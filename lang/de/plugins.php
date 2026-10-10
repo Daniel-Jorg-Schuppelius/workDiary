@@ -24,4 +24,17 @@ return [
         'range_hint' => 'Unterstützter WorkDiary-Kernversionsbereich.',
         'activation_blocked' => 'Plugin kann nicht aktiviert werden: :message',
     ],
+
+    // Adressprüfung ausgehender Plugin-Ziele (UrlSafety, PluginHttpFactory).
+    'url_guard' => [
+        'invalid' => ':prefix: :subject ist keine gültige http(s)-Adresse.',
+        'private' => ':prefix: :subject zeigt auf eine private/interne Adresse.',
+        'subject' => [
+            'base' => 'Die Basis-URL',
+            'target' => 'Die Ziel-URL',
+        ],
+        'hint_default' => 'Die Freigabe privater Adressen muss ausdrücklich aktiviert werden.',
+        'hint_setting' => 'Für eine Instanz im eigenen Netz die Plugin-Einstellung „:setting“ aktivieren.',
+        'hint_operator' => 'Ein Ziel im eigenen Netz kann nur der Betreiber Ihrer Installation freigeben (PLUGINS_PRIVATE_NETWORK_TARGETS).',
+    ],
 ];

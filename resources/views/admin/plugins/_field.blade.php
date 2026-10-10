@@ -45,6 +45,11 @@
                 <option value="{{ $value }}" @selected((string) $current === (string) $value)>{{ $label }}</option>
             @endforeach
         </select>
+    @elseif ($field['type'] === 'user')
+        {{-- Gespeichert ist die ID; Auswahl und Rückbefüllung laufen über die Sqid. --}}
+        <x-user-select :id="$fieldId" :name="'settings[' . $key . ']'" :users="$userOptions ?? []" value-key="sqid"
+                       :selected="is_numeric($current) ? \App\Support\Sqid::encode(\App\Models\Platform\User::class, (int) $current) : $current"
+                       class="select-sm" />
     @elseif ($field['type'] === 'number')
         <input type="number" id="{{ $fieldId }}" name="settings[{{ $key }}]"
                class="input input-sm input-bordered w-full"

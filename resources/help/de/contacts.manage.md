@@ -1,7 +1,7 @@
 ---
 title: "Kunden & Lieferanten"
 topic: contacts.manage
-version: 2
+version: 4
 keywords:
     - Kundenstamm
     - Kundendaten
@@ -17,6 +17,8 @@ keywords:
     - Adressbuch
     - Geschäftspartner
     - CRM
+    - Kundenportal
+    - Portalzugang
 audience: []
 modules:
     - module.vertrieb
@@ -62,6 +64,22 @@ Nacharbeit funktionieren.
 Kommunikationsnotiz am Kunden oder Lieferanten fest. Die Notizen stehen auf
 der Detailseite und in der zentralen Notizliste; eine Datenschutzauskunft zum
 Lieferanten führt sie mit Anzahl und Zeitraum auf.
+
+**Portalzugänge:** Im Abschnitt **Portalzugänge** der Kundenakte laden Sie
+Ansprechpartner mit **Zugang einladen** ins Kundenportal ein; der Kontakt legt
+sein Passwort über den Link in der Einladung selbst fest. Solange die
+Einladung offen oder abgelaufen ist, steht **Einladung erneut senden** bereit.
+Bei aktiven Zugängen setzt **Zugang zurücksetzen** den Zugang nach einer
+Rückfrage zurück: Das bisherige Passwort gilt sofort nicht mehr, alle
+Sitzungen werden beendet, und der Kontakt erhält eine neue Einladung;
+eingerichtete Zwei-Faktor-Methoden bleiben bestehen. Hat der Kontakt nur sein
+Passwort vergessen, ist das nicht nötig – er setzt es auf der Anmeldeseite des
+Portals über **Passwort vergessen?** selbst zurück. **Deaktivieren** meldet
+den Zugang sofort ab und sperrt die Anmeldung, **Reaktivieren** hebt das
+wieder auf. Welche Bereiche ein Zugang sieht, legt die Portal-Konfiguration
+des Kunden fest.
+
+Hat ein Kontakt alle Zwei-Faktor-Methoden und Recovery-Codes verloren, entfernt **Zweiten Faktor zurücksetzen** nach einer Passwortbestätigung und einer Rückfrage alle Methoden und beendet alle Sitzungen. Der Kontakt erhält dazu eine E-Mail und meldet sich danach mit seinem Passwort an; verlangt Ihre Organisation Zwei-Faktor-Authentifizierung, richtet er sie dabei neu ein. Prüfen Sie vorher seine Identität, etwa durch einen Rückruf.
 
 ## Beispiel aus der Praxis
 

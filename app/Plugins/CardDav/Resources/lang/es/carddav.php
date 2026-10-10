@@ -22,6 +22,7 @@ return [
         'unreachable' => 'Servidor CardDAV inaccesible o credenciales no válidas.',
         'error' => 'Error de CardDAV (:class).',
         'last_error' => 'Último error: :error',
+        'locked' => 'Tras :count intentos fallidos consecutivos, la sincronización está bloqueada. Compruebe la dirección y las credenciales y vuelva a guardar la conexión; así se levanta el bloqueo.',
     ],
 
     'action' => [
@@ -63,6 +64,7 @@ return [
         'saved' => 'Conexión CardDAV guardada.',
         'invalid_url' => 'La URL base debe empezar por http:// o https://.',
         'private_url_blocked' => 'La URL base apunta a una dirección privada/interna. Active el permiso de direcciones privadas para un servidor en su propia red.',
+        'private_hint' => 'Para un servidor en su propia red, las direcciones privadas deben permitirse expresamente.',
         'foreign_origin' => 'La dirección no pertenece al servidor CardDAV configurado.',
         'password_required' => 'Para una conexión nueva se requiere una contraseña de aplicación.',
         'no_connection' => 'No hay ninguna conexión CardDAV activa disponible.',

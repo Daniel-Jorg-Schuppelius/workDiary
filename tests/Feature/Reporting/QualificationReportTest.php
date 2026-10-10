@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Reporting;
 
+use App\Models\Hr\Qualification;
 use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -40,6 +41,23 @@ class QualificationReportTest extends TestCase {
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
         $this->assertStringContainsString('#report:qualifications', (string) $response->getContent());
         $this->assertStringContainsString('Mitarbeiter', (string) $response->getContent());
+    }
+
+    public function test_inactive_qualifications_are_left_out(): void {
+        $active = Qualification::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Ersthelfer', 'is_active' => true]);
+        $retired = Qualification::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Altschein', 'is_active' => false]);
+        $worker = $this->orgUser();
+        $worker->qualifications()->attach($active->id, ['valid_until' => '2099-12-31']);
+        $worker->qualifications()->attach($retired->id, ['valid_until' => '2000-01-31']);
+        $retiredOnly = $this->orgUser();
+        $retiredOnly->qualifications()->attach($retired->id);
+
+        $response = $this->actingAs($this->admin)->get(route('reports.qualifications'))->assertOk();
+
+        $this->assertSame([(int) $active->id], $response->viewData('qualifications')->pluck('id')->map(fn ($id): int => (int) $id)->all());
+        $this->assertSame([(int) $worker->id], $response->viewData('users')->pluck('id')->map(fn ($id): int => (int) $id)->all());
+        $this->assertSame(0, $response->viewData('totals')['expired']);
+        $this->assertSame(1, $response->viewData('totals')['assignments']);
     }
 
     public function test_requires_authentication(): void {

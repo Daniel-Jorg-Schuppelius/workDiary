@@ -37,6 +37,13 @@ return [
     ],
     // Retourenanmeldung im Kundenportal (MVP-935).
     'portal_return' => [
+        'list' => [
+            'claim' => 'Réclamation',
+            'empty' => 'Aucun retour déclaré pour l’instant.',
+            'rma' => 'Numéro de retour',
+            'status' => 'Statut',
+            'title' => 'Mes retours',
+        ],
         'capability' => 'Déclarer un retour',
         'nav' => 'Déclarer un retour',
         'title' => 'Déclarer un retour',
@@ -60,5 +67,10 @@ return [
             'subject' => 'Veuillez choisir une livraison ou un objet.',
             'serial' => 'Ce numéro de série n\'appartient pas à la livraison choisie.',
         ],
+    ],
+    // Nachreichungen aus dem Kundenportal.
+    'portal_note' => [
+        'history' => 'Vos envois complémentaires',
+        'notification_title' => 'Envoi complémentaire pour la réclamation :number',
     ],
 ];

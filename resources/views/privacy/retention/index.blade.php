@@ -82,7 +82,7 @@
                 </x-slot:head>
                 @foreach ($proposals as $proposal)
                     <tr>
-                        <td class="text-sm">{{ config('retention.areas.' . $proposal->area . '.label', $proposal->area) }}</td>
+                        <td class="text-sm">{{ $areaLabels[$proposal->area] ?? $proposal->area }}</td>
                         <td class="text-xs">{{ \App\Support\EntityType::label($proposal->subject_type) }} <span class="font-mono text-muted">#{{ $proposal->subject_id }}</span></td>
                         <td class="tabular-nums text-sm">{{ $proposal->retention_until->fdate() }}</td>
                         <td class="max-w-md truncate text-sm text-base-content/70">{{ $proposal->reason }}</td>
@@ -130,7 +130,7 @@
                                 @csrf
                                 <input type="hidden" name="area" value="{{ $approvedArea }}">
                                 <x-icon-btn icon="delete_sweep" tone="error" size="sm" type="submit"
-                                            show-label>{{ __('Bestätigte in :area löschen', ['area' => config('retention.areas.' . $approvedArea . '.label', $approvedArea)]) }}</x-icon-btn>
+                                            show-label>{{ __('Bestätigte in :area löschen', ['area' => $areaLabels[$approvedArea] ?? $approvedArea]) }}</x-icon-btn>
                             </form>
                         @endforeach
                     </div>

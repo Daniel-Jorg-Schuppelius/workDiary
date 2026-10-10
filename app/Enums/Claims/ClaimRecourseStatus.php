@@ -28,12 +28,12 @@ enum ClaimRecourseStatus: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Draft => (string) __('Entwurf'),
-            self::Submitted => (string) __('Eingereicht'),
-            self::Accepted => (string) __('Anerkannt'),
-            self::PartiallyAccepted => (string) __('Teilweise anerkannt'),
-            self::Rejected => (string) __('Abgelehnt'),
-            self::Closed => (string) __('Geschlossen'),
+            self::Draft => (string) __('enums.claims.claim_recourse_status.draft'),
+            self::Submitted => (string) __('enums.claims.claim_recourse_status.submitted'),
+            self::Accepted => (string) __('enums.claims.claim_recourse_status.accepted'),
+            self::PartiallyAccepted => (string) __('enums.claims.claim_recourse_status.partially_accepted'),
+            self::Rejected => (string) __('enums.claims.claim_recourse_status.rejected'),
+            self::Closed => (string) __('enums.claims.claim_recourse_status.closed'),
         };
     }
 }

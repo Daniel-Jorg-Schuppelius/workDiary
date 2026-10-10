@@ -27,10 +27,10 @@ enum AgileSprintStatus: string implements HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::Planned => (string) __('geplant'),
-            self::Active => (string) __('aktiv'),
-            self::Completed => (string) __('abgeschlossen'),
-            self::Cancelled => (string) __('abgebrochen'),
+            self::Planned => (string) __('enums.agile.agile_sprint_status.planned'),
+            self::Active => (string) __('enums.agile.agile_sprint_status.active'),
+            self::Completed => (string) __('enums.agile.agile_sprint_status.completed'),
+            self::Cancelled => (string) __('enums.agile.agile_sprint_status.cancelled'),
         };
     }
 

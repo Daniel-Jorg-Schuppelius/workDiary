@@ -133,6 +133,7 @@ return [
     ],
     'driving' => [
         'button' => 'Lenkzeit-Nachweis',
+        'button_pdf' => 'Lenkzeit-Nachweis (PDF)',
         'title' => 'Lenk- und Ruhezeiten-Nachweis',
         'thresholds_note' => 'Lenk-/Ruhezeiten (VO (EG) 561/2006 / FPersV): max. 9 h Lenkzeit/Tag (2×/Woche 10 h) · 56 h/Woche · 90 h/Doppelwoche · 45 min Fahrtunterbrechung nach 4,5 h (teilbar 15 + 30) · Ruhezeit 11 h/Tag (max. 3×/Woche 9 h) · 45 h/Woche (24 h mit Ausgleich).',
         'disclaimer' => 'Datenbasis sind die erfassten Fahrten (Fahrtenbuch) mit markierten Fahrzeugen; Tachograph-/DTCO-Daten werden nicht gelesen. Keine Rechtsberatung.',

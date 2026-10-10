@@ -1,7 +1,7 @@
 ---
 title: "Portale clienti – panoramica"
 topic: customer-portal.overview
-version: 2
+version: 4
 keywords:
     - home del portale
     - area clienti
@@ -15,6 +15,8 @@ keywords:
     - aree del portale
     - aiuto del portale
     - comunicazioni
+    - richiedere un appuntamento
+    - formazione
 audience: []
 related:
     - customer-portal.diary
@@ -40,7 +42,7 @@ Per ogni area rilasciata la pagina iniziale mostra un riquadro con un numero. Un
 
 - **Voci del registro ordini** – il numero dei Suoi ordini.
 - **Registrazioni di tempo** – il numero delle registrazioni di tempo che Lei può consultare. Il riquadro compare solo se Le vengono mostrate le singole registrazioni.
-- **Fatture** – il numero delle Sue fatture.
+- **Fatture** – il numero delle Sue fatture emesse.
 - **Punti aperti** – il numero dei punti aperti rilasciati per Lei e non ancora chiusi. La pagina **Punti aperti** è raggiungibile solo tramite questo riquadro.
 - **Richieste in corso** – le Sue richieste e i Suoi ordini in corso. Se alcune pratiche attendono una Sua reazione, il riquadro ha un bordo colorato e ne indica il numero («Di cui … attendono Lei»).
 - **Abbonamenti e licenze** – il numero di abbonamenti e licenze nel Suo elenco.
@@ -56,14 +58,17 @@ L'intestazione mostra sempre **Panoramica**, **Ricerca**, **Aiuto**, **Profilo**
 - **Documenti** – i documenti rilasciati per Lei,
 - **Tempi** – i tempi registrati per i Suoi progetti,
 - **Fatture** e, se il Suo fornitore La fattura tramite un conto di fatturazione, **Fatturazione**,
-- **Ticket** e **Catalogo dei servizi**,
-- **Errori noti**,
+- **Ticket**, **Catalogo dei servizi** ed **Errori noti**,
 - **Reclami** e **Registrare un reso**,
 - **Noleggio** e **Richiesta di noleggio**,
 - **Abbonamenti**,
 - **Accordi**,
 - **Richieste e ordini**,
+- **Richiedere un appuntamento**,
+- **Formazione**,
 - **Domande**.
+
+**Formazione** compare se il Suo fornitore offre corsi di formazione nel portale; lì vede solo i corsi che ha reso disponibili per i clienti.
 
 **Aiuto** apre l'argomento della guida relativo alla pagina in cui Lei si trova; se non esiste, l'elenco degli argomenti della guida del portale. Anche lì vede solo gli argomenti delle aree rilasciate per Lei. **Profilo** e **Sicurezza** sono descritti nell'argomento «Accesso e sicurezza». **Disconnetti** chiude la Sua sessione.
 

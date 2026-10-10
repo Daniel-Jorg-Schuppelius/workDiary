@@ -35,7 +35,7 @@ final class GoogleCalendarImportFeed implements CalendarImportFeed {
     }
 
     public function label(): string {
-        return 'Google Calendar';
+        return (string) __('google_calendar::google_calendar.title');
     }
 
     public function connections(Organization $organization): array {

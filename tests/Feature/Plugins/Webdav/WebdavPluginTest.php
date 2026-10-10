@@ -93,6 +93,16 @@ final class WebdavPluginTest extends TestCase {
         return $document;
     }
 
+    /** Die Ordnerregeln nennen Dokumenttypen mit ihrer Bezeichnung, nicht mit dem Speicherwert (Phase 137). */
+    public function test_folder_rules_show_document_type_labels(): void {
+        $this->connection();
+
+        $this->actingAs($this->orgAdmin())->get(route('admin.webdav.index'))
+            ->assertOk()
+            ->assertSee('>' . DocumentType::TestReport->label() . '</option>', false)
+            ->assertDontSee('>testReport</option>', false);
+    }
+
     public function test_is_discovered_and_announces_only_the_backup_target(): void {
         $this->assertContains(WebdavPlugin::class, PluginDiscovery::classes());
 

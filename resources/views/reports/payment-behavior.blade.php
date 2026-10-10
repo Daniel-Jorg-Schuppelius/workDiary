@@ -35,7 +35,7 @@
     @if (! $hasData)
         <div class="alert alert-info text-sm" role="status">
             <x-icon name="info" />
-            {{ __('Keine Rechnungsdaten: weder lokale Rechnungen noch gespiegelte Lexoffice-Belege vorhanden. Bei externer Rechnungshoheit zuerst den Beleg-Sync des Lexoffice-Plugins ausführen — er lädt auch die Zahlungsdaten nach.') }}
+            {{ __('Keine Rechnungsdaten: weder lokale Rechnungen noch aus dem Buchhaltungsprogramm gespiegelte Belege vorhanden. Bei externer Rechnungshoheit zuerst den Beleg-Sync mit dem Buchhaltungsprogramm ausführen — er lädt auch die Zahlungsdaten nach.') }}
         </div>
     @endif
 

@@ -82,6 +82,25 @@ class DataQualityReportTest extends TestCase {
         $response->assertSee('Serviceeinsatz Halle 3');
     }
 
+    public function test_phases_are_shown_with_their_label(): void {
+        $this->entry('2026-06-10 08:00:00');
+
+        $this->actingAs($this->admin)
+            ->withSession($this->dateRangeMonth(2026, 6))
+            ->get(route('reports.data-quality'))
+            ->assertOk()
+            ->assertSee(ClassificationRequirementPhase::BeforeComplete->label())
+            ->assertDontSee('beforeComplete');
+    }
+
+    public function test_menu_links_the_report_for_report_viewers_only(): void {
+        $link = 'href="' . route('reports.data-quality') . '"';
+        $plain = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($this->admin)->get(route('reports.my-month'))->assertOk()->assertSee($link, false);
+        $this->actingAs($plain)->get(route('reports.my-month'))->assertOk()->assertDontSee($link, false);
+    }
+
     public function test_report_requires_report_view_permission(): void {
         $plain = User::factory()->user()->create(['organization_id' => $this->organization->id]);
 

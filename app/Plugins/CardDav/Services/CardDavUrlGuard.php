@@ -29,12 +29,12 @@ use CommonToolkit\Helper\Data\WebLinkHelper;
 final class CardDavUrlGuard {
     /** Konfigurations- und Laufzeitprüfung einer CardDAV-Basis-URL. */
     public static function assertAcceptable(string $url, bool $allowPrivateNetwork): void {
-        // Gemeinsamer Guard (Vollaudit 2026-07, M48) — Meldungstexte unverändert.
+        // Gemeinsamer Guard (Vollaudit 2026-07, M48).
         UrlSafety::assertAcceptableExternalBaseUrl(
             $url,
             $allowPrivateNetwork,
             'CardDAV',
-            privateHint: 'Für einen Server im eigenen Netz muss die Freigabe privater Adressen ausdrücklich aktiviert werden.',
+            privateHint: (string) __('carddav::carddav.flash.private_hint'),
         );
     }
 

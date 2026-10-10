@@ -10,7 +10,7 @@
 
 return [
     'title' => 'CalDAV',
-    'intro' => 'WorkDiary-Termine werden in einen externen CalDAV-Kalender (Nextcloud/ownCloud) publiziert — On-Premise, ohne Microsoft-/Google-Konto. WorkDiary bleibt führend; abgesagte Termine verschwinden dort, wiederholte Läufe erzeugen keine Dubletten.',
+    'intro' => 'WorkDiary-Termine werden in einen externen CalDAV-Kalender (Nextcloud/ownCloud) publiziert — On-Premise, ohne Microsoft-/Google-Konto. WorkDiary bleibt führend; abgesagte und gelöschte Termine verschwinden dort, wiederholte Läufe erzeugen keine Dubletten.',
 
     'health' => [
         'ok' => 'Verbunden',
@@ -45,6 +45,8 @@ return [
         'calendar_path' => 'Kalenderpfad (Collection)',
         'calendar_path_help' => 'Relativ zur Basis-URL, z. B. calendars/team/dienstplan.',
         'active' => 'Aktiv',
+        'allow_private_network' => 'Private/interne Adressen erlauben',
+        'allow_private_network_help' => 'Nur einschalten, wenn der CalDAV-Server im eigenen Netz steht (z. B. 192.168.x.x). Wird protokolliert und wirkt nur, wenn der Betreiber diese Freigabe zulässt.',
         // MVP-610b: Rückimport ist Opt-in — er ändert Daten.
         'two_way' => 'Zwei-Wege: externe Änderungen als Inbox-Vorschläge importieren',
         'two_way_help' => 'Rückimport der Kalender-Collection über sync-collection (RFC 6578), sonst über ein Zeitfenster mit ETag-Vergleich — neue externe Termine, externe Änderungen an publizierten und Löschungen landen als Fälle in der Integrations-Inbox (nie blinde Anlage).',
@@ -62,5 +64,7 @@ return [
         'invalid_url' => 'Die Basis-URL muss mit http:// oder https:// beginnen.',
         'path_outside_base' => 'Die Kalender-URL liegt nicht unter der Basis-URL. Bitte den Pfad relativ zur Basis-URL angeben.',
         'password_required' => 'Für eine neue Anbindung ist ein App-Passwort erforderlich.',
+        'private_url_blocked' => 'Die Basis-URL zeigt auf eine private/interne Adresse. Für einen Server im eigenen Netz die Freigabe privater Adressen aktivieren.',
+        'private_hint' => 'Für einen Server im eigenen Netz muss an der Anbindung die Freigabe privater Adressen aktiviert sein.',
     ],
 ];

@@ -43,7 +43,8 @@ class MirrorDocumentObserver {
             if ($document->isMirrorDetached($target->pluginId())) {
                 continue;
             }
-            if ($target->activeConnection((int) $document->organization_id) === null) {
+            $connection = $target->activeConnection((int) $document->organization_id);
+            if ($connection === null || ! $connection->mirrorsSource('document')) {
                 continue;
             }
 

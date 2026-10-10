@@ -1,7 +1,7 @@
 ---
 title: "Operaciones: reparto del tiempo, procedimientos, material, guardias"
 topic: reports.operations
-version: 1
+version: 6
 keywords:
     - análisis de operaciones
     - órdenes de servicio
@@ -53,8 +53,13 @@ clientes** y **Análisis** → **Recursos**.
   administradores, que con él cambian entre sus propios datos y todo el
   equipo. Todos los demás ven siempre sus propios datos.
 - **PDF** descarga una versión para imprimir; **CSV** y **Excel** están en
-  **Exportación**. Las exportaciones conservan los filtros establecidos. Las
-  exportaciones PDF y CSV se registran en el registro de auditoría.
+  **Exportación**. Las exportaciones conservan los filtros establecidos. Cada
+  exportación se registra en el registro de auditoría.
+- Las exportaciones requieren el permiso **Exportar los informes**, también en
+  **Ejecuciones de procedimiento bloqueadas**; sin él no aparecen los botones
+  de exportación. Los administradores pueden exportar siempre. Siguen libres
+  las exportaciones que solo contienen sus propios datos; véase «Usar los
+  informes».
 
 ## Operaciones
 
@@ -68,8 +73,9 @@ tareas y rutas del período.
   vencida) y **Rutas** con los kilómetros y la duración planificados.
 - Gráficos: **Órdenes de servicio: creadas vs. completadas por semana** y
   **Backlog por cliente (top 15)** con las órdenes de servicio aún abiertas
-  por cliente. Un clic en una barra abre los puntos abiertos del cliente; para
-  ello necesita el permiso **Ver los informes**.
+  por cliente. Con el permiso **Ver los informes**, un clic en una barra abre
+  los puntos abiertos del cliente; sin este permiso, las barras no se pueden
+  pulsar.
 - Tablas: **Órdenes de servicio – estado**, **Órdenes de servicio –
   prioridad**, **Tareas – estado**, **Tareas – prioridad** y **Rutas – por
   empleado** (rutas, **Km planificados**, **Duración planificada**).
@@ -82,7 +88,7 @@ Lo determinante es la fecha planificada de la orden. Las tareas cuentan si se
 crearon, modificaron o vencieron en el período; las tareas archivadas quedan
 fuera.
 
-Filtros: **Área**, **Cliente**, **Proyecto**, **Empleados**, **Estado del
+Filtros: **Área**, **Cliente**, **Proyecto**, **Empleado**, **Estado del
 pedido** e **Incluir clientes ocultos**. Cliente y proyecto actúan sobre
 órdenes de servicio y tareas, el empleado sobre los tres ámbitos; las rutas
 no conocen ni cliente ni proyecto. El **Estado del pedido** solo restringe
@@ -191,7 +197,7 @@ archivadas no cuentan.
   **Tiempo de intervención** y **Proporción activa** con una fila de totales.
 
 Filtros: **Área** (**Solo mi disponibilidad** o **Equipo completo**, solo
-para administradores), **Empleados** y **Equipo**. Exportación en PDF (con el
+para administradores), **Empleado** y **Equipo**. Exportación en PDF (con el
 mapa de calor), CSV y Excel.
 
 ## Análisis de productos
@@ -225,16 +231,19 @@ las horas y los ingresos de un solo proyecto por mes. El análisis abarca el
 año natural en el que comienza el período elegido.
 
 - Elija **Cliente** y **Proyecto**. Sin selección aparece el primer proyecto
-  de la lista. El filtro **Empleados** solo existe con una vista de tiempos de
+  de la lista. El filtro **Empleado** solo existe con una vista de tiempos de
   toda la organización.
-- La tarjeta del proyecto indica los totales anuales **Σ Std.** y **Σ €** y
+- La tarjeta del proyecto indica los totales anuales **Σ h** y **Σ €** y
   enumera **Mes**, **Horas** e **Ingresos**; a continuación figura la
   **Distribución por empleado**. Los ingresos son la suma de los importes
   guardados con los registros de tiempo.
-- Gráficos: **Evolución de horas en el período**, **Horas reales y
-  planificadas por mes** (plan a partir de los minutos planificados de las
-  órdenes del proyecto según su inicio; sin datos de plan, una línea muestra
-  la mediana de los meses reales) y **Horas por tipo de pedido y mes**.
+- Gráficos: **Evolución de horas en el período**, **Horas reales y planificadas
+  por mes** (plan a partir del campo **Duración prevista (HH:MM)** de las
+  órdenes del proyecto según su inicio, a falta de él de la duración del servicio de una orden planificada; si no, de la duración de
+  la franja horaria o de la cita; con un empleado seleccionado, solo las órdenes
+  asignadas a esa persona; sin vista de tiempos de toda la organización, solo
+  las asignadas a usted; sin datos de plan, una línea muestra la mediana de los
+  meses reales) y **Horas por tipo de pedido y mes**.
 
 Los administradores y los roles con **Ver todos los registros de tiempo** ven
 todos los proyectos y todas las horas. Todos los demás solo ven los proyectos
@@ -263,11 +272,11 @@ CSV y Excel.
 
 ## Calidad de los datos
 
-La página **Calidad de datos: clasificaciones obligatorias** no tiene entrada
-de menú propia; se abre mediante un enlace directo, por ejemplo un marcador.
-Enumera las órdenes del período a las que les faltan datos exigidos por las
-reglas obligatorias de **Clasificaciones**. Se necesita el permiso **Ver los
-informes**.
+**Análisis** → **Proyectos y clientes** → **Calidad de los datos** abre la
+página **Calidad de datos: clasificaciones obligatorias**. Enumera las órdenes
+del período a las que les faltan datos exigidos por las reglas obligatorias de
+**Clasificaciones**. La entrada de menú y la página exigen el permiso **Ver
+los informes**.
 
 - Mosaicos: **Órdenes con huecos**, **Lagunas bloqueantes** (reglas
   bloqueantes) y **Brechas leves** (avisos).

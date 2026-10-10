@@ -1,4 +1,6 @@
 {
+    "Die Instanz-URL": "L’URL de l’instance",
+    "Für eine On-Premise-Instanz im eigenen Netz muss die Freigabe privater Adressen ausdrücklich aktiviert werden.": "Pour une instance sur site sur votre propre réseau, les adresses privées doivent être autorisées explicitement.",
     "GitLab ist nicht konfiguriert (Projekt-ID oder API-Token fehlt).": "GitLab n'est pas configuré (ID de projet ou jeton API manquant).",
     "GitLab lehnt den API-Token ab (:status) — Token prüfen.": "GitLab rejette le jeton API (:status) — vérifier le jeton.",
     "GitLab-API antwortet mit Fehlerstatus :status.": "L'API GitLab répond avec le statut d'erreur :status.",
@@ -8,7 +10,6 @@
     "Numerische GitLab-Projekt-ID (Projektseite → Einstellungen → Allgemein).": "ID numérique du projet GitLab (page du projet → Paramètres → Général).",
     "Nur für On-Premise-Instanzen im eigenen Netz: erlaubt eine Instanz-URL mit privater/interner Adresse.": "Uniquement pour les instances on-premise dans votre propre réseau : autorise une URL d'instance avec une adresse privée/interne.",
     "Optional: Secret Token des GitLab-Webhooks (Issue-Events, X-Gitlab-Token). Ohne Token bleibt der Webhook-Endpunkt deaktiviert; das Polling holt alles nach.": "Optionnel : jeton secret du webhook GitLab (événements issue, X-Gitlab-Token). Sans jeton, le point de terminaison webhook reste désactivé ; l'interrogation rattrape tout.",
-    "Private Adressen erlauben": "Autoriser les adresses privées",
     "Project Access Token (empfohlen) oder Personal Access Token mit read_api-Scope.": "Project Access Token (recommandé) ou Personal Access Token avec le scope read_api.",
     "Schließt das verknüpfte Issue (mit Notiz), wenn die Aufgabe in workDiary erledigt wird, und öffnet es beim Wiedereröffnen. Titel und Beschreibung bleiben quellsystem-geführt. Der Token braucht Schreibzugriff auf Issues (api-Scope).": "Ferme l’issue liée (avec une note) lorsque la tâche est terminée dans workDiary et la rouvre en cas de réouverture. Le titre et la description restent gérés par le système source. Le jeton nécessite un accès en écriture aux issues (scope api).",
     "Verbunden mit GitLab als :login.": "Connecté à GitLab en tant que :login.",

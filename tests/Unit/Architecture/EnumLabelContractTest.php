@@ -75,6 +75,46 @@ class EnumLabelContractTest extends TestCase {
     }
 
     /**
+     * Bezeichnungen kommen aus den Sprachdateien (`enums.<domäne>.<enum>.<fall>`,
+     * im Plugin `<plugin-id>::enums.…`), nie aus dem JSON-Katalog: ein
+     * gleichlautender JSON-Schlüssel überschattet sonst den Namespace, und beide
+     * laufen auseinander. Erlaubt sind nur Schlüssel mit Gruppe (auch als Präfix
+     * vor `. $this->value`).
+     */
+    public function test_labels_use_namespace_keys_not_json_texts(): void {
+        $root = (string) realpath(__DIR__ . '/../../..');
+        $violations = [];
+
+        foreach ($this->allEnumClasses($root) as $fqcn) {
+            $reflection = new ReflectionEnum($fqcn);
+            if (! $reflection->hasMethod('label')) {
+                continue;
+            }
+
+            $method = $reflection->getMethod('label');
+            $lines = (array) file((string) $method->getFileName());
+            $body = implode('', array_slice($lines, (int) $method->getStartLine() - 1, (int) $method->getEndLine() - (int) $method->getStartLine() + 1));
+
+            preg_match_all('/\b(?:__|trans|trans_choice)\(\s*(?:\'((?:[^\'\\\\]|\\\\.)*)\'|"((?:[^"\\\\]|\\\\.)*)")/', $body, $matches, PREG_SET_ORDER);
+            foreach ($matches as $match) {
+                $key = ($match[1] ?? '') !== '' ? $match[1] : ($match[2] ?? '');
+                if (! preg_match('/^[a-z][A-Za-z0-9_-]*(::[A-Za-z0-9_-]+)?\.[A-Za-z0-9_.-]*$/', $key)) {
+                    $violations[] = $fqcn . ': ' . $key;
+                }
+            }
+        }
+
+        sort($violations);
+
+        $this->assertSame([], $violations, sprintf(
+            "label() übersetzt einen JSON-Text statt eines Namespace-Schlüssels.\n"
+                . "Fix: Text nach lang/<sprache>/enums.php (×5) unter enums.<domäne>.<enum>.<fall>,\n"
+                . "im Plugin nach Resources/lang/<sprache>/enums.php, und den Schlüssel aufrufen:\n%s",
+            implode("\n", $violations),
+        ));
+    }
+
+    /**
      * Alle Enum-FQCNs unter den SCAN_ROOTS (PSR-4-Auflösung je Wurzel).
      *
      * @return iterable<class-string>

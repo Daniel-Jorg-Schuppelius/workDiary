@@ -1,7 +1,7 @@
 ---
 title: "Toggl-Import"
 topic: admin.toggl
-version: 2
+version: 3
 keywords:
     - Toggl Track
     - Zeiten importieren
@@ -81,3 +81,17 @@ Benutzerzuordnung (MVP-509):
   Einzelne Toggl-Adressen lassen sich zusätzlich fest zuordnen; der
   Import ist idempotent und kann nach gepflegter Zuordnung einfach
   erneut ausgeführt werden.
+
+Webhook (optional):
+
+- Damit neue Einträge schneller ankommen, nennt die Importseite im
+  Abschnitt **Webhook (optional)** die Adresse für eine
+  Toggl-Webhook-Subscription. Legen Sie die Subscription in Toggl für den
+  Workspace an und tragen Sie das dabei vergebene Geheimnis in den
+  Plugin-Einstellungen unter **Webhook-Secret** ein; dort muss auch die
+  **Workspace-ID** stehen.
+- Der Webhook stößt nur denselben Import an, den der stündliche Abruf
+  ausführt. Fällt er aus, holt der Abruf nach.
+- Den Standard-Benutzer des Einbenutzer-Modus wählen Sie in den
+  Plugin-Einstellungen unter **Zeiten buchen für Benutzer** aus der Liste
+  der Benutzer.

@@ -19,6 +19,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Accounting\AccountingOpenItem;
 use App\Services\Accounting\OpenItemService;
 use CommonToolkit\ValueObjects\Decimal;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -50,6 +51,9 @@ class OpenItemController extends Controller {
         return view('finance.accounting.open-items', [
             'direction' => $direction,
             'items' => $aging['items'],
+            // Wartende Gegenbuchungen (E9): der Posten zeigt sie, statt einen
+            // zweiten Ausgleich anzubieten.
+            'pendingDrafts' => $this->openItems->pendingDrafts($aging['items'] instanceof LengthAwarePaginator ? $aging['items']->items() : $aging['items']),
             'buckets' => $aging['buckets'],
             'statuses' => OpenItemStatus::cases(),
             'canPost' => Gate::allows(Permission::AccountingLedgerPost->value),
@@ -76,7 +80,7 @@ class OpenItemController extends Controller {
             'note' => ['nullable', 'string', 'max:191'],
         ]);
 
-        $this->openItems->settle(
+        $settlement = $this->openItems->settle(
             $item,
             SettlementKind::from((string) $data['kind']),
             Decimal::of((string) $data['amount'], 2)->getValue(),
@@ -84,7 +88,9 @@ class OpenItemController extends Controller {
             $data['note'] ?? null,
         );
 
-        return back()->with('status', __('accounting.open_items.flash.settled'));
+        return back()->with('status', $settlement === null
+            ? __('accounting.open_items.flash.awaiting_approval')
+            : __('accounting.open_items.flash.settled'));
     }
 
     private function assertSameOrganization(AccountingOpenItem $item): void {

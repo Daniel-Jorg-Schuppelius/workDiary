@@ -1,7 +1,7 @@
 ---
 title: "Auftrag bearbeiten"
 topic: diary-entries.edit
-version: 1
+version: 3
 keywords:
     - Auftrag ändern
     - Auftragsdetails
@@ -32,3 +32,6 @@ Beachten Sie:
   geführt und bleiben für die gesamte Lebensdauer sichtbar.
 - Anhänge dürfen bis zu **25 MB** groß sein; größere Dateien müssen über
   externes Storage referenziert werden.
+- Die **Geplante Dauer (HH:MM)** ändern Sie im Bearbeitungsdialog im Abschnitt
+  **Zeitraum**. Leeren Sie das Feld, gilt wieder die Servicedauer eines disponierten Auftrags, sonst die Länge des Zeitfensters
+  bzw. die Dauer des Termins.

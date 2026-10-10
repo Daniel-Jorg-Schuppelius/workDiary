@@ -30,10 +30,10 @@ enum RentalRequestStatus: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Requested => (string) __('angefragt'),
-            self::Accepted => (string) __('angenommen'),
-            self::Declined => (string) __('abgelehnt'),
-            self::Withdrawn => (string) __('zurückgenommen'),
+            self::Requested => (string) __('enums.rental.rental_request_status.requested'),
+            self::Accepted => (string) __('enums.rental.rental_request_status.accepted'),
+            self::Declined => (string) __('enums.rental.rental_request_status.declined'),
+            self::Withdrawn => (string) __('enums.rental.rental_request_status.withdrawn'),
         };
     }
 

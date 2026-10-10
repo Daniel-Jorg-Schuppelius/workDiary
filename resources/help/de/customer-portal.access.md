@@ -1,7 +1,7 @@
 ---
 title: "Zugang & Sicherheit"
 topic: customer-portal.access
-version: 3
+version: 5
 keywords:
     - Anmeldung Kundenportal
     - Login
@@ -15,6 +15,8 @@ keywords:
     - Anmelde-E-Mail ändern
     - angemeldet bleiben
     - Profil
+    - Passwort vergessen
+    - Passwort zurücksetzen
 audience: []
 related:
     - customer-portal.overview
@@ -34,6 +36,8 @@ Das Passwort muss mindestens 12 Zeichen lang sein und Groß- und Kleinbuchstaben
 
 Ist der Link abgelaufen, lässt sich die Seite nicht mehr öffnen. Bitten Sie dann Ihren Auftragnehmer, Ihnen die Einladung erneut zu senden.
 
+Hat Ihr Auftragnehmer Ihren Zugang zurückgesetzt, gilt Ihr bisheriges Passwort nicht mehr, und alle Anmeldungen Ihres Zugangs sind beendet. Sie erhalten dann eine neue Einladung mit dem Betreff „Ihr Zugang zum Kundenportal von …“ und legen Ihr Passwort wie oben beschrieben neu fest. Ein eingerichteter zweiter Faktor bleibt bestehen.
+
 ## Anmelden
 
 Geben Sie auf der Seite **Anmelden** Ihre **E-Mail** und Ihr **Passwort** ein und klicken Sie auf **Anmelden**. Mit **Angemeldet bleiben** müssen Sie sich auf diesem Gerät nicht bei jedem Besuch neu anmelden – nutzen Sie die Option nur auf Ihrem eigenen Gerät.
@@ -41,7 +45,18 @@ Geben Sie auf der Seite **Anmelden** Ihre **E-Mail** und Ihr **Passwort** ein un
 - Stimmen E-Mail oder Passwort nicht, erscheint **Diese Anmeldedaten stimmen nicht mit unseren Aufzeichnungen überein.** Aus Sicherheitsgründen sagt das Portal nicht, welche Angabe falsch war.
 - Die Zahl der Anmeldeversuche ist begrenzt; nach zu vielen Fehlversuchen müssen Sie eine Weile warten.
 - Hat Ihr Auftragnehmer Ihren Zugang deaktiviert, ist keine Anmeldung mehr möglich.
-- Eine Funktion zum Ändern oder Zurücksetzen des Passworts gibt es im Portal nicht. Haben Sie Ihr Passwort vergessen, wenden Sie sich an Ihren Auftragnehmer.
+- Haben Sie Ihr Passwort vergessen, setzen Sie es über **Passwort vergessen?** unter dem Anmeldeformular selbst zurück.
+
+### Passwort vergessen
+
+1. Klicken Sie auf der Seite **Anmelden** auf **Passwort vergessen?**.
+2. Geben Sie unter **E-Mail** Ihre Anmelde-E-Mail ein und klicken Sie auf **Link senden**.
+3. Öffnen Sie innerhalb von 60 Minuten den Link in der E-Mail mit dem Betreff „Passwort für das Kundenportal von … zurücksetzen“ (Knopf **Passwort festlegen**).
+4. Geben Sie unter **Neues Passwort** ein Passwort ein, wiederholen Sie es unter **Passwort wiederholen** und klicken Sie auf **Passwort speichern**.
+
+Nach dem Absenden meldet das Portal in jedem Fall **Falls ein Konto mit dieser E-Mail existiert, wurde ein Link zum Zurücksetzen versendet.** – auch wenn es die Adresse nicht kennt. So kann niemand herausfinden, welche Adressen einen Zugang haben. Eine E-Mail erhalten nur aktive Zugänge: Ist Ihre Einladung noch offen oder Ihr Zugang deaktiviert, wenden Sie sich an Ihren Auftragnehmer. Der Link gilt nur einmal; bis Sie das neue Passwort speichern, bleibt das bisherige gültig. Haben Sie die Anfrage nicht selbst gestellt, ignorieren Sie die E-Mail einfach.
+
+Für das neue Passwort gelten dieselben Regeln wie beim Aktivieren des Zugangs. Nach dem Speichern zeigt die Anmeldeseite **Passwort geändert. Bitte melden Sie sich an.** Alle bestehenden Anmeldungen Ihres Zugangs, auch auf anderen Geräten, sind dann beendet. Ein eingerichteter zweiter Faktor bleibt bestehen und wird bei der nächsten Anmeldung wie gewohnt abgefragt. Mehrere Anfragen kurz hintereinander sind begrenzt; warten Sie dann eine Weile.
 
 ### Zweiter Faktor bei der Anmeldung
 
@@ -89,6 +104,8 @@ Klicken Sie auf **Passkey hinzufügen** und folgen Sie den Anweisungen Ihres Bro
 ### Recovery-Codes
 
 Beim Einrichten der ersten Methode zeigt das Portal einmalig Ihre **Recovery-Codes**. Jeder Code funktioniert genau einmal und ersetzt bei der Anmeldung den zweiten Faktor. Bewahren Sie die Codes sicher auf; das Portal zeigt sie nicht noch einmal an. Ist die Authenticator-App eingerichtet, erzeugen Sie einen neuen Satz: Geben Sie unter **Recovery-Codes neu erzeugen** im Feld **Aktueller App-Code** den Code aus der App ein und klicken Sie auf **Neu erzeugen**. Die bisherigen Codes gelten dann nicht mehr.
+
+Haben Sie alle Methoden und Recovery-Codes verloren, wenden Sie sich an Ihren Auftragnehmer. Er kann Ihren zweiten Faktor zurücksetzen; Sie erhalten dazu eine E-Mail mit der Überschrift „Ihr zweiter Faktor wurde zurückgesetzt“ und melden sich danach nur mit Ihrem Passwort an. Ist Zwei-Faktor-Authentifizierung Pflicht, richten Sie dabei eine neue Methode ein.
 
 ## Faktoren entfernen oder alles deaktivieren
 

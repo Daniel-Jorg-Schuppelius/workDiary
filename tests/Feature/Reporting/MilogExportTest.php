@@ -11,7 +11,7 @@
 namespace Tests\Feature\Reporting;
 
 use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
-use App\Models\Platform\{Organization, User};
+use App\Models\Platform\{Organization, Team, User};
 use App\Models\Time\Attendance;
 use App\Support\Sqid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -144,6 +144,23 @@ class MilogExportTest extends TestCase {
         $this->attendance($this->user->id, '2030-03-04', '08:00:00', '12:00:00');
 
         $csv = (string) $this->download(['user' => Sqid::encode(User::class, (int) $this->user->id)])
+            ->assertOk()->getContent();
+
+        $this->assertStringContainsString('Anna Arbeit', $csv);
+        $this->assertStringNotContainsString('Zita Zuletzt', $csv);
+    }
+
+    public function test_team_filter_narrows_the_export(): void {
+        $second = User::factory()->user()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Zita Zuletzt',
+        ]);
+        $team = Team::factory()->create(['organization_id' => $this->organization->id]);
+        $team->members()->attach($this->user->id);
+        $this->attendance($second->id, '2030-03-03', '08:00:00', '12:00:00');
+        $this->attendance($this->user->id, '2030-03-04', '08:00:00', '12:00:00');
+
+        $csv = (string) $this->download(['team' => Sqid::encode(Team::class, (int) $team->id)])
             ->assertOk()->getContent();
 
         $this->assertStringContainsString('Anna Arbeit', $csv);

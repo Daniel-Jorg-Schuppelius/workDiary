@@ -26,10 +26,10 @@ enum ClaimRmaStatus: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Announced => (string) __('Angekündigt'),
-            self::Received => (string) __('Wareneingang erfasst'),
-            self::Inspecting => (string) __('In Prüfung'),
-            self::Completed => (string) __('Abgeschlossen'),
+            self::Announced => (string) __('enums.claims.claim_rma_status.announced'),
+            self::Received => (string) __('enums.claims.claim_rma_status.received'),
+            self::Inspecting => (string) __('enums.claims.claim_rma_status.inspecting'),
+            self::Completed => (string) __('enums.claims.claim_rma_status.completed'),
         };
     }
 }

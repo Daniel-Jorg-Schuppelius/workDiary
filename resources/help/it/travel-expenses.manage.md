@@ -1,7 +1,7 @@
 ---
 title: "Viaggi, spese e diarie"
 topic: travel-expenses.manage
-version: 2
+version: 3
 keywords:
     - nota spese
     - rimborso spese
@@ -25,7 +25,7 @@ related:
     - reports.overview
 ---
 
-Registro dei viaggi, spese e diarie di vitto documentano le trasferte di
+Registro viaggi, spese e diarie di vitto documentano le trasferte di
 lavoro separatamente ma con riferimento comune a periodo e giustificativi.
 Flusso tipico: registri il viaggio con data, tragitto, scopo, veicolo e
 chilometraggi, aggiunga le spese con categoria, importo, modalità di
@@ -60,7 +60,7 @@ viaggio**. Tutti i viaggi registrati si trovano in **Trasferte e spese** →
 sono compilati, WorkDiary crea di norma una registrazione del tempo non
 fatturabile per il tempo di viaggio. Un contachilometri finale più alto viene
 riportato nel veicolo della flotta. Se il veicolo della flotta è in **Modalità
-libretto**, i chilometraggi sono obbligatori e il viaggio viene bloccato dopo
+registro viaggi**, i chilometraggi sono obbligatori e il viaggio viene bloccato dopo
 la fine della giornata. Chiunque abbia effettuato l'accesso può registrare
 viaggi, se la Sua organizzazione usa il modulo; un viaggio appartiene sempre
 alla persona che lo ha registrato.
@@ -113,16 +113,16 @@ letture errate.
 Il giustificativo originale resta allegato invariato: il riconoscimento non lo
 sostituisce, le risparmia solo la digitazione.
 
-## Libretto di viaggio: firma, correzione e confronto 1 %
+## Registro viaggi: firma, correzione e confronto 1 %
 
-In modalità libretto di viaggio chi guida chiude un viaggio **con la propria
+In modalità registro viaggi chi guida chiude un viaggio **con la propria
 firma**; il viaggio viene poi bloccato. Anche un viaggio già bloccato a fine
 giornata si può ancora firmare. Se un viaggio a metà della catena viene corretto
 con un viaggio di storno e cambia il chilometraggio finale, il viaggio successivo
 inizia automaticamente da lì — come correzione conseguente, l'originale resta.
 
-Il **confronto 1 %** sotto il giustificativo del libretto mette a confronto, per
-veicolo e anno, il metodo del libretto con la regola dell'1 %. Il veicolo richiede
+Il **confronto 1 %** sotto il giustificativo del registro viaggi mette a confronto, per
+veicolo e anno, il metodo del registro viaggi con la regola dell'1 %. Il veicolo richiede
 il prezzo di listino lordo e la distanza casa–lavoro; lì Lei inserisce gli altri
 costi annuali (leasing, assicurazione, bollo), l'energia deriva dai giustificativi
 di rifornimento e ricarica. Facoltativamente un'impostazione blocca nuovi viaggi

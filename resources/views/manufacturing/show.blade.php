@@ -325,9 +325,23 @@
 
                                 {{-- Versandauftrag (Feature 059, Rang 20) --}}
                                 @if ($delivery->shipment)
-                                    <x-status-badge tone="plain">{{ __('shipping.label_short') }}: {{ $delivery->shipment->status->label() }}</x-status-badge>
-                                    @if ($delivery->shipment->tracking_number)
-                                        <span class="text-xs text-muted">{{ strtoupper($delivery->shipment->carrier) }}: {{ $delivery->shipment->tracking_number }}</span>
+                                    @php($shipment = $delivery->shipment)
+                                    <x-status-badge tone="plain" :title="$shipment->last_tracked_at ? __('shipping.last_tracked', ['time' => $shipment->last_tracked_at->fdatetime()]) : null">{{ __('shipping.label_short') }}: {{ $shipment->status->label() }}</x-status-badge>
+                                    @if ($shipment->tracking_number)
+                                        <span class="text-xs text-muted">{{ strtoupper($shipment->carrier) }}: {{ $shipment->tracking_number }}</span>
+                                    @endif
+                                    @if ($shipment->labelAttachment())
+                                        <x-icon-btn icon="download" size="xs" :href="route('manufacturing-orders.deliveries.shipment.label', [$order, $delivery])" :label="__('shipping.action.download_label')" />
+                                    @endif
+                                    @if ($canManage && $shipment->tracking_number && ! $shipment->status->isTerminal())
+                                        <x-action-form :action="route('manufacturing-orders.deliveries.shipment.track', [$order, $delivery])">
+                                            <x-icon-btn icon="sync" size="xs" type="submit" :label="__('shipping.action.track_now')" />
+                                        </x-action-form>
+                                    @endif
+                                    @if ($canManage && $shipment->status->isCancellable())
+                                        <x-action-form :action="route('manufacturing-orders.deliveries.shipment.cancel', [$order, $delivery])" :confirm="__('shipping.confirm_cancel')" confirm-icon="cancel" confirm-tone="error">
+                                            <x-icon-btn icon="cancel" tone="error" size="xs" type="submit" :label="__('shipping.action.cancel_shipment')" />
+                                        </x-action-form>
                                     @endif
                                 @elseif ($canManage && $delivery->customer_id && $carriers->isNotEmpty())
                                     <form method="POST" action="{{ route('manufacturing-orders.deliveries.shipment', [$order, $delivery]) }}" class="join">@csrf

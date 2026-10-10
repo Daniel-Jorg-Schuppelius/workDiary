@@ -42,20 +42,20 @@ enum InformationBlock: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::SenderLine => __('Absenderzeile'),
-            self::RecipientAddress => __('Empfängeranschrift'),
-            self::DocumentMeta => __('Dokumenttitel, Nummer, Datum & Referenzen'),
-            self::ContactPerson => __('Ansprechpartner & Kontaktdaten'),
-            self::CompanyIdentity => __('Unternehmensanschrift, Rechtsform & Register'),
-            self::TaxIdentity => __('Steuer-/Umsatzsteuerangaben'),
-            self::BankDetails => __('Bankverbindung & Zahlungsinformationen'),
-            self::IntroText => __('Einleitungstext'),
-            self::ItemsTable => __('Positionstabelle'),
-            self::Totals => __('Summenbereich'),
-            self::TaxBreakdown => __('Steueraufschlüsselung'),
-            self::ClosingText => __('Schlusstext'),
-            self::PageMeta => __('Seitenzahl & Dokumentkennung'),
-            self::Confidentiality => __('Vertraulichkeitskennzeichnung'),
+            self::SenderLine => __('enums.document_design.information_block.sender_line'),
+            self::RecipientAddress => __('enums.document_design.information_block.recipient_address'),
+            self::DocumentMeta => __('enums.document_design.information_block.document_meta'),
+            self::ContactPerson => __('enums.document_design.information_block.contact_person'),
+            self::CompanyIdentity => __('enums.document_design.information_block.company_identity'),
+            self::TaxIdentity => __('enums.document_design.information_block.tax_identity'),
+            self::BankDetails => __('enums.document_design.information_block.bank_details'),
+            self::IntroText => __('enums.document_design.information_block.intro_text'),
+            self::ItemsTable => __('enums.document_design.information_block.items_table'),
+            self::Totals => __('enums.document_design.information_block.totals'),
+            self::TaxBreakdown => __('enums.document_design.information_block.tax_breakdown'),
+            self::ClosingText => __('enums.document_design.information_block.closing_text'),
+            self::PageMeta => __('enums.document_design.information_block.page_meta'),
+            self::Confidentiality => __('enums.document_design.information_block.confidentiality'),
         };
     }
 

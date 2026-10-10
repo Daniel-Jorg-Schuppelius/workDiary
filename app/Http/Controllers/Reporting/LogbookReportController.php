@@ -39,6 +39,13 @@ class LogbookReportController extends Controller {
     use ResolvesGlobalDateRange;
     use WritesReportCsv;
 
+    /** E10: Das Fahrtenbuch des eigenen Dienstwagens ist frei; Poolfahrzeuge enthalten Fahrten anderer. */
+    protected function exportIsPersonal(Request $request): bool {
+        $vehicleId = Sqid::decode(Vehicle::class, $request->string('vehicle')->toString());
+
+        return $vehicleId !== null && Vehicle::query()->whereKey($vehicleId)->where('default_user_id', Auth::id())->exists();
+    }
+
     public function index(Request $request): View|SymfonyResponse {
         Gate::authorize('viewAny', Vehicle::class);
 
@@ -154,7 +161,22 @@ class LogbookReportController extends Controller {
      */
     private function exportCsv(Vehicle $vehicle, array $rows, array $totals, CarbonImmutable $from, CarbonImmutable $to, Request $request, array $exportFilters): SymfonyResponse {
         $filename = sprintf('fahrtenbuch_%s_%s_%s.csv', preg_replace('/[^A-Za-z0-9]+/', '-', $vehicle->license_plate), $from->toDateString(), $to->toDateString());
-        $out = [['Datum', 'Start-km', 'End-km', 'km', 'Fahrtart', 'Von', 'Ziel', 'Zweck', 'Fahrer', 'Festgeschrieben', 'Unterschrieben', 'Storniert', 'Korrektur zu', 'Korrekturgrund']];
+        $out = [[
+            (string) __('reporting.csv.date'),
+            (string) __('reporting.csv.start_km'),
+            (string) __('reporting.csv.end_km'),
+            (string) __('reporting.csv.km'),
+            (string) __('reporting.csv.trip_kind'),
+            (string) __('reporting.csv.from'),
+            (string) __('reporting.csv.destination'),
+            (string) __('reporting.csv.purpose'),
+            (string) __('reporting.csv.driver'),
+            (string) __('reporting.csv.locked'),
+            (string) __('reporting.csv.signed'),
+            (string) __('reporting.csv.cancelled'),
+            (string) __('reporting.csv.correction_of'),
+            (string) __('reporting.csv.correction_reason'),
+        ]];
         foreach ($rows as $r) {
             $log = $r['log'];
             $out[] = [
@@ -169,16 +191,16 @@ class LogbookReportController extends Controller {
                 $log->user->name ?? '',
                 Tz::toLocal($log->locked_at)?->format('Y-m-d H:i') ?? '',
                 Tz::toLocal($log->driver_signed_at)?->format('Y-m-d H:i') ?? '',
-                $r['superseded'] ? 'ja' : '',
+                $r['superseded'] ? (string) __('reporting.csv.yes') : '',
                 $log->corrects?->date?->toDateString() ?? '',
                 (string) $log->correction_reason,
             ];
         }
         foreach (TripKind::cases() as $kind) {
-            $out[] = ['Summe ' . $kind->label(), '', '', (string) $totals['by_kind'][$kind->value], $kind->label(), '', '', '', '', '', '', '', '', ''];
+            $out[] = [(string) __('reporting.csv.sum_of', ['label' => $kind->label()]), '', '', (string) $totals['by_kind'][$kind->value], $kind->label(), '', '', '', '', '', '', '', '', ''];
         }
-        $out[] = ['Gesamt', '', '', (string) $totals['km'], '', '', '', '', '', '', '', '', '', ''];
-        $out[] = ['Privater Anteil %', '', '', $totals['private_share'] !== null ? NumberHelper::toUSFormat($totals['private_share'], 1) : '', '', '', '', '', '', '', '', '', '', ''];
+        $out[] = [(string) __('reporting.csv.total'), '', '', (string) $totals['km'], '', '', '', '', '', '', '', '', '', ''];
+        $out[] = [(string) __('reporting.csv.private_share_percent'), '', '', $totals['private_share'] !== null ? NumberHelper::toUSFormat($totals['private_share'], 1) : '', '', '', '', '', '', '', '', '', '', ''];
 
         return $this->csvWithMetadata($out, $filename, 'logbook', $exportFilters, $request);
     }

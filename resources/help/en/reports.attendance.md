@@ -1,7 +1,7 @@
 ---
 title: "Attendance, plan/actual and coverage"
 topic: reports.attendance
-version: 1
+version: 7
 keywords:
     - attendance report
     - analyse clock-in times
@@ -46,9 +46,10 @@ the period selected in the header (calendar icon **Choose period**).
 The table has one row per person and the columns:
 
 - **Workdays** and **Target**: days and target time according to the
-  working-time model per weekday. Public holidays and vacation do not reduce
-  this target here – unlike in **Work balance**. Without a working-time model
-  both values are 0.
+  working-time model per weekday. Public holidays and days with approved
+  absence – such as vacation, special leave, unpaid leave or sick leave – have no target and
+  do not count as workdays, just as in **Work balance** and in the working-time
+  account. Without a working-time model both values are 0.
 - **Present**: completed clockings after deducting breaks; running and
   cancelled clockings do not count.
 - **Booked**: all time entries in the period, regardless of type.
@@ -60,9 +61,10 @@ and weekday** shows on which weekdays someone was present and for how long;
 **Attendance over time** shows the total per day, or per calendar week for
 periods longer than 62 days. Clicking a column heading sorts the table.
 
-Filters are only available to administrators: **Area** with **Mine only** or
-**Entire team** (all people in the organization) as well as **Employee** and
-**Team**. Everyone else only sees their own row.
+The filters **Area** with **Mine only** or **Entire team** (all people in the
+organization) as well as **Employee** and **Team** are shown to administrators
+and to people with the right **View attendance**. Everyone else only sees their
+own row.
 
 Export: **PDF** with table and heatmap; in the **Export** menu **CSV** and
 **Excel** with workdays, target, present, booked and balance in minutes per
@@ -85,14 +87,18 @@ The page **Plan/actual attendance** shows your own days with the tiles
 **Plan**, **Actual**, **Δ** and **Warnings** and, per day, the columns:
 
 - **Plan**: target time according to the working-time model for the weekday;
-  “—” on days without a working-time model or without a workday.
-- **Actual**: the clocked attendance of the day.
+  “—” on days without a working-time model or without a workday as well as on
+  public holidays and on days with approved absence such as vacation, special
+  leave, unpaid leave or sick leave.
+- **Actual**: the clocked attendance of the day; cancelled clockings do not
+  count.
 - **Δ**: actual minus plan, negative values in red.
 - **Start P/A**: start of core time according to the working-time model and the
   first clocking of the day, followed by the deviation in minutes.
 - **Warnings**: late start, when the first clocking is more than 15 minutes
   after the start of core time, and hours deviation, when actual differs from
-  plan by more than 10 %. Days without a plan get no warning.
+  plan by more than 10 %. Days without a plan – including public holidays and
+  vacation days – get no warning.
 
 If you open the page for another person from the **Team** or **Organization**
 tab, the note **View for** with their name appears at the top.
@@ -114,17 +120,20 @@ With the team right this only works for members of your own teams.
 - **Shifts**: plan is the published and confirmed shifts of the shift plan with
   the length of their time window (night shifts across midnight included);
   actual is the overlap of the assigned person's clock-in times with that
-  window. Tiles **Plan**, **Actual**, **Difference** and **Coverage** (actual
-  relative to plan; highlighted below 100 %). Use **Grouping** to choose
-  **Daily** or **Weekly** for the chart **Plan vs. actual per day** or **Plan
-  vs. actual per week**. The table **Per shift type** lists **Shifts**,
-  **Plan (h)**, **Actual (h)**, **Difference (h)** and **Coverage**. Shifts
-  without a time window are marked **without time window**: they have no plan,
-  and the person's daily attendance counts as actual.
-- **Projects**: plan is the sum of the planned minutes of the orders whose
+  window; cancelled clockings do not count. Tiles **Plan**, **Actual**,
+  **Difference** and **Coverage** (actual relative to plan; highlighted below
+  100 %). Use **Grouping** to choose **Daily** or **Weekly** for the chart
+  **Plan vs. actual per day** or **Plan vs. actual per week**. The table **Per
+  shift type** lists **Shifts**, **Plan (h)**, **Actual (h)**, **Difference
+  (h)** and **Coverage**. Shifts without a time window are marked **without
+  time window**: they have no plan, and the person's daily attendance counts as
+  actual.
+- **Projects**: plan is the sum of the planned duration of the orders whose
   period touches the selected period; actual is the booked time per project.
-  Orders receive planned minutes, for example, from confirmed Calendly
-  appointments. Tiles **Plan**, **Actual**, **Difference** and **Billable
+  The planned duration is the field **Planned duration (HH:MM)** on the order;
+  if it is empty, the service duration of a dispatched order, otherwise the length of the time slot or the duration of the
+  appointment counts. **Orders (planned)** counts the orders with such a
+  duration. Tiles **Plan**, **Actual**, **Difference** and **Billable
   (actual)**, the chart **Top projects: plan vs. actual** (the twelve projects
   with the most actual hours) and the table **Per project** with **Project**,
   **Customer**, **Orders (planned)**, **Plan (h)**, **Actual (h)**, **Billable
@@ -134,26 +143,36 @@ With the team right this only works for members of your own teams.
   are provided by **Profitability**.
 - **Sites**: there is no target data for sites; the view only shows the actual
   distribution of time from location-based time tracking. Tiles **Actual**,
-  **Site visits** and **People**, the chart **Actual times per site** and the
-  table **Per site** with **Location**, **Customer**, **Site visits**,
+  **Site visits** and **People**, the chart **Actual times per site (top 15)**
+  and the table **Per site** with **Location**, **Customer**, **Site visits**,
   **People**, **Actual (h)** and **Share**. Visits to geofences without an
   assigned site appear under **Without site assignment** with the note
   **Geofence without site**.
 
 Long tables in the **Projects** and **Sites** tabs are split into pages of 50
-rows each.
+rows each; the charts, however, evaluate all rows, not just the page shown.
 
 ## Coverage
 
 **Reports** → **Team** → **Coverage** compares target and actual staffing:
-do the planned shifts meet the target staffing?
+do the planned shifts meet the target staffing? The report calculates by the
+same rules as the heatmap in the duty plan.
 
-- Target is the minimum value (**Min**) of the **Target staffing** you define in
-  the duty plan per shift type. An entry for a specific date takes precedence
-  over an entry for the weekday, which in turn takes precedence over a general
-  entry. Shift types without target staffing do not appear.
-- Actual is the number of scheduled shifts per shift type and day; all shifts
-  that are not cancelled count, drafts included.
+- Target per day and shift type is the minimum value (**Min**) of the **Target
+  staffing** you define in the duty plan per shift type. The most specific entry
+  applies: an entry for a **Specific date** before an entry for the
+  **Weekday**, which in turn comes before an entry that applies **Always**.
+  Entries with **Always** apply on every day of the duty plan. If no entry fits
+  on a day, the duty plan's **Minimum staff per shift** applies to the shift
+  types that occur in the plan.
+- Days without a duty plan only have a target if there are cross-plan
+  requirements (switch **For all duty plans** in the target staffing). If several duty plans apply on one day, their targets and
+  actuals add up.
+- Actual is the number of scheduled shifts per shift type and day. Only shifts
+  with the status **Published** or **Confirmed** count; drafts and cancelled
+  shifts do not.
+- Shift types without a target in the period do not appear; shifts on days
+  without a target are not included.
 - Counting is in person-days: one shift of one person on one day is one
   person-day.
 
@@ -192,16 +211,15 @@ Filters: **Employee** and **Team**. Export: **PDF** in landscape with heatmap,
 
 ## Who sees what
 
-- **Attendance**: everyone sees their own row, administrators the whole
-  organization.
+- **Attendance**: everyone sees their own row. Administrators and people with
+  the right **View attendance** see the whole organization.
 - **Plan/actual**: everyone sees the **Attendance** tab with their own days. The
   **Team** tab requires the right **View presence report (team)**, the tabs
   **Organization**, **Shifts**, **Projects** and **Sites** the right **View
   presence report (organization)**. Administrators see all tabs. In the default
   setup the Team Lead role has the team right, Management the organization
   right and Personnel Administration both.
-- **Coverage** and **Month per employee** are only open to administrators.
-  Other people see the menu entries but get a message about missing permission
-  when opening them.
-- The menu area **Team** only exists if the add-on module team reports is
-  booked.
+- **Coverage** and **Month per employee** are only open to administrators; the
+  menu does not show them to other people.
+- **Coverage** and **Month per employee** require the add-on module team
+  reports; **Attendance** and **Plan/actual** are available without it.

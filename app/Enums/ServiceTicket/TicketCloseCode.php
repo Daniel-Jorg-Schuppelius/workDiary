@@ -28,12 +28,12 @@ enum TicketCloseCode: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Solved => (string) __('Gelöst'),
-            self::Workaround => (string) __('Umgehungslösung'),
-            self::Duplicate => (string) __('Duplikat'),
-            self::NoFault => (string) __('Kein Fehler'),
-            self::Rejected => (string) __('Abgelehnt'),
-            self::Other => (string) __('Sonstiges'),
+            self::Solved => (string) __('enums.service_ticket.ticket_close_code.solved'),
+            self::Workaround => (string) __('enums.service_ticket.ticket_close_code.workaround'),
+            self::Duplicate => (string) __('enums.service_ticket.ticket_close_code.duplicate'),
+            self::NoFault => (string) __('enums.service_ticket.ticket_close_code.no_fault'),
+            self::Rejected => (string) __('enums.service_ticket.ticket_close_code.rejected'),
+            self::Other => (string) __('enums.service_ticket.ticket_close_code.other'),
         };
     }
 }

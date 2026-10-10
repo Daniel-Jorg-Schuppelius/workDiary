@@ -44,7 +44,7 @@ class MaterialReportTest extends TestCase {
         $this->assertStringContainsString('materialien_2030-04-01_2030-04-30.csv', (string) $response->headers->get('Content-Disposition'));
         $body = $response->getContent() ?: '';
         $this->assertStringContainsString('#report:materials', $body);
-        $this->assertStringContainsString('GESAMT', $body);
+        $this->assertStringContainsString(';' . __('reporting.csv.total') . ';', $body);
     }
 
     private function getWithRange(string $routeName, array $parameters = []): TestResponse {

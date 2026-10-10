@@ -26,9 +26,9 @@ enum PatrolRunStatus: string implements HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::Running => (string) __('Laufend'),
-            self::Completed => (string) __('Abgeschlossen'),
-            self::Aborted => (string) __('Abgebrochen'),
+            self::Running => (string) __('enums.patrol.patrol_run_status.running'),
+            self::Completed => (string) __('enums.patrol.patrol_run_status.completed'),
+            self::Aborted => (string) __('enums.patrol.patrol_run_status.aborted'),
         };
     }
 

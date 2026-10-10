@@ -24,6 +24,7 @@ use App\Services\Attachments\FileAttacher;
 use App\Services\Claims\PortalReturnService;
 use App\Services\CustomerPortal\PortalVisibility;
 use App\Support\Sqid;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Storage};
 use Illuminate\View\View;
@@ -41,6 +42,12 @@ class ReturnRequestController extends Controller {
             'deliveries' => $deliveries,
             'serials' => $this->returns->serialsByDelivery($deliveries),
             'assets' => $this->returns->assets($customer),
+            // Eigene Rücksendungen samt Label — auch ohne Freigabe „Reklamationen“.
+            'rmas' => ClaimRmaReturn::query()
+                ->whereHas('claimCase', fn (Builder $q) => $q->where('customer_id', $customer->id))
+                ->with(['claimCase:id,number,title', 'returnShipments'])
+                ->orderByDesc('id')
+                ->paginate(25),
         ]);
     }
 

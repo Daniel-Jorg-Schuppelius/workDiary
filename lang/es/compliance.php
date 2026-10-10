@@ -133,9 +133,10 @@ return [
     ],
     'driving' => [
         'button' => 'Justificante tiempos de conducción',
+        'button_pdf' => 'Justificante tiempos de conducción (PDF)',
         'title' => 'Justificante de tiempos de conducción y descanso',
         'thresholds_note' => 'Tiempos de conducción/descanso (Regl. (CE) 561/2006 / FPersV): máx. 9 h de conducción/día (10 h dos veces por semana) · 56 h/semana · 90 h/dos semanas · pausa de 45 min tras 4,5 h (divisible 15 + 30) · descanso 11 h/día (máx. 3×/semana 9 h) · 45 h/semana (24 h con compensación).',
-        'disclaimer' => 'La base de datos son los viajes registrados (libro de ruta) con vehículos marcados; no se leen datos del tacógrafo/DTCO. No constituye asesoramiento jurídico.',
+        'disclaimer' => 'La base de datos son los viajes registrados (libro de viajes) con vehículos marcados; no se leen datos del tacógrafo/DTCO. No constituye asesoramiento jurídico.',
         'csv' => [
             'driver' => 'Conductor',
             'personnel_number' => 'Número de personal',

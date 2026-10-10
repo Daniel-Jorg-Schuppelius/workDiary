@@ -1,7 +1,7 @@
 ---
 title: "Auslastung & Realisierung"
 topic: reports.utilization
-version: 2
+version: 3
 keywords:
     - Auslastungsquote
     - Produktivität
@@ -24,7 +24,7 @@ Drei Quoten, drei Fragen — mit Zahlenbeispiel (Monat mit 160 h Soll):
 
 - **Auslastung** = erfasste ÷ Soll-Zeit. 120 h erfasst → **75 %**.
   Reicht das Arbeitsvolumen? Soll kommt aus dem Arbeitszeitmodell
-  (Feiertage/Urlaub zählen nicht als Soll).
+  (Feiertage, Urlaub und Krankheit zählen nicht als Soll).
 - **Abrechenbare Quote** = abrechenbare ÷ erfasste Zeit. 90 von 120 h
   abrechenbar → **75 %**. Fließt die Zeit in bezahlbare Arbeit?
 - **Realisierung** = fakturierte ÷ abrechenbare Zeit. 72 von 90 h auf

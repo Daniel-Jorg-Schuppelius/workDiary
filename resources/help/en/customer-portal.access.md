@@ -1,7 +1,7 @@
 ---
 title: "Access & Security"
 topic: customer-portal.access
-version: 3
+version: 5
 keywords:
     - login
     - sign in
@@ -15,6 +15,8 @@ keywords:
     - change email
     - stay signed in
     - profile
+    - forgot password
+    - reset password
 audience: []
 related:
     - customer-portal.overview
@@ -34,6 +36,8 @@ The password must be at least 12 characters long and contain upper- and lower-ca
 
 If the link has expired, the page can no longer be opened. In that case ask your contractor to send you the invitation again.
 
+If your contractor has reset your access, your previous password no longer works and all sessions of your access are ended. You then receive a new invitation with the subject “Your access to the … customer portal” and set your password again as described above. A second factor you have set up remains in place.
+
 ## Signing in
 
 On the **Sign in** page enter your **Email** and your **Password** and click **Sign in**. With **Stay signed in** you do not have to sign in again on this device every time you visit – use this option only on your own device.
@@ -41,7 +45,18 @@ On the **Sign in** page enter your **Email** and your **Password** and click **S
 - If email or password is wrong, **These credentials do not match our records.** appears. For security reasons the portal does not say which entry was wrong.
 - The number of sign-in attempts is limited; after too many failed attempts you have to wait a while.
 - If your contractor has deactivated your access, signing in is no longer possible.
-- There is no function in the portal for changing or resetting the password. If you have forgotten your password, please contact your contractor.
+- If you have forgotten your password, reset it yourself via **Forgot password?** below the sign-in form.
+
+### Forgot password
+
+1. On the **Sign in** page click **Forgot password?**.
+2. Enter your login email under **Email** and click **Send link**.
+3. Within 60 minutes, open the link in the email with the subject “Reset your password for the … customer portal” (button **Set password**).
+4. Enter a password under **New password**, repeat it under **Repeat password** and click **Save password**.
+
+After you submit the form, the portal always shows **If an account with this email exists, a reset link has been sent.** – even if it does not know the address. This way nobody can find out which addresses have an access. Only active accesses receive an email: if your invitation is still open or your access has been deactivated, please contact your contractor. The link works only once; your previous password remains valid until you save the new one. If you did not make the request yourself, simply ignore the email.
+
+The same rules apply to the new password as when activating the access. After saving, the sign-in page shows **Password changed. Please sign in.** All existing sessions of your access, including those on other devices, are then ended. A second factor you have set up remains in place and is requested as usual the next time you sign in. Several requests in quick succession are limited; in that case wait a while.
 
 ### Second factor when signing in
 
@@ -89,6 +104,8 @@ Click **Add passkey** and follow the instructions of your browser or device – 
 ### Recovery codes
 
 When you set up the first method, the portal shows your **Recovery codes** once. Each code works exactly once and replaces the second factor when signing in. Keep the codes in a safe place; the portal does not show them again. If the authenticator app is set up, you can create a new set: under **Regenerate recovery codes** enter the code from the app in the field **Current app code** and click **Generate new**. The previous codes are then no longer valid.
+
+If you have lost all methods and recovery codes, contact your contractor. They can reset your second factor; you will receive an email headed “Your second factor has been reset” and then sign in with your password only. If two-factor authentication is mandatory, you set up a new method at that point.
 
 ## Removing factors or disabling everything
 

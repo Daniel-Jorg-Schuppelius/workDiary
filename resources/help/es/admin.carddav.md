@@ -1,7 +1,7 @@
 ---
 title: "Conectar una libreta de direcciones CardDAV"
 topic: admin.carddav
-version: 1
+version: 2
 keywords:
     - CardDAV
     - conectar libreta de direcciones
@@ -124,6 +124,10 @@ como fuente.
 - **Sin sincronización:** si falta **Sincronizar ahora** o WorkDiary indica
   «Sincronización imposible», la conexión está inactiva, no hay libreta
   elegida, o se suspendió tras errores repetidos consecutivos. La página
-  muestra el último error en la parte superior.
+  muestra el último error en la parte superior, y también un bloqueo tras
+  (por defecto) diez errores consecutivos. Compruebe la dirección y las credenciales y haga
+  clic en **Guardar**: así se levanta el bloqueo y la próxima sincronización
+  decide de nuevo. Mientras la conexión falle, una tarea operativa lo
+  indica.
 - **Comprobar el estado:** junto al título de la página figura el último estado
   comprobado de la conexión. **Probar conexión** lo comprueba al momento.

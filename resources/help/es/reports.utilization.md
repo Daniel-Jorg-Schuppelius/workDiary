@@ -1,7 +1,7 @@
 ---
 title: "Ocupación & realización"
 topic: reports.utilization
-version: 2
+version: 3
 keywords:
     - tasa de ocupación
     - horas facturables
@@ -23,7 +23,7 @@ Tres tasas, tres preguntas — con ejemplo (mes con 160 h previstas):
 
 - **Ocupación** = tiempo registrado ÷ tiempo previsto. 120 h registradas
   → **75 %**. ¿Es suficiente el volumen de trabajo? Lo previsto viene del
-  modelo de jornada (festivos/vacaciones no cuentan).
+  modelo de jornada (festivos, vacaciones y bajas por enfermedad no cuentan).
 - **Cuota facturable** = tiempo facturable ÷ registrado. 90 de 120 h →
   **75 %**. ¿El tiempo fluye hacia trabajo remunerado?
 - **Realización** = tiempo facturado ÷ facturable. 72 de 90 h en factura

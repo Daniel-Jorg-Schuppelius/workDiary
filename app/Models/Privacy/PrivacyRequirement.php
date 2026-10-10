@@ -13,7 +13,10 @@ declare(strict_types=1);
 namespace App\Models\Privacy;
 
 use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Platform\Organization;
+use App\Support\Locales;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Lang;
 
 /**
  * Konfigurierbarer Anforderungskatalog des Datenschutz-Compliance-Checks
@@ -55,4 +58,16 @@ class PrivacyRequirement extends Model {
         'active' => 'boolean',
         'params' => 'array',
     ];
+
+    /**
+     * Standardname in der Sprache der Organisation. Er wird beim Anlegen
+     * gespeichert und ist danach umbenennbar; bestehende Einträge bleiben.
+     */
+    public static function defaultLabel(Organization $organization, string $key): string {
+        $locale = (string) $organization->locale;
+        $locale = Locales::isSupported($locale) ? $locale : app()->getLocale();
+        $translationKey = "privacy.requirement.{$key}";
+
+        return Lang::has($translationKey, $locale) ? (string) __($translationKey, [], $locale) : $key;
+    }
 }

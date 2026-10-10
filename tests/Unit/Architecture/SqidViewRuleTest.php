@@ -45,6 +45,7 @@ class SqidViewRuleTest extends TestCase {
         'resources/views/knowledge-hub/_import_dialog.blade.php' => 'Kennung des OneNote-Notizbuchs aus Microsoft Graph, keine Datenbank-ID.',
         // Konsolidierungs-Audit 2026-10 (k4-24): das Gate sieht auch `$x->…_id` und `$zeile['id']`; diese zwei sind keine freie Datenbank-ID.
         'resources/views/contracts/_form_dialog.blade.php' => 'template_id der Vorbelegung ist bereits die Sqid (ContractTemplateService::preset()).',
+        'app/Plugins/Zammad/Resources/views/admin/index.blade.php' => 'Webhook-Adresse, die in Zammad eingetragen wird: die Route nimmt bewusst die numerische ID (HMAC-geschützt, bereits verteilte Adressen bleiben gültig).',
         'resources/views/learning/my/quiz_attempt.blade.php' => 'Fragen- und Options-IDs aus dem Versuchs-Snapshot: gelten nur im eigenen Versuch (LearningQuizService prüft sie), Player und Bewertung rechnen mit ihnen.',
     ];
 

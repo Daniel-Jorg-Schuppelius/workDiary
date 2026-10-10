@@ -1,7 +1,7 @@
 ---
 title: "Utiliser les rapports"
 topic: reports.overview
-version: 3
+version: 7
 keywords:
     - statistiques
     - indicateurs
@@ -59,8 +59,13 @@ pouvez ouvrir. La sélection correspond exactement à la barre latérale.
 Les rapports sont classés en groupes : **Aperçu**, **Personnel**, **Équipe**,
 **Projets et clients**, **Ressources** et **Finances et audit**. Une entrée
 n'apparaît que si votre organisation utilise le module correspondant et que
-vous disposez du droit nécessaire. Les groupes **Équipe**, **Projets et clients**
-et **Ressources** nécessitent le module complémentaire de rapports d'équipe.
+vous disposez du droit nécessaire. Le module complémentaire de rapports
+d'équipe débloque ces rapports : **Semaine par employé**, **Mois par employé**,
+**Couverture**, **Congés et flex**, **Maladies**, **Qualifications**, **Analyse
+client**, **Analyse des types de commande**, **Analyse produit**, **Clients et
+projets**, **Détails du projet**, **Projets inactifs**, **Operations**,
+**Rentabilité** et **Conformité du temps de travail**. Sans le module, seules
+ces entrées manquent ; tous les autres rapports des groupes restent visibles.
 Les entrées que vous avez masquées via « Personnaliser le menu & Toutes les
 fonctions » manquent aussi sur la page d'aperçu.
 
@@ -94,9 +99,11 @@ ouvre le rapport avec exactement cette période.
   **Client**, **Projet**, **Employé**, **Équipe** ou **Statut**. Une sélection
   s'applique généralement immédiatement ; **Réinitialiser** supprime tous les
   filtres.
-- Certains champs ne sont visibles que pour les administrateurs, comme **Zone**
-  avec **Uniquement les miens** ou **Toute l’équipe**. Les autres personnes n'y
-  voient que leurs propres données.
+- Certains champs, comme **Zone** avec **Uniquement les miens** ou **Toute
+  l’équipe**, ne sont visibles que pour les administrateurs et les personnes
+  disposant du droit qui ouvre aussi la liste correspondante – par exemple
+  **Voir les présences** pour **Présence**. Les autres personnes n'y voient que
+  leurs propres données.
 - Les clients marqués **Masquer dans les analyses** dans leurs données de base
   sont exclus des rapports portant sur les clients et les projets.
   L'interrupteur **Inclure les clients masqués** – il n'apparaît que si de tels
@@ -111,6 +118,28 @@ ouvre le rapport avec exactement cette période.
   de votre organisation ; le menu **Export** propose **CSV** et **Excel**. Tous
   les rapports ne proposent pas tous les formats, certains n'ont aucun export.
 - Les exports reprennent la période et les filtres de la page.
+- Les exports des rapports du menu **Rapports** nécessitent le droit
+  **Exporter les rapports** – y compris les rapports d'autres domaines qui y
+  figurent : **SLA**, **Analyse** de la plateforme d'apprentissage,
+  **Exécutions de procédure bloquées**, **Rapports financiers** ainsi que
+  **BWA & budget**. Il en va de même pour **Candidatures et appels d'offres**,
+  le **Rapport d'audit** des moyens de contrôle et le **Cockpit des marchés**.
+  Les administrateurs peuvent toujours exporter. Sans ce droit, les boutons
+  d'export n'apparaissent pas. Les rapports d'autres menus, comme **Rapport
+  helpdesk**, **Rapport qualité** ou **Durabilité & ESG**, peuvent être
+  exportés par toute personne autorisée à les ouvrir.
+- Restent libres les
+  exports qui ne contiennent que vos propres données : **Mon mois**, votre
+  propre **Bilan de travail**, la vue **Uniquement les miens** et les rapports
+  qui, sans droit supplémentaire, ne vous montrent que vos propres données (par
+  exemple **Comptes de temps**, **Comparaison de périodes**,
+  **Qualifications**, **Plan de congés** et **Détails du projet**), ainsi que
+  le **Justificatif carnet de bord** d'un véhicule dont vous êtes le
+  **Conducteur par défaut**. La **Présence d'urgence** peut être exportée par
+  toute personne autorisée à l'ouvrir.
+- Les en-têtes de colonnes et les valeurs fixes des fichiers CSV et Excel,
+  comme la ligne de total, apparaissent dans votre langue ; les codes tels que
+  les clés de statut ou de type de paie restent inchangés.
 - Dans le réglage standard, les fichiers CSV sont séparés par des
   points-virgules et enregistrés en UTF-8. Les premières lignes commencent par #
   et indiquent le rapport, l'heure de création et une empreinte des filtres –
@@ -133,11 +162,24 @@ de **Plan/réel** aux jours d'une personne. Pour en savoir plus, voir
 - Les analyses à l'échelle de l'organisation sur les clients, les revenus et
   les fournisseurs nécessitent le droit **Voir les rapports** ou le rôle
   d'administrateur.
+- Les exports des rapports du menu **Rapports** nécessitent en plus le droit
+  **Exporter les rapports**, voir Export. Dans l'attribution standard, la
+  Direction, la Comptabilité, le Chef d'équipe et la Gestion du personnel en
+  disposent.
 - Certains rapports ont leur propre droit, par exemple **Consulter le rapport
   de présence (équipe)** pour Plan/réel ou **Voir le registre des événements de
   sécurité** pour la sécurité au travail.
-- Certaines vues d'équipe – par exemple **Couverture** ou la vue d'équipe de
-  **Congés et flex** – restent réservées aux administrateurs.
+- La vue sur toutes les personnes dans les rapports du personnel suit le droit
+  de la liste correspondante : **Voir les présences** pour **Présence**, **Voir
+  toutes les demandes de congés** pour **Congés et flex** et le **Plan de
+  congés**, **Voir les arrêts maladie** pour **Maladies** et les motifs
+  d'absence dans le **Plan de congés**, **Gérer les qualifications** pour
+  **Qualifications** et **Voir toutes les saisies de temps** pour le **Bilan de
+  travail** d'autres personnes. Les administrateurs l'ont toujours.
+- Restent réservés aux administrateurs **Couverture** et **Mois par employé**,
+  ainsi que la vue sur toutes les personnes dans **Comptes de temps**,
+  **Comparaison de périodes**, **Notes de frais**, **Parc automobile**,
+  **Service d’astreinte**, **Operations** et **Matériels**.
 - Chaque rapport n'affiche que les données de l'organisation active.
 
 ## Quel rapport pour quoi

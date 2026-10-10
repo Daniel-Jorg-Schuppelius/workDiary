@@ -1,7 +1,7 @@
 ---
 title: "Import Toggl"
 topic: admin.toggl
-version: 2
+version: 3
 keywords:
     - Toggl Track
     - importer des temps
@@ -58,3 +58,17 @@ par défaut configuré — clairement indiqué dans l'aperçu et le
 résultat). Les adresses Toggl individuelles peuvent en outre être
 attribuées explicitement ; l'import est idempotent et peut simplement
 être relancé une fois les attributions maintenues.
+
+Webhook (facultatif) :
+
+- Pour recevoir plus vite les nouvelles saisies, la page d'import indique
+  dans la section **Webhook (facultatif)** l'adresse d'un abonnement webhook
+  Toggl. Créez l'abonnement pour l'espace de travail dans Toggl et saisissez
+  le secret attribué à cette occasion dans les paramètres du plugin sous
+  **Secret du webhook** ; l'**ID d’espace de travail** doit également y
+  figurer.
+- Le webhook ne déclenche que l'import que la récupération horaire exécute
+  aussi. S'il fait défaut, la récupération rattrape.
+- Vous choisissez l'utilisateur par défaut du mode mono-utilisateur dans les
+  paramètres du plugin sous **Enregistrer les temps pour l’utilisateur**,
+  dans la liste des utilisateurs.

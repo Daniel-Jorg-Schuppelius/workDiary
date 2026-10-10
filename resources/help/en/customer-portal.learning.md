@@ -1,7 +1,7 @@
 ---
 title: "Training in the customer portal"
 topic: customer-portal.learning
-version: 2
+version: 4
 keywords:
     - e-learning
     - online course
@@ -21,7 +21,8 @@ related:
 
 On the **Training** page you find the courses your contractor has released
 for customers. You preview courses, enrol or book them, work through the
-learning units and complete the course.
+learning units and complete the course. You reach the page via **Training** in the portal menu;
+the entry appears if your contractor offers training in the portal.
 
 ## The course overview
 
@@ -43,16 +44,17 @@ currently no course for you.
 
 If a course has preview units, **Preview** opens the **Course preview**
 without enrolment: the course description and the texts of the preview units.
-Media, exams and assignments are not part of the preview. For freely
-accessible courses you can enrol there directly with **Enrol**; **Back**
-returns you to the overview.
+Media, exams and assignments are not part of the preview. At the top it offers
+the same way as the card: **Enrol** for freely accessible courses, **Book
+course** for bookable courses, otherwise the note **Enrolment is arranged by
+your contact person.** **Back** returns you to the overview.
 
 ## Enrolling or booking
 
 The course determines how you start it:
 
-- **Enrol** – for freely accessible courses. You are enrolled immediately and
-  the course opens.
+- **Enrol** – for freely accessible courses. You are enrolled immediately, the
+  portal reports **You are now enrolled in the course.** and the course opens.
 - **Book course** – for bookable courses. The portal sends a booking request
   and confirms **Booking request sent.** Your contractor decides on it; once
   confirmed, you are enrolled and the card shows **Open course**. Clicking
@@ -66,9 +68,10 @@ existing enrolment remains accessible after that.
 
 ## Working through the course
 
-**Open course** shows the learning units in their order with their texts. A
-tick marks completed units. When you have worked through a unit, click **Mark
-as done**.
+**Open course** shows the learning units in their order with their content:
+texts, notes, checklists, images, files to download, videos, audio recordings,
+tables and practice questions. A tick marks completed units. When you have
+worked through a unit, click **Mark as done**.
 
 Units can be locked:
 
@@ -92,6 +95,6 @@ documented and traceable for your contractor.
 - You only see courses that are released and explicitly intended for
   customers. If an expected course is missing, please contact your contact
   person.
-- The course page in the portal shows the texts of the units; media and exams
-  are not included here.
+- Exams are not included in the portal, nor are references to your
+  contractor's internal knowledge base.
 - You cannot unenrol or withdraw a booking request in the portal.

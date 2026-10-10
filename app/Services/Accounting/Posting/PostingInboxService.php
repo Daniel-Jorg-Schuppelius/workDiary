@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Accounting\Posting;
 
-use App\Enums\Finance\{AccountingEntryStatus, PostingAccountRole, PostingSourceKind};
+use App\Enums\Finance\{AccountingEntryStatus, DirectBookingKind, PostingAccountRole, PostingSourceKind};
 use App\Models\Accounting\{AccountingAccount, AccountingEntry};
 use App\Models\Finance\BankTransaction;
 use App\Models\Platform\{Organization, User};
@@ -95,6 +95,28 @@ class PostingInboxService {
             }
         }
 
+        // Entwürfe aus Fachvorgängen (Skonto, Klärung, Umbuchung, …) haben
+        // keinen Adapter. Sie stehen unabhängig vom Zeitraum hier, sonst sähe
+        // die freigebende Person sie nicht (E9).
+        if (! $kind instanceof PostingSourceKind) {
+            foreach ($this->journal->pendingDirectBookings($organization) as $entry) {
+                $directKind = DirectBookingKind::of($entry);
+                if (! $directKind instanceof DirectBookingKind) {
+                    continue;
+                }
+
+                $items->push([
+                    'kind' => $directKind,
+                    'source' => $entry,
+                    'source_key' => (string) $entry->source_key,
+                    'entry' => $entry,
+                    'proposal' => null,
+                    'blockers' => $this->sovereigntyBlockers($organization, $entry),
+                    'state' => $this->stateOf($entry, null),
+                ]);
+            }
+        }
+
         return $items->sortBy(fn (array $item): string => $this->sortKey($item))->values();
     }
 
@@ -155,7 +177,7 @@ class PostingInboxService {
         // aufs Klärungskonto.
         $moneyOnDebit = $transaction->isCredit();
 
-        return $this->journal->postDirect($organization, [
+        return $this->journal->postDirectOrSubmit($organization, [
             'booked_on' => $bookedOn,
             'memo' => (string) __('accounting.clearing.memo', ['purpose' => Str::limit((string) $transaction->purpose, 80) ?: '—']),
             'source_type' => $transaction->getMorphClass(),
@@ -181,7 +203,7 @@ class PostingInboxService {
                     'memo' => $note,
                 ],
             ],
-        ], $actor);
+        ], $actor, DirectBookingKind::Clearing);
     }
 
     /**
@@ -243,7 +265,7 @@ class PostingInboxService {
 
             $transfer = $coupled[$transaction->getMorphClass() . ':' . $transaction->getKey()] ?? null;
             if ($transfer !== null) {
-                $result[$id] = ['state' => 'posted', 'entry' => $transfer->entry, 'blockers' => []];
+                $result[$id] = ['state' => $this->stateOf($transfer->entry, null), 'entry' => $transfer->entry, 'blockers' => []];
 
                 continue;
             }
@@ -326,7 +348,7 @@ class PostingInboxService {
             // Ein gekoppelter Beleg ist über die interne Umbuchung gebucht.
             $transfer = $coupled[$source->getMorphClass() . ':' . $source->getKey()] ?? null;
             if ($transfer !== null) {
-                $result[$id] = ['state' => 'posted', 'entry' => $transfer->entry, 'blockers' => []];
+                $result[$id] = ['state' => $this->stateOf($transfer->entry, null), 'entry' => $transfer->entry, 'blockers' => []];
 
                 continue;
             }
@@ -381,17 +403,6 @@ class PostingInboxService {
     }
 
     /**
-     * Festschreiben mit Vier-Augen-Prüfung.
-     *
-     * @throws ValidationException wenn dieselbe Person vorbereitet und bucht
-     */
-    public function post(AccountingEntry $entry, User $actor): AccountingEntry {
-        $this->assertFourEyes($entry, $actor);
-
-        return $this->journal->post($entry, $actor);
-    }
-
-    /**
      * Stapelverarbeitung: Jede Quelle wird einzeln behandelt; ein Blocker
      * stoppt nur seinen Vorgang, nicht den Lauf. Ein Stapel, der beim ersten
      * Problem abbricht, lässt den Rest der Arbeit liegen.
@@ -413,7 +424,7 @@ class PostingInboxService {
                 }
 
                 if ($post && $entry instanceof AccountingEntry && $entry->status->isMutable()) {
-                    $this->post($entry, $actor);
+                    $this->journal->post($entry, $actor);
                     $posted++;
                 }
             } catch (ValidationException $exception) {
@@ -432,19 +443,6 @@ class PostingInboxService {
 
     public function fourEyesEnabled(): bool {
         return (bool) Setting::get(self::FOUR_EYES_KEY, false);
-    }
-
-    /** @throws ValidationException */
-    private function assertFourEyes(AccountingEntry $entry, User $actor): void {
-        if (! $this->fourEyesEnabled()) {
-            return;
-        }
-
-        if ($entry->created_by !== null && (int) $entry->created_by === (int) $actor->id) {
-            throw ValidationException::withMessages([
-                'four_eyes' => (string) __('accounting.inbox.error.four_eyes'),
-            ]);
-        }
     }
 
     /** @return list<string> */

@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Reporting;
 
+use App\Models\Audit\AuditLog;
 use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
@@ -53,6 +54,27 @@ class AuditActivityReportTest extends TestCase {
             ->withSession($this->dateRangeSession(now()->subDays(30)->toDateString(), now()->toDateString()))
             ->get(route('reports.audit-activity'))
             ->assertForbidden();
+    }
+
+    public function test_tiles_count_beyond_the_top_twenty_lists(): void {
+        for ($i = 1; $i <= 22; $i++) {
+            $actor = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+            AuditLog::create([
+                'organization_id' => $this->organization->id,
+                'user_id' => $actor->id,
+                'event' => 'test.touched',
+                'auditable_type' => 'TestModel' . $i,
+                'auditable_id' => $i,
+                'changes' => [],
+                'ip' => '127.0.0.1',
+                'user_agent' => 'phpunit',
+            ]);
+        }
+
+        $totals = $this->getWithRange()->assertOk()->viewData('totals');
+
+        $this->assertGreaterThanOrEqual(22, $totals['users']);
+        $this->assertGreaterThanOrEqual(22, $totals['types']);
     }
 
     public function test_csv_export_returns_csv_with_metadata(): void {

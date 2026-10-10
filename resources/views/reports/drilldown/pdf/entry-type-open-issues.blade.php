@@ -8,14 +8,14 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Auftragstyp Drilldown - Offene Punkte')
-@section('pdf-heading', 'Auftragstyp Drilldown: Offene Punkte')
+@section('pdf-title', __('Drilldown: Offene Punkte (Auftragstyp)'))
+@section('pdf-heading', __('Drilldown: Offene Punkte (Auftragstyp)'))
 
 @section('pdf-meta')
-    Auftragstyp: {{ $entryTypeLabel }}<br>
-    Zeitraum: {{ $label }}
+    {{ __('Auftragstyp') }}: {{ $entryTypeLabel }}<br>
+    {{ __('Zeitraum') }}: {{ $label }}
     @if ($escalatedOnly)
-        <br>Filter: Nur eskalierte offene Punkte
+        <br>{{ __('Filter: nur eskalierte offene Punkte') }}
     @endif
 @endsection
 

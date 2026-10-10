@@ -35,12 +35,12 @@ enum ChangeStatus: string implements HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::Draft => (string) __('Entwurf'),
-            self::PendingApproval => (string) __('Wartet auf Freigabe'),
-            self::Approved => (string) __('Genehmigt'),
-            self::Implementing => (string) __('In Umsetzung'),
-            self::Done => (string) __('Abgeschlossen'),
-            self::Cancelled => (string) __('Abgebrochen'),
+            self::Draft => (string) __('enums.service_ticket.change_status.draft'),
+            self::PendingApproval => (string) __('enums.service_ticket.change_status.pending_approval'),
+            self::Approved => (string) __('enums.service_ticket.change_status.approved'),
+            self::Implementing => (string) __('enums.service_ticket.change_status.implementing'),
+            self::Done => (string) __('enums.service_ticket.change_status.done'),
+            self::Cancelled => (string) __('enums.service_ticket.change_status.cancelled'),
         };
     }
 

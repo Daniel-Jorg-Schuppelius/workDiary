@@ -1,7 +1,7 @@
 ---
 title: "Archiviazione SharePoint"
 topic: admin.sharepoint
-version: 1
+version: 2
 keywords:
     - SharePoint
     - SharePoint Online
@@ -94,8 +94,8 @@ dove:
 - **Tipo di documento → cartella**: per ogni riga scelga un tipo di documento e
   inserisca una sottocartella relativa alla raccolta. Le righe vuote vengono
   ignorate; dopo ogni salvataggio sono disponibili altre tre righe vuote. I
-  tipi compaiono nell'elenco con il loro nome breve inglese, ad esempio
-  contract per i contratti o invoice per le fatture.
+  tipi compaiono nell'elenco con la loro denominazione, ad esempio Contratto
+  o Fattura.
 
 Clicchi poi su **Salva**.
 
@@ -116,13 +116,14 @@ Fatture e protocolli non seguono le regole delle cartelle.
   **Attivo** (approvato) o una nuova versione, WorkDiary trasferisce tale
   versione. Le semplici modifiche ai metadati non avviano un nuovo
   trasferimento. Quando una fattura viene emessa o un protocollo firmato,
-  segue il relativo PDF, purché il contenuto corrispondente sia selezionato.
+  segue il relativo PDF. Tutto ciò vale solo per i contenuti selezionati;
+  senza **Documenti (DMS)** spuntato, WorkDiary non trasferisce documenti.
 - **In background con ripetizione:** il trasferimento passa da una coda. Se non
   riesce, viene ripetuto automaticamente; nessun file viene scritto due volte.
-- **Replica ora:** mette in coda tutti i documenti attivi dell'organizzazione,
-  ad esempio dopo la prima configurazione. WorkDiary salta i file invariati.
-  Questo pulsante non comprende fatture e protocolli; questi vengono
-  trasferiti al momento dell'emissione o della firma.
+- **Replica ora:** mette in coda tutto ciò che proviene dai contenuti
+  selezionati – documenti attivi, fatture emesse e protocolli firmati –, ad
+  esempio dopo la prima configurazione, anche per i documenti precedenti.
+  WorkDiary salta i file invariati.
 
 Non esiste una pianificazione fissa. WorkDiary legge da SharePoint solo per
 verificare se un file replicato vi è stato modificato.
@@ -141,6 +142,11 @@ tre azioni:
   come nuova versione del documento.
 - **Scollega la replica**: questo singolo documento non viene più replicato;
   la connessione resta attiva.
+
+Per i PDF di fatture e protocolli esiste solo **Sovrascrivi remoto**: le
+fatture emesse e i protocolli firmati non sono modificabili, WorkDiary
+deposita di nuovo il proprio PDF. Se vuole mantenere il file modificato,
+scelga **Scarta**.
 
 L'**Inbox di riconciliazione** è accessibile alle persone autorizzate a
 gestire la fatturazione.
@@ -170,6 +176,7 @@ impostazioni.
   **Attivo** è disattivato, non è stata scelta una raccolta, oppure la
   connessione è stata sospesa dopo ripetuti errori consecutivi. Una volta
   eliminata la causa, **Disconnetti** e una nuova connessione azzerano il
-  conteggio degli errori.
+  conteggio degli errori. Finché la connessione è disturbata, un'attività
+  operativa lo segnala.
 - **Verificare lo stato:** accanto al titolo della pagina compare l'ultimo
   stato verificato; **Verifica connessione** lo controlla subito.

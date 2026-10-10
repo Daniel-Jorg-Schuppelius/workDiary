@@ -205,18 +205,18 @@ class CustomerValueReportController extends Controller {
         $labels = $this->segmentLabels();
         $out = [];
         $out[] = [
-            'Kunde',
-            'Segment',
-            'TageSeitLetzterLeistung',
-            'Aktivitaetstage',
-            'ErloesEUR',
-            'FakturiertEUR',
-            'GesamtMinuten',
+            (string) __('reporting.csv.customer'),
+            (string) __('reporting.csv.segment'),
+            (string) __('reporting.csv.days_since_last_service'),
+            (string) __('reporting.csv.activity_days'),
+            (string) __('reporting.csv.revenue'),
+            (string) __('reporting.csv.invoiced_eur'),
+            (string) __('reporting.csv.total_minutes'),
             'R',
             'F',
             'M',
-            'ErsteLeistung',
-            'LetzteLeistung',
+            (string) __('reporting.csv.first_service'),
+            (string) __('reporting.csv.last_service'),
         ];
 
         foreach ($rows as $row) {

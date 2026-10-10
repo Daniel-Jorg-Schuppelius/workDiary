@@ -326,12 +326,14 @@ class CustomerAccountStatementService {
     /**
      * Anzeige-/PDF-Daten eines Monats: Tageszeilen + Abrechnungsblock.
      * Gesperrt ⇒ aus dem eingefrorenen Snapshot, offen ⇒ live („vorläufig").
+     * Monate außerhalb der Kette legt die Ansicht nicht an (ModelNotFound → 404):
+     * sie läuft per GET, auch aus dem Kundenportal mit frei wählbarem Monat.
      *
      * @return array{statement: CustomerBillingStatement, rows: array<int, array<string, mixed>>, payments: array<int, array<string, mixed>>, by_category: array<int, array<string, mixed>>, locked: bool}
      */
     public function monthData(CustomerBillingAgreement $agreement, int $year, int $month): array {
         $this->recalculateOpen($agreement);
-        $statement = $this->ensure($agreement, $year, $month)->refresh();
+        $statement = $agreement->statements()->where('year', $year)->where('month', $month)->firstOrFail();
 
         if ($statement->locked && is_array($statement->totals)) {
             return [

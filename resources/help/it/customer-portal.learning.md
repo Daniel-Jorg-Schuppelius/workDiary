@@ -1,7 +1,7 @@
 ---
 title: "Formazione nel portale clienti"
 topic: customer-portal.learning
-version: 2
+version: 4
 keywords:
     - e-learning
     - corso online
@@ -21,7 +21,8 @@ related:
 
 Nella pagina **Formazione** trova i corsi che il Suo fornitore ha rilasciato
 per i clienti. Consulta l'anteprima dei corsi, si iscrive o li prenota,
-svolge le unità didattiche e completa il corso.
+svolge le unità didattiche e completa il corso. Raggiunge la pagina tramite **Formazione** nel menu del
+portale; la voce compare se il Suo fornitore offre corsi nel portale.
 
 ## La panoramica dei corsi
 
@@ -43,16 +44,18 @@ ora non c'è alcun corso per Lei.
 
 Se un corso ha unità di anteprima, **Anteprima** apre l'**Anteprima del
 corso** senza iscrizione: la descrizione del corso e i testi delle unità di
-anteprima. Media, esami ed esercitazioni non fanno parte dell'anteprima. Per i
-corsi ad accesso libero si iscrive lì direttamente con **Iscriversi al
-corso**; **Indietro** La riporta alla panoramica.
+anteprima. Media, esami ed esercitazioni non fanno parte dell'anteprima. In
+alto offre la stessa via della scheda: **Iscriversi al corso** per i corsi ad
+accesso libero, **Prenota il corso** per i corsi prenotabili, altrimenti
+l'avviso **L’iscrizione viene effettuata dal Suo referente.** **Indietro** La
+riporta alla panoramica.
 
 ## Iscriversi o prenotare
 
 È il corso a stabilire come iniziarlo:
 
-- **Iscriversi al corso** – per i corsi ad accesso libero. È iscritto subito e
-  il corso si apre.
+- **Iscriversi al corso** – per i corsi ad accesso libero. È iscritto subito,
+  il portale segnala **Lei è iscritto al corso.** e il corso si apre.
 - **Prenota il corso** – per i corsi prenotabili. Il portale invia una
   richiesta di prenotazione e conferma **Richiesta inviata.** Il Suo
   fornitore decide in merito; dopo la conferma è iscritto e la scheda mostra
@@ -66,9 +69,11 @@ disponibilità. Un'iscrizione esistente resta accessibile anche dopo.
 
 ## Svolgere il corso
 
-**Apri corso** mostra le unità didattiche nel loro ordine con i rispettivi
-testi. Un segno di spunta indica le unità completate. Quando ha svolto
-un'unità, clicchi su **Segna come completata**.
+**Apri corso** mostra le unità didattiche nel loro ordine con il rispettivo
+contenuto: testi, avvisi, liste di controllo, immagini, file da scaricare,
+video, registrazioni audio, tabelle e domande di esercitazione. Un segno di
+spunta indica le unità completate. Quando ha svolto un'unità, clicchi su
+**Segna come completata**.
 
 Le unità possono essere bloccate:
 
@@ -91,7 +96,7 @@ completamento viene documentato ed è tracciabile per il Suo fornitore.
 
 - Vede solo i corsi rilasciati e destinati espressamente ai clienti. Se manca
   un corso che si aspetta, si rivolga al Suo referente.
-- Nel portale la pagina del corso mostra i testi delle unità; media ed esami
-  non sono inclusi.
+- Gli esami non sono inclusi nel portale, così come i rimandi alla base di
+  conoscenza interna del Suo fornitore.
 - Nel portale non può cancellare l'iscrizione né ritirare una richiesta di
   prenotazione.

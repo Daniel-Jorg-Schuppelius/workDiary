@@ -1,7 +1,7 @@
 ---
 title: "Portail client – Tickets"
 topic: customer-portal.tickets
-version: 2
+version: 3
 keywords:
     - demande de support
     - signaler une panne
@@ -25,8 +25,8 @@ related:
 Sous **Tickets**, vous signalez des pannes et des demandes à l'équipe de
 service de votre prestataire et suivez leur traitement. L'espace comprend le
 **Catalogue de services**, dans lequel vous commandez des prestations
-standard. Si elle est ouverte pour votre entreprise, la page **Erreurs
-connues** s'y ajoute.
+standard, ainsi que la page **Erreurs connues**. Tous trois apparaissent dans
+le menu dès que votre prestataire a ouvert cet espace pour votre entreprise.
 
 ## Mes tickets
 
@@ -81,6 +81,11 @@ Lorsqu'un ticket est **Résolu**, vous avez deux possibilités :
   **Motif de la réouverture**. Le ticket revient à **En cours** et votre motif
   apparaît comme message dans l'historique.
 
+Même après la confirmation, tant que le ticket est **Réceptionné**, vous
+pouvez le rouvrir de la même manière avec **Rouvrir**, par exemple si l'erreur
+réapparaît plus tard. Lorsqu'il est **Fermé**, ce n'est plus possible ;
+signalez alors un nouveau ticket.
+
 ## Évaluer le traitement
 
 Lorsqu'un ticket est **Résolu**, **Réceptionné**, **Fermé** ou **Refusé**, le
@@ -101,7 +106,8 @@ cliquez sur **Évaluer**. Une seule évaluation est possible par ticket.
 - **En pause** – le traitement est momentanément suspendu.
 - **Résolu** – l'équipe considère la demande comme réglée ; veuillez
   confirmer ou rouvrir.
-- **Réceptionné** – vous avez confirmé la résolution.
+- **Réceptionné** – vous avez confirmé la résolution ; vous pouvez encore
+  rouvrir le ticket.
 - **Fermé** – le dossier est terminé.
 - **Refusé** – la demande ne sera pas traitée.
 
@@ -139,7 +145,8 @@ La page **Erreurs connues** liste les pannes que votre prestataire connaît
 déjà et pour lesquelles il travaille à une solution définitive. Chaque entrée
 indique, si elle existe, une **Solution de contournement** : comment
 contourner le problème d'ici là. Consultez la liste avant de signaler un
-nouveau ticket. La page est en lecture seule.
+nouveau ticket. La page est en lecture seule ; vous l'ouvrez via **Erreurs
+connues** dans l'en-tête.
 
 ## Limites
 

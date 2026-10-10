@@ -30,7 +30,7 @@
                     </select>
                     <x-icon-btn icon="search" tone="ghost" size="sm" type="submit" :label="__('accounting.reports.replacement.horizon')" />
                 </form>
-                <x-icon-btn icon="download" size="sm" tone="ghost" show-label :href="route('reports.accounting.replacement-forecast', ['years' => $horizon, 'export' => 'csv'])" :label="__('CSV')" />
+                <x-report-export :url="fn (string $format) => route('reports.accounting.replacement-forecast', ['years' => $horizon, 'export' => $format])" tone="ghost" />
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

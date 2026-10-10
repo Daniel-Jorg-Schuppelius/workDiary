@@ -1502,6 +1502,12 @@ document.addEventListener("click", (event) => {
         true,
     );
 
+    // Für Module ohne Trigger-Link im DOM (Befehlspalette).
+    document.addEventListener("entry-dialog:open", (event) => {
+        const url = /** @type {CustomEvent<{ url?: string }>} */ (event).detail?.url;
+        if (url) openEntryDialog(url);
+    });
+
     // Folgedialog nach einer Weiterleitung ohne Extraklick öffnen: die Zielseite
     // hinterlegt dafür nur einen Marker (z. B. der frisch angelegte Stundenzettel,
     // damit direkt eingetragen werden kann, was gemacht wurde). Der auslösende

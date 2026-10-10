@@ -178,6 +178,32 @@ class SickLeaveTest extends TestCase {
         ]);
     }
 
+    /** MVP-1093: Fortsetzungserkrankung setzt nur, wer Krankmeldungen verwaltet — und nur auf eine frühere derselben Person. */
+    public function test_continuation_is_recorded_by_admins_only_and_must_be_earlier(): void {
+        $earlier = SickLeave::factory()->create([
+            'user_id' => $this->user->id,
+            'start_date' => '2026-03-02',
+            'end_date' => '2026-03-06',
+            'kind' => SickLeaveKind::Initial->value,
+        ]);
+        $payload = [
+            'start_date' => '2026-05-04',
+            'end_date' => '2026-05-05',
+            'kind' => SickLeaveKind::Initial->value,
+            'continuation_of_id' => $earlier->id,
+        ];
+
+        $this->postAsUser('sick-leaves.store', $payload)->assertRedirect();
+        $this->assertNull(SickLeave::query()->whereDate('start_date', '2026-05-04')->sole()->continuation_of_id);
+
+        $this->postAsAdmin('sick-leaves.store', ['user_id' => $this->user->id, 'start_date' => '2026-06-01', 'end_date' => '2026-06-02'] + $payload)->assertRedirect();
+        $this->assertSame($earlier->id, SickLeave::query()->whereDate('start_date', '2026-06-01')->sole()->continuation_of_id);
+
+        $this->actingAs($this->admin)->from(route('sick-leaves.create'))
+            ->post(route('sick-leaves.store'), ['user_id' => $this->admin->id, 'start_date' => '2026-07-01', 'end_date' => '2026-07-02'] + $payload)
+            ->assertSessionHasErrors('continuation_of_id');
+    }
+
     private function postAsUser(string $routeName, array $payload = [], mixed $parameters = []): TestResponse {
         return $this->actingAs($this->user)->post(route($routeName, $parameters), $payload);
     }

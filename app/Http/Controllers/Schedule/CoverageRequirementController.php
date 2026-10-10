@@ -69,7 +69,9 @@ class CoverageRequirementController extends Controller {
         $auth = Auth::user();
 
         $data = $request->validated();
-        $data['duty_plan_id'] = $dutyPlan->id;
+        // Planübergreifend (MVP-1099): gilt in jedem Dienstplan und an Tagen ohne Plan.
+        $data['duty_plan_id'] = $request->boolean('all_plans') ? null : $dutyPlan->id;
+        unset($data['all_plans']);
         $data['organization_id'] = $this->currentOrganization()->id;
         $data['created_by'] = $auth->id;
         $data['updated_by'] = $auth->id;
@@ -84,6 +86,7 @@ class CoverageRequirementController extends Controller {
     public function edit(DutyPlan $dutyPlan, CoverageRequirement $requirement): View {
         Gate::authorize('update', $dutyPlan);
         Gate::authorize('update', $requirement);
+        $this->assertVisibleIn($dutyPlan, $requirement);
 
         return view('coverage-requirements._form_dialog', [
             'dutyPlan' => $dutyPlan,
@@ -98,11 +101,14 @@ class CoverageRequirementController extends Controller {
         CoverageRequirement $requirement,
     ): RedirectResponse {
         Gate::authorize('update', $requirement);
+        $this->assertVisibleIn($dutyPlan, $requirement);
 
         /** @var User $auth */
         $auth = Auth::user();
 
         $data = $request->validated();
+        $data['duty_plan_id'] = $request->boolean('all_plans') ? null : $dutyPlan->id;
+        unset($data['all_plans']);
         $data['updated_by'] = $auth->id;
 
         $requirement->update($data);
@@ -114,11 +120,17 @@ class CoverageRequirementController extends Controller {
 
     public function destroy(DutyPlan $dutyPlan, CoverageRequirement $requirement): RedirectResponse {
         Gate::authorize('delete', $requirement);
+        $this->assertVisibleIn($dutyPlan, $requirement);
 
         $requirement->delete();
 
         return redirect()
             ->toList('duty-plans.coverage.index', [$dutyPlan])
             ->with('success', __('Soll-Besetzung gelöscht.'));
+    }
+
+    /** Nur Anforderungen dieses Plans oder planübergreifende — wie die Liste. */
+    private function assertVisibleIn(DutyPlan $dutyPlan, CoverageRequirement $requirement): void {
+        abort_unless($requirement->duty_plan_id === null || $requirement->duty_plan_id === $dutyPlan->id, 404);
     }
 }

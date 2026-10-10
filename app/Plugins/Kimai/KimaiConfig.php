@@ -17,11 +17,11 @@ use App\Plugins\Support\PluginSettingsResolver;
  * Organisation vor `config('plugins.kimai.*')` — Lookup/Cast im
  * {@see PluginSettingsResolver} (C10). Analog {@see \App\Plugins\Toggl\TogglConfig}.
  *
- * @phpstan-type KimaiSettings array{enabled: bool, default_billable: bool, default_user_id: ?int, single_user_mode: bool, base_url: ?string, api_token: ?string, api_all_users: bool, sync_window_days: int, default_activity_id: ?int, export_enabled: bool, push_on_create: bool, writeback: bool}
+ * @phpstan-type KimaiSettings array{enabled: bool, default_billable: bool, default_user_id: ?int, single_user_mode: bool, base_url: ?string, allow_private_network: bool, api_token: ?string, api_all_users: bool, sync_window_days: int, default_activity_id: ?int, export_enabled: bool, push_on_create: bool, writeback: bool}
  */
 class KimaiConfig {
     /**
-     * @return array{enabled: bool, default_billable: bool, default_user_id: ?int, single_user_mode: bool, base_url: ?string, api_token: ?string, api_all_users: bool, sync_window_days: int, default_activity_id: ?int, export_enabled: bool, push_on_create: bool, writeback: bool}
+     * @return array{enabled: bool, default_billable: bool, default_user_id: ?int, single_user_mode: bool, base_url: ?string, allow_private_network: bool, api_token: ?string, api_all_users: bool, sync_window_days: int, default_activity_id: ?int, export_enabled: bool, push_on_create: bool, writeback: bool}
      */
     public static function resolve(?int $organizationId = null): array {
         $r = PluginSettingsResolver::for(KimaiPlugin::ID, $organizationId);
@@ -33,6 +33,7 @@ class KimaiConfig {
             // Einbenutzer-Modus (MVP-509): siehe TogglConfig — Standard-Benutzer nur bei ausdrücklicher Wahl.
             'single_user_mode' => $r->bool('single_user_mode', false),
             'base_url' => $r->string('base_url', trim: true),
+            'allow_private_network' => $r->bool('allow_private_network', false),
             'api_token' => $r->string('api_token', trim: true),
             'api_all_users' => $r->bool('api_all_users', true),
             'sync_window_days' => max(1, $r->int('sync_window_days', 30)),

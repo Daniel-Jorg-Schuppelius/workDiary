@@ -25,9 +25,9 @@ enum TimeAccountUnit: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Minutes => __('Minuten'),
-            self::Days    => __('Tage'),
-            self::Count   => __('Anzahl'),
+            self::Minutes => __('enums.time_account.time_account_unit.minutes'),
+            self::Days    => __('enums.time_account.time_account_unit.days'),
+            self::Count   => __('enums.time_account.time_account_unit.count'),
         };
     }
 

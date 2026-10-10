@@ -61,7 +61,7 @@ return [
         ],
         'mail' => [
             'subject' => 'Il suo colloquio: scelga una data (:title)',
-            'body' => "Gentile :name,\n\nsaremmo lieti di conoscerla. Scelga entro il :until una delle seguenti date:\n:slots\n\nScegli la data: :url",
+            'body' => "Gentile :name,\n\nsaremmo lieti di conoscerla. Scelga entro il :until una delle seguenti date:\n:slots\n\nScelga la data: :url",
             'confirmed_subject' => 'Conferma del suo colloquio',
             'confirmed_body' => "Gentile :name,\n\nil suo colloquio si terrà il :when (:mode). In allegato trova l'appuntamento come evento di calendario.",
         ],

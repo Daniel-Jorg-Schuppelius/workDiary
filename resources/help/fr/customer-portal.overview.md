@@ -1,7 +1,7 @@
 ---
 title: "Portail client – vue d'ensemble"
 topic: customer-portal.overview
-version: 2
+version: 4
 keywords:
     - accueil du portail
     - espace client
@@ -15,6 +15,8 @@ keywords:
     - zones du portail
     - aide du portail
     - annonces
+    - demander un rendez-vous
+    - formations
 audience: []
 related:
     - customer-portal.diary
@@ -40,7 +42,7 @@ Pour chaque zone libérée, la page d'accueil affiche une tuile avec un chiffre.
 
 - **Entrées de journal** – le nombre de vos commandes.
 - **Saisies de temps** – le nombre de saisies de temps que vous pouvez consulter. La tuile n'apparaît que si les saisies individuelles vous sont affichées.
-- **Factures** – le nombre de vos factures.
+- **Factures** – le nombre de vos factures émises.
 - **Points ouverts** – le nombre de points ouverts libérés pour vous et pas encore clôturés. La page **Points ouverts** n'est accessible que par cette tuile.
 - **Demandes en cours** – vos demandes et commandes en cours. Si des dossiers attendent une réaction de votre part, la tuile est encadrée en couleur et en indique le nombre (« Dont … vous attendent »).
 - **Abonnements & licences** – le nombre d'abonnements et de licences de votre liste.
@@ -56,14 +58,17 @@ L'en-tête affiche toujours **Aperçu**, **Recherche**, **Aide**, **Profil**, **
 - **Documents** – les documents libérés pour vous,
 - **Temps** – les temps saisis pour vos projets,
 - **Factures** et, si votre prestataire vous facture via un compte de facturation, **Facturation**,
-- **Tickets** et **Catalogue de services**,
-- **Erreurs connues**,
+- **Tickets**, **Catalogue de services** et **Erreurs connues**,
 - **Réclamations** et **Déclarer un retour**,
 - **Location** et **Demande de location**,
 - **Abonnements**,
 - **Accords**,
 - **Demandes et commandes**,
+- **Demander un rendez-vous**,
+- **Formations**,
 - **Questions**.
+
+**Formations** apparaît si votre prestataire propose des formations dans le portail ; vous n'y voyez que les cours qu'il a ouverts aux clients.
 
 **Aide** ouvre la rubrique d'aide de la page sur laquelle vous vous trouvez ; s'il n'y en a pas, la liste des rubriques d'aide du portail. Là aussi, vous ne voyez que les rubriques des zones libérées pour vous. **Profil** et **Sécurité** sont décrits dans la rubrique « Accès & sécurité ». **Se déconnecter** met fin à votre session.
 

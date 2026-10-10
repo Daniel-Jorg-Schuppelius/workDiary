@@ -39,6 +39,7 @@ return [
         'secret_keep' => '(unchanged — leave blank)',
         'allow_private_network' => 'Explicitly allow private/internal addresses',
         'allow_private_network_help' => 'An OnPremise Wawi typically lives on your own network. This approval is audited and applies to this connection only.',
+        'private_hint' => 'For an on-premise Wawi on your own network, private addresses must be allowed explicitly.',
         'last_sync' => 'Last synchronisation',
         'last_error' => 'Last error',
     ],

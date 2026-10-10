@@ -436,4 +436,9 @@ class HelpdeskReportExportController extends Controller {
             ['response_rate_percent', $satisfaction['response_rate']],
         ];
     }
+
+    /** Fachbericht außerhalb der Auswertungen: Den Export deckt das Fachrecht der Seite (E28). */
+    protected function exportNeedsReportPermission(): bool {
+        return false;
+    }
 }

@@ -1,7 +1,7 @@
 ---
 title: "Buchen und Inbox"
 topic: accounting.posting
-version: 2
+version: 5
 keywords:
     - Buchung erfassen
     - Belege buchen
@@ -13,6 +13,7 @@ keywords:
     - Generalumkehr
     - Festschreibung
     - Vier-Augen-Prinzip
+    - Freigabe
     - Fremdwährung
     - Wechselkurs
     - Buchungsjournal
@@ -37,6 +38,33 @@ jemand anfassen muss.
 **Vorschlag vor Festbuchung.** Auch ein eindeutiger Vorschlag wird erst zum
 geprüften Entwurf, nie direkt zur Festbuchung. Ist das Vier-Augen-Prinzip
 aktiv, schreibt die vorbereitende Person nicht selbst fest.
+
+**Vier-Augen-Prinzip bei Direktbuchungen.** Einige Vorgänge legen ihre Buchung
+selbst an: **Skonto** und **Ausbuchung** über **Ausgleichen** bei den offenen
+Posten, **Auf Klärungskonto buchen** im Zahlungsabgleich, die **Interne
+Umbuchung**, **Startsalden übernehmen**, **Sondervorauszahlung buchen** und
+**Stornieren** im Journal. Ohne Vier-Augen-Prinzip schreiben sie sofort fest.
+Ist es aktiv, entsteht ein geprüfter Entwurf: Eine Meldung und ein Hinweis im
+Dialog sagen das, und die Buchungs-Inbox führt ihn mit seiner Art
+(**Skonto/Ausbuchung**, **Klärungsbuchung**, **Interne Umbuchung**,
+**Startsalden**, **Sondervorauszahlung**, **Storno**) und dem Status **Bereit**
+– unabhängig vom Zeitraum der Kopfzeile, solange **Alle Quellen** gewählt ist.
+Wirksam wird der Vorgang erst, wenn eine zweite Person den Entwurf mit
+**Festschreiben** oder **Alle übernehmen und festschreiben** festschreibt: Erst
+dann ist der offene Posten ausgeglichen, der Bankumsatz gebucht und die
+Sondervorauszahlung in der letzten Voranmeldung des Jahres angerechnet. Im
+Journal bleibt **Sofort festschreiben** für die Person, die die Buchung anlegt,
+gesperrt.
+
+**Entwurf verwerfen.** Einen wartenden Entwurf aus diesen Vorgängen löschen
+Sie mit **Entwurf verwerfen** in der Buchungs-Inbox oder auf seiner
+Detailseite (Recht **Buchungen festschreiben**, mit Rückfrage). Der Schritt
+wird protokolliert, und der Vorgang steht danach wieder offen: Der Posten ist
+wieder ausgleichbar, Bankumsatz, Startsalden und Sondervorauszahlung lassen
+sich neu buchen, die Buchung eines verworfenen Stornos lässt sich erneut
+stornieren, und eine interne Umbuchung entfällt samt Kopplung ihrer Belege.
+Festgeschriebene Buchungen und Entwürfe aus Buchungsvorschlägen lassen sich
+nicht verwerfen.
 
 **Blockiert statt geraten.** Fehlt eine Buchungsregel, nennt der Vorschlag
 Rolle und Merkmale („Keine Buchungsregel für Erlös (tax_rate=19.00)"). Ein
@@ -84,8 +112,14 @@ anderes System das Hauptbuch, weist ein Hinweis über der Liste darauf hin.
   **Stornieren**: Die **Begründung** ist Pflicht, das **Buchungsdatum der
   Gegenbuchung** optional. Leer gelassen gilt der Originaltag, solange dessen
   Periode offen ist, sonst der heutige Tag. **Gegenbuchung erzeugen** schreibt
-  die gespiegelte Buchung sofort fest und nimmt auch die offenen Posten zurück,
-  die aus dem Original entstanden sind.
+  die gespiegelte Buchung fest und nimmt auch die offenen Posten zurück, die
+  aus dem Original entstanden sind. Ist das Vier-Augen-Prinzip aktiv, entsteht
+  die Gegenbuchung als Entwurf: Die Buchung bleibt festgeschrieben und die
+  offenen Posten unverändert, bis eine zweite Person das Storno festschreibt.
+  Bis dahin ist kein zweites Storno derselben Buchung möglich; ihre
+  Detailseite verweist mit **Wartenden Entwurf anzeigen** auf den Entwurf. Das
+  automatische Storno beim Aufheben einer Zuordnung im Zahlungsabgleich
+  schreibt immer sofort fest.
 
 Beim Festschreiben prüft WorkDiary: Für das Buchungsdatum besteht eine offene
 Periode, und die lokale Buchhaltung führt an diesem Tag das Hauptbuch; Soll und
@@ -121,6 +155,14 @@ aus.
   WorkDiary zugleich eine Gegenbuchung ins Journal fest – auf das Skonto- bzw.
   Ausbuchungskonto aus den DATEV-Einstellungen, sofern dieses Konto im
   Kontenplan angelegt ist. Ein Einbehalt erzeugt keine Buchung.
+  Ist das Vier-Augen-Prinzip aktiv, entsteht die Gegenbuchung als Entwurf
+  in der Buchungs-Inbox, und der Posten bleibt offen, bis eine zweite Person
+  sie festschreibt. Bis dahin zeigt die Liste **Entwurf wartet auf Freigabe**,
+  **Wartenden Entwurf anzeigen** führt zur Buchung, und jeder weitere
+  Ausgleich des Postens – auch ein Einbehalt – wird abgewiesen. Ist der Posten
+  bis zur Freigabe anderweitig ausgeglichen, scheitert das Festschreiben, weil
+  der Betrag den offenen Rest übersteigt. Einbehalt und Ausgleich ohne
+  angelegtes Gegenkonto erzeugen keine Buchung und gelten sofort.
 
 **Berechtigung:** Ansehen mit **Buchhaltung einsehen**, Ausgleichen mit
 **Buchungen festschreiben**.
@@ -142,7 +184,8 @@ Arten von Vorlagen:
 
 Die Seite gliedert sich in **Offene Vorgänge** (**Vorlage**, **Periode**,
 **Fällig**, **Erwartet**, **Status**; bei **Blockiert** steht der Grund
-darunter, bei **Entwurf erzeugt** führt **Buchung anzeigen** zum Entwurf),
+darunter, bei **Entwurf erzeugt** führt **Buchung anzeigen** zum Entwurf, bei
+**Beleg erwartet** ordnet **Beleg zuordnen** das Original zu),
 **Vorlagen** (**Bezeichnung**, **Art**, **Rhythmus**, **Nächste Fälligkeit**,
 **Verantwortlich**, **Status** mit Fassungsnummer) und **Serienrechnungen**:
 aktive Abrechnungspläne nur zur Übersicht, bearbeitet über **Abrechnungspläne
@@ -151,10 +194,11 @@ aktive Abrechnungspläne nur zur Übersicht, bearbeitet über **Abrechnungsplän
 **Vorlage anlegen:** **Art**, **Bezeichnung**, **Rhythmus** (**Monatlich**,
 **Vierteljährlich**, **Halbjährlich**, **Jährlich**), **Fälligkeitstag** (1–28,
 damit jeder Monat ihn hat), **Erwartet**, **Beginn** und optional **Ende**,
-für Buchungsvorlagen außerdem **Soll** und **Haben** sowie eine **Notiz**. Eine
-Buchungsvorlage ohne beide Konten und Betrag wird nicht gespeichert. Beim
-Bearbeiten zeigt der Dialog die nächsten Fälligkeiten; jede Änderung speichert
-eine neue Fassung, bereits erzeugte Vorgänge bleiben unverändert.
+für Buchungsvorlagen außerdem **Soll** und **Haben**, dazu **Verantwortlich**
+und eine **Notiz**. Eine Buchungsvorlage ohne beide Konten und Betrag wird
+nicht gespeichert. Beim Bearbeiten sind die gespeicherten Konten vorbelegt und
+der Dialog zeigt die nächsten Fälligkeiten; jede Änderung speichert eine neue
+Fassung, bereits erzeugte Vorgänge bleiben unverändert.
 
 **Ablauf und Regeln:**
 
@@ -165,12 +209,20 @@ eine neue Fassung, bereits erzeugte Vorgänge bleiben unverändert.
   ohne auf den täglichen Lauf zu warten.
 - Lässt sich ein Entwurf nicht anlegen, etwa weil für das Datum keine Periode
   besteht, steht der Vorgang als **Blockiert** mit Grund in der Liste.
+- **Beleg zuordnen** erfüllt eine Belegerwartung: Sie wählen die eingegangene
+  Rechnung im Feld **Eingangs-E-Rechnung**. Zur Wahl stehen Rechnungen aus
+  **Eingangs-E-Rechnungen**, die Sie sehen dürfen, die nicht abgelehnt und noch
+  keinem Vorgang zugeordnet sind – eine Rechnung erfüllt höchstens einen
+  Vorgang. Der Vorgang steht danach auf **Erfüllt**.
+- Wird der Entwurf einer Buchungsvorlage festgeschrieben, steht ihr Vorgang
+  ebenfalls auf **Erfüllt**.
 - Ist ein Vorgang mit **Beleg erwartet** oder **Entwurf erzeugt** überfällig,
-  meldet WorkDiary das einmal über die Benachrichtigungen.
+  meldet WorkDiary das einmal über die Benachrichtigungen, ab Werk an die
+  Buchhaltung und an die Person unter **Verantwortlich**.
 - **Pausieren** hält eine Vorlage an; **Fortsetzen** macht mit der nächsten
   Fälligkeit ab heute weiter, ohne Versäumtes nachzuholen. **Beenden** stoppt
   die Vorlage endgültig, erzeugte Vorgänge bleiben bestehen.
 
 **Berechtigung:** Ansehen mit **Buchhaltung einsehen**; Vorlagen anlegen,
 bearbeiten, pausieren, fortsetzen und beenden mit **Buchhaltung einrichten**;
-**Jetzt ausführen** mit **Buchungen vorbereiten**.
+**Jetzt ausführen** und **Beleg zuordnen** mit **Buchungen vorbereiten**.

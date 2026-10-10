@@ -1,7 +1,7 @@
 ---
 title: "Portal del cliente – Tickets"
 topic: customer-portal.tickets
-version: 2
+version: 3
 keywords:
     - solicitud de soporte
     - notificar una avería
@@ -24,8 +24,9 @@ related:
 
 En **Tickets** notifica averías y solicitudes al equipo de servicio de su
 proveedor y sigue su tramitación. Al área pertenece el **Catálogo de
-servicios**, en el que solicita servicios estándar. Si está liberada para su
-empresa, se añade la página **Errores conocidos**.
+servicios**, en el que solicita servicios estándar, y la página **Errores
+conocidos**. Los tres aparecen en el menú en cuanto su proveedor ha liberado
+el área para su empresa.
 
 ## Mis tickets
 
@@ -80,6 +81,11 @@ Cuando un ticket está **Resuelto**, tiene dos opciones:
   **Motivo de la reapertura**. El ticket vuelve a **En curso** y su motivo
   aparece como mensaje en el historial.
 
+Incluso después de confirmar, mientras el ticket esté **Aceptado**, puede
+recuperarlo de la misma manera con **Reabrir**, por ejemplo si el fallo vuelve
+a aparecer más tarde. Cuando está **Cerrado**, ya no es posible; notifique
+entonces un nuevo ticket.
+
 ## Valorar la tramitación
 
 Cuando un ticket está **Resuelto**, **Aceptado**, **Cerrado** o
@@ -100,7 +106,8 @@ insatisfecho**, añada si lo desea un **Comentario (opcional)** y haga clic en
 - **En pausa** – la tramitación está detenida temporalmente.
 - **Resuelto** – el equipo considera resuelta la solicitud; confírmela o
   reábrala.
-- **Aceptado** – usted ha confirmado la resolución.
+- **Aceptado** – usted ha confirmado la resolución; aún puede reabrir el
+  ticket.
 - **Cerrado** – el caso ha finalizado.
 - **Rechazado** – la solicitud no se tramitará.
 
@@ -135,7 +142,8 @@ La página **Errores conocidos** enumera las averías que su proveedor ya
 conoce y para las que trabaja en una solución definitiva. Cada entrada
 indica, si existe, una **Solución provisional**: cómo sortear el problema
 mientras tanto. Consulte la lista antes de notificar un nuevo ticket. La
-página es de solo lectura.
+página es de solo lectura; la abre mediante **Errores conocidos** en la
+cabecera.
 
 ## Límites
 

@@ -1,7 +1,7 @@
 ---
 title: "Connecter Microsoft 365"
 topic: admin.msgraph
-version: 1
+version: 2
 keywords:
     - Microsoft 365
     - Office 365
@@ -66,7 +66,7 @@ En haut de la page, vous connectez le calendrier avec **Connecter à Microsoft
 - **Sens :** les événements de WorkDiary sont transférés dans le calendrier du
   compte connecté – de 30 jours en arrière à 180 jours en avant, avec titre,
   description, horaire et lieu (salles réservées). Les modifications sont
-  reportées, les événements annulés y sont supprimés, et les exécutions
+  reportées, les événements annulés et supprimés y sont retirés, et les exécutions
   répétées ne créent pas de doublons. WorkDiary reste maître des données.
 - **Moment :** une synchronisation a lieu chaque jour, par défaut à 4 h 45 ;
   vous modifiez la fréquence sous **Tâches planifiées**. **Publier
@@ -185,13 +185,10 @@ demande de consentement personnelle.
 **URI de redirection pour une inscription d'application propre** liste les
 adresses qu'une application propre doit enregistrer comme URI de redirection
 de type « Web » : pour le calendrier, l'envoi d'e-mails, les contacts, les
-tâches, l'entrée de documents, l'admin consent et – uniquement pour
-l'application de l'installation – la cible de sauvegarde. L'adresse pour
-OneNote manque dans cette liste : avec une application propre, saisissez en
-plus votre adresse WorkDiary suivie du chemin
-/admin/msgraph/onenote/oauth/callback. Si le **Stockage SharePoint** utilise
-la même application, le chemin /admin/sharepoint/oauth/callback en fait aussi
-partie.
+tâches, OneNote, l'entrée de documents, l'admin consent, – uniquement pour
+l'application de l'installation – la cible de sauvegarde, et le **Stockage
+SharePoint**, qui utilise la même application tant que l'exploitant ne lui en
+attribue pas une propre.
 
 ## Autres fonctions du plugin
 
@@ -212,6 +209,8 @@ cette connexion ; les rendez-vous transférés et les contacts Outlook restent
 chez Microsoft. Vous pouvez vous reconnecter à tout moment ; WorkDiary remet
 alors aussi le compteur d'erreurs à zéro. Si une connexion a été mise à l'arrêt
 après des erreurs répétées consécutives, le bouton de connexion réapparaît.
+Tant qu'une connexion de calendrier est perturbée, une tâche d'exploitation
+la signale.
 
 ## Problèmes fréquents
 

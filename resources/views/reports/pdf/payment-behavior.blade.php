@@ -8,8 +8,8 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Zahlungsverhalten')
-@section('pdf-heading', 'Zahlungsverhalten & Forderungstrend')
+@section('pdf-title', __('Zahlungsverhalten'))
+@section('pdf-heading', __('Zahlungsverhalten'))
 
 @section('pdf-table')
     <p class="small">

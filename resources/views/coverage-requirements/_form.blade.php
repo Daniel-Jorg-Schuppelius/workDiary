@@ -67,6 +67,15 @@
                class="input input-bordered w-full">
         <div class="fieldset-label text-xs text-muted">{{ __('Überschreibt Wochentag-Regel') }}</div>
     </label>
+
+    <label class="fieldset w-full sm:col-span-2">
+        <span class="label cursor-pointer justify-start gap-2">
+            <input type="checkbox" name="all_plans" value="1" class="checkbox checkbox-sm"
+                   @checked(old('all_plans', $requirement !== null && $requirement->duty_plan_id === null))>
+            <span class="label-text">{{ __('Für alle Dienstpläne') }}</span>
+        </span>
+        <div class="fieldset-label text-xs text-muted">{{ __('Gilt in jedem Dienstplan und an Tagen ohne Dienstplan.') }}</div>
+    </label>
 </x-form-group>
 
 <x-form-group :legend="__('Besetzung')" icon="group" tone="success" cols="2">

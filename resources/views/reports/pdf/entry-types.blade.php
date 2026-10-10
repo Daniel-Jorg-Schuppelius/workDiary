@@ -8,8 +8,8 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Auftragstypanalyse')
-@section('pdf-heading', 'Auftragstypanalyse')
+@section('pdf-title', __('Auftragstypanalyse'))
+@section('pdf-heading', __('Auftragstypanalyse'))
 
 @section('pdf-table')
     @include('reports.pdf.charts._chart')
@@ -17,16 +17,16 @@
     <table>
         <thead>
             <tr>
-                <th>Auftragstyp</th>
-                <th class="num">Auftraege</th>
+                <th>{{ __('Auftragstyp') }}</th>
+                <th class="num">{{ __('Aufträge') }}</th>
                 <th class="num">{{ __('Durchschnitt Plan') }}</th>
                 <th class="num">{{ __('Durchschnitt Ist') }}</th>
                 <th class="num">{{ __('Plan/Ist') }}</th>
-                <th class="num">Ueberzug</th>
-                <th class="num">Ueberzug %</th>
-                <th class="num">Nacharbeit</th>
-                <th class="num">Nacharbeit %</th>
-                <th class="num">Escalation %</th>
+                <th class="num">{{ __('Überzug') }}</th>
+                <th class="num">{{ __('Überzug %') }}</th>
+                <th class="num">{{ __('Nacharbeit') }}</th>
+                <th class="num">{{ __('Nacharbeit %') }}</th>
+                <th class="num">{{ __('Eskalation %') }}</th>
                 <th class="num">{{ __('First-Time-Right %') }}</th>
                 <th class="num">{{ __('Median Ist') }}</th>
                 <th class="num">{{ __('P90 Ist') }}</th>

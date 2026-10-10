@@ -137,8 +137,9 @@ class ExternalPayoutReportController extends Controller {
     /**
      * Auszahlungen (€) je Bucket (adaptiv zur Header-Granularität):
      * zeitbasierte Vergütung nach Zeitraum der Zeiteinträge, Monatspauschalen
-     * je Zeitraum-Bucket, Einsatzpauschalen nach Einsatztagen, Einmalpauschalen
-     * im ersten Bucket. Leere Serie statt Null-Achse (§Diagramm-UX).
+     * einmal je Monat im Bucket ihres ersten Zeitraumtags (Summe = Tabelle),
+     * Einsatzpauschalen nach Einsatztagen, Einmalpauschalen im ersten Bucket.
+     * Leere Serie statt Null-Achse (§Diagramm-UX).
      *
      * @param  \Illuminate\Support\Collection<int, User>  $externals
      * @return list<array{x: string, y: float}>
@@ -180,6 +181,12 @@ class ExternalPayoutReportController extends Controller {
         $byMonth = array_fill_keys(array_column($buckets, 'key'), 0.0);
         $firstMonth = (string) $buckets[0]['key'];
 
+        /** @var list<string> $monthStartBuckets */
+        $monthStartBuckets = [];
+        for ($cursor = $from->startOfMonth(); $cursor->lte($to); $cursor = $cursor->addMonth()) {
+            $monthStartBuckets[] = ChartBucket::keyLabel($granularity, $cursor->max($from->startOfDay()))[0];
+        }
+
         foreach ($externals as $user) {
             $uid = (int) $user->id;
             $model = $user->compensation_model;
@@ -194,8 +201,10 @@ class ExternalPayoutReportController extends Controller {
                 $flat = ($user->flat_amount?->toFloat() ?? 0.0);
                 $interval = $user->flat_interval;
                 if ($interval === FlatInterval::Monatlich) {
-                    foreach ($byMonth as $ym => $sum) {
-                        $byMonth[$ym] = $sum + $flat;
+                    foreach ($monthStartBuckets as $ym) {
+                        if (array_key_exists($ym, $byMonth)) {
+                            $byMonth[$ym] += $flat;
+                        }
                     }
                 } elseif ($interval === FlatInterval::ProEinsatz) {
                     foreach ($daysByUserMonth[$uid] ?? [] as $ym => $days) {

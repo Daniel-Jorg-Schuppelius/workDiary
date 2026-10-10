@@ -1,7 +1,7 @@
 ---
 title: "Todoist-Anbindung"
 topic: admin.todoist
-version: 1
+version: 2
 keywords:
     - Todoist
     - Aufgaben synchronisieren
@@ -83,7 +83,9 @@ Der **Preflight** zeigt vor der Aktivierung, was der Abgleich vorfindet:
 
 - **Kennzahlen**: aktive Aufgaben, Unteraufgaben, wiederkehrende Aufgaben,
   Fälligkeiten mit Uhrzeit, nicht zuordenbare Bearbeiter und bereits
-  verknüpfte Aufgaben.
+  verknüpfte Aufgaben. Wiederkehrende Aufgaben kommen als einzelne Aufgabe
+  mit dem nächsten Fälligkeitstag an, die Wiederholung kennt nur Todoist; von
+  Fälligkeiten mit Uhrzeit übernimmt WorkDiary nur das Datum.
 - **Bearbeiter-Zuordnung**: Je Todoist-Kollaborator wählen Sie einen
   WorkDiary-Benutzer und klicken auf **Speichern**. Eine gleiche E-Mail-Adresse
   zeigt WorkDiary nur als **Vorschlag**; zugewiesen wird erst nach Ihrer Wahl.
@@ -157,3 +159,8 @@ Todoist.
   Preflight noch keinem Benutzer zugeordnet.
 - Nichts wird abgeglichen: Die Zuordnung steht noch auf **Entwurf** oder
   **Pausiert**.
+- Die Verbindung steht auf **Pausiert**: Todoist hat den Zugang abgelehnt,
+  etwa weil die App-Freigabe in Todoist widerrufen wurde. Der Abgleich ruht;
+  mit **Verbindung erneuern** verbinden Sie neu. Scheitert ein Abgleich aus
+  anderem Grund, nennt die Seite den letzten Fehler, bis ein Abgleich wieder
+  gelingt; zusätzlich entsteht eine Betriebsaufgabe.

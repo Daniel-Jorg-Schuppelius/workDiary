@@ -28,9 +28,9 @@ enum AssetFinanceUsageLimitKind: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Kilometers => (string) __('Kilometer'),
-            self::OperatingHours => (string) __('Betriebsstunden'),
-            self::UsageDays => (string) __('Nutzungstage'),
+            self::Kilometers => (string) __('enums.asset_finance.asset_finance_usage_limit_kind.kilometers'),
+            self::OperatingHours => (string) __('enums.asset_finance.asset_finance_usage_limit_kind.operating_hours'),
+            self::UsageDays => (string) __('enums.asset_finance.asset_finance_usage_limit_kind.usage_days'),
         };
     }
 }

@@ -1,7 +1,7 @@
 ---
 title: "Richiedere un appuntamento"
 topic: customer-portal.appointments
-version: 2
+version: 4
 keywords:
     - prenotare appuntamento
     - prenotazione online
@@ -20,7 +20,7 @@ related:
     - customer-portal.diary
 ---
 
-Nella pagina **Richiedere un appuntamento** sceglie una prestazione e una finestra libera e invia così al Suo fornitore una richiesta di appuntamento. L'appuntamento è fissato solo quando il Suo fornitore lo conferma. La pagina è a Sua disposizione se il Suo fornitore ha rilasciato per Lei la prenotazione di appuntamenti online.
+Nella pagina **Richiedere un appuntamento** sceglie una prestazione e una finestra libera e invia così al Suo fornitore una richiesta di appuntamento. L'appuntamento è fissato solo quando il Suo fornitore lo conferma. La pagina è a Sua disposizione se il Suo fornitore ha rilasciato per Lei la prenotazione di appuntamenti online. La apre quindi tramite **Richiedere un appuntamento** nel menu del portale.
 
 ## Cercare finestre libere
 
@@ -28,7 +28,7 @@ Nella pagina **Richiedere un appuntamento** sceglie una prestazione e una finest
 2. In **Data** scelga un giorno. Se il campo resta vuoto, il portale mostra il primo giorno possibile.
 3. Clicchi su **Mostrare le finestre**.
 
-Sotto la selezione compaiono la descrizione della prestazione, se presente, e le finestre libere del giorno come pulsanti, ad esempio «09:00–10:00». Vengono mostrate al massimo dodici finestre al giorno, a intervalli di mezz'ora.
+Sotto la selezione compaiono la descrizione della prestazione, se presente, e le finestre libere del giorno come pulsanti, ad esempio «09:00–10:00». Vengono mostrate al massimo dodici finestre al giorno, a intervalli di mezz'ora. Sotto compare il termine di annullamento della prestazione, ad esempio **È possibile annullare fino a 24 ore prima dell’inizio dell’appuntamento.**
 
 Le finestre derivano dal tempo libero dei collaboratori del Suo fornitore. Se una prestazione richiede una qualifica particolare, contano solo i collaboratori che la possiedono nel giorno dell'appuntamento. Ogni prestazione ha inoltre un preavviso: le finestre troppo ravvicinate non vengono offerte.
 
@@ -36,7 +36,7 @@ Se compare **Nessuna finestra libera in questo giorno — scegliere un altro gio
 
 ## Richiedere un appuntamento
 
-Clicchi sulla finestra desiderata. La richiesta viene inviata subito, senza ulteriori conferme. Il portale segnala **Richiesta inviata — confermeremo in modo vincolante.**, e la richiesta compare in **Le mie richieste** con lo stato **richiesta**.
+Clicchi sulla finestra desiderata. La richiesta viene inviata subito, senza ulteriori conferme. Il portale segnala **Richiesta inviata — confermeremo in modo vincolante.**, e la richiesta compare in **Le mie richieste** con lo stato **richiesta**. Il Suo fornitore viene informato della nuova richiesta.
 
 Se nel frattempo la finestra è diventata troppo ravvicinata perché il preavviso non è più rispettato, il portale non accetta la richiesta e indica il preavviso in ore. Scelga allora una finestra successiva.
 
@@ -59,9 +59,11 @@ L'elenco mostra tutte le richieste del Suo accesso, la più recente in alto, con
 
 ## Annullare una richiesta
 
-Gli appuntamenti richiesti e confermati li annulla Lei stesso con **Annulla**, finché il termine di annullamento della prestazione è rispettato. Il Suo fornitore fissa il termine per ogni prestazione; senza un'impostazione propria sono 24 ore prima dell'inizio dell'appuntamento. Dopo l'annullamento il portale segnala **Richiesta di appuntamento annullata.**, e la richiesta ha lo stato **annullata**.
+Gli appuntamenti richiesti e confermati li annulla Lei stesso con **Annulla**, finché il termine di annullamento della prestazione non è scaduto. Il Suo fornitore fissa il termine per ogni prestazione; senza un'impostazione propria sono 24 ore prima dell'inizio dell'appuntamento. Sotto il pulsante compare fino a quando può annullare, ad esempio **Annullabile fino al** con data e ora.
 
-Se il termine non è più rispettato, compare **Il termine di annullamento di … ore è superato — ci chiami.** Chiami allora il Suo fornitore. Le richieste rifiutate o già annullate non si possono annullare.
+Dopo l'annullamento il portale segnala **Richiesta di appuntamento annullata.**, la richiesta ha lo stato **annullata** e il Suo fornitore viene informato. Se l'appuntamento era già confermato, viene annullato anche l'ordine pianificato; nel **Registro ordini** compare allora con lo stato **Annullato**.
+
+Se il termine è scaduto, al posto del pulsante compare **Termine di annullamento scaduto**. Se scade mentre la pagina è aperta, al clic compare **Il termine di annullamento di … ore è superato — ci chiami.** Se il Suo fornitore sta già lavorando all'ordine, il portale non accetta l'annullamento e segnala **Questo appuntamento è già in lavorazione — ci chiami.** In entrambi i casi chiami il Suo fornitore. Le richieste rifiutate o già annullate non si possono annullare.
 
 ## Limiti
 

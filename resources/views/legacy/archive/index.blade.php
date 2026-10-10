@@ -95,7 +95,7 @@
                         'active' => false,
                     ],
                     [
-                        'label'  => __('Mitarbeiter'),
+                        'label'  => __('user.employees'),
                         'value'  => $tabKpis['users']   ?? 0,
                         'border' => 'border-secondary/40',
                         'href'   => null,

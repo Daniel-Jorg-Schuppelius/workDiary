@@ -1,7 +1,7 @@
 ---
 title: "Cierre e informes"
 topic: accounting.closing
-version: 1
+version: 2
 keywords:
     - cierre mensual
     - cierre anual
@@ -33,6 +33,11 @@ cadena de prueba.
 
 Los **informes** solo leen asientos contabilizados. IVA y criterio de caja son
 **vistas previas** verificables: el MVP no presenta nada ante Hacienda.
+
+**Exportación de los informes:** PDF, CSV y Excel de los informes
+financieros, del informe económico y del presupuesto requieren, además del
+permiso de lectura, el permiso **Exportar los informes**; sin él no aparecen
+los botones de exportación. Los administradores pueden exportar siempre.
 
 **Traspaso**: el paquete de auditoría contiene plan contable, diario, líneas,
 partidas abiertas y periodos; el traspaso DATEV nace de los asientos

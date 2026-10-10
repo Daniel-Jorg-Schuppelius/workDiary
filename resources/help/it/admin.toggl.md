@@ -1,7 +1,7 @@
 ---
 title: "Importazione Toggl"
 topic: admin.toggl
-version: 2
+version: 3
 keywords:
     - Toggl Track
     - importare tempi
@@ -56,3 +56,17 @@ configurato — chiaramente indicato in anteprima e risultato). I singoli
 indirizzi Toggl possono inoltre essere assegnati esplicitamente;
 l'importazione è idempotente e può semplicemente essere rieseguita una
 volta curate le assegnazioni.
+
+Webhook (facoltativo):
+
+- Per ricevere più rapidamente le nuove voci, la pagina di importazione
+  indica nella sezione **Webhook (facoltativo)** l'indirizzo per una
+  sottoscrizione webhook di Toggl. Crei la sottoscrizione per lo spazio di
+  lavoro in Toggl e inserisca il segreto assegnato nelle impostazioni del
+  plugin alla voce **Segreto del webhook**; lì deve essere impostato anche
+  l'**ID spazio di lavoro**.
+- Il webhook avvia solo la stessa importazione eseguita dal recupero
+  orario. Se manca, il recupero rimedia.
+- L'utente predefinito della modalità utente singolo si sceglie nelle
+  impostazioni del plugin alla voce **Registra i tempi per l’utente**,
+  dall'elenco degli utenti.

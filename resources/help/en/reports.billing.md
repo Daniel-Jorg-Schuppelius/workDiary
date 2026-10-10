@@ -1,7 +1,7 @@
 ---
 title: "Billing, expenses, payouts and revenue"
 topic: reports.billing
-version: 1
+version: 3
 keywords:
     - outstanding receivables
     - aging report
@@ -44,8 +44,7 @@ audit**, the **Surcharge forecast** under **Reports** → **Team**.
   **Surcharge forecast** instead looks ahead from the current month.
 - **PDF** downloads a print version; **CSV** and **Excel** are available under
   **Export**; the formats offered are stated with each report. Exports keep
-  the filters you have set. PDF and CSV exports are recorded in the audit
-  log.
+  the filters you have set. Every export is recorded in the audit log.
 
 ## Billing
 
@@ -55,11 +54,14 @@ permission; without this permission access is denied.
 
 - Tiles:
   - **Issued + paid (Σ gross)**: gross total of the invoices with the status
-    **Issued** or **Paid** whose invoice date lies in the period (without an
-    invoice date, the creation date counts).
-  - **Outstanding receivables**: gross total of all invoices with the status
-    **Issued**, regardless of the period. The tile turns red as soon as one of
-    them is more than 30 days overdue; the hint states their number.
+    **Issued**, **Partially paid** or **Paid** whose invoice date lies in the
+    period (without an invoice date, the creation date counts).
+  - **Outstanding receivables**: amount still open on all invoices with the
+    status **Issued** or **Partially paid**, regardless of the period.
+    Payments received and open retentions are deducted; pro forma invoices,
+    credit notes and cancellation documents do not count. The tile turns red
+    as soon as one of them is more than 30 days overdue; the hint states their
+    number.
   - **Unbilled time**: billable time entries of the period that have not yet
     been used up by any billing path, with the number of entries and the
     expected revenue from the stored amounts.
@@ -70,10 +72,12 @@ permission; without this permission access is denied.
 - **Invoices by status**: **Quantity**, **Net** and **Gross** per status.
 - **Aging – outstanding items**: the open invoices by days past the due date
   (without a due date, from the invoice date) in the levels **Current**, 1–7,
-  8–14, 15–30 and more than 30 days, with **Open total**.
+  8–14, 15–30 and more than 30 days, each with the open amount, and **Open
+  total**.
 - **Top customers (issued + paid in the period)**: **Customer**, **Invoices**
   and **Gross**; if amounts come from the accounting software, a further
-  column **thereof accounting system** appears.
+  column **thereof accounting system** appears. Partially paid invoices are
+  included.
 - **Incoming e-invoices (in period)**: incoming documents per status with
   number and gross amount, plus the number handed over to accounting.
 - **Incoming validation & dunning levels**: **Validation reviewed**,
@@ -99,7 +103,7 @@ amounts by the date of the expense.
 - Charts: expenses per month (or week or day) by category, with the four
   largest categories shown individually and the rest combined, and **Top
   spenders (top 15)**.
-- Tiles: **Total (gross)**, **Employee**, **Categories** and **months**.
+- Tiles: **Total (gross)**, **Employees**, **Categories** and **months**.
 - Table with one row per **Employee** and **Category**, one column per month
   and the **Total**, followed by **Top categories**.
 
@@ -125,7 +129,9 @@ It covers employees whose **Compensation model** is set to **Flat rate** or
 
 The table shows **Employee**, **Model**, **Calculation basis** and **Amount**
 with a grand total. Charts show the payouts over time and **Payouts per
-external (top 15)**. All amounts are gross, excluding tax and social security.
+external (top 15)**. Over time, a monthly flat fee appears once per month, in
+the section containing that month's first day within the period; the total of
+the chart therefore matches the table. All amounts are gross, excluding tax and social security.
 Filter: **Employee**. The page offers no export.
 
 ## Surcharge forecast

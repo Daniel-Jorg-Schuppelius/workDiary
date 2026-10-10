@@ -8,7 +8,7 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', __('compliance.driving.title') . ' – ' . $from . ' bis ' . $to)
+@section('pdf-title', __('compliance.driving.title') . ' – ' . $from . ' ' . __('bis') . ' ' . $to)
 @section('pdf-heading', __('compliance.driving.title'))
 
 @push('pdf-styles')

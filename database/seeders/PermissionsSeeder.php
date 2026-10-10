@@ -605,6 +605,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::AssetCheckout,
             PermissionEnum::AssetDefectManage,
             PermissionEnum::ReportView,
+            // Team-Auswertungen exportieren (Phase 137, E27).
+            PermissionEnum::ReportExport,
             PermissionEnum::AccessAuditView,
         ];
 
@@ -648,6 +650,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::SickLeaveViewAny,
             PermissionEnum::SickLeaveManage,
             PermissionEnum::ReportView,
+            // Team-Auswertungen exportieren (Phase 137, E27).
+            PermissionEnum::ReportExport,
             PermissionEnum::ClassificationList,
             // Feature 068: Personalbewerbungen sind HR-Hoheit — inkl.
             // Datenschutz-Aktionen (Aufbewahrung/Löschung/Auskunft/Talentpool).

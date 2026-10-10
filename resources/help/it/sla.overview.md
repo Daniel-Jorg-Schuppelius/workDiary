@@ -1,7 +1,7 @@
 ---
 title: "SLA, contratti e livelli di servizio"
 topic: sla.overview
-version: 3
+version: 4
 keywords:
     - accordo sul livello di servizio
     - tempo di risposta
@@ -75,4 +75,6 @@ per il periodo scelto i **Ticket con SLA**, il **Tasso di rispetto** e le
 cliente** e **Per causa** – oltre a un **Elenco violazioni** con
 collegamento al ticket e le **Quote di tempo incluso**. Il report è
 esportabile in PDF, CSV ed Excel. Può consultarlo chi dispone del
-permesso **Visualizzare stato e report SLA**.
+permesso **Visualizzare stato e report SLA**; per esportarlo serve inoltre il
+permesso **Esporta i report** – senza di esso i pulsanti di esportazione non
+compaiono. Gli amministratori possono sempre fare entrambe le cose.

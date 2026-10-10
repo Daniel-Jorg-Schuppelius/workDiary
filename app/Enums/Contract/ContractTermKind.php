@@ -27,8 +27,8 @@ enum ContractTermKind: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Fixed => (string) __('Befristet'),
-            self::OpenEnded => (string) __('Unbefristet'),
+            self::Fixed => (string) __('enums.contract.contract_term_kind.fixed'),
+            self::OpenEnded => (string) __('enums.contract.contract_term_kind.open_ended'),
         };
     }
 }

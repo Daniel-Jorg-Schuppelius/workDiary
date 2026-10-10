@@ -34,15 +34,15 @@ enum ClaimKind: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Guarantee => (string) __('Garantie'),
-            self::WarrantyLegal => (string) __('Gesetzliche Gewährleistung'),
-            self::WarrantyContractual => (string) __('Vertragliche Gewährleistung'),
-            self::Goodwill => (string) __('Kulanz'),
-            self::TransportDamage => (string) __('Transportschaden'),
-            self::UserError => (string) __('Fehlbedienung'),
-            self::InternalError => (string) __('Interner Fehler'),
-            self::SupplierFault => (string) __('Lieferantenfehler'),
-            self::Unfounded => (string) __('Unbegründet'),
+            self::Guarantee => (string) __('enums.claims.claim_kind.guarantee'),
+            self::WarrantyLegal => (string) __('enums.claims.claim_kind.warranty_legal'),
+            self::WarrantyContractual => (string) __('enums.claims.claim_kind.warranty_contractual'),
+            self::Goodwill => (string) __('enums.claims.claim_kind.goodwill'),
+            self::TransportDamage => (string) __('enums.claims.claim_kind.transport_damage'),
+            self::UserError => (string) __('enums.claims.claim_kind.user_error'),
+            self::InternalError => (string) __('enums.claims.claim_kind.internal_error'),
+            self::SupplierFault => (string) __('enums.claims.claim_kind.supplier_fault'),
+            self::Unfounded => (string) __('enums.claims.claim_kind.unfounded'),
         };
     }
 }

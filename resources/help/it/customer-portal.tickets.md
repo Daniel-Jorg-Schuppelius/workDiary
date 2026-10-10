@@ -1,7 +1,7 @@
 ---
 title: "Portale clienti – Ticket"
 topic: customer-portal.tickets
-version: 2
+version: 3
 keywords:
     - richiesta di supporto
     - segnalare un guasto
@@ -24,8 +24,9 @@ related:
 
 In **Ticket** segnala guasti e richieste al team di assistenza del Suo
 fornitore e ne segue la lavorazione. Dell'area fa parte il **Catalogo dei
-servizi**, nel quale ordina prestazioni standard. Se è rilasciata per la Sua
-azienda, si aggiunge la pagina **Errori noti**.
+servizi**, nel quale ordina prestazioni standard, e la pagina **Errori
+noti**. Tutte e tre compaiono nel menu non appena il Suo fornitore ha
+rilasciato l'area per la Sua azienda.
 
 ## I miei ticket
 
@@ -79,6 +80,10 @@ Quando un ticket è **Risolto**, ha due possibilità:
   **Motivo della riapertura**. Il ticket torna a **In lavorazione** e il Suo
   motivo compare come messaggio nella cronologia.
 
+Anche dopo la conferma, finché il ticket è **Accettato**, può riaprirlo allo
+stesso modo con **Riapri**, ad esempio se il guasto si ripresenta più tardi.
+Quando è **Chiuso** non è più possibile; in tal caso segnali un nuovo ticket.
+
 ## Valutare la lavorazione
 
 Quando un ticket è **Risolto**, **Accettato**, **Chiuso** o **Rifiutato**, il
@@ -99,7 +104,8 @@ possibile una sola valutazione.
 - **In pausa** – la lavorazione è temporaneamente sospesa.
 - **Risolto** – il team considera evasa la richiesta; La preghiamo di
   confermare o riaprire.
-- **Accettato** – ha confermato la risoluzione.
+- **Accettato** – ha confermato la risoluzione; può ancora riaprire il
+  ticket.
 - **Chiuso** – la pratica è conclusa.
 - **Rifiutato** – la richiesta non verrà lavorata.
 
@@ -134,7 +140,7 @@ La pagina **Errori noti** elenca i guasti che il Suo fornitore conosce già e
 per i quali sta lavorando a una soluzione definitiva. Ogni voce indica, se
 disponibile, una **Soluzione temporanea**: come aggirare il problema nel
 frattempo. Consulti l'elenco prima di segnalare un nuovo ticket. La pagina è
-di sola lettura.
+di sola lettura; la apre tramite **Errori noti** nell'intestazione.
 
 ## Limiti
 

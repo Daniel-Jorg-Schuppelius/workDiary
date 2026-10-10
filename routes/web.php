@@ -1461,6 +1461,8 @@ Route::middleware('auth')->group(function () {
         Route::post('customers/{customer}/portal-access/{portalUser}/resend', [\App\Http\Controllers\Customer\CustomerPortalAccessController::class, 'resend'])->name('customers.portal-access.resend');
         Route::post('customers/{customer}/portal-access/{portalUser}/deactivate', [\App\Http\Controllers\Customer\CustomerPortalAccessController::class, 'deactivate'])->name('customers.portal-access.deactivate');
         Route::post('customers/{customer}/portal-access/{portalUser}/reactivate', [\App\Http\Controllers\Customer\CustomerPortalAccessController::class, 'reactivate'])->name('customers.portal-access.reactivate');
+        Route::post('customers/{customer}/portal-access/{portalUser}/reset', [\App\Http\Controllers\Customer\CustomerPortalAccessController::class, 'reset'])->name('customers.portal-access.reset');
+        Route::post('customers/{customer}/portal-access/{portalUser}/reset-second-factor', [\App\Http\Controllers\Customer\CustomerPortalAccessController::class, 'resetSecondFactor'])->middleware('reauth')->name('customers.portal-access.reset-second-factor');
         // Portal-Sichtbarkeiten je Kunde (MVP-511).
         Route::put('customers/{customer}/portal-visibility', [\App\Http\Controllers\Customer\CustomerPortalVisibilityController::class, 'update'])->name('customers.portal-visibility.update');
 
@@ -1658,6 +1660,9 @@ Route::middleware('auth')->group(function () {
         Route::get('manufacturing-orders/{order}/deliveries/{delivery}/mail', [\App\Http\Controllers\Document\DocumentMailController::class, 'deliveryNoteForm'])->name('manufacturing-orders.deliveries.mail.form');
         Route::post('manufacturing-orders/{order}/deliveries/{delivery}/mail', [\App\Http\Controllers\Document\DocumentMailController::class, 'deliveryNoteSend'])->name('manufacturing-orders.deliveries.mail');
         Route::post('manufacturing-orders/{order}/deliveries/{delivery}/shipment', [\App\Http\Controllers\Shipping\DeliveryShipmentController::class, 'store'])->name('manufacturing-orders.deliveries.shipment'); // 059/MVP-128 Rang 20 Versandauftrag
+        Route::get('manufacturing-orders/{order}/deliveries/{delivery}/shipment/label', [\App\Http\Controllers\Shipping\DeliveryShipmentController::class, 'label'])->name('manufacturing-orders.deliveries.shipment.label'); // MVP-1095
+        Route::post('manufacturing-orders/{order}/deliveries/{delivery}/shipment/track', [\App\Http\Controllers\Shipping\DeliveryShipmentController::class, 'track'])->name('manufacturing-orders.deliveries.shipment.track');
+        Route::post('manufacturing-orders/{order}/deliveries/{delivery}/shipment/cancel', [\App\Http\Controllers\Shipping\DeliveryShipmentController::class, 'cancel'])->name('manufacturing-orders.deliveries.shipment.cancel');
         // Packstücke mit Seriennummern (059, MVP-900).
         Route::get('manufacturing-orders/{order}/deliveries/{delivery}/parcels/create', [\App\Http\Controllers\Shipping\ShipmentParcelController::class, 'create'])->name('manufacturing-orders.deliveries.parcels.create');
         Route::post('manufacturing-orders/{order}/deliveries/{delivery}/parcels', [\App\Http\Controllers\Shipping\ShipmentParcelController::class, 'store'])->name('manufacturing-orders.deliveries.parcels.store');
@@ -3259,6 +3264,9 @@ Route::middleware('auth')->group(function () {
                 Route::get('/', [\App\Http\Controllers\Finance\RecurringAccountingController::class, 'index'])->name('index');
                 Route::get('neu', [\App\Http\Controllers\Finance\RecurringAccountingController::class, 'form'])->name('create');
                 Route::post('/', [\App\Http\Controllers\Finance\RecurringAccountingController::class, 'store'])->name('store');
+                // Belegerwartung mit dem Original erfüllen (MVP-1102).
+                Route::get('vorgaenge/{run}/erfuellen', [\App\Http\Controllers\Finance\RecurringAccountingController::class, 'fulfillForm'])->name('runs.fulfill-form');
+                Route::post('vorgaenge/{run}/erfuellen', [\App\Http\Controllers\Finance\RecurringAccountingController::class, 'fulfill'])->name('runs.fulfill');
                 Route::get('{template}/bearbeiten', [\App\Http\Controllers\Finance\RecurringAccountingController::class, 'form'])->name('edit');
                 Route::put('{template}', [\App\Http\Controllers\Finance\RecurringAccountingController::class, 'update'])->name('update');
                 Route::post('{template}/pausieren', [\App\Http\Controllers\Finance\RecurringAccountingController::class, 'pause'])->name('pause');
@@ -3335,6 +3343,7 @@ Route::middleware('auth')->group(function () {
                 Route::post('{entry}/festschreiben', [\App\Http\Controllers\Finance\JournalController::class, 'post'])->name('post');
                 Route::get('{entry}/storno', [\App\Http\Controllers\Finance\JournalController::class, 'reverseForm'])->name('reverse-form');
                 Route::post('{entry}/storno', [\App\Http\Controllers\Finance\JournalController::class, 'reverse'])->name('reverse');
+                Route::post('{entry}/verwerfen', [\App\Http\Controllers\Finance\JournalController::class, 'discard'])->name('discard');
             });
         });
         Route::patch('projects/{project}/tasks/{task}/complete', [TaskController::class, 'complete'])->name('projects.tasks.complete');

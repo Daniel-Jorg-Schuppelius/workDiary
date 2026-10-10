@@ -21,8 +21,8 @@ enum KeyHandoverDirection: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Out => __('Ausgabe'),
-            self::In => __('Rückgabe'),
+            self::Out => __('enums.key_handover.key_handover_direction.out'),
+            self::In => __('enums.key_handover.key_handover_direction.in'),
         };
     }
 }

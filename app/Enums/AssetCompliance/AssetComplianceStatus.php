@@ -31,12 +31,12 @@ enum AssetComplianceStatus: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Valid => (string) __('Gültig geprüft'),
-            self::DueSoon => (string) __('Prüfung bald fällig'),
-            self::Overdue => (string) __('Prüfung überfällig'),
-            self::Restricted => (string) __('Eingeschränkt freigegeben'),
-            self::Blocked => (string) __('Gesperrt'),
-            self::NotApplicable => (string) __('Keine Prüfpflicht'),
+            self::Valid => (string) __('enums.asset_compliance.asset_compliance_status.valid'),
+            self::DueSoon => (string) __('enums.asset_compliance.asset_compliance_status.due_soon'),
+            self::Overdue => (string) __('enums.asset_compliance.asset_compliance_status.overdue'),
+            self::Restricted => (string) __('enums.asset_compliance.asset_compliance_status.restricted'),
+            self::Blocked => (string) __('enums.asset_compliance.asset_compliance_status.blocked'),
+            self::NotApplicable => (string) __('enums.asset_compliance.asset_compliance_status.not_applicable'),
         };
     }
 

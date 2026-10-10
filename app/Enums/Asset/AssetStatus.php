@@ -27,15 +27,15 @@ enum AssetStatus: string implements HasLabel, HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::Active => (string) __('Aktiv'),
-            self::InMaintenance => (string) __('In Wartung'),
-            self::InRepair => (string) __('In Reparatur'),
-            self::Blocked => (string) __('Gesperrt'),
-            self::Reserved => (string) __('Reserviert'),
-            self::LoanOut => (string) __('Ausgeliehen'),
-            self::Replaced => (string) __('Ersetzt'),
-            self::Decommissioned => (string) __('Außer Betrieb'),
-            self::Lost => (string) __('Verloren'),
+            self::Active => (string) __('enums.asset.asset_status.active'),
+            self::InMaintenance => (string) __('enums.asset.asset_status.in_maintenance'),
+            self::InRepair => (string) __('enums.asset.asset_status.in_repair'),
+            self::Blocked => (string) __('enums.asset.asset_status.blocked'),
+            self::Reserved => (string) __('enums.asset.asset_status.reserved'),
+            self::LoanOut => (string) __('enums.asset.asset_status.loan_out'),
+            self::Replaced => (string) __('enums.asset.asset_status.replaced'),
+            self::Decommissioned => (string) __('enums.asset.asset_status.decommissioned'),
+            self::Lost => (string) __('enums.asset.asset_status.lost'),
         };
     }
 

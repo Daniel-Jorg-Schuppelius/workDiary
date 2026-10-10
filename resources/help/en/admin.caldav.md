@@ -1,7 +1,7 @@
 ---
 title: "CalDAV calendar"
 topic: admin.caldav
-version: 1
+version: 3
 keywords:
     - CalDAV
     - Nextcloud calendar
@@ -13,6 +13,7 @@ keywords:
     - two-way sync
     - app password
     - calendar path
+    - private addresses
 audience:
     - admin
 related:
@@ -30,7 +31,7 @@ The **CalDAV** page publishes appointments from WorkDiary to an external
 CalDAV calendar, for example in Nextcloud or ownCloud – without a Microsoft or
 Google account. If you wish, rosters and leave are added, and changes from the
 calendar can be brought back as proposals. WorkDiary remains the leading
-system: cancelled appointments disappear there, and repeated runs never create
+system: cancelled and deleted appointments disappear there, and repeated runs never create
 duplicates. You find the page in the system menu (the **System** gear in the
 header) under **Plugins** → **CalDAV** once the plugin is active.
 
@@ -42,8 +43,8 @@ header) under **Plugins** → **CalDAV** once the plugin is active.
 - The page is open to administrators.
 - You need a calendar on the CalDAV server, an account with write access to
   it and an app password (Nextcloud: Settings → Security → App password).
-- The server must be publicly reachable. WorkDiary rejects addresses on an
-  internal network.
+- The server must be publicly reachable. If it runs on your own network,
+  switch on **Allow private/internal addresses** (see below).
 - There is exactly one CalDAV connection per organization.
 
 ## Setting up the connection
@@ -61,6 +62,11 @@ In the **Connection** section you fill in:
   base URL, for example calendars/team/roster. If you paste a full address
   copied with “Copy link” in Nextcloud, WorkDiary shortens it itself as long as
   it starts with the base URL.
+- **Allow private/internal addresses**: switch it on only if the CalDAV
+  server runs on your own network (for example 192.168.x.x). Without this
+  switch WorkDiary rejects internal addresses as soon as you save. Switching
+  it on is audited. If the operator of your installation has blocked this
+  approval, the switch has no effect.
 - **Active**: switches the connection on or off.
 - **Two-way: import external changes as inbox proposals**: see below.
 - **Published content**: **Events** and/or **Rosters & leave**. Without a
@@ -72,8 +78,8 @@ its health (for example **Health ok**) and **Test connection**.
 ## What is published
 
 - **Events:** the events of your organization that start between 30 days in
-  the past and 180 days in the future. WorkDiary removes cancelled events
-  from the calendar.
+  the past and 180 days in the future. WorkDiary removes cancelled and
+  deleted events from the calendar.
 - **Rosters & leave:** published or confirmed shifts with times from two
   months in the past onwards, and approved leave that ended no more than a
   year ago. Draft shifts, shifts without times, cancelled shifts and leave
@@ -121,9 +127,9 @@ entries of the chosen period.
 **Disconnect** switches the connection off. Entries already published stay in
 the calendar. To switch it on again, set **Active** and save.
 
-WorkDiary also does not remove deleted events or entries that drop out of the
-time window from the calendar. If an appointment should disappear there,
-cancel it instead of deleting it.
+The next sync removes deleted events, shifts and leave from the calendar,
+just like cancelled ones. Entries that merely drop out of the time window stay
+there.
 
 ## Common errors
 
@@ -136,7 +142,11 @@ cancel it instead of deleting it.
 - **Health failing** with “CalDAV server unreachable or credentials
   invalid.”: check the address, calendar path, username and app password. A
   CalDAV error with RuntimeException often points to an address on an
-  internal network.
+  internal network without approval.
+- “The base URL points to a private/internal address.”: if the server runs on
+  your own network, switch on **Allow private/internal addresses**. If the
+  operator has blocked this approval, the server needs a publicly reachable
+  address.
 - “No active CalDAV connection.” on **Publish now**: the connection is off or
   incomplete.
 - Rosters are missing in the calendar: **Rosters & leave** is not ticked under

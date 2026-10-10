@@ -1,7 +1,7 @@
 ---
 title: "Importar la lista de llamadas de FRITZ!Box"
 topic: admin.fritzbox
-version: 1
+version: 2
 keywords:
     - FRITZ!Box
     - lista de llamadas
@@ -40,7 +40,7 @@ necesita credenciales del router.
 
 ## Requisitos previos
 
-- El plugin **FRITZ!Box-Anrufliste** está activado en **Plugins**. A
+- El plugin **Lista de llamadas de FRITZ!Box** está activado en **Plugins**. A
   continuación aparece la entrada **Importación FRITZ!Box** en el menú del
   sistema (icono de engranaje **Sistema**), dentro del grupo **Plugins**.
 - Los números de teléfono de sus clientes y clientes finales están guardados en
@@ -51,12 +51,12 @@ necesita credenciales del router.
 
 ## Ajustes del plugin
 
-En **Plugins**, abra el diálogo **Configurar** de **FRITZ!Box-Anrufliste**:
+En **Plugins**, abra el diálogo **Configurar** de **Lista de llamadas de FRITZ!Box**:
 
 - **Registrar las llamadas como facturables** (por defecto: activado): si se
   desactiva, las llamadas importadas nunca se marcan como facturables.
-- **Imputar tiempos para el ID de usuario**: el identificador (ID) del usuario
-  al que se imputan las llamadas. Si queda vacío, WorkDiary imputa al titular
+- **Imputar tiempos para el usuario**: el usuario al que se imputan las
+  llamadas; lo elige de la lista. Sin selección, WorkDiary imputa al titular
   de la organización o al primer usuario.
 - **Duración mínima (minutos)** (por defecto: 2): las llamadas más cortas se
   omiten.
@@ -162,7 +162,7 @@ Así fichan los empleados por teléfono:
    de llamadas. La sección **Fichaje telefónico** muestra después los números de
    fichaje activos.
 2. En la sección **Fichaje telefónico**, asigne a cada empleado su número:
-   elija en **Empleados**, introduzca el **Número de teléfono** (por ejemplo
+   elija en **Empleado**, introduzca el **Número de teléfono** (por ejemplo
    +49 151 2345678) y haga clic en **Asignar**. Sin prefijo de país se aplica
    Alemania. La tabla muestra todas las asignaciones; **Eliminar** quita una.
 3. El empleado llama al número de fichaje. No hace falta atender la llamada: el
@@ -185,8 +185,8 @@ telefónica.
   encabezado), use la exportación CSV de la lista de llamadas sin modificarla.
 - **«No hay ningún usuario al que registrar tiempos en la organización.»** o
   una comprobación de estado que indica que el usuario predeterminado
-  configurado ya no existe: revise **Imputar tiempos para el ID de usuario** o
-  vacíe el campo.
+  configurado ya no existe: revise **Imputar tiempos para el usuario** o
+  quite la selección.
 - **Faltan llamadas salientes:** si la lista procede de un firmware antiguo,
   active **Tratar el tipo 3 como saliente**.
 - **Casi todo filtrado:** revise **Solo números propios**; la escritura debe

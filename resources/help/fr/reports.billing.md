@@ -1,7 +1,7 @@
 ---
 title: "Facturation, frais, paiements et chiffre d’affaires"
 topic: reports.billing
-version: 1
+version: 3
 keywords:
     - créances ouvertes
     - balance âgée
@@ -46,8 +46,8 @@ des majorations** sous **Rapports** → **Équipe**.
   mois en cours.
 - **PDF** télécharge une version imprimable ; **CSV** et **Excel** se trouvent
   sous **Export** ; les formats disponibles sont indiqués pour chaque
-  rapport. Les exports reprennent les filtres définis. Les exports PDF et CSV
-  sont consignés dans le journal d’audit.
+  rapport. Les exports reprennent les filtres définis. Chaque export est
+  consigné dans le journal d’audit.
 
 ## Facturation
 
@@ -57,13 +57,15 @@ droit **Voir toutes les saisies de temps** ; sans ce droit, l’accès est
 refusé.
 
 - Tuiles :
-  - **Émis + payé (Σ brut)** : total brut des factures au statut **Émise** ou
-    **Payée** dont la date de facture se situe dans la période (sans date de
-    facture, la date de création compte).
-  - **Créances ouvertes** : total brut de toutes les factures au statut
-    **Émise**, indépendamment de la période. La tuile devient rouge dès que
-    l’une d’elles a plus de 30 jours de retard ; l’indication en donne le
-    nombre.
+  - **Émis + payé (Σ brut)** : total brut des factures au statut **Émise**,
+    **Partiellement payée** ou **Payée** dont la date de facture se situe dans
+    la période (sans date de facture, la date de création compte).
+  - **Créances ouvertes** : montant restant dû de toutes les factures au
+    statut **Émise** ou **Partiellement payée**, indépendamment de la
+    période. Les paiements reçus et les retenues de garantie ouvertes sont
+    déduits ; les factures pro forma, avoirs et documents d’annulation ne
+    comptent pas. La tuile devient rouge dès que l’une d’elles a plus de
+    30 jours de retard ; l’indication en donne le nombre.
   - **Temps non facturé** : saisies de temps facturables de la période qui
     n’ont encore été consommées par aucun circuit de facturation, avec le
     nombre de saisies et le revenu attendu d’après les montants enregistrés.
@@ -74,11 +76,12 @@ refusé.
 - **Factures par statut** : **Quantité**, **Net** et **Brut** par statut.
 - **Ancienneté – postes ouverts** : les factures ouvertes selon le nombre de
   jours après l’échéance (sans échéance, à partir de la date de facture) dans
-  les tranches **Actuel**, 1–7, 8–14, 15–30 et plus de 30 jours, avec **Total
-  ouvert**.
+  les tranches **Actuel**, 1–7, 8–14, 15–30 et plus de 30 jours, chacune avec
+  le montant restant dû, et **Total ouvert**.
 - **Top clients (émis + payés sur la période)** : **Client**, **Factures** et
   **Brut** ; si des montants proviennent du logiciel comptable, une colonne
-  supplémentaire **dont logiciel comptable** apparaît.
+  supplémentaire **dont logiciel comptable** apparaît. Les factures
+  partiellement payées sont incluses.
 - **Factures électroniques entrantes (sur la période)** : entrées par statut
   avec nombre et montant brut, ainsi que le nombre transmis à la
   comptabilité.
@@ -106,7 +109,7 @@ les montants bruts selon la date de la dépense.
 - Graphiques : frais par mois (ou semaine ou jour) par catégorie, les quatre
   plus grandes catégories séparément et le reste regroupé, ainsi que
   **Principaux émetteurs (top 15)**.
-- Tuiles : **Total (brut)**, **Employé**, **Catégories** et **mois**.
+- Tuiles : **Total (brut)**, **Employés**, **Catégories** et **mois**.
 - Tableau avec une ligne par **Employé** et **Catégorie**, une colonne par
   mois et le **Total**, suivi de **Principales catégories**.
 
@@ -135,7 +138,9 @@ réglé sur **Forfait** ou **Au temps passé** :
 
 Le tableau affiche **Employé**, **Modèle**, **Base de calcul** et **Montant**
 avec un total général. Des graphiques montrent les versements dans le temps
-et **Versements par externe (top 15)**. Tous les montants sont bruts, hors
+et **Versements par externe (top 15)**. Dans l’évolution, un forfait mensuel
+apparaît une fois par mois, dans la section contenant le premier jour de ce mois
+compris dans la période ; le total du graphique correspond ainsi au tableau. Tous les montants sont bruts, hors
 impôts et charges sociales. Filtre : **Employé**. La page ne propose pas
 d’export.
 

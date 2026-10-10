@@ -15,7 +15,7 @@ namespace App\Services\Privacy;
 use App\Enums\Privacy\ComplianceFindingStatus;
 use App\Models\Platform\Organization;
 use App\Models\Privacy\{ComplianceFinding, Dpia, JointControllerAgreement, MeasureAssignment, PrivacyAttachment, PrivacyRequirement, ProcessingActivity, ProcessingAgreement, Processor, TechnicalMeasure};
-use App\Support\MorphMap;
+use App\Support\{Locales, MorphMap};
 use Illuminate\Support\Carbon;
 
 /**
@@ -30,6 +30,8 @@ class ComplianceAnalysisService {
         $now = Carbon::now();
         $warnDays = (int) config('dataprotection.expiry_warning_days', 30);
         $orgId = $organization->id;
+        // Befundtexte werden gespeichert — in der Sprache der Organisation, nicht der des Laufs.
+        $locale = Locales::isSupported((string) $organization->locale) ? (string) $organization->locale : app()->getLocale();
 
         /** @var list<array<string, mixed>> $gaps */
         $gaps = [];
@@ -37,7 +39,7 @@ class ComplianceAnalysisService {
             if (! $requirement->active) {
                 continue;
             }
-            foreach ($this->detectGaps($requirement->check_type, (int) $orgId, $now, $warnDays) as $gap) {
+            foreach ($this->detectGaps($requirement->check_type, (int) $orgId, $now, $warnDays, $locale) as $gap) {
                 $gap['key'] = $requirement->requirement_key;
                 $gap['label'] = $requirement->label;
                 $gap['category'] = $requirement->category;
@@ -95,14 +97,14 @@ class ComplianceAnalysisService {
             ->orderBy('id')
             ->get();
 
-        /** @var array<string, array{label?: string, category?: ?string}> $defaults */
+        /** @var array<string, array{category?: ?string}> $defaults */
         $defaults = (array) config('dataprotection.compliance.requirements', []);
         $missing = array_diff_key($defaults, $existing->keyBy('requirement_key')->all());
         foreach ($missing as $key => $def) {
             $existing->push(PrivacyRequirement::query()->create([
                 'organization_id' => $organization->id,
                 'requirement_key' => $key,
-                'label' => (string) ($def['label'] ?? $key),
+                'label' => PrivacyRequirement::defaultLabel($organization, (string) $key),
                 'category' => $def['category'] ?? null,
                 'check_type' => $key,
                 'active' => true,
@@ -119,7 +121,7 @@ class ComplianceAnalysisService {
      *
      * @return list<array<string, mixed>>
      */
-    private function detectGaps(string $checkType, int $orgId, Carbon $now, int $warnDays): array {
+    private function detectGaps(string $checkType, int $orgId, Carbon $now, int $warnDays, string $locale): array {
         $gaps = [];
 
         switch ($checkType) {
@@ -127,7 +129,7 @@ class ComplianceAnalysisService {
                 foreach (Processor::query()->where('organization_id', $orgId)->where('role', 'processor')->get() as $p) {
                     if (! ProcessingAgreement::query()->where('processor_id', $p->id)->exists()) {
                         $gaps[] = ['status' => ComplianceFindingStatus::Missing, 'processor_id' => $p->id,
-                            'trigger' => "Auftragsverarbeiter „{$p->name}“ ohne AVV"];
+                            'trigger' => __('privacy.gap.avv_missing', ['name' => $p->name], $locale)];
                     }
                 }
                 break;
@@ -135,14 +137,14 @@ class ComplianceAnalysisService {
                 foreach (ProcessingAgreement::query()->where('organization_id', $orgId)
                     ->whereNotNull('valid_until')->whereDate('valid_until', '<=', $now->copy()->addDays($warnDays))->get() as $a) {
                     $gaps[] = ['status' => ComplianceFindingStatus::Expiring, 'agreement_id' => $a->id,
-                        'trigger' => "AVV „{$a->title}“ läuft ab oder ist abgelaufen"];
+                        'trigger' => __('privacy.gap.avv_expiring', ['name' => $a->title], $locale)];
                 }
                 break;
             case 'gvv_required': // Gemeinsam Verantwortliche ohne GVV
                 foreach (Processor::query()->where('organization_id', $orgId)->where('role', 'joint_controller')->get() as $p) {
                     if (! JointControllerAgreement::query()->where('partner_id', $p->id)->exists()) {
                         $gaps[] = ['status' => ComplianceFindingStatus::Missing, 'processor_id' => $p->id,
-                            'trigger' => "Gemeinsam Verantwortlicher „{$p->name}“ ohne GVV"];
+                            'trigger' => __('privacy.gap.gvv_missing', ['name' => $p->name], $locale)];
                     }
                 }
                 break;
@@ -151,7 +153,7 @@ class ComplianceAnalysisService {
                     $dpia = Dpia::query()->where('activity_id', $act->id)->first();
                     if ($dpia === null || $dpia->outcome->value === 'open') {
                         $gaps[] = ['status' => ComplianceFindingStatus::Missing, 'activity_id' => $act->id,
-                            'trigger' => "„{$act->name}“ mit DSFA-Bedarf ohne abgeschlossene DSFA"];
+                            'trigger' => __('privacy.gap.dpia_missing', ['name' => $act->name], $locale)];
                     }
                 }
                 break;
@@ -159,7 +161,7 @@ class ComplianceAnalysisService {
                 foreach (ProcessingActivity::query()->where('organization_id', $orgId)->get() as $act) {
                     if (! MeasureAssignment::query()->where('activity_id', $act->id)->exists()) {
                         $gaps[] = ['status' => ComplianceFindingStatus::Missing, 'activity_id' => $act->id,
-                            'trigger' => "„{$act->name}“ ohne zugeordnete TOM"];
+                            'trigger' => __('privacy.gap.tom_missing', ['name' => $act->name], $locale)];
                     }
                 }
                 break;
@@ -173,7 +175,7 @@ class ComplianceAnalysisService {
                 if ($expiring->isNotEmpty()) {
                     $names = $expiring->map(fn(PrivacyAttachment $a): string => $a->filename)->implode(', ');
                     $gaps[] = ['status' => ComplianceFindingStatus::Expiring,
-                        'trigger' => 'TOM-Nachweise laufen ab oder sind abgelaufen: ' . $names];
+                        'trigger' => __('privacy.gap.tom_proof_expiring', ['names' => $names], $locale)];
                 }
                 break;
         }

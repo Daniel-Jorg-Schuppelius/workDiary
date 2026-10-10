@@ -1,7 +1,7 @@
 ---
 title: "Intégration OpenProject"
 topic: admin.openproject
-version: 3
+version: 4
 keywords:
     - gestion de projet
     - lots de travaux
@@ -12,6 +12,8 @@ keywords:
     - synchronisation des temps
     - synchronisation des projets
     - correspondances
+    - OpenProject auto-hébergé
+    - autoriser les adresses privées
 audience:
     - admin
 related:
@@ -26,6 +28,13 @@ L'intégration OpenProject relie WorkDiary à OpenProject de manière
 peuvent être reportés vers OpenProject. Vous enregistrez les accès et
 les options dans les paramètres du plugin (notamment **URL de
 l'instance**, **Jeton API** et **Fenêtre de synchronisation (jours)**).
+
+WorkDiary refuse une instance OpenProject auto-hébergée sur votre propre
+réseau (par exemple 192.168.x.x) tant que vous n’activez pas **Autoriser les
+adresses privées** dans les paramètres du plugin. La modification est
+journalisée. Si l’exploitant de votre installation a bloqué cette
+autorisation, le commutateur reste sans effet ; l’instance doit alors avoir
+une adresse joignable publiquement.
 
 Synchroniser (page **Synchroniser OpenProject**) :
 

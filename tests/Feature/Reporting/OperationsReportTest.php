@@ -10,6 +10,11 @@
 
 namespace Tests\Feature\Reporting;
 
+use App\Enums\Diary\Status as DiaryStatus;
+use App\Enums\User\Permission;
+use App\Models\Classification\EntryType;
+use App\Models\Customer\Customer;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
@@ -45,6 +50,31 @@ class OperationsReportTest extends TestCase {
         $body = $response->getContent() ?: '';
         $this->assertStringContainsString('#report:operations', $body);
         $this->assertStringContainsString('Service-Aufträge', $body);
+    }
+
+    public function test_backlog_links_only_with_the_drilldown_permission(): void {
+        $serviceType = EntryType::query()->withoutGlobalScopes()
+            ->where('organization_id', $this->organization->id)
+            ->where('slug', EntryType::SLUG_SERVICE)
+            ->firstOrFail();
+        $customer = Customer::create(['organization_id' => $this->organization->id, 'name' => 'Acme GmbH']);
+        DiaryEntry::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->user->id,
+            'assigned_user_id' => $this->user->id,
+            'entry_type_id' => $serviceType->id,
+            'customer_id' => $customer->id,
+            'status' => DiaryStatus::Planned,
+            'scheduled_for' => '2030-04-10',
+        ]);
+
+        $series = $this->getWithRange('reports.operations')->assertOk()->viewData('backlogSeries');
+        $this->assertCount(1, $series);
+        $this->assertArrayNotHasKey('url', $series[0]);
+
+        $this->user->givePermissionTo(Permission::ReportView->value);
+        $series = $this->getWithRange('reports.operations')->assertOk()->viewData('backlogSeries');
+        $this->assertArrayHasKey('url', $series[0]);
     }
 
     private function getWithRange(string $routeName, array $parameters = []): TestResponse {

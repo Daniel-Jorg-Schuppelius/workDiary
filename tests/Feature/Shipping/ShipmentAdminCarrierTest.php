@@ -72,4 +72,31 @@ class ShipmentAdminCarrierTest extends TestCase {
 
         $this->assertSame(0, CarrierConnection::query()->where('carrier', 'dhl')->count());
     }
+
+    /** MVP-1095: Ändern nur im Bearbeiten-Modus; leere Felder behalten Abrechnungsnummer, Sandbox bleibt. */
+    public function test_existing_connection_changes_only_in_edit_mode(): void {
+        $this->post(route('admin.shipments.connections.store'), [
+            'carrier' => 'ups', 'name' => 'UPS Test', 'username' => 'id', 'password' => 'secret',
+            'billing_number' => 'A1B2C3', 'sandbox' => '1', 'active' => '1',
+        ])->assertSessionHas('success');
+        $connection = CarrierConnection::query()->where('carrier', 'ups')->sole();
+
+        $this->post(route('admin.shipments.connections.store'), ['carrier' => 'ups', 'name' => 'Überschrieben'])
+            ->assertSessionHas('error', __('shipping.flash.exists_use_edit'));
+        $this->assertSame('UPS Test', $connection->refresh()->name);
+
+        $this->get(route('admin.shipments.connections.index', ['edit' => $connection->sqid]))
+            ->assertOk()
+            ->assertSee(__('shipping.form_heading_edit', ['carrier' => 'UPS']))
+            ->assertSee('value="A1B2C3"', false);
+
+        $this->post(route('admin.shipments.connections.store'), [
+            'connection' => $connection->sqid, 'carrier' => 'ups', 'name' => 'UPS Neu', 'sandbox' => '1', 'active' => '1',
+        ])->assertSessionHas('success');
+        $connection->refresh();
+        $this->assertSame('UPS Neu', $connection->name);
+        $this->assertSame('A1B2C3', $connection->billing_number);
+        $this->assertTrue((bool) $connection->sandbox);
+        $this->assertSame('secret', $connection->credential('password'));
+    }
 }

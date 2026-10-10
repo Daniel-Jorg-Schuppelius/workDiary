@@ -8,12 +8,12 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Auftragstyp Drilldown - Defektprotokolle')
-@section('pdf-heading', 'Auftragstyp Drilldown: Defektprotokolle')
+@section('pdf-title', __('Drilldown: Defektprotokolle (Auftragstyp)'))
+@section('pdf-heading', __('Drilldown: Defektprotokolle (Auftragstyp)'))
 
 @section('pdf-meta')
-    Auftragstyp: {{ $entryTypeLabel }}<br>
-    Zeitraum: {{ $label }}
+    {{ __('Auftragstyp') }}: {{ $entryTypeLabel }}<br>
+    {{ __('Zeitraum') }}: {{ $label }}
 @endsection
 
 @section('pdf-table')

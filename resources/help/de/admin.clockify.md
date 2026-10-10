@@ -1,7 +1,7 @@
 ---
 title: "Clockify-Import"
 topic: admin.clockify
-version: 1
+version: 3
 keywords:
     - Clockify
     - Zeiten importieren
@@ -13,6 +13,7 @@ keywords:
     - Fernwartung nach Clockify
     - Benutzerzuordnung
     - Korrekturen zurückschreiben
+    - stündlicher Import
 audience:
     - admin
 related:
@@ -58,15 +59,15 @@ Die Zugangsdaten hinterlegen Sie auf der Seite **Plugins** über
 3. **API-Basis-URL** und **Reports-API-Basis-URL**: nur ändern, wenn Ihr Konto
    auf einer regionalen Clockify-Instanz liegt; der Hilfetext im Dialog nennt
    ein Beispiel.
-4. **Sync-Zeitfenster (Tage)**: wie weit ein API-Import ohne Zeitraum
-   zurückblickt und wie weit die stündliche Übertragung reicht (Standard 30
-   Tage).
+4. **Sync-Zeitfenster (Tage)**: wie weit ein API-Import ohne Zeitraum –
+   auch der stündliche – zurückblickt und wie weit die stündliche Übertragung
+   reicht (Standard 30 Tage).
 5. **Abrechenbar übernehmen**: an übernimmt das Abrechenbar-Kennzeichen aus
    Clockify; aus markiert importierte Zeiten nie als abrechenbar.
-6. **Einbenutzer-Modus** und **Zeiten buchen für Benutzer-ID**: nur für
-   Einzelarbeitsplätze, siehe unten.
-7. Optional **Zeit-Übertragung aktivieren** und **Korrekturen
-   zurückschreiben**.
+6. **Einbenutzer-Modus** und **Zeiten buchen für Benutzer**: nur für
+   Einzelarbeitsplätze, siehe unten. Den Benutzer wählen Sie aus der Liste.
+7. Optional **Zeit-Übertragung aktivieren**, **Korrekturen
+   zurückschreiben** und **Webhook-Secret** (siehe „Webhook“).
 8. **Speichern**. Mit **Verbindung testen** im Dialog prüfen Sie den Zugang.
    Ohne API-Key meldet das Plugin den CSV-Modus – das ist kein Fehler.
 
@@ -87,10 +88,17 @@ WorkDiary holt die Zeiteinträge aller Benutzer des Workspace; ohne Zeitraum
 die letzten Tage gemäß Sync-Zeitfenster. Laufende Einträge ohne Ende
 überspringt der Import.
 
-Einen zeitgesteuerten Clockify-Import gibt es nicht: Jeder Import startet auf
-dieser Seite. Danach meldet die Seite, wie viele Einträge angelegt,
-übersprungen und offen in der Inbox sind, und wie viele keinem Benutzer
-zugeordnet werden konnten.
+**Stündlicher Import:** Ist ein API-Key hinterlegt, läuft der API-Import
+zusätzlich jede Stunde von selbst – über das Sync-Zeitfenster und mit
+Löschabgleich (siehe unten). Den Takt ändern Sie unter **Geplante Aufgaben**
+beim Eintrag „Clockify-Import“. Jeder Lauf verbraucht Anfragen aus dem
+Kontingent Ihres Clockify-Tarifs. Ohne API-Key gibt es keinen automatischen
+Import; CSV-Dateien laden Sie immer hier hoch.
+
+Meldet die Clockify-API einen Fehler, zeigt die Seite ihn an; es wird dann
+nichts importiert. Nach einem Import auf dieser Seite meldet sie, wie viele
+Einträge angelegt, übersprungen und offen in der Inbox sind, und wie viele
+keinem Benutzer zugeordnet werden konnten.
 
 ## Kunden, Projekte und Personen zuordnen
 
@@ -113,7 +121,7 @@ zugeordnet werden konnten.
   Benutzer; die Wahl wird gemerkt.
 - **Einbenutzer-Modus:** Nur wenn er eingeschaltet ist, bucht der Import
   Einträge ohne zuordenbare Person auf den Standard-Benutzer. Das ist der
-  Benutzer aus **Zeiten buchen für Benutzer-ID**, sonst der Inhaber der
+  Benutzer aus **Zeiten buchen für Benutzer**, sonst der Inhaber der
   Organisation bzw. der erste Benutzer.
 
 ## Erneuter Import und Änderungen
@@ -163,6 +171,22 @@ Abrechenbar) und deren Löschung nach Clockify. Vorher vergleicht WorkDiary den
 aktuellen Stand in Clockify: Wurde der Eintrag dort inzwischen geändert,
 überschreibt WorkDiary nichts, sondern legt einen Konflikt in der Inbox an.
 Abgerechnete und per CSV importierte Zeiten werden nie zurückgeschrieben.
+
+## Webhook
+
+Mit einem kostenpflichtigen Clockify-Tarif kann Clockify WorkDiary über neue
+und geänderte Einträge benachrichtigen; der Import startet dann von selbst:
+
+1. Die Seite **Clockify-Import** nennt im Abschnitt **Webhook (optional)** die
+   Adresse, die Clockify aufrufen soll.
+2. Legen Sie in Clockify unter Workspace-Einstellungen → Webhooks einen
+   Webhook auf diese Adresse an.
+3. Tragen Sie dessen Signatur-Token in den Plugin-Einstellungen unter
+   **Webhook-Secret** ein und hinterlegen Sie dort auch die **Workspace-ID**.
+
+Viele Ereignisse kurz hintereinander lösen nur einen Import aus. Ohne
+Webhook-Secret bleibt der Webhook aus. Der stündliche Abruf bleibt die
+verlässliche Quelle: Was ein ausgefallener Webhook verpasst, holt er nach.
 
 ## Typische Fehler
 

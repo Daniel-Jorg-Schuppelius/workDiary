@@ -1,7 +1,7 @@
 ---
 title: "Accès & sécurité"
 topic: customer-portal.access
-version: 3
+version: 5
 keywords:
     - connexion
     - se connecter
@@ -15,6 +15,8 @@ keywords:
     - changer d'adresse e-mail
     - rester connecté
     - profil
+    - mot de passe oublié
+    - réinitialiser le mot de passe
 audience: []
 related:
     - customer-portal.overview
@@ -34,6 +36,8 @@ Le mot de passe doit comporter au moins 12 caractères, avec majuscules et minus
 
 Si le lien a expiré, la page ne s'ouvre plus. Demandez alors à votre prestataire de vous renvoyer l'invitation.
 
+Si votre prestataire a réinitialisé votre accès, votre mot de passe précédent n'est plus valable et toutes les sessions de votre accès sont fermées. Vous recevez alors une nouvelle invitation avec l'objet « Votre accès au portail client de … » et définissez à nouveau votre mot de passe comme décrit ci-dessus. Un second facteur déjà configuré est conservé.
+
 ## Se connecter
 
 Sur la page **Se connecter**, saisissez votre **E-mail** et votre **Mot de passe**, puis cliquez sur **Se connecter**. Avec **Rester connecté**, vous n'avez pas à vous reconnecter à chaque visite sur cet appareil – n'utilisez cette option que sur votre propre appareil.
@@ -41,7 +45,18 @@ Sur la page **Se connecter**, saisissez votre **E-mail** et votre **Mot de passe
 - Si l'e-mail ou le mot de passe est erroné, le message **Ces identifiants ne correspondent pas à nos enregistrements.** s'affiche. Pour des raisons de sécurité, le portail n'indique pas quelle donnée était fausse.
 - Le nombre de tentatives de connexion est limité ; après trop d'échecs, vous devez patienter un moment.
 - Si votre prestataire a désactivé votre accès, la connexion n'est plus possible.
-- Le portail ne propose aucune fonction pour modifier ou réinitialiser le mot de passe. Si vous avez oublié votre mot de passe, adressez-vous à votre prestataire.
+- Si vous avez oublié votre mot de passe, réinitialisez-le vous-même via **Mot de passe oublié ?** sous le formulaire de connexion.
+
+### Mot de passe oublié
+
+1. Sur la page **Se connecter**, cliquez sur **Mot de passe oublié ?**.
+2. Saisissez votre e-mail de connexion dans **E-mail** et cliquez sur **Envoyer le lien**.
+3. Dans les 60 minutes, ouvrez le lien de l'e-mail dont l'objet est « Réinitialiser votre mot de passe du portail client de … » (bouton **Définir le mot de passe**).
+4. Saisissez un mot de passe dans **Nouveau mot de passe**, répétez-le dans **Répéter le mot de passe** et cliquez sur **Enregistrer le mot de passe**.
+
+Après l'envoi, le portail affiche toujours **Si un compte avec cet e-mail existe, un lien de réinitialisation a été envoyé.** – même s'il ne connaît pas l'adresse. Ainsi, personne ne peut savoir quelles adresses disposent d'un accès. Seuls les accès actifs reçoivent un e-mail : si votre invitation est encore en attente ou si votre accès a été désactivé, adressez-vous à votre prestataire. Le lien ne sert qu'une fois ; votre mot de passe actuel reste valable jusqu'à ce que vous enregistriez le nouveau. Si vous n'êtes pas à l'origine de la demande, ignorez simplement l'e-mail.
+
+Le nouveau mot de passe obéit aux mêmes règles que lors de l'activation de l'accès. Après l'enregistrement, la page de connexion affiche **Mot de passe modifié. Veuillez vous connecter.** Toutes les sessions ouvertes de votre accès, y compris sur d'autres appareils, sont alors fermées. Un second facteur déjà configuré est conservé et demandé comme d'habitude lors de la prochaine connexion. Plusieurs demandes rapprochées sont limitées ; patientez alors un moment.
 
 ### Second facteur à la connexion
 
@@ -90,6 +105,8 @@ Cliquez sur **Ajouter une passkey** et suivez les instructions de votre navigate
 ### Codes de récupération
 
 Lors de la configuration de la première méthode, le portail affiche une seule fois vos **Codes de récupération**. Chaque code fonctionne exactement une fois et remplace le second facteur à la connexion. Conservez ces codes en lieu sûr ; le portail ne les affiche plus. Si l'application d'authentification est configurée, vous pouvez générer un nouveau jeu : sous **Régénérer les codes de récupération**, saisissez dans le champ **Code d'application actuel** le code de l'application et cliquez sur **Générer**. Les anciens codes ne sont alors plus valables.
+
+Si vous avez perdu toutes vos méthodes et vos codes de récupération, adressez-vous à votre prestataire. Il peut réinitialiser votre second facteur ; vous recevez alors un e-mail intitulé « Votre second facteur a été réinitialisé » et vous vous connectez ensuite uniquement avec votre mot de passe. Si l’authentification à deux facteurs est obligatoire, vous configurez alors une nouvelle méthode.
 
 ## Supprimer des facteurs ou tout désactiver
 

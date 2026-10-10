@@ -12,15 +12,17 @@ declare(strict_types=1);
 
 namespace App\Services\Accounting;
 
-use App\Enums\Finance\AccountingEntryStatus;
-use App\Models\Accounting\{AccountingEntry, AccountingEntryLine, AccountingPeriod, AccountingProfile};
+use App\Enums\Finance\{AccountingEntryStatus, DirectBookingKind};
+use App\Models\Accounting\{AccountingEntry, AccountingEntryLine, AccountingPeriod, AccountingProfile, AccountingTransfer};
 use App\Models\Finance\CostCenter;
 use App\Models\Platform\{Organization, User};
+use App\Services\Accounting\Filing\VatSpecialPrepaymentService;
 use App\Services\Accounting\Posting\PostingInboxService;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\StringHelper;
 use CommonToolkit\ValueObjects\Money;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -29,7 +31,7 @@ use Illuminate\Validation\ValidationException;
  *     document_on?: CarbonImmutable|null, document_reference?: string|null,
  *     source_type?: string|null, source_id?: int|null, source_key?: string|null,
  *     rule_version?: string|null, snapshot?: array<string, mixed>|null,
- *     lines: array<int, array<string, mixed>>}
+ *     reverses_entry_id?: int|null, lines: array<int, array<string, mixed>>}
  *
  * Buchungsjournal (Feature 125, MVP-672) — EINZIGE Schreibstelle für
  * Buchungen und Buchungszeilen (Muster {@see \App\Services\Finance\CashBookService}).
@@ -90,6 +92,7 @@ class JournalService {
                 // je Zeile liegt im Snapshot, deshalb ist Kürzen hier unkritisch.
                 'rule_version' => ($data['rule_version'] ?? null) !== null ? mb_substr((string) $data['rule_version'], 0, 191) : null,
                 'snapshot' => $data['snapshot'] ?? null,
+                'reverses_entry_id' => $data['reverses_entry_id'] ?? null,
                 'created_by' => $actor->id,
             ]);
 
@@ -129,27 +132,18 @@ class JournalService {
      * @throws ValidationException wenn ein Guard greift
      */
     public function post(AccountingEntry $entry, User $actor): AccountingEntry {
+        return $this->postEntry($entry, $actor, checkFourEyes: true);
+    }
+
+    /** Ohne Vier-Augen-Prüfung nur für das automatische Storno (siehe reverse()). */
+    private function postEntry(AccountingEntry $entry, User $actor, bool $checkFourEyes): AccountingEntry {
         $this->assertMutable($entry);
-        $this->assertFourEyes($entry, $actor);
-
-        $organization = $this->organizationOf($entry);
-        $bookedOn = CarbonImmutable::parse($entry->booked_on)->startOfDay();
-
-        // 1. Buchungshoheit am Buchungsdatum — nicht "heute".
-        $this->sovereignty->assertLocalPostingAllowed($organization, $bookedOn);
-
-        // 2. Periode offen? (Die Periode kann sich seit dem Entwurf geändert haben.)
-        $period = $this->periodOrFail($organization, $bookedOn);
-        if (! $period->status->acceptsPostings()) {
-            throw ValidationException::withMessages([
-                'booked_on' => (string) __('accounting.ledger.error.period_closed', [
-                    'period' => $period->starts_on->format(\App\Support\Formats::date()),
-                ]),
-            ]);
+        if ($checkFourEyes) {
+            $this->assertFourEyes($entry, $actor);
         }
 
-        $entry->load('lines.account');
-        $this->assertPostable($entry, $organization);
+        $organization = $this->organizationOf($entry);
+        $period = $this->assertPostingPossible($entry, $organization);
 
         return DB::transaction(function () use ($entry, $actor, $organization, $period): AccountingEntry {
             // **Erneut lesen, gesperrt** (Sicherheitsscan 2026-08-23, S-31).
@@ -182,6 +176,14 @@ class JournalService {
             // Transaktion, sonst gäbe es einen Moment mit Buchung ohne OPOS.
             $this->openItems->applyEntry($entry);
 
+            if ($entry->reverses_entry_id !== null) {
+                $this->completeReversal($entry, $organization, $actor);
+            }
+
+            // Beim Aufruf aufgelöst: die Dienste hängen selbst an diesem hier.
+            app(RecurringAccountingService::class)->completeFromEntry($entry);
+            app(VatSpecialPrepaymentService::class)->completeFromEntry($entry);
+
             return $entry->refresh();
         });
     }
@@ -202,10 +204,65 @@ class JournalService {
     }
 
     /**
+     * Buchung eines Fachvorgangs (Skonto, Ausbuchung, Klärung, Umbuchung,
+     * Startsalden, Sondervorauszahlung — Phase 137, E9).
+     *
+     * Ohne Vier-Augen-Prinzip wie {@see self::postDirect()}. Mit ihm entsteht
+     * ein geprüfter Entwurf in der Buchungs-Inbox, den eine zweite Person
+     * festschreibt; die fachliche Folge hängt am Snapshot und greift erst in
+     * {@see self::post()}. Das Journal („anlegen und festschreiben") bleibt bei
+     * postDirect() und damit gesperrt (S-30).
+     *
+     * Die Festschreibungsprüfungen laufen schon hier, damit kein Entwurf
+     * entsteht, den niemand festschreiben kann.
+     *
+     * @param  EntryDraftData  $data
+     */
+    public function postDirectOrSubmit(Organization $organization, array $data, User $actor, DirectBookingKind $kind): AccountingEntry {
+        $data['snapshot'] = [...($data['snapshot'] ?? []), DirectBookingKind::SNAPSHOT_KEY => $kind->value];
+
+        if (! $this->fourEyesActive()) {
+            return $this->postDirect($organization, $data, $actor);
+        }
+
+        return DB::transaction(function () use ($organization, $data, $actor): AccountingEntry {
+            $entry = $this->draft($organization, $data, $actor);
+            if (! $entry->status->isMutable()) {
+                return $entry;
+            }
+
+            $this->assertPostingPossible($entry, $organization);
+
+            return $entry->status === AccountingEntryStatus::Ready ? $entry : $this->markReady($entry);
+        });
+    }
+
+    /**
+     * Entwürfe aus Fachvorgängen, die auf die Freigabe warten (E9).
+     *
+     * @return Collection<int, AccountingEntry>
+     */
+    public function pendingDirectBookings(Organization $organization): Collection {
+        return AccountingEntry::query()
+            ->where('organization_id', $organization->id)
+            ->whereIn('status', [AccountingEntryStatus::Draft->value, AccountingEntryStatus::Ready->value])
+            ->whereNotNull('snapshot->' . DirectBookingKind::SNAPSHOT_KEY)
+            ->with('lines')
+            ->orderBy('booked_on')
+            ->orderBy('id')
+            ->get();
+    }
+
+    /**
      * Storno als echte Gegenbuchung: Soll und Haben getauscht, Bezug in beide
      * Richtungen, Pflichtbegründung. Das Original bleibt inhaltlich stehen.
+     *
+     * Bei aktivem Vier-Augen-Prinzip wartet die Gegenbuchung als Entwurf auf
+     * die Freigabe (E23); Original und offene Posten ändern sich erst in
+     * post(). `$automatic` bucht immer sofort — nur für das Aufheben einer
+     * Zahlungszuordnung ({@see \App\Observers\PaymentAllocationAccountingObserver}).
      */
-    public function reverse(AccountingEntry $entry, string $reason, User $actor, ?CarbonImmutable $bookedOn = null): AccountingEntry {
+    public function reverse(AccountingEntry $entry, string $reason, User $actor, ?CarbonImmutable $bookedOn = null, bool $automatic = false): AccountingEntry {
         if ($entry->status !== AccountingEntryStatus::Posted) {
             throw ValidationException::withMessages([
                 'status' => (string) __('accounting.ledger.error.reverse_not_posted'),
@@ -223,11 +280,23 @@ class JournalService {
         $bookedOn ??= $this->reversalDate($organization, $entry);
         $entry->load('lines');
 
-        return DB::transaction(function () use ($entry, $reason, $actor, $organization, $bookedOn): AccountingEntry {
+        return DB::transaction(function () use ($entry, $reason, $actor, $organization, $bookedOn, $automatic): AccountingEntry {
             // Zwei gleichzeitige Stornos erzeugten zwei Gegenbuchungen — das
             // Konto war um den Betrag doppelt entlastet, und
             // `reversed_by_entry_id` zeigte nur auf eine davon (S-31).
-            $this->lockAndAssertPosted($entry);
+            $this->lockPostedOrFail((int) $entry->id);
+
+            $pending = $this->pendingReversalOf($entry);
+            if ($pending instanceof AccountingEntry) {
+                if (! $automatic) {
+                    throw ValidationException::withMessages([
+                        'status' => (string) __('accounting.ledger.error.reversal_pending'),
+                    ]);
+                }
+
+                // Die Zuordnung ist weg — das automatische Storno überholt den wartenden von Hand.
+                $this->discard($pending, $actor);
+            }
 
             $lines = $entry->lines->map(fn (AccountingEntryLine $line): array => [
                 // Gespiegelt: aus Soll wird Haben.
@@ -251,32 +320,109 @@ class JournalService {
                 'memo' => (string) __('accounting.ledger.reversal_memo', ['no' => (string) $entry->journal_no]),
                 'document_reference' => $entry->document_reference,
                 'source_key' => $entry->source_key !== null ? 'reversal:' . $entry->id : null,
-                'snapshot' => ['reverses' => $entry->journal_no, 'reason' => $reason],
+                'snapshot' => [
+                    'reverses' => $entry->journal_no,
+                    'reason' => $reason,
+                    DirectBookingKind::SNAPSHOT_KEY => DirectBookingKind::Reversal->value,
+                ],
+                'reverses_entry_id' => (int) $entry->id,
                 'lines' => $lines,
             ], $actor);
 
-            $reversal->forceFill(['reverses_entry_id' => $entry->id])->save();
-            $reversal = $this->post($reversal, $actor);
+            if (! $automatic && $this->fourEyesActive()) {
+                $this->assertPostingPossible($reversal, $organization);
 
-            // Einzige erlaubte Änderung an einer Festbuchung (Guard im Modell).
-            $entry->forceFill([
-                'status' => AccountingEntryStatus::Reversed,
-                'reversed_by_entry_id' => $reversal->id,
-                'reversal_reason' => $reason,
-            ])->save();
+                return $this->markReady($reversal);
+            }
 
-            $this->events->record($organization, 'accounting.entry_reversed', [
-                'journal_no' => $entry->journal_no,
-                'reversal_journal_no' => $reversal->journal_no,
-                'reason' => $reason,
+            $reversal = $this->postEntry($reversal, $actor, checkFourEyes: ! $automatic);
+            $entry->refresh();
+
+            return $reversal;
+        });
+    }
+
+    /** Wartender Storno-Entwurf einer Buchung (E23) — je Buchung höchstens einer. */
+    public function pendingReversalOf(AccountingEntry $entry): ?AccountingEntry {
+        return AccountingEntry::query()
+            ->where('organization_id', $entry->organization_id)
+            ->where('reverses_entry_id', $entry->id)
+            ->whereIn('status', [AccountingEntryStatus::Draft->value, AccountingEntryStatus::Ready->value])
+            ->first();
+    }
+
+    /**
+     * Wartende Direktbuchung verwerfen (E24). Der Entwurf wird gelöscht, der
+     * Vorgang lässt sich danach neu anstoßen: Posten, Bankumsatz,
+     * Sondervorauszahlung, Startsalden und Original eines Stornos lesen ihren
+     * Stand aus der Buchung und stehen wieder offen. Ein Inbox-Vorschlag hat
+     * seine Quelle und bleibt; Festbuchungen sind unantastbar.
+     *
+     * @throws ValidationException
+     */
+    public function discard(AccountingEntry $entry, User $actor): void {
+        $kind = DirectBookingKind::of($entry);
+        if (! $kind instanceof DirectBookingKind || ! $entry->status->isMutable()) {
+            throw ValidationException::withMessages([
+                'status' => (string) __('accounting.ledger.error.discard_not_allowed'),
+            ]);
+        }
+
+        $organization = $this->organizationOf($entry);
+
+        DB::transaction(function () use ($entry, $actor, $organization, $kind): void {
+            // Gesperrt: Eine gleichzeitige Freigabe gewinnt oder scheitert hier, nie beides.
+            $this->lockAndAssertMutable($entry);
+            $entry->load('lines');
+
+            $this->events->record($organization, 'accounting.entry_discarded', [
+                'kind' => $kind->value,
+                'memo' => $entry->memo,
+                'booked_on' => $entry->booked_on->toDateString(),
+                'debit' => $entry->debitTotal()->getAmount(),
+                'source_key' => $entry->source_key,
+                'created_by' => $entry->created_by,
             ], $entry, $actor);
 
-            // Der Storno nimmt auch die OPOS-Wirkung zurück: erzeugte Posten
-            // werden ausgebucht, geleistete Ausgleiche gegengebucht.
-            $this->openItems->reverseEntry($entry, $reversal);
+            // Ohne ihre Buchung ist die Umbuchung kein Vorgang mehr; die
+            // Kopplung ihrer Belege fällt mit ihr.
+            AccountingTransfer::query()
+                ->where('organization_id', $organization->id)
+                ->where('accounting_entry_id', $entry->id)
+                ->get()
+                ->each(fn (AccountingTransfer $transfer): ?bool => $transfer->delete());
 
-            return $reversal->refresh();
+            // Zeilen folgen per Fremdschlüssel (cascade).
+            $entry->delete();
         });
+    }
+
+    /**
+     * Folge eines festgeschriebenen Stornos: Original auf „storniert“,
+     * Nachweis, offene Posten zurück. Sitzt in post(), damit sie bei
+     * Vier-Augen erst mit der Freigabe greift (E23).
+     */
+    private function completeReversal(AccountingEntry $reversal, Organization $organization, User $actor): void {
+        $original = $this->lockPostedOrFail((int) $reversal->reverses_entry_id);
+        $snapshot = is_array($reversal->snapshot) ? $reversal->snapshot : [];
+        $reason = (string) ($snapshot['reason'] ?? '');
+
+        // Einzige erlaubte Änderung an einer Festbuchung (Guard im Modell).
+        $original->forceFill([
+            'status' => AccountingEntryStatus::Reversed,
+            'reversed_by_entry_id' => $reversal->id,
+            'reversal_reason' => $reason,
+        ])->save();
+
+        $this->events->record($organization, 'accounting.entry_reversed', [
+            'journal_no' => $original->journal_no,
+            'reversal_journal_no' => $reversal->journal_no,
+            'reason' => $reason,
+        ], $original, $actor);
+
+        // Der Storno nimmt auch die OPOS-Wirkung zurück: erzeugte Posten
+        // werden ausgebucht, geleistete Ausgleiche gegengebucht.
+        $this->openItems->reverseEntry($original, $reversal);
     }
 
     /**
@@ -294,12 +440,12 @@ class JournalService {
             ]);
         }
 
-        return $this->postDirect($organization, [
+        return $this->postDirectOrSubmit($organization, [
             'booked_on' => CarbonImmutable::parse($profile->starts_on),
             'memo' => (string) __('accounting.ledger.opening_memo'),
             'source_key' => 'opening_balance',
             'lines' => $lines,
-        ], $actor);
+        ], $actor, DirectBookingKind::OpeningBalance);
     }
 
     /** Aktive (nicht stornierte) Buchung zu einem Idempotenzschlüssel. */
@@ -462,25 +608,26 @@ class JournalService {
         }
     }
 
-    /** Wie {@see lockAndAssertMutable()}, aber für den Storno: muss festgeschrieben sein. */
-    private function lockAndAssertPosted(AccountingEntry $entry): void {
+    /**
+     * Wie {@see lockAndAssertMutable()}, aber für den Storno: festgeschrieben
+     * und noch nicht storniert. Liefert die gesperrte, frische Buchung.
+     */
+    private function lockPostedOrFail(int $entryId): AccountingEntry {
         $fresh = AccountingEntry::query()
             ->withoutGlobalScopes()
-            ->whereKey($entry->getKey())
+            ->whereKey($entryId)
             ->lockForUpdate()
             ->first();
 
-        if (! $fresh instanceof AccountingEntry || $fresh->status !== AccountingEntryStatus::Posted) {
+        if (! $fresh instanceof AccountingEntry
+            || $fresh->status !== AccountingEntryStatus::Posted
+            || $fresh->reversed_by_entry_id !== null) {
             throw ValidationException::withMessages([
                 'status' => (string) __('accounting.ledger.error.reverse_not_posted'),
             ]);
         }
 
-        if ($fresh->reversed_by_entry_id !== null) {
-            throw ValidationException::withMessages([
-                'status' => (string) __('accounting.ledger.error.reverse_not_posted'),
-            ]);
-        }
+        return $fresh;
     }
 
     /**
@@ -496,17 +643,24 @@ class JournalService {
      * Festschreibung läuft — hier gehört sie hin.
      */
     private function assertFourEyes(AccountingEntry $entry, User $actor): void {
-        // Direkt über die Einstellung, nicht über den Inbox-Dienst: der
-        // hängt selbst von diesem hier ab.
-        if (! (bool) \App\Support\Setting::get(PostingInboxService::FOUR_EYES_KEY, false)) {
-            return;
-        }
-
-        if ($entry->created_by !== null && (int) $entry->created_by === (int) $actor->id) {
+        if ($this->awaitsSecondPerson($entry, $actor)) {
             throw ValidationException::withMessages([
                 'four_eyes' => (string) __('accounting.inbox.error.four_eyes'),
             ]);
         }
+    }
+
+    /** Vier-Augen: Wer die Buchung vorbereitet hat, schreibt sie nicht fest. */
+    public function awaitsSecondPerson(AccountingEntry $entry, User $actor): bool {
+        return $this->fourEyesActive()
+            && $entry->created_by !== null
+            && (int) $entry->created_by === (int) $actor->id;
+    }
+
+    // Direkt über die Einstellung, nicht über den Inbox-Dienst: der hängt
+    // selbst von diesem hier ab.
+    private function fourEyesActive(): bool {
+        return (bool) \App\Support\Setting::get(PostingInboxService::FOUR_EYES_KEY, false);
     }
 
     private function assertMutable(AccountingEntry $entry): void {
@@ -515,6 +669,33 @@ class JournalService {
                 'status' => (string) __('accounting.ledger.error.entry_frozen'),
             ]);
         }
+    }
+
+    /**
+     * Prüfungen 1–5 der Festschreibung (siehe Klassenkommentar).
+     *
+     * @throws ValidationException wenn ein Guard greift
+     */
+    private function assertPostingPossible(AccountingEntry $entry, Organization $organization): AccountingPeriod {
+        $bookedOn = CarbonImmutable::parse($entry->booked_on)->startOfDay();
+
+        // 1. Buchungshoheit am Buchungsdatum — nicht "heute".
+        $this->sovereignty->assertLocalPostingAllowed($organization, $bookedOn);
+
+        // 2. Periode offen? (Die Periode kann sich seit dem Entwurf geändert haben.)
+        $period = $this->periodOrFail($organization, $bookedOn);
+        if (! $period->status->acceptsPostings()) {
+            throw ValidationException::withMessages([
+                'booked_on' => (string) __('accounting.ledger.error.period_closed', [
+                    'period' => $period->starts_on->format(\App\Support\Formats::date()),
+                ]),
+            ]);
+        }
+
+        $entry->load('lines.account');
+        $this->assertPostable($entry, $organization);
+
+        return $period;
     }
 
     /** Fachliche Prüfungen vor der Festschreibung. */

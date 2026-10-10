@@ -1,7 +1,7 @@
 ---
 title: "Import Clockify"
 topic: admin.clockify
-version: 1
+version: 3
 keywords:
     - Clockify
     - importare tempi
@@ -13,6 +13,7 @@ keywords:
     - assistenza remota in Clockify
     - associazione utenti
     - riscrivere le correzioni
+    - import orario
 audience:
     - admin
 related:
@@ -59,15 +60,15 @@ sulla voce Clockify:
    il Suo account si trova su un’istanza regionale di Clockify; il testo di
    aiuto nella finestra di dialogo riporta un esempio.
 4. **Finestra di sincronizzazione (giorni)**: quanto indietro guarda un
-   import API senza periodo e fin dove arriva il trasferimento orario
-   (predefinito 30 giorni).
+   import API senza periodo – anche quello orario – e fin dove arriva il
+   trasferimento orario (predefinito 30 giorni).
 5. **Acquisisci stato fatturabile**: attivo riprende il contrassegno
    fatturabile da Clockify; disattivato non contrassegna mai come fatturabili
    i tempi importati.
-6. **Modalità utente singolo** e **Registra i tempi per l’ID utente**: solo
-   per postazioni singole, vedi sotto.
-7. Facoltativamente **Attiva il trasferimento dei tempi** e **Riscrivere le
-   correzioni**.
+6. **Modalità utente singolo** e **Registra i tempi per l’utente**: solo
+   per postazioni singole, vedi sotto. L’utente si sceglie dall’elenco.
+7. Facoltativamente **Attiva il trasferimento dei tempi**, **Riscrivere le
+   correzioni** e **Segreto del webhook** (vedi «Webhook»).
 8. **Salva**. Con **Verifica connessione** nella finestra di dialogo controlla
    l’accesso. Senza chiave API il plugin segnala la modalità CSV – non è un
    errore.
@@ -89,8 +90,16 @@ recupera le registrazioni di tutti gli utenti dello spazio di lavoro; senza
 periodo, gli ultimi giorni secondo la finestra di sincronizzazione. L’import
 salta le registrazioni in corso, senza fine.
 
-Non esiste un import Clockify pianificato: ogni import parte da questa
-pagina. Poi la pagina indica quante voci sono state create, saltate o lasciate
+**Import orario:** non appena è memorizzata una chiave API, l’import API
+viene eseguito anche automaticamente ogni ora – sulla finestra di
+sincronizzazione e con riconciliazione delle eliminazioni (vedi sotto). La
+frequenza si modifica in **Attività pianificate**, alla voce «Import
+Clockify». Ogni esecuzione consuma richieste dalla quota del Suo piano
+Clockify. Senza chiave API non c’è import automatico; i file CSV si caricano
+sempre qui.
+
+Se l’API di Clockify segnala un errore, la pagina lo mostra e non viene
+importato nulla. Dopo un import da questa pagina, la pagina indica quante voci sono state create, saltate o lasciate
 aperte nell’inbox, e quante non è stato possibile associare a un utente.
 
 ## Associare clienti, progetti e persone
@@ -115,7 +124,7 @@ aperte nell’inbox, e quante non è stato possibile associare a un utente.
   principale. Scelga lì l’utente; la scelta viene memorizzata.
 - **Modalità utente singolo:** solo se è attiva, l’import registra le voci
   senza persona identificabile sull’utente predefinito. È l’utente indicato in
-  **Registra i tempi per l’ID utente**, altrimenti il titolare
+  **Registra i tempi per l’utente**, altrimenti il titolare
   dell’organizzazione o il primo utente.
 
 ## Nuovo import e modifiche
@@ -165,6 +174,22 @@ durata, fatturabile) e la loro eliminazione. Prima WorkDiary confronta lo
 stato attuale in Clockify: se nel frattempo la voce è stata modificata lì,
 WorkDiary non sovrascrive nulla e crea invece un conflitto nell’inbox. I tempi
 fatturati e quelli importati via CSV non vengono mai riscritti.
+
+## Webhook
+
+Con un piano Clockify a pagamento, Clockify può avvisare WorkDiary di voci
+nuove e modificate; l’import parte allora da solo:
+
+1. La pagina **Import Clockify** indica nella sezione **Webhook
+   (facoltativo)** l’indirizzo che Clockify deve chiamare.
+2. In Clockify crei, in Impostazioni dello spazio di lavoro → Webhooks, un
+   webhook verso questo indirizzo.
+3. Inserisca il relativo token di firma nelle impostazioni del plugin alla
+   voce **Segreto del webhook** e imposti lì anche l’**ID spazio di lavoro**.
+
+Molti eventi ravvicinati avviano un solo import. Senza segreto del webhook il
+webhook resta disattivato. Il recupero orario resta la fonte affidabile:
+recupera ciò che un webhook non riuscito ha perso.
 
 ## Errori frequenti
 

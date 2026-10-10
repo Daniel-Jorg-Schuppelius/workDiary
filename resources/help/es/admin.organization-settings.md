@@ -1,7 +1,7 @@
 ---
 title: "Organización y configuración"
 topic: admin.organization-settings
-version: 1
+version: 3
 keywords:
     - configuración de la empresa
     - ajustes del inquilino
@@ -204,8 +204,9 @@ planificación de turnos:
   aprobadas.
 - **Coincidencia de cualificación**: a la persona le falta una cualificación
   que exige la necesidad de personal del turno.
-- **Reserva en día festivo**: el turno cae en un festivo gestionado en
-  **Días festivos**.
+- **Reserva en día festivo**: el turno cae en un festivo legal de la región
+  de festivos (pestaña **Región y festivos**) o en un festivo propio
+  gestionado en **Días festivos**.
 
 Las cuatro últimas comprueban los fichajes y generan casos por aclarar en el
 análisis ArbZG:
@@ -236,15 +237,16 @@ secciones siguientes siguen el orden de las pestañas.
 ## Listas
 
 Cuántas entradas muestra una lista por página, cada una de 1 a 500: **Hojas
-de horas**, **Planes de turnos**, **Clientes**, **Rutas**, **Vehículos**,
-**Etiquetas**, **Organizaciones** (lista de la operación de la plataforma) y
-las tres listas de la bandeja de mantenimiento remoto (**Bandeja de
-mantenimiento remoto: equipos sin asignar**, **Bandeja de mantenimiento
-remoto: equipos multicliente**, **Bandeja de mantenimiento remoto: sesiones
-por tarjeta de equipo**). Los campos **Búsqueda de clientes (autocompletado)**,
-**Adjuntos de cliente**, **Archivo** y **Panel: elementos recientes** no
-tienen efecto por ahora; cuántas entradas recientes muestra el panel se fija
-en la pestaña **Interfaz**.
+de horas**, **Planes de turnos**, **Clientes** (también proveedores y
+clientes externos), **Rutas**, **Vehículos**, **Etiquetas**, **Archivo**
+(cada pestaña de la página de archivo), **Notificaciones, tareas operativas,
+ventanas de mantenimiento, informes de problemas** y las tres listas de la
+bandeja de mantenimiento remoto (**Bandeja de mantenimiento remoto: equipos
+sin asignar**, **Bandeja de mantenimiento remoto: equipos multicliente**,
+**Bandeja de mantenimiento remoto: sesiones por tarjeta de equipo**). Cuántas
+entradas recientes muestra el panel se fija en la pestaña **Interfaz**. El
+tamaño de la lista de organizaciones de la operación de la plataforma es un
+ajuste del sistema en **Configuración (registro)**.
 
 ## Facturación
 
@@ -326,9 +328,15 @@ Además, tres campos influyen en todas las facturas creadas localmente:
   nacionales, de la UE y de fuera de la UE.
 - **Plazo de pago (días)** (0–365): se aplica cuando ni la factura ni el
   cliente tienen plazo de pago; vacío o 0 = 14 días.
-- **Pequeña empresa (§ 19 UStG)**: las facturas no muestran IVA y llevan la
-  nota «Sin IVA conforme al § 19 UStG (régimen de pequeñas empresas).»; la
-  XRechnung recibe la categoría fiscal E (exenta).
+- **Pequeña empresa (§ 19 UStG)**: todas las facturas que crea workDiary no
+  muestran IVA y llevan la nota «Sin IVA conforme al § 19 UStG (régimen de
+  pequeñas empresas).»; la XRechnung recibe la categoría fiscal E (exenta).
+  La marca prevalece sobre **Tipo impositivo predeterminado (%)** y la
+  inversión del sujeto pasivo.
+
+## Contabilidad: principio de los cuatro ojos
+
+La opción **Principio de los cuatro ojos** del grupo **Contabilidad** exige la aprobación de una segunda persona: quien prepara un asiento o un asiento directo (descuento por pronto pago, cancelación, asiento de aclaración, traspaso interno, saldos iniciales, pago anticipado especial) no lo contabiliza personalmente; quien compone una remesa de pagos SEPA no la libera personalmente. Los asientos directos se crean entonces como borradores en la **Bandeja contable** y solo surten efecto tras su contabilización. Sin la opción, WorkDiary los contabiliza de inmediato.
 
 ## Inmovilizado: bienes de escaso valor y fondo colectivo
 
@@ -467,8 +475,6 @@ resto se corta.
   20, 30 o 60 (predeterminado 30).
 - **Panel** – **Número de elementos recientes** (predeterminado 5): cuántas
   entradas usadas recientemente muestra el panel.
-- **Búsqueda** – **Límite de resultados predeterminado** (predeterminado 20):
-  por ahora no tiene efecto.
 
 ## Nominatim (geocodificación)
 
@@ -548,8 +554,9 @@ parada en ese cliente; la posición lleva la fecha de la ruta. Las rutas cancela
 desplazamientos ya facturados no cuentan.
 
 - **Modo**: **Tarifa plana** o **Kilómetros**.
-- **Texto de la posición** (hasta 50 caracteres, predeterminado «Anfahrt»):
-  texto de la posición de factura, completado con la fecha o los kilómetros.
+- **Texto de la posición** (hasta 50 caracteres, predeterminado
+  «Desplazamiento» en el idioma de la facturación): texto de la posición de
+  factura, completado con la fecha o los kilómetros.
 - **Tarifa plana (neto €)**: importe por desplazamiento en el modo **Tarifa plana**; sin
   importe no se genera ninguna posición.
 - **Tarifa (€/km)**: precio por kilómetro en el modo **Kilómetros**.
@@ -586,7 +593,8 @@ festivos, entre otros en:
   festivos;
 - los días laborables de vacaciones y enfermedad, la cuenta de vacaciones y
   el objetivo de horario flexible;
-- el análisis ArbZG, por ejemplo para el trabajo en festivos;
+- el análisis ArbZG, por ejemplo para el trabajo en festivos, y la regla del
+  plan de turnos **Reserva en día festivo**;
 - las vistas calendario, vista semanal, plan de turnos, calendario de
   ausencias y **Ocupación actual**;
 - los plazos SLA del soporte y los plazos de presentación de declaraciones
@@ -660,8 +668,10 @@ organización.
   administradores ven actualmente una página de mantenimiento.» con el enlace
   **Configuración** para volver a este diálogo.
 - **Mensaje mostrado en la página de mantenimiento** (hasta 300 caracteres).
-- **Fin previsto** (opcional): después de este momento, el modo de
-  mantenimiento termina automáticamente; el aviso lo muestra como «Hasta: …».
+- **Fin previsto** (opcional, en su hora local): después de este momento, el
+  modo de mantenimiento termina automáticamente; el aviso lo muestra como
+  «Hasta: …», la página de mantenimiento como «Previsiblemente disponible de
+  nuevo: …».
 - **Pausar también las entradas de terminal/webhook** (desactivado de
   fábrica): sin esta marca, los terminales de fichaje y las entradas de
   telefonía y ubicación siguen funcionando durante el mantenimiento.

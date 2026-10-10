@@ -7,8 +7,8 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 @extends('layouts.app')
-@section('title', __('Mitarbeiter'))
-@section('nav-title', __('Mitarbeiter'))
+@section('title', __('user.employees'))
+@section('nav-title', __('user.employees'))
 @include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Mitarbeiter des Mandanten verwalten.')">

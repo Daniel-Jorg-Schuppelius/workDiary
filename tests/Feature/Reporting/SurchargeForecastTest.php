@@ -114,6 +114,8 @@ class SurchargeForecastTest extends TestCase {
     }
 
     public function test_csv_export(): void {
+        // E10: Exporte von Organisationsberichten verlangen „Auswertungen exportieren“.
+        $this->viewer->givePermissionTo(Permission::ReportExport->value);
         SurchargeRule::factory()->create(['organization_id' => $this->organization->id, 'code' => 'night']);
         $this->nightShiftOn(CarbonImmutable::now()->startOfMonth()->addDays(9)->toDateString());
 

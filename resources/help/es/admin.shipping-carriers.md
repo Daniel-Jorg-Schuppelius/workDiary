@@ -1,7 +1,7 @@
 ---
 title: "Conexiones de envío DHL, UPS y FedEx"
 topic: admin.shipping-carriers
-version: 1
+version: 2
 keywords:
     - envío
     - DHL
@@ -15,6 +15,8 @@ keywords:
     - portal de clientes empresa
     - sandbox
     - transportista
+    - seguimiento de envíos
+    - anular envío
 audience:
     - admin
 modules:
@@ -31,7 +33,8 @@ related:
 La página **Envío y logística**, que en el menú figura como **Envío**, guarda
 las credenciales de las empresas de paquetería DHL Paket, UPS y FedEx. Con una
 conexión activa crea directamente en WorkDiary etiquetas de envío para las
-entregas y etiquetas de devolución para las devoluciones. Hay una conexión por
+entregas y etiquetas de devolución para las devoluciones, y sigue sus envíos.
+Hay una conexión por
 empresa de paquetería y organización; las contraseñas y claves se guardan
 cifradas.
 
@@ -60,7 +63,7 @@ cifradas.
 
 ## Crear o cambiar una conexión
 
-En la sección **Añadir / editar conexión**:
+Una conexión nueva se crea en el formulario **Añadir conexión**:
 
 1. **Transportista**: DHL, UPS o FEDEX.
 2. **Denominación**: un nombre con el que la conexión se ofrecerá después al
@@ -76,26 +79,34 @@ En la sección **Añadir / editar conexión**:
 8. **Activo** y **Guardar**.
 
 Para una conexión nueva son obligatorios el usuario/ID de cliente y la
-contraseña/secreto de cliente; en DHL, además, la clave API.
+contraseña/secreto de cliente; en DHL, además, la clave API. Si en este
+formulario elige un transportista que ya tiene conexión, WorkDiary rechaza el
+guardado con un aviso; las conexiones existentes solo se modifican mediante
+**Editar**.
 
-Para hacer cambios, guarde de nuevo el formulario con el mismo transportista;
-así se actualiza la conexión existente. El formulario empieza siempre vacío:
+Para hacer cambios, haga clic en **Editar** junto a la conexión en la lista
+**Conexiones existentes**. El formulario se titula entonces **Editar conexión
+…** con el transportista en el título, por ejemplo «Editar conexión DHL»; el
+transportista no se puede cambiar.
 
-- Los campos de usuario, contraseña, clave API e ID del destinatario de
-  devoluciones que deje vacíos conservan el valor guardado.
-- **Denominación** y **Número de facturación / de cuenta** se introducen cada
-  vez: un número de facturación vacío se borra.
-- **Sandbox / entorno de pruebas** y **Activo** valen tal como estén marcados
-  al guardar. Por tanto, una conexión sandbox pasa a producción si no vuelve a
-  marcar la casilla.
+- **Denominación**, **Número de facturación / de cuenta**, **Sandbox / entorno
+  de pruebas** y **Activo** aparecen rellenados con los valores guardados. Lo
+  que cambie aquí se aplica al guardar.
+- El usuario, la contraseña, la clave API y el ID del destinatario de
+  devoluciones nunca se muestran. Los campos que deje vacíos conservan el valor
+  guardado; solo una entrada nueva lo sustituye.
+- Un **Número de facturación / de cuenta** vacío también conserva el valor
+  guardado.
+- **Cancelar** sale de la edición sin guardar.
 
 ## Conexiones existentes
 
 La lista **Conexiones existentes** muestra de cada conexión el transportista,
 la denominación, el **Modo** (**Sandbox** o **Producción**) y el estado
-(**Activo** o **Inactivo**). **Desactivar** apaga una conexión; a partir de ahí
-deja de ofrecerse. Para reactivarla, guárdela de nuevo con **Activo**
-marcado.
+(**Activo** o **Inactivo**). **Editar** abre la conexión en el formulario.
+**Desactivar** apaga una conexión; a partir de ahí deja de ofrecerse y los
+envíos de este transportista ya no se comprueban. Para reactivarla, ábrala con
+**Editar**, marque **Activo** y guarde.
 
 ## Crear etiquetas
 
@@ -107,7 +118,10 @@ marcado.
   bultos registrados aportan ellos mismos peso y medidas. El destinatario es el
   cliente de la entrega. Después la entrega muestra el estado **Etiqueta
   creada** con la empresa de paquetería y el número de seguimiento. Hay una
-  orden de envío por entrega.
+  orden de envío por entrega; una anulada no cuenta. En la entrega, **Descargar
+  etiqueta** vuelve a descargar la etiqueta, **Consultar estado del envío**
+  obtiene la situación actual y **Anular envío** lo anula; los detalles están
+  en la ayuda sobre las órdenes de fabricación.
 - **Etiqueta de devolución:** en los **Expedientes de reclamación**, elija para
   una devolución en estado **Anunciado** la conexión, indique el peso y haga
   clic en **Crear etiqueta de devolución**. El remitente es el cliente; su
@@ -123,6 +137,23 @@ UPS entrega la etiqueta como imagen (GIF) y FedEx como PDF. Si la empresa de
 paquetería rechaza el pedido, WorkDiary descarta el borrador y usted puede
 volver a intentarlo tras la corrección.
 
+## Seguimiento de envíos
+
+En la configuración estándar, WorkDiary comprueba cada hora con la empresa de
+paquetería los envíos abiertos: estado **Etiqueta creada**, **En tránsito** o
+**Problema de entrega**. Cada envío se consulta como máximo cada tres horas y
+solo hasta 60 días después de su creación; después deja de considerarse
+rastreable. La comprobación recoge el estado y el historial del envío hasta que
+figura como **Entregado**.
+
+- Si un envío pasa a **Problema de entrega**, WorkDiary envía la notificación
+  **Problema de entrega de un envío**.
+- La hora de la última comprobación aparece al pasar el ratón sobre el estado
+  en la entrega (**Última comprobación: …**).
+- Solo se comprueba a través de una conexión activa. Si la consulta a la
+  empresa de paquetería falla, cuenta como los demás errores de conexión de esa
+  conexión (consulte «Problemas habituales»).
+
 ## Límites
 
 - Una conexión por empresa de paquetería y organización.
@@ -137,8 +168,15 @@ volver a intentarlo tras la corrección.
   cliente (DHL además: clave API).»** Complete las credenciales que faltan.
 - **No hay conexión para elegir:** no existe ninguna conexión activa, o la
   entrega no tiene cliente o ya tiene una orden de envío.
+- **«Ya existe una conexión para este transportista. Modifíquela mediante
+  «Editar».»** En el formulario **Añadir conexión** ha elegido un
+  transportista ya conectado. Abra la conexión en la lista con **Editar**.
 - **«No hay una conexión activa configurada para el transportista
   seleccionado.»** La conexión se ha desactivado entretanto.
+- **«No se pudo anular el envío: …»** o **«No se pudo consultar el estado del
+  envío: …»** La empresa de paquetería rechazó la solicitud o no estaba
+  disponible, o la conexión está inactiva. Cuando el envío ya está en tránsito,
+  ya no es posible anularlo.
 - **«No se pudo crear la etiqueta de envío: …»** Compruebe las credenciales, el
   número de facturación o de cuenta, la opción **Sandbox / entorno de pruebas**
   y la dirección del destinatario. En UPS y FedEx suele faltar la dirección del

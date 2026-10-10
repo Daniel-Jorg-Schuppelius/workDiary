@@ -32,12 +32,12 @@ enum ClaimFinancialKind: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::PriceReduction => (string) __('Minderung/Preisnachlass'),
-            self::CreditNote => (string) __('Gutschrift'),
-            self::Cancellation => (string) __('Storno'),
-            self::Correction => (string) __('Rechnungskorrektur'),
-            self::ReplacementInvoice => (string) __('Ersatzrechnung'),
-            self::Refund => (string) __('Rückerstattung'),
+            self::PriceReduction => (string) __('enums.claims.claim_financial_kind.price_reduction'),
+            self::CreditNote => (string) __('enums.claims.claim_financial_kind.credit_note'),
+            self::Cancellation => (string) __('enums.claims.claim_financial_kind.cancellation'),
+            self::Correction => (string) __('enums.claims.claim_financial_kind.correction'),
+            self::ReplacementInvoice => (string) __('enums.claims.claim_financial_kind.replacement_invoice'),
+            self::Refund => (string) __('enums.claims.claim_financial_kind.refund'),
         };
     }
 

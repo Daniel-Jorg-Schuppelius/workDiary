@@ -37,10 +37,10 @@ enum PortalTimeDetail: string implements HasLabel {
 
     public function label(): string {
         return (string) match ($this) {
-            self::None => __('Keine Zeiten'),
-            self::Summary => __('Nur Summen'),
-            self::Entries => __('Einträge (Datum, Dauer, Projekt, Mitarbeiter)'),
-            self::EntriesWithDescription => __('Einträge inkl. Beschreibung (nur veröffentlichte)'),
+            self::None => __('enums.customer_portal.portal_time_detail.none'),
+            self::Summary => __('enums.customer_portal.portal_time_detail.summary'),
+            self::Entries => __('enums.customer_portal.portal_time_detail.entries'),
+            self::EntriesWithDescription => __('enums.customer_portal.portal_time_detail.entries_with_description'),
         };
     }
 

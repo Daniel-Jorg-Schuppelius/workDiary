@@ -1,7 +1,7 @@
 ---
 title: "Entry type analysis"
 topic: reports.entry-type-analysis
-version: 1
+version: 3
 keywords:
     - plan vs actual
     - target vs actual
@@ -32,3 +32,6 @@ type (e.g. maintenance, incident, migration) and shows:
 This reveals entry types where planning assumptions are unrealistic or
 the team systematically needs extra effort – both pointing at training
 or pricing needs.
+
+An order's planned duration is its **Planned duration (HH:MM)**; if it is
+empty, the service duration of a dispatched order, otherwise the length of the time slot or the duration of the appointment counts.

@@ -1,7 +1,7 @@
 ---
 title: "My Invoices"
 topic: customer-portal.invoices
-version: 3
+version: 4
 keywords:
     - view invoices
     - invoice list
@@ -15,6 +15,9 @@ keywords:
     - online payment
     - invoice number
     - partial payment
+    - download invoice
+    - invoice PDF
+    - ZUGFeRD
 audience: []
 related:
     - customer-portal.overview
@@ -33,9 +36,9 @@ The list shows for each invoice:
 - **Date** – the invoice date,
 - **Status** – the payment status,
 - **Amount** – the invoice amount with currency,
-- on the right, where applicable, the button **Pay online**.
+- on the right, the PDF icon for downloading and, where applicable, the button **Pay online**.
 
-The newest invoice is at the top. With more than 25 invoices you page through the list using the pagination at the bottom. Drafts your contractor is still working on do not appear – you only see issued invoices. The invoice documents themselves cannot be opened or downloaded on this page.
+The newest invoice is at the top. With more than 25 invoices you page through the list using the pagination at the bottom. Drafts your contractor is still working on do not appear – you only see issued invoices.
 
 ### The statuses
 
@@ -43,6 +46,14 @@ The newest invoice is at the top. With more than 25 invoices you page through th
 - **Partially paid** – part of the amount has been received.
 - **Paid** – the invoice has been settled in full.
 - **Cancelled** – the invoice has been cancelled and no longer needs to be paid.
+
+## Downloading an invoice
+
+Click the PDF icon in the row of the invoice (tooltip: **Download invoice … as PDF**). You receive the same document that your contractor issues for this invoice.
+
+- If you receive your invoices as ZUGFeRD e-invoices, the downloaded file is also a ZUGFeRD PDF with embedded invoice data.
+- For all other delivery methods you receive the invoice as a PDF – even if the invoice was delivered to you as an XRechnung (XML).
+- If the icon is missing for an invoice, your contractor manages this invoice in a different invoicing program. You then receive the document directly from your contractor.
 
 ## Paying online
 

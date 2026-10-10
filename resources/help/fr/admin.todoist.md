@@ -1,7 +1,7 @@
 ---
 title: "Connexion Todoist"
 topic: admin.todoist
-version: 1
+version: 2
 keywords:
     - Todoist
     - synchroniser les tâches
@@ -86,7 +86,10 @@ Avant l’activation, la **Préverification** montre ce que la synchronisation
 va trouver :
 
 - **Indicateurs** : tâches actives, sous-tâches, tâches récurrentes, échéances
-  avec heure, responsables non associables et tâches déjà liées.
+  avec heure, responsables non associables et tâches déjà liées. Les tâches
+  récurrentes arrivent comme une tâche unique avec la prochaine échéance ;
+  seule Todoist connaît la récurrence. Pour les échéances avec heure,
+  WorkDiary ne reprend que la date.
 - **Association des responsables** : pour chaque collaborateur Todoist, vous
   choisissez un utilisateur WorkDiary et cliquez sur **Enregistrer**. Une
   adresse e-mail identique n’apparaît que comme **Suggestion** ; l’affectation
@@ -162,3 +165,9 @@ rapprochement filtrée sur Todoist.
   encore associé à un utilisateur dans la préverification.
 - Rien n’est synchronisé : l’association est encore en **Brouillon** ou **En
   pause**.
+- La connexion affiche **En pause** : Todoist a refusé l’accès, par exemple
+  parce que l’autorisation de l’application a été révoquée dans Todoist. La
+  synchronisation est suspendue ; reconnectez-vous avec **Renouveler la
+  connexion**. Si une synchronisation échoue pour une autre raison, la page
+  indique la dernière erreur jusqu’à ce qu’une synchronisation réussisse de
+  nouveau ; une tâche d’exploitation est également créée.

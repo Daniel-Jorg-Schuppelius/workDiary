@@ -1,7 +1,7 @@
 ---
 title: "Objets"
 topic: customer-portal.assets
-version: 2
+version: 3
 keywords:
     - appareils
     - équipements
@@ -14,6 +14,7 @@ keywords:
     - procès-verbaux d'inspection
     - prochaine maintenance
     - plan de maintenance
+    - protocole PDF
 audience: []
 related:
     - customer-portal.overview
@@ -25,8 +26,9 @@ related:
 
 Sous **Objets**, vous voyez les appareils et installations que votre
 prestataire gère pour votre entreprise : avec leurs dates de contrôle et de
-maintenance, les maintenances effectuées et les protocoles publiés pour vous.
-La vue est en lecture seule.
+maintenance, les maintenances effectuées et les protocoles signés publiés
+pour vous. La vue est en lecture seule ; vous téléchargez les protocoles au
+format PDF.
 
 ## La liste des objets
 
@@ -46,15 +48,29 @@ sections :
   rendez-vous enregistré.**
 - **Maintenances terminées** – les maintenances effectuées avec leur
   désignation et leur date.
-- **Protocoles** – les protocoles de l'objet que votre prestataire a publiés
-  pour vous, avec titre, statut (par exemple **Signé**) et date, le plus
-  récent en premier. La liste nomme les protocoles ; ils ne peuvent pas être
-  ouverts ni téléchargés ici.
+- **Protocoles** – les protocoles signés de l'objet que votre prestataire a
+  publiés pour vous, avec titre, statut et date, le plus récent en premier,
+  chacun avec **Télécharger le PDF**. En l'absence de tels protocoles, la
+  section indique **Aucun protocole approuvé.**
+
+## Télécharger les protocoles
+
+Le portail n'affiche que les protocoles signés ; les brouillons et les
+protocoles en revue n'apparaissent qu'une fois signés. Le statut indique
+**Signé**, pour les protocoles plus anciens aussi **Archivé** ou **Remplacé**.
+Avec **Remplacé**, votre prestataire a établi une version corrigée ; elle
+apparaît dès qu'elle est signée.
+
+**Télécharger le PDF** vous fournit le protocole dans sa version signée sous
+forme de fichier PDF. Chaque téléchargement est consigné sur le protocole, de
+sorte que votre prestataire peut savoir quand il a été téléchargé via le
+portail.
 
 ## Ce que vous ne voyez pas ici
 
 - Les informations internes comme le détail des pannes, les défauts ou les
   affectations au personnel n'apparaissent pas.
+- Les protocoles qui ne sont pas encore signés n'apparaissent pas.
 - Vous ne voyez que les objets rattachés à votre entreprise.
 
 ## Vos objets ailleurs dans le portail

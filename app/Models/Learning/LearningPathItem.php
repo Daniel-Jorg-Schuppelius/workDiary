@@ -23,7 +23,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $learning_path_id
  * @property int $learning_course_id
  * @property int $position
- * @property bool $is_mandatory
  * @property int|null $due_days
  */
 class LearningPathItem extends Model {
@@ -40,14 +39,12 @@ class LearningPathItem extends Model {
         'learning_path_id',
         'learning_course_id',
         'position',
-        'is_mandatory',
         'due_days',
     ];
 
     /** @var array<string, string> */
     protected $casts = [
         'position' => 'integer',
-        'is_mandatory' => 'boolean',
         'due_days' => 'integer',
     ];
 

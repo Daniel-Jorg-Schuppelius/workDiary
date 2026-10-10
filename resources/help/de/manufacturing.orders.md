@@ -1,7 +1,7 @@
 ---
 title: "Fertigungsaufträge"
 topic: manufacturing.orders
-version: 1
+version: 2
 keywords:
     - Produktionsauftrag
     - Stückliste
@@ -17,6 +17,9 @@ keywords:
     - Proformarechnung
     - Handelsrechnung
     - Lieferschein
+    - Versandlabel
+    - Sendungsstatus
+    - Versand stornieren
 audience: []
 modules:
     - module.lager
@@ -46,7 +49,28 @@ geplanter Belegungsdauer zuordnen oder als Fremdfertigung an einen
 Lieferanten vergeben (erzeugt eine Bestellung). Die Planungssicht zeigt
 für ein Erzeugnis die mehrstufige Materialbedarfsauflösung (MRP) sowie
 Qualitätskennzahlen je Artikel. Stornieren ist nicht umkehrbar; Anlegen,
-Rückmelden und Ausliefern erfordern die Bestandsbuchungs-Berechtigung.
+Rückmelden und Ausliefern erfordern das Recht **Lagerbewegungen buchen**.
+
+## Versand an der Auslieferung
+
+Mit einer aktiven Versandanbindung (siehe „Versandanbindungen DHL, UPS und
+FedEx“) erstellen Sie an einer Auslieferung mit Kunde über **Versand** einen
+Versandauftrag samt Label. Die Auslieferung zeigt danach den Status, etwa
+**Versand: Label erstellt**, mit Paketdienst und Sendungsnummer. Fahren Sie mit
+der Maus über den Status, sehen Sie, wann er zuletzt beim Paketdienst
+abgeglichen wurde. Neben dem Status stehen:
+
+- **Label herunterladen**: lädt das Versandlabel erneut herunter.
+- **Sendungsstatus abrufen**: fragt den aktuellen Stand sofort beim
+  Paketdienst ab – nicht mehr bei **Zugestellt** oder **Storniert**. Offene
+  Sendungen gleicht WorkDiary außerdem regelmäßig von selbst ab.
+- **Versand stornieren**: nur im Status **Entwurf** oder **Label erstellt** und
+  nach einer Rückfrage. Das Label wird ungültig. Danach können Sie einen neuen
+  Versandauftrag erstellen, und die Packstücke der Auslieferung lassen sich
+  wieder bearbeiten.
+
+Versandauftrag erstellen, Sendungsstatus abrufen und Versand stornieren setzen
+das Recht **Lagerbewegungen buchen** voraus.
 
 ## Zollpapiere für Sendungen außerhalb der EU
 

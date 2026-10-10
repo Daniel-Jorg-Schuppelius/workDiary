@@ -1,7 +1,7 @@
 ---
 title: "Legacy system"
 topic: legacy.overview
-version: 2
+version: 3
 keywords:
     - old system
     - previous system
@@ -63,7 +63,7 @@ Everyone sees the duty schedules. The diary data of all persons is visible to
 legacy administrators and the **Accounting** role; everyone else sees only
 their own. The call center login leads to the same page.
 
-**Employee** is in the administration menu (the **Administration** icon in the
+**Employees** is in the administration menu (the **Administration** icon in the
 header) under **Personnel** and lists the users of the legacy system with
 **Name** and **Email**:
 
@@ -76,6 +76,6 @@ header) under **Personnel** and lists the users of the legacy system with
   exist for the person.
 - Creating, changing and deleting require write access to the legacy system.
 
-**Permission:** the **Employee** page is open to legacy administrators and
+**Permission:** the **Employees** page is open to legacy administrators and
 platform operations; the organization's administrator role alone is not
 enough.

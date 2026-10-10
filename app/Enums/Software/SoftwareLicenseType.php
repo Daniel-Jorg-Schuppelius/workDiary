@@ -26,13 +26,13 @@ enum SoftwareLicenseType: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Perpetual    => __('Kauflizenz'),
-            self::Subscription => __('Abonnement'),
-            self::Oem          => __('OEM'),
-            self::Volume       => __('Volumenlizenz'),
-            self::Free         => __('Kostenfrei'),
-            self::OpenSource   => __('Open Source'),
-            self::Other        => __('Sonstige'),
+            self::Perpetual    => __('enums.software.software_license_type.perpetual'),
+            self::Subscription => __('enums.software.software_license_type.subscription'),
+            self::Oem          => __('enums.software.software_license_type.oem'),
+            self::Volume       => __('enums.software.software_license_type.volume'),
+            self::Free         => __('enums.software.software_license_type.free'),
+            self::OpenSource   => __('enums.software.software_license_type.open_source'),
+            self::Other        => __('enums.software.software_license_type.other'),
         };
     }
 }

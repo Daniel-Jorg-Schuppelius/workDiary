@@ -73,6 +73,9 @@
                             @else
                                 <x-status-badge tone="ghost">{{ __('Immer') }}</x-status-badge>
                             @endif
+                            @if ($req->duty_plan_id === null)
+                                <x-status-badge tone="info">{{ __('Alle Dienstpläne') }}</x-status-badge>
+                            @endif
                         </td>
                         <td class="text-center font-semibold">{{ $req->min_staff }}</td>
                         <td class="text-center">{{ $req->max_staff ?? '∞' }}</td>

@@ -64,7 +64,7 @@ class ClockifyExportService extends AbstractTimeEntryPushService {
 
         $this->projectMap = $this->clockifyProjectIdByProjectId($organization);
         if ($this->projectMap === []) {
-            return (string) __('Kein Projekt ist einem Clockify-Projekt zugeordnet (zuerst API-Import ausführen bzw. Inbox-Gruppen buchen).');
+            return (string) __('Kein Projekt ist einem Clockify-Projekt zugeordnet — Clockify-Gruppen in der Zuordnungs-Inbox auf Projekte buchen.');
         }
 
         return null;

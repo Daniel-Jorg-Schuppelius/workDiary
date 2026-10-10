@@ -26,10 +26,10 @@ enum ProcessorRole: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Controller => __('Verantwortlicher'),
-            self::JointController => __('Gemeinsam Verantwortlicher'),
-            self::Processor => __('Auftragsverarbeiter'),
-            self::Subprocessor => __('Unterauftragsverarbeiter'),
+            self::Controller => __('enums.privacy.processor_role.controller'),
+            self::JointController => __('enums.privacy.processor_role.joint_controller'),
+            self::Processor => __('enums.privacy.processor_role.processor'),
+            self::Subprocessor => __('enums.privacy.processor_role.subprocessor'),
         };
     }
 }

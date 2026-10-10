@@ -1,7 +1,7 @@
 ---
 title: "Justificantes: actividad de auditoría, cumplimiento y salario mínimo"
 topic: reports.compliance
-version: 1
+version: 3
 keywords:
     - análisis de auditoría
     - quién cambió qué
@@ -42,7 +42,7 @@ describe en el tema dedicado al cumplimiento del tiempo de trabajo.
   **Historial de infracciones**, en cambio, muestra todas las infracciones
   guardadas.
 - Donde existe una exportación, se menciona en la sección correspondiente.
-  Las exportaciones PDF y CSV se registran en el registro de auditoría.
+  Cada exportación se registra en el registro de auditoría.
 
 ## Actividad de auditoría
 
@@ -51,15 +51,16 @@ las entradas del registro de auditoría del período. La página solo se abre
 para los administradores; a todos los demás se les deniega el acceso.
 
 - Mosaicos: **Eventos Σ** (todas las entradas del período), **Usuarios
-  activos** y **Tipos de entidad**. Los dos últimos cuentan las entradas de
-  las listas top 20 y por eso muestran como máximo 20.
+  activos** (personas con al menos una entrada) y **Tipos de entidad** (tipos
+  de objeto distintos). También estos dos cuentan todas las entradas del
+  período, no solo las listas top 20.
 - Gráficos: **Eventos a lo largo del tiempo**, **Principales actores (top
   15)** y los eventos a lo largo del tiempo por tipo de evento.
 - Tablas: **Por evento**, **Por tipo de entidad (Top 20)**, **Por usuario
   (Top 20)** y **Últimos 100 eventos** con **Momento**, **Usuario**,
   **Evento**, **Tipo**, **ID** e **IP**. Los eventos y tipos aparecen con su
   nombre legible cuando lo hay.
-- Filtro: **Empleados**.
+- Filtro: **Empleado**.
 
 Exportar análisis también genera una entrada con el análisis, el formato y
 los filtros; así se puede rastrear quién descargó qué análisis. Las entradas
@@ -110,7 +111,7 @@ pasa a **Resuelto**; si vuelve a producirse, vuelve a **Abierto**.
 - Lista: **Empleado**, **Fecha**, **Tipo**, **Valor**, **Umbral**,
   **Gravedad** y **Estado**; en las infracciones tratadas aparecen debajo el
   nombre, la fecha y el motivo.
-- Filtros: **Empleados**, **Equipo**, **Estado** y **Categoría** (**ArbZG**,
+- Filtros: **Empleado**, **Equipo**, **Estado** y **Categoría** (**ArbZG**,
   **Casos sin aclarar**, **Tiempos de conducción**).
 
 Así se trata una infracción con el estado **Abierto** o **Confirmado**:
@@ -140,8 +141,9 @@ requiere el permiso **Ver el cumplimiento del tiempo de trabajo**.
   siguen abiertos no cuentan. **Inicio** es el primer inicio y **Fin** el
   último fin del día, las pausas se suman y **Duración** es el tiempo de
   trabajo tras descontar las pausas.
-- Se ordena por nombre y fecha. La descarga adopta el período y el filtro de
-  empleado de la página y queda registrada en el registro de auditoría.
+- Se ordena por nombre y fecha. La descarga adopta el período y los filtros
+  de empleado y de equipo de la página y queda registrada en el registro de
+  auditoría.
 
 El **Justificante tiempos de conducción** del mismo menú se describe en el
-tema dedicado a flota, libro de ruta y tiempos de conducción.
+tema dedicado a flota, libro de viajes y tiempos de conducción.

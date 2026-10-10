@@ -24,8 +24,8 @@ use Illuminate\View\View;
 
 /**
  * Admin-Seite für den FRITZ!Box-Anruflisten-Import: CSV hochladen. Telefonate
- * bekannter Nummern werden sofort gebucht bzw. mit überlappenden Fernwartungs-
- * zeiten verschmolzen; unbekannte Nummern landen in der universellen
+ * bekannter Nummern werden sofort gebucht bzw. mit überlappenden gebuchten
+ * Zeiten desselben Kunden verschmolzen; unbekannte Nummern landen in der universellen
  * Zuordnungs-Inbox (admin.integration.inbox) — hier nur die Anzahl offener
  * Gruppen als Deep-Link-Hinweis.
  */

@@ -1,7 +1,7 @@
 ---
 title: "Fuhrpark, Fahrtenbuch und Lenkzeiten"
 topic: reports.fleet
-version: 1
+version: 3
 keywords:
     - Fahrzeugauswertung
     - Kilometerstand
@@ -44,8 +44,8 @@ Spesen** → **Fahrtenbuch**), die Belege im **Tank & Ladelog** (**Fuhrpark** �
 - Den Zeitraum wählen Sie über die Zeitraumwahl in der Kopfzeile. Der
   1-%-Vergleich rechnet stattdessen mit einem Kalenderjahr.
 - **PDF** lädt eine Druckfassung, unter **Export** stehen **CSV** und
-  **Excel** bereit. Exporte übernehmen die gewählten Filter; PDF- und
-  CSV-Exporte werden im Audit-Protokoll vermerkt.
+  **Excel** bereit. Exporte übernehmen die gewählten Filter; jeder Export
+  wird im Audit-Protokoll vermerkt.
 
 ## Fuhrpark
 
@@ -160,8 +160,10 @@ Ruhezeiten** die Lenkzeitregeln eingeschaltet sind, und verlangt das Recht
   Abfahrt**, **Letzte Ankunft**, **Lenkzeit**, **Längste Lenkphase ohne
   Unterbrechung**, **Unterbrechungen (Min.)**, **Ruhezeit davor** und
   **Befunde** des Tages.
-- Der Download übernimmt Zeitraum und Mitarbeiterfilter der Seite und liefert
-  eine CSV-Datei. Er wird im Audit-Protokoll vermerkt.
+- Der Download übernimmt Zeitraum, Mitarbeiter- und Teamfilter der Seite.
+  **Lenkzeit-Nachweis** liefert eine CSV-Datei, **Lenkzeit-Nachweis (PDF)**
+  dieselben Angaben als PDF im Querformat. Beide werden im Audit-Protokoll
+  vermerkt.
 
 Die Befunde beruhen auf den Grenzwerten der VO (EG) 561/2006 bzw. FPersV:
 höchstens 9 h Lenkzeit am Tag (zweimal je Woche 10 h), 56 h je Woche und

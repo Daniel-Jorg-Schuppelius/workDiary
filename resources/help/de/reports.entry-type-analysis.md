@@ -1,7 +1,7 @@
 ---
 title: "Auftragstyp-Analyse"
 topic: reports.entry-type-analysis
-version: 1
+version: 3
 keywords:
     - Soll-Ist-Vergleich
     - Plan-Ist-Abweichung
@@ -33,3 +33,6 @@ Die Auftragstyp-Analyse vergleicht Plan- und Ist-Dauern je Eintragstyp
 So erkennen Sie Auftragstypen, in denen die Plan-Annahmen unrealistisch
 sind oder das Team systematisch Mehraufwand hat – beides Hinweise auf
 Schulungs- oder Pricing-Bedarf.
+
+Die Plan-Dauer eines Auftrags ist seine **Geplante Dauer (HH:MM)**; ist sie
+leer, zählt die Servicedauer eines disponierten Auftrags, sonst die Länge des Zeitfensters bzw. die Dauer des Termins.

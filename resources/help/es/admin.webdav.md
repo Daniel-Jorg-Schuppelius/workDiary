@@ -1,7 +1,7 @@
 ---
 title: "Almacenamiento WebDAV"
 topic: admin.webdav
-version: 1
+version: 3
 keywords:
     - WebDAV
     - Nextcloud
@@ -13,6 +13,7 @@ keywords:
     - contraseña de aplicación
     - reglas de carpetas
     - conflicto de copia
+    - direcciones privadas
 audience:
     - admin
 related:
@@ -44,8 +45,9 @@ en la cabecera) en **Plugins** → **WebDAV**, en cuanto el plugin esté activo.
 - Necesita una cuenta en el almacenamiento con permiso de escritura en la
   carpeta de destino y una contraseña de aplicación (Nextcloud: Ajustes →
   Seguridad → Contraseña de aplicación).
-- El almacenamiento debe ser accesible públicamente. WorkDiary rechaza las
-  direcciones de una red interna.
+- El almacenamiento debe ser accesible públicamente. Si el servidor está en
+  su propia red, active **Permitir direcciones privadas/internas** (véase más
+  abajo).
 - Por organización existe exactamente un almacenamiento WebDAV.
 
 Esta página no sirve como destino de copias de seguridad. Un destino de copia
@@ -66,6 +68,11 @@ En la sección **Almacenamiento** rellena:
   un campo vacío conserva la contraseña guardada.
 - **Carpeta predeterminada**: subcarpeta para los documentos sin regla de
   carpeta propia (prerrellenada con Dokumente).
+- **Permitir direcciones privadas/internas**: actívelo solo si el servidor
+  WebDAV está en su propia red (por ejemplo 192.168.x.x). Sin este
+  interruptor, WorkDiary rechaza las direcciones internas ya al guardar. La
+  activación queda registrada. Si el operador de su instalación ha bloqueado
+  esta autorización, el interruptor no tiene efecto.
 - **Activo**: activa o desactiva el almacenamiento.
 - **Contenido reflejado**: **Documentos (DMS)**, **Facturas (PDF)**, **Actas
   (PDF)**.
@@ -79,9 +86,9 @@ muestra su estado (por ejemplo **Estado correcto**) y **Probar conexión**.
 
 - **Documentos:** un documento se copia en cuanto tiene el estado **Activo**
   con un archivo, y de nuevo con cada versión nueva. Los cambios en los datos
-  sin versión nueva no provocan una subida. El almacenamiento copia siempre
-  los documentos aprobados mientras esté activo, aunque **Documentos (DMS)**
-  no esté marcado.
+  sin versión nueva no provocan una subida. Esto solo rige con **Documentos
+  (DMS)** marcado; si no hay ninguna fuente marcada, los documentos cuentan
+  como elegidos.
 - **Facturas (PDF):** con esta casilla marcada, cada factura se deposita una
   vez como PDF al pasar a **Emitida**.
 - **Actas (PDF):** con esta casilla marcada, cada acta se deposita como PDF al
@@ -89,10 +96,10 @@ muestra su estado (por ejemplo **Estado correcto**) y **Probar conexión**.
 - La transferencia se ejecuta en segundo plano mediante una cola y se repite
   si hay errores de conexión. WorkDiary no vuelve a subir contenidos sin
   cambios.
-- **Copiar ahora** vuelve a poner en cola todos los documentos aprobados en
-  ese momento, algo útil tras la configuración. Este botón no incluye
-  facturas ni actas; estas solo se copian a partir de la configuración, al
-  emitirse o firmarse.
+- **Copiar ahora** vuelve a poner en cola todo lo de las fuentes marcadas:
+  documentos aprobados, facturas emitidas y actas firmadas, algo útil tras
+  la configuración, también para documentos anteriores. WorkDiary no vuelve
+  a subir contenidos ya copiados.
 - No existe una ejecución programada; la copia sigue a los cambios en
   WorkDiary.
 
@@ -103,10 +110,9 @@ muestra su estado (por ejemplo **Estado correcto**) y **Probar conexión**.
   ambas relativas a la URL de la colección. El archivo se llama document-
   seguido del número del documento y la extensión original, por ejemplo
   document-42.pdf.
-- La selección de tipos de documento muestra por ahora el código corto en
-  inglés, por ejemplo contract para contratos o invoice para facturas. Siempre
-  hay tres filas libres; WorkDiary descarta las filas sin tipo o sin
-  subcarpeta.
+- La selección nombra los tipos de documento por su denominación, por
+  ejemplo Contrato o Factura. Siempre hay tres filas libres; WorkDiary
+  descarta las filas sin tipo o sin subcarpeta.
 - Las facturas se guardan en invoices/año/número-de-factura.pdf y las actas en
   protocols/año/protocol-número.pdf, directamente bajo la URL de la colección,
   no en la carpeta predeterminada.
@@ -126,6 +132,11 @@ copia en pausa». Allí elige:
 - **Desvincular copia**: este documento deja de copiarse de forma
   permanente; el almacenamiento sigue activo para todos los demás.
 
+Para los PDF de facturas y actas solo existe **Sobrescribir remoto**: las
+facturas emitidas y las actas firmadas no se pueden modificar, WorkDiary
+vuelve a depositar su PDF. Si quiere conservar el archivo modificado, elija
+**Descartar**.
+
 La Bandeja de conciliación está abierta a los administradores y a
 contabilidad.
 
@@ -144,7 +155,12 @@ guarde.
 - **Estado defectuoso** con «Almacenamiento WebDAV no accesible o credenciales
   no válidas.»: compruebe la URL de la colección, el nombre de usuario, la
   contraseña de aplicación y que la carpeta exista. Un error de WebDAV con
-  RuntimeException suele indicar una dirección de una red interna.
+  RuntimeException suele indicar una dirección de una red interna sin
+  autorización.
+- «La URL de la colección apunta a una dirección privada/interna.»: si el
+  servidor está en su propia red, active **Permitir direcciones
+  privadas/internas**. Si el operador ha bloqueado esta autorización, el
+  almacenamiento necesita una dirección accesible públicamente.
 - «No hay ningún almacenamiento WebDAV activo.» con **Copiar ahora**: el
   almacenamiento está desactivado o incompleto.
 - Faltan facturas o actas en el almacenamiento: la casilla correspondiente en

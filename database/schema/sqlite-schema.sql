@@ -7606,6 +7606,7 @@ CREATE TABLE IF NOT EXISTS "caldav_connections"(
   "two_way" tinyint(1) not null default '0',
   "sync_token" varchar,
   "last_imported_at" datetime,
+  "allow_private_network" tinyint(1) not null default '0',
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("created_by") references "users"("id") on delete set null
 );
@@ -7629,6 +7630,7 @@ CREATE TABLE IF NOT EXISTS "webdav_connections"(
   "last_error_at" datetime,
   "consecutive_failures" integer not null default '0',
   "disabled_at" datetime,
+  "allow_private_network" tinyint(1) not null default '0',
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("created_by") references "users"("id") on delete set null
 );
@@ -8815,6 +8817,8 @@ CREATE TABLE IF NOT EXISTS "zammad_connections"(
   "time_unit" varchar,
   "ticket_target" varchar not null default 'task',
   "service_queue_id" integer,
+  "is_limited_to_mapped_groups" tinyint(1) not null default '0',
+  "allow_private_network" tinyint(1) not null default '0',
   foreign key("created_by") references users("id") on delete set null on update no action,
   foreign key("default_project_id") references projects("id") on delete set null on update no action,
   foreign key("organization_id") references organizations("id") on delete cascade on update no action,
@@ -17166,7 +17170,6 @@ CREATE TABLE IF NOT EXISTS "learning_path_items"(
   "learning_path_id" integer not null,
   "learning_course_id" integer not null,
   "position" integer not null default '0',
-  "is_mandatory" tinyint(1) not null default '1',
   "due_days" integer,
   "created_at" datetime,
   "updated_at" datetime,
@@ -17614,46 +17617,6 @@ CREATE INDEX "suppliers_organization_id_index" on "suppliers"(
 CREATE UNIQUE INDEX "suppliers_organization_id_number_unique" on "suppliers"(
   "organization_id",
   "number"
-);
-CREATE TABLE IF NOT EXISTS "sick_leaves"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer,
-  "user_id" integer not null,
-  "start_date" date not null,
-  "end_date" date not null,
-  "kind" varchar not null default('initial'),
-  "follow_up_for_id" integer,
-  "au_number" text,
-  "doctor_name" text,
-  "note" text,
-  "kasse_notified_at" datetime,
-  "reported_at" datetime,
-  "recorded_by" integer,
-  "cancelled_at" datetime,
-  "cancel_reason" varchar,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("recorded_by") references users("id") on delete set null on update no action,
-  foreign key("follow_up_for_id") references sick_leaves("id") on delete set null on update no action,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action
-);
-CREATE INDEX "sick_leaves_follow_up_for_id_index" on "sick_leaves"(
-  "follow_up_for_id"
-);
-CREATE INDEX "sick_leaves_org_dates_idx" on "sick_leaves"(
-  "organization_id",
-  "start_date",
-  "end_date"
-);
-CREATE INDEX "sick_leaves_start_date_end_date_index" on "sick_leaves"(
-  "start_date",
-  "end_date"
-);
-CREATE INDEX "sick_leaves_user_id_start_date_end_date_index" on "sick_leaves"(
-  "user_id",
-  "start_date",
-  "end_date"
 );
 CREATE TABLE IF NOT EXISTS "audit_redactions"(
   "id" integer primary key autoincrement not null,
@@ -23425,6 +23388,48 @@ CREATE INDEX "ciul_active_idx" on "customer_intake_upload_links"(
   "organization_id",
   "revoked_at"
 );
+CREATE TABLE IF NOT EXISTS "sick_leaves"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "user_id" integer not null,
+  "start_date" date not null,
+  "end_date" date not null,
+  "kind" varchar not null default('initial'),
+  "follow_up_for_id" integer,
+  "au_number" text,
+  "doctor_name" text,
+  "note" text,
+  "kasse_notified_at" datetime,
+  "reported_at" datetime,
+  "recorded_by" integer,
+  "cancelled_at" datetime,
+  "cancel_reason" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "continuation_of_id" integer,
+  foreign key("organization_id") references organizations("id") on delete set null on update no action,
+  foreign key("user_id") references users("id") on delete cascade on update no action,
+  foreign key("follow_up_for_id") references sick_leaves("id") on delete set null on update no action,
+  foreign key("recorded_by") references users("id") on delete set null on update no action,
+  foreign key("continuation_of_id") references "sick_leaves"("id") on delete set null
+);
+CREATE INDEX "sick_leaves_follow_up_for_id_index" on "sick_leaves"(
+  "follow_up_for_id"
+);
+CREATE INDEX "sick_leaves_org_dates_idx" on "sick_leaves"(
+  "organization_id",
+  "start_date",
+  "end_date"
+);
+CREATE INDEX "sick_leaves_start_date_end_date_index" on "sick_leaves"(
+  "start_date",
+  "end_date"
+);
+CREATE INDEX "sick_leaves_user_id_start_date_end_date_index" on "sick_leaves"(
+  "user_id",
+  "start_date",
+  "end_date"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -24384,3 +24389,9 @@ INSERT INTO migrations VALUES(965,'2027_03_11_100000_create_customer_intakes_tab
 INSERT INTO migrations VALUES(966,'2027_03_11_100100_add_customer_approval_to_print_orders',67);
 INSERT INTO migrations VALUES(967,'2027_03_11_100200_create_customer_intake_upload_links_table',68);
 INSERT INTO migrations VALUES(968,'2027_03_12_100000_add_search_columns_to_help_topics',69);
+INSERT INTO migrations VALUES(969,'2027_03_13_100000_add_continuation_of_id_to_sick_leaves',70);
+INSERT INTO migrations VALUES(970,'2027_03_13_100100_unify_caldav_reference_type',70);
+INSERT INTO migrations VALUES(971,'2027_03_13_100200_drop_is_mandatory_from_learning_path_items',71);
+INSERT INTO migrations VALUES(972,'2027_03_14_100000_add_group_filter_and_private_network_to_zammad_connections',71);
+INSERT INTO migrations VALUES(973,'2027_03_14_100100_add_allow_private_network_to_webdav_connections',71);
+INSERT INTO migrations VALUES(974,'2027_03_14_100200_add_allow_private_network_to_caldav_connections',71);

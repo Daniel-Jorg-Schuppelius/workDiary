@@ -177,7 +177,7 @@ class DiaryController extends Controller {
     public function store(SaveDiaryEntryRequest $request): RedirectResponse {
         $data = $request->validated();
         $custom = $this->validatedCustomFields($request, DiaryEntry::class);
-        unset($data['custom']);
+        unset($data['custom'], $data['planned_duration']); // Eingabeform von planned_minutes
         $data['status'] = \App\Enums\Diary\Status::Planned->value;
         $tagIds = $this->extractTagIds($request);
         $newTagNames = $this->extractNewTagNames($request);
@@ -333,7 +333,7 @@ class DiaryController extends Controller {
 
         $data = $request->validated();
         $custom = $this->validatedCustomFields($request, DiaryEntry::class);
-        unset($data['user_id'], $data['status'], $data['custom']); // Eigentümer und Lebenszyklus werden separat gesteuert
+        unset($data['user_id'], $data['status'], $data['custom'], $data['planned_duration']); // Eigentümer und Lebenszyklus werden separat gesteuert
         $tagIds = $this->extractTagIds($request);
         $newTagNames = $this->extractNewTagNames($request);
 

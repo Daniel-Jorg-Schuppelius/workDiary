@@ -34,15 +34,15 @@ enum AssetInspectionKind: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Verification => (string) __('Eichung'),
-            self::Calibration => (string) __('Kalibrierung'),
-            self::DguvUvv => (string) __('DGUV-/UVV-Prüfung'),
-            self::HuAu => (string) __('HU/AU'),
-            self::Electrical => (string) __('Elektrische Betriebsmittelprüfung'),
-            self::ManufacturerService => (string) __('Herstellerwartung'),
-            self::SafetyCheck => (string) __('Sicherheitsprüfung'),
-            self::FunctionCheck => (string) __('Funktionsprüfung'),
-            self::InternalCheck => (string) __('Interne Kontrollprüfung'),
+            self::Verification => (string) __('enums.asset_compliance.asset_inspection_kind.verification'),
+            self::Calibration => (string) __('enums.asset_compliance.asset_inspection_kind.calibration'),
+            self::DguvUvv => (string) __('enums.asset_compliance.asset_inspection_kind.dguv_uvv'),
+            self::HuAu => (string) __('enums.asset_compliance.asset_inspection_kind.hu_au'),
+            self::Electrical => (string) __('enums.asset_compliance.asset_inspection_kind.electrical'),
+            self::ManufacturerService => (string) __('enums.asset_compliance.asset_inspection_kind.manufacturer_service'),
+            self::SafetyCheck => (string) __('enums.asset_compliance.asset_inspection_kind.safety_check'),
+            self::FunctionCheck => (string) __('enums.asset_compliance.asset_inspection_kind.function_check'),
+            self::InternalCheck => (string) __('enums.asset_compliance.asset_inspection_kind.internal_check'),
         };
     }
 }

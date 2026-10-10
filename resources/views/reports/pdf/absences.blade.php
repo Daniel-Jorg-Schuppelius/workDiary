@@ -8,14 +8,14 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', __('Urlaub & Flex') . ' – ' . $from . ' bis ' . $to)
+@section('pdf-title', __('Urlaub & Flex') . ' – ' . $from . ' ' . __('bis') . ' ' . $to)
 @section('pdf-heading', __('Urlaub & Flex'))
 
 @section('pdf-meta')
-    Zeitraum: <strong>{{ \Carbon\Carbon::parse($from)->fdate() }}</strong> bis
+    {{ __('Zeitraum') }}: <strong>{{ \Carbon\Carbon::parse($from)->fdate() }}</strong> {{ __('bis') }}
     <strong>{{ \Carbon\Carbon::parse($to)->fdate() }}</strong> ·
-    Bereich: {{ $scope === 'team' ? 'Gesamtes Team' : 'Eigene' }} ·
-    Erstellt: {{ now()->fdatetime() }}
+    {{ __('Bereich') }}: {{ $scope === 'team' ? __('Gesamtes Team') : __('Eigene') }} ·
+    {{ __('Erstellt') }}: {{ now()->fdatetime() }}
 @endsection
 
 @section('pdf-table')
@@ -31,27 +31,31 @@
 
     <table class="kpis">
         <tr>
-            <td><div class="label">Mitarbeiter</div><div class="value">{{ $totals['users'] }}</div></td>
-            <td><div class="label">Urlaub (Werktage)</div><div class="value">{{ $totals['vacation_days'] }}</div></td>
-            <td><div class="label">Krank</div><div class="value">{{ $totals['sick_days'] }}</div></td>
+            <td><div class="label">{{ __('Mitarbeiter') }}</div><div class="value">{{ $totals['users'] }}</div></td>
+            <td><div class="label">{{ __('Urlaub (Werktage)') }}</div><div class="value">{{ $totals['vacation_days'] }}</div></td>
+            @if ($showsSick)
+            <td><div class="label">{{ __('Krank') }}</div><div class="value">{{ $totals['sick_days'] }}</div></td>
+            @endif
             <td><div class="label">{{ __('Sonder / Unbezahlt') }}</div><div class="value">{{ $totals['special_days'] }} / {{ $totals['unpaid_days'] }}</div></td>
-            <td><div class="label">Ausstehend</div><div class="value">{{ $totals['pending_days'] }}</div></td>
-            <td><div class="label">Flex Δ</div><div class="value {{ $totals['flex_change_minutes'] < 0 ? 'neg' : 'pos' }}">{{ $fmtMin($totals['flex_change_minutes']) }}</div></td>
+            <td><div class="label">{{ __('Ausstehend') }}</div><div class="value">{{ $totals['pending_days'] }}</div></td>
+            <td><div class="label">{{ __('Flex Δ') }}</div><div class="value {{ $totals['flex_change_minutes'] < 0 ? 'neg' : 'pos' }}">{{ $fmtMin($totals['flex_change_minutes']) }}</div></td>
         </tr>
     </table>
 
     <table class="data">
         <thead>
             <tr>
-                <th>Mitarbeiter</th>
-                <th class="right">Urlaub</th>
-                <th class="right">Krank</th>
-                <th class="right">Sonder</th>
-                <th class="right">Unbezahlt</th>
-                <th class="right">Ausstehend</th>
+                <th>{{ __('Mitarbeiter') }}</th>
+                <th class="right">{{ __('Urlaub') }}</th>
+                @if ($showsSick)
+                <th class="right">{{ __('Krank') }}</th>
+                @endif
+                <th class="right">{{ __('Sonder') }}</th>
+                <th class="right">{{ __('Unbezahlt') }}</th>
+                <th class="right">{{ __('Ausstehend') }}</th>
                 <th class="right">{{ __('Anspruch :year', ['year' => $balanceYear]) }}</th>
                 <th class="right">{{ __('Rest :year', ['year' => $balanceYear]) }}</th>
-                <th class="right">Flex Δ</th>
+                <th class="right">{{ __('Flex Δ') }}</th>
                 <th class="right">{{ __('Flex-Saldo') }}</th>
             </tr>
         </thead>
@@ -60,7 +64,9 @@
                 <tr>
                     <td>{{ $r['user']->name }}</td>
                     <td class="right">{{ $r['vacation_days'] }}</td>
+                    @if ($showsSick)
                     <td class="right">{{ $r['sick_days'] }}</td>
+                    @endif
                     <td class="right">{{ $r['special_days'] }}</td>
                     <td class="right">{{ $r['unpaid_days'] }}</td>
                     <td class="right">{{ $r['pending_days'] }}</td>
@@ -71,9 +77,11 @@
                 </tr>
             @endforeach
             <tr class="totals">
-                <td>Gesamt</td>
+                <td>{{ __('Gesamt') }}</td>
                 <td class="right">{{ $totals['vacation_days'] }}</td>
+                @if ($showsSick)
                 <td class="right">{{ $totals['sick_days'] }}</td>
+                @endif
                 <td class="right">{{ $totals['special_days'] }}</td>
                 <td class="right">{{ $totals['unpaid_days'] }}</td>
                 <td class="right">{{ $totals['pending_days'] }}</td>

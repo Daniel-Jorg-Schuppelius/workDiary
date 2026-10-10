@@ -1,7 +1,7 @@
 ---
 title: "Comptabiliser et boîte de saisie"
 topic: accounting.posting
-version: 2
+version: 5
 keywords:
     - passer une écriture
     - écriture comptable
@@ -12,6 +12,7 @@ keywords:
     - extourne
     - contre-passation
     - principe des quatre yeux
+    - validation
     - devise étrangère
     - taux de change
     - journal comptable
@@ -35,6 +36,34 @@ Les éléments bloqués figurent en tête.
 **Proposition avant comptabilisation.** Même une proposition univoque ne
 devient qu'un brouillon vérifié. Avec le principe des quatre yeux, celui qui
 prépare ne comptabilise pas lui-même.
+
+**Principe des quatre yeux pour les écritures directes.** Certaines opérations
+créent elles-mêmes leur écriture : **Escompte** et **Passage en perte** via
+**Solder** dans les postes ouverts, **Comptabiliser en compte d’attente** dans
+le rapprochement bancaire, le **Virement interne**, **Importer les soldes
+initiaux**, **Comptabiliser l'acompte spécial** et **Extourner** dans le
+journal. Sans principe des quatre yeux, elles sont comptabilisées
+immédiatement. S'il est actif, un brouillon vérifié est créé : un message et
+une remarque dans la boîte de dialogue l'indiquent, et la boîte de saisie le
+liste avec son type (**Escompte/passage en perte**, **Écriture d’attente**,
+**Virement interne**, **Soldes initiaux**, **Acompte spécial**, **Extourne**)
+et le statut **Prêt** – indépendamment de la période de l'en-tête, tant que
+**Toutes les sources** est sélectionné. L'opération ne prend effet que
+lorsqu'une deuxième personne la comptabilise avec **Comptabiliser** ou **Tout
+accepter et comptabiliser** : alors seulement le poste ouvert est soldé,
+l'opération bancaire comptabilisée et l'acompte spécial imputé dans la dernière
+déclaration de l'année. Dans le journal, **Comptabiliser immédiatement** reste
+bloqué pour la personne qui crée l'écriture.
+
+**Rejeter le brouillon.** Un brouillon en attente issu de ces opérations se
+supprime avec **Rejeter le brouillon** dans la boîte de saisie ou sur sa page
+de détail (autorisation **Comptabiliser les écritures**, avec confirmation).
+L'étape est journalisée et l'opération est de nouveau ouverte : le poste peut
+de nouveau être soldé, l'opération bancaire, les soldes initiaux et l'acompte
+spécial peuvent être comptabilisés à nouveau, l'écriture d'une extourne
+rejetée peut de nouveau être extournée, et un virement interne disparaît avec
+le lien de ses pièces. Les écritures comptabilisées et les brouillons issus de
+propositions ne peuvent pas être rejetés.
 
 **Bloqué plutôt que deviné.** Si une règle manque, la proposition nomme le rôle
 et les critères. Un compte par défaut deviné n'apparaîtrait qu'à l'analyse.
@@ -81,8 +110,14 @@ une note au-dessus de la liste le signale.
   **Motif** est obligatoire, la **Date de la contre-écriture** facultative.
   Laissée vide, c'est le jour d'origine qui s'applique tant que sa période est
   ouverte, sinon la date du jour. **Créer la contre-écriture** comptabilise
-  immédiatement l'écriture inversée et annule aussi les postes ouverts issus de
-  l'original.
+  l'écriture inversée et annule aussi les postes ouverts issus de l'original.
+  Avec le principe des quatre yeux actif, la contre-écriture est créée comme
+  brouillon : l'écriture reste comptabilisée et les postes ouverts inchangés
+  jusqu'à ce qu'une deuxième personne comptabilise l'extourne. D'ici là, une
+  deuxième extourne de la même écriture est impossible ; sa page de détail
+  renvoie au brouillon avec **Voir le brouillon en attente**. L'extourne
+  automatique lors de la suppression d'une affectation dans le rapprochement
+  bancaire est toujours comptabilisée immédiatement.
 
 À la comptabilisation, WorkDiary vérifie : une période ouverte existe pour la
 date de comptabilisation et la comptabilité locale tient le grand livre ce
@@ -118,6 +153,15 @@ lorsqu'une écriture est comptabilisée sur un compte portant la caractéristiqu
   contre-écriture au journal – sur le compte d'escompte ou de perte des
   paramètres DATEV, à condition que ce compte existe dans le plan comptable.
   Une retenue ne crée aucune écriture.
+  Avec le principe des quatre yeux actif, la contre-écriture est créée comme
+  brouillon dans la boîte de saisie et le poste reste ouvert jusqu'à ce
+  qu'une deuxième personne la comptabilise. D'ici là, la liste affiche
+  **Brouillon en attente de validation**, **Voir le brouillon en attente**
+  mène à l'écriture, et tout autre règlement du poste – y compris une
+  retenue – est refusé. Si le poste a été soldé autrement entre-temps, la
+  comptabilisation échoue car le montant dépasse le reste ouvert. Une retenue
+  et un règlement sans compte de contrepartie existant ne créent aucune
+  écriture et s'appliquent immédiatement.
 
 **Autorisation :** consulter avec **Consulter la comptabilité**, solder avec
 **Comptabiliser les écritures**.
@@ -139,7 +183,8 @@ existe deux types de modèles :
 
 La page se compose des **Opérations ouvertes** (**Modèle**, **Période**,
 **Échéance**, **Attendu**, **Statut** ; pour **Bloqué**, le motif figure
-dessous, pour **Brouillon créé**, **Voir l'écriture** mène au brouillon), des
+dessous, pour **Brouillon créé**, **Voir l'écriture** mène au brouillon, pour
+**Pièce attendue**, **Attribuer la pièce** attribue l'original), des
 **Modèles** (**Libellé**, **Type**, **Rythme**, **Prochaine échéance**,
 **Responsable**, **Statut** avec numéro de version) et des **Plans de
 facturation** : plans de facturation actifs, pour information seulement,
@@ -149,8 +194,9 @@ modifiés via **Ouvrir les plans**.
 **Trimestriel**, **Semestriel**, **Annuel**), **Jour d'échéance** (1–28, pour
 que chaque mois comporte ce jour), **Attendu**, **Début** et, en option,
 **Fin**, pour les modèles d'écriture aussi **Débit** et **Crédit**, ainsi
-qu'une **Note**. Un modèle d'écriture sans les deux comptes et sans montant
-n'est pas enregistré. En modification, la boîte de dialogue affiche les
+que **Responsable** et une **Note**. Un modèle d'écriture sans les deux
+comptes et sans montant n'est pas enregistré. En modification, les comptes
+enregistrés sont présélectionnés et la boîte de dialogue affiche les
 prochaines échéances ; chaque changement enregistre une nouvelle version, et
 les opérations déjà créées restent inchangées.
 
@@ -163,8 +209,17 @@ les opérations déjà créées restent inchangées.
   attendre le traitement quotidien.
 - Si un brouillon ne peut pas être créé, par exemple faute de période pour la
   date, l'opération apparaît comme **Bloqué** avec son motif.
+- **Attribuer la pièce** satisfait une attente de pièce : vous choisissez la
+  facture reçue dans le champ **Facture électronique entrante**. Sont
+  proposées les factures de **Factures électroniques entrantes** que vous
+  pouvez voir, qui ne sont pas rejetées et qui ne sont encore attribuées à
+  aucune opération – une facture satisfait au plus une opération. L'opération
+  passe ensuite au statut **Satisfait**.
+- Lorsque le brouillon d'un modèle d'écriture est comptabilisé, son opération
+  passe aussi au statut **Satisfait**.
 - Si une opération au statut **Pièce attendue** ou **Brouillon créé** est en
-  retard, WorkDiary le signale une seule fois via les notifications.
+  retard, WorkDiary le signale une seule fois via les notifications, par
+  défaut à la comptabilité et à la personne indiquée sous **Responsable**.
 - **Suspendre** arrête un modèle ; **Reprendre** continue avec la prochaine
   échéance à partir d'aujourd'hui, sans rattraper les échéances manquées.
   **Terminer** arrête définitivement le modèle ; les opérations déjà créées
@@ -172,4 +227,5 @@ les opérations déjà créées restent inchangées.
 
 **Autorisation :** consulter avec **Consulter la comptabilité** ; créer,
 modifier, suspendre, reprendre et terminer des modèles avec **Configurer la
-comptabilité** ; **Exécuter** avec **Préparer les écritures**.
+comptabilité** ; **Exécuter** et **Attribuer la pièce** avec **Préparer les
+écritures**.

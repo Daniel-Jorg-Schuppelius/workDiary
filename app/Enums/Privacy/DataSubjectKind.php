@@ -41,13 +41,13 @@ enum DataSubjectKind: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::User => __('Mitarbeiter'),
-            self::PortalUser => __('Portal-Nutzer'),
-            self::Customer => __('Kunde'),
-            self::Supplier => __('Lieferant'),
-            self::Lead => __('Lead'),
-            self::JobApplication => __('Bewerber'),
-            self::ClubMember => __('Vereinsmitglied'),
+            self::User => __('enums.privacy.data_subject_kind.user'),
+            self::PortalUser => __('enums.privacy.data_subject_kind.portal_user'),
+            self::Customer => __('enums.privacy.data_subject_kind.customer'),
+            self::Supplier => __('enums.privacy.data_subject_kind.supplier'),
+            self::Lead => __('enums.privacy.data_subject_kind.lead'),
+            self::JobApplication => __('enums.privacy.data_subject_kind.job_application'),
+            self::ClubMember => __('enums.privacy.data_subject_kind.club_member'),
         };
     }
 

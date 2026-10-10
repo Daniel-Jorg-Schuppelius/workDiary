@@ -21,6 +21,7 @@ use App\Models\Claims\ClaimCase;
 use App\Models\Customer\Customer;
 use App\Models\Inventory\{StockDelivery, StockSerial, Warehouse};
 use App\Models\Platform\User;
+use App\Models\Shipping\Shipment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -95,6 +96,29 @@ final class PortalReturnTest extends TestCase {
             'delivery_id' => $foreign->sqid, 'title' => 'x', 'description' => 'Beschreibung lang genug.',
         ])->assertSessionHasErrors('delivery_id');
         $this->assertSame(0, ClaimCase::query()->count());
+    }
+
+    /** Phase 137 (MVP-1105): ohne Freigabe „Reklamationen“ gab es keinen Weg zum Retourenlabel. */
+    public function test_returns_page_lists_own_returns_with_label(): void {
+        $this->allowPortal($this->customer, [PortalCapability::Returns->value]);
+        $this->actingAs($this->portalUser, 'customer')->post(route('customer.returns.store'), [
+            'delivery_id' => $this->delivery->sqid, 'title' => 'Gerät heizt nicht', 'description' => 'Nach zwei Tagen kein Heizbetrieb mehr.',
+        ])->assertRedirect(route('customer.returns.create'));
+        $rma = ClaimCase::query()->sole()->rmaReturns()->sole();
+        $shipment = Shipment::query()->create([
+            'organization_id' => $this->organization->id, 'claim_rma_return_id' => $rma->id, 'carrier' => 'mock', 'status' => 'labeled', 'is_return' => true,
+        ]);
+        Storage::disk('local')->put('labels/retoure.pdf', '%PDF-1.4');
+        Attachment::factory()->create([
+            'organization_id' => $this->organization->id, 'attachable_type' => $shipment->getMorphClass(), 'attachable_id' => $shipment->id,
+            'meta_type' => Shipment::LABEL_META, 'disk' => 'local', 'path' => 'labels/retoure.pdf', 'original_name' => 'label.pdf', 'mime' => 'application/pdf',
+        ]);
+
+        $this->actingAs($this->portalUser, 'customer')->get(route('customer.returns.create'))
+            ->assertOk()
+            ->assertSee($rma->rma_number)
+            ->assertSee(route('customer.returns.label', [$rma, $shipment]), false);
+        $this->actingAs($this->portalUser, 'customer')->get(route('customer.returns.label', [$rma, $shipment]))->assertOk()->assertDownload();
     }
 
     public function test_capability_is_required(): void {

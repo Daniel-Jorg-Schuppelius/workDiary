@@ -110,6 +110,8 @@ return [
             'add_entry' => 'Nuevo asiento',
             'post' => 'Contabilizar',
             'reverse' => 'Anular',
+            'discard' => 'Descartar borrador',
+            'show_pending' => 'Ver borrador pendiente',
             'reverse_submit' => 'Crear contraasiento',
             'import' => 'Importar plan de cuentas',
         ],
@@ -157,6 +159,8 @@ return [
             'entry_saved' => 'Asiento guardado.',
             'entry_posted' => 'Asiento contabilizado.',
             'entry_reversed' => 'Contraasiento creado.',
+            'entry_discarded' => 'Borrador descartado — la operación puede iniciarse de nuevo.',
+            'reversal_awaiting_approval' => 'Principio de doble control: la anulación espera la aprobación como borrador en la bandeja contable. El asiento sigue contabilizado hasta que una segunda persona contabiliza el contraasiento.',
         ],
         'error' => [
             'sovereignty' => 'El :date el libro mayor lo lleva :holder — ese día no se permiten asientos locales.',
@@ -177,6 +181,8 @@ return [
             'both_sides' => 'Una línea lleva Debe o Haber, nunca ambos.',
             'unbalanced' => 'El Debe (:debit) y el Haber (:credit) no coinciden.',
             'reverse_not_posted' => 'Solo se puede anular un asiento contabilizado.',
+            'reversal_pending' => 'Ya hay una anulación de este asiento pendiente de aprobación.',
+            'discard_not_allowed' => 'Solo se puede descartar un borrador pendiente de un descuento, una baja, un asiento en suspenso, un traspaso, los saldos iniciales, un pago anticipado especial o una anulación; los asientos contabilizados no cambian.',
             'reversal_reason_required' => 'La anulación exige un motivo.',
             'account_in_use' => 'Esta cuenta ya tiene asientos — solo puede desactivarse.',
             'entry_without_organization' => 'El asiento no tiene organización — informe al administrador del sistema.',
@@ -235,6 +241,8 @@ return [
             'lines' => 'Líneas',
             'total' => 'Total',
             'is_reversal_of' => 'Este asiento anula el asiento n.º :no.',
+            'awaiting_approval' => 'Borrador de «:kind»: espera la aprobación y solo surte efecto cuando una segunda persona lo contabiliza. Descartarlo lo elimina; después la operación puede iniciarse de nuevo.',
+            'reversal_pending' => 'Una anulación de este asiento espera la aprobación como borrador.',
             'reversed_by' => 'Anulado por el asiento n.º :no — :reason',
         ],
         'filter' => [
@@ -252,6 +260,7 @@ return [
         ],
         'confirm' => [
             'deactivate' => '¿Desactivar realmente esta cuenta? Los asientos existentes se conservan.',
+            'discard' => '¿Descartar el borrador? Se eliminará y el paso quedará registrado; después la operación puede iniciarse de nuevo.',
         ],
         'import' => [
             'line_invalid' => 'Línea :line omitida (falta número, nombre o tipo de cuenta).',
@@ -269,7 +278,8 @@ return [
         'menu' => 'Bandeja contable',
         'subtitle' => 'Documentos, gastos y movimientos de caja del periodo con su estado contable.',
         'empty' => 'No hay elementos abiertos en el periodo.',
-        'four_eyes_active' => 'Principio de doble control activo: quien prepara una propuesta no la contabiliza él mismo.',
+        'four_eyes_active' => 'Principio de doble control activo: quien prepara una propuesta no la contabiliza él mismo. Los descuentos, bajas, asientos en suspenso, traspasos internos, saldos iniciales, pagos anticipados especiales y anulaciones también esperan aquí la aprobación de una segunda persona; estos borradores también pueden descartarse.',
+        'four_eyes_direct_hint' => 'Principio de doble control activo: el asiento se crea como borrador en la bandeja contable y solo surte efecto cuando una segunda persona lo contabiliza.',
         'state' => [
             'blocked' => 'Bloqueado',
             'open' => 'Sin contabilizar',
@@ -299,6 +309,7 @@ return [
         'flash' => [
             'prepared' => 'Propuesta aceptada.',
             'batch' => 'Lote: :prepared aceptados, :posted contabilizados, :failed abiertos.',
+            'awaiting_approval' => 'Principio de doble control: el asiento espera la aprobación como borrador en la bandeja contable. Surte efecto en cuanto una segunda persona lo contabiliza.',
         ],
         'error' => [
             'four_eyes' => 'Principio de doble control: usted preparó este asiento — debe contabilizarlo otra persona.',
@@ -511,6 +522,8 @@ return [
         'empty' => 'No hay partidas abiertas.',
         'overdue_days' => ':days días de retraso',
         'settle_hint' => 'Abierto: :open. Los pagos vienen de la conciliación bancaria — aquí solo descuento, retención o baja.',
+        'awaiting_approval' => 'Borrador pendiente de aprobación',
+        'four_eyes_hint' => 'Principio de doble control activo: el descuento y la baja se crean como borrador en la bandeja contable. La partida sigue abierta hasta que una segunda persona contabiliza el contraasiento.',
         'column' => [
             'counterparty' => 'Contraparte',
             'due_date' => 'Vencimiento',
@@ -528,9 +541,14 @@ return [
         'action' => [
             'settle' => 'Compensar',
             'show_entry' => 'Ver asiento',
+            'show_pending' => 'Ver borrador pendiente',
         ],
         'flash' => [
             'settled' => 'Compensación registrada.',
+            'awaiting_approval' => 'Principio de doble control: el contraasiento espera la aprobación como borrador en la bandeja contable. La partida sigue abierta hasta que una segunda persona lo contabiliza.',
+        ],
+        'error' => [
+            'draft_pending' => 'Para esta partida ya hay un contraasiento pendiente de aprobación. Otra compensación solo es posible cuando se haya contabilizado.',
         ],
     ],
 
@@ -543,6 +561,9 @@ return [
         'invoice_schedules_hint' => 'Las facturas periódicas siguen en el plan de facturación; aquí solo como referencia.',
         'preview' => 'Próximos vencimientos: :dates',
         'no_account' => '— sin cuenta —',
+        'no_responsible' => '— nadie —',
+        'choose_invoice' => '— elegir la factura —',
+        'fulfill_hint' => 'Período :period, vence el :due, esperado :expected. Al asignar la factura recibida, la operación queda cerrada.',
         'section' => [
             'open_runs' => 'Operaciones abiertas',
             'templates' => 'Plantillas',
@@ -562,11 +583,13 @@ return [
             'due_day' => 'Día de vencimiento',
             'starts_on' => 'Inicio',
             'ends_on' => 'Fin',
+            'incoming_einvoice' => 'Factura electrónica entrante',
         ],
         'hint' => [
             'kind' => 'La expectativa espera un original; la plantilla de asiento crea un borrador.',
             'due_day' => '1–28, para que todos los meses tengan ese día.',
             'accounts' => 'Solo para plantillas de asiento — junto con el importe esperado.',
+            'responsible' => 'Recibe, además de contabilidad, el aviso de las operaciones vencidas.',
         ],
         'action' => [
             'add' => 'Crear plantilla',
@@ -576,6 +599,7 @@ return [
             'resume' => 'Reanudar',
             'end' => 'Finalizar',
             'open_schedules' => 'Abrir los planes',
+            'fulfill' => 'Asignar documento',
         ],
         'confirm' => [
             'end' => '¿Finalizar la plantilla? Las operaciones ya creadas se conservan.',
@@ -584,6 +608,7 @@ return [
             'runs' => 'No hay operaciones abiertas.',
             'templates' => 'Todavía no hay plantillas.',
             'schedules' => 'Ningún plan activo.',
+            'candidates' => 'No hay ninguna factura electrónica entrante que asignar. Registre primero el original en Facturas electrónicas entrantes.',
         ],
         'flash' => [
             'saved' => 'Plantilla guardada.',
@@ -592,6 +617,7 @@ return [
             'resumed' => 'Plantilla reanudada.',
             'ended' => 'Plantilla finalizada.',
             'ran' => 'Ejecución realizada.',
+            'fulfilled' => 'Expectativa de documento cumplida.',
         ],
         'error' => [
             'already_closed' => 'La operación ya está cerrada.',

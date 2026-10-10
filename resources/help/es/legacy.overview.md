@@ -1,7 +1,7 @@
 ---
 title: "Sistema heredado (Legacy)"
 topic: legacy.overview
-version: 2
+version: 3
 keywords:
     - sistema antiguo
     - datos antiguos

@@ -8,8 +8,8 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Umsatz je Produkt')
-@section('pdf-heading', 'Umsatz je Produkt')
+@section('pdf-title', __('Umsatz je Produkt'))
+@section('pdf-heading', __('Umsatz je Produkt'))
 
 @section('pdf-table')
     <p class="small">
@@ -47,5 +47,5 @@
             @endforeach
         </tbody>
     </table>
-    <p class="small">{{ __('Lokale Rechnungen und gespiegelte Lexoffice-Rechnungen/-Gutschriften; aus lokalen Rechnungen übergebene Belege zählen nur einmal.') }}</p>
+    <p class="small">{{ __('reporting.product_revenue.subtitle') }}</p>
 @endsection

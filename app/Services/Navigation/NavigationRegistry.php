@@ -1153,6 +1153,10 @@ class NavigationRegistry {
                         ['route' => 'reports.project-details', 'label' => __('Projekt-Details'), 'icon' => 'analytics', 'modal' => false, 'matches' => ['reports.project-details']],
                         ['route' => 'reports.project-inactive', 'label' => __('Inaktive Projekte'), 'icon' => 'folder_off', 'modal' => false, 'matches' => ['reports.project-inactive']],
                         ['route' => 'reports.operations', 'label' => __('Operations'), 'icon' => 'assignment', 'modal' => false, 'matches' => ['reports.operations']],
+                        // Datenqualität (Feature 024): Recht wie die Seite.
+                        $user?->can(Permission::ReportView->value)
+                            ? ['route' => 'reports.data-quality', 'label' => __('Datenqualität'), 'icon' => 'fact_check', 'modal' => false, 'matches' => ['reports.data-quality']]
+                            : null,
                         // SLA-Report (Feature 010): nur für SLA-Berechtigte.
                         $user?->can(Permission::SlaViewAny->value)
                             ? ['route' => 'reports.sla', 'label' => __('sla.report.nav'), 'icon' => 'timer', 'modal' => false, 'matches' => ['reports.sla', 'reports.sla.*']]
@@ -1346,8 +1350,9 @@ class NavigationRegistry {
                 && ! in_array(self::KEY_SECTION . (string) $s['key'], $hidden, true)
         ));
 
+        // Jeder Eintrag folgt dem Modul-Gate seiner Route (E12, MVP-1101): sichtbar ist, was erreichbar ist.
         $itemVisible = fn(array $it): bool => (! isset($moduleByItemRoute[$it['route']]) || $this->features->isEnabled($moduleByItemRoute[$it['route']]))
-            && $this->gate->mayAccess(isset($it['route']) ? (string) $it['route'] : null)
+            && $this->gate->allows(isset($it['route']) ? (string) $it['route'] : null)
             && ! in_array(self::KEY_ITEM . (string) $it['route'], $hidden, true);
 
         foreach ($sections as $i => $section) {
@@ -1758,8 +1763,9 @@ class NavigationRegistry {
         // sonst sähe ein frisch angelegter Admin ohne Legacy-ID die Verwaltung nicht.
         $isAppAdmin = $isLegacyAdmin || $isGlobalAdmin;
         if ($isAppAdmin) {
-            if ($isLegacyMode) {
-                $manageNavItems[] = ['route' => 'legacy.users.index', 'label' => __('Mitarbeiter'), 'icon' => 'group', 'modal' => false];
+            // Wie LegacyUserAdminController: Legacy-Admin oder Plattformbetrieb, nicht jeder Org-Admin.
+            if ($isLegacyMode && ($isLegacyAdmin || $isPlatformAdmin)) {
+                $manageNavItems[] = ['route' => 'legacy.users.index', 'label' => __('user.employees'), 'icon' => 'group', 'modal' => false];
             }
             if (! $isLegacyMode) {
                 $manageNavItems[] = ['route' => 'holidays.index', 'label' => __('Feiertage'), 'icon' => 'celebration', 'modal' => false];
@@ -1998,10 +2004,10 @@ class NavigationRegistry {
         }
         if (! $isLegacyMode && (Gate::allows('manage-members') || $user->can(Permission::UserPayrollManage->value))) {
             // Admin ODER Personalverwaltung/GF (Personal-/Lohndaten + Arbeitszeit-Modell).
-            $manageNavItems[] = ['route' => 'org.members.index', 'label' => __('Mitarbeiter'), 'icon' => 'group', 'modal' => false];
+            $manageNavItems[] = ['route' => 'org.members.index', 'label' => __('user.employees'), 'icon' => 'group', 'modal' => false];
         } elseif (! $isLegacyMode && $isPlatformAdmin) {
             // Plattform-Betreiber ohne Org-Kontext: Link auf Mandanten-Verwaltung zur Zuordnung.
-            $manageNavItems[] = ['route' => 'admin.organizations.index', 'label' => __('Mitarbeiter'), 'icon' => 'group', 'modal' => false];
+            $manageNavItems[] = ['route' => 'admin.organizations.index', 'label' => __('user.employees'), 'icon' => 'group', 'modal' => false];
         }
         if (! $isLegacyMode && $user->can(Permission::TeamViewAny->value)) {
             $manageNavItems[] = ['route' => 'teams.index', 'label' => __('Teams'), 'icon' => 'groups', 'modal' => false];

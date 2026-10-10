@@ -64,7 +64,7 @@ class KimaiPlugin extends AbstractPlugin implements TimeImporter {
     /** Health-Check: pingt die Kimai-API; ohne API-Zugang ist CSV der reguläre Modus (= ok). */
     public function healthCheck(): PluginHealth {
         $config = KimaiConfig::resolve();
-        $client = new KimaiApiClient($config['api_token'], $config['base_url']);
+        $client = new KimaiApiClient($config['api_token'], $config['base_url'], allowPrivateNetwork: $config['allow_private_network']);
 
         return PluginHealth::pingHealth(
             ping: fn (): bool => $client->ping(),
@@ -87,9 +87,10 @@ class KimaiPlugin extends AbstractPlugin implements TimeImporter {
     public function settingsSchema(): array {
         return [
             ['key' => 'default_billable', 'label' => __('Abrechenbar übernehmen'), 'type' => 'boolean', 'default' => true, 'help' => __('Wenn aus, werden importierte Zeiten nie als abrechenbar markiert.')],
-            ['key' => 'default_user_id', 'label' => __('Zeiten buchen für Benutzer-ID'), 'type' => 'text', 'help' => __('Optional. Leer = Organisations-Owner bzw. erster Benutzer. Greift nur im Einbenutzer-Modus oder bei ausdrücklicher Auswahl beim Buchen.')],
+            ['key' => 'default_user_id', 'label' => __('Zeiten buchen für Benutzer'), 'type' => 'user', 'help' => __('Optional. Leer = Organisations-Owner bzw. erster Benutzer. Greift nur im Einbenutzer-Modus oder bei ausdrücklicher Auswahl beim Buchen.')],
             ['key' => 'single_user_mode', 'label' => __('Einbenutzer-Modus'), 'type' => 'boolean', 'default' => false, 'help' => __('Nur für Einzelarbeitsplätze: Einträge ohne zuordenbaren Quell-Benutzer werden auf den Standard-Benutzer gebucht. Wenn aus (empfohlen), landen nicht zuordenbare Benutzer sichtbar in der Integrations-Inbox statt still beim Hauptbenutzer.')],
             ['key' => 'base_url', 'label' => __('Kimai-Basis-URL'), 'type' => 'text', 'help' => __('Adresse der Kimai-Instanz, z. B. https://kimai.example.com (ohne /api).')],
+            ['key' => 'allow_private_network', 'label' => __('Private Adressen erlauben'), 'type' => 'boolean', 'default' => false, 'help' => __('Nur für eine selbst gehostete Kimai-Instanz im eigenen Netz: erlaubt eine Basis-URL mit privater/interner Adresse. Wird protokolliert und wirkt nur, wenn der Betreiber diese Freigabe zulässt.')],
             ['key' => 'api_token', 'label' => __('Kimai API-Token'), 'type' => 'password', 'help' => __('Kimai 2.x: Profil → API-Zugang. Zusammen mit der Basis-URL schaltet das den API-Import frei.')],
             ['key' => 'api_all_users', 'label' => __('Zeiten aller Benutzer abrufen'), 'type' => 'boolean', 'default' => true, 'help' => __('Braucht in Kimai das Recht view_other_timesheet; sonst kommen nur die Zeiten des Token-Benutzers.')],
             ['key' => 'sync_window_days', 'label' => __('Sync-Zeitfenster (Tage)'), 'type' => 'text', 'default' => '30', 'help' => __('Wie viele Tage rückwirkend pro API-Lauf abgefragt werden.')],

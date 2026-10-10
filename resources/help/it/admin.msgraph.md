@@ -1,7 +1,7 @@
 ---
 title: "Collegare Microsoft 365"
 topic: admin.msgraph
-version: 1
+version: 2
 keywords:
     - Microsoft 365
     - Office 365
@@ -64,7 +64,7 @@ indicatore mostra **Connesso**, **Non raggiungibile** o **Inattivo**.
 - **Direzione:** gli eventi di WorkDiary vengono trasferiti nel calendario
   dell'account collegato, da 30 giorni indietro a 180 giorni avanti, con
   titolo, descrizione, orario e luogo (sale prenotate). Le modifiche vengono
-  riportate, gli eventi annullati vi vengono rimossi e le esecuzioni ripetute
+  riportate, gli eventi annullati ed eliminati vi vengono rimossi e le esecuzioni ripetute
   non creano duplicati. WorkDiary resta il sistema di riferimento.
 - **Momento:** una sincronizzazione viene eseguita ogni giorno, per
   impostazione predefinita alle 4:45; modifica la frequenza in **Attività
@@ -180,12 +180,10 @@ richiesta di consenso propria.
 
 **URI di reindirizzamento per una registrazione app propria** elenca gli
 indirizzi che un'app propria deve registrare come URI di reindirizzamento di
-tipo «Web»: per calendario, invio e-mail, contatti, attività, ingresso
-documenti, admin consent e, solo per l'app dell'installazione, la destinazione
-di backup. L'indirizzo per OneNote manca in questo elenco: con un'app propria
-inserisca anche il Suo indirizzo WorkDiary con il percorso
-/admin/msgraph/onenote/oauth/callback. Se l'**Archiviazione SharePoint** usa la
-stessa app, ne fa parte anche il percorso /admin/sharepoint/oauth/callback.
+tipo «Web»: per calendario, invio e-mail, contatti, attività, OneNote,
+ingresso documenti, admin consent, solo per l'app dell'installazione la
+destinazione di backup, e l'**Archiviazione SharePoint**, che usa la stessa
+app finché il gestore non le assegna un'app propria.
 
 ## Altre funzioni del plugin
 
@@ -204,7 +202,9 @@ Ogni scheda ha la propria disconnessione. Essa rimuove le chiavi di accesso di
 quella connessione; gli appuntamenti trasferiti e i contatti Outlook restano
 presso Microsoft. Può riconnettersi in qualsiasi momento; WorkDiary azzera
 allora anche il conteggio degli errori. Se una connessione è stata sospesa dopo
-ripetuti errori consecutivi, il pulsante di connessione ricompare.
+ripetuti errori consecutivi, il pulsante di connessione ricompare. Finché
+una connessione del calendario è disturbata, un'attività operativa lo
+segnala.
 
 ## Problemi tipici
 

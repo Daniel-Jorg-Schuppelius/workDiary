@@ -31,9 +31,9 @@ enum LexofficeMatchPolicy: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::LexofficeWins => (string) __('Lexoffice gewinnt (Remote überschreibt lokal)'),
-            self::LocalWins => (string) __('Lokal gewinnt (Pull legt nur neu an)'),
-            self::ManualReview => (string) __('Manuelle Prüfung (Konflikt-Inbox)'),
+            self::LexofficeWins => (string) __('lexoffice::enums.lexoffice_match_policy.lexoffice_wins'),
+            self::LocalWins => (string) __('lexoffice::enums.lexoffice_match_policy.local_wins'),
+            self::ManualReview => (string) __('lexoffice::enums.lexoffice_match_policy.manual_review'),
         };
     }
 

@@ -10,7 +10,6 @@
 
 namespace App\Http\Controllers\CustomerPortal;
 
-use App\Enums\Protocol\ProtocolVisibility;
 use App\Http\Controllers\Controller;
 use App\Models\Asset\Asset;
 use App\Models\Platform\User;
@@ -20,7 +19,8 @@ use Illuminate\View\View;
 /**
  * Portal-Sicht der Objektakte (Feature 027, Rang 50): eigene Objekte des
  * Kunden mit strikt kundensichtbarem Schnitt — Stammdaten, Prüf-/
- * Wartungstermine, abgeschlossene Wartungen und kundensichtbare Protokolle.
+ * Wartungstermine, abgeschlossene Wartungen und unterschriebene
+ * kundensichtbare Protokolle (PDF über {@see ProtocolPdfController}).
  * Interne Defekt-Details bleiben bewusst draußen.
  */
 class AssetController extends Controller {
@@ -37,11 +37,11 @@ class AssetController extends Controller {
 
     public function show(Asset $asset): View {
         $user = $this->portalUser();
-        abort_unless((int) $asset->customer_id === (int) $user->customer_id, 403);
+        abort_unless((int) $asset->customer_id === (int) $user->customer_id, 404);
 
         $asset->load([
             'maintenancePlans' => fn ($q) => $q->orderBy('next_due_on'),
-            'protocols' => fn ($q) => $q->where('visibility', ProtocolVisibility::Customer->value)->orderByDesc('occurred_at'),
+            'protocols' => fn ($q) => $q->releasedToCustomer(),
         ]);
 
         // Kundensichtbare Ereignisse: abgeschlossene Wartungen (aus der

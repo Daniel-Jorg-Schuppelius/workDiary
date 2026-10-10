@@ -18,6 +18,7 @@ use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Time\TimeEntry;
 use App\Services\Billing\Contracts\ExternalRevenue;
+use App\Services\Invoicing\DunningService;
 use App\Services\Reporting\ReportFilters;
 use App\Support\ChartBucket;
 use App\Support\Query\DateRange;
@@ -363,8 +364,10 @@ class BillingReportController extends Controller {
     }
 
     /**
-     * Offene (ausgestellte, nicht bezahlte, nicht stornierte) Rechnungen
-     * in Aging-Buckets relativ zu due_on (oder issued_on falls due_on null).
+     * Offene Posten wie in Mahnwesen und Belegkette: gestellte und teilweise
+     * bezahlte Rechnungen ohne Pro-forma, Gutschrift und Stornobeleg, mit dem
+     * offenen Betrag ({@see DunningService::openAmount()}), in Aging-Buckets
+     * relativ zu due_on (oder issued_on falls due_on null).
      *
      * @return array{
      *   buckets: array<string, array{count:int, total:float}>,
@@ -377,13 +380,16 @@ class BillingReportController extends Controller {
 
         /** @var Collection<int, Invoice> $invoices */
         $invoices = $this->applyInvoiceFilters(
-            Invoice::query()->where('status', InvoiceStatus::Issued),
+            Invoice::query()
+                ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid])
+                ->whereNotIn('type', [Invoice::TYPE_PROFORMA, Invoice::TYPE_CANCELLATION, Invoice::TYPE_CREDIT_NOTE]),
             $filters,
-        )->get(['due_on', 'issued_on', 'total']);
+        )->get();
 
+        $dunning = app(DunningService::class);
         $openTotal = 0.0;
         foreach ($invoices as $inv) {
-            $total = ($inv->total?->toFloat() ?? 0.0);
+            $total = $dunning->openAmount($inv)->toFloat();
             $openTotal += $total;
             $reference = $inv->due_on ?? $inv->issued_on;
             $key = $bands->bucketFor($reference === null
@@ -406,7 +412,7 @@ class BillingReportController extends Controller {
         $invoices = $this->applyInvoiceFilters(
             Invoice::query()
                 ->whereBetween('issued_on', [$from, $to])
-                ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::Paid]),
+                ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid, InvoiceStatus::Paid]),
             $filters,
         )->get(['customer_id', 'total']);
 
@@ -510,44 +516,52 @@ class BillingReportController extends Controller {
     private function exportCsv(array $status, array $aging, array $perCustomer, array $unbilled, array $einvoicing, array $documentChain, string $from, string $to, ReportFilters $filters, Request $request): Response {
         $filename = sprintf('billing_%s_%s.csv', $from, $to);
         $rows = [];
-        $rows[] = ['Bereich', 'Schlüssel', 'Anzahl', 'Wert €'];
+        $agingLabel = (string) __('reporting.csv.aging');
+        $customerLabel = (string) __('reporting.csv.customer');
+        $unbilledLabel = (string) __('reporting.csv.unbilled_time');
+        $incomingLabel = (string) __('reporting.csv.incoming_invoices');
+        $validationLabel = (string) __('reporting.csv.incoming_validation');
+        $quotesLabel = (string) __('reporting.csv.quotes');
+        $chainLabel = (string) __('reporting.csv.document_chain');
+        $correctionLabel = (string) __('reporting.csv.correction');
+        $rows[] = [(string) __('reporting.csv.area'), (string) __('reporting.csv.key'), (string) __('reporting.csv.count'), (string) __('reporting.csv.value_eur')];
         foreach ($status as $st => $s) {
-            $rows[] = ['Status', $st, $s['count'], NumberHelper::toUSFormat($s['total'], 2)];
+            $rows[] = [(string) __('reporting.csv.status'), $st, $s['count'], NumberHelper::toUSFormat($s['total'], 2)];
         }
         foreach ($aging['buckets'] as $k => $b) {
-            $rows[] = ['Aging', $k, $b['count'], NumberHelper::toUSFormat($b['total'], 2)];
+            $rows[] = [$agingLabel, $k, $b['count'], NumberHelper::toUSFormat($b['total'], 2)];
         }
-        $rows[] = ['Aging', 'OFFEN_SUMME', '', NumberHelper::toUSFormat($aging['open_total'], 2)];
+        $rows[] = [$agingLabel, (string) __('reporting.csv.open_total'), '', NumberHelper::toUSFormat($aging['open_total'], 2)];
         foreach ($perCustomer as $r) {
-            $rows[] = ['Kunde', $r['customer']->name, $r['count'], NumberHelper::toUSFormat($r['total'], 2)];
+            $rows[] = [$customerLabel, $r['customer']->name, $r['count'], NumberHelper::toUSFormat($r['total'], 2)];
             if (($r['external'] ?? 0.0) != 0.0) {
-                $rows[] = ['Kunde', $r['customer']->name . ' (' . __('reporting.external_share') . ')', '', NumberHelper::toUSFormat($r['external'], 2)];
+                $rows[] = [$customerLabel, $r['customer']->name . ' (' . __('reporting.external_share') . ')', '', NumberHelper::toUSFormat($r['external'], 2)];
             }
         }
-        $rows[] = ['Unbillte Zeit', 'Einträge', $unbilled['count'], ''];
-        $rows[] = ['Unbillte Zeit', 'Minuten', $unbilled['minutes'], ''];
-        $rows[] = ['Unbillte Zeit', 'Projiziert', '', NumberHelper::toUSFormat($unbilled['projected_revenue'], 2)];
+        $rows[] = [$unbilledLabel, (string) __('reporting.csv.entries'), $unbilled['count'], ''];
+        $rows[] = [$unbilledLabel, (string) __('reporting.csv.minutes'), $unbilled['minutes'], ''];
+        $rows[] = [$unbilledLabel, (string) __('reporting.csv.projected_eur'), '', NumberHelper::toUSFormat($unbilled['projected_revenue'], 2)];
         foreach ($einvoicing['incoming'] as $st => $s) {
-            $rows[] = ['Eingang', $st, $s['count'], NumberHelper::toUSFormat($s['gross'], 2)];
+            $rows[] = [$incomingLabel, $st, $s['count'], NumberHelper::toUSFormat($s['gross'], 2)];
         }
-        $rows[] = ['Eingang', 'UEBERGEBEN', $einvoicing['incoming_transferred'], ''];
-        $rows[] = ['Eingangs-Validierung', 'geprüft', $einvoicing['validation']['checked'], ''];
-        $rows[] = ['Eingangs-Validierung', 'bestanden', $einvoicing['validation']['passed'], ''];
-        $rows[] = ['Eingangs-Validierung', 'fehlgeschlagen', $einvoicing['validation']['failed'], ''];
+        $rows[] = [$incomingLabel, (string) __('reporting.csv.transferred'), $einvoicing['incoming_transferred'], ''];
+        $rows[] = [$validationLabel, (string) __('reporting.csv.checked'), $einvoicing['validation']['checked'], ''];
+        $rows[] = [$validationLabel, (string) __('reporting.csv.passed'), $einvoicing['validation']['passed'], ''];
+        $rows[] = [$validationLabel, (string) __('reporting.csv.failed_lc'), $einvoicing['validation']['failed'], ''];
         foreach ($einvoicing['dunning'] as $level => $count) {
-            $rows[] = ['Mahnstufe', (string) $level, $count, ''];
+            $rows[] = [(string) __('reporting.csv.dunning_level'), (string) $level, $count, ''];
         }
         // Vollaudit 2026-07 (N18): Angebots-/Belegketten-Block.
         foreach ($documentChain['quotes'] as $st => $count) {
-            $rows[] = ['Angebote', $st, $count, ''];
+            $rows[] = [$quotesLabel, $st, $count, ''];
         }
-        $rows[] = ['Angebote', 'ANNAHMEQUOTE_%', '', $documentChain['acceptance_rate'] !== null ? NumberHelper::toUSFormat($documentChain['acceptance_rate'], 1) : ''];
-        $rows[] = ['Angebote', 'MEDIAN_ENTSCHEIDUNG_TAGE', '', $documentChain['decision_median_days'] !== null ? NumberHelper::toUSFormat($documentChain['decision_median_days'], 1) : ''];
-        $rows[] = ['Belegkette', 'ANGEBOT_ZU_RECHNUNG', $documentChain['conversions']['quote_to_invoice'], ''];
-        $rows[] = ['Belegkette', 'PROFORMA_ZU_RECHNUNG', $documentChain['conversions']['proforma_to_invoice'], ''];
-        $rows[] = ['Korrektur', 'STORNOS', $documentChain['correction']['cancellations'], ''];
-        $rows[] = ['Korrektur', 'GUTSCHRIFTEN', $documentChain['correction']['credit_notes'], ''];
-        $rows[] = ['Korrektur', 'QUOTE_%', '', $documentChain['correction']['rate'] !== null ? NumberHelper::toUSFormat($documentChain['correction']['rate'], 1) : ''];
+        $rows[] = [$quotesLabel, (string) __('reporting.csv.acceptance_rate_percent'), '', $documentChain['acceptance_rate'] !== null ? NumberHelper::toUSFormat($documentChain['acceptance_rate'], 1) : ''];
+        $rows[] = [$quotesLabel, (string) __('reporting.csv.median_decision_days'), '', $documentChain['decision_median_days'] !== null ? NumberHelper::toUSFormat($documentChain['decision_median_days'], 1) : ''];
+        $rows[] = [$chainLabel, (string) __('reporting.csv.quote_to_invoice'), $documentChain['conversions']['quote_to_invoice'], ''];
+        $rows[] = [$chainLabel, (string) __('reporting.csv.proforma_to_invoice'), $documentChain['conversions']['proforma_to_invoice'], ''];
+        $rows[] = [$correctionLabel, (string) __('reporting.csv.cancellations'), $documentChain['correction']['cancellations'], ''];
+        $rows[] = [$correctionLabel, (string) __('reporting.csv.credit_notes'), $documentChain['correction']['credit_notes'], ''];
+        $rows[] = [$correctionLabel, (string) __('reporting.csv.rate_percent'), '', $documentChain['correction']['rate'] !== null ? NumberHelper::toUSFormat($documentChain['correction']['rate'], 1) : ''];
 
         return $this->csvWithMetadata($rows, $filename, 'billing', $filters->toAuditArray(), $request);
     }

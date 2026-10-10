@@ -20,7 +20,10 @@
 @section('content')
 @php
     $fmtH = fn (int $minutes): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($minutes / 60, 1, withThousandsSeparator: true) . ' h';
-    $chartSeries = collect($rows->items())
+    // Diagramm über alle Standorte, nicht nur die aktuelle Tabellenseite.
+    $chartSeries = collect($allRows)
+        ->sortByDesc('actual_minutes')
+        ->take(15)
         ->map(fn (array $r): array => [
             'x' => $r['name'],
             'y' => round($r['actual_minutes'] / 60, 1),
@@ -61,7 +64,7 @@
             <x-kpi-tile :label="__('Personen')" :value="$totals['users']" tone="neutral" format="int" />
         </div>
 
-        <x-charts.bar :title="__('Ist-Zeiten je Standort')"
+        <x-charts.bar :title="__('Ist-Zeiten je Standort (Top 15)')"
                       :unit="__('Stunden')"
                       :series="$chartSeries"
                       :x-label="__('Standort')"

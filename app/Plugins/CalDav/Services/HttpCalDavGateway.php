@@ -37,12 +37,21 @@ class HttpCalDavGateway implements CalDavGateway {
         private readonly PluginApiClient $http,
         private readonly CalDavConnection $connection,
     ) {
-        // SSRF-Schutz: die org-konfigurierte Basis-URL muss öffentlich routbar
-        // sein (kein Loopback/RFC1918/Metadata) — Whitebox-Befund 2026-07.
-        if (! UrlSafety::isPubliclyRoutableHttpUrl((string) $connection->base_url)) {
-            throw new RuntimeException('CalDAV base_url is not a publicly routable http(s) target.');
-        }
+        self::assertTarget($connection);
         $this->http->setAuthentication(new BasicAuthentication((string) $connection->username, (string) $connection->app_password));
+    }
+
+    /**
+     * SSRF-Schutz (Whitebox-Befund 2026-07): öffentlich routbar, außer die
+     * Anbindung gibt private Adressen frei und der Betreiber lässt das zu.
+     */
+    public static function assertTarget(CalDavConnection $connection): void {
+        UrlSafety::assertAcceptableExternalBaseUrl(
+            (string) $connection->base_url,
+            $connection->allowsPrivateNetwork(),
+            'CalDAV',
+            privateHint: (string) __('caldav::caldav.flash.private_hint'),
+        );
     }
 
     public function putObject(string $objectName, string $ics): bool {

@@ -9,6 +9,8 @@
  */
 
 return [
+    'employees' => 'Employés',
+
     'role' => [
         'admin' => 'Administrateur',
         'meldestelle' => 'Point de signalement',

@@ -35,65 +35,13 @@
         {{ __('Zum Inhalt springen') }}
     </a>
     <header class="bg-base-100 border-b border-base-300">
-        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
             <a href="{{ route('customer.dashboard') }}" class="flex items-center gap-2 font-semibold">
                 <x-icon name="support_agent" />
                 <span>{{ __('Customer-Portal') }}</span>
             </a>
             @if ($portalUser)
-                <nav class="flex items-center gap-3 text-sm">
-                    <a href="{{ route('customer.dashboard') }}" class="hover:underline">{{ __('Übersicht') }}</a>
-                    <a href="{{ route('customer.search') }}" class="hover:underline">{{ __('customer_search.nav') }}</a>
-                    @if ($portalAllows(PortalCapability::Diary))
-                        <a href="{{ route('customer.diary.index') }}" class="hover:underline">{{ __('Auftragsbuch') }}</a>
-                    @endif
-                    @if ($portalAllows(PortalCapability::Assets))
-                        <a href="{{ route('customer.assets.index') }}" class="hover:underline">{{ __('Objekte') }}</a>
-                    @endif
-                    @if ($portalAllows(PortalCapability::Documents))
-                        <a href="{{ route('customer.documents.index') }}" class="hover:underline">{{ __('document.customer.portal.title') }}</a>
-                    @endif
-                    @if ($portalAllows(PortalCapability::TimeEntries))
-                        <a href="{{ route('customer.time-entries.index') }}" class="hover:underline">{{ __('Zeiten') }}</a>
-                    @endif
-                    @if ($portalAllows(PortalCapability::Invoices))
-                        <a href="{{ route('customer.invoices.index') }}" class="hover:underline">{{ __('Rechnungen') }}</a>
-                        {{-- Abrechnungskonto (Feature 098): nur bei aktivem Konto-Modus-Profil. --}}
-                        @if ($portalCustomer?->billingAgreement?->keepsLedger())
-                            <a href="{{ route('customer.billing.index') }}" class="hover:underline">{{ __('customer-billing.portal_title') }}</a>
-                        @endif
-                    @endif
-                    @if ($portalAllows(PortalCapability::Tickets))
-                        <a href="{{ route('customer.tickets.index') }}" class="hover:underline">{{ __('Tickets') }}</a>
-                        <a href="{{ route('customer.catalog.index') }}" class="hover:underline">{{ __('Servicekatalog') }}</a>
-                    @endif
-                    @if ($portalAllows(PortalCapability::OpenIssues))
-                        <a href="{{ route('customer.known-errors.index') }}" class="hover:underline">{{ __('Bekannte Fehler') }}</a>
-                    @endif
-                    @if ($portalAllows(PortalCapability::Claims))
-                        <a href="{{ route('customer.claims.index') }}" class="hover:underline">{{ __('Reklamationen') }}</a>
-                    @endif
-                    @if ($portalAllows(PortalCapability::Returns))
-                        <a href="{{ route('customer.returns.create') }}" class="hover:underline">{{ __('claims.portal_return.nav') }}</a>
-                    @endif
-                    @if ($portalAllows(PortalCapability::Rentals))
-                        <a href="{{ route('customer.rentals.index') }}" class="hover:underline">{{ __('Verleih') }}</a>
-                    @endif
-                    @if ($portalAllows(PortalCapability::RentalRequests))
-                        <a href="{{ route('customer.rentals.requests.index') }}" class="hover:underline">{{ __('Verleih-Anfrage') }}</a>
-                    @endif
-                    @if ($portalAllows(PortalCapability::Subscriptions))
-                        <a href="{{ route('customer.subscriptions.index') }}" class="hover:underline">{{ __('resale_portal.menu') }}</a>
-                    @endif
-                    @if ($portalAllows(PortalCapability::Agreements))
-                        <a href="{{ route('customer.agreements.index') }}" class="hover:underline">{{ __('contract-signing.portal.menu') }}</a>
-                    @endif
-                    @if ($portalAllows(PortalCapability::Intakes))
-                        <a href="{{ route('customer.intakes.index') }}" class="hover:underline">{{ __('customer_intake.portal.nav') }}</a>
-                    @endif
-                    @if ($portalAllows(PortalCapability::Queries))
-                        <a href="{{ route('customer.queries.index') }}" class="hover:underline">{{ __('Rückfragen') }}</a>
-                    @endif
+                <div class="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-sm" role="group" aria-label="{{ __('Benutzermenü') }}">
                     @php($portalHelpTopic = app(\App\Services\Help\HelpContextResolver::class)->currentTopicFor(request()))
                     <a href="{{ $portalHelpTopic !== null && str_starts_with($portalHelpTopic, 'customer-portal.') && app(\App\Http\Controllers\CustomerPortal\HelpController::class)->allowed($portalHelpTopic) ? route('customer.help.show', $portalHelpTopic) : route('customer.help.index') }}" class="hover:underline">{{ __('customer_help.nav') }}</a>
                     <a href="{{ route('customer.profile.show') }}" class="hover:underline">{{ __('Profil') }}</a>
@@ -102,9 +50,72 @@
                         @csrf
                         <x-button type="submit" tone="ghost" size="sm" icon="logout"><span>{{ __('Abmelden') }}</span></x-button>
                     </form>
-                </nav>
+                </div>
             @endif
         </div>
+        @if ($portalUser)
+            {{-- Bereiche je Freigabe: am Desktop umbrechend, schmal waagerecht scrollbar statt über den Rand. --}}
+            <nav class="max-w-5xl mx-auto px-4 pb-3 flex gap-x-4 gap-y-1 text-sm overflow-x-auto whitespace-nowrap md:flex-wrap md:whitespace-normal" aria-label="{{ __('Hauptnavigation') }}">
+                <a href="{{ route('customer.dashboard') }}" class="hover:underline">{{ __('Übersicht') }}</a>
+                <a href="{{ route('customer.search') }}" class="hover:underline">{{ __('customer_search.nav') }}</a>
+                @if ($portalAllows(PortalCapability::Diary))
+                    <a href="{{ route('customer.diary.index') }}" class="hover:underline">{{ __('Auftragsbuch') }}</a>
+                @endif
+                @if ($portalAllows(PortalCapability::Assets))
+                    <a href="{{ route('customer.assets.index') }}" class="hover:underline">{{ __('Objekte') }}</a>
+                @endif
+                @if ($portalAllows(PortalCapability::Documents))
+                    <a href="{{ route('customer.documents.index') }}" class="hover:underline">{{ __('document.customer.portal.title') }}</a>
+                @endif
+                @if ($portalAllows(PortalCapability::TimeEntries))
+                    <a href="{{ route('customer.time-entries.index') }}" class="hover:underline">{{ __('Zeiten') }}</a>
+                @endif
+                @if ($portalAllows(PortalCapability::Invoices))
+                    <a href="{{ route('customer.invoices.index') }}" class="hover:underline">{{ __('Rechnungen') }}</a>
+                    {{-- Abrechnungskonto (Feature 098): nur bei aktivem Konto-Modus-Profil. --}}
+                    @if ($portalCustomer?->billingAgreement?->keepsLedger())
+                        <a href="{{ route('customer.billing.index') }}" class="hover:underline">{{ __('customer-billing.portal_title') }}</a>
+                    @endif
+                @endif
+                @if ($portalAllows(PortalCapability::Tickets))
+                    <a href="{{ route('customer.tickets.index') }}" class="hover:underline">{{ __('Tickets') }}</a>
+                    <a href="{{ route('customer.catalog.index') }}" class="hover:underline">{{ __('Servicekatalog') }}</a>
+                    <a href="{{ route('customer.known-errors.index') }}" class="hover:underline">{{ __('Bekannte Fehler') }}</a>
+                @endif
+                @if ($portalAllows(PortalCapability::Claims))
+                    <a href="{{ route('customer.claims.index') }}" class="hover:underline">{{ __('Reklamationen') }}</a>
+                @endif
+                @if ($portalAllows(PortalCapability::Returns))
+                    <a href="{{ route('customer.returns.create') }}" class="hover:underline">{{ __('claims.portal_return.nav') }}</a>
+                @endif
+                @if ($portalAllows(PortalCapability::Rentals))
+                    <a href="{{ route('customer.rentals.index') }}" class="hover:underline">{{ __('Verleih') }}</a>
+                @endif
+                @if ($portalAllows(PortalCapability::RentalRequests))
+                    <a href="{{ route('customer.rentals.requests.index') }}" class="hover:underline">{{ __('Verleih-Anfrage') }}</a>
+                @endif
+                @if ($portalAllows(PortalCapability::Subscriptions))
+                    <a href="{{ route('customer.subscriptions.index') }}" class="hover:underline">{{ __('resale_portal.menu') }}</a>
+                @endif
+                @if ($portalAllows(PortalCapability::Agreements))
+                    <a href="{{ route('customer.agreements.index') }}" class="hover:underline">{{ __('contract-signing.portal.menu') }}</a>
+                @endif
+                @if ($portalAllows(PortalCapability::Intakes))
+                    <a href="{{ route('customer.intakes.index') }}" class="hover:underline">{{ __('customer_intake.portal.nav') }}</a>
+                @endif
+                @if ($portalAllows(PortalCapability::Appointments))
+                    <a href="{{ route('customer.appointments.index') }}" class="hover:underline">{{ __('Termin anfragen') }}</a>
+                @endif
+                {{-- Schulungen haben keine Bereichsfreigabe: sichtbar sind ohnehin nur
+                     freigegebene Kurse mit Zielgruppe Kunde (Feature 149). --}}
+                @feature('module.lms')
+                    <a href="{{ route('customer.learning.index') }}" class="hover:underline">{{ __('learning.title.portal') }}</a>
+                @endfeature
+                @if ($portalAllows(PortalCapability::Queries))
+                    <a href="{{ route('customer.queries.index') }}" class="hover:underline">{{ __('Rückfragen') }}</a>
+                @endif
+            </nav>
+        @endif
     </header>
     <main id="main-content" class="max-w-5xl mx-auto px-4 py-6">
         {{-- Zentrale Flashes (I4, Gegenstück zu layouts/app): Portal-Views

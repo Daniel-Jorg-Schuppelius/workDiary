@@ -23,10 +23,10 @@ enum ServiceTicketPriority: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Low => __('Niedrig'),
-            self::Normal => __('Normal'),
-            self::High => __('Hoch'),
-            self::Urgent => __('Dringend'),
+            self::Low => __('enums.service_ticket.service_ticket_priority.low'),
+            self::Normal => __('enums.service_ticket.service_ticket_priority.normal'),
+            self::High => __('enums.service_ticket.service_ticket_priority.high'),
+            self::Urgent => __('enums.service_ticket.service_ticket_priority.urgent'),
         };
     }
 }

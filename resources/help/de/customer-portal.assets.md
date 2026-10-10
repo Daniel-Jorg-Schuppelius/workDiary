@@ -1,7 +1,7 @@
 ---
 title: "Objekte"
 topic: customer-portal.assets
-version: 2
+version: 3
 keywords:
     - Geräte
     - Anlagen
@@ -15,6 +15,7 @@ keywords:
     - nächste Wartung
     - Anlagenübersicht
     - Wartungsplan
+    - Protokoll-PDF
 audience: []
 related:
     - customer-portal.overview
@@ -26,8 +27,9 @@ related:
 
 Unter **Objekte** sehen Sie die Geräte und Anlagen, die Ihr Auftragnehmer
 für Ihr Unternehmen führt: mit ihren Prüf- und Wartungsterminen, den
-erledigten Wartungen und den für Sie freigegebenen Protokollen. Die Ansicht
-ist nur lesend.
+erledigten Wartungen und den unterschriebenen Protokollen, die er für Sie
+freigegeben hat. Die Ansicht ist nur lesend; Protokolle laden Sie als PDF
+herunter.
 
 ## Die Objektliste
 
@@ -45,15 +47,29 @@ Oben stehen Name und Seriennummer des Objekts, darunter drei Abschnitte:
   Ohne Plan steht dort **Keine Termine hinterlegt.**
 - **Abgeschlossene Wartungen** – erledigte Wartungen mit Bezeichnung und
   Datum.
-- **Protokolle** – die Protokolle zum Objekt, die Ihr Auftragnehmer für Sie
-  freigegeben hat, mit Titel, Status (etwa **Unterschrieben**) und Datum,
-  das neueste zuerst. Die Liste nennt die Protokolle; öffnen oder
-  herunterladen lassen sie sich hier nicht.
+- **Protokolle** – die unterschriebenen Protokolle zum Objekt, die Ihr
+  Auftragnehmer für Sie freigegeben hat, mit Titel, Status und Datum, das
+  neueste zuerst, jeweils mit **PDF herunterladen**. Ohne solche Protokolle
+  steht dort **Keine freigegebenen Protokolle.**
+
+## Protokolle herunterladen
+
+Im Portal erscheinen nur unterschriebene Protokolle; Entwürfe und Protokolle
+in Prüfung sehen Sie erst nach der Unterschrift. Als Status steht
+**Unterschrieben**, bei älteren Protokollen auch **Archiviert** oder
+**Ersetzt**. Bei **Ersetzt** hat Ihr Auftragnehmer eine korrigierte Fassung
+erstellt; sie erscheint, sobald sie unterschrieben ist.
+
+Mit **PDF herunterladen** erhalten Sie das Protokoll in der unterschriebenen
+Fassung als PDF-Datei. Jeder Abruf wird beim Protokoll vermerkt, sodass Ihr
+Auftragnehmer nachvollziehen kann, wann es über das Portal heruntergeladen
+wurde.
 
 ## Was Sie hier nicht sehen
 
 - Interne Angaben wie Störungsdetails, Defekte oder Zuweisungen an
   Mitarbeitende erscheinen nicht.
+- Protokolle, die noch nicht unterschrieben sind, erscheinen nicht.
 - Sie sehen nur Objekte, die Ihrem Unternehmen zugeordnet sind.
 
 ## Ihre Objekte an anderer Stelle

@@ -10,7 +10,7 @@
 
 return [
     'title' => 'Google Calendar',
-    'intro' => 'WorkDiary appointments are published via the Google Calendar API to a calendar of the connected Google account. WorkDiary stays authoritative; cancelled appointments disappear there and repeated runs never create duplicates. External appointments are never read.',
+    'intro' => 'WorkDiary appointments are published via the Google Calendar API to a calendar of the connected Google account. WorkDiary stays authoritative; cancelled and deleted appointments disappear there and repeated runs never create duplicates. WorkDiary only reads external appointments with the two-way re-import switched on and never adopts them unasked; it creates proposals in the integration inbox instead.',
     'plugin_description' => 'Publishes appointments idempotently to a Google calendar (Calendar API v3, OAuth2) — publish-only, selectable target calendar.',
     'not_configured_hint' => 'No Google app is configured — neither in this organisation’s plugin settings nor as the installation’s GOOGLE_CALENDAR_CLIENT_ID/SECRET. the connection first needs an OAuth client in the Google Cloud Console (calendar scopes are “sensitive”: brand verification or consent type “Internal” for Workspace).',
 

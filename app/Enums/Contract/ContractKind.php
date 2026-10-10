@@ -44,19 +44,19 @@ enum ContractKind: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Rent => (string) __('Miet-/Pachtvertrag'),
-            self::Maintenance => (string) __('Wartungsvertrag'),
-            self::License => (string) __('Lizenz-/Abovertrag'),
-            self::Service => (string) __('Dienstleistungsvertrag'),
-            self::Insurance => (string) __('Versicherungsvertrag'),
-            self::Supply => (string) __('Liefer-/Bezugsvertrag'),
-            self::Framework => (string) __('Rahmenvertrag'),
-            self::Membership => (string) __('Mitgliedschaft/Beitrag'),
-            self::DataProcessing => (string) __('Auftragsverarbeitungsvertrag (AVV)'),
-            self::NonDisclosure => (string) __('Verschwiegenheitsvereinbarung (NDA)'),
-            self::RentalTerms => (string) __('Mietbedingungen (Geräteverleih)'),
-            self::Employment => (string) __('Arbeitsvertrag'),
-            self::Other => (string) __('Sonstiger Vertrag'),
+            self::Rent => (string) __('enums.contract.contract_kind.rent'),
+            self::Maintenance => (string) __('enums.contract.contract_kind.maintenance'),
+            self::License => (string) __('enums.contract.contract_kind.license'),
+            self::Service => (string) __('enums.contract.contract_kind.service'),
+            self::Insurance => (string) __('enums.contract.contract_kind.insurance'),
+            self::Supply => (string) __('enums.contract.contract_kind.supply'),
+            self::Framework => (string) __('enums.contract.contract_kind.framework'),
+            self::Membership => (string) __('enums.contract.contract_kind.membership'),
+            self::DataProcessing => (string) __('enums.contract.contract_kind.data_processing'),
+            self::NonDisclosure => (string) __('enums.contract.contract_kind.non_disclosure'),
+            self::RentalTerms => (string) __('enums.contract.contract_kind.rental_terms'),
+            self::Employment => (string) __('enums.contract.contract_kind.employment'),
+            self::Other => (string) __('enums.contract.contract_kind.other'),
         };
     }
 

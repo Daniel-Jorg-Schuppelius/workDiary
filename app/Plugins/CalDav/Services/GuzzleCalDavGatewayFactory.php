@@ -26,7 +26,9 @@ use App\Plugins\Support\PluginHttpFactory;
  */
 class GuzzleCalDavGatewayFactory implements CalDavGatewayFactory {
     public function for(CalDavConnection $connection): CalDavGateway {
-        $client = app(PluginHttpFactory::class)->client(CalDavPlugin::ID, (string) $connection->base_url);
+        // Vor dem Client: diese Meldung nennt den Schalter der Anbindung, die der Client-Factory nur die Betreiber-Liste.
+        HttpCalDavGateway::assertTarget($connection);
+        $client = app(PluginHttpFactory::class)->client(CalDavPlugin::ID, (string) $connection->base_url, allowPrivateNetwork: $connection->allowsPrivateNetwork());
         // DAV statt JSON-API; Timeout wie zuvor 15 s (Health-Check behält
         // sein reduziertes Budget aus dem PluginApiClient).
         $client->setDefaultHeaders([]);

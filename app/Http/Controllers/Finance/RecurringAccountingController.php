@@ -12,18 +12,20 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Finance;
 
-use App\Enums\Finance\{RecurringInterval, RecurringTemplateKind, RecurringTemplateStatus};
+use App\Enums\Finance\{RecurringInterval, RecurringRunStatus, RecurringTemplateKind, RecurringTemplateStatus};
 use App\Enums\Invoicing\InvoiceScheduleStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Accounting\{AccountingAccount, AccountingRecurringRun, AccountingRecurringTemplate};
 use App\Models\Invoicing\InvoiceSchedule;
+use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\RecurringAccountingService;
 use App\Support\Sqid;
 use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
@@ -69,16 +71,36 @@ class RecurringAccountingController extends Controller {
     public function form(?AccountingRecurringTemplate $template = null): View {
         abort_unless(Gate::allows(Permission::AccountingLedgerConfigure->value), 403);
         $organization = $this->currentOrganizationOrAbort();
+        $accounts = AccountingAccount::query()
+            ->where('organization_id', $organization->id)
+            ->active()
+            ->orderBy('number')
+            ->get();
+
+        // Die Kontenfelder spiegeln die gespeicherten Zeilen — sonst stünde
+        // beim Bearbeiten „kein Konto" da und das Speichern würde abgewiesen.
+        $lineAccount = static function (string $side) use ($template, $accounts): ?string {
+            foreach ($template === null ? [] : ($template->template_lines ?? []) as $line) {
+                if (! Decimal::of((string) ($line[$side] ?? '0'), 2)->isZero()) {
+                    return $accounts->firstWhere('id', (int) ($line['accounting_account_id'] ?? 0))?->sqid;
+                }
+            }
+
+            return null;
+        };
 
         return view('finance.accounting._recurring_dialog', [
             'template' => $template,
             'kinds' => RecurringTemplateKind::cases(),
             'intervals' => RecurringInterval::cases(),
-            'accounts' => AccountingAccount::query()
-                ->where('organization_id', $organization->id)
-                ->active()
-                ->orderBy('number')
-                ->get(),
+            'accounts' => $accounts,
+            'debitAccount' => $lineAccount('debit'),
+            'creditAccount' => $lineAccount('credit'),
+            'users' => User::query()
+                ->forOrganization($organization)
+                ->where(fn ($query) => $query->whereNull('deactivated_at')->orWhere('id', $template?->responsible_user_id))
+                ->orderBy('name')
+                ->get(['id', 'name']),
             'preview' => $template !== null ? $this->recurring->preview($template) : [],
         ]);
     }
@@ -149,8 +171,51 @@ class RecurringAccountingController extends Controller {
         return back()->with('status', __('accounting.recurring.flash.ran'));
     }
 
+    /** Belegerwartung erfüllen: die eingegangene Rechnung zuordnen. */
+    public function fulfillForm(Request $request, AccountingRecurringRun $run): View {
+        $actor = $this->assertFulfillable($request, $run);
+
+        return view('finance.accounting._recurring_fulfill_dialog', [
+            'run' => $run,
+            'candidates' => $this->recurring->fulfillmentCandidates($run, $actor),
+        ]);
+    }
+
+    public function fulfill(Request $request, AccountingRecurringRun $run): RedirectResponse {
+        $actor = $this->assertFulfillable($request, $run);
+        $data = $request->validate(['incoming_einvoice_id' => ['required', 'string']]);
+
+        // Nur, was der Dialog anbietet: eigene Organisation, sichtbar, nicht
+        // abgelehnt, noch keinem anderen Vorgang zugeordnet.
+        $incoming = $this->recurring->fulfillmentCandidates($run, $actor)
+            ->firstWhere('sqid', (string) $data['incoming_einvoice_id'])
+            ?? throw ValidationException::withMessages([
+                'incoming_einvoice_id' => (string) __('validation.exists', ['attribute' => __('validation.attributes.incoming_einvoice_id')]),
+            ]);
+
+        $this->recurring->fulfill($run, $incoming);
+
+        return back()->with('status', __('accounting.recurring.flash.fulfilled'));
+    }
+
+    private function assertFulfillable(Request $request, AccountingRecurringRun $run): User {
+        abort_unless(Gate::allows(Permission::AccountingLedgerPrepare->value), 403);
+        abort_unless((int) $run->organization_id === (int) $this->currentOrganizationOrAbort()->id, 404);
+        // Den Vorgang einer Buchungsvorlage schließt die Festschreibung ihres Entwurfs.
+        abort_unless(
+            $run->status === RecurringRunStatus::Expected
+                && $run->template?->kind === RecurringTemplateKind::DocumentExpectation,
+            404,
+        );
+
+        $actor = $request->user();
+        abort_unless($actor instanceof User, 403);
+
+        return $actor;
+    }
+
     /** @return array<string, mixed> */
-    private function validated(Request $request, \App\Models\Platform\Organization $organization): array {
+    private function validated(Request $request, Organization $organization): array {
         $data = $request->validate([
             'kind' => ['required', 'string', 'in:' . implode(',', array_column(RecurringTemplateKind::cases(), 'value'))],
             'name' => ['required', 'string', 'max:191'],
@@ -161,8 +226,19 @@ class RecurringAccountingController extends Controller {
             'expected_amount' => ['nullable', 'numeric', 'decimal:0,8', 'gte:0'],
             'debit_account' => ['nullable', 'string'],
             'credit_account' => ['nullable', 'string'],
+            'responsible_user_id' => ['nullable', 'string'],
             'note' => ['nullable', 'string', 'max:500'],
         ]);
+
+        $responsibleId = null;
+        if (! empty($data['responsible_user_id'])) {
+            $responsibleId = Sqid::decodeOrNumeric(User::class, (string) $data['responsible_user_id']);
+            if ($responsibleId === null || ! User::query()->forOrganization($organization)->whereKey($responsibleId)->exists()) {
+                throw ValidationException::withMessages([
+                    'responsible_user_id' => (string) __('validation.exists', ['attribute' => __('validation.attributes.responsible_user_id')]),
+                ]);
+            }
+        }
 
         $kind = RecurringTemplateKind::from((string) $data['kind']);
         $lines = null;
@@ -170,8 +246,15 @@ class RecurringAccountingController extends Controller {
         if ($kind->createsDraft()) {
             // Ohne Zeilen bliebe der Lauf blockiert — das melden wir sofort,
             // statt es erst nachts im Scheduler herauszufinden.
-            if (empty($data['debit_account']) || empty($data['credit_account']) || ! isset($data['expected_amount'])) {
-                abort(422, (string) __('accounting.recurring.error.template_incomplete'));
+            $missing = array_filter(
+                ['debit_account', 'credit_account', 'expected_amount'],
+                static fn (string $field): bool => ! isset($data[$field]) || $data[$field] === '',
+            );
+            if ($missing !== []) {
+                throw ValidationException::withMessages(array_fill_keys(
+                    $missing,
+                    (string) __('accounting.recurring.error.template_incomplete'),
+                ));
             }
 
             $debitId = (int) Sqid::decodeOrNumeric(AccountingAccount::class, (string) $data['debit_account']);
@@ -200,6 +283,7 @@ class RecurringAccountingController extends Controller {
                 ? Decimal::of((string) $data['expected_amount'], 2)->getValue()
                 : null,
             'template_lines' => $lines,
+            'responsible_user_id' => $responsibleId,
             'note' => $data['note'] ?? null,
         ];
     }

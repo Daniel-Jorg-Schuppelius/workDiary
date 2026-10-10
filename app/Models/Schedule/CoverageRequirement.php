@@ -125,7 +125,9 @@ class CoverageRequirement extends Model {
         $query->where(function (Builder $q) use ($date, $weekday): void {
             $q->whereBetween('specific_date', DateRange::days($date, $date))
                 ->orWhere(function (Builder $q2) use ($weekday): void {
-                    $q2->whereNull('specific_date')->where('weekday', $weekday);
+                    $q2->whereNull('specific_date')->where(function (Builder $q3) use ($weekday): void {
+                        $q3->where('weekday', $weekday)->orWhereNull('weekday');
+                    });
                 });
         });
     }
@@ -156,7 +158,8 @@ class CoverageRequirement extends Model {
             return (int) $date->format('w') === $this->weekday;
         }
 
-        return false;
+        // „Immer“ in der Oberfläche: gilt an jedem Tag, verliert aber gegen Wochentag und Datum.
+        return true;
     }
 
     /**

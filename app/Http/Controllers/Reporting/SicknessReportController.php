@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Reporting;
 
 use App\Enums\Sickness\SickLeaveKind;
+use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{ResolvesReportScope, ResolvesStandardReportFilters};
@@ -47,7 +48,7 @@ class SicknessReportController extends Controller {
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
-        [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
+        [$scope, $seesTeam] = $this->resolveScopeWithPermission($request, Permission::SickLeaveViewAny);
 
         [$fromDate, $toDate] = $this->resolveRange($request);
 
@@ -63,7 +64,7 @@ class SicknessReportController extends Controller {
             'from' => $fromDate->toDateString(),
             'to' => $toDate->toDateString(),
             'scope' => $scope,
-            'isAdmin' => $isAdmin,
+            'seesTeam' => $seesTeam,
             'rows' => $rows,
             'totals' => $totals,
             'standardFilters' => $filters,
@@ -119,7 +120,7 @@ class SicknessReportController extends Controller {
             $buckets[$month['key']] = 0;
         }
         foreach ($leaves as $leave) {
-            $this->addWorkdaysPerMonth($buckets, $leave, $from, $to);
+            $this->addWorkdaysPerBucket($buckets, $leave, $from, $to);
         }
         if (array_sum($buckets) === 0) {
             return [];
@@ -155,7 +156,7 @@ class SicknessReportController extends Controller {
         foreach ($leaves as $leave) {
             $uid = (int) $leave->user_id;
             $byUserMonth[$uid] ??= $emptyBuckets;
-            $this->addWorkdaysPerMonth($byUserMonth[$uid], $leave, $from, $to);
+            $this->addWorkdaysPerBucket($byUserMonth[$uid], $leave, $from, $to);
         }
 
         $heatmap = [];
@@ -173,29 +174,23 @@ class SicknessReportController extends Controller {
 
     /**
      * Verteilt die Werktage einer Krankmeldung (auf den Report-Zeitraum
-     * geklammert) monatsweise auf die übergebenen Buckets.
+     * geklammert) tageweise auf ihre Abschnitte — Tag, Woche oder Monat.
      *
      * @param  array<string, int>  $buckets
      */
-    private function addWorkdaysPerMonth(array &$buckets, SickLeave $leave, CarbonImmutable $from, CarbonImmutable $to): void {
+    private function addWorkdaysPerBucket(array &$buckets, SickLeave $leave, CarbonImmutable $from, CarbonImmutable $to): void {
         $granularity = $this->bucketGranularity($from, $to);
         $start = $leave->start_date->greaterThan($from) ? CarbonImmutable::parse($leave->start_date->toDateString()) : $from;
         $end = $leave->end_date->lessThan($to) ? CarbonImmutable::parse($leave->end_date->toDateString()) : $to;
-        if ($start->greaterThan($end)) {
-            return;
-        }
 
-        $cursor = $start->startOfMonth();
-        while ($cursor->lte($end)) {
-            $monthKey = ChartBucket::keyLabel($granularity, $cursor)[0];
-            $chunkStart = $start->greaterThan($cursor) ? $start : $cursor;
-            $chunkEnd = $end->lessThan($cursor->endOfMonth()) ? $end : $cursor->endOfMonth();
-            if (array_key_exists($monthKey, $buckets)) {
-                $buckets[$monthKey] += $this->countWorkdays($chunkStart, $chunkEnd);
+        for ($day = $start; $day->lte($end); $day = $day->addDay()) {
+            $key = ChartBucket::keyLabel($granularity, $day)[0];
+            if (array_key_exists($key, $buckets)) {
+                $buckets[$key] += $this->countWorkdays($day, $day);
             }
-            $cursor = $cursor->addMonth();
         }
     }
+
     /**
      * @param  Collection<int, SickLeave>  $leaves
      * @return array<int, array{

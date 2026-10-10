@@ -1,7 +1,7 @@
 ---
 title: "Libro de órdenes y expediente del caso"
 topic: customer-portal.diary
-version: 2
+version: 4
 keywords:
     - libro de órdenes
     - trabajos realizados
@@ -13,6 +13,7 @@ keywords:
     - expediente del caso
     - confirmar foto
     - reclamar foto
+    - protocolo PDF
 audience: []
 related:
     - customer-portal.overview
@@ -49,9 +50,9 @@ El pedido más reciente aparece arriba. Con más de 25 pedidos, usted pasa de p�
 
 Arriba figuran el título, la fecha y el estado, a la derecha el botón **Expediente del caso como PDF**. A continuación siguen estas secciones:
 
-- **Fotos** – las fotos que su proveedor ha liberado para usted, con su nombre de archivo. Las fotos internas no aparecen.
+- **Fotos** – las fotos y archivos que su proveedor ha liberado para usted: las fotos como pequeña vista previa con su nombre de archivo, los demás archivos con su nombre. Un clic en la imagen o en el nombre descarga el archivo. Las fotos internas no aparecen.
 - **Material** – el material registrado para este pedido con **Denominación** y **Cantidad**.
-- **Protocolos** – los protocolos liberados con título, estado y fecha.
+- **Protocolos** – los protocolos firmados que su proveedor ha liberado para usted, con título, estado y fecha, cada uno con **Descargar PDF** (véase más abajo).
 - **Comunicación** – las notas liberadas sobre conversaciones y mensajes, con asunto, momento y texto.
 - **Consultas y comentarios** – solo si las consultas están liberadas para usted (véase más abajo).
 
@@ -66,9 +67,15 @@ Junto a cada foto que aún no ha confirmado hay dos botones:
 
 Una reclamación llega a su proveedor como consulta sobre este pedido, y su proveedor recibe un aviso. El mensaje **Reclamación enviada — nos pondremos en contacto.** confirma el envío. La respuesta le llega por correo electrónico a su correo de inicio de sesión; si las consultas están liberadas para usted, aparece además en la sección **Consultas y comentarios**.
 
+## Descargar protocolos
+
+El portal solo muestra protocolos firmados; los borradores y los protocolos en revisión aparecen una vez firmados. El estado indica **Firmado**, en protocolos más antiguos también **Archivado** o **Reemplazado**. Con **Reemplazado**, su proveedor ha elaborado una versión corregida, que aparece en cuanto está firmada.
+
+Con **Descargar PDF** obtiene el protocolo en su versión firmada como archivo PDF. Cada descarga queda registrada en el protocolo, de modo que su proveedor puede ver cuándo se descargó a través del portal.
+
 ## Expediente del caso como PDF
 
-**Expediente del caso como PDF** descarga un archivo PDF con el título, la fecha y el estado del pedido, las fotos liberadas con su fecha de confirmación, el material y los protocolos. La comunicación y las consultas no se incluyen.
+**Expediente del caso como PDF** descarga un archivo PDF con el título, la fecha y el estado del pedido, las fotos liberadas con su fecha de confirmación, el material y una lista de los protocolos firmados con título, estado y fecha; los protocolos en sí los descarga uno a uno con **Descargar PDF**. La comunicación y las consultas no se incluyen.
 
 El enlace del botón es válido 24 horas y funciona también sin iniciar sesión – por tanto, puede reenviarlo a sus compañeros. Si ha caducado, vuelva a abrir el expediente del caso; se crea un enlace nuevo.
 
@@ -79,4 +86,4 @@ Si las consultas están liberadas para usted, el expediente del caso muestra la 
 ## Límites
 
 - En el libro de órdenes no puede crear, modificar ni cancelar pedidos. Si el área está liberada, solicita nuevas prestaciones en **Solicitudes y pedidos**.
-- Solo ve las fotos, protocolos y notas que su proveedor ha liberado expresamente para usted.
+- Solo ve las fotos, protocolos y notas que su proveedor ha liberado expresamente para usted. Los protocolos aparecen solo una vez firmados.

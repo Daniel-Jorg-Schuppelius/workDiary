@@ -21,8 +21,9 @@ use Throwable;
 /**
  * Helpdesk-/Ticketsystem-Anbindung Zammad (Feature 060, MVP-129).
  *
- * - Referenz-Provider der Anbindungs-Lückenanalyse: Tickets einer zugeordneten
- *   Zammad-Gruppe (Queue) kommen als WorkDiary-Aufgaben an, damit Zeiterfassung/
+ * - Referenz-Provider der Anbindungs-Lückenanalyse: offene Tickets, die das
+ *   API-Token sieht, kommen als WorkDiary-Aufgaben an (mit „Nur zugeordnete
+ *   Gruppen“ nur die Gruppen mit Projektzuordnung), damit Zeiterfassung/
  *   Nachweise/Abrechnung dort laufen. Das Ticketsystem bleibt führend.
  * - Import ist **idempotent** über {@see \App\Models\Integration\ExternalReference}
  *   (Plugin `zammad`, Typ `ticket`); Replays erzeugen keine Dubletten.
@@ -64,8 +65,8 @@ class ZammadPlugin extends AbstractPlugin implements TaskSyncer {
     /**
      * Einheitlicher Sync-Einstieg (TaskSyncer): Ticket-Import über alle aktiven
      * Zammad-Anbindungen der Organisation. Einbahnig — `created` aus dem
-     * Import, `unchanged` = übersprungene (bereits verknüpfte) Tickets; die
-     * bidirektionalen Zähler bleiben 0.
+     * Import, `updated` = in Zammad geschlossene, nun erledigte Aufgaben,
+     * `unchanged` = übersprungene Tickets; Konflikt-Zähler bleiben 0.
      */
     public function syncTasks(Organization $organization): array {
         $counters = ['created' => 0, 'updated' => 0, 'unchanged' => 0, 'conflicts' => 0, 'inbox' => 0, 'failed' => 0];
@@ -84,6 +85,7 @@ class ZammadPlugin extends AbstractPlugin implements TaskSyncer {
             try {
                 $result = $importer->import($connection, $factory->for($connection));
                 $counters['created'] += $result['created'];
+                $counters['updated'] += $result['updated'];
                 $counters['unchanged'] += $result['skipped'];
                 $counters['inbox'] += $result['inbox'];
             } catch (Throwable) {

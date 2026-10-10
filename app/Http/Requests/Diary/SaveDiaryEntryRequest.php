@@ -15,10 +15,14 @@ use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\{DecodesSqidInputs, ParsesOrgLocalDateTimes};
 use App\Models\Classification\EntryType;
 use App\Rules\IsoCountryCode;
+use CommonToolkit\ValueObjects\Duration;
 use Illuminate\Validation\Rule;
 
 class SaveDiaryEntryRequest extends BaseFormRequest {
     use DecodesSqidInputs, ParsesOrgLocalDateTimes;
+
+    /** Geplante Dauer als Stunden:Minuten, z. B. 1:30 oder 12:00. */
+    private const PLANNED_DURATION_PATTERN = '/^\d{1,3}:[0-5]\d$/';
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
@@ -80,6 +84,17 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
         // datetime-local Von/Bis (Wanduhrzeit) in aktiver Anzeige-Zeitzone → UTC.
         // due_date/window_*_date sind reine Datumsfelder und bleiben unverändert.
         $this->mergeOrgLocalToUtc(['start_at', 'end_at']);
+
+        // Geplante Dauer (E13) als Stunden:Minuten; leer = ableiten (Zeitfenster/Termin).
+        // Ohne das Feld im Request bleibt der gespeicherte Wert unberührt.
+        if ($this->has('planned_duration')) {
+            $duration = trim((string) $this->input('planned_duration'));
+            if ($duration === '') {
+                $this->merge(['planned_minutes' => null]);
+            } elseif (preg_match(self::PLANNED_DURATION_PATTERN, $duration) === 1) {
+                $this->merge(['planned_minutes' => Duration::fromClock($duration)->getTotalMinutes()]);
+            }
+        }
     }
 
     /** @return array<string, mixed> */
@@ -126,6 +141,8 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
             'time_window_start' => ['nullable', 'date_format:H:i'],
             'time_window_end' => ['nullable', 'date_format:H:i', 'after_or_equal:time_window_start'],
             'service_minutes' => ['nullable', 'integer', 'min:0', 'max:10080'],
+            'planned_duration' => ['nullable', 'string', 'regex:' . self::PLANNED_DURATION_PATTERN],
+            'planned_minutes' => ['nullable', 'integer', 'min:1', 'max:10080'],
 
             'address_line' => [$requiresAddress ? 'required' : 'nullable', 'string', 'max:200'],
             'address_zip' => ['nullable', 'string', 'max:16'],
@@ -137,6 +154,15 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
             'tour_id' => [$requiresTour ? 'required' : 'nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('tours')],
             'tour_position' => ['nullable', 'integer', 'min:0', 'max:65535'],
             'notes' => ['nullable', 'string', 'max:65535'],
+        ];
+    }
+
+    /** @return array<string, string> */
+    public function messages(): array {
+        return [
+            'planned_duration.regex' => (string) __('diary.planned_duration.format'),
+            'planned_minutes.min' => (string) __('diary.planned_duration.range'),
+            'planned_minutes.max' => (string) __('diary.planned_duration.range'),
         ];
     }
 

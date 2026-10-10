@@ -60,7 +60,7 @@ return [
         'empty' => 'Aucun accord pour le moment — commencez par « Créer un accord ».',
         'no_revision' => 'aucune version pour le moment',
         'revision' => 'Version',
-        'title' => 'Accords (DPA/NDA)',
+        'title' => 'Accords (DPA, NDA, conditions de location)',
     ],
     'declaration' => [
         'default' => 'Je confirme être habilité(e) à représenter ma partie, avoir lu le présent :kind avec :organization dans la version affichée, annexes comprises, et l\'approuver.',
@@ -254,11 +254,12 @@ return [
         'organization' => 'Partie organisation',
     ],
     'portal' => [
+        'capability' => 'Accords (DPA, NDA, conditions de location)',
         'downloads' => 'Documents',
         'empty' => 'Aucun accord pour le moment.',
         'menu' => 'Accords',
         'not_released' => 'pas encore publié',
-        'subtitle' => 'Contrats de sous-traitance et accords de confidentialité avec nous — documents et attestation de clôture après publication.',
+        'subtitle' => 'Contrats de sous-traitance, accords de confidentialité et conditions de location avec nous — documents et attestation de clôture après publication.',
         'title' => 'Accords',
     ],
     'public' => [

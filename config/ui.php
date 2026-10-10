@@ -26,8 +26,4 @@ return [
         'max_items' => 5,
         'rotation_seconds' => 15,
     ],
-    'search' => [
-        /** Default result limit for type-ahead / quick search endpoints. */
-        'results_limit' => (int) env('UI_SEARCH_RESULTS_LIMIT', 20),
-    ],
 ];

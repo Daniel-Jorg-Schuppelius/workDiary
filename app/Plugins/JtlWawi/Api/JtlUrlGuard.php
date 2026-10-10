@@ -49,12 +49,12 @@ final class JtlUrlGuard {
 
     /** Konfigurations- und Laufzeitprüfung einer OnPremise-Basis-URL. */
     public static function assertAcceptable(string $url, bool $allowPrivateNetwork): void {
-        // Gemeinsamer Guard (Vollaudit 2026-07, M48) — Meldungstexte unverändert.
+        // Gemeinsamer Guard (Vollaudit 2026-07, M48).
         UrlSafety::assertAcceptableExternalBaseUrl(
             $url,
             $allowPrivateNetwork,
             'JTL-Wawi',
-            privateHint: 'Für eine OnPremise-Wawi im eigenen Netz muss die Freigabe privater Adressen ausdrücklich aktiviert werden.',
+            privateHint: (string) __('jtl_wawi::jtl_wawi.field.private_hint'),
         );
     }
 }

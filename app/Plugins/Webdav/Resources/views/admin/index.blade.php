@@ -74,6 +74,15 @@
             </label>
             <label class="form-control justify-end">
                 <span class="label cursor-pointer justify-start gap-2">
+                    <input type="hidden" name="allow_private_network" value="0">
+                    <input type="checkbox" name="allow_private_network" value="1" class="toggle toggle-sm toggle-warning"
+                           @checked(old('allow_private_network', $connection->allow_private_network ?? false))>
+                    <span class="label-text">{{ __('webdav::webdav.field.allow_private_network') }}</span>
+                </span>
+                <span class="label-text-alt text-muted">{{ __('webdav::webdav.field.allow_private_network_help') }}</span>
+            </label>
+            <label class="form-control justify-end">
+                <span class="label cursor-pointer justify-start gap-2">
                     <input type="hidden" name="active" value="0">
                     <input type="checkbox" name="active" value="1" class="toggle toggle-sm toggle-primary"
                            @checked(old('active', $connection->active ?? true))>
@@ -109,7 +118,7 @@
                         <select name="folder_type[]" class="select select-bordered select-sm w-56">
                             <option value="">{{ __('webdav::webdav.folder.type_placeholder') }}</option>
                             @foreach ($documentTypes as $type)
-                                <option value="{{ $type->value }}" @selected($mapType === $type->value)>{{ $type->value }}</option>
+                                <option value="{{ $type->value }}" @selected($mapType === $type->value)>{{ $type->label() }}</option>
                             @endforeach
                         </select>
                         <span class="text-muted">→</span>

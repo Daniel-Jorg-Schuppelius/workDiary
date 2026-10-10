@@ -1,7 +1,7 @@
 ---
 title: "Stockage SharePoint"
 topic: admin.sharepoint
-version: 1
+version: 2
 keywords:
     - SharePoint
     - SharePoint Online
@@ -98,9 +98,8 @@ répliqué et où :
 - **Type de document → dossier** : choisissez par ligne un type de document et
   saisissez un sous-dossier relatif à la bibliothèque. Les lignes vides sont
   ignorées ; après chaque enregistrement, trois lignes vides supplémentaires
-  sont disponibles. Les types apparaissent dans la liste sous leur nom court
-  anglais, par exemple contract pour les contrats ou invoice pour les
-  factures.
+  sont disponibles. Les types apparaissent dans la liste avec leur libellé,
+  par exemple Contrat ou Facture.
 
 Cliquez ensuite sur **Enregistrer**.
 
@@ -121,16 +120,15 @@ Les factures et les protocoles ne suivent pas les règles de dossiers.
   **Actif** (validé) ou une nouvelle version, WorkDiary transfère cette
   version. De simples modifications de métadonnées ne déclenchent pas de
   nouveau transfert. Lorsqu'une facture est émise ou qu'un protocole est
-  signé, son PDF suit – à condition que le contenu correspondant soit
-  sélectionné.
+  signé, son PDF suit. Tout cela ne vaut que pour les contenus sélectionnés ;
+  sans **Documents (GED)** coché, WorkDiary ne transfère aucun document.
 - **En arrière-plan avec répétition :** le transfert passe par une file
   d'attente. En cas d'échec, il est répété automatiquement ; aucun fichier
   n'est écrit deux fois.
-- **Refléter maintenant :** met en file d'attente tous les documents actifs de
-  l'organisation, par exemple après la première configuration. WorkDiary
-  ignore les fichiers inchangés. Ce bouton ne couvre pas les factures et les
-  protocoles ; ceux-ci sont transférés lors de leur émission ou de leur
-  signature.
+- **Refléter maintenant :** met en file d'attente tout ce qui provient des
+  contenus sélectionnés – documents actifs, factures émises et protocoles
+  signés –, par exemple après la première configuration, y compris pour les
+  pièces antérieures. WorkDiary ignore les fichiers inchangés.
 
 Il n'existe pas de planification fixe. WorkDiary lit dans SharePoint uniquement
 pour vérifier si un fichier répliqué y a été modifié.
@@ -149,6 +147,11 @@ sont disponibles :
   comme nouvelle version du document.
 - **Détacher la réplication** : ce seul document n'est plus répliqué ; la
   connexion reste active.
+
+Pour les PDF de factures et de protocoles, seul **Écraser le distant** est
+proposé : les factures émises et les protocoles signés sont immuables,
+WorkDiary dépose de nouveau son PDF. Pour conserver le fichier modifié,
+choisissez **Rejeter**.
 
 La **Boîte de rapprochement** est accessible aux personnes autorisées à gérer
 la facturation.
@@ -178,6 +181,7 @@ reprend avec les mêmes paramètres.
   déconnectée, **Actif** est désactivé, aucune bibliothèque n'est choisie, ou
   la connexion a été mise à l'arrêt après des erreurs répétées consécutives.
   Une fois la cause corrigée, **Déconnecter** puis une nouvelle connexion
-  remettent le compteur d'erreurs à zéro.
+  remettent le compteur d'erreurs à zéro. Tant que la connexion est
+  perturbée, une tâche d'exploitation la signale.
 - **Vérifier l'état :** à côté du titre de la page figure le dernier état
   vérifié ; **Tester la connexion** le vérifie immédiatement.

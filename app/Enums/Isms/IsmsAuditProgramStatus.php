@@ -25,9 +25,9 @@ enum IsmsAuditProgramStatus: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Active => (string) __('aktiv'),
-            self::Completed => (string) __('abgeschlossen'),
-            self::Cancelled => (string) __('abgebrochen'),
+            self::Active => (string) __('enums.isms.isms_audit_program_status.active'),
+            self::Completed => (string) __('enums.isms.isms_audit_program_status.completed'),
+            self::Cancelled => (string) __('enums.isms.isms_audit_program_status.cancelled'),
         };
     }
 

@@ -14,14 +14,19 @@ namespace App\Services\Appointments;
 
 use App\Enums\Calendar\AppointmentRequestStatus;
 use App\Enums\Diary\Status;
+use App\Enums\Notification\NotificationEvent;
+use App\Exceptions\InvalidOrderTransitionException;
 use App\Models\Calendar\AppointmentRequest;
 use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Sales\BookableService;
+use App\Services\Diary\OrderService;
+use App\Services\Notification\NotificationDispatcher;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 /**
@@ -34,6 +39,11 @@ use RuntimeException;
  * keinen Weg von `requested` direkt in den Dienstplan ohne `decided_by`.
  */
 class AppointmentRequestService {
+    public function __construct(
+        private readonly NotificationDispatcher $notifier,
+        private readonly OrderService $orders,
+    ) {}
+
     /** Portal-Anfrage anlegen (Status requested — nie mehr). */
     public function requestFromPortal(
         BookableService $service,
@@ -63,6 +73,7 @@ class AppointmentRequestService {
             'service_label' => $service->title,
         ]);
         $request->audit('appointment.requested', ['service' => $service->title]);
+        $this->notifyContractor(NotificationEvent::AppointmentRequested, 'appointment.notification.requested_title', $request, $customer, null);
 
         return $request;
     }
@@ -139,7 +150,8 @@ class AppointmentRequestService {
 
     /**
      * Storno durch den Kunden — nur innerhalb der Frist und nur die eigene,
-     * noch offene oder bestätigte Anfrage.
+     * noch offene oder bestätigte Anfrage. Ein bestätigter Termin storniert
+     * seinen Auftrag mit; läuft der schon, bleibt beides stehen.
      */
     public function cancelFromPortal(AppointmentRequest $request, User $portalUser): AppointmentRequest {
         if ($request->portal_user_id !== $portalUser->id) {
@@ -150,17 +162,45 @@ class AppointmentRequestService {
             throw new RuntimeException((string) __('Diese Anfrage lässt sich nicht mehr stornieren.'));
         }
 
-        $cancelHours = (int) ($request->bookableService->cancel_hours ?? 24);
-        if ($request->start_at !== null && Carbon::now()->addHours($cancelHours)->greaterThan($request->start_at)) {
-            throw new RuntimeException((string) __('Die Stornofrist von :hours Stunden ist unterschritten — bitte rufen Sie uns an.', ['hours' => $cancelHours]));
+        if (! $request->withinCancelDeadline()) {
+            throw new RuntimeException((string) __('Die Stornofrist von :hours Stunden ist unterschritten — bitte rufen Sie uns an.', ['hours' => $request->cancelHours()]));
         }
 
-        $request->forceFill([
-            'status' => AppointmentRequestStatus::Canceled,
-            'cancellation' => ['by' => 'portal', 'at' => Carbon::now()->toIso8601String()],
-        ])->save();
-        $request->audit('appointment.canceled', ['by' => 'portal']);
+        $entry = $request->diaryEntry;
+        DB::transaction(function () use ($request, $portalUser, $entry): void {
+            if ($entry instanceof DiaryEntry && $entry->status !== Status::Cancelled) {
+                try {
+                    $this->orders->cancel($entry, $portalUser, (string) __('appointment.portal.order_cancel_reason'));
+                } catch (InvalidOrderTransitionException) {
+                    throw new RuntimeException((string) __('appointment.portal.order_in_progress'));
+                }
+            }
+
+            $request->forceFill([
+                'status' => AppointmentRequestStatus::Canceled,
+                'cancellation' => ['by' => 'portal', 'at' => Carbon::now()->toIso8601String()],
+            ])->save();
+            $request->audit('appointment.canceled', ['by' => 'portal']);
+        });
+
+        if ($request->customer instanceof Customer) {
+            $this->notifyContractor(NotificationEvent::AppointmentCanceled, 'appointment.notification.canceled_title', $request, $request->customer, $entry?->assignedUser);
+        }
 
         return $request;
+    }
+
+    /** Disposition informieren; Texte werden beim Anzeigen in der Sprache der Empfänger gerendert. */
+    private function notifyContractor(NotificationEvent $event, string $titleKey, AppointmentRequest $request, Customer $customer, ?User $affected): void {
+        $service = (string) ($request->service_label ?? '');
+        DB::afterCommit(fn () => $this->notifier->notify($event, $request, $affected, [
+            'title' => (string) __($titleKey, ['customer' => $customer->name]),
+            'title_key' => $titleKey,
+            'title_params' => ['customer' => $customer->name],
+            'message' => (string) __('appointment.notification.message', ['service' => $service, 'date' => $request->start_at?->copy()->setTimezone(Tz::current())->format('d.m.Y H:i')]),
+            'message_key' => 'appointment.notification.message',
+            'message_params' => ['service' => $service, 'date' => $request->start_at?->toIso8601String()],
+            'url' => route('appointments.index'),
+        ]));
     }
 }

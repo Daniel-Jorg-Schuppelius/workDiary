@@ -146,6 +146,38 @@ final class CalDavPluginTest extends TestCase {
         $this->assertSame(0, ExternalReference::query()->count());
     }
 
+    /** Ein gelöschter Termin verschwindet beim nächsten Abgleich auch extern (Phase 137). */
+    public function test_deleted_event_is_removed_from_the_calendar(): void {
+        $gateway = $this->bindGateway();
+        $this->connection();
+        $event = $this->event();
+        (new CalDavPlugin())->publishCalendar($this->organization);
+
+        $event->delete();
+        $result = (new CalDavPlugin())->publishCalendar($this->organization);
+
+        $this->assertSame(1, $result['deleted']);
+        $this->assertSame(['event-' . $event->id . '.ics'], $gateway->deletes);
+        $this->assertSame(0, ExternalReference::query()->count());
+    }
+
+    /** Ein einzelner Benachrichtigungs-Eintrag räumt nicht auf — das bleibt dem Vollabgleich. */
+    public function test_single_item_publish_leaves_other_references_alone(): void {
+        $gateway = $this->bindGateway();
+        $this->connection();
+        $event = $this->event();
+        (new CalDavPlugin())->publishCalendar($this->organization);
+        $event->delete();
+
+        (new CalDavPlugin())->publishCalendarItem($this->organization, new \App\Plugins\Support\Calendar\RemoteCalendarEvent(
+            uid: 'notify-x@workdiary', title: 'Frist', description: null, location: '',
+            start: now()->addDays(2)->toDateTimeImmutable(), end: now()->addDays(2)->addHour()->toDateTimeImmutable(),
+            timezone: 'Europe/Berlin', referenceableType: $event->getMorphClass(), referenceableId: 999999,
+        ));
+
+        $this->assertSame([], $gateway->deletes);
+    }
+
     public function test_publish_skips_inactive_connection(): void {
         $gateway = $this->bindGateway();
         $this->connection(active: false);

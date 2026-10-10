@@ -1,7 +1,7 @@
 ---
 title: "Nachweise: Audit-Aktivität, Compliance und Mindestlohn"
 topic: reports.compliance
-version: 1
+version: 3
 keywords:
     - Audit-Auswertung
     - wer hat was geändert
@@ -39,8 +39,8 @@ wie die Einzelliste aussieht, beschreibt das Thema zur ArbZG-Compliance.
 
 - Den Zeitraum wählen Sie über die Zeitraumwahl in der Kopfzeile. Die
   **Verstoß-Historie** zeigt dagegen alle gespeicherten Verstöße.
-- Wo es einen Export gibt, ist er beim jeweiligen Abschnitt genannt. PDF- und
-  CSV-Exporte werden im Audit-Protokoll vermerkt.
+- Wo es einen Export gibt, ist er beim jeweiligen Abschnitt genannt. Jeder
+  Export wird im Audit-Protokoll vermerkt.
 
 ## Audit-Aktivität
 
@@ -48,9 +48,10 @@ wie die Einzelliste aussieht, beschreibt das Thema zur ArbZG-Compliance.
 Einträge des Audit-Protokolls im Zeitraum zusammen. Die Seite öffnet sich nur
 für Administratoren; allen anderen wird der Zugriff verweigert.
 
-- Kacheln: **Events Σ** (alle Einträge im Zeitraum), **Aktive Benutzer** und
-  **Entity-Typen**. Die beiden letzten zählen die Einträge der Top-20-Listen
-  und zeigen daher höchstens 20.
+- Kacheln: **Events Σ** (alle Einträge im Zeitraum), **Aktive Benutzer**
+  (Personen mit mindestens einem Eintrag) und **Entity-Typen** (verschiedene
+  Objekttypen). Auch diese beiden zählen über alle Einträge im Zeitraum, nicht
+  nur über die Top-20-Listen.
 - Diagramme: **Ereignisse im Verlauf**, **Top-Akteure (Top 15)** und die
   Ereignisse im Verlauf nach Ereignistyp.
 - Tabellen: **Nach Event**, **Nach Entity-Typ (Top 20)**, **Nach Benutzer
@@ -136,8 +137,8 @@ und verlangt das Recht **ArbZG-Compliance einsehen**.
   Stempelungen zählen nicht. **Beginn** ist der erste Start, **Ende** das
   letzte Ende des Tages, die Pausen werden addiert, und **Dauer** ist die
   Arbeitszeit nach Abzug der Pausen.
-- Sortiert ist nach Name und Datum. Der Download übernimmt Zeitraum und
-  Mitarbeiterfilter der Seite und wird im Audit-Protokoll vermerkt.
+- Sortiert ist nach Name und Datum. Der Download übernimmt Zeitraum,
+  Mitarbeiter- und Teamfilter der Seite und wird im Audit-Protokoll vermerkt.
 
 Den **Lenkzeit-Nachweis** im selben Menü beschreibt das Thema zu Fuhrpark,
 Fahrtenbuch und Lenkzeiten.

@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Clockify;
 
-use App\Plugins\Clockify\Console\ClockifyPushCommand;
+use App\Plugins\Clockify\Console\{ClockifyImportCommand, ClockifyPushCommand};
 use App\Plugins\Clockify\Services\{ClockifyGroupBooker, ClockifyImportService, ClockifyOutboxDispatcher};
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Integration\{InboxGroupBookerRegistry, IntegrationOutboxDispatcherResolver};
@@ -35,6 +35,6 @@ class ClockifyServiceProvider extends PluginServiceProviderBase {
 
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new ClockifyOutboxDispatcher);
 
-        $this->commands([ClockifyPushCommand::class]);
+        $this->commands([ClockifyImportCommand::class, ClockifyPushCommand::class]);
     }
 }

@@ -1,7 +1,7 @@
 ---
 title: "Integrazione OpenProject"
 topic: admin.openproject
-version: 3
+version: 4
 keywords:
     - gestione progetti
     - pacchetti di lavoro
@@ -12,6 +12,8 @@ keywords:
     - sincronizzazione tempi
     - sincronizzazione progetti
     - mappature
+    - OpenProject ospitato in proprio
+    - consenti indirizzi privati
 audience:
     - admin
 related:
@@ -26,6 +28,13 @@ L'integrazione OpenProject collega WorkDiary a OpenProject in modo
 possono essere riportati su OpenProject. Credenziali e opzioni si
 impostano nelle impostazioni del plugin (tra cui **URL dell'istanza**,
 **Token API** e **Finestra di sincronizzazione (giorni)**).
+
+WorkDiary rifiuta un’istanza OpenProject ospitata in proprio nella Sua rete
+(per esempio 192.168.x.x) finché non attiva **Consenti indirizzi privati**
+nelle impostazioni del plugin. La modifica viene registrata. Se il gestore
+della Sua installazione ha bloccato questa autorizzazione, l’interruttore non
+ha effetto; l’istanza ha allora bisogno di un indirizzo raggiungibile
+pubblicamente.
 
 Sincronizzare (pagina **Sincronizza OpenProject**):
 

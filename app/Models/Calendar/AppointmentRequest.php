@@ -131,6 +131,22 @@ class AppointmentRequest extends Model {
         return $this->status === AppointmentRequestStatus::Requested;
     }
 
+    /** Stornofrist der Leistungsart in Stunden vor Terminbeginn; ohne Angabe 24. */
+    public function cancelHours(): int {
+        return (int) ($this->bookableService->cancel_hours ?? 24);
+    }
+
+    /** Letzter Zeitpunkt, zu dem der Kunde im Portal selbst storniert. */
+    public function cancelDeadline(): ?Carbon {
+        return $this->start_at?->copy()->subHours($this->cancelHours());
+    }
+
+    public function withinCancelDeadline(): bool {
+        $deadline = $this->cancelDeadline();
+
+        return $deadline === null || Carbon::now()->lessThanOrEqualTo($deadline);
+    }
+
     public function sourceLabel(): string {
         return match ($this->source) {
             self::SOURCE_PORTAL => __('Kundenportal'),

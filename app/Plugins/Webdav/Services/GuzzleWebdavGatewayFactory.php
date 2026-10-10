@@ -27,7 +27,9 @@ use App\Plugins\Webdav\WebdavPlugin;
  */
 class GuzzleWebdavGatewayFactory implements WebdavGatewayFactory {
     public function for(WebdavConnection $connection): RemoteFileGateway {
-        $client = app(PluginHttpFactory::class)->client(WebdavPlugin::ID, (string) $connection->base_url);
+        // Vor dem Client: diese Meldung nennt den Schalter der Ablage, die der Client-Factory nur die Betreiber-Liste.
+        HttpWebdavGateway::assertTarget($connection);
+        $client = app(PluginHttpFactory::class)->client(WebdavPlugin::ID, (string) $connection->base_url, allowPrivateNetwork: $connection->allowsPrivateNetwork());
         // DAV statt JSON-API; Timeout wie zuvor 30 s (Health-Check behält
         // sein reduziertes Budget aus dem PluginApiClient).
         $client->setDefaultHeaders([]);

@@ -38,12 +38,11 @@ class PluginContributionsTest extends TestCase {
         foreach (['email', 'cti', 'carrier', 'msgraph', 'sharepoint', 'webdav', 'caldav', 'carddav', 'google_calendar'] as $key) {
             $this->assertArrayHasKey($key, $connections->all(), $key);
         }
-        // Betriebsaufgabe bei Störung wie bisher nur für diese Teilmenge.
-        $this->assertSame(['email', 'cti', 'carrier', 'webdav', 'caldav'], array_values(array_intersect(
-            ['email', 'cti', 'carrier', 'webdav', 'caldav', 'msgraph', 'carddav'],
+        // Betriebsaufgabe bei Störung für alle Plugin-Verbindungen (Phase 137).
+        $this->assertSame(['email', 'cti', 'carrier', 'webdav', 'caldav', 'msgraph', 'carddav', 'sharepoint', 'google_calendar'], array_values(array_intersect(
+            ['email', 'cti', 'carrier', 'webdav', 'caldav', 'msgraph', 'carddav', 'sharepoint', 'google_calendar'],
             array_keys($connections->withOperationsTask()),
         )));
-        $this->assertArrayNotHasKey('msgraph', $connections->withOperationsTask());
 
         $this->assertContains(LexofficeArticle::class, app(IdentifierAuditModels::class)->all());
         $this->assertSame(['path' => 'file_path'], app(OrganizationFileTables::class)->all()['lexoffice_vouchers'] ?? null);

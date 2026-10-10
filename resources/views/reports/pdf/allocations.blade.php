@@ -8,11 +8,11 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', __('reporting.allocations.title') . ' – ' . $from . ' bis ' . $to)
+@section('pdf-title', __('reporting.allocations.title') . ' – ' . $from . ' ' . __('bis') . ' ' . $to)
 @section('pdf-heading', __('reporting.allocations.title'))
 
 @section('pdf-meta')
-    {{ __('Zeitraum') }}: <strong>{{ \Carbon\Carbon::parse($from)->fdate() }}</strong> bis
+    {{ __('Zeitraum') }}: <strong>{{ \Carbon\Carbon::parse($from)->fdate() }}</strong> {{ __('bis') }}
     <strong>{{ \Carbon\Carbon::parse($to)->fdate() }}</strong> ·
     {{ __('reporting.allocations.total') }}: {{ \App\Support\Formats::duration($totalMinutes, 'clock') }} ·
     {{ __('Erstellt') }}: {{ now()->fdatetime() }}

@@ -186,18 +186,18 @@ class SupplierValueReportController extends Controller {
         $labels = $this->segmentLabels();
         $out = [];
         $out[] = [
-            'Lieferant',
-            'Segment',
-            'TageSeitLetztemBeleg',
-            'Belegtage',
-            'AusgabenEUR',
-            'Belege',
-            'AusgabenanteilProzent',
+            (string) __('reporting.csv.supplier'),
+            (string) __('reporting.csv.segment'),
+            (string) __('reporting.csv.days_since_last_document'),
+            (string) __('reporting.csv.document_days'),
+            (string) __('reporting.csv.spend_eur'),
+            (string) __('reporting.csv.documents'),
+            (string) __('reporting.csv.spend_share_percent'),
             'R',
             'F',
             'M',
-            'ErsterBeleg',
-            'LetzterBeleg',
+            (string) __('reporting.csv.first_document'),
+            (string) __('reporting.csv.last_document'),
         ];
 
         foreach ($rows as $row) {

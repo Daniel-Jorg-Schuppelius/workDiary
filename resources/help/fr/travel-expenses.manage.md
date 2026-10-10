@@ -1,7 +1,7 @@
 ---
 title: "Trajets, frais & indemnités forfaitaires"
 topic: travel-expenses.manage
-version: 2
+version: 3
 keywords:
     - notes de frais
     - frais de déplacement
@@ -26,7 +26,7 @@ related:
     - reports.overview
 ---
 
-Le carnet de route, les frais et les indemnités de repas documentent
+Le carnet de bord, les frais et les indemnités de repas documentent
 les déplacements professionnels séparément, mais avec une période et
 des justificatifs communs. Saisissez le trajet avec date, distance,
 motif, véhicule et relevés kilométriques, complétez les dépenses avec
@@ -115,17 +115,17 @@ les plus fréquentes.
 Le justificatif d'origine reste attaché tel quel — la reconnaissance ne le
 remplace pas, elle vous épargne seulement la saisie.
 
-## Carnet de route : signature, correction et comparaison 1 %
+## Carnet de bord : signature, correction et comparaison 1 %
 
-En mode carnet de route, la personne qui conduit clôture un trajet **avec sa
+En mode carnet de bord, la personne qui conduit clôture un trajet **avec sa
 signature** ; le trajet est ensuite verrouillé. Un trajet déjà verrouillé en fin
 de journée peut encore être signé. Si un trajet au milieu de la chaîne est corrigé
 par un trajet d'annulation et que son kilométrage final change, le trajet suivant
 commence automatiquement à ce point — sous forme de correction de suite,
 l'original est conservé.
 
-La **comparaison 1 %** sous le justificatif du carnet de route oppose, par véhicule
-et par année, la méthode du carnet de route à la règle du 1 %. Le véhicule a
+La **comparaison 1 %** sous le justificatif du carnet de bord oppose, par véhicule
+et par année, la méthode du carnet de bord à la règle du 1 %. Le véhicule a
 besoin du prix catalogue brut et de la distance domicile–travail ; vous y saisissez
 les autres coûts annuels (leasing, assurance, taxe), l'énergie provient des
 justificatifs de carburant et de recharge. En option, un paramètre bloque les

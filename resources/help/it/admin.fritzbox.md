@@ -1,7 +1,7 @@
 ---
 title: "Importare l'elenco chiamate FRITZ!Box"
 topic: admin.fritzbox
-version: 1
+version: 2
 keywords:
     - FRITZ!Box
     - elenco chiamate
@@ -40,7 +40,7 @@ servono credenziali di accesso alla box.
 
 ## Prerequisiti
 
-- Il plugin **FRITZ!Box-Anrufliste** è attivato in **Plugin**. Successivamente
+- Il plugin **Elenco chiamate FRITZ!Box** è attivato in **Plugin**. Successivamente
   compare la voce **Importazione FRITZ!Box** nel menu di sistema (icona a
   ingranaggio **Sistema**), nel gruppo **Plugin**.
 - I numeri di telefono dei Suoi clienti e clienti finali sono registrati nei
@@ -52,13 +52,13 @@ servono credenziali di accesso alla box.
 
 ## Impostazioni del plugin
 
-In **Plugin** apra la finestra **Configura** di **FRITZ!Box-Anrufliste**:
+In **Plugin** apra la finestra **Configura** di **Elenco chiamate FRITZ!Box**:
 
 - **Registrare le telefonate come fatturabili** (predefinito: attivo): se
   disattivato, le telefonate importate non vengono mai contrassegnate come
   fatturabili.
-- **Registra i tempi per l’ID utente**: l'identificativo (ID) dell'utente per
-  cui vengono registrate le telefonate. Se vuoto, WorkDiary registra sul
+- **Registra i tempi per l’utente**: l'utente per cui vengono registrate le
+  telefonate; lo sceglie dall'elenco. Senza selezione, WorkDiary registra sul
   titolare dell'organizzazione o sul primo utente.
 - **Durata minima (minuti)** (predefinito: 2): le chiamate più brevi vengono
   saltate.
@@ -187,7 +187,7 @@ registrate come telefonata.
   l'esportazione CSV dell'elenco chiamate senza modificarla.
 - **«Nessun utente prenotabile nell'organizzazione.»** oppure un controllo di
   stato che segnala che l'utente predefinito configurato non esiste più:
-  verifichi **Registra i tempi per l’ID utente** oppure svuoti il campo.
+  verifichi **Registra i tempi per l’utente** oppure annulli la selezione.
 - **Mancano le chiamate in uscita:** se l'elenco proviene da un firmware più
   vecchio, attivi **Considerare il tipo 3 come in uscita**.
 - **Quasi tutto filtrato:** verifichi **Solo numeri propri**: la grafia deve

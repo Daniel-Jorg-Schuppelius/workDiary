@@ -10,7 +10,7 @@
 
 return [
     'title' => 'CalDAV',
-    'intro' => 'Gli appuntamenti di WorkDiary vengono pubblicati in un calendario CalDAV esterno (Nextcloud/ownCloud) — on-premise, senza account Microsoft o Google. WorkDiary resta l\'autorità; gli appuntamenti annullati vi scompaiono e le esecuzioni ripetute non creano mai duplicati.',
+    'intro' => 'Gli appuntamenti di WorkDiary vengono pubblicati in un calendario CalDAV esterno (Nextcloud/ownCloud) — on-premise, senza account Microsoft o Google. WorkDiary resta l\'autorità; gli appuntamenti annullati ed eliminati vi scompaiono e le esecuzioni ripetute non creano mai duplicati.',
 
     'health' => [
         'ok' => 'Connesso',
@@ -45,6 +45,8 @@ return [
         'calendar_path' => 'Percorso calendario (collection)',
         'calendar_path_help' => 'Relativo all\'URL base, ad es. calendars/team/turni.',
         'active' => 'Attivo',
+        'allow_private_network' => 'Consenti indirizzi privati/interni',
+        'allow_private_network_help' => 'Attivare solo se il server CalDAV si trova nella propria rete (ad es. 192.168.x.x). L\'operazione è sottoposta ad audit e ha effetto solo se il gestore lo consente.',
         // MVP-610b: Rückimport ist Opt-in — er ändert Daten.
         'two_way' => 'Bidirezionale: importa le modifiche esterne come proposte',
         'two_way_help' => 'Reimportazione della collection del calendario tramite sync-collection (RFC 6578), altrimenti su una finestra temporale con confronto degli ETag — nuovi appuntamenti esterni, modifiche esterne a quelli pubblicati ed eliminazioni arrivano come casi nella inbox di integrazione (mai una creazione cieca).',
@@ -62,5 +64,7 @@ return [
         'invalid_url' => 'L\'URL base deve iniziare con http:// o https://.',
         'path_outside_base' => 'L\'URL del calendario non si trova sotto l\'URL base. Indichi il percorso relativo all\'URL base.',
         'password_required' => 'Una nuova connessione richiede una password app.',
+        'private_url_blocked' => 'L\'URL di base punta a un indirizzo privato/interno. Per un server nella propria rete, attivi l\'autorizzazione degli indirizzi privati.',
+        'private_hint' => 'Per un server nella propria rete, l\'autorizzazione degli indirizzi privati deve essere attiva sulla connessione.',
     ],
 ];

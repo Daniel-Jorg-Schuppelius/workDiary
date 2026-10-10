@@ -1,7 +1,7 @@
 ---
 title: "Créer une commande"
 topic: diary-entries.create
-version: 2
+version: 4
 keywords:
     - nouvelle commande
     - nouvelle intervention
@@ -14,6 +14,7 @@ keywords:
     - montage
     - type d'entrée
     - journal des interventions
+    - durée prévue
 audience: []
 schema: process
 related:
@@ -46,7 +47,10 @@ statut tracent le cycle de vie de la commande.
    échéant.
 3. Choisissez le **type d'entrée** et décrivez le **contenu** en une à
    deux phrases.
-4. En option : une **durée prévue** en minutes.
+4. En option : indiquez la **Durée prévue (HH:MM)** dans la section
+   **Période**, par ex. 1:30. Si le champ reste vide, la durée d’intervention d’une commande planifiée, sinon la durée du créneau ou du
+   rendez-vous s'applique. Elle sert de plan dans **Plan/réel**, **Analyse des
+   types de commande** et **Capacité du personnel**.
 5. Les transitions de statut passent ensuite par la **fenêtre de
    détail** — pas de mise à jour en masse depuis la liste.
 

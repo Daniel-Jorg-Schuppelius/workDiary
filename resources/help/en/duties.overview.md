@@ -1,7 +1,7 @@
 ---
 title: "Using the work list"
 topic: duties.overview
-version: 1
+version: 3
 keywords:
     - duty list
     - worklist
@@ -13,6 +13,7 @@ keywords:
     - leave request
     - sick note
     - absences
+    - continued pay
 audience: []
 related:
     - diary-entries.create
@@ -25,17 +26,25 @@ The work list combines ongoing operational items in five areas:
 
 - **Orders**: open, problematic, confirmed and completed order-book
   entries.
-- **On-call**: planned on-call and standby periods.
-- **Emergency duty**: specific emergency assignments and their reasons.
-- **Leave**: leave and absence requests with their approval status.
-- **Sickness**: sickness reports, periods and required evidence.
+- **Standby**: planned on-call and standby periods.
+- **On-call**: specific emergency assignments and their reasons.
+- **Vacation**: leave and absence requests with their approval status.
+- **Sick leave**: sickness reports, periods and required evidence.
+
+In the **Sick leave** area, the status of **Continued pay** appears above the
+list: days used and remaining, the **Start of illness chain** and – while the
+sick leave is ongoing – under **Expected end** the date on which the
+entitlement ends; once it is used up, the date since which it has been
+exhausted. You see your own status;
+administrators select a person for this in the **Employee** filter. The topic
+“Leave & sickness” explains how it is calculated.
 
 Select the relevant tab first. Filters and figures always apply to the
 current date range and area. Selecting a figure may narrow the list
 further.
 
 Use the action at the top right to create an item for the current area.
-Completed orders, on-call periods and emergency assignments are
+Completed orders, standby periods and emergency assignments are
 available in the **Archive**.
 
 If the list is empty, check the date range and filters. **Reset

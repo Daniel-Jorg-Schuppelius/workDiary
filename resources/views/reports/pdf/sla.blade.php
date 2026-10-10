@@ -8,7 +8,7 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'SLA – ' . $from . ' bis ' . $to)
+@section('pdf-title', __('SLA') . ' – ' . $from . ' ' . __('bis') . ' ' . $to)
 @section('pdf-heading', __('sla.report.title'))
 
 @section('pdf-meta')

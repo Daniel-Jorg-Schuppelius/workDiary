@@ -54,6 +54,8 @@ class ProjectInactiveReportController extends Controller {
             return $this->exportCsv($projects, $lastByProject, $from, $to, $filters->toAuditArray(), $request);
         }
         if ($request->query('export') === 'xlsx') {
+            $this->auditExport($request, 'project-inactive', 'xlsx', $filters->toAuditArray());
+
             return $this->exportXlsx($projects, $lastByProject, $from, $to);
         }
 
@@ -223,7 +225,7 @@ class ProjectInactiveReportController extends Controller {
      */
     private function exportCsv(Collection $projects, array $lastByProject, CarbonImmutable $from, CarbonImmutable $to, array $exportFilters, Request $request): Response {
         $filename = sprintf('projekte-inaktiv_%s_%s.csv', $from->toDateString(), $to->toDateString());
-        $rows = [['Projekt', 'Kunde', 'Status', 'Letzte Aktivität']];
+        $rows = [[(string) __('reporting.csv.project'), (string) __('reporting.csv.customer'), (string) __('reporting.csv.status'), (string) __('reporting.csv.last_activity')]];
         foreach ($projects as $project) {
             /** @var Project $project */
             $customer = $project->customer;
@@ -246,7 +248,7 @@ class ProjectInactiveReportController extends Controller {
      */
     private function exportXlsx(Collection $projects, array $lastByProject, CarbonImmutable $from, CarbonImmutable $to): SymfonyResponse {
         $filename = sprintf('projekte-inaktiv_%s_%s.xlsx', $from->toDateString(), $to->toDateString());
-        $headers = ['Projekt', 'Kunde', 'Status', 'Letzte Aktivität'];
+        $headers = [(string) __('reporting.csv.project'), (string) __('reporting.csv.customer'), (string) __('reporting.csv.status'), (string) __('reporting.csv.last_activity')];
         $rows = [];
         foreach ($projects as $project) {
             /** @var Project $project */

@@ -34,6 +34,11 @@ class TimeAccountsReportController extends Controller {
     use ResolvesReportScope;
     use WritesReportCsv;
 
+    /** E10: Ohne Admin zeigt der Bericht nur das eigene Konto. */
+    protected function exportIsPersonal(Request $request): bool {
+        return ! $this->viewerIsAdmin();
+    }
+
     public function index(Request $request): View|SymfonyResponse {
         /** @var User $viewer */
         $viewer = Auth::user();

@@ -26,7 +26,11 @@
                 <td class="whitespace-nowrap">{{ optional($invoice->issued_on)->fdate() }}</td>
                 <td>{{ $invoice->status->label() }}</td>
                 <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
-                <td class="text-right">
+                <td class="text-right whitespace-nowrap">
+                    @unless ($externallyLed->contains($invoice->id))
+                        <x-icon-btn icon="picture_as_pdf" :href="route('customer.invoices.pdf', $invoice)"
+                                    :label="__('customer_portal.invoices.pdf_label', ['number' => $invoice->number])" />
+                    @endunless
                     @if ($payLinks->has($invoice->id))
                         <x-button :href="$payLinks->get($invoice->id)">{{ __('payments.portal.pay') }}</x-button>
                     @endif

@@ -28,11 +28,11 @@ enum ProblemStatus: string implements HasLabel, HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::Open => (string) __('Offen'),
-            self::Analyzing => (string) __('In Analyse'),
-            self::KnownError => (string) __('Known Error'),
-            self::Resolved => (string) __('Gelöst'),
-            self::Closed => (string) __('Geschlossen'),
+            self::Open => (string) __('enums.service_ticket.problem_status.open'),
+            self::Analyzing => (string) __('enums.service_ticket.problem_status.analyzing'),
+            self::KnownError => (string) __('enums.service_ticket.problem_status.known_error'),
+            self::Resolved => (string) __('enums.service_ticket.problem_status.resolved'),
+            self::Closed => (string) __('enums.service_ticket.problem_status.closed'),
         };
     }
 

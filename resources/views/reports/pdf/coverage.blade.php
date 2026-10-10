@@ -8,13 +8,13 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Coverage – ' . $from . ' bis ' . $to)
+@section('pdf-title', __('Coverage') . ' – ' . $from . ' ' . __('bis') . ' ' . $to)
 @section('pdf-heading', __('Coverage / Soll-Ist-Besetzung'))
 
 @section('pdf-meta')
-    Zeitraum: <strong>{{ \Carbon\Carbon::parse($from)->fdate() }}</strong> bis
+    {{ __('Zeitraum') }}: <strong>{{ \Carbon\Carbon::parse($from)->fdate() }}</strong> {{ __('bis') }}
     <strong>{{ \Carbon\Carbon::parse($to)->fdate() }}</strong> ·
-    Erstellt: {{ now()->fdatetime() }}
+    {{ __('Erstellt') }}: {{ now()->fdatetime() }}
 @endsection
 
 @section('pdf-table')
@@ -25,12 +25,12 @@
 
     <table class="kpis">
         <tr>
-            <td><div class="label">Schichttypen</div><div class="value">{{ $totals['shift_types'] }}</div></td>
-            <td><div class="label">Soll (Personentage)</div><div class="value">{{ $totals['required'] }}</div></td>
-            <td><div class="label">Ist (Personentage)</div><div class="value">{{ $totals['scheduled'] }}</div></td>
-            <td><div class="label">Differenz</div><div class="value {{ $totals['gap'] < 0 ? 'neg' : 'pos' }}">{{ $totals['gap'] > 0 ? '+' : '' }}{{ $totals['gap'] }}</div></td>
+            <td><div class="label">{{ __('Schichttypen') }}</div><div class="value">{{ $totals['shift_types'] }}</div></td>
+            <td><div class="label">{{ __('Soll (Personentage)') }}</div><div class="value">{{ $totals['required'] }}</div></td>
+            <td><div class="label">{{ __('Ist (Personentage)') }}</div><div class="value">{{ $totals['scheduled'] }}</div></td>
+            <td><div class="label">{{ __('Differenz') }}</div><div class="value {{ $totals['gap'] < 0 ? 'neg' : 'pos' }}">{{ $totals['gap'] > 0 ? '+' : '' }}{{ $totals['gap'] }}</div></td>
             <td><div class="label">{{ __('Erfüllung') }}</div><div class="value">{{ $totals['fill_rate'] !== null ? $pct($totals['fill_rate']) : '–' }}</div></td>
-            <td><div class="label">Tage unter</div><div class="value {{ $totals['days_under'] > 0 ? 'neg' : '' }}">{{ $totals['days_under'] }}</div></td>
+            <td><div class="label">{{ __('Tage unter') }}</div><div class="value {{ $totals['days_under'] > 0 ? 'neg' : '' }}">{{ $totals['days_under'] }}</div></td>
         </tr>
     </table>
 
@@ -58,7 +58,7 @@
                 </tr>
             @endforeach
             <tr class="totals">
-                <td>Gesamt</td>
+                <td>{{ __('Gesamt') }}</td>
                 <td class="right">{{ $totals['required'] }}</td>
                 <td class="right">{{ $totals['scheduled'] }}</td>
                 <td class="right">{{ $totals['gap'] > 0 ? '+' : '' }}{{ $totals['gap'] }}</td>
@@ -69,7 +69,7 @@
     </table>
 
     @if (! empty($underfilled))
-        <h2>Tage mit Unterdeckung ({{ count($underfilled) }})</h2>
+        <h2>{{ __('Tage mit Unterdeckung') }} ({{ count($underfilled) }})</h2>
         <table class="data">
             <thead>
                 <tr>

@@ -323,7 +323,7 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
      * Organisation idempotent in den Ziel-Kalender der M365-Verbindung.
      */
     public function publishCalendar(Organization $organization): array {
-        return $this->publishItems($organization, fn(): array => app(OrganizationEventSource::class)->itemsFor($organization));
+        return $this->publishItems($organization, fn(): array => app(OrganizationEventSource::class)->itemsFor($organization), removeOrphans: true);
     }
 
     /**
@@ -342,7 +342,7 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
      * @param  Closure(): list<RemoteCalendarEvent>  $items
      * @return array{published: int, deleted: int, unchanged: int, failed: int}
      */
-    private function publishItems(Organization $organization, Closure $items): array {
+    private function publishItems(Organization $organization, Closure $items, bool $removeOrphans = false): array {
         $counters = ['published' => 0, 'deleted' => 0, 'unchanged' => 0, 'failed' => 0];
 
         $connection = MsgraphConnection::query()->where('organization_id', $organization->id)->first();
@@ -352,7 +352,7 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
 
         try {
             $gateway = new MsgraphCalendarClient($connection);
-            $result = app(RemoteCalendarPublishService::class)->publish(self::ID, $connection, $gateway, $items());
+            $result = app(RemoteCalendarPublishService::class)->publish(self::ID, $connection, $gateway, $items(), removeOrphans: $removeOrphans);
             foreach ($counters as $key => $value) {
                 $counters[$key] = $value + $result[$key];
             }

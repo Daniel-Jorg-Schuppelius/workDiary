@@ -1,7 +1,7 @@
 ---
 title: "Ordini di produzione"
 topic: manufacturing.orders
-version: 1
+version: 2
 keywords:
     - ordine di lavorazione
     - distinta base
@@ -16,6 +16,9 @@ keywords:
     - fattura commerciale
     - documento di trasporto
     - DDT
+    - etichetta di spedizione
+    - stato spedizione
+    - annullare spedizione
 audience: []
 modules:
     - module.lager
@@ -40,7 +43,27 @@ essere impostati). Dalla pagina di dettaglio assegna l'ordine a un
 centro di lavoro o lo affida in conto lavoro a un fornitore; la vista di
 pianificazione mostra l'MRP multilivello e gli indicatori di qualità.
 L'annullamento è irreversibile; creare, confermare e consegnare
-richiedono l'autorizzazione alle registrazioni di magazzino.
+richiedono il permesso **Registra movimenti di magazzino**.
+
+## Spedizione sulla consegna
+
+Con una connessione di spedizione attiva (veda «Connessioni di spedizione DHL,
+UPS e FedEx») crea su una consegna con cliente, tramite **Spedisci**, un ordine
+di spedizione con la relativa etichetta. La consegna mostra poi lo stato, per
+esempio **Spedizione: Etichetta creata**, con corriere e numero di
+tracciamento. Passando con il mouse sullo stato vede quando è stato verificato
+l'ultima volta presso il corriere. Accanto allo stato si trovano:
+
+- **Scarica etichetta**: scarica di nuovo l'etichetta di spedizione.
+- **Verifica stato spedizione**: interroga subito il corriere sulla situazione
+  attuale – non più disponibile per **Consegnato** o **Annullato**. WorkDiary
+  verifica inoltre regolarmente da sé le spedizioni aperte.
+- **Annulla spedizione**: solo nello stato **Bozza** o **Etichetta creata** e
+  dopo una conferma. L'etichetta non è più valida. In seguito può creare un
+  nuovo ordine di spedizione e i colli della consegna tornano modificabili.
+
+Creare un ordine di spedizione, verificarne lo stato e annullare la spedizione
+richiedono il permesso **Registra movimenti di magazzino**.
 
 ## Documenti doganali per spedizioni fuori dall’UE
 

@@ -16,6 +16,7 @@ use App\Models\Platform\PluginState;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Webdav\Models\WebdavConnection;
 use App\Plugins\Webdav\WebdavPlugin;
+use App\Support\UrlSafety;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
@@ -55,6 +56,7 @@ class WebdavAdminController extends Controller {
             'username' => ['required', 'string', 'max:190'],
             'app_password' => ['nullable', 'string', 'max:255'],
             'default_folder' => ['required', 'string', 'max:190'],
+            'allow_private_network' => ['nullable', 'boolean'],
             'active' => ['nullable', 'boolean'],
             'sources' => ['nullable', 'array'],
             'sources.*' => ['in:' . implode(',', WebdavConnection::SOURCES)],
@@ -65,8 +67,13 @@ class WebdavAdminController extends Controller {
         ]);
 
         $baseUrl = trim((string) $data['base_url']);
+        $allowPrivate = (bool) ($data['allow_private_network'] ?? false);
         if (! str_starts_with($baseUrl, 'http://') && ! str_starts_with($baseUrl, 'https://')) {
             return back()->with('error', __('webdav::webdav.flash.invalid_url'))->withInput();
+        }
+        // Konfigurationszeit-Prüfung ohne DNS; verbindlich prüft das Gateway vor jedem Abruf.
+        if (! $allowPrivate && ! UrlSafety::isAcceptableExternalHttpUrl($baseUrl)) {
+            return back()->with('error', __('webdav::webdav.flash.private_url_blocked'))->withInput();
         }
 
         /** @var WebdavConnection $connection */
@@ -80,6 +87,7 @@ class WebdavAdminController extends Controller {
             'folder_map' => WebdavConnection::folderMapFromInput((array) $request->input('folder_type', []), (array) $request->input('folder_path', [])),
             // Nur bekannte Quellen; leer = nur document (Default via Model).
             'sources' => array_values(array_intersect(WebdavConnection::SOURCES, (array) ($data['sources'] ?? []))),
+            'allow_private_network' => $allowPrivate,
             'active' => (bool) ($data['active'] ?? false),
             'created_by' => $connection->exists ? $connection->created_by : $admin->id,
         ];
@@ -92,7 +100,11 @@ class WebdavAdminController extends Controller {
         }
 
         $connection->forceFill($attributes)->save();
-        $connection->audit('webdav.connection_saved', ['by_user_id' => (int) $admin->id, 'active' => $connection->active]);
+        $connection->audit('webdav.connection_saved', [
+            'by_user_id' => (int) $admin->id,
+            'active' => $connection->active,
+            'allow_private_network' => $connection->allow_private_network,
+        ]);
 
         return back()->with('success', __('webdav::webdav.flash.saved'));
     }

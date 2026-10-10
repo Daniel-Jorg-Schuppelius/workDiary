@@ -1,7 +1,7 @@
 ---
 title: "Collegare Google Calendar"
 topic: admin.google-calendar
-version: 1
+version: 2
 keywords:
     - Google Calendar
     - calendario Google
@@ -28,7 +28,7 @@ related:
 
 La pagina **Google Calendar** trasferisce gli eventi di WorkDiary in un
 calendario di un account Google. WorkDiary resta il sistema di riferimento: le
-modifiche vengono riportate, gli eventi annullati scompaiono dal calendario
+modifiche vengono riportate, gli eventi annullati ed eliminati scompaiono dal calendario
 Google e le esecuzioni ripetute non creano duplicati. Se lo desidera, WorkDiary
 rilegge inoltre il calendario e Le sottopone le modifiche esterne come proposte
 da verificare.
@@ -113,7 +113,8 @@ come fonte.
 **Disconnetti** rimuove l'accesso. Gli appuntamenti già trasferiti restano nel
 calendario Google. Con **Collega a Google** ripristina la connessione in
 qualsiasi momento; il calendario scelto resta salvato e il conteggio degli
-errori riparte da zero.
+errori riparte da zero. Finché la connessione è disturbata, un'attività
+operativa lo segnala.
 
 ## Problemi tipici
 

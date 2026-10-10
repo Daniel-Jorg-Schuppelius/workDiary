@@ -31,11 +31,11 @@ enum RentalChargeStatus: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Draft => (string) __('Entwurf'),
-            self::Released => (string) __('Freigegeben'),
-            self::Invoiced => (string) __('Abgerechnet'),
-            self::Transferred => (string) __('Extern übergeben'),
-            self::Cancelled => (string) __('Storniert'),
+            self::Draft => (string) __('enums.rental.rental_charge_status.draft'),
+            self::Released => (string) __('enums.rental.rental_charge_status.released'),
+            self::Invoiced => (string) __('enums.rental.rental_charge_status.invoiced'),
+            self::Transferred => (string) __('enums.rental.rental_charge_status.transferred'),
+            self::Cancelled => (string) __('enums.rental.rental_charge_status.cancelled'),
         };
     }
 

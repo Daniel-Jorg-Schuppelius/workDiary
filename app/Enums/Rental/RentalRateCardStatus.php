@@ -28,9 +28,9 @@ enum RentalRateCardStatus: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Draft => (string) __('Entwurf'),
-            self::Active => (string) __('Aktiv'),
-            self::Retired => (string) __('Abgelöst'),
+            self::Draft => (string) __('enums.rental.rental_rate_card_status.draft'),
+            self::Active => (string) __('enums.rental.rental_rate_card_status.active'),
+            self::Retired => (string) __('enums.rental.rental_rate_card_status.retired'),
         };
     }
 }

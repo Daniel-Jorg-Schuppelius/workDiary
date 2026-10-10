@@ -1,7 +1,7 @@
 ---
 title: "CSV import"
 topic: admin.import
-version: 3
+version: 4
 keywords:
     - data import
     - import master data

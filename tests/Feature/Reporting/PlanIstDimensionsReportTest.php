@@ -10,7 +10,11 @@
 
 namespace Tests\Feature\Reporting;
 
+use App\Enums\Location\LocationVisitStatus;
 use App\Enums\User\Permission as P;
+use App\Models\Customer\Customer;
+use App\Models\Facility\Site;
+use App\Models\Location\{CustomerGeofence, LocationVisit};
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
 use App\Models\Schedule\{ScheduledShift, ShiftType};
@@ -71,6 +75,42 @@ class PlanIstDimensionsReportTest extends TestCase {
             ->assertOk()
             // Solldaten-Lücke wird immer ausgewiesen, dazu der leere Zustand.
             ->assertSee(__('Keine ortsbasiert erfassten Zeiten im Zeitraum.'));
+    }
+
+    public function test_site_chart_covers_all_sites_not_only_the_current_page(): void {
+        $viewer = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $viewer->givePermissionTo(P::ReportPresenceOrganization->value);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $site = Site::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $customer->id, 'name' => 'Werk Nordstern']);
+        $geofence = CustomerGeofence::create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'site_id' => $site->id,
+            'label' => 'Tor 1',
+            'center_lat' => '50.0',
+            'center_lng' => '8.0',
+            'radius_m' => 100,
+            'min_dwell_minutes' => 5,
+            'gap_merge_minutes' => 10,
+            'is_active' => true,
+        ]);
+        LocationVisit::create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $viewer->id,
+            'customer_geofence_id' => $geofence->id,
+            'entered_at' => '2030-03-04 08:00:00',
+            'left_at' => '2030-03-04 09:30:00',
+            'duration_min' => 90,
+            'sample_count' => 3,
+            'status' => LocationVisitStatus::Closed,
+            'materialized' => false,
+        ]);
+
+        // Seite 2 der Tabelle ist leer; das Diagramm zeigt trotzdem den Standort.
+        $this->actingAs($viewer)
+            ->get(route('reports.plan-ist.sites', ['from' => '2030-03-01', 'to' => '2030-03-31', 'page' => 2]))
+            ->assertOk()
+            ->assertSee('Werk Nordstern');
     }
 
     public function test_shift_dimension_renders_data_and_week_grouping(): void {

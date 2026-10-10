@@ -13,10 +13,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Claims\Portal;
 
 use App\Enums\CustomerPortal\PortalCapability;
+use App\Enums\Notification\NotificationEvent;
 use App\Http\Controllers\Controller;
 use App\Models\Claims\ClaimCase;
 use App\Services\CustomerPortal\PortalVisibility;
+use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 
@@ -47,11 +50,18 @@ class ClaimPortalController extends Controller {
         return view('customer.claims.show', [
             'claim' => $claim->load(['rmaReturns.returnShipments', 'actions']),
             'portalReturns' => $user->customer !== null && app(PortalVisibility::class)->allows($user->customer, PortalCapability::Returns),
+            // Nur eigene Nachreichungen; ohne Erfasser stammen sie aus der Zeit vor `recorded_by`.
+            'portalNotes' => $claim->evidence()
+                ->where('kind', 'message')
+                ->where(fn (Builder $q) => $q->whereNull('recorded_by')
+                    ->orWhereHas('recorder', fn (Builder $r) => $r->where('customer_id', $user->customer_id)))
+                ->orderByDesc('recorded_at')
+                ->get(['id', 'note', 'recorded_at']),
         ]);
     }
 
-    /** Nachreichung: Notiz des Kunden landet als Nachweis am Fall. */
-    public function addNote(Request $request, ClaimCase $claim): RedirectResponse {
+    /** Nachreichung: Notiz des Kunden landet als Nachweis am Fall und geht an den Verantwortlichen. */
+    public function addNote(Request $request, ClaimCase $claim, NotificationDispatcher $notifier): RedirectResponse {
         $user = Auth::guard('customer')->user();
         abort_unless($user !== null && $user->customer_id !== null, 403);
         abort_unless((int) $claim->customer_id === (int) $user->customer_id, 404);
@@ -63,7 +73,16 @@ class ClaimPortalController extends Controller {
             'kind' => 'message',
             'title' => (string) __('Nachreichung aus dem Kundenportal'),
             'note' => $data['note'],
+            'recorded_by' => $user->id,
             'recorded_at' => now(),
+        ]);
+
+        $notifier->notify(NotificationEvent::ClaimCustomerNote, $claim, $claim->responsible, [
+            'title' => (string) __('claims.portal_note.notification_title', ['number' => $claim->number]),
+            'title_key' => 'claims.portal_note.notification_title',
+            'title_params' => ['number' => $claim->number],
+            'message' => $data['note'],
+            'url' => route('claims.show', $claim),
         ]);
 
         return back()->with('status', __('Nachreichung übermittelt.'));

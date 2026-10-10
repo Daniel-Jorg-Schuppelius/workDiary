@@ -1,7 +1,7 @@
 ---
 title: "Facturación, gastos, pagos e ingresos"
 topic: reports.billing
-version: 1
+version: 3
 keywords:
     - cuentas por cobrar
     - antigüedad de saldos
@@ -46,8 +46,8 @@ en **Análisis** → **Finanzas y auditoría** y la **Previsión de recargos** e
   curso.
 - **PDF** descarga una versión para imprimir; **CSV** y **Excel** están en
   **Exportación**; los formatos disponibles se indican en cada análisis. Las
-  exportaciones conservan los filtros establecidos. Las exportaciones PDF y
-  CSV se registran en el registro de auditoría.
+  exportaciones conservan los filtros establecidos. Cada exportación se
+  registra en el registro de auditoría.
 
 ## Facturación
 
@@ -58,12 +58,14 @@ acceso.
 
 - Mosaicos:
   - **Emitido + pagado (Σ bruto)**: total bruto de las facturas con el estado
-    **Emitida** o **Pagada** cuya fecha de factura cae en el período (sin
-    fecha de factura cuenta la fecha de creación).
-  - **Cuentas por cobrar**: total bruto de todas las facturas con el estado
-    **Emitida**, con independencia del período. El mosaico se vuelve rojo en
-    cuanto una de ellas lleva más de 30 días vencida; la indicación da su
-    número.
+    **Emitida**, **Pagada parcialmente** o **Pagada** cuya fecha de factura
+    cae en el período (sin fecha de factura cuenta la fecha de creación).
+  - **Cuentas por cobrar**: importe aún pendiente de todas las facturas con el
+    estado **Emitida** o **Pagada parcialmente**, con independencia del
+    período. Se descuentan los pagos recibidos y las retenciones de garantía
+    abiertas; las facturas proforma, los abonos y los documentos de anulación
+    no cuentan. El mosaico se vuelve rojo en cuanto una de ellas lleva más de
+    30 días vencida; la indicación da su número.
   - **Tiempo no facturado**: registros de tiempo facturables del período que
     aún no ha consumido ninguna vía de facturación, con el número de
     registros y los ingresos previstos según los importes guardados.
@@ -74,11 +76,12 @@ acceso.
 - **Facturas por estado**: **Cantidad**, **Neto** y **Bruto** por estado.
 - **Antigüedad – partidas pendientes**: las facturas abiertas según los días
   transcurridos desde el vencimiento (sin vencimiento, desde la fecha de
-  factura) en los tramos **Actual**, 1–7, 8–14, 15–30 y más de 30 días, con
-  **Total abierto**.
+  factura) en los tramos **Actual**, 1–7, 8–14, 15–30 y más de 30 días, cada
+  uno con el importe pendiente, y **Total abierto**.
 - **Principales clientes (emitido + pagado en el período)**: **Cliente**,
   **Facturas** y **Bruto**; si hay importes del programa de contabilidad,
-  aparece una columna adicional **de ello programa contable**.
+  aparece una columna adicional **de ello programa contable**. Las facturas
+  pagadas parcialmente se incluyen.
 - **Facturas electrónicas entrantes (en el período)**: entradas por estado
   con número e importe bruto, así como el número de las entregadas a
   contabilidad.
@@ -90,7 +93,7 @@ acceso.
   **Presupuesto → factura**, **Proforma → factura**, **Anulaciones / abonos**
   y **Tasa de corrección**.
 
-Filtros: **Cliente**, **Proyecto**, **Empleados** e **Incluir clientes
+Filtros: **Cliente**, **Proyecto**, **Empleado** e **Incluir clientes
 ocultos**. Cliente y proyecto actúan sobre facturas, presupuestos y tiempos;
 el empleado solo sobre los tiempos. Las facturas entrantes y los niveles de
 reclamación se refieren siempre a toda la organización. Con un proyecto
@@ -107,11 +110,11 @@ importes brutos según la fecha del gasto.
   categorías más grandes por separado y el resto agrupado, y **Principales
   generadores (top 15)**.
 - Mosaicos: **Suma (bruto)**, **Empleados**, **Categorías** y **Meses**.
-- Tabla con una fila por **Empleados** y **Categoría**, una columna por mes y
+- Tabla con una fila por **Empleado** y **Categoría**, una columna por mes y
   la **Suma**, seguida de **Principales categorías**.
 
 Filtros: **Área** (**Solo propios** u **Organización completa**, solo para
-administradores), **Empleados**, **Equipo**, **Proyecto** y **Estado**. Sin
+administradores), **Empleado**, **Equipo**, **Proyecto** y **Estado**. Sin
 derechos de administrador solo ve sus propios gastos. La página no ofrece
 exportación.
 
@@ -132,10 +135,12 @@ configurado como **Tarifa plana** o **Por tiempo**:
   sola vez.
 - **Por tiempo**: tiempo registrado por **Tarifa de retribución (€/h)**.
 
-La tabla muestra **Empleados**, **Modelo**, **Base de cálculo** e **Importe**
+La tabla muestra **Empleado**, **Modelo**, **Base de cálculo** e **Importe**
 con un total general. Los gráficos muestran los pagos a lo largo del tiempo y
-**Pagos por externo (top 15)**. Todos los importes son brutos, sin impuestos
-ni seguridad social. Filtro: **Empleados**. La página no ofrece exportación.
+**Pagos por externo (top 15)**. En la evolución, una tarifa plana mensual
+aparece una vez al mes, en la sección que contiene el primer día de ese mes
+dentro del período; así, el total del gráfico coincide con la tabla. Todos los importes son brutos, sin impuestos
+ni seguridad social. Filtro: **Empleado**. La página no ofrece exportación.
 
 ## Previsión de recargos
 

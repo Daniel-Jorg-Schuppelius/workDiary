@@ -1,7 +1,7 @@
 ---
 title: "Conectar Microsoft 365"
 topic: admin.msgraph
-version: 1
+version: 2
 keywords:
     - Microsoft 365
     - Office 365
@@ -66,7 +66,7 @@ junto al título, una insignia muestra **Conectado**, **Inaccesible** o
 - **Dirección:** los eventos de WorkDiary se transfieren al calendario de la
   cuenta conectada, desde 30 días atrás hasta 180 días adelante, con título,
   descripción, horario y lugar (salas reservadas). Los cambios se trasladan,
-  los eventos cancelados se eliminan allí y las ejecuciones repetidas no crean
+  los eventos cancelados y eliminados se retiran allí y las ejecuciones repetidas no crean
   duplicados. WorkDiary sigue siendo el sistema de referencia.
 - **Momento:** cada día se ejecuta una sincronización, por defecto a las 4:45;
   la frecuencia se cambia en **Tareas programadas**. **Publicar ahora** la
@@ -180,13 +180,10 @@ sin solicitud de consentimiento propia.
 
 **URI de redirección para un registro de aplicación propio** enumera las
 direcciones que una aplicación propia debe registrar como URI de redirección de
-tipo «Web»: para calendario, envío de correo, contactos, tareas, entrada de
-documentos, admin consent y, solo en la aplicación de la instalación, el
-destino de copia de seguridad. La dirección de OneNote falta en esta lista:
-con una aplicación propia, añada también su dirección de WorkDiary con la ruta
-/admin/msgraph/onenote/oauth/callback. Si el **Almacenamiento SharePoint** usa
-la misma aplicación, también corresponde la ruta
-/admin/sharepoint/oauth/callback.
+tipo «Web»: para calendario, envío de correo, contactos, tareas, OneNote,
+entrada de documentos, admin consent, solo en la aplicación de la instalación
+el destino de copia de seguridad, y el **Almacenamiento SharePoint**, que usa
+la misma aplicación mientras el operador no le asigne una propia.
 
 ## Otras funciones del plugin
 
@@ -207,6 +204,7 @@ conexión; las citas transferidas y los contactos de Outlook se quedan en
 Microsoft. Puede volver a conectar en cualquier momento; WorkDiary pone
 entonces también a cero el contador de errores. Si una conexión se suspendió
 tras errores repetidos consecutivos, el botón de conexión vuelve a aparecer.
+Mientras una conexión de calendario falle, una tarea operativa lo indica.
 
 ## Problemas habituales
 

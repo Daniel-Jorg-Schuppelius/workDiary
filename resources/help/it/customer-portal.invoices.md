@@ -1,7 +1,7 @@
 ---
 title: "Le mie fatture"
 topic: customer-portal.invoices
-version: 3
+version: 4
 keywords:
     - visualizzare le fatture
     - elenco fatture
@@ -13,6 +13,9 @@ keywords:
     - pagamento online
     - numero di fattura
     - pagamento parziale
+    - scaricare fattura
+    - fattura PDF
+    - ZUGFeRD
 audience: []
 related:
     - customer-portal.overview
@@ -31,9 +34,9 @@ L'elenco mostra per ogni fattura:
 - **Data** – la data della fattura,
 - **Stato** – lo stato di pagamento,
 - **Importo** – l'importo della fattura con la valuta,
-- a destra, se previsto, il pulsante **Paga online**.
+- a destra, l'icona PDF per scaricare e, se previsto, il pulsante **Paga online**.
 
-La fattura più recente è in alto. Con più di 25 fatture sfoglia l'elenco tramite la paginazione in fondo alla pagina. Le bozze a cui il Suo fornitore sta ancora lavorando non compaiono – vede solo le fatture emesse. I documenti di fattura veri e propri non si possono aprire né scaricare da questa pagina.
+La fattura più recente è in alto. Con più di 25 fatture sfoglia l'elenco tramite la paginazione in fondo alla pagina. Le bozze a cui il Suo fornitore sta ancora lavorando non compaiono – vede solo le fatture emesse.
 
 ### Gli stati
 
@@ -41,6 +44,14 @@ La fattura più recente è in alto. Con più di 25 fatture sfoglia l'elenco tram
 - **Parzialmente pagata** – è stata ricevuta una parte dell'importo.
 - **Pagata** – la fattura è saldata per intero.
 - **Annullata** – la fattura è stata annullata e non va più pagata.
+
+## Scaricare una fattura
+
+Clicchi sull'icona PDF nella riga della fattura (suggerimento al passaggio del mouse: **Scaricare la fattura … in PDF**). Riceve lo stesso documento che il Suo fornitore emette per questa fattura.
+
+- Se riceve le Sue fatture come fattura elettronica ZUGFeRD, anche il file scaricato è un PDF ZUGFeRD con i dati della fattura incorporati.
+- Per tutte le altre modalità di recapito riceve la fattura in PDF – anche se Le è stata recapitata come XRechnung (XML).
+- Se per una fattura manca l'icona, il Suo fornitore gestisce questa fattura in un altro programma di fatturazione. In tal caso riceve il documento direttamente da lui.
 
 ## Pagare online
 

@@ -1,7 +1,7 @@
 ---
 title: "Editar una orden"
 topic: diary-entries.edit
-version: 1
+version: 3
 keywords:
     - cambiar orden
     - detalles de la orden
@@ -27,3 +27,7 @@ estado a **Resuelto**. Las notas de comunicación se muestran en orden
 cronológico bajo la orden y permanecen visibles durante toda su vida.
 Los adjuntos pueden tener hasta **25 MB**; los archivos mayores deben
 referenciarse mediante almacenamiento externo.
+
+La **Duración prevista (HH:MM)** se cambia en la ventana de edición, sección
+**Período**. Si vacía el campo, vuelve a aplicarse la duración del servicio de una orden planificada; si no, la duración de la franja
+horaria o de la cita.

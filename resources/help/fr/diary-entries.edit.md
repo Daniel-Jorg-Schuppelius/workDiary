@@ -1,7 +1,7 @@
 ---
 title: "Modifier une commande"
 topic: diary-entries.edit
-version: 1
+version: 3
 keywords:
     - modifier une intervention
     - détails de la commande
@@ -28,3 +28,7 @@ tenues chronologiquement sous la commande et restent visibles pendant
 toute sa durée de vie. Les pièces jointes sont limitées à **25 Mo** ;
 les fichiers plus volumineux doivent être référencés via un stockage
 externe.
+
+Vous modifiez la **Durée prévue (HH:MM)** dans la fenêtre de modification,
+section **Période**. Si vous videz le champ, la durée d’intervention d’une commande planifiée, sinon la durée du créneau ou du
+rendez-vous s'applique de nouveau.

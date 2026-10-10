@@ -1,7 +1,7 @@
 ---
 title: "Portale clienti – Reclami e resi"
 topic: customer-portal.claims
-version: 2
+version: 3
 keywords:
     - segnalare un difetto
     - aprire un reclamo
@@ -64,8 +64,11 @@ non sono visibili nel portale.
 Nella sezione **Integrazione successiva** completa il Suo reclamo: scriva nel
 campo **Il suo messaggio …** (da 3 a 2000 caratteri) e clicchi su **Invia**.
 Il messaggio viene salvato come prova nel reclamo e il portale conferma
-**Integrazione successiva inviata.** La vista del portale non mostra poi
-l'integrazione stessa. In questo punto non è possibile allegare file o foto.
+**Integrazione successiva inviata.** Sotto compaiono le Sue integrazioni
+precedenti in **Le Sue integrazioni successive** con data e ora, la più
+recente in alto. La persona responsabile presso il Suo fornitore viene
+informata di ogni integrazione. In questo punto non è possibile allegare file
+o foto.
 
 ## Registrare un reso
 
@@ -87,9 +90,12 @@ mostra **Non ci sono consegne né oggetti per il suo account.**
 6. Clicchi su **Registra il reso**.
 
 Il portale indica poi il nuovo numero di reclamo e il numero di reso. Se
-**Reclami** è rilasciato, il nuovo reclamo si apre direttamente; lì trova in
-seguito anche l'etichetta di reso, non appena il Suo fornitore ne mette a
-disposizione una. Spedisca la merce solo dopo aver registrato il reso.
+**Reclami** è rilasciato, il nuovo reclamo si apre direttamente; altrimenti
+resta sulla pagina **Registrare un reso**. Lì, in **I miei resi**, compaiono
+tutti i resi della Sua azienda con **Numero di reso**, **Reclamo** e
+**Stato**. Non appena il Suo fornitore mette a disposizione un'etichetta di
+reso, accanto compare **Scarica l'etichetta di reso** – anche senza il
+rilascio **Reclami**. Spedisca la merce solo dopo aver registrato il reso.
 
 ## Limiti
 

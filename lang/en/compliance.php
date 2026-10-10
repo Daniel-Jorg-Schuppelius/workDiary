@@ -133,6 +133,7 @@ return [
     ],
     'driving' => [
         'button' => 'Driving time evidence',
+        'button_pdf' => 'Driving time evidence (PDF)',
         'title' => 'Driving and rest time evidence',
         'thresholds_note' => 'Driving/rest times (Reg. (EC) 561/2006 / FPersV): max. 9 h driving/day (10 h twice a week) · 56 h/week · 90 h/fortnight · 45 min break after 4.5 h (splittable 15 + 30) · rest 11 h/day (max. 3× per week 9 h) · 45 h/week (24 h with compensation).',
         'disclaimer' => 'Data basis are the recorded trips (logbook) with flagged vehicles; tachograph/DTCO data is not read. No legal advice.',

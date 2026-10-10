@@ -49,6 +49,9 @@
                 @if ($connection->last_error)
                     <div class="text-error text-xs">{{ $connection->last_error }}</div>
                 @endif
+                @if ($connection->status === \App\Plugins\Todoist\Enums\TodoistConnectionStatus::Paused)
+                    <div class="text-warning text-xs">{{ __('todoist::todoist.connection.paused_hint') }}</div>
+                @endif
             </div>
             <div class="flex flex-wrap gap-2">
                 {{-- Manueller Vollabgleich (MVP-116): auditierter Admin-Vorgang --}}

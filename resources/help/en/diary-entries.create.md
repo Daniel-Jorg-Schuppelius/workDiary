@@ -1,7 +1,7 @@
 ---
 title: "Creating an order"
 topic: diary-entries.create
-version: 2
+version: 4
 keywords:
     - new order
     - new job
@@ -15,6 +15,7 @@ keywords:
     - order book
     - entry type
     - log a job
+    - planned duration
 audience: []
 schema: process
 related:
@@ -46,7 +47,10 @@ transitions map the order lifecycle traceably.
    applicable.
 3. Choose the **entry type** and describe the **content** in one or
    two sentences.
-4. Optionally store a **planned duration** in minutes.
+4. Optionally enter the **Planned duration (HH:MM)** in the **Period** section,
+   e.g. 1:30. If the field stays empty, the service duration of a dispatched order, otherwise the length of the time slot or the
+   duration of the appointment applies. It is the plan in **Plan/actual**, the
+   **Order-type analysis** and **Staff capacity**.
 5. Status transitions then run through the **detail modal** — no bulk
    update from the list.
 

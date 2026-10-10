@@ -1,7 +1,7 @@
 ---
 title: "Todoist connection"
 topic: admin.todoist
-version: 1
+version: 2
 keywords:
     - Todoist
     - sync tasks
@@ -82,7 +82,10 @@ Before activation, the **Preflight** shows what the synchronisation will
 find:
 
 - **Counters**: active tasks, subtasks, recurring tasks, due dates with a
-  time, assignees that cannot be mapped and tasks already linked.
+  time, assignees that cannot be mapped and tasks already linked. Recurring
+  tasks arrive as a single task with the next due date; only Todoist knows
+  the recurrence. For due dates with a time, WorkDiary takes over the date
+  only.
 - **Assignee mapping**: for each Todoist collaborator you choose a WorkDiary
   user and click **Save**. WorkDiary shows a matching email address only as a
   **Suggestion**; the assignment takes effect only once you choose. Without a
@@ -150,3 +153,8 @@ Todoist.
 - Tasks arrive without an assignee: the Todoist collaborator has not yet been
   mapped to a user in the preflight.
 - Nothing is synchronised: the mapping is still **Draft** or **Paused**.
+- The connection shows **Paused**: Todoist rejected the access, for example
+  because the app authorisation was revoked in Todoist. Synchronisation is
+  paused; reconnect with **Renew connection**. If a sync fails for another
+  reason, the page shows the last error until a sync succeeds again; an
+  operations task is created as well.

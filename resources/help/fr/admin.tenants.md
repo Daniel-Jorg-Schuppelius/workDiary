@@ -1,7 +1,7 @@
 ---
 title: "Organisations et tenants"
 topic: admin.tenants
-version: 3
+version: 4
 keywords:
     - gestion des tenants
     - multi-tenant
@@ -48,9 +48,9 @@ la plateforme : dans le menu système (icône d'engrenage **Système** dans
 l'en-tête) sous **Organisation** → **Organisations**. Les opérateurs de la
 plateforme sans organisation propre trouvent en outre, dans le menu
 d'administration (icône **Administration** dans l'en-tête) sous **Personnel**,
-l'entrée **Employé** ; elle mène elle aussi à la liste des organisations.
+l'entrée **Employés** ; elle mène elle aussi à la liste des organisations.
 Lorsqu'un tel administrateur ouvre la liste, WorkDiary rattache son compte à la
-première organisation créée – ensuite, **Employé** mène à la gestion des
+première organisation créée – ensuite, **Employés** mène à la gestion des
 membres de cette organisation.
 
 Les administrateurs d'une organisation modifient leur propre organisation dans

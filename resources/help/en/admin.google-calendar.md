@@ -1,7 +1,7 @@
 ---
 title: "Connecting Google Calendar"
 topic: admin.google-calendar
-version: 1
+version: 2
 keywords:
     - Google Calendar
     - Google calendar sync
@@ -28,7 +28,7 @@ related:
 
 The **Google Calendar** page transfers events from WorkDiary into a calendar of
 a Google account. WorkDiary stays in charge: changes are carried over,
-cancelled events disappear from the Google calendar, and repeated runs do not
+cancelled and deleted events disappear from the Google calendar, and repeated runs do not
 create duplicates. If you wish, WorkDiary also reads the calendar back and
 presents external changes as proposals for review.
 
@@ -106,6 +106,7 @@ offers the connected calendar as a source.
 **Disconnect** removes the access. Events already transferred remain in the
 Google calendar. With **Connect to Google** you can restore the connection at
 any time; the selected calendar stays saved, and the error count starts over.
+As long as the connection is failing, an operations task is listed for it.
 
 ## Typical problems
 

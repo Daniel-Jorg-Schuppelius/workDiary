@@ -25,9 +25,9 @@ enum ServiceTicketKind: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Incident => (string) __('Störung'),
-            self::ServiceRequest => (string) __('Service-Anfrage'),
-            self::Question => (string) __('Frage'),
+            self::Incident => (string) __('enums.service_ticket.service_ticket_kind.incident'),
+            self::ServiceRequest => (string) __('enums.service_ticket.service_ticket_kind.service_request'),
+            self::Question => (string) __('enums.service_ticket.service_ticket_kind.question'),
         };
     }
 }

@@ -30,10 +30,10 @@ enum IndexationMethod: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::None => (string) __('Keine Indexierung'),
-            self::ConsumerPriceIndex => (string) __('Verbraucherpreisindex (VPI)'),
-            self::FixedPercent => (string) __('Fester Prozentsatz'),
-            self::Custom => (string) __('Eigene Regel'),
+            self::None => (string) __('enums.contract.indexation_method.none'),
+            self::ConsumerPriceIndex => (string) __('enums.contract.indexation_method.consumer_price_index'),
+            self::FixedPercent => (string) __('enums.contract.indexation_method.fixed_percent'),
+            self::Custom => (string) __('enums.contract.indexation_method.custom'),
         };
     }
 

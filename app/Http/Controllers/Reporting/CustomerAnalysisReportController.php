@@ -205,17 +205,17 @@ class CustomerAnalysisReportController extends Controller {
         $filename = sprintf('kundenanalyse_%s_%s.csv', $from, $to);
         $out = [];
         $out[] = [
-            'Kunde',
-            'Auftraege',
-            'GesamtMinuten',
-            'AbrechenbarMinuten',
-            'NichtAbrechenbarMinuten',
-            'NichtAbrechenbarAnteilProzent',
-            'Nacharbeit',
-            'OffenePunkte',
-            'Eskaliert',
-            'DurchschnittMinutenProAuftrag',
-            'Trend30d',
+            (string) __('reporting.csv.customer'),
+            (string) __('reporting.csv.orders'),
+            (string) __('reporting.csv.total_minutes'),
+            (string) __('reporting.csv.billable_minutes'),
+            (string) __('reporting.csv.non_billable_minutes'),
+            (string) __('reporting.csv.non_billable_share_percent'),
+            (string) __('reporting.csv.rework'),
+            (string) __('reporting.csv.open_issues'),
+            (string) __('reporting.csv.escalated'),
+            (string) __('reporting.csv.avg_minutes_per_order'),
+            (string) __('reporting.csv.trend_30d'),
         ];
 
         foreach ($rows as $row) {

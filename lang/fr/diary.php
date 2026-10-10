@@ -38,4 +38,10 @@ return [
         'Invoiced' => 'Facturée',
         'Cancelled' => 'Annulée',
     ],
+    'planned_duration' => [
+        'label' => 'Durée prévue (HH:MM)',
+        'hint' => 'Vide : durée du créneau ou du rendez-vous. Sert de plan dans Plan/réel, Analyse des types de commande et Capacité du personnel.',
+        'format' => 'Veuillez saisir la durée prévue en heures:minutes, par ex. 1:30.',
+        'range' => 'La durée prévue doit être comprise entre 0:01 et 168:00.',
+    ],
 ];

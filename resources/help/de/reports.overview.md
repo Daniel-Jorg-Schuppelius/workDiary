@@ -1,7 +1,7 @@
 ---
 title: "Auswertungen verwenden"
 topic: reports.overview
-version: 3
+version: 7
 keywords:
     - Berichte
     - Reports
@@ -58,10 +58,15 @@ dürfen. Die Auswahl entspricht genau der Seitenleiste.
 Die Auswertungen sind in Gruppen geordnet: **Übersicht**, **Persönlich**,
 **Team**, **Projekte & Kunden**, **Ressourcen** und **Finanzen & Audit**. Ein
 Eintrag erscheint nur, wenn Ihre Organisation das zugehörige Modul nutzt und
-Sie das nötige Recht haben. Die Gruppen **Team**, **Projekte & Kunden** und
-**Ressourcen** setzen das Zusatzmodul Team-Auswertungen voraus. Einträge, die
-Sie über „Menü anpassen & Alle Funktionen“ ausgeblendet haben, fehlen auch auf
-der Übersichtsseite.
+Sie das nötige Recht haben. Das Zusatzmodul Team-Auswertungen schaltet diese
+Berichte frei: **Woche pro Mitarbeiter**, **Monat pro Mitarbeiter**,
+**Coverage**, **Urlaub & Flex**, **Krankheiten**, **Qualifikationen**,
+**Kundenanalyse**, **Auftragstypanalyse**, **Produktanalyse**, **Kunden &
+Projekte**, **Projekt-Details**, **Inaktive Projekte**, **Operations**,
+**Wirtschaftlichkeit** und **ArbZG-Compliance**. Ohne das Modul fehlen nur
+diese Einträge; alle übrigen Berichte der Gruppen bleiben sichtbar. Einträge,
+die Sie über „Menü anpassen & Alle Funktionen“ ausgeblendet haben, fehlen auch
+auf der Übersichtsseite.
 
 ## Zeitraum
 
@@ -91,8 +96,10 @@ den Bericht mit genau diesem Zeitraum.
 - Die Filterleiste bietet je nach Bericht Felder wie **Kunde**, **Projekt**,
   **Mitarbeiter**, **Team** oder **Status**. Eine Auswahl wirkt meist sofort;
   **Zurücksetzen** hebt alle Filter auf.
-- Manche Felder sehen nur Administratoren, etwa **Bereich** mit **Nur eigene**
-  oder **Gesamtes Team**. Alle anderen sehen dort nur ihre eigenen Daten.
+- Manche Felder, etwa **Bereich** mit **Nur eigene** oder **Gesamtes Team**,
+  sehen nur Administratoren und Personen mit dem Recht, das auch die zugehörige
+  Liste öffnet – etwa **Anwesenheiten einsehen** bei **Anwesenheit**. Alle
+  anderen sehen dort nur ihre eigenen Daten.
 - Kunden, die in ihren Stammdaten mit **In Auswertungen ausblenden** markiert
   sind, fehlen in den kunden- und projektbezogenen Berichten. Der Schalter
   **Ausgeblendete Kunden einbeziehen** – er erscheint nur, wenn es solche
@@ -107,6 +114,25 @@ den Bericht mit genau diesem Zeitraum.
   Menü **Export** bietet **CSV** und **Excel**. Nicht jeder Bericht hat alle
   Formate, manche haben keinen Export.
 - Exporte übernehmen Zeitraum und Filter der Seite.
+- Exporte der Berichte im Menü **Auswertungen** setzen das Recht
+  **Auswertungen exportieren** voraus – auch die Berichte anderer Bereiche,
+  die dort stehen: **SLA**, **Auswertung** der Lernplattform, **Blockierte
+  Prozedurläufe**, **Finanzberichte** sowie **BWA & Budget**. Dasselbe gilt für
+  **Bewerbungen & Ausschreibungen**, den **Auditbericht** der Prüfmittel und
+  das **Vergabe-Cockpit**. Administratoren dürfen immer exportieren. Ohne das
+  Recht fehlen die Exportknöpfe. Berichte in anderen Menüs, etwa
+  **Helpdesk-Bericht**, **Qualitätsbericht** oder **Nachhaltigkeit & ESG**,
+  exportiert, wer sie öffnen darf.
+- Frei bleiben Exporte, die nur Ihre eigenen
+  Daten enthalten: **Mein Monat**, Ihre eigene **Arbeitsbilanz**, die Sicht
+  **Nur eigene** und Berichte, die Ihnen ohne weiteres Recht nur Ihre eigenen
+  Daten zeigen (etwa **Zeitkonten**, **Periodenvergleich**,
+  **Qualifikationen**, **Urlaubsplan** und **Projekt-Details**), außerdem der
+  **Fahrtenbuch-Nachweis** eines Fahrzeugs, dessen **Standardfahrer** Sie sind.
+  Die **Notfall-Anwesenheit** exportiert, wer sie öffnen darf.
+- Spaltenköpfe und feste Werte in CSV- und Excel-Dateien, etwa die Gesamtzeile,
+  erscheinen in Ihrer Sprache; Codes wie Status- oder Lohnartschlüssel bleiben
+  unverändert.
 - CSV-Dateien sind in der Standardeinstellung mit Semikolon getrennt und in
   UTF-8 gespeichert. Die ersten Zeilen beginnen mit # und nennen den Bericht,
   den Erstellungszeitpunkt und einen Fingerabdruck der Filter – so lässt sich
@@ -126,11 +152,23 @@ einer Person. Mehr dazu unter „Drilldown von Kennzahl zu Auftrag“.
   Daten.
 - Organisationsweite Analysen von Kunden, Erlösen und Lieferanten verlangen
   das Recht **Auswertungen einsehen** oder die Administratorrolle.
+- Exporte der Berichte im Menü **Auswertungen** verlangen zusätzlich das Recht
+  **Auswertungen exportieren**, siehe Export. In der Standardvergabe haben es
+  Geschäftsführung, Buchhaltung, Teamleitung und Personalverwaltung.
 - Manche Berichte haben ein eigenes Recht, etwa **Anwesenheitsbericht
   einsehen (Team)** für Plan/Ist oder **Sicherheitsereignis-Register sehen**
   für den Arbeitsschutz.
-- Einige Teamsichten – etwa **Coverage** oder die Teamansicht von **Urlaub &
-  Flex** – bleiben Administratoren vorbehalten.
+- Die Sicht auf alle Personen in den Personal-Auswertungen folgt dem Recht der
+  zugehörigen Liste: **Anwesenheiten einsehen** für **Anwesenheit**, **Alle
+  Urlaubsanträge sehen** für **Urlaub & Flex** und den **Urlaubsplan**,
+  **Krankmeldungen einsehen** für **Krankheiten** und die Fehlgründe im
+  **Urlaubsplan**, **Qualifikationen verwalten** für **Qualifikationen** und
+  **Alle Zeiteinträge sehen** für die **Arbeitsbilanz** anderer Personen.
+  Administratoren haben sie immer.
+- Weiterhin Administratoren vorbehalten sind **Coverage** und **Monat pro
+  Mitarbeiter** sowie die Sicht auf alle Personen in **Zeitkonten**,
+  **Periodenvergleich**, **Spesen**, **Fuhrpark**, **Notdienst**,
+  **Operations** und **Materialien**.
 - Jede Auswertung zeigt nur Daten der aktiven Organisation.
 
 ## Welche Auswertung wofür

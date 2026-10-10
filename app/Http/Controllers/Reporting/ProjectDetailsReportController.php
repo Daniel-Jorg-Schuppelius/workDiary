@@ -43,6 +43,11 @@ class ProjectDetailsReportController extends Controller {
     use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
+    /** E10: Ohne Sicht auf alle Zeiten zählen nur die eigenen. */
+    protected function exportIsPersonal(Request $request): bool {
+        return ! $this->viewerSeesAllTimes();
+    }
+
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
         $seesAll = $this->viewerSeesAllTimes();
@@ -87,13 +92,15 @@ class ProjectDetailsReportController extends Controller {
         $byUser = $this->sortByUserByName($byUser, $users);
 
         $monthLabels = $this->buildMonthLabels($year);
-        $planIst = $this->planIstMonthlySeries($project, $year, $monthMatrix, $monthLabels, $yearMinutes, $filters->userId);
+        $planIst = $this->planIstMonthlySeries($project, $year, $monthMatrix, $monthLabels, $yearMinutes, $filters->userId ?? ($seesAll ? null : $userId));
         $exportFilters = array_merge(['year' => $year], $filters->toAuditArray());
 
         if ($request->query('export') === 'csv' && $project instanceof Project) {
             return $this->exportCsv($project, $year, $monthMatrix, $monthLabels, $byUser, $users, $yearMinutes, $yearRate, $exportFilters, $request);
         }
         if ($request->query('export') === 'xlsx' && $project instanceof Project) {
+            $this->auditExport($request, 'project-details', 'xlsx', $exportFilters);
+
             return $this->exportXlsx($project, $year, $monthMatrix, $monthLabels, $byUser, $users, $yearMinutes, $yearRate);
         }
         if ($request->query('export') === 'pdf' && $project instanceof Project) {
@@ -269,9 +276,11 @@ class ProjectDetailsReportController extends Controller {
     }
 
     /**
-     * Ist- und Plan-Stunden je Monat: Ist aus den Zeiteinträgen, Plan aus
-     * planned_minutes der im jeweiligen Monat terminierten Aufträge
+     * Ist- und Plan-Stunden je Monat: Ist aus den Zeiteinträgen, Plan aus der
+     * geplanten Dauer (effectivePlannedMinutes) der im jeweiligen Monat terminierten Aufträge
      * (start_at); ohne Plan-Daten stattdessen Median der Ist-Monatswerte.
+     * Der Plan einer Person sind die ihr zugewiesenen Aufträge — wie bei
+     * Disposition und Kapazitätsplanung, nicht die von ihr angelegten.
      *
      * @param  array<int, array{minutes: int, rate: float}>  $monthMatrix
      * @param  array<int, string>  $monthLabels
@@ -289,14 +298,14 @@ class ProjectDetailsReportController extends Controller {
         DiaryEntry::query()
             ->where('project_id', $project->id)
             ->whereBetween('start_at', [$yearStart, $yearStart->endOfYear()])
-            ->whereNotNull('planned_minutes')
-            ->when($filterUserId !== null, fn($q) => $q->where('user_id', $filterUserId))
-            ->get(['start_at', 'planned_minutes'])
+            ->when($filterUserId !== null, fn($q) => $q->where('assigned_user_id', $filterUserId))
+            ->get(DiaryEntry::PLANNED_DURATION_COLUMNS)
             ->each(function (DiaryEntry $entry) use (&$planByMonth, &$planTotal): void {
                 $month = (int) ($entry->start_at->month ?? 0);
-                if ($month >= 1 && $month <= 12) {
-                    $planByMonth[$month] += (int) $entry->planned_minutes;
-                    $planTotal += (int) $entry->planned_minutes;
+                $minutes = $entry->effectivePlannedMinutes();
+                if ($minutes !== null && $month >= 1 && $month <= 12) {
+                    $planByMonth[$month] += $minutes;
+                    $planTotal += $minutes;
                 }
             });
 
@@ -432,13 +441,13 @@ class ProjectDetailsReportController extends Controller {
      */
     private function exportCsv(Project $project, int $year, array $monthMatrix, array $monthLabels, array $byUser, $users, int $yearMinutes, float $yearRate, array $exportFilters, Request $request): Response {
         $filename = sprintf('projekt-%d-%d.csv', $project->id, $year);
-        $rows = [['Monat', 'Minuten', 'Erloes']];
+        $rows = [[(string) __('reporting.csv.month'), (string) __('reporting.csv.minutes'), (string) __('reporting.csv.revenue')]];
         foreach ($monthMatrix as $idx => $row) {
             $rows[] = [$monthLabels[$idx] ?? (string) $idx, (int) $row['minutes'], NumberHelper::toGermanFormat((float) $row['rate'], 2, withThousandsSeparator: true)];
         }
-        $rows[] = ['Gesamt', $yearMinutes, NumberHelper::toGermanFormat($yearRate, 2, withThousandsSeparator: true)];
+        $rows[] = [(string) __('reporting.csv.total'), $yearMinutes, NumberHelper::toGermanFormat($yearRate, 2, withThousandsSeparator: true)];
         $rows[] = [];
-        $rows[] = ['Mitarbeiter', 'Minuten', 'Erloes'];
+        $rows[] = [(string) __('reporting.csv.employee'), (string) __('reporting.csv.minutes'), (string) __('reporting.csv.revenue')];
         foreach ($byUser as $uid => $row) {
             $userModel = $users->get($uid);
             $name = $userModel instanceof User ? $userModel->name : '#' . $uid;
@@ -458,16 +467,17 @@ class ProjectDetailsReportController extends Controller {
         $filename = sprintf('projekt-%d-%d.xlsx', $project->id, $year);
 
         // Bauen einer kombinierten Tabelle: erst Monate, dann separator, dann Mitarbeiter.
-        $headers = ['Bereich', 'Bezeichnung', 'Minuten', 'Erloes'];
+        $headers = [(string) __('reporting.csv.area'), (string) __('reporting.csv.label'), (string) __('reporting.csv.minutes'), (string) __('reporting.csv.revenue')];
+        $monthLabel = (string) __('reporting.csv.month');
         $rows = [];
         foreach ($monthMatrix as $idx => $row) {
-            $rows[] = ['Monat', $monthLabels[$idx] ?? (string) $idx, (int) $row['minutes'], (float) $row['rate']];
+            $rows[] = [$monthLabel, $monthLabels[$idx] ?? (string) $idx, (int) $row['minutes'], (float) $row['rate']];
         }
-        $rows[] = ['Monat', 'Gesamt', (int) $yearMinutes, (float) $yearRate];
+        $rows[] = [$monthLabel, (string) __('reporting.csv.total'), (int) $yearMinutes, (float) $yearRate];
         foreach ($byUser as $uid => $row) {
             $userModel = $users->get($uid);
             $name = $userModel instanceof User ? $userModel->name : '#' . $uid;
-            $rows[] = ['Mitarbeiter', (string) $name, (int) $row['minutes'], (float) $row['rate']];
+            $rows[] = [(string) __('reporting.csv.employee'), (string) $name, (int) $row['minutes'], (float) $row['rate']];
         }
 
         return XlsxExport::streamFromArray($filename, $headers, $rows);

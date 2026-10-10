@@ -12,25 +12,69 @@ namespace App\Services\Flextime;
 
 use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
 use App\Enums\Vacation\VacationStatus;
-use App\Models\Absence\Vacation;
+use App\Models\Absence\{SickLeave, Vacation};
 use App\Models\Platform\User;
 use App\Models\Time\{Attendance, FlexBalance, TimeEntry};
 use App\Services\Calendar\HolidayService;
+use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
 
 class FlexCalculator {
     public function __construct(protected WorkScheduleResolver $resolver, protected HolidayService $holidays) {}
 
     /**
-     * Tagessoll in Minuten (0 wenn Feiertag, Wochenende oder Urlaub).
+     * Tagessoll in Minuten (0 wenn Feiertag, Wochenende, Urlaub oder Krankheit —
+     * wer krank ist, schuldet keine Arbeit; MVP-1098).
      */
     public function targetMinutes(User $user, CarbonInterface $day): int {
-        if ($this->isHoliday($day) || $this->isVacation($user, $day)) {
+        if ($this->isHoliday($day) || $this->isVacation($user, $day) || $this->isSick($user, $day)) {
             return 0;
         }
         $schedule = $this->resolver->for($user, $day);
 
         return $schedule->targetMinutesForWeekday($day->dayOfWeekIso);
+    }
+
+    /**
+     * Tage ohne Soll je Nutzer nach denselben Regeln wie {@see targetMinutes()}
+     * — gebündelt für Auswertungen über viele Nutzer und Tage.
+     *
+     * @param  list<int>  $userIds
+     * @return array<int, array<string, true>> [user_id][Y-m-d]
+     */
+    public function daysWithoutTarget(array $userIds, CarbonInterface $from, CarbonInterface $to): array {
+        $first = CarbonImmutable::parse($from->toDateString());
+        $last = CarbonImmutable::parse($to->toDateString());
+
+        $holidays = [];
+        for ($day = $first; $day->lte($last); $day = $day->addDay()) {
+            if ($this->isHoliday($day)) {
+                $holidays[$day->toDateString()] = true;
+            }
+        }
+        $days = array_fill_keys($userIds, $holidays);
+
+        $absences = Vacation::query()
+            ->whereIn('user_id', $userIds)
+            ->where('status', VacationStatus::Approved)
+            ->where('start_date', '<', DateRange::dayAfter($last))
+            ->where('end_date', '>=', $first->toDateString())
+            ->get(['user_id', 'start_date', 'end_date'])
+            ->concat(SickLeave::query()
+                ->whereIn('user_id', $userIds)
+                ->whereNull('cancelled_at')
+                ->where('start_date', '<', DateRange::dayAfter($last))
+                ->where('end_date', '>=', $first->toDateString())
+                ->get(['user_id', 'start_date', 'end_date']));
+        foreach ($absences as $absence) {
+            $start = CarbonImmutable::parse($absence->start_date->toDateString())->max($first);
+            $end = CarbonImmutable::parse($absence->end_date->toDateString())->min($last);
+            for ($day = $start; $day->lte($end); $day = $day->addDay()) {
+                $days[(int) $absence->user_id][$day->toDateString()] = true;
+            }
+        }
+
+        return $days;
     }
 
     public function actualMinutes(User $user, CarbonInterface $day): int {
@@ -176,6 +220,15 @@ class FlexCalculator {
 
     protected function isHoliday(CarbonInterface $day): bool {
         return $this->holidays->isHoliday($day);
+    }
+
+    protected function isSick(User $user, CarbonInterface $day): bool {
+        return SickLeave::query()
+            ->where('user_id', $user->id)
+            ->whereNull('cancelled_at')
+            ->where('start_date', '<', DateRange::dayAfter($day))
+            ->where('end_date', '>=', $day->toDateString())
+            ->exists();
     }
 
     protected function isVacation(User $user, CarbonInterface $day): bool {

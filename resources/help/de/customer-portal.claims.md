@@ -1,7 +1,7 @@
 ---
 title: "Kundenportal – Reklamationen und Rücksendungen"
 topic: customer-portal.claims
-version: 2
+version: 3
 keywords:
     - Reklamation melden
     - Mangel melden
@@ -65,12 +65,14 @@ Portal nicht sichtbar.
 
 ## Informationen nachreichen
 
-Im Abschnitt **Nachreichung** ergänzen Sie Informationen zu Ihrer
-Reklamation: Schreiben Sie in das Feld **Ihre Nachricht …** (3 bis 2000
-Zeichen) und klicken Sie auf **Absenden**. Die Nachricht wird als Nachweis an
-der Reklamation gespeichert, und das Portal bestätigt **Nachreichung
-übermittelt.** Die Nachreichung selbst zeigt die Portalansicht danach nicht
-an. Dateien oder Fotos lassen sich an dieser Stelle nicht anhängen.
+Im Abschnitt **Nachreichung** ergänzen Sie Informationen zu Ihrer Reklamation:
+Schreiben Sie in das Feld **Ihre Nachricht …** (3 bis 2000 Zeichen) und
+klicken Sie auf **Absenden**. Die Nachricht wird als Nachweis an der
+Reklamation gespeichert, und das Portal bestätigt **Nachreichung
+übermittelt.** Darunter stehen Ihre bisherigen Nachreichungen unter **Ihre
+Nachreichungen** mit Zeitpunkt, die neueste oben. Die zuständige Person bei
+Ihrem Auftragnehmer wird über jede Nachreichung benachrichtigt. Dateien oder
+Fotos lassen sich an dieser Stelle nicht anhängen.
 
 ## Rücksendung anmelden
 
@@ -93,11 +95,14 @@ oder Objekte vor.**
    oder PDF-Dateien bei.
 6. Klicken Sie auf **Rücksendung anmelden**.
 
-Das Portal nennt danach die neue Reklamationsnummer und die
-Rücksendenummer. Ist **Reklamationen** freigegeben, öffnet sich die neue
-Reklamation direkt; dort finden Sie später auch das Retourenlabel, sobald Ihr
-Auftragnehmer eines bereitstellt. Senden Sie Ware erst zurück, wenn die
-Rücksendung angemeldet ist.
+Das Portal nennt danach die neue Reklamationsnummer und die Rücksendenummer.
+Ist **Reklamationen** freigegeben, öffnet sich die neue Reklamation direkt;
+sonst bleiben Sie auf der Seite **Rücksendung anmelden**. Dort stehen unter
+**Meine Rücksendungen** alle Rücksendungen Ihres Unternehmens mit
+**Rücksendenummer**, **Reklamation** und **Status**. Sobald Ihr Auftragnehmer
+ein Rücksendeetikett bereitstellt, erscheint daneben **Retourenlabel
+herunterladen** – auch ohne Freigabe **Reklamationen**. Senden Sie Ware erst
+zurück, wenn die Rücksendung angemeldet ist.
 
 ## Grenzen
 

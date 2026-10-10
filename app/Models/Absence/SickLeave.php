@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property Carbon $end_date
  * @property SickLeaveKind $kind
  * @property int|null $follow_up_for_id
+ * @property int|null $continuation_of_id
  * @property string|null $au_number
  * @property string|null $doctor_name
  * @property string|null $note
@@ -56,6 +57,7 @@ class SickLeave extends Model {
         'end_date',
         'kind',
         'follow_up_for_id',
+        'continuation_of_id',
         'au_number',
         'doctor_name',
         'note',
@@ -101,6 +103,15 @@ class SickLeave extends Model {
     /** @return HasMany<SickLeave, $this> */
     public function followUps(): HasMany {
         return $this->hasMany(SickLeave::class, 'follow_up_for_id');
+    }
+
+    /**
+     * Fortsetzungserkrankung: dieselbe Krankheit wie diese frühere Krankmeldung (§ 3 EntgFG).
+     *
+     * @return BelongsTo<SickLeave, $this>
+     */
+    public function continuationOf(): BelongsTo {
+        return $this->belongsTo(SickLeave::class, 'continuation_of_id');
     }
 
     // ── Scopes ─────────────────────────────────────────────────────────────

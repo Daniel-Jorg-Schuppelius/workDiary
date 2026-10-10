@@ -174,7 +174,7 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $response->assertHeader('content-disposition');
 
         $content = (string) $response->getContent();
-        $this->assertStringContainsString('Auftragstyp;Auftraege;DurchschnittPlanMinuten', $content);
+        $this->assertStringContainsString(__('reporting.csv.entry_type') . ';' . __('reporting.csv.orders') . ';' . __('reporting.csv.avg_plan_minutes'), $content);
         $this->assertStringContainsString('Service', $content);
     }
 
@@ -285,7 +285,7 @@ class EntryTypeAnalysisReportTest extends TestCase {
         $response->assertHeader('content-disposition');
 
         $content = (string) $response->getContent();
-        $this->assertStringContainsString('ID;Titel;Status;Severity', $content);
+        $this->assertStringContainsString('ID;' . __('reporting.csv.title') . ';' . __('reporting.csv.status') . ';' . __('reporting.csv.severity'), $content);
         $this->assertStringContainsString('EntryType CSV Issue', $content);
     }
 

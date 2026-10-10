@@ -1,7 +1,7 @@
 ---
 title: "Operations: time allocation, procedures, material, on-call"
 topic: reports.operations
-version: 1
+version: 6
 keywords:
     - operations report
     - service orders
@@ -52,8 +52,12 @@ customers** and **Reports** → **Resources**.
   who use it to switch between their own data and the entire team. Everyone
   else always sees their own data there.
 - **PDF** downloads a print version; **CSV** and **Excel** are available under
-  **Export**. Exports keep the filters you have set. PDF and CSV exports are
-  recorded in the audit log.
+  **Export**. Exports keep the filters you have set. Every export is recorded
+  in the audit log.
+- Exports require the permission **Export reports**, including **Blocked
+  procedure runs**; without it, the export buttons are missing.
+  Administrators can always export. Exports that contain only your own data
+  remain free – see “Using reports”.
 
 ## Operations
 
@@ -67,8 +71,8 @@ tasks and tours in the period.
   **Tours** with planned kilometres and planned duration.
 - Charts: **Service orders: created vs. completed per week** and **Backlog per
   customer (top 15)** with the service orders still open per customer.
-  Clicking a bar opens the customer's open issues; this requires the **View
-  reports** permission.
+  With the **View reports** permission, clicking a bar opens the customer's
+  open issues; without it, the bars are not clickable.
 - Tables: **Service orders – status**, **Service orders – priority**, **Tasks –
   status**, **Tasks – priority** and **Tours – per employee** (tours,
   **Planned km**, **Planned duration**).
@@ -173,7 +177,7 @@ with standby shifts and actual assignments per employee, as maintained in the
 **Work list**. Times that extend beyond the period only count proportionally;
 archived entries do not count.
 
-- Tiles: **Employee**, **Standby** (with the number of shifts), **Active
+- Tiles: **Employees**, **Standby** (with the number of shifts), **Active
   assignments** (assignment time with the number of assignments) and **Active
   share** (assignment time in relation to standby time).
 - Charts: **On-call time per employee and week** as a heat map and the
@@ -217,13 +221,16 @@ year in which the selected period begins.
 - Choose **Customer** and **Project**. Without a selection, the first project
   in the list appears. The **Employee** filter is only available with an
   organization-wide view of times.
-- The project card states the annual totals **Σ Std.** and **Σ €** and lists
+- The project card states the annual totals **Σ hrs** and **Σ €** and lists
   **Month**, **Hours** and **Revenue**; below it follows the **Breakdown per
   employee**. Revenue is the sum of the amounts stored with the time entries.
 - Charts: **Hours over the selected period**, **Actual and planned hours per
-  month** (plan taken from the planned minutes of the project's orders by
-  their start; without plan data a line shows the median of the actual
-  months) and **Hours by order type per month**.
+  month** (plan taken from the field **Planned duration (HH:MM)** of the
+  project's orders by their start, without a value from service duration, the time slot or
+  appointment duration; with an employee selected only the orders assigned to
+  them, without an organization-wide view of times only the orders assigned to
+  you; without plan data a line shows the median of the actual months) and
+  **Hours by order type per month**.
 
 Administrators and roles with **See all time entries** see all projects and
 hours. Everyone else only sees projects on which they have booked time
@@ -250,10 +257,10 @@ projects actually archived. Export as CSV and Excel.
 
 ## Data quality
 
-The **Data quality: mandatory classifications** page has no menu entry of its
-own; you open it via a direct link, such as a bookmark. It lists orders of the
-period that lack information required by the mandatory rules from
-**Classifications**. The **View reports** permission is required.
+**Reports** → **Projects & customers** → **Data quality** opens the **Data
+quality: mandatory classifications** page. It lists orders of the period that
+lack information required by the mandatory rules from **Classifications**.
+The menu item and the page require the **View reports** permission.
 
 - Tiles: **Orders with gaps**, **Hard gaps** (blocking rules) and **Soft gaps**
   (hints).

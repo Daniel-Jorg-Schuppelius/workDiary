@@ -385,13 +385,16 @@ final class AssetComplianceLifecycleTest extends TestCase {
 
         $report = $this->actingAs($this->admin)
             ->get(route('asset-compliance.reports.index'))
-            ->assertOk();
+            ->assertOk()
+            // Kachel nennt die Prüfart, nicht ihren Code (Phase 137, MVP-1106).
+            ->assertSee(__('Kosten') . ' · ' . \App\Enums\AssetCompliance\AssetInspectionKind::Electrical->label())
+            ->assertDontSee(__('Kosten') . ' · electrical');
         $this->assertSame(149.5, (float) $report->viewData('totalCost'));
 
         $csv = $this->actingAs($this->admin)
             ->get(route('asset-compliance.reports.index', ['export' => 'csv']))
             ->assertOk();
-        $this->assertStringContainsString('PruefkostenEUR', (string) $csv->getContent());
+        $this->assertStringContainsString(__('reporting.csv.inspection_cost_eur'), (string) $csv->getContent());
         $this->assertStringContainsString('149.50', (string) $csv->getContent());
     }
 }

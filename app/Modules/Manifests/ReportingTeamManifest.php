@@ -68,16 +68,4 @@ final class ReportingTeamManifest extends Manifest {
         ];
     }
 
-    /** @return array{sections: list<string>, items: list<string>, groups: list<string>} */
-    public function navigation(): array {
-        return [
-            'sections' => [],
-            'items' => [],
-            'groups' => [
-                'reports-team',
-                'reports-projects',
-                'reports-resources',
-            ],
-        ];
-    }
 }

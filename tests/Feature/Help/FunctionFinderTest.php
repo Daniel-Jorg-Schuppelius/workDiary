@@ -119,4 +119,24 @@ class FunctionFinderTest extends TestCase {
             ->assertSee(__('Gefunden über „:keyword“', ['keyword' => 'Stechuhr']))
             ->assertSee(__('Zur Seite'));
     }
+
+    /** Dialogseiten (Profil …) öffnen im Dialog-Host, nicht als eingebettete Seite. */
+    public function test_dialog_pages_are_marked_for_the_dialog_host(): void {
+        $this->makeTopic('account.profile', ['title' => 'Profil und Konto', 'keywords' => ['Darkmode']]);
+        $user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $profile = route('account.profile.edit');
+
+        $items = collect(collect($this->actingAs($user)->getJson(route('api.internal.search', ['q' => 'Profil bearbeiten']))->json('groups'))
+            ->firstWhere('key', 'pages')['items'] ?? []);
+        $this->assertTrue($items->firstWhere('url', $profile)['modal'] ?? null);
+        $stamp = collect(collect($this->actingAs($user)->getJson(route('api.internal.search', ['q' => 'Stempeluhr']))->json('groups'))
+            ->firstWhere('key', 'pages')['items'] ?? []);
+        $this->assertFalse($stamp->firstWhere('url', route('attendance.index'))['modal'] ?? null);
+
+        $html = $this->actingAs($user)->get(route('help.center.index', ['q' => 'Darkmode']))->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('/href="' . preg_quote($profile, '/') . '"[^>]*data-entry-modal-trigger/', (string) $html);
+
+        $html = $this->actingAs($user)->get(route('help.center.index', ['q' => 'Profil bearbeiten']))->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('/href="' . preg_quote($profile, '/') . '"\s+data-entry-modal-trigger/', (string) $html);
+    }
 }

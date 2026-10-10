@@ -71,6 +71,7 @@ class GlobalSearchController extends Controller {
                     'subtitle' => $page['area'],
                     'icon' => $page['icon'],
                     'url' => $page['url'],
+                    'modal' => $page['modal'],
                 ], $finder->pages($query, self::PER_TYPE_LIMIT)),
             ],
             [

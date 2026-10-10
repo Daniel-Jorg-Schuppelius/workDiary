@@ -136,15 +136,17 @@ class PaymentBehaviorReportController extends Controller {
     private function exportCsv(array $result, string $from, string $to, array $filters, Request $request): Response {
         $filename = sprintf('zahlungsverhalten_%s_%s.csv', $from, $to);
         $out = [];
-        $out[] = ['Kennzahl', 'Wert'];
-        $out[] = ['DSO_Tage', $result['kpis']['dso'] !== null ? NumberHelper::toUSFormat($result['kpis']['dso'], 1) : ''];
-        $out[] = ['DurchschnittZahldauerTage', $result['kpis']['avgPayDays'] !== null ? NumberHelper::toUSFormat($result['kpis']['avgPayDays'], 1) : ''];
-        $out[] = ['PuenktlichProzent', $result['kpis']['onTimeShare'] !== null ? NumberHelper::toUSFormat($result['kpis']['onTimeShare'], 1) : ''];
-        $out[] = ['UeberfaelligAnzahl', $result['kpis']['overdueCount']];
-        $out[] = ['UeberfaelligSummeEUR', NumberHelper::toUSFormat($result['kpis']['overdueTotal'], 2)];
+        $dsoLabel = (string) __('reporting.csv.dso_days');
+        $avgPayLabel = (string) __('reporting.csv.avg_payment_days');
+        $out[] = [(string) __('reporting.csv.metric'), (string) __('reporting.csv.value')];
+        $out[] = [$dsoLabel, $result['kpis']['dso'] !== null ? NumberHelper::toUSFormat($result['kpis']['dso'], 1) : ''];
+        $out[] = [$avgPayLabel, $result['kpis']['avgPayDays'] !== null ? NumberHelper::toUSFormat($result['kpis']['avgPayDays'], 1) : ''];
+        $out[] = [(string) __('reporting.csv.on_time_percent'), $result['kpis']['onTimeShare'] !== null ? NumberHelper::toUSFormat($result['kpis']['onTimeShare'], 1) : ''];
+        $out[] = [(string) __('reporting.csv.overdue_count'), $result['kpis']['overdueCount']];
+        $out[] = [(string) __('reporting.csv.overdue_total_eur'), NumberHelper::toUSFormat($result['kpis']['overdueTotal'], 2)];
 
         $out[] = [];
-        $out[] = ['Monat', 'DSO_Tage', 'DurchschnittZahldauerTage'];
+        $out[] = [(string) __('reporting.csv.month'), $dsoLabel, $avgPayLabel];
         foreach ($result['monthly'] as $m) {
             $out[] = [
                 $m['month'],
@@ -154,13 +156,13 @@ class PaymentBehaviorReportController extends Controller {
         }
 
         $out[] = [];
-        $out[] = ['Kunde', 'DurchschnittVerzugTage', 'Rechnungen'];
+        $out[] = [(string) __('reporting.csv.customer'), (string) __('reporting.csv.avg_delay_days'), (string) __('reporting.csv.invoices')];
         foreach ($result['delayTop'] as $row) {
             $out[] = [$row['customerName'], NumberHelper::toUSFormat($row['avgDelay'], 1), $row['invoices']];
         }
 
         $out[] = [];
-        $out[] = ['UeberfaelligeRechnung', 'Kunde', 'Faellig', 'TageUeberfaellig', 'BetragEUR'];
+        $out[] = [(string) __('reporting.csv.overdue_invoice'), (string) __('reporting.csv.customer'), (string) __('reporting.csv.due'), (string) __('reporting.csv.days_overdue'), (string) __('reporting.csv.amount_eur')];
         foreach ($result['overdue'] as $row) {
             $out[] = [$row['number'], $row['customerName'], $row['dueOn'], $row['daysOverdue'], NumberHelper::toUSFormat($row['total'], 2)];
         }

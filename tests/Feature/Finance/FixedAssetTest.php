@@ -14,7 +14,7 @@ use App\Enums\Finance\{AccountType, AccountingEntryStatus, AccountingPeriodStatu
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingFiscalYear, AccountingPeriod, AccountingPostingRule, FixedAsset};
 use App\Models\Asset\Asset;
 use App\Models\Platform\{Organization, User};
-use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, FixedAssetService, PeriodClosingService};
+use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, FixedAssetService, JournalService, PeriodClosingService};
 use App\Services\Accounting\Posting\Adapters\DepreciationAdapter;
 use App\Services\Accounting\Posting\PostingInboxService;
 use App\Support\MorphMap;
@@ -202,7 +202,7 @@ class FixedAssetTest extends TestCase {
         $inbox = app(PostingInboxService::class);
 
         $entry = $inbox->prepare($this->org, $this->adapter()->proposalFor($this->org, $asset->forFiscalYear($this->year2026())), $this->admin);
-        $posted = $inbox->post($entry, $this->admin);
+        $posted = app(JournalService::class)->post($entry, $this->admin);
 
         $this->assertSame(AccountingEntryStatus::Posted, $posted->status);
         $this->assertSame(MorphMap::alias(FixedAsset::class), $posted->source_type);

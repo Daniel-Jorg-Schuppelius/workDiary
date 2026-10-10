@@ -60,7 +60,7 @@ class OpenProjectController extends Controller {
             return back()->withErrors(['base_url' => __('Keine OpenProject-Zugangsdaten hinterlegt.')]);
         }
 
-        $client = new OpenProjectApiClient($config['api_token'], $config['base_url']);
+        $client = new OpenProjectApiClient($config['api_token'], $config['base_url'], $config['allow_private_network']);
         $result = $this->import->syncStructure($this->organization($admin), $config, $client);
 
         return back()->with('status', (string) __('Struktur synchronisiert: :p Projekte, :w Work Packages, :u Benutzer zugeordnet.', [

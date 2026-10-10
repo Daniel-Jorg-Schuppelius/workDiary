@@ -11,6 +11,24 @@
     /** @var \App\Models\Platform\Organization|null $organization */
     $stored = (array) ($organization?->settings ?? []);
 
+    // Nur, was auf Organisationsebene wirkt: systemweite Registry-Schlüssel fehlen;
+    // im Reiter Oberfläche liest der Rest (z. B. news_feed) nur config().
+    $registry = app(\App\Settings\SettingsRegistry::class);
+    $orgScoped = static fn (string $key): bool => $registry->has($key)
+        && $registry->definition($key)->allowsScope(\App\Settings\SettingScope::Organization);
+    $paginationFields = array_filter(
+        (array) config('pagination'),
+        static fn (string $key): bool => ! $registry->has('pagination.' . $key) || $orgScoped('pagination.' . $key),
+        ARRAY_FILTER_USE_KEY,
+    );
+    $uiGroups = [];
+    foreach ((array) config('ui') as $group => $fields) {
+        $fields = array_filter((array) $fields, static fn (string $field): bool => $orgScoped('ui.' . $group . '.' . $field), ARRAY_FILTER_USE_KEY);
+        if ($fields !== []) {
+            $uiGroups[$group] = $fields;
+        }
+    }
+
     $tabs = [
         'pagination' => ['icon' => 'view_list', 'tone' => 'info', 'label' => __('settings.tabs.pagination')],
         'invoicing' => ['icon' => 'receipt_long', 'tone' => 'success', 'label' => __('settings.tabs.invoicing')],
@@ -39,7 +57,7 @@
     {{-- PAGINATION --}}
     <div x-show="isTab('pagination')" x-cloak>
         <x-form-group :legend="__('settings.tabs.pagination')" :icon="$tabs['pagination']['icon']" :tone="$tabs['pagination']['tone']" cols="3" compact>
-            @foreach ((array) config('pagination') as $k => $v)
+            @foreach ($paginationFields as $k => $v)
                 <x-input-field name="settings[pagination][{{ $k }}]" type="number" min="1" max="500"
                                :label="__('settings.pagination.' . $k)"
                                :error="'settings.pagination.' . $k"
@@ -55,7 +73,8 @@
             <x-input-field name="settings[invoicing][default_tax_rate]" :label="__('settings.invoicing.default_tax_rate')"
                            error="settings.invoicing.default_tax_rate" inputmode="decimal"
                            :value="old('settings.invoicing.default_tax_rate', data_get($stored, 'invoicing.default_tax_rate', ''))"
-                           :placeholder="__('settings.placeholder_default', ['value' => (string) config('invoicing.default_tax_rate')])" />
+                           :placeholder="__('settings.invoicing.default_tax_rate_placeholder')"
+                           :hint="__('settings.invoicing.default_tax_rate_hint')" />
             <x-select-field name="settings[invoicing][default_currency]" :label="__('settings.invoicing.default_currency')"
                             error="settings.invoicing.default_currency">
                 <x-currency-options :selected="old('settings.invoicing.default_currency', data_get($stored, 'invoicing.default_currency', ''))" nullable :null-label="__('settings.placeholder_default', ['value' => (string) config('invoicing.default_currency')])" />
@@ -235,6 +254,15 @@
                              error="settings.einvoice.small_business"
                              :checked="(string) old('settings.einvoice.small_business', data_get($stored, 'einvoice.small_business', '0')) === '1'"
                              :hint="__('settings.einvoice.small_business_hint')" />
+        </x-form-group>
+
+        {{-- BUCHHALTUNG: Vier-Augen-Prinzip für Festschreiben, Direktbuchungen und Zahlungsläufe. --}}
+        <x-form-group :legend="__('settings.accounting.heading')" icon="verified_user" tone="info" compact>
+            <x-checkbox-field name="settings[finance][accounting_four_eyes]" tone="info"
+                              :label="__('settings.accounting.four_eyes')"
+                              error="settings.finance.accounting_four_eyes"
+                              :checked="(string) old('settings.finance.accounting_four_eyes', (int) (bool) data_get($stored, 'finance.accounting_four_eyes', false)) === '1'"
+                              :hint="__('settings.accounting.four_eyes_hint')" />
         </x-form-group>
 
         {{-- ANLAGEN (MVP-892): Wertgrenzen für GWG und Sammelposten, netto. --}}
@@ -418,9 +446,9 @@
 
     {{-- UI --}}
     <div x-show="isTab('ui')" x-cloak class="space-y-4">
-        @foreach ((array) config('ui') as $group => $fields)
+        @foreach ($uiGroups as $group => $fields)
             <x-form-group :legend="__('settings.ui.' . $group . '.heading')" :icon="$tabs['ui']['icon']" :tone="$tabs['ui']['tone']" cols="3" compact>
-                @foreach ((array) $fields as $field => $val)
+                @foreach ($fields as $field => $val)
                     <x-input-field name="settings[ui][{{ $group }}][{{ $field }}]" type="number" min="1"
                                    :label="__('settings.ui.' . $group . '.' . $field)"
                                    :error="'settings.ui.' . $group . '.' . $field"
@@ -502,7 +530,7 @@
                 <option value="km">{{ __('Kilometer') }}</option>
             </x-select-field>
             <x-input-field name="settings[travel][label]" :label="__('Positionstext')"
-                           error="settings.travel.label" maxlength="50" placeholder="Anfahrt"
+                           error="settings.travel.label" maxlength="50" :placeholder="__('Anfahrt')"
                            :value="old('settings.travel.label', data_get($stored, 'travel.label', ''))" />
 
             {{-- x-show sitzt auf dem Wrapper (Komponente kapselt nur das Feld). --}}
@@ -637,7 +665,7 @@
             <x-input-field name="settings[maintenance][until]" type="datetime-local"
                            :label="__('settings.maintenance.until')"
                            error="settings.maintenance.until"
-                           :value="old('settings.maintenance.until', data_get($stored, 'maintenance.until', ''))"
+                           :value="old('settings.maintenance.until', $organization?->maintenanceSettings()['until']?->orgTz()->format('Y-m-d\\TH:i') ?? '')"
                            :hint="__('settings.maintenance.until_hint')" />
             <x-checkbox-field name="settings[maintenance][block_ingest]" tone="warning"
                              :label="__('settings.maintenance.block_ingest')"

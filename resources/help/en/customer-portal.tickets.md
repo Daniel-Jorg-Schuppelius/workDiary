@@ -1,7 +1,7 @@
 ---
 title: "Customer Portal – Tickets"
 topic: customer-portal.tickets
-version: 2
+version: 3
 keywords:
     - support request
     - report a fault
@@ -23,8 +23,9 @@ related:
 
 Under **Tickets** you report faults and requests to your contractor's service
 team and follow their progress. The area includes the **Service catalog**,
-where you order standard services. If it is released for your company, the
-**Known errors** page is added.
+where you order standard services, and the **Known errors** page. All three
+appear in the menu as soon as your contractor has released the area for your
+company.
 
 ## My tickets
 
@@ -77,6 +78,11 @@ When a ticket is **Resolved**, you have two options:
   **Reason for reopening**. The ticket returns to **In progress**, and your
   reason appears as a message in the history.
 
+Even after confirming, as long as the ticket is **Accepted**, you can bring it
+back the same way with **Reopen**, for example if the fault occurs again
+later. Once it is **Closed**, this is no longer possible; report a new ticket
+instead.
+
 ## Rate the handling
 
 When a ticket is **Resolved**, **Accepted**, **Closed** or **Rejected**, the
@@ -97,7 +103,8 @@ ticket.
 - **Paused** – work is temporarily on hold.
 - **Resolved** – the team considers the issue settled; please confirm or
   reopen.
-- **Accepted** – you have confirmed the resolution.
+- **Accepted** – you have confirmed the resolution; you can still reopen the
+  ticket.
 - **Closed** – the case is finished.
 - **Rejected** – the request will not be handled.
 
@@ -131,7 +138,8 @@ accept.
 The **Known errors** page lists faults your contractor already knows about
 and is working on a permanent fix for. Where available, each entry includes a
 **Workaround**: how to get around the problem until then. Check the list
-before reporting a new ticket. The page is read-only.
+before reporting a new ticket. The page is read-only; you open it via
+**Known errors** in the header.
 
 ## Limits
 

@@ -1,7 +1,7 @@
 ---
 title: "My reports"
 topic: reports.my-reports
-version: 1
+version: 5
 keywords:
     - My month
     - My year
@@ -24,8 +24,9 @@ related:
 ---
 
 Under **Reports** → **Personal** everyone has three reports on their own time:
-**My month**, **My year** and **Work balance**. They only ever show your own
-entries. They are based on your time entries; the work balance additionally
+**My month**, **My year** and **Work balance**. They show your own entries;
+only people with the corresponding right can open the work balance of another
+person (see “Who sees what”). They are based on your time entries; the work balance additionally
 uses your clock-in times and your working-time model. The reports are not a
 separate data source: if a figure is wrong, correct the time entry or the
 clocking – the report recalculates the next time you open it.
@@ -60,7 +61,7 @@ month day by day.
   kind**, stacked by type for each calendar week.
 
 Filters: **Customer**, **Project** and **Type** with **All**, **Work**,
-**Journey** (marked as **Travel** in the table) and **Standby**. A selection
+**Travel** and **Standby** – the same labels as in the table. A selection
 takes effect immediately; **Reset** clears all filters.
 
 Export: the **PDF** button creates the daily list with totals and a chart of
@@ -91,7 +92,8 @@ has no export.
 recorded time for the selected period. The tiles at the top:
 
 - **Target**: target time from your working-time model. Public holidays and days
-  of approved vacation have no target.
+  of approved absence such as vacation, special leave, unpaid leave or sick leave have no
+  target.
 - **Attendance**: your clock-in times minus breaks. Cancelled clockings do not
   count; a clocking that is still running is counted up to the current time.
 - **Captured**: your time entries of the kinds work and travel. Standby and
@@ -114,10 +116,10 @@ Export: **PDF** with key figures and the daily table.
 
 - **My month** and **My year** always show only your own entries, also for
   administrators.
-- **Work balance** shows your own balance by default. Only administrators see a
-  filter bar with **Employee** and **Team** and can use it to open the balance
-  of another person in the same organization; **Team** only narrows the list of
-  employees to choose from.
+- **Work balance** shows your own balance by default. Administrators and people
+  with the right **See all time entries** see a filter bar with **Employee** and
+  **Team** and can use it to open the balance of another person in the same
+  organization; **Team** only narrows the list of employees to choose from.
 - The work balance only calculates the selected period. It does not show the
   running balance of your working-time account – see “Working-time account &
   month approval” for that.

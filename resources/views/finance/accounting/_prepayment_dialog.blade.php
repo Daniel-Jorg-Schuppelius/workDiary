@@ -62,4 +62,6 @@
     <x-input-field name="booked_on" type="date" required
                    :label="__('accounting.ledger.column.booked_on')"
                    :value="old('booked_on', $calculation['due_on'])" />
+
+    <x-accounting.four-eyes-note />
 </x-modal>

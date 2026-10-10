@@ -1,7 +1,7 @@
 ---
 title: "Importing the FRITZ!Box call list"
 topic: admin.fritzbox
-version: 1
+version: 2
 keywords:
     - FRITZ!Box
     - call list
@@ -39,7 +39,7 @@ any credentials for the box.
 
 ## Prerequisites
 
-- The **FRITZ!Box-Anrufliste** plugin is activated under **Plugins**. After
+- The **FRITZ!Box call list** plugin is activated under **Plugins**. After
   that, the **FRITZ!Box import** entry appears in the system menu (gear icon
   **System**) in the **Plugins** group.
 - The phone numbers of your customers and end customers are stored in their
@@ -49,13 +49,13 @@ any credentials for the box.
 
 ## Plugin settings
 
-Under **Plugins**, open the **Configure** dialog for **FRITZ!Box-Anrufliste**:
+Under **Plugins**, open the **Configure** dialog for **FRITZ!Box call list**:
 
 - **Book calls as billable** (default: on): when switched off, imported calls
   are never marked as billable.
-- **Book times for user ID**: the identifier (ID) of the user the calls are
-  booked for. If empty, WorkDiary books to the owner of the organization or to
-  the first user.
+- **Book times for user**: the user the calls are booked for; you choose them
+  from the list. Without a selection, WorkDiary books to the owner of the
+  organization or to the first user.
 - **Minimum duration (minutes)** (default: 2): shorter calls are skipped.
 - **Lead window (minutes)** (default: 15): if a call ends no more than this
   many minutes before a booked time of the same customer, it is merged into
@@ -170,8 +170,8 @@ Calls to a stamp number are never booked as a phone call.
   recognized (empty file or missing header row), use the CSV export of the call
   list unchanged.
 - **“No bookable user in the organization.”** or a health check reporting that
-  the configured default user no longer exists: check **Book times for user
-  ID** or clear the field.
+  the configured default user no longer exists: check **Book times for user**
+  or clear the selection.
 - **Outgoing calls missing:** if the list comes from older firmware, switch on
   **Treat type 3 as outgoing**.
 - **Almost everything filtered out:** check **Own numbers only** – the spelling

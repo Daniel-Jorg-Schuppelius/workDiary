@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Support\Calendar;
 
 use App\Models\Integration\ExternalReference;
+use App\Support\MorphMap;
+use Illuminate\Database\Eloquent\{Model, SoftDeletes, SoftDeletingScope};
 use Illuminate\Support\Carbon;
 
 /**
@@ -31,8 +33,9 @@ use Illuminate\Support\Carbon;
  * beide Formate werden tolerant gelesen; Schreibvorgänge normalisieren aufs
  * Support-Format (external_id = Remote-ID, Payload hash+uid).
  *
- * WorkDiary bleibt führend; es werden nie externe Termine gelesen oder
- * überschrieben. Fehlgeschlagene Läufe zählen über
+ * WorkDiary bleibt führend: lokal gelöschte Elemente entfernt der
+ * Vollabgleich auch extern ({@see removeOrphans()}); fremde externe Termine
+ * werden nie überschrieben. Fehlgeschlagene Läufe zählen über
  * {@see RemoteCalendarConnection::recordConnectionFailure()} auf die
  * einheitliche Auto-Disable-Schwelle (MVP-178) ein.
  */
@@ -41,10 +44,14 @@ class RemoteCalendarPublishService {
 
     /**
      * @param  list<RemoteCalendarItem>  $items
+     * @param  bool  $removeOrphans  Vollabgleich: extern löschen, was lokal nicht mehr existiert
      * @return array{published: int, deleted: int, unchanged: int, failed: int}
      */
-    public function publish(string $pluginId, RemoteCalendarConnection $connection, RemoteCalendarGateway $gateway, array $items, string $externalType = self::EXTERNAL_TYPE): array {
+    public function publish(string $pluginId, RemoteCalendarConnection $connection, RemoteCalendarGateway $gateway, array $items, string $externalType = self::EXTERNAL_TYPE, bool $removeOrphans = false): array {
         $counters = ['published' => 0, 'deleted' => 0, 'unchanged' => 0, 'failed' => 0];
+        if ($removeOrphans) {
+            $counters = $this->removeOrphans($pluginId, $connection, $gateway, $externalType, $counters);
+        }
 
         foreach ($items as $item) {
             $ref = ExternalReference::query()
@@ -118,6 +125,47 @@ class RemoteCalendarPublishService {
             );
         } else {
             $connection->recordConnectionSuccess();
+        }
+
+        return $counters;
+    }
+
+    /**
+     * Gelöschte Termine, Urlaube oder Dienste liefert keine Quelle mehr — ohne
+     * diesen Schritt blieben sie im externen Kalender stehen. Abgesagtes deckt
+     * die Item-Liste ab.
+     *
+     * @param  array{published: int, deleted: int, unchanged: int, failed: int}  $counters
+     * @return array{published: int, deleted: int, unchanged: int, failed: int}
+     */
+    private function removeOrphans(string $pluginId, RemoteCalendarConnection $connection, RemoteCalendarGateway $gateway, string $externalType, array $counters): array {
+        $references = ExternalReference::query()
+            ->forPlugin($connection->organizationId(), $pluginId, $externalType)
+            ->get();
+
+        foreach ($references->groupBy('referenceable_type') as $type => $group) {
+            $class = MorphMap::classFor((string) $type);
+            if ($class === null || ! is_subclass_of($class, Model::class)) {
+                continue;
+            }
+            $model = new $class;
+            $query = $class::query()->withoutGlobalScopes()->whereIn($model->getKeyName(), $group->pluck('referenceable_id')->all());
+            if (in_array(SoftDeletes::class, class_uses_recursive($class), true)) {
+                $query->withGlobalScope(SoftDeletingScope::class, new SoftDeletingScope);
+            }
+            $existing = array_flip(array_map('intval', $query->pluck($model->getKeyName())->all()));
+
+            foreach ($group as $reference) {
+                if (isset($existing[(int) $reference->referenceable_id])) {
+                    continue;
+                }
+                if ($gateway->deleteEvent($this->remoteId($reference))) {
+                    $reference->delete();
+                    $counters['deleted']++;
+                } else {
+                    $counters['failed']++;
+                }
+            }
         }
 
         return $counters;

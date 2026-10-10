@@ -162,7 +162,7 @@
                             <select name="folder_type[]" class="select select-bordered select-sm w-56">
                                 <option value="">{{ __('sharepoint::sharepoint.folder.type_placeholder') }}</option>
                                 @foreach ($documentTypes as $type)
-                                    <option value="{{ $type->value }}" @selected($mapType === $type->value)>{{ $type->value }}</option>
+                                    <option value="{{ $type->value }}" @selected($mapType === $type->value)>{{ $type->label() }}</option>
                                 @endforeach
                             </select>
                             <span class="text-muted">→</span>

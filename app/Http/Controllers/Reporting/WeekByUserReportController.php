@@ -45,6 +45,11 @@ class WeekByUserReportController extends Controller {
     /** Maximalanzahl gleichzeitig gerenderter Wochen-Tabs. */
     private const MAX_WEEKS = 12;
 
+    /** E10: Sicht „Nur eigene“. */
+    protected function exportIsPersonal(Request $request): bool {
+        return $this->resolveScopeWithVisibility($request)[0] === 'mine';
+    }
+
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
         [$scope, $seesAll] = $this->resolveScopeWithVisibility($request);
@@ -159,6 +164,8 @@ class WeekByUserReportController extends Controller {
             return $this->exportCsv($byUser, $users, $dayLabels, $dayTotals, $weekTotal, $weekRate, $year, $week, $exportFilters, $request);
         }
         if ($request->query('export') === 'xlsx') {
+            $this->auditExport($request, 'week-by-user', 'xlsx', $exportFilters);
+
             return $this->exportXlsx($byUser, $users, $dayLabels, $dayTotals, $weekTotal, $weekRate, $year, $week);
         }
         if ($request->query('export') === 'pdf') {
@@ -227,7 +234,7 @@ class WeekByUserReportController extends Controller {
      */
     private function exportCsv(array $byUser, $users, array $dayLabels, array $dayTotals, int $weekTotal, float $weekRate, int $year, int $week, array $exportFilters, Request $request): Response {
         $filename = sprintf('woche_%04d-W%02d.csv', $year, $week);
-        $rows = [array_merge(['Mitarbeiter'], $dayLabels, ['Wochensumme', 'Erloes'])];
+        $rows = [array_merge([(string) __('reporting.csv.employee')], $dayLabels, [(string) __('reporting.csv.week_total'), (string) __('reporting.csv.revenue')])];
         foreach ($this->buildRows($byUser, $users, 'days', $dayTotals, $weekTotal, $weekRate) as $row) {
             $rows[] = array_map(static fn($v) => is_float($v) ? NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) : $v, $row);
         }
@@ -243,7 +250,7 @@ class WeekByUserReportController extends Controller {
      */
     private function exportXlsx(array $byUser, $users, array $dayLabels, array $dayTotals, int $weekTotal, float $weekRate, int $year, int $week): SymfonyResponse {
         $filename = sprintf('woche_%04d-W%02d.xlsx', $year, $week);
-        $headers = array_merge(['Mitarbeiter'], array_values($dayLabels), ['Wochensumme', 'Erloes']);
+        $headers = array_merge([(string) __('reporting.csv.employee')], array_values($dayLabels), [(string) __('reporting.csv.week_total'), (string) __('reporting.csv.revenue')]);
 
         return XlsxExport::streamFromArray($filename, $headers, $this->buildRows($byUser, $users, 'days', $dayTotals, $weekTotal, $weekRate));
     }

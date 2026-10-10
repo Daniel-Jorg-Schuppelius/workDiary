@@ -1,7 +1,7 @@
 ---
 title: "Portail client – Réclamations et retours"
 topic: customer-portal.claims
-version: 2
+version: 3
 keywords:
     - signaler un défaut
     - déposer une réclamation
@@ -65,11 +65,13 @@ réclamation ne sont pas visibles dans le portail.
 ## Transmettre des informations complémentaires
 
 Dans la section **Envoi complémentaire**, vous complétez votre réclamation :
-écrivez dans le champ **Votre message …** (3 à 2000 caractères) et cliquez
-sur **Envoyer**. Le message est enregistré comme justificatif dans la
-réclamation, et le portail confirme **Envoi complémentaire transmis.** La vue
-du portail n'affiche pas ensuite l'envoi lui-même. Il n'est pas possible de
-joindre des fichiers ou des photos à cet endroit.
+écrivez dans le champ **Votre message …** (3 à 2000 caractères) et cliquez sur
+**Envoyer**. Le message est enregistré comme justificatif dans la réclamation,
+et le portail confirme **Envoi complémentaire transmis.** En dessous, vos
+envois précédents figurent sous **Vos envois complémentaires** avec leur date
+et heure, le plus récent en haut. La personne responsable chez votre
+prestataire est informée de chaque envoi. Il n'est pas possible de joindre des
+fichiers ou des photos à cet endroit.
 
 ## Déclarer un retour
 
@@ -93,9 +95,12 @@ compte.**
 
 Le portail indique ensuite le nouveau numéro de réclamation et le numéro de
 retour. Si **Réclamations** est ouvert, la nouvelle réclamation s'ouvre
-directement ; c'est aussi là que vous trouverez plus tard l'étiquette de
-retour dès que votre prestataire en fournit une. N'envoyez la marchandise
-qu'une fois le retour déclaré.
+directement ; sinon, vous restez sur la page **Déclarer un retour**. Sous
+**Mes retours**, elle liste tous les retours de votre entreprise avec **Numéro
+de retour**, **Réclamation** et **Statut**. Dès que votre prestataire fournit
+une étiquette de retour, **Télécharger l'étiquette de retour** apparaît à côté
+– même sans l'ouverture **Réclamations**. N'envoyez la marchandise qu'une fois
+le retour déclaré.
 
 ## Limites
 

@@ -38,4 +38,10 @@ return [
         'Invoiced' => 'Facturado',
         'Cancelled' => 'Cancelado',
     ],
+    'planned_duration' => [
+        'label' => 'Duración prevista (HH:MM)',
+        'hint' => 'Vacío: duración de la franja horaria o de la cita. Cuenta como plan en Plan/real, Análisis de tipos de orden y Capacidad de personal.',
+        'format' => 'Indique la duración prevista en horas:minutos, p. ej. 1:30.',
+        'range' => 'La duración prevista debe estar entre 0:01 y 168:00.',
+    ],
 ];

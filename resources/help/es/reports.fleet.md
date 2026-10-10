@@ -1,7 +1,7 @@
 ---
-title: "Flota, libro de ruta y tiempos de conducción"
+title: "Flota, libro de viajes y tiempos de conducción"
 topic: reports.fleet
-version: 1
+version: 3
 keywords:
     - análisis de vehículos
     - kilometraje
@@ -32,8 +32,8 @@ related:
 ---
 
 Estos análisis se refieren a vehículos y viajes: kilómetros y costes de
-energía por vehículo, el libro de ruta fiscal de un vehículo, la comparación
-entre el método del libro de ruta y la regla del 1 % y el justificante de los
+energía por vehículo, el libro de viajes fiscal de un vehículo, la comparación
+entre el método del libro de viajes y la regla del 1 % y el justificante de los
 tiempos de conducción y descanso. Se basan en los viajes del **Libro de
 viajes** (**Viajes y gastos** → **Libro de viajes**), los justificantes del
 **Registro de repostaje y carga** (**Flota** → **Registro de repostaje y
@@ -44,8 +44,8 @@ carga**) y los datos de los vehículos en **Flota** → **Vehículos**.
 - El período se elige con el selector de período de la cabecera. La
   comparación 1 % calcula en cambio con un año natural.
 - **PDF** descarga una versión para imprimir; **CSV** y **Excel** están en
-  **Exportación**. Las exportaciones conservan los filtros elegidos; las
-  exportaciones PDF y CSV se registran en el registro de auditoría.
+  **Exportación**. Las exportaciones conservan los filtros elegidos; cada
+  exportación se registra en el registro de auditoría.
 
 ## Flota
 
@@ -74,25 +74,25 @@ Así se obtienen los valores:
   guardada en el vehículo.
 
 Filtros: **Área** (**Solo mis viajes** o **Flota completa**, solo para
-administradores) y **Empleados**. Todos los demás solo ven sus propios viajes
+administradores) y **Empleado**. Todos los demás solo ven sus propios viajes
 y justificantes. Exportación en PDF, CSV y Excel.
 
-## Justificante libro de ruta
+## Justificante libro de viajes
 
-**Análisis** → **Recursos** → **Justificante libro de ruta** muestra el libro
-de ruta fiscal de un vehículo: lecturas del cuentakilómetros, tipo de
+**Análisis** → **Recursos** → **Justificante libro de viajes** muestra el libro
+de viajes fiscal de un vehículo: lecturas del cuentakilómetros, tipo de
 trayecto, destino, finalidad y conductor, totales por tipo de trayecto y la
 proporción privada.
 
-- Elija el **Vehículo**. Los vehículos en **Modo libro de ruta** aparecen
+- Elija el **Vehículo**. Los vehículos en **Modo libro de viajes** aparecen
   arriba y están marcados como tales. Sin derechos de administrador, la lista
   contiene los vehículos sin **Conductor predeterminado** y aquellos de los
   que usted es el conductor predeterminado; los administradores ven todos los
   vehículos.
-- Si el vehículo no está en modo libro de ruta, un aviso indica que los
+- Si el vehículo no está en modo libro de viajes, un aviso indica que los
   viajes sin lecturas del cuentakilómetros y sin bloqueo no constituyen un
-  libro de ruta a efectos fiscales. El modo se activa en el vehículo con
-  **Modo libro de ruta (fiscal)**.
+  libro de viajes a efectos fiscales. El modo se activa en el vehículo con
+  **Modo libro de viajes (fiscal)**.
 - Mosaicos: **Viajes** (con el número de viajes bloqueados), **Σ km**, los
   kilómetros por tipo de trayecto (**Profesional**, **Domicilio–trabajo**,
   **Privado**) y **Proporción privada** (kilómetros privados en relación con
@@ -117,22 +117,22 @@ como los totales y la proporción privada.
 ## Comparación 1 %
 
 La **Comparación 1 %** se abre con el botón del mismo nombre en la página
-**Justificante libro de ruta**; no tiene entrada de menú propia. Compara para
-cada vehículo la retribución en especie según el método del libro de ruta con
+**Justificante libro de viajes**; no tiene entrada de menú propia. Compara para
+cada vehículo la retribución en especie según el método del libro de viajes con
 la regla del 1 %. Es un cálculo simplificado y no constituye asesoramiento
 fiscal.
 
 - **Año**: el año en curso y los seis anteriores; está preseleccionado el año
   anterior.
-- Solo se enumeran los vehículos en modo libro de ruta, con la misma
-  selección de vehículos que en el justificante del libro de ruta.
+- Solo se enumeran los vehículos en modo libro de viajes, con la misma
+  selección de vehículos que en el justificante del libro de viajes.
 - **Meses**: meses con viajes. **km totales**, **de ellos privados** y **de
   ellos al trabajo** solo cuentan viajes con kilometraje inicial y final; los
   viajes originales anulados no cuentan.
 - **Costes totales**: costes de energía de los justificantes de repostaje y
   carga del año más otros costes anuales; la información emergente muestra
   ambas partes.
-- **Método del libro de ruta**: costes totales multiplicados por la
+- **Método del libro de viajes**: costes totales multiplicados por la
   proporción de kilómetros privados y de trayecto al trabajo sobre todos los
   kilómetros.
 - **Regla del 1 %**: **Precio bruto de catálogo (€)**, redondeado a la
@@ -167,8 +167,11 @@ están activadas las normas de tiempos de conducción, y requiere el permiso
   **Primera salida**, **Última llegada**, **Tiempo de conducción**,
   **Periodo de conducción más largo sin pausa**, **Pausas (min)**, **Descanso
   previo** y los **Hallazgos** del día.
-- La descarga adopta el período y el filtro de empleado de la página y
-  entrega un archivo CSV. Queda registrada en el registro de auditoría.
+- La descarga adopta el período y los filtros de empleado y de equipo de la
+  página. **Justificante tiempos de conducción** entrega un archivo CSV,
+  **Justificante tiempos de conducción (PDF)** los mismos datos en un PDF
+  horizontal. Ambas descargas quedan registradas en el registro de
+  auditoría.
 
 Los hallazgos se basan en los límites del Reglamento (CE) 561/2006 y de la
 FPersV: como máximo 9 h de conducción al día (10 h dos veces por semana),

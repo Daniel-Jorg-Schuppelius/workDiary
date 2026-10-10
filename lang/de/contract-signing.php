@@ -60,7 +60,7 @@ return [
         'empty' => 'Noch keine Vereinbarung — über „Vereinbarung anlegen“ beginnen.',
         'no_revision' => 'noch keine Fassung',
         'revision' => 'Fassung',
-        'title' => 'Vereinbarungen (AVV/NDA)',
+        'title' => 'Vereinbarungen (AVV, NDA, Mietbedingungen)',
     ],
     'declaration' => [
         'default' => 'Ich bestätige, dass ich zur Vertretung berechtigt bin und den vorliegenden :kind mit :organization in der angezeigten Fassung samt Anlagen gelesen habe und ihm zustimme.',
@@ -254,11 +254,12 @@ return [
         'organization' => 'Organisationsseite',
     ],
     'portal' => [
+        'capability' => 'Vereinbarungen (AVV, NDA, Mietbedingungen)',
         'downloads' => 'Unterlagen',
         'empty' => 'Derzeit liegen keine Vereinbarungen vor.',
         'menu' => 'Vereinbarungen',
         'not_released' => 'noch nicht freigegeben',
-        'subtitle' => 'Auftragsverarbeitungs- und Verschwiegenheitsvereinbarungen mit uns — Unterlagen und Abschlussnachweis nach Freigabe.',
+        'subtitle' => 'Auftragsverarbeitungs- und Verschwiegenheitsvereinbarungen sowie Mietbedingungen mit uns — Unterlagen und Abschlussnachweis nach Freigabe.',
         'title' => 'Vereinbarungen',
     ],
     'public' => [

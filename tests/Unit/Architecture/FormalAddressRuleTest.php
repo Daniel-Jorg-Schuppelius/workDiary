@@ -20,7 +20,7 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
  * Deutsch: Pronomen, Du-Verbformen und informelle Imperative am Satzanfang in
  * allen Quelltexten (JSON-Schlüssel), de/*.php und de.json der Kern- und
  * Plugin-Kataloge, den Hilfethemen und Rohtext der Views. FR/ES/IT: eindeutige Du-Pronomen in
- * Übersetzungen und Hilfe — Imperative sind dort mit der 3. Person gleichlautend
+ * Übersetzungen und Hilfe, IT auch eindeutige Du-Verbformen — Imperative sind dort mit der 3. Person gleichlautend
  * („Añade" = „füge hinzu" oder „fügt hinzu") und bleiben der Durchsicht vorbehalten.
  *
  * Nicht erfasst: KI-Prompts in app/Services/Ai (sprechen das Modell an, nicht Nutzer).
@@ -45,7 +45,8 @@ class FormalAddressRuleTest extends TestCase {
         'fr' => "(?<![\\w'’-])(?:tu|toi|te|tien|tienne)(?![\\w-])|(?<![\\w'’-])(?:ton|ta|tes)\\s+\\p{L}|\\b(?:as|es|peux|dois|veux|sais|vas|fais)-tu\\b|-toi\\b",
         // „ti“ nur klein — „TI“ ist die spanische Abkürzung für IT.
         'es' => '(?<![\wáéíóúñ-])(?:tú|tu|tus|te|(?-i:ti)|contigo|tuyo|tuya|tuyos|tuyas|asegúrate|inténtalo)(?![\wáéíóúñ-])',
-        'it' => "(?<![\\wàèéìòù'’-])(?:tu|tuo|tua|tuoi|tue|(?-i:ti)|assicurati)(?![\\wàèéìòù-])",
+        // Pronomen und eindeutige Du-Verbformen; Imperative wie „Scegli" sind auch Knopftext und bleiben der Durchsicht.
+        'it' => "(?<![\\wàèéìòù'’-])(?:tu|tuo|tua|tuoi|tue|(?-i:ti)|assicurati|iscriviti|rivolgiti|puoi|vuoi|devi|hai|sai|potresti|dovresti|vorresti|potrai|dovrai|vedrai|troverai|riceverai)(?![\\wàèéìòù-])",
     ];
 
     public function test_german_texts_use_formal_address(): void {

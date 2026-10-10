@@ -13,14 +13,18 @@ declare(strict_types=1);
 namespace Tests\Feature\CustomerPortal;
 
 use App\Enums\Calendar\AppointmentRequestStatus;
+use App\Enums\Diary\Status;
+use App\Enums\Notification\NotificationEvent;
 use App\Models\Calendar\AppointmentRequest;
 use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Sales\BookableService;
+use App\Notifications\GenericEventNotification;
 use App\Services\Appointments\AppointmentRequestService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\{Mail, Notification};
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\{WithOrganization, WithPortalVisibility};
 use Tests\TestCase;
@@ -126,6 +130,68 @@ final class AppointmentBookingTest extends TestCase {
         $late->forceFill(['start_at' => CarbonImmutable::now()->addHours(3)])->save();
         $this->expectException(\RuntimeException::class);
         app(AppointmentRequestService::class)->cancelFromPortal($late->fresh(), $this->portalUser);
+    }
+
+    /** Phase 137 (MVP-1105): Anfrage und Storno aus dem Portal erreichen die Disposition („Benachrichtigungen beidseitig“). */
+    public function test_portal_request_and_cancellation_notify_the_contractor(): void {
+        Notification::fake();
+        $lead = User::factory()->teamleitung()->create(['organization_id' => $this->organization->id]);
+
+        $request = $this->request();
+        Notification::assertSentTo($lead, GenericEventNotification::class, fn (GenericEventNotification $n): bool => $n->event === NotificationEvent::AppointmentRequested
+            && ($n->payload['url'] ?? null) === route('appointments.index'));
+
+        app(AppointmentRequestService::class)->cancelFromPortal($request, $this->portalUser);
+        Notification::assertSentTo($lead, GenericEventNotification::class, fn (GenericEventNotification $n): bool => $n->event === NotificationEvent::AppointmentCanceled);
+        Notification::assertNotSentTo($this->portalUser, GenericEventNotification::class);
+    }
+
+    /** Phase 137 (MVP-1105): Storno eines bestätigten Termins storniert auch den Auftrag in der Disposition. */
+    public function test_portal_cancellation_cancels_the_dispatch_entry(): void {
+        Mail::fake();
+        $request = $this->request();
+        $entry = app(AppointmentRequestService::class)->confirm($request, $this->admin);
+
+        $this->actingAs($this->portalUser, 'customer')
+            ->post(route('customer.appointments.cancel', $request->fresh()))
+            ->assertSessionHas('success');
+
+        $this->assertSame(AppointmentRequestStatus::Canceled, $request->fresh()?->status);
+        $this->assertSame(Status::Cancelled, $entry->fresh()?->status);
+        $this->assertSame($this->portalUser->id, $entry->fresh()?->cancelled_by_user_id);
+    }
+
+    /** Läuft der Auftrag schon, bleibt beides stehen — die Kundin wird ans Telefon verwiesen. */
+    public function test_portal_cancellation_keeps_an_order_in_progress(): void {
+        Mail::fake();
+        $request = $this->request();
+        $entry = app(AppointmentRequestService::class)->confirm($request, $this->admin);
+        $entry->forceFill(['status' => Status::Done])->save();
+
+        $this->actingAs($this->portalUser, 'customer')
+            ->post(route('customer.appointments.cancel', $request->fresh()))
+            ->assertSessionHas('error');
+
+        $this->assertSame(AppointmentRequestStatus::Confirmed, $request->fresh()?->status);
+        $this->assertSame(Status::Done, $entry->fresh()?->status);
+    }
+
+    /** Phase 137 (MVP-1105): die Stornofrist steht vorab auf der Seite, nicht erst in der Fehlermeldung. */
+    public function test_portal_page_shows_the_cancellation_deadline(): void {
+        $this->travelTo(CarbonImmutable::parse('2030-07-01 08:00:00'));
+        $open = $this->request(CarbonImmutable::parse('2030-07-10 09:00:00'));
+        $late = $this->request(CarbonImmutable::parse('2030-07-03 09:00:00'));
+        $this->travelTo(CarbonImmutable::parse('2030-07-02 12:00:00'));
+
+        $response = $this->actingAs($this->portalUser, 'customer')
+            ->get(route('customer.appointments.index', ['service' => $this->service->sqid]))
+            ->assertOk()
+            ->assertSee(__('appointment.portal.cancel_policy', ['hours' => 24]));
+
+        $response->assertSee(__('appointment.portal.cancel_until', ['date' => $open->cancelDeadline()?->fdatetime()]));
+        $response->assertSee(route('customer.appointments.cancel', $open), false);
+        $response->assertDontSee(route('customer.appointments.cancel', $late), false);
+        $response->assertSee(__('appointment.portal.cancel_expired'));
     }
 
     /** Fremde Anfragen lassen sich nicht stornieren. */

@@ -1,7 +1,7 @@
 ---
 title: "Portal de clientes – Resumen"
 topic: customer-portal.overview
-version: 2
+version: 4
 keywords:
     - inicio del portal
     - área de clientes
@@ -15,6 +15,8 @@ keywords:
     - áreas del portal
     - ayuda del portal
     - avisos
+    - solicitar una cita
+    - formación
 audience: []
 related:
     - customer-portal.diary
@@ -40,7 +42,7 @@ Para cada área liberada, la página de inicio muestra un mosaico con un número
 
 - **Entradas del libro de órdenes** – el número de sus pedidos.
 - **Registros de tiempo** – el número de registros de tiempo que usted puede consultar. El mosaico solo aparece si se le muestran registros individuales.
-- **Facturas** – el número de sus facturas.
+- **Facturas** – el número de sus facturas emitidas.
 - **Puntos abiertos** – el número de puntos abiertos liberados para usted que aún no están cerrados. A la página **Puntos abiertos** solo se llega a través de este mosaico.
 - **Solicitudes en curso** – sus solicitudes y pedidos en curso. Si hay asuntos que esperan una reacción suya, el mosaico tiene un borde de color e indica cuántos son («De ellas, … le esperan a usted»).
 - **Suscripciones y licencias** – el número de suscripciones y licencias de su lista.
@@ -56,14 +58,17 @@ La cabecera muestra siempre **Vista general**, **Búsqueda**, **Ayuda**, **Perfi
 - **Documentos** – los documentos liberados para usted,
 - **Tiempos** – los tiempos registrados para sus proyectos,
 - **Facturas** y, si su proveedor le factura mediante una cuenta de facturación, **Facturación**,
-- **Tickets** y **Catálogo de servicios**,
-- **Errores conocidos**,
+- **Tickets**, **Catálogo de servicios** y **Errores conocidos**,
 - **Reclamaciones** y **Registrar devolución**,
 - **Alquiler** y **Solicitud de alquiler**,
 - **Suscripciones**,
 - **Acuerdos**,
 - **Solicitudes y pedidos**,
+- **Solicitar una cita**,
+- **Formación**,
 - **Consultas**.
+
+**Formación** aparece si su proveedor ofrece formación en el portal; allí solo ve los cursos que ha puesto a disposición de los clientes.
 
 **Ayuda** abre el tema de ayuda de la página en la que se encuentra; si no lo hay, la lista de temas de ayuda del portal. También allí solo ve los temas de las áreas liberadas para usted. **Perfil** y **Seguridad** se describen en el tema «Acceso y seguridad». **Cerrar sesión** finaliza su sesión.
 

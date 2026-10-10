@@ -10,7 +10,7 @@
 
 return [
     'title' => 'CalDAV',
-    'intro' => 'WorkDiary appointments are published to an external CalDAV calendar (Nextcloud/ownCloud) — on-premise, without a Microsoft or Google account. WorkDiary stays authoritative; cancelled appointments disappear there and repeated runs never create duplicates.',
+    'intro' => 'WorkDiary appointments are published to an external CalDAV calendar (Nextcloud/ownCloud) — on-premise, without a Microsoft or Google account. WorkDiary stays authoritative; cancelled and deleted appointments disappear there and repeated runs never create duplicates.',
 
     'health' => [
         'ok' => 'Connected',
@@ -45,6 +45,8 @@ return [
         'calendar_path' => 'Calendar path (collection)',
         'calendar_path_help' => 'Relative to the base URL, e.g. calendars/team/roster.',
         'active' => 'Active',
+        'allow_private_network' => 'Allow private/internal addresses',
+        'allow_private_network_help' => 'Enable only if the CalDAV server lives on your own network (e.g. 192.168.x.x). This is audited and only takes effect if the operator permits it.',
         // MVP-610b: Rückimport ist Opt-in — er ändert Daten.
         'two_way' => 'Two-way: import external changes as inbox proposals',
         'two_way_help' => 'Reimport of the calendar collection via sync-collection (RFC 6578), otherwise over a time window with an ETag comparison — new external appointments, external edits to published ones and deletions land as cases in the integration inbox (never a blind creation).',
@@ -62,5 +64,7 @@ return [
         'invalid_url' => 'The base URL must start with http:// or https://.',
         'path_outside_base' => 'The calendar URL is not below the base URL. Please enter the path relative to the base URL.',
         'password_required' => 'A new connection requires an app password.',
+        'private_url_blocked' => 'The base URL points to a private/internal address. For a server on your own network, enable the approval of private addresses.',
+        'private_hint' => 'For a server on your own network, the approval of private addresses must be enabled on the connection.',
     ],
 ];

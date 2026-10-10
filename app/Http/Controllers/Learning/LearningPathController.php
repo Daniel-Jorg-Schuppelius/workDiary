@@ -90,7 +90,6 @@ class LearningPathController extends Controller {
         $data = $request->validate([
             'learning_course_id' => ['required', 'integer', new ExistsInCurrentOrganization('learning_courses')],
             'due_days' => ['nullable', 'integer', 'min:1', 'max:3650'],
-            'is_mandatory' => ['nullable', 'boolean'],
         ]);
 
         LearningPathItem::query()->create([
@@ -98,7 +97,6 @@ class LearningPathController extends Controller {
             'learning_path_id' => $path->id,
             'learning_course_id' => (int) $data['learning_course_id'],
             'position' => (int) $path->items()->max('position') + 1,
-            'is_mandatory' => (bool) ($data['is_mandatory'] ?? true),
             'due_days' => $data['due_days'] ?? null,
         ]);
 

@@ -10,7 +10,7 @@
 
 return [
     'title' => 'CalDAV',
-    'intro' => 'Les rendez-vous WorkDiary sont publiés dans un calendrier CalDAV externe (Nextcloud/ownCloud) — sur site, sans compte Microsoft ou Google. WorkDiary reste la référence ; les rendez-vous annulés y disparaissent et les exécutions répétées ne créent jamais de doublons.',
+    'intro' => 'Les rendez-vous WorkDiary sont publiés dans un calendrier CalDAV externe (Nextcloud/ownCloud) — sur site, sans compte Microsoft ou Google. WorkDiary reste la référence ; les rendez-vous annulés et supprimés y disparaissent et les exécutions répétées ne créent jamais de doublons.',
 
     'health' => [
         'ok' => 'Connecté',
@@ -45,6 +45,8 @@ return [
         'calendar_path' => 'Chemin du calendrier (collection)',
         'calendar_path_help' => 'Relatif à l\'URL de base, p. ex. calendars/team/planning.',
         'active' => 'Actif',
+        'allow_private_network' => 'Autoriser les adresses privées/internes',
+        'allow_private_network_help' => 'À activer uniquement si le serveur CalDAV se trouve sur votre propre réseau (p. ex. 192.168.x.x). Cette action est auditée et ne prend effet que si l\'exploitant l\'autorise.',
         // MVP-610b: Rückimport ist Opt-in — er ändert Daten.
         'two_way' => 'Bidirectionnel : importer les modifications externes comme propositions',
         'two_way_help' => 'Réimport de la collection d’agenda via sync-collection (RFC 6578), sinon sur une fenêtre temporelle avec comparaison d’ETag — nouveaux rendez-vous externes, modifications externes de rendez-vous publiés et suppressions arrivent comme cas dans la boîte d’intégration (jamais de création aveugle).',
@@ -62,5 +64,7 @@ return [
         'invalid_url' => 'L\'URL de base doit commencer par http:// ou https://.',
         'path_outside_base' => 'L\'URL du calendrier ne se trouve pas sous l\'URL de base. Veuillez indiquer le chemin relatif à l\'URL de base.',
         'password_required' => 'Une nouvelle connexion nécessite un mot de passe d\'application.',
+        'private_url_blocked' => 'L\'URL de base pointe vers une adresse privée/interne. Pour un serveur sur votre propre réseau, activez l\'autorisation des adresses privées.',
+        'private_hint' => 'Pour un serveur sur votre propre réseau, l\'autorisation des adresses privées doit être activée sur la connexion.',
     ],
 ];

@@ -125,10 +125,20 @@
                                             :href="route('finance.accounting.journal.show', $entry)"
                                             :label="__('Anzeigen')" />
                                 @if ($canPost && $entry->status->isMutable())
-                                    <x-action-form :action="route('finance.accounting.inbox.post', $entry)" method="POST">
-                                        <x-icon-btn icon="task_alt" size="xs" tone="primary" type="submit"
-                                                    :label="__('accounting.ledger.action.post')" />
-                                    </x-action-form>
+                                    @unless ($item['awaits_second_person'])
+                                        <x-action-form :action="route('finance.accounting.inbox.post', $entry)" method="POST">
+                                            <x-icon-btn icon="task_alt" size="xs" tone="primary" type="submit"
+                                                        :label="__('accounting.ledger.action.post')" />
+                                        </x-action-form>
+                                    @endunless
+                                    @if ($item['kind'] instanceof \App\Enums\Finance\DirectBookingKind)
+                                        <x-action-form :action="route('finance.accounting.journal.discard', $entry)" method="POST"
+                                                       :confirm="__('accounting.ledger.confirm.discard')" confirm-icon="delete" confirm-tone="error"
+                                                       :confirm-label="__('accounting.ledger.action.discard')">
+                                            <x-icon-btn icon="delete" size="xs" tone="error" type="submit"
+                                                        :label="__('accounting.ledger.action.discard')" />
+                                        </x-action-form>
+                                    @endif
                                 @endif
                             @elseif ($canPrepare && $proposal?->isPostable())
                                 <x-action-form :action="route('finance.accounting.inbox.prepare')" method="POST">
@@ -138,11 +148,12 @@
                                     <x-icon-btn icon="playlist_add" size="xs" tone="ghost" type="submit"
                                                 :label="__('accounting.inbox.action.prepare')" />
                                 </x-action-form>
-                                @if ($canPost)
+                                @if ($canPost && ! $fourEyes)
+                                    {{-- Vorbereiten und Festschreiben in einem Zug wäre bei Vier-Augen dieselbe Person. --}}
                                     <x-action-form :action="route('finance.accounting.inbox.prepare')" method="POST">
                                         <input type="hidden" name="kind" value="{{ $item['kind']->value }}">
                                         <input type="hidden" name="source_id" value="{{ $item['source']->getKey() }}">
-                                    <input type="hidden" name="source_key" value="{{ $item['source_key'] }}">
+                                        <input type="hidden" name="source_key" value="{{ $item['source_key'] }}">
                                         <input type="hidden" name="post" value="1">
                                         <x-icon-btn icon="task_alt" size="xs" tone="primary" type="submit"
                                                     :label="__('accounting.inbox.action.prepare_and_post')" />

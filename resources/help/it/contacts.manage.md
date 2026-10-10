@@ -1,7 +1,7 @@
 ---
 title: "Clienti & fornitori"
 topic: contacts.manage
-version: 2
+version: 4
 keywords:
     - anagrafica clienti
     - anagrafica fornitori
@@ -15,6 +15,8 @@ keywords:
     - rubrica
     - partner commerciale
     - CRM
+    - portale clienti
+    - accesso al portale
 audience: []
 modules:
     - module.vertrieb
@@ -60,6 +62,22 @@ funzionano senza rilavorazioni.
 comunicazione sul cliente o sul fornitore. Le note compaiono nella pagina di
 dettaglio e nell’elenco centrale delle note; un riscontro di accesso ai dati
 relativo a un fornitore le elenca con numero e periodo.
+
+**Accessi al portale:** nella sezione **Accessi al portale** della scheda
+cliente invita i referenti nel portale clienti con **Invita accesso**; il
+contatto imposta autonomamente la password tramite il link dell'invito. Finché
+l'invito è aperto o scaduto, è disponibile **Invia di nuovo l'invito**. Per
+gli accessi attivi, **Reimpostare l’accesso** reimposta l'accesso dopo una
+richiesta di conferma: la password precedente non è più valida da subito,
+tutte le sessioni vengono chiuse e il contatto riceve un nuovo invito; i
+metodi a due fattori configurati restano attivi. Se il contatto ha solo
+dimenticato la password, non serve: la reimposta autonomamente nella pagina di
+accesso del portale tramite **Password dimenticata?**. **Disattiva**
+disconnette subito l'accesso e blocca il login, **Riattiva** annulla il
+blocco. Le aree visibili per un accesso sono stabilite dalla configurazione
+del portale del cliente.
+
+Se un contatto ha perso tutti i metodi a due fattori e i codici di recupero, **Reimposta il secondo fattore** rimuove tutti i metodi dopo una conferma della password e una richiesta di conferma e termina tutte le sessioni. Il contatto riceve un’e-mail al riguardo e accede poi con la propria password; se la Sua organizzazione richiede l’autenticazione a due fattori, la configura nuovamente in quel momento. Verifichi prima la sua identità, ad esempio richiamandolo.
 
 ## Esempio pratico
 

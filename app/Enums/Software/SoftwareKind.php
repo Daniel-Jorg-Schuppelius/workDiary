@@ -25,12 +25,12 @@ enum SoftwareKind: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::OperatingSystem => __('Betriebssystem'),
-            self::Application     => __('Anwendung'),
-            self::Firmware        => __('Firmware'),
-            self::Driver          => __('Treiber'),
-            self::Service         => __('Dienst'),
-            self::Other           => __('Sonstige'),
+            self::OperatingSystem => __('enums.software.software_kind.operating_system'),
+            self::Application     => __('enums.software.software_kind.application'),
+            self::Firmware        => __('enums.software.software_kind.firmware'),
+            self::Driver          => __('enums.software.software_kind.driver'),
+            self::Service         => __('enums.software.software_kind.service'),
+            self::Other           => __('enums.software.software_kind.other'),
         };
     }
 }

@@ -1,7 +1,7 @@
 ---
 title: "Clockify import"
 topic: admin.clockify
-version: 1
+version: 3
 keywords:
     - Clockify
     - import time entries
@@ -13,6 +13,7 @@ keywords:
     - remote support to Clockify
     - user mapping
     - write corrections back
+    - hourly import
 audience:
     - admin
 related:
@@ -56,13 +57,15 @@ Clockify entry:
 3. **API base URL** and **Reports API base URL**: only change these if your
    account is hosted on a regional Clockify instance; the help text in the
    dialog gives an example.
-4. **Sync window (days)**: how far back an API import without a period looks
-   and how far the hourly transfer reaches (default 30 days).
+4. **Sync window (days)**: how far back an API import without a period – the
+   hourly one included – looks and how far the hourly transfer reaches
+   (default 30 days).
 5. **Adopt billable flag**: on takes over the billable flag from Clockify;
    off never marks imported times as billable.
-6. **Single-user mode** and **Book times for user ID**: for single
-   workstations only, see below.
-7. Optionally **Enable time transfer** and **Write corrections back**.
+6. **Single-user mode** and **Book times for user**: for single
+   workstations only, see below. You choose the user from the list.
+7. Optionally **Enable time transfer**, **Write corrections back** and
+   **Webhook secret** (see “Webhook”).
 8. **Save**. Use **Test connection** in the dialog to check the access.
    Without an API key the plugin reports CSV mode – that is not an error.
 
@@ -83,8 +86,15 @@ entries of all users in the workspace; without a period, the last days
 according to the sync window. The import skips running entries that have no
 end yet.
 
-There is no scheduled Clockify import: every import starts on this page.
-Afterwards the page reports how many entries were created, skipped and left
+**Hourly import:** Once an API key is stored, the API import also runs by
+itself every hour – over the sync window and with deletion matching (see
+below). You change the interval under **Scheduled tasks** on the “Clockify
+import” entry. Each run uses requests from the quota of your Clockify plan.
+Without an API key there is no automatic import; you always upload CSV files
+here.
+
+If the Clockify API reports an error, the page shows it and nothing is
+imported. After an import on this page, the page reports how many entries were created, skipped and left
 open in the inbox, and how many could not be matched to a user.
 
 ## Matching customers, projects and people
@@ -107,7 +117,7 @@ open in the inbox, and how many could not be matched to a user.
   user there; the choice is remembered.
 - **Single-user mode:** Only when it is switched on does the import book
   entries without an identifiable person to the default user. That is the
-  user from **Book times for user ID**, otherwise the owner of the
+  user from **Book times for user**, otherwise the owner of the
   organization or the first user.
 
 ## Re-importing and changes
@@ -156,6 +166,22 @@ their deletion to Clockify. Beforehand WorkDiary compares the current state in
 Clockify: if the entry was changed there in the meantime, WorkDiary
 overwrites nothing and creates a conflict in the inbox instead. Billed times
 and times imported via CSV are never written back.
+
+## Webhook
+
+With a paid Clockify plan, Clockify can notify WorkDiary about new and
+changed entries; the import then starts by itself:
+
+1. The **Clockify import** page shows, in the **Webhook (optional)** section,
+   the address Clockify should call.
+2. In Clockify, create a webhook pointing to this address under workspace
+   settings → Webhooks.
+3. Enter its signature token in the plugin settings under **Webhook secret**
+   and also set the **Workspace ID** there.
+
+Many events in quick succession trigger only one import. Without a webhook
+secret the webhook stays off. The hourly fetch remains the reliable source:
+it catches up on whatever a failed webhook missed.
 
 ## Common errors
 

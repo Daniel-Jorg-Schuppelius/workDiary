@@ -168,7 +168,16 @@ class UtilizationReportController extends Controller {
     private function exportCsv(array $result, string $from, string $to, array $filters, Request $request): Response {
         $filename = sprintf('auslastung_%s_%s.csv', $from, $to);
         $out = [];
-        $out[] = ['Person', 'SollMinuten', 'ErfassteMinuten', 'AbrechenbarMinuten', 'FakturiertMinuten', 'AuslastungProzent', 'AbrechenbareQuoteProzent', 'RealisierungProzent'];
+        $out[] = [
+            (string) __('reporting.csv.person'),
+            (string) __('reporting.csv.target_minutes'),
+            (string) __('reporting.csv.tracked_minutes'),
+            (string) __('reporting.csv.billable_minutes'),
+            (string) __('reporting.csv.invoiced_minutes'),
+            (string) __('reporting.csv.utilization_percent'),
+            (string) __('reporting.csv.billable_rate_percent'),
+            (string) __('reporting.csv.realization_percent'),
+        ];
 
         foreach ($result['rows'] as $row) {
             $out[] = [
@@ -184,7 +193,7 @@ class UtilizationReportController extends Controller {
         }
 
         $t = $result['totals'];
-        $out[] = ['GESAMT', $t['targetMinutes'], $t['trackedMinutes'], $t['billableMinutes'], $t['invoicedMinutes'],
+        $out[] = [(string) __('reporting.csv.total'), $t['targetMinutes'], $t['trackedMinutes'], $t['billableMinutes'], $t['invoicedMinutes'],
             $t['utilization'] !== null ? NumberHelper::toUSFormat($t['utilization'], 1) : '',
             $t['billableRate'] !== null ? NumberHelper::toUSFormat($t['billableRate'], 1) : '',
             $t['realization'] !== null ? NumberHelper::toUSFormat($t['realization'], 1) : ''];

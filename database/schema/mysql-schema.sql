@@ -4007,6 +4007,7 @@ CREATE TABLE `caldav_connections` (
   `last_error_at` timestamp NULL DEFAULT NULL,
   `consecutive_failures` int(10) unsigned NOT NULL DEFAULT 0,
   `disabled_at` timestamp NULL DEFAULT NULL,
+  `allow_private_network` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `caldavconn_creator_fk` (`created_by`),
   KEY `caldavconn_org_idx` (`organization_id`),
@@ -14395,7 +14396,6 @@ CREATE TABLE `learning_path_items` (
   `learning_path_id` bigint(20) unsigned NOT NULL,
   `learning_course_id` bigint(20) unsigned NOT NULL,
   `position` smallint(5) unsigned NOT NULL DEFAULT 0,
-  `is_mandatory` tinyint(1) NOT NULL DEFAULT 1,
   `due_days` smallint(5) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -21625,6 +21625,7 @@ CREATE TABLE `sick_leaves` (
   `end_date` date NOT NULL,
   `kind` varchar(20) NOT NULL DEFAULT 'initial',
   `follow_up_for_id` bigint(20) unsigned DEFAULT NULL,
+  `continuation_of_id` bigint(20) unsigned DEFAULT NULL,
   `au_number` text DEFAULT NULL,
   `doctor_name` text DEFAULT NULL,
   `note` text DEFAULT NULL,
@@ -21641,6 +21642,8 @@ CREATE TABLE `sick_leaves` (
   KEY `sick_leaves_start_date_end_date_index` (`start_date`,`end_date`),
   KEY `sick_leaves_follow_up_for_id_index` (`follow_up_for_id`),
   KEY `sick_leaves_org_dates_idx` (`organization_id`,`start_date`,`end_date`),
+  KEY `sick_leaves_continuation_of_id_foreign` (`continuation_of_id`),
+  CONSTRAINT `sick_leaves_continuation_of_id_foreign` FOREIGN KEY (`continuation_of_id`) REFERENCES `sick_leaves` (`id`) ON DELETE SET NULL,
   CONSTRAINT `sick_leaves_follow_up_for_id_foreign` FOREIGN KEY (`follow_up_for_id`) REFERENCES `sick_leaves` (`id`) ON DELETE SET NULL,
   CONSTRAINT `sick_leaves_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE SET NULL,
   CONSTRAINT `sick_leaves_recorded_by_foreign` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
@@ -25115,6 +25118,7 @@ CREATE TABLE `webdav_connections` (
   `last_error_at` timestamp NULL DEFAULT NULL,
   `consecutive_failures` int(10) unsigned NOT NULL DEFAULT 0,
   `disabled_at` timestamp NULL DEFAULT NULL,
+  `allow_private_network` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `webdavconn_creator_fk` (`created_by`),
   KEY `webdavconn_org_idx` (`organization_id`),
@@ -25491,6 +25495,8 @@ CREATE TABLE `zammad_connections` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `ticket_target` varchar(20) NOT NULL DEFAULT 'task',
   `service_queue_id` bigint(20) unsigned DEFAULT NULL,
+  `is_limited_to_mapped_groups` tinyint(1) NOT NULL DEFAULT 0,
+  `allow_private_network` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `zammadconn_proj_fk` (`default_project_id`),
   KEY `zammadconn_creator_fk` (`created_by`),
@@ -26467,3 +26473,9 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (969,'2027_03_11_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (970,'2027_03_11_100100_add_customer_approval_to_print_orders',64);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (971,'2027_03_11_100200_create_customer_intake_upload_links_table',65);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (972,'2027_03_12_100000_add_search_columns_to_help_topics',66);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (973,'2027_03_13_100000_add_continuation_of_id_to_sick_leaves',67);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (974,'2027_03_13_100100_unify_caldav_reference_type',67);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (975,'2027_03_13_100200_drop_is_mandatory_from_learning_path_items',68);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (976,'2027_03_14_100000_add_group_filter_and_private_network_to_zammad_connections',68);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (977,'2027_03_14_100100_add_allow_private_network_to_webdav_connections',68);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (978,'2027_03_14_100200_add_allow_private_network_to_caldav_connections',68);

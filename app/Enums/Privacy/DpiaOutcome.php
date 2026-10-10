@@ -26,10 +26,10 @@ enum DpiaOutcome: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Open => __('Offen'),
-            self::Proceed => __('Vertretbar – Durchführung'),
-            self::ConsultAuthority => __('Konsultation der Aufsichtsbehörde'),
-            self::Abort => __('Nicht durchführbar'),
+            self::Open => __('enums.privacy.dpia_outcome.open'),
+            self::Proceed => __('enums.privacy.dpia_outcome.proceed'),
+            self::ConsultAuthority => __('enums.privacy.dpia_outcome.consult_authority'),
+            self::Abort => __('enums.privacy.dpia_outcome.abort'),
         };
     }
 }

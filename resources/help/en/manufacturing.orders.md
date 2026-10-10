@@ -1,7 +1,7 @@
 ---
 title: "Manufacturing orders"
 topic: manufacturing.orders
-version: 1
+version: 2
 keywords:
     - production order
     - work order
@@ -17,6 +17,9 @@ keywords:
     - proforma invoice
     - commercial invoice
     - delivery note
+    - shipping label
+    - shipment status
+    - cancel shipment
 audience: []
 modules:
     - module.lager
@@ -46,8 +49,28 @@ planned occupancy time, or commissioned to a supplier as subcontracting
 (which creates a purchase order). The planning view shows the
 multi-level material requirements explosion (MRP) for a finished good as
 well as quality metrics per article. Cancelling is irreversible;
-creating, reporting and delivering require the inventory posting
-permission.
+creating, reporting and delivering require the right **Post stock
+movements**.
+
+## Shipping on the delivery
+
+With an active shipping connection (see “Shipping connections DHL, UPS and
+FedEx”) you create a shipping order including a label on a delivery with a
+customer via **Ship**. The delivery then shows the status, for example
+**Shipping: Label created**, with the parcel service and tracking number. If
+you hover over the status, you see when it was last checked with the parcel
+service. Next to the status you find:
+
+- **Download label**: downloads the shipping label again.
+- **Check shipment status**: queries the current status from the parcel
+  service immediately – no longer available for **Delivered** or
+  **Cancelled**. WorkDiary also checks open shipments regularly by itself.
+- **Cancel shipment**: only in the status **Draft** or **Label created** and
+  after a confirmation prompt. The label becomes invalid. You can then create a
+  new shipping order, and the parcels of the delivery can be edited again.
+
+Creating a shipping order, checking the shipment status and cancelling a
+shipment require the right **Post stock movements**.
 
 ## Customs documents for shipments outside the EU
 

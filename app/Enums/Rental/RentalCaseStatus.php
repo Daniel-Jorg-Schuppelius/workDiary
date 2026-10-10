@@ -33,13 +33,13 @@ enum RentalCaseStatus: string implements HasLabel, HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::Draft => (string) __('Entwurf'),
-            self::Reserved => (string) __('Reserviert'),
-            self::HandedOver => (string) __('Übergeben'),
-            self::Overdue => (string) __('Überfällig'),
-            self::Returned => (string) __('Zurückgegeben'),
-            self::Closed => (string) __('Abgeschlossen'),
-            self::Cancelled => (string) __('Storniert'),
+            self::Draft => (string) __('enums.rental.rental_case_status.draft'),
+            self::Reserved => (string) __('enums.rental.rental_case_status.reserved'),
+            self::HandedOver => (string) __('enums.rental.rental_case_status.handed_over'),
+            self::Overdue => (string) __('enums.rental.rental_case_status.overdue'),
+            self::Returned => (string) __('enums.rental.rental_case_status.returned'),
+            self::Closed => (string) __('enums.rental.rental_case_status.closed'),
+            self::Cancelled => (string) __('enums.rental.rental_case_status.cancelled'),
         };
     }
 

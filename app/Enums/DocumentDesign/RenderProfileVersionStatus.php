@@ -26,9 +26,9 @@ enum RenderProfileVersionStatus: string implements HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::Draft => __('Entwurf'),
-            self::Active => __('Aktiv'),
-            self::Superseded => __('Abgelöst'),
+            self::Draft => __('enums.document_design.render_profile_version_status.draft'),
+            self::Active => __('enums.document_design.render_profile_version_status.active'),
+            self::Superseded => __('enums.document_design.render_profile_version_status.superseded'),
         };
     }
 

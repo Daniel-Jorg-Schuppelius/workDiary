@@ -1,7 +1,7 @@
 ---
 title: "Formación en el portal de clientes"
 topic: customer-portal.learning
-version: 2
+version: 4
 keywords:
     - e-learning
     - curso online
@@ -21,7 +21,8 @@ related:
 
 En la página **Formación** encuentra los cursos que su proveedor ha liberado
 para clientes. Consulta la vista previa de los cursos, se inscribe o los
-reserva, trabaja las unidades de aprendizaje y finaliza el curso.
+reserva, trabaja las unidades de aprendizaje y finaliza el curso. Llega a la página mediante **Formación** en el menú del
+portal; la entrada aparece si su proveedor ofrece formación en el portal.
 
 ## La vista general de cursos
 
@@ -44,16 +45,18 @@ de momento no hay ningún curso para usted.
 Si un curso tiene unidades de vista previa, **Vista previa** abre la **Vista
 previa del curso** sin inscripción: la descripción del curso y los textos de
 las unidades de vista previa. Los medios, los exámenes y las tareas no forman
-parte de la vista previa. En los cursos de acceso libre se inscribe allí
-directamente con **Inscribirse al curso**; **Volver** le lleva de nuevo a la
-vista general.
+parte de la vista previa. Arriba ofrece la misma vía que la tarjeta:
+**Inscribirse al curso** en los cursos de acceso libre, **Reservar curso** en
+los cursos reservables y, en los demás, el aviso **La inscripción la realiza
+su persona de contacto.** **Volver** le lleva de nuevo a la vista general.
 
 ## Inscribirse o reservar
 
 El curso determina cómo se empieza:
 
 - **Inscribirse al curso** – en los cursos de acceso libre. Queda inscrito de
-  inmediato y el curso se abre.
+  inmediato, el portal indica **Está inscrito en el curso.** y el curso se
+  abre.
 - **Reservar curso** – en los cursos reservables. El portal envía una
   solicitud de reserva y confirma **Solicitud enviada.** Su proveedor decide
   sobre ella; tras la confirmación queda inscrito y la tarjeta muestra
@@ -67,9 +70,11 @@ disponibilidad. Una inscripción existente sigue siendo accesible después.
 
 ## Trabajar el curso
 
-**Abrir curso** muestra las unidades de aprendizaje en su orden con sus
-textos. Una marca indica las unidades completadas. Cuando haya trabajado una
-unidad, haga clic en **Marcar como hecha**.
+**Abrir curso** muestra las unidades de aprendizaje en su orden con su
+contenido: textos, avisos, listas de comprobación, imágenes, archivos para
+descargar, vídeos, grabaciones de audio, tablas y preguntas de práctica. Una
+marca indica las unidades completadas. Cuando haya trabajado una unidad, haga
+clic en **Marcar como hecha**.
 
 Las unidades pueden estar bloqueadas:
 
@@ -93,6 +98,6 @@ proveedor.
 
 - Solo ve los cursos liberados y destinados expresamente a clientes. Si falta
   un curso que espera, diríjase a su persona de contacto.
-- En el portal, la página del curso muestra los textos de las unidades; los
-  medios y los exámenes no se incluyen aquí.
+- Los exámenes no se incluyen en el portal, como tampoco las referencias a la
+  base de conocimiento interna de su proveedor.
 - En el portal no puede darse de baja ni retirar una solicitud de reserva.

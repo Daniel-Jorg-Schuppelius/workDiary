@@ -110,6 +110,8 @@ return [
             'add_entry' => 'Nuova registrazione',
             'post' => 'Registrare',
             'reverse' => 'Stornare',
+            'discard' => 'Scartare la bozza',
+            'show_pending' => 'Mostra la bozza in attesa',
             'reverse_submit' => 'Creare contro-registrazione',
             'import' => 'Importa piano dei conti',
         ],
@@ -157,6 +159,8 @@ return [
             'entry_saved' => 'Registrazione salvata.',
             'entry_posted' => 'Registrazione definitiva.',
             'entry_reversed' => 'Contro-registrazione creata.',
+            'entry_discarded' => 'Bozza scartata — l’operazione può essere riavviata.',
+            'reversal_awaiting_approval' => 'Principio dei quattro occhi: lo storno attende l’approvazione come bozza nella posta contabile. La registrazione resta definitiva finché una seconda persona non registra la contro-registrazione.',
         ],
         'error' => [
             'sovereignty' => 'Il :date il libro mastro è tenuto da :holder — per quel giorno non sono ammesse registrazioni locali.',
@@ -177,6 +181,8 @@ return [
             'both_sides' => 'Una riga porta o Dare o Avere, mai entrambi.',
             'unbalanced' => 'Dare (:debit) e Avere (:credit) non coincidono.',
             'reverse_not_posted' => 'Solo una registrazione definitiva può essere stornata.',
+            'reversal_pending' => 'Per questa registrazione uno storno attende già l’approvazione.',
+            'discard_not_allowed' => 'Si può scartare solo una bozza in attesa da sconto, stralcio, scrittura in sospeso, giroconto, saldi iniziali, acconto speciale o storno; le registrazioni definitive restano invariate.',
             'reversal_reason_required' => 'Lo storno richiede una motivazione.',
             'account_in_use' => 'Su questo conto è già stato registrato — può solo essere disattivato.',
             'entry_without_organization' => 'La registrazione non ha un\'organizzazione — informare l\'amministratore.',
@@ -235,6 +241,8 @@ return [
             'lines' => 'Righe',
             'total' => 'Totale',
             'is_reversal_of' => 'Questa registrazione storna la registrazione n. :no.',
+            'awaiting_approval' => 'Bozza da «:kind»: attende l’approvazione e diventa efficace solo quando una seconda persona la registra. Scartarla la elimina; l’operazione può poi essere riavviata.',
+            'reversal_pending' => 'Uno storno di questa registrazione attende l’approvazione come bozza.',
             'reversed_by' => 'Stornata dalla registrazione n. :no — :reason',
         ],
         'filter' => [
@@ -252,6 +260,7 @@ return [
         ],
         'confirm' => [
             'deactivate' => 'Disattivare davvero questo conto? Le registrazioni esistenti restano.',
+            'discard' => 'Scartare la bozza? Verrà eliminata e il passaggio registrato nel protocollo; l’operazione può poi essere riavviata.',
         ],
         'import' => [
             'line_invalid' => 'Riga :line ignorata (numero, nome o tipo di conto mancante).',
@@ -269,7 +278,8 @@ return [
         'menu' => 'Posta contabile',
         'subtitle' => 'Documenti, spese e movimenti di cassa del periodo con il loro stato contabile.',
         'empty' => 'Nessun elemento aperto nel periodo.',
-        'four_eyes_active' => 'Principio dei quattro occhi attivo: chi prepara una proposta non la registra da solo.',
+        'four_eyes_active' => 'Principio dei quattro occhi attivo: chi prepara una proposta non la registra da solo. Anche sconti, stralci, scritture in sospeso, giroconti interni, saldi iniziali, acconti speciali e storni attendono qui l’approvazione da parte di una seconda persona; queste bozze si possono anche scartare.',
+        'four_eyes_direct_hint' => 'Principio dei quattro occhi attivo: la registrazione viene creata come bozza nella posta contabile e diventa efficace solo quando una seconda persona la registra.',
         'state' => [
             'blocked' => 'Bloccato',
             'open' => 'Non registrato',
@@ -299,6 +309,7 @@ return [
         'flash' => [
             'prepared' => 'Proposta accettata.',
             'batch' => 'Lotto: :prepared accettati, :posted registrati, :failed aperti.',
+            'awaiting_approval' => 'Principio dei quattro occhi: la registrazione attende l’approvazione come bozza nella posta contabile. Diventa efficace non appena una seconda persona la registra.',
         ],
         'error' => [
             'four_eyes' => 'Principio dei quattro occhi: questa registrazione è stata preparata da Lei — deve registrarla un altro.',
@@ -511,6 +522,8 @@ return [
         'empty' => 'Nessuna partita aperta.',
         'overdue_days' => 'scaduto da :days giorni',
         'settle_hint' => 'Aperto: :open. I pagamenti arrivano dalla riconciliazione bancaria — qui solo sconto, ritenuta o stralcio.',
+        'awaiting_approval' => 'Bozza in attesa di approvazione',
+        'four_eyes_hint' => 'Principio dei quattro occhi attivo: sconto e stralcio vengono creati come bozza nella posta contabile. La partita resta aperta finché una seconda persona non registra la contropartita.',
         'column' => [
             'counterparty' => 'Controparte',
             'due_date' => 'Scadenza',
@@ -528,9 +541,14 @@ return [
         'action' => [
             'settle' => 'Compensare',
             'show_entry' => 'Mostra registrazione',
+            'show_pending' => 'Mostra la bozza in attesa',
         ],
         'flash' => [
             'settled' => 'Compensazione registrata.',
+            'awaiting_approval' => 'Principio dei quattro occhi: la contropartita attende l’approvazione come bozza nella posta contabile. La partita resta aperta finché una seconda persona non la registra.',
+        ],
+        'error' => [
+            'draft_pending' => 'Per questa partita una contropartita attende già l’approvazione. Un’ulteriore compensazione è possibile solo dopo la sua registrazione.',
         ],
     ],
 
@@ -543,6 +561,9 @@ return [
         'invoice_schedules_hint' => 'Le fatture ricorrenti restano al piano di fatturazione; qui solo per panoramica.',
         'preview' => 'Prossime scadenze: :dates',
         'no_account' => '— nessun conto —',
+        'no_responsible' => '— nessuno —',
+        'choose_invoice' => '— scegliere la fattura —',
+        'fulfill_hint' => 'Periodo :period, scadenza il :due, atteso :expected. Con l\'assegnazione della fattura ricevuta l\'operazione è conclusa.',
         'section' => [
             'open_runs' => 'Operazioni aperte',
             'templates' => 'Modelli',
@@ -562,11 +583,13 @@ return [
             'due_day' => 'Giorno di scadenza',
             'starts_on' => 'Inizio',
             'ends_on' => 'Fine',
+            'incoming_einvoice' => 'Fattura elettronica in entrata',
         ],
         'hint' => [
             'kind' => 'L\'attesa aspetta un originale; il modello di registrazione crea una bozza.',
             'due_day' => '1–28, così ogni mese ha quel giorno.',
             'accounts' => 'Solo per i modelli di registrazione — insieme all\'importo atteso.',
+            'responsible' => 'Riceve, oltre alla contabilità, l\'avviso sulle operazioni scadute.',
         ],
         'action' => [
             'add' => 'Creare modello',
@@ -576,6 +599,7 @@ return [
             'resume' => 'Riprendere',
             'end' => 'Terminare',
             'open_schedules' => 'Apri i piani',
+            'fulfill' => 'Assegnare il documento',
         ],
         'confirm' => [
             'end' => 'Terminare il modello? Le operazioni già create restano.',
@@ -584,6 +608,7 @@ return [
             'runs' => 'Nessuna operazione aperta.',
             'templates' => 'Nessun modello creato.',
             'schedules' => 'Nessun piano attivo.',
+            'candidates' => 'Nessuna fattura elettronica in entrata da assegnare. Registri prima l\'originale in Fatture elettroniche in entrata.',
         ],
         'flash' => [
             'saved' => 'Modello salvato.',
@@ -592,6 +617,7 @@ return [
             'resumed' => 'Modello ripreso.',
             'ended' => 'Modello terminato.',
             'ran' => 'Esecuzione effettuata.',
+            'fulfilled' => 'Attesa di documento soddisfatta.',
         ],
         'error' => [
             'already_closed' => 'L\'operazione è già chiusa.',

@@ -10,17 +10,21 @@
 
 namespace Tests\Feature\Plugins\Webdav;
 
+use App\Enums\Document\{DocumentStatus, DocumentType};
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Protocol\ProtocolStatus;
 use App\Models\Customer\Customer;
-use App\Models\Integration\IntegrationOutboxEntry;
+use App\Models\Document\{Document, DocumentVersion};
+use App\Models\Integration\{IntegrationInboxItem, IntegrationOutboxEntry};
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Models\Protocol\Protocol;
-use App\Plugins\Support\Mirror\{MirrorOutboxDispatcher, RemoteFileGateway};
+use App\Plugins\Support\Mirror\{DocumentMirrorService, MirrorOutboxDispatcher, RemoteFileGateway};
 use App\Plugins\Webdav\Contracts\WebdavGatewayFactory;
 use App\Plugins\Webdav\Models\WebdavConnection;
 use App\Plugins\Webdav\Services\WebdavMirrorTarget;
+use App\Plugins\Webdav\WebdavPlugin;
 use App\Services\Invoicing\InvoicePdfRenderer;
 use App\Services\Protocol\ProtocolPdfRenderer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -196,5 +200,75 @@ final class WebdavPdfSourcesTest extends TestCase {
         (new MirrorOutboxDispatcher(new WebdavMirrorTarget()))->dispatch($entry); // Replay ohne Änderung
 
         $this->assertCount(1, $gateway->puts); // nur ein Upload
+    }
+
+    private function releasedDocument(): Document {
+        $path = 'documents/2026/07/' . bin2hex(random_bytes(6)) . '.pdf';
+        Storage::disk('local')->put($path, 'DOC');
+        $document = Document::query()->create([
+            'organization_id' => $this->organization->id,
+            'title' => 'Prüfbericht',
+            'document_type' => DocumentType::TestReport,
+            'status' => DocumentStatus::Draft,
+            'created_by_user_id' => $this->admin->id,
+        ]);
+        $version = DocumentVersion::query()->create([
+            'document_id' => $document->id, 'version_no' => 1, 'disk' => 'local', 'path' => $path,
+            'original_name' => 'bericht.pdf', 'mime' => 'application/pdf', 'size' => 3, 'uploaded_by_user_id' => $this->admin->id,
+        ]);
+        $document->forceFill(['current_version_id' => $version->id, 'status' => DocumentStatus::Active])->save();
+
+        return $document;
+    }
+
+    /** Ohne Haken „Dokumente (DMS)“ spiegelt die Ablage keine DMS-Dokumente (Phase 137). */
+    public function test_documents_are_not_mirrored_without_the_document_source(): void {
+        $this->connection(['invoice_pdf']);
+        $this->releasedDocument();
+
+        $this->assertSame(0, IntegrationOutboxEntry::query()->where('operation', MirrorOutboxDispatcher::OP_MIRROR)->count());
+    }
+
+    public function test_documents_are_mirrored_with_the_document_source(): void {
+        $this->connection(['document']);
+        $this->releasedDocument();
+
+        $this->assertSame(1, IntegrationOutboxEntry::query()->where('operation', MirrorOutboxDispatcher::OP_MIRROR)->count());
+    }
+
+    /** „Jetzt spiegeln“ holt auch Rechnungen und Protokolle nach, die vor der Anbindung entstanden. */
+    public function test_manual_mirror_run_queues_invoices_and_protocols_of_enabled_sources(): void {
+        $invoice = $this->issuedInvoice();
+        $protocol = $this->signedProtocol();
+        $this->connection(['invoice_pdf', 'protocol_pdf']);
+
+        $this->artisan('webdav:mirror', ['--organization' => (string) $this->organization->id])->assertExitCode(0);
+
+        $this->assertDatabaseHas('integration_outbox', ['operation' => MirrorOutboxDispatcher::OP_MIRROR_INVOICE, 'subject_id' => $invoice->id]);
+        $this->assertDatabaseHas('integration_outbox', ['operation' => MirrorOutboxDispatcher::OP_MIRROR_PROTOCOL, 'subject_id' => $protocol->id]);
+        $this->assertSame(0, IntegrationOutboxEntry::query()->where('operation', MirrorOutboxDispatcher::OP_MIRROR)->count());
+    }
+
+    /** Ein Konflikt am Rechnungs-PDF bietet nur „Remote überschreiben“ — und das funktioniert. */
+    public function test_invoice_pdf_conflict_offers_overwrite_only_and_overwrite_republishes(): void {
+        $connection = $this->connection(['invoice_pdf']);
+        $this->fakeInvoiceRenderer('V1');
+        $invoice = $this->issuedInvoice();
+        $service = new DocumentMirrorService();
+        $service->mirrorInvoice(new WebdavMirrorTarget(), $invoice, $connection, new \Tests\Support\RecordingWebdavGateway(signature: 'etag-1'));
+        $this->fakeInvoiceRenderer('V2');
+        $service->mirrorInvoice(new WebdavMirrorTarget(), $invoice, $connection, new \Tests\Support\RecordingWebdavGateway(signature: 'etag-EXTERN'));
+        $item = IntegrationInboxItem::query()->where('plugin_id', WebdavPlugin::ID)->where('case_type', IntegrationInboxItem::CASE_CONFLICT)->firstOrFail();
+
+        $actions = app(WebdavPlugin::class)->inboxConflictActions($item);
+        $this->assertCount(1, $actions);
+
+        $gateway = $this->bindGateway();
+        $this->actingAs($this->admin)->post(route('admin.webdav.conflict.overwrite', $item))
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $this->assertContains('invoices/2026/R2026-0042.pdf', $gateway->puts);
+        $this->assertSame(IntegrationInboxStatus::ResolvedLocal, $item->fresh()?->status);
     }
 }

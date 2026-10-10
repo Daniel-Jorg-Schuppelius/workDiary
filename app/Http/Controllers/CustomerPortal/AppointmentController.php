@@ -64,6 +64,7 @@ class AppointmentController extends Controller {
             ->withoutGlobalScopes()
             ->where('organization_id', $portalUser->organization_id)
             ->where('portal_user_id', $portalUser->id)
+            ->with('bookableService')
             ->orderByDesc('id')
             ->paginate(25)
             ->withQueryString();

@@ -1,7 +1,7 @@
 ---
 title: "Objects"
 topic: customer-portal.assets
-version: 2
+version: 3
 keywords:
     - devices
     - equipment
@@ -14,6 +14,7 @@ keywords:
     - inspection reports
     - next service
     - maintenance plan
+    - protocol PDF
 audience: []
 related:
     - customer-portal.overview
@@ -25,8 +26,8 @@ related:
 
 Under **Objects** you see the devices and installations your contractor
 manages for your company: with their inspection and maintenance dates, the
-completed maintenance and the reports released for you. The view is
-read-only.
+completed maintenance and the signed protocols released for you. The view
+is read-only; you download protocols as PDF.
 
 ## The object list
 
@@ -44,15 +45,27 @@ sections:
   maintenance plans with **Name** and **Next due date**, the next due date
   first. Without a plan it shows **No appointments configured.**
 - **Completed maintenance** – completed maintenance work with name and date.
-- **Protocols** – the reports for the object that your contractor has
-  released for you, with title, status (such as **Signed**) and date, the
-  newest first. The list names the reports; they cannot be opened or
-  downloaded here.
+- **Protocols** – the signed protocols for the object that your contractor
+  has released for you, with title, status and date, the newest first, each
+  with **Download PDF**. Without such protocols it reads
+  **No approved protocols.**
+
+## Downloading protocols
+
+The portal only shows signed protocols; drafts and protocols under review
+appear once they are signed. The status reads **Signed**, for older protocols
+also **Archived** or **Superseded**. With **Superseded**, your contractor has
+created a corrected version; it appears as soon as it is signed.
+
+**Download PDF** gives you the protocol in its signed version as a PDF file.
+Each download is noted on the protocol, so your contractor can see when it was
+downloaded via the portal.
 
 ## What you do not see here
 
 - Internal details such as fault details, defects or assignments to staff do
   not appear.
+- Protocols that are not yet signed do not appear.
 - You only see objects assigned to your company.
 
 ## Your objects elsewhere

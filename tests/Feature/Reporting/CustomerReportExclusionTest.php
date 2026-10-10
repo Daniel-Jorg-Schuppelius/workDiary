@@ -18,7 +18,9 @@ use App\Models\Diary\{DiaryEntry, OpenIssue};
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
+use App\Services\Reporting\EconomicsReportBuilder;
 use App\Support\{MorphMap, Sqid};
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Illuminate\Testing\TestResponse;
@@ -155,6 +157,55 @@ class CustomerReportExclusionTest extends TestCase {
         $response->assertOk();
         // Persönliche Auswertung bleibt vollständig: 60 (Alpha) + 120 (Beta) Minuten.
         $this->assertSame(180, $response->viewData('monthMinutes'));
+    }
+
+    public function test_times_without_project_stay_visible_while_customers_are_hidden(): void {
+        TimeEntry::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => null,
+            'user_id' => $this->user->id,
+            'date' => '2030-01-11',
+            'started_at' => '2030-01-11 09:00:00',
+            'ended_at' => '2030-01-11 09:30:00',
+            'kind' => TimeEntryKind::Work->value,
+            'billable' => true,
+            'hourly_rate' => '100.00',
+        ]);
+
+        // Abrechnung (ReportFilters): 60 min sichtbares Projekt + 30 min ohne Projekt.
+        $series = $this->getWithDateRange('reports.billing')->assertOk()->viewData('monthlyBillableSeries');
+        $hours = array_sum(array_map(static fn(array $p): float => (float) $p['billable'] + (float) $p['non_billable'], $series));
+        $this->assertEqualsWithDelta(1.5, $hours, 0.001);
+
+        // Wirtschaftlichkeit: dieselbe Regel im Monatsverlauf.
+        $expected = TimeEntry::query()
+            ->where('billable', true)
+            ->where(fn($q) => $q->whereNull('project_id')->orWhere('project_id', $this->visibleProject->id))
+            ->get()
+            ->sum(static fn(TimeEntry $e): float => $e->rate?->toFloat() ?? 0.0);
+        $this->assertGreaterThan(0.0, $expected);
+        $months = app(EconomicsReportBuilder::class)->timeByMonth(
+            CarbonImmutable::parse('2030-01-01'),
+            CarbonImmutable::parse('2030-01-31'),
+            'month',
+            excludedCustomerIds: [(int) $this->excludedCustomer->id],
+        );
+        $this->assertEqualsWithDelta($expected, array_sum(array_column($months, 'revenue')), 0.001);
+    }
+
+    public function test_project_filter_keeps_projects_without_customer_while_customers_are_hidden(): void {
+        Project::create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => null,
+            'name' => 'Projekt Fremdkunde',
+            'status' => ProjectStatus::Active->value,
+            'created_by' => $this->user->id,
+        ]);
+
+        $names = $this->getWithDateRange('reports.customer-project')->assertOk()->viewData('filterProjects')->pluck('name')->all();
+
+        $this->assertContains('Projekt Fremdkunde', $names);
+        $this->assertNotContains('Projekt Beta', $names);
     }
 
     public function test_toggle_only_appears_when_excluded_customers_exist(): void {

@@ -1,4 +1,6 @@
 {
+    "Die Instanz-URL": "L’URL dell’istanza",
+    "Für eine On-Premise-Instanz im eigenen Netz muss die Freigabe privater Adressen ausdrücklich aktiviert werden.": "Per un’istanza on-premise nella propria rete gli indirizzi privati devono essere consentiti esplicitamente.",
     "GitLab ist nicht konfiguriert (Projekt-ID oder API-Token fehlt).": "GitLab non è configurato (ID progetto o token API mancante).",
     "GitLab lehnt den API-Token ab (:status) — Token prüfen.": "GitLab rifiuta il token API (:status) — verificare il token.",
     "GitLab-API antwortet mit Fehlerstatus :status.": "L'API GitLab risponde con lo stato di errore :status.",
@@ -8,7 +10,6 @@
     "Numerische GitLab-Projekt-ID (Projektseite → Einstellungen → Allgemein).": "ID numerico del progetto GitLab (pagina del progetto → Impostazioni → Generale).",
     "Nur für On-Premise-Instanzen im eigenen Netz: erlaubt eine Instanz-URL mit privater/interner Adresse.": "Solo per istanze on-premise nella propria rete: consente un URL dell'istanza con indirizzo privato/interno.",
     "Optional: Secret Token des GitLab-Webhooks (Issue-Events, X-Gitlab-Token). Ohne Token bleibt der Webhook-Endpunkt deaktiviert; das Polling holt alles nach.": "Opzionale: secret token del webhook GitLab (eventi issue, X-Gitlab-Token). Senza token l'endpoint webhook resta disattivato; il polling recupera tutto.",
-    "Private Adressen erlauben": "Consenti indirizzi privati",
     "Project Access Token (empfohlen) oder Personal Access Token mit read_api-Scope.": "Project access token (consigliato) o personal access token con scope read_api.",
     "Schließt das verknüpfte Issue (mit Notiz), wenn die Aufgabe in workDiary erledigt wird, und öffnet es beim Wiedereröffnen. Titel und Beschreibung bleiben quellsystem-geführt. Der Token braucht Schreibzugriff auf Issues (api-Scope).": "Chiude l’issue collegata (con una nota) quando l’attività viene completata in workDiary e la riapre in caso di riapertura. Titolo e descrizione restano gestiti dal sistema di origine. Il token richiede accesso in scrittura alle issue (scope api).",
     "Verbunden mit GitLab als :login.": "Connesso a GitLab come :login.",

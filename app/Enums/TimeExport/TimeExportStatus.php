@@ -33,11 +33,11 @@ enum TimeExportStatus: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Preparing => __('In Vorbereitung'),
-            self::Ready => __('Bereit'),
-            self::Delivered => __('Übermittelt'),
-            self::Rejected => __('Abgelehnt'),
-            self::Superseded => __('Ersetzt'),
+            self::Preparing => __('enums.time_export.time_export_status.preparing'),
+            self::Ready => __('enums.time_export.time_export_status.ready'),
+            self::Delivered => __('enums.time_export.time_export_status.delivered'),
+            self::Rejected => __('enums.time_export.time_export_status.rejected'),
+            self::Superseded => __('enums.time_export.time_export_status.superseded'),
         };
     }
 

@@ -29,11 +29,11 @@ enum RentalCondition: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::New => (string) __('Neuwertig'),
-            self::Good => (string) __('Gut'),
-            self::Used => (string) __('Gebraucht'),
-            self::Worn => (string) __('Abgenutzt'),
-            self::Damaged => (string) __('Beschädigt'),
+            self::New => (string) __('enums.rental.rental_condition.new'),
+            self::Good => (string) __('enums.rental.rental_condition.good'),
+            self::Used => (string) __('enums.rental.rental_condition.used'),
+            self::Worn => (string) __('enums.rental.rental_condition.worn'),
+            self::Damaged => (string) __('enums.rental.rental_condition.damaged'),
         };
     }
 }

@@ -42,7 +42,7 @@ class GoogleCalendarPlugin extends AbstractPlugin implements CalendarPublisher {
     public const SERVICE_PROVIDER = GoogleCalendarServiceProvider::class;
 
     public function name(): string {
-        return 'Google Calendar';
+        return (string) __('google_calendar::google_calendar.title');
     }
 
     public function version(): string {
@@ -64,7 +64,7 @@ class GoogleCalendarPlugin extends AbstractPlugin implements CalendarPublisher {
      * Organisation idempotent in den Ziel-Kalender der Google-Verbindung.
      */
     public function publishCalendar(Organization $organization): array {
-        return $this->publishItems($organization, fn(): array => app(OrganizationEventSource::class)->itemsFor($organization));
+        return $this->publishItems($organization, fn(): array => app(OrganizationEventSource::class)->itemsFor($organization), removeOrphans: true);
     }
 
     /**
@@ -83,7 +83,7 @@ class GoogleCalendarPlugin extends AbstractPlugin implements CalendarPublisher {
      * @param  Closure(): list<RemoteCalendarEvent>  $items
      * @return array{published: int, deleted: int, unchanged: int, failed: int}
      */
-    private function publishItems(Organization $organization, Closure $items): array {
+    private function publishItems(Organization $organization, Closure $items, bool $removeOrphans = false): array {
         $counters = ['published' => 0, 'deleted' => 0, 'unchanged' => 0, 'failed' => 0];
 
         $connection = GoogleCalendarConnection::query()->where('organization_id', $organization->id)->first();
@@ -93,7 +93,7 @@ class GoogleCalendarPlugin extends AbstractPlugin implements CalendarPublisher {
 
         try {
             $gateway = new GoogleCalendarClient($connection);
-            $result = app(RemoteCalendarPublishService::class)->publish(self::ID, $connection, $gateway, $items());
+            $result = app(RemoteCalendarPublishService::class)->publish(self::ID, $connection, $gateway, $items(), removeOrphans: $removeOrphans);
             foreach ($counters as $key => $value) {
                 $counters[$key] = $value + $result[$key];
             }

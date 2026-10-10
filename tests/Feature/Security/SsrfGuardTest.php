@@ -89,6 +89,37 @@ final class SsrfGuardTest extends TestCase {
         $this->assertInstanceOf(PluginApiClient::class, $client);
     }
 
+    /**
+     * Die Meldung nennt den Weg, den es für das Plugin wirklich gibt — Clockify hat
+     * keine eigene Freigabe, nur die Betreiber-Liste; sie ist übersetzt (Phase 137).
+     */
+    public function test_meldung_nennt_den_vorhandenen_freigabeweg_in_der_sprache_des_nutzers(): void {
+        app()->setLocale('en');
+
+        try {
+            app(\App\Plugins\Support\PluginHttpFactory::class)->client('clockify', 'http://10.0.0.5');
+            $this->fail('Interne Adresse wurde nicht abgewiesen.');
+        } catch (RuntimeException $e) {
+            $this->assertStringContainsString('points to a private/internal address', $e->getMessage());
+            $this->assertStringContainsString(__('plugins.url_guard.hint_operator'), $e->getMessage());
+            $this->assertStringNotContainsString('Private Netzwerke erlauben', $e->getMessage());
+        }
+    }
+
+    /** GitLab sowie seit Phase 137 (E22) selbst gehostetes Kimai und OpenProject haben eine eigene Freigabe. */
+    public function test_plugin_mit_eigener_freigabe_nennt_deren_einstellung(): void {
+        app()->setLocale('de');
+
+        foreach (['gitlab', 'kimai', 'openproject'] as $plugin) {
+            try {
+                app(\App\Plugins\Support\PluginHttpFactory::class)->client($plugin, 'http://10.0.0.5');
+                $this->fail('Interne Adresse wurde nicht abgewiesen: ' . $plugin);
+            } catch (RuntimeException $e) {
+                $this->assertStringContainsString('„Private Adressen erlauben“', $e->getMessage(), $plugin);
+            }
+        }
+    }
+
     public function test_kern_dienste_laufen_durch_dieselbe_schranke(): void {
         $this->expectException(RuntimeException::class);
 

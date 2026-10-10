@@ -1,7 +1,7 @@
 ---
 title: "Learning platform"
 topic: learning.overview
-version: 5
+version: 6
 keywords:
     - e-learning
     - LMS
@@ -246,7 +246,9 @@ assignment stops with a message.
 ## Analytics and codetermination
 
 Course analytics show rates and outliers, not personal profiles. Rates appear
-from five enrolments onwards so that individuals cannot be inferred. Points,
+from five enrolments onwards so that individuals cannot be inferred. The export
+as PDF, CSV or Excel keeps the same threshold and requires the permission
+**Export reports**; administrators can always export. Points,
 badges and the leaderboard are off by default; the leaderboard additionally
 shows only those who explicitly agree.
 

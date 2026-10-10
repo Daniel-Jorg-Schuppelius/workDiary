@@ -14,7 +14,8 @@
   Feldbild, Text bleibt Text. Was hier fehlt, ist im Kurs unsichtbar —
   deshalb bekommt jeder Typ eine Darstellung.
 
-  Erwartet: $blocks (Liste), $mediaUrl (Closure attachment_id → URL|null).
+  Erwartet: $blocks (Liste), $mediaUrl (Closure attachment_id → URL|null);
+  $portal = true im Kundenportal: keine Verweise auf interne Seiten.
 --}}
 @php
     /** @var iterable<array<string, mixed>> $blocks */
@@ -22,6 +23,7 @@
     // Zustand und Ableitungen je Anhang; leer, wenn die Ansicht sie nicht
     // mitgibt (Autoren-Vorschau ohne Verarbeitung).
     $mediaState ??= [];
+    $portal ??= false;
 @endphp
 
 @foreach ($blocks as $block)
@@ -128,7 +130,7 @@
                         {{-- Qualitätswahl (MVP-1022): wechselt ohne Neuladen und gilt als Nutzerpräferenz. --}}
                         <div class="mt-1 flex justify-end">
                             <select class="select select-bordered select-xs" data-video-quality="{{ $videoId }}"
-                                    data-save-url="{{ route('learning.my.video-quality') }}"
+                                    @unless ($portal) data-save-url="{{ route('learning.my.video-quality') }}" @endunless
                                     aria-label="{{ __('media.label.quality') }}">
                                 @foreach ($variants as $variant)
                                     <option value="{{ $variant['variant'] }}" data-src="{{ $variant['url'] }}" @selected($variant['variant'] === ($media['variant'] ?? null))>{{ $variant['variant'] }}</option>
@@ -343,7 +345,8 @@
             @break
 
         @case(\App\Enums\Learning\LearningBlockKind::Knowledge)
-            @php $article = \App\Models\Knowledge\KnowledgeArticle::query()->find($block['knowledge_article_id'] ?? null); @endphp
+            {{-- Die Wissensdatenbank ist intern; im Portal führte der Verweis auf die Anmeldung. --}}
+            @php $article = $portal ? null : \App\Models\Knowledge\KnowledgeArticle::query()->find($block['knowledge_article_id'] ?? null); @endphp
             @if ($article)
                 <p class="mt-3 text-sm">
                     <x-icon name="menu_book" class="text-muted" />

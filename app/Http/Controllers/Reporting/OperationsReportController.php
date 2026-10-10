@@ -15,7 +15,7 @@ use App\Enums\Task\{TaskPriority, TaskStatus};
 use App\Enums\Tour\TourStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, RequiresTeamReportAccess, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\Classification\EntryType;
 use App\Models\Customer\Customer;
 use App\Models\Diary\{DiaryEntry, Tour};
@@ -38,6 +38,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 class OperationsReportController extends Controller {
     use RendersReportPdf;
+    use RequiresTeamReportAccess;
     use ResolvesGlobalDateRange;
     use ResolvesReportScope;
     use ResolvesStandardReportFilters;
@@ -55,6 +56,11 @@ class OperationsReportController extends Controller {
         'problem' => [DiaryStatus::WaitingCustomer, DiaryStatus::WaitingMaterial],
         'done' => [DiaryStatus::Completed, DiaryStatus::AcceptedFinal, DiaryStatus::Invoiced],
     ];
+
+    /** E10: Sicht „Nur eigene“. */
+    protected function exportIsPersonal(Request $request): bool {
+        return $this->resolveScopeWithAdmin($request)[0] === 'mine';
+    }
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
@@ -387,7 +393,8 @@ class OperationsReportController extends Controller {
     /**
      * Backlog (offene Service-Aufträge, Gruppen open/in_progress/problem) je
      * Kunde — Top 15; Drilldown in die Offene-Punkte-Liste des Kunden
-     * (Drilldown-Controller liest die Legacy-Parameternamen customer_id/…).
+     * (Drilldown-Controller liest die Legacy-Parameternamen customer_id/…),
+     * nur mit dem Recht, das der Drilldown verlangt — sonst endete der Klick in 403.
      *
      * @return list<array{x: string, y: int, url?: string}>
      */
@@ -418,6 +425,7 @@ class OperationsReportController extends Controller {
 
         arsort($byCustomer);
         $byCustomer = array_slice($byCustomer, 0, 15, true);
+        $drilldown = self::mayViewTeamReports(Auth::user());
 
         $names = Customer::query()
             ->whereIn('id', array_filter(array_keys($byCustomer)))
@@ -429,7 +437,7 @@ class OperationsReportController extends Controller {
                 'x' => $cid > 0 ? (string) ($names[$cid] ?? ('#' . $cid)) : (string) __('Ohne Kunde'),
                 'y' => $count,
             ];
-            if ($cid > 0) {
+            if ($cid > 0 && $drilldown) {
                 $point['url'] = route('reports.customers.drilldown.open-issues', array_filter([
                     'customer_id' => Sqid::encode(Customer::class, $cid),
                     'project_id' => Sqid::encode(Project::class, $filters->projectId),
@@ -451,35 +459,40 @@ class OperationsReportController extends Controller {
     private function exportCsv(array $orders, array $tasks, array $tours, string $from, string $to, Request $request, array $exportFilters): Response {
         $filename = sprintf('operations_%s_%s.csv', $from, $to);
         $rows = [];
-        $rows[] = ['Bereich', 'Kennzahl', 'Wert'];
-        $rows[] = ['Service-Aufträge', 'Gesamt', $orders['total']];
-        $rows[] = ['Service-Aufträge', 'Servicezeit (min)', $orders['service_minutes']];
+        $ordersLabel = (string) __('reporting.csv.service_orders');
+        $tasksLabel = (string) __('reporting.csv.tasks');
+        $toursLabel = (string) __('reporting.csv.tours');
+        $totalLabel = (string) __('reporting.csv.total');
+        $completionLabel = (string) __('reporting.csv.completion_rate_percent');
+        $rows[] = [(string) __('reporting.csv.area'), (string) __('reporting.csv.metric'), (string) __('reporting.csv.value')];
+        $rows[] = [$ordersLabel, $totalLabel, $orders['total']];
+        $rows[] = [$ordersLabel, (string) __('reporting.csv.service_minutes'), $orders['service_minutes']];
         foreach ($orders['by_status'] as $st => $c) {
-            $rows[] = ['Service-Aufträge', 'Status: ' . $st, $c];
+            $rows[] = [$ordersLabel, (string) __('reporting.csv.status_of', ['status' => $st]), $c];
         }
         foreach ($orders['by_priority'] as $p => $c) {
-            $rows[] = ['Service-Aufträge', 'Priorität: ' . $p, $c];
+            $rows[] = [$ordersLabel, (string) __('reporting.csv.priority_of', ['priority' => $p]), $c];
         }
-        $rows[] = ['Service-Aufträge', 'Abschlussquote %', $orders['completion_rate'] !== null ? NumberHelper::toUSFormat($orders['completion_rate'] * 100, 1) : ''];
+        $rows[] = [$ordersLabel, $completionLabel, $orders['completion_rate'] !== null ? NumberHelper::toUSFormat($orders['completion_rate'] * 100, 1) : ''];
 
-        $rows[] = ['Tasks', 'Gesamt', $tasks['total']];
-        $rows[] = ['Tasks', 'Überfällig', $tasks['overdue']];
+        $rows[] = [$tasksLabel, $totalLabel, $tasks['total']];
+        $rows[] = [$tasksLabel, (string) __('reporting.csv.overdue'), $tasks['overdue']];
         foreach ($tasks['by_status'] as $st => $c) {
-            $rows[] = ['Tasks', 'Status: ' . $st, $c];
+            $rows[] = [$tasksLabel, (string) __('reporting.csv.status_of', ['status' => $st]), $c];
         }
         foreach ($tasks['by_priority'] as $p => $c) {
-            $rows[] = ['Tasks', 'Priorität: ' . $p, $c];
+            $rows[] = [$tasksLabel, (string) __('reporting.csv.priority_of', ['priority' => $p]), $c];
         }
-        $rows[] = ['Tasks', 'Abschlussquote %', $tasks['completion_rate'] !== null ? NumberHelper::toUSFormat($tasks['completion_rate'] * 100, 1) : ''];
+        $rows[] = [$tasksLabel, $completionLabel, $tasks['completion_rate'] !== null ? NumberHelper::toUSFormat($tasks['completion_rate'] * 100, 1) : ''];
 
-        $rows[] = ['Touren', 'Gesamt', $tours['total']];
-        $rows[] = ['Touren', 'Abgeschlossen', $tours['completed']];
-        $rows[] = ['Touren', 'Plan-km Σ', NumberHelper::toUSFormat($tours['planned_distance_km'], 2)];
-        $rows[] = ['Touren', 'Plan-Minuten Σ', $tours['planned_minutes']];
+        $rows[] = [$toursLabel, $totalLabel, $tours['total']];
+        $rows[] = [$toursLabel, (string) __('reporting.csv.completed'), $tours['completed']];
+        $rows[] = [$toursLabel, (string) __('reporting.csv.planned_km_total'), NumberHelper::toUSFormat($tours['planned_distance_km'], 2)];
+        $rows[] = [$toursLabel, (string) __('reporting.csv.planned_minutes_total'), $tours['planned_minutes']];
         foreach ($tours['per_user'] as $u) {
             $rows[] = [
-                'Touren',
-                'User: ' . $u['user']->name . ' (km / Min / Anz)',
+                $toursLabel,
+                (string) __('reporting.csv.user_tours', ['name' => $u['user']->name]),
                 sprintf('%s / %d / %d', NumberHelper::toUSFormat($u['distance_km'], 2), $u['minutes'], $u['count']),
             ];
         }

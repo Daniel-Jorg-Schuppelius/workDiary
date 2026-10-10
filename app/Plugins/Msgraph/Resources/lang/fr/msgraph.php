@@ -11,7 +11,7 @@
 return [
     'title' => 'Microsoft 365',
     'calendar_heading' => 'Calendrier',
-    'intro' => 'Les rendez-vous WorkDiary sont publiés via Microsoft Graph dans un calendrier du compte Microsoft 365 connecté. WorkDiary reste maître ; les rendez-vous annulés y disparaissent et les exécutions répétées ne créent jamais de doublons. Les rendez-vous externes ne sont jamais lus.',
+    'intro' => 'Les rendez-vous WorkDiary sont publiés via Microsoft Graph dans un calendrier du compte Microsoft 365 connecté. WorkDiary reste maître ; les rendez-vous annulés et supprimés y disparaissent et les exécutions répétées ne créent jamais de doublons. WorkDiary ne lit les rendez-vous externes qu\'avec la réimportation bidirectionnelle activée et ne les reprend jamais sans demander ; il crée des propositions dans la boîte d\'intégration.',
     'plugin_description' => 'Publie les rendez-vous de manière idempotente dans un calendrier Microsoft 365 (Microsoft Graph, OAuth2) — publication seule, calendrier cible sélectionnable.',
     'not_configured_hint' => 'MSGRAPH_CLIENT_ID/SECRET (et MSGRAPH_TENANT si nécessaire) ne sont pas définis — la connexion nécessite d\'abord un enregistrement d\'application dans le tenant Microsoft.',
 
@@ -100,9 +100,11 @@ return [
         'redirect_mail' => 'Envoi d\'e-mails',
         'redirect_contacts' => 'Contacts',
         'redirect_tasks' => 'Tâches (To Do)',
+        'redirect_onenote' => 'OneNote',
         'redirect_intake' => 'Réception de documents',
         'redirect_adminconsent' => 'Admin consent',
         'redirect_backup' => 'Cible de sauvegarde (application d\'instance uniquement)',
+        'redirect_sharepoint' => 'Stockage SharePoint',
     ],
 
     // Titel der Inbox-Einträge des Kalenderimports — ein remote

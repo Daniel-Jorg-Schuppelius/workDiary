@@ -12,10 +12,12 @@ declare(strict_types=1);
 
 namespace App\Services\Accounting\Filing;
 
+use App\Enums\Finance\DirectBookingKind;
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingProfile, AccountingVatExtension};
 use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{JournalService, VatFilingProfileResolver};
 use App\Services\Accounting\Reports\VatPreviewBuilder;
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Validation\ValidationException;
@@ -103,22 +105,40 @@ class VatSpecialPrepaymentService {
             ]);
         }
 
-        $entry = $this->journal->postDirect($organization, [
+        // Die Verlängerung erfährt von der Zahlung erst beim Festschreiben
+        // (completeFromEntry) — bei Vier-Augen also nach der Freigabe.
+        return $this->journal->postDirectOrSubmit($organization, [
             'booked_on' => $bookedOn,
             'memo' => (string) __('accounting.filing.prepayment_memo', ['year' => (string) $year]),
+            'source_type' => $extension->getMorphClass(),
+            'source_id' => (int) $extension->getKey(),
             'source_key' => $extension->prepaymentSourceKey(),
             'lines' => [
                 ['accounting_account_id' => $prepaymentAccount->id, 'debit' => $amount, 'credit' => '0.00'],
                 ['accounting_account_id' => $moneyAccount->id, 'debit' => '0.00', 'credit' => $amount],
             ],
-        ], $actor);
+        ], $actor, DirectBookingKind::VatSpecialPrepayment);
+    }
 
-        $extension->update([
-            'special_prepayment_amount' => $amount,
-            'special_prepayment_entry_id' => $entry->id,
-        ]);
+    /**
+     * Festgeschriebene Sondervorauszahlung an der Dauerfristverlängerung
+     * vermerken. Angerechnet wird nur, was gebucht ist (§ 48 Abs. 4 UStDV) —
+     * deshalb hier und nicht schon beim Entwurf.
+     */
+    public function completeFromEntry(AccountingEntry $entry): void {
+        if (DirectBookingKind::of($entry) !== DirectBookingKind::VatSpecialPrepayment
+            || ! MorphMap::is($entry->source_type, AccountingVatExtension::class)) {
+            return;
+        }
 
-        return $entry;
+        AccountingVatExtension::query()
+            ->where('organization_id', $entry->organization_id)
+            ->whereKey((int) $entry->source_id)
+            ->first()
+            ?->update([
+                'special_prepayment_amount' => $entry->debitTotal()->getAmount(),
+                'special_prepayment_entry_id' => $entry->id,
+            ]);
     }
 
     /**

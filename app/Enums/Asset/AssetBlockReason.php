@@ -36,16 +36,16 @@ enum AssetBlockReason: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Defect => (string) __('Defekt'),
-            self::Safety => (string) __('Arbeitsschutz'),
-            self::Recall => (string) __('Rückruf'),
-            self::InspectionOverdue => (string) __('Prüfung überfällig'),
-            self::InspectionFailed => (string) __('Prüfung nicht bestanden'),
-            self::RentalDamage => (string) __('Verleihschaden'),
-            self::PolicyHold => (string) __('Interne Sperre'),
-            self::Manual => (string) __('Manuell gesperrt'),
-            self::Maintenance => (string) __('Wartung'),
-            self::Other => (string) __('Sonstiger Grund'),
+            self::Defect => (string) __('enums.asset.asset_block_reason.defect'),
+            self::Safety => (string) __('enums.asset.asset_block_reason.safety'),
+            self::Recall => (string) __('enums.asset.asset_block_reason.recall'),
+            self::InspectionOverdue => (string) __('enums.asset.asset_block_reason.inspection_overdue'),
+            self::InspectionFailed => (string) __('enums.asset.asset_block_reason.inspection_failed'),
+            self::RentalDamage => (string) __('enums.asset.asset_block_reason.rental_damage'),
+            self::PolicyHold => (string) __('enums.asset.asset_block_reason.policy_hold'),
+            self::Manual => (string) __('enums.asset.asset_block_reason.manual'),
+            self::Maintenance => (string) __('enums.asset.asset_block_reason.maintenance'),
+            self::Other => (string) __('enums.asset.asset_block_reason.other'),
         };
     }
 }

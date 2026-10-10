@@ -220,6 +220,12 @@
         {{-- raw-markup-ok: Hinweis am Formularfeld, kein Leerzustand einer Liste --}}
         <p class="text-sm text-muted">{{ __('Kein Datum erfasst — erscheint im Backlog und kann später terminiert werden.') }}</p>
     </div>
+
+    {{-- Geplante Dauer (E13, MVP-1101): Plan für Plan/Ist; leer = aus Zeitfenster bzw. Termin abgeleitet. --}}
+    <x-input-field name="planned_duration" :label="__('diary.planned_duration.label')" inputmode="numeric"
+                   pattern="^\d{1,3}:[0-5]\d$" placeholder="1:30" :hint="__('diary.planned_duration.hint')"
+                   :value="old('planned_duration', $entry?->planned_minutes !== null ? \CommonToolkit\ValueObjects\Duration::ofMinutes($entry->planned_minutes)->toClock() : '')" />
+    @error('planned_minutes')<p class="text-error text-sm">{{ $message }}</p>@enderror
 </x-form-group>
 
 {{-- Kunde / zugewiesener Benutzer: immer verfügbar (Server erlaubt Kunde

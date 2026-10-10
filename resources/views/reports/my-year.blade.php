@@ -59,9 +59,9 @@
         <x-filter-field :label="__('Art')" for="rep-kind">
             <select id="rep-kind" name="kind" class="select select-sm select-bordered" data-autosubmit>
                 <option value="all" @selected($kind === 'all')>{{ __('Alle') }}</option>
-                <option value="work" @selected($kind === 'work')>{{ __('Arbeit') }}</option>
-                <option value="travel" @selected($kind === 'travel')>{{ __('Reise') }}</option>
-                <option value="standby" @selected($kind === 'standby')>{{ __('Bereitschaft') }}</option>
+                @foreach (\App\Enums\TimeEntry\TimeEntryKind::options() as $kindValue => $kindLabel)
+                    <option value="{{ $kindValue }}" @selected($kind === $kindValue)>{{ $kindLabel }}</option>
+                @endforeach
             </select>
         </x-filter-field>
     </x-filter-bar>

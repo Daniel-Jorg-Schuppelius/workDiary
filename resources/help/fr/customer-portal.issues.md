@@ -1,7 +1,7 @@
 ---
 title: "Points ouverts"
 topic: customer-portal.issues
-version: 2
+version: 3
 keywords:
     - points ouverts
     - liste des réserves
@@ -24,7 +24,7 @@ Les points ouverts sont des tâches, des défauts ou des questions à clarifier 
 
 ## Comment ouvrir la page
 
-Sur l'**Aperçu**, cliquez sur la tuile **Points ouverts**. Le chiffre de la tuile indique les points qui ne sont pas encore clôturés. La tuile apparaît si votre prestataire a libéré cette zone pour vous. Avec la même libération, le menu affiche aussi **Erreurs connues** ; cette liste est décrite dans la rubrique d'aide consacrée aux tickets.
+Sur l'**Aperçu**, cliquez sur la tuile **Points ouverts**. Le chiffre de la tuile indique les points qui ne sont pas encore clôturés. La tuile apparaît si votre prestataire a libéré cette zone pour vous. La liste **Erreurs connues** relève de l'espace Tickets et est décrite dans la rubrique d'aide consacrée aux tickets.
 
 ## Ce qu'affiche un point
 

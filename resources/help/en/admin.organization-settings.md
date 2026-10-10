@@ -1,7 +1,7 @@
 ---
 title: "Organization and settings"
 topic: admin.organization-settings
-version: 1
+version: 3
 keywords:
     - company settings
     - tenant settings
@@ -188,7 +188,8 @@ them. The first eight rules concern shift planning:
   vacation.
 - **Qualification match**: the person lacks a qualification that the staffing
   requirement of the shift demands.
-- **Holiday booking**: the shift falls on a holiday maintained under
+- **Holiday booking**: the shift falls on a public holiday of the holiday
+  region (**Region & holidays** tab) or on one of your own holidays under
   **Holidays**.
 
 The last four check the clockings and create unclear cases in the ArbZG
@@ -216,14 +217,15 @@ applies to all tabs. The following sections are in the order of the tabs.
 ## Lists
 
 How many entries a list shows per page, each from 1 to 500: **Timesheets**,
-**Duty plans**, **Customers**, **Tours**, **Vehicles**, **Tags**,
-**Organizations** (the platform operations list) and the three lists of the
-remote support inbox (**Remote support inbox: unassigned devices**, **Remote
-support inbox: multi-customer devices**, **Remote support inbox: sessions per
-device card**). The fields **Customer search (type-ahead)**, **Customer
-attachments**, **Archive** and **Dashboard: recent items** currently have no
-effect; how many recently used entries the dashboard shows is set in the
-**Interface** tab.
+**Duty plans**, **Customers** (also suppliers and third-party customers),
+**Tours**, **Vehicles**, **Tags**, **Archive** (each tab of the archive page),
+**Notifications, operations tasks, maintenance windows, problem reports** and
+the three lists of the remote support inbox (**Remote support inbox:
+unassigned devices**, **Remote support inbox: multi-customer devices**,
+**Remote support inbox: sessions per device card**). How many recently used
+entries the dashboard shows is set in the **Interface** tab. The list size of
+the platform operations' organization overview is a system setting under
+**Settings (registry)**.
 
 ## Invoicing
 
@@ -295,9 +297,14 @@ Three fields also affect all locally created invoices:
   non-EU invoices.
 - **Payment term (days)** (0–365): applies when neither the invoice nor the
   customer has a payment term; empty or 0 = 14 days.
-- **Small business (§ 19 UStG)**: invoices show no VAT and carry the note “No
-  VAT in accordance with § 19 UStG (German small business scheme).”; the
-  XRechnung receives tax category E (exempt).
+- **Small business (§ 19 UStG)**: all invoices that workDiary creates show no
+  VAT and carry the note “No VAT in accordance with § 19 UStG (German small
+  business scheme).”; the XRechnung receives tax category E (exempt). The tick
+  takes precedence over **Default tax rate (%)** and reverse charge.
+
+## Accounting: four-eyes principle
+
+The **Four-eyes principle** switch in the **Accounting** group requires a second person to approve: whoever prepares an entry or a direct booking (cash discount, write-off, clearing booking, internal transfer, opening balances, special prepayment) does not post it themselves; whoever compiles a SEPA payment run does not release it themselves. Direct bookings are then created as drafts in the **Posting inbox** and only take effect once posted. Without the switch, WorkDiary posts them immediately.
 
 ## Fixed assets: low-value assets and pool
 
@@ -425,8 +432,6 @@ cut off.
   20, 30 or 60 (default 30).
 - **Dashboard** – **Number of recent items** (default 5): how many recently
   used entries the dashboard shows.
-- **Search** – **Default result limit** (default 20): currently has no
-  effect.
 
 ## Nominatim (geocoding)
 
@@ -499,8 +504,9 @@ with a stop at that customer; the position carries the date of the tour. Cancell
 travel already billed do not count.
 
 - **Mode**: **Flat rate** or **Kilometers**.
-- **Item text** (up to 50 characters, default “Anfahrt”): text of the invoice
-  position, supplemented by the date or the kilometers.
+- **Item text** (up to 50 characters, default “Travel” in the language of the
+  billing): text of the invoice position, supplemented by the date or the
+  kilometers.
 - **Flat rate (net €)**: amount per trip in **Flat rate** mode; without an
   amount, no position is created.
 - **Rate (€/km)**: price per kilometer in **Kilometers** mode.
@@ -534,7 +540,8 @@ including:
 - holiday surcharges and customer agreements with a holiday rule;
 - working days of vacation and sickness, the vacation account and the
   flexitime target;
-- the ArbZG evaluation, for example for work on public holidays;
+- the ArbZG evaluation, for example for work on public holidays, and the
+  duty plan rule **Holiday booking**;
 - the calendar, week view, duty plan, absence calendar and **Current
   presence** views;
 - SLA deadlines in the helpdesk and filing deadlines of tax returns, which
@@ -602,8 +609,9 @@ organization.
   active — non-administrators currently see a maintenance page.” at the top,
   with the **Settings** link back to this dialog.
 - **Notice shown on the maintenance page** (up to 300 characters).
-- **Expected end** (optional): after this time the maintenance mode ends
-  automatically; the notice shows it as “Until: …”.
+- **Expected end** (optional, in your local time): after this time the
+  maintenance mode ends automatically; the notice shows it as “Until: …”, the
+  maintenance page as “Expected available again: …”.
 - **Also pause terminal/webhook ingest** (off by default): without this tick,
   clock-in terminals as well as telephony and location ingest keep running
   during maintenance.

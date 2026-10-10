@@ -12,7 +12,7 @@ namespace App\Models\Inventory;
 
 use App\Casts\{MoneyCast, QuantityCast};
 use App\Enums\Manufacturing\{DeliveryFacturationStatus, DeliveryStockStatus};
-use App\Enums\Shipping\ShipmentExportReason;
+use App\Enums\Shipping\{ShipmentExportReason, ShipmentStatus};
 use App\Models\Article\ArticleVariant;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Contracts\AuditsChanges;
@@ -116,9 +116,14 @@ class StockDelivery extends Model implements AuditsChanges {
         return $this->hasMany(InvoiceItem::class, 'stock_delivery_id');
     }
 
-    /** @return HasOne<Shipment, $this> Versandauftrag zu dieser Auslieferung (Feature 059, Rang 20). */
+    /**
+     * Versandauftrag zu dieser Auslieferung (Feature 059, Rang 20). Ein
+     * stornierter zählt nicht — danach darf ein neuer entstehen (MVP-1095).
+     *
+     * @return HasOne<Shipment, $this>
+     */
     public function shipment(): HasOne {
-        return $this->hasOne(Shipment::class);
+        return $this->hasOne(Shipment::class)->where('status', '!=', ShipmentStatus::Cancelled->value);
     }
 
     /** @return HasMany<ShipmentParcel, $this> Packstücke (MVP-900). */

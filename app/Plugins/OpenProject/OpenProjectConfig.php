@@ -19,7 +19,7 @@ use App\Plugins\Support\PluginSettingsResolver;
  */
 class OpenProjectConfig {
     /**
-     * @return array{enabled: bool, api_token: ?string, base_url: ?string, sync_window_days: int, default_billable: bool, default_user_id: ?int, default_activity_id: ?int, create_missing_projects: bool, writeback: bool, push_on_create: bool}
+     * @return array{enabled: bool, api_token: ?string, base_url: ?string, allow_private_network: bool, sync_window_days: int, default_billable: bool, default_user_id: ?int, default_activity_id: ?int, create_missing_projects: bool, writeback: bool, push_on_create: bool}
      */
     public static function resolve(?int $organizationId = null): array {
         $r = PluginSettingsResolver::for(OpenProjectPlugin::ID, $organizationId);
@@ -28,6 +28,7 @@ class OpenProjectConfig {
             'enabled' => $r->enabled(),
             'api_token' => $r->string('api_token'),
             'base_url' => self::normalizeBaseUrl($r->string('base_url')),
+            'allow_private_network' => $r->bool('allow_private_network', false),
             'sync_window_days' => max(1, $r->int('sync_window_days', 30)),
             'default_billable' => $r->bool('default_billable', true),
             'default_user_id' => $r->intOrNull('default_user_id'),

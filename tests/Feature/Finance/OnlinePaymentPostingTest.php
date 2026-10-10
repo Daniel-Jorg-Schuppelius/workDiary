@@ -16,7 +16,7 @@ use App\Models\Accounting\AccountingPostingRule;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\{Invoice, OnlinePayment};
 use App\Models\Platform\{Organization, User};
-use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService};
+use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService};
 use App\Services\Accounting\Posting\Adapters\OnlinePaymentAdapter;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
@@ -148,7 +148,7 @@ final class OnlinePaymentPostingTest extends TestCase {
         $to = CarbonImmutable::parse('2026-06-30');
 
         $entry = $inbox->prepare($this->org, app(OnlinePaymentAdapter::class)->proposalFor($this->org, $payment), $admin);
-        $inbox->post($entry, $admin);
+        app(JournalService::class)->post($entry, $admin);
         $this->assertCount(0, $inbox->items($this->org, $from, $to, PostingSourceKind::OnlinePayment));
 
         $payment->forceFill(['refunded_amount' => '19.00', 'status' => OnlinePaymentStatus::Refunded])->save();

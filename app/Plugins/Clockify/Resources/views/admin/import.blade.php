@@ -21,12 +21,15 @@
         'subtitle' => __('Zeiteinträge aus einem Clockify-Detailed-Report übernehmen.'),
         'csv_hint' => __('Clockify → Reports → Detailed → Export → CSV. Clients/Projekte werden über Namen bzw. gemerkte Zuordnungen gematcht; nicht Zuordenbares landet in der Zuordnungs-Inbox. Für Free-Konten (30 API-Requests/h) ist CSV der empfohlene Weg.'),
         'api_title' => __('Direkt aus der Clockify-API importieren'),
-        'api_hint' => __('Holt Zeiteinträge aller Benutzer über die Reports-API (X-Api-Key). Ohne Zeitraum werden die letzten :days Tage abgefragt; bereits importierte Einträge werden übersprungen.', ['days' => $syncWindowDays]),
+        'api_hint' => __('Holt Zeiteinträge aller Benutzer über die Reports-API (X-Api-Key). Mit hinterlegtem API-Key läuft dieser Import stündlich von selbst; hier stoßen Sie ihn sofort an. Ohne Zeitraum werden die letzten :days Tage abgefragt; bereits importierte Einträge werden übersprungen.', ['days' => $syncWindowDays]),
         'api_missing' => __('Kein API-Key hinterlegt. API-Key (und optional Workspace-ID) in den Plugin-Einstellungen konfigurieren.'),
         'export_title' => __('Zeiten nach Clockify übertragen'),
         'export_hint' => __('Überträgt in workDiary erfasste Zeiten gemappter Projekte nach Clockify (z. B. Fernwartungssitzungen). Angelegt wird für den Inhaber des API-Keys; bereits übertragene oder aus Clockify importierte Einträge werden übersprungen, die Einträge bleiben lokal abrechenbar.'),
         'export_confirm' => __('Übertragung jetzt ausführen? Es werden Zeiteinträge in Clockify angelegt.'),
         'export_action' => __('Nach Clockify übertragen'),
+        'webhook_title' => __('Webhook (optional)'),
+        'webhook_hint' => __('Damit neue Einträge sofort ankommen, in Clockify (Workspace-Einstellungen → Webhooks) einen Webhook auf diese Adresse anlegen und dessen Signatur-Token in den Plugin-Einstellungen unter „Webhook-Secret“ hinterlegen. Die Workspace-ID muss dort ebenfalls gesetzt sein. Der stündliche Abruf bleibt die verlässliche Quelle.'),
     ],
+    'webhookUrl' => route('api.webhooks.clockify'),
 ])
 @endsection

@@ -1,7 +1,7 @@
 ---
 title: "Termin anfragen"
 topic: customer-portal.appointments
-version: 2
+version: 4
 keywords:
     - Termin buchen
     - Online-Terminbuchung
@@ -21,7 +21,7 @@ related:
     - customer-portal.diary
 ---
 
-Auf der Seite **Termin anfragen** wählen Sie eine Leistung und ein freies Zeitfenster und schicken Ihrem Auftragnehmer damit eine Terminanfrage. Fest ist der Termin erst, wenn Ihr Auftragnehmer ihn bestätigt. Die Seite steht Ihnen zur Verfügung, wenn Ihr Auftragnehmer die Online-Terminbuchung für Sie freigegeben hat.
+Auf der Seite **Termin anfragen** wählen Sie eine Leistung und ein freies Zeitfenster und schicken Ihrem Auftragnehmer damit eine Terminanfrage. Fest ist der Termin erst, wenn Ihr Auftragnehmer ihn bestätigt. Die Seite steht Ihnen zur Verfügung, wenn Ihr Auftragnehmer die Online-Terminbuchung für Sie freigegeben hat. Sie öffnen sie dann über **Termin anfragen** im Menü des Portals.
 
 ## Zeitfenster suchen
 
@@ -29,7 +29,7 @@ Auf der Seite **Termin anfragen** wählen Sie eine Leistung und ein freies Zeitf
 2. Wählen Sie unter **Datum** einen Tag. Bleibt das Feld leer, zeigt das Portal den frühestmöglichen Tag.
 3. Klicken Sie auf **Fenster anzeigen**.
 
-Unter der Auswahl erscheinen die Beschreibung der Leistung, sofern hinterlegt, und die freien Zeitfenster des Tages als Knöpfe, zum Beispiel „09:00–10:00“. Angezeigt werden höchstens zwölf Fenster je Tag im Halbstundenraster.
+Unter der Auswahl erscheinen die Beschreibung der Leistung, sofern hinterlegt, und die freien Zeitfenster des Tages als Knöpfe, zum Beispiel „09:00–10:00“. Angezeigt werden höchstens zwölf Fenster je Tag im Halbstundenraster. Darunter steht die Stornofrist der Leistung, zum Beispiel **Stornieren ist bis 24 Stunden vor Terminbeginn möglich.**
 
 Die Fenster ergeben sich aus der freien Zeit der Mitarbeitenden Ihres Auftragnehmers. Verlangt eine Leistung eine besondere Qualifikation, zählen nur Mitarbeitende, die sie am Termintag besitzen. Jede Leistung hat außerdem eine Vorlaufzeit: Zeitfenster, die zu kurzfristig liegen, werden nicht angeboten.
 
@@ -37,7 +37,7 @@ Erscheint **An diesem Tag sind keine Fenster frei — bitte einen anderen Tag w�
 
 ## Termin anfragen
 
-Klicken Sie auf das gewünschte Zeitfenster. Die Anfrage wird sofort gesendet, ohne weitere Rückfrage. Das Portal meldet **Terminanfrage gesendet — wir bestätigen verbindlich.**, und die Anfrage steht unter **Meine Anfragen** mit dem Status **angefragt**.
+Klicken Sie auf das gewünschte Zeitfenster. Die Anfrage wird sofort gesendet, ohne weitere Rückfrage. Das Portal meldet **Terminanfrage gesendet — wir bestätigen verbindlich.**, und die Anfrage steht unter **Meine Anfragen** mit dem Status **angefragt**. Ihr Auftragnehmer wird über die neue Anfrage benachrichtigt.
 
 Ist das Fenster inzwischen zu kurzfristig, weil die Vorlaufzeit unterschritten ist, nimmt das Portal die Anfrage nicht an und nennt die Vorlaufzeit in Stunden. Wählen Sie dann ein späteres Fenster.
 
@@ -60,9 +60,11 @@ Die Liste zeigt alle Anfragen Ihres Zugangs, die neueste oben, mit:
 
 ## Anfrage stornieren
 
-Angefragte und bestätigte Termine sagen Sie mit **Stornieren** selbst ab, solange die Stornofrist der Leistung nicht unterschritten ist. Die Frist legt Ihr Auftragnehmer je Leistung fest; ohne eigene Angabe sind es 24 Stunden vor Terminbeginn. Nach dem Stornieren meldet das Portal **Terminanfrage storniert.**, und die Anfrage trägt den Status **storniert**.
+Angefragte und bestätigte Termine sagen Sie mit **Stornieren** selbst ab, solange die Stornofrist der Leistung nicht abgelaufen ist. Die Frist legt Ihr Auftragnehmer je Leistung fest; ohne eigene Angabe sind es 24 Stunden vor Terminbeginn. Unter dem Knopf steht, bis wann Sie stornieren können, zum Beispiel **Stornierbar bis** mit Datum und Uhrzeit.
 
-Ist die Frist unterschritten, erscheint **Die Stornofrist von … Stunden ist unterschritten — bitte rufen Sie uns an.** Rufen Sie dann Ihren Auftragnehmer an. Abgelehnte und schon stornierte Anfragen lassen sich nicht stornieren.
+Nach dem Stornieren meldet das Portal **Terminanfrage storniert.**, die Anfrage trägt den Status **storniert**, und Ihr Auftragnehmer wird benachrichtigt. War der Termin schon bestätigt, wird auch der eingeplante Auftrag storniert; im **Auftragsbuch** steht er dann auf **Storniert**.
+
+Ist die Frist abgelaufen, steht statt des Knopfs **Stornofrist abgelaufen**. Läuft sie ab, während die Seite offen ist, meldet das Portal beim Klick **Die Stornofrist von … Stunden ist unterschritten — bitte rufen Sie uns an.** Arbeitet Ihr Auftragnehmer bereits an dem Auftrag, nimmt das Portal die Stornierung nicht an und meldet **Dieser Termin wird bereits bearbeitet — bitte rufen Sie uns an.** Rufen Sie in beiden Fällen Ihren Auftragnehmer an. Abgelehnte und schon stornierte Anfragen lassen sich nicht stornieren.
 
 ## Grenzen
 

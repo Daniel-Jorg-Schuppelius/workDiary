@@ -1,7 +1,7 @@
 ---
 title: "Objetos"
 topic: customer-portal.assets
-version: 2
+version: 3
 keywords:
     - equipos
     - instalaciones
@@ -14,6 +14,7 @@ keywords:
     - actas de inspección
     - próximo mantenimiento
     - plan de mantenimiento
+    - protocolo PDF
 audience: []
 related:
     - customer-portal.overview
@@ -25,8 +26,8 @@ related:
 
 En **Objetos** ve los equipos e instalaciones que su proveedor gestiona para
 su empresa: con sus fechas de inspección y mantenimiento, los mantenimientos
-realizados y los protocolos liberados para usted. La vista es de solo
-lectura.
+realizados y los protocolos firmados liberados para usted. La vista es de
+solo lectura; los protocolos los descarga en PDF.
 
 ## La lista de objetos
 
@@ -45,15 +46,28 @@ secciones:
   más próximo primero. Sin plan aparece **No hay citas registradas.**
 - **Mantenimientos completados** – los mantenimientos realizados con
   denominación y fecha.
-- **Protocolos** – los protocolos del objeto que su proveedor ha liberado
-  para usted, con título, estado (por ejemplo **Firmado**) y fecha, el más
-  reciente primero. La lista nombra los protocolos; aquí no se pueden abrir
-  ni descargar.
+- **Protocolos** – los protocolos firmados del objeto que su proveedor ha
+  liberado para usted, con título, estado y fecha, el más reciente primero,
+  cada uno con **Descargar PDF**. Si no hay ninguno, aparece
+  **No hay protocolos aprobados.**
+
+## Descargar protocolos
+
+El portal solo muestra protocolos firmados; los borradores y los protocolos en
+revisión aparecen una vez firmados. El estado indica **Firmado**, en
+protocolos más antiguos también **Archivado** o **Reemplazado**. Con
+**Reemplazado**, su proveedor ha elaborado una versión corregida, que aparece
+en cuanto está firmada.
+
+Con **Descargar PDF** obtiene el protocolo en su versión firmada como archivo
+PDF. Cada descarga queda registrada en el protocolo, de modo que su proveedor
+puede ver cuándo se descargó a través del portal.
 
 ## Lo que no ve aquí
 
 - La información interna, como detalles de averías, defectos o asignaciones
   al personal, no aparece.
+- Los protocolos que aún no están firmados no aparecen.
 - Solo ve los objetos asignados a su empresa.
 
 ## Sus objetos en otros lugares

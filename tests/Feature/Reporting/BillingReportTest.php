@@ -129,6 +129,42 @@ class BillingReportTest extends TestCase {
         $response->assertSee(__('reporting.external_share'));
     }
 
+    public function test_open_items_include_partially_paid_and_skip_non_receivables(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Teilzahler GmbH']);
+        $other = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Proforma AG']);
+        $invoice = function (string $number, InvoiceStatus $status, string $type, float $total, string $dueOn, ?Customer $for = null) use ($customer): void {
+            Invoice::create([
+                'organization_id' => $this->organization->id,
+                'customer_id' => ($for ?? $customer)->id,
+                'number' => $number,
+                'status' => $status,
+                'type' => $type,
+                'currency' => 'EUR',
+                'tax_rate' => '19.00',
+                'issued_on' => now()->subDays(45)->toDateString(),
+                'due_on' => $dueOn,
+                'total' => $total,
+                'created_by' => $this->admin->id,
+            ]);
+        };
+        $invoice('RE-2001', InvoiceStatus::Issued, Invoice::TYPE_INVOICE, 1000, now()->subDays(40)->toDateString());
+        $invoice('RE-2002', InvoiceStatus::PartiallyPaid, Invoice::TYPE_INVOICE, 500, now()->addDays(5)->toDateString());
+        $invoice('PF-2003', InvoiceStatus::Issued, Invoice::TYPE_PROFORMA, 300, now()->addDays(5)->toDateString(), $other);
+
+        $response = $this->actingAs($this->admin)
+            ->withSession($this->dateRangeSession(now()->subDays(60)->toDateString(), now()->toDateString()))
+            ->get(route('reports.billing'))
+            ->assertOk();
+
+        $aging = $response->viewData('aging');
+        $this->assertEqualsWithDelta(1500.0, $aging['open_total'], 0.001);
+        $this->assertSame(1, $aging['buckets']['30_plus']['count']);
+        $this->assertSame(1, $aging['buckets']['current']['count']);
+
+        $perCustomer = collect($response->viewData('perCustomer'))->keyBy(fn(array $r): string => (string) $r['customer']->name);
+        $this->assertSame(2, $perCustomer['Teilzahler GmbH']['count']);
+    }
+
     public function test_unbilled_kpi_ignores_exported_entries(): void {
         // Regression MVP-460: exported=true (z. B. per Pivot gebündelte
         // Nicht-Primär-Einträge einer Rechnung) zählt nicht mehr als unbilled.
@@ -190,7 +226,7 @@ class BillingReportTest extends TestCase {
         $response->assertSee(__('values.approved'))->assertSee(__('values.rejected'));
 
         $csv = (string) $this->getWithRange(['export' => 'csv'])->assertOk()->getContent();
-        $this->assertStringContainsString('Eingang;approved;2', $csv);
+        $this->assertStringContainsString(__('reporting.csv.incoming_invoices') . ';approved;2', $csv);
     }
 
     public function test_csv_export_returns_csv_with_metadata(): void {

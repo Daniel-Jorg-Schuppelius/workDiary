@@ -28,7 +28,7 @@
             </span>
             <span class="inline-flex items-center gap-3">
                 @if ($until instanceof \Carbon\CarbonInterface)
-                    <span class="opacity-70">{{ __('Bis: :at', ['at' => $until->translatedFormat('d.m.Y H:i')]) }}</span>
+                    <span class="opacity-70">{{ __('Bis: :at', ['at' => $until->fdatetime()]) }}</span>
                 @endif
                 @can('update', $organization)
                     <a href="{{ route('admin.organizations.edit', $organization) }}" class="link font-medium" data-entry-modal-trigger>

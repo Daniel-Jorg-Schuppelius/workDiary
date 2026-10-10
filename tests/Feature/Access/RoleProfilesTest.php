@@ -68,11 +68,24 @@ class RoleProfilesTest extends TestCase {
                     PermissionEnum::DutyPlanPublish,
                     PermissionEnum::VacationApprove,
                     PermissionEnum::ProjectUpdate,
+                    // Team-Auswertungen exportieren (Phase 137, E27).
+                    PermissionEnum::ReportExport,
                 ],
                 [
                     PermissionEnum::InvoiceCreate,
                     PermissionEnum::CustomerCreate,
                     PermissionEnum::TimesheetExport,
+                ],
+            ],
+            'personalverwaltung' => [
+                UserRole::Personalverwaltung->value,
+                [
+                    PermissionEnum::SickLeaveViewAny,
+                    PermissionEnum::ReportView,
+                    PermissionEnum::ReportExport,
+                ],
+                [
+                    PermissionEnum::InvoiceCreate,
                 ],
             ],
             'aussendienst' => [

@@ -13,12 +13,16 @@ declare(strict_types=1);
 namespace App\Services\Accounting;
 
 use App\Enums\Finance\{RecurringRunStatus, RecurringTemplateKind, RecurringTemplateStatus};
+use App\Enums\Invoicing\IncomingEInvoiceStatus;
 use App\Enums\Notification\NotificationEvent;
-use App\Models\Accounting\{AccountingRecurringRun, AccountingRecurringTemplate};
+use App\Models\Accounting\{AccountingEntry, AccountingRecurringRun, AccountingRecurringTemplate};
+use App\Models\Document\Document;
+use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Platform\{Organization, User};
 use App\Services\Notification\NotificationDispatcher;
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Collection, Model};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -150,6 +154,39 @@ class RecurringAccountingService {
         ]);
 
         return $run->refresh();
+    }
+
+    /**
+     * Eingangsrechnungen, die eine Belegerwartung erfüllen können: eigene
+     * Organisation, für die Person sichtbar, nicht abgelehnt und noch keinem
+     * Vorgang zugeordnet — ein Original belegt genau eine Periode.
+     *
+     * @return Collection<int, IncomingEInvoice>
+     */
+    public function fulfillmentCandidates(AccountingRecurringRun $run, User $viewer): Collection {
+        return IncomingEInvoice::query()
+            ->where('organization_id', $run->organization_id)
+            ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value)
+            ->whereIn('document_id', Document::query()->visibleTo($viewer)->select('id'))
+            ->whereNotIn('id', AccountingRecurringRun::query()
+                ->where('fulfilled_by_type', MorphMap::alias(IncomingEInvoice::class))
+                ->whereNotNull('fulfilled_by_id')
+                ->select('fulfilled_by_id'))
+            ->orderByDesc('received_at')
+            ->limit(100)
+            ->get();
+    }
+
+    /**
+     * Festgeschriebener Entwurf einer Buchungsvorlage: Damit ist ihr Vorgang
+     * erledigt und gilt nicht länger als überfällig.
+     */
+    public function completeFromEntry(AccountingEntry $entry): void {
+        AccountingRecurringRun::query()
+            ->where('accounting_entry_id', $entry->id)
+            ->where('status', RecurringRunStatus::DraftCreated->value)
+            ->get()
+            ->each(fn (AccountingRecurringRun $run): AccountingRecurringRun => $this->fulfill($run, $entry));
     }
 
     /** Überfällige Vorgänge melden — je Vorgang höchstens einmal. */

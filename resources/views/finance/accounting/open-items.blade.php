@@ -50,6 +50,7 @@
                 </tr>
             </x-slot:head>
             @forelse ($items as $item)
+                @php($pendingDraft = $pendingDrafts[$item->id] ?? null)
                 <tr class="hover">
                     <td class="font-medium">{{ $item->document_reference ?? '—' }}</td>
                     <td>{{ $item->counterparty?->name ?? '—' }}</td>
@@ -62,13 +63,23 @@
                     </td>
                     <td class="text-right font-mono">{{ $item->original_amount?->format() }}</td>
                     <td class="text-right font-mono">{{ $item->open_amount?->format() }}</td>
-                    <td><x-status-badge :tone="$item->status->tone()">{{ $item->status->label() }}</x-status-badge></td>
+                    <td>
+                        <x-status-badge :tone="$item->status->tone()">{{ $item->status->label() }}</x-status-badge>
+                        @if ($pendingDraft)
+                            <x-status-badge tone="info" size="xs" class="ml-1">{{ __('accounting.open_items.awaiting_approval') }}</x-status-badge>
+                        @endif
+                    </td>
                     <td class="text-right">
                         <div class="flex justify-end gap-1">
                             <x-icon-btn icon="menu_book" size="xs" tone="ghost"
                                         :href="route('finance.accounting.journal.show', $item->entry)"
                                         :label="__('accounting.open_items.action.show_entry')" />
-                            @if ($canPost && $item->status->isOpen())
+                            @if ($pendingDraft)
+                                {{-- Wartende Gegenbuchung (E9): kein zweiter Ausgleich, sondern der Weg zur Freigabe. --}}
+                                <x-icon-btn icon="pending_actions" size="xs" tone="ghost"
+                                            :href="route('finance.accounting.journal.show', $pendingDraft)"
+                                            :label="__('accounting.open_items.action.show_pending')" />
+                            @elseif ($canPost && $item->status->isOpen())
                                 <x-icon-btn icon="playlist_add_check" size="xs" tone="ghost"
                                             data-entry-modal-trigger
                                             :href="route('finance.accounting.open-items.settle-form', $item)"

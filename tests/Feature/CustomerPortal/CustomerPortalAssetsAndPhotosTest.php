@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\CustomerPortal;
 
-use App\Enums\Protocol\ProtocolVisibility;
+use App\Enums\Protocol\{ProtocolEventType, ProtocolVisibility};
 use App\Models\Asset\Asset;
 use App\Models\Attachments\{Attachment, AttachmentConfirmation};
 use App\Models\Customer\{Customer, CustomerQuery};
@@ -19,6 +19,7 @@ use App\Models\Platform\User;
 use App\Models\Protocol\Protocol;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\{WithOrganization, WithPortalVisibility};
 use Tests\TestCase;
@@ -116,13 +117,44 @@ class CustomerPortalAssetsAndPhotosTest extends TestCase {
         $response->assertDontSee('intern.jpg');
         $response->assertDontSee('Internes Protokoll');
 
-        // Fremder Auftrag (anderer Kunde derselben Org): 403.
+        // Fremder Auftrag (anderer Kunde derselben Org): kundensicher 404 wie jede Portalseite.
         $otherCustomer = Customer::factory()->create(['organization_id' => $this->organization->id]);
         $foreign = DiaryEntry::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $otherCustomer->id,
         ]);
-        $this->actingAs($this->portalUser, 'customer')->get(route('customer.diary.show', $foreign))->assertForbidden();
+        $this->actingAs($this->portalUser, 'customer')->get(route('customer.diary.show', $foreign))->assertNotFound();
+    }
+
+    /** Phase 137 (MVP-1105): freigegebene Fotos erscheinen als Bild und lassen sich öffnen — sonst stand nur der Dateiname da. */
+    public function test_released_photo_is_shown_and_can_be_opened(): void {
+        Storage::fake('local');
+        $diary = $this->ownDiary();
+        $photo = $this->photo($diary, true);
+        $photo->forceFill(['mime' => 'image/jpeg', 'path' => 'attachments/test/foto.jpg'])->save();
+        Storage::disk('local')->put('attachments/test/foto.jpg', 'JPEG');
+        $internal = $this->photo($diary, false);
+        $url = route('customer.diary.photos.show', [$diary, $photo]);
+
+        $this->actingAs($this->portalUser, 'customer')
+            ->get(route('customer.diary.show', $diary))
+            ->assertOk()
+            ->assertSee('<img src="' . $url . '"', false);
+
+        $this->actingAs($this->portalUser, 'customer')->get($url)->assertOk()->assertDownload('freigegeben.jpg');
+        $this->actingAs($this->portalUser, 'customer')
+            ->get(route('customer.diary.photos.show', [$diary, $internal]))
+            ->assertNotFound();
+
+        $otherCustomer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $foreign = DiaryEntry::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $otherCustomer->id]);
+        $foreignPhoto = $this->photo($foreign, true);
+        $this->actingAs($this->portalUser, 'customer')
+            ->get(route('customer.diary.photos.show', [$foreign, $foreignPhoto]))
+            ->assertNotFound();
+        $this->actingAs($this->portalUser, 'customer')
+            ->post(route('customer.diary.photos.confirm', [$foreign, $foreignPhoto]))
+            ->assertNotFound();
     }
 
     public function test_pdf_needs_valid_signature(): void {
@@ -172,6 +204,92 @@ class CustomerPortalAssetsAndPhotosTest extends TestCase {
         $this->assertStringContainsString('Falsche Stelle fotografiert', (string) $query->question);
     }
 
+    /**
+     * Phase 137 (E17): Objektakte und Fallakte zeigen nur unterschriebene,
+     * kundensichtbare Protokolle; das PDF lädt über die Portal-Route, jeder
+     * Abruf steht im Protokoll-Journal.
+     */
+    public function test_signed_protocols_are_listed_with_pdf_download_and_journaled(): void {
+        Storage::fake('local');
+        $asset = Asset::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $this->customer->id]);
+        $diary = $this->ownDiary();
+        $assetProtocol = $this->protocol($asset, 'Unterschriebenes Prüfprotokoll', signed: true);
+        $diaryProtocol = $this->protocol($diary, 'Unterschriebenes Abnahmeprotokoll', signed: true);
+        $this->protocol($asset, 'Entwurf am Objekt', signed: false);
+        $this->protocol($diary, 'Entwurf am Auftrag', signed: false);
+
+        $assetUrl = route('customer.assets.protocols.pdf', [$asset, $assetProtocol]);
+        $this->actingAs($this->portalUser, 'customer')->get(route('customer.assets.show', $asset))
+            ->assertOk()
+            ->assertSee('Unterschriebenes Prüfprotokoll')
+            ->assertSee($assetUrl, false)
+            ->assertDontSee('Entwurf am Objekt');
+
+        $diaryUrl = route('customer.diary.protocols.pdf', [$diary, $diaryProtocol]);
+        $this->actingAs($this->portalUser, 'customer')->get(route('customer.diary.show', $diary))
+            ->assertOk()
+            ->assertSee('Unterschriebenes Abnahmeprotokoll')
+            ->assertSee($diaryUrl, false)
+            ->assertDontSee('Entwurf am Auftrag');
+
+        foreach ([[$assetUrl, $assetProtocol], [$diaryUrl, $diaryProtocol]] as [$url, $protocol]) {
+            $response = $this->actingAs($this->portalUser, 'customer')->get($url);
+            $response->assertOk()->assertDownload('protokoll-' . $protocol->getRouteKey() . '-r1.pdf');
+            $this->assertStringStartsWith('%PDF', (string) $response->streamedContent());
+
+            $entry = $protocol->journal()->where('event', ProtocolEventType::PortalPdfDownloaded)->sole();
+            $this->assertSame((int) $this->portalUser->id, (int) $entry->getAttribute('actor_user_id'));
+            $this->assertSame('PDF im Kundenportal heruntergeladen', $entry->label());
+        }
+    }
+
+    /** Phase 137 (E17): Entwürfe, interne, fremde und zum falschen Träger gehörige Protokolle antworten kundensicher 404. */
+    public function test_protocol_pdf_is_not_found_unless_released_for_this_subject(): void {
+        Storage::fake('local');
+        $asset = Asset::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $this->customer->id]);
+        $otherAsset = Asset::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $this->customer->id]);
+        $diary = $this->ownDiary();
+
+        $draft = $this->protocol($asset, 'Entwurf', signed: false);
+        $inReview = $this->protocol($asset, 'In Prüfung', signed: false);
+        $inReview->forceFill(['status' => \App\Enums\Protocol\ProtocolStatus::InReview->value])->save();
+        $internal = $this->protocol($asset, 'Intern unterschrieben', signed: true);
+        $internal->forceFill(['visibility' => ProtocolVisibility::Internal->value])->save();
+        $otherAssetsProtocol = $this->protocol($otherAsset, 'Am anderen Objekt', signed: true);
+        $diaryProtocol = $this->protocol($diary, 'Am Auftrag', signed: true);
+
+        foreach ([$draft, $inReview, $internal, $otherAssetsProtocol] as $protocol) {
+            $this->actingAs($this->portalUser, 'customer')
+                ->get(route('customer.assets.protocols.pdf', [$asset, $protocol]))
+                ->assertNotFound();
+        }
+        $this->actingAs($this->portalUser, 'customer')
+            ->get(route('customer.diary.protocols.pdf', [$this->ownDiary(), $diaryProtocol]))
+            ->assertNotFound();
+
+        $otherCustomer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $foreignAsset = Asset::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $otherCustomer->id]);
+        $foreignProtocol = $this->protocol($foreignAsset, 'Fremd', signed: true);
+        $this->actingAs($this->portalUser, 'customer')
+            ->get(route('customer.assets.protocols.pdf', [$foreignAsset, $foreignProtocol]))
+            ->assertNotFound();
+
+        $this->assertSame(0, \App\Models\Protocol\ProtocolEvent::query()->where('event', ProtocolEventType::PortalPdfDownloaded)->count());
+    }
+
+    private function protocol(Asset|DiaryEntry $subject, string $title, bool $signed): Protocol {
+        $factory = $signed ? Protocol::factory()->signed() : Protocol::factory();
+
+        return $factory->create([
+            'organization_id' => $this->organization->id,
+            'subject_type' => $subject->getMorphClass(),
+            'subject_id' => $subject->id,
+            'created_by_user_id' => $this->portalUser->id,
+            'title' => $title,
+            'visibility' => ProtocolVisibility::Customer->value,
+        ]);
+    }
+
     public function test_assets_portal_is_scoped_and_hides_internal_protocols(): void {
         $own = Asset::factory()->create([
             'organization_id' => $this->organization->id,
@@ -179,7 +297,7 @@ class CustomerPortalAssetsAndPhotosTest extends TestCase {
             'name' => 'Heizungsanlage Nord',
             'serial_no' => 'SN-4711',
         ]);
-        Protocol::factory()->create([
+        Protocol::factory()->signed()->create([
             'organization_id' => $this->organization->id,
             'subject_type' => $own->getMorphClass(),
             'subject_id' => $own->id,
@@ -187,7 +305,7 @@ class CustomerPortalAssetsAndPhotosTest extends TestCase {
             'title' => 'Kundensichtbares Prüfprotokoll',
             'visibility' => ProtocolVisibility::Customer->value,
         ]);
-        Protocol::factory()->create([
+        Protocol::factory()->signed()->create([
             'organization_id' => $this->organization->id,
             'subject_type' => $own->getMorphClass(),
             'subject_id' => $own->id,
@@ -214,6 +332,6 @@ class CustomerPortalAssetsAndPhotosTest extends TestCase {
         $show->assertSee('Kundensichtbares Prüfprotokoll');
         $show->assertDontSee('Interner Defektbericht');
 
-        $this->actingAs($this->portalUser, 'customer')->get(route('customer.assets.show', $foreign))->assertForbidden();
+        $this->actingAs($this->portalUser, 'customer')->get(route('customer.assets.show', $foreign))->assertNotFound();
     }
 }

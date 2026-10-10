@@ -24,9 +24,9 @@ enum InformationBlockState: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Dynamic => __('Dynamisch (WorkDiary druckt)'),
-            self::ProvidedByLetterhead => __('Bereits auf dem Firmenbogen'),
-            self::NotApplicable => __('Nicht anwendbar'),
+            self::Dynamic => __('enums.document_design.information_block_state.dynamic'),
+            self::ProvidedByLetterhead => __('enums.document_design.information_block_state.provided_by_letterhead'),
+            self::NotApplicable => __('enums.document_design.information_block_state.not_applicable'),
         };
     }
 }

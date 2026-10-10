@@ -12,8 +12,9 @@ return [
     'title' => 'Spedizione e logistica',
     'intro' => 'Connessioni corriere per etichette di spedizione e tracciamento delle spedizioni (DHL Paket, UPS, FedEx). Una connessione per corriere e organizzazione; le credenziali sono memorizzate cifrate.',
 
-    'form_heading' => 'Aggiungi / modifica connessione',
-    'form_hint' => 'Scelga il corriere e inserisca le relative credenziali. Salvando di nuovo con lo stesso corriere si aggiorna la connessione esistente.',
+    'form_heading' => 'Aggiungi connessione',
+    'form_heading_edit' => 'Modifica connessione :carrier',
+    'form_hint' => 'Scelga il corriere e inserisca le relative credenziali. Modifichi le connessioni esistenti tramite «Modifica» nell’elenco.',
     'secret_hint' => 'La password e la chiave API vengono memorizzate cifrate e non vengono più mostrate. Le lasci vuote durante la modifica per mantenere i valori salvati.',
     'connections_heading' => 'Connessioni esistenti',
     'no_connections' => 'Nessuna connessione corriere ancora configurata.',
@@ -36,6 +37,8 @@ return [
     ],
 
     'label_short' => 'Spedizione',
+    'last_tracked' => 'Ultima verifica: :time',
+    'confirm_cancel' => 'Annullare la spedizione presso il corriere? L’etichetta non sarà più valida; dopo potrà creare una nuova spedizione.',
 
     'col' => [
         'mode' => 'Modalità',
@@ -55,6 +58,11 @@ return [
     'action' => [
         'save' => 'Salva',
         'disconnect' => 'Disattiva',
+        'edit' => 'Modifica',
+        'cancel_edit' => 'Annulla',
+        'download_label' => 'Scarica etichetta',
+        'track_now' => 'Verifica stato spedizione',
+        'cancel_shipment' => 'Annulla spedizione',
         'create' => 'Spedisci',
     ],
 
@@ -67,6 +75,12 @@ return [
         'no_connection' => 'Nessuna connessione attiva configurata per il corriere selezionato.',
         'label_created' => 'Spedizione creata ed etichetta recuperata.',
         'label_failed' => 'Impossibile creare l\'etichetta di spedizione: :reason',
+        'tracked' => 'Stato della spedizione verificato: :status',
+        'track_failed' => 'Impossibile verificare lo stato della spedizione: :reason',
+        'cancelled' => 'Spedizione annullata.',
+        'cancel_failed' => 'Impossibile annullare la spedizione: :reason',
+        'not_cancellable' => 'La spedizione è già presso il corriere e non può più essere annullata.',
+        'exists_use_edit' => 'Esiste già una connessione per questo corriere. La modifichi tramite «Modifica».',
     ],
 
     'notify' => [

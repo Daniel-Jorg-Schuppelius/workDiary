@@ -27,11 +27,11 @@ enum IncidentStatus: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Detected => __('Entdeckt'),
-            self::Assessing => __('In Bewertung'),
-            self::Contained => __('Eingedämmt'),
-            self::Reported => __('Gemeldet'),
-            self::Closed => __('Abgeschlossen'),
+            self::Detected => __('enums.privacy.incident_status.detected'),
+            self::Assessing => __('enums.privacy.incident_status.assessing'),
+            self::Contained => __('enums.privacy.incident_status.contained'),
+            self::Reported => __('enums.privacy.incident_status.reported'),
+            self::Closed => __('enums.privacy.incident_status.closed'),
         };
     }
 

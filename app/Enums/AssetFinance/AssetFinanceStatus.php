@@ -34,15 +34,15 @@ enum AssetFinanceStatus: string implements HasLabel, HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::Draft => (string) __('Entwurf'),
-            self::Active => (string) __('Aktiv'),
-            self::Ending => (string) __('Endphase'),
-            self::Extended => (string) __('Verlängert'),
-            self::Returned => (string) __('Zurückgegeben'),
-            self::Purchased => (string) __('Übernommen (Kauf)'),
-            self::Terminated => (string) __('Gekündigt'),
-            self::Closed => (string) __('Abgeschlossen'),
-            self::Cancelled => (string) __('Storniert'),
+            self::Draft => (string) __('enums.asset_finance.asset_finance_status.draft'),
+            self::Active => (string) __('enums.asset_finance.asset_finance_status.active'),
+            self::Ending => (string) __('enums.asset_finance.asset_finance_status.ending'),
+            self::Extended => (string) __('enums.asset_finance.asset_finance_status.extended'),
+            self::Returned => (string) __('enums.asset_finance.asset_finance_status.returned'),
+            self::Purchased => (string) __('enums.asset_finance.asset_finance_status.purchased'),
+            self::Terminated => (string) __('enums.asset_finance.asset_finance_status.terminated'),
+            self::Closed => (string) __('enums.asset_finance.asset_finance_status.closed'),
+            self::Cancelled => (string) __('enums.asset_finance.asset_finance_status.cancelled'),
         };
     }
 

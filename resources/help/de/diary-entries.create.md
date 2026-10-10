@@ -1,7 +1,7 @@
 ---
 title: "Auftrag anlegen"
 topic: diary-entries.create
-version: 2
+version: 4
 keywords:
     - neuer Auftrag
     - Auftrag erfassen
@@ -15,6 +15,7 @@ keywords:
     - Auftragsbuch
     - Eintragstyp
     - Einsatz anlegen
+    - Geplante Dauer
 audience: []
 schema: process
 related:
@@ -46,7 +47,10 @@ nachvollziehbar ab.
 2. Erfassen Sie **Kunde** (Pflicht) und ggf. **Projekt**.
 3. Wählen Sie den **Eintragstyp** und beschreiben Sie den **Inhalt** in ein bis
    zwei Sätzen.
-4. Optional: **Plan-Dauer** in Minuten hinterlegen.
+4. Optional: Im Abschnitt **Zeitraum** die **Geplante Dauer (HH:MM)** angeben,
+   z. B. 1:30. Bleibt das Feld leer, gilt die Servicedauer eines disponierten Auftrags, sonst die Länge des Zeitfensters bzw. die
+   Dauer des Termins. Sie ist der Plan in **Plan/Ist**, in der
+   **Auftragstypanalyse** und in der **Personal-Kapazität**.
 5. Statusübergänge laufen anschließend über das **Detail-Modal** — kein
    Massen-Update aus der Liste.
 

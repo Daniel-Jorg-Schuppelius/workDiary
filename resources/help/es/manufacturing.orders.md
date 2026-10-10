@@ -1,7 +1,7 @@
 ---
 title: "Órdenes de fabricación"
 topic: manufacturing.orders
-version: 1
+version: 2
 keywords:
     - orden de producción
     - lista de materiales
@@ -15,6 +15,9 @@ keywords:
     - factura proforma
     - factura comercial
     - albarán
+    - etiqueta de envío
+    - estado del envío
+    - anular envío
 audience: []
 modules:
     - module.lager
@@ -38,7 +41,27 @@ producidas, buenas, de desecho y de retrabajo, y con **«Entregar»** el
 producto terminado se contabiliza como stock. Desde la página de detalle
 la orden puede asignarse a un puesto de trabajo o subcontratarse a un
 proveedor (genera un pedido); anular es irreversible y crear, notificar
-y entregar requieren el permiso de contabilización de stock.
+y entregar requieren el permiso **Registrar movimientos de stock**.
+
+## Envío en la entrega
+
+Con una conexión de envío activa (consulte «Conexiones de envío DHL, UPS y
+FedEx») crea en una entrega con cliente, mediante **Enviar**, una orden de envío
+con su etiqueta. A continuación la entrega muestra el estado, por ejemplo
+**Envío: Etiqueta creada**, con la empresa de paquetería y el número de
+seguimiento. Al pasar el ratón sobre el estado ve cuándo se comprobó por última
+vez con la empresa de paquetería. Junto al estado encontrará:
+
+- **Descargar etiqueta**: vuelve a descargar la etiqueta de envío.
+- **Consultar estado del envío**: consulta de inmediato la situación actual a
+  la empresa de paquetería; ya no aparece con **Entregado** o **Cancelado**.
+  Además, WorkDiary comprueba por sí mismo con regularidad los envíos abiertos.
+- **Anular envío**: solo en el estado **Borrador** o **Etiqueta creada** y tras
+  una confirmación. La etiqueta deja de ser válida. Después puede crear una
+  nueva orden de envío, y los bultos de la entrega vuelven a ser editables.
+
+Crear una orden de envío, consultar su estado y anular el envío requieren el
+permiso **Registrar movimientos de stock**.
 
 ## Documentos aduaneros para envíos fuera de la UE
 

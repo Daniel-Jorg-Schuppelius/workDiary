@@ -1,7 +1,7 @@
 ---
 title: "Parc automobile, carnet de bord et temps de conduite"
 topic: reports.fleet
-version: 1
+version: 3
 keywords:
     - analyse des véhicules
     - kilométrage
@@ -33,7 +33,7 @@ related:
 
 Ces rapports concernent les véhicules et les trajets : kilomètres et coûts
 énergétiques par véhicule, le carnet de bord fiscal d’un véhicule, la
-comparaison entre la méthode du carnet de route et la règle du 1 % ainsi que
+comparaison entre la méthode du carnet de bord et la règle du 1 % ainsi que
 le justificatif des temps de conduite et de repos. Ils reposent sur les
 trajets du **Carnet de bord** (**Déplacements et frais** → **Carnet de
 bord**), les justificatifs du **Journal carburant et recharge** (**Parc
@@ -45,8 +45,8 @@ véhicules sous **Parc automobile** → **Véhicules**.
 - Vous choisissez la période avec le sélecteur de période dans l’en-tête. La
   comparaison 1 % calcule en revanche sur une année civile.
 - **PDF** télécharge une version imprimable ; **CSV** et **Excel** se trouvent
-  sous **Export**. Les exports reprennent les filtres choisis ; les exports
-  PDF et CSV sont consignés dans le journal d’audit.
+  sous **Export**. Les exports reprennent les filtres choisis ; chaque export
+  est consigné dans le journal d’audit.
 
 ## Parc automobile
 
@@ -121,7 +121,7 @@ de correction ainsi que les totaux et la part privée.
 Vous ouvrez la **Comparaison 1 %** avec le bouton du même nom sur la page
 **Justificatif carnet de bord** ; elle n’a pas d’entrée de menu propre. Elle
 oppose pour chaque véhicule l’avantage en nature selon la méthode du carnet
-de route à la règle du 1 %. Il s’agit d’un calcul simplifié et non d’un
+de bord à la règle du 1 %. Il s’agit d’un calcul simplifié et non d’un
 conseil fiscal.
 
 - **Année** : l’année en cours et les six années précédentes ; l’année
@@ -134,7 +134,7 @@ conseil fiscal.
 - **Coûts totaux** : coûts énergétiques issus des justificatifs de carburant
   et de recharge de l’année plus les autres coûts annuels ; l’infobulle
   montre les deux parts.
-- **Méthode du carnet de route** : coûts totaux multipliés par la part des
+- **Méthode du carnet de bord** : coûts totaux multipliés par la part des
   kilomètres privés et domicile–travail dans l’ensemble des kilomètres.
 - **Règle du 1 %** : **Prix catalogue brut (€)**, arrondi à la centaine
   d’euros inférieure, dont 1 % par mois d’utilisation plus 0,03 % par
@@ -167,8 +167,10 @@ conformité du temps de travail**.
   **Premier départ**, **Dernière arrivée**, **Temps de conduite**, **Plus
   longue période de conduite sans pause**, **Pauses (min)**, **Repos
   précédent** et les **Constats** du jour.
-- Le téléchargement reprend la période et le filtre d’employé de la page et
-  fournit un fichier CSV. Il est consigné dans le journal d’audit.
+- Le téléchargement reprend la période et les filtres d’employé et d’équipe
+  de la page. **Justificatif temps de conduite** fournit un fichier CSV,
+  **Justificatif temps de conduite (PDF)** les mêmes données en PDF au format
+  paysage. Les deux sont consignés dans le journal d’audit.
 
 Les constats reposent sur les limites du règlement (CE) 561/2006 et de la
 FPersV : au maximum 9 h de conduite par jour (10 h deux fois par semaine),

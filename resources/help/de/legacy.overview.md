@@ -1,7 +1,7 @@
 ---
 title: "Altsystem (Legacy)"
 topic: legacy.overview
-version: 2
+version: 3
 keywords:
     - altes System
     - Vorgängersystem

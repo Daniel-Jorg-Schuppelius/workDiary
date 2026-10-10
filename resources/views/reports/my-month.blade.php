@@ -37,9 +37,9 @@
         <x-filter-field :label="__('Art')" for="my-month-kind">
             <select id="my-month-kind" name="kind" class="select select-sm select-bordered" data-autosubmit>
                 <option value="all" @selected($kind === 'all')>{{ __('Alle') }}</option>
-                <option value="work" @selected($kind === 'work')>{{ __('Arbeit') }}</option>
-                <option value="travel" @selected($kind === 'travel')>{{ __('Reise') }}</option>
-                <option value="standby" @selected($kind === 'standby')>{{ __('Bereitschaft') }}</option>
+                @foreach (\App\Enums\TimeEntry\TimeEntryKind::options() as $kindValue => $kindLabel)
+                    <option value="{{ $kindValue }}" @selected($kind === $kindValue)>{{ $kindLabel }}</option>
+                @endforeach
             </select>
         </x-filter-field>
     </x-filter-bar>
@@ -53,11 +53,11 @@
         <div class="mb-3 flex flex-wrap items-baseline justify-end gap-2">
             <div class="flex items-baseline gap-4">
                 <div class="flex items-baseline gap-2">
-                    <span class="text-xs uppercase tracking-[0.18em] text-muted">Σ Std.</span>
+                    <span class="text-xs uppercase tracking-[0.18em] text-muted">{{ __('Σ Std.') }}</span>
                     <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $monthMinutes > 0 ? 'text-primary' : 'text-muted' }}">{{ $fmt($monthMinutes) }}</span>
                 </div>
                 <div class="flex items-baseline gap-2">
-                    <span class="text-xs uppercase tracking-[0.18em] text-muted">Σ €</span>
+                    <span class="text-xs uppercase tracking-[0.18em] text-muted">{{ __('Σ €') }}</span>
                     <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $monthRate > 0 ? 'text-primary' : 'text-muted' }}">{{ $money($monthRate) }}</span>
                 </div>
             </div>

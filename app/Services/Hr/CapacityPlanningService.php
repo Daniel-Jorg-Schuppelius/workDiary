@@ -71,7 +71,8 @@ final class CapacityPlanningService {
             if ($ids !== []) {
                 $query = DiaryEntry::query()->whereIn('assigned_user_id', $ids);
                 DateRange::whereTimestampBetween($query, 'start_at', $from, $to);
-                $demand = (int) $query->sum('planned_minutes');
+                $demand = (int) $query->get(DiaryEntry::PLANNED_DURATION_COLUMNS)
+                    ->sum(static fn(DiaryEntry $entry): int => $entry->effectivePlannedMinutes() ?? 0);
             }
             $result[] = ['start' => $from, 'capacity' => $capacity, 'demand' => $demand, 'utilization' => $capacity > 0 ? (int) round($demand / $capacity * 100) : null];
         }

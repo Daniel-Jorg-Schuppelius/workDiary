@@ -35,7 +35,7 @@
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
         <x-kpi-tile :label="__('Summe (Brutto)')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($grandTotal, 2, withThousandsSeparator: true) . ' €'" />
-        <x-kpi-tile :label="__('Mitarbeiter')" :value="count($totalsPerUser)" />
+        <x-kpi-tile :label="__('user.employees')" :value="count($totalsPerUser)" />
         <x-kpi-tile :label="__('Kategorien')" :value="count($totalsPerCategory)" />
         <x-kpi-tile :label="__('Monate')" :value="count($months)" />
     </div>

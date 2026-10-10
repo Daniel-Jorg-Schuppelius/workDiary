@@ -60,6 +60,14 @@ final class MsgraphAdminPageTest extends TestCase {
         return null;
     }
 
+    /** OneNote und SharePoint nutzen dieselbe App-Registrierung — ihre Redirect-URIs stehen mit auf der Liste (Phase 137). */
+    public function test_redirect_list_names_onenote_and_sharepoint(): void {
+        $this->actingAs($this->admin)->get(route('admin.msgraph.index'))
+            ->assertOk()
+            ->assertSee(route('admin.msgraph.onenote.oauth.callback'), false)
+            ->assertSee(route('admin.sharepoint.oauth.callback'), false);
+    }
+
     public function test_connected_page_keeps_every_action_as_a_submitting_form(): void {
         FakePluginHttp::fake([
             'https://graph.microsoft.com/v1.0/me/calendars*' => FakePluginHttp::response(['value' => [['id' => 'cal-1', 'name' => 'Team']]]),

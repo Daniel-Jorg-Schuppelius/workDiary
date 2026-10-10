@@ -4,6 +4,7 @@
     "Token abgelaufen oder Scopes entzogen — Verbindung erneuern.": "Token scaduto o scope revocati — rinnovare la connessione.",
     "Verbindung blockiert (:reason) — Details im orgaMAX-Admin.": "Connessione bloccata (:reason) — dettagli nell'admin orgaMAX.",
     "Verbindung wartet auf Callback bzw. Kontobestätigung.": "La connessione è in attesa del callback o della conferma dell'account.",
+    "orgaMAX Buchhaltung": "orgaMAX Buchhaltung",
     "orgaMAX-API antwortet mit Fehlerstatus :status.": "L'API orgaMAX risponde con stato di errore :status.",
     "orgaMAX-API erreichbar.": "API orgaMAX raggiungibile.",
     "orgaMAX-API nicht erreichbar.": "API orgaMAX non raggiungibile."

@@ -29,10 +29,10 @@ enum SurveyInvitationStatus: string implements HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::Created => __('erstellt'),
-            self::Sent => __('versendet'),
-            self::Responded => __('beantwortet'),
-            self::Expired => __('abgelaufen'),
+            self::Created => __('enums.survey.survey_invitation_status.created'),
+            self::Sent => __('enums.survey.survey_invitation_status.sent'),
+            self::Responded => __('enums.survey.survey_invitation_status.responded'),
+            self::Expired => __('enums.survey.survey_invitation_status.expired'),
         };
     }
 

@@ -33,14 +33,14 @@ enum DataMediumType: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Hdd => (string) __('Festplatte (HDD)'),
-            self::Ssd => (string) __('SSD'),
-            self::UsbFlash => (string) __('USB-Stick'),
-            self::MemoryCard => (string) __('Speicherkarte'),
-            self::MobileDevice => (string) __('Mobilgerät'),
-            self::MagneticTape => (string) __('Magnetband'),
-            self::Optical => (string) __('Optischer Datenträger'),
-            self::Other => (string) __('Sonstiger Datenträger'),
+            self::Hdd => (string) __('enums.disposal.data_medium_type.hdd'),
+            self::Ssd => (string) __('enums.disposal.data_medium_type.ssd'),
+            self::UsbFlash => (string) __('enums.disposal.data_medium_type.usb_flash'),
+            self::MemoryCard => (string) __('enums.disposal.data_medium_type.memory_card'),
+            self::MobileDevice => (string) __('enums.disposal.data_medium_type.mobile_device'),
+            self::MagneticTape => (string) __('enums.disposal.data_medium_type.magnetic_tape'),
+            self::Optical => (string) __('enums.disposal.data_medium_type.optical'),
+            self::Other => (string) __('enums.disposal.data_medium_type.other'),
         };
     }
 

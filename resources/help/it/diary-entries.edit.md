@@ -1,7 +1,7 @@
 ---
 title: "Modificare un incarico"
 topic: diary-entries.edit
-version: 1
+version: 3
 keywords:
     - modificare la commessa
     - dettagli dell'incarico
@@ -27,3 +27,7 @@ obbligatorie devono essere compilate prima del passaggio allo stato
 cronologico sotto l'incarico e restano visibili per tutta la sua durata;
 gli allegati possono pesare al massimo **25 MB**, i file più grandi vanno
 referenziati tramite storage esterno.
+
+La **Durata prevista (HH:MM)** si modifica nella finestra di modifica, sezione
+**Periodo**. Se svuota il campo, vale di nuovo la durata dell’intervento di un ordine pianificato, altrimenti la durata della finestra oraria
+o dell’appuntamento.

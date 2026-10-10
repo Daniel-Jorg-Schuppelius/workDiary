@@ -40,8 +40,8 @@ class GitlabClientFactory {
             $baseUrl,
             (bool) $config['allow_private_network'],
             'GitLab',
-            'Instanz-URL',
-            'Für eine On-Premise-Instanz im eigenen Netz muss die Freigabe privater Adressen ausdrücklich aktiviert werden.',
+            (string) __('Die Instanz-URL'),
+            (string) __('Für eine On-Premise-Instanz im eigenen Netz muss die Freigabe privater Adressen ausdrücklich aktiviert werden.'),
         );
 
         return new GitlabClient(

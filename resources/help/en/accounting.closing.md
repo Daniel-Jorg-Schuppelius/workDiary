@@ -1,7 +1,7 @@
 ---
 title: "Closing and reports"
 topic: accounting.closing
-version: 1
+version: 2
 keywords:
     - month-end close
     - year-end closing
@@ -34,6 +34,11 @@ audit chain.
 **Reports** read posted entries only — a draft is an intention, not a figure.
 VAT and cash-basis reports are auditable **previews**: the MVP files nothing
 with the tax authority.
+
+**Exporting reports:** PDF, CSV and Excel of the financial reports, the
+management report and the budget require the permission **Export reports** in
+addition to the read permission; without it, the export buttons are missing.
+Administrators can always export.
 
 **Handover**: the GoBD audit package contains chart of accounts, journal, entry
 lines, open items and periods; the DATEV handover is generated from posted

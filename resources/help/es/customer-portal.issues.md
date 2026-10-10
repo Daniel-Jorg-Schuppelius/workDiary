@@ -1,7 +1,7 @@
 ---
 title: "Puntos abiertos"
 topic: customer-portal.issues
-version: 2
+version: 3
 keywords:
     - puntos abiertos
     - temas pendientes
@@ -24,7 +24,7 @@ Los puntos abiertos son tareas, defectos o aclaraciones que su proveedor registr
 
 ## Cómo abrir la página
 
-En la **Vista general**, haga clic en el mosaico **Puntos abiertos**. El número del mosaico indica los puntos que aún no están cerrados. El mosaico aparece si su proveedor ha liberado esta área para usted. Con la misma liberación, el menú muestra además **Errores conocidos**; esa lista se describe en el tema de ayuda sobre tickets.
+En la **Vista general**, haga clic en el mosaico **Puntos abiertos**. El número del mosaico indica los puntos que aún no están cerrados. El mosaico aparece si su proveedor ha liberado esta área para usted. La lista **Errores conocidos** pertenece al área de tickets y se describe en el tema de ayuda sobre tickets.
 
 ## Qué muestra un punto
 

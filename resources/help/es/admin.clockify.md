@@ -1,7 +1,7 @@
 ---
 title: "Importación de Clockify"
 topic: admin.clockify
-version: 1
+version: 3
 keywords:
     - Clockify
     - importar tiempos
@@ -13,6 +13,7 @@ keywords:
     - asistencia remota a Clockify
     - asignación de usuarios
     - devolver correcciones
+    - importación cada hora
 audience:
     - admin
 related:
@@ -59,15 +60,16 @@ en la entrada Clockify:
    solo si su cuenta está en una instancia regional de Clockify; el texto de
    ayuda del diálogo da un ejemplo.
 4. **Franja de sincronización (días)**: hasta dónde mira hacia atrás una
-   importación API sin período y hasta dónde llega la transferencia horaria
-   (30 días por defecto).
+   importación API sin período, también la horaria, y hasta dónde llega la
+   transferencia horaria (30 días por defecto).
 5. **Adoptar como facturable**: activado, adopta la marca de facturable de
    Clockify; desactivado, nunca marca como facturables los tiempos
    importados.
-6. **Modo de usuario único** e **Imputar tiempos para el ID de usuario**: solo
-   para puestos individuales, véase más abajo.
-7. Opcionalmente **Activar la transferencia de tiempos** y **Devolver las
-   correcciones**.
+6. **Modo de usuario único** e **Imputar tiempos para el usuario**: solo
+   para puestos individuales, véase más abajo. El usuario se elige de la
+   lista.
+7. Opcionalmente **Activar la transferencia de tiempos**, **Devolver las
+   correcciones** y **Secreto del webhook** (véase «Webhook»).
 8. **Guardar**. Con **Probar conexión** en el diálogo comprueba el acceso.
    Sin clave de API, el plugin indica el modo CSV; no es un error.
 
@@ -88,8 +90,16 @@ WorkDiary obtiene los registros de todos los usuarios del espacio de trabajo;
 sin período, los últimos días según la franja de sincronización. La
 importación omite los registros en curso, sin fin.
 
-No existe una importación programada de Clockify: cada importación empieza en
-esta página. Después la página indica cuántas entradas se crearon, se
+**Importación cada hora:** en cuanto hay una clave de API guardada, la
+importación API se ejecuta además sola cada hora, sobre la franja de
+sincronización y con conciliación de eliminaciones (véase más abajo). La
+frecuencia se cambia en **Tareas programadas**, en la entrada «Importación de
+Clockify». Cada ejecución consume solicitudes de la cuota de su plan de
+Clockify. Sin clave de API no hay importación automática; los archivos CSV se
+suben siempre aquí.
+
+Si la API de Clockify notifica un error, la página lo muestra y no se importa
+nada. Tras una importación en esta página, la página indica cuántas entradas se crearon, se
 omitieron o quedaron abiertas en la bandeja, y cuántas no pudieron asignarse
 a ningún usuario.
 
@@ -115,7 +125,7 @@ a ningún usuario.
   usuario principal. Elija allí el usuario; la elección se memoriza.
 - **Modo de usuario único:** solo si está activado, la importación asigna las
   entradas sin persona identificable al usuario predeterminado. Es el usuario
-  de **Imputar tiempos para el ID de usuario** o, si no, el propietario de la
+  de **Imputar tiempos para el usuario** o, si no, el propietario de la
   organización o el primer usuario.
 
 ## Nueva importación y cambios
@@ -166,6 +176,22 @@ duración, facturable) y su eliminación. Antes, WorkDiary compara el estado
 actual en Clockify: si la entrada se modificó allí mientras tanto, WorkDiary
 no sobrescribe nada y crea en su lugar un conflicto en la bandeja. Los tiempos
 facturados y los importados por CSV nunca se devuelven.
+
+## Webhook
+
+Con un plan de pago de Clockify, Clockify puede avisar a WorkDiary de las
+entradas nuevas y modificadas; la importación empieza entonces sola:
+
+1. La página **Importación de Clockify** indica en la sección **Webhook
+   (opcional)** la dirección que Clockify debe llamar.
+2. En Clockify, cree en Configuración del espacio de trabajo → Webhooks un
+   webhook hacia esta dirección.
+3. Guarde su token de firma en la configuración del plugin en **Secreto del
+   webhook** y configure allí también el **ID de espacio de trabajo**.
+
+Muchos eventos seguidos solo inician una importación. Sin secreto del
+webhook, el webhook permanece desactivado. La consulta horaria sigue siendo la
+fuente fiable: recupera lo que un webhook fallido no haya transmitido.
 
 ## Errores frecuentes
 

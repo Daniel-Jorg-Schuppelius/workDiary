@@ -29,6 +29,9 @@ enum FieldType: string {
 
     case Textarea = 'textarea';
 
+    /** Interner Benutzer der Organisation; Auswahl über Sqid, gespeichert wird die ID. */
+    case User = 'user';
+
     /** @return list<string> */
     public static function values(): array {
         return array_map(static fn(self $t): string => $t->value, self::cases());

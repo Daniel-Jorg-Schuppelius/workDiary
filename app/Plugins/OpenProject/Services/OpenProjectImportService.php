@@ -418,6 +418,6 @@ class OpenProjectImportService {
 
     /** @param array<string, mixed> $config */
     private function client(array $config): OpenProjectApiClient {
-        return new OpenProjectApiClient($config['api_token'] ?? null, $config['base_url'] ?? null);
+        return new OpenProjectApiClient($config['api_token'] ?? null, $config['base_url'] ?? null, (bool) ($config['allow_private_network'] ?? false));
     }
 }

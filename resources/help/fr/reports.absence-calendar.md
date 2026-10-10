@@ -1,7 +1,7 @@
 ---
 title: "Plan de congés (vue annuelle)"
 topic: reports.absence-calendar
-version: 1
+version: 2
 keywords:
     - calendrier des congés
     - planning des absences
@@ -12,6 +12,7 @@ keywords:
     - congés restants
     - chevauchement des congés
     - exporter les absences
+    - anonymiser les motifs d'absence
 audience: []
 related:
     - absences.manage
@@ -21,11 +22,21 @@ related:
 Le plan de congés affiche toutes les périodes d'absence approuvées d'une
 année sous forme de barres sur un axe annuel — les chevauchements au sein
 d'un service se voient d'un coup d'œil. Les filtres permettent de choisir
-l'année et (avec l'autorisation correspondante) une équipe.
+l'**Année** et, si vous voyez toutes les personnes, une **Équipe**.
 
-Le filtre de confidentialité affiche les motifs d'absence d'autrui de façon
-neutre comme « absent ». Sans accès RH, il est toujours actif ; avec un
-accès administrateur, il peut être activé, par exemple pour un affichage.
+Sans droit supplémentaire, vous ne voyez que votre propre ligne. Les
+administrateurs et les personnes disposant du droit **Voir toutes les demandes
+de congés** voient toutes les personnes de l'organisation. Le motif d'absence
+des autres personnes – par exemple congés, congé spécial ou maladie – n'est
+visible que pour qui détient en plus le droit **Voir les arrêts maladie**,
+ainsi que pour les administrateurs. Pour toutes les autres personnes, les
+absences d'autrui apparaissent de façon neutre comme « absent » ; vous voyez
+toujours vos propres motifs d'absence.
+
+L'interrupteur **Anonymiser les motifs d'absence** n'apparaît qu'avec les deux
+droits ou pour les administrateurs. Il affiche les motifs d'absence d'autrui de
+façon neutre comme « absent » pour ces personnes aussi, par exemple pour un
+affichage. Il en va de même pour la carte d'absences et les exports.
 
 Un clic sur un nom ouvre la carte d'absences personnelle : le calendrier
 annuel avec week-ends, jours fériés et codes d'absence, ainsi que le bloc du

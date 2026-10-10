@@ -29,10 +29,10 @@ enum MediaTreatmentMethod: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::SoftwareWipe => (string) __('Software-Löschung'),
-            self::Degaussing => (string) __('Degaussing'),
-            self::Shredding => (string) __('Schreddern'),
-            self::RemovedForDestruction => (string) __('Ausgebaut zur Vernichtung'),
+            self::SoftwareWipe => (string) __('enums.disposal.media_treatment_method.software_wipe'),
+            self::Degaussing => (string) __('enums.disposal.media_treatment_method.degaussing'),
+            self::Shredding => (string) __('enums.disposal.media_treatment_method.shredding'),
+            self::RemovedForDestruction => (string) __('enums.disposal.media_treatment_method.removed_for_destruction'),
         };
     }
 }

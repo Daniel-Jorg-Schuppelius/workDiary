@@ -1,7 +1,7 @@
 ---
 title: "Clientes & proveedores"
 topic: contacts.manage
-version: 2
+version: 4
 keywords:
     - ficha de cliente
     - maestro de clientes
@@ -16,6 +16,8 @@ keywords:
     - agenda de contactos
     - socio comercial
     - CRM
+    - portal de clientes
+    - acceso al portal
 audience: []
 modules:
     - module.vertrieb
@@ -60,6 +62,22 @@ del registro de tiempos a la entrega DATEV — funcionan sin retrabajo.
 comunicación en el cliente o proveedor. Las notas aparecen en la página de
 detalle y en la lista central de notas; una respuesta de acceso de protección
 de datos sobre un proveedor las enumera con su número y período.
+
+**Accesos al portal:** en la sección **Accesos al portal** de la ficha del
+cliente invita a las personas de contacto al portal de clientes con
+**Invitar acceso**; el contacto establece su contraseña mediante el enlace de
+la invitación. Mientras la invitación está pendiente o caducada, dispone de
+**Reenviar invitación**. En los accesos activos, **Restablecer acceso**
+restablece el acceso tras una confirmación: la contraseña anterior deja de ser
+válida de inmediato, se cierran todas las sesiones y el contacto recibe una
+nueva invitación; los métodos de dos factores configurados se mantienen. Si el
+contacto solo ha olvidado su contraseña, no hace falta: la restablece él mismo
+en la página de inicio de sesión del portal mediante
+**¿Olvidó su contraseña?**. **Desactivar** cierra la sesión del acceso al
+instante y bloquea el inicio de sesión, **Reactivar** lo revierte. Las áreas
+que ve un acceso las determina la configuración del portal del cliente.
+
+Si un contacto ha perdido todos los métodos de dos factores y los códigos de recuperación, **Restablecer el segundo factor** elimina todos los métodos tras una confirmación de la contraseña y una pregunta de confirmación, y cierra todas las sesiones. El contacto recibe un correo electrónico al respecto y después inicia sesión con su contraseña; si su organización exige la autenticación de dos factores, la configura de nuevo en ese momento. Verifique antes su identidad, por ejemplo devolviéndole la llamada.
 
 ## Ejemplo práctico
 

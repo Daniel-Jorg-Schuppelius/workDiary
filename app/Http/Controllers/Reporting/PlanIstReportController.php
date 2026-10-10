@@ -190,6 +190,7 @@ class PlanIstReportController extends Controller {
 
         return view('reports.plan-ist.sites', [
             'rows' => $this->paginateRows($request, $report['rows']),
+            'allRows' => $report['rows'],
             'totals' => $report['totals'],
             'from' => $from,
             'to' => $to,

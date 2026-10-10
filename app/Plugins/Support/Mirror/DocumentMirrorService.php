@@ -15,6 +15,10 @@ namespace App\Plugins\Support\Mirror;
 use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Document\{Document, DocumentVersion};
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Invoicing\Invoice;
+use App\Models\Protocol\Protocol;
+use App\Modules\ModuleRegistry;
+use App\Plugins\Support\Mirror\Contracts\MirrorPdfRenderer;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -39,6 +43,11 @@ use RuntimeException;
  */
 class DocumentMirrorService {
     public const EXTERNAL_TYPE = 'dms_object';
+
+    /** Externer Typ = Quelle der Anbindung (`sources`). */
+    public const EXTERNAL_TYPE_INVOICE = 'invoice_pdf';
+
+    public const EXTERNAL_TYPE_PROTOCOL = 'protocol_pdf';
 
     public const RESULT_MIRRORED = 'mirrored';
 
@@ -96,6 +105,46 @@ class DocumentMirrorService {
      */
     public function mirrorBytes(MirrorTarget $target, Model $morph, string $externalType, string $relativePath, string $bytes, string $mime, string $displayTitle, MirrorConnection $connection, RemoteFileGateway $gateway, bool $force = false): string {
         return $this->deliverAndRecord($target->pluginId(), $morph, $externalType, $relativePath, $bytes, $mime, $displayTitle, $connection, $gateway, $force, []);
+    }
+
+    /** Rechnungs-PDF unter `invoices/<jahr>/<nummer>.pdf`. */
+    public function mirrorInvoice(MirrorTarget $target, Invoice $invoice, MirrorConnection $connection, RemoteFileGateway $gateway, bool $force = false): string {
+        return $this->mirrorBytes($target, $invoice, self::EXTERNAL_TYPE_INVOICE, $this->invoicePath($invoice), $this->pdfFor($invoice), 'application/pdf', (string) $invoice->number, $connection, $gateway, $force);
+    }
+
+    /** Protokoll-PDF unter `protocols/<jahr>/protocol-<id>.pdf`. */
+    public function mirrorProtocol(MirrorTarget $target, Protocol $protocol, MirrorConnection $connection, RemoteFileGateway $gateway, bool $force = false): string {
+        return $this->mirrorBytes($target, $protocol, self::EXTERNAL_TYPE_PROTOCOL, $this->protocolPath($protocol), $this->pdfFor($protocol), 'application/pdf', (string) $protocol->title, $connection, $gateway, $force);
+    }
+
+    /** Deterministischer Remote-Pfad `invoices/<jahr>/<nummer>.pdf` (pfadsicher). */
+    private function invoicePath(Invoice $invoice): string {
+        $year = $invoice->issued_on?->format('Y') ?? now()->format('Y');
+        $number = (string) preg_replace('/[^A-Za-z0-9._-]/', '_', (string) $invoice->number);
+        if ($number === '') {
+            $number = 'invoice-' . $invoice->getKey();
+        }
+
+        return 'invoices/' . $year . '/' . $number . '.pdf';
+    }
+
+    /** Deterministischer Remote-Pfad `protocols/<jahr>/protocol-<id>.pdf`. */
+    private function protocolPath(Protocol $protocol): string {
+        $year = ($protocol->occurred_at ?? now())->format('Y');
+
+        return 'protocols/' . $year . '/protocol-' . $protocol->getKey() . '.pdf';
+    }
+
+    /** PDF über den Renderer des Fachmoduls; ohne Modul keine Spiegelung dieser Belegart. */
+    private function pdfFor(Model $document): string {
+        foreach (app(ModuleRegistry::class)->extensions(MirrorPdfRenderer::class) as $class) {
+            $renderer = app($class);
+            if ($document instanceof ($renderer->modelClass())) {
+                return $renderer->pdf($document);
+            }
+        }
+
+        throw new RuntimeException('Kein Spiegel-Renderer für ' . $document::class . '.');
     }
 
     /**

@@ -8,8 +8,8 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Auslastung und Realisierung')
-@section('pdf-heading', 'Auslastung & Realisierung')
+@section('pdf-title', __('Auslastung & Realisierung'))
+@section('pdf-heading', __('Auslastung & Realisierung'))
 
 @section('pdf-table')
     <p class="small">

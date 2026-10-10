@@ -38,6 +38,11 @@ class CustomerProjectReportController extends Controller {
     use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
+    /** E10: Sicht „Nur eigene“. */
+    protected function exportIsPersonal(Request $request): bool {
+        return $this->resolveScopeWithVisibility($request)[0] === 'mine';
+    }
+
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
         [$scope, $seesAll] = $this->resolveScopeWithVisibility($request);
@@ -74,6 +79,8 @@ class CustomerProjectReportController extends Controller {
             return $this->exportCsv($bucket, $totalMinutes, $totalRate, $from, $to, $exportFilters, $request);
         }
         if ($request->query('export') === 'xlsx') {
+            $this->auditExport($request, 'customer-project', 'xlsx', $exportFilters);
+
             return $this->exportXlsx($bucket, $totalMinutes, $totalRate, $from, $to);
         }
         if ($request->query('export') === 'pdf') {
@@ -244,7 +251,7 @@ class CustomerProjectReportController extends Controller {
     private function buildRows(array $bucket, int $totalMinutes, float $totalRate): array {
         $rows = [];
         foreach ($bucket as $row) {
-            $customerName = $row['customer'] instanceof Customer ? $row['customer']->name : '(Ohne Kunde)';
+            $customerName = $row['customer'] instanceof Customer ? $row['customer']->name : (string) __('reporting.csv.without_customer');
             foreach ($row['projects'] as $entry) {
                 $foreign = $entry['project']->foreignCustomer;
                 $rows[] = [
@@ -257,7 +264,7 @@ class CustomerProjectReportController extends Controller {
                 ];
             }
         }
-        $rows[] = ['Gesamt', '', '', '', $totalMinutes, (float) $totalRate];
+        $rows[] = [(string) __('reporting.csv.total'), '', '', '', $totalMinutes, (float) $totalRate];
 
         return $rows;
     }
@@ -268,7 +275,7 @@ class CustomerProjectReportController extends Controller {
      */
     private function exportCsv(array $bucket, int $totalMinutes, float $totalRate, string $from, string $to, array $exportFilters, Request $request): Response {
         $filename = sprintf('kunden-projekte_%s_%s.csv', $from, $to);
-        $rows = [['Kunde', 'Endkunde', 'Projekt', 'Projektnummer', 'Minuten', 'Erloes']];
+        $rows = [$this->exportHeaders()];
         foreach ($this->buildRows($bucket, $totalMinutes, $totalRate) as $row) {
             $rows[] = array_map(static fn($v) => is_float($v) ? NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) : $v, $row);
         }
@@ -281,9 +288,13 @@ class CustomerProjectReportController extends Controller {
      */
     private function exportXlsx(array $bucket, int $totalMinutes, float $totalRate, string $from, string $to): SymfonyResponse {
         $filename = sprintf('kunden-projekte_%s_%s.xlsx', $from, $to);
-        $headers = ['Kunde', 'Endkunde', 'Projekt', 'Projektnummer', 'Minuten', 'Erloes'];
 
-        return XlsxExport::streamFromArray($filename, $headers, $this->buildRows($bucket, $totalMinutes, $totalRate));
+        return XlsxExport::streamFromArray($filename, $this->exportHeaders(), $this->buildRows($bucket, $totalMinutes, $totalRate));
+    }
+
+    /** @return list<string> */
+    private function exportHeaders(): array {
+        return [(string) __('reporting.csv.customer'), (string) __('reporting.csv.end_customer'), (string) __('reporting.csv.project'), (string) __('reporting.csv.project_number'), (string) __('reporting.csv.minutes'), (string) __('reporting.csv.revenue')];
     }
 
     /**

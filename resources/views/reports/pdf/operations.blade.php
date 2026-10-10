@@ -8,7 +8,7 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Operations – ' . $from . ' bis ' . $to)
+@section('pdf-title', __('Operations') . ' – ' . $from . ' ' . __('bis') . ' ' . $to)
 @section('pdf-heading', __('Operations-Auswertung'))
 
 @push('pdf-styles')
@@ -19,10 +19,10 @@
 @endpush
 
 @section('pdf-meta')
-    Zeitraum: <strong>{{ \Carbon\Carbon::parse($from)->fdate() }}</strong> bis
+    {{ __('Zeitraum') }}: <strong>{{ \Carbon\Carbon::parse($from)->fdate() }}</strong> {{ __('bis') }}
     <strong>{{ \Carbon\Carbon::parse($to)->fdate() }}</strong> ·
-    Bereich: {{ $scope === 'team' ? 'Gesamtes Team' : 'Eigene' }} ·
-    Erstellt: {{ now()->fdatetime() }}
+    {{ __('Bereich') }}: {{ $scope === 'team' ? __('Gesamtes Team') : __('Eigene') }} ·
+    {{ __('Erstellt') }}: {{ now()->fdatetime() }}
 @endsection
 
 @section('pdf-table')
@@ -36,11 +36,11 @@
     <table class="kpis">
         <tr>
             <td><div class="label">{{ __('Service-Aufträge') }}</div><div class="value">{{ $orders['total'] }}</div></td>
-            <td><div class="label">Servicezeit Σ</div><div class="value">{{ $fmtMin($orders['service_minutes']) }}</div></td>
-            <td><div class="label">SO Abschluss</div><div class="value">{{ $pct($orders['completion_rate']) }}</div></td>
-            <td><div class="label">Tasks (Überfällig)</div><div class="value">{{ $tasks['total'] }} ({{ $tasks['overdue'] }})</div></td>
+            <td><div class="label">{{ __('Servicezeit Σ') }}</div><div class="value">{{ $fmtMin($orders['service_minutes']) }}</div></td>
+            <td><div class="label">{{ __('Abschluss') }}</div><div class="value">{{ $pct($orders['completion_rate']) }}</div></td>
+            <td><div class="label">{{ __('Tasks') }} ({{ __('überfällig') }})</div><div class="value">{{ $tasks['total'] }} ({{ $tasks['overdue'] }})</div></td>
             <td><div class="label">{{ __('Tasks Abschluss') }}</div><div class="value">{{ $pct($tasks['completion_rate']) }}</div></td>
-            <td><div class="label">Touren</div><div class="value">{{ $tours['total'] }} · {{ $num($tours['planned_distance_km'], 0) }} km</div></td>
+            <td><div class="label">{{ __('Touren') }}</div><div class="value">{{ $tours['total'] }} · {{ $num($tours['planned_distance_km'], 0) }} km</div></td>
         </tr>
     </table>
 
@@ -49,7 +49,7 @@
             <td class="col">
                 <h2>{{ __('Service-Aufträge – Status') }}</h2>
                 <table class="data">
-                    <thead><tr><th>Status</th><th class="right">Anzahl</th></tr></thead>
+                    <thead><tr><th>{{ __('Status') }}</th><th class="right">{{ __('Anzahl') }}</th></tr></thead>
                     <tbody>
                         @foreach ($orders['by_status'] as $st => $c)
                             <tr><td>{{ $st }}</td><td class="right">{{ $c }}</td></tr>
@@ -69,7 +69,7 @@
             <td class="col">
                 <h2>{{ __('Tasks – Status') }}</h2>
                 <table class="data">
-                    <thead><tr><th>Status</th><th class="right">Anzahl</th></tr></thead>
+                    <thead><tr><th>{{ __('Status') }}</th><th class="right">{{ __('Anzahl') }}</th></tr></thead>
                     <tbody>
                         @foreach ($tasks['by_status'] as $st => $c)
                             <tr><td>{{ $st }}</td><td class="right">{{ $c }}</td></tr>
@@ -93,9 +93,9 @@
     <table class="data">
         <thead>
             <tr>
-                <th>Mitarbeiter</th>
-                <th class="right">Touren</th>
-                <th class="right">Plan-km</th>
+                <th>{{ __('Mitarbeiter') }}</th>
+                <th class="right">{{ __('Touren') }}</th>
+                <th class="right">{{ __('Plan-km') }}</th>
                 <th class="right">{{ __('Plan-Dauer') }}</th>
             </tr>
         </thead>
@@ -109,7 +109,7 @@
                 </tr>
             @endforeach
             <tr class="totals">
-                <td>Gesamt</td>
+                <td>{{ __('Gesamt') }}</td>
                 <td class="right">{{ $tours['total'] }}</td>
                 <td class="right">{{ $num($tours['planned_distance_km'], 1) }} km</td>
                 <td class="right">{{ $fmtMin($tours['planned_minutes']) }}</td>

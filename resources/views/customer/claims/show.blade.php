@@ -50,6 +50,17 @@
             @error('note')<p class="text-sm text-error">{{ $message }}</p>@enderror
             <x-button type="submit">{{ __('Absenden') }}</x-button>
         </form>
+        @if ($portalNotes->isNotEmpty())
+            <h3 class="mt-2 text-sm font-semibold">{{ __('claims.portal_note.history') }}</h3>
+            <ul class="divide-y divide-base-300 text-sm">
+                @foreach ($portalNotes as $portalNote)
+                    <li class="py-2">
+                        <p class="text-xs text-muted">{{ $portalNote->recorded_at->fdatetime() }}</p>
+                        <p class="whitespace-pre-line">{{ $portalNote->note }}</p>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
     </x-card>
 
     <a class="link" href="{{ route('customer.claims.index') }}">{{ __('Zurück zur Übersicht') }}</a>

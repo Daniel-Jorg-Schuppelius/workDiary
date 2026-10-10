@@ -37,18 +37,18 @@ enum RentalChargeKind: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::DailyRate => (string) __('Tagessatz'),
-            self::HourlyRate => (string) __('Stundensatz'),
-            self::FlatRate => (string) __('Pauschale'),
-            self::WeekendSurcharge => (string) __('Wochenendzuschlag'),
-            self::HolidaySurcharge => (string) __('Feiertagszuschlag'),
-            self::Cleaning => (string) __('Reinigung'),
-            self::Consumable => (string) __('Verbrauchsmaterial'),
-            self::Delivery => (string) __('Lieferung/Transport'),
-            self::Damage => (string) __('Schaden'),
-            self::Loss => (string) __('Verlust'),
-            self::Discount => (string) __('Minderung/Nachlass'),
-            self::Other => (string) __('Sonstiges'),
+            self::DailyRate => (string) __('enums.rental.rental_charge_kind.daily_rate'),
+            self::HourlyRate => (string) __('enums.rental.rental_charge_kind.hourly_rate'),
+            self::FlatRate => (string) __('enums.rental.rental_charge_kind.flat_rate'),
+            self::WeekendSurcharge => (string) __('enums.rental.rental_charge_kind.weekend_surcharge'),
+            self::HolidaySurcharge => (string) __('enums.rental.rental_charge_kind.holiday_surcharge'),
+            self::Cleaning => (string) __('enums.rental.rental_charge_kind.cleaning'),
+            self::Consumable => (string) __('enums.rental.rental_charge_kind.consumable'),
+            self::Delivery => (string) __('enums.rental.rental_charge_kind.delivery'),
+            self::Damage => (string) __('enums.rental.rental_charge_kind.damage'),
+            self::Loss => (string) __('enums.rental.rental_charge_kind.loss'),
+            self::Discount => (string) __('enums.rental.rental_charge_kind.discount'),
+            self::Other => (string) __('enums.rental.rental_charge_kind.other'),
         };
     }
 

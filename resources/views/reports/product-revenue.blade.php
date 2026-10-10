@@ -7,8 +7,9 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Umsatz je Produkt (Feature 140, MVP-705): Menge/Nettoumsatz/Anteil je
-     Artikel aus lokalen Rechnungen und gespiegelten Lexoffice-Belegen (MVP-804),
-     dazu je Kategorie; Voll-Höhe-Tabelle als letztes Element. --}}
+     Artikel aus lokalen Rechnungen und gespiegelten Belegen des
+     Buchhaltungsprogramms (MVP-804/1035), dazu je Kategorie; Voll-Höhe-Tabelle
+     als letztes Element. --}}
 
 @extends('layouts.app')
 @section('title', __('Umsatz je Produkt'))
@@ -24,7 +25,7 @@
     $withoutShare = $total > 0 ? round($withoutArticle / $total * 100, 1) : null;
 @endphp
 
-<x-index-page overflow="clip" :subtitle="__('Menge, Nettoumsatz und Anteil je Artikel aus lokalen Rechnungen und gespiegelten Lexoffice-Rechnungen.') . ' · ' . __('Zeitraum') . ': ' . $label">
+<x-index-page overflow="clip" :subtitle="__('reporting.product_revenue.subtitle') . ' · ' . __('Zeitraum') . ': ' . $label">
     <x-slot:actions>
         <x-report-export :url="fn (string $format) => route('reports.product-revenue', array_merge($linkParams, ['export' => $format]))" />
     </x-slot:actions>
@@ -46,7 +47,7 @@
     </div>
 
     <x-charts.bar-h :title="__('Nettoumsatz je Artikel (Top :n)', ['n' => $topN])" unit="€" :series="$series" :x-label="__('Artikel')" y-label="€"
-                    :note="__('Datenbasis: Positionen ausgestellter und bezahlter lokaler Rechnungen (Rechnung/Abschlag/Schluss) sowie gespiegelter Lexoffice-Rechnungen und -Gutschriften ohne Entwürfe und Stornos; Klick öffnet den Artikel.')" />
+                    :note="__('reporting.product_revenue.chart_note')" />
 
     {{-- Umsatz nach Artikelkategorie (MVP-804) — vor der Voll-Höhe-Tabelle (Tabellen-Gate R5). --}}
     @if (count($categories) > 0)

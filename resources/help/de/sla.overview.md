@@ -1,7 +1,7 @@
 ---
 title: "SLA, Verträge & Service-Level"
 topic: sla.overview
-version: 3
+version: 4
 keywords:
     - Service Level Agreement
     - Reaktionszeit
@@ -75,4 +75,6 @@ zeigt im gewählten Zeitraum die **Tickets mit SLA**, die
 **Verletzungsliste** mit Sprung zum Ticket und die
 **Inklusivzeit-Kontingente**. Der Report ist als PDF, CSV und Excel
 exportierbar. Einsehen darf ihn, wer das Recht **SLA-Status & -Report
-einsehen** hat.
+einsehen** hat; exportieren zusätzlich nur mit dem Recht **Auswertungen
+exportieren** – ohne das Recht fehlen die Exportknöpfe. Administratoren
+dürfen beides immer.

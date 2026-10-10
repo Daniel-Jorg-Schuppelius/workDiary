@@ -47,5 +47,7 @@
                        :label="__('accounting.clearing.field.follow_up_on')"
                        :hint="__('accounting.clearing.hint.follow_up_on')"
                        :value="old('follow_up_on', now()->addWeeks(2)->toDateString())" />
+
+        <x-accounting.four-eyes-note />
     @endif
 </x-modal>

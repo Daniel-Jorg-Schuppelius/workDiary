@@ -315,6 +315,14 @@ class ProductRevenueReportTest extends TestCase {
             ->assertSee('wd-table-flex', false);
     }
 
+    public function test_hint_texts_describe_the_actual_data_basis(): void {
+        $this->getWithRange()
+            ->assertOk()
+            ->assertSee(__('reporting.product_revenue.subtitle'))
+            ->assertSee(__('reporting.product_revenue.chart_note'))
+            ->assertDontSee('Lexoffice-Rechnungen');
+    }
+
     public function test_csv_and_pdf_export(): void {
         $csv = $this->getWithRange(['export' => 'csv']);
         $csv->assertOk();

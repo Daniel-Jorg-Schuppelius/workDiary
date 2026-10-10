@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
   FRITZ!Box-Anruflisten-Import: CSV-Export hochladen; Telefonate werden als
-  Zeiteinträge gebucht bzw. mit Fernwartungszeiten verschmolzen.
+  Zeiteinträge gebucht bzw. mit überlappenden Zeiten verschmolzen.
 --}}
 
 @extends('layouts.app')
@@ -26,7 +26,7 @@
     <x-card>
         <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('Anrufliste hochladen') }}</h2>
         <p class="mb-3 text-sm text-muted">
-            {{ __('FRITZ!Box → Telefonie → Anrufe → Sichern (CSV). Nummern bekannter Kunden buchen automatisch; Anrufe, die eine gebuchte Fernwartungszeit desselben Kunden überlappen oder ihr bis zu :lead Minuten vorausgehen, verschmelzen mit dem bestehenden Eintrag. Gespräche unter :min Minuten und verpasste Anrufe werden ausgefiltert; unbekannte Nummern landen in der Zuordnungs-Inbox.', ['lead' => $leadMinutes, 'min' => $minCallMinutes]) }}
+            {{ __('FRITZ!Box → Telefonie → Anrufe → Sichern (CSV). Nummern bekannter Kunden buchen automatisch; Anrufe, die eine gebuchte Zeit desselben Kunden und Benutzers überlappen oder ihr bis zu :lead Minuten vorausgehen, verschmelzen mit dem bestehenden Eintrag. Gespräche unter :min Minuten und verpasste Anrufe werden ausgefiltert; unbekannte Nummern landen in der Zuordnungs-Inbox.', ['lead' => $leadMinutes, 'min' => $minCallMinutes]) }}
         </p>
         <div class="mb-3 flex items-start gap-2 rounded-box bg-base-200 p-3 text-sm">
             <x-icon name="contact_phone" class="mt-0.5 shrink-0 text-info" />

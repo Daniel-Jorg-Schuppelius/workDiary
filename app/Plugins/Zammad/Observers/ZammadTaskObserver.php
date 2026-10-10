@@ -24,14 +24,27 @@ use App\Services\Integration\IntegrationOutboxService;
  * Schlanker Rückkanal-Trigger (Feature 060, 2. Stufe): wird eine mit einem
  * Zammad-Ticket verknüpfte Aufgabe lokal auf „erledigt" gesetzt, wird NUR ein
  * Outbox-Eintrag enqueued — keine Zammad-Logik in Model-Events; die Übertragung
- * läuft asynchron über den {@see ZammadOutboxDispatcher}. Der Import erzeugt
- * Aufgaben nur (aktualisiert sie nie), daher gibt es kein Import-Echo — eine
- * Unterdrückung wie beim bidirektionalen Todoist-Export ist nicht nötig.
+ * läuft asynchron über den {@see ZammadOutboxDispatcher}. Erledigt der Import
+ * eine Aufgabe, weil Zammad das Ticket geschlossen hat, läuft das unter
+ * {@see suppressed()} — sonst ginge der Abschluss als Echo samt Notiz zurück.
  */
 class ZammadTaskObserver {
+    private static bool $suppressed = false;
+
+    /** Statuswechsel aus dem Import ohne Rückmeldung ans Ticket ausführen. */
+    public static function suppressed(callable $callback): mixed {
+        $previous = self::$suppressed;
+        self::$suppressed = true;
+        try {
+            return $callback();
+        } finally {
+            self::$suppressed = $previous;
+        }
+    }
+
     public function updated(Task $task): void {
         // Nur beim Übergang auf „erledigt".
-        if (! array_key_exists('status', $task->getChanges()) || $task->status !== TaskStatus::Done) {
+        if (self::$suppressed || ! array_key_exists('status', $task->getChanges()) || $task->status !== TaskStatus::Done) {
             return;
         }
 

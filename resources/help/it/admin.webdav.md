@@ -1,7 +1,7 @@
 ---
 title: "Archivio WebDAV"
 topic: admin.webdav
-version: 1
+version: 3
 keywords:
     - WebDAV
     - Nextcloud
@@ -13,6 +13,7 @@ keywords:
     - password app
     - regole cartelle
     - conflitto di copia
+    - indirizzi privati
 audience:
     - admin
 related:
@@ -44,8 +45,8 @@ non appena il plugin è attivo.
 - Servono un account nell’archivio con diritto di scrittura sulla cartella di
   destinazione e una password per app (Nextcloud: Impostazioni → Sicurezza →
   Password app).
-- L’archivio deve essere raggiungibile pubblicamente. WorkDiary rifiuta gli
-  indirizzi di una rete interna.
+- L’archivio deve essere raggiungibile pubblicamente. Se il server si trova
+  nella Sua rete, attivi **Consenti indirizzi privati/interni** (vedi sotto).
 - Per ogni organizzazione esiste esattamente un archivio WebDAV.
 
 Questa pagina non è una destinazione per i backup. Una destinazione di backup
@@ -65,6 +66,11 @@ Nella sezione **Archivio** compila:
   la password memorizzata.
 - **Cartella predefinita**: sottocartella per i documenti senza una propria
   regola di cartella (precompilata con Dokumente).
+- **Consenti indirizzi privati/interni**: lo attivi solo se il server
+  WebDAV si trova nella Sua rete (per esempio 192.168.x.x). Senza questo
+  interruttore WorkDiary rifiuta gli indirizzi interni già al salvataggio.
+  L’attivazione viene registrata. Se il gestore della Sua installazione ha
+  bloccato questa autorizzazione, l’interruttore non ha effetto.
 - **Attivo**: attiva o disattiva l’archivio.
 - **Contenuti replicati**: **Documenti (DMS)**, **Fatture (PDF)**, **Verbali
   (PDF)**.
@@ -78,19 +84,19 @@ stato (per esempio **Stato ok**) e **Verifica connessione**.
 
 - **Documenti:** un documento viene copiato non appena ha lo stato **Attivo**
   con un file, e di nuovo a ogni nuova versione. Le modifiche ai dati senza
-  nuova versione non provocano un caricamento. L’archivio copia sempre i
-  documenti approvati finché è attivo – anche se **Documenti (DMS)** non è
-  spuntato.
+  nuova versione non provocano un caricamento. Ciò vale solo con
+  **Documenti (DMS)** spuntato; se non è spuntata alcuna fonte, i documenti
+  valgono come scelti.
 - **Fatture (PDF):** con questa casella spuntata ogni fattura viene depositata
   una volta come PDF al passaggio a **Emessa**.
 - **Verbali (PDF):** con questa casella spuntata ogni verbale viene depositato
   come PDF alla firma (stato **Firmato**).
 - Il trasferimento avviene in background tramite una coda e viene ripetuto in
   caso di errori di connessione. WorkDiary non ricarica contenuti invariati.
-- **Copia ora** rimette in coda tutti i documenti attualmente approvati –
-  utile dopo la configurazione. Questo pulsante non comprende fatture e
-  verbali; questi vengono copiati solo a partire dalla configurazione, al
-  momento dell’emissione o della firma.
+- **Copia ora** rimette in coda tutto ciò che proviene dalle fonti
+  spuntate: documenti approvati, fatture emesse e verbali firmati – utile
+  dopo la configurazione, anche per i documenti precedenti. WorkDiary non
+  ricarica contenuti già copiati.
 - Non esiste un’esecuzione pianificata; la copia segue le modifiche in
   WorkDiary.
 
@@ -101,10 +107,9 @@ stato (per esempio **Stato ok**) e **Verifica connessione**.
   relative all’URL della collection. Il file si chiama document- seguito dal
   numero del documento e dall’estensione originale, per esempio
   document-42.pdf.
-- La scelta dei tipi di documento mostra attualmente la sigla inglese, per
-  esempio contract per i contratti o invoice per le fatture. Ci sono sempre
-  tre righe libere; WorkDiary scarta le righe senza tipo o senza
-  sottocartella.
+- La scelta indica i tipi di documento con la loro denominazione, per
+  esempio Contratto o Fattura. Ci sono sempre tre righe libere; WorkDiary
+  scarta le righe senza tipo o senza sottocartella.
 - Le fatture finiscono in invoices/anno/numero-fattura.pdf, i verbali in
   protocols/anno/protocol-numero.pdf – direttamente sotto l’URL della
   collection, non nella cartella predefinita.
@@ -124,6 +129,11 @@ sovrascrive nulla e crea un conflitto nell’Inbox di riconciliazione:
 - **Scollega copia**: questo documento non viene più copiato in modo
   definitivo; l’archivio resta attivo per tutti gli altri.
 
+Per i PDF di fatture e verbali esiste solo **Sovrascrivi remoto**: le
+fatture emesse e i verbali firmati non sono modificabili, WorkDiary deposita
+di nuovo il proprio PDF. Se vuole mantenere il file modificato, scelga
+**Scarta**.
+
 L’Inbox di riconciliazione è accessibile agli amministratori e alla
 contabilità.
 
@@ -141,7 +151,11 @@ nell’archivio. Per riattivarlo imposti **Attivo** e salvi.
 - **Stato difettoso** con «Archivio WebDAV non raggiungibile o credenziali non
   valide.»: controlli URL della collection, nome utente e password app e che la
   cartella esista. Un errore WebDAV con RuntimeException indica spesso un
-  indirizzo di una rete interna.
+  indirizzo di una rete interna senza autorizzazione.
+- «L'URL della collection punta a un indirizzo privato/interno.»: se il server
+  si trova nella Sua rete, attivi **Consenti indirizzi privati/interni**. Se
+  il gestore ha bloccato questa autorizzazione, l’archivio ha bisogno di un
+  indirizzo raggiungibile pubblicamente.
 - «Nessun archivio WebDAV attivo.» con **Copia ora**: l’archivio è disattivato
   o incompleto.
 - Nell’archivio mancano fatture o verbali: la casella corrispondente in

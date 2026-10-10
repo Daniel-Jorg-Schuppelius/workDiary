@@ -110,6 +110,8 @@ return [
             'add_entry' => 'Buchung erfassen',
             'post' => 'Festschreiben',
             'reverse' => 'Stornieren',
+            'discard' => 'Entwurf verwerfen',
+            'show_pending' => 'Wartenden Entwurf anzeigen',
             'reverse_submit' => 'Gegenbuchung erzeugen',
             'import' => 'Kontenplan importieren',
         ],
@@ -157,6 +159,8 @@ return [
             'entry_saved' => 'Buchung gespeichert.',
             'entry_posted' => 'Buchung festgeschrieben.',
             'entry_reversed' => 'Gegenbuchung erzeugt.',
+            'entry_discarded' => 'Entwurf verworfen — der Vorgang lässt sich neu anstoßen.',
+            'reversal_awaiting_approval' => 'Vier-Augen-Prinzip: Das Storno wartet als Entwurf in der Buchungs-Inbox auf die Freigabe. Die Buchung bleibt festgeschrieben, bis eine zweite Person die Gegenbuchung festschreibt.',
         ],
         'error' => [
             'sovereignty' => 'Für den :date führt :holder das Hauptbuch — lokal darf für diesen Tag nicht festgeschrieben werden.',
@@ -177,6 +181,8 @@ return [
             'both_sides' => 'Eine Zeile trägt entweder Soll oder Haben, nie beides.',
             'unbalanced' => 'Soll (:debit) und Haben (:credit) stimmen nicht überein.',
             'reverse_not_posted' => 'Nur eine festgeschriebene Buchung kann storniert werden.',
+            'reversal_pending' => 'Für diese Buchung wartet bereits ein Storno auf die Freigabe.',
+            'discard_not_allowed' => 'Verwerfen lässt sich nur ein wartender Entwurf aus Skonto, Ausbuchung, Klärung, Umbuchung, Startsalden, Sondervorauszahlung oder Storno; festgeschriebene Buchungen bleiben unverändert.',
             'reversal_reason_required' => 'Für den Storno ist eine Begründung Pflicht.',
             'account_in_use' => 'Auf dieses Konto wurde bereits gebucht — es kann nur stillgelegt werden.',
             'entry_without_organization' => 'Die Buchung hat keine Organisation — bitte den Systembetreuer informieren.',
@@ -235,6 +241,8 @@ return [
             'lines' => 'Buchungszeilen',
             'total' => 'Summe',
             'is_reversal_of' => 'Diese Buchung storniert die Buchung #:no.',
+            'awaiting_approval' => 'Entwurf aus „:kind“: Er wartet auf die Freigabe und wird erst wirksam, wenn eine zweite Person ihn festschreibt. Verwerfen löscht ihn; der Vorgang lässt sich danach neu anstoßen.',
+            'reversal_pending' => 'Ein Storno dieser Buchung wartet als Entwurf auf die Freigabe.',
             'reversed_by' => 'Storniert durch Buchung #:no — :reason',
         ],
         'filter' => [
@@ -252,6 +260,7 @@ return [
         ],
         'confirm' => [
             'deactivate' => 'Konto wirklich stilllegen? Bestehende Buchungen bleiben erhalten.',
+            'discard' => 'Entwurf verwerfen? Er wird gelöscht und der Schritt protokolliert; der Vorgang lässt sich danach neu anstoßen.',
         ],
         'import' => [
             'line_invalid' => 'Zeile :line übersprungen (Nummer, Name oder Kontoart fehlt).',
@@ -269,7 +278,8 @@ return [
         'menu' => 'Buchungs-Inbox',
         'subtitle' => 'Belege, Auslagen und Kassenvorgänge des Zeitraums mit ihrem Buchungsstatus.',
         'empty' => 'Keine offenen Vorgänge im Zeitraum.',
-        'four_eyes_active' => 'Vier-Augen-Prinzip aktiv: Wer einen Vorschlag vorbereitet hat, schreibt ihn nicht selbst fest.',
+        'four_eyes_active' => 'Vier-Augen-Prinzip aktiv: Wer einen Vorschlag vorbereitet hat, schreibt ihn nicht selbst fest. Skonto, Ausbuchung, Klärungsbuchungen, interne Umbuchungen, Startsalden, Sondervorauszahlungen und Stornos warten hier ebenfalls auf die Freigabe durch eine zweite Person; solche Entwürfe lassen sich auch verwerfen.',
+        'four_eyes_direct_hint' => 'Vier-Augen-Prinzip aktiv: Die Buchung entsteht als Entwurf in der Buchungs-Inbox und wird erst wirksam, wenn eine zweite Person sie festschreibt.',
         'state' => [
             'blocked' => 'Blockiert',
             'open' => 'Ungebucht',
@@ -299,6 +309,7 @@ return [
         'flash' => [
             'prepared' => 'Vorschlag übernommen.',
             'batch' => 'Stapel: :prepared übernommen, :posted festgeschrieben, :failed offen.',
+            'awaiting_approval' => 'Vier-Augen-Prinzip: Die Buchung wartet als Entwurf in der Buchungs-Inbox auf die Freigabe. Wirksam wird sie, sobald eine zweite Person sie festschreibt.',
         ],
         'error' => [
             'four_eyes' => 'Vier-Augen-Prinzip: Diese Buchung wurde von Ihnen vorbereitet — sie muss jemand anderes festschreiben.',
@@ -511,6 +522,8 @@ return [
         'empty' => 'Keine offenen Posten.',
         'overdue_days' => ':days Tage überfällig',
         'settle_hint' => 'Offen: :open. Zahlungen kommen aus dem Zahlungsabgleich — hier nur Skonto, Einbehalt oder Ausbuchung.',
+        'awaiting_approval' => 'Entwurf wartet auf Freigabe',
+        'four_eyes_hint' => 'Vier-Augen-Prinzip aktiv: Skonto und Ausbuchung entstehen als Entwurf in der Buchungs-Inbox. Der Posten bleibt offen, bis eine zweite Person die Gegenbuchung festschreibt.',
         'column' => [
             'counterparty' => 'Gegenpartei',
             'due_date' => 'Fällig',
@@ -528,9 +541,14 @@ return [
         'action' => [
             'settle' => 'Ausgleichen',
             'show_entry' => 'Buchung anzeigen',
+            'show_pending' => 'Wartenden Entwurf anzeigen',
         ],
         'flash' => [
             'settled' => 'Ausgleich erfasst.',
+            'awaiting_approval' => 'Vier-Augen-Prinzip: Die Gegenbuchung wartet als Entwurf in der Buchungs-Inbox auf die Freigabe. Der Posten bleibt offen, bis eine zweite Person sie festschreibt.',
+        ],
+        'error' => [
+            'draft_pending' => 'Für diesen Posten wartet bereits eine Gegenbuchung auf die Freigabe. Ein weiterer Ausgleich ist erst möglich, wenn sie festgeschrieben ist.',
         ],
     ],
 
@@ -543,6 +561,9 @@ return [
         'invoice_schedules_hint' => 'Serienrechnungen bleiben beim Abrechnungsplan; hier nur zur Übersicht.',
         'preview' => 'Nächste Fälligkeiten: :dates',
         'no_account' => '— kein Konto —',
+        'no_responsible' => '— niemand —',
+        'choose_invoice' => '— Rechnung wählen —',
+        'fulfill_hint' => 'Periode :period, fällig am :due, erwartet :expected. Mit der Zuordnung der eingegangenen Rechnung ist der Vorgang erledigt.',
         'section' => [
             'open_runs' => 'Offene Vorgänge',
             'templates' => 'Vorlagen',
@@ -562,11 +583,13 @@ return [
             'due_day' => 'Fälligkeitstag',
             'starts_on' => 'Beginn',
             'ends_on' => 'Ende',
+            'incoming_einvoice' => 'Eingangs-E-Rechnung',
         ],
         'hint' => [
             'kind' => 'Belegerwartung wartet auf ein Original; die Buchungsvorlage erzeugt einen Entwurf.',
             'due_day' => '1–28, damit jeder Monat den Tag hat.',
             'accounts' => 'Nur für Buchungsvorlagen — zusammen mit dem erwarteten Betrag.',
+            'responsible' => 'Erhält zusätzlich zur Buchhaltung die Meldung über überfällige Vorgänge.',
         ],
         'action' => [
             'add' => 'Vorlage anlegen',
@@ -576,6 +599,7 @@ return [
             'resume' => 'Fortsetzen',
             'end' => 'Beenden',
             'open_schedules' => 'Abrechnungspläne öffnen',
+            'fulfill' => 'Beleg zuordnen',
         ],
         'confirm' => [
             'end' => 'Vorlage beenden? Bereits erzeugte Vorgänge bleiben bestehen.',
@@ -584,6 +608,7 @@ return [
             'runs' => 'Keine offenen Vorgänge.',
             'templates' => 'Noch keine Vorlage angelegt.',
             'schedules' => 'Kein aktiver Abrechnungsplan.',
+            'candidates' => 'Keine zuordenbare Eingangs-E-Rechnung. Erfassen Sie das Original zuerst unter Eingangs-E-Rechnungen.',
         ],
         'flash' => [
             'saved' => 'Vorlage gespeichert.',
@@ -592,6 +617,7 @@ return [
             'resumed' => 'Vorlage fortgesetzt.',
             'ended' => 'Vorlage beendet.',
             'ran' => 'Lauf ausgeführt.',
+            'fulfilled' => 'Belegerwartung erfüllt.',
         ],
         'error' => [
             'already_closed' => 'Der Vorgang ist bereits abgeschlossen.',

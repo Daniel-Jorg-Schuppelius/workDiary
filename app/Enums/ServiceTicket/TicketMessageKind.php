@@ -29,9 +29,9 @@ enum TicketMessageKind: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::PublicReply => (string) __('Antwort'),
-            self::InternalNote => (string) __('Interne Notiz'),
-            self::SystemEvent => (string) __('Systemereignis'),
+            self::PublicReply => (string) __('enums.service_ticket.ticket_message_kind.public_reply'),
+            self::InternalNote => (string) __('enums.service_ticket.ticket_message_kind.internal_note'),
+            self::SystemEvent => (string) __('enums.service_ticket.ticket_message_kind.system_event'),
         };
     }
 

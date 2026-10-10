@@ -1,7 +1,7 @@
 ---
 title: "Tiempos registrados"
 topic: customer-portal.time
-version: 2
+version: 3
 keywords:
     - registro de horas
     - hoja de horas
@@ -34,7 +34,7 @@ niveles:
   **Horas**. Para cada mes y proyecto figura el total de tiempo, con el mes
   más reciente arriba. En este nivel no se ven registros individuales.
 - Registros individuales: para cada registro, **Fecha**, **Duración**,
-  **Proyecto** y **Empleados**, es decir, quién realizó el trabajo.
+  **Proyecto** y **Empleado**, es decir, quién realizó el trabajo.
 - Registros individuales con descripción: además, la columna **Descripción**
   con el texto de la actividad. Solo aparece en los registros que su
   proveedor ha publicado expresamente para usted; en todos los demás la

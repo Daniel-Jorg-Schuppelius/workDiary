@@ -143,6 +143,27 @@ class PlanModuleGatingTest extends TestCase {
         $response->assertSee(route('reports.coverage'), false);
     }
 
+    /**
+     * E12 (MVP-1101): Das Menü folgt je Eintrag dem Modul-Gate der Route.
+     * Vorher hingen die Gruppen Team, Projekte & Kunden und Ressourcen ganz am
+     * Modul Team-Auswertungen — erreichbare Seiten fehlten im Free-Tarif, und
+     * Wirtschaftlichkeit/ArbZG standen im Menü, obwohl sie 423 antworten.
+     */
+    public function test_report_menu_follows_the_route_gate_on_free(): void {
+        $org = Organization::factory()->free()->create();
+        $admin = User::factory()->admin()->create(['organization_id' => $org->id]);
+
+        $response = $this->actingAs($admin)->get(route('dashboard'))->assertOk();
+        foreach (['reports.time-accounts', 'reports.utilization', 'reports.fleet', 'reports.safety', 'reports.management'] as $reachable) {
+            $response->assertSee(route($reachable), false);
+            $this->assertNotSame(423, $this->actingAs($admin)->get(route($reachable))->status(), $reachable);
+        }
+        foreach (['reports.economics', 'reports.arbzg-compliance', 'reports.week-by-user', 'reports.customers'] as $gated) {
+            $response->assertDontSee('href="' . route($gated) . '"', false);
+            $this->actingAs($admin)->get(route($gated))->assertStatus(423);
+        }
+    }
+
     public function test_navigation_hides_gated_module_links_on_free(): void {
         $org = Organization::factory()->free()->create();
         $admin = User::factory()->admin()->create(['organization_id' => $org->id]);

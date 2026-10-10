@@ -28,9 +28,9 @@ enum ContractPartnerType: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Customer => (string) __('Kunde'),
-            self::Supplier => (string) __('Lieferant'),
-            self::Other => (string) __('Freitext'),
+            self::Customer => (string) __('enums.contract.contract_partner_type.customer'),
+            self::Supplier => (string) __('enums.contract.contract_partner_type.supplier'),
+            self::Other => (string) __('enums.contract.contract_partner_type.other'),
         };
     }
 }

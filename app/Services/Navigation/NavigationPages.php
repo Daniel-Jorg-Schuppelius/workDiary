@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Route;
 final class NavigationPages {
     public function __construct(private readonly NavigationRegistry $registry) {}
 
-    /** @return list<array{route: string, label: string, icon: string, area: string, url: string}> */
+    /** @return list<array{route: string, label: string, icon: string, area: string, url: string, modal: bool}> */
     public function forCurrentUser(): array {
         $pages = [];
         $add = static function (mixed $item, string $area) use (&$pages): void {
@@ -46,6 +46,7 @@ final class NavigationPages {
                 'icon' => (string) ($item['icon'] ?? 'arrow_forward'),
                 'area' => $area,
                 'url' => $url,
+                'modal' => (bool) ($item['modal'] ?? false),
             ];
         };
 

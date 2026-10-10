@@ -1,7 +1,7 @@
 ---
 title: "Utilizzo & realizzazione"
 topic: reports.utilization
-version: 2
+version: 3
 keywords:
     - tasso di utilizzo
     - ore fatturabili
@@ -23,7 +23,7 @@ Tre quote, tre domande — con esempio (mese con 160 h previste):
 
 - **Utilizzo** = tempo registrato ÷ tempo previsto. 120 h registrate →
   **75 %**. Il volume di lavoro è sufficiente? Il previsto viene dal
-  modello di orario (festività/ferie non contano).
+  modello di orario (festività, ferie e malattia non contano).
 - **Quota fatturabile** = tempo fatturabile ÷ registrato. 90 h su 120 →
   **75 %**. Il tempo confluisce in lavoro remunerato?
 - **Realizzazione** = tempo fatturato ÷ fatturabile. 72 h su 90 in

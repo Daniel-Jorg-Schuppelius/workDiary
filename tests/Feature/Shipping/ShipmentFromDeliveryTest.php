@@ -128,6 +128,39 @@ final class ShipmentFromDeliveryTest extends TestCase {
         $this->assertSame(1, $this->provider->createCount);
     }
 
+    /** MVP-1095: Label herunterladen, Status abrufen, stornieren — danach ist ein neuer Versandauftrag möglich. */
+    public function test_label_tracking_and_cancel_from_delivery(): void {
+        [$order, $delivery] = $this->orderWithDelivery($this->customer());
+        $this->ship($order, $delivery)->assertRedirect();
+
+        $this->get(route('manufacturing-orders.deliveries.shipment.label', [$order, $delivery]))->assertOk()->assertDownload();
+
+        $this->post(route('manufacturing-orders.deliveries.shipment.track', [$order, $delivery]))->assertSessionHas('success');
+        $this->assertSame(ShipmentStatus::InTransit, Shipment::query()->sole()->status);
+        $this->post(route('manufacturing-orders.deliveries.shipment.cancel', [$order, $delivery]))->assertSessionHas('error', __('shipping.flash.not_cancellable'));
+
+        Shipment::query()->update(['status' => ShipmentStatus::Labeled->value]);
+        $this->post(route('manufacturing-orders.deliveries.shipment.cancel', [$order, $delivery]))->assertSessionHas('success');
+        $this->assertSame(1, $this->provider->cancelCount);
+        $this->assertSame(ShipmentStatus::Cancelled, Shipment::query()->sole()->status);
+
+        $this->ship($order, $delivery)->assertSessionHas('success');
+        $this->assertSame(2, Shipment::query()->where('stock_delivery_id', $delivery->id)->count());
+    }
+
+    public function test_scheduled_tracking_updates_open_shipments_only(): void {
+        [$order, $delivery] = $this->orderWithDelivery($this->customer());
+        $this->ship($order, $delivery)->assertRedirect();
+        [$otherOrder, $otherDelivery] = $this->orderWithDelivery($this->customer());
+        $this->ship($otherOrder, $otherDelivery)->assertRedirect();
+        Shipment::query()->where('stock_delivery_id', $otherDelivery->id)->update(['last_tracked_at' => now()]);
+
+        $this->artisan('shipping:track')->assertSuccessful();
+
+        $this->assertSame(ShipmentStatus::InTransit, Shipment::query()->where('stock_delivery_id', $delivery->id)->sole()->status);
+        $this->assertSame(ShipmentStatus::Labeled, Shipment::query()->where('stock_delivery_id', $otherDelivery->id)->sole()->status, 'Frisch abgeglichen — kein erneuter Abruf.');
+    }
+
     public function test_delivery_without_customer_is_rejected(): void {
         [$order, $delivery] = $this->orderWithDelivery(null);
 

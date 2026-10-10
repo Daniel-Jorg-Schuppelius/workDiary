@@ -64,7 +64,7 @@ trait BuildsUserPeriodMatrix {
             $cols[] = (float) $row['rate'];
             $rows[] = $cols;
         }
-        $totalRow = ['Gesamt'];
+        $totalRow = [(string) __('reporting.csv.total')];
         foreach ($periodTotals as $m) {
             $totalRow[] = (int) $m;
         }

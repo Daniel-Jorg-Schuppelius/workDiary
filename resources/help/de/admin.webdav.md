@@ -1,7 +1,7 @@
 ---
 title: "WebDAV-Ablage"
 topic: admin.webdav
-version: 1
+version: 3
 keywords:
     - WebDAV
     - Nextcloud
@@ -13,6 +13,7 @@ keywords:
     - App-Passwort
     - Ordnerregeln
     - Spiegelkonflikt
+    - Private Adressen
 audience:
     - admin
 related:
@@ -43,8 +44,8 @@ Kopfzeile) unter **Plugins** → **WebDAV**, sobald das Plugin aktiv ist.
 - Sie brauchen ein Konto in der Ablage mit Schreibrecht auf den Zielordner
   und ein App-Passwort (Nextcloud: Einstellungen → Sicherheit →
   App-Passwort).
-- Die Ablage muss öffentlich erreichbar sein. Adressen im internen Netz lehnt
-  WorkDiary ab.
+- Die Ablage muss öffentlich erreichbar sein. Steht der Server im eigenen
+  Netz, schalten Sie **Private/interne Adressen erlauben** ein (siehe unten).
 - Je Organisation gibt es genau eine WebDAV-Ablage.
 
 Als Ziel für Datensicherungen dient diese Seite nicht. Ein WebDAV-Backupziel
@@ -64,6 +65,11 @@ Im Abschnitt **Ablage** füllen Sie aus:
   später das gespeicherte Passwort.
 - **Standardordner**: Unterordner für Dokumente ohne eigene Ordnerregel
   (vorbelegt mit Dokumente).
+- **Private/interne Adressen erlauben**: nur einschalten, wenn der
+  WebDAV-Server in Ihrem eigenen Netz steht (zum Beispiel 192.168.x.x). Ohne
+  diesen Schalter lehnt WorkDiary interne Adressen schon beim Speichern ab.
+  Das Einschalten wird protokolliert. Hat der Betreiber Ihrer Installation
+  diese Freigabe gesperrt, bleibt der Schalter ohne Wirkung.
 - **Aktiv**: schaltet die Ablage ein oder aus.
 - **Gespiegelte Inhalte**: **Dokumente (DMS)**, **Rechnungen (PDF)**,
   **Protokolle (PDF)**.
@@ -77,9 +83,9 @@ Seite ihren Zustand (etwa **Zustand ok**) und **Verbindung testen**.
 
 - **Dokumente:** Ein Dokument wird gespiegelt, sobald es den Status **Aktiv**
   mit einer Datei hat, und erneut bei jeder neuen Version. Reine Änderungen
-  an den Angaben ohne neue Version lösen keinen Upload aus. Freigegebene
-  Dokumente spiegelt die Ablage in jedem Fall, solange sie aktiv ist – auch
-  wenn **Dokumente (DMS)** nicht angehakt ist.
+  an den Angaben ohne neue Version lösen keinen Upload aus. Das gilt nur mit
+  Haken bei **Dokumente (DMS)**; ist gar keine Quelle angehakt, gelten die
+  Dokumente als gewählt.
 - **Rechnungen (PDF):** Mit diesem Haken wird jede Rechnung beim Wechsel auf
   **Gestellt** einmal als PDF abgelegt.
 - **Protokolle (PDF):** Mit diesem Haken wird jedes Protokoll beim
@@ -87,10 +93,10 @@ Seite ihren Zustand (etwa **Zustand ok**) und **Verbindung testen**.
 - Die Übertragung läuft im Hintergrund über eine Warteschlange und wird bei
   Verbindungsfehlern wiederholt. Unveränderte Inhalte lädt WorkDiary nicht
   erneut hoch.
-- **Jetzt spiegeln** reiht alle aktuell freigegebenen Dokumente erneut ein –
-  nützlich nach dem Einrichten. Rechnungen und Protokolle erfasst dieser
-  Knopf nicht; sie werden erst ab dem Einrichten beim Stellen bzw.
-  Unterschreiben gespiegelt.
+- **Jetzt spiegeln** reiht alles aus den angehakten Quellen erneut ein:
+  freigegebene Dokumente, gestellte Rechnungen und unterschriebene
+  Protokolle – nützlich nach dem Einrichten, auch für Belege von davor.
+  Bereits gespiegelte Inhalte lädt WorkDiary nicht erneut hoch.
 - Einen zeitgesteuerten Lauf gibt es nicht; die Spiegelung folgt den
   Änderungen in WorkDiary.
 
@@ -100,9 +106,9 @@ Seite ihren Zustand (etwa **Zustand ok**) und **Verbindung testen**.
   sonst im **Standardordner** – beides relativ zur Collection-URL. Die Datei
   heißt document- mit der Dokumentnummer und der ursprünglichen Endung, etwa
   document-42.pdf.
-- Die Auswahl der Dokumenttypen zeigt derzeit die englische Kurzbezeichnung,
-  etwa contract für Verträge oder invoice für Rechnungen. Es gibt immer drei
-  freie Zeilen; Zeilen ohne Typ oder ohne Unterordner verwirft WorkDiary.
+- Die Auswahl nennt die Dokumenttypen mit ihrer Bezeichnung, etwa Vertrag
+  oder Rechnung. Es gibt immer drei freie Zeilen; Zeilen ohne Typ oder ohne
+  Unterordner verwirft WorkDiary.
 - Rechnungen liegen unter invoices/Jahr/Rechnungsnummer.pdf, Protokolle unter
   protocols/Jahr/protocol-Nummer.pdf – direkt unter der Collection-URL, nicht
   im Standardordner.
@@ -122,6 +128,11 @@ nichts, sondern legt einen Konflikt in der Zuordnungs-Inbox an: „Externe
 - **Spiegelung trennen**: Dieses Dokument wird dauerhaft nicht mehr
   gespiegelt; die Ablage bleibt für alle anderen aktiv.
 
+Bei Rechnungs- und Protokoll-PDFs gibt es nur **Remote überschreiben**:
+Gestellte Rechnungen und unterschriebene Protokolle sind unveränderlich,
+WorkDiary legt sein PDF erneut ab. Wollen Sie die geänderte Datei behalten,
+wählen Sie **Verwerfen**.
+
 Die Zuordnungs-Inbox steht Administratoren und der Buchhaltung offen.
 
 ## Trennen
@@ -138,7 +149,11 @@ Ablage erhalten. Zum Wiedereinschalten setzen Sie **Aktiv** und speichern.
 - **Zustand fehlerhaft** mit „WebDAV-Ablage nicht erreichbar oder Zugangsdaten
   ungültig.“: Prüfen Sie Collection-URL, Benutzername und App-Passwort und ob
   der Ordner existiert. Ein WebDAV-Fehler mit RuntimeException deutet oft auf
-  eine Adresse im internen Netz hin.
+  eine Adresse im internen Netz ohne Freigabe hin.
+- „Die Collection-URL zeigt auf eine private/interne Adresse.“: Steht der
+  Server im eigenen Netz, schalten Sie **Private/interne Adressen erlauben**
+  ein. Hat der Betreiber diese Freigabe gesperrt, braucht die Ablage eine
+  öffentlich erreichbare Adresse.
 - „Keine aktive WebDAV-Ablage vorhanden.“ bei **Jetzt spiegeln**: Die Ablage
   ist aus oder unvollständig.
 - Rechnungen oder Protokolle fehlen in der Ablage: Der passende Haken unter

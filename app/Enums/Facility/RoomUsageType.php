@@ -32,19 +32,19 @@ enum RoomUsageType: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Office => (string) __('Büro'),
-            self::ServerRoom => (string) __('Serverraum'),
-            self::Cleanroom => (string) __('Reinraum'),
-            self::Kitchen => (string) __('Küche'),
-            self::Sanitary => (string) __('Sanitär'),
-            self::Lab => (string) __('Labor'),
-            self::Storage => (string) __('Lager'),
-            self::TrafficArea => (string) __('Verkehrsfläche'),
-            self::Meeting => (string) __('Besprechung'),
-            self::Social => (string) __('Sozialraum'),
-            self::Technical => (string) __('Technikraum'),
-            self::Outdoor => (string) __('Außenfläche'),
-            self::Other => (string) __('Sonstiges'),
+            self::Office => (string) __('enums.facility.room_usage_type.office'),
+            self::ServerRoom => (string) __('enums.facility.room_usage_type.server_room'),
+            self::Cleanroom => (string) __('enums.facility.room_usage_type.cleanroom'),
+            self::Kitchen => (string) __('enums.facility.room_usage_type.kitchen'),
+            self::Sanitary => (string) __('enums.facility.room_usage_type.sanitary'),
+            self::Lab => (string) __('enums.facility.room_usage_type.lab'),
+            self::Storage => (string) __('enums.facility.room_usage_type.storage'),
+            self::TrafficArea => (string) __('enums.facility.room_usage_type.traffic_area'),
+            self::Meeting => (string) __('enums.facility.room_usage_type.meeting'),
+            self::Social => (string) __('enums.facility.room_usage_type.social'),
+            self::Technical => (string) __('enums.facility.room_usage_type.technical'),
+            self::Outdoor => (string) __('enums.facility.room_usage_type.outdoor'),
+            self::Other => (string) __('enums.facility.room_usage_type.other'),
         };
     }
 }

@@ -15,7 +15,7 @@ use App\Models\Platform\{Organization, User};
 use App\Services\Org\OrganizationLifecycleService;
 use App\Services\Platform\Catalog\ArticleCatalog;
 use App\Settings\SettingsTree;
-use App\Support\{Setting, SortableQuery};
+use App\Support\{Setting, SortableQuery, Tz};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use Illuminate\Validation\ValidationException;
@@ -167,6 +167,7 @@ class OrganizationController extends Controller {
             'settings.approvals.time_correction_stages' => ['nullable', 'integer', 'min:1', 'max:2'],
             // Anwesenheits-Board (MVP-524): Opt-in je Organisation.
             'settings.presence.board_enabled' => ['nullable', 'in:0,1'],
+            'settings.finance.accounting_four_eyes' => ['nullable', 'in:0,1'],
             // Outlook-Abwesenheitsnotiz bei genehmigtem Urlaub (Feature-103-Delta).
             'settings.validation' => ['sometimes', 'array'],
             'settings.validation.*' => ['sometimes', 'array'],
@@ -189,6 +190,12 @@ class OrganizationController extends Controller {
             $data['settings']['invoicing']['default_service_article'] = app(ArticleCatalog::class)
                 ->fromFormKey((int) $organization->id, $serviceArticle)->key
                 ?? throw ValidationException::withMessages(['settings.invoicing.default_service_article' => __('article.catalog.unknown')]);
+        }
+
+        // „Voraussichtliches Ende" kommt als Ortszeit (datetime-local), gespeichert wird UTC.
+        $maintenanceUntil = data_get($data, 'settings.maintenance.until');
+        if (is_string($maintenanceUntil)) {
+            $data['settings']['maintenance']['until'] = Tz::toUtcString($maintenanceUntil);
         }
 
         // Eingehende Override-Gruppen rekursiv mit Bestand mergen; leere Werte

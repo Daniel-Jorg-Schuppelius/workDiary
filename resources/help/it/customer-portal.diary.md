@@ -1,7 +1,7 @@
 ---
 title: "Registro ordini e fascicolo del caso"
 topic: customer-portal.diary
-version: 2
+version: 4
 keywords:
     - registro degli incarichi
     - interventi eseguiti
@@ -13,6 +13,7 @@ keywords:
     - fascicolo del caso
     - confermare una foto
     - contestare una foto
+    - protocollo PDF
 audience: []
 related:
     - customer-portal.overview
@@ -49,9 +50,9 @@ L'ordine più recente è in alto. Con più di 25 ordini sfoglia l'elenco tramite
 
 In alto compaiono titolo, data e stato, a destra il pulsante **Fascicolo del caso in PDF**. Seguono queste sezioni:
 
-- **Foto** – le foto che il Suo fornitore ha rilasciato per Lei, con il loro nome file. Le foto interne non compaiono.
+- **Foto** – le foto e i file che il Suo fornitore ha rilasciato per Lei: le foto come piccola anteprima con il nome file, gli altri file con il loro nome. Un clic sull'immagine o sul nome scarica il file. Le foto interne non compaiono.
 - **Materiale** – il materiale registrato per questo ordine con **Denominazione** e **Quantità**.
-- **Protocolli** – i protocolli rilasciati con titolo, stato e data.
+- **Protocolli** – i protocolli firmati che il Suo fornitore ha rilasciato per Lei, con titolo, stato e data, ciascuno con **Scarica PDF** (vedi sotto).
 - **Comunicazione** – le note rilasciate su colloqui e messaggi, con oggetto, momento e testo.
 - **Richieste e commenti** – solo se le domande sono rilasciate per Lei (vedi sotto).
 
@@ -66,9 +67,15 @@ Accanto a ogni foto che non ha ancora confermato ci sono due pulsanti:
 
 Una contestazione viene inviata al Suo fornitore come richiesta relativa a questo ordine, e il fornitore ne viene informato. Il messaggio **Contestazione inviata — la ricontatteremo.** conferma l'invio. La risposta Le arriva via e-mail all'indirizzo di accesso; se le domande sono rilasciate per Lei, compare anche nella sezione **Richieste e commenti**.
 
+## Scaricare i protocolli
+
+Il portale mostra solo i protocolli firmati; bozze e protocolli in revisione compaiono solo dopo la firma. Lo stato indica **Firmato**, per i protocolli meno recenti anche **Archiviato** o **Sostituito**. Con **Sostituito** il Suo fornitore ha redatto una versione corretta, che compare non appena è firmata.
+
+Con **Scarica PDF** riceve il protocollo nella versione firmata come file PDF. Ogni download viene annotato sul protocollo, così il Suo fornitore può verificare quando è stato scaricato tramite il portale.
+
 ## Fascicolo del caso in PDF
 
-**Fascicolo del caso in PDF** scarica un file PDF con titolo, data e stato dell'ordine, le foto rilasciate con la data di conferma, il materiale e i protocolli. La comunicazione e le richieste non sono incluse.
+**Fascicolo del caso in PDF** scarica un file PDF con titolo, data e stato dell'ordine, le foto rilasciate con la data di conferma, il materiale e un elenco dei protocolli firmati con titolo, stato e data; i protocolli stessi li scarica singolarmente con **Scarica PDF**. La comunicazione e le richieste non sono incluse.
 
 Il link dietro il pulsante è valido 24 ore e funziona anche senza accesso – può quindi inoltrarlo ai colleghi. Se è scaduto, riapra il fascicolo del caso; viene creato un nuovo link.
 
@@ -79,4 +86,4 @@ Se le domande sono rilasciate per Lei, il fascicolo del caso mostra la sezione *
 ## Limiti
 
 - Nel registro ordini non può creare, modificare o annullare ordini. Se l'area è rilasciata, richiede nuove prestazioni in **Richieste e ordini**.
-- Vede solo foto, protocolli e note che il Suo fornitore ha rilasciato espressamente per Lei.
+- Vede solo foto, protocolli e note che il Suo fornitore ha rilasciato espressamente per Lei. I protocolli compaiono solo dopo la firma.

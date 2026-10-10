@@ -114,6 +114,32 @@ class CustomerTwoFactorTest extends TestCase {
         $this->assertNotNull(session('webauthn.register'));
     }
 
+    /**
+     * Phase 137 (MVP-1105): die Prioritätsliste zieht `auth:customer` vor die 2FA-Pflicht des Web-Stapels;
+     * die prüfte das Portalkonto dann mit den internen Ausnahmen und schickte es auf die interne Einrichtungsseite.
+     */
+    public function test_forced_setup_after_real_login_leads_to_the_portal_setup_page(): void {
+        $this->organization->forceFill(['two_factor_required' => true])->save();
+
+        $this->post(route('customer.login.attempt'), ['email' => 'portal@example.test', 'password' => 'secret-pass'])->assertRedirect();
+        $this->get(route('customer.dashboard'))->assertRedirect(route('customer.2fa.show'));
+        $this->get(route('customer.2fa.show'))->assertOk();
+    }
+
+    /** Phase 137 (MVP-1105): verlangt die Organisation 2FA, muss die Passwortbestätigung für den Passkey erreichbar bleiben. */
+    public function test_password_confirmation_stays_reachable_during_forced_setup(): void {
+        $this->organization->forceFill(['two_factor_required' => true])->save();
+        $this->actingAs($this->portalUser, 'customer');
+
+        $this->postJson(route('customer.2fa.webauthn.options'))
+            ->assertStatus(423)
+            ->assertJsonPath('redirect', route('customer.password.confirm'));
+        $this->get(route('customer.password.confirm'))->assertOk();
+        $this->post(route('customer.password.confirm.store'), ['password' => 'secret-pass'])
+            ->assertSessionHas(\App\Support\Auth\RecentAuthentication::SESSION_KEY);
+        $this->postJson(route('customer.2fa.webauthn.options'))->assertOk();
+    }
+
     public function test_email_otp_enrollment_and_login_in_portal(): void {
         Mail::fake();
         $this->actingAs($this->portalUser, 'customer')->post(route('customer.2fa.email.enable'))

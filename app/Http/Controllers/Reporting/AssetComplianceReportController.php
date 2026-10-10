@@ -55,27 +55,28 @@ class AssetComplianceReportController extends Controller {
     private function exportCsv(array $aggregate, Carbon $from, Carbon $to, Request $request): \Illuminate\Http\Response {
         $num = static fn($v): string => $v === null ? '' : \CommonToolkit\Helper\Data\NumberHelper::toUSFormat((float) $v, 2);
 
-        $rows = [['Bereich', 'Schlüssel', 'Wert']];
-        $rows[] = ['Kennzahl', 'AktivePflichten', (string) $aggregate['assignmentCount']];
-        $rows[] = ['Kennzahl', 'BaldFaellig', (string) $aggregate['dueSoonCount']];
-        $rows[] = ['Kennzahl', 'Ueberfaellig', (string) $aggregate['overdueCount']];
-        $rows[] = ['Kennzahl', 'Gesperrt', (string) $aggregate['blockedCount']];
-        $rows[] = ['Kennzahl', 'Pruefungen', (string) $aggregate['inspectionCount']];
-        $rows[] = ['Kennzahl', 'Fehlgeschlagen', (string) $aggregate['failedCount']];
-        $rows[] = ['Kennzahl', 'BestehensquoteProzent', $num($aggregate['passRate'])];
-        $rows[] = ['Kennzahl', 'Zertifikate', (string) $aggregate['certificateCount']];
-        $rows[] = ['Kennzahl', 'PruefkostenEUR', $num($aggregate['totalCost'])];
+        $metricLabel = (string) __('reporting.csv.metric');
+        $rows = [[(string) __('reporting.csv.area'), (string) __('reporting.csv.key'), (string) __('reporting.csv.value')]];
+        $rows[] = [$metricLabel, (string) __('reporting.csv.active_obligations'), (string) $aggregate['assignmentCount']];
+        $rows[] = [$metricLabel, (string) __('reporting.csv.due_soon'), (string) $aggregate['dueSoonCount']];
+        $rows[] = [$metricLabel, (string) __('reporting.csv.overdue'), (string) $aggregate['overdueCount']];
+        $rows[] = [$metricLabel, (string) __('reporting.csv.blocked'), (string) $aggregate['blockedCount']];
+        $rows[] = [$metricLabel, (string) __('reporting.csv.inspections'), (string) $aggregate['inspectionCount']];
+        $rows[] = [$metricLabel, (string) __('reporting.csv.failed'), (string) $aggregate['failedCount']];
+        $rows[] = [$metricLabel, (string) __('reporting.csv.pass_rate_percent'), $num($aggregate['passRate'])];
+        $rows[] = [$metricLabel, (string) __('reporting.csv.certificates'), (string) $aggregate['certificateCount']];
+        $rows[] = [$metricLabel, (string) __('reporting.csv.inspection_cost_eur'), $num($aggregate['totalCost'])];
         foreach ($aggregate['byKind'] as $kind => $count) {
-            $rows[] = ['PflichtenJeArt', (string) $kind, (string) $count];
+            $rows[] = [(string) __('reporting.csv.obligations_by_kind'), (string) $kind, (string) $count];
         }
         foreach ($aggregate['costByKind'] as $kind => $cost) {
-            $rows[] = ['PruefkostenJeArtEUR', (string) $kind, $num($cost)];
+            $rows[] = [(string) __('reporting.csv.inspection_cost_by_kind_eur'), (string) $kind, $num($cost)];
         }
         foreach ($aggregate['byInspector'] as $name => $count) {
-            $rows[] = ['PruefungenJePruefer', (string) $name, (string) $count];
+            $rows[] = [(string) __('reporting.csv.inspections_by_inspector'), (string) $name, (string) $count];
         }
         foreach ($aggregate['deviations'] as $deviation) {
-            $rows[] = ['Abweichung', $deviation['asset'] . ' · ' . $deviation['performed_at'], (string) ($deviation['note'] ?? '')];
+            $rows[] = [(string) __('reporting.csv.deviation'), $deviation['asset'] . ' · ' . $deviation['performed_at'], (string) ($deviation['note'] ?? '')];
         }
 
         return $this->csvWithMetadata(

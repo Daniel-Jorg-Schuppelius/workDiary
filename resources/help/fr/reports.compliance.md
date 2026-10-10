@@ -1,7 +1,7 @@
 ---
 title: "Justificatifs : activité d’audit, conformité et salaire minimum"
 topic: reports.compliance
-version: 1
+version: 3
 keywords:
     - analyse d’audit
     - qui a modifié quoi
@@ -42,8 +42,8 @@ temps de travail.
 - Vous choisissez la période avec le sélecteur de période dans l’en-tête.
   L’**Historique des infractions** affiche en revanche toutes les infractions
   enregistrées.
-- Lorsqu’un export existe, il est mentionné dans la section concernée. Les
-  exports PDF et CSV sont consignés dans le journal d’audit.
+- Lorsqu’un export existe, il est mentionné dans la section concernée.
+  Chaque export est consigné dans le journal d’audit.
 
 ## Activité d’audit
 
@@ -52,8 +52,9 @@ entrées du journal d’audit de la période. La page ne s’ouvre que pour les
 administrateurs ; l’accès est refusé à tous les autres.
 
 - Tuiles : **Events Σ** (toutes les entrées de la période), **Utilisateurs
-  actifs** et **Types d’entités**. Les deux dernières comptent les entrées des
-  listes top 20 et affichent donc au maximum 20.
+  actifs** (personnes ayant au moins une entrée) et **Types d’entités** (types
+  d’objets distincts). Ces deux tuiles comptent elles aussi toutes les
+  entrées de la période, pas seulement les listes top 20.
 - Graphiques : **Événements dans le temps**, **Principaux acteurs (top 15)**
   et les événements dans le temps par type d’événement.
 - Tableaux : **Par événement**, **Par type d’entité (top 20)**, **Par
@@ -143,7 +144,8 @@ sens de l’article 17, alinéa 1, de la loi allemande sur le salaire minimum
   dernière fin de la journée, les pauses sont additionnées, et **Durée** est
   le temps de travail après déduction des pauses.
 - Le tri se fait par nom et par date. Le téléchargement reprend la période et
-  le filtre d’employé de la page et est consigné dans le journal d’audit.
+  les filtres d’employé et d’équipe de la page et est consigné dans le journal
+  d’audit.
 
 Le **Justificatif temps de conduite** du même menu est décrit dans le sujet
 consacré au parc automobile, au carnet de bord et aux temps de conduite.

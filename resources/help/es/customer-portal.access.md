@@ -1,7 +1,7 @@
 ---
 title: "Acceso y seguridad"
 topic: customer-portal.access
-version: 3
+version: 5
 keywords:
     - inicio de sesión
     - iniciar sesión
@@ -15,6 +15,8 @@ keywords:
     - cambiar correo electrónico
     - mantener sesión iniciada
     - perfil
+    - contraseña olvidada
+    - restablecer contraseña
 audience: []
 related:
     - customer-portal.overview
@@ -34,6 +36,8 @@ La contraseña debe tener al menos 12 caracteres y contener mayúsculas y minús
 
 Si el enlace ha caducado, la página ya no se abre. En ese caso, pida a su proveedor que le envíe de nuevo la invitación.
 
+Si su proveedor ha restablecido su acceso, su contraseña anterior deja de ser válida y se cierran todas las sesiones de su acceso. Recibirá entonces una nueva invitación con el asunto «Su acceso al portal de clientes de …» y establecerá de nuevo su contraseña como se describe arriba. Un segundo factor ya configurado se mantiene.
+
 ## Iniciar sesión
 
 En la página **Iniciar sesión** introduzca su **Correo electrónico** y su **Contraseña** y haga clic en **Iniciar sesión**. Con **Mantener sesión iniciada** no tiene que volver a iniciar sesión en cada visita desde este dispositivo – utilice esta opción solo en su propio dispositivo.
@@ -41,7 +45,18 @@ En la página **Iniciar sesión** introduzca su **Correo electrónico** y su **C
 - Si el correo o la contraseña no son correctos, aparece **Estas credenciales no coinciden con nuestros registros.** Por motivos de seguridad, el portal no indica qué dato era incorrecto.
 - El número de intentos de inicio de sesión está limitado; tras demasiados intentos fallidos debe esperar un rato.
 - Si su proveedor ha desactivado su acceso, ya no es posible iniciar sesión.
-- En el portal no existe ninguna función para cambiar o restablecer la contraseña. Si ha olvidado su contraseña, diríjase a su proveedor.
+- Si ha olvidado su contraseña, restablézcala usted mismo mediante **¿Olvidó su contraseña?** debajo del formulario de inicio de sesión.
+
+### Contraseña olvidada
+
+1. En la página **Iniciar sesión** haga clic en **¿Olvidó su contraseña?**.
+2. Introduzca su correo de inicio de sesión en **Correo electrónico** y haga clic en **Enviar enlace**.
+3. En un plazo de 60 minutos, abra el enlace del correo con el asunto «Restablecer su contraseña del portal de clientes de …» (botón **Establecer contraseña**).
+4. Introduzca una contraseña en **Nueva contraseña**, repítala en **Repetir contraseña** y haga clic en **Guardar contraseña**.
+
+Tras el envío, el portal muestra siempre **Si existe una cuenta con este correo, se ha enviado un enlace de restablecimiento.** – aunque no conozca la dirección. Así nadie puede averiguar qué direcciones tienen un acceso. Solo los accesos activos reciben un correo: si su invitación sigue pendiente o su acceso está desactivado, diríjase a su proveedor. El enlace solo sirve una vez; su contraseña actual sigue siendo válida hasta que guarde la nueva. Si usted no ha hecho la solicitud, simplemente ignore el correo.
+
+Para la nueva contraseña rigen las mismas reglas que al activar el acceso. Tras guardar, la página de inicio de sesión muestra **Contraseña cambiada. Inicie sesión.** Todas las sesiones abiertas de su acceso, también en otros dispositivos, quedan cerradas. Un segundo factor ya configurado se mantiene y se solicita como de costumbre en el siguiente inicio de sesión. Varias solicitudes seguidas están limitadas; en ese caso espere un rato.
 
 ### Segundo factor al iniciar sesión
 
@@ -90,6 +105,8 @@ Haga clic en **Añadir passkey** y siga las instrucciones de su navegador o disp
 ### Códigos de recuperación
 
 Al configurar el primer método, el portal muestra una sola vez sus **Códigos de recuperación**. Cada código funciona exactamente una vez y sustituye al segundo factor al iniciar sesión. Guarde los códigos en un lugar seguro; el portal no vuelve a mostrarlos. Si la aplicación de autenticación está configurada, puede generar un juego nuevo: en **Regenerar códigos de recuperación** introduzca en el campo **Código de aplicación actual** el código de la aplicación y haga clic en **Generar nuevo**. Los códigos anteriores dejan de ser válidos.
+
+Si ha perdido todos los métodos y códigos de recuperación, diríjase a su proveedor. Puede restablecer su segundo factor; recibirá un correo electrónico titulado «Su segundo factor se ha restablecido» y después iniciará sesión solo con su contraseña. Si la autenticación de dos factores es obligatoria, configurará en ese momento un nuevo método.
 
 ## Eliminar factores o desactivarlo todo
 

@@ -36,17 +36,17 @@ enum AssetFinanceTermKind: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Rate => (string) __('Rate'),
-            self::SpecialPayment => (string) __('Sonderzahlung'),
-            self::ResidualValue => (string) __('Restwertannahme'),
-            self::PurchaseOption => (string) __('Kaufoption'),
-            self::ServicePackage => (string) __('Servicepaket'),
-            self::Insurance => (string) __('Versicherung'),
-            self::Maintenance => (string) __('Wartung'),
-            self::Wear => (string) __('Verschleiß'),
-            self::ReturnCost => (string) __('Rückgabekosten'),
-            self::Fee => (string) __('Gebühr'),
-            self::Indexation => (string) __('Indexierung'),
+            self::Rate => (string) __('enums.asset_finance.asset_finance_term_kind.rate'),
+            self::SpecialPayment => (string) __('enums.asset_finance.asset_finance_term_kind.special_payment'),
+            self::ResidualValue => (string) __('enums.asset_finance.asset_finance_term_kind.residual_value'),
+            self::PurchaseOption => (string) __('enums.asset_finance.asset_finance_term_kind.purchase_option'),
+            self::ServicePackage => (string) __('enums.asset_finance.asset_finance_term_kind.service_package'),
+            self::Insurance => (string) __('enums.asset_finance.asset_finance_term_kind.insurance'),
+            self::Maintenance => (string) __('enums.asset_finance.asset_finance_term_kind.maintenance'),
+            self::Wear => (string) __('enums.asset_finance.asset_finance_term_kind.wear'),
+            self::ReturnCost => (string) __('enums.asset_finance.asset_finance_term_kind.return_cost'),
+            self::Fee => (string) __('enums.asset_finance.asset_finance_term_kind.fee'),
+            self::Indexation => (string) __('enums.asset_finance.asset_finance_term_kind.indexation'),
         };
     }
 }

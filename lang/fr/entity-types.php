@@ -557,7 +557,7 @@ return [
     'TodoistConnection' => 'Connexion Todoist',
     'TodoistProjectLink' => 'Lien de projet Todoist',
     'Tour' => 'Tournée',
-    'TravelLog' => 'Journal de déplacement',
+    'TravelLog' => 'Carnet de bord',
     'User' => 'Utilisateur',
     'UserBadge' => 'Badge d\'utilisateur',
     'UserTerminalPin' => 'PIN du terminal',

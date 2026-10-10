@@ -1,7 +1,7 @@
 ---
 title: "Using reports"
 topic: reports.overview
-version: 3
+version: 7
 keywords:
     - statistics
     - KPIs
@@ -57,9 +57,14 @@ selection exactly matches the sidebar.
 The reports are arranged in groups: **Overview**, **Personal**, **Team**,
 **Projects & customers**, **Resources** and **Finance & audit**. An entry only
 appears if your organization uses the corresponding module and you have the
-required right. The groups **Team**, **Projects & customers** and **Resources**
-require the add-on module team reports. Entries you have hidden via “Customize
-menu & All functions” are also missing from the overview page.
+required right. The add-on module team reports unlocks these reports: **Week
+per employee**, **Month per employee**, **Coverage**, **Vacation & flex**,
+**Sicknesses**, **Qualifications**, **Customer analysis**, **Order-type
+analysis**, **Product analysis**, **Customers & projects**, **Project
+details**, **Inactive projects**, **Operations**, **Profitability** and
+**Working-time compliance**. Without the module only these entries are missing;
+all other reports of the groups remain visible. Entries you have hidden via
+“Customize menu & All functions” are also missing from the overview page.
 
 ## Period
 
@@ -87,8 +92,10 @@ with exactly that period.
 - Depending on the report, the filter bar offers fields such as **Customer**,
   **Project**, **Employee**, **Team** or **Status**. A selection usually takes
   effect immediately; **Reset** clears all filters.
-- Some fields are only shown to administrators, such as **Area** with **Mine
-  only** or **Entire team**. Everyone else only sees their own data there.
+- Some fields, such as **Area** with **Mine only** or **Entire team**, are only
+  shown to administrators and to people with the right that also opens the
+  corresponding list – for example **View attendance** for **Attendance**.
+  Everyone else only sees their own data there.
 - Customers marked **Hide in reports** in their master data are left out of the
   customer and project reports. The switch **Include hidden customers** – it
   only appears if such customers exist – brings them back; if you select such a
@@ -101,6 +108,25 @@ with exactly that period.
   the **Export** menu offers **CSV** and **Excel**. Not every report has all
   formats, and some have no export.
 - Exports apply the period and filters of the page.
+- Exports of the reports in the **Reports** menu require the right **Export
+  reports** – including the reports of other areas listed there: **SLA**,
+  **Analysis** of the learning platform, **Blocked procedure runs**,
+  **Financial reports** and **BWA & budget**. The same applies to
+  **Applications & tenders**, the **Audit report** of the test equipment and
+  the **Tender cockpit**. Administrators can always export. Without the right,
+  the export buttons are missing. Reports in other menus, such as **Helpdesk
+  report**, **Quality report** or **Sustainability & ESG**, can be exported by
+  anyone allowed to open them.
+- Exports that contain only your own data remain free:
+  **My month**, your own **Work balance**, the view **Mine only** and reports
+  that show you only your own data without a further right (for example **Time
+  accounts**, **Period comparison**, **Qualifications**, **Absence calendar**
+  and **Project details**), as well as the **Logbook report** of a vehicle
+  whose **Default driver** you are. The **Emergency roster** can be exported by
+  anyone allowed to open it.
+- Column headers and fixed values in CSV and Excel files, such as the total
+  row, appear in your language; codes such as status or wage type keys remain
+  unchanged.
 - In the default setting, CSV files are separated by semicolons and saved in
   UTF-8. The first lines start with # and state the report, the creation time
   and a fingerprint of the filters – so a file can later be matched to its
@@ -119,10 +145,22 @@ person. More on this under “Drilldown from KPI to work order”.
 - The personal reports are open to everyone and only show your own data.
 - Organization-wide analyses of customers, revenue and suppliers require the
   right **View reports** or the administrator role.
+- Exports of the reports in the **Reports** menu additionally require the
+  right **Export reports**, see Export. In the default setup Management,
+  Accounting, Team Lead and Personnel Administration have it.
 - Some reports have their own right, for example **View presence report (team)**
   for plan/actual or **View safety event register** for occupational safety.
-- Some team views – for example **Coverage** or the team view of **Vacation &
-  flex** – remain reserved for administrators.
+- The view across all people in the personnel reports follows the right of the
+  corresponding list: **View attendance** for **Attendance**, **See all vacation
+  requests** for **Vacation & flex** and the **Absence calendar**, **View sick
+  leaves** for **Sicknesses** and the absence reasons in the **Absence
+  calendar**, **Manage qualifications** for **Qualifications** and **See all
+  time entries** for the **Work balance** of other people. Administrators
+  always have it.
+- Still reserved for administrators are **Coverage** and **Month per
+  employee**, as well as the view across all people in **Time accounts**,
+  **Period comparison**, **Expenses**, **Fleet**, **On-call**, **Operations**
+  and **Materials**.
 - Every report only shows data of the active organization.
 
 ## Which report for what

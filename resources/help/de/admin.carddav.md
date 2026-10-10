@@ -1,7 +1,7 @@
 ---
 title: "CardDAV-Adressbuch anbinden"
 topic: admin.carddav
-version: 1
+version: 2
 keywords:
     - CardDAV
     - Adressbuch anbinden
@@ -122,6 +122,10 @@ eintragen.
 - **Kein Abgleich:** Fehlt **Jetzt synchronisieren** oder meldet WorkDiary
   „Sync nicht möglich“, ist die Anbindung inaktiv, es ist kein Adressbuch
   gewählt, oder sie wurde nach wiederholten Fehlern in Folge stillgelegt. Den
-  letzten Fehler zeigt die Seite oben an.
+  letzten Fehler zeigt die Seite oben an, eine Sperre nach (standardmäßig)
+  zehn Fehlern in Folge ebenfalls. Prüfen Sie Adresse und Zugangsdaten und klicken Sie auf
+  **Speichern** – das hebt die Sperre auf, der nächste Abgleich entscheidet
+  neu. Solange die Anbindung gestört ist, steht dazu eine Betriebsaufgabe in
+  der Übersicht der Betriebsaufgaben.
 - **Zustand prüfen:** Neben dem Seitentitel steht der zuletzt geprüfte Zustand
   der Anbindung. Mit **Verbindung testen** prüfen Sie ihn sofort.

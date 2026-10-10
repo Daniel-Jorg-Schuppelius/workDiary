@@ -14,13 +14,18 @@ namespace App\Http\Controllers\Learning\Portal;
 
 use App\Enums\Learning\{LearningAudience, LearningCourseStatus, LearningProgressStatus};
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Learning\MyLearningController;
+use App\Models\Attachments\Attachment;
 use App\Models\Learning\{LearningCourse, LearningCourseCategory, LearningEnrollment, LearningUnit};
+use App\Models\Media\MediaRendition;
 use App\Models\Platform\User;
 use App\Services\Learning\{LearningBookingService, LearningEnrollmentService};
+use App\Services\Media\{MediaPresenter, MediaResponder};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * Kundenschulungen im Portal (Feature 149, MVP-742).
@@ -69,7 +74,7 @@ class PortalLearningController extends Controller {
 
         return redirect()
             ->route('customer.learning.show', $enrollment)
-            ->with('success', __('learning.flash.created'));
+            ->with('success', __('learning.flash.enrolled'));
     }
 
     /**
@@ -107,7 +112,7 @@ class PortalLearningController extends Controller {
 
     public function show(LearningEnrollment $enrollment): View {
         $this->guardOwn($enrollment);
-        $enrollment->load(['course.units']);
+        $enrollment->load(['course.units.attachments']);
         // Mindestverweildauer (MVP-788): das erste Öffnen zählt ab jetzt.
         $this->enrollments->markSeen($enrollment, $enrollment->course->units ?? []);
         $enrollment->load('progress');
@@ -119,7 +124,25 @@ class PortalLearningController extends Controller {
                 ->where('status', LearningProgressStatus::Completed)
                 ->pluck('learning_unit_id')
                 ->all(),
+            'mediaState' => $this->mediaStateFor($enrollment),
         ]);
+    }
+
+    /** Medien eines Inhaltsblocks — nur Anhänge dieser Einheit aus dem Kurs der eigenen Einschreibung. */
+    public function unitMedia(LearningEnrollment $enrollment, LearningUnit $unit, Attachment $attachment): SymfonyResponse {
+        $this->guardOwnUnit($enrollment, $unit);
+        abort_unless($attachment->attachable_type === $unit->getMorphClass() && (int) $attachment->attachable_id === (int) $unit->id, 404);
+
+        return app(MediaResponder::class)->attachment($attachment);
+    }
+
+    /** Abgeleitete Videofassung (Feature 150) — nicht leichter zugänglich als das Original. */
+    public function renditionMedia(LearningEnrollment $enrollment, LearningUnit $unit, MediaRendition $rendition): SymfonyResponse {
+        $this->guardOwnUnit($enrollment, $unit);
+        $attachment = $rendition->attachment;
+        abort_unless($attachment !== null && $attachment->attachable_type === $unit->getMorphClass() && (int) $attachment->attachable_id === (int) $unit->id, 404);
+
+        return app(MediaResponder::class)->rendition($rendition);
     }
 
     public function completeUnit(LearningEnrollment $enrollment, LearningUnit $unit): RedirectResponse {
@@ -171,6 +194,33 @@ class PortalLearningController extends Controller {
     private function guardOwn(LearningEnrollment $enrollment): void {
         abort_unless($enrollment->user_id === $this->actor()->id, 404);
         $this->guardVisible($enrollment->course ?? abort(404), catalog: false);
+    }
+
+    private function guardOwnUnit(LearningEnrollment $enrollment, LearningUnit $unit): void {
+        $this->guardOwn($enrollment);
+        abort_unless($unit->learning_course_id === $enrollment->learning_course_id, 404);
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function mediaStateFor(LearningEnrollment $enrollment): array {
+        $attachments = [];
+        $unitOf = [];
+        foreach ($enrollment->course->units ?? [] as $unit) {
+            foreach ($unit->attachments as $attachment) {
+                $attachments[] = $attachment;
+                $unitOf[(int) $attachment->id] = $unit;
+            }
+        }
+
+        return app(MediaPresenter::class)->forAttachments(
+            $attachments,
+            fn (MediaRendition $rendition): string => route('customer.learning.units.rendition', [
+                'enrollment' => $enrollment->sqid,
+                'unit' => $unitOf[(int) $rendition->attachment_id]->sqid,
+                'rendition' => $rendition->sqid,
+            ]),
+            $this->actor()->getPreference(MyLearningController::VIDEO_QUALITY_PREFERENCE),
+        );
     }
 
     private function actor(): User {

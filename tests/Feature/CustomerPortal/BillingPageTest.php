@@ -117,6 +117,23 @@ class BillingPageTest extends TestCase {
             ->assertSee(__('customer-billing.provisional'));
     }
 
+    /** Phase 137 (MVP-1105): ein Monat außerhalb des Kontos ist 404 — der GET legt keine Monatszeile an. */
+    public function test_month_outside_the_account_is_404_and_creates_nothing(): void {
+        $this->travelTo('2026-08-15 12:00:00');
+
+        $this->actingAs($this->portalUser, 'customer')
+            ->get(route('customer.billing.show', ['year' => 2099, 'month' => 12]))
+            ->assertNotFound();
+        $this->actingAs($this->portalUser, 'customer')
+            ->get(route('customer.billing.show', ['year' => 2001, 'month' => 1]))
+            ->assertNotFound();
+
+        $this->assertFalse($this->agreement->statements()->whereIn('year', [2099, 2001])->exists());
+        $this->actingAs($this->portalUser, 'customer')
+            ->get(route('customer.billing.show', ['year' => 2026, 'month' => 7]))
+            ->assertOk();
+    }
+
     public function test_billing_pages_return_404_without_account_agreement(): void {
         $this->agreement->update(['active' => false]);
 

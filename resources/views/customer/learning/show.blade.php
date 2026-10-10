@@ -49,13 +49,16 @@
                 @endunless
             </div>
 
-            @foreach ($isLocked ? [] : $unit->blocks() as $block)
-                @if (($block['type'] ?? null) === 'text' && isset($block['text']))
-                    <p class="mt-3 whitespace-pre-line text-sm text-base-content/80">{{ $block['text'] }}</p>
-                @elseif (($block['type'] ?? null) === 'heading' && isset($block['text']))
-                    <h3 class="mt-3 text-sm font-semibold">{{ $block['text'] }}</h3>
-                @endif
-            @endforeach
+            @unless ($isLocked)
+                @include('learning._blocks', [
+                    'blocks' => $unit->blocks(),
+                    'mediaState' => $mediaState,
+                    'mediaUrl' => fn (int $id): ?string => ($a = $unit->attachments->firstWhere('id', $id))
+                        ? route('customer.learning.units.media', [$enrollment->sqid, $unit->sqid, $a->sqid])
+                        : null,
+                    'portal' => true,
+                ])
+            @endunless
         </x-card>
     @endforeach
 </div>

@@ -1,7 +1,7 @@
 ---
 title: "Journal et dossier du cas"
 topic: customer-portal.diary
-version: 2
+version: 4
 keywords:
     - journal des interventions
     - historique des interventions
@@ -13,6 +13,7 @@ keywords:
     - dossier du cas
     - confirmer une photo
     - contester une photo
+    - protocole PDF
 audience: []
 related:
     - customer-portal.overview
@@ -49,9 +50,9 @@ La commande la plus récente figure en haut. Au-delà de 25 commandes, vous parc
 
 En haut figurent le titre, la date et le statut, à droite le bouton **Dossier du cas en PDF**. Suivent ces sections :
 
-- **Photos** – les photos que votre prestataire a libérées pour vous, avec leur nom de fichier. Les photos internes n'apparaissent pas.
+- **Photos** – les photos et fichiers que votre prestataire a libérés pour vous : les photos sous forme de petite miniature avec leur nom de fichier, les autres fichiers avec leur nom. Un clic sur l'image ou sur le nom télécharge le fichier. Les photos internes n'apparaissent pas.
 - **Matériel** – le matériel saisi pour cette commande avec **Désignation** et **Quantité**.
-- **Protocoles** – les protocoles libérés avec titre, statut et date.
+- **Protocoles** – les protocoles signés que votre prestataire a libérés pour vous, avec titre, statut et date, chacun avec **Télécharger le PDF** (voir ci-dessous).
 - **Communication** – les notes libérées sur des entretiens et des messages, avec objet, moment et texte.
 - **Questions et commentaires** – uniquement si les questions sont libérées pour vous (voir plus bas).
 
@@ -66,9 +67,15 @@ Si une section est vide, elle affiche un message comme **Aucune photo approuvée
 
 Une contestation est transmise à votre prestataire sous forme de question sur cette commande, et votre prestataire en est averti. Le message **Contestation transmise — nous revenons vers vous.** confirme l'envoi. Vous recevez la réponse par e-mail à votre e-mail de connexion ; si les questions sont libérées pour vous, elle figure aussi dans la section **Questions et commentaires**.
 
+## Télécharger les protocoles
+
+Le portail n'affiche que les protocoles signés ; les brouillons et les protocoles en revue n'apparaissent qu'une fois signés. Le statut indique **Signé**, pour les protocoles plus anciens aussi **Archivé** ou **Remplacé**. Avec **Remplacé**, votre prestataire a établi une version corrigée ; elle apparaît dès qu'elle est signée.
+
+**Télécharger le PDF** vous fournit le protocole dans sa version signée sous forme de fichier PDF. Chaque téléchargement est consigné sur le protocole, de sorte que votre prestataire peut savoir quand il a été téléchargé via le portail.
+
 ## Dossier du cas en PDF
 
-**Dossier du cas en PDF** télécharge un fichier PDF avec le titre, la date et le statut de la commande, les photos libérées avec leur date de confirmation, le matériel et les protocoles. La communication et les questions n'y figurent pas.
+**Dossier du cas en PDF** télécharge un fichier PDF avec le titre, la date et le statut de la commande, les photos libérées avec leur date de confirmation, le matériel et une liste des protocoles signés avec titre, statut et date ; les protocoles eux-mêmes se téléchargent un par un avec **Télécharger le PDF**. La communication et les questions n'y figurent pas.
 
 Le lien derrière le bouton est valable 24 heures et fonctionne aussi sans connexion – vous pouvez donc le transmettre à des collègues. S'il a expiré, rouvrez le dossier du cas ; un nouveau lien est alors créé.
 
@@ -79,4 +86,4 @@ Si les questions sont libérées pour vous, le dossier du cas affiche la section
 ## Limites
 
 - Dans le journal, vous ne pouvez ni créer, ni modifier, ni annuler de commandes. Si cette zone est libérée, vous demandez de nouvelles prestations sous **Demandes et commandes**.
-- Vous ne voyez que les photos, protocoles et notes que votre prestataire a expressément libérés pour vous.
+- Vous ne voyez que les photos, protocoles et notes que votre prestataire a expressément libérés pour vous. Les protocoles n'apparaissent qu'une fois signés.

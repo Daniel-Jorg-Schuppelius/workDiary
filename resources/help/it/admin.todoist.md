@@ -1,7 +1,7 @@
 ---
 title: "Connessione Todoist"
 topic: admin.todoist
-version: 1
+version: 2
 keywords:
     - Todoist
     - sincronizzare attività
@@ -85,6 +85,9 @@ troverà:
 
 - **Indicatori**: attività attive, sottoattività, attività ricorrenti,
   scadenze con orario, assegnatari non associabili e attività già collegate.
+  Le attività ricorrenti arrivano come singola attività con la prossima
+  scadenza; solo Todoist conosce la ricorrenza. Per le scadenze con orario
+  WorkDiary riprende solo la data.
 - **Associazione assegnatari**: per ogni collaboratore Todoist sceglie un
   utente WorkDiary e clicca su **Salva**. Un indirizzo e-mail uguale compare
   solo come **Suggerimento**; l’assegnazione vale solo dopo la Sua scelta.
@@ -157,3 +160,9 @@ filtrata su Todoist.
   ancora associato a un utente nel preflight.
 - Non viene sincronizzato nulla: l’associazione è ancora in **Bozza** o **In
   pausa**.
+- La connessione indica **In pausa**: Todoist ha rifiutato l’accesso, ad
+  esempio perché l’autorizzazione dell’app è stata revocata in Todoist. La
+  sincronizzazione è sospesa; si ricolleghi con **Rinnova connessione**. Se
+  una sincronizzazione fallisce per un altro motivo, la pagina mostra l’ultimo
+  errore finché una sincronizzazione non riesce di nuovo; viene creata anche
+  un’attività operativa.

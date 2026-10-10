@@ -15,6 +15,9 @@
 @section('nav-title', __('Datenqualität'))
 
 @section('content')
+@php
+    $phaseLabel = fn (string $phase): string => \App\Enums\Classification\ClassificationRequirementPhase::tryFrom($phase)?->label() ?? $phase;
+@endphp
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar>
@@ -68,7 +71,7 @@
             @else
                 <div class="flex flex-wrap gap-2">
                     @foreach ($by_phase as $phase => $count)
-                        <x-status-badge tone="plain" size="md" outline>{{ $phase }}: {{ $count }}</x-status-badge>
+                        <x-status-badge tone="plain" size="md" outline>{{ $phaseLabel($phase) }}: {{ $count }}</x-status-badge>
                     @endforeach
                 </div>
             @endif
@@ -97,7 +100,7 @@
                         <td>
                             <div class="flex flex-wrap gap-1">
                                 @foreach ($row['gaps'] as $gap)
-                                    <x-status-badge :tone="$gap['severity'] === 'hard' ? 'error' : 'warning'">{{ $gap['label'] }} · {{ $gap['phase'] }}</x-status-badge>
+                                    <x-status-badge :tone="$gap['severity'] === 'hard' ? 'error' : 'warning'">{{ $gap['label'] }} · {{ $phaseLabel($gap['phase']) }}</x-status-badge>
                                 @endforeach
                             </div>
                         </td>

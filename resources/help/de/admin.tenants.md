@@ -1,7 +1,7 @@
 ---
 title: "Organisationen & Mandanten"
 topic: admin.tenants
-version: 3
+version: 4
 keywords:
     - Mandantenverwaltung
     - Mandant anlegen

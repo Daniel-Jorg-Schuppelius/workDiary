@@ -1,7 +1,7 @@
 ---
 title: "Mis análisis"
 topic: reports.my-reports
-version: 1
+version: 5
 keywords:
     - Mi mes
     - Mi año
@@ -24,8 +24,9 @@ related:
 ---
 
 En **Análisis** → **Personal** cada persona dispone de tres análisis de su
-propio tiempo: **Mi mes**, **Mi año** y **Balance de trabajo**. Muestran
-exclusivamente sus propios registros. Se basan en sus registros de tiempo; el
+propio tiempo: **Mi mes**, **Mi año** y **Balance de trabajo**. Muestran sus
+propios registros; el balance de trabajo de otra persona solo puede abrirlo
+quien tenga el permiso correspondiente (consulte «Quién ve qué»). Se basan en sus registros de tiempo; el
 balance de trabajo utiliza además sus fichajes y su modelo de jornada laboral.
 Los análisis no son una fuente de datos propia: si una cifra no es correcta,
 corrija el registro de tiempo o el fichaje; el análisis vuelve a calcularse la
@@ -95,7 +96,7 @@ elegido el tiempo previsto, la asistencia y el tiempo registrado. Los recuadros
 de arriba:
 
 - **Previsto**: tiempo previsto según su modelo de jornada laboral. Los días
-  festivos y los días de vacaciones aprobadas no tienen tiempo previsto.
+  festivos y los días de ausencia aprobada como vacaciones, permiso especial, permiso no retribuido o baja por enfermedad no tienen tiempo previsto.
 - **Asistencia**: sus fichajes menos las pausas. Los fichajes anulados no
   cuentan; un fichaje todavía en curso se cuenta hasta el momento actual.
 - **Registrado**: sus registros de tiempo de los tipos trabajo y viaje. La
@@ -121,9 +122,10 @@ Exportación: **PDF** con los indicadores y la tabla diaria.
 
 - **Mi mes** y **Mi año** muestran siempre solo sus propios registros, también
   para los administradores.
-- **Balance de trabajo** muestra por defecto su propio balance. Solo los
-  administradores ven una barra de filtros con **Empleados** y **Equipo** y
-  pueden abrir con ella el balance de otra persona de la misma organización;
+- **Balance de trabajo** muestra por defecto su propio balance. Los
+  administradores y las personas con el permiso **Ver todos los registros de
+  tiempo** ven una barra de filtros con **Empleado** y **Equipo** y pueden
+  abrir con ella el balance de otra persona de la misma organización;
   **Equipo** solo limita la lista de empleados seleccionables.
 - El balance de trabajo solo calcula el período elegido. No muestra el saldo
   acumulado de su cuenta de tiempo de trabajo; para ello consulte «Cuenta de

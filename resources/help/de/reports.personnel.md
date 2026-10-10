@@ -1,13 +1,14 @@
 ---
 title: "Personal: Urlaub, Krankheit, Qualifikation, Arbeitsschutz"
 topic: reports.personnel
-version: 1
+version: 6
 keywords:
     - Fehlzeiten
     - Resturlaub
     - Urlaubsauswertung
     - Krankheitstage
     - Lohnfortzahlung
+    - Fortsetzungserkrankung
     - AU-Bescheinigung
     - Qualifikationsmatrix
     - ablaufende Zertifikate
@@ -69,10 +70,14 @@ Kacheln: **Mitarbeiter**, **Urlaub (Werktage)** mit den ausstehenden Tagen,
 Unbezahlt; je nach Länge des Zeitraums heißt es je Tag, je Woche oder je
 Quartal. **Resturlaub je Mitarbeiter (Top 15)** zeigt die höchsten Reste.
 
-Filter gibt es nur für Administratoren: **Bereich** (**Nur eigene** oder
-**Gesamtes Team** für alle Personen der Organisation), **Mitarbeiter**,
-**Team** und **Status**. Mit **Status** zählen nur Anträge mit **Ausstehend**
-oder **Genehmigt**. Export: **PDF** mit Diagramm, **CSV** und **Excel**.
+Die Filter **Bereich** (**Nur eigene** oder **Gesamtes Team** für alle
+Personen der Organisation), **Mitarbeiter**, **Team** und **Status** sehen
+Administratoren und Personen mit dem Recht **Alle Urlaubsanträge sehen**; alle
+anderen sehen nur ihre eigene Zeile. Mit **Status** zählen nur Anträge mit
+**Ausstehend** oder **Genehmigt**. Export: **PDF** mit Diagramm, **CSV** und
+**Excel**.
+
+Die Spalte **Krank**, ihre Kachel und ihr Anteil im Diagramm zeigen die Werte anderer Personen nur, wenn Sie zusätzlich das Recht **Krankmeldungen einsehen** haben; sonst fehlen sie in Ansicht und Export.
 
 ## Krankheiten
 
@@ -92,16 +97,30 @@ Spalten je Person mit Krankmeldungen im Zeitraum:
   die verbleibenden freien Tage oder **OK**. Unter dem Namen steht **Kette
   seit** mit dem Beginn der laufenden Krankheitskette.
 
-So rechnet die Lohnfortzahlung: Der Anspruch beträgt in der Standardeinstellung
-sechs Wochen, also 42 Kalendertage je Krankheitskette. Eine neue Krankmeldung
-setzt die bisherige Kette fort, wenn sie als Folgebescheinigung verknüpft ist
-oder seit dem Ende der Kette weniger als sechs Monate vergangen sind; erst nach
-mindestens sechs Monaten beginnt der Anspruch neu. Diagnosen werden nicht
-verglichen. Als verbraucht gelten die Kalendertage vom Beginn der Kette bis zu
-ihrem Ende, bei einer laufenden Krankheit bis heute. Spalten
-**Lohnfortzahlung** und **Status** zeigen den Stand von heute, unabhängig vom
-gewählten Zeitraum. Die Werte sind eine Orientierung, keine arbeitsrechtliche
-Prüfung.
+So rechnet die Lohnfortzahlung:
+
+- Der Anspruch beträgt in der Standardeinstellung sechs Wochen, also 42
+  Kalendertage Arbeitsunfähigkeit. Gezählt werden nur die Krankheitstage selbst,
+  bei einer laufenden Krankheit bis heute – Arbeitstage zwischen zwei
+  Krankmeldungen zählen nie mit.
+- Krankmeldungen, die sich überschneiden, nahtlos aneinander anschließen oder
+  als Folgebescheinigung verknüpft sind, bilden einen Krankheitsfall. Das gilt
+  auch, wenn während einer laufenden Krankheit eine neue Krankheit hinzukommt.
+- Eine neue Krankheit, die erst nach Arbeitstagen beginnt, startet mit vollem
+  Anspruch.
+- Bestätigt die Krankenkasse dieselbe Krankheit (Fortsetzungserkrankung), wird
+  an der neuen Krankmeldung im Feld **Fortsetzungserkrankung von** die frühere
+  Krankmeldung gewählt. Dann teilen sich die Fälle einen Anspruch. Für dieselbe
+  Krankheit entsteht ein neuer Anspruch, wenn die Person in der
+  Standardeinstellung sechs Monate lang nicht wegen dieser Krankheit
+  arbeitsunfähig war oder seit Beginn der ersten Arbeitsunfähigkeit zwölf
+  Monate vergangen sind.
+- **Kette seit** nennt den Beginn des ersten Falls, der auf den laufenden
+  Anspruch zählt.
+
+Spalten **Lohnfortzahlung** und **Status** zeigen den Stand von heute,
+unabhängig vom gewählten Zeitraum. Die Werte sind eine Orientierung, keine
+arbeitsrechtliche Prüfung oder Rechtsberatung.
 
 Kacheln: **Mitarbeiter**, **Werktage krank** mit den Kalendertagen,
 **Krankheitsfälle** mit den Folgebescheinigungen, **Mit AU** und **Anspruch
@@ -109,15 +128,18 @@ ausgeschöpft**. Diagramme: **Kranktage je Monat** mit Medianlinie (je nach
 Zeitraum je Tag, Woche oder Quartal) und die Heatmap **Kranktage je Mitarbeiter
 und Monat**.
 
-Filter wie bei **Urlaub & Flex**: **Bereich**, **Mitarbeiter** und **Team**,
-nur für Administratoren. Diese Seite bietet keinen Export.
+Filter wie bei **Urlaub & Flex**: **Bereich**, **Mitarbeiter** und **Team** –
+hier für Administratoren und Personen mit dem Recht **Krankmeldungen
+einsehen**; alle anderen sehen nur ihre eigene Zeile. Diese Seite bietet keinen
+Export.
 
 ## Qualifikationen
 
 **Auswertungen** → **Team** → **Qualifikationen** zeigt die
-**Qualifikationsmatrix**: eine Zeile je Person mit mindestens einer
-Qualifikation, eine Spalte je Qualifikation des Katalogs (Kürzel, voller Name
-beim Überfahren).
+**Qualifikationsmatrix**: eine Zeile je Person mit mindestens einer aktiven
+Qualifikation, eine Spalte je aktiver Qualifikation des Katalogs (Kürzel,
+voller Name beim Überfahren). Inaktive Qualifikationen erscheinen weder in der
+Matrix noch in Kacheln, Diagrammen und Export.
 
 - Jede Zelle zeigt das Ablaufdatum oder ✓, wenn die Qualifikation ohne
   Ablaufdatum gilt.
@@ -129,7 +151,9 @@ beim Überfahren).
   Qualifikation nach Status** für die zwölf häufigsten Qualifikationen.
 
 Stichtag ist immer heute; der Zeitraum der Kopfzeile ändert die Matrix nicht.
-Filter: **Mitarbeiter** und **Team**. Export: **PDF** im Querformat, **CSV** und
+Die Zeilen aller Personen sehen Administratoren und Personen mit dem Recht
+**Qualifikationen verwalten**; alle anderen sehen nur ihre eigene Zeile.
+Die Filter **Mitarbeiter** und **Team** gibt es nur mit diesem Recht. Export: **PDF** im Querformat, **CSV** und
 **Excel** mit einer Zeile je Person und dem Ablaufdatum bzw. einem
 Gültigkeitsvermerk je Qualifikation. Qualifikationen pflegen Sie im Katalog und
 an der Person, nicht in der Auswertung.
@@ -186,10 +210,12 @@ oder ohne Kompetenz-Soll bleibt die Tabelle leer.
 
 ## Wer was sieht
 
-- **Urlaub & Flex**, **Krankheiten** und **Qualifikationen**: Jede Person sieht
-  nur ihre eigenen Daten. Die Ansicht über alle Personen der Organisation ist
-  an die Administratorrolle gebunden – das Recht **Krankmeldungen einsehen**
-  allein schaltet sie hier nicht frei.
+- **Urlaub & Flex**, **Krankheiten** und **Qualifikationen**: Ohne weiteres
+  Recht sieht jede Person nur ihre eigenen Daten. Die Sicht auf alle Personen
+  der Organisation haben Administratoren und, je Auswertung, wer das Recht der
+  zugehörigen Liste hat: **Alle Urlaubsanträge sehen** für **Urlaub & Flex**,
+  **Krankmeldungen einsehen** für **Krankheiten** und **Qualifikationen
+  verwalten** für **Qualifikationen**.
 - **Arbeitsschutz**: Menüeintrag und Seite nur mit dem Recht
   **Sicherheitsereignis-Register sehen** oder **Sicherheitsereignisse bearbeiten
   / schließen**; Administratoren sehen sie immer. In der Standardvergabe haben
@@ -197,5 +223,6 @@ oder ohne Kompetenz-Soll bleibt die Tabelle leer.
 - **Probleme & Schulung**: nur mit dem Recht **Auswertungen einsehen** oder als
   Administrator. In der Standardvergabe haben es unter anderem
   Geschäftsführung, Teamleitung und Personalverwaltung.
-- Die Menübereiche **Team** und **Projekte & Kunden** gibt es nur, wenn das
-  Zusatzmodul Team-Auswertungen gebucht ist.
+- **Urlaub & Flex**, **Krankheiten** und **Qualifikationen** setzen das
+  Zusatzmodul Team-Auswertungen voraus; **Arbeitsschutz** und **Probleme &
+  Schulung** stehen ohne das Modul zur Verfügung.

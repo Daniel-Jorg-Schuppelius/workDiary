@@ -35,7 +35,7 @@ enum MigrationProvider: string implements HasLabel {
     public function label(): string {
         return match ($this) {
             self::Lexoffice => 'Lexoffice',
-            self::OrgaMax => __('orgaMAX Buchhaltung'),
+            self::OrgaMax => __('enums.migration.migration_provider.orga_max'),
         };
     }
 

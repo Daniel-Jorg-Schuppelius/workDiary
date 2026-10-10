@@ -165,6 +165,8 @@ enum NotificationEvent: string implements HasLabel {
     case ClaimEscalation = 'claim.escalation';
     /** Scanner: gleichartige Reklamationen über der Schwelle (Feature 072, MVP-886). */
     case ClaimPattern = 'claim.pattern';
+    /** Synchron: Nachreichung des Kunden im Portal — an den Verantwortlichen des Falls. */
+    case ClaimCustomerNote = 'claim.customerNote';
     /** Scanner: Frühwarnung mit Handlungsempfehlung (Feature 002, MVP-889). */
     case ReportWarning = 'report.warning';
 
@@ -177,6 +179,10 @@ enum NotificationEvent: string implements HasLabel {
     case RentalRequested = 'rental.requested';
     /** Synchron: Position eines verliehenen Geräts außerhalb des Einsatzorts (MVP-975). */
     case RentalGeofenceDeviation = 'rental.geofenceDeviation';
+
+    // Feature 087: Terminanfrage und Kunden-Storno aus dem Portal — an die Disposition.
+    case AppointmentRequested = 'appointment.requested';
+    case AppointmentCanceled = 'appointment.canceled';
 
     // Personalakte (Feature 141, MVP-987): Kreis und betroffene Person adressiert der PersonnelFileService selbst.
     case HrFileAckRequested = 'hrFile.ackRequested';
@@ -358,7 +364,7 @@ enum NotificationEvent: string implements HasLabel {
             return false;
         }
 
-        return ! in_array($this, [self::TimeCorrectionRequested, self::OvertimeRequested, self::VacationRequested, self::MonthClosureSubmitted, self::IsmsCertificateExpiring, self::IsmsIncidentCritical, self::SafetyCriticalEvent, self::ProcedureDeviationEscalated, self::ClaimPattern, self::ReportWarning, self::SafetyAssessmentReviewDue, self::ShiftExchangeRequested, self::CustomerQueryRaised, self::CustomerIntakeSubmitted, self::RentalRequested, self::ShipmentDeliveryProblem, self::SlaQuotaWarning,
+        return ! in_array($this, [self::TimeCorrectionRequested, self::OvertimeRequested, self::VacationRequested, self::MonthClosureSubmitted, self::IsmsCertificateExpiring, self::IsmsIncidentCritical, self::SafetyCriticalEvent, self::ProcedureDeviationEscalated, self::ClaimPattern, self::ReportWarning, self::SafetyAssessmentReviewDue, self::ShiftExchangeRequested, self::CustomerQueryRaised, self::CustomerIntakeSubmitted, self::RentalRequested, self::AppointmentRequested, self::ShipmentDeliveryProblem, self::SlaQuotaWarning,
             // Domain-/Finanz-/Fristereignisse betreffen keine Einzelperson (Vollaudit 2026-07, W3.2).
             self::DomainExpiring, self::DomainTransferChanged, self::DomainSyncFailed, self::DomainHighRiskAction,
             self::FinanceTransferFailed, self::FinanceBankImportFailed, self::FinanceReconciliationReview, self::RetentionReleaseDue,
@@ -460,6 +466,12 @@ enum NotificationEvent: string implements HasLabel {
             self::RentalReturnOverdue => [UserRole::Teamleitung->value],
             // Portal-Verleihanfrage (MVP-714): Entscheidung ist Leitungsaufgabe.
             self::RentalRequested => [UserRole::Teamleitung->value],
+            // Portal-Termine (Feature 087): die Disposition entscheidet; beim Storno
+            // zusätzlich die eingeplante Person (affected).
+            self::AppointmentRequested,
+            self::AppointmentCanceled => [UserRole::Teamleitung->value],
+            // Nachreichung: primär der Verantwortliche des Falls, ohne ihn die Leitung.
+            self::ClaimCustomerNote => [UserRole::Teamleitung->value],
             // Geofence-Abweichung (MVP-975): Akten-Verantwortlicher plus Leitung.
             self::RentalGeofenceDeviation => [UserRole::Teamleitung->value],
             // Leasingfristen (Feature 074): Vertrags-/Fristensteuerung ist
@@ -588,10 +600,13 @@ enum NotificationEvent: string implements HasLabel {
             self::ClaimEscalation => 'assignment_late',
             self::ProcedureDeviationEscalated => 'report',
             self::ClaimPattern => 'troubleshoot',
+            self::ClaimCustomerNote => 'mark_chat_unread',
             self::ReportWarning => 'crisis_alert',
             self::RentalReturnOverdue => 'forklift',
             self::RentalRequested => 'forklift',
             self::RentalGeofenceDeviation => 'wrong_location',
+            self::AppointmentRequested => 'event_available',
+            self::AppointmentCanceled => 'event_busy',
             self::HrFileAckRequested, self::HrFileSubmissionReceived, self::HrFileSubmissionDecided => 'badge',
             self::AssetFinanceDeadline => 'request_quote',
             self::ContractDeadlineDue => 'contract',

@@ -30,10 +30,10 @@ enum MigrationDataArea: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Customers => __('Kunden'),
-            self::Suppliers => __('Lieferanten'),
-            self::Articles => __('Artikel und Leistungen'),
-            self::Documents => __('Belege (Historie)'),
+            self::Customers => __('enums.migration.migration_data_area.customers'),
+            self::Suppliers => __('enums.migration.migration_data_area.suppliers'),
+            self::Articles => __('enums.migration.migration_data_area.articles'),
+            self::Documents => __('enums.migration.migration_data_area.documents'),
         };
     }
 

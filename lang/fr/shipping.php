@@ -12,8 +12,9 @@ return [
     'title' => 'Expédition & logistique',
     'intro' => 'Connexions transporteur pour les étiquettes d\'expédition et le suivi des colis (DHL Paket, UPS, FedEx). Une connexion par transporteur et organisation ; les identifiants sont stockés chiffrés.',
 
-    'form_heading' => 'Ajouter / modifier une connexion',
-    'form_hint' => 'Choisissez le transporteur et saisissez ses identifiants. Enregistrer à nouveau avec le même transporteur met à jour la connexion existante.',
+    'form_heading' => 'Ajouter une connexion',
+    'form_heading_edit' => 'Modifier la connexion :carrier',
+    'form_hint' => 'Choisissez le transporteur et saisissez ses identifiants. Modifiez les connexions existantes via « Modifier » dans la liste.',
     'secret_hint' => 'Le mot de passe et la clé API sont stockés chiffrés et ne sont plus jamais affichés. Laissez-les vides lors de la modification pour conserver les valeurs enregistrées.',
     'connections_heading' => 'Connexions existantes',
     'no_connections' => 'Aucune connexion transporteur configurée pour le moment.',
@@ -36,6 +37,8 @@ return [
     ],
 
     'label_short' => 'Expédition',
+    'last_tracked' => 'Dernière vérification : :time',
+    'confirm_cancel' => 'Annuler cette expédition auprès du transporteur ? L’étiquette devient invalide ; vous pourrez ensuite créer une nouvelle expédition.',
 
     'col' => [
         'mode' => 'Mode',
@@ -55,6 +58,11 @@ return [
     'action' => [
         'save' => 'Enregistrer',
         'disconnect' => 'Désactiver',
+        'edit' => 'Modifier',
+        'cancel_edit' => 'Annuler',
+        'download_label' => 'Télécharger l’étiquette',
+        'track_now' => 'Consulter le statut de l’envoi',
+        'cancel_shipment' => 'Annuler l’expédition',
         'create' => 'Expédier',
     ],
 
@@ -67,6 +75,12 @@ return [
         'no_connection' => 'Aucune connexion active n\'est configurée pour le transporteur sélectionné.',
         'label_created' => 'Expédition créée et étiquette récupérée.',
         'label_failed' => 'Impossible de créer l\'étiquette d\'expédition : :reason',
+        'tracked' => 'Statut de l’envoi consulté : :status',
+        'track_failed' => 'Impossible de consulter le statut de l’envoi : :reason',
+        'cancelled' => 'Expédition annulée.',
+        'cancel_failed' => 'Impossible d’annuler l’expédition : :reason',
+        'not_cancellable' => 'L’envoi est déjà pris en charge par le transporteur et ne peut plus être annulé.',
+        'exists_use_edit' => 'Une connexion existe déjà pour ce transporteur. Veuillez la modifier via « Modifier ».',
     ],
 
     'notify' => [

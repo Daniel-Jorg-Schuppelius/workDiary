@@ -57,7 +57,7 @@ class MsgraphServiceProvider extends PluginServiceProviderBase {
         // Erweiterungspunkt des Moduls (MVP-1045): Termine als Zeitimport-Feed.
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Import\Contracts\CalendarImportFeed::class, \App\Plugins\Msgraph\Services\MsgraphCalendarImportFeed::class);
         // Verbindungszustand für Diagnose und Ablaufprüfung (MVP-1044).
-        $this->app->make(\App\Services\Diagnostics\ConnectionHealthModels::class)->register('msgraph', \App\Plugins\Msgraph\Models\MsgraphConnection::class);
+        $this->app->make(\App\Services\Diagnostics\ConnectionHealthModels::class)->register('msgraph', \App\Plugins\Msgraph\Models\MsgraphConnection::class, operationsTask: true);
         // Gruppierte Auflösung der Import-Inbox (MVP-1030).
         $this->app->make(InboxGroupBookerRegistry::class)->register(MsgraphPlugin::ID, MsgraphSeriesGroupBooker::class);
         // Graph-Postfächer als Postfach-Transport (MVP-1042).

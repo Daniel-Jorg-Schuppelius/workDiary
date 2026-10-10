@@ -24,9 +24,9 @@ enum RenderProfileStatus: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Draft => __('Entwurf'),
-            self::Active => __('Aktiv'),
-            self::Archived => __('Archiviert'),
+            self::Draft => __('enums.document_design.render_profile_status.draft'),
+            self::Active => __('enums.document_design.render_profile_status.active'),
+            self::Archived => __('enums.document_design.render_profile_status.archived'),
         };
     }
 

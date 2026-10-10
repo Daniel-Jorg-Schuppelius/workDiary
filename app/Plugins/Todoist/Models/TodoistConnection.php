@@ -12,11 +12,13 @@ namespace App\Plugins\Todoist\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization};
 use App\Models\Platform\User;
+use App\Plugins\Support\PluginApiException;
 use App\Plugins\Todoist\Enums\TodoistConnectionStatus;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Throwable;
 
 /**
  * Todoist-OAuth-Verbindung einer Organisation (Feature 055, MVP-111): genau
@@ -94,5 +96,25 @@ class TodoistConnection extends Model {
 
     public function isActive(): bool {
         return $this->status === TodoistConnectionStatus::Active && trim((string) $this->access_token) !== '';
+    }
+
+    /**
+     * Ergebnis eines Abgleichs festhalten: Fehlerklasse in `last_error`, ein
+     * abgelehntes Token (401) pausiert die Verbindung bis zum Neuverbinden.
+     */
+    public function recordSyncResult(?Throwable $error): void {
+        if ($error === null) {
+            if ($this->last_error !== null) {
+                $this->forceFill(['last_error' => null])->save();
+            }
+
+            return;
+        }
+
+        $status = $error instanceof PluginApiException ? $error->status : 0;
+        $this->forceFill([
+            'last_error' => mb_substr(class_basename($error) . ($status > 0 ? ' (HTTP ' . $status . ')' : ''), 0, 191),
+            'status' => $status === 401 ? TodoistConnectionStatus::Paused : $this->status,
+        ])->save();
     }
 }

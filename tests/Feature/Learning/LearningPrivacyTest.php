@@ -138,7 +138,7 @@ class LearningPrivacyTest extends TestCase {
         $registry = app(RetentionRegistry::class);
         foreach (['learning_records', 'learning_certificates'] as $area) {
             $this->assertNotNull($registry->policy($area));
-            $this->assertNotSame('', (string) config("retention.areas.{$area}.label"));
+            $this->assertNotSame($area, $registry->labelFor($area));
             $this->assertNotNull($registry->yearsFor($this->organization, $area));
         }
     }

@@ -18,6 +18,7 @@
     "Nicht-exportierte Projekt-Zeiten, deren Projekt einem OpenProject-Projekt zugeordnet ist, werden als Zeiteinträge zurückgebucht. Aufgaben werden — sofern zugeordnet — als Work Package gebucht. Bereits gebuchte Einträge werden übersprungen.": "I tempi di progetto non esportati il cui progetto è associato a un progetto OpenProject vengono registrati come voci di tempo. Le attività vengono — se associate — registrate come work package. Le voci già registrate vengono saltate.",
     "Noch keine Zuordnungen. Starten Sie einen Struktur-Abgleich.": "Nessuna associazione. Avvii un confronto della struttura.",
     "Nur Struktur abgleichen": "Confronta solo la struttura",
+    "Nur für eine selbst gehostete OpenProject-Instanz im eigenen Netz: erlaubt eine Instanz-URL mit privater/interner Adresse. Wird protokolliert und wirkt nur, wenn der Betreiber diese Freigabe zulässt.": "Solo per un'istanza OpenProject ospitata in proprio nella propria rete: consente un URL dell'istanza con un indirizzo privato/interno. L'operazione è sottoposta ad audit e ha effetto solo se il gestore lo consente.",
     "Nutzt die hinterlegten Zugangsdaten und das Zeitfenster.": "Utilizza le credenziali memorizzate e la finestra temporale.",
     "OpenProject": "OpenProject",
     "OpenProject ist nicht konfiguriert.": "OpenProject non è configurato.",

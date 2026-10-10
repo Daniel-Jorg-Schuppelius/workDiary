@@ -346,6 +346,15 @@ Regel 3). Gleicher Status zählt nicht als Übergang — wer ihn zulassen will,
 prüft `$from !== $to` selbst. Status-Spalten casten auf ein Enum
 (`StatusEnumCastRuleTest`, Baseline nur schrumpfen).
 
+## Enum-Bezeichnungen aus den Sprachdateien
+
+`label()` eines Enums übersetzt nur Schlüssel mit Gruppe:
+`enums.<domäne>.<enum>.<fall>` in `lang/<sprache>/enums.php` (×5), im Plugin
+`<plugin-id>::enums.<enum>.<fall>` in `Resources/lang/<sprache>/enums.php`;
+ein Präfix vor `. $this->value` ist erlaubt. Keine deutschen JSON-Texte wie
+`__('Offen')` — ein gleichlautender JSON-Schlüssel überschattet sonst den
+Namespace, und beide laufen auseinander (Gate `EnumLabelContractTest`).
+
 ## Verweise
 
 Die gesamte Entwicklungs-/Architekturdoku liegt im Schwester-Repo

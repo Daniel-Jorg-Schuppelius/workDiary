@@ -46,13 +46,13 @@ class MilogEvidenceExportController extends Controller {
         abort_unless($org instanceof Organization, 404);
 
         [$from, $to] = $this->resolveRange($request);
-        $filters = $this->standardFilters($request, ['user'], $from, $to);
+        $filters = $this->standardFilters($request, ['user', 'team'], $from, $to);
 
         // Mandantengrenze: User trägt keinen globalen OrganizationScope.
         /** @var \Illuminate\Database\Eloquent\Collection<int, User> $users */
         $users = User::query()
             ->where('organization_id', $org->getKey())
-            ->when($filters->userId !== null, fn($q) => $q->whereKey($filters->userId))
+            ->tap(fn($q) => $filters->applyUserAndTeam($q, 'id'))
             ->orderBy('name')
             ->orderBy('id')
             ->get(['id', 'name', 'personnel_number']);

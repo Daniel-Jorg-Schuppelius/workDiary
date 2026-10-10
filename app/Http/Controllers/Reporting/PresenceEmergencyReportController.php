@@ -40,6 +40,14 @@ class PresenceEmergencyReportController extends Controller {
 
     public function __construct(private readonly EmergencyAttendanceService $service) {}
 
+    /**
+     * E10-Ausnahme: Die Notfallliste muss im Ernstfall ausgedruckt werden
+     * können — ihr eigenes Recht deckt PDF und CSV, `report.export` nicht nötig.
+     */
+    public function mayExportReport(Request $request): bool {
+        return Gate::allows(Permission::ReportPresenceEmergency->value);
+    }
+
     public function index(Request $request): View|SymfonyResponse {
         Gate::authorize(Permission::ReportPresenceEmergency->value);
 

@@ -183,4 +183,28 @@ class ArchiveTest extends TestCase {
             ->assertSeeText('Archiv-Render-Check')
             ->assertDontSee('use App\Enums');
     }
+
+    /** MVP-1103: Die Listengröße „Archiv" aus den Organisationseinstellungen greift. */
+    public function test_archive_page_size_follows_the_organization_setting(): void {
+        $user = User::factory()->user()->create();
+        $user->organization?->update(['settings' => ['pagination' => ['archive' => 1]]]);
+        foreach (['Archiv-Seite-A', 'Archiv-Seite-B'] as $note) {
+            Vacation::create([
+                'organization_id' => $user->organization_id,
+                'user_id' => $user->id,
+                'start_date' => now()->toDateString(),
+                'end_date' => now()->toDateString(),
+                'type' => VacationType::Vacation->value,
+                'status' => VacationStatus::Rejected->value,
+                'note' => $note,
+            ]);
+        }
+
+        $html = (string) $this->actingAs($user)
+            ->get(route('archive.index', ['tab' => 'urlaub']))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertSame(1, substr_count($html, 'Archiv-Seite-'));
+    }
 }

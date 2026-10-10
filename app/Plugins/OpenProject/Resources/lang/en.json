@@ -18,6 +18,7 @@
     "Nicht-exportierte Projekt-Zeiten, deren Projekt einem OpenProject-Projekt zugeordnet ist, werden als Zeiteinträge zurückgebucht. Aufgaben werden — sofern zugeordnet — als Work Package gebucht. Bereits gebuchte Einträge werden übersprungen.": "Non-exported project times whose project is mapped to an OpenProject project are posted back as time entries. Tasks are — if mapped — posted as a work package. Already posted entries are skipped.",
     "Noch keine Zuordnungen. Starten Sie einen Struktur-Abgleich.": "No mappings yet. Start a structure sync.",
     "Nur Struktur abgleichen": "Sync structure only",
+    "Nur für eine selbst gehostete OpenProject-Instanz im eigenen Netz: erlaubt eine Instanz-URL mit privater/interner Adresse. Wird protokolliert und wirkt nur, wenn der Betreiber diese Freigabe zulässt.": "Only for a self-hosted OpenProject instance on your own network: allows an instance URL with a private/internal address. This is audited and only takes effect if the operator permits it.",
     "Nutzt die hinterlegten Zugangsdaten und das Zeitfenster.": "Uses the stored credentials and the time window.",
     "OpenProject": "OpenProject",
     "OpenProject ist nicht konfiguriert.": "OpenProject is not configured.",

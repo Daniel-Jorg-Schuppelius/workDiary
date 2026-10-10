@@ -1,7 +1,7 @@
 ---
 title: "SLA, contrats & niveaux de service"
 topic: sla.overview
-version: 3
+version: 4
 keywords:
     - accord de niveau de service
     - délai de réponse
@@ -76,4 +76,6 @@ priorité**, **Par client** et **Par cause** – ainsi qu’une **Liste des
 violations** avec accès direct au ticket et les **Quotas de temps
 inclus**. Le rapport peut être exporté en PDF, CSV et Excel. Toute
 personne disposant du droit **Consulter le statut et le rapport SLA**
-peut le consulter.
+peut le consulter ; l'export nécessite en outre le droit **Exporter les
+rapports** – sans ce droit, les boutons d'export n'apparaissent pas. Les
+administrateurs peuvent toujours faire les deux.

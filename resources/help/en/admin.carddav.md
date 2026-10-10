@@ -1,7 +1,7 @@
 ---
 title: "Connecting a CardDAV address book"
 topic: admin.carddav
-version: 1
+version: 2
 keywords:
     - CardDAV
     - connect address book
@@ -113,6 +113,9 @@ base URL can be selected. An arbitrary address cannot be entered as a source.
 - **No sync:** if **Sync now** is missing or WorkDiary reports “Sync not
   possible”, the connection is inactive, no address book is selected, or it was
   shut down after repeated consecutive errors. The page shows the last error at
-  the top.
+  the top, and also a lock after (by default) ten consecutive errors. Check the address and
+  credentials and click **Save** – this lifts the lock, and the next sync
+  decides anew. As long as the connection is failing, an operations task is
+  listed for it.
 - **Checking the state:** next to the page title you see the most recently
   checked state of the connection. **Test connection** checks it right away.

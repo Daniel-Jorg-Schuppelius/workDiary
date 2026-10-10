@@ -65,7 +65,7 @@ return [
         'ack' => [
             'open' => 'Conferma di lettura in sospeso',
             'done' => 'Letto il :date',
-            'confirm' => 'Conferma di aver letto questo documento?',
+            'confirm' => 'Confermi di aver letto questo documento?',
         ],
         'submission' => [
             'title' => 'Presentazioni',

@@ -145,6 +145,59 @@ final class HelpdeskPortalTest extends TestCase {
         );
     }
 
+    /** Phase 137 (E15): „Wiedereröffnen“ steht bei „Gelöst“ und „Abgenommen“, „Lösung bestätigen“ nur bei „Gelöst“. */
+    public function test_reopen_is_offered_when_resolved_and_after_acceptance(): void {
+        $this->actingAs($this->portalUser, 'customer');
+
+        $done = $this->ownTicket(['status' => ServiceTicketStatus::Done]);
+        $this->get(route('customer.tickets.show', $done))
+            ->assertOk()
+            ->assertSee(route('customer.tickets.reopen', $done), false)
+            ->assertSee(route('customer.tickets.accept', $done), false);
+
+        $accepted = $this->ownTicket(['status' => ServiceTicketStatus::Accepted]);
+        $this->get(route('customer.tickets.show', $accepted))
+            ->assertOk()
+            ->assertSee(route('customer.tickets.reopen', $accepted), false)
+            ->assertSee('Grund der Wiedereröffnung')
+            ->assertDontSee(route('customer.tickets.accept', $accepted), false);
+
+        $closed = $this->ownTicket(['status' => ServiceTicketStatus::Closed]);
+        $this->get(route('customer.tickets.show', $closed))
+            ->assertOk()
+            ->assertDontSee(route('customer.tickets.reopen', $closed), false);
+        $this->post(route('customer.tickets.reopen', $closed), ['reason' => 'Geht wieder nicht'])->assertStatus(422);
+
+        $this->post(route('customer.tickets.reopen', $accepted), ['reason' => 'Fehler ist zurück'])
+            ->assertRedirect(route('customer.tickets.show', $accepted));
+        $this->assertSame(ServiceTicketStatus::InProgress, $accepted->fresh()->status);
+        $this->assertTrue(
+            ServiceTicketMessage::query()->where('service_ticket_id', $accepted->id)->where('body', 'Fehler ist zurück')->exists(),
+        );
+    }
+
+    /** Phase 137 (E16): „Bekannte Fehler“ hängt an der Freigabe „Tickets“ … */
+    public function test_known_errors_are_part_of_tickets_capability(): void {
+        $this->allowPortal($this->customer, ['tickets']);
+        $link = route('customer.known-errors.index');
+
+        $this->actingAs($this->portalUser, 'customer')->get($link)->assertOk();
+        $this->actingAs($this->portalUser, 'customer')->get(route('customer.dashboard'))
+            ->assertOk()
+            ->assertSee('href="' . $link . '"', false);
+    }
+
+    /** … und nicht mehr an „Offene Punkte“. */
+    public function test_known_errors_are_hidden_with_open_issues_only(): void {
+        $this->allowPortal($this->customer, ['open_issues']);
+        $link = route('customer.known-errors.index');
+
+        $this->actingAs($this->portalUser, 'customer')->get($link)->assertNotFound();
+        $this->actingAs($this->portalUser, 'customer')->get(route('customer.dashboard'))
+            ->assertOk()
+            ->assertDontSee('href="' . $link . '"', false);
+    }
+
     public function test_foreign_ticket_is_not_reachable(): void {
         $foreignCustomer = Customer::factory()->create(['organization_id' => $this->organization->id]);
         $foreign = ServiceTicket::factory()->create([

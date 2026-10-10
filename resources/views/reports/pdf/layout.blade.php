@@ -75,7 +75,7 @@
                     <div class="contact">
                         @if (!empty($contact['street'])){{ $contact['street'] }}<br>@endif
                         @if (!empty($contact['postal_code']) || !empty($contact['city'])){{ trim(($contact['postal_code'] ?? '').' '.($contact['city'] ?? '')) }}<br>@endif
-                        @if (!empty($contact['phone']))Tel: {{ $contact['phone'] }}<br>@endif
+                        @if (!empty($contact['phone'])){{ __('Tel.') }} {{ $contact['phone'] }}<br>@endif
                         @if (!empty($contact['email'])){{ $contact['email'] }}@endif
                     </div>
                 @endif
@@ -93,7 +93,7 @@
     @hasSection('pdf-meta')
         <p class="meta">@yield('pdf-meta')</p>
     @elseif (isset($label))
-        <p class="meta">Zeitraum: {{ $label }}</p>
+        <p class="meta">{{ __('Zeitraum') }}: {{ $label }}</p>
     @endif
 
     @yield('pdf-table')
@@ -101,7 +101,7 @@
     @if (($pdfCfg['show_footer'] ?? true))
         <p class="footer">
             @if (!empty($legal['footer_text'])){{ $legal['footer_text'] }} · @endif
-            Generiert von {{ $appName }} am {{ now()->format('Y-m-d H:i') }}
+            {{ __('Generiert von :app am :date', ['app' => $appName, 'date' => now()->format('Y-m-d H:i')]) }}
         </p>
     @endif
 </body>

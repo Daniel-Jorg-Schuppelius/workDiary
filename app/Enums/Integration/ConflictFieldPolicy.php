@@ -34,9 +34,9 @@ enum ConflictFieldPolicy: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::RemoteWins => (string) __('Remote gewinnt'),
-            self::LocalWins => (string) __('Lokal gewinnt'),
-            self::ManualReview => (string) __('Manuelle Prüfung (Inbox)'),
+            self::RemoteWins => (string) __('enums.integration.conflict_field_policy.remote_wins'),
+            self::LocalWins => (string) __('enums.integration.conflict_field_policy.local_wins'),
+            self::ManualReview => (string) __('enums.integration.conflict_field_policy.manual_review'),
         };
     }
 

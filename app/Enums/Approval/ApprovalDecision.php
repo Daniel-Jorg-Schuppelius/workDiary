@@ -26,8 +26,8 @@ enum ApprovalDecision: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Approved => __('Freigegeben'),
-            self::Rejected => __('Abgelehnt'),
+            self::Approved => __('enums.approval.approval_decision.approved'),
+            self::Rejected => __('enums.approval.approval_decision.rejected'),
         };
     }
 }

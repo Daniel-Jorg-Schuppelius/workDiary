@@ -12,12 +12,12 @@
     <thead>
         <tr>
             <th>ID</th>
-            <th>Titel</th>
-            <th>Status</th>
-            <th>Typ</th>
-            <th>Zeitpunkt</th>
+            <th>{{ __('Titel') }}</th>
+            <th>{{ __('Status') }}</th>
+            <th>{{ __('Typ') }}</th>
+            <th>{{ __('Zeitpunkt') }}</th>
             <th>{{ __('Erstellt von') }}</th>
-            <th>Auftrag</th>
+            <th>{{ __('Auftrag') }}</th>
         </tr>
     </thead>
     <tbody>

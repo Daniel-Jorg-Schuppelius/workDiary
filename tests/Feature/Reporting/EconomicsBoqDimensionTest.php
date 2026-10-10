@@ -397,14 +397,14 @@ class EconomicsBoqDimensionTest extends TestCase {
             ]));
         $withProject->assertOk();
         $csv = (string) $withProject->getContent();
-        $this->assertStringContainsString('LVPosition;Nachtrag;Kurztext', $csv);
+        $this->assertStringContainsString(__('reporting.csv.boq_position') . ';' . __('reporting.csv.addendum') . ';' . __('reporting.csv.short_text'), $csv);
         $this->assertStringContainsString('01.0010', $csv);
-        $this->assertStringContainsString('(ohne Zuordnung)', $csv);
+        $this->assertStringContainsString(__('reporting.csv.unassigned'), $csv);
 
         $withoutProject = $this->actingAs($admin)
             ->withSession($this->dateRangeSession('2026-06-01', '2026-06-30'))
             ->get(route('reports.economics', ['export' => 'csv']));
         $withoutProject->assertOk();
-        $this->assertStringNotContainsString('LVPosition', (string) $withoutProject->getContent());
+        $this->assertStringNotContainsString(__('reporting.csv.boq_position'), (string) $withoutProject->getContent());
     }
 }

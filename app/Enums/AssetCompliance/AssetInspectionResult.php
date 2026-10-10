@@ -28,9 +28,9 @@ enum AssetInspectionResult: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Passed => (string) __('Bestanden'),
-            self::PassedWithRestrictions => (string) __('Bestanden mit Einschränkungen'),
-            self::Failed => (string) __('Nicht bestanden'),
+            self::Passed => (string) __('enums.asset_compliance.asset_inspection_result.passed'),
+            self::PassedWithRestrictions => (string) __('enums.asset_compliance.asset_inspection_result.passed_with_restrictions'),
+            self::Failed => (string) __('enums.asset_compliance.asset_inspection_result.failed'),
         };
     }
 

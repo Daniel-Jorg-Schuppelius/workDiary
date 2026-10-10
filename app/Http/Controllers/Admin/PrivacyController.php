@@ -60,7 +60,7 @@ class PrivacyController extends Controller {
             'supportAccesses' => $data['support_accesses'],
             'integrations' => $data['integrations'],
             'auditActors' => $data['audit_actors'],
-            'categories' => $this->categoriesWithDynamicRetention(),
+            'categories' => $this->overview->categories($organization),
             'operatingMode' => (string) config('privacy.operating_mode', 'on_premise'),
             'dpaUrl' => config('privacy.dpa_document_url'),
             'canRevokeSessions' => $data['can']['sessions_revoke'],
@@ -90,7 +90,7 @@ class PrivacyController extends Controller {
         abort_if($organization === null, Response::HTTP_NOT_FOUND);
 
         $payload = $this->overview->reportPayload($organization);
-        $payload['categories'] = $this->categoriesWithDynamicRetention();
+        $payload['categories'] = $this->overview->categories($organization);
         $payload['dpaUrl'] = config('privacy.dpa_document_url');
 
         // View→PDF über den zentralen Renderer (C15; Vollaudit 2026-07, N27) — design-frei.
@@ -282,31 +282,4 @@ class PrivacyController extends Controller {
         return back()->with('success', __('API-Token widerrufen.'));
     }
 
-    /**
-     * Kategorien mit dynamischer Aufbewahrungs-Angabe (Restpunkt 67):
-     * trägt eine Kategorie eine retention_area, wird Frist+Rechtsgrundlage
-     * je Rechtsraum der Organisation aufgelöst; sonst bleibt der statische
-     * config-Text.
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    private function categoriesWithDynamicRetention(): array {
-        $registry = app(\App\Services\Retention\RetentionRegistry::class);
-        $organization = \Illuminate\Support\Facades\Auth::user()?->organization;
-
-        $categories = (array) config('privacy.categories', []);
-        foreach ($categories as &$category) {
-            $area = $category['retention_area'] ?? null;
-            if ($area === null || $organization === null) {
-                continue;
-            }
-            $years = $registry->yearsFor($organization, (string) $area);
-            $basis = $registry->basisFor($organization, (string) $area);
-            if ($years !== null) {
-                $category['retention'] = trim($years . ' Jahre' . ($basis !== null ? ' (' . $basis . ')' : ''));
-            }
-        }
-
-        return $categories;
-    }
 }

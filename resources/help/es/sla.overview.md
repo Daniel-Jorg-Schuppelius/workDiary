@@ -1,7 +1,7 @@
 ---
 title: "SLA, contratos y niveles de servicio"
 topic: sla.overview
-version: 3
+version: 4
 keywords:
     - acuerdo de nivel de servicio
     - tiempo de respuesta
@@ -75,4 +75,7 @@ cumplimiento** y los **Incumplimientos**, desglosados **Por tipo**, **Por
 prioridad**, **Por cliente** y **Por causa**, además de una **Lista de
 incumplimientos** con salto al ticket y las **Cuotas de tiempo
 incluido**. El informe puede exportarse en PDF, CSV y Excel. Puede
-consultarlo quien tenga el permiso **Ver estado e informe de SLA**.
+consultarlo quien tenga el permiso **Ver estado e informe de SLA**; para
+exportarlo se requiere además el permiso **Exportar los informes**; sin él no
+aparecen los botones de exportación. Los administradores pueden hacer ambas
+cosas siempre.

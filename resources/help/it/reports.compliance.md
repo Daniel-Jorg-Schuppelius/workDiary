@@ -1,7 +1,7 @@
 ---
 title: "Prove: attività di audit, conformità e salario minimo"
 topic: reports.compliance
-version: 1
+version: 3
 keywords:
     - analisi di audit
     - chi ha modificato cosa
@@ -41,8 +41,8 @@ dell’orario di lavoro.
 
 - Il periodo si sceglie con la selezione del periodo nell’intestazione. La
   **Cronologia violazioni** mostra invece tutte le violazioni salvate.
-- Dove esiste un’esportazione, è indicata nella rispettiva sezione. Le
-  esportazioni PDF e CSV vengono registrate nel registro di audit.
+- Dove esiste un’esportazione, è indicata nella rispettiva sezione. Ogni
+  esportazione viene registrata nel registro di audit.
 
 ## Attività di audit
 
@@ -50,9 +50,10 @@ dell’orario di lavoro.
 registro di audit nel periodo. La pagina si apre solo per gli
 amministratori; a tutti gli altri l’accesso viene negato.
 
-- Riquadri: **Eventi Σ** (tutte le voci del periodo), **Utenti attivi** e
-  **Tipi entità**. Gli ultimi due contano le voci degli elenchi top 20 e
-  mostrano quindi al massimo 20.
+- Riquadri: **Eventi Σ** (tutte le voci del periodo), **Utenti attivi**
+  (persone con almeno una voce) e **Tipi entità** (tipi di oggetto distinti).
+  Anche questi due contano tutte le voci del periodo, non solo gli elenchi
+  top 20.
 - Grafici: **Eventi nel tempo**, **Principali attori (top 15)** e gli eventi
   nel tempo per tipo di evento.
 - Tabelle: **Per evento**, **Per tipo entità (top 20)**, **Per utente (top
@@ -139,8 +140,9 @@ diritto **Visualizza la conformità orario di lavoro**.
   aperte non contano. **Inizio** è il primo inizio e **Fine** l’ultima fine
   della giornata, le pause vengono sommate e **Durata** è l’orario di lavoro
   al netto delle pause.
-- L’ordinamento è per nome e data. Il download riprende il periodo e il
-  filtro dipendente della pagina e viene registrato nel registro di audit.
+- L’ordinamento è per nome e data. Il download riprende il periodo e i
+  filtri dipendente e team della pagina e viene registrato nel registro di
+  audit.
 
 La **Prova tempi di guida** dello stesso menu è descritta nell’argomento
 dedicato a parco veicoli, registro viaggi e tempi di guida.

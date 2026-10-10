@@ -8,11 +8,11 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Team-Monatsreport – ' . $year)
-@section('pdf-heading', 'Team-Monatsreport – ' . $year)
+@section('pdf-title', __('Team-Monatsreport') . ' – ' . $year)
+@section('pdf-heading', __('Team-Monatsreport') . ' – ' . $year)
 
 @section('pdf-meta')
-    Erstellt: {{ now()->fdatetime() }}
+    {{ __('Erstellt') }}: {{ now()->fdatetime() }}
 @endsection
 
 @section('pdf-table')
@@ -21,11 +21,11 @@
     <table class="data">
         <thead>
             <tr>
-                <th>Mitarbeiter</th>
+                <th>{{ __('Mitarbeiter') }}</th>
                 @foreach ($monthLabels as $label)
                     <th class="right">{{ $label }}</th>
                 @endforeach
-                <th class="right">Σ Std.</th>
+                <th class="right">{{ __('Σ Std.') }}</th>
                 <th class="right">{{ __('Erlös') }}</th>
             </tr>
         </thead>
@@ -43,7 +43,7 @@
         </tbody>
         <tfoot>
             <tr>
-                <td>Σ Monat</td>
+                <td>Σ {{ __('Monat') }}</td>
                 @foreach ($monthTotals as $m)
                     <td class="right">{{ $m > 0 ? \App\Support\Formats::duration((int) $m, 'clock', withUnit: false) : '–' }}</td>
                 @endforeach

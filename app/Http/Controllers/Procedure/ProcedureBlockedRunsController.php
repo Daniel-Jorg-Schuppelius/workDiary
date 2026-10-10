@@ -34,7 +34,10 @@ class ProcedureBlockedRunsController extends Controller {
         $periods = $report->periods($from, $to);
 
         if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
-            $rows = [['Sperrgrund', 'Prozedur', 'Anzahl', 'MittlereStunden', 'LaengsteStunden']];
+            $rows = [array_map(
+                static fn (string $column): string => (string) __('procedure.blocked_report.' . $column),
+                ['reason', 'template', 'count', 'avg_hours', 'max_hours'],
+            )];
             foreach ($periods as $row) {
                 $rows[] = [$row['reason'], $row['template'], $row['count'], $row['avg_hours'], $row['max_hours']];
             }

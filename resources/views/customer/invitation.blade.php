@@ -6,7 +6,8 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Einladungs-Annahme (MVP-510) — erwartet: $portalUser, $token --}}
+{{-- Passwortvergabe: Einladungs-Annahme (MVP-510, $token) und „Passwort
+     vergessen“ (MVP-1096, $action = signierte Adresse, optional $hint). --}}
 @extends('customer.layout')
 
 @section('content')
@@ -16,8 +17,11 @@
             <p class="mb-4 text-sm text-base-content/70">
                 {{ __('Hallo :name — legen Sie das Passwort für Ihren Portalzugang fest. Danach melden Sie sich mit :email an.', ['name' => $portalUser->name, 'email' => $portalUser->email]) }}
             </p>
+            @isset($hint)
+                <p class="mb-4 text-sm text-base-content/70">{{ $hint }}</p>
+            @endisset
 
-            <form method="POST" action="{{ route('customer.invitation.accept', ['token' => $token]) }}" class="space-y-3">
+            <form method="POST" action="{{ $action ?? route('customer.invitation.accept', ['token' => $token]) }}" class="space-y-3">
                 @csrf
 
                 <div class="fieldset">

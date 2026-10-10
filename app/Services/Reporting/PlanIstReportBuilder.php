@@ -10,6 +10,7 @@
 
 namespace App\Services\Reporting;
 
+use App\Enums\Attendance\AttendanceStatus;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Facility\Site;
 use App\Models\Location\LocationVisit;
@@ -17,6 +18,7 @@ use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Schedule\ScheduledShift;
 use App\Models\Time\{Attendance, TimeEntry, WorkSchedule};
+use App\Services\Flextime\FlexCalculator;
 use App\Support\Query\DateRange;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
@@ -35,7 +37,8 @@ use Illuminate\Support\Collection;
  *    intervalle der eingeteilten Person mit dem Schichtfenster (brutto —
  *    Soll-Fenster ist ebenfalls brutto). Schichten ohne Zeitfenster zählen
  *    Soll = 0 und als Ist die Tages-Anwesenheit (je Person+Tag nur einmal).
- *  - Projekt: Soll = Summe `DiaryEntry.planned_minutes` der im Zeitraum
+ *  - Projekt: Soll = Summe der geplanten Dauer (`DiaryEntry::effectivePlannedMinutes()`:
+ *    Geplante Dauer, sonst Zeitfenster bzw. Termindauer) der im Zeitraum
  *    überlappenden Aufträge (Konzept §2.2); Projekte ohne geplante Aufträge
  *    werden als `noPlan` markiert (kein Alarm). Ist = TimeEntry-Minuten.
  *  - Standort: einzige direkte Standort↔Zeit-Verknüpfung im Datenmodell ist
@@ -85,8 +88,11 @@ class PlanIstReportBuilder {
             ->where('organization_id', $user->organization_id)
             ->whereDate('date', '>=', $from->toDateString())
             ->whereDate('date', '<=', $to->toDateString())
+            ->where('status', '!=', AttendanceStatus::Cancelled->value)
             ->get()
             ->groupBy(fn(Attendance $a) => $a->date?->format('Y-m-d') ?? '');
+
+        $daysOff = app(FlexCalculator::class)->daysWithoutTarget([(int) $user->id], $from, $to)[(int) $user->id] ?? [];
 
         $rows = [];
         for ($d = $from; $d->lte($to); $d = $d->addDay()) {
@@ -97,7 +103,7 @@ class PlanIstReportBuilder {
             $planMinutes = 0;
             $planStart = null;
             $noPlan = true;
-            if ($schedule && $schedule->appliesOnWeekday((int) $d->dayOfWeekIso)) {
+            if ($schedule && $schedule->appliesOnWeekday((int) $d->dayOfWeekIso) && ! isset($daysOff[$key])) {
                 $planMinutes = $schedule->targetMinutesForWeekday((int) $d->dayOfWeekIso);
                 $planStart = $schedule->core_start ? substr((string) $schedule->core_start, 0, 5) : null;
                 $noPlan = false;
@@ -213,6 +219,7 @@ class PlanIstReportBuilder {
             ->whereIn('user_id', $shifts->pluck('user_id')->unique()->values())
             ->whereDate('date', '>=', $from->toDateString())
             ->whereDate('date', '<=', $to->addDay()->toDateString())
+            ->where('status', '!=', AttendanceStatus::Cancelled->value)
             ->get()
             ->groupBy(fn (Attendance $a): string => $a->user_id . '|' . ($a->date?->format('Y-m-d') ?? ''));
 
@@ -322,8 +329,8 @@ class PlanIstReportBuilder {
     }
 
     /**
-     * Projekt-Plan/Ist (§2.2, MVP-333): Soll aus `DiaryEntry.planned_minutes`
-     * der im Zeitraum überlappenden Aufträge (overlappingDateRange-Scope),
+     * Projekt-Plan/Ist (§2.2, MVP-333): Soll aus der geplanten Dauer
+     * (`effectivePlannedMinutes()`) der im Zeitraum überlappenden Aufträge (overlappingDateRange-Scope),
      * Ist aus TimeEntry-Minuten je Projekt; Projekte ohne geplante Aufträge
      * werden als `no_plan` markiert (Konzept: kein Alarm). Zeiten ohne
      * Projektbezug erscheinen als eigene Zeile.
@@ -347,14 +354,25 @@ class PlanIstReportBuilder {
             ->get()
             ->keyBy(static fn (object $row): int => (int) ($row->project_id ?? 0));
 
-        $plans = DiaryEntry::query()
+        // Plan je Auftrag über effectivePlannedMinutes() (E13): ohne „Geplante
+        // Dauer“ zählt das Zeitfenster bzw. die Termindauer.
+        /** @var Collection<int, array{plan_minutes: int, orders: int, planned_orders: int}> $plans */
+        $plans = collect();
+        DiaryEntry::query()
             ->whereNotNull('project_id')
             ->overlappingDateRange($fromDate, $toDate)
-            ->groupBy('project_id')
-            ->selectRaw('project_id, COALESCE(SUM(COALESCE(planned_minutes, 0)), 0) AS plan_minutes, COUNT(*) AS orders, SUM(CASE WHEN planned_minutes IS NOT NULL THEN 1 ELSE 0 END) AS planned_orders')
-            ->toBase()
-            ->get()
-            ->keyBy(static fn (object $row): int => (int) $row->project_id);
+            ->get(['id', 'project_id', ...DiaryEntry::PLANNED_DURATION_COLUMNS])
+            ->each(static function (DiaryEntry $entry) use ($plans): void {
+                $projectId = (int) $entry->project_id;
+                $plan = $plans->get($projectId, ['plan_minutes' => 0, 'orders' => 0, 'planned_orders' => 0]);
+                $plan['orders']++;
+                $minutes = $entry->effectivePlannedMinutes();
+                if ($minutes !== null) {
+                    $plan['plan_minutes'] += $minutes;
+                    $plan['planned_orders']++;
+                }
+                $plans->put($projectId, $plan);
+            });
 
         $projectIds = $actuals->keys()
             ->merge($plans->keys())
@@ -376,15 +394,15 @@ class PlanIstReportBuilder {
             $actual = $actuals->get($project->id);
             $plan = $plans->get($project->id);
 
-            $planMinutes = (int) ($plan->plan_minutes ?? 0);
+            $planMinutes = $plan['plan_minutes'] ?? 0;
             $actualMinutes = (int) ($actual->total_minutes ?? 0);
-            $plannedOrders = (int) ($plan->planned_orders ?? 0);
+            $plannedOrders = $plan['planned_orders'] ?? 0;
 
             $row = [
                 'project_id' => (int) $project->id,
                 'name' => (string) $project->name,
                 'customer' => $project->customer?->name,
-                'orders' => (int) ($plan->orders ?? 0),
+                'orders' => $plan['orders'] ?? 0,
                 'planned_orders' => $plannedOrders,
                 'plan_minutes' => $planMinutes,
                 'actual_minutes' => $actualMinutes,

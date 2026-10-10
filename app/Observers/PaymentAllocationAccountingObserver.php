@@ -72,10 +72,13 @@ class PaymentAllocationAccountingObserver {
             return;
         }
 
+        // Sofort auch bei Vier-Augen (E23): Die Zuordnung ist bereits weg — ein
+        // Entwurf ließe eine Festbuchung ohne Grundlage bis zur Freigabe stehen.
         $this->journal->reverse(
             $entry,
             (string) __('accounting.inbox.reversal_reason.unmatched'),
             $actor,
+            automatic: true,
         );
     }
 }

@@ -28,9 +28,9 @@ enum PluginHealthStatus: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Ok => __('Zustand ok'),
-            self::Degraded => __('Zustand eingeschränkt'),
-            self::Failing => __('Zustand fehlerhaft'),
+            self::Ok => __('enums.plugin.plugin_health_status.ok'),
+            self::Degraded => __('enums.plugin.plugin_health_status.degraded'),
+            self::Failing => __('enums.plugin.plugin_health_status.failing'),
         };
     }
 

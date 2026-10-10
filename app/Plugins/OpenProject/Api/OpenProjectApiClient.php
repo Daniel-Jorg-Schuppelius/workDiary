@@ -36,6 +36,8 @@ class OpenProjectApiClient implements RemoteTimeWriter {
         private readonly ?string $apiToken,
         /** Normalisierte API-Wurzel inkl. /api/v3 (s. {@see \App\Plugins\OpenProject\OpenProjectConfig::normalizeBaseUrl()}). */
         private readonly ?string $baseUrl,
+        /** Plugin-Einstellung „Private Adressen erlauben“ (selbst gehostete Instanz). */
+        private readonly bool $allowPrivateNetwork = false,
     ) {}
 
     public function isConfigured(): bool {
@@ -388,7 +390,8 @@ class OpenProjectApiClient implements RemoteTimeWriter {
 
     private function api(): PluginApiClient {
         if ($this->api === null) {
-            $this->api = app(PluginHttpFactory::class)->client('openproject', (string) $this->baseUrl);
+            // Ausdrücklich statt aus dem Org-Kontext (Outbox und Scheduler laufen ohne); `null` lässt der Factory die Betreiber-Liste.
+            $this->api = app(PluginHttpFactory::class)->client('openproject', (string) $this->baseUrl, allowPrivateNetwork: $this->allowPrivateNetwork ?: null);
             $this->api->setAuthentication(new BasicAuthentication('apikey', (string) $this->apiToken));
         }
 

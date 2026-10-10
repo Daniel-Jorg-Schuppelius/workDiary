@@ -1,7 +1,7 @@
 ---
 title: "Présence, prévu/réel et couverture"
 topic: reports.attendance
-version: 1
+version: 7
 keywords:
     - rapport de présence
     - analyser les pointages
@@ -48,9 +48,11 @@ période**).
 Le tableau comporte une ligne par personne et les colonnes :
 
 - **Jours ouvrés** et **Cible** : jours et temps cible selon le modèle de temps
-  de travail par jour de semaine. Les jours fériés et les congés ne réduisent
-  pas cette cible ici – contrairement au **Bilan de travail**. Sans modèle de
-  temps de travail, les deux valeurs sont à 0.
+  de travail par jour de semaine. Les jours fériés et les jours d'absence
+  approuvée – par exemple congés, congé spécial, congé non payé ou arrêt maladie – n'ont pas de
+  cible et ne comptent pas comme jours ouvrés, exactement comme dans le **Bilan
+  de travail** et le compte de temps de travail. Sans modèle de temps de
+  travail, les deux valeurs sont à 0.
 - **Présent** : pointages terminés après déduction des pauses ; les pointages
   en cours et annulés ne comptent pas.
 - **Comptabilisé** : toutes les saisies de temps de la période, quel que soit
@@ -64,9 +66,10 @@ semaine une personne était présente et combien de temps ; **Présence dans le
 temps** montre le total par jour, ou par semaine calendaire pour les périodes
 de plus de 62 jours. Un clic sur un en-tête de colonne trie le tableau.
 
-Les filtres sont réservés aux administrateurs : **Zone** avec **Uniquement les
-miens** ou **Toute l’équipe** (toutes les personnes de l'organisation) ainsi que
-**Employé** et **Équipe**. Toutes les autres personnes ne voient que leur propre
+Les filtres **Zone** avec **Uniquement les miens** ou **Toute l’équipe**
+(toutes les personnes de l'organisation) ainsi que **Employé** et **Équipe**
+sont visibles pour les administrateurs et les personnes disposant du droit
+**Voir les présences**. Toutes les autres personnes ne voient que leur propre
 ligne.
 
 Export : **PDF** avec le tableau et la carte de chaleur ; dans le menu
@@ -93,15 +96,17 @@ La page **Présence planifiée/réelle** montre vos propres jours avec les tuile
 
 - **Plan** : temps cible selon le modèle de temps de travail pour le jour de
   semaine ; « — » les jours sans modèle de temps de travail ou sans jour de
-  travail.
-- **Réel** : la présence pointée du jour.
+  travail, ainsi que les jours fériés et les jours d'absence approuvée comme
+  les congés, le congé spécial, le congé non payé ou l’arrêt maladie.
+- **Réel** : la présence pointée du jour ; les pointages annulés ne comptent
+  pas.
 - **Δ** : réel moins plan, valeurs négatives en rouge.
 - **Début P/R** : début de la plage fixe selon le modèle de temps de travail et
   premier pointage du jour, suivis de l'écart en minutes.
 - **Avertissements** : début tardif, lorsque le premier pointage a lieu plus de
   15 minutes après le début de la plage fixe, et écart d'heures, lorsque le
-  réel s'écarte du plan de plus de 10 %. Les jours sans plan ne reçoivent pas
-  d'avertissement.
+  réel s'écarte du plan de plus de 10 %. Les jours sans plan – y compris les
+  jours fériés et les jours de congé – ne reçoivent pas d'avertissement.
 
 Si vous ouvrez la page pour une autre personne depuis l'onglet **Équipe** ou
 **Organisation**, la mention **Vue pour** suivie de son nom apparaît en haut.
@@ -125,49 +130,63 @@ de vos propres équipes.
 - **Services** : le prévu correspond aux services publiés et confirmés du
   planning avec la durée de leur créneau horaire (services de nuit passant
   minuit inclus) ; le réel est le chevauchement des pointages de la personne
-  affectée avec ce créneau. Tuiles **Plan**, **Réel**, **Différence** et
-  **Couverture** (réel rapporté au prévu ; mise en évidence sous 100 %). Avec
-  **Regroupement**, choisissez **Quotidien** ou **Hebdomadaire** pour le
-  graphique **Prévu vs réel par jour** ou **Prévu vs réel par semaine**. Le
-  tableau **Par type de poste** indique **Services**, **Prévu (h)**, **Réel
-  (h)**, **Écart (h)** et **Couverture**. Les services sans créneau horaire
-  sont marqués **sans créneau horaire** : ils n'ont pas de prévu, et la présence
-  journalière de la personne compte comme réel.
-- **Projets** : le prévu est la somme des minutes planifiées des ordres dont la
+  affectée avec ce créneau ; les pointages annulés ne comptent pas. Tuiles
+  **Plan**, **Réel**, **Différence** et **Couverture** (réel rapporté au prévu
+  ; mise en évidence sous 100 %). Avec **Regroupement**, choisissez
+  **Quotidien** ou **Hebdomadaire** pour le graphique **Prévu vs réel par
+  jour** ou **Prévu vs réel par semaine**. Le tableau **Par type de poste**
+  indique **Services**, **Prévu (h)**, **Réel (h)**, **Écart (h)** et
+  **Couverture**. Les services sans créneau horaire sont marqués **sans créneau
+  horaire** : ils n'ont pas de prévu, et la présence journalière de la personne
+  compte comme réel.
+- **Projets** : le prévu est la somme de la durée prévue des ordres dont la
   période touche la période choisie ; le réel est le temps comptabilisé par
-  projet. Les ordres reçoivent des minutes planifiées par exemple lors de la
-  confirmation de rendez-vous Calendly. Tuiles **Plan**, **Réel**,
-  **Différence** et **Facturable (réel)**, le graphique **Top projets : prévu vs
-  réel** (les douze projets avec le plus d'heures réelles) et le tableau **Par
-  projet** avec **Projet**, **Client**, **Ordres (planifiés)**, **Prévu (h)**,
-  **Réel (h)**, **Facturable (h)** et **Écart (h)**. Les projets sans ordre
-  planifié portent la mention **sans données cibles** – ce n'est pas une
-  alerte. Le temps sans projet figure dans la ligne **Sans projet**. Les
+  projet. La durée prévue est le champ **Durée prévue (HH:MM)** de l'ordre ;
+  s'il est vide, la durée d’intervention d’une commande planifiée, sinon la durée du créneau ou du rendez-vous compte. **Ordres
+  (planifiés)** compte les ordres disposant d'une telle durée. Tuiles **Plan**,
+  **Réel**, **Différence** et **Facturable (réel)**, le graphique **Top projets
+  : prévu vs réel** (les douze projets avec le plus d'heures réelles) et le
+  tableau **Par projet** avec **Projet**, **Client**, **Ordres (planifiés)**,
+  **Prévu (h)**, **Réel (h)**, **Facturable (h)** et **Écart (h)**. Les projets
+  sans ordre planifié portent la mention **sans données cibles** – ce n'est pas
+  une alerte. Le temps sans projet figure dans la ligne **Sans projet**. Les
   comparaisons avec des budgets en temps et en argent sont fournies par
   **Rentabilité**.
 - **Sites** : il n'existe pas de données cibles pour les sites ; la vue montre
   uniquement la répartition réelle du temps issu de la saisie de temps basée
   sur la localisation. Tuiles **Réel**, **Visites sur site** et **Personnes**,
-  graphique **Temps réels par site** et tableau **Par site** avec **Site**,
-  **Client**, **Visites sur site**, **Personnes**, **Réel (h)** et **Part**. Les
-  visites de géorepérages sans site associé figurent sous **Sans affectation de
-  site** avec la mention **Géorepérage sans site**.
+  graphique **Temps réels par site (top 15)** et tableau **Par site** avec
+  **Site**, **Client**, **Visites sur site**, **Personnes**, **Réel (h)** et
+  **Part**. Les visites de géorepérages sans site associé figurent sous **Sans
+  affectation de site** avec la mention **Géorepérage sans site**.
 
 Les longs tableaux des onglets **Projets** et **Sites** sont répartis sur des
-pages de 50 lignes chacune.
+pages de 50 lignes chacune ; les graphiques exploitent en revanche toutes les
+lignes, pas seulement la page affichée.
 
 ## Couverture
 
 **Rapports** → **Équipe** → **Couverture** compare l'effectif prévu et
-l'effectif réel : les services planifiés atteignent-ils l'effectif cible ?
+l'effectif réel : les services planifiés atteignent-ils l'effectif cible ? Le
+rapport calcule selon les mêmes règles que la carte de chaleur du planning de
+service.
 
-- La cible est la valeur minimale (**Min**) de l'**Effectif cible** que vous
-  définissez dans le planning de service par type de service. Une entrée pour
-  une date précise prime sur une entrée pour le jour de semaine, qui prime
-  elle-même sur une entrée générale. Les types de service sans effectif cible
-  n'apparaissent pas.
-- Le réel est le nombre de services planifiés par type de service et par jour ;
-  tous les services non annulés comptent, brouillons compris.
+- La cible par jour et par type de service est la valeur minimale (**Min**) de
+  l'**Effectif cible** que vous définissez dans le planning de service par type
+  de service. L'indication la plus précise s'applique : une entrée pour une
+  **Date précise** prime sur une entrée pour le **Jour de la semaine**, qui
+  prime elle-même sur une entrée valable **Toujours**. Les entrées **Toujours**
+  s'appliquent à chaque jour du planning de service. Si aucune entrée ne
+  convient pour un jour, l'**Effectif minimal par service** du planning
+  s'applique aux types de service qui y figurent.
+- Les jours sans planning de service n'ont de cible que s'il existe des
+  exigences communes à tous les plannings (option **Pour tous les plannings de service** dans l’effectif cible). Si plusieurs plannings de service
+  s'appliquent le même jour, leurs cibles et leurs réels s'additionnent.
+- Le réel est le nombre de services planifiés par type de service et par jour.
+  Seuls les services au statut **Publié** ou **Confirmé** comptent ; les
+  brouillons et les services annulés ne comptent pas.
+- Les types de service sans cible sur la période n'apparaissent pas ; les
+  services des jours sans cible ne sont pas pris en compte.
 - Le décompte se fait en jours-personnes : un service d'une personne un jour
   donné correspond à un jour-personne.
 
@@ -207,7 +226,8 @@ de chaleur, **CSV** et **Excel**.
 
 ## Qui voit quoi
 
-- **Présence** : chaque personne voit sa propre ligne, les administrateurs toute
+- **Présence** : chaque personne voit sa propre ligne. Les administrateurs et
+  les personnes disposant du droit **Voir les présences** voient toute
   l'organisation.
 - **Plan/réel** : chaque personne voit l'onglet **Présence** avec ses propres
   jours. L'onglet **Équipe** requiert le droit **Consulter le rapport de présence
@@ -216,8 +236,8 @@ de chaleur, **CSV** et **Excel**.
   administrateurs voient tous les onglets. Dans l'attribution standard, le rôle
   Chef d'équipe dispose du droit équipe, la Direction du droit organisation et
   la Gestion du personnel des deux.
-- **Couverture** et **Mois par employé** sont réservés aux administrateurs. Les
-  autres personnes voient les entrées de menu, mais reçoivent un message de
-  droits insuffisants à l'ouverture.
-- La zone de menu **Équipe** n'existe que si le module complémentaire de rapports
-  d'équipe est souscrit.
+- **Couverture** et **Mois par employé** sont réservés aux administrateurs ; le
+  menu ne les affiche pas aux autres personnes.
+- **Couverture** et **Mois par employé** nécessitent le module complémentaire
+  de rapports d'équipe ; **Présence** et **Plan/réel** sont disponibles sans
+  lui.

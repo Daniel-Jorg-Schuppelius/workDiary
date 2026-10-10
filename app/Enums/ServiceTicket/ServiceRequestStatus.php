@@ -32,12 +32,12 @@ enum ServiceRequestStatus: string implements HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::Draft => (string) __('Entwurf'),
-            self::PendingApproval => (string) __('Wartet auf Genehmigung'),
-            self::Approved => (string) __('Genehmigt'),
-            self::Rejected => (string) __('Abgelehnt'),
-            self::Fulfilling => (string) __('In Erfüllung'),
-            self::Done => (string) __('Erledigt'),
+            self::Draft => (string) __('enums.service_ticket.service_request_status.draft'),
+            self::PendingApproval => (string) __('enums.service_ticket.service_request_status.pending_approval'),
+            self::Approved => (string) __('enums.service_ticket.service_request_status.approved'),
+            self::Rejected => (string) __('enums.service_ticket.service_request_status.rejected'),
+            self::Fulfilling => (string) __('enums.service_ticket.service_request_status.fulfilling'),
+            self::Done => (string) __('enums.service_ticket.service_request_status.done'),
         };
     }
 

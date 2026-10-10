@@ -16,8 +16,9 @@ use App\Plugins\Kimai\{KimaiConfig, KimaiPlugin};
 use App\Plugins\Kimai\Sources\KimaiCsvParser;
 use App\Plugins\Support\{ImportedTimeEntry, MatchingTimeImportService, RemoteSyncWindow};
 use App\Plugins\Support\TimeTracking\CsvAndApiTimeImporter;
-use App\Support\Tz;
+use App\Support\{ErrorText, Tz};
 use Carbon\CarbonImmutable;
+use RuntimeException;
 
 /**
  * Kimai-Zeitimport auf der gemeinsamen {@see MatchingTimeImportService}-
@@ -62,6 +63,7 @@ class KimaiImportService extends MatchingTimeImportService implements CsvAndApiT
             is_string($config['api_token'] ?? null) ? $config['api_token'] : null,
             is_string($config['base_url'] ?? null) ? $config['base_url'] : null,
             Tz::ofOrganization($organization),
+            (bool) ($config['allow_private_network'] ?? false),
         );
         if (! $client->isConfigured()) {
             return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'unresolved_users' => 0, 'error' => (string) __('Kimai-API ist nicht konfiguriert (Basis-URL und API-Token in den Plugin-Einstellungen hinterlegen).')];
@@ -70,11 +72,16 @@ class KimaiImportService extends MatchingTimeImportService implements CsvAndApiT
         $from ??= CarbonImmutable::now()->subDays((int) ($config['sync_window_days'] ?? 30))->startOfDay();
 
         $allUsers = (bool) ($config['api_all_users'] ?? true);
-        $rows = $client->getTimesheets($from, $to, $allUsers);
+        try {
+            $rows = $client->getTimesheets($from, $to, $allUsers);
+        } catch (RuntimeException $e) {
+            return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'unresolved_users' => 0, 'error' => ErrorText::for($e)];
+        }
 
         $entries = [];
         foreach ($rows as $row) {
-            $entry = $this->entryFromApiRow((array) $row);
+            $row = (array) $row;
+            $entry = $this->entryFromApiRow($row, $this->userSignal($organization, is_array($row['user'] ?? null) ? $row['user'] : []));
             if ($entry !== null) {
                 $entries[] = $entry;
             }
@@ -91,12 +98,32 @@ class KimaiImportService extends MatchingTimeImportService implements CsvAndApiT
     }
 
     /**
+     * Personensignal eines Kimai-Benutzers: die E-Mail-Adresse (Kimai 2 liefert
+     * sie mit `full=true`), sonst der Benutzername. Bereits in der Inbox gemerkte
+     * Zuordnungen hängen am Benutzernamen und gelten weiter.
+     *
+     * @param  array<string, mixed>  $user
+     */
+    private function userSignal(Organization $organization, array $user): ?string {
+        $email = trim((string) ($user['email'] ?? ''));
+        $username = trim((string) ($user['username'] ?? ''));
+
+        if ($email !== '' && $username !== ''
+            && $this->resolveImportUser($organization, $email) === null
+            && $this->resolveImportUser($organization, $username) !== null) {
+            return $username;
+        }
+
+        return $email !== '' ? $email : ($username !== '' ? $username : null);
+    }
+
+    /**
      * Mappt ein `full=true`-serialisiertes Kimai-Timesheet auf das DTO.
      * Laufende Einträge (kein `end`) liefern null.
      *
      * @param  array<string, mixed>  $row
      */
-    private function entryFromApiRow(array $row): ?ImportedTimeEntry {
+    private function entryFromApiRow(array $row, ?string $userSignal): ?ImportedTimeEntry {
         $id = $row['id'] ?? null;
         $begin = $row['begin'] ?? null;
         $end = $row['end'] ?? null;
@@ -107,7 +134,6 @@ class KimaiImportService extends MatchingTimeImportService implements CsvAndApiT
         $project = is_array($row['project'] ?? null) ? $row['project'] : [];
         $customer = is_array($project['customer'] ?? null) ? $project['customer'] : [];
         $activity = is_array($row['activity'] ?? null) ? $row['activity'] : [];
-        $user = is_array($row['user'] ?? null) ? $row['user'] : [];
 
         /** @var list<string> $tags */
         $tags = isset($row['tags']) && is_array($row['tags']) ? array_values(array_map('strval', $row['tags'])) : [];
@@ -121,7 +147,7 @@ class KimaiImportService extends MatchingTimeImportService implements CsvAndApiT
             startedAt: CarbonImmutable::parse($begin),
             endedAt: CarbonImmutable::parse($end),
             billable: (bool) ($row['billable'] ?? false),
-            userEmail: isset($user['username']) ? (string) $user['username'] : null,
+            userEmail: $userSignal,
             tags: $tags,
             source: ImportedTimeEntry::SOURCE_API,
             clientId: is_numeric($customer['id'] ?? null) ? (int) $customer['id'] : null,

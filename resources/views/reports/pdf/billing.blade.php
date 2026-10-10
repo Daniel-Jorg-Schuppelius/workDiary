@@ -8,7 +8,7 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Billing – ' . $from . ' bis ' . $to)
+@section('pdf-title', __('Abrechnung') . ' – ' . $from . ' ' . __('bis') . ' ' . $to)
 @section('pdf-heading', __('Abrechnungs-Auswertung'))
 
 @push('pdf-styles')
@@ -20,16 +20,23 @@
 @endpush
 
 @section('pdf-meta')
-    Zeitraum: <strong>{{ \Carbon\Carbon::parse($from)->fdate() }}</strong> bis
+    {{ __('Zeitraum') }}: <strong>{{ \Carbon\Carbon::parse($from)->fdate() }}</strong> {{ __('bis') }}
     <strong>{{ \Carbon\Carbon::parse($to)->fdate() }}</strong> ·
-    Erstellt: {{ now()->fdatetime() }}
+    {{ __('Erstellt') }}: {{ now()->fdatetime() }}
 @endsection
 
 @section('pdf-table')
     @php
         $eur = fn (float $v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) . ' €';
         $fmtMin = fn (int $minutes): string => \App\Support\Formats::duration(abs($minutes));
-        $totalIssuedPaid = ($status['issued']['total'] ?? 0) + ($status['paid']['total'] ?? 0);
+        $totalIssuedPaid = ($status['issued']['total'] ?? 0) + ($status['partially_paid']['total'] ?? 0) + ($status['paid']['total'] ?? 0);
+        $agingLabels = [
+            'current' => __('Aktuell'),
+            '1_7' => __('1–7 Tage'),
+            '8_14' => __('8–14 Tage'),
+            '15_30' => __('15–30 Tage'),
+            '30_plus' => __('> 30 Tage'),
+        ];
     @endphp
 
     @include('reports.pdf.charts._chart')
@@ -38,7 +45,7 @@
         <tr>
             <td><div class="label">{{ __('Ausgestellt + Bezahlt') }}</div><div class="value">{{ $eur($totalIssuedPaid) }}</div></td>
             <td><div class="label">{{ __('Offene Forderungen') }}</div><div class="value">{{ $eur($aging['open_total']) }}</div></td>
-            <td><div class="label">&gt; 30 Tage</div><div class="value {{ $aging['buckets']['30_plus']['count'] > 0 ? 'warn' : '' }}">{{ $aging['buckets']['30_plus']['count'] }} ({{ $eur($aging['buckets']['30_plus']['total']) }})</div></td>
+            <td><div class="label">{{ __('> 30 Tage') }}</div><div class="value {{ $aging['buckets']['30_plus']['count'] > 0 ? 'warn' : '' }}">{{ $aging['buckets']['30_plus']['count'] }} ({{ $eur($aging['buckets']['30_plus']['total']) }})</div></td>
             <td><div class="label">{{ __('Unbillte Zeit') }}</div><div class="value">{{ $fmtMin($unbilled['minutes']) }} · {{ $eur($unbilled['projected_revenue']) }}</div></td>
         </tr>
     </table>
@@ -48,7 +55,7 @@
             <td class="col">
                 <h2>{{ __('Rechnungen nach Status') }}</h2>
                 <table class="data">
-                    <thead><tr><th>Status</th><th class="right">Anzahl</th><th class="right">Netto</th><th class="right">Brutto</th></tr></thead>
+                    <thead><tr><th>{{ __('Status') }}</th><th class="right">{{ __('Anzahl') }}</th><th class="right">{{ __('Netto') }}</th><th class="right">{{ __('Brutto') }}</th></tr></thead>
                     <tbody>
                         @foreach ($status as $st => $s)
                             <tr>
@@ -64,25 +71,25 @@
             <td class="col">
                 <h2>{{ __('Aging – offene Posten') }}</h2>
                 <table class="data">
-                    <thead><tr><th>Bucket</th><th class="right">Anzahl</th><th class="right">Summe</th></tr></thead>
+                    <thead><tr><th>{{ __('Bucket') }}</th><th class="right">{{ __('Anzahl') }}</th><th class="right">{{ __('Summe') }}</th></tr></thead>
                     <tbody>
                         @foreach ($aging['buckets'] as $k => $b)
                             <tr class="{{ $k === '30_plus' && $b['count'] > 0 ? 'warn' : '' }}">
-                                <td>{{ $k }}</td>
+                                <td>{{ $agingLabels[$k] ?? $k }}</td>
                                 <td class="right">{{ $b['count'] }}</td>
                                 <td class="right">{{ $eur($b['total']) }}</td>
                             </tr>
                         @endforeach
-                        <tr class="totals"><td>Offen gesamt</td><td></td><td class="right">{{ $eur($aging['open_total']) }}</td></tr>
+                        <tr class="totals"><td>{{ __('Offen gesamt') }}</td><td></td><td class="right">{{ $eur($aging['open_total']) }}</td></tr>
                     </tbody>
                 </table>
             </td>
         </tr>
     </table>
 
-    <h2>Top-Kunden (ausgestellt + bezahlt)</h2>
+    <h2>{{ __('Top-Kunden (ausgestellt + bezahlt im Zeitraum)') }}</h2>
     <table class="data">
-        <thead><tr><th>Kunde</th><th class="right">Rechnungen</th><th class="right">Brutto</th></tr></thead>
+        <thead><tr><th>{{ __('Kunde') }}</th><th class="right">{{ __('Rechnungen') }}</th><th class="right">{{ __('Brutto') }}</th></tr></thead>
         <tbody>
             @forelse ($perCustomer as $r)
                 <tr>

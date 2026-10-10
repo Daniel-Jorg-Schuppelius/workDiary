@@ -79,8 +79,9 @@ class TodoistWebhookSyncJob implements ShouldQueue {
             foreach ($links as $link) {
                 try {
                     $imports->syncLink($link, $connection);
-                } catch (Throwable) {
-                    // bewusst: Polling heilt — Webhook ist nur Impuls
+                } catch (Throwable $e) {
+                    // Polling heilt — Webhook ist nur Impuls; ein abgelehntes Token pausiert trotzdem.
+                    $connection->recordSyncResult($e);
                 }
             }
         }

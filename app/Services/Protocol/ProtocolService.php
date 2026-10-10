@@ -192,6 +192,12 @@ class ProtocolService {
         ]);
     }
 
+    public function recordPortalPdfDownload(Protocol $protocol, User $portalUser): void {
+        $this->record($protocol, ProtocolEventType::PortalPdfDownloaded, $portalUser, [
+            'hash' => $this->pdfRenderer->hashFor($protocol),
+        ]);
+    }
+
     public function archive(Protocol $protocol, User $actor): Protocol {
         $this->assertActionAllowed($protocol, 'archive');
         $protocol->update([

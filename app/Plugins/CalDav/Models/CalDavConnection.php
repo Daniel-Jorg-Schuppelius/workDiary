@@ -10,7 +10,7 @@
 
 namespace App\Plugins\CalDav\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth, HasPrivateNetworkOptIn};
 use App\Plugins\Support\Calendar\RemoteCalendarConnection;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -20,7 +20,8 @@ use Illuminate\Support\Carbon;
  * CalDAV-Anbindung einer Organisation (Feature 058, MVP-126). Das App-Passwort
  * ist at-rest verschlüsselt (`encrypted`-Cast, APP_KEY) und nie serialisiert/
  * auditiert (`$hidden`). WorkDiary publiziert Termine in die Collection unter
- * `calendar_path` (relativ zur `base_url`).
+ * `calendar_path` (relativ zur `base_url`). `allow_private_network` ist das
+ * auditierte SSRF-Opt-in für einen Server im eigenen Netz (Muster CardDAV).
  *
  * @property int $id
  * @property int $organization_id
@@ -30,6 +31,7 @@ use Illuminate\Support\Carbon;
  * @property string $app_password
  * @property string $calendar_path
  * @property array<int, string>|null $scopes
+ * @property bool $allow_private_network
  * @property bool $active
  * @property int|null $created_by
  * @property \Illuminate\Support\Carbon|null $last_published_at
@@ -44,6 +46,7 @@ class CalDavConnection extends Model implements RemoteCalendarConnection {
     use HasConnectionHealth;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+    use HasPrivateNetworkOptIn;
 
     /** Tabellenname explizit (Klassenname würde sonst zu `cal_dav_connections`). */
     protected $table = 'caldav_connections';
@@ -66,6 +69,7 @@ class CalDavConnection extends Model implements RemoteCalendarConnection {
         'sync_token',
         'last_imported_at',
         'scopes',
+        'allow_private_network',
         'active',
         'last_published_at',
         'created_by',
@@ -75,6 +79,7 @@ class CalDavConnection extends Model implements RemoteCalendarConnection {
     protected $casts = [
         'app_password' => 'encrypted',
         'scopes' => 'array',
+        'allow_private_network' => 'boolean',
         'active' => 'boolean',
         'two_way' => 'boolean',
         'last_published_at' => 'datetime',

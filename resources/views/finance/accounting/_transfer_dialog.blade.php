@@ -42,4 +42,6 @@
     <x-input-field name="note" type="text" required minlength="3" maxlength="500"
                    :label="__('accounting.ledger.field.note')"
                    :hint="__('accounting.transfer.hint.note')" />
+
+    <x-accounting.four-eyes-note />
 </x-modal>

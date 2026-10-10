@@ -26,9 +26,9 @@ enum TenderNoticeMatchState: string implements HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::New => (string) __('Neu'),
-            self::Muted => (string) __('Ausgeblendet'),
-            self::Converted => (string) __('Übernommen'),
+            self::New => (string) __('enums.tenders.tender_notice_match_state.new'),
+            self::Muted => (string) __('enums.tenders.tender_notice_match_state.muted'),
+            self::Converted => (string) __('enums.tenders.tender_notice_match_state.converted'),
         };
     }
 

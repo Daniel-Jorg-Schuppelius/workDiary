@@ -123,6 +123,16 @@ class TwoFactorTest extends TestCase {
             ->assertRedirect(route('account.2fa.show'));
     }
 
+    /** Phase 137 (MVP-1105): die Passwortbestätigung vor der Passkey-Registrierung lag hinter der 2FA-Pflicht — ein Kreislauf. */
+    public function test_password_confirmation_stays_reachable_during_forced_setup(): void {
+        $user = User::factory()->user()->create(['is_new_system' => true, 'password' => Hash::make('secret-pass')]);
+        $user->organization?->forceFill(['two_factor_required' => true])->save();
+
+        $this->actingAs($user)->get(route('password.confirm'))->assertOk();
+        $this->actingAs($user)->post(route('password.confirm.store'), ['password' => 'secret-pass'])
+            ->assertSessionHas(\App\Support\Auth\RecentAuthentication::SESSION_KEY);
+    }
+
     public function test_email_otp_enrollment_confirms_factor(): void {
         Mail::fake();
         $user = User::factory()->user()->create(['is_new_system' => true]);

@@ -1,7 +1,7 @@
 ---
 title: "Evidence: audit activity, compliance and minimum wage"
 topic: reports.compliance
-version: 1
+version: 3
 keywords:
     - audit report
     - who changed what
@@ -40,8 +40,8 @@ working-time compliance.
 
 - You choose the period with the period selector in the header. The
   **Violation history**, by contrast, shows all stored violations.
-- Where an export exists, it is mentioned in the respective section. PDF and
-  CSV exports are recorded in the audit log.
+- Where an export exists, it is mentioned in the respective section. Every
+  export is recorded in the audit log.
 
 ## Audit activity
 
@@ -49,9 +49,10 @@ working-time compliance.
 of the audit log in the period. The page only opens for administrators;
 everyone else is denied access.
 
-- Tiles: **Events Σ** (all entries in the period), **Active users** and
-  **Entity types**. The last two count the entries of the top 20 lists and
-  therefore show at most 20.
+- Tiles: **Events Σ** (all entries in the period), **Active users** (people
+  with at least one entry) and **Entity types** (distinct object types). These
+  two also count across all entries in the period, not just the top 20
+  lists.
 - Charts: **Events over time**, **Top actors (top 15)** and the events over
   time by event type.
 - Tables: **By event**, **By entity type (top 20)**, **By user (top 20)** and
@@ -136,7 +137,7 @@ working-time compliance** permission.
   of the day, breaks are added up, and **Duration** is the working time after
   deducting breaks.
 - It is sorted by name and date. The download takes over the period and the
-  employee filter of the page and is recorded in the audit log.
+  employee and team filters of the page and is recorded in the audit log.
 
 The **Driving time evidence** in the same menu is described in the topic on
 fleet, logbook and driving times.

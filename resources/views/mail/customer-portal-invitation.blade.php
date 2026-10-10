@@ -7,11 +7,19 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 @component('mail::message')
+@if ($reset ?? false)
+# {{ __('customer_portal.reset.mail_heading') }}
+@else
 # {{ __('Willkommen im Kundenportal von :org', ['org' => $brandName]) }}
+@endif
 
 {{ __('Hallo :name,', ['name' => $portalUser->name]) }}
 
+@if ($reset ?? false)
+{{ __('customer_portal.reset.mail_intro', ['org' => $brandName]) }}
+@else
 {{ __(':org hat für Sie einen Zugang zum Kundenportal eingerichtet. Über den folgenden Link legen Sie Ihr persönliches Passwort fest und melden sich anschließend an.', ['org' => $brandName]) }}
+@endif
 
 @component('mail::button', ['url' => $acceptUrl])
 {{ __('Passwort festlegen') }}

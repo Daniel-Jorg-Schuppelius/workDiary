@@ -29,10 +29,10 @@ enum AssetFinanceEndKind: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Return => (string) __('Rückgabe'),
-            self::Purchase => (string) __('Kauf/Übernahme'),
-            self::Extension => (string) __('Verlängerung'),
-            self::Replacement => (string) __('Ersatzinvestition'),
+            self::Return => (string) __('enums.asset_finance.asset_finance_end_kind.return'),
+            self::Purchase => (string) __('enums.asset_finance.asset_finance_end_kind.purchase'),
+            self::Extension => (string) __('enums.asset_finance.asset_finance_end_kind.extension'),
+            self::Replacement => (string) __('enums.asset_finance.asset_finance_end_kind.replacement'),
         };
     }
 

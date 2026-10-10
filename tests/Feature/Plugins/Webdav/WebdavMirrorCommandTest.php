@@ -83,7 +83,7 @@ class WebdavMirrorCommandTest extends TestCase {
         $this->connection();
 
         $this->artisan('webdav:mirror', ['--organization' => (string) $this->organization->id])
-            ->expectsOutputToContain('1 Dokumente eingereiht.')
+            ->expectsOutputToContain('1 Objekte eingereiht.')
             ->assertExitCode(0);
 
         $entry = IntegrationOutboxEntry::query()

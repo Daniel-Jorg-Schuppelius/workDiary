@@ -1,7 +1,7 @@
 ---
 title: "Meine Auswertungen"
 topic: reports.my-reports
-version: 1
+version: 5
 keywords:
     - Mein Monat
     - Mein Jahr
@@ -25,11 +25,12 @@ related:
 
 Unter **Auswertungen** → **Persönlich** stehen jeder Person drei Auswertungen
 der eigenen Zeiten zur Verfügung: **Mein Monat**, **Mein Jahr** und
-**Arbeitsbilanz**. Sie zeigen ausschließlich Ihre eigenen Einträge. Grundlage
-sind Ihre Zeiteinträge, bei der Arbeitsbilanz zusätzlich Ihre Stempelzeiten und
-Ihr Arbeitszeitmodell. Die Auswertungen sind keine eigene Datenquelle: Stimmt
-eine Zahl nicht, korrigieren Sie den Zeiteintrag oder die Stempelung – beim
-nächsten Aufruf rechnet die Auswertung neu.
+**Arbeitsbilanz**. Sie zeigen Ihre eigenen Einträge; die Arbeitsbilanz einer
+anderen Person öffnet nur, wer das Recht dazu hat (siehe „Wer was sieht“).
+Grundlage sind Ihre Zeiteinträge, bei der Arbeitsbilanz zusätzlich Ihre
+Stempelzeiten und Ihr Arbeitszeitmodell. Die Auswertungen sind keine eigene
+Datenquelle: Stimmt eine Zahl nicht, korrigieren Sie den Zeiteintrag oder die
+Stempelung – beim nächsten Aufruf rechnet die Auswertung neu.
 
 ## Zeitraum wählen
 
@@ -61,9 +62,9 @@ Zeiteinträge des Monats Tag für Tag auf.
 - Zwei Diagramme: **Stunden pro Tag** als Verlauf über den Monat und **Stunden
   pro Woche nach Art**, je Kalenderwoche nach Art gestapelt.
 
-Filter: **Kunde**, **Projekt** und **Art** mit **Alle**, **Arbeit**, **Reise**
-(in der Tabelle als **Anfahrt** gekennzeichnet) und **Bereitschaft**. Eine
-Auswahl wirkt sofort; **Zurücksetzen** hebt alle Filter auf.
+Filter: **Kunde**, **Projekt** und **Art** mit **Alle**, **Arbeit**,
+**Anfahrt** und **Bereitschaft** – dieselben Bezeichnungen wie in der
+Tabelle. Eine Auswahl wirkt sofort; **Zurücksetzen** hebt alle Filter auf.
 
 Export: Der Knopf **PDF** erzeugt die Tagesliste mit Summen und einem Diagramm
 der Stunden pro Tag. Im Menü **Export** finden Sie **CSV** und **Excel** mit
@@ -93,7 +94,8 @@ gibt es auf dieser Seite nicht.
 gewählten Zeitraum Soll, Anwesenheit und erfasste Zeit. Die Kacheln oben:
 
 - **Soll**: Sollzeit aus Ihrem Arbeitszeitmodell. Feiertage und Tage mit
-  genehmigtem Urlaub haben kein Soll.
+  genehmigter Abwesenheit wie Urlaub, Sonderurlaub, unbezahltem Urlaub oder Krankheit
+  haben kein Soll.
 - **Anwesenheit**: Ihre Stempelzeiten abzüglich Pausen. Stornierte Stempelungen
   zählen nicht; eine laufende Stempelung wird bis zum aktuellen Zeitpunkt
   mitgerechnet.
@@ -117,10 +119,11 @@ Export: **PDF** mit Kennzahlen und Tagestabelle.
 
 - **Mein Monat** und **Mein Jahr** zeigen immer nur Ihre eigenen Einträge, auch
   für Administratoren.
-- Die **Arbeitsbilanz** zeigt standardmäßig Ihre eigene Bilanz. Nur
-  Administratoren sehen eine Filterleiste mit **Mitarbeiter** und **Team** und
-  können damit die Bilanz einer anderen Person derselben Organisation öffnen;
-  **Team** grenzt dabei nur die Auswahlliste der Mitarbeitenden ein.
+- Die **Arbeitsbilanz** zeigt standardmäßig Ihre eigene Bilanz.
+  Administratoren und Personen mit dem Recht **Alle Zeiteinträge sehen** sehen
+  eine Filterleiste mit **Mitarbeiter** und **Team** und können damit die
+  Bilanz einer anderen Person derselben Organisation öffnen; **Team** grenzt
+  dabei nur die Auswahlliste der Mitarbeitenden ein.
 - Die Arbeitsbilanz rechnet nur den gewählten Zeitraum. Den fortgeschriebenen
   Stand Ihres Arbeitszeitkontos zeigt sie nicht – dazu siehe „Arbeitszeitkonto
   & Monatsfreigabe“.

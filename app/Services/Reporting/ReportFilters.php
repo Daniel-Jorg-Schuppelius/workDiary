@@ -78,7 +78,11 @@ final readonly class ReportFilters {
         } elseif ($this->customerId !== null) {
             $query->whereIn($projectColumn, Project::query()->where('customer_id', $this->customerId)->select('id'));
         } elseif ($this->customerExclusionActive()) {
-            $query->whereNotIn($projectColumn, Project::query()->whereIn('customer_id', $this->excludedCustomerIds)->select('id'));
+            // NOT IN würde Zeiten ohne Projekt mit verwerfen — sie bleiben sichtbar.
+            $query->where(fn($q) => $q->whereNull($projectColumn)->orWhereNotIn(
+                $projectColumn,
+                Project::query()->whereIn('customer_id', $this->excludedCustomerIds)->select('id'),
+            ));
         }
 
         return $this->applyUserAndTeam($query, $userColumn);

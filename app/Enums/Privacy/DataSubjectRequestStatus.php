@@ -29,13 +29,13 @@ enum DataSubjectRequestStatus: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Intake => __('Eingegangen'),
-            self::IdentityCheck => __('Identitätsprüfung'),
-            self::InProgress => __('In Bearbeitung'),
-            self::AwaitingInfo => __('Wartet auf Information'),
-            self::Completed => __('Erledigt'),
-            self::Rejected => __('Abgelehnt'),
-            self::Withdrawn => __('Zurückgezogen'),
+            self::Intake => __('enums.privacy.data_subject_request_status.intake'),
+            self::IdentityCheck => __('enums.privacy.data_subject_request_status.identity_check'),
+            self::InProgress => __('enums.privacy.data_subject_request_status.in_progress'),
+            self::AwaitingInfo => __('enums.privacy.data_subject_request_status.awaiting_info'),
+            self::Completed => __('enums.privacy.data_subject_request_status.completed'),
+            self::Rejected => __('enums.privacy.data_subject_request_status.rejected'),
+            self::Withdrawn => __('enums.privacy.data_subject_request_status.withdrawn'),
         };
     }
 

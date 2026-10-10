@@ -1,7 +1,7 @@
 ---
 title: "Integración con OpenProject"
 topic: admin.openproject
-version: 3
+version: 4
 keywords:
     - gestión de proyectos
     - paquetes de trabajo
@@ -12,6 +12,8 @@ keywords:
     - sincronización de tiempos
     - sincronización de proyectos
     - asignaciones
+    - OpenProject autoalojado
+    - permitir direcciones privadas
 audience:
     - admin
 related:
@@ -27,6 +29,12 @@ registrados pueden devolverse a OpenProject. Las credenciales y
 opciones se configuran en los ajustes del plugin (entre ellos **URL de
 la instancia**, **Token de API** y **Franja de sincronización
 (días)**).
+
+WorkDiary rechaza una instancia de OpenProject autoalojada en su propia red
+(por ejemplo 192.168.x.x) hasta que active **Permitir direcciones privadas**
+en los ajustes del plugin. El cambio queda registrado. Si el operador de su
+instalación ha bloqueado esta autorización, el interruptor no tiene efecto;
+la instancia necesita entonces una dirección accesible públicamente.
 
 Sincronizar (página **Sincronizar OpenProject**):
 

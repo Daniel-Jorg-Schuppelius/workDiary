@@ -63,6 +63,12 @@
         </x-card>
     @endif
 
+    <x-card>
+        <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('Webhook (optional)') }}</h2>
+        <p class="mb-2 text-sm text-muted">{{ __('Damit neue Einträge schneller ankommen, in Toggl eine Webhook-Subscription für den Workspace auf diese Adresse anlegen und das dabei vergebene Geheimnis in den Plugin-Einstellungen unter „Webhook-Secret“ hinterlegen. Die Workspace-ID muss dort ebenfalls gesetzt sein. Der stündliche Abruf bleibt die verlässliche Quelle.') }}</p>
+        <code class="select-all break-all text-sm">{{ route('api.webhooks.toggl') }}</code>
+    </x-card>
+
     {{-- Benutzerzuordnung (MVP-509): Modus sichtbar machen --}}
     <x-card>
         <div class="flex flex-wrap items-center justify-between gap-2">

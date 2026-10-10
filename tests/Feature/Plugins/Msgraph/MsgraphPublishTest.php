@@ -158,6 +158,27 @@ final class MsgraphPublishTest extends TestCase {
         $this->assertSame(0, ExternalReference::query()->count());
     }
 
+    /** Lokal gelöschte Termine entfernt der Vollabgleich auch aus Microsoft 365 (Phase 137). */
+    public function test_deleted_event_is_removed_and_reference_dropped(): void {
+        $this->connection();
+        $event = $this->event();
+        FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/events' => FakePluginHttp::response(['id' => 'AAMk-2'], 201),
+        ]);
+        (new MsgraphPlugin())->publishCalendar($this->organization);
+
+        $event->delete();
+        $fake = FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/events/*' => FakePluginHttp::response(null, 204),
+        ]);
+        $result = (new MsgraphPlugin())->publishCalendar($this->organization);
+
+        $this->assertSame(1, $result['deleted']);
+        $fake->assertSent(fn(RequestInterface $r): bool => $r->getMethod() === 'DELETE'
+            && str_contains((string) $r->getUri(), '/me/events/AAMk-2'));
+        $this->assertSame(0, ExternalReference::query()->count());
+    }
+
     public function test_publish_targets_selected_calendar(): void {
         $this->connection(['calendar_id' => 'cal-abc']);
         $this->event();

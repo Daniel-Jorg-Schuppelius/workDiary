@@ -30,11 +30,11 @@ enum ContractStatus: string implements HasLabel, HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::Draft => (string) __('Entwurf'),
-            self::Active => (string) __('Aktiv'),
-            self::Terminated => (string) __('Gekündigt'),
-            self::Ended => (string) __('Beendet'),
-            self::Cancelled => (string) __('Storniert'),
+            self::Draft => (string) __('enums.contract.contract_status.draft'),
+            self::Active => (string) __('enums.contract.contract_status.active'),
+            self::Terminated => (string) __('enums.contract.contract_status.terminated'),
+            self::Ended => (string) __('enums.contract.contract_status.ended'),
+            self::Cancelled => (string) __('enums.contract.contract_status.cancelled'),
         };
     }
 

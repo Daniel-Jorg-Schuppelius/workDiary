@@ -26,10 +26,10 @@ enum ClaimFinancialStatus: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Proposed => (string) __('Vorgeschlagen'),
-            self::Approved => (string) __('Freigegeben'),
-            self::Executed => (string) __('Ausgeführt/übergeben'),
-            self::Rejected => (string) __('Abgelehnt'),
+            self::Proposed => (string) __('enums.claims.claim_financial_status.proposed'),
+            self::Approved => (string) __('enums.claims.claim_financial_status.approved'),
+            self::Executed => (string) __('enums.claims.claim_financial_status.executed'),
+            self::Rejected => (string) __('enums.claims.claim_financial_status.rejected'),
         };
     }
 }

@@ -1,7 +1,7 @@
 ---
 title: "Plataforma de aprendizaje"
 topic: learning.overview
-version: 5
+version: 6
 keywords:
     - e-learning
     - LMS
@@ -255,7 +255,9 @@ asignación se interrumpe con un mensaje.
 
 La analítica muestra tasas y anomalías, no perfiles personales. Las tasas
 aparecen a partir de cinco inscripciones para que no se pueda inferir a
-personas. Puntos, insignias y clasificación están desactivados de fábrica; la
+personas. La exportación en PDF, CSV o Excel respeta el mismo umbral y
+requiere el permiso **Exportar los informes**; los administradores pueden
+exportar siempre. Puntos, insignias y clasificación están desactivados de fábrica; la
 clasificación solo muestra a quien lo consiente expresamente.
 
 Las notificaciones siguen las reglas de la organización: asignación,

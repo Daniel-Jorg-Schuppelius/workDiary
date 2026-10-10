@@ -110,6 +110,8 @@ return [
             'add_entry' => 'Nouvelle écriture',
             'post' => 'Comptabiliser',
             'reverse' => 'Extourner',
+            'discard' => 'Rejeter le brouillon',
+            'show_pending' => 'Voir le brouillon en attente',
             'reverse_submit' => 'Créer la contre-écriture',
             'import' => 'Importer le plan comptable',
         ],
@@ -157,6 +159,8 @@ return [
             'entry_saved' => 'Écriture enregistrée.',
             'entry_posted' => 'Écriture comptabilisée.',
             'entry_reversed' => 'Contre-écriture créée.',
+            'entry_discarded' => 'Brouillon rejeté — l’opération peut être relancée.',
+            'reversal_awaiting_approval' => 'Principe des quatre yeux : l’extourne attend la validation comme brouillon dans la boîte de saisie comptable. L’écriture reste comptabilisée jusqu’à ce qu’une deuxième personne comptabilise la contre-écriture.',
         ],
         'error' => [
             'sovereignty' => 'Le :date, le grand livre est tenu par :holder — aucune écriture locale nʼest permise ce jour-là.',
@@ -177,6 +181,8 @@ return [
             'both_sides' => 'Une ligne porte soit le débit, soit le crédit, jamais les deux.',
             'unbalanced' => 'Le débit (:debit) et le crédit (:credit) ne correspondent pas.',
             'reverse_not_posted' => 'Seule une écriture comptabilisée peut être extournée.',
+            'reversal_pending' => 'Une extourne de cette écriture attend déjà la validation.',
+            'discard_not_allowed' => 'Seul un brouillon en attente issu d’un escompte, d’un passage en perte, d’une écriture d’attente, d’un virement, des soldes initiaux, d’un acompte spécial ou d’une extourne peut être rejeté ; les écritures comptabilisées restent inchangées.',
             'reversal_reason_required' => 'L\'extourne exige un motif.',
             'account_in_use' => 'Ce compte a déjà été mouvementé — il ne peut qu\'être désactivé.',
             'entry_without_organization' => 'L\'écriture n\'a pas d\'organisation — merci d\'informer l\'administrateur.',
@@ -235,6 +241,8 @@ return [
             'lines' => 'Lignes de l\'écriture',
             'total' => 'Total',
             'is_reversal_of' => 'Cette écriture extourne l\'écriture n° :no.',
+            'awaiting_approval' => 'Brouillon issu de « :kind » : il attend la validation et ne prend effet que lorsqu’une deuxième personne le comptabilise. Le rejeter le supprime ; l’opération peut ensuite être relancée.',
+            'reversal_pending' => 'Une extourne de cette écriture attend la validation comme brouillon.',
             'reversed_by' => 'Extournée par l\'écriture n° :no — :reason',
         ],
         'filter' => [
@@ -252,6 +260,7 @@ return [
         ],
         'confirm' => [
             'deactivate' => 'Désactiver vraiment ce compte ? Les écritures existantes sont conservées.',
+            'discard' => 'Rejeter le brouillon ? Il sera supprimé et l’étape journalisée ; l’opération peut ensuite être relancée.',
         ],
         'import' => [
             'line_invalid' => 'Ligne :line ignorée (numéro, nom ou type de compte manquant).',
@@ -269,7 +278,8 @@ return [
         'menu' => 'Boîte de saisie',
         'subtitle' => 'Pièces, notes de frais et opérations de caisse de la période avec leur statut comptable.',
         'empty' => 'Aucun élément ouvert sur la période.',
-        'four_eyes_active' => 'Principe des quatre yeux actif : celui qui prépare une proposition ne la comptabilise pas lui-même.',
+        'four_eyes_active' => 'Principe des quatre yeux actif : celui qui prépare une proposition ne la comptabilise pas lui-même. Les escomptes, passages en perte, écritures d’attente, virements internes, soldes initiaux, acomptes spéciaux et extournes attendent également ici la validation par une deuxième personne ; ces brouillons peuvent aussi être rejetés.',
+        'four_eyes_direct_hint' => 'Principe des quatre yeux actif : l’écriture est créée comme brouillon dans la boîte de saisie comptable et ne prend effet que lorsqu’une deuxième personne la comptabilise.',
         'state' => [
             'blocked' => 'Bloqué',
             'open' => 'Non comptabilisé',
@@ -299,6 +309,7 @@ return [
         'flash' => [
             'prepared' => 'Proposition acceptée.',
             'batch' => 'Lot : :prepared acceptés, :posted comptabilisés, :failed en attente.',
+            'awaiting_approval' => 'Principe des quatre yeux : l’écriture attend la validation comme brouillon dans la boîte de saisie comptable. Elle prend effet dès qu’une deuxième personne la comptabilise.',
         ],
         'error' => [
             'four_eyes' => 'Principe des quatre yeux : vous avez préparé cette écriture — quelqu\'un d\'autre doit la comptabiliser.',
@@ -511,6 +522,8 @@ return [
         'empty' => 'Aucun poste ouvert.',
         'overdue_days' => 'en retard de :days jours',
         'settle_hint' => 'Ouvert : :open. Les paiements viennent du rapprochement bancaire — ici seulement escompte, retenue ou passage en perte.',
+        'awaiting_approval' => 'Brouillon en attente de validation',
+        'four_eyes_hint' => 'Principe des quatre yeux actif : l’escompte et le passage en perte sont créés comme brouillons dans la boîte de saisie comptable. Le poste reste ouvert jusqu’à ce qu’une deuxième personne comptabilise la contre-écriture.',
         'column' => [
             'counterparty' => 'Tiers',
             'due_date' => 'Échéance',
@@ -528,9 +541,14 @@ return [
         'action' => [
             'settle' => 'Solder',
             'show_entry' => 'Voir l\'écriture',
+            'show_pending' => 'Voir le brouillon en attente',
         ],
         'flash' => [
             'settled' => 'Règlement enregistré.',
+            'awaiting_approval' => 'Principe des quatre yeux : la contre-écriture attend la validation comme brouillon dans la boîte de saisie comptable. Le poste reste ouvert jusqu’à ce qu’une deuxième personne la comptabilise.',
+        ],
+        'error' => [
+            'draft_pending' => 'Une contre-écriture attend déjà la validation pour ce poste. Un autre règlement n’est possible qu’une fois celle-ci comptabilisée.',
         ],
     ],
 
@@ -543,6 +561,9 @@ return [
         'invoice_schedules_hint' => 'Les facturations récurrentes restent au plan de facturation ; affichées ici pour information.',
         'preview' => 'Prochaines échéances : :dates',
         'no_account' => '— aucun compte —',
+        'no_responsible' => '— personne —',
+        'choose_invoice' => '— choisir la facture —',
+        'fulfill_hint' => 'Période :period, échéance le :due, attendu :expected. L\'attribution de la facture reçue clôt l\'opération.',
         'section' => [
             'open_runs' => 'Opérations ouvertes',
             'templates' => 'Modèles',
@@ -562,11 +583,13 @@ return [
             'due_day' => 'Jour d\'échéance',
             'starts_on' => 'Début',
             'ends_on' => 'Fin',
+            'incoming_einvoice' => 'Facture électronique entrante',
         ],
         'hint' => [
             'kind' => 'L\'attente de pièce attend un original ; le modèle d\'écriture crée un brouillon.',
             'due_day' => '1–28, pour que chaque mois comporte ce jour.',
             'accounts' => 'Uniquement pour les modèles d\'écriture — avec le montant attendu.',
+            'responsible' => 'Reçoit, en plus de la comptabilité, l\'avis des opérations en retard.',
         ],
         'action' => [
             'add' => 'Créer un modèle',
@@ -576,6 +599,7 @@ return [
             'resume' => 'Reprendre',
             'end' => 'Terminer',
             'open_schedules' => 'Ouvrir les plans',
+            'fulfill' => 'Attribuer la pièce',
         ],
         'confirm' => [
             'end' => 'Terminer le modèle ? Les opérations déjà créées subsistent.',
@@ -584,6 +608,7 @@ return [
             'runs' => 'Aucune opération ouverte.',
             'templates' => 'Aucun modèle créé.',
             'schedules' => 'Aucun plan actif.',
+            'candidates' => 'Aucune facture électronique entrante à attribuer. Enregistrez d\'abord l\'original sous Factures électroniques entrantes.',
         ],
         'flash' => [
             'saved' => 'Modèle enregistré.',
@@ -592,6 +617,7 @@ return [
             'resumed' => 'Modèle repris.',
             'ended' => 'Modèle terminé.',
             'ran' => 'Exécution effectuée.',
+            'fulfilled' => 'Attente de pièce satisfaite.',
         ],
         'error' => [
             'already_closed' => 'Cette opération est déjà close.',

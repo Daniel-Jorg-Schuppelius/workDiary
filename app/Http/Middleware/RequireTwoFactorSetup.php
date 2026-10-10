@@ -23,6 +23,9 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class RequireTwoFactorSetup {
     public function handle(Request $request, Closure $next, ?string $guard = null): Response {
+        // Die Prioritätsliste zieht `auth:customer` vor die Instanz im Web-Stapel; ohne
+        // Parameter gilt deshalb der aktive Guard, sonst greifen für Portalkonten die internen Ausnahmen.
+        $guard ??= Auth::getDefaultDriver();
         $user = Auth::guard($guard)->user();
         $isCustomer = $guard === 'customer';
         $setupRoute = $isCustomer ? 'customer.2fa.show' : 'account.2fa.show';
@@ -49,16 +52,22 @@ class RequireTwoFactorSetup {
         return $next($request);
     }
 
-    /** Routen, die auch ohne eingerichtetes 2FA erreichbar bleiben müssen. */
+    /**
+     * Routen, die auch ohne eingerichtetes 2FA erreichbar bleiben müssen —
+     * auch die Passwortbestätigung, die `reauth` vor der Passkey-Registrierung
+     * verlangt; sonst kreist die Einrichtung zwischen beiden Seiten.
+     */
     private function isExempt(Request $request, bool $isCustomer): bool {
         if ($isCustomer) {
             return $request->routeIs('customer.2fa.*')
                 || $request->routeIs('customer.two-factor.*')
+                || $request->routeIs('customer.password.confirm', 'customer.password.confirm.store')
                 || $request->routeIs('customer.logout');
         }
 
         return $request->routeIs('account.2fa.*')
             || $request->routeIs('logout')
+            || $request->routeIs('password.confirm', 'password.confirm.store')
             || $request->routeIs('two-factor.*');
     }
 }

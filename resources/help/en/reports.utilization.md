@@ -1,7 +1,7 @@
 ---
 title: "Utilization & realization"
 topic: reports.utilization
-version: 2
+version: 3
 keywords:
     - utilization rate
     - utilisation
@@ -23,7 +23,7 @@ Three rates, three questions — with an example (month with 160 h target):
 
 - **Utilization** = tracked ÷ target time. 120 h tracked → **75 %**.
   Is the workload sufficient? Target comes from the work schedule
-  (holidays/vacation do not count as target).
+  (holidays, vacation and sick leave do not count as target).
 - **Billable rate** = billable ÷ tracked time. 90 of 120 h billable →
   **75 %**. Does time flow into paid work?
 - **Realization** = invoiced ÷ billable time. 72 of 90 h on invoices →

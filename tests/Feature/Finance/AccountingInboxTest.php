@@ -19,7 +19,7 @@ use App\Models\Finance\{CashEntry, CashRegister};
 use App\Models\Invoicing\{IncomingEInvoice, Invoice};
 use App\Models\Platform\{Organization, User};
 use App\Models\Travel\Expense;
-use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService};
+use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService};
 use App\Services\Accounting\Posting\{PostingInboxService, PostingSourceRegistry};
 use App\Settings\SettingScope;
 use App\Support\{MorphMap, Setting};
@@ -219,7 +219,7 @@ class AccountingInboxTest extends TestCase {
         $entry = $this->inbox()->prepare($this->org, $this->proposalFor(PostingSourceKind::SalesInvoice, $this->invoice()), $this->admin);
 
         $this->expectException(ValidationException::class);
-        $this->inbox()->post($entry, $this->admin);
+        app(JournalService::class)->post($entry, $this->admin);
     }
 
     public function test_four_eyes_allows_a_second_person_to_post(): void {
@@ -228,10 +228,24 @@ class AccountingInboxTest extends TestCase {
         $second = User::factory()->admin()->create(['organization_id' => $this->org->id]);
 
         $entry = $this->inbox()->prepare($this->org, $this->proposalFor(PostingSourceKind::SalesInvoice, $this->invoice()), $this->admin);
-        $posted = $this->inbox()->post($entry, $second);
+        $posted = app(JournalService::class)->post($entry, $second);
 
         $this->assertSame(AccountingEntryStatus::Posted, $posted->status);
         $this->assertSame($second->id, $posted->posted_by);
+    }
+
+    /** Übernehmen und Festschreiben in einem Zug wäre bei Vier-Augen dieselbe Person — kein Knopf dafür. */
+    public function test_four_eyes_hides_prepare_and_post_in_the_inbox(): void {
+        $this->salesRules();
+        $this->invoice();
+        $this->travelTo($this->startsOn->addMonth()->addDays(5));
+        $label = (string) __('accounting.inbox.action.prepare_and_post');
+
+        Setting::set(PostingInboxService::FOUR_EYES_KEY, true, SettingScope::Organization, $this->org);
+        $this->actingAs($this->admin)->get(route('finance.accounting.inbox.index'))
+            ->assertOk()
+            ->assertSee((string) __('accounting.inbox.action.prepare'))
+            ->assertDontSee($label);
     }
 
     public function test_incoming_invoice_proposal_books_expense_and_input_tax(): void {

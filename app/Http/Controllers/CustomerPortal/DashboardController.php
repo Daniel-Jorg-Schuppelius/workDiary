@@ -12,6 +12,7 @@ namespace App\Http\Controllers\CustomerPortal;
 
 use App\Enums\Customer\IntakeStatus;
 use App\Enums\CustomerPortal\PortalCapability;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\CustomerIntake;
 use App\Models\Diary\{DiaryEntry, OpenIssue};
@@ -52,7 +53,8 @@ class DashboardController extends Controller {
             $stats['time_entries'] = $timeQuery->count();
         }
         if ($customer !== null && $visibility->allows($customer, PortalCapability::Invoices)) {
-            $stats['invoices'] = Invoice::query()->where('customer_id', $customerId)->count();
+            // Wie die Liste: Entwürfe sind interne Arbeitsstände (MVP-1019).
+            $stats['invoices'] = Invoice::query()->where('customer_id', $customerId)->where('status', '!=', InvoiceStatus::Draft)->count();
         }
         if ($customer !== null && $visibility->allows($customer, PortalCapability::OpenIssues)) {
             $stats['open_issues'] = OpenIssue::query()

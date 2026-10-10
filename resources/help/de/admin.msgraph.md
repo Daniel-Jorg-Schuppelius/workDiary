@@ -1,7 +1,7 @@
 ---
 title: "Microsoft 365 anbinden"
 topic: admin.msgraph
-version: 1
+version: 2
 keywords:
     - Microsoft 365
     - Office 365
@@ -66,7 +66,7 @@ dem Titel zeigt ein Abzeichen **Verbunden**, **Nicht erreichbar** oder
 - **Richtung:** Veranstaltungen aus WorkDiary werden in den Kalender des
   verbundenen Kontos übertragen – von 30 Tagen zurück bis 180 Tage voraus,
   mit Titel, Beschreibung, Zeit und Ort (gebuchte Räume). Änderungen werden
-  nachgezogen, abgesagte Veranstaltungen dort entfernt, und wiederholte Läufe
+  nachgezogen, abgesagte und gelöschte Veranstaltungen dort entfernt, und wiederholte Läufe
   erzeugen keine Dubletten. WorkDiary bleibt führend.
 - **Zeitpunkt:** Ein Abgleich läuft täglich, standardmäßig um 4:45 Uhr; den
   Takt ändern Sie unter **Geplante Aufgaben**. **Jetzt publizieren** startet
@@ -178,12 +178,10 @@ verbinden Benutzer ohne eigene Einwilligungsabfrage.
 
 Unter **Redirect-URIs für eine eigene App-Registrierung** stehen die Adressen,
 die eine eigene App als Redirect-URI vom Typ „Web“ registrieren muss: für
-Kalender, Mail-Versand, Kontakte, Aufgaben, Dokumenteingang, Admin-Consent
-und – nur bei der Installations-App – das Backupziel. Die Adresse für OneNote
-fehlt in dieser Liste: Tragen Sie bei eigener App zusätzlich Ihre
-WorkDiary-Adresse mit dem Pfad /admin/msgraph/onenote/oauth/callback ein.
-Nutzt die **SharePoint-Ablage** dieselbe App, gehört auch der Pfad
-/admin/sharepoint/oauth/callback dazu.
+Kalender, Mail-Versand, Kontakte, Aufgaben, OneNote, Dokumenteingang,
+Admin-Consent, – nur bei der Installations-App – das Backupziel und die
+**SharePoint-Ablage**, die dieselbe App nutzt, solange der Betreiber ihr keine
+eigene zuweist.
 
 ## Weitere Funktionen des Plugins
 
@@ -202,7 +200,9 @@ Jede Karte hat ihr eigenes Trennen. Es entfernt die Zugangsschlüssel dieser
 Verbindung; übertragene Termine und Outlook-Kontakte bleiben bei Microsoft
 erhalten. Sie können jederzeit neu verbinden; dabei setzt WorkDiary auch die
 Fehlerzählung zurück. Wurde eine Verbindung nach wiederholten Fehlern in Folge
-stillgelegt, erscheint die Schaltfläche zum Verbinden wieder.
+stillgelegt, erscheint die Schaltfläche zum Verbinden wieder. Solange eine
+Kalenderverbindung gestört ist, steht dazu eine Betriebsaufgabe in der
+Übersicht der Betriebsaufgaben.
 
 ## Typische Fehlerbilder
 

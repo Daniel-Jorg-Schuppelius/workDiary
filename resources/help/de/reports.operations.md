@@ -1,7 +1,7 @@
 ---
 title: "Betrieb: Zeitaufteilung, Prozeduren, Material, Notdienst"
 topic: reports.operations
-version: 1
+version: 6
 keywords:
     - Betriebsauswertung
     - Service-Aufträge
@@ -53,8 +53,12 @@ unter **Auswertungen** → **Projekte & Kunden** und **Auswertungen** →
   Administratoren, die damit zwischen den eigenen Daten und dem gesamten Team
   wechseln. Alle anderen sehen dort immer ihre eigenen Daten.
 - **PDF** lädt eine Druckfassung, unter **Export** stehen **CSV** und
-  **Excel** bereit. Exporte übernehmen die gesetzten Filter. PDF- und
-  CSV-Exporte werden im Audit-Protokoll vermerkt.
+  **Excel** bereit. Exporte übernehmen die gesetzten Filter. Jeder Export
+  wird im Audit-Protokoll vermerkt.
+- Exporte setzen das Recht **Auswertungen exportieren** voraus, auch bei
+  **Blockierte Prozedurläufe**; ohne das Recht fehlen die Exportknöpfe.
+  Administratoren dürfen immer exportieren. Frei bleiben Exporte, die nur Ihre
+  eigenen Daten enthalten – siehe „Auswertungen verwenden“.
 
 ## Operations
 
@@ -68,8 +72,9 @@ Service), Tasks und Touren im Zeitraum.
   **Touren** mit Plan-Kilometern und Plan-Dauer.
 - Diagramme: **Service-Aufträge: erstellt vs. erledigt je Woche** und
   **Backlog je Kunde (Top 15)** mit den noch offenen Service-Aufträgen je
-  Kunde. Ein Klick auf einen Balken öffnet die offenen Punkte des Kunden;
-  dafür brauchen Sie das Recht **Auswertungen einsehen**.
+  Kunde. Mit dem Recht **Auswertungen einsehen** öffnet ein Klick auf einen
+  Balken die offenen Punkte des Kunden; ohne dieses Recht sind die Balken
+  nicht anklickbar.
 - Tabellen: **Service-Aufträge – Status**, **Service-Aufträge – Priorität**,
   **Tasks – Status**, **Tasks – Priorität** und **Touren – pro Mitarbeiter**
   (Touren, **Plan-km**, **Plan-Dauer**).
@@ -228,10 +233,12 @@ Kalenderjahr, in dem der gewählte Zeitraum beginnt.
   **Monat**, **Stunden** und **Erlös**; darunter folgt die **Aufteilung pro
   Mitarbeiter**. Der Erlös ist die Summe der bei den Zeiteinträgen
   gespeicherten Beträge.
-- Diagramme: **Stundenverlauf im Zeitraum**, **Ist- und Plan-Stunden je
-  Monat** (Plan aus den geplanten Minuten der Projektaufträge nach deren
-  Beginn; ohne Plandaten zeigt eine Linie den Median der Ist-Monate) und
-  **Stunden nach Auftragstyp je Monat**.
+- Diagramme: **Stundenverlauf im Zeitraum**, **Ist- und Plan-Stunden je Monat**
+  (Plan aus dem Feld **Geplante Dauer (HH:MM)** der Projektaufträge nach deren
+  Beginn, ohne Angabe aus Servicedauer, Zeitfenster bzw. Termindauer; mit gewähltem
+  Mitarbeiter nur die ihm zugewiesenen Aufträge, ohne organisationsweite
+  Zeitsicht nur die Ihnen zugewiesenen; ohne Plandaten zeigt eine Linie den
+  Median der Ist-Monate) und **Stunden nach Auftragstyp je Monat**.
 
 Administratoren und Rollen mit **Alle Zeiteinträge sehen** sehen alle
 Projekte und Stunden. Alle anderen sehen nur Projekte, auf die sie selbst
@@ -259,10 +266,10 @@ Projekte. Export als CSV und Excel.
 
 ## Datenqualität
 
-Die Seite **Datenqualität: Pflichtklassifikationen** hat keinen eigenen
-Menüeintrag; Sie öffnen sie über einen direkten Link, etwa ein Lesezeichen.
-Sie listet Aufträge des Zeitraums, denen Angaben nach den Pflichtregeln aus
-**Klassifikationen** fehlen. Nötig ist das Recht **Auswertungen einsehen**.
+**Auswertungen** → **Projekte & Kunden** → **Datenqualität** öffnet die Seite
+**Datenqualität: Pflichtklassifikationen**. Sie listet Aufträge des
+Zeitraums, denen Angaben nach den Pflichtregeln aus **Klassifikationen**
+fehlen. Menüpunkt und Seite verlangen das Recht **Auswertungen einsehen**.
 
 - Kacheln: **Aufträge mit Lücken**, **Harte Lücken** (blockierende Regeln)
   und **Weiche Lücken** (Hinweise).

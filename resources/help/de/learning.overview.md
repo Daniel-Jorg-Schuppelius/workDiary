@@ -1,7 +1,7 @@
 ---
 title: "Lernplattform"
 topic: learning.overview
-version: 5
+version: 6
 keywords:
     - E-Learning
     - LMS
@@ -254,7 +254,9 @@ bricht die Zuweisung mit einer Meldung ab.
 
 Die Kursanalyse zeigt Quoten und Auffälligkeiten, keine Personenprofile.
 Quoten erscheinen erst ab fünf Einschreibungen, damit sich nicht auf
-Einzelne zurückrechnen lässt. Punkte, Abzeichen und Bestenliste sind im
+Einzelne zurückrechnen lässt. Der Export als PDF, CSV oder Excel hält dieselbe
+Schwelle ein und setzt das Recht **Auswertungen exportieren** voraus;
+Administratoren dürfen immer exportieren. Punkte, Abzeichen und Bestenliste sind im
 Auslieferungszustand aus; die Bestenliste zeigt zusätzlich nur, wer
 ausdrücklich zustimmt.
 

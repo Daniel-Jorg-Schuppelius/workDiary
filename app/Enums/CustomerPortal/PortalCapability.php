@@ -39,10 +39,10 @@ enum PortalCapability: string implements HasLabel {
     /** Objektakte (eigene Objekte des Kunden). */
     case Assets = 'assets';
 
-    /** Offene Punkte und bekannte Fehler (OpenIssueVisibility bleibt Gate). */
+    /** Offene Punkte (OpenIssueVisibility bleibt Gate). */
     case OpenIssues = 'open_issues';
 
-    /** Tickets und Servicekatalog (Feature 065). */
+    /** Tickets, Servicekatalog und bekannte Fehler (Feature 065). */
     case Tickets = 'tickets';
 
     /** Reklamationen (Feature 072). */
@@ -74,21 +74,21 @@ enum PortalCapability: string implements HasLabel {
 
     public function label(): string {
         return (string) match ($this) {
-            self::Diary => __('Aufträge & Fallakte'),
-            self::TimeEntries => __('Projektzeiten'),
-            self::Invoices => __('Rechnungen & Abrechnungskonto'),
-            self::Documents => __('Dokumente'),
-            self::Assets => __('Objekte'),
-            self::OpenIssues => __('Offene Punkte & bekannte Fehler'),
-            self::Tickets => __('Tickets & Servicekatalog'),
-            self::Claims => __('Reklamationen'),
+            self::Diary => __('enums.customer_portal.portal_capability.diary'),
+            self::TimeEntries => __('enums.customer_portal.portal_capability.time_entries'),
+            self::Invoices => __('enums.customer_portal.portal_capability.invoices'),
+            self::Documents => __('enums.customer_portal.portal_capability.documents'),
+            self::Assets => __('enums.customer_portal.portal_capability.assets'),
+            self::OpenIssues => __('enums.customer_portal.portal_capability.open_issues'),
+            self::Tickets => __('enums.customer_portal.portal_capability.tickets'),
+            self::Claims => __('enums.customer_portal.portal_capability.claims'),
             self::Returns => __('claims.portal_return.capability'),
-            self::Rentals => __('Verleihvorgänge'),
-            self::Queries => __('Rückfragen & Kommentare'),
-            self::Appointments => __('Online-Terminbuchung'),
-            self::RentalRequests => __('Verleih-Anfrage'),
-            self::Subscriptions => __('Abos & Lizenzen'),
-            self::Agreements => __('Vereinbarungen (AVV/NDA)'),
+            self::Rentals => __('enums.customer_portal.portal_capability.rentals'),
+            self::Queries => __('enums.customer_portal.portal_capability.queries'),
+            self::Appointments => __('enums.customer_portal.portal_capability.appointments'),
+            self::RentalRequests => __('enums.customer_portal.portal_capability.rental_requests'),
+            self::Subscriptions => __('enums.customer_portal.portal_capability.subscriptions'),
+            self::Agreements => __('contract-signing.portal.capability'),
             self::Intakes => __('customer_intake.portal.capability'),
         };
     }

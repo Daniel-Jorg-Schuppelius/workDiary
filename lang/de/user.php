@@ -9,6 +9,9 @@
  */
 
 return [
+    // Mehrzahl für Menü, Seitentitel und Zählkacheln; Spalten und Felder nutzen „Mitarbeiter“ (Einzahl).
+    'employees' => 'Mitarbeiter',
+
     'role' => [
         'admin' => 'Administrator',
         'meldestelle' => 'Meldestelle',

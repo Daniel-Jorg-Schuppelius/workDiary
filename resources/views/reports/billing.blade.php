@@ -21,7 +21,7 @@
         '15_30'    => __('15–30 Tage'),
         '30_plus'  => __('> 30 Tage'),
     ];
-    $totalIssuedPaid = ($status['issued']['total'] ?? 0) + ($status['paid']['total'] ?? 0);
+    $totalIssuedPaid = ($status['issued']['total'] ?? 0) + ($status['partially_paid']['total'] ?? 0) + ($status['paid']['total'] ?? 0);
 @endphp
 
 <x-page-shell>
@@ -50,7 +50,7 @@
     <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.stacked-bar :title="__('Abrechenbare und nicht abrechenbare Stunden :per', ['per' => $periodPhrase])" unit="h" :series="$monthlyBillableSeries" :bands="$billableBands" :x-label="$periodAxis" />
         <x-charts.pareto :title="__('Umsatz je Kunde (Top 15)')" unit="€" :series="$customerRevenueSeries" :x-label="__('Kunde')" :y-label="__('Brutto (€)')"
-                         :note="__('Lokale Rechnungen plus gespiegelte Belege aus dem Buchhaltungsprogramm (Lexoffice); von der App übergebene Rechnungen zählen nur einmal, Gutschriften negativ.')" />
+                         :note="__('Lokale Rechnungen plus aus dem Buchhaltungsprogramm gespiegelte Belege; von der App übergebene Rechnungen zählen nur einmal, Gutschriften negativ.')" />
     </div>
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">

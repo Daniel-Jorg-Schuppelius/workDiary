@@ -76,6 +76,22 @@
             @error('follow_up_for_id')<p class="text-error text-sm">{{ $message }}</p>@enderror
         </div>
 
+        @if ($canMarkContinuation ?? false)
+            <div class="fieldset" x-show="isKind('{{ \App\Enums\Sickness\SickLeaveKind::Initial->value }}')" x-cloak>
+                <label class="fieldset-label" for="sick-continuation">{{ __('Fortsetzungserkrankung von') }}</label>
+                <select id="sick-continuation" name="continuation_of_id" class="select select-bordered w-full" aria-describedby="sick-continuation-hint">
+                    <option value="">{{ __('Keine — neue Krankheit') }}</option>
+                    @foreach ($previousLeaves as $prev)
+                        <option value="{{ $prev->sqid }}" @selected((string) old('continuation_of_id', \App\Support\Sqid::encode(\App\Models\Absence\SickLeave::class, $sickLeave?->continuation_of_id)) === $prev->sqid)>
+                            {{ $prev->start_date->fdate() }} – {{ $prev->end_date->fdate() }}@if ($canAssignOthers) · {{ $prev->user?->name }} @endif
+                        </option>
+                    @endforeach
+                </select>
+                <p id="sick-continuation-hint" class="fieldset-label text-xs">{{ __('Nur auswählen, wenn die Krankenkasse dieselbe Krankheit bestätigt. Die Krankheitstage zählen dann auf denselben Anspruch auf Lohnfortzahlung.') }}</p>
+                @error('continuation_of_id')<p class="text-error text-sm">{{ $message }}</p>@enderror
+            </div>
+        @endif
+
         <div class="fieldset">
             <span class="fieldset-label">{{ __('Zeitraum') }} *</span>
             <x-date-range

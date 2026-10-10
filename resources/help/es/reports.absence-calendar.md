@@ -1,7 +1,7 @@
 ---
 title: "Plan de vacaciones (vista anual)"
 topic: reports.absence-calendar
-version: 1
+version: 2
 keywords:
     - calendario de vacaciones
     - calendario de ausencias
@@ -12,6 +12,7 @@ keywords:
     - vacaciones pendientes
     - solapamiento de vacaciones
     - exportar ausencias
+    - anonimizar motivos de ausencia
 audience: []
 related:
     - absences.manage
@@ -20,12 +21,21 @@ related:
 
 El plan de vacaciones muestra todos los periodos de ausencia aprobados de un
 año como barras sobre un eje anual: los solapamientos dentro de un
-departamento se ven de un vistazo. Con los filtros elige el año y (con el
-permiso correspondiente) un equipo.
+departamento se ven de un vistazo. Con los filtros elige el **Año** y, si ve a
+todas las personas, un **Equipo**.
 
-El filtro de privacidad muestra los motivos de ausencia ajenos de forma
-neutral como «ausente». Sin acceso de RR. HH. está siempre activo; con
-acceso de administración puede activarse, por ejemplo para un tablón.
+Sin otro permiso solo ve su propia fila. Los administradores y las personas con
+el permiso **Ver todas las solicitudes de vacaciones** ven a todas las personas
+de la organización. El motivo de ausencia de otras personas – por ejemplo
+vacaciones, permiso especial o enfermedad – solo lo ve quien tiene además el
+permiso **Ver las bajas por enfermedad**, así como los administradores. Para
+todos los demás, las ausencias ajenas aparecen de forma neutral como
+«ausente»; sus propios motivos de ausencia los ve siempre.
+
+El interruptor **Anonimizar motivos de ausencia** solo aparece con ambos
+permisos o para los administradores. Muestra los motivos de ausencia ajenos de
+forma neutral como «ausente» también para estas personas, por ejemplo para un
+tablón. Lo mismo se aplica a la tarjeta de ausencias y a las exportaciones.
 
 Al hacer clic en un nombre se abre la tarjeta personal de ausencias: el
 calendario anual con fines de semana, festivos y códigos de ausencia, más el

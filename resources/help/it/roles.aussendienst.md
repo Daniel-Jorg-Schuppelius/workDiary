@@ -1,7 +1,7 @@
 ---
 title: "La sua giornata in WorkDiary: Servizio esterno"
 topic: roles.aussendienst
-version: 1
+version: 2
 keywords:
     - tecnico esterno
     - tecnico di assistenza
@@ -27,7 +27,7 @@ spese, sempre sui suoi interventi. Flusso tipico: avviare la
 **rilevazione tempi** (cronometro o «Nuova voce») con progetto/cliente
 e categoria di attività, documentare l'incarico con foto e allegati nel
 fascicolo, generare il **verbale** e farlo **firmare** al cliente in
-loco, gestire giro e libro di bordo, e chiudere la giornata inserendo
+loco, gestire giro e registro viaggi, e chiudere la giornata inserendo
 le pause. Può creare, modificare ed eliminare le sue voci di tempo
 fino all'approvazione — poi ogni correzione passa da una **richiesta di
 correzione** — oltre a gestire i suoi incarichi, richiedere ferie e

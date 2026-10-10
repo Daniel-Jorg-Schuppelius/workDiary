@@ -69,9 +69,15 @@ trait BuildsOpenIssueDrilldown {
      */
     protected function openIssueCsvRows(array $issues, ?string $subjectIdHeader = null): array {
         $rows = [];
-        $rows[] = $subjectIdHeader !== null
-            ? ['ID', $subjectIdHeader, 'Titel', 'Status', 'Severity', 'Fällig', 'Zugewiesen']
-            : ['ID', 'Titel', 'Status', 'Severity', 'Fällig', 'Zugewiesen'];
+        $rows[] = array_values(array_filter([
+            (string) __('reporting.csv.id'),
+            $subjectIdHeader,
+            (string) __('reporting.csv.title'),
+            (string) __('reporting.csv.status'),
+            (string) __('reporting.csv.severity'),
+            (string) __('reporting.csv.due'),
+            (string) __('reporting.csv.assignee'),
+        ], static fn(?string $header): bool => $header !== null));
         foreach ($issues as $issue) {
             $row = [$issue->id];
             if ($subjectIdHeader !== null) {
@@ -96,7 +102,7 @@ trait BuildsOpenIssueDrilldown {
      */
     protected function protocolCsvRows(array $protocols): array {
         $rows = [];
-        $rows[] = ['ID', 'Titel', 'Status', 'Typ', 'Zeitpunkt', 'ErstelltVon', 'AuftragID'];
+        $rows[] = [(string) __('reporting.csv.id'), (string) __('reporting.csv.title'), (string) __('reporting.csv.status'), (string) __('reporting.csv.type'), (string) __('reporting.csv.timestamp'), (string) __('reporting.csv.created_by'), (string) __('reporting.csv.order_id')];
         foreach ($protocols as $protocol) {
             $rows[] = [
                 $protocol->id,

@@ -39,6 +39,7 @@ return [
         'secret_keep' => '(invariato — lasciare vuoto)',
         'allow_private_network' => 'Consentire esplicitamente indirizzi privati/interni',
         'allow_private_network_help' => 'Una Wawi OnPremise si trova di solito nella propria rete. Questa autorizzazione è auditata e vale solo per questa connessione.',
+        'private_hint' => 'Per una Wawi on-premise nella propria rete gli indirizzi privati devono essere consentiti esplicitamente.',
         'last_sync' => 'Ultima sincronizzazione',
         'last_error' => 'Ultimo errore',
     ],

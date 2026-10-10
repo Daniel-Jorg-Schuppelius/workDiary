@@ -11,11 +11,13 @@
 namespace App\Http\Controllers\Reporting;
 
 use App\Enums\Attendance\AttendanceStatus;
+use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\Platform\User;
 use App\Models\Time\{Attendance, TimeEntry, WorkSchedule};
+use App\Services\Flextime\FlexCalculator;
 use App\Services\Reporting\ReportFilters;
 use App\Support\Query\DateRange;
 use Carbon\{Carbon, CarbonImmutable, CarbonInterface, CarbonPeriod};
@@ -40,9 +42,14 @@ class AttendanceReportController extends Controller {
     /** Ab dieser Zeitraumlänge wird die Zeitverlauf-Serie wochenweise aggregiert. */
     private const WEEKLY_THRESHOLD_DAYS = 62;
 
+    /** E10: Sicht „Nur eigene“. */
+    protected function exportIsPersonal(Request $request): bool {
+        return $this->resolveScopeWithPermission($request, Permission::AttendanceViewAny)[0] === 'mine';
+    }
+
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
-        [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
+        [$scope, $seesTeam] = $this->resolveScopeWithPermission($request, Permission::AttendanceViewAny);
 
         [$from, $to] = $this->resolveRange($request);
         $fromStr = $from->toDateString();
@@ -67,7 +74,7 @@ class AttendanceReportController extends Controller {
             'from' => $fromStr,
             'to' => $toStr,
             'scope' => $scope,
-            'isAdmin' => $isAdmin,
+            'seesTeam' => $seesTeam,
             'totals' => $this->totals($rows),
             'standardFilters' => $filters,
             'filterFields' => ['user', 'team'],
@@ -248,11 +255,13 @@ class AttendanceReportController extends Controller {
             $schedByUser[(int) $s->user_id][] = $s;
         }
 
+        $daysOff = app(FlexCalculator::class)->daysWithoutTarget(array_values($userIds), $from, $to);
+
         $rows = [];
         foreach ($users as $u) {
             $uid = (int) $u->id;
             $userSchedules = array_values($schedByUser[$uid] ?? []);
-            [$workdays, $targetMin] = $this->computeTarget($from, $to, $userSchedules);
+            [$workdays, $targetMin] = $this->computeTarget($from, $to, $userSchedules, $daysOff[$uid] ?? []);
             $att = $attMinByUser[$uid] ?? 0;
             $te = $teMinByUser[$uid] ?? 0;
             $rows[] = [
@@ -270,9 +279,10 @@ class AttendanceReportController extends Controller {
 
     /**
      * @param  list<WorkSchedule>  $schedules
+     * @param  array<string, true>  $daysOff  Feiertage und genehmigte Abwesenheit
      * @return array{0:int,1:int} [workdays, targetMinutes]
      */
-    private function computeTarget(CarbonImmutable $from, CarbonImmutable $to, array $schedules): array {
+    private function computeTarget(CarbonImmutable $from, CarbonImmutable $to, array $schedules, array $daysOff): array {
         if ($schedules === []) {
             return [0, 0];
         }
@@ -282,7 +292,7 @@ class AttendanceReportController extends Controller {
         $period = CarbonPeriod::create($from->toDateString(), $to->toDateString());
         foreach ($period as $day) {
             $sched = $this->scheduleFor($day, $schedules);
-            if ($sched === null) {
+            if ($sched === null || isset($daysOff[$day->toDateString()])) {
                 continue;
             }
             $iso = (int) $day->dayOfWeekIso;
@@ -342,12 +352,12 @@ class AttendanceReportController extends Controller {
     private function exportCsv(array $rows, string $from, string $to, array $exportFilters, Request $request): Response {
         $filename = sprintf('anwesenheit_%s_%s.csv', $from, $to);
         $out = [];
-        $out[] = ['Mitarbeiter', 'Arbeitstage', 'Soll (min)', 'Anwesend (min)', 'Gebucht (min)', 'Saldo (min)'];
+        $out[] = [(string) __('reporting.csv.employee'), (string) __('reporting.csv.workdays'), (string) __('reporting.csv.target_minutes'), (string) __('reporting.csv.present_minutes'), (string) __('reporting.csv.booked_minutes'), (string) __('reporting.csv.balance_minutes')];
         foreach ($rows as $r) {
             $out[] = [$r['user']->name, $r['workdays'], $r['target_minutes'], $r['attendance_minutes'], $r['time_entry_minutes'], $r['variance']];
         }
         $totals = $this->totals($rows);
-        $out[] = ['GESAMT', '', $totals['target'], $totals['attendance'], $totals['time_entry'], $totals['variance']];
+        $out[] = [(string) __('reporting.csv.total'), '', $totals['target'], $totals['attendance'], $totals['time_entry'], $totals['variance']];
 
         return $this->csvWithMetadata($out, $filename, 'attendance', $exportFilters, $request);
     }

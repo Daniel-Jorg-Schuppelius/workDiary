@@ -37,10 +37,10 @@ enum RenderDocumentFamily: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Sales => __('Vertrieb/Fakturierung'),
-            self::Procurement => __('Einkauf/Logistik'),
-            self::Evidence => __('Leistung/Nachweis'),
-            self::Special => __('Spezialformat'),
+            self::Sales => __('enums.document_design.render_document_family.sales'),
+            self::Procurement => __('enums.document_design.render_document_family.procurement'),
+            self::Evidence => __('enums.document_design.render_document_family.evidence'),
+            self::Special => __('enums.document_design.render_document_family.special'),
         };
     }
 }

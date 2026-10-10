@@ -56,7 +56,7 @@ class PermissionEnforcementRuleTest extends TestCase {
     private const BASELINE = [
         'AccessAssignGroups', 'AccessAssignRoles', 'AccessAuditView', 'ActivityCategoryManage',
         'AssetBlockOverride', 'AttendanceManage',
-        'AttendanceViewAny', 'AuditLogView',
+        'AuditLogView',
         'BrandingUpdate', 'CoverageRequirementManage', 'CustomerDelete',
         'CustomerLexofficeSync', 'CustomerPortalDiaryView',
         'CustomerPortalInvoiceView', 'CustomerPortalOpenIssueView', 'CustomerPortalTimeEntryView',
@@ -69,9 +69,9 @@ class PermissionEnforcementRuleTest extends TestCase {
         'MilestoneManage', 'OnCallShiftManage', 'OpenIssueCreate', 'OpenIssueUpdate',
         'OrganizationView', 'PlatformDemoCreate', 'ProcedureSecondPersonRequest',
         'ProcedureSecondPersonRevoke', 'ProcedureSecondPersonSign', 'ProcedureSecondPersonTake',
-        'ProjectArchive', 'ProjectCreate', 'ProjectDelete', 'ProjectManageBilling', 'ProtocolCreate', 'ProtocolItemPhotoAdd', 'ProtocolItemPhotoRemove', 'QualificationManage',
+        'ProjectArchive', 'ProjectCreate', 'ProjectDelete', 'ProjectManageBilling', 'ProtocolCreate', 'ProtocolItemPhotoAdd', 'ProtocolItemPhotoRemove',
         'ScheduledShiftManage', 'ShiftManage', 'ShiftTypeManage',
-        'SickLeaveManage', 'SupplierCreate', 'SupplierDelete', 'SupplierExport', 'SupplierLexofficeSync', 'TagManage',
+        'SupplierCreate', 'SupplierDelete', 'SupplierExport', 'SupplierLexofficeSync', 'TagManage',
         'TaskManage', 'TimeEntryCreate', 'TimeEntryCreateForOthers',
         'TimeEntryDelete', 'TimeEntryUpdate', 'TimeEntryViewOwn', 'TimesheetCreate', 'TimesheetDelete',
         'TimesheetExport', 'TimesheetLock', 'TimesheetSign', 'TimesheetUnlock', 'TimesheetUpdate',
@@ -160,7 +160,20 @@ class PermissionEnforcementRuleTest extends TestCase {
             $haystack .= (string) file_get_contents($file);
         }
 
-        return $haystack;
+        return $this->withoutRouteNames($haystack);
+    }
+
+    /**
+     * Routennamen sind keine Prüfstellen: `->name('report.export')` (Reselling)
+     * ließ das Recht `report.export` als geprüft gelten, obwohl es nirgends
+     * ausgewertet wurde (MVP-1101).
+     */
+    private function withoutRouteNames(string $haystack): string {
+        return (string) preg_replace(
+            "/(?:->name|->named|\\broute|->routeIs|to_route)\\(\\s*'[^']*'|'route'\\s*=>\\s*'[^']*'/",
+            '',
+            $haystack,
+        );
     }
 
     private function isDefinitionOnly(string $absolute): bool {

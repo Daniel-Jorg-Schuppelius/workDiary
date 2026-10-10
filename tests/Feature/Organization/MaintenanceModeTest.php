@@ -13,6 +13,8 @@ namespace Tests\Feature\Organization;
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\{User, UserBadge};
 use App\Models\Time\AttendanceTerminal;
+use App\Support\Formats;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -109,5 +111,34 @@ final class MaintenanceModeTest extends TestCase {
 
         $this->assertTrue($this->organization->refresh()->inMaintenance());
         $this->assertSame(1, AuditLog::query()->where('event', 'organization.maintenance_toggled')->count());
+    }
+
+    /** MVP-1103: „Voraussichtliches Ende" ist Ortszeit — gespeichert wird UTC, angezeigt wieder Ortszeit. */
+    public function test_until_is_entered_and_shown_in_local_time(): void {
+        $this->organization->update(['timezone' => 'Europe/Berlin']);
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $local = CarbonImmutable::now('Europe/Berlin')->addDays(2)->setTime(14, 0);
+
+        $this->actingAs($admin)->put(route('admin.organizations.update', $this->organization), [
+            'name' => $this->organization->name,
+            'plan' => $this->organization->plan,
+            'locale' => 'de',
+            'timezone' => 'Europe/Berlin',
+            'is_active' => 1,
+            'settings' => ['maintenance' => ['enabled' => '1', 'until' => $local->format('Y-m-d\\TH:i')]],
+        ])->assertSessionHasNoErrors();
+
+        $organization = $this->organization->refresh();
+        $this->assertSame($local->utc()->format('Y-m-d H:i:s'), data_get($organization->settings, 'maintenance.until'));
+        $this->assertTrue($organization->maintenanceSettings()['until']?->equalTo($local));
+
+        $this->actingAs($admin)->get(route('admin.organizations.edit', $organization))
+            ->assertOk()
+            ->assertSee('value="' . $local->format('Y-m-d\\TH:i') . '"', false);
+
+        // Frisch laden: actingAs hält sonst die vor dem Speichern geladene Organisation.
+        $this->actingAs($admin->fresh())->get(route('today.show'))
+            ->assertOk()
+            ->assertSee($local->format(Formats::dateTime()));
     }
 }

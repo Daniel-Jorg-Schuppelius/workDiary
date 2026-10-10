@@ -30,12 +30,12 @@ enum MonthClosureStatus: string implements HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::Draft     => __('Entwurf'),
-            self::Submitted => __('Eingereicht'),
-            self::Approved  => __('Genehmigt'),
-            self::Rejected  => __('Abgelehnt'),
-            self::Reopened  => __('Wiedereröffnet'),
-            self::Locked    => __('Gesperrt'),
+            self::Draft     => __('enums.time_approval.month_closure_status.draft'),
+            self::Submitted => __('enums.time_approval.month_closure_status.submitted'),
+            self::Approved  => __('enums.time_approval.month_closure_status.approved'),
+            self::Rejected  => __('enums.time_approval.month_closure_status.rejected'),
+            self::Reopened  => __('enums.time_approval.month_closure_status.reopened'),
+            self::Locked    => __('enums.time_approval.month_closure_status.locked'),
         };
     }
 

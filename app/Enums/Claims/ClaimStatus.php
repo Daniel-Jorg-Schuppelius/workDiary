@@ -33,13 +33,13 @@ enum ClaimStatus: string implements HasLabel, HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::Received => (string) __('Eingegangen'),
-            self::Assessing => (string) __('In Bewertung'),
-            self::Decided => (string) __('Entschieden'),
-            self::InProgress => (string) __('In Umsetzung'),
-            self::Closed => (string) __('Abgeschlossen'),
-            self::Rejected => (string) __('Abgelehnt'),
-            self::Withdrawn => (string) __('Zurückgezogen'),
+            self::Received => (string) __('enums.claims.claim_status.received'),
+            self::Assessing => (string) __('enums.claims.claim_status.assessing'),
+            self::Decided => (string) __('enums.claims.claim_status.decided'),
+            self::InProgress => (string) __('enums.claims.claim_status.in_progress'),
+            self::Closed => (string) __('enums.claims.claim_status.closed'),
+            self::Rejected => (string) __('enums.claims.claim_status.rejected'),
+            self::Withdrawn => (string) __('enums.claims.claim_status.withdrawn'),
         };
     }
 

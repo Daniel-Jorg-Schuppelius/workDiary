@@ -31,11 +31,11 @@ enum DisposalProofType: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::TransferNote => (string) __('Übernahmeschein'),
-            self::ConsignmentNote => (string) __('Begleitschein'),
-            self::DisposalCertificate => (string) __('Entsorgungsnachweis'),
-            self::Eanv => (string) __('eANV-Registerbezug'),
-            self::DisposerCertificate => (string) __('Entsorgerzertifikat'),
+            self::TransferNote => (string) __('enums.disposal.disposal_proof_type.transfer_note'),
+            self::ConsignmentNote => (string) __('enums.disposal.disposal_proof_type.consignment_note'),
+            self::DisposalCertificate => (string) __('enums.disposal.disposal_proof_type.disposal_certificate'),
+            self::Eanv => (string) __('enums.disposal.disposal_proof_type.eanv'),
+            self::DisposerCertificate => (string) __('enums.disposal.disposal_proof_type.disposer_certificate'),
         };
     }
 }

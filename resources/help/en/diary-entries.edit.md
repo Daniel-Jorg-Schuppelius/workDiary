@@ -1,7 +1,7 @@
 ---
 title: "Edit a work order"
 topic: diary-entries.edit
-version: 1
+version: 3
 keywords:
     - change order
     - order details
@@ -31,3 +31,6 @@ Keep in mind:
   visible for its entire lifetime.
 - Attachments may be up to **25 MB**; larger files must be referenced
   via external storage.
+- You change the **Planned duration (HH:MM)** in the edit dialog in the
+  **Period** section. If you clear the field, the service duration of a dispatched order, otherwise the length of the time slot or
+  the duration of the appointment applies again.

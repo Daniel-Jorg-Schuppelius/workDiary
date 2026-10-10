@@ -18,8 +18,8 @@ use App\Models\Project\Project;
 use App\Models\Weather\WeatherSnapshot;
 use App\Support\Setting;
 use Database\Factories\Protocol\ProtocolFactory;
+use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphTo};
 
 /**
@@ -155,4 +155,18 @@ class Protocol extends Model {
         return $this->hasMany(ProtocolSignatureToken::class);
     }
 
+    /**
+     * Was das Kundenportal zeigt (Phase 137, E17): kundensichtbar und
+     * unterschrieben — auch nach Archivierung oder Ersetzung.
+     *
+     * @param Builder<self> $query
+     */
+    public function scopeReleasedToCustomer(Builder $query): void {
+        $query->where('visibility', ProtocolVisibility::Customer->value)
+            ->whereNotNull('signed_at')
+            ->whereIn('status', array_map(
+                static fn (ProtocolStatus $status): string => $status->value,
+                array_filter(ProtocolStatus::cases(), static fn (ProtocolStatus $status): bool => $status->isImmutable()),
+            ));
+    }
 }

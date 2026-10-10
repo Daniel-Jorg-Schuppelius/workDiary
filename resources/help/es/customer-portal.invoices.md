@@ -1,7 +1,7 @@
 ---
 title: "Mis facturas"
 topic: customer-portal.invoices
-version: 3
+version: 4
 keywords:
     - ver facturas
     - listado de facturas
@@ -13,6 +13,9 @@ keywords:
     - pago online
     - número de factura
     - pago parcial
+    - descargar factura
+    - factura en PDF
+    - ZUGFeRD
 audience: []
 related:
     - customer-portal.overview
@@ -31,9 +34,9 @@ La lista muestra para cada factura:
 - **Fecha** – la fecha de la factura,
 - **Estado** – el estado de pago,
 - **Importe** – el importe de la factura con la moneda,
-- a la derecha, si procede, el botón **Pagar en línea**.
+- a la derecha, el icono PDF para descargar y, si procede, el botón **Pagar en línea**.
 
-La factura más reciente aparece arriba. Con más de 25 facturas, usted pasa de página con la paginación en la parte inferior. Los borradores en los que su proveedor aún trabaja no aparecen – solo ve facturas emitidas. Los documentos de las facturas no se pueden abrir ni descargar en esta página.
+La factura más reciente aparece arriba. Con más de 25 facturas, usted pasa de página con la paginación en la parte inferior. Los borradores en los que su proveedor aún trabaja no aparecen – solo ve facturas emitidas.
 
 ### Los estados
 
@@ -41,6 +44,14 @@ La factura más reciente aparece arriba. Con más de 25 facturas, usted pasa de 
 - **Pagada parcialmente** – se ha recibido una parte del importe.
 - **Pagada** – la factura está saldada por completo.
 - **Cancelada** – la factura se ha cancelado y ya no hay que pagarla.
+
+## Descargar una factura
+
+Haga clic en el icono PDF de la fila de la factura (texto al pasar el ratón: **Descargar la factura … en PDF**). Recibirá el mismo documento que su proveedor emite para esta factura.
+
+- Si recibe sus facturas como factura electrónica ZUGFeRD, el archivo descargado también es un PDF ZUGFeRD con los datos de la factura incorporados.
+- Con cualquier otra forma de envío recibirá la factura en PDF, aunque se la hayan enviado como XRechnung (XML).
+- Si en una factura falta el icono, su proveedor gestiona esa factura en otro programa de facturación. En ese caso recibirá el documento directamente de él.
 
 ## Pagar en línea
 

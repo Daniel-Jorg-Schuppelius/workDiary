@@ -166,4 +166,9 @@ class InvestmentsReportController extends Controller {
             ->values()
             ->all());
     }
+
+    /** Fachbericht außerhalb der Auswertungen: Den Export deckt das Fachrecht der Seite (E28). */
+    protected function exportNeedsReportPermission(): bool {
+        return false;
+    }
 }

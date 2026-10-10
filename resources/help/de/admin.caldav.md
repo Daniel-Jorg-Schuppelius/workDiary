@@ -1,7 +1,7 @@
 ---
 title: "CalDAV-Kalender"
 topic: admin.caldav
-version: 1
+version: 3
 keywords:
     - CalDAV
     - Nextcloud Kalender
@@ -13,6 +13,7 @@ keywords:
     - Zwei-Wege-Abgleich
     - App-Passwort
     - Kalenderpfad
+    - Private Adressen
 audience:
     - admin
 related:
@@ -30,7 +31,7 @@ Die Seite **CalDAV** veröffentlicht Termine aus WorkDiary in einen externen
 CalDAV-Kalender, etwa in Nextcloud oder ownCloud – ohne Microsoft- oder
 Google-Konto. Auf Wunsch kommen Dienstpläne und Urlaube hinzu, und Änderungen
 aus dem Kalender lassen sich als Vorschläge zurückholen. WorkDiary bleibt
-führend: Abgesagte Termine verschwinden dort, wiederholte Läufe erzeugen keine
+führend: Abgesagte und gelöschte Termine verschwinden dort, wiederholte Läufe erzeugen keine
 Dubletten. Sie finden die Seite im Systemmenü (Zahnrad **System** in der
 Kopfzeile) unter **Plugins** → **CalDAV**, sobald das Plugin aktiv ist.
 
@@ -43,8 +44,8 @@ Kopfzeile) unter **Plugins** → **CalDAV**, sobald das Plugin aktiv ist.
 - Sie brauchen einen Kalender auf dem CalDAV-Server, ein Konto mit
   Schreibrecht darauf und ein App-Passwort (Nextcloud: Einstellungen →
   Sicherheit → App-Passwort).
-- Der Server muss öffentlich erreichbar sein. Adressen im internen Netz lehnt
-  WorkDiary ab.
+- Der Server muss öffentlich erreichbar sein. Steht er im eigenen Netz,
+  schalten Sie **Private/interne Adressen erlauben** ein (siehe unten).
 - Je Organisation gibt es genau eine CalDAV-Anbindung.
 
 ## Anbindung einrichten
@@ -62,6 +63,11 @@ Im Abschnitt **Anbindung** füllen Sie aus:
   Basis-URL, etwa calendars/team/dienstplan. Eine mit „Link kopieren“ aus
   Nextcloud übernommene vollständige Adresse kürzt WorkDiary selbst, sofern
   sie mit der Basis-URL beginnt.
+- **Private/interne Adressen erlauben**: nur einschalten, wenn der
+  CalDAV-Server in Ihrem eigenen Netz steht (zum Beispiel 192.168.x.x). Ohne
+  diesen Schalter lehnt WorkDiary interne Adressen schon beim Speichern ab.
+  Das Einschalten wird protokolliert. Hat der Betreiber Ihrer Installation
+  diese Freigabe gesperrt, bleibt der Schalter ohne Wirkung.
 - **Aktiv**: schaltet die Anbindung ein oder aus.
 - **Zwei-Wege: externe Änderungen als Inbox-Vorschläge importieren**: siehe
   unten.
@@ -74,8 +80,8 @@ die Seite ihren Zustand (etwa **Zustand ok**) und **Verbindung testen**.
 ## Was publiziert wird
 
 - **Termine:** die Veranstaltungen Ihrer Organisation, die zwischen 30 Tagen in
-  der Vergangenheit und 180 Tagen in der Zukunft beginnen. Abgesagte
-  Veranstaltungen entfernt WorkDiary aus dem Kalender.
+  der Vergangenheit und 180 Tagen in der Zukunft beginnen. Abgesagte und
+  gelöschte Veranstaltungen entfernt WorkDiary aus dem Kalender.
 - **Dienstpläne & Urlaube:** veröffentlichte oder bestätigte Schichten mit
   Uhrzeiten ab zwei Monaten in der Vergangenheit sowie genehmigte Urlaube, die
   höchstens ein Jahr zurückliegen. Schichten im Entwurf, ohne Uhrzeit oder
@@ -124,9 +130,9 @@ gewählten Zeitraums.
 **Trennen** schaltet die Anbindung ab. Bereits publizierte Einträge bleiben im
 Kalender stehen. Zum Wiedereinschalten setzen Sie **Aktiv** und speichern.
 
-Auch gelöschte Veranstaltungen und Einträge, die aus dem Zeitfenster
-herausfallen, entfernt WorkDiary nicht aus dem Kalender. Soll ein Termin dort
-verschwinden, sagen Sie ihn ab, statt ihn zu löschen.
+Gelöschte Veranstaltungen, Schichten und Urlaube entfernt der nächste Abgleich
+aus dem Kalender, ebenso abgesagte. Einträge, die nur aus dem Zeitfenster
+herausfallen, bleiben dort stehen.
 
 ## Typische Fehler
 
@@ -139,7 +145,11 @@ verschwinden, sagen Sie ihn ab, statt ihn zu löschen.
 - **Zustand fehlerhaft** mit „CalDAV-Server nicht erreichbar oder
   Zugangsdaten ungültig.“: Prüfen Sie Adresse, Kalenderpfad, Benutzername
   und App-Passwort. Ein CalDAV-Fehler mit RuntimeException deutet oft auf eine
-  Adresse im internen Netz hin.
+  Adresse im internen Netz ohne Freigabe hin.
+- „Die Basis-URL zeigt auf eine private/interne Adresse.“: Steht der Server im
+  eigenen Netz, schalten Sie **Private/interne Adressen erlauben** ein. Hat
+  der Betreiber diese Freigabe gesperrt, braucht der Server eine öffentlich
+  erreichbare Adresse.
 - „Keine aktive CalDAV-Anbindung vorhanden.“ bei **Jetzt publizieren**: Die
   Anbindung ist aus oder unvollständig.
 - Dienstpläne fehlen im Kalender: Unter **Publizierte Inhalte** ist

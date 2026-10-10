@@ -8,11 +8,11 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Woche – ' . $weekLabel)
-@section('pdf-heading', 'Woche pro Mitarbeiter – ' . $weekLabel)
+@section('pdf-title', __('Woche') . ' – ' . $weekLabel)
+@section('pdf-heading', __('Woche pro Mitarbeiter') . ' – ' . $weekLabel)
 
 @section('pdf-meta')
-    Erstellt: {{ now()->fdatetime() }}
+    {{ __('Erstellt') }}: {{ now()->fdatetime() }}
 @endsection
 
 @section('pdf-table')
@@ -21,11 +21,11 @@
     <table class="data">
         <thead>
             <tr>
-                <th>Mitarbeiter</th>
+                <th>{{ __('Mitarbeiter') }}</th>
                 @foreach ($dayLabels as $label)
                     <th class="right">{{ $label }}</th>
                 @endforeach
-                <th class="right">Σ Stunden</th>
+                <th class="right">Σ {{ __('Stunden') }}</th>
                 <th class="right">{{ __('Erlös') }}</th>
             </tr>
         </thead>
@@ -43,7 +43,7 @@
         </tbody>
         <tfoot>
             <tr>
-                <td>Σ Tag</td>
+                <td>Σ {{ __('Tag') }}</td>
                 @foreach ($dayTotals as $m)
                     <td class="right">{{ $m > 0 ? \App\Support\Formats::duration((int) $m, 'clock', withUnit: false) : '–' }}</td>
                 @endforeach

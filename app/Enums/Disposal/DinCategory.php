@@ -31,12 +31,12 @@ enum DinCategory: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::P => (string) __('P — Papier'),
-            self::F => (string) __('F — Film/Folie'),
-            self::O => (string) __('O — Optische Datenträger'),
-            self::T => (string) __('T — Magnetische Datenträger'),
-            self::H => (string) __('H — Festplatten'),
-            self::E => (string) __('E — Elektronische Datenträger'),
+            self::P => (string) __('enums.disposal.din_category.p'),
+            self::F => (string) __('enums.disposal.din_category.f'),
+            self::O => (string) __('enums.disposal.din_category.o'),
+            self::T => (string) __('enums.disposal.din_category.t'),
+            self::H => (string) __('enums.disposal.din_category.h'),
+            self::E => (string) __('enums.disposal.din_category.e'),
         };
     }
 }

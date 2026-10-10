@@ -17,4 +17,17 @@ return [
         'canceled' => 'cancelada',
         'superseded' => 'reemplazada',
     ],
+    // Kundenportal (Feature 087).
+    'portal' => [
+        'cancel_expired' => 'Plazo de cancelación vencido',
+        'cancel_policy' => 'Puede cancelar hasta :hours horas antes del inicio de la cita.',
+        'cancel_until' => 'Cancelable hasta el :date',
+        'order_cancel_reason' => 'Cita cancelada por el cliente en el portal de clientes.',
+        'order_in_progress' => 'Esta cita ya se está atendiendo — llámenos.',
+    ],
+    'notification' => [
+        'canceled_title' => 'Cita cancelada por :customer',
+        'message' => ':service el :date',
+        'requested_title' => 'Solicitud de cita de :customer',
+    ],
 ];

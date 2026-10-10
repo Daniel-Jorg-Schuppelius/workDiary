@@ -19,7 +19,7 @@ use App\Plugins\Support\PluginOrgContext;
  * FritzBox-Anruflisten-Plugin: importiert die FRITZ!Box-Anrufliste (CSV-Export
  * oder monatlicher Telefonbericht per Push-Mail) und bucht Telefonate als
  * Zeiteinträge. Rufnummern bekannter Kunden/Endkunden buchen automatisch;
- * Anrufe, die eine bereits gebuchte Fernwartungssitzung desselben Kunden
+ * Anrufe, die eine bereits gebuchte Zeit desselben Kunden und Benutzers
  * überlappen oder ihr unmittelbar vorausgehen, verschmelzen mit dem
  * bestehenden Eintrag statt doppelt abzurechnen ({@see FritzboxImportService}).
  * Unbekannte Nummern landen gruppiert in der universellen Zuordnungs-Inbox
@@ -35,7 +35,7 @@ class FritzboxPlugin extends AbstractPlugin {
     public const SERVICE_PROVIDER = FritzboxServiceProvider::class;
 
     public function name(): string {
-        return 'FRITZ!Box-Anrufliste';
+        return (string) __('FRITZ!Box-Anrufliste');
     }
 
     public function version(): string {
@@ -43,7 +43,7 @@ class FritzboxPlugin extends AbstractPlugin {
     }
 
     public function description(): string {
-        return __('Importiert die FRITZ!Box-Anrufliste (CSV oder Telefonbericht per E-Mail) und bucht Telefonate als Zeiteinträge — mit Verschmelzung in überlappende Fernwartungszeiten.');
+        return __('Importiert die FRITZ!Box-Anrufliste (CSV oder Telefonbericht per E-Mail) und bucht Telefonate als Zeiteinträge — überlappende Zeiten desselben Kunden werden verschmolzen statt doppelt gebucht.');
     }
 
     public function capabilities(): array {
@@ -61,9 +61,9 @@ class FritzboxPlugin extends AbstractPlugin {
     public function settingsSchema(): array {
         return [
             ['key' => 'default_billable', 'label' => __('Telefonate abrechenbar buchen'), 'type' => 'boolean', 'default' => true, 'help' => __('Wenn aus, werden importierte Telefonate nie als abrechenbar markiert.')],
-            ['key' => 'default_user_id', 'label' => __('Zeiten buchen für Benutzer-ID'), 'type' => 'text', 'help' => __('Optional. Leer = Organisations-Owner bzw. erster Benutzer.')],
+            ['key' => 'default_user_id', 'label' => __('Zeiten buchen für Benutzer'), 'type' => 'user', 'help' => __('Optional. Leer = Organisations-Owner bzw. erster Benutzer.')],
             ['key' => 'min_call_minutes', 'label' => __('Mindestdauer (Minuten)'), 'type' => 'text', 'default' => '2', 'help' => __('Kürzere Gespräche werden übersprungen (Rückrufbitten, Fehlwahl). Verpasste Anrufe werden nie importiert.')],
-            ['key' => 'call_lead_minutes', 'label' => __('Vorlauf-Fenster (Minuten)'), 'type' => 'text', 'default' => '15', 'help' => __('Endet ein Anruf höchstens so viele Minuten vor einer gebuchten Fernwartungszeit desselben Kunden, wird er mit ihr verschmolzen (Start wird vorgezogen) statt doppelt gebucht.')],
+            ['key' => 'call_lead_minutes', 'label' => __('Vorlauf-Fenster (Minuten)'), 'type' => 'text', 'default' => '15', 'help' => __('Endet ein Anruf höchstens so viele Minuten vor einer gebuchten Zeit desselben Kunden und Benutzers, wird er mit ihr verschmolzen (Start wird vorgezogen) statt doppelt gebucht.')],
             ['key' => 'own_number_allowlist', 'label' => __('Nur eigene Rufnummern'), 'type' => 'text', 'help' => __('Optional, kommagetrennt. Nur Anrufe über diese eigenen Rufnummern werden importiert (z. B. Firmenleitung); leer = alle.')],
             ['key' => 'type3_outgoing', 'label' => __('Typ 3 als ausgehend werten'), 'type' => 'boolean', 'default' => false, 'help' => __('Ältere FRITZ!OS-Versionen exportieren ausgehende Anrufe als Typ 3, neuere als Typ 4 (Typ 3 = abgewiesen). Nur aktivieren, wenn die Liste von einer alten Firmware stammt.')],
             ['key' => 'external_contact_matching', 'label' => __('Externe Kontakte abgleichen'), 'type' => 'boolean', 'default' => true, 'help' => __('Unbekannte Rufnummern mit aktiv verbundenen Kontaktverzeichnissen wie Lexoffice und Microsoft 365 abgleichen.')],

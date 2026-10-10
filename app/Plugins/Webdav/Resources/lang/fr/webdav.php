@@ -59,6 +59,8 @@ return [
         'password_help' => 'Nextcloud : Paramètres → Sécurité → Mot de passe d\'application. Stocké chiffré.',
         'default_folder' => 'Dossier par défaut',
         'active' => 'Actif',
+        'allow_private_network' => 'Autoriser les adresses privées/internes',
+        'allow_private_network_help' => 'À activer uniquement si le serveur WebDAV se trouve sur votre propre réseau (p. ex. 192.168.x.x). Cette action est auditée et ne prend effet que si l\'exploitant l\'autorise.',
         'sources' => 'Contenu répliqué',
         'source_document' => 'Documents (GED)',
         'source_invoice_pdf' => 'Factures (PDF)',
@@ -80,5 +82,7 @@ return [
         'no_connection' => 'Aucun stockage WebDAV actif.',
         'invalid_url' => 'L\'URL de la collection doit commencer par http:// ou https://.',
         'password_required' => 'Un nouveau stockage nécessite un mot de passe d\'application.',
+        'private_url_blocked' => 'L\'URL de la collection pointe vers une adresse privée/interne. Pour un serveur sur votre propre réseau, activez l\'autorisation des adresses privées.',
+        'private_hint' => 'Pour un serveur sur votre propre réseau, l\'autorisation des adresses privées doit être activée sur le stockage.',
     ],
 ];

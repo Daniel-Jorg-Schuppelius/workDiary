@@ -24,11 +24,18 @@
                 <x-icon-btn icon="play_arrow" tone="primary" size="sm"
                             :href="route('customer.learning.show', $enrollment)"
                             show-label>{{ __('learning.action.open_course') }}</x-icon-btn>
-            @else
+            @elseif ($course->access_kind === \App\Enums\Learning\LearningAccessKind::Open)
                 <form method="POST" action="{{ route('customer.learning.enroll', $course) }}">
                     @csrf
                     <x-icon-btn icon="school" tone="primary" size="sm" type="submit" show-label>{{ __('learning.action.enroll') }}</x-icon-btn>
                 </form>
+            @elseif ($course->access_kind === \App\Enums\Learning\LearningAccessKind::Bookable)
+                <form method="POST" action="{{ route('customer.learning.book', $course) }}">
+                    @csrf
+                    <x-icon-btn icon="shopping_cart" tone="primary" size="sm" type="submit" show-label>{{ __('learning.action.book_course') }}</x-icon-btn>
+                </form>
+            @else
+                <span class="text-xs text-muted">{{ __('learning.help.enroll_by_operator') }}</span>
             @endif
             <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
                         :href="route('customer.learning.index')"

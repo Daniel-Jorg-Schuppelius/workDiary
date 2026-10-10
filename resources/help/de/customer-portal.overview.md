@@ -1,7 +1,7 @@
 ---
 title: "Kundenportal – Übersicht"
 topic: customer-portal.overview
-version: 2
+version: 4
 keywords:
     - Startseite Kundenportal
     - Kundenbereich
@@ -15,6 +15,8 @@ keywords:
     - Portalbereiche
     - Hilfe im Portal
     - Mitteilungen
+    - Termin anfragen
+    - Schulungen
 audience: []
 related:
     - customer-portal.diary
@@ -40,7 +42,7 @@ Für jeden freigegebenen Bereich zeigt die Startseite eine Kachel mit einer Zahl
 
 - **Auftragsbuch-Einträge** – die Zahl Ihrer Aufträge.
 - **Zeiterfassungen** – die Zahl der Zeiteinträge, die Sie einsehen können. Die Kachel erscheint nur, wenn Ihnen einzelne Zeiteinträge angezeigt werden.
-- **Rechnungen** – die Zahl Ihrer Rechnungen.
+- **Rechnungen** – die Zahl Ihrer ausgestellten Rechnungen.
 - **Offene Punkte** – die Zahl der noch nicht geschlossenen offenen Punkte, die für Sie freigegeben sind. Die Seite **Offene Punkte** erreichen Sie nur über diese Kachel.
 - **Laufende Anfragen** – Ihre laufenden Anfragen und Aufträge. Warten Vorgänge auf eine Reaktion von Ihnen, ist die Kachel farbig umrandet und nennt deren Zahl („Davon warten … auf Sie“).
 - **Abos & Lizenzen** – die Zahl der Abos und Lizenzen in Ihrer Liste.
@@ -56,14 +58,17 @@ In der Kopfzeile stehen immer **Übersicht**, **Suche**, **Hilfe**, **Profil**, 
 - **Dokumente** – für Sie freigegebene Dokumente,
 - **Zeiten** – erfasste Zeiten zu Ihren Projekten,
 - **Rechnungen** und, wenn Ihr Auftragnehmer Sie über ein Abrechnungskonto abrechnet, **Abrechnung**,
-- **Tickets** und **Servicekatalog**,
-- **Bekannte Fehler**,
+- **Tickets**, **Servicekatalog** und **Bekannte Fehler**,
 - **Reklamationen** und **Rücksendung anmelden**,
 - **Verleih** und **Verleih-Anfrage**,
 - **Abos**,
 - **Vereinbarungen**,
 - **Anfragen & Aufträge**,
+- **Termin anfragen**,
+- **Schulungen**,
 - **Rückfragen**.
+
+**Schulungen** erscheint, wenn Ihr Auftragnehmer Schulungen im Portal anbietet; darin sehen Sie nur Kurse, die er für Kunden freigegeben hat.
 
 **Hilfe** öffnet das Hilfethema zu der Seite, auf der Sie gerade sind; gibt es dazu keines, die Liste der Hilfethemen des Portals. Auch dort sehen Sie nur Themen zu Bereichen, die für Sie freigegeben sind. **Profil** und **Sicherheit** beschreibt das Thema „Zugang & Sicherheit“. Mit **Abmelden** beenden Sie Ihre Sitzung.
 

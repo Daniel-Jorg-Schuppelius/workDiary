@@ -41,21 +41,21 @@ enum ClassificationDomain: string implements HasLabel {
     /** Anzeigename der Domäne (Label-Helfer, nie rohen Enum-Wert in Views). */
     public function label(): string {
         return match ($this) {
-            self::EntryType => (string) __('Auftragstypen'),
-            self::Activity => (string) __('Tätigkeiten'),
-            self::DefectType => (string) __('Fehlertypen'),
-            self::RootCause => (string) __('Ursachen'),
-            self::Result => (string) __('Ergebnisse'),
-            self::Priority => (string) __('Prioritäten'),
-            self::GoodwillReason => (string) __('Kulanzgründe'),
-            self::ReworkReason => (string) __('Nacharbeitsgründe'),
-            self::ProductGroup => (string) __('Produktgruppen'),
-            self::DienstmittelType => (string) __('Dienstmitteltypen'),
-            self::Allergen => (string) __('Allergene'),
-            self::Trade => (string) __('Gewerke'),
-            self::PermitType => (string) __('Genehmigungsarten'),
-            self::WasteCode => (string) __('Abfallschlüssel (AVV)'),
-            self::CustomerGroup => (string) __('Kundengruppen'),
+            self::EntryType => (string) __('enums.classification.classification_domain.entry_type'),
+            self::Activity => (string) __('enums.classification.classification_domain.activity'),
+            self::DefectType => (string) __('enums.classification.classification_domain.defect_type'),
+            self::RootCause => (string) __('enums.classification.classification_domain.root_cause'),
+            self::Result => (string) __('enums.classification.classification_domain.result'),
+            self::Priority => (string) __('enums.classification.classification_domain.priority'),
+            self::GoodwillReason => (string) __('enums.classification.classification_domain.goodwill_reason'),
+            self::ReworkReason => (string) __('enums.classification.classification_domain.rework_reason'),
+            self::ProductGroup => (string) __('enums.classification.classification_domain.product_group'),
+            self::DienstmittelType => (string) __('enums.classification.classification_domain.dienstmittel_type'),
+            self::Allergen => (string) __('enums.classification.classification_domain.allergen'),
+            self::Trade => (string) __('enums.classification.classification_domain.trade'),
+            self::PermitType => (string) __('enums.classification.classification_domain.permit_type'),
+            self::WasteCode => (string) __('enums.classification.classification_domain.waste_code'),
+            self::CustomerGroup => (string) __('enums.classification.classification_domain.customer_group'),
         };
     }
 }

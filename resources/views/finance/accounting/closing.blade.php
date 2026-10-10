@@ -106,6 +106,7 @@
                     <x-button type="submit" name="dry_run" value="0">{{ __('accounting.opening.action.import') }}</x-button>
                 </form>
                 <p class="mt-2 text-xs text-muted">{{ __('accounting.opening.hint') }}</p>
+                <x-accounting.four-eyes-note class="mt-2" />
             </x-card>
 
             <x-card :title="__('accounting.datev.title')" icon="account_tree" :subtitle="__('accounting.datev.subtitle')">

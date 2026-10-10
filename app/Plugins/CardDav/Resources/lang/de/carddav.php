@@ -22,6 +22,7 @@ return [
         'unreachable' => 'CardDAV-Server nicht erreichbar oder Zugangsdaten ungültig.',
         'error' => 'CardDAV-Fehler (:class).',
         'last_error' => 'Letzter Fehler: :error',
+        'locked' => 'Nach :count Fehlversuchen in Folge ist der Abgleich gesperrt. Prüfen Sie Adresse und Zugangsdaten und speichern Sie die Anbindung erneut — das hebt die Sperre auf.',
     ],
 
     'action' => [
@@ -63,6 +64,7 @@ return [
         'saved' => 'CardDAV-Anbindung gespeichert.',
         'invalid_url' => 'Die Basis-URL muss mit http:// oder https:// beginnen.',
         'private_url_blocked' => 'Die Basis-URL zeigt auf eine private/interne Adresse. Für einen Server im eigenen Netz die Freigabe privater Adressen aktivieren.',
+        'private_hint' => 'Für einen Server im eigenen Netz muss die Freigabe privater Adressen ausdrücklich aktiviert werden.',
         'foreign_origin' => 'Die Adresse gehört nicht zum eingerichteten CardDAV-Server.',
         'password_required' => 'Für eine neue Anbindung ist ein App-Passwort erforderlich.',
         'no_connection' => 'Keine aktive CardDAV-Anbindung vorhanden.',

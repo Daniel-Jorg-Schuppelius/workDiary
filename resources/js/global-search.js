@@ -8,6 +8,8 @@
  *  - Tastatur-Navigation mit ↑/↓ und ↵.
  *  - Aktionen (MVP-1082): Einträge mit `action` statt `url` führen einen
  *    Bedienschritt aus (Farbschema, Tastenkürzel, Kontexthilfe).
+ *  - Seiten mit `modal` (Profil, Arbeitszeit-Modell …) sind Dialog-Fragmente
+ *    und öffnen im Dialog-Host statt als eingebettete Seite.
  *
  * Erwartet im DOM den Partial `partials/global-search.blade.php`.
  */
@@ -37,6 +39,7 @@ const searchUrl = () => {
  * @property {string} [icon]
  * @property {string} [action]
  * @property {string | null} [url]
+ * @property {boolean} [modal]
  */
 
 /**
@@ -291,11 +294,24 @@ const onKeydown = (root, e) => {
                 runAction(flatItems[activeIndex].action);
                 return;
             }
-            // Wie der Link selbst: nur Ziele der eigenen Origin.
-            const target = sameOriginPath(flatItems[activeIndex].url);
-            if (target !== null) window.location.href = target;
+            openItem(flatItems[activeIndex]);
         }
     }
+};
+
+/** @param {SearchItem} item */
+const openItem = (item) => {
+    // Wie der Link selbst: nur Ziele der eigenen Origin.
+    const target = sameOriginPath(item.url);
+    if (target === null) return;
+    if (item.modal) {
+        closeDialog();
+        document.dispatchEvent(
+            new CustomEvent("entry-dialog:open", { detail: { url: target } }),
+        );
+        return;
+    }
+    window.location.href = target;
 };
 
 // Bedienaktionen der Palette (FunctionFinder::ACTIONS): erst schließen, dann
@@ -382,11 +398,22 @@ const init = () => {
         input.addEventListener("keydown", (e) => onKeydown(root, e));
     }
 
-    root.addEventListener("click", (e) => {
-        const button = /** @type {HTMLElement} */ (e.target).closest(
-            "[data-gs-action]",
-        );
-        if (button) runAction(button.getAttribute("data-gs-action"));
+    root.addEventListener("click", (event) => {
+        const e = /** @type {MouseEvent} */ (event);
+        const target = /** @type {HTMLElement} */ (e.target);
+        const button = target.closest("[data-gs-action]");
+        if (button) {
+            runAction(button.getAttribute("data-gs-action"));
+            return;
+        }
+        // Strg-/Mittelklick bleibt ein neuer Tab mit eingebetteter Seite.
+        if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        const link = target.closest("a[data-gs-item]");
+        const item = link ? flatItems[Number(link.getAttribute("data-gs-index"))] : undefined;
+        if (item?.modal) {
+            e.preventDefault();
+            openItem(item);
+        }
     });
 
     // Globale Tastenkürzel: Cmd/Ctrl+K oder "/" (außerhalb von Eingabefeldern)

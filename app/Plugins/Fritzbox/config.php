@@ -11,7 +11,7 @@
 /*
  | FRITZ!Box-Anruflisten-Import (CSV-Upload + Telefonbericht per Mail).
  | Telefonate bekannter Kundennummern buchen als Zeiteinträge; Anrufe, die eine
- | gebuchte Fernwartungszeit desselben Kunden überlappen oder ihr vorausgehen,
+ | gebuchte Zeit desselben Kunden und Benutzers überlappen oder ihr vorausgehen,
  | verschmelzen mit dem bestehenden Eintrag. Unbekannte Nummern landen in der
  | universellen Zuordnungs-Inbox. Eingehängt vom FritzboxServiceProvider unter
  | `plugins.fritzbox`. ENV nur als Fallback (Tests/Konsole).
@@ -24,7 +24,7 @@ return [
     'default_user_id' => env('FRITZBOX_DEFAULT_USER_ID'),
     // Gespräche unterhalb dieser Dauer werden übersprungen.
     'min_call_minutes' => (int) env('FRITZBOX_MIN_CALL_MINUTES', 2),
-    // Endet ein Anruf höchstens so viele Minuten vor einer gebuchten Fernwartungszeit, wird verschmolzen.
+    // Endet ein Anruf höchstens so viele Minuten vor einer gebuchten Zeit desselben Kunden, wird verschmolzen.
     'call_lead_minutes' => (int) env('FRITZBOX_CALL_LEAD_MINUTES', 15),
     // Kommagetrennt: nur Anrufe über diese eigenen Rufnummern importieren (leer = alle).
     'own_number_allowlist' => env('FRITZBOX_OWN_NUMBER_ALLOWLIST', ''),

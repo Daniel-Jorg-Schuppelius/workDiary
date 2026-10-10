@@ -74,7 +74,6 @@ class LearningPathTest extends TestCase {
                 'learning_path_id' => $path->id,
                 'learning_course_id' => $course->id,
                 'position' => $index + 1,
-                'is_mandatory' => true,
                 'due_days' => $dueDays,
             ]);
         }
@@ -164,10 +163,16 @@ class LearningPathTest extends TestCase {
                 'code' => 'ONBOARD',
                 'title' => 'Einarbeitung Büro',
                 'duration_days' => 60,
+                'description' => 'Erste Wochen im Büro',
             ])
             ->assertRedirect();
 
         $path = LearningPath::query()->where('code', 'ONBOARD')->firstOrFail();
+        // MVP-1106: Beschreibung kommt aus dem Formular und steht auf der Pfadseite; das Kürzel heißt nicht mehr „Kurscode“.
+        $this->assertSame('Erste Wochen im Büro', $path->description);
+        $this->actingAs($manager)->get(route('learning.paths.show', $path->sqid))->assertOk()->assertSee('Erste Wochen im Büro');
+        $this->actingAs($manager)->get(route('learning.paths.index'))->assertOk()
+            ->assertSee(__('learning.field.path_code'))->assertSee('name="description"', false);
 
         $this->actingAs($manager)
             ->post(route('learning.paths.items.store', $path->sqid), [

@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Reporting;
 
+use App\Enums\User\Permission;
 use App\Enums\Vacation\{VacationStatus, VacationType};
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
@@ -50,9 +51,14 @@ class AbsencesReportController extends Controller {
         private readonly VacationBalanceService $balanceService,
     ) {}
 
+    /** E10: Sicht „Nur eigene“. */
+    protected function exportIsPersonal(Request $request): bool {
+        return $this->resolveScopeWithPermission($request, Permission::VacationViewAny)[0] === 'mine';
+    }
+
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
-        [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
+        [$scope, $seesTeam] = $this->resolveScopeWithPermission($request, Permission::VacationViewAny);
 
         [$fromDate, $toDate] = $this->resolveRange($request);
         $from = $fromDate->toDateString();
@@ -67,7 +73,10 @@ class AbsencesReportController extends Controller {
             scope: $scope,
         );
 
-        $rows = $this->aggregate($fromDate, $toDate, $scope, $userId, $filters);
+        // Krankheitstage anderer nur mit Sicht auf Krankmeldungen (wie Urlaubsplan und Krankheiten).
+        $showsSick = $scope === 'mine' || $this->viewerHolds(Permission::SickLeaveViewAny);
+
+        $rows = $this->aggregate($fromDate, $toDate, $scope, $userId, $filters, $showsSick);
         $totals = $this->totals($rows);
 
         // MVP-413: Urlaubskonto-Spalten (Anspruch+Übertrag/Rest) für das Jahr des Bereichsendes.
@@ -79,21 +88,22 @@ class AbsencesReportController extends Controller {
         }
 
         $exportFilters = array_merge(['scope' => $scope], $filters->toAuditArray());
-        $monthlyTypeSeries = $this->monthlyTypeSeries($fromDate, $toDate, $scope, $userId, $filters);
-        $typeBands = $this->typeBands();
+        $monthlyTypeSeries = $this->monthlyTypeSeries($fromDate, $toDate, $scope, $userId, $filters, $showsSick);
+        $typeBands = $this->typeBands($showsSick);
 
         if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
-            return $this->exportCsv($rows, $totals, $from, $to, $balanceYear, $exportFilters, $request);
+            return $this->exportCsv($rows, $totals, $from, $to, $balanceYear, $exportFilters, $request, $showsSick);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($rows, $totals, $from, $to, $scope, $balanceYear, $monthlyTypeSeries, $typeBands, $exportFilters, $request);
+            return $this->exportPdf($rows, $totals, $from, $to, $scope, $balanceYear, $monthlyTypeSeries, $typeBands, $exportFilters, $request, $showsSick);
         }
 
         return view('reports.absences', [
             'from' => $from,
             'to' => $to,
             'scope' => $scope,
-            'isAdmin' => $isAdmin,
+            'seesTeam' => $seesTeam,
+            'showsSick' => $showsSick,
             'rows' => $rows,
             'totals' => $totals,
             'balanceYear' => $balanceYear,
@@ -113,13 +123,13 @@ class AbsencesReportController extends Controller {
      *
      * @return list<array{key: string, label: string}>
      */
-    private function typeBands(): array {
-        return [
+    private function typeBands(bool $showsSick): array {
+        return array_values(array_filter([
             ['key' => 'vacation', 'label' => __('Urlaub')],
-            ['key' => 'sick', 'label' => __('Krank')],
+            $showsSick ? ['key' => 'sick', 'label' => __('Krank')] : null,
             ['key' => 'special', 'label' => __('Sonder')],
             ['key' => 'unpaid', 'label' => __('Unbezahlt')],
-        ];
+        ]));
     }
 
     /**
@@ -130,7 +140,7 @@ class AbsencesReportController extends Controller {
      *
      * @return list<array<string, string|int>>
      */
-    private function monthlyTypeSeries(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters): array {
+    private function monthlyTypeSeries(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters, bool $showsSick): array {
         $granularity = $this->bucketGranularity($from, $to);
         $bucketList = $this->buildBucketsInRange($from, $to);
         if ($bucketList === []) {
@@ -175,7 +185,7 @@ class AbsencesReportController extends Controller {
         }
         $filters->applyUserAndTeam($sickQ);
         /** @var Collection<int, SickLeave> $sickLeaves */
-        $sickLeaves = $sickQ->get();
+        $sickLeaves = $showsSick ? $sickQ->get() : new Collection();
         foreach ($sickLeaves as $s) {
             $this->addWorkdaysPerBucket($buckets, $granularity, 'sick', $s->start_date, $s->end_date, $from, $to);
         }
@@ -252,7 +262,7 @@ class AbsencesReportController extends Controller {
      *   flex_balance_minutes:int|null
      * }>
      */
-    private function aggregate(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters): array {
+    private function aggregate(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters, bool $showsSick): array {
         $vacQ = Vacation::query();
         if ($scope === 'mine') {
             $vacQ->where('user_id', $userId);
@@ -326,7 +336,7 @@ class AbsencesReportController extends Controller {
         }
         $filters->applyUserAndTeam($sickQ);
         /** @var Collection<int, SickLeave> $sickLeaves */
-        $sickLeaves = $sickQ->get();
+        $sickLeaves = $showsSick ? $sickQ->get() : new Collection();
         foreach ($sickLeaves as $s) {
             $uid = (int) $s->user_id;
             $ensure($absByUser, $uid);
@@ -429,9 +439,20 @@ class AbsencesReportController extends Controller {
      * @param  array{users:int, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int}  $totals
      * @param  array<string, mixed>  $exportFilters
      */
-    private function exportCsv(array $rows, array $totals, string $from, string $to, int $balanceYear, array $exportFilters, Request $request): Response {
+    private function exportCsv(array $rows, array $totals, string $from, string $to, int $balanceYear, array $exportFilters, Request $request, bool $showsSick): Response {
         $filename = sprintf('abwesenheiten_%s_%s.csv', $from, $to);
-        $out = [['Mitarbeiter', 'Urlaub (Werktage)', 'Krank', 'Sonderurlaub', 'Unbezahlt', 'Ausstehend', sprintf('Anspruch %d', $balanceYear), sprintf('Rest %d', $balanceYear), 'Flex-Änderung', 'Flex-Saldo']];
+        $out = [[
+            (string) __('reporting.csv.employee'),
+            (string) __('reporting.csv.vacation_workdays'),
+            (string) __('reporting.csv.sick'),
+            (string) __('reporting.csv.special_leave'),
+            (string) __('reporting.csv.unpaid'),
+            (string) __('reporting.csv.pending'),
+            (string) __('reporting.csv.entitlement_year', ['year' => $balanceYear]),
+            (string) __('reporting.csv.remaining_year', ['year' => $balanceYear]),
+            (string) __('reporting.csv.flex_change'),
+            (string) __('reporting.csv.flex_balance'),
+        ]];
         foreach ($rows as $r) {
             $out[] = [
                 (string) $r['user']->name,
@@ -447,7 +468,7 @@ class AbsencesReportController extends Controller {
             ];
         }
         $out[] = [
-            'Gesamt',
+            (string) __('reporting.csv.total'),
             $totals['vacation_days'],
             $totals['sick_days'],
             $totals['special_days'],
@@ -459,6 +480,14 @@ class AbsencesReportController extends Controller {
             Duration::ofMinutes($totals['flex_balance_minutes'])->toClock(),
         ];
 
+        if (! $showsSick) {
+            $out = array_map(static function (array $line): array {
+                unset($line[2]);
+
+                return array_values($line);
+            }, $out);
+        }
+
         return $this->csvWithMetadata($out, $filename, 'absences', $exportFilters, $request);
     }
 
@@ -469,9 +498,10 @@ class AbsencesReportController extends Controller {
      * @param  list<array{key: string, label: string}>  $typeBands
      * @param  array<string, mixed>  $exportFilters
      */
-    private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope, int $balanceYear, array $monthlyTypeSeries, array $typeBands, array $exportFilters, Request $request): SymfonyResponse {
+    private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope, int $balanceYear, array $monthlyTypeSeries, array $typeBands, array $exportFilters, Request $request, bool $showsSick): SymfonyResponse {
         $filename = sprintf('abwesenheiten_%s_%s.pdf', $from, $to);
         return $this->pdfDownload('reports.pdf.absences', [
+            'showsSick' => $showsSick,
             'rows' => $rows,
             'totals' => $totals,
             'from' => $from,

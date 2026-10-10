@@ -169,7 +169,10 @@ trait ResolvesStandardReportFilters {
                 ->with(['customer:id,name', 'foreignCustomer:id,name'])
                 ->whereNull('archived_at')
                 ->when($customerId !== null, fn($q) => $q->where('customer_id', $customerId))
-                ->when($hiddenCustomerIds !== [], fn($q) => $q->whereNotIn('customer_id', $hiddenCustomerIds))
+                // Projekte ohne Kunden (Fremdkunde) bleiben wählbar — NOT IN verwürfe sie.
+                ->when($hiddenCustomerIds !== [], fn($q) => $q->where(
+                    fn($w) => $w->whereNull('customer_id')->orWhereNotIn('customer_id', $hiddenCustomerIds),
+                ))
                 ->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']);
         }
         if (in_array('user', $fields, true)) {

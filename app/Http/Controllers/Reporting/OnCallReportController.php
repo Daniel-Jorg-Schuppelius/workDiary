@@ -36,6 +36,11 @@ class OnCallReportController extends Controller {
     use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
+    /** E10: Sicht „Nur eigene“. */
+    protected function exportIsPersonal(Request $request): bool {
+        return $this->resolveScopeWithAdmin($request)[0] === 'mine';
+    }
+
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
         [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
@@ -293,7 +298,7 @@ class OnCallReportController extends Controller {
         $filename = sprintf('notdienst_%s_%s.csv', $from, $to);
         $fmt = static fn (int $minutes): string => \CommonToolkit\ValueObjects\Duration::ofMinutes($minutes)->toClock();
 
-        $out = [['Mitarbeiter', 'Schichten', 'Bereitschaft (h)', 'Einsätze', 'Einsatzzeit (h)', 'Aktiv-Anteil %']];
+        $out = [[(string) __('reporting.csv.employee'), (string) __('reporting.csv.shifts'), (string) __('reporting.csv.standby_hours'), (string) __('reporting.csv.assignments'), (string) __('reporting.csv.assignment_hours'), (string) __('reporting.csv.active_share_percent')]];
         foreach ($rows as $r) {
             $out[] = [
                 (string) $r['user']->name,
@@ -305,7 +310,7 @@ class OnCallReportController extends Controller {
             ];
         }
         $out[] = [
-            'Gesamt',
+            (string) __('reporting.csv.total'),
             $totals['shift_count'],
             $fmt($totals['shift_minutes']),
             $totals['assignment_count'],

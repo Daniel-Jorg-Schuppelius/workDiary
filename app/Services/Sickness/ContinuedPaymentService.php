@@ -17,17 +17,22 @@ use Carbon\{CarbonImmutable, CarbonInterface};
 use Illuminate\Database\Eloquent\Collection;
 
 /**
- * Berechnet den Lohnfortzahlungs-Status nach § 3 EntgFG.
+ * Lohnfortzahlungs-Status nach § 3 EntgFG (MVP-1093).
  *
- * Regelwerk:
- *  - Anspruch = `sickness.continued_pay_weeks` Wochen ≙ Kalendertage.
- *  - Eine "Krankheits-Episode" umfasst zusammenhängende SickLeave-Einträge
- *    (Lücke ≤ 1 Tag oder explizite Folgebescheinigung via follow_up_for_id).
- *  - Reset: Liegen zwischen dem letzten arbeitsunfähigen Tag und dem neuen
- *    Beginn mindestens `sickness.chain_reset_after_months` Monate, beginnt
- *    der Anspruch neu (vereinfachte Heuristik ohne Diagnose-Vergleich).
+ *  - Anspruch = `sickness.continued_pay_weeks` Wochen ≙ Kalendertage der
+ *    Arbeitsunfähigkeit; Arbeitstage zwischen zwei Krankmeldungen zählen nie.
+ *  - Verhinderungsfall: Krankmeldungen, die sich überschneiden, nahtlos
+ *    anschließen oder Folgebescheinigung sind, bilden einen Fall — auch bei
+ *    einer neuen Krankheit während der laufenden (Einheit des Verhinderungsfalls).
+ *  - Fortsetzungserkrankung: Fälle, die über `continuation_of_id` dieselbe
+ *    Krankheit nennen, teilen sich den Anspruch. Neu entsteht er nach
+ *    `sickness.chain_reset_after_months` Monaten ohne Arbeitsunfähigkeit
+ *    wegen dieser Krankheit oder zwölf Monate nach Beginn der ersten.
+ *    Ohne Verweis beginnt jeder Fall mit vollem Anspruch.
  */
 class ContinuedPaymentService {
+    private const NEW_ENTITLEMENT_AFTER_MONTHS = 12;
+
     public function statusFor(User $user, ?CarbonInterface $reference = null): ContinuedPaymentStatus {
         $ref = CarbonImmutable::parse(($reference ?? CarbonImmutable::now())->toDateString());
         $entitlement = (int) config('sickness.continued_pay_weeks', 6) * 7;
@@ -38,26 +43,11 @@ class ContinuedPaymentService {
             ->where('user_id', $user->id)
             ->whereNull('cancelled_at')
             ->orderBy('start_date')
-            ->get();
+            ->orderBy('id')
+            ->get(['id', 'start_date', 'end_date', 'follow_up_for_id', 'continuation_of_id']);
 
-        if ($leaves->isEmpty()) {
-            return new ContinuedPaymentStatus(
-                entitlementDays: $entitlement,
-                usedDays: 0,
-                remainingDays: $entitlement,
-                chainStart: null,
-                exhaustionDate: null,
-                exhausted: false,
-            );
-        }
-
-        $episodes = $this->groupEpisodes($leaves, $resetMonths);
-
-        // Aktive Episode am Stichtag — sonst zuletzt abgeschlossene vor dem Stichtag.
-        $current = $this->episodeContaining($episodes, $ref);
-        if ($current === null) {
-            $current = $this->lastEpisodeBefore($episodes, $ref);
-        }
+        $cases = $this->cases($leaves);
+        $current = $this->caseAt($cases, $ref);
         if ($current === null) {
             return new ContinuedPaymentStatus(
                 entitlementDays: $entitlement,
@@ -69,102 +59,127 @@ class ContinuedPaymentService {
             );
         }
 
-        $chainStart = $current['start'];
-        // Bei einer aktiven Episode zählen wir nur bis zum Stichtag.
-        $endForCount = $current['end']->greaterThan($ref) ? $ref : $current['end'];
-        $used = (int) $chainStart->diffInDays($endForCount) + 1;
-        $used = max(0, min($used, $entitlement * 2));
+        $block = $this->entitlementBlock($cases, $current, $resetMonths);
+        $days = [];
+        foreach ($block as $index) {
+            $days += $cases[$index]['days'];
+        }
+        $days = array_keys(array_filter($days, static fn (bool $_, string $day): bool => $day <= $ref->toDateString(), ARRAY_FILTER_USE_BOTH));
+        sort($days);
+
+        $used = count($days);
         $remaining = max(0, $entitlement - $used);
-        $exhaustion = $chainStart->copy()->addDays($entitlement - 1);
+        $exhausted = $used >= $entitlement;
+        $exhaustion = match (true) {
+            $exhausted && $entitlement > 0 => CarbonImmutable::parse($days[$entitlement - 1]),
+            $cases[$current]['end']->gte($ref) => $ref->addDays($remaining),
+            default => null,
+        };
 
         return new ContinuedPaymentStatus(
             entitlementDays: $entitlement,
             usedDays: $used,
             remainingDays: $remaining,
-            chainStart: $chainStart,
+            chainStart: $cases[$block[0]]['start'],
             exhaustionDate: $exhaustion,
-            exhausted: $used >= $entitlement,
+            exhausted: $exhausted,
         );
     }
 
     /**
+     * Verhinderungsfälle in Beginn-Reihenfolge; `illness` verbindet Fälle
+     * derselben Krankheit (Fortsetzungserkrankung).
+     *
      * @param  Collection<int, SickLeave>  $leaves
-     * @return list<array{start: CarbonImmutable, end: CarbonImmutable}>
+     * @return list<array{start: CarbonImmutable, end: CarbonImmutable, days: array<string, true>, illness: int}>
      */
-    private function groupEpisodes(Collection $leaves, int $resetMonths): array {
-        /** @var list<array{start: CarbonImmutable, end: CarbonImmutable}> $episodes */
-        $episodes = [];
-        $current = null;
+    private function cases(Collection $leaves): array {
+        $cases = [];
+        $caseOfLeave = [];
+        $continues = [];
 
         foreach ($leaves as $leave) {
             $start = CarbonImmutable::parse($leave->start_date->toDateString());
             $end = CarbonImmutable::parse($leave->end_date->toDateString());
 
-            if ($current === null) {
-                $current = ['start' => $start, 'end' => $end];
-
-                continue;
+            $target = $leave->follow_up_for_id !== null ? ($caseOfLeave[$leave->follow_up_for_id] ?? null) : null;
+            $last = array_key_last($cases);
+            if ($target === null && $last !== null && $start->lte($cases[$last]['end']->addDay())) {
+                $target = $last;
+            }
+            if ($target === null) {
+                $cases[] = ['start' => $start, 'end' => $end, 'days' => [], 'illness' => count($cases)];
+                $target = array_key_last($cases);
             }
 
-            $gapDays = (int) $current['end']->diffInDays($start);
-            $monthsApart = (int) $current['end']->diffInMonths($start);
-            $isFollowUp = $leave->follow_up_for_id !== null;
+            $case = &$cases[$target];
+            $case['start'] = $case['start']->min($start);
+            $case['end'] = $case['end']->max($end);
+            for ($day = $start; $day->lte($end); $day = $day->addDay()) {
+                $case['days'][$day->toDateString()] = true;
+            }
+            unset($case);
 
-            if ($isFollowUp || $gapDays <= 1) {
-                if ($end->greaterThan($current['end'])) {
-                    $current['end'] = $end;
+            $caseOfLeave[(int) $leave->id] = $target;
+            if ($leave->continuation_of_id !== null) {
+                $continues[] = [$target, (int) $leave->continuation_of_id];
+            }
+        }
+
+        foreach ($continues as [$case, $leaveId]) {
+            $earlier = $caseOfLeave[$leaveId] ?? null;
+            if ($earlier === null || $earlier === $case) {
+                continue;
+            }
+            $from = $cases[$case]['illness'];
+            $into = $cases[$earlier]['illness'];
+            foreach ($cases as $index => $other) {
+                if ($other['illness'] === $from) {
+                    $cases[$index]['illness'] = $into;
                 }
-
-                continue;
-            }
-
-            if ($monthsApart >= $resetMonths) {
-                $episodes[] = $current;
-                $current = ['start' => $start, 'end' => $end];
-
-                continue;
-            }
-
-            // Lücke kürzer als Reset-Frist, aber keine Folgebescheinigung → weiterhin
-            // dieselbe Anspruchs-Episode (konservative Auslegung; Diagnose unbekannt).
-            if ($end->greaterThan($current['end'])) {
-                $current['end'] = $end;
             }
         }
 
-        if ($current !== null) {
-            $episodes[] = $current;
-        }
-
-        return $episodes;
+        return $cases;
     }
 
     /**
-     * @param  list<array{start: CarbonImmutable, end: CarbonImmutable}>  $episodes
-     * @return array{start: CarbonImmutable, end: CarbonImmutable}|null
+     * Laufender Fall am Stichtag, sonst der zuletzt vor ihm begonnene.
+     *
+     * @param  list<array{start: CarbonImmutable, end: CarbonImmutable, days: array<string, true>, illness: int}>  $cases
      */
-    private function episodeContaining(array $episodes, CarbonImmutable $ref): ?array {
-        foreach ($episodes as $ep) {
-            if ($ref->betweenIncluded($ep['start'], $ep['end'])) {
-                return $ep;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * @param  list<array{start: CarbonImmutable, end: CarbonImmutable}>  $episodes
-     * @return array{start: CarbonImmutable, end: CarbonImmutable}|null
-     */
-    private function lastEpisodeBefore(array $episodes, CarbonImmutable $ref): ?array {
+    private function caseAt(array $cases, CarbonImmutable $ref): ?int {
         $found = null;
-        foreach ($episodes as $ep) {
-            if ($ep['end']->lessThanOrEqualTo($ref)) {
-                $found = $ep;
+        foreach ($cases as $index => $case) {
+            if ($case['start']->lte($ref)) {
+                $found = $index;
             }
         }
 
         return $found;
+    }
+
+    /**
+     * Fälle derselben Krankheit, die sich mit dem aktuellen einen Anspruch teilen.
+     *
+     * @param  list<array{start: CarbonImmutable, end: CarbonImmutable, days: array<string, true>, illness: int}>  $cases
+     * @return non-empty-list<int>
+     */
+    private function entitlementBlock(array $cases, int $current, int $resetMonths): array {
+        $block = [];
+        $previous = null;
+        foreach ($cases as $index => $case) {
+            if ($case['illness'] !== $cases[$current]['illness'] || $index > $current) {
+                continue;
+            }
+            $fresh = $previous !== null && (
+                $cases[$previous]['end']->addMonths($resetMonths)->lte($case['start'])
+                || $cases[$block[0]]['start']->addMonths(self::NEW_ENTITLEMENT_AFTER_MONTHS)->lte($case['start'])
+            );
+            $block = $fresh ? [$index] : [...$block, $index];
+            $previous = $index;
+        }
+
+        return $block === [] ? [$current] : $block;
     }
 }

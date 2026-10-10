@@ -26,10 +26,10 @@ enum ClaimActionStatus: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Planned => (string) __('Geplant'),
-            self::InProgress => (string) __('In Arbeit'),
-            self::Done => (string) __('Erledigt'),
-            self::Cancelled => (string) __('Abgebrochen'),
+            self::Planned => (string) __('enums.claims.claim_action_status.planned'),
+            self::InProgress => (string) __('enums.claims.claim_action_status.in_progress'),
+            self::Done => (string) __('enums.claims.claim_action_status.done'),
+            self::Cancelled => (string) __('enums.claims.claim_action_status.cancelled'),
         };
     }
 }

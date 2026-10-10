@@ -266,30 +266,30 @@ class EconomicsReportController extends Controller {
         $filename = sprintf('wirtschaftlichkeit_%s_%s.csv', $from, $to);
         $out = [];
         $out[] = [
-            'Ebene',
-            'Name',
-            'Kunde',
-            'AbrechenbarMin',
-            'NichtAbrechenbarMin',
-            'GesamtMin',
-            'NichtAbrechenbarAnteilProzent',
-            'ErloesEUR',
-            'KostenEUR',
-            'DeckungsbeitragEUR',
-            'MargeProzent',
-            'PlanMin',
-            'IstMin',
-            'PlanIstDeltaMin',
-            'PlanBudgetEUR',
-            'IstKostenEUR',
-            'PlanIstDeltaEUR',
+            (string) __('reporting.csv.level'),
+            (string) __('reporting.csv.name'),
+            (string) __('reporting.csv.customer'),
+            (string) __('reporting.csv.billable_minutes'),
+            (string) __('reporting.csv.non_billable_minutes'),
+            (string) __('reporting.csv.total_minutes'),
+            (string) __('reporting.csv.non_billable_share_percent'),
+            (string) __('reporting.csv.revenue'),
+            (string) __('reporting.csv.cost_eur'),
+            (string) __('reporting.csv.contribution_eur'),
+            (string) __('reporting.csv.margin_percent'),
+            (string) __('reporting.csv.plan_minutes'),
+            (string) __('reporting.csv.actual_minutes'),
+            (string) __('reporting.csv.plan_actual_delta_minutes'),
+            (string) __('reporting.csv.plan_budget_eur'),
+            (string) __('reporting.csv.actual_cost_eur'),
+            (string) __('reporting.csv.plan_actual_delta_eur'),
         ];
 
         foreach ($byCustomer as $r) {
-            $out[] = $this->csvRow('Kunde', (string) $r['customerName'], '', $r);
+            $out[] = $this->csvRow((string) __('reporting.csv.customer'), (string) $r['customerName'], '', $r);
         }
         foreach ($byProject as $r) {
-            $out[] = $this->csvRow('Projekt', (string) $r['projectName'], (string) $r['customerName'], $r);
+            $out[] = $this->csvRow((string) __('reporting.csv.project'), (string) $r['projectName'], (string) $r['customerName'], $r);
         }
 
         // MVP-332: LV-Dimension als eigene Sektion (nur mit Projektfilter + LV).
@@ -297,25 +297,25 @@ class EconomicsReportController extends Controller {
             $num = static fn($v): string => $v === null ? '' : NumberHelper::toUSFormat((float) $v, 2);
             $out[] = [''];
             $out[] = [
-                'LVPosition',
-                'Nachtrag',
-                'Kurztext',
-                'MengeAufmass',
-                'Einheit',
-                'ErloesAufmassEUR',
-                'ZeitMin',
-                'KostenZeitEUR',
-                'KostenMaterialEUR',
-                'KostenEUR',
-                'KalkuliertEUR',
-                'IstMinusKalkulationEUR',
-                'KalkulationHerkunft',
-                'DeckungsbeitragEUR',
+                (string) __('reporting.csv.boq_position'),
+                (string) __('reporting.csv.addendum'),
+                (string) __('reporting.csv.short_text'),
+                (string) __('reporting.csv.measured_quantity'),
+                (string) __('reporting.csv.unit'),
+                (string) __('reporting.csv.measured_revenue_eur'),
+                (string) __('reporting.csv.time_minutes'),
+                (string) __('reporting.csv.time_cost_eur'),
+                (string) __('reporting.csv.material_cost_eur'),
+                (string) __('reporting.csv.cost_eur'),
+                (string) __('reporting.csv.calculated_eur'),
+                (string) __('reporting.csv.actual_minus_calculation_eur'),
+                (string) __('reporting.csv.calculation_source'),
+                (string) __('reporting.csv.contribution_eur'),
             ];
             foreach ($byBoq['positions'] as $p) {
                 $out[] = [
                     (string) $p['referenceNo'],
-                    $p['isAddendum'] ? 'ja' : 'nein',
+                    $p['isAddendum'] ? (string) __('reporting.csv.yes') : (string) __('reporting.csv.no'),
                     (string) ($p['shortText'] ?? ''),
                     NumberHelper::toUSFormat((float) $p['measuredQuantity'], 4),
                     (string) ($p['unit'] ?? ''),
@@ -328,13 +328,13 @@ class EconomicsReportController extends Controller {
                     $num($p['calcDelta']),
                     // Die Herkunft steht in jeder Zeile: Eine fremde Kalkulation
                     // ist die Rechnung eines anderen Betriebs.
-                    $p['calculated'] === null ? '' : ($byBoq['calculationImported'] ? 'importiert' : 'eigen'),
+                    $p['calculated'] === null ? '' : ($byBoq['calculationImported'] ? (string) __('reporting.csv.imported') : (string) __('reporting.csv.own')),
                     $num($p['contribution']),
                 ];
             }
             $u = $byBoq['unassigned'];
             $out[] = [
-                '(ohne Zuordnung)',
+                (string) __('reporting.csv.unassigned'),
                 '',
                 '',
                 '',

@@ -134,6 +134,15 @@ return [
             'expected_runtime_minutes' => 3,
         ],
 
+        // --- Sendungsverfolgung (MVP-1095): offene Versandaufträge beim Carrier abgleichen. ---
+        'shipping.track' => [
+            'command' => 'shipping:track',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 10,
+        ],
+
         // --- Update-Verfügbarkeitsprüfung (Feature 022, MVP-054) ---
         'updates.check' => [
             'command' => 'updates:check',
@@ -635,6 +644,24 @@ return [
             'criticality' => 'integration',
             'expected_runtime_minutes' => 10,
         ],
+        // Phase 137 (E21): API-Import wie Toggl, sobald ein API-Zugang hinterlegt
+        // ist (ohne API-Zugang überspringt der Befehl die Organisation still).
+        'kimai.import' => [
+            'command' => 'kimai:import',
+            'plugin' => 'kimai',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 15,
+        ],
+        'clockify.import' => [
+            'command' => 'clockify:import',
+            'plugin' => 'clockify',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 15,
+        ],
         'clockify.push' => [
             'command' => 'clockify:push',
             'plugin' => 'clockify',
@@ -774,9 +801,10 @@ return [
             'criticality' => 'integration',
             'expected_runtime_minutes' => 10,
         ],
-        // --- Kalender-Publish-Abgleich (MVP-126/328, Bauturbo A8/A11): täglicher
-        // Voll-Publish als Reconciliation; Einzeltermine gehen weiterhin sofort
-        // über den ereignisgetriebenen CalendarEventPublishJob raus. ---
+        // --- Kalender-Publish-Abgleich (MVP-126/328, Bauturbo A8/A11): einziger
+        // automatischer Weg für Termine, Dienste und Urlaube (neu, geändert,
+        // abgesagt, gelöscht). Sofort geht nur der Kalender-Kanal der
+        // Benachrichtigungen über den CalendarEventPublishJob hinaus. ---
         'caldav.publish' => [
             'command' => 'caldav:publish',
             'plugin' => 'caldav',

@@ -71,7 +71,7 @@ class GlobalSearchService {
             'assets' => (string) __('Objekte & Assets'),
             'expenses' => (string) __('Spesen'),
             'per_diem_trips' => (string) __('Reisekosten'),
-            'users' => (string) __('Mitarbeiter'),
+            'users' => (string) __('user.employees'),
             'documents' => (string) __('document.title.index'),
             'forms' => (string) __('form.title.submissions'),
             'attachments' => (string) __('Anhänge'),
@@ -264,7 +264,7 @@ class GlobalSearchService {
             $range($query, 'created_at');
             $groups[] = $this->makeGroup(
                 'users',
-                (string) __('Mitarbeiter'),
+                (string) __('user.employees'),
                 'group',
                 $query->orderBy('name')->limit($limit)->get()
                     ->map(fn(User $u) => [

@@ -80,6 +80,7 @@ class StoreCoverageRequirementRequest extends FormRequest {
             'qualification_minima' => ['nullable', 'array'],
             'qualification_minima.*' => ['integer', 'min:1', 'max:99'],
             'notes' => ['nullable', 'string', 'max:500'],
+            'all_plans' => ['nullable', 'boolean'],
         ];
     }
 

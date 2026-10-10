@@ -1,7 +1,7 @@
 ---
 title: "Stockage WebDAV"
 topic: admin.webdav
-version: 1
+version: 3
 keywords:
     - WebDAV
     - Nextcloud
@@ -13,6 +13,7 @@ keywords:
     - mot de passe d'application
     - règles de dossiers
     - conflit de copie
+    - adresses privées
 audience:
     - admin
 related:
@@ -46,8 +47,9 @@ est actif.
 - Il vous faut un compte dans le stockage avec droit d’écriture sur le
   dossier cible et un mot de passe d’application (Nextcloud : Paramètres →
   Sécurité → Mot de passe d’application).
-- Le stockage doit être joignable publiquement. WorkDiary refuse les adresses
-  d’un réseau interne.
+- Le stockage doit être joignable publiquement. Si le serveur se trouve sur
+  votre propre réseau, activez **Autoriser les adresses privées/internes**
+  (voir plus bas).
 - Il existe exactement un stockage WebDAV par organisation.
 
 Cette page ne sert pas de cible de sauvegarde. Une cible de sauvegarde WebDAV
@@ -67,6 +69,12 @@ Dans la section **Stockage**, vous renseignez :
   un champ vide conserve le mot de passe enregistré.
 - **Dossier par défaut** : sous-dossier des documents sans règle de dossier
   propre (prérempli avec Dokumente).
+- **Autoriser les adresses privées/internes** : à activer uniquement si le
+  serveur WebDAV se trouve sur votre propre réseau (par exemple
+  192.168.x.x). Sans ce commutateur, WorkDiary refuse les adresses internes
+  dès l’enregistrement. L’activation est journalisée. Si l’exploitant de
+  votre installation a bloqué cette autorisation, le commutateur reste sans
+  effet.
 - **Actif** : active ou désactive le stockage.
 - **Contenu répliqué** : **Documents (GED)**, **Factures (PDF)**, **Comptes
   rendus (PDF)**.
@@ -80,9 +88,9 @@ affiche son état (par exemple **État OK**) et **Tester la connexion**.
 
 - **Documents :** un document est copié dès qu’il a le statut **Actif** avec
   un fichier, puis à chaque nouvelle version. Les modifications des
-  informations sans nouvelle version ne déclenchent pas de téléversement. Le
-  stockage copie toujours les documents validés tant qu’il est actif – même
-  si **Documents (GED)** n’est pas coché.
+  informations sans nouvelle version ne déclenchent pas de téléversement.
+  Cela ne vaut que si **Documents (GED)** est coché ; si aucune source n’est
+  cochée, les documents sont considérés comme choisis.
 - **Factures (PDF) :** avec cette case cochée, chaque facture est déposée une
   fois en PDF lors de son passage à **Émise**.
 - **Comptes rendus (PDF) :** avec cette case cochée, chaque compte rendu est
@@ -90,10 +98,10 @@ affiche son état (par exemple **État OK**) et **Tester la connexion**.
 - Le transfert s’exécute en arrière-plan via une file d’attente et est répété
   en cas d’erreur de connexion. WorkDiary ne téléverse pas à nouveau un
   contenu inchangé.
-- **Copier maintenant** remet en file tous les documents actuellement
-  validés – utile après la configuration. Ce bouton ne couvre ni les factures
-  ni les comptes rendus ; ceux-ci ne sont copiés qu’à partir de la
-  configuration, lors de leur émission ou signature.
+- **Copier maintenant** remet en file tout ce qui provient des sources
+  cochées : documents validés, factures émises et comptes rendus signés –
+  utile après la configuration, y compris pour les pièces antérieures.
+  WorkDiary ne téléverse pas à nouveau un contenu déjà copié.
 - Il n’existe pas d’exécution planifiée ; la copie suit les modifications dans
   WorkDiary.
 
@@ -104,10 +112,9 @@ affiche son état (par exemple **État OK**) et **Tester la connexion**.
   tous deux relatifs à l’URL de la collection. Le fichier s’appelle document-
   suivi du numéro du document et de l’extension d’origine, par exemple
   document-42.pdf.
-- La sélection des types de document affiche actuellement le code court
-  anglais, par exemple contract pour les contrats ou invoice pour les
-  factures. Il y a toujours trois lignes vides ; WorkDiary écarte les lignes
-  sans type ou sans sous-dossier.
+- La sélection désigne les types de document par leur libellé, par exemple
+  Contrat ou Facture. Il y a toujours trois lignes vides ; WorkDiary écarte
+  les lignes sans type ou sans sous-dossier.
 - Les factures sont déposées sous invoices/année/numéro-de-facture.pdf, les
   comptes rendus sous protocols/année/protocol-numéro.pdf – directement sous
   l’URL de la collection, pas dans le dossier par défaut.
@@ -127,6 +134,11 @@ externe détectée — copie suspendue ». Vous y choisissez :
 - **Détacher la copie** : ce document n’est définitivement plus copié ; le
   stockage reste actif pour tous les autres.
 
+Pour les PDF de factures et de comptes rendus, seul **Écraser le distant**
+est proposé : les factures émises et les comptes rendus signés sont
+immuables, WorkDiary dépose de nouveau son PDF. Pour conserver le fichier
+modifié, choisissez **Rejeter**.
+
 La Boîte de rapprochement est accessible aux administrateurs et à la
 comptabilité.
 
@@ -144,7 +156,12 @@ le stockage. Pour le réactiver, cochez **Actif** et enregistrez.
 - **État défaillant** avec « Stockage WebDAV inaccessible ou identifiants
   invalides. » : vérifiez l’URL de la collection, le nom d’utilisateur, le mot
   de passe d’application et l’existence du dossier. Une erreur WebDAV avec
-  RuntimeException indique souvent une adresse d’un réseau interne.
+  RuntimeException indique souvent une adresse d’un réseau interne sans
+  autorisation.
+- « L'URL de la collection pointe vers une adresse privée/interne. » : si le
+  serveur se trouve sur votre propre réseau, activez **Autoriser les adresses
+  privées/internes**. Si l’exploitant a bloqué cette autorisation, le
+  stockage doit avoir une adresse joignable publiquement.
 - « Aucun stockage WebDAV actif. » avec **Copier maintenant** : le stockage est
   désactivé ou incomplet.
 - Des factures ou comptes rendus manquent dans le stockage : la case

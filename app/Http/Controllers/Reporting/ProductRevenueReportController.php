@@ -98,7 +98,17 @@ class ProductRevenueReportController extends Controller {
      */
     private function exportCsv(array $rows, string $from, string $to, array $filters, Request $request): Response {
         $filename = sprintf('umsatz_je_produkt_%s_%s.csv', $from, $to);
-        $out = [['Artikelnummer', 'Artikel', 'Kategorie', 'Einheit', 'Menge', 'NettoumsatzEUR', 'AnteilProzent', 'Belege', 'Quelle']];
+        $out = [[
+            (string) __('reporting.csv.article_number'),
+            (string) __('reporting.csv.article'),
+            (string) __('reporting.csv.category'),
+            (string) __('reporting.csv.unit'),
+            (string) __('reporting.csv.quantity'),
+            (string) __('reporting.csv.net_revenue_eur'),
+            (string) __('reporting.csv.share_percent'),
+            (string) __('reporting.csv.documents'),
+            (string) __('reporting.csv.source'),
+        ]];
         foreach ($rows as $row) {
             $out[] = [
                 $row['number'] ?? '',

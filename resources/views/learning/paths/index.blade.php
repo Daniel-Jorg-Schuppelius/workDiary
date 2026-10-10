@@ -33,12 +33,13 @@
         <form method="POST" action="{{ route('learning.paths.store') }}">
             @csrf
             <x-form-group :legend="__('learning.field.path')" icon="route" tone="primary" cols="2">
-                <x-input-field name="code" :label="__('learning.field.code')" required maxlength="60" :value="old('code')" />
+                <x-input-field name="code" :label="__('learning.field.path_code')" required maxlength="60" :value="old('code')" />
                 <x-input-field name="title" :label="__('learning.field.title')" required minlength="2" maxlength="180" :value="old('title')" />
                 <x-input-field name="target_role" :label="__('learning.field.target_role')" maxlength="60"
                                :hint="__('learning.help.target_role')" :value="old('target_role')" />
                 <x-input-field name="duration_days" type="number" min="1" max="3650"
                                :label="__('learning.field.duration_days')" :value="old('duration_days')" />
+                <x-textarea-field name="description" :label="__('learning.field.description')" maxlength="2000" span="2" :value="old('description')" />
             </x-form-group>
             <div class="mt-3 flex justify-end">
                 <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('learning.action.create_path') }}</x-icon-btn>
@@ -49,7 +50,7 @@
     <x-table scroll="flex" hover :caption="__('learning.title.paths')">
         <x-slot:head>
             <tr>
-                <th>{{ __('learning.field.code') }}</th>
+                <th>{{ __('learning.field.path_code') }}</th>
                 <th>{{ __('learning.field.title') }}</th>
                 <th>{{ __('learning.field.target_role') }}</th>
                 <th class="text-right">{{ __('learning.field.stations') }}</th>

@@ -13,23 +13,30 @@ namespace App\Plugins\Zammad\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\{Organization, PluginState};
 use App\Models\Project\Project;
+use App\Models\ServiceTicket\ServiceQueue;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Zammad\Models\ZammadConnection;
+use App\Plugins\Zammad\Services\ZammadTicketImporter;
 use App\Plugins\Zammad\ZammadPlugin;
-use App\Support\SqidEncoder;
+use App\Services\Licensing\FeatureFlagResolver;
+use App\Support\{ErrorText, SqidEncoder, UrlSafety};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
+use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * Zammad-Admin-Panel (Feature 060, MVP-129): eine Anbindung je Organisation
- * (Basis-URL, Token verschlüsselt, Queue→Projekt-Zuordnung), manueller Import
- * und Trennen. Der Token erscheint nie in Views oder Audit-Payloads
- * ({@see ZammadConnection::$hidden}); ein leeres Token-Feld beim Speichern lässt
- * das bestehende Token unangetastet.
+ * (Basis-URL, Token verschlüsselt, Queue→Projekt-Zuordnung), manueller Import,
+ * Wechsel des Ticketziels (Aufgaben ↔ Service-Tickets) und Trennen. Der Token
+ * erscheint nie in Views oder Audit-Payloads ({@see ZammadConnection::$hidden});
+ * ein leeres Token-Feld beim Speichern lässt das bestehende Token unangetastet.
  */
 class ZammadAdminController extends Controller {
     use ResolvesPluginOrgContext;
+
+    private const HELPDESK_MODULE = 'module.helpdesk';
 
     public function index(): View {
         $admin = $this->admin();
@@ -50,8 +57,17 @@ class ZammadAdminController extends Controller {
             ];
         }
 
+        // Service-Tickets setzen das Helpdesk-Modul voraus (Queues unter helpdesk.queues).
+        $serviceTickets = app(FeatureFlagResolver::class)->isEnabled(self::HELPDESK_MODULE);
+        $queues = $serviceTickets
+            ? ServiceQueue::query()->where('organization_id', $organization->id)->orderBy('name')->get(['id', 'name'])
+                ->map(fn (ServiceQueue $q): array => ['sqid' => $sqids->encode(ServiceQueue::class, (int) $q->id), 'name' => $q->name, 'id' => (int) $q->id])
+            : collect();
+
         return view('zammad::admin.index', [
             'connection' => $connection,
+            'serviceTicketsAvailable' => $serviceTickets,
+            'queues' => $queues,
             'projects' => $projects,
             'queueRows' => $queueRows,
             'defaultProjectSqid' => $connection?->default_project_id !== null
@@ -78,12 +94,20 @@ class ZammadAdminController extends Controller {
             'queue_group.*' => ['nullable', 'integer', 'min:1'],
             'queue_project' => ['array'],
             'queue_project.*' => ['nullable', 'string'],
+            'is_limited_to_mapped_groups' => ['nullable', 'boolean'],
             'resolved_state' => ['nullable', 'string', 'max:64'],
+            'time_unit' => ['nullable', 'in:minute,hour'],
+            'allow_private_network' => ['nullable', 'boolean'],
         ]);
 
         $baseUrl = trim((string) $data['base_url']);
+        $allowPrivate = (bool) ($data['allow_private_network'] ?? false);
         if (! str_starts_with($baseUrl, 'http://') && ! str_starts_with($baseUrl, 'https://')) {
             return back()->with('error', __('zammad::zammad.flash.invalid_url'))->withInput();
+        }
+        // Konfigurationszeit-Prüfung ohne DNS; verbindlich prüft das Gateway vor jedem Abruf.
+        if (! $allowPrivate && ! UrlSafety::isAcceptableExternalHttpUrl($baseUrl)) {
+            return back()->with('error', __('zammad::zammad.flash.private_url_blocked'))->withInput();
         }
 
         /** @var ZammadConnection $connection */
@@ -95,8 +119,12 @@ class ZammadAdminController extends Controller {
             'active' => (bool) ($data['active'] ?? false),
             'default_project_id' => $this->resolveProjectId($organization, $data['default_project'] ?? null),
             'queue_map' => $this->buildQueueMap($organization, $request),
+            'is_limited_to_mapped_groups' => (bool) ($data['is_limited_to_mapped_groups'] ?? false),
             // Status-Rückkanal (opt-in): leeres Feld = aus.
             'resolved_state' => filled($data['resolved_state'] ?? null) ? trim((string) $data['resolved_state']) : null,
+            // Zeit-Rückkanal (opt-in): Einheit wie Zammads „Time Accounting Unit“, leer = aus.
+            'time_unit' => filled($data['time_unit'] ?? null) ? (string) $data['time_unit'] : null,
+            'allow_private_network' => $allowPrivate,
             'created_by' => $connection->exists ? $connection->created_by : $admin->id,
         ];
 
@@ -114,9 +142,57 @@ class ZammadAdminController extends Controller {
         }
 
         $connection->forceFill($attributes)->save();
-        $connection->audit('zammad.connection_saved', ['by_user_id' => (int) $admin->id, 'active' => $connection->active]);
+        $connection->audit('zammad.connection_saved', [
+            'by_user_id' => (int) $admin->id,
+            'active' => $connection->active,
+            'is_limited_to_mapped_groups' => $connection->is_limited_to_mapped_groups,
+            'time_unit' => $connection->time_unit,
+            'allow_private_network' => $connection->allow_private_network,
+        ]);
 
         return back()->with('success', __('zammad::zammad.flash.saved'));
+    }
+
+    /**
+     * Ticketziel wechseln (Feature 065, P8): Aufgaben oder Service-Tickets einer
+     * Queue. Preflight und Migrationsprotokoll liegen im Importer; bereits
+     * importierte Tickets bleiben, wo sie sind.
+     */
+    public function switchTarget(Request $request): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        $data = $request->validate([
+            'ticket_target' => ['required', 'in:task,service_ticket'],
+            'service_queue' => ['nullable', 'string'],
+        ]);
+
+        $connection = ZammadConnection::query()->where('organization_id', $organization->id)->first();
+        if (! $connection instanceof ZammadConnection) {
+            return back()->with('error', __('zammad::zammad.flash.no_connection'));
+        }
+
+        $queue = null;
+        if ($data['ticket_target'] === 'service_ticket') {
+            if (! app(FeatureFlagResolver::class)->isEnabled(self::HELPDESK_MODULE)) {
+                return back()->with('error', __('zammad::zammad.flash.helpdesk_required'));
+            }
+            $queueId = app(SqidEncoder::class)->decode(ServiceQueue::class, (string) ($data['service_queue'] ?? ''));
+            $queue = $queueId !== null
+                ? ServiceQueue::query()->whereKey($queueId)->where('organization_id', $organization->id)->first()
+                : null;
+            if (! $queue instanceof ServiceQueue) {
+                return back()->withErrors(['service_queue' => __('zammad::zammad.flash.queue_required')])->withInput();
+            }
+        }
+
+        try {
+            app(ZammadTicketImporter::class)->switchTicketTarget($connection, (string) $data['ticket_target'], $queue, $admin);
+        } catch (InvalidArgumentException|RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
+
+        return back()->with('success', __('zammad::zammad.flash.target_switched'));
     }
 
     /** Manueller Ticket-Import (Polling-Äquivalent, auditiert). */

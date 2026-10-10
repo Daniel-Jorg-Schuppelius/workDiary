@@ -31,15 +31,15 @@ enum ClaimActionKind: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Rework => (string) __('Nacharbeit'),
-            self::Repair => (string) __('Reparatur'),
-            self::Replacement => (string) __('Ersatzlieferung'),
-            self::ServiceVisit => (string) __('Serviceeinsatz'),
-            self::PriceReduction => (string) __('Preisnachlass'),
-            self::Refund => (string) __('Rückerstattung'),
-            self::SupplierRecourse => (string) __('Lieferantenregress'),
-            self::RootCauseFix => (string) __('Ursachenbehebung'),
-            self::Other => (string) __('Sonstiges'),
+            self::Rework => (string) __('enums.claims.claim_action_kind.rework'),
+            self::Repair => (string) __('enums.claims.claim_action_kind.repair'),
+            self::Replacement => (string) __('enums.claims.claim_action_kind.replacement'),
+            self::ServiceVisit => (string) __('enums.claims.claim_action_kind.service_visit'),
+            self::PriceReduction => (string) __('enums.claims.claim_action_kind.price_reduction'),
+            self::Refund => (string) __('enums.claims.claim_action_kind.refund'),
+            self::SupplierRecourse => (string) __('enums.claims.claim_action_kind.supplier_recourse'),
+            self::RootCauseFix => (string) __('enums.claims.claim_action_kind.root_cause_fix'),
+            self::Other => (string) __('enums.claims.claim_action_kind.other'),
         };
     }
 }

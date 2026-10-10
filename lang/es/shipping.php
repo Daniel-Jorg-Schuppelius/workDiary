@@ -12,8 +12,9 @@ return [
     'title' => 'Envío y logística',
     'intro' => 'Conexiones de transportista para etiquetas de envío y seguimiento de envíos (DHL Paket, UPS, FedEx). Una conexión por transportista y organización; las credenciales se almacenan cifradas.',
 
-    'form_heading' => 'Añadir / editar conexión',
-    'form_hint' => 'Elija el transportista e introduzca sus credenciales. Guardar de nuevo con el mismo transportista actualiza la conexión existente.',
+    'form_heading' => 'Añadir conexión',
+    'form_heading_edit' => 'Editar conexión :carrier',
+    'form_hint' => 'Elija el transportista e introduzca sus credenciales. Modifique las conexiones existentes mediante «Editar» en la lista.',
     'secret_hint' => 'La contraseña y la clave API se almacenan cifradas y no se vuelven a mostrar. Déjelas vacías al editar para mantener los valores guardados.',
     'connections_heading' => 'Conexiones existentes',
     'no_connections' => 'Aún no hay ninguna conexión de transportista configurada.',
@@ -36,6 +37,8 @@ return [
     ],
 
     'label_short' => 'Envío',
+    'last_tracked' => 'Última comprobación: :time',
+    'confirm_cancel' => '¿Anular este envío ante el transportista? La etiqueta deja de ser válida; después podrá crear un envío nuevo.',
 
     'col' => [
         'mode' => 'Modo',
@@ -55,6 +58,11 @@ return [
     'action' => [
         'save' => 'Guardar',
         'disconnect' => 'Desactivar',
+        'edit' => 'Editar',
+        'cancel_edit' => 'Cancelar',
+        'download_label' => 'Descargar etiqueta',
+        'track_now' => 'Consultar estado del envío',
+        'cancel_shipment' => 'Anular envío',
         'create' => 'Enviar',
     ],
 
@@ -67,6 +75,12 @@ return [
         'no_connection' => 'No hay una conexión activa configurada para el transportista seleccionado.',
         'label_created' => 'Envío creado y etiqueta obtenida.',
         'label_failed' => 'No se pudo crear la etiqueta de envío: :reason',
+        'tracked' => 'Estado del envío consultado: :status',
+        'track_failed' => 'No se pudo consultar el estado del envío: :reason',
+        'cancelled' => 'Envío anulado.',
+        'cancel_failed' => 'No se pudo anular el envío: :reason',
+        'not_cancellable' => 'El envío ya está en manos del transportista y no puede anularse.',
+        'exists_use_edit' => 'Ya existe una conexión para este transportista. Modifíquela mediante «Editar».',
     ],
 
     'notify' => [

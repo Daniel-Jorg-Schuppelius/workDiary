@@ -33,11 +33,11 @@ enum TimeAccountSource: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::WageType       => __('Lohnart (Zeitregel-Ergebnis)'),
-            self::AttendanceNet  => __('Anwesenheit (Netto-Minuten)'),
-            self::Absence        => __('Abwesenheit (Tage)'),
-            self::ShiftTypeCount => __('Dienst-Zähler (Schichttyp)'),
-            self::ExternalItem   => __('Externe Position (Menge)'),
+            self::WageType       => __('enums.time_account.time_account_source.wage_type'),
+            self::AttendanceNet  => __('enums.time_account.time_account_source.attendance_net'),
+            self::Absence        => __('enums.time_account.time_account_source.absence'),
+            self::ShiftTypeCount => __('enums.time_account.time_account_source.shift_type_count'),
+            self::ExternalItem   => __('enums.time_account.time_account_source.external_item'),
         };
     }
 }

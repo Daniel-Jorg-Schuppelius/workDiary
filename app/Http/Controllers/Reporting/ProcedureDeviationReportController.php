@@ -153,7 +153,16 @@ class ProcedureDeviationReportController extends Controller {
     private function exportCsv(array $rows, CarbonImmutable $from, CarbonImmutable $to, array $filters, Request $request): Response {
         $filename = sprintf('prozedur-abweichungen_%s_%s.csv', $from->toDateString(), $to->toDateString());
         $out = [[
-            'Datum', 'Prozedur', 'Schritt', 'Typ', 'Schweregrad', 'VorgeschlageneAktion', 'Folgemassnahme', 'RisikoAkzeptiertAm', 'StundenBisEntscheidung', 'Begruendung',
+            (string) __('reporting.csv.date'),
+            (string) __('reporting.csv.procedure'),
+            (string) __('reporting.csv.step'),
+            (string) __('reporting.csv.type'),
+            (string) __('reporting.csv.severity'),
+            (string) __('reporting.csv.proposed_action'),
+            (string) __('reporting.csv.follow_up'),
+            (string) __('reporting.csv.risk_accepted_at'),
+            (string) __('reporting.csv.hours_to_decision'),
+            (string) __('reporting.csv.reason'),
         ]];
         foreach ($rows as $row) {
             $out[] = [

@@ -265,6 +265,41 @@ final class TimeTrackingWebhookTest extends TestCase {
         Bus::assertNothingDispatched();
     }
 
+    /** Das Secret kommt über den Plugin-Dialog — vorher fehlte dort das Feld (Phase 137). */
+    public function test_secret_saved_in_the_plugin_dialog_enables_the_toggl_webhook(): void {
+        Bus::fake();
+
+        $this->actingAs($this->orgAdmin())->put(route('admin.plugins.update', TogglPlugin::ID), [
+            'enabled' => 1,
+            'settings' => ['api_token' => 'tok', 'workspace_id' => '4711', 'webhook_secret' => 'geheim'],
+        ])->assertRedirect();
+
+        $this->togglPost($this->togglPayload(), 'geheim')->assertOk()->assertJson(['status' => 'queued']);
+        Bus::assertDispatched(WebhookImportJob::class);
+    }
+
+    public function test_secret_saved_in_the_plugin_dialog_enables_the_clockify_webhook(): void {
+        Bus::fake();
+
+        $this->actingAs($this->orgAdmin())->put(route('admin.plugins.update', ClockifyPlugin::ID), [
+            'enabled' => 1,
+            'settings' => ['workspace_id' => 'ws-abc', 'webhook_secret' => 'geheim'],
+        ])->assertRedirect();
+
+        $this->clockifyPost(['id' => 'e-1', 'workspaceId' => 'ws-abc'], 'geheim')->assertOk()->assertJson(['status' => 'queued']);
+        Bus::assertDispatched(WebhookImportJob::class);
+    }
+
+    /** Beide Importseiten nennen die Adresse, die beim Anbieter einzutragen ist. */
+    public function test_import_pages_show_the_webhook_address(): void {
+        PluginSetting::query()->create(['organization_id' => $this->organization->id, 'plugin_id' => TogglPlugin::ID, 'enabled' => true, 'settings' => []]);
+        PluginSetting::query()->create(['organization_id' => $this->organization->id, 'plugin_id' => ClockifyPlugin::ID, 'enabled' => true, 'settings' => []]);
+        $admin = $this->orgAdmin();
+
+        $this->actingAs($admin)->get(route('admin.toggl.index'))->assertOk()->assertSee(route('api.webhooks.toggl'), false);
+        $this->actingAs($admin)->get(route('admin.clockify.index'))->assertOk()->assertSee(route('api.webhooks.clockify'), false);
+    }
+
     public function test_gate_debounce_reopens_after_the_window(): void {
         $gate = app(TimeTrackingWebhookGate::class);
 

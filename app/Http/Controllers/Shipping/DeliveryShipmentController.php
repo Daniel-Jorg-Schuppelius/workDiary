@@ -20,8 +20,9 @@ use App\Models\Shipping\{CarrierConnection, Shipment, ShipmentParcel};
 use App\Services\Shipping\{ShipmentPackage, ShipmentRecipient, ShipmentRequest, ShipmentService};
 use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use RuntimeException;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * Versandauftrag zur Auslieferung eines Fertigungsauftrags (Feature 059,
@@ -90,5 +91,51 @@ class DeliveryShipmentController extends Controller {
         }
 
         return back()->with('success', __('shipping.flash.label_created'));
+    }
+
+    public function label(ManufacturingOrder $order, StockDelivery $delivery): BinaryFileResponse {
+        Gate::authorize('view', $order);
+        $label = $this->shipmentOf($order, $delivery)->labelAttachment() ?? abort(404);
+        $disk = Storage::disk($label->disk);
+        abort_unless($disk->exists($label->path), 404);
+
+        return response()->download($disk->path($label->path), $label->original_name);
+    }
+
+    public function track(ManufacturingOrder $order, StockDelivery $delivery, ShipmentService $shipping): RedirectResponse {
+        Gate::authorize('update', $order);
+        $shipment = $this->shipmentOf($order, $delivery);
+
+        try {
+            $shipping->refreshTracking($shipment);
+        } catch (\Throwable $e) {
+            return back()->with('error', __('shipping.flash.track_failed', ['reason' => ErrorText::for($e)]));
+        }
+
+        return back()->with('success', __('shipping.flash.tracked', ['status' => $shipment->status->label()]));
+    }
+
+    public function cancel(ManufacturingOrder $order, StockDelivery $delivery, ShipmentService $shipping): RedirectResponse {
+        Gate::authorize('update', $order);
+        $shipment = $this->shipmentOf($order, $delivery);
+        if (! $shipment->status->isCancellable()) {
+            return back()->with('error', __('shipping.flash.not_cancellable'));
+        }
+
+        try {
+            $cancelled = $shipping->cancel($shipment);
+        } catch (\Throwable $e) {
+            return back()->with('error', __('shipping.flash.cancel_failed', ['reason' => ErrorText::for($e)]));
+        }
+
+        return $cancelled
+            ? back()->with('success', __('shipping.flash.cancelled'))
+            : back()->with('error', __('shipping.flash.cancel_failed', ['reason' => strtoupper($shipment->carrier)]));
+    }
+
+    private function shipmentOf(ManufacturingOrder $order, StockDelivery $delivery): Shipment {
+        abort_unless($delivery->manufacturing_order_id === $order->id, 404);
+
+        return $delivery->shipment ?? abort(404);
     }
 }

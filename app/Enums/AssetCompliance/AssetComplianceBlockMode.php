@@ -30,10 +30,10 @@ enum AssetComplianceBlockMode: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::None => (string) __('Keine Wirkung'),
-            self::Warn => (string) __('Warnung'),
-            self::BlockAfterGrace => (string) __('Sperre nach Nachfrist'),
-            self::BlockImmediately => (string) __('Sofortige Sperre'),
+            self::None => (string) __('enums.asset_compliance.asset_compliance_block_mode.none'),
+            self::Warn => (string) __('enums.asset_compliance.asset_compliance_block_mode.warn'),
+            self::BlockAfterGrace => (string) __('enums.asset_compliance.asset_compliance_block_mode.block_after_grace'),
+            self::BlockImmediately => (string) __('enums.asset_compliance.asset_compliance_block_mode.block_immediately'),
         };
     }
 

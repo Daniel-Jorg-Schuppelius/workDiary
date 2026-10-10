@@ -1,7 +1,7 @@
 ---
 title: "Sign a protocol"
 topic: protocols.sign
-version: 1
+version: 2
 keywords:
     - signature
     - get signed
@@ -36,3 +36,10 @@ Methods:
   acceptances.
 - **Signature link** (e-mail to the customer): asynchronous, the
   customer signs separately without logging in.
+
+If a protocol's **Visibility** is set to **Customer-visible**, the customer
+sees it in the customer portal only after signing – for an order in its case
+file, for an object in the object record – and downloads it there as PDF.
+Drafts and protocols under review stay invisible in the portal. Every download
+from the portal appears in the protocol's **History** as **PDF downloaded in
+the customer portal** with the name of the portal account.

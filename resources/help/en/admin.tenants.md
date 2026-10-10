@@ -1,7 +1,7 @@
 ---
 title: "Organizations & tenants"
 topic: admin.tenants
-version: 3
+version: 4
 keywords:
     - tenant management
     - create organization
@@ -62,11 +62,11 @@ not affected.
 The **Organisations** list with all tenants is available to platform operations
 only: in the system menu (the **System** gear icon in the header) under
 **Organization** → **Organisations**. Platform operators without an
-organization of their own also find the **Employee** item in the
+organization of their own also find the **Employees** item in the
 administration menu (the **Administration** icon in the header) under
 **Personnel**; it leads to the organization list as well. When such an
 administrator opens the list, WorkDiary assigns their account to the
-organization created first – after that, **Employee** leads to the member
+organization created first – after that, **Employees** leads to the member
 management of that organization.
 
 Administrators of an organization edit their own organization in the system

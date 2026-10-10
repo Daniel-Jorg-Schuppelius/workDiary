@@ -91,6 +91,11 @@ class CardDavAdminController extends Controller {
             'allow_private_network' => $allowPrivate,
             'active' => (bool) ($data['active'] ?? false),
             'created_by' => $connection->exists ? $connection->created_by : $admin->id,
+            // Speichern ist der Weg aus der Auto-Sperre (HasConnectionHealth): der nächste Abgleich entscheidet neu.
+            'last_error' => null,
+            'last_error_at' => null,
+            'consecutive_failures' => 0,
+            'disabled_at' => null,
         ];
 
         // Passwort nur bei Eingabe setzen — nie leere Strings in encrypted-Felder.

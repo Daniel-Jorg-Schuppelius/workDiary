@@ -38,4 +38,10 @@ return [
         'Invoiced' => 'Berechnet',
         'Cancelled' => 'Storniert',
     ],
+    'planned_duration' => [
+        'label' => 'Geplante Dauer (HH:MM)',
+        'hint' => 'Leer: Länge des Zeitfensters bzw. Dauer des Termins. Gilt als Plan in Plan/Ist, Auftragstypanalyse und Personal-Kapazität.',
+        'format' => 'Bitte geben Sie die geplante Dauer als Stunden:Minuten an, z. B. 1:30.',
+        'range' => 'Die geplante Dauer muss zwischen 0:01 und 168:00 liegen.',
+    ],
 ];

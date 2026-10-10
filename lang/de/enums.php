@@ -16,6 +16,7 @@ return [
         'connection_status' => ['draft' => 'Entwurf', 'active' => 'Aktiv', 'blocked' => 'Gesperrt'],
         'memory_type' => ['glossary' => 'Glossar', 'style_rule' => 'Stil-Regel', 'example' => 'Beispielpaar'],
         'sensitivity' => ['low' => 'Niedrig', 'medium' => 'Mittel', 'high' => 'Hoch'],
+        'ai_text_suggestion_status' => ['proposed' => 'Vorgeschlagen', 'accepted' => 'Angenommen', 'edited' => 'Geändert', 'rejected' => 'Abgelehnt', 'expired' => 'Abgelaufen'],
     ],
     'domain' => [
         'environment' => ['ote' => 'OT&E (Test/Pilot)', 'production' => 'Produktiv'],
@@ -27,6 +28,7 @@ return [
     ],
     'approval' => [
         'step-kind' => ['commercial' => 'Kaufmännisch', 'technical' => 'Fachlich', 'hr' => 'HR', 'management' => 'Geschäftsleitung'],
+        'approval_decision' => ['approved' => 'Freigegeben', 'rejected' => 'Abgelehnt'],
     ],
     'asset' => [
         'defect-severity' => [
@@ -46,6 +48,8 @@ return [
             'customer' => 'Kunde',
             'external' => 'Extern',
         ],
+        'asset_block_reason' => ['defect' => 'Defekt', 'safety' => 'Arbeitsschutz', 'recall' => 'Rückruf', 'inspection_overdue' => 'Prüfung überfällig', 'inspection_failed' => 'Prüfung nicht bestanden', 'rental_damage' => 'Verleihschaden', 'policy_hold' => 'Interne Sperre', 'manual' => 'Manuell gesperrt', 'maintenance' => 'Wartung', 'other' => 'Sonstiger Grund'],
+        'asset_status' => ['active' => 'Aktiv', 'in_maintenance' => 'In Wartung', 'in_repair' => 'In Reparatur', 'blocked' => 'Gesperrt', 'reserved' => 'Reserviert', 'loan_out' => 'Ausgeliehen', 'replaced' => 'Ersetzt', 'decommissioned' => 'Außer Betrieb', 'lost' => 'Verloren'],
     ],
     'classification' => [
         'requirement-phase' => [
@@ -57,6 +61,7 @@ return [
             'hard' => 'Blockierend',
             'soft' => 'Hinweis',
         ],
+        'classification_domain' => ['entry_type' => 'Auftragstypen', 'activity' => 'Tätigkeiten', 'defect_type' => 'Fehlertypen', 'root_cause' => 'Ursachen', 'result' => 'Ergebnisse', 'priority' => 'Prioritäten', 'goodwill_reason' => 'Kulanzgründe', 'rework_reason' => 'Nacharbeitsgründe', 'product_group' => 'Produktgruppen', 'dienstmittel_type' => 'Dienstmitteltypen', 'allergen' => 'Allergene', 'trade' => 'Gewerke', 'permit_type' => 'Genehmigungsarten', 'waste_code' => 'Abfallschlüssel (AVV)', 'customer_group' => 'Kundengruppen'],
     ],
     'room_requirement_kind' => [
         'hygieneLevel' => 'Hygienestufe',
@@ -406,6 +411,7 @@ return [
             'claim' => [
                 'escalation' => 'Reklamation überfällig',
                 'pattern' => 'Auffälliges Reklamationsmuster',
+                'customerNote' => 'Nachreichung zu einer Reklamation eingegangen',
             ],
             'procedure' => [
                 'deviationEscalated' => 'Prozedur-Abweichung eskaliert',
@@ -417,6 +423,10 @@ return [
                 'returnOverdue' => 'Verleih-Rückgabe überfällig',
                 'requested' => 'Verleih-Anfrage aus dem Portal eingegangen',
                 'geofenceDeviation' => 'Verliehenes Gerät außerhalb des Einsatzorts',
+            ],
+            'appointment' => [
+                'requested' => 'Terminanfrage aus dem Portal eingegangen',
+                'canceled' => 'Termin im Portal storniert',
             ],
             'hrFile' => [
                 'ackRequested' => 'Lesebestätigung für die Personalakte erbeten',
@@ -1204,6 +1214,7 @@ return [
             'certificateSuspended' => 'Zertifikat ausgesetzt',
             'certificateExpired' => 'Zertifikat abgelaufen',
         ],
+        'isms_audit_program_status' => ['active' => 'aktiv', 'completed' => 'abgeschlossen', 'cancelled' => 'abgebrochen'],
     ],
     'surcharge' => [
         'kind' => [
@@ -1359,6 +1370,14 @@ return [
             'depreciation' => 'Abschreibung (AfA)',
             'asset_disposal' => 'Anlagenabgang',
             'online_payment' => 'Online-Zahlung',
+        ],
+        'direct-booking-kind' => [
+            'open_item_settlement' => 'Skonto/Ausbuchung',
+            'clearing' => 'Klärungsbuchung',
+            'internal_transfer' => 'Interne Umbuchung',
+            'opening_balance' => 'Startsalden',
+            'vat_special_prepayment' => 'Sondervorauszahlung',
+            'reversal' => 'Storno',
         ],
         'posting-account-role' => [
             'receivable' => 'Forderung',
@@ -2065,5 +2084,177 @@ return [
             'expired' => 'Abgelaufen',
             'refunded' => 'Erstattet',
         ],
+        'incoming_e_invoice_status' => ['received' => 'Empfangen', 'approved' => 'Fachlich freigegeben', 'rejected' => 'Abgelehnt', 'question' => 'Rückfrage', 'payment_released' => 'Zahlung freigegeben'],
+        'invoice_schedule_status' => ['active' => 'Aktiv', 'paused' => 'Pausiert', 'ended' => 'Beendet'],
+    ],
+    'agile' => [
+        'agile_column_category' => ['open' => 'Offen', 'in_progress' => 'In Arbeit', 'done' => 'Erledigt'],
+        'agile_item_type' => ['epic' => 'Epic', 'story' => 'Story', 'task' => 'Aufgabe', 'bug' => 'Fehler'],
+        'agile_sprint_status' => ['planned' => 'geplant', 'active' => 'aktiv', 'completed' => 'abgeschlossen', 'cancelled' => 'abgebrochen'],
+    ],
+    'api' => [
+        'api_ability' => ['diary_read' => 'Aufträge lesen', 'diary_write' => 'Aufträge anlegen/ändern', 'tasks_read' => 'Aufgaben lesen', 'tasks_write' => 'Aufgaben anlegen/ändern', 'attendance_read' => 'Anwesenheit lesen', 'attendance_write' => 'Anwesenheit stempeln', 'assets_read' => 'Assets lesen', 'hooks_manage' => 'Automatisierungs-Hooks verwalten', 'tickets_write' => 'Tickets anlegen', 'comments_write' => 'Kommentare schreiben', 'attachments_read' => 'Anhänge herunterladen', 'attachments_write' => 'Anhänge hochladen/löschen', 'tags_read' => 'Tags lesen', 'tags_write' => 'Tags anlegen/ändern', 'shifts_read' => 'Bereitschaften lesen', 'assignments_read' => 'Einsätze lesen', 'dashboard_read' => 'Dashboard lesen', 'push_write' => 'Push-Abo verwalten', 'timesheets_read' => 'Stundenzettel lesen', 'timesheets_write' => 'Stundenzettel anlegen/ändern', 'materials_read' => 'Materialien lesen', 'stopwatch_read' => 'Stoppuhr lesen', 'stopwatch_write' => 'Stoppuhr steuern', 'flex_read' => 'Arbeitszeitkonto lesen', 'location_write' => 'Standort stempeln', 'customers_read' => 'Kunden lesen', 'customers_write' => 'Kunden anlegen/ändern', 'projects_read' => 'Projekte lesen', 'projects_write' => 'Projekte anlegen/ändern', 'absences_read' => 'Abwesenheiten lesen', 'expenses_read' => 'Spesen lesen', 'invoices_read' => 'Rechnungen lesen', 'scheduled_shifts_read' => 'Schichtplan lesen', 'articles_read' => 'Artikel lesen', 'inventory_read' => 'Bestände lesen', 'purchase_orders_read' => 'Bestellungen lesen', 'suppliers_read' => 'Lieferanten lesen', 'protocols_read' => 'Protokolle lesen', 'vehicles_read' => 'Fahrzeuge lesen', 'learning_read' => 'Lernplattform lesen', 'learning_write' => 'Lernplattform: selbst einschreiben', 'mcp_read' => 'KI-Assistent (MCP): lesen', 'mcp_write' => 'KI-Assistent (MCP): Entwürfe anlegen'],
+    ],
+    'asset_compliance' => [
+        'asset_compliance_block_mode' => ['none' => 'Keine Wirkung', 'warn' => 'Warnung', 'block_after_grace' => 'Sperre nach Nachfrist', 'block_immediately' => 'Sofortige Sperre'],
+        'asset_compliance_status' => ['valid' => 'Gültig geprüft', 'due_soon' => 'Prüfung bald fällig', 'overdue' => 'Prüfung überfällig', 'restricted' => 'Eingeschränkt freigegeben', 'blocked' => 'Gesperrt', 'not_applicable' => 'Keine Prüfpflicht'],
+        'asset_inspection_kind' => ['verification' => 'Eichung', 'calibration' => 'Kalibrierung', 'dguv_uvv' => 'DGUV-/UVV-Prüfung', 'hu_au' => 'HU/AU', 'electrical' => 'Elektrische Betriebsmittelprüfung', 'manufacturer_service' => 'Herstellerwartung', 'safety_check' => 'Sicherheitsprüfung', 'function_check' => 'Funktionsprüfung', 'internal_check' => 'Interne Kontrollprüfung'],
+        'asset_inspection_result' => ['passed' => 'Bestanden', 'passed_with_restrictions' => 'Bestanden mit Einschränkungen', 'failed' => 'Nicht bestanden'],
+        'asset_inspection_schedule_status' => ['planned' => 'Geplant', 'announced' => 'Angekündigt', 'in_progress' => 'In Durchführung', 'done' => 'Durchgeführt', 'missed' => 'Versäumt', 'cancelled' => 'Storniert'],
+    ],
+    'asset_finance' => [
+        'asset_finance_end_kind' => ['return' => 'Rückgabe', 'purchase' => 'Kauf/Übernahme', 'extension' => 'Verlängerung', 'replacement' => 'Ersatzinvestition'],
+        'asset_finance_kind' => ['operating_lease' => 'Operating-Leasing', 'finance_lease' => 'Finanzierungsleasing', 'hire_purchase' => 'Mietkauf', 'long_term_rent' => 'Langzeitmiete', 'usage_contract' => 'Nutzungsvertrag', 'service_contract' => 'Servicevertrag mit Asset-Bezug'],
+        'asset_finance_status' => ['draft' => 'Entwurf', 'active' => 'Aktiv', 'ending' => 'Endphase', 'extended' => 'Verlängert', 'returned' => 'Zurückgegeben', 'purchased' => 'Übernommen (Kauf)', 'terminated' => 'Gekündigt', 'closed' => 'Abgeschlossen', 'cancelled' => 'Storniert'],
+        'asset_finance_term_kind' => ['rate' => 'Rate', 'special_payment' => 'Sonderzahlung', 'residual_value' => 'Restwertannahme', 'purchase_option' => 'Kaufoption', 'service_package' => 'Servicepaket', 'insurance' => 'Versicherung', 'maintenance' => 'Wartung', 'wear' => 'Verschleiß', 'return_cost' => 'Rückgabekosten', 'fee' => 'Gebühr', 'indexation' => 'Indexierung'],
+        'asset_finance_usage_limit_kind' => ['kilometers' => 'Kilometer', 'operating_hours' => 'Betriebsstunden', 'usage_days' => 'Nutzungstage'],
+    ],
+    'auth' => [
+        'two_factor_type' => ['totp' => 'Authenticator-App', 'email' => 'E-Mail-Code', 'webauthn' => 'Sicherheitsschlüssel / Passkey'],
+    ],
+    'claims' => [
+        'claim_action_kind' => ['rework' => 'Nacharbeit', 'repair' => 'Reparatur', 'replacement' => 'Ersatzlieferung', 'service_visit' => 'Serviceeinsatz', 'price_reduction' => 'Preisnachlass', 'refund' => 'Rückerstattung', 'supplier_recourse' => 'Lieferantenregress', 'root_cause_fix' => 'Ursachenbehebung', 'other' => 'Sonstiges'],
+        'claim_action_status' => ['planned' => 'Geplant', 'in_progress' => 'In Arbeit', 'done' => 'Erledigt', 'cancelled' => 'Abgebrochen'],
+        'claim_financial_kind' => ['price_reduction' => 'Minderung/Preisnachlass', 'credit_note' => 'Gutschrift', 'cancellation' => 'Storno', 'correction' => 'Rechnungskorrektur', 'replacement_invoice' => 'Ersatzrechnung', 'refund' => 'Rückerstattung'],
+        'claim_financial_status' => ['proposed' => 'Vorgeschlagen', 'approved' => 'Freigegeben', 'executed' => 'Ausgeführt/übergeben', 'rejected' => 'Abgelehnt'],
+        'claim_kind' => ['guarantee' => 'Garantie', 'warranty_legal' => 'Gesetzliche Gewährleistung', 'warranty_contractual' => 'Vertragliche Gewährleistung', 'goodwill' => 'Kulanz', 'transport_damage' => 'Transportschaden', 'user_error' => 'Fehlbedienung', 'internal_error' => 'Interner Fehler', 'supplier_fault' => 'Lieferantenfehler', 'unfounded' => 'Unbegründet'],
+        'claim_recourse_status' => ['draft' => 'Entwurf', 'submitted' => 'Eingereicht', 'accepted' => 'Anerkannt', 'partially_accepted' => 'Teilweise anerkannt', 'rejected' => 'Abgelehnt', 'closed' => 'Geschlossen'],
+        'claim_rma_disposition' => ['restock' => 'Wiedereinlagerung', 'repair' => 'Reparatur', 'return_to_supplier' => 'Rücksendung an Lieferant', 'scrap' => 'Verschrottung', 'dispose' => 'Entsorgung'],
+        'claim_rma_status' => ['announced' => 'Angekündigt', 'received' => 'Wareneingang erfasst', 'inspecting' => 'In Prüfung', 'completed' => 'Abgeschlossen'],
+        'claim_source' => ['portal' => 'Kundenportal', 'email' => 'E-Mail', 'phone' => 'Telefonnotiz', 'helpdesk' => 'Helpdesk', 'order' => 'Auftrag', 'protocol' => 'Abnahmeprotokoll', 'asset' => 'Asset', 'invoice' => 'Rechnung', 'api' => 'API', 'internal' => 'Interner Mangel', 'manual' => 'Manuell'],
+        'claim_status' => ['received' => 'Eingegangen', 'assessing' => 'In Bewertung', 'decided' => 'Entschieden', 'in_progress' => 'In Umsetzung', 'closed' => 'Abgeschlossen', 'rejected' => 'Abgelehnt', 'withdrawn' => 'Zurückgezogen'],
+        'claim_verdict' => ['justified' => 'Berechtigt', 'unclear' => 'Unklar', 'rejected' => 'Abgelehnt'],
+    ],
+    'contract' => [
+        'contract_kind' => ['rent' => 'Miet-/Pachtvertrag', 'maintenance' => 'Wartungsvertrag', 'license' => 'Lizenz-/Abovertrag', 'service' => 'Dienstleistungsvertrag', 'insurance' => 'Versicherungsvertrag', 'supply' => 'Liefer-/Bezugsvertrag', 'framework' => 'Rahmenvertrag', 'membership' => 'Mitgliedschaft/Beitrag', 'data_processing' => 'Auftragsverarbeitungsvertrag (AVV)', 'non_disclosure' => 'Verschwiegenheitsvereinbarung (NDA)', 'rental_terms' => 'Mietbedingungen (Geräteverleih)', 'employment' => 'Arbeitsvertrag', 'other' => 'Sonstiger Vertrag'],
+        'contract_obligation_status' => ['open' => 'offen', 'done' => 'erledigt', 'missed' => 'versäumt'],
+        'contract_partner_type' => ['customer' => 'Kunde', 'supplier' => 'Lieferant', 'other' => 'Freitext'],
+        'contract_status' => ['draft' => 'Entwurf', 'active' => 'Aktiv', 'terminated' => 'Gekündigt', 'ended' => 'Beendet', 'cancelled' => 'Storniert'],
+        'contract_term_kind' => ['fixed' => 'Befristet', 'open_ended' => 'Unbefristet'],
+        'indexation_method' => ['none' => 'Keine Indexierung', 'consumer_price_index' => 'Verbraucherpreisindex (VPI)', 'fixed_percent' => 'Fester Prozentsatz', 'custom' => 'Eigene Regel'],
+    ],
+    'customer_portal' => [
+        'portal_capability' => ['diary' => 'Aufträge & Fallakte', 'time_entries' => 'Projektzeiten', 'invoices' => 'Rechnungen & Abrechnungskonto', 'documents' => 'Dokumente', 'assets' => 'Objekte', 'open_issues' => 'Offene Punkte', 'tickets' => 'Tickets, Servicekatalog & bekannte Fehler', 'claims' => 'Reklamationen', 'rentals' => 'Verleihvorgänge', 'queries' => 'Rückfragen & Kommentare', 'appointments' => 'Online-Terminbuchung', 'rental_requests' => 'Verleih-Anfrage', 'subscriptions' => 'Abos & Lizenzen'],
+        'portal_time_detail' => ['none' => 'Keine Zeiten', 'summary' => 'Nur Summen', 'entries' => 'Einträge (Datum, Dauer, Projekt, Mitarbeiter)', 'entries_with_description' => 'Einträge inkl. Beschreibung (nur veröffentlichte)'],
+    ],
+    'disposal' => [
+        'data_medium_type' => ['hdd' => 'Festplatte (HDD)', 'ssd' => 'SSD', 'usb_flash' => 'USB-Stick', 'memory_card' => 'Speicherkarte', 'mobile_device' => 'Mobilgerät', 'magnetic_tape' => 'Magnetband', 'optical' => 'Optischer Datenträger', 'other' => 'Sonstiger Datenträger'],
+        'din_category' => ['p' => 'P — Papier', 'f' => 'F — Film/Folie', 'o' => 'O — Optische Datenträger', 't' => 'T — Magnetische Datenträger', 'h' => 'H — Festplatten', 'e' => 'E — Elektronische Datenträger'],
+        'disposal_job_event_type' => ['created' => 'Akte angelegt', 'item_added' => 'Geräteposition erfasst', 'item_updated' => 'Geräteposition geändert', 'item_removed' => 'Geräteposition entfernt', 'treatment_added' => 'Datenträger-Behandlung dokumentiert', 'treatment_removed' => 'Datenträger-Behandlung entfernt', 'handover_added' => 'Entsorger-Übergabe erfasst', 'handover_removed' => 'Entsorger-Übergabe entfernt', 'status_changed' => 'Status geändert', 'signed' => 'Übernahme unterschrieben', 'record_rendered' => 'Kundennachweis erzeugt', 'completed' => 'Akte abgeschlossen', 'cancelled' => 'Akte storniert'],
+        'disposal_job_status' => ['draft' => 'Angelegt', 'collected' => 'Abgeholt', 'in_treatment' => 'In Behandlung', 'handed_over' => 'An Entsorger übergeben', 'completed' => 'Abgeschlossen', 'cancelled' => 'Storniert'],
+        'disposal_proof_type' => ['transfer_note' => 'Übernahmeschein', 'consignment_note' => 'Begleitschein', 'disposal_certificate' => 'Entsorgungsnachweis', 'eanv' => 'eANV-Registerbezug', 'disposer_certificate' => 'Entsorgerzertifikat'],
+        'media_treatment_method' => ['software_wipe' => 'Software-Löschung', 'degaussing' => 'Degaussing', 'shredding' => 'Schreddern', 'removed_for_destruction' => 'Ausgebaut zur Vernichtung'],
+    ],
+    'document_design' => [
+        'information_block' => ['sender_line' => 'Absenderzeile', 'recipient_address' => 'Empfängeranschrift', 'document_meta' => 'Dokumenttitel, Nummer, Datum & Referenzen', 'contact_person' => 'Ansprechpartner & Kontaktdaten', 'company_identity' => 'Unternehmensanschrift, Rechtsform & Register', 'tax_identity' => 'Steuer-/Umsatzsteuerangaben', 'bank_details' => 'Bankverbindung & Zahlungsinformationen', 'intro_text' => 'Einleitungstext', 'items_table' => 'Positionstabelle', 'totals' => 'Summenbereich', 'tax_breakdown' => 'Steueraufschlüsselung', 'closing_text' => 'Schlusstext', 'page_meta' => 'Seitenzahl & Dokumentkennung', 'confidentiality' => 'Vertraulichkeitskennzeichnung'],
+        'information_block_state' => ['dynamic' => 'Dynamisch (WorkDiary druckt)', 'provided_by_letterhead' => 'Bereits auf dem Firmenbogen', 'not_applicable' => 'Nicht anwendbar'],
+        'letterhead_asset_status' => ['review_required' => 'Prüfung erforderlich', 'ready' => 'Einsatzbereit', 'archived' => 'Archiviert'],
+        'letterhead_page_role' => ['first' => 'Erste Seite', 'following' => 'Folgeseiten'],
+        'page_format' => ['a4_portrait' => 'A4 Hochformat', 'a4_landscape' => 'A4 Querformat'],
+        'render_document_family' => ['sales' => 'Vertrieb/Fakturierung', 'procurement' => 'Einkauf/Logistik', 'evidence' => 'Leistung/Nachweis', 'special' => 'Spezialformat'],
+        'render_document_kind' => ['invoice' => 'Rechnung', 'purchase_order' => 'Bestellung', 'protocol' => 'Protokoll', 'delivery_note' => 'Lieferschein', 'manufacturing_record' => 'Fertigungsnachweis', 'timesheet' => 'Stundenzettel', 'form' => 'Formular', 'report' => 'Bericht', 'quote' => 'Angebot', 'order_confirmation' => 'Auftragsbestätigung', 'credit_note' => 'Gutschrift', 'proforma_invoice' => 'Pro-forma-Rechnung', 'dunning' => 'Mahnung', 'case_file' => 'Fallakte', 'label' => 'Etikett'],
+        'render_profile_status' => ['draft' => 'Entwurf', 'active' => 'Aktiv', 'archived' => 'Archiviert'],
+        'render_profile_version_status' => ['draft' => 'Entwurf', 'active' => 'Aktiv', 'superseded' => 'Abgelöst'],
+        'table_style_preset' => ['clear' => 'Klar', 'compact' => 'Kompakt', 'low_line' => 'Linienarm'],
+    ],
+    'facility' => [
+        'room_usage_type' => ['office' => 'Büro', 'server_room' => 'Serverraum', 'cleanroom' => 'Reinraum', 'kitchen' => 'Küche', 'sanitary' => 'Sanitär', 'lab' => 'Labor', 'storage' => 'Lager', 'traffic_area' => 'Verkehrsfläche', 'meeting' => 'Besprechung', 'social' => 'Sozialraum', 'technical' => 'Technikraum', 'outdoor' => 'Außenfläche', 'other' => 'Sonstiges'],
+    ],
+    'integration' => [
+        'conflict_field_policy' => ['remote_wins' => 'Remote gewinnt', 'local_wins' => 'Lokal gewinnt', 'manual_review' => 'Manuelle Prüfung (Inbox)'],
+        'data_domain' => ['tasks' => 'Aufgaben', 'tickets' => 'Tickets', 'inventory' => 'Lagerbestand', 'calendar' => 'Kalender', 'documents' => 'Dokumente', 'customers' => 'Kunden'],
+        'import_match_policy' => ['auto_link_exact_only' => 'Nur eindeutige zuordnen (Rest in die Inbox)', 'auto_link_and_create' => 'Zuordnen, sonst neu anlegen', 'manual_review' => 'Alles manuell prüfen'],
+        'integration_inbox_status' => ['open' => 'Offen', 'resolved_linked' => 'Zugeordnet', 'resolved_created' => 'Neu angelegt', 'resolved_local' => 'Lokal behalten', 'resolved_remote' => 'Remote übernommen', 'dismissed' => 'Verworfen'],
+    ],
+    'key_handover' => [
+        'key_handover_direction' => ['out' => 'Ausgabe', 'in' => 'Rückgabe'],
+    ],
+    'licensing' => [
+        'module_status' => ['not_licensed' => 'Nicht lizenziert', 'active' => 'Aktiv', 'inactive_by_customer' => 'Deaktiviert', 'blocked' => 'Gesperrt'],
+    ],
+    'location' => [
+        'location_pending_entry_status' => ['open' => 'Offen', 'imported' => 'Übernommen', 'dismissed' => 'Verworfen'],
+    ],
+    'migration' => [
+        'accounting_migration_status' => ['draft' => 'Entwurf', 'analyzing' => 'Analyse', 'mapping' => 'Zuordnung', 'ready' => 'Bereit', 'parallel_run' => 'Doppelbetrieb', 'cutover' => 'Umschaltung', 'verifying' => 'Prüfung', 'completed' => 'Abgeschlossen', 'blocked' => 'Blockiert', 'cancelled' => 'Abgebrochen'],
+        'migration_data_area' => ['customers' => 'Kunden', 'suppliers' => 'Lieferanten', 'articles' => 'Artikel und Leistungen', 'documents' => 'Belege (Historie)'],
+        'migration_provider' => ['orga_max' => 'orgaMAX Buchhaltung'],
+    ],
+    'modules' => [
+        'module_kind' => ['platform' => 'Plattformdienst', 'core' => 'Kernmodul', 'feature' => 'Fachmodul'],
+    ],
+    'numbering' => [
+        'number_scope' => ['service_ticket' => 'Service-Ticket', 'problem_report' => 'Fehlermeldung', 'asset' => 'Asset', 'article' => 'Artikel', 'manufacturing_order' => 'Fertigungsauftrag', 'serial' => 'Seriennummer', 'purchase_order' => 'Bestellung', 'customer' => 'Kunde', 'supplier' => 'Lieferant', 'invoice' => 'Rechnung', 'credit_note' => 'Gutschrift', 'cancellation' => 'Stornorechnung', 'quote' => 'Angebot', 'proforma' => 'Pro-forma-Rechnung', 'claim' => 'Reklamation', 'rma' => 'Rücksendung (RMA)', 'rental' => 'Verleihakte', 'asset_finance' => 'Leasingakte', 'contract' => 'Vertrag', 'privacy_incident' => 'Datenschutzvorfall', 'data_subject_request' => 'Betroffenenanfrage', 'disposal' => 'Entsorgungsakte', 'certificate' => 'Zertifikat', 'damage' => 'Schadensfall', 'recall' => 'Rückrufaktion'],
+    ],
+    'patrol' => [
+        'patrol_run_status' => ['running' => 'Laufend', 'completed' => 'Abgeschlossen', 'aborted' => 'Abgebrochen'],
+    ],
+    'plugin' => [
+        'plugin_health_status' => ['ok' => 'Zustand ok', 'degraded' => 'Zustand eingeschränkt', 'failing' => 'Zustand fehlerhaft'],
+        'plugin_capability' => ['contact_sync' => 'Kontaktsynchronisierung', 'time_export' => 'Zeit-Export', 'time_import' => 'Zeit-Import', 'payment_sync' => 'Zahlungsabgleich', 'task_sync' => 'Aufgaben-Sync', 'calendar_publish' => 'Kalender-Veröffentlichung', 'shipping_provider' => 'Versanddienstleister', 'document_intake' => 'Dokumenteingang', 'backup_target' => 'Backupziel', 'domain_registrar' => 'Domain-Registrar', 'appointment_sync' => 'Terminsynchronisation', 'sms_gateway' => 'SMS-Gateway', 'online_payment' => 'Online-Zahlung', 'peppol_transport' => 'Peppol-Transport', 'fare_meter' => 'Taxameter-Import', 'passenger_dispatch' => 'Fahrtvermittlung', 'mobility_data' => 'Mobilitätsdaten'],
+    ],
+    'privacy' => [
+        'agreement_status' => ['draft' => 'Entwurf', 'active' => 'Aktiv', 'terminated' => 'Gekündigt', 'expired' => 'Abgelaufen'],
+        'compliance_finding_status' => ['missing' => 'Fehlt', 'expiring' => 'Läuft ab', 'required' => 'Erforderlich', 'in_review' => 'In Prüfung', 'deviation_accepted' => 'Abweichung akzeptiert', 'present' => 'Vorhanden', 'not_applicable' => 'Nicht anwendbar'],
+        'controller_role' => ['controller' => 'Verantwortlicher', 'joint_controller' => 'Gemeinsam Verantwortlicher', 'processor' => 'Auftragsverarbeiter'],
+        'data_subject_kind' => ['user' => 'Mitarbeiter', 'portal_user' => 'Portal-Nutzer', 'customer' => 'Kunde', 'supplier' => 'Lieferant', 'lead' => 'Lead', 'job_application' => 'Bewerber', 'club_member' => 'Vereinsmitglied'],
+        'data_subject_request_status' => ['intake' => 'Eingegangen', 'identity_check' => 'Identitätsprüfung', 'in_progress' => 'In Bearbeitung', 'awaiting_info' => 'Wartet auf Information', 'completed' => 'Erledigt', 'rejected' => 'Abgelehnt', 'withdrawn' => 'Zurückgezogen'],
+        'data_subject_request_type' => ['access' => 'Auskunft (Art. 15)', 'rectification' => 'Berichtigung (Art. 16)', 'erasure' => 'Löschung (Art. 17)', 'restriction' => 'Einschränkung (Art. 18)', 'portability' => 'Datenübertragbarkeit (Art. 20)', 'objection' => 'Widerspruch (Art. 21)'],
+        'dpia_outcome' => ['open' => 'Offen', 'proceed' => 'Vertretbar – Durchführung', 'consult_authority' => 'Konsultation der Aufsichtsbehörde', 'abort' => 'Nicht durchführbar'],
+        'dpia_step_status' => ['pending' => 'Offen', 'done' => 'Abgeschlossen'],
+        'implementation_status' => ['planned' => 'Geplant', 'partial' => 'Teilweise umgesetzt', 'implemented' => 'Umgesetzt', 'not_applicable' => 'Nicht anwendbar'],
+        'incident_status' => ['detected' => 'Entdeckt', 'assessing' => 'In Bewertung', 'contained' => 'Eingedämmt', 'reported' => 'Gemeldet', 'closed' => 'Abgeschlossen'],
+        'incident_type' => ['loss' => 'Verlust', 'misdelivery' => 'Fehlversand', 'unauthorized_access' => 'Unberechtigter Zugriff', 'disclosure' => 'Offenlegung', 'alteration' => 'Unbefugte Veränderung', 'unavailability' => 'Nichtverfügbarkeit'],
+        'measure_category' => ['physical_access' => 'Zutrittskontrolle', 'system_access' => 'Zugangskontrolle', 'data_access' => 'Zugriffskontrolle', 'transfer' => 'Weitergabekontrolle', 'input' => 'Eingabekontrolle', 'availability' => 'Verfügbarkeitskontrolle', 'recovery' => 'Wiederherstellbarkeit', 'separation' => 'Trennungskontrolle', 'management' => 'Datenschutz-Management'],
+        'processing_activity_status' => ['draft' => 'Entwurf', 'in_review' => 'In Prüfung', 'approved' => 'Freigegeben', 'archived' => 'Archiviert'],
+        'processor_role' => ['controller' => 'Verantwortlicher', 'joint_controller' => 'Gemeinsam Verantwortlicher', 'processor' => 'Auftragsverarbeiter', 'subprocessor' => 'Unterauftragsverarbeiter'],
+        'retention_proposal_status' => ['pending' => 'offen', 'approved' => 'bestätigt', 'rejected' => 'abgelehnt', 'purged' => 'gelöscht'],
+        'review_result' => ['effective' => 'Wirksam', 'deviation' => 'Abweichung', 'ineffective' => 'Unwirksam'],
+    ],
+    'rental' => [
+        'rental_case_status' => ['draft' => 'Entwurf', 'reserved' => 'Reserviert', 'handed_over' => 'Übergeben', 'overdue' => 'Überfällig', 'returned' => 'Zurückgegeben', 'closed' => 'Abgeschlossen', 'cancelled' => 'Storniert'],
+        'rental_charge_kind' => ['daily_rate' => 'Tagessatz', 'hourly_rate' => 'Stundensatz', 'flat_rate' => 'Pauschale', 'weekend_surcharge' => 'Wochenendzuschlag', 'holiday_surcharge' => 'Feiertagszuschlag', 'cleaning' => 'Reinigung', 'consumable' => 'Verbrauchsmaterial', 'delivery' => 'Lieferung/Transport', 'damage' => 'Schaden', 'loss' => 'Verlust', 'discount' => 'Minderung/Nachlass', 'other' => 'Sonstiges'],
+        'rental_charge_status' => ['draft' => 'Entwurf', 'released' => 'Freigegeben', 'invoiced' => 'Abgerechnet', 'transferred' => 'Extern übergeben', 'cancelled' => 'Storniert'],
+        'rental_condition' => ['new' => 'Neuwertig', 'good' => 'Gut', 'used' => 'Gebraucht', 'worn' => 'Abgenutzt', 'damaged' => 'Beschädigt'],
+        'rental_deposit_status' => ['requested' => 'Angefordert', 'received' => 'Erhalten', 'refunded' => 'Erstattet', 'partially_retained' => 'Teilweise einbehalten', 'retained' => 'Einbehalten', 'waived' => 'Verzichtet'],
+        'rental_rate_card_status' => ['draft' => 'Entwurf', 'active' => 'Aktiv', 'retired' => 'Abgelöst'],
+        'rental_request_status' => ['requested' => 'angefragt', 'accepted' => 'angenommen', 'declined' => 'abgelehnt', 'withdrawn' => 'zurückgenommen'],
+        'rental_reservation_kind' => ['soft' => 'Vormerkung', 'hard' => 'Reservierung', 'rental' => 'Verleih', 'maintenance' => 'Wartungsfenster', 'cleaning' => 'Reinigung', 'transport' => 'Transport/Rüstzeit'],
+        'rental_return_follow_up' => ['none' => 'Keine Folge', 'cleaning' => 'Reinigung erforderlich', 'repair' => 'Reparatur erforderlich', 'block' => 'Sperren', 'claim' => 'Reklamation eröffnen'],
+    ],
+    'service_ticket' => [
+        'change_status' => ['draft' => 'Entwurf', 'pending_approval' => 'Wartet auf Freigabe', 'approved' => 'Genehmigt', 'implementing' => 'In Umsetzung', 'done' => 'Abgeschlossen', 'cancelled' => 'Abgebrochen'],
+        'problem_status' => ['open' => 'Offen', 'analyzing' => 'In Analyse', 'known_error' => 'Known Error', 'resolved' => 'Gelöst', 'closed' => 'Geschlossen'],
+        'service_request_status' => ['draft' => 'Entwurf', 'pending_approval' => 'Wartet auf Genehmigung', 'approved' => 'Genehmigt', 'rejected' => 'Abgelehnt', 'fulfilling' => 'In Erfüllung', 'done' => 'Erledigt'],
+        'service_ticket_kind' => ['incident' => 'Störung', 'service_request' => 'Service-Anfrage', 'question' => 'Frage'],
+        'service_ticket_priority' => ['low' => 'Niedrig', 'normal' => 'Normal', 'high' => 'Hoch', 'urgent' => 'Dringend'],
+        'service_ticket_source' => ['manual' => 'Manuell', 'maintenance_plan' => 'Wartungsplan', 'open_issue' => 'Offene Punkte', 'email' => 'E-Mail', 'customer_portal' => 'Kundenportal', 'api' => 'API'],
+        'service_ticket_status' => ['reported' => 'Gemeldet', 'triaged' => 'Triagiert', 'scheduled' => 'Eingeplant', 'in_progress' => 'In Arbeit', 'done' => 'Gelöst', 'accepted' => 'Abgenommen', 'closed' => 'Geschlossen', 'rejected' => 'Abgelehnt', 'waiting_customer' => 'Wartet auf Kunde', 'waiting_external' => 'Wartet auf Dritte', 'paused' => 'Pausiert'],
+        'ticket_close_code' => ['solved' => 'Gelöst', 'workaround' => 'Umgehungslösung', 'duplicate' => 'Duplikat', 'no_fault' => 'Kein Fehler', 'rejected' => 'Abgelehnt', 'other' => 'Sonstiges'],
+        'ticket_message_kind' => ['public_reply' => 'Antwort', 'internal_note' => 'Interne Notiz', 'system_event' => 'Systemereignis'],
+        'ticket_severity' => ['low' => 'Niedrig', 'medium' => 'Mittel', 'high' => 'Hoch'],
+    ],
+    'software' => [
+        'software_kind' => ['operating_system' => 'Betriebssystem', 'application' => 'Anwendung', 'firmware' => 'Firmware', 'driver' => 'Treiber', 'service' => 'Dienst', 'other' => 'Sonstige'],
+        'software_license_type' => ['perpetual' => 'Kauflizenz', 'subscription' => 'Abonnement', 'oem' => 'OEM', 'volume' => 'Volumenlizenz', 'free' => 'Kostenfrei', 'open_source' => 'Open Source', 'other' => 'Sonstige'],
+    ],
+    'survey' => [
+        'survey_invitation_status' => ['created' => 'erstellt', 'sent' => 'versendet', 'responded' => 'beantwortet', 'expired' => 'abgelaufen'],
+    ],
+    'tenders' => [
+        'tender_notice_match_state' => ['new' => 'Neu', 'muted' => 'Ausgeblendet', 'converted' => 'Übernommen'],
+    ],
+    'time_account' => [
+        'carryover_policy' => ['carry' => 'Übertrag (kumulierend)', 'cap' => 'Kappung beim Monatsabschluss'],
+        'time_account_source' => ['wage_type' => 'Lohnart (Zeitregel-Ergebnis)', 'attendance_net' => 'Anwesenheit (Netto-Minuten)', 'absence' => 'Abwesenheit (Tage)', 'shift_type_count' => 'Dienst-Zähler (Schichttyp)', 'external_item' => 'Externe Position (Menge)'],
+        'time_account_unit' => ['minutes' => 'Minuten', 'days' => 'Tage', 'count' => 'Anzahl'],
+    ],
+    'time_approval' => [
+        'month_closure_status' => ['draft' => 'Entwurf', 'submitted' => 'Eingereicht', 'approved' => 'Genehmigt', 'rejected' => 'Abgelehnt', 'reopened' => 'Wiedereröffnet', 'locked' => 'Gesperrt'],
+        'overtime_request_status' => ['submitted' => 'Eingereicht', 'approved' => 'Genehmigt', 'rejected' => 'Abgelehnt', 'withdrawn' => 'Zurückgezogen'],
+        'time_correction_status' => ['draft' => 'Entwurf', 'submitted' => 'Eingereicht', 'approved' => 'Genehmigt', 'rejected' => 'Abgelehnt', 'applied' => 'Angewendet', 'withdrawn' => 'Zurückgezogen'],
+    ],
+    'time_export' => [
+        'time_export_status' => ['preparing' => 'In Vorbereitung', 'ready' => 'Bereit', 'delivered' => 'Übermittelt', 'rejected' => 'Abgelehnt', 'superseded' => 'Ersetzt'],
     ],
 ];

@@ -1,7 +1,7 @@
 ---
 title: "Importación de Kimai"
 topic: admin.kimai
-version: 1
+version: 3
 keywords:
     - Kimai
     - importar tiempos
@@ -13,6 +13,9 @@ keywords:
     - reasiento
     - asignación de usuarios
     - devolver correcciones
+    - importación cada hora
+    - Kimai autoalojado
+    - permitir direcciones privadas
 audience:
     - admin
 related:
@@ -23,6 +26,7 @@ related:
     - admin.toggl
     - finance.open-times
     - admin.organization-settings
+    - admin.scheduler
 ---
 
 La página **Importación de Kimai** trae a WorkDiary los registros de tiempo de
@@ -46,8 +50,9 @@ sistema (el engranaje **Sistema** en la cabecera) en **Plugins** →
   token API de un usuario de Kimai (en Kimai en Perfil → Acceso API). Si deben
   llegar los tiempos de todas las personas, ese usuario necesita en Kimai el
   permiso view_other_timesheet.
-- La instancia de Kimai debe ser accesible públicamente. Solo el operador de
-  su instalación puede habilitar una instancia de una red interna.
+- La instancia de Kimai debe ser accesible públicamente, o bien habilita una
+  instancia autoalojada en su propia red con **Permitir direcciones
+  privadas** (véase Configuración).
 
 ## Configuración
 
@@ -56,21 +61,27 @@ en la entrada Kimai:
 
 1. **URL base de Kimai**: la dirección con la que abre Kimai en el navegador,
    sin /api al final.
-2. **Token API de Kimai**: el token de Kimai. Se guarda cifrado; un campo
+2. **Permitir direcciones privadas**: solo para una instancia autoalojada en
+   su propia red (por ejemplo 192.168.x.x). Sin este interruptor, WorkDiary
+   rechaza las direcciones internas. El cambio queda registrado. Si el
+   operador de su instalación ha bloqueado esta autorización, el interruptor
+   no tiene efecto.
+3. **Token API de Kimai**: el token de Kimai. Se guarda cifrado; un campo
    vacío conserva el valor anterior al guardar.
-3. **Consultar los tiempos de todos los usuarios**: activado (por defecto) si
+4. **Consultar los tiempos de todos los usuarios**: activado (por defecto) si
    el usuario del token puede leer los tiempos de otros; de lo contrario solo
    llegan sus propios tiempos.
-4. **Franja de sincronización (días)**: hasta dónde mira hacia atrás una
-   importación API sin período (30 días por defecto).
-5. **Adoptar como facturable**: activado, adopta la marca de facturable de
+5. **Franja de sincronización (días)**: hasta dónde mira hacia atrás una
+   importación API sin período (30 días por defecto), también la importación horaria.
+6. **Adoptar como facturable**: activado, adopta la marca de facturable de
    Kimai; desactivado, nunca marca como facturables los tiempos importados.
-6. **Modo de usuario único** e **Imputar tiempos para el ID de usuario**: solo
-   para puestos individuales, véase más abajo.
-7. Para el reasiento, **Activar la reescritura**, **ID de actividad de Kimai
+7. **Modo de usuario único** e **Imputar tiempos para el usuario**: solo
+   para puestos individuales, véase más abajo. El usuario se elige de la
+   lista.
+8. Para el reasiento, **Activar la reescritura**, **ID de actividad de Kimai
    para reasientos** y opcionalmente **Devolución inmediata de los tiempos
    nuevos**; para devolver correcciones, **Devolver las correcciones**.
-8. **Guardar**. Con **Probar conexión** en el diálogo comprueba el acceso.
+9. **Guardar**. Con **Probar conexión** en el diálogo comprueba el acceso.
    Sin token, el plugin indica el modo CSV; no es un error.
 
 ## Importar tiempos
@@ -89,8 +100,14 @@ período (**Desde**, **Hasta**) y haga clic en **Importar desde la API**. Sin
 período, WorkDiary consulta los últimos días según la franja de
 sincronización. La importación omite las hojas de tiempo en curso, sin fin.
 
-No existe una importación programada de Kimai: cada importación empieza en
-esta página. Después la página indica cuántas entradas se crearon, se
+**Importación cada hora:** en cuanto la URL base y el token de API están
+guardados, la importación API se ejecuta además sola cada hora, sobre la
+franja de sincronización y con conciliación de eliminaciones (véase más
+abajo). La frecuencia se cambia en **Tareas programadas**, en la entrada
+«Importación de Kimai». Sin acceso a la API no hay importación automática;
+los archivos CSV se suben siempre aquí.
+
+Tras una importación en esta página, la página indica cuántas entradas se crearon, se
 omitieron o quedaron abiertas en la bandeja, y cuántas no pudieron asignarse
 a ningún usuario.
 
@@ -110,15 +127,17 @@ a ningún usuario.
   el proyecto, y contabiliza el grupo. La asignación se memoriza; las
   importaciones siguientes contabilizan entonces sin preguntar.
 - **Personas:** cada tiempo pertenece a la persona que lo registró en Kimai.
-  La importación CSV usa la columna de correo y la importación API el nombre
-  de usuario de Kimai. WorkDiary compara uno u otro con la dirección de correo
-  de los usuarios activos. Sin coincidencia se crea en la bandeja un caso
+  La importación CSV usa la columna de correo y la importación API la
+  dirección de correo del usuario de Kimai (si falta, su nombre de usuario).
+  WorkDiary compara uno u otro con la dirección de correo de los usuarios
+  activos; una elección memorizada en la bandeja para un nombre de usuario
+  sigue siendo válida. Sin coincidencia se crea en la bandeja un caso
   «Usuario desconocido» o «Entrada sin señal de usuario», en lugar de que el
   tiempo acabe sin aviso en el usuario principal. Elija allí el usuario; la
   elección se memoriza.
 - **Modo de usuario único:** solo si está activado, la importación asigna las
   entradas sin persona identificable al usuario predeterminado. Es el usuario
-  de **Imputar tiempos para el ID de usuario** o, si no, el propietario de la
+  de **Imputar tiempos para el usuario** o, si no, el propietario de la
   organización o el primer usuario.
 
 ## Nueva importación y cambios
@@ -181,7 +200,7 @@ segundo plano y se repite si hay errores.
   introduzca el número de una actividad de Kimai.
 - «Ningún proyecto está asignado a un proyecto de Kimai»: ejecute primero una
   importación API o contabilice los grupos API en la bandeja.
-- Muchos casos «Usuario desconocido»: los nombres de usuario de Kimai o la
+- Muchos casos «Usuario desconocido»: las direcciones de correo en Kimai o la
   columna de correo no coinciden con las direcciones de correo de WorkDiary.
   Asigne cada persona una vez en la bandeja.
 - Solo llegan los tiempos del usuario del token: le falta en Kimai el permiso
@@ -189,8 +208,11 @@ segundo plano y se repite si hay errores.
   desactivado.
 - La importación CSV no crea nada: la fila de encabezado necesita al menos una
   fecha y una hora de fin o una duración.
-- La API no es accesible: introduzca la dirección sin /api, compruebe el token
-  y utilice **Probar conexión**. Si la instancia está en una red interna,
-  WorkDiary indica una dirección privada. Si los errores se acumulan,
+- La API no es accesible: la página muestra el error y no se importa nada.
+  Introduzca la dirección sin /api, compruebe el token y utilice **Probar
+  conexión**. Si la instancia está en una red interna, WorkDiary indica una
+  dirección privada; active **Permitir direcciones privadas**. Si el
+  operador ha bloqueado esta autorización, la instancia necesita una
+  dirección accesible públicamente. Si los errores se acumulan,
   WorkDiary desactiva el plugin automáticamente; una vez corregida la causa,
   restablézcalo en la página **Plugins** con **Restablecer y reactivar**.

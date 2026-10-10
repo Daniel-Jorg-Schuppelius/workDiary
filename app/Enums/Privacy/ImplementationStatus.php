@@ -26,10 +26,10 @@ enum ImplementationStatus: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Planned => __('Geplant'),
-            self::Partial => __('Teilweise umgesetzt'),
-            self::Implemented => __('Umgesetzt'),
-            self::NotApplicable => __('Nicht anwendbar'),
+            self::Planned => __('enums.privacy.implementation_status.planned'),
+            self::Partial => __('enums.privacy.implementation_status.partial'),
+            self::Implemented => __('enums.privacy.implementation_status.implemented'),
+            self::NotApplicable => __('enums.privacy.implementation_status.not_applicable'),
         };
     }
 }

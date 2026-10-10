@@ -94,10 +94,6 @@ final class ZammadTimeReturnTest extends TestCase {
 
                 return true;
             }
-
-            public function addArticle(int $ticketId, string $body, bool $internal = true): bool {
-                return true;
-            }
         };
     }
 

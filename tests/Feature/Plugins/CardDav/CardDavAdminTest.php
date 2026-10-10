@@ -186,6 +186,33 @@ final class CardDavAdminTest extends TestCase {
         $this->assertTrue($connection->refresh()->active);
     }
 
+    /** Nach der Auto-Sperre zeigt die Seite den Weg zurück; Speichern hebt die Sperre auf (Phase 137). */
+    public function test_saving_the_connection_lifts_the_auto_lock(): void {
+        $connection = $this->connection();
+        $connection->forceFill(['addressbook_url' => 'https://cloud.example.com/remote.php/dav/addressbooks/svc/kontakte/'])->save();
+        for ($i = 0; $i < 10; $i++) {
+            $connection->recordConnectionFailure('401 Unauthorized');
+        }
+        $this->assertFalse($connection->refresh()->isSyncable());
+
+        $this->actingAs($this->admin)->get(route('admin.carddav.index'))
+            ->assertOk()
+            ->assertSee(__('carddav::carddav.health.locked', ['count' => 10]));
+
+        $this->actingAs($this->admin)->post(route('admin.carddav.connection.store'), [
+            'name' => 'Nextcloud',
+            'base_url' => 'https://cloud.example.com/remote.php/dav',
+            'username' => 'svc',
+            'app_password' => 'neu',
+            'active' => '1',
+        ])->assertSessionHas('success');
+
+        $connection->refresh();
+        $this->assertNull($connection->disabled_at);
+        $this->assertSame(0, $connection->consecutive_failures);
+        $this->assertTrue($connection->isSyncable());
+    }
+
     public function test_manual_sync_requires_syncable_connection(): void {
         $this->connection(); // ohne gewähltes Adressbuch → nicht sync-fähig
 

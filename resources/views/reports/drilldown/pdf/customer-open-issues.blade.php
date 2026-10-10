@@ -8,14 +8,14 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Kunden Drilldown - Offene Punkte')
-@section('pdf-heading', 'Kunden Drilldown: Offene Punkte')
+@section('pdf-title', __('Drilldown: Offene Punkte'))
+@section('pdf-heading', __('Drilldown: Offene Punkte'))
 
 @section('pdf-meta')
-    Kunde: {{ $customerName }}<br>
-    Zeitraum: {{ $label }}
+    {{ __('Kunde') }}: {{ $customerName }}<br>
+    {{ __('Zeitraum') }}: {{ $label }}
     @if ($escalatedOnly)
-        <br>Filter: Nur eskalierte offene Punkte
+        <br>{{ __('Filter: nur eskalierte offene Punkte') }}
     @endif
 @endsection
 

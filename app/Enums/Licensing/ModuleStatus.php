@@ -37,10 +37,10 @@ enum ModuleStatus: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::NotLicensed => __('Nicht lizenziert'),
-            self::Active => __('Aktiv'),
-            self::InactiveByCustomer => __('Deaktiviert'),
-            self::Blocked => __('Gesperrt'),
+            self::NotLicensed => __('enums.licensing.module_status.not_licensed'),
+            self::Active => __('enums.licensing.module_status.active'),
+            self::InactiveByCustomer => __('enums.licensing.module_status.inactive_by_customer'),
+            self::Blocked => __('enums.licensing.module_status.blocked'),
         };
     }
 

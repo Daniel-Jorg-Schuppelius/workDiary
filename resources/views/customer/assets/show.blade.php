@@ -8,8 +8,8 @@
 --}}
 {{--
   Portal-Objektakte Detail (Feature 027, Rang 50): kundensichtbarer Schnitt —
-  Stammdaten, Prüf-/Wartungstermine, abgeschlossene Wartungen, freigegebene
-  Protokolle. Interne Defekt-Details bleiben bewusst draußen.
+  Stammdaten, Prüf-/Wartungstermine, abgeschlossene Wartungen, unterschriebene
+  freigegebene Protokolle mit PDF. Interne Defekt-Details bleiben bewusst draußen.
 --}}
 @extends('customer.layout')
 
@@ -65,9 +65,12 @@
             @else
                 <ul class="divide-y divide-base-300 text-sm">
                     @foreach ($asset->protocols as $protocol)
-                        <li class="flex items-center justify-between gap-2 py-2">
-                            <span>{{ $protocol->title }}</span>
-                            <span class="opacity-70">{{ $protocol->status->label() }} · {{ optional($protocol->occurred_at)->fdate() }}</span>
+                        <li class="flex flex-wrap items-center justify-between gap-2 py-2">
+                            <span class="min-w-0">{{ $protocol->title }}</span>
+                            <span class="flex items-center gap-2">
+                                <span class="opacity-70">{{ $protocol->status->label() }} · {{ optional($protocol->occurred_at)->fdate() }}</span>
+                                <x-button :href="route('customer.assets.protocols.pdf', [$asset, $protocol])" tone="outline" size="sm" icon="download">{{ __('PDF herunterladen') }}</x-button>
+                            </span>
                         </li>
                     @endforeach
                 </ul>

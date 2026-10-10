@@ -31,11 +31,11 @@ enum RentalReturnFollowUp: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::None => (string) __('Keine Folge'),
-            self::Cleaning => (string) __('Reinigung erforderlich'),
-            self::Repair => (string) __('Reparatur erforderlich'),
-            self::Block => (string) __('Sperren'),
-            self::Claim => (string) __('Reklamation eröffnen'),
+            self::None => (string) __('enums.rental.rental_return_follow_up.none'),
+            self::Cleaning => (string) __('enums.rental.rental_return_follow_up.cleaning'),
+            self::Repair => (string) __('enums.rental.rental_return_follow_up.repair'),
+            self::Block => (string) __('enums.rental.rental_return_follow_up.block'),
+            self::Claim => (string) __('enums.rental.rental_return_follow_up.claim'),
         };
     }
 

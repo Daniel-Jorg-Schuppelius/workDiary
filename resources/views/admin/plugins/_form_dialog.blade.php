@@ -6,7 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Variablen: $plugin, $setting, $schema, $state --}}
+{{-- Variablen: $plugin, $setting, $schema, $state, $userOptions --}}
 @php
     $action = route('admin.plugins.update', $plugin->id());
 @endphp
@@ -52,7 +52,7 @@
         @include($plugin->settingsView(), ['plugin' => $plugin, 'setting' => $setting, 'schema' => $schema])
     @elseif ($schema !== [])
         @foreach ($schema as $field)
-            @include('admin.plugins._field', ['field' => $field, 'setting' => $setting])
+            @include('admin.plugins._field', ['field' => $field, 'setting' => $setting, 'userOptions' => $userOptions ?? []])
         @endforeach
     @else
         {{-- Kein Schema/keine View: Konfigurationsorte verlinken statt leerem Dialog

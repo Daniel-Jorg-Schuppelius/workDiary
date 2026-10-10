@@ -6,7 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Rücksendung anmelden (MVP-935). Erwartet: $deliveries, $serials, $assets --}}
+{{-- Rücksendung anmelden (MVP-935). Erwartet: $deliveries, $serials, $assets, $rmas --}}
 @extends('customer.layout')
 
 @section('title', __('claims.portal_return.title'))
@@ -60,5 +60,34 @@
             </form>
         </x-card>
     @endif
+
+    <h2 class="text-lg font-semibold">{{ __('claims.portal_return.list.title') }}</h2>
+    <x-table>
+        <x-slot:head>
+            <tr>
+                <x-table.th>{{ __('claims.portal_return.list.rma') }}</x-table.th>
+                <x-table.th>{{ __('claims.portal_return.list.claim') }}</x-table.th>
+                <x-table.th>{{ __('claims.portal_return.list.status') }}</x-table.th>
+                <x-table.th class="text-right"></x-table.th>
+            </tr>
+        </x-slot:head>
+        @forelse ($rmas as $rma)
+            <tr>
+                <td class="font-mono">{{ $rma->rma_number }}</td>
+                <td>{{ $rma->claimCase?->number }} — {{ $rma->claimCase?->title }}</td>
+                <td>{{ $rma->status->label() }}</td>
+                <td class="text-right">
+                    @foreach ($rma->returnShipments as $shipment)
+                        @if ($shipment->labelAttachment())
+                            <a class="link" href="{{ route('customer.returns.label', [$rma, $shipment]) }}">{{ __('claims.portal_return.label') }}</a>
+                        @endif
+                    @endforeach
+                </td>
+            </tr>
+        @empty
+            <x-table.empty :colspan="4" :title="__('claims.portal_return.list.empty')" />
+        @endforelse
+    </x-table>
+    <x-pagination :paginator="$rmas" standing />
 </div>
 @endsection

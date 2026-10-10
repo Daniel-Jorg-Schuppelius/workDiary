@@ -46,20 +46,23 @@ class RetentionController extends Controller {
 
         $organization = Auth::user()?->organization;
 
+        // Alle Katalog-Bereiche (Feature 130): auch reine Ausweis-Bereiche
+        // ohne Scan-Policy (time_records, location_points, documents_general)
+        // erscheinen in der Fristen-Tabelle — mit Kennzeichnung.
+        $areas = collect(array_keys((array) config('retention.areas')))->map(fn(string $area) => [
+            'area' => $area,
+            'label' => $this->registry->labelFor($area),
+            'years' => $organization !== null ? $this->registry->yearsFor($organization, $area) : null,
+            'days' => $this->registry->daysFor($area),
+            'basis' => $organization !== null ? $this->registry->basisFor($organization, $area) : null,
+            'scanned' => $this->registry->policy($area) !== null,
+        ])->values();
+
         return view('privacy.retention.index', [
             'proposals' => $proposals,
             'region' => $organization !== null ? $this->registry->regionFor($organization) : 'DE',
-            // Alle Katalog-Bereiche (Feature 130): auch reine Ausweis-Bereiche
-            // ohne Scan-Policy (time_records, location_points, documents_general)
-            // erscheinen in der Fristen-Tabelle — mit Kennzeichnung.
-            'areas' => collect(array_keys((array) config('retention.areas')))->map(fn(string $area) => [
-                'area' => $area,
-                'label' => (string) config("retention.areas.{$area}.label", $area),
-                'years' => $organization !== null ? $this->registry->yearsFor($organization, $area) : null,
-                'days' => $this->registry->daysFor($area),
-                'basis' => $organization !== null ? $this->registry->basisFor($organization, $area) : null,
-                'scanned' => $this->registry->policy($area) !== null,
-            ])->values(),
+            'areas' => $areas,
+            'areaLabels' => $areas->pluck('label', 'area')->all(),
             'canManage' => Gate::allows('manage', ComplianceFinding::class),
         ]);
     }

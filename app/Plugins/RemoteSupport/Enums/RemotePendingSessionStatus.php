@@ -29,10 +29,10 @@ enum RemotePendingSessionStatus: string implements HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::Open => (string) __('Offen'),
-            self::Imported => (string) __('Übernommen'),
-            self::Dismissed => (string) __('Verworfen'),
-            self::Attempt => (string) __('Verbindungsversuch'),
+            self::Open => (string) __('remote-support::enums.remote_pending_session_status.open'),
+            self::Imported => (string) __('remote-support::enums.remote_pending_session_status.imported'),
+            self::Dismissed => (string) __('remote-support::enums.remote_pending_session_status.dismissed'),
+            self::Attempt => (string) __('remote-support::enums.remote_pending_session_status.attempt'),
         };
     }
 

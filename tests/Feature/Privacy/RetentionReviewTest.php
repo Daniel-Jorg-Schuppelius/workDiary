@@ -174,6 +174,13 @@ final class RetentionReviewTest extends TestCase {
             ->assertOk()
             ->assertSee('Lohn-/Zeitexporte');
 
+        // Bereichsnamen folgen der Sprache (Phase 137, MVP-1106).
+        $admin->forceFill(['preferences' => ['locale' => 'en']])->save();
+        $this->actingAs($admin->fresh())->get(route('dataprotection.retention.index'))
+            ->assertOk()
+            ->assertSee('Payroll and time exports')
+            ->assertDontSee('Lohn-/Zeitexporte');
+
         $this->actingAs($admin)
             ->post(route('dataprotection.retention.decide', $proposal), ['action' => 'reject'])
             ->assertRedirect();

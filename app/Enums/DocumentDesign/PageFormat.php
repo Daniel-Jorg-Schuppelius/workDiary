@@ -30,8 +30,8 @@ enum PageFormat: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::A4Portrait => __('A4 Hochformat'),
-            self::A4Landscape => __('A4 Querformat'),
+            self::A4Portrait => __('enums.document_design.page_format.a4_portrait'),
+            self::A4Landscape => __('enums.document_design.page_format.a4_landscape'),
         };
     }
 

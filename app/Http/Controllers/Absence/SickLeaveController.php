@@ -10,6 +10,8 @@
 
 namespace App\Http\Controllers\Absence;
 
+use App\Enums\Sickness\SickLeaveKind;
+use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Absence\SaveSickLeaveRequest;
 use App\Models\Absence\SickLeave;
@@ -37,6 +39,7 @@ class SickLeaveController extends Controller {
             'isEdit' => false,
             'isDialog' => true,
             'canAssignOthers' => $auth->isAdmin(),
+            'canMarkContinuation' => $this->mayMarkContinuation($auth),
             'assignableUsers' => $auth->isAdmin() ? LookupCache::userDropdown() : collect(),
             'previousLeaves' => $this->previousLeavesFor($auth, $auth->isAdmin() ? null : (int) $auth->id),
             'prefillStart' => $request->query('start_date') ?? '',
@@ -55,6 +58,9 @@ class SickLeaveController extends Controller {
 
         if (! $auth->isAdmin() || empty($data['user_id'])) {
             $data['user_id'] = $auth->id;
+        }
+        if (! $this->mayMarkContinuation($auth)) {
+            unset($data['continuation_of_id']);
         }
         $data['reported_at'] = now();
         $data['recorded_by'] = $auth->id;
@@ -81,6 +87,7 @@ class SickLeaveController extends Controller {
             'isEdit' => true,
             'isDialog' => true,
             'canAssignOthers' => $auth->isAdmin(),
+            'canMarkContinuation' => $this->mayMarkContinuation($auth),
             'assignableUsers' => $auth->isAdmin() ? LookupCache::userDropdown() : collect(),
             'previousLeaves' => $this->previousLeavesFor($auth, (int) $sickLeave->user_id, $sickLeave),
             'prefillStart' => '',
@@ -100,6 +107,11 @@ class SickLeaveController extends Controller {
         $auth = Auth::user();
         if (! $auth->isAdmin()) {
             unset($data['user_id']);
+        }
+        if (! $this->mayMarkContinuation($auth)) {
+            unset($data['continuation_of_id']);
+        } elseif (($data['kind'] ?? null) === SickLeaveKind::FollowUp->value) {
+            $data['continuation_of_id'] = null;
         }
 
         if ($kasseNotified && $sickLeave->kasse_notified_at === null) {
@@ -197,6 +209,11 @@ class SickLeaveController extends Controller {
             'mime' => $file->getMimeType() ?? 'application/octet-stream',
             'size' => $file->getSize() ?: 0,
         ]);
+    }
+
+    /** Fortsetzungserkrankung meldet die Krankenkasse dem Arbeitgeber — kein Selbstbedienungsfeld. */
+    private function mayMarkContinuation(User $auth): bool {
+        return $auth->isAdmin() || $auth->hasEffectivePermission(Permission::SickLeaveManage->value);
     }
 
     /**

@@ -9,8 +9,9 @@
   Importseite einer Zeiterfassung (CSV, API, Rückübertragung). Parameter:
   $routePrefix (…import-csv, …import-api, …export-api), $texts (title,
   subtitle, csv_hint, api_title, api_hint, api_missing, export_title,
-  export_hint, export_confirm, export_action), dazu vom Controller
-  $apiConfigured, $exportEnabled, $inboxOpenCount.
+  export_hint, export_confirm, export_action, optional webhook_title und
+  webhook_hint), optional $webhookUrl, dazu vom Controller $apiConfigured,
+  $exportEnabled, $inboxOpenCount.
 --}}
 <x-page-shell>
     <x-page-toolbar>
@@ -63,6 +64,14 @@
             </form>
         </x-card>
     @endif
+
+    @isset($webhookUrl)
+        <x-card>
+            <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ $texts['webhook_title'] }}</h2>
+            <p class="mb-2 text-sm text-muted">{{ $texts['webhook_hint'] }}</p>
+            <code class="select-all break-all text-sm">{{ $webhookUrl }}</code>
+        </x-card>
+    @endisset
 
     <x-card>
         <div class="flex items-center justify-between">

@@ -1,7 +1,7 @@
 ---
 title: "Plateforme d'apprentissage"
 topic: learning.overview
-version: 5
+version: 6
 keywords:
     - e-learning
     - LMS
@@ -259,7 +259,9 @@ catalogue)**.
 
 L'analyse montre des taux et des anomalies, pas des profils individuels. Les
 taux n'apparaissent qu'à partir de cinq inscriptions afin qu'on ne puisse pas
-remonter aux personnes. Points, badges et classement sont désactivés par
+remonter aux personnes. L'export en PDF, CSV ou Excel respecte le même seuil
+et nécessite le droit **Exporter les rapports** ; les administrateurs peuvent
+toujours exporter. Points, badges et classement sont désactivés par
 défaut ; le classement n'affiche en outre que les personnes consentantes.
 
 Les notifications suivent les règles de l’organisation : attribution,

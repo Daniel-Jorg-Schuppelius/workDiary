@@ -74,10 +74,11 @@ class OpenProjectPlugin extends AbstractPlugin implements TimeImporter {
     public function settingsSchema(): array {
         return [
             ['key' => 'base_url', 'label' => __('Instanz-URL'), 'type' => 'text', 'required' => true, 'help' => __('z. B. https://openproject.example.com (mit oder ohne /api/v3).')],
+            ['key' => 'allow_private_network', 'label' => __('Private Adressen erlauben'), 'type' => 'boolean', 'default' => false, 'help' => __('Nur für eine selbst gehostete OpenProject-Instanz im eigenen Netz: erlaubt eine Instanz-URL mit privater/interner Adresse. Wird protokolliert und wirkt nur, wenn der Betreiber diese Freigabe zulässt.')],
             ['key' => 'api_token', 'label' => __('API-Token'), 'type' => 'password', 'required' => true, 'help' => __('Mein Konto → Zugriffstoken → API in OpenProject.')],
             ['key' => 'sync_window_days', 'label' => __('Sync-Zeitfenster (Tage)'), 'type' => 'text', 'default' => '30', 'help' => __('Wie viele Tage rückwirkend pro API-Lauf abgefragt werden.')],
             ['key' => 'default_billable', 'label' => __('Abrechenbar übernehmen'), 'type' => 'boolean', 'default' => true, 'help' => __('Wenn aus, werden importierte Zeiten nie als abrechenbar markiert.')],
-            ['key' => 'default_user_id', 'label' => __('Zeiten buchen für Benutzer-ID'), 'type' => 'text', 'help' => __('Optional. Leer = Organisations-Owner bzw. erster Benutzer.')],
+            ['key' => 'default_user_id', 'label' => __('Zeiten buchen für Benutzer'), 'type' => 'user', 'help' => __('Optional. Leer = Organisations-Owner bzw. erster Benutzer.')],
             ['key' => 'default_activity_id', 'label' => __('OpenProject-Activity-ID (Rückbuchung)'), 'type' => 'text', 'help' => __('TimeEntriesActivity-ID, unter der zurückgebuchte Zeiten angelegt werden (Pflicht für den Export).')],
             ['key' => 'create_missing_projects', 'label' => __('Fehlende Projekte/Aufgaben anlegen'), 'type' => 'boolean', 'default' => false, 'help' => __('Beim Struktur-Sync fehlende workDiary-Projekte/Aufgaben automatisch anlegen statt nur zuzuordnen.')],
             ['key' => 'writeback', 'label' => __('Korrekturen zurückschreiben'), 'type' => 'boolean', 'default' => false, 'help' => __('Schreibt Korrekturen an bereits importierten Zeiten zurück nach OpenProject (Änderung und Löschung). Wurde der Eintrag dort zwischenzeitlich geändert, wird nichts überschrieben — der Fall landet in der Integrations-Inbox. Abgerechnete Zeiten werden nie zurückgeschrieben.')],
@@ -112,7 +113,7 @@ class OpenProjectPlugin extends AbstractPlugin implements TimeImporter {
     /** Health-Check: pingt /api/v3/users/me mit dem konfigurierten Token. */
     public function healthCheck(): PluginHealth {
         $config = OpenProjectConfig::resolve();
-        $client = new OpenProjectApiClient($config['api_token'], $config['base_url']);
+        $client = new OpenProjectApiClient($config['api_token'], $config['base_url'], $config['allow_private_network']);
 
         if (! $client->isConfigured()) {
             return PluginHealth::degraded(__('Keine OpenProject-URL oder kein API-Token hinterlegt.'));

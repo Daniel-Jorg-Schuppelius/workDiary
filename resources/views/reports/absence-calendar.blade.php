@@ -40,7 +40,7 @@
             <input id="ac-year" type="number" name="year" min="2000" max="2100"
                    value="{{ $year }}" class="input input-sm input-bordered w-24" data-autosubmit>
         </x-filter-field>
-        @if ($isAdmin && $teams->isNotEmpty())
+        @if ($seesTeam && $teams->isNotEmpty())
             <x-filter-field :label="__('Team')" for="ac-team">
                 <select id="ac-team" name="team" class="select select-sm select-bordered" data-autosubmit>
                     <option value="">{{ __('Alle Teams') }}</option>
@@ -50,7 +50,7 @@
                 </select>
             </x-filter-field>
         @endif
-        @if ($isAdmin)
+        @if ($seesTeam && $seesReasons)
             <label class="label cursor-pointer gap-2 order-40">
                 <input type="checkbox" name="anon" value="1" class="toggle toggle-sm" data-autosubmit
                        @checked($anonymize)>

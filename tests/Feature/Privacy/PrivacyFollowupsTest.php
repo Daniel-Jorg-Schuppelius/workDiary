@@ -189,6 +189,22 @@ class PrivacyFollowupsTest extends TestCase {
         );
     }
 
+    public function test_catalog_defaults_use_the_organization_language_and_keep_existing_names(): void {
+        $org = Organization::factory()->create(['locale' => 'en']);
+        $svc = app(ComplianceAnalysisService::class);
+
+        $labels = $svc->catalog($org)->pluck('label', 'requirement_key');
+        $this->assertSame('DPA with processor', $labels['avv_required']);
+        $this->assertSame('TOM evidence valid (not expired)', $labels['tom_proof_current']);
+
+        // Bestand wird nicht umgeschrieben, auch wenn die Sprache wechselt.
+        $org->update(['locale' => 'de']);
+        $this->assertSame('DPA with processor', $svc->catalog($org)->firstWhere('requirement_key', 'avv_required')?->label);
+
+        $german = Organization::factory()->create(['locale' => 'de']);
+        $this->assertSame('AVV mit Auftragsverarbeiter', $svc->catalog($german)->firstWhere('requirement_key', 'avv_required')?->label);
+    }
+
     public function test_branch_profile_seeds_requirement_presets(): void {
         $org = Organization::factory()->create();
         $actor = User::factory()->admin()->create(['organization_id' => $org->id]);

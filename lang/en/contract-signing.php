@@ -60,7 +60,7 @@ return [
         'empty' => 'No agreement yet — start with “Add agreement”.',
         'no_revision' => 'no version yet',
         'revision' => 'Version',
-        'title' => 'Agreements (DPA/NDA)',
+        'title' => 'Agreements (DPA, NDA, rental terms)',
     ],
     'declaration' => [
         'default' => 'I confirm that I am authorised to represent my party and that I have read and agree to this :kind with :organization in the displayed version including its annexes.',
@@ -254,11 +254,12 @@ return [
         'organization' => 'Organisation side',
     ],
     'portal' => [
+        'capability' => 'Agreements (DPA, NDA, rental terms)',
         'downloads' => 'Documents',
         'empty' => 'There are no agreements at the moment.',
         'menu' => 'Agreements',
         'not_released' => 'not released yet',
-        'subtitle' => 'Data processing and non-disclosure agreements with us — documents and completion record after release.',
+        'subtitle' => 'Data processing and non-disclosure agreements and rental terms with us — documents and completion record after release.',
         'title' => 'Agreements',
     ],
     'public' => [

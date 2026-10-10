@@ -1,7 +1,7 @@
 ---
 title: "Kundenportal – Tickets"
 topic: customer-portal.tickets
-version: 2
+version: 3
 keywords:
     - Support-Anfrage
     - Störung melden
@@ -23,9 +23,10 @@ related:
 ---
 
 Unter **Tickets** melden Sie Störungen und Anliegen an das Service-Team Ihres
-Auftragnehmers und verfolgen die Bearbeitung. Zum Bereich gehört der
-**Servicekatalog**, in dem Sie Standardleistungen bestellen. Ist sie für Ihr
-Unternehmen freigegeben, kommt die Seite **Bekannte Fehler** hinzu.
+Auftragnehmers und verfolgen die Bearbeitung. Zum Bereich gehören der
+**Servicekatalog**, in dem Sie Standardleistungen bestellen, und die Seite
+**Bekannte Fehler**. Alle drei erscheinen im Menü, sobald Ihr Auftragnehmer
+den Bereich für Ihr Unternehmen freigegeben hat.
 
 ## Meine Tickets
 
@@ -78,6 +79,11 @@ Steht ein Ticket auf **Gelöst**, haben Sie zwei Möglichkeiten:
   der Wiedereröffnung** mindestens fünf Zeichen ein. Das Ticket geht zurück
   auf **In Arbeit**, und Ihr Grund erscheint als Nachricht im Verlauf.
 
+Auch nach der Bestätigung, solange das Ticket auf **Abgenommen** steht, können
+Sie es auf dieselbe Weise mit **Wiedereröffnen** zurückholen, etwa wenn der
+Fehler später erneut auftritt. Steht es auf **Geschlossen**, ist das nicht mehr
+möglich; melden Sie dann ein neues Ticket.
+
 ## Bearbeitung bewerten
 
 Steht ein Ticket auf **Gelöst**, **Abgenommen**, **Geschlossen** oder
@@ -98,7 +104,8 @@ klicken Sie auf **Bewerten**. Je Ticket ist nur eine Bewertung möglich.
 - **Pausiert** – die Bearbeitung ruht vorübergehend.
 - **Gelöst** – das Team hält das Anliegen für erledigt; bitte bestätigen
   oder wiedereröffnen.
-- **Abgenommen** – Sie haben die Lösung bestätigt.
+- **Abgenommen** – Sie haben die Lösung bestätigt; wiedereröffnen können Sie
+  das Ticket weiterhin.
 - **Geschlossen** – der Vorgang ist beendet.
 - **Abgelehnt** – das Anliegen wird nicht bearbeitet.
 
@@ -134,7 +141,7 @@ Die Seite **Bekannte Fehler** listet Störungen, die Ihr Auftragnehmer bereits
 kennt und an deren dauerhafter Lösung er arbeitet. Zu jedem Eintrag steht,
 sofern vorhanden, ein **Workaround**: wie Sie das Problem bis dahin umgehen.
 Prüfen Sie die Liste, bevor Sie ein neues Ticket melden. Die Seite ist nur
-lesbar.
+lesbar; Sie öffnen sie über **Bekannte Fehler** in der Kopfzeile.
 
 ## Grenzen
 

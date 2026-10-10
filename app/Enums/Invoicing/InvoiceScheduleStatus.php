@@ -26,9 +26,9 @@ enum InvoiceScheduleStatus: string implements HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::Active => (string) __('Aktiv'),
-            self::Paused => (string) __('Pausiert'),
-            self::Ended => (string) __('Beendet'),
+            self::Active => (string) __('enums.invoicing.invoice_schedule_status.active'),
+            self::Paused => (string) __('enums.invoicing.invoice_schedule_status.paused'),
+            self::Ended => (string) __('enums.invoicing.invoice_schedule_status.ended'),
         };
     }
 

@@ -1,7 +1,7 @@
 ---
 title: "Recorded Times"
 topic: customer-portal.time
-version: 2
+version: 3
 keywords:
     - time tracking
     - timesheet

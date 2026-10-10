@@ -31,15 +31,15 @@ enum MeasureCategory: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::PhysicalAccess => __('Zutrittskontrolle'),
-            self::SystemAccess => __('Zugangskontrolle'),
-            self::DataAccess => __('Zugriffskontrolle'),
-            self::Transfer => __('Weitergabekontrolle'),
-            self::Input => __('Eingabekontrolle'),
-            self::Availability => __('Verfügbarkeitskontrolle'),
-            self::Recovery => __('Wiederherstellbarkeit'),
-            self::Separation => __('Trennungskontrolle'),
-            self::Management => __('Datenschutz-Management'),
+            self::PhysicalAccess => __('enums.privacy.measure_category.physical_access'),
+            self::SystemAccess => __('enums.privacy.measure_category.system_access'),
+            self::DataAccess => __('enums.privacy.measure_category.data_access'),
+            self::Transfer => __('enums.privacy.measure_category.transfer'),
+            self::Input => __('enums.privacy.measure_category.input'),
+            self::Availability => __('enums.privacy.measure_category.availability'),
+            self::Recovery => __('enums.privacy.measure_category.recovery'),
+            self::Separation => __('enums.privacy.measure_category.separation'),
+            self::Management => __('enums.privacy.measure_category.management'),
         };
     }
 }

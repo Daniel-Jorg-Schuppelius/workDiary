@@ -22,7 +22,7 @@ use Illuminate\View\View;
 
 /**
  * Interne Verwaltung der Kundenportal-Zugänge an der Kundenakte (MVP-510):
- * einladen, erneut senden, deaktivieren/widerrufen, reaktivieren. Alle
+ * einladen, erneut senden, deaktivieren/widerrufen, reaktivieren, zurücksetzen. Alle
  * Aktionen strikt organisations- und kundenbezogen; eigene Permission
  * `customerPortal.access.manage` statt eines impliziten update-Bypasses.
  */
@@ -86,6 +86,32 @@ class CustomerPortalAccessController extends Controller {
         $this->service->reactivate($portalUser, $actor);
 
         return back()->with('success', __('Portalzugang reaktiviert.'));
+    }
+
+    /** Nur aktive Zugänge; offene Einladungen haben „erneut senden“ (MVP-1096). */
+    public function reset(Customer $customer, User $portalUser): RedirectResponse {
+        $this->authorizeManage($customer);
+        $this->assertBelongsToCustomer($customer, $portalUser);
+        abort_unless($this->service->state($portalUser) === PortalAccessService::STATE_ACTIVE, 404);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        $this->service->reset($portalUser, $actor);
+
+        return back()->with('success', __('customer_portal.reset.flash', ['email' => $portalUser->email]));
+    }
+
+    /** Nur Zugänge mit eingerichtetem zweiten Faktor; Route verlangt Passwortbestätigung (MVP-1100). */
+    public function resetSecondFactor(Customer $customer, User $portalUser): RedirectResponse {
+        $this->authorizeManage($customer);
+        $this->assertBelongsToCustomer($customer, $portalUser);
+        abort_unless($portalUser->hasTwoFactorEnabled(), 404);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        $this->service->resetSecondFactor($portalUser, $actor);
+
+        return back()->with('success', __('customer_portal.second_factor.flash', ['email' => $portalUser->email]));
     }
 
     private function authorizeManage(Customer $customer): void {

@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Reporting\Concerns;
 
+use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\User;
@@ -91,10 +92,14 @@ trait WritesReportCsv {
 
     /**
      * Audit-Eintrag `report.exported` mit vollem Filter-Hash (vgl. Meta-Zeile).
+     * Jeder Export (CSV, Excel, PDF) läuft hier durch — deshalb sitzt hier
+     * auch die Prüfung des Exportrechts.
      *
      * @param  array<string, mixed>  $filters
      */
     protected function auditExport(Request $request, string $reportCode, string $format, array $filters): void {
+        abort_unless($this->mayExportReport($request), 403);
+
         $user = $request->user();
         $organization = $this->currentOrganizationOrNull();
         if (! $user instanceof User || $organization === null) {
@@ -116,6 +121,42 @@ trait WritesReportCsv {
             'ip' => $request->ip(),
             'user_agent' => substr((string) $request->userAgent(), 0, 255),
         ]);
+    }
+
+    /**
+     * E10/E28 (MVP-1101): Exporte der Berichte verlangen `report.export`,
+     * Admins dürfen immer. Frei bleibt ein Export, der nur die eigenen Daten
+     * enthält ({@see exportIsPersonal()}), und der Export eines Fachberichts
+     * außerhalb des Menüs „Auswertungen“ ({@see exportNeedsReportPermission()}).
+     * Öffentlich, weil `<x-report-export>` die Knöpfe danach zeigt.
+     */
+    public function mayExportReport(Request $request): bool {
+        if (! $this->exportNeedsReportPermission()) {
+            return true;
+        }
+        $user = $request->user();
+
+        return $user instanceof User
+            && ($user->isAdmin() || $user->hasEffectivePermission(Permission::ReportExport->value) || $this->exportIsPersonal($request));
+    }
+
+    /**
+     * Gilt `report.export` für diesen Bericht? Ja für alle Berichte im Menü
+     * „Auswertungen“, gleich aus welchem Modul. Fachberichte anderer Menüs
+     * (Agile, Helpdesk, Reklamationen …) überschreiben das mit false: Ihren
+     * Export deckt das Fachrecht der Seite.
+     */
+    protected function exportNeedsReportPermission(): bool {
+        return true;
+    }
+
+    /**
+     * Enthält der Export nur Daten der anfragenden Person (Mein Monat, eigene
+     * Arbeitsbilanz, Sicht „Nur eigene“)? Berichte mit eigener Sicht
+     * überschreiben das.
+     */
+    protected function exportIsPersonal(Request $request): bool {
+        return false;
     }
 
     /**

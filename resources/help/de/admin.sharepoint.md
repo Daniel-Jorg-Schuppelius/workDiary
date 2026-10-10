@@ -1,7 +1,7 @@
 ---
 title: "SharePoint-Ablage"
 topic: admin.sharepoint
-version: 1
+version: 2
 keywords:
     - SharePoint
     - SharePoint Online
@@ -96,8 +96,8 @@ wird:
 - **Dokumenttyp → Ordner**: Wählen Sie je Zeile einen Dokumenttyp und tragen
   Sie einen Unterordner ein, relativ zur Bibliothek. Leere Zeilen bleiben
   unberücksichtigt; nach jedem Speichern stehen drei weitere freie Zeilen
-  bereit. Die Typen erscheinen in der Liste unter ihrem englischen
-  Kurznamen, etwa contract für Verträge oder invoice für Rechnungen.
+  bereit. Die Typen erscheinen in der Liste mit ihrer Bezeichnung, etwa
+  Vertrag oder Rechnung.
 
 Klicken Sie anschließend auf **Speichern**.
 
@@ -117,15 +117,16 @@ Rechnungen und Protokolle folgen nicht den Ordnerregeln.
 - **Automatisch bei Ereignissen:** Erhält ein Dokument den Status **Aktiv**
   (freigegeben) oder eine neue Version, überträgt WorkDiary diese Version.
   Reine Änderungen an Metadaten lösen keine neue Übertragung aus. Wird eine
-  Rechnung gestellt oder ein Protokoll signiert, folgt dessen PDF – sofern der
-  jeweilige Inhalt ausgewählt ist.
+  Rechnung gestellt oder ein Protokoll signiert, folgt dessen PDF. Das alles
+  gilt nur für die ausgewählten Inhalte; ohne Haken bei **Dokumente (DMS)**
+  überträgt WorkDiary keine Dokumente.
 - **Im Hintergrund mit Wiederholung:** Die Übertragung läuft über eine
   Warteschlange. Schlägt sie fehl, wird sie automatisch wiederholt; keine
   Datei wird doppelt geschrieben.
-- **Jetzt spiegeln:** reiht alle aktiven Dokumente der Organisation ein,
-  etwa nach der Ersteinrichtung. Unveränderte Dateien überspringt WorkDiary.
-  Rechnungen und Protokolle erfasst dieser Knopf nicht; sie werden beim
-  Stellen bzw. Signieren übertragen.
+- **Jetzt spiegeln:** reiht alles aus den ausgewählten Inhalten ein –
+  aktive Dokumente, gestellte Rechnungen und signierte Protokolle –, etwa nach
+  der Ersteinrichtung, auch für Belege von davor. Unveränderte Dateien
+  überspringt WorkDiary.
 
 Einen festen Zeitplan gibt es nicht. Aus SharePoint liest WorkDiary nur, um zu
 prüfen, ob eine gespiegelte Datei dort verändert wurde.
@@ -144,6 +145,11 @@ Aktionen bereit:
   Version des Dokuments übernommen.
 - **Spiegelung trennen**: Dieses eine Dokument wird nicht mehr gespiegelt; die
   Anbindung bleibt aktiv.
+
+Bei Rechnungs- und Protokoll-PDFs gibt es nur **Remote überschreiben**:
+Gestellte Rechnungen und signierte Protokolle sind unveränderlich, WorkDiary
+legt sein PDF erneut ab. Wollen Sie die geänderte Datei behalten, wählen Sie
+**Verwerfen**.
 
 Die **Zuordnungs-Inbox** steht Personen offen, die die Abrechnung verwalten
 dürfen.
@@ -174,6 +180,7 @@ denselben Einstellungen weiter.
   **Aktiv** ist ausgeschaltet, es ist keine Bibliothek gewählt, oder die
   Verbindung wurde nach wiederholten Fehlern in Folge stillgelegt. Nach
   Behebung der Ursache setzen **Trennen** und erneutes Verbinden die
-  Fehlerzählung zurück.
+  Fehlerzählung zurück. Solange die Verbindung gestört ist, steht dazu eine
+  Betriebsaufgabe in der Übersicht der Betriebsaufgaben.
 - **Zustand prüfen:** Neben dem Seitentitel steht der zuletzt geprüfte Zustand;
   **Verbindung testen** prüft ihn sofort.

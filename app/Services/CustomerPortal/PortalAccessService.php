@@ -12,18 +12,20 @@ declare(strict_types=1);
 
 namespace App\Services\CustomerPortal;
 
-use App\Mail\CustomerPortalInvitationMail;
+use App\Mail\{CustomerPortalInvitationMail, CustomerPortalPasswordResetMail, PortalSecondFactorResetNoticeMail};
 use App\Models\Customer\Customer;
-use App\Models\Platform\User;
+use App\Models\Platform\{Organization, User};
 use App\Services\Auth\UserSessionInvalidator;
+use App\Support\CanonicalUrl;
 use CommonToolkit\Helper\Data\{CryptoHelper, EmailHelper};
 use Illuminate\Support\{Carbon, Str};
-use Illuminate\Support\Facades\{Hash, Mail};
+use Illuminate\Support\Facades\{Hash, Mail, URL};
 use Illuminate\Validation\ValidationException;
 
 /**
  * Lebenszyklus der Kundenportal-Zugänge (MVP-510): einladen, erneut senden,
- * deaktivieren/widerrufen, reaktivieren und Einladung annehmen.
+ * deaktivieren/widerrufen, reaktivieren, zurücksetzen und Einladung annehmen;
+ * dazu „Passwort vergessen“ für aktive Zugänge (MVP-1096).
  *
  * Portalkonten sind users mit customer_id (einzige Trennlinie zum internen
  * Konto, {@see \App\Auth\CustomerUserProvider}). Der Einladungs-Token wird nur
@@ -42,6 +44,9 @@ class PortalAccessService {
 
     /** Gültigkeit eines Einladungs-Links in Tagen. */
     public const INVITE_TTL_DAYS = 7;
+
+    /** Gültigkeit eines „Passwort vergessen“-Links in Minuten (wie intern). */
+    public const PASSWORD_RESET_TTL_MINUTES = 60;
 
     public function __construct(private readonly UserSessionInvalidator $sessions) {}
 
@@ -115,6 +120,102 @@ class PortalAccessService {
     }
 
     /**
+     * Setzt einen aktiven Zugang zurück: das bisherige Passwort wird durch ein
+     * unbekanntes ersetzt, alle Sitzungen enden, und der Kontakt erhält eine
+     * neue Einladung. Zwei-Faktor-Methoden bleiben bestehen.
+     */
+    public function reset(User $portalUser, User $actor): void {
+        $this->assertPortalUser($portalUser);
+
+        $portalUser->forceFill(['password' => Hash::make(Str::random(64))])->save();
+        $this->sessions->invalidateAll($portalUser);
+
+        $this->issueInvite($portalUser, $actor, 'portal.access.reset', reset: true);
+    }
+
+    /**
+     * Entfernt alle Zwei-Faktor-Methoden eines Zugangs, der keinen Faktor mehr
+     * besitzt (MVP-1100); Sitzungen enden, der Kunde wird informiert. Verlangt
+     * die Organisation 2FA, richtet er sie bei der nächsten Anmeldung neu ein.
+     */
+    public function resetSecondFactor(User $portalUser, User $actor): void {
+        $this->assertPortalUser($portalUser);
+
+        $portalUser->twoFactorCredentials()->delete();
+        $portalUser->forceFill([
+            'two_factor_secret' => null,
+            'two_factor_recovery_codes' => null,
+            'two_factor_confirmed_at' => null,
+        ])->save();
+        $this->sessions->invalidateAll($portalUser);
+
+        $portalUser->audit('portal.access.second_factor_reset', ['by' => (int) $actor->id]);
+        Mail::to($portalUser->email)->send(new PortalSecondFactorResetNoticeMail($portalUser));
+    }
+
+    /**
+     * „Passwort vergessen“: versendet einen Link nur an aktive Zugänge eines
+     * nicht gesperrten Mandanten. Der Aufrufer antwortet immer gleich.
+     */
+    public function sendPasswordReset(string $email): void {
+        $portalUser = User::query()
+            ->withoutGlobalScopes()
+            ->whereRaw('LOWER(email) = ?', [EmailHelper::normalize($email)])
+            ->whereNotNull('customer_id')
+            ->first();
+
+        if ($portalUser === null || $this->state($portalUser) !== self::STATE_ACTIVE) {
+            return;
+        }
+        $organization = Organization::query()->withoutGlobalScopes()->find($portalUser->organization_id);
+        if ($organization instanceof Organization && ! $organization->publicSurfacesAvailable()) {
+            return;
+        }
+
+        $portalUser->audit('portal.access.password_reset_requested', []);
+
+        Mail::to($portalUser->email)->send(new CustomerPortalPasswordResetMail(
+            $portalUser,
+            $this->passwordResetUrl($portalUser),
+            self::PASSWORD_RESET_TTL_MINUTES,
+        ));
+    }
+
+    /**
+     * Signierter Link aus der konfigurierten Adresse (S-11: der Aufruf ist
+     * anonym, der Host-Header darf das Ziel nicht bestimmen).
+     */
+    public function passwordResetUrl(User $portalUser): string {
+        return CanonicalUrl::base() . URL::temporarySignedRoute(
+            'customer.password.reset',
+            Carbon::now()->addMinutes(self::PASSWORD_RESET_TTL_MINUTES),
+            ['user' => $portalUser->getRouteKey(), 'hash' => $this->passwordFingerprint($portalUser)],
+            false,
+        );
+    }
+
+    /** Gilt der Link (Signatur prüft der Controller) noch für dieses Konto? */
+    public function resolvePasswordReset(User $portalUser, string $hash): bool {
+        return $portalUser->isCustomer()
+            && $this->state($portalUser) === self::STATE_ACTIVE
+            && hash_equals($this->passwordFingerprint($portalUser), $hash);
+    }
+
+    /** Setzt das neue Passwort und beendet alle Sitzungen; 2FA bleibt unverändert. */
+    public function resetPassword(User $portalUser, string $password): void {
+        $this->assertPortalUser($portalUser);
+
+        $portalUser->forceFill([
+            'password' => Hash::make($password),
+            'is_new_system' => true,
+            'must_change_password' => false,
+        ])->save();
+        $this->sessions->invalidateAll($portalUser);
+
+        $portalUser->audit('portal.access.password_reset', []);
+    }
+
+    /**
      * Löst einen Klartext-Token auf: Hash-Match + nicht abgelaufen + Konto
      * nicht deaktiviert — sonst null (Controller antwortet neutral mit 404).
      */
@@ -168,8 +269,17 @@ class PortalAccessService {
         return self::STATE_ACTIVE;
     }
 
+    /**
+     * Bindet den Link an Passwortstand und Adresse: nach dem Setzen, einem
+     * Zurücksetzen durch den Auftragnehmer oder einem Adresswechsel gilt er
+     * nicht mehr — einmalig ohne gespeicherten Token.
+     */
+    private function passwordFingerprint(User $portalUser): string {
+        return (string) CryptoHelper::hash($portalUser->getAuthPassword() . '|' . mb_strtolower((string) $portalUser->email));
+    }
+
     /** Erzeugt Token + Ablauf, auditiert und versendet die Einladung. */
-    private function issueInvite(User $portalUser, User $actor, string $auditEvent): void {
+    private function issueInvite(User $portalUser, User $actor, string $auditEvent, bool $reset = false): void {
         $token = Str::random(48);
 
         $portalUser->forceFill([
@@ -186,6 +296,7 @@ class PortalAccessService {
         Mail::to($portalUser->email)->send(new CustomerPortalInvitationMail(
             $portalUser,
             route('customer.invitation.show', ['token' => $token]),
+            $reset,
         ));
     }
 

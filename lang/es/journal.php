@@ -216,6 +216,7 @@ return [
             'customerQueryAnswered' => 'Consulta del cliente respondida',
             'pdfRendered' => 'PDF generado',
             'pdfDownloaded' => 'PDF descargado',
+            'portalPdfDownloaded' => 'PDF descargado en el portal de clientes',
             'item' => [
                 'photoAdded' => 'Foto añadida',
                 'photoRemoved' => 'Foto eliminada',

@@ -21,13 +21,14 @@ use Illuminate\Queue\SerializesModels;
  * Einladung zu einem Kundenportal-Zugang (MVP-510). Der Link trägt den
  * einmaligen Klartext-Token zur Passwortvergabe; es werden nie Passwörter
  * oder andere Zugangsdaten versendet. Absender/Anrede nutzen den
- * Organisationsnamen aus dem Branding.
+ * Organisationsnamen aus dem Branding. `$reset`: neue Einladung nach
+ * „Zugang zurücksetzen“ (MVP-1096).
  */
 class CustomerPortalInvitationMail extends Mailable {
     use Queueable;
     use SerializesModels;
 
-    public function __construct(public User $portalUser, public string $acceptUrl) {}
+    public function __construct(public User $portalUser, public string $acceptUrl, public bool $reset = false) {}
 
     public function envelope(): Envelope {
         return new Envelope(subject: (string) __('Ihr Zugang zum Kundenportal von :org', [
@@ -40,6 +41,7 @@ class CustomerPortalInvitationMail extends Mailable {
             'portalUser' => $this->portalUser,
             'acceptUrl' => $this->acceptUrl,
             'brandName' => $this->brandName(),
+            'reset' => $this->reset,
         ]);
     }
 

@@ -41,9 +41,9 @@ enum ImportMatchPolicy: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::AutoLinkExactOnly => (string) __('Nur eindeutige zuordnen (Rest in die Inbox)'),
-            self::AutoLinkAndCreate => (string) __('Zuordnen, sonst neu anlegen'),
-            self::ManualReview => (string) __('Alles manuell prüfen'),
+            self::AutoLinkExactOnly => (string) __('enums.integration.import_match_policy.auto_link_exact_only'),
+            self::AutoLinkAndCreate => (string) __('enums.integration.import_match_policy.auto_link_and_create'),
+            self::ManualReview => (string) __('enums.integration.import_match_policy.manual_review'),
         };
     }
 

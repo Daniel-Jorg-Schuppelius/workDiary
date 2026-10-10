@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Reporting;
 
+use App\Enums\User\Permission;
 use App\Enums\Vacation\{VacationStatus, VacationType};
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
@@ -46,10 +47,16 @@ class AbsenceCalendarReportController extends Controller {
         private readonly HolidayService $holidayService,
     ) {}
 
+    /** E10: Ohne Urlaubssicht zeigt der Plan nur die eigenen Abwesenheiten. */
+    protected function exportIsPersonal(Request $request): bool {
+        return ! $this->viewerHolds(Permission::VacationViewAny);
+    }
+
     public function index(Request $request): View|SymfonyResponse {
         /** @var User $viewer */
         $viewer = Auth::user();
-        $isAdmin = $this->viewerIsAdmin();
+        $seesTeam = $this->viewerHolds(Permission::VacationViewAny);
+        $seesReasons = $this->viewerHolds(Permission::SickLeaveViewAny);
 
         $year = (int) $request->input('year', CarbonImmutable::now()->year);
         $year = max(2000, min(2100, $year));
@@ -57,19 +64,19 @@ class AbsenceCalendarReportController extends Controller {
         $yearEnd = $yearStart->endOfYear();
         $daysInYear = (int) $yearStart->diffInDays($yearEnd->addDay());
 
-        // Datenschutz-Filter: Nicht-Admins sehen fremde Fehlgründe IMMER
-        // neutral; Admins können die neutrale Sicht (z. B. für den Aushang)
-        // explizit zuschalten.
-        $anonymize = ! $isAdmin || $request->boolean('anon');
+        // Datenschutz-Filter: Fremde Fehlgründe (auch Krankheit) nur mit Sicht
+        // auf Krankmeldungen; die neutrale Sicht (z. B. für den Aushang) lässt
+        // sich explizit zuschalten.
+        $anonymize = ! $seesReasons || $request->boolean('anon');
 
-        // Personenkreis: Admin sieht alle (optional teamgefiltert), sonst nur sich selbst.
+        // Personenkreis: mit Urlaubssicht alle (optional teamgefiltert), sonst nur sich selbst.
         $teamSqid = (string) $request->input('team', '');
         $teamId = $teamSqid !== '' ? Sqid::decodeOrNumeric(Team::class, $teamSqid) : null;
 
         $usersQuery = User::query()
             ->where('organization_id', $viewer->organization_id)
             ->orderBy('name');
-        if (! $isAdmin) {
+        if (! $seesTeam) {
             $usersQuery->whereKey($viewer->getKey());
         } elseif ($teamId !== null) {
             $usersQuery->whereHas('teams', fn ($q) => $q->whereKey($teamId));
@@ -118,7 +125,7 @@ class AbsenceCalendarReportController extends Controller {
             $rows[] = ['user' => $u, 'sqid' => Sqid::encode(User::class, $uid), 'bars' => $bars];
         }
 
-        $teams = $isAdmin
+        $teams = $seesTeam
             ? Team::query()->whereNull('archived_at')->orderBy('name')->get(['id', 'name'])
             : collect();
 
@@ -126,7 +133,8 @@ class AbsenceCalendarReportController extends Controller {
             'rows' => $rows,
             'year' => $year,
             'anonymize' => $anonymize,
-            'isAdmin' => $isAdmin,
+            'seesTeam' => $seesTeam,
+            'seesReasons' => $seesReasons,
             'teams' => $teams,
             'teamFilter' => $teamSqid,
             'monthStarts' => $this->monthScale($yearStart, $daysInYear),
@@ -248,6 +256,7 @@ class AbsenceCalendarReportController extends Controller {
 
         SickLeave::query()
             ->whereIn('user_id', $userIds)
+            ->whereNull('cancelled_at')
             ->whereDate('start_date', '<=', $yearEnd->toDateString())
             ->whereDate('end_date', '>=', $yearStart->toDateString())
             ->orderBy('start_date')

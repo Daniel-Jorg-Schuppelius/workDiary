@@ -30,12 +30,12 @@ enum RentalDepositStatus: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Requested => (string) __('Angefordert'),
-            self::Received => (string) __('Erhalten'),
-            self::Refunded => (string) __('Erstattet'),
-            self::PartiallyRetained => (string) __('Teilweise einbehalten'),
-            self::Retained => (string) __('Einbehalten'),
-            self::Waived => (string) __('Verzichtet'),
+            self::Requested => (string) __('enums.rental.rental_deposit_status.requested'),
+            self::Received => (string) __('enums.rental.rental_deposit_status.received'),
+            self::Refunded => (string) __('enums.rental.rental_deposit_status.refunded'),
+            self::PartiallyRetained => (string) __('enums.rental.rental_deposit_status.partially_retained'),
+            self::Retained => (string) __('enums.rental.rental_deposit_status.retained'),
+            self::Waived => (string) __('enums.rental.rental_deposit_status.waived'),
         };
     }
 

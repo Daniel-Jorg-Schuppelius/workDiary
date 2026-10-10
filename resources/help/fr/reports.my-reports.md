@@ -1,7 +1,7 @@
 ---
 title: "Mes rapports"
 topic: reports.my-reports
-version: 1
+version: 5
 keywords:
     - Mon mois
     - Mon année
@@ -25,7 +25,9 @@ related:
 
 Sous **Rapports** → **Personnel**, chaque personne dispose de trois rapports sur
 son propre temps : **Mon mois**, **Mon année** et **Bilan de travail**. Ils
-n'affichent que vos propres saisies. Ils reposent sur vos saisies de temps ; le
+affichent vos propres saisies ; seules les personnes disposant du droit
+correspondant peuvent ouvrir le bilan de travail d'une autre personne (voir
+« Qui voit quoi »). Ils reposent sur vos saisies de temps ; le
 bilan de travail utilise en plus vos pointages et votre modèle de temps de
 travail. Les rapports ne sont pas une source de données à part : si un chiffre
 est faux, corrigez la saisie de temps ou le pointage – le rapport se recalcule
@@ -96,7 +98,8 @@ ne propose pas d'export.
 choisie la cible, la présence et le temps saisi. Les tuiles en haut :
 
 - **Cible** : temps de travail cible issu de votre modèle de temps de travail.
-  Les jours fériés et les jours de congé approuvé n'ont pas de cible.
+  Les jours fériés et les jours d'absence approuvée comme les congés, le congé
+  spécial, le congé non payé ou l’arrêt maladie n'ont pas de cible.
 - **Présence** : vos pointages moins les pauses. Les pointages annulés ne
   comptent pas ; un pointage en cours est compté jusqu'au moment présent.
 - **Saisi** : vos saisies de temps des types travail et déplacement.
@@ -121,8 +124,9 @@ Export : **PDF** avec les indicateurs et le tableau journalier.
 
 - **Mon mois** et **Mon année** n'affichent toujours que vos propres saisies,
   y compris pour les administrateurs.
-- Le **Bilan de travail** affiche par défaut votre propre bilan. Seuls les
-  administrateurs voient une barre de filtres avec **Employé** et **Équipe** et
+- Le **Bilan de travail** affiche par défaut votre propre bilan. Les
+  administrateurs et les personnes disposant du droit **Voir toutes les saisies
+  de temps** voient une barre de filtres avec **Employé** et **Équipe** et
   peuvent ainsi ouvrir le bilan d'une autre personne de la même organisation ;
   **Équipe** ne fait que restreindre la liste des employés proposés.
 - Le bilan de travail ne calcule que la période choisie. Il n'affiche pas le

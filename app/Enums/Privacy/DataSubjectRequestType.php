@@ -28,12 +28,12 @@ enum DataSubjectRequestType: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Access => __('Auskunft (Art. 15)'),
-            self::Rectification => __('Berichtigung (Art. 16)'),
-            self::Erasure => __('Löschung (Art. 17)'),
-            self::Restriction => __('Einschränkung (Art. 18)'),
-            self::Portability => __('Datenübertragbarkeit (Art. 20)'),
-            self::Objection => __('Widerspruch (Art. 21)'),
+            self::Access => __('enums.privacy.data_subject_request_type.access'),
+            self::Rectification => __('enums.privacy.data_subject_request_type.rectification'),
+            self::Erasure => __('enums.privacy.data_subject_request_type.erasure'),
+            self::Restriction => __('enums.privacy.data_subject_request_type.restriction'),
+            self::Portability => __('enums.privacy.data_subject_request_type.portability'),
+            self::Objection => __('enums.privacy.data_subject_request_type.objection'),
         };
     }
 }

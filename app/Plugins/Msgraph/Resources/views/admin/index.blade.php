@@ -343,9 +343,14 @@
                 <li>{{ __('msgraph::msgraph.entra.redirect_mail') }}: <code class="select-all break-all">{{ route('admin.msgraph.mail.oauth.callback') }}</code></li>
                 <li>{{ __('msgraph::msgraph.entra.redirect_contacts') }}: <code class="select-all break-all">{{ route('admin.msgraph.contacts.oauth.callback') }}</code></li>
                 <li>{{ __('msgraph::msgraph.entra.redirect_tasks') }}: <code class="select-all break-all">{{ route('admin.msgraph.tasks.oauth.callback') }}</code></li>
+                <li>{{ __('msgraph::msgraph.entra.redirect_onenote') }}: <code class="select-all break-all">{{ route('admin.msgraph.onenote.oauth.callback') }}</code></li>
                 <li>{{ __('msgraph::msgraph.entra.redirect_intake') }}: <code class="select-all break-all">{{ route('admin.cloud-intake.microsoft.oauth.callback') }}</code></li>
                 <li>{{ __('msgraph::msgraph.entra.redirect_adminconsent') }}: <code class="select-all break-all">{{ route('admin.msgraph.adminconsent.callback') }}</code></li>
                 <li>{{ __('msgraph::msgraph.entra.redirect_backup') }}: <code class="select-all break-all">{{ route('admin.backup-targets.microsoft.oauth.callback') }}</code></li>
+                {{-- SharePoint nutzt ohne eigene SHAREPOINT_*-App dieselbe App-Registrierung. --}}
+                @if (\Illuminate\Support\Facades\Route::has('admin.sharepoint.oauth.callback'))
+                    <li>{{ __('msgraph::msgraph.entra.redirect_sharepoint') }}: <code class="select-all break-all">{{ route('admin.sharepoint.oauth.callback') }}</code></li>
+                @endif
             </ul>
         </details>
     </x-card>

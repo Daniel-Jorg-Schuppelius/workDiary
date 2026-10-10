@@ -108,9 +108,9 @@ class CustomerRetentionReportController extends Controller {
         $exportFilters = array_merge(['cohort' => $cohort, 'year' => $year, 'lost_days' => $lostDays], $filters->toAuditArray());
 
         if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
-            $out = [['Kunde', 'ErsteLeistung', 'LetzteLeistung', $year !== null ? 'AktivIn' . $year : 'AktivImZieljahr']];
+            $out = [[(string) __('reporting.csv.customer'), (string) __('reporting.csv.first_service'), (string) __('reporting.csv.last_service'), $year !== null ? (string) __('reporting.csv.active_in_year', ['year' => $year]) : (string) __('reporting.csv.active_in_target_year')]];
             foreach ($rows as $row) {
-                $out[] = [$row['customerName'], $row['firstActivity'], $row['lastActivity'], $row['activeInYear'] === null ? '' : ($row['activeInYear'] ? 'ja' : 'nein')];
+                $out[] = [$row['customerName'], $row['firstActivity'], $row['lastActivity'], $row['activeInYear'] === null ? '' : ($row['activeInYear'] ? (string) __('reporting.csv.yes') : (string) __('reporting.csv.no'))];
             }
 
             return $this->csvWithMetadata($out, sprintf('kohorte_%d_%s_%s.csv', $cohort, $from->toDateString(), $to->toDateString()), 'customer-retention-cohort', $exportFilters, $request);
@@ -189,7 +189,7 @@ class CustomerRetentionReportController extends Controller {
     private function exportCsv(array $result, string $from, string $to, array $filters, Request $request): Response {
         $filename = sprintf('kundenbindung_%s_%s.csv', $from, $to);
         $out = [];
-        $out[] = array_merge(['Kohorte', 'Kunden'], array_map(static fn(int $i): string => 'Jahr+' . $i, range(0, count($result['cohorts']['years']) - 1)));
+        $out[] = array_merge([(string) __('reporting.csv.cohort'), (string) __('reporting.csv.customers')], array_map(static fn(int $i): string => (string) __('reporting.csv.year_plus', ['n' => $i]), range(0, count($result['cohorts']['years']) - 1)));
         foreach ($result['cohorts']['rows'] as $row) {
             $out[] = array_merge(
                 [$row['year'], $row['size']],
@@ -198,13 +198,13 @@ class CustomerRetentionReportController extends Controller {
         }
 
         $out[] = [];
-        $out[] = ['Bestandsbruecke', 'Anzahl'];
-        $out[] = ['BestandStart', $result['bridge']['start']];
-        $out[] = ['Neukunden', count($result['bridge']['new'])];
-        $out[] = ['Zurueckgewonnen', count($result['bridge']['reactivated'])];
-        $out[] = ['NeuWiederInaktiv', -count($result['bridge']['newChurned'])];
-        $out[] = ['Verloren', -count($result['bridge']['lost'])];
-        $out[] = ['BestandEnde', $result['bridge']['end']];
+        $out[] = [(string) __('reporting.csv.base_bridge'), (string) __('reporting.csv.count')];
+        $out[] = [(string) __('reporting.csv.base_start'), $result['bridge']['start']];
+        $out[] = [(string) __('reporting.csv.new_customers'), count($result['bridge']['new'])];
+        $out[] = [(string) __('reporting.csv.reactivated'), count($result['bridge']['reactivated'])];
+        $out[] = [(string) __('reporting.csv.new_churned'), -count($result['bridge']['newChurned'])];
+        $out[] = [(string) __('reporting.csv.lost'), -count($result['bridge']['lost'])];
+        $out[] = [(string) __('reporting.csv.base_end'), $result['bridge']['end']];
 
         return $this->csvWithMetadata($out, $filename, 'customer-retention', $filters, $request);
     }

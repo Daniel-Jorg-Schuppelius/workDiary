@@ -1,7 +1,7 @@
 ---
 title: "Punti aperti"
 topic: customer-portal.issues
-version: 2
+version: 3
 keywords:
     - punti aperti
     - lista delle pendenze
@@ -24,7 +24,7 @@ I punti aperti sono attività, difetti o chiarimenti che il Suo fornitore regist
 
 ## Come aprire la pagina
 
-Nella **Panoramica** clicchi sul riquadro **Punti aperti**. Il numero sul riquadro indica i punti non ancora chiusi. Il riquadro compare se il Suo fornitore ha rilasciato quest'area per Lei. Con lo stesso rilascio il menu mostra anche **Errori noti**; quell'elenco è descritto nell'argomento della guida sui ticket.
+Nella **Panoramica** clicchi sul riquadro **Punti aperti**. Il numero sul riquadro indica i punti non ancora chiusi. Il riquadro compare se il Suo fornitore ha rilasciato quest'area per Lei. L'elenco **Errori noti** appartiene all'area Ticket ed è descritto nell'argomento della guida sui ticket.
 
 ## Che cosa mostra un punto
 

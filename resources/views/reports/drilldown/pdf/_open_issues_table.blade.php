@@ -13,13 +13,13 @@
         <tr>
             <th>ID</th>
             @if ($showAsset ?? false)
-                <th>AssetID</th>
+                <th>{{ __('Asset-ID') }}</th>
             @endif
-            <th>Titel</th>
-            <th>Status</th>
-            <th>Severity</th>
+            <th>{{ __('Titel') }}</th>
+            <th>{{ __('Status') }}</th>
+            <th>{{ __('Schweregrad') }}</th>
             <th>{{ __('Fällig') }}</th>
-            <th>Zugewiesen</th>
+            <th>{{ __('Zugewiesen') }}</th>
         </tr>
     </thead>
     <tbody>

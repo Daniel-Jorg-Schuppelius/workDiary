@@ -37,6 +37,8 @@ final class ProtocolEventType {
     public const CustomerQueryAnswered = 'protocol.customerQueryAnswered';
     public const PdfRendered = 'protocol.pdfRendered';
     public const PdfDownloaded = 'protocol.pdfDownloaded';
+    // Abruf im Kundenportal (Phase 137, E17): eigener Eintrag als Download-Nachweis.
+    public const PortalPdfDownloaded = 'protocol.portalPdfDownloaded';
     public const ItemPhotoAdded = 'protocol.item.photoAdded';
     public const ItemPhotoRemoved = 'protocol.item.photoRemoved';
     public const ItemPhotoReordered = 'protocol.item.photoReordered';

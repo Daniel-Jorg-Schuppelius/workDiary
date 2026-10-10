@@ -38,6 +38,11 @@ class FleetReportController extends Controller {
     use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
+    /** E10: Sicht „Nur eigene“. */
+    protected function exportIsPersonal(Request $request): bool {
+        return $this->resolveScopeWithAdmin($request)[0] === 'mine';
+    }
+
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
         [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
@@ -272,7 +277,20 @@ class FleetReportController extends Controller {
      */
     private function exportCsv(array $rows, array $totals, string $from, string $to, Request $request, array $exportFilters): Response {
         $filename = sprintf('fuhrpark_%s_%s.csv', $from, $to);
-        $out = [['Kennzeichen', 'Bezeichnung', 'Antrieb', 'Fahrten', 'km', 'Erstattung', 'Tankungen', 'Liter', 'kWh', 'Energiekosten', '€/km', 'Tachostand']];
+        $out = [[
+            (string) __('reporting.csv.license_plate'),
+            (string) __('reporting.csv.label'),
+            (string) __('reporting.csv.propulsion'),
+            (string) __('reporting.csv.trips'),
+            (string) __('reporting.csv.km'),
+            (string) __('reporting.csv.reimbursement_eur'),
+            (string) __('reporting.csv.refuels'),
+            (string) __('reporting.csv.liters'),
+            (string) __('reporting.csv.kwh'),
+            (string) __('reporting.csv.energy_cost_eur'),
+            (string) __('reporting.csv.cost_per_km'),
+            (string) __('reporting.csv.odometer'),
+        ]];
         foreach ($rows as $r) {
             $v = $r['vehicle'];
             $out[] = [
@@ -291,7 +309,7 @@ class FleetReportController extends Controller {
             ];
         }
         $out[] = [
-            'Gesamt',
+            (string) __('reporting.csv.total'),
             '',
             '',
             $totals['trip_count'],

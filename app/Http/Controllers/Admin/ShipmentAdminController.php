@@ -24,18 +24,20 @@ use Illuminate\View\View;
  * eine Anbindung pro Organisation (unique(org, carrier)). Zugangsdaten
  * (Pflichtfelder nennt der Carrier über den ShippingProvider) sind at-rest verschlüsselt und werden nie
  * ausgegeben; leere Felder beim Bearbeiten lassen die gespeicherten Werte
- * unverändert. Nur registrierte Carrier (aus der {@see ShippingProviderRegistry})
+ * (auch die Abrechnungsnummer) unverändert. Bestehende Anbindungen ändert nur
+ * der Bearbeiten-Modus (MVP-1095). Nur registrierte Carrier (aus der {@see ShippingProviderRegistry})
  * sind wählbar.
  */
 class ShipmentAdminController extends Controller {
     /** Zugangsdaten-Schlüssel im verschlüsselten credentials-Array. */
     private const CREDENTIAL_KEYS = ['username', 'password', 'api_key', 'returns_receiver_id'];
 
-    public function index(ShippingProviderRegistry $registry): View {
+    public function index(Request $request, ShippingProviderRegistry $registry): View {
         $admin = $this->admin();
         $organization = $this->organization($admin);
 
         return view('admin.shipments.index', [
+            'editing' => $request->filled('edit') ? $this->resolveBySqid($organization, (string) $request->query('edit')) : null,
             'connections' => CarrierConnection::query()
                 ->where('organization_id', $organization->id)
                 ->orderBy('carrier')
@@ -61,6 +63,7 @@ class ShipmentAdminController extends Controller {
             'billing_number' => ['nullable', 'string', 'max:60'],
             'sandbox' => ['nullable', 'boolean'],
             'active' => ['nullable', 'boolean'],
+            'connection' => ['nullable', 'string'],
         ]);
 
         /** @var CarrierConnection $connection */
@@ -68,6 +71,11 @@ class ShipmentAdminController extends Controller {
             'organization_id' => $organization->id,
             'carrier' => (string) $data['carrier'],
         ]);
+
+        // Ohne Bearbeiten-Modus würde das leere Formular Sandbox und Aktiv der bestehenden Anbindung überschreiben.
+        if ($connection->exists && ($data['connection'] ?? '') !== $connection->sqid) {
+            return back()->with('error', __('shipping.flash.exists_use_edit'))->withInput();
+        }
 
         $credentials = $connection->exists ? ($connection->credentials ?? []) : [];
         foreach (self::CREDENTIAL_KEYS as $key) {
@@ -92,7 +100,7 @@ class ShipmentAdminController extends Controller {
             'carrier' => (string) $data['carrier'],
             'name' => (string) $data['name'],
             'credentials' => $credentials,
-            'billing_number' => filled($data['billing_number'] ?? null) ? trim((string) $data['billing_number']) : null,
+            'billing_number' => filled($data['billing_number'] ?? null) ? trim((string) $data['billing_number']) : $connection->billing_number,
             'sandbox' => (bool) ($data['sandbox'] ?? false),
             'active' => (bool) ($data['active'] ?? false),
             'created_by' => $connection->exists ? $connection->created_by : $admin->id,

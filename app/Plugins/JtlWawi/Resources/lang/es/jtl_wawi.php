@@ -39,6 +39,7 @@ return [
         'secret_keep' => '(sin cambios — dejar vacío)',
         'allow_private_network' => 'Permitir explícitamente direcciones privadas/internas',
         'allow_private_network_help' => 'Una Wawi OnPremise suele estar en su propia red. Esta autorización se audita y solo vale para esta conexión.',
+        'private_hint' => 'Para una Wawi local en su propia red, las direcciones privadas deben permitirse expresamente.',
         'last_sync' => 'Última sincronización',
         'last_error' => 'Último error',
     ],

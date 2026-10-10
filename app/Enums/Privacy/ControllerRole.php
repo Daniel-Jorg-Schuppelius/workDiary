@@ -25,9 +25,9 @@ enum ControllerRole: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Controller => __('Verantwortlicher'),
-            self::JointController => __('Gemeinsam Verantwortlicher'),
-            self::Processor => __('Auftragsverarbeiter'),
+            self::Controller => __('enums.privacy.controller_role.controller'),
+            self::JointController => __('enums.privacy.controller_role.joint_controller'),
+            self::Processor => __('enums.privacy.controller_role.processor'),
         };
     }
 }

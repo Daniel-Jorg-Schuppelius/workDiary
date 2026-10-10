@@ -1,7 +1,7 @@
 ---
 title: "Abschluss und Auswertungen"
 topic: accounting.closing
-version: 1
+version: 2
 keywords:
     - Monatsabschluss
     - Jahresabschluss
@@ -36,6 +36,11 @@ Nachweiskette. Ohne diese drei wäre der Abschluss nur eine Sichtbarkeit.
 Buchungen — ein Entwurf ist eine Absicht, keine Zahl. Umsatzsteuer- und
 EÜR-Auswertung sind prüfbare **Vorschauen**: Der MVP übermittelt nichts an
 ELSTER.
+
+**Export der Berichte:** PDF, CSV und Excel der Finanzberichte, der BWA und
+des Budgets setzen neben dem Leserecht das Recht **Auswertungen exportieren**
+voraus; ohne das Recht fehlen die Exportknöpfe. Administratoren dürfen immer
+exportieren.
 
 **Übergabe**: Der Z3-Prüfungsexport enthält Kontenplan, Journal,
 Buchungszeilen, offene Posten und Perioden; die DATEV-Übergabe entsteht aus den

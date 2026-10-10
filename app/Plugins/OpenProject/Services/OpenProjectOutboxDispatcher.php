@@ -70,7 +70,7 @@ class OpenProjectOutboxDispatcher extends TimeWritebackDispatcher implements Mir
             return null;
         }
 
-        $client = new OpenProjectApiClient($config['api_token'], $config['base_url']);
+        $client = new OpenProjectApiClient($config['api_token'], $config['base_url'], $config['allow_private_network']);
 
         return $client->isConfigured() ? $client : null;
     }

@@ -7,8 +7,8 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 @extends('layouts.app')
-@section('title', __('Mitarbeiter') . ' — ' . config('app.name', 'WorkDiary'))
-@section('nav-title', __('Mitarbeiter'))
+@section('title', __('user.employees') . ' — ' . config('app.name', 'WorkDiary'))
+@section('nav-title', __('user.employees'))
 
 @section('content')
     <?php $legacyUsers = collect($users ?? []); ?>

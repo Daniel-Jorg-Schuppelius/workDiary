@@ -24,6 +24,7 @@ class SaveSickLeaveRequest extends BaseFormRequest {
     protected array $sqidFields = [
         'user_id' => \App\Models\Platform\User::class,
         'follow_up_for_id' => \App\Models\Absence\SickLeave::class,
+        'continuation_of_id' => \App\Models\Absence\SickLeave::class,
     ];
 
     /** @return array<string, mixed> */
@@ -47,6 +48,23 @@ class SaveSickLeaveRequest extends BaseFormRequest {
                 'integer',
                 new \App\Rules\ExistsInCurrentOrganization('sick_leaves'),
                 Rule::requiredIf(fn() => $this->input('kind') === SickLeaveKind::FollowUp->value),
+            ],
+            'continuation_of_id' => [
+                'nullable',
+                'integer',
+                Rule::prohibitedIf(fn() => $this->input('kind') === SickLeaveKind::FollowUp->value),
+                function (string $attribute, mixed $value, \Closure $fail) use ($route): void {
+                    $earlier = SickLeave::query()->find($value);
+                    // Wie der Controller: nur Admins erfassen für andere.
+                    $userId = $this->user()?->isAdmin() && $this->filled('user_id')
+                        ? (int) $this->input('user_id')
+                        : (int) ($route->user_id ?? $this->user()?->id);
+                    if (! $earlier instanceof SickLeave
+                        || (int) $earlier->user_id !== $userId
+                        || $earlier->start_date->toDateString() >= (string) $this->input('start_date')) {
+                        $fail(__('Die Fortsetzungserkrankung muss eine frühere Krankmeldung derselben Person sein.'));
+                    }
+                },
             ],
             'au_number' => ['nullable', 'string', 'max:100'],
             'doctor_name' => ['nullable', 'string', 'max:255'],

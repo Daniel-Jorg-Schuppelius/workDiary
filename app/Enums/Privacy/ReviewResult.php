@@ -25,9 +25,9 @@ enum ReviewResult: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Effective => __('Wirksam'),
-            self::Deviation => __('Abweichung'),
-            self::Ineffective => __('Unwirksam'),
+            self::Effective => __('enums.privacy.review_result.effective'),
+            self::Deviation => __('enums.privacy.review_result.deviation'),
+            self::Ineffective => __('enums.privacy.review_result.ineffective'),
         };
     }
 }

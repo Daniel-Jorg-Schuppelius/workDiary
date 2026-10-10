@@ -1,7 +1,7 @@
 ---
 title: "Viajes, gastos y dietas"
 topic: travel-expenses.manage
-version: 2
+version: 3
 keywords:
     - nota de gastos
     - gastos de viaje
@@ -61,7 +61,7 @@ viajes**.
 indicados el inicio y el fin, WorkDiary crea por defecto un registro de tiempo
 no facturable para el tiempo de viaje. Un cuentakilómetros final más alto se
 traslada al vehículo de flota. Si el vehículo de flota está en **Modo libro de
-ruta**, los kilometrajes son obligatorios y el viaje se fija tras el fin del
+viajes**, los kilometrajes son obligatorios y el viaje se fija tras el fin del
 día. Cualquier persona con sesión iniciada puede registrar viajes si su
 organización usa el módulo; un viaje pertenece siempre a quien lo registró.
 
@@ -113,16 +113,16 @@ de lecturas erróneas.
 El comprobante original queda adjunto sin cambios: el reconocimiento no lo
 sustituye, solo le ahorra teclear.
 
-## Libro de ruta: firma, corrección y comparación del 1 %
+## Libro de viajes: firma, corrección y comparación del 1 %
 
-En modo libro de ruta, la persona que conduce cierra un trayecto **con su firma**;
+En modo libro de viajes, la persona que conduce cierra un trayecto **con su firma**;
 el trayecto queda bloqueado. Un trayecto ya bloqueado al final del día todavía se
 puede firmar. Si se corrige un trayecto en medio de la cadena mediante un trayecto
 de anulación y cambia su lectura final del cuentakilómetros, el siguiente trayecto
 empieza automáticamente allí, como corrección derivada; el original se mantiene.
 
-La **comparación del 1 %** bajo el justificante del libro de ruta contrasta por
-vehículo y año el método del libro de ruta con la regla del 1 %. El vehículo
+La **comparación del 1 %** bajo el justificante del libro de viajes contrasta por
+vehículo y año el método del libro de viajes con la regla del 1 %. El vehículo
 necesita el precio bruto de catálogo y la distancia domicilio–trabajo; allí usted
 introduce otros costes anuales (leasing, seguro, impuesto) y la energía procede de
 los justificantes de repostaje y carga. Opcionalmente, un ajuste bloquea nuevos

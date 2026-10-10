@@ -1,7 +1,7 @@
 ---
 title: "Calendrier CalDAV"
 topic: admin.caldav
-version: 1
+version: 3
 keywords:
     - CalDAV
     - calendrier Nextcloud
@@ -13,6 +13,7 @@ keywords:
     - synchronisation bidirectionnelle
     - mot de passe d'application
     - chemin du calendrier
+    - adresses privées
 audience:
     - admin
 related:
@@ -31,7 +32,7 @@ CalDAV externe, par exemple dans Nextcloud ou ownCloud – sans compte
 Microsoft ni Google. Si vous le souhaitez, les plannings et congés s’y
 ajoutent, et les modifications faites dans le calendrier peuvent revenir sous
 forme de propositions. WorkDiary reste le système de référence : les
-rendez-vous annulés y disparaissent, et les exécutions répétées ne créent
+rendez-vous annulés et supprimés y disparaissent, et les exécutions répétées ne créent
 jamais de doublons. Vous trouvez la page dans le menu système (la roue dentée
 **Système** dans l’en-tête) sous **Plugins** → **CalDAV**, dès que le plugin
 est actif.
@@ -46,8 +47,9 @@ est actif.
 - Il vous faut un calendrier sur le serveur CalDAV, un compte avec droit
   d’écriture sur celui-ci et un mot de passe d’application (Nextcloud :
   Paramètres → Sécurité → Mot de passe d’application).
-- Le serveur doit être joignable publiquement. WorkDiary refuse les adresses
-  d’un réseau interne.
+- Le serveur doit être joignable publiquement. S’il se trouve sur votre
+  propre réseau, activez **Autoriser les adresses privées/internes** (voir
+  plus bas).
 - Il existe exactement une connexion CalDAV par organisation.
 
 ## Configurer la connexion
@@ -66,6 +68,12 @@ Dans la section **Connexion**, vous renseignez :
   l’URL de base, par exemple calendars/team/planning. Si vous collez une
   adresse complète copiée depuis Nextcloud, WorkDiary la raccourcit lui-même,
   pourvu qu’elle commence par l’URL de base.
+- **Autoriser les adresses privées/internes** : à activer uniquement si le
+  serveur CalDAV se trouve sur votre propre réseau (par exemple
+  192.168.x.x). Sans ce commutateur, WorkDiary refuse les adresses internes
+  dès l’enregistrement. L’activation est journalisée. Si l’exploitant de
+  votre installation a bloqué cette autorisation, le commutateur reste sans
+  effet.
 - **Actif** : active ou désactive la connexion.
 - **Bidirectionnel : importer les modifications externes comme
   propositions** : voir plus bas.
@@ -79,7 +87,7 @@ page affiche son état (par exemple **État OK**) et **Tester la connexion**.
 
 - **Événements :** les événements de votre organisation qui commencent entre
   30 jours dans le passé et 180 jours dans le futur. WorkDiary retire du
-  calendrier les événements annulés.
+  calendrier les événements annulés et supprimés.
 - **Plannings & congés :** les services publiés ou confirmés avec horaires à
   partir de deux mois dans le passé, ainsi que les congés approuvés terminés
   depuis un an au plus. Les services en brouillon, sans horaires ou annulés
@@ -133,9 +141,9 @@ les temps de projet. Les connexions actives sont proposées avec leur
 **Déconnecter** désactive la connexion. Les entrées déjà publiées restent
 dans le calendrier. Pour la réactiver, cochez **Actif** et enregistrez.
 
-WorkDiary ne retire pas non plus du calendrier les événements supprimés ni
-les entrées qui sortent de la fenêtre de temps. Si un rendez-vous doit y
-disparaître, annulez-le au lieu de le supprimer.
+La synchronisation suivante retire du calendrier les événements, services et
+congés supprimés, tout comme ceux qui sont annulés. Les entrées qui sortent
+seulement de la fenêtre de temps y restent.
 
 ## Erreurs fréquentes
 
@@ -149,7 +157,12 @@ disparaître, annulez-le au lieu de le supprimer.
 - **État défaillant** avec « Serveur CalDAV injoignable ou identifiants
   invalides. » : vérifiez l’adresse, le chemin du calendrier, le nom
   d’utilisateur et le mot de passe d’application. Une erreur CalDAV avec
-  RuntimeException indique souvent une adresse d’un réseau interne.
+  RuntimeException indique souvent une adresse d’un réseau interne sans
+  autorisation.
+- « L'URL de base pointe vers une adresse privée/interne. » : si le serveur
+  se trouve sur votre propre réseau, activez **Autoriser les adresses
+  privées/internes**. Si l’exploitant a bloqué cette autorisation, le serveur
+  doit avoir une adresse joignable publiquement.
 - « Aucune connexion CalDAV active. » avec **Publier maintenant** : la
   connexion est désactivée ou incomplète.
 - Les plannings manquent dans le calendrier : **Plannings & congés** n’est pas

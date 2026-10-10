@@ -66,24 +66,31 @@ final class UrlSafety {
      * AN: private/interne Adressen sind bewusst freigegeben, es bleiben
      * Schema- (http/https), Host- und FILTER_VALIDATE_URL-Grundprüfung.
      */
+    /**
+     * @param  string|null  $subject  übersetzte Bezeichnung mit Artikel (Vorgabe: die Basis-URL)
+     * @param  string|(\Closure(): string)|null  $privateHint  Weg zur Freigabe; als Closure erst im Fehlerfall ermittelt
+     */
     public static function assertAcceptableExternalBaseUrl(
         string $url,
         bool $allowPrivateNetwork,
         string $errorPrefix,
-        string $subject = 'Basis-URL',
-        ?string $privateHint = null,
+        ?string $subject = null,
+        string|\Closure|null $privateHint = null,
     ): void {
         $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
         $host = (string) parse_url($url, PHP_URL_HOST);
+        $subject ??= (string) __('plugins.url_guard.subject.base');
 
         if (! in_array($scheme, ['http', 'https'], true) || $host === '' || filter_var($url, FILTER_VALIDATE_URL) === false) {
-            throw new RuntimeException($errorPrefix . ': Die ' . $subject . ' ist keine gültige http(s)-Adresse.');
+            throw new RuntimeException((string) __('plugins.url_guard.invalid', ['prefix' => $errorPrefix, 'subject' => $subject]));
         }
 
         if (! $allowPrivateNetwork && ! self::isPubliclyRoutableHttpUrl($url)) {
+            $hint = $privateHint instanceof \Closure ? $privateHint() : $privateHint;
+
             throw new RuntimeException(
-                $errorPrefix . ': Die ' . $subject . ' zeigt auf eine private/interne Adresse. '
-                . ($privateHint ?? 'Die Freigabe privater Adressen muss ausdrücklich aktiviert werden.')
+                __('plugins.url_guard.private', ['prefix' => $errorPrefix, 'subject' => $subject])
+                . ' ' . ($hint ?? __('plugins.url_guard.hint_default'))
             );
         }
     }

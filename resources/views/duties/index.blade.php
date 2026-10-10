@@ -158,19 +158,19 @@
                     ['label' => __('Gesamt'),                 'value' => $shiftKpis['total'],   'tone' => 'neutral',   'href' => null, 'statusKey' => null],
                     ['label' => __('Längste Schicht (Tage)'), 'value' => $shiftKpis['longest'], 'tone' => 'info',      'href' => null, 'statusKey' => null],
                     ['label' => __('Ø Dauer (Tage)'),         'value' => $shiftKpis['avg'],     'tone' => 'primary',   'href' => null, 'statusKey' => null, 'format' => 'decimal'],
-                    ['label' => __('Mitarbeiter'),            'value' => $shiftKpis['users'],   'tone' => 'secondary', 'href' => null, 'statusKey' => null],
+                    ['label' => __('user.employees'),            'value' => $shiftKpis['users'],   'tone' => 'secondary', 'href' => null, 'statusKey' => null],
                 ],
                 'notdienst' => [
                     ['label' => __('Gesamt'),                 'value' => $assignmentKpis['total'],   'tone' => 'neutral',   'href' => null, 'statusKey' => null],
                     ['label' => __('Längste Schicht (Tage)'), 'value' => $assignmentKpis['longest'], 'tone' => 'info',      'href' => null, 'statusKey' => null],
                     ['label' => __('Ø Dauer (Tage)'),         'value' => $assignmentKpis['avg'],     'tone' => 'primary',   'href' => null, 'statusKey' => null, 'format' => 'decimal'],
-                    ['label' => __('Mitarbeiter'),            'value' => $assignmentKpis['users'],   'tone' => 'secondary', 'href' => null, 'statusKey' => null],
+                    ['label' => __('user.employees'),            'value' => $assignmentKpis['users'],   'tone' => 'secondary', 'href' => null, 'statusKey' => null],
                 ],
                 'krank' => [
                     ['label' => __('Gesamt'),       'value' => $sickKpis['total'],     'tone' => 'neutral',   'href' => null, 'statusKey' => null],
                     ['label' => __('Aktuell krank'),'value' => $sickKpis['active'],    'tone' => 'warning',   'href' => null, 'statusKey' => null],
                     ['label' => __('Storniert'),    'value' => $sickKpis['cancelled'], 'tone' => 'error',     'href' => null, 'statusKey' => null],
-                    ['label' => __('Mitarbeiter'),  'value' => $sickKpis['users'],     'tone' => 'secondary', 'href' => null, 'statusKey' => null],
+                    ['label' => __('user.employees'),  'value' => $sickKpis['users'],     'tone' => 'secondary', 'href' => null, 'statusKey' => null],
                 ],
                 default => [
                     ['label' => __('Gesamt'),           'value' => $vacationKpis['total'],    'tone' => 'neutral', 'href' => null, 'statusKey' => null],

@@ -12,7 +12,7 @@ namespace Tests\Feature\Training;
 
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Enums\Training\{TrainingAssignmentState, TrainingRequirementSubject};
-use App\Enums\User\UserRole;
+use App\Enums\User\{Permission, UserRole};
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
 use App\Models\Platform\{Organization, Team, User};
 use App\Models\Safety\SafetyInstruction;
@@ -440,11 +440,15 @@ class TrainingManagementTest extends TestCase {
                     && $report['totals']['rate'] === 50.0;
             });
 
+        // E10: Export nur mit „Auswertungen exportieren“ — die Teamleitung hat es per Rollenvorgabe (E27).
+        $viewer = $this->orgUser();
+        $viewer->givePermissionTo(Permission::TrainingViewAny->value);
+        $this->actingAs($viewer)->get(route('reports.training', ['export' => 'csv']))->assertForbidden();
         $response = $this->actingAs($lead)->get(route('reports.training', ['export' => 'csv']));
         $response->assertOk();
         $this->assertStringContainsString('text/csv', (string) $response->headers->get('Content-Type'));
         $body = (string) $response->getContent();
-        $this->assertStringContainsString('erfuellungsgrad_prozent', $body);
+        $this->assertStringContainsString(__('reporting.csv.fulfillment_percent'), $body);
         $this->assertStringContainsString($team->name, $body);
     }
 
@@ -453,6 +457,7 @@ class TrainingManagementTest extends TestCase {
         $person = $this->field();
         $course = $this->course();
         $this->assignments()->assignManually($this->organization, $person, $course, Carbon::today()->addDays(5)->toDateString());
+        $lead->givePermissionTo(Permission::ReportExport->value);
 
         $response = $this->actingAs($lead)->get(route('reports.training', ['export' => 'pdf']));
 

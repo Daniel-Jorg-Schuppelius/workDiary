@@ -40,6 +40,11 @@ class MyMonthReportController extends Controller {
     use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
+    /** E10: Mein Monat zeigt nur die eigenen Zeiten. */
+    protected function exportIsPersonal(Request $request): bool {
+        return true;
+    }
+
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
         [$rangeFrom] = $this->resolveRange($request);
@@ -99,6 +104,8 @@ class MyMonthReportController extends Controller {
             return $this->exportCsv($entries, $year, $month, $request, $exportFilters);
         }
         if ($request->query('export') === 'xlsx') {
+            $this->auditExport($request, 'my-month', 'xlsx', $exportFilters);
+
             return $this->exportXlsx($entries, $year, $month);
         }
         if ($request->query('export') === 'pdf') {
@@ -176,7 +183,18 @@ class MyMonthReportController extends Controller {
      * @return list<string>
      */
     private function exportHeaders(): array {
-        return ['Datum', 'Start', 'Ende', 'Art', 'Kunde', 'Projekt', 'Aufgabe', 'Beschreibung', 'Minuten', 'Erloes'];
+        return [
+            (string) __('reporting.csv.date'),
+            (string) __('reporting.csv.start'),
+            (string) __('reporting.csv.end'),
+            (string) __('reporting.csv.kind'),
+            (string) __('reporting.csv.customer'),
+            (string) __('reporting.csv.project'),
+            (string) __('reporting.csv.task'),
+            (string) __('reporting.csv.description'),
+            (string) __('reporting.csv.minutes'),
+            (string) __('reporting.csv.revenue'),
+        ];
     }
 
     /**

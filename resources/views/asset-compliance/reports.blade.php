@@ -15,12 +15,7 @@
 <x-index-page :subtitle="__('Fällige und überfällige Prüfungen, Sperren, Abweichungen und Prüfquote mit Drilldown.')">
     <x-slot:actions>
         {{-- CSV-Export (MVP-292; Vollaudit 2026-07, M33). --}}
-        <x-action-menu icon="download" :label="__('Export')">
-            <x-icon-btn icon="download" size="sm" show-label
-                        :href="route('asset-compliance.reports.index', ['export' => 'csv', 'from' => $from->toDateString(), 'to' => $to->toDateString()])">{{ __('CSV') }}</x-icon-btn>
-            <x-icon-btn icon="table_view" size="sm" show-label
-                        :href="route('asset-compliance.reports.index', ['export' => 'xlsx', 'from' => $from->toDateString(), 'to' => $to->toDateString()])">Excel</x-icon-btn>
-        </x-action-menu>
+        <x-report-export :url="fn (string $format) => route('asset-compliance.reports.index', ['export' => $format, 'from' => $from->toDateString(), 'to' => $to->toDateString()])" :formats="['csv', 'xlsx']" tone="ghost" />
         <form method="POST" action="{{ route('asset-compliance.reports.snapshot', ['from' => $from->toDateString(), 'to' => $to->toDateString()]) }}">
             @csrf
             <x-button type="submit" tone="ghost">{{ __('Snapshot einfrieren') }}</x-button>
@@ -53,7 +48,7 @@
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <x-kpi-tile :label="__('Prüfkosten im Zeitraum')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $totalCost, 2, withThousandsSeparator: true) . ' €'" />
         @foreach (collect($costByKind)->take(3) as $kind => $kindCost)
-            <x-kpi-tile :label="__('Kosten') . ' · ' . $kind" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $kindCost, 2, withThousandsSeparator: true) . ' €'" />
+            <x-kpi-tile :label="__('Kosten') . ' · ' . (\App\Enums\AssetCompliance\AssetInspectionKind::tryFrom($kind)?->label() ?? $kind)" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $kindCost, 2, withThousandsSeparator: true) . ' €'" />
         @endforeach
     </div>
 

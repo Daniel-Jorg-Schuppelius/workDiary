@@ -116,6 +116,7 @@ final class ScheduleManifest extends Manifest {
         return [
             \App\Services\Calendar\Contracts\FreeSlotSource::class => \App\Services\Dispatch\GapFillSuggester::class,
             \App\Services\AssetCompliance\Contracts\InspectionTourPlanner::class => \App\Services\Routing\TourService::class,
+            \App\Services\Reporting\Contracts\StaffingCoverage::class => \App\Services\Schedule\CoverageService::class,
         ];
     }
 

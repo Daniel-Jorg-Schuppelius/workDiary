@@ -1,7 +1,7 @@
 ---
 title: "Schulungen im Kundenportal"
 topic: customer-portal.learning
-version: 2
+version: 4
 keywords:
     - E-Learning
     - Online-Kurs
@@ -24,7 +24,8 @@ related:
 Auf der Seite **Schulungen** finden Sie die Kurse, die Ihr Auftragnehmer für
 Kunden freigegeben hat. Sie sehen sich Kurse in der Vorschau an, schreiben
 sich ein oder buchen sie, arbeiten die Lerneinheiten durch und schließen den
-Kurs ab.
+Kurs ab. Sie erreichen die Seite über **Schulungen** im Menü des Portals; der
+Eintrag erscheint, wenn Ihr Auftragnehmer Schulungen im Portal anbietet.
 
 ## Die Kursübersicht
 
@@ -44,18 +45,21 @@ aktuell keinen Kurs für Sie.
 
 ## Vorschau
 
-Hat ein Kurs Vorschau-Einheiten, öffnet **Vorschau** die **Kursvorschau**
-ohne Einschreibung: die Kursbeschreibung und die Texte der
-Vorschau-Einheiten. Medien, Prüfungen und Aufgaben gehören nicht zur
-Vorschau. Bei frei zugänglichen Kursen schreiben Sie sich dort direkt mit
-**Einschreiben** ein; mit **Zurück** gelangen Sie wieder zur Übersicht.
+Hat ein Kurs Vorschau-Einheiten, öffnet **Vorschau** die **Kursvorschau** ohne
+Einschreibung: die Kursbeschreibung und die Texte der Vorschau-Einheiten.
+Medien, Prüfungen und Aufgaben gehören nicht zur Vorschau. Oben bietet sie
+denselben Weg wie die Karte: **Einschreiben** bei frei zugänglichen Kursen,
+**Kurs buchen** bei buchbaren Kursen, sonst den Hinweis **Die Einschreibung
+nimmt Ihr Ansprechpartner vor.** Mit **Zurück** gelangen Sie wieder zur
+Übersicht.
 
 ## Einschreiben oder buchen
 
 Wie Sie einen Kurs beginnen, legt der Kurs fest:
 
 - **Einschreiben** – bei frei zugänglichen Kursen. Sie sind sofort
-  eingeschrieben, und der Kurs öffnet sich.
+  eingeschrieben, das Portal meldet **Sie sind in den Kurs eingeschrieben.**,
+  und der Kurs öffnet sich.
 - **Kurs buchen** – bei buchbaren Kursen. Das Portal sendet eine
   Buchungsanfrage und bestätigt **Buchungsanfrage gesendet.** Ihr
   Auftragnehmer entscheidet darüber; nach der Zusage sind Sie
@@ -70,9 +74,11 @@ Ein Kurs erscheint nur innerhalb seines Verfügbarkeitszeitraums in der
 
 ## Den Kurs durcharbeiten
 
-**Kurs öffnen** zeigt die Lerneinheiten in ihrer Reihenfolge mit ihren
-Texten. Ein Häkchen kennzeichnet erledigte Einheiten. Haben Sie eine Einheit
-durchgearbeitet, klicken Sie auf **Als erledigt markieren**.
+**Kurs öffnen** zeigt die Lerneinheiten in ihrer Reihenfolge mit ihrem Inhalt:
+Texte, Hinweise, Checklisten, Bilder, Dateien zum Herunterladen, Videos,
+Tonaufnahmen, Tabellen und Übungsfragen. Ein Häkchen kennzeichnet erledigte
+Einheiten. Haben Sie eine Einheit durchgearbeitet, klicken Sie auf **Als
+erledigt markieren**.
 
 Einheiten können gesperrt sein:
 
@@ -95,7 +101,7 @@ Abschluss wird dokumentiert und ist für Ihren Auftragnehmer nachvollziehbar.
 
 - Sie sehen nur Kurse, die freigegeben und ausdrücklich für Kunden bestimmt
   sind. Fehlt ein erwarteter Kurs, wenden Sie sich an Ihren Ansprechpartner.
-- Die Kursseite im Portal zeigt die Texte der Einheiten; Medien und
-  Prüfungen sind hier nicht enthalten.
+- Prüfungen sind im Portal nicht enthalten, ebenso Verweise auf die interne
+  Wissensdatenbank Ihres Auftragnehmers.
 - Abmelden oder eine Buchungsanfrage zurückziehen können Sie im Portal
   nicht.

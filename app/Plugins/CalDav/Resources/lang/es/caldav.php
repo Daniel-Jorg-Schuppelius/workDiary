@@ -10,7 +10,7 @@
 
 return [
     'title' => 'CalDAV',
-    'intro' => 'Las citas de WorkDiary se publican en un calendario CalDAV externo (Nextcloud/ownCloud) — on-premise, sin cuenta de Microsoft ni de Google. WorkDiary sigue siendo la referencia; las citas canceladas desaparecen allí y las ejecuciones repetidas nunca crean duplicados.',
+    'intro' => 'Las citas de WorkDiary se publican en un calendario CalDAV externo (Nextcloud/ownCloud) — on-premise, sin cuenta de Microsoft ni de Google. WorkDiary sigue siendo la referencia; las citas canceladas y eliminadas desaparecen allí y las ejecuciones repetidas nunca crean duplicados.',
 
     'health' => [
         'ok' => 'Conectado',
@@ -45,6 +45,8 @@ return [
         'calendar_path' => 'Ruta del calendario (colección)',
         'calendar_path_help' => 'Relativa a la URL base, p. ej. calendars/team/turnos.',
         'active' => 'Activo',
+        'allow_private_network' => 'Permitir direcciones privadas/internas',
+        'allow_private_network_help' => 'Actívelo solo si el servidor CalDAV está en su propia red (p. ej. 192.168.x.x). La acción queda auditada y solo surte efecto si el operador lo permite.',
         // MVP-610b: Rückimport ist Opt-in — er ändert Daten.
         'two_way' => 'Bidireccional: importar los cambios externos como propuestas',
         'two_way_help' => 'Reimportación de la colección del calendario mediante sync-collection (RFC 6578) o, en su defecto, sobre una ventana temporal con comparación de ETag — las citas externas nuevas, los cambios externos en las publicadas y las eliminaciones llegan como casos a la bandeja de integración (nunca una creación a ciegas).',
@@ -62,5 +64,7 @@ return [
         'invalid_url' => 'La URL base debe empezar por http:// o https://.',
         'path_outside_base' => 'La URL del calendario no está bajo la URL base. Indique la ruta relativa a la URL base.',
         'password_required' => 'Una conexión nueva requiere una contraseña de aplicación.',
+        'private_url_blocked' => 'La URL base apunta a una dirección privada/interna. Para un servidor en su propia red, active la autorización de direcciones privadas.',
+        'private_hint' => 'Para un servidor en su propia red, la autorización de direcciones privadas debe estar activada en la conexión.',
     ],
 ];

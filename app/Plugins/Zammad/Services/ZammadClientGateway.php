@@ -15,7 +15,6 @@ namespace App\Plugins\Zammad\Services;
 use App\Plugins\Zammad\Contracts\ZammadGateway;
 use App\Plugins\Zammad\Models\ZammadConnection;
 use App\Support\UrlSafety;
-use RuntimeException;
 use Throwable;
 use ZammadAPIClient\Client;
 use ZammadAPIClient\Resource\Ticket;
@@ -30,11 +29,15 @@ class ZammadClientGateway implements ZammadGateway {
     public function __construct(private readonly Client $client) {}
 
     public static function forConnection(ZammadConnection $connection): self {
-        // SSRF-Schutz: die org-konfigurierte Basis-URL muss öffentlich routbar
-        // sein (kein Loopback/RFC1918/Metadata) — Whitebox-Befund 2026-07.
-        if (! UrlSafety::isPubliclyRoutableHttpUrl((string) $connection->base_url)) {
-            throw new RuntimeException('Zammad base_url is not a publicly routable http(s) target.');
-        }
+        // SSRF-Schutz (Whitebox-Befund 2026-07): öffentlich routbar, außer die
+        // Anbindung gibt private Adressen frei und der Betreiber lässt das zu.
+        UrlSafety::assertAcceptableExternalBaseUrl(
+            (string) $connection->base_url,
+            $connection->allowsPrivateNetwork(),
+            'Zammad',
+            (string) __('zammad::zammad.guard.subject'),
+            (string) __('zammad::zammad.guard.private_hint'),
+        );
 
         return new self(new Client([
             'url' => $connection->base_url,
@@ -118,25 +121,6 @@ class ZammadClientGateway implements ZammadGateway {
 
             // save() liefert bei Erfolg die Ressource ($this), sonst false.
             return $ticket->save() !== false;
-        } catch (Throwable) {
-            return false;
-        }
-    }
-
-    public function addArticle(int $ticketId, string $body, bool $internal = true): bool {
-        // Artikel-Anlage über den rohen Endpunkt (POST /api/v1/ticket_articles)
-        // — API-Fakten 2026-07 (065-Plan P8).
-        try {
-            $response = $this->client->post('ticket_articles', [
-                'json' => [
-                    'ticket_id' => $ticketId,
-                    'body' => $body,
-                    'type' => 'note',
-                    'internal' => $internal,
-                ],
-            ]);
-
-            return $response->getStatusCode() >= 200 && $response->getStatusCode() < 300;
         } catch (Throwable) {
             return false;
         }

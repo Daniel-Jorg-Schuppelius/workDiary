@@ -48,7 +48,7 @@ class OpenProjectExportService extends AbstractTimeEntryPushService {
     protected function prepareExport(Organization $organization, array $config): ?string {
         $this->projectExternalIds = [];
 
-        $this->client = new OpenProjectApiClient($config['api_token'] ?? null, $config['base_url'] ?? null);
+        $this->client = new OpenProjectApiClient($config['api_token'] ?? null, $config['base_url'] ?? null, (bool) ($config['allow_private_network'] ?? false));
         if (! $this->client->isConfigured()) {
             return (string) __('OpenProject ist nicht konfiguriert.');
         }

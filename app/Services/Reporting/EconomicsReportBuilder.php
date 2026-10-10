@@ -529,9 +529,12 @@ class EconomicsReportBuilder {
                 'project_id',
                 Project::query()->where('customer_id', $customerId)->select('id'),
             ))
-            ->when($projectId === null && $customerId === null && $excludedCustomerIds !== [], fn($q) => $q->whereNotIn(
-                'project_id',
-                Project::query()->whereIn('customer_id', $excludedCustomerIds)->select('id'),
+            // NOT IN würde Zeiten ohne Projekt mit verwerfen — sie bleiben sichtbar.
+            ->when($projectId === null && $customerId === null && $excludedCustomerIds !== [], fn($q) => $q->where(
+                fn($w) => $w->whereNull('project_id')->orWhereNotIn(
+                    'project_id',
+                    Project::query()->whereIn('customer_id', $excludedCustomerIds)->select('id'),
+                ),
             ))
             ->get(['date', 'billable', 'rate', 'internal_rate']);
 

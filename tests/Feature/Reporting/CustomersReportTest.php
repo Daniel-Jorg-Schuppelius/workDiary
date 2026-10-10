@@ -223,7 +223,7 @@ class CustomersReportTest extends TestCase {
         $response->assertHeader('content-disposition');
 
         $content = (string) $response->getContent();
-        $this->assertStringContainsString('Kunde;Auftraege;GesamtMinuten', $content);
+        $this->assertStringContainsString(__('reporting.csv.customer') . ';' . __('reporting.csv.orders') . ';' . __('reporting.csv.total_minutes'), $content);
         $this->assertStringContainsString('Musterkunde GmbH', $content);
     }
 
@@ -318,7 +318,7 @@ class CustomersReportTest extends TestCase {
         $response->assertHeader('content-disposition');
 
         $content = (string) $response->getContent();
-        $this->assertStringContainsString('ID;Titel;Status;Severity', $content);
+        $this->assertStringContainsString('ID;' . __('reporting.csv.title') . ';' . __('reporting.csv.status') . ';' . __('reporting.csv.severity'), $content);
         $this->assertStringContainsString('CSV Offener Punkt', $content);
     }
 

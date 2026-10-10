@@ -124,6 +124,39 @@ class ExpiryScannerTest extends TestCase {
             ->count());
     }
 
+    /**
+     * CardDAV, SharePoint, Microsoft 365 und Google Kalender melden Störungen
+     * wie WebDAV und CalDAV als Betriebsaufgabe (Phase 137).
+     *
+     * @return array<string, array{0: class-string<\Illuminate\Database\Eloquent\Model>, 1: string, 2: array<string, mixed>}>
+     */
+    public static function pluginConnections(): array {
+        return [
+            'carddav' => [\App\Plugins\CardDav\Models\CardDavConnection::class, 'carddav', ['name' => 'Nextcloud', 'base_url' => 'https://cloud.example.com/dav', 'username' => 'svc', 'app_password' => 'secret']],
+            'sharepoint' => [\App\Plugins\Sharepoint\Models\SharepointConnection::class, 'sharepoint', []],
+            'msgraph' => [\App\Plugins\Msgraph\Models\MsgraphConnection::class, 'msgraph', []],
+            'google_calendar' => [\App\Plugins\GoogleCalendar\Models\GoogleCalendarConnection::class, 'google_calendar', []],
+        ];
+    }
+
+    /**
+     * @param  class-string<\Illuminate\Database\Eloquent\Model>  $model
+     * @param  array<string, mixed>  $attributes
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('pluginConnections')]
+    public function test_plugin_connection_failure_creates_operations_task(string $model, string $kind, array $attributes): void {
+        $connection = new $model;
+        $connection->forceFill($attributes + ['organization_id' => $this->admin->organization_id, 'last_error' => 'HTTP 401'])->save();
+
+        $this->scan();
+
+        $this->assertDatabaseHas('operations_tasks', [
+            'dedupe_key' => "connection_failing:{$kind}:{$connection->getKey()}",
+            'type' => 'connection_failing',
+            'status' => 'open',
+        ]);
+    }
+
     public function test_todoist_connection_error_creates_connection_task(): void {
         $connection = TodoistConnection::query()->create([
             'organization_id' => $this->admin->organization_id,

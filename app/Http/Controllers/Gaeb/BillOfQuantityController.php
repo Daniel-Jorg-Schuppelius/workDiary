@@ -785,4 +785,9 @@ class BillOfQuantityController extends Controller {
     private function canManage(): void {
         Gate::authorize(P::ProjectUpdate->value);
     }
+
+    /** Fachbericht außerhalb der Auswertungen: Den Export deckt das Fachrecht der Seite (E28). */
+    protected function exportNeedsReportPermission(): bool {
+        return false;
+    }
 }

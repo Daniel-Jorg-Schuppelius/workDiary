@@ -8,8 +8,8 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Produktanalyse')
-@section('pdf-heading', 'Produktanalyse')
+@section('pdf-title', __('Produktanalyse'))
+@section('pdf-heading', __('Produktanalyse'))
 
 @section('pdf-table')
     @include('reports.pdf.charts._chart')
@@ -17,13 +17,13 @@
     <table>
         <thead>
             <tr>
-                <th>{{ match($groupBy) { 'group' => 'Produktgruppe', 'model' => 'Modell', default => 'Asset' } }}</th>
-                <th class="num">Assets</th>
-                <th class="num">Auftraege</th>
+                <th>{{ match($groupBy) { 'group' => __('Produktgruppe'), 'model' => __('Modell'), default => __('Asset') } }}</th>
+                <th class="num">{{ __('Assets') }}</th>
+                <th class="num">{{ __('Aufträge') }}</th>
                 <th class="num">{{ __('Offene Punkte') }}</th>
-                <th class="num">Eskaliert</th>
-                <th class="num">Defekte</th>
-                <th class="num">Defektrate %</th>
+                <th class="num">{{ __('Eskaliert') }}</th>
+                <th class="num">{{ __('Defekte') }}</th>
+                <th class="num">{{ __('Defektrate %') }}</th>
                 <th class="num">{{ __('Wartungssitzungen') }}</th>
                 <th class="num">{{ __('Wartungszeit') }} (min)</th>
                 <th>{{ __('Letzter Vorfall') }}</th>

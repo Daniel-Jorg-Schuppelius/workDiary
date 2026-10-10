@@ -854,7 +854,7 @@ return [
         ],
         'hint' => [
             'profile' => 'Nessun caso speciale per sport: tutto qui è configurazione modificabile dall\'associazione; le regole federali non sono fisse.',
-            'profiles_empty' => 'Crea uno sport o attiva un pacchetto iniziale del profilo dell\'associazione.',
+            'profiles_empty' => 'Crei uno sport o attivi un pacchetto iniziale del profilo dell\'associazione.',
             'packs' => 'Un pacchetto iniziale crea lo sport, la sezione, i gruppi e gli impianti e, a seconda dello sport, un sistema di gradi, cavalli da scuola o un requisito di presenza. Tutto resta modificabile; l\'esistente non viene sovrascritto.',
             'result_format' => 'Gol (calcio, pallamano, hockey), punti per periodo (basket), set (pallavolo, tennistavolo, tennis).',
             'positions' => 'Uno per riga, es. «por=Portiere» oppure solo «Portiere».',
@@ -864,7 +864,7 @@ return [
             'group_profile' => 'Senza scelta vale il profilo della sezione.',
             'age_class' => 'Etichetta come U15 o Seniores; il controllo dell\'età usa la data di riferimento del profilo.',
             'season' => 'Le stagioni precedenti restano invariate.',
-            'squad_member' => 'Scegli un socio esistente o crea un ospite con club di provenienza (senza quota, accesso o appartenenza a gruppo).',
+            'squad_member' => 'Scegliere un socio esistente o creare un ospite con club di provenienza (senza quota, accesso o appartenenza a gruppo).',
             'guest_origin' => 'Obbligatorio per ospiti di un club partner.',
             'strength_rank' => 'Ordine mantenuto manualmente per singolo/doppio negli sport di racchetta.',
             'no_profile' => 'Nessun profilo sportivo, né sul gruppo né sulla sezione. Le formazioni non hanno dimensioni della rosa né ruoli.',
@@ -993,7 +993,7 @@ return [
             'import' => 'CSV con intestazione (data, ora, avversario, casa/trasferta, luogo, competizione — oppure casa e ospite come nomi delle squadre) o calendario ICS. Nulla viene creato prima dell\'accettazione.',
             'import_file' => 'Fino a 2 MB; in alternativa incolla il contenuto sotto.',
             'import_columns' => 'Nomi delle colonne liberi: data, ora, fine, avversario, casa/trasferta (H/A), luogo, competizione.',
-            'my' => 'Rispondi disponibile o non disponibile — la dirigenza conferma la convocazione con la formazione.',
+            'my' => 'Confermi o declini la sua disponibilità — la dirigenza conferma la convocazione con la formazione.',
         ],
         'empty' => [
             'index' => 'Nessuna giornata.',
@@ -1098,7 +1098,7 @@ return [
             'missing_clearances' => 'Senza abilitazione:',
         ],
         'hint' => [
-            'index_empty' => 'Crea palestre, campi, tavoli o barche; le aree parziali dipendono dalla loro palestra.',
+            'index_empty' => 'Crei palestre, campi, tavoli o barche; le aree parziali dipendono dalla loro palestra.',
             'form' => 'Prenotare la palestra blocca tutte le aree parziali e i tavoli sottostanti; le aree libere sono utilizzabili in parallelo.',
             'parent' => 'Area parziale o unità di una palestra/impianto superiore.',
             'capacity' => 'Unità utilizzabili in parallelo, es. 4 corsie come una risorsa; 1 = esclusiva.',
@@ -1209,7 +1209,7 @@ return [
             'minutes_month' => 'Impiego in questo mese: :minutes minuti',
         ],
         'hint' => [
-            'index_empty' => 'Crea cavalli di scuola; i cavalli privati appartengono a un socio.',
+            'index_empty' => 'Crei cavalli di scuola; i cavalli privati appartengono a un socio.',
             'form' => 'Il cavallo è gestito come risorsa: doppia assegnazione, riposo, chiusure e abilitazioni vengono verificati lì.',
             'owner' => 'Obbligatorio per i cavalli privati; lo monta solo il proprietario.',
             'suitable_for' => 'Testo libero, es. principianti, avanzati, volteggio — senza modulo graduazioni.',
@@ -1343,7 +1343,7 @@ return [
             'correct' => 'La correzione viene registrata e annulla la conferma.',
             'start_right' => 'Verifica documentata con validità da parte dell\'amministrazione — nessun allineamento con le federazioni.',
             'start_right_profile' => 'Vuoto = vale per tutti gli sport.',
-            'requirements' => 'Crea un requisito (numero per periodo); il rapporto mostra per socio le presenze confermate alla data.',
+            'requirements' => 'Crei un requisito (numero per periodo); il rapporto mostra per socio le presenze confermate alla data.',
             'requirement_form' => 'I numeri li fissa l\'associazione; il sistema non contiene soglie di legge e non sostituisce certificazioni ufficiali.',
             'requirement_scope' => 'Gruppo o sezione; vuoto = tutti i soci.',
             'requirement_kind' => 'Contano solo appuntamenti di questo tipo; vuoto = tutti.',

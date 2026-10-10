@@ -29,6 +29,9 @@ Route::middleware(['web', 'auth'])->group(function (): void {
     Route::post('admin/zammad/connection', [ZammadAdminController::class, 'store'])->name('admin.zammad.connection.store');
     Route::post('admin/zammad/disconnect', [ZammadAdminController::class, 'disconnect'])->name('admin.zammad.disconnect');
 
+    // Ticketziel wechseln (Aufgaben ↔ Service-Tickets), mit Preflight und Migrationsprotokoll.
+    Route::post('admin/zammad/ticket-target', [ZammadAdminController::class, 'switchTarget'])->name('admin.zammad.ticket-target');
+
     // Manueller Ticket-Import (auditierter Admin-Vorgang; Polling-Äquivalent).
     Route::post('admin/zammad/sync', [ZammadAdminController::class, 'sync'])->name('admin.zammad.sync');
 });

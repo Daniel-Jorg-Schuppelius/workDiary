@@ -61,13 +61,13 @@ enum ComplianceFindingStatus: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Missing => (string) __('Fehlt'),
-            self::Expiring => (string) __('Läuft ab'),
-            self::Required => (string) __('Erforderlich'),
-            self::InReview => (string) __('In Prüfung'),
-            self::DeviationAccepted => (string) __('Abweichung akzeptiert'),
-            self::Present => (string) __('Vorhanden'),
-            self::NotApplicable => (string) __('Nicht anwendbar'),
+            self::Missing => (string) __('enums.privacy.compliance_finding_status.missing'),
+            self::Expiring => (string) __('enums.privacy.compliance_finding_status.expiring'),
+            self::Required => (string) __('enums.privacy.compliance_finding_status.required'),
+            self::InReview => (string) __('enums.privacy.compliance_finding_status.in_review'),
+            self::DeviationAccepted => (string) __('enums.privacy.compliance_finding_status.deviation_accepted'),
+            self::Present => (string) __('enums.privacy.compliance_finding_status.present'),
+            self::NotApplicable => (string) __('enums.privacy.compliance_finding_status.not_applicable'),
         };
     }
 

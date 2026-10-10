@@ -24,4 +24,17 @@ return [
         'range_hint' => 'Intervallo di versioni del core WorkDiary supportato.',
         'activation_blocked' => 'Il plugin non può essere attivato: :message',
     ],
+
+    // Adressprüfung ausgehender Plugin-Ziele (UrlSafety, PluginHttpFactory).
+    'url_guard' => [
+        'invalid' => ':prefix: :subject non è un indirizzo http(s) valido.',
+        'private' => ':prefix: :subject punta a un indirizzo privato/interno.',
+        'subject' => [
+            'base' => 'L’URL di base',
+            'target' => 'L’URL di destinazione',
+        ],
+        'hint_default' => 'Gli indirizzi privati devono essere consentiti esplicitamente.',
+        'hint_setting' => 'Per un’istanza nella propria rete attivi l’impostazione del plugin «:setting».',
+        'hint_operator' => 'Solo il gestore della Sua installazione può consentire una destinazione nella propria rete (PLUGINS_PRIVATE_NETWORK_TARGETS).',
+    ],
 ];

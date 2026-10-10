@@ -10,12 +10,11 @@
 
 namespace App\Http\Controllers\Reporting;
 
-use App\Enums\Shift\ScheduledShiftStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
-use App\Models\Schedule\{CoverageRequirement, ScheduledShift, ShiftType};
-use App\Support\Query\DateRange;
+use App\Models\Schedule\ShiftType;
+use App\Services\Reporting\Contracts\StaffingCoverage;
 use Carbon\{Carbon, CarbonImmutable, CarbonPeriod};
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
@@ -24,8 +23,8 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
- * Coverage / Soll-Ist-Besetzung: vergleicht CoverageRequirement-Sollvorgaben
- * gegen ScheduledShifts pro Schichttyp und Tag.
+ * Coverage / Soll-Ist-Besetzung pro Schichttyp und Tag; Soll und Ist kommen
+ * aus {@see StaffingCoverage} (Dienstplan) wie in der Dienstplan-Ampel.
  */
 class CoverageReportController extends Controller {
     use RendersReportPdf;
@@ -33,6 +32,8 @@ class CoverageReportController extends Controller {
     use ResolvesReportScope;
     use ResolvesStandardReportFilters;
     use WritesReportCsv;
+
+    public function __construct(private readonly StaffingCoverage $coverage) {}
 
     public function index(Request $request): View|SymfonyResponse {
         abort_unless($this->viewerIsAdmin(), 403);
@@ -169,39 +170,7 @@ class CoverageReportController extends Controller {
         if ($shiftTypes->isEmpty()) {
             return [[], [], ['shift_types' => 0, 'required' => 0, 'scheduled' => 0, 'gap' => 0, 'fill_rate' => null, 'days_under' => 0], []];
         }
-        $shiftTypeIds = $shiftTypes->pluck('id')->all();
-
-        // CoverageRequirements vorab gruppieren
-        /** @var array<int, array<string, int>> $reqByDate [shift_type_id][YYYY-MM-DD] */
-        $reqByDate = [];
-        /** @var array<int, array<int, int>> $reqByWeekday [shift_type_id][0..6] */
-        $reqByWeekday = [];
-        /** @var array<int, int> $reqDefault [shift_type_id] */
-        $reqDefault = [];
-        foreach (CoverageRequirement::query()->whereIn('shift_type_id', $shiftTypeIds)->get() as $r) {
-            $sid = (int) $r->shift_type_id;
-            if ($r->specific_date !== null) {
-                $reqByDate[$sid][$r->specific_date->toDateString()] = (int) $r->min_staff;
-            } elseif ($r->weekday !== null) {
-                $reqByWeekday[$sid][(int) $r->weekday] = (int) $r->min_staff;
-            } else {
-                $reqDefault[$sid] = (int) $r->min_staff;
-            }
-        }
-
-        // Scheduled Shifts vorab je (date|shift_type_id) zählen
-        /** @var array<string, int> $scheduledByKey */
-        $scheduledByKey = [];
-        ScheduledShift::query()
-            ->whereBetween('date', DateRange::days($from, $to))
-            ->where('status', '!=', ScheduledShiftStatus::Cancelled->value)
-            ->whereNotNull('shift_type_id')
-            ->when($teamUserIds !== [], fn ($q) => $q->whereIn('user_id', $teamUserIds))
-            ->get(['date', 'shift_type_id'])
-            ->each(function ($s) use (&$scheduledByKey): void {
-                $key = $s->date->toDateString() . '|' . $s->shift_type_id;
-                $scheduledByKey[$key] = ($scheduledByKey[$key] ?? 0) + 1;
-            });
+        $staffing = $this->coverage->staffingBetween($from, $to, $teamUserIds);
 
         /** @var array<int, int> $reqSumBySid */
         $reqSumBySid = [];
@@ -220,17 +189,13 @@ class CoverageReportController extends Controller {
             /** @var CarbonImmutable $day */
             $dateStr = $day->toDateString();
             $iso = (int) $day->dayOfWeekIso;       // 1=Mon … 7=Sun
-            $weekday = $iso === 7 ? 0 : $iso;      // Modell: 0=So..6=Sa
             foreach ($shiftTypes as $st) {
                 $sid = (int) $st->id;
-                $required = $reqByDate[$sid][$dateStr]
-                    ?? $reqByWeekday[$sid][$weekday]
-                    ?? $reqDefault[$sid]
-                    ?? 0;
+                $required = $staffing[$dateStr][$sid]['min'] ?? 0;
                 if ($required <= 0) {
                     continue;
                 }
-                $scheduled = $scheduledByKey[$dateStr . '|' . $sid] ?? 0;
+                $scheduled = $staffing[$dateStr][$sid]['actual'] ?? 0;
                 $gap = $scheduled - $required;
                 $reqSumBySid[$sid] = ($reqSumBySid[$sid] ?? 0) + $required;
                 $schedSumBySid[$sid] = ($schedSumBySid[$sid] ?? 0) + $scheduled;
@@ -301,7 +266,7 @@ class CoverageReportController extends Controller {
      */
     private function exportCsv(array $rows, array $totals, string $from, string $to, array $exportFilters, Request $request): Response {
         $filename = sprintf('coverage_%s_%s.csv', $from, $to);
-        $out = [['Schichttyp', 'Soll (Personentage)', 'Ist (Personentage)', 'Differenz', 'Erfüllung %', 'Tage mit Unterdeckung']];
+        $out = [[(string) __('reporting.csv.shift_type'), (string) __('reporting.csv.target_person_days'), (string) __('reporting.csv.actual_person_days'), (string) __('reporting.csv.difference'), (string) __('reporting.csv.fill_rate_percent'), (string) __('reporting.csv.days_under')]];
         foreach ($rows as $r) {
             $out[] = [
                 (string) $r['shiftType']->name,
@@ -313,7 +278,7 @@ class CoverageReportController extends Controller {
             ];
         }
         $out[] = [
-            'Gesamt',
+            (string) __('reporting.csv.total'),
             $totals['required'],
             $totals['scheduled'],
             $totals['gap'],

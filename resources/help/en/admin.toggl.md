@@ -1,7 +1,7 @@
 ---
 title: "Toggl Import"
 topic: admin.toggl
-version: 2
+version: 3
 keywords:
     - Toggl Track
     - import time entries
@@ -76,3 +76,15 @@ User assignment (MVP-509):
   Individual Toggl addresses can additionally be mapped explicitly; the
   import is idempotent and can simply be re-run once mappings are
   maintained.
+
+Webhook (optional):
+
+- To receive new entries faster, the import page shows the address for a
+  Toggl webhook subscription in the **Webhook (optional)** section. Create
+  the subscription for the workspace in Toggl and enter the secret assigned
+  there in the plugin settings under **Webhook secret**; the **Workspace ID**
+  must be set there as well.
+- The webhook only triggers the same import that the hourly fetch runs. If
+  it fails, the fetch catches up.
+- You choose the default user of single-user mode in the plugin settings
+  under **Book times for user** from the list of users.

@@ -259,7 +259,8 @@ class PlanIstReportBuilderTest extends TestCase {
         $p1 = Project::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $customer->id, 'name' => 'Projekt Alpha']);
         $p2 = Project::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $customer->id, 'name' => 'Projekt Beta']);
 
-        // Soll P1: ein geplanter (600) + ein ungeplanter Auftrag im Zeitraum;
+        // Soll P1: ein geplanter (600) + ein Auftrag ohne Geplante Dauer im
+        // Zeitraum, dessen Termin 08–10 Uhr als Plan zählt (E13: 120);
         // ein geplanter Auftrag AUSSERHALB (999) darf nicht zählen.
         DiaryEntry::factory()->create([
             'organization_id' => $this->organization->id,
@@ -300,12 +301,12 @@ class PlanIstReportBuilderTest extends TestCase {
 
         $alpha = $byName->get('Projekt Alpha');
         $this->assertNotNull($alpha);
-        $this->assertSame(600, $alpha['plan_minutes']);
+        $this->assertSame(720, $alpha['plan_minutes']);
         $this->assertSame(420, $alpha['actual_minutes']);
         $this->assertSame(300, $alpha['billable_minutes']);
-        $this->assertSame(-180, $alpha['delta_minutes']);
+        $this->assertSame(-300, $alpha['delta_minutes']);
         $this->assertSame(2, $alpha['orders']);
-        $this->assertSame(1, $alpha['planned_orders']);
+        $this->assertSame(2, $alpha['planned_orders']);
         $this->assertFalse($alpha['no_plan']);
         $this->assertSame($customer->name, $alpha['customer']);
 
@@ -320,11 +321,11 @@ class PlanIstReportBuilderTest extends TestCase {
         $this->assertSame(50, $unassigned['actual_minutes']);
         $this->assertTrue($unassigned['no_plan']);
 
-        // Summen == Handrechnung: Plan 600, Ist 420+100+50 = 570, Δ −30.
-        $this->assertSame(600, $report['totals']['plan_minutes']);
+        // Summen == Handrechnung: Plan 600+120, Ist 420+100+50 = 570, Δ −150.
+        $this->assertSame(720, $report['totals']['plan_minutes']);
         $this->assertSame(570, $report['totals']['actual_minutes']);
         $this->assertSame(300, $report['totals']['billable_minutes']);
-        $this->assertSame(-30, $report['totals']['delta_minutes']);
+        $this->assertSame(-150, $report['totals']['delta_minutes']);
         $this->assertSame(1, $report['totals']['no_plan_projects']);
     }
 

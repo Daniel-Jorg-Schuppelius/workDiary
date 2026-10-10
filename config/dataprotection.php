@@ -32,12 +32,12 @@ return [
      */
     'compliance' => [
         'requirements' => [
-            'avv_required' => ['label' => 'AVV mit Auftragsverarbeiter', 'category' => 'contracts'],
-            'avv_current' => ['label' => 'AVV gültig (nicht abgelaufen)', 'category' => 'contracts'],
-            'gvv_required' => ['label' => 'GVV mit gemeinsam Verantwortlichem', 'category' => 'contracts'],
-            'dpia_required' => ['label' => 'DSFA bei DSFA-Bedarf', 'category' => 'assessment'],
-            'tom_assigned' => ['label' => 'TOM je Verarbeitungstätigkeit', 'category' => 'security'],
-            'tom_proof_current' => ['label' => 'TOM-Nachweise gültig (nicht abgelaufen)', 'category' => 'security'],
+            'avv_required' => ['category' => 'contracts'],
+            'avv_current' => ['category' => 'contracts'],
+            'gvv_required' => ['category' => 'contracts'],
+            'dpia_required' => ['category' => 'assessment'],
+            'tom_assigned' => ['category' => 'security'],
+            'tom_proof_current' => ['category' => 'security'],
         ],
         // Gewerk => erwartete Anforderungs-Keys (informativ; die Regeln laufen generisch).
         'profiles' => [

@@ -1,7 +1,7 @@
 ---
 title: "Organizzazione e impostazioni"
 topic: admin.organization-settings
-version: 1
+version: 3
 keywords:
     - impostazioni aziendali
     - impostazioni del tenant
@@ -205,8 +205,9 @@ turni:
 - **Conflitto di ferie**: il turno cade in ferie richieste o approvate.
 - **Corrispondenza qualifiche**: alla persona manca una qualifica richiesta
   dal fabbisogno di personale del turno.
-- **Registrazione festivo**: il turno cade in un giorno festivo gestito sotto
-  **Giorni festivi**.
+- **Registrazione festivo**: il turno cade in una festività legale della
+  regione delle festività (scheda **Regione e festività**) o in un giorno
+  festivo proprio gestito sotto **Giorni festivi**.
 
 Le ultime quattro controllano le timbrature e generano casi da chiarire
 nell'analisi ArbZG:
@@ -235,14 +236,16 @@ predefinito del sistema.» Le sezioni seguenti seguono l'ordine delle schede.
 ## Elenchi
 
 Quante voci un elenco mostra per pagina, ciascuna da 1 a 500: **Fogli ore**,
-**Piani turni**, **Clienti**, **Giri**, **Veicoli**, **Etichette**,
-**Organizzazioni** (elenco della gestione della piattaforma) e i tre elenchi
-della inbox di teleassistenza (**Inbox teleassistenza: dispositivi non
-assegnati**, **Inbox teleassistenza: dispositivi multi-cliente**, **Inbox
-teleassistenza: sessioni per scheda dispositivo**). I campi **Ricerca clienti
-(digitazione predittiva)**, **Allegati cliente**, **Archivio** e **Dashboard:
-elementi recenti** attualmente non hanno effetto; quante voci recenti mostra
-la dashboard si imposta nella scheda **Interfaccia**.
+**Piani turni**, **Clienti** (anche fornitori e clienti terzi), **Giri**,
+**Veicoli**, **Etichette**, **Archivio** (ogni scheda della pagina archivio),
+**Notifiche, attività operative, finestre di manutenzione, segnalazioni di
+problemi** e i tre elenchi della inbox di teleassistenza (**Inbox
+teleassistenza: dispositivi non assegnati**, **Inbox teleassistenza:
+dispositivi multi-cliente**, **Inbox teleassistenza: sessioni per scheda
+dispositivo**). Quante voci recenti mostra la dashboard si imposta nella
+scheda **Interfaccia**. La dimensione dell'elenco delle organizzazioni della
+gestione della piattaforma è un'impostazione di sistema in **Impostazioni
+(registro)**.
 
 ## Fatturazione
 
@@ -323,9 +326,15 @@ Tre campi agiscono inoltre su tutte le fatture create localmente:
   nazionali, UE ed extra UE.
 - **Termine di pagamento (giorni)** (0–365): vale quando né la fattura né il
   cliente hanno un termine di pagamento; vuoto o 0 = 14 giorni.
-- **Piccola impresa (§ 19 UStG)**: le fatture non indicano l'IVA e riportano
-  la nota «Nessuna IVA ai sensi del § 19 UStG (regime delle piccole
-  imprese).»; la XRechnung riceve la categoria fiscale E (esente).
+- **Piccola impresa (§ 19 UStG)**: tutte le fatture create da workDiary non
+  indicano l'IVA e riportano la nota «Nessuna IVA ai sensi del § 19 UStG
+  (regime delle piccole imprese).»; la XRechnung riceve la categoria fiscale
+  E (esente). La spunta prevale su **Aliquota fiscale predefinita (%)** e sul
+  reverse charge.
+
+## Contabilità: principio dei quattro occhi
+
+L’opzione **Principio dei quattro occhi** del gruppo **Contabilità** richiede l’approvazione di una seconda persona: chi prepara una registrazione o una registrazione diretta (sconto, passaggio a perdita, registrazione di chiarimento, giroconto interno, saldi iniziali, acconto speciale) non la registra personalmente; chi compone un ciclo di pagamenti SEPA non lo rilascia personalmente. Le registrazioni dirette vengono allora create come bozze nella **Posta contabile** e hanno effetto solo dopo la registrazione definitiva. Senza l’opzione, WorkDiary le registra subito.
 
 ## Cespiti: beni di modesto valore e fondo collettivo
 
@@ -462,8 +471,6 @@ troncato.
   consentiti 10, 15, 20, 30 o 60 (predefinito 30).
 - **Dashboard** – **Numero di elementi recenti** (predefinito 5): quante voci
   usate di recente mostra la dashboard.
-- **Ricerca** – **Limite di risultati predefinito** (predefinito 20):
-  attualmente non ha effetto.
 
 ## Nominatim (geocodifica)
 
@@ -541,8 +548,9 @@ la voce riporta la data del giro. I giri annullati e le trasferte già fatturate
 non contano.
 
 - **Modalità**: **Importo forfettario** oppure **Chilometri**.
-- **Testo della voce** (fino a 50 caratteri, predefinito «Anfahrt»): testo
-  della voce di fattura, completato con la data o i chilometri.
+- **Testo della voce** (fino a 50 caratteri, predefinito «Trasferta» nella
+  lingua della fatturazione): testo della voce di fattura, completato con la
+  data o i chilometri.
 - **Importo forfettario (netto €)**: importo per trasferta nella modalità **Importo forfettario**;
   senza importo non nasce alcuna voce.
 - **Tariffa (€/km)**: prezzo per chilometro nella modalità **Chilometri**.
@@ -578,7 +586,8 @@ per:
   festività;
 - i giorni lavorativi di ferie e malattia, il conto ferie e l'obiettivo
   dell'orario flessibile;
-- l'analisi ArbZG, per esempio per il lavoro nei giorni festivi;
+- l'analisi ArbZG, per esempio per il lavoro nei giorni festivi, e la regola
+  del piano turni **Registrazione festivo**;
 - le viste calendario, vista settimanale, piano turni, calendario delle
   assenze e **Presenza attuale**;
 - le scadenze SLA dell'assistenza e le scadenze delle dichiarazioni fiscali,
@@ -650,8 +659,10 @@ organizzazione.
   utenti non amministratori vedono attualmente una pagina di manutenzione.»
   con il link **Impostazioni** per tornare a questa finestra.
 - **Messaggio mostrato sulla pagina di manutenzione** (fino a 300 caratteri).
-- **Fine prevista** (facoltativo): dopo questo momento la modalità
-  manutenzione termina automaticamente; l'avviso la mostra come «Fino a: …».
+- **Fine prevista** (facoltativo, nella Sua ora locale): dopo questo momento
+  la modalità manutenzione termina automaticamente; l'avviso la mostra come
+  «Fino a: …», la pagina di manutenzione come «Prevista nuova disponibilità:
+  …».
 - **Sospendi anche gli ingressi terminale/webhook** (disattivato di
   fabbrica): senza questa spunta i terminali di timbratura e gli ingressi di
   telefonia e posizione continuano a funzionare durante la manutenzione.

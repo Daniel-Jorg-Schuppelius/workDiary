@@ -325,4 +325,22 @@ class ComplianceTest extends TestCase {
         $codes = collect($res->json('compliance_warnings'))->pluck('code')->all();
         $this->assertContains('holiday_double_book', $codes);
     }
+
+    /** MVP-1103: Die Regel kennt die Feiertagsregion der Organisation, nicht nur eigene Feiertage. */
+    public function test_holiday_double_book_rule_uses_the_holiday_region(): void {
+        $this->organization->settings = [
+            'compliance' => ['mode' => 'warn'],
+            'holidays' => ['provider' => 'Germany\\Bavaria'],
+        ];
+        $this->organization->save();
+        $admin = $this->orgAdmin();
+        $u = $this->orgUser();
+
+        // Fronleichnam 2026 gilt in Bayern, nicht bundesweit.
+        $res = $this->actingAs($admin)
+            ->postJson(route('schedule.shifts.store'), $this->payload($u, ['date' => '2026-06-04']))
+            ->assertCreated();
+
+        $this->assertContains('holiday_double_book', collect($res->json('compliance_warnings'))->pluck('code')->all());
+    }
 }

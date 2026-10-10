@@ -76,7 +76,8 @@ class ModuleRegistryTest extends TestCase {
 
         $this->assertSame('module.planung', $maps['sections']['plan'] ?? null);
         $this->assertSame('module.kanban', $maps['items']['kanban.index'] ?? null);
-        $this->assertSame('module.auswertungen_team', $maps['groups']['reports-team'] ?? null);
+        // E12 (MVP-1101): Auswertungsgruppen hängen nicht mehr am Modul — jeder Eintrag folgt seiner Route.
+        $this->assertArrayNotHasKey('reports-team', $maps['groups']);
         $this->assertSame(['module.helpdesk'], $registry->licenseRequirements()['module.service_desk'] ?? null);
         $this->assertSame(['module.lager'], $registry->licenseRequirements()['module.b2b_katalog'] ?? null);
     }

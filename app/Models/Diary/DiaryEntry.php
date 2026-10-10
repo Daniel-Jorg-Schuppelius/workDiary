@@ -24,6 +24,7 @@ use App\Models\Protocol\Protocol;
 use App\Models\ServiceTicket\ServiceTicket;
 use App\Models\Time\TimeEntry;
 use App\Support\Query\DateRange;
+use CommonToolkit\ValueObjects\Duration;
 use Database\Factories\Diary\DiaryEntryFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -103,6 +104,9 @@ class DiaryEntry extends Model implements CustomFieldSubject {
     use HasSqid;
     use HasTags;
     use Searchable;
+
+    /** Spalten, aus denen {@see effectivePlannedMinutes()} die geplante Dauer liest. */
+    public const PLANNED_DURATION_COLUMNS = ['planned_minutes', 'service_minutes', 'time_window_start', 'time_window_end', 'start_at', 'end_at'];
 
     protected $fillable = [
         'organization_id',
@@ -405,6 +409,34 @@ class DiaryEntry extends Model implements CustomFieldSubject {
             });
             $q->orWhereIn('mode', [Mode::Backlog->value, Mode::Recurring->value]);
         });
+    }
+
+    /**
+     * Geplante Dauer in Minuten (E13/E30, Phase 137): die erfasste „Geplante
+     * Dauer“, sonst die Servicedauer der Disposition, sonst die Länge des
+     * Zeitfensters, sonst die Termindauer (Von/Bis); null ohne jede Angabe.
+     * Leser laden dafür PLANNED_DURATION_COLUMNS.
+     */
+    public function effectivePlannedMinutes(): ?int {
+        if ($this->planned_minutes !== null) {
+            return $this->planned_minutes;
+        }
+        if ($this->service_minutes !== null && $this->service_minutes > 0) {
+            return $this->service_minutes;
+        }
+        if ($this->time_window_start !== null && $this->time_window_end !== null) {
+            $minutes = Duration::fromClock((string) $this->time_window_end)
+                ->minus(Duration::fromClock((string) $this->time_window_start))
+                ->getTotalMinutes();
+            if ($minutes > 0) {
+                return $minutes;
+            }
+        }
+        if ($this->start_at !== null && $this->end_at !== null && $this->end_at->greaterThan($this->start_at)) {
+            return (int) $this->start_at->diffInMinutes($this->end_at);
+        }
+
+        return null;
     }
 
     /** @return list<string> */

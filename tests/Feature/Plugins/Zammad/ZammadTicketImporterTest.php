@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Plugins\Zammad;
 
-use App\Models\Integration\ExternalReference;
+use App\Enums\Task\TaskStatus;
+use App\Models\Integration\{ExternalReference, IntegrationOutboxEntry};
 use App\Models\Platform\Organization;
 use App\Models\Project\{Project, Task};
 use App\Plugins\Zammad\Contracts\ZammadGateway;
@@ -18,13 +19,15 @@ use App\Plugins\Zammad\Models\ZammadConnection;
 use App\Plugins\Zammad\Services\ZammadTicketImporter;
 use App\Plugins\Zammad\ZammadPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
 /**
  * Feature 060, MVP-129: Ticket-Import als Aufgaben. Prüft Idempotenz über
  * ExternalReference, Queue→Projekt-Zuordnung, Default-Fallback, die
- * Mandantengrenze (nie ein Fremdprojekt) und den Aufholpunkt.
+ * Mandantengrenze (nie ein Fremdprojekt), den Aufholpunkt sowie Gruppenfilter
+ * und Statusabgleich (Phase 137, E18/E19).
  */
 final class ZammadTicketImporterTest extends TestCase {
     use RefreshDatabase;
@@ -38,13 +41,13 @@ final class ZammadTicketImporterTest extends TestCase {
     /**
      * @param  list<array{id: int, number: string, title: string, group_id: int|null, state: string|null, customer_id: int|null}>  $tickets
      */
-    private function gateway(array $tickets): ZammadGateway {
-        return new class($tickets) implements ZammadGateway {
+    private function gateway(array $tickets, bool $ignoresPaging = false): ZammadGateway {
+        return new class($tickets, $ignoresPaging) implements ZammadGateway {
             /** @param list<array{id: int, number: string, title: string, group_id: int|null, state: string|null, customer_id: int|null}> $tickets */
-            public function __construct(private array $tickets) {}
+            public function __construct(private array $tickets, private bool $ignoresPaging) {}
 
             public function listTickets(?int $groupId = null, int $page = 1, int $perPage = 100): array {
-                return $this->tickets;
+                return $this->ignoresPaging ? array_slice($this->tickets, 0, $perPage) : array_slice($this->tickets, ($page - 1) * $perPage, $perPage);
             }
 
             public function ping(): bool {
@@ -56,10 +59,6 @@ final class ZammadTicketImporterTest extends TestCase {
             }
 
             public function accountTime(int $ticketId, float $timeUnit): bool {
-                return true;
-            }
-
-            public function addArticle(int $ticketId, string $body, bool $internal = true): bool {
                 return true;
             }
         };
@@ -92,7 +91,7 @@ final class ZammadTicketImporterTest extends TestCase {
         $gateway = $this->gateway([$this->ticket(1, group: 5), $this->ticket(2, group: 99)]);
         $result = (new ZammadTicketImporter())->import($connection, $gateway);
 
-        $this->assertSame(['created' => 2, 'skipped' => 0, 'inbox' => 0], $result);
+        $this->assertSame(['created' => 2, 'updated' => 0, 'skipped' => 0, 'inbox' => 0], $result);
         $this->assertSame(2, Task::query()->count());
 
         // Gruppe 5 → gemapptes Projekt; Gruppe 99 (ohne Treffer/Default) → global.
@@ -120,8 +119,8 @@ final class ZammadTicketImporterTest extends TestCase {
         $first = $importer->import($connection, $this->gateway([$this->ticket(1), $this->ticket(2)]));
         $second = $importer->import($connection, $this->gateway([$this->ticket(1), $this->ticket(2)]));
 
-        $this->assertSame(['created' => 2, 'skipped' => 0, 'inbox' => 0], $first);
-        $this->assertSame(['created' => 0, 'skipped' => 2, 'inbox' => 0], $second);
+        $this->assertSame(['created' => 2, 'updated' => 0, 'skipped' => 0, 'inbox' => 0], $first);
+        $this->assertSame(['created' => 0, 'updated' => 0, 'skipped' => 2, 'inbox' => 0], $second);
         $this->assertSame(2, Task::query()->count());
     }
 
@@ -148,13 +147,82 @@ final class ZammadTicketImporterTest extends TestCase {
         $this->assertTrue($task->is_global);
     }
 
-    public function test_closed_ticket_becomes_done(): void {
+    /** Zammad liefert höchstens 100 Tickets je Seite — der Import liest alle Seiten (Phase 137). */
+    public function test_imports_every_page_of_the_ticket_list(): void {
+        $connection = $this->connection();
+        $tickets = array_map(fn (int $id): array => $this->ticket($id), range(1, 250));
+
+        $result = (new ZammadTicketImporter())->import($connection, $this->gateway($tickets));
+
+        $this->assertSame(250, $result['created']);
+        $this->assertSame(250, Task::query()->count());
+    }
+
+    /** Wertet ein Server `page` nicht aus, endet der Lauf nach der ersten Wiederholung. */
+    public function test_server_ignoring_the_page_parameter_does_not_loop(): void {
+        $connection = $this->connection();
+        $tickets = array_map(fn (int $id): array => $this->ticket($id), range(1, 100));
+
+        $result = (new ZammadTicketImporter())->import($connection, $this->gateway($tickets, ignoresPaging: true));
+
+        $this->assertSame(100, $result['created']);
+    }
+
+    /** Geschlossene Tickets, die nie importiert wurden, holt der Import nicht nach (Phase 137, E19). */
+    public function test_closed_ticket_that_was_never_imported_is_skipped(): void {
         $connection = $this->connection();
 
-        (new ZammadTicketImporter())->import($connection, $this->gateway([$this->ticket(1, state: 'closed')]));
+        $result = (new ZammadTicketImporter())->import($connection, $this->gateway([
+            $this->ticket(1, state: 'closed'),
+            $this->ticket(2, state: 'merged'),
+            $this->ticket(3),
+        ]));
 
-        $task = Task::query()->first();
-        $this->assertNotNull($task);
-        $this->assertSame('done', $task->status->value);
+        $this->assertSame(['created' => 1, 'updated' => 0, 'skipped' => 2, 'inbox' => 0], $result);
+        $this->assertSame(['#22003 Ticket 3'], Task::query()->pluck('title')->all());
+        $this->assertSame(1, ExternalReference::query()->where('plugin_id', ZammadPlugin::ID)->count());
+    }
+
+    /**
+     * Schließt Zammad ein importiertes Ticket, wird die Aufgabe erledigt — ohne
+     * Rückmeldung ans Ticket (E19). Maßgeblich ist der Übergang: eine lokal
+     * wieder geöffnete Aufgabe bleibt offen.
+     */
+    public function test_closing_an_imported_ticket_completes_the_task_once_and_without_echo(): void {
+        Queue::fake();
+        $connection = $this->connection();
+        $connection->forceFill(['resolved_state' => 'closed'])->save();
+        $importer = new ZammadTicketImporter();
+
+        $importer->import($connection, $this->gateway([$this->ticket(1)]));
+        $task = Task::query()->firstOrFail();
+        $this->assertSame(TaskStatus::Open, $task->status);
+
+        $closed = $importer->import($connection, $this->gateway([$this->ticket(1, state: 'closed')]));
+        $this->assertSame(['created' => 0, 'updated' => 1, 'skipped' => 0, 'inbox' => 0], $closed);
+        $this->assertSame(TaskStatus::Done, $task->refresh()->status);
+        $this->assertSame(0, IntegrationOutboxEntry::query()->withoutGlobalScopes()->where('plugin_id', ZammadPlugin::ID)->count(), 'Der Abschluss kam aus Zammad und geht nicht zurück.');
+
+        $task->forceFill(['status' => TaskStatus::Open->value])->save();
+        $again = $importer->import($connection, $this->gateway([$this->ticket(1, state: 'closed')]));
+        $this->assertSame(['created' => 0, 'updated' => 0, 'skipped' => 1, 'inbox' => 0], $again);
+        $this->assertSame(TaskStatus::Open, $task->refresh()->status);
+    }
+
+    /** Mit „Nur zugeordnete Gruppen“ kommen nur Tickets der Gruppen mit Projektzuordnung an (E18). */
+    public function test_limited_connection_imports_only_mapped_groups(): void {
+        $project = Project::factory()->create(['organization_id' => $this->organization->id]);
+        $connection = $this->connection(queueMap: [5 => (int) $project->id]);
+        $connection->forceFill(['is_limited_to_mapped_groups' => true])->save();
+
+        $result = (new ZammadTicketImporter())->import($connection, $this->gateway([
+            $this->ticket(1, group: 5),
+            $this->ticket(2, group: 99),
+        ]));
+
+        $this->assertSame(1, $result['created']);
+        $this->assertSame(1, $result['skipped']);
+        $this->assertSame(1, Task::query()->where('project_id', $project->id)->count());
+        $this->assertSame(1, Task::query()->count());
     }
 }

@@ -11,11 +11,14 @@
 namespace Tests\Feature\CustomerPortal;
 
 use App\Enums\Learning\{LearningAudience, LearningEnrollmentStatus};
+use App\Models\Attachments\Attachment;
 use App\Models\Customer\Customer;
 use App\Models\Learning\{LearningBooking, LearningCourse, LearningEnrollment};
 use App\Models\Platform\{Organization, User};
-use App\Services\Learning\LearningCourseService;
+use App\Notifications\GenericEventNotification;
+use App\Services\Learning\{LearningCourseService, LearningNotifier};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\{Notification, Storage};
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\{WithOrganization, WithPortalVisibility};
 use Tests\TestCase;
@@ -165,6 +168,86 @@ class PortalLearningTest extends TestCase {
             ->assertOk()
             ->assertSee(route('customer.learning.book', $bookable), false)
             ->assertDontSee(route('customer.learning.enroll', $bookable), false);
+    }
+
+    /** Phase 137 (MVP-1105): die Vorschau bot „Einschreiben“ auch bei buchbaren und verwalteten Kursen an — der Klick endete im Fehler. */
+    public function test_vorschau_bietet_je_zugangsart_den_passenden_weg(): void {
+        $bookable = $this->course(['title' => 'Buchbarer Kurs', 'access_kind' => 'bookable']);
+        $managed = $this->course(['title' => 'Verwalteter Kurs', 'access_kind' => 'enrolled']);
+        $open = $this->course(['title' => 'Offener Kurs', 'access_kind' => 'open']);
+
+        $this->actingAs($this->portalUser, 'customer')->get(route('customer.learning.preview', $bookable))
+            ->assertOk()
+            ->assertSee(route('customer.learning.book', $bookable), false)
+            ->assertDontSee(route('customer.learning.enroll', $bookable), false);
+        $this->actingAs($this->portalUser, 'customer')->get(route('customer.learning.preview', $managed))
+            ->assertOk()
+            ->assertSee(__('learning.help.enroll_by_operator'))
+            ->assertDontSee(route('customer.learning.enroll', $managed), false);
+        $this->actingAs($this->portalUser, 'customer')->get(route('customer.learning.preview', $open))
+            ->assertOk()
+            ->assertSee(route('customer.learning.enroll', $open), false);
+    }
+
+    /** Phase 137 (MVP-1105): nach dem Einschreiben stand „Kurs angelegt.“ da. */
+    public function test_einschreiben_meldet_die_einschreibung(): void {
+        $course = $this->course(['access_kind' => 'open']);
+
+        $this->actingAs($this->portalUser, 'customer')
+            ->post(route('customer.learning.enroll', $course))
+            ->assertSessionHas('success', __('learning.flash.enrolled'));
+    }
+
+    /** Phase 137 (MVP-1105): die Kursseite zeigte nur Text und Überschriften; Bilder laufen über eine Portal-Route. */
+    public function test_kursseite_zeigt_alle_blockarten_mit_portal_medien(): void {
+        Storage::fake('local');
+        $course = $this->course(['access_kind' => 'open']);
+        $unit = $course->units()->firstOrFail();
+        $image = Attachment::factory()->create([
+            'organization_id' => $this->organization->id,
+            'attachable_type' => $unit->getMorphClass(),
+            'attachable_id' => $unit->id,
+            'disk' => 'local',
+            'path' => 'learning/test/bedienfeld.png',
+            'original_name' => 'bedienfeld.png',
+            'mime' => 'image/png',
+        ]);
+        Storage::disk('local')->put('learning/test/bedienfeld.png', 'PNG');
+        $unit->forceFill(['content' => json_encode([
+            ['type' => 'callout', 'tone' => 'warning', 'text' => 'Vorsicht, Oberfläche heiß'],
+            ['type' => 'image', 'attachment_id' => $image->id, 'alt' => 'Bedienfeld des Geräts'],
+            ['type' => 'checklist', 'items' => ['Stecker ziehen']],
+        ])])->save();
+
+        $this->actingAs($this->portalUser, 'customer')->post(route('customer.learning.enroll', $course));
+        $enrollment = LearningEnrollment::query()->where('user_id', $this->portalUser->id)->firstOrFail();
+        $media = route('customer.learning.units.media', [$enrollment, $unit, $image]);
+
+        $this->actingAs($this->portalUser, 'customer')
+            ->get(route('customer.learning.show', $enrollment))
+            ->assertOk()
+            ->assertSee('Vorsicht, Oberfläche heiß')
+            ->assertSee('Stecker ziehen')
+            ->assertSee('src="' . $media . '"', false)
+            ->assertDontSee('/meine-schulungen/', false);
+
+        $this->actingAs($this->portalUser, 'customer')->get($media)->assertOk();
+
+        $otherCustomer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $other = User::factory()->kunde((int) $otherCustomer->id, (int) $this->organization->id)->create();
+        $this->actingAs($other, 'customer')->get($media)->assertNotFound();
+    }
+
+    /** Phase 137 (MVP-1105): Benachrichtigungen an Portalkonten verlinken die Portalseite, nicht die interne Lernansicht. */
+    public function test_benachrichtigung_an_portalkonto_verlinkt_das_portal(): void {
+        Notification::fake();
+        $course = $this->course(['access_kind' => 'open']);
+        $this->actingAs($this->portalUser, 'customer')->post(route('customer.learning.enroll', $course));
+        $enrollment = LearningEnrollment::query()->where('user_id', $this->portalUser->id)->firstOrFail();
+
+        app(LearningNotifier::class)->enrolled($enrollment);
+
+        Notification::assertSentTo($this->portalUser, GenericEventNotification::class, fn (GenericEventNotification $n): bool => ($n->payload['url'] ?? null) === route('customer.learning.show', $enrollment));
     }
 
     public function test_fremde_einschreibung_ist_nicht_einsehbar(): void {

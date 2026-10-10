@@ -36,16 +36,16 @@ enum AccountingMigrationStatus: string implements HasLabel, HasStatusTransitions
 
     public function label(): string {
         return match ($this) {
-            self::Draft => __('Entwurf'),
-            self::Analyzing => __('Analyse'),
-            self::Mapping => __('Zuordnung'),
-            self::Ready => __('Bereit'),
-            self::ParallelRun => __('Doppelbetrieb'),
-            self::Cutover => __('Umschaltung'),
-            self::Verifying => __('Prüfung'),
-            self::Completed => __('Abgeschlossen'),
-            self::Blocked => __('Blockiert'),
-            self::Cancelled => __('Abgebrochen'),
+            self::Draft => __('enums.migration.accounting_migration_status.draft'),
+            self::Analyzing => __('enums.migration.accounting_migration_status.analyzing'),
+            self::Mapping => __('enums.migration.accounting_migration_status.mapping'),
+            self::Ready => __('enums.migration.accounting_migration_status.ready'),
+            self::ParallelRun => __('enums.migration.accounting_migration_status.parallel_run'),
+            self::Cutover => __('enums.migration.accounting_migration_status.cutover'),
+            self::Verifying => __('enums.migration.accounting_migration_status.verifying'),
+            self::Completed => __('enums.migration.accounting_migration_status.completed'),
+            self::Blocked => __('enums.migration.accounting_migration_status.blocked'),
+            self::Cancelled => __('enums.migration.accounting_migration_status.cancelled'),
         };
     }
 

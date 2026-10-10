@@ -20,14 +20,12 @@
         <x-slot:toolbar>
             <x-page-toolbar :subtitle="__('Soll-Ist-Vergleich von Anwesenheit, erfasster Zeit und Saldo für :user.', ['user' => $user->name])">
                 <x-slot:actions>
-                    <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                                :href="route('reports.work-balance', array_merge(request()->query(), $standardFilters->toQueryParams(), ['export' => 'pdf']))"
-                                show-label>PDF</x-icon-btn>
+                    <x-report-export :url="fn (string $format) => route('reports.work-balance', array_merge(request()->query(), $standardFilters->toQueryParams(), ['export' => $format]))" :formats="['pdf']" />
                 </x-slot:actions>
             </x-page-toolbar>
         </x-slot:toolbar>
 
-        @if ($isAdmin)
+        @if ($seesTeam)
             <x-filter-bar :action="route('reports.work-balance')" :reset="route('reports.work-balance')">
                 {{-- Zeitraum-Spezialparameter (year/month bzw. from/to) beim Umfiltern erhalten. --}}
                 @foreach (request()->except(['user', 'team', 'export']) as $k => $v)

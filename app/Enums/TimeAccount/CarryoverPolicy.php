@@ -25,8 +25,8 @@ enum CarryoverPolicy: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Carry => __('Übertrag (kumulierend)'),
-            self::Cap   => __('Kappung beim Monatsabschluss'),
+            self::Carry => __('enums.time_account.carryover_policy.carry'),
+            self::Cap   => __('enums.time_account.carryover_policy.cap'),
         };
     }
 }

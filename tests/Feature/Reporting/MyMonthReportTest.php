@@ -46,6 +46,13 @@ class MyMonthReportTest extends TestCase {
         $response->assertOk();
     }
 
+    public function test_kind_filter_uses_the_labels_of_the_entries(): void {
+        $html = (string) $this->getWithMonthRange('reports.my-month')->assertOk()->getContent();
+
+        $this->assertSame(1, preg_match('/<option value="travel"[^>]*>\s*([^<]+?)\s*<\/option>/', $html, $match));
+        $this->assertSame(TimeEntryKind::Travel->label(), html_entity_decode($match[1]));
+    }
+
     public function test_lists_entries_grouped_by_day(): void {
         TimeEntry::create([
             'organization_id' => $this->organization->id,

@@ -8,12 +8,12 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Produktanalyse Drilldown - Defektprotokolle')
-@section('pdf-heading', 'Produktanalyse Drilldown: Defektprotokolle')
+@section('pdf-title', __('Drilldown: Defektprotokolle (Asset)'))
+@section('pdf-heading', __('Drilldown: Defektprotokolle (Asset)'))
 
 @section('pdf-meta')
-    Bereich: {{ $scopeLabel }}<br>
-    Zeitraum: {{ $label }}
+    {{ __('Bereich') }}: {{ $scopeLabel }}<br>
+    {{ __('Zeitraum') }}: {{ $label }}
 @endsection
 
 @section('pdf-table')

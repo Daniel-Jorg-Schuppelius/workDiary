@@ -14,6 +14,7 @@ use App\Enums\User\Permission;
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\{Organization, PluginSetting, User};
 use App\Plugins\PluginManager;
+use App\Services\Retention\RetentionRegistry;
 use App\Services\Security\SessionManagementService;
 use App\Support\MorphMap;
 use Illuminate\Support\Facades\{DB, Schema};
@@ -32,7 +33,40 @@ use Illuminate\Support\Facades\{DB, Schema};
  * Berichts-Payload für den Datenschutzbericht (§3.9, PDF).
  */
 class PrivacyOverviewService {
-    public function __construct(private readonly PluginManager $plugins) {}
+    public function __construct(
+        private readonly PluginManager $plugins,
+        private readonly RetentionRegistry $retention,
+    ) {}
+
+    /**
+     * Datenkategorien mit Texten in der Sprache der Person; die Aufbewahrung
+     * kommt aus dem Löschbereich der Organisation, wo einer hinterlegt ist.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function categories(?Organization $organization): array {
+        $categories = [];
+        foreach ((array) config('privacy.categories', []) as $category) {
+            $code = (string) ($category['code'] ?? '');
+            $texts = trans('privacy.category.' . $code);
+            $texts = is_array($texts) ? $texts : [];
+            $category += [
+                'label' => $texts['label'] ?? $code,
+                'retention' => $texts['retention'] ?? null,
+                'delete_path' => $texts['delete_path'] ?? null,
+            ];
+
+            $area = $category['retention_area'] ?? null;
+            $years = $area !== null && $organization !== null ? $this->retention->yearsFor($organization, (string) $area) : null;
+            if ($years !== null) {
+                $basis = $this->retention->basisFor($organization, (string) $area);
+                $category['retention'] = __('privacy.retention_years', ['years' => $years]) . ($basis !== null ? ' (' . $basis . ')' : '');
+            }
+            $categories[] = $category;
+        }
+
+        return $categories;
+    }
     /**
      * Liefert das vollständige Aggregat für `$user` und dessen Organisation.
      *
@@ -326,7 +360,7 @@ class PrivacyOverviewService {
                     'created_at' => $a->created_at?->toIso8601String(),
                 ];
             })->values()->all(),
-            'categories' => (array) config('privacy.categories', []),
+            'categories' => $this->categories($org),
         ];
     }
 }

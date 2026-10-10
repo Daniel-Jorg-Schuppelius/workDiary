@@ -19,8 +19,6 @@ use App\Models\Document\Document;
 use App\Models\Integration\IntegrationOutboxEntry;
 use App\Models\Invoicing\Invoice;
 use App\Models\Protocol\Protocol;
-use App\Modules\ModuleRegistry;
-use App\Plugins\Support\Mirror\Contracts\MirrorPdfRenderer;
 
 /**
  * Gemeinsamer Outbox-Dispatcher der Dokumentspiegelung (MVP-330, Bauturbo A10 —
@@ -78,7 +76,7 @@ class MirrorOutboxDispatcher implements IntegrationOutboxDispatcher {
         }
 
         $connection = $this->target->activeConnection($entry->organization_id);
-        if ($connection === null) {
+        if ($connection === null || ! $connection->mirrorsSource('document')) {
             return true;
         }
 
@@ -99,14 +97,11 @@ class MirrorOutboxDispatcher implements IntegrationOutboxDispatcher {
         }
 
         $connection = $this->target->activeConnection($entry->organization_id);
-        if ($connection === null || ! $connection->mirrorsSource('invoice_pdf')) {
+        if ($connection === null || ! $connection->mirrorsSource(DocumentMirrorService::EXTERNAL_TYPE_INVOICE)) {
             return true;
         }
 
-        $bytes = $this->pdfFor($invoice);
-        $path = $this->invoicePath($invoice);
-
-        app(DocumentMirrorService::class)->mirrorBytes($this->target, $invoice, 'invoice_pdf', $path, $bytes, 'application/pdf', (string) $invoice->number, $connection, $this->target->gatewayFor($connection));
+        app(DocumentMirrorService::class)->mirrorInvoice($this->target, $invoice, $connection, $this->target->gatewayFor($connection));
 
         return true;
     }
@@ -123,45 +118,12 @@ class MirrorOutboxDispatcher implements IntegrationOutboxDispatcher {
         }
 
         $connection = $this->target->activeConnection($entry->organization_id);
-        if ($connection === null || ! $connection->mirrorsSource('protocol_pdf')) {
+        if ($connection === null || ! $connection->mirrorsSource(DocumentMirrorService::EXTERNAL_TYPE_PROTOCOL)) {
             return true;
         }
 
-        $bytes = $this->pdfFor($protocol);
-        $path = $this->protocolPath($protocol);
-
-        app(DocumentMirrorService::class)->mirrorBytes($this->target, $protocol, 'protocol_pdf', $path, $bytes, 'application/pdf', (string) $protocol->title, $connection, $this->target->gatewayFor($connection));
+        app(DocumentMirrorService::class)->mirrorProtocol($this->target, $protocol, $connection, $this->target->gatewayFor($connection));
 
         return true;
-    }
-
-    /** Deterministischer Remote-Pfad `invoices/<jahr>/<nummer>.pdf` (pfadsicher). */
-    private function invoicePath(Invoice $invoice): string {
-        $year = $invoice->issued_on?->format('Y') ?? now()->format('Y');
-        $number = (string) preg_replace('/[^A-Za-z0-9._-]/', '_', (string) $invoice->number);
-        if ($number === '') {
-            $number = 'invoice-' . $invoice->getKey();
-        }
-
-        return 'invoices/' . $year . '/' . $number . '.pdf';
-    }
-
-    /** Deterministischer Remote-Pfad `protocols/<jahr>/protocol-<id>.pdf`. */
-    private function protocolPath(Protocol $protocol): string {
-        $year = ($protocol->occurred_at ?? now())->format('Y');
-
-        return 'protocols/' . $year . '/protocol-' . $protocol->getKey() . '.pdf';
-    }
-
-    /** PDF über den Renderer des Fachmoduls; ohne Modul keine Spiegelung dieser Belegart. */
-    private function pdfFor(\Illuminate\Database\Eloquent\Model $document): string {
-        foreach (app(ModuleRegistry::class)->extensions(MirrorPdfRenderer::class) as $class) {
-            $renderer = app($class);
-            if ($document instanceof ($renderer->modelClass())) {
-                return $renderer->pdf($document);
-            }
-        }
-
-        throw new \RuntimeException('Kein Spiegel-Renderer für ' . $document::class . '.');
     }
 }

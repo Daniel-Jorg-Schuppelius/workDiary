@@ -18,6 +18,7 @@
     "Nicht-exportierte Projekt-Zeiten, deren Projekt einem OpenProject-Projekt zugeordnet ist, werden als Zeiteinträge zurückgebucht. Aufgaben werden — sofern zugeordnet — als Work Package gebucht. Bereits gebuchte Einträge werden übersprungen.": "Los tiempos de proyecto no exportados cuyo proyecto está asignado a un proyecto de OpenProject se registran como entradas de tiempo. Las tareas se registran — si están asignadas — como work package. Las entradas ya registradas se omiten.",
     "Noch keine Zuordnungen. Starten Sie einen Struktur-Abgleich.": "Aún sin asignaciones. Inicie una sincronización de estructura.",
     "Nur Struktur abgleichen": "Sincronizar solo la estructura",
+    "Nur für eine selbst gehostete OpenProject-Instanz im eigenen Netz: erlaubt eine Instanz-URL mit privater/interner Adresse. Wird protokolliert und wirkt nur, wenn der Betreiber diese Freigabe zulässt.": "Solo para una instancia de OpenProject autoalojada en su propia red: permite una URL de instancia con una dirección privada/interna. La acción queda auditada y solo surte efecto si el operador lo permite.",
     "Nutzt die hinterlegten Zugangsdaten und das Zeitfenster.": "Usa las credenciales guardadas y la ventana temporal.",
     "OpenProject": "OpenProject",
     "OpenProject ist nicht konfiguriert.": "OpenProject no está configurado.",

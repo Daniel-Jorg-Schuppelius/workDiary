@@ -8,14 +8,14 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Anwesenheit – ' . $from . ' bis ' . $to)
+@section('pdf-title', __('Anwesenheit') . ' – ' . $from . ' ' . __('bis') . ' ' . $to)
 @section('pdf-heading', __('Anwesenheits-Auswertung'))
 
 @section('pdf-meta')
-    Zeitraum: <strong>{{ \Carbon\Carbon::parse($from)->fdate() }}</strong> bis
+    {{ __('Zeitraum') }}: <strong>{{ \Carbon\Carbon::parse($from)->fdate() }}</strong> {{ __('bis') }}
     <strong>{{ \Carbon\Carbon::parse($to)->fdate() }}</strong> ·
-    Bereich: {{ $scope === 'team' ? 'Gesamtes Team' : 'Eigene' }} ·
-    Erstellt: {{ now()->fdatetime() }}
+    {{ __('Bereich') }}: {{ $scope === 'team' ? __('Gesamtes Team') : __('Eigene') }} ·
+    {{ __('Erstellt') }}: {{ now()->fdatetime() }}
 @endsection
 
 @section('pdf-table')
@@ -28,22 +28,22 @@
 
     <table class="kpis">
         <tr>
-            <td><div class="label">Soll</div><div class="value">{{ $fmtMin($totals['target']) }}</div></td>
-            <td><div class="label">Anwesend</div><div class="value">{{ $fmtMin($totals['attendance']) }}</div></td>
-            <td><div class="label">Gebucht</div><div class="value">{{ $fmtMin($totals['time_entry']) }}</div></td>
-            <td><div class="label">Saldo</div><div class="value {{ $varClass($totals['variance']) }}">{{ $fmtMin($totals['variance']) }}</div></td>
+            <td><div class="label">{{ __('Soll') }}</div><div class="value">{{ $fmtMin($totals['target']) }}</div></td>
+            <td><div class="label">{{ __('Anwesend') }}</div><div class="value">{{ $fmtMin($totals['attendance']) }}</div></td>
+            <td><div class="label">{{ __('Gebucht') }}</div><div class="value">{{ $fmtMin($totals['time_entry']) }}</div></td>
+            <td><div class="label">{{ __('Saldo') }}</div><div class="value {{ $varClass($totals['variance']) }}">{{ $fmtMin($totals['variance']) }}</div></td>
         </tr>
     </table>
 
     <table class="data">
         <thead>
             <tr>
-                <th>Mitarbeiter</th>
-                <th class="right">Arbeitstage</th>
-                <th class="right">Soll</th>
-                <th class="right">Anwesend</th>
-                <th class="right">Gebucht</th>
-                <th class="right">Saldo</th>
+                <th>{{ __('Mitarbeiter') }}</th>
+                <th class="right">{{ __('Arbeitstage') }}</th>
+                <th class="right">{{ __('Soll') }}</th>
+                <th class="right">{{ __('Anwesend') }}</th>
+                <th class="right">{{ __('Gebucht') }}</th>
+                <th class="right">{{ __('Saldo') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -61,7 +61,7 @@
             @endforelse
             @if (! empty($rows))
                 <tr class="totals">
-                    <td>Gesamt</td>
+                    <td>{{ __('Gesamt') }}</td>
                     <td></td>
                     <td class="right">{{ $fmtMin($totals['target']) }}</td>
                     <td class="right">{{ $fmtMin($totals['attendance']) }}</td>

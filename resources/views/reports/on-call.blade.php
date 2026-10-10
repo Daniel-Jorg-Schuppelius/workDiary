@@ -55,7 +55,7 @@
     </div>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <x-kpi-tile :label="__('Mitarbeiter')" :value="$totals['users']" />
+        <x-kpi-tile :label="__('user.employees')" :value="$totals['users']" />
         <x-kpi-tile :label="__('Bereitschaft')" :value="$fmt($totals['shift_minutes'])" :hint="$totals['shift_count'] . ' ' . __('Schichten')" />
         <x-kpi-tile :label="__('Aktiv-Einsätze')" :value="$fmt($totals['assignment_minutes'])" :hint="$totals['assignment_count'] . ' ' . __('Einsätze')" />
         <x-kpi-tile :label="__('Aktiv-Anteil')" :value="$totals['ratio'] !== null ? $pct($totals['ratio']) : '–'" />

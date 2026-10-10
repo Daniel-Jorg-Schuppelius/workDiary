@@ -59,6 +59,8 @@ return [
         'password_help' => 'Nextcloud: Impostazioni → Sicurezza → Password app. Memorizzata cifrata.',
         'default_folder' => 'Cartella predefinita',
         'active' => 'Attivo',
+        'allow_private_network' => 'Consenti indirizzi privati/interni',
+        'allow_private_network_help' => 'Attivare solo se il server WebDAV si trova nella propria rete (ad es. 192.168.x.x). L\'operazione è sottoposta ad audit e ha effetto solo se il gestore lo consente.',
         'sources' => 'Contenuti replicati',
         'source_document' => 'Documenti (DMS)',
         'source_invoice_pdf' => 'Fatture (PDF)',
@@ -80,5 +82,7 @@ return [
         'no_connection' => 'Nessun archivio WebDAV attivo.',
         'invalid_url' => 'L\'URL della collection deve iniziare con http:// o https://.',
         'password_required' => 'Un nuovo archivio richiede una password app.',
+        'private_url_blocked' => 'L\'URL della collection punta a un indirizzo privato/interno. Per un server nella propria rete, attivi l\'autorizzazione degli indirizzi privati.',
+        'private_hint' => 'Per un server nella propria rete, l\'autorizzazione degli indirizzi privati deve essere attiva sull\'archivio.',
     ],
 ];

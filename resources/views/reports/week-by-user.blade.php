@@ -82,13 +82,13 @@
             <h2 class="font-['Space_Grotesk'] text-lg font-semibold">{{ $weekLabel }}</h2>
             <div class="flex items-baseline gap-4">
                 <div class="flex items-baseline gap-2">
-                    <span class="text-xs uppercase tracking-[0.18em] text-muted">Σ Std.</span>
+                    <span class="text-xs uppercase tracking-[0.18em] text-muted">{{ __('Σ Std.') }}</span>
                     <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $weekTotal > 0 ? 'text-primary' : 'text-muted' }}">
                         {{ $fmt($weekTotal) }}
                     </span>
                 </div>
                 <div class="flex items-baseline gap-2">
-                    <span class="text-xs uppercase tracking-[0.18em] text-muted">Σ €</span>
+                    <span class="text-xs uppercase tracking-[0.18em] text-muted">{{ __('Σ €') }}</span>
                     <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $weekRate > 0 ? 'text-primary' : 'text-muted' }}">
                         {{ $money($weekRate) }}
                     </span>
@@ -107,7 +107,7 @@
                             <x-table.th sort type="duration" align="right">{{ $label }}</x-table.th>
                         @endforeach
                         <x-table.th sort type="duration" align="right">Σ {{ __('Stunden') }}</x-table.th>
-                        <x-table.th sort type="number" align="right">Σ €</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Σ €') }}</x-table.th>
                     </tr>
                 </x-slot:head>
                 <x-slot:foot>

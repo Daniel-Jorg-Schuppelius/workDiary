@@ -31,12 +31,12 @@ enum AssetFinanceKind: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::OperatingLease => (string) __('Operating-Leasing'),
-            self::FinanceLease => (string) __('Finanzierungsleasing'),
-            self::HirePurchase => (string) __('Mietkauf'),
-            self::LongTermRent => (string) __('Langzeitmiete'),
-            self::UsageContract => (string) __('Nutzungsvertrag'),
-            self::ServiceContract => (string) __('Servicevertrag mit Asset-Bezug'),
+            self::OperatingLease => (string) __('enums.asset_finance.asset_finance_kind.operating_lease'),
+            self::FinanceLease => (string) __('enums.asset_finance.asset_finance_kind.finance_lease'),
+            self::HirePurchase => (string) __('enums.asset_finance.asset_finance_kind.hire_purchase'),
+            self::LongTermRent => (string) __('enums.asset_finance.asset_finance_kind.long_term_rent'),
+            self::UsageContract => (string) __('enums.asset_finance.asset_finance_kind.usage_contract'),
+            self::ServiceContract => (string) __('enums.asset_finance.asset_finance_kind.service_contract'),
         };
     }
 }

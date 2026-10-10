@@ -30,7 +30,7 @@
                 <x-table.th sort="name" default>{{ __('Name') }}</x-table.th>
                 <x-table.th sort="abbreviation">{{ __('Kürzel') }}</x-table.th>
                 <th>{{ __('Beschreibung') }}</th>
-                <x-table.th sort="users" align="center">{{ __('Mitarbeiter') }}</x-table.th>
+                <x-table.th sort="users" align="center">{{ __('user.employees') }}</x-table.th>
                 <x-table.th sort="is_active" align="center">{{ __('Aktiv') }}</x-table.th>
                 <th></th>
             </tr>

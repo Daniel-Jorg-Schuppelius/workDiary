@@ -1,7 +1,7 @@
 ---
 title: "Fatturazione, spese, pagamenti e fatturato"
 topic: reports.billing
-version: 1
+version: 3
 keywords:
     - crediti aperti
     - scadenzario
@@ -46,8 +46,8 @@ fatturato per articolo. Trova la maggior parte delle pagine in **Report** →
   corso.
 - **PDF** scarica una versione stampabile; **CSV** ed **Excel** si trovano in
   **Esportazione**; i formati disponibili sono indicati per ogni report. Le
-  esportazioni riprendono i filtri impostati. Le esportazioni PDF e CSV
-  vengono registrate nel registro di audit.
+  esportazioni riprendono i filtri impostati. Ogni esportazione viene
+  registrata nel registro di audit.
 
 ## Fatturazione
 
@@ -58,12 +58,14 @@ l’accesso viene negato.
 
 - Riquadri:
   - **Emesso + pagato (Σ lordo)**: totale lordo delle fatture nello stato
-    **Emessa** o **Pagata** la cui data fattura cade nel periodo (senza data
-    fattura conta la data di creazione).
-  - **Crediti aperti**: totale lordo di tutte le fatture nello stato
-    **Emessa**, indipendentemente dal periodo. Il riquadro diventa rosso non
-    appena una di esse è scaduta da più di 30 giorni; l’indicazione ne riporta
-    il numero.
+    **Emessa**, **Parzialmente pagata** o **Pagata** la cui data fattura cade
+    nel periodo (senza data fattura conta la data di creazione).
+  - **Crediti aperti**: importo ancora aperto di tutte le fatture nello stato
+    **Emessa** o **Parzialmente pagata**, indipendentemente dal periodo. I
+    pagamenti ricevuti e le ritenute a garanzia aperte sono detratti; fatture
+    proforma, note di credito e documenti di storno non contano. Il riquadro
+    diventa rosso non appena una di esse è scaduta da più di 30 giorni;
+    l’indicazione ne riporta il numero.
   - **Tempo non fatturato**: registrazioni di tempo fatturabili del periodo
     non ancora utilizzate da alcun percorso di fatturazione, con il numero di
     registrazioni e il ricavo previsto dagli importi memorizzati.
@@ -74,10 +76,12 @@ l’accesso viene negato.
 - **Fatture per stato**: **Quantità**, **Netto** e **Lordo** per stato.
 - **Scadenzario – partite aperte**: le fatture aperte in base ai giorni oltre
   la scadenza (senza scadenza, dalla data fattura) nelle fasce **Attuale**,
-  1–7, 8–14, 15–30 e oltre 30 giorni, con **Totale aperti**.
+  1–7, 8–14, 15–30 e oltre 30 giorni, ciascuna con l’importo aperto, e
+  **Totale aperti**.
 - **Clienti principali (emesso + pagato nel periodo)**: **Cliente**,
   **Fatture** e **Lordo**; se alcuni importi provengono dal programma di
   contabilità, compare un’ulteriore colonna **di cui programma contabile**.
+  Le fatture parzialmente pagate sono incluse.
 - **Fatture elettroniche in entrata (nel periodo)**: documenti in entrata per
   stato con numero e importo lordo, nonché il numero di quelli trasferiti
   alla contabilità.
@@ -105,7 +109,7 @@ alla data della spesa.
 - Grafici: spese per mese (o settimana o giorno) per categoria, con le quattro
   categorie maggiori singolarmente e il resto raggruppato, e **Principali
   generatori (top 15)**.
-- Riquadri: **Totale (lordo)**, **Dipendente**, **Categorie** e **mesi**.
+- Riquadri: **Totale (lordo)**, **Dipendenti**, **Categorie** e **mesi**.
 - Tabella con una riga per **Dipendente** e **Categoria**, una colonna per
   mese e il **Totale**, seguita da **Categorie principali**.
 
@@ -133,7 +137,9 @@ impostato su **Forfettario** o **A consuntivo**:
 
 La tabella mostra **Dipendente**, **Modello**, **Base di calcolo** e
 **Importo** con un totale generale. I grafici mostrano i pagamenti nel tempo
-e **Pagamenti per esterno (top 15)**. Tutti gli importi sono lordi, esclusi
+e **Pagamenti per esterno (top 15)**. Nell’andamento un forfait mensile compare
+una volta al mese, nella sezione che contiene il primo giorno di quel mese
+compreso nel periodo; il totale del grafico corrisponde quindi alla tabella. Tutti gli importi sono lordi, esclusi
 imposte e contributi. Filtro: **Dipendente**. La pagina non offre
 esportazioni.
 

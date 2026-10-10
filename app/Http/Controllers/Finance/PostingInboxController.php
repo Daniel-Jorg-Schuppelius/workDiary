@@ -18,7 +18,7 @@ use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDa
 use App\Http\Controllers\Controller;
 use App\Models\Accounting\{AccountingAccount, AccountingEntry};
 use App\Models\Finance\BankTransaction;
-use App\Services\Accounting\InternalTransferService;
+use App\Services\Accounting\{InternalTransferService, JournalService};
 use App\Services\Accounting\Posting\{PostingInboxService, PostingSourceRegistry};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
@@ -39,6 +39,7 @@ class PostingInboxController extends Controller {
 
     public function __construct(
         private readonly PostingInboxService $inbox,
+        private readonly JournalService $journal,
         private readonly PostingSourceRegistry $registry,
         private readonly InternalTransferService $transfers,
     ) {}
@@ -56,6 +57,13 @@ class PostingInboxController extends Controller {
             $kind,
             $request->boolean('include_posted'),
         );
+
+        $actor = $request->user();
+        // Vier-Augen: Eigene Entwürfe bieten kein Festschreiben an, es scheiterte sicher.
+        $items = $items->map(fn (array $item): array => $item + [
+            'awaits_second_person' => ($item['entry'] ?? null) instanceof AccountingEntry && $actor !== null
+                && $this->journal->awaitsSecondPerson($item['entry'], $actor),
+        ]);
 
         return view('finance.accounting.inbox', [
             'items' => $items,
@@ -101,7 +109,7 @@ class PostingInboxController extends Controller {
 
         if ($request->boolean('post')) {
             abort_unless(Gate::allows(Permission::AccountingLedgerPost->value), 403);
-            $this->inbox->post($entry, $actor);
+            $this->journal->post($entry, $actor);
         }
 
         return back()->with('status', __('accounting.inbox.flash.prepared'));
@@ -136,7 +144,8 @@ class PostingInboxController extends Controller {
         abort_if($actor === null, 403);
 
         $data = $request->validate([
-            'clearing_account' => ['required', 'integer'],
+            // Sqid aus dem Dialog (numerisch nur für Altaufrufer) — `integer` wies jede Auswahl ab.
+            'clearing_account' => ['required', 'string', 'max:64'],
             'note' => ['required', 'string', 'min:5', 'max:500'],
             'follow_up_on' => ['required', 'date'],
         ]);
@@ -146,7 +155,7 @@ class PostingInboxController extends Controller {
             ->whereKey(Sqid::decodeOrNumeric(AccountingAccount::class, (string) $data['clearing_account']))
             ->firstOrFail();
 
-        $this->inbox->postBankTransactionToClearing(
+        $entry = $this->inbox->postBankTransactionToClearing(
             $organization,
             $transaction,
             $clearing,
@@ -155,7 +164,9 @@ class PostingInboxController extends Controller {
             $actor,
         );
 
-        return back()->with('status', __('accounting.clearing.flash.posted'));
+        return back()->with('status', $entry->status->isPosted()
+            ? __('accounting.clearing.flash.posted')
+            : __('accounting.inbox.flash.awaiting_approval'));
     }
 
     /** Dialog: interne Umbuchung zwischen Geldkonten (MVP-681). */
@@ -175,7 +186,7 @@ class PostingInboxController extends Controller {
         ]);
     }
 
-    /** Interne Umbuchung festschreiben. */
+    /** Interne Umbuchung festschreiben (bei Vier-Augen: Entwurf zur Freigabe). */
     public function storeTransfer(Request $request): RedirectResponse {
         abort_unless(Gate::allows(Permission::AccountingLedgerPost->value), 403);
         $organization = $this->currentOrganizationOrAbort();
@@ -183,8 +194,8 @@ class PostingInboxController extends Controller {
         abort_if($actor === null, 403);
 
         $data = $request->validate([
-            'from_account' => ['required', 'integer'],
-            'to_account' => ['required', 'integer'],
+            'from_account' => ['required', 'string', 'max:64'],
+            'to_account' => ['required', 'string', 'max:64'],
             'amount' => ['required', 'numeric', 'decimal:0,8', 'gt:0'],
             'booked_on' => ['required', 'date'],
             'note' => ['required', 'string', 'min:3', 'max:500'],
@@ -192,7 +203,7 @@ class PostingInboxController extends Controller {
 
         $accounts = AccountingAccount::query()->where('organization_id', $organization->id);
 
-        $this->transfers->record($organization, [
+        $transfer = $this->transfers->record($organization, [
             'booked_on' => CarbonImmutable::parse((string) $data['booked_on']),
             'amount' => Decimal::of((string) $data['amount'], 2)->getValue(),
             'from_account' => (clone $accounts)->whereKey(Sqid::decodeOrNumeric(AccountingAccount::class, (string) $data['from_account']))->firstOrFail(),
@@ -200,7 +211,9 @@ class PostingInboxController extends Controller {
             'note' => (string) $data['note'],
         ], $actor);
 
-        return back()->with('status', __('accounting.transfer.flash.recorded'));
+        return back()->with('status', $transfer->entry?->status->isPosted() === false
+            ? __('accounting.inbox.flash.awaiting_approval')
+            : __('accounting.transfer.flash.recorded'));
     }
 
     /** Vorbereiteten Entwurf festschreiben (mit Vier-Augen-Prüfung). */
@@ -211,7 +224,7 @@ class PostingInboxController extends Controller {
         $actor = $request->user();
         abort_if($actor === null, 403);
 
-        $this->inbox->post($entry, $actor);
+        $this->journal->post($entry, $actor);
 
         return back()->with('status', __('accounting.ledger.flash.entry_posted'));
     }

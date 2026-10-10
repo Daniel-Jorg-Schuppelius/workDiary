@@ -216,26 +216,28 @@ class ApplicationsReportController extends Controller {
      * @param array<string, int|string> $filters
      */
     private function exportCsv(?array $tenders, ?array $recruiting, ?array $contracts, string $from, string $to, array $filters, Request $request): Response {
-        $rows = [['Bereich', 'Schlüssel', 'Anzahl', 'Wert €']];
+        $tendersLabel = (string) __('reporting.csv.tenders');
+        $contractsLabel = (string) __('reporting.csv.contracts');
+        $rows = [[(string) __('reporting.csv.area'), (string) __('reporting.csv.key'), (string) __('reporting.csv.count'), (string) __('reporting.csv.value_eur')]];
         foreach (($tenders['pipeline'] ?? []) as $status => $row) {
-            $rows[] = ['Ausschreibungen', $status, $row['count'], NumberHelper::toUSFormat((float) $row['value'], 2)];
+            $rows[] = [$tendersLabel, $status, $row['count'], NumberHelper::toUSFormat((float) $row['value'], 2)];
         }
         if ($tenders !== null) {
-            $rows[] = ['Ausschreibungen', 'TREFFERQUOTE_%', $tenders['win_rate'] ?? '', ''];
+            $rows[] = [$tendersLabel, (string) __('reporting.csv.win_rate_percent'), $tenders['win_rate'] ?? '', ''];
             foreach ($tenders['loss_reasons'] as $reason => $count) {
-                $rows[] = ['Verlustgrund', $reason, $count, ''];
+                $rows[] = [(string) __('reporting.csv.loss_reason'), $reason, $count, ''];
             }
         }
         foreach (($recruiting['pipeline'] ?? []) as $status => $count) {
-            $rows[] = ['Bewerbungen', $status, $count, ''];
+            $rows[] = [(string) __('reporting.csv.applications'), $status, $count, ''];
         }
         foreach (($recruiting['sources'] ?? []) as $source => $count) {
-            $rows[] = ['Quellkanal', $source, $count, ''];
+            $rows[] = [(string) __('reporting.csv.source_channel'), $source, $count, ''];
         }
         if ($contracts !== null) {
-            $rows[] = ['Verträge', 'offen', $contracts['open'], ''];
-            $rows[] = ['Verträge', 'offene Blocker', $contracts['open_blockers'], ''];
-            $rows[] = ['Verträge', 'fällig ≤ 14 Tage', $contracts['due_soon'], ''];
+            $rows[] = [$contractsLabel, (string) __('reporting.csv.open'), $contracts['open'], ''];
+            $rows[] = [$contractsLabel, (string) __('reporting.csv.open_blockers'), $contracts['open_blockers'], ''];
+            $rows[] = [$contractsLabel, (string) __('reporting.csv.due_14_days'), $contracts['due_soon'], ''];
         }
 
         return $this->csvWithMetadata($rows, sprintf('applications_%s_%s.csv', $from, $to), 'applications', $filters, $request);

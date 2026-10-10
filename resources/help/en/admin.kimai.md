@@ -1,7 +1,7 @@
 ---
 title: "Kimai import"
 topic: admin.kimai
-version: 1
+version: 3
 keywords:
     - Kimai
     - import time entries
@@ -13,6 +13,9 @@ keywords:
     - write-back
     - user mapping
     - write corrections back
+    - hourly import
+    - self-hosted Kimai
+    - allow private addresses
 audience:
     - admin
 related:
@@ -23,6 +26,7 @@ related:
     - admin.toggl
     - finance.open-times
     - admin.organization-settings
+    - admin.scheduler
 ---
 
 The **Kimai import** page brings time entries from the Kimai time tracker
@@ -44,8 +48,8 @@ page in the system menu (the **System** gear in the header) under **Plugins**
   token of a Kimai user (in Kimai under Profile → API access). If the times
   of all people should come across, that user needs the view_other_timesheet
   permission in Kimai.
-- The Kimai instance must be publicly reachable. Only the operator of your
-  installation can allow an instance on an internal network.
+- The Kimai instance must be publicly reachable, or you allow a self-hosted
+  instance on your own network with **Allow private addresses** (see Setup).
 
 ## Setup
 
@@ -54,20 +58,24 @@ Kimai entry:
 
 1. **Kimai base URL**: the address at which you open Kimai in the browser –
    without /api at the end.
-2. **Kimai API token**: the token from Kimai. It is stored encrypted; an
+2. **Allow private addresses**: only for a self-hosted instance on your own
+   network (for example 192.168.x.x). Without this switch WorkDiary rejects
+   internal addresses. The change is audited. If the operator of your
+   installation has blocked this approval, the switch has no effect.
+3. **Kimai API token**: the token from Kimai. It is stored encrypted; an
    empty field keeps the previous value when you save.
-3. **Retrieve times of all users**: on (default) if the token user may read
+4. **Retrieve times of all users**: on (default) if the token user may read
    other people's times; otherwise only that user's own times arrive.
-4. **Sync window (days)**: how far back an API import without a period looks
-   (default 30 days).
-5. **Adopt billable flag**: on takes over the billable flag from Kimai; off
+5. **Sync window (days)**: how far back an API import without a period looks
+   (default 30 days), the hourly one included.
+6. **Adopt billable flag**: on takes over the billable flag from Kimai; off
    never marks imported times as billable.
-6. **Single-user mode** and **Book times for user ID**: for single
-   workstations only, see below.
-7. For write-back, **Enable write-back**, **Kimai activity ID for
+7. **Single-user mode** and **Book times for user**: for single
+   workstations only, see below. You choose the user from the list.
+8. For write-back, **Enable write-back**, **Kimai activity ID for
    write-backs** and optionally **Instant push-back of new times**; for the
    return path of corrections, **Write corrections back**.
-8. **Save**. Use **Test connection** in the dialog to check the access.
+9. **Save**. Use **Test connection** in the dialog to check the access.
    Without a token the plugin reports CSV mode – that is not an error.
 
 ## Importing times
@@ -85,8 +93,13 @@ time of your organization.
 last days according to the sync window. The import skips running timesheets
 that have no end yet.
 
-There is no scheduled Kimai import: every import starts on this page.
-Afterwards the page reports how many entries were created, skipped and left
+**Hourly import:** Once the base URL and API token are stored, the API
+import also runs by itself every hour – over the sync window and with
+deletion matching (see below). You change the interval under **Scheduled
+tasks** on the “Kimai import” entry. Without API access there is no automatic
+import; you always upload CSV files here.
+
+After an import on this page, the page reports how many entries were created, skipped and left
 open in the inbox, and how many could not be matched to a user.
 
 ## Matching customers, projects and people
@@ -103,14 +116,16 @@ open in the inbox, and how many could not be matched to a user.
   customer, optionally the end customer, and the project, then book the
   group. The mapping is remembered, so later imports book without asking.
 - **People:** Every time belongs to the person who recorded it in Kimai. The
-  CSV import uses the email column, the API import uses the Kimai user name.
-  WorkDiary compares either with the email address of the active users.
+  CSV import uses the email column, the API import the email address of the
+  Kimai user (if it is missing, the user name). WorkDiary compares either with
+  the email address of the active users; a choice remembered in the inbox for
+  a user name still applies.
   Without a match, an “Unknown user” or “Entry without user signal” case is
   created in the inbox instead of the time silently landing with the main
   user. Choose the user there; the choice is remembered.
 - **Single-user mode:** Only when it is switched on does the import book
   entries without an identifiable person to the default user. That is the
-  user from **Book times for user ID**, otherwise the owner of the
+  user from **Book times for user**, otherwise the owner of the
   organization or the first user.
 
 ## Re-importing and changes
@@ -169,15 +184,18 @@ retried on errors.
   number of a Kimai activity.
 - “No project is mapped to a Kimai project”: run an API import first or book
   the API groups in the inbox.
-- Many “Unknown user” cases: the Kimai user names or the email column do not
-  match the email addresses in WorkDiary. Map each person once in the inbox.
+- Many “Unknown user” cases: the email addresses in Kimai or the email column
+  do not match the email addresses in WorkDiary. Map each person once in the inbox.
 - Only the token user's times arrive: that user lacks the
   view_other_timesheet permission in Kimai, or **Retrieve times of all
   users** is off.
 - The CSV import creates nothing: the header row needs at least a date and
   either an end time or a duration.
-- The API cannot be reached: enter the address without /api, check the token
-  and use **Test connection**. If the instance is on an internal network,
-  WorkDiary reports a private address. If errors pile up, WorkDiary
+- The API cannot be reached: the page shows the error and nothing is
+  imported. Enter the address without /api, check the token and use **Test
+  connection**. If the instance is on an internal network, WorkDiary reports
+  a private address; switch on **Allow private addresses**. If the operator
+  has blocked this approval, the instance needs a publicly reachable
+  address. If errors pile up, WorkDiary
   deactivates the plugin automatically; once the cause is fixed, reset it on
   the **Plugins** page with **Reset & reactivate**.

@@ -14,6 +14,7 @@ namespace App\Services\Schedule;
 
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\Schedule\{CoverageRequirement, DutyPlan, ScheduledShift, ShiftType};
+use App\Services\Reporting\Contracts\StaffingCoverage;
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonPeriod};
 use Illuminate\Support\Collection;
@@ -25,12 +26,13 @@ use Illuminate\Support\Facades\DB;
  * Soll-Auflösung pro Tag + ShiftType (höhere Priorität gewinnt):
  *   3. CoverageRequirement.specific_date == Datum (im Plan oder org-weit)
  *   2. CoverageRequirement.weekday      == Wochentag (im Plan oder org-weit)
- *   1. DutyPlan.min_staff (Plan-Default, gilt für alle Schichttypen die im Plan vorkommen)
+ *   1. CoverageRequirement ohne Datum/Wochentag („Immer“)
+ *   0. DutyPlan.min_staff (Plan-Default, gilt für alle Schichttypen die im Plan vorkommen)
  *
  * Ist-Werte zählen nur Schichten mit Status `published` oder `confirmed`
  * (Entwürfe / abgesagte Schichten werden ignoriert).
  */
-class CoverageService {
+class CoverageService implements StaffingCoverage {
     /** Status, die als "tatsächlich besetzt" zählen. */
     private const ACTUAL_STATUSES = [
         ScheduledShiftStatus::Published->value,
@@ -44,11 +46,6 @@ class CoverageService {
     public function requirementsFor(DutyPlan $dutyPlan, ?CarbonPeriod $period = null): array {
         $period ??= CarbonPeriod::create($dutyPlan->from_date, $dutyPlan->to_date);
 
-        // Eine Query reicht: alle Anforderungen für Plan oder org-weit.
-        $reqs = CoverageRequirement::query()
-            ->forPlan($dutyPlan->id)
-            ->get();
-
         // Alle Schichttypen, die im Plan tatsächlich auftauchen (für min_staff-Fallback).
         $planShiftTypeIds = $dutyPlan->shifts()
             ->whereNotNull('shift_type_id')
@@ -56,28 +53,113 @@ class CoverageService {
             ->pluck('shift_type_id')
             ->all();
 
+        return $this->resolveRequirements(
+            CoverageRequirement::query()->forPlan($dutyPlan->id)->get(),
+            $period,
+            $dutyPlan->min_staff > 0 ? array_values(array_map('intval', $planShiftTypeIds)) : [],
+            (int) $dutyPlan->min_staff,
+        );
+    }
+
+    /**
+     * @return array<string, array<int, int>> date → shift_type_id → count
+     */
+    public function actualStaffing(DutyPlan $dutyPlan, ?CarbonPeriod $period = null): array {
+        $start = $period?->getStartDate();
+        $end = $period?->getEndDate();
+        $from = $start !== null ? CarbonImmutable::instance($start) : CarbonImmutable::instance($dutyPlan->from_date);
+        $to = $end !== null ? CarbonImmutable::instance($end) : CarbonImmutable::instance($dutyPlan->to_date);
+
+        return $this->countActual($from, $to, $dutyPlan->id);
+    }
+
+    /**
+     * Soll und Ist je Tag und Schichttyp planübergreifend (Auswertung
+     * „Coverage“): Tage eines Dienstplans nach dessen Regeln, Tage ohne Plan
+     * nur nach org-weiten Anforderungen; mehrere Pläne am selben Tag addieren
+     * sich. Der Personenfilter wirkt nur auf das Ist.
+     *
+     * @param  list<int>  $userIds  leere Liste = alle
+     * @return array<string, array<int, array{min: int, actual: int}>> date → shift_type_id
+     */
+    public function staffingBetween(CarbonImmutable $from, CarbonImmutable $to, array $userIds = []): array {
+        /** @var array<string, array<int, int>> $min */
+        $min = [];
+        /** @var array<string, array<int, int>> $actual */
+        $actual = [];
+        $planned = [];
+        $plans = DutyPlan::query()
+            ->where('from_date', '<', DateRange::dayAfter($to))
+            ->where('to_date', '>=', $from->toDateString())
+            ->get();
+        foreach ($plans as $plan) {
+            $start = CarbonImmutable::instance($plan->from_date)->max($from);
+            $end = CarbonImmutable::instance($plan->to_date)->min($to);
+            foreach ($this->requirementsFor($plan, CarbonPeriod::create($start->toDateString(), $end->toDateString())) as $date => $perType) {
+                $planned[$date] = true;
+                foreach ($perType as $shiftTypeId => $requirement) {
+                    $min[$date][$shiftTypeId] = ($min[$date][$shiftTypeId] ?? 0) + $requirement['min'];
+                }
+            }
+            foreach ($this->countActual($start, $end, $plan->id, $userIds) as $date => $perType) {
+                foreach ($perType as $shiftTypeId => $count) {
+                    $actual[$date][$shiftTypeId] = ($actual[$date][$shiftTypeId] ?? 0) + $count;
+                }
+            }
+        }
+
+        $orgWide = CoverageRequirement::query()->forPlan(null)->get();
+        foreach ($this->resolveRequirements($orgWide, CarbonPeriod::create($from->toDateString(), $to->toDateString()), [], 0) as $date => $perType) {
+            if (isset($planned[$date])) {
+                continue;
+            }
+            foreach ($perType as $shiftTypeId => $requirement) {
+                $min[$date][$shiftTypeId] = ($min[$date][$shiftTypeId] ?? 0) + $requirement['min'];
+            }
+        }
+        foreach ($this->countActual($from, $to, null, $userIds) as $date => $perType) {
+            foreach ($perType as $shiftTypeId => $count) {
+                $actual[$date][$shiftTypeId] = ($actual[$date][$shiftTypeId] ?? 0) + $count;
+            }
+        }
+
+        $out = [];
+        foreach (array_unique([...array_keys($min), ...array_keys($actual)]) as $date) {
+            foreach (array_unique([...array_keys($min[$date] ?? []), ...array_keys($actual[$date] ?? [])]) as $shiftTypeId) {
+                $out[(string) $date][(int) $shiftTypeId] = ['min' => $min[$date][$shiftTypeId] ?? 0, 'actual' => $actual[$date][$shiftTypeId] ?? 0];
+            }
+        }
+        ksort($out);
+
+        return $out;
+    }
+
+    /**
+     * Soll-Auflösung je Tag: Anforderung mit höchster Priorität gewinnt, der
+     * Plan-Default (min_staff) liegt darunter.
+     *
+     * @param  Collection<int, CoverageRequirement>  $reqs
+     * @param  list<int>  $defaultShiftTypeIds
+     * @return array<string, array<int, array{min:int, max:?int, qualification_ids:array<int,int>, qualification_minima:array<int,int>}>>
+     */
+    private function resolveRequirements(Collection $reqs, CarbonPeriod $period, array $defaultShiftTypeIds, int $minStaff): array {
         $out = [];
         foreach ($period as $day) {
             /** @var \DateTimeInterface $day */
             $dateStr = $day->format('Y-m-d');
             $perType = [];
 
-            // Plan-Default: jeder genutzte Schichttyp muss min_staff erfüllen.
-            if ($dutyPlan->min_staff > 0) {
-                foreach ($planShiftTypeIds as $stid) {
-                    $perType[(int) $stid] = [
-                        'min' => $dutyPlan->min_staff,
-                        'max' => null,
-                        'qualification_ids' => [],
-                        'qualification_minima' => [],
-                        '_priority' => 1,
-                    ];
-                }
+            foreach ($defaultShiftTypeIds as $stid) {
+                $perType[$stid] = [
+                    'min' => $minStaff,
+                    'max' => null,
+                    'qualification_ids' => [],
+                    'qualification_minima' => [],
+                    '_priority' => 0,
+                ];
             }
 
-            // Anforderungen für diesen Tag, Priorität 2/3.
             foreach ($reqs as $req) {
-                /** @var CoverageRequirement $req */
                 if (! $req->appliesToDate($day)) {
                     continue;
                 }
@@ -97,7 +179,6 @@ class CoverageService {
                 }
             }
 
-            // _priority entfernen
             foreach ($perType as &$row) {
                 unset($row['_priority']);
             }
@@ -110,16 +191,13 @@ class CoverageService {
     }
 
     /**
+     * @param  list<int>  $userIds  leere Liste = alle
      * @return array<string, array<int, int>> date → shift_type_id → count
      */
-    public function actualStaffing(DutyPlan $dutyPlan, ?CarbonPeriod $period = null): array {
-        $start = $period?->getStartDate();
-        $end = $period?->getEndDate();
-        $from = $start !== null ? CarbonImmutable::instance($start) : CarbonImmutable::instance($dutyPlan->from_date);
-        $to = $end !== null ? CarbonImmutable::instance($end) : CarbonImmutable::instance($dutyPlan->to_date);
-
+    private function countActual(CarbonImmutable $from, CarbonImmutable $to, ?int $dutyPlanId, array $userIds = []): array {
         $rows = ScheduledShift::query()
-            ->where('duty_plan_id', $dutyPlan->id)
+            ->when($dutyPlanId === null, fn ($q) => $q->whereNull('duty_plan_id'), fn ($q) => $q->where('duty_plan_id', $dutyPlanId))
+            ->when($userIds !== [], fn ($q) => $q->whereIn('user_id', $userIds))
             ->whereIn('status', self::ACTUAL_STATUSES)
             ->whereNotNull('shift_type_id')
             ->whereBetween('date', DateRange::days($from, $to))

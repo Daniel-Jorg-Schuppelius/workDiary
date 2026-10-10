@@ -1,7 +1,7 @@
 ---
 title: "Versandanbindungen DHL, UPS und FedEx"
 topic: admin.shipping-carriers
-version: 1
+version: 2
 keywords:
     - Versand
     - DHL
@@ -15,6 +15,8 @@ keywords:
     - Geschäftskundenportal
     - Sandbox
     - Carrier
+    - Sendungsverfolgung
+    - Versand stornieren
 audience:
     - admin
 modules:
@@ -31,7 +33,7 @@ related:
 Die Seite **Versand & Logistik** – im Menü unter **Versand** – hinterlegt die
 Zugangsdaten zu den Paketdiensten DHL Paket, UPS und FedEx. Mit einer aktiven
 Anbindung erzeugen Sie Versandlabels für Auslieferungen und Retourenlabels für
-Rücksendungen direkt in WorkDiary. Je Paketdienst gibt es eine Anbindung pro
+Rücksendungen direkt in WorkDiary und verfolgen den Weg Ihrer Sendungen. Je Paketdienst gibt es eine Anbindung pro
 Organisation; Passwörter und Schlüssel werden verschlüsselt gespeichert.
 
 ## Voraussetzungen
@@ -57,7 +59,7 @@ Organisation; Passwörter und Schlüssel werden verschlüsselt gespeichert.
 
 ## Anbindung anlegen oder ändern
 
-Im Abschnitt **Anbindung anlegen / bearbeiten**:
+Eine neue Anbindung legen Sie im Formular **Anbindung anlegen** an:
 
 1. **Carrier**: DHL, UPS oder FEDEX.
 2. **Bezeichnung**: ein Name, unter dem die Anbindung später bei der
@@ -72,26 +74,34 @@ Im Abschnitt **Anbindung anlegen / bearbeiten**:
 8. **Aktiv** und **Speichern**.
 
 Für eine neue Anbindung sind Benutzer/Client-ID und Passwort/Client-Secret
-Pflicht, bei DHL zusätzlich der API-Schlüssel.
+Pflicht, bei DHL zusätzlich der API-Schlüssel. Wählen Sie in diesem Formular
+einen Carrier, für den schon eine Anbindung besteht, lehnt WorkDiary das
+Speichern mit einem Hinweis ab – bestehende Anbindungen ändern Sie nur über
+**Bearbeiten**.
 
-Zum Ändern speichern Sie das Formular erneut mit demselben Carrier; das
-aktualisiert die bestehende Anbindung. Das Formular startet dabei immer leer:
+Zum Ändern klicken Sie in der Liste **Bestehende Anbindungen** bei der
+Anbindung auf **Bearbeiten**. Das Formular heißt dann **Anbindung … bearbeiten**
+mit dem Carrier im Titel, etwa „Anbindung DHL bearbeiten“; der Carrier lässt
+sich nicht ändern.
 
-- Leer gelassene Felder für Benutzer, Passwort, API-Schlüssel und
-  Retourenempfänger-ID behalten den gespeicherten Wert.
-- **Bezeichnung** und **Abrechnungs-/Kontonummer** tragen Sie jedes Mal neu
-  ein – eine leere Abrechnungsnummer wird gelöscht.
-- **Sandbox / Testumgebung** und **Aktiv** gelten so, wie sie beim Speichern
-  gesetzt sind. Eine Sandbox-Anbindung wird also produktiv, wenn Sie den
-  Haken nicht erneut setzen.
+- **Bezeichnung**, **Abrechnungs-/Kontonummer**, **Sandbox / Testumgebung** und
+  **Aktiv** sind mit den gespeicherten Werten vorbelegt. Was Sie hier ändern,
+  gilt nach dem Speichern.
+- Benutzer, Passwort, API-Schlüssel und Retourenempfänger-ID werden nie
+  angezeigt. Leer gelassene Felder behalten den gespeicherten Wert; nur ein
+  neuer Eintrag ersetzt ihn.
+- Auch eine leer gelassene **Abrechnungs-/Kontonummer** behält den gespeicherten
+  Wert.
+- **Abbrechen** verlässt das Bearbeiten, ohne zu speichern.
 
 ## Bestehende Anbindungen
 
 Die Liste **Bestehende Anbindungen** zeigt je Anbindung den Carrier, die
 Bezeichnung, den **Modus** (**Sandbox** oder **Produktiv**) und den Status
-(**Aktiv** oder **Inaktiv**). **Deaktivieren** schaltet eine Anbindung ab; sie
-steht dann nicht mehr zur Auswahl. Zum Reaktivieren speichern Sie sie mit
-eingeschaltetem **Aktiv** erneut.
+(**Aktiv** oder **Inaktiv**). **Bearbeiten** öffnet die Anbindung im Formular.
+**Deaktivieren** schaltet eine Anbindung ab; sie steht dann nicht mehr zur
+Auswahl, und Sendungen dieses Carriers werden nicht mehr abgeglichen. Zum
+Reaktivieren öffnen Sie sie mit **Bearbeiten**, setzen **Aktiv** und speichern.
 
 ## Labels erzeugen
 
@@ -103,7 +113,11 @@ eingeschaltetem **Aktiv** erneut.
   die Maße nur, wenn alle drei angegeben sind. Erfasste Packstücke liefern
   Gewicht und Maße selbst. Empfänger ist der Kunde der Auslieferung. Danach
   zeigt die Auslieferung den Status **Label erstellt** mit Paketdienst und
-  Sendungsnummer. Je Auslieferung gibt es einen Versandauftrag.
+  Sendungsnummer. Je Auslieferung gibt es einen Versandauftrag; ein
+  stornierter zählt nicht. An der Auslieferung laden Sie das Label mit **Label
+  herunterladen** erneut herunter, fragen mit **Sendungsstatus abrufen** den
+  aktuellen Stand ab und stornieren mit **Versand stornieren** – Einzelheiten
+  in der Hilfe zu Fertigungsaufträgen.
 - **Retourenlabel für Rücksendungen:** In den **Reklamationsakten** wählen Sie
   bei einer Rücksendung im Status **Angekündigt** die Anbindung, geben das
   Gewicht an und klicken auf **Retourenlabel erstellen**. Absender ist der
@@ -117,6 +131,23 @@ eingeschaltetem **Aktiv** erneut.
 UPS liefert das Label als Bild (GIF), FedEx als PDF. Lehnt der Paketdienst
 den Auftrag ab, verwirft WorkDiary den Entwurf, und Sie können es nach der
 Korrektur erneut versuchen.
+
+## Sendungsverfolgung
+
+Offene Sendungen – Status **Label erstellt**, **Unterwegs** oder
+**Zustellproblem** – gleicht WorkDiary in der Standardeinstellung stündlich beim
+Paketdienst ab. Jede Sendung wird dabei höchstens alle drei Stunden abgefragt
+und nur bis 60 Tage nach ihrer Anlage; danach gilt sie nicht mehr als
+verfolgbar. Der Abgleich übernimmt Status und Sendungsverlauf, bis die Sendung
+**Zugestellt** ist.
+
+- Wechselt eine Sendung auf **Zustellproblem**, löst WorkDiary die
+  Benachrichtigung **Zustellproblem bei einer Sendung** aus.
+- Den Zeitpunkt des letzten Abgleichs zeigt der Status an der Auslieferung beim
+  Überfahren mit der Maus (**Zuletzt abgeglichen: …**).
+- Abgeglichen wird nur über eine aktive Anbindung. Scheitert der Abruf beim
+  Paketdienst, zählt das wie andere Verbindungsfehler für die Anbindung (siehe
+  „Typische Fehlerbilder“).
 
 ## Grenzen
 
@@ -133,8 +164,16 @@ Korrektur erneut versuchen.
   Ergänzen Sie die fehlenden Zugangsdaten.
 - **Keine Anbindung zur Auswahl:** Es gibt keine aktive Anbindung, oder die
   Auslieferung hat keinen Kunden bzw. bereits einen Versandauftrag.
+- **„Für diesen Carrier besteht bereits eine Anbindung. Bitte ändern Sie sie
+  über „Bearbeiten“.“** Sie haben im Formular **Anbindung anlegen** einen
+  bereits angebundenen Carrier gewählt. Öffnen Sie die Anbindung in der Liste
+  mit **Bearbeiten**.
 - **„Für den gewählten Carrier ist keine aktive Anbindung hinterlegt.“** Die
   Anbindung wurde inzwischen deaktiviert.
+- **„Versandauftrag konnte nicht storniert werden: …“** oder
+  **„Sendungsstatus konnte nicht abgerufen werden: …“** Der Paketdienst hat die
+  Anfrage abgelehnt oder war nicht erreichbar, oder die Anbindung ist inaktiv.
+  Ist die Sendung bereits unterwegs, ist kein Storno mehr möglich.
 - **„Versandlabel konnte nicht erstellt werden: …“** Prüfen Sie Zugangsdaten,
   Abrechnungs- bzw. Kontonummer, den Schalter **Sandbox / Testumgebung** und
   die Anschrift des Empfängers. Bei UPS und FedEx fehlt oft die

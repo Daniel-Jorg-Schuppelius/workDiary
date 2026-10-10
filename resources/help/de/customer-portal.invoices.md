@@ -1,7 +1,7 @@
 ---
 title: "Meine Rechnungen"
 topic: customer-portal.invoices
-version: 3
+version: 4
 keywords:
     - Rechnungen ansehen
     - Rechnungsübersicht
@@ -15,6 +15,9 @@ keywords:
     - Belege
     - Rechnungsnummer
     - Teilzahlung
+    - Rechnung herunterladen
+    - Rechnungs-PDF
+    - ZUGFeRD
 audience: []
 related:
     - customer-portal.overview
@@ -33,9 +36,9 @@ Die Liste zeigt je Rechnung:
 - **Datum** – das Rechnungsdatum,
 - **Status** – der Zahlungsstand,
 - **Betrag** – der Rechnungsbetrag mit Währung,
-- rechts gegebenenfalls den Knopf **Online bezahlen**.
+- rechts das PDF-Symbol zum Herunterladen und gegebenenfalls den Knopf **Online bezahlen**.
 
-Die neueste Rechnung steht oben. Bei mehr als 25 Rechnungen blättern Sie über die Seitennummerierung am unteren Rand. Entwürfe, an denen Ihr Auftragnehmer noch arbeitet, erscheinen nicht – Sie sehen nur ausgestellte Rechnungen. Die Rechnungsdokumente selbst lassen sich auf dieser Seite nicht öffnen oder herunterladen.
+Die neueste Rechnung steht oben. Bei mehr als 25 Rechnungen blättern Sie über die Seitennummerierung am unteren Rand. Entwürfe, an denen Ihr Auftragnehmer noch arbeitet, erscheinen nicht – Sie sehen nur ausgestellte Rechnungen.
 
 ### Die Status
 
@@ -43,6 +46,14 @@ Die neueste Rechnung steht oben. Bei mehr als 25 Rechnungen blättern Sie über 
 - **Teilweise bezahlt** – ein Teil des Betrags ist eingegangen.
 - **Bezahlt** – die Rechnung ist vollständig beglichen.
 - **Storniert** – die Rechnung wurde storniert und ist nicht mehr zu zahlen.
+
+## Rechnung herunterladen
+
+Klicken Sie in der Zeile der Rechnung auf das PDF-Symbol (Hinweis beim Darüberfahren: **Rechnung … als PDF herunterladen**). Sie erhalten dasselbe Dokument, das auch Ihr Auftragnehmer zu dieser Rechnung ausgibt.
+
+- Erhalten Sie Ihre Rechnungen als ZUGFeRD-E-Rechnung, ist auch die heruntergeladene Datei ein ZUGFeRD-PDF mit eingebetteten Rechnungsdaten.
+- Bei allen anderen Zustellwegen erhalten Sie die Rechnung als PDF – auch dann, wenn Ihnen die Rechnung als XRechnung (XML) zugestellt wurde.
+- Fehlt das Symbol bei einer Rechnung, führt Ihr Auftragnehmer diese Rechnung in einem anderen Rechnungsprogramm. Das Dokument erhalten Sie dann direkt von ihm.
 
 ## Online bezahlen
 

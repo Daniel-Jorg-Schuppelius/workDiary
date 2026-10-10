@@ -26,10 +26,10 @@ enum ProcessingActivityStatus: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Draft => __('Entwurf'),
-            self::InReview => __('In Prüfung'),
-            self::Approved => __('Freigegeben'),
-            self::Archived => __('Archiviert'),
+            self::Draft => __('enums.privacy.processing_activity_status.draft'),
+            self::InReview => __('enums.privacy.processing_activity_status.in_review'),
+            self::Approved => __('enums.privacy.processing_activity_status.approved'),
+            self::Archived => __('enums.privacy.processing_activity_status.archived'),
         };
     }
 }

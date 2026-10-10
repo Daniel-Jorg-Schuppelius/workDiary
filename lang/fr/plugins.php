@@ -24,4 +24,17 @@ return [
         'range_hint' => 'Plage de versions du noyau WorkDiary prise en charge.',
         'activation_blocked' => 'Le plugin ne peut pas être activé : :message',
     ],
+
+    // Adressprüfung ausgehender Plugin-Ziele (UrlSafety, PluginHttpFactory).
+    'url_guard' => [
+        'invalid' => ':prefix : :subject n’est pas une adresse http(s) valide.',
+        'private' => ':prefix : :subject pointe vers une adresse privée/interne.',
+        'subject' => [
+            'base' => 'L’URL de base',
+            'target' => 'L’URL cible',
+        ],
+        'hint_default' => 'Les adresses privées doivent être autorisées explicitement.',
+        'hint_setting' => 'Pour une instance sur votre propre réseau, activez le paramètre du plugin « :setting ».',
+        'hint_operator' => 'Seul l’exploitant de votre installation peut autoriser une cible sur votre propre réseau (PLUGINS_PRIVATE_NETWORK_TARGETS).',
+    ],
 ];

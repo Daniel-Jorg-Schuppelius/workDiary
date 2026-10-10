@@ -79,7 +79,7 @@ class EntryTypeAnalysisReportBuilder {
             ->when($userId !== null, fn($q) => $q->where('user_id', $userId))
             ->when($entryTypeFilter !== null, fn($q) => $q->where('entry_type_id', $entryTypeFilter))
             ->when($statusFilter !== null, fn($q) => $q->where('status', $statusFilter))
-            ->get(['id', 'entry_type_id', 'planned_minutes', 'service_minutes']);
+            ->get(['id', 'entry_type_id', ...DiaryEntry::PLANNED_DURATION_COLUMNS]);
 
         if ($entries->isEmpty()) {
             return [];
@@ -156,7 +156,7 @@ class EntryTypeAnalysisReportBuilder {
 
             $bucket[$typeId]['entryCount']++;
 
-            $planned = $entry->planned_minutes;
+            $planned = $entry->effectivePlannedMinutes();
             if ($planned !== null) {
                 $bucket[$typeId]['plannedSum'] += (int) $planned;
                 $bucket[$typeId]['plannedKnownCount']++;

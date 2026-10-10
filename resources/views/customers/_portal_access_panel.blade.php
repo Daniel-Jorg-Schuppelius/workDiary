@@ -81,6 +81,29 @@
                                     @csrf
                                     <x-icon-btn icon="forward_to_inbox" type="submit" :label="__('Einladung erneut senden')" />
                                 </form>
+                            @else
+                                <form method="POST" action="{{ route('customers.portal-access.reset', [$customer, $portalUser]) }}"
+                                      data-confirm-dialog
+                                      data-confirm-title="{{ __('customer_portal.reset.confirm_title') }}"
+                                      data-confirm-message="{{ __('customer_portal.reset.confirm_message', ['email' => $portalUser->email]) }}"
+                                      data-confirm-tone="warning"
+                                      data-confirm-label="{{ __('customer_portal.reset.confirm_label') }}"
+                                      class="inline">
+                                    @csrf
+                                    <x-icon-btn icon="lock_reset" type="submit" :label="__('customer_portal.reset.action')" />
+                                </form>
+                                @if ($portalUser->hasTwoFactorEnabled())
+                                    <form method="POST" action="{{ route('customers.portal-access.reset-second-factor', [$customer, $portalUser]) }}"
+                                          data-confirm-dialog
+                                          data-confirm-title="{{ __('customer_portal.second_factor.confirm_title') }}"
+                                          data-confirm-message="{{ __('customer_portal.second_factor.confirm_message', ['email' => $portalUser->email]) }}"
+                                          data-confirm-tone="warning"
+                                          data-confirm-label="{{ __('customer_portal.second_factor.confirm_label') }}"
+                                          class="inline">
+                                        @csrf
+                                        <x-icon-btn icon="phonelink_lock" type="submit" :label="__('customer_portal.second_factor.action')" />
+                                    </form>
+                                @endif
                             @endif
                             <form method="POST" action="{{ route('customers.portal-access.deactivate', [$customer, $portalUser]) }}"
                                   data-confirm-dialog

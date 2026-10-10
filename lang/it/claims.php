@@ -37,6 +37,13 @@ return [
     ],
     // Retourenanmeldung im Kundenportal (MVP-935).
     'portal_return' => [
+        'list' => [
+            'claim' => 'Reclamo',
+            'empty' => 'Nessun reso ancora registrato.',
+            'rma' => 'Numero di reso',
+            'status' => 'Stato',
+            'title' => 'I miei resi',
+        ],
         'capability' => 'Registrare un reso',
         'nav' => 'Registrare un reso',
         'title' => 'Registrare un reso',
@@ -60,5 +67,10 @@ return [
             'subject' => 'Scelga una consegna o un oggetto.',
             'serial' => 'Questo numero di serie non appartiene alla consegna scelta.',
         ],
+    ],
+    // Nachreichungen aus dem Kundenportal.
+    'portal_note' => [
+        'history' => 'Le Sue integrazioni successive',
+        'notification_title' => 'Integrazione successiva al reclamo :number',
     ],
 ];

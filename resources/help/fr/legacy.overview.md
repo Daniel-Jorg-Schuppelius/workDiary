@@ -1,7 +1,7 @@
 ---
 title: "Ancien système (legacy)"
 topic: legacy.overview
-version: 2
+version: 3
 keywords:
     - ancienne application
     - anciennes données
@@ -55,7 +55,7 @@ personnes sont visibles pour les administrateurs de l'ancien système et pour le
 rôle **Comptabilité** ; les autres ne voient que les leurs. La connexion du
 centre d'appels mène à la même page.
 
-**Employé** se trouve dans le menu d'administration (icône **Administration**
+**Employés** se trouve dans le menu d'administration (icône **Administration**
 dans l'en-tête) sous **Personnel** et liste les utilisateurs de l'ancien
 système avec **Nom** et **E-mail** :
 
@@ -68,6 +68,6 @@ système avec **Nom** et **E-mail** :
   d'astreinte ou d'astreinte n'existe pour la personne.
 - Créer, modifier et supprimer exigent l'accès en écriture à l'ancien système.
 
-**Autorisation :** la page **Employé** est ouverte aux administrateurs de
+**Autorisation :** la page **Employés** est ouverte aux administrateurs de
 l'ancien système et à l'exploitation de la plateforme ; le rôle
 d'administrateur de l'organisation ne suffit pas à lui seul.

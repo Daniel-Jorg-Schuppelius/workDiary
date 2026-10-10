@@ -1,7 +1,7 @@
 ---
 title: "Usar los informes"
 topic: reports.overview
-version: 3
+version: 7
 keywords:
     - estadísticas
     - indicadores
@@ -59,10 +59,16 @@ abrir. La selección coincide exactamente con la barra lateral.
 Los análisis están ordenados en grupos: **Vista general**, **Personal**,
 **Equipo**, **Proyectos y clientes**, **Recursos** y **Finanzas y auditoría**.
 Una entrada solo aparece si su organización usa el módulo correspondiente y
-usted tiene el permiso necesario. Los grupos **Equipo**, **Proyectos y
-clientes** y **Recursos** requieren el módulo adicional de informes de equipo.
-Las entradas que haya ocultado mediante «Personalizar menú y Todas las
-funciones» tampoco aparecen en la página de vista general.
+usted tiene el permiso necesario. El módulo adicional de informes de equipo
+desbloquea estos análisis: **Semana por empleado**, **Mes por empleado**,
+**Cobertura**, **Vacaciones y flex**, **Enfermedades**, **Cualificaciones**,
+**Análisis de clientes**, **Análisis de tipos de orden**, **Análisis de
+productos**, **Clientes y proyectos**, **Detalles del proyecto**, **Proyectos
+inactivos**, **Operaciones**, **Rentabilidad** y **Cumplimiento del tiempo de
+trabajo**. Sin el módulo solo faltan estas entradas; todos los demás análisis
+de los grupos siguen visibles. Las entradas que haya ocultado mediante
+«Personalizar menú y Todas las funciones» tampoco aparecen en la página de
+vista general.
 
 ## Período
 
@@ -90,11 +96,12 @@ exactamente con ese período.
 ## Filtros
 
 - Según el análisis, la barra de filtros ofrece campos como **Cliente**,
-  **Proyecto**, **Empleados**, **Equipo** o **Estado**. Una selección suele
+  **Proyecto**, **Empleado**, **Equipo** o **Estado**. Una selección suele
   aplicarse de inmediato; **Restablecer** elimina todos los filtros.
-- Algunos campos solo los ven los administradores, por ejemplo **Área** con
-  **Solo propios** o **Equipo completo**. Las demás personas solo ven ahí sus
-  propios datos.
+- Algunos campos, por ejemplo **Área** con **Solo propios** o **Equipo
+  completo**, solo los ven los administradores y las personas con el permiso que
+  también abre la lista correspondiente – por ejemplo **Ver las presencias**
+  para **Asistencia**. Las demás personas solo ven ahí sus propios datos.
 - Los clientes marcados con **Ocultar en las evaluaciones** en sus datos
   maestros quedan fuera de los análisis de clientes y proyectos. El interruptor
   **Incluir clientes ocultos**, que solo aparece si existen tales clientes, los
@@ -109,6 +116,27 @@ exactamente con ese período.
   organización; el menú **Exportación** ofrece **CSV** y **Excel**. No todos los
   análisis ofrecen todos los formatos y algunos no tienen exportación.
 - Las exportaciones aplican el período y los filtros de la página.
+- Las exportaciones de los informes del menú **Análisis** requieren el permiso
+  **Exportar los informes**, también las de los informes de otras áreas que
+  figuran allí: **SLA**, **Análisis** de la plataforma de aprendizaje,
+  **Ejecuciones de procedimiento bloqueadas**, **Informes financieros** y
+  **BWA & presupuesto**. Lo mismo vale para **Candidaturas y licitaciones**, el
+  **Informe de auditoría** de los equipos de inspección y la **Cabina de
+  licitaciones**. Los administradores pueden exportar siempre. Sin el permiso
+  no aparecen los botones de exportación. Los informes de otros menús, como
+  **Informe de helpdesk**, **Informe de calidad** o **Sostenibilidad y ESG**,
+  los puede exportar quien pueda abrirlos.
+- Siguen libres
+  las exportaciones que solo contienen sus propios datos: **Mi mes**, su propio
+  **Balance de trabajo**, la vista **Solo propios** y los análisis que, sin
+  otro permiso, solo le muestran sus propios datos (por ejemplo **Cuentas de
+  tiempo**, **Comparación de períodos**, **Cualificaciones**, **Plan de
+  vacaciones** y **Detalles del proyecto**), además del **Justificante libro de
+  viajes** de un vehículo del que usted es el **Conductor predeterminado**. La
+  **Presencia de emergencia** la puede exportar quien pueda abrirla.
+- Los encabezados de columna y los valores fijos de los archivos CSV y Excel,
+  como la fila de total, aparecen en su idioma; los códigos como las claves de
+  estado o de tipo de salario no cambian.
 - En la configuración estándar, los archivos CSV se separan con punto y coma y
   se guardan en UTF-8. Las primeras líneas empiezan por # e indican el informe,
   el momento de creación y una huella de los filtros, de modo que un archivo
@@ -129,11 +157,25 @@ de una persona. Más información en «Drilldown del indicador a la orden».
   datos.
 - Los análisis de toda la organización sobre clientes, ingresos y proveedores
   requieren el permiso **Ver los informes** o el rol de administrador.
+- Las exportaciones de los informes del menú **Análisis** requieren además el
+  permiso **Exportar los informes**, véase Exportación. En la asignación
+  estándar lo tienen Dirección, Contabilidad, Jefe de equipo y Administración
+  de personal.
 - Algunos análisis tienen un permiso propio, por ejemplo **Ver informe de
   presencia (equipo)** para Plan/real o **Ver el registro de eventos de
   seguridad** para la seguridad laboral.
-- Algunas vistas de equipo, como **Cobertura** o la vista de equipo de
-  **Vacaciones y flex**, siguen reservadas a los administradores.
+- La vista de todas las personas en los análisis de personal sigue el permiso
+  de la lista correspondiente: **Ver las presencias** para **Asistencia**,
+  **Ver todas las solicitudes de vacaciones** para **Vacaciones y flex** y el
+  **Plan de vacaciones**, **Ver las bajas por enfermedad** para
+  **Enfermedades** y los motivos de ausencia en el **Plan de vacaciones**,
+  **Gestionar las cualificaciones** para **Cualificaciones** y **Ver todos los
+  registros de tiempo** para el **Balance de trabajo** de otras personas. Los
+  administradores la tienen siempre.
+- Siguen reservados a los administradores **Cobertura** y **Mes por
+  empleado**, así como la vista de todas las personas en **Cuentas de tiempo**,
+  **Comparación de períodos**, **Gastos**, **Flota**, **Servicio de urgencia**,
+  **Operaciones** y **Materiales**.
 - Cada análisis muestra solo los datos de la organización activa.
 
 ## Qué análisis para qué
@@ -196,10 +238,10 @@ aprendizaje».
 
 - **Flota** muestra por vehículo los kilómetros, el consumo, los costes de
   combustible y de carga y el coste por kilómetro. El **Justificante libro de
-  ruta** proporciona el libro de ruta fiscal por vehículo y período con los
+  viajes** proporciona el libro de viajes fiscal por vehículo y período con los
   tipos de trayecto y la parte privada, además de la **Comparación 1 %**. El
   **Justificante tiempos de conducción** documenta los tiempos de conducción y
-  descanso por conductor. Los tres se explican en «Flota, libro de ruta y tiempos de conducción».
+  descanso por conductor. Los tres se explican en «Flota, libro de viajes y tiempos de conducción».
 - **Materiales** y **Servicio de urgencia** pertenecen a «Operaciones: reparto del tiempo, procedimientos, material, guardias».
 - **Entrada de documentos en la nube** se explica en el tema del mismo nombre.
 
@@ -230,7 +272,7 @@ aprendizaje».
   inicio, fin y duración por día de trabajo, también en «Justificantes: actividad de auditoría, cumplimiento y salario mínimo», y, si
   su organización registra tiempos de conducción, el **Justificante tiempos de
   conducción** sobre los tiempos de conducción y descanso por conductor;
-  consulte «Flota, libro de ruta y tiempos de conducción».
+  consulte «Flota, libro de viajes y tiempos de conducción».
 - **Actividad de auditoría** resume el registro de auditoría por evento,
   persona y tipo de objeto y solo está abierta a los administradores; consulte
   «Justificantes: actividad de auditoría, cumplimiento y salario mínimo».

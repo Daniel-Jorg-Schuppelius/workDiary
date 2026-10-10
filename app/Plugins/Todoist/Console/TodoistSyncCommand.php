@@ -21,6 +21,7 @@ use App\Plugins\Todoist\Models\{TodoistConnection, TodoistProjectLink};
 use App\Plugins\Todoist\Services\{TodoistImportService, TodoistSyncService};
 use App\Plugins\Todoist\{TodoistConfig, TodoistPlugin};
 use Illuminate\Console\Command;
+use Throwable;
 
 /**
  * Polling-Abgleich als verlässliche Quelle (Feature 055, MVP-115): läuft
@@ -60,7 +61,13 @@ class TodoistSyncCommand extends Command {
                 return;
             }
 
-            $counters = $this->syncOrganization($org, $connection, $imports, $sync);
+            try {
+                $counters = $this->syncOrganization($org, $connection, $imports, $sync);
+            } catch (Throwable $e) {
+                $connection->recordSyncResult($e);
+
+                throw $e;
+            }
             $this->info(sprintf(
                 'Organisation #%d (%s): created %d, updated %d, unchanged %d, conflicts %d, inbox %d, failed %d',
                 $org->id, $org->name,
@@ -116,6 +123,7 @@ class TodoistSyncCommand extends Command {
                 }
             }
             $connection->forceFill(['last_sync_at' => now()])->save();
+            $connection->recordSyncResult(null);
         }
 
         $token = $delta['sync_token'] ?? null;

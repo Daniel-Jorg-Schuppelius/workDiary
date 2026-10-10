@@ -207,6 +207,51 @@ class KimaiApiTest extends TestCase {
         $this->assertSame(0, $result['created']);
     }
 
+    /** Eine API-Fehlerantwort erscheint als Meldung auf der Seite statt als Fehlerseite (Phase 137). */
+    public function test_api_error_is_reported_on_the_page(): void {
+        $this->enableKimaiApi();
+        FakePluginHttp::fake([
+            self::BASE . '/api/timesheets*' => FakePluginHttp::response(['message' => 'Unauthorized'], 401),
+        ]);
+
+        $this->actingAs($this->orgAdmin())
+            ->from(route('admin.kimai.index'))
+            ->post(route('admin.kimai.import-api'))
+            ->assertRedirect(route('admin.kimai.index'))
+            ->assertSessionHasErrors('api');
+    }
+
+    /** Kimai liefert die E-Mail des Benutzers mit — sie ordnet die Person zu, nicht der Benutzername. */
+    public function test_api_import_matches_people_by_email(): void {
+        $config = $this->enableKimaiApi(['single_user_mode' => false]);
+        $project = $this->customerWithProject('Acme', 'Website');
+        $anna = User::factory()->create(['organization_id' => $this->organization->id, 'email' => 'anna@firma.test']);
+        $row = $this->apiRow(301);
+        $row['user'] = ['id' => 4, 'username' => 'anna', 'email' => 'Anna@Firma.test'];
+        FakePluginHttp::fake([self::BASE . '/api/timesheets*' => FakePluginHttp::response([$row])]);
+
+        $result = (new KimaiImportService)->importFromApi($this->organization, $config);
+
+        $this->assertSame(1, $result['created']);
+        $this->assertSame($anna->id, TimeEntry::query()->where('project_id', $project->id)->value('user_id'));
+    }
+
+    /** In der Inbox am Benutzernamen gemerkte Zuordnungen gelten weiter. */
+    public function test_api_import_keeps_mappings_remembered_by_username(): void {
+        $config = $this->enableKimaiApi(['single_user_mode' => false]);
+        $project = $this->customerWithProject('Acme', 'Website');
+        $bernd = User::factory()->create(['organization_id' => $this->organization->id, 'email' => 'bernd@firma.test']);
+        (new KimaiImportService)->rememberUserEmail($this->organization, 'bernd.k', $bernd);
+        $row = $this->apiRow(302);
+        $row['user'] = ['id' => 5, 'username' => 'bernd.k', 'email' => 'b.k@privat.test'];
+        FakePluginHttp::fake([self::BASE . '/api/timesheets*' => FakePluginHttp::response([$row])]);
+
+        $result = (new KimaiImportService)->importFromApi($this->organization, $config);
+
+        $this->assertSame(1, $result['created']);
+        $this->assertSame($bernd->id, TimeEntry::query()->where('project_id', $project->id)->value('user_id'));
+    }
+
     public function test_export_pushes_unexported_entries_and_is_idempotent(): void {
         $config = $this->enableKimaiApi(['export_enabled' => true, 'default_activity_id' => '5']);
         $project = $this->customerWithProject('Acme', 'Website');

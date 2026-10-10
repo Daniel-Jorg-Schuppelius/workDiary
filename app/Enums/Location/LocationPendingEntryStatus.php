@@ -26,9 +26,9 @@ enum LocationPendingEntryStatus: string implements HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::Open => (string) __('Offen'),
-            self::Imported => (string) __('Übernommen'),
-            self::Dismissed => (string) __('Verworfen'),
+            self::Open => (string) __('enums.location.location_pending_entry_status.open'),
+            self::Imported => (string) __('enums.location.location_pending_entry_status.imported'),
+            self::Dismissed => (string) __('enums.location.location_pending_entry_status.dismissed'),
         };
     }
 

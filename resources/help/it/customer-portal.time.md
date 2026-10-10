@@ -1,7 +1,7 @@
 ---
 title: "Tempi registrati"
 topic: customer-portal.time
-version: 2
+version: 3
 keywords:
     - rilevazione tempi
     - foglio ore

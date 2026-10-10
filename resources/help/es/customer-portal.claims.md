@@ -1,7 +1,7 @@
 ---
 title: "Portal del cliente – Reclamaciones y devoluciones"
 topic: customer-portal.claims
-version: 2
+version: 3
 keywords:
     - notificar un defecto
     - presentar una reclamación
@@ -64,11 +64,12 @@ reclamación no son visibles en el portal.
 ## Enviar información complementaria
 
 En la sección **Presentación posterior** completa su reclamación: escriba en
-el campo **Su mensaje …** (de 3 a 2000 caracteres) y haga clic en
-**Enviar**. El mensaje se guarda como justificante en la reclamación y el
-portal confirma **Presentación posterior enviada.** La vista del portal no
-muestra después la presentación en sí. En este lugar no se pueden adjuntar
-archivos ni fotos.
+el campo **Su mensaje …** (de 3 a 2000 caracteres) y haga clic en **Enviar**.
+El mensaje se guarda como justificante en la reclamación y el portal confirma
+**Presentación posterior enviada.** Debajo figuran sus presentaciones
+anteriores en **Sus presentaciones posteriores** con fecha y hora, la más
+reciente arriba. La persona responsable en su proveedor recibe un aviso de
+cada presentación. En este lugar no se pueden adjuntar archivos ni fotos.
 
 ## Registrar una devolución
 
@@ -89,11 +90,14 @@ muestra **No hay entregas ni objetos para su cuenta.**
    (máx. 5)**.
 6. Haga clic en **Registrar devolución**.
 
-A continuación, el portal indica el nuevo número de reclamación y el número
-de devolución. Si **Reclamaciones** está liberada, la nueva reclamación se
-abre directamente; allí encontrará más adelante también la etiqueta de
-devolución, en cuanto su proveedor facilite una. No envíe la mercancía hasta
-haber registrado la devolución.
+A continuación, el portal indica el nuevo número de reclamación y el número de
+devolución. Si **Reclamaciones** está liberada, la nueva reclamación se abre
+directamente; si no, permanece en la página **Registrar devolución**. Allí, en
+**Mis devoluciones**, figuran todas las devoluciones de su empresa con
+**Número de devolución**, **Reclamación** y **Estado**. En cuanto su proveedor
+facilite una etiqueta de devolución, aparece al lado **Descargar etiqueta de
+devolución**, también sin la liberación **Reclamaciones**. No envíe la
+mercancía hasta haber registrado la devolución.
 
 ## Límites
 

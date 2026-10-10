@@ -86,6 +86,22 @@ class AbsencesReportSickLeaveTest extends TestCase {
         $this->assertTrue(is_string($changes['filter_hash'] ?? null));
     }
 
+    /** Bei Tagesraster landen Kranktage an ihrem Tag, nicht im Abschnitt des Monatsersten (MVP-1101). */
+    public function test_sickness_series_uses_the_day_buckets_of_short_ranges(): void {
+        SickLeave::factory()->create([
+            'user_id' => $this->user->id,
+            'start_date' => '2026-06-10',
+            'end_date' => '2026-06-12',
+            'kind' => SickLeaveKind::Initial->value,
+        ]);
+
+        $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession('2026-06-08', '2026-06-21'))
+            ->get(route('reports.sickness'))
+            ->assertOk()
+            ->assertViewHas('monthlySeries', fn (array $series): bool => array_sum(array_column($series, 'y')) === 3);
+    }
+
     public function test_sickness_report_route_renders(): void {
         SickLeave::factory()->create([
             'user_id' => $this->user->id,

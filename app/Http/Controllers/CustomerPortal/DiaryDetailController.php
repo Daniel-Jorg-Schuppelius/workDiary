@@ -24,14 +24,14 @@ use Illuminate\View\View;
  * Portal-Auftragsdetail (Feature 012, Rang 54): read-only Sicht auf den
  * eigenen Auftrag — kundensichtbare Fotos (attachments.customer_visible),
  * Materialliste (nur Menge/Einheit/Bezeichnung, keine Preise) und
- * kundensichtbare Protokolle. Das Fallakte-PDF läuft über einen signierten,
- * kurzlebigen Link (24 h, teilbar ohne Portal-Session).
+ * unterschriebene kundensichtbare Protokolle. Das Fallakte-PDF läuft über
+ * einen signierten, kurzlebigen Link (24 h, teilbar ohne Portal-Session).
  */
 class DiaryDetailController extends Controller {
     public function show(DiaryEntry $diary): View {
         /** @var User $user */
         $user = Auth::guard('customer')->user();
-        abort_unless((int) $diary->customer_id === (int) $user->customer_id, 403);
+        abort_unless((int) $diary->customer_id === (int) $user->customer_id, 404);
 
         $data = $this->customerViewData($diary);
 
@@ -87,10 +87,7 @@ class DiaryDetailController extends Controller {
             ->orderBy('created_at')
             ->get(['id', 'timesheet_id', 'description', 'quantity', 'unit', 'created_at']);
 
-        $protocols = $diary->protocols()
-            ->where('visibility', \App\Enums\Protocol\ProtocolVisibility::Customer->value)
-            ->orderByDesc('occurred_at')
-            ->get();
+        $protocols = $diary->protocols()->releasedToCustomer()->get();
 
         // Vollaudit 2026-07 (H9): freigegebene Kommunikationsnotizen
         // (visibility=customer) erreichen jetzt das Portal — der Freigabe-

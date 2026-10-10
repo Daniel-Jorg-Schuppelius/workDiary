@@ -82,10 +82,6 @@ final class DataOwnershipTest extends TestCase {
             public function accountTime(int $ticketId, float $timeUnit): bool {
                 return true;
             }
-
-            public function addArticle(int $ticketId, string $body, bool $internal = true): bool {
-                return true;
-            }
         };
 
         $result = (new \App\Plugins\Zammad\Services\ZammadTicketImporter)->import($connection, $gateway);

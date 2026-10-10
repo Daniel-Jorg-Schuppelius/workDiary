@@ -13,7 +13,8 @@
  * Region (DE/AT/CH) → Jahre + Rechtsgrundlage. Aufgelöst über
  * organizations.legal_region (Fallback default_region) durch die
  * RetentionRegistry; der Retention-Scan (Restpunkt 66) erzeugt daraus
- * Lösch-VORSCHLÄGE (Review-Queue statt Direktlöschung).
+ * Lösch-VORSCHLÄGE (Review-Queue statt Direktlöschung). Anzeigenamen der
+ * Bereiche: lang/<sprache>/privacy.php → retention_area.
  *
  * Bewusst NICHT hier: whistleblowing.retention_months (HinSchG §11, pro Org
  * überschreibbar) behält seine eigene Mechanik. Der Bereich location_points
@@ -28,14 +29,12 @@ return [
         // Audit-Protokoll: append-only mit Hash-Kette — wird NICHT gelöscht
         // (audit:verify!), die Frist dient Anzeige/Export-Manifest.
         'audit_logs' => [
-            'label' => 'Audit-Protokoll',
             'years' => ['DE' => 10, 'AT' => 7, 'CH' => 10],
             'basis' => ['DE' => 'GoBD / AO §147', 'AT' => 'BAO §132', 'CH' => 'OR Art. 958f'],
         ],
 
         // Lohn-/Zeitexporte (Dateien + Läufe): steuerlich relevante Unterlagen.
         'exports' => [
-            'label' => 'Lohn-/Zeitexporte',
             'years' => ['DE' => 10, 'AT' => 7, 'CH' => 10],
             'basis' => ['DE' => 'GoBD / AO §147', 'AT' => 'BAO §132', 'CH' => 'OR Art. 958f'],
         ],
@@ -43,7 +42,6 @@ return [
         // Steuerlich relevante Bewegungsdaten (Zeiterfassung, Spesen) —
         // referenziert aus config/privacy.php categories (retention_area).
         'gobd_financial' => [
-            'label' => 'Steuerlich relevante Daten',
             'years' => ['DE' => 10, 'AT' => 7, 'CH' => 10],
             'basis' => ['DE' => 'GoBD / AO §147', 'AT' => 'BAO §132', 'CH' => 'OR Art. 958f'],
         ],
@@ -56,7 +54,6 @@ return [
         // den BELEG die Belegfrist im Rechnungsbereich (8 J., BEG IV) —
         // zwei Fristklassen, der Beleg lebt im Faktura-Modul.
         'claims' => [
-            'label' => 'Reklamationen (abgeschlossen)',
             'years' => ['DE' => 6, 'AT' => 7, 'CH' => 10],
             'basis' => ['DE' => '§ 257 HGB (Geschäftsbriefe, 6 J.)', 'AT' => '§ 212 UGB (7 J.)', 'CH' => 'OR 958f (10 J.)'],
         ],
@@ -64,20 +61,17 @@ return [
         // Leads (Feature 091): Interessenten ohne Vertrag — kurze Frist,
         // Anker ist der letzte Kontakt (Monate via sales.lead_retention_months).
         'leads' => [
-            'label' => 'Leads (nicht konvertiert)',
             'years' => ['DE' => 1, 'AT' => 1, 'CH' => 1],
             'basis' => ['DE' => 'Art. 6 Abs. 1 lit. f DSGVO (Praxis 6 Monate)', 'AT' => 'Art. 6 Abs. 1 lit. f DSGVO', 'CH' => 'DSG (Zweckbindung)'],
         ],
 
         'applications' => [
-            'label' => 'Bewerbungen (abgelehnt/zurückgezogen)',
             'years' => ['DE' => 1, 'AT' => 1, 'CH' => 1],
             'basis' => ['DE' => 'AGG §15 Abs. 4 / ArbGG §61b (Praxis 4–6 Monate)', 'AT' => 'GlBG §15 (Praxis 7 Monate)', 'CH' => 'DSG (Zweckbindung)'],
         ],
 
         // Abgeschlossene Betroffenenanfragen: Nachweis der Erfüllung.
         'privacy_requests' => [
-            'label' => 'Betroffenenanfragen (abgeschlossen)',
             'years' => ['DE' => 3, 'AT' => 3, 'CH' => 5],
             'basis' => ['DE' => 'Art. 5 Abs. 2 DSGVO / §195 BGB', 'AT' => 'Art. 5 Abs. 2 DSGVO / §1489 ABGB', 'CH' => 'Art. 127 OR'],
         ],
@@ -86,7 +80,6 @@ return [
         // Verbindungsdaten (Rufnummer) werden anonymisiert, die Notiz-Zeile
         // (Richtung/Zeitpunkt/Dauer) bleibt als Vorgangsnachweis.
         'cti_calls' => [
-            'label' => 'CTI-Anrufmetadaten',
             'years' => ['DE' => 1, 'AT' => 1, 'CH' => 1],
             'basis' => ['DE' => 'Art. 5 Abs. 1 lit. e DSGVO (Speicherbegrenzung)', 'AT' => 'Art. 5 DSGVO', 'CH' => 'DSG (Zweckbindung)'],
         ],
@@ -94,21 +87,18 @@ return [
         // Ideenkarten im Papierkorb (Feature 054, MVP-110; Vollaudit 2026-07
         // M21): soft-gelöschte Karten werden nach Frist endgültig entfernt.
         'idea_maps' => [
-            'label' => 'Ideenkarten (Papierkorb)',
             'years' => ['DE' => 1, 'AT' => 1, 'CH' => 1],
             'basis' => ['DE' => 'Art. 17 DSGVO (Löschkonzept)', 'AT' => 'Art. 17 DSGVO', 'CH' => 'DSG'],
         ],
         // Sprachdiktate (MVP-1060): Audio ist nach der Transkription schon
         // gelöscht; das Transkript dient nur dem Ausfüllen des Formulars.
         'dictations' => [
-            'label' => 'Sprachdiktate (Transkripte)',
             'years' => ['DE' => 1, 'AT' => 1, 'CH' => 1],
             'basis' => ['DE' => 'Art. 5 Abs. 1 lit. e DSGVO (Speicherbegrenzung)', 'AT' => 'Art. 5 Abs. 1 lit. e DSGVO', 'CH' => 'DSG (Zweckbindung)'],
         ],
 
         // Fehlerberichte mit Seitenkontext-PII (Vollaudit 2026-07, N15).
         'problem_reports' => [
-            'label' => 'Fehlerberichte (geschlossen)',
             'years' => ['DE' => 2, 'AT' => 2, 'CH' => 2],
             'basis' => ['DE' => 'Art. 5 Abs. 1 lit. e DSGVO', 'AT' => 'Art. 5 DSGVO', 'CH' => 'DSG'],
         ],
@@ -116,14 +106,12 @@ return [
         // Führerscheinkontrollen (Phase 38, MVP-417; Vollaudit 2026-07 N24):
         // Halterhaftungs-Nachweis, danach Löschvorschlag über den Review-Scan.
         'driver_license_checks' => [
-            'label' => 'Führerscheinkontrollen',
             'years' => ['DE' => 2, 'AT' => 2, 'CH' => 2],
             'basis' => ['DE' => '§ 21 StVG (Halterhaftung, Nachweis)', 'AT' => '§ 103 KFG', 'CH' => 'SVG Art. 95'],
         ],
 
         // Eingangsrechnungen im DMS (DocumentType::Invoice).
         'documents_invoice' => [
-            'label' => 'Rechnungen (DMS)',
             'years' => ['DE' => 10, 'AT' => 7, 'CH' => 10],
             'basis' => ['DE' => 'GoBD / AO §147 / §14b UStG', 'AT' => 'BAO §132', 'CH' => 'OR Art. 958f'],
         ],
@@ -134,7 +122,6 @@ return [
         // Nachweis. Frist folgt der Aufbewahrungspflicht des Mietwagen-
         // Auftragseingangs (§ 49 Abs. 4 PBefG: 1 Jahr).
         'passenger_rides' => [
-            'label' => 'Fahrtakten (Orts-/Fahrgastbezug)',
             'years' => ['DE' => 1, 'AT' => 1, 'CH' => 1],
             'basis' => ['DE' => '§ 49 Abs. 4 PBefG (1 J.) / Art. 5 Abs. 1 lit. e DSGVO', 'AT' => 'Art. 5 DSGVO (Speicherbegrenzung)', 'CH' => 'DSG (Zweckbindung)'],
         ],
@@ -147,7 +134,6 @@ return [
         // Nachweise (RETENTION_FK_TABLES) bleiben verknüpft. Lohn-/Steuer-
         // Unterlagen selbst sind über exports/gobd_financial (10 J.) gedeckt.
         'employee_records' => [
-            'label' => 'Personalstamm (ausgeschiedene Mitarbeiter)',
             'years' => ['DE' => 3, 'AT' => 3, 'CH' => 5],
             'basis' => ['DE' => '§195 BGB (Regelverjährung, ab Austritt)', 'AT' => '§1486 ABGB (3 J.)', 'CH' => 'OR Art. 128 Ziff. 3 (5 J.)'],
         ],
@@ -158,7 +144,6 @@ return [
         // Abmahnung, 6 J. Lohnbezug-Verweise). Vollzug = Vernichtung nach
         // zweistufiger Bestätigung; die Katalog-Jahre sind der Ausweis.
         'personnel_files' => [
-            'label' => 'Personalakten (ausgeschiedene Mitarbeiter)',
             'years' => ['DE' => 3, 'AT' => 3, 'CH' => 5],
             'basis' => ['DE' => '§195 BGB (Regelverjährung, ab Austritt); Kategorie-Frist am Dokument, Lohnbezug 6 J. (§41 EStG / §257 HGB)', 'AT' => '§1486 ABGB (3 J.)', 'CH' => 'OR Art. 128 Ziff. 3 (5 J.)'],
         ],
@@ -167,7 +152,6 @@ return [
         // Zeiten): Anker ist der letzte Kontakt (updated_at). Kunden MIT
         // Belegen folgen den kaufmännischen Fristen (gobd_financial u. a.).
         'customer_master' => [
-            'label' => 'Kundenstamm (ohne Geschäftsvorfälle)',
             'years' => ['DE' => 3, 'AT' => 3, 'CH' => 5],
             'basis' => ['DE' => 'Art. 5 Abs. 1 lit. e DSGVO / §195 BGB (ab letztem Kontakt)', 'AT' => 'Art. 5 DSGVO / §1489 ABGB', 'CH' => 'DSG (Zweckbindung) / OR Art. 128'],
         ],
@@ -176,7 +160,6 @@ return [
         // Eingänge ab Abschluss. Übernommene sind Herkunftsnachweis der Fachakte
         // und folgen deren Fristen.
         'customer_intakes' => [
-            'label' => 'Kundeneingänge (abgelehnt oder zurückgenommen)',
             'years' => ['DE' => 3, 'AT' => 3, 'CH' => 5],
             'basis' => ['DE' => 'Art. 5 Abs. 1 lit. e DSGVO / §195 BGB (ab Abschluss)', 'AT' => 'Art. 5 DSGVO / §1489 ABGB', 'CH' => 'DSG (Zweckbindung) / OR Art. 128'],
         ],
@@ -187,7 +170,6 @@ return [
         // anwendbaren Bereiche (Konsistenz mit der GoBD-Ausnahme-Logik der
         // bestehenden Policies, z. B. documents_invoice).
         'time_records' => [
-            'label' => 'Arbeitszeit-Rohdaten (Anwesenheiten)',
             'years' => ['DE' => 2, 'AT' => 2, 'CH' => 5],
             'basis' => ['DE' => 'ArbZG §16 Abs. 2 (2 J.); lohn-/steuerrelevant: 10 J. via exports/gobd_financial', 'AT' => 'AZG §26', 'CH' => 'ArGV 1 Art. 73 (5 J.)'],
         ],
@@ -198,7 +180,6 @@ return [
         // location:purge-points-Job löscht verarbeitete Punkte selbst —
         // hier bewusst KEINE Scan-Policy (keine Doppel-Löschung).
         'location_points' => [
-            'label' => 'Standort-Rohdaten (GPS-Punkte)',
             'days_source' => 'location.retention_days',
             'basis' => ['DE' => 'Art. 5 Abs. 1 lit. c/e DSGVO (Datenminimierung); Vollzug: location:purge-points', 'AT' => 'Art. 5 DSGVO', 'CH' => 'DSG (Zweckbindung)'],
         ],
@@ -207,7 +188,6 @@ return [
         // Review im MVP, kein Auto-Purge und keine Scan-Policy — die
         // steuerrelevanten Dokumenttypen laufen über documents_invoice/gobd.
         'documents_general' => [
-            'label' => 'Dokumente (ohne Steuer-/Handelsrecht-Bezug)',
             'years' => ['DE' => 3, 'AT' => 3, 'CH' => 5],
             'basis' => ['DE' => '§195 BGB (Regelverjährung) — nur Ausweis, kein Auto-Purge', 'AT' => '§1489 ABGB', 'CH' => 'OR Art. 127/128'],
         ],
@@ -216,7 +196,6 @@ return [
         // ohne Zertifikat (Versuche, Fortschritt, Lernzeit kaskadieren). Der
         // Unterweisungsnachweis (132) hat seine eigene Frist.
         'learning_records' => [
-            'label' => 'Lernplattform (Einschreibungen, Versuche, Lernzeit)',
             'years' => ['DE' => 3, 'AT' => 3, 'CH' => 5],
             'basis' => ['DE' => '§195 BGB (Regelverjährung); DGUV Vorschrift 1 §4 Unterweisungsnachweis separat', 'AT' => '§1489 ABGB', 'CH' => 'OR Art. 127/128'],
         ],
@@ -224,7 +203,6 @@ return [
         // Zertifikate der Lernplattform: Nachweisfunktion — nach Frist wird
         // die Person auf Initialen gekürzt, Nummer und Prüfcode bleiben.
         'learning_certificates' => [
-            'label' => 'Lernplattform-Zertifikate (Pseudonymisierung)',
             'years' => ['DE' => 10, 'AT' => 10, 'CH' => 10],
             'basis' => ['DE' => 'Art. 17 Abs. 3 lit. b DSGVO (Nachweispflicht); Qualifikationsnachweis', 'AT' => 'Art. 17 Abs. 3 lit. b DSGVO', 'CH' => 'DSG Art. 6 (Aufbewahrung zu Nachweiszwecken)'],
         ],

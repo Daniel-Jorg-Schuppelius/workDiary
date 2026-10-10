@@ -168,7 +168,9 @@ class PeriodClosingController extends Controller {
 
         $entry = $this->openingBalances->import($organization, $path, $actor);
 
-        return back()->with('status', __('accounting.opening.flash.imported', ['no' => (string) $entry->journal_no]));
+        return back()->with('status', $entry->status->isPosted()
+            ? __('accounting.opening.flash.imported', ['no' => (string) $entry->journal_no])
+            : __('accounting.inbox.flash.awaiting_approval'));
     }
 
     /** DATEV-Übergabe aus den Festbuchungen des globalen Zeitraums. */

@@ -1,7 +1,7 @@
 ---
 title: "Clients & fournisseurs"
 topic: contacts.manage
-version: 2
+version: 4
 keywords:
     - fichier clients
     - base clients
@@ -16,6 +16,8 @@ keywords:
     - carnet d'adresses
     - partenaire commercial
     - CRM
+    - portail client
+    - accès au portail
 audience: []
 modules:
     - module.vertrieb
@@ -63,6 +65,23 @@ note de communication sur le client ou le fournisseur. Les notes figurent sur
 la page de détail et dans la liste centrale des notes ; une réponse à une
 demande d'accès concernant un fournisseur les mentionne avec leur nombre et
 leur période.
+
+**Accès au portail :** dans la section **Accès au portail** de la fiche
+client, vous invitez des interlocuteurs au portail client avec
+**Inviter un accès** ; le contact définit lui-même son mot de passe via le
+lien de l'invitation. Tant que l'invitation est en attente ou expirée,
+**Renvoyer l'invitation** est disponible. Pour les accès actifs,
+**Réinitialiser l’accès** réinitialise l'accès après confirmation : le mot de
+passe précédent cesse immédiatement d'être valable, toutes les sessions sont
+fermées et le contact reçoit une nouvelle invitation ; les méthodes à deux
+facteurs configurées sont conservées. Si le contact a seulement oublié son mot
+de passe, ce n'est pas nécessaire : il le réinitialise lui-même sur la page de
+connexion du portail via **Mot de passe oublié ?**. **Désactiver** déconnecte
+l'accès immédiatement et bloque la connexion, **Réactiver** annule cette
+mesure. Les zones visibles pour un accès sont définies par la configuration du
+portail du client.
+
+Si un contact a perdu toutes ses méthodes à deux facteurs et ses codes de récupération, **Réinitialiser le second facteur** supprime toutes les méthodes après une confirmation du mot de passe et une demande de confirmation, et ferme toutes les sessions. Le contact en est informé par e-mail et se connecte ensuite avec son mot de passe ; si votre organisation exige l’authentification à deux facteurs, il la configure à nouveau à ce moment-là. Vérifiez auparavant son identité, par exemple en le rappelant.
 
 ## Exemple pratique
 

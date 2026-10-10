@@ -38,4 +38,10 @@ return [
         'Invoiced' => 'Fatturato',
         'Cancelled' => 'Annullato',
     ],
+    'planned_duration' => [
+        'label' => 'Durata prevista (HH:MM)',
+        'hint' => 'Vuoto: durata della finestra oraria o dell’appuntamento. Vale come piano in Piano/effettivo, Analisi dei tipi di ordine e Capacità del personale.',
+        'format' => 'Indichi la durata prevista in ore:minuti, ad es. 1:30.',
+        'range' => 'La durata prevista deve essere compresa tra 0:01 e 168:00.',
+    ],
 ];

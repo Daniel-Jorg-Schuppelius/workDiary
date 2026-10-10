@@ -23,8 +23,8 @@ enum LetterheadPageRole: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::First => __('Erste Seite'),
-            self::Following => __('Folgeseiten'),
+            self::First => __('enums.document_design.letterhead_page_role.first'),
+            self::Following => __('enums.document_design.letterhead_page_role.following'),
         };
     }
 }

@@ -1,7 +1,7 @@
 ---
 title: "Connessioni di spedizione DHL, UPS e FedEx"
 topic: admin.shipping-carriers
-version: 1
+version: 2
 keywords:
     - spedizione
     - DHL
@@ -15,6 +15,8 @@ keywords:
     - portale clienti business
     - sandbox
     - corriere
+    - tracciamento spedizioni
+    - annullare spedizione
 audience:
     - admin
 modules:
@@ -31,7 +33,7 @@ related:
 La pagina **Spedizione e logistica**, nel menu alla voce **Spedizione**,
 memorizza le credenziali dei corrieri DHL Paket, UPS e FedEx. Con una
 connessione attiva crea direttamente in WorkDiary etichette di spedizione per
-le consegne ed etichette di reso per i resi. Esiste una connessione per
+le consegne ed etichette di reso per i resi e segue le Sue spedizioni. Esiste una connessione per
 corriere e per organizzazione; password e chiavi vengono salvate cifrate.
 
 ## Prerequisiti
@@ -57,7 +59,7 @@ corriere e per organizzazione; password e chiavi vengono salvate cifrate.
 
 ## Creare o modificare una connessione
 
-Nella sezione **Aggiungi / modifica connessione**:
+Una nuova connessione si crea nel modulo **Aggiungi connessione**:
 
 1. **Corriere**: DHL, UPS o FEDEX.
 2. **Denominazione**: un nome con cui la connessione verrà proposta in seguito
@@ -73,26 +75,33 @@ Nella sezione **Aggiungi / modifica connessione**:
 8. **Attivo** e **Salva**.
 
 Per una nuova connessione sono obbligatori utente/ID client e password/secret
-client, per DHL anche la chiave API.
+client, per DHL anche la chiave API. Se in questo modulo sceglie un corriere
+per cui esiste già una connessione, WorkDiary rifiuta il salvataggio con un
+avviso – le connessioni esistenti si modificano solo tramite **Modifica**.
 
-Per modificare, salvi di nuovo il modulo con lo stesso corriere; così si
-aggiorna la connessione esistente. Il modulo parte sempre vuoto:
+Per modificare, clicchi su **Modifica** accanto alla connessione nell'elenco
+**Connessioni esistenti**. Il modulo si intitola allora **Modifica connessione
+…** con il corriere nel titolo, ad esempio «Modifica connessione DHL»; il
+corriere non si può cambiare.
 
-- I campi lasciati vuoti per utente, password, chiave API e ID destinatario
-  resi mantengono il valore salvato.
-- **Denominazione** e **Numero di fatturazione / conto** vanno inseriti ogni
-  volta: un numero di fatturazione vuoto viene cancellato.
-- **Sandbox / ambiente di test** e **Attivo** valgono come sono impostati al
-  momento del salvataggio. Una connessione sandbox diventa quindi di
-  produzione se non spunta di nuovo la casella.
+- **Denominazione**, **Numero di fatturazione / conto**, **Sandbox / ambiente
+  di test** e **Attivo** sono precompilati con i valori salvati. Ciò che
+  modifica qui vale dopo il salvataggio.
+- Utente, password, chiave API e ID destinatario resi non vengono mai
+  mostrati. I campi lasciati vuoti mantengono il valore salvato; solo un nuovo
+  inserimento lo sostituisce.
+- Anche un **Numero di fatturazione / conto** lasciato vuoto mantiene il valore
+  salvato.
+- **Annulla** chiude la modifica senza salvare.
 
 ## Connessioni esistenti
 
 L'elenco **Connessioni esistenti** mostra per ogni connessione il corriere, la
 denominazione, la **Modalità** (**Sandbox** o **Produzione**) e lo stato
-(**Attivo** o **Inattivo**). **Disattiva** spegne una connessione, che non
-viene più proposta. Per riattivarla, la salvi di nuovo con **Attivo**
-selezionato.
+(**Attivo** o **Inattivo**). **Modifica** apre la connessione nel modulo.
+**Disattiva** spegne una connessione, che non viene più proposta; le spedizioni
+di questo corriere non vengono più verificate. Per riattivarla, la apra con
+**Modifica**, spunti **Attivo** e salvi.
 
 ## Creare le etichette
 
@@ -104,7 +113,10 @@ selezionato.
   sono indicate tutte e tre. I colli registrati forniscono da sé peso e misure.
   Il destinatario è il cliente della consegna. In seguito la consegna mostra lo
   stato **Etichetta creata** con corriere e numero di tracciamento. Per ogni
-  consegna esiste un ordine di spedizione.
+  consegna esiste un ordine di spedizione; uno annullato non conta. Sulla
+  consegna, **Scarica etichetta** scarica di nuovo l'etichetta, **Verifica
+  stato spedizione** recupera la situazione attuale e **Annulla spedizione**
+  annulla l'invio – dettagli nella guida sugli ordini di produzione.
 - **Etichetta di reso per i resi:** nelle **Pratiche di reclamo** scelga, per
   un reso nello stato **Annunciato**, la connessione, indichi il peso e clicchi
   su **Crea etichetta di reso**. Il mittente è il cliente; il suo indirizzo
@@ -118,6 +130,23 @@ selezionato.
 UPS fornisce l'etichetta come immagine (GIF), FedEx come PDF. Se il corriere
 rifiuta l'ordine, WorkDiary scarta la bozza e Lei può riprovare dopo la
 correzione.
+
+## Tracciamento delle spedizioni
+
+Nell'impostazione standard WorkDiary verifica ogni ora presso il corriere le
+spedizioni aperte – stato **Etichetta creata**, **In transito** o **Problema di
+consegna**. Ogni spedizione viene interrogata al massimo ogni tre ore e solo
+fino a 60 giorni dalla sua creazione; dopo non è più considerata tracciabile.
+La verifica riprende stato e cronologia della spedizione finché questa non
+risulta **Consegnato**.
+
+- Se una spedizione passa a **Problema di consegna**, WorkDiary invia la
+  notifica **Problema di consegna di una spedizione**.
+- L'ora dell'ultima verifica compare passando con il mouse sullo stato nella
+  consegna (**Ultima verifica: …**).
+- La verifica avviene solo tramite una connessione attiva. Se la richiesta al
+  corriere non riesce, conta come gli altri errori di connessione di quella
+  connessione (veda «Problemi tipici»).
 
 ## Limiti
 
@@ -135,8 +164,15 @@ correzione.
   mancanti.
 - **Nessuna connessione da scegliere:** non esiste una connessione attiva,
   oppure la consegna non ha un cliente o ha già un ordine di spedizione.
+- **«Esiste già una connessione per questo corriere. La modifichi tramite
+  «Modifica».»** Nel modulo **Aggiungi connessione** ha scelto un corriere già
+  collegato. Apra la connessione nell'elenco con **Modifica**.
 - **«Nessuna connessione attiva configurata per il corriere selezionato.»** La
   connessione è stata disattivata nel frattempo.
+- **«Impossibile annullare la spedizione: …»** oppure **«Impossibile verificare
+  lo stato della spedizione: …»** Il corriere ha rifiutato la richiesta o non
+  era raggiungibile, oppure la connessione è inattiva. Quando la spedizione è
+  già in transito, l'annullamento non è più possibile.
 - **«Impossibile creare l'etichetta di spedizione: …»** Verifichi le
   credenziali, il numero di fatturazione o di conto, l'opzione **Sandbox /
   ambiente di test** e l'indirizzo del destinatario. Per UPS e FedEx manca

@@ -19,6 +19,7 @@ use App\Models\Customer\Customer;
 use App\Models\Inventory\{StockSerial, Warehouse};
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
+use App\Notifications\GenericEventNotification;
 use App\Services\Claims\{ClaimCaseService, ClaimFinancialService, ClaimRmaService};
 use App\Services\Inventory\{InventoryLedger, LotService, LotStockReader};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -384,6 +385,36 @@ final class ClaimsLifecycleTest extends TestCase {
             'claim_case_id' => $case->id,
             'kind' => 'message',
         ]);
+    }
+
+    /** Phase 137 (MVP-1105): die Nachreichung war danach unsichtbar und erreichte niemanden. */
+    public function test_portal_note_is_listed_and_notifies_the_responsible_person(): void {
+        \Illuminate\Support\Facades\Notification::fake();
+        $responsible = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $case = $this->openCase(['responsible_user_id' => $responsible->id]);
+        $case->evidence()->create([
+            'organization_id' => $this->organization->id,
+            'kind' => 'message',
+            'title' => 'Interne Telefonnotiz',
+            'note' => 'Kunde wirkte verärgert',
+            'recorded_by' => $this->admin->id,
+            'recorded_at' => now(),
+        ]);
+        $portalUser = User::factory()
+            ->kunde((int) $this->customer->id, (int) $this->organization->id)
+            ->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($portalUser, 'customer')->post(route('customer.claims.note', $case), [
+            'note' => 'Seriennummer steht auf der Rückseite: SN-77.',
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('claim_evidence', ['claim_case_id' => $case->id, 'recorded_by' => $portalUser->id]);
+        $this->actingAs($portalUser, 'customer')->get(route('customer.claims.show', $case))
+            ->assertOk()
+            ->assertSee('Seriennummer steht auf der Rückseite: SN-77.')
+            ->assertDontSee('Kunde wirkte verärgert');
+        \Illuminate\Support\Facades\Notification::assertSentTo($responsible, GenericEventNotification::class, fn (GenericEventNotification $n): bool => $n->event === \App\Enums\Notification\NotificationEvent::ClaimCustomerNote
+            && ($n->payload['url'] ?? null) === route('claims.show', $case));
     }
 
     public function test_escalation_notifies_once_per_day(): void {

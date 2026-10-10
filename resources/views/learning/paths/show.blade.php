@@ -26,6 +26,11 @@
 
     <div class="grid gap-4 lg:grid-cols-3">
         <div class="space-y-4 lg:col-span-2">
+            @if (filled($path->description))
+                <x-card>
+                    <p class="whitespace-pre-line text-sm">{{ $path->description }}</p>
+                </x-card>
+            @endif
             <x-card>
                 <h3 class="mb-3 text-sm font-semibold">{{ __('learning.field.stations') }}</h3>
                 <x-table bare>

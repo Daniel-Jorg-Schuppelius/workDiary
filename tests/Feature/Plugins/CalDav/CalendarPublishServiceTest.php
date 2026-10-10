@@ -75,7 +75,7 @@ final class CalendarPublishServiceTest extends TestCase {
             $connection,
             new CalDavRemoteCalendarGateway($gateway),
             $items,
-            CalDavPlugin::EXT_TYPE_CALENDAR_OBJECT,
+            RemoteCalendarPublishService::EXTERNAL_TYPE,
         );
     }
 
@@ -89,7 +89,7 @@ final class CalendarPublishServiceTest extends TestCase {
         $this->assertSame(['event-1.ics'], $gateway->puts);
         $this->assertSame(1, ExternalReference::query()
             ->where('plugin_id', CalDavPlugin::ID)
-            ->where('external_type', CalDavPlugin::EXT_TYPE_CALENDAR_OBJECT)
+            ->where('external_type', RemoteCalendarPublishService::EXTERNAL_TYPE)
             ->count());
         $connection->refresh();
         $this->assertNotNull($connection->last_published_at);
@@ -159,7 +159,7 @@ final class CalendarPublishServiceTest extends TestCase {
         ExternalReference::query()->create([
             'organization_id' => $this->organization->id,
             'plugin_id' => CalDavPlugin::ID,
-            'external_type' => CalDavPlugin::EXT_TYPE_CALENDAR_OBJECT,
+            'external_type' => RemoteCalendarPublishService::EXTERNAL_TYPE,
             'referenceable_type' => 'App\\Models\\Event',
             'referenceable_id' => 1,
             'external_id' => 'event-1@workdiary', // Alt-Format: UID statt Objektname
@@ -180,7 +180,7 @@ final class CalendarPublishServiceTest extends TestCase {
         ExternalReference::query()->create([
             'organization_id' => $this->organization->id,
             'plugin_id' => CalDavPlugin::ID,
-            'external_type' => CalDavPlugin::EXT_TYPE_CALENDAR_OBJECT,
+            'external_type' => RemoteCalendarPublishService::EXTERNAL_TYPE,
             'referenceable_type' => 'App\\Models\\Event',
             'referenceable_id' => 1,
             'external_id' => 'event-1@workdiary',

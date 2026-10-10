@@ -34,11 +34,15 @@ class KimaiApiClient implements RemoteTimeWriter {
 
     private ?PluginApiClient $api = null;
 
-    /** @param  ?string  $timezone  Zeitzone, in der Kimai Zeiten ohne Offset liest und schreibt (datetime-local) */
+    /**
+     * @param  ?string  $timezone  Zeitzone, in der Kimai Zeiten ohne Offset liest und schreibt (datetime-local)
+     * @param  bool  $allowPrivateNetwork  Plugin-Einstellung „Private Adressen erlauben“ (selbst gehostete Instanz)
+     */
     public function __construct(
         private readonly ?string $apiToken,
         private readonly ?string $baseUrl,
         private readonly ?string $timezone = null,
+        private readonly bool $allowPrivateNetwork = false,
     ) {}
 
     public function isConfigured(): bool {
@@ -203,7 +207,8 @@ class KimaiApiClient implements RemoteTimeWriter {
 
     private function api(): PluginApiClient {
         if ($this->api === null) {
-            $this->api = app(PluginHttpFactory::class)->client('kimai', rtrim((string) $this->baseUrl, '/'));
+            // Ausdrücklich statt aus dem Org-Kontext (Outbox und Scheduler laufen ohne); `null` lässt der Factory die Betreiber-Liste.
+            $this->api = app(PluginHttpFactory::class)->client('kimai', rtrim((string) $this->baseUrl, '/'), allowPrivateNetwork: $this->allowPrivateNetwork ?: null);
             $this->api->setAuthentication(new BearerAuthentication((string) $this->apiToken));
         }
 

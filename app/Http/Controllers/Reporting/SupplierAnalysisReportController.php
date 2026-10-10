@@ -161,17 +161,17 @@ class SupplierAnalysisReportController extends Controller {
         $filename = sprintf('lieferantenanalyse_%s_%s.csv', $from, $to);
         $out = [];
         $header = [
-            'Lieferant',
-            'AusgabenEUR',
-            'Belege',
-            'DurchschnittBelegEUR',
-            'OffenerBetragEUR',
-            'TageSeitLetztemBeleg',
-            'TrendProzent',
+            (string) __('reporting.csv.supplier'),
+            (string) __('reporting.csv.spend_eur'),
+            (string) __('reporting.csv.documents'),
+            (string) __('reporting.csv.avg_document_eur'),
+            (string) __('reporting.csv.open_amount_eur'),
+            (string) __('reporting.csv.days_since_last_document'),
+            (string) __('reporting.csv.trend_percent'),
         ];
         if ($withProcurement) {
-            $header[] = 'Bestellungen';
-            $header[] = 'OffeneBestellungen';
+            $header[] = (string) __('reporting.csv.purchase_orders');
+            $header[] = (string) __('reporting.csv.open_purchase_orders');
         }
         $out[] = $header;
 

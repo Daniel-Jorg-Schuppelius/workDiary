@@ -17,6 +17,8 @@ use App\Models\Integration\ExternalReference;
 use App\Models\Shipping\{CarrierConnection, Shipment};
 use App\Plugins\Contracts\ShippingProvider;
 use App\Services\Notification\NotificationDispatcher;
+use DateInterval;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -127,7 +129,32 @@ class ShipmentService {
         $connection = $this->connectionFor($shipment);
         $provider = $this->providerFor($shipment);
 
-        return $this->applyTracking($shipment, $provider->track($connection, $tracking));
+        try {
+            $result = $provider->track($connection, $tracking);
+            $connection->recordConnectionSuccess();
+        } catch (\Throwable $e) {
+            $connection->recordConnectionFailure($e->getMessage());
+
+            throw $e;
+        }
+
+        return $this->applyTracking($shipment, $result);
+    }
+
+    /**
+     * Offene Sendungen mit Sendungsnummer, deren letzter Abgleich älter als
+     * `$staleAfter` ist — nach `$maxAgeDays` Tagen gilt eine hängende
+     * Sendung nicht mehr als verfolgbar.
+     *
+     * @return Builder<Shipment>
+     */
+    public function dueForTracking(DateInterval $staleAfter, int $maxAgeDays = 60): Builder {
+        return Shipment::withoutGlobalScopes()
+            ->whereIn('status', [ShipmentStatus::Labeled->value, ShipmentStatus::InTransit->value, ShipmentStatus::Problem->value])
+            ->whereNotNull('tracking_number')
+            ->where('tracking_number', '!=', '')
+            ->where('created_at', '>=', now()->subDays($maxAgeDays))
+            ->where(fn ($query) => $query->whereNull('last_tracked_at')->orWhere('last_tracked_at', '<', now()->sub($staleAfter)));
     }
 
     /**

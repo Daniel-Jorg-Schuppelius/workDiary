@@ -106,6 +106,8 @@ class AllocationReportTest extends TestCase {
     }
 
     public function test_csv_and_pdf_export(): void {
+        // E10: Exporte von Organisationsberichten verlangen „Auswertungen exportieren“.
+        $this->viewer->givePermissionTo(Permission::ReportExport->value);
         $project = Project::factory()->create(['organization_id' => $this->organization->id]);
         $this->allocate((int) $this->organization->id, 'project', (int) $project->id, 100, '2026-03-10');
 

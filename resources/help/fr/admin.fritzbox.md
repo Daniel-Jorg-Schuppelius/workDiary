@@ -1,7 +1,7 @@
 ---
 title: "Importer la liste d'appels FRITZ!Box"
 topic: admin.fritzbox
-version: 1
+version: 2
 keywords:
     - FRITZ!Box
     - liste d'appels
@@ -41,7 +41,7 @@ par e-mail. Aucun identifiant de la box n'est nécessaire.
 
 ## Prérequis
 
-- Le plugin **FRITZ!Box-Anrufliste** est activé sous **Plugins**. L'entrée
+- Le plugin **Liste d'appels FRITZ!Box** est activé sous **Plugins**. L'entrée
   **Import FRITZ!Box** apparaît ensuite dans le menu système (icône
   d'engrenage **Système**), dans le groupe **Plugins**.
 - Les numéros de téléphone de vos clients et clients finaux figurent dans
@@ -53,13 +53,14 @@ par e-mail. Aucun identifiant de la box n'est nécessaire.
 ## Paramètres du plugin
 
 Sous **Plugins**, ouvrez la boîte de dialogue **Configurer** de
-**FRITZ!Box-Anrufliste** :
+**Liste d'appels FRITZ!Box** :
 
 - **Enregistrer les appels comme facturables** (par défaut : activé) :
   désactivé, les appels importés ne sont jamais marqués comme facturables.
-- **Enregistrer les temps pour l’ID utilisateur** : l'identifiant (ID) de
-  l'utilisateur pour lequel les appels sont enregistrés. Vide, WorkDiary
-  enregistre pour le propriétaire de l'organisation ou le premier
+- **Enregistrer les temps pour l’utilisateur** : l'utilisateur pour lequel
+  les appels sont enregistrés ; vous le choisissez dans la liste. Sans
+  sélection, WorkDiary enregistre pour le propriétaire de l'organisation ou le
+  premier
   utilisateur.
 - **Durée minimale (minutes)** (par défaut : 2) : les appels plus courts sont
   ignorés.
@@ -189,7 +190,8 @@ téléphonique.
   l'export CSV de la liste d'appels sans le modifier.
 - **« Aucun utilisateur imputable dans l'organisation. »** ou un contrôle de
   santé indiquant que l'utilisateur par défaut configuré n'existe plus :
-  vérifiez **Enregistrer les temps pour l’ID utilisateur** ou videz le champ.
+  vérifiez **Enregistrer les temps pour l’utilisateur** ou annulez la
+  sélection.
 - **Appels sortants absents :** si la liste provient d'un ancien micrologiciel,
   activez **Considérer le type 3 comme sortant**.
 - **Presque tout est filtré :** vérifiez **Uniquement ses propres numéros** –

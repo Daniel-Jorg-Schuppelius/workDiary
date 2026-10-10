@@ -21,6 +21,8 @@
         {{ __('accounting.open_items.settle_hint', ['open' => $item->open_amount?->format() ?? '—']) }}
     </p>
 
+    <x-accounting.four-eyes-note :text="__('accounting.open_items.four_eyes_hint')" />
+
     <x-select-field name="kind" :label="__('accounting.open_items.column.kind')">
         @foreach ($kinds as $kind)
             <option value="{{ $kind->value }}" @selected(old('kind') === $kind->value)>{{ $kind->label() }}</option>

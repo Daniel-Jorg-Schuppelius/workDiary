@@ -8,8 +8,8 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Materialien – ' . $from . ' bis ' . $to)
-@section('pdf-heading', 'Materialverbrauch')
+@section('pdf-title', __('Materialien') . ' – ' . $from . ' ' . __('bis') . ' ' . $to)
+@section('pdf-heading', __('Materialverbrauch'))
 
 @push('pdf-styles')
 <style>
@@ -18,10 +18,10 @@
 @endpush
 
 @section('pdf-meta')
-    Zeitraum: <strong>{{ \Carbon\Carbon::parse($from)->fdate() }}</strong> bis
+    {{ __('Zeitraum') }}: <strong>{{ \Carbon\Carbon::parse($from)->fdate() }}</strong> {{ __('bis') }}
     <strong>{{ \Carbon\Carbon::parse($to)->fdate() }}</strong> ·
-    Bereich: {{ $scope === 'team' ? 'Gesamtes Team' : 'Eigene' }} ·
-    Erstellt: {{ now()->fdatetime() }}
+    {{ __('Bereich') }}: {{ $scope === 'team' ? __('Gesamtes Team') : __('Eigene') }} ·
+    {{ __('Erstellt') }}: {{ now()->fdatetime() }}
 @endsection
 
 @section('pdf-table')
@@ -33,9 +33,9 @@
 
     <table class="kpis">
         <tr>
-            <td><div class="label">Materialien</div><div class="value">{{ $totals['materials'] }}</div></td>
-            <td><div class="label">Verwendungen</div><div class="value">{{ $totals['usage_count'] }}</div></td>
-            <td><div class="label">Netto Σ</div><div class="value">{{ $eur($totals['line_total_net']) }}</div></td>
+            <td><div class="label">{{ __('Materialien') }}</div><div class="value">{{ $totals['materials'] }}</div></td>
+            <td><div class="label">{{ __('Verwendungen') }}</div><div class="value">{{ $totals['usage_count'] }}</div></td>
+            <td><div class="label">{{ __('Netto Σ') }}</div><div class="value">{{ $eur($totals['line_total_net']) }}</div></td>
         </tr>
     </table>
 
@@ -43,11 +43,11 @@
         <thead>
             <tr>
                 <th>SKU</th>
-                <th>Material</th>
-                <th>Einheit</th>
-                <th class="right">Menge</th>
-                <th class="right">Verw.</th>
-                <th class="right">Netto</th>
+                <th>{{ __('Material') }}</th>
+                <th>{{ __('Einheit') }}</th>
+                <th class="right">{{ __('Menge') }}</th>
+                <th class="right">{{ __('Verwendungen') }}</th>
+                <th class="right">{{ __('Netto') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -65,7 +65,7 @@
             @endforelse
             @if (! empty($rows))
                 <tr class="totals">
-                    <td colspan="4">Gesamt</td>
+                    <td colspan="4">{{ __('Gesamt') }}</td>
                     <td class="right">{{ $totals['usage_count'] }}</td>
                     <td class="right">{{ $eur($totals['line_total_net']) }}</td>
                 </tr>

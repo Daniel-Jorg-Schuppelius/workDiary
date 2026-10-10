@@ -1,7 +1,7 @@
 ---
 title: "Clôture et analyses"
 topic: accounting.closing
-version: 1
+version: 2
 keywords:
     - clôture mensuelle
     - clôture annuelle
@@ -34,6 +34,11 @@ chaîne de preuve.
 Les **analyses** ne lisent que les écritures comptabilisées. TVA et
 recettes-dépenses sont des **aperçus** vérifiables : le MVP ne transmet rien à
 l'administration.
+
+**Export des rapports :** les exports PDF, CSV et Excel des rapports
+financiers, de l'analyse de gestion et du budget nécessitent, outre le droit de
+lecture, le droit **Exporter les rapports** ; sans ce droit, les boutons
+d'export n'apparaissent pas. Les administrateurs peuvent toujours exporter.
 
 **Transfert** : le paquet de contrôle contient plan comptable, journal, lignes,
 postes ouverts et périodes ; le transfert DATEV provient des écritures

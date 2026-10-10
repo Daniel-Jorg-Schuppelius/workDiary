@@ -33,12 +33,12 @@ enum DisposalJobStatus: string implements HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::Draft => (string) __('Angelegt'),
-            self::Collected => (string) __('Abgeholt'),
-            self::InTreatment => (string) __('In Behandlung'),
-            self::HandedOver => (string) __('An Entsorger übergeben'),
-            self::Completed => (string) __('Abgeschlossen'),
-            self::Cancelled => (string) __('Storniert'),
+            self::Draft => (string) __('enums.disposal.disposal_job_status.draft'),
+            self::Collected => (string) __('enums.disposal.disposal_job_status.collected'),
+            self::InTreatment => (string) __('enums.disposal.disposal_job_status.in_treatment'),
+            self::HandedOver => (string) __('enums.disposal.disposal_job_status.handed_over'),
+            self::Completed => (string) __('enums.disposal.disposal_job_status.completed'),
+            self::Cancelled => (string) __('enums.disposal.disposal_job_status.cancelled'),
         };
     }
 

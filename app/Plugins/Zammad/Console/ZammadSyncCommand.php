@@ -56,8 +56,8 @@ class ZammadSyncCommand extends Command {
                     try {
                         $result = $importer->import($connection, $factory->for($connection));
                         $this->info(sprintf(
-                            'Organisation #%d (%s) / %s: created %d, skipped %d',
-                            $org->id, $org->name, $connection->name, $result['created'], $result['skipped'],
+                            'Organisation #%d (%s) / %s: created %d, updated %d, skipped %d',
+                            $org->id, $org->name, $connection->name, $result['created'], $result['updated'], $result['skipped'],
                         ));
                     } catch (Throwable $e) {
                         $this->error(sprintf('Organisation #%d / %s: Abbruch — %s', $org->id, $connection->name, $e->getMessage()));

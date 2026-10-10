@@ -30,9 +30,9 @@ enum TableStylePreset: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Clear => __('Klar'),
-            self::Compact => __('Kompakt'),
-            self::LowLine => __('Linienarm'),
+            self::Clear => __('enums.document_design.table_style_preset.clear'),
+            self::Compact => __('enums.document_design.table_style_preset.compact'),
+            self::LowLine => __('enums.document_design.table_style_preset.low_line'),
         };
     }
 

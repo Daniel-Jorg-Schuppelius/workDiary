@@ -59,6 +59,8 @@ return [
         'password_help' => 'Nextcloud: Einstellungen → Sicherheit → App-Passwort. Wird verschlüsselt gespeichert.',
         'default_folder' => 'Standardordner',
         'active' => 'Aktiv',
+        'allow_private_network' => 'Private/interne Adressen erlauben',
+        'allow_private_network_help' => 'Nur einschalten, wenn der WebDAV-Server im eigenen Netz steht (z. B. 192.168.x.x). Wird protokolliert und wirkt nur, wenn der Betreiber diese Freigabe zulässt.',
         'sources' => 'Gespiegelte Inhalte',
         'source_document' => 'Dokumente (DMS)',
         'source_invoice_pdf' => 'Rechnungen (PDF)',
@@ -80,5 +82,7 @@ return [
         'no_connection' => 'Keine aktive WebDAV-Ablage vorhanden.',
         'invalid_url' => 'Die Collection-URL muss mit http:// oder https:// beginnen.',
         'password_required' => 'Für eine neue Ablage ist ein App-Passwort erforderlich.',
+        'private_url_blocked' => 'Die Collection-URL zeigt auf eine private/interne Adresse. Für einen Server im eigenen Netz die Freigabe privater Adressen aktivieren.',
+        'private_hint' => 'Für einen Server im eigenen Netz muss an der Ablage die Freigabe privater Adressen aktiviert sein.',
     ],
 ];

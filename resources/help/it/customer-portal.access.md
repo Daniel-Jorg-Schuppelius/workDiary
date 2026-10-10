@@ -1,7 +1,7 @@
 ---
 title: "Accesso e sicurezza"
 topic: customer-portal.access
-version: 3
+version: 5
 keywords:
     - accesso al portale
     - login
@@ -15,6 +15,8 @@ keywords:
     - cambiare email
     - rimanere connesso
     - profilo
+    - password dimenticata
+    - reimpostare la password
 audience: []
 related:
     - customer-portal.overview
@@ -34,6 +36,8 @@ La password deve avere almeno 12 caratteri e contenere lettere maiuscole e minus
 
 Se il link è scaduto, la pagina non si apre più. Chieda allora al Suo fornitore di inviarLe di nuovo l'invito.
 
+Se il Suo fornitore ha reimpostato il Suo accesso, la password precedente non è più valida e tutte le sessioni del Suo accesso vengono chiuse. Riceve quindi un nuovo invito con l'oggetto «Il suo accesso al portale clienti di …» e imposta di nuovo la password come descritto sopra. Un secondo fattore già configurato resta attivo.
+
 ## Accedere
 
 Nella pagina **Accedi** inserisca la Sua **E-mail** e la Sua **Password** e clicchi su **Accedi**. Con **Rimani connesso** non deve accedere di nuovo a ogni visita su questo dispositivo – usi l'opzione solo sul Suo dispositivo personale.
@@ -41,7 +45,18 @@ Nella pagina **Accedi** inserisca la Sua **E-mail** e la Sua **Password** e clic
 - Se e-mail o password sono errate, compare **Queste credenziali non corrispondono ai nostri dati.** Per motivi di sicurezza il portale non indica quale dato era sbagliato.
 - Il numero di tentativi di accesso è limitato; dopo troppi tentativi falliti deve attendere un po'.
 - Se il Suo fornitore ha disattivato il Suo accesso, non è più possibile accedere.
-- Nel portale non esiste una funzione per modificare o reimpostare la password. Se ha dimenticato la password, si rivolga al Suo fornitore.
+- Se ha dimenticato la password, la reimposti autonomamente tramite **Password dimenticata?** sotto il modulo di accesso.
+
+### Password dimenticata
+
+1. Nella pagina **Accedi** clicchi su **Password dimenticata?**.
+2. Inserisca in **E-mail** la Sua e-mail di accesso e clicchi su **Invia link**.
+3. Entro 60 minuti apra il link nell'e-mail con l'oggetto «Reimpostare la password del portale clienti di …» (pulsante **Imposta password**).
+4. Inserisca una password in **Nuova password**, la ripeta in **Ripeti password** e clicchi su **Salva password**.
+
+Dopo l'invio il portale mostra sempre **Se esiste un account con questa e-mail, è stato inviato un link per il ripristino.** – anche se non conosce l'indirizzo. Così nessuno può scoprire quali indirizzi hanno un accesso. Ricevono un'e-mail solo gli accessi attivi: se il Suo invito è ancora aperto o il Suo accesso è disattivato, si rivolga al Suo fornitore. Il link vale una sola volta; la password precedente resta valida finché non salva quella nuova. Se non ha fatto Lei la richiesta, ignori semplicemente l'e-mail.
+
+Per la nuova password valgono le stesse regole dell'attivazione dell'accesso. Dopo il salvataggio la pagina di accesso mostra **Password modificata. Effettui l'accesso.** Tutte le sessioni aperte del Suo accesso, anche su altri dispositivi, vengono chiuse. Un secondo fattore già configurato resta attivo e viene richiesto come di consueto al prossimo accesso. Più richieste ravvicinate sono limitate; in tal caso attenda un po'.
 
 ### Secondo fattore all'accesso
 
@@ -89,6 +104,8 @@ Clicchi su **Aggiungi passkey** e segua le istruzioni del Suo browser o disposit
 ### Codici di recupero
 
 Alla configurazione del primo metodo il portale mostra una sola volta i Suoi **Codici di recupero**. Ogni codice funziona esattamente una volta e sostituisce il secondo fattore all'accesso. Conservi i codici in un luogo sicuro; il portale non li mostra più. Se l'app di autenticazione è configurata, può generare un nuovo set: in **Rigenera codici di recupero** inserisca nel campo **Codice app attuale** il codice dell'app e clicchi su **Genera nuovo**. I codici precedenti non sono più validi.
+
+Se ha perso tutti i metodi e i codici di recupero, si rivolga al Suo fornitore. Può reimpostare il Suo secondo fattore; riceverà un’e-mail intitolata «Il Suo secondo fattore è stato reimpostato» e in seguito accederà solo con la Sua password. Se l’autenticazione a due fattori è obbligatoria, configurerà in quel momento un nuovo metodo.
 
 ## Rimuovere fattori o disattivare tutto
 

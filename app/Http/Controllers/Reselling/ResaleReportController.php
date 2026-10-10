@@ -365,4 +365,9 @@ class ResaleReportController extends Controller {
 
         return CsvExport::streamFromRows($filename . '.csv', $header, $rows);
     }
+
+    /** Fachbericht außerhalb der Auswertungen: Den Export deckt das Fachrecht der Seite (E28). */
+    protected function exportNeedsReportPermission(): bool {
+        return false;
+    }
 }

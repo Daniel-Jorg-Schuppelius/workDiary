@@ -1,13 +1,14 @@
 ---
 title: "Personal: vacaciones, enfermedad, cualificaciones, seguridad"
 topic: reports.personnel
-version: 1
+version: 6
 keywords:
     - absentismo
     - vacaciones restantes
     - informe de vacaciones
     - días de baja
     - mantenimiento del salario
+    - continuación de la enfermedad
     - parte de baja
     - matriz de cualificaciones
     - certificados por vencer
@@ -71,11 +72,14 @@ especial y no pagado; según la duración del período se calcula por día, por
 semana o por trimestre. **Vacaciones restantes por empleado (top 15)** muestra
 los saldos restantes más altos.
 
-Los filtros solo están disponibles para los administradores: **Área** (**Solo
-propios** o **Equipo completo** para todas las personas de la organización),
-**Empleados**, **Equipo** y **Estado**. Con **Estado** solo cuentan las
-solicitudes **Pendiente** o **Aprobado**. Exportación: **PDF** con gráfico,
-**CSV** y **Excel**.
+Los filtros **Área** (**Solo propios** o **Equipo completo** para todas las
+personas de la organización), **Empleado**, **Equipo** y **Estado** los ven
+los administradores y las personas con el permiso **Ver todas las solicitudes
+de vacaciones**; las demás solo ven su propia fila. Con **Estado** solo cuentan
+las solicitudes **Pendiente** o **Aprobado**. Exportación: **PDF** con
+gráfico, **CSV** y **Excel**.
+
+La columna **Enfermedad**, su recuadro y su parte en el gráfico solo muestran los valores de otras personas si usted dispone además del permiso **Ver las bajas por enfermedad**; de lo contrario, no aparecen en la vista ni en la exportación.
 
 ## Enfermedades
 
@@ -95,16 +99,30 @@ Columnas por persona con bajas en el período:
   días libres restantes u **OK**. Bajo el nombre, **Cadena desde** indica el
   inicio de la cadena de enfermedad en curso.
 
-Cálculo del mantenimiento del salario: en la configuración estándar el derecho
-es de seis semanas, es decir, 42 días naturales por cadena de enfermedad. Una
-nueva baja continúa la cadena existente si está vinculada como parte de
-confirmación o si han pasado menos de seis meses desde el final de la cadena;
-solo tras al menos seis meses el derecho empieza de nuevo. No se comparan
-diagnósticos. Se consideran consumidos los días naturales desde el inicio de la
-cadena hasta su final; en una enfermedad en curso, hasta hoy. Las columnas
-**Mantenimiento del salario** y **Estado** muestran la situación de hoy,
-independientemente del período elegido. Los valores son orientativos y no
-constituyen una comprobación jurídica.
+Cálculo del mantenimiento del salario:
+
+- En la configuración estándar el derecho es de seis semanas, es decir, 42 días
+  naturales de incapacidad laboral. Solo cuentan los propios días de baja – en
+  una enfermedad en curso, hasta hoy; los días trabajados entre dos bajas no
+  cuentan nunca.
+- Las bajas que se solapan, se suceden sin interrupción o están vinculadas como
+  parte de confirmación forman un único caso de enfermedad. Esto también se
+  aplica cuando durante una enfermedad en curso aparece una nueva.
+- Una enfermedad nueva que solo empieza después de días trabajados parte con el
+  derecho completo.
+- Si la caja de seguro de enfermedad confirma la misma enfermedad
+  (continuación de la enfermedad), en la nueva baja se elige la baja anterior
+  en el campo **Continuación de la enfermedad del**. Los casos comparten
+  entonces un único derecho. Para la misma enfermedad nace un nuevo derecho si
+  la persona, en la configuración estándar, no ha estado incapacitada por esa
+  enfermedad durante seis meses, o si han pasado doce meses desde el inicio de
+  la primera incapacidad.
+- **Cadena desde** indica el inicio del primer caso que cuenta para el derecho
+  en curso.
+
+Las columnas **Mantenimiento del salario** y **Estado** muestran la situación
+de hoy, independientemente del período elegido. Los valores son orientativos y
+no constituyen una comprobación jurídica ni asesoramiento legal.
 
 Recuadros: **Empleados**, **Días laborables de baja** con los días naturales,
 **Casos de enfermedad** con los partes de confirmación, **Con baja** y
@@ -112,15 +130,18 @@ Recuadros: **Empleados**, **Días laborables de baja** con los días naturales,
 (por día, semana o trimestre según el período) y el mapa de calor **Días de
 baja por empleado y mes**.
 
-Filtros como en **Vacaciones y flex**: **Área**, **Empleados** y **Equipo**,
-solo para administradores. Esta página no ofrece exportación.
+Filtros como en **Vacaciones y flex**: **Área**, **Empleado** y **Equipo** –
+aquí para los administradores y las personas con el permiso **Ver las bajas por
+enfermedad**; las demás solo ven su propia fila. Esta página no ofrece
+exportación.
 
 ## Cualificaciones
 
 **Análisis** → **Equipo** → **Cualificaciones** muestra la **Matriz de
-cualificaciones**: una fila por persona con al menos una cualificación y una
-columna por cada cualificación del catálogo (abreviatura; nombre completo al
-pasar el cursor).
+cualificaciones**: una fila por persona con al menos una cualificación activa
+y una columna por cada cualificación activa del catálogo (abreviatura; nombre
+completo al pasar el cursor). Las cualificaciones inactivas no aparecen ni en
+la matriz ni en los mosaicos, gráficos y exportación.
 
 - Cada celda muestra la fecha de vencimiento, o ✓ si la cualificación es válida
   sin fecha de vencimiento.
@@ -132,7 +153,9 @@ pasar el cursor).
   cualificación según estado** para las doce cualificaciones más frecuentes.
 
 La fecha de referencia es siempre hoy; el período de la cabecera no cambia la
-matriz. Filtros: **Empleados** y **Equipo**. Exportación: **PDF** en
+matriz. Las filas de todas las personas las ven los administradores y las
+personas con el permiso **Gestionar las cualificaciones**; las demás solo ven
+su propia fila. Los filtros **Empleado** y **Equipo** solo están disponibles con este permiso. Exportación: **PDF** en
 horizontal, **CSV** y **Excel** con una fila por persona y, por cualificación,
 la fecha de vencimiento o una indicación de validez. Las cualificaciones se
 gestionan en el catálogo y en la ficha de la persona, no en el análisis.
@@ -152,7 +175,7 @@ de seguridad ocurridos en el período de la cabecera.
   **Defecto**; **Por gravedad** cuenta **Baja**, **Media**, **Alta** y
   **Crítica**.
 
-Filtros: **Empleados** y **Equipo**; se refieren a la persona que notificó el
+Filtros: **Empleado** y **Equipo**; se refieren a la persona que notificó el
 evento. No hay exportación; los eventos individuales se gestionan en el
 registro de eventos de seguridad.
 
@@ -190,10 +213,13 @@ requisitos de competencias, la tabla queda vacía.
 
 ## Quién ve qué
 
-- **Vacaciones y flex**, **Enfermedades** y **Cualificaciones**: cada persona
-  solo ve sus propios datos. La vista de todas las personas de la organización
-  está ligada al rol de administrador; el permiso **Ver las bajas por
-  enfermedad** por sí solo no la habilita aquí.
+- **Vacaciones y flex**, **Enfermedades** y **Cualificaciones**: sin otro
+  permiso, cada persona solo ve sus propios datos. La vista de todas las
+  personas de la organización la tienen los administradores y, en cada
+  análisis, quien tenga el permiso de la lista correspondiente: **Ver todas las
+  solicitudes de vacaciones** para **Vacaciones y flex**, **Ver las bajas por
+  enfermedad** para **Enfermedades** y **Gestionar las cualificaciones** para
+  **Cualificaciones**.
 - **Seguridad laboral**: entrada de menú y página solo con el permiso **Ver el
   registro de eventos de seguridad** o **Editar / cerrar eventos de
   seguridad**; los administradores las ven siempre. En la asignación estándar,
@@ -201,5 +227,6 @@ requisitos de competencias, la tabla queda vacía.
 - **Problemas y formación**: solo con el permiso **Ver los informes** o como
   administrador. En la asignación estándar lo tienen, entre otros, Dirección,
   Jefe de equipo y Administración de personal.
-- Las áreas de menú **Equipo** y **Proyectos y clientes** solo existen si está
-  contratado el módulo adicional de informes de equipo.
+- **Vacaciones y flex**, **Enfermedades** y **Cualificaciones** requieren el
+  módulo adicional de informes de equipo; **Seguridad laboral** y **Problemas y
+  formación** están disponibles sin él.

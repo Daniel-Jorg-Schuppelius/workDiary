@@ -25,8 +25,8 @@ enum DpiaStepStatus: string implements HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::Pending => __('Offen'),
-            self::Done => __('Abgeschlossen'),
+            self::Pending => __('enums.privacy.dpia_step_status.pending'),
+            self::Done => __('enums.privacy.dpia_step_status.done'),
         };
     }
 

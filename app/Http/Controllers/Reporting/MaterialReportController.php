@@ -35,6 +35,11 @@ class MaterialReportController extends Controller {
     use ResolvesStandardReportFilters;
     use WritesReportCsv;
 
+    /** E10: Sicht „Nur eigene“. */
+    protected function exportIsPersonal(Request $request): bool {
+        return $this->resolveScopeWithAdmin($request)[0] === 'mine';
+    }
+
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
         [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
@@ -213,7 +218,7 @@ class MaterialReportController extends Controller {
     private function exportCsv(array $agg, string $from, string $to, Request $request, array $exportFilters): Response {
         $filename = sprintf('materialien_%s_%s.csv', $from, $to);
         $rows = [];
-        $rows[] = ['SKU', 'Material', 'Einheit', 'Menge', 'Verwendungen', 'Netto €'];
+        $rows[] = [(string) __('reporting.csv.sku'), (string) __('reporting.csv.material'), (string) __('reporting.csv.unit'), (string) __('reporting.csv.quantity'), (string) __('reporting.csv.usages'), (string) __('reporting.csv.net_eur')];
         foreach ($agg['rows'] as $r) {
             $rows[] = [
                 $r['sku'] ?? '',
@@ -224,7 +229,7 @@ class MaterialReportController extends Controller {
                 NumberHelper::toUSFormat($r['line_total_net'], 2),
             ];
         }
-        $rows[] = ['', 'GESAMT', '', '', $agg['totals']['usage_count'], NumberHelper::toUSFormat($agg['totals']['line_total_net'], 2)];
+        $rows[] = ['', (string) __('reporting.csv.total'), '', '', $agg['totals']['usage_count'], NumberHelper::toUSFormat($agg['totals']['line_total_net'], 2)];
 
         return $this->csvWithMetadata($rows, $filename, 'materials', $exportFilters, $request);
     }

@@ -12,6 +12,8 @@ namespace App\Plugins\Support;
 
 use APIToolkit\API\Authentication\OAuth2\{OAuth2AuthorizationCodeGrant, OAuth2ClientCredentialsGrant, OAuth2GrantAbstract, OAuth2PasswordGrant};
 use APIToolkit\Contracts\Abstracts\API\ClientAbstract;
+use App\Plugins\Contracts\SettingsField;
+use App\Plugins\PluginManager;
 use App\Support\UrlSafety;
 use GuzzleHttp\Client as GuzzleClient;
 
@@ -214,9 +216,24 @@ class PluginHttpFactory {
             $baseUrl,
             $this->privateNetworkAllowed($pluginId, $allowPrivateNetwork),
             'Plugin ' . $pluginId,
-            'Ziel-URL',
-            'Für selbst gehostete Instanzen die Einstellung „Private Netzwerke erlauben" aktivieren.',
+            (string) __('plugins.url_guard.subject.target'),
+            fn (): string => $this->privateNetworkHint($pluginId),
         );
+    }
+
+    /**
+     * Wie sich ein Ziel im eigenen Netz freigeben lässt: über die Plugin-Einstellung
+     * `allow_private_network`, wo es sie gibt und der Betreiber das Opt-in zulässt,
+     * sonst nur über die Betreiber-Liste `plugins.private_network_targets`.
+     */
+    private function privateNetworkHint(string $pluginId): string {
+        $field = collect(app(PluginManager::class)->find($pluginId)?->settingsSchema() ?? [])
+            ->map(static fn (array|SettingsField $f): SettingsField => SettingsField::fromArray($f))
+            ->first(static fn (SettingsField $f): bool => $f->key === 'allow_private_network');
+
+        return $field instanceof SettingsField && (bool) config('plugins.allow_private_network_opt_in', true)
+            ? (string) __('plugins.url_guard.hint_setting', ['setting' => $field->label])
+            : (string) __('plugins.url_guard.hint_operator');
     }
 
     /**

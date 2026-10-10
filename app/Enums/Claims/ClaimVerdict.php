@@ -25,9 +25,9 @@ enum ClaimVerdict: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Justified => (string) __('Berechtigt'),
-            self::Unclear => (string) __('Unklar'),
-            self::Rejected => (string) __('Abgelehnt'),
+            self::Justified => (string) __('enums.claims.claim_verdict.justified'),
+            self::Unclear => (string) __('enums.claims.claim_verdict.unclear'),
+            self::Rejected => (string) __('enums.claims.claim_verdict.rejected'),
         };
     }
 }

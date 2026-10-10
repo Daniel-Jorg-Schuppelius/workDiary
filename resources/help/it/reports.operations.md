@@ -1,7 +1,7 @@
 ---
 title: "Operatività: ripartizione del tempo, procedure, materiale, reperibilità"
 topic: reports.operations
-version: 1
+version: 6
 keywords:
     - report operativo
     - ordini di servizio
@@ -53,8 +53,13 @@ maggior parte delle pagine in **Report** → **Progetti e clienti** e
   che con esso passano dai propri dati a tutto il team. Tutti gli altri vi
   vedono sempre i propri dati.
 - **PDF** scarica una versione stampabile; **CSV** ed **Excel** si trovano in
-  **Esportazione**. Le esportazioni riprendono i filtri impostati. Le
-  esportazioni PDF e CSV vengono registrate nel registro di audit.
+  **Esportazione**. Le esportazioni riprendono i filtri impostati. Ogni
+  esportazione viene registrata nel registro di audit.
+- Le esportazioni richiedono il permesso **Esporta i report**, anche per
+  **Esecuzioni di procedura bloccate**; senza il permesso i pulsanti di
+  esportazione non compaiono. Gli amministratori possono sempre esportare.
+  Restano libere le esportazioni che contengono solo i Suoi dati – vedere
+  «Usare i report».
 
 ## Operazioni
 
@@ -69,8 +74,9 @@ e giri del periodo.
   pianificati.
 - Grafici: **Ordini di servizio: creati vs. completati per settimana** e
   **Backlog per cliente (top 15)** con gli ordini di servizio ancora aperti
-  per cliente. Un clic su una barra apre i punti aperti del cliente; per
-  questo serve il diritto **Visualizza i report**.
+  per cliente. Con il diritto **Visualizza i report** un clic su una barra
+  apre i punti aperti del cliente; senza questo diritto le barre non sono
+  cliccabili.
 - Tabelle: **Ordini di servizio – stato**, **Ordini di servizio – priorità**,
   **Attività – stato**, **Attività – priorità** e **Giri – per dipendente**
   (giri, **Km pianificati**, **Durata pianificata**).
@@ -180,7 +186,7 @@ dipendente, così come vengono gestiti nella **Lista di lavoro**. I tempi che
 superano il periodo contano solo in proporzione; le voci archiviate non
 contano.
 
-- Riquadri: **Dipendente**, **Reperibilità** (con il numero di turni),
+- Riquadri: **Dipendenti**, **Reperibilità** (con il numero di turni),
   **Interventi attivi** (tempo di intervento con il numero di interventi) e
   **Quota attiva** (tempo di intervento rispetto al tempo di reperibilità).
 - Grafici: **Reperibilità per collaboratore e settimana** come mappa di
@@ -225,13 +231,16 @@ cui inizia il periodo scelto.
 - Scelga **Cliente** e **Progetto**. Senza selezione compare il primo
   progetto dell’elenco. Il filtro **Dipendente** esiste solo con una visione
   dei tempi estesa a tutta l’organizzazione.
-- La scheda del progetto indica i totali annui **Σ Std.** e **Σ €** ed elenca
+- La scheda del progetto indica i totali annui **Σ ore** e **Σ €** ed elenca
   **Mese**, **Ore** e **Ricavo**; segue la **Ripartizione per dipendente**. Il
   ricavo è la somma degli importi memorizzati con le registrazioni di tempo.
 - Grafici: **Andamento delle ore nel periodo**, **Ore effettive e pianificate
-  al mese** (piano ricavato dai minuti pianificati degli ordini del progetto
-  in base al loro inizio; senza dati di piano una linea mostra la mediana dei
-  mesi effettivi) e **Ore per tipo di ordine al mese**.
+  al mese** (piano ricavato dal campo **Durata prevista (HH:MM)** degli ordini
+  del progetto in base al loro inizio, in mancanza dalla durata dell’intervento di un ordine pianificato, altrimenti dalla durata della
+  finestra oraria o dell’appuntamento; con un dipendente selezionato solo gli ordini
+  assegnati a quella persona, senza una visione dei tempi estesa a tutta
+  l’organizzazione solo quelli assegnati a Lei; senza dati di piano una linea
+  mostra la mediana dei mesi effettivi) e **Ore per tipo di ordine al mese**.
 
 Gli amministratori e i ruoli con **Visualizza tutte le registrazioni di
 tempo** vedono tutti i progetti e tutte le ore. Tutti gli altri vedono solo i
@@ -259,10 +268,10 @@ ed Excel.
 
 ## Qualità dei dati
 
-La pagina **Qualità dei dati: classificazioni obbligatorie** non ha una voce
-di menu propria; la apre tramite un collegamento diretto, per esempio un
-segnalibro. Elenca gli ordini del periodo a cui mancano indicazioni richieste
-dalle regole obbligatorie di **Classificazioni**. Serve il diritto
+**Report** → **Progetti e clienti** → **Qualità dei dati** apre la pagina
+**Qualità dei dati: classificazioni obbligatorie**. Elenca gli ordini del
+periodo a cui mancano indicazioni richieste dalle regole obbligatorie di
+**Classificazioni**. La voce di menu e la pagina richiedono il diritto
 **Visualizza i report**.
 
 - Riquadri: **Ordini con lacune**, **Lacune bloccanti** (regole bloccanti) e

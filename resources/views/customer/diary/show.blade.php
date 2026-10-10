@@ -8,8 +8,8 @@
 --}}
 {{--
   Portal-Auftragsdetail (Feature 012, Rang 54/55): read-only — kundensichtbare
-  Fotos mit Bestätigen/Beanstanden, Materialliste ohne Preise, kundensichtbare
-  Protokolle, Fallakte-PDF über signierten 24-h-Link.
+  Fotos mit Bestätigen/Beanstanden, Materialliste ohne Preise, unterschriebene
+  kundensichtbare Protokolle mit PDF, Fallakte-PDF über signierten 24-h-Link.
 --}}
 @extends('customer.layout')
 
@@ -32,8 +32,19 @@
             @else
                 <ul class="divide-y divide-base-300 text-sm">
                     @foreach ($photos as $photo)
+                        @php
+                            $photoUrl = route('customer.diary.photos.show', [$diary, $photo]);
+                        @endphp
                         <li class="flex flex-wrap items-center justify-between gap-2 py-2">
-                            <span class="min-w-0 truncate">{{ $photo->original_name }}</span>
+                            <a href="{{ $photoUrl }}" class="flex min-w-0 items-center gap-3 hover:underline">
+                                @if ($photo->isImage())
+                                    <img src="{{ $photoUrl }}" alt="{{ $photo->original_name }}" loading="lazy"
+                                         class="h-16 w-16 shrink-0 rounded-box border border-base-300 object-cover">
+                                @else
+                                    <x-icon name="attach_file" class="text-xl text-muted" />
+                                @endif
+                                <span class="min-w-0 truncate">{{ $photo->original_name }}</span>
+                            </a>
                             <span class="flex items-center gap-2">
                                 @if ($confirmedByMe->has($photo->id))
                                     <x-status-badge tone="success">{{ __('Bestätigt am :date', ['date' => $confirmedByMe[$photo->id]->confirmed_at->fdate()]) }}</x-status-badge>
@@ -89,9 +100,12 @@
             @else
                 <ul class="divide-y divide-base-300 text-sm">
                     @foreach ($protocols as $protocol)
-                        <li class="flex items-center justify-between gap-2 py-2">
-                            <span>{{ $protocol->title }}</span>
-                            <span class="opacity-70">{{ $protocol->status->label() }} · {{ optional($protocol->occurred_at)->fdate() }}</span>
+                        <li class="flex flex-wrap items-center justify-between gap-2 py-2">
+                            <span class="min-w-0">{{ $protocol->title }}</span>
+                            <span class="flex items-center gap-2">
+                                <span class="opacity-70">{{ $protocol->status->label() }} · {{ optional($protocol->occurred_at)->fdate() }}</span>
+                                <x-button :href="route('customer.diary.protocols.pdf', [$diary, $protocol])" tone="outline" size="sm" icon="download">{{ __('PDF herunterladen') }}</x-button>
+                            </span>
                         </li>
                     @endforeach
                 </ul>

@@ -8,14 +8,14 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Fahrtenbuch ' . $vehicle->license_plate . ' – ' . $from . ' bis ' . $to)
+@section('pdf-title', __('Fahrtenbuch') . ' ' . $vehicle->license_plate . ' – ' . $from . ' ' . __('bis') . ' ' . $to)
 @section('pdf-heading', __('Fahrtenbuch') . ' ' . $vehicle->displayName())
 
 @section('pdf-meta')
-    Zeitraum: <strong>{{ \Carbon\Carbon::parse($from)->fdate() }}</strong> bis
+    {{ __('Zeitraum') }}: <strong>{{ \Carbon\Carbon::parse($from)->fdate() }}</strong> {{ __('bis') }}
     <strong>{{ \Carbon\Carbon::parse($to)->fdate() }}</strong> ·
-    {{ $vehicle->logbook_mode ? 'Fahrtenbuch-Modus (festgeschrieben, lückenlos)' : 'Kein Fahrtenbuch-Modus' }} ·
-    Erstellt: {{ now()->fdatetime() }}
+    {{ $vehicle->logbook_mode ? __('Fahrtenbuch-Modus (festgeschrieben, lückenlos)') : __('Kein Fahrtenbuch-Modus') }} ·
+    {{ __('Erstellt') }}: {{ now()->fdatetime() }}
 @endsection
 
 @section('pdf-table')
@@ -25,7 +25,7 @@
 
     <table class="kpis">
         <tr>
-            <td><div class="label">Fahrten</div><div class="value">{{ $totals['trips'] }}</div></td>
+            <td><div class="label">{{ __('Fahrten') }}</div><div class="value">{{ $totals['trips'] }}</div></td>
             <td><div class="label">Σ km</div><div class="value">{{ $num($totals['km']) }}</div></td>
             @foreach (\App\Enums\Travel\TripKind::cases() as $kind)
                 <td><div class="label">{{ $kind->label() }}</div><div class="value">{{ $num($totals['by_kind'][$kind->value]) }} km</div></td>
@@ -37,15 +37,15 @@
     <table class="data">
         <thead>
             <tr>
-                <th>Datum</th>
-                <th class="right">Start-km</th>
-                <th class="right">End-km</th>
+                <th>{{ __('Datum') }}</th>
+                <th class="right">{{ __('Start-km') }}</th>
+                <th class="right">{{ __('End-km') }}</th>
                 <th class="right">km</th>
-                <th>Fahrtart</th>
-                <th>Ziel</th>
-                <th>Zweck</th>
-                <th>Fahrer</th>
-                <th>Status</th>
+                <th>{{ __('Fahrtart') }}</th>
+                <th>{{ __('Ziel') }}</th>
+                <th>{{ __('Zweck') }}</th>
+                <th>{{ __('Fahrer') }}</th>
+                <th>{{ __('Status') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -62,23 +62,23 @@
                     <td>{{ $log->user?->name ?? '–' }}</td>
                     <td>
                         @if ($r['superseded'])
-                            storniert
+                            {{ __('storniert') }}
                         @elseif ($log->isLocked())
-                            festgeschrieben {{ $log->locked_at?->orgTz()->format('d.m.Y H:i') }}
+                            {{ __('festgeschrieben') }} {{ $log->locked_at?->orgTz()->format('d.m.Y H:i') }}
                         @else
-                            offen
+                            {{ __('offen') }}
                         @endif
                         @if ($log->isSigned())
-                            <br><span class="small">unterschrieben {{ $log->driver_signed_at?->orgTz()->format('d.m.Y H:i') }} · {{ substr((string) $log->driver_signature_hash, 0, 12) }}</span>
+                            <br><span class="small">{{ __('unterschrieben') }} {{ $log->driver_signed_at?->orgTz()->format('d.m.Y H:i') }} · {{ substr((string) $log->driver_signature_hash, 0, 12) }}</span>
                         @endif
                         @if ($log->isCorrection())
-                            <br><span class="small">Stornofahrt: {{ $log->correction_reason }}</span>
+                            <br><span class="small">{{ __('Stornofahrt') }}: {{ $log->correction_reason }}</span>
                         @endif
                     </td>
                 </tr>
             @endforeach
             <tr class="totals">
-                <td colspan="3">Gesamt</td>
+                <td colspan="3">{{ __('Gesamt') }}</td>
                 <td class="right">{{ $num($totals['km']) }}</td>
                 <td colspan="5">
                     @foreach (\App\Enums\Travel\TripKind::cases() as $kind)

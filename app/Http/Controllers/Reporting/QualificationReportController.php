@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Reporting;
 
+use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
@@ -34,9 +35,14 @@ class QualificationReportController extends Controller {
 
     private const EXPIRY_WARN_DAYS = 30;
 
+    /** E10: Ohne Verwaltungsrecht zeigt die Matrix nur die eigene Zeile. */
+    protected function exportIsPersonal(Request $request): bool {
+        return ! $this->viewerHolds(Permission::QualificationManage);
+    }
+
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
-        $isAdmin = $this->viewerIsAdmin();
+        $seesTeam = $this->viewerHolds(Permission::QualificationManage);
 
         $today = Carbon::today();
         $warnDate = $today->copy()->addDays(self::EXPIRY_WARN_DAYS);
@@ -45,20 +51,23 @@ class QualificationReportController extends Controller {
         [$rangeFrom, $rangeTo] = $this->resolveRange($request);
         $filters = $this->standardFilters($request, ['user', 'team'], $rangeFrom, $rangeTo);
 
+        // Inaktive Qualifikationen sind aus dem Katalog genommen — weder Spalte noch Zählung.
         /** @var Collection<int, Qualification> $qualifications */
         $qualifications = Qualification::query()
+            ->active()
             ->orderBy('name')
             ->get(['id', 'name', 'abbreviation', 'is_active']);
 
+        $activeOnly = static fn($q) => $q->where('qualifications.is_active', true);
         $usersQuery = User::inCurrentOrganization()
-            ->whereHas('qualifications')
+            ->whereHas('qualifications', $activeOnly)
             ->orderBy('name');
-        if (! $isAdmin) {
+        if (! $seesTeam) {
             $usersQuery->where('id', $userId);
         }
         $filters->applyUserAndTeam($usersQuery, 'id');
         /** @var Collection<int, User> $users */
-        $users = $usersQuery->with(['qualifications:id,name'])->get(['id', 'name']);
+        $users = $usersQuery->with(['qualifications' => fn($q) => $activeOnly($q)->select(['qualifications.id', 'qualifications.name'])])->get(['id', 'name']);
 
         /** @var array<int, array<int, array{valid_from: ?string, valid_until: ?string, state: string}>> $matrix */
         $matrix = [];
@@ -113,7 +122,7 @@ class QualificationReportController extends Controller {
             'users' => $users,
             'qualifications' => $qualifications,
             'matrix' => $matrix,
-            'isAdmin' => $isAdmin,
+            'seesTeam' => $seesTeam,
             'totals' => [
                 'users' => $users->count(),
                 'qualifications' => $qualifications->count(),
@@ -126,7 +135,7 @@ class QualificationReportController extends Controller {
             'holdersSeries' => $this->holdersSeries($qualifications, $stateByQualification),
             'stateSeries' => $this->stateSeries($qualifications, $stateByQualification),
             'stateBands' => $this->stateBands(),
-            ...$this->standardFilterOptions(['user', 'team'], $filters),
+            ...($seesTeam ? $this->standardFilterOptions(['user', 'team'], $filters) : []),
         ]);
     }
 
@@ -190,7 +199,7 @@ class QualificationReportController extends Controller {
     private function exportCsv($users, $qualifications, array $matrix, array $exportFilters, Request $request): Response {
         $filename = 'qualifikationen_' . Carbon::today()->toDateString() . '.csv';
         $rows = [];
-        $header = ['Mitarbeiter'];
+        $header = [(string) __('reporting.csv.employee')];
         foreach ($qualifications as $q) {
             $header[] = $q->name;
         }
@@ -202,11 +211,11 @@ class QualificationReportController extends Controller {
                 if ($cell === null) {
                     $line[] = '';
                 } else {
-                    $val = $cell['valid_until'] ?? 'gültig';
+                    $val = $cell['valid_until'] ?? (string) __('reporting.csv.qualification_valid');
                     if ($cell['state'] === 'expired') {
-                        $val = 'ABGELAUFEN ' . $val;
+                        $val = (string) __('reporting.csv.qualification_expired', ['date' => $val]);
                     } elseif ($cell['state'] === 'expiring') {
-                        $val = 'LÄUFT AB ' . $val;
+                        $val = (string) __('reporting.csv.qualification_expiring', ['date' => $val]);
                     }
                     $line[] = $val;
                 }

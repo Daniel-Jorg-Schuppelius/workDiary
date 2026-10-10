@@ -280,6 +280,8 @@ class LogbookTest extends TestCase {
 
     public function test_report_sums_per_trip_kind_and_private_share(): void {
         $vehicle = $this->vehicle();
+        // Eigener Dienstwagen: der Export bleibt ohne „Auswertungen exportieren“ frei (E10).
+        $vehicle->update(['default_user_id' => $this->user->id]);
         $this->trip($vehicle, ['date' => '2030-06-10', 'trip_kind' => TripKind::Business->value, 'distance_km' => 100, 'odometer_start_km' => 1000, 'odometer_end_km' => 1100]);
         $this->trip($vehicle, ['date' => '2030-06-11', 'trip_kind' => TripKind::Private_->value, 'distance_km' => 50, 'odometer_start_km' => 1100, 'odometer_end_km' => 1150]);
         $this->trip($vehicle, ['date' => '2030-06-12', 'trip_kind' => TripKind::Commute->value, 'distance_km' => 50, 'odometer_start_km' => 1150, 'odometer_end_km' => 1200]);
@@ -312,7 +314,7 @@ class LogbookTest extends TestCase {
         $csv->assertOk();
         $content = (string) $csv->getContent();
         $this->assertStringContainsString('#report:logbook', $content);
-        $this->assertStringContainsString('Privater Anteil %;;;22.7', $content);
+        $this->assertStringContainsString(__('reporting.csv.private_share_percent') . ';;;22.7', $content);
         $this->assertStringContainsString('Umweg gestrichen', $content);
 
         $pdf = $this->actingAs($this->user)->withSession($session)->get(route('reports.logbook', ['vehicle' => $vehicle->sqid, 'export' => 'pdf']));

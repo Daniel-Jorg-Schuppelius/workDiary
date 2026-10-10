@@ -17,7 +17,6 @@ use App\Plugins\Support\Mirror\RemoteFileGateway;
 use App\Plugins\Support\PluginApiClient;
 use App\Plugins\Webdav\Models\WebdavConnection;
 use App\Support\UrlSafety;
-use RuntimeException;
 use Throwable;
 
 /**
@@ -34,11 +33,20 @@ class HttpWebdavGateway implements RemoteFileGateway {
         private readonly PluginApiClient $http,
         private readonly WebdavConnection $connection,
     ) {
-        // SSRF-Schutz: die org-konfigurierte Basis-URL muss öffentlich routbar
-        // sein (kein Loopback/RFC1918/Metadata) — Whitebox-Befund 2026-07.
-        if (! UrlSafety::isPubliclyRoutableHttpUrl((string) $connection->base_url)) {
-            throw new RuntimeException('WebDAV base_url is not a publicly routable http(s) target.');
-        }
+        self::assertTarget($connection);
+    }
+
+    /**
+     * SSRF-Schutz (Whitebox-Befund 2026-07): öffentlich routbar, außer die
+     * Ablage gibt private Adressen frei und der Betreiber lässt das zu.
+     */
+    public static function assertTarget(WebdavConnection $connection): void {
+        UrlSafety::assertAcceptableExternalBaseUrl(
+            (string) $connection->base_url,
+            $connection->allowsPrivateNetwork(),
+            'WebDAV',
+            privateHint: (string) __('webdav::webdav.flash.private_hint'),
+        );
     }
 
     public function ensureCollection(string $collectionPath): bool {

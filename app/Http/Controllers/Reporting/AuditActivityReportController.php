@@ -96,9 +96,10 @@ class AuditActivityReportController extends Controller {
             $byUser[$uid] = ['user' => $usersById[$uid] ?? null, 'count' => $c];
         }
 
+        // Kacheln zählen über alle Einträge, nicht über die Top-20-Listen.
         $total = (int) (clone $base)->count();
-        $distinctUsers = count($byUserCounts);
-        $distinctTypes = count($byType);
+        $distinctUsers = (int) (clone $base)->whereNotNull('user_id')->distinct()->count('user_id');
+        $distinctTypes = (int) (clone $base)->whereNotNull('auditable_type')->distinct()->count('auditable_type');
 
         /** @var Collection<int, AuditLog> $recent */
         $recent = (clone $base)
@@ -289,18 +290,21 @@ class AuditActivityReportController extends Controller {
     private function exportCsv(array $byEvent, array $byType, array $byUser, $recent, string $from, string $to, array $exportFilters, Request $request): Response {
         $filename = sprintf('audit_%s_%s.csv', $from, $to);
         $rows = [];
-        $rows[] = ['Bereich', 'Schlüssel', 'Anzahl'];
+        $eventLabel = (string) __('reporting.csv.event');
+        $typeLabel = (string) __('reporting.csv.type');
+        $userLabel = (string) __('reporting.csv.user');
+        $rows[] = [(string) __('reporting.csv.area'), (string) __('reporting.csv.key'), (string) __('reporting.csv.count')];
         foreach ($byEvent as $ev => $c) {
-            $rows[] = ['Event', $ev, $c];
+            $rows[] = [$eventLabel, $ev, $c];
         }
         foreach ($byType as $t => $c) {
-            $rows[] = ['Typ', $this->shortType($t), $c];
+            $rows[] = [$typeLabel, $this->shortType($t), $c];
         }
         foreach ($byUser as $u) {
-            $rows[] = ['User', $u['user'] !== null ? $u['user']->name : '—', $u['count']];
+            $rows[] = [$userLabel, $u['user'] !== null ? $u['user']->name : '—', $u['count']];
         }
         $rows[] = [];
-        $rows[] = ['Zeitpunkt', 'User', 'Event', 'Typ', 'ID', 'IP'];
+        $rows[] = [(string) __('reporting.csv.timestamp'), $userLabel, $eventLabel, $typeLabel, (string) __('reporting.csv.id'), (string) __('reporting.csv.ip')];
         foreach ($recent as $log) {
             $rows[] = [
                 Tz::toLocal($log->created_at)?->format('Y-m-d H:i:s') ?? '',

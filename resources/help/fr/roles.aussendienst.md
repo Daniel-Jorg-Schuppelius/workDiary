@@ -1,7 +1,7 @@
 ---
 title: "Votre journée dans WorkDiary : Service extérieur"
 topic: roles.aussendienst
-version: 1
+version: 2
 keywords:
     - technicien terrain
     - technicien de maintenance
@@ -28,7 +28,7 @@ typique : démarrer la saisie du temps (chronomètre ou **« Nouvelle
 entrée »**), documenter l'intervention (contenu, photos, pièces jointes
 dans le dossier), générer le **procès-verbal** et le faire **signer**
 par le client sur place (signature tactile ou lien de signature), tenir
-tournée et carnet de route, puis clôturer la journée (pauses, entrées
+tournée et carnet de bord, puis clôturer la journée (pauses, entrées
 ouvertes). Vous pouvez créer, modifier et supprimer vos propres entrées de
 temps jusqu'à leur validation — ensuite toute correction passe par une
 **demande de correction** ; vous gérez vos interventions, tournées et

@@ -29,12 +29,12 @@ enum TimeCorrectionStatus: string implements HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::Draft     => __('Entwurf'),
-            self::Submitted => __('Eingereicht'),
-            self::Approved  => __('Genehmigt'),
-            self::Rejected  => __('Abgelehnt'),
-            self::Applied   => __('Angewendet'),
-            self::Withdrawn => __('Zurückgezogen'),
+            self::Draft     => __('enums.time_approval.time_correction_status.draft'),
+            self::Submitted => __('enums.time_approval.time_correction_status.submitted'),
+            self::Approved  => __('enums.time_approval.time_correction_status.approved'),
+            self::Rejected  => __('enums.time_approval.time_correction_status.rejected'),
+            self::Applied   => __('enums.time_approval.time_correction_status.applied'),
+            self::Withdrawn => __('enums.time_approval.time_correction_status.withdrawn'),
         };
     }
 

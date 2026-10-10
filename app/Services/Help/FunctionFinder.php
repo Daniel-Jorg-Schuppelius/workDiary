@@ -29,7 +29,7 @@ final class FunctionFinder {
         'help' => 'help',
     ];
 
-    /** @var list<array{route: string, label: string, icon: string, area: string, url: string, topic: string|null}>|null */
+    /** @var list<array{route: string, label: string, icon: string, area: string, url: string, modal: bool, topic: string|null}>|null */
     private ?array $pages = null;
 
     public function __construct(
@@ -42,7 +42,7 @@ final class FunctionFinder {
      * Seiten, die alle Pflichtwörter tragen — beste zuerst. Teiltreffer
      * bleiben draußen: ein Sprungziel soll passen.
      *
-     * @return list<array{route: string, label: string, icon: string, area: string, url: string, topic: string|null, keyword: string|null}>
+     * @return list<array{route: string, label: string, icon: string, area: string, url: string, modal: bool, topic: string|null, keyword: string|null}>
      */
     public function pages(HelpSearchQuery $query, int $limit): array {
         $pages = $this->pagesWithTopics();
@@ -72,13 +72,13 @@ final class FunctionFinder {
      * Erste erreichbare Seite je Hilfethema — Sprungziel neben einem
      * Hilfetreffer.
      *
-     * @return array<string, array{label: string, url: string}>
+     * @return array<string, array{label: string, url: string, modal: bool}>
      */
     public function pagesByTopic(): array {
         $byTopic = [];
         foreach ($this->pagesWithTopics() as $page) {
             if ($page['topic'] !== null && ! isset($byTopic[$page['topic']])) {
-                $byTopic[$page['topic']] = ['label' => $page['label'], 'url' => $page['url']];
+                $byTopic[$page['topic']] = ['label' => $page['label'], 'url' => $page['url'], 'modal' => $page['modal']];
             }
         }
 
@@ -112,7 +112,7 @@ final class FunctionFinder {
         ], array_values(array_filter($ranked['hits'], static fn(array $hit): bool => $hit['complete'])));
     }
 
-    /** @return list<array{route: string, label: string, icon: string, area: string, url: string, topic: string|null}> */
+    /** @return list<array{route: string, label: string, icon: string, area: string, url: string, modal: bool, topic: string|null}> */
     private function pagesWithTopics(): array {
         return $this->pages ??= array_map(
             fn(array $page): array => $page + ['topic' => $this->context->topicForRouteName($page['route'])],

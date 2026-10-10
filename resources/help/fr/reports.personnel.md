@@ -1,13 +1,14 @@
 ---
 title: "Personnel : congés, maladie, qualifications, sécurité"
 topic: reports.personnel
-version: 1
+version: 6
 keywords:
     - absentéisme
     - congés restants
     - rapport des congés
     - jours de maladie
     - maintien du salaire
+    - rechute de maladie
     - certificat médical
     - matrice des qualifications
     - certificats arrivant à échéance
@@ -65,18 +66,22 @@ Colonnes par personne :
   (réel moins cible selon les relevés mensuels du compte de temps de travail).
 - **Solde flexible** : le dernier relevé mensuel jusqu'à la fin de la période.
 
-Tuiles : **Employé**, **Congé (jours ouvrés)** avec les jours en attente,
+Tuiles : **Employés**, **Congé (jours ouvrés)** avec les jours en attente,
 **Maladie**, **Spécial / non payé** et **Variation flexible Σ**. Le graphique
 **Jours d'absence par mois par type** empile congé, maladie, spécial et non
 payé ; selon la longueur de la période, il est établi par jour, par semaine ou
 par trimestre. **Congés restants par collaborateur (top 15)** montre les soldes
 restants les plus élevés.
 
-Les filtres sont réservés aux administrateurs : **Zone** (**Uniquement les
-miens** ou **Toute l’équipe** pour toutes les personnes de l'organisation),
-**Employé**, **Équipe** et **Statut**. Avec **Statut**, seules les demandes
-**En attente** ou **Approuvé** sont comptées. Export : **PDF** avec graphique,
-**CSV** et **Excel**.
+Les filtres **Zone** (**Uniquement les miens** ou **Toute l’équipe** pour
+toutes les personnes de l'organisation), **Employé**, **Équipe** et **Statut**
+sont visibles pour les administrateurs et les personnes disposant du droit
+**Voir toutes les demandes de congés** ; toutes les autres ne voient que leur
+propre ligne. Avec **Statut**, seules les demandes **En attente** ou
+**Approuvé** sont comptées. Export : **PDF** avec graphique, **CSV** et
+**Excel**.
+
+La colonne **Maladie**, sa vignette et sa part dans le graphique n'affichent les valeurs des autres personnes que si vous disposez en plus du droit **Voir les arrêts maladie** ; sinon, elles sont absentes de l'affichage et de l'export.
 
 ## Maladies
 
@@ -97,44 +102,64 @@ Colonnes par personne ayant des arrêts maladie dans la période :
   jours libres restants ou **OK**. Sous le nom, **Chaîne depuis** indique le
   début de la chaîne de maladie en cours.
 
-Calcul du maintien du salaire : dans le réglage standard, le droit est de six
-semaines, soit 42 jours calendaires par chaîne de maladie. Un nouvel arrêt
-prolonge la chaîne existante s'il est lié comme certificat de prolongation ou
-si moins de six mois se sont écoulés depuis la fin de la chaîne ; ce n'est
-qu'après au moins six mois que le droit recommence. Les diagnostics ne sont pas
-comparés. Les jours calendaires du début de la chaîne jusqu'à sa fin – pour
-une maladie en cours jusqu'à aujourd'hui – sont considérés comme consommés.
+Calcul du maintien du salaire :
+
+- Dans le réglage standard, le droit est de six semaines, soit 42 jours
+  calendaires d'incapacité de travail. Seuls les jours de maladie eux-mêmes
+  comptent – pour une maladie en cours jusqu'à aujourd'hui ; les jours
+  travaillés entre deux arrêts maladie ne comptent jamais.
+- Les arrêts maladie qui se chevauchent, se suivent sans interruption ou sont
+  liés comme certificat de prolongation forment un seul cas de maladie. Cela
+  vaut aussi lorsqu'une nouvelle maladie survient pendant une maladie en cours.
+- Une nouvelle maladie qui ne commence qu'après des jours travaillés ouvre un
+  droit complet.
+- Si la caisse d'assurance maladie confirme la même maladie (rechute), l'arrêt
+  antérieur est choisi sur le nouvel arrêt maladie dans le champ **Rechute de
+  la maladie du**. Les cas se partagent alors un seul droit. Pour la même
+  maladie, un nouveau droit naît lorsque la personne, dans le réglage standard,
+  n'a pas été en incapacité de travail pour cette maladie pendant six mois, ou
+  lorsque douze mois se sont écoulés depuis le début de la première incapacité.
+- **Chaîne depuis** indique le début du premier cas qui compte pour le droit en
+  cours.
+
 Les colonnes **Maintien du salaire** et **Statut** montrent la situation du
 jour, indépendamment de la période choisie. Les valeurs servent d'orientation
-et ne constituent pas un contrôle juridique.
+et ne constituent ni un contrôle juridique ni un conseil juridique.
 
-Tuiles : **Employé**, **Jours ouvrés malades** avec les jours calendaires,
+Tuiles : **Employés**, **Jours ouvrés malades** avec les jours calendaires,
 **Cas de maladie** avec les certificats de prolongation, **Avec certificat
 médical** et **Droit épuisé**. Graphiques : **Jours de maladie par mois** avec
 une ligne de médiane (par jour, semaine ou trimestre selon la période) et la
 carte de chaleur **Jours de maladie par collaborateur et par mois**.
 
-Filtres comme dans **Congés et flex** : **Zone**, **Employé** et **Équipe**,
-réservés aux administrateurs. Cette page ne propose pas d'export.
+Filtres comme dans **Congés et flex** : **Zone**, **Employé** et **Équipe** –
+ici pour les administrateurs et les personnes disposant du droit **Voir les
+arrêts maladie** ; toutes les autres ne voient que leur propre ligne. Cette
+page ne propose pas d'export.
 
 ## Qualifications
 
 **Rapports** → **Équipe** → **Qualifications** affiche la **Matrice des
-qualifications** : une ligne par personne ayant au moins une qualification, une
-colonne par qualification du catalogue (abréviation, nom complet au survol).
+qualifications** : une ligne par personne ayant au moins une qualification
+active, une colonne par qualification active du catalogue (abréviation, nom
+complet au survol). Les qualifications inactives n’apparaissent ni dans la
+matrice ni dans les tuiles, les graphiques et l’export.
 
 - Chaque case montre la date d'expiration, ou ✓ si la qualification est valable
   sans date d'expiration.
 - Couleurs : vert **valide**, orange **expire dans 30 jours**, rouge
   **expiré**, gris **aucune attribution**. La légende figure sous la matrice.
-- Tuiles : **Employé**, **Qualifications**, **Attributions**, **Expirent (≤30
+- Tuiles : **Employés**, **Qualifications**, **Attributions**, **Expirent (≤30
   j)** et **Expiré**.
 - Graphiques : **Titulaires par qualification (top 15)** et **Attributions par
   qualification selon le statut** pour les douze qualifications les plus
   fréquentes.
 
 La date de référence est toujours aujourd'hui ; la période de l'en-tête ne
-modifie pas la matrice. Filtres : **Employé** et **Équipe**. Export : **PDF** au
+modifie pas la matrice. Les lignes de toutes les personnes sont visibles pour
+les administrateurs et les personnes disposant du droit **Gérer les
+qualifications** ; toutes les autres ne voient que leur propre ligne. Les filtres
+**Employé** et **Équipe** ne sont disponibles qu'avec ce droit. Export : **PDF** au
 format paysage, **CSV** et **Excel** avec une ligne par personne et, par
 qualification, la date d'expiration ou une mention de validité. Les
 qualifications se gèrent dans le catalogue et sur la fiche de la personne, pas
@@ -193,10 +218,13 @@ compétences, le tableau reste vide.
 
 ## Qui voit quoi
 
-- **Congés et flex**, **Maladies** et **Qualifications** : chaque personne ne
-  voit que ses propres données. La vue sur toutes les personnes de
-  l'organisation est liée au rôle d'administrateur – le droit **Voir les arrêts
-  maladie** seul ne la débloque pas ici.
+- **Congés et flex**, **Maladies** et **Qualifications** : sans droit
+  supplémentaire, chaque personne ne voit que ses propres données. La vue sur
+  toutes les personnes de l'organisation est réservée aux administrateurs et,
+  pour chaque rapport, à qui détient le droit de la liste correspondante :
+  **Voir toutes les demandes de congés** pour **Congés et flex**, **Voir les
+  arrêts maladie** pour **Maladies** et **Gérer les qualifications** pour
+  **Qualifications**.
 - **Sécurité au travail** : entrée de menu et page uniquement avec le droit
   **Voir le registre des événements de sécurité** ou **Modifier / clôturer les
   événements de sécurité** ; les administrateurs les voient toujours. Dans
@@ -205,5 +233,6 @@ compétences, le tableau reste vide.
 - **Problèmes et formation** : uniquement avec le droit **Voir les rapports** ou
   en tant qu'administrateur. Dans l'attribution standard, la Direction, le Chef
   d'équipe et la Gestion du personnel, entre autres, en disposent.
-- Les zones de menu **Équipe** et **Projets et clients** n'existent que si le
-  module complémentaire de rapports d'équipe est souscrit.
+- **Congés et flex**, **Maladies** et **Qualifications** nécessitent le module
+  complémentaire de rapports d'équipe ; **Sécurité au travail** et **Problèmes
+  et formation** sont disponibles sans lui.

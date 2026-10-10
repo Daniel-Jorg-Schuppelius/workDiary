@@ -1,7 +1,7 @@
 ---
 title: "Abrechnung, Spesen, Auszahlungen und Umsatz"
 topic: reports.billing
-version: 1
+version: 3
 keywords:
     - offene Forderungen
     - Fälligkeitsübersicht
@@ -46,7 +46,7 @@ unter **Auswertungen** → **Team**.
   vorn.
 - **PDF** lädt eine Druckfassung, unter **Export** stehen **CSV** und
   **Excel** bereit; welche Formate es gibt, steht beim jeweiligen Bericht.
-  Exporte übernehmen die gesetzten Filter. PDF- und CSV-Exporte werden im
+  Exporte übernehmen die gesetzten Filter. Jeder Export wird im
   Audit-Protokoll vermerkt.
 
 ## Abrechnung
@@ -58,10 +58,13 @@ verweigert.
 
 - Kacheln:
   - **Ausgestellt + Bezahlt (Σ Brutto)**: Bruttosumme der Rechnungen im
-    Status **Gestellt** oder **Bezahlt** mit Rechnungsdatum im Zeitraum (ohne
-    Rechnungsdatum zählt das Anlagedatum).
-  - **Offene Forderungen**: Bruttosumme aller Rechnungen im Status
-    **Gestellt**, unabhängig vom Zeitraum. Die Kachel färbt sich rot, sobald
+    Status **Gestellt**, **Teilweise bezahlt** oder **Bezahlt** mit
+    Rechnungsdatum im Zeitraum (ohne Rechnungsdatum zählt das Anlagedatum).
+  - **Offene Forderungen**: noch offener Betrag aller Rechnungen im Status
+    **Gestellt** oder **Teilweise bezahlt**, unabhängig vom Zeitraum.
+    Eingegangene Zahlungen und offene Sicherheitseinbehalte sind abgezogen;
+    Pro-forma-Rechnungen, Gutschriften und Stornobelege zählen nicht. Die
+    Kachel färbt sich rot, sobald
     eine davon mehr als 30 Tage überfällig ist; der Hinweis nennt ihre Zahl.
   - **Unbillte Zeit**: abrechenbare Zeiteinträge des Zeitraums, die noch
     über keinen Abrechnungsweg verbraucht wurden, mit Zahl der Einträge und
@@ -73,11 +76,12 @@ verweigert.
 - **Rechnungen nach Status**: **Anzahl**, **Netto** und **Brutto** je Status.
 - **Aging – offene Posten**: die offenen Rechnungen nach Tagen über der
   Fälligkeit (ohne Fälligkeit ab Rechnungsdatum) in den Stufen **Aktuell**,
-  1–7, 8–14, 15–30 und mehr als 30 Tage, mit **Offen gesamt**.
+  1–7, 8–14, 15–30 und mehr als 30 Tage, jeweils mit dem offenen Betrag, und
+  **Offen gesamt**.
 - **Top-Kunden (ausgestellt + bezahlt im Zeitraum)**: **Kunde**,
   **Rechnungen** und **Brutto**; stammen Beträge aus dem
   Buchhaltungsprogramm, zeigt eine weitere Spalte **davon
-  Buchhaltungsprogramm**.
+  Buchhaltungsprogramm**. Teilweise bezahlte Rechnungen zählen mit.
 - **Eingangs-E-Rechnungen (im Zeitraum)**: Eingänge je Status mit Anzahl und
   Bruttobetrag sowie die Zahl der an die Buchhaltung übergebenen.
 - **Eingangs-Validierung & Mahnstufen**: **Validierung geprüft**,
@@ -132,7 +136,9 @@ Mitarbeiter auf **Pauschal** oder **Nach Zeitaufwand** steht:
 
 Die Tabelle zeigt **Mitarbeiter**, **Modell**, **Berechnungsbasis** und
 **Betrag** mit Gesamtsumme. Diagramme zeigen die Auszahlungen im Verlauf und
-**Auszahlungen je Externem (Top 15)**. Alle Beträge sind brutto, ohne Steuer
+**Auszahlungen je Externem (Top 15)**. Im Verlauf steht eine Monatspauschale
+einmal je Monat im Abschnitt mit dessen erstem Tag im Zeitraum; die Summe des
+Verlaufs entspricht damit der Tabelle. Alle Beträge sind brutto, ohne Steuer
 und Sozialversicherung. Filter: **Mitarbeiter**. Die Seite bietet keinen
 Export.
 

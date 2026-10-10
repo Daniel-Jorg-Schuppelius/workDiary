@@ -94,16 +94,16 @@ class TrainingReportController extends Controller {
      */
     private function exportCsv(array $report, array $exportFilters, Request $request): Response {
         $rows = [
-            ['gruppe', 'schluessel', 'bezeichnung', 'soll', 'erfuellt', 'faellig', 'ueberfaellig', 'erfuellungsgrad_prozent'],
-            ['gesamt', '-', (string) __('training.report.total'), $report['totals']['assignments'], $report['totals']['fulfilled'], $report['totals']['due'], $report['totals']['overdue'], $report['totals']['rate']],
+            [(string) __('reporting.csv.group'), (string) __('reporting.csv.key'), (string) __('reporting.csv.label'), (string) __('reporting.csv.target'), (string) __('reporting.csv.fulfilled'), (string) __('reporting.csv.due'), (string) __('reporting.csv.overdue'), (string) __('reporting.csv.fulfillment_percent')],
+            [(string) __('reporting.csv.total'), '-', (string) __('training.report.total'), $report['totals']['assignments'], $report['totals']['fulfilled'], $report['totals']['due'], $report['totals']['overdue'], $report['totals']['rate']],
         ];
-        foreach (['team' => $report['byTeam'], 'rolle' => $report['byRole'], 'kurs' => $report['byCourse']] as $label => $groups) {
+        foreach ([(string) __('reporting.csv.team') => $report['byTeam'], (string) __('reporting.csv.role') => $report['byRole'], (string) __('reporting.csv.course') => $report['byCourse']] as $label => $groups) {
             foreach ($groups as $group) {
                 $rows[] = [$label, $group['key'], $group['label'], $group['total'], $group['fulfilled'], $group['due'], $group['overdue'], $group['rate']];
             }
         }
         $rows[] = [''];
-        $rows[] = ['person', 'kurs', 'faellig_am', 'nachgewiesen_am', 'zustand', 'nachweis'];
+        $rows[] = [(string) __('reporting.csv.person'), (string) __('reporting.csv.course'), (string) __('reporting.csv.due_on'), (string) __('reporting.csv.proven_on'), (string) __('reporting.csv.state'), (string) __('reporting.csv.proof')];
         foreach ($report['rows'] as $row) {
             $rows[] = [$row['user'], $row['course'], $row['due_at'], $row['fulfilled_at'], $row['state'], $row['proof']];
         }

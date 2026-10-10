@@ -656,7 +656,7 @@ return [
             'integrity' => 'Integrità',
             'integrity_ok' => 'Checksum corretti',
             'integrity_broken' => 'Checksum violati',
-            'missing' => 'Nessun manifesto ancora — usa «Genera manifesto» o la console: :command',
+            'missing' => 'Nessun manifesto ancora — usare «Genera manifesto» o la console: :command',
             'action_generate' => 'Genera manifesto',
             'action_download' => 'Scarica manifesto',
             'flash_generated' => 'Manifesto di rilascio generato (:signed).',

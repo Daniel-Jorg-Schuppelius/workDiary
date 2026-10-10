@@ -1,7 +1,7 @@
 ---
 title: "Customers & suppliers"
 topic: contacts.manage
-version: 2
+version: 4
 keywords:
     - customer master data
     - supplier master data
@@ -16,6 +16,8 @@ keywords:
     - address book
     - business partner
     - CRM
+    - customer portal
+    - portal access
 audience: []
 modules:
     - module.vertrieb
@@ -59,6 +61,21 @@ to the DATEV handover — work without rework.
 note on the customer or supplier. The notes appear on the detail page and in
 the central notes list; a data protection access report for a supplier lists
 them with count and period.
+
+**Portal accesses:** In the **Portal accesses** section of the customer record
+you invite contacts to the customer portal with **Invite access**; the contact
+sets their own password via the link in the invitation. While the invitation
+is open or has expired, **Re-send invitation** is available. For active
+accesses, **Reset access** resets the access after a confirmation prompt: the
+previous password stops working immediately, all sessions are ended and the
+contact receives a new invitation; two-factor methods that have been set up
+remain in place. If the contact has merely forgotten their password, this is
+not necessary – they reset it themselves on the portal sign-in page via
+**Forgot password?**. **Deactivate** signs the access out immediately and
+blocks sign-in, **Reactivate** lifts this again. Which areas an access can see
+is determined by the customer's portal configuration.
+
+If a contact has lost all two-factor methods and recovery codes, **Reset second factor** removes all methods after a password confirmation and a confirmation prompt and ends all sessions. The contact receives an email about it and then signs in with their password; if your organization requires two-factor authentication, they set it up again at that point. Verify their identity beforehand, for example by calling them back.
 
 ## Practical example
 

@@ -133,9 +133,10 @@ return [
     ],
     'driving' => [
         'button' => 'Prova tempi di guida',
+        'button_pdf' => 'Prova tempi di guida (PDF)',
         'title' => 'Prova dei tempi di guida e di riposo',
         'thresholds_note' => 'Tempi di guida/riposo (reg. (CE) 561/2006 / FPersV): max. 9 h di guida/giorno (10 h due volte a settimana) · 56 h/settimana · 90 h/due settimane · interruzione di 45 min dopo 4,5 h (frazionabile 15 + 30) · riposo 11 h/giorno (max. 3×/settimana 9 h) · 45 h/settimana (24 h con compensazione).',
-        'disclaimer' => 'La base dati sono i viaggi registrati (libro di bordo) con veicoli contrassegnati; i dati del tachigrafo/DTCO non vengono letti. Nessuna consulenza legale.',
+        'disclaimer' => 'La base dati sono i viaggi registrati (registro viaggi) con veicoli contrassegnati; i dati del tachigrafo/DTCO non vengono letti. Nessuna consulenza legale.',
         'csv' => [
             'driver' => 'Conducente',
             'personnel_number' => 'Matricola',

@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Controllers\CustomerPortal\{AssetController, BillingController, DashboardController, DiaryController, DiaryDetailController, DocumentController, InvitationController, InvoiceController, LoginController, OpenIssueController, PhotoConfirmationController, TimeEntryController, TwoFactorChallengeController, TwoFactorController};
+use App\Http\Controllers\CustomerPortal\{AssetController, BillingController, DashboardController, DiaryController, DiaryDetailController, DocumentController, InvitationController, InvoiceController, LoginController, OpenIssueController, PasswordResetController, PhotoConfirmationController, ProtocolPdfController, TimeEntryController, TwoFactorChallengeController, TwoFactorController};
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -27,6 +27,17 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
         ->middleware('throttle:30,1')->name('invitation.show');
     Route::post('/invitation/{token}', [InvitationController::class, 'store'])
         ->middleware('throttle:6,1')->name('invitation.accept');
+
+    // Passwort vergessen (MVP-1096): nur aktive Zugänge, Antwort neutral,
+    // Limiter je Adresse und IP wie intern. Der Link ist signiert, befristet
+    // und an den Passwortstand gebunden — kein gespeicherter Token.
+    Route::get('/passwort-vergessen', [PasswordResetController::class, 'request'])->name('password.request');
+    Route::post('/passwort-vergessen', [PasswordResetController::class, 'email'])
+        ->middleware('throttle:password-forgot')->name('password.email');
+    Route::get('/passwort-zuruecksetzen/{user}', [PasswordResetController::class, 'show'])
+        ->middleware('throttle:30,1')->name('password.reset');
+    Route::post('/passwort-zuruecksetzen/{user}', [PasswordResetController::class, 'update'])
+        ->middleware('throttle:6,1')->name('password.update');
 
     // Zweiter Login-Schritt (Zwei-Faktor): session-basiert, kein auth-Guard.
     Route::get('/two-factor-challenge', [TwoFactorChallengeController::class, 'create'])->name('two-factor.login');
@@ -65,8 +76,11 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
             Route::get('/diary', [DiaryController::class, 'index'])->name('diary.index');
             // Auftragsdetail read-only (Rang 54) + Foto-Bestätigung/-Beanstandung (Rang 55).
             Route::get('/diary/{diary}', [DiaryDetailController::class, 'show'])->name('diary.show');
+            Route::get('/diary/{diary}/photos/{attachment}', [PhotoConfirmationController::class, 'show'])->name('diary.photos.show');
             Route::post('/diary/{diary}/photos/{attachment}/confirm', [PhotoConfirmationController::class, 'confirm'])->name('diary.photos.confirm');
             Route::post('/diary/{diary}/photos/{attachment}/complain', [PhotoConfirmationController::class, 'complain'])->name('diary.photos.complain');
+            // Unterschriebene, kundensichtbare Protokolle als PDF (Phase 137, E17).
+            Route::get('/diary/{diary}/protocols/{protocol}/pdf', [ProtocolPdfController::class, 'diary'])->name('diary.protocols.pdf');
         });
 
         Route::middleware('portal.capability:time_entries')->group(function (): void {
@@ -75,6 +89,8 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
 
         Route::middleware('portal.capability:invoices')->group(function (): void {
             Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
+            // Rechnungsdokument (MVP-1097): dasselbe PDF wie intern, nur Ausgestelltes.
+            Route::get('/invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
             // Abrechnungskonto (Feature 098): Monatsübersicht + Monatsdetail, nur
             // für Kunden mit aktivem Konto-Modus-Abrechnungsprofil (sonst 404).
             Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
@@ -92,12 +108,13 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
 
         Route::middleware('portal.capability:open_issues')->group(function (): void {
             Route::get('/open-issues', [OpenIssueController::class, 'index'])->name('open-issues.index');
-            // Bekannte Fehler (Feature 065, MVP-156): read-only Known Errors
-            // (status=known_error + visibility=customer, org-gescopt).
-            Route::get('/known-errors', [\App\Http\Controllers\CustomerPortal\KnownErrorController::class, 'index'])->name('known-errors.index');
         });
 
         Route::middleware('portal.capability:tickets')->group(function (): void {
+            // Bekannte Fehler (Feature 065, MVP-156): read-only Known Errors
+            // (status=known_error + visibility=customer, org-gescopt); gehören
+            // zum Helpdesk und damit zur Freigabe „Tickets“ (Phase 137, E16).
+            Route::get('/known-errors', [\App\Http\Controllers\CustomerPortal\KnownErrorController::class, 'index'])->name('known-errors.index');
             // Portal-Tickets (Feature 065, MVP-160): nur eigene, nur public.
             Route::get('/tickets', [\App\Http\Controllers\Helpdesk\Portal\TicketController::class, 'index'])->name('tickets.index');
             Route::post('/tickets', [\App\Http\Controllers\Helpdesk\Portal\TicketController::class, 'store'])->name('tickets.store');
@@ -157,6 +174,7 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
             // Objektakte read-only (Rang 50): eigene Objekte des Kunden.
             Route::get('/assets', [AssetController::class, 'index'])->name('assets.index');
             Route::get('/assets/{asset}', [AssetController::class, 'show'])->name('assets.show');
+            Route::get('/assets/{asset}/protocols/{protocol}/pdf', [ProtocolPdfController::class, 'asset'])->name('assets.protocols.pdf');
         });
 
         Route::middleware('portal.capability:queries')->group(function (): void {
@@ -251,14 +269,16 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
     });
 
     // Kundenschulungen (Feature 149, MVP-742): Default-Deny — sichtbar sind
-    // nur freigegebene Kurse mit ausdrücklicher Zielgruppe `customer`.
-    Route::middleware(['auth:customer', 'two-factor.setup:customer'])->group(function (): void {
+    // nur freigegebene Kurse mit ausdrücklicher Zielgruppe `customer`; ohne Lernmodul 404.
+    Route::middleware(['auth:customer', 'two-factor.setup:customer', 'requires-feature:module.lms,hidden'])->group(function (): void {
         Route::get('/schulungen', [\App\Http\Controllers\Learning\Portal\PortalLearningController::class, 'index'])->name('learning.index');
         Route::post('/schulungen/{course}/einschreiben', [\App\Http\Controllers\Learning\Portal\PortalLearningController::class, 'enroll'])->name('learning.enroll');
         Route::post('/schulungen/{course}/buchen', [\App\Http\Controllers\Learning\Portal\PortalLearningController::class, 'requestBooking'])->name('learning.book');
         Route::get('/schulungen/{course}/vorschau', [\App\Http\Controllers\Learning\Portal\PortalLearningController::class, 'preview'])->name('learning.preview');
         Route::get('/schulungen/{enrollment}', [\App\Http\Controllers\Learning\Portal\PortalLearningController::class, 'show'])->name('learning.show');
         Route::post('/schulungen/{enrollment}/einheiten/{unit}/erledigt', [\App\Http\Controllers\Learning\Portal\PortalLearningController::class, 'completeUnit'])->name('learning.units.complete');
+        Route::get('/schulungen/{enrollment}/einheiten/{unit}/medien/fassung/{rendition}', [\App\Http\Controllers\Learning\Portal\PortalLearningController::class, 'renditionMedia'])->name('learning.units.rendition');
+        Route::get('/schulungen/{enrollment}/einheiten/{unit}/medien/{attachment}', [\App\Http\Controllers\Learning\Portal\PortalLearningController::class, 'unitMedia'])->name('learning.units.media');
     });
 
 });

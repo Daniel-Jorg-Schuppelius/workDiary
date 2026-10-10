@@ -90,15 +90,20 @@ class PluginController extends Controller {
         $row = PluginSetting::forOrganization($this->currentOrganization()->id, $plugin);
         $state = PluginState::forContext($plugin, $instance->isPerOrganization() ? $this->currentOrganization()->id : null);
 
+        // Normalisiert (W5b): akzeptiert Array-Literale UND SettingsField-VOs.
+        $schema = array_map(
+            static fn(array|\App\Plugins\Contracts\SettingsField $f): array => \App\Plugins\Contracts\SettingsField::fromArray($f)->toArray(),
+            $instance->settingsSchema(),
+        );
+
         return view('admin.plugins._form_dialog', [
             'plugin' => $instance,
             'setting' => $row,
-            // Normalisiert (W5b): akzeptiert Array-Literale UND SettingsField-VOs.
-            'schema' => array_map(
-                static fn(array|\App\Plugins\Contracts\SettingsField $f): array => \App\Plugins\Contracts\SettingsField::fromArray($f)->toArray(),
-                $instance->settingsSchema(),
-            ),
+            'schema' => $schema,
             'state' => $state,
+            'userOptions' => in_array(\App\Plugins\Contracts\FieldType::User->value, array_column($schema, 'type'), true)
+                ? $this->settingUsers()->get(['id', 'name'])->map(static fn (User $u): array => ['sqid' => $u->sqid, 'name' => $u->name])->all()
+                : [],
         ]);
     }
 
@@ -123,6 +128,7 @@ class PluginController extends Controller {
             $rules[$key] = match (true) {
                 $field->type === \App\Plugins\Contracts\FieldType::Boolean => ['sometimes', 'boolean'],
                 $field->type === \App\Plugins\Contracts\FieldType::Select => [$field->required ? 'required' : 'nullable', 'string', 'in:' . implode(',', array_keys($field->options))],
+                $field->type === \App\Plugins\Contracts\FieldType::User => [$field->required ? 'required' : 'nullable', 'string', 'max:64'],
                 $field->isSecret() => ['nullable', ...$field->type->rules()],
                 default => [$field->required ? 'required' : 'nullable', ...$field->type->rules()],
             };
@@ -199,6 +205,11 @@ class PluginController extends Controller {
 
                 continue;
             }
+            if ($field->type === \App\Plugins\Contracts\FieldType::User) {
+                $settings[$key] = (string) $this->settingUserId($field, (string) $input);
+
+                continue;
+            }
             $settings[$key] = (string) $input;
         }
 
@@ -266,6 +277,26 @@ class PluginController extends Controller {
         }
 
         return redirect()->toList('admin.plugins.index');
+    }
+
+    /** @return \Illuminate\Database\Eloquent\Builder<User> interne, aktive Benutzer der aktuellen Organisation */
+    private function settingUsers(): \Illuminate\Database\Eloquent\Builder {
+        return User::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $this->currentOrganization()->id)
+            ->whereNull('customer_id')
+            ->whereNull('deactivated_at')
+            ->orderBy('name');
+    }
+
+    /** Sqid (oder ID) eines Benutzerfelds → ID eines Benutzers dieser Organisation. */
+    private function settingUserId(\App\Plugins\Contracts\SettingsField $field, string $input): int {
+        $id = \App\Support\Sqid::decode(User::class, $input) ?? (ctype_digit($input) ? (int) $input : null);
+        if ($id === null || ! $this->settingUsers()->whereKey($id)->exists()) {
+            throw ValidationException::withMessages(['settings.' . $field->key => __('validation.exists', ['attribute' => $field->label])]);
+        }
+
+        return $id;
     }
 
     /**

@@ -172,4 +172,28 @@ class TranslationParityTest extends TestCase {
 
         $this->assertSame([], $offenders, 'Permissions ohne Label: ' . implode(', ', array_slice($offenders, 0, 15)));
     }
+
+    public function test_every_privacy_catalog_entry_has_a_label_in_every_locale(): void {
+        // Löschbereiche und Standardanforderungen stehen in config; ohne Eintrag
+        // in privacy.php zeigt die Aufbewahrungsseite den rohen Bereichsschlüssel
+        // bzw. legt der Anforderungskatalog den Schlüssel als Namen an.
+        $keys = [];
+        foreach (array_keys((array) config('retention.areas', [])) as $area) {
+            $keys[] = 'privacy.retention_area.' . $area;
+        }
+        foreach (array_keys((array) config('dataprotection.compliance.requirements', [])) as $requirement) {
+            $keys[] = 'privacy.requirement.' . $requirement;
+        }
+
+        $offenders = [];
+        foreach ($keys as $key) {
+            foreach (Locales::enabledCodes() as $code) {
+                if (! app('translator')->has($key, $code, false)) {
+                    $offenders[] = "$code: $key";
+                }
+            }
+        }
+
+        $this->assertSame([], $offenders, 'Datenschutz-Labels fehlen: ' . implode(', ', $offenders));
+    }
 }

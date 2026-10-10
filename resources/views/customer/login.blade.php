@@ -35,5 +35,8 @@
             </label>
             <x-button type="submit" tone="primary" class="w-full">{{ __('Anmelden') }}</x-button>
         </form>
+        <p class="mt-4 text-center text-sm">
+            <a href="{{ route('customer.password.request') }}" class="link link-hover">{{ __('Passwort vergessen?') }}</a>
+        </p>
     </div>
 @endsection

@@ -27,11 +27,11 @@ enum ClaimRmaDisposition: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Restock => (string) __('Wiedereinlagerung'),
-            self::Repair => (string) __('Reparatur'),
-            self::ReturnToSupplier => (string) __('Rücksendung an Lieferant'),
-            self::Scrap => (string) __('Verschrottung'),
-            self::Dispose => (string) __('Entsorgung'),
+            self::Restock => (string) __('enums.claims.claim_rma_disposition.restock'),
+            self::Repair => (string) __('enums.claims.claim_rma_disposition.repair'),
+            self::ReturnToSupplier => (string) __('enums.claims.claim_rma_disposition.return_to_supplier'),
+            self::Scrap => (string) __('enums.claims.claim_rma_disposition.scrap'),
+            self::Dispose => (string) __('enums.claims.claim_rma_disposition.dispose'),
         };
     }
 }

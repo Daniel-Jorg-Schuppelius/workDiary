@@ -130,6 +130,36 @@ class CoverageRequirementTest extends TestCase {
         $this->assertDatabaseMissing('coverage_requirements', ['id' => $req->id]);
     }
 
+    /** MVP-1099: planübergreifende Vorgabe anlegen; fremde Planvorgaben bleiben außer Reichweite. */
+    public function test_requirement_for_all_plans_and_foreign_plan_guard(): void {
+        $ctx = $this->planWithTypes();
+        $other = DutyPlan::factory()->draft()->weekly()->create(['organization_id' => $this->organization->id, 'from_date' => '2026-06-01', 'to_date' => '2026-06-07']);
+        $admin = $this->orgAdmin();
+
+        $this->actingAs($admin)->post(route('duty-plans.coverage.store', $ctx['plan']), [
+            'shift_type_id' => $ctx['fruh']->id,
+            'min_staff' => 2,
+            'all_plans' => '1',
+        ])->assertRedirect();
+        $global = CoverageRequirement::query()->sole();
+        $this->assertNull($global->duty_plan_id);
+        $this->actingAs($admin)->get(route('duty-plans.coverage.index', $other))->assertOk()->assertSee(__('Alle Dienstpläne'));
+
+        $own = CoverageRequirement::factory()->forWeekday(2)->create([
+            'organization_id' => $this->organization->id,
+            'duty_plan_id' => $ctx['plan']->id,
+            'shift_type_id' => $ctx['spaet']->id,
+        ]);
+        $this->actingAs($admin)->put(route('duty-plans.coverage.update', [$other, $own]), [
+            'shift_type_id' => $ctx['spaet']->id,
+            'weekday' => 2,
+            'min_staff' => 5,
+        ])->assertNotFound();
+
+        $staffing = app(CoverageService::class)->staffingBetween(\Carbon\CarbonImmutable::parse('2026-07-06'), \Carbon\CarbonImmutable::parse('2026-07-06'));
+        $this->assertSame(2, $staffing['2026-07-06'][$ctx['fruh']->id]['min'], 'Tag ohne Dienstplan nutzt die planübergreifende Vorgabe.');
+    }
+
     // ── Cross-org isolation ──────────────────────────────────────────────────
 
     public function test_requirements_from_other_org_are_not_returned_by_service(): void {

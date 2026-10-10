@@ -1,7 +1,7 @@
 ---
 title: "Customer Portal – Complaints and returns"
 topic: customer-portal.claims
-version: 2
+version: 3
 keywords:
     - report a defect
     - file a complaint
@@ -63,10 +63,11 @@ visible in the portal.
 
 In the **Subsequent submission** section you add information to your
 complaint: write in the **Your message …** field (3 to 2000 characters) and
-click **Submit**. The message is stored as evidence on the complaint, and
-the portal confirms **Subsequent submission transmitted.** The portal view
-does not show the submission itself afterwards. Files or photos cannot be
-attached here.
+click **Submit**. The message is stored as evidence on the complaint, and the
+portal confirms **Subsequent submission transmitted.** Below it, your previous
+submissions are listed under **Your subsequent submissions** with their time,
+the newest at the top. The responsible person at your contractor is notified
+of every submission. Files or photos cannot be attached here.
 
 ## Register a return
 
@@ -87,9 +88,12 @@ company's delivered shipments and objects. If there are none, the page shows
 6. Click **Register return**.
 
 The portal then shows the new complaint number and the return number. If
-**Complaints** is released, the new complaint opens directly; that is also
-where you later find the return label once your contractor provides one. Do
-not send goods back until the return is registered.
+**Complaints** is released, the new complaint opens directly; otherwise you
+stay on the **Register a return** page. There, **My returns** lists all
+returns of your company with **Return number**, **Complaint** and **Status**. As
+soon as your contractor provides a return label, **Download return label**
+appears next to it – even without the **Complaints** release. Do not send
+goods back until the return is registered.
 
 ## Limits
 

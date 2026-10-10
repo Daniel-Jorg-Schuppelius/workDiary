@@ -1,7 +1,7 @@
 ---
 title: "Import CSV"
 topic: admin.import
-version: 3
+version: 4
 keywords:
     - import de données
     - importer des données de base

@@ -24,8 +24,8 @@ use Tests\TestCase;
 /**
  * Feature 065, P8 (MVP-158): Zielmodus je Queue (task-Bestand vs.
  * ServiceTicket nativ), Moduswechsel nur über Preflight-Admin-Aktion mit
- * Migrationsprotokoll, Kommentar-Rückmeldung über die Outbox, keine
- * Löschweitergabe.
+ * Migrationsprotokoll, keine Kommentar-Rückmeldung (Phase 137, E20: ohne
+ * Erzeuger entfernt) und keine Löschweitergabe.
  */
 final class HelpdeskZammadOwnershipTest extends TestCase {
     use RefreshDatabase;
@@ -53,10 +53,10 @@ final class HelpdeskZammadOwnershipTest extends TestCase {
     }
 
     /** @param array<int, array<string, mixed>> $tickets */
-    private function gateway(array $tickets, array &$articles = []): ZammadGateway {
-        return new class($tickets, $articles) implements ZammadGateway {
+    private function gateway(array $tickets): ZammadGateway {
+        return new class($tickets) implements ZammadGateway {
             /** @param array<int, array<string, mixed>> $tickets */
-            public function __construct(private array $tickets, public array &$articles) {}
+            public function __construct(private array $tickets) {}
 
             public function listTickets(?int $groupId = null, int $page = 1, int $perPage = 100): array {
                 return $this->tickets;
@@ -71,12 +71,6 @@ final class HelpdeskZammadOwnershipTest extends TestCase {
             }
 
             public function accountTime(int $ticketId, float $timeUnit): bool {
-                return true;
-            }
-
-            public function addArticle(int $ticketId, string $body, bool $internal = true): bool {
-                $this->articles[] = ['ticket' => $ticketId, 'body' => $body, 'internal' => $internal];
-
                 return true;
             }
         };
@@ -134,30 +128,20 @@ final class HelpdeskZammadOwnershipTest extends TestCase {
         $importer->switchTicketTarget($connection, 'service_ticket', $foreignQueue, $this->actor);
     }
 
-    public function test_comment_outbox_operation_adds_article(): void {
+    /** Die Kommentar-Operation hatte keinen Erzeuger und ist entfernt (Phase 137, E20). */
+    public function test_comment_operation_no_longer_exists(): void {
         \Illuminate\Support\Facades\Queue::fake();
         $this->connection();
-        $articles = [];
-        $gateway = $this->gateway([], $articles);
-        app()->instance(\App\Plugins\Zammad\Contracts\ZammadGatewayFactory::class, new class($gateway) implements \App\Plugins\Zammad\Contracts\ZammadGatewayFactory {
-            public function __construct(private readonly ZammadGateway $gateway) {}
-
-            public function for(ZammadConnection $connection): ZammadGateway {
-                return $this->gateway;
-            }
-        });
-
         $entry = app(IntegrationOutboxService::class)->enqueue(
             $this->org->id,
             ZammadPlugin::ID,
-            ZammadOutboxDispatcher::OP_TICKET_COMMENT,
+            'ticket.comment',
             ['ticket_id' => 71, 'body' => 'Interne Rückmeldung', 'internal' => true],
             'test-comment-71',
         );
 
-        $this->assertTrue(app(ZammadOutboxDispatcher::class)->dispatch($entry->refresh()));
-        $this->assertCount(1, $gateway->articles);
-        $this->assertTrue($gateway->articles[0]['internal']);
+        $this->expectException(\RuntimeException::class);
+        app(ZammadOutboxDispatcher::class)->dispatch($entry->refresh());
     }
 
     public function test_no_delete_propagation_operation_exists(): void {

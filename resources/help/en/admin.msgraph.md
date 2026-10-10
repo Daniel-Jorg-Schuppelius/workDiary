@@ -1,7 +1,7 @@
 ---
 title: "Connecting Microsoft 365"
 topic: admin.msgraph
-version: 1
+version: 2
 keywords:
     - Microsoft 365
     - Office 365
@@ -64,7 +64,7 @@ to the title a badge shows **Connected**, **Unreachable** or **Inactive**.
 - **Direction:** events from WorkDiary are transferred to the calendar of the
   connected account – from 30 days back to 180 days ahead, with title,
   description, time and location (booked rooms). Changes are carried over,
-  cancelled events are removed there, and repeated runs do not create
+  cancelled and deleted events are removed there, and repeated runs do not create
   duplicates. WorkDiary stays in charge.
 - **Timing:** a sync runs daily, by default at 4:45 a.m.; you change the
   interval under **Scheduled tasks**. **Publish now** starts it immediately in
@@ -170,11 +170,9 @@ without being asked for consent themselves.
 
 **Redirect URIs for a custom app registration** lists the addresses that an
 own app must register as redirect URIs of type “Web”: for calendar, email
-sending, contacts, tasks, document intake, admin consent and – only for the
-installation app – the backup target. The address for OneNote is missing from
-this list: with an own app, also enter your WorkDiary address with the path
-/admin/msgraph/onenote/oauth/callback. If **SharePoint storage** uses the same
-app, the path /admin/sharepoint/oauth/callback belongs there as well.
+sending, contacts, tasks, OneNote, document intake, admin consent, – only for
+the installation app – the backup target, and **SharePoint storage**, which
+uses the same app unless the operator assigns it its own.
 
 ## Further plugin features
 
@@ -192,7 +190,8 @@ Each card has its own disconnect action. It removes the access keys of that
 connection; transferred events and Outlook contacts remain at Microsoft. You
 can reconnect at any time; WorkDiary also resets the error count when you do.
 If a connection was shut down after repeated consecutive errors, the connect
-button appears again.
+button appears again. As long as a calendar connection is failing, an
+operations task is listed for it.
 
 ## Typical problems
 

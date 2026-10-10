@@ -28,9 +28,9 @@ enum AgileColumnCategory: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Open => (string) __('Offen'),
-            self::InProgress => (string) __('In Arbeit'),
-            self::Done => (string) __('Erledigt'),
+            self::Open => (string) __('enums.agile.agile_column_category.open'),
+            self::InProgress => (string) __('enums.agile.agile_column_category.in_progress'),
+            self::Done => (string) __('enums.agile.agile_column_category.done'),
         };
     }
 }

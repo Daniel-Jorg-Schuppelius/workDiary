@@ -1,7 +1,7 @@
 ---
 title: "Conectar Google Calendar"
 topic: admin.google-calendar
-version: 1
+version: 2
 keywords:
     - Google Calendar
     - calendario de Google
@@ -28,7 +28,7 @@ related:
 
 La página **Google Calendar** transfiere los eventos de WorkDiary a un
 calendario de una cuenta de Google. WorkDiary sigue siendo el sistema de
-referencia: los cambios se trasladan, los eventos cancelados desaparecen del
+referencia: los cambios se trasladan, los eventos cancelados y eliminados desaparecen del
 calendario de Google y las ejecuciones repetidas no crean duplicados. Si lo
 desea, WorkDiary vuelve a leer además el calendario y le presenta los cambios
 externos como propuestas para revisar.
@@ -111,7 +111,8 @@ como fuente.
 **Desconectar** retira el acceso. Las citas ya transferidas permanecen en el
 calendario de Google. Con **Conectar con Google** restablece la conexión en
 cualquier momento; el calendario elegido sigue guardado y el contador de
-errores vuelve a empezar.
+errores vuelve a empezar. Mientras la conexión falle, una tarea operativa lo
+indica.
 
 ## Problemas habituales
 

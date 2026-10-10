@@ -459,4 +459,9 @@ class SustainabilityController extends Controller {
 
         return $user;
     }
+
+    /** Fachbericht außerhalb der Auswertungen: Den Export deckt das Fachrecht der Seite (E28). */
+    protected function exportNeedsReportPermission(): bool {
+        return false;
+    }
 }

@@ -92,7 +92,7 @@ class ClockifyPlugin extends AbstractPlugin implements TimeImporter {
     public function settingsSchema(): array {
         return [
             ['key' => 'default_billable', 'label' => __('Abrechenbar übernehmen'), 'type' => 'boolean', 'default' => true, 'help' => __('Wenn aus, werden importierte Zeiten nie als abrechenbar markiert.')],
-            ['key' => 'default_user_id', 'label' => __('Zeiten buchen für Benutzer-ID'), 'type' => 'text', 'help' => __('Optional. Leer = Organisations-Owner bzw. erster Benutzer. Greift nur im Einbenutzer-Modus oder bei ausdrücklicher Auswahl beim Buchen.')],
+            ['key' => 'default_user_id', 'label' => __('Zeiten buchen für Benutzer'), 'type' => 'user', 'help' => __('Optional. Leer = Organisations-Owner bzw. erster Benutzer. Greift nur im Einbenutzer-Modus oder bei ausdrücklicher Auswahl beim Buchen.')],
             ['key' => 'single_user_mode', 'label' => __('Einbenutzer-Modus'), 'type' => 'boolean', 'default' => false, 'help' => __('Nur für Einzelarbeitsplätze: Einträge ohne zuordenbaren Quell-Benutzer werden auf den Standard-Benutzer gebucht. Wenn aus (empfohlen), landen nicht zuordenbare Benutzer sichtbar in der Integrations-Inbox statt still beim Hauptbenutzer.')],
             ['key' => 'api_key', 'label' => __('Clockify API-Key'), 'type' => 'password', 'help' => __('Clockify → Profil → Advanced → API. Free-Plan erlaubt nur 30 Requests/h — für Free-Konten den CSV-Weg nutzen.')],
             ['key' => 'workspace_id', 'label' => __('Workspace-ID'), 'type' => 'text', 'help' => __('Optional. Leer = Standard-Workspace des API-Keys.')],
@@ -101,6 +101,7 @@ class ClockifyPlugin extends AbstractPlugin implements TimeImporter {
             ['key' => 'sync_window_days', 'label' => __('Sync-Zeitfenster (Tage)'), 'type' => 'text', 'default' => '30', 'help' => __('Wie viele Tage rückwirkend pro API-Lauf abgefragt werden.')],
             ['key' => 'writeback', 'label' => __('Korrekturen zurückschreiben'), 'type' => 'boolean', 'default' => false, 'help' => __('Schreibt Korrekturen an bereits importierten Zeiten zurück nach Clockify (Änderung und Löschung). Wurde der Eintrag dort zwischenzeitlich geändert, wird nichts überschrieben — der Fall landet in der Integrations-Inbox. Abgerechnete Zeiten werden nie zurückgeschrieben.')],
             ['key' => 'export_enabled', 'label' => __('Zeit-Übertragung aktivieren'), 'type' => 'boolean', 'default' => false, 'help' => __('Überträgt in workDiary erfasste Zeiten gemappter Projekte nach Clockify (z. B. Fernwartungssitzungen). Angelegt wird immer für den Inhaber des API-Keys; übertragene Einträge verhalten sich danach wie importierte — inklusive Abgleich in beide Richtungen und Löschungserkennung.')],
+            ['key' => 'webhook_secret', 'label' => __('Webhook-Secret'), 'type' => 'password', 'help' => __('Optional: Signatur-Token des Clockify-Webhooks (Webhooks setzen bei Clockify einen kostenpflichtigen Tarif voraus). Der Webhook braucht außerdem die Workspace-ID; ohne Secret bleibt er aus.')],
         ];
     }
 

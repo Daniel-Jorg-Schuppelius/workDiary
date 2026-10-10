@@ -1,7 +1,7 @@
 ---
 title: "Calendario CalDAV"
 topic: admin.caldav
-version: 1
+version: 3
 keywords:
     - CalDAV
     - calendario de Nextcloud
@@ -13,6 +13,7 @@ keywords:
     - sincronización bidireccional
     - contraseña de aplicación
     - ruta del calendario
+    - direcciones privadas
 audience:
     - admin
 related:
@@ -30,7 +31,7 @@ La página **CalDAV** publica las citas de WorkDiary en un calendario CalDAV
 externo, por ejemplo en Nextcloud u ownCloud, sin cuenta de Microsoft ni de
 Google. Si lo desea, se añaden turnos y vacaciones, y los cambios hechos en el
 calendario pueden volver como propuestas. WorkDiary sigue siendo el sistema
-de referencia: las citas canceladas desaparecen allí y las ejecuciones
+de referencia: las citas canceladas y eliminadas desaparecen allí y las ejecuciones
 repetidas nunca crean duplicados. Encontrará la página en el menú del sistema
 (el engranaje **Sistema** en la cabecera) en **Plugins** → **CalDAV**, en
 cuanto el plugin esté activo.
@@ -44,8 +45,8 @@ cuanto el plugin esté activo.
 - Necesita un calendario en el servidor CalDAV, una cuenta con permiso de
   escritura en él y una contraseña de aplicación (Nextcloud: Ajustes →
   Seguridad → Contraseña de aplicación).
-- El servidor debe ser accesible públicamente. WorkDiary rechaza las
-  direcciones de una red interna.
+- El servidor debe ser accesible públicamente. Si está en su propia red,
+  active **Permitir direcciones privadas/internas** (véase más abajo).
 - Por organización existe exactamente una conexión CalDAV.
 
 ## Configurar la conexión
@@ -63,6 +64,11 @@ En la sección **Conexión** rellena:
   URL base, por ejemplo calendars/team/turnos. Si pega una dirección completa
   copiada desde Nextcloud, WorkDiary la acorta por sí mismo, siempre que
   empiece por la URL base.
+- **Permitir direcciones privadas/internas**: actívelo solo si el servidor
+  CalDAV está en su propia red (por ejemplo 192.168.x.x). Sin este
+  interruptor, WorkDiary rechaza las direcciones internas ya al guardar. La
+  activación queda registrada. Si el operador de su instalación ha bloqueado
+  esta autorización, el interruptor no tiene efecto.
 - **Activo**: activa o desactiva la conexión.
 - **Bidireccional: importar los cambios externos como propuestas**: véase
   más abajo.
@@ -76,7 +82,7 @@ muestra su estado (por ejemplo **Estado correcto**) y **Probar conexión**.
 
 - **Eventos:** los eventos de su organización que empiezan entre 30 días en el
   pasado y 180 días en el futuro. WorkDiary retira del calendario los eventos
-  cancelados.
+  cancelados y eliminados.
 - **Turnos y vacaciones:** los turnos publicados o confirmados con horario a
   partir de dos meses en el pasado, y las vacaciones aprobadas que terminaron
   hace como máximo un año. Los turnos en borrador, sin horario o cancelados y
@@ -127,9 +133,9 @@ WorkDiary lee entonces las entradas del período elegido.
 **Desconectar** desactiva la conexión. Las entradas ya publicadas se quedan
 en el calendario. Para volver a activarla, marque **Activo** y guarde.
 
-WorkDiary tampoco retira del calendario los eventos eliminados ni las
-entradas que salen de la ventana de tiempo. Si una cita debe desaparecer de
-allí, cancélela en lugar de eliminarla.
+La siguiente sincronización retira del calendario los eventos, turnos y
+vacaciones eliminados, igual que los cancelados. Las entradas que solo salen
+de la ventana de tiempo permanecen allí.
 
 ## Errores frecuentes
 
@@ -142,7 +148,12 @@ allí, cancélela en lugar de eliminarla.
 - **Estado defectuoso** con «Servidor CalDAV no accesible o credenciales no
   válidas.»: compruebe la dirección, la ruta del calendario, el nombre de
   usuario y la contraseña de aplicación. Un error de CalDAV con
-  RuntimeException suele indicar una dirección de una red interna.
+  RuntimeException suele indicar una dirección de una red interna sin
+  autorización.
+- «La URL base apunta a una dirección privada/interna.»: si el servidor está
+  en su propia red, active **Permitir direcciones privadas/internas**. Si el
+  operador ha bloqueado esta autorización, el servidor necesita una dirección
+  accesible públicamente.
 - «No hay ninguna conexión CalDAV activa.» con **Publicar ahora**: la conexión
   está desactivada o incompleta.
 - Faltan turnos en el calendario: en **Contenido publicado** no está marcado

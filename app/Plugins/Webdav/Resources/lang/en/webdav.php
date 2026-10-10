@@ -59,6 +59,8 @@ return [
         'password_help' => 'Nextcloud: Settings → Security → App password. Stored encrypted.',
         'default_folder' => 'Default folder',
         'active' => 'Active',
+        'allow_private_network' => 'Allow private/internal addresses',
+        'allow_private_network_help' => 'Enable only if the WebDAV server lives on your own network (e.g. 192.168.x.x). This is audited and only takes effect if the operator permits it.',
         'sources' => 'Mirrored content',
         'source_document' => 'Documents (DMS)',
         'source_invoice_pdf' => 'Invoices (PDF)',
@@ -80,5 +82,7 @@ return [
         'no_connection' => 'No active WebDAV storage.',
         'invalid_url' => 'The collection URL must start with http:// or https://.',
         'password_required' => 'A new storage requires an app password.',
+        'private_url_blocked' => 'The collection URL points to a private/internal address. For a server on your own network, enable the approval of private addresses.',
+        'private_hint' => 'For a server on your own network, the approval of private addresses must be enabled on the storage.',
     ],
 ];

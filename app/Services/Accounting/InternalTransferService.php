@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Accounting;
 
+use App\Enums\Finance\DirectBookingKind;
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingTransfer};
 use App\Models\Platform\{Organization, User};
 use Carbon\CarbonImmutable;
@@ -35,7 +36,7 @@ class InternalTransferService {
     ) {}
 
     /**
-     * Umbuchung anlegen und sofort festschreiben.
+     * Umbuchung anlegen und festschreiben — bei Vier-Augen als Entwurf zur Freigabe.
      *
      * @param  array{booked_on: CarbonImmutable, amount: string, from_account: AccountingAccount, to_account: AccountingAccount, note: string, from_source?: ?Model, to_source?: ?Model}  $data
      */
@@ -88,7 +89,9 @@ class InternalTransferService {
                 'created_by' => $actor->id,
             ]);
 
-            $entry = $this->journal->postDirect($organization, [
+            // Bei Vier-Augen ein Entwurf: die gekoppelten Belege lesen ihren
+            // Stand aus dieser Buchung und gelten bis zur Freigabe als bereit.
+            $entry = $this->journal->postDirectOrSubmit($organization, [
                 'booked_on' => $data['booked_on'],
                 'memo' => $data['note'],
                 'source_key' => $transfer->sourceKey(),
@@ -96,7 +99,7 @@ class InternalTransferService {
                     ['accounting_account_id' => $to->id, 'debit' => $data['amount'], 'credit' => '0.00'],
                     ['accounting_account_id' => $from->id, 'debit' => '0.00', 'credit' => $data['amount']],
                 ],
-            ], $actor);
+            ], $actor, DirectBookingKind::InternalTransfer);
 
             $transfer->update(['accounting_entry_id' => $entry->id]);
 

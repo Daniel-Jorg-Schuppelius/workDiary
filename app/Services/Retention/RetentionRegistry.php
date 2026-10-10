@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Retention;
 
 use App\Models\Platform\Organization;
+use App\Support\Trans;
 use Carbon\CarbonImmutable;
 
 /**
@@ -38,6 +39,11 @@ class RetentionRegistry {
 
     public function policy(string $area): ?RetentionPolicy {
         return $this->policies[$area] ?? null;
+    }
+
+    /** Anzeigename des Bereichs in der aktiven Sprache; unbekannte Bereiche roh. */
+    public function labelFor(string $area): string {
+        return Trans::or("privacy.retention_area.{$area}", $area);
     }
 
     /** Rechtsraum der Org (Fallback: config default_region → DE). */

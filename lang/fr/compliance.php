@@ -133,6 +133,7 @@ return [
     ],
     'driving' => [
         'button' => 'Justificatif temps de conduite',
+        'button_pdf' => 'Justificatif temps de conduite (PDF)',
         'title' => 'Justificatif des temps de conduite et de repos',
         'thresholds_note' => 'Temps de conduite/repos (règl. (CE) 561/2006 / FPersV) : max. 9 h de conduite/jour (10 h deux fois par semaine) · 56 h/semaine · 90 h/deux semaines · pause de 45 min après 4,5 h (fractionnable 15 + 30) · repos 11 h/jour (max. 3×/semaine 9 h) · 45 h/semaine (24 h avec compensation).',
         'disclaimer' => 'Les données proviennent des trajets saisis (carnet de bord) avec des véhicules marqués ; les données du tachygraphe/DTCO ne sont pas lues. Pas de conseil juridique.',

@@ -17,4 +17,17 @@ return [
         'canceled' => 'storniert',
         'superseded' => 'ersetzt',
     ],
+    // Kundenportal (Feature 087).
+    'portal' => [
+        'cancel_expired' => 'Stornofrist abgelaufen',
+        'cancel_policy' => 'Stornieren ist bis :hours Stunden vor Terminbeginn möglich.',
+        'cancel_until' => 'Stornierbar bis :date',
+        'order_cancel_reason' => 'Termin vom Kunden im Kundenportal storniert.',
+        'order_in_progress' => 'Dieser Termin wird bereits bearbeitet — bitte rufen Sie uns an.',
+    ],
+    'notification' => [
+        'canceled_title' => 'Termin von :customer storniert',
+        'message' => ':service am :date',
+        'requested_title' => 'Terminanfrage von :customer',
+    ],
 ];

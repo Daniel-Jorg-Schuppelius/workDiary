@@ -10,13 +10,14 @@
 
 namespace App\Http\Controllers\Reporting\Concerns;
 
+use App\Enums\User\Permission;
 use App\Models\Platform\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * Mine/Team-Sichtweite der Report-Controller: `team` nur für Nutzer mit
- * Org-weiter Zeit-Sicht (Admin oder Permission timeEntry.viewAny, MVP-460),
+ * Mine/Team-Sichtweite der Report-Controller: `team` nur für Admins oder
+ * Inhaber des Fachrechts, das auch die Fachliste öffnet (MVP-460, MVP-1091),
  * alles andere fällt auf `mine` zurück.
  */
 trait ResolvesReportScope {
@@ -47,9 +48,18 @@ trait ResolvesReportScope {
      * @return array{string, bool} [$scope, $seesAllTimes]
      */
     protected function resolveScopeWithVisibility(Request $request): array {
-        $seesAll = $this->viewerSeesAllTimes();
+        return $this->resolveScopeWithPermission($request, Permission::TimeEntryViewAny);
+    }
 
-        return [$this->resolveScope($request, $seesAll), $seesAll];
+    /**
+     * Scope + Team-Sicht über ein Fachrecht in einem Schritt.
+     *
+     * @return array{string, bool} [$scope, $seesTeam]
+     */
+    protected function resolveScopeWithPermission(Request $request, Permission $permission): array {
+        $seesTeam = $this->viewerHolds($permission);
+
+        return [$this->resolveScope($request, $seesTeam), $seesTeam];
     }
 
     /** Admin-Status des angemeldeten Nutzers. */
@@ -61,9 +71,13 @@ trait ResolvesReportScope {
 
     /** Org-weite Zeit-Sicht: Admin oder Permission timeEntry.viewAny (E1, MVP-460). */
     protected function viewerSeesAllTimes(): bool {
+        return $this->viewerHolds(Permission::TimeEntryViewAny);
+    }
+
+    protected function viewerHolds(Permission $permission): bool {
         $user = Auth::user();
 
         return $user instanceof User
-            && ($user->isAdmin() || $user->hasEffectivePermission('timeEntry.viewAny'));
+            && ($user->isAdmin() || $user->hasEffectivePermission($permission->value));
     }
 }

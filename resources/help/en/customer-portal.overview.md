@@ -1,7 +1,7 @@
 ---
 title: "Customer Portal – Overview"
 topic: customer-portal.overview
-version: 2
+version: 4
 keywords:
     - portal home
     - customer area
@@ -15,6 +15,8 @@ keywords:
     - portal areas
     - portal help
     - announcements
+    - request an appointment
+    - training
 audience: []
 related:
     - customer-portal.diary
@@ -40,7 +42,7 @@ For each released area the start page shows a tile with a number. Clicking the t
 
 - **Diary entries** – the number of your orders.
 - **Time entries** – the number of time entries you can view. The tile only appears if individual time entries are shown to you.
-- **Invoices** – the number of your invoices.
+- **Invoices** – the number of your issued invoices.
 - **Open Issues** – the number of open issues released to you that are not yet closed. You can reach the **Open Issues** page only through this tile.
 - **Open requests** – your ongoing requests and orders. If items are waiting for a reaction from you, the tile has a coloured border and states their number (“Of which … await you”).
 - **Subscriptions & licences** – the number of subscriptions and licences in your list.
@@ -56,14 +58,17 @@ The header always shows **Overview**, **Search**, **Help**, **Profile**, **Secur
 - **Documents** – documents released to you,
 - **Times** – recorded times for your projects,
 - **Invoices** and, if your contractor bills you through a billing account, **Billing**,
-- **Tickets** and **Service catalog**,
-- **Known errors**,
+- **Tickets**, **Service catalog** and **Known errors**,
 - **Complaints** and **Register a return**,
 - **Rental** and **Rental request**,
 - **Subscriptions**,
 - **Agreements**,
 - **Requests & orders**,
+- **Request an appointment**,
+- **Training**,
 - **Questions**.
+
+**Training** appears if your contractor offers training in the portal; there you only see courses that your contractor has released for customers.
 
 **Help** opens the help topic for the page you are currently on; if there is none, the list of the portal's help topics. There, too, you only see topics for areas that have been released to you. **Profile** and **Security** are described in the topic “Access & Security”. **Sign out** ends your session.
 

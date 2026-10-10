@@ -1,7 +1,7 @@
 ---
 title: "Connecter Google Agenda"
 topic: admin.google-calendar
-version: 1
+version: 2
 keywords:
     - Google Agenda
     - Google Calendar
@@ -28,20 +28,20 @@ related:
 
 La page **Google Agenda** transfère les événements de WorkDiary dans un agenda
 d'un compte Google. WorkDiary reste maître des données : les modifications sont
-reportées, les événements annulés disparaissent de l'agenda Google, et les
+reportées, les événements annulés et supprimés disparaissent de l'agenda Google, et les
 exécutions répétées ne créent pas de doublons. Si vous le souhaitez, WorkDiary
 relit en outre l'agenda et vous soumet les modifications externes sous forme de
 propositions à vérifier.
 
 ## Prérequis
 
-- Le plugin **Google Calendar** est activé sous **Plugins**. L'entrée **Google
+- Le plugin **Google Agenda** est activé sous **Plugins**. L'entrée **Google
   Agenda** apparaît ensuite dans le menu système (icône d'engrenage
   **Système**), dans le groupe **Plugins**.
 - Il existe un client OAuth dans la Google Cloud Console. Soit l'exploitant en
   a enregistré un pour toute l'installation, soit votre organisation utilise le
   sien : sous **Plugins**, ouvrez la boîte de dialogue **Configurer** de
-  **Google Calendar** et saisissez **ID client (application Google Cloud
+  **Google Agenda** et saisissez **ID client (application Google Cloud
   propre)** et **Secret client**. Un client propre doit connaître votre adresse
   WorkDiary suivie du chemin /admin/google-calendar/oauth/callback comme URI de
   redirection autorisé.
@@ -112,7 +112,8 @@ et des temps de projet propose l'agenda connecté comme source.
 **Déconnecter** retire l'accès. Les rendez-vous déjà transférés restent dans
 l'agenda Google. Avec **Connecter à Google**, vous rétablissez la connexion à
 tout moment ; l'agenda choisi reste enregistré, et le compteur d'erreurs
-repart à zéro.
+repart à zéro. Tant que la connexion est perturbée, une tâche d'exploitation
+la signale.
 
 ## Problèmes fréquents
 

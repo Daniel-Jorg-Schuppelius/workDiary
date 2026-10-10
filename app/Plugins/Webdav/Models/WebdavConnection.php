@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Webdav\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth, HasPrivateNetworkOptIn};
 use App\Plugins\Support\Mirror\{MirrorConnection, MirrorsDocumentFolders};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -21,6 +21,8 @@ use Illuminate\Database\Eloquent\Model;
  * auditiert (`$hidden`). `folder_map` ordnet Dokumenttypen Zielordnern zu; ohne
  * Treffer greift `default_folder`. WorkDiary spiegelt freigegebene Dokumente in
  * die Collection unter `base_url` — WorkDiary bleibt führend, kein Rückkanal.
+ * `allow_private_network` ist das auditierte SSRF-Opt-in für eine Ablage im
+ * eigenen Netz (Muster CardDAV).
  *
  * @property int $id
  * @property int $organization_id
@@ -31,6 +33,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $default_folder
  * @property array<string, string>|null $folder_map
  * @property array<int, string>|null $sources
+ * @property bool $allow_private_network
  * @property bool $active
  * @property int|null $created_by
  * @property \Illuminate\Support\Carbon|null $last_mirrored_at
@@ -42,6 +45,7 @@ class WebdavConnection extends Model implements MirrorConnection {
     use HasConnectionHealth;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+    use HasPrivateNetworkOptIn;
     use MirrorsDocumentFolders;
 
     /** Tabellenname explizit (defensiv, konsistent zur Migration). */
@@ -61,6 +65,7 @@ class WebdavConnection extends Model implements MirrorConnection {
         'default_folder',
         'folder_map',
         'sources',
+        'allow_private_network',
         'active',
         'last_mirrored_at',
         'created_by',
@@ -71,6 +76,7 @@ class WebdavConnection extends Model implements MirrorConnection {
         'app_password' => 'encrypted',
         'folder_map' => 'array',
         'sources' => 'array',
+        'allow_private_network' => 'boolean',
         'active' => 'boolean',
         'last_mirrored_at' => 'datetime',
     ];

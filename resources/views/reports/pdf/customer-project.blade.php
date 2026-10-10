@@ -8,7 +8,7 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Kunden & Projekte – ' . $from . ' bis ' . $to)
+@section('pdf-title', __('Kunden & Projekte') . ' – ' . $from . ' ' . __('bis') . ' ' . $to)
 @section('pdf-heading', __('Kunden & Projekte'))
 
 @push('pdf-styles')
@@ -19,10 +19,10 @@
 @endpush
 
 @section('pdf-meta')
-    Zeitraum: <strong>{{ \Carbon\Carbon::parse($from)->fdate() }}</strong> bis
+    {{ __('Zeitraum') }}: <strong>{{ \Carbon\Carbon::parse($from)->fdate() }}</strong> {{ __('bis') }}
     <strong>{{ \Carbon\Carbon::parse($to)->fdate() }}</strong> ·
-    Bereich: {{ $scope === 'team' ? 'Team' : 'Eigene' }} ·
-    Erstellt: {{ now()->fdatetime() }}
+    {{ __('Bereich') }}: {{ $scope === 'team' ? __('Team') : __('Eigene') }} ·
+    {{ __('Erstellt') }}: {{ now()->fdatetime() }}
 @endsection
 
 @section('pdf-table')
@@ -33,14 +33,14 @@
             <tr>
                 <th>{{ __('Kunde / Projekt') }}</th>
                 <th style="width: 14%">{{ __('Projekt-Nr.') }}</th>
-                <th class="right" style="width: 14%">Stunden</th>
+                <th class="right" style="width: 14%">{{ __('Stunden') }}</th>
                 <th class="right" style="width: 16%">{{ __('Erlös') }}</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($bucket as $row)
                 @php
-                    $customerName = $row['customer'] ? $row['customer']->name : '(Ohne Kunde)';
+                    $customerName = $row['customer'] ? $row['customer']->name : __('(Ohne Kunde)');
                 @endphp
                 <tr class="customer-row">
                     <td>{{ $customerName }}</td>
@@ -58,7 +58,7 @@
                 @endforeach
             @endforeach
             <tr class="totals">
-                <td>Gesamt</td>
+                <td>{{ __('Gesamt') }}</td>
                 <td></td>
                 <td class="right">{{ \App\Support\Formats::duration((int) $totalMinutes, 'clock', withUnit: false) }}</td>
                 <td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $totalRate, 2, withThousandsSeparator: true) }} €</td>

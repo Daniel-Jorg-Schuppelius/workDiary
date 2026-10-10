@@ -37,6 +37,13 @@ return [
     ],
     // Retourenanmeldung im Kundenportal (MVP-935).
     'portal_return' => [
+        'list' => [
+            'claim' => 'Complaint',
+            'empty' => 'No returns registered yet.',
+            'rma' => 'Return number',
+            'status' => 'Status',
+            'title' => 'My returns',
+        ],
         'capability' => 'Register a return',
         'nav' => 'Register a return',
         'title' => 'Register a return',
@@ -60,5 +67,10 @@ return [
             'subject' => 'Please choose a delivery or an object.',
             'serial' => 'This serial number does not belong to the selected delivery.',
         ],
+    ],
+    // Nachreichungen aus dem Kundenportal.
+    'portal_note' => [
+        'history' => 'Your subsequent submissions',
+        'notification_title' => 'Subsequent submission for complaint :number',
     ],
 ];

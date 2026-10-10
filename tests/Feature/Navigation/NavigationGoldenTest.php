@@ -68,6 +68,17 @@ use Tests\TestCase;
  * Angepasst 2026-10-08 (Phase 135): `enterprise_user/sidebar` verliert
  * `/reports/audit-activity` und `/reports/billing` — beide Seiten antworteten
  * ihr mit 403; das Menü prüft jetzt wie die Controller.
+ * Angepasst 2026-10-09 (`MVP-1101`): `enterprise_admin/sidebar` erhält
+ * `/reports/data-quality` — die Seite hatte keinen Menüeintrag.
+ * Angepasst 2026-10-09 (`MVP-1101`, E12): `free_admin/sidebar` verliert
+ * `/reports/arbzg-compliance` und `/reports/economics` — beide Routen hängen
+ * am Modul Team-Auswertungen und antworten im Free-Tarif 423; das Menü prüft
+ * jetzt je Eintrag das Modul der Route statt ganzer Gruppen.
+ * Angepasst 2026-10-09 (Phase 137): Die Fokus-Sitzung aus `withSession()`
+ * wirkte in die folgenden Personas nach, deren „sidebar“ zeigte deshalb die
+ * Finanz-Fokus-Sicht. Die Sitzung wird je Persona geleert und der Snapshot
+ * neu aufgenommen; dadurch erscheinen die volle Seitenleiste und die mit E12
+ * sichtbar gewordenen Einträge (Zeitkonten, Auslastung, Fuhrpark …).
  */
 class NavigationGoldenTest extends TestCase {
     use RefreshDatabase;
@@ -80,6 +91,8 @@ class NavigationGoldenTest extends TestCase {
         // $this->be() je Persona überschreibt den aktiven Nutzer; ein
         // explizites logout() ist nicht nötig.
         foreach ($this->personas() as $name => [, $user]) {
+            // Die Fokus-Sitzung der Vorgänger-Persona darf nicht nachwirken.
+            $this->flushSession();
             $this->be($user);
             // Frischer Resolver-Zustand je Persona (FeatureFlagResolver cached pro Request).
             app(\App\Services\Licensing\FeatureFlagResolver::class)->flush();

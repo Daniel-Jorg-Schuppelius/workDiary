@@ -1,7 +1,7 @@
 ---
 title: "SharePoint storage"
 topic: admin.sharepoint
-version: 1
+version: 2
 keywords:
     - SharePoint
     - SharePoint Online
@@ -89,9 +89,8 @@ In the **Folder rules + sources** section you define what is mirrored where:
   **Protocols (PDF)**. Without a selection, only documents are mirrored.
 - **Document type → folder**: per row, select a document type and enter a
   subfolder relative to the library. Empty rows are ignored; after each save,
-  three more empty rows are available. The types appear in the list under
-  their English short name, for example contract for contracts or invoice for
-  invoices.
+  three more empty rows are available. The types appear in the list with
+  their label, for example Contract or Invoice.
 
 Then click **Save**.
 
@@ -111,14 +110,15 @@ Invoices and protocols do not follow the folder rules.
 - **Automatically on events:** when a document gets the status **Active**
   (released) or a new version, WorkDiary transfers that version. Pure changes
   to metadata do not trigger a new transfer. When an invoice is issued or a
-  protocol is signed, its PDF follows – provided the respective content is
-  selected.
+  protocol is signed, its PDF follows. All of this applies only to the
+  selected content; without **Documents (DMS)** ticked, WorkDiary transfers no
+  documents.
 - **In the background with retries:** the transfer runs through a queue. If it
   fails, it is retried automatically; no file is written twice.
-- **Mirror now:** queues all active documents of the organization, for example
-  after the initial setup. WorkDiary skips unchanged files. This button does
-  not cover invoices and protocols; they are transferred when they are issued
-  or signed.
+- **Mirror now:** queues everything from the selected content – active
+  documents, issued invoices and signed protocols –, for example after the
+  initial setup, also for records from before. WorkDiary skips unchanged
+  files.
 
 There is no fixed schedule. WorkDiary only reads from SharePoint to check
 whether a mirrored file was changed there.
@@ -136,6 +136,10 @@ document management, three actions are available:
   of the document.
 - **Detach mirroring**: this one document is no longer mirrored; the
   connection stays active.
+
+For invoice and protocol PDFs there is only **Overwrite remote**: issued
+invoices and signed protocols cannot be changed, so WorkDiary stores its PDF
+again. If you want to keep the changed file, choose **Dismiss**.
 
 The **Mapping Inbox** is open to people who are allowed to manage billing.
 
@@ -162,6 +166,7 @@ settings.
 - **Status Inactive, Mirror now missing:** the connection is disconnected,
   **Active** is switched off, no library is selected, or the connection was
   shut down after repeated consecutive errors. Once the cause is fixed,
-  **Disconnect** and connecting again reset the error count.
+  **Disconnect** and connecting again reset the error count. As long as the
+  connection is failing, an operations task is listed for it.
 - **Checking the state:** next to the page title you see the most recently
   checked state; **Test connection** checks it right away.

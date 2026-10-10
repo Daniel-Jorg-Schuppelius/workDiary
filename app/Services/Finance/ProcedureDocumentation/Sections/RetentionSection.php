@@ -43,7 +43,7 @@ final class RetentionSection implements ProcedureSection {
                 ? $this->days($this->registry->daysFor($area))
                 : $this->years($this->registry->yearsFor($organization, $area));
             $rows[] = [
-                (string) ($config['label'] ?? $area),
+                $this->registry->labelFor($area),
                 $area,
                 $period,
                 $this->text($this->registry->basisFor($organization, $area)),

@@ -15,6 +15,7 @@ use App\Models\Platform\PluginState;
 use App\Plugins\CalDav\CalDavPlugin;
 use App\Plugins\CalDav\Models\CalDavConnection;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
+use App\Support\UrlSafety;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
@@ -55,13 +56,19 @@ class CalDavAdminController extends Controller {
             'calendar_path' => ['required', 'string', 'max:255'],
             'scopes' => ['nullable', 'array'],
             'scopes.*' => ['in:' . implode(',', CalDavConnection::SCOPES)],
+            'allow_private_network' => ['nullable', 'boolean'],
             'active' => ['nullable', 'boolean'],
             'two_way' => ['nullable', 'boolean'],
         ]);
 
         $baseUrl = trim((string) $data['base_url']);
+        $allowPrivate = (bool) ($data['allow_private_network'] ?? false);
         if (! str_starts_with($baseUrl, 'http://') && ! str_starts_with($baseUrl, 'https://')) {
             return back()->with('error', __('caldav::caldav.flash.invalid_url'))->withInput();
+        }
+        // Konfigurationszeit-Prüfung ohne DNS; verbindlich prüft das Gateway vor jedem Abruf.
+        if (! $allowPrivate && ! UrlSafety::isAcceptableExternalHttpUrl($baseUrl)) {
+            return back()->with('error', __('caldav::caldav.flash.private_url_blocked'))->withInput();
         }
 
         // Nextclouds „Link kopieren" liefert die volle Kalender-URL; hinter die Basis-URL
@@ -85,6 +92,7 @@ class CalDavAdminController extends Controller {
             'calendar_path' => trim($calendarPath, '/'),
             // Nur bekannte Scopes übernehmen; leer = nur Termine (Default via Model).
             'scopes' => array_values(array_intersect(CalDavConnection::SCOPES, (array) ($data['scopes'] ?? []))),
+            'allow_private_network' => $allowPrivate,
             'active' => (bool) ($data['active'] ?? false),
             'two_way' => (bool) ($data['two_way'] ?? false),
             'created_by' => $connection->exists ? $connection->created_by : $admin->id,
@@ -99,7 +107,11 @@ class CalDavAdminController extends Controller {
         }
 
         $connection->forceFill($attributes)->save();
-        $connection->audit('caldav.connection_saved', ['by_user_id' => (int) $admin->id, 'active' => $connection->active]);
+        $connection->audit('caldav.connection_saved', [
+            'by_user_id' => (int) $admin->id,
+            'active' => $connection->active,
+            'allow_private_network' => $connection->allow_private_network,
+        ]);
 
         return back()->with('success', __('caldav::caldav.flash.saved'));
     }

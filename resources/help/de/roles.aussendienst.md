@@ -1,7 +1,7 @@
 ---
 title: "Ihr Tag in WorkDiary: Außendienst"
 topic: roles.aussendienst
-version: 1
+version: 2
 keywords:
     - Außendienstmitarbeiter
     - Monteur

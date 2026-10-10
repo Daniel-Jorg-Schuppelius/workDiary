@@ -24,8 +24,13 @@ trait MirrorConflictActions {
         $id = static::ID;
         $text = $id . '::' . $id . '.conflict.';
 
+        $overwrite = new UiAction('upload', (string) __($text . 'action.overwrite'), route('admin.' . $id . '.conflict.overwrite', $item), post: true, tone: 'primary', confirm: (string) __($text . 'confirm.overwrite'));
+        if (! DocumentConflictResolver::supportsDocumentActions($item)) {
+            return [$overwrite];
+        }
+
         return [
-            new UiAction('upload', (string) __($text . 'action.overwrite'), route('admin.' . $id . '.conflict.overwrite', $item), post: true, tone: 'primary', confirm: (string) __($text . 'confirm.overwrite')),
+            $overwrite,
             new UiAction('download', (string) __($text . 'action.import'), route('admin.' . $id . '.conflict.import', $item), post: true, tone: 'outline', confirm: (string) __($text . 'confirm.import')),
             new UiAction('link_off', (string) __($text . 'action.detach'), route('admin.' . $id . '.conflict.detach', $item), post: true, confirm: (string) __($text . 'confirm.detach')),
         ];

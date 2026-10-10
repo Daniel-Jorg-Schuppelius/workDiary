@@ -1,7 +1,7 @@
 ---
 title: "Ordres de fabrication"
 topic: manufacturing.orders
-version: 1
+version: 2
 keywords:
     - ordre de production
     - nomenclature
@@ -15,6 +15,9 @@ keywords:
     - facture pro forma
     - facture commerciale
     - bon de livraison
+    - étiquette d'expédition
+    - statut de l'envoi
+    - annuler une expédition
 audience: []
 modules:
     - module.lager
@@ -39,7 +42,29 @@ et entrepôt requis). Depuis la page de détail, l'ordre peut être affecté à 
 poste de travail ou sous-traité à un fournisseur (crée une commande) ; la
 vue de planification montre le calcul des besoins multi-niveaux (MRP) et
 les indicateurs qualité. L'annulation est irréversible ; créer, déclarer et
-livrer exigent l'autorisation de mouvement de stock.
+livrer exigent le droit **Enregistrer des mouvements de stock**.
+
+## Expédition sur la livraison
+
+Avec une connexion d'expédition active (voir « Connexions d'expédition DHL,
+UPS et FedEx »), vous créez sur une livraison avec client, via **Expédier**, un
+ordre d'expédition avec son étiquette. La livraison affiche ensuite le statut,
+par exemple **Expédition : Étiquette créée**, avec le transporteur et le numéro
+de suivi. En survolant le statut avec la souris, vous voyez quand il a été
+vérifié pour la dernière fois auprès du transporteur. À côté du statut se
+trouvent :
+
+- **Télécharger l’étiquette** : télécharge de nouveau l'étiquette d'expédition.
+- **Consulter le statut de l’envoi** : interroge immédiatement le transporteur
+  sur la situation actuelle – plus disponible pour **Livré** ou **Annulé**.
+  WorkDiary vérifie en outre régulièrement les envois ouverts de lui-même.
+- **Annuler l’expédition** : uniquement au statut **Brouillon** ou **Étiquette
+  créée** et après confirmation. L'étiquette devient invalide. Vous pouvez
+  ensuite créer un nouvel ordre d'expédition, et les colis de la livraison
+  redeviennent modifiables.
+
+Créer un ordre d'expédition, consulter le statut de l'envoi et annuler
+l'expédition exigent le droit **Enregistrer des mouvements de stock**.
 
 ## Documents douaniers pour les envois hors de l’UE
 

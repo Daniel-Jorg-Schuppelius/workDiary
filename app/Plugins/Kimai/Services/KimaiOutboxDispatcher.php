@@ -74,7 +74,7 @@ class KimaiOutboxDispatcher extends TimeWritebackDispatcher implements MirrorsCr
         }
 
         $organization = Organization::query()->withoutGlobalScopes()->find($organizationId);
-        $client = new KimaiApiClient($config['api_token'], $config['base_url'], $organization instanceof Organization ? Tz::ofOrganization($organization) : null);
+        $client = new KimaiApiClient($config['api_token'], $config['base_url'], $organization instanceof Organization ? Tz::ofOrganization($organization) : null, $config['allow_private_network']);
 
         return $client->isConfigured() ? $client : null;
     }

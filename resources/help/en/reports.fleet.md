@@ -1,7 +1,7 @@
 ---
 title: "Fleet, logbook and driving times"
 topic: reports.fleet
-version: 1
+version: 3
 keywords:
     - vehicle report
     - odometer reading
@@ -43,8 +43,8 @@ and the vehicle data under **Fleet** → **Vehicles**.
 - You choose the period with the period selector in the header. The 1%
   comparison uses a calendar year instead.
 - **PDF** downloads a print version; **CSV** and **Excel** are available under
-  **Export**. Exports keep the selected filters; PDF and CSV exports are
-  recorded in the audit log.
+  **Export**. Exports keep the selected filters; every export is recorded in
+  the audit log.
 
 ## Fleet
 
@@ -153,8 +153,10 @@ working-time compliance** permission.
   departure**, **Last arrival**, **Driving time**, **Longest driving stint
   without break**, **Breaks (min)**, **Rest before** and the day's
   **Findings**.
-- The download takes over the period and the employee filter of the page and
-  delivers a CSV file. It is recorded in the audit log.
+- The download takes over the period and the employee and team filters of
+  the page. **Driving time evidence** delivers a CSV file, **Driving time
+  evidence (PDF)** the same data as a landscape PDF. Both are recorded in the
+  audit log.
 
 The findings are based on the limits of Regulation (EC) 561/2006 and the
 FPersV: at most 9 h of driving per day (10 h twice a week), 56 h per week and

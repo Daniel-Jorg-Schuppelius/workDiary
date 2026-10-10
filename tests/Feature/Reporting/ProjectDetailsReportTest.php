@@ -13,9 +13,11 @@ namespace Tests\Feature\Reporting;
 use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Customer\Customer;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
+use App\Support\Sqid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
@@ -110,6 +112,52 @@ class ProjectDetailsReportTest extends TestCase {
         $response->assertOk();
         $response->assertHeader('Content-Type', 'application/pdf');
         $this->assertStringStartsWith('%PDF', (string) $response->getContent());
+    }
+
+    public function test_plan_for_an_employee_comes_from_orders_assigned_to_them(): void {
+        $admin = $this->orgAdmin();
+        $this->plannedOrder(createdBy: $admin, assignedTo: $this->user);
+
+        $series = $this->actingAs($admin)
+            ->withSession($this->dateRangeYear(2030))
+            ->get(route('reports.project-details', [
+                'project' => Sqid::encode(Project::class, (int) $this->project->id),
+                'user' => Sqid::encode(User::class, (int) $this->user->id),
+            ]))
+            ->assertOk()
+            ->viewData('planIstSeries');
+
+        $this->assertSame(2.0, (float) ($series[4]['y2'] ?? 0));
+    }
+
+    public function test_plan_without_organisation_wide_view_shows_only_own_orders(): void {
+        $colleague = $this->orgUser();
+        $this->plannedOrder(createdBy: $this->user, assignedTo: $colleague);
+        TimeEntry::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'date' => '2030-05-10',
+            'started_at' => '2030-05-10 09:00:00',
+            'ended_at' => '2030-05-10 10:00:00',
+            'kind' => TimeEntryKind::Work->value,
+        ]);
+
+        $series = $this->getWithYearRange('reports.project-details')->assertOk()->viewData('planIstSeries');
+
+        $this->assertArrayNotHasKey('y2', $series[4]);
+    }
+
+    private function plannedOrder(User $createdBy, User $assignedTo): DiaryEntry {
+        return DiaryEntry::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $createdBy->id,
+            'assigned_user_id' => $assignedTo->id,
+            'project_id' => $this->project->id,
+            'customer_id' => $this->project->customer_id,
+            'start_at' => '2030-05-12 08:00:00',
+            'planned_minutes' => 120,
+        ]);
     }
 
     public function test_requires_authentication(): void {

@@ -87,7 +87,7 @@ return [
         'heading' => 'Indirizzo del chiosco',
         'hint' => 'Lo apra nel browser di un tablet: il tablet diventa un terminale di timbratura. Contiene lo stesso token; mostrato una sola volta.',
         'title' => 'Terminale di timbratura',
-        'intro' => 'Avvicina il badge al lettore.',
+        'intro' => 'Avvicinare il badge al lettore.',
         'mode' => 'Tipo di timbratura',
         'mode_work' => 'Entrata / Uscita',
         'mode_break' => 'Pausa',

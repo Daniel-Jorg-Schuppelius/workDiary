@@ -33,17 +33,17 @@ enum ServiceTicketStatus: string implements HasLabel, HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::Reported => __('Gemeldet'),
-            self::Triaged => __('Triagiert'),
-            self::Scheduled => __('Eingeplant'),
-            self::InProgress => __('In Arbeit'),
-            self::Done => __('Gelöst'),
-            self::Accepted => __('Abgenommen'),
-            self::Closed => __('Geschlossen'),
-            self::Rejected => __('Abgelehnt'),
-            self::WaitingCustomer => __('Wartet auf Kunde'),
-            self::WaitingExternal => __('Wartet auf Dritte'),
-            self::Paused => __('Pausiert'),
+            self::Reported => __('enums.service_ticket.service_ticket_status.reported'),
+            self::Triaged => __('enums.service_ticket.service_ticket_status.triaged'),
+            self::Scheduled => __('enums.service_ticket.service_ticket_status.scheduled'),
+            self::InProgress => __('enums.service_ticket.service_ticket_status.in_progress'),
+            self::Done => __('enums.service_ticket.service_ticket_status.done'),
+            self::Accepted => __('enums.service_ticket.service_ticket_status.accepted'),
+            self::Closed => __('enums.service_ticket.service_ticket_status.closed'),
+            self::Rejected => __('enums.service_ticket.service_ticket_status.rejected'),
+            self::WaitingCustomer => __('enums.service_ticket.service_ticket_status.waiting_customer'),
+            self::WaitingExternal => __('enums.service_ticket.service_ticket_status.waiting_external'),
+            self::Paused => __('enums.service_ticket.service_ticket_status.paused'),
         };
     }
 

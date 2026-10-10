@@ -16,15 +16,26 @@ use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Services\Customer\CustomerQueryService;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{Auth, Storage};
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
- * Foto-Bestätigung im Kundenportal (Feature 012, Rang 55): Kunde bestätigt
- * ein kundensichtbares Foto einmalig oder beanstandet es — die Beanstandung
- * läuft über den bestehenden CustomerQuery-Flow (Notification
- * `customer.queryRaised` an die Organisation).
+ * Fotos der Fallakte im Kundenportal (Feature 012, Rang 55): ansehen,
+ * einmalig bestätigen oder beanstanden — die Beanstandung läuft über den
+ * bestehenden CustomerQuery-Flow (Notification `customer.queryRaised` an die
+ * Organisation).
  */
 class PhotoConfirmationController extends Controller {
+    /** Als Download ausgeliefert: ein inline gezeigtes SVG/HTML liefe sonst auf der App-Origin. */
+    public function show(DiaryEntry $diary, Attachment $attachment): BinaryFileResponse {
+        $this->authorizePhoto($diary, $attachment);
+
+        $disk = Storage::disk($attachment->disk);
+        abort_unless($disk->exists($attachment->path), 404);
+
+        return response()->download($disk->path($attachment->path), $attachment->original_name);
+    }
+
     public function confirm(DiaryEntry $diary, Attachment $attachment): RedirectResponse {
         $user = $this->authorizePhoto($diary, $attachment);
 
@@ -67,7 +78,7 @@ class PhotoConfirmationController extends Controller {
     private function authorizePhoto(DiaryEntry $diary, Attachment $attachment): User {
         /** @var User $user */
         $user = Auth::guard('customer')->user();
-        abort_unless((int) $diary->customer_id === (int) $user->customer_id, 403);
+        abort_unless((int) $diary->customer_id === (int) $user->customer_id, 404);
         abort_unless(
             $attachment->attachable_type === $diary->getMorphClass()
             && (int) $attachment->attachable_id === (int) $diary->id

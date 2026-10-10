@@ -39,9 +39,11 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    <x-filter-bar :action="route('reports.qualifications')" :reset="route('reports.qualifications')">
-        @include('reports._standard_filters', ['idPrefix' => 'qualifications'])
-    </x-filter-bar>
+    @if ($seesTeam)
+        <x-filter-bar :action="route('reports.qualifications')" :reset="route('reports.qualifications')">
+            @include('reports._standard_filters', ['idPrefix' => 'qualifications'])
+        </x-filter-bar>
+    @endif
 
     <div class="chart-grid grid gap-3 xl:grid-cols-2">
         <x-charts.bar-h :title="__('Träger je Qualifikation (Top 15)')" :unit="__('Personen')"
@@ -51,7 +53,7 @@
     </div>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <x-kpi-tile :label="__('Mitarbeiter')" :value="$totals['users']" />
+        <x-kpi-tile :label="__('user.employees')" :value="$totals['users']" />
         <x-kpi-tile :label="__('Qualifikationen')" :value="$totals['qualifications']" />
         <x-kpi-tile :label="__('Zuweisungen')" :value="$totals['assignments']" />
         <x-kpi-tile :label="__('Laufen ab (≤30 T.)')" :value="$totals['expiring']" :tone="$totals['expiring'] > 0 ? 'warning' : 'neutral'" />

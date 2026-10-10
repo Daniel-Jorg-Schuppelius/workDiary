@@ -1,7 +1,7 @@
 ---
 title: "I miei report"
 topic: reports.my-reports
-version: 1
+version: 5
 keywords:
     - Il mio mese
     - Il mio anno
@@ -24,8 +24,9 @@ related:
 ---
 
 In **Report** → **Personale** ogni persona dispone di tre report sul proprio
-tempo: **Il mio mese**, **Il mio anno** e **Bilancio lavoro**. Mostrano
-esclusivamente le Sue registrazioni. Si basano sulle Sue registrazioni di tempo;
+tempo: **Il mio mese**, **Il mio anno** e **Bilancio lavoro**. Mostrano le
+Sue registrazioni; il bilancio lavoro di un'altra persona può aprirlo solo chi
+ha il relativo permesso (veda «Chi vede che cosa»). Si basano sulle Sue registrazioni di tempo;
 il bilancio lavoro usa inoltre le Sue timbrature e il Suo modello di orario di
 lavoro. I report non sono una fonte di dati autonoma: se un valore non è
 corretto, corregga la registrazione di tempo o la timbratura – al prossimo
@@ -94,7 +95,8 @@ pagina non prevede esportazioni.
 scelto il tempo previsto, la presenza e il tempo registrato. I riquadri in alto:
 
 - **Previsto**: tempo previsto dal Suo modello di orario di lavoro. I giorni
-  festivi e i giorni di ferie approvate non hanno tempo previsto.
+  festivi e i giorni di assenza approvata come ferie, permesso speciale, ferie
+  non retribuite o malattia non hanno tempo previsto.
 - **Presenza**: le Sue timbrature meno le pause. Le timbrature annullate non
   contano; una timbratura ancora in corso viene conteggiata fino al momento
   attuale.
@@ -121,10 +123,11 @@ Esportazione: **PDF** con indicatori e tabella giornaliera.
 
 - **Il mio mese** e **Il mio anno** mostrano sempre solo le Sue registrazioni,
   anche per gli amministratori.
-- **Bilancio lavoro** mostra di norma il Suo bilancio. Solo gli amministratori
-  vedono una barra dei filtri con **Dipendente** e **Team** e possono così
-  aprire il bilancio di un'altra persona della stessa organizzazione; **Team**
-  restringe soltanto l'elenco dei dipendenti selezionabili.
+- **Bilancio lavoro** mostra di norma il Suo bilancio. Gli amministratori e le
+  persone con il permesso **Visualizza tutte le registrazioni di tempo** vedono
+  una barra dei filtri con **Dipendente** e **Team** e possono così aprire il
+  bilancio di un'altra persona della stessa organizzazione; **Team** restringe
+  soltanto l'elenco dei dipendenti selezionabili.
 - Il bilancio lavoro calcola solo il periodo scelto. Non mostra il saldo
   progressivo del Suo conto ore – per questo veda «Conto ore e approvazione
   mensile».

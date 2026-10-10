@@ -40,7 +40,7 @@ class TravelChargeService {
         'round_trip' => true,
         'origin_lat' => null,
         'origin_lng' => null,
-        'label' => 'Anfahrt',
+        'label' => '',
     ];
 
     /**
@@ -74,7 +74,8 @@ class TravelChargeService {
         $config['origin_lng'] = $config['origin_lng'] !== null ? (float) $config['origin_lng'] : null;
         $config['mode'] = (string) $config['mode'];
         $config['km_source'] = (string) $config['km_source'];
-        $config['label'] = (string) ($config['label'] ?: 'Anfahrt');
+        // Ohne eigenen Positionstext in der Sprache der Abrechnung.
+        $config['label'] = (string) ($config['label'] ?: __('Anfahrt'));
 
         return $config;
     }
@@ -188,7 +189,11 @@ class TravelChargeService {
             quantity: $km,
             unit: 'km',
             unitPrice: round($rate, 4),
-            description: sprintf('%s %s km am %s', $config['label'], NumberHelper::toGermanFormat($km, 2, withThousandsSeparator: true, trimTrailingZeros: true), $dateLabel),
+            description: (string) __(':label :km km am :date', [
+                'label' => $config['label'],
+                'km' => NumberHelper::toGermanFormat($km, 2, withThousandsSeparator: true, trimTrailingZeros: true),
+                'date' => $dateLabel,
+            ]),
         );
     }
 

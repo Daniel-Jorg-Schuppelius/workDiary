@@ -1,7 +1,7 @@
 ---
 title: "Open Issues"
 topic: customer-portal.issues
-version: 2
+version: 3
 keywords:
     - open items
     - open points
@@ -25,7 +25,7 @@ Open issues are tasks, defects or points to clarify that your contractor records
 
 ## How to open the page
 
-On the **Overview**, click the tile **Open Issues**. The number on the tile states the issues that are not yet closed. The tile appears if your contractor has released this area to you. With the same release, the menu also shows **Known errors**; that list is described in the help topic on tickets.
+On the **Overview**, click the tile **Open Issues**. The number on the tile states the issues that are not yet closed. The tile appears if your contractor has released this area to you. The **Known errors** list belongs to the Tickets area and is described in the help topic on tickets.
 
 ## What an issue shows
 

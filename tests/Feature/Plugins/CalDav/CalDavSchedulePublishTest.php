@@ -10,16 +10,18 @@
 
 namespace Tests\Feature\Plugins\CalDav;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Enums\Vacation\{VacationStatus, VacationType};
 use App\Models\Absence\Vacation;
 use App\Models\Calendar\Event;
-use App\Models\Integration\ExternalReference;
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\User;
 use App\Models\Schedule\ScheduledShift;
 use App\Plugins\CalDav\CalDavPlugin;
 use App\Plugins\CalDav\Contracts\{CalDavGateway, CalDavGatewayFactory};
 use App\Plugins\CalDav\Models\CalDavConnection;
+use App\Plugins\Support\Calendar\RemoteCalendarPublishService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\RecordingCalDavGateway;
@@ -102,6 +104,45 @@ final class CalDavSchedulePublishTest extends TestCase {
         $this->assertContains('shift-' . $shift->sqid . '.ics', $gateway->puts);
         $this->assertContains('vacation-' . $vacation->sqid . '.ics', $gateway->puts);
         $this->assertSame(2, ExternalReference::query()->where('plugin_id', 'caldav')->count());
+        // MVP-1094: derselbe Typ, den der Rückimport sucht — sonst kämen eigene Termine als Vorschlag zurück.
+        $this->assertSame(2, ExternalReference::query()->forPlugin($this->organization->id, 'caldav', RemoteCalendarPublishService::EXTERNAL_TYPE)->count());
+    }
+
+    public function test_migration_moves_old_references_and_dismisses_proposals_for_own_events(): void {
+        $event = Event::factory()->create(['organization_id' => $this->organization->id]);
+        ExternalReference::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => 'caldav',
+            'external_type' => 'calendar_object',
+            'referenceable_type' => $event->getMorphClass(),
+            'referenceable_id' => $event->id,
+            'external_id' => 'event-1.ics',
+            'payload' => ['hash' => 'x', 'uid' => 'uid-1'],
+        ]);
+        foreach (['calendar-proposal:event-1.ics', 'calendar-proposal:uid-1:1767225600', 'calendar-proposal:fremd.ics'] as $key) {
+            IntegrationInboxItem::query()->create([
+                'organization_id' => $this->organization->id,
+                'plugin_id' => 'caldav',
+                'source' => 'caldav',
+                'dedupe_key' => $key,
+                'target_type' => $event->getMorphClass(),
+                'external_type' => RemoteCalendarPublishService::EXTERNAL_TYPE,
+                'external_id' => $key,
+                'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
+                'status' => IntegrationInboxStatus::Open,
+                'remote_snapshot' => [],
+                'display_title' => 'Termin',
+                'occurred_at' => now(),
+            ]);
+        }
+
+        (require base_path('app/Plugins/CalDav/Database/Migrations/2027_03_13_100100_unify_caldav_reference_type.php'))->up();
+
+        $this->assertSame(RemoteCalendarPublishService::EXTERNAL_TYPE, ExternalReference::query()->sole()->external_type);
+        $this->assertSame(
+            ['calendar-proposal:fremd.ics'],
+            IntegrationInboxItem::query()->where('status', IntegrationInboxStatus::Open)->pluck('dedupe_key')->all(),
+        );
     }
 
     public function test_events_only_connection_ignores_schedule(): void {

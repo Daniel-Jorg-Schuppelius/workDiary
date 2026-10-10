@@ -10,7 +10,7 @@
 
 return [
     'title' => 'Google Agenda',
-    'intro' => 'Les rendez-vous WorkDiary sont publiés via l\'API Google Calendar dans un agenda du compte Google connecté. WorkDiary reste maître ; les rendez-vous annulés y disparaissent et les exécutions répétées ne créent jamais de doublons. Les rendez-vous externes ne sont jamais lus.',
+    'intro' => 'Les rendez-vous WorkDiary sont publiés via l\'API Google Calendar dans un agenda du compte Google connecté. WorkDiary reste maître ; les rendez-vous annulés et supprimés y disparaissent et les exécutions répétées ne créent jamais de doublons. WorkDiary ne lit les rendez-vous externes qu\'avec la réimportation bidirectionnelle activée et ne les reprend jamais sans demander ; il crée des propositions dans la boîte d\'intégration.',
     'plugin_description' => 'Publie les rendez-vous de manière idempotente dans un agenda Google (Calendar API v3, OAuth2) — publication seule, agenda cible sélectionnable.',
     'not_configured_hint' => 'Aucune application Google n’est enregistrée — ni dans les réglages du plugin de cette organisation, ni comme GOOGLE_CALENDAR_CLIENT_ID/SECRET de l’installation. la connexion nécessite d\'abord un client OAuth dans la Google Cloud Console (les scopes agenda sont « sensitive » : vérification de marque ou type de consentement « Internal » pour Workspace).',
 

@@ -19,12 +19,7 @@
         <x-page-toolbar :subtitle="__('learning.subtitle.report')">
             <x-slot:actions>
                 {{-- Unterdrückte Quoten bleiben auch im Export unterdrückt. --}}
-                <x-icon-btn icon="picture_as_pdf" tone="ghost" size="sm"
-                            :href="route('reports.learning', ['export' => 'pdf'])"
-                            show-label>{{ __('learning.action.export_pdf') }}</x-icon-btn>
-                <x-icon-btn icon="table_view" tone="ghost" size="sm"
-                            :href="route('reports.learning', ['export' => 'csv'])"
-                            show-label>{{ __('learning.action.export_csv') }}</x-icon-btn>
+                <x-report-export :url="fn (string $format) => route('reports.learning', ['export' => $format])" tone="ghost" />
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

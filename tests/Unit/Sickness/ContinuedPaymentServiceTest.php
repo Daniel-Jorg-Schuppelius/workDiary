@@ -128,4 +128,74 @@ class ContinuedPaymentServiceTest extends TestCase {
         $this->assertSame(0, $status->usedDays);
         $this->assertSame(42, $status->remainingDays);
     }
+
+    private function leave(string $start, string $end, ?SickLeave $continuationOf = null): SickLeave {
+        return SickLeave::factory()->create([
+            'user_id' => $this->user->id,
+            'start_date' => $start,
+            'end_date' => $end,
+            'kind' => SickLeaveKind::Initial->value,
+            'continuation_of_id' => $continuationOf?->id,
+        ]);
+    }
+
+    /** MVP-1093: Eine neue Krankheit nach Arbeitstagen gibt einen neuen Anspruch. */
+    public function test_new_illness_after_working_days_starts_fresh(): void {
+        $this->leave('2026-03-02', '2026-03-13');
+        $this->leave('2026-04-06', '2026-04-08');
+
+        $status = $this->service->statusFor($this->user, CarbonImmutable::parse('2026-04-08'));
+
+        $this->assertSame(3, $status->usedDays);
+        $this->assertSame('2026-04-06', $status->chainStart?->toDateString());
+    }
+
+    /** MVP-1093: Fortsetzungserkrankung zählt nur die Krankheitstage, nicht die Arbeitstage dazwischen. */
+    public function test_continuation_adds_only_days_of_incapacity(): void {
+        $first = $this->leave('2026-03-02', '2026-03-13');
+        $this->leave('2026-04-06', '2026-04-08', continuationOf: $first);
+
+        $status = $this->service->statusFor($this->user, CarbonImmutable::parse('2026-04-08'));
+
+        $this->assertSame(15, $status->usedDays);
+        $this->assertSame(27, $status->remainingDays);
+        $this->assertSame('2026-03-02', $status->chainStart?->toDateString());
+        $this->assertSame('2026-05-05', $status->exhaustionDate?->toDateString(), 'Fortlaufende Arbeitsunfähigkeit ab Stichtag');
+    }
+
+    public function test_continuation_exhausts_on_the_42nd_day_of_incapacity(): void {
+        $first = $this->leave('2026-01-05', '2026-02-05');
+        $this->leave('2026-03-02', '2026-03-20', continuationOf: $first);
+
+        $status = $this->service->statusFor($this->user, CarbonImmutable::parse('2026-03-20'));
+
+        $this->assertTrue($status->exhausted);
+        $this->assertSame(32 + 19, $status->usedDays);
+        $this->assertSame('2026-03-11', $status->exhaustionDate?->toDateString());
+    }
+
+    public function test_continuation_after_six_months_without_this_illness_starts_fresh(): void {
+        $first = $this->leave('2026-01-05', '2026-01-20');
+        $this->leave('2026-07-21', '2026-07-24', continuationOf: $first);
+
+        $this->assertSame(4, $this->service->statusFor($this->user, CarbonImmutable::parse('2026-07-24'))->usedDays);
+    }
+
+    public function test_continuation_twelve_months_after_first_onset_starts_fresh(): void {
+        $first = $this->leave('2025-01-06', '2025-01-17');
+        $second = $this->leave('2025-06-02', '2025-06-13', continuationOf: $first);
+        $third = $this->leave('2025-11-03', '2025-11-14', continuationOf: $second);
+        $this->leave('2026-01-12', '2026-01-14', continuationOf: $third);
+
+        $this->assertSame(36, $this->service->statusFor($this->user, CarbonImmutable::parse('2025-11-14'))->usedDays);
+        $this->assertSame(3, $this->service->statusFor($this->user, CarbonImmutable::parse('2026-01-14'))->usedDays);
+    }
+
+    /** Einheit des Verhinderungsfalls: neue Krankheit während der laufenden verlängert den Fall. */
+    public function test_overlapping_new_illness_extends_the_running_case(): void {
+        $this->leave('2026-03-02', '2026-03-13');
+        $this->leave('2026-03-10', '2026-03-20');
+
+        $this->assertSame(19, $this->service->statusFor($this->user, CarbonImmutable::parse('2026-03-20'))->usedDays);
+    }
 }

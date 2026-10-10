@@ -38,6 +38,7 @@
             @if ($selected->description)
                 <p class="mt-2 text-sm text-base-content/70">{{ $selected->description }}</p>
             @endif
+            <p class="mt-2 text-sm text-base-content/70">{{ __('appointment.portal.cancel_policy', ['hours' => $selected->cancel_hours]) }}</p>
             <div class="mt-4">
                 @if ($windows === [])
                     <p class="text-sm text-muted">{{ __('An diesem Tag sind keine Fenster frei — bitte einen anderen Tag wählen.') }}</p>
@@ -81,10 +82,17 @@
                 </td>
                 <td class="text-right">
                     @if (in_array($request->status, [\App\Enums\Calendar\AppointmentRequestStatus::Requested, \App\Enums\Calendar\AppointmentRequestStatus::Confirmed], true))
-                        <form method="POST" action="{{ route('customer.appointments.cancel', $request) }}">
-                            @csrf
-                            <x-button type="submit" tone="ghost" size="xs">{{ __('Stornieren') }}</x-button>
-                        </form>
+                        @if ($request->withinCancelDeadline())
+                            <form method="POST" action="{{ route('customer.appointments.cancel', $request) }}" class="inline-flex flex-col items-end">
+                                @csrf
+                                <x-button type="submit" tone="ghost" size="xs">{{ __('Stornieren') }}</x-button>
+                                @if ($request->cancelDeadline())
+                                    <span class="text-xs text-muted">{{ __('appointment.portal.cancel_until', ['date' => $request->cancelDeadline()->fdatetime()]) }}</span>
+                                @endif
+                            </form>
+                        @else
+                            <span class="text-xs text-muted">{{ __('appointment.portal.cancel_expired') }}</span>
+                        @endif
                     @endif
                 </td>
             </tr>

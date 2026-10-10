@@ -24,9 +24,9 @@ enum LetterheadAssetStatus: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::ReviewRequired => __('Prüfung erforderlich'),
-            self::Ready => __('Einsatzbereit'),
-            self::Archived => __('Archiviert'),
+            self::ReviewRequired => __('enums.document_design.letterhead_asset_status.review_required'),
+            self::Ready => __('enums.document_design.letterhead_asset_status.ready'),
+            self::Archived => __('enums.document_design.letterhead_asset_status.archived'),
         };
     }
 

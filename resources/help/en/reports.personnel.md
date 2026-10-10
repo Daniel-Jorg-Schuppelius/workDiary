@@ -1,13 +1,14 @@
 ---
 title: "Personnel: vacation, sickness, qualifications, safety"
 topic: reports.personnel
-version: 1
+version: 6
 keywords:
     - absence rates
     - remaining vacation
     - vacation report
     - sick days
     - continued pay
+    - continuation of illness
     - sick note
     - qualification matrix
     - expiring certificates
@@ -61,17 +62,21 @@ Columns per person:
   account).
 - **Flex balance**: the last monthly balance up to the end of the period.
 
-Tiles: **Employee**, **Vacation (workdays)** with the pending days, **Sick
+Tiles: **Employees**, **Vacation (workdays)** with the pending days, **Sick
 leave**, **Special / unpaid** and **Flex change Σ**. The chart **Absence days
 per month by type** stacks vacation, sick leave, special and unpaid; depending
 on the length of the period it is per day, per week or per quarter instead.
 **Remaining vacation per employee (top 15)** shows the highest remaining
 balances.
 
-Filters are only available to administrators: **Area** (**Mine only** or
-**Entire team** for all people in the organization), **Employee**, **Team** and
-**Status**. With **Status** only requests marked **Pending** or **Approved**
-count. Export: **PDF** with chart, **CSV** and **Excel**.
+The filters **Area** (**Mine only** or **Entire team** for all people in the
+organization), **Employee**, **Team** and **Status** are shown to
+administrators and to people with the right **See all vacation requests**;
+everyone else only sees their own row. With **Status** only requests marked
+**Pending** or **Approved** count. Export: **PDF** with chart, **CSV** and
+**Excel**.
+
+The **Sick leave** column, its tile and its share of the chart show other people's values only if you also have the right **View sick leaves**; otherwise they are missing from the view and the export.
 
 ## Sicknesses
 
@@ -91,42 +96,60 @@ Columns per person with sick leaves in the period:
   otherwise the remaining free days or **OK**. Below the name, **Chain since**
   shows the start of the current sickness chain.
 
-How continued pay is calculated: in the default setting the entitlement is six
-weeks, i.e. 42 calendar days per sickness chain. A new sick leave continues the
-existing chain if it is linked as a follow-up certificate or if less than six
-months have passed since the end of the chain; only after at least six months
-does the entitlement start again. Diagnoses are not compared. The calendar
-days from the start of the chain to its end – for an ongoing sickness up to
-today – count as used. The columns **Continued pay** and **Status** show
-today's status, regardless of the selected period. The values are a guide, not
-a legal assessment.
+How continued pay is calculated:
 
-Tiles: **Employee**, **Workdays sick** with the calendar days, **Sickness
+- In the default setting the entitlement is six weeks, i.e. 42 calendar days of
+  incapacity for work. Only the sick days themselves count – for an ongoing
+  sickness up to today; working days between two sick leaves never count.
+- Sick leaves that overlap, follow on seamlessly or are linked as a follow-up
+  certificate form one sickness case. This also applies if a new illness
+  starts during an ongoing one.
+- A new illness that only begins after working days starts with the full
+  entitlement.
+- If the health insurer confirms the same illness (continuation of illness),
+  the earlier sick leave is selected on the new sick leave in the field
+  **Continuation of illness from**. The cases then share one entitlement. For
+  the same illness a new entitlement arises if the person, in the default
+  setting, was not unable to work because of this illness for six months, or if
+  twelve months have passed since the start of the first incapacity.
+- **Chain since** shows the start of the first case that counts towards the
+  current entitlement.
+
+The columns **Continued pay** and **Status** show today's status, regardless of
+the selected period. The values are a guide, not a legal assessment or legal
+advice.
+
+Tiles: **Employees**, **Workdays sick** with the calendar days, **Sickness
 cases** with the follow-up certificates, **With MC** and **Entitlement
 exhausted**. Charts: **Sick days per month** with a median line (per day, week
 or quarter depending on the period) and the heatmap **Sick days per employee
 and month**.
 
-Filters as in **Vacation & flex**: **Area**, **Employee** and **Team**, for
-administrators only. This page offers no export.
+Filters as in **Vacation & flex**: **Area**, **Employee** and **Team** – here
+for administrators and people with the right **View sick leaves**; everyone
+else only sees their own row. This page offers no export.
 
 ## Qualifications
 
 **Reports** → **Team** → **Qualifications** shows the **Qualification
-matrix**: one row per person with at least one qualification, one column per
-qualification in the catalogue (abbreviation, full name on hover).
+matrix**: one row per person with at least one active qualification, one
+column per active qualification in the catalogue (abbreviation, full name on
+hover). Inactive qualifications appear neither in the matrix nor in the
+tiles, charts and export.
 
 - Each cell shows the expiry date, or ✓ if the qualification is valid without an
   expiry date.
 - Colours: green **valid**, orange **expires in 30 days**, red **expired**, grey
   **no assignment**. The legend is below the matrix.
-- Tiles: **Employee**, **Qualifications**, **Assignments**, **Expiring (≤30 d)**
+- Tiles: **Employees**, **Qualifications**, **Assignments**, **Expiring (≤30 d)**
   and **Expired**.
 - Charts: **Holders per qualification (top 15)** and **Assignments per
   qualification by status** for the twelve most common qualifications.
 
 The reference date is always today; the header period does not change the
-matrix. Filters: **Employee** and **Team**. Export: **PDF** in landscape,
+matrix. The rows of all people are visible to administrators and to people
+with the right **Manage qualifications**; everyone else only sees their own
+row. The **Employee** and **Team** filters are only available with this right. Export: **PDF** in landscape,
 **CSV** and **Excel** with one row per person and the expiry date or a validity
 note per qualification. Qualifications are maintained in the catalogue and on
 the person, not in the report.
@@ -182,10 +205,12 @@ platform or without competency requirements the table stays empty.
 
 ## Who sees what
 
-- **Vacation & flex**, **Sicknesses** and **Qualifications**: everyone only sees
-  their own data. The view across all people of the organization is tied to the
-  administrator role – the right **View sick leaves** alone does not unlock it
-  here.
+- **Vacation & flex**, **Sicknesses** and **Qualifications**: without a further
+  right everyone only sees their own data. The view across all people of the
+  organization is available to administrators and, per report, to whoever holds
+  the right of the corresponding list: **See all vacation requests** for
+  **Vacation & flex**, **View sick leaves** for **Sicknesses** and **Manage
+  qualifications** for **Qualifications**.
 - **Occupational Safety**: menu entry and page only with the right **View
   safety event register** or **Edit / close safety events**; administrators
   always see them. In the default setup Team Lead and Management have the read
@@ -193,5 +218,6 @@ platform or without competency requirements the table stays empty.
 - **Problems & training**: only with the right **View reports** or as an
   administrator. In the default setup Management, Team Lead and Personnel
   Administration, among others, have it.
-- The menu areas **Team** and **Projects & customers** only exist if the add-on
-  module team reports is booked.
+- **Vacation & flex**, **Sicknesses** and **Qualifications** require the add-on
+  module team reports; **Occupational Safety** and **Problems & training** are
+  available without it.

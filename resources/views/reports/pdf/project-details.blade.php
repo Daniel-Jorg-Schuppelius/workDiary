@@ -8,10 +8,10 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Projekt-Details ' . $project->name . ' – ' . $year)
+@section('pdf-title', __('Projekt-Details') . ' ' . $project->name . ' – ' . $year)
 
 @section('pdf-heading')
-    Projekt: {{ $project->name }}@if ($project->customer) <span style="font-weight:normal;color:#555;">– {{ $project->customer->name }}</span>@endif
+    {{ __('Projekt') }}: {{ $project->name }}@if ($project->customer) <span style="font-weight:normal;color:#555;">– {{ $project->customer->name }}</span>@endif
 @endsection
 
 @push('pdf-styles')
@@ -21,13 +21,13 @@
 @endpush
 
 @section('pdf-meta')
-    Jahr: <strong>{{ $year }}</strong> · Erstellt: {{ now()->fdatetime() }}
+    {{ __('Jahr') }}: <strong>{{ $year }}</strong> · {{ __('Erstellt') }}: {{ now()->fdatetime() }}
 @endsection
 
 @section('pdf-table')
     @include('reports.pdf.charts._chart')
 
-    <h2>Monatswerte</h2>
+    <h2>{{ __('Monatswerte') }}</h2>
     <table class="data">
         <thead>
             <tr><th>{{ __('Monat') }}</th><th class="right">{{ __('Stunden') }}</th><th class="right">{{ __('Erlös') }}</th></tr>
@@ -42,7 +42,7 @@
             @endforeach
         </tbody>
         <tfoot>
-            <tr><td>Gesamt</td><td class="right">{{ \App\Support\Formats::duration((int) $yearMinutes, 'clock', withUnit: false) }}</td><td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $yearRate, 2, withThousandsSeparator: true) }} €</td></tr>
+            <tr><td>{{ __('Gesamt') }}</td><td class="right">{{ \App\Support\Formats::duration((int) $yearMinutes, 'clock', withUnit: false) }}</td><td class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $yearRate, 2, withThousandsSeparator: true) }} €</td></tr>
         </tfoot>
     </table>
 

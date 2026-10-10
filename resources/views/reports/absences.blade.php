@@ -18,7 +18,7 @@
         return $sign . intdiv($abs, 60) . ':' . str_pad((string) ($abs % 60), 2, '0', STR_PAD_LEFT) . ' h';
     };
     $linkParams = array_filter(array_merge(
-        ['scope' => $isAdmin ? $scope : null],
+        ['scope' => $seesTeam ? $scope : null],
         $standardFilters->toQueryParams(),
     ));
 @endphp
@@ -32,7 +32,7 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if ($isAdmin)
+    @if ($seesTeam)
         <x-filter-bar :action="route('reports.absences')" :reset="route('reports.absences')">
             <x-filter-field :label="__('Bereich')" for="rep-scope">
                 <select id="rep-scope" name="scope" class="select select-sm select-bordered" data-autosubmit>
@@ -53,9 +53,11 @@
     </div>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <x-kpi-tile :label="__('Mitarbeiter')" :value="$totals['users']" />
+        <x-kpi-tile :label="__('user.employees')" :value="$totals['users']" />
         <x-kpi-tile :label="__('Urlaub (Werktage)')" :value="$totals['vacation_days']" :hint="$totals['pending_days'] . ' ' . __('ausstehend')" />
-        <x-kpi-tile :label="__('Krank')" :value="$totals['sick_days']" />
+        @if ($showsSick)
+            <x-kpi-tile :label="__('Krank')" :value="$totals['sick_days']" />
+        @endif
         <x-kpi-tile :label="__('Sonder / Unbezahlt')" :value="$totals['special_days'] . ' / ' . $totals['unpaid_days']" />
         <x-kpi-tile :label="__('Flex-Änderung Σ')" :value="$fmtMin($totals['flex_change_minutes'])"
                     :tone="$totals['flex_change_minutes'] < 0 ? 'error' : ($totals['flex_change_minutes'] > 0 ? 'success' : 'neutral')" />
@@ -70,7 +72,9 @@
                     <tr>
                         <x-table.th sort type="string">{{ __('Mitarbeiter') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Urlaub') }}</x-table.th>
-                        <x-table.th sort type="number" align="right">{{ __('Krank') }}</x-table.th>
+                        @if ($showsSick)
+                            <x-table.th sort type="number" align="right">{{ __('Krank') }}</x-table.th>
+                        @endif
                         <x-table.th sort type="number" align="right">{{ __('Sonder') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Unbezahlt') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Ausstehend') }}</x-table.th>
@@ -84,7 +88,9 @@
                     <tr class="font-bold">
                         <td>{{ __('Gesamt') }}</td>
                         <td class="text-right tabular-nums">{{ $totals['vacation_days'] }}</td>
-                        <td class="text-right tabular-nums">{{ $totals['sick_days'] }}</td>
+                        @if ($showsSick)
+                            <td class="text-right tabular-nums">{{ $totals['sick_days'] }}</td>
+                        @endif
                         <td class="text-right tabular-nums">{{ $totals['special_days'] }}</td>
                         <td class="text-right tabular-nums">{{ $totals['unpaid_days'] }}</td>
                         <td class="text-right tabular-nums">{{ $totals['pending_days'] }}</td>
@@ -98,7 +104,9 @@
                     <tr>
                         <td class="font-semibold">{{ $r['user']->name }}</td>
                         <td class="text-right tabular-nums">{{ $r['vacation_days'] }}</td>
-                        <td class="text-right tabular-nums">{{ $r['sick_days'] }}</td>
+                        @if ($showsSick)
+                            <td class="text-right tabular-nums">{{ $r['sick_days'] }}</td>
+                        @endif
                         <td class="text-right tabular-nums">{{ $r['special_days'] }}</td>
                         <td class="text-right tabular-nums">{{ $r['unpaid_days'] }}</td>
                         <td class="text-right tabular-nums {{ $r['pending_days'] > 0 ? 'text-warning' : '' }}">{{ $r['pending_days'] }}</td>

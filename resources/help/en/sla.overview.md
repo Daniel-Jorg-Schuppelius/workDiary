@@ -1,7 +1,7 @@
 ---
 title: "SLA, contracts & service levels"
 topic: sla.overview
-version: 3
+version: 4
 keywords:
     - service level agreement
     - response time
@@ -72,4 +72,6 @@ shows, for the selected period, the **Tickets with SLA**, the
 **By priority**, **By customer** and **By cause** – plus a **Violation
 list** with a jump to the ticket and the **Included-time quotas**. The
 report can be exported as PDF, CSV and Excel. Anyone with the **View SLA
-status & report** permission may view it.
+status & report** permission may view it; exporting additionally requires the
+permission **Export reports** – without it, the export buttons are missing.
+Administrators may always do both.

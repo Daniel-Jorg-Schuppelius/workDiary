@@ -15,7 +15,7 @@
     $fmtMin = fn (int $minutes): string => \App\Support\Formats::duration($minutes, 'clock');
     $fmtChart = fn (int|float $min): string => \App\Support\Formats::duration((int) $min, 'clock', withUnit: false);
     $linkParams = array_filter(array_merge(
-        ['scope' => $isAdmin ? $scope : null],
+        ['scope' => $seesTeam ? $scope : null],
         $standardFilters->toQueryParams(),
     ));
 @endphp
@@ -29,7 +29,7 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if ($isAdmin)
+    @if ($seesTeam)
         <x-filter-bar :action="route('reports.attendance')" :reset="route('reports.attendance')">
             <x-filter-field :label="__('Bereich')" for="rep-scope">
                 <select id="rep-scope" name="scope" class="select select-sm select-bordered" data-autosubmit>

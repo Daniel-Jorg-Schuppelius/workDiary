@@ -8,14 +8,14 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Fuhrpark – ' . $from . ' bis ' . $to)
+@section('pdf-title', __('Fuhrpark') . ' – ' . $from . ' ' . __('bis') . ' ' . $to)
 @section('pdf-heading', __('Fuhrpark-Auswertung'))
 
 @section('pdf-meta')
-    Zeitraum: <strong>{{ \Carbon\Carbon::parse($from)->fdate() }}</strong> bis
+    {{ __('Zeitraum') }}: <strong>{{ \Carbon\Carbon::parse($from)->fdate() }}</strong> {{ __('bis') }}
     <strong>{{ \Carbon\Carbon::parse($to)->fdate() }}</strong> ·
-    Bereich: {{ $scope === 'team' ? 'Gesamter Fuhrpark' : 'Eigene Fahrten' }} ·
-    Erstellt: {{ now()->fdatetime() }}
+    {{ __('Bereich') }}: {{ $scope === 'team' ? __('Gesamter Fuhrpark') : __('Eigene Fahrten') }} ·
+    {{ __('Erstellt') }}: {{ now()->fdatetime() }}
 @endsection
 
 @section('pdf-table')
@@ -27,11 +27,11 @@
 
     <table class="kpis">
         <tr>
-            <td><div class="label">Fahrzeuge</div><div class="value">{{ $totals['vehicles'] }}</div></td>
+            <td><div class="label">{{ __('Fahrzeuge') }}</div><div class="value">{{ $totals['vehicles'] }}</div></td>
             <td><div class="label">Σ km</div><div class="value">{{ $num($totals['km'], 1) }}</div></td>
-            <td><div class="label">Fahrten</div><div class="value">{{ $totals['trip_count'] }}</div></td>
+            <td><div class="label">{{ __('Fahrten') }}</div><div class="value">{{ $totals['trip_count'] }}</div></td>
             <td><div class="label">{{ __('Tankungen / Ladungen') }}</div><div class="value">{{ $totals['fuel_count'] }}</div></td>
-            <td><div class="label">Energiekosten</div><div class="value">{{ $money($totals['energy_cost']) }}</div></td>
+            <td><div class="label">{{ __('Energiekosten') }}</div><div class="value">{{ $money($totals['energy_cost']) }}</div></td>
             <td><div class="label">Ø €/km</div><div class="value">{{ $totals['avg_cost_per_km'] !== null ? $num($totals['avg_cost_per_km'], 3) . ' €' : '–' }}</div></td>
         </tr>
     </table>
@@ -39,17 +39,17 @@
     <table class="data">
         <thead>
             <tr>
-                <th>Fahrzeug</th>
-                <th>Antrieb</th>
-                <th class="right">Fahrten</th>
+                <th>{{ __('Fahrzeug') }}</th>
+                <th>{{ __('Antrieb') }}</th>
+                <th class="right">{{ __('Fahrten') }}</th>
                 <th class="right">km</th>
-                <th class="right">Erstattung</th>
-                <th class="right">Tankungen</th>
-                <th class="right">Liter</th>
+                <th class="right">{{ __('Erstattung') }}</th>
+                <th class="right">{{ __('Tankungen') }}</th>
+                <th class="right">{{ __('Liter') }}</th>
                 <th class="right">kWh</th>
-                <th class="right">Energiekosten</th>
+                <th class="right">{{ __('Energiekosten') }}</th>
                 <th class="right">€/km</th>
-                <th class="right">Tachostand</th>
+                <th class="right">{{ __('Tachostand') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -72,7 +72,7 @@
                 </tr>
             @endforeach
             <tr class="totals">
-                <td colspan="2">Gesamt</td>
+                <td colspan="2">{{ __('Gesamt') }}</td>
                 <td class="right">{{ $totals['trip_count'] }}</td>
                 <td class="right">{{ $num($totals['km'], 1) }}</td>
                 <td class="right">{{ $money($totals['reimbursement']) }}</td>

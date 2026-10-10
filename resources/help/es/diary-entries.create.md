@@ -1,7 +1,7 @@
 ---
 title: "Crear una orden"
 topic: diary-entries.create
-version: 2
+version: 4
 keywords:
     - nueva orden
     - nuevo trabajo
@@ -14,6 +14,7 @@ keywords:
     - libro de órdenes
     - tipo de entrada
     - registrar intervención
+    - duración prevista
 audience: []
 schema: process
 related:
@@ -46,7 +47,10 @@ y estado. La entrada ancla actas, tiempos y la facturación posterior
    **proyecto**.
 3. Elija el **tipo de entrada** y describa el **contenido** en una o
    dos frases.
-4. Opcional: una **duración prevista** en minutos.
+4. Opcional: indique la **Duración prevista (HH:MM)** en la sección
+   **Período**, p. ej. 1:30. Si el campo queda vacío, se aplica la duración del servicio de una orden planificada; si no, la duración
+   de la franja horaria o de la cita. Es el plan en **Plan/real**, **Análisis de
+   tipos de orden** y **Capacidad de personal**.
 5. Las transiciones de estado pasan después por la **ventana de
    detalle** — sin actualización masiva desde la lista.
 

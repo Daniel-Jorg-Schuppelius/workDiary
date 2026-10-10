@@ -468,7 +468,7 @@ class BranchProfileInstaller {
         // für die Compliance-Lückenanalyse. Manuell angepasste (source=manual) werden nie überschrieben.
         /** @var list<array<string, mixed>> $privacyRequirements */
         $privacyRequirements = (array) Arr::get($profile, 'dataprotection_requirements_seed', []);
-        /** @var array<string, array{label?: string, category?: ?string}> $privacyDefaults */
+        /** @var array<string, array{category?: ?string}> $privacyDefaults */
         $privacyDefaults = (array) config('dataprotection.compliance.requirements', []);
         foreach ($privacyRequirements as $row) {
             $key = (string) ($row['key'] ?? '');
@@ -483,7 +483,7 @@ class BranchProfileInstaller {
                 ->first();
 
             $payload = [
-                'label' => (string) ($row['label'] ?? $default['label'] ?? $key),
+                'label' => (string) ($row['label'] ?? \App\Models\Privacy\PrivacyRequirement::defaultLabel($organization, $key)),
                 'category' => $row['category'] ?? $default['category'] ?? null,
                 'check_type' => (string) ($row['check_type'] ?? $key),
                 'active' => (bool) ($row['active'] ?? true),

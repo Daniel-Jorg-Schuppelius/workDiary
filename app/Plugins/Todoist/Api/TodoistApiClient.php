@@ -11,7 +11,7 @@
 namespace App\Plugins\Todoist\Api;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
-use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginHttpFactory};
+use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginApiException, PluginHttpFactory};
 use App\Plugins\Todoist\Models\TodoistConnection;
 use App\Plugins\Todoist\TodoistConfig;
 use RuntimeException;
@@ -186,7 +186,7 @@ class TodoistApiClient {
     private function assertOk(int $status, string $path): void {
         if ($status >= 400) {
             // Nur Statuscode + Pfad — nie Payload/Token in Fehlermeldungen.
-            throw new RuntimeException(sprintf('Todoist API %s antwortete mit HTTP %d.', $path, $status));
+            throw new PluginApiException(sprintf('Todoist API %s antwortete mit HTTP %d.', $path, $status), $status, $path);
         }
     }
 }

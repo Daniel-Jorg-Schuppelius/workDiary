@@ -12,8 +12,9 @@ return [
     'title' => 'Shipping & Logistics',
     'intro' => 'Carrier connections for shipping labels and shipment tracking (DHL Parcel, UPS, FedEx). One connection per carrier and organization; credentials are stored encrypted.',
 
-    'form_heading' => 'Add / edit connection',
-    'form_hint' => 'Pick the carrier and enter its credentials. Saving again with the same carrier updates the existing connection.',
+    'form_heading' => 'Add connection',
+    'form_heading_edit' => 'Edit :carrier connection',
+    'form_hint' => 'Pick the carrier and enter its credentials. Change existing connections via “Edit” in the list.',
     'secret_hint' => 'Password and API key are stored encrypted and never shown again. Leave them blank when editing to keep the stored values.',
     'connections_heading' => 'Existing connections',
     'no_connections' => 'No carrier connection configured yet.',
@@ -36,6 +37,8 @@ return [
     ],
 
     'label_short' => 'Shipping',
+    'last_tracked' => 'Last checked: :time',
+    'confirm_cancel' => 'Cancel this shipment with the carrier? The label becomes invalid; you can then create a new shipment.',
 
     'col' => [
         'mode' => 'Mode',
@@ -55,6 +58,11 @@ return [
     'action' => [
         'save' => 'Save',
         'disconnect' => 'Deactivate',
+        'edit' => 'Edit',
+        'cancel_edit' => 'Cancel',
+        'download_label' => 'Download label',
+        'track_now' => 'Check shipment status',
+        'cancel_shipment' => 'Cancel shipment',
         'create' => 'Ship',
     ],
 
@@ -67,6 +75,12 @@ return [
         'no_connection' => 'No active connection is configured for the selected carrier.',
         'label_created' => 'Shipment created and label retrieved.',
         'label_failed' => 'Could not create the shipping label: :reason',
+        'tracked' => 'Shipment status checked: :status',
+        'track_failed' => 'Could not check the shipment status: :reason',
+        'cancelled' => 'Shipment cancelled.',
+        'cancel_failed' => 'Could not cancel the shipment: :reason',
+        'not_cancellable' => 'The shipment is already with the carrier and can no longer be cancelled.',
+        'exists_use_edit' => 'A connection for this carrier already exists. Please change it via “Edit”.',
     ],
 
     'notify' => [

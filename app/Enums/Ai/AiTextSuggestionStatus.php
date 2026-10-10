@@ -32,11 +32,11 @@ enum AiTextSuggestionStatus: string implements HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::Proposed => (string) __('Vorgeschlagen'),
-            self::Accepted => (string) __('Angenommen'),
-            self::Edited => (string) __('Geändert'),
-            self::Rejected => (string) __('Abgelehnt'),
-            self::Expired => (string) __('Abgelaufen'),
+            self::Proposed => (string) __('enums.ai.ai_text_suggestion_status.proposed'),
+            self::Accepted => (string) __('enums.ai.ai_text_suggestion_status.accepted'),
+            self::Edited => (string) __('enums.ai.ai_text_suggestion_status.edited'),
+            self::Rejected => (string) __('enums.ai.ai_text_suggestion_status.rejected'),
+            self::Expired => (string) __('enums.ai.ai_text_suggestion_status.expired'),
         };
     }
 

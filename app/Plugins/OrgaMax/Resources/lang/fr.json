@@ -4,6 +4,7 @@
     "Token abgelaufen oder Scopes entzogen — Verbindung erneuern.": "Jeton expiré ou scopes révoqués — renouvelez la connexion.",
     "Verbindung blockiert (:reason) — Details im orgaMAX-Admin.": "Connexion bloquée (:reason) — détails dans l’admin orgaMAX.",
     "Verbindung wartet auf Callback bzw. Kontobestätigung.": "La connexion attend le callback ou la confirmation du compte.",
+    "orgaMAX Buchhaltung": "orgaMAX Buchhaltung",
     "orgaMAX-API antwortet mit Fehlerstatus :status.": "L’API orgaMAX répond avec le statut d’erreur :status.",
     "orgaMAX-API erreichbar.": "API orgaMAX accessible.",
     "orgaMAX-API nicht erreichbar.": "API orgaMAX inaccessible."

@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Zammad\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasPrivateNetworkOptIn};
 use App\Models\Project\Project;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -20,7 +20,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Zammad-Anbindung einer Organisation (Feature 060, MVP-129). Der API-Token
  * ist at-rest verschlüsselt (`encrypted`-Cast, APP_KEY). `queue_map` ordnet
  * Zammad-Gruppen (Queues) WorkDiary-Projekten zu; ohne Treffer greift
- * `default_project_id` (oder die Aufgabe wird global).
+ * `default_project_id` (oder die Aufgabe wird global). Mit
+ * `is_limited_to_mapped_groups` kommen nur Tickets zugeordneter Gruppen an;
+ * `allow_private_network` ist das auditierte SSRF-Opt-in (Muster CardDAV).
  *
  * @property int $id
  * @property int $organization_id
@@ -33,6 +35,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property array<int|string, int>|null $queue_map
  * @property string|null $resolved_state
  * @property string|null $time_unit
+ * @property string $ticket_target
+ * @property int|null $service_queue_id
+ * @property bool $is_limited_to_mapped_groups
+ * @property bool $allow_private_network
  * @property \Illuminate\Support\Carbon|null $last_polled_at
  */
 class ZammadConnection extends Model {
@@ -40,6 +46,7 @@ class ZammadConnection extends Model {
     use BelongsToOrganization;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+    use HasPrivateNetworkOptIn;
 
     /** Geheimnisse nie serialisieren/auditieren. */
     protected $hidden = [
@@ -60,6 +67,8 @@ class ZammadConnection extends Model {
         'time_unit',
         'ticket_target',
         'service_queue_id',
+        'is_limited_to_mapped_groups',
+        'allow_private_network',
         'last_polled_at',
         'created_by',
     ];
@@ -70,6 +79,8 @@ class ZammadConnection extends Model {
         'webhook_secret' => 'encrypted',
         'active' => 'boolean',
         'queue_map' => 'array',
+        'is_limited_to_mapped_groups' => 'boolean',
+        'allow_private_network' => 'boolean',
         'last_polled_at' => 'datetime',
     ];
 
@@ -93,6 +104,12 @@ class ZammadConnection extends Model {
      */
     public function pushesTime(): bool {
         return $this->isActive() && in_array($this->time_unit, ['minute', 'hour'], true);
+    }
+
+    /** Neue Tickets dieser Gruppe importieren? Ohne Beschränkung alle, sonst nur Gruppen mit Projektzuordnung. */
+    public function importsGroup(?int $groupId): bool {
+        return ! $this->is_limited_to_mapped_groups
+            || ($groupId !== null && array_key_exists($groupId, $this->queue_map ?? []));
     }
 
     /** @return BelongsTo<Project, $this> */

@@ -55,6 +55,7 @@ class KimaiExportService extends AbstractTimeEntryPushService {
             is_string($config['api_token'] ?? null) ? $config['api_token'] : null,
             is_string($config['base_url'] ?? null) ? $config['base_url'] : null,
             Tz::ofOrganization($organization),
+            (bool) ($config['allow_private_network'] ?? false),
         );
         if (! $this->client->isConfigured()) {
             return (string) __('Kimai-API ist nicht konfiguriert (Basis-URL und API-Token in den Plugin-Einstellungen hinterlegen).');

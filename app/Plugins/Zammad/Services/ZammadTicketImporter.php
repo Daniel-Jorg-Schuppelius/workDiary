@@ -13,12 +13,14 @@ declare(strict_types=1);
 namespace App\Plugins\Zammad\Services;
 
 use App\Enums\Integration\IntegrationInboxStatus;
+use App\Enums\Task\TaskStatus;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\{Project, Task};
 use App\Plugins\Zammad\Contracts\ZammadGateway;
 use App\Plugins\Zammad\Models\ZammadConnection;
+use App\Plugins\Zammad\Observers\ZammadTaskObserver;
 use App\Plugins\Zammad\ZammadPlugin;
 use App\Services\Integration\Match\EntityMatcher;
 use App\Services\Integration\Profiles\CustomerMatchProfile;
@@ -32,27 +34,44 @@ use Illuminate\Support\Carbon;
  * Typ `ticket`, externe Ticket-ID): ein Replay legt keine Dubletten an. Queue
  * (Zammad-Gruppe) → Projekt über `queue_map`, sonst `default_project_id`, sonst
  * globale Aufgabe. Nie ein Projekt fremder Organisationen (Mandantengrenze).
+ *
+ * Neu angelegt werden nur offene Tickets (geschlossene holt der Import nicht
+ * nach) und mit `is_limited_to_mapped_groups` nur zugeordnete Gruppen. Schließt
+ * Zammad ein bereits verknüpftes Ticket, wird die Aufgabe erledigt.
  */
 class ZammadTicketImporter {
+    /** Höchstwert der Zammad-API je Seite. */
+    public const PAGE_SIZE = 100;
+
+    /** Zammad-Status, die ein Ticket abschließen. */
+    private const CLOSED_STATES = ['closed', 'merged'];
+
     public function __construct(private readonly EntityMatcher $matcher = new EntityMatcher, private readonly CustomerMatchProfile $profile = new CustomerMatchProfile) {}
 
     /**
-     * @return array{created: int, skipped: int, inbox: int}
+     * @return array{created: int, updated: int, skipped: int, inbox: int}
      */
     public function import(ZammadConnection $connection, ZammadGateway $gateway, ?User $actor = null): array {
         $created = 0;
+        $updated = 0;
         $skipped = 0;
         $inbox = 0;
         $queueMap = $connection->queue_map ?? [];
 
-        foreach ($gateway->listTickets() as $ticket) {
+        foreach ($this->allTickets($gateway) as $ticket) {
             $externalId = (string) $ticket['id'];
 
-            $exists = ExternalReference::query()
+            $reference = ExternalReference::query()
                 ->forPlugin($connection->organization_id, ZammadPlugin::ID, ZammadPlugin::EXT_TYPE_TICKET)
                 ->forExternalId($externalId)
-                ->exists();
-            if ($exists) {
+                ->first();
+            if ($reference instanceof ExternalReference) {
+                $this->syncClosedState($reference, $ticket) ? $updated++ : $skipped++;
+                continue;
+            }
+
+            // Seit dem Paging-Fix sähe der erste Lauf die ganze Historie: Geschlossenes holt er nicht nach (E19).
+            if ($this->isClosed($ticket) || ! $connection->importsGroup($ticket['group_id'])) {
                 $skipped++;
                 continue;
             }
@@ -123,7 +142,7 @@ class ZammadTicketImporter {
                 'project_id' => $projectId,
                 'is_global' => $projectId === null,
                 'title' => $this->taskTitle($ticket),
-                'status' => in_array($ticket['state'], ['closed', 'merged'], true) ? 'done' : 'open',
+                'status' => TaskStatus::Open->value,
                 'billable' => true,
                 'created_by' => $actor?->id,
             ]);
@@ -148,7 +167,66 @@ class ZammadTicketImporter {
 
         $connection->forceFill(['last_polled_at' => Carbon::now()])->save();
 
-        return ['created' => $created, 'skipped' => $skipped, 'inbox' => $inbox];
+        return ['created' => $created, 'updated' => $updated, 'skipped' => $skipped, 'inbox' => $inbox];
+    }
+
+    /** @param array<string, mixed> $ticket */
+    private function isClosed(array $ticket): bool {
+        return in_array($ticket['state'] ?? null, self::CLOSED_STATES, true);
+    }
+
+    /**
+     * Schließt Zammad ein verknüpftes Ticket, wird die Aufgabe erledigt. Maßgeblich
+     * ist der Übergang gegenüber dem gemerkten Ticketstand — sonst schlösse jeder
+     * Lauf eine lokal wieder geöffnete Aufgabe erneut. Ein wiedereröffnetes Ticket
+     * öffnet nichts (ohne Rückkanal kann die Aufgabe hier erledigt worden sein).
+     *
+     * @param  array<string, mixed>  $ticket
+     */
+    private function syncClosedState(ExternalReference $reference, array $ticket): bool {
+        $closed = $this->isClosed($ticket);
+        if ($closed === $this->isClosed((array) ($reference->payload ?? []))) {
+            return false;
+        }
+        $reference->forceFill(['payload' => $ticket, 'synced_at' => Carbon::now()])->save();
+
+        $task = $reference->referenceable;
+        if (! $closed || ! $task instanceof Task || $task->status === TaskStatus::Done) {
+            return false;
+        }
+
+        // Kein Echo: der Abschluss kommt aus Zammad und geht nicht als Rückmeldung zurück.
+        ZammadTaskObserver::suppressed(fn () => $task->forceFill(['status' => TaskStatus::Done->value])->save());
+
+        return true;
+    }
+
+    /**
+     * Alle Seiten der Ticketliste. Zammad sortiert nach ID aufsteigend — nur
+     * die erste Seite hieße, dass ab dem 101. Ticket nie wieder ein neues ankommt.
+     *
+     * @return \Generator<int, array{id: int, number: string, title: string, group_id: int|null, state: string|null, customer_id: int|null, customer: string, organization: string}>
+     */
+    private function allTickets(ZammadGateway $gateway): \Generator {
+        $seen = [];
+        for ($page = 1; ; $page++) {
+            $tickets = $gateway->listTickets(null, $page, self::PAGE_SIZE);
+            $fresh = 0;
+            foreach ($tickets as $ticket) {
+                if (isset($seen[$ticket['id']])) {
+                    continue;
+                }
+                $seen[$ticket['id']] = true;
+                $fresh++;
+                yield $ticket;
+            }
+
+            // Eine Seite ohne neue Tickets beendet den Lauf auch dann, wenn ein
+            // Server `page` nicht auswertet und stets dieselbe Seite liefert.
+            if (count($tickets) < self::PAGE_SIZE || $fresh === 0) {
+                return;
+            }
+        }
     }
 
     /**

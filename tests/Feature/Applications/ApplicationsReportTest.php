@@ -59,7 +59,7 @@ final class ApplicationsReportTest extends TestCase {
 
         $csv = $this->actingAs($admin)->get(route('applications.report', ['export' => 'csv']));
         $csv->assertOk();
-        $this->assertStringContainsString('TREFFERQUOTE', (string) $csv->getContent());
+        $this->assertStringContainsString(__('reporting.csv.win_rate_percent'), (string) $csv->getContent());
     }
 
     public function test_report_denies_unauthorized_users(): void {

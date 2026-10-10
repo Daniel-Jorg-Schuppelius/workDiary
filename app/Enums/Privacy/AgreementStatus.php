@@ -26,10 +26,10 @@ enum AgreementStatus: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Draft => __('Entwurf'),
-            self::Active => __('Aktiv'),
-            self::Terminated => __('Gekündigt'),
-            self::Expired => __('Abgelaufen'),
+            self::Draft => __('enums.privacy.agreement_status.draft'),
+            self::Active => __('enums.privacy.agreement_status.active'),
+            self::Terminated => __('enums.privacy.agreement_status.terminated'),
+            self::Expired => __('enums.privacy.agreement_status.expired'),
         };
     }
 }

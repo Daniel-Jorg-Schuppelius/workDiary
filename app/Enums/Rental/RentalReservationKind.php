@@ -31,12 +31,12 @@ enum RentalReservationKind: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Soft => (string) __('Vormerkung'),
-            self::Hard => (string) __('Reservierung'),
-            self::Rental => (string) __('Verleih'),
-            self::Maintenance => (string) __('Wartungsfenster'),
-            self::Cleaning => (string) __('Reinigung'),
-            self::Transport => (string) __('Transport/Rüstzeit'),
+            self::Soft => (string) __('enums.rental.rental_reservation_kind.soft'),
+            self::Hard => (string) __('enums.rental.rental_reservation_kind.hard'),
+            self::Rental => (string) __('enums.rental.rental_reservation_kind.rental'),
+            self::Maintenance => (string) __('enums.rental.rental_reservation_kind.maintenance'),
+            self::Cleaning => (string) __('enums.rental.rental_reservation_kind.cleaning'),
+            self::Transport => (string) __('enums.rental.rental_reservation_kind.transport'),
         };
     }
 

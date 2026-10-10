@@ -1,7 +1,7 @@
 ---
 title: "FRITZ!Box-Anrufliste importieren"
 topic: admin.fritzbox
-version: 1
+version: 2
 keywords:
     - FRITZ!Box
     - Anrufliste
@@ -55,9 +55,9 @@ Unter **Plugins** öffnen Sie bei **FRITZ!Box-Anrufliste** den Dialog
 
 - **Telefonate abrechenbar buchen** (Standard: an): Ausgeschaltet werden
   importierte Telefonate nie als abrechenbar markiert.
-- **Zeiten buchen für Benutzer-ID**: die Kennung (ID) des Benutzers, dem die
-  Telefonate gebucht werden. Leer bucht WorkDiary auf den Inhaber der
-  Organisation bzw. den ersten Benutzer.
+- **Zeiten buchen für Benutzer**: der Benutzer, dem die Telefonate gebucht
+  werden; Sie wählen ihn aus der Liste. Ohne Auswahl bucht WorkDiary auf den
+  Inhaber der Organisation bzw. den ersten Benutzer.
 - **Mindestdauer (Minuten)** (Standard: 2): Kürzere Gespräche werden
   übersprungen.
 - **Vorlauf-Fenster (Minuten)** (Standard: 15): Endet ein Anruf höchstens so
@@ -183,7 +183,7 @@ auf eine Stempel-Rufnummer werden nie als Telefonat gebucht.
   CSV-Export der Anrufliste unverändert.
 - **„Kein buchbarer Benutzer in der Organisation.“** bzw. ein Health-Check, der
   meldet, der konfigurierte Standard-Benutzer existiere nicht mehr: Prüfen Sie
-  **Zeiten buchen für Benutzer-ID** oder leeren Sie das Feld.
+  **Zeiten buchen für Benutzer** oder heben Sie die Auswahl auf.
 - **Ausgehende Anrufe fehlen:** Stammt die Liste von einer älteren Firmware,
   schalten Sie **Typ 3 als ausgehend werten** ein.
 - **Fast alles ausgefiltert:** Prüfen Sie **Nur eigene Rufnummern** – die

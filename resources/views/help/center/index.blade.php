@@ -65,7 +65,7 @@
                 <ul class="divide-y divide-base-300">
                     @foreach ($pages as $entry)
                         <li>
-                            <a href="{{ $entry['url'] }}"
+                            <a href="{{ $entry['url'] }}" @if ($entry['modal']) data-entry-modal-trigger @endif
                                class="flex items-center justify-between gap-3 px-5 py-3 transition-colors hover:bg-base-200">
                                 <span class="flex min-w-0 items-center gap-3">
                                     <x-icon :name="$entry['icon']" class="shrink-0 text-primary" />
@@ -142,7 +142,7 @@
                                 <x-icon name="chevron_right" class="shrink-0 text-primary" />
                             </a>
                             @if ($topicPage !== null)
-                                <x-button tone="ghost" size="xs" icon="arrow_forward" class="shrink-0" :href="$topicPage['url']"
+                                <x-button tone="ghost" size="xs" icon="arrow_forward" class="shrink-0" :href="$topicPage['url']" :data-entry-modal-trigger="$topicPage['modal']"
                                           :title="__('Zur Seite „:page“', ['page' => $topicPage['label']])">
                                     {{ __('Zur Seite') }}
                                 </x-button>

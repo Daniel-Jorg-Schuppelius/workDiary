@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Finance;
 
-use App\Enums\Finance\AccountingEntryStatus;
+use App\Enums\Finance\{AccountingEntryStatus, DirectBookingKind};
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
@@ -70,13 +70,18 @@ class JournalController extends Controller {
         ]);
     }
 
-    public function show(AccountingEntry $entry): View {
+    public function show(Request $request, AccountingEntry $entry): View {
         abort_unless(Gate::allows(Permission::AccountingLedgerView->value), 403);
         $this->assertSameOrganization($entry);
+        $actor = $request->user();
 
         return view('finance.accounting.entry', [
             'entry' => $entry->load(['lines.account', 'lines.taxCode', 'postedBy', 'reversedBy', 'reverses']),
             'canPost' => Gate::allows(Permission::AccountingLedgerPost->value),
+            'awaitsSecondPerson' => $actor !== null && $this->journal->awaitsSecondPerson($entry, $actor),
+            // Wartende Direktbuchung (verwerfbar) bzw. wartendes Storno (E23/E24).
+            'directKind' => $entry->status->isMutable() ? DirectBookingKind::of($entry) : null,
+            'pendingReversal' => $entry->status === AccountingEntryStatus::Posted ? $this->journal->pendingReversalOf($entry) : null,
             // Hinweis auf überschrittene freigegebene Monatsbudgets (MVP-983), keine Sperre.
             'budgetOverruns' => app(\App\Services\Accounting\AccountingBudgetService::class)->overrunsFor($entry),
         ]);
@@ -186,7 +191,27 @@ class JournalController extends Controller {
 
         return redirect()
             ->route('finance.accounting.journal.show', $reversal)
-            ->with('status', __('accounting.ledger.flash.entry_reversed'));
+            ->with('status', $reversal->status->isPosted()
+                ? __('accounting.ledger.flash.entry_reversed')
+                : __('accounting.ledger.flash.reversal_awaiting_approval'));
+    }
+
+    /**
+     * Wartende Direktbuchung verwerfen (E24). Zurück zur Liste, auf der der
+     * Vorgang wieder offen steht — die Detailseite gibt es danach nicht mehr.
+     */
+    public function discard(Request $request, AccountingEntry $entry): RedirectResponse {
+        abort_unless(Gate::allows(Permission::AccountingLedgerPost->value), 403);
+        $this->assertSameOrganization($entry);
+        $actor = $request->user();
+        abort_if($actor === null, 403);
+
+        $kind = DirectBookingKind::of($entry);
+        $this->journal->discard($entry, $actor);
+
+        return redirect()
+            ->toList($kind === DirectBookingKind::OpenItemSettlement ? 'finance.accounting.open-items.index' : 'finance.accounting.inbox.index')
+            ->with('status', __('accounting.ledger.flash.entry_discarded'));
     }
 
     private function assertSameOrganization(AccountingEntry $entry): void {

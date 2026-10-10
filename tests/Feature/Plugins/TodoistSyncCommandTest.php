@@ -121,6 +121,44 @@ final class TodoistSyncCommandTest extends TestCase {
         $this->assertSame('tok-1', $this->cursor(), 'Cursor unverändert — Wiederanlauf am selben Stand');
     }
 
+    /** Ein abgelehntes Token pausiert die Verbindung, statt stündlich weiter zu scheitern (Phase 137). */
+    public function test_rejected_token_pauses_the_connection(): void {
+        $this->connection->forceFill(['sync_cursor' => 'tok-1'])->save();
+        FakePluginHttp::fake([
+            'https://api.todoist.com/api/v1/sync' => FakePluginHttp::response(['error' => 'unauthorized'], 401),
+        ]);
+
+        $this->artisan('todoist:sync')->assertExitCode(0);
+
+        $connection = $this->connection->fresh();
+        $this->assertSame(TodoistConnectionStatus::Paused, $connection?->status);
+        $this->assertStringContainsString('HTTP 401', (string) $connection?->last_error);
+    }
+
+    public function test_other_failures_record_the_error_but_keep_the_connection_active(): void {
+        $this->connection->forceFill(['sync_cursor' => 'tok-1'])->save();
+        FakePluginHttp::fake([
+            'https://api.todoist.com/api/v1/sync' => FakePluginHttp::response(['error' => 'rate limited'], 429, ['Retry-After' => '0']),
+        ]);
+
+        $this->artisan('todoist:sync')->assertExitCode(0);
+
+        $connection = $this->connection->fresh();
+        $this->assertSame(TodoistConnectionStatus::Active, $connection?->status);
+        $this->assertNotNull($connection?->last_error);
+    }
+
+    public function test_successful_run_clears_the_last_error(): void {
+        $this->connection->forceFill(['sync_cursor' => 'tok-1', 'last_error' => 'PluginApiException (HTTP 429)'])->save();
+        FakePluginHttp::fake([
+            'https://api.todoist.com/api/v1/sync' => FakePluginHttp::response(['sync_token' => 'tok-2', 'full_sync' => false, 'items' => []]),
+        ]);
+
+        $this->artisan('todoist:sync')->assertExitCode(0);
+
+        $this->assertNull($this->connection->fresh()?->last_error);
+    }
+
     public function test_delta_checked_item_completes_local_task(): void {
         $this->importInitialTask();
 

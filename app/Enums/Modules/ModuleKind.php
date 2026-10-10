@@ -26,9 +26,9 @@ enum ModuleKind: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Platform => (string) __('Plattformdienst'),
-            self::Core => (string) __('Kernmodul'),
-            self::Feature => (string) __('Fachmodul'),
+            self::Platform => (string) __('enums.modules.module_kind.platform'),
+            self::Core => (string) __('enums.modules.module_kind.core'),
+            self::Feature => (string) __('enums.modules.module_kind.feature'),
         };
     }
 }

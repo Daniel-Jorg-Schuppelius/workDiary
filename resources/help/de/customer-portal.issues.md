@@ -1,7 +1,7 @@
 ---
 title: "Offene Punkte"
 topic: customer-portal.issues
-version: 2
+version: 3
 keywords:
     - offene Punkte
     - Mängelliste
@@ -25,7 +25,7 @@ Offene Punkte sind Aufgaben, Mängel oder Klärungen, die Ihr Auftragnehmer zu I
 
 ## So öffnen Sie die Seite
 
-Klicken Sie auf der **Übersicht** auf die Kachel **Offene Punkte**. Die Zahl auf der Kachel nennt die Punkte, die noch nicht geschlossen sind. Die Kachel erscheint, wenn Ihr Auftragnehmer diesen Bereich für Sie freigegeben hat. Mit derselben Freigabe steht im Menü außerdem **Bekannte Fehler**; diese Liste beschreibt das Hilfethema zu Tickets.
+Klicken Sie auf der **Übersicht** auf die Kachel **Offene Punkte**. Die Zahl auf der Kachel nennt die Punkte, die noch nicht geschlossen sind. Die Kachel erscheint, wenn Ihr Auftragnehmer diesen Bereich für Sie freigegeben hat. Die Liste **Bekannte Fehler** gehört zum Bereich Tickets und ist im Hilfethema zu Tickets beschrieben.
 
 ## Was ein Punkt zeigt
 

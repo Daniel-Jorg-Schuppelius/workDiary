@@ -1,7 +1,7 @@
 ---
 title: "Su día en WorkDiary: Servicio de campo"
 topic: roles.aussendienst
-version: 1
+version: 2
 keywords:
     - técnico de campo
     - técnico de servicio
@@ -27,7 +27,7 @@ rutas y gastos, siempre sobre sus propias intervenciones: inicie la
 **medición de tiempo** (cronómetro o «Nueva entrada»), documente la
 orden con fotos y adjuntos en el expediente, genere el **protocolo** y
 haga que el cliente lo **firme** in situ (firma táctil o enlace de
-firma), mantenga rutas y libro de a bordo y cierre el día. Puede crear y
+firma), mantenga rutas y libro de viajes y cierre el día. Puede crear y
 editar sus propios registros de tiempo hasta su aprobación (después,
 solo mediante solicitud de corrección), gestionar sus órdenes,
 solicitar vacaciones y consultar su cuenta de tiempo. Clientes y

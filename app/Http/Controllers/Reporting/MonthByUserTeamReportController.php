@@ -127,6 +127,8 @@ class MonthByUserTeamReportController extends Controller {
             return $this->exportCsv($byUser, $users, $monthLabels, $monthTotals, $yearTotal, $yearRate, $year, $exportFilters, $request);
         }
         if ($request->query('export') === 'xlsx') {
+            $this->auditExport($request, 'month-by-user-team', 'xlsx', $exportFilters);
+
             return $this->exportXlsx($byUser, $users, $monthLabels, $monthTotals, $yearTotal, $yearRate, $year);
         }
         if ($request->query('export') === 'pdf') {
@@ -180,7 +182,7 @@ class MonthByUserTeamReportController extends Controller {
      */
     private function exportCsv(array $byUser, Collection $users, array $monthLabels, array $monthTotals, int $yearTotal, float $yearRate, int $year, array $exportFilters, Request $request): Response {
         $filename = sprintf('monat-team-%04d.csv', $year);
-        $rows = [array_merge(['Mitarbeiter'], array_values($monthLabels), ['Jahressumme', 'Erloes'])];
+        $rows = [array_merge([(string) __('reporting.csv.employee')], array_values($monthLabels), [(string) __('reporting.csv.year_total'), (string) __('reporting.csv.revenue')])];
         foreach ($this->buildRows($byUser, $users, 'months', $monthTotals, $yearTotal, $yearRate) as $row) {
             $rows[] = array_map(static fn($v) => is_float($v) ? NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) : $v, $row);
         }
@@ -196,7 +198,7 @@ class MonthByUserTeamReportController extends Controller {
      */
     private function exportXlsx(array $byUser, Collection $users, array $monthLabels, array $monthTotals, int $yearTotal, float $yearRate, int $year): SymfonyResponse {
         $filename = sprintf('monat-team-%04d.xlsx', $year);
-        $headers = array_merge(['Mitarbeiter'], array_values($monthLabels), ['Jahressumme', 'Erloes']);
+        $headers = array_merge([(string) __('reporting.csv.employee')], array_values($monthLabels), [(string) __('reporting.csv.year_total'), (string) __('reporting.csv.revenue')]);
 
         return XlsxExport::streamFromArray($filename, $headers, $this->buildRows($byUser, $users, 'months', $monthTotals, $yearTotal, $yearRate));
     }

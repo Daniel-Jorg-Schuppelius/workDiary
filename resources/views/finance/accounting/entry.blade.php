@@ -19,14 +19,26 @@
     <x-page-toolbar :subtitle="$entry->memo">
         <x-slot:badges>
             <x-status-badge :tone="$entry->status->tone()">{{ $entry->status->label() }}</x-status-badge>
+            @if ($directKind)
+                <x-status-badge :tone="$directKind->tone()">{{ $directKind->label() }}</x-status-badge>
+            @endif
         </x-slot:badges>
         <x-slot:actions>
-            @if ($canPost && $entry->status->isMutable())
+            @if ($canPost && $entry->status->isMutable() && ! $awaitsSecondPerson)
                 <x-action-form :action="route('finance.accounting.journal.post', $entry)" method="POST">
                     <x-button type="submit" tone="primary" size="sm">{{ __('accounting.ledger.action.post') }}</x-button>
                 </x-action-form>
             @endif
-            @if ($canPost && $entry->status === \App\Enums\Finance\AccountingEntryStatus::Posted)
+            @if ($canPost && $directKind)
+                {{-- Nur wartende Direktbuchungen (E24); Festbuchungen bleiben unantastbar. --}}
+                <x-action-form :action="route('finance.accounting.journal.discard', $entry)" method="POST"
+                               :confirm="__('accounting.ledger.confirm.discard')" confirm-icon="delete" confirm-tone="error"
+                               :confirm-label="__('accounting.ledger.action.discard')">
+                    <x-icon-btn placement="danger" icon="delete" size="sm" tone="error" show-label type="submit"
+                                :label="__('accounting.ledger.action.discard')" />
+                </x-action-form>
+            @endif
+            @if ($canPost && $entry->status === \App\Enums\Finance\AccountingEntryStatus::Posted && ! $pendingReversal)
                 <x-icon-btn icon="undo" size="sm" tone="warning" show-label
                             data-entry-modal-trigger
                             :href="route('finance.accounting.journal.reverse-form', $entry)"
@@ -46,6 +58,21 @@
                 <x-detail-grid.row :label="__('accounting.ledger.column.source')" class="font-mono text-xs">{{ $entry->source_key ?? '—' }}</x-detail-grid.row>
             </x-detail-grid>
 
+            @if ($directKind)
+                <div class="alert bg-info/10 border-info/30 mt-3 text-sm" role="note">
+                    <x-icon name="groups" />
+                    <span>{{ __('accounting.ledger.entry.awaiting_approval', ['kind' => $directKind->label()]) }}</span>
+                </div>
+            @endif
+            @if ($pendingReversal)
+                <div class="alert bg-warning/10 border-warning/30 mt-3 text-sm" role="note">
+                    <x-icon name="pending_actions" />
+                    <span>
+                        {{ __('accounting.ledger.entry.reversal_pending') }}
+                        <a href="{{ route('finance.accounting.journal.show', $pendingReversal) }}" class="link">{{ __('accounting.ledger.action.show_pending') }}</a>
+                    </span>
+                </div>
+            @endif
             @if ($entry->reverses)
                 <div class="alert bg-warning/10 border-warning/30 mt-3 text-sm" role="note">
                     <x-icon name="undo" />

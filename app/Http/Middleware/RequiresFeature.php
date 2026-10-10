@@ -25,15 +25,17 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
  * Liefert bei deaktiviertem Feature 423 Locked. JSON-Aufrufer bekommen
  * ein `{error: 'feature_disabled', code: ...}`-Body, HTML-Aufrufer eine
  * Standard-HttpException (kann später durch eigene 423-View ersetzt
- * werden).
+ * werden). `requires-feature:code,hidden` antwortet 404 — für das
+ * Kundenportal, das den Lizenzstand nicht verraten soll (MVP-1100).
  */
 class RequiresFeature {
     public function __construct(private readonly FeatureFlagResolver $features) {}
 
-    public function handle(Request $request, Closure $next, string $code): Response {
+    public function handle(Request $request, Closure $next, string $code, string $mode = 'locked'): Response {
         if ($this->features->isEnabled($code)) {
             return $next($request);
         }
+        abort_if($mode === 'hidden', 404);
 
         $message = __('Funktion „:code" ist in der aktuellen Lizenz nicht enthalten.', ['code' => $code]);
 

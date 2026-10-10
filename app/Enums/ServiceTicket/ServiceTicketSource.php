@@ -25,12 +25,12 @@ enum ServiceTicketSource: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Manual => __('Manuell'),
-            self::MaintenancePlan => __('Wartungsplan'),
-            self::OpenIssue => __('Offene Punkte'),
-            self::Email => __('E-Mail'),
-            self::CustomerPortal => __('Kundenportal'),
-            self::Api => __('API'),
+            self::Manual => __('enums.service_ticket.service_ticket_source.manual'),
+            self::MaintenancePlan => __('enums.service_ticket.service_ticket_source.maintenance_plan'),
+            self::OpenIssue => __('enums.service_ticket.service_ticket_source.open_issue'),
+            self::Email => __('enums.service_ticket.service_ticket_source.email'),
+            self::CustomerPortal => __('enums.service_ticket.service_ticket_source.customer_portal'),
+            self::Api => __('enums.service_ticket.service_ticket_source.api'),
         };
     }
 }

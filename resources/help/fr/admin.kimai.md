@@ -1,7 +1,7 @@
 ---
 title: "Import Kimai"
 topic: admin.kimai
-version: 1
+version: 3
 keywords:
     - Kimai
     - importer des temps
@@ -13,6 +13,9 @@ keywords:
     - écriture retour
     - affectation des utilisateurs
     - renvoyer les corrections
+    - import horaire
+    - Kimai auto-hébergé
+    - autoriser les adresses privées
 audience:
     - admin
 related:
@@ -23,6 +26,7 @@ related:
     - admin.toggl
     - finance.open-times
     - admin.organization-settings
+    - admin.scheduler
 ---
 
 La page **Import Kimai** reprend dans WorkDiary les saisies de temps de l’outil
@@ -46,8 +50,9 @@ dès que le plugin est actif.
   API d’un utilisateur Kimai (dans Kimai sous Profil → Accès API). Pour
   recevoir les temps de toutes les personnes, cet utilisateur a besoin dans
   Kimai du droit view_other_timesheet.
-- L’instance Kimai doit être joignable publiquement. Seul l’exploitant de votre
-  installation peut autoriser une instance située sur un réseau interne.
+- L’instance Kimai doit être joignable publiquement, ou vous autorisez une
+  instance auto-hébergée sur votre propre réseau avec **Autoriser les
+  adresses privées** (voir Configuration).
 
 ## Configuration
 
@@ -56,22 +61,28 @@ l’entrée Kimai :
 
 1. **URL de base Kimai** : l’adresse à laquelle vous ouvrez Kimai dans le
    navigateur – sans /api à la fin.
-2. **Jeton API Kimai** : le jeton issu de Kimai. Il est stocké chiffré ; un
+2. **Autoriser les adresses privées** : uniquement pour une instance
+   auto-hébergée sur votre propre réseau (par exemple 192.168.x.x). Sans ce
+   commutateur, WorkDiary refuse les adresses internes. La modification est
+   journalisée. Si l’exploitant de votre installation a bloqué cette
+   autorisation, le commutateur reste sans effet.
+3. **Jeton API Kimai** : le jeton issu de Kimai. Il est stocké chiffré ; un
    champ vide conserve la valeur précédente à l’enregistrement.
-3. **Consulter les temps de tous les utilisateurs** : activé (par défaut) si
+4. **Consulter les temps de tous les utilisateurs** : activé (par défaut) si
    l’utilisateur du jeton peut lire les temps des autres ; sinon seuls ses
    propres temps arrivent.
-4. **Fenêtre de synchronisation (jours)** : jusqu’où remonte un import API sans
-   période (30 jours par défaut).
-5. **Reprendre l’état facturable** : activé, l’indicateur facturable de Kimai
+5. **Fenêtre de synchronisation (jours)** : jusqu’où remonte un import API sans
+   période (30 jours par défaut), y compris l’import horaire.
+6. **Reprendre l’état facturable** : activé, l’indicateur facturable de Kimai
    est repris ; désactivé, les temps importés ne sont jamais marqués comme
    facturables.
-6. **Mode mono-utilisateur** et **Enregistrer les temps pour l’ID
-   utilisateur** : uniquement pour les postes individuels, voir plus bas.
-7. Pour la réimputation, **Activer l'écriture retour**, **ID d'activité Kimai
+7. **Mode mono-utilisateur** et **Enregistrer les temps pour
+   l’utilisateur** : uniquement pour les postes individuels, voir plus bas.
+   Vous choisissez l’utilisateur dans la liste.
+8. Pour la réimputation, **Activer l'écriture retour**, **ID d'activité Kimai
    pour les réimputations** et éventuellement **Report immédiat des nouveaux
    temps** ; pour le renvoi des corrections, **Renvoyer les corrections**.
-8. **Enregistrer**. **Tester la connexion** dans la boîte de dialogue vérifie
+9. **Enregistrer**. **Tester la connexion** dans la boîte de dialogue vérifie
    l’accès. Sans jeton, le plugin signale le mode CSV – ce n’est pas une
    erreur.
 
@@ -91,8 +102,14 @@ organisation.
 WorkDiary interroge les derniers jours selon la fenêtre de synchronisation.
 L’import ignore les feuilles de temps en cours, sans fin.
 
-Il n’existe pas d’import Kimai planifié : chaque import démarre sur cette
-page. La page indique ensuite combien d’entrées ont été créées, ignorées ou
+**Import horaire :** dès que l’URL de base et le jeton API sont enregistrés,
+l’import API s’exécute en plus automatiquement toutes les heures – sur la
+fenêtre de synchronisation et avec rapprochement des suppressions (voir plus
+bas). Vous modifiez la fréquence sous **Tâches planifiées**, à l’entrée
+« Import Kimai ». Sans accès API, il n’y a pas d’import automatique ; vous
+chargez toujours les fichiers CSV ici.
+
+Après un import sur cette page, la page indique combien d’entrées ont été créées, ignorées ou
 laissées en attente dans la boîte, et combien n’ont pu être rattachées à aucun
 utilisateur.
 
@@ -111,15 +128,16 @@ utilisateur.
   puis vous comptabilisez le groupe. L’affectation est mémorisée ; les imports
   suivants comptabilisent alors sans demander.
 - **Personnes :** chaque temps appartient à la personne qui l’a saisi dans
-  Kimai. L’import CSV utilise la colonne e-mail, l’import API le nom
-  d’utilisateur Kimai. WorkDiary compare l’un ou l’autre à l’adresse e-mail
-  des utilisateurs actifs. Sans correspondance, un cas « Utilisateur
+  Kimai. L’import CSV utilise la colonne e-mail, l’import API l’adresse
+  e-mail de l’utilisateur Kimai (à défaut, son nom d’utilisateur). WorkDiary
+  compare l’un ou l’autre à l’adresse e-mail des utilisateurs actifs ; un
+  choix mémorisé dans la boîte pour un nom d’utilisateur reste valable. Sans correspondance, un cas « Utilisateur
   inconnu » ou « Entrée sans signal d’utilisateur » est créé dans la boîte,
   au lieu que le temps atterrisse sans bruit chez l’utilisateur principal.
   Choisissez-y l’utilisateur ; le choix est mémorisé.
 - **Mode mono-utilisateur :** seulement s’il est activé, l’import affecte les
   entrées sans personne identifiable à l’utilisateur par défaut. C’est
-  l’utilisateur indiqué dans **Enregistrer les temps pour l’ID utilisateur**,
+  l’utilisateur indiqué dans **Enregistrer les temps pour l’utilisateur**,
   sinon le propriétaire de l’organisation ou le premier utilisateur.
 
 ## Nouvel import et modifications
@@ -182,17 +200,20 @@ arrière-plan et est répété en cas d’erreur.
   le numéro d’une activité Kimai.
 - « Aucun projet n'est associé à un projet Kimai » : lancez d’abord un import
   API ou comptabilisez les groupes API dans la boîte.
-- Beaucoup de cas « Utilisateur inconnu » : les noms d’utilisateur Kimai ou la
-  colonne e-mail ne correspondent pas aux adresses e-mail de WorkDiary.
+- Beaucoup de cas « Utilisateur inconnu » : les adresses e-mail dans Kimai ou
+  la colonne e-mail ne correspondent pas aux adresses e-mail de WorkDiary.
   Affectez chaque personne une fois dans la boîte.
 - Seuls les temps de l’utilisateur du jeton arrivent : il lui manque dans
   Kimai le droit view_other_timesheet, ou **Consulter les temps de tous les
   utilisateurs** est désactivé.
 - L’import CSV ne crée rien : la ligne d’en-tête doit contenir au moins une
   date et une heure de fin ou une durée.
-- L’API est injoignable : saisissez l’adresse sans /api, vérifiez le jeton et
-  utilisez **Tester la connexion**. Si l’instance se trouve sur un réseau
-  interne, WorkDiary signale une adresse privée. Si les erreurs se
+- L’API est injoignable : la page affiche l’erreur et rien n’est importé.
+  Saisissez l’adresse sans /api, vérifiez le jeton et utilisez **Tester la
+  connexion**. Si l’instance se trouve sur un réseau interne, WorkDiary
+  signale une adresse privée ; activez **Autoriser les adresses privées**. Si
+  l’exploitant a bloqué cette autorisation, l’instance doit avoir une adresse
+  joignable publiquement. Si les erreurs se
   multiplient, WorkDiary désactive automatiquement le plugin ; une fois la
   cause corrigée, réinitialisez-le sur la page **Plugins** avec
   **Réinitialiser et réactiver**.

@@ -779,7 +779,7 @@ return [
         'customer.assets.*' => 'customer-portal.assets',
         'customer.profile.*' => 'customer-portal.access',
         'customer.invitation.*' => 'customer-portal.access',
-        'customer.password.confirm' => 'customer-portal.access',
+        'customer.password.*' => 'customer-portal.access',
         'customer.login' => 'customer-portal.access',
         'customer.2fa.*' => 'customer-portal.access',
         'customer.two-factor.*' => 'customer-portal.access',

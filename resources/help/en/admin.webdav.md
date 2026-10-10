@@ -1,7 +1,7 @@
 ---
 title: "WebDAV storage"
 topic: admin.webdav
-version: 1
+version: 3
 keywords:
     - WebDAV
     - Nextcloud
@@ -13,6 +13,7 @@ keywords:
     - app password
     - folder rules
     - mirror conflict
+    - private addresses
 audience:
     - admin
 related:
@@ -42,8 +43,8 @@ under **Plugins** → **WebDAV** once the plugin is active.
 - The page is open to administrators.
 - You need an account in the storage with write access to the target folder
   and an app password (Nextcloud: Settings → Security → App password).
-- The storage must be publicly reachable. WorkDiary rejects addresses on an
-  internal network.
+- The storage must be publicly reachable. If the server runs on your own
+  network, switch on **Allow private/internal addresses** (see below).
 - There is exactly one WebDAV storage per organization.
 
 This page is not a target for backups. You set up a WebDAV backup target
@@ -63,6 +64,11 @@ In the **Storage** section you fill in:
   password.
 - **Default folder**: subfolder for documents without their own folder rule
   (prefilled with Dokumente).
+- **Allow private/internal addresses**: switch it on only if the WebDAV
+  server runs on your own network (for example 192.168.x.x). Without this
+  switch WorkDiary rejects internal addresses as soon as you save. Switching
+  it on is audited. If the operator of your installation has blocked this
+  approval, the switch has no effect.
 - **Active**: switches the storage on or off.
 - **Mirrored content**: **Documents (DMS)**, **Invoices (PDF)**, **Protocols
   (PDF)**.
@@ -76,18 +82,19 @@ health (for example **Health ok**) and **Test connection**.
 
 - **Documents:** a document is mirrored as soon as it has the status
   **Active** with a file, and again with every new version. Changes to the
-  details without a new version do not trigger an upload. The storage always
-  mirrors released documents while it is active – even if **Documents (DMS)**
-  is not ticked.
+  details without a new version do not trigger an upload. This only applies
+  with **Documents (DMS)** ticked; if no source is ticked at all, documents
+  count as selected.
 - **Invoices (PDF):** with this box ticked, every invoice is stored once as a
   PDF when it changes to **Issued**.
 - **Protocols (PDF):** with this box ticked, every protocol is stored as a
   PDF when it is signed (status **Signed**).
 - The transfer runs in the background through a queue and is retried on
   connection errors. WorkDiary does not upload unchanged content again.
-- **Mirror now** queues all currently released documents again – useful after
-  the setup. This button does not cover invoices and protocols; they are only
-  mirrored from the setup onwards, when they are issued or signed.
+- **Mirror now** queues everything from the ticked sources again: released
+  documents, issued invoices and signed protocols – useful after the setup,
+  also for records from before. WorkDiary does not upload content that has
+  already been mirrored again.
 - There is no scheduled run; mirroring follows the changes in WorkDiary.
 
 ## Folders and file names
@@ -96,10 +103,9 @@ health (for example **Health ok**) and **Test connection**.
   type → folder**, otherwise in the **Default folder** – both relative to the
   collection URL. The file is named document- followed by the document number
   and the original extension, for example document-42.pdf.
-- The document type selection currently shows the short English code, for
-  example contract for contracts or invoice for invoices. There are always
-  three empty rows; WorkDiary discards rows without a type or without a
-  subfolder.
+- The selection names the document types by their label, for example
+  Contract or Invoice. There are always three empty rows; WorkDiary discards
+  rows without a type or without a subfolder.
 - Invoices are stored under invoices/year/invoice-number.pdf, protocols under
   protocols/year/protocol-number.pdf – directly below the collection URL, not
   in the default folder.
@@ -119,6 +125,10 @@ detected — mirroring paused”. There you choose:
 - **Detach mirror**: this document is permanently no longer mirrored; the
   storage stays active for all others.
 
+For invoice and protocol PDFs there is only **Overwrite remote**: issued
+invoices and signed protocols cannot be changed, so WorkDiary stores its PDF
+again. If you want to keep the changed file, choose **Dismiss**.
+
 The Mapping Inbox is open to administrators and accounting.
 
 ## Disconnecting
@@ -135,7 +145,11 @@ storage. To switch it on again, set **Active** and save.
 - **Health failing** with “WebDAV storage unreachable or credentials
   invalid.”: check the collection URL, username and app password, and whether
   the folder exists. A WebDAV error with RuntimeException often points to an
-  address on an internal network.
+  address on an internal network without approval.
+- “The collection URL points to a private/internal address.”: if the server
+  runs on your own network, switch on **Allow private/internal addresses**.
+  If the operator has blocked this approval, the storage needs a publicly
+  reachable address.
 - “No active WebDAV storage.” on **Mirror now**: the storage is off or
   incomplete.
 - Invoices or protocols are missing in the storage: the matching box under

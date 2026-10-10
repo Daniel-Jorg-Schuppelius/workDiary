@@ -246,7 +246,7 @@ class AssetDrilldownReportController extends Controller {
             $to,
             $escalatedOnly ? '-escalated' : ''
         );
-        return $this->csvWithMetadata($this->openIssueCsvRows($issues, 'AssetID'), $filename, 'assets-drilldown-open-issues', $filters, $request);
+        return $this->csvWithMetadata($this->openIssueCsvRows($issues, (string) __('reporting.csv.asset_id')), $filename, 'assets-drilldown-open-issues', $filters, $request);
     }
 
     /**
@@ -256,7 +256,7 @@ class AssetDrilldownReportController extends Controller {
     private function exportRecurringDefectsCsv(array $rows, array $filters, string $from, string $to, Request $request): Response {
         $filename = sprintf('produktanalyse-drilldown-wiederholdefekte_%s_%s.csv', $from, $to);
         $csv = [];
-        $csv[] = ['AssetID', 'Asset', 'Inventarnr', 'Defekte_Zeitraum', 'Defekte_12Monate', 'Wiederholdefekt'];
+        $csv[] = [(string) __('reporting.csv.asset_id'), (string) __('reporting.csv.asset'), (string) __('reporting.csv.inventory_no'), (string) __('reporting.csv.defects_period'), (string) __('reporting.csv.defects_12_months'), (string) __('reporting.csv.recurring_defect')];
         foreach ($rows as $r) {
             $csv[] = [
                 $r['asset_id'],
@@ -264,7 +264,7 @@ class AssetDrilldownReportController extends Controller {
                 $r['asset_no'] ?? '',
                 $r['total'],
                 $r['recent_total'],
-                $r['is_recurring'] ? 'ja' : 'nein',
+                $r['is_recurring'] ? (string) __('reporting.csv.yes') : (string) __('reporting.csv.no'),
             ];
         }
 

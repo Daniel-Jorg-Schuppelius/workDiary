@@ -29,9 +29,9 @@ enum TicketSeverity: int implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Low => (string) __('Niedrig'),
-            self::Medium => (string) __('Mittel'),
-            self::High => (string) __('Hoch'),
+            self::Low => (string) __('enums.service_ticket.ticket_severity.low'),
+            self::Medium => (string) __('enums.service_ticket.ticket_severity.medium'),
+            self::High => (string) __('enums.service_ticket.ticket_severity.high'),
         };
     }
 }

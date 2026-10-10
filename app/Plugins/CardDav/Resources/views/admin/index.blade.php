@@ -29,6 +29,11 @@
                 {{ __('carddav::carddav.health.last_error', ['error' => $connection->last_error ?? '—']) }}
             </div>
         @endif
+        @if ($connection && $connection->disabled_at !== null)
+            <div role="alert" class="alert alert-error mb-4 text-sm">
+                {{ __('carddav::carddav.health.locked', ['count' => $connection->consecutive_failures]) }}
+            </div>
+        @endif
 
         @if ($connection && $connection->isActive())
             <div class="flex flex-wrap gap-2">

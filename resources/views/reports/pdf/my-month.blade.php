@@ -8,8 +8,8 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Mein Monat – ' . $monthLabel)
-@section('pdf-heading', 'Mein Monat – ' . $monthLabel)
+@section('pdf-title', __('Mein Monat') . ' – ' . $monthLabel)
+@section('pdf-heading', __('Mein Monat') . ' – ' . $monthLabel)
 
 @push('pdf-styles')
 <style>
@@ -23,7 +23,7 @@
 @endpush
 
 @section('pdf-meta')
-    Erstellt: {{ now()->fdatetime() }} – Nutzer: {{ auth()->user()?->name }}
+    {{ __('Erstellt') }}: {{ now()->fdatetime() }} – {{ __('Benutzer') }}: {{ auth()->user()?->name }}
 @endsection
 
 @section('pdf-table')
@@ -41,11 +41,11 @@
                     <th class="right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $row['rate'], 2, withThousandsSeparator: true) }} €</th>
                 </tr>
                 <tr>
-                    <th style="width: 8%">Start</th>
-                    <th style="width: 8%">Ende</th>
-                    <th style="width: 10%">Art</th>
+                    <th style="width: 8%">{{ __('Start') }}</th>
+                    <th style="width: 8%">{{ __('Ende') }}</th>
+                    <th style="width: 10%">{{ __('Art') }}</th>
                     <th>{{ __('Projekt / Aufgabe / Beschreibung') }}</th>
-                    <th class="right" style="width: 12%">Dauer</th>
+                    <th class="right" style="width: 12%">{{ __('Dauer') }}</th>
                     <th class="right" style="width: 14%">{{ __('Erlös') }}</th>
                 </tr>
             </thead>
@@ -74,7 +74,7 @@
 
     <table class="month-total">
         <tr>
-            <td class="right" style="width: 70%;"><strong>Monat gesamt:</strong></td>
+            <td class="right" style="width: 70%;"><strong>{{ __('Monat gesamt:') }}</strong></td>
             <td class="right" style="width: 15%;"><strong>{{ \App\Support\Formats::duration((int) $monthMinutes, 'clock') }}</strong></td>
             <td class="right" style="width: 15%;"><strong>{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $monthRate, 2, withThousandsSeparator: true) }} €</strong></td>
         </tr>

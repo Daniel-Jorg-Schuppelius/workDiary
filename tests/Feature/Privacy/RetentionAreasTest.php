@@ -49,7 +49,7 @@ final class RetentionAreasTest extends TestCase {
         ];
 
         foreach ($expectedYears as $area => [$de, $at, $ch]) {
-            $this->assertNotSame('', (string) config("retention.areas.{$area}.label"), "Label fehlt: {$area}");
+            $this->assertNotSame($area, $registry->labelFor($area), "Label fehlt: {$area}");
             $this->assertSame($de, $registry->yearsFor($this->makeOrg('DE'), $area), "DE-Frist falsch: {$area}");
             $this->assertSame($at, $registry->yearsFor($this->makeOrg('AT'), $area), "AT-Frist falsch: {$area}");
             $this->assertSame($ch, $registry->yearsFor($this->makeOrg('CH'), $area), "CH-Frist falsch: {$area}");

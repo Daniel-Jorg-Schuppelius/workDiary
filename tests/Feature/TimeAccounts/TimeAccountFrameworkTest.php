@@ -11,7 +11,9 @@
 namespace Tests\Feature\TimeAccounts;
 
 use App\Enums\Shift\ScheduledShiftStatus;
+use App\Enums\Sickness\SickLeaveKind;
 use App\Enums\TimeAccount\{CarryoverPolicy, TimeAccountSource, TimeAccountUnit};
+use App\Models\Absence\SickLeave;
 use App\Models\Platform\User;
 use App\Models\Schedule\{ScheduledShift, ShiftType};
 use App\Models\Surcharge\{SurchargeRule, TimeRuleResult};
@@ -126,6 +128,18 @@ class TimeAccountFrameworkTest extends TestCase {
 
         // Nur die zwei geleisteten (vergangenen) Dienste zählen.
         $this->assertSame(2, $stats['posted']);
+        $this->assertSame(2.0, (float) TimeAccountEntry::query()->sum('quantity'));
+    }
+
+    /** Stornierte Krankmeldungen bebuchen kein Krankheitskonto (MVP-1098). */
+    public function test_sick_rule_ignores_cancelled_sick_leaves(): void {
+        $account = $this->account(['code' => 'sickdays', 'unit' => TimeAccountUnit::Count->value]);
+        $account->rules()->create(['source_type' => TimeAccountSource::Absence->value, 'match_value' => 'sick', 'factor' => 1]);
+        SickLeave::create(['organization_id' => $this->organization->id, 'user_id' => $this->user->id, 'start_date' => '2026-06-08', 'end_date' => '2026-06-09', 'kind' => SickLeaveKind::Initial->value]);
+        SickLeave::create(['organization_id' => $this->organization->id, 'user_id' => $this->user->id, 'start_date' => '2026-06-11', 'end_date' => '2026-06-11', 'kind' => SickLeaveKind::Initial->value, 'cancelled_at' => now()]);
+
+        $this->runPosting();
+
         $this->assertSame(2.0, (float) TimeAccountEntry::query()->sum('quantity'));
     }
 

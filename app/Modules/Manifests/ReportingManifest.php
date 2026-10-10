@@ -68,6 +68,7 @@ final class ReportingManifest extends Manifest {
     public function contracts(): array {
         return [
             \App\Services\Reporting\Contracts\TrainingNeedSource::class => \App\Services\Reporting\Contracts\NullTrainingNeedSource::class,
+            \App\Services\Reporting\Contracts\StaffingCoverage::class => \App\Services\Reporting\Contracts\NullStaffingCoverage::class,
         ];
     }
 }

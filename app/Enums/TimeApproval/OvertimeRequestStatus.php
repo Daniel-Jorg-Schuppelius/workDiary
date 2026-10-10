@@ -27,10 +27,10 @@ enum OvertimeRequestStatus: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Submitted => __('Eingereicht'),
-            self::Approved  => __('Genehmigt'),
-            self::Rejected  => __('Abgelehnt'),
-            self::Withdrawn => __('Zurückgezogen'),
+            self::Submitted => __('enums.time_approval.overtime_request_status.submitted'),
+            self::Approved  => __('enums.time_approval.overtime_request_status.approved'),
+            self::Rejected  => __('enums.time_approval.overtime_request_status.rejected'),
+            self::Withdrawn => __('enums.time_approval.overtime_request_status.withdrawn'),
         };
     }
 

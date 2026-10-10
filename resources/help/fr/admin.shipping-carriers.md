@@ -1,7 +1,7 @@
 ---
 title: "Connexions d'expédition DHL, UPS et FedEx"
 topic: admin.shipping-carriers
-version: 1
+version: 2
 keywords:
     - expédition
     - DHL
@@ -15,6 +15,8 @@ keywords:
     - portail clients professionnels
     - sandbox
     - transporteur
+    - suivi des envois
+    - annuler une expédition
 audience:
     - admin
 modules:
@@ -31,8 +33,8 @@ related:
 La page **Expédition & logistique** – dans le menu sous **Expédition** –
 enregistre les identifiants des transporteurs DHL Paket, UPS et FedEx. Avec une
 connexion active, vous créez directement dans WorkDiary des étiquettes
-d'expédition pour les livraisons et des étiquettes de retour pour les retours.
-Il existe une connexion par transporteur et par organisation ; les mots de
+d'expédition pour les livraisons et des étiquettes de retour pour les retours,
+et vous suivez vos envois. Il existe une connexion par transporteur et par organisation ; les mots de
 passe et les clés sont enregistrés chiffrés.
 
 ## Prérequis
@@ -59,7 +61,7 @@ passe et les clés sont enregistrés chiffrés.
 
 ## Créer ou modifier une connexion
 
-Dans la section **Ajouter / modifier une connexion** :
+Vous créez une nouvelle connexion dans le formulaire **Ajouter une connexion** :
 
 1. **Transporteur** : DHL, UPS ou FEDEX.
 2. **Désignation** : un nom sous lequel la connexion sera proposée lors de la
@@ -75,26 +77,34 @@ Dans la section **Ajouter / modifier une connexion** :
 8. **Actif** et **Enregistrer**.
 
 Pour une nouvelle connexion, l'utilisateur/ID client et le mot de passe/secret
-client sont obligatoires, et pour DHL aussi la clé API.
+client sont obligatoires, et pour DHL aussi la clé API. Si vous choisissez dans
+ce formulaire un transporteur qui a déjà une connexion, WorkDiary refuse
+l'enregistrement et affiche un avis – les connexions existantes se modifient
+uniquement via **Modifier**.
 
-Pour modifier, enregistrez de nouveau le formulaire avec le même transporteur ;
-cela met à jour la connexion existante. Le formulaire s'ouvre toujours vide :
+Pour modifier, cliquez sur **Modifier** à côté de la connexion dans la liste
+**Connexions existantes**. Le formulaire s'intitule alors **Modifier la
+connexion …** avec le transporteur dans le titre, par exemple « Modifier la
+connexion DHL » ; le transporteur ne peut pas être changé.
 
-- Les champs laissés vides pour l'utilisateur, le mot de passe, la clé API et
-  l'ID du destinataire des retours conservent la valeur enregistrée.
-- Saisissez à chaque fois la **Désignation** et le **Numéro de facturation / de
-  compte** – un numéro de facturation vide est supprimé.
-- **Sandbox / environnement de test** et **Actif** s'appliquent tels qu'ils
-  sont cochés lors de l'enregistrement. Une connexion sandbox devient donc une
-  connexion de production si vous ne recochez pas la case.
+- **Désignation**, **Numéro de facturation / de compte**, **Sandbox /
+  environnement de test** et **Actif** sont préremplis avec les valeurs
+  enregistrées. Ce que vous modifiez ici s'applique après l'enregistrement.
+- L'utilisateur, le mot de passe, la clé API et l'ID du destinataire des
+  retours ne sont jamais affichés. Les champs laissés vides conservent la
+  valeur enregistrée ; seule une nouvelle saisie la remplace.
+- Un **Numéro de facturation / de compte** laissé vide conserve lui aussi la
+  valeur enregistrée.
+- **Annuler** quitte la modification sans enregistrer.
 
 ## Connexions existantes
 
 La liste **Connexions existantes** affiche pour chaque connexion le
 transporteur, la désignation, le **Mode** (**Sandbox** ou **Production**) et
-le statut (**Actif** ou **Inactif**). **Désactiver** désactive une connexion ;
-elle n'est alors plus proposée. Pour la réactiver, enregistrez-la de nouveau
-avec **Actif** coché.
+le statut (**Actif** ou **Inactif**). **Modifier** ouvre la connexion dans le
+formulaire. **Désactiver** désactive une connexion ; elle n'est alors plus
+proposée, et les envois de ce transporteur ne sont plus vérifiés. Pour la
+réactiver, ouvrez-la avec **Modifier**, cochez **Actif** et enregistrez.
 
 ## Créer des étiquettes
 
@@ -107,7 +117,11 @@ avec **Actif** coché.
   renseignées. Les colis saisis fournissent eux-mêmes poids et dimensions. Le
   destinataire est le client de la livraison. Ensuite, la livraison affiche le
   statut **Étiquette créée** avec le transporteur et le numéro de suivi. Il
-  existe un ordre d'expédition par livraison.
+  existe un ordre d'expédition par livraison ; un ordre annulé ne compte pas.
+  Sur la livraison, **Télécharger l’étiquette** télécharge de nouveau
+  l'étiquette, **Consulter le statut de l’envoi** récupère la situation
+  actuelle et **Annuler l’expédition** annule l'envoi – détails dans l'aide sur
+  les ordres de fabrication.
 - **Étiquette de retour pour les retours :** dans les **Dossiers de
   réclamation**, choisissez pour un retour au statut **Annoncé** la
   connexion, indiquez le poids et cliquez sur **Créer l'étiquette de retour**.
@@ -124,6 +138,23 @@ UPS fournit l'étiquette sous forme d'image (GIF), FedEx sous forme de PDF. Si
 le transporteur refuse l'ordre, WorkDiary abandonne le brouillon, et vous
 pouvez réessayer après correction.
 
+## Suivi des envois
+
+Dans le réglage standard, WorkDiary vérifie toutes les heures auprès du
+transporteur les envois ouverts – statut **Étiquette créée**, **En transit** ou
+**Problème de livraison**. Chaque envoi est interrogé au plus toutes les trois
+heures et seulement jusqu'à 60 jours après sa création ; ensuite, il n'est plus
+considéré comme suivable. La vérification reprend le statut et l'historique de
+l'envoi jusqu'à ce qu'il soit **Livré**.
+
+- Si un envoi passe à **Problème de livraison**, WorkDiary déclenche la
+  notification **Problème de livraison d'une expédition**.
+- L'heure de la dernière vérification s'affiche au survol du statut sur la
+  livraison (**Dernière vérification : …**).
+- La vérification passe uniquement par une connexion active. Si la requête
+  auprès du transporteur échoue, elle compte comme les autres erreurs de
+  connexion de cette connexion (voir « Problèmes fréquents »).
+
 ## Limites
 
 - Une connexion par transporteur et par organisation.
@@ -139,8 +170,16 @@ pouvez réessayer après correction.
   manquants.
 - **Aucune connexion à choisir :** il n'existe pas de connexion active, ou la
   livraison n'a pas de client ou possède déjà un ordre d'expédition.
+- **« Une connexion existe déjà pour ce transporteur. Veuillez la modifier via
+  « Modifier ». »** Vous avez choisi dans le formulaire **Ajouter une
+  connexion** un transporteur déjà connecté. Ouvrez la connexion dans la liste
+  avec **Modifier**.
 - **« Aucune connexion active n'est configurée pour le transporteur
   sélectionné. »** La connexion a été désactivée entre-temps.
+- **« Impossible d’annuler l’expédition : … »** ou **« Impossible de consulter
+  le statut de l’envoi : … »** Le transporteur a refusé la demande ou n'était
+  pas joignable, ou la connexion est inactive. Une fois l'envoi en transit,
+  l'annulation n'est plus possible.
 - **« Impossible de créer l'étiquette d'expédition : … »** Vérifiez les
   identifiants, le numéro de facturation ou de compte, l'option **Sandbox /
   environnement de test** et l'adresse du destinataire. Pour UPS et FedEx,

@@ -39,9 +39,6 @@ use Throwable;
 class CalDavPlugin extends AbstractPlugin implements CalendarPublisher {
     public const ID = 'caldav';
 
-    /** ExternalReference-Typ des CalDAV-Publishs (Bestandsdaten — nie ändern). */
-    public const EXT_TYPE_CALENDAR_OBJECT = 'calendar_object';
-
     public const SERVICE_PROVIDER = CalDavServiceProvider::class;
 
     public function name(): string {
@@ -92,12 +89,14 @@ class CalDavPlugin extends AbstractPlugin implements CalendarPublisher {
             }
             try {
                 $gateway = new CalDavRemoteCalendarGateway($factory->for($connection));
+                $removeOrphans = true;
                 foreach ($sources as $scope => $source) {
                     if (! $connection->publishesScope($scope)) {
                         continue;
                     }
                     $itemsByScope[$scope] ??= $source->itemsFor($organization);
-                    $result = $publisher->publish(self::ID, $connection, $gateway, $itemsByScope[$scope], self::EXT_TYPE_CALENDAR_OBJECT);
+                    $result = $publisher->publish(self::ID, $connection, $gateway, $itemsByScope[$scope], removeOrphans: $removeOrphans);
+                    $removeOrphans = false;
                     foreach ($counters as $key => $value) {
                         $counters[$key] = $value + $result[$key];
                     }
@@ -132,7 +131,7 @@ class CalDavPlugin extends AbstractPlugin implements CalendarPublisher {
                 continue;
             }
             try {
-                $result = $publisher->publish(self::ID, $connection, new CalDavRemoteCalendarGateway($factory->for($connection)), [$publishItem], self::EXT_TYPE_CALENDAR_OBJECT);
+                $result = $publisher->publish(self::ID, $connection, new CalDavRemoteCalendarGateway($factory->for($connection)), [$publishItem]);
                 foreach ($counters as $key => $value) {
                     $counters[$key] = $value + $result[$key];
                 }

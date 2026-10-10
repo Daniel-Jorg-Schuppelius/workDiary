@@ -1,7 +1,7 @@
 ---
 title: "CSV-Import"
 topic: admin.import
-version: 3
+version: 4
 keywords:
     - Datenimport
     - Stammdaten importieren
@@ -104,7 +104,7 @@ verlässt.
 ## Stempelungen und Projektzeiten aus dem Kalender
 
 Für Stempelungen und Projektzeiten können Sie statt einer Datei eine
-verbundene Kalenderquelle wählen (CalDAV, Google Calendar, Microsoft 365).
+verbundene Kalenderquelle wählen (CalDAV, Google Kalender, Microsoft 365).
 Die Termine des gewählten Zeitraums werden abgerufen und wie eine iCal-Datei
 geprüft — mit Vorschau, Kategorie-Filter und Auflösung von Serien.
 

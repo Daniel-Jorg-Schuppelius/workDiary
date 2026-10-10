@@ -8,12 +8,12 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Kunden Drilldown - Defektprotokolle')
-@section('pdf-heading', 'Kunden Drilldown: Defektprotokolle')
+@section('pdf-title', __('Drilldown: Defektprotokolle'))
+@section('pdf-heading', __('Drilldown: Defektprotokolle'))
 
 @section('pdf-meta')
-    Kunde: {{ $customerName }}<br>
-    Zeitraum: {{ $label }}
+    {{ __('Kunde') }}: {{ $customerName }}<br>
+    {{ __('Zeitraum') }}: {{ $label }}
 @endsection
 
 @section('pdf-table')

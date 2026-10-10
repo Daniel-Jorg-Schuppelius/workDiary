@@ -16,7 +16,7 @@ use App\Enums\Vacation\VacationStatus;
 use App\Models\Absence\Vacation;
 use App\Models\Diary\{DiaryEntry, EmergencyAssignment, OnCallShift};
 use App\Models\Platform\User;
-use App\Support\{SortableQuery, Sqid};
+use App\Support\{Setting, SortableQuery, Sqid};
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
@@ -113,6 +113,8 @@ class ArchiveSummaryService {
             ], 'end', 'desc');
         }
 
+        $perPage = max(1, (int) Setting::get('pagination.archive', 25));
+
         return [
             'isAdmin' => $isAdmin,
             'users' => $isAdmin ? User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']) : collect(),
@@ -124,10 +126,10 @@ class ArchiveSummaryService {
             ),
             'counts' => $counts,
             'tabKpis' => $tabKpis,
-            'diaryEntries' => $diaryQuery->paginate(25, ['*'], 'dpage')->withQueryString(),
-            'shiftEntries' => $shiftQuery->paginate(25, ['*'], 'spage')->withQueryString(),
-            'assignmentEntries' => $assignmentQuery->paginate(25, ['*'], 'apage')->withQueryString(),
-            'vacationEntries' => $vacationQuery->paginate(25, ['*'], 'vpage')->withQueryString(),
+            'diaryEntries' => $diaryQuery->paginate($perPage, ['*'], 'dpage')->withQueryString(),
+            'shiftEntries' => $shiftQuery->paginate($perPage, ['*'], 'spage')->withQueryString(),
+            'assignmentEntries' => $assignmentQuery->paginate($perPage, ['*'], 'apage')->withQueryString(),
+            'vacationEntries' => $vacationQuery->paginate($perPage, ['*'], 'vpage')->withQueryString(),
             'sort' => $sort,
             'dir' => $dir,
         ];

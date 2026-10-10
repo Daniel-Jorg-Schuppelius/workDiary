@@ -41,18 +41,21 @@ class TodoistSyncService {
             ->where('status', TodoistProjectLinkStatus::Active)
             ->get();
 
+        $error = null;
         foreach ($links as $link) {
             try {
                 $result = $this->imports->syncLink($link, $connection);
                 foreach ($counters as $key => $value) {
                     $counters[$key] = $value + $result[$key];
                 }
-            } catch (Throwable) {
+            } catch (Throwable $e) {
                 $counters['failed']++;
+                $error = $e;
             }
         }
 
         $connection->forceFill(['last_sync_at' => now()])->save();
+        $connection->recordSyncResult($error);
 
         return $counters;
     }

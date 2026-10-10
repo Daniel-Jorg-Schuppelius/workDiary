@@ -1,7 +1,7 @@
 ---
 title: "Organisation und Einstellungen"
 topic: admin.organization-settings
-version: 1
+version: 3
 keywords:
     - Firmeneinstellungen
     - Mandanteneinstellungen
@@ -191,8 +191,9 @@ ab. Die ersten acht Regeln betreffen die Schichtplanung:
   Urlaub.
 - **Qualifikations-Match**: Der Person fehlt eine Qualifikation, die der
   Besetzungsbedarf der Schicht verlangt.
-- **Feiertagsbuchung**: Die Schicht liegt auf einem Feiertag, der unter
-  **Feiertage** gepflegt ist.
+- **Feiertagsbuchung**: Die Schicht liegt auf einem gesetzlichen Feiertag der
+  Feiertagsregion (Reiter **Region & Feiertage**) oder auf einem eigenen
+  Feiertag unter **Feiertage**.
 
 Die letzten vier prüfen die Stempelzeiten und erzeugen ungeklärte Fälle in
 der ArbZG-Auswertung:
@@ -221,14 +222,16 @@ Die folgenden Abschnitte stehen in der Reihenfolge der Reiter.
 ## Listen
 
 Wie viele Einträge eine Liste je Seite zeigt, jeweils 1 bis 500:
-**Stundenzettel**, **Dienstpläne**, **Kunden**, **Touren**, **Fahrzeuge**,
-**Tags**, **Organisationen** (Liste des Plattformbetriebs) sowie die drei
-Listen der Fernwartungs-Inbox (**Fernwartungs-Inbox: unzugeordnete Geräte**,
-**Fernwartungs-Inbox: Mehrkundengeräte**, **Fernwartungs-Inbox: Sitzungen je
-Gerätekarte**). Die Felder **Kundensuche (Type-Ahead)**, **Kundenanhänge**,
-**Archiv** und **Dashboard: zuletzt verwendete** haben derzeit keine Wirkung;
-wie viele zuletzt verwendete Einträge das Dashboard zeigt, legt der Reiter
-**Oberfläche** fest.
+**Stundenzettel**, **Dienstpläne**, **Kunden** (auch Lieferanten und
+Fremdkunden), **Touren**, **Fahrzeuge**, **Tags**, **Archiv** (jeder Reiter
+der Archivseite), **Benachrichtigungen, Betriebsaufgaben, Wartungsfenster,
+Fehlermeldungen** sowie die drei Listen der Fernwartungs-Inbox
+(**Fernwartungs-Inbox: unzugeordnete Geräte**, **Fernwartungs-Inbox:
+Mehrkundengeräte**, **Fernwartungs-Inbox: Sitzungen je Gerätekarte**). Wie
+viele zuletzt verwendete Einträge das Dashboard zeigt, legt der Reiter
+**Oberfläche** fest. Die Listengröße der Organisationsübersicht des
+Plattformbetriebs ist eine Systemeinstellung unter **Einstellungen
+(Registry)**.
 
 ## Rechnungen
 
@@ -301,10 +304,15 @@ Drei Felder wirken darüber hinaus auf alle lokal erstellten Rechnungen:
   Drittlandsrechnungen.
 - **Zahlungsziel (Tage)** (0–365): gilt, wenn weder die Rechnung noch der
   Kunde ein Zahlungsziel haben; leer oder 0 = 14 Tage.
-- **Kleinunternehmer (§ 19 UStG)**: Rechnungen weisen keine Umsatzsteuer aus
-  und tragen den Hinweis „Keine Umsatzsteuer gemäß § 19 UStG
-  (Kleinunternehmerregelung).“; die XRechnung erhält die Steuerkategorie E
-  (steuerbefreit).
+- **Kleinunternehmer (§ 19 UStG)**: Alle Rechnungen, die workDiary erstellt,
+  weisen keine Umsatzsteuer aus und tragen den Hinweis „Keine Umsatzsteuer
+  gemäß § 19 UStG (Kleinunternehmerregelung).“; die XRechnung erhält die
+  Steuerkategorie E (steuerbefreit). Der Haken hat Vorrang vor
+  **Standard-Steuersatz (%)** und Reverse Charge.
+
+## Buchhaltung: Vier-Augen-Prinzip
+
+Der Schalter **Vier-Augen-Prinzip** in der Gruppe **Buchhaltung** legt fest, dass eine zweite Person freigibt: Wer eine Buchung oder eine Direktbuchung (Skonto, Ausbuchung, Klärungsbuchung, interne Umbuchung, Startsalden, Sondervorauszahlung) vorbereitet, schreibt sie nicht selbst fest; wer einen SEPA-Zahlungslauf zusammenstellt, gibt ihn nicht selbst frei. Direktbuchungen entstehen dann als Entwurf in der **Buchungs-Inbox** und wirken erst nach der Festschreibung. Ohne den Schalter schreibt WorkDiary sie sofort fest.
 
 ## Anlagen: GWG und Sammelposten
 
@@ -433,8 +441,6 @@ abgeschnitten.
   (Vorgabe 30).
 - **Dashboard** – **Anzahl letzter Einträge** (Vorgabe 5): wie viele zuletzt
   verwendete Einträge das Dashboard zeigt.
-- **Suche** – **Standard-Treffer-Limit** (Vorgabe 20): hat derzeit keine
-  Wirkung.
 
 ## Nominatim (Geocoding)
 
@@ -511,8 +517,8 @@ Tour mit Stopp bei diesem Kunden; die Position trägt das Datum der Tour. Abgesa
 und bereits abgerechnete Anfahrten zählen nicht.
 
 - **Modus**: **Pauschale** oder **Kilometer**.
-- **Positionstext** (bis 50 Zeichen, Vorgabe „Anfahrt“): Text der
-  Rechnungsposition, ergänzt um Datum bzw. Kilometer.
+- **Positionstext** (bis 50 Zeichen, Vorgabe „Anfahrt“ in der Sprache der
+  Abrechnung): Text der Rechnungsposition, ergänzt um Datum bzw. Kilometer.
 - **Pauschale (netto €)**: Betrag je Anfahrt im Modus **Pauschale**; ohne
   Betrag entsteht keine Position.
 - **Satz (€/km)**: Preis je Kilometer im Modus **Kilometer**.
@@ -544,7 +550,8 @@ anderem bei:
 
 - Feiertagszuschlägen und Kundenkonditionen mit Feiertagsregel;
 - Arbeitstagen von Urlaub und Krankheit, Urlaubskonto und Gleitzeit-Soll;
-- der ArbZG-Auswertung, etwa bei Arbeit an Feiertagen;
+- der ArbZG-Auswertung, etwa bei Arbeit an Feiertagen, und der
+  Dienstplan-Regel **Feiertagsbuchung**;
 - den Ansichten Kalender, Wochenansicht, Dienstplan, Abwesenheitskalender
   und **Aktuelle Belegung**;
 - SLA-Fristen im Helpdesk und Abgabefristen von Steuermeldungen, die auf den
@@ -611,8 +618,9 @@ Organisation.
   „Wartungsmodus aktiv — Nicht-Administratoren sehen derzeit eine
   Wartungsseite.“ mit dem Link **Einstellungen** zurück in diesen Dialog.
 - **Hinweistext für die Wartungsseite** (bis 300 Zeichen).
-- **Voraussichtliches Ende** (optional): Nach diesem Zeitpunkt endet der
-  Wartungsmodus automatisch; der Hinweis zeigt ihn als „Bis: …“.
+- **Voraussichtliches Ende** (optional, in Ihrer Ortszeit): Nach diesem
+  Zeitpunkt endet der Wartungsmodus automatisch; der Hinweis zeigt ihn als
+  „Bis: …“, die Wartungsseite als „Voraussichtlich wieder verfügbar: …“.
 - **Auch Terminal-/Webhook-Eingänge pausieren** (ab Werk aus): Ohne diesen
   Haken laufen Stempelterminals sowie Telefonie- und Standort-Eingänge während
   der Wartung weiter.

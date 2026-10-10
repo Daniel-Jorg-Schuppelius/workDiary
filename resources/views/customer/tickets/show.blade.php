@@ -58,12 +58,14 @@
         @error('files.*')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
     </form>
 
-    @if ($ticket->status->value === 'done')
+    @if ($canReopen)
         <div class="mt-4 flex flex-wrap items-start gap-3 rounded-box border border-info/40 bg-info/5 p-3">
-            <form method="POST" action="{{ route('customer.tickets.accept', $ticket) }}">
-                @csrf
-                <x-button type="submit" tone="success">{{ __('Lösung bestätigen') }}</x-button>
-            </form>
+            @if ($ticket->status === \App\Enums\ServiceTicket\ServiceTicketStatus::Done)
+                <form method="POST" action="{{ route('customer.tickets.accept', $ticket) }}">
+                    @csrf
+                    <x-button type="submit" tone="success">{{ __('Lösung bestätigen') }}</x-button>
+                </form>
+            @endif
             <form method="POST" action="{{ route('customer.tickets.reopen', $ticket) }}" class="flex items-center gap-2">
                 @csrf
                 <input aria-label="{{ __('Grund der Wiedereröffnung') }}" name="reason" required minlength="5" maxlength="500" class="input input-sm input-bordered" placeholder="{{ __('Grund der Wiedereröffnung') }}">

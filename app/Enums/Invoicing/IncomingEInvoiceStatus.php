@@ -28,11 +28,11 @@ enum IncomingEInvoiceStatus: string implements HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::Received => (string) __('Empfangen'),
-            self::Approved => (string) __('Fachlich freigegeben'),
-            self::Rejected => (string) __('Abgelehnt'),
-            self::Question => (string) __('Rückfrage'),
-            self::PaymentReleased => (string) __('Zahlung freigegeben'),
+            self::Received => (string) __('enums.invoicing.incoming_e_invoice_status.received'),
+            self::Approved => (string) __('enums.invoicing.incoming_e_invoice_status.approved'),
+            self::Rejected => (string) __('enums.invoicing.incoming_e_invoice_status.rejected'),
+            self::Question => (string) __('enums.invoicing.incoming_e_invoice_status.question'),
+            self::PaymentReleased => (string) __('enums.invoicing.incoming_e_invoice_status.payment_released'),
         };
     }
 

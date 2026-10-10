@@ -30,12 +30,12 @@ enum AssetInspectionScheduleStatus: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Planned => (string) __('Geplant'),
-            self::Announced => (string) __('Angekündigt'),
-            self::InProgress => (string) __('In Durchführung'),
-            self::Done => (string) __('Durchgeführt'),
-            self::Missed => (string) __('Versäumt'),
-            self::Cancelled => (string) __('Storniert'),
+            self::Planned => (string) __('enums.asset_compliance.asset_inspection_schedule_status.planned'),
+            self::Announced => (string) __('enums.asset_compliance.asset_inspection_schedule_status.announced'),
+            self::InProgress => (string) __('enums.asset_compliance.asset_inspection_schedule_status.in_progress'),
+            self::Done => (string) __('enums.asset_compliance.asset_inspection_schedule_status.done'),
+            self::Missed => (string) __('enums.asset_compliance.asset_inspection_schedule_status.missed'),
+            self::Cancelled => (string) __('enums.asset_compliance.asset_inspection_schedule_status.cancelled'),
         };
     }
 

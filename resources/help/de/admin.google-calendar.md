@@ -1,7 +1,7 @@
 ---
 title: "Google Kalender anbinden"
 topic: admin.google-calendar
-version: 1
+version: 2
 keywords:
     - Google Kalender
     - Google Calendar
@@ -28,20 +28,20 @@ related:
 
 Die Seite **Google Kalender** überträgt Veranstaltungen aus WorkDiary in einen
 Kalender eines Google-Kontos. WorkDiary bleibt dabei führend: Änderungen werden
-nachgezogen, abgesagte Veranstaltungen verschwinden aus dem Google-Kalender,
+nachgezogen, abgesagte und gelöschte Veranstaltungen verschwinden aus dem Google-Kalender,
 und wiederholte Läufe erzeugen keine Dubletten. Auf Wunsch liest WorkDiary den
 Kalender zusätzlich zurück und legt externe Änderungen als Vorschläge zur
 Prüfung vor.
 
 ## Voraussetzungen
 
-- Das Plugin **Google Calendar** ist unter **Plugins** aktiviert. Danach
+- Das Plugin **Google Kalender** ist unter **Plugins** aktiviert. Danach
   erscheint im Systemmenü (Zahnrad-Symbol **System**) in der Gruppe
   **Plugins** der Eintrag **Google Kalender**.
 - Es gibt einen OAuth-Client in der Google Cloud Console. Entweder hat der
   Betreiber einen für die gesamte Installation hinterlegt, oder Ihre
   Organisation nutzt einen eigenen: Öffnen Sie unter **Plugins** bei **Google
-  Calendar** den Dialog **Konfigurieren** und tragen Sie **Client-ID (eigene
+  Kalender** den Dialog **Konfigurieren** und tragen Sie **Client-ID (eigene
   Google-Cloud-App)** und **Client-Secret** ein. Ein eigener Client muss Ihre
   WorkDiary-Adresse mit dem Pfad /admin/google-calendar/oauth/callback als
   autorisierte Weiterleitungs-URI kennen.
@@ -109,7 +109,8 @@ und Projektzeiten den verbundenen Kalender als Quelle an.
 **Trennen** entfernt den Zugriff. Bereits übertragene Termine bleiben im
 Google-Kalender erhalten. Mit **Mit Google verbinden** stellen Sie die
 Verbindung jederzeit wieder her; der gewählte Kalender bleibt gespeichert,
-und die Fehlerzählung beginnt neu.
+und die Fehlerzählung beginnt neu. Solange die Verbindung gestört ist, steht
+dazu eine Betriebsaufgabe in der Übersicht der Betriebsaufgaben.
 
 ## Typische Fehlerbilder
 

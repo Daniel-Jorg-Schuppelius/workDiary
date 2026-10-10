@@ -22,7 +22,7 @@
         'subtitle' => __('Zeiteinträge aus einem Kimai-Timesheet-CSV-Export übernehmen.'),
         'csv_hint' => __('Kimai → Zeiten → Export → CSV. Kunden/Projekte werden über Namen bzw. gemerkte Zuordnungen gematcht; nicht Zuordenbares landet in der Zuordnungs-Inbox.'),
         'api_title' => __('Direkt aus der Kimai-API importieren'),
-        'api_hint' => __('Holt Timesheets über die Kimai-REST-API (Bearer-Token). Ohne Zeitraum werden die letzten :days Tage abgefragt; bereits importierte Einträge werden übersprungen.', ['days' => $syncWindowDays]),
+        'api_hint' => __('Holt Timesheets über die Kimai-REST-API (Bearer-Token). Mit hinterlegtem API-Zugang läuft dieser Import stündlich von selbst; hier stoßen Sie ihn sofort an. Ohne Zeitraum werden die letzten :days Tage abgefragt; bereits importierte Einträge werden übersprungen.', ['days' => $syncWindowDays]),
         'api_missing' => __('Kein API-Zugang hinterlegt. Basis-URL und API-Token in den Plugin-Einstellungen konfigurieren.'),
         'export_title' => __('Zeiten nach Kimai zurückbuchen'),
         'export_hint' => __('Bucht in workDiary erfasste, noch nicht exportierte Zeiten gemappter Projekte als Kimai-Timesheets (Tätigkeit aus den Plugin-Einstellungen). Bereits gebuchte und aus Kimai importierte Einträge werden übersprungen.'),

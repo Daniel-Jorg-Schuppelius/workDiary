@@ -60,7 +60,7 @@ return [
         'empty' => 'Nessun accordo per ora — inizi con «Crea accordo».',
         'no_revision' => 'nessuna versione per ora',
         'revision' => 'Versione',
-        'title' => 'Accordi (DPA/NDA)',
+        'title' => 'Accordi (DPA, NDA, condizioni di noleggio)',
     ],
     'declaration' => [
         'default' => 'Confermo di essere autorizzato/a a rappresentare la mia parte, di aver letto il presente :kind con :organization nella versione visualizzata, allegati compresi, e di approvarlo.',
@@ -254,11 +254,12 @@ return [
         'organization' => 'Parte organizzazione',
     ],
     'portal' => [
+        'capability' => 'Accordi (DPA, NDA, condizioni di noleggio)',
         'downloads' => 'Documenti',
         'empty' => 'Al momento non sono presenti accordi.',
         'menu' => 'Accordi',
         'not_released' => 'non ancora pubblicato',
-        'subtitle' => 'Nomine a responsabile e accordi di riservatezza con noi — documenti e attestato di chiusura dopo la pubblicazione.',
+        'subtitle' => 'Nomine a responsabile, accordi di riservatezza e condizioni di noleggio con noi — documenti e attestato di chiusura dopo la pubblicazione.',
         'title' => 'Accordi',
     ],
     'public' => [

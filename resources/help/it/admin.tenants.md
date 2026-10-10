@@ -1,7 +1,7 @@
 ---
 title: "Organizzazioni e tenant"
 topic: admin.tenants
-version: 3
+version: 4
 keywords:
     - gestione tenant
     - multi-tenant
@@ -47,10 +47,10 @@ piattaforma: nel menu di sistema (l'icona a ingranaggio **Sistema**
 nell'intestazione) sotto **Organizzazione** → **Organizzazioni**. Gli operatori
 della piattaforma senza un'organizzazione propria trovano inoltre nel menu di
 amministrazione (icona **Amministrazione** nell'intestazione) sotto
-**Personale** la voce **Dipendente**, che porta anch'essa all'elenco delle
+**Personale** la voce **Dipendenti**, che porta anch'essa all'elenco delle
 organizzazioni. Quando un tale amministratore apre l'elenco, WorkDiary assegna
 il suo account alla prima organizzazione creata – da quel momento
-**Dipendente** porta alla gestione dei membri di quell'organizzazione.
+**Dipendenti** porta alla gestione dei membri di quell'organizzazione.
 
 Gli amministratori di un'organizzazione modificano la propria organizzazione
 nel menu di sistema sotto **Organizzazione** → **Organizzazione** (finestra

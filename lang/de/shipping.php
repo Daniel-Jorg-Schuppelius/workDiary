@@ -12,8 +12,9 @@ return [
     'title' => 'Versand & Logistik',
     'intro' => 'Carrier-Anbindungen für Versandlabels und Sendungsverfolgung (DHL Paket, UPS, FedEx). Je Carrier eine Anbindung pro Organisation; Zugangsdaten werden verschlüsselt gespeichert.',
 
-    'form_heading' => 'Anbindung anlegen / bearbeiten',
-    'form_hint' => 'Wählen Sie den Carrier und hinterlegen Sie die Zugangsdaten. Eine erneute Speicherung mit demselben Carrier aktualisiert die bestehende Anbindung.',
+    'form_heading' => 'Anbindung anlegen',
+    'form_heading_edit' => 'Anbindung :carrier bearbeiten',
+    'form_hint' => 'Wählen Sie den Carrier und hinterlegen Sie die Zugangsdaten. Bestehende Anbindungen ändern Sie über „Bearbeiten“ in der Liste.',
     'secret_hint' => 'Passwort und API-Schlüssel werden verschlüsselt abgelegt und nie wieder angezeigt. Beim Bearbeiten leer lassen, um die gespeicherten Werte zu behalten.',
     'connections_heading' => 'Bestehende Anbindungen',
     'no_connections' => 'Noch keine Carrier-Anbindung hinterlegt.',
@@ -37,6 +38,8 @@ return [
 
     // Kurzlabel für die Versand-Statusanzeige (Rang 20).
     'label_short' => 'Versand',
+    'last_tracked' => 'Zuletzt abgeglichen: :time',
+    'confirm_cancel' => 'Versandauftrag beim Carrier stornieren? Das Label wird ungültig; danach können Sie einen neuen Versandauftrag erstellen.',
 
     'col' => [
         'mode' => 'Modus',
@@ -56,6 +59,11 @@ return [
     'action' => [
         'save' => 'Speichern',
         'disconnect' => 'Deaktivieren',
+        'edit' => 'Bearbeiten',
+        'cancel_edit' => 'Abbrechen',
+        'download_label' => 'Label herunterladen',
+        'track_now' => 'Sendungsstatus abrufen',
+        'cancel_shipment' => 'Versand stornieren',
         'create' => 'Versand',
     ],
 
@@ -68,6 +76,12 @@ return [
         'no_connection' => 'Für den gewählten Carrier ist keine aktive Anbindung hinterlegt.',
         'label_created' => 'Versandauftrag erstellt und Label abgerufen.',
         'label_failed' => 'Versandlabel konnte nicht erstellt werden: :reason',
+        'tracked' => 'Sendungsstatus abgerufen: :status',
+        'track_failed' => 'Sendungsstatus konnte nicht abgerufen werden: :reason',
+        'cancelled' => 'Versandauftrag storniert.',
+        'cancel_failed' => 'Versandauftrag konnte nicht storniert werden: :reason',
+        'not_cancellable' => 'Die Sendung ist bereits beim Carrier und kann nicht mehr storniert werden.',
+        'exists_use_edit' => 'Für diesen Carrier besteht bereits eine Anbindung. Bitte ändern Sie sie über „Bearbeiten“.',
     ],
 
     'notify' => [

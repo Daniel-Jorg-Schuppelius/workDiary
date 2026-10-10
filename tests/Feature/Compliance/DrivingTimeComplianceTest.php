@@ -14,10 +14,11 @@ use App\Enums\Notification\NotificationEvent;
 use App\Enums\Travel\TravelLogVehicle;
 use App\Models\Compliance\ComplianceFinding;
 use App\Models\Fleet\Vehicle;
-use App\Models\Platform\User;
+use App\Models\Platform\{Team, User};
 use App\Models\Travel\TravelLog;
 use App\Notifications\GenericEventNotification;
 use App\Services\Compliance\{DrivingTimeBudget, DrivingTimeComplianceChecker};
+use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -151,6 +152,31 @@ class DrivingTimeComplianceTest extends TestCase {
         $pdf = $this->actingAs($this->admin)->withSession($session)->get(route('reports.driving-time-evidence', ['format' => 'pdf']));
         $pdf->assertOk();
         $pdf->assertHeader('Content-Type', 'application/pdf');
+    }
+
+    public function test_evidence_export_respects_the_team_filter(): void {
+        $other = User::factory()->user()->create(['organization_id' => $this->organization->id, 'name' => 'Fahrer Ohneteam']);
+        $team = Team::factory()->create(['organization_id' => $this->organization->id]);
+        $team->members()->attach($this->driver->id);
+        $this->trip('2026-06-08 06:00:00', '2026-06-08 11:00:00');
+        $this->trip('2026-06-09 06:00:00', '2026-06-09 11:00:00', driver: $other);
+
+        $csv = (string) $this->actingAs($this->admin)
+            ->withSession($this->dateRangeSession('2026-06-01', '2026-06-14'))
+            ->get(route('reports.driving-time-evidence', ['team' => Sqid::encode(Team::class, (int) $team->id)]))
+            ->assertOk()->getContent();
+
+        $this->assertStringContainsString('Fahrer Frey', $csv);
+        $this->assertStringNotContainsString('Fahrer Ohneteam', $csv);
+    }
+
+    public function test_report_offers_the_evidence_as_pdf(): void {
+        $this->actingAs($this->admin)
+            ->withSession($this->dateRangeSession('2026-06-01', '2026-06-14'))
+            ->get(route('reports.arbzg-compliance'))
+            ->assertOk()
+            ->assertSee(__('compliance.driving.button_pdf'))
+            ->assertSee('format=pdf', false);
     }
 
     public function test_evidence_export_is_hidden_without_setting_and_for_plain_users(): void {

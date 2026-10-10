@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Accounting;
 
-use App\Enums\Finance\{AccountType, OpenItemDirection, OpenItemStatus, SettlementKind};
+use App\Enums\Finance\{AccountType, AccountingEntryStatus, DirectBookingKind, OpenItemDirection, OpenItemStatus, SettlementKind};
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingEntryLine, AccountingOpenItem, AccountingOpenItemSettlement};
 use App\Models\Platform\{Organization, User};
 use App\Services\Finance\Datev\DatevBookingConfig;
@@ -57,7 +57,7 @@ class OpenItemService {
         $snapshot = is_array($entry->snapshot) ? $entry->snapshot : [];
         // Nennt der Snapshot ein Ausgleichsziel, ist die Zeile ein Ausgleich —
         // auch wenn sie den Posten wieder erhöht (Rückläufer).
-        $settlesTarget = isset($snapshot['settles_source_type']) || isset($snapshot['payment_allocation_id']);
+        $settlesTarget = isset($snapshot['settles_source_type']) || isset($snapshot['payment_allocation_id']) || isset($snapshot['settles_open_item_id']);
 
         foreach ($entry->lines as $line) {
             $account = $line->account;
@@ -123,6 +123,12 @@ class OpenItemService {
     /**
      * Ausgleich von Hand (Skonto, Einbehalt, Ausbuchung) — für Fälle, die
      * kein Zahlungsdatensatz abbildet.
+     *
+     * Null, solange die Gegenbuchung bei aktivem Vier-Augen-Prinzip als
+     * Entwurf auf die Freigabe wartet (E9): Der Ausgleich entsteht dann beim
+     * Festschreiben in applyEntry(), bis dahin bleibt der Posten offen.
+     *
+     * @throws ValidationException wenn schon ein Entwurf wartet oder der Betrag den offenen Rest übersteigt
      */
     public function settle(
         AccountingOpenItem $item,
@@ -130,31 +136,79 @@ class OpenItemService {
         string $amount,
         ?AccountingEntry $entry = null,
         ?string $note = null,
-    ): AccountingOpenItemSettlement {
-        // Skonto und Ausbuchung brauchen eine Gegenbuchung im Journal
-        // (Sicherheitsscan 2026-08-23, S-38): ohne sie war der Posten
-        // ausgeglichen und das Journal unberuehrt — die Forderung verschwand,
-        // das Erloes- bzw. Aufwandskonto blieb stehen. Offene Posten sind eine
-        // Projektion der Buchhaltung, keine zweite Wahrheit daneben.
-        $entry ??= $this->counterEntryFor($item, $kind, $amount, $note);
+    ): ?AccountingOpenItemSettlement {
+        return DB::transaction(function () use ($item, $kind, $amount, $entry, $note): ?AccountingOpenItemSettlement {
+            // Gesperrt: zwei gleichzeitige Ausgleiche sähen sonst beide keinen
+            // wartenden Entwurf und legten zwei an.
+            /** @var AccountingOpenItem $item */
+            $item = AccountingOpenItem::query()->lockForUpdate()->findOrFail($item->getKey());
 
-        if ($entry instanceof AccountingEntry) {
-            // Die Festbuchung laeuft durch applyEntry() und legt den Ausgleich
-            // dort an, wo alle anderen auch entstehen. Nur wenn sie den Posten
-            // nicht getroffen hat (kein Belegbezug, keine Gegenpartei), wird er
-            // hier nachgetragen — sonst gaebe es ihn zweimal.
-            $fromEntry = AccountingOpenItemSettlement::query()
-                ->where('accounting_open_item_id', $item->getKey())
-                ->where('accounting_entry_id', $entry->getKey())
-                ->latest('id')
-                ->first();
-
-            if ($fromEntry instanceof AccountingOpenItemSettlement) {
-                return $fromEntry;
+            // Ein wartender Entwurf ist schon ein Ausgleich — ein zweiter von
+            // Hand würde den Posten doppelt mindern, sobald beide freigegeben sind.
+            if (($this->pendingDrafts([$item])[$item->id] ?? null) instanceof AccountingEntry) {
+                throw ValidationException::withMessages([
+                    'amount' => (string) __('accounting.open_items.error.draft_pending'),
+                ]);
             }
+            $this->assertWithinOpen($item, $kind, $amount);
+
+            // Skonto und Ausbuchung brauchen eine Gegenbuchung im Journal
+            // (Sicherheitsscan 2026-08-23, S-38): ohne sie war der Posten
+            // ausgeglichen und das Journal unberuehrt — die Forderung verschwand,
+            // das Erloes- bzw. Aufwandskonto blieb stehen. Offene Posten sind eine
+            // Projektion der Buchhaltung, keine zweite Wahrheit daneben.
+            $entry ??= $this->counterEntryFor($item, $kind, $amount, $note);
+
+            if ($entry instanceof AccountingEntry) {
+                if (! $entry->status->isPosted()) {
+                    return null;
+                }
+
+                // Die Festbuchung laeuft durch applyEntry() und legt den Ausgleich
+                // dort an, wo alle anderen auch entstehen. Nur wenn sie den Posten
+                // nicht getroffen hat (kein Belegbezug, keine Gegenpartei), wird er
+                // hier nachgetragen — sonst gaebe es ihn zweimal.
+                $fromEntry = AccountingOpenItemSettlement::query()
+                    ->where('accounting_open_item_id', $item->getKey())
+                    ->where('accounting_entry_id', $entry->getKey())
+                    ->latest('id')
+                    ->first();
+
+                if ($fromEntry instanceof AccountingOpenItemSettlement) {
+                    return $fromEntry;
+                }
+            }
+
+            return $this->recordSettlement($item, $kind, $amount, $entry, null, null, false, $note);
+        });
+    }
+
+    /**
+     * Gegenbuchungen von Hand, die als Entwurf auf die Freigabe warten (E9) —
+     * je Posten höchstens eine.
+     *
+     * @param  iterable<AccountingOpenItem>  $items
+     * @return array<int, AccountingEntry> nach Posten-ID
+     */
+    public function pendingDrafts(iterable $items): array {
+        $ids = [];
+        $organizations = [];
+        foreach ($items as $item) {
+            $ids[] = (int) $item->getKey();
+            $organizations[] = (int) $item->organization_id;
+        }
+        if ($ids === []) {
+            return [];
         }
 
-        return $this->recordSettlement($item, $kind, $amount, $entry, null, null, false, $note);
+        return AccountingEntry::query()
+            ->whereIn('organization_id', array_unique($organizations))
+            ->where('source_type', MorphMap::alias(AccountingOpenItem::class))
+            ->whereIn('source_id', $ids)
+            ->whereIn('status', [AccountingEntryStatus::Draft->value, AccountingEntryStatus::Ready->value])
+            ->get()
+            ->keyBy(fn (AccountingEntry $entry): int => (int) $entry->source_id)
+            ->all();
     }
 
     /**
@@ -213,14 +267,15 @@ class OpenItemService {
 
         // Der Snapshot lenkt settleFromEntry() auf genau diesen Posten und
         // haelt die Ausgleichsart fest — sonst waere jede Gegenbuchung eine
-        // Zahlung auf den aeltesten offenen Posten der Gegenpartei.
-        $snapshot = ['settlement_kind' => $kind->value];
+        // Zahlung auf den aeltesten offenen Posten der Gegenpartei. Wartet die
+        // Buchung auf die Freigabe, ist er der einzige Weg zum Posten.
+        $snapshot = ['settlement_kind' => $kind->value, 'settles_open_item_id' => (int) $item->getKey()];
         if (is_string($item->source_type) && $item->source_id !== null) {
             $snapshot['settles_source_type'] = $item->source_type;
             $snapshot['settles_source_id'] = (int) $item->source_id;
         }
 
-        return $this->journal()->postDirect($organization, [
+        return $this->journal()->postDirectOrSubmit($organization, [
             'booked_on' => CarbonImmutable::now(Tz::current()),
             'memo' => trim(sprintf(
                 '%s zu %s%s',
@@ -234,7 +289,7 @@ class OpenItemService {
             'source_key' => 'opos-settle:' . $item->getKey() . ':' . $kind->value . ':' . $amount,
             'snapshot' => $snapshot,
             'lines' => $receivable ? [$counterLine, $itemLine] : [$itemLine, $counterLine],
-        ], $actor);
+        ], $actor, DirectBookingKind::OpenItemSettlement);
     }
 
     /**
@@ -363,18 +418,23 @@ class OpenItemService {
         $snapshot = is_array($entry->snapshot) ? $entry->snapshot : [];
         $sourceType = $snapshot['settles_source_type'] ?? null;
         $sourceId = $snapshot['settles_source_id'] ?? null;
+        $itemId = $snapshot['settles_open_item_id'] ?? null;
 
         $query = AccountingOpenItem::query()
             ->where('organization_id', $organization->id)
             ->where('direction', $direction->value);
 
         // Ein Rückläufer trifft einen bereits ausgeglichenen Posten — genau der
-        // soll ja wieder aufleben.
-        if (! $reopening) {
+        // soll ja wieder aufleben. Ein benannter Posten wird nicht gefiltert:
+        // Ist er inzwischen ausgeglichen, scheitert die Freigabe an der
+        // Betragsprüfung, statt still ohne Ausgleich zu buchen.
+        if (! $reopening && $itemId === null) {
             $query->stillOpen();
         }
 
-        if (is_string($sourceType) && $sourceId !== null) {
+        if ($itemId !== null) {
+            $query->whereKey((int) $itemId);
+        } elseif (is_string($sourceType) && $sourceId !== null) {
             $query->where('source_type', $sourceType)->where('source_id', (int) $sourceId);
         } elseif ($line->counterparty_type !== null && $line->counterparty_id !== null) {
             // Ohne Belegbezug bleibt nur die Gegenpartei — ältester Posten zuerst.
@@ -425,15 +485,8 @@ class OpenItemService {
             // `gt:0`: der Überbetrag wurde still auf 0 geklemmt, der
             // Ausgleichssatz behielt ihn aber — Posten und Sätze gingen
             // auseinander.
-            if (! $kind->reopens() && ! $writeOffRemainder) {
-                $openNow = $item->open_amount ?? Money::zero($item->currency);
-                if (Money::of($amount, $item->currency)->greaterThan($openNow)) {
-                    throw ValidationException::withMessages([
-                        'amount' => (string) __('accounting.opos.error.amount_exceeds_open', [
-                            'open' => (string) $openNow->getAmount(),
-                        ]),
-                    ]);
-                }
+            if (! $writeOffRemainder) {
+                $this->assertWithinOpen($item, $kind, $amount);
             }
 
             $settlement = AccountingOpenItemSettlement::query()->create([
@@ -478,6 +531,22 @@ class OpenItemService {
 
             return $settlement;
         });
+    }
+
+    /** @throws ValidationException */
+    private function assertWithinOpen(AccountingOpenItem $item, SettlementKind $kind, string $amount): void {
+        if ($kind->reopens()) {
+            return;
+        }
+
+        $openNow = $item->open_amount ?? Money::zero($item->currency);
+        if (Money::of($amount, $item->currency)->greaterThan($openNow)) {
+            throw ValidationException::withMessages([
+                'amount' => (string) __('accounting.opos.error.amount_exceeds_open', [
+                    'open' => (string) $openNow->getAmount(),
+                ]),
+            ]);
+        }
     }
 
     private function directionOf(AccountType $type): OpenItemDirection {

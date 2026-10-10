@@ -12,40 +12,41 @@ declare(strict_types=1);
 
 namespace App\Services\Compliance\Rules;
 
-use App\Models\Platform\Holiday;
 use App\Models\Schedule\ScheduledShift;
+use App\Services\Calendar\HolidayService;
 use App\Services\Compliance\{ComplianceRule, ComplianceViolation};
+use App\Support\CarbonFmt;
 
-/** Warnt, wenn an einem Feiertag eine Schicht geplant wird (organisationsbezogen). */
+/**
+ * Warnt, wenn an einem Feiertag eine Schicht geplant wird — gesetzliche
+ * Feiertage der Feiertagsregion und eigene Feiertage der Organisation.
+ */
 final class HolidayDoubleBookRule implements ComplianceRule {
+    private ?HolidayService $holidays = null;
+
     public function key(): string {
         return 'holiday_double_book';
     }
 
     public function check(ScheduledShift $shift, array $settings): array {
-        $year = (int) $shift->date->format('Y');
-        $iso = $shift->date->format('Y-m-d');
-
-        $holidays = Holiday::query()->get();
-        /** @var Holiday $holiday */
-        foreach ($holidays as $holiday) {
-            $dates = $holiday->resolveForYear($year);
-            if (in_array($iso, $dates, true)) {
-                return [
-                    new ComplianceViolation(
-                        code: 'holiday_double_book',
-                        severity: ComplianceViolation::SEVERITY_WARNING,
-                        message: __('Schicht liegt auf Feiertag „:name" (:date).', [
-                            'name' => $holiday->name ?? __('Feiertag'),
-                            'date' => $shift->date->format('d.m.Y'),
-                        ]),
-                        relatedShiftIds: [],
-                        context: ['holiday_id' => $holiday->id],
-                    ),
-                ];
-            }
+        // Eine Instanz je Regel: Der Dienst merkt sich die Feiertage je Jahr.
+        $this->holidays ??= app(HolidayService::class);
+        $name = $this->holidays->nameFor($shift->date);
+        if ($name === null) {
+            return [];
         }
 
-        return [];
+        return [
+            new ComplianceViolation(
+                code: 'holiday_double_book',
+                severity: ComplianceViolation::SEVERITY_WARNING,
+                message: __('Schicht liegt auf Feiertag „:name" (:date).', [
+                    'name' => $name,
+                    'date' => CarbonFmt::fdate($shift->date),
+                ]),
+                relatedShiftIds: [],
+                context: ['holiday' => $name],
+            ),
+        ];
     }
 }

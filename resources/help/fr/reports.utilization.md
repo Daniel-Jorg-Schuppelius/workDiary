@@ -1,7 +1,7 @@
 ---
 title: "Taux d'occupation & réalisation"
 topic: reports.utilization
-version: 2
+version: 3
 keywords:
     - taux de facturation
     - heures facturables
@@ -23,7 +23,7 @@ Trois taux, trois questions — avec exemple (mois à 160 h théoriques) :
 
 - **Taux d'occupation** = temps saisi ÷ temps théorique. 120 h saisies →
   **75 %**. Le volume de travail suffit-il ? Le théorique vient du modèle
-  de temps de travail (jours fériés/congés ne comptent pas).
+  de temps de travail (jours fériés, congés et arrêts maladie ne comptent pas).
 - **Part facturable** = temps facturable ÷ temps saisi. 90 h sur 120 →
   **75 %**. Le temps va-t-il dans du travail rémunéré ?
 - **Réalisation** = temps facturé ÷ temps facturable. 72 h sur 90 en

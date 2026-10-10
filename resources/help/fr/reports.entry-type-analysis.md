@@ -1,7 +1,7 @@
 ---
 title: "Analyse par type d'intervention"
 topic: reports.entry-type-analysis
-version: 1
+version: 3
 keywords:
     - prévu vs réalisé
     - écart prévu réalisé
@@ -29,3 +29,6 @@ tenues comme classification. Elle révèle les types d'intervention où les
 hypothèses de planification sont irréalistes ou où l'équipe a un
 surcoût systématique — deux signaux de besoin de formation ou de
 révision tarifaire.
+
+La durée prévue d'un ordre est sa **Durée prévue (HH:MM)** ; si elle est vide,
+la durée d’intervention d’une commande planifiée, sinon la durée du créneau ou du rendez-vous compte.

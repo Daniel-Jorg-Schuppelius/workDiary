@@ -38,4 +38,10 @@ return [
         'Invoiced' => 'Invoiced',
         'Cancelled' => 'Cancelled',
     ],
+    'planned_duration' => [
+        'label' => 'Planned duration (HH:MM)',
+        'hint' => 'Empty: length of the time slot or duration of the appointment. Counts as the plan in Plan/actual, Order-type analysis and Staff capacity.',
+        'format' => 'Please enter the planned duration as hours:minutes, e.g. 1:30.',
+        'range' => 'The planned duration must be between 0:01 and 168:00.',
+    ],
 ];

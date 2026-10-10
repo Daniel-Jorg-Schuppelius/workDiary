@@ -60,6 +60,13 @@
                         </td>
                         <td class="text-right">
                             <div class="flex justify-end gap-1">
+                                @if ($canPrepare && $run->status === \App\Enums\Finance\RecurringRunStatus::Expected
+                                    && $run->template?->kind === \App\Enums\Finance\RecurringTemplateKind::DocumentExpectation)
+                                    <x-icon-btn icon="task_alt" size="xs" tone="ghost"
+                                                data-entry-modal-trigger
+                                                :href="route('finance.accounting.recurring.runs.fulfill-form', $run)"
+                                                :label="__('accounting.recurring.action.fulfill')" />
+                                @endif
                                 @if ($run->entry)
                                     <x-icon-btn icon="menu_book" size="xs" tone="ghost"
                                                 :href="route('finance.accounting.journal.show', $run->entry)"

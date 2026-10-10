@@ -8,14 +8,14 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Produktanalyse Drilldown - Offene Punkte')
-@section('pdf-heading', 'Produktanalyse Drilldown: Offene Punkte')
+@section('pdf-title', __('Drilldown: Offene Punkte (Asset)'))
+@section('pdf-heading', __('Drilldown: Offene Punkte (Asset)'))
 
 @section('pdf-meta')
-    Bereich: {{ $scopeLabel }}<br>
-    Zeitraum: {{ $label }}
+    {{ __('Bereich') }}: {{ $scopeLabel }}<br>
+    {{ __('Zeitraum') }}: {{ $label }}
     @if ($escalatedOnly)
-        <br>Filter: Nur eskalierte offene Punkte
+        <br>{{ __('Filter: nur eskalierte offene Punkte') }}
     @endif
 @endsection
 

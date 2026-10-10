@@ -49,7 +49,4 @@ interface ZammadGateway {
      * (Minuten oder Stunden). true bei Erfolg.
      */
     public function accountTime(int $ticketId, float $timeUnit): bool;
-
-    /** Artikel (Notiz/Antwort) am Ticket anlegen — internal steuert die Kundensichtbarkeit. */
-    public function addArticle(int $ticketId, string $body, bool $internal = true): bool;
 }

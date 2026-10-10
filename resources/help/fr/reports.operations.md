@@ -1,7 +1,7 @@
 ---
 title: "Exploitation : répartition du temps, procédures, matériel, astreinte"
 topic: reports.operations
-version: 1
+version: 6
 keywords:
     - rapport d’exploitation
     - commandes de service
@@ -53,8 +53,13 @@ clients** et **Rapports** → **Ressources**.
   administrateurs, qui passent ainsi de leurs propres données à toute
   l’équipe. Tous les autres y voient toujours leurs propres données.
 - **PDF** télécharge une version imprimable ; **CSV** et **Excel** se trouvent
-  sous **Export**. Les exports reprennent les filtres définis. Les exports PDF
-  et CSV sont consignés dans le journal d’audit.
+  sous **Export**. Les exports reprennent les filtres définis. Chaque export
+  est consigné dans le journal d’audit.
+- Les exports nécessitent le droit **Exporter les rapports**, y compris pour
+  **Exécutions de procédure bloquées** ; sans ce droit, les boutons d'export
+  n'apparaissent pas. Les administrateurs peuvent toujours exporter. Restent
+  libres les exports qui ne contiennent que vos propres données – voir
+  « Utiliser les rapports ».
 
 ## Operations
 
@@ -68,8 +73,9 @@ Service), tâches et tournées de la période.
   retard) ainsi que **Tournées** avec les kilomètres et la durée planifiés.
 - Graphiques : **Ordres de service : créés vs terminés par semaine** et
   **Backlog par client (top 15)** avec les commandes de service encore
-  ouvertes par client. Un clic sur une barre ouvre les points ouverts du
-  client ; il faut pour cela le droit **Voir les rapports**.
+  ouvertes par client. Avec le droit **Voir les rapports**, un clic sur une
+  barre ouvre les points ouverts du client ; sans ce droit, les barres ne
+  sont pas cliquables.
 - Tableaux : **Commandes de service – statut**, **Commandes de service –
   priorité**, **Tâches – statut**, **Tâches – priorité** et **Tournées – par
   employé** (tournées, **Km planifiés**, **Durée planifiée**).
@@ -179,7 +185,7 @@ réelles par employé, tels qu’ils sont gérés dans la **Liste de travail**. 
 durées qui dépassent la période ne comptent qu’au prorata ; les entrées
 archivées ne comptent pas.
 
-- Tuiles : **Employé**, **Astreinte** (avec le nombre de services),
+- Tuiles : **Employés**, **Astreinte** (avec le nombre de services),
   **Interventions actives** (temps d’intervention avec le nombre
   d’interventions) et **Part active** (temps d’intervention rapporté au temps
   d’astreinte).
@@ -225,14 +231,17 @@ civile dans laquelle commence la période choisie.
 - Choisissez **Client** et **Projet**. Sans sélection, le premier projet de
   la liste s’affiche. Le filtre **Employé** n’existe qu’avec une vue des
   temps à l’échelle de l’organisation.
-- La carte du projet indique les totaux annuels **Σ Std.** et **Σ €** et
+- La carte du projet indique les totaux annuels **Σ h** et **Σ €** et
   liste **Mois**, **Heures** et **Revenu** ; suit la **Répartition par
   employé**. Le revenu est la somme des montants enregistrés avec les saisies
   de temps.
 - Graphiques : **Évolution des heures sur la période**, **Heures réelles et
-  planifiées par mois** (plan issu des minutes planifiées des commandes du
-  projet selon leur début ; sans données de plan, une ligne montre la médiane
-  des mois réels) et **Heures par type de commande et par mois**.
+  planifiées par mois** (plan issu du champ **Durée prévue (HH:MM)** des
+  commandes du projet selon leur début, à défaut de la durée d’intervention d’une commande planifiée, sinon la durée du créneau ou du
+  rendez-vous ; avec un employé sélectionné, seulement les commandes qui lui
+  sont attribuées, sans vue des temps à l’échelle de l’organisation, seulement
+  celles qui vous sont attribuées ; sans données de plan, une ligne montre la
+  médiane des mois réels) et **Heures par type de commande et par mois**.
 
 Les administrateurs et les rôles disposant de **Voir toutes les saisies de
 temps** voient tous les projets et toutes les heures. Tous les autres ne
@@ -261,11 +270,11 @@ Export en CSV et Excel.
 
 ## Qualité des données
 
-La page **Qualité des données : classifications obligatoires** n’a pas
-d’entrée de menu propre ; vous l’ouvrez par un lien direct, par exemple un
-favori. Elle liste les commandes de la période auxquelles manquent des
-indications exigées par les règles obligatoires de **Classifications**. Le
-droit **Voir les rapports** est nécessaire.
+**Rapports** → **Projets et clients** → **Qualité des données** ouvre la page
+**Qualité des données : classifications obligatoires**. Elle liste les
+commandes de la période auxquelles manquent des indications exigées par les
+règles obligatoires de **Classifications**. L’entrée de menu et la page
+exigent le droit **Voir les rapports**.
 
 - Tuiles : **Commandes avec lacunes**, **Lacunes bloquantes** (règles
   bloquantes) et **Écarts mineurs** (avertissements).

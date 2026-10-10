@@ -29,12 +29,12 @@ enum IntegrationInboxStatus: string implements HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::Open => (string) __('Offen'),
-            self::ResolvedLinked => (string) __('Zugeordnet'),
-            self::ResolvedCreated => (string) __('Neu angelegt'),
-            self::ResolvedLocal => (string) __('Lokal behalten'),
-            self::ResolvedRemote => (string) __('Remote übernommen'),
-            self::Dismissed => (string) __('Verworfen'),
+            self::Open => (string) __('enums.integration.integration_inbox_status.open'),
+            self::ResolvedLinked => (string) __('enums.integration.integration_inbox_status.resolved_linked'),
+            self::ResolvedCreated => (string) __('enums.integration.integration_inbox_status.resolved_created'),
+            self::ResolvedLocal => (string) __('enums.integration.integration_inbox_status.resolved_local'),
+            self::ResolvedRemote => (string) __('enums.integration.integration_inbox_status.resolved_remote'),
+            self::Dismissed => (string) __('enums.integration.integration_inbox_status.dismissed'),
         };
     }
 

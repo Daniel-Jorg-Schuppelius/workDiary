@@ -71,6 +71,19 @@ class TravelChargeServiceTest extends TestCase {
         $this->assertSame(25.0, $charges->first()->amount());
     }
 
+    /** MVP-1103: Ohne eigenen Positionstext steht „Anfahrt" in der Sprache der Abrechnung. */
+    public function test_default_label_follows_the_language(): void {
+        config()->set('travel.enabled', true);
+        config()->set('travel.mode', 'flat');
+        config()->set('travel.flat_amount', 25);
+        config()->set('travel.label', '');
+        app()->setLocale('en');
+
+        $this->tourToCustomer('2030-04-01');
+
+        $this->assertStringStartsWith('Travel ', $this->charges()->first()->description);
+    }
+
     public function test_km_company_round_trip_doubles_distance(): void {
         config()->set('travel.enabled', true);
         config()->set('travel.mode', 'km');

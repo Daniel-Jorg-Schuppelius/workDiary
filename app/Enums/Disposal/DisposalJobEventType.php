@@ -38,19 +38,19 @@ enum DisposalJobEventType: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Created => (string) __('Akte angelegt'),
-            self::ItemAdded => (string) __('Geräteposition erfasst'),
-            self::ItemUpdated => (string) __('Geräteposition geändert'),
-            self::ItemRemoved => (string) __('Geräteposition entfernt'),
-            self::TreatmentAdded => (string) __('Datenträger-Behandlung dokumentiert'),
-            self::TreatmentRemoved => (string) __('Datenträger-Behandlung entfernt'),
-            self::HandoverAdded => (string) __('Entsorger-Übergabe erfasst'),
-            self::HandoverRemoved => (string) __('Entsorger-Übergabe entfernt'),
-            self::StatusChanged => (string) __('Status geändert'),
-            self::Signed => (string) __('Übernahme unterschrieben'),
-            self::RecordRendered => (string) __('Kundennachweis erzeugt'),
-            self::Completed => (string) __('Akte abgeschlossen'),
-            self::Cancelled => (string) __('Akte storniert'),
+            self::Created => (string) __('enums.disposal.disposal_job_event_type.created'),
+            self::ItemAdded => (string) __('enums.disposal.disposal_job_event_type.item_added'),
+            self::ItemUpdated => (string) __('enums.disposal.disposal_job_event_type.item_updated'),
+            self::ItemRemoved => (string) __('enums.disposal.disposal_job_event_type.item_removed'),
+            self::TreatmentAdded => (string) __('enums.disposal.disposal_job_event_type.treatment_added'),
+            self::TreatmentRemoved => (string) __('enums.disposal.disposal_job_event_type.treatment_removed'),
+            self::HandoverAdded => (string) __('enums.disposal.disposal_job_event_type.handover_added'),
+            self::HandoverRemoved => (string) __('enums.disposal.disposal_job_event_type.handover_removed'),
+            self::StatusChanged => (string) __('enums.disposal.disposal_job_event_type.status_changed'),
+            self::Signed => (string) __('enums.disposal.disposal_job_event_type.signed'),
+            self::RecordRendered => (string) __('enums.disposal.disposal_job_event_type.record_rendered'),
+            self::Completed => (string) __('enums.disposal.disposal_job_event_type.completed'),
+            self::Cancelled => (string) __('enums.disposal.disposal_job_event_type.cancelled'),
         };
     }
 }

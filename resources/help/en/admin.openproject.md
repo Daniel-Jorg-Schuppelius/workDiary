@@ -1,7 +1,7 @@
 ---
 title: "OpenProject Integration"
 topic: admin.openproject
-version: 3
+version: 4
 keywords:
     - project management
     - work packages
@@ -12,6 +12,8 @@ keywords:
     - project sync
     - project mapping
     - task import
+    - self-hosted OpenProject
+    - allow private addresses
 audience:
     - admin
 related:
@@ -26,6 +28,12 @@ OpenProject: times are imported **and** recorded times can be posted
 back to OpenProject. You store credentials and options in the plugin
 settings (including **Instance URL**, **API token** and **Sync window
 (days)**).
+
+WorkDiary rejects a self-hosted OpenProject instance on your own network
+(for example 192.168.x.x) until you switch on **Allow private addresses** in
+the plugin settings. The change is audited. If the operator of your
+installation has blocked this approval, the switch has no effect; the
+instance then needs a publicly reachable address.
 
 Synchronizing (**Sync OpenProject** page):
 

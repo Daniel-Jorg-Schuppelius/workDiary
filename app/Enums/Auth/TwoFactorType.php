@@ -25,9 +25,9 @@ enum TwoFactorType: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Totp => __('Authenticator-App'),
-            self::Email => __('E-Mail-Code'),
-            self::Webauthn => __('Sicherheitsschlüssel / Passkey'),
+            self::Totp => __('enums.auth.two_factor_type.totp'),
+            self::Email => __('enums.auth.two_factor_type.email'),
+            self::Webauthn => __('enums.auth.two_factor_type.webauthn'),
         };
     }
 

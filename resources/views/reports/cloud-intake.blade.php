@@ -20,7 +20,7 @@
         <x-page-toolbar>
             <x-slot:subtitle>{{ __('cloud_intake.report.subtitle') }} · {{ $label }}</x-slot:subtitle>
             <x-slot:actions>
-                <x-button tone="ghost" icon="download" :href="route('reports.cloud-intake', ['export' => 'csv'])">{{ __('CSV') }}</x-button>
+                <x-report-export :url="fn (string $format) => route('reports.cloud-intake', ['export' => $format])" :formats="['csv', 'xlsx']" tone="ghost" />
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

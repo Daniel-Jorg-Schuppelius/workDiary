@@ -1,7 +1,7 @@
 ---
 title: "Almacenamiento SharePoint"
 topic: admin.sharepoint
-version: 1
+version: 2
 keywords:
     - SharePoint
     - SharePoint Online
@@ -95,8 +95,7 @@ En la sección **Reglas de carpetas + orígenes** define qué se replica y dónd
 - **Tipo de documento → carpeta**: en cada fila elija un tipo de documento e
   indique una subcarpeta relativa a la biblioteca. Las filas vacías se
   ignoran; tras cada guardado hay tres filas vacías más. Los tipos aparecen en
-  la lista con su nombre corto en inglés, por ejemplo contract para los
-  contratos o invoice para las facturas.
+  la lista con su denominación, por ejemplo Contrato o Factura.
 
 Después haga clic en **Guardar**.
 
@@ -116,14 +115,15 @@ Las facturas y los protocolos no siguen las reglas de carpetas.
 - **Automáticamente ante eventos:** cuando un documento recibe el estado
   **Activo** (aprobado) o una versión nueva, WorkDiary transfiere esa versión.
   Los simples cambios de metadatos no provocan una nueva transferencia. Cuando
-  se emite una factura o se firma un protocolo, se envía su PDF, siempre que el
-  contenido correspondiente esté seleccionado.
+  se emite una factura o se firma un protocolo, se envía su PDF. Todo ello
+  rige solo para los contenidos seleccionados; sin **Documentos (DMS)**
+  marcado, WorkDiary no transfiere documentos.
 - **En segundo plano con reintentos:** la transferencia pasa por una cola. Si
   falla, se repite automáticamente; ningún archivo se escribe dos veces.
-- **Replicar ahora:** pone en cola todos los documentos activos de la
-  organización, por ejemplo tras la configuración inicial. WorkDiary omite los
-  archivos sin cambios. Este botón no incluye facturas ni protocolos; estos se
-  transfieren al emitirse o firmarse.
+- **Replicar ahora:** pone en cola todo lo de los contenidos seleccionados
+  (documentos activos, facturas emitidas y protocolos firmados), por ejemplo
+  tras la configuración inicial, también para documentos anteriores.
+  WorkDiary omite los archivos sin cambios.
 
 No hay una planificación fija. WorkDiary solo lee de SharePoint para comprobar
 si un archivo replicado se ha modificado allí.
@@ -142,6 +142,11 @@ acciones:
   versión nueva del documento.
 - **Desvincular la replicación**: este documento concreto deja de replicarse;
   la conexión sigue activa.
+
+Para los PDF de facturas y protocolos solo existe **Sobrescribir remoto**: las
+facturas emitidas y los protocolos firmados no se pueden modificar,
+WorkDiary vuelve a depositar su PDF. Si quiere conservar el archivo
+modificado, elija **Descartar**.
 
 La **Bandeja de conciliación** está abierta a las personas autorizadas a
 gestionar la facturación.
@@ -171,5 +176,6 @@ con los mismos ajustes.
   **Activo** está desactivado, no hay biblioteca elegida, o la conexión se
   suspendió tras errores repetidos consecutivos. Una vez corregida la causa,
   **Desconectar** y volver a conectar ponen a cero el contador de errores.
+  Mientras la conexión falle, una tarea operativa lo indica.
 - **Comprobar el estado:** junto al título de la página figura el último estado
   comprobado; **Probar conexión** lo comprueba al momento.

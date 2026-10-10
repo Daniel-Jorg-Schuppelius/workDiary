@@ -8,8 +8,8 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Kundenanalyse')
-@section('pdf-heading', 'Kundenanalyse')
+@section('pdf-title', __('Kundenanalyse'))
+@section('pdf-heading', __('Kundenanalyse'))
 
 @section('pdf-table')
     @include('reports.pdf.charts._chart')
@@ -17,17 +17,17 @@
     <table>
         <thead>
             <tr>
-                <th>Kunde</th>
-                <th class="num">Auftraege</th>
-                <th class="num">Gesamt</th>
-                <th class="num">Abrechenbar</th>
+                <th>{{ __('Kunde') }}</th>
+                <th class="num">{{ __('Aufträge') }}</th>
+                <th class="num">{{ __('Gesamt') }}</th>
+                <th class="num">{{ __('Abrechenbar') }}</th>
                 <th class="num">{{ __('Nicht abrechenbar') }}</th>
-                <th class="num">Anteil %</th>
-                <th class="num">Nacharbeit</th>
+                <th class="num">{{ __('Anteil %') }}</th>
+                <th class="num">{{ __('Nacharbeit') }}</th>
                 <th class="num">{{ __('Offene Punkte') }}</th>
-                <th class="num">Eskaliert</th>
-                <th class="num">Durchschnitt</th>
-                <th class="num">Trend 30d</th>
+                <th class="num">{{ __('Eskaliert') }}</th>
+                <th class="num">{{ __('Ø Min./Auftrag') }}</th>
+                <th class="num">{{ __('Trend 30d') }}</th>
             </tr>
         </thead>
         <tbody>

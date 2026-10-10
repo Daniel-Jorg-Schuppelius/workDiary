@@ -10,6 +10,7 @@
 
 namespace App\Plugins\Kimai;
 
+use App\Plugins\Kimai\Console\KimaiImportCommand;
 use App\Plugins\Kimai\Services\{KimaiGroupBooker, KimaiImportService, KimaiOutboxDispatcher};
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Integration\{InboxGroupBookerRegistry, IntegrationOutboxDispatcherResolver};
@@ -17,7 +18,7 @@ use App\Services\Integration\{InboxGroupBookerRegistry, IntegrationOutboxDispatc
 /**
  * Plugin-eigener ServiceProvider (geladen vom Core-PluginServiceProvider, sobald
  * KimaiPlugin in der Registry steht). Registriert den Import-Service, lädt Routen
- * und Views sowie den Rückkanal für importierte Zeiten.
+ * und Views sowie den Rückkanal für importierte Zeiten und den geplanten Import.
  */
 class KimaiServiceProvider extends PluginServiceProviderBase {
     protected function pluginId(): string {
@@ -33,5 +34,7 @@ class KimaiServiceProvider extends PluginServiceProviderBase {
         $this->app->make(InboxGroupBookerRegistry::class)->register(KimaiPlugin::ID, KimaiGroupBooker::class);
 
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new KimaiOutboxDispatcher);
+
+        $this->commands([KimaiImportCommand::class]);
     }
 }

@@ -1,7 +1,7 @@
 ---
 title: "Collegare una rubrica CardDAV"
 topic: admin.carddav
-version: 1
+version: 2
 keywords:
     - CardDAV
     - collegare una rubrica
@@ -119,7 +119,11 @@ qualsiasi come sorgente.
 - **Nessuna sincronizzazione:** se manca **Sincronizza ora** o WorkDiary
   segnala «Sincronizzazione non possibile», la connessione è inattiva, non è
   stata scelta una rubrica, oppure è stata sospesa dopo ripetuti errori
-  consecutivi. La pagina mostra l'ultimo errore in alto.
+  consecutivi. La pagina mostra l'ultimo errore in alto, così come un blocco
+  dopo (per impostazione predefinita) dieci errori consecutivi. Verifichi indirizzo e credenziali e clicchi
+  su **Salva**: il blocco viene rimosso e la prossima sincronizzazione decide
+  di nuovo. Finché la connessione è disturbata, un'attività operativa lo
+  segnala.
 - **Verificare lo stato:** accanto al titolo della pagina compare l'ultimo
   stato verificato della connessione. **Verifica connessione** lo controlla
   subito.

@@ -1,7 +1,7 @@
 ---
 title: "Piattaforma di apprendimento"
 topic: learning.overview
-version: 5
+version: 6
 keywords:
     - e-learning
     - LMS
@@ -254,7 +254,10 @@ catalogo)**.
 ## Analisi e cogestione
 
 L'analisi mostra tassi e anomalie, non profili individuali. I tassi compaiono
-solo da cinque iscrizioni in su, così non si risale alle persone. Punti,
+solo da cinque iscrizioni in su, così non si risale alle persone.
+L'esportazione in PDF, CSV o Excel rispetta la stessa soglia e richiede il
+permesso **Esporta i report**; gli amministratori possono sempre esportare.
+Punti,
 riconoscimenti e classifica sono disattivati per impostazione predefinita; la
 classifica mostra inoltre solo chi acconsente espressamente.
 

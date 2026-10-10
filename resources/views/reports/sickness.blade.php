@@ -16,7 +16,7 @@
         <x-page-toolbar :subtitle="__('Krankheitsfälle, AU-Bescheinigungen und Lohnfortzahlung je Mitarbeiter.')" />
     </x-slot:toolbar>
 
-    @if ($isAdmin)
+    @if ($seesTeam)
         <x-filter-bar :action="route('reports.sickness')" :reset="route('reports.sickness')">
             <x-filter-field :label="__('Bereich')" for="rep-scope">
                 <select id="rep-scope" name="scope" class="select select-sm select-bordered" data-autosubmit>
@@ -40,7 +40,7 @@
     </div>
 
     <div class="grid gap-3 grid-cols-1 sm:grid-flow-col sm:auto-cols-fr">
-        <x-kpi-tile :label="__('Mitarbeiter')" :value="$totals['users']" />
+        <x-kpi-tile :label="__('user.employees')" :value="$totals['users']" />
         <x-kpi-tile :label="__('Werktage krank')" :value="$totals['sick_workdays']" :hint="$totals['sick_calendar_days'] . ' ' . __('Kalendertage')" />
         <x-kpi-tile :label="__('Krankheitsfälle')" :value="$totals['episodes']" :hint="$totals['follow_ups'] . ' ' . __('Folge')" />
         <x-kpi-tile :label="__('Mit AU')" :value="$totals['with_au']" :hint="'/ ' . $totals['episodes'] . ' ' . __('Fälle')" />

@@ -1,7 +1,7 @@
 ---
 title: "Connecter un carnet d'adresses CardDAV"
 topic: admin.carddav
-version: 1
+version: 2
 keywords:
     - CardDAV
     - connecter un carnet d'adresses
@@ -129,6 +129,10 @@ saisir une adresse quelconque comme source.
 - **Pas de synchronisation :** si **Synchroniser maintenant** manque ou si
   WorkDiary signale « Synchronisation impossible », la connexion est inactive,
   aucun carnet d'adresses n'est choisi, ou elle a été mise à l'arrêt après des
-  erreurs répétées consécutives. La page affiche la dernière erreur en haut.
+  erreurs répétées consécutives. La page affiche la dernière erreur en haut,
+  ainsi qu'un blocage après (par défaut) dix erreurs consécutives. Vérifiez l'adresse et
+  les identifiants, puis cliquez sur **Enregistrer** – cela lève le blocage,
+  la prochaine synchronisation décide à nouveau. Tant que la connexion est
+  perturbée, une tâche d'exploitation la signale.
 - **Vérifier l'état :** à côté du titre de la page figure le dernier état
   vérifié de la connexion. **Tester la connexion** le vérifie immédiatement.

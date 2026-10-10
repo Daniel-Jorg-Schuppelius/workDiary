@@ -26,10 +26,10 @@ enum AgileItemType: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Epic => (string) __('Epic'),
-            self::Story => (string) __('Story'),
-            self::Task => (string) __('Aufgabe'),
-            self::Bug => (string) __('Fehler'),
+            self::Epic => (string) __('enums.agile.agile_item_type.epic'),
+            self::Story => (string) __('enums.agile.agile_item_type.story'),
+            self::Task => (string) __('enums.agile.agile_item_type.task'),
+            self::Bug => (string) __('enums.agile.agile_item_type.bug'),
         };
     }
 }

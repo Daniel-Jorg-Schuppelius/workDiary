@@ -1,7 +1,7 @@
 ---
 title: "Analisi per tipo di incarico"
 topic: reports.entry-type-analysis
-version: 1
+version: 3
 keywords:
     - previsto vs effettivo
     - scostamento dal pianificato
@@ -29,3 +29,6 @@ piano/consuntivo** in percentuale, la **quota di rilavorazione** e le
 con ipotesi di pianificazione irrealistiche o con sovraccarico
 sistematico del team — entrambi segnali di esigenze di formazione o di
 revisione dei prezzi.
+
+La durata pianificata di un incarico è la sua **Durata prevista (HH:MM)**; se è
+vuota, conta la durata dell’intervento di un ordine pianificato, altrimenti la durata della finestra oraria o dell’appuntamento.

@@ -10,9 +10,10 @@
 
 namespace App\Http\Controllers\Reporting;
 
+use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\Platform\User;
 use App\Services\Reporting\{PeriodBalance, ReportFilters, WorkBalanceCalculator};
 use App\Support\Sqid;
@@ -33,6 +34,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 class WorkBalanceReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use ResolvesReportScope;
     use ResolvesStandardReportFilters;
     // A9: liefert auditExport für den PDF-Export.
     use WritesReportCsv;
@@ -42,11 +44,18 @@ class WorkBalanceReportController extends Controller {
 
     public function __construct(protected WorkBalanceCalculator $calc) {}
 
+    /** E10: Die eigene Arbeitsbilanz ist frei, die einer anderen Person nicht. */
+    protected function exportIsPersonal(Request $request): bool {
+        $requested = Sqid::decodeOrNumeric(User::class, (string) $request->query('user', ''));
+
+        return $requested === null || $requested === (int) Auth::id();
+    }
+
     public function index(Request $request): View|SymfonyResponse {
         /** @var User $authUser */
         $authUser = Auth::user();
         $user = $this->resolveTargetUser($request, $authUser);
-        $isAdmin = $authUser->isAdmin();
+        $seesTeam = $this->viewerHolds(Permission::TimeEntryViewAny);
 
         [$from, $to, $label] = $this->resolveRange($request);
 
@@ -80,7 +89,7 @@ class WorkBalanceReportController extends Controller {
         }
 
         $filterOptions = [];
-        if ($isAdmin) {
+        if ($seesTeam) {
             $filterOptions = $this->standardFilterOptions(['user', 'team'], $filters);
             if ($filters->teamId !== null && isset($filterOptions['filterUsers'])) {
                 // Team wählt die Mitarbeiterliste vor; der aktuell angezeigte
@@ -102,7 +111,7 @@ class WorkBalanceReportController extends Controller {
             'from' => $from,
             'to' => $to,
             'label' => $label,
-            'isAdmin' => $isAdmin,
+            'seesTeam' => $seesTeam,
             'standardFilters' => $filters,
             'filterFields' => ['user', 'team'],
             'dailySeries' => $dailySeries,
@@ -203,8 +212,8 @@ class WorkBalanceReportController extends Controller {
             return $authUser;
         }
 
-        if (! $authUser->isAdmin()) {
-            throw new AccessDeniedHttpException('Nur Admins dürfen die Arbeitsbilanz anderer Nutzer einsehen.');
+        if (! $this->viewerHolds(Permission::TimeEntryViewAny)) {
+            throw new AccessDeniedHttpException('Die Arbeitsbilanz anderer Nutzer setzt die Sicht auf alle Zeiten voraus.');
         }
 
         // Mandantengrenze: nur Nutzer der eigenen Organisation (User hat keinen

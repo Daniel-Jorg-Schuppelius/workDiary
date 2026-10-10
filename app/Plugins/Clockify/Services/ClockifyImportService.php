@@ -13,12 +13,12 @@ namespace App\Plugins\Clockify\Services;
 use App\Models\Platform\Organization;
 use App\Plugins\Clockify\Api\ClockifyApiClient;
 use App\Plugins\Clockify\{ClockifyConfig, ClockifyPlugin};
-use App\Plugins\Clockify\Exceptions\ClockifyApiException;
 use App\Plugins\Clockify\Sources\ClockifyCsvParser;
 use App\Plugins\Support\{ImportedTimeEntry, MatchingTimeImportService, RemoteSyncWindow};
 use App\Plugins\Support\TimeTracking\CsvAndApiTimeImporter;
-use App\Support\Tz;
+use App\Support\{ErrorText, Tz};
 use Carbon\CarbonImmutable;
+use RuntimeException;
 
 /**
  * Clockify-Zeitimport auf der gemeinsamen {@see MatchingTimeImportService}-
@@ -76,8 +76,9 @@ class ClockifyImportService extends MatchingTimeImportService implements CsvAndA
 
         try {
             $rows = $client->getTimeEntries($from, $to);
-        } catch (ClockifyApiException $e) {
-            return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'unresolved_users' => 0, 'error' => $e->getMessage()];
+        } catch (RuntimeException $e) {
+            // Auch die Adressprüfung des Clients (private Ziele) — nicht nur API-Antworten.
+            return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'unresolved_users' => 0, 'error' => ErrorText::for($e)];
         }
 
         $entries = [];

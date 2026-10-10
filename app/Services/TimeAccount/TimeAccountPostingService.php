@@ -245,6 +245,7 @@ final class TimeAccountPostingService {
                     SickLeave::query()
                         ->withoutGlobalScopes()
                         ->where('organization_id', $orgId)
+                        ->whereNull('cancelled_at')
                         ->where('start_date', '<', DateRange::dayAfter($toStr))
                         ->where('end_date', '>=', DateRange::day($fromStr))
                         ->get(['id', 'user_id', 'start_date', 'end_date'])

@@ -1,7 +1,7 @@
 ---
 title: "Parco veicoli, registro viaggi e tempi di guida"
 topic: reports.fleet
-version: 1
+version: 3
 keywords:
     - analisi veicoli
     - chilometraggio
@@ -33,7 +33,7 @@ related:
 
 Questi report riguardano veicoli e viaggi: chilometri e costi energetici per
 veicolo, il registro viaggi fiscale di un veicolo, il confronto tra il metodo
-del libretto di viaggio e la regola dell’1 % e la prova dei tempi di guida e
+del registro viaggi e la regola dell’1 % e la prova dei tempi di guida e
 di riposo. Si basano sui viaggi del **Registro viaggi** (**Trasferte e
 spese** → **Registro viaggi**), sui giustificativi del **Registro
 rifornimenti e ricariche** (**Parco veicoli** → **Registro rifornimenti e
@@ -44,8 +44,8 @@ ricariche**) e sui dati dei veicoli in **Parco veicoli** → **Veicoli**.
 - Il periodo si sceglie con la selezione del periodo nell’intestazione. Il
   confronto 1 % calcola invece su un anno solare.
 - **PDF** scarica una versione stampabile; **CSV** ed **Excel** si trovano in
-  **Esportazione**. Le esportazioni riprendono i filtri scelti; le
-  esportazioni PDF e CSV vengono registrate nel registro di audit.
+  **Esportazione**. Le esportazioni riprendono i filtri scelti; ogni
+  esportazione viene registrata nel registro di audit.
 
 ## Parco veicoli
 
@@ -76,20 +76,20 @@ Filtri: **Area** (**Solo i miei viaggi** o **Intero parco veicoli**, solo per
 gli amministratori) e **Dipendente**. Tutti gli altri vedono solo i propri
 viaggi e giustificativi. Esportazione in PDF, CSV ed Excel.
 
-## Prova libretto di viaggio
+## Prova registro viaggi
 
-**Report** → **Risorse** → **Prova libretto di viaggio** mostra il registro
+**Report** → **Risorse** → **Prova registro viaggi** mostra il registro
 viaggi fiscale di un veicolo: letture del contachilometri, tipo di viaggio,
 destinazione, scopo e conducente, totali per tipo di viaggio e quota privata.
 
-- Scelga il **Veicolo**. I veicoli in **Modalità libretto** compaiono in alto
+- Scelga il **Veicolo**. I veicoli in **Modalità registro viaggi** compaiono in alto
   e sono contrassegnati di conseguenza. Senza diritti di amministratore
   l’elenco contiene i veicoli senza **Conducente predefinito** e quelli di cui
   Lei è il conducente predefinito; gli amministratori vedono tutti i veicoli.
-- Se il veicolo non è in modalità libretto, un avviso ricorda che i viaggi
+- Se il veicolo non è in modalità registro viaggi, un avviso ricorda che i viaggi
   senza letture del contachilometri e senza blocco non costituiscono un
   registro viaggi ai fini fiscali. La modalità si attiva sul veicolo con
-  **Modalità libretto (fiscale)**.
+  **Modalità registro viaggi (fiscale)**.
 - Riquadri: **Viaggi** (con il numero di viaggi bloccati), **Σ km**, i
   chilometri per tipo di viaggio (**Aziendale**, **Casa–lavoro**, **Privato**)
   e **Quota privata** (chilometri privati rispetto a tutti i chilometri).
@@ -112,22 +112,22 @@ correzione, nonché i totali e la quota privata.
 ## Confronto 1 %
 
 Il **Confronto 1 %** si apre con il pulsante omonimo nella pagina **Prova
-libretto di viaggio**; non ha una voce di menu propria. Per ogni veicolo
-mette a confronto il benefit in natura secondo il metodo del libretto di
-viaggio e la regola dell’1 %. Si tratta di un calcolo semplificato e non di
+registro viaggi**; non ha una voce di menu propria. Per ogni veicolo
+mette a confronto il benefit in natura secondo il metodo del registro
+viaggi e la regola dell’1 %. Si tratta di un calcolo semplificato e non di
 una consulenza fiscale.
 
 - **Anno**: l’anno in corso e i sei anni precedenti; è preselezionato l’anno
   precedente.
-- Sono elencati solo i veicoli in modalità libretto, con la stessa selezione
-  di veicoli della prova libretto di viaggio.
+- Sono elencati solo i veicoli in modalità registro viaggi, con la stessa selezione
+  di veicoli della prova registro viaggi.
 - **mesi**: mesi con viaggi. **km totali**, **di cui privati** e **di cui
   casa–lavoro** contano solo i viaggi con km iniziali e finali; i viaggi
   originali stornati non contano.
 - **Costi totali**: costi energetici dai giustificativi di rifornimento e
   ricarica dell’anno più gli altri costi annuali; il tooltip mostra le due
   parti.
-- **Metodo del libretto di viaggio**: costi totali moltiplicati per la quota
+- **Metodo del registro viaggi**: costi totali moltiplicati per la quota
   dei chilometri privati e casa–lavoro su tutti i chilometri.
 - **Regola dell’1 %**: **Prezzo di listino lordo (€)**, arrotondato per
   difetto al centinaio di euro, di cui l’1 % per mese di utilizzo più lo
@@ -160,8 +160,10 @@ lavoro**.
   partenza**, **Ultimo arrivo**, **Tempo di guida**, **Periodo di guida più
   lungo senza interruzione**, **Interruzioni (min)**, **Riposo precedente** e
   i **Rilievi** del giorno.
-- Il download riprende il periodo e il filtro dipendente della pagina e
-  fornisce un file CSV. Viene registrato nel registro di audit.
+- Il download riprende il periodo e i filtri dipendente e team della pagina.
+  **Prova tempi di guida** fornisce un file CSV, **Prova tempi di guida
+  (PDF)** gli stessi dati in un PDF orizzontale. Entrambi vengono registrati
+  nel registro di audit.
 
 I rilievi si basano sui limiti del regolamento (CE) 561/2006 e della FPersV:
 al massimo 9 h di guida al giorno (10 h due volte a settimana), 56 h a

@@ -56,7 +56,7 @@
                     ['label' => __('Gesamt'),                  'value' => $tabKpis['total'],   'border' => 'border-base-300',     'href' => $tileLink([]), 'active' => $currentFrom === '' && $currentTo === ''],
                     ['label' => __('Längste Schicht (Tage)'),  'value' => $tabKpis['longest'], 'border' => 'border-info/40',      'href' => null,          'active' => false],
                     ['label' => __('Ø Dauer (Tage)'),          'value' => $tabKpis['avg'],     'border' => 'border-primary/40',   'href' => null,          'active' => false],
-                    ['label' => __('Mitarbeiter'),             'value' => $tabKpis['users'],   'border' => 'border-secondary/40', 'href' => null,          'active' => false],
+                    ['label' => __('user.employees'),             'value' => $tabKpis['users'],   'border' => 'border-secondary/40', 'href' => null,          'active' => false],
                 ]
             );
     @endphp

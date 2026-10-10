@@ -33,12 +33,12 @@ enum DataDomain: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Tasks => (string) __('Aufgaben'),
-            self::Tickets => (string) __('Tickets'),
-            self::Inventory => (string) __('Lagerbestand'),
-            self::Calendar => (string) __('Kalender'),
-            self::Documents => (string) __('Dokumente'),
-            self::Customers => (string) __('Kunden'),
+            self::Tasks => (string) __('enums.integration.data_domain.tasks'),
+            self::Tickets => (string) __('enums.integration.data_domain.tickets'),
+            self::Inventory => (string) __('enums.integration.data_domain.inventory'),
+            self::Calendar => (string) __('enums.integration.data_domain.calendar'),
+            self::Documents => (string) __('enums.integration.data_domain.documents'),
+            self::Customers => (string) __('enums.integration.data_domain.customers'),
         };
     }
 }

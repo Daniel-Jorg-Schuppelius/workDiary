@@ -28,12 +28,12 @@ enum IncidentType: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Loss => __('Verlust'),
-            self::Misdelivery => __('Fehlversand'),
-            self::UnauthorizedAccess => __('Unberechtigter Zugriff'),
-            self::Disclosure => __('Offenlegung'),
-            self::Alteration => __('Unbefugte Veränderung'),
-            self::Unavailability => __('Nichtverfügbarkeit'),
+            self::Loss => __('enums.privacy.incident_type.loss'),
+            self::Misdelivery => __('enums.privacy.incident_type.misdelivery'),
+            self::UnauthorizedAccess => __('enums.privacy.incident_type.unauthorized_access'),
+            self::Disclosure => __('enums.privacy.incident_type.disclosure'),
+            self::Alteration => __('enums.privacy.incident_type.alteration'),
+            self::Unavailability => __('enums.privacy.incident_type.unavailability'),
         };
     }
 }

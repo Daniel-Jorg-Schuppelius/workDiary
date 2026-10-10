@@ -35,7 +35,7 @@
 
 @include('print._header', [
     'title'    => $title,
-    'subtitle' => $subtitle . ' · ' . $users->count() . ' ' . __('Mitarbeiter'),
+    'subtitle' => $subtitle . ' · ' . $users->count() . ' ' . __('user.employees'),
     'org'      => $org ?? null,
 ])
 

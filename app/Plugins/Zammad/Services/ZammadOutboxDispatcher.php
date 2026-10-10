@@ -21,20 +21,19 @@ use App\Plugins\Zammad\ZammadPlugin;
 use RuntimeException;
 
 /**
- * Status-Rückkanal nach Zammad (Feature 060, 2. Ausbaustufe): überträgt die
+ * Rückkanal nach Zammad (Feature 060, 2. Ausbaustufe): überträgt die
  * Erledigung einer WorkDiary-Aufgabe als schlanke Ticket-Rückmeldung
- * (Zielstatus + interne Notiz) über die generische integration_outbox — gleiche
- * Mechanik wie der Todoist-/WebDAV-Export. Bewusst KEINE Vollsynchronisation;
- * das Ticketsystem bleibt führend. Ist für die Organisation kein Rückkanal
- * konfiguriert ({@see ZammadConnection::pushesResolution()}), ist der Eintrag
- * ein No-Op (erledigt).
+ * (Zielstatus + interne Notiz) und erfasste Zeiten als Zeitbuchung am Ticket
+ * über die generische integration_outbox — gleiche Mechanik wie der
+ * Todoist-/WebDAV-Export. Bewusst KEINE Vollsynchronisation; das Ticketsystem
+ * bleibt führend. Ist der jeweilige Rückkanal nicht konfiguriert
+ * ({@see ZammadConnection::pushesResolution()}, {@see ZammadConnection::pushesTime()}),
+ * ist der Eintrag ein No-Op (erledigt).
  */
 class ZammadOutboxDispatcher implements IntegrationOutboxDispatcher {
     public const OP_TICKET_RESOLVE = 'ticket.resolve';
 
     public const OP_TICKET_TIME = 'ticket.time';
-
-    public const OP_TICKET_COMMENT = 'ticket.comment';
 
     public const EXT_TYPE_TIME = 'time_accounting';
 
@@ -46,7 +45,6 @@ class ZammadOutboxDispatcher implements IntegrationOutboxDispatcher {
         return match ($entry->operation) {
             self::OP_TICKET_RESOLVE => $this->resolveTicket($entry),
             self::OP_TICKET_TIME => $this->accountTime($entry),
-            self::OP_TICKET_COMMENT => $this->addComment($entry),
             default => throw new RuntimeException('Unbekannte Zammad-Outbox-Operation: ' . $entry->operation),
         };
     }
@@ -73,36 +71,6 @@ class ZammadOutboxDispatcher implements IntegrationOutboxDispatcher {
             $connection->resolved_state,
             (string) __('zammad::zammad.resolution.note'),
         );
-    }
-
-    /**
-     * Kommentar-Rückmeldung (Feature 065, P8): legt einen Artikel am
-     * Zammad-Ticket an; internal steuert die Kundensichtbarkeit (interne
-     * Notizen bleiben intern — Typgarantie kommt aus der Message-Art).
-     */
-    private function addComment(IntegrationOutboxEntry $entry): bool {
-        $payload = $entry->payload;
-        $ticketId = (int) ($payload['ticket_id'] ?? 0);
-        $body = trim((string) ($payload['body'] ?? ''));
-        if ($ticketId <= 0 || $body === '') {
-            return true;
-        }
-
-        $connection = ZammadConnection::query()->withoutGlobalScopes()
-            ->where('organization_id', $entry->organization_id)
-            ->where('active', true)
-            ->first();
-        if (! $connection instanceof ZammadConnection) {
-            return true;
-        }
-
-        $gateway = app(ZammadGatewayFactory::class)->for($connection);
-
-        if (! $gateway->addArticle($ticketId, $body, (bool) ($payload['internal'] ?? true))) {
-            throw new RuntimeException('Zammad: Artikel konnte nicht angelegt werden'); // → Queue-Retry
-        }
-
-        return true;
     }
 
     /**

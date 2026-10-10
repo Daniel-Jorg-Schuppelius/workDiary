@@ -1,7 +1,7 @@
 ---
 title: "OpenProject-Integration"
 topic: admin.openproject
-version: 3
+version: 4
 keywords:
     - Projektmanagement
     - Work Packages
@@ -14,6 +14,8 @@ keywords:
     - Projektzuordnung
     - Aufgaben importieren
     - Mapping
+    - selbst gehostetes OpenProject
+    - Private Adressen erlauben
 audience:
     - admin
 related:
@@ -28,6 +30,13 @@ OpenProject: Zeiten werden importiert **und** erfasste Zeiten lassen
 sich nach OpenProject zurückbuchen. Zugangsdaten und Optionen
 hinterlegen Sie in den Plugin-Einstellungen (u. a. **Instanz-URL**,
 **API-Token** und **Sync-Zeitfenster (Tage)**).
+
+Eine selbst gehostete OpenProject-Instanz im eigenen Netz (zum Beispiel
+192.168.x.x) lehnt WorkDiary ab, bis Sie in den Plugin-Einstellungen
+**Private Adressen erlauben** einschalten. Die Änderung wird protokolliert.
+Hat der Betreiber Ihrer Installation diese Freigabe gesperrt, bleibt der
+Schalter ohne Wirkung; die Instanz braucht dann eine öffentlich erreichbare
+Adresse.
 
 Synchronisieren (Seite **OpenProject synchronisieren**):
 

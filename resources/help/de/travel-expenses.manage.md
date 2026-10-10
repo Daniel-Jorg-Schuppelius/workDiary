@@ -1,7 +1,7 @@
 ---
 title: "Fahrten, Spesen & Pauschalen"
 topic: travel-expenses.manage
-version: 2
+version: 3
 keywords:
     - Reisekostenabrechnung
     - Spesenabrechnung

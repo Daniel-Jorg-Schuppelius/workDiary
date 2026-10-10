@@ -15,6 +15,7 @@ namespace App\Services\Learning;
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Calendar\EventParticipant;
 use App\Models\Learning\{LearningBooking, LearningCertificate, LearningEnrollment, LearningSubmission, LearningTimeSession};
+use App\Models\Platform\User;
 use App\Services\Notification\NotificationDispatcher;
 
 /**
@@ -137,7 +138,7 @@ class LearningNotifier {
             ]),
             'message_key' => 'notification.message.learning_waitlist_promoted',
             'message_params' => $params,
-            'url' => $this->safeRoute('learning.my.index'),
+            'url' => $this->myLearningUrl($user),
             'due_at' => $startsAt,
         ]);
     }
@@ -156,7 +157,7 @@ class LearningNotifier {
             'message' => (string) __($key, ['course' => $course]),
             'message_key' => $key,
             'message_params' => ['course' => $course],
-            'url' => $this->safeRoute('learning.my.index'),
+            'url' => $this->myLearningUrl($user),
         ]);
     }
 
@@ -186,8 +187,13 @@ class LearningNotifier {
         return (string) ($enrollment->course->title ?? '');
     }
 
+    /** Portalkonten erreichen die interne Lernansicht nicht — ihr Link führt ins Kundenportal. */
     private function enrollmentUrl(LearningEnrollment $enrollment): ?string {
-        return $this->safeRoute('learning.my.show', $enrollment);
+        return $this->safeRoute($enrollment->user?->isCustomer() ? 'customer.learning.show' : 'learning.my.show', $enrollment);
+    }
+
+    private function myLearningUrl(User $user): ?string {
+        return $this->safeRoute($user->isCustomer() ? 'customer.learning.index' : 'learning.my.index');
     }
 
     private function safeRoute(string $name, mixed $parameter = null): ?string {

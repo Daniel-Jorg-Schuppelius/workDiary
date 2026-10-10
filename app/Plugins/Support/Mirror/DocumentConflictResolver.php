@@ -15,7 +15,9 @@ namespace App\Plugins\Support\Mirror;
 use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Document\{Document, DocumentVersion};
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
+use App\Models\Protocol\Protocol;
 use App\Plugins\Support\Mirror\Contracts\DocumentVersionImporter;
 use App\Services\Integration\InboxActionService;
 use CommonToolkit\Helper\Data\CryptoHelper;
@@ -35,16 +37,30 @@ use RuntimeException;
 class DocumentConflictResolver {
     public function __construct(private readonly InboxActionService $inbox) {}
 
-    /** (a) „Remote überschreiben": lokaler Stand gewinnt, externe Änderung wird verworfen. */
+    /**
+     * (a) „Remote überschreiben": lokaler Stand gewinnt, externe Änderung wird
+     * verworfen — auch für Rechnungs- und Protokoll-PDFs (neu gerendert).
+     */
     public function overwrite(MirrorTarget $target, IntegrationInboxItem $item): void {
-        $document = $this->document($item);
+        $subject = $item->referenceable;
         $connection = $this->connection($target, $item);
         $gateway = $target->gatewayFor($connection);
+        $mirror = app(DocumentMirrorService::class);
 
-        app(DocumentMirrorService::class)->mirror($target, $document, $connection, $gateway, force: true);
+        match (true) {
+            $subject instanceof Document => $mirror->mirror($target, $subject, $connection, $gateway, force: true),
+            $subject instanceof Invoice => $mirror->mirrorInvoice($target, $subject, $connection, $gateway, force: true),
+            $subject instanceof Protocol => $mirror->mirrorProtocol($target, $subject, $connection, $gateway, force: true),
+            default => throw new RuntimeException('Spiegelkonflikt ohne zugehöriges Dokument.'),
+        };
 
-        $document->audit($target->pluginId() . '.conflict.overwritten', ['external_id' => $item->external_id]);
-        $this->inbox->markResolved($item, IntegrationInboxStatus::ResolvedLocal, $document);
+        $subject->audit($target->pluginId() . '.conflict.overwritten', ['external_id' => $item->external_id]);
+        $this->inbox->markResolved($item, IntegrationInboxStatus::ResolvedLocal, $subject);
+    }
+
+    /** Nur DMS-Dokumente lassen sich als Version übernehmen oder trennen; Belege bleiben unveränderlich. */
+    public static function supportsDocumentActions(IntegrationInboxItem $item): bool {
+        return $item->external_type === DocumentMirrorService::EXTERNAL_TYPE;
     }
 
     /** (b) „Remote als neue lokale Version importieren": externer Stand gewinnt lokal. */

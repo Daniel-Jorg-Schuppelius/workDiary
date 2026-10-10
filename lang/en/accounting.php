@@ -110,6 +110,8 @@ return [
             'add_entry' => 'New entry',
             'post' => 'Post',
             'reverse' => 'Reverse',
+            'discard' => 'Discard draft',
+            'show_pending' => 'Show pending draft',
             'reverse_submit' => 'Create counter-entry',
             'import' => 'Import chart of accounts',
         ],
@@ -157,6 +159,8 @@ return [
             'entry_saved' => 'Entry saved.',
             'entry_posted' => 'Entry posted.',
             'entry_reversed' => 'Counter-entry created.',
+            'entry_discarded' => 'Draft discarded — the action can be started again.',
+            'reversal_awaiting_approval' => 'Four-eyes principle: the reversal is waiting as a draft in the posting inbox for approval. The entry stays posted until a second person posts the counter-entry.',
         ],
         'error' => [
             'sovereignty' => 'On :date the ledger is kept by :holder — local postings are not allowed for that day.',
@@ -177,6 +181,8 @@ return [
             'both_sides' => 'A line carries either debit or credit, never both.',
             'unbalanced' => 'Debit (:debit) and credit (:credit) do not match.',
             'reverse_not_posted' => 'Only a posted entry can be reversed.',
+            'reversal_pending' => 'A reversal of this entry is already awaiting approval.',
+            'discard_not_allowed' => 'Only a pending draft from a discount, write-off, clearing entry, transfer, opening balances, special prepayment or reversal can be discarded; posted entries remain unchanged.',
             'reversal_reason_required' => 'A reversal requires a reason.',
             'account_in_use' => 'This account has been used — it can only be deactivated.',
             'entry_without_organization' => 'The entry has no organization — please inform your system administrator.',
@@ -235,6 +241,8 @@ return [
             'lines' => 'Entry lines',
             'total' => 'Total',
             'is_reversal_of' => 'This entry reverses entry #:no.',
+            'awaiting_approval' => 'Draft from “:kind”: it is awaiting approval and only takes effect once a second person posts it. Discarding deletes it; the action can then be started again.',
+            'reversal_pending' => 'A reversal of this entry is awaiting approval as a draft.',
             'reversed_by' => 'Reversed by entry #:no — :reason',
         ],
         'filter' => [
@@ -252,6 +260,7 @@ return [
         ],
         'confirm' => [
             'deactivate' => 'Really deactivate this account? Existing entries are kept.',
+            'discard' => 'Discard the draft? It will be deleted and the step logged; the action can then be started again.',
         ],
         'import' => [
             'line_invalid' => 'Line :line skipped (number, name or account type missing).',
@@ -269,7 +278,8 @@ return [
         'menu' => 'Posting inbox',
         'subtitle' => 'Documents, expenses and cash entries of the period with their posting status.',
         'empty' => 'No open items in the period.',
-        'four_eyes_active' => 'Four-eyes principle active: whoever prepared a proposal does not post it themselves.',
+        'four_eyes_active' => 'Four-eyes principle active: whoever prepared a proposal does not post it themselves. Discounts, write-offs, clearing entries, internal transfers, opening balances, special prepayments and reversals also wait here for approval by a second person; such drafts can also be discarded.',
+        'four_eyes_direct_hint' => 'Four-eyes principle active: the entry is created as a draft in the posting inbox and only takes effect once a second person posts it.',
         'state' => [
             'blocked' => 'Blocked',
             'open' => 'Unposted',
@@ -299,6 +309,7 @@ return [
         'flash' => [
             'prepared' => 'Proposal accepted.',
             'batch' => 'Batch: :prepared accepted, :posted posted, :failed open.',
+            'awaiting_approval' => 'Four-eyes principle: the entry is waiting as a draft in the posting inbox for approval. It takes effect as soon as a second person posts it.',
         ],
         'error' => [
             'four_eyes' => 'Four-eyes principle: you prepared this entry — someone else has to post it.',
@@ -511,6 +522,8 @@ return [
         'empty' => 'No open items.',
         'overdue_days' => ':days days overdue',
         'settle_hint' => 'Open: :open. Payments come from the payment reconciliation — here only discount, retention or write-off.',
+        'awaiting_approval' => 'Draft awaiting approval',
+        'four_eyes_hint' => 'Four-eyes principle active: discounts and write-offs are created as drafts in the posting inbox. The item stays open until a second person posts the counter-entry.',
         'column' => [
             'counterparty' => 'Counterparty',
             'due_date' => 'Due',
@@ -528,9 +541,14 @@ return [
         'action' => [
             'settle' => 'Settle',
             'show_entry' => 'Show entry',
+            'show_pending' => 'Show pending draft',
         ],
         'flash' => [
             'settled' => 'Settlement recorded.',
+            'awaiting_approval' => 'Four-eyes principle: the counter-entry is waiting as a draft in the posting inbox for approval. The item stays open until a second person posts it.',
+        ],
+        'error' => [
+            'draft_pending' => 'A counter-entry for this item is already awaiting approval. A further settlement is only possible once it has been posted.',
         ],
     ],
 
@@ -543,6 +561,9 @@ return [
         'invoice_schedules_hint' => 'Invoice schedules stay with the billing plan; shown here for context only.',
         'preview' => 'Next due dates: :dates',
         'no_account' => '— no account —',
+        'no_responsible' => '— nobody —',
+        'choose_invoice' => '— choose invoice —',
+        'fulfill_hint' => 'Period :period, due on :due, expected :expected. Assigning the incoming invoice completes the item.',
         'section' => [
             'open_runs' => 'Open items',
             'templates' => 'Templates',
@@ -562,11 +583,13 @@ return [
             'due_day' => 'Due day',
             'starts_on' => 'Start',
             'ends_on' => 'End',
+            'incoming_einvoice' => 'Incoming e-invoice',
         ],
         'hint' => [
             'kind' => 'A document expectation waits for an original; a posting template creates a draft.',
             'due_day' => '1–28, so every month has that day.',
             'accounts' => 'Posting templates only — together with the expected amount.',
+            'responsible' => 'Is notified about overdue items in addition to accounting.',
         ],
         'action' => [
             'add' => 'Add template',
@@ -576,6 +599,7 @@ return [
             'resume' => 'Resume',
             'end' => 'End',
             'open_schedules' => 'Open billing plans',
+            'fulfill' => 'Assign document',
         ],
         'confirm' => [
             'end' => 'End the template? Items already created remain.',
@@ -584,6 +608,7 @@ return [
             'runs' => 'No open items.',
             'templates' => 'No template created yet.',
             'schedules' => 'No active billing plan.',
+            'candidates' => 'No incoming e-invoice to assign. Record the original under Incoming e-invoices first.',
         ],
         'flash' => [
             'saved' => 'Template saved.',
@@ -592,6 +617,7 @@ return [
             'resumed' => 'Template resumed.',
             'ended' => 'Template ended.',
             'ran' => 'Run executed.',
+            'fulfilled' => 'Document expectation fulfilled.',
         ],
         'error' => [
             'already_closed' => 'This item is already closed.',

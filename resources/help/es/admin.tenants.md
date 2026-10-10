@@ -1,7 +1,7 @@
 ---
 title: "Organizaciones e inquilinos"
 topic: admin.tenants
-version: 3
+version: 4
 keywords:
     - gestión de inquilinos
     - multi-tenant

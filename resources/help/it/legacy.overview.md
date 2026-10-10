@@ -1,7 +1,7 @@
 ---
 title: "Sistema precedente (Legacy)"
 topic: legacy.overview
-version: 2
+version: 3
 keywords:
     - vecchio sistema
     - dati storici
@@ -54,7 +54,7 @@ persone li vedono gli amministratori del sistema precedente e il ruolo
 **Contabilità**; tutti gli altri vedono solo i propri. Il login del call center
 porta alla stessa pagina.
 
-**Dipendente** si trova nel menu di amministrazione (icona **Amministrazione**
+**Dipendenti** si trova nel menu di amministrazione (icona **Amministrazione**
 nell'intestazione) sotto **Personale** ed elenca gli utenti del sistema
 precedente con **Nome** e **E-mail**:
 
@@ -68,6 +68,6 @@ precedente con **Nome** e **E-mail**:
 - Creare, modificare ed eliminare richiedono l'accesso in scrittura al sistema
   precedente.
 
-**Autorizzazione:** la pagina **Dipendente** è accessibile agli amministratori
+**Autorizzazione:** la pagina **Dipendenti** è accessibile agli amministratori
 del sistema precedente e alla gestione della piattaforma; il solo ruolo di
 amministratore dell'organizzazione non basta.

@@ -35,6 +35,8 @@ class SchedulerRegistrationTest extends TestCase {
         // Neu mit Feature 072 (MVP-255): Reklamations-Fristeneskalation.
         'claims:escalate' => ['15 7 * * *', true, true],
         'operations:scan' => ['0 * * * *', true, true],
+        // Neu mit MVP-1095: Sendungsverfolgung offener Versandaufträge.
+        'shipping:track' => ['0 * * * *', true, true],
         // Neu mit MVP-054 (kein Alt-Eintrag): Update-Check (Opt-in-Gate im Command).
         'updates:check' => ['30 6 * * *', true, true],
         // Neuigkeiten-Rail (Opt-in-Gate im Command; externer Abruf nie im Web-Request).
@@ -95,6 +97,9 @@ class SchedulerRegistrationTest extends TestCase {
         'remote:sync-sessions' => ['0 * * * *', true, true],
         'toggl:import' => ['0 * * * *', true, true],
         'toggl:push' => ['0 * * * *', true, true],
+        // Phase 137 (E21): API-Import wie Toggl.
+        'kimai:import' => ['0 * * * *', true, true],
+        'clockify:import' => ['0 * * * *', true, true],
         'clockify:push' => ['0 * * * *', true, true],
         'openproject:import' => ['0 * * * *', true, true],
         'todoist:sync' => ['0 * * * *', true, true],

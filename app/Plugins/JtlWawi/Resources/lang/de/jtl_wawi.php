@@ -39,6 +39,7 @@ return [
         'secret_keep' => '(unverändert — leer lassen)',
         'allow_private_network' => 'Private/interne Adressen ausdrücklich erlauben',
         'allow_private_network_help' => 'Eine OnPremise-Wawi steht typischerweise im eigenen Netz. Diese Freigabe wird auditiert und gilt nur für diese Verbindung.',
+        'private_hint' => 'Für eine OnPremise-Wawi im eigenen Netz muss die Freigabe privater Adressen ausdrücklich aktiviert werden.',
         'last_sync' => 'Letzte Synchronisation',
         'last_error' => 'Letzter Fehler',
     ],

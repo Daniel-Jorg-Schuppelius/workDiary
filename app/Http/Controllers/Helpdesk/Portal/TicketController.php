@@ -37,6 +37,9 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 class TicketController extends Controller {
     use ValidatesUploadedFiles;
 
+    /** Aus diesen Status darf der Kunde wiedereröffnen; „Geschlossen“ bleibt dem Team vorbehalten. */
+    private const REOPENABLE = [ServiceTicketStatus::Done, ServiceTicketStatus::Accepted];
+
     public function index(): View {
         $user = $this->portalUser();
 
@@ -58,6 +61,7 @@ class TicketController extends Controller {
             // (Leak-Schutz strukturell im Timeline-Service, MVP-152).
             'timeline' => $timeline->forCustomer($ticket),
             'rated' => TicketSatisfaction::query()->where('service_ticket_id', $ticket->id)->exists(),
+            'canReopen' => in_array($ticket->status, self::REOPENABLE, true),
         ]);
     }
 
@@ -161,11 +165,11 @@ class TicketController extends Controller {
             ->with('success', __('Lösung bestätigt — vielen Dank!'));
     }
 
-    /** Wiedereröffnen mit Pflichtgrund (done → in_progress). */
+    /** Wiedereröffnen mit Pflichtgrund (done/accepted → in_progress). */
     public function reopen(Request $request, ServiceTicket $ticket, TicketConversationService $conversation): RedirectResponse {
         $user = $this->portalUser();
         abort_unless((int) $ticket->customer_id === (int) $user->customer_id, 404);
-        abort_unless(in_array($ticket->status, [ServiceTicketStatus::Done, ServiceTicketStatus::Accepted], true), 422);
+        abort_unless(in_array($ticket->status, self::REOPENABLE, true), 422);
 
         $data = $request->validate(['reason' => ['required', 'string', 'min:5', 'max:500']]);
 

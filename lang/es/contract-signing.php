@@ -60,7 +60,7 @@ return [
         'empty' => 'Todavía no hay acuerdos — empiece con «Crear acuerdo».',
         'no_revision' => 'todavía sin versión',
         'revision' => 'Versión',
-        'title' => 'Acuerdos (DPA/NDA)',
+        'title' => 'Acuerdos (DPA, NDA, condiciones de alquiler)',
     ],
     'declaration' => [
         'default' => 'Confirmo que estoy facultado/a para representar a mi parte y que he leído y acepto el presente :kind con :organization en la versión mostrada, incluidos sus anexos.',
@@ -254,11 +254,12 @@ return [
         'organization' => 'Parte organización',
     ],
     'portal' => [
+        'capability' => 'Acuerdos (DPA, NDA, condiciones de alquiler)',
         'downloads' => 'Documentos',
         'empty' => 'Actualmente no hay acuerdos.',
         'menu' => 'Acuerdos',
         'not_released' => 'todavía no publicado',
-        'subtitle' => 'Contratos de encargo del tratamiento y acuerdos de confidencialidad con nosotros — documentos y certificado de cierre tras la publicación.',
+        'subtitle' => 'Contratos de encargo del tratamiento, acuerdos de confidencialidad y condiciones de alquiler con nosotros — documentos y certificado de cierre tras la publicación.',
         'title' => 'Acuerdos',
     ],
     'public' => [

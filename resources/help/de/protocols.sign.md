@@ -1,7 +1,7 @@
 ---
 title: "Protokoll signieren"
 topic: protocols.sign
-version: 1
+version: 2
 keywords:
     - Unterschrift
     - unterschreiben lassen
@@ -35,3 +35,10 @@ Methoden:
 - **Drawing**: Unterschrift im Touch-Pad. Standard für Vor-Ort-Abnahmen.
 - **Signaturlink** (E-Mail an Kunde): asynchron, der Kunde signiert
   separat ohne Login.
+
+Ist ein Protokoll unter **Sichtbarkeit** auf **Kunden-sichtbar** gestellt,
+sieht der Kunde es im Kundenportal erst nach der Unterschrift – zu einem
+Auftrag in dessen Fallakte, zu einem Objekt in der Objektakte – und lädt es
+dort als PDF herunter. Entwürfe und Protokolle in Prüfung bleiben im Portal
+unsichtbar. Jeder Abruf aus dem Portal steht im **Verlauf** des Protokolls als
+**PDF im Kundenportal heruntergeladen** mit dem Namen des Portalzugangs.

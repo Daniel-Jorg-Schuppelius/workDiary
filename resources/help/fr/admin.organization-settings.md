@@ -1,7 +1,7 @@
 ---
 title: "Organisation et paramètres"
 topic: admin.organization-settings
-version: 1
+version: 3
 keywords:
     - paramètres de l'entreprise
     - réglages du locataire
@@ -211,7 +211,8 @@ des services :
 - **Correspondance des qualifications** : il manque à la personne une
   qualification exigée par le besoin en effectif du service.
 - **Comptabilisation du jour férié** : le service tombe sur un jour férié
-  géré sous **Jours fériés**.
+  légal de la région des jours fériés (onglet **Région et jours fériés**) ou
+  sur un jour férié propre géré sous **Jours fériés**.
 
 Les quatre dernières contrôlent les pointages et créent des cas à clarifier
 dans l'analyse ArbZG :
@@ -242,16 +243,17 @@ des onglets.
 ## Listes
 
 Nombre d'éléments qu'une liste affiche par page, de 1 à 500 :
-**Feuilles de temps**, **Plannings de service**, **Clients**, **Tournées**,
-**Véhicules**, **Tags**, **Organisations** (liste de l'exploitation de la
-plateforme) ainsi que les trois listes de la boîte de télémaintenance
-(**Boîte de télémaintenance : appareils non attribués**, **Boîte de
-télémaintenance : appareils multi-clients**, **Boîte de télémaintenance :
-sessions par carte d'appareil**). Les champs **Recherche de clients (saisie
-semi-automatique)**, **Pièces jointes client**, **Archive** et **Tableau de
-bord : éléments récents** n'ont actuellement aucun effet ; le nombre
-d'éléments récents affichés sur le tableau de bord se règle dans l'onglet
-**Interface**.
+**Feuilles de temps**, **Plannings de service**, **Clients** (également
+fournisseurs et clients tiers), **Tournées**, **Véhicules**, **Tags**,
+**Archive** (chaque onglet de la page d'archive), **Notifications, tâches
+d'exploitation, fenêtres de maintenance, signalements de problèmes** ainsi
+que les trois listes de la boîte de télémaintenance (**Boîte de
+télémaintenance : appareils non attribués**, **Boîte de télémaintenance :
+appareils multi-clients**, **Boîte de télémaintenance : sessions par carte
+d'appareil**). Le nombre d'éléments récents affichés sur le tableau de bord se
+règle dans l'onglet **Interface**. La taille de la liste des organisations de
+l'exploitation de la plateforme est un paramètre système sous **Paramètres
+(registre)**.
 
 ## Facturation
 
@@ -331,10 +333,15 @@ Trois champs agissent en outre sur toutes les factures créées localement :
   et hors UE.
 - **Délai de paiement (jours)** (0–365) : s'applique lorsque ni la facture ni
   le client n'ont de délai de paiement ; vide ou 0 = 14 jours.
-- **Petite entreprise (§ 19 UStG)** : les factures n'indiquent pas de TVA et
-  portent la mention « Pas de TVA conformément au § 19 UStG (régime des
-  petites entreprises). » ; la XRechnung reçoit la catégorie de taxe E
-  (exonérée).
+- **Petite entreprise (§ 19 UStG)** : toutes les factures créées par workDiary
+  n'indiquent pas de TVA et portent la mention « Pas de TVA conformément au
+  § 19 UStG (régime des petites entreprises). » ; la XRechnung reçoit la
+  catégorie de taxe E (exonérée). La case prime sur **Taux de TVA par défaut
+  (%)** et l'autoliquidation.
+
+## Comptabilité : principe des quatre yeux
+
+L’option **Principe des quatre yeux** du groupe **Comptabilité** impose la validation par une seconde personne : la personne qui prépare une écriture ou une écriture directe (escompte, passage en perte, écriture d’attente, virement interne, soldes d’ouverture, acompte spécial) ne la valide pas elle-même ; celle qui constitue un lot de paiements SEPA ne le libère pas elle-même. Les écritures directes sont alors créées comme brouillons dans la **Boîte de saisie comptable** et ne prennent effet qu’après leur validation. Sans cette option, WorkDiary les valide immédiatement.
 
 ## Immobilisations : biens de faible valeur et pool
 
@@ -474,8 +481,6 @@ est coupé.
   autorisées : 10, 15, 20, 30 ou 60 (par défaut 30).
 - **Tableau de bord** – **Nombre d'éléments récents** (par défaut 5) : nombre
   d'éléments utilisés récemment affichés par le tableau de bord.
-- **Recherche** – **Limite de résultats par défaut** (par défaut 20) : n'a
-  actuellement aucun effet.
 
 ## Nominatim (géocodage)
 
@@ -555,8 +560,9 @@ chez ce client ; la position porte la date de la tournée. Les tournées annulé
 déjà facturés ne comptent pas.
 
 - **Mode** : **Forfait** ou **Kilomètres**.
-- **Texte de position** (50 caractères au plus, par défaut « Anfahrt ») :
-  texte de la position de facture, complété par la date ou les kilomètres.
+- **Texte de position** (50 caractères au plus, par défaut « Trajet »
+  dans la langue de la facturation) : texte de la position de facture,
+  complété par la date ou les kilomètres.
 - **Forfait (net €)** : montant par déplacement en mode **Forfait** ; sans
   montant, aucune position n'est créée.
 - **Taux (€/km)** : prix par kilomètre en mode **Kilomètres**.
@@ -592,7 +598,8 @@ autres pour :
   jours fériés ;
 - les jours ouvrés des congés et des maladies, le compte de congés et
   l'objectif d'horaire flexible ;
-- l'analyse ArbZG, par exemple pour le travail les jours fériés ;
+- l'analyse ArbZG, par exemple pour le travail les jours fériés, et la règle
+  de planning **Comptabilisation du jour férié** ;
 - les vues calendrier, vue hebdomadaire, planning de service, calendrier des
   absences et **Présence actuelle** ;
 - les délais SLA de l'assistance et les échéances des déclarations fiscales,
@@ -666,8 +673,10 @@ votre organisation.
   — les non-administrateurs voient actuellement une page de maintenance. »
   avec le lien **Paramètres** pour revenir à cette boîte de dialogue.
 - **Message affiché sur la page de maintenance** (300 caractères au plus).
-- **Fin prévue** (facultatif) : après cette date, le mode maintenance se
-  termine automatiquement ; l'avis l'affiche sous la forme « Jusqu'au : … ».
+- **Fin prévue** (facultatif, dans votre heure locale) : après cette date, le
+  mode maintenance se termine automatiquement ; l'avis l'affiche sous la forme
+  « Jusqu'au : … », la page de maintenance sous la forme « Probablement de
+  nouveau disponible : … ».
 - **Suspendre aussi les entrées terminal/webhook** (désactivé par défaut) :
   sans cette case, les terminaux de pointage ainsi que les entrées de
   téléphonie et de localisation continuent pendant la maintenance.

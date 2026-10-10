@@ -1,7 +1,7 @@
 ---
 title: "Conexión con Todoist"
 topic: admin.todoist
-version: 1
+version: 2
 keywords:
     - Todoist
     - sincronizar tareas
@@ -85,6 +85,9 @@ sincronización:
 
 - **Indicadores**: tareas activas, subtareas, tareas recurrentes,
   vencimientos con hora, responsables no asignables y tareas ya vinculadas.
+  Las tareas recurrentes llegan como una sola tarea con el próximo
+  vencimiento; solo Todoist conoce la recurrencia. En los vencimientos con
+  hora, WorkDiary solo adopta la fecha.
 - **Asignación de responsables**: para cada colaborador de Todoist elige un
   usuario de WorkDiary y hace clic en **Guardar**. Una dirección de correo
   igual solo aparece como **Sugerencia**; la asignación vale únicamente tras
@@ -155,3 +158,9 @@ filtrada por Todoist.
 - Las tareas llegan sin responsable: el colaborador de Todoist aún no está
   asignado a un usuario en el preflight.
 - No se sincroniza nada: la asignación sigue en **Borrador** o **En pausa**.
+- La conexión muestra **En pausa**: Todoist rechazó el acceso, por ejemplo
+  porque se revocó la autorización de la aplicación en Todoist. La
+  sincronización está en pausa; vuelva a conectar con **Renovar conexión**.
+  Si una sincronización falla por otro motivo, la página indica el último
+  error hasta que una sincronización vuelva a funcionar; además se crea una
+  tarea operativa.

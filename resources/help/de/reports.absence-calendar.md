@@ -1,7 +1,7 @@
 ---
 title: "Urlaubsplan (Jahresübersicht)"
 topic: reports.absence-calendar
-version: 1
+version: 2
 keywords:
     - Urlaubskalender
     - Abwesenheitskalender
@@ -14,6 +14,7 @@ keywords:
     - Teamabwesenheiten
     - Urlaubsüberschneidung
     - Urlaubsliste exportieren
+    - Fehlgründe anonymisieren
 audience: []
 related:
     - absences.manage
@@ -23,11 +24,19 @@ related:
 Der Urlaubsplan zeigt für ein Jahr alle genehmigten Fehlzeiträume der
 Mitarbeitenden als Balken auf einer Jahresachse — Überschneidungen in einer
 Abteilung sind so auf einen Blick erkennbar. Über die Filter wählen Sie das
-Jahr und (mit entsprechender Berechtigung) ein Team.
+**Jahr** und, wenn Sie alle Personen sehen, ein **Team**.
 
-Der Datenschutz-Filter stellt fremde Fehlgründe neutral als „abwesend" dar.
-Ohne Personalverwaltungs-Sicht ist er immer aktiv; mit Admin-Sicht lässt er
-sich zuschalten, etwa für einen Aushang.
+Ohne weiteres Recht sehen Sie nur Ihre eigene Zeile. Alle Personen der
+Organisation sehen Administratoren und Personen mit dem Recht **Alle
+Urlaubsanträge sehen**. Den Fehlgrund anderer Personen – etwa Urlaub,
+Sonderurlaub oder Krank – sieht nur, wer zusätzlich das Recht **Krankmeldungen
+einsehen** hat, sowie Administratoren. Für alle anderen erscheinen fremde
+Fehlzeiten neutral als „abwesend“; die eigenen Fehlgründe sehen Sie immer.
+
+Der Schalter **Fehlgründe anonymisieren** erscheint nur mit beiden Rechten oder
+für Administratoren. Er stellt fremde Fehlgründe auch für diese Personen
+neutral als „abwesend“ dar, etwa für einen Aushang. Die Darstellung gilt
+ebenso für die Fehlzeitenkarte und die Exporte.
 
 Ein Klick auf einen Namen öffnet die persönliche Fehlzeitenkarte: der
 Jahreskalender mit Wochenenden, Feiertagen und Fehlzeit-Kürzeln, dazu der

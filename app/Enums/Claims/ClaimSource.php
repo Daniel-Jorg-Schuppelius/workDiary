@@ -33,17 +33,17 @@ enum ClaimSource: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Portal => (string) __('Kundenportal'),
-            self::Email => (string) __('E-Mail'),
-            self::Phone => (string) __('Telefonnotiz'),
-            self::Helpdesk => (string) __('Helpdesk'),
-            self::Order => (string) __('Auftrag'),
-            self::Protocol => (string) __('Abnahmeprotokoll'),
-            self::Asset => (string) __('Asset'),
-            self::Invoice => (string) __('Rechnung'),
-            self::Api => (string) __('API'),
-            self::Internal => (string) __('Interner Mangel'),
-            self::Manual => (string) __('Manuell'),
+            self::Portal => (string) __('enums.claims.claim_source.portal'),
+            self::Email => (string) __('enums.claims.claim_source.email'),
+            self::Phone => (string) __('enums.claims.claim_source.phone'),
+            self::Helpdesk => (string) __('enums.claims.claim_source.helpdesk'),
+            self::Order => (string) __('enums.claims.claim_source.order'),
+            self::Protocol => (string) __('enums.claims.claim_source.protocol'),
+            self::Asset => (string) __('enums.claims.claim_source.asset'),
+            self::Invoice => (string) __('enums.claims.claim_source.invoice'),
+            self::Api => (string) __('enums.claims.claim_source.api'),
+            self::Internal => (string) __('enums.claims.claim_source.internal'),
+            self::Manual => (string) __('enums.claims.claim_source.manual'),
         };
     }
 }

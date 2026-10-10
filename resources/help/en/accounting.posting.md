@@ -1,7 +1,7 @@
 ---
 title: "Posting and inbox"
 topic: accounting.posting
-version: 2
+version: 5
 keywords:
     - post entry
     - journal entry
@@ -12,6 +12,7 @@ keywords:
     - reverse posting
     - cancel posting
     - four-eyes principle
+    - approval
     - foreign currency
     - exchange rate
     - finalize posting
@@ -36,6 +37,31 @@ ready, posted. Blocked items come first; that is the work someone has to touch.
 **Proposal before posting.** Even an unambiguous proposal only becomes a
 reviewed draft, never a direct posting. With the four-eyes principle active,
 the preparer does not post it themselves.
+
+**Four-eyes principle for direct postings.** Some actions create their entry
+themselves: **Discount** and **Write-off** via **Settle** in the open items,
+**Post to clearing account** in the payment reconciliation, the **Internal
+transfer**, **Import opening balances**, **Post special prepayment** and
+**Reverse** in the journal. Without the four-eyes principle they post
+immediately. With it active, a reviewed draft is created instead: a message and
+a note in the dialog say so, and the posting inbox lists it with its kind
+(**Discount/write-off**, **Clearing entry**, **Internal transfer**, **Opening
+balances**, **Special prepayment**, **Reversal**) and the status **Ready** –
+regardless of the period in the header, as long as **All sources** is selected.
+The action only takes effect once a second person posts it with **Post** or
+**Accept and post all**: only then is the open item settled, the bank
+transaction booked and the special prepayment credited in the last advance
+return of the year. In the journal, **Post immediately** stays blocked for the
+person who creates the entry.
+
+**Discard draft.** You delete a pending draft from these actions with
+**Discard draft** in the posting inbox or on its detail page (permission
+**Post entries**, with confirmation). The step is logged and the action is
+open again afterwards: the item can be settled again, the bank transaction,
+opening balances and special prepayment can be booked anew, the entry of a
+discarded reversal can be reversed again, and an internal transfer is removed
+together with the link to its documents. Posted entries and drafts from
+posting proposals cannot be discarded.
 
 **Blocked instead of guessed.** If a posting rule is missing, the proposal
 names role and criteria. A guessed default account would only show up in the
@@ -80,8 +106,14 @@ currently keeps the general ledger, a note above the list says so.
 - **Reversing:** correct a posted entry with **Reverse**: the **Reason** is
   required, the **Posting date of the counter-entry** is optional. Left empty,
   the original day applies as long as its period is open, otherwise today.
-  **Create counter-entry** posts the mirrored entry immediately and also
-  reverses the open items that resulted from the original.
+  **Create counter-entry** posts the mirrored entry and also reverses the open
+  items that resulted from the original. With the four-eyes principle active,
+  the counter-entry is created as a draft: the entry stays posted and the open
+  items unchanged until a second person posts the reversal. Until then no
+  second reversal of the same entry is possible; its detail page points to
+  the draft with **Show pending draft**. The automatic reversal when an
+  allocation is removed in the payment reconciliation always posts
+  immediately.
 
 When posting, WorkDiary checks: an open period exists for the posting date and
 local accounting keeps the general ledger on that day; debit and credit are
@@ -113,6 +145,14 @@ reconciliation.
   posts a counter-entry in the journal – to the discount or write-off account
   from the DATEV settings, provided that account exists in the chart of
   accounts. A retention creates no entry.
+  With the four-eyes principle active, the counter-entry is created as a
+  draft in the posting inbox and the item stays open until a second person
+  posts it. Until then the list shows **Draft awaiting approval**, **Show
+  pending draft** leads to the entry, and any further settlement of the item –
+  including a retention – is refused. If the item has been settled otherwise
+  by the time of approval, posting fails because the amount exceeds the open
+  remainder. A retention and a settlement without an existing counter account
+  create no entry and apply immediately.
 
 **Permission:** viewing with **View accounting**, settling with **Post
 entries**.
@@ -132,7 +172,8 @@ items**) you plan what comes up regularly. There are two kinds of template:
 
 The page is divided into **Open items** (**Template**, **Period**, **Due**,
 **Expected**, **Status**; for **Blocked** the reason is shown below, for
-**Draft created** **Show entry** leads to the draft), **Templates** (**Name**,
+**Draft created** **Show entry** leads to the draft, for **Document expected**
+**Assign document** assigns the original), **Templates** (**Name**,
 **Kind**, **Interval**, **Next due**, **Responsible**, **Status** with version
 number) and **Invoice schedules**: active billing plans for reference only,
 edited via **Open billing plans**.
@@ -140,10 +181,11 @@ edited via **Open billing plans**.
 **Add template:** **Kind**, **Name**, **Interval** (**Monthly**,
 **Quarterly**, **Semi-annually**, **Annually**), **Due day** (1–28, so every
 month has that day), **Expected**, **Start** and optionally **End**, for
-posting templates also **Debit** and **Credit**, plus a **Note**. A posting
-template without both accounts and an amount is not saved. When editing, the
-dialog shows the next due dates; every change saves a new version, and items
-already created stay unchanged.
+posting templates also **Debit** and **Credit**, plus **Responsible** and a
+**Note**. A posting template without both accounts and an amount is not saved.
+When editing, the saved accounts are preselected and the dialog shows the next
+due dates; every change saves a new version, and items already created stay
+unchanged.
 
 **Process and rules:**
 
@@ -154,12 +196,20 @@ already created stay unchanged.
   waiting for the daily run.
 - If a draft cannot be created, for example because no period exists for the
   date, the item appears as **Blocked** with its reason.
+- **Assign document** fulfils a document expectation: you choose the incoming
+  invoice in the **Incoming e-invoice** field. You can choose invoices from
+  **Incoming e-invoices** that you may see, that are not rejected and that are
+  not yet assigned to an item – one invoice fulfils at most one item. The item
+  then has the status **Fulfilled**.
+- When the draft of a posting template is posted, its item also has the status
+  **Fulfilled**.
 - If an item with **Document expected** or **Draft created** is overdue,
-  WorkDiary reports it once through the notifications.
+  WorkDiary reports it once through the notifications, by default to
+  accounting and to the person under **Responsible**.
 - **Pause** stops a template; **Resume** continues with the next due date from
   today on, without catching up on missed ones. **End** stops the template for
   good; items already created remain.
 
 **Permission:** viewing with **View accounting**; adding, editing, pausing,
-resuming and ending templates with **Set up accounting**; **Run now** with
-**Prepare postings**.
+resuming and ending templates with **Set up accounting**; **Run now** and
+**Assign document** with **Prepare postings**.

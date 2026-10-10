@@ -215,6 +215,42 @@ class PluginAdminControllerTest extends TestCase {
         $this->assertSame('bestehender-key', $row->settings['api_key'] ?? null);
     }
 
+    /** Benutzerfelder zeigen Namen statt einer nirgends sichtbaren ID (Phase 137). */
+    public function test_user_field_lists_users_by_name_and_preselects_the_stored_one(): void {
+        $anna = User::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Anna Auswahl']);
+        $row = $this->enablePlugin('admintest');
+        $row->settings = ['default_user_id' => (string) $anna->id];
+        $row->save();
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.plugins.edit', 'admintest'))
+            ->assertOk()
+            ->assertSee('Anna Auswahl')
+            ->assertSee('value="' . $anna->sqid . '" selected', false);
+    }
+
+    public function test_user_field_stores_the_id_of_the_chosen_user(): void {
+        $anna = User::factory()->create(['organization_id' => $this->organization->id]);
+        $row = $this->enablePlugin('admintest');
+
+        $this->actingAs($this->admin)
+            ->put(route('admin.plugins.update', 'admintest'), ['enabled' => 1, 'settings' => ['default_user_id' => $anna->sqid]])
+            ->assertRedirect();
+
+        $this->assertSame((string) $anna->id, $row->refresh()->settings['default_user_id'] ?? null);
+    }
+
+    public function test_user_field_rejects_users_of_other_organizations(): void {
+        $foreign = User::factory()->create(['organization_id' => \App\Models\Platform\Organization::factory()->create()->id]);
+        $row = $this->enablePlugin('admintest');
+
+        $this->actingAs($this->admin)
+            ->put(route('admin.plugins.update', 'admintest'), ['enabled' => 1, 'settings' => ['default_user_id' => $foreign->sqid]])
+            ->assertSessionHasErrors('settings.default_user_id');
+
+        $this->assertArrayNotHasKey('default_user_id', $row->refresh()->settings ?? []);
+    }
+
     public function test_secret_reset_removes_stored_value(): void {
         $row = $this->enablePlugin('admintest');
         $row->settings = ['api_key' => 'bestehender-key'];
@@ -376,6 +412,7 @@ final class AdminTestPlugin implements Plugin {
     public function settingsSchema(): array {
         return [
             ['key' => 'api_key', 'label' => 'API', 'type' => 'password'],
+            ['key' => 'default_user_id', 'label' => 'Standard-Benutzer', 'type' => 'user'],
         ];
     }
     public function healthCheck(): PluginHealth {

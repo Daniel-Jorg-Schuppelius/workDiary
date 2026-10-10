@@ -8,8 +8,8 @@
 --}}
 @extends('reports.pdf.layout')
 
-@section('pdf-title', 'Qualifikationsmatrix – ' . now()->fdate())
-@section('pdf-heading', 'Qualifikationsmatrix')
+@section('pdf-title', __('Qualifikationsmatrix') . ' – ' . now()->fdate())
+@section('pdf-heading', __('Qualifikationsmatrix'))
 
 @push('pdf-styles')
 <style>
@@ -23,7 +23,7 @@
 @endpush
 
 @section('pdf-meta')
-    Stand: {{ now()->fdatetime() }}
+    {{ __('Stand') }}: {{ now()->fdatetime() }}
 @endsection
 
 @section('pdf-table')
@@ -48,11 +48,11 @@
 
     <table class="kpis">
         <tr>
-            <td><div class="label">Mitarbeiter</div><div class="value">{{ $users->count() }}</div></td>
-            <td><div class="label">Qualifikationen</div><div class="value">{{ $qualifications->count() }}</div></td>
-            <td><div class="label">Zuweisungen</div><div class="value">{{ $totals['total_assignments'] }}</div></td>
-            <td><div class="label">Laufen ab (≤30 T.)</div><div class="value">{{ $totals['expiring'] }}</div></td>
-            <td><div class="label">Abgelaufen</div><div class="value">{{ $totals['expired'] }}</div></td>
+            <td><div class="label">{{ __('Mitarbeiter') }}</div><div class="value">{{ $users->count() }}</div></td>
+            <td><div class="label">{{ __('Qualifikationen') }}</div><div class="value">{{ $qualifications->count() }}</div></td>
+            <td><div class="label">{{ __('Zuweisungen') }}</div><div class="value">{{ $totals['total_assignments'] }}</div></td>
+            <td><div class="label">{{ __('Laufen ab (≤30 T.)') }}</div><div class="value">{{ $totals['expiring'] }}</div></td>
+            <td><div class="label">{{ __('Abgelaufen') }}</div><div class="value">{{ $totals['expired'] }}</div></td>
         </tr>
     </table>
 
@@ -63,7 +63,7 @@
         <table>
             <thead>
                 <tr>
-                    <th class="name">Mitarbeiter</th>
+                    <th class="name">{{ __('Mitarbeiter') }}</th>
                     @foreach ($qualifications as $q)
                         <th>{{ $q->abbreviation ?? \Illuminate\Support\Str::limit($q->name, 12) }}</th>
                     @endforeach

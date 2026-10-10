@@ -198,19 +198,19 @@ class AssetAnalysisReportController extends Controller {
         $out = [];
         $out[] = [
             match ($groupBy) {
-                'group' => 'Produktgruppe',
-                'model' => 'Modell',
-                default => 'Asset'
+                'group' => (string) __('reporting.csv.product_group'),
+                'model' => (string) __('reporting.csv.model'),
+                default => (string) __('reporting.csv.asset'),
             },
-            'Assets',
-            'Auftraege',
-            'OffenePunkte',
-            'Eskaliert',
-            'Defekte',
-            'DefektrateProzent',
-            'Wartungssitzungen',
-            'WartungszeitMinuten',
-            'LetzterVorfall',
+            (string) __('reporting.csv.assets'),
+            (string) __('reporting.csv.orders'),
+            (string) __('reporting.csv.open_issues'),
+            (string) __('reporting.csv.escalated'),
+            (string) __('reporting.csv.defects'),
+            (string) __('reporting.csv.defect_rate_percent'),
+            (string) __('reporting.csv.maintenance_sessions'),
+            (string) __('reporting.csv.maintenance_minutes'),
+            (string) __('reporting.csv.last_incident'),
         ];
 
         foreach ($rows as $row) {

@@ -1,7 +1,7 @@
 ---
 title: "Chiusura e analisi"
 topic: accounting.closing
-version: 1
+version: 2
 keywords:
     - chiusura mensile
     - chiusura annuale
@@ -33,6 +33,11 @@ registrata nella catena di prova.
 
 Le **analisi** leggono solo registrazioni definitive. IVA e contabilità per
 cassa sono **anteprime** verificabili: l'MVP non trasmette nulla al fisco.
+
+**Esportazione dei report:** PDF, CSV ed Excel dei report finanziari,
+dell'analisi di gestione e del budget richiedono, oltre al permesso di
+lettura, il permesso **Esporta i report**; senza di esso i pulsanti di
+esportazione non compaiono. Gli amministratori possono sempre esportare.
 
 **Trasferimento**: il pacchetto di verifica contiene piano dei conti, giornale,
 righe, partite aperte e periodi; il trasferimento DATEV nasce dalle

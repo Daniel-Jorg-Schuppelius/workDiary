@@ -281,7 +281,7 @@ class AccountingRecurringTest extends TestCase {
         $this->assertSame(RecurringInterval::Quarterly, $template->interval);
     }
 
-    /** Eine Buchungsvorlage ohne Konten wird sofort abgewiesen, nicht nachts. */
+    /** Eine Buchungsvorlage ohne Konten wird sofort abgewiesen, nicht nachts — als Feldfehler im Dialog. */
     public function test_an_incomplete_posting_template_is_rejected_at_save_time(): void {
         $this->actingAs($this->admin)->post(route('finance.accounting.recurring.store'), [
             'kind' => RecurringTemplateKind::PostingTemplate->value,
@@ -289,6 +289,153 @@ class AccountingRecurringTest extends TestCase {
             'interval' => RecurringInterval::Monthly->value,
             'due_day' => 1,
             'starts_on' => $this->startsOn->toDateString(),
-        ])->assertStatus(422);
+        ])->assertSessionHasErrors(['debit_account', 'credit_account', 'expected_amount']);
+
+        $this->assertSame(0, AccountingRecurringTemplate::query()->count());
+    }
+
+    /** MVP-1102: Der Bearbeiten-Dialog belegt Soll und Haben aus der Vorlage vor. */
+    public function test_the_edit_dialog_preselects_the_template_accounts(): void {
+        $template = $this->template(RecurringTemplateKind::PostingTemplate);
+
+        $html = $this->actingAs($this->admin)
+            ->get(route('finance.accounting.recurring.edit', $template))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertSame($this->accounts['expense']->sqid, $this->selectedOption((string) $html, 'debit_account'));
+        $this->assertSame($this->accounts['bank']->sqid, $this->selectedOption((string) $html, 'credit_account'));
+        $this->assertSame($this->admin->sqid, $this->selectedOption((string) $html, 'responsible_user_id'));
+    }
+
+    /** Unverändert gespeichert entsteht eine neue Fassung mit denselben Zeilen — kein Abweisen. */
+    public function test_saving_an_unchanged_posting_template_keeps_its_lines(): void {
+        $template = $this->template(RecurringTemplateKind::PostingTemplate);
+
+        $this->actingAs($this->admin)->put(route('finance.accounting.recurring.update', $template), [
+            'kind' => $template->kind->value,
+            'name' => $template->name,
+            'interval' => $template->interval->value,
+            'due_day' => $template->due_day,
+            'starts_on' => $template->starts_on->toDateString(),
+            'expected_amount' => '1000.00',
+            'debit_account' => $this->accounts['expense']->sqid,
+            'credit_account' => $this->accounts['bank']->sqid,
+            'responsible_user_id' => $this->admin->sqid,
+        ])->assertSessionHasNoErrors()->assertRedirect();
+
+        $template->refresh();
+        $this->assertSame(2, $template->version);
+        $this->assertSame($this->accounts['expense']->id, $template->template_lines[0]['accounting_account_id'] ?? null);
+        $this->assertSame($this->accounts['bank']->id, $template->template_lines[1]['accounting_account_id'] ?? null);
+    }
+
+    /** MVP-1102: „Verantwortlich" ist setzbar — nur mit Mitgliedern der eigenen Organisation. */
+    public function test_the_responsible_person_can_be_set_within_the_organization(): void {
+        $colleague = User::factory()->create(['organization_id' => $this->org->id]);
+        $stranger = User::factory()->create(['organization_id' => Organization::factory()->create()->id]);
+        $payload = [
+            'kind' => RecurringTemplateKind::DocumentExpectation->value,
+            'name' => 'Leasing',
+            'interval' => RecurringInterval::Monthly->value,
+            'due_day' => 3,
+            'starts_on' => $this->startsOn->toDateString(),
+        ];
+
+        $this->actingAs($this->admin)->post(route('finance.accounting.recurring.store'), $payload + ['responsible_user_id' => $stranger->sqid])
+            ->assertSessionHasErrors('responsible_user_id');
+        $this->assertSame(0, AccountingRecurringTemplate::query()->count());
+
+        $this->actingAs($this->admin)->post(route('finance.accounting.recurring.store'), $payload + ['responsible_user_id' => $colleague->sqid])
+            ->assertSessionHasNoErrors();
+        $this->assertSame($colleague->id, AccountingRecurringTemplate::query()->sole()->responsible_user_id);
+    }
+
+    /** MVP-1102: Eine Belegerwartung wird erfüllt, indem jemand die eingegangene Rechnung zuordnet. */
+    public function test_an_expectation_is_fulfilled_by_assigning_the_incoming_invoice(): void {
+        $template = $this->template(RecurringTemplateKind::DocumentExpectation);
+        $run = $this->service()->runOnce($template, $this->admin);
+        $this->assertNotNull($run);
+        $incoming = $this->incomingInvoice($this->org, 'TK-2026-01');
+        $foreign = $this->incomingInvoice(Organization::factory()->create(), 'FREMD-1');
+
+        $this->actingAs($this->admin)->get(route('finance.accounting.recurring.runs.fulfill-form', $run))
+            ->assertOk()
+            ->assertSee('TK-2026-01')
+            ->assertDontSee('FREMD-1');
+
+        $this->actingAs($this->admin)->post(route('finance.accounting.recurring.runs.fulfill', $run), ['incoming_einvoice_id' => $foreign->sqid])
+            ->assertSessionHasErrors('incoming_einvoice_id');
+        $this->assertSame(RecurringRunStatus::Expected, $run->refresh()->status);
+
+        $this->actingAs($this->admin)->post(route('finance.accounting.recurring.runs.fulfill', $run), ['incoming_einvoice_id' => $incoming->sqid])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect();
+
+        $run->refresh();
+        $this->assertSame(RecurringRunStatus::Fulfilled, $run->status);
+        $this->assertTrue(MorphMap::is($run->fulfilled_by_type, IncomingEInvoice::class));
+        $this->assertSame($incoming->id, $run->fulfilled_by_id);
+
+        // Eine Rechnung erfüllt höchstens einen Vorgang.
+        $next = $this->service()->runOnce($template->refresh(), $this->admin);
+        $this->assertNotNull($next);
+        $this->actingAs($this->admin)->get(route('finance.accounting.recurring.runs.fulfill-form', $next))
+            ->assertOk()
+            ->assertDontSee('TK-2026-01');
+    }
+
+    /** Den Vorgang einer Buchungsvorlage erfüllt man nicht von Hand — ihn schließt die Festschreibung. */
+    public function test_a_posting_template_run_cannot_be_fulfilled_by_hand(): void {
+        $run = $this->service()->runOnce($this->template(RecurringTemplateKind::PostingTemplate), $this->admin);
+        $this->assertNotNull($run);
+
+        $this->actingAs($this->admin)->get(route('finance.accounting.recurring.runs.fulfill-form', $run))->assertNotFound();
+    }
+
+    /** MVP-1102: Wird der Entwurf festgeschrieben, ist der Vorgang erledigt und nicht mehr überfällig. */
+    public function test_posting_the_draft_completes_the_run(): void {
+        $run = $this->service()->runOnce($this->template(RecurringTemplateKind::PostingTemplate), $this->admin);
+        $this->assertNotNull($run);
+        $this->assertSame(RecurringRunStatus::DraftCreated, $run->status);
+
+        $entry = AccountingEntry::query()->sole();
+        app(\App\Services\Accounting\JournalService::class)->post($entry, $this->admin);
+
+        $run->refresh();
+        $this->assertSame(RecurringRunStatus::Fulfilled, $run->status);
+        $this->assertTrue(MorphMap::is($run->fulfilled_by_type, AccountingEntry::class));
+        $this->assertSame($entry->id, $run->fulfilled_by_id);
+        $this->assertSame(0, $this->service()->notifyOverdue($this->org, $this->startsOn->addYear()));
+    }
+
+    private function incomingInvoice(Organization $organization, string $number): IncomingEInvoice {
+        $document = \App\Models\Document\Document::factory()->create([
+            'organization_id' => $organization->id,
+            'document_type' => \App\Enums\Document\DocumentType::Invoice->value,
+        ]);
+
+        return IncomingEInvoice::query()->withoutGlobalScopes()->create([
+            'organization_id' => $organization->id,
+            'document_id' => $document->id,
+            'sha256' => hash('sha256', $number),
+            'source' => 'upload',
+            'received_at' => now(),
+            'status' => IncomingEInvoiceStatus::Approved,
+            'invoice_number' => $number,
+            'seller_name' => 'Telefon AG',
+            'issue_date' => $this->startsOn->addDays(5)->toDateString(),
+            'currency' => 'EUR',
+            'amount_gross' => '1000.00',
+        ]);
+    }
+
+    /** Wert der ausgewählten Option eines Auswahlfelds im gerenderten Dialog. */
+    private function selectedOption(string $html, string $name): ?string {
+        if (preg_match('/<select[^>]*name="' . preg_quote($name, '/') . '"[^>]*>(.*?)<\/select>/s', $html, $select) !== 1) {
+            return null;
+        }
+
+        return preg_match('/<option value="([^"]*)"\s+selected/', $select[1], $option) === 1 ? $option[1] : null;
     }
 }

@@ -27,10 +27,10 @@ enum RetentionProposalStatus: string implements HasStatusTransitions {
 
     public function label(): string {
         return match ($this) {
-            self::Pending => __('offen'),
-            self::Approved => __('bestätigt'),
-            self::Rejected => __('abgelehnt'),
-            self::Purged => __('gelöscht'),
+            self::Pending => __('enums.privacy.retention_proposal_status.pending'),
+            self::Approved => __('enums.privacy.retention_proposal_status.approved'),
+            self::Rejected => __('enums.privacy.retention_proposal_status.rejected'),
+            self::Purged => __('enums.privacy.retention_proposal_status.purged'),
         };
     }
 

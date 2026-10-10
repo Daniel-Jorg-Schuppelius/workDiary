@@ -240,7 +240,7 @@ class AccountingSetupController extends Controller {
 
         $accounts = AccountingAccount::query()->where('organization_id', $organization->id);
 
-        $this->prepayments->post(
+        $entry = $this->prepayments->post(
             $organization,
             (int) $data['year'],
             (clone $accounts)->whereKey(Sqid::decodeOrNumeric(AccountingAccount::class, (string) $data['prepayment_account']))->firstOrFail(),
@@ -250,7 +250,9 @@ class AccountingSetupController extends Controller {
             $actor,
         );
 
-        return back()->with('status', __('accounting.filing.flash.prepayment_posted'));
+        return back()->with('status', $entry->status->isPosted()
+            ? __('accounting.filing.flash.prepayment_posted')
+            : __('accounting.inbox.flash.awaiting_approval'));
     }
 
     public function taxationForm(): View {

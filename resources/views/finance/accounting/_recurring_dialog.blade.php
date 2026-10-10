@@ -53,17 +53,26 @@
         <x-select-field name="debit_account" :label="__('accounting.ledger.column.debit')" :hint="__('accounting.recurring.hint.accounts')">
             <option value="">{{ __('accounting.recurring.no_account') }}</option>
             @foreach ($accounts as $account)
-                <option value="{{ $account->sqid }}" @selected(old('debit_account') === $account->sqid)>{{ $account->displayLabel() }}</option>
+                <option value="{{ $account->sqid }}" @selected(old('debit_account', $debitAccount) === $account->sqid)>{{ $account->displayLabel() }}</option>
             @endforeach
         </x-select-field>
 
         <x-select-field name="credit_account" :label="__('accounting.ledger.column.credit')">
             <option value="">{{ __('accounting.recurring.no_account') }}</option>
             @foreach ($accounts as $account)
-                <option value="{{ $account->sqid }}" @selected(old('credit_account') === $account->sqid)>{{ $account->displayLabel() }}</option>
+                <option value="{{ $account->sqid }}" @selected(old('credit_account', $creditAccount) === $account->sqid)>{{ $account->displayLabel() }}</option>
             @endforeach
         </x-select-field>
     </div>
+
+    @php($responsible = old('responsible_user_id', $template?->responsible?->sqid))
+    <x-select-field name="responsible_user_id" :label="__('accounting.recurring.column.responsible')"
+                    :hint="__('accounting.recurring.hint.responsible')">
+        <option value="">{{ __('accounting.recurring.no_responsible') }}</option>
+        @foreach ($users as $user)
+            <option value="{{ $user->sqid }}" @selected($responsible === $user->sqid)>{{ $user->name }}</option>
+        @endforeach
+    </x-select-field>
 
     <x-input-field name="note" type="text" maxlength="500"
                    :label="__('accounting.ledger.field.note')"

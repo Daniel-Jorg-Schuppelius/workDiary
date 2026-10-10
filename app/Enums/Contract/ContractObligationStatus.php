@@ -26,9 +26,9 @@ enum ContractObligationStatus: string implements HasLabel {
 
     public function label(): string {
         return match ($this) {
-            self::Open => (string) __('offen'),
-            self::Done => (string) __('erledigt'),
-            self::Missed => (string) __('versäumt'),
+            self::Open => (string) __('enums.contract.contract_obligation_status.open'),
+            self::Done => (string) __('enums.contract.contract_obligation_status.done'),
+            self::Missed => (string) __('enums.contract.contract_obligation_status.missed'),
         };
     }
 
