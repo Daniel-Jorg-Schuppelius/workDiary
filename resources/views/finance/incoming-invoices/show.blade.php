@@ -22,6 +22,17 @@
             <x-slot:title>{{ $document->title }}</x-slot:title>
             <x-slot:subtitle>{{ $document->description }}</x-slot:subtitle>
             <x-slot:actions>
+                {{-- Zuordnen und Werte erfassen (MVP-1110). --}}
+                @if ($incoming !== null && $incoming->transferred_at === null && $incoming->status !== \App\Enums\Invoicing\IncomingEInvoiceStatus::Rejected && (auth()->user()?->canManageBilling() ?? false))
+                    <x-icon-btn icon="rule" tone="primary" size="sm" data-entry-modal-trigger
+                                :href="route('finance.incoming-invoices.assign.form', $incoming)"
+                                show-label>{{ __('Zuordnen') }}</x-icon-btn>
+                    @if ($incoming->recognition !== \App\Enums\Invoicing\IncomingInvoiceRecognition::Structured)
+                        <x-icon-btn icon="edit_note" tone="outline" size="sm" data-entry-modal-trigger
+                                    :href="route('finance.incoming-invoices.values.form', $incoming)"
+                                    show-label>{{ __('Werte erfassen') }}</x-icon-btn>
+                    @endif
+                @endif
                 <x-icon-btn icon="download" tone="outline" size="sm"
                             :href="route('documents.download', $document)"
                             show-label>{{ __('Original (XML/PDF)') }}</x-icon-btn>
@@ -46,7 +57,24 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if ($parsed === null || $summary === null)
+    @if (($parsed === null || $summary === null) && $incoming !== null && $incoming->recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted)
+        {{-- PDF bzw. Bild (MVP-1066): erkannte Werte sind Vorschläge. --}}
+        <x-card :title="__('Rechnungsdaten (erkannt)')">
+            <x-detail-grid>
+                <x-detail-grid.row :label="__('Rechnungsnummer')">{{ $incoming->invoice_number ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Rechnungsdatum')">{{ $incoming->issue_date?->isoFormat('L') ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Fällig am')">{{ $incoming->due_date?->isoFormat('L') ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Verkäufer')">{{ $incoming->seller_name ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('USt-IdNr.')">{{ $incoming->seller_vat_id ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Brutto')">@if ($incoming->amount_gross !== null){{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($incoming->amount_gross->toFloat(), 2, withThousandsSeparator: true) }} {{ $incoming->currency?->value }}@else—@endif</x-detail-grid.row>
+            </x-detail-grid>
+            <p class="mt-2 text-xs text-muted">{{ __('Aus PDF bzw. Bild erkannt — alle Werte am Original prüfen.') }}</p>
+        </x-card>
+    @elseif (($parsed === null || $summary === null) && $incoming !== null && $incoming->recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::None)
+        <x-empty-state icon="help" tone="warning" framed
+                       :title="__('Keine Rechnungsdaten erkannt (Klärfall).')"
+                       :message="__('Das Original liegt unverändert vor. Prüfen Sie die Datei und erfassen Sie die Werte.')" />
+    @elseif ($parsed === null || $summary === null)
         <x-empty-state icon="report" tone="warning" framed
                        :title="__('Das Original konnte nicht (mehr) als E-Rechnung geparst werden.')"
                        :message="__('Die Datei bleibt als Dokument verfügbar (Original herunterladen).')" />
@@ -100,6 +128,46 @@
         </x-card>
     @endif
 
+    {{-- Herkunft, Richtung und Hinweise (MVP-1107). --}}
+    @if ($incoming !== null)
+        <x-card :title="__('Eingang')">
+            <x-detail-grid>
+                <x-detail-grid.row :label="__('Richtung')">{{ $incoming->direction->label() }} · {{ $incoming->kind->label() }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Erkennung')">{{ $incoming->recognition->label() }}</x-detail-grid.row>
+                @php($counterparty = $incoming->counterparty())
+                <x-detail-grid.row :label="$incoming->direction === \App\Enums\Billing\DocumentDirection::Outgoing ? __('Kunde') : __('Lieferant')">
+                    @if ($counterparty !== null)
+                        {{ $counterparty->name }}
+                        <span class="text-xs text-muted">({{ $incoming->match_kind?->label() }}@if ($incoming->matchedUser) · {{ $incoming->matchedUser->name }}@endif)</span>
+                    @else
+                        <span class="text-warning">{{ __('Noch nicht zugeordnet') }}</span>
+                    @endif
+                </x-detail-grid.row>
+                @if ($incoming->sender_email)
+                    <x-detail-grid.row :label="__('Absender')">{{ $incoming->sender_email }}</x-detail-grid.row>
+                @endif
+                @if ($incoming->buyer_name || $incoming->buyer_vat_id)
+                    <x-detail-grid.row :label="__('Käufer')">{{ $incoming->buyer_name ?? '—' }}@if ($incoming->buyer_vat_id) · {{ $incoming->buyer_vat_id }}@endif</x-detail-grid.row>
+                @endif
+            </x-detail-grid>
+            @if ($incoming->supplier !== null && app(\App\Services\Billing\Sepa\PaymentProposalService::class)->ibanDiffersFromMaster($incoming, $incoming->supplier))
+                <div role="alert" class="alert alert-warning mt-2 text-sm">
+                    <x-icon name="warning" />
+                    {{ __('Die IBAN der Rechnung weicht von den hinterlegten Bankverbindungen des Lieferanten ab. Vor der Zahlung bestätigen.') }}
+                </div>
+            @endif
+            @foreach ((array) ($incoming->summary['notices'] ?? []) as $notice)
+                <div role="status" class="alert alert-info mt-2 text-sm">
+                    <x-icon name="info" />
+                    {{ $notice }}
+                </div>
+            @endforeach
+        </x-card>
+        @if ($incoming->attachments->isNotEmpty())
+            <x-attachments-section :attachments="$incoming->attachments" details />
+        @endif
+    @endif
+
     {{-- Eingangs-Validierung (MVP-166): getrennt von Original/Feldern. --}}
     @if ($incoming !== null && ($incoming->summary['validation'] ?? null) !== null)
         @php($validation = $incoming->summary['validation'])
@@ -150,6 +218,13 @@
                         @endforeach
                     </x-detail-grid.row>
                 @endif
+                @if (($suggestions['customers'] ?? []) !== [])
+                    <x-detail-grid.row :label="__('Kunden-Vorschlag')">
+                        @foreach ($suggestions['customers'] as $candidate)
+                            <div>{{ $candidate['label'] }} <span class="text-xs text-muted">({{ implode(', ', $candidate['reasons']) }})</span></div>
+                        @endforeach
+                    </x-detail-grid.row>
+                @endif
                 @if (($suggestions['purchase_orders'] ?? []) !== [])
                     <x-detail-grid.row :label="__('Bestell-Vorschlag')">
                         @foreach ($suggestions['purchase_orders'] as $candidate)
@@ -196,7 +271,7 @@
                        placeholder="{{ __('Anmerkung (bei Ablehnung Pflicht)') }}">
                 <x-icon-btn icon="gavel" tone="primary" size="sm" type="submit" show-label>{{ __('Entscheiden') }}</x-icon-btn>
             </form>
-            @if ($incoming->transferred_at === null && in_array($incoming->status, [\App\Enums\Invoicing\IncomingEInvoiceStatus::Approved, \App\Enums\Invoicing\IncomingEInvoiceStatus::PaymentReleased], true))
+            @if ($transferTargets === [] && $incoming->transferred_at === null && in_array($incoming->status, [\App\Enums\Invoicing\IncomingEInvoiceStatus::Approved, \App\Enums\Invoicing\IncomingEInvoiceStatus::PaymentReleased], true))
                 <x-action-form :action="route('finance.incoming-invoices.transfer', $incoming)" class="mt-2"
                       :confirm="__('Eingang an die führende Buchhaltung übergeben? Die Übergabe wird als Nachweis vermerkt.')"
                       confirm-icon="outbox"
@@ -206,6 +281,9 @@
                 </x-action-form>
             @endif
         </x-card>
+        @if ($transferTargets !== [])
+            @include('finance.incoming-invoices._transfers')
+        @endif
         @include('finance.incoming-invoices._retentions', ['incoming' => $incoming])
     @endif
 </x-page-shell>

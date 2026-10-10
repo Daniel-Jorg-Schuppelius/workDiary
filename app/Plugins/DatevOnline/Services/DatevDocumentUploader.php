@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\DatevOnline\Services;
 
 use App\Enums\Invoicing\InvoiceStatus;
-use App\Models\Invoicing\{IncomingEInvoice, Invoice};
+use App\Models\Invoicing\Invoice;
 use App\Plugins\DatevOnline\Api\DatevOnlineClientFactory;
 use App\Plugins\DatevOnline\Enums\{DatevTransferKind, DatevTransferStatus};
 use App\Plugins\DatevOnline\Models\{DatevOnlineConnection, DatevOnlineTransfer};
@@ -24,14 +24,14 @@ use Datev\API\Online\Endpoints\AccountingDocuments\DocumentsEndpoint;
 use Datev\API\Online\OnlineService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 /**
  * Belegbilder an DATEV Unternehmen online (accounting:documents, MVP-122):
- * ausgestellte Rechnungen als PDF („Rechnungsausgang“), eingegangene
- * Rechnungen im Original („Rechnungseingang“). Nur ab `documents_since`, je
- * Beleg einmal; Fehlschläge werden bis zu fünfmal erneut versucht.
+ * ausgestellte Rechnungen als PDF („Rechnungsausgang“). Nur ab
+ * `documents_since`, je Beleg einmal; Fehlschläge werden bis zu fünfmal erneut
+ * versucht. Der Rechnungseingang geht über
+ * {@see DatevOnlineIncomingInvoiceTarget} (MVP-1111).
  */
 class DatevDocumentUploader {
     private const MAX_ATTEMPTS = 5;
@@ -58,23 +58,6 @@ class DatevDocumentUploader {
         foreach ($invoices as $invoice) {
             $this->upload($connection, $documents, DatevTransferKind::OutgoingDocument, $invoice->getMorphClass(), (int) $invoice->id, $counts,
                 fn (): array => [$this->pdf->output($invoice), 'Rechnung-' . preg_replace('/[^A-Za-z0-9._-]/', '_', (string) $invoice->number) . '.pdf', (string) $invoice->number]);
-        }
-
-        $incoming = $this->pending(IncomingEInvoice::query(), $connection, DatevTransferKind::IncomingDocument, IncomingEInvoice::class)
-            ->whereNotNull('document_id')
-            ->where('received_at', '>=', DateRange::dayStart($since))
-            ->with('document.currentVersion')
-            ->orderBy('id')->limit($limit)->get();
-        foreach ($incoming as $receipt) {
-            $this->upload($connection, $documents, DatevTransferKind::IncomingDocument, $receipt->getMorphClass(), (int) $receipt->id, $counts, function () use ($receipt): array {
-                $version = $receipt->document?->currentVersion;
-                $content = $version !== null ? Storage::disk($version->disk)->get($version->path) : null;
-                if (! is_string($content) || $content === '') {
-                    throw new \RuntimeException('Belegdatei fehlt.');
-                }
-
-                return [$content, (string) $version->original_name, (string) ($receipt->document->title ?? '')];
-            });
         }
 
         $connection->forceFill(['last_synced_at' => now()])->save();

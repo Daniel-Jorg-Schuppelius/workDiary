@@ -60,7 +60,7 @@ class PluginAdminTest extends TestCase {
             'enabled' => '1',
             'settings' => [
                 'api_key' => 'sk_live_secret_123456',
-                'base_url' => 'https://api.lexoffice.io/v1',
+                'base_url' => 'https://api.lexware.io/v1',
                 'default_currency' => 'EUR',
                 'default_tax_type' => 'net',
                 'default_vat_rate' => '19',

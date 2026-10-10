@@ -17,7 +17,7 @@ use App\Models\Invoicing\{Invoice, InvoiceItem};
  * Übersetzt eine lokale workDiary-Invoice in den JSON-Payload, den
  * Lexoffice unter POST /v1/invoices erwartet.
  *
- * Doku: https://developers.lexoffice.io/docs/#invoices-endpoint
+ * Doku: https://developers.lexware.io/docs/#invoices-endpoint
  */
 class LexofficeInvoiceMapper {
     /**

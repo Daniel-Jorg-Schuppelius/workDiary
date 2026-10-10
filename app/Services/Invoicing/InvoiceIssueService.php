@@ -81,6 +81,9 @@ final class InvoiceIssueService {
         }
 
         $invoice->loadMissing(['items', 'customer', 'organization']);
+        if ($invoice->customer->is_collective) {
+            throw new InvoiceIssueException(InvoiceIssueException::REASON_COLLECTIVE_CUSTOMER, (string) __('An den Sammelkunden lässt sich keine Rechnung stellen. Bitte einen Kunden mit Anschrift wählen.'));
+        }
         if ($invoice->pricedItems()->isEmpty()) {
             throw new InvoiceIssueException(InvoiceIssueException::REASON_EMPTY, (string) __('invoicing.free.error.empty'));
         }

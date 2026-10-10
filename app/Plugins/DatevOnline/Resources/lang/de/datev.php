@@ -31,6 +31,9 @@ return [
         'active' => 'verbunden',
         'disconnected' => 'nicht verbunden',
     ],
+    'incoming' => [
+        'label' => 'DATEV Unternehmen online',
+    ],
     'transfer_kind' => [
         'extf' => 'Buchungsstapel',
         'outgoing_document' => 'Ausgangsrechnung',
@@ -79,7 +82,7 @@ return [
         ],
         'documents' => [
             'heading' => 'Belegbilder',
-            'hint' => 'Ausgestellte Rechnungen gehen als „Rechnungsausgang“, eingegangene Rechnungen als „Rechnungseingang“ an DATEV Unternehmen online — jeweils einmal, ab dem gewählten Datum.',
+            'hint' => 'Ausgestellte Rechnungen gehen als „Rechnungsausgang“ an DATEV Unternehmen online, eingegangene Rechnungen als „Rechnungseingang“, sobald sie im Rechnungseingang zugeordnet sind — jeweils einmal, ab dem gewählten Datum.',
             'enabled' => 'Belegbilder nächtlich übertragen',
             'since' => 'Ab Belegdatum',
             'save' => 'Speichern',

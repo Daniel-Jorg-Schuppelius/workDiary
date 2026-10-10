@@ -22,6 +22,9 @@
                      :archive-route="route('customers.archive', $customer)"
                      :can-manage="auth()->user()->can('update', $customer)">
         <x-slot:badges>
+            @if ($customer->is_collective)
+                <x-status-badge tone="info">{{ __('Sammelkontakt') }}</x-status-badge>
+            @endif
             @if ($customer->isArchived())
                 <x-status-badge tone="ghost">{{ __('archiviert') }}</x-status-badge>
             @endif

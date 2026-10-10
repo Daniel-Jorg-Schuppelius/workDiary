@@ -2140,8 +2140,7 @@ CREATE TABLE IF NOT EXISTS "help_topics"(
   "created_at" datetime,
   "updated_at" datetime,
   "modules" text,
-  "headings" text
-  ,
+  "headings" text,
   "keywords" text,
   "search_text" text
 );
@@ -5737,6 +5736,7 @@ CREATE TABLE IF NOT EXISTS "contact_bank_accounts"(
   "external_id" varchar,
   "created_at" datetime,
   "updated_at" datetime,
+  "iban_hash" varchar,
   foreign key("organization_id") references "organizations"("id") on delete set null
 );
 CREATE INDEX "contact_bank_accounts_accountable_type_accountable_id_index" on "contact_bank_accounts"(
@@ -15889,57 +15889,6 @@ CREATE UNIQUE INDEX "tags_org_slug_unique" on "tags"(
   "organization_id",
   "slug"
 );
-CREATE TABLE IF NOT EXISTS "incoming_einvoices"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "document_id" integer not null,
-  "sha256" varchar not null,
-  "source" varchar not null default('upload'),
-  "received_at" datetime not null,
-  "status" varchar not null default('received'),
-  "decided_by" integer,
-  "decided_at" datetime,
-  "decision_note" varchar,
-  "summary" text,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "transferred_at" datetime,
-  "transferred_by" integer,
-  "invoice_number" varchar,
-  "seller_name" varchar,
-  "issue_date" date,
-  "due_date" date,
-  "currency" varchar,
-  "amount_net" numeric,
-  "amount_tax" numeric,
-  "amount_gross" numeric,
-  "creditor_iban" text,
-  "creditor_bic" text,
-  "discount_percent" numeric,
-  "discount_days" integer,
-  "paid_in_run_id" integer,
-  "seller_vat_id" varchar,
-  "creditor_iban_confirmed_at" datetime,
-  "creditor_iban_confirmed_by" integer,
-  foreign key("transferred_by") references users("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("document_id") references documents("id") on delete cascade on update no action,
-  foreign key("decided_by") references users("id") on delete set null on update no action,
-  foreign key("paid_in_run_id") references payment_runs("id") on delete set null on update no action,
-  foreign key("creditor_iban_confirmed_by") references "users"("id") on delete set null
-);
-CREATE INDEX "inc_einv_org_due_idx" on "incoming_einvoices"(
-  "organization_id",
-  "due_date"
-);
-CREATE INDEX "inc_einv_org_issue_idx" on "incoming_einvoices"(
-  "organization_id",
-  "issue_date"
-);
-CREATE UNIQUE INDEX "ine_org_hash_unique" on "incoming_einvoices"(
-  "organization_id",
-  "sha256"
-);
 CREATE INDEX "imt_org_kind_default_idx" on "invoice_mail_templates"(
   "organization_id",
   "document_kind",
@@ -17529,6 +17478,7 @@ CREATE TABLE IF NOT EXISTS "customers"(
   "payment_terms_days" integer,
   "skonto_percent" numeric,
   "skonto_days" integer,
+  "is_collective" tinyint(1) not null default '0',
   foreign key("organization_id") references organizations("id") on delete set null on update no action,
   foreign key("created_by") references users("id") on delete set null on update no action,
   foreign key("document_render_profile_id") references document_render_profiles("id") on delete set null on update no action
@@ -17594,6 +17544,7 @@ CREATE TABLE IF NOT EXISTS "suppliers"(
   "number_source" varchar not null default('local'),
   "phone_e164" varchar,
   "mobile_e164" varchar,
+  "is_collective" tinyint(1) not null default '0',
   foreign key("created_by") references users("id") on delete set null on update no action,
   foreign key("organization_id") references organizations("id") on delete set null on update no action
 );
@@ -23430,6 +23381,137 @@ CREATE INDEX "sick_leaves_user_id_start_date_end_date_index" on "sick_leaves"(
   "start_date",
   "end_date"
 );
+CREATE TABLE IF NOT EXISTS "incoming_einvoices"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "document_id" integer not null,
+  "sha256" varchar not null,
+  "source" varchar not null default('upload'),
+  "received_at" datetime not null,
+  "status" varchar not null default('received'),
+  "decided_by" integer,
+  "decided_at" datetime,
+  "decision_note" varchar,
+  "summary" text,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "transferred_at" datetime,
+  "transferred_by" integer,
+  "invoice_number" varchar,
+  "seller_name" varchar,
+  "issue_date" date,
+  "due_date" date,
+  "currency" varchar,
+  "amount_net" numeric,
+  "amount_tax" numeric,
+  "amount_gross" numeric,
+  "creditor_iban" text,
+  "creditor_bic" text,
+  "discount_percent" numeric,
+  "discount_days" integer,
+  "paid_in_run_id" integer,
+  "seller_vat_id" varchar,
+  "creditor_iban_confirmed_at" datetime,
+  "creditor_iban_confirmed_by" integer,
+  "direction" varchar not null default('incoming'),
+  "kind" varchar not null default('invoice'),
+  "recognition" varchar not null default('structured'),
+  "buyer_name" varchar,
+  "buyer_vat_id" varchar,
+  "sender_email" varchar,
+  "source_reference" varchar,
+  "supplier_id" integer,
+  "customer_id" integer,
+  "match_kind" varchar,
+  "matched_user_id" integer,
+  "matched_at" datetime,
+  foreign key("creditor_iban_confirmed_by") references users("id") on delete set null on update no action,
+  foreign key("paid_in_run_id") references payment_runs("id") on delete set null on update no action,
+  foreign key("decided_by") references users("id") on delete set null on update no action,
+  foreign key("document_id") references documents("id") on delete cascade on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("transferred_by") references users("id") on delete set null on update no action,
+  foreign key("supplier_id") references "suppliers"("id") on delete set null,
+  foreign key("customer_id") references "customers"("id") on delete set null,
+  foreign key("matched_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "inc_einv_org_due_idx" on "incoming_einvoices"(
+  "organization_id",
+  "due_date"
+);
+CREATE INDEX "inc_einv_org_issue_idx" on "incoming_einvoices"(
+  "organization_id",
+  "issue_date"
+);
+CREATE INDEX "incoming_einv_org_dir_status_idx" on "incoming_einvoices"(
+  "organization_id",
+  "direction",
+  "status"
+);
+CREATE INDEX "incoming_einv_org_source_ref_idx" on "incoming_einvoices"(
+  "organization_id",
+  "source_reference"
+);
+CREATE UNIQUE INDEX "ine_org_hash_unique" on "incoming_einvoices"(
+  "organization_id",
+  "sha256"
+);
+CREATE INDEX "incoming_einv_org_supplier_idx" on "incoming_einvoices"(
+  "organization_id",
+  "supplier_id"
+);
+CREATE INDEX "incoming_einv_org_customer_idx" on "incoming_einvoices"(
+  "organization_id",
+  "customer_id"
+);
+CREATE INDEX "contact_bank_acc_org_iban_hash_idx" on "contact_bank_accounts"(
+  "organization_id",
+  "iban_hash"
+);
+CREATE TABLE IF NOT EXISTS "invoice_sender_rules"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "email" varchar not null,
+  "direction" varchar not null,
+  "supplier_id" integer,
+  "customer_id" integer,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("supplier_id") references "suppliers"("id") on delete cascade,
+  foreign key("customer_id") references "customers"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "invoice_sender_rule_org_email_dir_unique" on "invoice_sender_rules"(
+  "organization_id",
+  "email",
+  "direction"
+);
+CREATE TABLE IF NOT EXISTS "incoming_einvoice_transfers"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "incoming_einvoice_id" integer not null,
+  "target" varchar not null,
+  "status" varchar not null default 'pending',
+  "external_id" varchar,
+  "external_number" varchar,
+  "attempts" integer not null default '0',
+  "error" varchar,
+  "transferred_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("incoming_einvoice_id") references "incoming_einvoices"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "incoming_einv_transfer_target_unique" on "incoming_einvoice_transfers"(
+  "incoming_einvoice_id",
+  "target"
+);
+CREATE INDEX "incoming_einv_transfer_org_status_idx" on "incoming_einvoice_transfers"(
+  "organization_id",
+  "status"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -24274,124 +24356,129 @@ INSERT INTO migrations VALUES(840,'2027_02_23_101200_create_club_resource_tables
 INSERT INTO migrations VALUES(841,'2027_02_23_101300_create_club_horse_tables',1);
 INSERT INTO migrations VALUES(842,'2027_02_23_101400_create_club_competition_tables',1);
 INSERT INTO migrations VALUES(843,'2027_02_23_101500_add_free_invoice_source_columns',1);
-INSERT INTO migrations VALUES(844,'2027_02_24_100000_rewrite_morph_types_to_aliases',2);
-INSERT INTO migrations VALUES(845,'2027_02_24_110000_add_journal_columns_to_learning_enrollment_events',3);
-INSERT INTO migrations VALUES(846,'2027_02_24_120000_canonicalize_field_schemas_and_checklists',4);
-INSERT INTO migrations VALUES(847,'2027_02_24_130000_create_custom_field_tables',5);
-INSERT INTO migrations VALUES(849,'2027_02_24_140000_move_club_member_address_to_contact_addresses',6);
-INSERT INTO migrations VALUES(850,'2027_02_25_100000_add_dunning_block_reason_to_invoices',7);
-INSERT INTO migrations VALUES(851,'2027_02_25_110000_create_base_interest_rates_table',8);
-INSERT INTO migrations VALUES(852,'2027_02_25_120000_create_protocol_templates_table',9);
-INSERT INTO migrations VALUES(853,'2027_02_25_130000_add_disposal_details_to_fixed_assets',10);
-INSERT INTO migrations VALUES(854,'2027_02_25_140000_create_contract_templates_table',10);
-INSERT INTO migrations VALUES(855,'2027_02_25_150000_add_cost_center_to_contracts',10);
-INSERT INTO migrations VALUES(856,'2027_02_25_160000_add_rental_terms_revision_to_rental_cases',10);
-INSERT INTO migrations VALUES(861,'2027_02_25_170000_create_procedure_library_steps_table',11);
-INSERT INTO migrations VALUES(862,'2027_02_25_180000_add_blocked_state_to_procedure_runs',11);
-INSERT INTO migrations VALUES(863,'2027_02_25_190000_create_asset_inspection_rounds_table',11);
-INSERT INTO migrations VALUES(864,'2027_02_25_200000_create_shipment_parcels_table',11);
-INSERT INTO migrations VALUES(865,'2027_02_25_210000_add_article_to_materials',12);
-INSERT INTO migrations VALUES(866,'2027_02_25_220000_create_lexoffice_voucher_categories_table',12);
-INSERT INTO migrations VALUES(867,'2027_02_26_100000_create_investment_financing_variants_table',13);
-INSERT INTO migrations VALUES(868,'2027_02_27_100000_add_name_i18n_to_procedure_templates_and_tags',14);
-INSERT INTO migrations VALUES(869,'2027_02_27_110000_add_is_direct_to_rental_requests',15);
-INSERT INTO migrations VALUES(870,'2027_02_27_120000_add_return_to_shipments',15);
-INSERT INTO migrations VALUES(871,'2027_02_27_130000_add_diary_entry_to_asset_inspection_schedules',15);
-INSERT INTO migrations VALUES(872,'2027_02_27_140000_create_damage_cases_tables',16);
-INSERT INTO migrations VALUES(873,'2027_02_27_150000_create_recalls_tables',16);
-INSERT INTO migrations VALUES(874,'2027_02_27_160000_create_job_application_ratings_table',17);
-INSERT INTO migrations VALUES(875,'2027_02_27_170000_create_job_interview_offers_table',17);
-INSERT INTO migrations VALUES(876,'2027_02_27_180000_create_investment_programs_tables',18);
-INSERT INTO migrations VALUES(877,'2027_02_27_190000_create_investment_supplier_ratings_table',18);
-INSERT INTO migrations VALUES(878,'2027_02_27_200000_create_sustainability_sites_table',18);
-INSERT INTO migrations VALUES(879,'2027_02_27_210000_create_boq_call_offs_tables',19);
-INSERT INTO migrations VALUES(880,'2027_02_27_220000_add_bill_of_quantity_to_invoices',19);
-INSERT INTO migrations VALUES(881,'2027_02_27_230000_create_branch_profile_variants_table',19);
-INSERT INTO migrations VALUES(882,'2027_02_27_240000_add_proposal_fields_to_investment_cases',20);
-INSERT INTO migrations VALUES(883,'2027_02_27_250000_create_supplier_questionnaires_tables',21);
-INSERT INTO migrations VALUES(884,'2027_02_27_260000_create_asset_inspection_orders_tables',22);
-INSERT INTO migrations VALUES(885,'2027_02_27_270000_create_strategic_objectives_tables',23);
-INSERT INTO migrations VALUES(886,'2027_02_27_280000_add_employment_fields_to_contracts',24);
-INSERT INTO migrations VALUES(887,'2027_02_27_290000_add_classification_fields_to_asset_finance_contracts',25);
-INSERT INTO migrations VALUES(888,'2027_02_27_300000_add_authority_report_fields_to_recalls',25);
-INSERT INTO migrations VALUES(889,'2027_02_27_310000_create_crisis_business_processes_table',25);
-INSERT INTO migrations VALUES(890,'2027_02_27_320000_create_rental_rate_rules_table',26);
-INSERT INTO migrations VALUES(891,'2027_02_27_330000_create_price_index_tables',27);
-INSERT INTO migrations VALUES(892,'2027_02_27_340000_create_incoming_invoice_retentions_table',27);
-INSERT INTO migrations VALUES(893,'2027_02_27_350000_create_liquidity_scenarios_table',27);
-INSERT INTO migrations VALUES(894,'2027_02_27_360000_create_tenant_billing_tables',28);
-INSERT INTO migrations VALUES(895,'2027_02_27_370000_add_carbon_footprint_fields_to_articles',29);
-INSERT INTO migrations VALUES(896,'2027_02_27_380000_create_sustainability_offsets_table',29);
-INSERT INTO migrations VALUES(897,'2027_02_27_390000_create_crisis_room_tables',29);
-INSERT INTO migrations VALUES(898,'2027_02_27_400000_add_supplier_confirmation_to_purchase_orders',30);
-INSERT INTO migrations VALUES(899,'2027_02_28_100000_create_asset_positions_table',31);
-INSERT INTO migrations VALUES(900,'2027_02_28_110000_create_security_ip_bans_table',32);
-INSERT INTO migrations VALUES(901,'2027_02_28_120000_add_declining_and_special_depreciation',33);
-INSERT INTO migrations VALUES(902,'2027_02_28_130000_create_cost_allocation_and_budget_releases',33);
-INSERT INTO migrations VALUES(903,'2027_02_28_140000_create_liquidity_plan_tables',33);
-INSERT INTO migrations VALUES(904,'2027_02_28_150000_create_medical_checkup_occasions',34);
-INSERT INTO migrations VALUES(905,'2027_02_28_160000_create_personnel_file_acknowledgements_and_submissions',34);
-INSERT INTO migrations VALUES(906,'2027_02_28_170000_extend_commissions_with_tiers_caps_and_agents',35);
-INSERT INTO migrations VALUES(907,'2027_02_28_180000_create_open_issue_follow_ups',35);
-INSERT INTO migrations VALUES(908,'2027_02_28_190000_add_driver_signature_to_travel_logs',36);
-INSERT INTO migrations VALUES(909,'2027_02_28_191000_add_private_use_fields_to_vehicles',36);
-INSERT INTO migrations VALUES(910,'2027_02_28_192000_add_review_to_procedure_documentations',36);
-INSERT INTO migrations VALUES(911,'2027_02_28_193000_add_acquisition_and_charging_to_vehicles',37);
-INSERT INTO migrations VALUES(912,'2027_02_28_194000_add_reversal_kind_to_invoice_commissions',37);
-INSERT INTO migrations VALUES(913,'2027_02_28_200000_add_payment_terms_to_customers',38);
-INSERT INTO migrations VALUES(914,'2027_02_28_201000_create_fixed_asset_classes',38);
-INSERT INTO migrations VALUES(915,'2027_02_28_202000_add_cost_center_requirement_to_accounting_accounts',38);
-INSERT INTO migrations VALUES(916,'2027_02_28_203000_clean_integration_inbox_raw_values',38);
-INSERT INTO migrations VALUES(917,'2027_02_28_204000_create_hazard_catalog_and_event_link',39);
-INSERT INTO migrations VALUES(918,'2027_02_28_205000_create_club_donations',40);
-INSERT INTO migrations VALUES(919,'2027_02_28_206000_add_checkin_code_to_club_event_details',40);
-INSERT INTO migrations VALUES(920,'2027_02_28_207000_add_customs_fields',41);
-INSERT INTO migrations VALUES(921,'2027_02_28_208000_add_invoice_to_payment_run_items',42);
-INSERT INTO migrations VALUES(922,'2027_02_28_209000_create_accounting_exchange_rates',42);
-INSERT INTO migrations VALUES(923,'2027_02_28_210000_add_multi_manning_to_travel_logs',43);
-INSERT INTO migrations VALUES(924,'2027_02_28_211000_add_recorded_at_to_attendances',43);
-INSERT INTO migrations VALUES(925,'2027_02_28_211100_close_finished_open_attendances',43);
-INSERT INTO migrations VALUES(926,'2027_02_28_212000_add_fee_to_club_event_details',44);
-INSERT INTO migrations VALUES(927,'2027_02_28_213000_create_import_column_mappings',45);
-INSERT INTO migrations VALUES(933,'2027_02_28_214000_create_resale_license_stock_tables',46);
-INSERT INTO migrations VALUES(934,'2027_02_28_215000_neutral_article_refs_in_reselling',46);
-INSERT INTO migrations VALUES(935,'2027_02_28_216000_neutral_service_article_refs',46);
-INSERT INTO migrations VALUES(936,'2027_02_28_217000_retainer_voucher_links_as_external_references',47);
-INSERT INTO migrations VALUES(937,'2027_02_28_218000_accounting_numbers_in_external_references',47);
-INSERT INTO migrations VALUES(938,'2027_02_28_219000_document_mirror_detachments',48);
-INSERT INTO migrations VALUES(939,'2027_02_28_220000_msgraph_oof_setting_to_plugin',49);
-INSERT INTO migrations VALUES(940,'2027_03_01_100000_add_labour_share_to_document_lines',50);
-INSERT INTO migrations VALUES(941,'2027_03_02_100000_add_line_kind_to_document_lines',50);
-INSERT INTO migrations VALUES(942,'2027_03_03_100000_create_service_calculation_tables',50);
-INSERT INTO migrations VALUES(943,'2027_03_04_100000_create_takeoffs_tables',51);
-INSERT INTO migrations VALUES(944,'2027_03_05_100000_create_takeoff_transfers_table',51);
-INSERT INTO migrations VALUES(945,'2027_03_06_100000_create_dictations_table',51);
-INSERT INTO migrations VALUES(946,'2027_03_07_100000_add_subject_to_chat_channels',51);
-INSERT INTO migrations VALUES(947,'2027_03_08_100000_create_mcp_oauth_tables',52);
-INSERT INTO migrations VALUES(948,'2027_03_09_100000_add_ids_connect_to_supplier_catalog_sources',53);
-INSERT INTO migrations VALUES(949,'2027_03_09_110000_create_online_payment_tables',54);
-INSERT INTO migrations VALUES(950,'2027_03_09_120000_create_datev_online_tables',55);
-INSERT INTO migrations VALUES(951,'2027_03_09_130000_create_ebics_tables',56);
-INSERT INTO migrations VALUES(952,'2027_03_09_140000_add_open_masterdata_to_supplier_catalog_sources',57);
-INSERT INTO migrations VALUES(953,'2027_03_09_150000_reslug_customers_with_reserved_slugs',58);
-INSERT INTO migrations VALUES(954,'2027_03_09_160000_add_unparsed_records_to_domain_dns_zone_projections',59);
-INSERT INTO migrations VALUES(955,'2027_03_10_100000_add_block_and_merge_fields_to_stock_lots',60);
-INSERT INTO migrations VALUES(956,'2027_03_10_100100_add_abort_fields_to_patrol_runs',60);
-INSERT INTO migrations VALUES(957,'2027_03_10_100200_backfill_resolved_at_on_closed_inbox_items',61);
-INSERT INTO migrations VALUES(958,'2027_03_10_100300_add_round_to_approvals_table',62);
-INSERT INTO migrations VALUES(959,'2027_03_10_100400_add_approval_round_to_application_contract_versions_table',62);
-INSERT INTO migrations VALUES(960,'2027_03_10_100500_create_fritzbox_dismissed_calls_table',63);
-INSERT INTO migrations VALUES(961,'2027_03_10_100600_backfill_fritzbox_dismissed_calls',63);
-INSERT INTO migrations VALUES(962,'2027_03_10_100700_add_deferred_from_status_to_investment_cases',64);
-INSERT INTO migrations VALUES(963,'2027_03_10_100800_normalize_orgamax_invoice_status',65);
-INSERT INTO migrations VALUES(964,'2027_03_10_100900_post_lot_block_balances',66);
-INSERT INTO migrations VALUES(965,'2027_03_11_100000_create_customer_intakes_tables',67);
-INSERT INTO migrations VALUES(966,'2027_03_11_100100_add_customer_approval_to_print_orders',67);
-INSERT INTO migrations VALUES(967,'2027_03_11_100200_create_customer_intake_upload_links_table',68);
-INSERT INTO migrations VALUES(968,'2027_03_12_100000_add_search_columns_to_help_topics',69);
-INSERT INTO migrations VALUES(969,'2027_03_13_100000_add_continuation_of_id_to_sick_leaves',70);
-INSERT INTO migrations VALUES(970,'2027_03_13_100100_unify_caldav_reference_type',70);
-INSERT INTO migrations VALUES(971,'2027_03_13_100200_drop_is_mandatory_from_learning_path_items',71);
-INSERT INTO migrations VALUES(972,'2027_03_14_100000_add_group_filter_and_private_network_to_zammad_connections',71);
-INSERT INTO migrations VALUES(973,'2027_03_14_100100_add_allow_private_network_to_webdav_connections',71);
-INSERT INTO migrations VALUES(974,'2027_03_14_100200_add_allow_private_network_to_caldav_connections',71);
+INSERT INTO migrations VALUES(844,'2027_02_24_100000_rewrite_morph_types_to_aliases',1);
+INSERT INTO migrations VALUES(845,'2027_02_24_110000_add_journal_columns_to_learning_enrollment_events',1);
+INSERT INTO migrations VALUES(846,'2027_02_24_120000_canonicalize_field_schemas_and_checklists',1);
+INSERT INTO migrations VALUES(847,'2027_02_24_130000_create_custom_field_tables',1);
+INSERT INTO migrations VALUES(848,'2027_02_24_140000_move_club_member_address_to_contact_addresses',1);
+INSERT INTO migrations VALUES(849,'2027_02_25_100000_add_dunning_block_reason_to_invoices',1);
+INSERT INTO migrations VALUES(850,'2027_02_25_110000_create_base_interest_rates_table',1);
+INSERT INTO migrations VALUES(851,'2027_02_25_120000_create_protocol_templates_table',1);
+INSERT INTO migrations VALUES(852,'2027_02_25_130000_add_disposal_details_to_fixed_assets',1);
+INSERT INTO migrations VALUES(853,'2027_02_25_140000_create_contract_templates_table',1);
+INSERT INTO migrations VALUES(854,'2027_02_25_150000_add_cost_center_to_contracts',1);
+INSERT INTO migrations VALUES(855,'2027_02_25_160000_add_rental_terms_revision_to_rental_cases',1);
+INSERT INTO migrations VALUES(856,'2027_02_25_170000_create_procedure_library_steps_table',1);
+INSERT INTO migrations VALUES(857,'2027_02_25_180000_add_blocked_state_to_procedure_runs',1);
+INSERT INTO migrations VALUES(858,'2027_02_25_190000_create_asset_inspection_rounds_table',1);
+INSERT INTO migrations VALUES(859,'2027_02_25_200000_create_shipment_parcels_table',1);
+INSERT INTO migrations VALUES(860,'2027_02_25_210000_add_article_to_materials',1);
+INSERT INTO migrations VALUES(861,'2027_02_25_220000_create_lexoffice_voucher_categories_table',1);
+INSERT INTO migrations VALUES(862,'2027_02_26_100000_create_investment_financing_variants_table',1);
+INSERT INTO migrations VALUES(863,'2027_02_27_100000_add_name_i18n_to_procedure_templates_and_tags',1);
+INSERT INTO migrations VALUES(864,'2027_02_27_110000_add_is_direct_to_rental_requests',1);
+INSERT INTO migrations VALUES(865,'2027_02_27_120000_add_return_to_shipments',1);
+INSERT INTO migrations VALUES(866,'2027_02_27_130000_add_diary_entry_to_asset_inspection_schedules',1);
+INSERT INTO migrations VALUES(867,'2027_02_27_140000_create_damage_cases_tables',1);
+INSERT INTO migrations VALUES(868,'2027_02_27_150000_create_recalls_tables',1);
+INSERT INTO migrations VALUES(869,'2027_02_27_160000_create_job_application_ratings_table',1);
+INSERT INTO migrations VALUES(870,'2027_02_27_170000_create_job_interview_offers_table',1);
+INSERT INTO migrations VALUES(871,'2027_02_27_180000_create_investment_programs_tables',1);
+INSERT INTO migrations VALUES(872,'2027_02_27_190000_create_investment_supplier_ratings_table',1);
+INSERT INTO migrations VALUES(873,'2027_02_27_200000_create_sustainability_sites_table',1);
+INSERT INTO migrations VALUES(874,'2027_02_27_210000_create_boq_call_offs_tables',1);
+INSERT INTO migrations VALUES(875,'2027_02_27_220000_add_bill_of_quantity_to_invoices',1);
+INSERT INTO migrations VALUES(876,'2027_02_27_230000_create_branch_profile_variants_table',1);
+INSERT INTO migrations VALUES(877,'2027_02_27_240000_add_proposal_fields_to_investment_cases',1);
+INSERT INTO migrations VALUES(878,'2027_02_27_250000_create_supplier_questionnaires_tables',1);
+INSERT INTO migrations VALUES(879,'2027_02_27_260000_create_asset_inspection_orders_tables',1);
+INSERT INTO migrations VALUES(880,'2027_02_27_270000_create_strategic_objectives_tables',1);
+INSERT INTO migrations VALUES(881,'2027_02_27_280000_add_employment_fields_to_contracts',1);
+INSERT INTO migrations VALUES(882,'2027_02_27_290000_add_classification_fields_to_asset_finance_contracts',1);
+INSERT INTO migrations VALUES(883,'2027_02_27_300000_add_authority_report_fields_to_recalls',1);
+INSERT INTO migrations VALUES(884,'2027_02_27_310000_create_crisis_business_processes_table',1);
+INSERT INTO migrations VALUES(885,'2027_02_27_320000_create_rental_rate_rules_table',1);
+INSERT INTO migrations VALUES(886,'2027_02_27_330000_create_price_index_tables',1);
+INSERT INTO migrations VALUES(887,'2027_02_27_340000_create_incoming_invoice_retentions_table',1);
+INSERT INTO migrations VALUES(888,'2027_02_27_350000_create_liquidity_scenarios_table',1);
+INSERT INTO migrations VALUES(889,'2027_02_27_360000_create_tenant_billing_tables',1);
+INSERT INTO migrations VALUES(890,'2027_02_27_370000_add_carbon_footprint_fields_to_articles',1);
+INSERT INTO migrations VALUES(891,'2027_02_27_380000_create_sustainability_offsets_table',1);
+INSERT INTO migrations VALUES(892,'2027_02_27_390000_create_crisis_room_tables',1);
+INSERT INTO migrations VALUES(893,'2027_02_27_400000_add_supplier_confirmation_to_purchase_orders',1);
+INSERT INTO migrations VALUES(894,'2027_02_28_100000_create_asset_positions_table',1);
+INSERT INTO migrations VALUES(895,'2027_02_28_110000_create_security_ip_bans_table',1);
+INSERT INTO migrations VALUES(896,'2027_02_28_120000_add_declining_and_special_depreciation',1);
+INSERT INTO migrations VALUES(897,'2027_02_28_130000_create_cost_allocation_and_budget_releases',1);
+INSERT INTO migrations VALUES(898,'2027_02_28_140000_create_liquidity_plan_tables',1);
+INSERT INTO migrations VALUES(899,'2027_02_28_150000_create_medical_checkup_occasions',1);
+INSERT INTO migrations VALUES(900,'2027_02_28_160000_create_personnel_file_acknowledgements_and_submissions',1);
+INSERT INTO migrations VALUES(901,'2027_02_28_170000_extend_commissions_with_tiers_caps_and_agents',1);
+INSERT INTO migrations VALUES(902,'2027_02_28_180000_create_open_issue_follow_ups',1);
+INSERT INTO migrations VALUES(903,'2027_02_28_190000_add_driver_signature_to_travel_logs',1);
+INSERT INTO migrations VALUES(904,'2027_02_28_191000_add_private_use_fields_to_vehicles',1);
+INSERT INTO migrations VALUES(905,'2027_02_28_192000_add_review_to_procedure_documentations',1);
+INSERT INTO migrations VALUES(906,'2027_02_28_193000_add_acquisition_and_charging_to_vehicles',1);
+INSERT INTO migrations VALUES(907,'2027_02_28_194000_add_reversal_kind_to_invoice_commissions',1);
+INSERT INTO migrations VALUES(908,'2027_02_28_200000_add_payment_terms_to_customers',1);
+INSERT INTO migrations VALUES(909,'2027_02_28_201000_create_fixed_asset_classes',1);
+INSERT INTO migrations VALUES(910,'2027_02_28_202000_add_cost_center_requirement_to_accounting_accounts',1);
+INSERT INTO migrations VALUES(911,'2027_02_28_203000_clean_integration_inbox_raw_values',1);
+INSERT INTO migrations VALUES(912,'2027_02_28_204000_create_hazard_catalog_and_event_link',1);
+INSERT INTO migrations VALUES(913,'2027_02_28_205000_create_club_donations',1);
+INSERT INTO migrations VALUES(914,'2027_02_28_206000_add_checkin_code_to_club_event_details',1);
+INSERT INTO migrations VALUES(915,'2027_02_28_207000_add_customs_fields',1);
+INSERT INTO migrations VALUES(916,'2027_02_28_208000_add_invoice_to_payment_run_items',1);
+INSERT INTO migrations VALUES(917,'2027_02_28_209000_create_accounting_exchange_rates',1);
+INSERT INTO migrations VALUES(918,'2027_02_28_210000_add_multi_manning_to_travel_logs',1);
+INSERT INTO migrations VALUES(919,'2027_02_28_211000_add_recorded_at_to_attendances',1);
+INSERT INTO migrations VALUES(920,'2027_02_28_211100_close_finished_open_attendances',1);
+INSERT INTO migrations VALUES(921,'2027_02_28_212000_add_fee_to_club_event_details',1);
+INSERT INTO migrations VALUES(922,'2027_02_28_213000_create_import_column_mappings',1);
+INSERT INTO migrations VALUES(923,'2027_02_28_214000_create_resale_license_stock_tables',1);
+INSERT INTO migrations VALUES(924,'2027_02_28_215000_neutral_article_refs_in_reselling',1);
+INSERT INTO migrations VALUES(925,'2027_02_28_216000_neutral_service_article_refs',1);
+INSERT INTO migrations VALUES(926,'2027_02_28_217000_retainer_voucher_links_as_external_references',1);
+INSERT INTO migrations VALUES(927,'2027_02_28_218000_accounting_numbers_in_external_references',1);
+INSERT INTO migrations VALUES(928,'2027_02_28_219000_document_mirror_detachments',1);
+INSERT INTO migrations VALUES(929,'2027_02_28_220000_msgraph_oof_setting_to_plugin',1);
+INSERT INTO migrations VALUES(930,'2027_03_01_100000_add_labour_share_to_document_lines',1);
+INSERT INTO migrations VALUES(931,'2027_03_02_100000_add_line_kind_to_document_lines',1);
+INSERT INTO migrations VALUES(932,'2027_03_03_100000_create_service_calculation_tables',1);
+INSERT INTO migrations VALUES(933,'2027_03_04_100000_create_takeoffs_tables',1);
+INSERT INTO migrations VALUES(934,'2027_03_05_100000_create_takeoff_transfers_table',1);
+INSERT INTO migrations VALUES(935,'2027_03_06_100000_create_dictations_table',1);
+INSERT INTO migrations VALUES(936,'2027_03_07_100000_add_subject_to_chat_channels',1);
+INSERT INTO migrations VALUES(937,'2027_03_08_100000_create_mcp_oauth_tables',1);
+INSERT INTO migrations VALUES(938,'2027_03_09_100000_add_ids_connect_to_supplier_catalog_sources',1);
+INSERT INTO migrations VALUES(939,'2027_03_09_110000_create_online_payment_tables',1);
+INSERT INTO migrations VALUES(940,'2027_03_09_120000_create_datev_online_tables',1);
+INSERT INTO migrations VALUES(941,'2027_03_09_130000_create_ebics_tables',1);
+INSERT INTO migrations VALUES(942,'2027_03_09_140000_add_open_masterdata_to_supplier_catalog_sources',1);
+INSERT INTO migrations VALUES(943,'2027_03_09_150000_reslug_customers_with_reserved_slugs',1);
+INSERT INTO migrations VALUES(944,'2027_03_09_160000_add_unparsed_records_to_domain_dns_zone_projections',1);
+INSERT INTO migrations VALUES(945,'2027_03_10_100000_add_block_and_merge_fields_to_stock_lots',1);
+INSERT INTO migrations VALUES(946,'2027_03_10_100100_add_abort_fields_to_patrol_runs',1);
+INSERT INTO migrations VALUES(947,'2027_03_10_100200_backfill_resolved_at_on_closed_inbox_items',1);
+INSERT INTO migrations VALUES(948,'2027_03_10_100300_add_round_to_approvals_table',1);
+INSERT INTO migrations VALUES(949,'2027_03_10_100400_add_approval_round_to_application_contract_versions_table',1);
+INSERT INTO migrations VALUES(950,'2027_03_10_100500_create_fritzbox_dismissed_calls_table',1);
+INSERT INTO migrations VALUES(951,'2027_03_10_100600_backfill_fritzbox_dismissed_calls',1);
+INSERT INTO migrations VALUES(952,'2027_03_10_100700_add_deferred_from_status_to_investment_cases',1);
+INSERT INTO migrations VALUES(953,'2027_03_10_100800_normalize_orgamax_invoice_status',1);
+INSERT INTO migrations VALUES(954,'2027_03_10_100900_post_lot_block_balances',1);
+INSERT INTO migrations VALUES(955,'2027_03_11_100000_create_customer_intakes_tables',1);
+INSERT INTO migrations VALUES(956,'2027_03_11_100100_add_customer_approval_to_print_orders',1);
+INSERT INTO migrations VALUES(957,'2027_03_11_100200_create_customer_intake_upload_links_table',1);
+INSERT INTO migrations VALUES(958,'2027_03_12_100000_add_search_columns_to_help_topics',1);
+INSERT INTO migrations VALUES(959,'2027_03_13_100000_add_continuation_of_id_to_sick_leaves',1);
+INSERT INTO migrations VALUES(960,'2027_03_13_100100_unify_caldav_reference_type',1);
+INSERT INTO migrations VALUES(961,'2027_03_13_100200_drop_is_mandatory_from_learning_path_items',1);
+INSERT INTO migrations VALUES(962,'2027_03_14_100000_add_group_filter_and_private_network_to_zammad_connections',1);
+INSERT INTO migrations VALUES(963,'2027_03_14_100100_add_allow_private_network_to_webdav_connections',1);
+INSERT INTO migrations VALUES(964,'2027_03_14_100200_add_allow_private_network_to_caldav_connections',1);
+INSERT INTO migrations VALUES(965,'2027_03_14_110000_add_mailbox_intake_to_incoming_einvoices',1);
+INSERT INTO migrations VALUES(966,'2027_03_14_110100_add_counterparty_matching_to_incoming_einvoices',1);
+INSERT INTO migrations VALUES(967,'2027_03_14_110200_add_is_collective_to_suppliers_and_customers',1);
+INSERT INTO migrations VALUES(968,'2027_03_14_110300_create_incoming_einvoice_transfers_table',1);
+INSERT INTO migrations VALUES(969,'2027_03_14_110400_move_lexoffice_base_url_to_lexware',1);

@@ -544,6 +544,11 @@ class NavigationRegistry {
                         ...((Auth::user()?->canManageBilling() ?? false)
                             ? [['route' => 'finance.dunning.index', 'label' => __('finance.dunning.menu'), 'icon' => 'notification_important', 'modal' => false, 'matches' => ['finance.dunning.*']]]
                             : []),
+                        // Rechnungseingang (Feature 163, MVP-1110): Arbeitsliste mit
+                        // Zähler der noch zuzuordnenden Eingänge.
+                        ...((Auth::user()?->canManageBilling() ?? false)
+                            ? [['route' => 'finance.incoming-invoices.index', 'label' => __('Rechnungseingang'), 'icon' => 'move_to_inbox', 'modal' => false, 'matches' => ['finance.incoming-invoices.*'], 'badge' => $this->incomingToAssignCount()]]
+                            : []),
                         // Bürgschaftsregister (Feature 114, MVP-603): Sicherheiten
                         // für Geld gehören zur Abrechnung, nicht zum Projekt.
                         ['route' => 'guarantees.index', 'label' => __('guarantee.title'), 'icon' => 'gpp_maybe', 'modal' => false, 'matches' => ['guarantees.*']],
@@ -1613,6 +1618,24 @@ class NavigationRegistry {
         return $patterns;
     }
 
+    /** Zähler „Zuzuordnen“ im Rechnungseingang (Feature 163, MVP-1110). */
+    private function incomingToAssignCount(): int {
+        $user = Auth::user();
+        $organizationId = OrganizationContext::currentId() ?? $user?->organization_id;
+        if ($user === null || $organizationId === null || ! $user->canManageBilling()) {
+            return 0;
+        }
+
+        return (int) Cache::remember(
+            'nav-badge:incoming-assign:' . (int) $organizationId,
+            self::BADGE_TTL,
+            static fn (): int => \App\Models\Invoicing\IncomingEInvoice::query()
+                ->whereNull('supplier_id')->whereNull('customer_id')
+                ->where('status', '!=', \App\Enums\Invoicing\IncomingEInvoiceStatus::Rejected->value)
+                ->count(),
+        );
+    }
+
     /**
      * Zähler „Nachfassen fällig" (Feature 112, MVP-601). Bewusst NUR die
      * fälligen Termine, nicht die ablaufenden Angebote: Ein Badge, das drei
@@ -1734,6 +1757,7 @@ class NavigationRegistry {
                 ['route' => 'inventory.label-templates.index', 'label' => __('inventory.label_template.title'), 'icon' => 'label', 'modal' => false, 'matches' => ['inventory.label-templates.*']],
                 ['route' => 'projects.index', 'label' => __('Projekte'), 'icon' => 'folder_special', 'modal' => false, 'matches' => ['projects.*']],
                 ['route' => 'billing.feed', 'label' => __('billing.feed.title'), 'icon' => 'receipt_long', 'modal' => false, 'matches' => ['billing.feed', 'invoices.*', 'quotes.*', ...$this->pluginMatches('billing.feed')], 'badge' => $this->overdueDocumentCount()],
+                ['route' => 'finance.incoming-invoices.index', 'label' => __('Rechnungseingang'), 'icon' => 'move_to_inbox', 'modal' => false, 'matches' => ['finance.incoming-invoices.*'], 'badge' => $this->incomingToAssignCount()],
                 ['route' => 'finance.transfers.index', 'label' => __('finance.title.menu'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['finance.transfers.*']],
                 ['route' => 'finance.reconciliation.index', 'label' => __('bank.title.menu'), 'icon' => 'account_balance', 'modal' => false, 'matches' => ['finance.reconciliation.*', 'finance.bank-accounts.*']],
                 ...$this->pluginNavItems('sales-billing'),

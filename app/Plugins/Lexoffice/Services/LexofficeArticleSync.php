@@ -45,7 +45,7 @@ use RuntimeException;
  * Verwendet den HTTP-Client direkt, da das verwendete SDK keinen
  * Articles-Endpunkt anbietet.
  *
- * Quelle: https://developers.lexoffice.io/docs/#articles-endpoint
+ * Quelle: https://developers.lexware.io/docs/#articles-endpoint
  */
 class LexofficeArticleSync {
     /** Inhaltsfelder, die Konflikterkennung und Konflikt-Schnappschuss vergleichen. */
@@ -57,7 +57,7 @@ class LexofficeArticleSync {
 
     public function __construct(
         private readonly ?string $apiKey,
-        private readonly string $baseUrl = 'https://api.lexoffice.io/v1',
+        private readonly string $baseUrl = 'https://api.lexware.io/v1',
         private readonly ?float $requestInterval = null,
     ) {}
 

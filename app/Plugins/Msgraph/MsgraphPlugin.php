@@ -115,6 +115,7 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
      * (404) ⇒ Neuanlage; sonst POST mit Immutable-ID. Keine Dubletten.
      */
     public function pushContact(\App\Models\Customer\Customer $customer): string {
+        \App\Services\Stammdaten\CollectiveContacts::assertPushable($customer);
         $connection = \App\Plugins\Msgraph\Models\MsgraphContactConnection::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $customer->organization_id)

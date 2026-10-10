@@ -17,7 +17,7 @@
 return [
     'enabled' => env('LEXOFFICE_ENABLED', false),
     'api_key' => env('LEXOFFICE_API_KEY'),
-    'base_url' => env('LEXOFFICE_BASE_URL', 'https://api.lexoffice.io/v1'),
+    'base_url' => env('LEXOFFICE_BASE_URL', 'https://api.lexware.io/v1'),
     // Default values applied to vouchers/contacts when not set on the model
     'default_currency' => env('LEXOFFICE_DEFAULT_CURRENCY', 'EUR'),
     'default_tax_type' => env('LEXOFFICE_DEFAULT_TAX_TYPE', 'net'), // net|gross

@@ -168,17 +168,18 @@ class LexofficeExpenseLinkProvider implements ExpenseLinkProvider {
             throw new RuntimeException((string) __('Der Auslagenkategorie fehlt die Buchungskategorie des Buchhaltungssystems — ohne Zuordnung kein Push.'));
         }
 
-        // Idempotenz: Der zweite Klick findet den Beleg des ersten.
+        // Idempotenz: Der zweite Klick findet den Beleg des ersten und holt nur fehlende Dateien nach.
         $existing = $this->voucherModelFor($expense);
         if ($existing instanceof LexofficeVoucher) {
+            $reference = $this->referenceFor($expense);
+            if ($reference !== null && ($reference->payload['files_attached'] ?? true) === false) {
+                $this->attachFiles($expense, $existing, $reference);
+            }
+
             return $this->toRef($existing);
         }
 
-        $result = app(LexofficeService::class)->createExpenseVoucher(
-            $expense,
-            (string) $categoryId,
-            $this->localFilePaths($expense),
-        );
+        $result = app(LexofficeService::class)->createExpenseVoucher($expense, (string) $categoryId);
 
         // Spiegelzeile wie beim Voucher-Sync — damit hat der Beleg sofort eine
         // lokale Identität, ohne auf den nächsten Sync-Lauf zu warten.
@@ -188,7 +189,7 @@ class LexofficeExpenseLinkProvider implements ExpenseLinkProvider {
             'voucher_type' => 'purchaseinvoice',
             'voucher_status' => 'open',
             'voucher_date' => $expense->date,
-            'total_gross' => $expense->amount_gross?->getAmount(),
+            'total_amount' => $expense->amount_gross?->getAmount(),
             'currency' => $expense->currency->value,
             'synced_at' => Carbon::now(),
         ]);
@@ -196,11 +197,18 @@ class LexofficeExpenseLinkProvider implements ExpenseLinkProvider {
         // Verknüpfung (Feature 105): ab jetzt führt der Beleg. `pushed`
         // unterscheidet den aktiven Push von der nachträglichen Zuordnung —
         // eine gepushte Verknüpfung darf nicht gelöst werden, der Beleg
-        // existiert unwiderruflich.
+        // existiert unwiderruflich. Vor den Dateien gespeichert: Scheitert ein
+        // Anhang, findet der nächste Klick den Beleg statt einen zweiten anzulegen.
         $reference = $this->linkVoucher($expense, $voucher);
-        $reference->forceFill(['payload' => ['pushed' => true]])->save();
+        $reference->forceFill(['payload' => ['pushed' => true, 'files_attached' => false]])->save();
+        $this->attachFiles($expense, $voucher, $reference);
 
         return $this->toRef($voucher);
+    }
+
+    private function attachFiles(Expense $expense, LexofficeVoucher $voucher, ExternalReference $reference): void {
+        app(LexofficeService::class)->attachVoucherFiles((string) $voucher->external_id, $this->localFilePaths($expense));
+        $reference->forceFill(['payload' => ['pushed' => true, 'files_attached' => true]])->save();
     }
 
     public function wasPushed(Expense $expense): bool {
@@ -243,7 +251,7 @@ class LexofficeExpenseLinkProvider implements ExpenseLinkProvider {
             'voucher_type' => 'purchasecreditnote',
             'voucher_status' => 'open',
             'voucher_date' => Carbon::today(),
-            'total_gross' => $expense->amount_gross?->getAmount(),
+            'total_amount' => $expense->amount_gross?->getAmount(),
             'currency' => $expense->currency->value,
             'synced_at' => Carbon::now(),
         ]);

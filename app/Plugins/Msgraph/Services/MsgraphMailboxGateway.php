@@ -129,6 +129,7 @@ class MsgraphMailboxGateway implements MailboxGateway {
                     filename: $attachment['name'],
                     mime: $attachment['contentType'],
                     content: $raw,
+                    isInline: $attachment['isInline'],
                 );
             }
         }

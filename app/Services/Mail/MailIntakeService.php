@@ -97,6 +97,10 @@ class MailIntakeService {
         if ($attachments !== []) {
             $snapshot['attachments'] = $attachments;
         }
+        // Rechnungspostfach ohne Rechnungsanhang (MVP-1107), z. B. nur ein Download-Link.
+        if ($connection->einvoice_intake) {
+            $snapshot['invoice_mailbox'] = true;
+        }
 
         $item->fill([
             'source' => 'imap',
@@ -110,7 +114,7 @@ class MailIntakeService {
             'candidate_ids' => $this->candidatePayload($candidates),
             'remote_snapshot' => $snapshot,
             'display_title' => $message->subject !== '' ? $message->subject : __('mail.inbox.no_subject'),
-            'display_subtitle' => $message->fromEmail,
+            'display_subtitle' => $connection->einvoice_intake ? __('mail.inbox.invoice_mailbox', ['from' => $message->fromEmail]) : $message->fromEmail,
             'occurred_at' => $message->receivedAt,
         ])->save();
 

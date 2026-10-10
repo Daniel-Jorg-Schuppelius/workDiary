@@ -52,6 +52,11 @@ class ClaimRecourseController extends Controller {
             'amount_claimed' => ['nullable', 'numeric', 'min:0'],
         ]);
 
+        // Regress nur aus Eingangsbelegen, nie aus einer Ausgangskopie des Postfachs (MVP-1107).
+        if (($data['incoming_einvoice_id'] ?? null) !== null && ! \App\Models\Invoicing\IncomingEInvoice::query()->purchases()->whereKey($data['incoming_einvoice_id'])->exists()) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['incoming_einvoice_id' => __('validation.exists', ['attribute' => __('validation.attributes.incoming_einvoice_id')])]);
+        }
+
         $claim->supplierRecourses()->create(array_merge($data, [
             'organization_id' => $claim->organization_id,
             'status' => ClaimRecourseStatus::Draft->value,

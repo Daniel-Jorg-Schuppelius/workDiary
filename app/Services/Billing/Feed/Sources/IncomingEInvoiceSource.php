@@ -13,15 +13,17 @@ declare(strict_types=1);
 namespace App\Services\Billing\Feed\Sources;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind, DocumentOrigin};
-use App\Enums\Invoicing\IncomingEInvoiceStatus;
+use App\Enums\Invoicing\{IncomingEInvoiceStatus, IncomingInvoiceRecognition};
 use App\Services\Billing\DocumentFeedFilters;
 use App\Services\Billing\Feed\{DocumentFeedSource, FeedProjection};
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Eingangsrechnungen aus dem Prüfbereich. Übertragene Belege werden
- * ausgelassen — dort führt der Buchhaltungsbeleg (Dublettenregel 2).
+ * Belege aus dem Rechnungseingang. Übertragene Belege werden ausgelassen —
+ * dort führt der Buchhaltungsbeleg (Dublettenregel 2). Seit MVP-1107 tragen
+ * sie Richtung und Art selbst (Ausgangskopien, Gutschriften); Klärfälle ohne
+ * Betrag und Kopien eigener Rechnungen zählen nicht.
  */
 class IncomingEInvoiceSource implements DocumentFeedSource {
     public function key(): string {
@@ -29,7 +31,8 @@ class IncomingEInvoiceSource implements DocumentFeedSource {
     }
 
     public function builder(DocumentFeedFilters $f): ?Builder {
-        if (! $f->allows('incoming_einvoice') || ! $f->wantsOrigin(DocumentOrigin::Local) || ! $f->wantsFixed(DocumentDirection::Incoming, DocumentKind::Invoice)) {
+        if (! $f->allows('incoming_einvoice') || ! $f->wantsOrigin(DocumentOrigin::Local)
+            || (! $f->wantsFixed(DocumentDirection::Incoming) && ! $f->wantsFixed(DocumentDirection::Outgoing))) {
             return null;
         }
 
@@ -38,7 +41,9 @@ class IncomingEInvoiceSource implements DocumentFeedSource {
             IncomingEInvoiceStatus::PaymentReleased->value => 'paid',
         ], 'open');
 
-        $sign = "CASE WHEN incoming_einvoices.status = '" . IncomingEInvoiceStatus::Rejected->value . "' THEN 0 ELSE 1 END";
+        $sign = "CASE WHEN incoming_einvoices.status = '" . IncomingEInvoiceStatus::Rejected->value . "' THEN 0"
+            . " WHEN incoming_einvoices.kind = '" . DocumentKind::CreditNote->value . "' THEN -1 ELSE 1 END";
+        $outgoing = "incoming_einvoices.direction = '" . DocumentDirection::Outgoing->value . "'";
 
         return DB::table('incoming_einvoices')
             ->selectRaw(FeedProjection::columns([
@@ -46,8 +51,8 @@ class IncomingEInvoiceSource implements DocumentFeedSource {
                 'incoming_einvoices.id AS source_id',
                 'incoming_einvoices.document_id AS link_id',
                 "'" . DocumentOrigin::Local->value . "' AS origin",
-                "'" . DocumentDirection::Incoming->value . "' AS direction",
-                "'" . DocumentKind::Invoice->value . "' AS kind",
+                'incoming_einvoices.direction AS direction',
+                'incoming_einvoices.kind AS kind',
                 "$sign AS sign",
                 "COALESCE(incoming_einvoices.invoice_number, '') AS number",
                 'COALESCE(incoming_einvoices.issue_date, DATE(incoming_einvoices.received_at)) AS doc_date',
@@ -56,7 +61,7 @@ class IncomingEInvoiceSource implements DocumentFeedSource {
                 '0 AS is_archived',
                 'NULL AS contact_type',
                 'NULL AS contact_id',
-                'incoming_einvoices.seller_name AS contact_name',
+                "CASE WHEN $outgoing THEN incoming_einvoices.buyer_name ELSE incoming_einvoices.seller_name END AS contact_name",
                 '0 AS dunning_level',
                 'COALESCE(incoming_einvoices.amount_gross, 0) AS amount_gross',
                 "CASE WHEN $state = 'open' THEN COALESCE(incoming_einvoices.amount_gross, 0) ELSE 0 END AS open_amount",
@@ -64,6 +69,13 @@ class IncomingEInvoiceSource implements DocumentFeedSource {
             ]))
             ->where('incoming_einvoices.organization_id', $f->organizationId)
             ->whereNull('incoming_einvoices.transferred_at')
+            ->where(static fn (Builder $q) => $q->where('incoming_einvoices.recognition', '!=', IncomingInvoiceRecognition::None->value)
+                ->orWhereNotNull('incoming_einvoices.amount_gross'))
+            // Kopie einer eigenen Rechnung: dort führt die lokale Rechnung.
+            ->whereNotExists(static fn (Builder $q) => $q->selectRaw('1')->from('invoices')
+                ->whereColumn('invoices.organization_id', 'incoming_einvoices.organization_id')
+                ->whereColumn('invoices.number', 'incoming_einvoices.invoice_number')
+                ->where('incoming_einvoices.direction', DocumentDirection::Outgoing->value))
             ->whereBetween(
                 DB::raw('COALESCE(incoming_einvoices.issue_date, DATE(incoming_einvoices.received_at))'),
                 [$f->from->toDateString(), $f->to->toDateString()]

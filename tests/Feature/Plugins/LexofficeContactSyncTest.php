@@ -33,7 +33,7 @@ class LexofficeContactSyncTest extends TestCase {
 
     private function fakeContacts(array $items): void {
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response([
+            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response([
                 'content' => $items,
                 'totalPages' => 1,
             ], 200),

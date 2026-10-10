@@ -35,10 +35,26 @@ final class InvoicingDemoBlock implements DemoBlock {
             'invoices' => $context->mainCustomer === null ? 0 : $this->seedSmallBusinessInvoicing($context->organization, $context->mainCustomer, $actor),
             'free_invoices' => $context->mainCustomer === null ? 0 : $this->seedFreeInvoice($context->organization, $context->mainCustomer, $actor),
             'billing_basics' => $context->mainCustomer === null ? 0 : $this->seedBillingBasics($context->organization, $context->mainCustomer, $context->users),
+            'incoming_invoices' => $this->seedIncomingInvoices($context->organization, $actor),
         ];
     }
 
-    public function purge(Organization $organization): void {}
+    /** Demo-Eingänge samt Dokument; sie hängen am Demo-Benutzer und blockierten sonst dessen Löschen. */
+    public function purge(Organization $organization): void {
+        $incomings = \App\Models\Invoicing\IncomingEInvoice::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->whereIn('sha256', array_map(static fn (string $key): ?string => self::demoSha($organization, $key), self::DEMO_INCOMING_KEYS))
+            ->get(['id', 'document_id']);
+        \App\Models\Invoicing\IncomingEInvoice::query()->withoutGlobalScopes()->whereKey($incomings->pluck('id'))->delete();
+        \App\Models\Document\Document::query()->withoutGlobalScopes()->withTrashed()->whereKey($incomings->pluck('document_id'))->forceDelete();
+    }
+
+    /** @var list<string> */
+    private const DEMO_INCOMING_KEYS = ['demo-incoming-assigned', 'demo-incoming-unrecognized'];
+
+    private static function demoSha(Organization $organization, string $key): ?string {
+        return \CommonToolkit\Helper\Data\CryptoHelper::hash($organization->id . ':' . $key);
+    }
 
     private function moduleActive(string $code): bool {
         return $this->context->moduleActive($code);
@@ -143,6 +159,62 @@ final class InvoicingDemoBlock implements DemoBlock {
             return 1;
         } catch (\Throwable $e) {
             // Demo-Seeder bleibt robust (externe Rechnungshoheit, fehlende Steuerdaten).
+            return 0;
+        }
+    }
+
+    /**
+     * Rechnungseingang (Feature 163, MVP-1110): ein über die USt-IdNr.
+     * zugeordneter Eingang aus dem Postfach und ein Klärfall ohne erkannte Daten.
+     */
+    private function seedIncomingInvoices(Organization $organization, ?User $actor): int {
+        if (! $this->moduleActive('module.vertrieb') || $actor === null) {
+            return 0;
+        }
+        try {
+            $supplier = \App\Models\Supplier\Supplier::query()->firstOrCreate(
+                ['organization_id' => $organization->id, 'name' => 'Bürobedarf Muster GmbH'],
+                ['company' => 'Bürobedarf Muster GmbH', 'vat_id' => 'DE299999999', 'email' => 'rechnung@buerobedarf-muster.example', 'active' => true],
+            );
+            $rows = [
+                ['sha' => 'demo-incoming-assigned', 'title' => 'Eingangsrechnung RE-2026-1187 — Bürobedarf Muster GmbH', 'attributes' => [
+                    'recognition' => \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted, 'invoice_number' => 'RE-2026-1187',
+                    'seller_name' => 'Bürobedarf Muster GmbH', 'seller_vat_id' => 'DE299999999', 'issue_date' => \Carbon\Carbon::now()->subDays(3)->toDateString(),
+                    'currency' => 'EUR', 'amount_net' => '120.00', 'amount_tax' => '22.80', 'amount_gross' => '142.80',
+                    'supplier_id' => $supplier->id, 'match_kind' => \App\Enums\Invoicing\IncomingInvoiceMatchKind::VatId, 'matched_at' => now(),
+                ]],
+                ['sha' => 'demo-incoming-unrecognized', 'title' => 'Rechnungseingang ohne erkannte Daten — scan-0815.pdf', 'attributes' => [
+                    'recognition' => \App\Enums\Invoicing\IncomingInvoiceRecognition::None,
+                ]],
+            ];
+            foreach ($rows as $row) {
+                $sha256 = (string) self::demoSha($organization, $row['sha']);
+                if (\App\Models\Invoicing\IncomingEInvoice::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->where('sha256', $sha256)->exists()) {
+                    continue;
+                }
+                $document = \App\Models\Document\Document::query()->create([
+                    'organization_id' => $organization->id,
+                    'title' => $row['title'],
+                    'document_type' => \App\Enums\Document\DocumentType::Invoice->value,
+                    'status' => \App\Enums\Document\DocumentStatus::Active->value,
+                    'created_by_user_id' => $actor->id,
+                ]);
+                \App\Models\Invoicing\IncomingEInvoice::query()->create([
+                    'organization_id' => $organization->id,
+                    'document_id' => $document->id,
+                    'sha256' => $sha256,
+                    'source' => 'mail',
+                    'sender_email' => 'rechnung@buerobedarf-muster.example',
+                    'received_at' => now()->subDays(2),
+                    'status' => \App\Enums\Invoicing\IncomingEInvoiceStatus::Received,
+                    'summary' => [],
+                    ...$row['attributes'],
+                ]);
+            }
+
+            return count($rows);
+        } catch (\Throwable) {
+            // Demo-Seeder bleibt robust.
             return 0;
         }
     }

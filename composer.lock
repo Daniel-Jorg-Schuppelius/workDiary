@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0424a51d69903445422bf82a2de6c0df",
+    "content-hash": "f650f5665eaa9600e8487bfd25067a57",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -673,16 +673,16 @@
         },
         {
             "name": "daniel-jorg-schuppelius/lexoffice-php-sdk",
-            "version": "v1.2.2",
+            "version": "v1.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/lexoffice-php-sdk.git",
-                "reference": "90872308ade254890586c20df095da178dec10f3"
+                "reference": "c32fc0f9f41774af247fc36086d38202072c8113"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/lexoffice-php-sdk/zipball/90872308ade254890586c20df095da178dec10f3",
-                "reference": "90872308ade254890586c20df095da178dec10f3",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/lexoffice-php-sdk/zipball/c32fc0f9f41774af247fc36086d38202072c8113",
+                "reference": "c32fc0f9f41774af247fc36086d38202072c8113",
                 "shasum": ""
             },
             "require": {
@@ -714,9 +714,9 @@
             "description": "Lexoffice SDK for PHP",
             "support": {
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/lexoffice-php-sdk/issues",
-                "source": "https://github.com/Daniel-Jorg-Schuppelius/lexoffice-php-sdk/tree/v1.2.2"
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/lexoffice-php-sdk/tree/v1.3.1"
             },
-            "time": "2026-10-02T22:24:31+00:00"
+            "time": "2026-10-10T09:56:53+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/orgamax-php-sdk",

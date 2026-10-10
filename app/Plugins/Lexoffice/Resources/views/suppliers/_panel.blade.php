@@ -7,9 +7,10 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
   Lexoffice-Verknüpfung der Lieferantenakte (Slot `supplier-show.panels`,
-  MVP-1039). Erwartet: $contactRef (?ExternalReference).
+  MVP-1039). Erwartet: $supplier, $contactRef (?ExternalReference),
+  $categoryRef (?ExternalReference), $categories.
 --}}
-<x-card>
+<x-card class="space-y-4">
     <div class="flex flex-wrap items-center justify-between gap-2">
         <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
             <x-icon name="sync" class="text-muted" /> {{ __('Lexoffice') }}
@@ -20,4 +21,11 @@
             <x-status-badge tone="ghost">{{ __('Noch nicht verknüpft') }}</x-status-badge>
         @endif
     </div>
+    @if ($categories->isNotEmpty())
+        @can('update', $supplier)
+            <div class="grid gap-3 md:grid-cols-2">
+                @include('lexoffice::_posting_category', ['action' => route('suppliers.lexoffice.posting-category', $supplier)])
+            </div>
+        @endcan
+    @endif
 </x-card>

@@ -19,6 +19,7 @@ return [
 
     'inbox' => [
         'no_subject' => '(senza oggetto)',
+        'invoice_mailbox' => 'Casella delle fatture · :from',
         'book_action' => 'Registra come nota di comunicazione',
         'book_ticket_action' => 'Registra come ticket di servizio',
         'book_customer_placeholder' => '… cliente (vuoto = mittente rilevato)',

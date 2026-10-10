@@ -3120,6 +3120,12 @@ Route::middleware('auth')->group(function () {
         Route::prefix('finanzen/eingangsrechnungen')->name('finance.incoming-invoices.')->group(function (): void {
             Route::get('/', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'index'])->name('index');
             Route::post('/', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'store'])->name('store');
+            // Rechnungspostfach (Feature 163, MVP-1110): Zuordnen, Werte erfassen, Sammelaktion.
+            Route::post('sammel-zuordnen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'bulkAssign'])->name('bulk-assign');
+            Route::get('{incoming}/zuordnen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'assignForm'])->name('assign.form');
+            Route::post('{incoming}/zuordnen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'assign'])->name('assign');
+            Route::get('{incoming}/werte', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'valuesForm'])->name('values.form');
+            Route::post('{incoming}/werte', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'values'])->name('values');
             Route::post('{incoming}/entscheiden', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'decide'])->name('decide');
             Route::post('{incoming}/uebergeben', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'transfer'])->name('transfer');
             // Einbehalte (MVP-953).

@@ -15,6 +15,7 @@ namespace App\Services\Billing\Sepa;
 use App\Enums\Invoicing\IncomingEInvoiceStatus;
 use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Supplier\Supplier;
+use App\Support\Crypto\BlindIndex;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\{BankHelper, NumberHelper};
 use Illuminate\Support\Collection;
@@ -38,6 +39,7 @@ class PaymentProposalService {
         $today = $today ?? CarbonImmutable::today();
 
         return IncomingEInvoice::query()
+            ->purchases()
             ->where('status', IncomingEInvoiceStatus::PaymentReleased)
             ->whereNull('paid_in_run_id')
             ->orderBy('due_date')
@@ -112,7 +114,11 @@ class PaymentProposalService {
         return null;
     }
 
-    /** Rechnungs-IBAN ≠ Stammsatz-IBAN (normalisiert) und noch nicht bestätigt. */
+    /**
+     * Rechnungs-IBAN passt zu keiner hinterlegten Bankverbindung des
+     * Lieferanten und ist noch nicht bestätigt. Alle Bankverbindungen zählen
+     * (MVP-1108), nicht nur die primäre.
+     */
     public function ibanDiffersFromMaster(IncomingEInvoice $invoice, ?Supplier $supplier): bool {
         if ($invoice->creditor_iban_confirmed_at !== null) {
             return false;
@@ -121,9 +127,13 @@ class PaymentProposalService {
         if ($invoiceIban === null || $supplier === null) {
             return false;
         }
-        $masterIban = BankHelper::normalizeIBAN(trim((string) $supplier->primaryBankAccount()?->iban));
+        // Der Sammellieferant (MVP-1109) hat keine Bankverbindung: jede Rechnungs-IBAN ist zu bestätigen.
+        if ($supplier->is_collective) {
+            return true;
+        }
+        $known = $supplier->bankAccounts()->withoutGlobalScopes()->whereNotNull('iban_hash')->pluck('iban_hash')->all();
 
-        return $masterIban !== null && $masterIban !== $invoiceIban;
+        return $known !== [] && array_intersect($known, BlindIndex::ibanCandidates($invoiceIban)) === [];
     }
 
     /** @return array{0: string|null, 1: string|null} */
@@ -143,6 +153,10 @@ class PaymentProposalService {
     }
 
     private function supplierFor(IncomingEInvoice $invoice): ?Supplier {
+        // Feste Zuordnung (MVP-1108) zuerst; die Heuristik bleibt für Altbestand.
+        if ($invoice->supplier_id !== null) {
+            return $invoice->supplier;
+        }
         // USt-ID vor Name (Vollscan 2026-08-23, E3): sie ist das stabilere
         // Merkmal — der Name kommt frei formatiert aus der Rechnung.
         $vatId = trim((string) ($invoice->seller_vat_id ?? ''));

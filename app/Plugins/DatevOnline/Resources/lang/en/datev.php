@@ -31,6 +31,9 @@ return [
         'active' => 'connected',
         'disconnected' => 'not connected',
     ],
+    'incoming' => [
+        'label' => 'DATEV Unternehmen online',
+    ],
     'transfer_kind' => [
         'extf' => 'Booking batch',
         'outgoing_document' => 'Outgoing invoice',
@@ -79,7 +82,7 @@ return [
         ],
         'documents' => [
             'heading' => 'Document images',
-            'hint' => 'Issued invoices go to DATEV Unternehmen online as “Rechnungsausgang”, received invoices as “Rechnungseingang” — each once, from the selected date.',
+            'hint' => 'Issued invoices go to DATEV Unternehmen online as “Rechnungsausgang”, received invoices as “Rechnungseingang” once they are assigned in incoming invoices — each once, from the selected date.',
             'enabled' => 'Transfer document images nightly',
             'since' => 'From document date',
             'save' => 'Save',

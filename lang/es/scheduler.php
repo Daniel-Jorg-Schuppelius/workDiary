@@ -153,7 +153,7 @@ return [
         'accounting' => ['recurring' => 'Expectativas de documentos y borradores de asiento recurrentes', 'filings' => 'Sincronizar plazos fiscales y recordar', 'liquidity_snapshot' => 'Guardar la previsión de liquidez semanal'],
         'platform' => ['usage_snapshot' => 'Registrar el uso por cliente'],
         'contracts' => ['price_index_sync' => 'Sincronizar el índice de precios al consumo desde el Bundesbank'],
-        'invoicing' => ['recurring' => 'Generar borradores de facturas recurrentes', 'base_rate_sync' => 'Sincronizar el tipo básico del Bundesbank', 'online_payments_refresh' => 'Conciliar los pagos en línea con el proveedor de pagos'],
+        'invoicing' => ['recurring' => 'Generar borradores de facturas recurrentes', 'base_rate_sync' => 'Sincronizar el tipo básico del Bundesbank', 'online_payments_refresh' => 'Conciliar los pagos en línea con el proveedor de pagos', 'incoming_digest' => 'Avisar de facturas recibidas pendientes de asignar', 'incoming_transfer' => 'Reintentar las transferencias de facturas recibidas'],
         'jtl' => ['sync' => 'Sincronización JTL Wawi'],
         'resale' => [
             'sync_domains' => 'Suscripciones de reventa: adoptar dominios de la gestión de dominios',

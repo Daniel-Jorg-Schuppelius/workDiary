@@ -23,6 +23,9 @@ final class InvoiceIssueException extends RuntimeException {
     /** Entwurf ohne Positionen (Feature 160). */
     public const REASON_EMPTY = 'empty';
 
+    /** Der Sammelkunde (MVP-1109) erhält keine eigene Rechnung — er hat keine Anschrift. */
+    public const REASON_COLLECTIVE_CUSTOMER = 'collective_customer';
+
     public function __construct(public readonly string $reason, string $message) {
         parent::__construct($message);
     }

@@ -31,6 +31,9 @@ return [
         'active' => 'conectado',
         'disconnected' => 'no conectado',
     ],
+    'incoming' => [
+        'label' => 'DATEV Unternehmen online',
+    ],
     'transfer_kind' => [
         'extf' => 'Lote contable',
         'outgoing_document' => 'Factura emitida',
@@ -79,7 +82,7 @@ return [
         ],
         'documents' => [
             'heading' => 'Imágenes de justificantes',
-            'hint' => 'Las facturas emitidas se envían a DATEV Unternehmen online como «Rechnungsausgang» y las recibidas como «Rechnungseingang», cada una una vez y a partir de la fecha elegida.',
+            'hint' => 'Las facturas emitidas se envían a DATEV Unternehmen online como «Rechnungsausgang» y las recibidas como «Rechnungseingang» en cuanto se asignan en las facturas recibidas, cada una una vez y a partir de la fecha elegida.',
             'enabled' => 'Transferir imágenes de justificantes cada noche',
             'since' => 'A partir de la fecha del justificante',
             'save' => 'Guardar',

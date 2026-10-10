@@ -31,7 +31,7 @@ final class LexofficeDraftInvoiceService {
 
     public function __construct(
         private readonly string $apiKey,
-        private readonly string $baseUrl = 'https://api.lexoffice.io/v1',
+        private readonly string $baseUrl = 'https://api.lexware.io/v1',
         private readonly ?float $requestInterval = null,
     ) {}
 

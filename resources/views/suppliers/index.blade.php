@@ -82,6 +82,9 @@
                     </td>
                     <td>
                         <a class="link link-hover font-medium" href="{{ route('suppliers.show', $supplier) }}">{{ $supplier->name }}</a>
+                        @if ($supplier->is_collective)
+                            <x-status-badge tone="info">{{ __('Sammelkontakt') }}</x-status-badge>
+                        @endif
                         @if ($supplier->isArchived())
                             <x-status-badge tone="ghost" size="xs" class="ml-1">{{ __('archiviert') }}</x-status-badge>
                         @endif

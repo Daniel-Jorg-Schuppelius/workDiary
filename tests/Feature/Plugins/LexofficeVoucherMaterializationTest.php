@@ -141,15 +141,26 @@ final class LexofficeVoucherMaterializationTest extends TestCase {
     }
 
     public function test_empty_seen_list_does_not_archive_the_mirror(): void {
-        $voucher = $this->voucher();
+        $voucher = $this->voucher(['contact_external_id' => 'kontakt-1']);
         $sync = new LexofficeVoucherSync('key', 'https://api.lexoffice.test/v1');
 
-        $this->assertSame(0, $sync->archiveMissing($this->org, []));
+        $this->assertSame(0, $sync->archiveMissing($this->org, [], ['kontakt-1']));
         $this->assertFalse((bool) $voucher->fresh()?->archived);
 
         // Mit nicht-leerer seen-Menge greift die Archivierung normal.
-        $this->assertSame(1, $sync->archiveMissing($this->org, ['andere-id']));
+        $this->assertSame(1, $sync->archiveMissing($this->org, ['andere-id'], ['kontakt-1']));
         $this->assertTrue((bool) $voucher->fresh()?->archived);
+    }
+
+    /** MVP-1112: Belege anderer Kontakte und des Sammelkontakts kamen in der Abfrage nicht vor. */
+    public function test_only_vouchers_of_the_queried_contacts_are_archived(): void {
+        $other = $this->voucher(['contact_external_id' => 'kontakt-2']);
+        $collective = $this->voucher(['contact_external_id' => null]);
+        $sync = new LexofficeVoucherSync('key', 'https://api.lexoffice.test/v1');
+
+        $this->assertSame(0, $sync->archiveMissing($this->org, ['gesehen-1'], ['kontakt-1']));
+        $this->assertFalse((bool) $other->fresh()?->archived);
+        $this->assertFalse((bool) $collective->fresh()?->archived);
     }
 
     public function test_completed_migration_freezes_the_sync(): void {

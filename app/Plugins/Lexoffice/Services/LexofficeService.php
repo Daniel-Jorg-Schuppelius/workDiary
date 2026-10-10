@@ -21,7 +21,7 @@ use CommonToolkit\Helper\Data\JsonHelper;
 use GuzzleHttp\Exception\ConnectException;
 use Illuminate\Support\Collection;
 use Lexoffice\API\Client;
-use Lexoffice\API\Endpoints\{ContactsEndpoint, FilesEndpoint, VouchersEndpoint};
+use Lexoffice\API\Endpoints\{ContactsEndpoint, VouchersEndpoint};
 use Lexoffice\Entities\Contacts\Contact;
 use Lexoffice\Entities\Files\File as LexofficeFile;
 use Lexoffice\Entities\Vouchers\Voucher;
@@ -44,7 +44,7 @@ class LexofficeService {
         private readonly LexofficeMapper $mapper,
         /** @var array<string, mixed> */
         private readonly array $defaults = [],
-        private readonly string $baseUrl = 'https://api.lexoffice.io/v1',
+        private readonly string $baseUrl = 'https://api.lexware.io/v1',
         private readonly ?float $requestInterval = null,
     ) {}
 
@@ -243,40 +243,34 @@ class LexofficeService {
     }
 
     /**
-     * Auslage als Einkaufsbeleg anlegen (Feature 106): erst die Belegdatei
-     * hochladen, dann den Beleg mit Datei-Verweis erzeugen — ohne Datei ist
-     * der Beleg für die Buchhaltung wertlos.
+     * Auslage als Einkaufsbeleg anlegen (Feature 106). Die Belegdateien hängt
+     * danach {@see attachVoucherFiles()} an: `POST /files` mit `type=voucher`
+     * legte in Lexware einen eigenen zweiten Beleg an (MVP-1112).
      *
      * Der Push ist **terminal**: `VouchersEndpoint::delete()` wirft
      * NotAllowedException; Korrekturen laufen als Gegenbeleg im führenden
      * System, nie als Update von hier.
      *
-     * @param  list<string> $filePaths  lokale Pfade der Belegdateien
      * @return array{external_id: string, payload: array<string, mixed>}
      */
-    public function createExpenseVoucher(\App\Models\Travel\Expense $expense, string $categoryId, array $filePaths = []): array {
-        $fileIds = [];
-        foreach ($filePaths as $filePath) {
-            $file = new LexofficeFile(['filePath' => $filePath]);
-            $resource = (new FilesEndpoint($this->client()))->upload($file);
-            $fileId = $resource->getId()->toString();
-            if ($fileId !== '') {
-                $fileIds[] = $fileId;
-            }
-        }
+    public function createExpenseVoucher(\App\Models\Travel\Expense $expense, string $categoryId): array {
+        $payload = $this->mapper->expenseToVoucherPayload($expense, $categoryId);
 
-        $payload = $this->mapper->expenseToVoucherPayload($expense, $categoryId, $fileIds);
-
-        $endpoint = new VouchersEndpoint($this->client());
-        $voucher = Voucher::fromJson(JsonHelper::encode($payload));
-
-        $resource = $endpoint->create($voucher);
+        $resource = (new VouchersEndpoint($this->client()))->create(Voucher::fromJson(JsonHelper::encode($payload)));
         $id = $resource->getId()->toString();
         if ($id === '') {
             throw new RuntimeException('Lexoffice voucher create returned no id.');
         }
 
         return ['external_id' => $id, 'payload' => $payload];
+    }
+
+    /** @param  list<string>  $filePaths  lokale Pfade der Belegdateien */
+    public function attachVoucherFiles(string $voucherId, array $filePaths): void {
+        $endpoint = new VouchersEndpoint($this->client());
+        foreach ($filePaths as $filePath) {
+            $endpoint->addFile(new \APIToolkit\Entities\ID($voucherId), new LexofficeFile(['filePath' => $filePath]));
+        }
     }
 
     /**

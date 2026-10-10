@@ -20,7 +20,7 @@ use Illuminate\Support\Collection;
  * Translates workDiary domain models into Lexoffice JSON payloads.
  *
  * The payload structures follow the public Lexoffice REST API:
- *   https://developers.lexoffice.io/docs/
+ *   https://developers.lexware.io/docs/
  *
  * They are intentionally produced as plain associative arrays so they can be
  * fed into Lexoffice entity classes via fromJson(json_encode($payload)) which
@@ -300,10 +300,9 @@ class LexofficeMapper {
      * `useCollectiveContact` (Sammelkontakt) und der Händlername im Belegtext,
      * statt für jede Tankstelle einen Kontakt anzulegen.
      *
-     * @param  list<string> $fileIds  zuvor hochgeladene Belegdateien
      * @return array<string, mixed>
      */
-    public function expenseToVoucherPayload(\App\Models\Travel\Expense $expense, string $categoryId, array $fileIds = []): array {
+    public function expenseToVoucherPayload(\App\Models\Travel\Expense $expense, string $categoryId): array {
         $gross = $expense->amount_gross?->toFloat() ?? 0.0;
         $tax = $expense->tax_amount?->toFloat() ?? 0.0;
         $taxRate = $expense->tax_rate?->getValue()->toFloat() ?? 0.0;
@@ -324,10 +323,6 @@ class LexofficeMapper {
                 'categoryId' => $categoryId,
             ]],
         ];
-
-        if ($fileIds !== []) {
-            $payload['files'] = $fileIds;
-        }
 
         return $payload;
     }

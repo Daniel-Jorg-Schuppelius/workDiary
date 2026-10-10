@@ -449,6 +449,10 @@ return [
         'started' => 'Import started',
     ],
     'incoming_einvoice' => [
+        'direction_corrected' => 'Incoming document direction corrected',
+        'values_captured' => 'Incoming document values recorded',
+        'assigned' => 'Incoming invoice assigned',
+        'sender_rule_saved' => 'Sender rule saved',
         'decided' => 'Incoming invoice decided',
         'transferred' => 'Incoming invoice transferred',
     ],

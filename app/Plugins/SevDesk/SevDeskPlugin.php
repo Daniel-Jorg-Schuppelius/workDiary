@@ -75,6 +75,7 @@ class SevDeskPlugin extends AbstractPlugin implements ContactSyncer {
      * Feld, das beide Seiten stabil führen.
      */
     public function pushContact(Customer $customer): string {
+        \App\Services\Stammdaten\CollectiveContacts::assertPushable($customer);
         $client = app(SevDeskClientFactory::class)->for((int) $customer->organization_id);
         $number = trim((string) $customer->number);
 

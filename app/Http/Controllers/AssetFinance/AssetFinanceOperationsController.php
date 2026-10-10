@@ -91,6 +91,7 @@ class AssetFinanceOperationsController extends Controller {
             'schedule' => $schedule,
             'contract' => $contract,
             'invoices' => IncomingEInvoice::query()
+                ->purchases()
                 ->where('status', '!=', IncomingEInvoiceStatus::Rejected)
                 ->orderByRaw('issue_date IS NULL, issue_date DESC')
                 ->orderByDesc('id')
@@ -110,7 +111,7 @@ class AssetFinanceOperationsController extends Controller {
         ]);
 
         try {
-            $this->service->linkIncomingInvoice($schedule, IncomingEInvoice::query()->whereKey($data['incoming_einvoice_id'])->firstOrFail());
+            $this->service->linkIncomingInvoice($schedule, IncomingEInvoice::query()->purchases()->whereKey($data['incoming_einvoice_id'])->firstOrFail());
         } catch (\RuntimeException $e) {
             return back()->withErrors(['incoming_einvoice_id' => ErrorText::for($e)]);
         }

@@ -67,7 +67,7 @@ final class LexofficeArticleMatchingTest extends TestCase {
         ]);
 
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/articles*' => FakePluginHttp::response([
+            'https://api.lexware.io/v1/articles*' => FakePluginHttp::response([
                 'content' => [
                     [
                         'id' => 'lex-sku',
@@ -163,7 +163,7 @@ final class LexofficeArticleMatchingTest extends TestCase {
             'totalPages' => 1,
         ]);
 
-        FakePluginHttp::fake(['https://api.lexoffice.io/v1/articles*' => $stub]);
+        FakePluginHttp::fake(['https://api.lexware.io/v1/articles*' => $stub]);
         (new LexofficeArticleSync('test-key'))->sync($this->organization);
         $this->assertDatabaseHas('integration_inbox_items', [
             'external_id' => 'lex-dup',
@@ -174,7 +174,7 @@ final class LexofficeArticleMatchingTest extends TestCase {
         // verknüpft und schließt den Inbox-Fall idempotent.
         ArticleVariant::query()->where('sku', 'DUP-A')->update(['gtin' => null]);
 
-        FakePluginHttp::fake(['https://api.lexoffice.io/v1/articles*' => $stub]);
+        FakePluginHttp::fake(['https://api.lexware.io/v1/articles*' => $stub]);
         $result = (new LexofficeArticleSync('test-key'))->sync($this->organization);
 
         $this->assertSame(1, $result['linked']);

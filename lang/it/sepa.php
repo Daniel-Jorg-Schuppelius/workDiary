@@ -163,6 +163,7 @@ return [
         ],
         'error' => [
             'in_run' => 'La fattura è già in un lotto di pagamento.',
+            'outgoing' => 'I documenti in uscita dalla casella delle fatture non hanno trattenute.',
             'amount' => 'Indichi una percentuale o un importo maggiore di 0.',
             'exceeds' => 'Le trattenute superano l’importo della fattura.',
             'not_open' => 'Si possono svincolare solo le trattenute aperte.',

@@ -60,7 +60,7 @@ class LexofficeArticleSyncTest extends TestCase {
 
     private function fakeArticleList(): void {
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/articles*' => FakePluginHttp::response(['content' => [$this->remoteItem()], 'totalPages' => 1], 200),
+            'https://api.lexware.io/v1/articles*' => FakePluginHttp::response(['content' => [$this->remoteItem()], 'totalPages' => 1], 200),
         ]);
     }
 
@@ -112,7 +112,7 @@ class LexofficeArticleSyncTest extends TestCase {
     public function test_adopt_remote_fetches_the_article_and_clears_the_dirty_flag(): void {
         $local = $this->dirtyLocalArticle();
         $fake = FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/articles/lex-8' => FakePluginHttp::response($this->remoteItem(version: 3), 200),
+            'https://api.lexware.io/v1/articles/lex-8' => FakePluginHttp::response($this->remoteItem(version: 3), 200),
         ]);
 
         $adopted = (new LexofficeArticleSync('test-key'))->adoptRemote($local);
@@ -130,7 +130,7 @@ class LexofficeArticleSyncTest extends TestCase {
     public function test_adopt_remote_reports_lexoffice_errors_and_leaves_the_article_untouched(): void {
         $local = $this->dirtyLocalArticle();
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/articles/lex-8' => FakePluginHttp::response(['message' => 'not found'], 404),
+            'https://api.lexware.io/v1/articles/lex-8' => FakePluginHttp::response(['message' => 'not found'], 404),
         ]);
 
         try {
@@ -155,7 +155,7 @@ class LexofficeArticleSyncTest extends TestCase {
 
         $manager = $this->userWithRole(UserRole::Buchhaltung->value);
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/articles/lex-8' => FakePluginHttp::response($this->remoteItem(version: 4), 200),
+            'https://api.lexware.io/v1/articles/lex-8' => FakePluginHttp::response($this->remoteItem(version: 4), 200),
         ]);
 
         $this->actingAs($manager)->post(route('inventory.conflicts.adopt-remote', $conflict))
@@ -171,7 +171,7 @@ class LexofficeArticleSyncTest extends TestCase {
 
     public function test_sync_creates_articles_from_paginated_response(): void {
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/articles*' => [
+            'https://api.lexware.io/v1/articles*' => [
                 FakePluginHttp::response([
                     'content' => [
                         [
@@ -265,7 +265,7 @@ class LexofficeArticleSyncTest extends TestCase {
 
     public function test_push_creates_new_article_via_post_when_external_id_missing(): void {
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/articles' => FakePluginHttp::response([
+            'https://api.lexware.io/v1/articles' => FakePluginHttp::response([
                 'id' => 'lex-new', 'version' => 1,
             ], 201),
         ]);
@@ -293,7 +293,7 @@ class LexofficeArticleSyncTest extends TestCase {
 
     public function test_push_updates_existing_article_via_put_with_version(): void {
         $fake = FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/articles/lex-7' => FakePluginHttp::response([
+            'https://api.lexware.io/v1/articles/lex-7' => FakePluginHttp::response([
                 'id' => 'lex-7', 'version' => 3,
             ], 200),
         ]);
@@ -318,7 +318,7 @@ class LexofficeArticleSyncTest extends TestCase {
             $data = json_decode((string) $request->getBody(), true);
 
             return strtoupper($request->getMethod()) === 'PUT'
-                && (string) $request->getUri() === 'https://api.lexoffice.io/v1/articles/lex-7'
+                && (string) $request->getUri() === 'https://api.lexware.io/v1/articles/lex-7'
                 && ($data['version'] ?? null) === 2;
         });
     }
@@ -336,7 +336,7 @@ class LexofficeArticleSyncTest extends TestCase {
         ]);
 
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/articles*' => FakePluginHttp::response([
+            'https://api.lexware.io/v1/articles*' => FakePluginHttp::response([
                 'content' => [[
                     'id' => 'lex-8', 'version' => 2, 'title' => 'Remote geändert',
                     'type' => 'service', 'price' => ['netPrice' => 120.00, 'currency' => 'EUR'],
@@ -391,7 +391,7 @@ class LexofficeArticleSyncTest extends TestCase {
             'price' => ['netPrice' => 100.0, 'currency' => 'EUR', 'taxRate' => $taxRate],
         ];
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/articles*' => FakePluginHttp::response([
+            'https://api.lexware.io/v1/articles*' => FakePluginHttp::response([
                 'content' => [$remote('lex-10', 'Unverändert', 19), $remote('lex-11', 'Nur der Satz weicht ab', 7)],
                 'totalPages' => 1,
             ], 200),
@@ -421,7 +421,7 @@ class LexofficeArticleSyncTest extends TestCase {
         ]);
 
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/articles*' => FakePluginHttp::response([
+            'https://api.lexware.io/v1/articles*' => FakePluginHttp::response([
                 'content' => [[
                     'id' => 'lex-9', 'version' => 5, 'title' => 'Remote-Version',
                     'type' => 'service', 'price' => ['netPrice' => 50.0, 'currency' => 'EUR'],

@@ -7,7 +7,8 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
   Lexoffice-Panel der Kundenakte (Slot `customer-show.panels`, MVP-1038).
-  Erwartet: $customer, $contactRef (?ExternalReference), $voucherRefs.
+  Erwartet: $customer, $contactRef (?ExternalReference), $voucherRefs,
+  $categoryRef (?ExternalReference), $categories.
 --}}
 @can('update', $customer)
 <x-card class="space-y-4">
@@ -57,6 +58,10 @@
                 <x-icon-btn icon="sync" tone="primary" size="sm" type="submit" show-label>{{ __('Zeiten übertragen') }}</x-icon-btn>
             </div>
         </form>
+
+        @if ($categories->isNotEmpty())
+            @include('lexoffice::_posting_category', ['action' => route('customers.lexoffice.posting-category', $customer)])
+        @endif
     </div>
 
     @if ($voucherRefs->isNotEmpty())

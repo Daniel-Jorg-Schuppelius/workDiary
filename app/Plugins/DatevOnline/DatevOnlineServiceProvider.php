@@ -22,5 +22,7 @@ class DatevOnlineServiceProvider extends PluginServiceProviderBase {
 
     protected function bootPlugin(): void {
         $this->commands([DatevOnlineSyncCommand::class]);
+        // Rechnungseingang als Belegbild (MVP-1111).
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Invoicing\Contracts\IncomingInvoiceTransferTarget::class, \App\Plugins\DatevOnline\Services\DatevOnlineIncomingInvoiceTarget::class);
     }
 }

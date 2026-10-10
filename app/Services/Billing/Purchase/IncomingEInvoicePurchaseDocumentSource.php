@@ -113,7 +113,7 @@ final class IncomingEInvoicePurchaseDocumentSource implements PurchaseDocumentSo
 
     /** @return Builder<IncomingEInvoice> */
     private function query(Organization $organization): Builder {
-        return IncomingEInvoice::query()->withoutGlobalScopes()->where('organization_id', $organization->id);
+        return IncomingEInvoice::query()->withoutGlobalScopes()->purchases()->where('organization_id', $organization->id);
     }
 
     /** @return Builder<IncomingEInvoice> */

@@ -182,7 +182,7 @@ final class ManufacturingOrderControllerTest extends TestCase {
     }
 
     public function test_push_delivery_note_to_lexoffice(): void {
-        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexoffice.io/v1', 'api_key' => 'test-key']);
+        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexware.io/v1', 'api_key' => 'test-key']);
 
         $customer = \App\Models\Customer\Customer::factory()->create([
             'organization_id' => $this->organization->id, 'email' => 'kunde@example.com',
@@ -215,7 +215,7 @@ final class ManufacturingOrderControllerTest extends TestCase {
         ]);
 
         \Tests\Support\FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/delivery-notes*' => \Tests\Support\FakePluginHttp::response(['id' => 'lex-dn-1'], 201),
+            'https://api.lexware.io/v1/delivery-notes*' => \Tests\Support\FakePluginHttp::response(['id' => 'lex-dn-1'], 201),
         ]);
 
         $this->actingAs($this->admin)
@@ -231,7 +231,7 @@ final class ManufacturingOrderControllerTest extends TestCase {
     }
 
     public function test_push_order_confirmation_to_lexoffice(): void {
-        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexoffice.io/v1', 'api_key' => 'test-key']);
+        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexware.io/v1', 'api_key' => 'test-key']);
 
         $customer = \App\Models\Customer\Customer::factory()->create([
             'organization_id' => $this->organization->id, 'email' => 'kunde@example.com',
@@ -256,7 +256,7 @@ final class ManufacturingOrderControllerTest extends TestCase {
         ]);
 
         \Tests\Support\FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/order-confirmations*' => \Tests\Support\FakePluginHttp::response(['id' => 'lex-oc-1'], 201),
+            'https://api.lexware.io/v1/order-confirmations*' => \Tests\Support\FakePluginHttp::response(['id' => 'lex-oc-1'], 201),
         ]);
 
         $this->actingAs($this->admin)
@@ -286,7 +286,7 @@ final class ManufacturingOrderControllerTest extends TestCase {
             ->assertOk()
             ->assertDontSee(route('manufacturing-orders.quotation.lexoffice', $order), false);
 
-        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexoffice.io/v1', 'api_key' => 'test-key']);
+        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexware.io/v1', 'api_key' => 'test-key']);
         // Wie nach dem Umschalten in der Plugin-Verwaltung.
         app(\App\Plugins\PluginManager::class)->flushRuntimeCaches();
         $this->actingAs($this->admin)->get(route('manufacturing-orders.show', $order))
@@ -295,7 +295,7 @@ final class ManufacturingOrderControllerTest extends TestCase {
     }
 
     public function test_push_quotation_to_lexoffice(): void {
-        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexoffice.io/v1', 'api_key' => 'test-key']);
+        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexware.io/v1', 'api_key' => 'test-key']);
 
         $customer = \App\Models\Customer\Customer::factory()->create([
             'organization_id' => $this->organization->id, 'email' => 'kunde@example.com',
@@ -320,7 +320,7 @@ final class ManufacturingOrderControllerTest extends TestCase {
         ]);
 
         \Tests\Support\FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/quotations*' => \Tests\Support\FakePluginHttp::response(['id' => 'lex-q-1'], 201),
+            'https://api.lexware.io/v1/quotations*' => \Tests\Support\FakePluginHttp::response(['id' => 'lex-q-1'], 201),
         ]);
 
         $this->actingAs($this->admin)

@@ -67,7 +67,7 @@ class LexofficePaymentSyncTest extends TestCase {
         ]);
 
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/payments/lex-voucher-1' => FakePluginHttp::response(['paidDate' => '2026-08-05T00:00:00.000+02:00']),
+            'https://api.lexware.io/v1/payments/lex-voucher-1' => FakePluginHttp::response(['paidDate' => '2026-08-05T00:00:00.000+02:00']),
         ]);
 
         $result = app(LexofficePlugin::class)->syncPayments($this->organization);

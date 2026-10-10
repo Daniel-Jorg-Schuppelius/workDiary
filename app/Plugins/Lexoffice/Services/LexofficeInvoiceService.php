@@ -39,7 +39,7 @@ class LexofficeInvoiceService {
         private readonly ?string $apiKey,
         /** @var array<string, mixed> */
         private readonly array $defaults = [],
-        private readonly string $baseUrl = 'https://api.lexoffice.io/v1',
+        private readonly string $baseUrl = 'https://api.lexware.io/v1',
         private readonly ?float $requestInterval = null,
     ) {}
 

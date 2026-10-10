@@ -199,7 +199,7 @@ class MsgraphMailClient implements GraphSubscriptionClient {
     /**
      * Datei-Anhänge einer Nachricht (fileAttachment, base64 → roh).
      *
-     * @return list<array{name: string, contentType: string, contentBytes: string}>
+     * @return list<array{name: string, contentType: string, contentBytes: string, isInline: bool}>
      */
     public function messageAttachments(string $messageId): array {
         $response = $this->api->getResponse($this->base . '/me/messages/' . rawurlencode($messageId) . '/attachments');
@@ -208,7 +208,7 @@ class MsgraphMailClient implements GraphSubscriptionClient {
         }
 
         $out = [];
-        /** @var array{value?: list<array{'@odata.type'?: string, name?: string, contentType?: string, contentBytes?: string}>} $data */
+        /** @var array{value?: list<array{'@odata.type'?: string, name?: string, contentType?: string, contentBytes?: string, isInline?: bool}>} $data */
         $data = (array) $response->json();
         foreach ((array) ($data['value'] ?? []) as $attachment) {
             if (($attachment['@odata.type'] ?? '') !== '#microsoft.graph.fileAttachment') {
@@ -218,6 +218,7 @@ class MsgraphMailClient implements GraphSubscriptionClient {
                 'name' => (string) ($attachment['name'] ?? 'anhang'),
                 'contentType' => (string) ($attachment['contentType'] ?? 'application/octet-stream'),
                 'contentBytes' => (string) ($attachment['contentBytes'] ?? ''),
+                'isInline' => (bool) ($attachment['isInline'] ?? false),
             ];
         }
 

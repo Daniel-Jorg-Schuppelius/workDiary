@@ -126,7 +126,7 @@ class DraftTargetTest extends TestCase {
         ]);
         $subscription = $this->subscription($partner);
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/invoices' => static fn() => FakePluginHttp::response(['id' => 'draft-77', 'resourceUri' => 'https://api.lexoffice.io/v1/invoices/draft-77'], 201),
+            'https://api.lexware.io/v1/invoices' => static fn() => FakePluginHttp::response(['id' => 'draft-77', 'resourceUri' => 'https://api.lexware.io/v1/invoices/draft-77'], 201),
         ]);
 
         $result = app(ResaleInvoiceDraftService::class)->draft($this->organization, $partner, $admin);

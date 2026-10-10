@@ -12,11 +12,15 @@ declare(strict_types=1);
 
 namespace App\Models\Invoicing;
 
-use App\Enums\Invoicing\IncomingEInvoiceStatus;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Enums\Billing\{DocumentDirection, DocumentKind};
+use App\Enums\Invoicing\{IncomingEInvoiceStatus, IncomingInvoiceMatchKind, IncomingInvoiceRecognition};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
+use App\Models\Customer\Customer;
 use App\Models\Document\Document;
 use App\Models\Finance\IncomingInvoiceRetention;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Platform\User;
+use App\Models\Supplier\Supplier;
+use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
 /**
@@ -40,6 +44,18 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property \CommonToolkit\ValueObjects\Money|null $amount_gross
  * @property \Illuminate\Support\Carbon $received_at
  * @property IncomingEInvoiceStatus $status
+ * @property DocumentDirection $direction
+ * @property DocumentKind $kind
+ * @property IncomingInvoiceRecognition $recognition
+ * @property string|null $buyer_name
+ * @property string|null $buyer_vat_id
+ * @property string|null $sender_email
+ * @property string|null $source_reference
+ * @property int|null $supplier_id
+ * @property int|null $customer_id
+ * @property IncomingInvoiceMatchKind|null $match_kind
+ * @property int|null $matched_user_id
+ * @property \Illuminate\Support\Carbon|null $matched_at
  * @property int|null $decided_by
  * @property \Illuminate\Support\Carbon|null $decided_at
  * @property string|null $decision_note
@@ -57,10 +73,18 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 class IncomingEInvoice extends Model {
     use Auditable;
     use BelongsToOrganization;
+    use HasAttachments;
     use HasSqid;
 
     /** Eloquent würde zu incoming_e_invoices pluralisieren. */
     protected $table = 'incoming_einvoices';
+
+    /** Wie die Spaltenvorgaben — sonst fehlen die Werte bis zum nächsten Laden. */
+    protected $attributes = [
+        'direction' => 'incoming',
+        'kind' => 'invoice',
+        'recognition' => 'structured',
+    ];
 
     protected $fillable = [
         'organization_id', 'document_id', 'sha256', 'source', 'received_at',
@@ -73,12 +97,22 @@ class IncomingEInvoice extends Model {
         // MVP-609: Zahlungsdaten für den Zahlungsvorschlag.
         'creditor_iban', 'creditor_bic', 'discount_percent', 'discount_days',
         'paid_in_run_id',
+        // MVP-1107: Rechnungspostfach.
+        'direction', 'kind', 'recognition', 'buyer_name', 'buyer_vat_id',
+        'sender_email', 'source_reference',
+        // MVP-1108: Gegenpartei.
+        'supplier_id', 'customer_id', 'match_kind', 'matched_user_id', 'matched_at',
     ];
 
     /** @var array<string, string> */
     protected $casts = [
         'received_at' => 'datetime',
         'status' => IncomingEInvoiceStatus::class,
+        'direction' => DocumentDirection::class,
+        'kind' => DocumentKind::class,
+        'recognition' => IncomingInvoiceRecognition::class,
+        'match_kind' => IncomingInvoiceMatchKind::class,
+        'matched_at' => 'datetime',
         'decided_at' => 'datetime',
         'summary' => 'array',
         'transferred_at' => 'datetime',
@@ -113,6 +147,8 @@ class IncomingEInvoice extends Model {
             'invoice_number' => $text($summary['number'] ?? null, 64),
             'seller_name' => $text($summary['seller'] ?? null, 191),
             'seller_vat_id' => $text($summary['seller_vat'] ?? null, 32),
+            'buyer_name' => $text($summary['buyer'] ?? null, 191),
+            'buyer_vat_id' => $text($summary['buyer_vat'] ?? null, 32),
             'issue_date' => $text($summary['issue_date'] ?? null, 10),
             'due_date' => $text($summary['due_date'] ?? null, 10),
             'currency' => $text($summary['currency'] ?? null, 3),
@@ -124,6 +160,43 @@ class IncomingEInvoice extends Model {
             'discount_percent' => is_numeric($summary['discount_percent'] ?? null) ? (string) $summary['discount_percent'] : null,
             'discount_days' => is_numeric($summary['discount_days'] ?? null) ? (string) $summary['discount_days'] : null,
         ];
+    }
+
+    /**
+     * Nur Eingangsbelege. Ausgangsbelege aus dem Postfach (Rechnungskopien,
+     * Gutschriftverfahren) sind keine Verbindlichkeit und gehören nie in
+     * Zahlung, Einbehalt, Liquidität oder Buchungsadapter.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopePurchases(Builder $query): Builder {
+        return $query->where($query->qualifyColumn('direction'), DocumentDirection::Incoming->value);
+    }
+
+    /** @return BelongsTo<Supplier, $this> */
+    public function supplier(): BelongsTo {
+        return $this->belongsTo(Supplier::class);
+    }
+
+    /** @return BelongsTo<Customer, $this> */
+    public function customer(): BelongsTo {
+        return $this->belongsTo(Customer::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function matchedUser(): BelongsTo {
+        return $this->belongsTo(User::class, 'matched_user_id');
+    }
+
+    /** @return HasMany<IncomingEInvoiceTransfer, $this> Übergaben je Buchhaltungsziel (MVP-1111) */
+    public function transfers(): HasMany {
+        return $this->hasMany(IncomingEInvoiceTransfer::class, 'incoming_einvoice_id');
+    }
+
+    /** Lieferant (Eingang) bzw. Kunde (Ausgang); null = noch zuzuordnen. */
+    public function counterparty(): Supplier|Customer|null {
+        return $this->supplier ?? $this->customer;
     }
 
     /** @return BelongsTo<Document, $this> */

@@ -37,7 +37,8 @@ class CustomerMatchProfile extends AbstractMatchProfile {
     }
 
     protected function newCandidateQuery(): Builder {
-        return Customer::query();
+        // Der Sammelkunde (MVP-1109) ist nie ein Abgleichkandidat.
+        return Customer::query()->withoutCollective();
     }
 
     public function strategies(): array {

@@ -22,14 +22,14 @@ use Illuminate\Support\Collection;
  * Zugangsdaten kommen aus der Organisation (LexofficeConfig), nicht mehr aus
  * einem systemweiten Schlüssel.
  *
- * Doku: https://developers.lexoffice.io/docs/#articles-endpoint-articles
+ * Doku: https://developers.lexware.io/docs/#articles-endpoint-articles
  */
 class LexofficeMaterialProvider implements MaterialProviderInterface {
     private ?PluginApiClient $api = null;
 
     public function __construct(
         protected string $apiKey,
-        protected string $baseUrl = 'https://api.lexoffice.io/v1',
+        protected string $baseUrl = 'https://api.lexware.io/v1',
         protected ?float $requestInterval = null,
     ) {}
 

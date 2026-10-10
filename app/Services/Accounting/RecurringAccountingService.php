@@ -165,6 +165,7 @@ class RecurringAccountingService {
      */
     public function fulfillmentCandidates(AccountingRecurringRun $run, User $viewer): Collection {
         return IncomingEInvoice::query()
+            ->purchases()
             ->where('organization_id', $run->organization_id)
             ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value)
             ->whereIn('document_id', Document::query()->visibleTo($viewer)->select('id'))

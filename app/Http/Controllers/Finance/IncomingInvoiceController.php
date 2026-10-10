@@ -12,14 +12,19 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Finance;
 
+use App\Enums\Billing\DocumentDirection;
 use App\Enums\Document\DocumentType;
-use App\Enums\Invoicing\IncomingEInvoiceStatus;
+use App\Enums\Invoicing\{IncomingEInvoiceStatus, IncomingInvoiceRecognition, IncomingInvoiceTransferStatus};
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\Accounting\FixedAsset;
+use App\Models\Customer\Customer;
 use App\Models\Document\Document;
+use App\Models\Invoicing\{IncomingEInvoice, IncomingEInvoiceTransfer};
 use App\Models\Platform\User;
-use App\Services\Invoicing\EInvoice\IncomingEInvoiceService;
-use App\Support\CarbonFmt;
+use App\Models\Supplier\Supplier;
+use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, IncomingInvoiceTransferGate, IncomingInvoiceTransferService};
+use App\Support\{CarbonFmt, SortableQuery};
 use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
@@ -33,22 +38,93 @@ use Illuminate\View\View;
  * Faktura-Programm); die Detailseite parst das Original bei jedem Aufruf.
  */
 class IncomingInvoiceController extends Controller {
+    use ResolvesGlobalDateRange;
+
     public function __construct(
         private readonly IncomingEInvoiceService $eInvoices,
+        private readonly IncomingInvoiceTransferService $transfers,
     ) {}
 
-    public function index(): View {
+    /** Reiter der Arbeitsliste (MVP-1110/1111): benannte Filterzustände. */
+    public const TABS = ['assign', 'review', 'transfer', 'failed', 'all'];
+
+    /** Sortierbare Spalten → SQL-Spalte. */
+    private const SORTS = [
+        'received_at' => 'received_at',
+        'issue_date' => 'issue_date',
+        'amount' => 'amount_gross',
+        'number' => 'invoice_number',
+    ];
+
+    /**
+     * Arbeitsliste des Rechnungseingangs (Feature 163, MVP-1110): Zuzuordnen
+     * und Zu prüfen immer vollständig, „Alle“ im globalen Zeitraum. Sichtbar
+     * ist, was das Original im DMS sehen lässt.
+     */
+    public function index(Request $request): View {
         Gate::authorize('viewAny', Document::class);
+        $user = $this->authUser();
+        $tab = in_array($request->query('tab'), self::TABS, true) ? (string) $request->query('tab') : 'assign';
+        [$sort, $dir] = SortableQuery::resolve($request, self::SORTS, 'received_at');
+        $direction = DocumentDirection::tryFrom($request->string('direction')->toString());
+        $recognition = IncomingInvoiceRecognition::tryFrom($request->string('recognition')->toString());
+        $term = trim($request->string('q')->toString());
+
+        $base = static fn (): \Illuminate\Database\Eloquent\Builder => IncomingEInvoice::query()
+            ->whereIn('document_id', Document::query()->visibleTo($user)->select('id'));
+        $toAssign = static fn (\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder => $query
+            ->whereNull('supplier_id')->whereNull('customer_id')
+            ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value);
+        $toReview = static fn (\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder => $query
+            ->where(static fn ($party) => $party->whereNotNull('supplier_id')->orWhereNotNull('customer_id'))
+            ->whereIn('status', [IncomingEInvoiceStatus::Received->value, IncomingEInvoiceStatus::Question->value]);
+        $inTransfer = static fn (\Illuminate\Database\Eloquent\Builder $query, array $states): \Illuminate\Database\Eloquent\Builder => $query
+            ->whereHas('transfers', static fn ($journal) => $journal->whereIn('status', array_map(static fn (IncomingInvoiceTransferStatus $s): string => $s->value, $states)));
+        $open = [IncomingInvoiceTransferStatus::Pending, IncomingInvoiceTransferStatus::Waiting];
+        $failed = [IncomingInvoiceTransferStatus::Failed];
+        [$from, $to] = $this->globalDateRangeBounds();
+
+        $query = match ($tab) {
+            'assign' => $toAssign($base()),
+            'review' => $toReview($base()),
+            'transfer' => $inTransfer($base(), $open),
+            'failed' => $inTransfer($base(), $failed),
+            default => $base()->whereBetween('received_at', [$from, $to]),
+        };
+        $query->with(['document', 'supplier:id,name,is_collective', 'customer:id,name,is_collective'])
+            ->when(in_array($tab, ['transfer', 'failed'], true), static fn ($q) => $q->with('transfers'))
+            ->when($direction !== null, static fn ($q) => $q->where('direction', $direction?->value))
+            ->when($recognition !== null, static fn ($q) => $q->where('recognition', $recognition?->value))
+            ->when($term !== '', static fn ($q) => $q->where(static fn ($w) => $w->whereLikeEscaped('invoice_number', $term)
+                ->orWhereLikeEscaped('seller_name', $term)->orWhereLikeEscaped('buyer_name', $term)->orWhereLikeEscaped('sender_email', $term)));
+        $query->orderBy(self::SORTS[$sort], $dir)->orderByDesc('id');
 
         return view('finance.incoming-invoices.index', [
-            'documents' => Document::query()
-                ->visibleTo($this->authUser())
-                ->where('document_type', DocumentType::Invoice->value)
-                ->with(['currentVersion', 'creator'])
-                ->orderByDesc('created_at')
-                ->paginate(25),
+            'incomings' => $query->paginate(25)->withQueryString(),
+            'tab' => $tab,
+            'sort' => $sort,
+            'dir' => $dir,
+            'assignCount' => $toAssign($base())->count(),
+            'reviewCount' => $toReview($base())->count(),
+            'transferCount' => $inTransfer($base(), $open)->count(),
+            'failedCount' => $inTransfer($base(), $failed)->count(),
             'canUpload' => Gate::allows('create', Document::class),
+            'canManage' => $user->canManageBilling(),
+            'bulkParties' => $tab === 'assign' && $user->canManageBilling() ? $this->assignmentOptions() : null,
         ]);
+    }
+
+    /**
+     * Auswahl für Zuordnungsdialog und Sammelaktion: Lieferanten und Kunden
+     * ohne Sammelkontakte; die Sammelkontakte stehen als eigene Wahl davor.
+     *
+     * @return array{suppliers: \Illuminate\Support\Collection<int, Supplier>, customers: \Illuminate\Support\Collection<int, Customer>}
+     */
+    private function assignmentOptions(): array {
+        return [
+            'suppliers' => Supplier::query()->withoutCollective()->whereNull('archived_at')->orderBy('name')->get(['id', 'name', 'vat_id']),
+            'customers' => Customer::query()->withoutCollective()->whereNull('archived_at')->orderBy('name')->get(['id', 'name', 'vat_id']),
+        ];
     }
 
     public function store(Request $request): RedirectResponse {
@@ -80,7 +156,7 @@ class IncomingInvoiceController extends Controller {
         if (count($results) > 1) {
             $count = static fn (string $status): int => count(array_filter($results, static fn (array $r): bool => $r['status'] === $status));
 
-            return redirect()->route('finance.incoming-invoices.index')->with('success', __(':created Rechnungen erfasst, :duplicates Dubletten, :failed nicht lesbar oder abgewiesen.', [
+            return redirect()->toList('finance.incoming-invoices.index')->with('success', __(':created Rechnungen erfasst, :duplicates Dubletten, :failed nicht lesbar oder abgewiesen.', [
                 'created' => $count('created'),
                 'duplicates' => $count('duplicate'),
                 'failed' => $count('unreadable') + $count('infected'),
@@ -90,7 +166,7 @@ class IncomingInvoiceController extends Controller {
         $result = $results[0];
         $incoming = $result['incoming'];
         if ($result['status'] === 'duplicate' && $incoming !== null) {
-            return redirect()->route('finance.incoming-invoices.show', $incoming->document_id)
+            return redirect()->route('finance.incoming-invoices.show', $incoming->document)
                 ->with('error', __('Diese E-Rechnung wurde bereits am :date erfasst (Dublette).', [
                     'date' => CarbonFmt::orgTz($incoming->received_at)->isoFormat('L LT'),
                 ]));
@@ -140,29 +216,42 @@ class IncomingInvoiceController extends Controller {
     }
 
     /**
-     * Idempotente Übergabe an die führende Buchhaltung (MVP-168): nur nach
-     * fachlicher Freigabe; ein zweiter Aufruf ändert nichts (kein doppelter
-     * Nachweis). Keine automatische Stammdaten- oder Belegänderung.
+     * Übergabe an die Buchhaltung. Mit eingeschalteten Zielen (MVP-1111)
+     * startet sie sofort für alle Ziele, auch nach ausgeschöpften
+     * Wiederholungen; das Tor entscheidet. Ohne Ziel bleibt es beim
+     * idempotenten Vermerk nach fachlicher Freigabe (MVP-168).
      */
-    public function transfer(\App\Models\Invoicing\IncomingEInvoice $incoming): RedirectResponse {
+    public function transfer(IncomingEInvoice $incoming): RedirectResponse {
         abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+        $back = redirect()->route('finance.incoming-invoices.show', $incoming->document);
+
+        $organization = $incoming->organization;
+        if ($organization !== null && $this->transfers->hasTargets($organization)) {
+            $journals = $this->transfers->transfer($incoming, $this->authUser());
+            if ($journals === []) {
+                return $back->with('info', __('Kein Buchhaltungsziel gilt für diesen Eingang, oder eine Übergabe läuft gerade.'));
+            }
+            $done = count(array_filter($journals, static fn (IncomingEInvoiceTransfer $journal): bool => $journal->status->isFinal()));
+
+            return $done === count($journals)
+                ? $back->with('success', __('Eingang an die Buchhaltung übergeben.'))
+                : $back->with('warning', __('Übergabe: :done von :total Zielen abgeschlossen. Die Gründe stehen bei der Übergabe.', ['done' => $done, 'total' => count($journals)]));
+        }
 
         if (! in_array($incoming->status, [IncomingEInvoiceStatus::Approved, IncomingEInvoiceStatus::PaymentReleased], true)) {
             return back()->with('error', __('Nur fachlich freigegebene Eingänge werden an die Buchhaltung übergeben.'));
         }
 
         if ($incoming->transferred_at !== null) {
-            return redirect()->route('finance.incoming-invoices.show', $incoming->document_id)
-                ->with('success', __('Bereits am :date übergeben — kein erneuter Übergabevorgang.', [
-                    'date' => CarbonFmt::orgTz($incoming->transferred_at)->isoFormat('L LT'),
-                ]));
+            return $back->with('success', __('Bereits am :date übergeben — kein erneuter Übergabevorgang.', [
+                'date' => CarbonFmt::orgTz($incoming->transferred_at)->isoFormat('L LT'),
+            ]));
         }
 
         $incoming->update(['transferred_at' => now(), 'transferred_by' => (int) Auth::id()]);
         $incoming->audit('incoming_einvoice.transferred', ['sha256' => $incoming->sha256]);
 
-        return redirect()->route('finance.incoming-invoices.show', $incoming->document_id)
-            ->with('success', __('Eingang an die führende Buchhaltung übergeben.'));
+        return $back->with('success', __('Eingang an die führende Buchhaltung übergeben.'));
     }
 
     /**
@@ -179,6 +268,10 @@ class IncomingInvoiceController extends Controller {
         ]);
 
         $target = IncomingEInvoiceStatus::from((string) $data['decision']);
+        // Ausgangsbelege aus dem Postfach (MVP-1107) bezahlt nicht die Organisation.
+        if ($target === IncomingEInvoiceStatus::PaymentReleased && $incoming->direction === DocumentDirection::Outgoing) {
+            return back()->with('error', __('Ausgangsbelege werden nicht zur Zahlung freigegeben.'));
+        }
         // Eine Rückfrage darf mit neuer Anmerkung wiederholt werden.
         $repeatedQuestion = $target === IncomingEInvoiceStatus::Question && $incoming->status === $target;
         if (! $repeatedQuestion && ! $incoming->status->canTransitionTo($target)) {
@@ -193,7 +286,7 @@ class IncomingInvoiceController extends Controller {
         ]);
         $incoming->audit('incoming_einvoice.decided', ['to' => $target->value]);
 
-        $redirect = redirect()->route('finance.incoming-invoices.show', $incoming->document_id)
+        $redirect = redirect()->route('finance.incoming-invoices.show', $incoming->document)
             ->with('success', __('Entscheidung gespeichert.'));
 
         // Feature 117: Bei der Zahlungsfreigabe warnen, wenn dem Lieferanten
@@ -222,8 +315,14 @@ class IncomingInvoiceController extends Controller {
             );
         }
 
+        $organization = $incoming?->organization;
+        $targets = $organization !== null ? $this->transfers->targets($organization) : [];
+
         return view('finance.incoming-invoices.show', [
             'incoming' => $incoming,
+            'transferTargets' => $targets,
+            'transferJournals' => $incoming !== null && $targets !== [] ? $incoming->transfers()->get()->keyBy('target') : collect(),
+            'transferBlockers' => $incoming !== null && $targets !== [] ? app(IncomingInvoiceTransferGate::class)->blockers($incoming) : [],
             'document' => $document->load('currentVersion'),
             'parsed' => $parsed,
             'summary' => $parsed !== null ? $this->eInvoices->summary($parsed) : null,
@@ -240,14 +339,11 @@ class IncomingInvoiceController extends Controller {
      */
     private function credentialWarning(\App\Models\Invoicing\IncomingEInvoice $incoming): ?string {
         $name = trim((string) ($incoming->seller_name ?? ''));
-        if ($name === '') {
-            return null;
-        }
-
-        $supplier = \App\Models\Supplier\Supplier::query()
+        // Feste Zuordnung (MVP-1108) zuerst, der Name nur für Altbestand.
+        $supplier = $incoming->supplier ?? ($name === '' ? null : \App\Models\Supplier\Supplier::query()
             ->where('organization_id', $incoming->organization_id)
             ->where('name', $name)
-            ->first();
+            ->first());
         if (! $supplier instanceof \App\Models\Supplier\Supplier) {
             return null;
         }

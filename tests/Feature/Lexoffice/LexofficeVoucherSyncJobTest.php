@@ -52,8 +52,8 @@ final class LexofficeVoucherSyncJobTest extends TestCase {
         // Phase-54-Nachtrag: voucherlist liefert kein paidDate — die
         // Anreicherung holt es je bezahltem Beleg über den Payments-Endpunkt.
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/payments/ext-paid' => FakePluginHttp::response(['paidDate' => '2030-01-15T00:00:00.000+01:00', 'openAmount' => 0]),
-            'https://api.lexoffice.io/v1/payments/ext-err' => FakePluginHttp::response(null, 404),
+            'https://api.lexware.io/v1/payments/ext-paid' => FakePluginHttp::response(['paidDate' => '2030-01-15T00:00:00.000+01:00', 'openAmount' => 0]),
+            'https://api.lexware.io/v1/payments/ext-err' => FakePluginHttp::response(null, 404),
         ]);
 
         $mk = fn (string $ext, string $status, ?string $paidDate): LexofficeVoucher => LexofficeVoucher::create([

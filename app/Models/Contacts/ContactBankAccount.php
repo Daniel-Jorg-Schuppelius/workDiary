@@ -11,6 +11,7 @@
 namespace App\Models\Contacts;
 
 use App\Models\Concerns\BelongsToOrganization;
+use App\Support\Crypto\BlindIndex;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -27,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property int $accountable_id
  * @property string|null $account_holder
  * @property string|null $iban
+ * @property string|null $iban_hash
  * @property string|null $bic
  * @property string|null $bank_name
  * @property bool $is_primary
@@ -58,6 +60,14 @@ class ContactBankAccount extends Model {
         'iban' => 'encrypted',
         'bic' => 'encrypted',
     ];
+
+    protected static function booted(): void {
+        // Suchbarer Abdruck der verschlüsselten IBAN (MVP-1108): Der
+        // Rechnungseingang findet den Lieferanten über die Rechnungs-IBAN.
+        static::saving(static function (self $account): void {
+            $account->iban_hash = BlindIndex::ofIban($account->iban);
+        });
+    }
 
     /** @return MorphTo<Model, $this> */
     public function accountable(): MorphTo {

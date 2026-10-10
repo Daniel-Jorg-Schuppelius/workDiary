@@ -144,7 +144,7 @@
                     <span class="label cursor-pointer justify-start gap-2">
                         <input type="hidden" name="einvoice_intake" value="0">
                         <input type="checkbox" name="einvoice_intake" value="1" class="toggle toggle-sm toggle-primary" @checked(old('einvoice_intake', false))>
-                        <span class="label-text">{{ __('Rechnungs-Postfach: Anhänge als E-Rechnung in den Prüfbereich übernehmen') }}</span>
+                        <span class="label-text">{{ __('Rechnungspostfach: Rechnungen aus den Anhängen in den Rechnungseingang übernehmen') }}</span>
                     </span>
                 </label>
                 <label class="form-control justify-end">

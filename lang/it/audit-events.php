@@ -449,6 +449,10 @@ return [
         'started' => 'Import avviato',
     ],
     'incoming_einvoice' => [
+        'direction_corrected' => 'Direzione del documento corretta',
+        'values_captured' => 'Valori del documento registrati',
+        'assigned' => 'Fattura in entrata assegnata',
+        'sender_rule_saved' => 'Regola mittente salvata',
         'decided' => 'Fattura in entrata decisa',
         'transferred' => 'Fattura in entrata trasferita',
     ],

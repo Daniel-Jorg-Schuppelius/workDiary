@@ -94,6 +94,8 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
         // „Lexoffice-Stand übernehmen“ in der Konfliktliste des Lagers (Entscheidung 2026-10-06):
         // der Kern erreicht das Plugin nur über diesen Beitrag.
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Inventory\Contracts\ArticleConflictHandler::class, \App\Plugins\Lexoffice\Services\LexofficeArticleConflictHandler::class);
+        // Übergabe aus dem Rechnungseingang (MVP-1111).
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Invoicing\Contracts\IncomingInvoiceTransferTarget::class, \App\Plugins\Lexoffice\Services\LexofficeIncomingInvoiceTarget::class);
 
         // Material-Suche (MVP-1033) mit den Zugangsdaten der aktuellen Organisation.
         $this->app->make(MaterialProviderRegistry::class)->register('lexoffice', static function (): ?LexofficeMaterialProvider {

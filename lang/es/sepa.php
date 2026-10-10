@@ -163,6 +163,7 @@ return [
         ],
         'error' => [
             'in_run' => 'La factura ya está en una remesa de pago.',
+            'outgoing' => 'Los documentos de salida del buzón de facturas no tienen retención.',
             'amount' => 'Indique un porcentaje o importe mayor que 0.',
             'exceeds' => 'Las retenciones superan el importe de la factura.',
             'not_open' => 'Solo se pueden liberar retenciones abiertas.',

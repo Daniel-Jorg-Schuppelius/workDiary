@@ -31,6 +31,9 @@ return [
         'active' => 'connecté',
         'disconnected' => 'non connecté',
     ],
+    'incoming' => [
+        'label' => 'DATEV Unternehmen online',
+    ],
     'transfer_kind' => [
         'extf' => 'Lot comptable',
         'outgoing_document' => 'Facture émise',
@@ -79,7 +82,7 @@ return [
         ],
         'documents' => [
             'heading' => 'Images de pièces',
-            'hint' => 'Les factures émises partent vers DATEV Unternehmen online comme « Rechnungsausgang », les factures reçues comme « Rechnungseingang » — chacune une fois, à partir de la date choisie.',
+            'hint' => 'Les factures émises partent vers DATEV Unternehmen online comme « Rechnungsausgang », les factures reçues comme « Rechnungseingang » dès qu’elles sont attribuées dans les factures reçues — chacune une fois, à partir de la date choisie.',
             'enabled' => 'Transférer les images de pièces chaque nuit',
             'since' => 'À partir de la date de pièce',
             'save' => 'Enregistrer',

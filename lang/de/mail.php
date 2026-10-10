@@ -19,6 +19,7 @@ return [
 
     'inbox' => [
         'no_subject' => '(ohne Betreff)',
+        'invoice_mailbox' => 'Rechnungspostfach · :from',
         'book_action' => 'Als Kommunikationsnotiz buchen',
         'book_ticket_action' => 'Als Service-Ticket buchen',
         'book_customer_placeholder' => '… Kunde (leer = erkannter Absender)',

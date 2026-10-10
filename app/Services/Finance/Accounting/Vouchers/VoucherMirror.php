@@ -170,6 +170,7 @@ class VoucherMirror {
         if ($number !== '') {
             $customer = Customer::query()
                 ->withoutGlobalScopes()
+                ->withoutCollective()
                 ->where('organization_id', $organizationId)
                 ->where('number', $number)
                 ->first();
@@ -180,8 +181,10 @@ class VoucherMirror {
 
         $supplierName = trim((string) $voucher->supplierName);
         if ($supplierName !== '') {
+            // Ein Sammellieferant (MVP-1109) passt nie über den Namen.
             $supplier = Supplier::query()
                 ->withoutGlobalScopes()
+                ->withoutCollective()
                 ->where('organization_id', $organizationId)
                 ->where('name', $supplierName)
                 ->first();

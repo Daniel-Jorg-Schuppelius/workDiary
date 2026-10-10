@@ -92,6 +92,8 @@ class ForeignKeyCoverageTest extends TestCase {
         'customers.peppol_participant_id',
         // Keine Referenz: USt-IdNr.-WERT aus der Rechnung (E3, Lieferanten-Matching).
         'incoming_einvoices.seller_vat_id',
+        // Ebenso der Käufer (Feature 163, MVP-1107): Richtungserkennung und Kundenabgleich.
+        'incoming_einvoices.buyer_vat_id',
         // Feature 128 (MVP-692): Zieltabelle hängt an document_kind (quasi-Morph
         // ohne *able-Namen) — Nachweis-Log bleibt bewusst ohne FK stehen,
         // auch wenn der Beleg(-Entwurf) gelöscht wird; Rechnungen zusätzlich

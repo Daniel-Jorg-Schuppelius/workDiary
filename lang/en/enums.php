@@ -2080,6 +2080,9 @@ return [
             'refunded' => 'Refunded',
         ],
         'incoming_e_invoice_status' => ['received' => 'Received', 'approved' => 'Approved (review)', 'rejected' => 'Rejected', 'question' => 'Query', 'payment_released' => 'Payment released'],
+        'incoming_invoice_recognition' => ['structured' => 'E-invoice (structured)', 'extracted' => 'Recognised from PDF or image', 'none' => 'Not recognised (needs clarification)'],
+        'incoming_invoice_match_kind' => ['vat_id' => 'VAT ID', 'tax_number' => 'Tax number', 'iban' => 'IBAN', 'sender_rule' => 'Sender rule', 'manual' => 'Manual'],
+        'incoming_invoice_transfer_status' => ['pending' => 'Pending', 'waiting' => 'Waiting for clarification', 'failed' => 'Failed', 'transferred' => 'Transferred', 'linked' => 'Already present, linked'],
         'invoice_schedule_status' => ['active' => 'Active', 'paused' => 'Paused', 'ended' => 'Ended'],
     ],
     'agile' => [

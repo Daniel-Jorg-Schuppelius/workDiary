@@ -163,6 +163,7 @@ return [
         ],
         'error' => [
             'in_run' => 'Die Rechnung steckt bereits in einem Zahllauf.',
+            'outgoing' => 'Ausgangsbelege aus dem Rechnungspostfach haben keinen Einbehalt.',
             'amount' => 'Bitte einen Prozentsatz oder Betrag größer 0 angeben.',
             'exceeds' => 'Die Einbehalte übersteigen den Rechnungsbetrag.',
             'not_open' => 'Nur offene Einbehalte lassen sich freigeben.',

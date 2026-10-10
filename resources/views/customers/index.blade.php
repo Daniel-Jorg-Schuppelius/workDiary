@@ -89,6 +89,9 @@
                     </td>
                     <td>
                         <a class="link link-hover font-medium" href="{{ route('customers.show', $customer) }}">{{ $customer->name }}</a>
+                        @if ($customer->is_collective)
+                            <x-status-badge tone="info">{{ __('Sammelkontakt') }}</x-status-badge>
+                        @endif
                         @if ($customer->isArchived())
                             <x-status-badge tone="ghost" size="xs" class="ml-1">{{ __('archiviert') }}</x-status-badge>
                         @endif

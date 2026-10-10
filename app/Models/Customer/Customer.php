@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne, MorphMan
 use Illuminate\Support\Carbon;
 
 /**
+ * @property bool $is_collective
  * @property int $id
  * @property int|null $organization_id
  * @property string $name
@@ -192,6 +193,8 @@ class Customer extends Model implements ContactDetailsHolder, CustomFieldSubject
         'address_lat' => 'decimal:7',
         'address_lng' => 'decimal:7',
         'contact_persons' => 'array',
+        // Sammelkontakt (MVP-1109); setzt nur App\Services\Stammdaten\CollectiveContacts.
+        'is_collective' => 'boolean',
     ];
 
     protected static function booted(): void {
@@ -382,5 +385,15 @@ class Customer extends Model implements ContactDetailsHolder, CustomFieldSubject
      */
     public function scopeVisibleInReports(Builder $query): Builder {
         return $query->where('exclude_from_reports', false);
+    }
+
+    /**
+     * Ohne Sammelkontakt (MVP-1109): für Abgleich, Vorschläge und Stammdaten-Push.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeWithoutCollective(Builder $query): Builder {
+        return $query->where($query->qualifyColumn('is_collective'), false);
     }
 }

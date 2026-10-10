@@ -24,7 +24,8 @@ use App\Plugins\{AbstractPlugin, PluginHealth, PluginManager};
 use App\Plugins\Contracts\{ContactSyncer, ContributesWhileInactive, NavigationContributor, PaymentSyncer, Plugin, PluginCapability, SlotRenderer, TimeExporter};
 use App\Plugins\Lexoffice\Enums\LexwareFeature;
 use App\Plugins\Lexoffice\Exceptions\LexofficeRateLimitException;
-use App\Plugins\Lexoffice\Services\{LexofficeMapper, LexofficeService, LexofficeVoucherSync, LexofficeWebhookService};
+use App\Plugins\Lexoffice\Models\LexofficePostingCategory;
+use App\Plugins\Lexoffice\Services\{LexofficeIncomingInvoiceTarget, LexofficeMapper, LexofficeService, LexofficeVoucherSync, LexofficeWebhookService};
 use App\Plugins\Lexoffice\Tariff\LexwareTariffService;
 use App\Support\Query\DateRange;
 use App\Support\Sqid;
@@ -205,7 +206,7 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
     public function settingsSchema(): array {
         return [
             ['key' => 'api_key', 'label' => __('API-Key'), 'type' => 'password', 'required' => true, 'help' => __('Public API-Token aus dem Lexoffice-Account.')],
-            ['key' => 'base_url', 'label' => __('API-Basis-URL'), 'type' => 'text', 'default' => 'https://api.lexoffice.io/v1'],
+            ['key' => 'base_url', 'label' => __('API-Basis-URL'), 'type' => 'text', 'default' => 'https://api.lexware.io/v1'],
             ['key' => 'default_currency', 'label' => __('Standardwährung'), 'type' => 'text', 'default' => 'EUR'],
             ['key' => 'default_tax_type', 'label' => __('Steuerart'), 'type' => 'select', 'options' => ['net' => 'net', 'gross' => 'gross'], 'default' => 'net'],
             ['key' => 'default_vat_rate', 'label' => __('Standard-USt %'), 'type' => 'text', 'default' => '19'],
@@ -217,10 +218,35 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
             ['key' => 'create_missing_local', 'label' => __('Fehlende Kunden aus Lexoffice neu anlegen'), 'type' => 'boolean', 'default' => false],
             ['key' => 'number_authority', 'label' => __('Nummernkreise von Lexoffice führen lassen (Kunde, Lieferant, Rechnung, Gutschrift)'), 'type' => 'boolean', 'default' => false],
             ['key' => 'request_interval', 'label' => __('Mindestabstand zwischen API-Anfragen in Sekunden (Lexoffice erlaubt 2 je Sekunde)'), 'type' => 'text', 'default' => '0.5'],
+            ['key' => 'incoming_transfer', 'label' => __('lexoffice::incoming.settings.transfer'), 'type' => 'boolean', 'default' => false, 'help' => __('lexoffice::incoming.settings.transfer_help')],
+            ['key' => 'incoming_default_category', 'label' => __('lexoffice::incoming.settings.incoming_category'), 'type' => 'select', 'options' => $this->postingCategoryOptions('outgo'), 'help' => __('lexoffice::incoming.settings.category_help')],
+            ['key' => 'outgoing_default_category', 'label' => __('lexoffice::incoming.settings.outgoing_category'), 'type' => 'select', 'options' => $this->postingCategoryOptions('income')],
         ];
     }
 
+    /**
+     * Kategorien aus dem Spiegel der gebundenen Organisation; ohne Organisation
+     * (Konsole, Doctor) nur der leere Eintrag, sonst fiele der Bereich weg.
+     *
+     * @return array<string, string>
+     */
+    private function postingCategoryOptions(string $kind): array {
+        $options = ['' => (string) __('lexoffice::incoming.settings.no_category')];
+        if (! app()->bound('currentOrganization')) {
+            return $options;
+        }
+
+        return $options + LexofficePostingCategory::query()
+            ->where('kind', $kind)
+            ->orderBy('group_name')
+            ->orderBy('name')
+            ->get(['external_id', 'name', 'group_name'])
+            ->mapWithKeys(static fn (LexofficePostingCategory $c): array => [$c->external_id => $c->group_name !== null && $c->group_name !== '' ? $c->group_name . ' › ' . $c->name : $c->name])
+            ->all();
+    }
+
     public function pushContact(Customer $customer): string {
+        \App\Services\Stammdaten\CollectiveContacts::assertPushable($customer);
         $externalId = $this->service->createContact($customer);
 
         ExternalReference::updateOrCreate(
@@ -246,6 +272,7 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
      * {@see Supplier}, ohne den ContactSyncer-Vertrag zu erweitern.
      */
     public function pushSupplierContact(Supplier $supplier): string {
+        \App\Services\Stammdaten\CollectiveContacts::assertPushable($supplier);
         $externalId = $this->service->createContact($supplier);
 
         ExternalReference::updateOrCreate(
@@ -309,10 +336,22 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
                 ->forReferenceable($context)
                 ->first();
 
+            $categoryRef = ExternalReference::query()
+                ->forPlugin((int) $context->organization_id, self::ID, LexofficeIncomingInvoiceTarget::EXT_TYPE_POSTING_CATEGORY)
+                ->forReferenceable($context)
+                ->first();
+            $categories = LexofficePostingCategory::query()
+                ->where('kind', $context instanceof Customer ? 'income' : 'outgo')
+                ->orderBy('group_name')
+                ->orderBy('name')
+                ->get(['external_id', 'name', 'group_name']);
+
             return $context instanceof Customer
                 ? view('lexoffice::customers._panel', [
                     'customer' => $context,
                     'contactRef' => $contactRef,
+                    'categoryRef' => $categoryRef,
+                    'categories' => $categories,
                     'voucherRefs' => ExternalReference::query()
                         ->forPlugin((int) $context->organization_id, self::ID, self::EXT_TYPE_VOUCHER)
                         ->forReferenceable($context)
@@ -320,7 +359,7 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
                         ->limit(10)
                         ->get(),
                 ])->render()
-                : view('lexoffice::suppliers._panel', ['contactRef' => $contactRef])->render();
+                : view('lexoffice::suppliers._panel', ['supplier' => $context, 'contactRef' => $contactRef, 'categoryRef' => $categoryRef, 'categories' => $categories])->render();
         }
 
         // Fertigung (MVP-1040): Angebot/AB am Auftrag mit Kunde, Lieferschein je Auslieferung.

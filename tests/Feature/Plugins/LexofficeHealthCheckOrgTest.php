@@ -55,7 +55,7 @@ class LexofficeHealthCheckOrgTest extends TestCase {
     public function test_uses_bound_org_db_key(): void {
         $org = $this->orgWithKey('valid-db-key');
         app()->instance('currentOrganization', $org);
-        FakePluginHttp::fake(['https://api.lexoffice.io/v1/profile' => FakePluginHttp::response(['organizationId' => 'o1'], 200)]);
+        FakePluginHttp::fake(['https://api.lexware.io/v1/profile' => FakePluginHttp::response(['organizationId' => 'o1'], 200)]);
 
         $health = $this->plugin()->healthCheck();
 
@@ -65,7 +65,7 @@ class LexofficeHealthCheckOrgTest extends TestCase {
     public function test_failing_when_bound_org_key_rejected(): void {
         $org = $this->orgWithKey('bad-db-key');
         app()->instance('currentOrganization', $org);
-        FakePluginHttp::fake(['https://api.lexoffice.io/v1/profile' => FakePluginHttp::response('unauthorized', 401)]);
+        FakePluginHttp::fake(['https://api.lexware.io/v1/profile' => FakePluginHttp::response('unauthorized', 401)]);
 
         $health = $this->plugin()->healthCheck();
 
@@ -77,7 +77,7 @@ class LexofficeHealthCheckOrgTest extends TestCase {
         // Kein gebundener Kontext (wie der Cron). Der Command muss je Org binden
         // und den DB-Key prüfen → per-Org-Zustand „ok".
         $org = $this->orgWithKey('valid-db-key');
-        FakePluginHttp::fake(['https://api.lexoffice.io/v1/profile' => FakePluginHttp::response(['organizationId' => 'o1'], 200)]);
+        FakePluginHttp::fake(['https://api.lexware.io/v1/profile' => FakePluginHttp::response(['organizationId' => 'o1'], 200)]);
 
         $this->artisan('plugin:healthcheck lexoffice --no-fail')->assertExitCode(0);
 

@@ -39,7 +39,7 @@ final class LexofficeDeliveryNoteTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexoffice.io/v1', 'api_key' => 'test-key']);
+        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexware.io/v1', 'api_key' => 'test-key']);
 
         $this->customer = Customer::factory()->create([
             'organization_id' => $this->organization->id,
@@ -90,7 +90,7 @@ final class LexofficeDeliveryNoteTest extends TestCase {
         $delivery = $this->makeDelivery();
 
         $fake = FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/delivery-notes*' => FakePluginHttp::response(['id' => 'lex-dn-1'], 201),
+            'https://api.lexware.io/v1/delivery-notes*' => FakePluginHttp::response(['id' => 'lex-dn-1'], 201),
         ]);
 
         $reference = app(LexofficeDeliveryNoteService::class)->push($delivery);
@@ -120,8 +120,8 @@ final class LexofficeDeliveryNoteTest extends TestCase {
         $delivery = $this->makeDelivery();
 
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'lex-contact-2']]], 200),
-            'https://api.lexoffice.io/v1/delivery-notes*' => FakePluginHttp::response(['id' => 'lex-dn-2'], 201),
+            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'lex-contact-2']]], 200),
+            'https://api.lexware.io/v1/delivery-notes*' => FakePluginHttp::response(['id' => 'lex-dn-2'], 201),
         ]);
 
         $reference = app(LexofficeDeliveryNoteService::class)->push($delivery);
@@ -140,7 +140,7 @@ final class LexofficeDeliveryNoteTest extends TestCase {
         $delivery = $this->makeDelivery();
 
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/delivery-notes*' => FakePluginHttp::response(['message' => 'bad'], 400),
+            'https://api.lexware.io/v1/delivery-notes*' => FakePluginHttp::response(['message' => 'bad'], 400),
         ]);
 
         try {
@@ -166,7 +166,7 @@ final class LexofficeDeliveryNoteTest extends TestCase {
         ]);
 
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/delivery-notes/lex-dn-9' => FakePluginHttp::response(['id' => 'lex-dn-9', 'voucherStatus' => 'open'], 200),
+            'https://api.lexware.io/v1/delivery-notes/lex-dn-9' => FakePluginHttp::response(['id' => 'lex-dn-9', 'voucherStatus' => 'open'], 200),
         ]);
 
         $result = app(LexofficeDeliveryNoteService::class)->pull($delivery);

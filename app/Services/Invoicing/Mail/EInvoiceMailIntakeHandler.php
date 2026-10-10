@@ -14,14 +14,15 @@ namespace App\Services\Invoicing\Mail;
 
 use App\Models\Mail\EmailConnection;
 use App\Models\Platform\{Organization, User};
-use App\Services\Invoicing\EInvoice\IncomingEInvoiceService;
+use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, IncomingOrigin};
 use App\Services\Mail\Contracts\MailIntakeHandler;
 use App\Services\Mail\ParsedMessage;
 
 /**
- * E-Rechnungs-Postfach (Feature 066, MVP-165): XML-/PDF-Anhänge laufen durch
- * dieselbe Eingangsverarbeitung wie der Upload; Dubletten (SHA-256) werden
- * übersprungen, nicht lesbare Nachrichten fallen in die Inbox durch.
+ * Rechnungspostfach (Feature 066, MVP-165; Feature 163, MVP-1107): die Anhänge
+ * einer Nachricht laufen gemeinsam durch die Eingangsverarbeitung, damit eine
+ * Rechnung genau ein Eingang wird. Dubletten (SHA-256) werden übersprungen;
+ * Nachrichten ohne Rechnungsanhang fallen in die Inbox durch.
  */
 final class EInvoiceMailIntakeHandler implements MailIntakeHandler {
     public function __construct(private readonly IncomingEInvoiceService $invoices) {}
@@ -43,24 +44,12 @@ final class EInvoiceMailIntakeHandler implements MailIntakeHandler {
             return null; // ohne zuordenbaren Bearbeiter kein automatischer DMS-Eintrag
         }
 
-        $created = 0;
-        $duplicates = 0;
-        foreach ($message->attachments as $attachment) {
-            $name = strtolower($attachment->filename);
-            $isCandidate = str_contains($attachment->mime, 'xml') || str_contains($attachment->mime, 'pdf')
-                || str_ends_with($name, '.xml') || str_ends_with($name, '.pdf');
-            if (! $isCandidate) {
-                continue;
-            }
+        $result = $this->invoices->storeMessage($actor, $message->attachments, new IncomingOrigin($message->fromEmail, $message->messageId));
 
-            $result = $this->invoices->storeIncoming($actor, $attachment->content, $attachment->mime, null, 'mail', null, $attachment->filename);
-            if ($result['status'] === 'created') {
-                $created++;
-            } elseif ($result['status'] === 'duplicate') {
-                $duplicates++;
-            }
-        }
-
-        return $created > 0 ? 'einvoice' : ($duplicates > 0 ? 'skipped' : null);
+        return match (true) {
+            $result['stored'] + $result['unrecognized'] > 0 => 'einvoice',
+            $result['duplicates'] > 0 => 'skipped',
+            default => null,
+        };
     }
 }

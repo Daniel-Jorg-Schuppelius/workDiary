@@ -139,6 +139,7 @@ class ImapMailboxGateway implements MailboxGateway {
                 filename: (string) ($attachment->getName() ?: 'anhang'),
                 mime: (string) ($attachment->getMimeType() ?: 'application/octet-stream'),
                 content: $content,
+                isInline: strtolower((string) $attachment->getDisposition()) === 'inline',
             );
         }
 

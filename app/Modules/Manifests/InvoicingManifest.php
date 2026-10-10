@@ -43,6 +43,8 @@ final class InvoicingManifest extends Manifest {
         return [
             'base_interest_rates',
             'incoming_einvoices',
+            'invoice_sender_rules',
+            'incoming_einvoice_transfers',
             'invoice_commissions',
             'invoice_item_time_entries',
             'invoice_items',
@@ -118,6 +120,10 @@ final class InvoicingManifest extends Manifest {
         return [
             \App\Events\Article\ArticlesMerged::class => [
                 \App\Listeners\Invoicing\RepointMergedServiceArticles::class,
+            ],
+            // Rechnungseingang (MVP-1111): nach der Zuordnung an die Buchhaltung.
+            \App\Events\Invoicing\IncomingInvoiceAssigned::class => [
+                \App\Listeners\Invoicing\TransferAssignedIncomingInvoice::class,
             ],
         ];
     }

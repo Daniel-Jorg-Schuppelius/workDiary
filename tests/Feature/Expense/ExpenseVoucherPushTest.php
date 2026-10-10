@@ -21,6 +21,7 @@ use App\Plugins\Lexoffice\Services\{LexofficeExpenseLinkProvider, LexofficeMappe
 use App\Plugins\PluginManager;
 use App\Services\Billing\NullExpenseLinkProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\FakePluginHttp;
@@ -84,9 +85,9 @@ final class ExpenseVoucherPushTest extends TestCase {
 
     private function fakeCreate(): FakePluginHttp {
         return FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/vouchers*' => FakePluginHttp::response([
+            'https://api.lexware.io/v1/vouchers*' => FakePluginHttp::response([
                 'id' => 'voucher-new-1',
-                'resourceUri' => 'https://api.lexoffice.io/v1/vouchers/voucher-new-1',
+                'resourceUri' => 'https://api.lexware.io/v1/vouchers/voucher-new-1',
             ], 200),
         ]);
     }
@@ -102,11 +103,48 @@ final class ExpenseVoucherPushTest extends TestCase {
         $voucher = LexofficeVoucher::query()->firstOrFail();
         $this->assertSame('voucher-new-1', $voucher->external_id);
         $this->assertSame('purchaseinvoice', $voucher->voucher_type);
+        // Bis MVP-1112 schrieb der Push `total_gross`, das die Spiegeltabelle nicht kennt.
+        $this->assertSame('59.50', $voucher->total_amount?->getAmount());
 
         // Die Verknüpfung trägt das pushed-Kennzeichen: aktiver Push, keine
         // nachträgliche Zuordnung.
         $this->assertNotNull(app(LexofficeExpenseLinkProvider::class)->voucherFor($expense));
         $this->assertTrue(app(LexofficeExpenseLinkProvider::class)->wasPushed($expense));
+    }
+
+    /**
+     * Die Quittung hängt am Beleg (`vouchers/{id}/files`). `POST /files` mit
+     * `type=voucher` legte bis MVP-1112 einen zweiten Beleg an. Scheitert der
+     * Anhang, holt der nächste Klick nur die Datei nach.
+     */
+    public function test_push_attaches_the_receipt_and_retries_only_the_file(): void {
+        Storage::fake('local');
+        $uploads = 0;
+        $http = FakePluginHttp::fake([
+            'https://api.lexware.io/v1/vouchers/*/files' => function () use (&$uploads): \GuzzleHttp\Psr7\Response {
+                return ++$uploads === 1 ? FakePluginHttp::response(['message' => 'kaputt'], 400) : FakePluginHttp::response(['id' => 'file-1'], 202);
+            },
+            'https://api.lexware.io/v1/vouchers' => FakePluginHttp::response(['id' => 'voucher-new-1', 'resourceUri' => 'https://api.lexware.io/v1/vouchers/voucher-new-1'], 201),
+        ]);
+        $expense = $this->expense();
+        Storage::disk('local')->put('attachments/quittung.pdf', '%PDF-1.4 Quittung');
+        $expense->attachments()->create([
+            'organization_id' => $this->organization->id, 'user_id' => $this->admin->id, 'disk' => 'local',
+            'path' => 'attachments/quittung.pdf', 'original_name' => 'quittung.pdf', 'mime' => 'application/pdf', 'size' => 17,
+        ]);
+        $push = app(LexofficeExpenseLinkProvider::class);
+
+        $this->assertThrows(static fn () => $push->pushVoucher($expense), \APIToolkit\Exceptions\ApiException::class);
+        $this->assertSame(1, LexofficeVoucher::query()->count());
+        $this->assertFalse($push->referenceFor($expense)?->payload['files_attached']);
+
+        $push->pushVoucher($expense->fresh() ?? $expense);
+
+        $this->assertSame(2, $uploads);
+        $this->assertTrue($push->referenceFor($expense)?->payload['files_attached']);
+        $creates = array_filter($http->recorded(), static fn (array $call): bool => $call['request']->getMethod() === 'POST' && str_ends_with($call['request']->getUri()->getPath(), '/vouchers'));
+        $this->assertCount(1, $creates);
+        $http->assertNotSent(static fn ($request): bool => str_ends_with($request->getUri()->getPath(), '/v1/files'));
     }
 
     /** Der zweite Klick findet den Beleg des ersten — kein zweiter Beleg. */
@@ -126,9 +164,9 @@ final class ExpenseVoucherPushTest extends TestCase {
 
     private function fakePushAndCounter(): FakePluginHttp {
         return FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/vouchers*' => [
-                FakePluginHttp::response(['id' => 'voucher-new-1', 'resourceUri' => 'https://api.lexoffice.io/v1/vouchers/voucher-new-1'], 200),
-                FakePluginHttp::response(['id' => 'voucher-counter-1', 'resourceUri' => 'https://api.lexoffice.io/v1/vouchers/voucher-counter-1'], 200),
+            'https://api.lexware.io/v1/vouchers*' => [
+                FakePluginHttp::response(['id' => 'voucher-new-1', 'resourceUri' => 'https://api.lexware.io/v1/vouchers/voucher-new-1'], 200),
+                FakePluginHttp::response(['id' => 'voucher-counter-1', 'resourceUri' => 'https://api.lexware.io/v1/vouchers/voucher-counter-1'], 200),
             ],
         ]);
     }

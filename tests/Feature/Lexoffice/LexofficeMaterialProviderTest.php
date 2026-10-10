@@ -30,7 +30,7 @@ class LexofficeMaterialProviderTest extends TestCase {
 
     public function test_search_calls_lexoffice_and_upserts_local_materials(): void {
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/articles*' => FakePluginHttp::response([
+            'https://api.lexware.io/v1/articles*' => FakePluginHttp::response([
                 'content' => [
                     [
                         'id' => 'lex-1',

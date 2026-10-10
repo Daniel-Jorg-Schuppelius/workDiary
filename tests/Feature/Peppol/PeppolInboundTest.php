@@ -16,12 +16,11 @@ use App\Models\Invoicing\{IncomingEInvoice, Invoice};
 use App\Models\Platform\{Organization, User};
 use App\Plugins\PeppolAccessPoint\PeppolAccessPointPlugin;
 use App\Plugins\PluginManager;
-use App\Services\Invoicing\EInvoice\XRechnungGenerator;
 use App\Services\Peppol\PeppolInboundService;
 use ERechnungToolkit\Peppol\{ParticipantId, Sbdh};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{GeneratesIncomingEInvoices, WithOrganization};
 use Tests\Support\{FakePluginHttp, InteractsWithPlugins};
 use Tests\TestCase;
 
@@ -33,6 +32,7 @@ use Tests\TestCase;
  * Quittungsverhalten: übernommen ⇒ quittiert, unlesbar ⇒ liegen lassen.
  */
 class PeppolInboundTest extends TestCase {
+    use GeneratesIncomingEInvoices;
     use InteractsWithPlugins;
     use RefreshDatabase;
     use WithOrganization;
@@ -110,7 +110,7 @@ class PeppolInboundTest extends TestCase {
         $invoice->recalculate();
         $invoice->save();
 
-        return app(XRechnungGenerator::class)->generate($invoice->fresh(['items', 'customer']));
+        return $this->incomingXml($invoice);
     }
 
     /**

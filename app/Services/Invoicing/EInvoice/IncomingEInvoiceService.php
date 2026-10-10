@@ -31,6 +31,9 @@ use Throwable;
  * nur angezeigt und als Document (Typ Rechnung) im DMS abgelegt.
  */
 class IncomingEInvoiceService {
+    /** Kleinere Bilder sind Logos oder Signaturbilder, keine fotografierten Belege. */
+    private const MIN_IMAGE_BYTES = 20_000;
+
     /**
      * Versucht, Dateiinhalt als E-Rechnung zu parsen. `null`, wenn es keine
      * (lesbare) E-Rechnung ist — Aufrufer behandeln das als „normale Datei".
@@ -128,15 +131,35 @@ class IncomingEInvoiceService {
      * Kernfelder für Anzeige/Flash — die Detailseite parst das Original
      * bei jedem Aufruf erneut (kein eigenes Schema, Quelle bleibt die Datei).
      *
-     * @return array{number: string, issue_date: ?string, due_date: ?string, seller: ?string, seller_vat: ?string, currency: string, net: string, tax: string, gross: string, profile: string, lines: int, order_reference: ?string, buyer_reference: ?string, project_reference: ?string, creditor_iban: ?string, creditor_bic: ?string, discount_percent: ?float, discount_days: ?int}
+     * @return array{number: string, issue_date: ?string, due_date: ?string, seller: ?string, seller_vat: ?string, seller_tax_number: ?string, seller_country: ?string, seller_email: ?string, buyer: ?string, buyer_vat: ?string, buyer_country: ?string, seller_address: array{street: ?string, zip: ?string, city: ?string, country: ?string}, buyer_address: array{street: ?string, zip: ?string, city: ?string, country: ?string}, type_code: string, tax_breakdown: list<array{category: string, percent: float, net: string, tax: string}>, currency: string, net: string, tax: string, gross: string, profile: string, lines: int, order_reference: ?string, buyer_reference: ?string, project_reference: ?string, creditor_iban: ?string, creditor_bic: ?string, discount_percent: ?float, discount_days: ?int}
      */
     public function summary(EInvoiceDocument $document): array {
+        $seller = $document->getSeller();
+        $buyer = $document->getBuyer();
+
         return [
             'number' => $document->getId(),
             'issue_date' => $document->getIssueDate()->format('Y-m-d'),
             'due_date' => $document->getDueDate()?->format('Y-m-d'),
-            'seller' => $document->getSeller()->getName(),
-            'seller_vat' => $document->getSeller()->getVatId(),
+            'seller' => $seller->getName(),
+            'seller_vat' => $seller->getVatId(),
+            // MVP-1107: Richtung, Sonderfälle und Positionen je Steuersatz.
+            'seller_tax_number' => $seller->getTaxRegistrationId(),
+            'seller_country' => $seller->getPostalAddress()?->getCountryCode(),
+            'seller_email' => $seller->getContactEmail(),
+            'buyer' => $buyer->getName(),
+            'buyer_vat' => $buyer->getVatId(),
+            'buyer_country' => $buyer->getPostalAddress()?->getCountryCode(),
+            // Vorbefüllung „neu aus Belegdaten“ (MVP-1110).
+            'seller_address' => self::addressOf($seller),
+            'buyer_address' => self::addressOf($buyer),
+            'type_code' => $document->getInvoiceType()->value,
+            'tax_breakdown' => array_map(static fn (\ERechnungToolkit\Entities\TaxSubtotal $subtotal): array => [
+                'category' => $subtotal->getCategory()->value,
+                'percent' => $subtotal->getPercent(),
+                'net' => $subtotal->getTaxableAmount()->getAmount(),
+                'tax' => $subtotal->getTaxAmount()->getAmount(),
+            ], array_values($document->getTaxTotal()?->getSubtotals() ?? [])),
             'currency' => $document->getCurrency()->value,
             'net' => $document->getNetAmount()->getAmount(),
             'tax' => $document->getTaxAmount()->getAmount(),
@@ -155,14 +178,6 @@ class IncomingEInvoiceService {
         ];
     }
 
-    /**
-     * Zentrale Eingangsverarbeitung ALLER Kanäle (MVP-165/167): Hash-Dedup
-     * je Organisation, Parse, Validierung, Vorschläge/Abweichungen, Ablage
-     * als Document (DMS) + Prüfbereich-Datensatz. Kanäle unterscheiden sich
-     * nur in der `source`-Herkunft — nie in der Verarbeitung.
-     *
-     * @return array{status: 'created'|'duplicate'|'unreadable', incoming: \App\Models\Invoicing\IncomingEInvoice|null, document: \App\Models\Document\Document|null}
-     */
     /**
      * Malware-Prüfung der eingehenden Datei über den im Betrieb konfigurierten
      * Treiber (derselbe wie für Hinweisgeber-Anhänge und Bewerbungsunterlagen —
@@ -191,7 +206,16 @@ class IncomingEInvoiceService {
     }
 
     /**
-     * @return array{status: string, incoming: ?\App\Models\Invoicing\IncomingEInvoice, document: ?\App\Models\Document\Document}
+     * Zentrale Eingangsverarbeitung ALLER Kanäle (MVP-165/167): Hash-Dedup
+     * je Organisation, Sicherheitsprüfung, Parse bzw. Erkennung, Validierung,
+     * Vorschläge/Abweichungen, Ablage als Document (DMS) + Prüfbereich-Datensatz.
+     *
+     * Nicht erkannte Dateien weist dieser Weg ab: Beim Upload sieht der Mensch
+     * die Meldung, in der Cloud-Ablage bleibt die Datei liegen, Peppol
+     * quittiert nicht. Nur das Rechnungspostfach legt Klärfälle an
+     * ({@see storeMessage()}), weil die Mail sonst in der allgemeinen Inbox landet.
+     *
+     * @return array{status: 'created'|'duplicate'|'infected'|'unreadable', incoming: ?\App\Models\Invoicing\IncomingEInvoice, document: ?\App\Models\Document\Document}
      */
     public function storeIncoming(
         \App\Models\Platform\User $actor,
@@ -201,59 +225,253 @@ class IncomingEInvoiceService {
         string $source = 'upload',
         ?\Illuminate\Http\UploadedFile $file = null,
         ?string $originalName = null,
+        ?IncomingOrigin $origin = null,
     ): array {
-        $organizationId = (int) $actor->organization_id;
         $sha256 = CryptoHelper::hash($contents);
-
-        // Inhaltsbasierter Dedup (MVP-165): identische Datei je Org genau einmal —
-        // auch kanalübergreifend (Upload nach Mail bleibt Dublette).
-        $duplicate = \App\Models\Invoicing\IncomingEInvoice::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organizationId)
-            ->where('sha256', $sha256)
-            ->first();
+        $duplicate = $this->duplicateOf((int) $actor->organization_id, $sha256);
         if ($duplicate !== null) {
             return ['status' => 'duplicate', 'incoming' => $duplicate, 'document' => null];
         }
 
         // Dateisicherheitsprüfung (Feature 066, Eingangsverarbeitung Schritt 3):
-        // nach Hash/Dublette, vor dem Parsen. Alle fünf Kanäle (Upload, Mail,
-        // Peppol, Cloud-Eingang, PDF-Import) laufen hier durch, deshalb sitzt
-        // die Prüfung im Dienst und nicht in einem Controller.
+        // nach Hash/Dublette, vor dem Parsen. Alle Kanäle laufen hier durch,
+        // deshalb sitzt die Prüfung im Dienst und nicht in einem Controller.
         if ($this->isInfected($contents, $mime, $path, $file)) {
             return ['status' => 'infected', 'incoming' => null, 'document' => null];
         }
 
-        $parsed = $this->parse($contents, $mime, $path);
-        // MVP-1066: ohne E-Rechnungsdaten die Erkennung aus PDF/Bild — nur als Vorschlag.
-        $summary = $parsed !== null
-            ? $this->summary($parsed)
-            : $this->unstructuredSummary($actor, $contents, $mime, $path, $originalName ?? $file?->getClientOriginalName());
+        $name = $originalName ?? $file?->getClientOriginalName();
+        $summary = $this->analyze($actor, $contents, $mime, $path, $name);
         if ($summary === null) {
             return ['status' => 'unreadable', 'incoming' => null, 'document' => null];
         }
 
-        // Eingangs-Validierung (MVP-166): getrennt vom Original abgelegt.
-        $extractedXml = $parsed !== null ? $this->extractXml($contents, $mime, $path) : null;
-        $summary['validation'] = $extractedXml !== null ? $this->validateXml($extractedXml) : null;
+        return ['status' => 'created', ...$this->persist($actor, $sha256, $contents, $mime, $source, $file, $name, $summary, $origin)];
+    }
 
+    /**
+     * Rechnungspostfach (MVP-1107): alle Anhänge einer Nachricht gemeinsam
+     * auswerten, damit eine Rechnung genau ein Eingang wird.
+     *
+     * - Die XML führt; ein PDF mit derselben Rechnungsnummer (Sichtbeleg,
+     *   ZUGFeRD-Doppel) wird Begleitdatei.
+     * - Nicht erkannte Anhänge (AGB, Lieferschein) werden Begleitdatei, sobald
+     *   die Nachricht eine erkannte Rechnung enthält; sonst Klärfall.
+     * - Inline-Teile, Signaturen und kleine Bilder sind nie Belege.
+     *
+     * @param  list<\App\Services\Mail\MailAttachment>  $attachments
+     * @return array{stored: int, unrecognized: int, duplicates: int, infected: int, candidates: int, incomings: list<\App\Models\Invoicing\IncomingEInvoice>}
+     */
+    public function storeMessage(\App\Models\Platform\User $actor, array $attachments, IncomingOrigin $origin, string $source = 'mail'): array {
+        $result = ['stored' => 0, 'unrecognized' => 0, 'duplicates' => 0, 'infected' => 0, 'candidates' => 0, 'incomings' => []];
+        $organizationId = (int) $actor->organization_id;
+
+        $candidates = [];
+        $companions = [];
+        foreach ($attachments as $attachment) {
+            if (self::isInvoiceCandidate($attachment)) {
+                $candidates[] = $attachment;
+            } else {
+                $companions[] = $attachment;
+            }
+        }
+        $result['candidates'] = count($candidates);
+        if ($candidates === []) {
+            return $result;
+        }
+
+        /** @var list<array{attachment: \App\Services\Mail\MailAttachment, sha256: string, summary: array<string, mixed>|null}> $analysed */
+        $analysed = [];
+        $seen = [];
+        foreach ($candidates as $attachment) {
+            $sha256 = CryptoHelper::hash($attachment->content);
+            if (isset($seen[$sha256]) || $this->duplicateOf($organizationId, $sha256) !== null) {
+                $result['duplicates']++;
+
+                continue;
+            }
+            $seen[$sha256] = true;
+            if ($this->isInfected($attachment->content, $attachment->mime, null, null)) {
+                $result['infected']++;
+
+                continue;
+            }
+            $analysed[] = [
+                'attachment' => $attachment,
+                'sha256' => $sha256,
+                'summary' => $this->analyze($actor, $attachment->content, $attachment->mime, null, $attachment->filename),
+            ];
+        }
+
+        // Strukturierte Belege zuerst, XML vor PDF: die XML ist das Original.
+        usort($analysed, static fn (array $a, array $b): int => self::leadRank($a) <=> self::leadRank($b));
+
+        /** @var array<int, array{item: array{attachment: \App\Services\Mail\MailAttachment, sha256: string, summary: array<string, mixed>|null}, companions: list<\App\Services\Mail\MailAttachment>}> $leading */
+        $leading = [];
+        $unrecognized = [];
+        foreach ($analysed as $item) {
+            if ($item['summary'] === null) {
+                $unrecognized[] = $item;
+
+                continue;
+            }
+            $number = self::comparableNumber($item['summary']['number'] ?? null);
+            foreach ($leading as $index => $lead) {
+                if ($number !== '' && $number === self::comparableNumber($lead['item']['summary']['number'] ?? null)) {
+                    $leading[$index]['companions'][] = $item['attachment'];
+
+                    continue 2;
+                }
+            }
+            $leading[] = ['item' => $item, 'companions' => []];
+        }
+
+        if ($leading === []) {
+            foreach ($unrecognized as $item) {
+                $leading[] = ['item' => $item, 'companions' => []];
+            }
+        } else {
+            foreach ($unrecognized as $item) {
+                $companions[] = $item['attachment'];
+            }
+        }
+
+        foreach ($leading as $lead) {
+            $item = $lead['item'];
+            $incoming = $this->persist($actor, $item['sha256'], $item['attachment']->content, $item['attachment']->mime, $source, null, $item['attachment']->filename, $item['summary'], $origin)['incoming'];
+            $result[$item['summary'] === null ? 'unrecognized' : 'stored']++;
+            $result['incomings'][] = $incoming;
+            foreach ([...$lead['companions'], ...$companions] as $companion) {
+                app(\App\Services\Attachments\FileAttacher::class)->storeContent($incoming, $companion->content, $companion->filename, $companion->mime, (int) $actor->id);
+            }
+        }
+
+        return $result;
+    }
+
+    /** Anhang, der eine Rechnung sein kann: XML, PDF oder ein Bild, das kein Logo ist. */
+    public static function isInvoiceCandidate(\App\Services\Mail\MailAttachment $attachment): bool {
+        if ($attachment->isInline) {
+            return false;
+        }
+        $name = mb_strtolower($attachment->filename);
+        $mime = mb_strtolower($attachment->mime);
+        if (str_contains($mime, 'xml') || str_ends_with($name, '.xml') || str_contains($mime, 'pdf') || str_ends_with($name, '.pdf')) {
+            return true;
+        }
+        $isImage = str_starts_with($mime, 'image/') || preg_match('/\.(jpe?g|png|tiff?)$/', $name) === 1;
+
+        return $isImage && $attachment->size() >= self::MIN_IMAGE_BYTES;
+    }
+
+    /**
+     * @param  array{attachment: \App\Services\Mail\MailAttachment, summary: array<string, mixed>|null}  $item
+     */
+    private static function leadRank(array $item): int {
+        $recognition = $item['summary']['recognition'] ?? null;
+        $isXml = str_contains(mb_strtolower($item['attachment']->mime), 'xml') || str_ends_with(mb_strtolower($item['attachment']->filename), '.xml');
+
+        return match (true) {
+            $recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::Structured->value && $isXml => 0,
+            $recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::Structured->value => 1,
+            $recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted->value => 2,
+            default => 3,
+        };
+    }
+
+    private static function comparableNumber(mixed $number): string {
+        return is_scalar($number) ? mb_strtoupper(\CommonToolkit\Helper\Data\StringHelper::removeWhitespace((string) $number, true)) : '';
+    }
+
+    private function duplicateOf(int $organizationId, string $sha256): ?\App\Models\Invoicing\IncomingEInvoice {
+        // Inhaltsbasierter Dedup (MVP-165): identische Datei je Org genau einmal —
+        // auch kanalübergreifend (Upload nach Mail bleibt Dublette).
+        return \App\Models\Invoicing\IncomingEInvoice::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organizationId)
+            ->where('sha256', $sha256)
+            ->first();
+    }
+
+    /**
+     * E-Rechnung parsen, sonst aus PDF bzw. Bild erkennen (MVP-1066); null,
+     * wenn keine Rechnung zu erkennen ist.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function analyze(\App\Models\Platform\User $actor, string $contents, ?string $mime, ?string $path, ?string $name): ?array {
+        $parsed = $this->parse($contents, $mime, $path);
+        if ($parsed !== null) {
+            $summary = $this->summary($parsed);
+            // Eingangs-Validierung (MVP-166): getrennt vom Original abgelegt.
+            $xml = $this->extractXml($contents, $mime, $path);
+            $summary['validation'] = $xml !== null ? $this->validateXml($xml) : null;
+            $summary['recognition'] = \App\Enums\Invoicing\IncomingInvoiceRecognition::Structured->value;
+
+            return $summary;
+        }
+
+        $summary = $this->unstructuredSummary($actor, $contents, $mime, $path, $name);
+        if ($summary !== null) {
+            $summary['validation'] = null;
+            $summary['recognition'] = \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted->value;
+        }
+
+        return $summary;
+    }
+
+    /**
+     * Ablage als Document und Prüfbereich-Datensatz. Ohne Summary entsteht ein
+     * Klärfall mit dem Original und leeren Werten.
+     *
+     * @param  array<string, mixed>|null  $summary
+     * @return array{incoming: \App\Models\Invoicing\IncomingEInvoice, document: \App\Models\Document\Document}
+     */
+    private function persist(
+        \App\Models\Platform\User $actor,
+        string $sha256,
+        string $contents,
+        ?string $mime,
+        string $source,
+        ?\Illuminate\Http\UploadedFile $file,
+        ?string $originalName,
+        ?array $summary,
+        ?IncomingOrigin $origin,
+    ): array {
+        $organizationId = (int) $actor->organization_id;
+        $summary ??= $this->unrecognizedSummary();
+        $recognition = \App\Enums\Invoicing\IncomingInvoiceRecognition::from((string) $summary['recognition']);
+
+        $classification = $this->classify($actor->organization, $summary);
+        $summary['direction'] = $classification['direction']->value;
+        $summary['kind'] = $classification['kind']->value;
         // Zuordnungs-VORSCHLÄGE + Abweichungen (MVP-167): nur Hinweise für
         // den Prüfer — es entsteht NIE automatisch ein Stammdatensatz.
         $summary['suggestions'] = $this->suggestions($organizationId, $summary);
-        $summary['deviations'] = $this->deviations($organizationId, $summary);
+        $addressDeviations = $this->addressDeviations($actor->organization, $summary);
+        $summary['deviations'] = [...$this->deviations($organizationId, $summary), ...$addressDeviations];
+        $summary['notices'] = $this->notices($summary);
+        // Maschinenlesbar für das Übergabe-Tor (MVP-1111); die Meldungstexte sind nur für Menschen.
+        $summary['flags'] = array_values(array_filter([
+            $addressDeviations === [] ? null : ($classification['direction'] === \App\Enums\Billing\DocumentDirection::Outgoing ? 'own_invoice_copy' : 'not_addressed'),
+            self::totalsMismatch($summary) ? 'totals_mismatch' : null,
+        ]));
 
         $attributes = [
-            'title' => (string) __(($summary['unstructured'] ?? false) ? 'Eingangsrechnung :number — :seller' : 'E-Rechnung :number — :seller', [
-                'number' => $summary['number'],
-                'seller' => $summary['seller'] ?? '—',
-            ]),
+            'title' => match ($recognition) {
+                \App\Enums\Invoicing\IncomingInvoiceRecognition::Structured => (string) __('E-Rechnung :number — :seller', ['number' => $summary['number'], 'seller' => $summary['seller'] ?? '—']),
+                \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted => (string) __('Eingangsrechnung :number — :seller', ['number' => $summary['number'], 'seller' => $summary['seller'] ?? '—']),
+                \App\Enums\Invoicing\IncomingInvoiceRecognition::None => (string) __('Rechnungseingang ohne erkannte Daten — :file', ['file' => $originalName ?? $sha256]),
+            },
             'document_type' => \App\Enums\Document\DocumentType::Invoice->value,
-            'description' => (string) __(':profile · :gross :currency, fällig :due', [
-                'profile' => $summary['profile'],
-                'gross' => NumberHelper::toGermanFormat($summary['gross'], 2, withThousandsSeparator: true),
-                'currency' => $summary['currency'],
-                'due' => $summary['due_date'] ?? '—',
-            ]),
+            'description' => $recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::None
+                ? (string) __('Nicht erkannt — Werte am Original prüfen und erfassen.')
+                : (string) __(':profile · :gross :currency, fällig :due', [
+                    'profile' => $summary['profile'],
+                    'gross' => NumberHelper::toGermanFormat((float) $summary['gross'], 2, withThousandsSeparator: true),
+                    'currency' => $summary['currency'],
+                    'due' => $summary['due_date'] ?? '—',
+                ]),
         ];
 
         $documents = app(\App\Services\Document\DocumentService::class);
@@ -278,8 +496,13 @@ class IncomingEInvoiceService {
             'document_id' => $document->id,
             'sha256' => $sha256,
             'source' => $source,
+            'sender_email' => $origin?->senderEmail !== null ? mb_substr(mb_strtolower(trim($origin->senderEmail)), 0, 191) : null,
+            'source_reference' => $origin?->reference !== null ? mb_substr($origin->reference, 0, 191) : null,
             'received_at' => now(),
             'status' => \App\Enums\Invoicing\IncomingEInvoiceStatus::Received,
+            'direction' => $classification['direction'],
+            'kind' => $classification['kind'],
+            'recognition' => $recognition,
             'summary' => $summary,
             ...\App\Models\Invoicing\IncomingEInvoice::columnsFromSummary($summary),
         ]);
@@ -292,7 +515,164 @@ class IncomingEInvoiceService {
             'source' => $source,
         ]);
 
-        return ['status' => 'created', 'incoming' => $incoming, 'document' => $document];
+        // Gegenpartei nur bei eindeutigem, exaktem Treffer (MVP-1108).
+        app(IncomingInvoiceMatcher::class)->autoAssign($incoming);
+
+        return ['incoming' => $incoming, 'document' => $document];
+    }
+
+    /**
+     * Richtung und Belegart (MVP-1107). Ausgang nur bei einem positiven Treffer
+     * auf eine eigene Kennung des Verkäufers (USt-IdNr., Steuernummer, IBAN);
+     * ohne bekannte eigene Kennung bleibt es beim Eingang.
+     *
+     * @param  array<string, mixed>  $summary
+     * @return array{direction: \App\Enums\Billing\DocumentDirection, kind: \App\Enums\Billing\DocumentKind}
+     */
+    public function classify(?\App\Models\Platform\Organization $organization, array $summary): array {
+        $own = $this->ownIdentity($organization);
+        $sellerVat = self::normalizedVat($summary['seller_vat'] ?? null);
+        $sellerTax = self::digitsOf($summary['seller_tax_number'] ?? null);
+        $sellerIban = \CommonToolkit\Helper\Data\BankHelper::normalizeIBAN(is_string($summary['creditor_iban'] ?? null) ? $summary['creditor_iban'] : null);
+
+        $isOwnSeller = ($sellerVat !== '' && $sellerVat === $own['vat'])
+            || ($sellerTax !== '' && $sellerTax === $own['tax_number'])
+            || ($sellerIban !== null && in_array($sellerIban, $own['ibans'], true));
+
+        $kind = match ((string) ($summary['type_code'] ?? '')) {
+            '381' => \App\Enums\Billing\DocumentKind::CreditNote,
+            '386' => \App\Enums\Billing\DocumentKind::DownPayment,
+            default => is_numeric($summary['gross'] ?? null) && (float) $summary['gross'] < 0
+                ? \App\Enums\Billing\DocumentKind::CreditNote
+                : \App\Enums\Billing\DocumentKind::Invoice,
+        };
+
+        return [
+            'direction' => $isOwnSeller ? \App\Enums\Billing\DocumentDirection::Outgoing : \App\Enums\Billing\DocumentDirection::Incoming,
+            'kind' => $kind,
+        ];
+    }
+
+    /**
+     * Eigene Kennungen der Organisation. Sie zählen nie als Treffer für eine
+     * fremde Partei (verschmutzte Lexoffice-Kontakte trugen die eigene USt-IdNr.).
+     *
+     * @return array{vat: string, tax_number: string, ibans: list<string>}
+     */
+    public function ownIdentity(?\App\Models\Platform\Organization $organization): array {
+        if ($organization === null) {
+            return ['vat' => '', 'tax_number' => '', 'ibans' => []];
+        }
+        $seller = app(XRechnungGenerator::class)->sellerDataFor($organization);
+        $ibans = array_values(array_filter([
+            \CommonToolkit\Helper\Data\BankHelper::normalizeIBAN($seller['iban'] !== '' ? $seller['iban'] : null),
+            ...\App\Models\Finance\BankAccount::query()->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)->get(['iban'])
+                ->map(static fn (\App\Models\Finance\BankAccount $account): ?string => \CommonToolkit\Helper\Data\BankHelper::normalizeIBAN($account->iban))
+                ->all(),
+        ]));
+
+        return [
+            'vat' => self::normalizedVat($seller['vat_id']),
+            'tax_number' => self::digitsOf($seller['tax_number']),
+            'ibans' => array_values(array_unique($ibans)),
+        ];
+    }
+
+    /** @return array{street: ?string, zip: ?string, city: ?string, country: ?string} */
+    private static function addressOf(\ERechnungToolkit\Entities\Party $party): array {
+        $address = $party->getPostalAddress();
+        $street = trim(implode(' ', array_filter([$address?->getStreetName(), $address?->getBuildingNumber()])));
+
+        return [
+            'street' => $street !== '' ? $street : null,
+            'zip' => $address?->getPostalCode(),
+            'city' => $address?->getCity(),
+            'country' => $address?->getCountryCode(),
+        ];
+    }
+
+    /**
+     * Netto + Steuer ≠ Brutto (auf einen halben Cent).
+     *
+     * @param  array<string, mixed>  $summary
+     */
+    private static function totalsMismatch(array $summary): bool {
+        $net = $summary['net'] ?? null;
+        $tax = $summary['tax'] ?? null;
+        $gross = $summary['gross'] ?? null;
+
+        return is_numeric($net) && is_numeric($tax) && is_numeric($gross) && abs(((float) $net + (float) $tax) - (float) $gross) > 0.005;
+    }
+
+    /** USt-IdNr. in Vergleichsform; leer, wenn keine angegeben ist. */
+    public static function normalizedVat(mixed $value): string {
+        return is_string($value) && trim($value) !== '' ? \CommonToolkit\Helper\Data\VatNumberHelper::normalize($value) : '';
+    }
+
+    /** Nur die Ziffern (Steuernummern werden unterschiedlich gegliedert). */
+    public static function digitsOf(mixed $value): string {
+        return is_string($value) ? (string) preg_replace('/\D+/', '', $value) : '';
+    }
+
+    /**
+     * Eingangsbeleg, dessen Käufer eine fremde USt-IdNr. trägt: nicht an uns
+     * adressiert (Irrläufer, Privat- oder Fremdrechnung). Nur bei bekannten
+     * Kennungen auf beiden Seiten — ein Namensvergleich wäre zu ungenau.
+     * Ausgangsbeleg mit der Nummer einer eigenen Rechnung: nur eine Kopie.
+     *
+     * @param  array<string, mixed>  $summary
+     * @return list<string>
+     */
+    private function addressDeviations(?\App\Models\Platform\Organization $organization, array $summary): array {
+        if (($summary['direction'] ?? null) === \App\Enums\Billing\DocumentDirection::Outgoing->value) {
+            $number = trim((string) ($summary['number'] ?? ''));
+            $isOwnInvoice = $organization !== null && $number !== '' && \App\Models\Invoicing\Invoice::query()->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)->where('number', $number)->exists();
+
+            return $isOwnInvoice ? [(string) __('Kopie der eigenen Rechnung :number — die Rechnung ist bereits erfasst.', ['number' => $number])] : [];
+        }
+        $own = $this->ownIdentity($organization)['vat'];
+        $buyer = self::normalizedVat($summary['buyer_vat'] ?? null);
+
+        return $own !== '' && $buyer !== '' && $own !== $buyer
+            ? [(string) __('Nicht an uns adressiert: Der Käufer trägt die USt-IdNr. :vat.', ['vat' => $summary['buyer_vat']])]
+            : [];
+    }
+
+    /**
+     * Informative Hinweise ohne Sperrwirkung (MVP-1107).
+     *
+     * @param  array<string, mixed>  $summary
+     * @return list<string>
+     */
+    private function notices(array $summary): array {
+        $sellerVat = self::normalizedVat($summary['seller_vat'] ?? null);
+        $isDomestic = $sellerVat === '' || str_starts_with($sellerVat, 'DE');
+        $gross = is_numeric($summary['gross'] ?? null) ? (float) $summary['gross'] : 0.0;
+
+        // Kleinbetragsrechnungen bis 250 € brauchen keine E-Rechnung.
+        if (($summary['recognition'] ?? null) === \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted->value
+            && ($summary['direction'] ?? null) === \App\Enums\Billing\DocumentDirection::Incoming->value
+            && $isDomestic && $gross > 250.0) {
+            return [(string) __('Keine E-Rechnung (PDF bzw. Bild). Im inländischen B2B-Verkehr ist das nur übergangsweise zulässig: bis Ende 2026, für Aussteller mit höchstens 800.000 € Vorjahresumsatz bis Ende 2027.')];
+        }
+
+        return [];
+    }
+
+    /** @return array<string, mixed> Klärfall ohne erkannte Werte */
+    private function unrecognizedSummary(): array {
+        return [
+            'number' => null, 'issue_date' => null, 'due_date' => null,
+            'seller' => null, 'seller_vat' => null, 'buyer' => null, 'buyer_vat' => null,
+            'currency' => null, 'net' => null, 'tax' => null, 'gross' => null,
+            'profile' => (string) __('Nicht erkannt'), 'lines' => 0, 'type_code' => null,
+            'order_reference' => null, 'buyer_reference' => null, 'project_reference' => null,
+            'creditor_iban' => null, 'creditor_bic' => null, 'discount_percent' => null, 'discount_days' => null,
+            'validation' => null,
+            'recognition' => \App\Enums\Invoicing\IncomingInvoiceRecognition::None->value,
+        ];
     }
 
     /**
@@ -300,20 +680,25 @@ class IncomingEInvoiceService {
      * mit Begründung, sortiert nach Stärke; Übernahme bleibt beim Prüfer.
      *
      * @param  array<string, mixed>  $summary
-     * @return array{suppliers: list<array{id: int, label: string, reasons: list<string>}>, purchase_orders: list<array{id: int, label: string, reasons: list<string>}>, projects: list<array{id: int, label: string, reasons: list<string>}>}
+     * @return array{suppliers: list<array{id: int, label: string, reasons: list<string>}>, customers: list<array{id: int, label: string, reasons: list<string>}>, purchase_orders: list<array{id: int, label: string, reasons: list<string>}>, projects: list<array{id: int, label: string, reasons: list<string>}>}
      */
     public function suggestions(int $organizationId, array $summary): array {
+        // Ausgangsbelege (MVP-1107) suchen den Kunden über die Käuferangaben.
+        if (($summary['direction'] ?? null) === \App\Enums\Billing\DocumentDirection::Outgoing->value) {
+            return ['suppliers' => [], 'customers' => $this->customerSuggestions($organizationId, $summary), 'purchase_orders' => [], 'projects' => []];
+        }
+
         $suppliers = [];
         $sellerVat = trim((string) ($summary['seller_vat'] ?? ''));
         $sellerName = trim((string) ($summary['seller'] ?? ''));
 
         if ($sellerVat !== '') {
-            foreach (\App\Models\Supplier\Supplier::query()->withoutGlobalScopes()->where('organization_id', $organizationId)->where('vat_id', $sellerVat)->limit(3)->get() as $supplier) {
+            foreach (\App\Models\Supplier\Supplier::query()->withoutGlobalScopes()->withoutCollective()->where('organization_id', $organizationId)->where('vat_id', $sellerVat)->limit(3)->get() as $supplier) {
                 $suppliers[$supplier->id] = ['id' => (int) $supplier->id, 'label' => (string) ($supplier->displayLabel()), 'reasons' => [(string) __('USt-IdNr. stimmt überein')]];
             }
         }
         if ($sellerName !== '') {
-            $query = \App\Models\Supplier\Supplier::query()->withoutGlobalScopes()->where('organization_id', $organizationId)
+            $query = \App\Models\Supplier\Supplier::query()->withoutGlobalScopes()->withoutCollective()->where('organization_id', $organizationId)
                 ->where(function ($q) use ($sellerName): void {
                     $q->whereLikeEscaped('name', $sellerName)->orWhereLikeEscaped('company', $sellerName);
                 })->limit(3);
@@ -359,9 +744,35 @@ class IncomingEInvoiceService {
 
         return [
             'suppliers' => array_values($suppliers),
+            'customers' => [],
             'purchase_orders' => $purchaseOrders,
             'projects' => $projects,
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $summary
+     * @return list<array{id: int, label: string, reasons: list<string>}>
+     */
+    private function customerSuggestions(int $organizationId, array $summary): array {
+        $customers = [];
+        $buyerVat = self::normalizedVat($summary['buyer_vat'] ?? null);
+        if ($buyerVat !== '') {
+            foreach (\App\Models\Customer\Customer::query()->withoutGlobalScopes()->withoutCollective()->where('organization_id', $organizationId)->whereNotNull('vat_id')->get(['id', 'name', 'vat_id']) as $customer) {
+                if (self::normalizedVat($customer->vat_id) === $buyerVat) {
+                    $customers[$customer->id] = ['id' => (int) $customer->id, 'label' => (string) $customer->name, 'reasons' => [(string) __('USt-IdNr. stimmt überein')]];
+                }
+            }
+        }
+        $buyerName = trim((string) ($summary['buyer'] ?? ''));
+        if ($buyerName !== '') {
+            foreach (\App\Models\Customer\Customer::query()->withoutGlobalScopes()->withoutCollective()->where('organization_id', $organizationId)->whereLikeEscaped('name', $buyerName)->limit(3)->get(['id', 'name']) as $customer) {
+                $customers[$customer->id] ??= ['id' => (int) $customer->id, 'label' => (string) $customer->name, 'reasons' => []];
+                $customers[$customer->id]['reasons'][] = (string) __('Name ähnlich');
+            }
+        }
+
+        return array_values($customers);
     }
 
     /**
@@ -374,6 +785,9 @@ class IncomingEInvoiceService {
      */
     public function deviations(int $organizationId, array $summary): array {
         $deviations = [];
+        if (($summary['recognition'] ?? null) === \App\Enums\Invoicing\IncomingInvoiceRecognition::None->value) {
+            $deviations[] = (string) __('Keine Rechnungsdaten erkannt — Original prüfen und die Werte erfassen.');
+        }
         if ($summary['unstructured'] ?? false) {
             $deviations[] = (string) __('Ohne E-Rechnungsdaten aus PDF bzw. Bild erkannt — alle Werte am Original prüfen.');
         }
@@ -394,7 +808,7 @@ class IncomingEInvoiceService {
         $net = $summary['net'] ?? null;
         $tax = $summary['tax'] ?? null;
         $gross = $summary['gross'] ?? null;
-        if ($net !== null && $tax !== null && $gross !== null && abs(((float) $net + (float) $tax) - (float) $gross) > 0.005) {
+        if (self::totalsMismatch($summary)) {
             $deviations[] = (string) __('Summen widersprüchlich: Netto + Steuer ≠ Brutto (:net + :tax ≠ :gross).', [
                 'net' => NumberHelper::toGermanFormat((float) $net, 2, withThousandsSeparator: true),
                 'tax' => NumberHelper::toGermanFormat((float) $tax, 2, withThousandsSeparator: true),

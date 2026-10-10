@@ -75,6 +75,7 @@ class PaymentRunService {
             // Nur zur Zahlung Freigegebenes, und unter Zeilensperre: zwei gleichzeitige Läufe nähmen sonst
             // dieselbe Rechnung auf (Sicherheitsaudit 2026-10-04, li-2). Der Statusfilter stand nur in der Vorschlagsliste.
             $invoices = IncomingEInvoice::query()
+                ->purchases()
                 ->whereIn('id', $incomingIds)
                 ->where('status', IncomingEInvoiceStatus::PaymentReleased)
                 ->whereNull('paid_in_run_id')

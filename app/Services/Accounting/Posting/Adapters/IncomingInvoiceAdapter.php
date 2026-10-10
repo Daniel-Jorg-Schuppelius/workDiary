@@ -37,7 +37,9 @@ class IncomingInvoiceAdapter extends AbstractPostingAdapter {
     /** @return Collection<int, Model> */
     public function candidates(Organization $organization, CarbonImmutable $from, CarbonImmutable $to): Collection {
         /** @var Collection<int, Model> $invoices */
+        // Ausgangsbelege aus dem Postfach (MVP-1107) sind keine Verbindlichkeit.
         $invoices = IncomingEInvoice::query()
+            ->purchases()
             ->where('organization_id', $organization->id)
             ->whereIn('status', [IncomingEInvoiceStatus::Approved, IncomingEInvoiceStatus::PaymentReleased])
             ->whereNotNull('issue_date')

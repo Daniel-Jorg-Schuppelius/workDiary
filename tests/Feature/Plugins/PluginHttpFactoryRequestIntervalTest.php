@@ -34,7 +34,7 @@ class PluginHttpFactoryRequestIntervalTest extends TestCase {
     }
 
     public function test_known_default_applies_without_setting(): void {
-        $client = (new PluginHttpFactory)->client('lexoffice', 'https://api.lexoffice.io/v1');
+        $client = (new PluginHttpFactory)->client('lexoffice', 'https://api.lexware.io/v1');
 
         $this->assertSame(0.5, $client->getRequestInterval());
     }
@@ -57,6 +57,6 @@ class PluginHttpFactoryRequestIntervalTest extends TestCase {
     public function test_explicit_interval_from_the_caller_wins(): void {
         $this->enablePluginFor($this->organization, 'lexoffice', ['request_interval' => '2']);
 
-        $this->assertSame(0.25, (new PluginHttpFactory)->client('lexoffice', 'https://api.lexoffice.io/v1', 0.25)->getRequestInterval());
+        $this->assertSame(0.25, (new PluginHttpFactory)->client('lexoffice', 'https://api.lexware.io/v1', 0.25)->getRequestInterval());
     }
 }

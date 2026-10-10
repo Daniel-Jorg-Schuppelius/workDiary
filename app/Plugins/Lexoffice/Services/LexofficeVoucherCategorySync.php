@@ -37,7 +37,7 @@ final class LexofficeVoucherCategorySync {
 
     public function __construct(
         private readonly string $apiKey,
-        private readonly string $baseUrl = 'https://api.lexoffice.io/v1',
+        private readonly string $baseUrl = 'https://api.lexware.io/v1',
         ?float $requestInterval = null,
     ) {
         $this->requestInterval = $requestInterval ?? LexofficeConfig::requestInterval();

@@ -45,6 +45,10 @@ use Tests\TestCase;
  * Recht) in zwei klare Einträge zerfällt. `/safety-events` bleibt erreichbar,
  * steht aber in der Sektion Arbeitsschutz statt unter „Wissen & Doku".
  *
+ * Neu aufgenommen 2026-10-10 (`MVP-1110`, Rechnungseingang): einziges Delta
+ * ist `/finanzen/eingangsrechnungen` in der Sidebar von `enterprise_admin`
+ * (Gruppe Abrechnung, nur mit Abrechnungsrecht).
+ *
  * Neu aufgenommen 2026-09-24 (`MVP-868`, eigene Felder je Organisation):
  * einziges Delta ist `/admin/custom-fields` im Header-Systemmenü der
  * Org-Admin-Personas.

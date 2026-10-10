@@ -76,7 +76,7 @@ class FinanceTransferExecuteTest extends TestCase {
 
         $this->service = app(BillingTransferService::class);
 
-        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexoffice.io/v1', 'api_key' => 'test-key']);
+        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexware.io/v1', 'api_key' => 'test-key']);
     }
 
     private function makeTimeEntry(array $overrides = []): TimeEntry {
@@ -136,13 +136,13 @@ class FinanceTransferExecuteTest extends TestCase {
 
         $fake = FakePluginHttp::fake([
             // Contact-Lookup (kein bestehender Kontakt → Suche per E-Mail)
-            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response([
+            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response([
                 'content' => [['id' => 'contact-uuid-1']],
             ], 200),
             // Invoice-Create (Entwurf) → 201
-            'https://api.lexoffice.io/v1/invoices*' => FakePluginHttp::response([
+            'https://api.lexware.io/v1/invoices*' => FakePluginHttp::response([
                 'id' => 'lex-invoice-1',
-                'resourceUri' => 'https://api.lexoffice.io/v1/invoices/lex-invoice-1',
+                'resourceUri' => 'https://api.lexware.io/v1/invoices/lex-invoice-1',
             ], 201),
         ]);
 
@@ -213,8 +213,8 @@ class FinanceTransferExecuteTest extends TestCase {
         $transfer = $this->confirmedTransfer(TransferTarget::Lexoffice);
 
         $fake = FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'contact-uuid-1']]], 200),
-            'https://api.lexoffice.io/v1/invoices*' => FakePluginHttp::response(['id' => 'lex-invoice-2'], 201),
+            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'contact-uuid-1']]], 200),
+            'https://api.lexware.io/v1/invoices*' => FakePluginHttp::response(['id' => 'lex-invoice-2'], 201),
         ]);
 
         $this->post(route('finance.transfers.execute', $transfer))->assertSessionHasNoErrors();
@@ -252,7 +252,7 @@ class FinanceTransferExecuteTest extends TestCase {
         ]);
 
         $fake = FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/invoices*' => FakePluginHttp::response(['id' => 'lex-invoice-2'], 201),
+            'https://api.lexware.io/v1/invoices*' => FakePluginHttp::response(['id' => 'lex-invoice-2'], 201),
         ]);
 
         $this->post(route('finance.transfers.execute', $transfer))->assertSessionHasNoErrors();
@@ -269,8 +269,8 @@ class FinanceTransferExecuteTest extends TestCase {
         $transfer = $this->confirmedTransfer(TransferTarget::Lexoffice);
 
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'contact-uuid-1']]], 200),
-            'https://api.lexoffice.io/v1/invoices*' => FakePluginHttp::response(['message' => 'boom'], 500),
+            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'contact-uuid-1']]], 200),
+            'https://api.lexware.io/v1/invoices*' => FakePluginHttp::response(['message' => 'boom'], 500),
         ]);
 
         $this->post(route('finance.transfers.execute', $transfer))
@@ -298,8 +298,8 @@ class FinanceTransferExecuteTest extends TestCase {
         $marker = LexofficeTarget::MARKER_PREFIX . substr($transfer->payload_hash, 0, 16);
 
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'contact-uuid-1']]], 200),
-            'https://api.lexoffice.io/v1/invoices*' => fn (RequestInterface $request) => throw new ConnectException('cURL error 28: Operation timed out', $request),
+            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'contact-uuid-1']]], 200),
+            'https://api.lexware.io/v1/invoices*' => fn (RequestInterface $request) => throw new ConnectException('cURL error 28: Operation timed out', $request),
         ]);
 
         $this->post(route('finance.transfers.execute', $transfer))->assertSessionHasErrors('transfer');
@@ -310,13 +310,13 @@ class FinanceTransferExecuteTest extends TestCase {
         $this->service->confirm($transfer, $this->accountant);
 
         $fake = FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/voucherlist*' => FakePluginHttp::response(['content' => [
+            'https://api.lexware.io/v1/voucherlist*' => FakePluginHttp::response(['content' => [
                 ['id' => 'lex-foreign', 'createdDate' => now()->toIso8601String()],
                 ['id' => 'lex-draft-9', 'createdDate' => now()->toIso8601String()],
                 ['id' => 'lex-old', 'createdDate' => now()->subMonth()->toIso8601String()],
             ]], 200),
-            'https://api.lexoffice.io/v1/invoices/lex-foreign' => FakePluginHttp::response(['id' => 'lex-foreign', 'remark' => 'Vielen Dank.'], 200),
-            'https://api.lexoffice.io/v1/invoices/lex-draft-9' => FakePluginHttp::response(['id' => 'lex-draft-9', 'remark' => 'Übergabenachweis ' . $marker], 200),
+            'https://api.lexware.io/v1/invoices/lex-foreign' => FakePluginHttp::response(['id' => 'lex-foreign', 'remark' => 'Vielen Dank.'], 200),
+            'https://api.lexware.io/v1/invoices/lex-draft-9' => FakePluginHttp::response(['id' => 'lex-draft-9', 'remark' => 'Übergabenachweis ' . $marker], 200),
         ]);
 
         $this->post(route('finance.transfers.execute', $transfer->fresh()))
@@ -341,8 +341,8 @@ class FinanceTransferExecuteTest extends TestCase {
         $marker = LexofficeTarget::MARKER_PREFIX . substr($transfer->payload_hash, 0, 16);
 
         $fake = FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'contact-uuid-1']]], 200),
-            'https://api.lexoffice.io/v1/invoices*' => FakePluginHttp::response(['id' => 'lex-invoice-1'], 201),
+            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'contact-uuid-1']]], 200),
+            'https://api.lexware.io/v1/invoices*' => FakePluginHttp::response(['id' => 'lex-invoice-1'], 201),
         ]);
 
         $this->post(route('finance.transfers.execute', $transfer))->assertSessionHasNoErrors();
@@ -364,8 +364,8 @@ class FinanceTransferExecuteTest extends TestCase {
         $transfer = $this->confirmedTransfer(TransferTarget::Lexoffice);
 
         $fake = FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'contact-uuid-1']]], 200),
-            'https://api.lexoffice.io/v1/invoices*' => FakePluginHttp::response(['id' => 'lex-invoice-1'], 201),
+            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'contact-uuid-1']]], 200),
+            'https://api.lexware.io/v1/invoices*' => FakePluginHttp::response(['id' => 'lex-invoice-1'], 201),
         ]);
 
         $target = app(LexofficeTarget::class);
@@ -402,8 +402,8 @@ class FinanceTransferExecuteTest extends TestCase {
         $transfer = $this->confirmedTransfer(TransferTarget::Lexoffice);
 
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'c1']]], 200),
-            'https://api.lexoffice.io/v1/invoices*' => FakePluginHttp::response([], 201),
+            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'c1']]], 200),
+            'https://api.lexware.io/v1/invoices*' => FakePluginHttp::response([], 201),
         ]);
 
         $this->post(route('finance.transfers.execute', $transfer))

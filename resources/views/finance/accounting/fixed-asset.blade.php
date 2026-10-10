@@ -56,7 +56,7 @@
                         {{-- Herkunft (MVP-999): Eingangsrechnung oder Auslage, aus der die Anlage entstand. --}}
                         @if ($fixedAsset->source instanceof \App\Models\Invoicing\IncomingEInvoice)
                             <x-detail-grid.row :label="__('accounting.fixed_assets.field.source')">
-                                <a class="link link-primary" href="{{ route('finance.incoming-invoices.show', $fixedAsset->source->document_id) }}">{{ __('accounting.fixed_assets.source.incoming', ['number' => $fixedAsset->source->invoice_number ?? $fixedAsset->source->sqid]) }}</a>
+                                <a class="link link-primary" href="{{ route('finance.incoming-invoices.show', $fixedAsset->source->document) }}">{{ __('accounting.fixed_assets.source.incoming', ['number' => $fixedAsset->source->invoice_number ?? $fixedAsset->source->sqid]) }}</a>
                             </x-detail-grid.row>
                         @elseif ($fixedAsset->source instanceof \App\Models\Travel\Expense)
                             <x-detail-grid.row :label="__('accounting.fixed_assets.field.source')" :value="__('accounting.fixed_assets.source.expense', ['description' => $fixedAsset->source->description])" />

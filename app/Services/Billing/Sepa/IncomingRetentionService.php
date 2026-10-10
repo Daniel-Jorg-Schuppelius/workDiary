@@ -36,6 +36,9 @@ class IncomingRetentionService {
         if ($invoice->paid_in_run_id !== null) {
             throw new RuntimeException((string) __('sepa.retention.error.in_run'));
         }
+        if ($invoice->direction === \App\Enums\Billing\DocumentDirection::Outgoing) {
+            throw new RuntimeException((string) __('sepa.retention.error.outgoing'));
+        }
         $gross = (string) ($invoice->amount_gross?->getAmount() ?? '0');
         if ($percent !== null) {
             $amount = NumberHelper::percentOfPrecise($gross, $percent, 2);

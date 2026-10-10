@@ -54,7 +54,7 @@ class LexofficeContactSync {
         Organization $organization,
         LexofficeMatchPolicy $policy,
         ?string $apiKey,
-        string $baseUrl = 'https://api.lexoffice.io/v1',
+        string $baseUrl = 'https://api.lexware.io/v1',
         bool $createMissingLocal = false,
         string $only = 'both',
         bool $stageUnmatched = false,
@@ -290,7 +290,8 @@ class LexofficeContactSync {
         $personName = trim(((string) data_get($remote, 'person.firstName', '')) . ' ' . ((string) data_get($remote, 'person.lastName', '')));
         $zip = (string) data_get($remote, 'addresses.billing.0.zip', '');
 
-        $base = fn() => $modelClass::query()->where('organization_id', $organization->id);
+        // Ein Sammelkontakt (MVP-1109) ist nie das Gegenstück eines Lexoffice-Kontakts.
+        $base = fn() => $modelClass::query()->where('organization_id', $organization->id)->where('is_collective', false);
 
         if ($vatId !== '') {
             $byVat = $base()->where('vat_id', $vatId)->first();

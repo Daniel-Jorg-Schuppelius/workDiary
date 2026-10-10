@@ -34,7 +34,7 @@ use RuntimeException;
  *
  * Verwendet den HTTP-Client direkt (analog Article-/Contact-Sync).
  *
- * Quelle: https://developers.lexoffice.io/docs/#voucherlist-endpoint
+ * Quelle: https://developers.lexware.io/docs/#voucherlist-endpoint
  */
 class LexofficeVoucherSync {
     private ?PluginApiClient $api = null;
@@ -50,7 +50,7 @@ class LexofficeVoucherSync {
      */
     public function __construct(
         private readonly ?string $apiKey,
-        private readonly string $baseUrl = 'https://api.lexoffice.io/v1',
+        private readonly string $baseUrl = 'https://api.lexware.io/v1',
         ?float $requestInterval = null,
     ) {
         $this->requestInterval = $requestInterval ?? LexofficeConfig::requestInterval();
@@ -102,12 +102,13 @@ class LexofficeVoucherSync {
             }
         }
 
-        $archived = $this->archiveMissing($organization, $seen);
+        $archived = $this->archiveMissing($organization, $seen, array_map('strval', array_keys($contactMap)));
+        $collective = $this->syncCollective($organization);
 
         $result = [
             'contacts' => count($contactMap),
-            'created' => $created,
-            'updated' => $updated,
+            'created' => $created + $collective['created'],
+            'updated' => $updated + $collective['updated'],
             'archived' => (int) $archived,
             'paid_dates' => $this->enrichPaidDates($organization->id),
             'lines' => 0,
@@ -135,22 +136,16 @@ class LexofficeVoucherSync {
     }
 
     /**
-     * Zahlungsdaten nachladen (Phase-54-Nachtrag): Die voucherlist liefert
-     * KEIN paidDate — für bezahlte Belege ohne Zahlungsdatum wird es über
-     * den Payments-Endpunkt geholt. Damit kann der Zahlungsverhaltens-
-     * Report Zahldauer/DSO auch bei externer Rechnungshoheit rechnen.
-     * $limit deckelt die Zusatz-Requests je Lauf (Ratelimit 2 req/s);
-     * Rest folgt beim nächsten Sync. Fehler je Beleg (z. B. 404 für
-     * Belegarten ohne Zahlung) werden toleriert.
-     */
-    /**
-     * In Lexoffice nicht mehr sichtbare Belege archivieren. G3-Guard
-     * (MVP-690): Eine LEERE Antwort archiviert NICHTS — nach Kündigung/
-     * API-Ausfall wäre sonst der komplette GoBD-Spiegel „archiviert".
+     * In Lexoffice nicht mehr sichtbare Belege der abgefragten Kontakte
+     * archivieren. Belege anderer Kontakte und des Sammelkontakts bleiben
+     * unberührt; sie kamen in dieser Abfrage gar nicht vor (MVP-1112).
+     * G3-Guard (MVP-690): Eine LEERE Antwort archiviert NICHTS — nach
+     * Kündigung/API-Ausfall wäre sonst der komplette GoBD-Spiegel „archiviert".
      *
      * @param  array<int, string>  $seen
+     * @param  list<string>  $contactIds
      */
-    public function archiveMissing(Organization $organization, array $seen): int {
+    public function archiveMissing(Organization $organization, array $seen, array $contactIds): int {
         if ($seen === []) {
             if (LexofficeVoucher::query()->where('organization_id', $organization->id)->exists()) {
                 \Illuminate\Support\Facades\Log::warning('LexofficeVoucherSync: leere Belegliste — Archivierung übersprungen (Kündigung/API-Problem?).', [
@@ -163,11 +158,67 @@ class LexofficeVoucherSync {
 
         return LexofficeVoucher::query()
             ->where('organization_id', $organization->id)
+            ->whereIn('contact_external_id', $contactIds)
             ->where('archived', false)
             ->whereNotIn('external_id', $seen)
             ->update(['archived' => true]);
     }
 
+    /**
+     * Belege am Sammelkontakt (MVP-1112) tragen keine `contactId` und fehlen
+     * deshalb in den Kontaktabfragen. Eine Abfrage ohne Kontakt ab dem letzten
+     * Lauf holt sie; Belege mit Kontakt überspringt sie, die liefert der
+     * Kontaktlauf. Archiviert wird hier nicht: eine Abfrage nach Änderungsdatum
+     * sieht gelöschte Belege nicht.
+     *
+     * @return array{created: int, updated: int}
+     */
+    public function syncCollective(Organization $organization): array {
+        $since = LexofficeVoucher::query()
+            ->where('organization_id', $organization->id)
+            ->whereNull('contact_external_id')
+            ->whereNotNull('payload')
+            ->max('synced_at');
+        $collective = [
+            'customer_id' => Customer::query()->where('organization_id', $organization->id)->where('is_collective', true)->value('id'),
+            'supplier_id' => Supplier::query()->where('organization_id', $organization->id)->where('is_collective', true)->value('id'),
+        ];
+
+        // Ein Beleg, den der Kontaktlauf schon kennt, wechselt nie zum Sammelkontakt.
+        $withContact = array_flip(LexofficeVoucher::query()
+            ->where('organization_id', $organization->id)
+            ->whereNotNull('contact_external_id')
+            ->pluck('external_id')->map(static fn (mixed $id): string => (string) $id)->all());
+
+        $counts = ['created' => 0, 'updated' => 0];
+        $from = $since !== null ? Carbon::parse((string) $since)->subDay()->toDateString() : null;
+        foreach ($this->fetchVouchers(null, $from) as $item) {
+            if (! empty($item['contactId']) || isset($withContact[(string) ($item['id'] ?? '')])) {
+                continue;
+            }
+            $isPurchase = in_array($item['voucherType'] ?? null, VoucherTypes::EXPENSES, true);
+            $owners = [
+                'customer_id' => ! $isPurchase && $collective['customer_id'] !== null ? (int) $collective['customer_id'] : null,
+                'supplier_id' => $isPurchase && $collective['supplier_id'] !== null ? (int) $collective['supplier_id'] : null,
+            ];
+            $verb = $this->upsertVoucherItem($organization->id, null, $owners, $item);
+            if ($verb !== null) {
+                $counts[$verb]++;
+            }
+        }
+
+        return $counts;
+    }
+
+    /**
+     * Zahlungsdaten nachladen (Phase-54-Nachtrag): Die voucherlist liefert
+     * KEIN paidDate — für bezahlte Belege ohne Zahlungsdatum wird es über
+     * den Payments-Endpunkt geholt. Damit kann der Zahlungsverhaltens-
+     * Report Zahldauer/DSO auch bei externer Rechnungshoheit rechnen.
+     * $limit deckelt die Zusatz-Requests je Lauf (Ratelimit 2 req/s);
+     * Rest folgt beim nächsten Sync. Fehler je Beleg (z. B. 404 für
+     * Belegarten ohne Zahlung) werden toleriert.
+     */
     public function enrichPaidDates(int $organizationId, int $limit = 100): int {
         $candidates = LexofficeVoucher::query()
             ->where('organization_id', $organizationId)
@@ -264,7 +315,7 @@ class LexofficeVoucherSync {
      * @param  array<string, mixed>  $item
      * @return 'created'|'updated'|null  null, wenn der Eintrag keine id hat.
      */
-    private function upsertVoucherItem(int $organizationId, string $contactExternalId, array $owners, array $item): ?string {
+    private function upsertVoucherItem(int $organizationId, ?string $contactExternalId, array $owners, array $item): ?string {
         if (empty($item['id'])) {
             return null;
         }
@@ -365,18 +416,18 @@ class LexofficeVoucherSync {
     }
 
     /**
-     * Lädt alle Belege eines Kontakts (paginiert).
+     * Lädt alle Belege eines Kontakts bzw. ohne Kontakt ab einem Änderungsdatum (paginiert).
      *
      * @return array<int, array<string, mixed>>
      */
-    private function fetchVouchers(string $contactExternalId): array {
+    private function fetchVouchers(?string $contactExternalId, ?string $updatedFrom = null): array {
         $page = 0;
         $pageSize = 250;
         /** @var array<int, array<string, mixed>> $all */
         $all = [];
 
         do {
-            $response = $this->requestVoucherlist($contactExternalId, $page, $pageSize);
+            $response = $this->requestVoucherlist($contactExternalId, $page, $pageSize, $updatedFrom);
 
             /** @var array<string, mixed> $body */
             $body = $response->json() ?? [];
@@ -399,15 +450,16 @@ class LexofficeVoucherSync {
      * (Retry-After/Backoff) übernimmt der Client; was danach noch scheitert,
      * ist ein regulärer API-Fehler.
      */
-    private function requestVoucherlist(string $contactExternalId, int $page, int $pageSize): \Illuminate\Http\Client\Response {
+    private function requestVoucherlist(?string $contactExternalId, int $page, int $pageSize, ?string $updatedFrom = null): \Illuminate\Http\Client\Response {
         $response = $this->api()
-            ->getResponse($this->baseUrl . '/voucherlist', [
+            ->getResponse($this->baseUrl . '/voucherlist', array_filter([
                 'voucherType' => 'any',
                 'voucherStatus' => 'any',
                 'contactId' => $contactExternalId,
+                'updatedDateFrom' => $updatedFrom,
                 'page' => $page,
                 'size' => $pageSize,
-            ]);
+            ], static fn (mixed $value): bool => $value !== null));
 
         if (! $response->successful()) {
             throw LexofficeApiException::fromResponse($response, __('Belege'), __('Belegliste filtern und abrufen'));

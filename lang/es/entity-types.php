@@ -276,6 +276,7 @@ return [
     'OnlinePayment' => 'Pago en línea',
     'EbicsConnection' => 'Acceso bancario EBICS',
     'DatevOnlineConnection' => 'Conexión DATEV Online',
+    'InvoiceSenderRule' => 'Regla de remitente (buzón de facturas)',
     'InvoiceSchedule' => 'Plan de facturación',
     'InvoiceScheduleItem' => 'Línea del plan de facturación',
     'InvoiceTemplate' => 'Plantilla de factura',

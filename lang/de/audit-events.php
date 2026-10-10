@@ -449,6 +449,10 @@ return [
         'started' => 'Import gestartet',
     ],
     'incoming_einvoice' => [
+        'direction_corrected' => 'Richtung des Eingangs korrigiert',
+        'values_captured' => 'Werte des Eingangs erfasst',
+        'assigned' => 'Eingangsrechnung zugeordnet',
+        'sender_rule_saved' => 'Absenderregel gespeichert',
         'decided' => 'Eingangsrechnung entschieden',
         'transferred' => 'Eingangsrechnung übergeben',
     ],

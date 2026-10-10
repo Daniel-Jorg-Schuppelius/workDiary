@@ -19,6 +19,7 @@ return [
 
     'inbox' => [
         'no_subject' => '(sans objet)',
+        'invoice_mailbox' => 'Boîte de réception des factures · :from',
         'book_action' => 'Enregistrer comme note de communication',
         'book_ticket_action' => 'Enregistrer comme ticket de service',
         'book_customer_placeholder' => '… client (vide = expéditeur détecté)',

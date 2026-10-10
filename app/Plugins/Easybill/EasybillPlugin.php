@@ -70,6 +70,7 @@ class EasybillPlugin extends AbstractPlugin implements ContactSyncer {
      * löschen. Gefunden wird über die Kundennummer.
      */
     public function pushContact(Customer $customer): string {
+        \App\Services\Stammdaten\CollectiveContacts::assertPushable($customer);
         $client = app(EasybillClientFactory::class)->for((int) $customer->organization_id);
         $number = trim((string) $customer->number);
 

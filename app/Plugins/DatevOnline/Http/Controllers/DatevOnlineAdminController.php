@@ -12,21 +12,25 @@ declare(strict_types=1);
 
 namespace App\Plugins\DatevOnline\Http\Controllers;
 
+use App\Enums\Billing\DocumentDirection;
 use App\Enums\Finance\DatevBatchStatus;
 use App\Models\Finance\DatevBookingBatch;
+use App\Models\Invoicing\IncomingEInvoiceTransfer;
 use App\Models\Platform\User;
 use App\Plugins\DatevOnline\Api\DatevOnlineOAuth;
-use App\Plugins\DatevOnline\DatevOnlineConfig;
+use App\Plugins\DatevOnline\{DatevOnlineConfig, DatevOnlinePlugin};
 use App\Plugins\DatevOnline\Enums\{DatevConnectionStatus, DatevTransferKind};
 use App\Plugins\DatevOnline\Exceptions\DatevOnlineException;
 use App\Plugins\DatevOnline\Models\{DatevOnlineConnection, DatevOnlineTransfer};
 use App\Plugins\DatevOnline\Services\{DatevClientDirectory, DatevDocumentUploader, DatevExtfTransferService};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
+use App\Services\Invoicing\EInvoice\IncomingInvoiceTransferService;
 use App\Support\Query\DateRange;
-use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Str;
+use Illuminate\Support\{Collection, Str};
 use Illuminate\View\View;
 use Throwable;
 
@@ -64,9 +68,32 @@ class DatevOnlineAdminController extends ConnectionOAuthController {
             // Stand je Stapel der Seite gezielt laden — ein Fenster über alle Übertragungen verlor ihn hinter vielen Belegen.
             'batchTransfers' => (clone $transfers)->where('kind', DatevTransferKind::Extf->value)
                 ->whereIn('source_id', $batches->pluck('id'))->get()->keyBy('source_id'),
-            'documentTransfers' => (clone $transfers)->where('kind', '!=', DatevTransferKind::Extf->value)
-                ->latest('id')->limit(30)->get(),
+            'documentTransfers' => $this->documentTransfers($transfers, (int) $organization->id),
         ]);
+    }
+
+    /**
+     * Belegbilder beider Journale, neueste zuerst: Ausgangsrechnungen hier,
+     * der Rechnungseingang im gemeinsamen Übergabejournal (MVP-1111).
+     *
+     * @param  Builder<DatevOnlineTransfer>  $transfers
+     * @return Collection<int, array{kind: string, at: ?Carbon, label: string, tone: string, error: ?string}>
+     */
+    private function documentTransfers(Builder $transfers, int $organizationId): Collection {
+        $outgoing = (clone $transfers)->where('kind', '!=', DatevTransferKind::Extf->value)->latest('id')->limit(30)->get()
+            ->map(static fn (DatevOnlineTransfer $t): array => [
+                'kind' => $t->kind->label(), 'at' => $t->transferred_at ?? $t->updated_at,
+                'label' => $t->status->label(), 'tone' => $t->status->tone(), 'error' => $t->error,
+            ]);
+        $incoming = IncomingEInvoiceTransfer::query()->where('organization_id', $organizationId)
+            ->where('target', DatevOnlinePlugin::ID)->with('incoming:id,direction')->latest('id')->limit(30)->get()
+            ->map(static fn (IncomingEInvoiceTransfer $t): array => [
+                'kind' => ($t->incoming?->direction === DocumentDirection::Outgoing ? DatevTransferKind::OutgoingDocument : DatevTransferKind::IncomingDocument)->label(),
+                'at' => $t->transferred_at ?? $t->updated_at,
+                'label' => $t->status->label(), 'tone' => $t->status->tone(), 'error' => $t->error,
+            ]);
+
+        return $outgoing->concat($incoming)->sortByDesc(static fn (array $row): int => (int) $row['at']?->getTimestamp())->take(30)->values();
     }
 
     public function selectClient(Request $request, DatevClientDirectory $directory): RedirectResponse {
@@ -95,8 +122,11 @@ class DatevOnlineAdminController extends ConnectionOAuthController {
         return back()->with('success', __('datev-online::datev.flash.documents_saved'));
     }
 
-    public function uploadNow(DatevDocumentUploader $uploader): RedirectResponse {
-        $counts = $uploader->uploadPending($this->activeConnection(), 50);
+    public function uploadNow(DatevDocumentUploader $uploader, IncomingInvoiceTransferService $incoming): RedirectResponse {
+        $connection = $this->activeConnection();
+        $counts = $uploader->uploadPending($connection, 50);
+        $more = $incoming->retryOpen($this->organization($this->admin()), DatevOnlinePlugin::ID);
+        $counts = ['transferred' => $counts['transferred'] + $more['transferred'], 'failed' => $counts['failed'] + $more['failed']];
 
         return back()->with($counts['failed'] > 0 ? 'warning' : 'success', __('datev-online::datev.flash.uploaded', $counts));
     }

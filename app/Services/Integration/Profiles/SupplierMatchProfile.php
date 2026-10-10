@@ -36,7 +36,8 @@ class SupplierMatchProfile extends AbstractMatchProfile {
     }
 
     protected function newCandidateQuery(): Builder {
-        return Supplier::query();
+        // Der Sammellieferant (MVP-1109) ist nie ein Abgleichkandidat.
+        return Supplier::query()->withoutCollective();
     }
 
     public function strategies(): array {

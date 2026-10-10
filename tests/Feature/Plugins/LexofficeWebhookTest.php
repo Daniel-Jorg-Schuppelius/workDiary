@@ -150,7 +150,7 @@ class LexofficeWebhookTest extends TestCase {
         ]);
 
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/event-subscriptions' => FakePluginHttp::response(['content' => []], 200),
+            'https://api.lexware.io/v1/event-subscriptions' => FakePluginHttp::response(['content' => []], 200),
         ]);
 
         $this->artisan('lexoffice:webhooks', ['--organization' => $this->organization->id])

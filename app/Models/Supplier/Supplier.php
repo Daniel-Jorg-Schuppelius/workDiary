@@ -17,8 +17,8 @@ use App\Models\Contracts\ContactDetailsHolder;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\User;
 use App\Models\Procurement\PurchaseOrder;
+use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
 use Illuminate\Support\Carbon;
 
@@ -27,6 +27,7 @@ use Illuminate\Support\Carbon;
  * Spiegelt {@see Customer}, jedoch ohne Abrechnungs-/Stundensatzfelder.
  * Mappt im Lexoffice-Kontakt-Sync auf `roles.vendor`.
  *
+ * @property bool $is_collective
  * @property int $id
  * @property int|null $organization_id
  * @property string $name
@@ -131,6 +132,8 @@ class Supplier extends Model implements ContactDetailsHolder {
         'address_lat' => 'decimal:7',
         'address_lng' => 'decimal:7',
         'contact_persons' => 'array',
+        // Sammelkontakt (MVP-1109); setzt nur App\Services\Stammdaten\CollectiveContacts.
+        'is_collective' => 'boolean',
     ];
 
     protected static function booted(): void {
@@ -205,5 +208,15 @@ class Supplier extends Model implements ContactDetailsHolder {
     /** @return list<string> */
     protected function searchableColumns(): array {
         return ['name', 'number', 'company', 'email'];
+    }
+
+    /**
+     * Ohne Sammelkontakt (MVP-1109): für Abgleich, Vorschläge und Stammdaten-Push.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeWithoutCollective(Builder $query): Builder {
+        return $query->where($query->qualifyColumn('is_collective'), false);
     }
 }

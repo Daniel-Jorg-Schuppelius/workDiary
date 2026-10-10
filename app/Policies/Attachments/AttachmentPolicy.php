@@ -103,6 +103,8 @@ class AttachmentPolicy {
             $parent instanceof \App\Models\Asset\AssetDefect => $parent->asset,
             // Knoten der Ideenkarte (MVP-1018): Rechte der Karte.
             $parent instanceof \App\Models\Ideas\IdeaNode => $parent->map,
+            // Begleitdateien eines Rechnungseingangs (MVP-1107): Rechte des Originals.
+            $parent instanceof \App\Models\Invoicing\IncomingEInvoice => $parent->document,
             default => null,
         };
 

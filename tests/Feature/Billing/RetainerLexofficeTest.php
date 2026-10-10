@@ -55,7 +55,7 @@ class RetainerLexofficeTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexoffice.io/v1', 'api_key' => 'test-key']);
+        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexware.io/v1', 'api_key' => 'test-key']);
 
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $this->customer = Customer::factory()->create([
@@ -94,7 +94,7 @@ class RetainerLexofficeTest extends TestCase {
 
     private function fakeInvoiceApi(string $uuid = 'lex-invoice-1', string $number = 'RE-2025-0001'): FakePluginHttp {
         return FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/invoices*' => function (RequestInterface $request) use ($uuid, $number) {
+            'https://api.lexware.io/v1/invoices*' => function (RequestInterface $request) use ($uuid, $number) {
                 if ($request->getMethod() === 'POST') {
                     return FakePluginHttp::response(['id' => $uuid], 201);
                 }

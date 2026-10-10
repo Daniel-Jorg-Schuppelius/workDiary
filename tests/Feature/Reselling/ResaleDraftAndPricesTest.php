@@ -175,10 +175,10 @@ class ResaleDraftAndPricesTest extends TestCase {
 
         $captured = null;
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/invoices' => static function (RequestInterface $request) use (&$captured) {
+            'https://api.lexware.io/v1/invoices' => static function (RequestInterface $request) use (&$captured) {
                 $captured = json_decode((string) $request->getBody(), true);
 
-                return FakePluginHttp::response(['id' => 'draft-42', 'resourceUri' => 'https://api.lexoffice.io/v1/invoices/draft-42'], 201);
+                return FakePluginHttp::response(['id' => 'draft-42', 'resourceUri' => 'https://api.lexware.io/v1/invoices/draft-42'], 201);
             },
         ]);
 
@@ -211,10 +211,10 @@ class ResaleDraftAndPricesTest extends TestCase {
         // Zweiter Klick: kein zweiter Entwurf, sondern der Hinweis auf den ausstehenden.
         $calls = 0;
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/invoices' => static function () use (&$calls) {
+            'https://api.lexware.io/v1/invoices' => static function () use (&$calls) {
                 $calls++;
 
-                return FakePluginHttp::response(['id' => 'draft-43', 'resourceUri' => 'https://api.lexoffice.io/v1/invoices/draft-43'], 201);
+                return FakePluginHttp::response(['id' => 'draft-43', 'resourceUri' => 'https://api.lexware.io/v1/invoices/draft-43'], 201);
             },
         ]);
         $this->actingAs($admin)->postJson(route('finance.resale.periods.draft.store'), ['customer_id' => $partner->sqid])

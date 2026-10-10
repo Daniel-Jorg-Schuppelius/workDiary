@@ -48,7 +48,7 @@ class LexofficeVoucherSyncTest extends TestCase {
      */
     private function fakeVoucherlist(array $items): FakePluginHttp {
         return FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/voucherlist*' => FakePluginHttp::response([
+            'https://api.lexware.io/v1/voucherlist*' => FakePluginHttp::response([
                 'content' => $items,
                 'totalPages' => 1,
             ], 200),
@@ -63,6 +63,7 @@ class LexofficeVoucherSyncTest extends TestCase {
 
         $this->fakeVoucherlist([[
             'id' => 'voucher-1',
+            'contactId' => 'contact-1',
             'voucherType' => 'salesinvoice',
             'voucherStatus' => 'open',
             'voucherNumber' => 'RE-1001',
@@ -100,6 +101,7 @@ class LexofficeVoucherSyncTest extends TestCase {
 
         $this->fakeVoucherlist([[
             'id' => 'voucher-v',
+            'contactId' => 'contact-v',
             'voucherType' => 'purchaseinvoice',
             'voucherStatus' => 'paid',
             'voucherNumber' => 'ER-9',
@@ -125,17 +127,17 @@ class LexofficeVoucherSyncTest extends TestCase {
         $this->linkContact('contact-1', $customer);
 
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/voucherlist*' => [
+            'https://api.lexware.io/v1/voucherlist*' => [
                 FakePluginHttp::response([
                     'content' => [
-                        ['id' => 'v1', 'voucherType' => 'salesinvoice', 'voucherNumber' => 'A', 'totalAmount' => 10.0],
-                        ['id' => 'v2', 'voucherType' => 'salesinvoice', 'voucherNumber' => 'B', 'totalAmount' => 20.0],
+                        ['id' => 'v1', 'contactId' => 'contact-1', 'voucherType' => 'salesinvoice', 'voucherNumber' => 'A', 'totalAmount' => 10.0],
+                        ['id' => 'v2', 'contactId' => 'contact-1', 'voucherType' => 'salesinvoice', 'voucherNumber' => 'B', 'totalAmount' => 20.0],
                     ],
                     'totalPages' => 1,
                 ], 200),
                 FakePluginHttp::response([
                     'content' => [
-                        ['id' => 'v1', 'voucherType' => 'salesinvoice', 'voucherNumber' => 'A', 'totalAmount' => 15.0],
+                        ['id' => 'v1', 'contactId' => 'contact-1', 'voucherType' => 'salesinvoice', 'voucherNumber' => 'A', 'totalAmount' => 15.0],
                     ],
                     'totalPages' => 1,
                 ], 200),
@@ -192,6 +194,38 @@ class LexofficeVoucherSyncTest extends TestCase {
         $this->assertDatabaseHas('lexoffice_vouchers', [
             'external_id' => 'voucher-2', 'supplier_id' => $supplier->id,
         ]);
+    }
+
+    /**
+     * MVP-1112: Belege am Sammelkontakt haben keine contactId und fehlten im
+     * Spiegel; die Abfrage ohne Kontakt holt sie ab dem letzten Lauf. Belege
+     * mit Kontakt bleiben beim Kontaktlauf.
+     */
+    public function test_collective_vouchers_are_mirrored_from_the_contactless_query(): void {
+        $supplier = Supplier::factory()->create(['organization_id' => $this->organization->id]);
+        $this->linkContact('contact-v', $supplier);
+        $collective = app(\App\Services\Stammdaten\CollectiveContacts::class)->supplier($this->organization);
+        $fake = FakePluginHttp::fake([
+            'https://api.lexware.io/v1/voucherlist*' => static function (RequestInterface $request): \GuzzleHttp\Psr7\Response {
+                $own = ['id' => 'v-kontakt', 'contactId' => 'contact-v', 'voucherType' => 'purchaseinvoice', 'voucherNumber' => 'ER-1', 'totalAmount' => 50.0];
+
+                return str_contains((string) $request->getUri(), 'contactId=')
+                    ? FakePluginHttp::response(['content' => [$own], 'totalPages' => 1])
+                    : FakePluginHttp::response(['content' => [$own, ['id' => 'v-sammel', 'contactName' => 'Kiosk am Eck', 'voucherType' => 'purchaseinvoice', 'voucherNumber' => 'Q-7', 'totalAmount' => 12.5]], 'totalPages' => 1]);
+            },
+        ]);
+
+        (new LexofficeVoucherSync('test-key'))->sync($this->organization);
+
+        $this->assertDatabaseHas('lexoffice_vouchers', ['external_id' => 'v-sammel', 'contact_external_id' => null, 'supplier_id' => $collective->id]);
+        $this->assertDatabaseHas('lexoffice_vouchers', ['external_id' => 'v-kontakt', 'contact_external_id' => 'contact-v', 'supplier_id' => $supplier->id]);
+        $fake->assertNotSent(static fn (RequestInterface $request): bool => str_contains((string) $request->getUri(), 'updatedDateFrom'));
+
+        (new LexofficeVoucherSync('test-key'))->sync($this->organization);
+
+        $fake->assertSent(static fn (RequestInterface $request): bool => ! str_contains((string) $request->getUri(), 'contactId=')
+            && str_contains((string) $request->getUri(), 'updatedDateFrom=' . now()->subDay()->toDateString()));
+        $this->assertDatabaseHas('lexoffice_vouchers', ['external_id' => 'v-sammel', 'archived' => false]);
     }
 
     public function test_sync_for_unlinked_owner_is_noop(): void {

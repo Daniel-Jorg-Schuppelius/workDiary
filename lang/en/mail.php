@@ -19,6 +19,7 @@ return [
 
     'inbox' => [
         'no_subject' => '(no subject)',
+        'invoice_mailbox' => 'Invoice mailbox · :from',
         'book_action' => 'Book as communication note',
         'book_ticket_action' => 'Book as service ticket',
         'book_customer_placeholder' => '… customer (blank = detected sender)',

@@ -65,7 +65,9 @@ class ContactPushService implements \App\Services\Stammdaten\Contracts\ContactPu
             return $counters;
         }
 
+        // Der Sammelkunde steht für den Sammelkontakt des Zielsystems und wird nie übertragen (MVP-1109).
         $customers = Customer::query()
+            ->withoutCollective()
             ->where('organization_id', $organization->id)
             ->whereNull('archived_at')
             ->orderBy('id')

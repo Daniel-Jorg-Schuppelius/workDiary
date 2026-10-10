@@ -36,7 +36,7 @@ final class LexofficeOrderConfirmationTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexoffice.io/v1', 'default_vat_rate' => 19.0, 'default_currency' => 'EUR', 'api_key' => 'test-key']);
+        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexware.io/v1', 'default_vat_rate' => 19.0, 'default_currency' => 'EUR', 'api_key' => 'test-key']);
 
         $this->customer = Customer::factory()->create([
             'organization_id' => $this->organization->id, 'email' => 'kunde@example.com',
@@ -78,7 +78,7 @@ final class LexofficeOrderConfirmationTest extends TestCase {
         $order = $this->makeOrder();
 
         $fake = FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/order-confirmations*' => FakePluginHttp::response(['id' => 'lex-oc-1'], 201),
+            'https://api.lexware.io/v1/order-confirmations*' => FakePluginHttp::response(['id' => 'lex-oc-1'], 201),
         ]);
 
         $reference = app(LexofficeOrderConfirmationService::class)->push($order);
@@ -106,7 +106,7 @@ final class LexofficeOrderConfirmationTest extends TestCase {
         $order = $this->makeOrder();
 
         $fake = FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/quotations*' => FakePluginHttp::response(['id' => 'lex-q-1'], 201),
+            'https://api.lexware.io/v1/quotations*' => FakePluginHttp::response(['id' => 'lex-q-1'], 201),
         ]);
 
         $reference = app(LexofficeQuotationService::class)->push($order);

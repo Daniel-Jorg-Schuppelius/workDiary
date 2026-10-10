@@ -353,6 +353,24 @@ return [
             'criticality' => 'core',
             'expected_runtime_minutes' => 10,
         ],
+        // Rechnungseingang (MVP-1111): offene und fehlgeschlagene Übergaben an
+        // die Buchhaltung wiederholen; Zuordnungen lösen die Übergabe sofort aus.
+        'invoicing.incoming_transfer' => [
+            'command' => 'incoming-invoices:transfer',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 5,
+        ],
+        // Rechnungseingang (MVP-1110): täglicher Hinweis auf zuzuordnende
+        // Eingänge im Betriebsfenster; ohne Befund geht nichts hinaus.
+        'invoicing.incoming_digest' => [
+            'command' => 'incoming-invoices:digest',
+            'cadence' => ['type' => 'dailyAt', 'time' => '08:20'],
+            'allowed' => ['dailyAt', 'weeklyOn'],
+            'criticality' => 'housekeeping',
+            'expected_runtime_minutes' => 3,
+        ],
         // Online-Zahlung (MVP-1067): verlorene Webhooks und Erstattungen nachziehen.
         'invoicing.online_payments_refresh' => [
             'command' => 'invoicing:online-payments-refresh',

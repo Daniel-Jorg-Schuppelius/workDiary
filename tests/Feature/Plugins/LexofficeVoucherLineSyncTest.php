@@ -65,8 +65,8 @@ class LexofficeVoucherLineSyncTest extends TestCase {
 
     private function fakeInvoices(): void {
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/invoices/inv-1' => FakePluginHttp::response($this->invoicePayload()),
-            'https://api.lexoffice.io/v1/invoices/inv-gone' => FakePluginHttp::response(['message' => 'not found'], 404),
+            'https://api.lexware.io/v1/invoices/inv-1' => FakePluginHttp::response($this->invoicePayload()),
+            'https://api.lexware.io/v1/invoices/inv-gone' => FakePluginHttp::response(['message' => 'not found'], 404),
         ]);
     }
 
@@ -113,7 +113,7 @@ class LexofficeVoucherLineSyncTest extends TestCase {
     }
 
     private function lineSync(): LexofficeVoucherLineSync {
-        return (new LexofficeVoucherLineSync('lex-key', 'https://api.lexoffice.io/v1'))->withoutThrottle();
+        return (new LexofficeVoucherLineSync('lex-key', 'https://api.lexware.io/v1'))->withoutThrottle();
     }
 
     private function linkContact(string $externalId, Customer $customer): void {
@@ -158,7 +158,7 @@ class LexofficeVoucherLineSyncTest extends TestCase {
         $booking = $this->voucher('bk-1', '10021-01-2025', '2025-01-05', 'salesinvoice');
         $this->fakeInvoices();
 
-        $sync = (new LexofficeVoucherLineSync('lex-key', 'https://api.lexoffice.io/v1'))->withoutThrottle();
+        $sync = (new LexofficeVoucherLineSync('lex-key', 'https://api.lexware.io/v1'))->withoutThrottle();
         $result = $sync->syncMissing($this->organization, 10);
         $this->assertSame(['synced' => 2, 'lines' => 2, 'failed' => 0, 'remaining' => 0], $result);
 
@@ -211,7 +211,7 @@ class LexofficeVoucherLineSyncTest extends TestCase {
         $changed['lineItems'][0]['name'] = 'Microsoft 365 Business Premium (Jahresvertrag)';
         unset($changed['lineItems'][2]);
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/invoices/inv-1' => [FakePluginHttp::response($this->invoicePayload()), FakePluginHttp::response($this->invoicePayload()), FakePluginHttp::response($changed)],
+            'https://api.lexware.io/v1/invoices/inv-1' => [FakePluginHttp::response($this->invoicePayload()), FakePluginHttp::response($this->invoicePayload()), FakePluginHttp::response($changed)],
         ]);
 
         $sync = $this->lineSync();
@@ -245,7 +245,7 @@ class LexofficeVoucherLineSyncTest extends TestCase {
         $other = $this->invoicePayload();
         $other['lineItems'][0]['id'] = 'art-exo';
         $other['lineItems'][0]['name'] = 'Exchange Online (Plan 1)';
-        FakePluginHttp::fake(['https://api.lexoffice.io/v1/invoices/inv-1' => [FakePluginHttp::response($this->invoicePayload()), FakePluginHttp::response($other)]]);
+        FakePluginHttp::fake(['https://api.lexware.io/v1/invoices/inv-1' => [FakePluginHttp::response($this->invoicePayload()), FakePluginHttp::response($other)]]);
 
         $sync = $this->lineSync();
         $sync->syncMissing($this->organization, 10);
@@ -263,12 +263,12 @@ class LexofficeVoucherLineSyncTest extends TestCase {
         $broken = $this->voucher('inv-err', 'RE/2025/0009', '2025-09-01');
         $fine = $this->voucher('inv-1', 'RE/2025/0001', '2025-08-06');
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/invoices/inv-err' => [
+            'https://api.lexware.io/v1/invoices/inv-err' => [
                 FakePluginHttp::response(['message' => 'boom'], 500),
                 FakePluginHttp::response(['message' => 'boom'], 500),
                 FakePluginHttp::response($this->invoicePayload()),
             ],
-            'https://api.lexoffice.io/v1/invoices/inv-1' => FakePluginHttp::response($this->invoicePayload()),
+            'https://api.lexware.io/v1/invoices/inv-1' => FakePluginHttp::response($this->invoicePayload()),
         ]);
         $sync = $this->lineSync();
 
@@ -303,12 +303,12 @@ class LexofficeVoucherLineSyncTest extends TestCase {
         $fine = $this->voucher('inv-1', 'RE/2025/0001', '2025-08-06');
         $limited = $this->voucher('inv-429', 'RE/2025/0002', '2025-08-07');
         $fake = FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/invoices/inv-1' => [
+            'https://api.lexware.io/v1/invoices/inv-1' => [
                 FakePluginHttp::response(['message' => 'Rate limit exceeded'], 429, ['Retry-After' => '1']),
                 FakePluginHttp::response(['message' => 'Rate limit exceeded'], 429, ['Retry-After' => '1']),
                 FakePluginHttp::response($this->invoicePayload()),
             ],
-            'https://api.lexoffice.io/v1/invoices/inv-429' => FakePluginHttp::response(['message' => 'Rate limit exceeded'], 429, ['Retry-After' => '1']),
+            'https://api.lexware.io/v1/invoices/inv-429' => FakePluginHttp::response(['message' => 'Rate limit exceeded'], 429, ['Retry-After' => '1']),
         ]);
 
         $result = $this->lineSync()->syncMissing($this->organization, 10);
@@ -325,8 +325,8 @@ class LexofficeVoucherLineSyncTest extends TestCase {
         $fine = $this->voucher('inv-1', 'RE/2025/0001', '2025-08-06');
         FakePluginHttp::fake([
             // Kaputte Antwort (Name als Objekt) → Parserfehler statt LexofficeApiException.
-            'https://api.lexoffice.io/v1/invoices/inv-broken' => FakePluginHttp::response(['lineItems' => [['type' => 'custom', 'name' => ['kein' => 'string'], 'unitPrice' => ['netAmount' => 1], 'quantity' => 1]]]),
-            'https://api.lexoffice.io/v1/invoices/inv-1' => FakePluginHttp::response($this->invoicePayload()),
+            'https://api.lexware.io/v1/invoices/inv-broken' => FakePluginHttp::response(['lineItems' => [['type' => 'custom', 'name' => ['kein' => 'string'], 'unitPrice' => ['netAmount' => 1], 'quantity' => 1]]]),
+            'https://api.lexware.io/v1/invoices/inv-1' => FakePluginHttp::response($this->invoicePayload()),
         ]);
 
         $result = $this->lineSync()->syncMissing($this->organization, 10);
@@ -343,13 +343,13 @@ class LexofficeVoucherLineSyncTest extends TestCase {
         $item = ['id' => 'inv-1', 'voucherType' => 'invoice', 'voucherStatus' => 'draft', 'voucherNumber' => 'RE/2025/0001', 'voucherDate' => '2025-08-06', 'totalAmount' => 294.17, 'currency' => 'EUR', 'updatedDate' => '2025-08-06T10:00:00.000+02:00'];
         $finalized = ['voucherStatus' => 'open', 'updatedDate' => '2025-08-07T09:00:00.000+02:00'] + $item;
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/voucherlist*' => [
+            'https://api.lexware.io/v1/voucherlist*' => [
                 FakePluginHttp::response(['content' => [$item], 'totalPages' => 1]),
                 FakePluginHttp::response(['content' => [$finalized], 'totalPages' => 1]),
             ],
-            'https://api.lexoffice.io/v1/invoices/inv-1' => FakePluginHttp::response($this->invoicePayload()),
+            'https://api.lexware.io/v1/invoices/inv-1' => FakePluginHttp::response($this->invoicePayload()),
         ]);
-        $sync = new LexofficeVoucherSync('lex-key', 'https://api.lexoffice.io/v1', 0.0);
+        $sync = new LexofficeVoucherSync('lex-key', 'https://api.lexware.io/v1', 0.0);
 
         $this->assertSame(0, $sync->sync($this->organization)['lines'], 'Entwürfe werden nicht gespiegelt');
         $voucher = LexofficeVoucher::query()->where('external_id', 'inv-1')->firstOrFail();
@@ -375,7 +375,7 @@ class LexofficeVoucherLineSyncTest extends TestCase {
         $this->enablePluginFor($this->organization, LexofficePlugin::ID, ['api_key' => 'lex-key', 'request_interval' => '0']);
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
         $this->linkContact('c-lds', $customer);
-        FakePluginHttp::fake(['https://api.lexoffice.io/v1/voucherlist*' => FakePluginHttp::response(['message' => 'down'], 503)]);
+        FakePluginHttp::fake(['https://api.lexware.io/v1/voucherlist*' => FakePluginHttp::response(['message' => 'down'], 503)]);
 
         $this->artisan('lexoffice:sync-vouchers', ['--organization' => (string) $this->organization->id])
             ->expectsOutputToContain('Fehler:')
@@ -389,7 +389,7 @@ class LexofficeVoucherLineSyncTest extends TestCase {
         $payload['id'] = 'cn-1';
         $payload['title'] = 'Gutschrift';
         unset($payload['shippingConditions']);
-        $fake = FakePluginHttp::fake(['https://api.lexoffice.io/v1/credit-notes/cn-1' => FakePluginHttp::response($payload)]);
+        $fake = FakePluginHttp::fake(['https://api.lexware.io/v1/credit-notes/cn-1' => FakePluginHttp::response($payload)]);
 
         $sync = $this->lineSync();
         $this->assertSame(['synced' => 1, 'lines' => 2, 'failed' => 0, 'remaining' => 0], $sync->syncMissing($this->organization, 10));
@@ -415,10 +415,10 @@ class LexofficeVoucherLineSyncTest extends TestCase {
         $broken = $this->voucher('inv-broken', 'RE/2025/0002', '2025-08-07');
         $oldest = $this->voucher('inv-1', 'RE/2025/0001', '2025-08-06');
         $fake = FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/invoices/inv-3' => FakePluginHttp::response($this->invoicePayload()),
+            'https://api.lexware.io/v1/invoices/inv-3' => FakePluginHttp::response($this->invoicePayload()),
             // Kaputte Antwort → Parserfehler, sofortiger Fehlschlag ohne Client-Retry.
-            'https://api.lexoffice.io/v1/invoices/inv-broken' => FakePluginHttp::response(['lineItems' => [['type' => 'custom', 'name' => ['kein' => 'string'], 'unitPrice' => ['netAmount' => 1], 'quantity' => 1]]]),
-            'https://api.lexoffice.io/v1/invoices/inv-1' => FakePluginHttp::response($this->invoicePayload()),
+            'https://api.lexware.io/v1/invoices/inv-broken' => FakePluginHttp::response(['lineItems' => [['type' => 'custom', 'name' => ['kein' => 'string'], 'unitPrice' => ['netAmount' => 1], 'quantity' => 1]]]),
+            'https://api.lexware.io/v1/invoices/inv-1' => FakePluginHttp::response($this->invoicePayload()),
         ]);
 
         $this->artisan('lexoffice:sync-voucher-lines', ['--limit' => 2, '--all' => true])
@@ -438,8 +438,8 @@ class LexofficeVoucherLineSyncTest extends TestCase {
         // Ohne --all bleibt es bei einem Häppchen.
         $this->lineSync()->resetSynced($this->organization);
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/invoices/inv-3' => FakePluginHttp::response($this->invoicePayload()),
-            'https://api.lexoffice.io/v1/invoices/inv-1' => FakePluginHttp::response($this->invoicePayload()),
+            'https://api.lexware.io/v1/invoices/inv-3' => FakePluginHttp::response($this->invoicePayload()),
+            'https://api.lexware.io/v1/invoices/inv-1' => FakePluginHttp::response($this->invoicePayload()),
         ]);
         $this->artisan('lexoffice:sync-voucher-lines', ['--limit' => 1])
             ->expectsOutputToContain('1 Rechnungen, 2 Positionen, 0 Fehler, 1 offen')
@@ -466,8 +466,8 @@ class LexofficeVoucherLineSyncTest extends TestCase {
         $twisted = $this->voucher('inv-tw', 'RE/2025/0011', '2025-08-07');
         $payload = $this->invoicePayload();
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/invoices/inv-dp' => FakePluginHttp::response(['shippingConditions' => ['shippingDate' => '2025-08-05T00:00:00.000+02:00', 'shippingEndDate' => '2026-08-04T00:00:00.000+02:00', 'shippingType' => 'deliveryperiod']] + $payload),
-            'https://api.lexoffice.io/v1/invoices/inv-tw' => FakePluginHttp::response(['shippingConditions' => ['shippingDate' => '2026-08-04T00:00:00.000+02:00', 'shippingEndDate' => '2025-08-05T00:00:00.000+02:00', 'shippingType' => 'deliveryperiod']] + $payload),
+            'https://api.lexware.io/v1/invoices/inv-dp' => FakePluginHttp::response(['shippingConditions' => ['shippingDate' => '2025-08-05T00:00:00.000+02:00', 'shippingEndDate' => '2026-08-04T00:00:00.000+02:00', 'shippingType' => 'deliveryperiod']] + $payload),
+            'https://api.lexware.io/v1/invoices/inv-tw' => FakePluginHttp::response(['shippingConditions' => ['shippingDate' => '2026-08-04T00:00:00.000+02:00', 'shippingEndDate' => '2025-08-05T00:00:00.000+02:00', 'shippingType' => 'deliveryperiod']] + $payload),
         ]);
         $this->assertSame(2, $this->lineSync()->syncMissing($this->organization, 10)['synced']);
         $invoice->refresh();
@@ -516,7 +516,7 @@ class LexofficeVoucherLineSyncTest extends TestCase {
         $this->assertSame(1, $pending());
 
         // Erfolg räumt den Marker ab, unabhängig vom Zähler.
-        FakePluginHttp::fake(['https://api.lexoffice.io/v1/invoices/inv-old' => FakePluginHttp::response($this->invoicePayload())]);
+        FakePluginHttp::fake(['https://api.lexware.io/v1/invoices/inv-old' => FakePluginHttp::response($this->invoicePayload())]);
         $voucher->forceFill(['lines_sync_attempts' => 12, 'lines_sync_failed_at' => $failedAt(500)])->save();
         $this->assertSame(['synced' => 1, 'lines' => 2, 'failed' => 0, 'remaining' => 0], $sync->syncMissing($this->organization, 10));
         $voucher->refresh();

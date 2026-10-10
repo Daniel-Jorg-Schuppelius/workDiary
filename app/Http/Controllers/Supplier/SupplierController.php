@@ -196,6 +196,11 @@ class SupplierController extends Controller {
             return redirect()->route('suppliers.show', $supplier)
                 ->with('error', __('Lieferant kann nicht gelöscht werden: Es existieren externe Referenzen (z. B. Lexoffice). Bitte stattdessen archivieren.'));
         }
+        // Am Sammellieferanten hängen die Belege vieler Einmallieferanten (MVP-1109).
+        if ($supplier->is_collective && \App\Models\Invoicing\IncomingEInvoice::query()->where('supplier_id', $supplier->id)->exists()) {
+            return redirect()->route('suppliers.show', $supplier)
+                ->with('error', __('Der Sammelkontakt hat Belege und lässt sich nicht löschen.'));
+        }
 
         $supplier->delete();
 

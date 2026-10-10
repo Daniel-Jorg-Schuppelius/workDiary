@@ -17,11 +17,11 @@ use App\Models\Customer\Customer;
 use App\Models\Document\Document;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
-use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, XRechnungGenerator};
+use App\Services\Invoicing\EInvoice\IncomingEInvoiceService;
 use App\Services\Security\Scanning\ScanDriver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{GeneratesIncomingEInvoices, WithOrganization};
 use Tests\TestCase;
 
 /**
@@ -30,6 +30,7 @@ use Tests\TestCase;
  * Detailansicht mit Positionen; Nicht-E-Rechnungen werden abgewiesen.
  */
 final class IncomingEInvoiceTest extends TestCase {
+    use GeneratesIncomingEInvoices;
     use RefreshDatabase;
     use WithOrganization;
 
@@ -94,7 +95,7 @@ final class IncomingEInvoiceTest extends TestCase {
         $invoice->recalculate();
         $invoice->save();
 
-        return app(XRechnungGenerator::class)->generate($invoice->fresh(['items', 'customer']));
+        return $this->incomingXml($invoice);
     }
 
     /**
@@ -150,7 +151,7 @@ final class IncomingEInvoiceTest extends TestCase {
         $documents = \App\Models\Document\Document::query()->count();
         $this->actingAs($this->admin)->post(route('finance.incoming-invoices.store'), [
             'file' => \Illuminate\Http\UploadedFile::fake()->createWithContent('kopie.xml', $xml),
-        ])->assertRedirect(route('finance.incoming-invoices.show', $incoming->document_id));
+        ])->assertRedirect(route('finance.incoming-invoices.show', $incoming->document));
         $this->assertSame($documents, \App\Models\Document\Document::query()->count());
         $this->assertSame(1, \App\Models\Invoicing\IncomingEInvoice::query()->count());
 

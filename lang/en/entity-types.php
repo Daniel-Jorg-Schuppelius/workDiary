@@ -276,6 +276,7 @@ return [
     'OnlinePayment' => 'Online payment',
     'EbicsConnection' => 'EBICS bank access',
     'DatevOnlineConnection' => 'DATEV Online connection',
+    'InvoiceSenderRule' => 'Sender rule (invoice mailbox)',
     'InvoiceSchedule' => 'Invoice schedule',
     'InvoiceScheduleItem' => 'Invoice schedule line',
     'InvoiceTemplate' => 'Invoice template',

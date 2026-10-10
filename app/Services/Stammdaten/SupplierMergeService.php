@@ -112,6 +112,10 @@ class SupplierMergeService extends AbstractEntityMergeService {
         if ($source->organization_id !== $target->organization_id) {
             throw new InvalidArgumentException('Lieferanten gehören zu unterschiedlichen Organisationen.');
         }
+        // Belege am Sammellieferanten gehören zu vielen Einmallieferanten (MVP-1109).
+        if ($source->is_collective || $target->is_collective) {
+            throw new InvalidArgumentException((string) __('Ein Sammelkontakt lässt sich nicht zusammenführen.'));
+        }
 
         $morph = $source->getMorphClass();
         $sourceId = (int) $source->getKey();

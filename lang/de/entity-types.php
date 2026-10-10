@@ -276,6 +276,7 @@ return [
     'OnlinePayment' => 'Online-Zahlung',
     'EbicsConnection' => 'EBICS-Bankzugang',
     'DatevOnlineConnection' => 'DATEV-Online-Verbindung',
+    'InvoiceSenderRule' => 'Absenderregel (Rechnungspostfach)',
     'InvoiceSchedule' => 'Rechnungsplan',
     'InvoiceScheduleItem' => 'Rechnungsplan-Position',
     'InvoiceTemplate' => 'Rechnungs-Vorlage',

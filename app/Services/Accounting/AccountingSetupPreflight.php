@@ -179,6 +179,7 @@ class AccountingSetupPreflight {
             ->count();
 
         $count += IncomingEInvoice::query()
+            ->purchases()
             ->where('organization_id', $organization->id)
             ->where('issue_date', '>=', DateRange::day($date))
             ->whereNotNull('currency')

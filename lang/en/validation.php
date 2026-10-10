@@ -208,6 +208,20 @@ return [
     */
 
     'attributes' => [
+        'new_name' => 'Name',
+        'new_vat_id' => 'VAT ID',
+        'new_email' => 'Email',
+        'new_iban' => 'IBAN',
+        'new_street' => 'Street',
+        'new_zip' => 'Postcode',
+        'new_city' => 'City',
+        'new_country' => 'Country',
+        'remember_sender' => 'Remember sender',
+        'invoice_number' => 'Invoice number',
+        'issue_date' => 'Invoice date',
+        'amount_tax' => 'Tax',
+        'party_name' => 'Party name',
+        'party_vat_id' => 'Party VAT ID',
         'desired_date' => 'requested date',
         'intake' => 'record',
         'open' => 'additional files',

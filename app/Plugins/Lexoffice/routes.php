@@ -9,7 +9,7 @@
  */
 
 use App\Plugins\Lexoffice\Http\Controllers\Admin\LexofficeConflictInboxController;
-use App\Plugins\Lexoffice\Http\Controllers\{LexofficeArticleController, LexofficeCustomerController, LexofficeInvoiceController, LexofficeManufacturingController, LexofficeVoucherController};
+use App\Plugins\Lexoffice\Http\Controllers\{LexofficeArticleController, LexofficeCustomerController, LexofficeInvoiceController, LexofficeManufacturingController, LexofficePostingCategoryController, LexofficeVoucherController};
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -35,6 +35,10 @@ Route::middleware(['web', 'auth', \App\Http\Middleware\EnforcePlanModules::class
         ->name('customers.lexoffice.sync-vouchers');
     Route::post('suppliers/{supplier}/lexoffice/sync-vouchers', [LexofficeVoucherController::class, 'syncSupplier'])
         ->name('suppliers.lexoffice.sync-vouchers');
+    Route::post('customers/{customer}/lexoffice/posting-category', [LexofficePostingCategoryController::class, 'customer'])
+        ->name('customers.lexoffice.posting-category');
+    Route::post('suppliers/{supplier}/lexoffice/posting-category', [LexofficePostingCategoryController::class, 'supplier'])
+        ->name('suppliers.lexoffice.posting-category');
 
     // Rechnungs-bezogen
     Route::post('invoices/{invoice}/lexoffice/publish', [LexofficeInvoiceController::class, 'publish'])

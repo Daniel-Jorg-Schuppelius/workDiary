@@ -24,6 +24,9 @@ final class MailAttachment {
         public readonly string $filename,
         public readonly string $mime,
         public readonly string $content,
+        // Im Text eingebettet (Logo, Signaturbild) statt angehängt; der
+        // Rechnungseingang verarbeitet solche Teile nie als Beleg.
+        public readonly bool $isInline = false,
     ) {}
 
     /** Größe in Bytes (aus dem Inhalt abgeleitet, keine separate Quelle). */

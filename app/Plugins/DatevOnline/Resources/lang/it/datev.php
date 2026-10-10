@@ -31,6 +31,9 @@ return [
         'active' => 'connesso',
         'disconnected' => 'non connesso',
     ],
+    'incoming' => [
+        'label' => 'DATEV Unternehmen online',
+    ],
     'transfer_kind' => [
         'extf' => 'Lotto contabile',
         'outgoing_document' => 'Fattura emessa',
@@ -79,7 +82,7 @@ return [
         ],
         'documents' => [
             'heading' => 'Immagini dei giustificativi',
-            'hint' => 'Le fatture emesse vanno a DATEV Unternehmen online come «Rechnungsausgang», quelle ricevute come «Rechnungseingang», ciascuna una volta e a partire dalla data scelta.',
+            'hint' => 'Le fatture emesse vanno a DATEV Unternehmen online come «Rechnungsausgang», quelle ricevute come «Rechnungseingang» non appena sono assegnate nelle fatture ricevute, ciascuna una volta e a partire dalla data scelta.',
             'enabled' => 'Trasferire ogni notte le immagini dei giustificativi',
             'since' => 'Dalla data del giustificativo',
             'save' => 'Salva',

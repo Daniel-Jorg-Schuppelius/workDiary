@@ -17,11 +17,11 @@ use App\Models\Invoicing\{IncomingEInvoice, Invoice};
 use App\Models\Mail\EmailConnection;
 use App\Models\Platform\User;
 use App\Models\Supplier\Supplier;
-use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, XRechnungGenerator};
+use App\Services\Invoicing\EInvoice\IncomingEInvoiceService;
 use App\Services\Mail\{MailAttachment, MailIntakeService, ParsedMessage};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{GeneratesIncomingEInvoices, WithOrganization};
 use Tests\TestCase;
 
 /**
@@ -32,6 +32,7 @@ use Tests\TestCase;
  * die führende Buchhaltung.
  */
 final class IncomingEInvoiceChannelsTest extends TestCase {
+    use GeneratesIncomingEInvoices;
     use RefreshDatabase;
     use WithOrganization;
 
@@ -97,7 +98,7 @@ final class IncomingEInvoiceChannelsTest extends TestCase {
         $invoice->recalculate();
         $invoice->save();
 
-        return app(XRechnungGenerator::class)->generate($invoice->fresh(['items', 'customer']));
+        return $this->incomingXml($invoice);
     }
 
     private function connection(bool $einvoiceIntake = true): EmailConnection {

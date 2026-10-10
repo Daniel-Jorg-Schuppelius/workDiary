@@ -180,6 +180,12 @@ class CustomerController extends Controller {
                 ->with('error', __('Kunde steht unter Legal Hold — Löschen ist bis zur Aufhebung ausgeschlossen.'));
         }
 
+        // Am Sammelkunden hängen die Belege vieler Einmalkunden (MVP-1109).
+        if ($customer->is_collective && \App\Models\Invoicing\IncomingEInvoice::query()->where('customer_id', $customer->id)->exists()) {
+            return redirect()->route('customers.show', $customer)
+                ->with('error', __('Der Sammelkontakt hat Belege und lässt sich nicht löschen.'));
+        }
+
         if ($customer->hasNonDefaultProjects()) {
             return redirect()->route('customers.show', $customer)
                 ->with('error', __('Kunde kann nicht gelöscht werden: Es existieren noch Projekte. Bitte zuerst archivieren oder Projekte entfernen.'));

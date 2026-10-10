@@ -37,7 +37,7 @@ final class LexofficeVoucherSyncButtonTest extends TestCase {
         $this->setUpOrganization();
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
-        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexoffice.io/v1', 'api_key' => 'test-key']);
+        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexware.io/v1', 'api_key' => 'test-key']);
     }
 
     private function linkContact(string $externalId, Model $model): void {
@@ -53,7 +53,7 @@ final class LexofficeVoucherSyncButtonTest extends TestCase {
 
     private function fakeVoucherlist(array $items): void {
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/voucherlist*' => FakePluginHttp::response(['content' => $items, 'totalPages' => 1], 200),
+            'https://api.lexware.io/v1/voucherlist*' => FakePluginHttp::response(['content' => $items, 'totalPages' => 1], 200),
         ]);
     }
 

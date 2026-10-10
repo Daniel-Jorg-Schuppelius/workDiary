@@ -49,7 +49,7 @@ final class FritzboxExternalContactMatchingTest extends TestCase {
         $this->linkContact(LexofficePlugin::ID, 'lex-contact-1', $customer);
 
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response([
+            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response([
                 'content' => [[
                     'id' => 'lex-contact-1',
                     'company' => ['name' => 'Externe Nummer GmbH'],
@@ -113,7 +113,7 @@ final class FritzboxExternalContactMatchingTest extends TestCase {
         ]);
         $this->linkContact(LexofficePlugin::ID, 'lex-linked', $customer);
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response([
+            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response([
                 'content' => [
                     ['id' => 'lex-linked', 'company' => ['name' => 'Kunde A'], 'phoneNumbers' => ['business' => ['02219567000']]],
                     ['id' => 'lex-unlinked', 'company' => ['name' => 'Kontakt B'], 'phoneNumbers' => ['business' => ['02219567000']]],
@@ -141,7 +141,7 @@ final class FritzboxExternalContactMatchingTest extends TestCase {
             'enabled' => true,
             'settings' => [
                 'api_key' => 'test-key',
-                'base_url' => 'https://api.lexoffice.io/v1',
+                'base_url' => 'https://api.lexware.io/v1',
             ],
         ]);
     }

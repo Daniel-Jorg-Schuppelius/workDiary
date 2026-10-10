@@ -59,6 +59,10 @@ class PortalAccessService {
      *                             Grund — keine Konten-Enumeration)
      */
     public function invite(Customer $customer, string $name, string $email, User $actor): User {
+        // Der Sammelkunde (MVP-1109) steht für viele Einmalkunden.
+        if ($customer->is_collective) {
+            throw ValidationException::withMessages(['email' => (string) __('Der Sammelkunde erhält keinen Portalzugang.')]);
+        }
         $email = EmailHelper::normalize($email);
 
         // users.email ist global eindeutig. Die Antwort verrät nicht, ob die

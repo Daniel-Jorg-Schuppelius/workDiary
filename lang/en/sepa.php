@@ -163,6 +163,7 @@ return [
         ],
         'error' => [
             'in_run' => 'The invoice is already in a payment run.',
+            'outgoing' => 'Outgoing documents from the invoice mailbox have no retention.',
             'amount' => 'Please enter a percentage or amount greater than 0.',
             'exceeds' => 'The retentions exceed the invoice amount.',
             'not_open' => 'Only open retentions can be released.',

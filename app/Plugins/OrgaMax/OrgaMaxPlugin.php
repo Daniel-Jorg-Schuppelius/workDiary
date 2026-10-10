@@ -84,6 +84,7 @@ class OrgaMaxPlugin extends AbstractPlugin implements ContactSyncer {
      * löschen. Gefunden wird über die Kundennummer, die orgaMAX führt.
      */
     public function pushContact(Customer $customer): string {
+        \App\Services\Stammdaten\CollectiveContacts::assertPushable($customer);
         $connection = OrgaMaxConnection::query()
             ->where('organization_id', $customer->organization_id)
             ->first();

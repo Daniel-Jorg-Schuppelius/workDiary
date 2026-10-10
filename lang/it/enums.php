@@ -2080,6 +2080,9 @@ return [
             'refunded' => 'Rimborsato',
         ],
         'incoming_e_invoice_status' => ['received' => 'Ricevuta', 'approved' => 'Approvata (verifica)', 'rejected' => 'Rifiutato', 'question' => 'Richiesta di chiarimento', 'payment_released' => 'Pagamento autorizzato'],
+        'incoming_invoice_recognition' => ['structured' => 'Fattura elettronica (strutturata)', 'extracted' => 'Riconosciuta da PDF o immagine', 'none' => 'Non riconosciuta (da chiarire)'],
+        'incoming_invoice_match_kind' => ['vat_id' => 'Partita IVA', 'tax_number' => 'Codice fiscale', 'iban' => 'IBAN', 'sender_rule' => 'Regola mittente', 'manual' => 'Manuale'],
+        'incoming_invoice_transfer_status' => ['pending' => 'In attesa', 'waiting' => 'Da chiarire', 'failed' => 'Non riuscito', 'transferred' => 'Trasferita', 'linked' => 'Già presente, collegata'],
         'invoice_schedule_status' => ['active' => 'Attivo', 'paused' => 'In pausa', 'ended' => 'Terminato'],
     ],
     'agile' => [

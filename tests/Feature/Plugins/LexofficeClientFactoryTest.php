@@ -77,7 +77,7 @@ final class LexofficeClientFactoryTest extends TestCase {
     public function test_every_client_gets_the_same_retry_budget(): void {
         FakePluginHttp::fake();
 
-        $this->assertSame(LexofficeClientFactory::MAX_RETRIES, app(LexofficeClientFactory::class)->make('lex-key', 'https://api.lexoffice.io/v1')->getMaxRetries());
+        $this->assertSame(LexofficeClientFactory::MAX_RETRIES, app(LexofficeClientFactory::class)->make('lex-key', 'https://api.lexware.io/v1')->getMaxRetries());
         $this->assertSame(LexofficeClientFactory::MAX_RETRIES, app(LexofficeClientFactory::class)->fromConfig(LexofficeConfig::resolve($this->organization->id))->getMaxRetries());
     }
 

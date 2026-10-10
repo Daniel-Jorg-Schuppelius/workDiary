@@ -48,15 +48,15 @@ final class LexofficeVoucherCategorySyncTest extends TestCase {
         $this->voucher('pv-draft', 'purchaseinvoice', $supplier->id, 'draft');
 
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/posting-categories' => FakePluginHttp::response([
+            'https://api.lexware.io/v1/posting-categories' => FakePluginHttp::response([
                 ['id' => 'cat-office', 'name' => 'Bürobedarf', 'type' => 'outgo', 'groupName' => 'Büro'],
                 ['id' => 'cat-fuel', 'name' => 'Kraftstoff', 'type' => 'outgo', 'groupName' => 'Kfz'],
             ]),
-            'https://api.lexoffice.io/v1/vouchers/pv-1' => FakePluginHttp::response(['taxType' => 'gross', 'voucherItems' => [
+            'https://api.lexware.io/v1/vouchers/pv-1' => FakePluginHttp::response(['taxType' => 'gross', 'voucherItems' => [
                 ['amount' => 119.0, 'taxAmount' => 19.0, 'taxRatePercent' => 19, 'categoryId' => 'cat-office'],
                 ['amount' => 59.5, 'taxAmount' => 9.5, 'taxRatePercent' => 19, 'categoryId' => 'cat-fuel'],
             ]]),
-            'https://api.lexoffice.io/v1/vouchers/pc-1' => FakePluginHttp::response(['taxType' => 'net', 'voucherItems' => [
+            'https://api.lexware.io/v1/vouchers/pc-1' => FakePluginHttp::response(['taxType' => 'net', 'voucherItems' => [
                 ['amount' => 20.0, 'taxAmount' => 3.8, 'taxRatePercent' => 19, 'categoryId' => 'cat-office'],
             ]]),
         ]);
@@ -82,8 +82,8 @@ final class LexofficeVoucherCategorySyncTest extends TestCase {
         $voucher = $this->voucher('pv-9', 'purchaseinvoice', $supplier->id);
         $this->enablePluginFor($this->organization, LexofficePlugin::ID, ['api_key' => 'lex-key', 'request_interval' => '0']);
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/posting-categories' => FakePluginHttp::response([['id' => 'cat-tools', 'name' => 'Werkzeug', 'type' => 'outgo']]),
-            'https://api.lexoffice.io/v1/vouchers/pv-9' => FakePluginHttp::response(['taxType' => 'net', 'voucherItems' => [['amount' => 40.0, 'taxAmount' => 7.6, 'categoryId' => 'cat-tools']]]),
+            'https://api.lexware.io/v1/posting-categories' => FakePluginHttp::response([['id' => 'cat-tools', 'name' => 'Werkzeug', 'type' => 'outgo']]),
+            'https://api.lexware.io/v1/vouchers/pv-9' => FakePluginHttp::response(['taxType' => 'net', 'voucherItems' => [['amount' => 40.0, 'taxAmount' => 7.6, 'categoryId' => 'cat-tools']]]),
         ]);
 
         $this->artisan('lexoffice:sync-voucher-categories', ['--limit' => 5])

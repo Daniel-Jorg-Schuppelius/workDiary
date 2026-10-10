@@ -134,12 +134,12 @@
                     </x-slot:head>
                     @forelse ($documentTransfers as $transfer)
                         <tr>
-                            <td>{{ $transfer->kind->label() }}</td>
-                            <td class="whitespace-nowrap">{{ ($transfer->transferred_at ?? $transfer->updated_at)?->fdatetime() }}</td>
+                            <td>{{ $transfer['kind'] }}</td>
+                            <td class="whitespace-nowrap">{{ $transfer['at']?->fdatetime() }}</td>
                             <td>
-                                <x-status-badge :tone="$transfer->status->tone()" size="xs">{{ $transfer->status->label() }}</x-status-badge>
-                                @if ($transfer->error)
-                                    <span class="text-xs text-error">{{ $transfer->error }}</span>
+                                <x-status-badge :tone="$transfer['tone']" size="xs">{{ $transfer['label'] }}</x-status-badge>
+                                @if ($transfer['error'])
+                                    <span class="text-xs text-error">{{ $transfer['error'] }}</span>
                                 @endif
                             </td>
                         </tr>

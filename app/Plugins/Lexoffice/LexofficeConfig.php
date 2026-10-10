@@ -23,14 +23,14 @@ class LexofficeConfig {
     public const DEFAULT_REQUEST_INTERVAL = 0.5;
 
     /**
-     * @return array{api_key: ?string, base_url: string, defaults: array<string, mixed>, match_policy: string, create_missing_local: bool, number_authority: bool, webhook_secret: ?string, webhook_public_key: ?string, enabled: bool, request_interval: float}
+     * @return array{api_key: ?string, base_url: string, defaults: array<string, mixed>, match_policy: string, create_missing_local: bool, number_authority: bool, webhook_secret: ?string, webhook_public_key: ?string, enabled: bool, request_interval: float, incoming_transfer: bool, incoming_default_category: ?string, outgoing_default_category: ?string}
      */
     public static function resolve(?int $organizationId = null): array {
         $r = PluginSettingsResolver::for(LexofficePlugin::ID, $organizationId);
 
         return [
             'api_key' => $r->string('api_key'),
-            'base_url' => $r->string('base_url') ?? 'https://api.lexoffice.io/v1',
+            'base_url' => $r->string('base_url') ?? 'https://api.lexware.io/v1',
             'defaults' => [
                 'default_currency' => $r->string('default_currency') ?? 'EUR',
                 'default_tax_type' => $r->string('default_tax_type') ?? 'net',
@@ -47,6 +47,9 @@ class LexofficeConfig {
             'webhook_public_key' => $r->string('webhook_public_key'),
             'enabled' => $r->enabled(),
             'request_interval' => self::clampInterval($r->float('request_interval', self::DEFAULT_REQUEST_INTERVAL)),
+            'incoming_transfer' => $r->bool('incoming_transfer', false),
+            'incoming_default_category' => $r->string('incoming_default_category'),
+            'outgoing_default_category' => $r->string('outgoing_default_category'),
         ];
     }
 

@@ -31,7 +31,7 @@ class LexofficeRateLimitTest extends TestCase {
 
     public function test_healthcheck_returns_degraded_on_persistent_rate_limit(): void {
         $fake = FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/profile' => FakePluginHttp::response('rate limited', 429),
+            'https://api.lexware.io/v1/profile' => FakePluginHttp::response('rate limited', 429),
         ]);
 
         $health = (new LexofficePlugin($this->service()))->healthCheck();
@@ -43,7 +43,7 @@ class LexofficeRateLimitTest extends TestCase {
 
     public function test_ping_throws_rate_limit_exception_after_exhausting_retries(): void {
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/profile' => FakePluginHttp::response('rate limited', 429),
+            'https://api.lexware.io/v1/profile' => FakePluginHttp::response('rate limited', 429),
         ]);
 
         $this->expectException(LexofficeRateLimitException::class);
@@ -53,7 +53,7 @@ class LexofficeRateLimitTest extends TestCase {
 
     public function test_ping_recovers_when_rate_limit_clears_on_retry(): void {
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/profile' => [
+            'https://api.lexware.io/v1/profile' => [
                 FakePluginHttp::response('rate limited', 429),
                 FakePluginHttp::response(['organizationId' => 'org-1'], 200),
             ],
@@ -65,7 +65,7 @@ class LexofficeRateLimitTest extends TestCase {
     public function test_healthcheck_returns_degraded_on_server_error(): void {
         // 5xx ist serverseitig/transient → degraded (kein Auto-Disable).
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/profile' => FakePluginHttp::response('boom', 503),
+            'https://api.lexware.io/v1/profile' => FakePluginHttp::response('boom', 503),
         ]);
 
         $health = (new LexofficePlugin($this->service()))->healthCheck();
@@ -77,7 +77,7 @@ class LexofficeRateLimitTest extends TestCase {
     public function test_healthcheck_returns_failing_with_status_on_client_error(): void {
         // 403 (z. B. fehlender Scope/Tarif) → failing, Status in der Meldung.
         FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/profile' => FakePluginHttp::response('forbidden', 403),
+            'https://api.lexware.io/v1/profile' => FakePluginHttp::response('forbidden', 403),
         ]);
 
         $health = (new LexofficePlugin($this->service()))->healthCheck();

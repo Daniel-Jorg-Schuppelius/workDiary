@@ -245,7 +245,13 @@ class FixedAssetController extends Controller {
             return null;
         }
 
-        return $class::query()->where('organization_id', $organization->id)->find((int) Sqid::decodeOrNumeric($class, $ref));
+        $id = (int) Sqid::decodeOrNumeric($class, $ref);
+        if ($class === Expense::class) {
+            return Expense::query()->where('organization_id', $organization->id)->find($id);
+        }
+
+        // Aus einem Ausgangsbeleg des Postfachs entsteht keine Anlage (MVP-1107).
+        return IncomingEInvoice::query()->purchases()->where('organization_id', $organization->id)->find($id);
     }
 
     /**

@@ -19,6 +19,7 @@ return [
 
     'inbox' => [
         'no_subject' => '(sin asunto)',
+        'invoice_mailbox' => 'Buzón de facturas · :from',
         'book_action' => 'Registrar como nota de comunicación',
         'book_ticket_action' => 'Registrar como ticket de servicio',
         'book_customer_placeholder' => '… cliente (vacío = remitente detectado)',

@@ -38,7 +38,7 @@ final class LexofficeDunningTest extends TestCase {
         $this->setUpOrganization();
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
-        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexoffice.io/v1', 'api_key' => 'test-key']);
+        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexware.io/v1', 'api_key' => 'test-key']);
     }
 
     private function overdueInvoice(): LexofficeVoucher {
@@ -52,7 +52,7 @@ final class LexofficeDunningTest extends TestCase {
 
     private function fakeInvoiceAndDunning(): FakePluginHttp {
         return FakePluginHttp::fake([
-            'https://api.lexoffice.io/v1/invoices/inv-1' => FakePluginHttp::response([
+            'https://api.lexware.io/v1/invoices/inv-1' => FakePluginHttp::response([
                 'id' => 'inv-1',
                 'address' => ['contactId' => 'lex-contact-1'],
                 'lineItems' => [[
@@ -62,7 +62,7 @@ final class LexofficeDunningTest extends TestCase {
                 'totalPrice' => ['currency' => 'EUR'],
                 'taxConditions' => ['taxType' => 'net'],
             ], 200),
-            'https://api.lexoffice.io/v1/dunnings*' => FakePluginHttp::response(['id' => 'dun-1'], 201),
+            'https://api.lexware.io/v1/dunnings*' => FakePluginHttp::response(['id' => 'dun-1'], 201),
         ]);
     }
 

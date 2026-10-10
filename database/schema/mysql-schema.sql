@@ -7310,6 +7310,7 @@ CREATE TABLE `contact_bank_accounts` (
   `accountable_id` bigint(20) unsigned NOT NULL,
   `account_holder` text DEFAULT NULL,
   `iban` text DEFAULT NULL,
+  `iban_hash` varchar(64) DEFAULT NULL,
   `bic` text DEFAULT NULL,
   `bank_name` varchar(200) DEFAULT NULL,
   `is_primary` tinyint(1) NOT NULL DEFAULT 0,
@@ -7320,6 +7321,7 @@ CREATE TABLE `contact_bank_accounts` (
   KEY `contact_bank_accounts_accountable_type_accountable_id_index` (`accountable_type`,`accountable_id`),
   KEY `contact_bank_accounts_organization_id_index` (`organization_id`),
   KEY `contact_bank_accounts_owner_idx` (`accountable_type`,`accountable_id`),
+  KEY `contact_bank_acc_org_iban_hash_idx` (`organization_id`,`iban_hash`),
   CONSTRAINT `contact_bank_accounts_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -8775,6 +8777,7 @@ CREATE TABLE `customers` (
   `created_by` bigint(20) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
+  `is_collective` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `customers_organization_id_number_unique` (`organization_id`,`number`),
   UNIQUE KEY `customers_org_slug_unique` (`organization_id`,`slug`),
@@ -10731,7 +10734,6 @@ CREATE TABLE `external_references` (
   `external_number` varchar(64) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `extref_unique` (`plugin_id`,`external_type`,`referenceable_type`,`referenceable_id`),
-  KEY `external_references_organization_id_foreign` (`organization_id`),
   KEY `external_references_referenceable_type_referenceable_id_index` (`referenceable_type`,`referenceable_id`),
   KEY `external_references_plugin_id_external_id_index` (`plugin_id`,`external_id`),
   KEY `extref_org_number_idx` (`organization_id`,`external_number`),
@@ -11627,6 +11629,29 @@ CREATE TABLE `import_value_mappings` (
   CONSTRAINT `import_value_mappings_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `incoming_einvoice_transfers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `incoming_einvoice_transfers` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `incoming_einvoice_id` bigint(20) unsigned NOT NULL,
+  `target` varchar(40) NOT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'pending',
+  `external_id` varchar(100) DEFAULT NULL,
+  `external_number` varchar(100) DEFAULT NULL,
+  `attempts` int(10) unsigned NOT NULL DEFAULT 0,
+  `error` varchar(500) DEFAULT NULL,
+  `transferred_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `incoming_einv_transfer_target_unique` (`incoming_einvoice_id`,`target`),
+  KEY `incoming_einv_transfer_org_status_idx` (`organization_id`,`status`),
+  CONSTRAINT `incoming_einvoice_transfers_incoming_einvoice_id_foreign` FOREIGN KEY (`incoming_einvoice_id`) REFERENCES `incoming_einvoices` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `incoming_einvoice_transfers_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `incoming_einvoices`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -11636,9 +11661,13 @@ CREATE TABLE `incoming_einvoices` (
   `document_id` bigint(20) unsigned NOT NULL,
   `sha256` char(64) NOT NULL,
   `source` varchar(12) NOT NULL DEFAULT 'upload',
+  `sender_email` varchar(191) DEFAULT NULL,
+  `source_reference` varchar(191) DEFAULT NULL,
   `invoice_number` varchar(64) DEFAULT NULL,
   `seller_name` varchar(191) DEFAULT NULL,
   `seller_vat_id` varchar(32) DEFAULT NULL,
+  `buyer_name` varchar(191) DEFAULT NULL,
+  `buyer_vat_id` varchar(32) DEFAULT NULL,
   `issue_date` date DEFAULT NULL,
   `due_date` date DEFAULT NULL,
   `currency` char(3) DEFAULT NULL,
@@ -11654,6 +11683,14 @@ CREATE TABLE `incoming_einvoices` (
   `paid_in_run_id` bigint(20) unsigned DEFAULT NULL,
   `received_at` timestamp NOT NULL,
   `status` varchar(20) NOT NULL DEFAULT 'received',
+  `direction` varchar(16) NOT NULL DEFAULT 'incoming',
+  `kind` varchar(32) NOT NULL DEFAULT 'invoice',
+  `supplier_id` bigint(20) unsigned DEFAULT NULL,
+  `customer_id` bigint(20) unsigned DEFAULT NULL,
+  `match_kind` varchar(16) DEFAULT NULL,
+  `matched_user_id` bigint(20) unsigned DEFAULT NULL,
+  `matched_at` timestamp NULL DEFAULT NULL,
+  `recognition` varchar(16) NOT NULL DEFAULT 'structured',
   `decided_by` bigint(20) unsigned DEFAULT NULL,
   `decided_at` timestamp NULL DEFAULT NULL,
   `decision_note` varchar(500) DEFAULT NULL,
@@ -11671,8 +11708,18 @@ CREATE TABLE `incoming_einvoices` (
   KEY `inc_einv_org_due_idx` (`organization_id`,`due_date`),
   KEY `incoming_einvoices_paid_in_run_id_foreign` (`paid_in_run_id`),
   KEY `fk_inc_einv_iban_confirmed_by` (`creditor_iban_confirmed_by`),
+  KEY `incoming_einv_org_dir_status_idx` (`organization_id`,`direction`,`status`),
+  KEY `incoming_einv_org_source_ref_idx` (`organization_id`,`source_reference`),
+  KEY `incoming_einvoices_supplier_id_foreign` (`supplier_id`),
+  KEY `incoming_einvoices_customer_id_foreign` (`customer_id`),
+  KEY `incoming_einvoices_matched_user_id_foreign` (`matched_user_id`),
+  KEY `incoming_einv_org_supplier_idx` (`organization_id`,`supplier_id`),
+  KEY `incoming_einv_org_customer_idx` (`organization_id`,`customer_id`),
   CONSTRAINT `fk_inc_einv_iban_confirmed_by` FOREIGN KEY (`creditor_iban_confirmed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `incoming_einvoices_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `incoming_einvoices_matched_user_id_foreign` FOREIGN KEY (`matched_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `incoming_einvoices_paid_in_run_id_foreign` FOREIGN KEY (`paid_in_run_id`) REFERENCES `payment_runs` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `incoming_einvoices_supplier_id_foreign` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE SET NULL,
   CONSTRAINT `ine_decided_by_fk` FOREIGN KEY (`decided_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `ine_document_fk` FOREIGN KEY (`document_id`) REFERENCES `documents` (`id`) ON DELETE CASCADE,
   CONSTRAINT `ine_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
@@ -12416,6 +12463,30 @@ CREATE TABLE `invoice_schedules` (
   CONSTRAINT `invoice_schedules_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `invoice_schedules_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE CASCADE,
   CONSTRAINT `invoice_schedules_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `invoice_sender_rules`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `invoice_sender_rules` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `email` varchar(191) NOT NULL,
+  `direction` varchar(16) NOT NULL,
+  `supplier_id` bigint(20) unsigned DEFAULT NULL,
+  `customer_id` bigint(20) unsigned DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `invoice_sender_rule_org_email_dir_unique` (`organization_id`,`email`,`direction`),
+  KEY `invoice_sender_rules_supplier_id_foreign` (`supplier_id`),
+  KEY `invoice_sender_rules_customer_id_foreign` (`customer_id`),
+  KEY `invoice_sender_rules_created_by_foreign` (`created_by`),
+  CONSTRAINT `invoice_sender_rules_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `invoice_sender_rules_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `invoice_sender_rules_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `invoice_sender_rules_supplier_id_foreign` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `invoices`;
@@ -22640,6 +22711,7 @@ CREATE TABLE `suppliers` (
   `created_by` bigint(20) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
+  `is_collective` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `suppliers_organization_id_number_unique` (`organization_id`,`number`),
   UNIQUE KEY `suppliers_org_slug_unique` (`organization_id`,`slug`),
@@ -26358,124 +26430,129 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (840,'2027_02_23_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (841,'2027_02_23_101300_create_club_horse_tables',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (842,'2027_02_23_101400_create_club_competition_tables',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (843,'2027_02_23_101500_add_free_invoice_source_columns',1);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (844,'2027_02_24_100000_rewrite_morph_types_to_aliases',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (845,'2027_02_24_110000_add_journal_columns_to_learning_enrollment_events',3);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (846,'2027_02_24_120000_canonicalize_field_schemas_and_checklists',4);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (847,'2027_02_24_130000_create_custom_field_tables',5);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (848,'2027_02_24_140000_move_club_member_address_to_contact_addresses',6);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (849,'2027_02_25_100000_add_dunning_block_reason_to_invoices',7);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (850,'2027_02_25_110000_create_base_interest_rates_table',8);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (851,'2027_02_25_120000_create_protocol_templates_table',9);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (852,'2027_02_25_130000_add_disposal_details_to_fixed_assets',10);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (853,'2027_02_25_140000_create_contract_templates_table',10);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (854,'2027_02_25_150000_add_cost_center_to_contracts',10);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (855,'2027_02_25_160000_add_rental_terms_revision_to_rental_cases',10);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (860,'2027_02_25_170000_create_procedure_library_steps_table',11);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (861,'2027_02_25_180000_add_blocked_state_to_procedure_runs',11);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (862,'2027_02_25_190000_create_asset_inspection_rounds_table',11);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (863,'2027_02_25_200000_create_shipment_parcels_table',11);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (864,'2027_02_25_210000_add_article_to_materials',12);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (865,'2027_02_25_220000_create_lexoffice_voucher_categories_table',12);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (866,'2027_02_26_100000_create_investment_financing_variants_table',13);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (867,'2027_02_27_100000_add_name_i18n_to_procedure_templates_and_tags',14);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (868,'2027_02_27_110000_add_is_direct_to_rental_requests',15);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (869,'2027_02_27_120000_add_return_to_shipments',15);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (870,'2027_02_27_130000_add_diary_entry_to_asset_inspection_schedules',15);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (871,'2027_02_27_140000_create_damage_cases_tables',16);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (872,'2027_02_27_150000_create_recalls_tables',16);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (873,'2027_02_27_160000_create_job_application_ratings_table',17);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (874,'2027_02_27_170000_create_job_interview_offers_table',17);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (875,'2027_02_27_180000_create_investment_programs_tables',18);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (876,'2027_02_27_190000_create_investment_supplier_ratings_table',18);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (877,'2027_02_27_200000_create_sustainability_sites_table',18);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (878,'2027_02_27_210000_create_boq_call_offs_tables',19);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (879,'2027_02_27_220000_add_bill_of_quantity_to_invoices',19);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (880,'2027_02_27_230000_create_branch_profile_variants_table',19);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (881,'2027_02_27_240000_add_proposal_fields_to_investment_cases',20);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (882,'2027_02_27_250000_create_supplier_questionnaires_tables',20);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (883,'2027_02_27_260000_create_asset_inspection_orders_tables',20);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (884,'2027_02_27_270000_create_strategic_objectives_tables',21);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (885,'2027_02_27_280000_add_employment_fields_to_contracts',21);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (886,'2027_02_27_290000_add_classification_fields_to_asset_finance_contracts',22);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (887,'2027_02_27_300000_add_authority_report_fields_to_recalls',22);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (888,'2027_02_27_310000_create_crisis_business_processes_table',22);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (889,'2027_02_27_320000_create_rental_rate_rules_table',23);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (890,'2027_02_27_330000_create_price_index_tables',24);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (891,'2027_02_27_340000_create_incoming_invoice_retentions_table',24);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (892,'2027_02_27_350000_create_liquidity_scenarios_table',24);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (893,'2027_02_27_360000_create_tenant_billing_tables',25);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (894,'2027_02_27_370000_add_carbon_footprint_fields_to_articles',26);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (895,'2027_02_27_380000_create_sustainability_offsets_table',26);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (896,'2027_02_27_390000_create_crisis_room_tables',26);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (897,'2027_02_27_400000_add_supplier_confirmation_to_purchase_orders',27);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (898,'2027_02_28_100000_create_asset_positions_table',28);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (899,'2027_02_28_110000_create_security_ip_bans_table',29);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (900,'2027_02_28_120000_add_declining_and_special_depreciation',30);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (901,'2027_02_28_130000_create_cost_allocation_and_budget_releases',30);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (902,'2027_02_28_140000_create_liquidity_plan_tables',30);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (903,'2027_02_28_150000_create_medical_checkup_occasions',31);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (904,'2027_02_28_160000_create_personnel_file_acknowledgements_and_submissions',31);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (905,'2027_02_28_170000_extend_commissions_with_tiers_caps_and_agents',32);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (906,'2027_02_28_180000_create_open_issue_follow_ups',32);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (907,'2027_02_28_190000_add_driver_signature_to_travel_logs',33);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (908,'2027_02_28_191000_add_private_use_fields_to_vehicles',33);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (909,'2027_02_28_192000_add_review_to_procedure_documentations',33);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (910,'2027_02_28_193000_add_acquisition_and_charging_to_vehicles',34);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (911,'2027_02_28_194000_add_reversal_kind_to_invoice_commissions',34);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (912,'2027_02_28_200000_add_payment_terms_to_customers',35);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (913,'2027_02_28_201000_create_fixed_asset_classes',35);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (914,'2027_02_28_202000_add_cost_center_requirement_to_accounting_accounts',35);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (915,'2027_02_28_203000_clean_integration_inbox_raw_values',35);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (916,'2027_02_28_204000_create_hazard_catalog_and_event_link',36);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (917,'2027_02_28_205000_create_club_donations',37);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (918,'2027_02_28_206000_add_checkin_code_to_club_event_details',37);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (919,'2027_02_28_207000_add_customs_fields',38);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (920,'2027_02_28_208000_add_invoice_to_payment_run_items',39);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (921,'2027_02_28_209000_create_accounting_exchange_rates',39);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (922,'2027_02_28_210000_add_multi_manning_to_travel_logs',40);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (923,'2027_02_28_211000_add_recorded_at_to_attendances',40);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (924,'2027_02_28_211100_close_finished_open_attendances',40);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (925,'2027_02_28_212000_add_fee_to_club_event_details',41);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (926,'2027_02_28_213000_create_import_column_mappings',42);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (934,'2027_02_28_214000_create_resale_license_stock_tables',43);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (935,'2027_02_28_215000_neutral_article_refs_in_reselling',43);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (936,'2027_02_28_216000_neutral_service_article_refs',43);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (939,'2027_02_28_217000_retainer_voucher_links_as_external_references',44);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (940,'2027_02_28_218000_accounting_numbers_in_external_references',44);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (942,'2027_02_28_219000_document_mirror_detachments',45);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (943,'2027_02_28_220000_msgraph_oof_setting_to_plugin',46);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (944,'2027_03_01_100000_add_labour_share_to_document_lines',47);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (945,'2027_03_02_100000_add_line_kind_to_document_lines',47);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (946,'2027_03_03_100000_create_service_calculation_tables',47);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (947,'2027_03_04_100000_create_takeoffs_tables',48);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (948,'2027_03_05_100000_create_takeoff_transfers_table',48);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (949,'2027_03_06_100000_create_dictations_table',48);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (950,'2027_03_07_100000_add_subject_to_chat_channels',48);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (951,'2027_03_08_100000_create_mcp_oauth_tables',49);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (952,'2027_03_09_100000_add_ids_connect_to_supplier_catalog_sources',50);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (953,'2027_03_09_110000_create_online_payment_tables',51);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (954,'2027_03_09_120000_create_datev_online_tables',52);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (955,'2027_03_09_130000_create_ebics_tables',53);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (956,'2027_03_09_140000_add_open_masterdata_to_supplier_catalog_sources',54);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (957,'2027_03_09_150000_reslug_customers_with_reserved_slugs',55);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (958,'2027_03_09_160000_add_unparsed_records_to_domain_dns_zone_projections',56);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (959,'2027_03_10_100000_add_block_and_merge_fields_to_stock_lots',57);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (960,'2027_03_10_100100_add_abort_fields_to_patrol_runs',57);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (961,'2027_03_10_100200_backfill_resolved_at_on_closed_inbox_items',58);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (962,'2027_03_10_100300_add_round_to_approvals_table',59);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (963,'2027_03_10_100400_add_approval_round_to_application_contract_versions_table',59);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (964,'2027_03_10_100500_create_fritzbox_dismissed_calls_table',60);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (965,'2027_03_10_100600_backfill_fritzbox_dismissed_calls',60);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (966,'2027_03_10_100700_add_deferred_from_status_to_investment_cases',61);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (967,'2027_03_10_100800_normalize_orgamax_invoice_status',62);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (968,'2027_03_10_100900_post_lot_block_balances',63);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (969,'2027_03_11_100000_create_customer_intakes_tables',64);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (970,'2027_03_11_100100_add_customer_approval_to_print_orders',64);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (971,'2027_03_11_100200_create_customer_intake_upload_links_table',65);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (972,'2027_03_12_100000_add_search_columns_to_help_topics',66);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (973,'2027_03_13_100000_add_continuation_of_id_to_sick_leaves',67);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (974,'2027_03_13_100100_unify_caldav_reference_type',67);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (975,'2027_03_13_100200_drop_is_mandatory_from_learning_path_items',68);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (976,'2027_03_14_100000_add_group_filter_and_private_network_to_zammad_connections',68);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (977,'2027_03_14_100100_add_allow_private_network_to_webdav_connections',68);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (978,'2027_03_14_100200_add_allow_private_network_to_caldav_connections',68);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (844,'2027_02_24_100000_rewrite_morph_types_to_aliases',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (845,'2027_02_24_110000_add_journal_columns_to_learning_enrollment_events',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (846,'2027_02_24_120000_canonicalize_field_schemas_and_checklists',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (847,'2027_02_24_130000_create_custom_field_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (848,'2027_02_24_140000_move_club_member_address_to_contact_addresses',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (849,'2027_02_25_100000_add_dunning_block_reason_to_invoices',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (850,'2027_02_25_110000_create_base_interest_rates_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (851,'2027_02_25_120000_create_protocol_templates_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (852,'2027_02_25_130000_add_disposal_details_to_fixed_assets',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (853,'2027_02_25_140000_create_contract_templates_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (854,'2027_02_25_150000_add_cost_center_to_contracts',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (855,'2027_02_25_160000_add_rental_terms_revision_to_rental_cases',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (856,'2027_02_25_170000_create_procedure_library_steps_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (857,'2027_02_25_180000_add_blocked_state_to_procedure_runs',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (858,'2027_02_25_190000_create_asset_inspection_rounds_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (859,'2027_02_25_200000_create_shipment_parcels_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (860,'2027_02_25_210000_add_article_to_materials',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (861,'2027_02_25_220000_create_lexoffice_voucher_categories_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (862,'2027_02_26_100000_create_investment_financing_variants_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (863,'2027_02_27_100000_add_name_i18n_to_procedure_templates_and_tags',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (864,'2027_02_27_110000_add_is_direct_to_rental_requests',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (865,'2027_02_27_120000_add_return_to_shipments',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (866,'2027_02_27_130000_add_diary_entry_to_asset_inspection_schedules',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (867,'2027_02_27_140000_create_damage_cases_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (868,'2027_02_27_150000_create_recalls_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (869,'2027_02_27_160000_create_job_application_ratings_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (870,'2027_02_27_170000_create_job_interview_offers_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (871,'2027_02_27_180000_create_investment_programs_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (872,'2027_02_27_190000_create_investment_supplier_ratings_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (873,'2027_02_27_200000_create_sustainability_sites_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (874,'2027_02_27_210000_create_boq_call_offs_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (875,'2027_02_27_220000_add_bill_of_quantity_to_invoices',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (876,'2027_02_27_230000_create_branch_profile_variants_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (877,'2027_02_27_240000_add_proposal_fields_to_investment_cases',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (878,'2027_02_27_250000_create_supplier_questionnaires_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (879,'2027_02_27_260000_create_asset_inspection_orders_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (880,'2027_02_27_270000_create_strategic_objectives_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (881,'2027_02_27_280000_add_employment_fields_to_contracts',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (882,'2027_02_27_290000_add_classification_fields_to_asset_finance_contracts',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (883,'2027_02_27_300000_add_authority_report_fields_to_recalls',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (884,'2027_02_27_310000_create_crisis_business_processes_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (885,'2027_02_27_320000_create_rental_rate_rules_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (886,'2027_02_27_330000_create_price_index_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (887,'2027_02_27_340000_create_incoming_invoice_retentions_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (888,'2027_02_27_350000_create_liquidity_scenarios_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (889,'2027_02_27_360000_create_tenant_billing_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (890,'2027_02_27_370000_add_carbon_footprint_fields_to_articles',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (891,'2027_02_27_380000_create_sustainability_offsets_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (892,'2027_02_27_390000_create_crisis_room_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (893,'2027_02_27_400000_add_supplier_confirmation_to_purchase_orders',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (894,'2027_02_28_100000_create_asset_positions_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (895,'2027_02_28_110000_create_security_ip_bans_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (896,'2027_02_28_120000_add_declining_and_special_depreciation',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (897,'2027_02_28_130000_create_cost_allocation_and_budget_releases',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (898,'2027_02_28_140000_create_liquidity_plan_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (899,'2027_02_28_150000_create_medical_checkup_occasions',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (900,'2027_02_28_160000_create_personnel_file_acknowledgements_and_submissions',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (901,'2027_02_28_170000_extend_commissions_with_tiers_caps_and_agents',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (902,'2027_02_28_180000_create_open_issue_follow_ups',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (903,'2027_02_28_190000_add_driver_signature_to_travel_logs',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (904,'2027_02_28_191000_add_private_use_fields_to_vehicles',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (905,'2027_02_28_192000_add_review_to_procedure_documentations',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (906,'2027_02_28_193000_add_acquisition_and_charging_to_vehicles',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (907,'2027_02_28_194000_add_reversal_kind_to_invoice_commissions',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (908,'2027_02_28_200000_add_payment_terms_to_customers',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (909,'2027_02_28_201000_create_fixed_asset_classes',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (910,'2027_02_28_202000_add_cost_center_requirement_to_accounting_accounts',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (911,'2027_02_28_203000_clean_integration_inbox_raw_values',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (912,'2027_02_28_204000_create_hazard_catalog_and_event_link',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (913,'2027_02_28_205000_create_club_donations',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (914,'2027_02_28_206000_add_checkin_code_to_club_event_details',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (915,'2027_02_28_207000_add_customs_fields',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (916,'2027_02_28_208000_add_invoice_to_payment_run_items',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (917,'2027_02_28_209000_create_accounting_exchange_rates',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (918,'2027_02_28_210000_add_multi_manning_to_travel_logs',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (919,'2027_02_28_211000_add_recorded_at_to_attendances',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (920,'2027_02_28_211100_close_finished_open_attendances',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (921,'2027_02_28_212000_add_fee_to_club_event_details',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (922,'2027_02_28_213000_create_import_column_mappings',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (923,'2027_02_28_214000_create_resale_license_stock_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (924,'2027_02_28_215000_neutral_article_refs_in_reselling',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (925,'2027_02_28_216000_neutral_service_article_refs',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (926,'2027_02_28_217000_retainer_voucher_links_as_external_references',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (927,'2027_02_28_218000_accounting_numbers_in_external_references',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (928,'2027_02_28_219000_document_mirror_detachments',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (929,'2027_02_28_220000_msgraph_oof_setting_to_plugin',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (930,'2027_03_01_100000_add_labour_share_to_document_lines',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (931,'2027_03_02_100000_add_line_kind_to_document_lines',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (932,'2027_03_03_100000_create_service_calculation_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (933,'2027_03_04_100000_create_takeoffs_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (934,'2027_03_05_100000_create_takeoff_transfers_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (935,'2027_03_06_100000_create_dictations_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (936,'2027_03_07_100000_add_subject_to_chat_channels',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (937,'2027_03_08_100000_create_mcp_oauth_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (938,'2027_03_09_100000_add_ids_connect_to_supplier_catalog_sources',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (939,'2027_03_09_110000_create_online_payment_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (940,'2027_03_09_120000_create_datev_online_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (941,'2027_03_09_130000_create_ebics_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (942,'2027_03_09_140000_add_open_masterdata_to_supplier_catalog_sources',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (943,'2027_03_09_150000_reslug_customers_with_reserved_slugs',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (944,'2027_03_09_160000_add_unparsed_records_to_domain_dns_zone_projections',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (945,'2027_03_10_100000_add_block_and_merge_fields_to_stock_lots',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (946,'2027_03_10_100100_add_abort_fields_to_patrol_runs',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (947,'2027_03_10_100200_backfill_resolved_at_on_closed_inbox_items',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (948,'2027_03_10_100300_add_round_to_approvals_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (949,'2027_03_10_100400_add_approval_round_to_application_contract_versions_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (950,'2027_03_10_100500_create_fritzbox_dismissed_calls_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (951,'2027_03_10_100600_backfill_fritzbox_dismissed_calls',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (952,'2027_03_10_100700_add_deferred_from_status_to_investment_cases',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (953,'2027_03_10_100800_normalize_orgamax_invoice_status',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (954,'2027_03_10_100900_post_lot_block_balances',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (955,'2027_03_11_100000_create_customer_intakes_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (956,'2027_03_11_100100_add_customer_approval_to_print_orders',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (957,'2027_03_11_100200_create_customer_intake_upload_links_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (958,'2027_03_12_100000_add_search_columns_to_help_topics',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (959,'2027_03_13_100000_add_continuation_of_id_to_sick_leaves',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (960,'2027_03_13_100100_unify_caldav_reference_type',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (961,'2027_03_13_100200_drop_is_mandatory_from_learning_path_items',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (962,'2027_03_14_100000_add_group_filter_and_private_network_to_zammad_connections',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (963,'2027_03_14_100100_add_allow_private_network_to_webdav_connections',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (964,'2027_03_14_100200_add_allow_private_network_to_caldav_connections',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (965,'2027_03_14_110000_add_mailbox_intake_to_incoming_einvoices',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (966,'2027_03_14_110100_add_counterparty_matching_to_incoming_einvoices',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (967,'2027_03_14_110200_add_is_collective_to_suppliers_and_customers',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (968,'2027_03_14_110300_create_incoming_einvoice_transfers_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (969,'2027_03_14_110400_move_lexoffice_base_url_to_lexware',1);
