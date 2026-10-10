@@ -1,7 +1,7 @@
 ---
 title: "Customers & suppliers"
 topic: contacts.manage
-version: 4
+version: 5
 keywords:
     - customer master data
     - supplier master data
@@ -56,6 +56,13 @@ to the DATEV handover — work without rework.
 
 ![Customer list with numbers, contact data, hourly rates and project count](media/kunden/kundenliste.png)
 *The customer list: master data, hourly rate and linked projects per business partner.*
+
+**Authorities and levy recipients:** If you keep the tax office, health
+insurance funds, the employers' liability insurance association or the
+municipality as suppliers so that accounting can book taxes and
+contributions, tick **Hide in reports** there. The vouchers are kept; the
+supplier reports leave these bodies out. For customers, the same checkbox
+applies to the customer and project reports.
 
 **Communication:** Record calls, e-mails and commitments as a communication
 note on the customer or supplier. The notes appear on the detail page and in

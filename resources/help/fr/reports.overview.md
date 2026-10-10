@@ -1,7 +1,7 @@
 ---
 title: "Utiliser les rapports"
 topic: reports.overview
-version: 7
+version: 8
 keywords:
     - statistiques
     - indicateurs
@@ -109,6 +109,10 @@ ouvre le rapport avec exactement cette période.
   L'interrupteur **Inclure les clients masqués** – il n'apparaît que si de tels
   clients existent – les réintègre ; si vous choisissez directement un tel
   client dans le filtre, il est également affiché.
+- Les fournisseurs marqués **Masquer dans les analyses**, comme le centre
+  des impôts ou une caisse d'assurance maladie, sont exclus de la valeur
+  fournisseur, de l'analyse des fournisseurs et des scorecards fournisseurs ;
+  l'interrupteur s'y appelle **Inclure les fournisseurs masqués**.
 - Vous pouvez enregistrer un rapport paramétré comme vue nommée, voir
   « Évaluations enregistrées ».
 

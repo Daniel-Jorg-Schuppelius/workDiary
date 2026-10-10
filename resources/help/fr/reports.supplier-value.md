@@ -1,7 +1,7 @@
 ---
 title: "Valeur fournisseur"
 topic: reports.supplier-value
-version: 1
+version: 2
 keywords:
     - analyse RFM
     - segmentation des fournisseurs
@@ -63,6 +63,19 @@ propre base de fournisseurs**, pas absolus.
 - **Occasionnel** — tous les autres fournisseurs actifs.
 - **Nouveau** — le premier justificatif tombe dans la période.
 - **Dormant** — aucun justificatif dans la période.
+
+## Fournisseurs masqués
+
+La comptabilité enregistre souvent comme fournisseurs des administrations et
+organismes de prélèvement tels que le centre des impôts, les caisses
+d'assurance maladie, la caisse d'assurance accidents du travail ou la
+commune, afin de pouvoir comptabiliser impôts et cotisations. Ces paiements
+ne sont pas des achats et faussent la concentration, les segments et la
+liste des risques. Marquez ces fournisseurs **Masquer dans les analyses**
+dans leurs données de base ; ils sont alors exclus de la valeur
+fournisseur, de l'analyse des fournisseurs et des scorecards fournisseurs.
+L'interrupteur **Inclure les fournisseurs masqués** – il n'apparaît que si
+de tels fournisseurs existent – les réintègre.
 
 Le rapport présente des données financières et n'est visible que pour les
 utilisateurs disposant du droit de reporting.

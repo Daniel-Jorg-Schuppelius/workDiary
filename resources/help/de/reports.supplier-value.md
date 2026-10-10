@@ -1,7 +1,7 @@
 ---
 title: "Lieferantenwert"
 topic: reports.supplier-value
-version: 1
+version: 2
 keywords:
     - RFM-Analyse
     - Lieferantensegmentierung
@@ -62,6 +62,18 @@ Lieferantenbestand**, nicht absolut.
 - **Sporadisch** — alle übrigen aktiven Lieferanten.
 - **Neu** — erster Beleg liegt im Zeitraum.
 - **Ruhend** — keine Belege im Zeitraum.
+
+## Ausgeblendete Lieferanten
+
+Behörden und Abgabenempfänger wie Finanzamt, Krankenkassen,
+Berufsgenossenschaft oder Gemeinde führt die Buchhaltung oft als
+Lieferanten, damit sich Steuern und Beiträge buchen lassen. Diese Zahlungen
+sind keine Einkäufe und verzerren Konzentration, Segmente und Risikoliste.
+Markieren Sie solche Lieferanten in ihren Stammdaten mit **In Auswertungen
+ausblenden**; sie fehlen dann in Lieferantenwert, Lieferantenanalyse und
+Lieferanten-Scorecards. Der Schalter **Ausgeblendete Lieferanten
+einbeziehen** – er erscheint nur, wenn es solche Lieferanten gibt – nimmt
+sie wieder auf.
 
 Der Bericht zeigt Finanzdaten und ist nur für Berechtigte mit
 Auswertungsrecht sichtbar.

@@ -1,7 +1,7 @@
 ---
 title: "Using reports"
 topic: reports.overview
-version: 7
+version: 8
 keywords:
     - statistics
     - KPIs
@@ -100,6 +100,10 @@ with exactly that period.
   customer and project reports. The switch **Include hidden customers** – it
   only appears if such customers exist – brings them back; if you select such a
   customer directly in the filter, it is shown as well.
+- Suppliers marked **Hide in reports**, such as the tax office or a health
+  insurance fund, are left out of supplier value, supplier analysis and
+  supplier scorecards; there the switch is called **Include hidden
+  suppliers**.
 - You can save a configured report as a named view, see “Saved reports”.
 
 ## Export

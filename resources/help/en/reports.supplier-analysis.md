@@ -1,7 +1,7 @@
 ---
 title: "Supplier analysis"
 topic: reports.supplier-analysis
-version: 1
+version: 2
 keywords:
     - spend analysis
     - purchasing analysis
@@ -44,6 +44,11 @@ therefore works **without the warehouse module**.
 If the **warehouse module** is active, **purchase orders** (placed in the
 period) and **open purchase orders** (currently running) are added per
 supplier.
+
+Suppliers marked **Hide in reports** – for example the tax office or a
+health insurance fund, whose vouchers are taxes and contributions – are not
+counted anywhere, not even in total spend or the posting categories. The
+switch **Include hidden suppliers** brings them back.
 
 ## Metrics
 

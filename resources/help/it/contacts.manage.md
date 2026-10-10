@@ -1,7 +1,7 @@
 ---
 title: "Clienti & fornitori"
 topic: contacts.manage
-version: 4
+version: 5
 keywords:
     - anagrafica clienti
     - anagrafica fornitori
@@ -57,6 +57,14 @@ funzionano senza rilavorazioni.
 
 ![Elenco clienti con numeri, contatti, tariffe orarie e numero di progetti](media/kunden/kundenliste.png)
 *L’elenco clienti: anagrafica, tariffa oraria e progetti collegati per partner.*
+
+**Enti pubblici e destinatari di tributi:** se registra l'ufficio delle
+imposte, le casse malattia, l'istituto di assicurazione contro gli infortuni
+sul lavoro o il comune come fornitori affinché la contabilità possa
+registrare imposte e contributi, vi spunti **Nascondi nelle analisi**. I
+documenti restano conservati; le analisi dei fornitori tralasciano questi
+enti. Per i clienti, la stessa casella agisce sui report su clienti e
+progetti.
 
 **Comunicazione:** registri chiamate, e-mail e impegni come nota di
 comunicazione sul cliente o sul fornitore. Le note compaiono nella pagina di

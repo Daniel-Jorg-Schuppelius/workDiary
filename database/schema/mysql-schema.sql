@@ -22730,6 +22730,7 @@ CREATE TABLE `suppliers` (
   `bank_bic` text DEFAULT NULL,
   `bank_name` varchar(200) DEFAULT NULL,
   `active` tinyint(1) NOT NULL DEFAULT 1,
+  `exclude_from_reports` tinyint(1) NOT NULL DEFAULT 0,
   `archived_at` timestamp NULL DEFAULT NULL,
   `created_by` bigint(20) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -26579,10 +26580,11 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (966,'2027_03_14_11
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (967,'2027_03_14_110200_add_is_collective_to_suppliers_and_customers',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (968,'2027_03_14_110300_create_incoming_einvoice_transfers_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (969,'2027_03_14_110400_move_lexoffice_base_url_to_lexware',1);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (971,'2027_03_16_100000_split_lexoffice_voucher_sides',1);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (972,'2027_03_16_100100_add_related_voucher_ids_to_lexoffice_vouchers',1);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (973,'2027_03_16_100200_add_contact_name_to_lexoffice_vouchers',1);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (974,'2027_03_16_100300_add_document_to_invoice_commissions',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (975,'2027_03_16_100400_add_sales_assignment_to_lexoffice_vouchers',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (976,'2027_03_16_100500_add_external_invoice_to_quotes',3);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (977,'2027_03_16_100600_add_sales_assignment_to_accounting_vouchers',3);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (970,'2027_03_16_100000_split_lexoffice_voucher_sides',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (971,'2027_03_16_100100_add_related_voucher_ids_to_lexoffice_vouchers',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (972,'2027_03_16_100200_add_contact_name_to_lexoffice_vouchers',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (973,'2027_03_16_100300_add_document_to_invoice_commissions',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (974,'2027_03_16_100400_add_sales_assignment_to_lexoffice_vouchers',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (975,'2027_03_16_100500_add_external_invoice_to_quotes',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (976,'2027_03_16_100600_add_sales_assignment_to_accounting_vouchers',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (977,'2027_03_17_100000_add_exclude_from_reports_to_suppliers',1);

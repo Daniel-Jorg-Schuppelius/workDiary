@@ -33,6 +33,9 @@
             <x-input-field name="vat_id" :label="__('USt-IdNr.')" maxlength="64" :value="old('vat_id', $supplier?->vat_id)" />
             <x-input-field name="vendor_number" :label="__('Kreditorennummer')" maxlength="64" :value="old('vendor_number', $supplier?->vendor_number)" />
             <x-checkbox-field name="active" :label="__('Aktiv')" :checked="old('active', $supplier?->active ?? true)" />
+            <x-checkbox-field name="exclude_from_reports" :label="__('In Auswertungen ausblenden')"
+                              :hint="__('Für Behörden und Abgabenempfänger wie Finanzamt, Krankenkasse oder Berufsgenossenschaft: Belege bleiben erhalten, der Lieferant erscheint nur nicht in den Lieferantenauswertungen.')"
+                              :checked="old('exclude_from_reports', $supplier?->exclude_from_reports ?? false)" />
         </x-form-group>
 
         <x-form-group :legend="__('Kontakt')" icon="call" tone="info" cols="2">

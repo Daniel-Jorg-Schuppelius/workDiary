@@ -1,7 +1,7 @@
 ---
 title: "Lieferantenanalyse"
 topic: reports.supplier-analysis
-version: 1
+version: 2
 keywords:
     - Einkaufsanalyse
     - Ausgabenanalyse
@@ -46,6 +46,11 @@ Lager-Modul**.
 Ist das **Lager-Modul** aktiv, kommen zusätzlich **Bestellungen** (im
 Zeitraum ausgelöst) und **offene Bestellungen** (aktuell laufend) je
 Lieferant hinzu.
+
+Lieferanten mit **In Auswertungen ausblenden** – etwa Finanzamt oder
+Krankenkasse, deren Belege Steuern und Abgaben sind – zählen nirgends mit,
+auch nicht in den Gesamtausgaben und den Buchungskategorien. Der Schalter
+**Ausgeblendete Lieferanten einbeziehen** nimmt sie wieder auf.
 
 ## Kennzahlen
 

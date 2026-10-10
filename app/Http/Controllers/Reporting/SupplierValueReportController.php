@@ -50,8 +50,10 @@ class SupplierValueReportController extends Controller {
         // Segment-Drilldown: filtert NUR die Lieferantenliste, nicht Charts/KPIs.
         $segment = $request->query('segment');
         $segment = is_string($segment) && array_key_exists($segment, $this->segmentLabels()) ? $segment : null;
+        $includeExcluded = $request->boolean('include_excluded');
+        $hiddenSupplierIds = Supplier::excludedFromReportsIds();
 
-        $result = $this->builder->build($from, $to);
+        $result = $this->builder->build($from, $to, $includeExcluded ? [] : $hiddenSupplierIds);
         $rows = collect($result['rows']);
         $riskRows = $this->builder->riskRows($result['rows'], $riskShare);
         $riskSparklines = $this->builder->monthlySpendSeries(
@@ -61,7 +63,7 @@ class SupplierValueReportController extends Controller {
             $this->globalUnit(),
         );
 
-        $exportFilters = ['risk_share' => $riskShare];
+        $exportFilters = ['risk_share' => $riskShare] + ($includeExcluded ? ['include_excluded' => 1] : []);
 
         if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($result['rows'], $from->toDateString(), $to->toDateString(), $exportFilters, $request);
@@ -81,12 +83,14 @@ class SupplierValueReportController extends Controller {
             'riskRows' => $riskRows,
             'riskSparklines' => $riskSparklines,
             'riskShare' => $riskShare,
+            'includeExcluded' => $includeExcluded,
+            'hasExcludedSuppliers' => $hiddenSupplierIds !== [],
             'from' => $from,
             'to' => $to,
             'label' => $label,
             'spendSeries' => $this->spendSeries($result['rows']),
             'dependencyScatter' => $this->dependencyScatter($result['rows']),
-            'segmentSeries' => $this->segmentSeries($result['segments'], $riskShare),
+            'segmentSeries' => $this->segmentSeries($result['segments'], $riskShare, $includeExcluded),
             'periodPhrase' => $this->periodPhrase($this->bucketGranularity($from, $to)),
         ]);
     }
@@ -161,9 +165,9 @@ class SupplierValueReportController extends Controller {
      * @param  array<string, int>  $segments
      * @return list<array{x: string, y: int, url: string}>
      */
-    private function segmentSeries(array $segments, float $riskShare): array {
+    private function segmentSeries(array $segments, float $riskShare, bool $includeExcluded): array {
         $labels = $this->segmentLabels();
-        $baseParams = $riskShare !== 15.0 ? ['risk_share' => $riskShare] : [];
+        $baseParams = array_filter(['risk_share' => $riskShare !== 15.0 ? $riskShare : null, 'include_excluded' => $includeExcluded ? 1 : null]);
 
         return array_values(collect($segments)
             ->map(static fn(int $count, string $key): array => ['key' => $key, 'count' => $count])

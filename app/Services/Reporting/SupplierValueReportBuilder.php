@@ -43,6 +43,7 @@ class SupplierValueReportBuilder {
     public function __construct(private readonly ExternalPurchases $purchases) {}
 
     /**
+     * @param  list<int>  $excludedSupplierIds  in Auswertungen ausgeblendete Lieferanten (MVP-1121)
      * @return array{
      *   rows: list<array{supplierId:int, supplierName:string, recencyDays:?int, frequencyDays:int,
      *     spend:float, voucherCount:int, spendShare:float, r:?int, f:?int, m:?int, segment:string,
@@ -51,9 +52,9 @@ class SupplierValueReportBuilder {
      *   concentration: array{totalSpend:float, top5Share:?float, top10Share:?float, hhi:?int, activeSuppliers:int},
      * }
      */
-    public function build(CarbonImmutable $from, CarbonImmutable $to): array {
-        [$spend, $voucherDays, $voucherCount, $lastInPeriod] = $this->periodAggregates($from, $to);
-        [$firstActivity, $lastActivity] = $this->activityBounds();
+    public function build(CarbonImmutable $from, CarbonImmutable $to, array $excludedSupplierIds = []): array {
+        [$spend, $voucherDays, $voucherCount, $lastInPeriod] = $this->periodAggregates($from, $to, $excludedSupplierIds);
+        [$firstActivity, $lastActivity] = $this->activityBounds($excludedSupplierIds);
 
         $supplierIds = collect(array_keys($spend))
             ->merge(array_keys($firstActivity))
@@ -185,9 +186,10 @@ class SupplierValueReportBuilder {
     /**
      * Ausgaben, Belegtage und Belegzahl je Lieferant im Zeitraum.
      *
+     * @param  list<int>  $excludedSupplierIds
      * @return array{0: array<int, float>, 1: array<int, int>, 2: array<int, int>, 3: array<int, string>}
      */
-    private function periodAggregates(CarbonImmutable $from, CarbonImmutable $to): array {
+    private function periodAggregates(CarbonImmutable $from, CarbonImmutable $to, array $excludedSupplierIds): array {
         /** @var array<int, float> $spend */
         $spend = [];
         /** @var array<int, array<string, true>> $days */
@@ -197,7 +199,7 @@ class SupplierValueReportBuilder {
         /** @var array<int, string> $last */
         $last = [];
 
-        foreach ($this->purchases->purchases($from, $to) as $purchase) {
+        foreach ($this->purchases->purchases($from, $to, exceptSupplierIds: $excludedSupplierIds) as $purchase) {
             $sid = $purchase->supplierId;
             $date = $purchase->date->toDateString();
             $spend[$sid] = ($spend[$sid] ?? 0.0) + $purchase->amount;
@@ -217,12 +219,13 @@ class SupplierValueReportBuilder {
      * Erst-/Letztbeleg je Lieferant (org-weit, ungefiltert) über das
      * Belegdatum aller Einkaufsbelege.
      *
+     * @param  list<int>  $excludedSupplierIds
      * @return array{0: array<int, string>, 1: array<int, string>}
      */
-    private function activityBounds(): array {
+    private function activityBounds(array $excludedSupplierIds): array {
         $first = [];
         $last = [];
-        foreach ($this->purchases->purchases(null, null) as $purchase) {
+        foreach ($this->purchases->purchases(null, null, exceptSupplierIds: $excludedSupplierIds) as $purchase) {
             $sid = $purchase->supplierId;
             $date = $purchase->date->toDateString();
             if (! isset($first[$sid]) || $date < $first[$sid]) {

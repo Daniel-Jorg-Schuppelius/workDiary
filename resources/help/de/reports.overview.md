@@ -1,7 +1,7 @@
 ---
 title: "Auswertungen verwenden"
 topic: reports.overview
-version: 7
+version: 8
 keywords:
     - Berichte
     - Reports
@@ -105,6 +105,10 @@ den Bericht mit genau diesem Zeitraum.
   **Ausgeblendete Kunden einbeziehen** – er erscheint nur, wenn es solche
   Kunden gibt – nimmt sie wieder auf; wählen Sie einen solchen Kunden direkt
   im Filter, wird er ebenfalls angezeigt.
+- Lieferanten mit **In Auswertungen ausblenden**, etwa Finanzamt oder
+  Krankenkasse, fehlen in Lieferantenwert, Lieferantenanalyse und
+  Lieferanten-Scorecards; dort heißt der Schalter **Ausgeblendete Lieferanten
+  einbeziehen**.
 - Einen eingestellten Bericht speichern Sie als benannte Ansicht, siehe
   „Gespeicherte Auswertungen“.
 

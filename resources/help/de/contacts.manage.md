@@ -1,7 +1,7 @@
 ---
 title: "Kunden & Lieferanten"
 topic: contacts.manage
-version: 4
+version: 5
 keywords:
     - Kundenstamm
     - Kundendaten
@@ -59,6 +59,13 @@ Nacharbeit funktionieren.
 
 ![Kundenliste mit Nummern, Kontaktdaten, Stundensätzen und Projektzahl](media/kunden/kundenliste.png)
 *Die Kundenliste: Stammdaten, Stundensatz und verknüpfte Projekte je Geschäftspartner.*
+
+**Behörden und Abgabenempfänger:** Führen Sie Finanzamt, Krankenkassen,
+Berufsgenossenschaft oder Gemeinde als Lieferanten, damit die Buchhaltung
+Steuern und Beiträge buchen kann, setzen Sie dort **In Auswertungen
+ausblenden**. Die Belege bleiben erhalten; die Lieferantenauswertungen
+lassen diese Stellen aus. Bei Kunden wirkt dasselbe Häkchen auf die kunden-
+und projektbezogenen Berichte.
 
 **Kommunikation:** Anrufe, E-Mails und Zusagen halten Sie als
 Kommunikationsnotiz am Kunden oder Lieferanten fest. Die Notizen stehen auf

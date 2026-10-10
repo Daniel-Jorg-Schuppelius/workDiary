@@ -88,9 +88,10 @@ class SupplierScorecardService {
      * Ranking aller Lieferanten mit Einkaufsbezug, sortiert nach Gesamt-Score
      * (absteigend, „keine Daten" ans Ende). Für die Übersicht ohne Chart-Serien.
      *
+     * @param  list<int>  $excludedSupplierIds  in Auswertungen ausgeblendete Lieferanten (MVP-1121)
      * @return list<array<string, mixed>>
      */
-    public function ranking(CarbonImmutable $from, CarbonImmutable $to): array {
+    public function ranking(CarbonImmutable $from, CarbonImmutable $to, array $excludedSupplierIds = []): array {
         // Nur Lieferanten mit Aktivität (Bestellung, Reklamation oder
         // ISMS-Bewertung) — reine Stammdaten blähen das Ranking nicht auf.
         $supplierIds = collect()
@@ -101,6 +102,7 @@ class SupplierScorecardService {
             ->filter()
             ->map(static fn($v): int => (int) $v)
             ->unique()
+            ->diff($excludedSupplierIds)
             ->all();
 
         $suppliers = Supplier::query()->whereIn('id', $supplierIds)->get();

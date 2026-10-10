@@ -54,6 +54,7 @@ class SupplierAnalysisReportBuilder {
     public function __construct(private readonly ExternalPurchases $purchases) {}
 
     /**
+     * @param  list<int>  $excludedSupplierIds  in Auswertungen ausgeblendete Lieferanten (MVP-1121)
      * @return array{
      *   rows: list<array{supplierId:int, supplierName:string, spend:float, voucherCount:int,
      *     avgVoucher:float, openAmount:float, recencyDays:?int, lastVoucher:?string,
@@ -61,14 +62,14 @@ class SupplierAnalysisReportBuilder {
      *   concentration: array{totalSpend:float, top5Share:?float, top10Share:?float, hhi:?int, activeSuppliers:int},
      * }
      */
-    public function build(CarbonImmutable $from, CarbonImmutable $to, bool $withProcurement = false): array {
-        $period = $this->voucherAggregates($from, $to);
+    public function build(CarbonImmutable $from, CarbonImmutable $to, bool $withProcurement = false, array $excludedSupplierIds = []): array {
+        $period = $this->voucherAggregates($from, $to, $excludedSupplierIds);
 
         // Vergleichszeitraum gleicher Länge unmittelbar davor (Ausgabentrend).
         $days = (int) $from->startOfDay()->diffInDays($to->startOfDay()) + 1;
         $prevTo = $from->subDay()->endOfDay();
         $prevFrom = $from->subDays($days)->startOfDay();
-        $previous = $this->voucherAggregates($prevFrom, $prevTo);
+        $previous = $this->voucherAggregates($prevFrom, $prevTo, $excludedSupplierIds);
 
         $orders = $withProcurement ? $this->orderAggregates($from, $to) : [];
         $openOrders = $withProcurement ? $this->openOrderCounts() : [];
@@ -79,6 +80,7 @@ class SupplierAnalysisReportBuilder {
             ->merge(array_keys($orders))
             ->merge(array_keys($openOrders))
             ->unique()
+            ->diff($excludedSupplierIds)
             ->values()
             ->all();
 
@@ -153,9 +155,10 @@ class SupplierAnalysisReportBuilder {
      * Bestellpostens zum Artikel, sonst die bevorzugte Lieferquelle.
      * Verbrauch ohne Artikelbezug zählt nur in `unlinkedValue`.
      *
+     * @param  list<int>  $excludedSupplierIds
      * @return array{rows: list<array{supplierId: int, supplierName: string, materials: int, usages: int, manufacturing: int, value: float, quantities: array<string, float>}>, unlinkedValue: float}
      */
-    public function materialUsageBySupplier(CarbonImmutable $from, CarbonImmutable $to): array {
+    public function materialUsageBySupplier(CarbonImmutable $from, CarbonImmutable $to, array $excludedSupplierIds = []): array {
         $entries = [];
         $usages = MaterialUsage::query()
             ->with('material:id,article_id')
@@ -183,6 +186,9 @@ class SupplierAnalysisReportBuilder {
             if ($supplierId === null) {
                 $unlinked += $entry['value'];
 
+                continue;
+            }
+            if (in_array($supplierId, $excludedSupplierIds, true)) {
                 continue;
             }
             $row = $rows[$supplierId] ?? ['supplierId' => (int) $supplierId, 'supplierName' => (string) ($names[$supplierId] ?? '—'), 'materials' => [], 'usages' => 0, 'manufacturing' => 0, 'value' => 0.0, 'quantities' => []];
@@ -266,11 +272,12 @@ class SupplierAnalysisReportBuilder {
      * Kategorien als eigene Bänder, der Rest als „Übrige“ (Diagramm trägt
      * höchstens fünf Bänder). `pending` = Belege ohne geladene Kategorien.
      *
+     * @param  list<int>  $excludedSupplierIds
      * @return array{series: list<array<string, float|string>>, bands: list<array{key: string, label: string}>, pending: int}
      */
-    public function spendByCategorySeries(CarbonImmutable $from, CarbonImmutable $to, string $unit): array {
+    public function spendByCategorySeries(CarbonImmutable $from, CarbonImmutable $to, string $unit, array $excludedSupplierIds = []): array {
         [$granularity, $buckets] = $this->spendAxis($from, $to, $unit);
-        $spend = $this->purchases->categorySpend($from, $to);
+        $spend = $this->purchases->categorySpend($from, $to, $excludedSupplierIds);
         $pending = $spend['pending'];
         $cells = [];
         $totals = [];
@@ -311,14 +318,15 @@ class SupplierAnalysisReportBuilder {
      * Gesamtausgaben (org-weit) im Zeitraum, in der Header-Granularität —
      * Datenreihe des Ausgabentrend-Charts.
      *
+     * @param  list<int>  $excludedSupplierIds
      * @return list<array{x: string, y: float}>
      */
-    public function monthlySpendSeries(CarbonImmutable $from, CarbonImmutable $to, string $unit): array {
+    public function monthlySpendSeries(CarbonImmutable $from, CarbonImmutable $to, string $unit, array $excludedSupplierIds = []): array {
         [$granularity, $buckets] = $this->spendAxis($from, $to, $unit);
         /** @var array<string, float> $sums */
         $sums = array_fill_keys(array_column($buckets, 'key'), 0.0);
 
-        foreach ($this->purchases->purchases($from, $to) as $purchase) {
+        foreach ($this->purchases->purchases($from, $to, exceptSupplierIds: $excludedSupplierIds) as $purchase) {
             $key = ChartBucket::keyLabel($granularity, $purchase->date)[0];
             if (array_key_exists($key, $sums)) {
                 $sums[$key] += $purchase->amount;
@@ -388,13 +396,14 @@ class SupplierAnalysisReportBuilder {
     /**
      * Ausgaben-Aggregate je Lieferant im Zeitraum (Beleg-Spiegel).
      *
+     * @param  list<int>  $excludedSupplierIds
      * @return array<int, array{spend:float, open:float, count:int, last:?string}>
      */
-    private function voucherAggregates(CarbonImmutable $from, CarbonImmutable $to): array {
+    private function voucherAggregates(CarbonImmutable $from, CarbonImmutable $to, array $excludedSupplierIds): array {
         /** @var array<int, array{spend:float, open:float, count:int, last:?string}> $agg */
         $agg = [];
 
-        foreach ($this->purchases->purchases($from, $to) as $purchase) {
+        foreach ($this->purchases->purchases($from, $to, exceptSupplierIds: $excludedSupplierIds) as $purchase) {
             $sid = $purchase->supplierId;
             $date = $purchase->date->toDateString();
             $agg[$sid] ??= ['spend' => 0.0, 'open' => 0.0, 'count' => 0, 'last' => null];

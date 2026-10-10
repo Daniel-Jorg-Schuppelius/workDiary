@@ -54,8 +54,11 @@ class SupplierAnalysisReportController extends Controller {
         $minSpend = max(0, (int) $request->integer('min_spend', 0));
         $hideZero = $request->boolean('hide_zero');
         $withProcurement = app(FeatureFlagResolver::class)->isEnabled('module.lager');
+        $includeExcluded = $request->boolean('include_excluded');
+        $hiddenSupplierIds = Supplier::excludedFromReportsIds();
+        $excludedSupplierIds = $includeExcluded ? [] : $hiddenSupplierIds;
 
-        $result = $this->builder->build($from, $to, $withProcurement);
+        $result = $this->builder->build($from, $to, $withProcurement, $excludedSupplierIds);
         $rows = collect($result['rows'])
             ->filter(static fn(array $row): bool => $row['spend'] >= $minSpend)
             ->when($hideZero, fn($c) => $c->filter(static fn(array $row): bool => $row['spend'] > 0
@@ -64,7 +67,8 @@ class SupplierAnalysisReportController extends Controller {
                 || ($row['openOrderCount'] ?? 0) > 0))
             ->values();
 
-        $exportFilters = ['min_spend' => $minSpend, 'hide_zero' => $hideZero, 'with_procurement' => $withProcurement];
+        $exportFilters = ['min_spend' => $minSpend, 'hide_zero' => $hideZero, 'with_procurement' => $withProcurement]
+            + ($includeExcluded ? ['include_excluded' => 1] : []);
 
         if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv(array_values($rows->all()), $withProcurement, $from->toDateString(), $to->toDateString(), $exportFilters, $request);
@@ -84,15 +88,17 @@ class SupplierAnalysisReportController extends Controller {
             'label' => $label,
             'minSpend' => $minSpend,
             'hideZero' => $hideZero,
+            'includeExcluded' => $includeExcluded,
+            'hasExcludedSuppliers' => $hiddenSupplierIds !== [],
             'withProcurement' => $withProcurement,
             'spendSeries' => $this->spendSeries(array_values($rows->all()), $from, $to),
-            'monthlySpendSeries' => $this->builder->monthlySpendSeries($from, $to, $this->globalUnit()),
+            'monthlySpendSeries' => $this->builder->monthlySpendSeries($from, $to, $this->globalUnit(), $excludedSupplierIds),
             'openSeries' => $this->openSeries(array_values($rows->all()), $from, $to),
             'periodPhrase' => $this->periodPhrase($this->bucketGranularity($from, $to)),
             'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($from, $to)),
             'bridge' => $bridge,
-            'materialUsage' => $this->builder->materialUsageBySupplier($from, $to),
-            'categorySpend' => $this->builder->spendByCategorySeries($from, $to, $this->globalUnit()),
+            'materialUsage' => $this->builder->materialUsageBySupplier($from, $to, $excludedSupplierIds),
+            'categorySpend' => $this->builder->spendByCategorySeries($from, $to, $this->globalUnit(), $excludedSupplierIds),
             'bridgeSeries' => array_map(fn (array $step): array => [
                 'x' => $step['x'],
                 'y' => $step['y'],

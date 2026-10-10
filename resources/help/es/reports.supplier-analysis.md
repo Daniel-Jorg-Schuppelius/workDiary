@@ -1,7 +1,7 @@
 ---
 title: "Análisis de proveedores"
 topic: reports.supplier-analysis
-version: 1
+version: 2
 keywords:
     - análisis de compras
     - análisis del gasto
@@ -45,6 +45,12 @@ los comprobantes anulados no cuentan. Por lo tanto, el informe funciona
 Si el **módulo de almacén** está activo, se añaden por proveedor los
 **pedidos** (emitidos en el periodo) y los **pedidos abiertos** (en
 curso).
+
+Los proveedores marcados con **Ocultar en las evaluaciones** (por ejemplo,
+Hacienda o una caja del seguro de enfermedad, cuyos comprobantes son
+impuestos y cotizaciones) no cuentan en ninguna parte, tampoco en el gasto
+total ni en las categorías contables. El interruptor **Incluir proveedores
+ocultos** los vuelve a incluir.
 
 ## Indicadores
 

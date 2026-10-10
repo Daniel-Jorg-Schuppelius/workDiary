@@ -1,7 +1,7 @@
 ---
 title: "Valore fornitore"
 topic: reports.supplier-value
-version: 1
+version: 2
 keywords:
     - analisi RFM
     - segmentazione fornitori
@@ -62,6 +62,18 @@ parco fornitori**, non assoluti.
 - **Occasionale** — tutti gli altri fornitori attivi.
 - **Nuovo** — il primo documento cade nel periodo.
 - **Inattivo** — nessun documento nel periodo.
+
+## Fornitori nascosti
+
+La contabilità registra spesso come fornitori enti pubblici e destinatari di
+tributi come l'ufficio delle imposte, le casse malattia, l'istituto di
+assicurazione contro gli infortuni sul lavoro o il comune, per poter
+registrare imposte e contributi. Questi pagamenti non sono acquisti e
+falsano la concentrazione, i segmenti e l'elenco dei rischi. Contrassegni
+tali fornitori con **Nascondi nelle analisi** nella loro anagrafica; saranno
+così esclusi dal valore fornitore, dall'analisi dei fornitori e dalle
+scorecard fornitori. L'interruttore **Includi i fornitori nascosti** –
+compare solo se esistono tali fornitori – li reintegra.
 
 Il report mostra dati finanziari ed è visibile solo agli utenti con il
 permesso di reporting.

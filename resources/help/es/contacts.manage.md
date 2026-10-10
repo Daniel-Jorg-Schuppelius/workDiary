@@ -1,7 +1,7 @@
 ---
 title: "Clientes & proveedores"
 topic: contacts.manage
-version: 4
+version: 5
 keywords:
     - ficha de cliente
     - maestro de clientes
@@ -57,6 +57,14 @@ del registro de tiempos a la entrega DATEV — funcionan sin retrabajo.
 
 ![Lista de clientes con números, datos de contacto, tarifas horarias y número de proyectos](media/kunden/kundenliste.png)
 *La lista de clientes: datos maestros, tarifa horaria y proyectos vinculados por socio.*
+
+**Organismos públicos y perceptores de tributos:** si registra Hacienda,
+las cajas del seguro de enfermedad, la mutua de accidentes de trabajo o el
+ayuntamiento como proveedores para que la contabilidad pueda contabilizar
+impuestos y cotizaciones, marque allí **Ocultar en las evaluaciones**. Los
+comprobantes se conservan; los análisis de proveedores dejan fuera a estas
+entidades. En los clientes, la misma casilla actúa sobre los análisis de
+clientes y proyectos.
 
 **Comunicación:** registre llamadas, correos y compromisos como nota de
 comunicación en el cliente o proveedor. Las notas aparecen en la página de

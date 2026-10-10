@@ -19,12 +19,16 @@ use Carbon\CarbonInterface;
 interface ExternalPurchases {
     /**
      * @param  list<int>|null  $supplierIds
+     * @param  list<int>  $exceptSupplierIds  in Auswertungen ausgeblendete Lieferanten (MVP-1121)
      * @return list<ExternalPurchase>
      */
-    public function purchases(?CarbonInterface $from, ?CarbonInterface $to, ?array $supplierIds = null): array;
+    public function purchases(?CarbonInterface $from, ?CarbonInterface $to, ?array $supplierIds = null, array $exceptSupplierIds = []): array;
 
-    /** @return array{rows: list<ExternalCategorySpend>, pending: int} */
-    public function categorySpend(CarbonInterface $from, CarbonInterface $to): array;
+    /**
+     * @param  list<int>  $exceptSupplierIds
+     * @return array{rows: list<ExternalCategorySpend>, pending: int}
+     */
+    public function categorySpend(CarbonInterface $from, CarbonInterface $to, array $exceptSupplierIds = []): array;
 
     /** @return array{open: float, overdue: float, count: int} */
     public function openPayables(int $organizationId, string $today): array;

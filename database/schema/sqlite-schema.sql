@@ -17441,6 +17441,7 @@ CREATE TABLE IF NOT EXISTS "suppliers"(
   "phone_e164" varchar,
   "mobile_e164" varchar,
   "is_collective" tinyint(1) not null default '0',
+  "exclude_from_reports" tinyint(1) not null default '0',
   foreign key("created_by") references users("id") on delete set null on update no action,
   foreign key("organization_id") references organizations("id") on delete set null on update no action
 );
@@ -24503,10 +24504,11 @@ INSERT INTO migrations VALUES(966,'2027_03_14_110100_add_counterparty_matching_t
 INSERT INTO migrations VALUES(967,'2027_03_14_110200_add_is_collective_to_suppliers_and_customers',1);
 INSERT INTO migrations VALUES(968,'2027_03_14_110300_create_incoming_einvoice_transfers_table',1);
 INSERT INTO migrations VALUES(969,'2027_03_14_110400_move_lexoffice_base_url_to_lexware',1);
-INSERT INTO migrations VALUES(971,'2027_03_16_100000_split_lexoffice_voucher_sides',1);
-INSERT INTO migrations VALUES(972,'2027_03_16_100100_add_related_voucher_ids_to_lexoffice_vouchers',1);
-INSERT INTO migrations VALUES(973,'2027_03_16_100200_add_contact_name_to_lexoffice_vouchers',1);
-INSERT INTO migrations VALUES(974,'2027_03_16_100300_add_document_to_invoice_commissions',2);
-INSERT INTO migrations VALUES(975,'2027_03_16_100400_add_sales_assignment_to_lexoffice_vouchers',2);
-INSERT INTO migrations VALUES(976,'2027_03_16_100500_add_external_invoice_to_quotes',3);
-INSERT INTO migrations VALUES(977,'2027_03_16_100600_add_sales_assignment_to_accounting_vouchers',3);
+INSERT INTO migrations VALUES(970,'2027_03_16_100000_split_lexoffice_voucher_sides',1);
+INSERT INTO migrations VALUES(971,'2027_03_16_100100_add_related_voucher_ids_to_lexoffice_vouchers',1);
+INSERT INTO migrations VALUES(972,'2027_03_16_100200_add_contact_name_to_lexoffice_vouchers',1);
+INSERT INTO migrations VALUES(973,'2027_03_16_100300_add_document_to_invoice_commissions',1);
+INSERT INTO migrations VALUES(974,'2027_03_16_100400_add_sales_assignment_to_lexoffice_vouchers',1);
+INSERT INTO migrations VALUES(975,'2027_03_16_100500_add_external_invoice_to_quotes',1);
+INSERT INTO migrations VALUES(976,'2027_03_16_100600_add_sales_assignment_to_accounting_vouchers',1);
+INSERT INTO migrations VALUES(977,'2027_03_17_100000_add_exclude_from_reports_to_suppliers',1);

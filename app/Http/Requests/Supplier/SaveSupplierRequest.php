@@ -43,12 +43,14 @@ class SaveSupplierRequest extends BaseFormRequest {
             ],
             'vendor_number' => ['nullable', 'string', 'max:64'],
             'active' => ['sometimes', 'boolean'],
+            'exclude_from_reports' => ['sometimes', 'boolean'],
         ]);
     }
 
     protected function prepareForValidation(): void {
         $this->merge(array_merge($this->partyNormalizedData(), [
             'active' => $this->has('active') ? $this->boolean('active') : true,
+            'exclude_from_reports' => $this->boolean('exclude_from_reports'),
         ]));
     }
 }

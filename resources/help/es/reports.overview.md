@@ -1,7 +1,7 @@
 ---
 title: "Usar los informes"
 topic: reports.overview
-version: 7
+version: 8
 keywords:
     - estadísticas
     - indicadores
@@ -107,6 +107,10 @@ exactamente con ese período.
   **Incluir clientes ocultos**, que solo aparece si existen tales clientes, los
   vuelve a incluir; si elige directamente uno de esos clientes en el filtro,
   también se muestra.
+- Los proveedores marcados con **Ocultar en las evaluaciones**, como
+  Hacienda o una caja del seguro de enfermedad, quedan fuera del valor del
+  proveedor, del análisis de proveedores y de las scorecards de proveedores;
+  allí el interruptor se llama **Incluir proveedores ocultos**.
 - Puede guardar un análisis configurado como vista con nombre; consulte
   «Evaluaciones guardadas».
 

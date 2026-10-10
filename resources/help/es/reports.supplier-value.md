@@ -1,7 +1,7 @@
 ---
 title: "Valor del proveedor"
 topic: reports.supplier-value
-version: 1
+version: 2
 keywords:
     - análisis RFM
     - segmentación de proveedores
@@ -62,6 +62,18 @@ propia base de proveedores**, no absolutas.
 - **Ocasional** — todos los demás proveedores activos.
 - **Nuevo** — el primer comprobante cae dentro del periodo.
 - **Inactivo** — sin comprobantes en el periodo.
+
+## Proveedores ocultos
+
+La contabilidad suele registrar como proveedores a organismos públicos y
+perceptores de tributos como Hacienda, las cajas del seguro de enfermedad,
+la mutua de accidentes de trabajo o el ayuntamiento, para poder contabilizar
+impuestos y cotizaciones. Estos pagos no son compras y distorsionan la
+concentración, los segmentos y la lista de riesgos. Marque esos proveedores
+con **Ocultar en las evaluaciones** en sus datos maestros; así quedan fuera
+del valor del proveedor, del análisis de proveedores y de las scorecards de
+proveedores. El interruptor **Incluir proveedores ocultos**, que solo aparece
+si existen tales proveedores, los vuelve a incluir.
 
 El informe muestra datos financieros y solo es visible para usuarios con
 permiso de informes.

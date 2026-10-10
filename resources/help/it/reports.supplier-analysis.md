@@ -1,7 +1,7 @@
 ---
 title: "Analisi dei fornitori"
 topic: reports.supplier-analysis
-version: 1
+version: 2
 keywords:
     - analisi degli acquisti
     - analisi della spesa
@@ -44,6 +44,12 @@ magazzino**.
 
 Se il **modulo di magazzino** è attivo, si aggiungono per fornitore gli
 **ordini** (emessi nel periodo) e gli **ordini aperti** (in corso).
+
+I fornitori contrassegnati con **Nascondi nelle analisi** – ad esempio
+l'ufficio delle imposte o una cassa malattia, i cui documenti sono imposte e
+contributi – non vengono conteggiati da nessuna parte, nemmeno nella spesa
+totale o nelle categorie contabili. L'interruttore **Includi i fornitori
+nascosti** li reintegra.
 
 ## Indicatori
 

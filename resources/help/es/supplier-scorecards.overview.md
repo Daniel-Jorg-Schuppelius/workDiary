@@ -1,7 +1,7 @@
 ---
 title: "Scorecards de proveedores"
 topic: supplier-scorecards.overview
-version: 1
+version: 2
 keywords:
     - evaluación de proveedores
     - calificación de proveedores
@@ -25,3 +25,5 @@ Las scorecards evalúan a los proveedores con datos reales: puntualidad (recepci
 **Puntuación:** los indicadores se combinan en una puntuación global ponderada; si falta una fuente de datos se muestra como «sin datos» y los pesos se renormalizan.
 
 **Ranking y detalle:** la lista se ordena por puntuación; la scorecard de detalle muestra los indicadores con gráficos y análisis firmados hacia los registros subyacentes.
+
+**Proveedores ocultos:** los proveedores marcados con **Ocultar en las evaluaciones** quedan fuera del ranking; el interruptor **Incluir proveedores ocultos** los vuelve a incluir.

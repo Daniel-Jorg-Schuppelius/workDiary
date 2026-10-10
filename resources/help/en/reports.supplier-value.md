@@ -1,7 +1,7 @@
 ---
 title: "Supplier value"
 topic: reports.supplier-value
-version: 1
+version: 2
 keywords:
     - RFM analysis
     - supplier segmentation
@@ -61,6 +61,18 @@ absolute.
 - **Occasional** — all other active suppliers.
 - **New** — first voucher falls within the period.
 - **Dormant** — no vouchers in the period.
+
+## Hidden suppliers
+
+Accounting often keeps authorities and levy recipients such as the tax
+office, health insurance funds, the employers' liability insurance
+association or the municipality as suppliers so that taxes and
+contributions can be booked. These payments are not purchases and distort
+concentration, segments and the risk list. Mark such suppliers with **Hide
+in reports** in their master data; they are then left out of supplier
+value, supplier analysis and supplier scorecards. The switch **Include
+hidden suppliers** – it only appears if such suppliers exist – brings them
+back.
 
 The report shows financial data and is only visible to users with
 reporting permission.

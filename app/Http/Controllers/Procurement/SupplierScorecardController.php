@@ -53,7 +53,9 @@ class SupplierScorecardController extends Controller {
         $this->authorizeReport($request);
 
         [$from, $to] = $this->resolveRange($request);
-        $rows = $this->service->ranking($from, $to);
+        $includeExcluded = $request->boolean('include_excluded');
+        $hiddenSupplierIds = Supplier::excludedFromReportsIds();
+        $rows = $this->service->ranking($from, $to, $includeExcluded ? [] : $hiddenSupplierIds);
 
         return view('reports.supplier-scorecards.index', [
             'rows' => $this->paginate($rows, self::PER_PAGE, $request),
@@ -62,6 +64,8 @@ class SupplierScorecardController extends Controller {
             'from' => $from,
             'to' => $to,
             'label' => $this->globalDateRange()['label'],
+            'includeExcluded' => $includeExcluded,
+            'hasExcludedSuppliers' => $hiddenSupplierIds !== [],
             'weights' => $this->service->weights(),
             'metricVersion' => SupplierScorecardService::METRIC_VERSION,
         ]);

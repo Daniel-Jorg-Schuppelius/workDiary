@@ -17,6 +17,7 @@
     $linkParams = array_filter([
         'min_spend' => $minSpend > 0 ? $minSpend : null,
         'hide_zero' => $hideZero ? 1 : null,
+        'include_excluded' => $includeExcluded ? 1 : null,
     ]);
     $hhi = $concentration['hhi'];
     $hhiTone = $hhi === null ? 'neutral'
@@ -48,6 +49,12 @@
                          :label="__('Lieferanten ohne Werte ausblenden')"
                          :title="__('Nur Lieferanten mit Aktivität im Zeitraum anzeigen (ohne reine Nullzeilen).')"
                          :checked="$hideZero" data-autosubmit />
+        @if ($hasExcludedSuppliers)
+            <x-filter-toggle name="include_excluded" id="suppliers-include-excluded"
+                             :label="__('Ausgeblendete Lieferanten einbeziehen')"
+                             :title="__('Lieferanten mit „In Auswertungen ausblenden“ mit anzeigen.')"
+                             :checked="$includeExcluded" data-autosubmit />
+        @endif
     </x-filter-bar>
 
     @unless ($withProcurement)

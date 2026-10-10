@@ -1,7 +1,7 @@
 ---
 title: "Analyse des fournisseurs"
 topic: reports.supplier-analysis
-version: 1
+version: 2
 keywords:
     - analyse des achats
     - analyse des dépenses
@@ -45,6 +45,12 @@ fonctionne donc **sans le module d'entrepôt**.
 Si le **module d'entrepôt** est actif, les **commandes** (passées dans la
 période) et les **commandes ouvertes** (en cours) s'ajoutent par
 fournisseur.
+
+Les fournisseurs marqués **Masquer dans les analyses** – par exemple le
+centre des impôts ou une caisse d'assurance maladie, dont les justificatifs
+sont des impôts et des cotisations – ne sont comptés nulle part, pas même
+dans les dépenses totales ni dans les catégories comptables. L'interrupteur
+**Inclure les fournisseurs masqués** les réintègre.
 
 ## Indicateurs
 

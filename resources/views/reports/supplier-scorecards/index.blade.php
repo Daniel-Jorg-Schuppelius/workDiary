@@ -43,6 +43,12 @@
     <x-filter-bar :action="route('supplier-scorecards.index')" :reset="route('supplier-scorecards.index')">
         <x-date-range class="w-80 shrink-0" :label="false" from-name="from" to-name="to"
                       :from="$from->toDateString()" :to="$to->toDateString()" />
+        @if ($hasExcludedSuppliers)
+            <x-filter-toggle name="include_excluded" id="scorecards-include-excluded"
+                             :label="__('Ausgeblendete Lieferanten einbeziehen')"
+                             :title="__('Lieferanten mit „In Auswertungen ausblenden“ mit anzeigen.')"
+                             :checked="$includeExcluded" data-autosubmit />
+        @endif
         <x-icon-btn icon="filter_alt" tone="ghost" size="sm" type="submit" show-label>{{ __('scorecard.apply') }}</x-icon-btn>
     </x-filter-bar>
 

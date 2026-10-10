@@ -59,6 +59,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $bank_bic
  * @property string|null $bank_name
  * @property bool $active
+ * @property bool $exclude_from_reports
  * @property Carbon|null $archived_at
  * @property int|null $created_by
  */
@@ -114,6 +115,7 @@ class Supplier extends Model implements ContactDetailsHolder {
         'bank_bic',
         'bank_name',
         'active',
+        'exclude_from_reports',
         'archived_at',
         'created_by',
     ];
@@ -128,6 +130,7 @@ class Supplier extends Model implements ContactDetailsHolder {
         'bank_account_holder' => 'encrypted',
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'active' => 'boolean',
+        'exclude_from_reports' => 'boolean',
         'archived_at' => 'datetime',
         'address_lat' => 'decimal:7',
         'address_lng' => 'decimal:7',
@@ -218,5 +221,19 @@ class Supplier extends Model implements ContactDetailsHolder {
      */
     public function scopeWithoutCollective(Builder $query): Builder {
         return $query->where($query->qualifyColumn('is_collective'), false);
+    }
+
+    /**
+     * In den Lieferantenauswertungen ausgeblendet (MVP-1121), etwa Finanzamt,
+     * Krankenkasse oder Berufsgenossenschaft: Steuern und Abgaben sind keine
+     * Einkäufe und verzerren Konzentration und Segmente.
+     *
+     * @return list<int>
+     */
+    public static function excludedFromReportsIds(): array {
+        return array_values(array_map(
+            static fn($id): int => (int) $id,
+            static::query()->where('exclude_from_reports', true)->pluck('id')->all(),
+        ));
     }
 }

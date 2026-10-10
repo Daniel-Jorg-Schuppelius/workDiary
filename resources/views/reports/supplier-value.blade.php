@@ -14,7 +14,10 @@
 @section('content')
 @php
     $eur = fn (float $v): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) . ' €';
-    $linkParams = array_filter(['risk_share' => $riskShare !== 15.0 ? $riskShare : null]);
+    $linkParams = array_filter([
+        'risk_share' => $riskShare !== 15.0 ? $riskShare : null,
+        'include_excluded' => $includeExcluded ? 1 : null,
+    ]);
     $hhi = $concentration['hhi'];
     $hhiTone = $hhi === null ? 'neutral'
         : ($hhi > \App\Services\Reporting\SupplierValueReportBuilder::HHI_HIGH ? 'error'
@@ -43,6 +46,12 @@
         <x-filter-field :label="__('Risiko-Schwelle (Ausgabenanteil %)')" for="sv-risk-share" inline>
             <input id="sv-risk-share" type="number" name="risk_share" value="{{ $riskShare }}" min="1" step="1" class="input input-sm input-bordered w-24" />
         </x-filter-field>
+        @if ($hasExcludedSuppliers)
+            <x-filter-toggle name="include_excluded" id="sv-include-excluded"
+                             :label="__('Ausgeblendete Lieferanten einbeziehen')"
+                             :title="__('Lieferanten mit „In Auswertungen ausblenden“ mit anzeigen.')"
+                             :checked="$includeExcluded" data-autosubmit />
+        @endif
     </x-filter-bar>
 
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">

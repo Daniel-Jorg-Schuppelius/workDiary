@@ -17,6 +17,7 @@ use Carbon\CarbonImmutable;
 /** Ausgaben eines Belegs je Buchungskategorie (MVP-1036), netto mit Vorzeichen. */
 final readonly class ExternalCategorySpend {
     public function __construct(
+        public int $supplierId,
         public string $category,
         public CarbonImmutable $date,
         public float $amount,

@@ -1,7 +1,7 @@
 ---
 title: "Usare i report"
 topic: reports.overview
-version: 7
+version: 8
 keywords:
     - statistiche
     - indicatori
@@ -103,6 +103,10 @@ esattamente con quel periodo.
   sono esclusi dai report su clienti e progetti. L'interruttore **Includi i
   clienti nascosti** – compare solo se esistono tali clienti – li reintegra; se
   sceglie direttamente un tale cliente nel filtro, viene comunque mostrato.
+- I fornitori contrassegnati con **Nascondi nelle analisi**, come l'ufficio
+  delle imposte o una cassa malattia, sono esclusi dal valore fornitore,
+  dall'analisi dei fornitori e dalle scorecard fornitori; lì l'interruttore
+  si chiama **Includi i fornitori nascosti**.
 - Può salvare un report impostato come vista con nome, veda «Valutazioni
   salvate».
 

@@ -57,7 +57,7 @@ final class LexofficeSpendSource implements ExternalPurchaseSource {
         $names = LexofficePostingCategory::query()->pluck('name', 'external_id')->all();
         $rows = [];
         LexofficeVoucherCategory::query()
-            ->with('voucher:id,voucher_type,voucher_date')
+            ->with('voucher:id,supplier_id,voucher_type,voucher_date')
             ->whereIn('voucher_id', (clone $vouchers)->select('id'))
             ->get()
             ->each(function (LexofficeVoucherCategory $row) use (&$rows, $names): void {
@@ -66,6 +66,7 @@ final class LexofficeSpendSource implements ExternalPurchaseSource {
                     return;
                 }
                 $rows[] = new ExternalCategorySpend(
+                    supplierId: (int) $row->voucher->supplier_id,
                     category: (string) ($names[(string) $row->category_external_id] ?? __('lexoffice::reporting.supplier_category.unknown')),
                     date: CarbonImmutable::parse($date->toDateString()),
                     amount: $row->net_amount->toFloat() * $this->sign($row->voucher->voucher_type),

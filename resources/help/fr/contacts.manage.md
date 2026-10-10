@@ -1,7 +1,7 @@
 ---
 title: "Clients & fournisseurs"
 topic: contacts.manage
-version: 4
+version: 5
 keywords:
     - fichier clients
     - base clients
@@ -59,6 +59,14 @@ fonctionnent sans reprise.
 
 ![Liste des clients avec numéros, coordonnées, taux horaires et nombre de projets](media/kunden/kundenliste.png)
 *La liste des clients : données de base, taux horaire et projets liés par partenaire.*
+
+**Administrations et organismes de prélèvement :** si vous enregistrez le
+centre des impôts, les caisses d'assurance maladie, la caisse d'assurance
+accidents du travail ou la commune comme fournisseurs pour que la
+comptabilité puisse comptabiliser impôts et cotisations, cochez-y
+**Masquer dans les analyses**. Les justificatifs sont conservés ; les
+analyses fournisseurs laissent ces organismes de côté. Pour les clients, la
+même case agit sur les rapports portant sur les clients et les projets.
 
 **Communication :** consignez appels, e-mails et engagements sous forme de
 note de communication sur le client ou le fournisseur. Les notes figurent sur
