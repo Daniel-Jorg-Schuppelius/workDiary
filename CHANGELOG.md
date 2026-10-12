@@ -10,6 +10,11 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- `scripts/artisan.sh`: artisan-Befehle von Hand mit dem passenden
+  PHP-Binary (Suche wie `cron.sh`/`deploy.sh`), aus jedem Verzeichnis, alle
+  Argumente durchgereicht. Als root gestartet läuft es als Eigentümer von
+  `storage/`.
+
 - Kundennummern vom Buchhaltungsprogramm (Phase 141, MVP-1130–1134): Auf
   der Seite „Nummernkreise“ (jetzt im Admin-Menü) wählt die Organisation für
   Kunde und Lieferant, wer die Nummer vergibt — WorkDiary, Lexoffice, sevDesk
@@ -39,11 +44,11 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   als „im Buchhaltungsprogramm abgerechnet“ markieren. Buchhaltungsberichte
   zeigen ohne lokale Buchhaltung einen Hinweis. Materialrechnungen tragen den
   Artikel des Materials.
-  **Manueller Schritt nach dem Deploy:** je Organisation mit Lexoffice einmal
-  `php artisan lexoffice:sync-voucher-lines --all --refresh` (füllt Nettobetrag
-  und Gutschrift-Bezug der schon gespiegelten Belege, etwa zehn Minuten je
-  1000 Belege). Der nächste stündliche Belegsync ruft einmal alle Belege ohne
-  Kontakt ab.
+  **Manueller Schritt nach dem Deploy:** einmal
+  `scripts/artisan.sh lexoffice:sync-voucher-lines --all --refresh` (läuft über
+  alle Organisationen mit Lexoffice; füllt Nettobetrag und Gutschrift-Bezug der
+  schon gespiegelten Belege, etwa zehn Minuten je 1000 Belege). Der nächste
+  stündliche Belegsync ruft einmal alle Belege ohne Kontakt ab.
 
 - Vereinsverwaltung (Feature 159, MVP-842): **Mitglieder, Gruppen und
   Vertretungen** als neues Plan-Modul `module.club`. Mitglieder existieren ohne

@@ -115,6 +115,24 @@ class PhpBinScriptTest extends TestCase {
         $this->assertSame("wrapper install\n", $run->getOutput(), $run->getErrorOutput());
     }
 
+    public function test_artisan_skript_startet_artisan_im_app_verzeichnis_mit_allen_argumenten(): void {
+        $this->executable('php7.9', "#!/bin/sh\nif [ \"\$1\" = \"-r\" ]; then echo 7.9; exit 0; fi\npwd\nprintf '[%s]\\n' \"\$@\"\nexit 3\n");
+
+        $process = new Process(
+            ['bash', dirname(__DIR__, 3) . '/scripts/artisan.sh', 'lexoffice:sync-voucher-lines', '--organization=Meine Firma', '--refresh'],
+            null,
+            ['PATH' => $this->dir . '/bin:' . getenv('PATH'), 'APP_DIR' => $this->dir . '/app'],
+        );
+        $process->run();
+
+        $this->assertSame(
+            $this->dir . "/app\n[artisan]\n[lexoffice:sync-voucher-lines]\n[--organization=Meine Firma]\n[--refresh]\n",
+            $process->getOutput(),
+            $process->getErrorOutput()
+        );
+        $this->assertSame(3, $process->getExitCode());
+    }
+
     public function test_skripte_rufen_php_und_composer_nur_ueber_die_erkennung_auf(): void {
         $root = dirname(__DIR__, 3);
         $violations = [];

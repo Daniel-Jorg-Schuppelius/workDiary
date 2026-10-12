@@ -261,5 +261,6 @@ Naechste Schritte:
   4. Queue-Worker dauerhaft ueber Supervisor, systemd oder Hoster-Job starten:
      $PHP_BIN artisan queue:work --tries=3
 
+Einzelne artisan-Befehle von Hand: $ROOT_DIR/scripts/artisan.sh <befehl> (sucht das PHP-Binary selbst)
 Hinweis: artisan view:cache wird bewusst nicht ausgefuehrt.
 DONE
