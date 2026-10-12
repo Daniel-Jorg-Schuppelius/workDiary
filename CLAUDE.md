@@ -311,6 +311,14 @@ eine Projektion (`address_*`, `bank_*`, `ContactDetailsProjectionObserver`).
   `WritesContactDetails` (`pullContactDetails()` vor, `writeContactDetails()`
   nach dem Speichern); Dienste `ContactDetailsWriter::pullInline()` +
   `writeInline()` (Teil-Update). Anzeige `postalAddressLines()`.
+- **Ansprechpartner strukturiert (MVP-1136/1137):** Kunde, Lieferant,
+  Fremdkunde und Lead tragen `contact_salutation`, `contact_title`,
+  `contact_first_name`, `contact_middle_names`, `contact_last_name`;
+  `contact_name` wird daraus gebildet (`HasStructuredContactName`, Vertrag
+  `ContactNameHolder`) — nie wieder als Freitextfeld erfassen. Formular
+  `<x-contact-name-fields :model>`, Regeln `ContactNameFields`; Einträge in
+  `contact_persons` nur über `App\Services\Stammdaten\ContactPersons`;
+  Zerlegen von Freitext über `PersonNameHelper` (common-toolkit).
 - Anonymisierung löscht den Satelliten ausdrücklich (`addresses()->delete()`),
   Auskunftsabschnitte geben die Anschrift aus; harte Löschung der Partei
   räumt die Satelliten selbst ab.

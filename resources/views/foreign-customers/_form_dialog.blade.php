@@ -67,12 +67,9 @@
                        placeholder="#64748b" />
     </x-form-group>
 
+    <x-contact-name-fields :model="$foreignCustomer" />
+
     <x-form-group :legend="__('Kontakt')" icon="call" tone="info" cols="2">
-        <x-input-field name="contact_name"
-                       :label="__('Ansprechpartner')"
-                       type="text"
-                       value="{{ old('contact_name', $foreignCustomer?->contact_name) }}"
-                       maxlength="200" />
         <x-input-field name="email"
                        :label="__('E-Mail')"
                        type="email"

@@ -46,8 +46,9 @@
         @endif
         </x-form-group>
 
+        <x-contact-name-fields :model="$customer" />
+
         <x-form-group :legend="__('Kontakt')" icon="call" tone="info" cols="2">
-            <x-input-field name="contact_name" :label="__('Ansprechpartner')" maxlength="200" :value="old('contact_name', $customer?->contact_name)" />
             <x-input-field name="email" type="email" :label="__('E-Mail')" maxlength="255" :value="old('email', $customer?->email)" />
             <x-input-field name="phone" :label="__('Telefon')" maxlength="64" :value="old('phone', $customer?->phone)" />
             <x-input-field name="mobile" :label="__('Mobil')" maxlength="64" :value="old('mobile', $customer?->mobile)" />

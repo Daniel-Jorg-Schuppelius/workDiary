@@ -182,6 +182,15 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
             'displayName' => $displayName,
             'fileAs' => (string) $customer->name,
         ];
+        // Namensteile des Ansprechpartners (MVP-1136); ohne ihn bleibt es beim Anzeigenamen.
+        if (trim((string) $customer->contact_name) !== '') {
+            $payload += array_filter([
+                'title' => $customer->contact_title,
+                'givenName' => $customer->contact_first_name,
+                'middleName' => $customer->contact_middle_names,
+                'surname' => $customer->contact_last_name,
+            ], static fn (?string $value): bool => $value !== null && $value !== '');
+        }
         if (trim((string) $customer->company) !== '') {
             $payload['companyName'] = trim((string) $customer->company);
         }

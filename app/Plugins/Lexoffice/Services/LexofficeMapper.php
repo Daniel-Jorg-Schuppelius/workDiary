@@ -10,10 +10,13 @@
 
 namespace App\Plugins\Lexoffice\Services;
 
+use App\Enums\Stammdaten\ContactSalutation;
 use App\Models\Customer\Customer;
 use App\Models\Supplier\Supplier;
 use App\Models\Time\TimeEntry;
+use App\Services\Stammdaten\ContactPersons;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\PersonNameHelper;
 use Illuminate\Support\Collection;
 
 /**
@@ -88,10 +91,11 @@ class LexofficeMapper {
                 'contactPersons' => $contactPersons !== [] ? $contactPersons : null,
             ]);
         } else {
-            $parts = preg_split('/\s+/', trim((string) $contact->name), 2) ?: [];
+            $parts = PersonNameHelper::split((string) $contact->name);
             $payload['person'] = array_filter([
-                'firstName' => $parts[0] ?? null,
-                'lastName' => $parts[1] ?? ($parts[0] ?? $contact->name),
+                'salutation' => self::salutation($parts['salutation'], $parts['title']),
+                'firstName' => trim($parts['first_name'] . ' ' . $parts['middle_names']) ?: null,
+                'lastName' => $parts['last_name'] ?? $contact->name,
             ]);
         }
 
@@ -148,41 +152,51 @@ class LexofficeMapper {
     }
 
     /**
-     * Baut die contactPersons-Liste aus den strukturierten Kontaktpersonen
-     * des Kunden, fällt auf das Legacy-Einzelfeld contact_name zurück.
+     * Baut die contactPersons-Liste aus den Ansprechpartnern des Kunden mit
+     * Anrede, Vornamen und Nachname (MVP-1138); ohne Liste geht der
+     * Ansprechpartner des Formulars als primärer Kontakt hinüber.
      *
      * @return array<int, array<string, mixed>>
      */
     private function buildContactPersons(Customer|Supplier $customer): array {
-        $persons = $customer->contact_persons ?? [];
-        $list = [];
+        $entries = ContactPersons::normalizeAll($customer->contact_persons ?? []);
+        if ($entries === []) {
+            $primary = ContactPersons::primaryOf($customer);
+            $entries = $primary !== null ? [$primary] : [];
+        }
 
-        foreach ($persons as $p) {
-            $name = trim((string) ($p['name'] ?? ''));
-            if ($name === '' && empty($p['email']) && empty($p['phone'])) {
-                continue;
+        $list = [];
+        foreach ($entries as $entry) {
+            $lastName = (string) ($entry['last_name'] ?? '');
+            if ($lastName === '') {
+                continue; // Lexoffice verlangt einen Nachnamen
             }
-            $parts = preg_split('/\s+/', $name, 2) ?: [];
             $list[] = array_filter([
-                'salutation' => null,
-                'firstName' => isset($parts[1]) ? $parts[0] : null,
-                'lastName' => $parts[1] ?? ($parts[0] ?? $name),
-                'emailAddress' => $p['email'] ?? null,
-                'phoneNumber' => $p['phone'] ?? null,
-                'primary' => (bool) ($p['primary'] ?? false),
+                'salutation' => self::salutation($entry['salutation'], $entry['title']),
+                'firstName' => trim($entry['first_name'] . ' ' . $entry['middle_names']) ?: null,
+                'lastName' => $lastName,
+                'emailAddress' => $entry['email'],
+                'phoneNumber' => $entry['phone'],
+                'primary' => (bool) $entry['primary'],
             ], static fn($v) => $v !== null && $v !== '');
         }
 
-        if ($list === [] && $customer->contact_name) {
-            $list[] = array_filter([
-                'lastName' => $customer->contact_name,
-                'emailAddress' => $customer->email,
-                'phoneNumber' => $customer->phone ?: $customer->mobile,
-                'primary' => true,
-            ]);
-        }
-
         return $list;
+    }
+
+    /**
+     * Anrede für Lexoffice (Freitext, höchstens 25 Zeichen): das deutsche
+     * Anredewort, ein Titel dahinter („Herr Dr.“).
+     */
+    private static function salutation(mixed $salutation, mixed $title): ?string {
+        $word = match ($salutation) {
+            ContactSalutation::Mr->value => 'Herr',
+            ContactSalutation::Ms->value => 'Frau',
+            default => '',
+        };
+        $text = trim($word . ' ' . (string) $title);
+
+        return $text !== '' ? mb_substr($text, 0, 25) : null;
     }
 
     /**

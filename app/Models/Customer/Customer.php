@@ -14,9 +14,9 @@ use App\Casts\{MoneyCast, PercentageCast};
 use App\Enums\Numbering\NumberScope;
 use App\Enums\Project\ProjectStatus;
 use App\Models\Asset\Asset;
-use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasClassifications, HasCommunicationNotes, HasContactAndBankDetails, HasCustomFields, HasPartyDisplayLabel, HasPhoneSearchKeys, HasSequentialNumber, HasSqid, HasTags, Searchable};
+use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasClassifications, HasCommunicationNotes, HasContactAndBankDetails, HasCustomFields, HasPartyDisplayLabel, HasPhoneSearchKeys, HasSequentialNumber, HasSqid, HasStructuredContactName, HasTags, Searchable};
 use App\Models\Contacts\ContactAddress;
-use App\Models\Contracts\{ContactDetailsHolder, CustomFieldSubject};
+use App\Models\Contracts\{ContactDetailsHolder, ContactNameHolder, CustomFieldSubject};
 use App\Models\Facility\{Room, Site};
 use App\Models\Integration\ExternalReference;
 use App\Models\Material\MaterialCostAllocation;
@@ -40,7 +40,12 @@ use Illuminate\Support\Carbon;
  * @property string|null $company
  * @property string|null $vat_id
  * @property string|null $tax_number
- * @property string|null $contact_name
+ * @property string|null $contact_name Ansprechpartner zur Anzeige, gebildet aus den Teilen (MVP-1136)
+ * @property \App\Enums\Stammdaten\ContactSalutation|null $contact_salutation
+ * @property string|null $contact_title
+ * @property string|null $contact_first_name
+ * @property string|null $contact_middle_names
+ * @property string|null $contact_last_name
  * @property array<int, array{name?: string, email?: string, phone?: string, primary?: bool}>|null $contact_persons
  * @property string|null $email
  * @property string|null $phone
@@ -78,7 +83,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $archived_at
  * @property int|null $created_by
  */
-class Customer extends Model implements ContactDetailsHolder, CustomFieldSubject {
+class Customer extends Model implements ContactDetailsHolder, ContactNameHolder, CustomFieldSubject {
     use Archivable;
     use Auditable;
     use BelongsToOrganization;
@@ -89,13 +94,14 @@ class Customer extends Model implements ContactDetailsHolder, CustomFieldSubject
     use HasCommunicationNotes;
     use HasContactAndBankDetails;
     use HasCustomFields;
-
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use HasPartyDisplayLabel;
     use HasPhoneSearchKeys;
     use HasSequentialNumber;
     use HasSqid;
+    use HasStructuredContactName;
     use HasTags;
     use Searchable;
 
@@ -110,6 +116,11 @@ class Customer extends Model implements ContactDetailsHolder, CustomFieldSubject
         'vat_id',
         'tax_number',
         'contact_name',
+        'contact_salutation',
+        'contact_title',
+        'contact_first_name',
+        'contact_middle_names',
+        'contact_last_name',
         'contact_persons',
         'email',
         'phone',
@@ -165,6 +176,7 @@ class Customer extends Model implements ContactDetailsHolder, CustomFieldSubject
 
     /** @var array<string, string> */
     protected $casts = [
+        'contact_salutation' => \App\Enums\Stammdaten\ContactSalutation::class,
         // Bankdaten sind eine Projektion des primären Bankkontos, das seit je
         // verschlüsselt liegt — flach zurückgeschrieben hob das die
         // Verschlüsselung auf (Sicherheitsscan S-21). Spalten als text.

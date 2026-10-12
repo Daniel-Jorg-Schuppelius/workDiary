@@ -21,7 +21,8 @@ use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy;
 use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
-use App\Services\Stammdaten\ContactNumberAdopter;
+use App\Services\Stammdaten\{ContactNumberAdopter, ContactPersons};
+use CommonToolkit\Helper\Data\{PersonNameHelper, StringHelper};
 use CommonToolkit\ValueObjects\VatNumber;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use RuntimeException;
@@ -528,22 +529,27 @@ class LexofficeContactSync {
             return;
         }
 
-        $list = [];
+        // Anrede samt Titel steht in Lexoffice in einem Feld („Herr Dr.“), die
+        // weiteren Vornamen im Vornamen (MVP-1138).
+        $rows = [];
         foreach ($persons as $p) {
-            if (! is_array($p)) {
+            if (! is_array($p) || trim(((string) ($p['firstName'] ?? '')) . ((string) ($p['lastName'] ?? ''))) === '') {
                 continue;
             }
-            $name = trim(((string) ($p['firstName'] ?? '')) . ' ' . ((string) ($p['lastName'] ?? '')));
-            if ($name === '') {
-                continue;
-            }
-            $list[] = array_filter([
-                'name' => $name,
+            $salutation = PersonNameHelper::splitSalutation(is_string($p['salutation'] ?? null) ? $p['salutation'] : null);
+            $firstNames = explode(' ', StringHelper::normalizeWhitespace((string) ($p['firstName'] ?? '')), 2);
+            $rows[] = [
+                'salutation' => $salutation['salutation'],
+                'title' => $salutation['title'],
+                'first_name' => $firstNames[0],
+                'middle_names' => $firstNames[1] ?? null,
+                'last_name' => $p['lastName'] ?? null,
                 'email' => $p['emailAddress'] ?? null,
                 'phone' => $p['phoneNumber'] ?? null,
                 'primary' => (bool) ($p['primary'] ?? false),
-            ], static fn($v) => $v !== null && $v !== '');
+            ];
         }
+        $list = ContactPersons::normalizeAll($rows);
 
         if ($list !== []) {
             $record->contact_persons = $list;

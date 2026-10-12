@@ -11,7 +11,7 @@
 namespace App\Http\Requests\Customer;
 
 use App\Http\Requests\BaseFormRequest;
-use App\Http\Requests\Concerns\{ContactSatelliteFields, DecodesSqidInputs};
+use App\Http\Requests\Concerns\{ContactNameFields, ContactSatelliteFields, DecodesSqidInputs};
 
 /**
  * Validierung für Fremdkunden (Endkunden). Leichtgewichtiger Kontakt; die
@@ -19,6 +19,7 @@ use App\Http\Requests\Concerns\{ContactSatelliteFields, DecodesSqidInputs};
  * via {@see DecodesSqidInputs} zu einer ID dekodiert).
  */
 class SaveForeignCustomerRequest extends BaseFormRequest {
+    use ContactNameFields;
     use ContactSatelliteFields;
     use DecodesSqidInputs;
 
@@ -29,7 +30,7 @@ class SaveForeignCustomerRequest extends BaseFormRequest {
 
     /** @return array<string, mixed> */
     public function rules(): array {
-        return $this->addressRules() + [
+        return $this->addressRules() + $this->contactNameRules() + [
             'customer_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('customers')],
             'name' => ['required', 'string', 'max:200'],
             // Kürzel für den Alias-Abgleich der Fernwartungs-Inbox (z. B. GSL).

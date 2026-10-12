@@ -39,7 +39,7 @@ class SupplierMasterDataSection extends AbstractSubjectSection {
             'vendor_number' => $this->field(__('Kreditorennummer'), $s->vendor_number),
             'name' => $this->field(__('Name'), $s->name),
             'company' => $this->field(__('Firma'), $s->company),
-            'contact_name' => $this->field(__('Ansprechpartner'), $s->contact_name),
+            'contact_name' => $this->field(__('Ansprechpartner'), $s->contactNameWithSalutation() ?: null),
             'email' => $this->field(__('E-Mail'), $s->email),
             'phone' => $this->field(__('Telefon'), $s->phone),
             'mobile' => $this->field(__('Mobil'), $s->mobile),

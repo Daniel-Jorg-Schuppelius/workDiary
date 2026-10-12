@@ -5718,6 +5718,11 @@ CREATE TABLE IF NOT EXISTS "foreign_customers"(
   "matchcode" varchar,
   "phone_e164" varchar,
   "mobile_e164" varchar,
+  "contact_salutation" varchar,
+  "contact_title" varchar,
+  "contact_first_name" varchar,
+  "contact_middle_names" varchar,
+  "contact_last_name" varchar,
   foreign key("organization_id") references "organizations"("id") on delete set null,
   foreign key("customer_id") references "customers"("id") on delete cascade,
   foreign key("created_by") references "users"("id") on delete set null
@@ -14423,6 +14428,11 @@ CREATE TABLE IF NOT EXISTS "leads"(
   "created_by" integer,
   "created_at" datetime,
   "updated_at" datetime,
+  "contact_salutation" varchar,
+  "contact_title" varchar,
+  "contact_first_name" varchar,
+  "contact_middle_names" varchar,
+  "contact_last_name" varchar,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("responsible_user_id") references "users"("id") on delete set null,
   foreign key("customer_id") references "customers"("id") on delete set null,
@@ -17375,6 +17385,11 @@ CREATE TABLE IF NOT EXISTS "customers"(
   "skonto_percent" numeric,
   "skonto_days" integer,
   "is_collective" tinyint(1) not null default '0',
+  "contact_salutation" varchar,
+  "contact_title" varchar,
+  "contact_first_name" varchar,
+  "contact_middle_names" varchar,
+  "contact_last_name" varchar,
   foreign key("organization_id") references organizations("id") on delete set null on update no action,
   foreign key("created_by") references users("id") on delete set null on update no action,
   foreign key("document_render_profile_id") references document_render_profiles("id") on delete set null on update no action
@@ -17442,6 +17457,11 @@ CREATE TABLE IF NOT EXISTS "suppliers"(
   "mobile_e164" varchar,
   "is_collective" tinyint(1) not null default '0',
   "exclude_from_reports" tinyint(1) not null default '0',
+  "contact_salutation" varchar,
+  "contact_title" varchar,
+  "contact_first_name" varchar,
+  "contact_middle_names" varchar,
+  "contact_last_name" varchar,
   foreign key("created_by") references users("id") on delete set null on update no action,
   foreign key("organization_id") references organizations("id") on delete set null on update no action
 );
@@ -24513,3 +24533,4 @@ INSERT INTO migrations VALUES(975,'2027_03_16_100500_add_external_invoice_to_quo
 INSERT INTO migrations VALUES(976,'2027_03_16_100600_add_sales_assignment_to_accounting_vouchers',1);
 INSERT INTO migrations VALUES(977,'2027_03_17_100000_add_exclude_from_reports_to_suppliers',1);
 INSERT INTO migrations VALUES(978,'2027_03_18_100000_number_formats_source_plugin_id',1);
+INSERT INTO migrations VALUES(979,'2027_03_18_100100_add_contact_name_parts',1);

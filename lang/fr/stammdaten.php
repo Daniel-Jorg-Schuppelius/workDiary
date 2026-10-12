@@ -41,4 +41,7 @@ return [
         ],
     ],
     'accounting_number' => 'N° dans le logiciel comptable',
+    'contact' => [
+        'salutation' => 'Civilité',
+    ],
 ];

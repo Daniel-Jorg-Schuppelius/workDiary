@@ -2260,4 +2260,7 @@ return [
     'time_export' => [
         'time_export_status' => ['preparing' => 'In Vorbereitung', 'ready' => 'Bereit', 'delivered' => 'Übermittelt', 'rejected' => 'Abgelehnt', 'superseded' => 'Ersetzt'],
     ],
+    'stammdaten' => [
+        'contact_salutation' => ['mr' => 'Herr', 'ms' => 'Frau', 'diverse' => 'Divers'],
+    ],
 ];

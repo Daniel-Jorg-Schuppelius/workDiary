@@ -8,7 +8,7 @@
  * Markup-Kontrakt:
  *   [data-contact-persons]  Wurzel des Editors
  *   [data-contact-rows]     Container der Zeilen
- *   [data-contact-row]      eine Personenzeile (name/email/phone/primary)
+ *   [data-contact-row]      eine Personenzeile (Anrede, Namensteile, email/phone/primary)
  *   [data-contact-add]      Button: neue (geleerte) Zeile per Klon anhängen
  *   [data-contact-remove]   Button: Zeile entfernen; letzte Zeile wird geleert
  */
@@ -16,8 +16,8 @@
 /** @param {ParentNode} rows */
 function renumber(rows) {
     rows.querySelectorAll('[data-contact-row]').forEach((row, idx) => {
-        /** @type {NodeListOf<HTMLInputElement>} */ (row.querySelectorAll('input[name]')).forEach(inp => {
-            inp.name = inp.name.replace(/contact_persons\[\d+\]/, 'contact_persons[' + idx + ']');
+        /** @type {NodeListOf<HTMLInputElement | HTMLSelectElement>} */ (row.querySelectorAll('input[name], select[name]')).forEach(field => {
+            field.name = field.name.replace(/contact_persons\[\d+\]/, 'contact_persons[' + idx + ']');
         });
     });
 }
@@ -28,6 +28,7 @@ function clearInputs(row) {
         if (inp.type === 'checkbox') { inp.checked = false; }
         else if (inp.type !== 'hidden') { inp.value = ''; }
     });
+    row.querySelectorAll('select').forEach(sel => { sel.selectedIndex = 0; });
 }
 
 document.addEventListener('click', (e) => {

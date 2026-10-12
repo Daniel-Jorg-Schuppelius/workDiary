@@ -92,12 +92,14 @@ final class MsgraphContactsTest extends TestCase {
 
         $this->assertSame('kontakt-1', $externalId);
         $fake->assertSent(function ($request): bool {
-            /** @var array{displayName?: string, companyName?: string, emailAddresses?: list<array{address?: string}>, businessPhones?: list<string>} $payload */
+            /** @var array{displayName?: string, givenName?: string, surname?: string, companyName?: string, emailAddresses?: list<array{address?: string}>, businessPhones?: list<string>} $payload */
             $payload = (array) json_decode((string) $request->getBody(), true);
 
             return $request->getMethod() === 'POST'
                 && str_contains($request->getHeaderLine('Prefer'), 'ImmutableId')
                 && ($payload['displayName'] ?? null) === 'Erika Beispiel'
+                && ($payload['givenName'] ?? null) === 'Erika'
+                && ($payload['surname'] ?? null) === 'Beispiel'
                 && ($payload['fileAs'] ?? null) === 'Acme GmbH'
                 && (($payload['emailAddresses'][0]['address'] ?? null) === 'erika@acme.test')
                 && (($payload['businessPhones'][0] ?? null) === '+49 30 123456');

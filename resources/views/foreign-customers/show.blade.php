@@ -54,7 +54,7 @@
         <x-card>
             <div class="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
                 @if ($foreignCustomer->company)<div><span class="text-muted">{{ __('Firma') }}:</span> {{ $foreignCustomer->company }}</div>@endif
-                @if ($foreignCustomer->contact_name)<div><span class="text-muted">{{ __('Ansprechpartner') }}:</span> {{ $foreignCustomer->contact_name }}</div>@endif
+                @if ($foreignCustomer->contact_name)<div><span class="text-muted">{{ __('Ansprechpartner') }}:</span> {{ $foreignCustomer->contactNameWithSalutation() }}</div>@endif
                 @if ($foreignCustomer->email)<div><span class="text-muted">{{ __('E-Mail') }}:</span> {{ $foreignCustomer->email }}</div>@endif
                 @if ($foreignCustomer->phone)<div><span class="text-muted">{{ __('Telefon') }}:</span> {{ $foreignCustomer->phone }}</div>@endif
                 @php

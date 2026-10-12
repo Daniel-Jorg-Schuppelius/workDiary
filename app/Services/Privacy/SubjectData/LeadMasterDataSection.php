@@ -36,7 +36,7 @@ class LeadMasterDataSection extends AbstractSubjectSection {
 
         return ['fields' => [
             'company' => $this->field(__('Firma'), $l->company),
-            'contact_name' => $this->field(__('Ansprechpartner'), $l->contact_name),
+            'contact_name' => $this->field(__('Ansprechpartner'), $l->contactNameWithSalutation() ?: null),
             'email' => $this->field(__('E-Mail'), $l->email),
             'phone' => $this->field(__('Telefon'), $l->phone),
             'address' => $this->field(__('Adresse'), implode(', ', $l->postalAddressLines()) ?: null),

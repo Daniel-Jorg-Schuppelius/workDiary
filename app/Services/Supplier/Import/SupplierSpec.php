@@ -45,6 +45,11 @@ class SupplierSpec extends AbstractEntitySpec implements InboxFirstSpec {
             'vat_id',
             'tax_number',
             'contact_name',
+            'contact_salutation',
+            'contact_title',
+            'contact_first_name',
+            'contact_middle_names',
+            'contact_last_name',
             'email',
             'phone',
             'mobile',
@@ -83,6 +88,11 @@ class SupplierSpec extends AbstractEntitySpec implements InboxFirstSpec {
             'ustid' => 'vat_id',
             'steuernummer' => 'tax_number',
             'ansprechpartner' => 'contact_name',
+            'anrede' => 'contact_salutation',
+            'titel' => 'contact_title',
+            'vorname' => 'contact_first_name',
+            'weitere vornamen' => 'contact_middle_names',
+            'nachname' => 'contact_last_name',
             'e-mail' => 'email',
             'telefon' => 'phone',
             'mobil' => 'mobile',
@@ -111,6 +121,7 @@ class SupplierSpec extends AbstractEntitySpec implements InboxFirstSpec {
             $raw = $row[$col] ?? null;
             $out[$col] = match ($col) {
                 'country', 'currency' => $this->upperOrNull($this->trimmedString($raw)),
+                'contact_salutation' => \App\Enums\Stammdaten\ContactSalutation::fromText($this->trimmedString($raw))?->value,
                 default => $this->trimmedString($raw),
             };
         }

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Stammdaten;
 
+use App\Models\Contracts\ContactNameHolder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\{DB, Schema};
 
@@ -468,6 +469,14 @@ abstract class AbstractEntityMergeService {
             if (in_array($field, $fillable, true)) {
                 $target->setAttribute($field, $value);
             }
+        }
+
+        // Der Ansprechpartner wandert als Ganzes; sonst zerlegte das Modell den
+        // übernommenen Text neu, und die Anrede ginge verloren (MVP-1136).
+        if ($target instanceof ContactNameHolder
+            && $target->isDirty('contact_name')
+            && $target->getAttribute('contact_name') === $source->getAttribute('contact_name')) {
+            $target->copyContactNameFrom($source);
         }
 
         $this->mergeEntitySpecificFields($source, $target);

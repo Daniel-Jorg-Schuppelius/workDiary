@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Easybill;
 
 use App\Enums\Numbering\NumberScope;
+use App\Enums\Stammdaten\ContactSalutation;
 use App\Exceptions\ContactNumberTakenException;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
@@ -22,7 +23,7 @@ use App\Plugins\Easybill\Api\{EasybillClient, EasybillClientFactory};
 use App\Plugins\Easybill\Exceptions\EasybillApiException;
 use App\Services\Finance\Accounting\ContactPushService;
 use App\Services\Numbering\NumberSequenceService;
-use App\Services\Stammdaten\{ContactIdentity, ContactNumberAdopter};
+use App\Services\Stammdaten\{ContactIdentity, ContactNumberAdopter, ContactPersons};
 use RuntimeException;
 use Throwable;
 
@@ -102,9 +103,20 @@ class EasybillPlugin extends AbstractPlugin implements ContactNumberIssuer, Cont
             'email' => (string) ($customer->email ?? ''),
         ]);
 
+        // Hauptansprechpartner in die Namensfelder des easybill-Kunden (MVP-1138).
+        $contact = ContactPersons::primaryOf($customer);
+
         $payload = array_filter([
             'company_name' => (string) $customer->name,
             'number' => $number !== '' ? $number : null,
+            'salutation' => match ($contact['salutation'] ?? null) {
+                ContactSalutation::Mr->value => 1,
+                ContactSalutation::Ms->value => 2,
+                default => null,
+            },
+            'title' => $contact['title'] ?? null,
+            'first_name' => trim(($contact['first_name'] ?? '') . ' ' . ($contact['middle_names'] ?? '')) ?: null,
+            'last_name' => $contact['last_name'] ?? null,
             'street' => (string) ($customer->address_street ?? '') ?: null,
             'zip_code' => (string) ($customer->address_zip ?? '') ?: null,
             'city' => (string) ($customer->address_city ?? '') ?: null,

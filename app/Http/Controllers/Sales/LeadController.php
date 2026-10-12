@@ -16,7 +16,7 @@ use App\Enums\Sales\{LeadSource, LeadStatus};
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\WritesContactDetails;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Concerns\ContactSatelliteFields;
+use App\Http\Requests\Concerns\{ContactNameFields, ContactSatelliteFields};
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Sales\Lead;
@@ -37,6 +37,7 @@ use RuntimeException;
  * gibt. Modul-Gate: module.vertrieb (config/plans.php).
  */
 class LeadController extends Controller {
+    use ContactNameFields;
     use ContactSatelliteFields;
     use WritesContactDetails;
 
@@ -182,7 +183,7 @@ class LeadController extends Controller {
 
     /** @return array<string, mixed> */
     private function validated(Request $request): array {
-        $data = $request->validate($this->addressRules() + [
+        $data = $request->validate($this->addressRules() + $this->contactNameRules() + [
             'company' => ['nullable', 'string', 'max:160'],
             'contact_name' => ['nullable', 'string', 'max:160'],
             'email' => ['nullable', 'email', 'max:190'],
@@ -193,7 +194,8 @@ class LeadController extends Controller {
         ]);
         abort_if(LeadSource::tryFrom((string) $data['source']) === null, 422);
         // Ohne Firma UND ohne Ansprechpartner gibt es keine Akte.
-        abort_if(blank($data['company'] ?? null) && blank($data['contact_name'] ?? null), 422);
+        abort_if(blank($data['company'] ?? null) && blank($data['contact_name'] ?? null)
+            && blank($data['contact_first_name'] ?? null) && blank($data['contact_last_name'] ?? null), 422);
 
         $responsible = null;
         if (filled($data['responsible_user'] ?? null)) {

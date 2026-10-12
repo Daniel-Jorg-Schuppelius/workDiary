@@ -75,7 +75,7 @@
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <x-card :title="__('Kontakt')" icon="contacts">
             <x-detail-grid>
-                <x-detail-grid.row :label="__('Ansprechpartner')" :value="$supplier->contact_name" />
+                <x-detail-grid.row :label="__('Ansprechpartner')" :value="$supplier->contactNameWithSalutation()" />
                 <x-detail-grid.row :label="__('E-Mail')">@if ($supplier->email)<a class="link" href="mailto:{{ $supplier->email }}">{{ $supplier->email }}</a>@endif</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Telefon')" :value="$supplier->phone" />
                 <x-detail-grid.row :label="__('Mobil')" :value="$supplier->mobile" />

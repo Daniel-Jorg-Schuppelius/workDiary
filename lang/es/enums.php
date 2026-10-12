@@ -2255,4 +2255,7 @@ return [
     'time_export' => [
         'time_export_status' => ['preparing' => 'En preparación', 'ready' => 'Listo', 'delivered' => 'Transmitido', 'rejected' => 'Rechazado', 'superseded' => 'Reemplazado'],
     ],
+    'stammdaten' => [
+        'contact_salutation' => ['mr' => 'Señor', 'ms' => 'Señora', 'diverse' => 'Diverso'],
+    ],
 ];

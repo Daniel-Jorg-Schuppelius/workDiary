@@ -14,6 +14,7 @@ namespace App\Plugins\OrgaMax;
 
 use APIToolkit\Entities\ID;
 use APIToolkit\Exceptions\ApiException;
+use App\Enums\Stammdaten\ContactSalutation;
 use App\Exceptions\ContactNumberTakenException;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
@@ -24,10 +25,10 @@ use App\Plugins\OrgaMax\Enums\OrgaMaxConnectionStatus;
 use App\Plugins\OrgaMax\Models\OrgaMaxConnection;
 use App\Services\Finance\Accounting\ContactPushService;
 use App\Services\Numbering\NumberSequenceService;
-use App\Services\Stammdaten\{ContactIdentity, ContactNumberAdopter};
+use App\Services\Stammdaten\{ContactIdentity, ContactNumberAdopter, ContactPersons};
 use Orgamax\API\Endpoints\CustomersEndpoint;
 use Orgamax\API\Endpoints\Settings\AccountSettingEndpoint;
-use Orgamax\Entities\Customers\Customer as OrgaMaxCustomer;
+use Orgamax\Entities\Customers\{ContactPerson as OrgaMaxContactPerson, ContactPersons as OrgaMaxContactPersons, Customer as OrgaMaxCustomer};
 use RuntimeException;
 use Throwable;
 
@@ -152,6 +153,25 @@ class OrgaMaxPlugin extends AbstractPlugin implements ContactSyncer {
             app(ContactNumberAdopter::class)->linked($customer, self::ID, $existingId, $number);
 
             return $existingId;
+        }
+
+        // Hauptansprechpartner nur beim Anlegen (MVP-1138): ohne orgaMAX-ID
+        // legte ein Aktualisieren ihn bei jedem Übertragen erneut an.
+        $contact = ContactPersons::primaryOf($customer);
+        if ($contact !== null && ($contact['last_name'] ?? null) !== null) {
+            $person = new OrgaMaxContactPerson;
+            $person->setSalutation(match ($contact['salutation']) {
+                ContactSalutation::Mr->value => 'Herr',
+                ContactSalutation::Ms->value => 'Frau',
+                default => null,
+            });
+            $person->setTitle($contact['title']);
+            $person->setFirstName(trim($contact['first_name'] . ' ' . $contact['middle_names']) ?: null);
+            $person->setLastName($contact['last_name']);
+            $person->setEmail($contact['email']);
+            $person->setPhone1($contact['phone']);
+            $person->setIsMainContact(true);
+            $payload->setContactPersons(new OrgaMaxContactPersons([$person]));
         }
 
         $created = $endpoint->create($payload)->getData();

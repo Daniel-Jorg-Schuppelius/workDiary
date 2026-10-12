@@ -1,7 +1,7 @@
 ---
 title: "Clienti & fornitori"
 topic: contacts.manage
-version: 6
+version: 7
 keywords:
     - anagrafica clienti
     - anagrafica fornitori
@@ -55,6 +55,9 @@ funzionano senza rilavorazioni.
    Se, secondo i **Formati di numerazione**, un programma di contabilità
    assegna i numeri cliente, il campo è bloccato: il cliente viene
    trasferito al programma alla creazione e ne riceve il numero.
+   Inserisca il referente con appellativo, titolo, nome, altri nomi e
+   cognome; ogni riga dell'elenco dei referenti ha gli stessi campi. I
+   programmi di contabilità li ricevono separatamente.
 3. Completi dati di pagamento e fatturazione e gli identificativi
    esterni — guidano fatturazione e consegna contabile.
 4. Colleghi progetti, sedi e accordi man mano che nascono.

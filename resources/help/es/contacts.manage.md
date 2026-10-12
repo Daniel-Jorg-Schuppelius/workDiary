@@ -1,7 +1,7 @@
 ---
 title: "Clientes & proveedores"
 topic: contacts.manage
-version: 6
+version: 7
 keywords:
     - ficha de cliente
     - maestro de clientes
@@ -55,6 +55,9 @@ del registro de tiempos a la entrega DATEV — funcionan sin retrabajo.
    Si, según los **Formatos de numeración**, un programa de contabilidad
    asigna los números de cliente, el campo queda bloqueado: el cliente se
    transfiere al programa al crearlo y recibe su número.
+   Registre la persona de contacto con tratamiento, título, nombre, otros
+   nombres y apellido; cada fila de la lista de personas de contacto tiene
+   los mismos campos. Los programas de contabilidad los reciben por separado.
 3. Complete datos de pago y facturación e identificadores externos —
    dirigen la facturación y la entrega contable.
 4. Vincule proyectos, ubicaciones y acuerdos según vayan surgiendo.

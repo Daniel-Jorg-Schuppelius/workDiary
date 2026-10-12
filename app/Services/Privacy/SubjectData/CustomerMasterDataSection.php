@@ -38,7 +38,7 @@ class CustomerMasterDataSection extends AbstractSubjectSection {
             'number' => $this->field(__('Kundennummer'), $c->number),
             'name' => $this->field(__('Name'), $c->name),
             'company' => $this->field(__('Firma'), $c->company),
-            'contact_name' => $this->field(__('Ansprechpartner'), $c->contact_name),
+            'contact_name' => $this->field(__('Ansprechpartner'), $c->contactNameWithSalutation() ?: null),
             'email' => $this->field(__('E-Mail'), $c->email),
             'phone' => $this->field(__('Telefon'), $c->phone),
             'mobile' => $this->field(__('Mobil'), $c->mobile),

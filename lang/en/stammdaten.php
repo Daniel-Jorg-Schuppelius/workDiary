@@ -41,4 +41,7 @@ return [
         ],
     ],
     'accounting_number' => 'No. in accounting system',
+    'contact' => [
+        'salutation' => 'Salutation',
+    ],
 ];

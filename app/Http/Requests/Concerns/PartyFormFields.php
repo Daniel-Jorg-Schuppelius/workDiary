@@ -11,6 +11,7 @@
 namespace App\Http\Requests\Concerns;
 
 use App\Models\Platform\Organization;
+use App\Services\Stammdaten\ContactPersons;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -20,6 +21,7 @@ use Illuminate\Support\Facades\Auth;
  * vendor_number) ergänzt der jeweilige Request über array_merge.
  */
 trait PartyFormFields {
+    use ContactNameFields;
     use ContactSatelliteFields;
 
     /**
@@ -28,7 +30,7 @@ trait PartyFormFields {
      * @return array<string, mixed>
      */
     protected function partyBaseRules(): array {
-        return $this->addressRules(withCountry: true) + [
+        return $this->addressRules(withCountry: true) + $this->contactNameRules() + [
             'name' => ['required', 'string', 'max:200'],
             'company' => ['nullable', 'string', 'max:200'],
             'vat_id' => ['nullable', 'string', 'max:64'],
@@ -49,6 +51,11 @@ trait PartyFormFields {
             'bank_bic' => ['nullable', 'string', 'max:32', new \App\Rules\Bic()],
             'bank_name' => ['nullable', 'string', 'max:200'],
             'contact_persons' => ['nullable', 'array', 'max:20'],
+            'contact_persons.*.salutation' => ['nullable', \Illuminate\Validation\Rule::enum(\App\Enums\Stammdaten\ContactSalutation::class)],
+            'contact_persons.*.title' => ['nullable', 'string', 'max:64'],
+            'contact_persons.*.first_name' => ['nullable', 'string', 'max:128'],
+            'contact_persons.*.middle_names' => ['nullable', 'string', 'max:128'],
+            'contact_persons.*.last_name' => ['nullable', 'string', 'max:128'],
             'contact_persons.*.name' => ['nullable', 'string', 'max:200'],
             'contact_persons.*.email' => ['nullable', 'email', 'max:255'],
             'contact_persons.*.phone' => ['nullable', 'string', 'max:64'],
@@ -60,32 +67,15 @@ trait PartyFormFields {
     }
 
     /**
-     * Kontaktpersonen normalisieren: leere Zeilen entfernen, primary als bool.
+     * Kontaktpersonen normalisieren: leere Zeilen entfernen, Name aus den Teilen
+     * bilden bzw. einen bloßen Namen zerlegen (MVP-1137), primary als bool.
      *
-     * @return array<int, array{name: ?string, email: ?string, phone: ?string, primary: bool}>
+     * @return list<array<string, mixed>>
      */
     protected function normalizedContactPersons(): array {
         $persons = $this->input('contact_persons', []);
-        if (! is_array($persons)) {
-            return [];
-        }
 
-        $persons = array_values(array_filter($persons, static function ($row): bool {
-            if (! is_array($row)) {
-                return false;
-            }
-
-            return trim((string) ($row['name'] ?? '')) !== ''
-                || trim((string) ($row['email'] ?? '')) !== ''
-                || trim((string) ($row['phone'] ?? '')) !== '';
-        }));
-
-        return array_map(static fn(array $row): array => [
-            'name' => $row['name'] ?? null,
-            'email' => $row['email'] ?? null,
-            'phone' => $row['phone'] ?? null,
-            'primary' => (bool) ($row['primary'] ?? false),
-        ], $persons);
+        return is_array($persons) ? ContactPersons::normalizeAll($persons) : [];
     }
 
     /**

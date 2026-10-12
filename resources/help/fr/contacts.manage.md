@@ -1,7 +1,7 @@
 ---
 title: "Clients & fournisseurs"
 topic: contacts.manage
-version: 6
+version: 7
 keywords:
     - fichier clients
     - base clients
@@ -56,6 +56,9 @@ fonctionnent sans reprise.
    Si, selon les **Formats de numérotation**, un logiciel de comptabilité
    attribue les numéros client, le champ est verrouillé : le client est
    transféré au logiciel à la création et reçoit son numéro.
+   Saisissez l'interlocuteur avec civilité, titre, prénom, autres prénoms
+   et nom ; chaque ligne de la liste des interlocuteurs a les mêmes champs.
+   Les logiciels de comptabilité les reçoivent séparément.
 3. Complétez les données de paiement et de facturation ainsi que les
    identifiants externes — ils pilotent la facturation et la remise
    comptable.

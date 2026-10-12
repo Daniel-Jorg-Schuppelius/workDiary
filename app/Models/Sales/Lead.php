@@ -14,8 +14,8 @@ namespace App\Models\Sales;
 
 use App\Enums\Sales\{LeadSource, LeadStatus};
 use App\Models\Communication\CommunicationNote;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasContactAndBankDetails, HasSqid};
-use App\Models\Contracts\ContactDetailsHolder;
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasContactAndBankDetails, HasSqid, HasStructuredContactName};
+use App\Models\Contracts\{ContactDetailsHolder, ContactNameHolder};
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
@@ -34,7 +34,12 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int|null $organization_id
  * @property string|null $company
- * @property string|null $contact_name
+ * @property string|null $contact_name Ansprechpartner zur Anzeige, gebildet aus den Teilen (MVP-1136)
+ * @property \App\Enums\Stammdaten\ContactSalutation|null $contact_salutation
+ * @property string|null $contact_title
+ * @property string|null $contact_first_name
+ * @property string|null $contact_middle_names
+ * @property string|null $contact_last_name
  * @property string|null $email
  * @property string|null $phone
  * @property LeadSource $source
@@ -47,14 +52,15 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $anonymized_at
  * @property int|null $created_by
  */
-class Lead extends Model implements ContactDetailsHolder {
+class Lead extends Model implements ContactDetailsHolder, ContactNameHolder {
     use Auditable;
     use BelongsToOrganization;
     use HasContactAndBankDetails;
     use HasSqid;
+    use HasStructuredContactName;
 
     protected $fillable = [
-        'organization_id', 'company', 'contact_name', 'email', 'phone',
+        'organization_id', 'company', 'contact_name', 'contact_salutation', 'contact_title', 'contact_first_name', 'contact_middle_names', 'contact_last_name', 'email', 'phone',
         'source', 'interest', 'status', 'discard_reason',
         'responsible_user_id', 'customer_id', 'last_contact_at',
         'anonymized_at', 'created_by',
@@ -62,6 +68,7 @@ class Lead extends Model implements ContactDetailsHolder {
 
     /** @var array<string, string> */
     protected $casts = [
+        'contact_salutation' => \App\Enums\Stammdaten\ContactSalutation::class,
         'source' => LeadSource::class,
         'status' => LeadStatus::class,
         'last_contact_at' => 'datetime',

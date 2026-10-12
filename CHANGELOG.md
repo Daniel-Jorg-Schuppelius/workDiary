@@ -15,6 +15,17 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   Argumente durchgereicht. Als root gestartet läuft es als Eigentümer von
   `storage/`.
 
+- Ansprechpartner mit Anrede und Namensteilen (Phase 142, MVP-1135–1138):
+  Kunde, Lieferant, Fremdkunde und Lead erfassen den Ansprechpartner mit
+  Anrede, Titel, Vorname, weiteren Vornamen und Nachname, ebenso jede Zeile
+  der Ansprechpartner-Liste; die Detailseiten zeigen ihn mit Anrede.
+  Lexoffice erhält Anrede und Titel im Anredefeld, Vornamen und Nachname
+  getrennt, und der Kontaktabgleich bringt sie zurück; easybill, orgaMAX
+  (beim Anlegen) und Outlook-Kontakte bekommen die Namensfelder. Import und
+  Export kennen die neuen Spalten. Vorhandene Ansprechpartner zerlegt eine
+  Migration mit dem neuen `PersonNameHelper` aus dem common-toolkit
+  (v2.8.0); die Anzeige bleibt dabei unverändert.
+
 - Kundennummern vom Buchhaltungsprogramm (Phase 141, MVP-1130–1134): Auf
   der Seite „Nummernkreise“ (jetzt im Admin-Menü) wählt die Organisation für
   Kunde und Lieferant, wer die Nummer vergibt — WorkDiary, Lexoffice, sevDesk
@@ -1268,6 +1279,10 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
   das Ergebnis nur, wenn die Summen aufgehen.
 
 ### Fixed
+
+- Lexoffice (Phase 142, MVP-1138): Der Ansprechpartner stand komplett im
+  Nachnamen, Anrede und Vorname blieben leer; der Kontaktabgleich verlor die
+  in Lexoffice gepflegte Anrede, und das nächste Übertragen löschte sie dort.
 
 - Kontakt-Push in die Buchhaltung (Phase 141, MVP-1133): sevDesk, easybill
   und orgaMAX überschrieben einen fremden Kontakt, der zufällig dieselbe

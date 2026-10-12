@@ -1,7 +1,7 @@
 ---
 title: "Kunden & Lieferanten"
 topic: contacts.manage
-version: 6
+version: 7
 keywords:
     - Kundenstamm
     - Kundendaten
@@ -56,6 +56,9 @@ Nacharbeit funktionieren.
    Vergibt laut **Nummernformate** ein Buchhaltungsprogramm die
    Kundennummer, ist das Feld gesperrt: Der Kunde wird beim Anlegen an das
    Programm übertragen und erhält dessen Nummer.
+   Den Ansprechpartner erfassen Sie mit Anrede, Titel, Vorname, weiteren
+   Vornamen und Nachname; dieselben Felder hat jede Zeile der
+   Ansprechpartner-Liste. Die Buchhaltungsprogramme erhalten sie getrennt.
 3. Ergänzen Sie Zahlungs- und Abrechnungsdaten sowie externe Kennungen
    vollständig — sie steuern Faktura und Buchhaltungsübergabe.
 4. Verknüpfen Sie Projekte, Standorte und Vereinbarungen, sobald sie

@@ -26,7 +26,6 @@
     <x-form-group cols="2">
         <x-input-field name="company" :label="__('Firma')" :value="old('company', $lead?->company)"
                        placeholder="{{ __('Muster GmbH') }}" />
-        <x-input-field name="contact_name" :label="__('Ansprechpartner')" :value="old('contact_name', $lead?->contact_name)" />
         <x-input-field type="email" name="email" :label="__('E-Mail')" :value="old('email', $lead?->email)" />
         <x-input-field name="phone" :label="__('Telefon')" :value="old('phone', $lead?->phone)" />
         <x-select-field name="source" :label="__('Quelle')" required>
@@ -43,4 +42,6 @@
         <x-contact-address-fields :subject="$lead" />
         <x-textarea-field name="interest" :label="__('Interesse / Bedarf')" rows="3" span="2">{{ old('interest', $lead?->interest) }}</x-textarea-field>
     </x-form-group>
+
+    <x-contact-name-fields :model="$lead" />
 </x-modal>

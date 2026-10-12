@@ -1,7 +1,7 @@
 ---
 title: "Customers & suppliers"
 topic: contacts.manage
-version: 6
+version: 7
 keywords:
     - customer master data
     - supplier master data
@@ -54,6 +54,9 @@ to the DATEV handover — work without rework.
    If an accounting program assigns customer numbers according to
    **Number formats**, the field is locked: the customer is transferred to
    the program on creation and receives its number.
+   Enter the contact person with salutation, title, first name, additional
+   first names and last name; every row of the contact person list has the
+   same fields. The accounting programs receive them separately.
 3. Complete payment and billing data as well as external identifiers —
    they drive invoicing and the accounting handover.
 4. Link projects, sites and agreements as they come into being.

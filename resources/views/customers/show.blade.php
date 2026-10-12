@@ -115,7 +115,7 @@
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <x-card :title="__('Kontakt')" icon="contacts">
             <x-detail-grid>
-                <x-detail-grid.row :label="__('Ansprechpartner')" :value="$customer->contact_name" />
+                <x-detail-grid.row :label="__('Ansprechpartner')" :value="$customer->contactNameWithSalutation()" />
                 <x-detail-grid.row :label="__('E-Mail')">@if ($customer->email)<a class="link" href="mailto:{{ $customer->email }}">{{ $customer->email }}</a>@endif</x-detail-grid.row>
                 {{-- Click-to-Dial (W4.5): Knopf erscheint nur bei eingerichteter Anlage. --}}
                 <x-detail-grid.row :label="__('Telefon')"><x-phone-value :number="$customer->phone" /></x-detail-grid.row>

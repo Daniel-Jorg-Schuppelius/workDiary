@@ -38,7 +38,7 @@
             <x-card :title="__('Stammdaten')">
                 <x-detail-grid layout="split" :cols="2">
                     <x-detail-grid.row :label="__('Firma')">{{ $lead->company ?? '—' }}</x-detail-grid.row>
-                    <x-detail-grid.row :label="__('Ansprechpartner')">{{ $lead->contact_name ?? '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Ansprechpartner')">{{ $lead->contactNameWithSalutation() ?: '—' }}</x-detail-grid.row>
                     <x-detail-grid.row :label="__('E-Mail')">{{ $lead->email ?? '—' }}</x-detail-grid.row>
                     <x-detail-grid.row :label="__('Telefon')">{{ $lead->phone ?? '—' }}</x-detail-grid.row>
                     <x-detail-grid.row :label="__('Adresse')" full class="text-right">{{ implode(', ', $lead->postalAddressLines()) ?: '—' }}</x-detail-grid.row>

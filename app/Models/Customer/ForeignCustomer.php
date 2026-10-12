@@ -12,8 +12,8 @@ namespace App\Models\Customer;
 
 use App\Enums\Project\ProjectStatus;
 use App\Models\Asset\Asset;
-use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, HasContactAndBankDetails, HasPartyDisplayLabel, HasPhoneSearchKeys, HasSqid, Searchable};
-use App\Models\Contracts\ContactDetailsHolder;
+use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, HasContactAndBankDetails, HasPartyDisplayLabel, HasPhoneSearchKeys, HasSqid, HasStructuredContactName, Searchable};
+use App\Models\Contracts\{ContactDetailsHolder, ContactNameHolder};
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
@@ -40,7 +40,12 @@ use Illuminate\Support\Carbon;
  * @property string|null $number
  * @property string|null $matchcode
  * @property string|null $company
- * @property string|null $contact_name
+ * @property string|null $contact_name Ansprechpartner zur Anzeige, gebildet aus den Teilen (MVP-1136)
+ * @property \App\Enums\Stammdaten\ContactSalutation|null $contact_salutation
+ * @property string|null $contact_title
+ * @property string|null $contact_first_name
+ * @property string|null $contact_middle_names
+ * @property string|null $contact_last_name
  * @property string|null $email
  * @property string|null $phone
  * @property string|null $mobile
@@ -52,19 +57,20 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $archived_at
  * @property int|null $created_by
  */
-class ForeignCustomer extends Model implements ContactDetailsHolder {
+class ForeignCustomer extends Model implements ContactDetailsHolder, ContactNameHolder {
     use Archivable;
     use Auditable;
     use BelongsToOrganization;
     use HasContactAndBankDetails;
-
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
     use HasPartyDisplayLabel;
-    use HasPhoneSearchKeys;
 
+    use HasPhoneSearchKeys;
     use HasSqid;
+
+    use HasStructuredContactName;
     use Searchable;
 
     protected $fillable = [
@@ -75,6 +81,11 @@ class ForeignCustomer extends Model implements ContactDetailsHolder {
         'matchcode',
         'company',
         'contact_name',
+        'contact_salutation',
+        'contact_title',
+        'contact_first_name',
+        'contact_middle_names',
+        'contact_last_name',
         'email',
         'phone',
         'mobile',
@@ -89,6 +100,7 @@ class ForeignCustomer extends Model implements ContactDetailsHolder {
 
     /** @var array<string, string> */
     protected $casts = [
+        'contact_salutation' => \App\Enums\Stammdaten\ContactSalutation::class,
         'archived_at' => 'datetime',
     ];
 
