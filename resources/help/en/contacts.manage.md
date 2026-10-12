@@ -1,7 +1,7 @@
 ---
 title: "Customers & suppliers"
 topic: contacts.manage
-version: 5
+version: 6
 keywords:
     - customer master data
     - supplier master data
@@ -23,6 +23,7 @@ modules:
     - module.vertrieb
 schema: process
 related:
+    - admin.number-formats
     - projects.manage
     - invoices.manage
     - admin.import
@@ -50,6 +51,9 @@ to the DATEV handover — work without rework.
    already exists — this prevents duplicates. Existing duplicates can
    be merged; the history moves along.
 2. Create the contact with name, address and contact persons.
+   If an accounting program assigns customer numbers according to
+   **Number formats**, the field is locked: the customer is transferred to
+   the program on creation and receives its number.
 3. Complete payment and billing data as well as external identifiers —
    they drive invoicing and the accounting handover.
 4. Link projects, sites and agreements as they come into being.

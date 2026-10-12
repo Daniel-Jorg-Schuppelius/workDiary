@@ -1,7 +1,7 @@
 ---
 title: "Kunden & Lieferanten"
 topic: contacts.manage
-version: 5
+version: 6
 keywords:
     - Kundenstamm
     - Kundendaten
@@ -24,6 +24,7 @@ modules:
     - module.vertrieb
 schema: process
 related:
+    - admin.number-formats
     - projects.manage
     - invoices.manage
     - admin.import
@@ -52,6 +53,9 @@ Nacharbeit funktionieren.
    existiert — so entstehen keine Dubletten. Vorhandene Dubletten
    lassen sich zusammenführen, dabei wandert die Historie mit.
 2. Legen Sie den Kontakt mit Name, Anschrift und Ansprechpartnern an.
+   Vergibt laut **Nummernformate** ein Buchhaltungsprogramm die
+   Kundennummer, ist das Feld gesperrt: Der Kunde wird beim Anlegen an das
+   Programm übertragen und erhält dessen Nummer.
 3. Ergänzen Sie Zahlungs- und Abrechnungsdaten sowie externe Kennungen
    vollständig — sie steuern Faktura und Buchhaltungsübergabe.
 4. Verknüpfen Sie Projekte, Standorte und Vereinbarungen, sobald sie

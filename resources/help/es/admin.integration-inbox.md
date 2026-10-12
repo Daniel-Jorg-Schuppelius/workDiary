@@ -1,7 +1,7 @@
 ---
 title: "Bandeja de conciliación"
 topic: admin.integration-inbox
-version: 1
+version: 2
 keywords:
     - bandeja de integraciones
     - conflictos de importación
@@ -31,6 +31,12 @@ decide en cada entrada.
 - **Ambiguo** – hay varios registros posibles.
 - **Conflicto de campo** – el registro es conocido, pero el estado local y el
   remoto se contradicen. Ambos estados se muestran uno junto al otro.
+
+**Número ya asignado:** un caso especial de conflicto de campo. Un
+programa de contabilidad asignó a un cliente o proveedor un número que otro
+registro ya lleva en WorkDiary. El caso indica el titular. Cambie allí el
+número y elija **Adoptar lo remoto**; la siguiente sincronización también lo
+adopta por sí sola.
 
 **Decidir:** asigna una entrada a un registro existente, la crea como nueva o
 la descarta. En un conflicto de campo elige si se mantiene el estado local o

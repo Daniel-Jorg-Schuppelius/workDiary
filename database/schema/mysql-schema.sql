@@ -26588,3 +26588,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (974,'2027_03_16_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (975,'2027_03_16_100500_add_external_invoice_to_quotes',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (976,'2027_03_16_100600_add_sales_assignment_to_accounting_vouchers',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (977,'2027_03_17_100000_add_exclude_from_reports_to_suppliers',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (978,'2027_03_18_100000_number_formats_source_plugin_id',1);

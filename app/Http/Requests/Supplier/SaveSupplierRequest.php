@@ -10,9 +10,11 @@
 
 namespace App\Http\Requests\Supplier;
 
+use App\Enums\Numbering\NumberScope;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\{DecodesSqidInputs, PartyFormFields};
 use App\Models\Supplier\Supplier;
+use App\Services\Numbering\NumberAuthority;
 use Illuminate\Validation\Rule;
 
 class SaveSupplierRequest extends BaseFormRequest {
@@ -34,6 +36,8 @@ class SaveSupplierRequest extends BaseFormRequest {
 
         return array_merge($this->partyBaseRules(), [
             'number' => [
+                // Vergibt ein Buchhaltungsprogramm die Nummer, ist das Feld gesperrt (MVP-1134).
+                Rule::prohibitedIf(fn (): bool => app(NumberAuthority::class)->numberLockedBy(NumberScope::Supplier, $organizationId, $supplier?->number_source) !== null),
                 'nullable',
                 'string',
                 'max:64',

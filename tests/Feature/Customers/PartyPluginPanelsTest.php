@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Customers;
 
+use App\Enums\Numbering\ContactNumberOutcome;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\User;
@@ -109,6 +110,10 @@ class PartyPluginPanelsTest extends TestCase {
 
             public function pushSupplier(Supplier $supplier, string $pluginId): string {
                 return 'lex-contact-2';
+            }
+
+            public function issueNumber(Customer|Supplier $party): ?ContactNumberOutcome {
+                return null;
             }
         });
 

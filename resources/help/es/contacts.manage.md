@@ -1,7 +1,7 @@
 ---
 title: "Clientes & proveedores"
 topic: contacts.manage
-version: 5
+version: 6
 keywords:
     - ficha de cliente
     - maestro de clientes
@@ -23,6 +23,7 @@ modules:
     - module.vertrieb
 schema: process
 related:
+    - admin.number-formats
     - projects.manage
     - invoices.manage
     - admin.import
@@ -51,6 +52,9 @@ del registro de tiempos a la entrega DATEV — funcionan sin retrabajo.
    existe — así no nacen duplicados. Los duplicados existentes se
    pueden fusionar; el historial acompaña.
 2. Cree el contacto con nombre, dirección e interlocutores.
+   Si, según los **Formatos de numeración**, un programa de contabilidad
+   asigna los números de cliente, el campo queda bloqueado: el cliente se
+   transfiere al programa al crearlo y recibe su número.
 3. Complete datos de pago y facturación e identificadores externos —
    dirigen la facturación y la entrega contable.
 4. Vincule proyectos, ubicaciones y acuerdos según vayan surgiendo.

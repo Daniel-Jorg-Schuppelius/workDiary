@@ -1,7 +1,7 @@
 ---
 title: "Mapping inbox"
 topic: admin.integration-inbox
-version: 1
+version: 2
 keywords:
     - integration inbox
     - import conflicts
@@ -32,6 +32,12 @@ Nothing is created blindly: you decide for each entry.
 - **Ambiguous** – several records are possible matches.
 - **Field conflict** – the record is known, but the local and the remote
   state contradict each other. Both states are shown side by side.
+
+**Number already assigned:** A special field conflict. An accounting
+program assigned a number to a customer or supplier that another record in
+WorkDiary already carries. The case names the holder. Change the number
+there, then choose **Adopt remote**; the next sync also takes it over on
+its own.
 
 **Deciding:** You link an entry to an existing record, create it as a new one
 or discard it. For a field conflict you choose whether the local state stays

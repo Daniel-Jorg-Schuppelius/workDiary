@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Stammdaten\Contracts;
 
+use App\Enums\Numbering\ContactNumberOutcome;
 use App\Models\Customer\Customer;
 use App\Models\Supplier\Supplier;
 use App\Modules\ModuleUnavailableException;
@@ -27,5 +28,9 @@ final class NullContactPushTarget implements ContactPushTarget {
 
     public function pushSupplier(Supplier $supplier, string $pluginId): string {
         throw ModuleUnavailableException::for('module.finance');
+    }
+
+    public function issueNumber(Customer|Supplier $party): ?ContactNumberOutcome {
+        return null;
     }
 }

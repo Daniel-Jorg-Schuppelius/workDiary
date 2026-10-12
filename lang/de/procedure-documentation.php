@@ -137,7 +137,7 @@ return [
     'numbering' => [
         'table' => 'Nummernkreise',
         'local' => 'WorkDiary (lokal)',
-        'external' => 'Externes System',
+        'external' => 'Externes System (:program)',
         'col' => [
             'scope' => 'Bereich',
             'key' => 'Schlüssel',

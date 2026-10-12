@@ -85,7 +85,7 @@ class SevDeskTarget implements FacturationTarget {
         }
 
         $transfer->loadMissing(['items', 'customer']);
-        $contactReference = $this->resolveContactReference($transfer, $client);
+        $contactReference = $this->resolveContactReference($transfer);
 
         $vatRate = (float) $config['default_vat_rate'];
         $positions = $transfer->channel === TransferChannel::Time
@@ -202,34 +202,21 @@ class SevDeskTarget implements FacturationTarget {
     // ── Kontakt-Projektion ──────────────────────────────────────────────
 
     /**
-     * Kontakt-Auflösung in drei Stufen (Muster LexofficeTarget): bestehende
-     * ExternalReference → sevDesk-Suche über die Kundennummer → Kontakt
-     * anlegen (Projektion). Die Referenz wird in jedem Fall gespeichert,
-     * damit Folge-Übergaben idempotent auflösen.
+     * Kontaktauflösung: bestehende ExternalReference, sonst Kontakt-Push des
+     * Plugins — der sucht über die Kundennummer, verknüpft nur denselben
+     * Kontakt und übernimmt eine von sevDesk vergebene Nummer (MVP-1133).
+     * Die Referenz wird gespeichert, damit Folge-Übergaben idempotent auflösen.
      */
-    private function resolveContactReference(BillingTransfer $transfer, SevDeskClient $client): ExternalReference {
+    private function resolveContactReference(BillingTransfer $transfer): ExternalReference {
         /** @var Customer $customer */
         $customer = $transfer->customer;
-
-        $number = trim((string) $customer->number);
 
         return $this->projectContact(
             $customer,
             (int) $transfer->organization_id,
             SevDeskPlugin::ID,
             self::EXT_TYPE_CONTACT,
-            // Matching über die Kundennummer (dokumentierter /Contact-Filter).
-            fn(): ?array => $number !== '' ? self::rowByNumber($client->contactsByCustomerNumber($number), 'customerNumber', $number) : null,
-            fn(): array => $client->createContact(array_filter([
-                'objectName' => 'Contact',
-                'mapAll' => true,
-                'name' => (string) $customer->name,
-                'customerNumber' => $number !== '' ? $number : null,
-                'category' => [
-                    'id' => (int) config('plugins.sevdesk.contact_category_id', 3),
-                    'objectName' => 'Category',
-                ],
-            ], static fn($value): bool => $value !== null)),
+            fn(): string => app(SevDeskPlugin::class)->pushContact($customer),
             (string) __('sevdesk::finance.error.sevdesk_outcome_unclear'),
         );
     }

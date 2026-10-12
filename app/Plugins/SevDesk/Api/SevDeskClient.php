@@ -99,6 +99,17 @@ class SevDeskClient {
         return $this->rows($body);
     }
 
+    /** GET /Contact/Factory/getNextCustomerNumber — nächste freie Kundennummer, wenn sevDesk vergibt (MVP-1131). */
+    public function nextCustomerNumber(): string {
+        $body = $this->guard(
+            $this->api()->requestResponse('get', $this->baseUrl . '/Contact/Factory/getNextCustomerNumber'),
+            '/Contact/Factory/getNextCustomerNumber',
+        );
+        $number = $body['objects'] ?? '';
+
+        return is_scalar($number) ? trim((string) $number) : '';
+    }
+
     /**
      * POST /Contact — projizierten Kunden anlegen (Organisation + Kategorie).
      *

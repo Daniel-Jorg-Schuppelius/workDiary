@@ -1,7 +1,7 @@
 ---
 title: "Clienti & fornitori"
 topic: contacts.manage
-version: 5
+version: 6
 keywords:
     - anagrafica clienti
     - anagrafica fornitori
@@ -22,6 +22,7 @@ modules:
     - module.vertrieb
 schema: process
 related:
+    - admin.number-formats
     - projects.manage
     - invoices.manage
     - admin.import
@@ -51,6 +52,9 @@ funzionano senza rilavorazioni.
    così non nascono duplicati. I duplicati esistenti si possono
    unire; la cronologia segue.
 2. Crei il contatto con nome, indirizzo e referenti.
+   Se, secondo i **Formati di numerazione**, un programma di contabilità
+   assegna i numeri cliente, il campo è bloccato: il cliente viene
+   trasferito al programma alla creazione e ne riceve il numero.
 3. Completi dati di pagamento e fatturazione e gli identificativi
    esterni — guidano fatturazione e consegna contabile.
 4. Colleghi progetti, sedi e accordi man mano che nascono.

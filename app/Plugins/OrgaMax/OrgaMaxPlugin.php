@@ -14,13 +14,17 @@ namespace App\Plugins\OrgaMax;
 
 use APIToolkit\Entities\ID;
 use APIToolkit\Exceptions\ApiException;
+use App\Exceptions\ContactNumberTakenException;
 use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{ContactSyncer, Plugin, PluginCapability};
 use App\Plugins\OrgaMax\Api\OrgaMaxClientFactory;
 use App\Plugins\OrgaMax\Enums\OrgaMaxConnectionStatus;
 use App\Plugins\OrgaMax\Models\OrgaMaxConnection;
 use App\Services\Finance\Accounting\ContactPushService;
+use App\Services\Numbering\NumberSequenceService;
+use App\Services\Stammdaten\{ContactIdentity, ContactNumberAdopter};
 use Orgamax\API\Endpoints\CustomersEndpoint;
 use Orgamax\API\Endpoints\Settings\AccountSettingEndpoint;
 use Orgamax\Entities\Customers\Customer as OrgaMaxCustomer;
@@ -81,7 +85,11 @@ class OrgaMaxPlugin extends AbstractPlugin implements ContactSyncer {
     /** @return array<int, array<string, mixed>> Eigenes Admin-Panel statt Auto-Form. */
     /**
      * Kontakt-Push (Feature 122, MVP-611): anlegen oder aktualisieren, nie
-     * löschen. Gefunden wird über die Kundennummer, die orgaMAX führt.
+     * löschen. Ein verknüpfter Kunde wird über seine ID aktualisiert; ein
+     * Treffer über die Kundennummer nur, wenn er derselbe Kunde ist
+     * (MVP-1133). orgaMAX vergibt keine Kundennummern für die App: die Doku
+     * sagt nicht zu, dass ohne Nummer eine entsteht. Eine Entwurfsnummer
+     * eines anderen Programms geht nicht hinüber.
      */
     public function pushContact(Customer $customer): string {
         \App\Services\Stammdaten\CollectiveContacts::assertPushable($customer);
@@ -93,13 +101,28 @@ class OrgaMaxPlugin extends AbstractPlugin implements ContactSyncer {
         }
 
         $endpoint = new CustomersEndpoint(app(OrgaMaxClientFactory::class)->for($connection));
-        $number = trim((string) $customer->number);
+        $number = NumberSequenceService::isDraft($customer->number) ? '' : trim((string) $customer->number);
 
-        $existingId = '';
-        if ($number !== '') {
+        // Der Stammdatenimport verknüpft unter `customer`, der Push unter `contact`.
+        $existingId = (string) ExternalReference::query()
+            ->forPlugin($customer->organization_id, self::ID)
+            ->whereIn('external_type', [ExternalReference::TYPE_CONTACT, 'customer'])
+            ->forReferenceable($customer)
+            ->value('external_id');
+        if ($existingId === '' && $number !== '') {
             foreach (($endpoint->search(['number' => $number, 'limit' => 10])?->getValues() ?? []) as $row) {
                 if ((string) $row->getNumber() === $number && (string) $row->getId() !== '') {
+                    $name = (string) ($row->getCompanyName() ?: $row->getName() ?: trim($row->getFirstName() . ' ' . $row->getLastName()));
+                    if (! app(ContactIdentity::class)->same($customer, ['name' => $name, 'vat_id' => $row->getVatNumber()])) {
+                        throw ContactNumberTakenException::remote($number, $this->name(), $name);
+                    }
                     $existingId = (string) $row->getId();
+                    // Führt die Buchhaltung die Stammdaten, wird ein Treffer nur verknüpft, nicht überschrieben.
+                    if (! app(ContactPushService::class)->pushAllowed()) {
+                        app(ContactNumberAdopter::class)->linked($customer, self::ID, $existingId, $number);
+
+                        return $existingId;
+                    }
 
                     break;
                 }
@@ -126,16 +149,19 @@ class OrgaMaxPlugin extends AbstractPlugin implements ContactSyncer {
 
         if ($existingId !== '') {
             $endpoint->update(new ID($existingId), $payload);
+            app(ContactNumberAdopter::class)->linked($customer, self::ID, $existingId, $number);
 
             return $existingId;
         }
 
-        $created = (string) ($endpoint->create($payload)->getData()?->getId() ?? '');
-        if ($created === '') {
+        $created = $endpoint->create($payload)->getData();
+        $createdId = (string) ($created?->getId() ?? '');
+        if ($createdId === '') {
             throw new RuntimeException('orgaMAX customer push returned no id.');
         }
+        app(ContactNumberAdopter::class)->linked($customer, self::ID, $createdId, (string) ($created?->getNumber() ?? $number));
 
-        return $created;
+        return $createdId;
     }
 
     public function settingsSchema(): array {

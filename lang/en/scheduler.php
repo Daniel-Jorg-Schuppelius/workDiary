@@ -150,7 +150,7 @@ return [
         'integration' => ['purge_inbox' => 'Purge integration inbox'],
         'finance' => ['open_times_digest' => 'Open-times digest for accounting', 'ebics_statements' => 'Fetch daily statements via EBICS'],
         'inventory' => ['cycle_counts' => 'Trigger cycle counts', 'expiring_lots' => 'Best-before monitoring (expiring lots)'],
-        'accounting' => ['recurring' => 'Recurring document expectations and posting drafts', 'filings' => 'Sync tax deadlines and send reminders', 'liquidity_snapshot' => 'Record the weekly liquidity forecast'],
+        'accounting' => ['issue_contact_numbers' => 'Fetch customer and supplier numbers from the accounting program', 'recurring' => 'Recurring document expectations and posting drafts', 'filings' => 'Sync tax deadlines and send reminders', 'liquidity_snapshot' => 'Record the weekly liquidity forecast'],
         'platform' => ['usage_snapshot' => 'Record usage per tenant'],
         'contracts' => ['price_index_sync' => 'Sync consumer price index from the Bundesbank'],
         'invoicing' => ['recurring' => 'Generate recurring invoice drafts', 'base_rate_sync' => 'Sync base interest rate from the Bundesbank', 'online_payments_refresh' => 'Reconcile online payments with the payment provider', 'incoming_digest' => 'Notify about incoming invoices awaiting assignment', 'incoming_transfer' => 'Retry incoming invoice transfers'],

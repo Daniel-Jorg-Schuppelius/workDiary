@@ -16,6 +16,8 @@ use App\Models\Time\TimeEntry;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Exceptions\LexofficeRateLimitException;
 use App\Plugins\Support\PluginApiClient;
+use App\Services\Finance\Accounting\ContactPushService;
+use App\Services\Stammdaten\ContactIdentity;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\JsonHelper;
 use GuzzleHttp\Exception\ConnectException;
@@ -112,66 +114,73 @@ class LexofficeService {
     }
 
     /**
-     * Push a customer to Lexoffice as a contact. Returns the external id.
+     * Überträgt einen Kunden bzw. Lieferanten als Lexoffice-Kontakt und
+     * liefert ID und Kontaktnummer (MVP-1131/1133). Ein verknüpfter Kontakt
+     * wird über seine ID aktualisiert; ohne Verknüpfung nur ein Suchtreffer,
+     * der derselbe Kontakt ist ({@see ContactIdentity}), sonst entsteht ein
+     * neuer. Die Nummer vergibt immer Lexoffice; die Antwort auf das Anlegen
+     * trägt nur die ID, daher der Abruf danach.
      *
-     * Falls bereits ein passender Kontakt in Lexoffice existiert (Match über
-     * vat_id oder email), wird statt eines neuen Kontakts dieser
-     * aktualisiert. So vermeiden wir Duplikate beim ersten Push.
+     * @return array{id: string, number: ?string}
      */
-    public function createContact(Customer|Supplier $customer): string {
-        $existingId = $this->findRemoteId($customer);
+    public function pushContact(Customer|Supplier $party, ?string $linkedId = null): array {
+        $linked = $linkedId !== null ? $this->fetchContact($linkedId) : null;
+        $existing = $linked ?? $this->findSameContact($party);
+        // Führt die Buchhaltung die Stammdaten, wird ein Treffer nur verknüpft, nicht überschrieben.
+        if ($linked === null && $existing !== null && ! app(ContactPushService::class)->pushAllowed()) {
+            return ['id' => (string) $existing['id'], 'number' => $this->contactNumber($existing, $party)];
+        }
 
-        $payload = $customer instanceof Supplier
-            ? $this->mapper->supplierToContactPayload($customer, $this->defaults)
-            : $this->mapper->customerToContactPayload($customer, $this->defaults);
+        $payload = $party instanceof Supplier
+            ? $this->mapper->supplierToContactPayload($party, $this->defaults)
+            : $this->mapper->customerToContactPayload($party, $this->defaults);
 
         $endpoint = new ContactsEndpoint($this->client());
 
-        if ($existingId !== null) {
-            $remoteVersion = $this->fetchRemoteVersion($existingId);
-            $payload['version'] = $remoteVersion;
+        if ($existing !== null) {
+            $existingId = (string) $existing['id'];
+            $payload['version'] = (int) ($existing['version'] ?? 0);
             $payload['id'] = $existingId;
 
             $contact = Contact::fromJson(JsonHelper::encode($payload));
-            $resource = $endpoint->update(new \Lexoffice\Entities\Contacts\ContactID($existingId), $contact);
-
-            $id = $resource->getId()->toString();
+            $id = $endpoint->update(new \Lexoffice\Entities\Contacts\ContactID($existingId), $contact)->getId()->toString();
             if ($id === '') {
                 throw new RuntimeException('Lexoffice contact update returned no id.');
             }
 
-            return $id;
+            return ['id' => $id, 'number' => $this->contactNumber($existing, $party)];
         }
 
         $contact = Contact::fromJson(JsonHelper::encode($payload));
-        $resource = $endpoint->create($contact);
-        $id = $resource->getId()->toString();
+        $id = $endpoint->create($contact)->getId()->toString();
         if ($id === '') {
             throw new RuntimeException('Lexoffice contact create returned no id.');
         }
 
-        return $id;
+        return ['id' => $id, 'number' => $this->contactNumber($this->fetchContact($id) ?? [], $party)];
     }
 
     /**
-     * Sucht via Lexoffice-Suche nach einem existierenden Kontakt anhand
-     * vat_id (Tax Number) oder E-Mail. Greift auf den REST-Filter
-     * `?email=` / `?customer=true&number=` der Lexoffice-API zurück.
+     * Sucht einen vorhandenen Lexoffice-Kontakt über E-Mail bzw. — mit
+     * USt-IdNr. — über den Namen. Ein Treffer zählt nur, wenn er derselbe
+     * Kontakt ist; die Namenssuche trifft sonst auch fremde Firmen.
+     *
+     * @return array<string, mixed>|null
      */
-    private function findRemoteId(Customer|Supplier $customer): ?string {
-        $email = (string) $customer->email;
-        if ($email !== '') {
-            $id = $this->searchByQuery(['email' => $email]);
-            if ($id !== null) {
-                return $id;
-            }
+    private function findSameContact(Customer|Supplier $party): ?array {
+        $queries = [];
+        if ((string) $party->email !== '') {
+            $queries[] = ['email' => (string) $party->email];
         }
-        $vat = (string) $customer->vat_id;
-        if ($vat !== '') {
-            $id = $this->searchByQuery(['name' => (string) ($customer->displayLabel())]);
-            if ($id !== null) {
-                // Falls Name-Treffer existiert UND vat_id übereinstimmt, ist es ein sicherer Match.
-                return $id;
+        if ((string) $party->vat_id !== '') {
+            $queries[] = ['name' => $party->displayLabel()];
+        }
+
+        foreach ($queries as $query) {
+            foreach ($this->searchContacts($query) as $candidate) {
+                if (isset($candidate['id']) && app(ContactIdentity::class)->same($party, self::identityFields($candidate))) {
+                    return $candidate;
+                }
             }
         }
 
@@ -180,37 +189,51 @@ class LexofficeService {
 
     /**
      * @param  array<string, string>  $query
+     * @return list<array<string, mixed>>
      */
-    private function searchByQuery(array $query): ?string {
+    private function searchContacts(array $query): array {
         if (! $this->isConfigured()) {
-            return null;
+            return [];
         }
-        $response = $this->api()
-            ->getResponse($this->baseUrl . '/contacts', $query + ['page' => 0, 'size' => 1]);
-
+        $response = $this->api()->getResponse($this->baseUrl . '/contacts', $query + ['page' => 0, 'size' => 25]);
         if (! $response->successful()) {
-            return null;
+            return [];
         }
-        $items = (array) ($response->json('content') ?? []);
-        if ($items === []) {
-            return null;
-        }
-        $first = $items[0] ?? null;
 
-        return is_array($first) && isset($first['id']) ? (string) $first['id'] : null;
+        return array_values(array_filter((array) ($response->json('content') ?? []), 'is_array'));
     }
 
-    private function fetchRemoteVersion(string $externalId): int {
+    /** @return array<string, mixed>|null */
+    private function fetchContact(string $externalId): ?array {
         if (! $this->isConfigured()) {
-            return 0;
+            return null;
         }
-        $response = $this->api()->getResponse($this->baseUrl . '/contacts/' . $externalId);
+        $response = $this->api()->getResponse($this->baseUrl . '/contacts/' . rawurlencode($externalId));
+        $body = $response->successful() ? $response->json() : null;
 
-        if (! $response->successful()) {
-            return 0;
-        }
+        return is_array($body) && isset($body['id']) ? $body : null;
+    }
 
-        return (int) ($response->json('version') ?? 0);
+    /** @param array<string, mixed> $contact */
+    private function contactNumber(array $contact, Customer|Supplier $party): ?string {
+        $number = data_get($contact, $party instanceof Supplier ? 'roles.vendor.number' : 'roles.customer.number');
+
+        return $number === null || $number === '' ? null : (string) $number;
+    }
+
+    /**
+     * @param  array<string, mixed>  $contact
+     * @return array{name: string, company: string, vat_id: string}
+     */
+    private static function identityFields(array $contact): array {
+        $company = (string) data_get($contact, 'company.name', '');
+        $person = trim(data_get($contact, 'person.firstName', '') . ' ' . data_get($contact, 'person.lastName', ''));
+
+        return [
+            'name' => $company !== '' ? $company : $person,
+            'company' => $company,
+            'vat_id' => (string) data_get($contact, 'company.vatRegistrationId', ''),
+        ];
     }
 
     /**

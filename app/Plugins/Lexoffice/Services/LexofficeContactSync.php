@@ -11,6 +11,7 @@
 namespace App\Plugins\Lexoffice\Services;
 
 use App\Enums\Integration\IntegrationInboxStatus;
+use App\Enums\Numbering\ContactNumberOutcome;
 use App\Models\Contacts\ContactAddress;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem};
@@ -20,6 +21,7 @@ use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy;
 use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
+use App\Services\Stammdaten\ContactNumberAdopter;
 use CommonToolkit\ValueObjects\VatNumber;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use RuntimeException;
@@ -247,6 +249,9 @@ class LexofficeContactSync {
                     'payload' => $remote,
                     'synced_at' => now(),
                 ]);
+                // Vergibt Lexoffice die Nummern, trägt der neue Kontakt sie gleich (MVP-1131).
+                /** @var Customer|Supplier $new */
+                app(ContactNumberAdopter::class)->adopt($new, LexofficePlugin::ID, $this->extractContactNumber($remote, $kind));
                 // Aus dem Staging heraus angelegt → offenes Unmatched-Item schließen.
                 $this->resolveUnmatchedInbox($organization, $morphClass, $externalId, $new);
                 $this->bump($kind, 'created');
@@ -451,17 +456,12 @@ class LexofficeContactSync {
             $changed = true;
         }
 
-        // Ist Lexoffice für die Nummer führend, ersetzt die offizielle Nummer
-        // die lokale Entwurfsnummer.
-        if (
-            (string) $record->getAttribute('number_source') === 'lexoffice'
-            && (string) $record->getAttribute('number') !== $number
-        ) {
-            $record->setAttribute('number', $number);
-            $changed = true;
-        }
+        // Vergibt Lexoffice die Nummer, ersetzt sie die Entwurfsnummer; eine
+        // schon vergebene Nummer wird zum Inbox-Fall (MVP-1132).
+        /** @var Customer|Supplier $record */
+        $outcome = app(ContactNumberAdopter::class)->adopt($record, LexofficePlugin::ID, $number);
 
-        return $changed;
+        return $changed || $outcome === ContactNumberOutcome::Adopted;
     }
 
     /**

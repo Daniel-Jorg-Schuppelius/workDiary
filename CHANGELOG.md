@@ -10,6 +10,20 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Kundennummern vom Buchhaltungsprogramm (Phase 141, MVP-1130–1134): Auf
+  der Seite „Nummernkreise“ (jetzt im Admin-Menü) wählt die Organisation für
+  Kunde und Lieferant, wer die Nummer vergibt — WorkDiary, Lexoffice, sevDesk
+  oder easybill. Vergibt ein Programm, überträgt das Anlegen im Formular den
+  Kontakt sofort und übernimmt dessen Nummer; ein stündlicher Lauf
+  (`accounting:issue-contact-numbers`) holt Importe und Fehlschläge nach. Das
+  Nummernfeld ist dann gesperrt. Kunden, die der Lexoffice-Abgleich anlegt,
+  tragen ihre Nummer sofort. Gehört eine Programmnummer schon einem anderen
+  Kontakt, entsteht ein Fall in der Zuordnungs-Inbox, statt dass der Abgleich
+  abbricht. Der Lexoffice-Schalter für Nummernkreise gilt nur noch für
+  Rechnung, Gutschrift und Storno und wirkt beim Speichern. Bestehende
+  Organisationen behalten ihre Einstellung (Migration
+  `number_formats.source`: `external` → `lexoffice`).
+
 - Belege des Buchhaltungsprogramms in Auswertungen (Phase 139,
   MVP-1113–1129): Lexoffice und der allgemeine Belegspiegel (sevDesk,
   easybill, JTL-Wawi, InvoicePlane) fließen nach einer gemeinsamen Belegregel
@@ -1249,6 +1263,22 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
   das Ergebnis nur, wenn die Summen aufgehen.
 
 ### Fixed
+
+- Kontakt-Push in die Buchhaltung (Phase 141, MVP-1133): sevDesk, easybill
+  und orgaMAX überschrieben einen fremden Kontakt, der zufällig dieselbe
+  Kundennummer trug; die Belegübergabe von sevDesk und easybill buchte die
+  Rechnung auf ihn. Jetzt bricht die Übertragung mit einer Meldung ab.
+  Lexoffice legte beim erneuten Übertragen eines verknüpften Kontakts mit
+  geänderter E-Mail einen zweiten Kontakt an; verknüpfte Kontakte werden
+  jetzt über ihre ID aktualisiert, Suchtreffer nur bei gleicher USt-IdNr.
+  bzw. ähnlichem Namen genutzt und bei Stammdatenführung durch die
+  Buchhaltung nur verknüpft.
+- Lexoffice-Kontaktabgleich (MVP-1132): Eine Lexoffice-Nummer, die lokal
+  schon ein anderer Kunde trug, brach den ganzen Abgleich ab — stündlich
+  erneut.
+- Nummernkreise (MVP-1130): Der stündliche Lexoffice-Kontaktabgleich setzte
+  Präfix, Stellenzahl und Startwert der Kunden-, Lieferanten- und
+  Rechnungskreise auf die Standardwerte zurück.
 
 - Lizenzierung: Eine frische Installation hatte keinen Public Key und konnte
   deshalb weder Lizenzen noch Release-Manifeste oder den Update-Feed prüfen

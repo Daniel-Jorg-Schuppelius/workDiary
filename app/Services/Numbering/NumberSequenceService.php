@@ -28,6 +28,8 @@ use Illuminate\Support\Facades\DB;
  * `(organization_id, <number-spalte>)` der Ziel-Tabelle geschützt.
  */
 class NumberSequenceService {
+    public const DRAFT_PREFIX = 'ENTWURF-';
+
     public function __construct(
         private readonly NumberAuthority $authority = new NumberAuthority(),
     ) {}
@@ -82,20 +84,21 @@ class NumberSequenceService {
         return $this->compose($format, $when, $current + 1);
     }
 
-    /** @param array<string, mixed> $attributes */
+    /**
+     * Standardwerte nur beim Anlegen: Ein Aufruf mit Teilwerten (etwa nur
+     * `source`) setzte sonst Präfix, Stellen und Start zurück (MVP-1130).
+     *
+     * @param array<string, mixed> $attributes
+     */
     public function setFormat(Organization|int $organization, NumberScope $scope, array $attributes): NumberFormat {
         $orgId = $organization instanceof Organization ? (int) $organization->id : (int) $organization;
-        $defaults = $this->defaultsFor($scope);
-        $payload = array_merge($defaults, $attributes, [
-            'organization_id' => $orgId,
-            'scope' => $scope->value,
-        ]);
 
         /** @var NumberFormat $format */
-        $format = NumberFormat::query()->updateOrCreate(
-            ['organization_id' => $orgId, 'scope' => $scope->value],
-            $payload,
-        );
+        $format = NumberFormat::query()->firstOrNew(['organization_id' => $orgId, 'scope' => $scope->value]);
+        if (! $format->exists) {
+            $format->fill($this->defaultsFor($scope));
+        }
+        $format->fill($attributes)->save();
 
         return $format;
     }
@@ -196,11 +199,16 @@ class NumberSequenceService {
         ];
     }
 
+    /** Entwurfsnummer? Sie geht nie in ein Buchhaltungsprogramm (MVP-1131). */
+    public static function isDraft(?string $number): bool {
+        return str_starts_with((string) $number, self::DRAFT_PREFIX);
+    }
+
     /**
      * Erzeugt eine eindeutige Entwurfsnummer für Scopes unter externer Hoheit.
      * Wird später durch die offizielle Nummer des Buchhaltungssystems ersetzt.
      */
     private function draftNumber(): string {
-        return 'ENTWURF-' . strtoupper(Str::random(8));
+        return self::DRAFT_PREFIX . strtoupper(Str::random(8));
     }
 }

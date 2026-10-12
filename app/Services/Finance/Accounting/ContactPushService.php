@@ -12,11 +12,15 @@ declare(strict_types=1);
 
 namespace App\Services\Finance\Accounting;
 
+use App\Enums\Numbering\{ContactNumberOutcome, NumberScope};
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
+use App\Models\Supplier\Supplier;
 use App\Plugins\Contracts\ContactSyncer;
 use App\Plugins\PluginManager;
+use App\Services\Numbering\{NumberAuthority, NumberSequenceService};
+use App\Services\Stammdaten\ContactNumberAdopter;
 use App\Support\Setting;
 use RuntimeException;
 use Throwable;
@@ -42,7 +46,10 @@ class ContactPushService implements \App\Services\Stammdaten\Contracts\ContactPu
 
     public const AUTHORITY_ACCOUNTING = 'accounting';
 
-    public function __construct(private readonly PluginManager $plugins) {}
+    public function __construct(
+        private readonly PluginManager $plugins,
+        private readonly NumberAuthority $authority = new NumberAuthority(),
+    ) {}
 
     /** Führt workDiary die Stammdaten? Nur dann darf gepusht werden. */
     public function pushAllowed(): bool {
@@ -115,6 +122,32 @@ class ContactPushService implements \App\Services\Stammdaten\Contracts\ContactPu
         );
 
         return $externalId;
+    }
+
+    /**
+     * Neuer Kontakt mit Entwurfsnummer: an das vergebende Programm übertragen
+     * (MVP-1131). Ist das Programm nicht mehr die Quelle des Kreises, bleibt
+     * der Entwurf, bis es wieder vergibt — eine eigene Nummer jetzt wiche
+     * später von der des Programms ab.
+     */
+    public function issueNumber(Customer|Supplier $party): ?ContactNumberOutcome {
+        $pluginId = (string) $party->number_source;
+        if (! $this->pushAllowed() || $pluginId === NumberAuthority::SOURCE_LOCAL || ! NumberSequenceService::isDraft($party->number)) {
+            return null;
+        }
+        $scope = $party instanceof Supplier ? NumberScope::Supplier : NumberScope::Customer;
+        if ($this->authority->sourceFor($party->organization_id, $scope) !== $pluginId) {
+            return null;
+        }
+
+        $party instanceof Supplier ? $this->pushSupplier($party, $pluginId) : $this->push($party, $pluginId);
+        $party->refresh();
+
+        if (! NumberSequenceService::isDraft($party->number)) {
+            return ContactNumberOutcome::Adopted;
+        }
+
+        return app(ContactNumberAdopter::class)->hasOpenConflict($party, $pluginId) ? ContactNumberOutcome::Taken : ContactNumberOutcome::Skipped;
     }
 
     /**

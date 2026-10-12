@@ -18,10 +18,12 @@
     <p class="text-muted text-xs flex-none">
         {{ __('Hinweis: „Start bei" wird nur beim ersten Mal je Periode (Jahr) übernommen. Bestehende Sequenzen werden weitergezählt.') }}
     </p>
+    <p class="text-muted text-xs flex-none">{{ __('numbering.source.page_hint') }}</p>
     <x-table scroll="flex" :pinRows="true" table-sort="client">
         <x-slot:head>
             <tr>
                 <x-table.th sort type="string">{{ __('Nummernkreis') }}</x-table.th>
+                <th>{{ __('numbering.source.column') }}</th>
                 <th>{{ __('Präfix') }}</th>
                 <th class="text-center">{{ __('Jahr') }}</th>
                 <th class="text-center">{{ __('Padding') }}</th>
@@ -42,6 +44,17 @@
                         @unless ($row['persisted'])
                             <x-status-badge tone="ghost" size="sm" class="ml-1">{{ __('Default') }}</x-status-badge>
                         @endunless
+                    </td>
+                    <td>
+                        @if ($row['sourceOptions'] !== null)
+                            <select name="source" class="select select-sm select-bordered w-40" aria-label="{{ __('numbering.source.column') }}">
+                                @foreach ($row['sourceOptions'] as $value => $label)
+                                    <option value="{{ $value }}" @selected($row['source'] === $value)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        @else
+                            <span class="text-sm">{{ $row['sourceLabel'] }}</span>
+                        @endif
                     </td>
                     <td class="flex gap-1">
                         <input type="text" name="prefix" value="{{ $row['format']->prefix }}"

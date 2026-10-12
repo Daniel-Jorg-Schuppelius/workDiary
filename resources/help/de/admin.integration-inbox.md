@@ -1,7 +1,7 @@
 ---
 title: "Zuordnungs-Inbox"
 topic: admin.integration-inbox
-version: 1
+version: 2
 keywords:
     - Integrations-Inbox
     - Importkonflikte
@@ -33,6 +33,12 @@ dem E-Mail-Eingang. Nichts wird blind angelegt: Je Eintrag entscheiden Sie.
 - **Mehrdeutig** – mehrere Datensätze kommen in Frage.
 - **Feld-Konflikt** – der Datensatz ist bekannt, aber der lokale und der
   entfernte Stand widersprechen sich. Beide Stände stehen nebeneinander.
+
+**Nummer schon vergeben:** Ein Sonderfall des Feld-Konflikts. Ein
+Buchhaltungsprogramm hat einem Kunden oder Lieferanten eine Nummer vergeben,
+die in WorkDiary schon ein anderer Datensatz trägt. Der Fall nennt den
+Inhaber. Ändern Sie dort die Nummer und wählen Sie dann **Remote
+übernehmen**; der nächste Abgleich übernimmt sie auch von selbst.
 
 **Entscheiden:** Einen Eintrag ordnen Sie einem bestehenden Datensatz zu,
 legen ihn neu an oder verwerfen ihn. Bei einem Feld-Konflikt wählen Sie, ob

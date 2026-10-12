@@ -64,6 +64,9 @@ class IntegrationInboxItem extends Model {
      */
     public const RESOLUTION_ACKNOWLEDGE_ONLY = 'acknowledge_only';
 
+    /** Grund im `remote_snapshot`: Programmnummer gehört schon einem anderen Kontakt (MVP-1132). */
+    public const REASON_NUMBER_TAKEN = 'number_taken';
+
     public const CASE_CONFLICT = 'conflict';
     public const CASE_AMBIGUOUS = 'ambiguous';
 
@@ -143,6 +146,11 @@ class IntegrationInboxItem extends Model {
             return match ($reason) {
                 'remote_changed_after_export' => (string) __('Zeiteintrag extern geändert (bereits abgerechnet)'),
                 'remote_deleted_after_export' => (string) __('Zeiteintrag extern gelöscht (bereits abgerechnet)'),
+                self::REASON_NUMBER_TAKEN => (string) __('numbering.conflict.title', [
+                    'number' => (string) (($this->remote_snapshot ?? [])['number'] ?? ''),
+                    'program' => $pluginName ?? ucfirst((string) $this->plugin_id),
+                    'holder' => (string) (($this->remote_snapshot ?? [])['holder'] ?? '?'),
+                ]),
                 default => null,
             };
         }

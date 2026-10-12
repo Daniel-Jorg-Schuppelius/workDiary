@@ -150,7 +150,7 @@ return [
         'integration' => ['purge_inbox' => 'Purger la boîte de réception d\'intégration'],
         'finance' => ['open_times_digest' => 'Digest des temps ouverts pour la comptabilité', 'ebics_statements' => 'Récupérer les relevés quotidiens par EBICS'],
         'inventory' => ['cycle_counts' => 'Lancer l\'inventaire tournant', 'expiring_lots' => 'Surveillance DLUO (lots expirants)'],
-        "accounting" => ["recurring" => "Attentes de pièces et brouillons d'écriture récurrents", "filings" => "Synchroniser les échéances fiscales et rappeler", "liquidity_snapshot" => "Enregistrer la prévision de trésorerie hebdomadaire"],
+        "accounting" => ["issue_contact_numbers" => "Récupérer les numéros de client et de fournisseur auprès du logiciel de comptabilité", "recurring" => "Attentes de pièces et brouillons d'écriture récurrents", "filings" => "Synchroniser les échéances fiscales et rappeler", "liquidity_snapshot" => "Enregistrer la prévision de trésorerie hebdomadaire"],
         'platform' => ['usage_snapshot' => 'Enregistrer l’utilisation par client'],
         'contracts' => ['price_index_sync' => 'Synchroniser l’indice des prix à la consommation depuis la Bundesbank'],
         'invoicing' => ['recurring' => 'Générer les brouillons de factures récurrentes', 'base_rate_sync' => 'Synchroniser le taux de base de la Bundesbank', 'online_payments_refresh' => 'Rapprocher les paiements en ligne avec le prestataire de paiement', 'incoming_digest' => 'Signaler les factures reçues à attribuer', 'incoming_transfer' => 'Relancer les transmissions des factures reçues'],

@@ -43,11 +43,13 @@ final class NumberingSection implements ProcedureSection {
         $rows = [];
         foreach (NumberScope::cases() as $scope) {
             $format = $this->sequences->resolveFormat($orgId, $scope);
-            $external = $this->authority->isExternal($orgId, $scope);
+            $source = $this->authority->sourceFor($orgId, $scope);
             $rows[] = [
                 $scope->label(),
                 $scope->value,
-                (string) __($external ? 'procedure-documentation.numbering.external' : 'procedure-documentation.numbering.local'),
+                (string) ($source === NumberAuthority::SOURCE_LOCAL
+                    ? __('procedure-documentation.numbering.local')
+                    : __('procedure-documentation.numbering.external', ['program' => $this->authority->sourceLabel($source)])),
                 $this->text($format->prefix),
                 $this->yesNo((bool) $format->include_year),
                 $this->text($format->padding),

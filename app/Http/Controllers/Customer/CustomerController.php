@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Enums\Import\ImportEntity;
+use App\Enums\Numbering\NumberScope;
 use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery, ResolvesGlobalDateRange};
 use App\Http\Controllers\Concerns\SavesCustomFields;
 use App\Http\Controllers\Controller;
@@ -22,14 +23,17 @@ use App\Models\Platform\{Organization, User};
 use App\Plugins\PluginManager;
 use App\Services\Customer\CustomerDetailAssembler;
 use App\Services\Import\DirectCsvImportService;
+use App\Services\Numbering\NumberAuthority;
 use App\Services\Stammdaten\ContactMasterDataPusher;
 use App\Support\{CsvExport, Setting};
+use App\Support\OrganizationContext;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CustomerController extends Controller {
+    use \App\Http\Controllers\Concerns\IssuesContactNumbers;
     use \App\Http\Controllers\Concerns\WritesContactDetails;
 
     use ArchivesModels;
@@ -93,6 +97,7 @@ class CustomerController extends Controller {
         return view('customers._form_dialog', [
             'customer' => null,
             'isDialog' => true,
+            'numberLockedBy' => app(NumberAuthority::class)->numberLockedBy(NumberScope::Customer, OrganizationContext::currentId() ?? Auth::user()?->organization_id),
             'allTags' => Tag::query()->orderBy('name')->get(),
             'customerGroups' => app(\App\Services\Classification\ClassificationResolver::class)->list((int) Auth::user()?->organization_id, \App\Enums\Classification\ClassificationDomain::CustomerGroup),
         ]);
@@ -116,7 +121,7 @@ class CustomerController extends Controller {
         $customer->syncClassificationDomain(\App\Enums\Classification\ClassificationDomain::CustomerGroup, $customerGroupId !== null ? [(int) $customerGroupId] : []);
 
         return redirect()->route('customers.show', $customer)
-            ->with('success', __('Kunde angelegt.'));
+            ->with($this->issueContactNumber($customer) + ['success' => __('Kunde angelegt.')]);
     }
 
     public function edit(Customer $customer): View {
@@ -125,6 +130,7 @@ class CustomerController extends Controller {
         return view('customers._form_dialog', [
             'customer' => $customer,
             'isDialog' => true,
+            'numberLockedBy' => app(NumberAuthority::class)->numberLockedBy(NumberScope::Customer, $customer->organization_id, (string) $customer->number_source),
             'allTags' => Tag::query()->orderBy('name')->get(),
             'customerGroups' => app(\App\Services\Classification\ClassificationResolver::class)->list((int) $customer->organization_id, \App\Enums\Classification\ClassificationDomain::CustomerGroup),
         ]);

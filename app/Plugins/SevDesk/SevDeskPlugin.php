@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Plugins\SevDesk;
 
+use App\Enums\Numbering\NumberScope;
+use App\Exceptions\ContactNumberTakenException;
 use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\{ContactSyncer, Plugin, PluginCapability};
+use App\Plugins\Contracts\{ContactNumberIssuer, ContactSyncer, Plugin, PluginCapability};
 use App\Plugins\SevDesk\Api\{SevDeskClient, SevDeskClientFactory};
 use App\Plugins\SevDesk\Exceptions\SevDeskApiException;
 use App\Services\Finance\Accounting\ContactPushService;
+use App\Services\Numbering\NumberSequenceService;
+use App\Services\Stammdaten\{ContactIdentity, ContactNumberAdopter};
 use Illuminate\Support\Facades\Cache;
 use RuntimeException;
 use Throwable;
@@ -38,7 +43,7 @@ use Throwable;
  *   GET /Tools/bookkeepingSystemVersion und erneuert den Versions-Cache
  *   des Mandanten.
  */
-class SevDeskPlugin extends AbstractPlugin implements ContactSyncer {
+class SevDeskPlugin extends AbstractPlugin implements ContactNumberIssuer, ContactSyncer {
     public const ID = 'sevdesk';
 
     public const SERVICE_PROVIDER = SevDeskServiceProvider::class;
@@ -71,23 +76,31 @@ class SevDeskPlugin extends AbstractPlugin implements ContactSyncer {
 
     /**
      * Kontakt-Push (Feature 122, MVP-611): anlegen oder aktualisieren, nie
-     * löschen. Gefunden wird über die Kundennummer — sie ist das einzige
-     * Feld, das beide Seiten stabil führen.
+     * löschen. Ein verknüpfter Kontakt wird über seine ID aktualisiert; ein
+     * Treffer über die Kundennummer nur, wenn er derselbe Kontakt ist
+     * (MVP-1133). Vergibt sevDesk die Nummer, holt die App die nächste freie
+     * und übernimmt sie (MVP-1131); eine Entwurfsnummer geht nie hinüber.
      */
     public function pushContact(Customer $customer): string {
         \App\Services\Stammdaten\CollectiveContacts::assertPushable($customer);
         $client = app(SevDeskClientFactory::class)->for((int) $customer->organization_id);
-        $number = trim((string) $customer->number);
+        $number = self::transferableNumber($customer);
 
-        $existingId = '';
-        if ($number !== '') {
-            foreach ($client->contactsByCustomerNumber($number) as $row) {
-                if (is_array($row) && (string) ($row['customerNumber'] ?? '') === $number && ! empty($row['id'] ?? null)) {
-                    $existingId = (string) $row['id'];
+        $existingId = (string) ExternalReference::query()
+            ->forPlugin($customer->organization_id, self::ID, ExternalReference::TYPE_CONTACT)
+            ->forReferenceable($customer)
+            ->value('external_id');
+        if ($existingId === '' && $number !== '') {
+            $existingId = (string) ($this->contactByNumber($client, $customer, $number)['id'] ?? '');
+            // Führt die Buchhaltung die Stammdaten, wird ein Treffer nur verknüpft, nicht überschrieben.
+            if ($existingId !== '' && ! app(ContactPushService::class)->pushAllowed()) {
+                app(ContactNumberAdopter::class)->linked($customer, self::ID, $existingId, $number);
 
-                    break;
-                }
+                return $existingId;
             }
+        }
+        if ($existingId === '' && (string) $customer->number_source === self::ID) {
+            $number = $client->nextCustomerNumber();
         }
 
         // Eigene USt-IdNr./E-Mail nie an einen Fremdkontakt (MVP-611).
@@ -117,8 +130,46 @@ class SevDeskPlugin extends AbstractPlugin implements ContactSyncer {
         // Anschrift und Kommunikationswege sind in sevDesk eigene Objekte mit
         // eigenem Endpunkt (MVP-731) — ohne sie bleibt der Kontakt ein Name.
         app(Services\SevDeskContactDetailPushService::class)->push($client, $customer, $contactId);
+        app(ContactNumberAdopter::class)->linked($customer, self::ID, $contactId, (string) ($result['customerNumber'] ?? $number));
 
         return $contactId;
+    }
+
+    public function issuableNumberScopes(): array {
+        return [NumberScope::Customer];
+    }
+
+    /**
+     * Nummer, die nach sevDesk geht: keine Entwurfsnummer und keine, wenn
+     * sevDesk selbst vergibt (MVP-1131).
+     */
+    private static function transferableNumber(Customer $customer): string {
+        return (string) $customer->number_source === self::ID || NumberSequenceService::isDraft($customer->number)
+            ? ''
+            : trim((string) $customer->number);
+    }
+
+    /**
+     * Kontakt mit dieser Kundennummer in sevDesk. Gehört die Nummer dort einem
+     * anderen Kontakt, bricht die Übertragung ab, statt ihn zu überschreiben
+     * oder ihm Rechnungen zuzuordnen (MVP-1133).
+     *
+     * @return array<string, mixed>|null
+     */
+    private function contactByNumber(SevDeskClient $client, Customer $customer, string $number): ?array {
+        foreach ($client->contactsByCustomerNumber($number) as $row) {
+            if (! is_array($row) || (string) ($row['customerNumber'] ?? '') !== $number || empty($row['id'] ?? null)) {
+                continue;
+            }
+            $name = (string) ($row['name'] ?? '') ?: trim(($row['surename'] ?? '') . ' ' . ($row['familyname'] ?? ''));
+            if (! app(ContactIdentity::class)->same($customer, ['name' => $name, 'vat_id' => $row['vatNumber'] ?? null])) {
+                throw ContactNumberTakenException::remote($number, $this->name(), $name);
+            }
+
+            return $row;
+        }
+
+        return null;
     }
 
     /** @return array<int, array{key: string, label: string, type: string, options?: array<string, string>, help?: string, required?: bool, default?: mixed}> */

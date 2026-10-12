@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Supplier;
 
+use App\Enums\Numbering\NumberScope;
 use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Supplier\SaveSupplierRequest;
@@ -17,15 +18,17 @@ use App\Models\Audit\AuditLog;
 use App\Models\Classification\Tag;
 use App\Models\Supplier\{Supplier, SupplierQuestionnaireRequest};
 use App\Services\Billing\PartyDocumentSources;
+use App\Services\Numbering\NumberAuthority;
 use App\Services\Stammdaten\{ContactMasterDataPusher, IdentifierIssueDetector};
 use App\Support\{CarbonFmt, CsvExport, Setting};
-use App\Support\MorphMap;
+use App\Support\{MorphMap, OrganizationContext};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SupplierController extends Controller {
+    use \App\Http\Controllers\Concerns\IssuesContactNumbers;
     use \App\Http\Controllers\Concerns\WritesContactDetails;
     use ArchivesModels;
     use ParsesIndexQuery;
@@ -132,6 +135,7 @@ class SupplierController extends Controller {
         return view('suppliers._form_dialog', [
             'supplier' => null,
             'isDialog' => true,
+            'numberLockedBy' => app(NumberAuthority::class)->numberLockedBy(NumberScope::Supplier, OrganizationContext::currentId() ?? Auth::user()?->organization_id),
             'allTags' => Tag::query()->orderBy('name')->get(),
         ]);
     }
@@ -150,7 +154,7 @@ class SupplierController extends Controller {
         $supplier->syncTagsFromInput($tagIds, \App\Support\TagInput::names($newTagsRaw));
 
         return redirect()->route('suppliers.show', $supplier)
-            ->with('success', __('Lieferant angelegt.'));
+            ->with($this->issueContactNumber($supplier) + ['success' => __('Lieferant angelegt.')]);
     }
 
     public function edit(Supplier $supplier): View {
@@ -159,6 +163,7 @@ class SupplierController extends Controller {
         return view('suppliers._form_dialog', [
             'supplier' => $supplier,
             'isDialog' => true,
+            'numberLockedBy' => app(NumberAuthority::class)->numberLockedBy(NumberScope::Supplier, $supplier->organization_id, (string) $supplier->number_source),
             'allTags' => Tag::query()->orderBy('name')->get(),
         ]);
     }

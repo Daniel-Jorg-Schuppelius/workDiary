@@ -1,7 +1,7 @@
 ---
 title: "Boîte de rapprochement"
 topic: admin.integration-inbox
-version: 1
+version: 2
 keywords:
     - boîte des intégrations
     - conflits import
@@ -31,6 +31,12 @@ chaque entrée.
 - **Ambigu** – plusieurs enregistrements sont possibles.
 - **Conflit de champ** – l'enregistrement est connu, mais l'état local et
   l'état distant se contredisent. Les deux états sont affichés côte à côte.
+
+**Numéro déjà attribué :** un cas particulier de conflit de champ. Un
+logiciel de comptabilité a attribué à un client ou fournisseur un numéro
+qu'un autre enregistrement porte déjà dans WorkDiary. Le cas nomme le
+détenteur. Modifiez-y le numéro, puis choisissez **Reprendre le distant** ;
+la synchronisation suivante le reprend aussi d'elle-même.
 
 **Décider :** vous rattachez une entrée à un enregistrement existant, vous la
 créez ou vous la rejetez. En cas de conflit de champ, vous choisissez de

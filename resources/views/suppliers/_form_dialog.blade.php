@@ -28,7 +28,9 @@
 
     <x-form-group :legend="__('Stammdaten')" icon="local_shipping" tone="primary" cols="2">
             <x-input-field name="name" :label="__('Name')" required maxlength="200" :value="old('name', $supplier?->name)" />
-            <x-input-field name="number" :label="__('Lieferantennummer (intern)')" maxlength="64" :value="old('number', $supplier?->number)" />
+            <x-input-field name="number" :label="__('Lieferantennummer (intern)')" maxlength="64" :value="old('number', $supplier?->number)"
+                           :disabled="($numberLockedBy ?? null) !== null"
+                           :hint="($numberLockedBy ?? null) !== null ? __('numbering.field.locked_hint', ['program' => $numberLockedBy]) : null" />
             <x-input-field name="company" :label="__('Firma')" maxlength="200" :value="old('company', $supplier?->company)" />
             <x-input-field name="vat_id" :label="__('USt-IdNr.')" maxlength="64" :value="old('vat_id', $supplier?->vat_id)" />
             <x-input-field name="vendor_number" :label="__('Kreditorennummer')" maxlength="64" :value="old('vendor_number', $supplier?->vendor_number)" />

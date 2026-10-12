@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Stammdaten\Contracts;
 
+use App\Enums\Numbering\ContactNumberOutcome;
 use App\Models\Customer\Customer;
 use App\Models\Supplier\Supplier;
 
@@ -29,4 +30,12 @@ interface ContactPushTarget {
 
     /** @return string externe ID */
     public function pushSupplier(Supplier $supplier, string $pluginId): string;
+
+    /**
+     * Überträgt einen Kontakt mit Entwurfsnummer an das Programm, das seine
+     * Nummer vergibt, und übernimmt sie (MVP-1131). Null: nichts zu tun —
+     * keine Programmvergabe, keine Entwurfsnummer oder die Buchhaltung führt
+     * die Stammdaten.
+     */
+    public function issueNumber(Customer|Supplier $party): ?ContactNumberOutcome;
 }

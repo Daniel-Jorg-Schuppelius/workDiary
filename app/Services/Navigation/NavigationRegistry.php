@@ -1816,6 +1816,10 @@ class NavigationRegistry {
                 }
                 // PDF-Dokumentdesign/CI-Basisdesign (Feature 076, Ausbau #83): war bislang nur per Direkt-URL erreichbar.
                 $adminNavItems[] = ['route' => 'admin.document-design.index', 'label' => __('document_design.title'), 'icon' => 'design_services', 'modal' => false, 'matches' => ['admin.document-design.*']];
+                // Nummernkreise: war nur per Direkt-URL erreichbar; dort wählt man auch, wer Kunden- und Lieferantennummern vergibt (MVP-1130).
+                if (Gate::allows('manage', \App\Models\Numbering\NumberFormat::class)) {
+                    $adminNavItems[] = ['route' => 'admin.number-formats.index', 'label' => __('Nummernkreise'), 'icon' => 'pin', 'modal' => false, 'matches' => ['admin.number-formats.*']];
+                }
                 // Buchhaltungswechsel (MVP-653): nur mit ausdrücklicher Berechtigung.
                 if (Gate::allows(Permission::AccountingMigrationManage->value)) {
                     $adminNavItems[] = ['route' => 'admin.accounting-migration.index', 'label' => __('accounting_migration.title'), 'icon' => 'swap_horiz', 'modal' => false, 'matches' => ['admin.accounting-migration.*']];

@@ -137,7 +137,7 @@ return [
     'numbering' => [
         'table' => 'Number sequences',
         'local' => 'WorkDiary (local)',
-        'external' => 'External system',
+        'external' => 'External system (:program)',
         'col' => [
             'scope' => 'Scope',
             'key' => 'Key',

@@ -18,17 +18,18 @@ use GuzzleHttp\Exception\ConnectException;
 use RuntimeException;
 
 /**
- * Kunde im Fremdsystem eines Fakturaziels: gespeicherte Referenz, sonst dort
- * suchen, sonst anlegen — und die Referenz festhalten. Suchschlüssel und
- * Nutzlast nennt das Ziel.
+ * Kunde im Fremdsystem eines Fakturaziels: gespeicherte Referenz, sonst über
+ * den Kontakt-Push des Plugins. Der sucht über die Nummer, nimmt nur einen
+ * Treffer, der derselbe Kunde ist, überschreibt ihn nicht, wenn die
+ * Buchhaltung die Stammdaten führt, und übernimmt eine vom Programm vergebene
+ * Nummer (MVP-1133). Die Referenz wird festgehalten.
  */
 trait ProjectsContactReference {
     /**
-     * @param  callable(): (array<string, mixed>|null)  $find  Treffer im Fremdsystem (mit `id`) oder null
-     * @param  callable(): array<string, mixed>  $create  legt an und liefert den Datensatz (mit `id`)
+     * @param  callable(): string  $push  überträgt den Kunden und liefert die externe ID
      * @param  string  $unclearMessage  Meldung, wenn der Ausgang des Anlegens offen bleibt
      */
-    private function projectContact(Customer $customer, int $organizationId, string $pluginId, string $externalType, callable $find, callable $create, string $unclearMessage): ExternalReference {
+    private function projectContact(Customer $customer, int $organizationId, string $pluginId, string $externalType, callable $push, string $unclearMessage): ExternalReference {
         $existing = ExternalReference::query()
             ->forPlugin($organizationId, $pluginId, $externalType)
             ->forReferenceable($customer)
@@ -37,18 +38,13 @@ trait ProjectsContactReference {
             return $existing;
         }
 
-        $matched = $find();
-        if ($matched === null) {
-            try {
-                $matched = $create();
-            } catch (ConnectException) {
-                // Ausgang unklar — der nächste Lauf findet den Kontakt über
-                // seine Nummer wieder, statt ihn doppelt anzulegen.
-                throw new RuntimeException($unclearMessage);
-            }
+        try {
+            $externalId = (string) $push();
+        } catch (ConnectException) {
+            // Ausgang unklar — der nächste Lauf findet den Kontakt über
+            // seine Nummer wieder, statt ihn doppelt anzulegen.
+            throw new RuntimeException($unclearMessage);
         }
-
-        $externalId = (string) ($matched['id'] ?? '');
         if ($externalId === '') {
             throw new RuntimeException($pluginId . ' contact projection returned no id.');
         }
@@ -66,24 +62,5 @@ trait ProjectsContactReference {
                 'synced_at' => now(),
             ],
         );
-    }
-
-    /**
-     * Erster Treffer, dessen Feld genau der Kundennummer entspricht.
-     *
-     * @param  iterable<mixed>  $rows
-     * @return array<string, mixed>|null
-     */
-    private static function rowByNumber(iterable $rows, string $field, string $number): ?array {
-        if ($number === '') {
-            return null;
-        }
-        foreach ($rows as $row) {
-            if (is_array($row) && (string) ($row[$field] ?? '') === $number && ! empty($row['id'] ?? null)) {
-                return $row;
-            }
-        }
-
-        return null;
     }
 }

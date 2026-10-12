@@ -48,6 +48,8 @@ use Tests\TestCase;
  * Neu aufgenommen 2026-10-10 (`MVP-1110`, Rechnungseingang): einziges Delta
  * ist `/finanzen/eingangsrechnungen` in der Sidebar von `enterprise_admin`
  * (Gruppe Abrechnung, nur mit Abrechnungsrecht).
+ * Neu aufgenommen 2026-10-12 (`MVP-1130`): einziges Delta ist
+ * `/admin/number-formats` im Header-Systemmenü der Org-Admin-Personas.
  *
  * Neu aufgenommen 2026-09-24 (`MVP-868`, eigene Felder je Organisation):
  * einziges Delta ist `/admin/custom-fields` im Header-Systemmenü der

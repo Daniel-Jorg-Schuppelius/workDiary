@@ -179,8 +179,8 @@ final class AccountingSymmetryTest extends TestCase {
     public function test_second_push_updates_instead_of_duplicating(): void {
         $customer = Customer::factory()->create(['organization_id' => $this->org->id, 'number' => 'K-0042', 'name' => 'Kunde AG']);
         $fake = FakePluginHttp::fake([
-            // Erste Antwort: Suche findet den Kontakt → PUT statt POST.
-            'https://my.sevdesk.de/api/v1/Contact*' => FakePluginHttp::response(['objects' => [['id' => '4711', 'customerNumber' => 'K-0042']]]),
+            // Erste Antwort: Suche findet denselben Kontakt → PUT statt POST.
+            'https://my.sevdesk.de/api/v1/Contact*' => FakePluginHttp::response(['objects' => [['id' => '4711', 'customerNumber' => 'K-0042', 'name' => 'Kunde AG']]]),
         ]);
 
         app(ContactPushService::class)->push($customer, SevDeskPlugin::ID);

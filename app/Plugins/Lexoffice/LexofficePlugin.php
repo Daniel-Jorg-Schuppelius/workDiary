@@ -11,6 +11,7 @@
 namespace App\Plugins\Lexoffice;
 
 use App\Enums\Invoicing\InvoiceStatus;
+use App\Enums\Numbering\NumberScope;
 use App\Enums\User\Permission;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
@@ -21,12 +22,13 @@ use App\Models\Platform\{Organization, PluginSetting, User};
 use App\Models\Supplier\Supplier;
 use App\Models\Time\TimeEntry;
 use App\Plugins\{AbstractPlugin, PluginHealth, PluginManager};
-use App\Plugins\Contracts\{ContactSyncer, ContributesWhileInactive, NavigationContributor, PaymentSyncer, Plugin, PluginCapability, SlotRenderer, TimeExporter};
+use App\Plugins\Contracts\{ContactNumberIssuer, ContactSyncer, ContributesWhileInactive, NavigationContributor, PaymentSyncer, Plugin, PluginCapability, SlotRenderer, TimeExporter};
 use App\Plugins\Lexoffice\Enums\LexwareFeature;
 use App\Plugins\Lexoffice\Exceptions\LexofficeRateLimitException;
 use App\Plugins\Lexoffice\Models\LexofficePostingCategory;
-use App\Plugins\Lexoffice\Services\{LexofficeIncomingInvoiceTarget, LexofficeMapper, LexofficeService, LexofficeVoucherSync, LexofficeWebhookService};
+use App\Plugins\Lexoffice\Services\{LexofficeIncomingInvoiceTarget, LexofficeMapper, LexofficeNumberAuthority, LexofficeService, LexofficeVoucherSync, LexofficeWebhookService};
 use App\Plugins\Lexoffice\Tariff\LexwareTariffService;
+use App\Services\Stammdaten\ContactNumberAdopter;
 use App\Support\Query\DateRange;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
@@ -43,7 +45,7 @@ use Throwable;
  * Mappings between local entities and Lexoffice ids are persisted in the
  * external_references table. The plugin id is "lexoffice".
  */
-class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\SupplierContactSyncer, ContactSyncer, ContributesWhileInactive, NavigationContributor, PaymentSyncer, SlotRenderer, TimeExporter {
+class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\SupplierContactSyncer, ContactNumberIssuer, ContactSyncer, ContributesWhileInactive, NavigationContributor, PaymentSyncer, SlotRenderer, TimeExporter {
     public const ID = 'lexoffice';
 
     public const SERVICE_PROVIDER = LexofficeServiceProvider::class;
@@ -216,12 +218,21 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
                 'manual_review' => __('Manuelle Prüfung'),
             ], 'default' => 'manual_review'],
             ['key' => 'create_missing_local', 'label' => __('Fehlende Kunden aus Lexoffice neu anlegen'), 'type' => 'boolean', 'default' => false],
-            ['key' => 'number_authority', 'label' => __('Nummernkreise von Lexoffice führen lassen (Kunde, Lieferant, Rechnung, Gutschrift)'), 'type' => 'boolean', 'default' => false],
+            ['key' => 'number_authority', 'label' => __('Rechnungs-, Gutschrift- und Stornonummern von Lexoffice führen lassen'), 'type' => 'boolean', 'default' => false, 'help' => __('Wer Kunden- und Lieferantennummern vergibt, stellen Sie auf der Seite „Nummernkreise“ ein.')],
             ['key' => 'request_interval', 'label' => __('Mindestabstand zwischen API-Anfragen in Sekunden (Lexoffice erlaubt 2 je Sekunde)'), 'type' => 'text', 'default' => '0.5'],
             ['key' => 'incoming_transfer', 'label' => __('lexoffice::incoming.settings.transfer'), 'type' => 'boolean', 'default' => false, 'help' => __('lexoffice::incoming.settings.transfer_help')],
             ['key' => 'incoming_default_category', 'label' => __('lexoffice::incoming.settings.incoming_category'), 'type' => 'select', 'options' => $this->postingCategoryOptions('outgo'), 'help' => __('lexoffice::incoming.settings.category_help')],
             ['key' => 'outgoing_default_category', 'label' => __('lexoffice::incoming.settings.outgoing_category'), 'type' => 'select', 'options' => $this->postingCategoryOptions('income')],
         ];
+    }
+
+    /** @param array<string, mixed> $settings */
+    public function onSettingsSaved(int $organizationId, array $settings): void {
+        app(LexofficeNumberAuthority::class)->apply($organizationId, (bool) ($settings['number_authority'] ?? false));
+    }
+
+    public function issuableNumberScopes(): array {
+        return [NumberScope::Customer, NumberScope::Supplier];
     }
 
     /**
@@ -247,49 +258,35 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
 
     public function pushContact(Customer $customer): string {
         \App\Services\Stammdaten\CollectiveContacts::assertPushable($customer);
-        $externalId = $this->service->createContact($customer);
 
-        ExternalReference::updateOrCreate(
-            [
-                'plugin_id' => self::ID,
-                'external_type' => self::EXT_TYPE_CONTACT,
-                'referenceable_type' => $customer->getMorphClass(),
-                'referenceable_id' => $customer->getKey(),
-            ],
-            [
-                'organization_id' => $customer->organization_id,
-                'external_id' => $externalId,
-                'synced_at' => now(),
-            ],
-        );
-
-        return $externalId;
+        return $this->pushParty($customer);
     }
 
     /**
-     * Pusht einen Lieferanten als Lexoffice-Kontakt (role=vendor) und legt
-     * die ExternalReference an. Gegenstück zu {@see pushContact()} für
-     * {@see Supplier}, ohne den ContactSyncer-Vertrag zu erweitern.
+     * Pusht einen Lieferanten als Lexoffice-Kontakt (role=vendor). Gegenstück
+     * zu {@see pushContact()} für {@see Supplier}, ohne den
+     * ContactSyncer-Vertrag zu erweitern.
      */
     public function pushSupplierContact(Supplier $supplier): string {
         \App\Services\Stammdaten\CollectiveContacts::assertPushable($supplier);
-        $externalId = $this->service->createContact($supplier);
 
-        ExternalReference::updateOrCreate(
-            [
-                'plugin_id' => self::ID,
-                'external_type' => self::EXT_TYPE_CONTACT,
-                'referenceable_type' => $supplier->getMorphClass(),
-                'referenceable_id' => $supplier->getKey(),
-            ],
-            [
-                'organization_id' => $supplier->organization_id,
-                'external_id' => $externalId,
-                'synced_at' => now(),
-            ],
-        );
+        return $this->pushParty($supplier);
+    }
 
-        return $externalId;
+    /**
+     * Verknüpfter Kontakt über seine ID (MVP-1133); Referenz und Nummer
+     * schreibt der Übernehmer, die Kundennummer nur bei Lexoffice-Vergabe.
+     */
+    private function pushParty(Customer|Supplier $party): string {
+        $linkedId = ExternalReference::query()
+            ->forPlugin($party->organization_id, self::ID, self::EXT_TYPE_CONTACT)
+            ->forReferenceable($party)
+            ->value('external_id');
+
+        $result = $this->service->pushContact($party, $linkedId !== null ? (string) $linkedId : null);
+        app(ContactNumberAdopter::class)->linked($party, self::ID, $result['id'], $result['number']);
+
+        return $result['id'];
     }
 
     public function navigationItems(User $user): array {

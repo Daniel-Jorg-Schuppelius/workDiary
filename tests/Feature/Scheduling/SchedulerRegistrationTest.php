@@ -207,6 +207,8 @@ class SchedulerRegistrationTest extends TestCase {
         'accounting:check-filings' => ['45 5 * * *', true, true],
         // Neu mit MVP-984: Wochenstand der Liquiditätsvorschau für Plan/Ist.
         'accounting:liquidity-snapshot' => ['10 6 * * 1', true, true],
+        // Neu mit Phase 141 (MVP-1131): Nummern vom Buchhaltungsprogramm nachholen.
+        'accounting:issue-contact-numbers' => ['20 * * * *', true, true],
         // Neu mit Phase 38 (MVP-415): wiederkehrende Rechnungsentwürfe.
         'invoices:generate-recurring' => ['15 5 * * *', true, true],
         // Neu mit Feature 095 (MVP-441): tägliche Quelltext-Integritätsprüfung.

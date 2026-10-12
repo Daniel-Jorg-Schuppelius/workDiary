@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Plugins\Easybill;
 
+use App\Enums\Numbering\NumberScope;
+use App\Exceptions\ContactNumberTakenException;
 use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\{ContactSyncer, Plugin, PluginCapability};
-use App\Plugins\Easybill\Api\EasybillClientFactory;
+use App\Plugins\Contracts\{ContactNumberIssuer, ContactSyncer, Plugin, PluginCapability};
+use App\Plugins\Easybill\Api\{EasybillClient, EasybillClientFactory};
 use App\Plugins\Easybill\Exceptions\EasybillApiException;
 use App\Services\Finance\Accounting\ContactPushService;
+use App\Services\Numbering\NumberSequenceService;
+use App\Services\Stammdaten\{ContactIdentity, ContactNumberAdopter};
 use RuntimeException;
 use Throwable;
 
@@ -34,7 +39,7 @@ use Throwable;
  * - Rate-Limits sind tarifabhängig (PLUS 10, BUSINESS 60 req/min) — das
  *   Intervall kommt aus dem Setting `rate_limit_per_minute`.
  */
-class EasybillPlugin extends AbstractPlugin implements ContactSyncer {
+class EasybillPlugin extends AbstractPlugin implements ContactNumberIssuer, ContactSyncer {
     public const ID = 'easybill';
 
     public const SERVICE_PROVIDER = EasybillServiceProvider::class;
@@ -64,24 +69,30 @@ class EasybillPlugin extends AbstractPlugin implements ContactSyncer {
         return [PluginCapability::ContactSync];
     }
 
-    /** @return array<int, array{key: string, label: string, type: string, options?: array<string, string>, help?: string, required?: bool, default?: mixed}> */
     /**
      * Kontakt-Push (Feature 122, MVP-611): anlegen oder aktualisieren, nie
-     * löschen. Gefunden wird über die Kundennummer.
+     * löschen. Ein verknüpfter Kunde wird über seine ID aktualisiert; ein
+     * Treffer über die Kundennummer nur, wenn er derselbe Kunde ist
+     * (MVP-1133). Vergibt easybill die Nummer, wird ohne Nummer angelegt und
+     * die vergebene übernommen (MVP-1131); eine Entwurfsnummer geht nie hinüber.
      */
     public function pushContact(Customer $customer): string {
         \App\Services\Stammdaten\CollectiveContacts::assertPushable($customer);
         $client = app(EasybillClientFactory::class)->for((int) $customer->organization_id);
-        $number = trim((string) $customer->number);
+        $issues = (string) $customer->number_source === self::ID;
+        $number = self::transferableNumber($customer);
 
-        $existingId = '';
-        if ($number !== '') {
-            foreach ($client->customersByNumber($number) as $row) {
-                if (is_array($row) && (string) ($row['number'] ?? '') === $number && ! empty($row['id'] ?? null)) {
-                    $existingId = (string) $row['id'];
+        $existingId = (string) ExternalReference::query()
+            ->forPlugin($customer->organization_id, self::ID, ExternalReference::TYPE_CONTACT)
+            ->forReferenceable($customer)
+            ->value('external_id');
+        if ($existingId === '' && $number !== '') {
+            $existingId = (string) ($this->customerByNumber($client, $customer, $number)['id'] ?? '');
+            // Führt die Buchhaltung die Stammdaten, wird ein Treffer nur verknüpft, nicht überschrieben.
+            if ($existingId !== '' && ! app(ContactPushService::class)->pushAllowed()) {
+                app(ContactNumberAdopter::class)->linked($customer, self::ID, $existingId, $number);
 
-                    break;
-                }
+                return $existingId;
             }
         }
 
@@ -103,16 +114,55 @@ class EasybillPlugin extends AbstractPlugin implements ContactSyncer {
 
         $result = $existingId !== ''
             ? $client->updateCustomer($existingId, $payload)
-            : $client->createCustomer($payload);
+            : $client->createCustomer($payload, $issues);
 
         $customerId = (string) ($result['id'] ?? $existingId);
         if ($customerId === '') {
             throw new RuntimeException('easybill customer push returned no id.');
         }
+        app(ContactNumberAdopter::class)->linked($customer, self::ID, $customerId, (string) ($result['number'] ?? $number));
 
         return $customerId;
     }
 
+    public function issuableNumberScopes(): array {
+        return [NumberScope::Customer];
+    }
+
+    /**
+     * Nummer, die nach easybill geht: keine Entwurfsnummer und keine, wenn
+     * easybill selbst vergibt (MVP-1131).
+     */
+    private static function transferableNumber(Customer $customer): string {
+        return (string) $customer->number_source === self::ID || NumberSequenceService::isDraft($customer->number)
+            ? ''
+            : trim((string) $customer->number);
+    }
+
+    /**
+     * Kunde mit dieser Kundennummer in easybill. Gehört die Nummer dort einem
+     * anderen Kunden, bricht die Übertragung ab, statt ihn zu überschreiben
+     * oder ihm Rechnungen zuzuordnen (MVP-1133).
+     *
+     * @return array<string, mixed>|null
+     */
+    private function customerByNumber(EasybillClient $client, Customer $customer, string $number): ?array {
+        foreach ($client->customersByNumber($number) as $row) {
+            if (! is_array($row) || (string) ($row['number'] ?? '') !== $number || empty($row['id'] ?? null)) {
+                continue;
+            }
+            $name = (string) ($row['company_name'] ?? '') ?: trim(($row['first_name'] ?? '') . ' ' . ($row['last_name'] ?? ''));
+            if (! app(ContactIdentity::class)->same($customer, ['name' => $name, 'vat_id' => $row['vat_identifier'] ?? null])) {
+                throw ContactNumberTakenException::remote($number, $this->name(), $name);
+            }
+
+            return $row;
+        }
+
+        return null;
+    }
+
+    /** @return array<int, array{key: string, label: string, type: string, options?: array<string, string>, help?: string, required?: bool, default?: mixed}> */
     public function settingsSchema(): array {
         return [
             ['key' => 'api_key', 'label' => __('API-Key'), 'type' => 'password', 'required' => true, 'help' => __('easybill-API-Key (easybill → Einstellungen → API).')],

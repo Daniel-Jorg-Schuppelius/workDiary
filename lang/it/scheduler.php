@@ -150,7 +150,7 @@ return [
         'integration' => ['purge_inbox' => 'Ripulire la inbox delle integrazioni'],
         'finance' => ['open_times_digest' => 'Digest dei tempi aperti per la contabilità', 'ebics_statements' => 'Recuperare gli estratti giornalieri tramite EBICS'],
         'inventory' => ['cycle_counts' => 'Avvio inventario ciclico', 'expiring_lots' => 'Monitoraggio TMC (lotti in scadenza)'],
-        'accounting' => ['recurring' => 'Attese di documenti e bozze di registrazione ricorrenti', 'filings' => 'Allinea le scadenze fiscali e invia promemoria', 'liquidity_snapshot' => 'Registrare la previsione di liquidità settimanale'],
+        'accounting' => ['issue_contact_numbers' => 'Recuperare i numeri cliente e fornitore dal programma di contabilità', 'recurring' => 'Attese di documenti e bozze di registrazione ricorrenti', 'filings' => 'Allinea le scadenze fiscali e invia promemoria', 'liquidity_snapshot' => 'Registrare la previsione di liquidità settimanale'],
         'platform' => ['usage_snapshot' => 'Registrare l’utilizzo per cliente'],
         'contracts' => ['price_index_sync' => 'Sincronizzare l’indice dei prezzi al consumo dalla Bundesbank'],
         'invoicing' => ['recurring' => 'Generare bozze di fatture ricorrenti', 'base_rate_sync' => 'Sincronizzare il tasso base dalla Bundesbank', 'online_payments_refresh' => 'Riconciliare i pagamenti online con il fornitore di pagamento', 'incoming_digest' => 'Segnalare le fatture ricevute da assegnare', 'incoming_transfer' => 'Ripetere i trasferimenti delle fatture ricevute'],

@@ -83,7 +83,7 @@ class EasybillTarget implements FacturationTarget {
         }
 
         $transfer->loadMissing(['items', 'customer']);
-        $customerReference = $this->resolveCustomerReference($transfer, $client);
+        $customerReference = $this->resolveCustomerReference($transfer);
 
         $vatRate = (float) $config['default_vat_rate'];
         $positions = $this->positions($transfer, $vatRate);
@@ -174,26 +174,21 @@ class EasybillTarget implements FacturationTarget {
     // ── Kunden-Projektion ───────────────────────────────────────────────
 
     /**
-     * Kundenauflösung in drei Stufen (Muster Lexoffice/sevDesk): bestehende
-     * ExternalReference → easybill-Nummernfilter → Kunde anlegen. Die
-     * Referenz wird gespeichert, damit Folge-Übergaben idempotent auflösen.
+     * Kontaktauflösung: bestehende ExternalReference, sonst Kontakt-Push des
+     * Plugins — der sucht über die Kundennummer, verknüpft nur denselben
+     * Kontakt und übernimmt eine von easybill vergebene Nummer (MVP-1133).
+     * Die Referenz wird gespeichert, damit Folge-Übergaben idempotent auflösen.
      */
-    private function resolveCustomerReference(BillingTransfer $transfer, EasybillClient $client): ExternalReference {
+    private function resolveCustomerReference(BillingTransfer $transfer): ExternalReference {
         /** @var Customer $customer */
         $customer = $transfer->customer;
-
-        $number = trim((string) $customer->number);
 
         return $this->projectContact(
             $customer,
             (int) $transfer->organization_id,
             EasybillPlugin::ID,
             self::EXT_TYPE_CUSTOMER,
-            fn(): ?array => $number !== '' ? self::rowByNumber($client->customersByNumber($number), 'number', $number) : null,
-            fn(): array => $client->createCustomer(array_filter([
-                'company_name' => (string) $customer->name,
-                'number' => $number !== '' ? $number : null,
-            ], static fn($value): bool => $value !== null)),
+            fn(): string => app(EasybillPlugin::class)->pushContact($customer),
             (string) __('easybill::finance.error.easybill_outcome_unclear'),
         );
     }

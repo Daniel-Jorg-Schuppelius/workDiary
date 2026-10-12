@@ -373,4 +373,104 @@ class LexofficeContactSyncTest extends TestCase {
 
         $this->assertNull($customer->fresh()->vat_id, 'Steuernummer gehört nicht in das USt-IdNr.-Feld');
     }
+
+    /** Kontakt mit Verknüpfung und Lexoffice-Vergabe für die Nummernfälle (MVP-1132). */
+    private function linkedDraftCustomer(string $name, string $externalId): Customer {
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => $name,
+            'number' => 'ENTWURF-' . strtoupper(substr(md5($name), 0, 8)),
+            'number_source' => LexofficePlugin::ID,
+        ]);
+        ExternalReference::create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => LexofficePlugin::ID,
+            'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+            'referenceable_type' => $customer->getMorphClass(),
+            'referenceable_id' => $customer->id,
+            'external_id' => $externalId,
+        ]);
+
+        return $customer;
+    }
+
+    public function test_taken_number_becomes_an_inbox_case_and_the_sync_goes_on(): void {
+        Customer::factory()->create(['organization_id' => $this->organization->id, 'number' => '10001', 'number_source' => 'local']);
+        $blocked = $this->linkedDraftCustomer('Blockiert', 'lex-b');
+        $next = $this->linkedDraftCustomer('Danach', 'lex-c');
+        $this->fakeContacts([
+            ['id' => 'lex-b', 'company' => ['name' => 'Blockiert'], 'roles' => ['customer' => ['number' => 10001]]],
+            ['id' => 'lex-c', 'company' => ['name' => 'Danach'], 'roles' => ['customer' => ['number' => 10002]]],
+        ]);
+
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins, 'test-key');
+
+        $this->assertStringStartsWith('ENTWURF-', (string) $blocked->fresh()?->number);
+        $this->assertSame('10002', $next->fresh()?->number);
+        $this->assertSame('10001', $blocked->fresh()?->accounting_number);
+        $this->assertDatabaseHas('integration_inbox_items', [
+            'referenceable_id' => $blocked->id,
+            'case_type' => IntegrationInboxItem::CASE_CONFLICT,
+            'status' => IntegrationInboxStatus::Open->value,
+        ]);
+    }
+
+    public function test_follow_up_sync_takes_the_number_once_the_holder_is_renumbered(): void {
+        $holder = Customer::factory()->create(['organization_id' => $this->organization->id, 'number' => '10001', 'number_source' => 'local']);
+        $blocked = $this->linkedDraftCustomer('Blockiert', 'lex-b');
+        $this->fakeContacts([['id' => 'lex-b', 'company' => ['name' => 'Blockiert'], 'roles' => ['customer' => ['number' => 10001]]]]);
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins, 'test-key');
+
+        $holder->update(['number' => 'K-0001']);
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins, 'test-key');
+
+        $this->assertSame('10001', $blocked->fresh()?->number);
+        $this->assertDatabaseHas('integration_inbox_items', [
+            'referenceable_id' => $blocked->id,
+            'status' => IntegrationInboxStatus::ResolvedRemote->value,
+        ]);
+    }
+
+    public function test_accepting_the_number_names_the_holder_until_it_is_free(): void {
+        $holder = Customer::factory()->create(['organization_id' => $this->organization->id, 'number' => '10001', 'number_source' => 'local']);
+        $blocked = $this->linkedDraftCustomer('Blockiert', 'lex-b');
+        $this->fakeContacts([['id' => 'lex-b', 'company' => ['name' => 'Blockiert'], 'roles' => ['customer' => ['number' => 10001]]]]);
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins, 'test-key');
+        $item = IntegrationInboxItem::query()->where('referenceable_id', $blocked->id)->firstOrFail();
+        $admin = $this->orgAdmin();
+
+        $this->actingAs($admin)->post(route('admin.integration.inbox.accept-remote', $item))
+            ->assertSessionHas('error', __('numbering.error.taken_local', ['number' => '10001', 'holder' => $holder->displayLabel()]));
+
+        $holder->update(['number' => 'K-0001']);
+        $this->actingAs($admin)->post(route('admin.integration.inbox.accept-remote', $item))->assertSessionHas('success');
+
+        $this->assertSame('10001', $blocked->fresh()?->number);
+        $this->assertSame(IntegrationInboxStatus::ResolvedRemote, $item->fresh()?->status);
+    }
+
+    public function test_customer_created_from_lexoffice_carries_its_number_right_away(): void {
+        \App\Models\Platform\PluginSetting::create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => LexofficePlugin::ID,
+            'enabled' => true,
+            'settings' => ['api_key' => 'test-key'],
+        ]);
+        app(\App\Services\Numbering\NumberSequenceService::class)
+            ->setFormat($this->organization, \App\Enums\Numbering\NumberScope::Customer, ['source' => LexofficePlugin::ID]);
+        $this->fakeContacts([[
+            'id' => 'lex-new',
+            'company' => ['name' => 'Aus Lexoffice GmbH'],
+            'roles' => ['customer' => ['number' => 10050]],
+        ]]);
+
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins, 'test-key', createMissingLocal: true);
+
+        $this->assertDatabaseHas('customers', [
+            'organization_id' => $this->organization->id,
+            'name' => 'Aus Lexoffice GmbH',
+            'number' => '10050',
+            'number_source' => LexofficePlugin::ID,
+        ]);
+    }
 }

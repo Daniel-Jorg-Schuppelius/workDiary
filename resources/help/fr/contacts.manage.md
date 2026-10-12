@@ -1,7 +1,7 @@
 ---
 title: "Clients & fournisseurs"
 topic: contacts.manage
-version: 5
+version: 6
 keywords:
     - fichier clients
     - base clients
@@ -23,6 +23,7 @@ modules:
     - module.vertrieb
 schema: process
 related:
+    - admin.number-formats
     - projects.manage
     - invoices.manage
     - admin.import
@@ -52,6 +53,9 @@ fonctionnent sans reprise.
    déjà — cela évite les doublons. Les doublons existants peuvent être
    fusionnés ; l'historique suit.
 2. Créez le contact avec nom, adresse et interlocuteurs.
+   Si, selon les **Formats de numérotation**, un logiciel de comptabilité
+   attribue les numéros client, le champ est verrouillé : le client est
+   transféré au logiciel à la création et reçoit son numéro.
 3. Complétez les données de paiement et de facturation ainsi que les
    identifiants externes — ils pilotent la facturation et la remise
    comptable.

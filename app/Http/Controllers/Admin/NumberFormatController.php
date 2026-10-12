@@ -16,7 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Numbering\SaveNumberFormatRequest;
 use App\Models\Numbering\NumberFormat;
 use App\Models\Platform\Organization;
-use App\Services\Numbering\NumberSequenceService;
+use App\Services\Numbering\{NumberAuthority, NumberSequenceService};
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -26,6 +26,7 @@ class NumberFormatController extends Controller {
 
     public function __construct(
         private readonly NumberSequenceService $numberSequence,
+        private readonly NumberAuthority $authority,
     ) {}
 
     public function index(): View|RedirectResponse {
@@ -40,11 +41,18 @@ class NumberFormatController extends Controller {
         $rows = [];
         foreach (NumberScope::cases() as $scope) {
             $format = $this->numberSequence->resolveFormat((int) $organization->id, $scope);
+            $source = $this->authority->configuredSource($organization, $scope);
             $rows[] = [
                 'scope' => $scope,
                 'format' => $format,
                 'preview' => $this->numberSequence->peekNext($organization, $scope),
                 'persisted' => $format->exists,
+                'source' => $source,
+                'sourceLabel' => $this->authority->sourceLabel($this->authority->sourceFor($organization, $scope)),
+                // Kunden- und Lieferantennummern wählt man hier; Belegkreise steuert das Programm selbst (MVP-1130).
+                'sourceOptions' => in_array($scope, SaveNumberFormatRequest::SELECTABLE_SOURCE_SCOPES, true)
+                    ? $this->authority->sourceOptions($organization, $scope)
+                    : null,
             ];
         }
 
@@ -72,7 +80,7 @@ class NumberFormatController extends Controller {
             'padding' => (int) $request->integer('padding'),
             'reset_per_year' => (bool) $request->boolean('reset_per_year'),
             'starts_at' => (int) $request->integer('starts_at'),
-        ]);
+        ] + ($request->filled('source') ? ['source' => (string) $request->string('source')] : []));
 
         return redirect()->route('admin.number-formats.index')
             ->with('success', __('Nummernkreis-Format aktualisiert.'));

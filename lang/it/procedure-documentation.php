@@ -137,7 +137,7 @@ return [
     'numbering' => [
         'table' => 'Serie di numerazione',
         'local' => 'WorkDiary (locale)',
-        'external' => 'Sistema esterno',
+        'external' => 'Sistema esterno (:program)',
         'col' => [
             'scope' => 'Ambito',
             'key' => 'Chiave',

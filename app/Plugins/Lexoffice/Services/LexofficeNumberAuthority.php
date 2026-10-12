@@ -12,32 +12,33 @@ namespace App\Plugins\Lexoffice\Services;
 
 use App\Enums\Numbering\NumberScope;
 use App\Models\Platform\Organization;
+use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Services\Numbering\{NumberAuthority, NumberSequenceService};
 
 /**
- * Überträgt die Lexoffice-Plugin-Einstellung „Nummernkreise von Lexoffice
- * führen lassen" auf die buchhaltungsrelevanten Nummernkreise, indem
- * `number_formats.source` entsprechend gesetzt wird.
- *
- * Hält den Core entkoppelt: {@see NumberAuthority} liest ausschließlich
- * `number_formats.source`; dieses Plugin-Detail schreibt den Flag.
+ * Überträgt den Lexoffice-Schalter „Rechnungsnummern von Lexoffice führen
+ * lassen“ auf die Belegkreise (`number_formats.source`). Kunden- und
+ * Lieferantennummern wählt die Organisation auf der Seite „Nummernkreise“
+ * (MVP-1130); der Schalter fasst sie nicht an.
  */
 class LexofficeNumberAuthority {
+    /** Belegkreise, die der Schalter steuert. */
+    public const SCOPES = [NumberScope::Invoice, NumberScope::CreditNote, NumberScope::Cancellation];
+
     public function __construct(
         private readonly NumberSequenceService $numbers = new NumberSequenceService(),
+        private readonly NumberAuthority $authority = new NumberAuthority(),
     ) {}
 
-    /**
-     * Setzt für alle buchhaltungsrelevanten Scopes die Hoheit der Organisation.
-     */
-    public function apply(Organization $organization, bool $external): void {
-        $source = $external ? NumberAuthority::SOURCE_EXTERNAL : NumberAuthority::SOURCE_LOCAL;
-
-        foreach (NumberScope::cases() as $scope) {
-            if (! $scope->isAccountingRelevant()) {
-                continue;
+    /** Ausschalten setzt nur Kreise zurück, die Lexoffice vergibt. */
+    public function apply(Organization|int $organization, bool $external): void {
+        foreach (self::SCOPES as $scope) {
+            $current = $this->authority->configuredSource($organization, $scope);
+            if ($external) {
+                $this->numbers->setFormat($organization, $scope, ['source' => LexofficePlugin::ID]);
+            } elseif ($current === LexofficePlugin::ID) {
+                $this->numbers->setFormat($organization, $scope, ['source' => NumberAuthority::SOURCE_LOCAL]);
             }
-            $this->numbers->setFormat($organization, $scope, ['source' => $source]);
         }
     }
 }

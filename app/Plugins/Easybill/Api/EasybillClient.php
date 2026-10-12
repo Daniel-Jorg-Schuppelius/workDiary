@@ -59,10 +59,16 @@ class EasybillClient {
      * @param array<string, mixed> $payload
      * @return array<string, mixed>
      */
-    public function createCustomer(array $payload): array {
+    public function createCustomer(array $payload, bool $assignNumber = false): array {
         // 429/5xx-Retry gewollt (api-toolkit ≥2.9.2: POST-Retry ist Opt-in):
         // Dubletten fängt die Reconciliation über den external-id-Marker.
-        return (array) $this->guard($this->api()->requestResponse('post', $this->baseUrl . '/customers', ['json' => $payload, 'retry_non_idempotent' => true]), '/customers');
+        $options = ['json' => $payload, 'retry_non_idempotent' => true];
+        if ($assignNumber) {
+            // Doku: ohne `number` erzwingt `type` die Vergabe der nächsten Kundennummer (MVP-1131).
+            $options['query'] = ['type' => 'CUSTOMER'];
+        }
+
+        return (array) $this->guard($this->api()->requestResponse('post', $this->baseUrl . '/customers', $options), '/customers');
     }
 
     /**

@@ -13,7 +13,7 @@ namespace App\Plugins\Lexoffice\Console;
 use App\Console\Concerns\IteratesOrganizations;
 use App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
-use App\Plugins\Lexoffice\Services\{LexofficeContactSync, LexofficeNumberAuthority};
+use App\Plugins\Lexoffice\Services\LexofficeContactSync;
 use App\Plugins\Support\Console\ChecksPluginSwitch;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Cache\LockTimeoutException;
@@ -31,7 +31,7 @@ class LexofficeSyncContactsCommand extends Command {
 
     protected $description = 'Pull-Sync der Lexoffice-Kontakte: matcht remote Kontakte rollen-bewusst auf lokale Kunden (customer) bzw. Lieferanten (vendor) und führt je nach Policy Updates oder Konflikt-Einträge durch.';
 
-    public function handle(LexofficeContactSync $sync, LexofficeNumberAuthority $numberAuthority): int {
+    public function handle(LexofficeContactSync $sync): int {
         $organizations = $this->organizationsToProcess();
         if ($organizations->isEmpty()) {
             $this->warn('Keine Organisationen gefunden.');
@@ -68,9 +68,6 @@ class LexofficeSyncContactsCommand extends Command {
             if (! in_array($only, ['both', 'customers', 'suppliers'], true)) {
                 $only = 'both';
             }
-
-            // Nummernkreis-Hoheit gemäß Plugin-Einstellung an die Org übertragen.
-            $numberAuthority->apply($org, (bool) $config['number_authority']);
 
             try {
                 Cache::lock(LexofficeConfig::apiLockKey((int) $org->id), 1800)->block(LexofficeConfig::API_LOCK_WAIT_SCHEDULED, function () use ($sync, $org, $policy, $config, $createMissing, $only, $stageUnmatched): void {

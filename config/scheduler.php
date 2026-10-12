@@ -75,6 +75,15 @@ return [
             'criticality' => 'core',
         ],
 
+        // --- Nummernvergabe durch das Buchhaltungsprogramm (Phase 141, MVP-1131) ---
+        'accounting.issue_contact_numbers' => [
+            'command' => 'accounting:issue-contact-numbers',
+            'cadence' => ['type' => 'cron', 'expression' => '20 * * * *'],
+            'allowed' => ['cron', 'hourly', 'everyThirtyMinutes'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 5,
+        ],
+
         'invoicing.recurring' => [
             'command' => 'invoices:generate-recurring',
             'cadence' => ['type' => 'dailyAt', 'time' => '05:15'],

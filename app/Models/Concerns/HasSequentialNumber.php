@@ -34,10 +34,10 @@ trait HasSequentialNumber {
     protected static function registerSequentialNumberHook(): void {
         static::creating(function (self $model): void {
             if ($model->number === null || $model->number === '') {
-                $external = app(NumberAuthority::class)->isExternal($model->organization_id, static::numberScope());
+                $source = app(NumberAuthority::class)->sourceFor($model->organization_id, static::numberScope());
                 $model->number = self::nextNumberFor($model->organization_id);
                 if ((string) $model->number_source === '') {
-                    $model->number_source = $external ? 'lexoffice' : 'local';
+                    $model->number_source = $source;
                 }
             }
         });

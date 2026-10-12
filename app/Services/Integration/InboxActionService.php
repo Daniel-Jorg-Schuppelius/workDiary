@@ -13,12 +13,14 @@ declare(strict_types=1);
 namespace App\Services\Integration;
 
 use App\Enums\Integration\IntegrationInboxStatus;
+use App\Enums\Numbering\ContactNumberOutcome;
+use App\Exceptions\ContactNumberTakenException;
 use App\Models\Audit\AuditLog;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\Organization;
 use App\Models\Supplier\Supplier;
-use App\Services\Stammdaten\ContactDetailsWriter;
+use App\Services\Stammdaten\{ContactDetailsWriter, ContactNumberAdopter};
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\{Auth, Request};
@@ -69,6 +71,19 @@ class InboxActionService {
         // eines Belegs. Klar sagen statt still nichts tun.
         if (($item->remote_snapshot['resolution'] ?? null) === IntegrationInboxItem::RESOLUTION_ACKNOWLEDGE_ONLY) {
             throw new RuntimeException((string) __('Dieser Datensatz ist bereits abgerechnet — der Fremdstand kann nicht übernommen werden. Bitte den Fall zur Kenntnis nehmen und die Abweichung über eine Korrektur buchen.'));
+        }
+
+        // Programmnummer schon vergeben (MVP-1132): erst übernehmbar, wenn der Inhaber umnummeriert ist.
+        if (($item->remote_snapshot['reason'] ?? null) === IntegrationInboxItem::REASON_NUMBER_TAKEN
+            && ($model instanceof Customer || $model instanceof Supplier)) {
+            $number = (string) ($item->mapped_snapshot['number'] ?? '');
+            $outcome = app(ContactNumberAdopter::class)->adopt($model, $item->plugin_id, $number);
+            if ($outcome === ContactNumberOutcome::Taken) {
+                throw ContactNumberTakenException::local($number, (string) app(ContactNumberAdopter::class)->holder($model, $number)?->displayLabel());
+            }
+            $this->close($item, IntegrationInboxStatus::ResolvedRemote, $model);
+
+            return;
         }
 
         $changes = array_intersect_key(

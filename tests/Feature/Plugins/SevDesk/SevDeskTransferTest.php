@@ -171,8 +171,9 @@ class SevDeskTransferTest extends TestCase {
         });
 
         // Version-Probe + Recon-Scan + Kontakt-Suche + Kontakt-Anlage +
-        // SevUser + EIN Invoice-Create = 6 Requests.
-        $fake->assertSentCount(6);
+        // Kommunikationsweg (E-Mail, Kontakt-Push seit MVP-1133) + SevUser +
+        // EIN Invoice-Create = 7 Requests.
+        $fake->assertSentCount(7);
     }
 
     public function test_reconciliation_adopts_existing_invoice_instead_of_duplicating(): void {
@@ -249,7 +250,7 @@ class SevDeskTransferTest extends TestCase {
         $this->assertSame(TransferStatus::Transferred, $transfer->fresh()->status);
         // Versions-Cache je Mandant greift — keine erneute API-Probe.
         $fake->assertNotSent(fn(RequestInterface $r) => str_contains((string) $r->getUri(), 'bookkeepingSystemVersion'));
-        $fake->assertSentCount(5);
+        $fake->assertSentCount(6);
     }
 
     public function test_contact_projection_adopts_existing_contact_by_customer_number(): void {

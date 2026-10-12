@@ -1,7 +1,7 @@
 ---
 title: "Inbox di riconciliazione"
 topic: admin.integration-inbox
-version: 1
+version: 2
 keywords:
     - inbox integrazioni
     - conflitti di importazione
@@ -31,6 +31,12 @@ cieca: decide lei per ogni voce.
 - **Ambiguo** – sono possibili più record.
 - **Conflitto di campo** – il record è noto, ma lo stato locale e quello
   remoto si contraddicono. I due stati sono affiancati.
+
+**Numero già assegnato:** un caso particolare di conflitto di campo. Un
+programma di contabilità ha assegnato a un cliente o fornitore un numero
+che un altro record porta già in WorkDiary. Il caso indica il titolare.
+Modifichi lì il numero e scelga **Adotta il remoto**; anche la
+sincronizzazione successiva lo adotta da sola.
 
 **Decidere:** associa una voce a un record esistente, la crea come nuova o la
 scarta. In caso di conflitto di campo sceglie se mantenere lo stato locale o
