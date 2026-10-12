@@ -46,7 +46,40 @@ final class ParsedMessage {
         // Provider-ID für Nicht-IMAP-Transporte (Graph-Message-ID, Feature 102);
         // IMAP adressiert weiterhin über die numerische UID.
         public readonly ?string $externalId = null,
+        // Abrufstand nach dieser Nachricht (MVP-1139); null = noch kein Sicherungspunkt.
+        public readonly ?MailboxCursor $cursorAfter = null,
     ) {}
+
+    public function withCursorAfter(?MailboxCursor $cursor): self {
+        return $this->copy(['cursorAfter' => $cursor]);
+    }
+
+    /** @param list<MailAttachment> $attachments */
+    public function withAttachments(array $attachments): self {
+        return $this->copy(['attachments' => $attachments]);
+    }
+
+    /** @param array<string, mixed> $changes */
+    private function copy(array $changes): self {
+        $pick = fn (string $key): mixed => array_key_exists($key, $changes) ? $changes[$key] : $this->{$key};
+
+        return new self(
+            messageId: $this->messageId,
+            uid: $this->uid,
+            fromEmail: $this->fromEmail,
+            fromName: $this->fromName,
+            subject: $this->subject,
+            body: $this->body,
+            receivedAt: $this->receivedAt,
+            attachmentCount: $this->attachmentCount,
+            attachments: $pick('attachments'),
+            inReplyTo: $this->inReplyTo,
+            references: $this->references,
+            isAutoSubmitted: $this->isAutoSubmitted,
+            externalId: $this->externalId,
+            cursorAfter: $pick('cursorAfter'),
+        );
+    }
 
     /**
      * Roh-/Herkunftsnachweis für das Inbox-Item (Postfach + Message-ID, DoD 056).

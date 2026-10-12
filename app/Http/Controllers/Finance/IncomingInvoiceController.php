@@ -46,7 +46,7 @@ class IncomingInvoiceController extends Controller {
     ) {}
 
     /** Reiter der Arbeitsliste (MVP-1110/1111): benannte Filterzustände. */
-    public const TABS = ['assign', 'review', 'transfer', 'failed', 'all'];
+    public const TABS = ['assign', 'review', 'transfer', 'failed', 'duplicates', 'all'];
 
     /** Sortierbare Spalten → SQL-Spalte. */
     private const SORTS = [
@@ -80,6 +80,11 @@ class IncomingInvoiceController extends Controller {
             ->whereIn('status', [IncomingEInvoiceStatus::Received->value, IncomingEInvoiceStatus::Question->value]);
         $inTransfer = static fn (\Illuminate\Database\Eloquent\Builder $query, array $states): \Illuminate\Database\Eloquent\Builder => $query
             ->whereHas('transfers', static fn ($journal) => $journal->whereIn('status', array_map(static fn (IncomingInvoiceTransferStatus $s): string => $s->value, $states)));
+        // Möglicher Doppel-Eingang (MVP-1145): offen, solange weder bestätigt noch einer der beiden abgelehnt ist.
+        $duplicates = static fn (\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder => $query
+            ->whereNotNull('duplicate_of_id')->whereNull('duplicate_cleared_at')
+            ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value)
+            ->whereHas('duplicateOf', static fn ($earlier) => $earlier->withoutGlobalScopes()->where('status', '!=', IncomingEInvoiceStatus::Rejected->value));
         $open = [IncomingInvoiceTransferStatus::Pending, IncomingInvoiceTransferStatus::Waiting];
         $failed = [IncomingInvoiceTransferStatus::Failed];
         [$from, $to] = $this->globalDateRangeBounds();
@@ -89,9 +94,10 @@ class IncomingInvoiceController extends Controller {
             'review' => $toReview($base()),
             'transfer' => $inTransfer($base(), $open),
             'failed' => $inTransfer($base(), $failed),
+            'duplicates' => $duplicates($base()),
             default => $base()->whereBetween('received_at', [$from, $to]),
         };
-        $query->with(['document', 'supplier:id,name,is_collective', 'customer:id,name,is_collective'])
+        $query->with(['document', 'supplier:id,name,is_collective', 'customer:id,name,is_collective', 'duplicateOf:id,status'])
             ->when(in_array($tab, ['transfer', 'failed'], true), static fn ($q) => $q->with('transfers'))
             ->when($direction !== null, static fn ($q) => $q->where('direction', $direction?->value))
             ->when($recognition !== null, static fn ($q) => $q->where('recognition', $recognition?->value))
@@ -108,6 +114,7 @@ class IncomingInvoiceController extends Controller {
             'reviewCount' => $toReview($base())->count(),
             'transferCount' => $inTransfer($base(), $open)->count(),
             'failedCount' => $inTransfer($base(), $failed)->count(),
+            'duplicateCount' => $duplicates($base())->count(),
             'canUpload' => Gate::allows('create', Document::class),
             'canManage' => $user->canManageBilling(),
             'bulkParties' => $tab === 'assign' && $user->canManageBilling() ? $this->assignmentOptions() : null,
@@ -259,6 +266,48 @@ class IncomingInvoiceController extends Controller {
      * Zahlungsfreigabe (nur NACH fachlicher Freigabe). Keine automatische
      * Stammdatenänderung — reine Statusführung mit Audit.
      */
+    /** Treffer ohne Rechnungsnummer als denselben Beleg übernehmen (MVP-1146). */
+    public function linkTransferCandidate(IncomingEInvoice $incoming, string $target): RedirectResponse {
+        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+        $this->transfers->linkCandidate($this->candidateJournal($incoming, $target), $this->authUser());
+
+        return redirect()->route('finance.incoming-invoices.show', $incoming->document)->with('success', __('Mit dem vorhandenen Beleg verknüpft.'));
+    }
+
+    /** Anderer Beleg: im Ziel neu anlegen, ohne erneute unscharfe Suche (MVP-1146). */
+    public function dismissTransferCandidate(IncomingEInvoice $incoming, string $target): RedirectResponse {
+        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+        $this->transfers->dismissCandidate($this->candidateJournal($incoming, $target), $this->authUser());
+
+        return redirect()->route('finance.incoming-invoices.show', $incoming->document)->with('success', __('Übergabe als neuer Beleg angestoßen.'));
+    }
+
+    private function candidateJournal(IncomingEInvoice $incoming, string $target): IncomingEInvoiceTransfer {
+        return $incoming->transfers()->where('target', $target)->whereNotNull('candidate_external_id')->firstOrFail();
+    }
+
+    /**
+     * „Kein Doppel“ (MVP-1145): gibt einen als möglichen Doppel-Eingang
+     * gesperrten Eingang frei und stößt die Übergabe an, sofern Ziele bestehen.
+     */
+    public function clearDuplicate(IncomingEInvoice $incoming): RedirectResponse {
+        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+        $back = redirect()->route('finance.incoming-invoices.show', $incoming->document);
+        if (! $incoming->isPossibleDuplicate()) {
+            return $back;
+        }
+
+        $incoming->forceFill(['duplicate_cleared_user_id' => (int) Auth::id(), 'duplicate_cleared_at' => now()])->save();
+        $incoming->audit('incoming_einvoice.duplicate_cleared', ['duplicate_of_id' => $incoming->duplicate_of_id]);
+
+        $organization = $incoming->organization;
+        if ($organization !== null && $incoming->counterparty() !== null && $this->transfers->hasTargets($organization)) {
+            $this->transfers->transfer($incoming, $this->authUser());
+        }
+
+        return $back->with('success', __('Als kein Doppel bestätigt.'));
+    }
+
     public function decide(Request $request, \App\Models\Invoicing\IncomingEInvoice $incoming): RedirectResponse {
         abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
 

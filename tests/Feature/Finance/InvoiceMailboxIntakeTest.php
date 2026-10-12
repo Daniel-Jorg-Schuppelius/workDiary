@@ -75,10 +75,7 @@ final class InvoiceMailboxIntakeTest extends TestCase {
         $this->assertSame('lieferant@example.test', $incoming->sender_email);
         $this->assertSame('<m1@example.test>', $incoming->source_reference);
         $this->assertEqualsCanonicalizing(['ER-2026-0042.pdf', 'agb.pdf'], $incoming->attachments->pluck('original_name')->all());
-        $this->assertNotContains(
-            __('Rechnungsnummer :number dieses Ausstellers wurde bereits erfasst (möglicher Doppel-Eingang mit anderem Dateiinhalt).', ['number' => 'ER-2026-0042']),
-            (array) data_get($incoming->summary, 'deviations'),
-        );
+        $this->assertNull($incoming->duplicate_of_id); // XML und Sichtbeleg sind ein Eingang, kein Doppel
 
         $this->actingAs($this->admin)->get(route('finance.incoming-invoices.show', $incoming->document))
             ->assertOk()->assertSee('agb.pdf')->assertSee('lieferant@example.test');
@@ -165,6 +162,79 @@ final class InvoiceMailboxIntakeTest extends TestCase {
             __('Nicht an uns adressiert: Der Käufer trägt die USt-IdNr. :vat.', ['vat' => 'DE277777770']),
             (array) data_get($incoming->summary, 'deviations'),
         );
+    }
+
+    public function test_inbox_mail_can_be_taken_over_as_incoming_invoice(): void {
+        $connection = $this->mailbox(false);
+        $this->deliver($connection, [new MailAttachment('rechnung.pdf', 'application/pdf', $this->invoicePdf('RE-7001', '119,00'))], '<inbox-1@example.test>');
+        $item = IntegrationInboxItem::query()->sole();
+        $this->assertSame(0, IncomingEInvoice::query()->count());
+
+        $this->actingAs($this->admin)->post(route('admin.mail.inbox.import-invoice'), ['item' => $item->sqid])
+            ->assertSessionHas('success', __('mail.flash.invoice_imported', ['count' => 1]));
+
+        $incoming = IncomingEInvoice::query()->sole();
+        $this->assertSame('<inbox-1@example.test>', $incoming->source_reference);
+        $this->assertSame(\App\Enums\Integration\IntegrationInboxStatus::ResolvedCreated, $item->refresh()->status);
+
+        $this->actingAs($this->admin)->post(route('admin.mail.inbox.import-invoice'), ['item' => $item->sqid])
+            ->assertSessionHas('error', __('mail.flash.already_resolved'));
+        $this->assertSame(1, IncomingEInvoice::query()->count());
+    }
+
+    public function test_redelivered_mail_resolves_its_open_inbox_item(): void {
+        $attachments = [new MailAttachment('rechnung.pdf', 'application/pdf', $this->invoicePdf('RE-7002', '238,00'))];
+        $this->deliver($this->mailbox(false), $attachments, '<late@example.test>');
+        $item = IntegrationInboxItem::query()->sole();
+
+        $result = $this->deliver($this->mailbox(true), $attachments, '<late@example.test>');
+
+        $this->assertSame('einvoice', $result);
+        $this->assertSame(1, IncomingEInvoice::query()->count());
+        $item->refresh();
+        $this->assertSame(\App\Enums\Integration\IntegrationInboxStatus::ResolvedCreated, $item->status);
+        $this->assertSame(IncomingEInvoice::query()->sole()->getKey(), $item->resolved_to_id);
+    }
+
+    public function test_missing_creator_falls_back_to_the_oldest_person(): void {
+        $connection = $this->mailbox(true, null);
+
+        $result = $this->deliver($connection, [new MailAttachment('rechnung.pdf', 'application/pdf', $this->invoicePdf('RE-7003', '59,50'))], '<orphan@example.test>');
+
+        $this->assertSame('einvoice', $result);
+        $this->assertSame(1, IncomingEInvoice::query()->count());
+        $this->assertSame(0, IntegrationInboxItem::query()->count());
+    }
+
+    private function mailbox(bool $invoices, ?int $createdBy = 0): EmailConnection {
+        return EmailConnection::query()->create([
+            'organization_id' => $this->organization->id,
+            'name' => $invoices ? 'Rechnungen' : 'Info',
+            'host' => 'imap.example.test',
+            'port' => 993,
+            'encryption' => 'ssl',
+            'username' => 'rechnung@example.test',
+            'password' => 'geheim',
+            'folder' => $invoices ? 'Rechnungen' : 'INBOX',
+            'active' => true,
+            'einvoice_intake' => $invoices,
+            'created_by' => $createdBy === 0 ? $this->admin->id : $createdBy,
+        ]);
+    }
+
+    /** @param  list<MailAttachment>  $attachments */
+    private function deliver(EmailConnection $connection, array $attachments, string $messageId): string {
+        return app(MailIntakeService::class)->intake($this->organization, $connection, new ParsedMessage(
+            messageId: $messageId,
+            uid: 1,
+            fromEmail: 'lieferant@example.test',
+            fromName: 'Lieferant GmbH',
+            subject: 'Ihre Rechnung',
+            body: 'Anbei die Rechnung.',
+            receivedAt: Carbon::now(),
+            attachmentCount: count($attachments),
+            attachments: $attachments,
+        ));
     }
 
     /** @param  list<MailAttachment>  $attachments */

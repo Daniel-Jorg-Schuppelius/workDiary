@@ -449,6 +449,9 @@ return [
         'started' => 'Import started',
     ],
     'incoming_einvoice' => [
+        'duplicate_cleared' => 'Confirmed as not a duplicate receipt',
+        'candidate_linked' => 'Handover linked to existing voucher',
+        'candidate_dismissed' => 'Handover created despite a match',
         'direction_corrected' => 'Incoming document direction corrected',
         'values_captured' => 'Incoming document values recorded',
         'assigned' => 'Incoming invoice assigned',
@@ -614,6 +617,8 @@ return [
         'exceeded' => 'Limit exceeded',
     ],
     'mail' => [
+        'backfill_started' => 'Mail backfill started',
+        'connection_activated' => 'Mail connection activated',
         'connection_saved' => 'Mail connection saved',
         'disconnected' => 'Mail connection disconnected',
     ],

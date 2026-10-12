@@ -43,6 +43,21 @@
                     @if ($journal->error)
                         <div class="text-xs {{ $journal->status === \App\Enums\Invoicing\IncomingInvoiceTransferStatus::Failed ? 'text-error' : 'text-muted' }}">{{ $journal->error }}</div>
                     @endif
+                    {{-- Treffer ohne Rechnungsnummer (MVP-1146): ein Mensch entscheidet einmal. --}}
+                    @if ($journal->candidate_external_id !== null && ! $journal->status->isFinal() && (auth()->user()?->canManageBilling() ?? false))
+                        <div class="mt-1 flex flex-wrap items-center gap-2">
+                            <x-action-form :action="route('finance.incoming-invoices.transfer.link', [$incoming, $journal->target])"
+                                           :confirm="__('Mit dem Beleg :voucher verknüpfen? Im Buchhaltungsprogramm wird dann nichts angelegt.', ['voucher' => $journal->candidate_label])"
+                                           confirm-icon="link" confirm-tone="primary" :confirm-label="__('Verknüpfen')">
+                                <x-icon-btn icon="link" tone="primary" size="xs" type="submit" show-label>{{ __('Mit diesem Beleg verknüpfen') }}</x-icon-btn>
+                            </x-action-form>
+                            <x-action-form :action="route('finance.incoming-invoices.transfer.create-new', [$incoming, $journal->target])"
+                                           :confirm="__('Einen neuen Beleg anlegen? Ein dort angelegter Beleg lässt sich nicht mehr löschen.')"
+                                           confirm-icon="add" confirm-tone="primary" :confirm-label="__('Neu anlegen')">
+                                <x-icon-btn icon="add" size="xs" type="submit" show-label>{{ __('Anderer Beleg – neu anlegen') }}</x-icon-btn>
+                            </x-action-form>
+                        </div>
+                    @endif
                 @endif
             </x-detail-grid.row>
         @endforeach

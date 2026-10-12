@@ -16,21 +16,17 @@ use App\Jobs\Concerns\RetriesTransientFailures;
 use App\Models\Mail\EmailConnection;
 use App\Models\Platform\Organization;
 use App\Plugins\Msgraph\MsgraphPlugin;
-use App\Services\Mail\{MailIntakeService, MailboxGateway};
+use App\Services\Mail\MailboxPoller;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\{InteractsWithQueue, SerializesModels};
-use Illuminate\Support\Carbon;
-use Throwable;
 
 /**
  * Gezielter Postfach-Abruf nach Graph-Webhook-Impuls (Feature 102,
- * Folgeausbau): ruft genau das betroffene Graph-Postfach ab — gleiche
- * Verarbeitung wie {@see \App\Console\Commands\MailPollCommand} (Intake in
- * die Integrations-Inbox, markProcessed, Health-Zähler). Fehler zählen auf
- * den Verbindungs-Health; das 5-Minuten-Polling (mail:poll) heilt verpasste
- * Impulse.
+ * Folgeausbau): ruft genau das betroffene Graph-Postfach über denselben
+ * {@see MailboxPoller} ab wie `mail:poll` — die Sperre je Postfach verhindert
+ * doppelte Verarbeitung. Das 5-Minuten-Polling heilt verpasste Impulse.
  */
 class MsgraphMailWakeJob implements ShouldQueue {
     use RetriesTransientFailures;
@@ -48,30 +44,19 @@ class MsgraphMailWakeJob implements ShouldQueue {
         public readonly int $connectionId,
     ) {}
 
-    public function handle(MailboxGateway $gateway, MailIntakeService $intake): void {
+    public function handle(MailboxPoller $poller): void {
         $org = Organization::query()->find($this->organizationId);
         if (! $org instanceof Organization) {
             return;
         }
 
-        \App\Support\OrganizationContext::run($org, function () use ($gateway, $intake, $org): void {
+        \App\Support\OrganizationContext::run($org, function () use ($poller, $org): void {
             $connection = EmailConnection::query()
                 ->where('organization_id', $org->id)
                 ->whereKey($this->connectionId)
                 ->first();
-            if (! $connection instanceof EmailConnection || ! $connection->isActive()) {
-                return;
-            }
-
-            try {
-                foreach ($gateway->fetch($connection) as $message) {
-                    $intake->intake($org, $connection, $message);
-                    $gateway->markProcessed($connection, $message);
-                }
-                $connection->forceFill(['last_polled_at' => Carbon::now()])->save();
-                $connection->recordConnectionSuccess();
-            } catch (Throwable $e) {
-                $connection->recordConnectionFailure($e->getMessage());
+            if ($connection instanceof EmailConnection && $connection->isActive()) {
+                $poller->poll($org, $connection);
             }
         });
     }

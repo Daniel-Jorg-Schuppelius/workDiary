@@ -1928,11 +1928,19 @@ Route::middleware('auth')->group(function () {
         // ── E-Mail-Eingang (Admin, Feature 056) ─────────────────────────────────
         Route::get('admin/mail', [\App\Http\Controllers\Admin\MailAdminController::class, 'index'])->name('admin.mail.index');
         Route::post('admin/mail/connection', [\App\Http\Controllers\Admin\MailAdminController::class, 'store'])->name('admin.mail.connection.store');
+        // Postfach-Dialoge, Nachholen und Aktivieren (MVP-1143); feste Route vor den Parameter-Routen.
+        Route::get('admin/mail/connections/create', [\App\Http\Controllers\Admin\MailAdminController::class, 'create'])->name('admin.mail.connection.create');
+        Route::get('admin/mail/connections/{connection}/edit', [\App\Http\Controllers\Admin\MailAdminController::class, 'edit'])->name('admin.mail.connection.edit');
+        Route::put('admin/mail/connections/{connection}', [\App\Http\Controllers\Admin\MailAdminController::class, 'update'])->name('admin.mail.connection.update');
+        Route::get('admin/mail/connections/{connection}/backfill', [\App\Http\Controllers\Admin\MailAdminController::class, 'backfillForm'])->name('admin.mail.connection.backfill.form');
+        Route::post('admin/mail/connections/{connection}/backfill', [\App\Http\Controllers\Admin\MailAdminController::class, 'backfill'])->name('admin.mail.connection.backfill');
+        Route::post('admin/mail/connections/{connection}/activate', [\App\Http\Controllers\Admin\MailAdminController::class, 'activate'])->name('admin.mail.connection.activate');
         Route::post('admin/mail/disconnect', [\App\Http\Controllers\Admin\MailAdminController::class, 'disconnect'])->name('admin.mail.disconnect');
         Route::post('admin/mail/poll', [\App\Http\Controllers\Admin\MailAdminController::class, 'poll'])->name('admin.mail.poll');
         Route::post('admin/mail/inbox/book', [\App\Http\Controllers\Admin\MailAdminController::class, 'book'])->name('admin.mail.inbox.book');
         Route::post('admin/mail/inbox/book-ticket', [\App\Http\Controllers\Admin\MailAdminController::class, 'bookTicket'])->name('admin.mail.inbox.book-ticket');
         Route::post('admin/mail/inbox/import-dms', [\App\Http\Controllers\Admin\MailAdminController::class, 'importDms'])->name('admin.mail.inbox.import-dms');
+        Route::post('admin/mail/inbox/import-invoice', [\App\Http\Controllers\Admin\MailAdminController::class, 'importInvoice'])->name('admin.mail.inbox.import-invoice');
 
         // ── Telefonie / CTI (Admin, Feature 056) ────────────────────────────────
         Route::get('admin/cti', [\App\Http\Controllers\Admin\CtiAdminController::class, 'index'])->name('admin.cti.index');
@@ -3136,6 +3144,9 @@ Route::middleware('auth')->group(function () {
             Route::post('{incoming}/werte', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'values'])->name('values');
             Route::post('{incoming}/entscheiden', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'decide'])->name('decide');
             Route::post('{incoming}/uebergeben', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'transfer'])->name('transfer');
+            Route::post('{incoming}/kein-doppel', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'clearDuplicate'])->name('duplicate.clear');
+            Route::post('{incoming}/uebergabe/{target}/verknuepfen', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'linkTransferCandidate'])->name('transfer.link');
+            Route::post('{incoming}/uebergabe/{target}/neu-anlegen', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'dismissTransferCandidate'])->name('transfer.create-new');
             // Einbehalte (MVP-953).
             Route::post('{incoming}/einbehalte', [\App\Http\Controllers\Finance\IncomingRetentionController::class, 'store'])->name('retentions.store');
             Route::post('einbehalte/{retention}/freigeben', [\App\Http\Controllers\Finance\IncomingRetentionController::class, 'release'])->name('retentions.release');

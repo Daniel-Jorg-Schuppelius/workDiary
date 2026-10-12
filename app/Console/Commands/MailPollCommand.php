@@ -15,16 +15,15 @@ namespace App\Console\Commands;
 use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Mail\EmailConnection;
 use App\Models\Platform\Organization;
-use App\Services\Mail\{MailIntakeService, MailboxGateway};
+use App\Services\Mail\MailboxPoller;
 use Illuminate\Console\Command;
-use Illuminate\Support\Carbon;
-use Throwable;
 
 /**
  * Ruft die verbundenen Eingangspostfächer je Organisation ab (Feature 056,
  * MVP-117) und stellt neue Mails als Vorschläge in die Integrations-Inbox.
- * Idempotent über die Message-ID; verarbeitete Mails werden nur markiert/
- * verschoben, nie gelöscht. Läuft im Scheduler und manuell aus der Admin-UI.
+ * Abgerufen wird nach Stand in Stapeln ({@see MailboxPoller}, MVP-1139);
+ * verarbeitete Mails werden nur markiert/verschoben, nie gelöscht. Läuft im
+ * Scheduler und manuell aus der Admin-UI.
  */
 class MailPollCommand extends Command {
     use IteratesOrganizations;
@@ -33,36 +32,22 @@ class MailPollCommand extends Command {
 
     protected $description = 'Ruft IMAP-Eingangspostfächer ab und stellt neue Mails in die Integrations-Inbox.';
 
-    public function handle(MailboxGateway $gateway, MailIntakeService $intake): int {
+    public function handle(MailboxPoller $poller): int {
         foreach ($this->organizationsToProcess() as $org) {
-            // Fehler je Postfach werden unten gefangen — Org-Fehler sollen weiter durchschlagen.
-            $this->withOrganizationContext($org, function (Organization $org) use ($gateway, $intake): void {
+            // Fehler je Postfach fängt der Poller — Org-Fehler sollen weiter durchschlagen.
+            $this->withOrganizationContext($org, function (Organization $org) use ($poller): void {
                 $connections = EmailConnection::query()->where('organization_id', $org->id)->get();
                 foreach ($connections as $connection) {
                     if (! $connection->isActive()) {
                         continue;
                     }
 
-                    try {
-                        $created = 0;
-                        foreach ($gateway->fetch($connection) as $message) {
-                            $result = $intake->intake($org, $connection, $message);
-                            if ($result === 'created') {
-                                $created++;
-                            }
-                            $gateway->markProcessed($connection, $message);
-                        }
-                        $connection->forceFill(['last_polled_at' => Carbon::now()])->save();
-                        // Verbindungs-Gesundheit (MVP-178): Erholung setzt den
-                        // Fehlerzähler zurück und löst die Betriebsaufgabe auf.
-                        $connection->recordConnectionSuccess();
-                        $this->info(sprintf('Organisation #%d / %s: %d neue Mails eingereiht.', $org->id, $connection->name, $created));
-                    } catch (Throwable $e) {
-                        // Verbindungs-Gesundheit (MVP-178): Fehlversuch zählen —
-                        // der ExpiryScanner meldet gestörte Postfächer als Aufgabe.
-                        $connection->recordConnectionFailure($e->getMessage());
-                        $this->error(sprintf('Organisation #%d / %s: Abbruch — %s', $org->id, $connection->name, class_basename($e)));
-                    }
+                    $result = $poller->poll($org, $connection);
+                    match ($result['status']) {
+                        'ok' => $this->info(sprintf('Organisation #%d / %s: %d Mails verarbeitet, %d neu eingereiht.', $org->id, $connection->name, $result['processed'], $result['created'])),
+                        'locked' => $this->line(sprintf('Organisation #%d / %s: Abruf läuft bereits.', $org->id, $connection->name)),
+                        'failed' => $this->error(sprintf('Organisation #%d / %s: Abbruch — %s', $org->id, $connection->name, (string) $result['error'])),
+                    };
                 }
             });
         }

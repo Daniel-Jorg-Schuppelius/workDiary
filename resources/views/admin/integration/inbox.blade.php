@@ -573,6 +573,16 @@
                                         <x-button type="submit" tone="outline">{{ __('mail.dms.action') }}</x-button>
                                     </form>
                                 @endif
+                                {{-- Als Eingangsrechnung übernehmen (MVP-1144): auch aus Postfächern ohne Rechnungsschalter. --}}
+                                @if ($mailHasStoredAttachments && auth()->user()?->canManageBilling())
+                                    @feature('module.finance')
+                                        <form method="POST" action="{{ route('admin.mail.inbox.import-invoice') }}">
+                                            @csrf
+                                            <input type="hidden" name="item" value="{{ $item->sqid }}">
+                                            <x-button type="submit" tone="outline">{{ __('mail.inbox.invoice_action') }}</x-button>
+                                        </form>
+                                    @endfeature
+                                @endif
                             @elseif ($conflictActions !== null && $conflictActions->replacesDefaultConflictActions($item))
                                 {{-- Plugin-eigene Konfliktlösung (MVP-1041), z. B. Datei-Divergenz des Ablage-Spiegels. --}}
                                 @foreach ($conflictActions->inboxConflictActions($item) as $action)

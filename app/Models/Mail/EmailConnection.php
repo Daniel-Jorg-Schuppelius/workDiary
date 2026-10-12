@@ -13,6 +13,7 @@ namespace App\Models\Mail;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * IMAP-Eingangspostfach einer Organisation (Feature 056, MVP-117). Das Passwort
@@ -31,10 +32,20 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $password
  * @property string $folder
  * @property string|null $processed_folder
+ * @property \Illuminate\Support\Carbon|null $fetch_since
+ * @property array<string, mixed>|null $sync_cursor
+ * @property string|null $mailbox_address
  * @property bool $active
+ * @property bool $einvoice_intake
+ * @property bool $callreport_intake
  * @property int|null $created_by
  * @property \Illuminate\Support\Carbon|null $last_polled_at
+ * @property string|null $last_error
+ * @property \Illuminate\Support\Carbon|null $last_error_at
+ * @property int $consecutive_failures
+ * @property \Illuminate\Support\Carbon|null $disabled_at
  * @property string|null $subscription_id
+ * @property string|null $subscription_resource
  * @property \Illuminate\Support\Carbon|null $subscription_expires_at
  * @property string|null $webhook_secret
  */
@@ -54,10 +65,11 @@ class EmailConnection extends Model {
     /** Tabellenname explizit (defensiv, konsistent zur Migration). */
     protected $table = 'email_connections';
 
-    /** Geheimnisse nie serialisieren/auditieren. */
+    /** Geheimnisse nie serialisieren/auditieren; der Abrufstand ist Betriebszustand. */
     protected $hidden = [
         'password',
         'webhook_secret',
+        'sync_cursor',
     ];
 
     protected $fillable = [
@@ -71,6 +83,8 @@ class EmailConnection extends Model {
         'password',
         'folder',
         'processed_folder',
+        'fetch_since',
+        'mailbox_address',
         'active',
         'einvoice_intake',
         'callreport_intake',
@@ -86,9 +100,18 @@ class EmailConnection extends Model {
         'einvoice_intake' => 'boolean',
         'callreport_intake' => 'boolean',
         'last_polled_at' => 'datetime',
+        'fetch_since' => 'date',
+        'sync_cursor' => 'array',
         'subscription_expires_at' => 'datetime',
         'webhook_secret' => 'encrypted',
     ];
+
+    protected static function booted(): void {
+        // Ohne Angabe beginnt der Abruf am Anlagetag (MVP-1139), nie rückwirkend.
+        static::creating(static function (self $connection): void {
+            $connection->fetch_since ??= Carbon::today();
+        });
+    }
 
     public function usesImap(): bool {
         return in_array($this->getAttribute('transport'), [null, '', self::TRANSPORT_IMAP], true);

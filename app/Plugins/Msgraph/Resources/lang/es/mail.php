@@ -12,6 +12,9 @@ return [
     'flash' => [
         'msgraph_connection_required' => 'Un buzón de Microsoft 365 requiere primero la conexión de envío de correo en el plugin de Microsoft 365 (scope Mail.ReadWrite).',
     ],
+    'error' => [
+        'scope_missing' => 'A la conexión de Microsoft 365 le falta el permiso :scope. Vuelva a conectar el envío de correo en el plugin de Microsoft 365.',
+    ],
     'transport' => [
         'msgraph' => 'Microsoft 365 (Graph)',
         'msgraph_hint' => 'Microsoft 365: usa la conexión de correo Graph de la organización — no se necesitan credenciales IMAP.',

@@ -1,7 +1,7 @@
 ---
 title: "Fatture ricevute"
 topic: finance.incoming-invoices
-version: 2
+version: 3
 keywords:
     - fattura fornitore
     - fattura d'acquisto
@@ -22,6 +22,9 @@ keywords:
     - EN 16931
     - consegna a Lexware
     - categoria contabile
+    - doppione
+    - fattura duplicata
+    - cartella fatture
 audience: []
 modules:
     - module.vertrieb
@@ -57,6 +60,17 @@ fatture». Ogni e-mail viene valutata per fatture, non per allegati:
 - Le e-mail senza alcun allegato di fattura (per esempio solo con un link di
   download) finiscono nella casella di assegnazione dell’Amministrazione,
   contrassegnate come casella delle fatture.
+- Un’e-mail inoltrata come allegato viene aperta; la fattura che contiene
+  conta come un allegato diretto.
+
+**Recupero ed e-mail esistenti:** le e-mail vengono recuperate a partire dal
+giorno indicato in «Recupera dal», dall’ultimo punto raggiunto — anche quelle
+già lette. Scelga preferibilmente una cartella dedicata in cui una regola
+smisti le fatture (sottocartelle separate da «/», ad es. Posta in
+arrivo/Fatture). «Recupera e-mail precedenti» nell’amministrazione delle
+caselle recupera fatture più vecchie; la stessa fattura non viene creata due
+volte. Se un’e-mail con fattura si trova in un’altra casella, «Acquisisci come
+fattura in entrata» nella inbox di associazione ne acquisisce gli allegati.
 
 **Riconoscimento:** una fattura elettronica (XRechnung o ZUGFeRD/Factur-X)
 fornisce valori vincolanti. Per PDF e foto i valori vengono riconosciuti e
@@ -116,13 +130,20 @@ anagrafici.
 per organizzazione, anche tra canali diversi (un caricamento dopo una
 ricezione via e-mail resta un duplicato).
 
+**Possibile doppione:** se la stessa fattura arriva una seconda volta come
+file diverso — ad esempio come PDF via e-mail e come XRechnung tramite Peppol
+—, la ricezione fatture lo riconosce dal numero di fattura insieme
+all’identificativo fiscale dell’emittente o alla parte assegnata. L’entrata
+successiva non viene trasmessa alla contabilità finché Lei non conferma
+«Nessun doppione» o la rifiuta. Il solo numero non basta: «1001» esiste presso
+molti fornitori.
+
 **Validazione e coerenza:** ogni fattura elettronica viene validata rispetto
 allo schema XML e, se configurato, alle regole KoSIT (EN 16931); viene
 indicato se i controlli erano disponibili. Inoltre il controllo degli
-scostamenti avvisa in modo visibile — mai in silenzio — di un numero di
-fattura già registrato per lo stesso emittente, di totali contraddittori
-(imponibile + imposta ≠ totale) e di imposta indicata senza identificativo
-fiscale dell’emittente.
+scostamenti avvisa in modo visibile — mai in silenzio — di totali
+contraddittori (imponibile + imposta ≠ totale) e di imposta indicata senza
+identificativo fiscale dell’emittente.
 
 **Workflow di verifica:** un documento viene approvato, messo in domanda o
 rifiutato (il rifiuto solo con motivazione). L’autorizzazione al pagamento è
@@ -147,6 +168,14 @@ contabile, le operazioni intracomunitarie o i paesi terzi.
   giustificativo parte senza importi e la contabilità li completa in Lexware.
 - DATEV Unternehmen online riceve l’originale come immagine del
   giustificativo.
+- Se manca il numero di fattura, la consegna cerca in Lexware per contatto,
+  data del giustificativo e importo. Una corrispondenza non viene collegata
+  automaticamente: Lei sceglie «Collega a questo giustificativo» oppure «Altro
+  giustificativo – crea nuovo».
+- Tramite l’interfaccia non è possibile cercare i giustificativi esistenti in
+  DATEV. Non invii quindi le stesse fatture anche tramite l’e-mail di
+  caricamento DATEV; lì la protezione dai doppioni spetta solo alla ricezione
+  fatture.
 - Un giustificativo creato lì non si può più eliminare tramite l’interfaccia.
 - Non invii le stesse fatture anche all’indirizzo e-mail dei giustificativi
   di Lexware: i giustificativi riconosciuti lì inizialmente non hanno numero e

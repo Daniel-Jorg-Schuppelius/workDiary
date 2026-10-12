@@ -202,6 +202,30 @@ final class LexofficeIncomingInvoiceTransferTest extends TestCase {
         $this->assertCount(1, $creates);
     }
 
+    public function test_without_a_number_a_matching_voucher_is_only_a_candidate(): void {
+        $this->connect(transfer: false);
+        $this->linkedSupplier();
+        $incoming = $this->receive('ER-10');
+        $incoming->forceFill(['invoice_number' => null])->save();
+        $this->connect();
+        $fake = $this->fakeLexware(existing: [['voucherNumber' => null] + $this->listed('X', 238.0, 'Lieferant GmbH')]);
+        $journal = IncomingEInvoiceTransfer::query()->create(['organization_id' => $this->organization->id, 'incoming_einvoice_id' => $incoming->id, 'target' => LexofficePlugin::ID]);
+        $target = app(LexofficeIncomingInvoiceTarget::class);
+
+        $result = $target->transfer($incoming->refresh(), $journal);
+
+        $this->assertSame(IncomingInvoiceTransferStatus::Waiting, $result->status);
+        $this->assertSame('a0000000-0000-4000-8000-000000000001', $result->candidateId);
+        $fake->assertSent(static fn (RequestInterface $r): bool => str_contains((string) $r->getUri(), '/voucherlist')
+            && str_contains((string) $r->getUri(), 'voucherDateFrom=2026-06-01')
+            && str_contains((string) $r->getUri(), 'contactId=' . self::CONTACT_ID));
+        $fake->assertNotSent(static fn (RequestInterface $r): bool => $r->getMethod() === 'POST');
+
+        $journal->forceFill(['candidate_dismissed_at' => now()])->save();
+        $this->assertSame(IncomingInvoiceTransferStatus::Transferred, $target->transfer($incoming, $journal->refresh())->status);
+        $fake->assertSent(static fn (RequestInterface $r): bool => $r->getMethod() === 'POST' && str_ends_with($r->getUri()->getPath(), '/vouchers'));
+    }
+
     public function test_the_switch_keeps_the_target_off(): void {
         $this->connect(transfer: false);
         $fake = $this->fakeLexware();

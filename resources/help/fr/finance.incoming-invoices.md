@@ -1,7 +1,7 @@
 ---
 title: "Factures reçues"
 topic: finance.incoming-invoices
-version: 2
+version: 3
 keywords:
     - facture fournisseur
     - facture d'achat
@@ -22,6 +22,9 @@ keywords:
     - EN 16931
     - transfert vers Lexware
     - catégorie comptable
+    - doublon
+    - facture en double
+    - dossier des factures
 audience: []
 modules:
     - module.vertrieb
@@ -58,6 +61,18 @@ factures ». Chaque e-mail est évalué par facture, non par pièce jointe :
 - Les e-mails sans aucune facture jointe (par exemple seulement avec un lien
   de téléchargement) arrivent dans la boîte d’attribution de
   l’Administration, marqués comme boîte des factures.
+- Un e-mail transféré en pièce jointe est ouvert ; la facture qu’il contient
+  compte comme une pièce jointe directe.
+
+**Relève et e-mails existants :** Les e-mails sont relevés à partir du jour
+indiqué sous « Relever à partir du », selon l’état de relève — y compris ceux
+déjà lus. Choisissez de préférence un dossier dédié dans lequel une règle
+classe les factures (sous-dossiers séparés par « / », p. ex. Boîte de
+réception/Factures). « Récupérer les anciens e-mails » dans l’administration
+des boîtes récupère les factures plus anciennes ; une même facture n’est pas
+créée deux fois. Si un e-mail de facture se trouve dans une autre boîte, «
+Reprendre comme facture entrante » dans la boîte d’affectation reprend ses
+pièces jointes.
 
 **Reconnaissance :** Une facture électronique (XRechnung ou
 ZUGFeRD/Factur-X) fournit des valeurs contraignantes. Pour le PDF et la
@@ -120,12 +135,20 @@ données de base.
 fois par organisation, y compris d’un canal à l’autre (un téléversement après
 une réception par e-mail reste un doublon).
 
+**Doublon possible :** Si la même facture arrive une seconde fois sous un
+autre fichier — par exemple en PDF par e-mail et en XRechnung via Peppol —, la
+réception des factures le reconnaît au numéro de facture associé à
+l’identifiant fiscal de l’émetteur ou à la partie attribuée. La réception
+ultérieure n’est pas transmise à la comptabilité tant que vous ne confirmez
+pas « Pas de doublon » ou ne la refusez pas. Un numéro seul ne suffit pas : «
+1001 » existe chez de nombreux fournisseurs.
+
 **Validation et cohérence :** Chaque facture électronique est validée par
 rapport au schéma XML et, si configuré, aux règles KoSIT (EN 16931) ; la
 disponibilité des contrôles est indiquée. En outre, le contrôle des écarts
-avertit de manière visible — jamais silencieusement — d’un numéro de facture
-déjà enregistré pour le même émetteur, de totaux contradictoires (HT + taxe ≠
-TTC) et d’une taxe indiquée sans identifiant fiscal de l’émetteur.
+avertit de manière visible — jamais silencieusement — de totaux
+contradictoires (HT + taxe ≠ TTC) et d’une taxe indiquée sans identifiant
+fiscal de l’émetteur.
 
 **Workflow de vérification :** Un document est validé, mis en question ou
 refusé (refus uniquement avec motif). La libération du paiement n’est
@@ -148,6 +171,14 @@ les opérations intracommunautaires ou les pays tiers.
   euros et avec les taux de TVA 0, 5, 7, 16 ou 19 %. Sinon, le justificatif
   part sans montants et la comptabilité les complète dans Lexware.
 - DATEV Unternehmen online reçoit l’original comme image de justificatif.
+- Si le numéro de facture manque, le transfert recherche dans Lexware par
+  contact, date du justificatif et montant. Une correspondance n’est pas liée
+  automatiquement : vous choisissez « Lier à ce justificatif » ou « Autre
+  justificatif – créer ».
+- L’interface ne permet pas de rechercher les justificatifs existants dans
+  DATEV. N’envoyez donc pas en plus les mêmes factures par l’e-mail de
+  téléversement DATEV ; la protection contre les doublons y repose uniquement
+  sur la réception des factures.
 - Un justificatif créé là-bas ne peut plus être supprimé par l’interface.
 - N’envoyez pas en plus les mêmes factures à l’adresse e-mail des
   justificatifs de Lexware : les justificatifs reconnus là-bas n’ont d’abord

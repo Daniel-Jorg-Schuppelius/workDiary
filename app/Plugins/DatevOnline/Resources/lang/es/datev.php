@@ -83,6 +83,7 @@ return [
         'documents' => [
             'heading' => 'Imágenes de justificantes',
             'hint' => 'Las facturas emitidas se envían a DATEV Unternehmen online como «Rechnungsausgang» y las recibidas como «Rechnungseingang» en cuanto se asignan en las facturas recibidas, cada una una vez y a partir de la fecha elegida.',
+            'no_duplicate_check' => 'A través de la interfaz no se pueden buscar comprobantes existentes en DATEV. Por eso no envíe las mismas facturas además por el correo de carga de DATEV o la transferencia de comprobantes; de lo contrario, estarán duplicadas en DATEV.',
             'enabled' => 'Transferir imágenes de justificantes cada noche',
             'since' => 'A partir de la fecha del justificante',
             'save' => 'Guardar',

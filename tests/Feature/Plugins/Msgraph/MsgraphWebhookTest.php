@@ -137,6 +137,49 @@ final class MsgraphWebhookTest extends TestCase {
         }
     }
 
+    public function test_mailbox_subscription_follows_the_folder_and_replaces_the_old_one(): void {
+        [$mailbox] = $this->mailboxSetup(['folder' => 'Posteingang/Rechnungen']);
+        $mailbox->forceFill([
+            'subscription_id' => 'sub-alt',
+            'subscription_expires_at' => Carbon::now()->addDays(5),
+            'subscription_resource' => "/me/mailFolders('inbox')/messages",
+            'webhook_secret' => 'geheim',
+        ])->save();
+
+        $fake = FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/mailFolders/f-inbox/childFolders*' => FakePluginHttp::response(['value' => [['id' => 'f-inv', 'displayName' => 'Rechnungen']]]),
+            'https://graph.microsoft.com/v1.0/me/mailFolders?*' => FakePluginHttp::response(['value' => [['id' => 'f-inbox', 'displayName' => 'Posteingang']]]),
+            'https://graph.microsoft.com/v1.0/subscriptions/sub-alt' => FakePluginHttp::response([], 204),
+            'https://graph.microsoft.com/v1.0/subscriptions' => FakePluginHttp::response([
+                'id' => 'sub-neu',
+                'expirationDateTime' => Carbon::now()->addDays(6)->format('Y-m-d\TH:i:s\Z'),
+            ], 201),
+        ]);
+
+        app(MsgraphSubscriptionService::class)->ensureMailbox($mailbox);
+
+        $fake->assertSent(fn ($request): bool => $request->getMethod() === 'DELETE' && str_ends_with((string) $request->getUri(), '/subscriptions/sub-alt'));
+        $fake->assertSent(fn ($request): bool => $request->getMethod() === 'POST'
+            && str_contains((string) $request->getBody(), "mailFolders('f-inv')"));
+        $fresh = $mailbox->fresh();
+        $this->assertSame('sub-neu', $fresh?->subscription_id);
+        $this->assertSame("/me/mailFolders('f-inv')/messages", $fresh?->subscription_resource);
+    }
+
+    public function test_shared_mailbox_gets_no_subscription(): void {
+        [$mailbox] = $this->mailboxSetup(['mailbox_address' => 'rechnungen@firma.de']);
+        $mailbox->forceFill(['subscription_id' => 'sub-alt', 'subscription_resource' => "/me/mailFolders('inbox')/messages"])->save();
+
+        $fake = FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/subscriptions/sub-alt' => FakePluginHttp::response([], 204),
+        ]);
+
+        app(MsgraphSubscriptionService::class)->ensureMailbox($mailbox);
+
+        $fake->assertNotSent(fn ($request): bool => $request->getMethod() === 'POST');
+        $this->assertNull($mailbox->fresh()?->subscription_id);
+    }
+
     public function test_subscription_renewed_only_when_close_to_expiry(): void {
         // Subscription-Felder sind bewusst nicht fillable — wie im Service via forceFill.
         $calendar = $this->calendarConnection();
@@ -247,12 +290,16 @@ final class MsgraphWebhookTest extends TestCase {
         [$mailbox] = $this->mailboxSetup();
 
         FakePluginHttp::fake([
-            'https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages*' => FakePluginHttp::response(['value' => []]),
+            'https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages/delta*' => FakePluginHttp::response([
+                'value' => [],
+                '@odata.deltaLink' => 'https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages/delta?deltatoken=wake',
+            ]),
         ]);
 
-        (new MsgraphMailWakeJob($this->organization->id, $mailbox->id))
-            ->handle(app(\App\Services\Mail\MailboxGateway::class), app(\App\Services\Mail\MailIntakeService::class));
+        (new MsgraphMailWakeJob($this->organization->id, $mailbox->id))->handle(app(\App\Services\Mail\MailboxPoller::class));
 
-        $this->assertNotNull($mailbox->fresh()?->last_polled_at);
+        $fresh = $mailbox->fresh();
+        $this->assertNotNull($fresh?->last_polled_at);
+        $this->assertStringContainsString('deltatoken=wake', (string) (($fresh->sync_cursor ?? [])['link'] ?? ''));
     }
 }

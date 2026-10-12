@@ -87,6 +87,13 @@ final class LexofficeIncomingInvoiceTarget implements IncomingInvoiceTransferTar
 
                 return IncomingInvoiceTransferResult::linked($existing['id'], $existing['voucherNumber'] ?? $incoming->invoice_number);
             }
+            // Ohne Rechnungsnummer (MVP-1146): Kontakt, Belegdatum und Betrag als Hinweis — entscheiden muss ein Mensch.
+            if ($journal->candidate_dismissed_at === null) {
+                $candidate = $this->candidateWithoutNumber($client, $incoming, $type);
+                if ($candidate !== null) {
+                    return IncomingInvoiceTransferResult::candidate($candidate['id'], $candidate['label'], (string) __('lexoffice::incoming.candidate', ['voucher' => $candidate['label']]));
+                }
+            }
 
             $contact = $this->contact($incoming);
             if (is_string($contact)) {
@@ -173,6 +180,56 @@ final class LexofficeIncomingInvoiceTarget implements IncomingInvoiceTransferTar
             }
 
             return ['id' => $id, 'voucherNumber' => $voucher->getVoucherNumber(), 'totalAmount' => $voucher->getTotalAmount()->toFloat()];
+        }
+
+        return null;
+    }
+
+    /**
+     * Beleg ohne Rechnungsnummer: derselbe Kontakt (beim Sammelkontakt der
+     * Name), dasselbe Belegdatum und derselbe Bruttobetrag. Ein Abo mit gleichem
+     * Betrag hätte ein anderes Datum; trotzdem nur ein Vorschlag.
+     *
+     * @return array{id: string, label: string}|null
+     */
+    private function candidateWithoutNumber(Client $client, IncomingEInvoice $incoming, string $type): ?array {
+        $party = $incoming->counterparty();
+        $gross = $incoming->amount_gross?->toFloat();
+        if (trim((string) $incoming->invoice_number) !== '' || $incoming->issue_date === null || $gross === null || $party === null) {
+            return null;
+        }
+        $contactId = $party->is_collective ? null : $this->linkedContactId($incoming, $party);
+        $names = array_unique(array_filter([
+            mb_strtolower(trim((string) $party->name)),
+            mb_strtolower(trim(self::collectiveName($incoming, $party))),
+        ]));
+        $date = $incoming->issue_date->toDateString();
+
+        $page = (new VoucherListEndpoint($client))->search(array_filter([
+            'voucherType' => $type,
+            'voucherStatus' => 'any',
+            'voucherDateFrom' => $date,
+            'voucherDateTo' => $date,
+            'contactId' => $contactId,
+        ]));
+        foreach ($page->getContent() as $voucher) {
+            $id = $voucher->getID()?->toString();
+            if ($id === null || $id === '' || abs(abs($voucher->getTotalAmount()->toFloat()) - abs($gross)) > 0.01) {
+                continue;
+            }
+            if ($contactId === null && ! in_array(mb_strtolower(trim((string) $voucher->getContactName())), $names, true)) {
+                continue;
+            }
+
+            return [
+                'id' => $id,
+                'label' => implode(' · ', array_filter([
+                    trim((string) $voucher->getVoucherNumber()) ?: null,
+                    $voucher->getVoucherDate()?->format('Y-m-d'),
+                    NumberHelper::toGermanFormat(abs($voucher->getTotalAmount()->toFloat()), 2, withThousandsSeparator: true),
+                    trim((string) $voucher->getContactName()) ?: null,
+                ])),
+            ];
         }
 
         return null;

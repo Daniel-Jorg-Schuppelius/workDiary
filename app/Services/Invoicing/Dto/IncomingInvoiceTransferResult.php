@@ -21,6 +21,8 @@ final class IncomingInvoiceTransferResult {
         public readonly ?string $externalId = null,
         public readonly ?string $externalNumber = null,
         public readonly ?string $note = null,
+        public readonly ?string $candidateId = null,
+        public readonly ?string $candidateLabel = null,
     ) {}
 
     public static function transferred(string $externalId, ?string $externalNumber = null, ?string $note = null): self {
@@ -35,5 +37,14 @@ final class IncomingInvoiceTransferResult {
     /** Ein Mensch muss etwas klären; ein späterer Lauf versucht es erneut. */
     public static function waiting(string $note): self {
         return new self(IncomingInvoiceTransferStatus::Waiting, note: $note);
+    }
+
+    /**
+     * Im Ziel liegt vermutlich derselbe Beleg, aber ohne Rechnungsnummer nicht
+     * sicher (MVP-1146): Die Übergabe wartet, bis jemand verknüpft oder sich
+     * für einen neuen Beleg entscheidet.
+     */
+    public static function candidate(string $externalId, string $label, string $note): self {
+        return new self(IncomingInvoiceTransferStatus::Waiting, note: $note, candidateId: $externalId, candidateLabel: $label);
     }
 }

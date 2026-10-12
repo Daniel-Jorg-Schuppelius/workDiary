@@ -83,6 +83,7 @@ return [
         'documents' => [
             'heading' => 'Document images',
             'hint' => 'Issued invoices go to DATEV Unternehmen online as “Rechnungsausgang”, received invoices as “Rechnungseingang” once they are assigned in incoming invoices — each once, from the selected date.',
+            'no_duplicate_check' => 'DATEV cannot be searched for existing vouchers through the interface. Therefore do not also send the same invoices via the DATEV upload mail or document transfer, otherwise they will be in DATEV twice.',
             'enabled' => 'Transfer document images nightly',
             'since' => 'From document date',
             'save' => 'Save',

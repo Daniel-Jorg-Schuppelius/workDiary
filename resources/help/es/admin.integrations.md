@@ -1,7 +1,7 @@
 ---
 title: "Gestionar integraciones"
 topic: admin.integrations
-version: 3
+version: 4
 keywords:
     - interfaces
     - conectores
@@ -15,6 +15,10 @@ keywords:
     - SSO
     - Nextcloud
     - Stripe
+    - buzón de correo
+    - carpeta de facturas
+    - recuperar correos anteriores
+    - buzón compartido
 audience:
     - admin
     - buchhaltung
@@ -84,6 +88,36 @@ escribe dos veces.
 healthcheck, observe durante unos días la bandeja de entrada en busca de
 conflictos inesperados y solo entonces configure procesos automatizados
 sobre ella.
+
+## Buzones de correo
+
+En Administración → Recepción de correo conecta buzones IMAP y buzones de
+Microsoft 365.
+
+- **Consulta según el estado:** Los correos se consultan a partir del día
+  indicado en «Consultar desde», incluidos los que alguien ya ha leído. Cada
+  correo se procesa una vez y después se marca como leído o se mueve a la
+  carpeta de procesados, nunca se elimina.
+- **Carpetas:** Separe las subcarpetas con «/», p. ej. Bandeja de
+  entrada/Facturas. Tras el primer guardado, el diálogo propone las carpetas
+  del buzón. Si falta una carpeta, el aviso aparece en el buzón.
+- **Un buzón, varias carpetas:** El mismo buzón puede registrarse varias
+  veces, cada entrada con su propia carpeta y su propio uso; por ejemplo,
+  info@ una vez para la bandeja de entrada y otra para la carpeta de facturas.
+  La misma carpeta solo se permite una vez por buzón.
+- **Recuperar correos anteriores:** retrasa la fecha de inicio; las próximas
+  consultas procesan los correos por lotes, solo en la carpeta de esta
+  entrada. Los correos y archivos ya incorporados no se crean dos veces.
+- **Microsoft 365:** Sin dirección de buzón se aplica el buzón de la cuenta
+  conectada. Para un buzón compartido, introduzca su dirección; la cuenta
+  conectada necesita acceso completo. El inicio de sesión en el plugin de
+  Microsoft 365 solicita los permisos necesarios; si falta alguno, vuelva a
+  conectar allí el envío de correo. Los buzones compartidos llegan mediante la
+  consulta periódica, sin notificación inmediata.
+- **Facturas:** Con la opción «Buzón de facturas», cada archivo PDF, XML o de
+  imagen de un correo se convierte en una entrada de las facturas recibidas.
+  «Pasar a factura recibida» en la bandeja de asignación incorpora facturas de
+  otros buzones.
 
 ## Qué integraciones existen
 

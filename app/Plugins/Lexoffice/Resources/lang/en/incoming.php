@@ -13,6 +13,7 @@
 return [
     'label' => 'Lexware Office',
     'amount_differs' => 'Lexware already has voucher :number with a different amount. Please check it there and then start the handover again.',
+    'candidate' => 'Lexware probably already holds the same voucher (:voucher), but without an invoice number this is not certain. Please link it or have a new voucher created.',
     'remark' => 'From the WorkDiary incoming invoices (:sender).',
     'no_party' => 'The document is not yet assigned to a party.',
     'contact_missing' => 'The contact :party could neither be found nor created in Lexware.',

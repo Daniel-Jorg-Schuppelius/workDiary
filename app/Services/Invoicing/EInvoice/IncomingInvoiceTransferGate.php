@@ -35,6 +35,7 @@ class IncomingInvoiceTransferGate {
             in_array('not_addressed', $flags, true) ? (string) __('Nicht an uns adressiert.') : null,
             in_array('own_invoice_copy', $flags, true) ? (string) __('Kopie einer eigenen Rechnung.') : null,
             in_array('totals_mismatch', $flags, true) ? (string) __('Summen widersprüchlich.') : null,
+            $incoming->isPossibleDuplicate() ? (string) __('Möglicher Doppel-Eingang — erst „Kein Doppel“ bestätigen oder den Eingang ablehnen.') : null,
             $party !== null && $party->is_collective && CollectiveContacts::requiresNamedContact($incoming)
                 ? (string) __('Reverse Charge, innergemeinschaftlicher Fall oder Drittland: Dafür braucht es einen echten Firmenkontakt, keinen Sammelkontakt.') : null,
         ]));

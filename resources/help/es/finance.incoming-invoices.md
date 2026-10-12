@@ -1,7 +1,7 @@
 ---
 title: "Facturas recibidas"
 topic: finance.incoming-invoices
-version: 2
+version: 3
 keywords:
     - factura de proveedor
     - factura de compra
@@ -22,6 +22,9 @@ keywords:
     - EN 16931
     - traspaso a Lexware
     - categoría contable
+    - entrada duplicada
+    - factura duplicada
+    - carpeta de facturas
 audience: []
 modules:
     - module.vertrieb
@@ -57,6 +60,17 @@ facturas». Cada correo se evalúa por facturas, no por adjuntos:
 - Los correos sin ningún adjunto de factura (por ejemplo, solo con un enlace
   de descarga) van a la bandeja de asignación de la Administración, marcados
   como buzón de facturas.
+- Un correo reenviado como adjunto se abre; la factura que contiene cuenta
+  como un adjunto directo.
+
+**Consulta y correos existentes:** Los correos se consultan a partir del día
+indicado en «Consultar desde», según su estado — incluidos los que alguien ya
+ha leído. Elija preferiblemente una carpeta propia en la que una regla
+clasifique las facturas (subcarpetas separadas con «/», p. ej. Bandeja de
+entrada/Facturas). «Recuperar correos anteriores» en la administración de
+buzones recupera facturas más antiguas; la misma factura no se crea dos veces.
+Si un correo con factura está en otro buzón, «Pasar a factura recibida» en la
+bandeja de asignación incorpora sus adjuntos.
 
 **Reconocimiento:** Una factura electrónica (XRechnung o ZUGFeRD/Factur-X)
 aporta valores vinculantes. En PDF y foto, los valores se reconocen y son una
@@ -114,13 +128,19 @@ confirmación. Una factura nunca modifica los datos maestros.
 organización, también entre canales (una carga tras una entrada por correo
 sigue siendo un duplicado).
 
+**Posible entrada duplicada:** Si la misma factura llega una segunda vez como
+otro archivo —por ejemplo, como PDF por correo y como XRechnung por Peppol—,
+la recepción de facturas lo reconoce por el número de factura junto con la
+identificación fiscal del emisor o la parte asignada. La entrada posterior no
+se entrega a la contabilidad hasta que usted confirme «No es duplicado» o la
+rechace. Un número solo no basta: «1001» existe en muchos proveedores.
+
 **Validación y consistencia:** Cada factura electrónica se valida con el
-esquema XML y, si está configurado, con las reglas KoSIT (EN 16931); se
-indica si las comprobaciones estaban disponibles. Además, la comprobación de
-desviaciones avisa de forma visible —nunca en silencio— de un número de
-factura ya registrado del mismo emisor, de totales contradictorios (neto +
-impuesto ≠ bruto) y de impuesto indicado sin identificación fiscal del
-emisor.
+esquema XML y, si está configurado, con las reglas KoSIT (EN 16931); se indica
+si las comprobaciones estaban disponibles. Además, la comprobación de
+desviaciones avisa de forma visible —nunca en silencio— de totales
+contradictorios (neto + impuesto ≠ bruto) y de impuesto indicado sin
+identificación fiscal del emisor.
 
 **Flujo de revisión:** Un documento se aprueba, se somete a consulta o se
 rechaza (el rechazo solo con motivo). La liberación de pago solo es posible
@@ -142,6 +162,14 @@ del sujeto pasivo, operaciones intracomunitarias o países terceros.
   con los tipos impositivos 0, 5, 7, 16 o 19 %. Si no, el comprobante se
   envía sin importes y contabilidad los completa en Lexware.
 - DATEV Unternehmen online recibe el original como imagen del comprobante.
+- Si falta el número de factura, el traspaso busca en Lexware por contacto,
+  fecha del comprobante e importe. Una coincidencia no se vincula
+  automáticamente: usted elige «Vincular con este comprobante» u «Otro
+  comprobante – crear nuevo».
+- A través de la interfaz no se pueden buscar comprobantes existentes en
+  DATEV. Por eso no envíe las mismas facturas además por el correo de carga de
+  DATEV; allí la protección contra duplicados recae solo en la recepción de
+  facturas.
 - Un comprobante creado allí ya no se puede eliminar por la interfaz.
 - No envíe las mismas facturas también a la dirección de correo de
   comprobantes de Lexware: los comprobantes reconocidos allí no tienen número

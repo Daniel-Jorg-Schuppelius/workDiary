@@ -17,6 +17,7 @@ use App\Models\Platform\User;
 use App\Plugins\Contracts\DocumentIntakeSource;
 use App\Plugins\PluginManager;
 use App\Plugins\Support\Intake\IntakeItem;
+use App\Services\Platform\IntakeActor;
 use App\Support\MorphMap;
 use CommonToolkit\Helper\FileSystem\{File, Folder};
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -68,7 +69,7 @@ class CloudIntakeRunner {
             return $result;
         }
 
-        $actor = $connection->creator;
+        $actor = IntakeActor::resolve((int) $connection->organization_id, $connection->created_by_user_id !== null ? (int) $connection->created_by_user_id : null);
         if (! $actor instanceof User) {
             $connection->recordConnectionFailure('actor_missing');
             $result['status'] = 'no_actor';

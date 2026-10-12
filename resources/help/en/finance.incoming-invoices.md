@@ -1,7 +1,7 @@
 ---
 title: "Incoming invoices"
 topic: finance.incoming-invoices
-version: 2
+version: 3
 keywords:
     - supplier invoice
     - purchase invoice
@@ -22,6 +22,9 @@ keywords:
     - EN 16931
     - handover to Lexware
     - posting category
+    - duplicate receipt
+    - duplicate invoice
+    - invoice folder
 audience: []
 modules:
     - module.vertrieb
@@ -55,6 +58,16 @@ evaluated by invoice, not by attachment:
   yourself.
 - Emails without any invoice attachment (for example only a download link)
   go to the assignment inbox in Administration, marked as invoice mailbox.
+- An email forwarded as an attachment is unpacked; the invoice inside counts
+  like a direct attachment.
+
+**Fetching and existing mails:** Mails are fetched from the day set under
+“Fetch from”, by position — including mails someone has already read. Ideally
+choose a dedicated folder into which a rule sorts the invoices (separate
+subfolders with “/”, for example Inbox/Invoices). “Fetch older mails” in the
+mailbox administration fetches older invoices; the same invoice is not created
+twice. If an invoice email is in another mailbox, “Take over as incoming
+invoice” in the assignment inbox takes over its attachments.
 
 **Recognition:** An e-invoice (XRechnung or ZUGFeRD/Factur-X) provides
 binding values. For PDF and photo, the values are recognised and are a
@@ -112,12 +125,18 @@ confirmation. An invoice never changes master data.
 organisation — across channels as well (an upload after a previous email
 intake remains a duplicate).
 
+**Possible duplicate receipt:** If the same invoice arrives a second time as a
+different file — for example as a PDF by email and as an XRechnung via Peppol
+— incoming invoices recognise this by the invoice number together with the
+issuer’s tax identifier or the assigned party. The later receipt is not handed
+over to accounting until you confirm “Not a duplicate” or reject it. A number
+alone is not enough: “1001” exists at many suppliers.
+
 **Validation and consistency:** Every e-invoice is validated against the XML
 schema and, if set up, against the KoSIT rules (EN 16931); whether the checks
 were available is shown. In addition, the deviation check warns visibly —
-never silently — about an invoice number already recorded for the same
-issuer, inconsistent totals (net + tax ≠ gross) and tax shown without the
-issuer’s tax identifier.
+never silently — about inconsistent totals (net + tax ≠ gross) and tax shown
+without the issuer’s tax identifier.
 
 **Review workflow:** A document is approved, put on query or rejected
 (rejection only with a reason). Payment approval is only possible after
@@ -139,6 +158,12 @@ charge, intra-community cases or third countries.
   tax rates 0, 5, 7, 16 or 19 %. Otherwise the voucher is sent without
   amounts and accounting adds them in Lexware.
 - DATEV Unternehmen online receives the original as a document image.
+- If the invoice number is missing, the handover searches Lexware by contact,
+  voucher date and amount. A match is not linked automatically: you choose
+  “Link with this voucher” or “Different voucher – create new”.
+- DATEV cannot be searched for existing vouchers through the interface.
+  Therefore do not also send the same invoices via the DATEV upload mail;
+  protection against duplicates there rests solely with incoming invoices.
 - A voucher created there can no longer be deleted via the interface.
 - Do not also send the same invoices to Lexware’s voucher email address:
   vouchers recognised there have no number at first and escape the duplicate

@@ -10073,6 +10073,7 @@ CREATE TABLE `email_connections` (
   `organization_id` bigint(20) unsigned NOT NULL,
   `name` varchar(255) NOT NULL,
   `transport` varchar(16) NOT NULL DEFAULT 'imap',
+  `mailbox_address` varchar(190) DEFAULT NULL,
   `host` varchar(255) DEFAULT NULL,
   `port` smallint(5) unsigned NOT NULL DEFAULT 993,
   `encryption` varchar(8) NOT NULL DEFAULT 'ssl',
@@ -10080,6 +10081,8 @@ CREATE TABLE `email_connections` (
   `password` text DEFAULT NULL,
   `folder` varchar(255) NOT NULL DEFAULT 'INBOX',
   `processed_folder` varchar(255) DEFAULT NULL,
+  `fetch_since` date DEFAULT NULL,
+  `sync_cursor` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`sync_cursor`)),
   `active` tinyint(1) NOT NULL DEFAULT 1,
   `last_polled_at` timestamp NULL DEFAULT NULL,
   `created_by` bigint(20) unsigned DEFAULT NULL,
@@ -10092,6 +10095,7 @@ CREATE TABLE `email_connections` (
   `einvoice_intake` tinyint(1) NOT NULL DEFAULT 0,
   `callreport_intake` tinyint(1) NOT NULL DEFAULT 0,
   `subscription_id` varchar(190) DEFAULT NULL,
+  `subscription_resource` varchar(255) DEFAULT NULL,
   `subscription_expires_at` timestamp NULL DEFAULT NULL,
   `webhook_secret` text DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -11656,6 +11660,10 @@ CREATE TABLE `incoming_einvoice_transfers` (
   `status` varchar(16) NOT NULL DEFAULT 'pending',
   `external_id` varchar(100) DEFAULT NULL,
   `external_number` varchar(100) DEFAULT NULL,
+  `candidate_external_id` varchar(100) DEFAULT NULL,
+  `candidate_label` varchar(255) DEFAULT NULL,
+  `candidate_dismissed_user_id` bigint(20) unsigned DEFAULT NULL,
+  `candidate_dismissed_at` timestamp NULL DEFAULT NULL,
   `attempts` int(10) unsigned NOT NULL DEFAULT 0,
   `error` varchar(500) DEFAULT NULL,
   `transferred_at` timestamp NULL DEFAULT NULL,
@@ -11664,8 +11672,10 @@ CREATE TABLE `incoming_einvoice_transfers` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `incoming_einv_transfer_target_unique` (`incoming_einvoice_id`,`target`),
   KEY `incoming_einv_transfer_org_status_idx` (`organization_id`,`status`),
+  KEY `ine_transfer_candidate_user_fk` (`candidate_dismissed_user_id`),
   CONSTRAINT `incoming_einvoice_transfers_incoming_einvoice_id_foreign` FOREIGN KEY (`incoming_einvoice_id`) REFERENCES `incoming_einvoices` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `incoming_einvoice_transfers_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+  CONSTRAINT `incoming_einvoice_transfers_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `ine_transfer_candidate_user_fk` FOREIGN KEY (`candidate_dismissed_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `incoming_einvoices`;
@@ -11680,6 +11690,10 @@ CREATE TABLE `incoming_einvoices` (
   `sender_email` varchar(191) DEFAULT NULL,
   `source_reference` varchar(191) DEFAULT NULL,
   `invoice_number` varchar(64) DEFAULT NULL,
+  `invoice_number_key` varchar(64) DEFAULT NULL,
+  `duplicate_of_id` bigint(20) unsigned DEFAULT NULL,
+  `duplicate_cleared_user_id` bigint(20) unsigned DEFAULT NULL,
+  `duplicate_cleared_at` timestamp NULL DEFAULT NULL,
   `seller_name` varchar(191) DEFAULT NULL,
   `seller_vat_id` varchar(32) DEFAULT NULL,
   `buyer_name` varchar(191) DEFAULT NULL,
@@ -11731,6 +11745,9 @@ CREATE TABLE `incoming_einvoices` (
   KEY `incoming_einvoices_matched_user_id_foreign` (`matched_user_id`),
   KEY `incoming_einv_org_supplier_idx` (`organization_id`,`supplier_id`),
   KEY `incoming_einv_org_customer_idx` (`organization_id`,`customer_id`),
+  KEY `ine_duplicate_of_fk` (`duplicate_of_id`),
+  KEY `ine_duplicate_cleared_user_fk` (`duplicate_cleared_user_id`),
+  KEY `ine_org_number_key_idx` (`organization_id`,`invoice_number_key`),
   CONSTRAINT `fk_inc_einv_iban_confirmed_by` FOREIGN KEY (`creditor_iban_confirmed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `incoming_einvoices_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
   CONSTRAINT `incoming_einvoices_matched_user_id_foreign` FOREIGN KEY (`matched_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
@@ -11738,6 +11755,8 @@ CREATE TABLE `incoming_einvoices` (
   CONSTRAINT `incoming_einvoices_supplier_id_foreign` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE SET NULL,
   CONSTRAINT `ine_decided_by_fk` FOREIGN KEY (`decided_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `ine_document_fk` FOREIGN KEY (`document_id`) REFERENCES `documents` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `ine_duplicate_cleared_user_fk` FOREIGN KEY (`duplicate_cleared_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `ine_duplicate_of_fk` FOREIGN KEY (`duplicate_of_id`) REFERENCES `incoming_einvoices` (`id`) ON DELETE SET NULL,
   CONSTRAINT `ine_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `ine_transferred_by_fk` FOREIGN KEY (`transferred_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -26610,3 +26629,5 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (976,'2027_03_16_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (977,'2027_03_17_100000_add_exclude_from_reports_to_suppliers',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (978,'2027_03_18_100000_number_formats_source_plugin_id',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (979,'2027_03_18_100100_add_contact_name_parts',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (980,'2027_03_19_100000_add_mailbox_sync_to_email_connections',2);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (981,'2027_03_19_100100_add_duplicate_review_to_incoming_einvoices',2);

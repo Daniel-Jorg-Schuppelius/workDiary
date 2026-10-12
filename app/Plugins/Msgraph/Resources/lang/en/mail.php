@@ -12,6 +12,9 @@ return [
     'flash' => [
         'msgraph_connection_required' => 'A Microsoft 365 mailbox requires the mail sending connection in the Microsoft 365 plugin first (scope Mail.ReadWrite).',
     ],
+    'error' => [
+        'scope_missing' => 'The Microsoft 365 connection lacks the permission :scope. Please reconnect mail sending in the Microsoft 365 plugin.',
+    ],
     'transport' => [
         'msgraph' => 'Microsoft 365 (Graph)',
         'msgraph_hint' => 'Microsoft 365: uses the organization’s Graph mail connection — no IMAP credentials needed.',

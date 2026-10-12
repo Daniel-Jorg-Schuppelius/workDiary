@@ -449,6 +449,9 @@ return [
         'started' => 'Import avviato',
     ],
     'incoming_einvoice' => [
+        'duplicate_cleared' => 'Confermato come non doppione',
+        'candidate_linked' => 'Trasmissione collegata a un documento esistente',
+        'candidate_dismissed' => 'Trasmissione creata nonostante una corrispondenza',
         'direction_corrected' => 'Direzione del documento corretta',
         'values_captured' => 'Valori del documento registrati',
         'assigned' => 'Fattura in entrata assegnata',
@@ -614,6 +617,8 @@ return [
         'exceeded' => 'Limite superato',
     ],
     'mail' => [
+        'backfill_started' => 'Recupero e-mail avviato',
+        'connection_activated' => 'Connessione e-mail attivata',
         'connection_saved' => 'Connessione e-mail salvata',
         'disconnected' => 'Connessione e-mail disconnessa',
     ],

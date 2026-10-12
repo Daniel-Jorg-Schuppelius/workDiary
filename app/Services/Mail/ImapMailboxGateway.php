@@ -12,63 +12,186 @@ declare(strict_types=1);
 
 namespace App\Services\Mail;
 
+use App\Exceptions\MailboxFolderMissingException;
 use App\Models\Mail\EmailConnection;
 use CommonToolkit\Helper\Data\EmailHelper;
+use Generator;
 use Illuminate\Support\Carbon;
 use Throwable;
-use Webklex\PHPIMAP\{ClientManager, Message};
+use Webklex\PHPIMAP\{Client, ClientManager, Folder, IMAP, Message};
+use Webklex\PHPIMAP\Exceptions\{MessageHeaderFetchingException, MessageNotFoundException};
 
 /**
  * IMAP-Transport über `webklex/php-imap` (Feature 056, MVP-117) — reine
- * PHP-Implementierung, kein `ext-imap` nötig. Ruft ungelesene Nachrichten ab
- * (ohne sie zu markieren) und kennzeichnet verarbeitete Nachrichten als gelesen
- * bzw. verschiebt sie (nie löschen). Dieser Adapter ist die austauschbare
- * Transportschicht hinter {@see MailboxGateway}; der Intake-Kern hängt nicht an
- * IMAP.
+ * PHP-Implementierung, kein `ext-imap` nötig. Abgerufen wird nach Stand
+ * (MVP-1139): UIDVALIDITY plus höchste verarbeitete UID, im ersten Durchgang
+ * ab `SINCE` des Startpunkts; der Lesestatus spielt keine Rolle. Verarbeitete
+ * Nachrichten werden als gelesen gekennzeichnet bzw. verschoben (nie gelöscht).
  */
 class ImapMailboxGateway implements MailboxGateway {
-    public function fetch(EmailConnection $connection): array {
-        $client = $this->client($connection);
-        $client->connect();
+    /** @var array<int, Client> verbundene Clients je Postfach während eines Abrufs */
+    private array $clients = [];
 
-        $folder = $client->getFolder($connection->folder);
-        if ($folder === null) {
-            return [];
-        }
+    /** @var array<int, list<Folder>> Ordnerliste je Client, einmal je Abruf geladen */
+    private array $folderLists = [];
 
-        $messages = $folder->query()->unseen()->leaveUnread()->limit(100)->get();
+    public function fetch(EmailConnection $connection, MailboxCursor $cursor, int $limit): Generator {
+        $client = $this->connect($connection);
+        $this->clients[(int) $connection->id] = $client;
 
-        $out = [];
-        foreach ($messages as $message) {
-            if ($message instanceof Message) {
-                $out[] = $this->parse($message);
+        try {
+            $folder = $this->resolveFolder($client, (string) $connection->folder)
+                ?? throw new MailboxFolderMissingException((string) $connection->folder);
+
+            $uidValidity = (int) ($folder->examine()['uidvalidity'] ?? 0);
+            if ($cursor->uidValidity !== null && $cursor->uidValidity !== $uidValidity) {
+                $cursor = $cursor->restarted($connection);
             }
-        }
+            $cursor = $cursor->with(['uidValidity' => $uidValidity]);
 
-        return $out;
+            $uids = $this->pendingUids($client, $folder, $cursor, $connection);
+            foreach (array_slice($uids, 0, max(1, $limit)) as $uid) {
+                try {
+                    $message = $folder->query()->leaveUnread()->getMessageByUid($uid);
+                } catch (MessageHeaderFetchingException|MessageNotFoundException) {
+                    $message = null; // zwischen Suche und Abruf gelöscht
+                }
+                $cursor = $cursor->with(['lastUid' => $uid, 'resumeFrom' => null]);
+                if ($message !== null) {
+                    yield $this->parse($message)->withCursorAfter($cursor);
+                }
+            }
+
+            return count($uids) <= $limit ? $cursor->with(['catchingUp' => false]) : $cursor;
+        } finally {
+            unset($this->clients[(int) $connection->id], $this->folderLists[spl_object_id($client)]);
+            $this->disconnect($client);
+        }
     }
 
     public function markProcessed(EmailConnection $connection, ParsedMessage $message): void {
+        $client = $this->clients[(int) $connection->id] ?? null;
+        $own = $client === null;
+
         try {
-            $client = $this->client($connection);
-            $client->connect();
-            $folder = $client->getFolder($connection->folder);
+            $client ??= $this->connect($connection);
+            $folder = $this->resolveFolder($client, (string) $connection->folder);
             if ($folder === null) {
                 return;
             }
-            $live = $folder->query()->getMessageByUid($message->uid);
-            $live->setFlag('Seen');
-            if ($connection->processed_folder !== null && $connection->processed_folder !== '') {
-                $live->move($connection->processed_folder);
+            $target = null;
+            $processedFolder = trim((string) $connection->processed_folder);
+            if ($processedFolder !== '') {
+                $target = $this->resolveFolder($client, $processedFolder)
+                    ?? throw new MailboxFolderMissingException($processedFolder);
             }
+
+            $live = $folder->query()->leaveUnread()->getMessageByUid($message->uid);
+            $live->setFlag('Seen');
+            if ($target !== null) {
+                $live->move($target->path, false, true);
+            }
+        } catch (MailboxFolderMissingException $e) {
+            throw $e;
         } catch (Throwable) {
-            // Best effort: der Dublettenschutz über die Message-ID verhindert
-            // ohnehin ein erneutes Anlegen beim nächsten Abruf.
+            // Best effort: der Stand verhindert ohnehin eine erneute Verarbeitung.
+        } finally {
+            if ($own && $client !== null) {
+                unset($this->folderLists[spl_object_id($client)]);
+                $this->disconnect($client);
+            }
         }
     }
 
-    private function client(EmailConnection $connection): \Webklex\PHPIMAP\Client {
-        return (new ClientManager())->make([
+    public function folders(EmailConnection $connection): array {
+        $client = $this->connect($connection);
+
+        try {
+            $paths = [];
+            foreach ($client->getFolders(false, null, true) as $folder) {
+                if ($folder instanceof Folder && ! $folder->no_select) {
+                    $paths[] = self::displayPath($folder);
+                }
+            }
+            sort($paths, SORT_NATURAL | SORT_FLAG_CASE);
+
+            return array_values(array_unique($paths));
+        } finally {
+            $this->disconnect($client);
+        }
+    }
+
+    /**
+     * UIDs nach dem Stand, aufsteigend. Rohsuche, weil die Bibliothek
+     * Kriterienwerte in Anführungszeichen setzt und ein UID-Bereich so
+     * ungültig wäre; `n:*` liefert laut IMAP immer die letzte Mail mit, auch
+     * wenn ihre UID kleiner als n ist.
+     *
+     * @return list<int>
+     */
+    private function pendingUids(Client $client, Folder $folder, MailboxCursor $cursor, EmailConnection $connection): array {
+        $criteria = [];
+        if ($cursor->lastUid !== null) {
+            $criteria[] = 'UID ' . ($cursor->lastUid + 1) . ':*';
+        }
+        $since = $cursor->since($connection);
+        if ($since !== null) {
+            $criteria[] = 'SINCE ' . $since->format('d-M-Y');
+        }
+
+        $client->openFolder($folder->path);
+        $found = $client->getConnection()->search([$criteria !== [] ? implode(' ', $criteria) : 'ALL'], IMAP::ST_UID)->validatedData();
+
+        $uids = array_values(array_filter(
+            array_map('intval', (array) $found),
+            static fn (int $uid): bool => $uid > 0 && ($cursor->lastUid === null || $uid > $cursor->lastUid),
+        ));
+        sort($uids);
+
+        return $uids;
+    }
+
+    /**
+     * Ordner per Pfad mit `/`, per Serverpfad (z. B. `INBOX.Rechnungen`) oder
+     * per Blattname in beliebiger Tiefe (erster Treffer); `INBOX` ohne
+     * Rücksicht auf die Schreibweise.
+     */
+    private function resolveFolder(Client $client, string $wanted): ?Folder {
+        $wanted = trim($wanted, " /\t");
+        if ($wanted === '') {
+            $wanted = 'INBOX';
+        }
+        $folders = $this->folderLists[spl_object_id($client)] ??= array_values(array_filter(
+            iterator_to_array($client->getFolders(false, null, true)),
+            static fn (mixed $folder): bool => $folder instanceof Folder,
+        ));
+
+        $normalize = static fn (string $path): string => preg_replace('/^inbox(?=\/|$)/i', 'INBOX', $path) ?? $path;
+        $target = $normalize($wanted);
+        foreach ($folders as $folder) {
+            if ($normalize(self::displayPath($folder)) === $target || $normalize($folder->full_name) === $target || $folder->path === $wanted) {
+                return $folder;
+            }
+        }
+        if (! str_contains($wanted, '/')) {
+            foreach ($folders as $folder) {
+                if ($folder->name === $wanted) {
+                    return $folder;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static function displayPath(Folder $folder): string {
+        $delimiter = (string) $folder->delimiter;
+
+        return $delimiter !== '' && $delimiter !== '/' ? str_replace($delimiter, '/', $folder->full_name) : $folder->full_name;
+    }
+
+    private function connect(EmailConnection $connection): Client {
+        $client = (new ClientManager())->make([
             'host' => $connection->host,
             'port' => $connection->port,
             'encryption' => $connection->encryption === 'none' ? false : $connection->encryption,
@@ -77,6 +200,17 @@ class ImapMailboxGateway implements MailboxGateway {
             'password' => $connection->password,
             'protocol' => 'imap',
         ]);
+        $client->connect();
+
+        return $client;
+    }
+
+    private function disconnect(Client $client): void {
+        try {
+            $client->disconnect();
+        } catch (Throwable) {
+            // Verbindung ist ohnehin weg.
+        }
     }
 
     private function parse(Message $message): ParsedMessage {
@@ -115,7 +249,7 @@ class ImapMailboxGateway implements MailboxGateway {
             body: $body,
             receivedAt: $this->parseDate((string) $message->getDate()),
             attachmentCount: $message->getAttachments()->count(),
-            attachments: $this->extractAttachments($message),
+            attachments: $this->extractAttachments($message, true),
             inReplyTo: $inReplyTo !== '' ? $inReplyTo : null,
             references: $references,
             isAutoSubmitted: $autoSubmitted,
@@ -123,17 +257,29 @@ class ImapMailboxGateway implements MailboxGateway {
     }
 
     /**
-     * Extrahiert Anhänge als transport-neutrale {@see MailAttachment} (Rang 7).
-     * Die Whitelist-/Größenprüfung passiert erst im Intake — hier nur einlesen.
+     * Anhänge als transport-neutrale {@see MailAttachment} (Rang 7); die
+     * Whitelist-/Größenprüfung passiert erst im Intake. Eine angehängte Mail
+     * (`message/rfc822`, „Als Anlage weiterleiten“) wird eine Ebene tief
+     * ausgepackt (MVP-1142), sonst ginge die Rechnung darin verloren.
      *
      * @return list<MailAttachment>
      */
-    private function extractAttachments(Message $message): array {
+    private function extractAttachments(Message $message, bool $unpackMessages): array {
         $out = [];
         foreach ($message->getAttachments() as $attachment) {
             $content = (string) $attachment->getContent();
             if ($content === '') {
                 continue;
+            }
+            $isMessage = $attachment->type === 'message' || strtolower((string) $attachment->content_type) === 'message/rfc822';
+            if ($isMessage && $unpackMessages) {
+                try {
+                    array_push($out, ...$this->extractAttachments(Message::fromString($content), false));
+
+                    continue;
+                } catch (Throwable) {
+                    // Nicht lesbar → als Datei behalten.
+                }
             }
             $out[] = new MailAttachment(
                 filename: (string) ($attachment->getName() ?: 'anhang'),

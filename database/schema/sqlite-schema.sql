@@ -13129,6 +13129,10 @@ CREATE TABLE IF NOT EXISTS "email_connections"(
   "subscription_id" varchar,
   "subscription_expires_at" datetime,
   "webhook_secret" text,
+  "fetch_since" date,
+  "sync_cursor" text,
+  "mailbox_address" varchar,
+  "subscription_resource" varchar,
   foreign key("created_by") references users("id") on delete set null on update no action,
   foreign key("organization_id") references organizations("id") on delete cascade on update no action
 );
@@ -23253,89 +23257,6 @@ CREATE INDEX "sick_leaves_user_id_start_date_end_date_index" on "sick_leaves"(
   "start_date",
   "end_date"
 );
-CREATE TABLE IF NOT EXISTS "incoming_einvoices"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "document_id" integer not null,
-  "sha256" varchar not null,
-  "source" varchar not null default('upload'),
-  "received_at" datetime not null,
-  "status" varchar not null default('received'),
-  "decided_by" integer,
-  "decided_at" datetime,
-  "decision_note" varchar,
-  "summary" text,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "transferred_at" datetime,
-  "transferred_by" integer,
-  "invoice_number" varchar,
-  "seller_name" varchar,
-  "issue_date" date,
-  "due_date" date,
-  "currency" varchar,
-  "amount_net" numeric,
-  "amount_tax" numeric,
-  "amount_gross" numeric,
-  "creditor_iban" text,
-  "creditor_bic" text,
-  "discount_percent" numeric,
-  "discount_days" integer,
-  "paid_in_run_id" integer,
-  "seller_vat_id" varchar,
-  "creditor_iban_confirmed_at" datetime,
-  "creditor_iban_confirmed_by" integer,
-  "direction" varchar not null default('incoming'),
-  "kind" varchar not null default('invoice'),
-  "recognition" varchar not null default('structured'),
-  "buyer_name" varchar,
-  "buyer_vat_id" varchar,
-  "sender_email" varchar,
-  "source_reference" varchar,
-  "supplier_id" integer,
-  "customer_id" integer,
-  "match_kind" varchar,
-  "matched_user_id" integer,
-  "matched_at" datetime,
-  foreign key("creditor_iban_confirmed_by") references users("id") on delete set null on update no action,
-  foreign key("paid_in_run_id") references payment_runs("id") on delete set null on update no action,
-  foreign key("decided_by") references users("id") on delete set null on update no action,
-  foreign key("document_id") references documents("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("transferred_by") references users("id") on delete set null on update no action,
-  foreign key("supplier_id") references "suppliers"("id") on delete set null,
-  foreign key("customer_id") references "customers"("id") on delete set null,
-  foreign key("matched_user_id") references "users"("id") on delete set null
-);
-CREATE INDEX "inc_einv_org_due_idx" on "incoming_einvoices"(
-  "organization_id",
-  "due_date"
-);
-CREATE INDEX "inc_einv_org_issue_idx" on "incoming_einvoices"(
-  "organization_id",
-  "issue_date"
-);
-CREATE INDEX "incoming_einv_org_dir_status_idx" on "incoming_einvoices"(
-  "organization_id",
-  "direction",
-  "status"
-);
-CREATE INDEX "incoming_einv_org_source_ref_idx" on "incoming_einvoices"(
-  "organization_id",
-  "source_reference"
-);
-CREATE UNIQUE INDEX "ine_org_hash_unique" on "incoming_einvoices"(
-  "organization_id",
-  "sha256"
-);
-CREATE INDEX "incoming_einv_org_supplier_idx" on "incoming_einvoices"(
-  "organization_id",
-  "supplier_id"
-);
-CREATE INDEX "incoming_einv_org_customer_idx" on "incoming_einvoices"(
-  "organization_id",
-  "customer_id"
-);
 CREATE INDEX "contact_bank_acc_org_iban_hash_idx" on "contact_bank_accounts"(
   "organization_id",
   "iban_hash"
@@ -23359,30 +23280,6 @@ CREATE UNIQUE INDEX "invoice_sender_rule_org_email_dir_unique" on "invoice_sende
   "organization_id",
   "email",
   "direction"
-);
-CREATE TABLE IF NOT EXISTS "incoming_einvoice_transfers"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "incoming_einvoice_id" integer not null,
-  "target" varchar not null,
-  "status" varchar not null default 'pending',
-  "external_id" varchar,
-  "external_number" varchar,
-  "attempts" integer not null default '0',
-  "error" varchar,
-  "transferred_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("incoming_einvoice_id") references "incoming_einvoices"("id") on delete cascade
-);
-CREATE UNIQUE INDEX "incoming_einv_transfer_target_unique" on "incoming_einvoice_transfers"(
-  "incoming_einvoice_id",
-  "target"
-);
-CREATE INDEX "incoming_einv_transfer_org_status_idx" on "incoming_einvoice_transfers"(
-  "organization_id",
-  "status"
 );
 CREATE TABLE IF NOT EXISTS "invoice_commissions"(
   "id" integer primary key autoincrement not null,
@@ -23553,6 +23450,128 @@ CREATE UNIQUE INDEX "acc_voucher_org_plugin_ext_unique" on "accounting_vouchers"
 CREATE INDEX "acc_voucher_org_supplier_idx" on "accounting_vouchers"(
   "organization_id",
   "supplier_id"
+);
+CREATE TABLE IF NOT EXISTS "incoming_einvoices"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "document_id" integer not null,
+  "sha256" varchar not null,
+  "source" varchar not null default('upload'),
+  "received_at" datetime not null,
+  "status" varchar not null default('received'),
+  "decided_by" integer,
+  "decided_at" datetime,
+  "decision_note" varchar,
+  "summary" text,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "transferred_at" datetime,
+  "transferred_by" integer,
+  "invoice_number" varchar,
+  "seller_name" varchar,
+  "issue_date" date,
+  "due_date" date,
+  "currency" varchar,
+  "amount_net" numeric,
+  "amount_tax" numeric,
+  "amount_gross" numeric,
+  "creditor_iban" text,
+  "creditor_bic" text,
+  "discount_percent" numeric,
+  "discount_days" integer,
+  "paid_in_run_id" integer,
+  "seller_vat_id" varchar,
+  "creditor_iban_confirmed_at" datetime,
+  "creditor_iban_confirmed_by" integer,
+  "direction" varchar not null default('incoming'),
+  "kind" varchar not null default('invoice'),
+  "recognition" varchar not null default('structured'),
+  "buyer_name" varchar,
+  "buyer_vat_id" varchar,
+  "sender_email" varchar,
+  "source_reference" varchar,
+  "supplier_id" integer,
+  "customer_id" integer,
+  "match_kind" varchar,
+  "matched_user_id" integer,
+  "matched_at" datetime,
+  "invoice_number_key" varchar,
+  "duplicate_of_id" integer,
+  "duplicate_cleared_user_id" integer,
+  "duplicate_cleared_at" datetime,
+  foreign key("matched_user_id") references users("id") on delete set null on update no action,
+  foreign key("customer_id") references customers("id") on delete set null on update no action,
+  foreign key("supplier_id") references suppliers("id") on delete set null on update no action,
+  foreign key("transferred_by") references users("id") on delete set null on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("document_id") references documents("id") on delete cascade on update no action,
+  foreign key("decided_by") references users("id") on delete set null on update no action,
+  foreign key("paid_in_run_id") references payment_runs("id") on delete set null on update no action,
+  foreign key("creditor_iban_confirmed_by") references users("id") on delete set null on update no action,
+  foreign key("duplicate_of_id") references "incoming_einvoices"("id") on delete set null,
+  foreign key("duplicate_cleared_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "inc_einv_org_due_idx" on "incoming_einvoices"(
+  "organization_id",
+  "due_date"
+);
+CREATE INDEX "inc_einv_org_issue_idx" on "incoming_einvoices"(
+  "organization_id",
+  "issue_date"
+);
+CREATE INDEX "incoming_einv_org_customer_idx" on "incoming_einvoices"(
+  "organization_id",
+  "customer_id"
+);
+CREATE INDEX "incoming_einv_org_dir_status_idx" on "incoming_einvoices"(
+  "organization_id",
+  "direction",
+  "status"
+);
+CREATE INDEX "incoming_einv_org_source_ref_idx" on "incoming_einvoices"(
+  "organization_id",
+  "source_reference"
+);
+CREATE INDEX "incoming_einv_org_supplier_idx" on "incoming_einvoices"(
+  "organization_id",
+  "supplier_id"
+);
+CREATE UNIQUE INDEX "ine_org_hash_unique" on "incoming_einvoices"(
+  "organization_id",
+  "sha256"
+);
+CREATE INDEX "ine_org_number_key_idx" on "incoming_einvoices"(
+  "organization_id",
+  "invoice_number_key"
+);
+CREATE TABLE IF NOT EXISTS "incoming_einvoice_transfers"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "incoming_einvoice_id" integer not null,
+  "target" varchar not null,
+  "status" varchar not null default('pending'),
+  "external_id" varchar,
+  "external_number" varchar,
+  "attempts" integer not null default('0'),
+  "error" varchar,
+  "transferred_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "candidate_external_id" varchar,
+  "candidate_label" varchar,
+  "candidate_dismissed_user_id" integer,
+  "candidate_dismissed_at" datetime,
+  foreign key("incoming_einvoice_id") references incoming_einvoices("id") on delete cascade on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("candidate_dismissed_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "incoming_einv_transfer_org_status_idx" on "incoming_einvoice_transfers"(
+  "organization_id",
+  "status"
+);
+CREATE UNIQUE INDEX "incoming_einv_transfer_target_unique" on "incoming_einvoice_transfers"(
+  "incoming_einvoice_id",
+  "target"
 );
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
@@ -24534,3 +24553,5 @@ INSERT INTO migrations VALUES(976,'2027_03_16_100600_add_sales_assignment_to_acc
 INSERT INTO migrations VALUES(977,'2027_03_17_100000_add_exclude_from_reports_to_suppliers',1);
 INSERT INTO migrations VALUES(978,'2027_03_18_100000_number_formats_source_plugin_id',1);
 INSERT INTO migrations VALUES(979,'2027_03_18_100100_add_contact_name_parts',1);
+INSERT INTO migrations VALUES(980,'2027_03_19_100000_add_mailbox_sync_to_email_connections',2);
+INSERT INTO migrations VALUES(981,'2027_03_19_100100_add_duplicate_review_to_incoming_einvoices',2);

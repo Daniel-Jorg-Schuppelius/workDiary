@@ -12,6 +12,9 @@ return [
     'flash' => [
         'msgraph_connection_required' => 'Una casella Microsoft 365 richiede prima la connessione di invio e-mail nel plugin Microsoft 365 (scope Mail.ReadWrite).',
     ],
+    'error' => [
+        'scope_missing' => 'Alla connessione Microsoft 365 manca l’autorizzazione :scope. Ricolleghi l’invio e-mail nel plugin Microsoft 365.',
+    ],
     'transport' => [
         'msgraph' => 'Microsoft 365 (Graph)',
         'msgraph_hint' => 'Microsoft 365: usa la connessione mail Graph dell’organizzazione — nessuna credenziale IMAP necessaria.',

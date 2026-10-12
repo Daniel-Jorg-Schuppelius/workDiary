@@ -83,6 +83,7 @@ return [
         'documents' => [
             'heading' => 'Immagini dei giustificativi',
             'hint' => 'Le fatture emesse vanno a DATEV Unternehmen online come «Rechnungsausgang», quelle ricevute come «Rechnungseingang» non appena sono assegnate nelle fatture ricevute, ciascuna una volta e a partire dalla data scelta.',
+            'no_duplicate_check' => 'Tramite l’interfaccia non è possibile cercare i giustificativi esistenti in DATEV. Non invii quindi le stesse fatture anche tramite l’e-mail di caricamento DATEV o il trasferimento giustificativi, altrimenti saranno presenti due volte in DATEV.',
             'enabled' => 'Trasferire ogni notte le immagini dei giustificativi',
             'since' => 'Dalla data del giustificativo',
             'save' => 'Salva',

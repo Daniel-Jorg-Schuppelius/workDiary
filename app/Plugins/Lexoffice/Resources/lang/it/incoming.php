@@ -13,6 +13,7 @@
 return [
     'label' => 'Lexware Office',
     'amount_differs' => 'In Lexware esiste già il giustificativo :number con un altro importo. Lo verifichi lì e poi avvii di nuovo la consegna.',
+    'candidate' => 'Probabilmente Lexware contiene già lo stesso giustificativo (:voucher), ma senza numero di fattura non è certo. Lo colleghi oppure faccia creare un nuovo giustificativo.',
     'remark' => 'Dalle fatture ricevute di WorkDiary (:sender).',
     'no_party' => 'Il documento non è ancora assegnato a nessuna parte.',
     'contact_missing' => 'Il contatto :party non è stato né trovato né creato in Lexware.',

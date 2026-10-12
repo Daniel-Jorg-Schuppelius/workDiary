@@ -128,6 +128,43 @@ class IncomingInvoiceTransferService {
         return $counts;
     }
 
+    /**
+     * Treffer ohne Rechnungsnummer (MVP-1146) als denselben Beleg übernehmen:
+     * die Übergabe gilt als verknüpft, im Ziel wird nichts angelegt.
+     */
+    public function linkCandidate(IncomingEInvoiceTransfer $journal, User $actor): void {
+        $incoming = $journal->incoming()->withoutGlobalScopes()->firstOrFail();
+        if ($journal->status->isFinal() || $journal->candidate_external_id === null) {
+            return;
+        }
+        $journal->forceFill([
+            'status' => IncomingInvoiceTransferStatus::Linked,
+            'external_id' => $journal->candidate_external_id,
+            'error' => null,
+            'transferred_at' => now(),
+        ])->save();
+        if ($incoming->transferred_at === null) {
+            $incoming->forceFill(['transferred_at' => now(), 'transferred_by' => $actor->id])->save();
+        }
+        $incoming->audit('incoming_einvoice.candidate_linked', ['target' => $journal->target, 'external_id' => $journal->external_id]);
+    }
+
+    /** Anderer Beleg: Das Ziel sucht nicht mehr unscharf und legt beim nächsten Lauf an. */
+    public function dismissCandidate(IncomingEInvoiceTransfer $journal, User $actor): void {
+        $incoming = $journal->incoming()->withoutGlobalScopes()->firstOrFail();
+        if ($journal->status->isFinal() || $journal->candidate_external_id === null) {
+            return;
+        }
+        $journal->forceFill([
+            'candidate_dismissed_user_id' => $actor->id,
+            'candidate_dismissed_at' => now(),
+            'candidate_external_id' => null,
+            'candidate_label' => null,
+        ])->save();
+        $incoming->audit('incoming_einvoice.candidate_dismissed', ['target' => $journal->target]);
+        $this->transfer($incoming, $actor, $journal->target);
+    }
+
     /** @param  list<string>  $blockers */
     private function transferTo(IncomingEInvoice $incoming, IncomingInvoiceTransferTarget $target, array $blockers, ?User $actor): IncomingEInvoiceTransfer {
         $journal = IncomingEInvoiceTransfer::query()->withoutGlobalScopes()->firstOrCreate(
@@ -153,6 +190,8 @@ class IncomingInvoiceTransferService {
                 'status' => $result->status,
                 'external_id' => $result->externalId ?? $journal->external_id,
                 'external_number' => $result->externalNumber ?? $journal->external_number,
+                'candidate_external_id' => $result->candidateId,
+                'candidate_label' => $result->candidateLabel !== null ? mb_substr($result->candidateLabel, 0, 255) : null,
                 'error' => $result->note !== null ? self::clip($result->note) : null,
                 'transferred_at' => $result->status->isFinal() ? now() : null,
             ])->save();

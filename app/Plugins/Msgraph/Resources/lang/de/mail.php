@@ -12,6 +12,9 @@ return [
     'flash' => [
         'msgraph_connection_required' => 'Für ein Microsoft-365-Postfach muss zuerst der Mail-Versand im Microsoft-365-Plugin verbunden werden (Scope Mail.ReadWrite).',
     ],
+    'error' => [
+        'scope_missing' => 'Der Microsoft-365-Verbindung fehlt das Recht :scope. Bitte verbinden Sie den Mail-Versand im Microsoft-365-Plugin neu.',
+    ],
     'transport' => [
         'msgraph' => 'Microsoft 365 (Graph)',
         'msgraph_hint' => 'Microsoft 365: nutzt die Graph-Mail-Verbindung der Organisation — IMAP-Zugangsdaten entfallen.',

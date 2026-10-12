@@ -244,6 +244,36 @@
         </x-card>
     @endif
 
+    {{-- Möglicher Doppel-Eingang (MVP-1145): sperrt die Übergabe bis zur Bestätigung. --}}
+    @if ($incoming !== null && $incoming->duplicate_of_id !== null && $incoming->duplicateOf !== null)
+        @php($earlier = $incoming->duplicateOf)
+        <x-card :title="__('Möglicher Doppel-Eingang')">
+            @if ($incoming->isPossibleDuplicate())
+                <div role="alert" class="alert alert-warning text-sm">
+                    <x-icon name="content_copy" />
+                    <span>
+                        {{ __('Die Rechnung :number desselben Ausstellers liegt schon im Rechnungseingang (empfangen am :date). Bis zur Klärung wird nicht an die Buchhaltung übergeben.', ['number' => $earlier->invoice_number ?? '—', 'date' => $earlier->received_at->orgTz()->isoFormat('L')]) }}
+                        @if ($earlier->document !== null)
+                            <a class="link" href="{{ route('finance.incoming-invoices.show', $earlier->document) }}">{{ __('Früheren Eingang öffnen') }}</a>
+                        @endif
+                    </span>
+                </div>
+                <div class="mt-2 flex flex-wrap items-center gap-2">
+                    <x-action-form :action="route('finance.incoming-invoices.duplicate.clear', $incoming)"
+                                   :confirm="__('Bestätigen, dass dies kein Doppel-Eingang ist? Danach wird der Eingang wie jeder andere übergeben.')"
+                                   confirm-icon="check" confirm-tone="primary" :confirm-label="__('Kein Doppel')">
+                        <x-icon-btn icon="check" tone="primary" size="sm" type="submit" show-label>{{ __('Kein Doppel') }}</x-icon-btn>
+                    </x-action-form>
+                    <span class="text-xs text-muted">{{ __('Ist es ein Doppel, lehnen Sie den Eingang unten ab.') }}</span>
+                </div>
+            @elseif ($incoming->duplicate_cleared_at !== null)
+                <p class="text-sm text-muted">{{ __('Als kein Doppel bestätigt am :date.', ['date' => $incoming->duplicate_cleared_at->orgTz()->isoFormat('L LT')]) }}</p>
+            @else
+                <p class="text-sm text-muted">{{ __('Der frühere Eingang mit derselben Nummer ist abgelehnt.') }}</p>
+            @endif
+        </x-card>
+    @endif
+
     {{-- Prüfbereich (MVP-165/167): Hash-Nachweis + Freigabe-Workflow. --}}
     @if ($incoming !== null)
         <x-card :title="__('Prüfung und Freigabe')">

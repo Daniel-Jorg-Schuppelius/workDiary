@@ -83,6 +83,7 @@ return [
         'documents' => [
             'heading' => 'Images de pièces',
             'hint' => 'Les factures émises partent vers DATEV Unternehmen online comme « Rechnungsausgang », les factures reçues comme « Rechnungseingang » dès qu’elles sont attribuées dans les factures reçues — chacune une fois, à partir de la date choisie.',
+            'no_duplicate_check' => 'L’interface ne permet pas de rechercher les justificatifs existants dans DATEV. N’envoyez donc pas les mêmes factures en plus par l’e-mail de téléversement DATEV ou le transfert de justificatifs, sinon elles figureront deux fois dans DATEV.',
             'enabled' => 'Transférer les images de pièces chaque nuit',
             'since' => 'À partir de la date de pièce',
             'save' => 'Enregistrer',

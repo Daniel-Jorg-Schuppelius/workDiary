@@ -12,6 +12,9 @@ return [
     'flash' => [
         'msgraph_connection_required' => 'Une boîte Microsoft 365 nécessite d’abord la connexion d’envoi de mails dans le plugin Microsoft 365 (scope Mail.ReadWrite).',
     ],
+    'error' => [
+        'scope_missing' => 'Il manque l’autorisation :scope à la connexion Microsoft 365. Veuillez reconnecter l’envoi de mails dans le plugin Microsoft 365.',
+    ],
     'transport' => [
         'msgraph' => 'Microsoft 365 (Graph)',
         'msgraph_hint' => 'Microsoft 365 : utilise la connexion mail Graph de l’organisation — pas d’identifiants IMAP nécessaires.',

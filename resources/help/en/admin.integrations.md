@@ -1,7 +1,7 @@
 ---
 title: "Managing integrations"
 topic: admin.integrations
-version: 3
+version: 4
 keywords:
     - interfaces
     - connectors
@@ -15,6 +15,10 @@ keywords:
     - SSO
     - Nextcloud
     - Stripe
+    - email mailbox
+    - invoice folder
+    - fetch older mails
+    - shared mailbox
 audience:
     - admin
     - buchhaltung
@@ -78,6 +82,35 @@ clarification. Nothing gets lost and nothing is written twice.
 **Recommendation:** After setting up a new connector, check its
 health status, watch the inbox for unexpected conflicts for a few
 days, and only then build automated workflows on top of it.
+
+## Email mailboxes
+
+Under Administration → Email intake you connect IMAP mailboxes and Microsoft
+365 mailboxes.
+
+- **Fetching by position:** Mails are fetched from the day set under “Fetch
+  from”, including mails someone has already read. Each mail is processed once
+  and then flagged as read or moved to the processed folder, never deleted.
+- **Folders:** Separate subfolders with “/”, for example Inbox/Invoices. After
+  the first save, the dialog suggests the mailbox folders. If a folder is
+  missing, the message appears at the mailbox.
+- **One mailbox, several folders:** The same mailbox may be entered several
+  times, each entry with its own folder and purpose – for example info@ once
+  for the inbox and once for the invoice folder. The same folder is allowed
+  only once per mailbox.
+- **Fetch older mails:** moves the start date back; the next polls process the
+  mails in batches, only in the folder of this entry. Mails and files already
+  taken over are not created twice.
+- **Microsoft 365:** Without a mailbox address, the mailbox of the connected
+  account applies. For a shared mailbox enter its address; the connected
+  account needs full access to it. The sign-in in the Microsoft 365 plugin
+  requests the required permissions – if one is missing, reconnect mail
+  sending there. Shared mailboxes arrive through the regular polling, without
+  instant notification.
+- **Invoices:** With the “Invoice mailbox” switch, every PDF, XML or image
+  file of a mail becomes a receipt in incoming invoices. “Take over as
+  incoming invoice” in the assignment inbox takes over invoices from other
+  mailboxes.
 
 ## Which integrations exist
 

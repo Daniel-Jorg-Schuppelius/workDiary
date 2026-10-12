@@ -14,6 +14,9 @@ use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
 use App\Plugins\Msgraph\Models\MsgraphMailConnection;
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginHttpFactory};
+use App\Services\CloudIntake\StaleCheckpointException;
+use DateTimeInterface;
+use Illuminate\Support\Carbon;
 use RuntimeException;
 use Throwable;
 
@@ -169,91 +172,231 @@ class MsgraphMailClient implements GraphSubscriptionClient {
         }
     }
 
-    // ── Mail-EINGANG (Feature 102, MS365-Plan B — braucht Mail.ReadWrite) ──
+    // ── Mail-EINGANG (Feature 102; Abruf nach Stand MVP-1139, Ordner MVP-1140,
+    //    freigegebene Postfächer MVP-1141 — braucht Mail.ReadWrite bzw. .Shared) ──
+
+    /** Feste Graph-Ordnernamen, die als erstes Pfadsegment direkt als ID gelten. */
+    private const WELL_KNOWN_FOLDERS = ['inbox', 'archive', 'deleteditems', 'drafts', 'junkemail', 'sentitems', 'msgfolderroot'];
+
+    private const MESSAGE_FIELDS = 'id,internetMessageId,subject,from,receivedDateTime,body,hasAttachments,internetMessageHeaders';
 
     /**
-     * Ungelesene Nachrichten eines Ordners (Default: Inbox), älteste zuerst.
+     * Eine Seite der Delta-Abfrage eines Ordners (nur neu hinzugekommene
+     * Nachrichten). Ohne Link beginnt ein Durchgang, gefiltert ab `$since`;
+     * `@removed`-Einträge (weggeschoben, gelöscht) fallen heraus.
      *
-     * @return list<array<string, mixed>>
+     * @return array{ids: list<string>, next: ?string, delta: ?string}
+     *
+     * @throws StaleCheckpointException wenn Graph einen Neuabgleich verlangt
      */
-    public function listUnreadMessages(string $folder = 'inbox', int $limit = 100): array {
-        $response = $this->api->getResponse(
-            $this->base . '/me/mailFolders/' . rawurlencode($folder !== '' ? $folder : 'inbox') . '/messages',
-            [
-                '$filter' => 'isRead eq false',
-                '$orderby' => 'receivedDateTime asc',
-                '$top' => (string) max(1, min(100, $limit)),
-                '$select' => 'id,internetMessageId,subject,from,receivedDateTime,body,hasAttachments,internetMessageHeaders',
-            ],
-        );
-        if (! $response->successful()) {
-            throw new RuntimeException('Graph messages-Abruf fehlgeschlagen (HTTP ' . $response->status() . ').');
+    public function messagesDelta(?string $mailbox, string $folderId, ?string $link, ?DateTimeInterface $since, int $pageSize): array {
+        $options = ['headers' => ['Prefer' => 'odata.maxpagesize=' . max(1, $pageSize)]];
+        if ($link !== null && $link !== '') {
+            $response = $this->api->getFollowUp($link, $options);
+        } else {
+            $query = ['changeType' => 'created', '$select' => 'id,receivedDateTime'];
+            if ($since !== null) {
+                $query['$filter'] = 'receivedDateTime ge ' . Carbon::instance($since)->utc()->format('Y-m-d\TH:i:s\Z');
+            }
+            $response = $this->api->getResponse($this->mailboxBase($mailbox) . '/mailFolders/' . rawurlencode($folderId) . '/messages/delta', $query, $options);
         }
 
-        /** @var array{value?: list<array<string, mixed>>} $data */
-        $data = (array) $response->json();
+        $code = mb_strtolower((string) $response->json('error.code', ''));
+        if ($response->status() === 410 || ($response->clientError() && (str_contains($code, 'syncstate') || str_contains($code, 'resync')))) {
+            throw new StaleCheckpointException('Graph-Mail-Delta abgelaufen (HTTP ' . $response->status() . ').');
+        }
+        if (! $response->successful()) {
+            throw new RuntimeException('Graph messages/delta fehlgeschlagen (HTTP ' . $response->status() . ').');
+        }
 
-        return $data['value'] ?? [];
+        /** @var array{value?: list<array<string, mixed>>, '@odata.nextLink'?: string, '@odata.deltaLink'?: string} $data */
+        $data = (array) $response->json();
+        $ids = [];
+        foreach ((array) ($data['value'] ?? []) as $entry) {
+            if (! isset($entry['@removed']) && is_string($entry['id'] ?? null) && $entry['id'] !== '') {
+                $ids[] = $entry['id'];
+            }
+        }
+
+        return [
+            'ids' => $ids,
+            'next' => isset($data['@odata.nextLink']) ? (string) $data['@odata.nextLink'] : null,
+            'delta' => isset($data['@odata.deltaLink']) ? (string) $data['@odata.deltaLink'] : null,
+        ];
     }
 
     /**
-     * Datei-Anhänge einer Nachricht (fileAttachment, base64 → roh).
+     * Eine Nachricht mit Kopfzeilen (Threading, Loop-Schutz); null, wenn sie
+     * zwischen Delta und Abruf verschwunden ist.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function message(?string $mailbox, string $messageId): ?array {
+        $response = $this->api->getResponse($this->mailboxBase($mailbox) . '/messages/' . rawurlencode($messageId), ['$select' => self::MESSAGE_FIELDS]);
+        if ($response->status() === 404) {
+            return null;
+        }
+        if (! $response->successful()) {
+            throw new RuntimeException('Graph message-Abruf fehlgeschlagen (HTTP ' . $response->status() . ').');
+        }
+
+        return (array) $response->json();
+    }
+
+    /**
+     * Datei-Anhänge einer Nachricht (base64). Eine angehängte Mail
+     * (`itemAttachment`, „Als Anlage weiterleiten“) liefert ihre Dateianhänge
+     * mit, eine Ebene tief (MVP-1142); Verweise auf Cloud-Dateien bleiben
+     * außen vor. Fehlt `contentBytes`, wird der Rohinhalt nachgeladen.
      *
      * @return list<array{name: string, contentType: string, contentBytes: string, isInline: bool}>
      */
-    public function messageAttachments(string $messageId): array {
-        $response = $this->api->getResponse($this->base . '/me/messages/' . rawurlencode($messageId) . '/attachments');
+    public function messageAttachments(?string $mailbox, string $messageId): array {
+        $base = $this->mailboxBase($mailbox) . '/messages/' . rawurlencode($messageId) . '/attachments';
+        $response = $this->api->getResponse($base);
         if (! $response->successful()) {
             return [];
         }
 
         $out = [];
-        /** @var array{value?: list<array{'@odata.type'?: string, name?: string, contentType?: string, contentBytes?: string, isInline?: bool}>} $data */
-        $data = (array) $response->json();
-        foreach ((array) ($data['value'] ?? []) as $attachment) {
-            if (($attachment['@odata.type'] ?? '') !== '#microsoft.graph.fileAttachment') {
-                continue; // item-/reference-Attachments bewusst außen vor
+        foreach ((array) $response->json('value', []) as $attachment) {
+            if (! is_array($attachment)) {
+                continue;
             }
-            $out[] = [
-                'name' => (string) ($attachment['name'] ?? 'anhang'),
-                'contentType' => (string) ($attachment['contentType'] ?? 'application/octet-stream'),
-                'contentBytes' => (string) ($attachment['contentBytes'] ?? ''),
-                'isInline' => (bool) ($attachment['isInline'] ?? false),
-            ];
+            $type = (string) ($attachment['@odata.type'] ?? '');
+            $id = (string) ($attachment['id'] ?? '');
+            if ($type === '#microsoft.graph.fileAttachment') {
+                if ((string) ($attachment['contentBytes'] ?? '') === '' && $id !== '') {
+                    $raw = $this->api->getResponse($base . '/' . rawurlencode($id) . '/$value');
+                    $attachment['contentBytes'] = $raw->successful() ? base64_encode($raw->body()) : '';
+                }
+                $out[] = self::fileAttachment($attachment);
+            } elseif ($type === '#microsoft.graph.itemAttachment' && $id !== '') {
+                $item = $this->api->getResponse($base . '/' . rawurlencode($id), ['$expand' => 'microsoft.graph.itemattachment/item']);
+                foreach ($item->successful() ? (array) $item->json('item.attachments', []) : [] as $nested) {
+                    if (is_array($nested) && ($nested['@odata.type'] ?? '') === '#microsoft.graph.fileAttachment') {
+                        $out[] = self::fileAttachment($nested);
+                    }
+                }
+            }
         }
 
         return $out;
     }
 
     /** Nachricht als gelesen markieren (Verarbeitungs-Kennzeichnung, nie löschen). */
-    public function markRead(string $messageId): void {
-        $this->api->requestResponse('patch', $this->base . '/me/messages/' . rawurlencode($messageId), [
+    public function markRead(?string $mailbox, string $messageId): void {
+        $this->api->requestResponse('patch', $this->mailboxBase($mailbox) . '/messages/' . rawurlencode($messageId), [
             'json' => ['isRead' => true],
         ]);
     }
 
-    /** Nachricht in einen Ordner verschieben (Ordnername → ID-Lookup). */
-    public function moveToFolder(string $messageId, string $folderName): void {
-        $folderId = $this->folderIdByName($folderName);
-        if ($folderId === null) {
-            return; // Zielordner existiert nicht — Nachricht bleibt (best effort)
-        }
-        $this->api->postJson($this->base . '/me/messages/' . rawurlencode($messageId) . '/move', [
+    public function moveToFolder(?string $mailbox, string $messageId, string $folderId): void {
+        $this->api->postJson($this->mailboxBase($mailbox) . '/messages/' . rawurlencode($messageId) . '/move', [
             'destinationId' => $folderId,
         ]);
     }
 
-    /** Ordner-ID zu einem Anzeigenamen (Top-Level). */
-    private function folderIdByName(string $folderName): ?string {
-        $response = $this->api->getResponse($this->base . '/me/mailFolders', [
-            '$filter' => "displayName eq '" . str_replace("'", "''", $folderName) . "'",
-            '$select' => 'id',
-        ]);
-        if (! $response->successful()) {
-            return null;
+    /**
+     * Ordner-ID zu einem Pfad mit `/` (MVP-1140). Das erste Segment darf ein
+     * fester Name wie `inbox` sein (`INBOX` aus der IMAP-Konvention ebenso),
+     * sonst zählt der Anzeigename ohne Rücksicht auf die Schreibweise.
+     */
+    public function folderId(?string $mailbox, string $path): ?string {
+        $segments = array_values(array_filter(array_map('trim', explode('/', $path)), static fn (string $s): bool => $s !== ''));
+        if ($segments === []) {
+            return 'inbox';
         }
-        $id = $response->json('value.0.id');
 
-        return is_string($id) && $id !== '' ? $id : null;
+        $parent = null;
+        if (in_array(mb_strtolower($segments[0]), self::WELL_KNOWN_FOLDERS, true)) {
+            $parent = mb_strtolower(array_shift($segments));
+        }
+        foreach ($segments as $segment) {
+            $match = null;
+            foreach ($this->childFolders($mailbox, $parent) as $folder) {
+                if (mb_strtolower($folder['name']) === mb_strtolower($segment)) {
+                    $match = $folder;
+
+                    break;
+                }
+            }
+            if ($match === null) {
+                return null;
+            }
+            $parent = $match['id'];
+        }
+
+        return $parent;
+    }
+
+    /**
+     * Ordnerpfade für die Auswahl im Dialog, Tiefe und Anzahl begrenzt.
+     *
+     * @return list<string>
+     */
+    public function folderPaths(?string $mailbox, int $maxDepth = 4, int $maxFolders = 500): array {
+        $paths = [];
+        $walk = function (?string $parentId, string $prefix, int $depth) use (&$walk, &$paths, $mailbox, $maxDepth, $maxFolders): void {
+            foreach ($this->childFolders($mailbox, $parentId) as $folder) {
+                if (count($paths) >= $maxFolders) {
+                    return;
+                }
+                $path = $prefix === '' ? $folder['name'] : $prefix . '/' . $folder['name'];
+                $paths[] = $path;
+                if ($folder['children'] > 0 && $depth < $maxDepth) {
+                    $walk($folder['id'], $path, $depth + 1);
+                }
+            }
+        };
+        $walk(null, '', 1);
+
+        return $paths;
+    }
+
+    /**
+     * Unterordner (oberste Ebene bei `null`), Folgeseiten eingeschlossen.
+     *
+     * @return list<array{id: string, name: string, children: int}>
+     */
+    private function childFolders(?string $mailbox, ?string $parentId): array {
+        $url = $this->mailboxBase($mailbox) . '/mailFolders' . ($parentId !== null ? '/' . rawurlencode($parentId) . '/childFolders' : '');
+        $response = $this->api->getResponse($url, ['$top' => '250', '$select' => 'id,displayName,childFolderCount']);
+        $folders = [];
+        while (true) {
+            if (! $response->successful()) {
+                throw new RuntimeException('Graph mailFolders fehlgeschlagen (HTTP ' . $response->status() . ').');
+            }
+            foreach ((array) $response->json('value', []) as $folder) {
+                if (is_array($folder) && (string) ($folder['id'] ?? '') !== '') {
+                    $folders[] = ['id' => (string) $folder['id'], 'name' => (string) ($folder['displayName'] ?? ''), 'children' => (int) ($folder['childFolderCount'] ?? 0)];
+                }
+            }
+            $next = $response->json('@odata.nextLink');
+            if (! is_string($next) || $next === '') {
+                return $folders;
+            }
+            $response = $this->api->getFollowUp($next);
+        }
+    }
+
+    /** Eigenes Postfach des verbundenen Kontos oder ein freigegebenes per Adresse. */
+    private function mailboxBase(?string $mailbox): string {
+        $address = trim((string) $mailbox);
+
+        return $this->base . ($address === '' ? '/me' : '/users/' . rawurlencode($address));
+    }
+
+    /**
+     * @param  array<string, mixed>  $attachment
+     * @return array{name: string, contentType: string, contentBytes: string, isInline: bool}
+     */
+    private static function fileAttachment(array $attachment): array {
+        return [
+            'name' => (string) ($attachment['name'] ?? 'anhang'),
+            'contentType' => (string) ($attachment['contentType'] ?? 'application/octet-stream'),
+            'contentBytes' => (string) ($attachment['contentBytes'] ?? ''),
+            'isInline' => (bool) ($attachment['isInline'] ?? false),
+        ];
     }
 }

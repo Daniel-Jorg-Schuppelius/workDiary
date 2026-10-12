@@ -18,6 +18,7 @@ use App\Models\Mail\EmailConnection;
 use App\Plugins\Msgraph\Api\{GraphSubscriptionClient, MsgraphCalendarClient, MsgraphIntakeClient, MsgraphMailClient, MsgraphTodoClient};
 use App\Plugins\Msgraph\Enums\MsgraphTaskListLinkStatus;
 use App\Plugins\Msgraph\Models\{MsgraphConnection, MsgraphMailConnection, MsgraphTaskConnection, MsgraphTaskListLink};
+use App\Services\Mail\MailboxCursor;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\{Carbon, Str};
 
@@ -112,9 +113,10 @@ class MsgraphSubscriptionService {
     }
 
     /**
-     * Graph-Postfach (transport=msgraph): weckt den Mail-Abruf. Subscribiert
-     * bewusst die Inbox — Postfächer mit abweichendem Abruf-Ordner heilt das
-     * 5-Minuten-Polling (`mail:poll`).
+     * Graph-Postfach (transport=msgraph): weckt den Mail-Abruf. Abonniert wird
+     * der eingestellte Abruf-Ordner (MVP-1141); ein Ordnerwechsel löst das alte
+     * Abo ab. Freigegebene Postfächer bekommen keins — Graph erlaubt delegiert
+     * nur Abos im eigenen Postfach —, sie laufen über `mail:poll`.
      */
     public function ensureMailbox(EmailConnection $connection): void {
         if ($connection->transport !== \App\Plugins\Msgraph\MsgraphPlugin::MAIL_TRANSPORT || ! $connection->isActive()) {
@@ -128,16 +130,49 @@ class MsgraphSubscriptionService {
         if (! $mail instanceof MsgraphMailConnection || ! $mail->isActive()) {
             return; // ohne Graph-Mail-Verbindung kein Token — Polling bleibt
         }
+        $client = new MsgraphMailClient($mail);
+
+        if (trim((string) $connection->mailbox_address) !== '') {
+            $this->dropMailboxSubscription($connection, $client);
+
+            return;
+        }
+        $cursor = MailboxCursor::of($connection);
+        $folderId = $cursor->folderId ?? $client->folderId(null, (string) $connection->folder);
+        if ($folderId === null) {
+            return; // den fehlenden Ordner meldet der Abruf am Postfach
+        }
+        $resource = "/me/mailFolders('" . $folderId . "')/messages";
+        $current = trim((string) $connection->subscription_resource);
+        if ($current !== '' && $current !== $resource) {
+            $this->dropMailboxSubscription($connection, $client);
+        }
 
         $this->ensureSubscription(
             $connection,
-            new MsgraphMailClient($mail),
-            "/me/mailFolders('inbox')/messages",
+            $client,
+            $resource,
             route('api.webhooks.msgraph'),
             self::LIFETIME_OUTLOOK_DAYS,
             self::RENEW_THRESHOLD_OUTLOOK_DAYS,
             'created',
         );
+        if ($connection->subscription_resource !== $resource) {
+            $connection->forceFill(['subscription_resource' => $resource])->save();
+        }
+    }
+
+    private function dropMailboxSubscription(EmailConnection $connection, MsgraphMailClient $client): void {
+        $subscriptionId = trim((string) $connection->subscription_id);
+        if ($subscriptionId === '') {
+            return;
+        }
+        try {
+            $client->deleteSubscription($subscriptionId);
+        } catch (\Throwable) {
+            // Graph räumt abgelaufene Abos selbst ab.
+        }
+        $connection->forceFill(['subscription_id' => null, 'subscription_expires_at' => null, 'subscription_resource' => null])->save();
     }
 
     /** Abmelden beim Trennen/Deaktivieren (best effort, idempotent). */

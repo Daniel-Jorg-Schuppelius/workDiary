@@ -122,7 +122,6 @@ class IndexListLayoutRuleTest extends TestCase {
         'resources/views/admin/cti/index.blade.php' => 'Formular für neue Anbindungen über der Anbindungstabelle, darunter die Wähleinstellungen je Anbindung.',
         'resources/views/admin/document-design/index.blade.php' => 'Einrichtungs-Checkliste über den Karten für Belegprofile und Briefpapier — zwei Tabellen.',
         'resources/views/admin/license/index.blade.php' => 'Lizenzübersicht aus sechs Karten (Lizenz, Mandantenstatus, Org-Lizenz, Limits, Feature-Flags, Module).',
-        'resources/views/admin/mail/index.blade.php' => 'Abrufstatus und Postfachtabelle über dem Formular zum Verbinden eines Postfachs.',
         'resources/views/admin/metrics/index.blade.php' => 'Kennzahlen-Dashboard aus acht Karten mit zwei Aggregat-Tabellen.',
         'resources/views/admin/privacy/index.blade.php' => 'Datenschutz-Übersicht aus acht Karten mit sechs Tabellen.',
         'resources/views/admin/security/index.blade.php' => 'Sicherheitsübersicht aus neun Karten mit sechs Tabellen.',

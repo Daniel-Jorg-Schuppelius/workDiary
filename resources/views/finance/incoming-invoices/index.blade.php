@@ -27,6 +27,7 @@
         ['label' => __('Zu prüfen'), 'route' => 'finance.incoming-invoices.index', 'params' => ['tab' => 'review'] + $queryBase, 'active' => $tab === 'review', 'count' => $reviewCount, 'icon' => 'fact_check'],
         ...($transferCount > 0 || $tab === 'transfer' ? [['label' => __('Übergabe offen'), 'route' => 'finance.incoming-invoices.index', 'params' => ['tab' => 'transfer'] + $queryBase, 'active' => $tab === 'transfer', 'count' => $transferCount, 'icon' => 'outbox']] : []),
         ...($failedCount > 0 || $tab === 'failed' ? [['label' => __('Übergabe fehlgeschlagen'), 'route' => 'finance.incoming-invoices.index', 'params' => ['tab' => 'failed'] + $queryBase, 'active' => $tab === 'failed', 'count' => $failedCount, 'icon' => 'sync_problem']] : []),
+        ...($duplicateCount > 0 || $tab === 'duplicates' ? [['label' => __('Möglicher Doppel-Eingang'), 'route' => 'finance.incoming-invoices.index', 'params' => ['tab' => 'duplicates'] + $queryBase, 'active' => $tab === 'duplicates', 'count' => $duplicateCount, 'icon' => 'content_copy']] : []),
         ['label' => __('Alle'), 'route' => 'finance.incoming-invoices.index', 'params' => ['tab' => 'all'] + $queryBase, 'active' => $tab === 'all', 'icon' => 'list'],
     ];
     $bulk = $bulkParties !== null && $incomings->isNotEmpty();
@@ -149,6 +150,9 @@
                 <td><x-status-badge :tone="$incoming->recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::None ? 'warning' : 'ghost'">{{ $incoming->recognition->label() }}</x-status-badge></td>
                 <td>
                     <x-status-badge outline>{{ $incoming->status->label() }}</x-status-badge>
+                    @if ($incoming->isPossibleDuplicate())
+                        <x-status-badge tone="warning">{{ __('Möglicher Doppel-Eingang') }}</x-status-badge>
+                    @endif
                     @if ($incoming->relationLoaded('transfers'))
                         @foreach ($incoming->transfers as $journal)
                             <x-status-badge :tone="$journal->status->tone()" :title="$journal->error">{{ $journal->status->label() }}</x-status-badge>
@@ -168,7 +172,7 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty :colspan="$colspan" icon="receipt_long" :title="match ($tab) { 'assign' => __('Nichts zuzuordnen.'), 'review' => __('Nichts zu prüfen.'), 'transfer', 'failed' => __('Keine offenen Übergaben.'), default => __('Keine Eingänge im Zeitraum.') }" />
+            <x-table.empty :colspan="$colspan" icon="receipt_long" :title="match ($tab) { 'assign' => __('Nichts zuzuordnen.'), 'review' => __('Nichts zu prüfen.'), 'transfer', 'failed' => __('Keine offenen Übergaben.'), 'duplicates' => __('Kein möglicher Doppel-Eingang offen.'), default => __('Keine Eingänge im Zeitraum.') }" />
         @endforelse
     </x-table>
 

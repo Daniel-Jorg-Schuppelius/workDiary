@@ -10,14 +10,17 @@
 
 return [
     'title' => 'Ricezione e-mail',
-    'intro' => 'Le caselle IMAP collegate vengono interrogate dallo scheduler; le nuove e-mail arrivano come proposte nella inbox di integrazione e vengono associate a un cliente — mai create alla cieca. Le e-mail elaborate vengono solo contrassegnate/spostate, mai eliminate. WorkDiary non è un client di posta.',
+    'intro' => 'Le caselle vengono interrogate regolarmente dall’ultimo punto raggiunto, anche le e-mail già lette. Le nuove e-mail arrivano come proposte nella inbox di integrazione, le fatture tra le fatture in entrata; le e-mail elaborate vengono solo contrassegnate o spostate, mai eliminate.',
     'to_inbox' => 'Vai alla inbox di associazione',
+    'title_edit' => 'Modifica casella',
+    'to_inbox_count' => 'Vai alla inbox di associazione (:count)',
 
     'mailboxes_heading' => 'Caselle',
     'no_connections' => 'Nessuna casella collegata finora.',
     'add_heading' => 'Aggiungi casella',
 
     'inbox' => [
+        'invoice_action' => 'Acquisisci come fattura in entrata',
         'no_subject' => '(senza oggetto)',
         'invoice_mailbox' => 'Casella delle fatture · :from',
         'book_action' => 'Registra come nota di comunicazione',
@@ -37,6 +40,17 @@ return [
     ],
 
     'field' => [
+        'mailbox_address' => 'Indirizzo della casella',
+        'mailbox_address_hint' => 'Lasci vuoto per la casella dell’account collegato. Per una casella condivisa (ad es. fatture@…) l’account necessita dell’accesso completo.',
+        'password_keep' => 'Lasci vuoto per mantenere la password salvata.',
+        'fetch_since' => 'Recupera dal',
+        'fetch_since_hint' => 'Le e-mail ricevute prima di questo giorno non vengono recuperate. Una data precedente recupera e-mail più vecchie.',
+        'folder_hint_list' => 'I suggerimenti provengono dalla casella; separi le sottocartelle con «/», ad es. Posta in arrivo/Fatture.',
+        'folder_hint_error' => 'Impossibile caricare l’elenco delle cartelle (:error). Inserisca la cartella manualmente e separi le sottocartelle con «/».',
+        'folder_hint_free' => 'Dopo il primo salvataggio, la finestra propone le cartelle della casella. Separi le sottocartelle con «/», ad es. INBOX/Fatture.',
+        'einvoice_intake' => 'Casella fatture: acquisire le fatture dagli allegati tra le fatture in entrata',
+        'einvoice_intake_hint' => 'Ogni file PDF, XML o immagine di un’e-mail diventa una fattura in entrata. Scelga preferibilmente una cartella dedicata in cui una regola smisti le fatture.',
+        'callreport_intake' => 'Casella rapporti chiamate: acquisire gli elenchi chiamate FRITZ!Box (CSV) nell’importazione elenchi chiamate',
         'name' => 'Etichetta',
         'transport' => 'Trasporto',
         'host' => 'Server IMAP',
@@ -51,23 +65,38 @@ return [
     ],
 
     'action' => [
+        'create' => 'Nuova casella',
+        'edit' => 'Modifica',
+        'backfill' => 'Recupera e-mail precedenti',
+        'activate' => 'Attiva',
         'poll' => 'Interroga ora',
         'disconnect' => 'Disconnetti',
         'save' => 'Salva',
     ],
 
     'col' => [
+        'purpose' => 'Utilizzo',
+        'fetch_since' => 'dal :date',
         'host' => 'Account',
         'status' => 'Stato',
         'last_polled' => 'Ultima interrogazione',
     ],
 
     'status' => [
+        'error' => 'Errore',
+        'backfill_running' => 'Recupero in corso · :count elaborate',
         'active' => 'Attivo',
         'inactive' => 'Inattivo',
     ],
 
     'flash' => [
+        'invoice_imported' => 'Acquisito tra le fatture in entrata: :count.',
+        'invoice_duplicate' => 'Questa fattura è già tra le fatture in entrata.',
+        'invoice_none' => 'Nessun allegato è un file PDF, XML o immagine.',
+        'invoice_failed' => 'Acquisizione tra le fatture in entrata non riuscita.',
+        'backfill_started' => 'Recupero avviato. I prossimi recuperi elaborano le e-mail precedenti a lotti.',
+        'activated' => 'Casella attivata.',
+        'chained_folders' => 'Nota: una cartella di questa casella è anche la cartella di recupero o di elaborate di «:name». Le e-mail passerebbero da una voce all’altra.',
         'saved' => 'Casella salvata.',
         'disconnected' => 'Casella disconnessa.',
         'polled' => 'Interrogazione avviata.',
@@ -79,6 +108,37 @@ return [
         'already_resolved' => 'Questa voce è già risolta.',
         'password_required' => 'Una nuova casella richiede una password.',
         'customer_required' => 'Nessun cliente associato.',
+    ],
+    'transport' => [
+        'imap' => 'Casella IMAP',
+    ],
+    'access' => [
+        'own_mailbox' => 'Casella dell’account collegato',
+    ],
+    'group' => [
+        'mailbox' => 'Casella',
+        'folders' => 'Cartelle e data di inizio',
+        'purpose' => 'Utilizzo',
+    ],
+    'purpose' => [
+        'invoices' => 'Fatture',
+        'callreports' => 'Elenchi chiamate',
+        'inbox' => 'Inbox',
+    ],
+    'validation' => [
+        'duplicate_folder' => 'Esiste già una voce con questa cartella per questo accesso.',
+    ],
+    'backfill' => [
+        'title' => 'Recupera e-mail precedenti',
+        'submit' => 'Recupera',
+        'intro' => 'I prossimi recuperi elaborano tutte le e-mail della cartella «:folder» a partire dal giorno scelto, anche quelle già lette.',
+        'note_folder' => 'Viene recuperata solo questa cartella. Per una casella generica crei una seconda voce con la cartella delle fatture.',
+        'note_inbox' => 'Le e-mail senza fattura arrivano come sempre nella inbox di integrazione.',
+        'note_duplicates' => 'E-mail e file già acquisiti vengono riconosciuti e non creati due volte.',
+        'note_graph_limit' => 'Microsoft 365 fornisce al massimo 5.000 e-mail per passaggio.',
+    ],
+    'error' => [
+        'folder_missing' => 'La cartella «:folder» non è stata trovata nella casella di posta.',
     ],
     'reference' => [
         'customer_number' => 'Numero cliente nel testo: :number',

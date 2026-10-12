@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Mail;
 
+use App\Exceptions\MailboxUnavailableException;
 use App\Models\Mail\EmailConnection;
-use RuntimeException;
+use Generator;
 
 /**
  * Transport-Weiche vor {@see MailboxGateway} (Feature 102): wählt je
@@ -26,12 +27,16 @@ class TransportSelectingMailboxGateway implements MailboxGateway {
         private readonly MailboxTransports $transports,
     ) {}
 
-    public function fetch(EmailConnection $connection): array {
-        return $this->gatewayFor($connection)->fetch($connection);
+    public function fetch(EmailConnection $connection, MailboxCursor $cursor, int $limit): Generator {
+        return $this->gatewayFor($connection)->fetch($connection, $cursor, $limit);
     }
 
     public function markProcessed(EmailConnection $connection, ParsedMessage $message): void {
         $this->gatewayFor($connection)->markProcessed($connection, $message);
+    }
+
+    public function folders(EmailConnection $connection): array {
+        return $this->gatewayFor($connection)->folders($connection);
     }
 
     private function gatewayFor(EmailConnection $connection): MailboxGateway {
@@ -40,6 +45,6 @@ class TransportSelectingMailboxGateway implements MailboxGateway {
         }
 
         return $this->transports->get((string) $connection->transport)?->gateway()
-            ?? throw new RuntimeException('Postfach-Transport „' . $connection->transport . '“ ist nicht verfügbar.');
+            ?? throw new MailboxUnavailableException('Postfach-Transport „' . $connection->transport . '“ ist nicht verfügbar.');
     }
 }

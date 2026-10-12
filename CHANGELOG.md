@@ -15,6 +15,26 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   Argumente durchgereicht. Als root gestartet läuft es als Eigentümer von
   `storage/`.
 
+- Rechnungspostfach: Abruf, Ordner, Microsoft 365 und Bestand (Phase 143,
+  MVP-1139–1146): Postfächer werden nach Stand abgerufen statt nach
+  Lesestatus — auch Mails, die schon jemand gelesen hat, ab dem Startpunkt
+  „Abruf ab“; „Ältere Mails nachholen“ stellt ihn zurück, nur für den Ordner
+  des Eintrags. Ordner lassen sich per Pfad angeben (`Posteingang/Rechnungen`),
+  auch bei Microsoft 365; ein fehlender Ordner steht als Meldung am Postfach.
+  M365 ruft auf Wunsch ein freigegebenes Postfach ab (Postfachadresse), das
+  Abo folgt dem eingestellten Ordner. Als Anlage weitergeleitete Mails werden
+  ausgepackt. Die Verwaltung der Postfächer arbeitet mit Dialogen, kann
+  bearbeiten und wieder aktivieren; dasselbe Postfach darf mit mehreren
+  Ordnern eingetragen sein. In der Zuordnungs-Inbox übernimmt „Als
+  Eingangsrechnung übernehmen“ Rechnungen aus jedem Postfach. Ein möglicher
+  Doppel-Eingang (gleiche Nummer beim selben Aussteller) sperrt die Übergabe
+  an die Buchhaltung bis zur Bestätigung „Kein Doppel“; Lexoffice meldet
+  einen Treffer ohne Rechnungsnummer als Vorschlag zum Verknüpfen. Bestehende
+  Postfächer starten am letzten Abruf minus einem Tag. Wer M365-Postfächer
+  abruft, verbindet den Mail-Versand im Microsoft-365-Plugin einmal neu, damit
+  die Anmeldung die Leserechte (`Mail.ReadWrite`, bei freigegebenen
+  Postfächern `Mail.ReadWrite.Shared`) anfordert.
+
 - Ansprechpartner mit Anrede und Namensteilen (Phase 142, MVP-1135–1138):
   Kunde, Lieferant, Fremdkunde und Lead erfassen den Ansprechpartner mit
   Anrede, Titel, Vorname, weiteren Vornamen und Nachname, ebenso jede Zeile

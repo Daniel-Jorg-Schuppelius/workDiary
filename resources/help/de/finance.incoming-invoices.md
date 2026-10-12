@@ -1,7 +1,7 @@
 ---
 title: "Rechnungseingang"
 topic: finance.incoming-invoices
-version: 2
+version: 3
 keywords:
     - Eingangsrechnung
     - Lieferantenrechnung
@@ -22,6 +22,9 @@ keywords:
     - EN 16931
     - Übergabe an Lexware
     - Buchungskategorie
+    - Doppel-Eingang
+    - doppelte Rechnung
+    - Rechnungsordner
 audience: []
 modules:
     - module.vertrieb
@@ -53,6 +56,16 @@ nach Rechnungen ausgewertet, nicht nach Anhängen:
   **Klärfall**: Das Original liegt vor, die Werte erfassen Sie selbst.
 - Mails ganz ohne Rechnungsanhang (etwa nur mit Download-Link) landen in der
   Zuordnungs-Inbox der Verwaltung, gekennzeichnet als Rechnungspostfach.
+- Eine als Anlage weitergeleitete Mail wird ausgepackt; die Rechnung darin
+  zählt wie ein direkter Anhang.
+
+**Abruf und Bestand:** Abgerufen wird ab dem Tag unter „Abruf ab“ nach Stand —
+auch Mails, die schon jemand gelesen hat. Am besten wählen Sie einen eigenen
+Ordner, in den eine Regel die Rechnungen sortiert (Unterordner mit „/“, etwa
+Posteingang/Rechnungen). Ältere Rechnungen holt „Ältere Mails nachholen“ in
+der Postfach-Verwaltung; dieselbe Rechnung wird dabei nicht doppelt angelegt.
+Liegt eine Rechnungsmail in einem anderen Postfach, übernimmt „Als
+Eingangsrechnung übernehmen“ in der Zuordnungs-Inbox ihre Anhänge.
 
 **Erkennung:** Eine E-Rechnung (XRechnung oder ZUGFeRD/Factur-X) liefert
 verbindliche Werte. Bei PDF und Foto werden die Werte erkannt und sind ein
@@ -109,12 +122,20 @@ verlangen diese Bestätigung immer. Eine Rechnung ändert nie die Stammdaten.
 erfasst — auch kanalübergreifend (ein Upload nach vorherigem Mail-Eingang
 bleibt eine Dublette).
 
-**Validierung und Konsistenz:** Jede E-Rechnung wird gegen das XML-Schema
-und, sofern eingerichtet, gegen die KoSIT-Prüfregeln (EN 16931) validiert;
-ob die Prüfungen verfügbar waren, wird ausgewiesen. Zusätzlich warnt die
-Abweichungsprüfung sichtbar — nie stillschweigend — bei bereits erfasster
-Rechnungsnummer desselben Ausstellers, bei widersprüchlichen Summen (Netto +
-Steuer ≠ Brutto) und bei Steuerausweis ohne Steuerkennung des Ausstellers.
+**Möglicher Doppel-Eingang:** Kommt dieselbe Rechnung als andere Datei ein
+zweites Mal herein — etwa als PDF per Mail und als XRechnung über Peppol —,
+erkennt der Rechnungseingang das an der Rechnungsnummer zusammen mit der
+Steuerkennung des Ausstellers bzw. der zugeordneten Partei. Der spätere
+Eingang wird nicht an die Buchhaltung übergeben, bis Sie „Kein Doppel“
+bestätigen oder ihn ablehnen. Eine Nummer allein reicht nicht: „1001“ gibt es
+bei vielen Lieferanten.
+
+**Validierung und Konsistenz:** Jede E-Rechnung wird gegen das XML-Schema und,
+sofern eingerichtet, gegen die KoSIT-Prüfregeln (EN 16931) validiert; ob die
+Prüfungen verfügbar waren, wird ausgewiesen. Zusätzlich warnt die
+Abweichungsprüfung sichtbar — nie stillschweigend — bei widersprüchlichen
+Summen (Netto + Steuer ≠ Brutto) und bei Steuerausweis ohne Steuerkennung des
+Ausstellers.
 
 **Prüfworkflow:** Ein Eingang wird freigegeben, mit Rückfrage versehen oder
 abgelehnt (Ablehnung nur mit Begründung). Erst nach fachlicher Freigabe ist
@@ -137,6 +158,13 @@ innergemeinschaftlichen Fällen oder Drittland.
   Steuersätzen 0, 5, 7, 16 oder 19 %. Sonst geht der Beleg ohne Beträge
   hinaus, und die Buchhaltung ergänzt sie in Lexware.
 - DATEV Unternehmen online erhält das Original als Belegbild.
+- Fehlt die Rechnungsnummer, sucht die Übergabe in Lexware nach Kontakt,
+  Belegdatum und Betrag. Ein Treffer wird nicht automatisch verknüpft: Sie
+  wählen „Mit diesem Beleg verknüpfen“ oder „Anderer Beleg – neu anlegen“.
+- DATEV lässt sich per Schnittstelle nicht nach vorhandenen Belegen
+  durchsuchen. Schicken Sie dieselben Rechnungen deshalb nicht zusätzlich per
+  DATEV-Upload-Mail; der Schutz vor Doppeln liegt dort allein beim
+  Rechnungseingang.
 - Ein dort angelegter Beleg lässt sich per Schnittstelle nicht mehr löschen.
 - Senden Sie dieselben Rechnungen nicht zusätzlich an die Beleg-E-Mail-Adresse
   von Lexware: Dort erkannte Belege haben anfangs keine Nummer und entgehen

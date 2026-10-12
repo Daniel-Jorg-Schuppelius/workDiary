@@ -61,6 +61,7 @@
         @if ($connection->datev_client_number !== null)
             <x-card :title="__('datev-online::datev.page.documents.heading')" class="mt-4">
                 <p class="text-sm text-muted">{{ __('datev-online::datev.page.documents.hint') }}</p>
+                <p class="mt-1 text-sm text-warning">{{ __('datev-online::datev.page.documents.no_duplicate_check') }}</p>
                 <form method="POST" action="{{ route('admin.datev-online.documents') }}" class="mt-2 flex flex-wrap items-end gap-3">
                     @csrf
                     <x-checkbox-field name="is_documents_enabled" value="1" :label="__('datev-online::datev.page.documents.enabled')" :checked="$connection->is_documents_enabled" />

@@ -153,6 +153,90 @@ final class IncomingInvoiceTransferTest extends TestCase {
         $this->assertSame(0, IncomingEInvoiceTransfer::query()->count());
     }
 
+    public function test_a_possible_duplicate_waits_until_someone_clears_it(): void {
+        $supplier = Supplier::factory()->create(['organization_id' => $this->organization->id]);
+        $first = $this->row(['invoice_number' => 'RE 4711', 'seller_vat_id' => 'DE111111111', 'supplier_id' => $supplier->id]);
+        $second = $this->row(['invoice_number' => 're4711', 'seller_vat_id' => 'DE111111111']);
+
+        $this->assertSame($first->id, $second->duplicate_of_id);
+        $this->assertTrue($second->isPossibleDuplicate());
+        $this->assertNull($first->refresh()->duplicate_of_id);
+
+        $second->forceFill(['supplier_id' => $supplier->id])->save();
+        [$journal] = app(IncomingInvoiceTransferService::class)->transfer($second->refresh());
+        $this->assertSame(IncomingInvoiceTransferStatus::Waiting, $journal->status);
+        $this->assertStringContainsString('Doppel', (string) $journal->error);
+        $this->assertSame(0, $this->target->calls);
+
+        $this->get(route('finance.incoming-invoices.show', $second->document))
+            ->assertOk()
+            ->assertSee(route('finance.incoming-invoices.duplicate.clear', $second), false);
+
+        $this->get(route('finance.incoming-invoices.index', ['tab' => 'duplicates']))
+            ->assertOk()
+            ->assertSee('re4711');
+
+        $this->post(route('finance.incoming-invoices.duplicate.clear', $second))->assertSessionHas('success');
+
+        $second->refresh();
+        $this->assertNotNull($second->duplicate_cleared_at);
+        $this->assertFalse($second->isPossibleDuplicate());
+        $this->assertSame(IncomingInvoiceTransferStatus::Transferred, $journal->refresh()->status);
+        $this->assertDatabaseHas('audit_logs', ['event' => 'incoming_einvoice.duplicate_cleared', 'auditable_id' => $second->id]);
+    }
+
+    public function test_bare_numbers_are_no_duplicates_and_a_rejected_original_does_not_block(): void {
+        $first = $this->row(['invoice_number' => '1001']);
+        $second = $this->row(['invoice_number' => '1001']);
+        $this->assertNull($second->duplicate_of_id);
+
+        $supplier = Supplier::factory()->create(['organization_id' => $this->organization->id]);
+        $first->forceFill(['supplier_id' => $supplier->id])->save();
+        $second->forceFill(['supplier_id' => $supplier->id])->save();
+        $this->assertSame($first->id, $second->refresh()->duplicate_of_id);
+
+        $first->forceFill(['status' => IncomingEInvoiceStatus::Rejected])->save();
+        $this->assertFalse($second->refresh()->isPossibleDuplicate());
+    }
+
+    public function test_a_match_without_number_waits_for_a_decision(): void {
+        $supplier = Supplier::factory()->create(['organization_id' => $this->organization->id]);
+        $this->target->result = IncomingInvoiceTransferResult::candidate('V-77', '2026-10-01 · 119,00', 'Vermutlich schon vorhanden.');
+        $incoming = $this->row(['supplier_id' => $supplier->id, 'invoice_number' => null]);
+
+        [$journal] = app(IncomingInvoiceTransferService::class)->transfer($incoming);
+        $this->assertSame(IncomingInvoiceTransferStatus::Waiting, $journal->status);
+        $this->assertSame('V-77', $journal->candidate_external_id);
+
+        $this->get(route('finance.incoming-invoices.show', $incoming->document))
+            ->assertOk()
+            ->assertSee(route('finance.incoming-invoices.transfer.link', [$incoming, FakeTransferTarget::KEY]), false);
+
+        $this->post(route('finance.incoming-invoices.transfer.link', [$incoming, FakeTransferTarget::KEY]))->assertSessionHas('success');
+
+        $journal->refresh();
+        $this->assertSame(IncomingInvoiceTransferStatus::Linked, $journal->status);
+        $this->assertSame('V-77', $journal->external_id);
+        $this->assertNotNull($incoming->refresh()->transferred_at);
+        $this->assertSame(1, $this->target->calls);
+    }
+
+    public function test_dismissing_a_match_creates_a_new_voucher(): void {
+        $supplier = Supplier::factory()->create(['organization_id' => $this->organization->id]);
+        $this->target->result = IncomingInvoiceTransferResult::candidate('V-78', 'Beleg', 'Vermutlich schon vorhanden.');
+        $incoming = $this->row(['supplier_id' => $supplier->id, 'invoice_number' => null]);
+        app(IncomingInvoiceTransferService::class)->transfer($incoming);
+        $this->target->result = null;
+
+        $this->post(route('finance.incoming-invoices.transfer.create-new', [$incoming, FakeTransferTarget::KEY]))->assertSessionHas('success');
+
+        $journal = IncomingEInvoiceTransfer::query()->sole();
+        $this->assertSame(IncomingInvoiceTransferStatus::Transferred, $journal->status);
+        $this->assertNotNull($journal->candidate_dismissed_at);
+        $this->assertNull($journal->candidate_external_id);
+        $this->assertSame(2, $this->target->calls);
+    }
+
     /** @param  array<string, mixed>  $attributes */
     private function row(array $attributes = []): IncomingEInvoice {
         $document = Document::factory()->create(['organization_id' => $this->organization->id, 'document_type' => DocumentType::Invoice]);

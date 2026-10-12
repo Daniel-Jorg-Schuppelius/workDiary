@@ -13,6 +13,7 @@
 return [
     'label' => 'Lexware Office',
     'amount_differs' => 'In Lexware gibt es den Beleg :number schon mit einem anderen Betrag. Bitte dort prüfen und danach die Übergabe erneut anstoßen.',
+    'candidate' => 'In Lexware liegt vermutlich schon derselbe Beleg (:voucher), aber ohne Rechnungsnummer ist das nicht sicher. Bitte verknüpfen oder einen neuen Beleg anlegen lassen.',
     'remark' => 'Aus dem Rechnungseingang von WorkDiary (:sender).',
     'no_party' => 'Der Eingang ist noch keiner Partei zugeordnet.',
     'contact_missing' => 'Der Kontakt :party ließ sich in Lexware weder finden noch anlegen.',

@@ -15,6 +15,13 @@
  * Typen) wird als „gefährlich" verworfen und im Snapshot mit Grund vermerkt.
  */
 return [
+    // Abruf nach Stand (MVP-1139): Mails je Postfach und Lauf; die
+    // Belegerkennung läuft im Abruf, der Lauf soll in seinem Fenster bleiben.
+    'poll' => [
+        'batch' => (int) env('MAIL_INTAKE_POLL_BATCH', 25),
+        'lock_seconds' => (int) env('MAIL_INTAKE_POLL_LOCK_SECONDS', 600),
+    ],
+
     'attachments' => [
         // Obergrenze je Anhang (Default 25 MB). Größere werden verworfen.
         'max_bytes' => (int) env('MAIL_INTAKE_MAX_ATTACHMENT_BYTES', 25 * 1024 * 1024),

@@ -70,7 +70,6 @@ class ViewConventionRuleTest extends TestCase {
         'resources/views/dashboard/index.blade.php' => 'Begrüßungs-Hero des Dashboards (bewusst, ux-pattern-katalog).',
         'resources/views/chat/index.blade.php' => 'Chat-Kopf mit Kanalwechsel (Eigenlayout).',
         'resources/views/admin/document-design/editor.blade.php' => 'Welle 4 (I9): Editor-Kopf.',
-        'resources/views/admin/mail/index.blade.php' => 'Welle 4 (I9).',
         'resources/views/procedures/templates/edit.blade.php' => 'Welle 4 (D16).',
         'resources/views/recipes/menus/index.blade.php' => 'Welle 4 (I9): h1 + Rohkarte → x-page-toolbar/x-card.',
         'resources/views/recipes/menus/show.blade.php' => 'Welle 4 (I9).',

@@ -449,6 +449,9 @@ return [
         'started' => 'Import gestartet',
     ],
     'incoming_einvoice' => [
+        'duplicate_cleared' => 'Als kein Doppel-Eingang bestätigt',
+        'candidate_linked' => 'Übergabe mit vorhandenem Beleg verknüpft',
+        'candidate_dismissed' => 'Übergabe trotz Treffer neu angelegt',
         'direction_corrected' => 'Richtung des Eingangs korrigiert',
         'values_captured' => 'Werte des Eingangs erfasst',
         'assigned' => 'Eingangsrechnung zugeordnet',
@@ -614,6 +617,8 @@ return [
         'exceeded' => 'Limit überschritten',
     ],
     'mail' => [
+        'backfill_started' => 'Mail-Nachholen gestartet',
+        'connection_activated' => 'Mail-Verbindung aktiviert',
         'connection_saved' => 'Mail-Verbindung gespeichert',
         'disconnected' => 'Mail-Verbindung getrennt',
     ],

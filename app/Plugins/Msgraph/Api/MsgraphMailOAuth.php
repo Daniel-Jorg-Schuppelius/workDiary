@@ -10,6 +10,9 @@
 
 namespace App\Plugins\Msgraph\Api;
 
+use App\Plugins\Msgraph\Services\MsgraphMailScopes;
+use App\Support\OrganizationContext;
+
 /**
  * OAuth2-Authorization-Code-Grant (+ PKCE) für den Graph-MAIL-VERSAND
  * (Feature 102). Vierter, getrennter Grant neben Kalender/Intake/Backup:
@@ -23,5 +26,17 @@ class MsgraphMailOAuth extends MsgraphGrantBase {
 
     protected function scopesKey(): string {
         return 'mail_scopes';
+    }
+
+    /** Leserechte nur, wenn die Organisation M365-Postfächer abruft (MVP-1141). */
+    public function scopesFor(?int $organizationId): array {
+        $scopes = parent::scopesFor($organizationId);
+        foreach (MsgraphMailScopes::intakeScopesFor($organizationId ?? OrganizationContext::currentId()) as $scope) {
+            if (! in_array($scope, $scopes, true)) {
+                $scopes[] = $scope;
+            }
+        }
+
+        return $scopes;
     }
 }

@@ -180,13 +180,13 @@ final class IncomingEInvoiceChannelsTest extends TestCase {
         $this->assertNotEmpty($suggestions, 'Lieferanten-Vorschlag über USt-IdNr. erwartet.');
         $this->assertSame([], (array) data_get($first['incoming']->summary, 'deviations'));
 
-        // Gleiche Rechnungsnummer, anderer Inhalt → Abweichung wird eskaliert.
+        // Gleiche Rechnungsnummer, anderer Inhalt → möglicher Doppel-Eingang sperrt die Übergabe (MVP-1145).
         // (Lokal sind Nummern je Org unique — daher Nummer im XML angleichen.)
         $xml = str_replace('ER-2026-0099', 'ER-2026-0042', $this->sampleXml('ER-2026-0099', '150.00'));
         $second = $service->storeIncoming($this->admin, $xml, 'application/xml');
         $this->assertSame('created', $second['status']);
-        $deviations = (array) data_get($second['incoming']->summary, 'deviations');
-        $this->assertNotEmpty($deviations, 'Doppelte Rechnungsnummer muss als Abweichung erscheinen.');
+        $this->assertSame($first['incoming']->id, $second['incoming']->duplicate_of_id);
+        $this->assertTrue($second['incoming']->isPossibleDuplicate());
     }
 
     public function test_xml_download_and_idempotent_transfer(): void {

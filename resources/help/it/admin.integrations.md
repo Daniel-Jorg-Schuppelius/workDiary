@@ -1,7 +1,7 @@
 ---
 title: "Gestire le integrazioni"
 topic: admin.integrations
-version: 3
+version: 4
 keywords:
     - interfacce
     - connettori
@@ -15,6 +15,10 @@ keywords:
     - SSO
     - Nextcloud
     - Stripe
+    - casella e-mail
+    - cartella fatture
+    - recupera e-mail precedenti
+    - casella condivisa
 audience:
     - admin
     - buchhaltung
@@ -85,6 +89,36 @@ e nulla viene scritto due volte.
 verificare l'healthcheck, osservare per alcuni giorni la Inbox alla
 ricerca di conflitti inattesi e solo allora impostare processi
 automatizzati basati su di esso.
+
+## Caselle e-mail
+
+In Amministrazione → Ricezione e-mail collega caselle IMAP e caselle Microsoft
+365.
+
+- **Recupero dall’ultimo punto:** le e-mail vengono recuperate a partire dal
+  giorno indicato in «Recupera dal», anche quelle già lette. Ogni e-mail viene
+  elaborata una volta e poi contrassegnata come letta o spostata nella
+  cartella delle elaborate, mai eliminata.
+- **Cartelle:** separi le sottocartelle con «/», ad es. Posta in
+  arrivo/Fatture. Dopo il primo salvataggio, la finestra propone le cartelle
+  della casella. Se manca una cartella, l’avviso compare sulla casella.
+- **Una casella, più cartelle:** la stessa casella può essere inserita più
+  volte, ogni voce con la propria cartella e il proprio scopo – ad es. info@
+  una volta per la posta in arrivo e una volta per la cartella delle fatture.
+  La stessa cartella è consentita una sola volta per casella.
+- **Recupera e-mail precedenti:** anticipa la data di inizio; i prossimi
+  recuperi elaborano le e-mail a lotti, solo nella cartella di questa voce.
+  E-mail e file già acquisiti non vengono creati due volte.
+- **Microsoft 365:** senza indirizzo della casella vale la casella
+  dell’account collegato. Per una casella condivisa inserisca il suo
+  indirizzo; l’account collegato necessita dell’accesso completo. L’accesso
+  nel plugin Microsoft 365 richiede le autorizzazioni necessarie – se ne manca
+  una, ricolleghi lì l’invio e-mail. Le caselle condivise arrivano tramite il
+  recupero periodico, senza notifica immediata.
+- **Fatture:** con l’opzione «Casella fatture» ogni file PDF, XML o immagine
+  di un’e-mail diventa un’entrata tra le fatture in entrata. «Acquisisci come
+  fattura in entrata» nella inbox di associazione acquisisce le fatture da
+  altre caselle.
 
 ## Quali integrazioni esistono
 

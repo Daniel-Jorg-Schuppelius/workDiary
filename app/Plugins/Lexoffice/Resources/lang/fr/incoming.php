@@ -13,6 +13,7 @@
 return [
     'label' => 'Lexware Office',
     'amount_differs' => 'Lexware contient déjà le justificatif :number avec un autre montant. Veuillez le vérifier là-bas, puis relancer le transfert.',
+    'candidate' => 'Lexware contient probablement déjà le même justificatif (:voucher), mais sans numéro de facture ce n’est pas certain. Veuillez le lier ou faire créer un nouveau justificatif.',
     'remark' => 'Issu des factures reçues de WorkDiary (:sender).',
     'no_party' => 'Le document n’est encore attribué à aucune partie.',
     'contact_missing' => 'Le contact :party n’a pu être ni trouvé ni créé dans Lexware.',

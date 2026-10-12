@@ -10,7 +10,9 @@
 
 namespace App\Plugins\Msgraph;
 
+use App\Plugins\Msgraph\Services\MsgraphMailScopes;
 use App\Plugins\Support\PluginSettingsResolver;
+use App\Support\OrganizationContext;
 use CommonToolkit\Helper\Data\WebLinkHelper;
 
 /**
@@ -102,6 +104,7 @@ class MsgraphConfig {
         if (self::oneNoteImportEnabled($organizationId)) {
             $sets[] = $config['onenote_scopes'];
         }
+        $sets[] = implode(' ', MsgraphMailScopes::intakeScopesFor($organizationId ?? OrganizationContext::currentId()));
         foreach ($sets as $set) {
             foreach (preg_split('/\s+/', trim($set)) ?: [] as $scope) {
                 if ($scope !== '') {

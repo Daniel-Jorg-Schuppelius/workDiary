@@ -1,7 +1,7 @@
 ---
 title: "Integrationen verwalten"
 topic: admin.integrations
-version: 3
+version: 4
 keywords:
     - Schnittstellen
     - Anbindungen
@@ -15,6 +15,10 @@ keywords:
     - SSO
     - Nextcloud
     - Stripe
+    - E-Mail-Postfach
+    - Rechnungsordner
+    - Ältere Mails nachholen
+    - freigegebenes Postfach
 audience:
     - admin
     - buchhaltung
@@ -83,6 +87,36 @@ nichts wird doppelt geschrieben.
 **Empfehlung:** Prüfen Sie nach dem Einrichten einer neuen Anbindung den
 Healthcheck, beobachten Sie einige Tage die Inbox auf unerwartete
 Konflikte und richten Sie erst dann automatisierte Abläufe darauf ein.
+
+## E-Mail-Postfächer
+
+Unter Verwaltung → E-Mail-Eingang verbinden Sie IMAP-Postfächer und
+Microsoft-365-Postfächer.
+
+- **Abruf nach Stand:** Abgerufen wird ab dem Tag unter „Abruf ab“, auch
+  Mails, die schon jemand gelesen hat. Jede Mail wird einmal verarbeitet und
+  danach als gelesen markiert bzw. in den Verarbeitet-Ordner verschoben, nie
+  gelöscht.
+- **Ordner:** Unterordner trennen Sie mit „/“, etwa Posteingang/Rechnungen.
+  Nach dem ersten Speichern schlägt der Dialog die Ordner des Postfachs vor.
+  Fehlt ein Ordner, steht die Meldung am Postfach.
+- **Ein Postfach, mehrere Ordner:** Dasselbe Postfach darf mehrfach
+  eingetragen sein, jeder Eintrag mit eigenem Ordner und eigenem Zweck – etwa
+  info@ einmal für den Posteingang und einmal für den Rechnungsordner.
+  Derselbe Ordner ist je Postfach nur einmal erlaubt.
+- **Ältere Mails nachholen:** stellt den Startpunkt zurück; die nächsten
+  Abrufe arbeiten die Mails in Stapeln ab, nur im Ordner dieses Eintrags.
+  Schon übernommene Mails und Dateien werden nicht doppelt angelegt.
+- **Microsoft 365:** Ohne Postfachadresse gilt das Postfach des verbundenen
+  Kontos. Für ein freigegebenes Postfach tragen Sie dessen Adresse ein; das
+  verbundene Konto braucht Vollzugriff darauf. Die nötigen Rechte fordert die
+  Anmeldung im Microsoft-365-Plugin an – fehlt eines, verbinden Sie den
+  Mail-Versand dort neu. Freigegebene Postfächer kommen über den regelmäßigen
+  Abruf, ohne Sofort-Benachrichtigung.
+- **Rechnungen:** Mit dem Schalter „Rechnungspostfach“ wird jede PDF-, XML-
+  oder Bilddatei einer Mail ein Eingang im Rechnungseingang. Rechnungen aus
+  anderen Postfächern übernimmt „Als Eingangsrechnung übernehmen“ in der
+  Zuordnungs-Inbox.
 
 ## Welche Anbindungen es gibt
 

@@ -315,9 +315,9 @@ class IncomingEInvoiceService {
 
                 continue;
             }
-            $number = self::comparableNumber($item['summary']['number'] ?? null);
+            $number = \App\Models\Invoicing\IncomingEInvoice::numberKey($item['summary']['number'] ?? null);
             foreach ($leading as $index => $lead) {
-                if ($number !== '' && $number === self::comparableNumber($lead['item']['summary']['number'] ?? null)) {
+                if ($number !== null && $number === \App\Models\Invoicing\IncomingEInvoice::numberKey($lead['item']['summary']['number'] ?? null)) {
                     $leading[$index]['companions'][] = $item['attachment'];
 
                     continue 2;
@@ -377,10 +377,6 @@ class IncomingEInvoiceService {
             $recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted->value => 2,
             default => 3,
         };
-    }
-
-    private static function comparableNumber(mixed $number): string {
-        return is_scalar($number) ? mb_strtoupper(\CommonToolkit\Helper\Data\StringHelper::removeWhitespace((string) $number, true)) : '';
     }
 
     private function duplicateOf(int $organizationId, string $sha256): ?\App\Models\Invoicing\IncomingEInvoice {
@@ -449,7 +445,7 @@ class IncomingEInvoiceService {
         // den Prüfer — es entsteht NIE automatisch ein Stammdatensatz.
         $summary['suggestions'] = $this->suggestions($organizationId, $summary);
         $addressDeviations = $this->addressDeviations($actor->organization, $summary);
-        $summary['deviations'] = [...$this->deviations($organizationId, $summary), ...$addressDeviations];
+        $summary['deviations'] = [...$this->deviations($summary), ...$addressDeviations];
         $summary['notices'] = $this->notices($summary);
         // Maschinenlesbar für das Übergabe-Tor (MVP-1111); die Meldungstexte sind nur für Menschen.
         $summary['flags'] = array_values(array_filter([
@@ -776,33 +772,21 @@ class IncomingEInvoiceService {
     }
 
     /**
-     * Abweichungsprüfung (MVP-167): doppelte Rechnungsnummern desselben
-     * Ausstellers, Summen-Inkonsistenz und fehlende Steuerkennung werden
-     * sichtbar eskaliert — nie stillschweigend verarbeitet.
+     * Abweichungsprüfung (MVP-167): Summen-Inkonsistenz und fehlende
+     * Steuerkennung werden sichtbar eskaliert — nie stillschweigend
+     * verarbeitet. Doppelte Rechnungsnummern prüft der Eingang selbst und
+     * sperrt die Übergabe (MVP-1145, {@see \App\Models\Invoicing\IncomingEInvoice::refreshDuplicate()}).
      *
      * @param  array<string, mixed>  $summary
      * @return list<string>
      */
-    public function deviations(int $organizationId, array $summary): array {
+    public function deviations(array $summary): array {
         $deviations = [];
         if (($summary['recognition'] ?? null) === \App\Enums\Invoicing\IncomingInvoiceRecognition::None->value) {
             $deviations[] = (string) __('Keine Rechnungsdaten erkannt — Original prüfen und die Werte erfassen.');
         }
         if ($summary['unstructured'] ?? false) {
             $deviations[] = (string) __('Ohne E-Rechnungsdaten aus PDF bzw. Bild erkannt — alle Werte am Original prüfen.');
-        }
-
-        $number = trim((string) ($summary['number'] ?? ''));
-        if ($number !== '') {
-            $sameNumber = \App\Models\Invoicing\IncomingEInvoice::query()
-                ->withoutGlobalScopes()
-                ->where('organization_id', $organizationId)
-                ->where('summary->number', $number)
-                ->when(trim((string) ($summary['seller_vat'] ?? '')) !== '', fn($q) => $q->where('summary->seller_vat', trim((string) $summary['seller_vat'])))
-                ->exists();
-            if ($sameNumber) {
-                $deviations[] = (string) __('Rechnungsnummer :number dieses Ausstellers wurde bereits erfasst (möglicher Doppel-Eingang mit anderem Dateiinhalt).', ['number' => $number]);
-            }
         }
 
         $net = $summary['net'] ?? null;

@@ -34,6 +34,10 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property string $sha256
  * @property string $source
  * @property string|null $invoice_number
+ * @property string|null $invoice_number_key
+ * @property int|null $duplicate_of_id
+ * @property int|null $duplicate_cleared_user_id
+ * @property \Illuminate\Support\Carbon|null $duplicate_cleared_at
  * @property string|null $seller_name
  * @property string|null $seller_vat_id
  * @property \Illuminate\Support\Carbon|null $issue_date
@@ -127,7 +131,71 @@ class IncomingEInvoice extends Model {
         'creditor_iban' => 'encrypted',
         'creditor_bic' => 'encrypted',
         'creditor_iban_confirmed_at' => 'datetime',
+        'duplicate_cleared_at' => 'datetime',
     ];
+
+    protected static function booted(): void {
+        static::saving(static function (self $incoming): void {
+            if (! $incoming->exists || $incoming->isDirty(['invoice_number', 'seller_vat_id', 'supplier_id', 'customer_id'])) {
+                $incoming->refreshDuplicate();
+            }
+        });
+    }
+
+    /** Vergleichsschlüssel einer Rechnungsnummer: ohne Leerraum, Großschreibung. */
+    public static function numberKey(mixed $number): ?string {
+        $key = is_scalar($number) ? mb_strtoupper(\CommonToolkit\Helper\Data\StringHelper::removeWhitespace((string) $number, true)) : '';
+
+        return $key !== '' ? mb_substr($key, 0, 64) : null;
+    }
+
+    /**
+     * Möglicher Doppel-Eingang (MVP-1145): ein früherer, nicht abgelehnter
+     * Eingang mit derselben Nummer und derselben Aussteller-Kennung bzw.
+     * derselben Partei. Ohne beides kein Treffer — Nummern wie „1001“ gibt es
+     * bei vielen Lieferanten.
+     */
+    public function refreshDuplicate(): void {
+        $this->invoice_number_key = self::numberKey($this->invoice_number);
+        $vat = trim((string) $this->seller_vat_id);
+        if ($this->invoice_number_key === null || ($vat === '' && $this->supplier_id === null && $this->customer_id === null)) {
+            $this->duplicate_of_id = null;
+
+            return;
+        }
+
+        $this->duplicate_of_id = self::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $this->organization_id)
+            ->where('invoice_number_key', $this->invoice_number_key)
+            ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value)
+            ->when($this->exists, fn (Builder $query) => $query->where('id', '<', $this->getKey()))
+            ->where(function (Builder $query) use ($vat): void {
+                if ($vat !== '') {
+                    $query->orWhere('seller_vat_id', $vat);
+                }
+                if ($this->supplier_id !== null) {
+                    $query->orWhere('supplier_id', $this->supplier_id);
+                }
+                if ($this->customer_id !== null) {
+                    $query->orWhere('customer_id', $this->customer_id);
+                }
+            })
+            ->orderBy('id')
+            ->value('id');
+    }
+
+    /** Sperrt die Übergabe, bis jemand „kein Doppel“ bestätigt oder der frühere Eingang abgelehnt ist. */
+    public function isPossibleDuplicate(): bool {
+        return $this->duplicate_of_id !== null
+            && $this->duplicate_cleared_at === null
+            && $this->duplicateOf?->status !== IncomingEInvoiceStatus::Rejected;
+    }
+
+    /** @return BelongsTo<self, $this> */
+    public function duplicateOf(): BelongsTo {
+        return $this->belongsTo(self::class, 'duplicate_of_id');
+    }
 
     /**
      * Spaltenwerte aus einem `summary`-Array (MVP-544). Eine Stelle für

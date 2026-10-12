@@ -13,6 +13,7 @@
 return [
     'label' => 'Lexware Office',
     'amount_differs' => 'En Lexware ya existe el comprobante :number con otro importe. Revíselo allí y vuelva a iniciar el traspaso.',
+    'candidate' => 'Probablemente Lexware ya contiene el mismo comprobante (:voucher), pero sin número de factura no es seguro. Vincúlelo o haga crear un comprobante nuevo.',
     'remark' => 'Desde las facturas recibidas de WorkDiary (:sender).',
     'no_party' => 'El documento aún no está asignado a ninguna parte.',
     'contact_missing' => 'El contacto :party no se pudo encontrar ni crear en Lexware.',

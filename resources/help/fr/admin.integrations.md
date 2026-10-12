@@ -1,7 +1,7 @@
 ---
 title: "Gérer les intégrations"
 topic: admin.integrations
-version: 3
+version: 4
 keywords:
     - interfaces
     - connecteurs
@@ -15,6 +15,10 @@ keywords:
     - SSO
     - Nextcloud
     - Stripe
+    - boîte e-mail
+    - dossier des factures
+    - récupérer les anciens e-mails
+    - boîte partagée
 audience:
     - admin
     - buchhaltung
@@ -87,6 +91,37 @@ rien n'est écrit en double.
 vérifiez le contrôle de santé, observez l'Inbox pendant quelques jours
 pour repérer des conflits inattendus, et ne mettez en place des
 processus automatisés qu'ensuite.
+
+## Boîtes e-mail
+
+Sous Administration → Réception d’e-mails, vous connectez des boîtes IMAP et
+des boîtes Microsoft 365.
+
+- **Relève selon l’état :** Les e-mails sont relevés à partir du jour indiqué
+  sous « Relever à partir du », y compris ceux déjà lus. Chaque e-mail est
+  traité une fois, puis marqué comme lu ou déplacé dans le dossier des e-mails
+  traités, jamais supprimé.
+- **Dossiers :** Séparez les sous-dossiers par « / », p. ex. Boîte de
+  réception/Factures. Après le premier enregistrement, la boîte de dialogue
+  propose les dossiers de la boîte. S’il manque un dossier, le message
+  apparaît sur la boîte.
+- **Une boîte, plusieurs dossiers :** La même boîte peut être saisie plusieurs
+  fois, chaque entrée avec son propre dossier et son propre usage – p. ex.
+  info@ une fois pour la boîte de réception et une fois pour le dossier des
+  factures. Un même dossier n’est autorisé qu’une fois par boîte.
+- **Récupérer les anciens e-mails :** recule la date de début ; les prochaines
+  relèves traitent les e-mails par lots, uniquement dans le dossier de cette
+  entrée. Les e-mails et fichiers déjà repris ne sont pas créés deux fois.
+- **Microsoft 365 :** Sans adresse de boîte, c’est la boîte du compte connecté
+  qui s’applique. Pour une boîte partagée, saisissez son adresse ; le compte
+  connecté doit y avoir un accès complet. La connexion dans le plugin
+  Microsoft 365 demande les autorisations nécessaires – s’il en manque une,
+  reconnectez l’envoi de mails à cet endroit. Les boîtes partagées arrivent
+  par la relève régulière, sans notification immédiate.
+- **Factures :** Avec l’option « Boîte de factures », chaque fichier PDF, XML
+  ou image d’un e-mail devient une réception dans les factures entrantes. «
+  Reprendre comme facture entrante » dans la boîte d’affectation reprend les
+  factures d’autres boîtes.
 
 ## Quelles intégrations existent
 

@@ -29,6 +29,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property IncomingInvoiceTransferStatus $status
  * @property string|null $external_id
  * @property string|null $external_number
+ * @property string|null $candidate_external_id
+ * @property string|null $candidate_label
+ * @property int|null $candidate_dismissed_user_id
+ * @property \Illuminate\Support\Carbon|null $candidate_dismissed_at
  * @property int $attempts
  * @property string|null $error
  * @property \Illuminate\Support\Carbon|null $transferred_at
@@ -53,6 +57,7 @@ class IncomingEInvoiceTransfer extends Model {
         'status' => IncomingInvoiceTransferStatus::class,
         'attempts' => 'integer',
         'transferred_at' => 'datetime',
+        'candidate_dismissed_at' => 'datetime',
     ];
 
     /** @return BelongsTo<IncomingEInvoice, $this> */

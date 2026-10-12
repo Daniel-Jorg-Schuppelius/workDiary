@@ -12,81 +12,126 @@ declare(strict_types=1);
 
 namespace App\Plugins\Msgraph\Services;
 
+use App\Exceptions\{MailboxFolderMissingException, MailboxUnavailableException};
 use App\Models\Mail\EmailConnection;
 use App\Plugins\Msgraph\Api\MsgraphMailClient;
 use App\Plugins\Msgraph\Models\MsgraphMailConnection;
-use App\Services\Mail\{MailAttachment, MailboxGateway, ParsedMessage};
+use App\Services\CloudIntake\StaleCheckpointException;
+use App\Services\Mail\{MailAttachment, MailboxCursor, MailboxGateway, ParsedMessage};
 use CommonToolkit\Helper\Data\EmailHelper;
+use Generator;
 use Illuminate\Support\Carbon;
 use Throwable;
 
 /**
  * Microsoft-Graph-Transport hinter {@see MailboxGateway} (Feature 102,
  * MS365-Plan B): Exchange Online hat IMAP-Basic-Auth 2023 abgeschaltet —
- * M365-Postfächer laufen stattdessen über die Graph-Mail-Verbindung der
- * Organisation (delegated; für den Eingang ist der Scope `Mail.ReadWrite`
- * in MSGRAPH_MAIL_SCOPES nötig). Semantik wie der IMAP-Adapter: ungelesene
- * Nachrichten abrufen OHNE sie zu markieren; verarbeitete als gelesen
- * kennzeichnen bzw. verschieben — nie löschen. Der gesamte
- * {@see MailIntakeService}-Downstream bleibt unverändert.
+ * M365-Postfächer laufen über die Graph-Mail-Verbindung der Organisation
+ * (delegiert). Abgerufen wird nach Stand über die Delta-Abfrage des Ordners
+ * (MVP-1139), der Ordner per Pfad (MVP-1140), auf Wunsch aus einem
+ * freigegebenen Postfach (MVP-1141). Verarbeitete Nachrichten werden als
+ * gelesen gekennzeichnet bzw. verschoben — nie gelöscht.
  */
 class MsgraphMailboxGateway implements MailboxGateway {
-    public function fetch(EmailConnection $connection): array {
+    /** @var array<string, string> aufgelöste Verarbeitet-Ordner je Postfach und Pfad */
+    private array $processedFolders = [];
+
+    public function fetch(EmailConnection $connection, MailboxCursor $cursor, int $limit): Generator {
         $client = $this->client($connection);
-        if ($client === null) {
-            return [];
+        $mailbox = $connection->mailbox_address;
+
+        $folderId = $cursor->folderId ?? $client->folderId($mailbox, (string) $connection->folder)
+            ?? throw new MailboxFolderMissingException((string) $connection->folder);
+        $cursor = $cursor->with(['folderId' => $folderId]);
+
+        $remaining = max(1, $limit);
+        while ($remaining > 0) {
+            try {
+                $page = $client->messagesDelta($mailbox, $folderId, $cursor->link, $cursor->link === null ? $cursor->since($connection) : null, $remaining);
+            } catch (StaleCheckpointException $e) {
+                if ($cursor->link === null) {
+                    throw $e;
+                }
+                $cursor = $cursor->restarted($connection);
+
+                continue;
+            }
+
+            $next = $cursor->with([
+                'link' => $page['next'] ?? $page['delta'],
+                'resumeFrom' => $page['next'] !== null ? $cursor->resumeFrom : null,
+                'catchingUp' => $page['next'] !== null ? $cursor->catchingUp : false,
+            ]);
+            $last = array_key_last($page['ids']);
+            foreach ($page['ids'] as $index => $id) {
+                $raw = $client->message($mailbox, $id);
+                if ($raw !== null) {
+                    $parsed = $this->parse($client, $mailbox, $raw);
+
+                    yield $index === $last ? $parsed->withCursorAfter($next) : $parsed;
+                }
+            }
+            $cursor = $next;
+            if ($page['next'] === null) {
+                break;
+            }
+            $remaining -= max(1, count($page['ids']));
         }
 
-        $out = [];
-        foreach ($client->listUnreadMessages($this->graphFolder($connection)) as $message) {
-            $out[] = $this->parse($client, $message);
-        }
-
-        return $out;
+        return $cursor;
     }
 
     public function markProcessed(EmailConnection $connection, ParsedMessage $message): void {
         if ($message->externalId === null || $message->externalId === '') {
             return;
         }
+        $client = $this->client($connection);
+        $mailbox = $connection->mailbox_address;
+
+        $target = null;
+        $processedFolder = trim((string) $connection->processed_folder);
+        if ($processedFolder !== '') {
+            $key = $connection->id . '|' . $processedFolder;
+            $target = $this->processedFolders[$key] ??= ($client->folderId($mailbox, $processedFolder)
+                ?? throw new MailboxFolderMissingException($processedFolder));
+        }
 
         try {
-            $client = $this->client($connection);
-            if ($client === null) {
-                return;
-            }
-            $client->markRead($message->externalId);
-            if ($connection->processed_folder !== null && $connection->processed_folder !== '') {
-                $client->moveToFolder($message->externalId, $connection->processed_folder);
+            $client->markRead($mailbox, $message->externalId);
+            if ($target !== null) {
+                $client->moveToFolder($mailbox, $message->externalId, $target);
             }
         } catch (Throwable) {
-            // Best effort — der Dublettenschutz über die Message-ID verhindert
-            // ein erneutes Anlegen beim nächsten Abruf (IMAP-Muster).
+            // Best effort — der Stand verhindert ohnehin eine erneute Verarbeitung.
         }
     }
 
-    /** Graph-Mail-Verbindung der Organisation (null = nicht verbunden). */
-    private function client(EmailConnection $connection): ?MsgraphMailClient {
+    public function folders(EmailConnection $connection): array {
+        return $this->client($connection)->folderPaths($connection->mailbox_address);
+    }
+
+    /**
+     * Graph-Mail-Verbindung der Organisation. Fehlt sie oder das nötige Recht,
+     * steht die Meldung am Postfach (MVP-1141) statt eines HTTP-Fehlers.
+     */
+    private function client(EmailConnection $connection): MsgraphMailClient {
         $mail = MsgraphMailConnection::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $connection->organization_id)
             ->first();
         if (! $mail instanceof MsgraphMailConnection || ! $mail->isActive()) {
-            return null;
+            throw new MailboxUnavailableException((string) __('msgraph::mail.flash.msgraph_connection_required'));
+        }
+        $missing = MsgraphMailScopes::missingFor($mail, $connection);
+        if ($missing !== null) {
+            throw new MailboxUnavailableException((string) __('msgraph::mail.error.scope_missing', ['scope' => $missing]));
         }
 
         return new MsgraphMailClient($mail);
     }
 
-    /** Ordner-Feld der Verbindung → Graph-Well-Known-Name (INBOX-Konvention des IMAP-Formulars). */
-    private function graphFolder(EmailConnection $connection): string {
-        $folder = trim((string) $connection->folder);
-
-        return $folder === '' || strcasecmp($folder, 'INBOX') === 0 ? 'inbox' : $folder;
-    }
-
     /** @param array<string, mixed> $message */
-    private function parse(MsgraphMailClient $client, array $message): ParsedMessage {
+    private function parse(MsgraphMailClient $client, ?string $mailbox, array $message): ParsedMessage {
         $graphId = (string) ($message['id'] ?? '');
 
         $from = (array) ($message['from'] ?? []);
@@ -120,7 +165,7 @@ class MsgraphMailboxGateway implements MailboxGateway {
 
         $attachments = [];
         if ((bool) ($message['hasAttachments'] ?? false)) {
-            foreach ($client->messageAttachments($graphId) as $attachment) {
+            foreach ($client->messageAttachments($mailbox, $graphId) as $attachment) {
                 $raw = base64_decode($attachment['contentBytes'], true);
                 if (! is_string($raw) || $raw === '') {
                     continue;

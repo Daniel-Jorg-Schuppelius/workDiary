@@ -83,6 +83,7 @@ return [
         'documents' => [
             'heading' => 'Belegbilder',
             'hint' => 'Ausgestellte Rechnungen gehen als „Rechnungsausgang“ an DATEV Unternehmen online, eingegangene Rechnungen als „Rechnungseingang“, sobald sie im Rechnungseingang zugeordnet sind — jeweils einmal, ab dem gewählten Datum.',
+            'no_duplicate_check' => 'DATEV lässt sich über die Schnittstelle nicht nach vorhandenen Belegen durchsuchen. Schicken Sie dieselben Rechnungen deshalb nicht zusätzlich per DATEV-Upload-Mail oder Belegtransfer, sonst liegen sie doppelt in DATEV.',
             'enabled' => 'Belegbilder nächtlich übertragen',
             'since' => 'Ab Belegdatum',
             'save' => 'Speichern',

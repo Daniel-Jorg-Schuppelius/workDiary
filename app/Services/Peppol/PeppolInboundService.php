@@ -16,6 +16,7 @@ use App\Models\Platform\{Organization, User};
 use App\Plugins\Contracts\PeppolTransportProvider;
 use App\Plugins\PluginManager;
 use App\Services\Invoicing\EInvoice\IncomingEInvoiceService;
+use App\Services\Platform\IntakeActor;
 use ERechnungToolkit\Contracts\AccessPointClientInterface;
 use ERechnungToolkit\Peppol\InboundDocument;
 use Throwable;
@@ -51,7 +52,7 @@ class PeppolInboundService {
             return $counters;
         }
 
-        $actor = $this->actor($organization);
+        $actor = IntakeActor::resolve((int) $organization->id);
         if (! $actor instanceof User) {
             return $counters; // ohne zuordenbaren Bearbeiter kein DMS-Eintrag
         }
@@ -112,19 +113,5 @@ class PeppolInboundService {
         $plugin = app(PluginManager::class)->implementing(PeppolTransportProvider::class)->first();
 
         return $plugin instanceof PeppolTransportProvider ? $plugin->peppolAccessPoint($organizationId) : null;
-    }
-
-    /**
-     * Ausführende Person des automatischen Eingangs. Der Eingang gehört keiner
-     * Person; für Ablage und Audit braucht er trotzdem einen Bearbeiter —
-     * dieselbe Wahl wie bei den übrigen Org-Läufen: die älteste Person der
-     * Organisation.
-     */
-    private function actor(Organization $organization): ?User {
-        return User::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->orderBy('id')
-            ->first();
     }
 }
