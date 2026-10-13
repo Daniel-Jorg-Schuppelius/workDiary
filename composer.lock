@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a42f693894ba374ba9fc80872b221ba6",
+    "content-hash": "7d7d2e5a9572e08db5c81ffc0bd07474",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -720,16 +720,16 @@
         },
         {
             "name": "daniel-jorg-schuppelius/orgamax-php-sdk",
-            "version": "v1.1.2",
+            "version": "v1.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/orgamax-php-sdk.git",
-                "reference": "26b3db5006a687f82c26ed894c00d0e7e6a12382"
+                "reference": "5026524988f4c551cd8e419724fda23fffc6a4df"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/orgamax-php-sdk/zipball/26b3db5006a687f82c26ed894c00d0e7e6a12382",
-                "reference": "26b3db5006a687f82c26ed894c00d0e7e6a12382",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/orgamax-php-sdk/zipball/5026524988f4c551cd8e419724fda23fffc6a4df",
+                "reference": "5026524988f4c551cd8e419724fda23fffc6a4df",
                 "shasum": ""
             },
             "require": {
@@ -761,9 +761,9 @@
             "description": "orgaMAX SDK for PHP",
             "support": {
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/orgamax-php-sdk/issues",
-                "source": "https://github.com/Daniel-Jorg-Schuppelius/orgamax-php-sdk/tree/v1.1.2"
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/orgamax-php-sdk/tree/v1.2.1"
             },
-            "time": "2026-10-02T22:24:35+00:00"
+            "time": "2026-10-13T08:09:41+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/php-api-toolkit",

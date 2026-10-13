@@ -101,6 +101,7 @@ return [
     'error.intent_invalid' => 'Sin intención de conexión válida — un iid ajeno no se vincula. Reinicie la conexión.',
     'error.nothing_to_confirm' => 'No hay confirmación de cuenta pendiente.',
     'error.not_connected' => 'orgaMAX no está conectado o está bloqueado.',
+    'error.no_customer' => 'El documento no tiene cliente y no se puede transferir a orgaMAX.',
     'error.billing_capability_disabled' => 'La capacidad de facturación no está activada u orgaMAX no la lidera.',
     'error.customer_unmapped' => 'El cliente «:customer» no está asignado a un cliente orgaMAX — asígnelo mediante la bandeja de integración.',
     'error.outcome_unclear' => 'Resultado incierto (tiempo agotado tras el envío) — sin reintento ciego. La próxima ejecución concilia mediante el marcador de origen.',

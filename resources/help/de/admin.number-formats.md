@@ -1,7 +1,7 @@
 ---
 title: "Nummernformate"
 topic: admin.number-formats
-version: 5
+version: 6
 keywords:
     - Nummernkreis
     - Rechnungsnummer
@@ -65,8 +65,7 @@ leeres Feld bedeutet: kein Trenner. Vergebene Nummern bleiben unverändert.
 In der Spalte **Vergibt** wählen Sie für **Kunde** und **Lieferant**, ob
 WorkDiary die Nummer vergibt oder ein angebundenes Buchhaltungsprogramm.
 Zur Wahl stehen aktive Programme, die Nummern vergeben können: Lexoffice
-(Kunde und Lieferant), sevDesk und easybill (Kunde). orgaMAX vergibt keine
-Nummern für WorkDiary.
+(Kunde und Lieferant), sevDesk und easybill (Kunde). orgaMAX vergibt keine Kundennummern für WorkDiary.
 
 Vergibt ein Programm, gilt:
 
@@ -93,8 +92,7 @@ den fremden Kontakt zu überschreiben.
 
 In der Spalte **Vergibt** wählen Sie auch für **Rechnung**, **Gutschrift**
 und **Storno**, wer die Nummer vergibt: WorkDiary oder ein angebundenes
-Programm – Lexoffice und easybill für alle drei, sevDesk für Rechnung und
-Storno. Vergibt ein Programm, trägt ein Entwurf eine Entwurfsnummer;
+Programm – Lexoffice und easybill für alle drei, sevDesk für Rechnung und Storno, orgaMAX für die Rechnung. Vergibt ein Programm, trägt ein Entwurf eine Entwurfsnummer;
 **Stellen** überträgt den Beleg und übernimmt die Nummer des Programms,
 Gutschrift und Storno mit Bezug auf die übertragene Rechnung. Abschlags- und
 Schlussrechnungen legen Sie dann im Programm an.
@@ -117,7 +115,7 @@ Speichern frei.
 ## Angebot, Auftragsbestätigung und Lieferschein
 
 Für **Angebot**, **Auftragsbestätigung** und **Lieferschein** wählen Sie in
-der Spalte **Vergibt** Lexoffice oder easybill. Die Nummer entsteht dann beim
+der Spalte **Vergibt** Lexoffice oder easybill, für Angebot und Auftragsbestätigung auch orgaMAX. Die Nummer entsteht dann beim
 Versand des Angebots, beim Bestätigen der Auftragsbestätigung und beim
 Ausliefern des Lieferscheins, wenn WorkDiary den Beleg an das Programm
 überträgt.

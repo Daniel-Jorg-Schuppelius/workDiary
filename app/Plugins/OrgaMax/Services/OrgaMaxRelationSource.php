@@ -15,6 +15,8 @@ namespace App\Plugins\OrgaMax\Services;
 use App\Enums\Billing\{DocumentKind, DocumentRelationKind};
 use App\Models\Finance\BillingTransfer;
 use App\Models\Integration\ExternalReference;
+use App\Models\Invoicing\Invoice;
+use App\Models\Sales\{OrderConfirmation, Quote};
 use App\Plugins\OrgaMax\Models\OrgaMaxInvoice;
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Services\Billing\Contracts\DocumentRelationSource;
@@ -22,7 +24,8 @@ use App\Services\Billing\Dto\{DocumentNode, DocumentRef, DocumentRelation};
 
 /**
  * orgaMAX im Belegverbund (MVP-1158): Übergabe → Auftrag in orgaMAX →
- * daraus erzeugte Rechnung (Umwandlung über die Outbox).
+ * daraus erzeugte Rechnung (Umwandlung über die Outbox); Gegenstücke der von
+ * orgaMAX nummerierten Angebote, AB und Rechnungen (Phase 145).
  */
 final class OrgaMaxRelationSource implements DocumentRelationSource {
     public function relationsOf(DocumentRef $document, int $organizationId): array {
@@ -35,6 +38,27 @@ final class OrgaMaxRelationSource implements DocumentRelationSource {
             return $reference instanceof ExternalReference ? [new DocumentRelation(new DocumentNode(
                 ref: DocumentRef::external(OrgaMaxPlugin::ID, 'order', (string) $reference->external_id),
                 label: (string) __('orgamax::orgamax.relations.order'),
+                number: $reference->external_number,
+                date: $reference->synced_at,
+                system: 'orgaMAX',
+            ), DocumentRelationKind::Counterpart)] : [];
+        }
+        // Gegenstück eines von orgaMAX nummerierten Belegs (Phase 145).
+        $issued = match (true) {
+            $document->is(Quote::class) => [OrgaMaxDocumentIssuer::EXT_TYPE_OFFER, DocumentKind::Quote],
+            $document->is(OrderConfirmation::class) => [OrgaMaxDocumentIssuer::EXT_TYPE_ORDER_CONFIRMATION, DocumentKind::OrderConfirmation],
+            $document->is(Invoice::class) => [OrgaMaxDocumentIssuer::EXT_TYPE_INVOICE, DocumentKind::Invoice],
+            default => null,
+        };
+        if ($issued !== null) {
+            $reference = ExternalReference::query()
+                ->forPlugin($organizationId, OrgaMaxPlugin::ID, $issued[0])
+                ->where('referenceable_type', $document->type)->where('referenceable_id', $document->id)
+                ->first();
+
+            return $reference instanceof ExternalReference ? [new DocumentRelation(new DocumentNode(
+                ref: DocumentRef::external(OrgaMaxPlugin::ID, $issued[1]->value, (string) $reference->external_id),
+                label: $issued[1]->label(),
                 number: $reference->external_number,
                 date: $reference->synced_at,
                 system: 'orgaMAX',

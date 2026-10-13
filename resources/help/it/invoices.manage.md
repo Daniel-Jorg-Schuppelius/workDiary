@@ -1,7 +1,7 @@
 ---
 title: "Fatture & documenti"
 topic: invoices.manage
-version: 9
+version: 10
 keywords:
     - creare fattura
     - emettere fattura
@@ -169,9 +169,7 @@ Se un programma di contabilità assegna i numeri di fattura (pagina
 **Serie numeriche**), la bozza ha un numero provvisorio e la fattura mostra un
 avviso. **Emettere** – anche l'invio di una bozza per e-mail – trasmette la
 fattura al programma e ne riprende il numero prima che nascano PDF e oggetto.
-Lexoffice ed easybill riprendono la conferma d'ordine o l'offerta come
-documento precedente. Nota di credito e storno vengono trasmessi con
-riferimento alla fattura trasmessa; per sevDesk ed easybill la fattura deve
-trovarsi nel programma. Se il programma rifiuta, il documento resta una bozza
+Lexoffice ed easybill riprendono la conferma d'ordine o l'offerta come documento precedente; orgaMAX crea la fattura tramite un ordine e la blocca. Nota di credito e storno vengono trasmessi con
+riferimento alla fattura trasmessa; per sevDesk ed easybill la fattura deve trovarsi nel programma; orgaMAX non riprende nessuno dei due. Se il programma rifiuta, il documento resta una bozza
 e il messaggio ne indica il motivo. In tal caso crei le fatture di acconto e
 finali nel programma.

@@ -1,7 +1,7 @@
 ---
 title: "Rechnungen & Belege"
 topic: invoices.manage
-version: 9
+version: 10
 keywords:
     - Rechnung erstellen
     - Rechnung schreiben
@@ -163,8 +163,8 @@ Vergibt ein Buchhaltungsprogramm die Rechnungsnummern (Seite
 zeigt einen Hinweis. **Stellen** – auch der E-Mail-Versand eines Entwurfs –
 überträgt die Rechnung an das Programm und übernimmt dessen Nummer, bevor PDF
 und Betreff entstehen. Lexoffice und easybill übernehmen die
-Auftragsbestätigung bzw. das Angebot als Vorgänger. Gutschrift und Storno
+Auftragsbestätigung bzw. das Angebot als Vorgänger; orgaMAX legt die Rechnung über einen Auftrag an und schreibt sie fest. Gutschrift und Storno
 gehen mit Bezug auf die übertragene Rechnung hinüber; bei sevDesk und
-easybill muss die Rechnung dafür im Programm sein. Lehnt das Programm ab,
+easybill muss die Rechnung dafür im Programm sein, orgaMAX übernimmt beide nicht. Lehnt das Programm ab,
 bleibt der Beleg Entwurf, und die Meldung nennt den Grund. Abschlags- und
 Schlussrechnungen legen Sie in diesem Fall im Programm an.

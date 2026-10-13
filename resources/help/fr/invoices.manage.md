@@ -1,7 +1,7 @@
 ---
 title: "Factures & pièces"
 topic: invoices.manage
-version: 9
+version: 10
 keywords:
     - créer une facture
     - établir une facture
@@ -167,9 +167,7 @@ Si un logiciel de comptabilité attribue les numéros de facture (page
 **Plages de numéros**), le brouillon porte un numéro provisoire et la facture
 affiche une remarque. **Émettre** – aussi l'envoi d'un brouillon par e-mail –
 transmet la facture au logiciel et reprend son numéro avant que le PDF et
-l'objet ne soient créés. Lexoffice et easybill reprennent la confirmation de
-commande ou le devis comme document précédent. L'avoir et l'annulation sont
-transmis avec référence à la facture transmise ; pour sevDesk et easybill, la
-facture doit se trouver dans le logiciel. Si le logiciel refuse, le document
+l'objet ne soient créés. Lexoffice et easybill reprennent la confirmation de commande ou le devis comme document précédent ; orgaMAX crée la facture via une commande et la verrouille. L'avoir et l'annulation sont
+transmis avec référence à la facture transmise ; pour sevDesk et easybill, la facture doit se trouver dans le logiciel ; orgaMAX ne reprend ni l'un ni l'autre. Si le logiciel refuse, le document
 reste un brouillon et le message en indique la raison. Créez dans ce cas les
 factures d'acompte et de solde dans le logiciel.

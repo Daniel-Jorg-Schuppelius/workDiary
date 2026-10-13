@@ -1,7 +1,7 @@
 ---
 title: "Quotes"
 topic: quotes.overview
-version: 6
+version: 7
 keywords:
     - create quote
     - estimate
@@ -93,20 +93,20 @@ names the document through which the connection exists.
 
 ## Quote number from the accounting program
 
-If you set an accounting program (Lexoffice or easybill) for **Quote** on the
+If you set an accounting program (Lexoffice, easybill or orgaMAX) for **Quote** on the
 **Number ranges** page, a new quote first carries a draft number. When it is
 **sent**, WorkDiary creates the quote in the program, finalises it there and
 takes over its number; only then is the PDF created. If the transfer fails,
 the quote stays approved and you can send it again. A new version is a new
 quote with its own number in the program. Lexoffice marks optional items as
-optional; easybill lists them without calculation.
+optional; easybill lists them without calculation, orgaMAX leaves them out.
 
 ## Order confirmation
 
 For an accepted quote, **Create order confirmation** creates a separate
 document with the accepted items. The order confirmation has its own number
 range (**Number ranges**, range “Order confirmation”). **Confirm** gives it its
-number; if an accounting program (Lexoffice or easybill) assigns the number,
+number; if an accounting program (Lexoffice, easybill or orgaMAX) assigns the number,
 WorkDiary transfers it at that moment. After that, the PDF and e-mail sending
 are available. Cancelling withdraws it in WorkDiary; it remains in the
 program.

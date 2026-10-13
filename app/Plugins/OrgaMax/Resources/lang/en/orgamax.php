@@ -101,6 +101,7 @@ return [
     'error.intent_invalid' => 'No valid connection intent — a foreign iid is not bound. Please restart the connection.',
     'error.nothing_to_confirm' => 'No account confirmation pending.',
     'error.not_connected' => 'orgaMAX is not connected or blocked.',
+    'error.no_customer' => 'The document has no customer and cannot be transferred to orgaMAX.',
     'error.billing_capability_disabled' => 'The billing capability is not enabled or orgaMAX does not lead it.',
     'error.customer_unmapped' => 'Customer ":customer" is not mapped to an orgaMAX customer — map it via the integration inbox.',
     'error.outcome_unclear' => 'Outcome unclear (timeout after sending) — no blind retry. The next run reconciles via the source marker.',

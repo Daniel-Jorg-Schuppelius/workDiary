@@ -1,7 +1,7 @@
 ---
 title: "Devis"
 topic: quotes.overview
-version: 6
+version: 7
 keywords:
     - créer un devis
     - estimation
@@ -96,14 +96,14 @@ celui-ci ; « via … » nomme le document par lequel le lien existe.
 
 ## Numéro de devis du logiciel de comptabilité
 
-Si vous choisissez un logiciel de comptabilité (Lexoffice ou easybill) pour
+Si vous choisissez un logiciel de comptabilité (Lexoffice, easybill ou orgaMAX) pour
 **Devis** sur la page **Plages de numéros**, un nouveau devis porte d'abord un
 numéro provisoire. Lors de l'**envoi**, WorkDiary crée le devis dans le
 logiciel, l'y finalise et reprend son numéro ; le PDF n'est créé qu'ensuite.
 Si le transfert échoue, le devis reste validé et vous pouvez renouveler
 l'envoi. Une nouvelle version est un nouveau devis avec son propre numéro dans
 le logiciel. Lexoffice marque les positions optionnelles comme optionnelles ;
-easybill les reprend sans calcul.
+easybill les reprend sans calcul, orgaMAX ne les reprend pas.
 
 ## Confirmation de commande
 
@@ -111,7 +111,7 @@ Pour un devis accepté, **Créer la confirmation de commande** crée un
 document distinct avec les positions acceptées. La confirmation de commande a
 sa propre plage de numéros (**Plages de numéros**, plage « Confirmation de
 commande »). **Confirmer** lui attribue son numéro ; si un logiciel de
-comptabilité (Lexoffice ou easybill) attribue le numéro, WorkDiary la
+comptabilité (Lexoffice, easybill ou orgaMAX) attribue le numéro, WorkDiary la
 transfère à ce moment. Ensuite, le PDF et l'envoi par e-mail sont disponibles.
 L'annulation la retire dans WorkDiary ; elle reste dans le logiciel.
 

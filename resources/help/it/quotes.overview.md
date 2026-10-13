@@ -1,7 +1,7 @@
 ---
 title: "Offerte"
 topic: quotes.overview
-version: 6
+version: 7
 keywords:
     - creare un'offerta
     - preventivo
@@ -98,20 +98,20 @@ collegamento.
 ## Numero dell'offerta dal programma di contabilità
 
 Se nella pagina **Serie numeriche** imposta un programma di contabilità
-(Lexoffice o easybill) per **Offerta**, una nuova offerta riceve prima un
+(Lexoffice, easybill o orgaMAX) per **Offerta**, una nuova offerta riceve prima un
 numero provvisorio. All'**invio** WorkDiary crea l'offerta nel programma, la
 finalizza lì e ne adotta il numero; solo dopo viene creato il PDF. Se il
 trasferimento non riesce, l'offerta resta approvata e può ripetere l'invio.
 Una nuova versione è nel programma una nuova offerta con un proprio numero.
 Lexoffice contrassegna le posizioni facoltative come facoltative; easybill le
-riporta senza calcolo.
+riporta senza calcolo; orgaMAX non le riprende.
 
 ## Conferma d'ordine
 
 Per un'offerta accettata, **Crea conferma d'ordine** crea un documento
 proprio con le posizioni accettate. La conferma d'ordine ha una propria serie
 numerica (**Serie numeriche**, serie «Conferma d'ordine»). Con **Conferma**
-riceve il suo numero; se un programma di contabilità (Lexoffice o easybill)
+riceve il suo numero; se un programma di contabilità (Lexoffice, easybill o orgaMAX)
 assegna il numero, WorkDiary la trasferisce in quel momento. Dopo sono
 disponibili il PDF e l'invio per e-mail. L'annullamento la ritira in WorkDiary;
 nel programma resta.

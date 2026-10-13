@@ -19,7 +19,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   MVP-1152–1169): WorkDiary schreibt die Belege, das Programm vergibt die
   Nummer. Auf der Seite „Nummernkreise“ wählt die Organisation für Angebot,
   Auftragsbestätigung, Lieferschein, Rechnung, Gutschrift und Storno, wer
-  vergibt — WorkDiary, Lexoffice, easybill oder (Rechnung, Storno) sevDesk;
+  vergibt — WorkDiary, Lexoffice, easybill, sevDesk (Rechnung, Storno) oder
+  orgaMAX (Angebot, AB, Rechnung);
   der Lexoffice-Schalter für Rechnungsnummern entfällt, die gespeicherte Wahl
   bleibt. Vergibt ein Programm, trägt der Beleg bis zum Festschreiben eine
   Entwurfsnummer: Das Angebot geht beim Versand hinüber, die AB beim
@@ -33,8 +34,8 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   Auslieferungen behalten ihre Nummer `LS-…`. Rechnung, Angebot, AB,
   Lieferschein, Fertigungsauftrag und Übergabe zeigen „Zugehörige Belege“
   einschließlich der Gegenstücke im Programm; der Belegfluss filtert nach
-  Projekt und listet AB und Lieferscheine. Der orgaMAX-Teil folgt mit dem
-  Release des orgaMAX-SDK v1.2.0 (Angebot, Auftrag mit Antwort 201).
+  Projekt und listet AB und Lieferscheine. orgaMAX legt die Rechnung über
+  einen Auftrag an und vergibt die Nummer beim Sperren (orgaMAX-SDK v1.2.1).
 
 - Seite „Nummernkreise“ (Phase 144, MVP-1147–1150): Alle Kreise speichern in
   einem Formular, nur geänderte werden geschrieben; Trenner nach Präfix und

@@ -101,6 +101,7 @@ return [
     'error.intent_invalid' => 'Nessun intento di connessione valido — un iid estraneo non viene associato. Riavvii la connessione.',
     'error.nothing_to_confirm' => 'Nessuna conferma account in sospeso.',
     'error.not_connected' => 'orgaMAX non è collegato o è bloccato.',
+    'error.no_customer' => 'Il documento non ha un cliente e non può essere trasmesso a orgaMAX.',
     'error.billing_capability_disabled' => 'La capacità di fatturazione non è attiva o orgaMAX non la guida.',
     'error.customer_unmapped' => 'Il cliente ":customer" non è associato a un cliente orgaMAX — lo associ tramite la inbox di integrazione.',
     'error.outcome_unclear' => 'Esito incerto (timeout dopo l’invio) — nessun nuovo tentativo cieco. La prossima esecuzione riconcilia tramite il marcatore origine.',

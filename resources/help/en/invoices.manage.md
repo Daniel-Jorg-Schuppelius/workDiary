@@ -1,7 +1,7 @@
 ---
 title: "Invoices & documents"
 topic: invoices.manage
-version: 9
+version: 10
 keywords:
     - create invoice
     - write invoice
@@ -158,9 +158,7 @@ If an accounting program assigns the invoice numbers (**Number ranges**
 page), the draft carries a draft number and the invoice shows a notice.
 **Issue** – also sending a draft by e-mail – transfers the invoice to the
 program and adopts its number before the PDF and subject are created.
-Lexoffice and easybill take the order confirmation or the quote as
-predecessor. Credit note and cancellation go over with a reference to the
-transferred invoice; for sevDesk and easybill the invoice must be in the
-program for that. If the program refuses, the document remains a draft and
+Lexoffice and easybill take the order confirmation or the quote as predecessor; orgaMAX creates the invoice via an order and locks it. Credit note and cancellation go over with a reference to the
+transferred invoice; for sevDesk and easybill the invoice must be in the program for that, orgaMAX takes neither. If the program refuses, the document remains a draft and
 the message names the reason. In this case, create down payment and final
 invoices in the program.

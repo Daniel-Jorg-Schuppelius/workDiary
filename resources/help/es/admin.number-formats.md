@@ -1,7 +1,7 @@
 ---
 title: "Formatos de numeración"
 topic: admin.number-formats
-version: 5
+version: 6
 keywords:
     - serie de numeración
     - número de factura
@@ -58,7 +58,7 @@ no cambian.
 En la columna **Asignado por** elige para **Cliente** y **Proveedor** si
 WorkDiary asigna el número o un programa de contabilidad conectado. Se
 ofrecen los programas activos que pueden asignar números: Lexoffice
-(cliente y proveedor), sevDesk y easybill (cliente). orgaMAX no asigna
+(cliente y proveedor), sevDesk y easybill (cliente). orgaMAX no asigna números de cliente
 números para WorkDiary.
 
 Si un programa asigna los números:
@@ -87,7 +87,7 @@ un aviso en lugar de sobrescribir ese contacto.
 
 En la columna **Asignado por** también elige para **Factura**, **Abono** y
 **Anulación** quién asigna el número: WorkDiary o un programa conectado –
-Lexoffice y easybill para los tres, sevDesk para factura y anulación. Si
+Lexoffice y easybill para los tres, sevDesk para factura y anulación, orgaMAX para la factura. Si
 asigna un programa, el borrador lleva un número provisional; **Emitir**
 transfiere el documento y adopta el número del programa, el abono y la
 anulación con referencia a la factura transferida. Las facturas de anticipo y
@@ -110,6 +110,6 @@ reciben números locales. La selección **Asignado por** sigue siendo editable; 
 ## Oferta, confirmación de pedido y albarán
 
 Para **Oferta**, **Confirmación de pedido** y **Albarán** elija Lexoffice
-o easybill en la columna **Asignado por**. El número se crea al enviar la oferta, al
+o easybill en la columna **Asignado por**; para oferta y confirmación de pedido también orgaMAX. El número se crea al enviar la oferta, al
 confirmar la confirmación de pedido y al entregar el albarán, cuando WorkDiary
 transfiere el documento al programa.

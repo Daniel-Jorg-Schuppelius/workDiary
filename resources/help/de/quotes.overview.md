@@ -1,7 +1,7 @@
 ---
 title: "Angebote"
 topic: quotes.overview
-version: 6
+version: 7
 keywords:
     - Angebot erstellen
     - Kostenvoranschlag
@@ -97,13 +97,13 @@ Beleg, über den der Zusammenhang besteht.
 ## Angebotsnummer vom Buchhaltungsprogramm
 
 Stellen Sie auf der Seite **Nummernkreise** für **Angebot** ein
-Buchhaltungsprogramm ein (Lexoffice oder easybill), trägt ein neues Angebot
+Buchhaltungsprogramm ein (Lexoffice, easybill oder orgaMAX), trägt ein neues Angebot
 zunächst eine Entwurfsnummer. Beim **Versand** legt WorkDiary das Angebot im
 Programm an, schreibt es dort fest und übernimmt dessen Nummer; erst danach
 entsteht das PDF. Scheitert die Übertragung, bleibt das Angebot freigegeben,
 und Sie können den Versand wiederholen. Eine neue Version ist im Programm ein
 neues Angebot mit eigener Nummer. Optionale Positionen kennzeichnet Lexoffice
-als optional; easybill führt sie ohne Berechnung.
+als optional; easybill führt sie ohne Berechnung, orgaMAX übernimmt sie nicht.
 
 ## Auftragsbestätigung
 
@@ -111,7 +111,7 @@ Zu einem angenommenen Angebot legt **Auftragsbestätigung erstellen** einen
 eigenen Beleg mit den angenommenen Positionen an. Die Auftragsbestätigung hat
 einen eigenen Nummernkreis (**Nummernkreise**, Kreis „Auftragsbestätigung“).
 Mit **Bestätigen** erhält sie ihre Nummer; vergibt ein Buchhaltungsprogramm
-(Lexoffice oder easybill) die Nummer, überträgt WorkDiary sie dabei. Danach
+(Lexoffice, easybill oder orgaMAX) die Nummer, überträgt WorkDiary sie dabei. Danach
 lassen sich PDF und E-Mail-Versand nutzen. Stornieren nimmt sie in WorkDiary
 zurück; im Programm bleibt sie bestehen.
 

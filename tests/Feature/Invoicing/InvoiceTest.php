@@ -565,10 +565,11 @@ class InvoiceTest extends TestCase {
     }
 
     public function test_draft_number_stays_while_the_program_cannot_take_the_invoice(): void {
-        // orgaMAX nummeriert Rechnungen erst nach dem SDK-Release (Phase 145) — Stellen bleibt gesperrt.
+        // orgaMAX legt per API keine Gutschrift an — Stellen bleibt gesperrt.
         $this->pluginSecret('orgamax', ['enabled' => true, 'api_key' => 'test-key']);
-        app(NumberSequenceService::class)->setFormat($this->organization, NumberScope::Invoice, ['source' => 'orgamax']);
+        app(NumberSequenceService::class)->setFormat($this->organization, NumberScope::CreditNote, ['source' => 'orgamax']);
         $invoice = $this->draftWithItem(NumberSequenceService::DRAFT_PREFIX . 'LEX00002');
+        $invoice->update(['type' => Invoice::TYPE_CREDIT_NOTE]);
 
         $this->actingAs($this->admin)->from(route('invoices.show', $invoice))
             ->post(route('invoices.issue', $invoice))

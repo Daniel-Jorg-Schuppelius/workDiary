@@ -1,7 +1,7 @@
 ---
 title: "Number Formats"
 topic: admin.number-formats
-version: 5
+version: 6
 keywords:
     - number range
     - invoice number
@@ -62,7 +62,7 @@ no separator. Numbers already assigned stay unchanged.
 In the **Assigned by** column you choose for **Customer** and **Supplier**
 whether WorkDiary assigns the number or a connected accounting program.
 Active programs that can assign numbers are offered: Lexoffice (customer and
-supplier), sevDesk and easybill (customer). orgaMAX does not assign numbers
+supplier), sevDesk and easybill (customer). orgaMAX does not assign customer numbers
 for WorkDiary.
 
 If a program assigns the numbers:
@@ -90,8 +90,7 @@ message instead of overwriting that contact.
 
 In the **Assigned by** column you also choose for **Invoice**, **Credit
 note** and **Cancellation** who assigns the number: WorkDiary or a connected
-program – Lexoffice and easybill for all three, sevDesk for invoice and
-cancellation. If a program assigns, a draft carries a draft number; **Issue**
+program – Lexoffice and easybill for all three, sevDesk for invoice and cancellation, orgaMAX for the invoice. If a program assigns, a draft carries a draft number; **Issue**
 transfers the document and adopts the program's number, credit note and
 cancellation with a reference to the transferred invoice. Create down payment
 and final invoices in the program then.
@@ -114,7 +113,7 @@ editable; the fields become available after saving.
 ## Quote, order confirmation and delivery note
 
 For **Quote**, **Order confirmation** and **Delivery note** you choose
-Lexoffice or easybill in the **Assigned by** column. The number is then
+Lexoffice or easybill in the **Assigned by** column, for quote and order confirmation also orgaMAX. The number is then
 created when the quote is sent, the order confirmation is confirmed and the
 delivery note is delivered, as WorkDiary transfers the document to the
 program.

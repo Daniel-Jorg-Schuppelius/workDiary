@@ -1,7 +1,7 @@
 ---
 title: "Ofertas"
 topic: quotes.overview
-version: 6
+version: 7
 keywords:
     - crear presupuesto
     - presupuesto
@@ -98,21 +98,20 @@ Lexoffice. La columna **Relación** indica qué es el documento respecto a este;
 ## Número de oferta del programa de contabilidad
 
 Si en la página **Series numéricas** elige un programa de contabilidad
-(Lexoffice o easybill) para **Oferta**, una oferta nueva lleva primero un
+(Lexoffice, easybill u orgaMAX) para **Oferta**, una oferta nueva lleva primero un
 número provisional. Al **enviarla**, WorkDiary crea la oferta en el programa,
 la cierra allí y adopta su número; solo entonces se genera el PDF. Si la
 transferencia falla, la oferta sigue aprobada y puede repetir el envío. Una
 nueva versión es en el programa una oferta nueva con su propio número.
 Lexoffice marca las posiciones opcionales como opcionales; easybill las
-incluye sin cálculo.
+incluye sin cálculo; orgaMAX no las toma.
 
 ## Confirmación de pedido
 
 Para una oferta aceptada, **Crear confirmación de pedido** crea un documento
 propio con las posiciones aceptadas. La confirmación de pedido tiene su propia
 serie numérica (**Series numéricas**, serie «Confirmación de pedido»). Con
-**Confirmar** recibe su número; si un programa de contabilidad (Lexoffice o
-easybill) asigna el número, WorkDiary la transfiere en ese momento. Después
+**Confirmar** recibe su número; si un programa de contabilidad (Lexoffice, easybill u orgaMAX) asigna el número, WorkDiary la transfiere en ese momento. Después
 están disponibles el PDF y el envío por correo. Anular la retira en WorkDiary;
 en el programa se mantiene.
 

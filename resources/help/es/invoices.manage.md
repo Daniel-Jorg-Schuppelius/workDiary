@@ -1,7 +1,7 @@
 ---
 title: "Facturas & documentos"
 topic: invoices.manage
-version: 9
+version: 10
 keywords:
     - crear factura
     - emitir factura
@@ -166,9 +166,7 @@ Si un programa de contabilidad asigna los números de factura (página
 **Series numéricas**), el borrador lleva un número provisional y la factura
 muestra un aviso. **Emitir** – también el envío por correo de un borrador –
 transfiere la factura al programa y adopta su número antes de crear el PDF y
-el asunto. Lexoffice y easybill toman la confirmación de pedido o la oferta
-como documento anterior. El abono y la anulación se transfieren con
-referencia a la factura transferida; en sevDesk y easybill la factura debe
-estar en el programa. Si el programa la rechaza, el documento sigue como
+el asunto. Lexoffice y easybill toman la confirmación de pedido o la oferta como documento anterior; orgaMAX crea la factura a través de un pedido y la bloquea. El abono y la anulación se transfieren con
+referencia a la factura transferida; en sevDesk y easybill la factura debe estar en el programa; orgaMAX no asume ninguno de los dos. Si el programa la rechaza, el documento sigue como
 borrador y el mensaje indica el motivo. En ese caso, cree las facturas de
 anticipo y finales en el programa.

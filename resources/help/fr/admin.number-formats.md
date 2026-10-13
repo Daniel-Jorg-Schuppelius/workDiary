@@ -1,7 +1,7 @@
 ---
 title: "Formats de numérotation"
 topic: admin.number-formats
-version: 5
+version: 6
 keywords:
     - plage de numéros
     - numéro de facture
@@ -60,7 +60,7 @@ Dans la colonne **Attribué par**, vous choisissez pour **Client** et
 **Fournisseur** si WorkDiary attribue le numéro ou un logiciel de
 comptabilité connecté. Sont proposés les logiciels actifs capables
 d'attribuer des numéros : Lexoffice (client et fournisseur), sevDesk et
-easybill (client). orgaMAX n'attribue pas de numéros pour WorkDiary.
+easybill (client). orgaMAX n'attribue pas de numéros de client pour WorkDiary.
 
 Si un logiciel attribue les numéros :
 
@@ -88,8 +88,7 @@ un message au lieu d'écraser ce contact.
 
 Dans la colonne **Attribué par**, vous choisissez aussi pour **Facture**,
 **Avoir** et **Annulation** qui attribue le numéro : WorkDiary ou un logiciel
-connecté – Lexoffice et easybill pour les trois, sevDesk pour la facture et
-l'annulation. Si un logiciel attribue, le brouillon porte un numéro
+connecté – Lexoffice et easybill pour les trois, sevDesk pour la facture et l'annulation, orgaMAX pour la facture. Si un logiciel attribue, le brouillon porte un numéro
 provisoire ; **Émettre** transmet le document et reprend le numéro du
 logiciel, l'avoir et l'annulation avec référence à la facture transmise.
 Créez alors les factures d'acompte et de solde dans le logiciel.
@@ -113,6 +112,6 @@ les champs se libèrent après l'enregistrement.
 ## Devis, confirmation de commande et bon de livraison
 
 Pour **Devis**, **Confirmation de commande** et **Bon de livraison**,
-choisissez Lexoffice ou easybill dans la colonne **Attribué par**. Le numéro
+choisissez Lexoffice ou easybill dans la colonne **Attribué par**, pour le devis et la confirmation de commande aussi orgaMAX. Le numéro
 naît alors à l'envoi du devis, à la confirmation de la commande et à la
 livraison du bon, lorsque WorkDiary transmet le document au logiciel.
