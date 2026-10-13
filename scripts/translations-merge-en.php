@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 const ROOT = __DIR__ . '/..';
 
+// Unter PHPStan nicht garantiert definiert; im CLI-Aufruf immer gesetzt.
+$argv = $_SERVER['argv'] ?? [];
+$argc = count($argv);
 if ($argc < 2) {
     fwrite(STDERR, "usage: php scripts/translations-merge-en.php <map.php> [...]\n");
     exit(2);

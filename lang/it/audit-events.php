@@ -781,12 +781,18 @@ return [
     ],
     'order_confirmation' => [
         'mailed' => 'Conferma d\'ordine inviata via e-mail',
+        'created' => 'Conferma d\'ordine creata',
+        'confirmed' => 'Conferma d\'ordine confermata',
+        'cancelled' => 'Conferma d\'ordine annullata',
     ],
     'purchase_order' => [
         'confirmed' => 'Conferma d’ordine importata',
         'mailed' => 'Ordine di acquisto inviato via e-mail',
     ],
     'delivery_note' => [
+        'created' => 'Bolla di consegna creata',
+        'delivered' => 'Bolla di consegna consegnata',
+        'cancelled' => 'Bolla di consegna annullata',
         'mailed' => 'Bolla di consegna inviata via e-mail',
     ],
     'quote' => [

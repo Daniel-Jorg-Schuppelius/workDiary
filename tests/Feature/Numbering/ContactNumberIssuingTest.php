@@ -16,6 +16,7 @@ use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\{PluginSetting, User};
 use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\SevDesk\SevDeskPlugin;
 use App\Services\Finance\Accounting\ContactPushService;
 use App\Services\Numbering\{NumberAuthority, NumberSequenceService};
 use App\Settings\SettingScope;
@@ -69,36 +70,79 @@ class ContactNumberIssuingTest extends TestCase {
         ]);
     }
 
-    public function test_number_page_offers_active_issuers_for_customers_only(): void {
+    public function test_number_page_offers_active_issuers_for_accounting_scopes_only(): void {
         $response = $this->actingAs($this->admin)->get(route('admin.number-formats.index'))->assertOk();
 
         $rows = collect((array) $response->viewData('rows'))->keyBy(fn (array $row): string => $row['scope']->value);
         $this->assertSame(['local', LexofficePlugin::ID], array_keys($rows[NumberScope::Customer->value]['sourceOptions']));
-        $this->assertNull($rows[NumberScope::Invoice->value]['sourceOptions']);
+        // Seit MVP-1165 auch Rechnung, Gutschrift und Storno.
+        $this->assertSame(['local', LexofficePlugin::ID], array_keys($rows[NumberScope::Invoice->value]['sourceOptions']));
+        $this->assertNull($rows[NumberScope::ServiceTicket->value]['sourceOptions']);
         $response->assertSee(__('numbering.source.column'));
     }
 
     public function test_number_page_saves_the_issuer_and_rejects_others(): void {
-        $payload = ['padding' => 4, 'starts_at' => 0, 'prefix' => 'K'];
+        $row = ['padding' => 4, 'starts_at' => 0, 'prefix' => 'K'];
+        $column = fn (NumberScope $scope): string => __('numbering.field.row', ['field' => __('validation.attributes')['formats.*.source'], 'scope' => $scope->label()]);
 
         $this->actingAs($this->admin)
-            ->put(route('admin.number-formats.update'), $payload + ['scope' => NumberScope::Customer->value, 'source' => LexofficePlugin::ID])
+            ->put(route('admin.number-formats.update'), ['formats' => ['customer' => $row + ['source' => LexofficePlugin::ID]]])
             ->assertSessionHasNoErrors();
         $this->assertSame(LexofficePlugin::ID, app(NumberAuthority::class)->sourceFor($this->organization, NumberScope::Customer));
 
         $this->actingAs($this->admin)
-            ->put(route('admin.number-formats.update'), $payload + ['scope' => NumberScope::Customer->value, 'source' => 'sevdesk'])
-            ->assertSessionHasErrors(['source' => __('validation.in', ['attribute' => __('numbering.source.column')])]);
+            ->put(route('admin.number-formats.update'), ['formats' => ['customer' => $row + ['source' => 'sevdesk']]])
+            ->assertSessionHasErrors(['formats.customer.source' => __('validation.in', ['attribute' => $column(NumberScope::Customer)])]);
         $this->actingAs($this->admin)
-            ->put(route('admin.number-formats.update'), $payload + ['scope' => NumberScope::Invoice->value, 'source' => LexofficePlugin::ID])
-            ->assertSessionHasErrors('source');
+            ->put(route('admin.number-formats.update'), ['formats' => ['service_ticket' => $row + ['source' => LexofficePlugin::ID]]])
+            ->assertSessionHasErrors('formats.service_ticket.source');
     }
 
-    public function test_lexoffice_switch_applies_on_save_to_document_scopes(): void {
+    public function test_number_page_shows_the_program_state_instead_of_a_draft_preview(): void {
+        $this->lexofficeIssuesCustomerNumbers();
+        Customer::factory()->create(['organization_id' => $this->organization->id, 'number' => '10023', 'number_source' => LexofficePlugin::ID]);
+        Customer::factory()->create(['organization_id' => $this->organization->id, 'number' => NumberSequenceService::DRAFT_PREFIX . 'ABCDEFGH', 'number_source' => LexofficePlugin::ID]);
+
+        $response = $this->actingAs($this->admin)->get(route('admin.number-formats.index'))->assertOk();
+
+        $row = collect((array) $response->viewData('rows'))->firstWhere('scope', NumberScope::Customer);
+        $this->assertSame('Lexoffice', $row['lockedBy']);
+        $this->assertNull($row['preview']);
+        $this->assertSame([
+            __('numbering.preview.last_adopted', ['program' => 'Lexoffice', 'number' => '10023']),
+            trans_choice('numbering.preview.pending', 1, ['count' => 1]),
+        ], $row['details']);
+        $response->assertDontSee(NumberSequenceService::DRAFT_PREFIX);
+    }
+
+    public function test_number_page_shows_the_next_sevdesk_number(): void {
+        PluginSetting::create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => SevDeskPlugin::ID,
+            'enabled' => true,
+            'settings' => ['api_key' => 'k'],
+        ]);
+        app(NumberSequenceService::class)->setFormat($this->organization, NumberScope::Customer, ['source' => SevDeskPlugin::ID]);
+        $fake = FakePluginHttp::fake([
+            'https://my.sevdesk.de/api/v1/Contact/Factory/getNextCustomerNumber' => FakePluginHttp::response(['objects' => '1043']),
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('admin.number-formats.index'))->assertOk();
+
+        $row = collect((array) $response->viewData('rows'))->firstWhere('scope', NumberScope::Customer);
+        $this->assertSame([__('numbering.preview.next_remote', ['program' => 'sevDesk', 'number' => '1043'])], $row['details']);
+
+        // Zweiter Aufruf aus dem Zwischenspeicher.
+        $this->actingAs($this->admin)->get(route('admin.number-formats.index'))->assertOk();
+        $fake->assertSentCount(1);
+    }
+
+    public function test_lexoffice_settings_leave_the_number_ranges_alone(): void {
+        // Wer Rechnungsnummern vergibt, steht seit MVP-1165 allein auf der Seite „Nummernkreise“.
         app(LexofficePlugin::class)->onSettingsSaved($this->organization->id, ['number_authority' => '1']);
 
         $authority = app(NumberAuthority::class);
-        $this->assertSame(LexofficePlugin::ID, $authority->sourceFor($this->organization, NumberScope::Invoice));
+        $this->assertSame(NumberAuthority::SOURCE_LOCAL, $authority->sourceFor($this->organization, NumberScope::Invoice));
         $this->assertSame(NumberAuthority::SOURCE_LOCAL, $authority->sourceFor($this->organization, NumberScope::Customer));
     }
 
@@ -168,7 +212,7 @@ class ContactNumberIssuingTest extends TestCase {
         $this->assertTrue(NumberSequenceService::isDraft($customer->number));
         $this->fakeLexoffice(10088);
 
-        $this->artisan('accounting:issue-contact-numbers', ['--organization' => $this->organization->id])->assertSuccessful();
+        $this->assertSame(0, \Illuminate\Support\Facades\Artisan::call('accounting:issue-contact-numbers', ['--organization' => $this->organization->id]));
 
         $this->assertSame('10088', $customer->fresh()?->number);
         $this->assertDatabaseHas('external_references', [

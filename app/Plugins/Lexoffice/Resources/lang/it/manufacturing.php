@@ -15,6 +15,7 @@ return [
         ],
         'flash' => [
             'lexoffice_pushed' => 'Documento di trasporto inviato a Lexoffice.',
+            'already_linked' => 'Questo documento esiste già in Lexoffice (ID :id); non ne è stato creato un secondo.',
         ],
     ],
 ];

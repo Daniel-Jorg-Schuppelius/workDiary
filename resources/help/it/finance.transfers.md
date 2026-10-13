@@ -1,7 +1,7 @@
 ---
 title: "Trasferimento fatturazione"
 topic: finance.transfers
-version: 3
+version: 4
 keywords:
     - trasferimento a Lexoffice
     - trasferimento DATEV
@@ -12,6 +12,8 @@ keywords:
     - export fatturazione
     - software di fatturazione
     - righe di fattura
+    - documenti collegati
+    - catena dei documenti
 audience: []
 modules:
     - module.finance
@@ -73,3 +75,15 @@ separatamente (**Preparare e trasferire i tempi fatturabili** oppure
 visibile a chi ha **Consultare le ricevute di trasferimento**; stornare
 e correggere richiedono inoltre **Gestire la configurazione
 finanziaria**.
+
+## Documenti collegati
+
+In fondo alla pagina, **Documenti collegati** elenca tutti i documenti legati
+a questo: l'offerta e le sue versioni, fatture, acconti e fattura finale, note
+di credito e storni, documenti di trasporto, ordini di produzione e
+trasmissioni. Se un programma di contabilità ha ripreso un documento, il suo
+corrispondente compare lì con il numero del programma. Compaiono anche i
+collegamenti segnalati dal programma stesso, per esempio un acconto creato in
+Lexoffice. La colonna **Relazione** indica che cosa è il documento rispetto a
+questo; «tramite …» nomina il documento attraverso cui esiste il
+collegamento.

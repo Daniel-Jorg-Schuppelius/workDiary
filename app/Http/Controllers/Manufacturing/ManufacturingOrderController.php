@@ -10,17 +10,20 @@
 
 namespace App\Http\Controllers\Manufacturing;
 
+use App\Enums\Billing\DeliveryNoteStatus;
 use App\Enums\Manufacturing\ManufacturingOrderStatus;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Manufacturing\SaveManufacturingOrderRequest;
 use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Customer\Customer;
-use App\Models\Inventory\{StockDelivery, Warehouse};
+use App\Models\Inventory\Warehouse;
 use App\Models\Manufacturing\{ManufacturingOrder, ManufacturingOrderMaterial, WorkCenter};
+use App\Models\Platform\User;
 use App\Models\Shipping\CarrierConnection;
 use App\Models\Supplier\Supplier;
-use App\Services\Manufacturing\{CapacityService, DeliveryNotePdfRenderer, DeliveryService, ManufacturingInventoryService, ManufacturingOrderService, ManufacturingQualityService, ManufacturingRecordPdfRenderer, ManufacturingReportService, SubcontractService};
+use App\Services\Billing\DeliveryNoteService;
+use App\Services\Manufacturing\{CapacityService, DeliveryService, ManufacturingInventoryService, ManufacturingOrderService, ManufacturingQualityService, ManufacturingRecordPdfRenderer, ManufacturingReportService, SubcontractService};
 use App\Support\{ErrorText, SqidEncoder};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
@@ -95,7 +98,7 @@ class ManufacturingOrderController extends Controller {
 
     public function show(ManufacturingOrder $order, ManufacturingQualityService $quality): View {
         Gate::authorize('view', $order);
-        $order->load(['article', 'variant', 'warehouse', 'materials', 'reports', 'deliveries.customer', 'deliveries.shipment', 'deliveries.parcels.serials', 'deliveries.invoiceItems.invoice', 'procedureRun']);
+        $order->load(['article', 'variant', 'warehouse', 'materials', 'reports', 'deliveries.customer', 'deliveries.shipment', 'deliveries.parcels.serials', 'deliveries.invoiceItems.invoice', 'deliveries.deliveryNoteItem.deliveryNote', 'procedureRun']);
 
         return view('manufacturing.show', [
             'order' => $order,
@@ -212,17 +215,6 @@ class ManufacturingOrderController extends Controller {
         return back()->with('success', __('Ersatzmaterial-Antrag entschieden.'));
     }
 
-    /** Liefert die Auslieferung als Lieferschein-PDF (Feature 047, MVP-074). */
-    public function deliveryNotePdf(ManufacturingOrder $order, StockDelivery $delivery, DeliveryNotePdfRenderer $renderer): \Illuminate\Http\Response {
-        Gate::authorize('view', $order);
-        abort_unless($delivery->manufacturing_order_id === $order->id, 404);
-
-        return response($renderer->render($delivery), 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="' . $renderer->number($delivery) . '.pdf"',
-        ]);
-    }
-
     /** Weist den Auftrag einem Arbeitsplatz mit geplanter Belegungsdauer zu (E7). */
     public function assignWorkCenter(Request $request, ManufacturingOrder $order): RedirectResponse {
         Gate::authorize('update', $order);
@@ -311,9 +303,20 @@ class ManufacturingOrderController extends Controller {
         $customer = $order->customer_id !== null ? Customer::query()->find($order->customer_id) : null;
 
         try {
-            $this->deliveries->deliver($variant, $warehouse, (string) $data['quantity'], $order, $customer, createdBy: Auth::id() !== null ? (int) Auth::id() : null);
+            $delivery = $this->deliveries->deliver($variant, $warehouse, (string) $data['quantity'], $order, $customer, createdBy: Auth::id() !== null ? (int) Auth::id() : null);
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
+        }
+
+        // MVP-1164: Vergibt ein Programm die Lieferscheinnummer, überträgt es ihn jetzt; lehnt es ab, bleibt er Entwurf.
+        $note = $delivery->deliveryNoteItem()->first()?->deliveryNote()->first();
+        $actor = Auth::user();
+        if ($note !== null && $note->status === DeliveryNoteStatus::Draft && $actor instanceof User) {
+            try {
+                app(DeliveryNoteService::class)->deliver($note, $actor);
+            } catch (RuntimeException $e) {
+                return back()->with('warning', __('billing.delivery_note.flash.issue_failed', ['number' => $note->number, 'error' => ErrorText::for($e)]));
+            }
         }
 
         return back()->with('success', __('manufacturing.order.flash.delivered'));

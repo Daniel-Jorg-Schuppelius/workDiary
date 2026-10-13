@@ -15,6 +15,7 @@ return [
         ],
         'flash' => [
             'lexoffice_pushed' => 'Lieferschein an Lexoffice übergeben.',
+            'already_linked' => 'Dieser Beleg ist in Lexoffice schon angelegt (ID :id); es wurde kein zweiter angelegt.',
         ],
     ],
 ];

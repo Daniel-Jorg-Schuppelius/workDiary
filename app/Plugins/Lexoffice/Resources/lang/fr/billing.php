@@ -14,4 +14,7 @@ return [
             'dun_confirm' => 'Créer une relance dans la comptabilité ?',
         ],
     ],
+    'relations' => [
+        'not_mirrored' => 'pas encore synchronisé',
+    ],
 ];

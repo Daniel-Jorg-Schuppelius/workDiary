@@ -19,7 +19,8 @@ use App\Enums\Sales\QuoteStatus;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Models\Sales\Quote;
-use App\Services\Numbering\NumberSequenceService;
+use App\Services\Billing\BillingModeResolver;
+use App\Services\Numbering\{DocumentIssuers, NumberAuthority, NumberSequenceService};
 use App\Support\Setting;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\CryptoHelper;
@@ -75,6 +76,10 @@ class QuoteService {
             $next = $quote->replicate(['acceptance_token_hash', 'decided_at', 'decision_snapshot']);
             $next->version = $quote->version + 1;
             $next->previous_version_id = (int) $quote->id;
+            // Vergibt ein Programm, ist jede Version dort ein eigenes Angebot mit eigener Nummer (MVP-1161).
+            if (app(NumberAuthority::class)->isExternal((int) $quote->organization_id, NumberScope::Quote)) {
+                $next->number = $this->numbers->next((int) $quote->organization_id, NumberScope::Quote, now());
+            }
             $next->status = QuoteStatus::Draft;
             $next->created_by = (int) $actor->id;
             $next->save();
@@ -111,11 +116,14 @@ class QuoteService {
             throw new \RuntimeException((string) __('Nur freigegebene Angebote können versendet werden.'));
         }
 
+        // Die Nummer steht vor dem ersten PDF fest: Vergibt ein Programm, überträgt der Versand das Angebot (MVP-1161).
+        $number = app(DocumentIssuers::class)->numberOnIssue($quote, NumberScope::Quote);
+
         $token = Str::random(48);
         $attributes = [
             'status' => QuoteStatus::Sent,
             'acceptance_token_hash' => CryptoHelper::hash($token),
-        ];
+        ] + ($number !== null ? ['number' => $number] : []);
 
         // Nachfasstermin vorbelegen (Feature 112, MVP-601) — nur vorbelegen,
         // nicht erzwingen: Ein Pflichtfeld füllt sich mit Fantasiedaten, um
@@ -235,6 +243,7 @@ class QuoteService {
         if (! $quote->status->isWon()) {
             throw new \RuntimeException((string) __('Nur angenommene Angebote werden überführt.'));
         }
+        app(BillingModeResolver::class)->assertLocalInvoicing($quote->customer()->firstOrFail());
 
         return DB::transaction(function () use ($quote, $actor): Invoice {
             // Steuerkontext wie im InvoiceGenerator über den TaxResolver (§19, Reverse Charge, Drittland) statt
@@ -312,6 +321,7 @@ class QuoteService {
         if ($proforma->type !== Invoice::TYPE_PROFORMA) {
             throw new \RuntimeException((string) __('Nur Pro-forma-Rechnungen können umgewandelt werden.'));
         }
+        app(BillingModeResolver::class)->assertLocalInvoicing($proforma->customer()->firstOrFail());
 
         return DB::transaction(function () use ($proforma, $actor): Invoice {
             $invoice = Invoice::query()->create([

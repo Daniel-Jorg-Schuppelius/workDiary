@@ -106,4 +106,7 @@ return [
     'error.outcome_unclear' => 'Ergebnis unklar (Timeout nach dem Senden) — keine blinde Wiederholung. Der nächste Lauf gleicht über den Quellmarker ab.',
     'error.token_exchange_failed' => 'Tokenaustausch fehlgeschlagen (HTTP :status) — API-Key/Secret prüfen.',
     'order.internal_note' => 'WorkDiary-Übergabe :channel :from–:to',
+    'relations' => [
+        'order' => 'Auftrag',
+    ],
 ];

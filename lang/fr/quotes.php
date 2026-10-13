@@ -90,4 +90,30 @@ return [
         'marked_on' => 'Facturé dans le logiciel comptable (marqué le :date)',
         'marked_with_number' => 'Facturé dans le logiciel comptable : :number (marqué le :date)',
     ],
+    // Auftragsbestätigung als eigener Beleg (Phase 145, MVP-1162).
+    'order_confirmation' => [
+        'open' => 'Confirmation de commande :number',
+        'create' => 'Créer la confirmation de commande',
+        'confirm' => 'Confirmer',
+        'cancel' => 'Annuler',
+        'cancel_confirm' => 'Annuler la confirmation de commande ? Elle reste dans le logiciel de comptabilité.',
+        'to_quote' => 'Devis :number',
+        'confirmed_on' => 'Confirmée le :date',
+        'number_pending' => ':program attribue le numéro lors de la confirmation ; d\'ici là, la confirmation de commande porte un numéro provisoire.',
+        'pdf' => [
+            'number' => 'N° :number',
+        ],
+        'flash' => [
+            'confirmed' => 'Confirmation de commande :number confirmée.',
+            'cancelled' => 'Confirmation de commande annulée.',
+            'create_first' => 'Veuillez d\'abord créer la confirmation de commande.',
+        ],
+        'error' => [
+            'not_won' => 'Seuls les devis acceptés sont confirmés.',
+            'not_draft' => 'Seuls les brouillons peuvent être confirmés.',
+            'empty' => 'La confirmation de commande n\'a pas de positions.',
+            'not_cancellable' => 'Cette confirmation de commande ne peut pas être annulée.',
+            'not_confirmed' => 'La confirmation de commande n\'est pas encore confirmée.',
+        ],
+    ],
 ];

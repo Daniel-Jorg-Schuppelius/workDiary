@@ -32,7 +32,7 @@ use Tests\TestCase;
 
 /**
  * MVP-125 (Bauturbo A4): idempotente Übergabe als sevDesk-Rechnungsentwurf —
- * höchstens EINE Rechnung je freigegebenem Transfer (Status 50, Hoheit bei
+ * höchstens EINE Rechnung je freigegebenem Transfer (Status 100, Hoheit bei
  * sevDesk); Timeout/Retry läuft über die Marker-Reconciliation statt blinder
  * Wiederholung; Quellen werden markiert; Buchhaltungs-Version je Mandant
  * steuert taxRule (2.0) vs. taxType (1.0).
@@ -107,10 +107,13 @@ class SevDeskTransferTest extends TestCase {
         );
         $this->service->confirm($transfer, $this->accountant);
 
-        return $transfer->fresh();
+        return $transfer->refresh();
     }
 
-    /** @param array<string, mixed> $overrides */
+    /**
+     * @param  array<string, mixed>  $overrides
+     * @return array<string, mixed>
+     */
     private function stubs(array $overrides = []): array {
         return array_merge([
             'https://my.sevdesk.de/api/v1/Tools/bookkeepingSystemVersion*' => FakePluginHttp::response(['objects' => ['version' => '1.0']]),
@@ -120,7 +123,7 @@ class SevDeskTransferTest extends TestCase {
             'https://my.sevdesk.de/api/v1/Contact' => FakePluginHttp::response(['objects' => ['id' => 501, 'customerNumber' => 'K-1001']], 201),
             // Reconciliation-Scan findet nichts.
             'https://my.sevdesk.de/api/v1/Invoice?*' => FakePluginHttp::response(['objects' => []]),
-            'https://my.sevdesk.de/api/v1/Invoice/Factory/saveInvoice' => FakePluginHttp::response(['objects' => ['invoice' => ['id' => 9001, 'status' => '50']]], 201),
+            'https://my.sevdesk.de/api/v1/Invoice/Factory/saveInvoice' => FakePluginHttp::response(['objects' => ['invoice' => ['id' => 9001, 'status' => '100']]], 201),
         ], $overrides);
     }
 
@@ -153,7 +156,7 @@ class SevDeskTransferTest extends TestCase {
         // Quellen sind verbraucht (exported) — keine Doppelabrechnung.
         $this->assertSame(0, TimeEntry::query()->where('exported', false)->count());
 
-        // Entwurf (Status 50, Hoheit bei sevDesk) mit Marker, Kontakt und
+        // Entwurf (Status 100, Hoheit bei sevDesk) mit Marker, Kontakt und
         // v1-Steuerlogik (taxType statt taxRule) — atomar über die Factory.
         $fake->assertSent(function (RequestInterface $r) use ($transfer): bool {
             if ($r->getMethod() !== 'POST' || ! str_contains((string) $r->getUri(), '/Invoice/Factory/saveInvoice')) {
@@ -161,7 +164,7 @@ class SevDeskTransferTest extends TestCase {
             }
             $body = (string) $r->getBody();
 
-            return str_contains($body, '"status":50')
+            return str_contains($body, '"status":100')
                 && str_contains($body, SevDeskTarget::MARKER_PREFIX . $transfer->payload_hash)
                 && str_contains($body, '"taxType":"default"')
                 && ! str_contains($body, '"taxRule"')
@@ -211,7 +214,7 @@ class SevDeskTransferTest extends TestCase {
         // Direkter Zweitaufruf des Targets: liefert die bestehende Referenz,
         // ohne die API zu berühren.
         $fake = FakePluginHttp::fake([]);
-        $result = app(SevDeskTarget::class)->transfer($transfer->fresh());
+        $result = app(SevDeskTarget::class)->transfer($transfer->refresh());
         $this->assertSame('9001', $result->externalReference?->external_id);
         $fake->assertNothingSent();
     }
@@ -225,7 +228,7 @@ class SevDeskTransferTest extends TestCase {
 
         $this->post(route('finance.transfers.execute', $transfer))->assertRedirect();
 
-        $this->assertSame(TransferStatus::Transferred, $transfer->fresh()->status);
+        $this->assertSame(TransferStatus::Transferred, $transfer->refresh()->status);
         $this->assertSame('2.0', Cache::get(SevDeskClient::versionCacheKey($this->organization->id)));
 
         $fake->assertSent(function (RequestInterface $r): bool {
@@ -247,7 +250,7 @@ class SevDeskTransferTest extends TestCase {
 
         $this->post(route('finance.transfers.execute', $transfer))->assertRedirect();
 
-        $this->assertSame(TransferStatus::Transferred, $transfer->fresh()->status);
+        $this->assertSame(TransferStatus::Transferred, $transfer->refresh()->status);
         // Versions-Cache je Mandant greift — keine erneute API-Probe.
         $fake->assertNotSent(fn(RequestInterface $r) => str_contains((string) $r->getUri(), 'bookkeepingSystemVersion'));
         $fake->assertSentCount(6);

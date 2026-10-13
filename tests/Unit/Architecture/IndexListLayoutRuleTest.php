@@ -63,7 +63,7 @@ class IndexListLayoutRuleTest extends TestCase {
         'resources/views/admin/mail/index.blade.php' => 'Postfächer der Organisation für den Maileingang — eine Handvoll.',
         'resources/views/admin/metrics/index.blade.php' => 'Betriebskennzahlen: Aggregat-Tabellen (Nutzung je Funktion, Erklärung der Telemetrie-Zähler) — keine Datensatzliste.',
         'resources/views/admin/notification-rules/index.blade.php' => 'Eine Zeile je Benachrichtigungsereignis (Enum NotificationEvent) — durch den Code festgelegt, nicht durch Daten.',
-        'resources/views/admin/number-formats/index.blade.php' => 'Eine Zeile je Nummernkreis (Enum NumberScope) mit Formular in der Zeile — durch den Code festgelegt.',
+        'resources/views/admin/number-formats/index.blade.php' => 'Eine Zeile je Nummernkreis (Enum NumberScope), alle Zeilen in einem Formular — durch den Code festgelegt.',
         'resources/views/admin/plugins/index.blade.php' => 'Eine Zeile je installiertem Plugin aus dem PluginManager, in der View gefiltert und clientseitig sortiert — keine Datenbankliste.',
         'resources/views/admin/privacy/index.blade.php' => 'Datenschutz-Übersicht: Datenkategorien aus der Konfiguration und Auszüge (Sitzungen, Tokens, Integrationen, letzte Exporte und Supportzugriffe) — die vollständige Verwaltung liegt unter Sitzungen.',
         'resources/views/admin/scheduler/index.blade.php' => 'Eine Zeile je geplantem Job aus der Job-Registry im Code; Filter und Sortierung laufen in PHP über den berechneten Laufzustand.',

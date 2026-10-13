@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\SevDesk\Console;
 
 use App\Models\Platform\Organization;
-use App\Plugins\SevDesk\Services\SevDeskVoucherPullService;
+use App\Plugins\SevDesk\Services\{SevDeskInvoiceNumberPull, SevDeskVoucherPullService};
 use App\Plugins\SevDesk\SevDeskPlugin;
 use App\Plugins\Support\Console\ChecksPluginSwitch;
 use Illuminate\Console\Command;
@@ -32,7 +32,7 @@ class SevDeskPullVouchersCommand extends Command {
 
     protected $description = 'Spiegelt sevDesk-Belege in die Belegliste (Feature 122).';
 
-    public function handle(SevDeskVoucherPullService $pull): int {
+    public function handle(SevDeskVoucherPullService $pull, SevDeskInvoiceNumberPull $numbers): int {
         $orgOption = $this->option('organization');
         $pages = max(1, (int) $this->option('pages'));
         $totals = ['read' => 0, 'created' => 0, 'updated' => 0];
@@ -51,6 +51,8 @@ class SevDeskPullVouchersCommand extends Command {
                 foreach ($totals as $key => $value) {
                     $totals[$key] = $value + $result[$key];
                 }
+                // Nummer und Status übergebener Rechnungsentwürfe (MVP-1158).
+                $numbers->pull((int) $organization->id);
             } catch (Throwable) {
                 $failed++;
             }

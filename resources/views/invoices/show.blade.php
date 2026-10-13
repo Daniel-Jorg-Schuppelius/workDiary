@@ -261,7 +261,7 @@
                         </x-action-form>
                     @endif
                 @endcan
-                @if ($invoice->isProforma())
+                @if ($invoice->isProforma() && $billingInternal)
                     @can('create', \App\Models\Invoicing\Invoice::class)
                         <x-action-form :action="route('invoices.proforma-convert', $invoice)"
                               :confirm="__('Pro-forma :nr in eine echte Rechnung mit neuer Rechnungsnummer umwandeln?', ['nr' => $invoice->number])"
@@ -354,6 +354,13 @@
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
+
+    @if ($numberIssuer !== null)
+        <div role="status" class="alert alert-info text-sm">
+            <x-icon name="tag" />
+            {{ __('numbering.issue.invoice_pending', ['program' => $numberIssuer]) }}
+        </div>
+    @endif
 
     @php $showServiceDates = $invoice->hasServicePeriod(); $footColspan = $showServiceDates ? 5 : 4; @endphp
 
@@ -631,6 +638,9 @@
             <div>{{ __('Freigegeben am :date', ['date' => $invoice->approved_at->fdatetime()]) }}</div>
         @endif
     </div>
+
+    {{-- Zugehörige Belege lokal und im Buchhaltungsprogramm (MVP-1159). --}}
+    <x-billing.document-relations :document="$invoice" />
 
     {{-- Zustellnachweis (MVP-168): jeder Versand/Download ist ein eigener Versuch --}}
     @php $dispatches = $invoice->dispatches()->with([])->limit(50)->get(); @endphp

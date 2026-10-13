@@ -1,7 +1,7 @@
 ---
 title: "Faktura-Übergabe"
 topic: finance.transfers
-version: 3
+version: 4
 keywords:
     - Lexoffice-Übergabe
     - Zeiten an Lexoffice
@@ -15,6 +15,8 @@ keywords:
     - Rechnungshoheit
     - Positionen übergeben
     - Faktura-Export
+    - zugehörige Belege
+    - Belegkette
 audience: []
 modules:
     - module.finance
@@ -73,3 +75,14 @@ Berechtigungen: Zeit- und Materialübergaben sind getrennt geschützt
 vorbereiten und übertragen**). Die Liste sehen Personen mit
 **Übergabenachweise einsehen**; Stornieren und Korrigieren erfordern
 zusätzlich **Finanzkonfiguration verwalten**.
+
+## Zugehörige Belege
+
+Unten auf der Seite listet **Zugehörige Belege** alle Belege, die mit
+diesem zusammenhängen: Angebot und seine Versionen, Rechnungen, Abschläge und
+Schlussrechnung, Gutschriften und Stornos, Lieferscheine, Fertigungsaufträge
+und Übergaben. Hat ein Buchhaltungsprogramm einen Beleg übernommen, steht
+sein Gegenstück dort mit der Nummer des Programms. Bezüge, die das Programm
+selbst meldet, etwa ein in Lexoffice angelegter Abschlag, erscheinen ebenfalls.
+Die Spalte **Bezug** sagt, was der Beleg für diesen ist; „über …“ nennt den
+Beleg, über den der Zusammenhang besteht.

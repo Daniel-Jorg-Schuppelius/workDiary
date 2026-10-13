@@ -10,16 +10,16 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Manufacturing\Mail;
+namespace App\Services\Billing\Mail;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
+use App\Models\Billing\DeliveryNote;
 use App\Models\Customer\Customer;
-use App\Models\Inventory\StockDelivery;
+use App\Services\Billing\DeliveryNotePdfRenderer;
 use App\Services\Document\Contracts\MailableDocumentProvider;
-use App\Services\Manufacturing\DeliveryNotePdfRenderer;
 use Illuminate\Database\Eloquent\Model;
 
-/** Lieferschein der Auslieferung im Belegversand. */
+/** Lieferschein im Belegversand (Beleg seit Phase 145, MVP-1163). */
 final class DeliveryNoteMailDocument implements MailableDocumentProvider {
     public function __construct(private readonly DeliveryNotePdfRenderer $renderer) {}
 
@@ -28,45 +28,45 @@ final class DeliveryNoteMailDocument implements MailableDocumentProvider {
     }
 
     public function modelClass(RenderDocumentKind $kind): string {
-        return StockDelivery::class;
+        return DeliveryNote::class;
     }
 
     public function pdfBytes(Model $document, RenderDocumentKind $kind): string {
-        /** @var StockDelivery $document */
+        /** @var DeliveryNote $document */
         return $this->renderer->render($document);
     }
 
     public function attachmentFilename(Model $document, RenderDocumentKind $kind): string {
-        /** @var StockDelivery $document */
-        return $this->renderer->number($document) . '.pdf';
+        /** @var DeliveryNote $document */
+        return $this->renderer->filename($document);
     }
 
     public function documentNumber(Model $document, RenderDocumentKind $kind): string {
-        /** @var StockDelivery $document */
-        return $this->renderer->number($document);
+        /** @var DeliveryNote $document */
+        return $document->number;
     }
 
     public function variables(Model $document, RenderDocumentKind $kind): array {
-        /** @var StockDelivery $document */
+        /** @var DeliveryNote $document */
         $document->loadMissing('customer');
 
         return [
             'customer_name' => (string) ($document->customer->name ?? ''),
             'customer_email' => (string) ($document->customer->email ?? ''),
-            'document_number' => $this->renderer->number($document),
-            'document_date' => optional($document->delivered_at ?? $document->created_at)->format('d.m.Y') ?? '',
+            'document_number' => $document->number,
+            'document_date' => ($document->delivered_on ?? $document->created_at)?->format('d.m.Y') ?? '',
         ];
     }
 
     public function defaultRecipient(Model $document, RenderDocumentKind $kind): string {
-        /** @var StockDelivery $document */
+        /** @var DeliveryNote $document */
         $customer = $document->customer;
 
         return (string) ($customer?->primaryContact()['email'] ?? $customer->email ?? '');
     }
 
     public function localeCustomer(Model $document, RenderDocumentKind $kind): ?Customer {
-        /** @var StockDelivery $document */
+        /** @var DeliveryNote $document */
         return $document->customer;
     }
 

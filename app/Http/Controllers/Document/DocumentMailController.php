@@ -12,18 +12,18 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Document;
 
+use App\Enums\Billing\DeliveryNoteStatus;
 use App\Enums\DocumentDesign\RenderDocumentKind;
-use App\Enums\Sales\QuoteStatus;
+use App\Enums\Sales\{OrderConfirmationStatus, QuoteStatus};
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\SplitsRecipientLists;
 use App\Http\Controllers\Controller;
+use App\Models\Billing\DeliveryNote;
 use App\Models\Construction\ConstructionNotice;
-use App\Models\Inventory\StockDelivery;
 use App\Models\Invoicing\InvoiceMailTemplate;
-use App\Models\Manufacturing\ManufacturingOrder;
 use App\Models\Procurement\PurchaseOrder;
 use App\Models\Project\Project;
-use App\Models\Sales\Quote;
+use App\Models\Sales\{OrderConfirmation, Quote};
 use App\Services\Document\DocumentMailService;
 use App\Support\SqidEncoder;
 use Illuminate\Contracts\View\View;
@@ -62,20 +62,20 @@ class DocumentMailController extends Controller {
         return $this->send($request, $quote, RenderDocumentKind::Quote, route('quotes.show', $quote));
     }
 
-    // ── Auftragsbestätigung (zum angenommenen Angebot) ───────────────────
+    // ── Auftragsbestätigung (eigener Beleg seit Phase 145, MVP-1162) ─────
 
-    public function orderConfirmationForm(Quote $quote): View {
-        Gate::authorize('view', $quote);
-        $this->assertAccepted($quote);
+    public function orderConfirmationForm(OrderConfirmation $orderConfirmation): View {
+        Gate::authorize('view', $orderConfirmation);
+        abort_if($orderConfirmation->status === OrderConfirmationStatus::Draft, 422, (string) __('quotes.order_confirmation.error.not_confirmed'));
 
-        return $this->form($quote, RenderDocumentKind::OrderConfirmation, route('quotes.order-confirmation.mail', $quote), __('Auftragsbestätigung :nr per E-Mail senden', ['nr' => $quote->number]));
+        return $this->form($orderConfirmation, RenderDocumentKind::OrderConfirmation, route('order-confirmations.mail', $orderConfirmation), __('Auftragsbestätigung :nr per E-Mail senden', ['nr' => $orderConfirmation->number]));
     }
 
-    public function orderConfirmationSend(Request $request, Quote $quote): RedirectResponse {
-        Gate::authorize('view', $quote);
-        $this->assertAccepted($quote);
+    public function orderConfirmationSend(Request $request, OrderConfirmation $orderConfirmation): RedirectResponse {
+        Gate::authorize('view', $orderConfirmation);
+        abort_if($orderConfirmation->status === OrderConfirmationStatus::Draft, 422, (string) __('quotes.order_confirmation.error.not_confirmed'));
 
-        return $this->send($request, $quote, RenderDocumentKind::OrderConfirmation, route('quotes.show', $quote));
+        return $this->send($request, $orderConfirmation, RenderDocumentKind::OrderConfirmation, route('order-confirmations.show', $orderConfirmation));
     }
 
     // ── Bestellung ───────────────────────────────────────────────────────
@@ -92,20 +92,20 @@ class DocumentMailController extends Controller {
         return $this->send($request, $purchaseOrder, RenderDocumentKind::PurchaseOrder, route('purchase-orders.show', $purchaseOrder));
     }
 
-    // ── Lieferschein (Auslieferung) ──────────────────────────────────────
+    // ── Lieferschein (Phase 145, MVP-1163) ────────────────────────────────
 
-    public function deliveryNoteForm(ManufacturingOrder $order, StockDelivery $delivery): View {
-        Gate::authorize('view', $order);
-        abort_unless($delivery->manufacturing_order_id === $order->id, 404);
+    public function deliveryNoteForm(DeliveryNote $deliveryNote): View {
+        Gate::authorize('update', $deliveryNote);
+        abort_if($deliveryNote->status !== DeliveryNoteStatus::Delivered, 422, (string) __('billing.delivery_note.error.not_delivered'));
 
-        return $this->form($delivery, RenderDocumentKind::DeliveryNote, route('manufacturing-orders.deliveries.mail', [$order, $delivery]), __('Lieferschein :nr per E-Mail senden', ['nr' => $this->mailer->documentNumber($delivery, RenderDocumentKind::DeliveryNote)]));
+        return $this->form($deliveryNote, RenderDocumentKind::DeliveryNote, route('delivery-notes.mail', $deliveryNote), __('Lieferschein :nr per E-Mail senden', ['nr' => $deliveryNote->number]));
     }
 
-    public function deliveryNoteSend(Request $request, ManufacturingOrder $order, StockDelivery $delivery): RedirectResponse {
-        Gate::authorize('update', $order);
-        abort_unless($delivery->manufacturing_order_id === $order->id, 404);
+    public function deliveryNoteSend(Request $request, DeliveryNote $deliveryNote): RedirectResponse {
+        Gate::authorize('update', $deliveryNote);
+        abort_if($deliveryNote->status !== DeliveryNoteStatus::Delivered, 422, (string) __('billing.delivery_note.error.not_delivered'));
 
-        return $this->send($request, $delivery, RenderDocumentKind::DeliveryNote, route('manufacturing-orders.show', $order));
+        return $this->send($request, $deliveryNote, RenderDocumentKind::DeliveryNote, route('delivery-notes.show', $deliveryNote));
     }
 
     // ── VOB/B-Schreiben (Feature 062, MVP-728) ───────────────────────────
@@ -208,7 +208,4 @@ class DocumentMailController extends Controller {
         return $template;
     }
 
-    private function assertAccepted(Quote $quote): void {
-        abort_unless($quote->status->isWon(), 422, (string) __('Nur angenommene Angebote können bestätigt werden.'));
-    }
 }

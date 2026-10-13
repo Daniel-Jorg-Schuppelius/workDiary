@@ -15,7 +15,13 @@ return [
         'unit_piece' => 'Stk.',
     ],
     'error' => [
+        'easybill_no_customer' => 'Der Beleg hat keinen Kunden und lässt sich nicht an easybill übertragen.',
+        'easybill_cancel_not_transferred' => 'Die Rechnung :number ist nicht in easybill; das Storno lässt sich dort nicht anlegen. Stellen Sie den Kreis „Storno“ auf WorkDiary, um es lokal zu nummerieren.',
         'easybill_not_configured' => 'easybill ist für diese Organisation nicht konfiguriert (API-Key fehlt).',
         'easybill_outcome_unclear' => 'Ausgang der easybill-Übergabe unklar (Zeitüberschreitung nach dem Senden) — nicht blind wiederholen; der nächste Lauf gleicht über den Quellmarker ab.',
+    ],
+    'relations' => [
+        'draft' => 'Entwurf',
+        'done' => 'fertiggestellt',
     ],
 ];

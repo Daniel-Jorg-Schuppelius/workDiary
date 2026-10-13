@@ -15,7 +15,13 @@ return [
         'unit_piece' => 'pz.',
     ],
     'error' => [
+        'easybill_no_customer' => 'Il documento non ha un cliente e non può essere trasmesso a easybill.',
+        'easybill_cancel_not_transferred' => 'La fattura :number non è in easybill; lo storno non può essere creato lì. Imposti la serie «Storno» su WorkDiary per numerarlo localmente.',
         'easybill_not_configured' => 'easybill non è configurato per questa organizzazione (chiave API mancante).',
         'easybill_outcome_unclear' => 'Esito del trasferimento easybill incerto (timeout dopo l\'invio) — non ripetere alla cieca; la prossima esecuzione riconcilia tramite il marcatore di origine.',
+    ],
+    'relations' => [
+        'draft' => 'Bozza',
+        'done' => 'completato',
     ],
 ];

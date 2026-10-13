@@ -29,6 +29,9 @@ enum NumberScope: string implements HasLabel {
     case CreditNote = 'credit_note';
     case Cancellation = 'cancellation';
     case Quote = 'quote';
+    // Auftragsbestätigung und Lieferschein als eigene Belege (Phase 145, MVP-1162/1163).
+    case OrderConfirmation = 'order_confirmation';
+    case DeliveryNote = 'delivery_note';
     case Proforma = 'proforma';
     case Claim = 'claim';
     case Rma = 'rma';
@@ -62,6 +65,8 @@ enum NumberScope: string implements HasLabel {
             self::CreditNote => __('enums.numbering.number_scope.credit_note'),
             self::Cancellation => __('enums.numbering.number_scope.cancellation'),
             self::Quote => __('enums.numbering.number_scope.quote'),
+            self::OrderConfirmation => __('enums.numbering.number_scope.order_confirmation'),
+            self::DeliveryNote => __('enums.numbering.number_scope.delivery_note'),
             self::Proforma => __('enums.numbering.number_scope.proforma'),
             self::Claim => __('enums.numbering.number_scope.claim'),
             self::Rma => __('enums.numbering.number_scope.rma'),
@@ -79,13 +84,15 @@ enum NumberScope: string implements HasLabel {
     }
 
     /**
-     * Buchhaltungsrelevante Nummernkreise, deren Hoheit an ein externes
-     * Buchhaltungssystem (z. B. Lexoffice) delegiert werden kann.
+     * Nummernkreise, deren Hoheit an ein Buchhaltungsprogramm (z. B. Lexoffice)
+     * delegiert werden kann: Kontakte und Belege, die das Programm führt.
      */
     public function isAccountingRelevant(): bool {
         return match ($this) {
             self::Customer, self::Supplier, self::Invoice, self::CreditNote, self::Cancellation => true,
-            self::Quote, self::Proforma => false, // keine steuerliche Belegwirkung
+            self::Quote => true, // Programm vergibt beim Versand (Phase 145, MVP-1160)
+            self::OrderConfirmation, self::DeliveryNote => true, // Programm vergibt beim Bestätigen bzw. Ausliefern (MVP-1164)
+            self::Proforma => false, // keine steuerliche Belegwirkung
             self::ServiceTicket, self::Asset, self::Article, self::ManufacturingOrder, self::Serial, self::PurchaseOrder, self::ProblemReport => false,
             self::Claim, self::Rma => false, // Fallakten/Logistik, keine Belegwirkung
             self::Rental, self::AssetFinance => false, // Fallakten, keine Belegwirkung

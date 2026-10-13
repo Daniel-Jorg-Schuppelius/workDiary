@@ -1,7 +1,7 @@
 ---
 title: "Formats de numérotation"
 topic: admin.number-formats
-version: 2
+version: 5
 keywords:
     - plage de numéros
     - numéro de facture
@@ -15,6 +15,13 @@ keywords:
     - numérotation par la comptabilité
     - numéro client Lexoffice
     - numéro provisoire
+    - séparateur
+    - voie de facturation
+    - numéro de devis du logiciel
+    - numéro de facture du logiciel
+    - facture vers Lexoffice
+    - facture vers sevDesk
+    - facture vers easybill
 audience:
     - admin
     - teamleitung
@@ -34,6 +41,19 @@ zéro annuelle du compteur ; un aperçu montre le prochain numéro
 généré. Modifiez format ou valeur de départ avec prudence : les
 numéros déjà attribués sont conservés.
 
+## Enregistrer et séparateurs pour toutes les plages
+
+Vous enregistrez toutes les modifications de la page ensemble avec
+**Enregistrer** dans l'en-tête. Les plages que vous ne modifiez pas restent
+sur la valeur standard (« Default »). Si une saisie est invalide, le message
+nomme la plage et vos saisies sont conservées.
+
+Au-dessus du tableau se trouvent les champs **Séparateur après le préfixe**
+et **Séparateur après l'année** pour toutes les plages. **Appliquer à toutes
+les plages** définit les deux séparateurs dans chaque plage attribuée par
+WorkDiary et enregistre la page. Un champ vide signifie : aucun séparateur.
+Les numéros déjà attribués restent inchangés.
+
 ## Qui attribue les numéros de client et de fournisseur ?
 
 Dans la colonne **Attribué par**, vous choisissez pour **Client** et
@@ -49,6 +69,9 @@ Si un logiciel attribue les numéros :
   numéro. Un traitement horaire rattrape les clients issus d'imports et les
   transferts échoués.
 - Le champ **Numéro client** est verrouillé pour ces clients.
+- La colonne **Prochain numéro** indique le dernier numéro repris, combien
+  de contacts attendent encore leur numéro et, pour sevDesk, le prochain
+  numéro du logiciel.
 - Si le numéro du logiciel appartient déjà à un autre client, l'ancien
   numéro reste et la **boîte de rapprochement** affiche le cas. Après
   renumérotation de l'autre client, la synchronisation suivante reprend le
@@ -61,5 +84,35 @@ Si WorkDiary attribue les numéros, chaque transfert vérifie si le numéro
 appartient déjà à un autre contact dans le logiciel et s'arrête alors avec
 un message au lieu d'écraser ce contact.
 
-Les numéros de facture, d'avoir et d'annulation se règlent dans les
-paramètres du plugin Lexoffice.
+## Facture, avoir et annulation
+
+Dans la colonne **Attribué par**, vous choisissez aussi pour **Facture**,
+**Avoir** et **Annulation** qui attribue le numéro : WorkDiary ou un logiciel
+connecté – Lexoffice et easybill pour les trois, sevDesk pour la facture et
+l'annulation. Si un logiciel attribue, le brouillon porte un numéro
+provisoire ; **Émettre** transmet le document et reprend le numéro du
+logiciel, l'avoir et l'annulation avec référence à la facture transmise.
+Créez alors les factures d'acompte et de solde dans le logiciel.
+
+Si la **voie de facturation** des paramètres de l'organisation est réglée sur
+un logiciel de comptabilité, celui-ci tient entièrement les factures ; la
+colonne **Attribué par** le nomme. Si certains clients facturent par une autre
+voie, leur nombre figure en dessous.
+
+## Plages verrouillées
+
+Si un logiciel attribue les numéros d'une plage, il en définit aussi le
+format. Préfixe, séparateurs, année, nombre de chiffres, remise à zéro
+annuelle et début sont alors verrouillés ; les valeurs enregistrées
+s'appliquent de nouveau dès que WorkDiary attribue. Si un client est facturé
+dans WorkDiary malgré une voie de facturation externe, facture, avoir et
+annulation restent ouverts, car ses factures reçoivent des numéros locaux.
+La sélection **Attribué par** reste modifiable ;
+les champs se libèrent après l'enregistrement.
+
+## Devis, confirmation de commande et bon de livraison
+
+Pour **Devis**, **Confirmation de commande** et **Bon de livraison**,
+choisissez Lexoffice ou easybill dans la colonne **Attribué par**. Le numéro
+naît alors à l'envoi du devis, à la confirmation de la commande et à la
+livraison du bon, lorsque WorkDiary transmet le document au logiciel.

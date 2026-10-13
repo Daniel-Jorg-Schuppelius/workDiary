@@ -295,11 +295,21 @@
                         </td>
                         <td class="text-right">
                             <div class="flex items-center justify-end gap-2">
-                                <x-button :href="route('manufacturing-orders.deliveries.pdf', [$order, $delivery])" tone="ghost" size="xs"
-                                        target="_blank">{{ __('manufacturing.delivery_note.title') }}</x-button>
-                                {{-- Feature 128 (MVP-692): Lieferschein per E-Mail an den Kunden. --}}
-                                <x-button :href="route('manufacturing-orders.deliveries.mail.form', [$order, $delivery])" tone="ghost"
-                                        size="xs" data-entry-modal-trigger>{{ __('Per E-Mail senden') }}</x-button>
+                                {{-- Lieferschein als Beleg (MVP-1163); Versand per E-Mail (Feature 128, MVP-692). --}}
+                                @php($deliveryNote = $delivery->deliveryNoteItem?->deliveryNote)
+                                @if ($deliveryNote !== null)
+                                    <x-button :href="route('delivery-notes.show', $deliveryNote)" tone="ghost" size="xs">{{ __('manufacturing.delivery_note.title') }} {{ $deliveryNote->number }}</x-button>
+                                    @if ($deliveryNote->status === \App\Enums\Billing\DeliveryNoteStatus::Delivered)
+                                        <x-button :href="route('delivery-notes.pdf', $deliveryNote)" tone="ghost" size="xs" target="_blank">{{ __('PDF') }}</x-button>
+                                        <x-button :href="route('delivery-notes.mail.form', $deliveryNote)" tone="ghost"
+                                                size="xs" data-entry-modal-trigger>{{ __('Per E-Mail senden') }}</x-button>
+                                    @else
+                                        <x-status-badge tone="plain">{{ $deliveryNote->status->label() }}</x-status-badge>
+                                    @endif
+                                @else
+                                    <x-button :href="route('manufacturing-orders.deliveries.pdf', [$order, $delivery])" tone="ghost" size="xs"
+                                            target="_blank">{{ __('manufacturing.delivery_note.title') }}</x-button>
+                                @endif
                                 {{-- MVP-1007: Handels- bzw. Proformarechnung für den Export. --}}
                                 @if ($canManage && $delivery->customer_id)
                                     <x-button :href="route('manufacturing-orders.deliveries.customs.form', [$order, $delivery])" tone="ghost"
@@ -375,9 +385,13 @@
             </x-table>
         </x-card>
         {{-- Versandhistorie der Lieferscheine (MVP-876). --}}
+        @php($deliveryNotes = $order->deliveries->map(fn ($delivery) => $delivery->deliveryNoteItem?->deliveryNote)->filter())
         <x-dispatch-history :kinds="[\App\Enums\DocumentDesign\RenderDocumentKind::DeliveryNote]"
-                            :ids="$order->deliveries->pluck('id')->map(fn ($id) => (int) $id)->all()"
-                            :labels="$order->deliveries->mapWithKeys(fn ($delivery) => [(int) $delivery->id => app(\App\Services\Document\DocumentMailService::class)->documentNumber($delivery, \App\Enums\DocumentDesign\RenderDocumentKind::DeliveryNote)])->all()" />
+                            :ids="$deliveryNotes->map(fn ($note) => (int) $note->id)->values()->all()"
+                            :labels="$deliveryNotes->mapWithKeys(fn ($note) => [(int) $note->id => $note->number])->all()" />
     @endif
+
+    {{-- Lieferscheine, Rechnungen und Belege im Buchhaltungsprogramm (MVP-1159). --}}
+    <x-billing.document-relations :document="$order" />
 </x-page-shell>
 @endsection

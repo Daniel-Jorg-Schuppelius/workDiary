@@ -781,12 +781,18 @@ return [
     ],
     'order_confirmation' => [
         'mailed' => 'Auftragsbestätigung per E-Mail versendet',
+        'created' => 'Auftragsbestätigung angelegt',
+        'confirmed' => 'Auftragsbestätigung bestätigt',
+        'cancelled' => 'Auftragsbestätigung storniert',
     ],
     'purchase_order' => [
         'confirmed' => 'Auftragsbestätigung eingelesen',
         'mailed' => 'Bestellung per E-Mail versendet',
     ],
     'delivery_note' => [
+        'created' => 'Lieferschein angelegt',
+        'delivered' => 'Lieferschein ausgeliefert',
+        'cancelled' => 'Lieferschein storniert',
         'mailed' => 'Lieferschein per E-Mail versendet',
     ],
     'quote' => [

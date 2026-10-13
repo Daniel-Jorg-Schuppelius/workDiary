@@ -15,7 +15,13 @@ return [
         'unit_piece' => 'uds.',
     ],
     'error' => [
+        'easybill_no_customer' => 'El documento no tiene cliente y no se puede transferir a easybill.',
+        'easybill_cancel_not_transferred' => 'La factura :number no está en easybill; la anulación no se puede crear allí. Asigne la serie «Anulación» a WorkDiary para numerarla localmente.',
         'easybill_not_configured' => 'easybill no está configurado para esta organización (falta la clave de API).',
         'easybill_outcome_unclear' => 'Resultado de la transferencia a easybill incierto (tiempo de espera tras el envío): no reintentar a ciegas; la siguiente ejecución concilia mediante el marcador de origen.',
+    ],
+    'relations' => [
+        'draft' => 'Borrador',
+        'done' => 'finalizado',
     ],
 ];

@@ -14,6 +14,7 @@ use App\Casts\{MoneyCast, QuantityCast};
 use App\Enums\Manufacturing\{DeliveryFacturationStatus, DeliveryStockStatus};
 use App\Enums\Shipping\{ShipmentExportReason, ShipmentStatus};
 use App\Models\Article\ArticleVariant;
+use App\Models\Billing\DeliveryNoteItem;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Contracts\AuditsChanges;
 use App\Models\Customer\Customer;
@@ -124,6 +125,11 @@ class StockDelivery extends Model implements AuditsChanges {
      */
     public function shipment(): HasOne {
         return $this->hasOne(Shipment::class)->where('status', '!=', ShipmentStatus::Cancelled->value);
+    }
+
+    /** @return HasOne<DeliveryNoteItem, $this> Position des Lieferscheins (MVP-1163). */
+    public function deliveryNoteItem(): HasOne {
+        return $this->hasOne(DeliveryNoteItem::class);
     }
 
     /** @return HasMany<ShipmentParcel, $this> Packstücke (MVP-900). */

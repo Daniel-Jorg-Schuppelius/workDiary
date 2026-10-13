@@ -1,7 +1,7 @@
 ---
 title: "Transferencia a facturación"
 topic: finance.transfers
-version: 3
+version: 4
 keywords:
     - traspaso a Lexoffice
     - traspaso a DATEV
@@ -12,6 +12,8 @@ keywords:
     - exportación de facturación
     - software de facturación
     - líneas de factura
+    - documentos relacionados
+    - cadena de documentos
 audience: []
 modules:
     - module.finance
@@ -71,3 +73,14 @@ separado (**Preparar y traspasar los tiempos facturables** o
 **Preparar y traspasar el material facturable**). La lista la ven las
 personas con **Consultar los justificantes de traspaso**; cancelar y
 corregir requieren además **Gestionar la configuración financiera**.
+
+## Documentos relacionados
+
+Al final de la página, **Documentos relacionados** muestra todos los
+documentos vinculados a este: la oferta y sus versiones, facturas, anticipos y
+factura final, abonos y anulaciones, albaranes, órdenes de fabricación y
+traspasos. Si un programa de contabilidad ha asumido un documento, su
+contraparte aparece allí con el número del programa. También aparecen las
+relaciones que comunica el propio programa, por ejemplo un anticipo creado en
+Lexoffice. La columna **Relación** indica qué es el documento respecto a este;
+«a través de …» nombra el documento por el que existe la relación.

@@ -49,7 +49,8 @@ final class DeliveryListTest extends TestCase {
         $open = $this->delivery('Südhang AG', 'Steuergerät');
         Shipment::query()->create(['organization_id' => $this->organization->id, 'stock_delivery_id' => $shipped->id, 'carrier' => 'dhl', 'status' => ShipmentStatus::Labeled->value, 'tracking_number' => 'TRK-1']);
 
-        $number = static fn (StockDelivery $delivery): string => 'LS-' . str_pad((string) $delivery->id, 6, '0', STR_PAD_LEFT);
+        // Belegnummer des Lieferscheins (MVP-1163).
+        $number = static fn (StockDelivery $delivery): string => (string) $delivery->deliveryNoteItem()->firstOrFail()->deliveryNote()->value('number');
         $this->actingAs($admin)->get(route('deliveries.index'))->assertOk()
             ->assertSee($number($shipped))->assertSee($number($open))->assertSee('TRK-1')
             ->assertSee(route('manufacturing-orders.deliveries.customs.form', [$open->order, $open]), false);

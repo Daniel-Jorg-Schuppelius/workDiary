@@ -43,4 +43,11 @@ final class NumberingManifest extends Manifest {
             'number_sequences',
         ];
     }
+
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            \App\Services\Numbering\Contracts\BillingRouteNumbers::class => \App\Services\Numbering\Contracts\NullBillingRouteNumbers::class,
+        ];
+    }
 }

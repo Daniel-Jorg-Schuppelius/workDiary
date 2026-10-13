@@ -1,7 +1,7 @@
 ---
 title: "Facturas & documentos"
 topic: invoices.manage
-version: 7
+version: 9
 keywords:
     - crear factura
     - emitir factura
@@ -18,6 +18,10 @@ keywords:
     - Stripe
     - Mollie
     - SumUp
+    - documentos relacionados
+    - cadena de documentos
+    - transferir factura a Lexoffice
+    - número provisional
 audience: []
 modules:
     - module.vertrieb
@@ -144,3 +148,27 @@ posterior del proveedor se contabiliza contra la cuenta de dinero en
 tránsito. El enlace en la factura y en el correo se desactiva en la
 configuración de la organización, en «Pago en línea»; en el portal del
 cliente se mantiene.
+
+## Documentos relacionados
+
+Al final de la página, **Documentos relacionados** muestra todos los
+documentos vinculados a este: la oferta y sus versiones, facturas, anticipos y
+factura final, abonos y anulaciones, albaranes, órdenes de fabricación y
+traspasos. Si un programa de contabilidad ha asumido un documento, su
+contraparte aparece allí con el número del programa. También aparecen las
+relaciones que comunica el propio programa, por ejemplo un anticipo creado en
+Lexoffice. La columna **Relación** indica qué es el documento respecto a este;
+«a través de …» nombra el documento por el que existe la relación.
+
+## Número del programa de contabilidad
+
+Si un programa de contabilidad asigna los números de factura (página
+**Series numéricas**), el borrador lleva un número provisional y la factura
+muestra un aviso. **Emitir** – también el envío por correo de un borrador –
+transfiere la factura al programa y adopta su número antes de crear el PDF y
+el asunto. Lexoffice y easybill toman la confirmación de pedido o la oferta
+como documento anterior. El abono y la anulación se transfieren con
+referencia a la factura transferida; en sevDesk y easybill la factura debe
+estar en el programa. Si el programa la rechaza, el documento sigue como
+borrador y el mensaje indica el motivo. En ese caso, cree las facturas de
+anticipo y finales en el programa.

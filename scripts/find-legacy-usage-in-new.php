@@ -111,6 +111,8 @@ foreach ($scanDirs as $d) {
     $iter($d);
 }
 
+// Unter PHPStan nicht garantiert definiert; im CLI-Aufruf immer gesetzt.
+$argv = $_SERVER['argv'] ?? [];
 $asJson = in_array('--json', $argv, true);
 
 if ($asJson) {

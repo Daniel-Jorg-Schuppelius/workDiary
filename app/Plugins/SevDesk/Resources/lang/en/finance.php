@@ -11,10 +11,18 @@
 return [
     'error' => [
         'sevdesk_not_configured' => 'sevDesk is not configured for this organisation (API token missing).',
+        'sevdesk_cancel_not_transferred' => 'Invoice :number is not in sevDesk; the cancellation cannot be created there. Set the range “Cancellation” to WorkDiary to number it locally.',
         'sevdesk_outcome_unclear' => 'Outcome of the sevDesk handover unclear (timeout after sending) — do not retry blindly; the next run reconciles via the source marker.',
     ],
     'sevdesk' => [
         'introduction' => 'We invoice the goods and services provided in the period :from – :to as follows.',
         'tax_text' => 'VAT :rate%',
+    ],
+    'invoice_status' => [
+        '50' => 'Recurring invoice inactive',
+        '100' => 'Draft',
+        '200' => 'open',
+        '750' => 'partially paid',
+        '1000' => 'paid',
     ],
 ];

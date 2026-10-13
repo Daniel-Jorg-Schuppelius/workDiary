@@ -41,5 +41,10 @@ class SevDeskServiceProvider extends PluginServiceProviderBase {
 
         // Beleg-Rückabruf (MVP-1031): der Kern kennt die Anbindung nur über die Registry.
         $this->app->make(VoucherPullerRegistry::class)->register(SevDeskVoucherPullService::class);
+
+        // Zugehörige Belege (MVP-1158).
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Billing\Contracts\DocumentRelationSource::class, \App\Plugins\SevDesk\Services\SevDeskRelationSource::class);
+        // Phase 145 (MVP-1166/1167): Rechnung und Storno nummeriert sevDesk beim Ausstellen.
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Numbering\Contracts\DocumentIssuer::class, \App\Plugins\SevDesk\Services\SevDeskDocumentIssuer::class);
     }
 }

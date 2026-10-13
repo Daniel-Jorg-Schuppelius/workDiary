@@ -66,6 +66,7 @@ class IncomingEInvoiceSource implements DocumentFeedSource {
                 'COALESCE(incoming_einvoices.amount_gross, 0) AS amount_gross',
                 "CASE WHEN $state = 'open' THEN COALESCE(incoming_einvoices.amount_gross, 0) ELSE 0 END AS open_amount",
                 "COALESCE(incoming_einvoices.currency, '" . FeedProjection::defaultCurrency() . "') AS currency",
+                'NULL AS project_id',
             ]))
             ->where('incoming_einvoices.organization_id', $f->organizationId)
             ->whereNull('incoming_einvoices.transferred_at')

@@ -256,4 +256,8 @@ return [
         'title' => 'Billing rules',
         'hint' => 'Per activity type you can define which article is used as the service in transfers and invoice exports — from the article master or a connected accounting system. Without activity type = fallback for all entries. Sub-projects inherit rules from the parent project but can override them.',
     ],
+    // Phase 145 (MVP-1168): Abschlag und Schluss im Programm.
+    'down_payment' => [
+        'program_numbering' => 'Create down payment and final invoices in :program as long as :program assigns the invoice numbers. WorkDiary shows them in the document flow.',
+    ],
 ];

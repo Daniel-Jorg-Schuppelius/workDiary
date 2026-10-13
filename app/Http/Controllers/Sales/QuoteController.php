@@ -82,6 +82,14 @@ class QuoteController extends Controller {
             'previousVersion' => $quote->previous_version_id !== null ? Quote::query()->find($quote->previous_version_id) : null,
             'newerVersions' => Quote::query()->where('previous_version_id', $quote->id)->orderBy('version')->get(),
             'invoices' => \App\Models\Invoicing\Invoice::query()->where('quote_id', $quote->id)->orderBy('id')->get(['id', 'number', 'status']),
+            'orderConfirmation' => \App\Models\Sales\OrderConfirmation::query()->where('quote_id', $quote->id)
+                ->where('status', '!=', \App\Enums\Sales\OrderConfirmationStatus::Cancelled)->latest('id')->first(),
+            // Entwurfsnummer: Das Programm vergibt die Nummer beim Versand (MVP-1161).
+            'numberIssuer' => \App\Services\Numbering\NumberSequenceService::isDraft($quote->number)
+                ? app(\App\Services\Numbering\NumberAuthority::class)->sourceLabel(app(\App\Services\Numbering\NumberAuthority::class)->sourceFor((int) $quote->organization_id, \App\Enums\Numbering\NumberScope::Quote))
+                : null,
+            // Bei externem Fakturierungsweg nur „im Buchhaltungsprogramm abgerechnet“ (MVP-1152).
+            'localInvoicing' => $quote->customer === null || ! app(\App\Services\Billing\BillingModeResolver::class)->effectiveFor($quote->customer)->isExternal(),
         ]);
     }
 
@@ -109,16 +117,21 @@ class QuoteController extends Controller {
      * Auftragsbestätigung (MVP-650): bestätigt die angenommenen Positionen
      * eines (teil-)angenommenen Angebots — kein eigener Beleg/Nummernkreis.
      */
-    public function orderConfirmationPdf(Quote $quote): \Symfony\Component\HttpFoundation\Response {
+    /**
+     * Bestandsroute (MVP-650): Die AB ist seit Phase 145 (MVP-1162) ein eigener
+     * Beleg; die Route führt auf ihr PDF bzw. ihre Seite.
+     */
+    public function orderConfirmationPdf(Quote $quote): RedirectResponse {
         Gate::authorize('view', $quote);
-        abort_unless($quote->status->isWon(), 422, (string) __('Nur angenommene Angebote können bestätigt werden.'));
+        $confirmation = \App\Models\Sales\OrderConfirmation::query()->where('quote_id', $quote->id)
+            ->where('status', '!=', \App\Enums\Sales\OrderConfirmationStatus::Cancelled)->latest('id')->first();
+        if ($confirmation === null) {
+            return redirect()->route('quotes.show', $quote)->with('info', __('quotes.order_confirmation.flash.create_first'));
+        }
 
-        $bytes = app(\App\Services\Invoicing\OrderConfirmationPdfRenderer::class)->output($quote);
-
-        return response($bytes, 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => sprintf('attachment; filename="auftragsbestaetigung-%s.pdf"', $quote->number),
-        ]);
+        return $confirmation->status === \App\Enums\Sales\OrderConfirmationStatus::Confirmed
+            ? redirect()->route('order-confirmations.pdf', $confirmation)
+            : redirect()->route('order-confirmations.show', $confirmation);
     }
 
     // ── Positionen (nur Entwurf) ─────────────────────────────────────────

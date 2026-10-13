@@ -85,6 +85,7 @@ class InvoiceSource implements DocumentFeedSource {
                 'COALESCE(invoices.total, 0) AS amount_gross',
                 "CASE WHEN $state = 'open' THEN COALESCE(invoices.total, 0) ELSE 0 END AS open_amount",
                 'invoices.currency AS currency',
+                'invoices.project_id AS project_id',
             ]))
             ->where('invoices.organization_id', $f->organizationId)
             ->whereBetween(DB::raw('COALESCE(invoices.issued_on, DATE(invoices.created_at))'), DateRange::days($f->from, $f->to));

@@ -20,6 +20,8 @@
 
 declare(strict_types=1);
 
+// Unter PHPStan nicht garantiert definiert; im CLI-Aufruf immer gesetzt.
+$argv = $_SERVER['argv'] ?? [];
 $file = $argv[1] ?? null;
 $max = 0;
 foreach (array_slice($argv, 2) as $arg) {

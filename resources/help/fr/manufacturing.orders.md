@@ -1,7 +1,7 @@
 ---
 title: "Ordres de fabrication"
 topic: manufacturing.orders
-version: 2
+version: 4
 keywords:
     - ordre de production
     - nomenclature
@@ -18,6 +18,9 @@ keywords:
     - étiquette d'expédition
     - statut de l'envoi
     - annuler une expédition
+    - documents liés
+    - chaîne de documents
+    - numéro de bon de livraison
 audience: []
 modules:
     - module.lager
@@ -85,3 +88,21 @@ La page **Bons de livraison** liste toutes les livraisons de la période choisie
 — avec PDF du bon, envoi par e-mail, documents douaniers et état d'expédition,
 sans passer par chaque ordre de fabrication. Le filtre « Non expédiées » montre
 ce qui attend encore une étiquette.
+
+Chaque livraison crée un bon de livraison comme document distinct avec un
+numéro de la plage « Bon de livraison » (**Plages de numéros**). Si un
+logiciel de comptabilité attribue le numéro et refuse la transmission, la
+sortie de stock reste et le bon de livraison reste un brouillon ; **Livrer**
+sur sa page réessaie. Les bons de livraison antérieurs à ce changement
+gardent leur numéro `LS-…`.
+
+## Documents liés
+
+En bas de page, **Documents liés** liste tous les documents rattachés à
+celui-ci : le devis et ses versions, les factures, acomptes et la facture
+finale, avoirs et annulations, bons de livraison, ordres de fabrication et
+transmissions. Si un logiciel de comptabilité a repris un document, son
+équivalent y figure avec le numéro du logiciel. Les liens signalés par le
+logiciel lui-même, par exemple un acompte créé dans Lexoffice, apparaissent
+aussi. La colonne **Lien** indique ce que le document représente pour
+celui-ci ; « via … » nomme le document par lequel le lien existe.

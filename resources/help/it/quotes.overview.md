@@ -1,7 +1,7 @@
 ---
 title: "Offerte"
 topic: quotes.overview
-version: 2
+version: 6
 keywords:
     - creare un'offerta
     - preventivo
@@ -14,6 +14,14 @@ keywords:
     - convertire in fattura
     - voci opzionali
     - nuova versione dell'offerta
+    - documenti collegati
+    - catena dei documenti
+    - numero offerta
+    - offerta a Lexoffice
+    - numero conferma
+    - bolla di consegna
+    - consegna parziale
+    - numero bolla di consegna
 audience: []
 modules:
     - module.vertrieb
@@ -70,9 +78,51 @@ dall’elenco **Preventivi accettati senza fattura**; il contrassegno può
 essere rimosso. L’azione è disponibile finché per l’offerta non esiste
 alcuna fattura.
 
-**PDF e conferma d'ordine:** ogni offerta può essere scaricata come PDF
-(con marcatura delle opzioni e ripartizione delle imposte); le offerte
-inviate mantengono permanentemente il design del momento dell'invio.
-Per le offerte (parzialmente) accettate è disponibile anche una
-conferma d'ordine in PDF che conferma esattamente le posizioni
-accettate.
+**PDF:** ogni offerta può essere scaricata come PDF (con marcatura delle
+opzioni e ripartizione delle imposte); le offerte inviate mantengono
+permanentemente il design del momento dell'invio. La conferma d'ordine è un
+documento proprio (vedi sotto).
+
+## Documenti collegati
+
+In fondo alla pagina, **Documenti collegati** elenca tutti i documenti legati
+a questo: l'offerta e le sue versioni, fatture, acconti e fattura finale, note
+di credito e storni, documenti di trasporto, ordini di produzione e
+trasmissioni. Se un programma di contabilità ha ripreso un documento, il suo
+corrispondente compare lì con il numero del programma. Compaiono anche i
+collegamenti segnalati dal programma stesso, per esempio un acconto creato in
+Lexoffice. La colonna **Relazione** indica che cosa è il documento rispetto a
+questo; «tramite …» nomina il documento attraverso cui esiste il
+collegamento.
+
+## Numero dell'offerta dal programma di contabilità
+
+Se nella pagina **Serie numeriche** imposta un programma di contabilità
+(Lexoffice o easybill) per **Offerta**, una nuova offerta riceve prima un
+numero provvisorio. All'**invio** WorkDiary crea l'offerta nel programma, la
+finalizza lì e ne adotta il numero; solo dopo viene creato il PDF. Se il
+trasferimento non riesce, l'offerta resta approvata e può ripetere l'invio.
+Una nuova versione è nel programma una nuova offerta con un proprio numero.
+Lexoffice contrassegna le posizioni facoltative come facoltative; easybill le
+riporta senza calcolo.
+
+## Conferma d'ordine
+
+Per un'offerta accettata, **Crea conferma d'ordine** crea un documento
+proprio con le posizioni accettate. La conferma d'ordine ha una propria serie
+numerica (**Serie numeriche**, serie «Conferma d'ordine»). Con **Conferma**
+riceve il suo numero; se un programma di contabilità (Lexoffice o easybill)
+assegna il numero, WorkDiary la trasferisce in quel momento. Dopo sono
+disponibili il PDF e l'invio per e-mail. L'annullamento la ritira in WorkDiary;
+nel programma resta.
+
+## Bolla di consegna
+
+Una conferma d'ordine confermata offre **Crea bolla di consegna**. La bolla
+riprende le quantità non ancora consegnate, senza prezzi. Per una consegna
+parziale, modifichi le quantità in **Modifica quantità**; 0 toglie una voce da
+questa bolla, che resta aperta per la successiva. **Consegna** fissa il numero
+della serie «Documento di trasporto»; se un programma di contabilità
+(Lexoffice o easybill) assegna il numero, WorkDiary trasmette la bolla in quel
+momento. Dopo sono disponibili il PDF e l'invio per e-mail. Le bolle della
+produzione nascono con ogni consegna (vedi ordini di produzione).

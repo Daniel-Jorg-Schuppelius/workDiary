@@ -15,6 +15,35 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   Argumente durchgereicht. Als root gestartet läuft es als Eigentümer von
   `storage/`.
 
+- Belege an Buchhaltungsprogramme übertragen und Belegkette (Phase 145,
+  MVP-1152–1169): WorkDiary schreibt die Belege, das Programm vergibt die
+  Nummer. Auf der Seite „Nummernkreise“ wählt die Organisation für Angebot,
+  Auftragsbestätigung, Lieferschein, Rechnung, Gutschrift und Storno, wer
+  vergibt — WorkDiary, Lexoffice, easybill oder (Rechnung, Storno) sevDesk;
+  der Lexoffice-Schalter für Rechnungsnummern entfällt, die gespeicherte Wahl
+  bleibt. Vergibt ein Programm, trägt der Beleg bis zum Festschreiben eine
+  Entwurfsnummer: Das Angebot geht beim Versand hinüber, die AB beim
+  Bestätigen, der Lieferschein beim Ausliefern, Rechnung, Gutschrift und
+  Storno beim Stellen bzw. vor dem Mailversand — mit Vorgänger (AB, Angebot,
+  Ursprungsrechnung) und mit der Nummer des Programms. Abschlags- und
+  Schlussrechnungen legt man dann im Programm an. Die Auftragsbestätigung und
+  der Lieferschein sind eigene Belege mit Nummernkreis, PDF und Versand; der
+  Lieferschein übernimmt aus der AB die offenen Mengen (Teillieferung), jede
+  Auslieferung der Fertigung bekommt ihren Lieferschein, bisherige
+  Auslieferungen behalten ihre Nummer `LS-…`. Rechnung, Angebot, AB,
+  Lieferschein, Fertigungsauftrag und Übergabe zeigen „Zugehörige Belege“
+  einschließlich der Gegenstücke im Programm; der Belegfluss filtert nach
+  Projekt und listet AB und Lieferscheine. Der orgaMAX-Teil folgt mit dem
+  Release des orgaMAX-SDK v1.2.0 (Angebot, Auftrag mit Antwort 201).
+
+- Seite „Nummernkreise“ (Phase 144, MVP-1147–1150): Alle Kreise speichern in
+  einem Formular, nur geänderte werden geschrieben; Trenner nach Präfix und
+  Jahr lassen sich für alle offenen Kreise auf einmal setzen. Vergibt ein
+  Programm oder der Fakturierungsweg die Nummern, sind die Formatfelder
+  gesperrt und die Zeile zeigt statt der Vorschau die zuletzt übernommene
+  Nummer, wartende Kontakte und bei sevDesk die nächste Nummer. Zertifikate
+  beginnen mit `CRT`; ein leerer Präfix erzeugt keinen führenden Trenner mehr.
+
 - Rechnungspostfach: Abruf, Ordner, Microsoft 365 und Bestand (Phase 143,
   MVP-1139–1146): Postfächer werden nach Stand abgerufen statt nach
   Lesestatus — auch Mails, die schon jemand gelesen hat, ab dem Startpunkt
@@ -1299,6 +1328,21 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
   das Ergebnis nur, wenn die Summen aufgehen.
 
 ### Fixed
+
+- Lexoffice (Phase 145): Rechnungen trugen bei jeder Position den
+  Steuersatz der Rechnung, Positions- und Belegrabatte fehlten, und
+  Positionen gingen als `service` ohne Artikel-ID hinüber; das PDF einer
+  übertragenen Rechnung lief über den abgekündigten Weg `/document`.
+  Gutschrift und Storno gingen als normale Rechnung statt als
+  Rechnungskorrektur mit Bezug; Angebot und AB aus der Fertigung konnten in
+  Lexoffice doppelt entstehen; „Stellen“ und der Mailversand stellten bei
+  Programmvergabe einen Entwurf mit `ENTWURF-…`-Nummer aus.
+- orgaMAX (Phase 145): Eine Namensänderung am Kunden kam nicht an — orgaMAX
+  liest den Namen nur aus der Rechnungsanschrift.
+- Überführen eines Angebots in eine Rechnung und Umwandeln einer Pro-forma
+  prüften den Fakturierungsweg nicht (Phase 145, MVP-1152).
+- sevDesk (Phase 144, MVP-1151): Rechnungsentwürfe entstanden mit Status 50
+  (deaktivierte Serienrechnung) statt 100.
 
 - Lexoffice (Phase 142, MVP-1138): Der Ansprechpartner stand komplett im
   Nachnamen, Anrede und Vorname blieben leer; der Kontaktabgleich verlor die

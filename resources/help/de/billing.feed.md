@@ -1,7 +1,7 @@
 ---
 title: "Belegfluss"
 topic: billing.feed
-version: 1
+version: 2
 keywords:
     - Belegliste
     - Rechnungen
@@ -15,6 +15,7 @@ keywords:
     - mahnen
     - überfällige Rechnungen
     - E-Rechnung umwandeln
+    - Projektfilter
 audience: []
 modules:
     - module.vertrieb
@@ -75,3 +76,9 @@ nachzufassen“ öffnet die Belegkette mit allem, was noch aussteht.
 **Sichtbarkeit:** Der Belegfluss zeigt nur, was Ihre Rechte in den einzelnen
 Bereichen ohnehin erlauben. Fehlt Ihnen etwa das Recht auf Angebote, fehlen der
 Reiter und die zugehörigen Zeilen.
+
+## Nach Projekt filtern
+
+Der Filter **Projekt** zeigt nur Belege eines Projekts. Belege aus
+Buchhaltungsprogrammen kennen kein Projekt und fallen bei diesem Filter
+heraus.

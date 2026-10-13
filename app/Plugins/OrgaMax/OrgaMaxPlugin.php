@@ -26,9 +26,10 @@ use App\Plugins\OrgaMax\Models\OrgaMaxConnection;
 use App\Services\Finance\Accounting\ContactPushService;
 use App\Services\Numbering\NumberSequenceService;
 use App\Services\Stammdaten\{ContactIdentity, ContactNumberAdopter, ContactPersons};
+use CommonToolkit\Helper\Data\PersonNameHelper;
 use Orgamax\API\Endpoints\CustomersEndpoint;
 use Orgamax\API\Endpoints\Settings\AccountSettingEndpoint;
-use Orgamax\Entities\Customers\{ContactPerson as OrgaMaxContactPerson, ContactPersons as OrgaMaxContactPersons, Customer as OrgaMaxCustomer};
+use Orgamax\Entities\Customers\{ContactPerson as OrgaMaxContactPerson, ContactPersons as OrgaMaxContactPersons, Customer as OrgaMaxCustomer, CustomerDefaultAddress};
 use RuntimeException;
 use Throwable;
 
@@ -92,6 +93,33 @@ class OrgaMaxPlugin extends AbstractPlugin implements ContactSyncer {
      * sagt nicht zu, dass ohne Nummer eine entsteht. Eine Entwurfsnummer
      * eines anderen Programms geht nicht hinüber.
      */
+    /**
+     * `customerDefaultAddress` ersetzt die gespeicherte Anschrift ganz: Beide
+     * Anschriften gehen mit ihrer `id` zurück, nur der Name der Rechnungsanschrift
+     * ändert sich. Null, wenn orgaMAX keine Anschrift führt oder der Name stimmt.
+     */
+    private function renamedDefaultAddress(CustomersEndpoint $endpoint, string $id, string $name): ?CustomerDefaultAddress {
+        $address = $endpoint->get(new ID($id))?->getCustomerDefaultAddress();
+        $billing = $address?->getBillingAddress();
+        if ($address === null || $billing === null || trim((string) $billing->getId()) === '' || trim($name) === '') {
+            return null;
+        }
+        $person = ! filled($billing->getCompanyName()) && (filled($billing->getFirstName()) || filled($billing->getLastName()));
+        $current = $person ? trim($billing->getFirstName() . ' ' . $billing->getLastName()) : trim((string) $billing->getCompanyName());
+        if ($current === trim($name)) {
+            return null;
+        }
+        if ($person) {
+            $parts = PersonNameHelper::split($name);
+            $billing->setFirstName(trim($parts['first_name'] . ' ' . $parts['middle_names']) ?: null);
+            $billing->setLastName($parts['last_name']);
+        } else {
+            $billing->setCompanyName($name);
+        }
+
+        return $address;
+    }
+
     public function pushContact(Customer $customer): string {
         \App\Services\Stammdaten\CollectiveContacts::assertPushable($customer);
         $connection = OrgaMaxConnection::query()
@@ -149,6 +177,11 @@ class OrgaMaxPlugin extends AbstractPlugin implements ContactSyncer {
         }
 
         if ($existingId !== '') {
+            // Den Namen liest orgaMAX nur aus der Rechnungsanschrift (Befund B8); ohne gespeicherte Anschrift bleibt sie unberührt.
+            $address = $this->renamedDefaultAddress($endpoint, $existingId, (string) $customer->name);
+            if ($address !== null) {
+                $payload->setCustomerDefaultAddress($address);
+            }
             $endpoint->update(new ID($existingId), $payload);
             app(ContactNumberAdopter::class)->linked($customer, self::ID, $existingId, $number);
 

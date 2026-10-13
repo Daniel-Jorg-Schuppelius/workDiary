@@ -46,6 +46,7 @@
         'origin' => $filters['origin'] ?: null,
         'contact' => $filters['contact'] ?: null,
         'state' => $filters['state'] ?: null,
+        'project' => $filters['project'] ?: null,
         'overdue' => $filters['overdue'] ? 1 : null,
         'archived' => $filters['archived'] ? 1 : null,
         'unlinked' => ($filters['unlinked'] ?? false) ? 1 : null,
@@ -79,6 +80,8 @@
         $core = match ($row->source_type) {
             'invoice' => [route('invoices.show', Sqid::encode(\App\Models\Invoicing\Invoice::class, (int) $row->link_id)), false],
             'quote' => [route('quotes.show', Sqid::encode(\App\Models\Sales\Quote::class, (int) $row->link_id)), false],
+            'order_confirmation' => [route('order-confirmations.show', Sqid::encode(\App\Models\Sales\OrderConfirmation::class, (int) $row->link_id)), false],
+            'delivery_note' => [route('delivery-notes.show', Sqid::encode(\App\Models\Billing\DeliveryNote::class, (int) $row->link_id)), false],
             'incoming_einvoice' => [route('finance.incoming-invoices.show', Sqid::encode(\App\Models\Document\Document::class, (int) $row->link_id)), false],
             'expense' => [route('expenses.receipt', Sqid::encode(\App\Models\Travel\Expense::class, (int) $row->link_id)), true],
             default => null,
@@ -218,6 +221,13 @@
                 <option value="">{{ __('Alle') }}</option>
                 <option value="customer" @selected($filters['contact'] === 'customer')>{{ __('Kunde') }}</option>
                 <option value="supplier" @selected($filters['contact'] === 'supplier')>{{ __('Lieferant') }}</option>
+            </select>
+        </x-filter-field>
+
+        <x-filter-field :label="__('billing.feed.filter.project')" for="feed-project" class="min-w-44 shrink-0">
+            <select id="feed-project" name="project" class="select select-sm select-bordered w-full">
+                <option value="">{{ __('Alle') }}</option>
+                <x-project-options :projects="$projects" :selected="$filters['project']" />
             </select>
         </x-filter-field>
 

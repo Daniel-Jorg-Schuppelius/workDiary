@@ -14,4 +14,7 @@ return [
             'dun_confirm' => 'Creare un sollecito in contabilità?',
         ],
     ],
+    'relations' => [
+        'not_mirrored' => 'non ancora sincronizzato',
+    ],
 ];

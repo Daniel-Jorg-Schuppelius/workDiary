@@ -15,6 +15,7 @@ return [
         ],
         'flash' => [
             'lexoffice_pushed' => 'Delivery note sent to Lexoffice.',
+            'already_linked' => 'This document already exists in Lexoffice (ID :id); no second one was created.',
         ],
     ],
 ];

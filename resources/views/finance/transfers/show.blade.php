@@ -450,6 +450,9 @@
         </x-table>
     </x-card>
 
+    {{-- Beleg im Buchhaltungsprogramm und Korrekturen (MVP-1159). --}}
+    <x-billing.document-relations :document="$transfer" />
+
     {{-- Ereignisprotokoll (Hash-Kette) --}}
     <x-card>
         <h3 class="mb-2 text-sm font-semibold">{{ __('finance.title.events') }}</h3>

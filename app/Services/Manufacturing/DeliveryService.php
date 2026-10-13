@@ -19,8 +19,9 @@ use App\Models\Customer\Customer;
 use App\Models\Inventory\{StockDelivery, StockSerial, Warehouse};
 use App\Models\Manufacturing\ManufacturingOrder;
 use App\Models\Platform\Organization;
-use App\Services\Billing\BillingModeResolver;
+use App\Services\Billing\{BillingModeResolver, DeliveryNoteService};
 use App\Services\Inventory\{ExternalStockMirror, InventoryLedger, InventoryValuationManager, SerialService};
+use App\Services\Numbering\NumberSequenceService;
 use App\Support\DecimalQty;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -102,14 +103,14 @@ class DeliveryService {
                 'created_by' => $createdBy,
             ]);
 
-            // MVP-650: der Lieferschein rendert dauerhaft mit dem
-            // Designprofil des Buchungszeitpunkts (idempotent).
-            if ($organization instanceof Organization) {
-                app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->snapshot(
-                    $delivery,
-                    \App\Enums\DocumentDesign\RenderDocumentKind::DeliveryNote,
-                    $organization,
-                );
+            // MVP-1163: Vergibt workDiary die Nummer, ist der Lieferschein sofort ausgeliefert;
+            // ein Programm überträgt ihn erst nach der Lagerbuchung (ManufacturingOrderController::deliver).
+            if ($delivery->organization_id !== null) {
+                $notes = app(DeliveryNoteService::class);
+                $note = $notes->forStockDelivery($delivery, $createdBy, issued: false);
+                if (! NumberSequenceService::isDraft($note->number)) {
+                    $notes->deliver($note, null);
+                }
             }
 
             if ($serialIds !== null && $serialIds !== []) {

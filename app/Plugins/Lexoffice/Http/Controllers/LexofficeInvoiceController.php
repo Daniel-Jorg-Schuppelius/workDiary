@@ -10,62 +10,23 @@
 
 namespace App\Plugins\Lexoffice\Http\Controllers;
 
-use App\Enums\Invoicing\InvoiceStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\Invoice;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Services\LexofficeInvoiceService;
-use App\Support\ErrorText;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
- * Plugin-eigener Controller, der Aktionen rund um die Lexoffice-Invoice
- * (Push, PDF-Proxy, Status-Sync) kapselt — damit der Core-InvoiceController
- * Lexoffice nicht mehr direkt kennen muss.
+ * PDF-Proxy einer an Lexoffice übertragenen Rechnung. Übertragen wird beim
+ * Stellen über den {@see \App\Plugins\Lexoffice\Services\LexofficeDocumentIssuer}
+ * (Phase 145, MVP-1166) — der Core-InvoiceController kennt Lexoffice nicht.
  */
 class LexofficeInvoiceController extends Controller {
     public function __construct(
         private readonly LexofficeInvoiceService $lexofficeInvoice,
     ) {}
-
-    public function publish(Invoice $invoice): RedirectResponse {
-        Gate::authorize('issue', $invoice);
-
-        if (! $this->lexofficeInvoice->isConfigured()) {
-            return back()->with('error', __('Lexoffice-Plugin ist nicht aktiviert oder API-Key fehlt.'));
-        }
-
-        if ($invoice->status !== InvoiceStatus::Draft) {
-            return back()->with('error', __('Nur Entwürfe können an Lexoffice übertragen werden.'));
-        }
-
-        // Dieselben Voraussetzungen wie die lokale Ausstellung (Freigabepflicht,
-        // E-Rechnungs-Validierung) — der Push stellt die Rechnung (B1).
-        try {
-            app(\App\Services\Invoicing\InvoiceIssueService::class)->assertIssuable($invoice);
-        } catch (\App\Services\Invoicing\InvoiceIssueException $e) {
-            return back()->with('error', $e->getMessage());
-        }
-
-        $contactRef = ExternalReference::query()
-            ->forPlugin($invoice->customer->organization_id, LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT)
-            ->forReferenceable($invoice->customer)
-            ->first();
-
-        try {
-            $this->lexofficeInvoice->publish($invoice, $contactRef?->external_id, finalize: true);
-        } catch (\Throwable $e) {
-            report($e);
-
-            return back()->with('error', __('Lexoffice-Übertragung fehlgeschlagen: :msg', ['msg' => ErrorText::for($e)]));
-        }
-
-        return redirect()->route('invoices.show', $invoice)
-            ->with('success', __('Rechnung an Lexoffice übertragen und finalisiert.'));
-    }
 
     /**
      * Liefert das Lexoffice-PDF einer verknüpften Rechnung. Aufrufer ist
@@ -80,7 +41,7 @@ class LexofficeInvoiceController extends Controller {
             ->forReferenceable($invoice)
             ->firstOrFail();
 
-        $pdf = $this->lexofficeInvoice->downloadPdf($ref->external_id);
+        $pdf = $this->lexofficeInvoice->downloadPdf($ref->external_id, (string) ($ref->payload['_resource'] ?? LexofficeInvoiceService::RESOURCE_INVOICES));
 
         return response($pdf, 200, [
             'Content-Type' => 'application/pdf',

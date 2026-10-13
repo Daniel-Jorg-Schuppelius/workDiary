@@ -106,4 +106,7 @@ return [
     'error.outcome_unclear' => 'Résultat incertain (délai dépassé après envoi) — pas de nouvelle tentative aveugle. La prochaine exécution rapproche via le marqueur source.',
     'error.token_exchange_failed' => 'Échec de l’échange de jeton (HTTP :status) — vérifiez la clé/le secret API.',
     'order.internal_note' => 'Transfert WorkDiary :channel :from–:to',
+    'relations' => [
+        'order' => 'Commande',
+    ],
 ];

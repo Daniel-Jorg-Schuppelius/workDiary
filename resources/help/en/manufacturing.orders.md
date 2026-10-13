@@ -1,7 +1,7 @@
 ---
 title: "Manufacturing orders"
 topic: manufacturing.orders
-version: 2
+version: 4
 keywords:
     - production order
     - work order
@@ -20,6 +20,9 @@ keywords:
     - shipping label
     - shipment status
     - cancel shipment
+    - related documents
+    - document chain
+    - delivery note number
 audience: []
 modules:
     - module.lager
@@ -90,3 +93,20 @@ The **Delivery notes** page lists all deliveries in the selected period — with
 delivery note PDF, sending by email, customs documents and shipping status,
 without going through each manufacturing order. The filter “Not shipped” shows
 what is still waiting for a label.
+
+Every delivery creates a delivery note as a separate document with a number
+from the range “Delivery note” (**Number ranges**). If an accounting program
+assigns the number and rejects the transfer, the stock posting stays and the
+delivery note remains a draft; **Deliver** on its page tries again. Delivery
+notes from before this change keep their number `LS-…`.
+
+## Related documents
+
+At the bottom of the page, **Related documents** lists every document
+connected to this one: the quote and its versions, invoices, down payments and
+the final invoice, credit notes and cancellations, delivery notes,
+manufacturing orders and handovers. If an accounting program has taken over a
+document, its counterpart appears there with the program's number. Links the
+program reports itself, such as a down payment created in Lexoffice, appear as
+well. The **Relation** column says what the document is to this one; "via …"
+names the document through which the connection exists.

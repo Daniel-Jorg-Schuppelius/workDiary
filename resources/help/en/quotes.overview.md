@@ -1,7 +1,7 @@
 ---
 title: "Quotes"
 topic: quotes.overview
-version: 2
+version: 6
 keywords:
     - create quote
     - estimate
@@ -16,6 +16,14 @@ keywords:
     - optional items
     - quote revision
     - quote PDF
+    - related documents
+    - document chain
+    - quote number
+    - quote to Lexoffice
+    - order confirmation number
+    - delivery note
+    - partial delivery
+    - delivery note number
 audience: []
 modules:
     - module.vertrieb
@@ -67,8 +75,50 @@ number used there. The quote then leaves the list **Accepted quotes without
 invoice**; the mark can be removed again. The action is available as long as
 there is no invoice for the quote.
 
-**PDF & order confirmation:** Every quote can be downloaded as a PDF
-(including option markers and per-rate tax breakdown); sent quotes
-permanently keep the document design of the time of sending. For
-(partially) accepted quotes an order confirmation PDF is also
-available, confirming exactly the accepted items.
+**PDF:** Every quote can be downloaded as a PDF (including option markers
+and per-rate tax breakdown); sent quotes permanently keep the document design
+of the time of sending. The order confirmation is a separate document (see
+below).
+
+## Related documents
+
+At the bottom of the page, **Related documents** lists every document
+connected to this one: the quote and its versions, invoices, down payments and
+the final invoice, credit notes and cancellations, delivery notes,
+manufacturing orders and handovers. If an accounting program has taken over a
+document, its counterpart appears there with the program's number. Links the
+program reports itself, such as a down payment created in Lexoffice, appear as
+well. The **Relation** column says what the document is to this one; "via …"
+names the document through which the connection exists.
+
+## Quote number from the accounting program
+
+If you set an accounting program (Lexoffice or easybill) for **Quote** on the
+**Number ranges** page, a new quote first carries a draft number. When it is
+**sent**, WorkDiary creates the quote in the program, finalises it there and
+takes over its number; only then is the PDF created. If the transfer fails,
+the quote stays approved and you can send it again. A new version is a new
+quote with its own number in the program. Lexoffice marks optional items as
+optional; easybill lists them without calculation.
+
+## Order confirmation
+
+For an accepted quote, **Create order confirmation** creates a separate
+document with the accepted items. The order confirmation has its own number
+range (**Number ranges**, range “Order confirmation”). **Confirm** gives it its
+number; if an accounting program (Lexoffice or easybill) assigns the number,
+WorkDiary transfers it at that moment. After that, the PDF and e-mail sending
+are available. Cancelling withdraws it in WorkDiary; it remains in the
+program.
+
+## Delivery note
+
+A confirmed order confirmation offers **Create delivery note**. The delivery
+note takes over the quantities not yet delivered, without prices. For a
+partial delivery, adjust the quantities under **Edit quantities**; 0 removes
+an item from this delivery note, it stays open for the next one. **Deliver**
+fixes the number from the range “Delivery note”; if an accounting program
+(Lexoffice or easybill) assigns the number, WorkDiary transfers the delivery
+note at that moment. After that, the PDF and e-mail sending are available.
+Delivery notes from manufacturing are created with every delivery (see
+manufacturing orders).

@@ -12,6 +12,7 @@ namespace App\Models\Invoicing;
 
 use App\Casts\{MoneyCast, PercentageCast};
 use App\Enums\Invoicing\{InvoiceDeliveryFormat, InvoiceStatus};
+use App\Enums\Numbering\NumberScope;
 use App\Models\Classification\Tag;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, DisclosesLabourCosts, HasSqid};
 use App\Models\Contracts\HasDocumentLines;
@@ -585,6 +586,16 @@ class Invoice extends Model implements HasDocumentLines {
 
     public function isCreditNote(): bool {
         return $this->type === self::TYPE_CREDIT_NOTE;
+    }
+
+    /** Nummernkreis der Belegart; bestimmt auch, wer die Nummer vergibt (MVP-1153). */
+    public function numberScope(): NumberScope {
+        return match ($this->type) {
+            self::TYPE_CREDIT_NOTE => NumberScope::CreditNote,
+            self::TYPE_CANCELLATION => NumberScope::Cancellation,
+            self::TYPE_PROFORMA => NumberScope::Proforma,
+            default => NumberScope::Invoice,
+        };
     }
 
     public function isMaterial(): bool {

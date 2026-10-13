@@ -256,4 +256,8 @@ return [
         'title' => 'Regole di fatturazione',
         'hint' => 'Per ogni tipo di attività può stabilire quale articolo viene usato come prestazione nel trasferimento e nell’esportazione delle fatture — dall’anagrafica articoli o da un programma di contabilità collegato. Senza tipo di attività = regola di riserva per tutte le registrazioni. I sottoprogetti ereditano le regole dal progetto padre, ma possono sovrascriverle.',
     ],
+    // Phase 145 (MVP-1168): Abschlag und Schluss im Programm.
+    'down_payment' => [
+        'program_numbering' => 'Crei le fatture di acconto e finali in :program finché :program assegna i numeri di fattura. WorkDiary le mostra nel flusso dei documenti.',
+    ],
 ];

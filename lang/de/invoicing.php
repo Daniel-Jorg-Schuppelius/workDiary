@@ -256,4 +256,8 @@ return [
         'title' => 'Abrechnungs-Regeln',
         'hint' => 'Pro Tätigkeitsart lässt sich festlegen, welcher Artikel bei Übergabe und Rechnungs-Export als Leistung verwendet wird — aus dem Artikelstamm oder einem angebundenen Buchhaltungsprogramm. Ohne Tätigkeitsart = Rückfall für alle Einträge. Unterprojekte erben Regeln vom übergeordneten Projekt, können sie aber überschreiben.',
     ],
+    // Phase 145 (MVP-1168): Abschlag und Schluss im Programm.
+    'down_payment' => [
+        'program_numbering' => 'Abschlags- und Schlussrechnungen legen Sie in :program an, solange :program die Rechnungsnummern vergibt. WorkDiary zeigt sie im Belegfluss.',
+    ],
 ];

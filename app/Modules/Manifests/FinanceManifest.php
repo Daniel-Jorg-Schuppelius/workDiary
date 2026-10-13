@@ -182,6 +182,10 @@ final class FinanceManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Billing\Contracts\DocumentRelationSource::class => [
+                \App\Services\Finance\Relations\TransferRelationSource::class,
+                \App\Services\Finance\Relations\AccountingVoucherRelationSource::class,
+            ],
             \App\Services\Demo\Contracts\DemoBlock::class => [
                 \App\Services\Finance\Demo\FinanceDemoBlock::class,
             ],

@@ -1,7 +1,7 @@
 ---
 title: "Fertigungsaufträge"
 topic: manufacturing.orders
-version: 2
+version: 4
 keywords:
     - Produktionsauftrag
     - Stückliste
@@ -20,6 +20,9 @@ keywords:
     - Versandlabel
     - Sendungsstatus
     - Versand stornieren
+    - zugehörige Belege
+    - Belegkette
+    - Lieferscheinnummer
 audience: []
 modules:
     - module.lager
@@ -90,3 +93,21 @@ Die Seite **Lieferscheine** listet alle Auslieferungen im gewählten Zeitraum �
 mit Lieferschein-PDF, Versand per E-Mail, Zollpapieren und Versandstand, ohne
 Umweg über den einzelnen Fertigungsauftrag. Filter „Ohne Versand“ zeigt, was
 noch auf ein Label wartet.
+
+Jede Auslieferung erzeugt einen Lieferschein als eigenen Beleg mit einer
+Nummer aus dem Kreis „Lieferschein“ (**Nummernkreise**). Vergibt ein
+Buchhaltungsprogramm die Nummer und lehnt die Übertragung ab, bleibt die
+Lagerbuchung bestehen und der Lieferschein Entwurf; **Ausliefern** auf seiner
+Seite versucht es erneut. Lieferscheine von vor dieser Umstellung behalten
+ihre Nummer `LS-…`.
+
+## Zugehörige Belege
+
+Unten auf der Seite listet **Zugehörige Belege** alle Belege, die mit
+diesem zusammenhängen: Angebot und seine Versionen, Rechnungen, Abschläge und
+Schlussrechnung, Gutschriften und Stornos, Lieferscheine, Fertigungsaufträge
+und Übergaben. Hat ein Buchhaltungsprogramm einen Beleg übernommen, steht
+sein Gegenstück dort mit der Nummer des Programms. Bezüge, die das Programm
+selbst meldet, etwa ein in Lexoffice angelegter Abschlag, erscheinen ebenfalls.
+Die Spalte **Bezug** sagt, was der Beleg für diesen ist; „über …“ nennt den
+Beleg, über den der Zusammenhang besteht.

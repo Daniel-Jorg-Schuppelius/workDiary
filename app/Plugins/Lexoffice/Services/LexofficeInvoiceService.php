@@ -10,27 +10,34 @@
 
 namespace App\Plugins\Lexoffice\Services;
 
+use App\Enums\Sales\OrderConfirmationStatus;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\Invoice;
+use App\Models\Sales\{OrderConfirmation, Quote};
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Support\PluginApiClient;
+use App\Support\MorphMap;
 use RuntimeException;
 
 /**
- * Delegiert die Rechnungserstellung an Lexoffice (POST /v1/invoices).
- * Nach erfolgreichem Push:
- *  - external_id wird in ExternalReference gespeichert
- *  - die Lexoffice-Rechnungsnummer wird (falls vorhanden) in die lokale
- *    Invoice übernommen
- *  - Status wechselt von draft → issued
+ * Überträgt Rechnungen an Lexoffice (POST /v1/invoices mit der AB bzw. dem
+ * Angebot als Vorgänger; Gutschrift und Storno als Rechnungskorrektur
+ * POST /v1/credit-notes mit Bezug auf die übertragene Ursprungsrechnung,
+ * MVP-1154/1166). Die Verknüpfung steht in einer ExternalReference, die
+ * Lexoffice-Nummer übernimmt das lokale Ausstellen.
  *
  * Bewusst HTTP-basiert (statt SDK-Entities), weil wir auch das PDF
  * herunterladen und Status pullen wollen — der SDK-Workflow ist hier eher
  * im Weg.
  */
 class LexofficeInvoiceService {
+    /** Gilt für jeden übertragenen lokalen Beleg, auch Korrekturen; die Ressource steht in `payload._resource`. */
     public const EXT_TYPE_INVOICE = 'invoice';
+
+    public const RESOURCE_INVOICES = 'invoices';
+
+    public const RESOURCE_CREDIT_NOTES = 'credit-notes';
 
     private ?PluginApiClient $api = null;
 
@@ -52,56 +59,128 @@ class LexofficeInvoiceService {
     }
 
     /**
-     * Erzeugt in Lexoffice eine Rechnung aus der lokalen Invoice. Wenn
-     * $finalize true ist, wird die Rechnung sofort festgeschrieben (kein
-     * Draft); sonst landet sie als Entwurf in Lexoffice.
+     * Überträgt die lokale Rechnung festgeschrieben an Lexoffice und liefert
+     * die Lexoffice-Nummer (Phase 145, MVP-1166). Ausgestellt wird lokal über
+     * {@see \App\Services\Invoicing\InvoiceIssueService::issue()}, das diese
+     * Übertragung über den {@see LexofficeDocumentIssuer} anstößt. Eine schon
+     * verknüpfte Rechnung wird nicht erneut angelegt.
      *
-     * @return array{external_id: string, payload: array<string, mixed>}
+     * @return array{external_id: string, number: string, payload: array<string, mixed>}
      */
-    public function publish(Invoice $invoice, ?string $externalContactId = null, bool $finalize = true): array {
+    public function transfer(Invoice $invoice, ?string $externalContactId = null): array {
         if (! $this->isConfigured()) {
-            throw new RuntimeException('Lexoffice API key is not configured (LEXOFFICE_API_KEY).');
+            throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_not_configured'));
         }
 
-        $payload = $this->mapper->toPayload($invoice, $externalContactId, $this->defaults);
-
-        $url = $this->baseUrl . '/invoices' . ($finalize ? '?finalize=true' : '');
-        $response = $this->api()->postJson($url, $payload);
-
-        if (! $response->successful()) {
-            throw new RuntimeException('Lexoffice invoice create failed: ' . $response->status() . ' ' . $response->body());
+        $correction = $invoice->isCreditNote() || $invoice->type === Invoice::TYPE_CANCELLATION;
+        $resource = $correction ? self::RESOURCE_CREDIT_NOTES : self::RESOURCE_INVOICES;
+        $reference = ExternalReference::query()
+            ->forPlugin($invoice->organization_id, LexofficePlugin::ID, self::EXT_TYPE_INVOICE)
+            ->forReferenceable($invoice)
+            ->first();
+        if ($reference instanceof ExternalReference && (string) $reference->external_number !== '') {
+            return ['external_id' => (string) $reference->external_id, 'number' => (string) $reference->external_number, 'payload' => (array) $reference->payload];
         }
 
-        $body = (array) ($response->json() ?? []);
-        $externalId = (string) ($body['id'] ?? '');
-        if ($externalId === '') {
-            throw new RuntimeException('Lexoffice invoice create returned no id.');
-        }
-
-        ExternalReference::updateOrCreate(
-            [
+        if (! $reference instanceof ExternalReference) {
+            $contactId = $externalContactId ?? ExternalReference::query()
+                ->forPlugin($invoice->organization_id, LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT)
+                ->forReferenceable($invoice->customer)
+                ->value('external_id');
+            $payload = $correction
+                ? $this->mapper->toCreditNotePayload($invoice, $contactId, $this->defaults)
+                : $this->mapper->toPayload($invoice, $contactId, $this->defaults);
+            // Korrektur ohne übertragene Ursprungsrechnung entsteht ohne Bezug (Original aus der Zeit lokaler Nummern).
+            $preceding = $correction ? $this->precedingVoucherId($invoice) : $this->orderVoucherId($invoice);
+            $response = $this->create($resource, $payload, $preceding);
+            // Lexoffice lehnt einen ungültigen Vorgänger mit 406 ab (etwa ein Angebot mit Optionspositionen) — dann ohne Bezug.
+            if ($response->status() === 406 && $preceding !== null && ! $correction) {
+                $response = $this->create($resource, $payload, null);
+            }
+            if (! $response->successful()) {
+                throw new RuntimeException('Lexoffice ' . $resource . ' create failed: ' . $response->status() . ' ' . mb_substr((string) $response->body(), 0, 500));
+            }
+            $externalId = (string) ($response->json('id') ?? '');
+            if ($externalId === '') {
+                throw new RuntimeException('Lexoffice invoice create returned no id.');
+            }
+            $reference = ExternalReference::create([
+                'organization_id' => $invoice->organization_id,
                 'plugin_id' => LexofficePlugin::ID,
                 'external_type' => self::EXT_TYPE_INVOICE,
                 'referenceable_type' => $invoice->getMorphClass(),
                 'referenceable_id' => $invoice->getKey(),
-            ],
-            [
-                'organization_id' => $invoice->organization_id,
                 'external_id' => $externalId,
-                'payload' => $body + ['_request' => $payload],
+                'payload' => ['_request' => $payload, '_resource' => $resource],
                 'synced_at' => now(),
-            ],
-        );
+            ]);
+        }
 
-        $fetched = $this->fetchInvoice($externalId);
-        $remoteNumber = $fetched['voucherNumber'] ?? null;
-        // Ausstellung über die einzige Schreibstelle (Vollscan 2026-08-23, B1):
-        // Partei-Snapshot, Fälligkeit und tax_context frieren jetzt auch beim
-        // Lexoffice-Push ein; die Lexoffice-Nummer kommt im selben Save mit.
-        $extra = is_string($remoteNumber) && $remoteNumber !== '' ? ['number' => $remoteNumber] : [];
-        app(\App\Services\Invoicing\InvoiceIssueService::class)->issue($invoice, $extra);
+        $fetched = $this->fetchInvoice((string) $reference->external_id, (string) ($reference->payload['_resource'] ?? $resource));
+        $number = (string) ($fetched['voucherNumber'] ?? '');
+        if ($number === '') {
+            throw new RuntimeException((string) __('numbering.error.no_number', ['program' => 'Lexoffice']));
+        }
+        $reference->forceFill([
+            'external_number' => $number,
+            'payload' => $fetched + ['_resource' => (string) ($reference->payload['_resource'] ?? $resource)],
+            'synced_at' => now(),
+        ])->save();
 
-        return ['external_id' => $externalId, 'payload' => $fetched];
+        return ['external_id' => (string) $reference->external_id, 'number' => $number, 'payload' => $fetched];
+    }
+
+    /**
+     * Übertragen und mit der Lexoffice-Nummer ausstellen — für Belege, die
+     * Lexoffice unabhängig vom Nummernkreis führt (Retainer, Feature 098).
+     *
+     * @return array{external_id: string, payload: array<string, mixed>}
+     */
+    public function publish(Invoice $invoice, ?string $externalContactId = null): array {
+        $result = $this->transfer($invoice, $externalContactId);
+        app(\App\Services\Invoicing\InvoiceIssueService::class)->issue($invoice, ['number' => $result['number']]);
+
+        return ['external_id' => $result['external_id'], 'payload' => $result['payload']];
+    }
+
+    /** @param array<string, mixed> $payload */
+    private function create(string $resource, array $payload, ?string $preceding): \Illuminate\Http\Client\Response {
+        $query = array_filter(['precedingSalesVoucherId' => $preceding, 'finalize' => 'true']);
+
+        return $this->api()->postJson($this->baseUrl . '/' . $resource . '?' . http_build_query($query), $payload);
+    }
+
+    /**
+     * Vorgänger einer Rechnung in Lexoffice: die übertragene AB des Angebots,
+     * sonst das übertragene Angebot (Phase 145, MVP-1166).
+     */
+    private function orderVoucherId(Invoice $invoice): ?string {
+        if ($invoice->quote_id === null) {
+            return null;
+        }
+        $confirmationId = OrderConfirmation::query()
+            ->where('organization_id', $invoice->organization_id)
+            ->where('quote_id', $invoice->quote_id)
+            ->where('status', OrderConfirmationStatus::Confirmed)
+            ->latest('id')
+            ->value('id');
+        $candidates = array_filter([
+            [LexofficeOrderConfirmationService::EXT_TYPE_ORDER_CONFIRMATION, MorphMap::alias(OrderConfirmation::class), $confirmationId],
+            [LexofficeQuotationService::EXT_TYPE_QUOTATION, MorphMap::alias(Quote::class), $invoice->quote_id],
+        ], static fn (array $candidate): bool => $candidate[2] !== null);
+        foreach ($candidates as [$type, $alias, $id]) {
+            $externalId = ExternalReference::query()
+                ->forPlugin($invoice->organization_id, LexofficePlugin::ID, $type)
+                ->where('referenceable_type', $alias)
+                ->where('referenceable_id', $id)
+                ->whereNotNull('external_number')
+                ->value('external_id');
+            if (is_string($externalId) && $externalId !== '') {
+                return $externalId;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -109,11 +188,11 @@ class LexofficeInvoiceService {
      *
      * @return array<string, mixed>
      */
-    public function fetchInvoice(string $externalId): array {
+    public function fetchInvoice(string $externalId, string $resource = self::RESOURCE_INVOICES): array {
         if (! $this->isConfigured()) {
             throw new RuntimeException('Lexoffice API key is not configured.');
         }
-        $response = $this->api()->getResponse($this->baseUrl . '/invoices/' . $externalId);
+        $response = $this->api()->getResponse($this->baseUrl . '/' . $resource . '/' . $externalId);
 
         if (! $response->successful()) {
             throw new RuntimeException('Lexoffice invoice fetch failed: ' . $response->status() . ' ' . $response->body());
@@ -123,36 +202,38 @@ class LexofficeInvoiceService {
     }
 
     /**
-     * Holt das PDF einer finalisierten Lexoffice-Rechnung als Binär-String.
-     * Lexoffice braucht dazu zwei Schritte:
-     *   1. GET /invoices/{id}/document → liefert {documentFileId}
-     *   2. GET /files/{documentFileId} → binäres PDF
+     * PDF eines festgeschriebenen Lexoffice-Belegs: `GET /{art}/{id}/file`
+     * (seit 08/2025; `/document` mit `documentFileId` ist abgekündigt, Befund B7).
      */
-    public function downloadPdf(string $externalId): string {
+    public function downloadPdf(string $externalId, string $resource = self::RESOURCE_INVOICES): string {
         if (! $this->isConfigured()) {
             throw new RuntimeException('Lexoffice API key is not configured.');
         }
 
-        $meta = $this->api()->getResponse($this->baseUrl . '/invoices/' . $externalId . '/document');
-
-        if (! $meta->successful()) {
-            throw new RuntimeException('Lexoffice invoice document metadata fetch failed: ' . $meta->status());
-        }
-        $fileId = (string) ($meta->json('documentFileId') ?? '');
-        if ($fileId === '') {
-            throw new RuntimeException('Lexoffice invoice document has no documentFileId.');
-        }
-
         $pdf = $this->api()->getResponse(
-            $this->baseUrl . '/files/' . $fileId,
+            $this->baseUrl . '/' . $resource . '/' . $externalId . '/file',
             [],
             ['headers' => ['Accept' => 'application/pdf']],
         );
-
         if (! $pdf->successful()) {
             throw new RuntimeException('Lexoffice file fetch failed: ' . $pdf->status());
         }
 
         return (string) $pdf->body();
+    }
+
+    /** Lexoffice-ID der übertragenen Ursprungsrechnung einer Korrektur. */
+    private function precedingVoucherId(Invoice $invoice): ?string {
+        if ($invoice->parent_invoice_id === null) {
+            return null;
+        }
+
+        $id = ExternalReference::query()
+            ->forPlugin($invoice->organization_id, LexofficePlugin::ID, self::EXT_TYPE_INVOICE)
+            ->where('referenceable_type', $invoice->getMorphClass())
+            ->where('referenceable_id', $invoice->parent_invoice_id)
+            ->value('external_id');
+
+        return is_string($id) && $id !== '' ? $id : null;
     }
 }

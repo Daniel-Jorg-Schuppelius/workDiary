@@ -43,6 +43,27 @@ final class BillingManifest extends Manifest {
             'customer_billing_agreements',
             'customer_billing_rates',
             'customer_billing_statements',
+            'delivery_note_items',
+            'delivery_notes',
+        ];
+    }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Billing\Contracts\DocumentRelationSource::class => [
+                \App\Services\Billing\Relations\DeliveryNoteRelationSource::class,
+            ],
+            \App\Services\Document\Contracts\MailableDocumentProvider::class => [
+                \App\Services\Billing\Mail\DeliveryNoteMailDocument::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, class-string> */
+    public function bindings(): array {
+        return [
+            \App\Services\Numbering\Contracts\BillingRouteNumbers::class => \App\Services\Billing\BillingRouteNumberSource::class,
         ];
     }
 }

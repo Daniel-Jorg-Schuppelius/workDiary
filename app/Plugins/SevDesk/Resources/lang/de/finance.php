@@ -11,10 +11,18 @@
 return [
     'error' => [
         'sevdesk_not_configured' => 'sevDesk ist für diese Organisation nicht konfiguriert (API-Token fehlt).',
+        'sevdesk_cancel_not_transferred' => 'Die Rechnung :number ist nicht in sevDesk; das Storno lässt sich dort nicht anlegen. Stellen Sie den Kreis „Storno“ auf WorkDiary, um es lokal zu nummerieren.',
         'sevdesk_outcome_unclear' => 'Ausgang der sevDesk-Übergabe unklar (Zeitüberschreitung nach dem Senden) — nicht blind wiederholen; der nächste Lauf gleicht über den Quellmarker ab.',
     ],
     'sevdesk' => [
         'introduction' => 'Unsere Lieferungen/Leistungen im Zeitraum :from – :to stellen wir Ihnen wie folgt in Rechnung.',
         'tax_text' => 'Umsatzsteuer :rate%',
+    ],
+    'invoice_status' => [
+        '50' => 'Serienrechnung inaktiv',
+        '100' => 'Entwurf',
+        '200' => 'offen',
+        '750' => 'teilweise bezahlt',
+        '1000' => 'bezahlt',
     ],
 ];

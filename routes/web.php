@@ -1656,13 +1656,11 @@ Route::middleware('auth')->group(function () {
         Route::post('manufacturing-orders/{order}/substitutes/{substitute}/decide', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'decideSubstitute'])->name('manufacturing-orders.substitutes.decide');
         Route::get('manufacturing-orders/{order}/record.pdf', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'recordPdf'])->name('manufacturing-orders.record.pdf'); // MVP-065 Fertigungsnachweis
         Route::post('manufacturing-orders/{order}/deliver', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'deliver'])->name('manufacturing-orders.deliver');
-        Route::get('manufacturing-orders/{order}/deliveries/{delivery}/delivery-note.pdf', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'deliveryNotePdf'])->name('manufacturing-orders.deliveries.pdf'); // MVP-074 Lieferschein-PDF
+        Route::get('manufacturing-orders/{order}/deliveries/{delivery}/delivery-note.pdf', [\App\Http\Controllers\Billing\DeliveryNoteController::class, 'stockDeliveryPdf'])->name('manufacturing-orders.deliveries.pdf'); // MVP-074, seit MVP-1163 Weiterleitung auf den Beleg
         // Zollpapiere (MVP-1007): Versandgrund im Dialog, PDF im neuen Tab.
         Route::get('manufacturing-orders/{order}/deliveries/{delivery}/customs', [\App\Http\Controllers\Shipping\DeliveryCustomsController::class, 'form'])->name('manufacturing-orders.deliveries.customs.form');
         Route::post('manufacturing-orders/{order}/deliveries/{delivery}/customs.pdf', [\App\Http\Controllers\Shipping\DeliveryCustomsController::class, 'pdf'])->name('manufacturing-orders.deliveries.customs.pdf');
         // Feature 128 (MVP-692): Lieferschein per E-Mail an den Kunden.
-        Route::get('manufacturing-orders/{order}/deliveries/{delivery}/mail', [\App\Http\Controllers\Document\DocumentMailController::class, 'deliveryNoteForm'])->name('manufacturing-orders.deliveries.mail.form');
-        Route::post('manufacturing-orders/{order}/deliveries/{delivery}/mail', [\App\Http\Controllers\Document\DocumentMailController::class, 'deliveryNoteSend'])->name('manufacturing-orders.deliveries.mail');
         Route::post('manufacturing-orders/{order}/deliveries/{delivery}/shipment', [\App\Http\Controllers\Shipping\DeliveryShipmentController::class, 'store'])->name('manufacturing-orders.deliveries.shipment'); // 059/MVP-128 Rang 20 Versandauftrag
         Route::get('manufacturing-orders/{order}/deliveries/{delivery}/shipment/label', [\App\Http\Controllers\Shipping\DeliveryShipmentController::class, 'label'])->name('manufacturing-orders.deliveries.shipment.label'); // MVP-1095
         Route::post('manufacturing-orders/{order}/deliveries/{delivery}/shipment/track', [\App\Http\Controllers\Shipping\DeliveryShipmentController::class, 'track'])->name('manufacturing-orders.deliveries.shipment.track');
@@ -2896,8 +2894,8 @@ Route::middleware('auth')->group(function () {
             // Feature 128 (MVP-692): PDF-Mailversand — getrennt vom Annahme-Token-Flow (quotes.send).
             Route::get('{quote}/mail', [\App\Http\Controllers\Document\DocumentMailController::class, 'quoteForm'])->name('mail.form');
             Route::post('{quote}/mail', [\App\Http\Controllers\Document\DocumentMailController::class, 'quoteSend'])->name('mail');
-            Route::get('{quote}/auftragsbestaetigung/mail', [\App\Http\Controllers\Document\DocumentMailController::class, 'orderConfirmationForm'])->name('order-confirmation.mail.form');
-            Route::post('{quote}/auftragsbestaetigung/mail', [\App\Http\Controllers\Document\DocumentMailController::class, 'orderConfirmationSend'])->name('order-confirmation.mail');
+            // Phase 145 (MVP-1162): Auftragsbestätigung als eigener Beleg; die GET-Route oben leitet auf ihr PDF.
+            Route::post('{quote}/auftragsbestaetigung', [\App\Http\Controllers\Sales\OrderConfirmationController::class, 'store'])->name('order-confirmation.store');
             Route::post('{quote}/freigeben', [\App\Http\Controllers\Sales\QuoteController::class, 'approve'])->name('approve');
             Route::post('{quote}/versenden', [\App\Http\Controllers\Sales\QuoteController::class, 'send'])->name('send');
             Route::post('{quote}/entscheiden', [\App\Http\Controllers\Sales\QuoteController::class, 'decide'])->name('decide');
@@ -2915,6 +2913,29 @@ Route::middleware('auth')->group(function () {
             // MVP-1055: Zuschlag auf Einzelpreise verteilen (nur Entwurf).
             Route::get('{quote}/zuschlag', [\App\Http\Controllers\Sales\QuoteController::class, 'markupForm'])->name('markup.form');
             Route::post('{quote}/zuschlag', [\App\Http\Controllers\Sales\QuoteController::class, 'applyMarkup'])->name('markup');
+        });
+
+        // ── Auftragsbestätigung (Phase 145, MVP-1162) ───────────────────────────
+        Route::prefix('auftragsbestaetigungen')->name('order-confirmations.')->group(function (): void {
+            Route::get('{orderConfirmation}', [\App\Http\Controllers\Sales\OrderConfirmationController::class, 'show'])->name('show');
+            Route::post('{orderConfirmation}/bestaetigen', [\App\Http\Controllers\Sales\OrderConfirmationController::class, 'confirm'])->name('confirm');
+            Route::post('{orderConfirmation}/stornieren', [\App\Http\Controllers\Sales\OrderConfirmationController::class, 'cancel'])->name('cancel');
+            Route::get('{orderConfirmation}/pdf', [\App\Http\Controllers\Sales\OrderConfirmationController::class, 'pdf'])->name('pdf');
+            Route::get('{orderConfirmation}/mail', [\App\Http\Controllers\Document\DocumentMailController::class, 'orderConfirmationForm'])->name('mail.form');
+            Route::post('{orderConfirmation}/mail', [\App\Http\Controllers\Document\DocumentMailController::class, 'orderConfirmationSend'])->name('mail');
+            Route::post('{orderConfirmation}/lieferschein', [\App\Http\Controllers\Billing\DeliveryNoteController::class, 'store'])->name('delivery-note.store');
+        });
+
+        // ── Lieferschein (Phase 145, MVP-1163) ──────────────────────────────────
+        Route::prefix('lieferscheine')->name('delivery-notes.')->group(function (): void {
+            Route::get('{deliveryNote}', [\App\Http\Controllers\Billing\DeliveryNoteController::class, 'show'])->name('show');
+            Route::get('{deliveryNote}/bearbeiten', [\App\Http\Controllers\Billing\DeliveryNoteController::class, 'edit'])->name('edit');
+            Route::put('{deliveryNote}', [\App\Http\Controllers\Billing\DeliveryNoteController::class, 'update'])->name('update');
+            Route::post('{deliveryNote}/ausliefern', [\App\Http\Controllers\Billing\DeliveryNoteController::class, 'deliver'])->name('deliver');
+            Route::post('{deliveryNote}/stornieren', [\App\Http\Controllers\Billing\DeliveryNoteController::class, 'cancel'])->name('cancel');
+            Route::get('{deliveryNote}/pdf', [\App\Http\Controllers\Billing\DeliveryNoteController::class, 'pdf'])->name('pdf');
+            Route::get('{deliveryNote}/mail', [\App\Http\Controllers\Document\DocumentMailController::class, 'deliveryNoteForm'])->name('mail.form');
+            Route::post('{deliveryNote}/mail', [\App\Http\Controllers\Document\DocumentMailController::class, 'deliveryNoteSend'])->name('mail');
         });
 
         // ── Faktura-Übergabe (Feature 045, Teil B) ──────────────────────────────

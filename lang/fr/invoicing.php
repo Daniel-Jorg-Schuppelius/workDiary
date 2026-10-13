@@ -256,4 +256,8 @@ return [
         'title' => 'Règles de facturation',
         'hint' => 'Pour chaque type d’activité, vous pouvez définir l’article utilisé comme prestation lors du transfert et de l’export des factures — issu du fichier articles ou d’un logiciel comptable connecté. Sans type d’activité = règle par défaut pour toutes les saisies. Les sous-projets héritent des règles du projet parent mais peuvent les remplacer.',
     ],
+    // Phase 145 (MVP-1168): Abschlag und Schluss im Programm.
+    'down_payment' => [
+        'program_numbering' => 'Créez les factures d\'acompte et de solde dans :program tant que :program attribue les numéros de facture. WorkDiary les affiche dans le flux des documents.',
+    ],
 ];

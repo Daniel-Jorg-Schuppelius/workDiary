@@ -15,6 +15,7 @@ return [
         ],
         'flash' => [
             'lexoffice_pushed' => 'Albarán enviado a Lexoffice.',
+            'already_linked' => 'Este documento ya existe en Lexoffice (ID :id); no se ha creado un segundo.',
         ],
     ],
 ];

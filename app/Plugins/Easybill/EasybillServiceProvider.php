@@ -39,5 +39,10 @@ class EasybillServiceProvider extends PluginServiceProviderBase {
 
         // Beleg-Rückabruf (MVP-1031): der Kern kennt die Anbindung nur über die Registry.
         $this->app->make(VoucherPullerRegistry::class)->register(EasybillVoucherPullService::class);
+
+        // Belegnummern beim Übertragen (Phase 145).
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Numbering\Contracts\DocumentIssuer::class, \App\Plugins\Easybill\Services\EasybillDocumentIssuer::class);
+        // Zugehörige Belege (MVP-1158).
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Billing\Contracts\DocumentRelationSource::class, \App\Plugins\Easybill\Services\EasybillRelationSource::class);
     }
 }

@@ -14,6 +14,8 @@ use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Invoicing\Invoice;
 use App\Services\Integration\LifecycleWebhookPublisher;
 use App\Services\Invoicing\EInvoice\EInvoiceValidationService;
+use App\Services\Numbering\{DocumentIssuers, NumberAuthority, NumberSequenceService};
+use App\Support\ErrorText;
 
 /**
  * Einzige Schreibstelle für den Übergang draft → issued (Vollscan 2026-08-23,
@@ -38,13 +40,21 @@ final class InvoiceIssueService {
 
     /**
      * Fachliche Voraussetzungen der Ausstellung: keine Pro-forma, Freigabe
-     * (MVP-163, Opt-in), E-Rechnungs-Validierung (MVP-164, Opt-in).
+     * (MVP-163, Opt-in), E-Rechnungs-Validierung (MVP-164, Opt-in). Eine
+     * Entwurfsnummer stellt nur die Übertragung an das vergebende Programm aus
+     * (`$numberFromProgram`, MVP-1153).
      *
      * @throws InvoiceIssueException
      */
-    public function assertIssuable(Invoice $invoice): void {
+    public function assertIssuable(Invoice $invoice, bool $numberFromProgram = false): void {
         if ($invoice->isProforma()) {
             throw new InvoiceIssueException(InvoiceIssueException::REASON_PROFORMA, (string) __('Eine Pro-forma-Rechnung wird nicht gestellt — wandeln Sie sie in eine echte Rechnung um.'));
+        }
+        // Eine Entwurfsnummer ersetzt das vergebende Programm beim Ausstellen (MVP-1166) — kann es den Beleg nicht übernehmen, bleibt er Entwurf.
+        $program = $this->issuingProgram($invoice);
+        if (! $numberFromProgram && $program !== null && NumberSequenceService::isDraft($invoice->number)
+            && ! app(DocumentIssuers::class)->canIssue((int) $invoice->organization_id, $invoice->numberScope())) {
+            throw new InvoiceIssueException(InvoiceIssueException::REASON_DRAFT_NUMBER, (string) __('numbering.issue.draft_number', ['program' => $program]));
         }
         // Feature 160 (MVP-856): ein leerer Entwurf verlässt das Haus auf keinem Weg.
         // Titel und Text allein machen keinen Beleg (MVP-1054).
@@ -95,6 +105,15 @@ final class InvoiceIssueService {
 
         $fromFile = $invoice->number_source === 'file_import';
 
+        // Entwurfsnummer: Das vergebende Programm übernimmt den Beleg und liefert seine Nummer, sonst zieht workDiary sie (MVP-1166).
+        if (! array_key_exists('number', $extra) && NumberSequenceService::isDraft($invoice->number)) {
+            try {
+                $extra['number'] = app(DocumentIssuers::class)->numberOnIssue($invoice, $invoice->numberScope());
+            } catch (\RuntimeException $e) {
+                throw new InvoiceIssueException(InvoiceIssueException::REASON_PROGRAM, (string) __('numbering.issue.transfer_failed', ['program' => (string) $this->issuingProgram($invoice), 'error' => ErrorText::for($e)]), previous: $e);
+            }
+        }
+
         $invoice->freezeParties();
         // Festgeschrieben, damit Fälligkeit und E-Rechnung dasselbe Ziel nennen (MVP-996).
         $paymentTermsDays = $invoice->effectivePaymentTermsDays();
@@ -123,5 +142,13 @@ final class InvoiceIssueService {
         $this->lifecycleWebhooks->invoiceIssued($invoice);
 
         return $invoice;
+    }
+
+    /** Programm, das die Nummer dieses Belegs vergibt; null = workDiary. */
+    private function issuingProgram(Invoice $invoice): ?string {
+        $authority = app(NumberAuthority::class);
+        $source = $authority->sourceFor((int) $invoice->organization_id, $invoice->numberScope());
+
+        return $source === NumberAuthority::SOURCE_LOCAL ? null : $authority->sourceLabel($source);
     }
 }

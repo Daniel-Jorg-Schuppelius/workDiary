@@ -1,7 +1,7 @@
 ---
 title: "Invoices & documents"
 topic: invoices.manage
-version: 7
+version: 9
 keywords:
     - create invoice
     - write invoice
@@ -18,6 +18,10 @@ keywords:
     - Stripe
     - Mollie
     - SumUp
+    - related documents
+    - document chain
+    - transfer invoice to Lexoffice
+    - draft number
 audience: []
 modules:
     - module.vertrieb
@@ -136,3 +140,27 @@ payment charges); you book the provider's later payout against the
 cash-in-transit account. You can switch off the link on invoices and
 emails in the organization settings under “Online payment”; it remains in
 the customer portal.
+
+## Related documents
+
+At the bottom of the page, **Related documents** lists every document
+connected to this one: the quote and its versions, invoices, down payments and
+the final invoice, credit notes and cancellations, delivery notes,
+manufacturing orders and handovers. If an accounting program has taken over a
+document, its counterpart appears there with the program's number. Links the
+program reports itself, such as a down payment created in Lexoffice, appear as
+well. The **Relation** column says what the document is to this one; "via …"
+names the document through which the connection exists.
+
+## Number from the accounting program
+
+If an accounting program assigns the invoice numbers (**Number ranges**
+page), the draft carries a draft number and the invoice shows a notice.
+**Issue** – also sending a draft by e-mail – transfers the invoice to the
+program and adopts its number before the PDF and subject are created.
+Lexoffice and easybill take the order confirmation or the quote as
+predecessor. Credit note and cancellation go over with a reference to the
+transferred invoice; for sevDesk and easybill the invoice must be in the
+program for that. If the program refuses, the document remains a draft and
+the message names the reason. In this case, create down payment and final
+invoices in the program.

@@ -48,6 +48,11 @@ class LexofficeDeliveryNoteService {
      *                          auf Failed gesetzt).
      */
     public function push(StockDelivery $delivery): ExternalReference {
+        $existing = $this->reference($delivery);
+        if ($existing !== null) {
+            return $existing;
+        }
+
         $config = LexofficeConfig::resolve($delivery->organization_id);
         if (empty($config['api_key'])) {
             throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_not_configured'));
@@ -123,13 +128,15 @@ class LexofficeDeliveryNoteService {
     }
 
     /**
-     * Die ExternalReference des Lexoffice-Lieferscheins zu einer Auslieferung.
+     * Die ExternalReference des Lexoffice-Lieferscheins zu einer Auslieferung —
+     * auch, wenn ihr Lieferschein-Beleg schon übertragen wurde (MVP-1164).
      */
     public function reference(StockDelivery $delivery): ?ExternalReference {
-        return ExternalReference::query()
-            ->forPlugin($delivery->organization_id, LexofficePlugin::ID, self::EXT_TYPE_DELIVERY_NOTE)
-            ->forReferenceable($delivery)
-            ->first();
+        $references = ExternalReference::query()->forPlugin($delivery->organization_id, LexofficePlugin::ID, self::EXT_TYPE_DELIVERY_NOTE);
+        $note = $delivery->deliveryNoteItem()->first()?->deliveryNote()->first();
+
+        return (clone $references)->forReferenceable($delivery)->first()
+            ?? ($note !== null ? (clone $references)->forReferenceable($note)->first() : null);
     }
 
     /**

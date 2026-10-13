@@ -10,12 +10,14 @@
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Finance\BillingMode;
 use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Sales\QuoteStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Models\Sales\Quote;
+use App\Services\Billing\BillingModeLockedException;
 use App\Services\Invoicing\QuoteService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -74,8 +76,8 @@ final class QuoteProformaTest extends TestCase {
         }
 
         // Teilannahme: nur Grundpaket + Option Schulung.
-        $items = $quote->items()->get();
-        $quote = $service->accept($quote, [(int) $items[0]->id, (int) $items[2]->id], $token);
+        [$base, , $training] = $quote->items()->get()->all();
+        $quote = $service->accept($quote, [(int) $base->id, (int) $training->id], $token);
         $this->assertSame(QuoteStatus::PartiallyAccepted, $quote->status);
         $this->assertSame(1300.0, $quote->total?->toFloat() - $quote->tax_amount?->toFloat());
         $this->assertNotNull($quote->decision_snapshot);
@@ -85,11 +87,11 @@ final class QuoteProformaTest extends TestCase {
         $this->assertSame(2, $invoice->items()->count());
         $this->assertSame(1300.0, $invoice->subtotal?->toFloat());
         $this->assertSame((int) $quote->id, (int) $invoice->quote_id);
-        $this->assertSame(QuoteStatus::PartiallyAccepted, $quote->fresh()->status, 'Keine Rückwirkung.');
+        $this->assertSame(QuoteStatus::PartiallyAccepted, $quote->refresh()->status, 'Keine Rückwirkung.');
 
         // Nachträgliche Angebotsänderung wirkt NICHT auf den Snapshot.
-        $quote->items()->first()->update(['unit_price' => '9999.00']);
-        $this->assertSame(1000.0, (float) $quote->fresh()->decision_snapshot['items'][0]['unit_price']);
+        $quote->items()->firstOrFail()->update(['unit_price' => '9999.00']);
+        $this->assertSame(1000.0, (float) ($quote->refresh()->decision_snapshot['items'][0]['unit_price'] ?? 0));
     }
 
     /**
@@ -143,16 +145,16 @@ final class QuoteProformaTest extends TestCase {
         ['quote' => $quote, 'acceptance_token' => $token] = $service->send($quote, $this->user);
         $quote = $service->accept($quote, null, $token);
 
-        $snapshot = $quote->decision_snapshot;
+        $snapshot = (array) $quote->decision_snapshot;
         $this->assertSame(10.0, (float) $snapshot['items'][0]['discount_percent']);
         $this->assertSame(50.0, (float) $snapshot['items'][1]['discount_amount']);
         $this->assertSame('Pausch.', $snapshot['items'][0]['unit']);
 
         $invoice = $service->convertToInvoice($quote, $this->user);
-        $items = $invoice->items()->orderBy('position')->get();
-        $this->assertSame(10.0, (float) $items[0]->discount_percent?->getNumericValue());
-        $this->assertSame(50.0, $items[1]->discount_amount?->toFloat());
-        $this->assertSame('Pausch.', $items[0]->unit);
+        [$first, $second] = $invoice->items()->orderBy('position')->get()->all();
+        $this->assertSame(10.0, (float) $first->discount_percent?->getNumericValue());
+        $this->assertSame(50.0, $second->discount_amount?->toFloat());
+        $this->assertSame('Pausch.', $first->unit);
         $this->assertSame(1350.0, $invoice->subtotal?->toFloat());
         $this->assertSame((float) $snapshot['total'], $invoice->total?->toFloat(), 'Rechnungs-Total == angenommener Angebots-Total.');
     }
@@ -164,17 +166,17 @@ final class QuoteProformaTest extends TestCase {
         ['quote' => $quote, 'acceptance_token' => $token] = $service->send($quote, $this->user);
         $quote = $service->accept($quote, null, $token);
 
-        $snapshot = $quote->decision_snapshot;
+        $snapshot = (array) $quote->decision_snapshot;
         $snapshot['items'] = array_map(
             fn(array $item): array => array_diff_key($item, array_flip(['unit', 'discount_percent', 'discount_amount'])),
             $snapshot['items'],
         );
         $quote->forceFill(['decision_snapshot' => $snapshot])->save();
 
-        $invoice = $service->convertToInvoice($quote->fresh(), $this->user);
+        $invoice = $service->convertToInvoice($quote->refresh(), $this->user);
 
         $this->assertSame(2, $invoice->items()->count());
-        $this->assertNull($invoice->items()->first()->discount_percent);
+        $this->assertNull($invoice->items()->firstOrFail()->discount_percent);
         $this->assertSame(1500.0, $invoice->subtotal?->toFloat());
     }
 
@@ -232,11 +234,11 @@ final class QuoteProformaTest extends TestCase {
         $quote->update(['valid_until' => now()->subDay()]);
 
         try {
-            $service->accept($quote->fresh(), null, $token);
+            $service->accept($quote->refresh(), null, $token);
             $this->fail('Abgelaufenes Angebot wurde angenommen.');
         } catch (\RuntimeException) {
         }
-        $this->assertSame(QuoteStatus::Expired, $quote->fresh()->status);
+        $this->assertSame(QuoteStatus::Expired, $quote->refresh()->status);
     }
 
     public function test_proforma_converts_to_real_invoice_with_new_number(): void {
@@ -254,16 +256,16 @@ final class QuoteProformaTest extends TestCase {
             'discount_percent' => '10.00', 'position' => 1,
         ]);
 
-        $invoice = app(QuoteService::class)->proformaToInvoice($proforma->fresh(), $this->user);
+        $invoice = app(QuoteService::class)->proformaToInvoice($proforma->refresh(), $this->user);
 
         // Vollaudit 2026-07 (H4): Positionsrabatt überlebt auch die Pro-forma-Umwandlung.
-        $this->assertSame(10.0, (float) $invoice->items()->first()->discount_percent?->getNumericValue());
+        $this->assertSame(10.0, (float) $invoice->items()->firstOrFail()->discount_percent?->getNumericValue());
         $this->assertSame(225.0, $invoice->subtotal?->toFloat());
         $this->assertSame(Invoice::TYPE_INVOICE, $invoice->type);
         $this->assertStringStartsWith('R', $invoice->number);
         $this->assertNotSame($proforma->number, $invoice->number);
         $this->assertSame((int) $proforma->id, (int) $invoice->parent_invoice_id);
-        $this->assertSame(Invoice::TYPE_PROFORMA, $proforma->fresh()->type, 'Pro-forma bleibt unangetastet.');
+        $this->assertSame(Invoice::TYPE_PROFORMA, $proforma->refresh()->type, 'Pro-forma bleibt unangetastet.');
 
         // Normale Rechnung kann NICHT als Pro-forma umgewandelt werden.
         $this->expectException(\RuntimeException::class);
@@ -298,5 +300,43 @@ final class QuoteProformaTest extends TestCase {
         $this->actingAs($this->user)
             ->post(route('invoices.objection', $credit), ['objection_note' => 'Noch ein Widerspruch, unzulässig.'])
             ->assertSessionHas('error');
+    }
+
+    public function test_external_billing_route_blocks_quote_and_proforma_conversion(): void {
+        $service = app(QuoteService::class);
+        $quote = $service->approve($this->quote(), $this->user);
+        ['quote' => $quote, 'acceptance_token' => $token] = $service->send($quote, $this->user);
+        $quote = $service->accept($quote, null, $token);
+        $proforma = Invoice::query()->create([
+            'organization_id' => $this->org->id,
+            'customer_id' => $this->customer->id,
+            'number' => 'PF-2026-0002',
+            'status' => InvoiceStatus::Draft,
+            'type' => Invoice::TYPE_PROFORMA,
+            'tax_rate' => '19.00',
+        ]);
+        $this->customer->update(['billing_mode' => BillingMode::SevDesk]);
+
+        $this->actingAs($this->user)->get(route('quotes.show', $quote))
+            ->assertOk()
+            ->assertDontSee(__('In Rechnung überführen'))
+            ->assertSee(__('quotes.external_invoice.action'));
+        $this->actingAs($this->user)->from(route('quotes.show', $quote))->post(route('quotes.convert', $quote))
+            ->assertRedirect(route('quotes.show', $quote))
+            ->assertSessionHas('error');
+        $this->actingAs($this->user)->get(route('invoices.show', $proforma))
+            ->assertOk()
+            ->assertDontSee(__('In Rechnung umwandeln'));
+        $this->actingAs($this->user)->from(route('invoices.show', $proforma))->post(route('invoices.proforma-convert', $proforma))
+            ->assertRedirect(route('invoices.show', $proforma))
+            ->assertSessionHas('error', (new BillingModeLockedException(BillingMode::SevDesk))->getMessage());
+
+        try {
+            $service->convertToInvoice($quote->refresh(), $this->user);
+            $this->fail('Überführung trotz externem Fakturierungsweg.');
+        } catch (BillingModeLockedException $e) {
+            $this->assertSame(BillingMode::SevDesk, $e->mode);
+        }
+        $this->assertSame(0, Invoice::query()->where('type', '!=', Invoice::TYPE_PROFORMA)->count());
     }
 }

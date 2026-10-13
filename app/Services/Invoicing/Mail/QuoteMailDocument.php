@@ -14,69 +14,75 @@ namespace App\Services\Invoicing\Mail;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Customer\Customer;
-use App\Models\Sales\Quote;
+use App\Models\Sales\{OrderConfirmation, Quote};
 use App\Services\Document\Contracts\MailableDocumentProvider;
 use App\Services\Invoicing\{OrderConfirmationPdfRenderer, QuotePdfRenderer};
 use App\Support\DocumentNumber;
 use Illuminate\Database\Eloquent\Model;
 
-/** Angebot und Auftragsbestätigung im Belegversand. */
+/** Angebot und Auftragsbestätigung (eigener Beleg seit Phase 145, MVP-1162) im Belegversand. */
 final class QuoteMailDocument implements MailableDocumentProvider {
     public function kinds(): array {
         return [RenderDocumentKind::Quote, RenderDocumentKind::OrderConfirmation];
     }
 
     public function modelClass(RenderDocumentKind $kind): string {
-        return Quote::class;
+        return $kind === RenderDocumentKind::OrderConfirmation ? OrderConfirmation::class : Quote::class;
     }
 
     public function pdfBytes(Model $document, RenderDocumentKind $kind): string {
-        /** @var Quote $document */
-        return $kind === RenderDocumentKind::OrderConfirmation
+        return $document instanceof OrderConfirmation
             ? app(OrderConfirmationPdfRenderer::class)->output($document)
-            : app(QuotePdfRenderer::class)->output($document);
+            : app(QuotePdfRenderer::class)->output($this->quote($document));
     }
 
     public function attachmentFilename(Model $document, RenderDocumentKind $kind): string {
-        /** @var Quote $document */
-        $number = (string) preg_replace('/[^A-Za-z0-9._-]/', '_', (string) $document->number);
+        $number = (string) preg_replace('/[^A-Za-z0-9._-]/', '_', (string) $document->getAttribute('number'));
 
-        return $kind === RenderDocumentKind::OrderConfirmation
+        return $document instanceof OrderConfirmation
             ? sprintf('auftragsbestaetigung-%s.pdf', $number)
-            : sprintf('angebot-%s-v%d.pdf', $number, $document->version);
+            : sprintf('angebot-%s-v%d.pdf', $number, $this->quote($document)->version);
     }
 
     public function documentNumber(Model $document, RenderDocumentKind $kind): string {
-        /** @var Quote $document */
-        return (string) $document->number;
+        return (string) $document->getAttribute('number');
     }
 
     public function variables(Model $document, RenderDocumentKind $kind): array {
-        /** @var Quote $document */
         $document->loadMissing('customer');
+        $total = $document instanceof OrderConfirmation ? $document->total : $this->quote($document)->total;
+        $date = $document instanceof OrderConfirmation ? ($document->confirmed_on ?? $document->created_at) : $document->getAttribute('created_at');
 
         return [
-            'customer_name' => (string) ($document->customer->name ?? ''),
-            'customer_email' => (string) ($document->customer->email ?? ''),
-            'document_number' => (string) $document->number,
-            'document_date' => optional($document->created_at)->format('d.m.Y') ?? '',
-            'valid_until' => optional($document->valid_until)->format('d.m.Y') ?? '',
-            'total' => DocumentNumber::decimal($document->total?->toFloat() ?? 0.0, 2),
-            'currency' => $document->total?->getCurrency()->value ?? 'EUR',
+            'customer_name' => (string) ($document->getRelation('customer')->name ?? ''),
+            'customer_email' => (string) ($document->getRelation('customer')->email ?? ''),
+            'document_number' => (string) $document->getAttribute('number'),
+            'document_date' => optional($date)->format('d.m.Y') ?? '',
+            'valid_until' => $document instanceof Quote ? (optional($document->valid_until)->format('d.m.Y') ?? '') : '',
+            'total' => DocumentNumber::decimal($total?->toFloat() ?? 0.0, 2),
+            'currency' => $total?->getCurrency()->value ?? 'EUR',
         ];
     }
 
     public function defaultRecipient(Model $document, RenderDocumentKind $kind): string {
-        /** @var Quote $document */
-        $customer = $document->customer;
+        $customer = $this->customer($document);
 
         return (string) ($customer?->primaryContact()['email'] ?? $customer->email ?? '');
     }
 
     public function localeCustomer(Model $document, RenderDocumentKind $kind): ?Customer {
-        /** @var Quote $document */
-        return $document->customer;
+        return $this->customer($document);
     }
 
     public function afterSent(Model $document, RenderDocumentKind $kind): void {}
+
+    private function quote(Model $document): Quote {
+        return $document instanceof Quote ? $document : throw new \InvalidArgumentException('Quote expected, got ' . $document::class);
+    }
+
+    private function customer(Model $document): ?Customer {
+        $customer = $document->getRelationValue('customer');
+
+        return $customer instanceof Customer ? $customer : null;
+    }
 }

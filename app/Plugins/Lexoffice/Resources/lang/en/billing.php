@@ -14,4 +14,7 @@ return [
             'dun_confirm' => 'Create a dunning notice in the accounting system?',
         ],
     ],
+    'relations' => [
+        'not_mirrored' => 'not synchronised yet',
+    ],
 ];

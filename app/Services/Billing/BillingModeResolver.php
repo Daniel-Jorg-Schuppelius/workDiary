@@ -12,6 +12,7 @@ namespace App\Services\Billing;
 
 use App\Enums\Finance\BillingMode;
 use App\Models\Customer\Customer;
+use App\Models\Platform\Organization;
 
 /**
  * Löst den effektiven Fakturierungsweg eines Kunden auf (Feature 045,
@@ -28,14 +29,28 @@ class BillingModeResolver {
             return $override;
         }
 
-        $orgSetting = data_get($customer->organization?->settings, 'billing_mode');
-        if (is_string($orgSetting) && $orgSetting !== '') {
-            $mode = BillingMode::tryFrom($orgSetting);
-            if ($mode instanceof BillingMode) {
-                return $mode;
-            }
-        }
+        return $this->forOrganization($customer->organization);
+    }
 
-        return BillingMode::Workdiary;
+    /**
+     * Hoheits-Sperre (Feature 045): führt ein externes Programm die
+     * Fakturierung des Kunden, entsteht in workDiary keine lokale Rechnung —
+     * Zeiten und Material gehen als BillingTransfer an das führende System.
+     * Gilt auch für Überführungen aus Angebot und Pro-forma (MVP-1152).
+     *
+     * @throws BillingModeLockedException
+     */
+    public function assertLocalInvoicing(Customer $customer): void {
+        $mode = $this->effectiveFor($customer);
+        if ($mode->isExternal()) {
+            throw new BillingModeLockedException($mode);
+        }
+    }
+
+    /** Org-Default ohne Kunden-Override; ohne Organisation führt WorkDiary. */
+    public function forOrganization(?Organization $organization): BillingMode {
+        $orgSetting = data_get($organization?->settings, 'billing_mode');
+
+        return is_string($orgSetting) ? (BillingMode::tryFrom($orgSetting) ?? BillingMode::Workdiary) : BillingMode::Workdiary;
     }
 }

@@ -23573,6 +23573,103 @@ CREATE UNIQUE INDEX "incoming_einv_transfer_target_unique" on "incoming_einvoice
   "incoming_einvoice_id",
   "target"
 );
+CREATE TABLE IF NOT EXISTS "order_confirmations"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "customer_id" integer not null,
+  "project_id" integer,
+  "quote_id" integer,
+  "number" varchar not null,
+  "status" varchar not null default 'draft',
+  "confirmed_on" date,
+  "note" text,
+  "currency" varchar not null default 'EUR',
+  "subtotal" numeric not null default '0',
+  "tax_amount" numeric not null default '0',
+  "total" numeric not null default '0',
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("customer_id") references "customers"("id") on delete cascade,
+  foreign key("project_id") references "projects"("id") on delete set null,
+  foreign key("quote_id") references "quotes"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "ocf_org_number_unique" on "order_confirmations"(
+  "organization_id",
+  "number"
+);
+CREATE TABLE IF NOT EXISTS "order_confirmation_items"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "order_confirmation_id" integer not null,
+  "article_id" integer,
+  "position" integer not null,
+  "line_kind" varchar not null default 'item',
+  "description" varchar not null,
+  "quantity" numeric not null default '1',
+  "unit" varchar,
+  "unit_price" numeric not null default '0',
+  "discount_percent" numeric,
+  "discount_amount" numeric,
+  "tax_rate" numeric,
+  "tax_category" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("order_confirmation_id") references "order_confirmations"("id") on delete cascade,
+  foreign key("article_id") references "articles"("id") on delete set null
+);
+CREATE TABLE IF NOT EXISTS "delivery_notes"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "customer_id" integer,
+  "project_id" integer,
+  "order_confirmation_id" integer,
+  "manufacturing_order_id" integer,
+  "number" varchar not null,
+  "status" varchar not null default 'draft',
+  "delivered_on" date,
+  "note" text,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("customer_id") references "customers"("id") on delete set null,
+  foreign key("project_id") references "projects"("id") on delete set null,
+  foreign key("order_confirmation_id") references "order_confirmations"("id") on delete set null,
+  foreign key("manufacturing_order_id") references "manufacturing_orders"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "dln_org_number_unique" on "delivery_notes"(
+  "organization_id",
+  "number"
+);
+CREATE TABLE IF NOT EXISTS "delivery_note_items"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "delivery_note_id" integer not null,
+  "order_confirmation_item_id" integer,
+  "stock_delivery_id" integer,
+  "article_id" integer,
+  "position" integer not null,
+  "line_kind" varchar not null default 'item',
+  "sku" varchar,
+  "description" varchar not null,
+  "quantity" numeric not null default '0',
+  "unit" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("delivery_note_id") references "delivery_notes"("id") on delete cascade,
+  foreign key("order_confirmation_item_id") references "order_confirmation_items"("id") on delete set null,
+  foreign key("stock_delivery_id") references "stock_deliveries"("id") on delete set null,
+  foreign key("article_id") references "articles"("id") on delete set null
+);
+CREATE UNIQUE INDEX "dli_stock_delivery_unique" on "delivery_note_items"(
+  "stock_delivery_id"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -24553,5 +24650,7 @@ INSERT INTO migrations VALUES(976,'2027_03_16_100600_add_sales_assignment_to_acc
 INSERT INTO migrations VALUES(977,'2027_03_17_100000_add_exclude_from_reports_to_suppliers',1);
 INSERT INTO migrations VALUES(978,'2027_03_18_100000_number_formats_source_plugin_id',1);
 INSERT INTO migrations VALUES(979,'2027_03_18_100100_add_contact_name_parts',1);
-INSERT INTO migrations VALUES(980,'2027_03_19_100000_add_mailbox_sync_to_email_connections',2);
-INSERT INTO migrations VALUES(981,'2027_03_19_100100_add_duplicate_review_to_incoming_einvoices',2);
+INSERT INTO migrations VALUES(980,'2027_03_19_100000_add_mailbox_sync_to_email_connections',1);
+INSERT INTO migrations VALUES(981,'2027_03_19_100100_add_duplicate_review_to_incoming_einvoices',1);
+INSERT INTO migrations VALUES(982,'2027_03_20_100000_create_order_confirmations',1);
+INSERT INTO migrations VALUES(983,'2027_03_20_110000_create_delivery_notes',1);

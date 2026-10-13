@@ -33,13 +33,14 @@ class DeliveryListController extends Controller {
         $range = $this->globalDateRange();
 
         $deliveries = StockDelivery::query()
-            ->with(['customer:id,name,company,country', 'order:id,number', 'shipment'])
+            ->with(['customer:id,name,company,country', 'order:id,number', 'shipment', 'deliveryNoteItem.deliveryNote'])
             ->whereBetween('delivered_at', [$range['from']->startOfDay(), $range['to']->endOfDay()])
             ->when($shipping === 'open', fn ($query) => $query->whereDoesntHave('shipment'))
             ->when($shipping === 'shipped', fn ($query) => $query->whereHas('shipment'))
             ->when($search !== '', fn ($query) => $query->where(fn ($inner) => $inner
                 ->whereLikeEscaped('name_snapshot', $search)
                 ->orWhereLikeEscaped('sku_snapshot', $search)
+                ->orWhereHas('deliveryNoteItem.deliveryNote', fn ($note) => $note->whereLikeEscaped('number', $search))
                 ->orWhereHas('customer', fn ($customer) => $customer->whereLikeEscaped('name', $search)->orWhereLikeEscaped('company', $search))))
             ->orderByDesc('delivered_at')->orderByDesc('id')
             ->paginate(50)

@@ -14,47 +14,64 @@ use App\Enums\Numbering\NumberScope;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Requests\BaseFormRequest;
 use App\Models\Platform\Organization;
-use App\Services\Numbering\NumberAuthority;
+use App\Services\Numbering\{NumberAuthority, NumberFormatOverview};
 use Illuminate\Validation\Rule;
 
+/**
+ * Alle Nummernkreise in einem Absenden (MVP-1147). Felder gesperrter Kreise
+ * sendet der Browser nicht mit; jedes Formatfeld ist deshalb optional.
+ */
 class SaveNumberFormatRequest extends BaseFormRequest {
     use ResolvesCurrentOrganization;
 
-    /** Kreise, deren vergebende Stelle auf der Seite gewählt wird (MVP-1130). */
-    public const SELECTABLE_SOURCE_SCOPES = [NumberScope::Customer, NumberScope::Supplier];
+    /** Formatfelder einer Zeile. */
+    public const FIELDS = ['prefix', 'prefix_separator', 'include_year', 'year_separator', 'padding', 'reset_per_year', 'starts_at', 'source'];
 
     /** @return array<string, array<int, mixed>> */
     public function rules(): array {
-        return [
-            'scope' => ['required', Rule::enum(NumberScope::class)],
-            'source' => ['nullable', 'string', Rule::in($this->allowedSources())],
-            'prefix' => ['nullable', 'string', 'max:16', 'regex:/^[A-Z0-9-]*$/i'],
-            'prefix_separator' => ['nullable', 'string', 'max:4'],
-            'include_year' => ['sometimes', 'boolean'],
-            'year_separator' => ['nullable', 'string', 'max:4'],
-            'padding' => ['required', 'integer', 'min:1', 'max:10'],
-            'reset_per_year' => ['sometimes', 'boolean'],
-            'starts_at' => ['required', 'integer', 'min:0', 'max:999999999999'],
+        $rules = [
+            'formats' => ['required', 'array:' . implode(',', NumberScope::values())],
+            'formats.*' => ['array'],
+            'formats.*.prefix' => ['sometimes', 'nullable', 'string', 'max:16', 'regex:/^[A-Z0-9-]*$/i'],
+            'formats.*.prefix_separator' => ['sometimes', 'nullable', 'string', 'max:4'],
+            'formats.*.include_year' => ['sometimes', 'boolean'],
+            'formats.*.year_separator' => ['sometimes', 'nullable', 'string', 'max:4'],
+            'formats.*.padding' => ['sometimes', 'required', 'integer', 'min:1', 'max:10'],
+            'formats.*.reset_per_year' => ['sometimes', 'boolean'],
+            'formats.*.starts_at' => ['sometimes', 'required', 'integer', 'min:0', 'max:999999999999'],
+            'separators' => ['sometimes', 'array'],
+            'separators.prefix' => ['nullable', 'string', 'max:4'],
+            'separators.year' => ['nullable', 'string', 'max:4'],
+            'apply_separators' => ['sometimes', 'boolean'],
         ];
+
+        $organization = $this->currentOrganizationOrUserOrganization();
+        foreach (NumberScope::cases() as $scope) {
+            $rules['formats.' . $scope->value . '.source'] = in_array($scope, NumberFormatOverview::SELECTABLE_SOURCE_SCOPES, true) && $organization instanceof Organization
+                ? ['sometimes', 'nullable', 'string', Rule::in(array_keys(app(NumberAuthority::class)->sourceOptions($organization, $scope)))]
+                : ['prohibited'];
+        }
+
+        return $rules;
     }
 
     /**
-     * `source` heißt global „Wird gelöscht“ (Zusammenführen); hier ist es die vergebende Stelle.
+     * Ein Formular für alle Kreise: Die Meldung nennt den Kreis (E4).
      *
      * @return array<string, string>
      */
     public function attributes(): array {
-        return ['source' => (string) __('numbering.source.column')];
-    }
-
-    /** @return list<string> */
-    private function allowedSources(): array {
-        $scope = NumberScope::tryFrom((string) $this->input('scope'));
-        $organization = $this->currentOrganizationOrUserOrganization();
-        if (! in_array($scope, self::SELECTABLE_SOURCE_SCOPES, true) || ! $organization instanceof Organization) {
-            return [];
+        $names = (array) trans('validation.attributes');
+        $attributes = [];
+        foreach (NumberScope::cases() as $scope) {
+            foreach (self::FIELDS as $field) {
+                $attributes['formats.' . $scope->value . '.' . $field] = (string) __('numbering.field.row', [
+                    'field' => (string) ($names['formats.*.' . $field] ?? $field),
+                    'scope' => $scope->label(),
+                ]);
+            }
         }
 
-        return array_keys(app(NumberAuthority::class)->sourceOptions($organization, $scope));
+        return $attributes;
     }
 }

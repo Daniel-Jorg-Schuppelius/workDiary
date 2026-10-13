@@ -121,7 +121,7 @@ class EasybillTarget implements FacturationTarget {
         }
 
         try {
-            $created = $client->createInvoiceDraft($document);
+            $created = $client->createDocument($document);
         } catch (ConnectException) {
             // Timeout/Netzabriss NACH dem Senden: Ausgang unklar — kein
             // blindes Retry; der nächste Lauf reconciled über external_id.

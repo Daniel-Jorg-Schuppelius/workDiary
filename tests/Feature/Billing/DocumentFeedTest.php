@@ -330,6 +330,27 @@ final class DocumentFeedTest extends TestCase {
             ->assertSee('RE/2026/1111');
     }
 
+    public function test_project_filter_keeps_only_documents_of_the_project(): void {
+        $project = \App\Models\Project\Project::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $this->customer->id]);
+        $other = \App\Models\Project\Project::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $this->customer->id]);
+        foreach ([['R-PROJ-1', $project], ['R-PROJ-2', $other]] as [$number, $owner]) {
+            \App\Models\Invoicing\Invoice::query()->create([
+                'organization_id' => $this->organization->id, 'customer_id' => $this->customer->id, 'project_id' => $owner->id,
+                'number' => $number, 'status' => \App\Enums\Invoicing\InvoiceStatus::Issued, 'currency' => 'EUR', 'issued_on' => '2026-08-10',
+            ]);
+        }
+        $this->voucher(['external_id' => 'v-proj', 'customer_id' => $this->customer->id, 'voucher_type' => 'salesinvoice',
+            'voucher_status' => 'open', 'voucher_number' => 'RE/OHNE/1', 'total_amount' => '10.00']);
+
+        $this->actingAs($this->admin)
+            ->withSession($this->range())
+            ->get(route('billing.feed', ['project' => $project->sqid]))
+            ->assertOk()
+            ->assertSee('R-PROJ-1')
+            ->assertDontSee('R-PROJ-2')
+            ->assertDontSee('RE/OHNE/1');
+    }
+
     public function test_incoming_tab_hides_outgoing_documents(): void {
         $this->voucher(['external_id' => 'v13', 'customer_id' => $this->customer->id,
             'voucher_type' => 'salesinvoice', 'voucher_status' => 'open',

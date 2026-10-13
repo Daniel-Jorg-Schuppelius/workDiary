@@ -15,7 +15,6 @@ use App\Models\Customer\Customer;
 use App\Models\Numbering\NumberFormat;
 use App\Models\Platform\{Organization, PluginSetting};
 use App\Plugins\Lexoffice\LexofficePlugin;
-use App\Plugins\Lexoffice\Services\LexofficeNumberAuthority;
 use App\Services\Numbering\{NumberAuthority, NumberSequenceService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -60,28 +59,15 @@ class NumberAuthorityTest extends TestCase {
         $this->assertFalse($this->authority->isExternal($this->org, NumberScope::Asset));
     }
 
-    public function test_lexoffice_switch_only_covers_document_scopes(): void {
+    public function test_invoice_scopes_are_chosen_per_scope(): void {
         $this->enableLexoffice();
-        (new LexofficeNumberAuthority($this->numbers))->apply($this->org, true);
+        $this->lexofficeNumbersInvoices();
 
         $this->assertSame(LexofficePlugin::ID, $this->authority->sourceFor($this->org, NumberScope::Invoice));
         $this->assertTrue($this->authority->isExternal($this->org, NumberScope::CreditNote));
         $this->assertTrue($this->authority->isExternal($this->org, NumberScope::Cancellation));
-        // Kunden- und Lieferantennummern wählt man auf der Seite „Nummernkreise“ (MVP-1130).
         $this->assertFalse($this->authority->isExternal($this->org, NumberScope::Customer));
         $this->assertFalse($this->authority->isExternal($this->org, NumberScope::Supplier));
-    }
-
-    public function test_switching_lexoffice_off_resets_only_its_own_scopes(): void {
-        $this->enableLexoffice();
-        $helper = new LexofficeNumberAuthority($this->numbers);
-        $helper->apply($this->org, true);
-        $this->numbers->setFormat($this->org, NumberScope::Customer, ['source' => LexofficePlugin::ID]);
-
-        $helper->apply($this->org, false);
-
-        $this->assertFalse($this->authority->isExternal($this->org, NumberScope::Invoice));
-        $this->assertTrue($this->authority->isExternal($this->org, NumberScope::Customer));
     }
 
     public function test_inactive_program_falls_back_to_local_numbers(): void {
@@ -108,7 +94,7 @@ class NumberAuthorityTest extends TestCase {
     public function test_setting_only_the_source_keeps_the_format(): void {
         $this->numbers->setFormat($this->org, NumberScope::Invoice, ['prefix' => 'RE', 'padding' => 6, 'starts_at' => 500]);
 
-        (new LexofficeNumberAuthority($this->numbers))->apply($this->org, true);
+        $this->lexofficeNumbersInvoices();
 
         /** @var NumberFormat $format */
         $format = NumberFormat::query()->where('organization_id', $this->org->id)->where('scope', NumberScope::Invoice->value)->firstOrFail();
@@ -130,7 +116,7 @@ class NumberAuthorityTest extends TestCase {
     public function test_next_returns_draft_number_when_external(): void {
         Carbon::setTestNow('2026-06-01 10:00:00');
         $this->enableLexoffice();
-        (new LexofficeNumberAuthority($this->numbers))->apply($this->org, true);
+        $this->lexofficeNumbersInvoices();
 
         $number = $this->numbers->next($this->org, NumberScope::Invoice);
 
@@ -140,10 +126,17 @@ class NumberAuthorityTest extends TestCase {
     public function test_next_returns_regular_number_for_non_accounting_scope_even_when_external(): void {
         Carbon::setTestNow('2026-06-01 10:00:00');
         $this->enableLexoffice();
-        (new LexofficeNumberAuthority($this->numbers))->apply($this->org, true);
+        $this->lexofficeNumbersInvoices();
 
         $number = $this->numbers->next($this->org, NumberScope::ServiceTicket);
 
         $this->assertStringStartsWith('ST-2026-', $number);
+    }
+
+    /** Rechnung, Gutschrift und Storno vergibt Lexoffice (Seite „Nummernkreise“, MVP-1165). */
+    private function lexofficeNumbersInvoices(): void {
+        foreach ([NumberScope::Invoice, NumberScope::CreditNote, NumberScope::Cancellation] as $scope) {
+            $this->numbers->setFormat($this->org, $scope, ['source' => LexofficePlugin::ID]);
+        }
     }
 }

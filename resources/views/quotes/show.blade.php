@@ -24,6 +24,13 @@
         </div>
     @endif
 
+    @if ($numberIssuer !== null)
+        <div role="status" class="alert alert-info text-sm">
+            <x-icon name="tag" />
+            {{ __('numbering.issue.quote_pending', ['program' => $numberIssuer]) }}
+        </div>
+    @endif
+
     @if ($quote->isExpired())
         <div role="alert" class="alert alert-warning text-sm">
             <x-icon name="timer_off" />
@@ -54,16 +61,19 @@
                                 :href="route('quotes.mail.form', $quote)"
                                 show-label>{{ __('Per E-Mail senden') }}</x-icon-btn>
                 @endif
+                {{-- Auftragsbestätigung als eigener Beleg (Phase 145, MVP-1162). --}}
                 @if ($quote->status->isWon())
-                    <x-action-menu icon="assignment_turned_in" :label="__('Auftragsbestätigung')">
-                        <x-icon-btn icon="picture_as_pdf" size="sm"
-                                    :href="route('quotes.order-confirmation', $quote)"
-                                    show-label>{{ __('Auftragsbestätigung (PDF)') }}</x-icon-btn>
-                        <x-icon-btn icon="forward_to_inbox" size="sm"
-                                    data-entry-modal-trigger
-                                    :href="route('quotes.order-confirmation.mail.form', $quote)"
-                                    show-label>{{ __('AB per E-Mail') }}</x-icon-btn>
-                    </x-action-menu>
+                    @if ($orderConfirmation !== null)
+                        <x-icon-btn icon="assignment_turned_in" size="sm"
+                                    :href="route('order-confirmations.show', $orderConfirmation)"
+                                    show-label>{{ __('quotes.order_confirmation.open', ['number' => $orderConfirmation->number]) }}</x-icon-btn>
+                    @else
+                        @can('convert', $quote)
+                            <x-action-form :action="route('quotes.order-confirmation.store', $quote)">
+                                <x-icon-btn icon="assignment_turned_in" size="sm" type="submit" show-label>{{ __('quotes.order_confirmation.create') }}</x-icon-btn>
+                            </x-action-form>
+                        @endcan
+                    @endif
                 @endif
                 @can('approve', $quote)
                     <x-action-form :action="route('quotes.approve', $quote)">
@@ -87,13 +97,15 @@
                     @endcan
                 @endif
                 @can('convert', $quote)
-                    <x-action-form :action="route('quotes.convert', $quote)"
-                          :confirm="__('Angenommene Positionen in eine Entwurfsrechnung überführen?')"
-                          confirm-icon="receipt_long"
-                          confirm-tone="primary"
-                          :confirm-label="__('Überführen')">
-                        <x-icon-btn icon="receipt_long" tone="primary" size="sm" type="submit" placement="bar" show-label>{{ __('In Rechnung überführen') }}</x-icon-btn>
-                    </x-action-form>
+                    @if ($localInvoicing)
+                        <x-action-form :action="route('quotes.convert', $quote)"
+                              :confirm="__('Angenommene Positionen in eine Entwurfsrechnung überführen?')"
+                              confirm-icon="receipt_long"
+                              confirm-tone="primary"
+                              :confirm-label="__('Überführen')">
+                            <x-icon-btn icon="receipt_long" tone="primary" size="sm" type="submit" placement="bar" show-label>{{ __('In Rechnung überführen') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
                     {{-- MVP-1124: abgerechnet im Buchhaltungsprogramm — nur ohne lokale Rechnung. --}}
                     @if ($quote->invoiced_externally_at !== null)
                         <x-action-form :action="route('quotes.external-invoice.destroy', $quote)" method="DELETE"
@@ -384,7 +396,12 @@
         <div class="text-sm text-base-content/70">{{ __('Entschieden am :date.', ['date' => $quote->decided_at->fdatetime()]) }}</div>
     @endif
 
+    {{-- Zugehörige Belege lokal und im Buchhaltungsprogramm (MVP-1159). --}}
+    <x-billing.document-relations :document="$quote" />
+
     {{-- Versandhistorie von Angebot und Auftragsbestätigung (MVP-876). --}}
-    <x-dispatch-history :kinds="[\App\Enums\DocumentDesign\RenderDocumentKind::Quote, \App\Enums\DocumentDesign\RenderDocumentKind::OrderConfirmation]" :ids="[(int) $quote->id]" />
+    {{-- AB-Versände vor Phase 145 hängen an der Angebots-ID; eine spätere AB mit derselben ID zeigt ihre eigenen. --}}
+    <x-dispatch-history :kinds="[\App\Enums\DocumentDesign\RenderDocumentKind::Quote, \App\Enums\DocumentDesign\RenderDocumentKind::OrderConfirmation]" :ids="[(int) $quote->id]"
+                        :before="[\App\Enums\DocumentDesign\RenderDocumentKind::OrderConfirmation->value => \App\Models\Sales\OrderConfirmation::query()->whereKey($quote->id)->value('created_at')]" />
 </x-page-shell>
 @endsection

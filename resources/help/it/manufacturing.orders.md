@@ -1,7 +1,7 @@
 ---
 title: "Ordini di produzione"
 topic: manufacturing.orders
-version: 2
+version: 4
 keywords:
     - ordine di lavorazione
     - distinta base
@@ -19,6 +19,9 @@ keywords:
     - etichetta di spedizione
     - stato spedizione
     - annullare spedizione
+    - documenti collegati
+    - catena dei documenti
+    - numero bolla di consegna
 audience: []
 modules:
     - module.lager
@@ -83,3 +86,22 @@ La pagina **Documenti di trasporto** elenca tutte le consegne del periodo scelto
 — con PDF del documento, invio per e-mail, documenti doganali e stato della
 spedizione, senza passare da ogni ordine di produzione. Il filtro «Non spedite»
 mostra ciò che attende ancora un'etichetta.
+
+Ogni consegna crea una bolla di consegna come documento proprio con un
+numero della serie «Documento di trasporto» (**Serie numeriche**). Se un
+programma di contabilità assegna il numero e rifiuta la trasmissione, il
+movimento di magazzino resta e la bolla rimane una bozza; **Consegna** sulla
+sua pagina riprova. Le bolle precedenti a questa modifica mantengono il loro
+numero `LS-…`.
+
+## Documenti collegati
+
+In fondo alla pagina, **Documenti collegati** elenca tutti i documenti legati
+a questo: l'offerta e le sue versioni, fatture, acconti e fattura finale, note
+di credito e storni, documenti di trasporto, ordini di produzione e
+trasmissioni. Se un programma di contabilità ha ripreso un documento, il suo
+corrispondente compare lì con il numero del programma. Compaiono anche i
+collegamenti segnalati dal programma stesso, per esempio un acconto creato in
+Lexoffice. La colonna **Relazione** indica che cosa è il documento rispetto a
+questo; «tramite …» nomina il documento attraverso cui esiste il
+collegamento.

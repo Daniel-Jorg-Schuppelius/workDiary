@@ -1,7 +1,7 @@
 ---
 title: "Transfert de facturation"
 topic: finance.transfers
-version: 3
+version: 4
 keywords:
     - transfert vers Lexoffice
     - transfert DATEV
@@ -12,6 +12,8 @@ keywords:
     - export de facturation
     - logiciel de facturation
     - lignes de facture
+    - documents liés
+    - chaîne de documents
 audience: []
 modules:
     - module.finance
@@ -73,3 +75,14 @@ séparément (**Préparer et transférer les temps facturables** ou
 disposant de **Consulter les justificatifs de transfert** voient la
 liste ; extourner et corriger exigent en plus **Gérer la configuration
 financière**.
+
+## Documents liés
+
+En bas de page, **Documents liés** liste tous les documents rattachés à
+celui-ci : le devis et ses versions, les factures, acomptes et la facture
+finale, avoirs et annulations, bons de livraison, ordres de fabrication et
+transmissions. Si un logiciel de comptabilité a repris un document, son
+équivalent y figure avec le numéro du logiciel. Les liens signalés par le
+logiciel lui-même, par exemple un acompte créé dans Lexoffice, apparaissent
+aussi. La colonne **Lien** indique ce que le document représente pour
+celui-ci ; « via … » nomme le document par lequel le lien existe.

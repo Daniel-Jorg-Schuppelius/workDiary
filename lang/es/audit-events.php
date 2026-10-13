@@ -781,12 +781,18 @@ return [
     ],
     'order_confirmation' => [
         'mailed' => 'Confirmación de pedido enviada por correo electrónico',
+        'created' => 'Confirmación de pedido creada',
+        'confirmed' => 'Confirmación de pedido confirmada',
+        'cancelled' => 'Confirmación de pedido anulada',
     ],
     'purchase_order' => [
         'confirmed' => 'Confirmación de pedido importada',
         'mailed' => 'Pedido de compra enviado por correo electrónico',
     ],
     'delivery_note' => [
+        'created' => 'Albarán creado',
+        'delivered' => 'Albarán entregado',
+        'cancelled' => 'Albarán anulado',
         'mailed' => 'Albarán enviado por correo electrónico',
     ],
     'quote' => [

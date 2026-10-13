@@ -9071,6 +9071,69 @@ CREATE TABLE `day_correction_requests` (
   CONSTRAINT `day_correction_requests_requested_by_user_id_foreign` FOREIGN KEY (`requested_by_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `delivery_note_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `delivery_note_items` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `delivery_note_id` bigint(20) unsigned NOT NULL,
+  `order_confirmation_item_id` bigint(20) unsigned DEFAULT NULL,
+  `stock_delivery_id` bigint(20) unsigned DEFAULT NULL,
+  `article_id` bigint(20) unsigned DEFAULT NULL,
+  `position` smallint(5) unsigned NOT NULL,
+  `line_kind` varchar(20) NOT NULL DEFAULT 'item',
+  `sku` varchar(100) DEFAULT NULL,
+  `description` varchar(500) NOT NULL,
+  `quantity` decimal(12,4) NOT NULL DEFAULT 0.0000,
+  `unit` varchar(20) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `dli_stock_delivery_unique` (`stock_delivery_id`),
+  KEY `dli_org_fk` (`organization_id`),
+  KEY `dli_note_fk` (`delivery_note_id`),
+  KEY `dli_confirmation_item_fk` (`order_confirmation_item_id`),
+  KEY `dli_article_fk` (`article_id`),
+  CONSTRAINT `dli_article_fk` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `dli_confirmation_item_fk` FOREIGN KEY (`order_confirmation_item_id`) REFERENCES `order_confirmation_items` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `dli_note_fk` FOREIGN KEY (`delivery_note_id`) REFERENCES `delivery_notes` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `dli_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `dli_stock_delivery_fk` FOREIGN KEY (`stock_delivery_id`) REFERENCES `stock_deliveries` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `delivery_notes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `delivery_notes` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `customer_id` bigint(20) unsigned DEFAULT NULL,
+  `project_id` bigint(20) unsigned DEFAULT NULL,
+  `order_confirmation_id` bigint(20) unsigned DEFAULT NULL,
+  `manufacturing_order_id` bigint(20) unsigned DEFAULT NULL,
+  `number` varchar(40) NOT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'draft',
+  `delivered_on` date DEFAULT NULL,
+  `note` text DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `dln_org_number_unique` (`organization_id`,`number`),
+  KEY `dln_customer_fk` (`customer_id`),
+  KEY `dln_project_fk` (`project_id`),
+  KEY `dln_confirmation_fk` (`order_confirmation_id`),
+  KEY `dln_mfg_order_fk` (`manufacturing_order_id`),
+  KEY `dln_created_by_fk` (`created_by`),
+  CONSTRAINT `dln_confirmation_fk` FOREIGN KEY (`order_confirmation_id`) REFERENCES `order_confirmations` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `dln_created_by_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `dln_customer_fk` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `dln_mfg_order_fk` FOREIGN KEY (`manufacturing_order_id`) REFERENCES `manufacturing_orders` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `dln_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `dln_project_fk` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `desired_shifts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -16698,6 +16761,68 @@ CREATE TABLE `operations_tasks` (
   CONSTRAINT `opt_actor_fk` FOREIGN KEY (`acted_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `opt_assignee_fk` FOREIGN KEY (`assigned_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `opt_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `order_confirmation_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `order_confirmation_items` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `order_confirmation_id` bigint(20) unsigned NOT NULL,
+  `article_id` bigint(20) unsigned DEFAULT NULL,
+  `position` smallint(5) unsigned NOT NULL,
+  `line_kind` varchar(20) NOT NULL DEFAULT 'item',
+  `description` varchar(500) NOT NULL,
+  `quantity` decimal(12,4) NOT NULL DEFAULT 1.0000,
+  `unit` varchar(20) DEFAULT NULL,
+  `unit_price` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `discount_percent` decimal(5,2) DEFAULT NULL,
+  `discount_amount` decimal(12,2) DEFAULT NULL,
+  `tax_rate` decimal(5,2) DEFAULT NULL,
+  `tax_category` varchar(10) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `oci_org_fk` (`organization_id`),
+  KEY `oci_confirmation_fk` (`order_confirmation_id`),
+  KEY `oci_article_fk` (`article_id`),
+  CONSTRAINT `oci_article_fk` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `oci_confirmation_fk` FOREIGN KEY (`order_confirmation_id`) REFERENCES `order_confirmations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `oci_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `order_confirmations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `order_confirmations` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `customer_id` bigint(20) unsigned NOT NULL,
+  `project_id` bigint(20) unsigned DEFAULT NULL,
+  `quote_id` bigint(20) unsigned DEFAULT NULL,
+  `number` varchar(40) NOT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'draft',
+  `confirmed_on` date DEFAULT NULL,
+  `note` text DEFAULT NULL,
+  `currency` char(3) NOT NULL DEFAULT 'EUR',
+  `subtotal` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `tax_amount` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `total` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ocf_org_number_unique` (`organization_id`,`number`),
+  KEY `ocf_customer_fk` (`customer_id`),
+  KEY `ocf_project_fk` (`project_id`),
+  KEY `ocf_quote_fk` (`quote_id`),
+  KEY `ocf_created_by_fk` (`created_by`),
+  CONSTRAINT `ocf_created_by_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `ocf_customer_fk` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `ocf_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `ocf_project_fk` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `ocf_quote_fk` FOREIGN KEY (`quote_id`) REFERENCES `quotes` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `orgamax_connections`;
@@ -26629,5 +26754,7 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (976,'2027_03_16_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (977,'2027_03_17_100000_add_exclude_from_reports_to_suppliers',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (978,'2027_03_18_100000_number_formats_source_plugin_id',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (979,'2027_03_18_100100_add_contact_name_parts',1);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (980,'2027_03_19_100000_add_mailbox_sync_to_email_connections',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (981,'2027_03_19_100100_add_duplicate_review_to_incoming_einvoices',2);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (980,'2027_03_19_100000_add_mailbox_sync_to_email_connections',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (981,'2027_03_19_100100_add_duplicate_review_to_incoming_einvoices',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (982,'2027_03_20_100000_create_order_confirmations',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (983,'2027_03_20_110000_create_delivery_notes',1);

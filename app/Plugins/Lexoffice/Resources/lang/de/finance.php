@@ -19,6 +19,7 @@ return [
         'lexoffice_oc_no_customer' => 'Fertigungsauftrag ohne Kunde kann nicht als Auftragsbestätigung übergeben werden.',
         'lexoffice_oc_not_linked' => 'Mit diesem Fertigungsauftrag ist keine Lexoffice-Auftragsbestätigung verknüpft.',
         'lexoffice_quote_no_customer' => 'Fertigungsauftrag ohne Kunde kann nicht als Angebot übergeben werden.',
+        'lexoffice_document_no_customer' => 'Ein Beleg ohne Kunde lässt sich nicht an Lexoffice übertragen.',
         'lexoffice_quote_not_linked' => 'Mit diesem Fertigungsauftrag ist kein Lexoffice-Angebot verknüpft.',
     ],
     'lexoffice' => [

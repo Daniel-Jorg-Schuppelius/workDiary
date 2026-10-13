@@ -1,7 +1,7 @@
 ---
 title: "Ofertas"
 topic: quotes.overview
-version: 2
+version: 6
 keywords:
     - crear presupuesto
     - presupuesto
@@ -15,6 +15,14 @@ keywords:
     - convertir en factura
     - partidas opcionales
     - nueva versión
+    - documentos relacionados
+    - cadena de documentos
+    - número de oferta
+    - oferta a Lexoffice
+    - número de confirmación
+    - albarán
+    - entrega parcial
+    - número de albarán
 audience: []
 modules:
     - module.vertrieb
@@ -71,8 +79,50 @@ de factura utilizado allí. La oferta sale así de la lista **Presupuestos
 aceptados sin factura**; la marca puede quitarse de nuevo. La acción está
 disponible mientras no exista ninguna factura para la oferta.
 
-**PDF y confirmación de pedido:** cada oferta puede descargarse como
-PDF (con marcado de opciones y desglose de impuestos); las ofertas
-enviadas conservan permanentemente el diseño del momento del envío.
-Para ofertas (parcialmente) aceptadas existe además una confirmación de
-pedido en PDF que confirma exactamente las posiciones aceptadas.
+**PDF:** cada oferta puede descargarse como PDF (con marcado de opciones
+y desglose de impuestos); las ofertas enviadas conservan permanentemente el
+diseño del momento del envío. La confirmación de pedido es un documento propio
+(véase más abajo).
+
+## Documentos relacionados
+
+Al final de la página, **Documentos relacionados** muestra todos los
+documentos vinculados a este: la oferta y sus versiones, facturas, anticipos y
+factura final, abonos y anulaciones, albaranes, órdenes de fabricación y
+traspasos. Si un programa de contabilidad ha asumido un documento, su
+contraparte aparece allí con el número del programa. También aparecen las
+relaciones que comunica el propio programa, por ejemplo un anticipo creado en
+Lexoffice. La columna **Relación** indica qué es el documento respecto a este;
+«a través de …» nombra el documento por el que existe la relación.
+
+## Número de oferta del programa de contabilidad
+
+Si en la página **Series numéricas** elige un programa de contabilidad
+(Lexoffice o easybill) para **Oferta**, una oferta nueva lleva primero un
+número provisional. Al **enviarla**, WorkDiary crea la oferta en el programa,
+la cierra allí y adopta su número; solo entonces se genera el PDF. Si la
+transferencia falla, la oferta sigue aprobada y puede repetir el envío. Una
+nueva versión es en el programa una oferta nueva con su propio número.
+Lexoffice marca las posiciones opcionales como opcionales; easybill las
+incluye sin cálculo.
+
+## Confirmación de pedido
+
+Para una oferta aceptada, **Crear confirmación de pedido** crea un documento
+propio con las posiciones aceptadas. La confirmación de pedido tiene su propia
+serie numérica (**Series numéricas**, serie «Confirmación de pedido»). Con
+**Confirmar** recibe su número; si un programa de contabilidad (Lexoffice o
+easybill) asigna el número, WorkDiary la transfiere en ese momento. Después
+están disponibles el PDF y el envío por correo. Anular la retira en WorkDiary;
+en el programa se mantiene.
+
+## Albarán
+
+Una confirmación de pedido confirmada ofrece **Crear albarán**. El albarán
+toma las cantidades aún no entregadas, sin precios. Para una entrega parcial,
+ajuste las cantidades en **Editar cantidades**; 0 quita una posición de este
+albarán, que queda pendiente para el siguiente. **Entregar** fija el número de
+la serie «Albarán»; si un programa de contabilidad (Lexoffice o easybill)
+asigna el número, WorkDiary transfiere el albarán en ese momento. Después están
+disponibles el PDF y el envío por correo. Los albaranes de fabricación se crean
+con cada entrega (véase órdenes de fabricación).

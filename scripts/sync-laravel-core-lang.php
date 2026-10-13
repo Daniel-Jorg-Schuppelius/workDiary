@@ -51,6 +51,8 @@ $write = false;
 $replace = false;
 $versionOverride = null;
 
+// Unter PHPStan nicht garantiert definiert; im CLI-Aufruf immer gesetzt.
+$argv = $_SERVER['argv'] ?? [];
 foreach (array_slice($argv, 1) as $arg) {
     if ($arg === '--write' || $arg === '-w') {
         $write = true;

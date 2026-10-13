@@ -1,7 +1,7 @@
 ---
 title: "Órdenes de fabricación"
 topic: manufacturing.orders
-version: 2
+version: 4
 keywords:
     - orden de producción
     - lista de materiales
@@ -18,6 +18,9 @@ keywords:
     - etiqueta de envío
     - estado del envío
     - anular envío
+    - documentos relacionados
+    - cadena de documentos
+    - número de albarán
 audience: []
 modules:
     - module.lager
@@ -81,3 +84,20 @@ La página **Albaranes** muestra todas las entregas del periodo elegido, con PDF
 del albarán, envío por correo electrónico, documentos aduaneros y estado del
 envío, sin pasar por cada orden de fabricación. El filtro «Sin envío» muestra lo
 que aún espera una etiqueta.
+
+Cada entrega crea un albarán como documento propio con un número de la
+serie «Albarán» (**Series numéricas**). Si un programa de contabilidad asigna
+el número y rechaza la transferencia, el movimiento de almacén se mantiene y el
+albarán queda como borrador; **Entregar** en su página lo intenta de nuevo. Los
+albaranes anteriores a este cambio conservan su número `LS-…`.
+
+## Documentos relacionados
+
+Al final de la página, **Documentos relacionados** muestra todos los
+documentos vinculados a este: la oferta y sus versiones, facturas, anticipos y
+factura final, abonos y anulaciones, albaranes, órdenes de fabricación y
+traspasos. Si un programa de contabilidad ha asumido un documento, su
+contraparte aparece allí con el número del programa. También aparecen las
+relaciones que comunica el propio programa, por ejemplo un anticipo creado en
+Lexoffice. La columna **Relación** indica qué es el documento respecto a este;
+«a través de …» nombra el documento por el que existe la relación.

@@ -45,7 +45,7 @@ class CustomsInvoicePdfRenderer {
     }
 
     public function render(StockDelivery $delivery, ShipmentExportReason $reason): string {
-        $delivery->loadMissing(['customer', 'variant.article', 'parcels', 'shipment', 'invoiceItems.invoice']);
+        $delivery->loadMissing(['customer', 'variant.article', 'parcels', 'shipment', 'invoiceItems.invoice', 'deliveryNoteItem.deliveryNote']);
         $customer = $delivery->customer;
         if (! $customer instanceof Customer) {
             throw ValidationException::withMessages(['customs' => (string) __('shipping.customs.error.no_customer')]);
@@ -64,7 +64,7 @@ class CustomsInvoicePdfRenderer {
                 'title' => (string) __($commercial ? 'shipping.customs.commercial_invoice' : 'shipping.customs.proforma_invoice'),
                 'number' => $this->number($delivery, $reason),
                 'date' => now()->format('d.m.Y'),
-                'deliveryNoteNumber' => 'LS-' . str_pad((string) $delivery->id, 6, '0', STR_PAD_LEFT),
+                'deliveryNoteNumber' => $delivery->deliveryNoteItem?->deliveryNote->number ?? 'LS-' . str_pad((string) $delivery->id, 6, '0', STR_PAD_LEFT),
                 'invoiceNumber' => $commercial ? $invoice?->number : null,
                 'tracking' => $delivery->shipment?->tracking_number,
                 'reason' => $reason,

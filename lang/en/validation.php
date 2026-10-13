@@ -208,6 +208,21 @@ return [
     */
 
     'attributes' => [
+        'apply_separators' => 'Apply separators to all ranges',
+        'formats' => 'Number ranges',
+        'formats.*' => 'Number range',
+        'formats.*.include_year' => 'Year',
+        'formats.*.padding' => 'Padding',
+        'formats.*.prefix' => 'Prefix',
+        'formats.*.prefix_separator' => 'Separator after prefix',
+        'formats.*.reset_per_year' => 'Annual reset',
+        'formats.*.source' => 'Assigned by',
+        'formats.*.starts_at' => 'Start at',
+        'formats.*.year_separator' => 'Separator after year',
+        'separators' => 'Separators',
+        'separators.prefix' => 'Separator after prefix, all ranges',
+        'separators.year' => 'Separator after year, all ranges',
+
         'new_name' => 'Name',
         'new_vat_id' => 'VAT ID',
         'new_email' => 'Email',
@@ -2024,6 +2039,7 @@ return [
         'qualifications.*' => 'Required qualifications',
         'quality_score' => 'Quality score',
         'qualityhosting' => 'Quality Hosting contract export (XLSX)',
+        'delivered_on' => 'delivery date',
         'quantities' => 'Quantities',
         'quantities.*' => 'Quantity',
         'quantity' => 'Quantity',

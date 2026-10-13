@@ -14,4 +14,7 @@ return [
             'dun_confirm' => 'Mahnung in der Buchhaltung anlegen?',
         ],
     ],
+    'relations' => [
+        'not_mirrored' => 'noch nicht abgeglichen',
+    ],
 ];

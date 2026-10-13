@@ -220,7 +220,7 @@ class SevDeskClient {
 
     /**
      * POST /Invoice/Factory/saveInvoice — Rechnung + Positionen atomar.
-     * Der Aufrufer setzt Status 50 (Entwurf) — sevDesk behält die
+     * Der Aufrufer setzt Status 100 (Entwurf) — sevDesk behält die
      * Rechnungshoheit; `enshrine` (irreversible Festschreibung) wird hier
      * bewusst NIE aufgerufen.
      *
@@ -246,6 +246,51 @@ class SevDeskClient {
         );
 
         return $this->rows($body);
+    }
+
+    /**
+     * GET /SevSequence/Factory/getByType — nächste Rechnungsnummer, so wie
+     * sevDesk sie vergeben würde (MVP-1166). Null, wenn sevDesk keine meldet;
+     * dann vergibt sevDesk sie beim Speichern selbst.
+     */
+    public function nextInvoiceNumber(): ?string {
+        $body = (array) $this->guard(
+            $this->api()->requestResponse('get', $this->baseUrl . '/SevSequence/Factory/getByType', ['query' => ['objectType' => 'Invoice', 'type' => 'RE']]),
+            '/SevSequence/Factory/getByType',
+        );
+        $objects = $body['objects'] ?? null;
+        if (is_scalar($objects)) {
+            return trim((string) $objects) ?: null;
+        }
+        $sequence = is_array($objects) ? $this->object(['objects' => $objects]) : [];
+        $next = trim((string) ($sequence['nextSequence'] ?? ''));
+        if ($next === '') {
+            return null;
+        }
+        $format = (string) ($sequence['format'] ?? '');
+        // Das Format trägt die laufende Nummer als Platzhalter, etwa „RE-[%nr]“.
+        $number = preg_replace('/\[%?nr%?\]|%nr%?/i', $next, $format, 1, $count);
+
+        return $count > 0 && is_string($number) ? $number : $next;
+    }
+
+    /** PUT /Invoice/{id}/sendBy — als versendet markieren; sevDesk führt die Rechnung danach als offen (MVP-1166). */
+    public function markInvoiceSent(string $invoiceId): void {
+        $this->guard(
+            $this->api()->requestResponse('put', $this->baseUrl . '/Invoice/' . rawurlencode($invoiceId) . '/sendBy', ['json' => ['sendType' => 'VPDF', 'sendDraft' => false]]),
+            '/Invoice/{id}/sendBy',
+        );
+    }
+
+    /**
+     * POST /Invoice/{id}/cancelInvoice — Stornorechnung zur Rechnung (MVP-1167).
+     *
+     * @return array<string, mixed>
+     */
+    public function cancelInvoice(string $invoiceId): array {
+        $body = (array) $this->guard($this->api()->requestResponse('post', $this->baseUrl . '/Invoice/' . rawurlencode($invoiceId) . '/cancelInvoice'), '/Invoice/{id}/cancelInvoice');
+
+        return $this->object($body);
     }
 
     /** @return array<string, mixed> GET /Invoice/{id} — Statusrücklauf. */

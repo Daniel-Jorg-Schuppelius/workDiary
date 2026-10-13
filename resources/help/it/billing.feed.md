@@ -1,7 +1,7 @@
 ---
 title: "Flusso documenti"
 topic: billing.feed
-version: 1
+version: 2
 keywords:
     - fatture
     - preventivi
@@ -15,6 +15,7 @@ keywords:
     - fattura elettronica
     - elenco documenti
     - ricavi
+    - filtro progetto
 audience: []
 modules:
     - module.vertrieb
@@ -77,3 +78,9 @@ sospeso.
 **Visibilità:** il flusso mostra solo ciò che i suoi permessi nelle singole
 aree già consentono. Senza il permesso sui preventivi, ad esempio, mancano la
 scheda e le relative righe.
+
+## Filtrare per progetto
+
+Il filtro **Progetto** mostra solo i documenti di un progetto. I documenti dei
+programmi di contabilità non hanno un progetto e con questo filtro vengono
+esclusi.

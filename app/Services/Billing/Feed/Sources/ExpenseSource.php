@@ -103,6 +103,7 @@ class ExpenseSource implements DocumentFeedSource {
                 'COALESCE(expenses.amount_gross, 0) AS amount_gross',
                 '0 AS open_amount',
                 'expenses.currency AS currency',
+                'expenses.project_id AS project_id',
             ]))
             ->where('expenses.organization_id', $f->organizationId)
             ->whereBetween('expenses.date', DateRange::days($f->from, $f->to));

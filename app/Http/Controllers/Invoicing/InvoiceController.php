@@ -254,7 +254,13 @@ class InvoiceController extends Controller {
             && SepaMandate::query()->where('customer_id', $invoice->customer_id)->where('status', MandateStatus::Active->value)->get()
                 ->contains(static fn (SepaMandate $mandate): bool => $mandate->isUsable());
 
-        return view('invoices.show', compact('invoice', 'openDownPaymentCount', 'settledByInvoice', 'directDebitOffer'));
+        // Entwurfsnummer: Das vergebende Programm übernimmt den Beleg beim Stellen (MVP-1166).
+        $authority = app(\App\Services\Numbering\NumberAuthority::class);
+        $numberIssuer = $invoice->status === InvoiceStatus::Draft && \App\Services\Numbering\NumberSequenceService::isDraft($invoice->number)
+            ? $authority->sourceLabel($authority->sourceFor((int) $invoice->organization_id, $invoice->numberScope()))
+            : null;
+
+        return view('invoices.show', compact('invoice', 'openDownPaymentCount', 'settledByInvoice', 'directDebitOffer', 'numberIssuer'));
     }
 
     /**
@@ -492,7 +498,11 @@ class InvoiceController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        $issuer->issue($invoice);
+        try {
+            $issuer->issue($invoice);
+        } catch (InvoiceIssueException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         return redirect()->route('invoices.show', $invoice)->with('status', __('Rechnung gestellt.'));
     }
@@ -948,7 +958,7 @@ class InvoiceController extends Controller {
             $cancellation = $gen->cancellationFor($invoice, $data['reason'] ?? null, (int) Auth::id());
 
             return redirect()->route('invoices.show', $cancellation)
-                ->with('status', __('Stornobeleg :nr erstellt.', ['nr' => $cancellation->number]));
+                ->with('status', $this->createdNotice($cancellation, __('Stornobeleg :nr erstellt.', ['nr' => $cancellation->number])));
         }
 
         $invoice->cancel($data['reason'] ?? null, (int) Auth::id());
@@ -966,7 +976,20 @@ class InvoiceController extends Controller {
         $credit = $gen->creditNoteFor($invoice, (int) Auth::id());
 
         return redirect()->route('invoices.show', $credit)
-            ->with('status', __('Korrekturrechnung :nr erstellt.', ['nr' => $credit->number]));
+            ->with('status', $this->createdNotice($credit, __('Korrekturrechnung :nr erstellt.', ['nr' => $credit->number])));
+    }
+
+    /** Vergibt ein Programm die Nummer, wirkt die Korrektur erst mit der Übertragung (MVP-1154). */
+    private function createdNotice(Invoice $document, string $created): string {
+        if (! \App\Services\Numbering\NumberSequenceService::isDraft($document->number)) {
+            return $created;
+        }
+        $authority = app(\App\Services\Numbering\NumberAuthority::class);
+
+        return (string) __('numbering.flash.transfer_pending', [
+            'document' => $document->documentLabel(),
+            'program' => $authority->sourceLabel($authority->sourceFor((int) $document->organization_id, $document->numberScope())),
+        ]);
     }
 
     /**
@@ -1090,6 +1113,18 @@ class InvoiceController extends Controller {
         // Feature 128 (MVP-692): Vorlagen gelten je Belegart.
         abort_unless($template->document_kind === \App\Enums\DocumentDesign\RenderDocumentKind::Invoice->value, 422, (string) __('Vorlage passt nicht zur Belegart.'));
 
+        // Vergibt ein Programm die Nummer, stellt der Versand erst aus — Betreff und PDF tragen dann dessen Nummer (MVP-1166).
+        if (\App\Services\Numbering\NumberSequenceService::isDraft($invoice->number) && ! $issuer->wouldIssue($invoice)) {
+            return back()->withInput()->with('error', __('numbering.issue.issue_first', ['document' => $invoice->documentLabel()]));
+        }
+        if ($issuer->wouldIssue($invoice) && \App\Services\Numbering\NumberSequenceService::isDraft($invoice->number)) {
+            try {
+                $issuer->issue($invoice);
+            } catch (InvoiceIssueException $e) {
+                return back()->withInput()->with('error', $e->getMessage());
+            }
+        }
+
         // Belegsprache je Kunde (Feature 034, MVP-721): Vorlagen-Platzhalter
         // (Belegart, Datum) in der Sprache des Kunden.
         $rendered = \App\Support\DocumentLocale::within($invoice->customer, $invoice->organization, fn (): array => $template->renderForInvoice($invoice, $data['custom_text'] ?? null));
@@ -1139,7 +1174,11 @@ class InvoiceController extends Controller {
 
         /** @var \App\Models\Platform\User $actor */
         $actor = Auth::user();
-        $real = $quotes->proformaToInvoice($invoice, $actor);
+        try {
+            $real = $quotes->proformaToInvoice($invoice, $actor);
+        } catch (\App\Services\Billing\BillingModeLockedException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         return redirect()->route('invoices.show', $real)
             ->with('status', __('Rechnung :nr aus Pro-forma :proforma erstellt.', ['nr' => $real->number, 'proforma' => $invoice->number]));

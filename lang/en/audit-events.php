@@ -781,12 +781,18 @@ return [
     ],
     'order_confirmation' => [
         'mailed' => 'Order confirmation sent by email',
+        'created' => 'Order confirmation created',
+        'confirmed' => 'Order confirmation confirmed',
+        'cancelled' => 'Order confirmation cancelled',
     ],
     'purchase_order' => [
         'confirmed' => 'Order confirmation imported',
         'mailed' => 'Purchase order sent by email',
     ],
     'delivery_note' => [
+        'created' => 'Delivery note created',
+        'delivered' => 'Delivery note delivered',
+        'cancelled' => 'Delivery note cancelled',
         'mailed' => 'Delivery note sent by email',
     ],
     'quote' => [

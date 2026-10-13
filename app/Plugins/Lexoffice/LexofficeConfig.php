@@ -23,7 +23,7 @@ class LexofficeConfig {
     public const DEFAULT_REQUEST_INTERVAL = 0.5;
 
     /**
-     * @return array{api_key: ?string, base_url: string, defaults: array<string, mixed>, match_policy: string, create_missing_local: bool, number_authority: bool, webhook_secret: ?string, webhook_public_key: ?string, enabled: bool, request_interval: float, incoming_transfer: bool, incoming_default_category: ?string, outgoing_default_category: ?string}
+     * @return array{api_key: ?string, base_url: string, defaults: array<string, mixed>, match_policy: string, create_missing_local: bool, webhook_secret: ?string, webhook_public_key: ?string, enabled: bool, request_interval: float, incoming_transfer: bool, incoming_default_category: ?string, outgoing_default_category: ?string}
      */
     public static function resolve(?int $organizationId = null): array {
         $r = PluginSettingsResolver::for(LexofficePlugin::ID, $organizationId);
@@ -38,7 +38,6 @@ class LexofficeConfig {
             ],
             'match_policy' => $r->string('match_policy') ?? 'manual_review',
             'create_missing_local' => $r->bool('create_missing_local', false),
-            'number_authority' => $r->bool('number_authority', false),
             // settingString(): **kein** Config-/ENV-Fallback. Ein per ENV
             // gesetztes Secret gälte sonst für ALLE Organisationen — jede
             // könnte die Callbacks jeder anderen auslösen (Sicherheitsscan

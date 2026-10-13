@@ -60,6 +60,7 @@ class QuoteSource implements DocumentFeedSource {
                 'COALESCE(quotes.total, 0) AS amount_gross',
                 '0 AS open_amount',
                 "'" . FeedProjection::defaultCurrency() . "' AS currency",
+                'quotes.project_id AS project_id',
             ]))
             ->where('quotes.organization_id', $f->organizationId)
             ->whereBetween(DB::raw('DATE(quotes.created_at)'), DateRange::days($f->from, $f->to));

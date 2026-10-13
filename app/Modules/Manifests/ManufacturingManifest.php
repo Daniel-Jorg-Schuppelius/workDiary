@@ -84,15 +84,6 @@ final class ManufacturingManifest extends Manifest {
         ];
     }
 
-    /** @return array<class-string, list<class-string>> */
-    public function extensions(): array {
-        return [
-            \App\Services\Document\Contracts\MailableDocumentProvider::class => [
-                \App\Services\Manufacturing\Mail\DeliveryNoteMailDocument::class,
-            ],
-        ];
-    }
-
     /** @return array<class-string, class-string> */
     public function bindings(): array {
         return [

@@ -90,4 +90,30 @@ return [
         'marked_on' => 'Invoiced in the accounting system (marked on :date)',
         'marked_with_number' => 'Invoiced in the accounting system: :number (marked on :date)',
     ],
+    // Auftragsbestätigung als eigener Beleg (Phase 145, MVP-1162).
+    'order_confirmation' => [
+        'open' => 'Order confirmation :number',
+        'create' => 'Create order confirmation',
+        'confirm' => 'Confirm',
+        'cancel' => 'Cancel',
+        'cancel_confirm' => 'Cancel the order confirmation? It remains in the accounting program.',
+        'to_quote' => 'Quote :number',
+        'confirmed_on' => 'Confirmed on :date',
+        'number_pending' => ':program assigns the number on confirmation; until then the order confirmation carries a draft number.',
+        'pdf' => [
+            'number' => 'No. :number',
+        ],
+        'flash' => [
+            'confirmed' => 'Order confirmation :number confirmed.',
+            'cancelled' => 'Order confirmation cancelled.',
+            'create_first' => 'Please create the order confirmation first.',
+        ],
+        'error' => [
+            'not_won' => 'Only accepted quotes are confirmed.',
+            'not_draft' => 'Only drafts can be confirmed.',
+            'empty' => 'The order confirmation has no items.',
+            'not_cancellable' => 'This order confirmation cannot be cancelled.',
+            'not_confirmed' => 'The order confirmation has not been confirmed yet.',
+        ],
+    ],
 ];

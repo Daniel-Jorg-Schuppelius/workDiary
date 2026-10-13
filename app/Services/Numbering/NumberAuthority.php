@@ -16,6 +16,7 @@ use App\Models\Platform\Organization;
 use App\Plugins\Contracts\ContactNumberIssuer;
 use App\Plugins\PluginManager;
 use App\Plugins\Support\PluginSettingsResolver;
+use App\Services\Numbering\Contracts\DocumentIssuer;
 
 /**
  * Entscheidet, wer einen Nummernkreis vergibt: `local` (workDiary) oder die
@@ -74,9 +75,11 @@ class NumberAuthority {
      */
     public function sourceOptions(Organization|int $organization, NumberScope $scope): array {
         $plugins = app(PluginManager::class);
+        $documentIssuers = array_map(static fn (DocumentIssuer $issuer): string => $issuer->pluginId(), app(DocumentIssuers::class)->forScope($scope));
         $options = [self::SOURCE_LOCAL => (string) __('numbering.source.local')];
         foreach ($plugins->enabled() as $id => $plugin) {
-            if ($plugin instanceof ContactNumberIssuer && in_array($scope, $plugin->issuableNumberScopes(), true)) {
+            $issuesContacts = $plugin instanceof ContactNumberIssuer && in_array($scope, $plugin->issuableNumberScopes(), true);
+            if ($issuesContacts || in_array((string) $id, $documentIssuers, true)) {
                 $options[(string) $id] = $plugin->name();
             }
         }

@@ -1,7 +1,7 @@
 ---
 title: "Fatture & documenti"
 topic: invoices.manage
-version: 7
+version: 9
 keywords:
     - creare fattura
     - emettere fattura
@@ -18,6 +18,10 @@ keywords:
     - Stripe
     - Mollie
     - SumUp
+    - documenti collegati
+    - catena dei documenti
+    - trasmettere fattura a Lexoffice
+    - numero provvisorio
 audience: []
 modules:
     - module.vertrieb
@@ -146,3 +150,28 @@ del fornitore come spese bancarie e di pagamento); il successivo accredito
 del fornitore lo registri sul conto del denaro in transito. Il link su
 fattura ed e-mail si disattiva nelle impostazioni dell'organizzazione,
 alla voce «Pagamento online»; nel portale clienti rimane.
+
+## Documenti collegati
+
+In fondo alla pagina, **Documenti collegati** elenca tutti i documenti legati
+a questo: l'offerta e le sue versioni, fatture, acconti e fattura finale, note
+di credito e storni, documenti di trasporto, ordini di produzione e
+trasmissioni. Se un programma di contabilità ha ripreso un documento, il suo
+corrispondente compare lì con il numero del programma. Compaiono anche i
+collegamenti segnalati dal programma stesso, per esempio un acconto creato in
+Lexoffice. La colonna **Relazione** indica che cosa è il documento rispetto a
+questo; «tramite …» nomina il documento attraverso cui esiste il
+collegamento.
+
+## Numero dal programma di contabilità
+
+Se un programma di contabilità assegna i numeri di fattura (pagina
+**Serie numeriche**), la bozza ha un numero provvisorio e la fattura mostra un
+avviso. **Emettere** – anche l'invio di una bozza per e-mail – trasmette la
+fattura al programma e ne riprende il numero prima che nascano PDF e oggetto.
+Lexoffice ed easybill riprendono la conferma d'ordine o l'offerta come
+documento precedente. Nota di credito e storno vengono trasmessi con
+riferimento alla fattura trasmessa; per sevDesk ed easybill la fattura deve
+trovarsi nel programma. Se il programma rifiuta, il documento resta una bozza
+e il messaggio ne indica il motivo. In tal caso crei le fatture di acconto e
+finali nel programma.

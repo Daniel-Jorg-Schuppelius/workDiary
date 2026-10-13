@@ -207,6 +207,8 @@ return [
         'quotes.follow-ups.*' => 'quotes.follow-ups',
         'quotes.win-rate' => 'quotes.follow-ups',
         'quotes.*' => 'quotes.overview',
+        'order-confirmations.*' => 'quotes.overview',
+        'delivery-notes.*' => 'quotes.overview',
         // Bürgschaften (Feature 114) und Gewährleistung (Feature 115)
         'guarantees.*' => 'guarantees.overview',
         'warranties.*' => 'warranties.overview',

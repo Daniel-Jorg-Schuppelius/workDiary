@@ -90,4 +90,30 @@ return [
         'marked_on' => 'Im Buchhaltungsprogramm abgerechnet (markiert am :date)',
         'marked_with_number' => 'Im Buchhaltungsprogramm abgerechnet: :number (markiert am :date)',
     ],
+    // Auftragsbestätigung als eigener Beleg (Phase 145, MVP-1162).
+    'order_confirmation' => [
+        'open' => 'Auftragsbestätigung :number',
+        'create' => 'Auftragsbestätigung erstellen',
+        'confirm' => 'Bestätigen',
+        'cancel' => 'Stornieren',
+        'cancel_confirm' => 'Auftragsbestätigung stornieren? Im Buchhaltungsprogramm bleibt sie bestehen.',
+        'to_quote' => 'Angebot :number',
+        'confirmed_on' => 'Bestätigt am :date',
+        'number_pending' => 'Die Nummer vergibt :program beim Bestätigen; bis dahin trägt die Auftragsbestätigung eine Entwurfsnummer.',
+        'pdf' => [
+            'number' => 'Nr. :number',
+        ],
+        'flash' => [
+            'confirmed' => 'Auftragsbestätigung :number bestätigt.',
+            'cancelled' => 'Auftragsbestätigung storniert.',
+            'create_first' => 'Erstellen Sie zuerst die Auftragsbestätigung.',
+        ],
+        'error' => [
+            'not_won' => 'Nur angenommene Angebote werden bestätigt.',
+            'not_draft' => 'Nur Entwürfe lassen sich bestätigen.',
+            'empty' => 'Die Auftragsbestätigung hat keine Positionen.',
+            'not_cancellable' => 'Diese Auftragsbestätigung lässt sich nicht stornieren.',
+            'not_confirmed' => 'Die Auftragsbestätigung ist noch nicht bestätigt.',
+        ],
+    ],
 ];

@@ -46,7 +46,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $contact_first_name
  * @property string|null $contact_middle_names
  * @property string|null $contact_last_name
- * @property array<int, array{name?: string, email?: string, phone?: string, primary?: bool}>|null $contact_persons
+ * @property array<int, array{salutation?: ?string, title?: ?string, first_name?: ?string, middle_names?: ?string, last_name?: ?string, name?: ?string, email?: ?string, phone?: ?string, primary?: bool}>|null $contact_persons
  * @property string|null $email
  * @property string|null $phone
  * @property string|null $mobile

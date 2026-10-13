@@ -261,7 +261,8 @@ class ContactPushIdentityTest extends TestCase {
         $customer = $this->customer();
         $this->link($customer, OrgaMaxPlugin::ID, 'om-1', 'customer');
         $fake = FakePluginHttp::fake([
-            'https://api.orgamax.de/openapi/customer/om-1' => self::itemResponse(['id' => 'om-1']),
+            // GET (Anschrift für den Namensabgleich, Befund B8) und PUT teilen die URL — je Aufruf eine frische Antwort.
+            'https://api.orgamax.de/openapi/customer/om-1' => fn () => self::itemResponse(['id' => 'om-1']),
         ]);
 
         $this->assertSame('om-1', app(OrgaMaxPlugin::class)->pushContact($customer));

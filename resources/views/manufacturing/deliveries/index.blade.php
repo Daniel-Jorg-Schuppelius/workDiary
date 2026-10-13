@@ -43,7 +43,14 @@
         </x-slot:head>
         @forelse ($deliveries as $delivery)
             <tr>
-                <td class="font-mono">LS-{{ str_pad((string) $delivery->id, 6, '0', STR_PAD_LEFT) }}</td>
+                @php($deliveryNote = $delivery->deliveryNoteItem?->deliveryNote)
+                <td class="font-mono">
+                    @if ($deliveryNote !== null)
+                        <a href="{{ route('delivery-notes.show', $deliveryNote) }}" class="link link-hover">{{ $deliveryNote->number }}</a>
+                    @else
+                        LS-{{ str_pad((string) $delivery->id, 6, '0', STR_PAD_LEFT) }}
+                    @endif
+                </td>
                 <td class="tabular-nums">{{ $delivery->delivered_at?->orgTz()->format('d.m.Y') }}</td>
                 <td>{{ $delivery->customer?->displayLabel() ?? '—' }}</td>
                 <td>{{ $delivery->name_snapshot }}@if ($delivery->sku_snapshot)<span class="text-xs text-muted"> · {{ $delivery->sku_snapshot }}</span>@endif</td>
@@ -67,10 +74,14 @@
                 </td>
                 <td class="text-right whitespace-nowrap">
                     @if ($delivery->order)
-                        <x-icon-btn icon="picture_as_pdf" size="sm" tone="ghost" target="_blank"
-                                    :href="route('manufacturing-orders.deliveries.pdf', [$delivery->order, $delivery])" :label="__('manufacturing.delivery_note.title')" />
-                        <x-icon-btn icon="mail" size="sm" tone="ghost" data-entry-modal-trigger
-                                    :href="route('manufacturing-orders.deliveries.mail.form', [$delivery->order, $delivery])" :label="__('Per E-Mail senden')" />
+                        @if ($deliveryNote === null || $deliveryNote->status === \App\Enums\Billing\DeliveryNoteStatus::Delivered)
+                            <x-icon-btn icon="picture_as_pdf" size="sm" tone="ghost" target="_blank"
+                                        :href="$deliveryNote !== null ? route('delivery-notes.pdf', $deliveryNote) : route('manufacturing-orders.deliveries.pdf', [$delivery->order, $delivery])" :label="__('manufacturing.delivery_note.title')" />
+                        @endif
+                        @if ($deliveryNote?->status === \App\Enums\Billing\DeliveryNoteStatus::Delivered)
+                            <x-icon-btn icon="mail" size="sm" tone="ghost" data-entry-modal-trigger
+                                        :href="route('delivery-notes.mail.form', $deliveryNote)" :label="__('Per E-Mail senden')" />
+                        @endif
                         @can('update', $delivery->order)
                             @if ($delivery->customer_id)
                                 <x-icon-btn icon="public" size="sm" tone="ghost" data-entry-modal-trigger

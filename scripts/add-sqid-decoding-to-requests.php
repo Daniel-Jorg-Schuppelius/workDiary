@@ -19,6 +19,9 @@
 declare(strict_types=1);
 
 $root = dirname(__DIR__);
+// Unter PHPStan nicht garantiert definiert; im CLI-Aufruf immer gesetzt.
+$argv = $_SERVER['argv'] ?? [];
+
 $apply = in_array('--apply', $argv, true);
 
 /** Tabelle → vollqualifizierte Modellklasse (HasSqid). */

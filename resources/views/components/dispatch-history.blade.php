@@ -16,6 +16,8 @@
     'labels' => [],           // array<int, string> Beschriftung je Beleg-ID (mehrere Belege)
     'bare' => false,
     'empty' => null,          // eigener Leertext (z. B. Zugangsnachweis bei VOB-Schreiben)
+    'since' => null,          // nur Versände ab diesem Zeitpunkt (Beleg-ID früher von einem anderen Beleg belegt)
+    'before' => [],           // array<string, ?CarbonInterface> Belegart => nur Versände davor (Altbestand derselben ID)
 ])
 
 @php
@@ -23,6 +25,12 @@
     $dispatches = $ids === [] ? collect() : \App\Models\Document\DocumentDispatch::query()
         ->whereIn('document_kind', $kindValues)
         ->whereIn('document_id', $ids)
+        ->when($since !== null, fn ($query) => $query->where('created_at', '>=', $since))
+        ->when(array_filter($before) !== [], fn ($query) => $query->where(function ($query) use ($before): void {
+            foreach (array_filter($before) as $kind => $until) {
+                $query->where(fn ($row) => $row->where('document_kind', '!=', $kind)->orWhere('created_at', '<', $until));
+            }
+        }))
         ->orderByDesc('created_at')->orderByDesc('id')
         ->limit(50)
         ->get();

@@ -1,7 +1,7 @@
 ---
 title: "Rechnungen & Belege"
 topic: invoices.manage
-version: 7
+version: 9
 keywords:
     - Rechnung erstellen
     - Rechnung schreiben
@@ -17,6 +17,10 @@ keywords:
     - Stripe
     - Mollie
     - SumUp
+    - zugehörige Belege
+    - Belegkette
+    - Rechnung an Lexoffice übertragen
+    - Entwurfsnummer
 audience: []
 modules:
     - module.vertrieb
@@ -140,3 +144,27 @@ Nebenkosten des Geldverkehrs); die spätere Auszahlung des Anbieters buchen
 Sie gegen das Geldtransit-Konto. Den Link auf Rechnung und Mail schalten
 Sie in den Organisationseinstellungen unter „Online-Zahlung“ ab; im
 Kundenportal bleibt er.
+
+## Zugehörige Belege
+
+Unten auf der Seite listet **Zugehörige Belege** alle Belege, die mit
+diesem zusammenhängen: Angebot und seine Versionen, Rechnungen, Abschläge und
+Schlussrechnung, Gutschriften und Stornos, Lieferscheine, Fertigungsaufträge
+und Übergaben. Hat ein Buchhaltungsprogramm einen Beleg übernommen, steht
+sein Gegenstück dort mit der Nummer des Programms. Bezüge, die das Programm
+selbst meldet, etwa ein in Lexoffice angelegter Abschlag, erscheinen ebenfalls.
+Die Spalte **Bezug** sagt, was der Beleg für diesen ist; „über …“ nennt den
+Beleg, über den der Zusammenhang besteht.
+
+## Nummer vom Buchhaltungsprogramm
+
+Vergibt ein Buchhaltungsprogramm die Rechnungsnummern (Seite
+**Nummernkreise**), trägt der Entwurf eine Entwurfsnummer, und die Rechnung
+zeigt einen Hinweis. **Stellen** – auch der E-Mail-Versand eines Entwurfs –
+überträgt die Rechnung an das Programm und übernimmt dessen Nummer, bevor PDF
+und Betreff entstehen. Lexoffice und easybill übernehmen die
+Auftragsbestätigung bzw. das Angebot als Vorgänger. Gutschrift und Storno
+gehen mit Bezug auf die übertragene Rechnung hinüber; bei sevDesk und
+easybill muss die Rechnung dafür im Programm sein. Lehnt das Programm ab,
+bleibt der Beleg Entwurf, und die Meldung nennt den Grund. Abschlags- und
+Schlussrechnungen legen Sie in diesem Fall im Programm an.

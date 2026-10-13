@@ -46,5 +46,8 @@ class OrgaMaxServiceProvider extends PluginServiceProviderBase {
         // Tabelle `orgamax_invoices` nur noch über diese Registrierung.
         $this->app->make(DocumentFeedSourceRegistry::class)
             ->register(new OrgaMaxDocumentFeedSource);
+
+        // Zugehörige Belege (MVP-1158).
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Billing\Contracts\DocumentRelationSource::class, \App\Plugins\OrgaMax\Services\OrgaMaxRelationSource::class);
     }
 }

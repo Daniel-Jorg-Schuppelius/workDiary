@@ -12,12 +12,13 @@ declare(strict_types=1);
 
 namespace App\Plugins\SevDesk;
 
+use APIToolkit\Exceptions\ApiException;
 use App\Enums\Numbering\NumberScope;
 use App\Exceptions\ContactNumberTakenException;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\{ContactNumberIssuer, ContactSyncer, Plugin, PluginCapability};
+use App\Plugins\Contracts\{ContactNumberIssuer, ContactNumberPreview, ContactSyncer, Plugin, PluginCapability};
 use App\Plugins\SevDesk\Api\{SevDeskClient, SevDeskClientFactory};
 use App\Plugins\SevDesk\Exceptions\SevDeskApiException;
 use App\Services\Finance\Accounting\ContactPushService;
@@ -37,13 +38,13 @@ use Throwable;
  *   Verbindungsfluss wie beim orgaMAX-iid-Callback nötig).
  * - Faktura-Übergabe über {@see \App\Plugins\SevDesk\Services\SevDeskTarget}
  *   ({@see \App\Enums\Finance\TransferTarget::SevDesk}): sevDesk führt die
- *   Rechnung (Entwurf, Status 50) — keine parallele lokale Fakturierung,
+ *   Rechnung (Entwurf, Status 100) — keine parallele lokale Fakturierung,
  *   `enshrine` wird nie aufgerufen.
  * - „Update 2.0" ist Buchhaltungslogik je Account: der Healthcheck probt
  *   GET /Tools/bookkeepingSystemVersion und erneuert den Versions-Cache
  *   des Mandanten.
  */
-class SevDeskPlugin extends AbstractPlugin implements ContactNumberIssuer, ContactSyncer {
+class SevDeskPlugin extends AbstractPlugin implements ContactNumberIssuer, ContactNumberPreview, ContactSyncer {
     public const ID = 'sevdesk';
 
     public const SERVICE_PROVIDER = SevDeskServiceProvider::class;
@@ -137,6 +138,23 @@ class SevDeskPlugin extends AbstractPlugin implements ContactNumberIssuer, Conta
 
     public function issuableNumberScopes(): array {
         return [NumberScope::Customer];
+    }
+
+    /** Die Seite ruft bei jedem Aufruf ab; kurz zwischengespeichert, Fehler als leere Nummer. */
+    public function nextContactNumber(int $organizationId, NumberScope $scope): ?string {
+        if ($scope !== NumberScope::Customer) {
+            return null;
+        }
+
+        $number = (string) Cache::remember('sevdesk.next_customer_number.' . $organizationId, 60, static function () use ($organizationId): string {
+            try {
+                return app(SevDeskClientFactory::class)->for($organizationId)->nextCustomerNumber();
+            } catch (ApiException|RuntimeException) {
+                return '';
+            }
+        });
+
+        return $number !== '' ? $number : null;
     }
 
     /**

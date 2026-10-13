@@ -18,6 +18,7 @@ use App\Models\Customer\Customer;
 use App\Models\Document\Document;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Models\Sales\Quote;
 use App\Models\Travel\Expense;
 use App\Services\Billing\{DocumentFeedFilters, DocumentFeedQuery};
@@ -87,6 +88,7 @@ class DocumentFeedController extends Controller {
             includeArchived: $request->boolean('archived'),
             allExpenses: $scopeAll,
             onlyUnlinkedExpenses: $tab === 'expenses' && $request->boolean('unlinked'),
+            projectId: Sqid::decodeOrNumeric(Project::class, (string) $request->query('project', '')),
             sources: $sources,
         );
 
@@ -108,8 +110,10 @@ class DocumentFeedController extends Controller {
             'canDunLocal' => $user->canManageBilling(),
             // Plugin-Zeilen: Link und Aktionen aus der jeweiligen Quelle (MVP-1041).
             'feedSources' => app(DocumentFeedSourceRegistry::class),
+            'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
             'filters' => [
                 'q' => $filters->search,
+                'project' => (string) $request->query('project', ''),
                 'origin' => $filters->origin->value ?? '',
                 'contact' => $filters->contactType ?? '',
                 'state' => $filters->state ?? '',
@@ -144,6 +148,8 @@ class DocumentFeedController extends Controller {
         return [
             'invoice' => Gate::allows('viewAny', Invoice::class),
             'quote' => Gate::allows('viewAny', Quote::class),
+            'order_confirmation' => Gate::allows('viewAny', \App\Models\Sales\OrderConfirmation::class),
+            'delivery_note' => Gate::allows('viewAny', \App\Models\Billing\DeliveryNote::class),
             'voucher' => $user->can(Permission::VoucherViewAny->value),
             'incoming_einvoice' => Gate::allows('viewAny', Document::class),
             'expense' => Gate::allows('viewAny', Expense::class),

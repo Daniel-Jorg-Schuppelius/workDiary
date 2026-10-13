@@ -67,9 +67,13 @@ final class DeliveryNotePdfTest extends TestCase {
 
     public function test_delivery_note_pdf_is_streamed(): void {
         $delivery = $this->deliveryForOrder();
+        $note = $delivery->deliveryNoteItem()->firstOrFail()->deliveryNote()->firstOrFail();
+        $this->assertSame('LS-' . now()->format('Y') . '-0001', $note->number, 'Nummer aus dem Kreis „Lieferschein“ (MVP-1163).');
 
-        $response = $this->actingAs($this->admin)
-            ->get(route('manufacturing-orders.deliveries.pdf', [$delivery->order, $delivery]));
+        $this->actingAs($this->admin)
+            ->get(route('manufacturing-orders.deliveries.pdf', [$delivery->order, $delivery]))
+            ->assertRedirect(route('delivery-notes.pdf', $note));
+        $response = $this->actingAs($this->admin)->get(route('delivery-notes.pdf', $note));
 
         $response->assertOk();
         $response->assertHeader('content-type', 'application/pdf');

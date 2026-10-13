@@ -54,10 +54,15 @@ class InvoiceScheduleController extends Controller {
 
         $invoiceSchedule->load(['customer', 'contract', 'items', 'runs.invoice:id,number,status,total,currency']);
 
+        $authority = app(\App\Services\Numbering\NumberAuthority::class);
+        $source = $authority->sourceFor((int) $invoiceSchedule->organization_id, \App\Enums\Numbering\NumberScope::Invoice);
+
         return view('invoice-schedules.show', [
             'schedule' => $invoiceSchedule,
             'isBlocked' => $invoiceSchedule->customer !== null
                 && $billingMode->effectiveFor($invoiceSchedule->customer)->isExternal(),
+            // Phase 145 (MVP-1169): Die Entwürfe des Plans nummeriert das Programm beim Stellen.
+            'numberIssuer' => $source === \App\Services\Numbering\NumberAuthority::SOURCE_LOCAL ? null : $authority->sourceLabel($source),
         ]);
     }
 

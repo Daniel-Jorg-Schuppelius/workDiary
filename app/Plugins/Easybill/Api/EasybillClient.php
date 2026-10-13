@@ -95,11 +95,21 @@ class EasybillClient {
      * @param array<string, mixed> $payload
      * @return array<string, mixed>
      */
-    public function createInvoiceDraft(array $payload): array {
+    public function createDocument(array $payload): array {
         // 429/5xx-Retry gewollt (POST-Opt-in seit api-toolkit 2.9.2): der
         // Beleg entsteht als Entwurf mit external-id-Marker — ein doppelter
         // Draft würde von der Adoptions-Reconciliation eingefangen.
         return (array) $this->guard($this->api()->requestResponse('post', $this->baseUrl . '/documents', ['json' => $payload, 'retry_non_idempotent' => true]), '/documents');
+    }
+
+    /** @return array<string, mixed> PUT /documents/{id}/done — stellt fertig und vergibt die Nummer (Phase 145). */
+    public function finishDocument(string $documentId): array {
+        return (array) $this->guard($this->api()->requestResponse('put', $this->baseUrl . '/documents/' . rawurlencode($documentId) . '/done'), '/documents/{id}/done');
+    }
+
+    /** @return array<string, mixed> POST /documents/{id}/cancel — legt das Storno der Rechnung an (MVP-1167). */
+    public function cancelDocument(string $documentId): array {
+        return (array) $this->guard($this->api()->requestResponse('post', $this->baseUrl . '/documents/' . rawurlencode($documentId) . '/cancel'), '/documents/{id}/cancel');
     }
 
     /** @return array<string, mixed> GET /documents/{id} — Status-/Nummernrücklauf. */

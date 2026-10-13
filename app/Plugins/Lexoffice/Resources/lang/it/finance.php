@@ -19,6 +19,7 @@ return [
         'lexoffice_oc_no_customer' => 'Un ordine di produzione senza cliente non può essere trasmesso come conferma d\'ordine.',
         'lexoffice_oc_not_linked' => 'Nessuna conferma d\'ordine Lexoffice è collegata a questo ordine di produzione.',
         'lexoffice_quote_no_customer' => 'Un ordine di produzione senza cliente non può essere trasmesso come offerta.',
+        'lexoffice_document_no_customer' => 'Un documento senza cliente non può essere trasmesso a Lexoffice.',
         'lexoffice_quote_not_linked' => 'Nessuna offerta Lexoffice è collegata a questo ordine di produzione.',
     ],
     'lexoffice' => [

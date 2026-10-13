@@ -26,7 +26,13 @@ final class InvoiceIssueException extends RuntimeException {
     /** Der Sammelkunde (MVP-1109) erhält keine eigene Rechnung — er hat keine Anschrift. */
     public const REASON_COLLECTIVE_CUSTOMER = 'collective_customer';
 
-    public function __construct(public readonly string $reason, string $message) {
-        parent::__construct($message);
+    /** Entwurfsnummer: Die Nummer vergibt ein Buchhaltungsprogramm beim Übertragen (MVP-1153). */
+    public const REASON_DRAFT_NUMBER = 'draft_number';
+
+    /** Das vergebende Programm hat den Beleg nicht übernommen (MVP-1166). */
+    public const REASON_PROGRAM = 'program';
+
+    public function __construct(public readonly string $reason, string $message, ?\Throwable $previous = null) {
+        parent::__construct($message, 0, $previous);
     }
 }

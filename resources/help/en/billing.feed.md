@@ -1,7 +1,7 @@
 ---
 title: "Document flow"
 topic: billing.feed
-version: 1
+version: 2
 keywords:
     - invoices
     - quotes
@@ -15,6 +15,7 @@ keywords:
     - overdue invoices
     - e-invoice
     - document list
+    - project filter
 audience: []
 modules:
     - module.vertrieb
@@ -72,3 +73,8 @@ the document chain with everything that is still outstanding.
 **Visibility:** The document flow only shows what your permissions in the
 individual areas allow anyway. If you lack the permission for quotes, for
 example, the tab and its rows are missing.
+
+## Filter by project
+
+The **Project** filter shows only documents of one project. Documents from
+accounting programs have no project and drop out with this filter.

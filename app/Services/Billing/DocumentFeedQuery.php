@@ -246,6 +246,10 @@ class DocumentFeedQuery {
             $query->where('contact_type', $f->contactType);
         }
 
+        if ($f->projectId !== null) {
+            $query->where('project_id', $f->projectId);
+        }
+
         if ($f->customerId !== null) {
             $query->where('contact_type', 'customer')->where('contact_id', $f->customerId);
         }

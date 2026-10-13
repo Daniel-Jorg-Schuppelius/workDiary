@@ -10,9 +10,12 @@
     <h1>{{ __('manufacturing.delivery_note.title') }} {{ $number }}</h1>
     <div class="meta">
         {{ __('manufacturing.delivery_note.date') }}:
-        <strong>{{ optional($delivery->delivered_at)->format('d.m.Y') }}</strong>
-        @if ($delivery->order)
-            · {{ __('manufacturing.delivery_note.order') }}: <strong>{{ $delivery->order->number }}</strong>
+        <strong>{{ optional($note->delivered_on)->format('d.m.Y') }}</strong>
+        @if ($note->orderConfirmation)
+            · {{ __('Auftragsbestätigung') }}: <strong>{{ $note->orderConfirmation->number }}</strong>
+        @endif
+        @if ($note->manufacturingOrder)
+            · {{ __('manufacturing.delivery_note.order') }}: <strong>{{ $note->manufacturingOrder->number }}</strong>
         @endif
     </div>
 
@@ -20,18 +23,20 @@
         <tr>
             <td>
                 <strong>{{ __('manufacturing.delivery_note.recipient') }}</strong><br>
-                @if ($delivery->customer)
-                    {{ $delivery->customer->displayLabel() }}<br>
-                    @if ($delivery->customer->address_street){{ $delivery->customer->address_street }}<br>@endif
-                    {{ $delivery->customer->address_zip }} {{ $delivery->customer->address_city }}<br>
-                    {{ $delivery->customer->country }}
+                @if ($note->customer)
+                    {{ $note->customer->displayLabel() }}<br>
+                    @if ($note->customer->address_street){{ $note->customer->address_street }}<br>@endif
+                    {{ $note->customer->address_zip }} {{ $note->customer->address_city }}<br>
+                    {{ $note->customer->country }}
                 @else
                     {{ __('manufacturing.delivery_note.no_customer') }}
                 @endif
             </td>
             <td>
-                <strong>{{ __('manufacturing.delivery_note.warehouse') }}</strong><br>
-                {{ $delivery->warehouse?->name }}
+                @if ($warehouses->isNotEmpty())
+                    <strong>{{ __('manufacturing.delivery_note.warehouse') }}</strong><br>
+                    {{ $warehouses->implode(', ') }}
+                @endif
             </td>
         </tr>
     </table>
@@ -46,14 +51,26 @@
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>{{ $delivery->sku_snapshot }}</td>
-                <td>{{ $delivery->name_snapshot }}</td>
-                <td style="text-align: right;">{{ rtrim(rtrim((string) $delivery->quantity?->getNumericValue(), '0'), '.') }}</td>
-                <td>{{ $delivery->unit }}</td>
-            </tr>
+            @foreach ($note->items as $item)
+                @if ($item->line_kind !== \App\Enums\Billing\DocumentLineKind::Item)
+                    <tr>
+                        <td></td>
+                        <td colspan="3" @if ($item->line_kind === \App\Enums\Billing\DocumentLineKind::Title) style="font-weight: bold;" @endif>{{ $item->description }}</td>
+                    </tr>
+                    @continue
+                @endif
+                <tr>
+                    <td>{{ $item->sku }}</td>
+                    <td style="white-space: pre-line;">{{ $item->description }}</td>
+                    <td style="text-align: right;">{{ \CommonToolkit\Helper\Data\NumberHelper::trimTrailingZeros(\CommonToolkit\ValueObjects\Decimal::of((string) $item->quantity, 4)->format(), ',') }}</td>
+                    <td>{{ $item->unit }}</td>
+                </tr>
+            @endforeach
         </tbody>
     </table>
 
+    @if (filled($note->note))
+        <div class="meta" style="margin-top: 12pt; white-space: pre-line;">{{ $note->note }}</div>
+    @endif
     <div class="meta" style="margin-top: 16pt;">{{ __('manufacturing.delivery_note.footer_note') }}</div>
 </x-pdf-layout>

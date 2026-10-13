@@ -42,6 +42,8 @@ final readonly class DocumentFeedFilters {
         public bool $includeArchived = false,
         public bool $allExpenses = false,
         public bool $onlyUnlinkedExpenses = false,
+        /** Projekt (MVP-1159); Quellen ohne Projekt fallen dann heraus. */
+        public ?int $projectId = null,
         /**
          * Sichtbarkeit je Quelle — der Feed zeigt nur, was die jeweilige
          * Policy erlaubt, und das Kennzahlenband rechnet mit derselben Menge.

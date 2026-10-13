@@ -120,6 +120,7 @@ class AccountingVoucherSource implements DocumentFeedSource {
                 "CASE WHEN $state = 'open'
                     THEN COALESCE(accounting_vouchers.open_amount, accounting_vouchers.total_amount, 0) ELSE 0 END AS open_amount",
                 'accounting_vouchers.currency AS currency',
+                'NULL AS project_id',
             ]))
             ->where('accounting_vouchers.organization_id', $f->organizationId)
             ->whereIn('accounting_vouchers.plugin_id', array_keys($origins))

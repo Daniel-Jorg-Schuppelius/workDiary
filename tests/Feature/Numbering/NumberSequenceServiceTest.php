@@ -115,4 +115,20 @@ class NumberSequenceServiceTest extends TestCase {
 
         $this->assertSame('AS-2026-0043', $this->service->next($this->org, NumberScope::Asset));
     }
+
+    public function test_empty_prefix_starts_without_separator(): void {
+        Carbon::setTestNow('2026-06-01 10:00:00');
+
+        $this->service->setFormat($this->org, NumberScope::Asset, ['prefix' => '', 'include_year' => true]);
+        $this->assertSame('2026-0001', $this->service->next($this->org, NumberScope::Asset));
+
+        $this->service->setFormat($this->org, NumberScope::Asset, ['include_year' => false, 'reset_per_year' => false]);
+        $this->assertSame('0001', $this->service->next($this->org, NumberScope::Asset));
+    }
+
+    public function test_certificate_numbers_start_with_crt(): void {
+        Carbon::setTestNow('2026-06-01 10:00:00');
+
+        $this->assertSame('CRT-2026-0001', $this->service->next($this->org, NumberScope::Certificate));
+    }
 }

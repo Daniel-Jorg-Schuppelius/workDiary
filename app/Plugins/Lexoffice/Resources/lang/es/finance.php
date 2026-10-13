@@ -19,6 +19,7 @@ return [
         'lexoffice_oc_no_customer' => 'Una orden de fabricación sin cliente no puede transferirse como confirmación de pedido.',
         'lexoffice_oc_not_linked' => 'No hay ninguna confirmación de pedido de Lexoffice vinculada a esta orden de fabricación.',
         'lexoffice_quote_no_customer' => 'Una orden de fabricación sin cliente no puede transferirse como oferta.',
+        'lexoffice_document_no_customer' => 'Un documento sin cliente no puede transferirse a Lexoffice.',
         'lexoffice_quote_not_linked' => 'No hay ninguna oferta de Lexoffice vinculada a esta orden de fabricación.',
     ],
     'lexoffice' => [

@@ -1,7 +1,7 @@
 ---
 title: "Flux de documents"
 topic: billing.feed
-version: 1
+version: 2
 keywords:
     - factures
     - devis
@@ -15,6 +15,7 @@ keywords:
     - facture électronique
     - liste des documents
     - recettes
+    - filtre projet
 audience: []
 modules:
     - module.vertrieb
@@ -78,3 +79,9 @@ attente.
 **Visibilité :** le flux n'affiche que ce que vos droits dans chaque domaine
 autorisent déjà. Sans droit sur les devis, par exemple, l'onglet et ses
 lignes sont absents.
+
+## Filtrer par projet
+
+Le filtre **Projet** n'affiche que les documents d'un projet. Les documents
+provenant de logiciels de comptabilité n'ont pas de projet et disparaissent avec
+ce filtre.

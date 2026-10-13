@@ -81,6 +81,9 @@ final class InvoicingManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Billing\Contracts\DocumentRelationSource::class => [
+                \App\Services\Invoicing\Relations\InvoiceRelationSource::class,
+            ],
             \App\Services\Mcp\Contracts\McpTool::class => [
                 \App\Services\Invoicing\Mcp\InvoicesTool::class,
                 \App\Services\Invoicing\Mcp\OpenItemsTool::class,

@@ -19,6 +19,7 @@ return [
         'lexoffice_oc_no_customer' => 'A manufacturing order without a customer cannot be handed over as an order confirmation.',
         'lexoffice_oc_not_linked' => 'No Lexoffice order confirmation is linked to this manufacturing order.',
         'lexoffice_quote_no_customer' => 'A manufacturing order without a customer cannot be handed over as a quotation.',
+        'lexoffice_document_no_customer' => 'A document without a customer cannot be transferred to Lexoffice.',
         'lexoffice_quote_not_linked' => 'No Lexoffice quotation is linked to this manufacturing order.',
     ],
     'lexoffice' => [

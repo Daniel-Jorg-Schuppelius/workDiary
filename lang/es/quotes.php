@@ -90,4 +90,30 @@ return [
         'marked_on' => 'Facturado en el programa contable (marcado el :date)',
         'marked_with_number' => 'Facturado en el programa contable: :number (marcado el :date)',
     ],
+    // Auftragsbestätigung als eigener Beleg (Phase 145, MVP-1162).
+    'order_confirmation' => [
+        'open' => 'Confirmación de pedido :number',
+        'create' => 'Crear confirmación de pedido',
+        'confirm' => 'Confirmar',
+        'cancel' => 'Anular',
+        'cancel_confirm' => '¿Anular la confirmación de pedido? En el programa de contabilidad se mantiene.',
+        'to_quote' => 'Oferta :number',
+        'confirmed_on' => 'Confirmada el :date',
+        'number_pending' => ':program asigna el número al confirmar; hasta entonces la confirmación de pedido lleva un número provisional.',
+        'pdf' => [
+            'number' => 'N.º :number',
+        ],
+        'flash' => [
+            'confirmed' => 'Confirmación de pedido :number confirmada.',
+            'cancelled' => 'Confirmación de pedido anulada.',
+            'create_first' => 'Cree primero la confirmación de pedido.',
+        ],
+        'error' => [
+            'not_won' => 'Solo se confirman ofertas aceptadas.',
+            'not_draft' => 'Solo se pueden confirmar borradores.',
+            'empty' => 'La confirmación de pedido no tiene posiciones.',
+            'not_cancellable' => 'Esta confirmación de pedido no se puede anular.',
+            'not_confirmed' => 'La confirmación de pedido aún no está confirmada.',
+        ],
+    ],
 ];

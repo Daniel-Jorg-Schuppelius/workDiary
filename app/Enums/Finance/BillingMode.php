@@ -45,6 +45,18 @@ enum BillingMode: string implements HasLabel {
         };
     }
 
+    /** Programmname ohne „führt“ (Seite „Nummernkreise“, MVP-1149). */
+    public function programName(): string {
+        return match ($this) {
+            self::Workdiary => 'workDiary',
+            self::Lexoffice => 'Lexoffice',
+            self::Datev => 'DATEV',
+            self::OrgaMax => 'orgaMAX',
+            self::SevDesk => 'sevDesk',
+            self::Easybill => 'easybill',
+        };
+    }
+
     /**
      * Führt ein externes Programm die Fakturierung? Dann ist die lokale
      * Rechnungserstellung gesperrt (Hoheitsprinzip).

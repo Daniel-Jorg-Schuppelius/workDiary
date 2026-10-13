@@ -20,6 +20,7 @@ use App\Models\Platform\User;
 use App\Plugins\Easybill\Api\EasybillClientFactory;
 use App\Plugins\Easybill\{EasybillConfig, EasybillPlugin};
 use App\Services\Document\DocumentService;
+use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\CryptoHelper;
 
 /**
@@ -45,6 +46,8 @@ class EasybillDocumentPullService {
 
         $references = ExternalReference::query()
             ->forPlugin($organizationId, EasybillPlugin::ID, EasybillTarget::EXT_TYPE_INVOICE)
+            // Ausgestellte Rechnungen (MVP-1166) tragen ihre Nummer schon; abgeholt werden nur Übergaben.
+            ->where('referenceable_type', MorphMap::alias(BillingTransfer::class))
             ->get()
             ->filter(fn(ExternalReference $ref): bool => empty(((array) $ref->payload)['document_pulled_at'] ?? null));
         if ($references->isEmpty()) {
@@ -104,6 +107,7 @@ class EasybillDocumentPullService {
             }
 
             $reference->forceFill([
+                'external_number' => $number !== '' ? $number : $reference->external_number,
                 'payload' => array_merge((array) $reference->payload, array_filter([
                     'document' => $remote,
                     'document_pulled_at' => now()->toIso8601String(),

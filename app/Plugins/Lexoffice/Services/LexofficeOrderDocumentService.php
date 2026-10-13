@@ -46,12 +46,19 @@ abstract class LexofficeOrderDocumentService {
     abstract protected function notLinkedErrorKey(): string;
 
     /**
-     * Überträgt den Fertigungsauftrag als Lexoffice-Verkaufsbeleg.
+     * Überträgt den Fertigungsauftrag als Lexoffice-Verkaufsbeleg; ein schon
+     * verknüpfter Beleg wird zurückgegeben (`wasRecentlyCreated` = false).
      *
      * @throws RuntimeException Bei fehlender Konfiguration, fehlendem Kunden/
      *                          Kontakt oder API-Fehler.
      */
     public function push(ManufacturingOrder $order): ExternalReference {
+        // Ein zweiter Klick legte in Lexoffice einen zweiten Beleg an; der eindeutige Index griff erst danach (MVP-1155).
+        $existing = $this->reference($order);
+        if ($existing !== null) {
+            return $existing;
+        }
+
         $config = LexofficeConfig::resolve($order->organization_id);
         if (empty($config['api_key'])) {
             throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_not_configured'));

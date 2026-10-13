@@ -103,7 +103,7 @@ class SalesDocumentPdfTest extends TestCase {
         $quote = $this->quote();
 
         // Vor der Annahme: keine Auftragsbestätigung.
-        $this->actingAs($this->user)->get(route('quotes.order-confirmation', $quote))->assertStatus(422);
+        $this->actingAs($this->user)->post(route('quotes.order-confirmation.store', $quote))->assertForbidden();
 
         $quote = $service->approve($quote, $this->user);
         ['quote' => $quote, 'acceptance_token' => $token] = $service->send($quote, $this->user);
@@ -112,14 +112,18 @@ class SalesDocumentPdfTest extends TestCase {
         $quote = $service->accept($quote, [(int) $firstItem->id], $token);
         $this->assertSame(QuoteStatus::PartiallyAccepted, $quote->status);
 
-        $html = view('quotes.order-confirmation-pdf', app(OrderConfirmationPdfRenderer::class)->viewData($quote))->render();
+        // Seit Phase 145 (MVP-1162) ein eigener Beleg aus den angenommenen Positionen.
+        $confirmation = app(\App\Services\Sales\OrderConfirmationService::class)->fromQuote($quote, $this->user);
+        $confirmation = app(\App\Services\Sales\OrderConfirmationService::class)->confirm($confirmation, $this->user);
+        $html = view('quotes.order-confirmation-pdf', app(OrderConfirmationPdfRenderer::class)->viewData($confirmation))->render();
         $this->assertStringContainsString('Auftragsbestätigung', $html);
         $this->assertStringContainsString('Grundpaket', $html);
         $this->assertStringNotContainsString('Fachliteratur', $html, 'Nicht angenommene Positionen erscheinen nicht.');
         $this->assertStringContainsString('Teilannahme', $html);
         $this->assertStringContainsString($quote->number, $html);
+        $this->assertStringContainsString($confirmation->number, $html);
 
-        $response = $this->actingAs($this->user)->get(route('quotes.order-confirmation', $quote));
+        $response = $this->actingAs($this->user)->get(route('order-confirmations.pdf', $confirmation));
         $response->assertOk();
         $this->assertStringStartsWith('%PDF', (string) $response->getContent());
     }

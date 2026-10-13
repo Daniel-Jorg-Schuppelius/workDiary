@@ -170,12 +170,12 @@ class NumberSequenceService {
     private function compose(NumberFormat $format, CarbonInterface $when, int $sequenceValue): string {
         $out = (string) $format->prefix;
 
+        // Trenner nur nach einem Präfix; sonst begann ein Kreis ohne Präfix mit „-“ (MVP-1150).
+        if ($out !== '') {
+            $out .= (string) $format->prefix_separator;
+        }
         if ($format->include_year) {
-            $out .= (string) $format->prefix_separator;
-            $out .= $when->format('Y');
-            $out .= (string) $format->year_separator;
-        } elseif ($out !== '') {
-            $out .= (string) $format->prefix_separator;
+            $out .= $when->format('Y') . (string) $format->year_separator;
         }
 
         $out .= str_pad((string) $sequenceValue, (int) $format->padding, '0', STR_PAD_LEFT);

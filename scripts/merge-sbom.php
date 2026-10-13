@@ -20,6 +20,9 @@ declare(strict_types=1);
  * Aufruf: php scripts/merge-sbom.php <composer-sbom> <npm-sbom> <ziel> [version]
  */
 
+// Unter PHPStan nicht garantiert definiert; im CLI-Aufruf immer gesetzt.
+$argv = $_SERVER['argv'] ?? [];
+$argc = count($argv);
 if ($argc < 4) {
     fwrite(STDERR, "Aufruf: php scripts/merge-sbom.php <composer-sbom> <npm-sbom> <ziel> [version]\n");
     exit(1);

@@ -26,7 +26,7 @@ use App\Plugins\Contracts\{ContactNumberIssuer, ContactSyncer, ContributesWhileI
 use App\Plugins\Lexoffice\Enums\LexwareFeature;
 use App\Plugins\Lexoffice\Exceptions\LexofficeRateLimitException;
 use App\Plugins\Lexoffice\Models\LexofficePostingCategory;
-use App\Plugins\Lexoffice\Services\{LexofficeIncomingInvoiceTarget, LexofficeMapper, LexofficeNumberAuthority, LexofficeService, LexofficeVoucherSync, LexofficeWebhookService};
+use App\Plugins\Lexoffice\Services\{LexofficeIncomingInvoiceTarget, LexofficeMapper, LexofficeService, LexofficeVoucherSync, LexofficeWebhookService};
 use App\Plugins\Lexoffice\Tariff\LexwareTariffService;
 use App\Services\Stammdaten\ContactNumberAdopter;
 use App\Support\Query\DateRange;
@@ -218,17 +218,11 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
                 'manual_review' => __('Manuelle Prüfung'),
             ], 'default' => 'manual_review'],
             ['key' => 'create_missing_local', 'label' => __('Fehlende Kunden aus Lexoffice neu anlegen'), 'type' => 'boolean', 'default' => false],
-            ['key' => 'number_authority', 'label' => __('Rechnungs-, Gutschrift- und Stornonummern von Lexoffice führen lassen'), 'type' => 'boolean', 'default' => false, 'help' => __('Wer Kunden- und Lieferantennummern vergibt, stellen Sie auf der Seite „Nummernkreise“ ein.')],
             ['key' => 'request_interval', 'label' => __('Mindestabstand zwischen API-Anfragen in Sekunden (Lexoffice erlaubt 2 je Sekunde)'), 'type' => 'text', 'default' => '0.5'],
             ['key' => 'incoming_transfer', 'label' => __('lexoffice::incoming.settings.transfer'), 'type' => 'boolean', 'default' => false, 'help' => __('lexoffice::incoming.settings.transfer_help')],
             ['key' => 'incoming_default_category', 'label' => __('lexoffice::incoming.settings.incoming_category'), 'type' => 'select', 'options' => $this->postingCategoryOptions('outgo'), 'help' => __('lexoffice::incoming.settings.category_help')],
             ['key' => 'outgoing_default_category', 'label' => __('lexoffice::incoming.settings.outgoing_category'), 'type' => 'select', 'options' => $this->postingCategoryOptions('income')],
         ];
-    }
-
-    /** @param array<string, mixed> $settings */
-    public function onSettingsSaved(int $organizationId, array $settings): void {
-        app(LexofficeNumberAuthority::class)->apply($organizationId, (bool) ($settings['number_authority'] ?? false));
     }
 
     public function issuableNumberScopes(): array {
@@ -369,28 +363,6 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
                 'orderKey' => Sqid::encode(ManufacturingOrder::class, (int) $context->manufacturing_order_id),
                 'canPush' => auth()->user()?->can(Permission::InventoryPost->value) ?? false,
             ])->render()) ?: null;
-        }
-
-        if ($slot === 'invoice-show.actions' && $context instanceof Invoice && $context->status === InvoiceStatus::Draft) {
-            $url = route('invoices.lexoffice.publish', $context);
-            $csrf = csrf_token();
-            $label = __('An Lexoffice');
-            $confirm = __('Rechnung an Lexoffice übertragen und dort finalisieren? Die Rechnungsnummer wird ggf. von Lexoffice gesetzt.');
-
-            return <<<HTML
-                <form method="POST" action="{$url}" class="inline"
-                      data-confirm-dialog
-                      data-confirm-message="{$confirm}"
-                      data-confirm-icon="cloud_upload"
-                      data-confirm-tone="primary"
-                      data-confirm-label="{$label}">
-                    <input type="hidden" name="_token" value="{$csrf}">
-                    <button type="submit" class="btn btn-sm btn-primary">
-                        <span class="material-symbols-outlined" aria-hidden="true">cloud_upload</span>
-                        <span>{$label}</span>
-                    </button>
-                </form>
-            HTML;
         }
 
         return null;

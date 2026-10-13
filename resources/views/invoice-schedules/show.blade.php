@@ -58,6 +58,12 @@
             <span>{{ __('Externes Fakturasystem führt die Rechnungen dieses Kunden — der Plan erzeugt keine Entwürfe.') }}</span>
         </div>
     @endif
+    @if ($numberIssuer !== null && ! $isBlocked)
+        <div role="status" class="alert alert-info text-sm">
+            <x-icon name="tag" />
+            {{ __('numbering.issue.invoice_pending', ['program' => $numberIssuer]) }}
+        </div>
+    @endif
 
     <x-card :title="__('Plan')">
         <div class="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">

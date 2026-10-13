@@ -1,7 +1,7 @@
 ---
 title: "Devis"
 topic: quotes.overview
-version: 2
+version: 6
 keywords:
     - créer un devis
     - estimation
@@ -15,6 +15,14 @@ keywords:
     - transformer un devis en facture
     - options
     - nouvelle version du devis
+    - documents liés
+    - chaîne de documents
+    - numéro de devis
+    - devis vers Lexoffice
+    - numéro de confirmation
+    - bon de livraison
+    - livraison partielle
+    - numéro de bon de livraison
 audience: []
 modules:
     - module.vertrieb
@@ -70,8 +78,51 @@ de facture utilisé là-bas. Le devis quitte alors la liste **Devis acceptés
 sans facture** ; le marquage peut être supprimé. L’action est disponible
 tant qu’aucune facture n’existe pour le devis.
 
-**PDF & confirmation de commande :** chaque devis peut être téléchargé
-en PDF (avec repérage des options et ventilation de la TVA) ; les devis
-envoyés conservent durablement le design du moment de l'envoi. Pour les
-devis (partiellement) acceptés, une confirmation de commande en PDF est
-également disponible et confirme exactement les positions acceptées.
+**PDF :** chaque devis peut être téléchargé en PDF (avec repérage des
+options et ventilation de la TVA) ; les devis envoyés conservent durablement
+le design du moment de l'envoi. La confirmation de commande est un document
+distinct (voir ci-dessous).
+
+## Documents liés
+
+En bas de page, **Documents liés** liste tous les documents rattachés à
+celui-ci : le devis et ses versions, les factures, acomptes et la facture
+finale, avoirs et annulations, bons de livraison, ordres de fabrication et
+transmissions. Si un logiciel de comptabilité a repris un document, son
+équivalent y figure avec le numéro du logiciel. Les liens signalés par le
+logiciel lui-même, par exemple un acompte créé dans Lexoffice, apparaissent
+aussi. La colonne **Lien** indique ce que le document représente pour
+celui-ci ; « via … » nomme le document par lequel le lien existe.
+
+## Numéro de devis du logiciel de comptabilité
+
+Si vous choisissez un logiciel de comptabilité (Lexoffice ou easybill) pour
+**Devis** sur la page **Plages de numéros**, un nouveau devis porte d'abord un
+numéro provisoire. Lors de l'**envoi**, WorkDiary crée le devis dans le
+logiciel, l'y finalise et reprend son numéro ; le PDF n'est créé qu'ensuite.
+Si le transfert échoue, le devis reste validé et vous pouvez renouveler
+l'envoi. Une nouvelle version est un nouveau devis avec son propre numéro dans
+le logiciel. Lexoffice marque les positions optionnelles comme optionnelles ;
+easybill les reprend sans calcul.
+
+## Confirmation de commande
+
+Pour un devis accepté, **Créer la confirmation de commande** crée un
+document distinct avec les positions acceptées. La confirmation de commande a
+sa propre plage de numéros (**Plages de numéros**, plage « Confirmation de
+commande »). **Confirmer** lui attribue son numéro ; si un logiciel de
+comptabilité (Lexoffice ou easybill) attribue le numéro, WorkDiary la
+transfère à ce moment. Ensuite, le PDF et l'envoi par e-mail sont disponibles.
+L'annulation la retire dans WorkDiary ; elle reste dans le logiciel.
+
+## Bon de livraison
+
+Une confirmation de commande confirmée propose **Créer un bon de livraison**.
+Le bon de livraison reprend les quantités non encore livrées, sans prix. Pour
+une livraison partielle, ajustez les quantités sous **Modifier les
+quantités** ; 0 retire une position de ce bon, elle reste ouverte pour le
+suivant. **Livrer** fixe le numéro de la plage « Bon de livraison » ; si un
+logiciel de comptabilité (Lexoffice ou easybill) attribue le numéro, WorkDiary
+transmet le bon de livraison à ce moment. Ensuite, le PDF et l'envoi par
+e-mail sont disponibles. Les bons de livraison de la fabrication naissent à
+chaque livraison (voir ordres de fabrication).

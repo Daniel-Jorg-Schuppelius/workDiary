@@ -106,4 +106,7 @@ return [
     'error.outcome_unclear' => 'Resultado incierto (tiempo agotado tras el envío) — sin reintento ciego. La próxima ejecución concilia mediante el marcador de origen.',
     'error.token_exchange_failed' => 'Intercambio de token fallido (HTTP :status) — compruebe la clave/el secreto API.',
     'order.internal_note' => 'Traspaso WorkDiary :channel :from–:to',
+    'relations' => [
+        'order' => 'Pedido',
+    ],
 ];

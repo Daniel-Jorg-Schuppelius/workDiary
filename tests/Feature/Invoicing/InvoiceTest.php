@@ -12,6 +12,7 @@ namespace Tests\Feature\Invoicing;
 
 use App\Enums\Document\DocumentDispatchStatus;
 use App\Enums\Invoicing\InvoiceStatus;
+use App\Enums\Numbering\NumberScope;
 use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Mail\InvoiceMail;
@@ -20,6 +21,7 @@ use App\Models\Invoicing\{Invoice, InvoiceMailTemplate};
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
+use App\Services\Numbering\NumberSequenceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Testing\TestResponse;
@@ -176,7 +178,7 @@ class InvoiceTest extends TestCase {
         $invoice = Invoice::firstOrFail()->load('items');
         $this->assertFalse($invoice->hasServicePeriod());
         $this->assertSame('2030-04-01', $invoice->serviceDateSingle()?->toDateString());
-        $this->assertSame('2030-04-01', $invoice->items()->first()->service_date?->toDateString());
+        $this->assertSame('2030-04-01', $invoice->items()->firstOrFail()->service_date?->toDateString());
     }
 
     public function test_multiple_days_form_a_service_period_with_per_item_dates(): void {
@@ -413,7 +415,7 @@ class InvoiceTest extends TestCase {
         ])->assertRedirect();
 
         $invoice = Invoice::firstOrFail()->load('items');
-        $this->assertStringContainsString('Endkunde Thieme', (string) $invoice->items()->first()->description);
+        $this->assertStringContainsString('Endkunde Thieme', (string) $invoice->items()->firstOrFail()->description);
     }
 
     public function test_index_accepts_numeric_customer_filter_fallback(): void {
@@ -473,7 +475,7 @@ class InvoiceTest extends TestCase {
         $this->assertSame(InvoiceStatus::Issued, $invoice->fresh()?->status);
 
         $this->postAsAdmin('invoices.pay', [], $invoice)->assertRedirect();
-        $this->assertSame(InvoiceStatus::Paid, $invoice->fresh()?->status);
+        $this->assertSame(InvoiceStatus::Paid, $invoice->refresh()->status);
     }
 
     public function test_pdf_export(): void {
@@ -501,10 +503,11 @@ class InvoiceTest extends TestCase {
 
     public function test_publish_to_lexoffice_sends_payload_and_updates_invoice(): void {
         $this->pluginSecret('lexoffice', ['enabled' => true, 'api_key' => 'test-key']);
+        app(NumberSequenceService::class)->setFormat($this->organization, NumberScope::Invoice, ['source' => 'lexoffice']);
         $invoice = Invoice::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
-            'number' => 'DRAFT-0001',
+            'number' => NumberSequenceService::DRAFT_PREFIX . 'LEX00001',
             'status' => InvoiceStatus::Draft,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
@@ -530,7 +533,8 @@ class InvoiceTest extends TestCase {
             ], 200),
         ]);
 
-        $this->postAsAdmin('invoices.lexoffice.publish', [], $invoice)->assertRedirect();
+        // Stellen überträgt, wenn Lexoffice den Kreis vergibt (MVP-1166).
+        $this->postAsAdmin('invoices.issue', [], $invoice)->assertRedirect();
 
         $invoice->refresh();
         $this->assertSame(InvoiceStatus::Issued, $invoice->status);
@@ -549,6 +553,126 @@ class InvoiceTest extends TestCase {
         ]);
     }
 
+    public function test_local_numbering_issues_without_lexoffice(): void {
+        $this->pluginSecret('lexoffice', ['enabled' => true, 'api_key' => 'test-key']);
+        $invoice = $this->draftWithItem('R2030-0009');
+        $fake = \Tests\Support\FakePluginHttp::fake();
+
+        $this->postAsAdmin('invoices.issue', [], $invoice)->assertRedirect(route('invoices.show', $invoice));
+
+        $fake->assertNothingSent();
+        $this->assertSame(['R2030-0009', InvoiceStatus::Issued], [$invoice->refresh()->number, $invoice->status]);
+    }
+
+    public function test_draft_number_stays_while_the_program_cannot_take_the_invoice(): void {
+        // orgaMAX nummeriert Rechnungen erst nach dem SDK-Release (Phase 145) — Stellen bleibt gesperrt.
+        $this->pluginSecret('orgamax', ['enabled' => true, 'api_key' => 'test-key']);
+        app(NumberSequenceService::class)->setFormat($this->organization, NumberScope::Invoice, ['source' => 'orgamax']);
+        $invoice = $this->draftWithItem(NumberSequenceService::DRAFT_PREFIX . 'LEX00002');
+
+        $this->actingAs($this->admin)->from(route('invoices.show', $invoice))
+            ->post(route('invoices.issue', $invoice))
+            ->assertRedirect(route('invoices.show', $invoice))
+            ->assertSessionHas('error', __('numbering.issue.draft_number', ['program' => app(\App\Plugins\OrgaMax\OrgaMaxPlugin::class)->name()]));
+
+        $this->assertSame(InvoiceStatus::Draft, $invoice->refresh()->status);
+    }
+
+    public function test_draft_number_gets_a_local_number_once_workdiary_numbers_again(): void {
+        $invoice = $this->draftWithItem(NumberSequenceService::DRAFT_PREFIX . 'LEX00003');
+
+        $this->postAsAdmin('invoices.issue', [], $invoice)->assertRedirect(route('invoices.show', $invoice));
+
+        $invoice->refresh();
+        $this->assertSame(InvoiceStatus::Issued, $invoice->status);
+        $this->assertFalse(NumberSequenceService::isDraft($invoice->number));
+        $this->assertStringStartsWith('R', $invoice->number);
+    }
+
+    public function test_cancelling_a_transferred_invoice_sends_a_linked_lexoffice_correction(): void {
+        $this->pluginSecret('lexoffice', ['enabled' => true, 'api_key' => 'test-key']);
+        foreach ([NumberScope::Invoice, NumberScope::CreditNote, NumberScope::Cancellation] as $scope) {
+            app(NumberSequenceService::class)->setFormat($this->organization, $scope, ['source' => 'lexoffice']);
+        }
+        $original = $this->draftWithItem('RE-2030-010');
+        app(\App\Services\Invoicing\InvoiceIssueService::class)->issue($original, ['number' => 'RE-2030-010']);
+        \App\Models\Integration\ExternalReference::create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => \App\Plugins\Lexoffice\LexofficePlugin::ID,
+            'external_type' => \App\Plugins\Lexoffice\Services\LexofficeInvoiceService::EXT_TYPE_INVOICE,
+            'referenceable_type' => $original->getMorphClass(),
+            'referenceable_id' => $original->id,
+            'external_id' => 'lex-inv-9',
+        ]);
+
+        $this->actingAs($this->admin)->post(route('invoices.cancel', $original))->assertRedirect();
+        $cancellation = Invoice::query()->where('parent_invoice_id', $original->id)->firstOrFail();
+        $this->assertTrue(NumberSequenceService::isDraft($cancellation->number));
+        $this->assertSame(__('numbering.flash.transfer_pending', ['document' => $cancellation->documentLabel(), 'program' => 'Lexoffice']), session('status'));
+
+        $fake = \Tests\Support\FakePluginHttp::fake([
+            'https://api.lexware.io/v1/credit-notes?precedingSalesVoucherId=lex-inv-9&finalize=true' => \Tests\Support\FakePluginHttp::response(['id' => 'lex-cn-1'], 201),
+            'https://api.lexware.io/v1/credit-notes/lex-cn-1' => \Tests\Support\FakePluginHttp::response(['id' => 'lex-cn-1', 'voucherNumber' => 'RK-2030-001'], 200),
+        ]);
+
+        $this->postAsAdmin('invoices.issue', [], $cancellation)->assertRedirect(route('invoices.show', $cancellation));
+
+        $cancellation->refresh();
+        $this->assertSame(InvoiceStatus::Issued, $cancellation->status);
+        $this->assertSame('RK-2030-001', $cancellation->number);
+        $fake->assertSent(function (\Psr\Http\Message\RequestInterface $request): bool {
+            $body = json_decode((string) $request->getBody(), true);
+
+            return $request->getMethod() === 'POST'
+                && is_array($body)
+                && ! isset($body['dueDate'])
+                && $body['title'] === __('Stornorechnung')
+                && $body['lineItems'][0]['quantity'] === 1;
+        });
+        $reference = \App\Models\Integration\ExternalReference::query()->where('referenceable_id', $cancellation->id)->firstOrFail();
+        $this->assertSame(['lex-cn-1', 'credit-notes'], [$reference->external_id, $reference->payload['_resource'] ?? null]);
+    }
+
+    public function test_correction_without_transferred_original_goes_to_lexoffice_without_link(): void {
+        $this->pluginSecret('lexoffice', ['enabled' => true, 'api_key' => 'test-key']);
+        app(NumberSequenceService::class)->setFormat($this->organization, NumberScope::CreditNote, ['source' => 'lexoffice']);
+        $original = $this->draftWithItem('R2030-0042');
+        app(\App\Services\Invoicing\InvoiceIssueService::class)->issue($original);
+        $credit = $this->draftWithItem(NumberSequenceService::DRAFT_PREFIX . 'GUT00001');
+        $credit->update(['type' => Invoice::TYPE_CREDIT_NOTE, 'parent_invoice_id' => $original->id]);
+
+        $fake = \Tests\Support\FakePluginHttp::fake([
+            'https://api.lexware.io/v1/credit-notes?finalize=true' => \Tests\Support\FakePluginHttp::response(['id' => 'lex-cn-2'], 201),
+            'https://api.lexware.io/v1/credit-notes/lex-cn-2' => \Tests\Support\FakePluginHttp::response(['id' => 'lex-cn-2', 'voucherNumber' => 'RK-2030-002'], 200),
+        ]);
+
+        $this->postAsAdmin('invoices.issue', [], $credit->refresh())->assertRedirect();
+
+        $this->assertSame('RK-2030-002', $credit->refresh()->number);
+        $fake->assertSentCount(2);
+    }
+
+    private function draftWithItem(string $number): Invoice {
+        $invoice = Invoice::create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+            'number' => $number,
+            'status' => InvoiceStatus::Draft,
+            'currency' => 'EUR',
+            'tax_rate' => '19.00',
+            'created_by' => $this->admin->id,
+        ]);
+        $invoice->items()->create([
+            'description' => 'Beratung',
+            'quantity' => '1.00',
+            'unit' => 'h',
+            'unit_price' => '95.00',
+            'position' => 1,
+        ]);
+
+        return $invoice;
+    }
+
     public function test_publish_to_lexoffice_requires_draft_status(): void {
         $this->pluginSecret('lexoffice', ['enabled' => true, 'api_key' => 'test-key']);
         $invoice = Invoice::create([
@@ -563,7 +687,7 @@ class InvoiceTest extends TestCase {
 
         // Bereits ausgestellte Rechnungen werden vom issue-Gate geblockt → 403,
         // die Lexoffice-Übertragung kommt also gar nicht erst zur Ausführung.
-        $this->postAsAdmin('invoices.lexoffice.publish', [], $invoice)
+        $this->postAsAdmin('invoices.issue', [], $invoice)
             ->assertForbidden();
 
         $this->assertDatabaseMissing('external_references', [
@@ -621,23 +745,27 @@ class InvoiceTest extends TestCase {
             'synced_at' => now(),
         ]);
 
-        \Tests\Support\FakePluginHttp::fake([
-            'https://api.lexware.io/v1/invoices/lex-inv-9/document' => \Tests\Support\FakePluginHttp::response([
-                'documentFileId' => 'file-abc',
-            ], 200),
-            'https://api.lexware.io/v1/files/file-abc' => \Tests\Support\FakePluginHttp::response('%PDF-1.4 fake', 200),
+        // Befund B7 (Phase 145): ein Abruf über `/file` statt `/document` + `/files/{id}`.
+        $fake = \Tests\Support\FakePluginHttp::fake([
+            'https://api.lexware.io/v1/invoices/lex-inv-9/file' => \Tests\Support\FakePluginHttp::response('%PDF-1.4 fake', 200),
         ]);
 
         $response = $this->actingAs($this->admin)->get(route('invoices.lexoffice.pdf', $invoice));
         $response->assertOk();
         $this->assertSame('application/pdf', $response->headers->get('Content-Type'));
         $this->assertStringStartsWith('%PDF', (string) $response->getContent());
+        $fake->assertSentCount(1);
     }
 
+    /** @return TestResponse<\Symfony\Component\HttpFoundation\Response> */
     private function getAsAdmin(string $routeName, mixed $parameters = []): TestResponse {
         return $this->actingAs($this->admin)->get(route($routeName, $parameters));
     }
 
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return TestResponse<\Symfony\Component\HttpFoundation\Response>
+     */
     private function postAsAdmin(string $routeName, array $payload = [], mixed $parameters = []): TestResponse {
         return $this->actingAs($this->admin)->post(route($routeName, $parameters), $payload);
     }
@@ -675,7 +803,7 @@ class InvoiceTest extends TestCase {
         ]);
 
         $this->postAsAdmin('invoices.cancel', [], $invoice)->assertForbidden();
-        $this->assertSame(InvoiceStatus::Paid, $invoice->fresh()?->status);
+        $this->assertSame(InvoiceStatus::Paid, $invoice->refresh()->status);
     }
 
     public function test_credit_note_only_for_paid(): void {
@@ -802,6 +930,7 @@ class InvoiceTest extends TestCase {
     // Helpers
     // ────────────────────────────────────────────────────────────────────────
 
+    /** @param array<string, mixed> $overrides */
     private function makeInvoice(InvoiceStatus|string $status, array $overrides = []): Invoice {
         $invoice = Invoice::create(array_merge([
             'organization_id' => $this->organization->id,

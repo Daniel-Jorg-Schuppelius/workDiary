@@ -13,62 +13,53 @@ declare(strict_types=1);
 namespace App\Services\Invoicing;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
-use App\Models\Sales\Quote;
+use App\Models\Sales\OrderConfirmation;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
 use App\Services\UI\BrandingService;
-use RuntimeException;
 
 /**
- * Auftragsbestätigung zu einem angenommenen Angebot (MVP-650, Issue #83):
- * bestätigt genau die ANGENOMMENEN Positionen (Voll- oder Teilannahme).
- * Datengrundlage ist das Angebot nach der Entscheidung — die Positionen sind
- * ab da unveränderlich (Item-CRUD nur im Entwurf), die Summen wurden bei der
- * Annahme neu berechnet. Kein eigener Nummernkreis: die AB referenziert das
- * Angebot (Folgeschnitt: eigene AB-Nummern, wenn ein Auftragsobjekt entsteht).
- * Das Design erbt über die Fallback-Art das Rechnungs- bzw. CI-Basisprofil;
- * bei der Annahme wird der Stand als Render-Snapshot eingefroren.
+ * PDF der Auftragsbestätigung (MVP-650; seit Phase 145, MVP-1162, eigener
+ * Beleg mit Nummer). Das Design erbt über die Fallback-Art das Rechnungs- bzw.
+ * CI-Basisprofil; beim Bestätigen wird der Stand als Render-Snapshot
+ * eingefroren.
  */
 class OrderConfirmationPdfRenderer {
     public function __construct(private readonly DocumentDesignRenderer $design) {}
 
     /** PDF-Bytes der Auftragsbestätigung (A4). */
-    public function output(Quote $quote): string {
-        if (! $quote->status->isWon()) {
-            throw new RuntimeException((string) __('Nur angenommene Angebote können bestätigt werden.'));
-        }
-        $quote->loadMissing(['items', 'customer', 'organization']);
+    public function output(OrderConfirmation $confirmation): string {
+        $confirmation->loadMissing(['items', 'customer', 'organization', 'quote']);
 
         // Belegsprache je Kunde (Feature 034, MVP-721): nur Darstellung.
-        return \App\Support\DocumentLocale::within($quote->customer, $quote->organization, fn (): string => $this->design->renderPdf(
+        return \App\Support\DocumentLocale::within($confirmation->customer, $confirmation->organization, fn (): string => $this->design->renderPdf(
             RenderDocumentKind::OrderConfirmation,
             'quotes.order-confirmation-pdf',
-            $this->viewData($quote),
-            $quote->organization,
-            payload: $this->designPayload($quote),
+            $this->viewData($confirmation),
+            $confirmation->organization,
+            payload: $this->designPayload($confirmation),
         ));
     }
 
     /** @return array<string, mixed> */
-    public function viewData(Quote $quote): array {
-        $quote->loadMissing(['items', 'customer', 'organization']);
+    public function viewData(OrderConfirmation $confirmation): array {
+        $confirmation->loadMissing(['items', 'customer', 'organization', 'quote']);
 
         return [
-            'quote' => $quote,
-            'acceptedItems' => $quote->items->filter(fn ($item): bool => (bool) $item->accepted)->values(),
-            'orgLegal' => app(BrandingService::class)->legalFor($quote->organization),
-            'design' => $this->design->context($this->designPayload($quote)),
+            'confirmation' => $confirmation,
+            'orgLegal' => app(BrandingService::class)->legalFor($confirmation->organization),
+            'design' => $this->design->context($this->designPayload($confirmation)),
         ];
     }
 
     /** @return array<string, mixed>|null */
-    private function designPayload(Quote $quote): ?array {
-        $snapshot = $this->design->payloadFromSnapshot($quote, RenderDocumentKind::OrderConfirmation);
+    private function designPayload(OrderConfirmation $confirmation): ?array {
+        $snapshot = $this->design->payloadFromSnapshot($confirmation, RenderDocumentKind::OrderConfirmation);
         if ($snapshot !== null) {
             return $snapshot;
         }
 
-        return $quote->organization === null
+        return $confirmation->organization === null
             ? null
-            : $this->design->payloadFor($quote->organization, RenderDocumentKind::OrderConfirmation, (int) $quote->customer_id);
+            : $this->design->payloadFor($confirmation->organization, RenderDocumentKind::OrderConfirmation, (int) $confirmation->customer_id);
     }
 }

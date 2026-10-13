@@ -781,12 +781,18 @@ return [
     ],
     'order_confirmation' => [
         'mailed' => 'Confirmation de commande envoyée par e-mail',
+        'created' => 'Confirmation de commande créée',
+        'confirmed' => 'Confirmation de commande confirmée',
+        'cancelled' => 'Confirmation de commande annulée',
     ],
     'purchase_order' => [
         'confirmed' => 'Confirmation de commande importée',
         'mailed' => 'Bon de commande envoyé par e-mail',
     ],
     'delivery_note' => [
+        'created' => 'Bon de livraison créé',
+        'delivered' => 'Bon de livraison livré',
+        'cancelled' => 'Bon de livraison annulé',
         'mailed' => 'Bon de livraison envoyé par e-mail',
     ],
     'quote' => [

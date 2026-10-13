@@ -27,7 +27,7 @@ use RuntimeException;
 
 /**
  * Übergibt einen bestätigten BillingTransfer als sevDesk-RECHNUNGSENTWURF
- * (MVP-125, Bauturbo A4): POST /Invoice/Factory/saveInvoice mit Status 50
+ * (MVP-125, Bauturbo A4): POST /Invoice/Factory/saveInvoice mit Status 100
  * (Entwurf) — sevDesk behält die Rechnungshoheit (Nummer, Festschreibung);
  * `enshrine` wird nie aufgerufen.
  *
@@ -115,8 +115,9 @@ class SevDeskTarget implements FacturationTarget {
             'objectName' => 'Invoice',
             'mapAll' => true,
             'invoiceType' => 'RE',
-            // Entwurf — sevDesk führt (Nummer/Festschreibung); nie `enshrine`.
-            'status' => 50,
+            // Entwurf ist bei Rechnungen 100 (50 = deaktivierte Serienrechnung, nur bei Belegen Entwurf);
+            // Update 2.0 legt Rechnungen nur als Entwurf an. sevDesk führt, nie `enshrine`.
+            'status' => 100,
             'invoiceDate' => now()->format('Y-m-d'),
             'currency' => $transfer->customer->currency->value,
             'discount' => 0,

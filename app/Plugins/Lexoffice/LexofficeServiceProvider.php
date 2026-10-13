@@ -98,6 +98,10 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Invoicing\Contracts\IncomingInvoiceTransferTarget::class, \App\Plugins\Lexoffice\Services\LexofficeIncomingInvoiceTarget::class);
         // Provisionen an gespiegelten Rechnungen (MVP-1119).
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Sales\Contracts\CommissionDocumentSource::class, \App\Plugins\Lexoffice\Services\LexofficeCommissionDocuments::class);
+        // Belegnummern beim Übertragen (Phase 145).
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Numbering\Contracts\DocumentIssuer::class, \App\Plugins\Lexoffice\Services\LexofficeDocumentIssuer::class);
+        // Zugehörige Belege (MVP-1158).
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Billing\Contracts\DocumentRelationSource::class, \App\Plugins\Lexoffice\Services\LexofficeRelationSource::class);
 
         // Material-Suche (MVP-1033) mit den Zugangsdaten der aktuellen Organisation.
         $this->app->make(MaterialProviderRegistry::class)->register('lexoffice', static function (): ?LexofficeMaterialProvider {

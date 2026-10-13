@@ -19,6 +19,7 @@ return [
         'lexoffice_oc_no_customer' => 'Un ordre de fabrication sans client ne peut pas être transmis comme confirmation de commande.',
         'lexoffice_oc_not_linked' => 'Aucune confirmation de commande Lexoffice n\'est liée à cet ordre de fabrication.',
         'lexoffice_quote_no_customer' => 'Un ordre de fabrication sans client ne peut pas être transmis comme devis.',
+        'lexoffice_document_no_customer' => 'Un document sans client ne peut pas être transmis à Lexoffice.',
         'lexoffice_quote_not_linked' => 'Aucun devis Lexoffice n\'est lié à cet ordre de fabrication.',
     ],
     'lexoffice' => [

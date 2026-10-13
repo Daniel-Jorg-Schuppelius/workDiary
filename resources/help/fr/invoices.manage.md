@@ -1,7 +1,7 @@
 ---
 title: "Factures & pièces"
 topic: invoices.manage
-version: 7
+version: 9
 keywords:
     - créer une facture
     - établir une facture
@@ -18,6 +18,10 @@ keywords:
     - Stripe
     - Mollie
     - SumUp
+    - documents liés
+    - chaîne de documents
+    - transmettre la facture à Lexoffice
+    - numéro provisoire
 audience: []
 modules:
     - module.vertrieb
@@ -145,3 +149,27 @@ paiement) ; vous comptabilisez le versement ultérieur du prestataire sur
 le compte de fonds en transit. Vous désactivez le lien sur la facture et
 dans l'e-mail dans les paramètres de l'organisation, sous « Paiement en
 ligne » ; il reste dans le portail client.
+
+## Documents liés
+
+En bas de page, **Documents liés** liste tous les documents rattachés à
+celui-ci : le devis et ses versions, les factures, acomptes et la facture
+finale, avoirs et annulations, bons de livraison, ordres de fabrication et
+transmissions. Si un logiciel de comptabilité a repris un document, son
+équivalent y figure avec le numéro du logiciel. Les liens signalés par le
+logiciel lui-même, par exemple un acompte créé dans Lexoffice, apparaissent
+aussi. La colonne **Lien** indique ce que le document représente pour
+celui-ci ; « via … » nomme le document par lequel le lien existe.
+
+## Numéro du logiciel de comptabilité
+
+Si un logiciel de comptabilité attribue les numéros de facture (page
+**Plages de numéros**), le brouillon porte un numéro provisoire et la facture
+affiche une remarque. **Émettre** – aussi l'envoi d'un brouillon par e-mail –
+transmet la facture au logiciel et reprend son numéro avant que le PDF et
+l'objet ne soient créés. Lexoffice et easybill reprennent la confirmation de
+commande ou le devis comme document précédent. L'avoir et l'annulation sont
+transmis avec référence à la facture transmise ; pour sevDesk et easybill, la
+facture doit se trouver dans le logiciel. Si le logiciel refuse, le document
+reste un brouillon et le message en indique la raison. Créez dans ce cas les
+factures d'acompte et de solde dans le logiciel.

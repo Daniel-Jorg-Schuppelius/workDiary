@@ -18,6 +18,9 @@
  *          (Dateinamen relativ zu app/Models)
  */
 
+// Unter PHPStan nicht garantiert definiert; im CLI-Aufruf immer gesetzt.
+$argv = $_SERVER['argv'] ?? [];
+$argc = count($argv);
 if ($argc < 2) {
     fwrite(STDERR, "Usage: php scripts/add-has-sqid.php <ModelFile.php> [...]\n");
     exit(2);

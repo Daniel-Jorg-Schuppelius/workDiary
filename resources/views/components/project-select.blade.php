@@ -11,12 +11,18 @@
   x-project-options (Kundengruppierung, Endkunden-Suffix). Zusätzliche
   Attribute (x-model, data-depends-on, …) werden ans <select> durchgereicht.
   Für Filterleisten/Sonder-Selects x-project-options direkt einsetzen.
+
+  Props (Kommentare stehen hier statt im Array, sonst meldet die IDE Syntaxfehler):
+  - placeholder: null ⇒ keine Leer-Option
+  - searchable: Suchfeld überm Select (filtert Optionen + Kunden-Optgroups live,
+    app.js data-select-search)
+  - recent: Collection<Project> für die Optgroup „Zuletzt verwendet“ zuerst
 --}}
 @props([
     'projects',
     'name' => 'project_id',
     'label' => null,
-    'placeholder' => '—', {{-- null ⇒ keine Leer-Option --}}
+    'placeholder' => '—',
     'selected' => '',
     'group' => true,
     'dataParent' => false,
@@ -24,8 +30,8 @@
     'span' => null,
     'hint' => null,
     'error' => null,
-    'searchable' => false, {{-- Suchfeld überm Select (filtert Optionen + Kunden-Optgroups live, app.js data-select-search) --}}
-    'recent' => null,      {{-- Collection<Project>: „Zuletzt verwendet"-Optgroup zuerst --}}
+    'searchable' => false,
+    'recent' => null,
 ])
 
 <x-select-field :name="$name" :label="$label" :required="$required" :span="$span" :hint="$hint" :error="$error" {{ $attributes }}>

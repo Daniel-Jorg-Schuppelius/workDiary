@@ -14,15 +14,26 @@
   customer_id des Parents (ProjectObserver), daher keine Vererbungslogik.
   Die Query muss customer_id (und für den Endkunden-Suffix
   foreign_customer_id) mitselektieren; Relationen lädt die Komponente nach.
+
+  Props (Kommentare stehen hier statt im Array, sonst meldet die IDE Syntaxfehler):
+  - projects: Collection<Project> mit id, name, customer_id
+  - selected: Sqid des vorausgewählten Projekts ('' = keins)
+  - group: aus, wenn der Kontext bereits ein Kunde ist
+  - dataParent: data-parent="<Kunden-Sqid>" je Option (für data-depends-on)
+  - dataCustomer: data-customer="<Kunden-Sqid>" je Optgroup (Inbox-Kundenfilter);
+    erzwingt Optgroups inkl. „Intern (ohne Kunde)"
+  - dataForeign: data-foreign="<Endkunden-Sqid>" je Option (Fremdkunden-Filter)
+  - recent: Collection<Project> für die Optgroup „Zuletzt verwendet“ zuerst;
+    diese Projekte tauchen in den Kundengruppen nicht doppelt auf
 --}}
 @props([
-    'projects',              {{-- Collection<Project> mit id, name, customer_id --}}
-    'selected' => '',        {{-- Sqid des vorausgewählten Projekts ('' = keins) --}}
-    'group' => true,         {{-- aus, wenn der Kontext bereits ein Kunde ist --}}
-    'dataParent' => false,   {{-- data-parent="<Kunden-Sqid>" je Option (für data-depends-on) --}}
-    'dataCustomer' => false, {{-- data-customer="<Kunden-Sqid>" je Optgroup (Inbox-Kundenfilter); erzwingt Optgroups inkl. „Intern (ohne Kunde)" --}}
-    'dataForeign' => false,  {{-- data-foreign="<Endkunden-Sqid>" je Option (Fremdkunden-Filter) --}}
-    'recent' => null,        {{-- Collection<Project>: „Zuletzt verwendet"-Optgroup zuerst; diese Projekte tauchen in den Kundengruppen nicht doppelt auf --}}
+    'projects',
+    'selected' => '',
+    'group' => true,
+    'dataParent' => false,
+    'dataCustomer' => false,
+    'dataForeign' => false,
+    'recent' => null,
 ])
 
 @php

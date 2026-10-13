@@ -41,8 +41,6 @@ Route::middleware(['web', 'auth', \App\Http\Middleware\EnforcePlanModules::class
         ->name('suppliers.lexoffice.posting-category');
 
     // Rechnungs-bezogen
-    Route::post('invoices/{invoice}/lexoffice/publish', [LexofficeInvoiceController::class, 'publish'])
-        ->name('invoices.lexoffice.publish');
     Route::get('invoices/{invoice}/lexoffice/pdf', [LexofficeInvoiceController::class, 'pdf'])
         ->name('invoices.lexoffice.pdf');
 

@@ -17,8 +17,8 @@ use App\Models\Invoicing\Invoice;
 use App\Models\Material\MaterialUsage;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
-use App\Services\Billing\{BillingModeLockedException, BillingModeResolver};
-use App\Services\Numbering\NumberSequenceService;
+use App\Services\Billing\BillingModeResolver;
+use App\Services\Numbering\{NumberAuthority, NumberSequenceService};
 use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -64,7 +64,7 @@ class InvoiceGenerator {
      *                                       bleiben exported=false und erscheinen im nächsten Lauf.
      */
     public function fromTimeEntries(Customer $customer, ?Project $project, array $range = [], ?ForeignCustomer $foreignCustomer = null, array $excludedEntryIds = []): Invoice {
-        $this->assertLocalBillingAllowed($customer);
+        app(BillingModeResolver::class)->assertLocalInvoicing($customer);
         $this->assertNotAccountManaged($customer);
 
         return DB::transaction(function () use ($customer, $project, $range, $foreignCustomer, $excludedEntryIds): Invoice {
@@ -246,7 +246,7 @@ class InvoiceGenerator {
      * }
      */
     public function previewTimeEntries(Customer $customer, ?Project $project, array $range = [], ?ForeignCustomer $foreignCustomer = null): array {
-        $this->assertLocalBillingAllowed($customer);
+        app(BillingModeResolver::class)->assertLocalInvoicing($customer);
         $this->assertNotAccountManaged($customer);
 
         $entries = $this->openTimeEntriesQuery($customer, $project, $range, $foreignCustomer)->get();
@@ -304,7 +304,7 @@ class InvoiceGenerator {
      * abrechenbare Zeiten/Material.
      */
     public function emptyProforma(Customer $customer, ?Project $project = null): Invoice {
-        $this->assertLocalBillingAllowed($customer);
+        app(BillingModeResolver::class)->assertLocalInvoicing($customer);
 
         return DB::transaction(function () use ($customer, $project): Invoice {
             $tax = app(TaxResolver::class)->resolve($customer->organization()->firstOrFail(), $customer);
@@ -336,7 +336,7 @@ class InvoiceGenerator {
      * auslieferungen. Rechnungshoheit und Kontobindung gelten wie im Zeitpfad.
      */
     public function emptyDraft(Customer $customer, ?Project $project = null, ?ForeignCustomer $foreignCustomer = null): Invoice {
-        $this->assertLocalBillingAllowed($customer);
+        app(BillingModeResolver::class)->assertLocalInvoicing($customer);
         $this->assertNotAccountManaged($customer);
 
         return DB::transaction(function () use ($customer, $project, $foreignCustomer): Invoice {
@@ -373,7 +373,7 @@ class InvoiceGenerator {
      * @param  array{from?: string|CarbonInterface|null, to?: string|CarbonInterface|null}  $range
      */
     public function fromMaterialUsages(Customer $customer, ?Project $project, array $range = [], ?ForeignCustomer $foreignCustomer = null): Invoice {
-        $this->assertLocalBillingAllowed($customer);
+        app(BillingModeResolver::class)->assertLocalInvoicing($customer);
 
         return DB::transaction(function () use ($customer, $project, $range, $foreignCustomer): Invoice {
             // Per-Kunde serialisieren (Doppelklick-Schutz gegen Doppelabrechnung).
@@ -498,21 +498,6 @@ class InvoiceGenerator {
 
             $charge->tour->travel_billed = true;
             $charge->tour->saveQuietly();
-        }
-    }
-
-    /**
-     * Hoheits-Sperre (Feature 045, additiv): führt ein externes Programm die
-     * Fakturierung des Kunden (lexoffice/datev), darf WorkDiary keine lokale
-     * Rechnung aus Zeiten/Material erzeugen — die Quellen gehen stattdessen
-     * als Übergabenachweis (BillingTransfer) an das führende System.
-     *
-     * @throws BillingModeLockedException
-     */
-    private function assertLocalBillingAllowed(Customer $customer): void {
-        $mode = app(BillingModeResolver::class)->effectiveFor($customer);
-        if ($mode->isExternal()) {
-            throw new BillingModeLockedException($mode);
         }
     }
 
@@ -667,7 +652,8 @@ class InvoiceGenerator {
         string $netAmount,
         ?CarbonInterface $serviceDate = null,
     ): Invoice {
-        $this->assertLocalBillingAllowed($customer);
+        app(BillingModeResolver::class)->assertLocalInvoicing($customer);
+        $this->assertLocalDownPayments((int) $customer->organization_id);
 
         return DB::transaction(function () use ($customer, $project, $description, $netAmount, $serviceDate): Invoice {
             $tax = app(TaxResolver::class)->resolve(
@@ -717,7 +703,7 @@ class InvoiceGenerator {
     /**
      * Pauschal-/Ausgleichsbeleg für die externe Übergabe an das führende
      * Buchhaltungsprogramm (Feature 098, Retainer-Modus mit Lexoffice-Hoheit).
-     * Eine einzige custom-Position; überspringt BEWUSST assertLocalBillingAllowed,
+     * Eine einzige custom-Position; überspringt BEWUSST BillingModeResolver::assertLocalInvoicing,
      * weil die Rechnung sofort mit finalize=true an Lexoffice geht (Nummernkreis/
      * Festschreibung/Zahlung liegen dort). Die übergebene $placeholderNumber ist
      * transient — {@see \App\Plugins\Lexoffice\Services\LexofficeInvoiceService::publish}
@@ -804,10 +790,28 @@ class InvoiceGenerator {
      * die Verknüpfung lebt auf den Absetzungspositionen. Ein Storno der
      * Schlussrechnung öffnet die Abschläge dadurch automatisch wieder.
      */
+    /**
+     * Abschlag und Schluss legt man im Programm an, solange es die
+     * Rechnungsnummern vergibt (Phase 145, L5/MVP-1168): Keines der Programme
+     * nimmt Abschläge per API an; der Belegspiegel zeigt sie.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    private function assertLocalDownPayments(int $organizationId): void {
+        $authority = app(NumberAuthority::class);
+        $source = $authority->sourceFor($organizationId, NumberScope::Invoice);
+        if ($source !== NumberAuthority::SOURCE_LOCAL) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'invoice' => (string) __('invoicing.down_payment.program_numbering', ['program' => $authority->sourceLabel($source)]),
+            ]);
+        }
+    }
+
     public function finalFromDraft(Invoice $draft): Invoice {
         if ($draft->status !== InvoiceStatus::Draft || $draft->type !== Invoice::TYPE_INVOICE) {
             throw new \LogicException('Only draft standard invoices can become a final invoice (type: ' . $draft->type . ', status: ' . $draft->status->value . ')');
         }
+        $this->assertLocalDownPayments((int) $draft->organization_id);
 
         return DB::transaction(function () use ($draft): Invoice {
             // Per-Kunde serialisieren: zwei parallele Schlussrechnungen dürfen

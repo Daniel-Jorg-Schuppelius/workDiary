@@ -111,14 +111,14 @@ final class QuoteStatusEnumCastTest extends TestCase {
         $html = $this->page(route('quotes.show', $sent));
         $this->assertPageHas('action="' . route('quotes.decide', $sent) . '"', $html);
         $this->assertPageHas('action="' . route('quotes.new-version', $sent) . '"', $html);
-        $this->assertPageLacks('href="' . route('quotes.order-confirmation', $sent) . '"', $html);
+        $this->assertPageLacks('action="' . route('quotes.order-confirmation.store', $sent) . '"', $html);
         $this->assertPageLacks('action="' . route('quotes.convert', $sent) . '"', $html);
         $this->assertPageHas(e(QuoteStatus::Sent->label()), $html);
 
         foreach ([QuoteStatus::Accepted, QuoteStatus::PartiallyAccepted] as $won) {
             $quote = $this->quote($won);
             $html = $this->page(route('quotes.show', $quote));
-            $this->assertPageHas('href="' . route('quotes.order-confirmation', $quote) . '"', $html);
+            $this->assertPageHas('action="' . route('quotes.order-confirmation.store', $quote) . '"', $html);
             $this->assertPageHas('action="' . route('quotes.convert', $quote) . '"', $html);
             $this->assertPageLacks('action="' . route('quotes.decide', $quote) . '"', $html);
             $this->assertPageLacks('action="' . route('quotes.new-version', $quote) . '"', $html);
@@ -171,23 +171,29 @@ final class QuoteStatusEnumCastTest extends TestCase {
     public function test_draft_quotes_cannot_be_mailed_and_only_won_quotes_are_confirmed(): void {
         $draft = $this->quote(QuoteStatus::Draft);
         $this->actingAs($this->user)->get(route('quotes.mail.form', $draft))->assertStatus(422);
-        $this->actingAs($this->user)->get(route('quotes.order-confirmation', $draft))->assertStatus(422);
+        // Auftragsbestätigung als eigener Beleg (Phase 145): nur zu angenommenen Angeboten.
+        $this->actingAs($this->user)->post(route('quotes.order-confirmation.store', $draft))->assertForbidden();
 
         $sent = $this->quote(QuoteStatus::Sent);
         $this->actingAs($this->user)->get(route('quotes.mail.form', $sent))->assertOk();
-        $this->actingAs($this->user)->get(route('quotes.order-confirmation.mail.form', $sent))->assertStatus(422);
+        $this->actingAs($this->user)->post(route('quotes.order-confirmation.store', $sent))->assertForbidden();
 
         $won = $this->quote(QuoteStatus::PartiallyAccepted);
-        $this->actingAs($this->user)->get(route('quotes.order-confirmation.mail.form', $won))->assertOk();
+        $this->actingAs($this->user)->post(route('quotes.order-confirmation.store', $won))->assertRedirect();
+        $this->assertTrue(\App\Models\Sales\OrderConfirmation::query()->where('quote_id', $won->id)->exists());
     }
 
     public function test_order_confirmation_names_a_partial_acceptance_only(): void {
         $renderer = app(OrderConfirmationPdfRenderer::class);
 
-        $partial = view('quotes.order-confirmation-pdf', $renderer->viewData($this->quote(QuoteStatus::PartiallyAccepted)))->render();
+        $confirmationOf = fn (Quote $quote): \App\Models\Sales\OrderConfirmation => \App\Models\Sales\OrderConfirmation::factory()->create([
+            'organization_id' => $this->org->id, 'customer_id' => $this->customer->id, 'quote_id' => $quote->id,
+        ]);
+
+        $partial = view('quotes.order-confirmation-pdf', $renderer->viewData($confirmationOf($this->quote(QuoteStatus::PartiallyAccepted))))->render();
         $this->assertPageHas('Teilannahme', $partial);
 
-        $full = view('quotes.order-confirmation-pdf', $renderer->viewData($this->quote(QuoteStatus::Accepted)))->render();
+        $full = view('quotes.order-confirmation-pdf', $renderer->viewData($confirmationOf($this->quote(QuoteStatus::Accepted))))->render();
         $this->assertPageLacks('Teilannahme', $full);
     }
 

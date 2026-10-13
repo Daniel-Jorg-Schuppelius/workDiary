@@ -14,4 +14,7 @@ return [
             'dun_confirm' => '¿Crear un aviso de pago en la contabilidad?',
         ],
     ],
+    'relations' => [
+        'not_mirrored' => 'aún no sincronizado',
+    ],
 ];

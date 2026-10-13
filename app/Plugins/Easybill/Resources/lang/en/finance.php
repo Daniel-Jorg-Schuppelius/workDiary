@@ -15,7 +15,13 @@ return [
         'unit_piece' => 'pcs',
     ],
     'error' => [
+        'easybill_no_customer' => 'The document has no customer and cannot be transferred to easybill.',
+        'easybill_cancel_not_transferred' => 'Invoice :number is not in easybill; the cancellation cannot be created there. Set the range “Cancellation” to WorkDiary to number it locally.',
         'easybill_not_configured' => 'easybill is not configured for this organisation (API key missing).',
         'easybill_outcome_unclear' => 'Outcome of the easybill transfer unclear (timeout after sending) — do not blindly retry; the next run reconciles via the source marker.',
+    ],
+    'relations' => [
+        'draft' => 'Draft',
+        'done' => 'completed',
     ],
 ];

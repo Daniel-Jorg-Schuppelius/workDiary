@@ -6,19 +6,21 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Auftragsbestätigung zu einem angenommenen Angebot (MVP-650): bestätigt
-     NUR die angenommenen Positionen; Summen = Angebots-Summen nach Annahme. --}}
+{{-- Auftragsbestätigung als eigener Beleg (MVP-650, Phase 145 MVP-1162): ihre
+     Positionen stammen aus den angenommenen Positionen des Angebots. --}}
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
-<title>{{ __('Auftragsbestätigung') }} {{ $quote->number }}</title>
+<title>{{ __('Auftragsbestätigung') }} {{ $confirmation->number }}</title>
 @php
     /** @var \App\Services\DocumentDesign\DesignContext $design MVP-651: Texte + Akzentfarbe aus dem Design-Payload. */
     $design ??= new \App\Services\DocumentDesign\DesignContext(null);
     $accent = $design->accentColor();
     $fmt = fn (float $v) => \App\Support\DocumentNumber::decimal($v, 2);
     $fmtRate = fn ($rate) => rtrim(rtrim(number_format((float) $rate, 2, '.', ''), '0'), '.');
+    $currency = $confirmation->documentCurrency()->value;
+    $quote = $confirmation->quote;
 @endphp
 <style>
     body { font-family: 'DejaVu Sans', sans-serif; font-size: 11px; color: #222; }
@@ -47,22 +49,25 @@
     $addressStyle = $design->addressWindowStyle();
     $senderStyle = $design->senderLineStyle();
 @endphp
-@if ($design->show(\App\Enums\DocumentDesign\InformationBlock::SenderLine) && $senderStyle !== null && $quote->organization !== null)
-    <div style="{{ $senderStyle }}">{{ ($orgLegal['account_holder'] ?? null) ?: $quote->organization->name }}</div>
+@if ($design->show(\App\Enums\DocumentDesign\InformationBlock::SenderLine) && $senderStyle !== null && $confirmation->organization !== null)
+    <div style="{{ $senderStyle }}">{{ ($orgLegal['account_holder'] ?? null) ?: $confirmation->organization->name }}</div>
 @endif
 <div class="header">
     <div class="left"@if ($addressStyle !== null) style="{{ $addressStyle }}"@endif>
-        <strong>{{ $quote->customer->name }}</strong><br>
-        @if ($quote->customer->company){{ $quote->customer->company }}<br>@endif
-        {{ $quote->customer->address_street }}<br>
-        {{ $quote->customer->address_zip }} {{ $quote->customer->address_city }}<br>
-        {{ $quote->customer->country }}
+        <strong>{{ $confirmation->customer->name }}</strong><br>
+        @if ($confirmation->customer->company){{ $confirmation->customer->company }}<br>@endif
+        {{ $confirmation->customer->address_street }}<br>
+        {{ $confirmation->customer->address_zip }} {{ $confirmation->customer->address_city }}<br>
+        {{ $confirmation->customer->country }}
     </div>
     <div class="right">
         <h1>{{ __('Auftragsbestätigung') }}</h1>
-        {{ __('zu Angebot :nr (V:version)', ['nr' => $quote->number, 'version' => $quote->version]) }}<br>
-        {{ __('Datum') }}: {{ optional($quote->decided_at)->fdate() }}<br>
-        @if ($quote->status === \App\Enums\Sales\QuoteStatus::PartiallyAccepted)
+        {{ __('quotes.order_confirmation.pdf.number', ['number' => $confirmation->number]) }}<br>
+        @if ($quote !== null)
+            {{ __('zu Angebot :nr (V:version)', ['nr' => $quote->number, 'version' => $quote->version]) }}<br>
+        @endif
+        {{ __('Datum') }}: {{ ($confirmation->confirmed_on ?? $confirmation->created_at)?->fdate() }}<br>
+        @if ($quote?->status === \App\Enums\Sales\QuoteStatus::PartiallyAccepted)
             <span class="muted">{{ __('Teilannahme') }}</span><br>
         @endif
     </div>
@@ -82,9 +87,9 @@
         </tr>
     </thead>
     <tbody>
-    @foreach (\App\Services\Billing\DocumentOutline::rows($acceptedItems, fn ($line): bool => $line->countsInTotal()) as $outlineRow)
+    @foreach (\App\Services\Billing\DocumentOutline::rows($confirmation->items, fn ($line): bool => $line->lineKind()->isPriced()) as $outlineRow)
         @if ($outlineRow['type'] === 'subtotal')
-            <tr><td></td><td colspan="4" class="num" style="font-size: 9px;">{{ __('invoicing.line_kind.subtotal', ['number' => $outlineRow['number'], 'title' => $outlineRow['title']->description]) }}</td><td class="num" style="font-weight: bold;">{{ $fmt($outlineRow['amount']->toFloat()) }} EUR</td></tr>
+            <tr><td></td><td colspan="4" class="num" style="font-size: 9px;">{{ __('invoicing.line_kind.subtotal', ['number' => $outlineRow['number'], 'title' => $outlineRow['title']->description]) }}</td><td class="num" style="font-weight: bold;">{{ $fmt($outlineRow['amount']->toFloat()) }} {{ $currency }}</td></tr>
             @continue
         @endif
         @php
@@ -98,28 +103,28 @@
             <td>{{ $outlineRow['number'] }}</td>
             <td>{{ $item->description }}</td>
             <td class="num">{{ \App\Support\DocumentNumber::decimal((float) $item->quantity, ((int) round((float) $item->quantity * 1000)) % 10 !== 0 ? 3 : 2) }} {{ $item->unit }}</td>
-            <td class="num">{{ $fmt($item->unit_price?->toFloat() ?? 0.0) }} EUR</td>
+            <td class="num">{{ $fmt($item->unit_price?->toFloat() ?? 0.0) }} {{ $currency }}</td>
             <td class="num">
                 @if ($item->discount_percent !== null && (float) $item->discount_percent->getNumericValue() > 0)
                     {{ $fmtRate($item->discount_percent->getNumericValue()) }} %
                 @elseif ($item->discount_amount !== null && ! $item->discount_amount->isZero())
-                    {{ $fmt($item->discount_amount->toFloat()) }} EUR
+                    {{ $fmt($item->discount_amount->toFloat()) }} {{ $currency }}
                 @else
                     —
                 @endif
             </td>
-            <td class="num">{{ $fmt($item->netAmount()->toFloat()) }} EUR</td>
+            <td class="num">{{ $fmt($item->netAmount()->toFloat()) }} {{ $currency }}</td>
         </tr>
     @endforeach
     </tbody>
     <tfoot>
-        <tr><td colspan="5" class="num">{{ __('Zwischensumme (netto)') }}</td><td class="num">{{ $fmt($quote->subtotal?->toFloat() ?? 0.0) }} EUR</td></tr>
-        <tr><td colspan="5" class="num">{{ __('USt.') }}</td><td class="num">{{ $fmt($quote->tax_amount?->toFloat() ?? 0.0) }} EUR</td></tr>
-        <tr><td colspan="5" class="num">{{ __('Gesamt') }}</td><td class="num">{{ $fmt($quote->total?->toFloat() ?? 0.0) }} EUR</td></tr>
+        <tr><td colspan="5" class="num">{{ __('Zwischensumme (netto)') }}</td><td class="num">{{ $fmt($confirmation->subtotal?->toFloat() ?? 0.0) }} {{ $currency }}</td></tr>
+        <tr><td colspan="5" class="num">{{ __('USt.') }}</td><td class="num">{{ $fmt($confirmation->tax_amount?->toFloat() ?? 0.0) }} {{ $currency }}</td></tr>
+        <tr><td colspan="5" class="num">{{ __('Gesamt') }}</td><td class="num">{{ $fmt($confirmation->total?->toFloat() ?? 0.0) }} {{ $currency }}</td></tr>
     </tfoot>
 </table>
 
-@if ($quote->terms)
+@if ($quote?->terms)
     <p class="muted" style="margin-top: 12px; font-size: 10px;">{{ __('Es gelten die Bedingungen des Angebots :nr.', ['nr' => $quote->number]) }}</p>
 @endif
 

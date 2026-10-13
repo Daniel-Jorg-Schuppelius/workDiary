@@ -178,4 +178,40 @@ class ContactNameTransferTest extends TestCase {
         // Das SDK serialisiert die leere Liste als `[[null]]`; es darf nur kein Ansprechpartner mitgehen.
         $fake->assertSent(fn (RequestInterface $r): bool => $r->getMethod() === 'PUT' && ! str_contains((string) $r->getBody(), 'isMainContact'));
     }
+
+    public function test_orgamax_renames_through_the_billing_address(): void {
+        // Befund B8 (Phase 145): orgaMAX liest den Namen nur aus der Rechnungsanschrift, beide Anschriften gehen mit ihrer ID zurück.
+        OrgaMaxConnection::create([
+            'organization_id' => $this->organization->id,
+            'mode' => OrgaMaxConnection::MODE_PRIVATE,
+            'api_key' => 'k',
+            'api_secret' => 's',
+            'ownership_id' => 'own-1',
+            'bearer_token' => 'token',
+            'token_expires_at' => Carbon::now()->addHour(),
+            'status' => OrgaMaxConnectionStatus::Active,
+        ]);
+        $customer = $this->company();
+        \App\Models\Integration\ExternalReference::create(['organization_id' => $this->organization->id, 'plugin_id' => OrgaMaxPlugin::ID, 'external_type' => \App\Models\Integration\ExternalReference::TYPE_CONTACT,
+            'referenceable_type' => $customer->getMorphClass(), 'referenceable_id' => $customer->id, 'external_id' => 'om-7']);
+        $fake = FakePluginHttp::fake([
+            'https://api.orgamax.de/openapi/customer/om-7' => fn () => self::itemResponse(['id' => 'om-7', 'customerDefaultAddress' => [
+                'id' => 'cda-1',
+                'billingAddress' => ['id' => 'adr-1', 'companyName' => 'ACME alt', 'street' => 'Hafenweg 1', 'zipCode' => '20457', 'city' => 'Hamburg'],
+                'deliveryAddress' => ['id' => 'adr-2', 'companyName' => 'ACME alt', 'street' => 'Lagerstraße 5', 'zipCode' => '20457', 'city' => 'Hamburg'],
+            ]]),
+        ]);
+
+        app(OrgaMaxPlugin::class)->pushContact($customer);
+
+        $fake->assertSent(function (RequestInterface $request): bool {
+            $address = self::body($request)['customerDefaultAddress'] ?? [];
+
+            return $request->getMethod() === 'PUT'
+                && ($address['billingAddress']['companyName'] ?? null) === 'ACME GmbH'
+                && ($address['billingAddress']['id'] ?? null) === 'adr-1'
+                && ($address['billingAddress']['street'] ?? null) === 'Hafenweg 1'
+                && ($address['deliveryAddress']['id'] ?? null) === 'adr-2';
+        });
+    }
 }

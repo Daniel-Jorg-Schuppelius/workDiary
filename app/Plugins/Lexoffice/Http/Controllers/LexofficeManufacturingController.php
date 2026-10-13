@@ -30,9 +30,12 @@ class LexofficeManufacturingController extends Controller {
         abort_unless($delivery->manufacturing_order_id === $order->id, 404);
 
         try {
-            $deliveryNotes->push($delivery);
+            $reference = $deliveryNotes->push($delivery);
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
+        }
+        if (! $reference->wasRecentlyCreated) {
+            return back()->with('info', __('lexoffice::manufacturing.order.flash.already_linked', ['id' => $reference->external_id]));
         }
 
         return back()->with('success', __('lexoffice::manufacturing.order.flash.lexoffice_pushed'));
@@ -48,6 +51,9 @@ class LexofficeManufacturingController extends Controller {
             $reference = $orderConfirmations->push($order);
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
+        }
+        if (! $reference->wasRecentlyCreated) {
+            return back()->with('info', __('lexoffice::manufacturing.order.flash.already_linked', ['id' => $reference->external_id]));
         }
 
         return back()->with('success', __('Auftragsbestätigung in Lexoffice angelegt (ID :id).', [
@@ -65,6 +71,9 @@ class LexofficeManufacturingController extends Controller {
             $reference = $quotations->push($order);
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
+        }
+        if (! $reference->wasRecentlyCreated) {
+            return back()->with('info', __('lexoffice::manufacturing.order.flash.already_linked', ['id' => $reference->external_id]));
         }
 
         return back()->with('success', __('Angebot in Lexoffice angelegt (ID :id).', [

@@ -43,7 +43,7 @@ final class PdfGeneratorInventory {
         'app/Services/Contract/SigningCertificatePdfRenderer.php' => ['signing_certificate'],
         // Einkauf/Logistik
         'app/Services/Procurement/PurchaseOrderPdfRenderer.php' => ['purchase_order'],
-        'app/Services/Manufacturing/DeliveryNotePdfRenderer.php' => ['delivery_note'],
+        'app/Services/Billing/DeliveryNotePdfRenderer.php' => ['delivery_note'],
         // Handels-/Proformarechnung für Sendungen außerhalb der EU (MVP-1007).
         'app/Services/Shipping/CustomsInvoicePdfRenderer.php' => ['delivery_note'],
         // Kommissionierliste (Feature 048, MVP-706): interner Arbeitsbeleg.

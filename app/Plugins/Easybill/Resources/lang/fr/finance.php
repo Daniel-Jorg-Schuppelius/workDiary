@@ -15,7 +15,13 @@ return [
         'unit_piece' => 'pcs',
     ],
     'error' => [
+        'easybill_no_customer' => 'Le document n\'a pas de client et ne peut pas être transmis à easybill.',
+        'easybill_cancel_not_transferred' => 'La facture :number n\'est pas dans easybill ; l\'annulation ne peut pas y être créée. Réglez la plage « Annulation » sur WorkDiary pour la numéroter localement.',
         'easybill_not_configured' => 'easybill n\'est pas configuré pour cette organisation (clé API manquante).',
         'easybill_outcome_unclear' => 'Résultat du transfert easybill incertain (délai dépassé après l\'envoi) — ne pas réessayer à l\'aveugle ; la prochaine exécution réconcilie via le marqueur source.',
+    ],
+    'relations' => [
+        'draft' => 'Brouillon',
+        'done' => 'finalisé',
     ],
 ];

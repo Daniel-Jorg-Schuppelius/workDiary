@@ -1,7 +1,7 @@
 ---
 title: "Invoicing transfer"
 topic: finance.transfers
-version: 3
+version: 4
 keywords:
     - Lexoffice transfer
     - send times to Lexoffice
@@ -14,6 +14,8 @@ keywords:
     - invoicing export
     - leading invoicing system
     - transfer line items
+    - related documents
+    - document chain
 audience: []
 modules:
     - module.finance
@@ -70,3 +72,14 @@ Permissions: time and material transfers are protected separately
 billable material**). People with **View transfer receipts** see the
 list; cancelling and correcting additionally require **Manage finance
 configuration**.
+
+## Related documents
+
+At the bottom of the page, **Related documents** lists every document
+connected to this one: the quote and its versions, invoices, down payments and
+the final invoice, credit notes and cancellations, delivery notes,
+manufacturing orders and handovers. If an accounting program has taken over a
+document, its counterpart appears there with the program's number. Links the
+program reports itself, such as a down payment created in Lexoffice, appear as
+well. The **Relation** column says what the document is to this one; "via …"
+names the document through which the connection exists.

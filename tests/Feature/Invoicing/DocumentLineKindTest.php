@@ -160,7 +160,8 @@ class DocumentLineKindTest extends TestCase {
     public function test_lexoffice_gets_text_lines_for_structure(): void {
         $payload = app(LexofficeInvoiceMapper::class)->toPayload($this->structuredInvoice(), null);
 
-        $this->assertSame(['text', 'service', 'service', 'text', 'text', 'service'], array_column($payload['lineItems'], 'type'));
+        // Ohne Lexoffice-Artikel ist eine Position `custom`; `service` verlangt eine Artikel-ID (Phase 145, B9).
+        $this->assertSame(['text', 'custom', 'custom', 'text', 'text', 'custom'], array_column($payload['lineItems'], 'type'));
     }
 
     public function test_title_can_be_added_without_quantity_and_price(): void {

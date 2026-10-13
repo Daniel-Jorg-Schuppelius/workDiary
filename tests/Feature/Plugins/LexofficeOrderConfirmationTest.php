@@ -123,6 +123,22 @@ final class LexofficeOrderConfirmationTest extends TestCase {
         });
     }
 
+    public function test_second_push_returns_the_linked_document_without_creating_another(): void {
+        $this->seedContactReference();
+        $order = $this->makeOrder();
+        $fake = FakePluginHttp::fake([
+            'https://api.lexware.io/v1/quotations*' => FakePluginHttp::response(['id' => 'lex-q-1'], 201),
+        ]);
+
+        $first = app(LexofficeQuotationService::class)->push($order);
+        $second = app(LexofficeQuotationService::class)->push($order->fresh());
+
+        $this->assertTrue($first->wasRecentlyCreated);
+        $this->assertFalse($second->wasRecentlyCreated);
+        $this->assertSame($first->id, $second->id);
+        $this->assertSame(1, collect($fake->recorded())->filter(fn (array $entry): bool => $entry['request']->getMethod() === 'POST')->count());
+    }
+
     public function test_push_without_customer_throws(): void {
         $article = Article::factory()->create(['organization_id' => $this->organization->id, 'base_unit' => 'Stk']);
         $order = ManufacturingOrder::factory()->create([

@@ -244,6 +244,7 @@ return [
         'medium_type' => ['transponder' => 'Transponder', 'card' => 'Karte', 'code' => 'Code'],
     ],
     'sales' => [
+        'order_confirmation_status' => ['draft' => 'Entwurf', 'confirmed' => 'Bestätigt', 'cancelled' => 'Storniert'],
         'lead_status' => ['new' => 'Neu', 'contacted' => 'Kontaktiert', 'qualified' => 'Qualifiziert', 'converted' => 'Konvertiert', 'discarded' => 'Verworfen'],
         'lead_source' => ['referral' => 'Empfehlung', 'web' => 'Web', 'trade_fair' => 'Messe', 'phone' => 'Telefon', 'booking' => 'Terminbuchung', 'other' => 'Sonstige'],
     ],
@@ -1230,6 +1231,19 @@ return [
     ],
     // Kunden-Sonderkonditionen & Abrechnungskonto (Feature 098).
     'billing' => [
+        'delivery_note_status' => ['draft' => 'Entwurf', 'delivered' => 'Ausgeliefert', 'cancelled' => 'Storniert'],
+        // Belegverbund (Phase 145, MVP-1157)
+        'document_relation_kind' => [
+            'source' => 'Vorgänger',
+            'follow_up' => 'Folgebeleg',
+            'version' => 'andere Version',
+            'corrects' => 'Original',
+            'corrected_by' => 'Korrektur',
+            'settles' => 'angerechneter Abschlag',
+            'settled_by' => 'Schlussrechnung',
+            'counterpart' => 'Gegenstück',
+            'related' => 'Bezug im Programm',
+        ],
         // Belegfluss (Feature 105, MVP-542)
         'direction' => [
             'outgoing' => 'Ausgang',
@@ -2187,7 +2201,7 @@ return [
         'module_kind' => ['platform' => 'Plattformdienst', 'core' => 'Kernmodul', 'feature' => 'Fachmodul'],
     ],
     'numbering' => [
-        'number_scope' => ['service_ticket' => 'Service-Ticket', 'problem_report' => 'Fehlermeldung', 'asset' => 'Asset', 'article' => 'Artikel', 'manufacturing_order' => 'Fertigungsauftrag', 'serial' => 'Seriennummer', 'purchase_order' => 'Bestellung', 'customer' => 'Kunde', 'supplier' => 'Lieferant', 'invoice' => 'Rechnung', 'credit_note' => 'Gutschrift', 'cancellation' => 'Stornorechnung', 'quote' => 'Angebot', 'proforma' => 'Pro-forma-Rechnung', 'claim' => 'Reklamation', 'rma' => 'Rücksendung (RMA)', 'rental' => 'Verleihakte', 'asset_finance' => 'Leasingakte', 'contract' => 'Vertrag', 'privacy_incident' => 'Datenschutzvorfall', 'data_subject_request' => 'Betroffenenanfrage', 'disposal' => 'Entsorgungsakte', 'certificate' => 'Zertifikat', 'damage' => 'Schadensfall', 'recall' => 'Rückrufaktion'],
+        'number_scope' => ['service_ticket' => 'Service-Ticket', 'problem_report' => 'Fehlermeldung', 'asset' => 'Asset', 'article' => 'Artikel', 'manufacturing_order' => 'Fertigungsauftrag', 'serial' => 'Seriennummer', 'purchase_order' => 'Bestellung', 'customer' => 'Kunde', 'supplier' => 'Lieferant', 'invoice' => 'Rechnung', 'credit_note' => 'Gutschrift', 'cancellation' => 'Stornorechnung', 'quote' => 'Angebot', 'order_confirmation' => 'Auftragsbestätigung', 'delivery_note' => 'Lieferschein', 'proforma' => 'Pro-forma-Rechnung', 'claim' => 'Reklamation', 'rma' => 'Rücksendung (RMA)', 'rental' => 'Verleihakte', 'asset_finance' => 'Leasingakte', 'contract' => 'Vertrag', 'privacy_incident' => 'Datenschutzvorfall', 'data_subject_request' => 'Betroffenenanfrage', 'disposal' => 'Entsorgungsakte', 'certificate' => 'Zertifikat', 'damage' => 'Schadensfall', 'recall' => 'Rückrufaktion'],
     ],
     'patrol' => [
         'patrol_run_status' => ['running' => 'Laufend', 'completed' => 'Abgeschlossen', 'aborted' => 'Abgebrochen'],

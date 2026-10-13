@@ -244,6 +244,7 @@ return [
         'medium_type' => ['transponder' => 'Transponder', 'card' => 'Card', 'code' => 'Code'],
     ],
     'sales' => [
+        'order_confirmation_status' => ['draft' => 'Draft', 'confirmed' => 'Confirmed', 'cancelled' => 'Cancelled'],
         'lead_status' => ['new' => 'New', 'contacted' => 'Contacted', 'qualified' => 'Qualified', 'converted' => 'Converted', 'discarded' => 'Discarded'],
         'lead_source' => ['referral' => 'Referral', 'web' => 'Web', 'trade_fair' => 'Trade fair', 'phone' => 'Phone', 'booking' => 'Appointment booking', 'other' => 'Other'],
     ],
@@ -1227,6 +1228,19 @@ return [
     ],
     // Kunden-Sonderkonditionen & Abrechnungskonto (Feature 098).
     'billing' => [
+        'delivery_note_status' => ['draft' => 'Draft', 'delivered' => 'Delivered', 'cancelled' => 'Cancelled'],
+        // Belegverbund (Phase 145, MVP-1157)
+        'document_relation_kind' => [
+            'source' => 'Predecessor',
+            'follow_up' => 'Follow-up document',
+            'version' => 'other version',
+            'corrects' => 'Original',
+            'corrected_by' => 'Correction',
+            'settles' => 'deducted down payment',
+            'settled_by' => 'Final invoice',
+            'counterpart' => 'Counterpart',
+            'related' => 'Link in the program',
+        ],
         // Belegfluss (Feature 105, MVP-542)
         'direction' => [
             'outgoing' => 'Outgoing',
@@ -2182,7 +2196,7 @@ return [
         'module_kind' => ['platform' => 'Platform service', 'core' => 'Core module', 'feature' => 'Feature module'],
     ],
     'numbering' => [
-        'number_scope' => ['service_ticket' => 'Service ticket', 'problem_report' => 'Error message', 'asset' => 'Asset', 'article' => 'Article', 'manufacturing_order' => 'Manufacturing order', 'serial' => 'Serial number', 'purchase_order' => 'Order', 'customer' => 'Customer', 'supplier' => 'Supplier', 'invoice' => 'Invoice', 'credit_note' => 'Credit note', 'cancellation' => 'Cancellation invoice', 'quote' => 'Quotation', 'proforma' => 'Pro forma invoice', 'claim' => 'Complaint', 'rma' => 'Return shipment (RMA)', 'rental' => 'Rental file', 'asset_finance' => 'Leasing file', 'contract' => 'Contract', 'privacy_incident' => 'Data protection incident', 'data_subject_request' => 'Data subject request', 'disposal' => 'Disposal case', 'certificate' => 'Certificate', 'damage' => 'Damage case', 'recall' => 'Recall'],
+        'number_scope' => ['service_ticket' => 'Service ticket', 'problem_report' => 'Error message', 'asset' => 'Asset', 'article' => 'Article', 'manufacturing_order' => 'Manufacturing order', 'serial' => 'Serial number', 'purchase_order' => 'Order', 'customer' => 'Customer', 'supplier' => 'Supplier', 'invoice' => 'Invoice', 'credit_note' => 'Credit note', 'cancellation' => 'Cancellation invoice', 'quote' => 'Quotation', 'order_confirmation' => 'Order confirmation', 'delivery_note' => 'Delivery note', 'proforma' => 'Pro forma invoice', 'claim' => 'Complaint', 'rma' => 'Return shipment (RMA)', 'rental' => 'Rental file', 'asset_finance' => 'Leasing file', 'contract' => 'Contract', 'privacy_incident' => 'Data protection incident', 'data_subject_request' => 'Data subject request', 'disposal' => 'Disposal case', 'certificate' => 'Certificate', 'damage' => 'Damage case', 'recall' => 'Recall'],
     ],
     'patrol' => [
         'patrol_run_status' => ['running' => 'Active', 'completed' => 'Completed', 'aborted' => 'Cancelled'],

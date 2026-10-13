@@ -1,7 +1,7 @@
 ---
 title: "Flujo de documentos"
 topic: billing.feed
-version: 1
+version: 2
 keywords:
     - facturas
     - presupuestos
@@ -15,6 +15,7 @@ keywords:
     - factura electrónica
     - listado de documentos
     - ingresos
+    - filtro de proyecto
 audience: []
 modules:
     - module.vertrieb
@@ -76,3 +77,9 @@ pendiente.
 **Visibilidad:** el flujo solo muestra lo que sus permisos en cada área ya
 permiten. Si le falta el permiso de presupuestos, por ejemplo, faltan la
 pestaña y sus filas.
+
+## Filtrar por proyecto
+
+El filtro **Proyecto** muestra solo los documentos de un proyecto. Los
+documentos de programas de contabilidad no tienen proyecto y quedan fuera con
+este filtro.

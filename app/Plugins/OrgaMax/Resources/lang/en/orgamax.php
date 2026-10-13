@@ -106,4 +106,7 @@ return [
     'error.outcome_unclear' => 'Outcome unclear (timeout after sending) — no blind retry. The next run reconciles via the source marker.',
     'error.token_exchange_failed' => 'Token exchange failed (HTTP :status) — check API key/secret.',
     'order.internal_note' => 'WorkDiary hand-over :channel :from–:to',
+    'relations' => [
+        'order' => 'Order',
+    ],
 ];

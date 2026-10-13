@@ -192,23 +192,25 @@ class DocumentMailTest extends TestCase {
     }
 
     public function test_order_confirmation_mail_requires_acceptance(): void {
-        $quote = $this->approvedQuote();
+        // Seit Phase 145 (MVP-1162) ein eigener Beleg: Versand erst nach dem Bestätigen.
+        $confirmations = app(\App\Services\Sales\OrderConfirmationService::class);
+        $confirmation = $confirmations->fromQuote($this->acceptedQuote(), $this->admin);
 
-        $this->actingAs($this->admin)->post(route('quotes.order-confirmation.mail', $quote), [
+        $this->actingAs($this->admin)->post(route('order-confirmations.mail', $confirmation), [
             'to' => ['kunde@example.test'],
         ])->assertStatus(422);
 
-        $quote = $this->acceptedQuote();
-        $this->actingAs($this->admin)->post(route('quotes.order-confirmation.mail', $quote), [
+        $confirmation = $confirmations->confirm($confirmation, $this->admin);
+        $this->actingAs($this->admin)->post(route('order-confirmations.mail', $confirmation), [
             'to' => ['kunde@example.test'],
-        ])->assertRedirect(route('quotes.show', $quote));
+        ])->assertRedirect(route('order-confirmations.show', $confirmation));
 
-        Mail::assertQueued(DocumentMail::class, function (DocumentMail $mail) use ($quote): bool {
+        Mail::assertQueued(DocumentMail::class, function (DocumentMail $mail) use ($confirmation): bool {
             $names = array_map(fn ($attachment) => $attachment->as, $mail->attachments());
 
-            return $names === [sprintf('auftragsbestaetigung-%s.pdf', $quote->number)];
+            return $names === [sprintf('auftragsbestaetigung-%s.pdf', $confirmation->number)];
         });
-        $this->assertSame(1, DocumentDispatch::query()->forDocument(RenderDocumentKind::OrderConfirmation, (int) $quote->id)->count());
+        $this->assertSame(1, DocumentDispatch::query()->forDocument(RenderDocumentKind::OrderConfirmation, (int) $confirmation->id)->count());
         $this->assertTrue(AuditLog::query()->where('event', 'order_confirmation.mailed')->exists());
     }
 
@@ -236,17 +238,18 @@ class DocumentMailTest extends TestCase {
 
     public function test_delivery_note_mail_sends_and_logs(): void {
         $delivery = $this->stockDelivery();
+        $note = $delivery->deliveryNoteItem()->firstOrFail()->deliveryNote()->firstOrFail();
 
-        $this->actingAs($this->admin)->post(route('manufacturing-orders.deliveries.mail', [$delivery->order, $delivery]), [
+        $this->actingAs($this->admin)->post(route('delivery-notes.mail', $note), [
             'to' => ['kunde@example.test'],
-        ])->assertRedirect();
+        ])->assertRedirect(route('delivery-notes.show', $note));
 
-        Mail::assertQueued(DocumentMail::class, function (DocumentMail $mail): bool {
+        Mail::assertQueued(DocumentMail::class, function (DocumentMail $mail) use ($note): bool {
             $names = array_map(fn ($attachment) => $attachment->as, $mail->attachments());
 
-            return count($names) === 1 && str_starts_with($names[0], 'LS-') && str_ends_with($names[0], '.pdf');
+            return $names === [$note->number . '.pdf'] && str_starts_with($note->number, 'LS-');
         });
-        $this->assertSame(1, DocumentDispatch::query()->forDocument(RenderDocumentKind::DeliveryNote, (int) $delivery->id)->count());
+        $this->assertSame(1, DocumentDispatch::query()->forDocument(RenderDocumentKind::DeliveryNote, (int) $note->id)->count());
         $this->actingAs($this->admin)->get(route('manufacturing-orders.show', $delivery->order))
             ->assertOk()
             ->assertSee(__('document.dispatch.history'))

@@ -53,6 +53,8 @@ final class SalesManifest extends Manifest {
             'commission_rules',
             'commission_settlement_runs',
             'leads',
+            'order_confirmation_items',
+            'order_confirmations',
             'quote_items',
             'quotes',
             'sales_discount_group_overrides',
@@ -80,6 +82,7 @@ final class SalesManifest extends Manifest {
             'api.legacy.invoices.*',
             'invoice-schedules.*',
             'quotes.*',
+            'order-confirmations.*',
             'lexoffice.*',
             'events.*',
             'event-categories.*',
@@ -103,6 +106,9 @@ final class SalesManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Billing\Contracts\DocumentRelationSource::class => [
+                \App\Services\Sales\Relations\QuoteRelationSource::class,
+            ],
             \App\Services\Mcp\Contracts\McpTool::class => [
                 \App\Services\Sales\Mcp\QuotesTool::class,
                 \App\Services\Sales\Mcp\CreateQuoteDraftTool::class,

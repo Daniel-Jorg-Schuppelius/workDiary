@@ -99,9 +99,9 @@ class LexofficeRetainerPublisher implements RetainerPublisher {
                 $serviceDate,
             );
 
-            // Push nach Lexoffice (finalize=true → Lexoffice-Nummer + status=issued);
+            // Push nach Lexoffice (festgeschrieben → Lexoffice-Nummer + status=issued);
             // schlägt der Push fehl, rollt die Transaktion den Draft zurück.
-            $this->lexoffice->publish($invoice, $this->resolveContactExternalId($customer), finalize: true);
+            $this->lexoffice->publish($invoice, $this->resolveContactExternalId($customer));
 
             $locked->update(['retainer_invoice_id' => $invoice->id]);
 
@@ -146,7 +146,7 @@ class LexofficeRetainerPublisher implements RetainerPublisher {
                 Invoice::TYPE_RETAINER,
                 $now,
             );
-            $this->lexoffice->publish($invoice, $this->resolveContactExternalId($customer), finalize: true);
+            $this->lexoffice->publish($invoice, $this->resolveContactExternalId($customer));
 
             return $invoice->refresh();
         });

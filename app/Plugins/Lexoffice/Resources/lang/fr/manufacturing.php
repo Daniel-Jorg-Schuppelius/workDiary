@@ -15,6 +15,7 @@ return [
         ],
         'flash' => [
             'lexoffice_pushed' => 'Bon de livraison envoyé à Lexoffice.',
+            'already_linked' => 'Ce document existe déjà dans Lexoffice (ID :id) ; aucun second n\'a été créé.',
         ],
     ],
 ];

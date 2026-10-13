@@ -256,4 +256,8 @@ return [
         'title' => 'Reglas de facturación',
         'hint' => 'Para cada tipo de actividad puede definir qué artículo se utiliza como servicio en la transferencia y la exportación de facturas — del maestro de artículos o de un programa de contabilidad conectado. Sin tipo de actividad = regla por defecto para todas las entradas. Los subproyectos heredan las reglas del proyecto principal, pero pueden sobrescribirlas.',
     ],
+    // Phase 145 (MVP-1168): Abschlag und Schluss im Programm.
+    'down_payment' => [
+        'program_numbering' => 'Cree las facturas de anticipo y finales en :program mientras :program asigne los números de factura. WorkDiary las muestra en el flujo de documentos.',
+    ],
 ];

@@ -232,6 +232,8 @@ class AppServiceProvider extends ServiceProvider {
             $registry = new \App\Services\Billing\Feed\DocumentFeedSourceRegistry;
             $registry->register(new \App\Services\Billing\Feed\Sources\InvoiceSource($registry));
             $registry->register(new \App\Services\Billing\Feed\Sources\QuoteSource);
+            $registry->register(new \App\Services\Billing\Feed\Sources\OrderConfirmationSource);
+            $registry->register(new \App\Services\Billing\Feed\Sources\DeliveryNoteSource);
             $registry->register(new \App\Services\Billing\Feed\Sources\AccountingVoucherSource);
             $registry->register(new \App\Services\Billing\Feed\Sources\IncomingEInvoiceSource);
             $registry->register(new \App\Services\Billing\Feed\Sources\ExpenseSource($registry));
