@@ -37,21 +37,7 @@
     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         @foreach ($_focusProduct as $focus)
             @php $active = $focus['key'] === $navFocusActive; @endphp
-            <form method="POST" action="{{ route('me.focus.switch', $focus['key']) }}" class="m-0">
-                @csrf
-                <button type="submit"
-                        class="group relative flex h-full w-full flex-col gap-3 rounded-box border p-4 text-left transition hover:-translate-y-0.5 hover:shadow-md
-                               {{ $active ? 'border-primary bg-primary/10 ring-1 ring-primary' : 'border-base-300 bg-base-100 hover:border-primary/40 hover:bg-base-200' }}">
-                    @if ($active)
-                        <x-status-badge tone="primary" class="absolute right-3 top-3">{{ __('scope.focus.active') }}</x-status-badge>
-                    @endif
-                    <span class="flex size-12 items-center justify-center rounded-field {{ $active ? 'bg-primary text-primary-content' : 'bg-base-200 text-primary' }}">
-                        <x-icon :name="$focus['icon']" class="text-[1.6rem]" />
-                    </span>
-                    <span class="font-semibold leading-tight">{{ $focus['label'] }}</span>
-                    <span class="text-xs leading-snug text-base-content/65">{{ $focus['description'] }}</span>
-                </button>
-            </form>
+            @include('partials._focus-tile', ['focus' => $focus, 'active' => $active])
         @endforeach
     </div>
 
@@ -68,21 +54,7 @@
         <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             @foreach ($_focusPersonal as $focus)
                 @php $active = $focus['key'] === $navFocusActive; @endphp
-                <form method="POST" action="{{ route('me.focus.switch', $focus['key']) }}" class="m-0">
-                    @csrf
-                    <button type="submit"
-                            class="group relative flex h-full w-full flex-col gap-3 rounded-box border p-4 text-left transition hover:-translate-y-0.5 hover:shadow-md
-                                   {{ $active ? 'border-primary bg-primary/10 ring-1 ring-primary' : 'border-base-300 bg-base-100 hover:border-primary/40 hover:bg-base-200' }}">
-                        @if ($active)
-                            <x-status-badge tone="primary" class="absolute right-3 top-3">{{ __('scope.focus.active') }}</x-status-badge>
-                        @endif
-                        <span class="flex size-12 items-center justify-center rounded-field {{ $active ? 'bg-primary text-primary-content' : 'bg-base-200 text-primary' }}">
-                            <x-icon :name="$focus['icon']" class="text-[1.6rem]" />
-                        </span>
-                        <span class="font-semibold leading-tight">{{ $focus['label'] }}</span>
-                        <span class="text-xs leading-snug text-base-content/65">{{ $focus['description'] }}</span>
-                    </button>
-                </form>
+                @include('partials._focus-tile', ['focus' => $focus, 'active' => $active])
             @endforeach
         </div>
     @endif
