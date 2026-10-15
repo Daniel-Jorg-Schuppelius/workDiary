@@ -1,7 +1,7 @@
 ---
 title: "Saisie des temps basée sur la localisation"
 topic: location.overview
-version: 1
+version: 2
 keywords:
     - pointage GPS
     - géorepérage
@@ -14,6 +14,8 @@ keywords:
     - historique des positions Google
     - propositions de temps
     - visites clients
+    - propositions de trajet
+    - carnet de route depuis la trace GPS
 audience: []
 modules:
     - module.standorterfassung
@@ -51,6 +53,17 @@ proposition crée une véritable saisie de temps ; les propositions
 inadaptées peuvent être rejetées. Entre le signal de localisation et
 l'écriture se trouve ainsi toujours une décision consciente de la
 personne concernée elle-même.
+
+**Trajets issus de la trace :** S'il y a un déplacement entre la sortie
+d'un site et l'entrée dans le suivant, il devient une proposition de
+trajet avec début, fin et distance. La distance provient du rapprochement
+de la trace avec le réseau routier ; sans service de routage, c'est la
+longueur de la trace qui compte et la proposition est signalée en
+conséquence. Ici non plus, rien n'est enregistré automatiquement : ce
+n'est qu'avec le véhicule, le type de trajet et le motif que la
+proposition est reprise dans le carnet de bord — ou rejetée. Les règles
+du carnet de bord, par exemple les relevés kilométriques obligatoires en
+mode carnet, s'appliquent sans changement.
 
 **Protection des données :** Seuls les événements d'entrée et de sortie
 aux sites clients enregistrés sont exploités — il n'y a aucune

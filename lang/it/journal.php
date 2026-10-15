@@ -116,6 +116,18 @@ return [
         ],
     ],
     'diary' => [
+        'tour' => [
+            'proposal_requested' => 'Proposta di giro richiesta',
+            'proposal_adopted' => 'Proposta di giro adottata',
+            'proposal_rejected' => 'Proposta di giro rifiutata',
+            'started' => 'Giro avviato',
+            'completed' => 'Giro completato',
+            'cancelled' => 'Giro annullato',
+            'trips_created' => 'Viaggi ripresi nel libro di bordo',
+            'stop_arrived' => 'Arrivato alla fermata',
+            'stop_departed' => 'Fermata lasciata',
+            'replanned' => 'Resto del giro ripianificato',
+        ],
         'order' => [
             'created' => 'Ordine creato',
             'accept' => 'Ordine accettato',

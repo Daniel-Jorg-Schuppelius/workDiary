@@ -23,11 +23,28 @@ class GeofenceMatcher {
      *
      * @param iterable<CustomerGeofence> $geofences
      */
-    public function match(float $lat, float $lng, iterable $geofences): ?CustomerGeofence {
+    /** Meter je Breitengrad; Längengrade schrumpfen mit dem Kosinus der Breite. */
+    private const METERS_PER_DEGREE = 111_320.0;
+
+    /**
+     * @param  iterable<int, CustomerGeofence>  $geofences
+     * @param  int|null  $accuracyM  Genauigkeit des Punkts: ein Punkt zählt erst als
+     *                               drinnen, wenn Abstand plus Genauigkeit im Radius
+     *                               liegen (MVP-1186) — Punkte am Rand flattern nicht.
+     */
+    public function match(float $lat, float $lng, iterable $geofences, ?int $accuracyM = null): ?CustomerGeofence {
         $best = null;
         $bestDistance = INF;
+        $slack = max(0, (int) $accuracyM);
+        $cosLat = max(0.01, cos(deg2rad($lat)));
 
         foreach ($geofences as $geofence) {
+            $reach = (int) $geofence->radius_m + $slack;
+            // Rechteck-Vorfilter vor der Haversine: spart bei vielen Zonen den Großteil der Rechnung.
+            if (abs($lat - (float) $geofence->center_lat) * self::METERS_PER_DEGREE > $reach
+                || abs($lng - (float) $geofence->center_lng) * self::METERS_PER_DEGREE * $cosLat > $reach) {
+                continue;
+            }
             $distance = GeoHelper::haversineMeters(
                 $lat,
                 $lng,
@@ -35,12 +52,19 @@ class GeofenceMatcher {
                 (float) $geofence->center_lng,
             );
 
-            if ($distance <= $geofence->radius_m && $distance < $bestDistance) {
+            if ($distance + $slack <= $geofence->radius_m && $distance < $bestDistance) {
                 $best = $geofence;
                 $bestDistance = $distance;
             }
         }
 
         return $best;
+    }
+
+    /** Liegt der Punkt (mit seiner Genauigkeit) noch im Band einer Zone, die er schon betreten hat? */
+    public function stillInside(float $lat, float $lng, CustomerGeofence $geofence, ?int $accuracyM = null): bool {
+        $distance = GeoHelper::haversineMeters($lat, $lng, (float) $geofence->center_lat, (float) $geofence->center_lng);
+
+        return $distance - max(0, (int) $accuracyM) <= $geofence->radius_m;
     }
 }

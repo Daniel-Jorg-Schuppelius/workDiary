@@ -309,6 +309,9 @@ return [
     'routing.allow_private_network' => ['type' => 'boolean', 'scopes' => ['organization']],
     'routing.osrm.profile' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'max:32'],
     'routing.osrm.timeout' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:1|max:120'],
+    // VROOM (Tourvorschlag, MVP-1178): leer = nicht konfiguriert, die Heuristik rechnet.
+    'routing.vroom.base_url' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'url|max:255'],
+    'routing.vroom.timeout' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:1|max:600'],
     // 'url' wie bei nominatim/osrm: der Wert landet als Origin in der
     // CSP jeder Antwort der Organisation (Sicherheitsscan 2026-08-23, S-05).
     // Die Platzhalter {z}/{x}/{y} im Pfad stören die Regel nicht.

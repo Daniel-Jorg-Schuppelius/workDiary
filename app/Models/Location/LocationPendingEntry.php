@@ -13,6 +13,7 @@ namespace App\Models\Location;
 use App\Enums\Location\LocationPendingEntryStatus;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
@@ -30,6 +31,7 @@ use Illuminate\Support\Carbon;
  * @property int $location_visit_id
  * @property int|null $customer_id
  * @property int|null $project_id
+ * @property int|null $diary_entry_id
  * @property Carbon $suggested_date
  * @property Carbon $started_at
  * @property Carbon $ended_at
@@ -50,6 +52,7 @@ class LocationPendingEntry extends Model {
         'location_visit_id',
         'customer_id',
         'project_id',
+        'diary_entry_id',
         'suggested_date',
         'started_at',
         'ended_at',
@@ -88,6 +91,11 @@ class LocationPendingEntry extends Model {
     /** @return BelongsTo<Project, $this> */
     public function project(): BelongsTo {
         return $this->belongsTo(Project::class);
+    }
+
+    /** @return BelongsTo<DiaryEntry, $this> */
+    public function diaryEntry(): BelongsTo {
+        return $this->belongsTo(DiaryEntry::class);
     }
 
     /** @return BelongsTo<TimeEntry, $this> */

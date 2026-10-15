@@ -19,6 +19,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\{InteractsWithQueue, SerializesModels};
+use Illuminate\Queue\Middleware\WithoutOverlapping;
 
 /**
  * Verarbeitet die noch offene Standort-Spur eines Nutzers: bildet Aufenthalte
@@ -33,6 +34,17 @@ class ProcessLocationBatch implements ShouldQueue {
     use SerializesModels;
 
     public function __construct(public readonly int $userId) {}
+
+    /**
+     * Je Nutzer läuft genau ein Lauf zur Zeit (MVP-1186): zwei gleichzeitige
+     * Jobs lasen dieselben unverarbeiteten Punkte und bildeten Besuche doppelt.
+     * Ein Folgeaufruf wartet, statt verworfen zu werden.
+     *
+     * @return list<object>
+     */
+    public function middleware(): array {
+        return [(new WithoutOverlapping('location-batch:' . $this->userId))->releaseAfter(30)->expireAfter(600)];
+    }
 
     public function handle(VisitBuilder $builder, VisitMaterializer $materializer): void {
         $user = User::query()->find($this->userId);

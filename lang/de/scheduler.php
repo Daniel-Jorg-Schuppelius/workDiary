@@ -168,7 +168,7 @@ return [
             'sync_contacts' => 'Lexoffice-Kontakte synchronisieren',
             'sync_vouchers' => 'Lexoffice-Belege synchronisieren',
         ],
-        'location' => ['purge_points' => 'Standort-Rohpunkte bereinigen'],
+        'location' => ['purge_points' => 'Standort-Rohpunkte bereinigen', 'close_stale_visits' => 'Verwaiste Standort-Besuche schließen'],
         'mail' => ['poll' => 'Mail-Eingang abrufen'],
         'msgraph' => [
             'calendar-import' => 'Zwei-Wege-Kalender-Rückimport',

@@ -23,4 +23,8 @@ return [
     // verarbeitete location_points gelöscht (location:purge-points); die
     // abgeleiteten Besuche und Buchungen bleiben erhalten. 0 = nie löschen.
     'retention_days' => (int) env('LOCATION_RETENTION_DAYS', 90),
+
+    // Offene Besuche ohne weiteren Punkt (Gerät aus, Akku leer) werden nach so
+    // vielen Stunden geschlossen und wie gewohnt vorgeschlagen (MVP-1186).
+    'stale_visit_hours' => (int) env('LOCATION_STALE_VISIT_HOURS', 6),
 ];

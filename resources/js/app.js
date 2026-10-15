@@ -1578,4 +1578,63 @@ document.addEventListener("click", (event) => {
         },
         true,
     );
+
+    // Adresse aus Teilfeldern → versteckte Koordinaten (MVP-1170): Felder mit
+    // data-geocode-part="<gruppe>", Ziele data-geocode-lat/-lng="<gruppe>",
+    // Anzeige data-geocode-status="<gruppe>" (Texte in data-hit/data-miss).
+    /**
+     * @param {ParentNode} root
+     * @param {string} group
+     */
+    const geocodeGroup = async (root, group) => {
+        const lat = root.querySelector(`[data-geocode-lat="${group}"]`);
+        const lng = root.querySelector(`[data-geocode-lng="${group}"]`);
+        if (!(lat instanceof HTMLInputElement) || !(lng instanceof HTMLInputElement)) return;
+        const status = root.querySelector(`[data-geocode-status="${group}"]`);
+        const url = document
+            .querySelector('meta[name="geocode-url"]')
+            ?.getAttribute("content");
+        const query = Array.from(root.querySelectorAll(`[data-geocode-part="${group}"]`))
+            .map((el) => (el instanceof HTMLInputElement || el instanceof HTMLSelectElement ? el.value.trim() : ""))
+            .filter((value) => value !== "")
+            .join(", ");
+        if (!url) return;
+        if (query.length < 3) {
+            lat.value = "";
+            lng.value = "";
+            return;
+        }
+        /** @param {string} key */
+        const show = (key) => {
+            if (status instanceof HTMLElement) status.textContent = status.dataset[key] || "";
+        };
+        try {
+            const res = /** @type {import("./lib/http.js").JsonResult<{ lat: number, lng: number }>} */ (
+                await postJson(url, { query })
+            );
+            if (!res.ok || !res.data) {
+                lat.value = "";
+                lng.value = "";
+                show("miss");
+                return;
+            }
+            lat.value = String(res.data.lat);
+            lng.value = String(res.data.lng);
+            show("hit");
+        } catch (_error) {
+            show("miss");
+        }
+    };
+
+    document.addEventListener(
+        "change",
+        (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLInputElement || target instanceof HTMLSelectElement)) return;
+            const group = target.dataset.geocodePart;
+            if (!group) return;
+            geocodeGroup(target.closest("form") ?? document, group);
+        },
+        true,
+    );
 })();

@@ -13,13 +13,11 @@ declare(strict_types=1);
 namespace App\Services\Dispatch;
 
 use App\Enums\Diary\{DispatchStatus, Mode};
-use App\Models\Calendar\AvailabilityWindow;
 use App\Models\Diary\{DiaryEntry, DiaryEntryEvent, Tour};
 use App\Models\Platform\User;
-use App\Models\Schedule\ScheduledShift;
 use App\Services\Calendar\Contracts\FreeSlotSource;
 use App\Services\Routing\{Coordinate, OsrmRouter};
-use App\Services\Schedule\QualificationGate;
+use App\Services\Schedule\{QualificationGate, WorkWindowResolver};
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Geo\GeoHelper;
@@ -38,16 +36,13 @@ use CommonToolkit\Helper\Geo\GeoHelper;
  * Auftragsverlauf (DiaryEntryEvent) nachvollziehbar bleibt.
  */
 class GapFillSuggester implements FreeSlotSource {
-    private const DEFAULT_DAY_START = '08:00';
-
-    private const DEFAULT_DAY_END = '17:00';
-
     private const AVERAGE_SPEED_KMH = 40.0;
 
     public function __construct(
         private readonly QualificationGate $qualifications,
         private readonly DispatchConflictChecker $conflicts,
         private readonly OsrmRouter $router,
+        private readonly WorkWindowResolver $workWindows,
     ) {}
 
     /**
@@ -167,34 +162,7 @@ class GapFillSuggester implements FreeSlotSource {
      * @return list<array{start: string, end: string, net_minutes: int}>
      */
     public function freeSlots(User $user, CarbonImmutable $date): array {
-        $windows = [];
-        $shifts = ScheduledShift::query()
-            ->forUser((int) $user->id)
-            ->forDate($date)
-            ->get();
-        foreach ($shifts as $shift) {
-            $start = $shift->resolvedStartTime();
-            $end = $shift->resolvedEndTime();
-            if ($start !== null && $end !== null) {
-                $windows[] = [substr($start, 0, 5), substr($end, 0, 5)];
-            }
-        }
-        if ($windows === []) {
-            $availability = AvailabilityWindow::query()
-                ->forUser((int) $user->id)
-                ->forDate($date)
-                ->get()
-                ->filter(fn(AvailabilityWindow $window): bool => $window->kind->value !== 'unavailable');
-            foreach ($availability as $window) {
-                $windows[] = [
-                    $window->start_time !== null ? substr((string) $window->start_time, 0, 5) : self::DEFAULT_DAY_START,
-                    $window->end_time !== null ? substr((string) $window->end_time, 0, 5) : self::DEFAULT_DAY_END,
-                ];
-            }
-        }
-        if ($windows === []) {
-            $windows[] = [self::DEFAULT_DAY_START, self::DEFAULT_DAY_END];
-        }
+        $windows = $this->workWindows->windowsFor($user, $date);
 
         // Belegte Intervalle: bereits disponierte Aufträge des Tages.
         $busy = [];
@@ -211,10 +179,10 @@ class GapFillSuggester implements FreeSlotSource {
                 $busy[] = $interval;
             }
         }
-        // Tour-Zeitrahmen des Tages zählt als belegt (geplante Fahrleistung).
+        // Tour des Tages: mit geplanten Stopp-Zeiten (MVP-1176) belegen die Aufträge selbst
+        // (start_at/end_at oben); sonst blockt die Tourdauer pauschal vom Fensterbeginn an.
         $tour = Tour::query()->forUser((int) $user->id)->onDate($date->toDateString())->first();
-        if ($tour !== null && $tour->planned_duration_minutes > 0) {
-            // Tourdauer blockt vom Fensterbeginn an (grobe Planungssicht).
+        if ($tour !== null && $tour->planned_duration_minutes > 0 && ! $tour->stops()->whereNotNull('planned_arrival_at')->exists()) {
             $tourStart = $windows[0][0];
             $busy[] = [$tourStart, CarbonImmutable::parse($date->toDateString() . ' ' . $tourStart)->addMinutes((int) $tour->planned_duration_minutes)->format('H:i')];
         }
@@ -311,23 +279,25 @@ class GapFillSuggester implements FreeSlotSource {
 
     /** @return array{0: float|null, 1: int|null, 2: bool} [km, Zusatzminuten, Schätzung?] */
     private function proximity(?Coordinate $anchor, DiaryEntry $entry): array {
-        $lat = $entry->address_lat ?? $entry->customer?->address_lat;
-        $lng = $entry->address_lng ?? $entry->customer?->address_lng;
-        if ($anchor === null || $lat === null || $lng === null) {
+        $target = $entry->planningCoordinates();
+        if ($anchor === null || $target === null) {
             return [null, null, true];
         }
+        $lat = $target['lat'];
+        $lng = $target['lng'];
 
-        $meters = GeoHelper::haversineMeters((float) $anchor->lat, (float) $anchor->lng, (float) $lat, (float) $lng);
+        $meters = GeoHelper::haversineMeters($anchor->lat, $anchor->lng, $lat, $lng);
         $km = round($meters / 1000, 1);
 
         // OSRM, wenn erreichbar: echte zusätzliche Fahrzeit hin+zurück zum Anker.
+        // OSRM erwartet [lng, lat]; die Dauer-Matrix liefert Sekunden (MVP-1171).
         try {
-            $matrix = $this->router->table([
-                [(float) $anchor->lat, (float) $anchor->lng],
-                [(float) $lat, (float) $lng],
+            $table = $this->router->table([
+                [$anchor->lng, $anchor->lat],
+                [$lng, $lat],
             ]);
-            $seconds = (float) ($matrix[0][1] ?? 0) + (float) ($matrix[1][0] ?? 0);
-            if ($seconds > 0) {
+            $seconds = ($table->durations[0][1] ?? 0.0) + ($table->durations[1][0] ?? 0.0);
+            if ($seconds > 0 && is_finite($seconds)) {
                 return [$km, (int) round($seconds / 60), false];
             }
         } catch (\Throwable) {

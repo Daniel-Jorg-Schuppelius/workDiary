@@ -292,6 +292,23 @@ class DiaryEntry extends Model implements CustomFieldSubject {
         return $this->address_lat !== null && $this->address_lng !== null;
     }
 
+    /**
+     * Planungskoordinaten: eigene Adresse, sonst die des Kunden (MVP-1170).
+     *
+     * @return array{lat: float, lng: float}|null
+     */
+    public function planningCoordinates(): ?array {
+        if ($this->hasCoordinates()) {
+            return ['lat' => (float) $this->address_lat, 'lng' => (float) $this->address_lng];
+        }
+        $customer = $this->customer;
+        if ($customer !== null && $customer->address_lat !== null && $customer->address_lng !== null) {
+            return ['lat' => (float) $customer->address_lat, 'lng' => (float) $customer->address_lng];
+        }
+
+        return null;
+    }
+
     /** @return BelongsTo<OnCallShift, $this> */
     public function shift(): BelongsTo {
         return $this->belongsTo(OnCallShift::class, 'on_call_shift_id');

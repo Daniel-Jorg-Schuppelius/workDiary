@@ -1188,6 +1188,8 @@ class NavigationRegistry {
                         ['route' => 'reports.fleet', 'label' => __('Fuhrpark'), 'icon' => 'directions_car', 'modal' => false, 'matches' => ['reports.fleet']],
                         // Feature 137: steuerliches Fahrtenbuch (Fahrzeug + Zeitraum, Fahrtarten, privater Anteil).
                         ['route' => 'reports.logbook', 'label' => __('Fahrtenbuch-Nachweis'), 'icon' => 'menu_book', 'modal' => false, 'matches' => ['reports.logbook']],
+                        // MVP-1184: geplante und tatsächliche Ankunft und Verweildauer je Tourstopp.
+                        ['route' => 'reports.tour-plan-actual', 'label' => __('Touren Plan-Ist'), 'icon' => 'route', 'modal' => false, 'matches' => ['reports.tour-plan-actual']],
                         ['route' => 'reports.materials', 'label' => __('Materialien'), 'icon' => 'inventory', 'modal' => false, 'matches' => ['reports.materials']],
                         ['route' => 'reports.on-call', 'label' => __('Notdienst'), 'icon' => 'notifications_active', 'modal' => false, 'matches' => ['reports.on-call']],
                         // Importbericht Cloud-Dokumenteingang (Feature 080 P9): org-weite

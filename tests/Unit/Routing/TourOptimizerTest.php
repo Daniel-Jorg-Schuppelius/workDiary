@@ -69,4 +69,58 @@ class TourOptimizerTest extends TestCase {
 
         $this->assertSame([1, 2, 0], $result['order']);
     }
+
+    /** Mit Start- und Zielanker findet 2-opt den kürzesten Weg um das Quadrat. */
+    public function test_two_opt_with_both_anchors_walks_the_perimeter(): void {
+        $opt = new TourOptimizer;
+        $stops = [
+            new Coordinate(0.0, 0.0), // 0
+            new Coordinate(1.0, 1.0), // 1 (quer gesetzt: Startlösung ist schlecht)
+            new Coordinate(0.0, 1.0), // 2
+            new Coordinate(1.0, 0.0), // 3
+        ];
+        $start = new Coordinate(0.0, -1.0);
+        $end = new Coordinate(1.0, -1.0);
+        $matrix = $opt->haversineMatrix($stops, $start, $end);
+
+        $result = $opt->optimize($stops, $matrix, hasStart: true, hasEnd: true);
+
+        $this->assertSame([0, 2, 1, 3], $result['order']);
+    }
+
+    /** Ohne Anker beginnt die Kette an einem Ende, nicht beim ersten Eingabe-Stopp. */
+    public function test_open_tour_without_anchor_starts_at_an_end_of_the_chain(): void {
+        $opt = new TourOptimizer;
+        $stops = [
+            new Coordinate(0.0, 2.0), // 0 — Mitte zuerst
+            new Coordinate(0.0, 0.0), // 1
+            new Coordinate(0.0, 4.0), // 2
+            new Coordinate(0.0, 1.0), // 3
+            new Coordinate(0.0, 3.0), // 4
+        ];
+        $matrix = $opt->haversineMatrix($stops);
+
+        $result = $opt->optimize($stops, $matrix);
+
+        $this->assertContains($result['order'], [[1, 3, 0, 4, 2], [2, 4, 0, 3, 1]]);
+        $this->assertEqualsWithDelta($matrix[1][3] * 4, $result['distance'], 1.0);
+    }
+
+    /** Asymmetrische Matrix (Einbahnstraßen): die Delta-Bewertung rechnet das umgekehrte Segment mit. */
+    public function test_two_opt_respects_asymmetric_costs(): void {
+        $opt = new TourOptimizer;
+        $stops = [new Coordinate(0.0, 0.0), new Coordinate(0.0, 1.0), new Coordinate(0.0, 2.0)];
+        // 0→1→2 ist teuer, 0→2→1 billig; Rückrichtungen jeweils günstig.
+        $matrix = [
+            [0.0, 100.0, 10.0, 1.0],
+            [1.0, 0.0, 100.0, 1.0],
+            [1.0, 1.0, 0.0, 1.0],
+            [1.0, 100.0, 100.0, 0.0], // Start: billig nur nach 0
+        ];
+
+        $result = $opt->optimize($stops, $matrix, hasStart: true);
+
+        $this->assertSame([0, 2, 1], $result['order']);
+        $this->assertSame(12, $result['distance']);
+    }
 }

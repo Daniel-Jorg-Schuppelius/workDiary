@@ -325,6 +325,8 @@ class DiaryController extends Controller {
             'recentTagIds' => $this->recentTagIds((int) $auth->id),
             'canCreateForOthers' => $canCreateForOthers,
             'assignableUsers' => $canCreateForOthers ? LookupCache::userDropdown() : collect(),
+            // MVP-1184: Erfahrungswert der Servicedauer aus Ist-Verweildauern (Vorschlag, kein Überschreiben).
+            'serviceDurationHint' => app(\App\Services\Diary\Contracts\ServiceDurationSource::class)->suggest($diary->entry_type_id !== null ? (int) $diary->entry_type_id : null, $diary->customer_id !== null ? (int) $diary->customer_id : null),
         ] + $this->entryTypeFormData($diary));
     }
 

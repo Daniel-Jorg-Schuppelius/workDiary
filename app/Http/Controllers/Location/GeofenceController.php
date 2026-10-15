@@ -15,6 +15,7 @@ use App\Models\Customer\Customer;
 use App\Models\Facility\Site;
 use App\Models\Location\CustomerGeofence;
 use App\Models\Project\Project;
+use App\Services\Location\ZoneFactory;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -30,7 +31,9 @@ class GeofenceController extends Controller {
 
         $customerId = Sqid::decodeOrNumeric(Customer::class, (string) $request->query('customer', ''));
 
+        // Temporäre Tourzonen (MVP-1181) gehören zur Tour, nicht in die Pflegeliste.
         $query = CustomerGeofence::query()
+            ->permanent()
             ->with(['customer', 'site'])
             ->orderBy('label');
         if ($customerId !== null) {
@@ -75,6 +78,33 @@ class GeofenceController extends Controller {
 
         return redirect()->route('geofences.index', ['customer' => $geofence->customer?->sqid])
             ->with('success', __('Geofence aktualisiert.'));
+    }
+
+    /** Zone aus der Kundenadresse (MVP-1181). */
+    public function fromCustomer(Customer $customer, ZoneFactory $zones, Request $request): RedirectResponse {
+        Gate::authorize('create', CustomerGeofence::class);
+        $zone = $zones->forCustomer($customer, $request->user());
+
+        return redirect()->route('geofences.index', ['customer' => $customer->sqid])
+            ->with($zone !== null ? 'success' : 'info', $zone !== null ? __('Zone aus der Kundenadresse angelegt.') : __('Keine Zone angelegt: Kunde ohne Koordinaten oder Zone vorhanden.'));
+    }
+
+    /** Zone aus der Standortadresse (MVP-1181). */
+    public function fromSite(Site $site, ZoneFactory $zones, Request $request): RedirectResponse {
+        Gate::authorize('create', CustomerGeofence::class);
+        $zone = $zones->forSite($site, $request->user());
+
+        return redirect()->route('sites.show', $site)
+            ->with($zone !== null ? 'success' : 'info', $zone !== null ? __('Zone aus der Standortadresse angelegt.') : __('Keine Zone angelegt: Standort ohne Koordinaten, ohne Kunde oder Zone vorhanden.'));
+    }
+
+    /** Alle Kunden mit Koordinaten ohne Zone (MVP-1181). */
+    public function fromAllCustomers(ZoneFactory $zones, Request $request): RedirectResponse {
+        Gate::authorize('create', CustomerGeofence::class);
+        $count = $zones->forAllCustomers($request->user());
+
+        return redirect()->route('geofences.index')
+            ->with('success', trans_choice(':count Zone aus Kundenadressen angelegt.|:count Zonen aus Kundenadressen angelegt.', $count, ['count' => $count]));
     }
 
     public function destroy(CustomerGeofence $geofence): RedirectResponse {

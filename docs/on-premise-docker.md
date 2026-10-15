@@ -334,6 +334,33 @@ läuft als `schedule:work` dauerhaft — er holt verpasste Läufe **nicht** nach
   zu halten und liegt als ENV in allen App-Containern. Wer das trennen will,
   gibt dem `db`-Dienst in einer `compose.override.yml` eine eigene `env_file`.
 
+## 11. Routing-Dienste: OSRM und VROOM
+
+Beide Dienste sind optional und laufen als eigene Container neben der App.
+Ohne sie plant workDiary mit Luftlinie (Touren) und der eingebauten
+Heuristik (Tourvorschlag).
+
+- **OSRM** (Straßenentfernungen, Fahrzeiten, Streckenverlauf): Image
+  `osrm/osrm-backend`, ein Auszug der OpenStreetMap-Daten der Region
+  (`.osm.pbf`, z. B. von Geofabrik), einmalig vorverarbeiten
+  (`osrm-extract -p /opt/car.lua`, `osrm-partition`, `osrm-customize`),
+  dann `osrm-routed --algorithm mld /data/region.osrm` auf Port 5000. In der
+  App `ROUTING_OSRM_URL=http://osrm:5000`; `/table` braucht
+  `--max-table-size` mindestens in Höhe der größten Tour plus Fahrer.
+- **VROOM** (Tourvorschlag mit Zeitfenstern, Pausen, Qualifikationen,
+  mehrere Fahrer, MVP-1178): Image `vroomvrp/vroom-docker` (enthält
+  `vroom-express`), Port 3000. workDiary schickt die Kostenmatrix mit
+  (`matrices`), VROOM braucht deshalb **keinen** eigenen OSRM-Zugang; die
+  Umgebungsvariable `VROOM_ROUTER` kann auf `osrm` bleiben, der Routing-Host
+  wird nicht angesprochen. In der App `ROUTING_VROOM_URL=http://vroom:3000`
+  (leer = Heuristik), `ROUTING_VROOM_TIMEOUT=60`. Die Release-Version vor dem
+  Einbau in der Projektseite prüfen; der Vertrag `TourSolver` fällt bei
+  Fehler oder Zeitüberschreitung auf die Heuristik zurück, der Vorschlag
+  nennt den Solver.
+- Beide Adressen sind je Organisation in den Einstellungen überschreibbar;
+  private Netzadressen außerhalb der Betreiber-Vorgabe brauchen das Opt-in
+  `routing.allow_private_network` (Sicherheitsscan 2026-08-23, S-10).
+
 ## Verweise
 
 - [systemdienste.md](systemdienste.md) — Bare-Metal-Systemdienste (Cron, Queue, Reverb, fail2ban)

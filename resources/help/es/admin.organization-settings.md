@@ -527,6 +527,22 @@ sugerencias llevan la indicación **estimación aproximada (línea recta)**.
 - **Tiempo de espera (segundos)** (1–120, predeterminado 10): cuánto espera
   workDiary una respuesta antes de recurrir a la línea recta.
 
+## VROOM (propuesta de ruta)
+
+VROOM es un servicio opcional para la optimización de rutas. Si está
+configurado, calcula las **propuestas de ruta** (orden y horas de llegada con
+franjas horarias, pausas y cualificaciones) y la **propuesta del día** del
+centro de control para varios conductores. Usa los mismos tiempos de
+conducción que workDiary (OSRM o línea recta). Sin configuración o en caso
+de fallo calcula la heurística integrada; la propuesta indica quién calculó.
+
+- **URL base (vacío = heurística)** (dirección completa, hasta 255
+  caracteres): dirección del servicio VROOM (vroom-express). Para una
+  dirección propia en una red interna rige la misma habilitación por parte
+  del operador que para Nominatim.
+- **Tiempo de espera (segundos)** (1–600, predeterminado 60): cuánto espera
+  workDiary una respuesta antes de que la heurística tome el relevo.
+
 ## Teselas de mapa
 
 Las teselas de mapa son los fragmentos de imagen que componen los mapas de

@@ -49,6 +49,7 @@ final class LocationManifest extends Manifest {
         return [
             'location_device_tokens',
             'location_pending_entries',
+            'location_pending_trips',
             'location_points',
             'location_visits',
         ];
@@ -59,6 +60,23 @@ final class LocationManifest extends Manifest {
         return [
             'location.*',
             'geofences.*',
+        ];
+    }
+
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            // MVP-1185: Straßenstrecke einer Spur kommt aus der Planung (OSRM-Kartenabgleich), sonst zählt die Spurlänge.
+            \App\Services\Location\Contracts\TrackDistanceSource::class => \App\Services\Location\Contracts\NullTrackDistanceSource::class,
+        ];
+    }
+
+    /** @return array<class-string, list<class-string>> */
+    public function listeners(): array {
+        return [
+            \App\Events\Tour\TourStarted::class => [
+                \App\Listeners\Location\CreateTemporaryTourZones::class,
+            ],
         ];
     }
 

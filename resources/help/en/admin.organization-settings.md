@@ -479,6 +479,22 @@ carry the note **rough estimate (straight-line distance)**.
 - **Timeout (seconds)** (1–120, default 10): how long workDiary waits for an
   answer before falling back to straight-line distances.
 
+## VROOM (tour proposal)
+
+VROOM is an optional service for tour optimization. When configured, it
+computes the **tour proposals** (order and arrival times under time
+windows, breaks and qualifications) and the **day proposal** of the control
+center for several drivers. It uses the same driving times as workDiary
+(OSRM or straight line). Without an entry or in case of an outage the
+built-in heuristic solves; the proposal states which solver did.
+
+- **Base URL (empty = heuristic)** (full address, up to 255 characters):
+  address of the VROOM service (vroom-express). For your own address in an
+  internal network the same approval by the operator applies as for
+  Nominatim.
+- **Timeout (seconds)** (1–600, default 60): how long workDiary waits for an
+  answer before the heuristic takes over.
+
 ## Map tiles
 
 Map tiles are the image sections the maps in workDiary are made of, for

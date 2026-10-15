@@ -116,6 +116,18 @@ return [
         ],
     ],
     'diary' => [
+        'tour' => [
+            'proposal_requested' => 'Tour proposal requested',
+            'proposal_adopted' => 'Tour proposal adopted',
+            'proposal_rejected' => 'Tour proposal rejected',
+            'started' => 'Tour started',
+            'completed' => 'Tour completed',
+            'cancelled' => 'Tour cancelled',
+            'trips_created' => 'Trips adopted into the logbook',
+            'stop_arrived' => 'Arrived at stop',
+            'stop_departed' => 'Left stop',
+            'replanned' => 'Remainder of the tour replanned',
+        ],
         'order' => [
             'created' => 'Order created',
             'accept' => 'Order accepted',

@@ -25,6 +25,7 @@ return [
     ],
     'tour_leg_purpose' => 'Trayecto a :title',
     'tour_return_purpose' => 'Viaje de vuelta',
+    'tour_leg_straight_line' => '(en línea recta)',
     'driving_time' => [
         'legend' => 'Tiempos de conducción y descanso',
         'hint' => 'Para vehículos sujetos a las normas de tiempos de conducción: segundo conductor en conducción en equipo y travesías en las que el vehículo viaja en ferry o tren.',

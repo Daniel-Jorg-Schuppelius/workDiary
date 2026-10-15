@@ -64,6 +64,7 @@ class SchedulerRegistrationTest extends TestCase {
         // Feature 153 (MVP-770): Suchindex-Abgleich im Betriebsfenster.
         'search:reconcile' => ['50 21 * * *', true, true],
         'location:purge-points' => ['45 3 * * *', true, true],
+        'location:close-stale-visits' => ['0 * * * *', true, true], // MVP-1186
         'integration:purge-inbox' => ['0 4 * * *', true, true],
         'chat:send-reminders' => ['* * * * *', false, true],
         'chat:send-scheduled' => ['* * * * *', false, true],

@@ -65,4 +65,36 @@ class OsrmRouterTest extends TestCase {
         $this->expectException(RoutingException::class);
         $this->router()->route([[13.0, 52.0], [13.1, 52.1]]);
     }
+
+    /** MVP-1171: `/table` liefert Distanz- und Dauer-Matrix; Koordinaten gehen als lng,lat. */
+    public function test_table_returns_distance_and_duration_matrices(): void {
+        $fake = FakePluginHttp::fake([
+            'http://osrm.test/*' => FakePluginHttp::response([
+                'code' => 'Ok',
+                'distances' => [[0, 1000], [1000, 0]],
+                'durations' => [[0, 90.4], [null, 0]],
+            ]),
+        ]);
+
+        $table = $this->router()->table([[13.0, 52.0], [13.1, 52.1]]);
+
+        $this->assertSame(1000.0, $table->distances[0][1]);
+        $this->assertSame(90.4, $table->durations[0][1]);
+        $this->assertInfinite($table->durations[1][0]);
+        $fake->assertSent(function (RequestInterface $req): bool {
+            $uri = (string) $req->getUri();
+
+            return str_contains($uri, '/table/v1/driving/13.000000,52.000000;13.100000,52.100000')
+                && str_contains($uri, 'annotations=duration');
+        });
+    }
+
+    public function test_table_without_durations_is_invalid(): void {
+        FakePluginHttp::fake([
+            'http://osrm.test/*' => FakePluginHttp::response(['code' => 'Ok', 'distances' => [[0, 1], [1, 0]]]),
+        ]);
+
+        $this->expectException(RoutingException::class);
+        $this->router()->table([[13.0, 52.0], [13.1, 52.1]]);
+    }
 }

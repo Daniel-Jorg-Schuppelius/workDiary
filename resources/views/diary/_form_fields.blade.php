@@ -280,6 +280,9 @@
                 class="input input-bordered w-full @error('service_minutes') input-error @enderror"
             >
             @error('service_minutes')<p class="text-error text-sm">{{ $message }}</p>@enderror
+            @if (! empty($serviceDurationHint))
+                <p class="text-xs text-muted">{{ __('Erfahrungswert: :min Min. aus :n Einsätzen', ['min' => $serviceDurationHint['minutes'], 'n' => $serviceDurationHint['samples']]) }}</p>
+            @endif
         </div>
     </x-form-group>
 </template>
@@ -287,17 +290,26 @@
 {{-- Adresse --}}
 <template x-if="requiresAddress">
     <x-form-group :legend="__('Adresse')" icon="location_on" tone="warning" cols="2">
-        <x-input-field name="address_line" :label="__('Straße & Nummer')" maxlength="200" span="2" :value="old('address_line', $entry?->address_line)" />
+        <x-input-field name="address_line" :label="__('Straße & Nummer')" maxlength="200" span="2" :value="old('address_line', $entry?->address_line)" data-geocode-part="address" />
 
-        <x-input-field name="address_zip" :label="__('PLZ')" maxlength="16" :value="old('address_zip', $entry?->address_zip)" />
+        <x-input-field name="address_zip" :label="__('PLZ')" maxlength="16" :value="old('address_zip', $entry?->address_zip)" data-geocode-part="address" />
 
-        <x-input-field name="address_city" :label="__('Stadt')" maxlength="120" :value="old('address_city', $entry?->address_city)" />
+        <x-input-field name="address_city" :label="__('Stadt')" maxlength="120" :value="old('address_city', $entry?->address_city)" data-geocode-part="address" />
 
-        <x-input-field name="address_country" :label="__('Land (ISO-2)')" maxlength="2" class="uppercase" :value="old('address_country', $entry?->address_country)" />
+        <x-input-field name="address_country" :label="__('Land (ISO-2)')" maxlength="2" class="uppercase" :value="old('address_country', $entry?->address_country)" data-geocode-part="address" />
 
-        <x-input-field name="address_lat" type="number" :label="__('Lat')" step="0.0000001" :value="old('address_lat', $entry?->address_lat)" />
-
-        <x-input-field name="address_lng" type="number" :label="__('Lng')" step="0.0000001" :value="old('address_lng', $entry?->address_lng)" />
+        {{-- Koordinaten kommen aus der Adresse (Geokodierung in app.js, MVP-1170); ohne eigene gilt die des Kunden. --}}
+        <input type="hidden" name="address_lat" value="{{ old('address_lat', $entry?->address_lat) }}" data-geocode-lat="address">
+        <input type="hidden" name="address_lng" value="{{ old('address_lng', $entry?->address_lng) }}" data-geocode-lng="address">
+        <p class="text-xs text-muted md:col-span-2" data-geocode-status="address"
+           data-hit="{{ __('Koordinaten aus der Adresse ermittelt.') }}"
+           data-miss="{{ __('Adresse nicht gefunden — ohne eigene Koordinaten gilt die Kundenadresse.') }}">
+            @if (old('address_lat', $entry?->address_lat) !== null && old('address_lat', $entry?->address_lat) !== '')
+                {{ __('Koordinaten aus der Adresse ermittelt.') }}
+            @else
+                {{ __('Koordinaten werden beim Verlassen der Adressfelder ermittelt.') }}
+            @endif
+        </p>
     </x-form-group>
 </template>
 

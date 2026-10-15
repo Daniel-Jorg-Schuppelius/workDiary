@@ -33,6 +33,8 @@ class ColumnNamingRuleTest extends TestCase {
         'active' => 'is_active',
         'valid_to' => 'valid_until',
         'type' => 'kind (Fachart) oder <name>_type + <name>_id (Morph-Paar)',
+        'latitude' => '<name>_lat',
+        'longitude' => '<name>_lng',
     ];
 
     /** Methoden, deren erstes Argument keine neue Spalte ist. */
@@ -55,6 +57,8 @@ class ColumnNamingRuleTest extends TestCase {
                         $violations[] = "{$name}: {$table}.{$column} → " . self::FORBIDDEN[$column];
                     } elseif (str_ends_with($column, '_type') && ! in_array(substr($column, 0, -5) . '_id', $columns, true)) {
                         $violations[] = "{$name}: {$table}.{$column} → <x>_kind (kein Morph-Paar)";
+                    } elseif (str_ends_with($column, '_lon') || str_ends_with($column, '_long')) {
+                        $violations[] = "{$name}: {$table}.{$column} → <name>_lng";
                     }
                 }
             }

@@ -237,4 +237,17 @@ class LocationIngestTest extends TestCase {
         $this->assertGreaterThan(0, LocationVisit::query()->count());
         $this->assertGreaterThan(0, LocationPendingEntry::query()->count());
     }
+
+    /** MVP-1173: Zukunft über fünf Minuten und unparsbare Zeitstempel werden verworfen, nicht zu „jetzt“. */
+    public function test_ingest_discards_implausible_timestamps(): void {
+        $base = ['lat' => self::LAT + 0.0001, 'lng' => self::LNG, 'acc' => 10];
+        $this->postJson("/api/location/ingest/{$this->token}", ['points' => [
+            $base + ['recorded_at' => now()->subHour()->toIso8601String()],
+            $base + ['recorded_at' => now()->addDay()->toIso8601String()],
+            $base + ['recorded_at' => 'kein-datum'],
+            $base + ['tst' => now()->addHours(2)->getTimestamp()],
+        ]])->assertOk();
+
+        $this->assertSame(1, LocationPoint::query()->count());
+    }
 }

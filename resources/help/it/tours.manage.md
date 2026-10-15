@@ -1,9 +1,10 @@
 ---
 title: "Pianificare i giri"
 topic: tours.manage
-version: 1
+version: 2
 keywords:
     - pianificazione percorsi
+    - proposta di giro
     - ottimizzare il percorso
     - itinerario
     - tappe
@@ -13,6 +14,7 @@ keywords:
     - giro di consegne
     - pianificazione interventi
     - visite clienti
+    - viaggi nel libro di bordo
 audience: []
 modules:
     - module.planung
@@ -23,10 +25,30 @@ related:
 ---
 
 I giri raggruppano tappe e interventi in una sequenza pianificata; la vista
-mappa aiuta a verificare e ottimizzare il percorso. Definisca prima gli
-indirizzi dei clienti o degli interventi, poi assegni tappe, responsabilità
-e orari previsti, controlli il percorso e avvii il giro solo con dati
-completi. L'ottimizzazione automatica è una proposta di pianificazione:
-verifichi finestre temporali, priorità e condizioni reali di viaggio prima di
-adottarla, e concordi con le persone coinvolte le modifiche ai giri in
-corso.
+mappa aiuta a verificare e ottimizzare il percorso.
+
+**Coordinate:** gli interventi hanno bisogno di coordinate per essere
+pianificabili. Vengono ricavate dall'indirizzo dell'intervento uscendo dai
+campi dell'indirizzo; senza indirizzo proprio vale l'indirizzo del cliente.
+Le tappe senza coordinate restano nel giro, in fondo, e sono contrassegnate.
+
+**Proposta invece di automatismo:** «Calcola proposta» determina una
+sequenza con orari di arrivo e partenza per ogni tappa. Considera tempo di
+guida, finestre orarie degli interventi, finestra di lavoro da turno o
+disponibilità, pause obbligatorie e qualifiche. La proposta mostra il
+confronto con lo stato attuale, attese, pause e interventi non
+pianificabili con il motivo. Solo «Adotta» scrive sequenza e orari nel
+giro; «Rifiuta» richiede un motivo. Ogni proposta resta tracciabile nello
+storico del giro.
+
+**Ora e punto di partenza:** l'ora di partenza del giro e il punto di
+partenza (casa, sede o un indirizzo) determinano gli orari di arrivo.
+
+**Viaggi nel libro di bordo:** da un giro avviato le tratte possono essere
+riprese come viaggi. I chilometri stradali derivano dal percorso calcolato;
+senza percorso vale la linea d'aria e il viaggio è contrassegnato di
+conseguenza. Per un veicolo in modalità libro di bordo viene richiesto il
+chilometraggio e i chilometraggi dei viaggi si susseguono senza
+interruzioni. La ripresa è possibile una sola volta per giro.
+
+Concordi con le persone coinvolte le modifiche ai giri in corso.

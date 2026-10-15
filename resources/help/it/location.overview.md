@@ -1,7 +1,7 @@
 ---
 title: "Rilevazione dei tempi basata sulla posizione"
 topic: location.overview
-version: 1
+version: 2
 keywords:
     - rilevazione presenze GPS
     - geofencing
@@ -13,6 +13,8 @@ keywords:
     - cronologia delle posizioni Google
     - proposte di tempo
     - visite clienti
+    - proposte di viaggio
+    - registro viaggi dalla traccia GPS
 audience: []
 modules:
     - module.standorterfassung
@@ -49,6 +51,16 @@ genera una vera registrazione oraria; le proposte non pertinenti
 possono essere scartate. Tra il segnale di posizione e la registrazione
 c'è quindi sempre una decisione consapevole della persona interessata
 stessa.
+
+**Viaggi dalla traccia:** se tra l'uscita da una sede e l'ingresso nella
+successiva c'è uno spostamento, ne nasce una proposta di viaggio con
+inizio, fine e distanza. La distanza deriva dal confronto della traccia con
+la rete stradale; senza un servizio di routing conta la lunghezza della
+traccia e la proposta è contrassegnata di conseguenza. Anche qui nulla
+viene registrato automaticamente: solo con veicolo, tipo di viaggio e scopo
+la proposta viene acquisita nel registro viaggi — oppure scartata. Le
+regole del registro, ad esempio i chilometraggi obbligatori in modalità
+registro, restano invariate.
 
 **Protezione dei dati:** vengono analizzati gli eventi di ingresso e di
 uscita presso le sedi cliente memorizzate — non ha luogo alcuna

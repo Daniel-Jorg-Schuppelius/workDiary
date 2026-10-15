@@ -533,6 +533,24 @@ suggestions portent la mention **estimation approximative (à vol d'oiseau)**.
   laquelle workDiary attend une réponse avant de revenir aux distances à vol
   d'oiseau.
 
+## VROOM (proposition de tournée)
+
+VROOM est un service facultatif d'optimisation des tournées. S'il est
+renseigné, il calcule les **propositions de tournée** (ordre et heures
+d'arrivée avec créneaux, pauses et qualifications) et la **proposition du
+jour** du centre de contrôle pour plusieurs chauffeurs. Il utilise les mêmes
+temps de trajet que workDiary (OSRM ou vol d'oiseau). Sans entrée ou en cas
+de panne, l'heuristique intégrée calcule ; la proposition indique qui a
+calculé.
+
+- **URL de base (vide = heuristique)** (adresse complète, 255 caractères au
+  plus) : adresse du service VROOM (vroom-express). Pour votre propre adresse
+  dans un réseau interne, la même autorisation de l'exploitant s'applique que
+  pour Nominatim.
+- **Délai d'attente (secondes)** (1–600, par défaut 60) : durée pendant
+  laquelle workDiary attend une réponse avant que l'heuristique prenne le
+  relais.
+
 ## Tuiles de carte
 
 Les tuiles de carte sont les fragments d'image qui composent les cartes de

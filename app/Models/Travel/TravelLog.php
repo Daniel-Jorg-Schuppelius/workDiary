@@ -13,6 +13,7 @@ namespace App\Models\Travel;
 use App\Enums\Travel\{TravelLogVehicle, TripKind};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
+use App\Models\Diary\Tour;
 use App\Models\Fleet\Vehicle;
 use App\Models\Platform\User;
 use App\Models\Project\{Project, Task};
@@ -32,6 +33,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $customer_id
  * @property int|null $attendance_id
  * @property int|null $vehicle_id
+ * @property int|null $tour_id
  * @property Carbon|null $date
  * @property Carbon|null $started_at
  * @property Carbon|null $ended_at
@@ -102,6 +104,7 @@ class TravelLog extends Model {
         'customer_id',
         'attendance_id',
         'vehicle_id',
+        'tour_id',
         'date',
         'started_at',
         'ended_at',
@@ -222,6 +225,11 @@ class TravelLog extends Model {
     /** @return BelongsTo<Attendance, $this> */
     public function attendance(): BelongsTo {
         return $this->belongsTo(Attendance::class);
+    }
+
+    /** @return BelongsTo<Tour, $this> */
+    public function tour(): BelongsTo {
+        return $this->belongsTo(Tour::class);
     }
 
     /** @return BelongsTo<Vehicle, $this> */

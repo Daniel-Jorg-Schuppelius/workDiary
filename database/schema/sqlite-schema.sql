@@ -735,45 +735,6 @@ CREATE INDEX "geocode_cache_expires_at_index" on "geocode_cache"("expires_at");
 CREATE UNIQUE INDEX "geocode_cache_query_hash_unique" on "geocode_cache"(
   "query_hash"
 );
-CREATE TABLE IF NOT EXISTS "tours"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer,
-  "user_id" integer not null,
-  "vehicle_id" integer,
-  "tour_date" date not null,
-  "name" varchar,
-  "start_address" varchar,
-  "start_lat" numeric,
-  "start_lng" numeric,
-  "end_address" varchar,
-  "end_lat" numeric,
-  "end_lng" numeric,
-  "planned_distance_km" numeric not null default '0',
-  "planned_duration_minutes" integer not null default '0',
-  "route_geometry" text,
-  "status" varchar not null default 'draft',
-  "notes" text,
-  "created_by" integer,
-  "updated_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "travel_billed" tinyint(1) not null default '0',
-  foreign key("organization_id") references "organizations"("id") on delete set null,
-  foreign key("user_id") references "users"("id") on delete cascade,
-  foreign key("vehicle_id") references "vehicles"("id") on delete set null,
-  foreign key("created_by") references "users"("id") on delete set null,
-  foreign key("updated_by") references "users"("id") on delete set null
-);
-CREATE INDEX "tours_organization_id_tour_date_index" on "tours"(
-  "organization_id",
-  "tour_date"
-);
-CREATE INDEX "tours_user_id_tour_date_index" on "tours"(
-  "user_id",
-  "tour_date"
-);
-CREATE INDEX "tours_status_index" on "tours"("status");
-CREATE INDEX "tours_tour_date_index" on "tours"("tour_date");
 CREATE TABLE IF NOT EXISTS "entry_types"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer,
@@ -5808,7 +5769,6 @@ CREATE INDEX "invoice_item_time_entries_time_entry_id_index" on "invoice_item_ti
   "time_entry_id"
 );
 CREATE INDEX "material_usages_billed_index" on "material_usages"("billed");
-CREATE INDEX "tours_travel_billed_index" on "tours"("travel_billed");
 CREATE TABLE IF NOT EXISTS "plugin_states"(
   "id" integer primary key autoincrement not null,
   "plugin_id" varchar not null,
@@ -6947,39 +6907,6 @@ CREATE UNIQUE INDEX "cmd_pair_unique" on "customer_merge_dismissals"(
   "customer_high_id"
 );
 CREATE INDEX "cmd_org_idx" on "customer_merge_dismissals"("organization_id");
-CREATE TABLE IF NOT EXISTS "customer_geofences"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "customer_id" integer not null,
-  "site_id" integer,
-  "project_id" integer,
-  "label" varchar not null,
-  "center_lat" numeric not null,
-  "center_lng" numeric not null,
-  "radius_m" integer not null default '100',
-  "min_dwell_minutes" integer not null default '5',
-  "gap_merge_minutes" integer not null default '10',
-  "is_active" tinyint(1) not null default '1',
-  "created_by" integer,
-  "updated_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("customer_id") references "customers"("id") on delete cascade,
-  foreign key("site_id") references "sites"("id") on delete set null,
-  foreign key("project_id") references "projects"("id") on delete set null,
-  foreign key("created_by") references "users"("id") on delete set null,
-  foreign key("updated_by") references "users"("id") on delete set null
-);
-CREATE INDEX "cgf_idx_org_customer" on "customer_geofences"(
-  "organization_id",
-  "customer_id",
-  "is_active"
-);
-CREATE INDEX "cgf_idx_org_active" on "customer_geofences"(
-  "organization_id",
-  "is_active"
-);
 CREATE TABLE IF NOT EXISTS "integration_inbox_items"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer,
@@ -7051,40 +6978,6 @@ CREATE INDEX "lv_idx_org_user_status" on "location_visits"(
 CREATE INDEX "lv_idx_geofence_status" on "location_visits"(
   "customer_geofence_id",
   "status"
-);
-CREATE TABLE IF NOT EXISTS "location_pending_entries"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "user_id" integer not null,
-  "location_visit_id" integer not null,
-  "customer_id" integer,
-  "project_id" integer,
-  "suggested_date" date not null,
-  "started_at" datetime not null,
-  "ended_at" datetime not null,
-  "minutes" integer not null,
-  "description" varchar,
-  "status" varchar not null default 'open',
-  "time_entry_id" integer,
-  "resolved_by" integer,
-  "resolved_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("user_id") references "users"("id") on delete cascade,
-  foreign key("location_visit_id") references "location_visits"("id") on delete cascade,
-  foreign key("customer_id") references "customers"("id") on delete set null,
-  foreign key("project_id") references "projects"("id") on delete set null,
-  foreign key("time_entry_id") references "time_entries"("id") on delete set null,
-  foreign key("resolved_by") references "users"("id") on delete set null
-);
-CREATE INDEX "lpe_idx_org_user_status" on "location_pending_entries"(
-  "organization_id",
-  "user_id",
-  "status"
-);
-CREATE UNIQUE INDEX "lpe_uniq_visit" on "location_pending_entries"(
-  "location_visit_id"
 );
 CREATE TABLE IF NOT EXISTS "location_device_tokens"(
   "id" integer primary key autoincrement not null,
@@ -22217,78 +22110,6 @@ CREATE UNIQUE INDEX "acc_fx_org_currency_period_uq" on "accounting_exchange_rate
   "currency",
   "period"
 );
-CREATE TABLE IF NOT EXISTS "travel_logs"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer,
-  "user_id" integer not null,
-  "project_id" integer,
-  "task_id" integer,
-  "customer_id" integer,
-  "attendance_id" integer,
-  "date" date not null,
-  "started_at" datetime,
-  "ended_at" datetime,
-  "duration_minutes" integer not null default('0'),
-  "from_address" varchar,
-  "to_address" varchar,
-  "from_lat" numeric,
-  "from_lng" numeric,
-  "to_lat" numeric,
-  "to_lng" numeric,
-  "distance_km" numeric not null default('0'),
-  "vehicle" varchar not null default('private'),
-  "vehicle_label" varchar,
-  "purpose" varchar,
-  "round_trip" tinyint(1) not null default('0'),
-  "reimbursable" tinyint(1) not null default('1'),
-  "rate_per_km" numeric,
-  "reimbursement_total" numeric not null default('0'),
-  "notes" text,
-  "created_by" integer,
-  "updated_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "vehicle_id" integer,
-  "odometer_start_km" integer,
-  "odometer_end_km" integer,
-  "trip_kind" varchar not null default('business'),
-  "locked_at" datetime,
-  "corrects_travel_log_id" integer,
-  "correction_reason" varchar,
-  "driver_signed_at" datetime,
-  "driver_signature_path" varchar,
-  "driver_signature_hash" varchar,
-  "co_driver_user_id" integer,
-  "is_ferry_or_train" tinyint(1) not null default '0',
-  foreign key("corrects_travel_log_id") references travel_logs("id") on delete set null on update no action,
-  foreign key("updated_by") references users("id") on delete set null on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("attendance_id") references attendances("id") on delete set null on update no action,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("task_id") references tasks("id") on delete set null on update no action,
-  foreign key("project_id") references projects("id") on delete set null on update no action,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
-  foreign key("vehicle_id") references vehicles("id") on delete set null on update no action,
-  foreign key("co_driver_user_id") references "users"("id") on delete set null
-);
-CREATE INDEX "travel_logs_customer_id_index" on "travel_logs"("customer_id");
-CREATE INDEX "travel_logs_organization_id_date_index" on "travel_logs"(
-  "organization_id",
-  "date"
-);
-CREATE INDEX "travel_logs_project_id_index" on "travel_logs"("project_id");
-CREATE INDEX "travel_logs_reimbursable_index" on "travel_logs"("reimbursable");
-CREATE INDEX "travel_logs_user_id_date_index" on "travel_logs"(
-  "user_id",
-  "date"
-);
-CREATE INDEX "travel_logs_vehicle_chain_idx" on "travel_logs"(
-  "vehicle_id",
-  "date",
-  "odometer_end_km"
-);
-CREATE INDEX "travel_logs_vehicle_id_index" on "travel_logs"("vehicle_id");
 CREATE TABLE IF NOT EXISTS "import_column_mappings"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -23670,6 +23491,312 @@ CREATE TABLE IF NOT EXISTS "delivery_note_items"(
 CREATE UNIQUE INDEX "dli_stock_delivery_unique" on "delivery_note_items"(
   "stock_delivery_id"
 );
+CREATE TABLE IF NOT EXISTS "travel_logs"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "user_id" integer not null,
+  "project_id" integer,
+  "task_id" integer,
+  "customer_id" integer,
+  "attendance_id" integer,
+  "date" date not null,
+  "started_at" datetime,
+  "ended_at" datetime,
+  "duration_minutes" integer not null default('0'),
+  "from_address" varchar,
+  "to_address" varchar,
+  "from_lat" numeric,
+  "from_lng" numeric,
+  "to_lat" numeric,
+  "to_lng" numeric,
+  "distance_km" numeric not null default('0'),
+  "vehicle" varchar not null default('private'),
+  "vehicle_label" varchar,
+  "purpose" varchar,
+  "round_trip" tinyint(1) not null default('0'),
+  "reimbursable" tinyint(1) not null default('1'),
+  "rate_per_km" numeric,
+  "reimbursement_total" numeric not null default('0'),
+  "notes" text,
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "vehicle_id" integer,
+  "odometer_start_km" integer,
+  "odometer_end_km" integer,
+  "trip_kind" varchar not null default('business'),
+  "locked_at" datetime,
+  "corrects_travel_log_id" integer,
+  "correction_reason" varchar,
+  "driver_signed_at" datetime,
+  "driver_signature_path" varchar,
+  "driver_signature_hash" varchar,
+  "co_driver_user_id" integer,
+  "is_ferry_or_train" tinyint(1) not null default('0'),
+  "tour_id" integer,
+  foreign key("co_driver_user_id") references users("id") on delete set null on update no action,
+  foreign key("vehicle_id") references vehicles("id") on delete set null on update no action,
+  foreign key("organization_id") references organizations("id") on delete set null on update no action,
+  foreign key("user_id") references users("id") on delete cascade on update no action,
+  foreign key("project_id") references projects("id") on delete set null on update no action,
+  foreign key("task_id") references tasks("id") on delete set null on update no action,
+  foreign key("customer_id") references customers("id") on delete set null on update no action,
+  foreign key("attendance_id") references attendances("id") on delete set null on update no action,
+  foreign key("created_by") references users("id") on delete set null on update no action,
+  foreign key("updated_by") references users("id") on delete set null on update no action,
+  foreign key("corrects_travel_log_id") references travel_logs("id") on delete set null on update no action,
+  foreign key("tour_id") references "tours"("id") on delete set null
+);
+CREATE INDEX "travel_logs_customer_id_index" on "travel_logs"("customer_id");
+CREATE INDEX "travel_logs_organization_id_date_index" on "travel_logs"(
+  "organization_id",
+  "date"
+);
+CREATE INDEX "travel_logs_project_id_index" on "travel_logs"("project_id");
+CREATE INDEX "travel_logs_reimbursable_index" on "travel_logs"("reimbursable");
+CREATE INDEX "travel_logs_user_id_date_index" on "travel_logs"(
+  "user_id",
+  "date"
+);
+CREATE INDEX "travel_logs_vehicle_chain_idx" on "travel_logs"(
+  "vehicle_id",
+  "date",
+  "odometer_end_km"
+);
+CREATE INDEX "travel_logs_vehicle_id_index" on "travel_logs"("vehicle_id");
+CREATE TABLE IF NOT EXISTS "tours"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "user_id" integer not null,
+  "vehicle_id" integer,
+  "tour_date" date not null,
+  "name" varchar,
+  "start_address" varchar,
+  "start_lat" numeric,
+  "start_lng" numeric,
+  "end_address" varchar,
+  "end_lat" numeric,
+  "end_lng" numeric,
+  "planned_distance_km" numeric not null default('0'),
+  "planned_duration_minutes" integer not null default('0'),
+  "route_geometry" text,
+  "status" varchar not null default('draft'),
+  "notes" text,
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "travel_billed" tinyint(1) not null default('0'),
+  "route_legs" text,
+  "planned_start_at" datetime,
+  "start_site_id" integer,
+  foreign key("updated_by") references users("id") on delete set null on update no action,
+  foreign key("created_by") references users("id") on delete set null on update no action,
+  foreign key("vehicle_id") references vehicles("id") on delete set null on update no action,
+  foreign key("user_id") references users("id") on delete cascade on update no action,
+  foreign key("organization_id") references organizations("id") on delete set null on update no action,
+  foreign key("start_site_id") references "sites"("id") on delete set null
+);
+CREATE INDEX "tours_organization_id_tour_date_index" on "tours"(
+  "organization_id",
+  "tour_date"
+);
+CREATE INDEX "tours_status_index" on "tours"("status");
+CREATE INDEX "tours_tour_date_index" on "tours"("tour_date");
+CREATE INDEX "tours_travel_billed_index" on "tours"("travel_billed");
+CREATE INDEX "tours_user_id_tour_date_index" on "tours"(
+  "user_id",
+  "tour_date"
+);
+CREATE TABLE IF NOT EXISTS "tour_stops"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "tour_id" integer not null,
+  "diary_entry_id" integer not null,
+  "position" integer not null,
+  "planned_arrival_at" datetime,
+  "planned_departure_at" datetime,
+  "waiting_minutes" integer not null default '0',
+  "arrived_at" datetime,
+  "departed_at" datetime,
+  "actual_source" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "outcome" varchar,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("tour_id") references "tours"("id") on delete cascade,
+  foreign key("diary_entry_id") references "diary_entries"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "tour_stops_tour_entry_unique" on "tour_stops"(
+  "tour_id",
+  "diary_entry_id"
+);
+CREATE INDEX "tour_stops_tour_position_idx" on "tour_stops"(
+  "tour_id",
+  "position"
+);
+CREATE TABLE IF NOT EXISTS "tour_proposals"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "tour_id" integer,
+  "proposal_date" date not null,
+  "solver" varchar,
+  "is_estimate" tinyint(1) not null default '0',
+  "problem" text,
+  "plan" text,
+  "metrics" text,
+  "status" varchar not null default 'computing',
+  "failure" text,
+  "decision_note" text,
+  "decided_by" integer,
+  "decided_at" datetime,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("tour_id") references "tours"("id") on delete cascade,
+  foreign key("decided_by") references "users"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "tour_proposals_org_date_idx" on "tour_proposals"(
+  "organization_id",
+  "proposal_date"
+);
+CREATE INDEX "tour_proposals_tour_status_idx" on "tour_proposals"(
+  "tour_id",
+  "status"
+);
+CREATE TABLE IF NOT EXISTS "tour_events"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "tour_id" integer not null,
+  "event" varchar not null,
+  "actor_user_id" integer,
+  "payload" text,
+  "occurred_at" datetime not null,
+  "created_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("tour_id") references "tours"("id") on delete cascade,
+  foreign key("actor_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "tour_events_tour_time_idx" on "tour_events"(
+  "tour_id",
+  "occurred_at"
+);
+CREATE TABLE IF NOT EXISTS "customer_geofences"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "customer_id" integer,
+  "site_id" integer,
+  "project_id" integer,
+  "label" varchar not null,
+  "center_lat" numeric not null,
+  "center_lng" numeric not null,
+  "radius_m" integer not null default('100'),
+  "min_dwell_minutes" integer not null default('5'),
+  "gap_merge_minutes" integer not null default('10'),
+  "is_active" tinyint(1) not null default('1'),
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "tour_id" integer,
+  "diary_entry_id" integer,
+  "valid_on" date,
+  foreign key("updated_by") references users("id") on delete set null on update no action,
+  foreign key("created_by") references users("id") on delete set null on update no action,
+  foreign key("project_id") references projects("id") on delete set null on update no action,
+  foreign key("site_id") references sites("id") on delete set null on update no action,
+  foreign key("customer_id") references customers("id") on delete cascade on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("tour_id") references "tours"("id") on delete set null,
+  foreign key("diary_entry_id") references "diary_entries"("id") on delete set null
+);
+CREATE INDEX "cgf_idx_org_active" on "customer_geofences"(
+  "organization_id",
+  "is_active"
+);
+CREATE INDEX "cgf_idx_org_customer" on "customer_geofences"(
+  "organization_id",
+  "customer_id",
+  "is_active"
+);
+CREATE TABLE IF NOT EXISTS "location_pending_entries"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "user_id" integer not null,
+  "location_visit_id" integer not null,
+  "customer_id" integer,
+  "project_id" integer,
+  "suggested_date" date not null,
+  "started_at" datetime not null,
+  "ended_at" datetime not null,
+  "minutes" integer not null,
+  "description" varchar,
+  "status" varchar not null default('open'),
+  "time_entry_id" integer,
+  "resolved_by" integer,
+  "resolved_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "diary_entry_id" integer,
+  foreign key("resolved_by") references users("id") on delete set null on update no action,
+  foreign key("time_entry_id") references time_entries("id") on delete set null on update no action,
+  foreign key("project_id") references projects("id") on delete set null on update no action,
+  foreign key("customer_id") references customers("id") on delete set null on update no action,
+  foreign key("location_visit_id") references location_visits("id") on delete cascade on update no action,
+  foreign key("user_id") references users("id") on delete cascade on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("diary_entry_id") references "diary_entries"("id") on delete set null
+);
+CREATE INDEX "lpe_idx_org_user_status" on "location_pending_entries"(
+  "organization_id",
+  "user_id",
+  "status"
+);
+CREATE UNIQUE INDEX "lpe_uniq_visit" on "location_pending_entries"(
+  "location_visit_id"
+);
+CREATE TABLE IF NOT EXISTS "location_pending_trips"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "user_id" integer not null,
+  "from_visit_id" integer,
+  "to_visit_id" integer,
+  "from_label" varchar,
+  "to_label" varchar,
+  "from_lat" numeric,
+  "from_lng" numeric,
+  "to_lat" numeric,
+  "to_lng" numeric,
+  "started_at" datetime not null,
+  "ended_at" datetime not null,
+  "distance_km" numeric not null,
+  "distance_source" varchar not null default 'track',
+  "point_count" integer not null default '0',
+  "status" varchar not null default 'open',
+  "travel_log_id" integer,
+  "resolved_by" integer,
+  "resolved_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade,
+  foreign key("from_visit_id") references "location_visits"("id") on delete set null,
+  foreign key("to_visit_id") references "location_visits"("id") on delete set null,
+  foreign key("travel_log_id") references "travel_logs"("id") on delete set null,
+  foreign key("resolved_by") references "users"("id") on delete set null
+);
+CREATE INDEX "lpt_org_user_status_idx" on "location_pending_trips"(
+  "organization_id",
+  "user_id",
+  "status"
+);
+CREATE UNIQUE INDEX "lpt_visits_unique" on "location_pending_trips"(
+  "from_visit_id",
+  "to_visit_id"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -24654,3 +24781,7 @@ INSERT INTO migrations VALUES(980,'2027_03_19_100000_add_mailbox_sync_to_email_c
 INSERT INTO migrations VALUES(981,'2027_03_19_100100_add_duplicate_review_to_incoming_einvoices',1);
 INSERT INTO migrations VALUES(982,'2027_03_20_100000_create_order_confirmations',1);
 INSERT INTO migrations VALUES(983,'2027_03_20_110000_create_delivery_notes',1);
+INSERT INTO migrations VALUES(984,'2027_03_21_100000_add_route_legs_to_tours_and_tour_to_travel_logs',2);
+INSERT INTO migrations VALUES(985,'2027_03_21_110000_create_tour_stops_proposals_and_events',2);
+INSERT INTO migrations VALUES(986,'2027_03_21_120000_add_tour_zones_and_stop_links',3);
+INSERT INTO migrations VALUES(987,'2027_03_21_130000_create_location_pending_trips',4);

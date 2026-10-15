@@ -10,13 +10,11 @@
 
 namespace App\Http\Requests\Diary;
 
-use App\Enums\Tour\TourStatus;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Fleet\Vehicle;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Validation\Rule;
 
 class SaveTourRequest extends BaseFormRequest {
     use DecodesSqidInputs;
@@ -25,6 +23,7 @@ class SaveTourRequest extends BaseFormRequest {
     protected array $sqidFields = [
         'user_id' => \App\Models\Platform\User::class,
         'vehicle_id' => \App\Models\Fleet\Vehicle::class,
+        'start_site_id' => \App\Models\Facility\Site::class,
     ];
 
     /** @return array<string, mixed> */
@@ -40,8 +39,9 @@ class SaveTourRequest extends BaseFormRequest {
             'end_address' => ['nullable', 'string', 'max:255'],
             'end_lat' => ['nullable', 'numeric', 'between:-90,90'],
             'end_lng' => ['nullable', 'numeric', 'between:-180,180'],
-            'status' => ['sometimes', Rule::enum(TourStatus::class)],
             'notes' => ['nullable', 'string', 'max:5000'],
+            'planned_start_time' => ['nullable', 'date_format:H:i'],
+            'start_site_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('sites')],
         ];
     }
 

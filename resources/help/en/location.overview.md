@@ -1,7 +1,7 @@
 ---
 title: "Location-based time tracking"
 topic: location.overview
-version: 1
+version: 2
 keywords:
     - GPS time tracking
     - geofencing
@@ -14,6 +14,8 @@ keywords:
     - time suggestions
     - customer visits
     - site check-in
+    - trip suggestions
+    - travel log from GPS trail
 audience: []
 modules:
     - module.standorterfassung
@@ -46,6 +48,15 @@ customer, the project where applicable, and the recorded period.
 actual time entry; unsuitable suggestions can be dismissed. Between the
 location signal and the booking there is always a conscious decision by the
 person concerned.
+
+**Trips from the trail:** If there is a journey between leaving one site
+and entering the next, it becomes a trip suggestion with start, end and
+distance. The distance comes from matching the trail against the road
+network; without a routing service, the length of the trail counts and the
+suggestion is marked accordingly. Nothing is booked automatically here
+either: only with vehicle, trip type and purpose is the suggestion taken
+over into the logbook — or dismissed. The logbook’s rules, such as
+mandatory odometer readings in logbook mode, apply unchanged.
 
 **Privacy:** What is evaluated are entry and exit events at the registered
 customer sites — there is no permanent location surveillance. Each person

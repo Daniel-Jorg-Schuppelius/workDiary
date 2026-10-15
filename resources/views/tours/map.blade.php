@@ -52,6 +52,9 @@
         <x-card padding="p-0" class="flex h-[60dvh] flex-col lg:h-auto lg:min-h-0 lg:flex-1">
             <div class="flex items-center justify-between gap-2 border-b border-base-300 px-4 py-2 text-sm text-base-content/70">
                 <span>{{ trans_choice(':count Tour|:count Touren', $tourCount, ['count' => $tourCount]) }}</span>
+                @if ($truncatedLayers !== [])
+                    <span class="text-xs text-warning">{{ __('Layer gekürzt auf :max Punkte: :layers', ['max' => \App\Http\Controllers\Schedule\TourController::MAX_LAYER_MARKERS, 'layers' => implode(', ', $truncatedLayers)]) }}</span>
+                @endif
                 <span class="text-xs">{{ __('Layer rechts oben ein-/ausblenden.') }}</span>
             </div>
             <x-map :markers="$markers" :routes="$routes" :layers="$layers" height="100%" :zoom="9" class="min-h-0 flex-1" />

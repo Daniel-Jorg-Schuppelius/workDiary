@@ -509,6 +509,15 @@ function buildPayload(type, form) {
         };
     }
 
+    if (type === "tour.stop-arrive" || type === "tour.stop-depart") {
+        // Fahreransicht (MVP-1183): Stopp-Ist mit dem Zeitpunkt der Erfassung auf dem Gerät.
+        /** @type {{stop: string, at: string, outcome?: string}} */
+        const payload = { stop: form.dataset.syncPayloadStop || "", at: now };
+        const outcome = /** @type {FormField | null} */ (form.querySelector('[name="outcome"]'))?.value;
+        if (outcome) payload.outcome = outcome;
+        return payload;
+    }
+
     if (type === "takeoff.line") {
         // Aufmaßzeile (MVP-1059): gerechnet wird beim Abgleich auf dem Server,
         // das Foto wandert als angekündigte Datei in die Warteschlange.

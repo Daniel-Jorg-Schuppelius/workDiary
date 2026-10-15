@@ -72,6 +72,7 @@ final class ScheduleManifest extends Manifest {
             'timesheets.*',
             'flex.*',
             'tours.*',
+            'tour-proposals.*',
             'dispatch.*',
             'patrols.*',
             'appointments.*',
@@ -108,6 +109,9 @@ final class ScheduleManifest extends Manifest {
             \App\Services\Import\EntitySpec::class => [
                 \App\Services\Schedule\Import\ScheduledShiftSpec::class,
             ],
+            \App\Services\Sync\Contracts\SyncCommandHandler::class => [
+                \App\Services\Routing\Sync\TourStopSyncHandler::class,
+            ],
         ];
     }
 
@@ -117,6 +121,8 @@ final class ScheduleManifest extends Manifest {
             \App\Services\Calendar\Contracts\FreeSlotSource::class => \App\Services\Dispatch\GapFillSuggester::class,
             \App\Services\AssetCompliance\Contracts\InspectionTourPlanner::class => \App\Services\Routing\TourService::class,
             \App\Services\Reporting\Contracts\StaffingCoverage::class => \App\Services\Schedule\CoverageService::class,
+            \App\Services\Diary\Contracts\ServiceDurationSource::class => \App\Services\Routing\ServiceDurationSuggester::class,
+            \App\Services\Location\Contracts\TrackDistanceSource::class => \App\Services\Routing\OsrmTrackMatcher::class,
         ];
     }
 

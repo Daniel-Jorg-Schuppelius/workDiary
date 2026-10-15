@@ -19,8 +19,9 @@
             $markers[] = ['lat' => (float) $tour->start_lat, 'lng' => (float) $tour->start_lng, 'label' => __('Start')];
         }
         foreach ($stops as $i => $s) {
-            if ($s->address_lat && $s->address_lng) {
-                $markers[] = ['lat' => (float) $s->address_lat, 'lng' => (float) $s->address_lng, 'label' => ($i + 1) . '. ' . $s->title];
+            $point = $s->planningCoordinates();
+            if ($point !== null) {
+                $markers[] = $point + ['label' => ($i + 1) . '. ' . $s->title];
             }
         }
         if ($tour->end_lat && $tour->end_lng) {
@@ -40,10 +41,9 @@
                 </div>
                 <x-slot:actions>
                     <x-icon-btn icon="visibility" size="sm" :href="route('tours.show', $tour)" show-label>{{ __('Ansicht') }}</x-icon-btn>
-                    <form method="POST" action="{{ route('tours.optimize', $tour) }}" class="inline">
-                        @csrf
-                        <x-icon-btn icon="auto_awesome" size="sm" type="submit" show-label>{{ __('Optimieren') }}</x-icon-btn>
-                    </form>
+                    <x-action-form :action="route('tours.proposals.store', $tour)">
+                        <x-icon-btn icon="auto_awesome" size="sm" type="submit" show-label>{{ __('Vorschlag berechnen') }}</x-icon-btn>
+                    </x-action-form>
                 </x-slot:actions>
             </x-page-toolbar>
         </x-slot:toolbar>
@@ -62,31 +62,34 @@
                             <option value="{{ $v->sqid }}" @selected((string) old('vehicle_id', \App\Support\Sqid::encode(\App\Models\Fleet\Vehicle::class, $tour->vehicle_id)) === $v->sqid)>{{ $v->license_plate }} {{ $v->label }}</option>
                         @endforeach
                     </x-select-field>
-                    <x-select-field name="status" :label="__('Status')" class="select-sm">
-                        @foreach ($statuses as $value => $label)
-                            <option value="{{ $value }}" @selected($tour->status?->value === $value)>{{ $label }}</option>
+                    <x-input-field name="name" :label="__('Name')" maxlength="200" :value="$tour->name" class="input-sm" />
+                    <x-input-field name="planned_start_time" type="time" :label="__('Startzeit')" :value="old('planned_start_time', $tour->planned_start_at ? \App\Support\Tz::toLocal($tour->planned_start_at)?->format('H:i') : '')" class="input-sm" />
+                    <x-select-field name="start_site_id" :label="__('Start ab Betriebsstätte')" class="select-sm">
+                        <option value="">{{ __('— Adresse unten —') }}</option>
+                        @foreach ($sites as $site)
+                            <option value="{{ $site->sqid }}" @selected((string) old('start_site_id', \App\Support\Sqid::encode(\App\Models\Facility\Site::class, $tour->start_site_id)) === $site->sqid)>{{ $site->name }}</option>
                         @endforeach
                     </x-select-field>
-                    <x-input-field name="name" :label="__('Name')" maxlength="200" :value="$tour->name" class="input-sm" span="2" />
                 </div>
 
-                <fieldset class="grid gap-3 md:grid-cols-2 rounded-box border border-base-300 p-3">
-                    <legend class="px-1 text-sm font-medium">{{ __('Start') }}</legend>
-                    <x-input-field name="start_address" :label="__('Adresse')" :value="$tour->start_address" class="input-sm" span="2" />
-                    <x-input-field name="start_lat" type="number" step="0.0000001" :label="__('Lat')" :value="$tour->start_lat" class="input-sm" />
-                    <x-input-field name="start_lng" type="number" step="0.0000001" :label="__('Lng')" :value="$tour->start_lng" class="input-sm" />
-                </fieldset>
-
-                <fieldset class="grid gap-3 md:grid-cols-2 rounded-box border border-base-300 p-3">
-                    <legend class="px-1 text-sm font-medium">{{ __('Ziel') }}</legend>
-                    <x-input-field name="end_address" :label="__('Adresse')" :value="$tour->end_address" class="input-sm" span="2" />
-                    <x-input-field name="end_lat" type="number" step="0.0000001" :label="__('Lat')" :value="$tour->end_lat" class="input-sm" />
-                    <x-input-field name="end_lng" type="number" step="0.0000001" :label="__('Lng')" :value="$tour->end_lng" class="input-sm" />
-                </fieldset>
+                {{-- Koordinaten aus der Adresse (Geokodierung in app.js, MVP-1170). --}}
+                @foreach (['start' => __('Start'), 'end' => __('Ziel')] as $anchor => $anchorLabel)
+                    <fieldset class="grid gap-3 rounded-box border border-base-300 p-3">
+                        <legend class="px-1 text-sm font-medium">{{ $anchorLabel }}</legend>
+                        <x-input-field :name="$anchor . '_address'" :label="__('Adresse')" :value="$tour->{$anchor . '_address'}" class="input-sm" :data-geocode-part="$anchor" />
+                        <input type="hidden" name="{{ $anchor }}_lat" value="{{ $tour->{$anchor . '_lat'} }}" data-geocode-lat="{{ $anchor }}">
+                        <input type="hidden" name="{{ $anchor }}_lng" value="{{ $tour->{$anchor . '_lng'} }}" data-geocode-lng="{{ $anchor }}">
+                        <p class="text-xs text-muted" data-geocode-status="{{ $anchor }}"
+                           data-hit="{{ __('Koordinaten aus der Adresse ermittelt.') }}"
+                           data-miss="{{ __('Adresse nicht gefunden.') }}">
+                            {{ $tour->{$anchor . '_lat'} !== null ? __('Koordinaten aus der Adresse ermittelt.') : __('Koordinaten werden beim Verlassen des Adressfelds ermittelt.') }}
+                        </p>
+                    </fieldset>
+                @endforeach
 
                 <fieldset class="rounded-box border border-base-300 p-3">
                     <legend class="px-1 text-sm font-medium">{{ __('Stopps') }}</legend>
-                    <p class="mb-2 text-xs text-muted">{{ __('Per Drag & Drop sortieren. „Optimieren" sortiert automatisch.') }}</p>
+                    <p class="mb-2 text-xs text-muted">{{ __('Per Drag & Drop sortieren. „Vorschlag berechnen“ liefert Reihenfolge und Zeiten zur Übernahme.') }}</p>
                     {{-- Sortierlogik: resources/js/tour-stops.js --}}
                     <ol class="space-y-1" data-stop-list>
                         @foreach ($stops as $s)
@@ -95,7 +98,12 @@
                                 <input type="hidden" name="order_ids[]" value="{{ $s->sqid }}">
                                 <x-status-badge tone="primary" size="sm" data-stop-pos>{{ $s->tour_position ?? '?' }}</x-status-badge>
                                 <div class="flex-1">
-                                    <div class="font-medium text-sm">{{ $s->title }}</div>
+                                    <div class="flex flex-wrap items-center gap-2 text-sm font-medium">
+                                        <span>{{ $s->title }}</span>
+                                        @if ($s->planningCoordinates() === null)
+                                            <x-status-badge tone="warning" size="xs">{{ __('ohne Koordinaten') }}</x-status-badge>
+                                        @endif
+                                    </div>
                                     <div class="text-xs text-muted">{{ $s->customer?->name }} · {{ $s->address_city }}</div>
                                 </div>
                             </li>
@@ -138,7 +146,12 @@
                                         <li class="flex items-center gap-2 rounded-box border border-base-200 p-2">
                                             <input type="checkbox" name="order_ids[]" value="{{ $a->sqid }}" class="checkbox checkbox-sm">
                                             <div class="flex-1">
-                                                <div class="text-sm">{{ $a->title }}</div>
+                                                <div class="flex flex-wrap items-center gap-2 text-sm">
+                                                    <span>{{ $a->title }}</span>
+                                                    @if ($a->planningCoordinates() === null)
+                                                        <x-status-badge tone="warning" size="xs">{{ __('ohne Koordinaten') }}</x-status-badge>
+                                                    @endif
+                                                </div>
                                                 <div class="text-xs text-muted">{{ $a->address_city }}</div>
                                             </div>
                                         </li>
@@ -164,6 +177,9 @@
                                                     <x-status-badge size="xs" outline>{{ $a->modeLabel() }}</x-status-badge>
                                                     @if ($a->location_mode === \App\Enums\Diary\LocationMode::Remote)
                                                         <x-status-badge tone="ghost" size="xs">{{ __('Remote') }}</x-status-badge>
+                                                    @endif
+                                                    @if ($a->planningCoordinates() === null)
+                                                        <x-status-badge tone="warning" size="xs">{{ __('ohne Koordinaten') }}</x-status-badge>
                                                     @endif
                                                 </div>
                                                 <div class="text-xs text-muted">

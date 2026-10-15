@@ -18,6 +18,17 @@
     ? __('Geofences für :customer.', ['customer' => $customer->name])
     : __('Standort-Zonen je Kunde für die automatische Zeiterfassung.')">
     <x-slot:actions>
+        @can('create', \App\Models\Location\CustomerGeofence::class)
+            @if ($customer)
+                <x-action-form :action="route('geofences.from-customer', $customer)">
+                    <x-icon-btn icon="my_location" size="sm" type="submit" show-label>{{ __('Zone aus Kundenadresse') }}</x-icon-btn>
+                </x-action-form>
+            @else
+                <x-action-form :action="route('geofences.from-customers')" :confirm="__('Für alle Kunden mit Koordinaten ohne Zone eine Zone anlegen?')" :confirm-label="__('Anlegen')">
+                    <x-icon-btn icon="my_location" size="sm" type="submit" show-label>{{ __('Zonen aus Kundenadressen') }}</x-icon-btn>
+                </x-action-form>
+            @endif
+        @endcan
         <x-icon-btn icon="add" tone="primary" size="sm"
                     data-entry-modal-trigger
                     :href="route('geofences.create')"

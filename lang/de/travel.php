@@ -25,6 +25,7 @@ return [
     ],
     'tour_leg_purpose' => 'Etappe zu :title',
     'tour_return_purpose' => 'Rückfahrt',
+    'tour_leg_straight_line' => '(Luftlinie)',
     'driving_time' => [
         'legend' => 'Lenk- und Ruhezeiten',
         'hint' => 'Für Fahrzeuge mit Lenkzeitregeln: zweiter Fahrer im Mehrfahrerbetrieb und Überfahrten, bei denen das Fahrzeug auf Fähre oder Zug mitfährt.',

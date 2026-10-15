@@ -233,6 +233,12 @@ return [
             'profile' => 'Profil (z. B. driving)',
             'timeout' => 'Timeout (Sekunden)',
         ],
+        'vroom' => [
+            'heading' => 'VROOM (Tourvorschlag)',
+            'base_url' => 'Basis-URL (leer = Heuristik)',
+            'timeout' => 'Timeout (Sekunden)',
+            'not_configured' => 'nicht konfiguriert — die eingebaute Heuristik rechnet',
+        ],
         'tiles' => [
             'heading' => 'Kartenkacheln',
             'url' => 'Tile-URL-Vorlage',

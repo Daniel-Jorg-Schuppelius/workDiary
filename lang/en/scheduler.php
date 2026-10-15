@@ -168,7 +168,7 @@ return [
             'sync_contacts' => 'Sync Lexoffice contacts',
             'sync_vouchers' => 'Sync Lexoffice vouchers',
         ],
-        'location' => ['purge_points' => 'Purge raw location points'],
+        'location' => ['purge_points' => 'Purge raw location points', 'close_stale_visits' => 'Close stale location visits'],
         'mail' => ['poll' => 'Poll mail intake'],
         'msgraph' => [
             'calendar-import' => 'Two-way calendar import',

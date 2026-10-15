@@ -230,6 +230,12 @@ return [
             'profile' => 'Perfil (p. ej. driving)',
             'timeout' => 'Tiempo de espera (segundos)',
         ],
+        'vroom' => [
+            'heading' => 'VROOM (propuesta de ruta)',
+            'base_url' => 'URL base (vacío = heurística)',
+            'timeout' => 'Tiempo de espera (segundos)',
+            'not_configured' => 'no configurado — calcula la heurística integrada',
+        ],
         'tiles' => [
             'heading' => 'Teselas de mapa',
             'url' => 'Plantilla de URL de tesela',

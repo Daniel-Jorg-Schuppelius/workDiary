@@ -491,6 +491,22 @@ tragen den Hinweis **grobe Schätzung (Luftlinie)**.
 - **Timeout (Sekunden)** (1–120, Vorgabe 10): So lange wartet workDiary auf
   eine Antwort, bevor es auf die Luftlinie zurückfällt.
 
+## VROOM (Tourvorschlag)
+
+VROOM ist ein optionaler Dienst für die Tourenoptimierung. Ist er
+eingetragen, rechnet er die **Tourvorschläge** (Reihenfolge und
+Ankunftszeiten unter Zeitfenstern, Pausen und Qualifikationen) und den
+**Tagesvorschlag** der Leitstelle für mehrere Fahrer. Er nutzt dieselben
+Fahrzeiten wie workDiary (OSRM oder Luftlinie). Ohne Eintrag oder bei einem
+Ausfall rechnet die eingebaute Heuristik; der Vorschlag nennt, wer gerechnet
+hat.
+
+- **Basis-URL (leer = Heuristik)** (vollständige Adresse, bis 255 Zeichen):
+  Adresse des VROOM-Dienstes (vroom-express). Für eine eigene Adresse im
+  internen Netz gilt dieselbe Freigabe durch den Betreiber wie bei Nominatim.
+- **Timeout (Sekunden)** (1–600, Vorgabe 60): So lange wartet workDiary auf
+  eine Antwort, bevor die Heuristik übernimmt.
+
 ## Kartenkacheln
 
 Kartenkacheln sind die Bildausschnitte, aus denen die Karten in workDiary

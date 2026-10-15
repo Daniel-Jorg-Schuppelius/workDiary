@@ -31,7 +31,7 @@ use App\Enums\Sales\QuoteStatus;
 use App\Enums\ServiceTicket\{ChangeStatus, ProblemStatus, ServiceTicketStatus};
 use App\Enums\Sustainability\SustainabilityAssessmentStatus;
 use App\Enums\Tenders\TenderNoticeMatchState;
-use App\Enums\Tour\TourStatus;
+use App\Enums\Tour\{TourProposalStatus, TourStatus};
 use App\Enums\Whistleblowing\CaseStatus;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -61,6 +61,9 @@ final class StatusTransitionsTest extends TestCase {
             'Ticket: wartet → in Arbeit' => [ServiceTicketStatus::WaitingCustomer, ServiceTicketStatus::InProgress, true],
             'Tour: Entwurf → abgeschlossen' => [TourStatus::Draft, TourStatus::Completed, false],
             'Tour: geplant → abgeschlossen' => [TourStatus::Planned, TourStatus::Completed, true],
+            'Tourvorschlag: berechnet → offen' => [TourProposalStatus::Computing, TourProposalStatus::Open, true],
+            'Tourvorschlag: berechnet → übernommen' => [TourProposalStatus::Computing, TourProposalStatus::Adopted, false],
+            'Tourvorschlag: verworfen → übernommen' => [TourProposalStatus::Rejected, TourProposalStatus::Adopted, false],
             'Problem: offen → Known Error' => [ProblemStatus::Open, ProblemStatus::KnownError, false],
             'Problem: Analyse → Known Error' => [ProblemStatus::Analyzing, ProblemStatus::KnownError, true],
             'Wartungsfenster: geplant → aktiv' => [MaintenanceWindowStatus::Planned, MaintenanceWindowStatus::Active, true],

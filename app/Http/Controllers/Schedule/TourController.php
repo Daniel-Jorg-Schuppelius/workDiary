@@ -12,6 +12,8 @@ namespace App\Http\Controllers\Schedule;
 
 use App\Enums\Diary\{Mode, Status as DiaryStatus};
 use App\Enums\Tour\TourStatus;
+use App\Enums\User\Permission;
+use App\Exceptions\{LogbookViolationException, TourAlreadyMaterializedException};
 use App\Http\Controllers\Concerns\{ResolvesGlobalDateRange, ResolvesRequestedUser};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Diary\SaveTourRequest;
@@ -23,7 +25,7 @@ use App\Models\Platform\User;
 use App\Services\Routing\TourService;
 use App\Support\ErrorText;
 use App\Support\Query\DateRange;
-use App\Support\{Setting, SortableQuery};
+use App\Support\{Setting, SortableQuery, Tz};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
@@ -35,6 +37,9 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class TourController extends Controller {
     use ResolvesGlobalDateRange, ResolvesRequestedUser;
+
+    /** Marker je Stammdaten-Layer der Karte; mehr wird gekürzt und angezeigt (MVP-1173). */
+    public const MAX_LAYER_MARKERS = 1000;
 
     public function __construct(private readonly TourService $tours) {}
 
@@ -136,10 +141,16 @@ class TourController extends Controller {
             'user:id,name',
             'vehicle:id,license_plate,label',
             'diaryEntries' => fn($q) => $q->orderByRaw('tour_position IS NULL')->orderBy('tour_position'),
-            'diaryEntries.customer:id,name',
-        ]);
+            'diaryEntries.customer:id,name,address_lat,address_lng',
+            'stops',
+            'proposals',
+            'journal.actor:id,name',
+        ])->loadCount('travelLogs');
 
-        return view('tours.show', ['tour' => $tour]);
+        return view('tours.show', [
+            'tour' => $tour,
+            'stopRows' => $tour->stops->keyBy('diary_entry_id'),
+        ]);
     }
 
     public function edit(Tour $tour): View {
@@ -147,7 +158,7 @@ class TourController extends Controller {
 
         $tour->load([
             'diaryEntries' => fn($q) => $q->orderByRaw('tour_position IS NULL')->orderBy('tour_position'),
-            'diaryEntries.customer:id,name',
+            'diaryEntries.customer:id,name,address_lat,address_lng',
         ]);
 
         $tourDate = $tour->tour_date?->toDateString() ?? CarbonImmutable::today()->toDateString();
@@ -155,8 +166,11 @@ class TourController extends Controller {
         // Fix terminierte Aufträge für diesen Tag (heutiges Verhalten).
         $available = DiaryEntry::query()
             ->whereNull('tour_id')
+            ->whereIn('status', [DiaryStatus::Open->value, DiaryStatus::Problem->value])
+            ->where('is_archived', false)
             ->whereHas('entryType', fn($q) => $q->where('allow_tour', true))
             ->whereDate('scheduled_for', $tourDate)
+            ->with('customer:id,name,address_lat,address_lng')
             ->orderBy('time_window_start')
             ->orderBy('id')
             ->get();
@@ -184,6 +198,7 @@ class TourController extends Controller {
                         ->whereDate('due_date', '<=', $tourDate);
                 });
             })
+            ->with('customer:id,name,address_lat,address_lng')
             ->orderByRaw('service_minutes IS NULL')
             ->orderBy('service_minutes')
             ->orderBy('id')
@@ -196,16 +211,16 @@ class TourController extends Controller {
             'flexBacklog' => $flexBacklog,
             'users' => $this->loadSelectableUsers(),
             'vehicles' => $this->loadVehicles(),
-            'statuses' => TourStatus::options(),
+            'sites' => Site::query()->whereNotNull('geo_lat')->whereNotNull('geo_lng')->orderBy('name')->get(['id', 'name', 'geo_lat', 'geo_lng', 'address_street', 'address_zip', 'address_city']),
         ]);
     }
 
     public function update(SaveTourRequest $request, Tour $tour): RedirectResponse {
         Gate::authorize('update', $tour);
 
-        // status NICHT per Massenzuweisung: Übergänge über start()/complete() (TourService mit Transition-Guards);
-        // direktes Setzen umginge Guards und Seiteneffekte.
-        $data = collect($request->validated())->except('status')->all();
+        // Statuswechsel laufen über start()/complete() (Transition-Guards), nicht übers Formular.
+        $data = $request->validated();
+        $data += $this->resolveStartAnchor($tour, $data);
 
         /** @var User $auth */
         $auth = Auth::user();
@@ -279,10 +294,39 @@ class TourController extends Controller {
         return back()->with('success', __('Tour abgeschlossen.'));
     }
 
-    public function materialize(Tour $tour): RedirectResponse {
+    /** Dialog „Als Fahrten übernehmen“ (MVP-1172): Tachostand nur für Fahrzeuge im Fahrtenbuch-Modus. */
+    public function materializeForm(Tour $tour): View {
+        Gate::authorize('update', $tour);
+        $tour->load('vehicle:id,license_plate,label,logbook_mode,odometer_km');
+
+        return view('tours._materialize_dialog', [
+            'tour' => $tour,
+            'requiresOdometer' => $tour->vehicle?->logbook_mode === true,
+        ]);
+    }
+
+    public function materialize(Request $request, Tour $tour): RedirectResponse {
         Gate::authorize('update', $tour);
 
-        $logs = $this->tours->materializeToTravelLogs($tour);
+        if (! in_array($tour->status, [TourStatus::InProgress, TourStatus::Completed], true)) {
+            return back()->withErrors(['tour' => (string) __('Fahrten lassen sich erst ab einer gestarteten Tour übernehmen.')]);
+        }
+
+        $requiresOdometer = $tour->vehicle?->logbook_mode === true;
+        $data = $request->validate([
+            'odometer_start_km' => [$requiresOdometer ? 'required' : 'nullable', 'integer', 'min:0'],
+        ]);
+
+        try {
+            $logs = $this->tours->materializeToTravelLogs(
+                $tour,
+                isset($data['odometer_start_km']) ? (int) $data['odometer_start_km'] : null,
+            );
+        } catch (TourAlreadyMaterializedException $e) {
+            return back()->withErrors(['tour' => ErrorText::for($e)]);
+        } catch (LogbookViolationException $e) {
+            return back()->withErrors($e->errors);
+        }
 
         return redirect()->route('tours.show', $tour)
             ->with('success', __(':count Fahrten erzeugt.', ['count' => count($logs)]));
@@ -373,8 +417,14 @@ class TourController extends Controller {
             ];
         }
 
-        // Stammdaten-Layer (zuschaltbar).
-        foreach (Customer::query()->whereNotNull('address_lat')->whereNotNull('address_lng')->get(['id', 'name', 'address_lat', 'address_lng']) as $customer) {
+        // Stammdaten-Layer (zuschaltbar), je Layer gedeckelt (MVP-1173).
+        $truncatedLayers = [];
+        $customers = Customer::query()->whereNotNull('address_lat')->whereNotNull('address_lng')->orderBy('name')->limit(self::MAX_LAYER_MARKERS + 1)->get(['id', 'name', 'address_lat', 'address_lng']);
+        if ($customers->count() > self::MAX_LAYER_MARKERS) {
+            $truncatedLayers[] = (string) __('Kunden');
+            $customers = $customers->take(self::MAX_LAYER_MARKERS);
+        }
+        foreach ($customers as $customer) {
             $markers[] = [
                 'lat' => (float) $customer->address_lat,
                 'lng' => (float) $customer->address_lng,
@@ -383,7 +433,12 @@ class TourController extends Controller {
                 'color' => '#0d9488',
             ];
         }
-        foreach (Site::query()->whereNotNull('geo_lat')->whereNotNull('geo_lng')->get(['id', 'name', 'geo_lat', 'geo_lng']) as $site) {
+        $sites = Site::query()->whereNotNull('geo_lat')->whereNotNull('geo_lng')->orderBy('name')->limit(self::MAX_LAYER_MARKERS + 1)->get(['id', 'name', 'geo_lat', 'geo_lng']);
+        if ($sites->count() > self::MAX_LAYER_MARKERS) {
+            $truncatedLayers[] = (string) __('Standorte');
+            $sites = $sites->take(self::MAX_LAYER_MARKERS);
+        }
+        foreach ($sites as $site) {
             $markers[] = [
                 'lat' => (float) $site->geo_lat,
                 'lng' => (float) $site->geo_lng,
@@ -392,7 +447,12 @@ class TourController extends Controller {
                 'color' => '#9333ea',
             ];
         }
-        foreach (User::inCurrentOrganization()->whereNotNull('home_lat')->whereNotNull('home_lng')->get(['id', 'name', 'home_lat', 'home_lng']) as $driver) {
+        // Heimadressen sind Beschäftigtendaten: alle nur für Disposition und Admin, sonst die eigene (MVP-1173).
+        $drivers = User::inCurrentOrganization()->whereNotNull('home_lat')->whereNotNull('home_lng');
+        if (! $auth->isAdmin() && ! $auth->can(Permission::DispatchManage->value)) {
+            $drivers->whereKey($auth->id);
+        }
+        foreach ($drivers->get(['id', 'name', 'home_lat', 'home_lng']) as $driver) {
             $markers[] = [
                 'lat' => (float) $driver->home_lat,
                 'lng' => (float) $driver->home_lng,
@@ -421,7 +481,36 @@ class TourController extends Controller {
             'routes' => $routes,
             'layers' => $layers,
             'tourCount' => $tours->count(),
+            'truncatedLayers' => $truncatedLayers,
         ]);
+    }
+
+    /**
+     * Startzeit (Ortszeit `HH:MM` am Tourtag → UTC) und Startanker aus der
+     * Betriebsstätte (Adresse und Koordinaten der Site) (MVP-1174).
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function resolveStartAnchor(Tour $tour, array $data): array {
+        $resolved = [];
+        $tz = $tour->organization !== null ? Tz::ofOrganization($tour->organization) : Tz::current();
+        $date = (string) ($data['tour_date'] ?? $tour->tour_date?->toDateString() ?? CarbonImmutable::today($tz)->toDateString());
+        if (array_key_exists('planned_start_time', $data)) {
+            $time = (string) ($data['planned_start_time'] ?? '');
+            $resolved['planned_start_at'] = $time !== '' ? CarbonImmutable::parse($date . ' ' . $time, $tz)->utc() : null;
+            unset($data['planned_start_time']);
+        }
+        if (! empty($data['start_site_id'])) {
+            $site = Site::query()->find((int) $data['start_site_id']);
+            if ($site instanceof Site && $site->geo_lat !== null && $site->geo_lng !== null) {
+                $resolved['start_address'] = trim(implode(' ', array_filter([$site->address_street, $site->address_zip, $site->address_city])) ?: $site->name);
+                $resolved['start_lat'] = (string) $site->geo_lat;
+                $resolved['start_lng'] = (string) $site->geo_lng;
+            }
+        }
+
+        return $resolved;
     }
 
     private function resolveTargetUser(Request $request, User $authUser): ?User {

@@ -176,6 +176,15 @@ class AppServiceProvider extends ServiceProvider {
         $this->app->scoped(\App\Services\Search\SearchVocabulary::class);
         $this->app->scoped(\App\Services\Search\SearchSynonyms::class);
 
+        // Tourvorschlag (MVP-1175/1178): ein Vertrag; VROOM, wenn konfiguriert und erreichbar, sonst die Heuristik.
+        $this->app->scoped(\App\Services\Routing\Solver\VroomTourSolver::class, function (): \App\Services\Routing\Solver\VroomTourSolver {
+            return new \App\Services\Routing\Solver\VroomTourSolver([
+                'base_url' => Setting::get('routing.vroom.base_url'),
+                'timeout' => (int) Setting::get('routing.vroom.timeout', 60),
+            ], app(\App\Plugins\Support\PluginHttpFactory::class), app(\App\Services\Routing\Solver\HeuristicTourSolver::class));
+        });
+        $this->app->bind(\App\Services\Routing\Solver\Contracts\TourSolver::class, \App\Services\Routing\Solver\FallbackTourSolver::class);
+
         $this->app->scoped(OsrmRouter::class, function (): OsrmRouter {
             return new OsrmRouter([
                 'base_url' => Setting::get('routing.osrm.base_url'),

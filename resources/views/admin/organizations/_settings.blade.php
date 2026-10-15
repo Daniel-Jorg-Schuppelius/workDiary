@@ -497,6 +497,19 @@
                            :placeholder="__('settings.placeholder_default', ['value' => (string) config('routing.osrm.timeout')])" />
         </x-form-group>
 
+        <x-form-group :legend="__('settings.routing.vroom.heading')" :icon="$tabs['routing']['icon']" :tone="$tabs['routing']['tone']" cols="2" compact>
+            <x-input-field name="settings[routing][vroom][base_url]" span="2" inputmode="url"
+                           :label="__('settings.routing.vroom.base_url')"
+                           error="settings.routing.vroom.base_url"
+                           :value="old('settings.routing.vroom.base_url', data_get($stored, 'routing.vroom.base_url', ''))"
+                           :placeholder="(string) config('routing.vroom.base_url') !== '' ? __('settings.placeholder_default', ['value' => (string) config('routing.vroom.base_url')]) : __('settings.routing.vroom.not_configured')" />
+            <x-input-field name="settings[routing][vroom][timeout]" type="number" min="1" max="600"
+                           :label="__('settings.routing.vroom.timeout')"
+                           error="settings.routing.vroom.timeout"
+                           :value="old('settings.routing.vroom.timeout', data_get($stored, 'routing.vroom.timeout', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => (string) config('routing.vroom.timeout')])" />
+        </x-form-group>
+
         <x-form-group :legend="__('settings.routing.tiles.heading')" :icon="$tabs['routing']['icon']" :tone="$tabs['routing']['tone']" cols="2" compact>
             <x-input-field name="settings[routing][tiles][url]" span="2" inputmode="url"
                            :label="__('settings.routing.tiles.url')"

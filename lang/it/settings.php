@@ -230,6 +230,12 @@ return [
             'profile' => 'Profilo (es. driving)',
             'timeout' => 'Timeout (secondi)',
         ],
+        'vroom' => [
+            'heading' => 'VROOM (proposta di giro)',
+            'base_url' => 'URL base (vuoto = euristica)',
+            'timeout' => 'Timeout (secondi)',
+            'not_configured' => 'non configurato — calcola l\'euristica integrata',
+        ],
         'tiles' => [
             'heading' => 'Tile mappa',
             'url' => 'Modello URL tile',

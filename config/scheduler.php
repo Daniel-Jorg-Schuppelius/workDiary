@@ -308,6 +308,13 @@ return [
             'allowed' => ['dailyAt', 'weeklyOn'],
             'criticality' => 'housekeeping',
         ],
+        // MVP-1186: verwaiste offene Besuche schließen, damit ihr Vorschlag entsteht.
+        'location.close_stale_visits' => [
+            'command' => 'location:close-stale-visits',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['hourly', 'everyThirtyMinutes', 'dailyAt'],
+            'criticality' => 'core',
+        ],
         'integration.purge_inbox' => [
             'command' => 'integration:purge-inbox',
             'cadence' => ['type' => 'dailyAt', 'time' => '04:00'],

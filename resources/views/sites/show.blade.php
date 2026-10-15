@@ -20,6 +20,13 @@
                 : __('Standort ohne Kundenbindung.')"
                             back-route="sites.index" :back-label="__('Zurück')">
                 <x-slot:actions>
+                    @if ($site->geo_lat !== null && $site->customer_id !== null && Route::has('geofences.from-site'))
+                        @can('create', \App\Models\Location\CustomerGeofence::class)
+                            <x-action-form :action="route('geofences.from-site', $site)">
+                                <x-icon-btn icon="my_location" size="sm" type="submit" show-label>{{ __('Zone aus Adresse') }}</x-icon-btn>
+                            </x-action-form>
+                        @endcan
+                    @endif
                     <x-icon-btn icon="edit" size="sm"
                                 data-entry-modal-trigger
                                 :href="route('sites.edit', $site)"

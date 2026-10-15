@@ -17,6 +17,7 @@ use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Location\LocationIngestService;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
 
 /**
@@ -32,6 +33,9 @@ class LocationController extends Controller {
     public const MODULE = 'module.standorterfassung';
 
     public const OPT_IN_PREFERENCE = 'location_tracking_enabled';
+
+    /** Toleranz für Geräteuhren, die vorgehen. */
+    public const MAX_FUTURE_MINUTES = 5;
 
     public function __construct(
         private readonly LocationIngestService $ingest,
@@ -102,7 +106,11 @@ class LocationController extends Controller {
             return response()->json(['error' => 'tracking_not_consented'], 403);
         }
 
-        $points = $this->extractPoints($request);
+        $discarded = 0;
+        $points = $this->extractPoints($request, $discarded);
+        if ($discarded > 0) {
+            Log::info('location.ingest.discarded', ['user_id' => $user->id, 'device_id' => $device->id, 'count' => $discarded]);
+        }
         $this->ingest->ingest($user, $points, $this->resolveSource($request));
 
         $device->forceFill(['last_used_at' => Carbon::now()])->save();
@@ -160,9 +168,10 @@ class LocationController extends Controller {
     }
 
     /**
+     * @param  int  $discarded  Punkte mit unbrauchbarer Position oder Zeit (MVP-1173)
      * @return array<int, array{lat: float, lng: float, recorded_at: Carbon, accuracy_m: int|null}>
      */
-    private function extractPoints(Request $request): array {
+    private function extractPoints(Request $request, int &$discarded = 0): array {
         $raw = $request->all();
 
         // Generischer Batch unter "points" oder als reine Liste.
@@ -187,6 +196,8 @@ class LocationController extends Controller {
             $normalized = $this->normalizeOne($candidate);
             if ($normalized !== null) {
                 $points[] = $normalized;
+            } else {
+                $discarded++;
             }
         }
 
@@ -206,34 +217,48 @@ class LocationController extends Controller {
             return null;
         }
 
+        $recordedAt = $this->resolveTimestamp($p);
+        if ($recordedAt === null) {
+            return null;
+        }
         $accuracy = $p['accuracy_m'] ?? $p['acc'] ?? $p['accuracy'] ?? null;
 
         return [
             'lat' => (float) $lat,
             'lng' => (float) $lng,
-            'recorded_at' => $this->resolveTimestamp($p),
+            'recorded_at' => $recordedAt,
             'accuracy_m' => is_numeric($accuracy) ? (int) round((float) $accuracy) : null,
         ];
     }
 
-    /** @param array<string, mixed> $p */
-    private function resolveTimestamp(array $p): Carbon {
-        // OwnTracks: tst (Unix-Sekunden). Traccar/OsmAnd: timestamp. Sonst ISO.
+    /**
+     * OwnTracks `tst` (Unix-Sekunden), Traccar/OsmAnd `timestamp`, sonst ISO;
+     * ohne Angabe gilt „jetzt“. Unparsbare Zeiten und mehr als fünf Minuten
+     * Zukunft werden verworfen (MVP-1173); alte Punkte bleiben erlaubt, weil
+     * Offline-Puffer und Importe rückwirkend liefern.
+     *
+     * @param array<string, mixed> $p
+     */
+    private function resolveTimestamp(array $p): ?Carbon {
         $tst = $p['tst'] ?? $p['timestamp'] ?? null;
-        if (is_numeric($tst)) {
-            return Carbon::createFromTimestampUTC((int) $tst);
-        }
-
         $iso = $p['recorded_at'] ?? (is_string($tst) ? $tst : null);
-        if (is_string($iso) && $iso !== '') {
+        if (is_numeric($tst)) {
+            $at = Carbon::createFromTimestampUTC((int) $tst);
+        } elseif (is_string($iso) && $iso !== '') {
             try {
-                return Carbon::parse($iso);
+                $at = Carbon::parse($iso);
             } catch (\Throwable) {
-                // Fällt unten auf "jetzt" zurück.
+                return null;
             }
+        } else {
+            return Carbon::now();
         }
 
-        return Carbon::now();
+        if ($at->greaterThan(Carbon::now()->addMinutes(self::MAX_FUTURE_MINUTES))) {
+            return null;
+        }
+
+        return $at;
     }
 
     private function resolveSource(Request $request): string {

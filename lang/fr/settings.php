@@ -230,6 +230,12 @@ return [
             'profile' => 'Profil (p. ex. driving)',
             'timeout' => 'Délai d\'attente (secondes)',
         ],
+        'vroom' => [
+            'heading' => 'VROOM (proposition de tournée)',
+            'base_url' => 'URL de base (vide = heuristique)',
+            'timeout' => 'Délai d\'attente (secondes)',
+            'not_configured' => 'non configuré — l\'heuristique intégrée calcule',
+        ],
         'tiles' => [
             'heading' => 'Tuiles de carte',
             'url' => 'Modèle d\'URL de tuile',

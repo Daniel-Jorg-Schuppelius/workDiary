@@ -162,6 +162,13 @@ return [
         ],
     ],
     'tour' => [
+        'proposal_status' => [
+            'computing' => 'Wird berechnet',
+            'open' => 'Offen',
+            'adopted' => 'Übernommen',
+            'rejected' => 'Verworfen',
+            'failed' => 'Fehlgeschlagen',
+        ],
         'status' => [
             'draft' => 'Entwurf',
             'planned' => 'Geplant',
@@ -2191,6 +2198,7 @@ return [
     ],
     'location' => [
         'location_pending_entry_status' => ['open' => 'Offen', 'imported' => 'Übernommen', 'dismissed' => 'Verworfen'],
+        'location_pending_trip_status' => ['open' => 'Offen', 'imported' => 'Übernommen', 'dismissed' => 'Verworfen'],
     ],
     'migration' => [
         'accounting_migration_status' => ['draft' => 'Entwurf', 'analyzing' => 'Analyse', 'mapping' => 'Zuordnung', 'ready' => 'Bereit', 'parallel_run' => 'Doppelbetrieb', 'cutover' => 'Umschaltung', 'verifying' => 'Prüfung', 'completed' => 'Abgeschlossen', 'blocked' => 'Blockiert', 'cancelled' => 'Abgebrochen'],

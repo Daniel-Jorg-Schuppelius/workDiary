@@ -1189,6 +1189,8 @@ Route::middleware('auth')->group(function () {
         Route::get('dispatch-board/vorschlaege', [\App\Http\Controllers\Schedule\DispatchSuggestionController::class, 'index'])->name('dispatch.suggestions');
         Route::post('dispatch-board/vorschlaege/{entry}/uebernehmen', [\App\Http\Controllers\Schedule\DispatchSuggestionController::class, 'apply'])->name('dispatch.suggestions.apply');
         Route::post('dispatch-board/vorschlaege/{entry}/ablehnen', [\App\Http\Controllers\Schedule\DispatchSuggestionController::class, 'dismiss'])->name('dispatch.suggestions.dismiss');
+        Route::get('dispatch-board/tagesvorschlag', [\App\Http\Controllers\Schedule\DispatchDayPlanController::class, 'index'])->name('dispatch.day-plan'); // MVP-1179
+        Route::post('dispatch-board/tagesvorschlag', [\App\Http\Controllers\Schedule\DispatchDayPlanController::class, 'store'])->name('dispatch.day-plan.store');
         Route::get('dispatch-board', [DispatchBoardController::class, 'board'])->name('dispatch.board');
         Route::get('dispatch-board/map', [DispatchBoardController::class, 'map'])->name('dispatch.map');
         // Kalender-/Tagesansicht (Rang 52) + Auftrags-Qualifikationsmatrix (Rang 53).
@@ -1372,7 +1374,15 @@ Route::middleware('auth')->group(function () {
         // ── Standortbasierte Zeiterfassung (gegated: module.standorterfassung) ──
         Route::resource('geofences', \App\Http\Controllers\Location\GeofenceController::class)
             ->except('show');
+        Route::post('geofences/from-customers', [\App\Http\Controllers\Location\GeofenceController::class, 'fromAllCustomers'])->name('geofences.from-customers'); // MVP-1181
+        Route::post('geofences/from-customer/{customer}', [\App\Http\Controllers\Location\GeofenceController::class, 'fromCustomer'])->name('geofences.from-customer');
+        Route::post('geofences/from-site/{site}', [\App\Http\Controllers\Location\GeofenceController::class, 'fromSite'])->name('geofences.from-site');
         Route::get('location/review', [\App\Http\Controllers\Location\LocationReviewController::class, 'index'])->name('location.review.index');
+        // Fahrtvorschläge aus der Spur (MVP-1185) — feste Routen vor den {entry}-Routen.
+        Route::get('location/review/trips', [\App\Http\Controllers\Location\LocationTripReviewController::class, 'index'])->name('location.review.trips.index');
+        Route::get('location/review/trips/{trip}/confirm', [\App\Http\Controllers\Location\LocationTripReviewController::class, 'confirmForm'])->name('location.review.trips.confirm.form');
+        Route::post('location/review/trips/{trip}/confirm', [\App\Http\Controllers\Location\LocationTripReviewController::class, 'confirm'])->name('location.review.trips.confirm');
+        Route::post('location/review/trips/{trip}/dismiss', [\App\Http\Controllers\Location\LocationTripReviewController::class, 'dismiss'])->name('location.review.trips.dismiss');
         Route::post('location/review/{entry}/confirm', [\App\Http\Controllers\Location\LocationReviewController::class, 'confirm'])->name('location.review.confirm');
         Route::post('location/review/{entry}/dismiss', [\App\Http\Controllers\Location\LocationReviewController::class, 'dismiss'])->name('location.review.dismiss');
         Route::get('location/devices', [\App\Http\Controllers\Location\LocationDeviceController::class, 'index'])->name('location.devices.index');
@@ -4573,6 +4583,15 @@ Route::middleware('auth')->group(function () {
         Route::post('tours/{tour}/optimize', [TourController::class, 'optimize'])->name('tours.optimize');
         Route::post('tours/{tour}/start', [TourController::class, 'start'])->name('tours.start');
         Route::post('tours/{tour}/complete', [TourController::class, 'complete'])->name('tours.complete');
+        Route::post('tours/{tour}/proposals', [\App\Http\Controllers\Schedule\TourProposalController::class, 'store'])->name('tours.proposals.store'); // MVP-1176
+        Route::get('tour-proposals/{proposal}', [\App\Http\Controllers\Schedule\TourProposalController::class, 'show'])->name('tour-proposals.show');
+        Route::post('tour-proposals/{proposal}/adopt', [\App\Http\Controllers\Schedule\TourProposalController::class, 'adopt'])->name('tour-proposals.adopt');
+        Route::get('tour-proposals/{proposal}/reject', [\App\Http\Controllers\Schedule\TourProposalController::class, 'rejectForm'])->name('tour-proposals.reject-form');
+        Route::post('tour-proposals/{proposal}/reject', [\App\Http\Controllers\Schedule\TourProposalController::class, 'reject'])->name('tour-proposals.reject');
+        Route::get('tours/{tour}/fahrer', [\App\Http\Controllers\Schedule\TourDriverController::class, 'show'])->name('tours.driver'); // MVP-1183
+        Route::post('tours/{tour}/stops/{stop}/arrive', [\App\Http\Controllers\Schedule\TourDriverController::class, 'arrive'])->name('tours.stops.arrive');
+        Route::post('tours/{tour}/stops/{stop}/depart', [\App\Http\Controllers\Schedule\TourDriverController::class, 'depart'])->name('tours.stops.depart');
+        Route::get('tours/{tour}/materialize', [TourController::class, 'materializeForm'])->name('tours.materialize.form');
         Route::post('tours/{tour}/materialize', [TourController::class, 'materialize'])->name('tours.materialize');
 
         // ── Fuhrpark ───────────────────────────────────────────────────────
@@ -5035,6 +5054,7 @@ Route::middleware('auth')->group(function () {
         Route::get('reports/fleet', [FleetReportController::class, 'index'])->name('reports.fleet');
         // Feature 137: steuerliches Fahrtenbuch je Fahrzeug + Zeitraum.
         Route::get('reports/logbook', [\App\Http\Controllers\Reporting\LogbookReportController::class, 'index'])->name('reports.logbook');
+        Route::get('reports/tour-plan-ist', [\App\Http\Controllers\Reporting\TourPlanActualReportController::class, 'index'])->name('reports.tour-plan-actual'); // MVP-1184
         Route::get('reports/logbook/vergleich', [\App\Http\Controllers\Fleet\LogbookComparisonController::class, 'index'])->name('reports.logbook-comparison');
         Route::get('reports/logbook/vergleich/{vehicle}/kosten', [\App\Http\Controllers\Fleet\LogbookComparisonController::class, 'costsForm'])->name('reports.logbook-comparison.costs-form');
         Route::post('reports/logbook/vergleich/{vehicle}/kosten', [\App\Http\Controllers\Fleet\LogbookComparisonController::class, 'storeCosts'])->name('reports.logbook-comparison.costs');

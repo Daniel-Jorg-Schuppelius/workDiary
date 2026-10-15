@@ -25,6 +25,7 @@ return [
     ],
     'tour_leg_purpose' => 'Leg to :title',
     'tour_return_purpose' => 'Return trip',
+    'tour_leg_straight_line' => '(straight line)',
     'driving_time' => [
         'legend' => 'Driving and rest times',
         'hint' => 'For vehicles subject to driving time rules: second driver in multi-manning and crossings where the vehicle travels on a ferry or train.',

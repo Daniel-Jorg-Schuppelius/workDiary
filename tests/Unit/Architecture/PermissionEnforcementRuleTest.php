@@ -75,7 +75,7 @@ class PermissionEnforcementRuleTest extends TestCase {
         'TaskManage', 'TimeEntryCreate', 'TimeEntryCreateForOthers',
         'TimeEntryDelete', 'TimeEntryUpdate', 'TimeEntryViewOwn', 'TimesheetCreate', 'TimesheetDelete',
         'TimesheetExport', 'TimesheetLock', 'TimesheetSign', 'TimesheetUnlock', 'TimesheetUpdate',
-        'TimesheetViewAny', 'TourManage', 'TourViewAny', 'TravelLogManage', 'TravelLogViewAny',
+        'TimesheetViewAny', 'TourManage', 'TravelLogManage', 'TravelLogViewAny',
         'UserCreate', 'UserDelete', 'UserManageRates', 'UserResetPassword', 'UserUpdate',
         'UserView', 'UserViewAny', 'VacationApprove', 'VacationCancel', 'VacationRequest',
     ];

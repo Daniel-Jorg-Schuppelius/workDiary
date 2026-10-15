@@ -230,6 +230,12 @@ return [
             'profile' => 'Profile (e.g. driving)',
             'timeout' => 'Timeout (seconds)',
         ],
+        'vroom' => [
+            'heading' => 'VROOM (tour proposal)',
+            'base_url' => 'Base URL (empty = heuristic)',
+            'timeout' => 'Timeout (seconds)',
+            'not_configured' => 'not configured — the built-in heuristic solves',
+        ],
         'tiles' => [
             'heading' => 'Map tiles',
             'url' => 'Tile URL template',

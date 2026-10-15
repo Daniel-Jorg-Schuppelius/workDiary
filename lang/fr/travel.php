@@ -25,6 +25,7 @@ return [
     ],
     'tour_leg_purpose' => 'Trajet vers :title',
     'tour_return_purpose' => 'Trajet de retour',
+    'tour_leg_straight_line' => '(à vol d’oiseau)',
     'driving_time' => [
         'legend' => 'Temps de conduite et de repos',
         'hint' => 'Pour les véhicules soumis aux règles de temps de conduite : second conducteur en équipage multiple et traversées où le véhicule voyage sur un ferry ou un train.',

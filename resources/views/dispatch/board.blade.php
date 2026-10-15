@@ -16,6 +16,9 @@
     <x-index-page :subtitle="__('Offene und geplante Aufträge des Zeitraums kompakt nach Disposition.')">
         <x-slot:actions>
         <x-icon-btn icon="auto_fix_high" size="sm" :href="route('dispatch.suggestions')" show-label>{{ __('Leerzeit-Vorschläge') }}</x-icon-btn>
+            @can(\App\Enums\User\Permission::DispatchManage->value)
+                <x-icon-btn icon="auto_awesome" size="sm" :href="route('dispatch.day-plan')" show-label>{{ __('Tagesvorschlag') }}</x-icon-btn>
+            @endcan
             <x-icon-btn icon="map" tone="ghost" size="sm"
                         :href="route('dispatch.map', request()->only(['from', 'to', 'user']))"
                         show-label>{{ __('Karte') }}</x-icon-btn>

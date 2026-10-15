@@ -168,7 +168,7 @@ return [
             'sync_contacts' => 'Synchroniser les contacts Lexoffice',
             'sync_vouchers' => 'Synchroniser les pièces Lexoffice',
         ],
-        'location' => ['purge_points' => 'Purger les points de localisation bruts'],
+        'location' => ['purge_points' => 'Purger les points de localisation bruts', 'close_stale_visits' => 'Clôturer les visites de site orphelines'],
         'mail' => ['poll' => 'Relever la boîte mail entrante'],
         'msgraph' => [
             'calendar-import' => 'Import bidirectionnel du calendrier',

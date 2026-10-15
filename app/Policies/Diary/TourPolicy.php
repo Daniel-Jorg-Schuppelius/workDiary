@@ -10,6 +10,7 @@
 
 namespace App\Policies\Diary;
 
+use App\Enums\User\Permission;
 use App\Models\Diary\Tour;
 use App\Models\Platform\User;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
@@ -19,7 +20,7 @@ class TourPolicy {
     use HasAdminBypass;
 
     public function viewAny(User $user): bool {
-        return true;
+        return $user->can(Permission::TourViewAny->value);
     }
 
     public function view(User $user, Tour $tour): bool {

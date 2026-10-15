@@ -25,6 +25,7 @@ return [
     ],
     'tour_leg_purpose' => 'Tratta verso :title',
     'tour_return_purpose' => 'Viaggio di ritorno',
+    'tour_leg_straight_line' => '(in linea d’aria)',
     'driving_time' => [
         'legend' => 'Tempi di guida e di riposo',
         'hint' => 'Per i veicoli soggetti alle regole sui tempi di guida: secondo conducente in multipresenza e traversate in cui il veicolo viaggia su traghetto o treno.',

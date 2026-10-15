@@ -57,6 +57,9 @@ final class DiaryManifest extends Manifest {
             'takeoff_lines',
             'takeoff_transfers',
             'takeoffs',
+            'tour_events',
+            'tour_proposals',
+            'tour_stops',
             'tours',
         ];
     }
@@ -103,6 +106,8 @@ final class DiaryManifest extends Manifest {
     public function contracts(): array {
         return [
             \App\Services\Takeoff\Contracts\TakeoffProgressRecorder::class => \App\Services\Takeoff\Contracts\NullTakeoffProgressRecorder::class,
+            // MVP-1184: Erfahrungswert der Servicedauer kommt aus der Planung (Tour-Ist), sonst keiner.
+            \App\Services\Diary\Contracts\ServiceDurationSource::class => \App\Services\Diary\Contracts\NullServiceDurationSource::class,
         ];
     }
 

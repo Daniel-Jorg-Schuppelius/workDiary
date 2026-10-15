@@ -116,6 +116,18 @@ return [
         ],
     ],
     'diary' => [
+        'tour' => [
+            'proposal_requested' => 'Proposition de tournée demandée',
+            'proposal_adopted' => 'Proposition de tournée adoptée',
+            'proposal_rejected' => 'Proposition de tournée rejetée',
+            'started' => 'Tournée démarrée',
+            'completed' => 'Tournée terminée',
+            'cancelled' => 'Tournée annulée',
+            'trips_created' => 'Trajets repris dans le carnet de route',
+            'stop_arrived' => 'Arrivé à l’arrêt',
+            'stop_departed' => 'Arrêt quitté',
+            'replanned' => 'Reste de la tournée replanifié',
+        ],
         'order' => [
             'created' => 'Ordre créé',
             'accept' => 'Ordre accepté',

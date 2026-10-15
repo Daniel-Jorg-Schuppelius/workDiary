@@ -86,14 +86,13 @@ class OsrmRouter {
     }
 
     /**
-     * Fetches the full N×N road-distance matrix (meters) from OSRM's
-     * `/table` service. The returned matrix mirrors the input ordering and is
-     * directly consumable by {@see TourOptimizer::optimize()}.
+     * Fetches the full N×N distance (meters) and duration (seconds) matrices
+     * from OSRM's `/table` service. Both mirror the input ordering; the
+     * distance matrix is directly consumable by {@see TourOptimizer::optimize()}.
      *
      * @param  array<int, array{0: float, 1: float}>  $coordinates  ordered [lng, lat] pairs
-     * @return array<int, array<int, float>>  square distance matrix in meters
      */
-    public function table(array $coordinates, ?string $profile = null): array {
+    public function table(array $coordinates, ?string $profile = null): TableResult {
         if (count($coordinates) < 2) {
             throw new RoutingException('At least two coordinates required.');
         }
@@ -109,7 +108,7 @@ class OsrmRouter {
         $path = $base . '/table/v1/' . rawurlencode($profile) . '/' . implode(';', $segments);
 
         try {
-            $response = $this->client($base, $timeout)->getResponse($path, ['annotations' => 'distance']);
+            $response = $this->client($base, $timeout)->getResponse($path, ['annotations' => 'duration,distance']);
         } catch (ConnectException $e) {
             throw new RoutingException('OSRM unreachable: ' . $e->getMessage(), 0, $e);
         }
@@ -120,24 +119,85 @@ class OsrmRouter {
 
         /** @var array<string, mixed> $body */
         $body = $response->json() ?? [];
-        if (($body['code'] ?? null) !== 'Ok' || ! isset($body['distances']) || ! is_array($body['distances'])) {
+        if (($body['code'] ?? null) !== 'Ok' || ! isset($body['distances'], $body['durations']) || ! is_array($body['distances']) || ! is_array($body['durations'])) {
             throw new RoutingException('OSRM table response invalid: ' . ($body['code'] ?? 'unknown'));
         }
 
         $expected = count($coordinates);
-        $matrix = [];
-        foreach ($body['distances'] as $row) {
-            if (! is_array($row) || count($row) !== $expected) {
-                throw new RoutingException('OSRM table returned a malformed distance row.');
-            }
-            $matrix[] = array_map(static fn($v): float => (float) $v, array_values($row));
-        }
 
+        return new TableResult(
+            $this->squareMatrix($body['distances'], $expected, 'distance'),
+            $this->squareMatrix($body['durations'], $expected, 'duration'),
+        );
+    }
+
+    /**
+     * @param  array<int, mixed>  $rows
+     * @return array<int, array<int, float>>
+     */
+    private function squareMatrix(array $rows, int $expected, string $kind): array {
+        $matrix = [];
+        foreach ($rows as $row) {
+            if (! is_array($row) || count($row) !== $expected) {
+                throw new RoutingException("OSRM table returned a malformed {$kind} row.");
+            }
+            // null = kein Weg (OSRM) → als unerreichbar bewerten.
+            $matrix[] = array_map(static fn($v): float => $v === null ? INF : (float) $v, array_values($row));
+        }
         if (count($matrix) !== $expected) {
-            throw new RoutingException('OSRM table returned an incomplete matrix.');
+            throw new RoutingException("OSRM table returned an incomplete {$kind} matrix.");
         }
 
         return $matrix;
+    }
+
+    /**
+     * Kartenabgleich einer GPS-Spur (`/match`, MVP-1185): Summe der
+     * Straßenstrecke aller Teilabgleiche in Metern; null, wenn OSRM nichts
+     * zuordnen kann.
+     *
+     * @param  array<int, array{0: float, 1: float}>  $coordinates  ordered [lng, lat] pairs
+     */
+    public function match(array $coordinates, ?string $profile = null): ?float {
+        if (count($coordinates) < 2) {
+            throw new RoutingException('At least two coordinates required.');
+        }
+
+        $base = rtrim((string) ($this->config['base_url'] ?? ''), '/');
+        $profile = $profile ?? (string) ($this->config['profile'] ?? 'driving');
+        $timeout = (int) ($this->config['timeout'] ?? 10);
+
+        $segments = array_map(
+            static fn(array $c): string => sprintf('%F,%F', (float) $c[0], (float) $c[1]),
+            $coordinates,
+        );
+        $path = $base . '/match/v1/' . rawurlencode($profile) . '/' . implode(';', $segments);
+
+        try {
+            $response = $this->client($base, $timeout)->getResponse($path, [
+                'overview' => 'false',
+                'steps' => 'false',
+                'gaps' => 'ignore',
+                'tidy' => 'true',
+            ]);
+        } catch (ConnectException $e) {
+            throw new RoutingException('OSRM unreachable: ' . $e->getMessage(), 0, $e);
+        }
+        if (! $response->successful()) {
+            throw new RoutingException('OSRM returned HTTP ' . $response->status());
+        }
+
+        /** @var array<string, mixed> $body */
+        $body = $response->json() ?? [];
+        if (($body['code'] ?? null) !== 'Ok' || ! isset($body['matchings']) || ! is_array($body['matchings'])) {
+            return null;
+        }
+        $meters = 0.0;
+        foreach ($body['matchings'] as $matching) {
+            $meters += (float) ($matching['distance'] ?? 0);
+        }
+
+        return $meters > 0 ? $meters : null;
     }
 
     /**

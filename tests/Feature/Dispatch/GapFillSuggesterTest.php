@@ -181,4 +181,28 @@ final class GapFillSuggesterTest extends TestCase {
             ->assertOk()
             ->assertSee('Leerzeit');
     }
+
+    /** MVP-1171: OSRM bekommt lng,lat und die Dauer-Matrix liefert die Minuten (vorher lat,lng und Meter als Sekunden). */
+    public function test_proximity_asks_osrm_with_lng_lat_and_reads_minutes_from_durations(): void {
+        $date = CarbonImmutable::parse('2026-07-13');
+        $fake = \Tests\Support\FakePluginHttp::fake([
+            '*/table/*' => \Tests\Support\FakePluginHttp::response([
+                'code' => 'Ok',
+                'distances' => [[0, 20000], [20000, 0]],
+                'durations' => [[0, 600], [660, 0]],
+            ]),
+        ]);
+        // Anker = letzter Tourstopp des Mitarbeiters an diesem Tag.
+        $tour = \App\Models\Diary\Tour::factory()->create(['organization_id' => $this->organization->id, 'user_id' => $this->worker->id, 'tour_date' => $date->toDateString(), 'planned_duration_minutes' => 0]);
+        $this->makeEntry(['title' => 'Anker', 'tour_id' => $tour->id, 'tour_position' => 1, 'assigned_user_id' => $this->worker->id, 'mode' => Mode::Fixed->value, 'scheduled_for' => $date->toDateString(), 'address_lat' => 52.5, 'address_lng' => 13.0]);
+        $this->makeEntry(['title' => 'Kandidat']); // Kundenkoordinaten 52.52 / 13.405
+
+        $suggestions = app(GapFillSuggester::class)->suggestFor($this->worker, $date);
+
+        $titles = array_map(fn(array $s): string => (string) $s['entry']->title, $suggestions);
+        $suggestion = $suggestions[array_search('Kandidat', $titles, true)];
+        $this->assertFalse($suggestion['distance_is_estimate']);
+        $this->assertSame(21, $suggestion['extra_travel_minutes']);
+        $fake->assertSent(fn($request): bool => str_contains((string) $request->getUri(), '/table/v1/driving/13.000000,52.500000;13.405000,52.520000'));
+    }
 }

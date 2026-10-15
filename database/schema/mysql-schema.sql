@@ -8515,9 +8515,12 @@ DROP TABLE IF EXISTS `customer_geofences`;
 CREATE TABLE `customer_geofences` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `organization_id` bigint(20) unsigned NOT NULL,
-  `customer_id` bigint(20) unsigned NOT NULL,
+  `customer_id` bigint(20) unsigned DEFAULT NULL,
   `site_id` bigint(20) unsigned DEFAULT NULL,
   `project_id` bigint(20) unsigned DEFAULT NULL,
+  `tour_id` bigint(20) unsigned DEFAULT NULL,
+  `diary_entry_id` bigint(20) unsigned DEFAULT NULL,
+  `valid_on` date DEFAULT NULL,
   `label` varchar(160) NOT NULL,
   `center_lat` decimal(10,7) NOT NULL,
   `center_lng` decimal(10,7) NOT NULL,
@@ -8537,6 +8540,10 @@ CREATE TABLE `customer_geofences` (
   KEY `customer_geofences_updated_by_foreign` (`updated_by`),
   KEY `cgf_idx_org_customer` (`organization_id`,`customer_id`,`is_active`),
   KEY `cgf_idx_org_active` (`organization_id`,`is_active`),
+  KEY `cgf_tour_fk` (`tour_id`),
+  KEY `cgf_entry_fk` (`diary_entry_id`),
+  CONSTRAINT `cgf_entry_fk` FOREIGN KEY (`diary_entry_id`) REFERENCES `diary_entries` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `cgf_tour_fk` FOREIGN KEY (`tour_id`) REFERENCES `tours` (`id`) ON DELETE SET NULL,
   CONSTRAINT `customer_geofences_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `customer_geofences_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE CASCADE,
   CONSTRAINT `customer_geofences_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
@@ -15445,6 +15452,7 @@ CREATE TABLE `location_pending_entries` (
   `location_visit_id` bigint(20) unsigned NOT NULL,
   `customer_id` bigint(20) unsigned DEFAULT NULL,
   `project_id` bigint(20) unsigned DEFAULT NULL,
+  `diary_entry_id` bigint(20) unsigned DEFAULT NULL,
   `suggested_date` date NOT NULL,
   `started_at` datetime NOT NULL,
   `ended_at` datetime NOT NULL,
@@ -15464,13 +15472,56 @@ CREATE TABLE `location_pending_entries` (
   KEY `location_pending_entries_time_entry_id_foreign` (`time_entry_id`),
   KEY `location_pending_entries_resolved_by_foreign` (`resolved_by`),
   KEY `lpe_idx_org_user_status` (`organization_id`,`user_id`,`status`),
+  KEY `lpe_entry_fk` (`diary_entry_id`),
   CONSTRAINT `location_pending_entries_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
   CONSTRAINT `location_pending_entries_location_visit_id_foreign` FOREIGN KEY (`location_visit_id`) REFERENCES `location_visits` (`id`) ON DELETE CASCADE,
   CONSTRAINT `location_pending_entries_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `location_pending_entries_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE SET NULL,
   CONSTRAINT `location_pending_entries_resolved_by_foreign` FOREIGN KEY (`resolved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `location_pending_entries_time_entry_id_foreign` FOREIGN KEY (`time_entry_id`) REFERENCES `time_entries` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `location_pending_entries_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+  CONSTRAINT `location_pending_entries_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `lpe_entry_fk` FOREIGN KEY (`diary_entry_id`) REFERENCES `diary_entries` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `location_pending_trips`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `location_pending_trips` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `user_id` bigint(20) unsigned NOT NULL,
+  `from_visit_id` bigint(20) unsigned DEFAULT NULL,
+  `to_visit_id` bigint(20) unsigned DEFAULT NULL,
+  `from_label` varchar(160) DEFAULT NULL,
+  `to_label` varchar(160) DEFAULT NULL,
+  `from_lat` decimal(10,7) DEFAULT NULL,
+  `from_lng` decimal(10,7) DEFAULT NULL,
+  `to_lat` decimal(10,7) DEFAULT NULL,
+  `to_lng` decimal(10,7) DEFAULT NULL,
+  `started_at` datetime NOT NULL,
+  `ended_at` datetime NOT NULL,
+  `distance_km` decimal(8,2) NOT NULL,
+  `distance_source` varchar(16) NOT NULL DEFAULT 'track',
+  `point_count` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `status` varchar(16) NOT NULL DEFAULT 'open',
+  `travel_log_id` bigint(20) unsigned DEFAULT NULL,
+  `resolved_by` bigint(20) unsigned DEFAULT NULL,
+  `resolved_at` datetime DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lpt_visits_unique` (`from_visit_id`,`to_visit_id`),
+  KEY `lpt_user_fk` (`user_id`),
+  KEY `lpt_to_visit_fk` (`to_visit_id`),
+  KEY `lpt_travel_log_fk` (`travel_log_id`),
+  KEY `lpt_resolved_by_fk` (`resolved_by`),
+  KEY `lpt_org_user_status_idx` (`organization_id`,`user_id`,`status`),
+  CONSTRAINT `lpt_from_visit_fk` FOREIGN KEY (`from_visit_id`) REFERENCES `location_visits` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `lpt_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `lpt_resolved_by_fk` FOREIGN KEY (`resolved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `lpt_to_visit_fk` FOREIGN KEY (`to_visit_id`) REFERENCES `location_visits` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `lpt_travel_log_fk` FOREIGN KEY (`travel_log_id`) REFERENCES `travel_logs` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `lpt_user_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `location_points`;
@@ -24465,6 +24516,87 @@ CREATE TABLE `todoist_webhook_deliveries` (
   CONSTRAINT `twdel_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `tour_events`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tour_events` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `tour_id` bigint(20) unsigned NOT NULL,
+  `event` varchar(64) NOT NULL,
+  `actor_user_id` bigint(20) unsigned DEFAULT NULL,
+  `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`payload`)),
+  `occurred_at` datetime NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `tour_events_org_fk` (`organization_id`),
+  KEY `tour_events_actor_fk` (`actor_user_id`),
+  KEY `tour_events_tour_time_idx` (`tour_id`,`occurred_at`),
+  CONSTRAINT `tour_events_actor_fk` FOREIGN KEY (`actor_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `tour_events_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `tour_events_tour_fk` FOREIGN KEY (`tour_id`) REFERENCES `tours` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `tour_proposals`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tour_proposals` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `tour_id` bigint(20) unsigned DEFAULT NULL,
+  `proposal_date` date NOT NULL,
+  `solver` varchar(32) DEFAULT NULL,
+  `is_estimate` tinyint(1) NOT NULL DEFAULT 0,
+  `problem` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`problem`)),
+  `plan` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`plan`)),
+  `metrics` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`metrics`)),
+  `status` varchar(16) NOT NULL DEFAULT 'computing',
+  `failure` text DEFAULT NULL,
+  `decision_note` text DEFAULT NULL,
+  `decided_by` bigint(20) unsigned DEFAULT NULL,
+  `decided_at` datetime DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `tour_proposals_decided_by_fk` (`decided_by`),
+  KEY `tour_proposals_created_by_fk` (`created_by`),
+  KEY `tour_proposals_org_date_idx` (`organization_id`,`proposal_date`),
+  KEY `tour_proposals_tour_status_idx` (`tour_id`,`status`),
+  CONSTRAINT `tour_proposals_created_by_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `tour_proposals_decided_by_fk` FOREIGN KEY (`decided_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `tour_proposals_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `tour_proposals_tour_fk` FOREIGN KEY (`tour_id`) REFERENCES `tours` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `tour_stops`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tour_stops` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `tour_id` bigint(20) unsigned NOT NULL,
+  `diary_entry_id` bigint(20) unsigned NOT NULL,
+  `position` smallint(5) unsigned NOT NULL,
+  `planned_arrival_at` datetime DEFAULT NULL,
+  `planned_departure_at` datetime DEFAULT NULL,
+  `waiting_minutes` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `arrived_at` datetime DEFAULT NULL,
+  `departed_at` datetime DEFAULT NULL,
+  `actual_source` varchar(16) DEFAULT NULL,
+  `outcome` varchar(16) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `tour_stops_tour_entry_unique` (`tour_id`,`diary_entry_id`),
+  KEY `tour_stops_org_fk` (`organization_id`),
+  KEY `tour_stops_entry_fk` (`diary_entry_id`),
+  KEY `tour_stops_tour_position_idx` (`tour_id`,`position`),
+  CONSTRAINT `tour_stops_entry_fk` FOREIGN KEY (`diary_entry_id`) REFERENCES `diary_entries` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `tour_stops_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `tour_stops_tour_fk` FOREIGN KEY (`tour_id`) REFERENCES `tours` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `tours`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -24474,6 +24606,8 @@ CREATE TABLE `tours` (
   `user_id` bigint(20) unsigned NOT NULL,
   `vehicle_id` bigint(20) unsigned DEFAULT NULL,
   `tour_date` date NOT NULL,
+  `planned_start_at` datetime DEFAULT NULL,
+  `start_site_id` bigint(20) unsigned DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
   `start_address` varchar(255) DEFAULT NULL,
   `start_lat` decimal(10,7) DEFAULT NULL,
@@ -24484,6 +24618,7 @@ CREATE TABLE `tours` (
   `planned_distance_km` decimal(10,2) NOT NULL DEFAULT 0.00,
   `planned_duration_minutes` int(10) unsigned NOT NULL DEFAULT 0,
   `route_geometry` longtext DEFAULT NULL,
+  `route_legs` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`route_legs`)),
   `status` varchar(16) NOT NULL DEFAULT 'draft',
   `travel_billed` tinyint(1) NOT NULL DEFAULT 0,
   `notes` text DEFAULT NULL,
@@ -24500,8 +24635,10 @@ CREATE TABLE `tours` (
   KEY `tours_status_index` (`status`),
   KEY `tours_tour_date_index` (`tour_date`),
   KEY `tours_travel_billed_index` (`travel_billed`),
+  KEY `tours_start_site_fk` (`start_site_id`),
   CONSTRAINT `tours_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `tours_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `tours_start_site_fk` FOREIGN KEY (`start_site_id`) REFERENCES `sites` (`id`) ON DELETE SET NULL,
   CONSTRAINT `tours_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `tours_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `tours_vehicle_id_foreign` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`id`) ON DELETE SET NULL
@@ -24629,6 +24766,7 @@ CREATE TABLE `travel_logs` (
   `customer_id` bigint(20) unsigned DEFAULT NULL,
   `attendance_id` bigint(20) unsigned DEFAULT NULL,
   `vehicle_id` bigint(20) unsigned DEFAULT NULL,
+  `tour_id` bigint(20) unsigned DEFAULT NULL,
   `date` date NOT NULL,
   `started_at` datetime DEFAULT NULL,
   `ended_at` datetime DEFAULT NULL,
@@ -24676,6 +24814,7 @@ CREATE TABLE `travel_logs` (
   KEY `travel_logs_corrects_travel_log_id_foreign` (`corrects_travel_log_id`),
   KEY `travel_logs_vehicle_chain_idx` (`vehicle_id`,`date`,`odometer_end_km`),
   KEY `travel_logs_co_driver_fk` (`co_driver_user_id`),
+  KEY `travel_logs_tour_fk` (`tour_id`),
   CONSTRAINT `travel_logs_attendance_id_foreign` FOREIGN KEY (`attendance_id`) REFERENCES `attendances` (`id`) ON DELETE SET NULL,
   CONSTRAINT `travel_logs_co_driver_fk` FOREIGN KEY (`co_driver_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `travel_logs_corrects_travel_log_id_foreign` FOREIGN KEY (`corrects_travel_log_id`) REFERENCES `travel_logs` (`id`) ON DELETE SET NULL,
@@ -24684,6 +24823,7 @@ CREATE TABLE `travel_logs` (
   CONSTRAINT `travel_logs_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE SET NULL,
   CONSTRAINT `travel_logs_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE SET NULL,
   CONSTRAINT `travel_logs_task_id_foreign` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `travel_logs_tour_fk` FOREIGN KEY (`tour_id`) REFERENCES `tours` (`id`) ON DELETE SET NULL,
   CONSTRAINT `travel_logs_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `travel_logs_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `travel_logs_vehicle_id_foreign` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`id`) ON DELETE SET NULL
@@ -26758,3 +26898,7 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (980,'2027_03_19_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (981,'2027_03_19_100100_add_duplicate_review_to_incoming_einvoices',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (982,'2027_03_20_100000_create_order_confirmations',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (983,'2027_03_20_110000_create_delivery_notes',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (984,'2027_03_21_100000_add_route_legs_to_tours_and_tour_to_travel_logs',2);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (985,'2027_03_21_110000_create_tour_stops_proposals_and_events',2);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (986,'2027_03_21_120000_add_tour_zones_and_stop_links',3);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (987,'2027_03_21_130000_create_location_pending_trips',4);

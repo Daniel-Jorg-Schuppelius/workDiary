@@ -12,11 +12,10 @@ namespace App\Http\Controllers\Location;
 
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Controller;
+use App\Jobs\Location\ImportGoogleTimeline;
 use App\Models\Location\LocationDeviceToken;
-use App\Services\Location\GoogleTimelineImporter;
-use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Carbon;
+use Illuminate\Support\{Carbon, Str};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -81,7 +80,7 @@ class LocationDeviceController extends Controller {
     /**
      * Rückwirkender Import einer Google-Timeline-Export-Datei (JSON).
      */
-    public function importGoogle(Request $request, GoogleTimelineImporter $importer): RedirectResponse {
+    public function importGoogle(Request $request): RedirectResponse {
         $request->validate([
             'file' => ['required', 'file', 'max:51200'],
         ]);
@@ -91,11 +90,12 @@ class LocationDeviceController extends Controller {
             $user->setPreference(LocationController::OPT_IN_PREFERENCE, true);
         }
 
-        $json = File::read((string) $request->file('file')->getRealPath());
-        $count = $importer->import($user, $json);
+        // Große Verläufe laufen im Hintergrund (MVP-1186): Datei ablegen, Job in Blöcken, Datei danach weg.
+        $path = $request->file('file')->storeAs('location-imports', Str::uuid()->toString() . '.json', 'local');
+        ImportGoogleTimeline::dispatch((int) $user->id, (string) $path);
 
         return redirect()->route('location.devices.index')
-            ->with('success', __(':count Standortpunkte importiert.', ['count' => $count]));
+            ->with('success', __('Import gestartet — die Vorschläge erscheinen im Prüf-Eingang, sobald die Punkte verarbeitet sind.'));
     }
 
     public function destroy(Request $request, LocationDeviceToken $device): RedirectResponse {

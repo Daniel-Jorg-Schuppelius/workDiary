@@ -1,7 +1,7 @@
 ---
 title: "Standortbasierte Zeiterfassung"
 topic: location.overview
-version: 1
+version: 2
 keywords:
     - GPS-Zeiterfassung
     - Geofencing
@@ -15,6 +15,8 @@ keywords:
     - Zeitvorschläge
     - Kundenbesuche erfassen
     - Einwilligung Ortung
+    - Fahrtvorschläge
+    - Fahrtenbuch aus GPS-Spur
 audience: []
 modules:
     - module.standorterfassung
@@ -49,6 +51,16 @@ erfassten Zeitraum.
 einen echten Zeiteintrag; unpassende Vorschläge lassen sich verwerfen.
 Zwischen Ortssignal und Buchung steht damit immer eine bewusste
 Entscheidung der betroffenen Person selbst.
+
+**Fahrten aus der Spur:** Liegt zwischen dem Verlassen eines Standorts und
+dem Betreten des nächsten eine Fahrt, entsteht daraus ein Fahrtvorschlag
+mit Beginn, Ende und Strecke. Die Strecke stammt aus dem Kartenabgleich der
+Spur mit dem Straßennetz; ist kein Routing-Dienst eingerichtet, zählt die
+Länge der Spur, und der Vorschlag ist entsprechend gekennzeichnet. Auch hier
+wird nichts automatisch gebucht: Erst mit Fahrzeug, Fahrtart und Zweck wird
+der Vorschlag ins Fahrtenbuch übernommen — oder verworfen. Die Regeln des
+Fahrtenbuchs, etwa Pflicht-Tachostände im Fahrtenbuch-Modus, gelten dabei
+unverändert.
 
 **Datenschutz:** Ausgewertet werden Ein- und Austritts-Ereignisse an den
 hinterlegten Kundenstandorten — eine dauerhafte Ortsüberwachung findet nicht

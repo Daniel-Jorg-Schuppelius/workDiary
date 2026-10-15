@@ -11,9 +11,11 @@
 namespace App\Models\Diary;
 
 use App\Enums\Tour\TourStatus;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasJournal, HasSqid};
+use App\Models\Facility\Site;
 use App\Models\Fleet\Vehicle;
 use App\Models\Platform\User;
+use App\Models\Travel\TravelLog;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Database\Factories\Diary\TourFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -27,6 +29,8 @@ use Illuminate\Support\Carbon;
  * @property int $user_id
  * @property int|null $vehicle_id
  * @property Carbon|null $tour_date
+ * @property Carbon|null $planned_start_at
+ * @property int|null $start_site_id
  * @property string|null $name
  * @property string|null $start_address
  * @property string|null $start_lat
@@ -37,6 +41,7 @@ use Illuminate\Support\Carbon;
  * @property string $planned_distance_km
  * @property int $planned_duration_minutes
  * @property string|null $route_geometry
+ * @property list<array{from: string, to: string, distance_m: int, duration_s: int}>|null $route_legs
  * @property TourStatus $status
  * @property bool $travel_billed
  * @property string|null $notes
@@ -52,13 +57,19 @@ class Tour extends Model {
     /** @use HasFactory<TourFactory> */
     use HasFactory;
 
+    use HasJournal;
     use HasSqid;
+
+    /** @var class-string<\App\Models\Journal\JournalEntry> */
+    protected static string $journalClass = TourEvent::class;
 
     protected $fillable = [
         'organization_id',
         'user_id',
         'vehicle_id',
         'tour_date',
+        'planned_start_at',
+        'start_site_id',
         'name',
         'start_address',
         'start_lat',
@@ -69,6 +80,7 @@ class Tour extends Model {
         'planned_distance_km',
         'planned_duration_minutes',
         'route_geometry',
+        'route_legs',
         'status',
         'travel_billed',
         'notes',
@@ -79,12 +91,14 @@ class Tour extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'tour_date' => 'date',
+        'planned_start_at' => 'datetime',
         'start_lat' => 'decimal:7',
         'start_lng' => 'decimal:7',
         'end_lat' => 'decimal:7',
         'end_lng' => 'decimal:7',
         'planned_distance_km' => 'decimal:2',
         'planned_duration_minutes' => 'integer',
+        'route_legs' => 'array',
         'status' => TourStatus::class,
         'travel_billed' => 'boolean',
     ];
@@ -102,6 +116,26 @@ class Tour extends Model {
     /** @return HasMany<DiaryEntry, $this> */
     public function diaryEntries(): HasMany {
         return $this->hasMany(DiaryEntry::class);
+    }
+
+    /** @return HasMany<TravelLog, $this> */
+    public function travelLogs(): HasMany {
+        return $this->hasMany(TravelLog::class);
+    }
+
+    /** @return HasMany<TourStop, $this> */
+    public function stops(): HasMany {
+        return $this->hasMany(TourStop::class)->orderBy('position');
+    }
+
+    /** @return HasMany<TourProposal, $this> */
+    public function proposals(): HasMany {
+        return $this->hasMany(TourProposal::class)->latest('id');
+    }
+
+    /** @return BelongsTo<Site, $this> */
+    public function startSite(): BelongsTo {
+        return $this->belongsTo(Site::class, 'start_site_id');
     }
 
     /** @return HasMany<DiaryEntry, $this> */

@@ -521,6 +521,22 @@ riportano l'indicazione **stima approssimativa (in linea d'aria)**.
 - **Timeout (secondi)** (1–120, predefinito 10): quanto workDiary attende una
   risposta prima di ripiegare sulla linea d'aria.
 
+## VROOM (proposta di giro)
+
+VROOM è un servizio opzionale per l'ottimizzazione dei giri. Se configurato,
+calcola le **proposte di giro** (sequenza e orari di arrivo con finestre
+orarie, pause e qualifiche) e la **proposta del giorno** della centrale
+operativa per più autisti. Usa gli stessi tempi di guida di workDiary (OSRM
+o linea d'aria). Senza configurazione o in caso di guasto calcola
+l'euristica integrata; la proposta indica chi ha calcolato.
+
+- **URL base (vuoto = euristica)** (indirizzo completo, fino a 255
+  caratteri): indirizzo del servizio VROOM (vroom-express). Per un indirizzo
+  proprio in una rete interna vale la stessa abilitazione da parte del
+  gestore prevista per Nominatim.
+- **Timeout (secondi)** (1–600, predefinito 60): quanto workDiary attende una
+  risposta prima che subentri l'euristica.
+
 ## Tile mappa
 
 Le tile della mappa sono le porzioni di immagine di cui sono composte le

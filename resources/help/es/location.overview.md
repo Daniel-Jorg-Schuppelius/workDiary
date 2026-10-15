@@ -1,7 +1,7 @@
 ---
 title: "Registro de tiempo basado en ubicación"
 topic: location.overview
-version: 1
+version: 2
 keywords:
     - fichaje GPS
     - geovallas
@@ -14,6 +14,8 @@ keywords:
     - historial de ubicaciones de Google
     - propuestas de tiempo
     - visitas a clientes
+    - propuestas de viaje
+    - libro de viajes desde el rastro GPS
 audience: []
 modules:
     - module.standorterfassung
@@ -51,6 +53,16 @@ propuesta genera un registro de tiempo real; las propuestas
 inadecuadas pueden descartarse. Entre la señal de ubicación y la
 contabilización media así siempre una decisión consciente de la propia
 persona afectada.
+
+**Viajes a partir del rastro:** Si entre la salida de una ubicación y la
+entrada en la siguiente hay un desplazamiento, se genera una propuesta de
+viaje con inicio, fin y distancia. La distancia procede del ajuste del
+rastro a la red de carreteras; sin un servicio de rutas cuenta la longitud
+del rastro y la propuesta queda marcada en consecuencia. Tampoco aquí se
+contabiliza nada automáticamente: solo con vehículo, tipo de viaje y
+motivo se adopta la propuesta en el libro de viajes — o se descarta. Las
+reglas del libro de viajes, por ejemplo los kilometrajes obligatorios en
+modo libro, se aplican sin cambios.
 
 **Protección de datos:** Se evalúan los eventos de entrada y salida en
 las ubicaciones de cliente registradas — no tiene lugar una vigilancia
