@@ -34,7 +34,7 @@
         $_focusPersonal = array_values(array_filter($navFocusAvailable, static fn (array $f): bool => ! empty($f['personal'])));
     @endphp
 
-    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         @foreach ($_focusProduct as $focus)
             @php $active = $focus['key'] === $navFocusActive; @endphp
             <form method="POST" action="{{ route('me.focus.switch', $focus['key']) }}" class="m-0">
@@ -65,7 +65,7 @@
     @if ($_focusPersonal === [])
         <x-empty-state icon="workspaces" :title="__('scope.workspace.empty')" compact class="mt-2" />
     @else
-        <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             @foreach ($_focusPersonal as $focus)
                 @php $active = $focus['key'] === $navFocusActive; @endphp
                 <form method="POST" action="{{ route('me.focus.switch', $focus['key']) }}" class="m-0">
