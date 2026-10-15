@@ -271,6 +271,7 @@ return [
     'CommissionRule' => 'Commission rule',
     'InvoiceCommission' => 'Commission entry',
     'CommissionSettlementRun' => 'Commission settlement run',
+    'InvoiceInquiry' => 'Invoice inquiry',
     'InvoiceItem' => 'Invoice item',
     'InvoiceMailTemplate' => 'Invoice mail template',
     'InvoiceRetention' => 'Retention',

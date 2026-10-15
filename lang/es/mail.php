@@ -26,6 +26,18 @@ return [
         'book_action' => 'Registrar como nota de comunicación',
         'book_ticket_action' => 'Registrar como ticket de servicio',
         'book_customer_placeholder' => '… cliente (vacío = remitente detectado)',
+        // Rechnungsnachfrage und Notiz am Auftrag (Feature 166, MVP-1201)
+        'inquiry_action' => 'Registrar como consulta sobre la factura',
+        'inquiry_number_placeholder' => 'Número de factura/documento',
+        'order_action' => 'Registrar como nota en el pedido',
+        'order_placeholder' => '… elegir pedido',
+        'order_no_customer' => 'Sin cliente',
+        'invoice_review' => [
+            'multiple' => 'Varias facturas detectadas – asigne una',
+            'sender_unknown' => 'Factura detectada, remitente desconocido – compruebe',
+            'no_customer' => 'Documento detectado, sin cliente asignado – compruebe',
+            'generic' => 'Factura detectada – compruebe',
+        ],
     ],
 
     'dms' => [
@@ -108,6 +120,14 @@ return [
         'already_resolved' => 'Esta entrada ya está resuelta.',
         'password_required' => 'Un buzón nuevo requiere una contraseña.',
         'customer_required' => 'Ningún cliente asociado.',
+        'inquiry_booked' => 'Consulta sobre :number registrada.',
+        'inquiry_not_found' => 'No existe ninguna factura ni documento para :number.',
+        'inquiry_ambiguous' => 'Hay varios documentos para :number – introduzca el número exacto.',
+        'inquiry_duplicate' => 'Este mensaje ya está registrado como consulta.',
+        'inquiry_failed' => 'No se pudo registrar la consulta.',
+        'order_booked' => 'Correo registrado como nota en el pedido.',
+        'order_required' => 'No se ha elegido ningún pedido.',
+        'order_failed' => 'El registro en el pedido ha fallado.',
     ],
     'transport' => [
         'imap' => 'Buzón IMAP',

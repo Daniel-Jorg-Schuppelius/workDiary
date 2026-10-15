@@ -23797,6 +23797,47 @@ CREATE UNIQUE INDEX "lpt_visits_unique" on "location_pending_trips"(
   "from_visit_id",
   "to_visit_id"
 );
+CREATE TABLE IF NOT EXISTS "invoice_inquiries"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "invoice_id" integer,
+  "external_source" varchar,
+  "external_key" varchar,
+  "invoice_number" varchar not null,
+  "customer_id" integer,
+  "message_id" varchar not null,
+  "in_reply_to" varchar,
+  "from_email" varchar not null,
+  "from_name" varchar,
+  "subject" varchar,
+  "received_at" datetime not null,
+  "match_kind" varchar not null,
+  "communication_note_id" integer,
+  "status" varchar not null default 'open',
+  "answered_by" integer,
+  "answered_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("invoice_id") references "invoices"("id") on delete set null,
+  foreign key("customer_id") references "customers"("id") on delete set null,
+  foreign key("communication_note_id") references "communication_notes"("id") on delete set null,
+  foreign key("answered_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "iiq_org_message_unique" on "invoice_inquiries"(
+  "organization_id",
+  "message_id"
+);
+CREATE INDEX "iiq_org_status_received_idx" on "invoice_inquiries"(
+  "organization_id",
+  "status",
+  "received_at"
+);
+CREATE INDEX "iiq_org_external_idx" on "invoice_inquiries"(
+  "organization_id",
+  "external_source",
+  "external_key"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -24781,7 +24822,8 @@ INSERT INTO migrations VALUES(980,'2027_03_19_100000_add_mailbox_sync_to_email_c
 INSERT INTO migrations VALUES(981,'2027_03_19_100100_add_duplicate_review_to_incoming_einvoices',1);
 INSERT INTO migrations VALUES(982,'2027_03_20_100000_create_order_confirmations',1);
 INSERT INTO migrations VALUES(983,'2027_03_20_110000_create_delivery_notes',1);
-INSERT INTO migrations VALUES(984,'2027_03_21_100000_add_route_legs_to_tours_and_tour_to_travel_logs',2);
-INSERT INTO migrations VALUES(985,'2027_03_21_110000_create_tour_stops_proposals_and_events',2);
-INSERT INTO migrations VALUES(986,'2027_03_21_120000_add_tour_zones_and_stop_links',3);
-INSERT INTO migrations VALUES(987,'2027_03_21_130000_create_location_pending_trips',4);
+INSERT INTO migrations VALUES(984,'2027_03_21_100000_add_route_legs_to_tours_and_tour_to_travel_logs',1);
+INSERT INTO migrations VALUES(985,'2027_03_21_110000_create_tour_stops_proposals_and_events',1);
+INSERT INTO migrations VALUES(986,'2027_03_21_120000_add_tour_zones_and_stop_links',1);
+INSERT INTO migrations VALUES(987,'2027_03_21_130000_create_location_pending_trips',1);
+INSERT INTO migrations VALUES(988,'2027_03_22_090000_create_invoice_inquiries',1);

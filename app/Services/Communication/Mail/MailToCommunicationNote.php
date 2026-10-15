@@ -15,6 +15,7 @@ namespace App\Services\Communication\Mail;
 use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType};
 use App\Models\Communication\CommunicationNote;
 use App\Models\Customer\Customer;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\User;
 use App\Services\Communication\CommunicationNoteService;
@@ -31,14 +32,18 @@ class MailToCommunicationNote {
         private readonly MailAttachmentStore $store,
     ) {}
 
-    public function bookAsCommunicationNote(IntegrationInboxItem $item, Customer $customer, User $actor, bool $attachFiles = true): CommunicationNote {
+    /**
+     * Träger ist der Kunde oder — Antwort auf eine Rechnung zum Auftrag
+     * (Feature 166, MVP-1201) — der Auftrag selbst.
+     */
+    public function bookAsCommunicationNote(IntegrationInboxItem $item, Customer|DiaryEntry $notable, User $actor, bool $attachFiles = true): CommunicationNote {
         if ($item->plugin_id !== MailIntakeService::PLUGIN_ID) {
             throw new RuntimeException('Kein E-Mail-Inbox-Eintrag.');
         }
 
         $snapshot = $item->remote_snapshot ?? [];
 
-        $note = $this->notes->create($customer, $actor, [
+        $note = $this->notes->create($notable, $actor, [
             'type' => CommunicationNoteType::Email->value,
             'direction' => CommunicationDirection::Inbound->value,
             'subject' => (string) ($snapshot['subject'] ?? $item->display_title ?? ''),

@@ -2105,6 +2105,8 @@ return [
         'incoming_invoice_match_kind' => ['vat_id' => 'Partita IVA', 'tax_number' => 'Codice fiscale', 'iban' => 'IBAN', 'sender_rule' => 'Regola mittente', 'manual' => 'Manuale'],
         'incoming_invoice_transfer_status' => ['pending' => 'In attesa', 'waiting' => 'Da chiarire', 'failed' => 'Non riuscito', 'transferred' => 'Trasferita', 'linked' => 'Già presente, collegata'],
         'invoice_schedule_status' => ['active' => 'Attivo', 'paused' => 'In pausa', 'ended' => 'Terminato'],
+        'invoice_inquiry_status' => ['open' => 'Aperta', 'answered' => 'Risposta'],
+        'invoice_inquiry_match_kind' => ['thread' => 'Risposta all\'e-mail di fattura', 'number' => 'Numero fattura nel testo', 'manual' => 'Manualmente'],
     ],
     'agile' => [
         'agile_column_category' => ['open' => 'Aperto', 'in_progress' => 'In lavorazione', 'done' => 'Completato'],

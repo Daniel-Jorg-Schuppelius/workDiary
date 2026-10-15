@@ -271,6 +271,7 @@ return [
     'CommissionRule' => 'Provisionsregel',
     'InvoiceCommission' => 'Provisionszeile',
     'CommissionSettlementRun' => 'Provisions-Abrechnungslauf',
+    'InvoiceInquiry' => 'Rechnungsnachfrage',
     'InvoiceItem' => 'Rechnungsposition',
     'InvoiceMailTemplate' => 'Rechnungs-Mail-Vorlage',
     'InvoiceRetention' => 'Sicherheitseinbehalt',

@@ -26,6 +26,14 @@ interface ExternalRevenue {
     public function invoices(ExternalInvoiceQuery $query): array;
 
     /**
+     * Belege aller Quellen zu diesen Nummern (Rechnungsnachfragen, MVP-1200).
+     *
+     * @param  list<string>  $numbers
+     * @return list<ExternalInvoice>
+     */
+    public function invoicesByNumber(int $organizationId, array $numbers): array;
+
+    /**
      * Umsatz je zugeordnetem Kunden im Zeitraum, Gutschriften mindern.
      *
      * @param  list<int>  $excludedCustomerIds

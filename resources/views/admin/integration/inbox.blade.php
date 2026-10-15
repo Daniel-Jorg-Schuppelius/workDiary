@@ -521,6 +521,24 @@
                         </div>
                     @endif
 
+                    {{-- Zur manuellen Prüfung markiert (Feature 166, MVP-1200): erkannte Rechnungen/Belege mit Grund. --}}
+                    @php
+                        $invoiceCandidates = array_values(array_filter((array) (($item->remote_snapshot ?? [])['invoice_candidates'] ?? []), 'is_array'));
+                        $invoiceReview = (string) (($item->remote_snapshot ?? [])['invoice_review'] ?? '');
+                    @endphp
+                    @if ($invoiceCandidates !== [])
+                        <div class="mb-3 flex flex-wrap items-center gap-2 text-xs">
+                            <x-status-badge tone="warning" outline size="xs" icon="receipt_long">
+                                {{ __('mail.inbox.invoice_review.' . (in_array($invoiceReview, ['multiple', 'sender_unknown', 'no_customer'], true) ? $invoiceReview : 'generic')) }}
+                            </x-status-badge>
+                            @foreach ($invoiceCandidates as $candidate)
+                                <x-status-badge tone="plain" outline size="xs" class="font-mono">
+                                    {{ (string) ($candidate['number'] ?? '') }}@if (! empty($candidate['source'])) · {{ $pluginNames[(string) $candidate['source']] ?? ucfirst((string) $candidate['source']) }}@endif
+                                </x-status-badge>
+                            @endforeach
+                        </div>
+                    @endif
+
                     @if ($item->case_type === IntegrationInboxItem::CASE_CONFLICT && $diff !== [])
                         <div class="mb-3 grid grid-cols-2 gap-3 text-xs">
                             <div>
@@ -581,6 +599,49 @@
                                             <input type="hidden" name="item" value="{{ $item->sqid }}">
                                             <x-button type="submit" tone="outline">{{ __('mail.inbox.invoice_action') }}</x-button>
                                         </form>
+                                    @endfeature
+                                @endif
+                                {{-- Nachfrage zur Rechnung/zum Beleg und Notiz am Auftrag (Feature 166, MVP-1201):
+                                     Nummer vorbelegt aus den beim Eingang erkannten Kandidaten; Auftrag aus den offenen. --}}
+                                @if (auth()->user()?->canManageBilling())
+                                    @feature('module.vertrieb')
+                                        @php
+                                            $inquiryCandidates = collect((array) (($item->remote_snapshot ?? [])['invoice_candidates'] ?? []))
+                                                ->map(fn ($c) => is_array($c) ? (string) ($c['number'] ?? '') : '')
+                                                ->filter()->unique()->values();
+                                        @endphp
+                                        <form method="POST" action="{{ route('admin.mail.inbox.book-inquiry') }}" class="join">
+                                            @csrf
+                                            <input type="hidden" name="item" value="{{ $item->sqid }}">
+                                            <input type="text" name="invoice_number" list="inquiry-numbers-{{ $item->sqid }}" required maxlength="64"
+                                                   value="{{ $inquiryCandidates->first() ?? '' }}"
+                                                   class="join-item input input-sm input-bordered w-40"
+                                                   placeholder="{{ __('mail.inbox.inquiry_number_placeholder') }}"
+                                                   aria-label="{{ __('validation.attributes.invoice_number') }}">
+                                            <datalist id="inquiry-numbers-{{ $item->sqid }}">
+                                                @foreach ($inquiryCandidates as $candidateNumber)
+                                                    <option value="{{ $candidateNumber }}"></option>
+                                                @endforeach
+                                            </datalist>
+                                            <x-button type="submit" tone="outline" class="join-item">{{ __('mail.inbox.inquiry_action') }}</x-button>
+                                        </form>
+                                        @if (($orderTargets ?? []) !== [])
+                                            <form method="POST" action="{{ route('admin.mail.inbox.book-order') }}" class="join">
+                                                @csrf
+                                                <input type="hidden" name="item" value="{{ $item->sqid }}">
+                                                <select name="diary_entry" class="join-item select select-sm select-bordered" required aria-label="{{ __('validation.attributes.diary_entry') }}">
+                                                    <option value="">{{ __('mail.inbox.order_placeholder') }}</option>
+                                                    @foreach ($orderTargets as $customerName => $orders)
+                                                        <optgroup label="{{ $customerName }}">
+                                                            @foreach ($orders as $orderSqid => $orderLabel)
+                                                                <option value="{{ $orderSqid }}">{{ $orderLabel }}</option>
+                                                            @endforeach
+                                                        </optgroup>
+                                                    @endforeach
+                                                </select>
+                                                <x-button type="submit" tone="outline" class="join-item">{{ __('mail.inbox.order_action') }}</x-button>
+                                            </form>
+                                        @endif
                                     @endfeature
                                 @endif
                             @elseif ($conflictActions !== null && $conflictActions->replacesDefaultConflictActions($item))

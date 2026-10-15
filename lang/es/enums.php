@@ -2105,6 +2105,8 @@ return [
         'incoming_invoice_match_kind' => ['vat_id' => 'NIF-IVA', 'tax_number' => 'Número fiscal', 'iban' => 'IBAN', 'sender_rule' => 'Regla de remitente', 'manual' => 'Manual'],
         'incoming_invoice_transfer_status' => ['pending' => 'Pendiente', 'waiting' => 'Pendiente de aclarar', 'failed' => 'Fallida', 'transferred' => 'Transferida', 'linked' => 'Ya existente, vinculada'],
         'invoice_schedule_status' => ['active' => 'Activo', 'paused' => 'En pausa', 'ended' => 'Finalizado'],
+        'invoice_inquiry_status' => ['open' => 'Abierta', 'answered' => 'Respondida'],
+        'invoice_inquiry_match_kind' => ['thread' => 'Respuesta al correo de la factura', 'number' => 'Número de factura en el texto', 'manual' => 'Manualmente'],
     ],
     'agile' => [
         'agile_column_category' => ['open' => 'Abierto', 'in_progress' => 'En curso', 'done' => 'Hecho'],

@@ -19,7 +19,7 @@ use App\Services\Billing\Contracts\ExternalRevenueSource;
 use App\Services\Billing\Dto\{ExternalInvoice, ExternalInvoiceFile, ExternalInvoiceQuery, ExternalProductRevenue};
 use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\{Builder, Collection};
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
@@ -48,7 +48,7 @@ class LexofficeRevenueSource implements ExternalRevenueSource {
     }
 
     public function invoices(ExternalInvoiceQuery $query): array {
-        $vouchers = $this->revenueVouchers($query->withCreditNotes ? VoucherTypes::REVENUE_WITH_CREDITS : VoucherTypes::REVENUE)
+        $vouchers = $this->selectVouchers($this->revenueVouchers($query->withCreditNotes ? VoucherTypes::REVENUE_WITH_CREDITS : VoucherTypes::REVENUE))
             ->when($query->organizationId !== null, static fn (Builder $q) => $q->where('lexoffice_vouchers.organization_id', $query->organizationId))
             ->when($query->issuedFrom, static fn (Builder $q, CarbonInterface $from) => $q->where('lexoffice_vouchers.voucher_date', '>=', DateRange::day($from)))
             ->when($query->issuedTo, static fn (Builder $q, CarbonInterface $to) => $q->where('lexoffice_vouchers.voucher_date', '<', DateRange::dayAfter($to)))
@@ -57,12 +57,40 @@ class LexofficeRevenueSource implements ExternalRevenueSource {
                 ->whereNull('lexoffice_vouchers.customer_id')
                 ->orWhereNotIn('lexoffice_vouchers.customer_id', $query->excludedCustomerIds)))
             ->when($query->openOnly, static fn (Builder $q) => $q->whereNotIn('lexoffice_vouchers.voucher_status', self::PAID_STATUSES))
+            ->get();
+
+        return $this->toExternalInvoices($vouchers);
+    }
+
+    public function invoicesByNumber(int $organizationId, array $numbers): array {
+        if ($numbers === []) {
+            return [];
+        }
+        $vouchers = $this->selectVouchers($this->revenueVouchers(VoucherTypes::REVENUE_WITH_CREDITS))
+            ->where('lexoffice_vouchers.organization_id', $organizationId)
+            ->whereIn('lexoffice_vouchers.voucher_number', $numbers)
+            ->get();
+
+        return $this->toExternalInvoices($vouchers);
+    }
+
+    /**
+     * @param  Builder<LexofficeVoucher>  $query
+     * @return Builder<LexofficeVoucher>
+     */
+    private function selectVouchers(Builder $query): Builder {
+        return $query
             ->select(['id', 'organization_id', 'customer_id', 'voucher_type', 'voucher_status', 'voucher_number', 'voucher_date', 'due_date', 'paid_date', 'total_amount', 'open_amount', 'net_amount', 'currency', 'recipient_name', 'contact_name'])
             ->selectSub(LexofficeVoucherLine::query()->selectRaw('SUM(total_net)')->whereColumn('lexoffice_voucher_lines.voucher_id', 'lexoffice_vouchers.id'), 'lines_net')
             ->orderBy('voucher_date')
-            ->orderBy('id')
-            ->get();
+            ->orderBy('id');
+    }
 
+    /**
+     * @param  Collection<int, LexofficeVoucher>  $vouchers
+     * @return list<ExternalInvoice>
+     */
+    private function toExternalInvoices(Collection $vouchers): array {
         $withLink = Route::has('lexoffice.vouchers.file');
         $invoices = [];
         foreach ($vouchers as $voucher) {

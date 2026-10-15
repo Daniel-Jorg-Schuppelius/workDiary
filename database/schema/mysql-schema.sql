@@ -12346,6 +12346,45 @@ CREATE TABLE `invoice_commissions` (
   CONSTRAINT `invoice_commissions_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `invoice_inquiries`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `invoice_inquiries` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `invoice_id` bigint(20) unsigned DEFAULT NULL,
+  `external_source` varchar(40) DEFAULT NULL,
+  `external_key` varchar(64) DEFAULT NULL,
+  `invoice_number` varchar(64) NOT NULL,
+  `customer_id` bigint(20) unsigned DEFAULT NULL,
+  `message_id` varchar(255) NOT NULL,
+  `in_reply_to` varchar(255) DEFAULT NULL,
+  `from_email` varchar(255) NOT NULL,
+  `from_name` varchar(160) DEFAULT NULL,
+  `subject` varchar(255) DEFAULT NULL,
+  `received_at` datetime NOT NULL,
+  `match_kind` varchar(16) NOT NULL,
+  `communication_note_id` bigint(20) unsigned DEFAULT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'open',
+  `answered_by` bigint(20) unsigned DEFAULT NULL,
+  `answered_at` datetime DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `iiq_org_message_unique` (`organization_id`,`message_id`),
+  KEY `iiq_invoice_fk` (`invoice_id`),
+  KEY `iiq_customer_fk` (`customer_id`),
+  KEY `iiq_note_fk` (`communication_note_id`),
+  KEY `iiq_answered_by_fk` (`answered_by`),
+  KEY `iiq_org_status_received_idx` (`organization_id`,`status`,`received_at`),
+  KEY `iiq_org_external_idx` (`organization_id`,`external_source`,`external_key`),
+  CONSTRAINT `iiq_answered_by_fk` FOREIGN KEY (`answered_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `iiq_customer_fk` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `iiq_invoice_fk` FOREIGN KEY (`invoice_id`) REFERENCES `invoices` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `iiq_note_fk` FOREIGN KEY (`communication_note_id`) REFERENCES `communication_notes` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `iiq_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `invoice_item_time_entries`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -26898,7 +26937,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (980,'2027_03_19_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (981,'2027_03_19_100100_add_duplicate_review_to_incoming_einvoices',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (982,'2027_03_20_100000_create_order_confirmations',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (983,'2027_03_20_110000_create_delivery_notes',1);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (984,'2027_03_21_100000_add_route_legs_to_tours_and_tour_to_travel_logs',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (985,'2027_03_21_110000_create_tour_stops_proposals_and_events',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (986,'2027_03_21_120000_add_tour_zones_and_stop_links',3);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (987,'2027_03_21_130000_create_location_pending_trips',4);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (984,'2027_03_21_100000_add_route_legs_to_tours_and_tour_to_travel_logs',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (985,'2027_03_21_110000_create_tour_stops_proposals_and_events',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (986,'2027_03_21_120000_add_tour_zones_and_stop_links',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (987,'2027_03_21_130000_create_location_pending_trips',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (988,'2027_03_22_090000_create_invoice_inquiries',1);

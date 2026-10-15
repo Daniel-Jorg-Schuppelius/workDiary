@@ -271,6 +271,7 @@ return [
     'CommissionRule' => 'Regla de comisión',
     'InvoiceCommission' => 'Línea de comisión',
     'CommissionSettlementRun' => 'Liquidación de comisiones',
+    'InvoiceInquiry' => 'Consulta sobre la factura',
     'InvoiceItem' => 'Posición de factura',
     'InvoiceMailTemplate' => 'Plantilla de correo de factura',
     'InvoiceRetention' => 'Retención de garantía',

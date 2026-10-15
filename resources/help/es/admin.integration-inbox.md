@@ -1,7 +1,7 @@
 ---
 title: "Bandeja de conciliación"
 topic: admin.integration-inbox
-version: 2
+version: 3
 keywords:
     - bandeja de integraciones
     - conflictos de importación
@@ -12,6 +12,7 @@ keywords:
     - conflicto de sincronización
     - número desconocido
     - dispositivos desconocidos
+    - consulta sobre factura
 audience: []
 related:
     - admin.integrations
@@ -71,5 +72,16 @@ derecha acota la selección.
 **Gestionar asignaciones:** WorkDiary recuerda una asignación realizada; las
 importaciones posteriores del mismo registro pasan entonces sin preguntar. En
 «Gestionar asignaciones» consulta y elimina esos vínculos.
+
+**Correos:** Una entrada procedente de la recepción de correo puede
+registrarse como nota de comunicación en el cliente, como ticket de
+servicio, en el archivo de documentos o como factura entrante. Si WorkDiary
+reconoció un número de factura o de documento pero no asignó el correo por
+sí mismo (varios números, remitente desconocido), la entrada muestra los
+candidatos; **Registrar como consulta sobre la factura** toma el correo con
+el número indicado como consulta sobre la factura o sobre el documento del
+programa de contabilidad. **Registrar como nota en el pedido** adjunta el
+correo a un pedido abierto, por ejemplo cuando un cliente responde a la
+factura pero se refiere al pedido.
 
 La página está abierta a quienes pueden gestionar la facturación.

@@ -440,6 +440,7 @@ return [
         'investment_reviews' => \App\Models\Investments\InvestmentReview::class,
         'investment_supplier_ratings' => \App\Models\Investments\InvestmentSupplierRating::class,
         'invoice_commissions' => \App\Models\Sales\InvoiceCommission::class,
+        'invoice_inquiries' => \App\Models\Invoicing\InvoiceInquiry::class,
         'invoice_items' => \App\Models\Invoicing\InvoiceItem::class,
         'invoice_mail_templates' => \App\Models\Invoicing\InvoiceMailTemplate::class,
         'invoice_payment_links' => \App\Models\Invoicing\InvoicePaymentLink::class,

@@ -328,6 +328,15 @@ class Invoice extends Model implements HasDocumentLines {
     }
 
     /**
+     * Nachfragen des Kunden aus E-Mails (Feature 166, MVP-1202).
+     *
+     * @return HasMany<InvoiceInquiry, $this>
+     */
+    public function inquiries(): HasMany {
+        return $this->hasMany(InvoiceInquiry::class)->orderByDesc('received_at');
+    }
+
+    /**
      * Manuell zugeordnete Vertriebsperson (Feature 146). `null` = die
      * Zuordnung kommt aus der Lead-Pipeline oder es gibt keine.
      *

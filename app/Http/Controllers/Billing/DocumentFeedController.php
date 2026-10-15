@@ -108,6 +108,10 @@ class DocumentFeedController extends Controller {
             'scopeAll' => $scopeAll,
             'mayScopeAll' => $this->maySeeAllExpenses($user),
             'canDunLocal' => $user->canManageBilling(),
+            // Offene Rechnungsnachfragen (Feature 166, MVP-1202) als Einstieg in die Arbeitsliste.
+            'inquiryOpenCount' => $user->canManageBilling()
+                ? \App\Models\Invoicing\InvoiceInquiry::query()->where('organization_id', $user->organization_id)->where('status', \App\Enums\Invoicing\InvoiceInquiryStatus::Open)->count()
+                : 0,
             // Plugin-Zeilen: Link und Aktionen aus der jeweiligen Quelle (MVP-1041).
             'feedSources' => app(DocumentFeedSourceRegistry::class),
             'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),

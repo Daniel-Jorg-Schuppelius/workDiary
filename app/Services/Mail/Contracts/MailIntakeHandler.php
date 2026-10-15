@@ -29,7 +29,7 @@ interface MailIntakeHandler {
     /**
      * Ergebnis des Eingangs oder null, wenn der Handler nicht zuständig ist.
      *
-     * @return 'b2b_order'|'einvoice'|'callreport'|'ticket_message'|'skipped'|null
+     * @return 'b2b_order'|'einvoice'|'callreport'|'ticket_message'|'invoice_inquiry'|'skipped'|null
      */
     public function handle(Organization $organization, EmailConnection $connection, ParsedMessage $message): ?string;
 }

@@ -260,4 +260,23 @@ return [
     'down_payment' => [
         'program_numbering' => 'Cree las facturas de anticipo y finales en :program mientras :program asigne los números de factura. WorkDiary las muestra en el flujo de documentos.',
     ],
+    // Rechnungsnachfragen aus E-Mails (Feature 166, MVP-1202).
+    'inquiries' => [
+        'title' => 'Consultas sobre facturas',
+        'subtitle' => 'Consultas de clientes recibidas por correo sobre facturas y documentos – abiertas hasta que alguien las marque como respondidas.',
+        'section' => 'Consultas (:count)',
+        'open_count' => '{1} :count abierta|[2,*] :count abiertas',
+        'default_subject' => 'Consulta sobre la factura :number',
+        'empty' => 'Sin consultas.',
+        'empty_hint' => 'Las respuestas a correos de factura y los correos con un número de factura aparecen aquí automáticamente en cuanto se consulta un buzón.',
+        'filter' => ['open' => 'Abiertas', 'answered' => 'Respondidas', 'all' => 'Todas'],
+        'column' => ['received' => 'Recepción', 'document' => 'Factura / documento', 'sender' => 'Remitente', 'match' => 'Detectada por'],
+        'action' => ['answer' => 'Marcar como respondida', 'reopen' => 'Reabrir', 'note' => 'Abrir la nota de comunicación'],
+        'flash' => [
+            'answered' => 'Consulta sobre :number marcada como respondida.',
+            'reopened' => 'Consulta sobre :number reabierta.',
+            'already_answered' => 'La consulta ya está respondida.',
+            'already_open' => 'La consulta sigue abierta.',
+        ],
+    ],
 ];

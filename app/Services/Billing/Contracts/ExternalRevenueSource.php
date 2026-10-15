@@ -43,6 +43,16 @@ interface ExternalRevenueSource {
      */
     public function invoices(ExternalInvoiceQuery $query): array;
 
+    /**
+     * Belege der Organisation zu diesen Nummern — Belegregel wie
+     * {@see invoices()}, also ohne Entwürfe, Stornos und an das Programm
+     * übergebene lokale Rechnungen (Rechnungsnachfragen, MVP-1200).
+     *
+     * @param  list<string>  $numbers
+     * @return list<ExternalInvoice>
+     */
+    public function invoicesByNumber(int $organizationId, array $numbers): array;
+
     /** @return list<ExternalProductRevenue> Umsatz je Artikel im Zeitraum */
     public function productRevenue(CarbonInterface $from, CarbonInterface $to): array;
 

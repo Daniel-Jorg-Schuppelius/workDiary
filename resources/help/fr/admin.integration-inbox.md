@@ -1,7 +1,7 @@
 ---
 title: "Boîte de rapprochement"
 topic: admin.integration-inbox
-version: 2
+version: 3
 keywords:
     - boîte des intégrations
     - conflits import
@@ -12,6 +12,7 @@ keywords:
     - conflit de synchronisation
     - numéro inconnu
     - appareils inconnus
+    - demande sur facture
 audience: []
 related:
     - admin.integrations
@@ -70,5 +71,16 @@ haut à droite restreint la sélection.
 **Gérer les affectations :** WorkDiary mémorise une affectation effectuée ;
 les imports ultérieurs du même enregistrement passent alors sans question.
 Sous « Gérer les affectations », vous consultez et supprimez ces liens.
+
+**E-mails :** Une entrée issue de la réception des e-mails peut être reprise
+comme note de communication chez le client, comme ticket de service, dans
+l'archivage de documents ou comme facture entrante. Si WorkDiary a reconnu
+un numéro de facture ou de document sans affecter l'e-mail de lui-même
+(plusieurs numéros, expéditeur inconnu), l'entrée affiche les candidats ;
+**Enregistrer comme demande sur facture** reprend l'e-mail avec le numéro
+saisi comme demande concernant la facture ou le document du logiciel de
+comptabilité. **Enregistrer comme note sur la commande** rattache l'e-mail à
+une commande ouverte, par exemple lorsqu'un client répond à la facture mais
+vise la commande.
 
 La page est ouverte aux personnes autorisées à gérer la facturation.

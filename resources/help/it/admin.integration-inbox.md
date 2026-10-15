@@ -1,7 +1,7 @@
 ---
 title: "Inbox di riconciliazione"
 topic: admin.integration-inbox
-version: 2
+version: 3
 keywords:
     - inbox integrazioni
     - conflitti di importazione
@@ -12,6 +12,7 @@ keywords:
     - conflitto di sincronizzazione
     - numero sconosciuto
     - dispositivi sconosciuti
+    - richiesta sulla fattura
 audience: []
 related:
     - admin.integrations
@@ -70,5 +71,16 @@ restringe la selezione.
 **Gestisci assegnazioni:** WorkDiary ricorda un'assegnazione effettuata; le
 importazioni successive dello stesso record passano senza domande. In
 «Gestisci assegnazioni» consulta e rimuove questi collegamenti.
+
+**E-mail:** Una voce proveniente dalla ricezione e-mail può essere ripresa
+come nota di comunicazione presso il cliente, come ticket di servizio,
+nell'archivio documenti o come fattura in entrata. Se WorkDiary ha
+riconosciuto un numero di fattura o di documento senza assegnare l'e-mail da
+solo (più numeri, mittente sconosciuto), la voce mostra i candidati;
+**Registra come richiesta sulla fattura** riprende l'e-mail con il numero
+inserito come richiesta sulla fattura o sul documento del programma di
+contabilità. **Registra come nota sull'ordine** collega l'e-mail a un ordine
+aperto, ad esempio quando un cliente risponde alla fattura ma intende
+l'ordine.
 
 La pagina è aperta a chi è autorizzato a gestire la fatturazione.

@@ -260,4 +260,23 @@ return [
     'down_payment' => [
         'program_numbering' => 'Crei le fatture di acconto e finali in :program finché :program assegna i numeri di fattura. WorkDiary le mostra nel flusso dei documenti.',
     ],
+    // Rechnungsnachfragen aus E-Mails (Feature 166, MVP-1202).
+    'inquiries' => [
+        'title' => 'Richieste sulle fatture',
+        'subtitle' => 'Richieste dei clienti da e-mail su fatture e documenti – aperte finché qualcuno le contrassegna come risposte.',
+        'section' => 'Richieste (:count)',
+        'open_count' => '{1} :count aperta|[2,*] :count aperte',
+        'default_subject' => 'Richiesta sulla fattura :number',
+        'empty' => 'Nessuna richiesta.',
+        'empty_hint' => 'Le risposte alle e-mail di fattura e le e-mail con un numero di fattura compaiono qui automaticamente non appena una casella viene scaricata.',
+        'filter' => ['open' => 'Aperte', 'answered' => 'Risposte', 'all' => 'Tutte'],
+        'column' => ['received' => 'Ricezione', 'document' => 'Fattura / documento', 'sender' => 'Mittente', 'match' => 'Rilevata tramite'],
+        'action' => ['answer' => 'Contrassegna come risposta', 'reopen' => 'Riapri', 'note' => 'Apri la nota di comunicazione'],
+        'flash' => [
+            'answered' => 'Richiesta per :number contrassegnata come risposta.',
+            'reopened' => 'Richiesta per :number riaperta.',
+            'already_answered' => 'La richiesta ha già una risposta.',
+            'already_open' => 'La richiesta è ancora aperta.',
+        ],
+    ],
 ];

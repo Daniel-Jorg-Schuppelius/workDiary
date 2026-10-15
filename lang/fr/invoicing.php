@@ -260,4 +260,23 @@ return [
     'down_payment' => [
         'program_numbering' => 'Créez les factures d\'acompte et de solde dans :program tant que :program attribue les numéros de facture. WorkDiary les affiche dans le flux des documents.',
     ],
+    // Rechnungsnachfragen aus E-Mails (Feature 166, MVP-1202).
+    'inquiries' => [
+        'title' => 'Demandes sur factures',
+        'subtitle' => 'Demandes des clients issues d\'e-mails concernant des factures et des documents – ouvertes jusqu\'à ce que quelqu\'un les marque comme répondues.',
+        'section' => 'Demandes (:count)',
+        'open_count' => '{1} :count ouverte|[2,*] :count ouvertes',
+        'default_subject' => 'Demande concernant la facture :number',
+        'empty' => 'Aucune demande.',
+        'empty_hint' => 'Les réponses aux e-mails de facture et les e-mails contenant un numéro de facture apparaissent ici automatiquement dès qu\'une boîte aux lettres est relevée.',
+        'filter' => ['open' => 'Ouvertes', 'answered' => 'Répondues', 'all' => 'Toutes'],
+        'column' => ['received' => 'Réception', 'document' => 'Facture / document', 'sender' => 'Expéditeur', 'match' => 'Détectée par'],
+        'action' => ['answer' => 'Marquer comme répondue', 'reopen' => 'Rouvrir', 'note' => 'Ouvrir la note de communication'],
+        'flash' => [
+            'answered' => 'Demande pour :number marquée comme répondue.',
+            'reopened' => 'Demande pour :number rouverte.',
+            'already_answered' => 'La demande a déjà été répondue.',
+            'already_open' => 'La demande est encore ouverte.',
+        ],
+    ],
 ];

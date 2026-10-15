@@ -1,7 +1,7 @@
 ---
 title: "Zuordnungs-Inbox"
 topic: admin.integration-inbox
-version: 2
+version: 3
 keywords:
     - Integrations-Inbox
     - Importkonflikte
@@ -14,6 +14,7 @@ keywords:
     - unbekannte Geräte
     - Klärungsfälle
     - Mapping
+    - Rechnungsnachfrage
 audience: []
 related:
     - admin.integrations
@@ -70,5 +71,15 @@ die Zuordnungs-Auswahl ein.
 **Zuordnungen verwalten:** WorkDiary merkt sich eine getroffene Zuordnung;
 künftige Importe desselben Datensatzes laufen dann ohne Rückfrage durch. Unter
 „Zuordnungen verwalten“ sehen und lösen Sie diese Verknüpfungen.
+
+**E-Mails:** Ein Eintrag aus dem E-Mail-Eingang lässt sich als
+Kommunikationsnotiz beim Kunden, als Service-Ticket, in die Dokumentenablage
+oder als Eingangsrechnung übernehmen. Hat WorkDiary eine Rechnungs- oder
+Belegnummer erkannt, die Mail aber nicht von selbst zugeordnet (mehrere
+Nummern, unbekannter Absender), zeigt der Eintrag die Kandidaten; **Als
+Rechnungsnachfrage erfassen** übernimmt die Mail mit der eingetragenen Nummer
+als Nachfrage zur Rechnung oder zum Beleg des Buchhaltungsprogramms. **Als
+Notiz am Auftrag buchen** hängt die Mail an einen offenen Auftrag, etwa wenn
+ein Kunde auf die Rechnung antwortet, aber den Auftrag meint.
 
 Die Seite steht Personen offen, die die Abrechnung verwalten dürfen.

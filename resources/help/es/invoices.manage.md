@@ -1,7 +1,7 @@
 ---
 title: "Facturas & documentos"
 topic: invoices.manage
-version: 10
+version: 11
 keywords:
     - crear factura
     - emitir factura
@@ -22,6 +22,7 @@ keywords:
     - cadena de documentos
     - transferir factura a Lexoffice
     - número provisional
+    - consulta sobre factura
 audience: []
 modules:
     - module.vertrieb
@@ -170,3 +171,23 @@ el asunto. Lexoffice y easybill toman la confirmación de pedido o la oferta com
 referencia a la factura transferida; en sevDesk y easybill la factura debe estar en el programa; orgaMAX no asume ninguno de los dos. Si el programa la rechaza, el documento sigue como
 borrador y el mensaje indica el motivo. En ese caso, cree las facturas de
 anticipo y finales en el programa.
+
+## Consultas sobre facturas
+
+Cuando un cliente responde a una factura por correo, WorkDiary registra al
+consultar el buzón una **consulta sobre la factura**: en el historial de la
+factura, como nota de comunicación en el cliente y en la sección
+**Consultas** de la página de la factura. Se reconocen la respuesta al correo
+de factura enviado por WorkDiary y un número de factura o de documento en el
+asunto o el texto – también para documentos emitidos por Lexoffice, sevDesk,
+easybill u otro programa conectado. Con un número, el remitente debe
+pertenecer al expediente (cliente, persona de contacto, cuenta del portal o
+destinatario del correo de la factura); de lo contrario el correo queda
+marcado en la bandeja de asignación, igual que con varios números. Cada
+mensaje se registra una sola vez, las respuestas automáticas de ausencia
+nunca.
+
+La lista de trabajo **Consultas sobre facturas** (botón en el flujo de
+documentos) muestra las consultas abiertas y respondidas de todas las
+facturas y documentos; **Marcar como respondida** cierra una consulta,
+**Reabrir** la recupera. Ambas constan en el historial de la factura.

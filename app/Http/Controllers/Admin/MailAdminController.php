@@ -11,22 +11,26 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\Integration\IntegrationInboxStatus;
+use App\Enums\Invoicing\InvoiceInquiryMatchKind;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Mail\EmailConnection;
 use App\Models\Platform\{Organization, User};
 use App\Services\Communication\Mail\MailToCommunicationNote;
 use App\Services\Document\Mail\MailAttachmentsToDms;
+use App\Services\Integration\InboxActionService;
+use App\Services\Invoicing\Inquiries\{InvoiceInquiryMatcher, InvoiceInquiryService};
 use App\Services\Invoicing\Mail\MailToIncomingInvoice;
 use App\Services\Licensing\ModuleStatusResolver;
 use App\Services\Mail\Contracts\MailboxTransport;
-use App\Services\Mail\{MailIntakeService, MailboxCursor, MailboxGateway, MailboxTransports};
+use App\Services\Mail\{MailIntakeService, MailboxCursor, MailboxGateway, MailboxTransports, ParsedMessage};
 use App\Services\ServiceTicket\Mail\MailToServiceTicket;
 use App\Support\{ErrorText, SqidEncoder};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\{Artisan, Auth};
+use Illuminate\Support\Facades\{Artisan, Auth, DB};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Throwable;
@@ -218,6 +222,95 @@ class MailAdminController extends Controller {
      * persistierten Anhänge als Dokumente (idempotent je Message-ID+Index),
      * verortet am erkannten bzw. gewählten Kunden.
      */
+    /**
+     * Mail als Nachfrage zur Rechnung oder zum Beleg erfassen (Feature 166,
+     * MVP-1201): die Nummer wird wie beim automatischen Eingang gegen lokale
+     * Rechnungen und den Belegspiegel aufgelöst; die Absenderprüfung entfällt,
+     * weil eine Person entscheidet. Korrespondenz wird Notiz beim Kunden.
+     */
+    public function bookInquiry(Request $request, InvoiceInquiryMatcher $matcher, InvoiceInquiryService $inquiries, MailToCommunicationNote $notes, InboxActionService $actions): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        $data = $request->validate([
+            'item' => ['required', 'string'],
+            'invoice_number' => ['required', 'string', 'max:64'],
+        ]);
+
+        $item = $this->resolveInboxItem($organization, (string) $data['item']);
+        if (! $item->isOpen()) {
+            return back()->with('error', __('mail.flash.already_resolved'));
+        }
+
+        $number = trim((string) $data['invoice_number']);
+        $targets = $matcher->byNumbers($organization, [$number, mb_strtoupper($number)]);
+        if ($targets === []) {
+            return back()->with('error', __('mail.flash.inquiry_not_found', ['number' => $number]));
+        }
+        if (count($targets) > 1) {
+            return back()->with('error', __('mail.flash.inquiry_ambiguous', ['number' => $number]));
+        }
+        $target = $targets[0];
+
+        $message = $this->messageFromItem($item);
+        if ($inquiries->exists((int) $organization->id, $message->messageId)) {
+            return back()->with('error', __('mail.flash.inquiry_duplicate'));
+        }
+        $customer = $target->customerId !== null
+            ? Customer::query()->whereKey($target->customerId)->where('organization_id', $organization->id)->first()
+            : null;
+
+        try {
+            DB::transaction(function () use ($item, $target, $message, $customer, $admin, $notes, $inquiries, $actions, $organization): void {
+                // Mit Kunde: Notiz samt Anhängen schließt den Inbox-Eintrag; ohne Kunde schließt ihn die Nachfrage.
+                $note = $customer instanceof Customer ? $notes->bookAsCommunicationNote($item, $customer, $admin) : null;
+                $inquiry = $inquiries->record($organization, $target, $message, InvoiceInquiryMatchKind::Manual, $admin, $note);
+                if ($inquiry === null) {
+                    throw new \RuntimeException('Nachfrage bereits erfasst.');
+                }
+                if ($note === null) {
+                    $actions->assignTo($item, $inquiry);
+                }
+            });
+        } catch (Throwable) {
+            return back()->with('error', __('mail.flash.inquiry_failed'));
+        }
+
+        return back()->with('success', __('mail.flash.inquiry_booked', ['number' => $target->number]));
+    }
+
+    /** Mail als Kommunikationsnotiz am Auftrag (Feature 166, MVP-1201). */
+    public function bookOrder(Request $request, MailToCommunicationNote $resolver): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        $data = $request->validate([
+            'item' => ['required', 'string'],
+            'diary_entry' => ['required', 'string'],
+        ]);
+
+        $item = $this->resolveInboxItem($organization, (string) $data['item']);
+        if (! $item->isOpen()) {
+            return back()->with('error', __('mail.flash.already_resolved'));
+        }
+
+        $decoded = app(SqidEncoder::class)->decode(DiaryEntry::class, (string) $data['diary_entry']);
+        $entry = $decoded !== null
+            ? DiaryEntry::query()->withoutGlobalScopes()->whereKey($decoded)->where('organization_id', $organization->id)->first()
+            : null;
+        if (! $entry instanceof DiaryEntry) {
+            return back()->with('error', __('mail.flash.order_required'));
+        }
+
+        try {
+            $resolver->bookAsCommunicationNote($item, $entry, $admin);
+        } catch (Throwable) {
+            return back()->with('error', __('mail.flash.order_failed'));
+        }
+
+        return back()->with('success', __('mail.flash.order_booked'));
+    }
+
     public function importDms(Request $request, MailAttachmentsToDms $resolver): RedirectResponse {
         $admin = $this->admin();
         $organization = $this->organization($admin);
@@ -448,6 +541,22 @@ class MailAdminController extends Controller {
         abort_unless($item instanceof IntegrationInboxItem, 404);
 
         return $item;
+    }
+
+    /** Nachricht aus dem beim Eingang gesicherten Snapshot (Nachfrage von Hand, MVP-1201). */
+    private function messageFromItem(IntegrationInboxItem $item): ParsedMessage {
+        $snapshot = $item->remote_snapshot ?? [];
+        $from = (array) ($snapshot['from'] ?? []);
+
+        return new ParsedMessage(
+            messageId: (string) ($item->external_id ?: ($snapshot['message_id'] ?? '')),
+            uid: 0,
+            fromEmail: (string) ($from['email'] ?? ''),
+            fromName: (string) ($from['name'] ?? ''),
+            subject: (string) ($snapshot['subject'] ?? $item->display_title ?? ''),
+            body: (string) ($snapshot['body'] ?? ''),
+            receivedAt: isset($snapshot['received_at']) ? Carbon::parse((string) $snapshot['received_at']) : ($item->occurred_at ?? now()),
+        );
     }
 
     private function resolveCustomer(Organization $organization, ?string $sqid, IntegrationInboxItem $item): ?Customer {

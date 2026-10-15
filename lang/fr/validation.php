@@ -944,6 +944,7 @@ return [
         'dial_enabled' => 'Lancer les appels depuis workDiary',
         'dial_extension' => 'Poste utilisé',
         'diary' => 'Ordre',
+        'diary_entry' => 'Commande',
         'diary_entry_id' => 'Origine (entrée de journal)',
         'difference_reason' => 'Motif de l\'écart',
         'dimension' => 'Dimension',

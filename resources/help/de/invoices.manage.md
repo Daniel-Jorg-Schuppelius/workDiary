@@ -1,7 +1,7 @@
 ---
 title: "Rechnungen & Belege"
 topic: invoices.manage
-version: 10
+version: 11
 keywords:
     - Rechnung erstellen
     - Rechnung schreiben
@@ -21,6 +21,7 @@ keywords:
     - Belegkette
     - Rechnung an Lexoffice übertragen
     - Entwurfsnummer
+    - Rechnungsnachfrage
 audience: []
 modules:
     - module.vertrieb
@@ -168,3 +169,22 @@ gehen mit Bezug auf die übertragene Rechnung hinüber; bei sevDesk und
 easybill muss die Rechnung dafür im Programm sein, orgaMAX übernimmt beide nicht. Lehnt das Programm ab,
 bleibt der Beleg Entwurf, und die Meldung nennt den Grund. Abschlags- und
 Schlussrechnungen legen Sie in diesem Fall im Programm an.
+
+## Nachfragen zu Rechnungen
+
+Antwortet ein Kunde per E-Mail auf eine Rechnung, erfasst WorkDiary beim
+Abruf des Postfachs eine **Nachfrage zur Rechnung**: in der Historie der
+Rechnung, als Kommunikationsnotiz beim Kunden und im Abschnitt
+**Nachfragen** auf der Rechnungsseite. Erkannt wird die Antwort auf die von
+WorkDiary versandte Rechnungsmail sowie eine Rechnungs- oder Belegnummer in
+Betreff oder Text – auch für Belege, die Lexoffice, sevDesk, easybill oder
+ein anderes angebundenes Programm gestellt hat. Bei einer Nummer muss der
+Absender zum Vorgang gehören (Kunde, Ansprechpartner, Portalkonto oder
+Empfänger der Rechnungsmail); sonst landet die Mail markiert in der
+Zuordnungs-Inbox, ebenso bei mehreren Nummern. Jede Nachricht wird nur
+einmal erfasst, Abwesenheitsnotizen nie.
+
+Die Arbeitsliste **Rechnungsnachfragen** (Schaltfläche im Belegfluss) zeigt
+offene und beantwortete Nachfragen aller Rechnungen und Belege; **Als
+beantwortet markieren** schließt eine Nachfrage, **Wieder öffnen** holt sie
+zurück. Beides steht in der Historie der Rechnung.

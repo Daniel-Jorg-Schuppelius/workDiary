@@ -116,6 +116,12 @@
     <x-slot:actions>
         {{-- MVP-1057: Belegkette --}}
         <x-icon-btn icon="conversion_path" size="sm" :href="route('billing.chain')" show-label>{{ __('invoicing.chain.title') }}</x-icon-btn>
+        {{-- Rechnungsnachfragen aus E-Mails (Feature 166, MVP-1202) --}}
+        @if ($canDunLocal)
+            <x-icon-btn icon="mark_email_unread" size="sm" :href="route('invoices.inquiries.index')" show-label>
+                {{ __('invoicing.inquiries.title') }}@if (($inquiryOpenCount ?? 0) > 0) <x-status-badge tone="warning" size="xs">{{ $inquiryOpenCount }}</x-status-badge>@endif
+            </x-icon-btn>
+        @endif
         @if ($_canDesign)
             <x-icon-btn icon="design_services" size="sm" :href="route('admin.document-design.index')"
                         :label="__('document_design.link.feed_title')" show-label>

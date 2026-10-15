@@ -21,7 +21,7 @@ use App\Models\ServiceTicket\ServiceQueue;
 use App\Modules\ModuleRegistry;
 use App\Services\Integration\Match\{EntityMatcher, MatchStrategy};
 use App\Services\Integration\Profiles\CustomerMatchProfile;
-use App\Services\Mail\Contracts\MailIntakeHandler;
+use App\Services\Mail\Contracts\{MailIntakeAnnotator, MailIntakeHandler};
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -44,7 +44,7 @@ class MailIntakeService {
     ) {}
 
     /**
-     * @return 'created'|'skipped'|'ticket_message'|'einvoice'|'b2b_order'|'callreport'
+     * @return 'created'|'skipped'|'ticket_message'|'einvoice'|'b2b_order'|'callreport'|'invoice_inquiry'
      */
     public function intake(Organization $organization, EmailConnection $connection, ParsedMessage $message): string {
         foreach ($this->handlers() as $handler) {
@@ -101,6 +101,11 @@ class MailIntakeService {
         if ($connection->einvoice_intake) {
             $snapshot['invoice_mailbox'] = true;
         }
+        // Markierungen der Fachmodule für die Klärung von Hand (MVP-1200), z. B.
+        // erkannte Rechnungsnummern; Basisfelder gewinnen bei gleichem Schlüssel.
+        foreach ($this->annotators() as $annotator) {
+            $snapshot += $annotator->annotate($organization, $connection, $message);
+        }
 
         $item->fill([
             'source' => 'imap',
@@ -119,6 +124,11 @@ class MailIntakeService {
         ])->save();
 
         return 'created';
+    }
+
+    /** @return list<MailIntakeAnnotator> */
+    private function annotators(): array {
+        return array_map(static fn (string $class): MailIntakeAnnotator => app($class), app(ModuleRegistry::class)->extensions(MailIntakeAnnotator::class));
     }
 
     /** @return list<MailIntakeHandler> nach Priorität */

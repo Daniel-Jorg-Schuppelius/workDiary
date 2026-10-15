@@ -26,6 +26,18 @@ return [
         'book_action' => 'Als Kommunikationsnotiz buchen',
         'book_ticket_action' => 'Als Service-Ticket buchen',
         'book_customer_placeholder' => '… Kunde (leer = erkannter Absender)',
+        // Rechnungsnachfrage und Notiz am Auftrag (Feature 166, MVP-1201)
+        'inquiry_action' => 'Als Rechnungsnachfrage erfassen',
+        'inquiry_number_placeholder' => 'Rechnungs-/Belegnummer',
+        'order_action' => 'Als Notiz am Auftrag buchen',
+        'order_placeholder' => '… Auftrag wählen',
+        'order_no_customer' => 'Ohne Kunde',
+        'invoice_review' => [
+            'multiple' => 'Mehrere Rechnungen erkannt – bitte zuordnen',
+            'sender_unknown' => 'Rechnung erkannt, Absender unbekannt – bitte prüfen',
+            'no_customer' => 'Beleg erkannt, kein Kunde zugeordnet – bitte prüfen',
+            'generic' => 'Rechnung erkannt – bitte prüfen',
+        ],
     ],
 
     'dms' => [
@@ -108,6 +120,14 @@ return [
         'already_resolved' => 'Der Eintrag ist bereits aufgelöst.',
         'password_required' => 'Für ein neues Postfach ist ein Passwort erforderlich.',
         'customer_required' => 'Kein Kunde zugeordnet.',
+        'inquiry_booked' => 'Nachfrage zu :number erfasst.',
+        'inquiry_not_found' => 'Zu :number gibt es weder eine Rechnung noch einen Beleg.',
+        'inquiry_ambiguous' => 'Zu :number gibt es mehrere Belege – bitte die genaue Nummer eingeben.',
+        'inquiry_duplicate' => 'Diese Nachricht ist schon als Nachfrage erfasst.',
+        'inquiry_failed' => 'Die Nachfrage konnte nicht erfasst werden.',
+        'order_booked' => 'Mail als Notiz am Auftrag übernommen.',
+        'order_required' => 'Kein Auftrag gewählt.',
+        'order_failed' => 'Übernahme an den Auftrag fehlgeschlagen.',
     ],
     'transport' => [
         'imap' => 'IMAP-Postfach',

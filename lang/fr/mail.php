@@ -26,6 +26,18 @@ return [
         'book_action' => 'Enregistrer comme note de communication',
         'book_ticket_action' => 'Enregistrer comme ticket de service',
         'book_customer_placeholder' => '… client (vide = expéditeur détecté)',
+        // Rechnungsnachfrage und Notiz am Auftrag (Feature 166, MVP-1201)
+        'inquiry_action' => 'Enregistrer comme demande sur facture',
+        'inquiry_number_placeholder' => 'Numéro de facture/document',
+        'order_action' => 'Enregistrer comme note sur la commande',
+        'order_placeholder' => '… choisir la commande',
+        'order_no_customer' => 'Sans client',
+        'invoice_review' => [
+            'multiple' => 'Plusieurs factures détectées – veuillez affecter',
+            'sender_unknown' => 'Facture détectée, expéditeur inconnu – veuillez vérifier',
+            'no_customer' => 'Document détecté, aucun client affecté – veuillez vérifier',
+            'generic' => 'Facture détectée – veuillez vérifier',
+        ],
     ],
 
     'dms' => [
@@ -108,6 +120,14 @@ return [
         'already_resolved' => 'Cette entrée est déjà résolue.',
         'password_required' => 'Une nouvelle boîte nécessite un mot de passe.',
         'customer_required' => 'Aucun client associé.',
+        'inquiry_booked' => 'Demande pour :number enregistrée.',
+        'inquiry_not_found' => 'Aucune facture ni aucun document pour :number.',
+        'inquiry_ambiguous' => 'Plusieurs documents pour :number – veuillez saisir le numéro exact.',
+        'inquiry_duplicate' => 'Ce message est déjà enregistré comme demande.',
+        'inquiry_failed' => 'La demande n\'a pas pu être enregistrée.',
+        'order_booked' => 'E-mail enregistré comme note sur la commande.',
+        'order_required' => 'Aucune commande sélectionnée.',
+        'order_failed' => 'L\'enregistrement sur la commande a échoué.',
     ],
     'transport' => [
         'imap' => 'Boîte IMAP',

@@ -1,7 +1,7 @@
 ---
 title: "Invoices & documents"
 topic: invoices.manage
-version: 10
+version: 11
 keywords:
     - create invoice
     - write invoice
@@ -22,6 +22,7 @@ keywords:
     - document chain
     - transfer invoice to Lexoffice
     - draft number
+    - invoice inquiry
 audience: []
 modules:
     - module.vertrieb
@@ -162,3 +163,22 @@ Lexoffice and easybill take the order confirmation or the quote as predecessor; 
 transferred invoice; for sevDesk and easybill the invoice must be in the program for that, orgaMAX takes neither. If the program refuses, the document remains a draft and
 the message names the reason. In this case, create down payment and final
 invoices in the program.
+
+## Inquiries about invoices
+
+When a customer replies to an invoice by e-mail, WorkDiary records an
+**invoice inquiry** while polling the mailbox: in the invoice history, as a
+communication note on the customer and in the **Inquiries** section of the
+invoice page. It recognises the reply to the invoice e-mail sent by
+WorkDiary as well as an invoice or document number in the subject or text –
+also for documents issued by Lexoffice, sevDesk, easybill or another
+connected program. For a number, the sender must belong to the case
+(customer, contact person, portal account or recipient of the invoice
+e-mail); otherwise the e-mail ends up flagged in the assignment inbox, as it
+does with several numbers. Each message is recorded only once, out-of-office
+replies never.
+
+The **Invoice inquiries** work list (button in the document flow) shows open
+and answered inquiries of all invoices and documents; **Mark as answered**
+closes an inquiry, **Reopen** brings it back. Both appear in the invoice
+history.

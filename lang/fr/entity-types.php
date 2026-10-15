@@ -271,6 +271,7 @@ return [
     'CommissionRule' => 'Règle de commission',
     'InvoiceCommission' => 'Ligne de commission',
     'CommissionSettlementRun' => 'Décompte de commissions',
+    'InvoiceInquiry' => 'Demande sur facture',
     'InvoiceItem' => 'Position de facture',
     'InvoiceMailTemplate' => 'Modèle d\'e-mail de facture',
     'InvoiceRetention' => 'Retenue de garantie',

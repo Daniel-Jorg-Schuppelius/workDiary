@@ -978,6 +978,7 @@ return [
         'dial_enabled' => 'Start calls from workDiary',
         'dial_extension' => 'Own extension',
         'diary' => 'Order',
+        'diary_entry' => 'Order',
         'diary_entry_id' => 'Trigger (diary entry)',
         'difference_reason' => 'Reason for difference',
         'dimension' => 'Dimension',

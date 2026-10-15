@@ -38,7 +38,7 @@ class MailReferenceMatcher {
      * @return list<array{model: Customer, confidence: string, reasons: list<string>}>
      */
     public function customerCandidates(Organization $organization, string $text): array {
-        $tokens = $this->extractTokens($text);
+        $tokens = $this->tokens($text);
         if ($tokens === []) {
             return [];
         }
@@ -78,11 +78,13 @@ class MailReferenceMatcher {
     /**
      * Referenzartige Tokens aus dem Text (optionales Buchstabenpräfix + Ziffern
      * mit -/‑Trennern), in Original- UND Großschreibung (case-tolerantes Matching
-     * gegen die gespeicherten Nummern).
+     * gegen die gespeicherten Nummern). Öffentlich, weil die
+     * Rechnungsnachfrage (MVP-1200) dieselben Nummern gegen Rechnungen und
+     * Belegspiegel auflöst.
      *
      * @return list<string>
      */
-    private function extractTokens(string $text): array {
+    public function tokens(string $text): array {
         if (! preg_match_all('/\b[A-Za-z]{0,5}[-\/]?\d{2,}(?:[-\/]\d+)*\b/u', $text, $matches)) {
             return [];
         }

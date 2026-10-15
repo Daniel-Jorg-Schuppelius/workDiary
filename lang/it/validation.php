@@ -944,6 +944,7 @@ return [
         'dial_enabled' => 'Avviare chiamate da workDiary',
         'dial_extension' => 'Interno proprio',
         'diary' => 'Ordine',
+        'diary_entry' => 'Ordine',
         'diary_entry_id' => 'Origine (voce di diario)',
         'difference_reason' => 'Motivo della differenza',
         'dimension' => 'Dimensione',

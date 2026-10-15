@@ -1,7 +1,7 @@
 ---
 title: "Factures & pièces"
 topic: invoices.manage
-version: 10
+version: 11
 keywords:
     - créer une facture
     - établir une facture
@@ -22,6 +22,7 @@ keywords:
     - chaîne de documents
     - transmettre la facture à Lexoffice
     - numéro provisoire
+    - demande sur facture
 audience: []
 modules:
     - module.vertrieb
@@ -171,3 +172,23 @@ l'objet ne soient créés. Lexoffice et easybill reprennent la confirmation de c
 transmis avec référence à la facture transmise ; pour sevDesk et easybill, la facture doit se trouver dans le logiciel ; orgaMAX ne reprend ni l'un ni l'autre. Si le logiciel refuse, le document
 reste un brouillon et le message en indique la raison. Créez dans ce cas les
 factures d'acompte et de solde dans le logiciel.
+
+## Demandes concernant des factures
+
+Lorsqu'un client répond à une facture par e-mail, WorkDiary enregistre lors
+de la relève de la boîte aux lettres une **demande sur facture** : dans
+l'historique de la facture, comme note de communication chez le client et
+dans la section **Demandes** de la page de la facture. Sont reconnues la
+réponse à l'e-mail de facture envoyé par WorkDiary ainsi qu'un numéro de
+facture ou de document dans l'objet ou le texte – y compris pour les
+documents émis par Lexoffice, sevDesk, easybill ou un autre logiciel
+connecté. Pour un numéro, l'expéditeur doit appartenir au dossier (client,
+interlocuteur, compte portail ou destinataire de l'e-mail de facture) ; sinon
+l'e-mail arrive marqué dans la boîte d'affectation, de même en présence de
+plusieurs numéros. Chaque message n'est enregistré qu'une seule fois, les
+messages d'absence jamais.
+
+La liste de travail **Demandes sur factures** (bouton dans le flux des
+documents) affiche les demandes ouvertes et répondues de toutes les factures
+et de tous les documents ; **Marquer comme répondue** clôt une demande,
+**Rouvrir** la ramène. Les deux figurent dans l'historique de la facture.

@@ -1,7 +1,7 @@
 ---
 title: "Mapping inbox"
 topic: admin.integration-inbox
-version: 2
+version: 3
 keywords:
     - integration inbox
     - import conflicts
@@ -14,6 +14,7 @@ keywords:
     - unknown devices
     - mapping
     - review imports
+    - invoice inquiry
 audience: []
 related:
     - admin.integrations
@@ -68,5 +69,15 @@ selection.
 **Manage mappings:** WorkDiary remembers a mapping once made; future imports
 of the same record then pass without asking. Under "Manage mappings" you view
 and remove these links.
+
+**E-mails:** An entry from the e-mail intake can be taken over as a
+communication note on the customer, as a service ticket, into the document
+storage or as an incoming invoice. If WorkDiary recognised an invoice or
+document number but did not assign the e-mail by itself (several numbers,
+unknown sender), the entry shows the candidates; **Record as invoice
+inquiry** takes the e-mail with the entered number as an inquiry about the
+invoice or the accounting program's document. **Book as note on the order**
+attaches the e-mail to an open order, for example when a customer replies to
+the invoice but means the order.
 
 The page is open to people who are allowed to manage billing.

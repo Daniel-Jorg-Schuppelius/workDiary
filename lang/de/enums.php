@@ -2110,6 +2110,8 @@ return [
         'incoming_invoice_match_kind' => ['vat_id' => 'USt-IdNr.', 'tax_number' => 'Steuernummer', 'iban' => 'IBAN', 'sender_rule' => 'Absenderregel', 'manual' => 'Von Hand'],
         'incoming_invoice_transfer_status' => ['pending' => 'Ausstehend', 'waiting' => 'Wartet auf Klärung', 'failed' => 'Fehlgeschlagen', 'transferred' => 'Übergeben', 'linked' => 'Schon vorhanden, verknüpft'],
         'invoice_schedule_status' => ['active' => 'Aktiv', 'paused' => 'Pausiert', 'ended' => 'Beendet'],
+        'invoice_inquiry_status' => ['open' => 'Offen', 'answered' => 'Beantwortet'],
+        'invoice_inquiry_match_kind' => ['thread' => 'Antwort auf Rechnungsmail', 'number' => 'Rechnungsnummer im Text', 'manual' => 'Von Hand'],
     ],
     'agile' => [
         'agile_column_category' => ['open' => 'Offen', 'in_progress' => 'In Arbeit', 'done' => 'Erledigt'],

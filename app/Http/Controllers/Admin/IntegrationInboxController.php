@@ -165,7 +165,40 @@ class IntegrationInboxController extends Controller {
                 ->mapWithKeys(fn(User $u): array => [(string) $u->sqid => (string) $u->name])
                 ->all(),
             'openCount' => $this->openCount($user),
+            // Mail → Notiz am Auftrag (Feature 166, MVP-1201): offene Aufträge, nach Kunde gruppiert.
+            'orderTargets' => in_array(\App\Services\Mail\MailIntakeService::PLUGIN_ID, $plugins, true) ? $this->orderTargets($user) : [],
         ]);
+    }
+
+    /**
+     * Offene Aufträge der Organisation als Buchungsziel einer Mail, gruppiert
+     * nach Kunde (höchstens 100, neueste zuerst).
+     *
+     * @return array<string, array<string, string>> Kunde → (Sqid → Bezeichnung)
+     */
+    private function orderTargets(User $user): array {
+        $entries = \App\Models\Diary\DiaryEntry::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $user->organization_id)
+            ->whereNotIn('status', [\App\Enums\Diary\Status::Done->value, \App\Enums\Diary\Status::Invoiced->value, \App\Enums\Diary\Status::Cancelled->value])
+            ->orderByDesc('id')
+            ->limit(100)
+            ->get(['id', 'title', 'customer_id', 'created_at']);
+        $customerNames = Customer::query()
+            ->withoutGlobalScopes()
+            ->whereKey($entries->pluck('customer_id')->filter()->unique()->all())
+            ->pluck('name', 'id')
+            ->all();
+
+        $targets = [];
+        foreach ($entries as $entry) {
+            $group = (string) ($customerNames[(int) $entry->customer_id] ?? __('mail.inbox.order_no_customer'));
+            $date = $entry->created_at !== null ? \App\Support\CarbonFmt::fdate($entry->created_at) : '';
+            $targets[$group][$entry->getRouteKey()] = trim(trim((string) $entry->title) . ' · ' . $date, ' ·');
+        }
+        ksort($targets);
+
+        return $targets;
     }
 
     public function bookGroup(Request $request, InboxGroupBookerRegistry $bookers): RedirectResponse {

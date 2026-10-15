@@ -271,6 +271,7 @@ return [
     'CommissionRule' => 'Regola di provvigione',
     'InvoiceCommission' => 'Riga di provvigione',
     'CommissionSettlementRun' => 'Liquidazione provvigioni',
+    'InvoiceInquiry' => 'Richiesta sulla fattura',
     'InvoiceItem' => 'Voce di fattura',
     'InvoiceMailTemplate' => 'Modello e-mail fattura',
     'InvoiceRetention' => 'Ritenuta a garanzia',

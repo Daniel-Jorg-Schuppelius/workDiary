@@ -944,6 +944,7 @@ return [
         'dial_enabled' => 'Anrufe aus workDiary starten',
         'dial_extension' => 'Eigene Durchwahl',
         'diary' => 'Auftrag',
+        'diary_entry' => 'Auftrag',
         'diary_entry_id' => 'Anlass (Tagebucheintrag)',
         'difference_reason' => 'Grund der Differenz',
         'dimension' => 'Dimension',

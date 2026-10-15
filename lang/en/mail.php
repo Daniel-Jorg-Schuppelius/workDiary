@@ -26,6 +26,18 @@ return [
         'book_action' => 'Book as communication note',
         'book_ticket_action' => 'Book as service ticket',
         'book_customer_placeholder' => '… customer (blank = detected sender)',
+        // Rechnungsnachfrage und Notiz am Auftrag (Feature 166, MVP-1201)
+        'inquiry_action' => 'Record as invoice inquiry',
+        'inquiry_number_placeholder' => 'Invoice/document number',
+        'order_action' => 'Book as note on the order',
+        'order_placeholder' => '… choose order',
+        'order_no_customer' => 'No customer',
+        'invoice_review' => [
+            'multiple' => 'Several invoices detected – please assign',
+            'sender_unknown' => 'Invoice detected, sender unknown – please check',
+            'no_customer' => 'Document detected, no customer assigned – please check',
+            'generic' => 'Invoice detected – please check',
+        ],
     ],
 
     'dms' => [
@@ -108,6 +120,14 @@ return [
         'already_resolved' => 'This entry has already been resolved.',
         'password_required' => 'A new mailbox requires a password.',
         'customer_required' => 'No customer assigned.',
+        'inquiry_booked' => 'Inquiry for :number recorded.',
+        'inquiry_not_found' => 'There is neither an invoice nor a document for :number.',
+        'inquiry_ambiguous' => 'There are several documents for :number – please enter the exact number.',
+        'inquiry_duplicate' => 'This message is already recorded as an inquiry.',
+        'inquiry_failed' => 'The inquiry could not be recorded.',
+        'order_booked' => 'E-mail booked as a note on the order.',
+        'order_required' => 'No order selected.',
+        'order_failed' => 'Booking to the order failed.',
     ],
     'transport' => [
         'imap' => 'IMAP mailbox',

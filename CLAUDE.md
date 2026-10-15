@@ -164,6 +164,7 @@ Welle 4 leer; ein neuer Verstoß wird gelöst, nicht eingetragen.
   `ProfileInstallStep`, `AllocationTargetHandler`, `InboxGroupBooker`,
   `VehicleReservationGuard`, `ProjectEconomicsDimension`, `RoomBlockingSource`,
   `CloudIntakeHandler`, `RetentionPolicyProvider`, `MailIntakeHandler`,
+  `MailIntakeAnnotator` (Klärfall-Markierung im Mail-Eingang, Feature 166),
   `OffboardingStep`, `NavigationCondition`, `PluginCapabilitySource`,
   `MirrorPdfRenderer`, `RuleAction`, `RuleTrigger` (Automationsregeln), `EarlyWarningSource`,
   `PortalNoticeSource` (Hinweise im Kundenportal), `ArticleConflictHandler`

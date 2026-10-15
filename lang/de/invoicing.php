@@ -260,4 +260,23 @@ return [
     'down_payment' => [
         'program_numbering' => 'Abschlags- und Schlussrechnungen legen Sie in :program an, solange :program die Rechnungsnummern vergibt. WorkDiary zeigt sie im Belegfluss.',
     ],
+    // Rechnungsnachfragen aus E-Mails (Feature 166, MVP-1202).
+    'inquiries' => [
+        'title' => 'Rechnungsnachfragen',
+        'subtitle' => 'Nachfragen von Kunden aus E-Mails zu Rechnungen und Belegen – offen, bis jemand sie als beantwortet markiert.',
+        'section' => 'Nachfragen (:count)',
+        'open_count' => '{1} :count offen|[2,*] :count offen',
+        'default_subject' => 'Nachfrage zur Rechnung :number',
+        'empty' => 'Keine Nachfragen.',
+        'empty_hint' => 'Antworten auf Rechnungsmails und Mails mit einer Rechnungsnummer erscheinen hier von selbst, sobald ein Postfach abgerufen wird.',
+        'filter' => ['open' => 'Offen', 'answered' => 'Beantwortet', 'all' => 'Alle'],
+        'column' => ['received' => 'Eingang', 'document' => 'Rechnung / Beleg', 'sender' => 'Absender', 'match' => 'Erkannt über'],
+        'action' => ['answer' => 'Als beantwortet markieren', 'reopen' => 'Wieder öffnen', 'note' => 'Kommunikationsnotiz öffnen'],
+        'flash' => [
+            'answered' => 'Nachfrage zu :number als beantwortet markiert.',
+            'reopened' => 'Nachfrage zu :number wieder geöffnet.',
+            'already_answered' => 'Die Nachfrage ist schon beantwortet.',
+            'already_open' => 'Die Nachfrage ist noch offen.',
+        ],
+    ],
 ];

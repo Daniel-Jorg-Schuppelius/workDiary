@@ -21,7 +21,7 @@ use App\Services\Billing\Contracts\ExternalRevenueSource;
 use App\Services\Billing\Dto\{ExternalInvoice, ExternalInvoiceFile, ExternalInvoiceQuery};
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\{Builder, Collection};
 
 /**
  * Umsatzbelege aus dem allgemeinen Belegspiegel `accounting_vouchers`
@@ -38,6 +38,8 @@ final class AccountingVoucherRevenueSource implements ExternalRevenueSource {
     /** sevDesk-Status vor MVP-731 (normalisierter Zustand fehlt in Altzeilen). */
     private const LEGACY_STATES = ['50' => 'draft', '100' => 'open', '750' => 'open', '1000' => 'paid'];
 
+    private const COLUMNS = ['id', 'plugin_id', 'customer_id', 'voucher_status', 'voucher_state', 'document_kind', 'voucher_number', 'voucher_date', 'due_date', 'paid_date', 'total_amount', 'net_amount', 'open_amount', 'currency'];
+
     public function key(): string {
         return self::KEY;
     }
@@ -53,12 +55,34 @@ final class AccountingVoucherRevenueSource implements ExternalRevenueSource {
                 ->orWhereNotIn('accounting_vouchers.customer_id', $query->excludedCustomerIds)))
             ->orderBy('voucher_date')
             ->orderBy('id')
-            ->get(['id', 'plugin_id', 'customer_id', 'voucher_status', 'voucher_state', 'document_kind', 'voucher_number', 'voucher_date', 'due_date', 'paid_date', 'total_amount', 'net_amount', 'open_amount', 'currency']);
+            ->get(self::COLUMNS);
 
+        return $this->toExternalInvoices($vouchers, $query->openOnly);
+    }
+
+    public function invoicesByNumber(int $organizationId, array $numbers): array {
+        if ($numbers === []) {
+            return [];
+        }
+        $vouchers = $this->revenueVouchers(true)
+            ->where('accounting_vouchers.organization_id', $organizationId)
+            ->whereIn('accounting_vouchers.voucher_number', $numbers)
+            ->orderBy('voucher_date')
+            ->orderBy('id')
+            ->get(self::COLUMNS);
+
+        return $this->toExternalInvoices($vouchers, false);
+    }
+
+    /**
+     * @param  Collection<int, AccountingVoucher>  $vouchers
+     * @return list<ExternalInvoice>
+     */
+    private function toExternalInvoices(Collection $vouchers, bool $openOnly): array {
         $invoices = [];
         foreach ($vouchers as $voucher) {
             $state = self::state($voucher);
-            if ($query->openOnly && $state !== AccountingVoucherState::Open) {
+            if ($openOnly && $state !== AccountingVoucherState::Open) {
                 continue;
             }
             $kind = DocumentKind::tryFrom((string) $voucher->document_kind) ?? DocumentKind::Other;

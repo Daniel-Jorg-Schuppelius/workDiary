@@ -46,6 +46,7 @@ final class InvoicingManifest extends Manifest {
             'invoice_sender_rules',
             'incoming_einvoice_transfers',
             'invoice_commissions',
+            'invoice_inquiries',
             'invoice_item_time_entries',
             'invoice_items',
             'invoice_mail_templates',
@@ -107,6 +108,11 @@ final class InvoicingManifest extends Manifest {
             ],
             \App\Services\Mail\Contracts\MailIntakeHandler::class => [
                 \App\Services\Invoicing\Mail\EInvoiceMailIntakeHandler::class,
+                \App\Services\Invoicing\Mail\InvoiceInquiryMailIntakeHandler::class,
+            ],
+            // Rechnungsnachfragen (MVP-1200): Klärfälle in der Inbox mit Kandidaten markieren.
+            \App\Services\Mail\Contracts\MailIntakeAnnotator::class => [
+                \App\Services\Invoicing\Mail\InvoiceInquiryMailIntakeHandler::class,
             ],
         ];
     }

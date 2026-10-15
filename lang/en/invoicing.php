@@ -260,4 +260,23 @@ return [
     'down_payment' => [
         'program_numbering' => 'Create down payment and final invoices in :program as long as :program assigns the invoice numbers. WorkDiary shows them in the document flow.',
     ],
+    // Rechnungsnachfragen aus E-Mails (Feature 166, MVP-1202).
+    'inquiries' => [
+        'title' => 'Invoice inquiries',
+        'subtitle' => 'Customer inquiries from e-mails about invoices and documents – open until someone marks them as answered.',
+        'section' => 'Inquiries (:count)',
+        'open_count' => '{1} :count open|[2,*] :count open',
+        'default_subject' => 'Inquiry about invoice :number',
+        'empty' => 'No inquiries.',
+        'empty_hint' => 'Replies to invoice e-mails and e-mails with an invoice number appear here automatically as soon as a mailbox is polled.',
+        'filter' => ['open' => 'Open', 'answered' => 'Answered', 'all' => 'All'],
+        'column' => ['received' => 'Received', 'document' => 'Invoice / document', 'sender' => 'Sender', 'match' => 'Detected by'],
+        'action' => ['answer' => 'Mark as answered', 'reopen' => 'Reopen', 'note' => 'Open communication note'],
+        'flash' => [
+            'answered' => 'Inquiry for :number marked as answered.',
+            'reopened' => 'Inquiry for :number reopened.',
+            'already_answered' => 'The inquiry has already been answered.',
+            'already_open' => 'The inquiry is still open.',
+        ],
+    ],
 ];

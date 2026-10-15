@@ -642,6 +642,8 @@
     {{-- Zugehörige Belege lokal und im Buchhaltungsprogramm (MVP-1159). --}}
     <x-billing.document-relations :document="$invoice" />
 
+    @include('invoices._inquiries', ['invoice' => $invoice])
+
     {{-- Zustellnachweis (MVP-168): jeder Versand/Download ist ein eigener Versuch --}}
     @php $dispatches = $invoice->dispatches()->with([])->limit(50)->get(); @endphp
     @if ($dispatches->isNotEmpty())

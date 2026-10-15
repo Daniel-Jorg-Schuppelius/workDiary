@@ -1959,6 +1959,9 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/mail/inbox/book-ticket', [\App\Http\Controllers\Admin\MailAdminController::class, 'bookTicket'])->name('admin.mail.inbox.book-ticket');
         Route::post('admin/mail/inbox/import-dms', [\App\Http\Controllers\Admin\MailAdminController::class, 'importDms'])->name('admin.mail.inbox.import-dms');
         Route::post('admin/mail/inbox/import-invoice', [\App\Http\Controllers\Admin\MailAdminController::class, 'importInvoice'])->name('admin.mail.inbox.import-invoice');
+        // Rechnungsnachfrage und Notiz am Auftrag aus der Inbox (Feature 166, MVP-1201).
+        Route::post('admin/mail/inbox/book-inquiry', [\App\Http\Controllers\Admin\MailAdminController::class, 'bookInquiry'])->name('admin.mail.inbox.book-inquiry');
+        Route::post('admin/mail/inbox/book-order', [\App\Http\Controllers\Admin\MailAdminController::class, 'bookOrder'])->name('admin.mail.inbox.book-order');
 
         // ── Telefonie / CTI (Admin, Feature 056) ────────────────────────────────
         Route::get('admin/cti', [\App\Http\Controllers\Admin\CtiAdminController::class, 'index'])->name('admin.cti.index');
@@ -2091,6 +2094,10 @@ Route::middleware('auth')->group(function () {
         // MVP-549: Bestandsroute → Feed mit vorgesetztem Tab.
         Route::get('invoices', [\App\Http\Controllers\Billing\DocumentFeedController::class, 'fromInvoices'])->name('invoices.index');
         Route::get('invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');
+        // Rechnungsnachfragen aus E-Mails (Feature 166, MVP-1202) — feste Pfade vor invoices/{invoice}.
+        Route::get('invoices/nachfragen', [\App\Http\Controllers\Invoicing\InvoiceInquiryController::class, 'index'])->name('invoices.inquiries.index');
+        Route::post('invoices/nachfragen/{inquiry}/beantwortet', [\App\Http\Controllers\Invoicing\InvoiceInquiryController::class, 'answer'])->name('invoices.inquiries.answer');
+        Route::post('invoices/nachfragen/{inquiry}/wieder-oeffnen', [\App\Http\Controllers\Invoicing\InvoiceInquiryController::class, 'reopen'])->name('invoices.inquiries.reopen');
         Route::get('invoices/datei-import', [\App\Http\Controllers\Invoicing\InvoicePdfImportController::class, 'create'])->name('invoices.pdf-import.create');
         Route::post('invoices/datei-import', [\App\Http\Controllers\Invoicing\InvoicePdfImportController::class, 'store'])->name('invoices.pdf-import.store');
         // Vorschau (MVP-462): POST + Literal-Segment VOR invoices/{invoice},

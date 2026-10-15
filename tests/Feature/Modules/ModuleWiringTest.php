@@ -143,6 +143,8 @@ class ModuleWiringTest extends TestCase {
             \App\Services\Invoicing\Mail\EInvoiceMailIntakeHandler::class,
             \App\Plugins\Fritzbox\Services\FritzboxCallReportMailHandler::class,
             \App\Services\ServiceTicket\Mail\TicketThreadMailIntakeHandler::class,
+            // Rechnungsnachfrage (MVP-1200) nach dem Ticket-Faden: eine Antwort in einen Ticketverlauf bleibt dort.
+            \App\Services\Invoicing\Mail\InvoiceInquiryMailIntakeHandler::class,
         ], array_map(static fn (object $handler): string => $handler::class, $handlers));
     }
 

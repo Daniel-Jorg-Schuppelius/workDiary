@@ -2105,6 +2105,8 @@ return [
         'incoming_invoice_match_kind' => ['vat_id' => 'VAT ID', 'tax_number' => 'Tax number', 'iban' => 'IBAN', 'sender_rule' => 'Sender rule', 'manual' => 'Manual'],
         'incoming_invoice_transfer_status' => ['pending' => 'Pending', 'waiting' => 'Waiting for clarification', 'failed' => 'Failed', 'transferred' => 'Transferred', 'linked' => 'Already present, linked'],
         'invoice_schedule_status' => ['active' => 'Active', 'paused' => 'Paused', 'ended' => 'Ended'],
+        'invoice_inquiry_status' => ['open' => 'Open', 'answered' => 'Answered'],
+        'invoice_inquiry_match_kind' => ['thread' => 'Reply to invoice e-mail', 'number' => 'Invoice number in text', 'manual' => 'Manually'],
     ],
     'agile' => [
         'agile_column_category' => ['open' => 'Open', 'in_progress' => 'In progress', 'done' => 'Done'],

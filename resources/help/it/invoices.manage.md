@@ -1,7 +1,7 @@
 ---
 title: "Fatture & documenti"
 topic: invoices.manage
-version: 10
+version: 11
 keywords:
     - creare fattura
     - emettere fattura
@@ -22,6 +22,7 @@ keywords:
     - catena dei documenti
     - trasmettere fattura a Lexoffice
     - numero provvisorio
+    - richiesta sulla fattura
 audience: []
 modules:
     - module.vertrieb
@@ -173,3 +174,23 @@ Lexoffice ed easybill riprendono la conferma d'ordine o l'offerta come documento
 riferimento alla fattura trasmessa; per sevDesk ed easybill la fattura deve trovarsi nel programma; orgaMAX non riprende nessuno dei due. Se il programma rifiuta, il documento resta una bozza
 e il messaggio ne indica il motivo. In tal caso crei le fatture di acconto e
 finali nel programma.
+
+## Richieste sulle fatture
+
+Quando un cliente risponde a una fattura per e-mail, WorkDiary registra
+durante lo scarico della casella una **richiesta sulla fattura**: nella
+cronologia della fattura, come nota di comunicazione presso il cliente e
+nella sezione **Richieste** della pagina della fattura. Vengono riconosciute
+la risposta all'e-mail di fattura inviata da WorkDiary e un numero di fattura
+o di documento nell'oggetto o nel testo – anche per documenti emessi da
+Lexoffice, sevDesk, easybill o da un altro programma collegato. Per un
+numero il mittente deve appartenere alla pratica (cliente, referente,
+account del portale o destinatario dell'e-mail di fattura); altrimenti
+l'e-mail finisce contrassegnata nella posta di assegnazione, come pure in
+presenza di più numeri. Ogni messaggio viene registrato una sola volta, le
+risposte automatiche di assenza mai.
+
+L'elenco di lavoro **Richieste sulle fatture** (pulsante nel flusso dei
+documenti) mostra le richieste aperte e risposte di tutte le fatture e di
+tutti i documenti; **Contrassegna come risposta** chiude una richiesta,
+**Riapri** la riporta. Entrambe compaiono nella cronologia della fattura.

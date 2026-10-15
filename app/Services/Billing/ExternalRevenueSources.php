@@ -40,6 +40,18 @@ final class ExternalRevenueSources implements ExternalRevenue {
         return $invoices;
     }
 
+    public function invoicesByNumber(int $organizationId, array $numbers): array {
+        if ($numbers === []) {
+            return [];
+        }
+        $invoices = [];
+        foreach ($this->sources as $source) {
+            array_push($invoices, ...$source->invoicesByNumber($organizationId, $numbers));
+        }
+
+        return $invoices;
+    }
+
     public function perCustomer(string $from, string $to, ?int $customerId = null, array $excludedCustomerIds = []): array {
         $totals = [];
         foreach ($this->invoices(new ExternalInvoiceQuery(CarbonImmutable::parse($from), CarbonImmutable::parse($to), $customerId, $excludedCustomerIds)) as $invoice) {
