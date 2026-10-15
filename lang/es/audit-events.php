@@ -612,6 +612,7 @@ return [
         'orgIssued' => 'Licencia de la organización emitida',
         'orgRemoved' => 'Licencia de la organización eliminada',
         'scopeConfigured' => 'Ámbito de la licencia configurado',
+        'scopeReverted' => 'Inicio compacto revertido',
     ],
     'limit' => [
         'exceeded' => 'Límite superado',

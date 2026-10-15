@@ -48,3 +48,14 @@ abrir se omite; sin asignación se mantiene la predeterminada.
   gestión de licencias.
 - Ocultar no cambia los permisos. Las páginas bloqueadas responden con un
   aviso (HTTP 423) en lugar de perder datos.
+
+## Modo de alcance e inicio compacto
+
+Desde la funcionalidad 165 la página muestra también el **modo de alcance**:
+«Limitado a propósito» mantiene desactivados los módulos que se añadan más
+tarde a la licencia hasta que los configure en *Ampliar el alcance
+funcional*; «Alcance licenciado completo» activa de inmediato cualquier
+ampliación. La tarjeta **Inicio compacto** lleva a la configuración con pocos
+objetivos (clientes y pedidos, tiempo, planificación de equipo, presupuestos y
+facturas) y, tras aplicarla, a la reversión que restaura el estado anterior.
+Los cambios manuales posteriores se indican y solo se sobrescriben a petición.

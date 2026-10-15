@@ -62,4 +62,8 @@ return [
         'title' => 'Translations',
         'hint' => 'Leave empty where the German text should apply. The translation of the language the person has set is shown.',
     ],
+    'collapsible' => [
+        'filled' => '{1} :count entry|[2,*] :count entries',
+        'has_errors' => 'Please check',
+    ],
 ];

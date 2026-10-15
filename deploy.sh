@@ -287,6 +287,9 @@ echo "→ Production-Caches bauen (config/route/event)"
 "$PHP_BIN" artisan event:cache
 # Modul-Manifeste (MVP-861): Liste einmal einlesen statt je Request zu suchen.
 "$PHP_BIN" artisan modules:cache
+# Feature 165 (MVP-1188): neue Katalogmodule bei bewusst begrenzten
+# Organisationen deaktiviert halten, bis sie gewählt werden.
+"$PHP_BIN" artisan scope:reconcile || echo "  ⚠ Umfangsabgleich fehlgeschlagen — nachholen: $PHP_BIN artisan scope:reconcile" >&2
 
 echo "→ Queue-Worker neu starten (laufende Worker laden den neuen Code)"
 # Ohne Restart arbeiten dauerhaft laufende Worker (Supervisor/systemd) mit dem

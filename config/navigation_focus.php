@@ -174,6 +174,86 @@ return [
                 'org.members.index', 'qualifications.index',
             ],
         ],
+        // Kompakte Arbeitsbereiche (Feature 165, MVP-1190): Einzelziele
+        // (`item:<route>`, höchstens sechs) statt ganzer Sektionen, dazu
+        // `create` = Schnellaktionen (`create:<route>`, höchstens drei). Sie
+        // werden nur angeboten, wenn die Org-Kuratierung sie nennt; Ziele ohne
+        // Modul oder Recht filtert die Registry davor heraus.
+        'compact_day' => [
+            'label' => 'Mein Arbeitstag',
+            'description' => 'Heute, Arbeitsliste, Woche, Stempeluhr und Ihr Monat.',
+            'icon' => 'today',
+            'keys' => [
+                'item:today.show',
+                'item:duties.index',
+                'item:week.index',
+                'item:attendance.index',
+                'item:reports.my-month',
+            ],
+            'manage' => [],
+            'create' => ['create:time-entries.create', 'create:diary.create', 'create:communication-notes.create'],
+        ],
+        'compact_orders' => [
+            'label' => 'Kunden & Aufträge',
+            'description' => 'Aufträge, Kunden, Projekte, Kundeneingang und Notizen.',
+            'icon' => 'assignment',
+            // „Alle Aufträge" ist die Arbeitsliste (duties.index, deckt diary.*);
+            // der Kundeneingang liegt im Verwaltungsmenü, nicht in der Sidebar.
+            'keys' => [
+                'item:duties.index',
+                'item:week.index',
+                'item:customers.index',
+                'item:projects.index',
+                'item:communication-notes.index',
+            ],
+            'manage' => ['org.members.index', 'tags.index', 'activity-categories.index'],
+            'create' => ['create:diary.create', 'create:customers.create', 'create:projects.create'],
+        ],
+        'compact_billing' => [
+            'label' => 'Angebote & Rechnungen',
+            'description' => 'Belege (Angebote und Rechnungen), Wiedervorlagen, Kunden, Projekte und Abrechnung.',
+            'icon' => 'receipt_long',
+            // Angebote und Rechnungen sind Tabs des Belegfeeds (billing.feed).
+            'keys' => [
+                'item:billing.feed',
+                'item:quotes.follow-ups.index',
+                'item:customers.index',
+                'item:projects.index',
+                'item:reports.billing',
+            ],
+            'manage' => ['materials.index', 'tags.index'],
+            'create' => ['create:quotes.create', 'create:invoices.create', 'create:customers.create'],
+        ],
+        'compact_team' => [
+            'label' => 'Team & Planung',
+            'description' => 'Anwesenheit, Dienstplan, Einsatzplanung, Stundenzettel und Teamauswertung.',
+            'icon' => 'groups',
+            'keys' => [
+                'item:presence.board',
+                'item:duty-plans.index',
+                'item:schedule.index',
+                'item:timesheets.index',
+                'item:reports.absences',
+                'item:reports.week-by-user',
+            ],
+            'manage' => ['org.members.index', 'qualifications.index', 'holidays.index', 'shift-types.index'],
+            'create' => ['create:duty-plans.create', 'create:vacations.create', 'create:timesheets.create'],
+        ],
+        'compact_company' => [
+            'label' => 'Unternehmensübersicht',
+            'description' => 'Management, Wirtschaftlichkeit, offene Zeiten, Mahnwesen, Verträge und Übergaben.',
+            'icon' => 'insights',
+            'keys' => [
+                'item:reports.management',
+                'item:reports.economics',
+                'item:finance.open-times.index',
+                'item:finance.dunning.index',
+                'item:contracts.index',
+                'item:finance.transfers.index',
+            ],
+            'manage' => ['org.members.index', 'materials.index'],
+            'create' => ['create:invoices.create', 'create:customers.create', 'create:projects.create'],
+        ],
         'all' => [
             'label' => 'Alles anzeigen',
             'description' => 'Der volle Funktionsumfang ohne Filter.',

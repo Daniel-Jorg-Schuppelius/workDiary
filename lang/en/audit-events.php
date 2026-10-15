@@ -612,6 +612,7 @@ return [
         'orgIssued' => 'Tenant license issued',
         'orgRemoved' => 'Tenant license removed',
         'scopeConfigured' => 'License scope configured',
+        'scopeReverted' => 'Compact start reverted',
     ],
     'limit' => [
         'exceeded' => 'Limit exceeded',

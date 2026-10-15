@@ -116,9 +116,11 @@ return [
     // alle übrigen werden org-deaktiviert; `modules = null` = Vollumfang.
     // Labels/Beschreibungen werden beim Rendern per __() übersetzt.
     'presets' => [
+        // Achtung: Kunden, Projekte, Angebote und Rechnungen hängen an
+        // module.vertrieb — dieses Preset blendet sie mit aus (Feature 165, B1).
         'schlank' => [
             'label' => 'Schlanker Start',
-            'description' => 'Nur der Kern: Auftragsbuch, Zeiterfassung und persönliche Auswertungen — alle Zusatzmodule bleiben ausgeblendet.',
+            'description' => 'Nur der Kern: Auftragsbuch, Zeiterfassung und persönliche Auswertungen — alle Zusatzmodule bleiben ausgeblendet, auch Kunden, Projekte und Rechnungen.',
             'modules' => [],
         ],
         'service_handwerk' => [
@@ -153,6 +155,120 @@ return [
             'label' => 'Voller Umfang',
             'description' => 'Alle lizenzierten Module aktiv — das Standardverhalten ohne bewusste Auswahl.',
             'modules' => null,
+        ],
+    ],
+
+    // Produktpakete (Feature 165, MVP-1187): Verkaufsbündel vorhandener Module
+    // plus Einstiegsvorgaben. Die Lizenz trägt den Paketnamen nur als
+    // Metadatum; freigeschaltet wird über `addons`, die die Ausstellung aus
+    // `modules` befüllt (kumulativ über `includes`). `default_active` = beim
+    // kompakten Einstieg aktive Module, `workspaces` = angebotene kompakte
+    // Arbeitsbereiche (config/navigation_focus.php), `focus_roles` /
+    // `startpages` = Vorschläge je Rolle. `version` steuert das Angebot einer
+    // neuen Vorgabe an Bestandsorganisationen (nie automatisch).
+    'packages' => [
+        'start' => [
+            'label' => 'Start',
+            'description' => 'Kundenaufträge und Arbeitszeit einfach organisieren: Kunden, Projekte, Aufträge und die Heute-Seite mit Timer; Angebote und Rechnungen bei Bedarf.',
+            'version' => 1,
+            'includes' => null,
+            'modules' => ['module.vertrieb'],
+            'default_active' => ['module.vertrieb'],
+            'workspaces' => ['compact_day', 'compact_orders'],
+            'commercial_workspace' => 'compact_billing',
+            'focus_roles' => [
+                'admin' => 'compact_orders',
+                'geschaeftsfuehrung' => 'compact_orders',
+                'personalverwaltung' => 'compact_orders',
+                'teamleitung' => 'compact_orders',
+                'buchhaltung' => 'compact_orders',
+                'user' => 'compact_day',
+                'aussendienst' => 'compact_day',
+                'callcenter' => 'compact_day',
+                'support' => 'compact_day',
+                'training_manager' => 'compact_day',
+            ],
+            'startpages' => [
+                'admin' => 'duties.index',
+                'geschaeftsfuehrung' => 'duties.index',
+                'personalverwaltung' => 'duties.index',
+                'teamleitung' => 'duties.index',
+                'buchhaltung' => 'duties.index',
+                'user' => 'today.show',
+                'aussendienst' => 'today.show',
+                'callcenter' => 'today.show',
+                'support' => 'today.show',
+                'training_manager' => 'today.show',
+            ],
+        ],
+        'team' => [
+            'label' => 'Team',
+            'description' => 'Arbeit gemeinsam planen und abstimmen: Start plus Dienst- und Einsatzplanung, Stundenzettel, Anwesenheitsboard und Team-Auswertungen.',
+            'version' => 1,
+            'includes' => 'start',
+            'modules' => ['module.planung', 'module.auswertungen_team'],
+            'default_active' => ['module.planung', 'module.auswertungen_team'],
+            'workspaces' => ['compact_team'],
+            'focus_roles' => [
+                'teamleitung' => 'compact_team',
+                'personalverwaltung' => 'compact_team',
+            ],
+            'startpages' => [],
+        ],
+        'betrieb' => [
+            'label' => 'Betrieb',
+            'description' => 'Abläufe und Wirtschaftlichkeit steuern: Team plus Dokumente, Formulare, Verträge, Finanzübergaben, Mahnwesen und Projektwirtschaftlichkeit — bewusst zuschaltbar.',
+            'version' => 1,
+            'includes' => 'team',
+            'modules' => ['module.documents', 'module.forms', 'module.contracts', 'module.finance'],
+            // Betriebsmodule sind lizenziert, aber bis zur bewussten Aktivierung
+            // deaktiviert (Feature 165 §5.2).
+            'default_active' => [],
+            'workspaces' => [],
+            'optional_workspaces' => ['compact_company'],
+            'focus_roles' => [],
+            'startpages' => [],
+        ],
+    ],
+
+    // Fachliche Erweiterungen (Feature 165 §4.3): Bündel vorhandener Module,
+    // die zu jedem Paket hinzukommen; `workspace` = vorhandener Fachbereich.
+    'bundles' => [
+        'lager' => [
+            'label' => 'Lager & Beschaffung',
+            'description' => 'Artikel, Bestände, Bestellungen und Fertigung.',
+            'modules' => ['module.lager'],
+            'workspace' => 'inventory',
+        ],
+        'service' => [
+            'label' => 'Service & Support',
+            'description' => 'Tickets, Queues und SLAs für den Support.',
+            'modules' => ['module.helpdesk'],
+            'workspace' => 'service',
+        ],
+        'fuhrpark_reisen' => [
+            'label' => 'Fuhrpark & Reisen',
+            'description' => 'Fahrzeuge, Fahrtenbuch, Reisen und Spesen.',
+            'modules' => ['module.fuhrpark', 'module.spesen'],
+            'workspace' => 'time',
+        ],
+        'gebaeude' => [
+            'label' => 'Gebäude & Wartung',
+            'description' => 'Standorte, Gebäude, Prüfpflichten und Wartung.',
+            'modules' => ['module.liegenschaften', 'module.asset_compliance'],
+            'workspace' => 'facility',
+        ],
+        'personal' => [
+            'label' => 'Personal & Qualifikation',
+            'description' => 'Schulungen, Nachweise und Lernplattform.',
+            'modules' => ['module.lms'],
+            'workspace' => 'people',
+        ],
+        'compliance' => [
+            'label' => 'Compliance & Datenschutz',
+            'description' => 'Datenschutz, ISMS und Hinweisgebersystem.',
+            'modules' => ['module.datenschutz', 'module.isms', 'module.compliance'],
+            'workspace' => 'compliance',
         ],
     ],
 

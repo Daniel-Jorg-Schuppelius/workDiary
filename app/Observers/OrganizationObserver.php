@@ -12,7 +12,7 @@ namespace App\Observers;
 
 use App\Events\Platform\OrganizationCreated;
 use App\Models\Platform\Organization;
-use App\Services\Licensing\PlanModuleService;
+use App\Services\Licensing\{LicenseService, ModuleScopeService, PlanModuleService};
 use Database\Seeders\{ActivityCategorySeeder, EntryTypeSeeder, ExpenseCategorySeeder, PermissionsSeeder};
 
 /**
@@ -45,6 +45,13 @@ class OrganizationObserver {
                 (string) $organization->getOriginal('plan'),
                 (string) $organization->plan,
             );
+        }
+        // Lizenzzuwachs (Feature 165, MVP-1188): Planwechsel und Lizenzinstallation
+        // laufen beide über diesen Hook. Der Lizenz-Cache wird vorher geleert,
+        // weil installForOrganization() erst nach dem save() flusht.
+        if ($organization->wasChanged('plan') || $organization->wasChanged('license_key')) {
+            app(LicenseService::class)->flushOrganization($organization);
+            app(ModuleScopeService::class)->reconcile($organization);
         }
     }
 }

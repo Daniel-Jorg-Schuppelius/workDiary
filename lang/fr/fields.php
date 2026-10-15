@@ -62,4 +62,8 @@ return [
         'title' => 'Traductions',
         'hint' => 'Laissez vide si le texte allemand doit s\'appliquer. La traduction affichée est celle de la langue choisie par la personne.',
     ],
+    'collapsible' => [
+        'filled' => '{1} :count indication|[2,*] :count indications',
+        'has_errors' => 'À vérifier',
+    ],
 ];

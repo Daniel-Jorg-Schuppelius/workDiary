@@ -82,7 +82,7 @@
              Start; ohne Auswahl bleibt der volle Lizenzumfang aktiv. --}}
         <x-select-field name="scope_preset" :label="__('scope.title.index')">
             <option value="">{{ __('scope.presets.all_modules') }}</option>
-            @foreach ((array) config('plans.presets', []) as $presetKey => $preset)
+            @foreach (app(\App\Services\Licensing\ModuleScopeService::class)->presets() as $presetKey => $preset)
                 <option value="{{ $presetKey }}" @selected(old('scope_preset') === $presetKey)>
                     {{ __((string) ($preset['label'] ?? $presetKey)) }}
                 </option>

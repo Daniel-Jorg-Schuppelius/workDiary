@@ -67,21 +67,82 @@ class NavigationFocusCoverageRuleTest extends TestCase {
         ));
     }
 
-    /** Kein Arbeitsbereich darf auf eine Sektion/Gruppe zeigen, die es nicht gibt. */
+    /**
+     * Kein Arbeitsbereich darf auf eine Sektion, Gruppe, Route oder
+     * Schnellaktion zeigen, die es in der Registry nicht gibt (`item:` und
+     * `create:` seit Feature 165 für die kompakten Bereiche).
+     */
     public function test_kein_arbeitsbereich_zeigt_ins_leere(): void {
         $sections = $this->sectionKeys();
         $groups = $this->groupKeys();
+        $routes = $this->routeKeys();
 
         $dangling = [];
-        foreach ($this->coveredKeys() as $ref) {
+        foreach (array_merge($this->coveredKeys(), $this->createKeys()) as $ref) {
             [$type, $key] = array_pad(explode(':', $ref, 2), 2, null);
-            $pool = $type === 'section' ? $sections : $groups;
+            $pool = match ($type) {
+                'section' => $sections,
+                'group' => $groups,
+                'item', 'create' => $routes,
+                default => [],
+            };
             if (! in_array((string) $key, $pool, true)) {
                 $dangling[] = $ref;
             }
         }
 
         $this->assertSame([], $dangling, "Verweise auf nicht existierende Navigationsschlüssel:\n  " . implode("\n  ", $dangling));
+    }
+
+    /** Kompakte Bereiche (Feature 165) bleiben klein: höchstens sechs Ziele, drei Schnellaktionen. */
+    public function test_kompakte_bereiche_bleiben_klein(): void {
+        /** @var array{focuses?: array<string, array<string, mixed>>} $config */
+        $config = require $this->repoRoot() . '/config/navigation_focus.php';
+        $violations = [];
+        foreach ((array) ($config['focuses'] ?? []) as $key => $focus) {
+            if (! str_starts_with((string) $key, 'compact_')) {
+                continue;
+            }
+            $keys = (array) ($focus['keys'] ?? []);
+            $create = (array) ($focus['create'] ?? []);
+            if (count($keys) > 6 || $keys === []) {
+                $violations[] = "{$key}: " . count($keys) . ' Ziele (erlaubt 1–6)';
+            }
+            foreach ($keys as $ref) {
+                if (! str_starts_with((string) $ref, 'item:')) {
+                    $violations[] = "{$key}: '{$ref}' ist kein Einzelziel (item:)";
+                }
+            }
+            if (count($create) > 3) {
+                $violations[] = "{$key}: " . count($create) . ' Schnellaktionen (erlaubt 0–3)';
+            }
+        }
+
+        $this->assertSame([], $violations, "Kompakte Arbeitsbereiche verletzen die Zielwerte aus Feature 165 §1:\n  " . implode("\n  ", $violations));
+    }
+
+    /** @return list<string> Alle Routen der Registry (Sidebar und Schnellerstellung). */
+    private function routeKeys(): array {
+        $source = (string) file_get_contents($this->repoRoot() . '/app/Services/Navigation/NavigationRegistry.php');
+        preg_match_all("/'route'\\s*=>\\s*'([a-z0-9._-]+)'/", $source, $m);
+
+        // Die Arbeitsliste steht als Platzhalter `$indexRoute` im Bauplan;
+        // `build()` setzt dort 'duties.index' ein.
+        return array_values(array_unique([...$m[1], 'duties.index']));
+    }
+
+    /** @return list<string> */
+    private function createKeys(): array {
+        /** @var array{focuses?: array<string, array<string, mixed>>} $config */
+        $config = require $this->repoRoot() . '/config/navigation_focus.php';
+        $refs = [];
+        foreach ((array) ($config['focuses'] ?? []) as $focus) {
+            foreach ((array) ($focus['create'] ?? []) as $ref) {
+                $refs[] = (string) $ref;
+            }
+        }
+
+        return array_values(array_unique($refs));
     }
 
     /** @return list<string> */

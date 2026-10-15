@@ -96,6 +96,25 @@
                 </ul>
             </x-card>
 
+            {{-- Vorschlag je Rolle (Feature 165, E6): nur vorschlagend, die persönliche Wahl gewinnt. --}}
+            <x-card class="mt-4">
+                <h2 class="mb-1 text-sm font-semibold uppercase tracking-wider opacity-60">{{ __('scope.focus.admin.roles_heading') }}</h2>
+                <p class="mb-3 text-sm text-base-content/70">{{ __('scope.focus.admin.roles_hint') }}</p>
+                <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    @foreach ($roleRows as $entry)
+                        <x-select-field :name="'roles[' . $entry['role']->value . ']'" :id="'focus-role-' . $entry['role']->value"
+                                        :label="$entry['role']->label()" :error="'roles.' . $entry['role']->value">
+                            <option value="">{{ __('scope.focus.admin.roles_none') }}</option>
+                            @foreach ($rows as $row)
+                                @if ($row['offered'])
+                                    <option value="{{ $row['key'] }}" @selected(old('roles.' . $entry['role']->value, $entry['key']) === $row['key'])>{{ $row['label_override'] !== '' ? $row['label_override'] : $row['default_label'] }}</option>
+                                @endif
+                            @endforeach
+                        </x-select-field>
+                    @endforeach
+                </div>
+            </x-card>
+
             <div class="mt-4 flex justify-end">
                 <x-button type="submit" tone="primary" size="sm" icon="save">{{ __('Speichern') }}</x-button>
             </div>

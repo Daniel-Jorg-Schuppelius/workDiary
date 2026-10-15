@@ -16,7 +16,7 @@ use App\Http\Controllers\Concerns\{RequiresPlatformOperator, ResolvesCurrentOrga
 use App\Http\Controllers\Controller;
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\{LicenseFlagOverride, Organization, User};
-use App\Services\Licensing\{FeatureFlagResolver, LicenseResult, LicenseService, LicenseStatus, ModuleCatalog, ModuleStatusResolver};
+use App\Services\Licensing\{FeatureFlagResolver, LicenseResult, LicenseService, LicenseStatus, ModuleCatalog, ModuleScopeService, ModuleStatusResolver, PackageCatalog};
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -35,6 +35,7 @@ class LicenseAdminController extends Controller {
         private readonly FeatureFlagResolver $resolver,
         private readonly ModuleStatusResolver $moduleStatus,
         private readonly ModuleCatalog $catalog,
+        private readonly ModuleScopeService $scope,
     ) {}
 
     public function index(Request $request): View {
@@ -73,6 +74,7 @@ class LicenseAdminController extends Controller {
             'orgModules' => $this->orgModules($orgLicense),
             'canIssue' => $operator && $this->service->canIssue(),
             'moduleCodes' => $this->moduleCodes(),
+            'packages' => app(PackageCatalog::class)->packages(),
             // Mandantenstatus (trial/active/suspended/expired); abgeleitet aus
             // tenant_status-Spalte bzw. Lizenz-Ablauf (Feature 021).
             'tenantStatus' => $org?->tenantStatus($orgLicense),
@@ -114,23 +116,9 @@ class LicenseAdminController extends Controller {
 
         $reason = isset($data['reason']) && trim((string) $data['reason']) !== '' ? trim((string) $data['reason']) : null;
 
-        $existing = LicenseFlagOverride::query()
-            ->where('organization_id', $organization->id)
-            ->where('flag', $module)
-            ->first();
-
-        if ($existing === null) {
-            LicenseFlagOverride::query()->create([
-                'organization_id' => $organization->id,
-                'flag' => $module,
-                'reason' => $reason,
-                'disabled_at' => CarbonImmutable::now(),
-                'disabled_by_user_id' => $user->id,
-            ]);
-        }
-
-        $this->auditModule($organization, $user, 'license.moduleDisabled', $module, $reason);
-        $this->resolver->flush();
+        // Einzelschaltung über den Umfangsdienst (Feature 165, MVP-1188): nur so
+        // bleibt die Liste der bewusst gewählten Module beim Lizenzzuwachs richtig.
+        $this->scope->disableModule($organization, $module, $user, $reason);
 
         return back()->with('success', __('Modul „:modul" deaktiviert. Es wurden keine Daten gelöscht.', [
             'modul' => $this->catalog->label($module),
@@ -155,34 +143,13 @@ class LicenseAdminController extends Controller {
         $module = (string) $data['module'];
 
         // Org-Admin darf ausschließlich Overrides der eigenen Organisation
-        // entfernen — plattformweite Overrides bleiben dem Plattform-Admin.
-        $deleted = LicenseFlagOverride::query()
-            ->where('organization_id', $organization->id)
-            ->where('flag', $module)
-            ->delete();
-
-        if ($deleted > 0) {
-            $this->auditModule($organization, $user, 'license.moduleEnabled', $module, null);
-            $this->resolver->flush();
-        }
+        // entfernen — plattformweite Overrides bleiben dem Plattform-Admin
+        // (der Umfangsdienst löscht nur org-eigene Zeilen).
+        $this->scope->enableModule($organization, $module, $user);
 
         return back()->with('success', __('Modul „:modul" aktiviert.', [
             'modul' => $this->catalog->label($module),
         ]));
-    }
-
-    private function auditModule(Organization $organization, User $user, string $event, string $module, ?string $reason): void {
-        AuditLog::query()->create([
-            'organization_id' => $organization->id,
-            'user_id' => $user->id,
-            'event' => $event,
-            'auditable_type' => MorphMap::stableKey(Organization::class),
-            'auditable_id' => $organization->id,
-            'changes' => [
-                'module' => $module,
-                'reason' => $reason,
-            ],
-        ]);
     }
 
     /**
@@ -250,6 +217,7 @@ class LicenseAdminController extends Controller {
 
         return view('admin.license.issuer', [
             'moduleCodes' => $this->moduleCodes(),
+            'packages' => app(PackageCatalog::class)->packages(),
         ]);
     }
 
@@ -262,6 +230,7 @@ class LicenseAdminController extends Controller {
             'licensee' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],
             'plan' => ['required', \Illuminate\Validation\Rule::in(['free', 'pro', 'enterprise'])],
+            'product_package' => ['nullable', 'string', \Illuminate\Validation\Rule::in(array_keys(app(PackageCatalog::class)->packages()))],
             'addons' => ['array'],
             'addons.*' => ['string', \Illuminate\Validation\Rule::in($this->moduleCodes())],
             'expires' => ['nullable', 'date'],
@@ -272,6 +241,7 @@ class LicenseAdminController extends Controller {
 
         /** @var list<string> $addons */
         $addons = array_values($data['addons'] ?? []);
+        $package = isset($data['product_package']) && $data['product_package'] !== '' ? (string) $data['product_package'] : null;
         $key = $this->service->signLicense(
             (string) $data['plan'],
             $addons,
@@ -281,6 +251,7 @@ class LicenseAdminController extends Controller {
             $data['domain'] ?? null,
             $data['email'] ?? null,
             isset($data['max_users']) ? (int) $data['max_users'] : null,
+            $package,
         );
 
         if ($key === null) {
@@ -300,6 +271,7 @@ class LicenseAdminController extends Controller {
             'changes' => [
                 'licensee' => $data['licensee'],
                 'plan' => $data['plan'],
+                'package' => $package,
                 'addons' => $addons,
                 'organization' => $data['organization_uid'] ?? null,
                 'domain' => $data['domain'] ?? null,
@@ -311,6 +283,7 @@ class LicenseAdminController extends Controller {
             ->with('issued_meta', [
                 'licensee' => (string) $data['licensee'],
                 'plan' => (string) $data['plan'],
+                'package' => $package,
             ])
             ->withInput();
     }
@@ -328,6 +301,7 @@ class LicenseAdminController extends Controller {
         $data = $request->validate([
             'licensee' => ['required', 'string', 'max:255'],
             'plan' => ['required', \Illuminate\Validation\Rule::in(['free', 'pro', 'enterprise'])],
+            'product_package' => ['nullable', 'string', \Illuminate\Validation\Rule::in(array_keys(app(PackageCatalog::class)->packages()))],
             'addons' => ['array'],
             'addons.*' => ['string', \Illuminate\Validation\Rule::in($this->moduleCodes())],
             'expires' => ['nullable', 'date'],
@@ -335,12 +309,15 @@ class LicenseAdminController extends Controller {
 
         /** @var list<string> $addons */
         $addons = array_values($data['addons'] ?? []);
+        $package = isset($data['product_package']) && $data['product_package'] !== '' ? (string) $data['product_package'] : null;
         $result = $this->service->issueForOrganization(
             $org,
             (string) $data['plan'],
             $addons,
             $data['expires'] ?? null,
             (string) $data['licensee'],
+            null,
+            $package,
         );
         $this->resolver->flush();
 
@@ -354,7 +331,7 @@ class LicenseAdminController extends Controller {
             'event' => 'license.orgIssued',
             'auditable_type' => MorphMap::stableKey(Organization::class),
             'auditable_id' => $org->id,
-            'changes' => ['license_id' => $result->payload?->licenseId, 'plan' => $result->payload?->plan, 'addons' => $addons],
+            'changes' => ['license_id' => $result->payload?->licenseId, 'plan' => $result->payload?->plan, 'package' => $package, 'addons' => $result->payload->addons ?? $addons],
         ]);
 
         return back()->with('success', __('Lizenz erstellt & installiert. Plan: ') . __('values.' . (string) $data['plan']));

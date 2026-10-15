@@ -101,6 +101,18 @@ class NavigationRegistry {
         // Arbeitsbereich-Filter nur im neuen Modus; `null` lässt alles unberührt.
         $focusKeep = (! $isLegacyMode && $focusKey !== null) ? $this->focus->keepKeys($focusKey) : null;
         $focusManage = (! $isLegacyMode && $focusKey !== null) ? $this->focus->manageKeep($focusKey) : null;
+        $focusCreate = (! $isLegacyMode && $focusKey !== null) ? $this->focus->createKeep($focusKey) : null;
+
+        $sidebar = $isLegacyMode ? [] : $this->filterSidebar($this->sidebarBlueprint($indexRoute), $hidden);
+        // Kompakte Bereiche (Feature 165): ein Fokus, dem Modul oder Recht alle
+        // Ziele nehmen, darf die Sidebar nicht leeren — dann gilt die volle
+        // Ansicht, und der Umschalter bietet den Bereich nicht an.
+        $emptyFocuses = $isLegacyMode ? [] : $this->emptyFocuses($sidebar);
+        if ($focusKey !== null && in_array($focusKey, $emptyFocuses, true)) {
+            $focusKeep = null;
+            $focusManage = null;
+            $focusCreate = null;
+        }
 
         [$adminNavItems, $manageNavItems, $pluginPanelItems, $pluginPanelRoutes] = $this->headerMenus($user, $isLegacyMode);
 
@@ -134,11 +146,31 @@ class NavigationRegistry {
             'manageNavItems' => $manageNavItems,
             'adminNavItems' => $adminNavItems,
             'userNavItems' => $this->userNavItems($isLegacyMode),
-            'sidebarSections' => $isLegacyMode ? [] : $this->markActiveItem($this->applyFocus($this->filterSidebar($this->sidebarBlueprint($indexRoute), $hidden), $focusKeep)),
-            'createGroups' => $isLegacyMode ? [] : $this->applyFocusCreateGroups($this->filterCreateGroups($this->createGroupsBlueprint(), $hidden), $focusKeep),
+            'sidebarSections' => $isLegacyMode ? [] : $this->markActiveItem($this->applyFocus($sidebar, $focusKeep)),
+            'createGroups' => $isLegacyMode ? [] : $this->applyFocusCreateGroups($this->filterCreateGroups($this->createGroupsBlueprint(), $hidden), $focusKeep, $focusCreate),
             'pluginPanelItems' => $pluginPanelItems,
             'pluginPanelRoutes' => $pluginPanelRoutes,
+            'emptyFocuses' => $emptyFocuses,
         ];
+    }
+
+    /**
+     * Fokus-Schlüssel mit Positivliste, die auf der bereits modul-, rechte- und
+     * ausblende-gefilterten Sidebar kein einziges Ziel mehr treffen (Feature 165).
+     *
+     * @param  list<array<string, mixed>>  $sidebar
+     * @return list<string>
+     */
+    public function emptyFocuses(array $sidebar): array {
+        $empty = [];
+        foreach (array_keys($this->focus->all()) as $key) {
+            $keep = $this->focus->keepKeys((string) $key);
+            if ($keep !== null && $this->applyFocus($sidebar, $keep) === []) {
+                $empty[] = (string) $key;
+            }
+        }
+
+        return $empty;
     }
 
     /**
@@ -202,11 +234,33 @@ class NavigationRegistry {
                 }
             }
         }
+        // Schnellerstellung nur je Gruppe: Die Menüanpassung speichert alles
+        // Wählbare, das nicht angehakt ist, als ausgeblendet — einzelne
+        // Aktionen (`create:<route>`, Feature 165) gehören nur dem Fokus.
         foreach ($this->filterCreateGroups($this->createGroupsBlueprint(), []) as $group) {
             $keys[] = self::KEY_CREATE . (string) ($group['key'] ?? '');
         }
 
         return array_values(array_unique($keys));
+    }
+
+    /**
+     * Routen der Schnellerstellung, die der aktuelle Nutzer anlegen darf
+     * (Ziel der `create:<route>`-Schlüssel kompakter Bereiche, Feature 165).
+     *
+     * @return list<string>
+     */
+    public function selectableCreateRoutes(): array {
+        $routes = [];
+        foreach ($this->filterCreateGroups($this->createGroupsBlueprint(), []) as $group) {
+            foreach ((array) ($group['items'] ?? []) as $item) {
+                if (\is_array($item)) {
+                    $routes[] = (string) $item['route'];
+                }
+            }
+        }
+
+        return array_values(array_unique($routes));
     }
 
     /** Rechte-Ebene einer Route (NavGate::mayAccess) — für den Funktionskatalog. */
@@ -1429,6 +1483,17 @@ class NavigationRegistry {
                     ['route' => 'energy-logs.create', 'label' => __('Tank-/Ladelog'), 'icon' => 'local_gas_station'],
                 ],
             ],
+            // Belege (Feature 165, MVP-1191): Angebot und Rechnung als
+            // Schnellaktion des kaufmännischen Einstiegs; Modul und Policy
+            // filtert NavGate wie bei jeder anderen Gruppe.
+            [
+                'key' => 'billing',
+                'label' => __('billing.feed.title'),
+                'items' => [
+                    ['route' => 'quotes.create', 'label' => __('Angebot'), 'icon' => 'request_quote'],
+                    ['route' => 'invoices.create', 'label' => __('Rechnung'), 'icon' => 'receipt_long'],
+                ],
+            ],
             [
                 'key' => 'master',
                 'label' => __('Stammdaten'),
@@ -1462,7 +1527,10 @@ class NavigationRegistry {
             }
             $items = array_values(array_filter(
                 is_array($group['items'] ?? null) ? $group['items'] : [],
-                fn(array $i): bool => Route::has((string) $i['route']) && $this->gate->allows((string) $i['route'])
+                fn(array $i): bool => Route::has((string) $i['route'])
+                    && $this->gate->allows((string) $i['route'])
+                    // Einzelne Schnellaktion ausgeblendet (`create:<route>`, Feature 165).
+                    && ! in_array(self::KEY_CREATE . (string) $i['route'], $hidden, true)
             ));
             if ($items === []) {
                 continue;
@@ -1552,11 +1620,33 @@ class NavigationRegistry {
      * gelistet ist; 'master' (Stammdaten) bleibt als übergreifende Gruppe immer.
      * `null` = kein Filter.
      *
+     * Mit Eintragsfilter `$createKeep` (`create:<route>`, Feature 165,
+     * MVP-1191) bleiben über alle Gruppen nur diese Aktionen; leere Gruppen
+     * entfallen, auch 'master'.
+     *
      * @param  list<array<string, mixed>>  $groups
      * @param  list<string>|null  $keep
+     * @param  list<string>|null  $createKeep
      * @return list<array<string, mixed>>
      */
-    public function applyFocusCreateGroups(array $groups, ?array $keep): array {
+    public function applyFocusCreateGroups(array $groups, ?array $keep, ?array $createKeep = null): array {
+        if ($createKeep !== null) {
+            $wanted = array_flip($createKeep);
+            $out = [];
+            foreach ($groups as $group) {
+                $items = array_values(array_filter(
+                    \is_array($group['items'] ?? null) ? $group['items'] : [],
+                    static fn(array $it): bool => isset($wanted[self::KEY_CREATE . (string) ($it['route'] ?? '')])
+                ));
+                if ($items !== []) {
+                    $group['items'] = $items;
+                    $out[] = $group;
+                }
+            }
+
+            return $out;
+        }
+
         if ($keep === null) {
             return $groups;
         }

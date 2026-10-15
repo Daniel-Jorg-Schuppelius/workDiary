@@ -163,6 +163,44 @@ class OrgLicensingTest extends TestCase {
         $this->assertNotNull($org->license_key);
     }
 
+    public function test_package_is_metadata_and_its_modules_land_in_addons(): void {
+        config()->set('license.private_key', base64_encode($this->secretKey));
+        $service = app(LicenseService::class);
+        $org = Organization::factory()->create(['plan' => 'free']);
+
+        // Paket „Team" zu plan=free: Lizenzmodule kommen aus dem Katalog in die Add-ons (E1).
+        $result = $service->issueForOrganization($org, 'free', ['module.lohn'], null, 'Kleinbetrieb', null, 'team');
+
+        $this->assertSame(LicenseStatus::Valid, $result->status);
+        $this->assertSame('team', $result->payload?->package);
+        $this->assertEqualsCanonicalizing(['module.lohn', 'module.vertrieb', 'module.planung', 'module.auswertungen_team'], $result->payload?->addons ?? []);
+        $this->assertSame('free', $org->refresh()->plan);
+
+        $resolver = $this->resolverFor($org);
+        $this->assertTrue($resolver->isEnabled('module.vertrieb'));
+        $this->assertTrue($resolver->isEnabled('module.planung'));
+        $this->assertFalse($resolver->isEnabled('module.finance'));
+    }
+
+    public function test_old_payload_without_package_field_still_verifies(): void {
+        $org = Organization::factory()->create(['plan' => 'free']);
+        $result = app(LicenseService::class)->installForOrganization($org, $this->keyFor($org));
+
+        $this->assertSame(LicenseStatus::Valid, $result->status);
+        $this->assertNull($result->payload?->package);
+    }
+
+    public function test_admin_ui_rejects_unknown_package(): void {
+        config()->set('license.private_key', base64_encode($this->secretKey));
+        $admin = User::factory()->platformAdmin()->create();
+
+        $this->actingAs($admin)->from(route('admin.license.index'))->post(route('admin.license.org.issue'), [
+            'licensee' => 'ACME',
+            'plan' => 'free',
+            'product_package' => 'platin',
+        ])->assertSessionHasErrors('product_package');
+    }
+
     public function test_issuer_signs_key_for_customer_without_installing(): void {
         config()->set('license.private_key', base64_encode($this->secretKey));
         $service = app(LicenseService::class);

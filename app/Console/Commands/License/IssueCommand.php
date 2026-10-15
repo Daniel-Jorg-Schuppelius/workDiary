@@ -10,6 +10,7 @@
 
 namespace App\Console\Commands\License;
 
+use App\Services\Licensing\PackageCatalog;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
@@ -24,6 +25,7 @@ class IssueCommand extends Command {
         {--max-users= : Maximale Nutzerzahl}
         {--plan=free : Tier (free|pro|enterprise) – steuert die Basis-Module}
         {--addons=* : Einzeln gebuchte Modul-Codes (z. B. module.datenschutz)}
+        {--package= : Produktpaket (start|team|betrieb) – seine Module landen in den Add-ons}
         {--org= : Bindungs-ID der Organisation (organizations.license_uid)}
         {--features=* : Technische Feature-Flags (z. B. protocols.signed)}
         {--private-key= : Ed25519 Private Key (base64). Fallback: env(LICENSE_PRIVATE_KEY)}
@@ -53,6 +55,18 @@ class IssueCommand extends Command {
             return self::FAILURE;
         }
 
+        $package = (string) ($this->option('package') ?? '');
+        $addons = array_values(array_filter((array) $this->option('addons')));
+        if ($package !== '') {
+            $catalog = app(PackageCatalog::class);
+            if (! $catalog->has($package)) {
+                $this->error('Unbekanntes Paket: ' . $package . ' (bekannt: ' . implode(', ', array_keys($catalog->packages())) . ').');
+
+                return self::FAILURE;
+            }
+            $addons = array_values(array_unique(array_merge($addons, $catalog->modulesFor($package))));
+        }
+
         $payload = [
             'license_id' => bin2hex(random_bytes(8)),
             'licensee' => $licensee,
@@ -65,8 +79,9 @@ class IssueCommand extends Command {
             'max_users' => $this->option('max-users') !== null ? (int) $this->option('max-users') : null,
             'features' => array_values(array_filter((array) $this->option('features'))),
             'plan' => (string) ($this->option('plan') ?: 'free'),
-            'addons' => array_values(array_filter((array) $this->option('addons'))),
+            'addons' => $addons,
             'organization' => $this->option('org') ?: null,
+            'package' => $package !== '' ? $package : null,
         ];
 
         $json = JsonHelper::encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);

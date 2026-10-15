@@ -188,6 +188,10 @@
         @else
             <x-detail-grid layout="cells" small-labels>
                 <x-detail-grid.row :label="__('Plan (Tier)')"><x-status-badge :tone="$orgUsable ? 'success' : 'neutral'" size="md">{{ __('values.' . $orgModules['plan']) }}</x-status-badge></x-detail-grid.row>
+                @if ($op !== null && $orgUsable && $op->package !== null)
+                    {{-- Produktpaket (Feature 165): nur beschreibend, die Module stehen in den Add-ons. --}}
+                    <x-detail-grid.row :label="__('scope.packages.field')">{{ __((string) (app(\App\Services\Licensing\PackageCatalog::class)->package($op->package)['label'] ?? $op->package)) }}</x-detail-grid.row>
+                @endif
                 <x-detail-grid.row :label="__('Zugebuchte Module')" class="text-xs break-all">{{ count($orgModules['addons']) ? collect($orgModules['addons'])->map(fn ($c) => app(\App\Services\Licensing\ModuleCatalog::class)->labels()[$c] ?? $c)->implode(', ') : '—' }}</x-detail-grid.row>
                 @if ($op !== null && $orgUsable)
                     <x-detail-grid.row :label="__('Lizenznehmer')" class="font-mono">{{ $op->licensee }}</x-detail-grid.row>
@@ -249,6 +253,15 @@
                                 <select name="plan" class="select select-sm select-bordered w-full">
                                     @foreach (['free', 'pro', 'enterprise'] as $val)
                                         <option value="{{ $val }}" @selected(old('plan', $orgModules['plan']) === $val)>{{ __('values.' . $val) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs uppercase tracking-wider text-muted" for="org-issue-package">{{ __('scope.packages.field') }}</label>
+                                <select id="org-issue-package" name="product_package" class="select select-sm select-bordered w-full @error('product_package') select-error @enderror">
+                                    <option value="">{{ __('scope.packages.none') }}</option>
+                                    @foreach ($packages as $packageKey => $package)
+                                        <option value="{{ $packageKey }}" @selected(old('product_package', $op->package ?? null) === $packageKey)>{{ __($package['label']) }}</option>
                                     @endforeach
                                 </select>
                             </div>

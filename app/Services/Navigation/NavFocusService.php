@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Navigation;
 
+use App\Enums\User\UserRole;
 use App\Models\Platform\{Organization, User, UserWorkspace};
 use App\Support\BranchProfileFiles;
 use Illuminate\Support\Facades\Auth;
@@ -47,6 +48,12 @@ class NavFocusService {
 
     /** Org-Einstellung: Zeitpunkt der Arbeitsbereich-Kuratierung (Onboarding). */
     public const SETTING_CONFIGURED_AT = 'nav_focus_configured_at';
+
+    /**
+     * Org-Einstellung: vorschlagender Arbeitsbereich je Rolle (Feature 165, E6).
+     * Nur ein Vorschlag vor dem Org-Default — die persönliche Wahl gewinnt (D16).
+     */
+    public const SETTING_ROLES = 'nav_focus_roles';
 
     /** Schlüsselpräfix eines eigenen Arbeitsbereichs (`user:<sqid>`). */
     public const PERSONAL_PREFIX = 'user:';
@@ -229,10 +236,102 @@ class NavFocusService {
     }
 
     /**
-     * Default-Arbeitsbereich der Organisation:
-     * Org-Einstellung → Branchenprofil-Vorschlag → Config-Default.
+     * Schnellaktionen des Fokus (`create:<route>`, Feature 165, MVP-1191);
+     * `null` = kein Eintragsfilter (bisheriges Gruppenverhalten).
+     *
+     * @return list<string>|null
      */
-    public function defaultFor(?Organization $organization): string {
+    public function createKeep(string $key): ?array {
+        if (self::isPersonalKey($key)) {
+            return null;
+        }
+        $create = $this->all()[$key]['create'] ?? null;
+
+        return is_array($create) && $create !== [] ? array_values(array_map('strval', $create)) : null;
+    }
+
+    /**
+     * Vorschlag je Rolle (Feature 165, E6): erste Rolle der Person in der
+     * Reihenfolge von `UserRole`, für die die Organisation einen angebotenen
+     * Bereich hinterlegt hat. Nie verriegelnd.
+     */
+    public function roleDefaultFor(?Organization $organization, ?User $user): ?string {
+        if (! $user instanceof User) {
+            return null;
+        }
+        $roles = $this->settings($organization)[self::SETTING_ROLES] ?? null;
+        if (! is_array($roles) || $roles === []) {
+            return null;
+        }
+        $names = $user->getRoleNames()->all();
+        foreach (UserRole::cases() as $role) {
+            if (! in_array($role->value, $names, true)) {
+                continue;
+            }
+            $key = $roles[$role->value] ?? null;
+            if (is_string($key) && $key !== '' && $this->isAvailableFor($organization, $key)) {
+                return $key;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Schreibt die Org-Kuratierung an einer Stelle (Feature 082, Feature 165):
+     * angebotene Bereiche (`null` = alle), Org-Default, Rollen-Vorschläge und
+     * Label-Overrides. Nicht angebotene Defaults fallen auf 'all' zurück.
+     *
+     * @param  list<string>|null  $available
+     * @param  array<string, string>  $roles
+     * @param  array<string, string>  $labels
+     */
+    public function saveCuration(Organization $organization, ?array $available, string $default, array $roles, array $labels): void {
+        $keys = array_keys($this->all());
+        if ($available !== null) {
+            $available = array_values(array_filter(
+                $keys,
+                static fn(string $k): bool => $k === 'all' || in_array($k, $available, true)
+            ));
+        }
+        $offered = $available ?? $keys;
+        if (! in_array($default, $offered, true)) {
+            $default = 'all';
+        }
+        $cleanRoles = [];
+        foreach ($roles as $role => $key) {
+            if ($key !== '' && in_array($key, $offered, true)) {
+                $cleanRoles[$role] = $key;
+            }
+        }
+        $cleanLabels = [];
+        foreach ($labels as $key => $value) {
+            $value = trim((string) $value);
+            if ($value !== '' && in_array((string) $key, $keys, true)) {
+                $cleanLabels[(string) $key] = $value;
+            }
+        }
+
+        $settings = $this->settings($organization);
+        $settings[self::SETTING_AVAILABLE] = $available;
+        $settings[self::SETTING_DEFAULT] = $default;
+        $settings[self::SETTING_ROLES] = $cleanRoles;
+        $settings[self::SETTING_LABELS] = $cleanLabels;
+        $settings[self::SETTING_CONFIGURED_AT] = now()->toIso8601String();
+        $organization->settings = $settings;
+        $organization->save();
+    }
+
+    /**
+     * Default-Arbeitsbereich der Organisation:
+     * Rollen-Vorschlag → Org-Einstellung → Branchenprofil-Vorschlag → Config-Default.
+     */
+    public function defaultFor(?Organization $organization, ?User $user = null): string {
+        $byRole = $this->roleDefaultFor($organization, $user);
+        if ($byRole !== null) {
+            return $byRole;
+        }
+
         $orgDefault = $this->settings($organization)[self::SETTING_DEFAULT] ?? null;
         if (is_string($orgDefault) && $this->isAvailableFor($organization, $orgDefault)) {
             return $orgDefault;
@@ -275,7 +374,7 @@ class NavFocusService {
             return $pref;
         }
 
-        return $this->defaultFor($organization);
+        return $this->defaultFor($organization, $user);
     }
 
     /**

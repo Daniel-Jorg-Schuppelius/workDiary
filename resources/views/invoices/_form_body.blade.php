@@ -18,11 +18,11 @@
     <x-select-field name="customer_id" :label="__('Kunde')" required span="2">
         <option value="">{{ __('-- bitte wählen --') }}</option>
         @foreach ($customers as $c)
-            <option value="{{ $c->sqid }}" @selected((string) old('customer_id') === $c->sqid)>{{ $c->name }}</option>
+            <option value="{{ $c->sqid }}" @selected((string) old('customer_id', $prefillCustomerId ?? '') === $c->sqid)>{{ $c->name }}</option>
         @endforeach
     </x-select-field>
     <x-project-select :label="__('Projekt (optional)')" :placeholder="__('alle Projekte des Kunden')" span="2"
-        :projects="$projects" :selected="(string) old('project_id')"
+        :projects="$projects" :selected="(string) old('project_id', $prefillProjectId ?? '')"
         data-depends-on="customer_id" :data-parent="true" />
     <x-select-field name="foreign_customer_id" :label="__('Fremdkunde / Endkunde (optional)')" span="2" data-depends-on="customer_id" :hint="__('Nur Zeiten dieses Endkunden abrechnen.')">
         <option value="">{{ __('alle Endkunden') }}</option>

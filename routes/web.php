@@ -1062,6 +1062,16 @@ Route::middleware('auth')->group(function () {
         Route::get('admin/scope', [\App\Http\Controllers\Admin\ScopeAdminController::class, 'index'])->name('admin.scope.index');
         Route::post('admin/scope', [\App\Http\Controllers\Admin\ScopeAdminController::class, 'save'])->name('admin.scope.save');
         Route::post('admin/scope/startseiten', [\App\Http\Controllers\Admin\ScopeAdminController::class, 'saveStartPages'])->name('admin.scope.startpages');
+        // Geltungsmodus (Feature 165, MVP-1188).
+        Route::post('admin/scope/modus', [\App\Http\Controllers\Admin\ScopeAdminController::class, 'saveMode'])->name('admin.scope.mode');
+        // Einrichtung „Was möchten Sie erledigen?" (Feature 165, MVP-1189).
+        Route::get('admin/scope/einrichtung', [\App\Http\Controllers\Admin\ScopeAdminController::class, 'setup'])->name('admin.scope.setup');
+        Route::post('admin/scope/einrichtung', [\App\Http\Controllers\Admin\ScopeAdminController::class, 'applySetup'])->name('admin.scope.setup.apply');
+        // Erweiterung mit Vorschau (MVP-1195) und Rücknahme (MVP-1196).
+        Route::get('admin/scope/erweitern', [\App\Http\Controllers\Admin\ScopeAdminController::class, 'growth'])->name('admin.scope.growth');
+        Route::post('admin/scope/erweitern', [\App\Http\Controllers\Admin\ScopeAdminController::class, 'activate'])->name('admin.scope.growth.activate');
+        Route::get('admin/scope/ruecknahme', [\App\Http\Controllers\Admin\ScopeAdminController::class, 'revertPreview'])->name('admin.scope.revert');
+        Route::post('admin/scope/ruecknahme', [\App\Http\Controllers\Admin\ScopeAdminController::class, 'revert'])->name('admin.scope.revert.apply');
 
         // Arbeitsbereiche kuratieren (Feature 082, MVP-379): welche Fokus-
         // Ansichten die Org anbietet, Default + Umbenennung. Recht wie Scope.

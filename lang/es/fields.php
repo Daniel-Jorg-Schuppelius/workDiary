@@ -62,4 +62,8 @@ return [
         'title' => 'Traducciones',
         'hint' => 'Déjelo vacío donde deba aplicarse el texto alemán. Se muestra la traducción del idioma que la persona tiene configurado.',
     ],
+    'collapsible' => [
+        'filled' => '{1} :count dato|[2,*] :count datos',
+        'has_errors' => 'Revisar',
+    ],
 ];

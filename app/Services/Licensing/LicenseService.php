@@ -229,10 +229,17 @@ class LicenseService {
         ?string $domain = null,
         ?string $email = null,
         ?int $maxUsers = null,
+        ?string $package = null,
     ): ?string {
         $private = $this->privateKey();
         if ($private === null || $private === '') {
             return null;
+        }
+
+        // Produktpaket (Feature 165): Paketmodule landen in den Add-ons, der
+        // Name bleibt Metadatum — keine zweite Freischaltquelle.
+        if ($package !== null && $package !== '') {
+            $addons = array_values(array_unique(array_merge($addons, app(PackageCatalog::class)->modulesFor($package))));
         }
 
         $payload = [
@@ -248,6 +255,7 @@ class LicenseService {
             'plan' => $plan,
             'addons' => array_values($addons),
             'organization' => ($organizationUid !== null && $organizationUid !== '') ? $organizationUid : null,
+            'package' => ($package !== null && $package !== '') ? $package : null,
         ];
 
         $json = JsonHelper::encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
@@ -268,8 +276,9 @@ class LicenseService {
         ?string $expires,
         string $licensee,
         ?int $maxUsers = null,
+        ?string $package = null,
     ): LicenseResult {
-        $key = $this->signLicense($plan, $addons, $expires, $licensee, (string) $org->license_uid, null, null, $maxUsers);
+        $key = $this->signLicense($plan, $addons, $expires, $licensee, (string) $org->license_uid, null, null, $maxUsers, $package);
         if ($key === null) {
             return LicenseResult::fail(LicenseStatus::PublicKeyMissing, 'Kein Private Key konfiguriert.');
         }

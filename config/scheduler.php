@@ -296,6 +296,16 @@ return [
             'allowed' => ['dailyAt', 'weeklyOn'],
             'criticality' => 'housekeeping',
         ],
+        // Feature 165 (MVP-1188): bewusst begrenzte Organisationen behalten
+        // neu lizenzierte Module deaktiviert, bis sie gewählt werden. Der
+        // Abgleich läuft bei Lizenzinstallation, Planwechsel und im Deploy;
+        // hier als tägliches Fangnetz.
+        'scope.reconcile' => [
+            'command' => 'scope:reconcile',
+            'cadence' => ['type' => 'dailyAt', 'time' => '08:40'],
+            'allowed' => ['dailyAt', 'weeklyOn'],
+            'criticality' => 'housekeeping',
+        ],
         'privacy.deadlines' => [
             'command' => 'privacy:deadlines',
             'cadence' => ['type' => 'dailyAt', 'time' => '06:00'],

@@ -119,6 +119,16 @@ class NavigationGoldenTest extends TestCase {
                 'header' => $this->hrefs($this->between($html, '<header id="app-header"', '</header>')),
                 'sections_focus_finance' => $this->sectionKeys($this->between($focusHtml, '<aside id="app-sidebar"', '</aside>')),
             ];
+
+            // Feature 165: kompakte Personas frieren zusätzlich jeden kompakten
+            // Arbeitsbereich ein (Sidebar-Links inklusive „Neu …"-Menü).
+            if (str_starts_with($name, 'start_') || str_starts_with($name, 'team_')) {
+                foreach (['compact_day', 'compact_orders', 'compact_billing', 'compact_team'] as $compact) {
+                    $compactHtml = $this->withSession([\App\Services\Navigation\NavFocusService::SESSION_KEY => $compact])
+                        ->get(route('dashboard'))->getContent();
+                    $snapshot[$name]['sidebar_focus_' . $compact] = $this->hrefs($this->between($compactHtml, '<aside id="app-sidebar"', '</aside>'));
+                }
+            }
         }
 
         $path = base_path(self::FIXTURE);
@@ -134,6 +144,13 @@ class NavigationGoldenTest extends TestCase {
 
         /** @var array<string, array<string, list<string>>> $golden */
         $golden = json_decode((string) file_get_contents($path), true);
+
+        // Neue Personas werden additiv eingefroren; bestehende bleiben unangetastet.
+        $missing = array_diff_key($snapshot, $golden);
+        if ($missing !== []) {
+            file_put_contents($path, json_encode(array_merge($golden, $missing), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
+            $golden = array_merge($golden, $missing);
+        }
 
         foreach ($snapshot as $persona => $areas) {
             foreach ($areas as $area => $values) {
@@ -153,10 +170,27 @@ class NavigationGoldenTest extends TestCase {
         $enterprise = Organization::factory()->create(['name' => 'Golden Enterprise']);
         $free = Organization::factory()->free()->create(['name' => 'Golden Free']);
 
+        // Feature 165: Organisationen mit Einstiegsbündel „Start" bzw. „Team"
+        // (Modus „bewusst begrenzt", nur gewählte Module aktiv).
+        $start = Organization::factory()->create(['name' => 'Golden Start']);
+        $startAdmin = User::factory()->admin()->create(['organization_id' => $start->id]);
+        $startUser = User::factory()->user()->create(['organization_id' => $start->id]);
+        $team = Organization::factory()->create(['name' => 'Golden Team']);
+        $teamAdmin = User::factory()->admin()->create(['organization_id' => $team->id]);
+        $scope = app(\App\Services\Licensing\ModuleScopeService::class);
+        app()->instance('currentOrganization', $start);
+        $scope->applyPreset($start, 'start', $startAdmin);
+        app()->instance('currentOrganization', $team);
+        $scope->applyBundle($team, $scope->bundleFor($team, 'team', ['team'], true), $teamAdmin, 'package', 'team');
+        app()->forgetInstance('currentOrganization');
+
         return [
             'enterprise_admin' => [$enterprise, User::factory()->admin()->create(['organization_id' => $enterprise->id])],
             'enterprise_user' => [$enterprise, User::factory()->user()->create(['organization_id' => $enterprise->id])],
             'free_admin' => [$free, User::factory()->admin()->create(['organization_id' => $free->id])],
+            'start_admin' => [$start, $startAdmin],
+            'start_user' => [$start, $startUser],
+            'team_admin' => [$team, $teamAdmin],
         ];
     }
 

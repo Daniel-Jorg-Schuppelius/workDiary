@@ -31,6 +31,8 @@ final class LicensePayload {
         public readonly array $addons = [],
         /** Bindungs-ID der Organisation (z. B. Org-Sqid/UUID); leer = ungebunden. */
         public readonly ?string $organization = null,
+        /** Produktpaket (Feature 165): nur beschreibend, freigeschaltet wird über addons. */
+        public readonly ?string $package = null,
     ) {}
 
     /** @param array<string,mixed> $data */
@@ -49,6 +51,7 @@ final class LicensePayload {
             plan: (string) ($data['plan'] ?? 'free'),
             addons: array_values(array_map('strval', (array) ($data['addons'] ?? []))),
             organization: isset($data['organization']) && $data['organization'] !== '' ? (string) $data['organization'] : null,
+            package: isset($data['package']) && $data['package'] !== '' ? (string) $data['package'] : null,
         );
     }
 
@@ -68,6 +71,7 @@ final class LicensePayload {
             'plan' => $this->plan,
             'addons' => $this->addons,
             'organization' => $this->organization,
+            'package' => $this->package,
         ];
     }
 }

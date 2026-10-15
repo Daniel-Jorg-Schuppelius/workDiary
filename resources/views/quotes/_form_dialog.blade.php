@@ -21,11 +21,11 @@
         <x-select-field name="customer_id" :label="__('Kunde')" required span="2">
             <option value="">{{ __('-- bitte wählen --') }}</option>
             @foreach ($customers as $c)
-                <option value="{{ $c->sqid }}" @selected((string) old('customer_id') === $c->sqid)>{{ $c->name }}</option>
+                <option value="{{ $c->sqid }}" @selected((string) old('customer_id', $prefillCustomerId ?? '') === $c->sqid)>{{ $c->name }}</option>
             @endforeach
         </x-select-field>
         <x-project-select :label="__('Projekt (optional)')" :placeholder="__('ohne Projektbezug')" span="2"
-            :projects="$projects" :selected="(string) old('project_id')"
+            :projects="$projects" :selected="(string) old('project_id', $prefillProjectId ?? '')"
             data-depends-on="customer_id" :data-parent="true" />
         <x-input-field name="valid_until" type="date" :label="__('Bindefrist (gültig bis)')" :value="old('valid_until')" />
         <x-textarea-field name="terms" :label="__('Bedingungen / Leistungsumfang (optional)')" rows="3" span="2">{{ old('terms') }}</x-textarea-field>

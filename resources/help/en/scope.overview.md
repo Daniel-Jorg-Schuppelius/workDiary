@@ -50,3 +50,13 @@ the person may not open is skipped; without a setting the default stays.
   management.
 - Hiding does not change permissions. Locked pages respond with a notice
   (HTTP 423) instead of losing data.
+
+## Scope mode and compact start
+
+Since feature 165 the page also shows the **scope mode**: "Deliberately
+limited" keeps modules that are added to the license later deactivated until
+you set them up under *Extend feature scope*; "Full licensed scope" activates
+license growth immediately. The **Compact start** card leads to the setup
+with a few goals (customers and orders, time, team planning, quotes and
+invoices) and, after applying, to the revert that restores the state before.
+Manual changes since applying are listed and only overwritten on request.

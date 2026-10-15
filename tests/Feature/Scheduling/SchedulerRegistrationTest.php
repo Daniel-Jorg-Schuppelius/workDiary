@@ -60,6 +60,8 @@ class SchedulerRegistrationTest extends TestCase {
         'incoming-invoices:transfer' => ['0 * * * *', true, true],
         'archive:run' => ['0 3 * * *', true, true],
         'plans:purge' => ['30 3 * * *', true, true],
+        // Feature 165 (MVP-1188): Umfangsabgleich bei bewusst begrenzten Organisationen.
+        'scope:reconcile' => ['40 8 * * *', true, true],
         'privacy:deadlines' => ['0 6 * * *', true, true],
         // Feature 153 (MVP-770): Suchindex-Abgleich im Betriebsfenster.
         'search:reconcile' => ['50 21 * * *', true, true],

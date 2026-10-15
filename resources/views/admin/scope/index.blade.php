@@ -16,6 +16,11 @@
     /** @var array<string, array{label:string,description:string,modules:list<string>|null}> $presets */
     /** @var array{code:string,label:string,modules:list<string>}|null $recommendation */
     /** @var string|null $scopeConfiguredAt */
+    /** @var array{source: ?string, key: ?string, version: int, mode: string, chosen: list<string>, applied_at: ?string, applied_by: ?int, snapshot: array<string, mixed>, applied: array<string, mixed>} $profile */
+    /** @var list<string> $growthModules */
+    /** @var string|null $packageLabel */
+    /** @var int|null $pendingVersion */
+    /** @var bool $canRevert */
 @endphp
 
 @section('content')
@@ -55,6 +60,56 @@
                 @endforeach
             </div>
         </x-card>
+
+        {{-- Kompakter Einstieg: Einrichtung, Versionsangebot, Rücknahme (Feature 165, MVP-1189/1195/1196) --}}
+        <x-card class="mt-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="min-w-0">
+                    <h2 class="text-sm font-semibold uppercase tracking-wider opacity-60">{{ __('scope.revert.card_heading') }}</h2>
+                    @if ($profile['source'] === 'package' && $profile['applied_at'] !== null)
+                        <p class="mt-1 text-sm text-base-content/70">{{ __('scope.revert.card_hint_applied', ['date' => \Carbon\CarbonImmutable::parse($profile['applied_at'])->fdatetime(), 'package' => __((string) $packageLabel)]) }}</p>
+                    @else
+                        <p class="mt-1 text-sm text-base-content/70">{{ __('scope.revert.card_hint_new') }}</p>
+                    @endif
+                    @if ($pendingVersion !== null)
+                        <p class="mt-1 text-sm text-info">{{ __('scope.version.banner', ['package' => __((string) $packageLabel), 'version' => $pendingVersion]) }}</p>
+                    @endif
+                </div>
+                <div class="flex shrink-0 flex-wrap gap-2">
+                    <x-button href="{{ route('admin.scope.setup') }}" data-entry-modal-trigger tone="primary" size="sm" icon="rocket_launch">
+                        {{ $pendingVersion !== null ? __('scope.version.review') : __('scope.revert.card_apply') }}
+                    </x-button>
+                    <x-button href="{{ route('admin.scope.growth') }}" tone="ghost" size="sm" icon="add_circle">{{ __('scope.growth.title') }}</x-button>
+                    @if ($canRevert)
+                        <x-button href="{{ route('admin.scope.revert') }}" data-entry-modal-trigger tone="ghost" size="sm" icon="undo">{{ __('scope.revert.card_revert') }}</x-button>
+                    @endif
+                </div>
+            </div>
+        </x-card>
+
+        {{-- Geltungsmodus (Feature 165, MVP-1188) --}}
+        <form method="POST" action="{{ route('admin.scope.mode') }}" class="mt-4">
+            @csrf
+            <x-card>
+                <h2 class="mb-1 text-sm font-semibold uppercase tracking-wider opacity-60">{{ __('scope.mode.heading') }}</h2>
+                <p class="mb-3 text-sm text-base-content/70">{{ __('scope.mode.hint') }}</p>
+                <div class="grid gap-3 sm:grid-cols-2">
+                    @foreach ([\App\Services\Licensing\ModuleScopeService::MODE_LIMITED => 'limited', \App\Services\Licensing\ModuleScopeService::MODE_FULL => 'full'] as $modeValue => $modeKey)
+                        <label class="flex cursor-pointer items-start gap-3 rounded-box border border-base-300 bg-base-200/40 p-3 has-checked:border-primary">
+                            <input type="radio" name="scope_mode" value="{{ $modeValue }}" class="radio radio-primary radio-sm mt-0.5"
+                                   @checked(old('scope_mode', $profile['mode']) === $modeValue)>
+                            <span class="min-w-0">
+                                <span class="block font-semibold">{{ __('scope.mode.' . $modeKey) }}</span>
+                                <span class="block text-xs text-base-content/70">{{ __('scope.mode.' . $modeKey . '_hint') }}</span>
+                            </span>
+                        </label>
+                    @endforeach
+                </div>
+                <div class="mt-3 flex justify-end">
+                    <x-button type="submit" tone="primary" size="sm" icon="save">{{ __('scope.mode.save') }}</x-button>
+                </div>
+            </x-card>
+        </form>
 
         {{-- Branchenprofil-Empfehlung --}}
         @if ($recommendation !== null)
@@ -105,6 +160,9 @@
                                 <div class="flex flex-wrap items-center gap-2">
                                     <span class="font-semibold">{{ __($module['label']) }}</span>
                                     <x-status-badge :tone="$module['status']->tone()">{{ $module['status']->label() }}</x-status-badge>
+                                    @if (in_array($module['code'], $growthModules, true))
+                                        <x-status-badge tone="info" outline>{{ __('scope.mode.growth') }}</x-status-badge>
+                                    @endif
                                 </div>
                                 @if ($module['description'] !== '')
                                     <p class="mt-0.5 text-xs text-base-content/70">{{ __($module['description']) }}</p>

@@ -130,8 +130,6 @@
     {{-- MVP-1060: Diktat füllt das Inhaltsfeld als Vorschlag. --}}
     <div class="flex justify-end"><x-dictation-button target="#diary-content" context="diary" /></div>
     <x-textarea-field name="content" id="diary-content" :label="__('Inhalt')" required rows="8" placeholder="{{ __('Beschreiben Sie den Vorgang...') }}" :value="old('content', $entry?->content ?? $prefillContent)" />
-
-    <x-textarea-field name="response" :label="__('Rückmeldung')" rows="4" placeholder="{{ __('Antwort oder Notiz (optional) ...') }}" :value="old('response', $entry?->response)" />
 </x-form-group>
 
 <input type="hidden" name="status" value="{{ $entry?->status?->value ?? \App\Enums\Diary\Status::Planned->value }}">
@@ -221,11 +219,6 @@
         <p class="text-sm text-muted">{{ __('Kein Datum erfasst — erscheint im Backlog und kann später terminiert werden.') }}</p>
     </div>
 
-    {{-- Geplante Dauer (E13, MVP-1101): Plan für Plan/Ist; leer = aus Zeitfenster bzw. Termin abgeleitet. --}}
-    <x-input-field name="planned_duration" :label="__('diary.planned_duration.label')" inputmode="numeric"
-                   pattern="^\d{1,3}:[0-5]\d$" placeholder="1:30" :hint="__('diary.planned_duration.hint')"
-                   :value="old('planned_duration', $entry?->planned_minutes !== null ? \CommonToolkit\ValueObjects\Duration::ofMinutes($entry->planned_minutes)->toClock() : '')" />
-    @error('planned_minutes')<p class="text-error text-sm">{{ $message }}</p>@enderror
 </x-form-group>
 
 {{-- Kunde / zugewiesener Benutzer: immer verfügbar (Server erlaubt Kunde
@@ -248,15 +241,33 @@
             <option value="{{ $u->sqid }}" @selected((string) old('assigned_user_id', \App\Support\Sqid::encode(\App\Models\Platform\User::class, $entry?->assigned_user_id)) === $u->sqid)>{{ $u->name }}</option>
         @endforeach
     </x-select-field>
+</x-form-group>
+
+{{-- Zusatzangaben (Feature 165, MVP-1193): zugeklappt, solange nichts drinsteht;
+     Werte bleiben beim Bearbeiten erhalten, auch ungeöffnet. --}}
+@php
+    $plannedDuration = old('planned_duration', $entry?->planned_minutes !== null ? \CommonToolkit\ValueObjects\Duration::ofMinutes($entry->planned_minutes)->toClock() : '');
+    $assetSqid = (string) old('asset_id', \App\Support\Sqid::encode(\App\Models\Asset\Asset::class, $entry?->asset_id));
+@endphp
+<x-form-group-collapsible :legend="__('Weitere Angaben')" icon="tune" tone="ghost" cols="2"
+                          :fields="['response', 'asset_id', 'planned_duration', 'planned_minutes']"
+                          :values="[old('response', $entry?->response), $entry?->asset_id !== null || old('asset_id') ? $assetSqid : null, $plannedDuration]">
+    <x-textarea-field name="response" span="2" :label="__('Rückmeldung')" rows="4" placeholder="{{ __('Antwort oder Notiz (optional) ...') }}" :value="old('response', $entry?->response)" />
 
     {{-- Gegenstand des Auftrags (Feature 009; Vollaudit 2026-07, M5). --}}
     <x-select-field name="asset_id" :label="__('Objekt/Asset')">
         <option value="">—</option>
         @foreach (\App\Models\Asset\Asset::query()->orderBy('name')->limit(500)->get(['id', 'name']) as $formAsset)
-            <option value="{{ $formAsset->sqid }}" @selected((string) old('asset_id', \App\Support\Sqid::encode(\App\Models\Asset\Asset::class, $entry?->asset_id)) === $formAsset->sqid)>{{ $formAsset->name }}</option>
+            <option value="{{ $formAsset->sqid }}" @selected($assetSqid === $formAsset->sqid)>{{ $formAsset->name }}</option>
         @endforeach
     </x-select-field>
-</x-form-group>
+
+    {{-- Geplante Dauer (E13, MVP-1101): Plan für Plan/Ist; leer = aus Zeitfenster bzw. Termin abgeleitet. --}}
+    <x-input-field name="planned_duration" :label="__('diary.planned_duration.label')" inputmode="numeric"
+                   pattern="^\d{1,3}:[0-5]\d$" placeholder="1:30" :hint="__('diary.planned_duration.hint')"
+                   :value="$plannedDuration" />
+    @error('planned_minutes')<p class="text-error text-sm">{{ $message }}</p>@enderror
+</x-form-group-collapsible>
 
 {{-- Termin / Zeitfenster / Servicedauer --}}
 <template x-if="requiresSchedule">
@@ -329,10 +340,10 @@
     </x-form-group>
 </template>
 
-<x-form-group :legend="__('Tags')" icon="flag" tone="success">
+<x-form-group-collapsible :legend="__('Tags')" icon="flag" tone="success" :fields="['tag_ids']" :values="[$selectedTagIds ?? []]">
     <x-tag-picker :tags="$allTags ?? collect()" :selected="$selectedTagIds ?? []" :recent="$recentTagIds ?? []"
                   suggest-from='[name="content"]' customer-from='[name="customer_id"]' />
-</x-form-group>
+</x-form-group-collapsible>
 
 </div>
 

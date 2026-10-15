@@ -194,6 +194,7 @@ return [
         'search' => ['reconcile' => 'Reconcile search index (activity search)'],
         'payroll' => ['import_minimum_wages' => 'Import EU minimum wages'],
         'plans' => ['purge' => 'Purge downgraded module data'],
+        'scope' => ['reconcile' => 'Reconcile feature scope (license growth of limited organizations)'],
         'plugin' => ['healthcheck' => 'Plugin health check', 'errors_prune' => 'Prune plugin error inbox (retention)'],
         'privacy' => [
             'deadlines' => 'Check data subject request deadlines',

@@ -10,10 +10,10 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\User\Permission;
+use App\Enums\User\{Permission, UserRole};
 use App\Http\Controllers\Controller;
 use App\Models\Platform\Organization;
-use App\Services\Navigation\NavFocusService;
+use App\Services\Navigation\{NavFocusService, StartPageResolver};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -52,10 +52,17 @@ class WorkspaceAdminController extends Controller {
             ];
         }
 
+        $roles = is_array($settings[NavFocusService::SETTING_ROLES] ?? null) ? $settings[NavFocusService::SETTING_ROLES] : [];
+
         return view('admin.workspaces.index', [
             'rows' => $rows,
             'default' => $this->focus->defaultFor($organization),
             'configuredAt' => $settings[NavFocusService::SETTING_CONFIGURED_AT] ?? null,
+            // Rollen-Vorschläge (Feature 165, E6): dieselben Rollen wie die Startseiten je Rolle.
+            'roleRows' => array_map(
+                static fn (UserRole $role): array => ['role' => $role, 'key' => is_string($roles[$role->value] ?? null) ? $roles[$role->value] : ''],
+                StartPageResolver::CONFIGURABLE_ROLES,
+            ),
         ]);
     }
 
@@ -65,43 +72,32 @@ class WorkspaceAdminController extends Controller {
         $organization = $this->organization($request);
         $keys = array_keys($this->focus->all());
 
+        $roleValues = array_map(static fn (UserRole $role): string => $role->value, StartPageResolver::CONFIGURABLE_ROLES);
         $data = $request->validate([
             'available' => ['nullable', 'array'],
             'available.*' => ['string', Rule::in($keys)],
             'default' => ['nullable', 'string', Rule::in($keys)],
             'labels' => ['nullable', 'array'],
             'labels.*' => ['nullable', 'string', 'max:60'],
+            'roles' => ['nullable', 'array'],
+            'roles.*' => ['nullable', 'string', Rule::in($keys)],
         ]);
 
-        // Angebotene = gewählte + 'all' (Pflicht); Config-Reihenfolge für stabile Sortierung.
-        $chosen = array_values((array) ($data['available'] ?? []));
-        $available = array_values(array_filter(
-            $keys,
-            static fn(string $k): bool => $k === 'all' || in_array($k, $chosen, true)
-        ));
-
-        // Default nur zulassen, wenn er auch angeboten wird — sonst 'all'.
-        $default = (string) ($data['default'] ?? 'all');
-        if (! in_array($default, $available, true)) {
-            $default = 'all';
-        }
-
-        // Nur nicht-leere Labels übernehmen.
-        $labels = [];
-        foreach ((array) ($data['labels'] ?? []) as $key => $value) {
-            $value = trim((string) $value);
-            if ($value !== '' && in_array((string) $key, $keys, true)) {
-                $labels[(string) $key] = $value;
+        // Angebotene = gewählte + 'all' (Pflicht); Rollen-Vorschläge und Default
+        // nur, wenn angeboten — alles in einer Schreibstelle (Feature 165).
+        $roles = [];
+        foreach ((array) ($data['roles'] ?? []) as $role => $key) {
+            if (in_array((string) $role, $roleValues, true) && is_string($key) && $key !== '') {
+                $roles[(string) $role] = $key;
             }
         }
-
-        $settings = is_array($organization->settings) ? $organization->settings : [];
-        $settings[NavFocusService::SETTING_AVAILABLE] = $available;
-        $settings[NavFocusService::SETTING_DEFAULT] = $default;
-        $settings[NavFocusService::SETTING_LABELS] = $labels;
-        $settings[NavFocusService::SETTING_CONFIGURED_AT] = now()->toIso8601String();
-        $organization->settings = $settings;
-        $organization->save();
+        $this->focus->saveCuration(
+            $organization,
+            array_values(array_map('strval', (array) ($data['available'] ?? []))),
+            (string) ($data['default'] ?? 'all'),
+            $roles,
+            (array) ($data['labels'] ?? []),
+        );
 
         return back()->with('success', __('scope.focus.admin.saved'));
     }

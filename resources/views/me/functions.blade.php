@@ -87,7 +87,8 @@
                                 @endif
                             </div>
                             @if ($entry['status'] === \App\Enums\Licensing\ModuleStatus::InactiveByCustomer && $canManageScope)
-                                <x-button href="{{ route('admin.scope.index') }}" tone="ghost" size="xs" icon="tune">{{ __('scope.functions.action.enable_module') }}</x-button>
+                                {{-- Erweiterung mit Vorschau (Feature 165, MVP-1195). --}}
+                                <x-button href="{{ route('admin.scope.growth') }}" tone="ghost" size="xs" icon="tune">{{ __('scope.functions.action.enable_module') }}</x-button>
                             @elseif ($entry['hidden'] && ($entry['status'] === null || $entry['status'] === \App\Enums\Licensing\ModuleStatus::Active))
                                 <form method="POST" action="{{ route('me.navigation.unhide') }}">
                                     @csrf

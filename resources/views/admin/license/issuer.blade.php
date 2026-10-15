@@ -28,7 +28,7 @@
             <h2 class="font-['Space_Grotesk'] text-base font-semibold text-success">{{ __('Lizenz erstellt') }}</h2>
             <p class="text-sm text-base-content/70">
                 {{ __('Für') }} <span class="font-semibold">{{ $issuedMeta['licensee'] ?? '' }}</span>
-                · {{ __('Plan') }}: {{ __('values.' . ($issuedMeta['plan'] ?? 'free')) }}.
+                · {{ __('Plan') }}: {{ __('values.' . ($issuedMeta['plan'] ?? 'free')) }}@if (! empty($issuedMeta['package'])) · {{ __('scope.packages.field') }}: {{ __((string) (app(\App\Services\Licensing\PackageCatalog::class)->package((string) $issuedMeta['package'])['label'] ?? $issuedMeta['package'])) }}@endif.
                 {{ __('Diesen Schlüssel an den Kunden weitergeben – er installiert ihn auf seiner Instanz.') }}
             </p>
             <textarea id="issued-key" rows="4" readonly class="textarea textarea-bordered w-full font-mono text-xs select-all">{{ $issuedKey }}</textarea>
@@ -69,6 +69,17 @@
                             <option value="{{ $val }}" @selected(old('plan', 'enterprise') === $val)>{{ __('values.' . $val) }}</option>
                         @endforeach
                     </select>
+                </div>
+                <div>
+                    {{-- Produktpaket (Feature 165): Paketmodule werden beim Signieren in die Add-ons übernommen. --}}
+                    <label class="text-xs uppercase tracking-wider text-muted" for="issue-package">{{ __('scope.packages.field') }}</label>
+                    <select id="issue-package" name="product_package" class="select select-sm select-bordered w-full @error('product_package') select-error @enderror">
+                        <option value="">{{ __('scope.packages.none') }}</option>
+                        @foreach ($packages as $packageKey => $package)
+                            <option value="{{ $packageKey }}" @selected(old('product_package') === $packageKey)>{{ __($package['label']) }} — {{ implode(', ', array_map(fn (string $c): string => app(\App\Services\Licensing\ModuleCatalog::class)->labels()[$c] ?? $c, $package['modules'])) }}</option>
+                        @endforeach
+                    </select>
+                    <p class="mt-1 text-xs text-muted">{{ __('scope.packages.issue_hint') }}</p>
                 </div>
                 <div>
                     <label class="text-xs uppercase tracking-wider text-muted">{{ __('Gültig bis (optional)') }}</label>

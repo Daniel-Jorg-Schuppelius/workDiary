@@ -612,6 +612,7 @@ return [
         'orgIssued' => 'Licence de l\'organisation émise',
         'orgRemoved' => 'Licence de l\'organisation retirée',
         'scopeConfigured' => 'Périmètre de licence configuré',
+        'scopeReverted' => 'Démarrage compact annulé',
     ],
     'limit' => [
         'exceeded' => 'Limite dépassée',

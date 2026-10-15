@@ -80,7 +80,7 @@ class OrganizationController extends Controller {
             'is_active' => ['boolean'],
             // Funktionsumfang-Preset (Feature 081, MVP-373): optional beim
             // Anlegen; ohne Auswahl bleibt der volle Lizenzumfang aktiv.
-            'scope_preset' => ['nullable', 'string', \Illuminate\Validation\Rule::in(array_keys((array) config('plans.presets', [])))],
+            'scope_preset' => ['nullable', 'string', \Illuminate\Validation\Rule::in(array_keys(app(\App\Services\Licensing\ModuleScopeService::class)->presets()))],
         ]);
 
         $scopePreset = $data['scope_preset'] ?? null;

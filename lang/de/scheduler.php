@@ -194,6 +194,7 @@ return [
         'search' => ['reconcile' => 'Suchindex abgleichen (Tätigkeitsrecherche)'],
         'payroll' => ['import_minimum_wages' => 'EU-Mindestlöhne importieren'],
         'plans' => ['purge' => 'Downgrade-Daten bereinigen'],
+        'scope' => ['reconcile' => 'Funktionsumfang abgleichen (Lizenzzuwachs bei begrenzten Organisationen)'],
         'plugin' => ['healthcheck' => 'Plugin-Healthcheck', 'errors_prune' => 'Plugin-Fehler-Inbox aufräumen (Aufbewahrungsfristen)'],
         'privacy' => [
             'deadlines' => 'Betroffenenanfragen-Fristen prüfen',

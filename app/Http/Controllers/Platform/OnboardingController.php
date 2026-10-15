@@ -51,7 +51,9 @@ class OnboardingController extends Controller {
     private const STEP_ROUTES = [
         'org.profile' => 'account.profile.edit',
         'org.branch_profile' => 'admin.branch-profiles.index',
-        'org.scope' => 'admin.scope.index',
+        // Feature 165: Einrichtungsdialog statt Modulliste (Dialog-Route
+        // direkt aufgerufen → Middleware bettet ihn ein).
+        'org.scope' => 'admin.scope.setup',
         'org.workspaces' => 'admin.workspaces.index',
         'users.invite' => 'org-members.index',
         'roles.check' => 'admin.access.members.index',

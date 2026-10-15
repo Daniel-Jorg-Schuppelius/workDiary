@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Modules;
 
 use App\Modules\{ManifestChecker, ModuleRegisterDocument, ModuleRegistry};
+use App\Services\Licensing\PackageCatalog;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Console\Command;
 
@@ -25,8 +26,13 @@ class ModulesCheckCommand extends Command {
 
     protected $description = 'Prüft die Modul-Manifeste auf Vollständigkeit (Tabellen, Lizenzcodes, Routen, Ordner, Rechtegruppen).';
 
-    public function handle(ModuleRegistry $registry): int {
+    public function handle(ModuleRegistry $registry, PackageCatalog $packages): int {
         $violations = (new ManifestChecker($registry, base_path()))->check();
+        // Produktpakete (Feature 165, MVP-1187): Modulcodes, Abhängigkeiten,
+        // Arbeitsbereiche, Rollen und Startseiten der Pakete müssen stimmen.
+        foreach ($packages->problems() as $problem) {
+            $violations[] = 'Paketkatalog: ' . $problem;
+        }
         $register = base_path(ModuleRegisterDocument::RELATIVE_PATH);
         if (File::exists($register)) {
             /** @var array<string, string> $helpRoutes */

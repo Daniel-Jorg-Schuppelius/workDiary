@@ -75,6 +75,10 @@ class TenantRegistrationController extends Controller {
             $adminRole = Role::findOrCreate(UserRole::Admin->value, 'web');
             $user->assignRole($adminRole);
 
+            // Schlanker Standard (Feature 165, MVP-1189): Paketvorgabe innerhalb
+            // der tatsächlichen Lizenz, Modus „bewusst begrenzt".
+            app(\App\Services\Licensing\ModuleScopeService::class)->applyPackageDefaults($org, $user);
+
             return $user;
         });
 

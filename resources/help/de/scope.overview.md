@@ -53,3 +53,14 @@ festgelegt ist. Eine Seite, die die Person nicht öffnen darf, wird
   nur über die Lizenzverwaltung.
 - Das Ausblenden ändert keine Berechtigungen. Gesperrte Seiten melden sich
   mit einem Hinweis (HTTP 423) statt mit Datenverlust.
+
+## Geltungsmodus und kompakter Einstieg
+
+Seit Feature 165 zeigt die Seite zusätzlich den **Geltungsmodus**: „Bewusst
+begrenzt“ hält Module, die später neu in die Lizenz kommen, deaktiviert, bis
+Sie sie unter *Funktionsumfang erweitern* einrichten; „Voller lizenzierter
+Umfang“ schaltet Lizenzzuwachs sofort frei. Die Karte **Kompakter Einstieg**
+führt zur Einrichtung mit wenigen Zielen (Kunden und Aufträge, Zeit,
+Teamplanung, Angebote und Rechnungen) und — nach einer Übernahme — zur
+Rücknahme, die den Stand davor wiederherstellt. Manuelle Änderungen seit der
+Übernahme werden dabei ausgewiesen und nur auf Wunsch überschrieben.

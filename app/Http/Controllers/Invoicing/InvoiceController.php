@@ -46,7 +46,12 @@ class InvoiceController extends Controller {
         // Feature 160 (MVP-856): Token je Dialog macht die Entwurfsanlage idempotent (Doppelklick).
         $draftToken = (string) \Illuminate\Support\Str::uuid();
 
-        return view('invoices._form_dialog', compact('customers', 'projects', 'foreignCustomers', 'defaultFrom', 'defaultTo', 'draftToken'));
+        // Vorbelegung aus Auftrag oder Kundenakte (Feature 165, MVP-1194):
+        // nur Sqids, nur Datensätze der eigenen Organisation.
+        $prefillCustomerId = Customer::query()->find(\App\Support\Sqid::decodeOrNumeric(Customer::class, $request->query('customer_id')))?->sqid;
+        $prefillProjectId = Project::query()->find(\App\Support\Sqid::decodeOrNumeric(Project::class, $request->query('project_id')))?->sqid;
+
+        return view('invoices._form_dialog', compact('customers', 'projects', 'foreignCustomers', 'defaultFrom', 'defaultTo', 'draftToken', 'prefillCustomerId', 'prefillProjectId'));
     }
 
     /**

@@ -49,3 +49,14 @@ impostazione resta quella predefinita.
 - I moduli senza licenza non si attivano qui; serve la gestione licenze.
 - Nascondere non cambia i permessi. Le pagine bloccate rispondono con un
   avviso (HTTP 423) invece di perdere dati.
+
+## Modalità di ambito e avvio compatto
+
+Dalla funzionalità 165 la pagina mostra anche la **modalità di ambito**:
+«Volutamente limitato» tiene disattivati i moduli aggiunti in seguito alla
+licenza finché non li configura in *Ampliare l'ambito funzionale*; «Ambito
+licenziato completo» attiva subito ogni ampliamento di licenza. La scheda
+**Avvio compatto** porta alla configurazione con pochi obiettivi (clienti e
+ordini, tempo, pianificazione del team, preventivi e fatture) e, dopo
+l'applicazione, al ripristino dello stato precedente. Le modifiche manuali
+successive vengono segnalate e sovrascritte solo su richiesta.

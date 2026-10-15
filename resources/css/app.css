@@ -1774,6 +1774,28 @@
         color: color-mix(in srgb, var(--color-base-content) 70%, transparent);
     }
 
+    /* Aufklappbare Gruppe (<x-form-group-collapsible>, Feature 165): die
+       Legende ist das <summary>; zugeklappt bleibt nur sie sichtbar. */
+    .wd-fieldset--collapsible {
+        padding-top: 0.75rem;
+    }
+
+    .wd-fieldset--collapsible:not([open]) {
+        padding-bottom: 0.75rem;
+    }
+
+    .wd-fieldset--collapsible > summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .wd-fieldset--collapsible[open] > summary {
+        margin-bottom: 0.5rem;
+    }
+
+    .wd-fieldset--collapsible[open] > summary .wd-fieldset__legend-icon:last-child {
+        transform: rotate(180deg);
+    }
+
     .wd-fieldset__grid {
         display: grid;
         gap: 0.75rem;

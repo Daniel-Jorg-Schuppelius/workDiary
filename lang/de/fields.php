@@ -62,4 +62,8 @@ return [
         'title' => 'Übersetzungen',
         'hint' => 'Leer lassen, wo der deutsche Text gelten soll. Angezeigt wird die Übersetzung der Sprache, die die Person eingestellt hat.',
     ],
+    'collapsible' => [
+        'filled' => '{1} :count Angabe|[2,*] :count Angaben',
+        'has_errors' => 'Bitte prüfen',
+    ],
 ];

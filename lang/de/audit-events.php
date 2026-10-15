@@ -612,6 +612,7 @@ return [
         'orgIssued' => 'Mandanten-Lizenz ausgestellt',
         'orgRemoved' => 'Mandanten-Lizenz entfernt',
         'scopeConfigured' => 'Lizenz-Scope konfiguriert',
+        'scopeReverted' => 'Kompakter Einstieg zurückgenommen',
     ],
     'limit' => [
         'exceeded' => 'Limit überschritten',

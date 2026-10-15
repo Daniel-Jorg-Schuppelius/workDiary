@@ -90,7 +90,9 @@ return [
         // (MVP-797, Befund C3-28) — die uebrigen customer.*-Routen sind gemappt.
         'customer.learning.*' => 'customer-portal.learning',
         // Oberflächen-Konfiguration (Feature 081): Funktionsumfang,
-        // Menüanpassung und Funktionskatalog.
+        // Menüanpassung und Funktionskatalog. Einrichtung (Feature 165).
+        'admin.scope.setup' => 'scope.setup',
+        'admin.scope.growth' => 'scope.growth',
         'admin.scope.*' => 'scope.overview',
         // Arbeitsbereiche — schaltbare Fokus-Ansichten (Feature 082)
         'admin.workspaces.*' => 'workspaces.overview',

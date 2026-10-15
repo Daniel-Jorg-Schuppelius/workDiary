@@ -81,8 +81,11 @@
             @include('today._entry_bar')
         @endif
 
-        <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-6">
-            <x-kpi-tile :label="__('Soll')" :value="$fmt($targetMinutes)" />
+        {{-- Kernblock (Feature 165, MVP-1192): drei Kennzahlen und die Aktionen
+             des Tages; Soll, Unverteilt, Fortschritt, Bilanz, Tätigkeiten und
+             Stempelungen liegen unter „Weitere Details" (für alle, kein Modus). --}}
+        <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+            <x-kpi-tile :label="__('Erfasst')" :value="$fmt($entriesMinutes)" tone="info" />
 
             {{-- Anwesenheit-Tile: tickert live mit dem Header-Stempel-Timer mit. --}}
             <div class="rounded-box border border-success/40 bg-base-100 px-4 py-3 shadow-xs">
@@ -91,15 +94,13 @@
                    x-text="attendanceFmt">{{ $fmt($attendanceMinutes) }}</p>
             </div>
 
-            <x-kpi-tile :label="__('Erfasst')" :value="$fmt($entriesMinutes)" tone="info" />
-
-            {{-- Unverteilt-Tile: leitet sich aus Anwesenheit ab, also auch live. --}}
-            <div class="rounded-box border bg-base-100 px-4 py-3 shadow-xs"
-                 :class="untrackedBorderClass">
-                <p class="text-xs uppercase tracking-[0.18em] text-muted">{{ __('Unverteilt') }}</p>
+            {{-- Saldo zum Soll: leitet sich aus der Anwesenheit ab, also auch live. --}}
+            {{-- raw-markup-ok: Live-Kennzahl mit Alpine x-text/:class wie die Anwesenheits-Kachel; x-kpi-tile trägt keine Bindungen --}}
+            <div class="rounded-box border border-base-300 bg-base-100 px-4 py-3 shadow-xs">
+                <p class="text-xs uppercase tracking-[0.18em] text-muted">{{ __('Saldo') }} <span class="normal-case tracking-normal">({{ __('Soll') }} {{ $fmt($targetMinutes) }})</span></p>
                 <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold"
-                   :class="untrackedTextClass"
-                   x-text="untrackedFmt">{{ $fmt($untrackedMinutes) }}</p>
+                   :class="balanceTextClass"
+                   x-text="balanceFmt">{{ $fmt($balance) }}</p>
             </div>
 
             {{-- Doppelte Spaltenbreite für die Aktionsleiste; grid-Wrapper streckt das Panel auf Zeilenhöhe. --}}
@@ -108,83 +109,16 @@
             </div>
         </section>
 
-        <x-card as="section">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-                <h2 class="font-['Space_Grotesk'] text-sm font-semibold uppercase tracking-widest text-muted">{{ __('Tagesfortschritt') }}</h2>
-                <span class="text-xs text-muted">
-                    <span x-text="attendanceFmt">{{ $fmt($attendanceMinutes) }}</span>
-                    / {{ $fmt($targetMinutes) }}
-                    (<span x-text="progress">{{ $progress }}</span>%)
-                    · {{ __('Saldo') }}:
-                    <strong :class="balanceTextClass"
-                            x-text="balanceFmt">{{ $fmt($balance) }}</strong>
-                </span>
-            </div>
-            <progress class="progress mt-2 w-full"
-                      :class="balanceProgressClass"
-                      :value="progress"
-                      max="100"
-                      value="{{ $progress }}"></progress>
-        </x-card>
-
-        {{-- Tagesabschluss: Bilanz (kompakt — Soll/Anwesenheit/Erfasst/Unverteilt
-             stehen bereits oben als Kacheln) inkl. Pausen, dann Warnungen. --}}
-        @include('time-approval.day._balance', ['compact' => true])
+        {{-- Tagesabschluss: Warnungen und Sperren bleiben immer im Kernblock. --}}
         @include('time-approval.day._issues')
 
         {{-- Quick-Buchung offener Zeitblöcke (Rang 37) — nur bei offenen Blöcken. --}}
         @include('today._quick_book')
 
-        @if ($byActivity->isNotEmpty())
-            <x-card as="section">
-                <h2 class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Aufteilung nach Tätigkeit') }}</h2>
-                <ul class="mt-2 grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
-                    @foreach ($byActivity as $key => $info)
-                        <li class="flex items-center justify-between gap-2 rounded-box bg-base-200/70 px-3 py-2">
-                            <span>{{ \App\Enums\TimeEntry\TimeEntryActivityType::tryFrom((string) $key)?->label() ?? (string) $key }}</span>
-                            <span class="tabular-nums text-base-content/70">{{ $fmt($info['minutes']) }} <span class="text-xs text-muted">({{ $info['count'] }})</span></span>
-                        </li>
-                    @endforeach
-                </ul>
-            </x-card>
-        @endif
-
-        {{-- shrink-0 (beide Tabellen-Karten): als Flex-Kind der scrollenden
+        {{-- shrink-0 (Tabellen-Karten): als Flex-Kind der scrollenden
              page-shell darf die Karte nicht unter ihre Inhaltshöhe schrumpfen —
              overflow-hidden würde sonst ohne Scrollbalken abschneiden; bei
              Platzmangel scrollt stattdessen der Seiten-Container. --}}
-        <x-card as="section" padding="p-0" class="shrink-0 overflow-hidden">
-            <header class="flex items-center justify-between gap-2 border-b border-base-300 p-3">
-                <h2 class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Stempelungen') }}</h2>
-                <span class="text-xs text-muted">{{ $attendances->count() }}</span>
-            </header>
-            <x-table table-sort="client" bare>
-                <x-slot:head>
-                    <tr>
-                        <x-table.th sort type="string">{{ __('Beginn') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Ende') }}</x-table.th>
-                        <x-table.th sort type="number" align="right">{{ __('Pause') }}</x-table.th>
-                        <x-table.th sort type="duration" align="right">{{ __('Dauer') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
-                    </tr>
-                </x-slot:head>
-                @forelse ($attendances as $a)
-                    <tr>
-                        <td class="tabular-nums">{{ $a->started_at?->ftime() }}</td>
-                        <td class="tabular-nums">{{ $a->ended_at?->ftime() ?? '—' }}</td>
-                        <td class="text-right tabular-nums">{{ $a->break_minutes_total }}</td>
-                        <td class="text-right tabular-nums" data-sort-value="{{ (int) ($a->duration_minutes ?? 0) }}">{{ $fmt((int) ($a->duration_minutes ?? 0)) }}</td>
-                        <td><x-status-badge :tone="$a->isOpen() ? 'success' : 'ghost'">{{ $a->statusLabel() }}</x-status-badge></td>
-                    </tr>
-                @empty
-                    <x-table.empty :colspan="5"
-                                   icon="schedule"
-                                   :title="__('Noch keine Stempelung')"
-                                   :message="__('Für diesen Tag ist noch keine Stempelung erfasst.')" />
-                @endforelse
-            </x-table>
-        </x-card>
-
         <x-card as="section" padding="p-0" class="shrink-0 overflow-hidden">
             <header class="flex items-center justify-between gap-2 border-b border-base-300 p-3">
                 <h2 class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Zeiteinträge') }}</h2>
@@ -250,6 +184,90 @@
                 @endforelse
             </x-table>
         </x-card>
+
+        <x-collapsible-section :title="__('Weitere Details')" key="today.details" icon="analytics" class="shrink-0">
+            <section class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <x-kpi-tile :label="__('Soll')" :value="$fmt($targetMinutes)" />
+
+                {{-- Unverteilt-Tile: leitet sich aus Anwesenheit ab, also auch live. --}}
+                <div class="rounded-box border bg-base-100 px-4 py-3 shadow-xs"
+                     :class="untrackedBorderClass">
+                    <p class="text-xs uppercase tracking-[0.18em] text-muted">{{ __('Unverteilt') }}</p>
+                    <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold"
+                       :class="untrackedTextClass"
+                       x-text="untrackedFmt">{{ $fmt($untrackedMinutes) }}</p>
+                </div>
+            </section>
+
+            <x-card as="section">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <h2 class="font-['Space_Grotesk'] text-sm font-semibold uppercase tracking-widest text-muted">{{ __('Tagesfortschritt') }}</h2>
+                    <span class="text-xs text-muted">
+                        <span x-text="attendanceFmt">{{ $fmt($attendanceMinutes) }}</span>
+                        / {{ $fmt($targetMinutes) }}
+                        (<span x-text="progress">{{ $progress }}</span>%)
+                        · {{ __('Saldo') }}:
+                        <strong :class="balanceTextClass"
+                                x-text="balanceFmt">{{ $fmt($balance) }}</strong>
+                    </span>
+                </div>
+                <progress class="progress mt-2 w-full"
+                          :class="balanceProgressClass"
+                          :value="progress"
+                          max="100"
+                          value="{{ $progress }}"></progress>
+            </x-card>
+
+            {{-- Tagesabschluss: Bilanz (kompakt — Anwesenheit/Erfasst stehen bereits
+                 als Kacheln) inkl. Pausen. --}}
+            @include('time-approval.day._balance', ['compact' => true])
+
+            @if ($byActivity->isNotEmpty())
+                <x-card as="section">
+                    <h2 class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Aufteilung nach Tätigkeit') }}</h2>
+                    <ul class="mt-2 grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
+                        @foreach ($byActivity as $key => $info)
+                            <li class="flex items-center justify-between gap-2 rounded-box bg-base-200/70 px-3 py-2">
+                                <span>{{ \App\Enums\TimeEntry\TimeEntryActivityType::tryFrom((string) $key)?->label() ?? (string) $key }}</span>
+                                <span class="tabular-nums text-base-content/70">{{ $fmt($info['minutes']) }} <span class="text-xs text-muted">({{ $info['count'] }})</span></span>
+                            </li>
+                        @endforeach
+                    </ul>
+                </x-card>
+            @endif
+
+            <x-card as="section" padding="p-0" class="shrink-0 overflow-hidden">
+                <header class="flex items-center justify-between gap-2 border-b border-base-300 p-3">
+                    <h2 class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Stempelungen') }}</h2>
+                    <span class="text-xs text-muted">{{ $attendances->count() }}</span>
+                </header>
+                <x-table table-sort="client" bare>
+                    <x-slot:head>
+                        <tr>
+                            <x-table.th sort type="string">{{ __('Beginn') }}</x-table.th>
+                            <x-table.th sort type="string">{{ __('Ende') }}</x-table.th>
+                            <x-table.th sort type="number" align="right">{{ __('Pause') }}</x-table.th>
+                            <x-table.th sort type="duration" align="right">{{ __('Dauer') }}</x-table.th>
+                            <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
+                        </tr>
+                    </x-slot:head>
+                    @forelse ($attendances as $a)
+                        <tr>
+                            <td class="tabular-nums">{{ $a->started_at?->ftime() }}</td>
+                            <td class="tabular-nums">{{ $a->ended_at?->ftime() ?? '—' }}</td>
+                            <td class="text-right tabular-nums">{{ $a->break_minutes_total }}</td>
+                            <td class="text-right tabular-nums" data-sort-value="{{ (int) ($a->duration_minutes ?? 0) }}">{{ $fmt((int) ($a->duration_minutes ?? 0)) }}</td>
+                            <td><x-status-badge :tone="$a->isOpen() ? 'success' : 'ghost'">{{ $a->statusLabel() }}</x-status-badge></td>
+                        </tr>
+                    @empty
+                        <x-table.empty :colspan="5"
+                                       icon="schedule"
+                                       :title="__('Noch keine Stempelung')"
+                                       :message="__('Für diesen Tag ist noch keine Stempelung erfasst.')" />
+                    @endforelse
+                </x-table>
+            </x-card>
+        </x-collapsible-section>
 
         {{-- Tagesabschluss: Korrekturanträge (Bilanz steht oben; Aktionen in der
              Toolbar; hier nur noch die zugehörigen Dialoge). --}}

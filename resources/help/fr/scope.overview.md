@@ -51,3 +51,15 @@ sans réglage, la page par défaut reste.
   la gestion des licences.
 - Masquer ne change aucun droit. Les pages verrouillées répondent par un
   avis (HTTP 423) au lieu de perdre des données.
+
+## Mode de périmètre et démarrage compact
+
+Depuis la fonctionnalité 165, la page affiche aussi le **mode de
+périmètre** : « Volontairement limité » garde désactivés les modules ajoutés
+plus tard à la licence jusqu'à ce que vous les configuriez sous *Étendre le
+périmètre fonctionnel* ; « Périmètre licencié complet » active immédiatement
+toute extension de licence. La carte **Démarrage compact** mène à la
+configuration avec quelques objectifs (clients et commandes, temps,
+planification d'équipe, devis et factures) et, après application, à
+l'annulation qui rétablit l'état antérieur. Les modifications manuelles
+effectuées depuis sont signalées et écrasées uniquement sur demande.

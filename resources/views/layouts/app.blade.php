@@ -274,6 +274,8 @@
                             // der zentralen NavigationRegistry — stabile Schlüssel, einheitliches
                             // Plan-/Rechte-Gating (NavGate) und Per-User-Ausblendungen (MVP-374).
                             $_navData = app(\App\Services\Navigation\NavigationRegistry::class)->build($isLegacyMode, $indexRoute, $navFocusActive);
+                            // Kompakte Bereiche ohne erreichbares Ziel (Feature 165) werden nicht angeboten.
+                            $navFocusAvailable = array_values(array_filter($navFocusAvailable, static fn (array $f): bool => ! in_array($f['key'], $_navData['emptyFocuses'] ?? [], true)));
                             $mainNavItems = $_navData['mainNavItems'];
                             $manageNavItems = $_navData['manageNavItems'];
                             $adminNavItems = $_navData['adminNavItems'];

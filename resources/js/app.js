@@ -56,6 +56,7 @@ import "./action-menu.js";
 import "./toolbar-overflow.js";
 import "./dictation.js";
 import "./upload-form.js";
+import "./collapsible-section.js";
 // facility-picker.js / tag-picker.js / work-schedule-form.js wurden in
 // alpine/components.js als Alpine.data-Komponenten überführt (CSP-konform).
 

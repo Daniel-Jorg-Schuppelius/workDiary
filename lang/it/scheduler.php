@@ -194,6 +194,7 @@ return [
         'search' => ['reconcile' => 'Riallineare l’indice di ricerca (ricerca attività)'],
         'payroll' => ['import_minimum_wages' => 'Importare i salari minimi UE'],
         'plans' => ['purge' => 'Eliminare i dati dei moduli retrocessi'],
+        'scope' => ['reconcile' => 'Allineare l\'ambito funzionale (crescita di licenza delle organizzazioni limitate)'],
         'plugin' => ['healthcheck' => 'Controllo di integrità dei plugin', 'errors_prune' => 'Ripulire la inbox errori dei plugin (conservazione)'],
         'privacy' => [
             'deadlines' => 'Controllare le scadenze delle richieste degli interessati',

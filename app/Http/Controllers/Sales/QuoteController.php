@@ -35,12 +35,19 @@ class QuoteController extends Controller {
 
     public function __construct(private readonly QuoteService $quotes) {}
 
-    public function create(): View {
+    public function create(Request $request): View {
         Gate::authorize('create', Quote::class);
+
+        // Vorbelegung aus Auftrag oder Kundenakte (Feature 165, MVP-1194):
+        // nur Sqids, nur Datensätze der eigenen Organisation.
+        $prefillCustomer = Customer::query()->find(\App\Support\Sqid::decodeOrNumeric(Customer::class, $request->query('customer_id')));
+        $prefillProject = \App\Models\Project\Project::query()->find(\App\Support\Sqid::decodeOrNumeric(\App\Models\Project\Project::class, $request->query('project_id')));
 
         return view('quotes._form_dialog', [
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
             'projects' => \App\Models\Project\Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
+            'prefillCustomerId' => $prefillCustomer?->sqid,
+            'prefillProjectId' => $prefillProject?->sqid,
         ]);
     }
 

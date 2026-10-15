@@ -60,6 +60,8 @@ return [
     // im Menü sieht — siehe StartPageResolver (MVP-799).
     'startpages' => [
         'dashboard' => 'Dashboard',
+        // Heute-Seite (Feature 165, MVP-1190): Startseite des kompakten Einstiegs.
+        'today.show' => 'Heute',
         'duties.index' => 'Arbeitsliste',
         'diary.index' => 'Alle Einträge',
         'week.index' => 'Wochenansicht',
