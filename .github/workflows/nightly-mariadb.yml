@@ -61,7 +61,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up PHP
-        uses: shivammathur/setup-php@2.37.2
+        uses: shivammathur/setup-php@2.40.0
         with:
           php-version: "8.5"
           extensions: bcmath, curl, dom, fileinfo, gd, intl, mbstring, mysqli, openssl, pcntl, pdo_mysql, pdo_sqlite, sodium, sqlite3, tokenizer, xml, xmlwriter, zip
