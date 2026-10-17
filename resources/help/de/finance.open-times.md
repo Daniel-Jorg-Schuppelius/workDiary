@@ -1,7 +1,7 @@
 ---
 title: "Offene Zeiten"
 topic: finance.open-times
-version: 2
+version: 3
 keywords:
     - nicht abgerechnete Zeiten
     - unfakturierte Stunden
@@ -52,7 +52,10 @@ Funktionen:
 3. **Filter**: Kunde, Projekt, Mitarbeiter/in sowie der
    Abrechenbar-Schalter. Mit „Nur nicht abrechenbare" lassen sich
    bewusst oder versehentlich nicht abrechenbar markierte Zeiten
-   prüfen.
+   prüfen. Zeiten **interner Projekte** (ohne Kunden) gelten als
+   nicht abrechenbar — es gibt niemanden, dem sie in Rechnung
+   gestellt werden könnten — und stehen deshalb nur in dieser Sicht,
+   solange das Projekt nicht ausdrücklich auf „abrechenbar" steht.
 4. **Summen je Kunde & Projekt** als aufklappbarer Block über der
    Einzelliste.
 5. **CSV-Export** mit Dauer in beiden Formaten (H:MM und dezimal).

@@ -1,7 +1,7 @@
 ---
 title: "Tempi aperti"
 topic: finance.open-times
-version: 2
+version: 3
 keywords:
     - tempi non fatturati
     - ore non fatturate
@@ -51,7 +51,10 @@ Funzionalità:
 3. **Filtri**: cliente, progetto, collaboratore/trice e il
    selettore «fatturabile». Con «Solo non fatturabili» si possono
    verificare i tempi contrassegnati come non fatturabili
-   volontariamente o per errore.
+   volontariamente o per errore. I tempi dei **progetti interni**
+   (senza cliente) sono considerati non fatturabili — non c’è nessuno
+   a cui fatturarli — e compaiono quindi solo in questa vista, a meno
+   che il progetto non sia impostato esplicitamente su «fatturabile».
 4. **Totali per cliente & progetto** in un blocco espandibile sopra
    l'elenco dettagliato.
 5. **Export CSV** con la durata in entrambi i formati (H:MM e

@@ -335,8 +335,10 @@ class ProjectController extends Controller {
 
         // Abrechenbar-Schalter auf offene Zeiten durchziehen — billable ist am
         // Eintrag ein Snapshot und bliebe sonst auf dem alten Wert stehen.
-        $syncedBillable = $project->wasChanged('billable')
-            ? app(\App\Services\Billing\TimeEntryBillableSyncService::class)->syncProject($project)
+        // Kunde und übergeordnetes Projekt zählen mit: sie bestimmen den
+        // geerbten Wert (kundenlos ⇒ nicht abrechenbar).
+        $syncedBillable = $project->wasChanged(['billable', 'customer_id', 'parent_id'])
+            ? app(\App\Services\Billing\TimeEntryBillableSyncService::class)->syncProject($project->fresh(['parent', 'customer']) ?? $project)
             : 0;
 
         if ($request->hasHeader('X-Entry-Dialog') && ($project->wasChanged('customer_id') || $project->wasChanged('slug'))) {

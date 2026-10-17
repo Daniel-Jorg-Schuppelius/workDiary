@@ -166,6 +166,28 @@ class SubprojectTest extends TestCase {
         $this->assertFalse($standalone->effectiveBillable());
     }
 
+    public function test_effective_billable_is_false_without_customer(): void {
+        // Internes Projekt (kein Kunde in der Kette): nichts zu fakturieren —
+        // sonst landen seine Zeiten als abrechenbar in den Offenen Zeiten.
+        $internal = $this->makeProject(['customer_id' => null]);
+        $this->assertNull($internal->billable);
+        $this->assertFalse($internal->effectiveBillable());
+        $this->assertFalse($internal->inheritedBillable());
+
+        $child = Project::create([
+            'organization_id' => $this->organization->id,
+            'parent_id' => $internal->id,
+            'name' => 'Internes Kind',
+            'status' => ProjectStatus::Active->value,
+        ]);
+        $this->assertFalse($child->refresh()->effectiveBillable());
+
+        // Ein expliziter Schalter gewinnt weiterhin.
+        $internal->update(['billable' => true]);
+        $this->assertTrue($internal->refresh()->effectiveBillable());
+        $this->assertTrue($child->refresh()->effectiveBillable());
+    }
+
     public function test_delete_with_children_is_blocked_by_policy(): void {
         $parent = $this->makeProject();
         Project::create([

@@ -3771,7 +3771,7 @@
     "Gezählt": "Compté",
     "Gezählter Bestand (EUR)": "Solde compté (EUR)",
     "Geändert": "Modifié",
-    "Gilt als Vorgabe für neue Zeiteinträge dieses Projekts; nicht abrechenbare Projekte erzeugen keinen Umsatz. Erben nutzt die Einstellung des übergeordneten Projekts bzw. des Kunden.": "Sert de valeur par défaut pour les nouvelles saisies de temps de ce projet ; les projets non facturables ne génèrent aucun chiffre d’affaires. Hériter utilise le réglage du projet parent ou du client.",
+    "Gilt als Vorgabe für neue Zeiteinträge dieses Projekts; nicht abrechenbare Projekte erzeugen keinen Umsatz. Erben nutzt die Einstellung des übergeordneten Projekts bzw. des Kunden; interne Projekte ohne Kunden sind nicht abrechenbar.": "Sert de valeur par défaut pour les nouvelles saisies de temps de ce projet ; les projets non facturables ne génèrent aucun chiffre d’affaires. Hériter utilise le réglage du projet parent ou du client ; les projets internes sans client ne sont pas facturables.",
     "Gilt für Zeiten dieses Projekts, sofern weder Eintrag, Kundenkondition, Mitarbeiter noch Tätigkeit einen Satz setzen. Leer = Satz des Kunden bzw. der Organisations-Standardsatz.": "S’applique aux temps de ce projet si ni la saisie, ni la condition client, ni le collaborateur, ni l’activité ne définit de taux. Vide = taux du client ou taux par défaut de l’organisation.",
     "Gilt für alle Mitglieder, die keine eigene Theme-Wahl im Profil getroffen haben. Der Automatik-Modus wechselt je nach System-Einstellung zwischen dem Hell- und dem Dunkel-Theme.": "S'applique à tous les membres qui n'ont pas choisi de thème dans leur profil. Le mode automatique alterne entre le thème clair et sombre selon le réglage système.",
     "Gleichbleibend": "Stable",

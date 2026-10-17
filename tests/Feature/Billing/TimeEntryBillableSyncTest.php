@@ -184,6 +184,50 @@ class TimeEntryBillableSyncTest extends TestCase {
         $this->assertFalse((bool) $stale->refresh()->billable);
     }
 
+    public function test_repair_command_aligns_entries_of_internal_projects(): void {
+        // Internes Projekt ohne eigenen Schalter erbt „nicht abrechenbar";
+        // Altbestand trägt noch billable=true-Snapshots.
+        $internal = Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => null,
+            'billable' => null,
+        ]);
+        $stale = $this->openEntry(['project_id' => $internal->id]);
+        $this->assertTrue((bool) $stale->billable);
+
+        $this->artisan('billing:sync-entry-billable', ['--apply' => true])
+            ->expectsOutputToContain('Internes Projekt "' . $internal->name . '": 1 Einträge')
+            ->assertSuccessful();
+        $this->assertFalse((bool) $stale->refresh()->billable);
+
+        // Ein explizit abrechenbares internes Projekt bleibt unberührt.
+        $explicit = Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => null,
+            'billable' => true,
+        ]);
+        $kept = $this->openEntry(['project_id' => $explicit->id]);
+        $this->artisan('billing:sync-entry-billable', ['--apply' => true])->assertSuccessful();
+        $this->assertTrue((bool) $kept->refresh()->billable);
+    }
+
+    public function test_removing_customer_via_http_syncs_entries(): void {
+        // Kundenwechsel ändert den geerbten Wert: kundenlos ⇒ nicht abrechenbar.
+        $entry = $this->openEntry();
+
+        $response = $this->actingAs($this->admin)
+            ->put(route('projects.update', $this->project), [
+                'name' => $this->project->name,
+                'status' => \App\Enums\Project\ProjectStatus::Active->value,
+                'customer_id' => '',
+            ]);
+
+        $response->assertRedirect(route('projects.show', $this->project->fresh()));
+        $this->assertStringContainsString('Abrechenbarkeit angepasst', (string) session('success'));
+        $this->assertNull($this->project->refresh()->customer_id);
+        $this->assertFalse((bool) $entry->refresh()->billable);
+    }
+
     public function test_project_update_via_http_reports_synced_entries(): void {
         $entry = $this->openEntry();
 

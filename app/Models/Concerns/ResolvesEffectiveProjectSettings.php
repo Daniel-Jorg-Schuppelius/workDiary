@@ -54,15 +54,28 @@ trait ResolvesEffectiveProjectSettings {
         return $this->customer?->internal_rate?->toFloat();
     }
 
+    /**
+     * Abrechenbarkeit mit Vererbung: eigener Wert > {@see inheritedBillable()}.
+     */
     public function effectiveBillable(): bool {
         if ($this->billable !== null) {
             return (bool) $this->billable;
         }
+
+        return $this->inheritedBillable();
+    }
+
+    /**
+     * Was „Erben" ergibt: Parent (rekursiv) > Kunde. Ohne Kunden in der Kette
+     * (internes Projekt) nicht abrechenbar — es gibt niemanden, dem die Zeit
+     * in Rechnung gestellt werden könnte.
+     */
+    public function inheritedBillable(): bool {
         if ($this->parent !== null) {
             return $this->parent->effectiveBillable();
         }
 
-        return (bool) ($this->customer->billable ?? true);
+        return $this->customer !== null && (bool) $this->customer->billable;
     }
 
     /**

@@ -22,9 +22,10 @@ use Illuminate\Console\Command;
  * bereits VOR dem Controller-Hook auf „nicht abrechenbar" gestellt wurden,
  * haben offene Zeiteinträge mit veraltetem billable=true-Snapshot.
  *
- * Bewusst nur die Nicht-abrechenbar-Richtung: es werden ausschließlich
- * explizit nicht abrechenbare Kunden/Projekte abgeglichen. Ein globaler
- * Abgleich in beide Richtungen würde gewollte Einzelfall-Kulanz
+ * Bewusst nur die Nicht-abrechenbar-Richtung: abgeglichen werden explizit
+ * nicht abrechenbare Kunden/Projekte sowie interne Projekte (kein Kunde in
+ * der Kette, kein eigener Schalter), die „nicht abrechenbar" erben. Ein
+ * globaler Abgleich in beide Richtungen würde gewollte Einzelfall-Kulanz
  * (billable=false unter abrechenbarem Kunden) plattziehen.
  *
  * Idempotent; Guards je Eintrag im Service (exportiert/rechnungsverknüpft/
@@ -35,7 +36,7 @@ class SyncEntryBillableCommand extends Command {
         . self::ORGANIZATION_OPTION
         . ' {--apply : Änderungen schreiben (sonst Dry-Run)}';
 
-    protected $description = 'Gleicht offene Zeiteinträge nicht abrechenbarer Kunden/Projekte an deren Abrechenbarkeit an. Ohne --apply nur Dry-Run.';
+    protected $description = 'Gleicht offene Zeiteinträge nicht abrechenbarer Kunden/Projekte und interner Projekte an deren Abrechenbarkeit an. Ohne --apply nur Dry-Run.';
 
     use IteratesOrganizations;
 
@@ -68,6 +69,22 @@ class SyncEntryBillableCommand extends Command {
                     $count = $this->sync->syncProject($project, $apply);
                     if ($count > 0) {
                         $this->line('  Projekt "' . $project->name . '": ' . $count . ' Einträge');
+                        $total += $count;
+                    }
+                }
+
+                // Interne Wurzelprojekte ohne eigenen Schalter; Kind-Projekte
+                // erben den Kunden vom Parent und laufen über syncProject mit.
+                $internalProjects = Project::query()
+                    ->whereNull('customer_id')
+                    ->whereNull('parent_id')
+                    ->whereNull('billable')
+                    ->orderBy('id')
+                    ->get();
+                foreach ($internalProjects as $project) {
+                    $count = $this->sync->syncProject($project, $apply);
+                    if ($count > 0) {
+                        $this->line('  Internes Projekt "' . $project->name . '": ' . $count . ' Einträge');
                         $total += $count;
                     }
                 }

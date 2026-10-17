@@ -106,6 +106,38 @@ class OpenTimesWorklistTest extends TestCase {
             ->assertDontSee('Bereits abgerechnet');
     }
 
+    public function test_internal_project_entries_are_not_billable_by_default(): void {
+        // Internes Projekt (ohne Kunden): neue Zeiten erben „nicht abrechenbar"
+        // und stehen nur im Nicht-abrechenbar-Filter, nicht in der Abrechnung.
+        $internal = Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => null,
+            'billable' => null,
+        ]);
+        $worker = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $entry = TimeEntry::factory()->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $internal->id,
+            'user_id' => $worker->id,
+            'exported' => false,
+            'minutes' => 45,
+            'date' => now()->subDays(3)->toDateString(),
+            'description' => 'Interne Dokumentation',
+        ]);
+
+        $this->assertFalse((bool) $entry->refresh()->billable);
+
+        $this->actingAs($this->accountant)
+            ->get(route('finance.open-times.index'))
+            ->assertOk()
+            ->assertDontSee('Interne Dokumentation');
+
+        $this->actingAs($this->accountant)
+            ->get(route('finance.open-times.index', ['billable' => 'no']))
+            ->assertOk()
+            ->assertSee('Interne Dokumentation');
+    }
+
     public function test_billable_filter_no_shows_only_non_billable(): void {
         $this->openEntry(['description' => 'Abrechenbarer Eintrag']);
         $this->openEntry(['description' => 'Kulanz-Eintrag', 'billable' => false]);

@@ -1,7 +1,7 @@
 ---
 title: "Open times"
 topic: finance.open-times
-version: 2
+version: 3
 keywords:
     - unbilled time
     - unbilled hours
@@ -49,7 +49,10 @@ Features:
    override it.
 3. **Filters**: customer, project, employee, and the billable
    toggle. Use "Non-billable only" to review times marked
-   non-billable deliberately or by mistake.
+   non-billable deliberately or by mistake. Times on **internal
+   projects** (without a customer) count as non-billable — there is
+   nobody to invoice them to — and therefore appear only in this view
+   unless the project is explicitly set to "billable".
 4. **Totals per customer & project** as an expandable block above
    the entry list.
 5. **CSV export** with the duration in both formats (H:MM and

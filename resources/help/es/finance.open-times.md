@@ -1,7 +1,7 @@
 ---
 title: "Tiempos abiertos"
 topic: finance.open-times
-version: 2
+version: 3
 keywords:
     - tiempo no facturado
     - horas no facturadas
@@ -51,7 +51,10 @@ Funciones:
 3. **Filtros**: cliente, proyecto, empleado/a y el conmutador
    «facturable». Con «Solo no facturables» se pueden revisar los
    tiempos marcados como no facturables de forma deliberada o por
-   error.
+   error. Los tiempos de **proyectos internos** (sin cliente) se
+   consideran no facturables —no hay nadie a quien facturarlos— y por
+   eso aparecen solo en esta vista, salvo que el proyecto esté
+   marcado expresamente como «facturable».
 4. **Totales por cliente & proyecto** en un bloque desplegable sobre
    la lista detallada.
 5. **Exportación CSV** con la duración en ambos formatos (H:MM y

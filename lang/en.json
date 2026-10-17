@@ -3771,7 +3771,7 @@
     "Gezählt": "Counted",
     "Gezählter Bestand (EUR)": "Counted balance (EUR)",
     "Geändert": "Modified",
-    "Gilt als Vorgabe für neue Zeiteinträge dieses Projekts; nicht abrechenbare Projekte erzeugen keinen Umsatz. Erben nutzt die Einstellung des übergeordneten Projekts bzw. des Kunden.": "Serves as the default for new time entries of this project; non-billable projects generate no revenue. Inherit uses the setting of the parent project or the customer.",
+    "Gilt als Vorgabe für neue Zeiteinträge dieses Projekts; nicht abrechenbare Projekte erzeugen keinen Umsatz. Erben nutzt die Einstellung des übergeordneten Projekts bzw. des Kunden; interne Projekte ohne Kunden sind nicht abrechenbar.": "Serves as the default for new time entries of this project; non-billable projects generate no revenue. Inherit uses the setting of the parent project or the customer; internal projects without a customer are not billable.",
     "Gilt für Zeiten dieses Projekts, sofern weder Eintrag, Kundenkondition, Mitarbeiter noch Tätigkeit einen Satz setzen. Leer = Satz des Kunden bzw. der Organisations-Standardsatz.": "Applies to time on this project unless the entry, customer agreement, employee or activity sets a rate. Empty = the customer rate or the organisation default rate.",
     "Gilt für alle Mitglieder, die keine eigene Theme-Wahl im Profil getroffen haben. Der Automatik-Modus wechselt je nach System-Einstellung zwischen dem Hell- und dem Dunkel-Theme.": "Applies to all members who have not chosen their own theme in their profile. Automatic mode switches between the light and dark theme depending on the system setting.",
     "Gleichbleibend": "Steady",

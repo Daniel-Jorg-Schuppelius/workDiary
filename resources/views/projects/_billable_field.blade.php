@@ -16,16 +16,16 @@
 @php
     $billableCurrent = $project?->billable === null ? '' : ($project->billable ? '1' : '0');
     $billableValue = (string) old('billable', $billableCurrent);
-    // Anzeige, was „Erben" aktuell bedeutet: Parent-Kette → Kunde → ja. Bei
-    // Neuanlage steht der Kunde noch nicht fest → generisches Label.
+    // Anzeige, was „Erben" aktuell bedeutet (Parent-Kette → Kunde, kundenlos
+    // = nein). Bei Neuanlage steht der Kunde noch nicht fest → generisches Label.
     $billableInheritLabel = $project === null
         ? __('Erben (Kunde bzw. übergeordnetes Projekt)')
-        : __('Erben (aktuell: :value)', ['value' => ($project->parent?->effectiveBillable() ?? $project->customer?->billable ?? true) ? __('Ja') : __('Nein')]);
+        : __('Erben (aktuell: :value)', ['value' => $project->inheritedBillable() ? __('Ja') : __('Nein')]);
 @endphp
 <x-form-group :legend="__('Abrechenbarkeit')" icon="payments" tone="warning">
     <x-select-field name="billable"
                     :label="__('Abrechenbar')"
-                    :hint="__('Gilt als Vorgabe für neue Zeiteinträge dieses Projekts; nicht abrechenbare Projekte erzeugen keinen Umsatz. Erben nutzt die Einstellung des übergeordneten Projekts bzw. des Kunden.')">
+                    :hint="__('Gilt als Vorgabe für neue Zeiteinträge dieses Projekts; nicht abrechenbare Projekte erzeugen keinen Umsatz. Erben nutzt die Einstellung des übergeordneten Projekts bzw. des Kunden; interne Projekte ohne Kunden sind nicht abrechenbar.')">
         <option value="" @selected($billableValue === '')>{{ $billableInheritLabel }}</option>
         <option value="1" @selected($billableValue === '1')>{{ __('Ja') }}</option>
         <option value="0" @selected($billableValue === '0')>{{ __('Nein') }}</option>
