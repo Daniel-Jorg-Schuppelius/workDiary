@@ -22,6 +22,8 @@ return [
     'save_to_sent' => 'Guardar una copia en la carpeta Elementos enviados',
     'connect' => 'Conectar el envío de correo',
     'disconnect' => 'Desconectar el envío de correo',
+    'reconnect' => 'Volver a conectar',
+    'reconnect_hint' => 'Volver a conectar solicita de nuevo los permisos; es necesario cuando un buzón de Microsoft 365 se registró en la recepción de correo después de conectar (Mail.ReadWrite o Mail.ReadWrite.Shared).',
     'flash' => [
         'not_configured' => 'Microsoft 365 no está configurado (faltan MSGRAPH_CLIENT_ID/SECRET).',
         'state_invalid' => 'El proceso de inicio de sesión caducó o no es válido — inícielo de nuevo.',

@@ -4,6 +4,7 @@ topic: admin.msgraph
 version: 2
 keywords:
     - Microsoft 365
+    - buzón compartido
     - Office 365
     - calendario de Outlook
     - enviar correo con Microsoft
@@ -120,6 +121,23 @@ permisos de envío se nota enseguida. Si WorkDiary envía realmente sus correos
 por esta conexión lo decide el operador de la instalación; si no está
 configurado, la tarjeta muestra un aviso. **Desconectar el envío de correo**
 retira el acceso.
+
+### Recuperar buzones (recepción de correo)
+
+La misma conexión lee los buzones de Microsoft 365 que registre en
+Administración → Datos e interfaces → Recepción de correo. El plugin solo
+solicita los permisos de lectura cuando allí existe un buzón de Microsoft
+365: «Mail.ReadWrite» para el buzón de la propia cuenta y, además,
+«Mail.ReadWrite.Shared» en cuanto una entrada indica una dirección, por
+ejemplo un buzón compartido facturas@…. De ahí el orden: registre primero el
+buzón y ejecute después **Conectar el envío de correo** o **Volver a
+conectar**. El permiso «acceso completo» de Exchange sobre el buzón
+compartido es necesario, pero no basta por sí solo: en ese caso el envío
+sigue funcionando, solo falla la recuperación. Si el buzón indica «falta el
+permiso Mail.ReadWrite.Shared», la conexión se estableció antes del registro.
+Si su tenant impide el consentimiento de los usuarios, un administrador debe
+ejecutar antes de nuevo **Conceder para la organización**, porque esa
+concesión también abarca solo los permisos necesarios en ese momento.
 
 ## Enviar contactos a Outlook
 

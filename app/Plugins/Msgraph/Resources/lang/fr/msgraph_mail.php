@@ -22,6 +22,8 @@ return [
     'save_to_sent' => 'Enregistrer une copie dans le dossier Éléments envoyés',
     'connect' => 'Connecter l’envoi d’e-mails',
     'disconnect' => 'Déconnecter l’envoi d’e-mails',
+    'reconnect' => 'Reconnecter',
+    'reconnect_hint' => 'Reconnecter redemande les autorisations – nécessaire lorsqu’une boîte Microsoft 365 n’a été saisie dans la réception d’e-mails qu’après la connexion (Mail.ReadWrite ou Mail.ReadWrite.Shared).',
     'flash' => [
         'not_configured' => 'Microsoft 365 n’est pas configuré (MSGRAPH_CLIENT_ID/SECRET manquants).',
         'state_invalid' => 'Le processus de connexion a expiré ou est invalide — veuillez recommencer.',

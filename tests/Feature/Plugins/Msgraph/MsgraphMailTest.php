@@ -10,10 +10,12 @@
 
 namespace Tests\Feature\Plugins\Msgraph;
 
+use App\Models\Mail\EmailConnection;
 use App\Models\Platform\{Organization, User};
 use App\Plugins\Msgraph\Api\MsgraphMailOAuth;
 use App\Plugins\Msgraph\Enums\MsgraphConnectionStatus;
 use App\Plugins\Msgraph\Models\MsgraphMailConnection;
+use App\Plugins\Msgraph\MsgraphPlugin;
 use GuzzleHttp\{Client as GuzzleClient, HandlerStack};
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response as Psr7Response;
@@ -107,6 +109,45 @@ final class MsgraphMailTest extends TestCase {
         $raw = (string) DB::table('msgraph_mail_connections')->where('id', $connection->id)->value('access_token');
         $this->assertStringNotContainsString('mail-token-123', $raw);
         $this->assertDatabaseHas('audit_logs', ['event' => 'msgraph_mail.connected']);
+    }
+
+    /**
+     * Prüfung 2026-10-17: Versand lief, der Abruf eines freigegebenen Postfachs
+     * meldete das fehlende Recht. Die Leserechte hängen am Bestand der
+     * Graph-Postfächer zum Zeitpunkt der Anmeldung — ohne Postfach nur
+     * Mail.Send, mit eigenem Postfach Mail.ReadWrite, mit Adresse zusätzlich
+     * Mail.ReadWrite.Shared. Wer das Postfach erst nach dem Verbinden einträgt,
+     * muss neu verbinden.
+     */
+    public function test_oauth_start_requests_read_scopes_from_the_graph_mailboxes_on_record(): void {
+        $this->assertSame([], array_intersect(['Mail.ReadWrite', 'Mail.ReadWrite.Shared'], $this->requestedScopes()));
+
+        $mailbox = EmailConnection::query()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Eigenes Postfach',
+            'transport' => MsgraphPlugin::MAIL_TRANSPORT,
+            'folder' => 'INBOX',
+            'active' => true,
+            'created_by' => $this->admin->id,
+        ]);
+        $scopes = $this->requestedScopes();
+        $this->assertContains('Mail.ReadWrite', $scopes);
+        $this->assertNotContains('Mail.ReadWrite.Shared', $scopes);
+
+        $mailbox->forceFill(['mailbox_address' => 'rechnungen@firma.example'])->save();
+        $scopes = $this->requestedScopes();
+        $this->assertContains('Mail.ReadWrite', $scopes);
+        $this->assertContains('Mail.ReadWrite.Shared', $scopes);
+        $this->assertContains('Mail.Send', $scopes);
+    }
+
+    /** @return list<string> */
+    private function requestedScopes(): array {
+        $response = $this->actingAs($this->admin)->post(route('admin.msgraph.mail.oauth.start'));
+        $response->assertRedirect();
+        parse_str((string) parse_url((string) $response->headers->get('Location'), PHP_URL_QUERY), $query);
+
+        return array_values(array_filter(explode(' ', is_string($query['scope'] ?? null) ? $query['scope'] : '')));
     }
 
     public function test_transport_sends_via_graph_send_mail_with_payload(): void {

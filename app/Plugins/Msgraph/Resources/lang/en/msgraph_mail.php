@@ -22,6 +22,8 @@ return [
     'save_to_sent' => 'Save a copy to the Sent Items folder',
     'connect' => 'Connect mail sending',
     'disconnect' => 'Disconnect mail sending',
+    'reconnect' => 'Reconnect',
+    'reconnect_hint' => 'Reconnecting requests the permissions again – needed when a Microsoft 365 mailbox was entered in the email intake only after connecting (Mail.ReadWrite or Mail.ReadWrite.Shared).',
     'flash' => [
         'not_configured' => 'Microsoft 365 is not configured (MSGRAPH_CLIENT_ID/SECRET missing).',
         'state_invalid' => 'The sign-in process expired or is invalid — please start again.',

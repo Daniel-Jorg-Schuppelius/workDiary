@@ -13,7 +13,7 @@ return [
         'msgraph_connection_required' => 'Un buzón de Microsoft 365 requiere primero la conexión de envío de correo en el plugin de Microsoft 365 (scope Mail.ReadWrite).',
     ],
     'error' => [
-        'scope_missing' => 'A la conexión de Microsoft 365 le falta el permiso :scope. Vuelva a conectar el envío de correo en el plugin de Microsoft 365.',
+        'scope_missing' => 'A la conexión de Microsoft 365 le falta el permiso :scope. Vuelva a conectar el envío de correo en el plugin de Microsoft 365; el permiso «acceso completo» de Exchange no basta por sí solo. Si su tenant impide el consentimiento de los usuarios, un administrador debe ejecutar antes de nuevo «Conceder para la organización».',
     ],
     'transport' => [
         'msgraph' => 'Microsoft 365 (Graph)',

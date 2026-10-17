@@ -4,6 +4,7 @@ topic: admin.msgraph
 version: 2
 keywords:
     - Microsoft 365
+    - freigegebenes Postfach abrufen
     - Office 365
     - Outlook-Kalender
     - Mail über Microsoft versenden
@@ -118,6 +119,23 @@ Senderechte sofort auffallen. Ob WorkDiary seine Mails tatsächlich über diese
 Verbindung verschickt, legt der Betreiber der Installation fest; ist das nicht
 eingestellt, zeigt die Karte einen Hinweis. **Mail-Versand trennen** entfernt
 den Zugriff.
+
+### Postfächer abrufen (E-Mail-Eingang)
+
+Dieselbe Verbindung liest die Microsoft-365-Postfächer, die Sie unter
+Verwaltung → Daten & Schnittstellen → E-Mail-Eingang eintragen. Das Plugin
+fordert die Leserechte erst an, wenn dort ein Microsoft-365-Postfach steht:
+„Mail.ReadWrite“ für das eigene Postfach, „Mail.ReadWrite.Shared“ zusätzlich,
+sobald ein Eintrag eine Adresse nennt, etwa ein freigegebenes Postfach
+rechnungen@…. Deshalb gilt die Reihenfolge: zuerst das Postfach eintragen,
+dann **Mail-Versand verbinden** bzw. **Neu verbinden** ausführen. Das
+Exchange-Recht „Vollzugriff“ auf das freigegebene Postfach ist nötig, genügt
+aber allein nicht – der Versand funktioniert dann trotzdem, nur der Abruf
+nicht. Meldet das Postfach „fehlt das Recht Mail.ReadWrite.Shared“, wurde die
+Verbindung vor dem Eintrag hergestellt. Verbietet Ihr Tenant die Zustimmung
+durch Benutzer, muss ein Administrator vorher **Für Organisation freigeben**
+erneut ausführen, weil auch diese Freigabe nur die zu dem Zeitpunkt
+benötigten Rechte umfasst.
 
 ## Kontakte nach Outlook übertragen
 

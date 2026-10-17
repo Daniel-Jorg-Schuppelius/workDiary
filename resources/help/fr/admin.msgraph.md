@@ -4,6 +4,7 @@ topic: admin.msgraph
 version: 2
 keywords:
     - Microsoft 365
+    - boîte partagée
     - Office 365
     - agenda Outlook
     - envoyer des e-mails via Microsoft
@@ -122,6 +123,23 @@ bien que des droits d'envoi manquants apparaissent tout de suite. C'est
 l'exploitant de l'installation qui décide si WorkDiary envoie réellement ses
 e-mails par cette connexion ; si ce n'est pas configuré, la carte affiche un
 avertissement. **Déconnecter l’envoi d’e-mails** retire l'accès.
+
+### Relever des boîtes (réception d'e-mails)
+
+La même connexion lit les boîtes Microsoft 365 que vous saisissez sous
+Administration → Données et interfaces → Réception d'e-mails. Le plugin ne
+demande les droits de lecture qu'à partir du moment où une boîte Microsoft
+365 y figure : « Mail.ReadWrite » pour la boîte du compte lui-même, et
+« Mail.ReadWrite.Shared » en plus dès qu'une entrée indique une adresse, par
+exemple une boîte partagée factures@…. D'où l'ordre à respecter : saisissez
+d'abord la boîte, puis exécutez **Connecter l’envoi d’e-mails** ou
+**Reconnecter**. Le droit Exchange « accès complet » sur la boîte partagée
+est nécessaire mais ne suffit pas à lui seul – l'envoi fonctionne alors
+quand même, seule la relève échoue. Si la boîte signale « manque
+l'autorisation Mail.ReadWrite.Shared », la connexion a été établie avant la
+saisie. Si votre tenant interdit le consentement des utilisateurs, un
+administrateur doit d'abord relancer **Accorder pour l'organisation**, car ce
+consentement ne couvre lui aussi que les droits nécessaires à ce moment-là.
 
 ## Envoyer les contacts vers Outlook
 

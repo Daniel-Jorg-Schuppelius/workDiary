@@ -53,7 +53,7 @@ return [
 
     'field' => [
         'mailbox_address' => 'Mailbox address',
-        'mailbox_address_hint' => 'Leave empty for the mailbox of the connected account. For a shared mailbox (e.g. invoices@…) the account needs full access to it.',
+        'mailbox_address_hint' => 'Leave empty for the mailbox of the connected account. For a shared mailbox (e.g. invoices@…) the account needs full access to it in Exchange, and mail sending in the Microsoft 365 plugin must be reconnected afterwards so the app receives the Mail.ReadWrite.Shared permission.',
         'password_keep' => 'Leave empty to keep the stored password.',
         'fetch_since' => 'Fetch from',
         'fetch_since_hint' => 'Mails received before this day are not fetched. An earlier date fetches older mails.',

@@ -22,6 +22,8 @@ return [
     'save_to_sent' => 'Kopie im Gesendet-Ordner ablegen',
     'connect' => 'Mail-Versand verbinden',
     'disconnect' => 'Mail-Versand trennen',
+    'reconnect' => 'Neu verbinden',
+    'reconnect_hint' => 'Neu verbinden fordert die Rechte erneut an – nötig, wenn ein Microsoft-365-Postfach erst nach dem Verbinden im E-Mail-Eingang eingetragen wurde (Mail.ReadWrite bzw. Mail.ReadWrite.Shared).',
     'flash' => [
         'not_configured' => 'Microsoft 365 ist nicht konfiguriert (MSGRAPH_CLIENT_ID/SECRET fehlen).',
         'state_invalid' => 'Der Anmeldevorgang ist abgelaufen oder ungültig — bitte erneut starten.',

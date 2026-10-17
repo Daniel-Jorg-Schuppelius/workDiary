@@ -53,7 +53,7 @@ return [
 
     'field' => [
         'mailbox_address' => 'Indirizzo della casella',
-        'mailbox_address_hint' => 'Lasci vuoto per la casella dell’account collegato. Per una casella condivisa (ad es. fatture@…) l’account necessita dell’accesso completo.',
+        'mailbox_address_hint' => 'Lasci vuoto per la casella dell’account collegato. Per una casella condivisa (ad es. fatture@…) l’account necessita dell’accesso completo in Exchange e, in seguito, l’invio e-mail nel plugin Microsoft 365 va ricollegato affinché l’app ottenga l’autorizzazione Mail.ReadWrite.Shared.',
         'password_keep' => 'Lasci vuoto per mantenere la password salvata.',
         'fetch_since' => 'Recupera dal',
         'fetch_since_hint' => 'Le e-mail ricevute prima di questo giorno non vengono recuperate. Una data precedente recupera e-mail più vecchie.',

@@ -13,7 +13,7 @@ return [
         'msgraph_connection_required' => 'A Microsoft 365 mailbox requires the mail sending connection in the Microsoft 365 plugin first (scope Mail.ReadWrite).',
     ],
     'error' => [
-        'scope_missing' => 'The Microsoft 365 connection lacks the permission :scope. Please reconnect mail sending in the Microsoft 365 plugin.',
+        'scope_missing' => 'The Microsoft 365 connection lacks the permission :scope. Please reconnect mail sending in the Microsoft 365 plugin – the Exchange “full access” right alone is not enough. If your tenant blocks user consent, an administrator must first run “Grant for organization” again.',
     ],
     'transport' => [
         'msgraph' => 'Microsoft 365 (Graph)',

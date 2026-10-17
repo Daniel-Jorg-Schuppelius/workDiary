@@ -4,6 +4,7 @@ topic: admin.msgraph
 version: 2
 keywords:
     - Microsoft 365
+    - casella condivisa
     - Office 365
     - calendario Outlook
     - inviare e-mail tramite Microsoft
@@ -118,6 +119,23 @@ diritti di invio mancanti emergono subito. Se WorkDiary invii davvero le sue
 e-mail tramite questa connessione lo decide il gestore dell'installazione; se
 non è impostato, la scheda mostra un avviso. **Disconnetti l’invio e-mail**
 rimuove l'accesso.
+
+### Ricevere le caselle (ricezione e-mail)
+
+La stessa connessione legge le caselle Microsoft 365 che Lei inserisce in
+Amministrazione → Dati e interfacce → Ricezione e-mail. Il plugin richiede i
+diritti di lettura solo quando lì esiste una casella Microsoft 365:
+«Mail.ReadWrite» per la casella dell'account stesso e, in aggiunta,
+«Mail.ReadWrite.Shared» non appena una voce indica un indirizzo, ad esempio
+una casella condivisa fatture@…. Da qui l'ordine: inserisca prima la
+casella, poi esegua **Connetti l’invio e-mail** oppure **Ricollega**. Il
+diritto Exchange «accesso completo» sulla casella condivisa è necessario ma
+da solo non basta: in tal caso l'invio funziona comunque, solo la ricezione
+no. Se la casella segnala «manca l'autorizzazione Mail.ReadWrite.Shared», la
+connessione è stata stabilita prima dell'inserimento. Se il Suo tenant
+impedisce il consenso degli utenti, un amministratore deve prima eseguire di
+nuovo **Concedi per l'organizzazione**, perché anche quell'autorizzazione
+comprende solo i diritti necessari in quel momento.
 
 ## Inviare i contatti a Outlook
 

@@ -13,7 +13,7 @@ return [
         'msgraph_connection_required' => 'Une boîte Microsoft 365 nécessite d’abord la connexion d’envoi de mails dans le plugin Microsoft 365 (scope Mail.ReadWrite).',
     ],
     'error' => [
-        'scope_missing' => 'Il manque l’autorisation :scope à la connexion Microsoft 365. Veuillez reconnecter l’envoi de mails dans le plugin Microsoft 365.',
+        'scope_missing' => 'Il manque l’autorisation :scope à la connexion Microsoft 365. Veuillez reconnecter l’envoi de mails dans le plugin Microsoft 365 – le droit Exchange « accès complet » ne suffit pas à lui seul. Si votre tenant interdit le consentement des utilisateurs, un administrateur doit d’abord relancer « Accorder pour l\'organisation ».',
     ],
     'transport' => [
         'msgraph' => 'Microsoft 365 (Graph)',

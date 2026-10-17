@@ -22,6 +22,8 @@ return [
     'save_to_sent' => 'Salvare una copia nella cartella Posta inviata',
     'connect' => 'Connetti l’invio e-mail',
     'disconnect' => 'Disconnetti l’invio e-mail',
+    'reconnect' => 'Ricollega',
+    'reconnect_hint' => 'Ricollegare richiede di nuovo le autorizzazioni: necessario se una casella Microsoft 365 è stata inserita nella ricezione e-mail solo dopo il collegamento (Mail.ReadWrite o Mail.ReadWrite.Shared).',
     'flash' => [
         'not_configured' => 'Microsoft 365 non è configurato (MSGRAPH_CLIENT_ID/SECRET mancanti).',
         'state_invalid' => 'La procedura di accesso è scaduta o non è valida — riprovare.',

@@ -4,6 +4,7 @@ topic: admin.msgraph
 version: 2
 keywords:
     - Microsoft 365
+    - shared mailbox
     - Office 365
     - Outlook calendar
     - send mail via Microsoft
@@ -114,6 +115,22 @@ uses the same sender address as real sending, so missing send rights show up
 immediately. Whether WorkDiary actually sends its emails through this
 connection is decided by the operator of the installation; if this is not set
 up, the card shows a notice. **Disconnect mail sending** removes the access.
+
+### Fetching mailboxes (email intake)
+
+The same connection reads the Microsoft 365 mailboxes you enter under
+Administration → Data & interfaces → Email intake. The plugin requests the
+read permissions only once a Microsoft 365 mailbox exists there:
+“Mail.ReadWrite” for the account's own mailbox, and “Mail.ReadWrite.Shared”
+in addition as soon as an entry names an address, for example a shared
+mailbox invoices@…. Hence the order: enter the mailbox first, then run
+**Connect mail sending** or **Reconnect**. The Exchange “full access” right
+on the shared mailbox is required but not sufficient on its own – sending
+still works in that case, only fetching does not. If the mailbox reports
+“lacks the permission Mail.ReadWrite.Shared”, the connection was made before
+the entry. If your tenant blocks user consent, an administrator must first
+run **Grant for organization** again, because that grant also covers only
+the permissions needed at that moment.
 
 ## Pushing contacts to Outlook
 

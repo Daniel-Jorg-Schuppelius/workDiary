@@ -87,6 +87,7 @@ final class MsgraphAdminPageTest extends TestCase {
             'admin.msgraph.mail.settings' => __('msgraph::msgraph.action.save'),
             'admin.msgraph.mail.test' => __('msgraph::msgraph_mail.test.send'),
             'admin.msgraph.mail.disconnect' => __('msgraph::msgraph_mail.disconnect'),
+            'admin.msgraph.mail.oauth.start' => __('msgraph::msgraph_mail.reconnect'),
             'admin.msgraph.contacts.disconnect' => __('msgraph::msgraph_contacts.disconnect'),
             'admin.msgraph.tasks.links.store' => __('msgraph::msgraph_tasks.link.add'),
             'admin.msgraph.tasks.disconnect' => __('msgraph::msgraph_tasks.disconnect'),
@@ -112,7 +113,11 @@ final class MsgraphAdminPageTest extends TestCase {
         $this->assertNotNull($calendarForm->querySelector('input[name="_token"]'));
 
         $this->assertGreaterThanOrEqual(4, $page->querySelectorAll('.badge.badge-success')->length, 'Verbunden-Abzeichen je Abschnitt');
-        $this->assertSame(0, $page->querySelectorAll('[data-oauth-popup]')->length, 'verbunden: kein Verbinden-Formular');
+        // Verbunden gibt es nur noch das Neu-verbinden-Formular des Mail-Versands:
+        // es fordert die Leserechte nach (Postfach erst nach dem Verbinden eingetragen).
+        $popups = $page->querySelectorAll('form[data-oauth-popup]');
+        $this->assertSame(1, $popups->length, 'verbunden: nur Neu verbinden des Mail-Versands');
+        $this->assertSame(route('admin.msgraph.mail.oauth.start'), (string) $popups->item(0)?->getAttribute('action'));
     }
 
     public function test_unconnected_page_offers_the_connect_forms(): void {

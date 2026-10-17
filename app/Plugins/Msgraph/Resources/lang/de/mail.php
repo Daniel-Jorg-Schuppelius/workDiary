@@ -13,7 +13,7 @@ return [
         'msgraph_connection_required' => 'Für ein Microsoft-365-Postfach muss zuerst der Mail-Versand im Microsoft-365-Plugin verbunden werden (Scope Mail.ReadWrite).',
     ],
     'error' => [
-        'scope_missing' => 'Der Microsoft-365-Verbindung fehlt das Recht :scope. Bitte verbinden Sie den Mail-Versand im Microsoft-365-Plugin neu.',
+        'scope_missing' => 'Der Microsoft-365-Verbindung fehlt das Recht :scope. Bitte verbinden Sie den Mail-Versand im Microsoft-365-Plugin neu – das Exchange-Recht „Vollzugriff“ allein genügt nicht. Verbietet Ihr Tenant die Zustimmung durch Benutzer, muss ein Administrator vorher „Für Organisation freigeben“ erneut ausführen.',
     ],
     'transport' => [
         'msgraph' => 'Microsoft 365 (Graph)',

@@ -109,12 +109,20 @@
                         </label>
                         <x-button type="submit" tone="outline">{{ __('msgraph::msgraph_mail.test.send') }}</x-button>
                     </form>
-                    <form method="POST" action="{{ route('admin.msgraph.mail.disconnect') }}">
-                        @csrf
-                        <x-button type="submit" tone="ghost">{{ __('msgraph::msgraph_mail.disconnect') }}</x-button>
-                    </form>
+                    <div class="flex flex-wrap items-end gap-2">
+                        {{-- Neu verbinden fordert die Rechte neu an — nötig, wenn ein Graph-Postfach erst nach dem Verbinden eingetragen wurde (Mail.ReadWrite[.Shared]). --}}
+                        <form method="POST" action="{{ route('admin.msgraph.mail.oauth.start') }}" data-oauth-popup>
+                            @csrf
+                            <x-button type="submit" tone="outline">{{ __('msgraph::msgraph_mail.reconnect') }}</x-button>
+                        </form>
+                        <form method="POST" action="{{ route('admin.msgraph.mail.disconnect') }}">
+                            @csrf
+                            <x-button type="submit" tone="ghost">{{ __('msgraph::msgraph_mail.disconnect') }}</x-button>
+                        </form>
+                    </div>
                 </div>
                 <p class="text-xs text-muted">{{ __('msgraph::msgraph_mail.test.hint') }}</p>
+                <p class="text-xs text-muted">{{ __('msgraph::msgraph_mail.reconnect_hint') }}</p>
             </div>
         @elseif ($configured)
             <form method="POST" action="{{ route('admin.msgraph.mail.oauth.start') }}" data-oauth-popup>

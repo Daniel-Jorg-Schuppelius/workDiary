@@ -13,7 +13,7 @@ return [
         'msgraph_connection_required' => 'Una casella Microsoft 365 richiede prima la connessione di invio e-mail nel plugin Microsoft 365 (scope Mail.ReadWrite).',
     ],
     'error' => [
-        'scope_missing' => 'Alla connessione Microsoft 365 manca l’autorizzazione :scope. Ricolleghi l’invio e-mail nel plugin Microsoft 365.',
+        'scope_missing' => 'Alla connessione Microsoft 365 manca l’autorizzazione :scope. Ricolleghi l’invio e-mail nel plugin Microsoft 365: il diritto Exchange «accesso completo» da solo non basta. Se il tenant impedisce il consenso degli utenti, un amministratore deve prima eseguire di nuovo «Concedi per l\'organizzazione».',
     ],
     'transport' => [
         'msgraph' => 'Microsoft 365 (Graph)',

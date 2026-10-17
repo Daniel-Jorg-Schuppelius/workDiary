@@ -53,7 +53,7 @@ return [
 
     'field' => [
         'mailbox_address' => 'Dirección del buzón',
-        'mailbox_address_hint' => 'Déjelo vacío para el buzón de la cuenta conectada. Para un buzón compartido (p. ej. facturas@…), la cuenta necesita acceso completo.',
+        'mailbox_address_hint' => 'Déjelo vacío para el buzón de la cuenta conectada. Para un buzón compartido (p. ej. facturas@…), la cuenta necesita acceso completo en Exchange y, después, hay que volver a conectar el envío de correo en el plugin de Microsoft 365 para que la aplicación reciba el permiso Mail.ReadWrite.Shared.',
         'password_keep' => 'Déjelo vacío para conservar la contraseña guardada.',
         'fetch_since' => 'Consultar desde',
         'fetch_since_hint' => 'Los correos recibidos antes de este día no se consultan. Una fecha anterior recupera correos más antiguos.',

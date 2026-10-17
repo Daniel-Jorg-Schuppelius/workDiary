@@ -53,7 +53,7 @@ return [
 
     'field' => [
         'mailbox_address' => 'Postfachadresse',
-        'mailbox_address_hint' => 'Leer lassen für das Postfach des verbundenen Kontos. Für ein freigegebenes Postfach (z. B. rechnungen@…) braucht das Konto Vollzugriff darauf.',
+        'mailbox_address_hint' => 'Leer lassen für das Postfach des verbundenen Kontos. Für ein freigegebenes Postfach (z. B. rechnungen@…) braucht das Konto in Exchange Vollzugriff darauf, und der Mail-Versand im Microsoft-365-Plugin muss danach neu verbunden werden, damit die App das Recht Mail.ReadWrite.Shared erhält.',
         'password_keep' => 'Leer lassen, um das gespeicherte Passwort zu behalten.',
         'fetch_since' => 'Abruf ab',
         'fetch_since_hint' => 'Mails, die vor diesem Tag eingegangen sind, werden nicht abgerufen. Ein früheres Datum holt ältere Mails nach.',

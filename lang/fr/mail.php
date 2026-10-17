@@ -53,7 +53,7 @@ return [
 
     'field' => [
         'mailbox_address' => 'Adresse de la boîte',
-        'mailbox_address_hint' => 'Laissez vide pour la boîte du compte connecté. Pour une boîte partagée (p. ex. factures@…), le compte doit y avoir un accès complet.',
+        'mailbox_address_hint' => 'Laissez vide pour la boîte du compte connecté. Pour une boîte partagée (p. ex. factures@…), le compte doit y avoir un accès complet dans Exchange, et l’envoi d’e-mails dans le plugin Microsoft 365 doit ensuite être reconnecté pour que l’application obtienne l’autorisation Mail.ReadWrite.Shared.',
         'password_keep' => 'Laissez vide pour conserver le mot de passe enregistré.',
         'fetch_since' => 'Relever à partir du',
         'fetch_since_hint' => 'Les e-mails reçus avant ce jour ne sont pas relevés. Une date antérieure récupère des e-mails plus anciens.',
