@@ -116,6 +116,7 @@ return [
             'check_restore' => 'Comprobación de copias de seguridad',
             'cloud-run' => 'Ejecución de la copia de seguridad en la nube',
             'cloud-verify' => 'Comprobación de la copia de seguridad en la nube',
+            'cloud-restore-test' => 'Prueba de restauración de la copia en la nube',
         ],
         'billbee' => ['sync' => 'Sincronización Billbee'],
         'caldav' => ['publish' => 'Conciliación de publicación del calendario CalDAV', 'import' => 'Reimportación del calendario CalDAV'],

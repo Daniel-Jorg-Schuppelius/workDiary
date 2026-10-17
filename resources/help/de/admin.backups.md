@@ -50,8 +50,12 @@ von WorkDiary.
    Quelle die letzte Sicherung und markiert sie als **überfällig**,
    wenn der jüngste Heartbeat älter ist als die konfigurierte Frische
    (`BACKUP_HEARTBEAT_FRESHNESS_HOURS`, Standard 26 h).
-3. Restore-Tests regelmäßig auf einer separaten Umgebung durchführen
-   und über **Restore-Test protokollieren** ins Register eintragen.
+3. Restore-Tests laufen automatisch: der Scheduler-Job
+   **Cloud-Backup-Restore-Test** (monatlich) für Cloud-Ziele und der
+   wöchentliche Cron-Lauf des Skripts `restore-test.sh` für das
+   Skript-Backup tragen Erfolg wie Fehlschlag ins Register ein. Tests auf
+   einer anderen Umgebung weiterhin über **Restore-Test protokollieren**
+   erfassen; ein bestandener Test setzt die nächste Fälligkeit.
 4. Systemzustand automatisiert prüfen: `php artisan system:health`
    testet Datenbank, Migrationen, Storage, Queue, APP_KEY, Mail und
    Lizenz (Exit-Code 0/1, ändert keine Daten — ideal für Cron/CI).

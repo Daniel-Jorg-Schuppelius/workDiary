@@ -48,8 +48,13 @@ elles-mêmes se font volontairement hors de WorkDiary.
    montre la dernière sauvegarde par source et la marque **en
    retard** si le dernier battement dépasse la fraîcheur configurée
    (`BACKUP_HEARTBEAT_FRESHNESS_HOURS`, 26 h par défaut).
-3. Tester régulièrement les restaurations sur un environnement séparé
-   et les consigner via **Consigner un test de restauration**.
+3. Les tests de restauration s'exécutent automatiquement : la tâche
+   planifiée **Test de restauration de la sauvegarde cloud** (mensuelle)
+   pour les cibles cloud et l'exécution hebdomadaire par cron du script
+   `restore-test.sh` pour la sauvegarde par script consignent réussites et
+   échecs dans le registre. Les tests sur un autre environnement se
+   consignent toujours via **Consigner un test de restauration** ; un test
+   réussi fixe la prochaine échéance.
 4. Contrôler l'état du système : `php artisan system:health` teste
    base de données, migrations, stockage, file d'attente, APP_KEY,
    courriel et licence (code de sortie 0/1, ne modifie rien — idéal

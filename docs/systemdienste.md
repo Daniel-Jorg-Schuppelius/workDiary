@@ -19,7 +19,8 @@ Skriptpfad, PHP-Binary, Betriebs-User aus dem `storage/`-Owner) und richtet ein:
 
 | Komponente                          | Zweck                                                                                                                                              | immer?                   |
 | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
-| `/etc/cron.d/workdiary`             | `schedule:run` minütlich (Herzschlag ALLER wiederkehrenden Jobs) + tägliches Backup (`scripts/backup.sh`)                                          | ja                       |
+| `/etc/cron.d/workdiary`             | `schedule:run` minütlich (Herzschlag ALLER wiederkehrenden Jobs) + tägliches Backup (`scripts/backup.sh`) + wöchentlicher Restore-Test (`scripts/restore-test.sh`, Ergebnis im Restore-Test-Register) | ja                       |
+| `/usr/local/sbin/workdiary-*.sh`    | root-eigene Kopien von `backup.sh` und `restore-test.sh` für die root-Cron-Einträge (werden bei jedem Lauf aufgefrischt)                           | ja (außer `--no-backup`) |
 | `/etc/workdiary-backup.conf`        | Backup-Konfiguration (Zielverzeichnis, Retention; chmod 600) — eine vorhandene Datei bleibt bei erneutem Lauf erhalten                             | ja (außer `--no-backup`) |
 | `BACKUP_HEARTBEAT_TOKEN`            | wird in der App-`.env` erzeugt, falls er fehlt (`artisan workdiary:backup:rotate-token`) — ohne ihn registriert die Statusseite keine Backup-Läufe | ja (außer `--no-backup`) |
 | `workdiary-queue.service`           | Queue-Worker — `QUEUE_CONNECTION=database`: ohne ihn bleiben Benachrichtigungen, Importe und Hintergrund-Jobs liegen                               | ja                       |
@@ -40,6 +41,11 @@ Skriptpfad, PHP-Binary, Betriebs-User aus dem `storage/`-Owner) und richtet ein:
 --backup-dir PFAD        Backup-Zielverzeichnis (Default /var/backups/workdiary)
 --backup-keep-days N     Retention in Tagen (Default 14)
 --no-backup              keinen Backup-Cron und keine Backup-Konfiguration anlegen
+                         (schaltet auch den Restore-Test ab)
+--restore-test-day N     Cron-Wochentag des Restore-Tests, 0-6 (Default 0 = Sonntag)
+--restore-test-time HH:MM  Uhrzeit des Restore-Tests (Default 04:00) — ebenfalls
+                         in der Betriebszeit des Servers
+--no-restore-test        keinen Restore-Test-Cron anlegen
 --dry-run                nur zeigen, was geschrieben würde
 --status                 Zustand der eingerichteten Komponenten anzeigen
 --uninstall              alles wieder entfernen (App/Backups bleiben)
@@ -91,7 +97,8 @@ php artisan workdiary:backup:rotate-token   # Heartbeat-Token rotieren (angelegt
 **Server mit Abschaltzeiten** (z. B. nachts aus): Der Laravel-Scheduler holt
 verpasste Läufe NICHT nach. Alle täglichen Jobs müssen per Scheduler-Adminseite
 (Systembetrieb → Geplante Aufgaben) in die Betriebszeit gelegt werden — ebenso
-die Backup-Zeit (`--backup-time`). Details zum Backup: [backup-restore.md](backup-restore.md).
+die Backup-Zeit (`--backup-time`) und die Restore-Test-Zeit
+(`--restore-test-time`). Details zum Backup: [backup-restore.md](backup-restore.md).
 
 > **Zeitzone:** Alle Uhrzeiten des Zeitplans (Registry-Defaults und Overrides der
 > Adminseite) gelten in `SCHEDULE_TIMEZONE` (Standard: `APP_DISPLAY_TIMEZONE`,

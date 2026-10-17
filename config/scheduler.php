@@ -836,6 +836,17 @@ return [
             'criticality' => 'core',
             'expected_runtime_minutes' => 30,
         ],
+        // Voller Restore-Test der jüngsten Generation jeder Verbindung in ein
+        // isoliertes Verzeichnis (MVP-1204): Erfolg wie Fehlschlag landen im
+        // Restore-Test-Register, das Zielverzeichnis wird wieder entfernt.
+        'backup.cloud-restore-test' => [
+            'command' => 'workdiary:backup:restore-test',
+            'cadence' => ['type' => 'monthlyOn', 'day' => 1, 'time' => '02:30'],
+            'allowed' => ['weeklyOn', 'monthlyOn'],
+            'criticality' => 'core',
+            // 60 wie backup.run: die Überlappungssperre (× 6) bleibt unter einem Tag.
+            'expected_runtime_minutes' => 60,
+        ],
         // --- CardDAV-Kontakt-Lese-Sync (Bauturbo A9, MVP-329) ---
         'carddav.sync' => [
             'command' => 'carddav:sync',

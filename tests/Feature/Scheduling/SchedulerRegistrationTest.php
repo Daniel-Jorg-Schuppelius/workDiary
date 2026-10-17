@@ -124,6 +124,8 @@ class SchedulerRegistrationTest extends TestCase {
         // Neu mit Feature 017 Phase 32 (MVP-364/365): Cloud-Backup + Verify.
         'workdiary:backup:run' => ['30 1 * * *', true, true],
         'workdiary:backup:verify' => ['30 3 * * 6', true, true],
+        // Geplanter Restore-Test (MVP-1204): monatlich am 1.
+        'workdiary:backup:restore-test' => ['30 2 1 * *', true, true],
         // Neu mit Bauturbo A9 (MVP-329): CardDAV-Kontakt-Lese-Sync.
         'carddav:sync' => ['0 * * * *', true, true],
         // Kalender-Publish-Reconciliation (MS365-Integrationsplan 2026-08, S2):

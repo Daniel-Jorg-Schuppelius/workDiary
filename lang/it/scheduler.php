@@ -116,6 +116,7 @@ return [
             'check_restore' => 'Verifica dei backup',
             'cloud-run' => 'Esecuzione del backup cloud',
             'cloud-verify' => 'Verifica del backup cloud',
+            'cloud-restore-test' => 'Test di ripristino del backup cloud',
         ],
         'billbee' => ['sync' => 'Sincronizzazione Billbee'],
         'caldav' => ['publish' => 'Riconciliazione pubblicazione calendario CalDAV', 'import' => 'Reimportazione calendario CalDAV'],

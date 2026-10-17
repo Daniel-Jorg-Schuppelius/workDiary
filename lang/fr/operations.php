@@ -74,6 +74,7 @@ return [
         'backup_failed' => 'Échec du contrôle de sauvegarde : :reason',
         'backup_target_failed' => 'Sauvegarde cloud échouée : :reason',
         'backup_target_verify_failed' => 'Vérification de la sauvegarde cloud échouée : :reason',
+        'backup_restore_test_failed' => 'Test de restauration de la sauvegarde cloud échoué : :reason',
         'restore_test_overdue' => 'Le dernier test de restauration date de :days jours (seuil :threshold jours).',
         'restore_test_missing' => "Aucun test de restauration n'a jamais été consigné.",
         'update_available' => 'Mise à jour disponible pour :component : :installed → :available.',

@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Backup;
 
-use App\Enums\Backup\BackupGenerationStatus;
+use App\Enums\Backup\{BackupGenerationStatus, RestoreTestResult};
 use App\Models\Backup\{BackupGeneration, BackupTargetConnection};
 use App\Models\Platform\RestoreTest;
 use App\Services\Backup\{BackupRestoreTestService, BackupRunService, BackupVerifyService};
@@ -78,7 +78,7 @@ class BackupVerifyRestoreTest extends TestCase {
         $this->assertSame([$generation->snapshot_uuid], $result['verified']);
         $fresh = $generation->fresh();
         $this->assertSame(BackupGenerationStatus::Verified, $fresh?->status);
-        $this->assertNotNull($fresh?->last_verified_at);
+        $this->assertNotNull($fresh->last_verified_at);
     }
 
     public function test_verify_detects_remote_tampering(): void {
@@ -115,12 +115,79 @@ class BackupVerifyRestoreTest extends TestCase {
 
         $fresh = $generation->fresh();
         $this->assertNotNull($fresh?->restore_tested_at);
-        $this->assertNotNull($fresh?->restore_rpo_seconds);
-        $this->assertNotNull($fresh?->restore_rto_seconds);
+        $this->assertNotNull($fresh->restore_rpo_seconds);
+        $this->assertNotNull($fresh->restore_rto_seconds);
 
         $register = RestoreTest::query()->sole();
         $this->assertStringContainsString('cloud-backup:', $register->source);
         $this->assertStringContainsString($generation->snapshot_uuid, (string) $register->scope);
+    }
+
+    /** MVP-1204: der geplante Lauf braucht kein Zielverzeichnis, räumt auf und setzt die Fälligkeit. */
+    public function test_scheduled_restore_test_uses_default_dir_cleans_up_and_sets_next_due(): void {
+        $generation = $this->committedGeneration();
+
+        $result = app(BackupRestoreTestService::class)->runForLatestGenerations($this->adapter);
+
+        $this->assertSame([$generation->snapshot_uuid], $result['passed']);
+        $this->assertSame([], $result['failed']);
+        $targetDir = $result['target_dirs'][$generation->snapshot_uuid];
+        $this->assertStringStartsWith($this->base . '/work/restore-test/' . $generation->snapshot_uuid, $targetDir);
+        $this->assertDirectoryDoesNotExist($targetDir);
+        $this->assertNotNull($generation->fresh()?->restore_tested_at);
+
+        $register = RestoreTest::query()->sole();
+        $this->assertSame(RestoreTestResult::Passed, $register->result);
+        $this->assertSame(now()->addDays(30)->toDateString(), $register->next_due_on?->toDateString());
+    }
+
+    public function test_scheduled_restore_test_keeps_files_on_request(): void {
+        $generation = $this->committedGeneration();
+
+        $result = app(BackupRestoreTestService::class)->runForLatestGenerations($this->adapter, keep: true);
+
+        $targetDir = $result['target_dirs'][$generation->snapshot_uuid];
+        $this->assertFileExists($targetDir . '/extracted/meta/inventory.json');
+    }
+
+    public function test_failed_scheduled_restore_test_is_recorded_in_register(): void {
+        $generation = $this->committedGeneration();
+        $this->adapter->tamper((string) $generation->remote_prefix . '/part-1');
+
+        $result = app(BackupRestoreTestService::class)->runForLatestGenerations($this->adapter);
+
+        $this->assertSame([], $result['passed']);
+        $this->assertArrayHasKey($generation->snapshot_uuid, $result['failed']);
+        $this->assertDirectoryDoesNotExist($result['target_dirs'][$generation->snapshot_uuid]);
+
+        $register = RestoreTest::query()->sole();
+        $this->assertSame(RestoreTestResult::Failed, $register->result);
+        $this->assertStringContainsString('Hash', (string) $register->notes);
+        $this->assertNull($register->next_due_on);
+        $this->assertStringContainsString('Restore-Test', (string) $generation->fresh()?->last_error);
+        $this->assertNull($generation->fresh()?->restore_tested_at);
+    }
+
+    public function test_scheduled_restore_test_covers_latest_generation_of_each_connection(): void {
+        BackupTargetConnection::factory()->active()->create();
+        $run = app(BackupRunService::class)->run(adapter: $this->adapter);
+        $this->assertSame([], $run['failed']);
+        $this->assertCount(2, BackupGeneration::query()->get());
+
+        $result = app(BackupRestoreTestService::class)->runForLatestGenerations($this->adapter);
+
+        $this->assertCount(2, $result['passed']);
+        $this->assertSame(2, RestoreTest::query()->where('result', RestoreTestResult::Passed->value)->count());
+    }
+
+    public function test_restore_test_refuses_when_disk_space_is_insufficient(): void {
+        $generation = $this->committedGeneration();
+        $generation->parts()->update(['plain_size' => 1 << 60]);
+
+        $result = app(BackupRestoreTestService::class)->runRecorded($generation, adapter: $this->adapter);
+
+        $this->assertSame(['BackupPreflightException'], array_values($result['failed']));
+        $this->assertStringContainsString('freier Platz', (string) RestoreTest::query()->sole()->notes);
     }
 
     public function test_restore_test_refuses_non_empty_target_dir(): void {

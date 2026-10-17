@@ -47,8 +47,13 @@ ripristino veri e propri avvengono volutamente fuori da WorkDiary.
    mostra l'ultimo backup per sorgente e la marca **in ritardo** se
    l'heartbeat più recente supera la freschezza configurata
    (`BACKUP_HEARTBEAT_FRESHNESS_HOURS`, predefinito 26 h).
-3. Testare regolarmente i ripristini su un ambiente separato e
-   annotarli con **Registra test di ripristino**.
+3. I test di ripristino vengono eseguiti automaticamente: l'attività
+   pianificata **Test di ripristino del backup cloud** (mensile) per le
+   destinazioni cloud e l'esecuzione settimanale via cron dello script
+   `restore-test.sh` per il backup a script registrano successi e
+   fallimenti nel registro. I test su un altro ambiente si annotano
+   ancora con **Registra test di ripristino**; un test superato fissa la
+   prossima scadenza.
 4. Controllare lo stato del sistema: `php artisan system:health`
    verifica database, migrazioni, storage, coda, APP_KEY, mail e
    licenza (exit code 0/1, non modifica dati — ideale per cron/CI).

@@ -30,7 +30,8 @@ class BackupRecordRestoreTestCommand extends Command {
         {--scope= : Umfang, z. B. "DB+Storage+.env, Stand 20260723_2300"}
         {--restored-size-bytes= : Wiederhergestellte Bytes}
         {--duration-minutes= : Dauer in Minuten (RTO)}
-        {--notes= : Freitext (max. 5000 Zeichen)}';
+        {--notes= : Freitext (max. 5000 Zeichen)}
+        {--next-due-on= : Nächste Fälligkeit (Default bei passed: Testdatum + backup.restore_test_interval_days)}';
 
     protected $description = 'Trägt einen durchgeführten Restore-Test ins Register ein (für Skripte/Automation).';
 
@@ -64,6 +65,16 @@ class BackupRecordRestoreTestCommand extends Command {
             return self::INVALID;
         }
 
+        try {
+            $nextDueOn = $this->option('next-due-on') !== null
+                ? CarbonImmutable::parse((string) $this->option('next-due-on'))
+                : RestoreTest::defaultNextDueOn($testedOn, $result);
+        } catch (Throwable) {
+            $this->error('--next-due-on ist kein gültiges Datum.');
+
+            return self::INVALID;
+        }
+
         $size = $this->option('restored-size-bytes');
         $duration = $this->option('duration-minutes');
         if (($size !== null && (int) $size < 0) || ($duration !== null && (int) $duration < 0)) {
@@ -80,6 +91,7 @@ class BackupRecordRestoreTestCommand extends Command {
             'restored_size_bytes' => $size !== null ? (int) $size : null,
             'duration_minutes' => $duration !== null ? (int) $duration : null,
             'notes' => $this->option('notes') !== null ? mb_substr((string) $this->option('notes'), 0, 5000) : null,
+            'next_due_on' => $nextDueOn,
             'performed_by_user_id' => null,
         ]);
 

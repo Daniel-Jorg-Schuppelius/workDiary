@@ -13,6 +13,7 @@ namespace App\Models\Platform;
 use App\Casts\ByteSizeCast;
 use App\Enums\Backup\RestoreTestResult;
 use App\Models\Concerns\Auditable;
+use App\Support\Setting;
 use Carbon\CarbonImmutable;
 use Database\Factories\Platform\RestoreTestFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -67,6 +68,19 @@ class RestoreTest extends Model {
         'duration_minutes' => 'integer',
         'next_due_on' => 'immutable_date',
     ];
+
+    /**
+     * Fälligkeit des nächsten Tests (MVP-1206): nur ein bestandener Test
+     * verschiebt sie um das eingestellte Intervall; nach einem Fehlschlag
+     * bleibt sie offen.
+     */
+    public static function defaultNextDueOn(CarbonImmutable $testedOn, RestoreTestResult $result): ?CarbonImmutable {
+        if ($result !== RestoreTestResult::Passed) {
+            return null;
+        }
+
+        return $testedOn->addDays(max(1, (int) Setting::get('backup.restore_test_interval_days', 30)));
+    }
 
     /** @return BelongsTo<User, $this> */
     public function performedBy(): BelongsTo {

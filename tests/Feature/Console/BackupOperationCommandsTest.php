@@ -77,17 +77,20 @@ class BackupOperationCommandsTest extends TestCase {
 
     // ── workdiary:backup:restore-test ────────────────────────────────────
 
-    public function test_restore_test_requires_an_isolated_target_directory(): void {
+    /** MVP-1204: ohne Cloud-Generationen ist der geplante Lauf ein ruhiger Durchgang, kein Fehler. */
+    public function test_restore_test_without_generations_is_a_quiet_no_op(): void {
         $this->artisan('workdiary:backup:restore-test')
-            ->expectsOutputToContain('--target-dir ist Pflicht')
-            ->assertExitCode(2);
+            ->expectsOutputToContain('Keine committete Cloud-Generation vorhanden')
+            ->assertExitCode(0);
+
+        $this->assertSame(0, OperationsTask::query()->where('dedupe_key', 'backup_restore_test_failed')->count());
     }
 
-    public function test_restore_test_reports_a_missing_generation(): void {
+    public function test_restore_test_rejects_a_target_dir_without_generation(): void {
         $this->artisan('workdiary:backup:restore-test', [
             '--target-dir' => storage_path('framework/testing/restore-' . bin2hex(random_bytes(4))),
         ])
-            ->expectsOutputToContain('Keine passende Generation gefunden.')
+            ->expectsOutputToContain('--target-dir gilt nur zusammen mit --generation.')
             ->assertExitCode(2);
     }
 

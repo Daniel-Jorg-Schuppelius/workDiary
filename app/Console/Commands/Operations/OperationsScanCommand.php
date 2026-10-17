@@ -132,7 +132,11 @@ class OperationsScanCommand extends Command {
         ));
     }
 
-    /** Restore-Test überfällig oder nie protokolliert (MVP-056). */
+    /**
+     * Restore-Test überfällig oder nie bestanden (MVP-056). Zählt wie
+     * Statusseite und system:health nur BESTANDENE Tests (MVP-1206) — ein
+     * protokollierter Fehlschlag bestätigt keine Wiederherstellbarkeit.
+     */
     private function scanRestoreTests(OperationsAlertService $alerts): void {
         // Ohne Backup-Betrieb (kein Heartbeat) wäre eine Restore-Test-
         // Aufgabe reiner Lärm auf Frischinstallationen.
@@ -141,7 +145,10 @@ class OperationsScanCommand extends Command {
         }
 
         $thresholdDays = (int) \App\Support\Setting::get('backup.restore_test_overdue_days', 180);
-        $lastTest = \App\Models\Platform\RestoreTest::query()->orderByDesc('tested_on')->first();
+        $lastTest = \App\Models\Platform\RestoreTest::query()
+            ->where('result', \App\Enums\Backup\RestoreTestResult::Passed->value)
+            ->orderByDesc('tested_on')
+            ->first();
 
         if ($lastTest === null) {
             $alerts->report(new OperationsSignal(

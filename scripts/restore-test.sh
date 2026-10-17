@@ -20,11 +20,22 @@
 # Aufruf (als root; MySQL/MariaDB braucht Socket-Auth als root,
 # SQLite kommt ohne DB-Server aus):
 #   scripts/restore-test.sh [--stamp YYYYMMDD_HHMMSS] [--work-dir PFAD]
-#                           [--keep] [--no-record]
+#                           [--keep] [--no-record] [--prune-stale]
+#
+# --prune-stale entfernt vorher stehengelassene Arbeitsverzeichnisse und
+# Test-DBs frueherer Fehlschlaege dieser Instanz (fuer den Cron-Lauf, den
+# scripts/install-system.sh woechentlich einrichtet, MVP-1205).
 #
 # Optional per Env oder Konfig (BACKUP_CONF, Default /etc/workdiary-backup.conf):
-# BACKUP_DIR, BACKUP_NAME (Defaults wie scripts/backup.sh); APP_DIR, PHP_BIN
-# wie install-system.sh.
+# BACKUP_DIR, BACKUP_NAME (Defaults wie scripts/backup.sh); APP_DIR wie
+# install-system.sh. PHP_BIN: ausdrueckliche Vorgabe (der Cron-Eintrag gibt sie
+# mit), sonst Erkennung ueber lib/php-bin.sh neben diesem Skript.
+#
+# Arbeitsverzeichnis, Test-DB und DB-User tragen den Instanznamen
+# (/var/tmp/<instanz>-restore-test-<stempel>, wd_restore_<instanz>_<stempel>),
+# damit mehrere Installationen auf einem Host sich nicht in die Quere kommen.
+# Die Smoke-Tests in der Kopie laufen als Betriebs-User, nicht als root: die
+# Kopie stammt aus dem vom Web-User beschreibbaren Anwendungsverzeichnis.
 
 set -euo pipefail
 umask 077
@@ -41,6 +52,7 @@ STAMP=""
 WORK_DIR=""
 KEEP=0
 RECORD=1
+PRUNE=0
 
 usage() { grep -E '^#( |$)' "$0" | sed 's/^# \{0,1\}//'; }
 
@@ -50,6 +62,7 @@ while [[ $# -gt 0 ]]; do
     --work-dir) shift; WORK_DIR="${1:?--work-dir braucht einen Pfad}" ;;
     --keep) KEEP=1 ;;
     --no-record) RECORD=0 ;;
+    --prune-stale) PRUNE=1 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unbekannte Option: $1" >&2; usage >&2; exit 64 ;;
   esac
@@ -64,10 +77,20 @@ note() { echo "  $*"; }
 [[ $EUID -eq 0 ]] || fail "bitte als root ausführen (Test-DB anlegen, Arbeitsverzeichnis unter /var/tmp)."
 [[ -r "$ENV_FILE" ]] || fail "$ENV_FILE nicht lesbar — APP_DIR korrekt?"
 
-# PHP-Binary: Override → versioniertes Binary passend zur composer.json → php.
-# shellcheck source=lib/php-bin.sh
-source "$SCRIPT_DIR/lib/php-bin.sh"
-PHP_BIN="$(resolve_php_bin "$APP_DIR" "${PHP_BIN:-}")"
+# PHP-Binary: ausdrueckliche Vorgabe (Cron-Eintrag des Installers) oder
+# Erkennung ueber lib/php-bin.sh neben diesem Skript. Die root-eigene Kopie
+# unter /usr/local/sbin hat kein lib/ neben sich und darf nichts aus dem
+# Anwendungsverzeichnis sourcen: dort schreibt der Web-User, als root
+# ausgefuehrt waere das eine Rechteausweitung (Sicherheitsaudit 2026-09-13).
+if [[ -n "${PHP_BIN:-}" ]]; then
+  command -v "$PHP_BIN" >/dev/null 2>&1 || fail "PHP_BIN=$PHP_BIN ist nicht ausfuehrbar."
+elif [[ -r "$SCRIPT_DIR/lib/php-bin.sh" ]]; then
+  # shellcheck source=lib/php-bin.sh
+  source "$SCRIPT_DIR/lib/php-bin.sh"
+  PHP_BIN="$(resolve_php_bin "$APP_DIR" "")"
+else
+  fail "PHP_BIN nicht gesetzt und $SCRIPT_DIR/lib/php-bin.sh fehlt — PHP_BIN=/usr/bin/php8.x mitgeben (der Cron-Eintrag des Installers tut das)."
+fi
 RUN_USER="${RUN_USER:-$(stat -c %U "$APP_DIR/storage" 2>/dev/null || echo www-data)}"
 
 # .env-Leser + Instanzname: identisch zu scripts/backup.sh.
@@ -118,10 +141,30 @@ STORAGE_TAR="$BACKUP_DIR/${BACKUP_NAME}_storage_${STAMP}.tar.gz"
 ENV_BACKUP="$BACKUP_DIR/${BACKUP_NAME}_env_${STAMP}.txt"
 [[ -f "$DB_DUMP" ]] || fail "$DB_DUMP nicht gefunden (passt DB_CONNECTION=$DB_CONNECTION zum Backup-Stand?)."
 
-WORK_DIR="${WORK_DIR:-/var/tmp/workdiary-restore-test-${STAMP}}"
+# Instanz-eindeutige Namen: zwei Installationen auf einem Host duerfen sich
+# weder das Arbeitsverzeichnis noch Test-DB und DB-User streitig machen.
+DB_SLUG=$(printf '%s' "$BACKUP_NAME" | tr -c 'a-z0-9\n' '_' | cut -c1-20)
+WORK_DIR_BASE="/var/tmp/${BACKUP_NAME}-restore-test"
+WORK_DIR="${WORK_DIR:-${WORK_DIR_BASE}-${STAMP}}"
+TEST_DB="wd_restore_${DB_SLUG}_${STAMP}"
+TEST_DB_USER="wd_restore_${DB_SLUG}"
+
+# Reste frueherer Fehlschlaege (nur --prune-stale): ein stehengelassener
+# Fehlschlag ist Diagnosematerial, aber nicht fuer immer — sonst waechst
+# /var/tmp mit jedem gescheiterten Cron-Lauf.
+if [[ $PRUNE -eq 1 ]]; then
+  for stale_dir in "${WORK_DIR_BASE}"-*; do
+    [[ -d "$stale_dir" && "$stale_dir" != "$WORK_DIR" ]] || continue
+    rm -rf "$stale_dir"; note "aufgeraeumt: $stale_dir"
+  done
+  if [[ "$DB_KIND" == "mysql" ]]; then
+    while IFS= read -r stale_db; do
+      [[ -n "$stale_db" && "$stale_db" != "$TEST_DB" ]] || continue
+      mysql -e "DROP DATABASE IF EXISTS \`$stale_db\`"; note "aufgeraeumt: Test-DB $stale_db"
+    done < <(mysql -N -e "SHOW DATABASES LIKE 'wd\\_restore\\_${DB_SLUG}\\_%'")
+  fi
+fi
 [[ ! -e "$WORK_DIR" ]] || fail "$WORK_DIR existiert bereits — anderes --work-dir wählen oder aufräumen."
-TEST_DB="wd_restore_${STAMP}"
-TEST_DB_USER="wd_restore_test"
 TEST_DB_PASS=$(od -vAn -N18 -tx1 /dev/urandom | tr -d ' \n')
 TEST_SQLITE="$WORK_DIR/app/database/restore-test.sqlite"
 
@@ -138,6 +181,20 @@ fi
 CURRENT_STEP="Manifest-Prüfung"
 sha256sum -c --quiet "$MANIFEST" || fail "Manifest-Prüfung fehlgeschlagen — Backup-Dateien beschädigt oder verschoben?"
 note "Manifest ok (db/storage/env unversehrt)."
+
+# Platz: Codebase-Kopie + entpackter Storage (geschaetzt 3x Archiv) + SQLite-
+# Datei (2x Dump). MySQL schreibt in sein Datenverzeichnis, das bleibt
+# ungeprueft. Ohne diese Pruefung fuellt ein Cron-Lauf die Platte des
+# Produktivsystems.
+CURRENT_STEP="Platzprüfung"
+CODE_BYTES=$(du -sb --exclude=.git --exclude=node_modules --exclude=storage/app "$APP_DIR" | cut -f1)
+NEED_BYTES=$(( CODE_BYTES + 3 * $(stat -c%s "$STORAGE_TAR") ))
+[[ "$DB_KIND" != "sqlite" ]] || NEED_BYTES=$(( NEED_BYTES + 2 * $(stat -c%s "$DB_DUMP") ))
+mkdir -p "$(dirname "$WORK_DIR")"
+AVAIL_BYTES=$(df --output=avail -B1 "$(dirname "$WORK_DIR")" | tail -n1 | tr -d ' ')
+human() { numfmt --to=iec "$1" 2>/dev/null || echo "$1 B"; }
+[[ "$AVAIL_BYTES" -ge "$NEED_BYTES" ]] || fail "zu wenig Platz unter $(dirname "$WORK_DIR"): $(human "$AVAIL_BYTES") frei, etwa $(human "$NEED_BYTES") nötig."
+note "Platz: $(human "$AVAIL_BYTES") frei, etwa $(human "$NEED_BYTES") nötig."
 
 # Ab hier gilt ein Fehlschlag als gescheiterter Restore-Test: Ergebnis wird
 # (ohne --no-record) protokolliert, Test-DB + Arbeitsverzeichnis bleiben
@@ -232,8 +289,19 @@ env_set MAIL_MAILER log
 env_set QUEUE_CONNECTION sync
 env_set BROADCAST_CONNECTION log
 
-# 5) Smoke-Tests in der wiederhergestellten Kopie
-artisan_test() { (cd "$WORK_DIR/app" && "$PHP_BIN" artisan "$@"); }
+# 5) Smoke-Tests in der wiederhergestellten Kopie — als Betriebs-User: die
+# Kopie stammt aus dem vom Web-User beschreibbaren Anwendungsverzeichnis, als
+# root darf daraus kein Code laufen (Rechteausweitung, Sicherheitsaudit
+# 2026-09-13). Dafuer gehoert ihm die Kopie samt Test-.env und SQLite-Datei.
+CURRENT_STEP="Kopie übereignen"
+chown -R "$RUN_USER:$(id -gn "$RUN_USER")" "$WORK_DIR"
+artisan_test() {
+  if command -v runuser >/dev/null 2>&1 && [[ "$RUN_USER" != "root" ]]; then
+    runuser -u "$RUN_USER" -- bash -c 'cd "$1" && exec "$2" artisan "${@:3}"' _ "$WORK_DIR/app" "$PHP_BIN" "$@"
+  else
+    (cd "$WORK_DIR/app" && "$PHP_BIN" artisan "$@")
+  fi
+}
 CURRENT_STEP="Caches leeren"
 artisan_test optimize:clear --quiet
 CURRENT_STEP="Migrationsstand prüfen"
@@ -290,7 +358,7 @@ PHASE="done"
 if [[ $KEEP -eq 1 ]]; then
   echo
   echo "Fertig (bestanden, ${DURATION_MIN} min). Umgebung bleibt (--keep):"
-  note "App: $WORK_DIR/app — Probelauf z. B.: (cd $WORK_DIR/app && $PHP_BIN artisan serve --port=8090)"
+  note "App: $WORK_DIR/app — Probelauf z. B.: runuser -u $RUN_USER -- bash -c 'cd $WORK_DIR/app && $PHP_BIN artisan serve --port=8090'"
   if [[ "$DB_KIND" == "mysql" ]]; then
     note "Aufräumen: mysql -e \"DROP DATABASE \\\`$TEST_DB\\\`; DROP USER '$TEST_DB_USER'@'localhost', '$TEST_DB_USER'@'127.0.0.1';\" && rm -rf '$WORK_DIR'"
   else

@@ -48,8 +48,11 @@ deliberately run outside WorkDiary.
    backup per source and marks it **overdue** when the latest
    heartbeat is older than the configured freshness
    (`BACKUP_HEARTBEAT_FRESHNESS_HOURS`, default 26 h).
-3. Run restore tests regularly on a separate environment and record
-   them via **Log restore test**.
+3. Restore tests run automatically: the scheduler job **Cloud backup
+   restore test** (monthly) for cloud targets and the weekly cron run of
+   the `restore-test.sh` script for the script backup record success and
+   failure in the register. Tests on another environment are still
+   recorded via **Log restore test**; a passed test sets the next due date.
 4. Check system health automatically: `php artisan system:health`
    tests database, migrations, storage, queue, APP_KEY, mail and
    licence (exit code 0/1, changes no data — ideal for cron/CI).

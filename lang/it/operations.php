@@ -74,6 +74,7 @@ return [
         'backup_failed' => 'Controllo del backup non riuscito: :reason',
         'backup_target_failed' => 'Backup cloud fallito: :reason',
         'backup_target_verify_failed' => 'Verifica del backup cloud fallita: :reason',
+        'backup_restore_test_failed' => 'Test di ripristino del backup cloud fallito: :reason',
         'restore_test_overdue' => "L'ultimo test di ripristino risale a :days giorni fa (soglia :threshold giorni).",
         'restore_test_missing' => 'Non è mai stato registrato un test di ripristino.',
         'update_available' => 'Aggiornamento disponibile per :component: :installed → :available.',

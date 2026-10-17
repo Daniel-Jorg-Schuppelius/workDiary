@@ -73,4 +73,15 @@ return [
     | warnt die Statusseite „überfälliger Restore-Test".
     */
     'restore_test_overdue_days' => (int) env('BACKUP_RESTORE_TEST_OVERDUE_DAYS', 180),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Intervall der Restore-Tests (MVP-1206)
+    |--------------------------------------------------------------------------
+    |
+    | Ein bestandener Test setzt `next_due_on` auf tested_on + Intervall
+    | (Default 30 Tage, backup-restore.md §6.3 „monatlich"). Gilt für den
+    | geplanten Cloud-Restore-Test, das Skript und Einträge ohne Angabe.
+    */
+    'restore_test_interval_days' => (int) env('BACKUP_RESTORE_TEST_INTERVAL_DAYS', 30),
 ];

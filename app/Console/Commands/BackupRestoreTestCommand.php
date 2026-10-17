@@ -10,60 +10,93 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskType};
 use App\Models\Backup\BackupGeneration;
 use App\Services\Backup\BackupRestoreTestService;
+use App\Services\Operations\{OperationsAlertService, OperationsSignal};
 use Illuminate\Console\Command;
 use Throwable;
 
 /**
- * Restore-Test einer Backup-Generation (Feature 017 Phase 32, MVP-365):
- * voller Download + Entschlüsselung + Entpacken in ein ISOLIERTES
- * Verzeichnis ({@see BackupRestoreTestService}) — überschreibt nie die
- * laufende Produktion. Der produktive Restore bleibt ein bewusster
- * Wartungslauf mit dokumentierter Vier-Augen-Freigabe.
+ * Restore-Test von Backup-Generationen (Feature 017 Phase 32, MVP-365;
+ * geplant seit MVP-1204): voller Download + Entschlüsselung + Entpacken in
+ * ein ISOLIERTES Verzeichnis ({@see BackupRestoreTestService}) — überschreibt
+ * nie die laufende Produktion. Ohne --generation läuft die jüngste Generation
+ * jeder Verbindung (Scheduler-Job backup.cloud-restore-test); Fehlschläge
+ * stehen im Restore-Test-Register und als Betriebsaufgabe. Der produktive
+ * Restore bleibt ein bewusster Wartungslauf mit Vier-Augen-Freigabe.
  */
 class BackupRestoreTestCommand extends Command {
     protected $signature = 'workdiary:backup:restore-test
-        {--generation= : Snapshot-UUID der Generation (Default: jüngste committete)}
-        {--target-dir= : Isoliertes, leeres Zielverzeichnis (Pflicht)}';
+        {--generation= : Snapshot-UUID einer Generation (Default: jüngste Generation jeder Verbindung)}
+        {--target-dir= : Isoliertes, leeres Zielverzeichnis (nur mit --generation; Default: unterhalb von BACKUP_WORK_DIR)}
+        {--keep : Wiederhergestellte Dateien nach dem Test stehen lassen}';
 
-    protected $description = 'Cloud-Backup: Generation isoliert wiederherstellen und Integrität protokollieren (RPO/RTO)';
+    protected $description = 'Cloud-Backup: Generationen isoliert wiederherstellen, Integrität protokollieren (RPO/RTO) und ins Restore-Test-Register eintragen';
 
     public function handle(BackupRestoreTestService $service): int {
-        $targetDir = (string) $this->option('target-dir');
-        if ($targetDir === '') {
-            $this->error('--target-dir ist Pflicht (isoliertes, leeres Verzeichnis).');
-
-            return self::INVALID;
-        }
-
         $uuid = (string) $this->option('generation');
-        $generation = $uuid !== ''
-            ? BackupGeneration::query()->where('snapshot_uuid', $uuid)->first()
-            : BackupGeneration::query()->whereNotNull('committed_at')->orderByDesc('committed_at')->first();
-        if ($generation === null) {
-            $this->error('Keine passende Generation gefunden.');
+        $targetDir = (string) $this->option('target-dir');
+        $keep = (bool) $this->option('keep');
 
-            return self::INVALID;
+        if ($uuid === '') {
+            if ($targetDir !== '') {
+                $this->error('--target-dir gilt nur zusammen mit --generation.');
+
+                return self::INVALID;
+            }
+
+            $result = $service->runForLatestGenerations(keep: $keep);
+            if ($result['passed'] === [] && $result['failed'] === []) {
+                $this->info('Keine committete Cloud-Generation vorhanden — nichts zu testen.');
+
+                return self::SUCCESS;
+            }
+        } else {
+            $generation = BackupGeneration::query()->where('snapshot_uuid', $uuid)->first();
+            if ($generation === null) {
+                $this->error('Keine passende Generation gefunden.');
+
+                return self::INVALID;
+            }
+
+            $result = $service->runRecorded($generation, $targetDir !== '' ? $targetDir : null, $keep);
         }
 
+        foreach ($result['passed'] as $snapshotUuid) {
+            $this->info("BESTANDEN: {$snapshotUuid}" . ($keep ? ' → ' . $result['target_dirs'][$snapshotUuid] : ''));
+        }
+        foreach ($result['failed'] as $snapshotUuid => $class) {
+            $this->error("FEHLER: {$snapshotUuid} ({$class})" . ($keep ? ' → ' . $result['target_dirs'][$snapshotUuid] : ''));
+        }
+
+        $this->syncAlert($result['failed']);
+
+        return $result['failed'] === [] ? self::SUCCESS : self::FAILURE;
+    }
+
+    /** @param array<string, string> $failed */
+    private function syncAlert(array $failed): void {
         try {
-            $result = $service->run($generation, $targetDir);
+            $alerts = app(OperationsAlertService::class);
+            if ($failed !== []) {
+                $alerts->report(new OperationsSignal(
+                    type: OperationsTaskType::BackupFailed,
+                    dedupeKey: 'backup_restore_test_failed',
+                    severity: OperationsTaskSeverity::Critical,
+                    titleKey: 'operations.task.backup_restore_test_failed',
+                    params: ['reason' => mb_substr(implode(', ', array_map(
+                        static fn (string $uuid, string $class): string => "{$uuid}: {$class}",
+                        array_keys($failed),
+                        array_values($failed),
+                    )), 0, 300)],
+                    linkRoute: 'admin.backup.status',
+                ));
+            } else {
+                $alerts->resolve('backup_restore_test_failed');
+            }
         } catch (Throwable $e) {
-            $this->error('Restore-Test fehlgeschlagen: ' . $e->getMessage());
-
-            return self::FAILURE;
+            $this->warn('Betriebsaufgabe konnte nicht aktualisiert werden: ' . $e->getMessage());
         }
-
-        $this->info(sprintf(
-            'Restore-Test bestanden: %s — RPO %d s, RTO %d s, %d B nach %s',
-            $generation->snapshot_uuid,
-            $result['rpo_seconds'],
-            $result['rto_seconds'],
-            $result['restored_size'],
-            $result['target_dir'],
-        ));
-
-        return self::SUCCESS;
     }
 }

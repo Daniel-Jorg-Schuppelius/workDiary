@@ -50,8 +50,13 @@ WorkDiary.
    la última copia por fuente y la marca **atrasada** si el último
    latido supera la frescura configurada
    (`BACKUP_HEARTBEAT_FRESHNESS_HOURS`, 26 h por defecto).
-3. Probar restauraciones con regularidad en un entorno separado y
-   anotarlas con **Registrar prueba de restauración**.
+3. Las pruebas de restauración se ejecutan automáticamente: la tarea
+   programada **Prueba de restauración de la copia en la nube** (mensual)
+   para destinos en la nube y la ejecución semanal por cron del script
+   `restore-test.sh` para la copia por script anotan éxitos y fallos en el
+   registro. Las pruebas en otro entorno se siguen anotando con
+   **Registrar prueba de restauración**; una prueba superada fija el
+   próximo vencimiento.
 4. Vigilar el estado del sistema: `php artisan system:health`
    comprueba base de datos, migraciones, almacenamiento, cola,
    APP_KEY, correo y licencia (código de salida 0/1, no cambia datos

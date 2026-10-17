@@ -74,6 +74,7 @@ return [
         'backup_failed' => 'Backup check failed: :reason',
         'backup_target_failed' => 'Cloud backup failed: :reason',
         'backup_target_verify_failed' => 'Cloud backup verification failed: :reason',
+        'backup_restore_test_failed' => 'Cloud backup restore test failed: :reason',
         'restore_test_overdue' => 'Last restore test was :days days ago (threshold :threshold days).',
         'restore_test_missing' => 'No restore test has ever been logged.',
         'update_available' => 'Update available for :component: :installed → :available.',

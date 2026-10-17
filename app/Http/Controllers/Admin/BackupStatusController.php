@@ -10,12 +10,14 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\Backup\RestoreTestResult;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\RequiresPlatformOperator;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Platform\LogRestoreTestRequest;
 use App\Models\Platform\RestoreTest;
 use App\Services\Backup\BackupStatusService;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -74,6 +76,12 @@ class BackupStatusController extends Controller {
 
         $data = $request->validated();
         $data['performed_by_user_id'] = Auth::id();
+        if (blank($data['next_due_on'] ?? null)) {
+            $data['next_due_on'] = RestoreTest::defaultNextDueOn(
+                CarbonImmutable::parse((string) $data['tested_on']),
+                RestoreTestResult::from((string) $data['result']),
+            );
+        }
 
         RestoreTest::create($data);
 

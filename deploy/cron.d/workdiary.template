@@ -1,7 +1,9 @@
 # WorkDiary Cron (MVP-454) — von scripts/install-system.sh nach
 # /etc/cron.d/workdiary (bzw. /etc/cron.d/workdiary-<instanz>) gerendert.
 # Platzhalter: __APP_DIR__, __PHP_BIN__, __RUN_USER__, __BACKUP_MIN__,
-#              __BACKUP_HOUR__, __BACKUP_CONF__, __BACKUP_LOG__
+#              __BACKUP_HOUR__, __BACKUP_CONF__, __BACKUP_LOG__, __BACKUP_BIN__,
+#              __RESTORE_TEST_MIN__, __RESTORE_TEST_HOUR__, __RESTORE_TEST_DOW__,
+#              __RESTORE_TEST_BIN__, __RESTORE_TEST_LOG__
 #
 # schedule:run ist der Herzschlag der App (Scheduler-Registry, Feature 067) —
 # ohne diese Zeile läuft KEIN wiederkehrender Job. Das Backup läuft als root
@@ -19,3 +21,10 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # (Sicherheitsaudit 2026-09-13). scripts/install-system.sh legt die Kopie an
 # und frischt sie bei jedem Lauf auf.
 __BACKUP_MIN__ __BACKUP_HOUR__ * * * root BACKUP_CONF=__BACKUP_CONF__ __BACKUP_BIN__ >> __BACKUP_LOG__ 2>&1
+# Restore-Test (MVP-1205): stellt den juengsten Backup-Stand isoliert wieder
+# her und traegt das Ergebnis ins Restore-Test-Register ein, Fehlschlaege
+# ebenso. Der Restore-Test laeuft wie das Backup als root aus einer
+# root-eigenen Kopie; PHP_BIN gibt der Installer dem Restore-Test mit, weil
+# neben der Kopie kein lib/php-bin.sh liegt. --prune-stale raeumt beim
+# Restore-Test stehengelassene Reste frueherer Fehlschlaege weg.
+__RESTORE_TEST_MIN__ __RESTORE_TEST_HOUR__ * * __RESTORE_TEST_DOW__ root BACKUP_CONF=__BACKUP_CONF__ PHP_BIN=__PHP_BIN__ __RESTORE_TEST_BIN__ --prune-stale >> __RESTORE_TEST_LOG__ 2>&1

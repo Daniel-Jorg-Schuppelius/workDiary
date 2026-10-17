@@ -6,7 +6,10 @@
 # Betrieb braucht — dynamisch aus der Installation ermittelt (APP_DIR aus dem
 # Skriptpfad, PHP-Binary, Betriebs-User aus dem storage/-Owner):
 #
-#   immer:              /etc/cron.d/workdiary        (schedule:run minütlich + Backup)
+#   immer:              /etc/cron.d/workdiary        (schedule:run minütlich + Backup
+#                                                     + wöchentlicher Restore-Test, MVP-1205)
+#                       /usr/local/sbin/workdiary-backup.sh, -restore-test.sh
+#                                                    (root-eigene Kopien der Skripte)
 #                       /etc/workdiary-backup.conf   (Backup-Ziel/Retention, chmod 600)
 #                       BACKUP_HEARTBEAT_TOKEN       (falls er in der App-.env fehlt,
 #                                                     via artisan rotate-token erzeugt)
@@ -25,8 +28,14 @@
 #   scripts/install-system.sh [--instance NAME] [--with-reverb]
 #                             [--with-integrity-watch] [--with-fail2ban]
 #                             [--backup-time HH:MM] [--backup-dir PFAD]
-#                             [--backup-keep-days N] [--no-backup] [--dry-run]
-#                             [--status] [--uninstall]
+#                             [--backup-keep-days N] [--no-backup]
+#                             [--restore-test-day 0-6] [--restore-test-time HH:MM]
+#                             [--no-restore-test] [--dry-run] [--status] [--uninstall]
+#
+# Der Restore-Test (scripts/restore-test.sh --prune-stale) läuft wöchentlich
+# (Default Sonntag 04:00) als root, stellt den jüngsten Backup-Stand isoliert
+# wieder her und trägt das Ergebnis ins Restore-Test-Register der App ein.
+# Er braucht das Backup; --no-backup schaltet ihn mit ab.
 #
 # Idempotent je Instanz: erneutes Ausführen (mit demselben --instance) über-
 # schreibt die erzeugten Dateien und lädt die Dienste neu — nur die Backup-
@@ -46,6 +55,9 @@ WITH_WATCH=0
 WITH_FAIL2BAN=0
 WITH_BACKUP=1
 BACKUP_TIME="23:00"
+WITH_RESTORE_TEST=1
+RESTORE_TEST_TIME="04:00"
+RESTORE_TEST_DOW=0
 BACKUP_DIR="/var/backups/workdiary"
 BACKUP_KEEP_DAYS=14
 BACKUP_CONF_OPTS=0
@@ -65,6 +77,9 @@ while [[ $# -gt 0 ]]; do
     --backup-time) shift; BACKUP_TIME="${1:?--backup-time braucht HH:MM}" ;;
     --backup-dir) shift; BACKUP_DIR="${1:?--backup-dir braucht einen Pfad}"; BACKUP_CONF_OPTS=1 ;;
     --backup-keep-days) shift; BACKUP_KEEP_DAYS="${1:?--backup-keep-days braucht eine Zahl}"; BACKUP_CONF_OPTS=1 ;;
+    --no-restore-test) WITH_RESTORE_TEST=0 ;;
+    --restore-test-time) shift; RESTORE_TEST_TIME="${1:?--restore-test-time braucht HH:MM}" ;;
+    --restore-test-day) shift; RESTORE_TEST_DOW="${1:?--restore-test-day braucht 0-6 (0 = Sonntag)}" ;;
     --dry-run) DRY_RUN=1 ;;
     --status) ACTION="status" ;;
     --uninstall) ACTION="uninstall" ;;
@@ -97,6 +112,11 @@ RUN_USER="${RUN_USER:-$(stat -c %U "$APP_DIR/storage" 2>/dev/null || echo www-da
 [[ "$BACKUP_TIME" =~ ^([01]?[0-9]|2[0-3]):([0-5][0-9])$ ]] || fail "--backup-time erwartet HH:MM (bekam: $BACKUP_TIME)."
 BACKUP_HOUR="${BACKUP_TIME%%:*}"; BACKUP_HOUR=$((10#$BACKUP_HOUR))
 BACKUP_MIN="${BACKUP_TIME##*:}";  BACKUP_MIN=$((10#$BACKUP_MIN))
+[[ "$RESTORE_TEST_TIME" =~ ^([01]?[0-9]|2[0-3]):([0-5][0-9])$ ]] || fail "--restore-test-time erwartet HH:MM (bekam: $RESTORE_TEST_TIME)."
+RESTORE_TEST_HOUR="${RESTORE_TEST_TIME%%:*}"; RESTORE_TEST_HOUR=$((10#$RESTORE_TEST_HOUR))
+RESTORE_TEST_MIN="${RESTORE_TEST_TIME##*:}";  RESTORE_TEST_MIN=$((10#$RESTORE_TEST_MIN))
+[[ "$RESTORE_TEST_DOW" =~ ^[0-6]$ ]] || fail "--restore-test-day erwartet 0-6 (0 = Sonntag; bekam: $RESTORE_TEST_DOW)."
+[[ $WITH_BACKUP -eq 1 ]] || WITH_RESTORE_TEST=0
 
 [[ "$BACKUP_DIR" == /* ]] || fail "--backup-dir erwartet einen absoluten Pfad (bekam: $BACKUP_DIR)."
 [[ "$BACKUP_KEEP_DAYS" =~ ^[1-9][0-9]*$ ]] || fail "--backup-keep-days erwartet eine positive Zahl (bekam: $BACKUP_KEEP_DAYS)."
@@ -125,6 +145,12 @@ BACKUP_LOG="/var/log/${NAME}-backup.log"
 # Skript aus $APP_DIR waere vom Deploy-/Webbenutzer beschreibbar und damit eine
 # Rechteausweitung (Sicherheitsaudit 2026-09-13).
 BACKUP_BIN="$DESTDIR/usr/local/sbin/${NAME}-backup.sh"
+RESTORE_TEST_BIN="$DESTDIR/usr/local/sbin/${NAME}-restore-test.sh"
+RESTORE_TEST_LOG="/var/log/${NAME}-restore-test.log"
+# In die Cron-Datei gehören die Pfade zur Laufzeit — ohne DESTDIR-Präfix
+# (Paketbau/Test), wie bei BACKUP_CONF_RUNTIME.
+BACKUP_BIN_RUNTIME="${BACKUP_BIN#"$DESTDIR"}"
+RESTORE_TEST_BIN_RUNTIME="${RESTORE_TEST_BIN#"$DESTDIR"}"
 F2B_DIR="$DESTDIR/etc/fail2ban"
 F2B_JAIL="$F2B_DIR/jail.d/$NAME.conf"
 
@@ -149,7 +175,12 @@ render() { # $1 Template, $2 Ziel
                 -e "s|__BACKUP_HOUR__|$BACKUP_HOUR|g" \
                 -e "s|__BACKUP_CONF__|$BACKUP_CONF_RUNTIME|g" \
                 -e "s|__BACKUP_LOG__|$BACKUP_LOG|g" \
-                -e "s|__BACKUP_BIN__|$BACKUP_BIN|g" "$1")
+                -e "s|__BACKUP_BIN__|$BACKUP_BIN_RUNTIME|g" \
+                -e "s|__RESTORE_TEST_MIN__|$RESTORE_TEST_MIN|g" \
+                -e "s|__RESTORE_TEST_HOUR__|$RESTORE_TEST_HOUR|g" \
+                -e "s|__RESTORE_TEST_DOW__|$RESTORE_TEST_DOW|g" \
+                -e "s|__RESTORE_TEST_LOG__|$RESTORE_TEST_LOG|g" \
+                -e "s|__RESTORE_TEST_BIN__|$RESTORE_TEST_BIN_RUNTIME|g" "$1")
   if [[ $DRY_RUN -eq 1 ]]; then
     echo "--- würde schreiben: $2"
     echo "$content" | sed 's/^/    /'
@@ -166,18 +197,33 @@ render() { # $1 Template, $2 Ziel
 # schreiben, und root fuehrt es aus — wer die Anwendung aktualisieren darf,
 # haette damit root (Sicherheitsaudit 2026-09-13). Die Kopie wird bei jedem
 # Installationslauf aufgefrischt, damit sie nicht veraltet.
-install_backup_binary() {
-  local src="$APP_DIR/scripts/backup.sh"
+install_root_copy() { # $1 Skript unter scripts/, $2 Ziel
+  local src="$APP_DIR/scripts/$1"
   if [[ ! -f "$src" ]]; then
-    fail "Backup-Skript nicht gefunden: $src"
+    fail "Skript nicht gefunden: $src"
   fi
   if [[ $DRY_RUN -eq 1 ]]; then
-    echo "--- würde installieren: $src -> $BACKUP_BIN (root:root, 0755)"
+    echo "--- würde installieren: $src -> $2 (root:root, 0755)"
     return
   fi
-  mkdir -p "$(dirname "$BACKUP_BIN")"
-  install -o root -g root -m 0755 "$src" "$BACKUP_BIN"
-  note "installiert: $BACKUP_BIN (root:root, 0755)"
+  mkdir -p "$(dirname "$2")"
+  install -o root -g root -m 0755 "$src" "$2"
+  note "installiert: $2 (root:root, 0755)"
+}
+
+# Cron-Vorlage ohne die abgewählten Blöcke: Backup-Zeilen tragen backup.sh/
+# __BACKUP_BIN__/root-eigene, Restore-Test-Zeilen das Wort Restore-Test bzw.
+# __RESTORE_TEST_ (die Vorlage ist so geschrieben, dass jede Zeile ihres Blocks
+# eines davon enthält).
+cron_template() {
+  local -a filters=()
+  [[ $WITH_BACKUP -eq 1 ]] || filters+=(-e 'backup.sh' -e '__BACKUP_BIN__' -e 'root-eigene')
+  [[ $WITH_RESTORE_TEST -eq 1 ]] || filters+=(-e 'Restore-Test' -e '__RESTORE_TEST_')
+  if [[ ${#filters[@]} -eq 0 ]]; then
+    cat "$APP_DIR/deploy/cron.d/workdiary.template"
+  else
+    grep -v "${filters[@]}" "$APP_DIR/deploy/cron.d/workdiary.template"
+  fi
 }
 
 # Backup-Konfiguration: chmod 600 (darf den Heartbeat-Token aufnehmen), daher
@@ -195,7 +241,7 @@ write_backup_conf() {
     name_setting="# BACKUP_NAME=\"meine-instanz\"                              # Instanzname in den Dateinamen; Default: APP_NAME aus der App-.env"
   fi
   local content
-  content="# WorkDiary-Backup-Konfiguration — wird von scripts/backup.sh gelesen.
+  content="# WorkDiary-Backup-Konfiguration — gelesen von scripts/backup.sh und scripts/restore-test.sh.
 # Erzeugt von scripts/install-system.sh; Änderungen hier überleben erneute
 # Installer-Läufe (nur explizite --backup-*-Optionen schreiben die Datei neu).
 BACKUP_DIR=\"$BACKUP_DIR\"
@@ -252,6 +298,9 @@ status() {
   done
   [[ -f "/etc/cron.d/$NAME" ]] && echo "  /etc/cron.d/$NAME  vorhanden" || echo "  /etc/cron.d/$NAME  nicht installiert"
   [[ -f "/etc/${NAME}-backup.conf" ]] && echo "  /etc/${NAME}-backup.conf  vorhanden" || echo "  /etc/${NAME}-backup.conf  nicht installiert (backup.sh nutzt Defaults)"
+  for b in "/usr/local/sbin/${NAME}-backup.sh" "/usr/local/sbin/${NAME}-restore-test.sh"; do
+    [[ -f "$b" ]] && echo "  $b  vorhanden" || echo "  $b  nicht installiert"
+  done
   [[ -f "/etc/fail2ban/jail.d/$NAME.conf" ]] && echo "  fail2ban-Jail ($NAME)  vorhanden" || echo "  fail2ban-Jail ($NAME)  nicht installiert"
 }
 
@@ -266,6 +315,9 @@ uninstall() {
   sysctl_do daemon-reload || true
   [[ -f "$CRON_FILE" ]] && { rm -f "$CRON_FILE"; note "entfernt: $CRON_FILE"; }
   [[ -f "$BACKUP_CONF" ]] && { rm -f "$BACKUP_CONF"; note "entfernt: $BACKUP_CONF"; }
+  for b in "$BACKUP_BIN" "$RESTORE_TEST_BIN"; do
+    [[ -f "$b" ]] && { rm -f "$b"; note "entfernt: $b"; }
+  done
   if [[ -f "$F2B_JAIL" ]]; then
     rm -f "$F2B_JAIL"; note "entfernt: $F2B_JAIL"
     # Gemeinsame Filter nur entfernen, wenn keine andere WorkDiary-Jail mehr da ist.
@@ -295,12 +347,13 @@ install() {
 
   # 1) Cron (Herzschlag + optional Backup) + Backup-Konfiguration + Token
   if [[ $WITH_BACKUP -eq 1 ]]; then
-    install_backup_binary
-    render "$APP_DIR/deploy/cron.d/workdiary.template" "$CRON_FILE"
+    install_root_copy backup.sh "$BACKUP_BIN"
+    [[ $WITH_RESTORE_TEST -eq 1 ]] && install_root_copy restore-test.sh "$RESTORE_TEST_BIN"
+    render <(cron_template) "$CRON_FILE"
     write_backup_conf
     ensure_heartbeat_token
   else
-    render <(grep -v 'backup.sh\|__BACKUP_BIN__\|root-eigene' "$APP_DIR/deploy/cron.d/workdiary.template") "$CRON_FILE"
+    render <(cron_template) "$CRON_FILE"
   fi
 
   # 2) systemd-Units (Template nach Rolle, Zieldatei instanz-scoped)
@@ -341,6 +394,7 @@ install() {
   note "systemctl status ${UNITS[*]}"
   note "$PHP_BIN $APP_DIR/artisan schedule:list   # Scheduler-Herzschlag prüfen"
   [[ $WITH_BACKUP -eq 1 ]] && note "Backup täglich ${BACKUP_TIME} Uhr → $BACKUP_LOG (Ziel/Retention: $BACKUP_CONF_RUNTIME; Zeit muss in der Server-Betriebszeit liegen!)"
+  [[ $WITH_RESTORE_TEST -eq 1 ]] && note "Restore-Test wöchentlich (Cron-Wochentag $RESTORE_TEST_DOW, ${RESTORE_TEST_TIME} Uhr) → $RESTORE_TEST_LOG; Ergebnis im Restore-Test-Register (Administration → Backup & Restore)"
   note "Backup-Einrichtung prüfen: $PHP_BIN $APP_DIR/artisan workdiary:backup:status"
 }
 

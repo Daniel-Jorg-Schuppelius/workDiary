@@ -108,6 +108,19 @@ class BackupAlertsTest extends TestCase {
         $this->assertDatabaseHas('operations_tasks', ['dedupe_key' => 'restore_test_overdue', 'status' => 'resolved']);
     }
 
+    /** MVP-1206: eine Fälligkeitsregel — nur bestandene Tests zählen, wie auf Statusseite und in system:health. */
+    public function test_failed_restore_test_does_not_resolve_overdue_task(): void {
+        $this->heartbeat(2);
+        RestoreTest::query()->create(['source' => 'manual', 'tested_on' => now()->subDays(200), 'result' => 'passed']);
+        Artisan::call('operations:scan');
+        $this->assertDatabaseHas('operations_tasks', ['dedupe_key' => 'restore_test_overdue', 'status' => 'open']);
+
+        RestoreTest::query()->create(['source' => 'cloud-backup:s3', 'tested_on' => now()->subDay(), 'result' => 'failed']);
+        Artisan::call('operations:scan');
+
+        $this->assertDatabaseHas('operations_tasks', ['dedupe_key' => 'restore_test_overdue', 'status' => 'open']);
+    }
+
     public function test_size_drop_reports_backup_failed_and_recovery_resolves(): void {
         // Stabiler Median über mehrere Heartbeats, dann Einbruch.
         foreach ([100, 99, 98, 97, 96] as $i => $hoursAgo) {

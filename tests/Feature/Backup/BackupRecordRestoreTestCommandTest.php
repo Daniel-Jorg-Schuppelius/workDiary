@@ -54,6 +54,18 @@ class BackupRecordRestoreTestCommandTest extends TestCase {
         $this->assertSame(RestoreTestResult::Failed, RestoreTest::query()->sole()->result);
     }
 
+    /** MVP-1206: ein bestandener Test setzt die Fälligkeit, ein Fehlschlag lässt sie offen. */
+    public function test_passed_run_gets_the_default_next_due_date_and_failed_run_none(): void {
+        $this->artisan('workdiary:backup:record-restore-test')->assertExitCode(0);
+        $this->assertSame(Carbon::today()->addDays(30)->toDateString(), RestoreTest::query()->sole()->next_due_on?->toDateString());
+
+        $this->artisan('workdiary:backup:record-restore-test', ['--result' => 'failed'])->assertExitCode(0);
+        $this->assertNull(RestoreTest::query()->latest('id')->first()?->next_due_on);
+
+        $this->artisan('workdiary:backup:record-restore-test', ['--next-due-on' => '2031-01-15'])->assertExitCode(0);
+        $this->assertSame('2031-01-15', RestoreTest::query()->latest('id')->first()?->next_due_on?->toDateString());
+    }
+
     public function test_status_command_turns_green_after_recorded_test(): void {
         config(['backup.heartbeat_token' => 'token', 'backup_targets.master_key' => null]);
         BackupHeartbeat::create(['occurred_at' => Carbon::now()->subHours(2), 'source' => 'testhost']);

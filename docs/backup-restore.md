@@ -152,10 +152,16 @@ php artisan workdiary:backup:verify        # Commit-Manifest + Stichproben-Teile
 php artisan workdiary:backup:restore-test  # Generation isoliert wiederherstellen, Integrität protokollieren
 ```
 
-`run` (täglich 01:30) und `verify` (wöchentlich Sa 03:30) laufen über die
-Scheduler-Registry (`config/scheduler.php`: `backup.cloud-run`,
-`backup.cloud-verify`) und sind dort pausier-/umplanbar; nur `restore-test`
-wird bewusst manuell bzw. per Cron (z. B. monatlich) ausgelöst. **Nicht
+`run` (täglich 01:30), `verify` (wöchentlich Sa 03:30) und `restore-test`
+(monatlich am 1., 02:30) laufen über die Scheduler-Registry
+(`config/scheduler.php`: `backup.cloud-run`, `backup.cloud-verify`,
+`backup.cloud-restore-test`) und sind dort pausier-/umplanbar. Der geplante
+Restore-Test nimmt die jüngste Generation jeder Verbindung, prüft vorher den
+freien Platz (2× Klartextgröße), stellt unterhalb von
+`BACKUP_WORK_DIR/restore-test/` wieder her, räumt danach auf und trägt Erfolg
+wie Fehlschlag ins Restore-Test-Register ein; ein Fehlschlag erzeugt zusätzlich
+die Betriebsaufgabe „Cloud-Backup-Restore-Test fehlgeschlagen". Von Hand:
+`--generation=<uuid>` (optional `--target-dir`, `--keep`). **Nicht
 zusätzlich** `scripts/backup.sh` (Datei-/DB-Dump-Variante aus
 `deploy/cron.d`) für dieselbe Instanz einplanen — ein Backupverfahren pro
 Installation, sonst laufen zwei Sicherungen parallel.
@@ -215,26 +221,40 @@ lässt sich der Datenschlüssel mit dem Recovery-Secret-Key öffnen.
 
 ## 5. Restore-Tests (verpflichtend)
 
-Regelmäßig — mindestens innerhalb von `BACKUP_RESTORE_TEST_OVERDUE_DAYS`
-(Default 180 Tage), empfohlen monatlich — einen Restore in eine separate
-Testumgebung durchführen und protokollieren. Bleibt ein erfolgreicher Test
-zu lange aus, warnt die Statusseite.
+Ein bestandener Restore-Test setzt die nächste Fälligkeit auf Testdatum +
+`BACKUP_RESTORE_TEST_INTERVAL_DAYS` (Default 30 Tage). Bleibt ein
+erfolgreicher Test länger als `BACKUP_RESTORE_TEST_OVERDUE_DAYS` (Default 180)
+aus, warnen Statusseite, `system:health` und das Aufgabencenter — gezählt
+werden nur bestandene Tests, ein protokollierter Fehlschlag verlängert nichts.
 
-Der einfachste Weg ist das mitgelieferte Skript (als root, lokaler
-MySQL/MariaDB):
+Beide Backupwege testen sich selbst:
+
+- **Cloud-Backupziele:** Scheduler-Job `backup.cloud-restore-test` (§3.2).
+- **Skript-Backup:** `scripts/install-system.sh` richtet den wöchentlichen
+  Cron-Lauf von `restore-test.sh --prune-stale` ein (Default Sonntag 04:00;
+  `--restore-test-day 0-6`, `--restore-test-time HH:MM`, `--no-restore-test`),
+  als root aus der root-eigenen Kopie `/usr/local/sbin/workdiary-restore-test.sh`,
+  Log `/var/log/workdiary-restore-test.log`. Der Cron-Eintrag gibt `PHP_BIN`
+  mit — nach einem PHP-Wechsel den Installer erneut ausführen.
+
+Von Hand (als root, lokaler MySQL/MariaDB oder SQLite):
 
 ```bash
 scripts/restore-test.sh                                  # jüngster Stand: prüfen + protokollieren
 scripts/restore-test.sh --stamp 20260723_230000 --keep   # bestimmter Stand, Umgebung stehen lassen
+scripts/restore-test.sh --prune-stale                    # vorher Reste früherer Fehlschläge wegräumen
 ```
 
-Es stellt den Backup-Stand isoliert unter `/var/tmp` mit eigener Test-DB und
-temporärem DB-User wieder her (die laufende Installation bleibt unberührt),
-prüft Manifest, Migrationsstand, Datenbestand und die
-APP_KEY-Entschlüsselung und trägt das Ergebnis automatisch ins Register ein
-— Fehlschläge ebenso; dann bleiben Test-DB und Arbeitsverzeichnis zur
-Diagnose stehen. Mit `--keep` lässt sich die wiederhergestellte Kopie danach
-per `artisan serve` anschauen.
+Es stellt den Backup-Stand isoliert unter
+`/var/tmp/<instanz>-restore-test-<stempel>` mit eigener Test-DB
+(`wd_restore_<instanz>_<stempel>`) und temporärem DB-User wieder her (die
+laufende Installation bleibt unberührt), prüft vorher den freien Platz, dann
+Manifest, Migrationsstand, Datenbestand und die APP_KEY-Entschlüsselung — die
+Smoke-Tests laufen als Betriebs-User, nicht als root — und trägt das Ergebnis
+automatisch ins Register ein, Fehlschläge ebenso; dann bleiben Test-DB und
+Arbeitsverzeichnis zur Diagnose stehen, bis der nächste Lauf mit
+`--prune-stale` sie entfernt. Mit `--keep` lässt sich die wiederhergestellte
+Kopie danach per `artisan serve` anschauen.
 
 Manuelle Tests (z. B. auf einer anderen Maschine, §4) unter
 **Backup & Restore → Restore-Test protokollieren** ins Register eintragen
