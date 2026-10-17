@@ -25,21 +25,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class OnboardingController extends Controller {
     /** @var list<string> */
-    private const STEP_CODES = [
-        'org.profile',
-        'org.branch_profile',
-        'org.scope',
-        'users.invite',
-        'roles.check',
-        'classification.check',
-        'customer.first',
-        'work.first',
-        'time.first',
-        'protocol.first_signed',
-        'backup.heartbeat',
-    ];
-
-    /** @var list<string> */
     private const HARD_REQUIRED_STEP_CODES = [
         'org.profile',
         'roles.check',
@@ -103,7 +88,7 @@ class OnboardingController extends Controller {
 
         Gate::authorize(Permission::OrgOnboardingSkipStep->value);
 
-        abort_unless(in_array($step, self::STEP_CODES, true), Response::HTTP_NOT_FOUND);
+        abort_unless(in_array($step, OnboardingChecklistResolver::stepCodes(), true), Response::HTTP_NOT_FOUND);
 
         if (in_array($step, self::HARD_REQUIRED_STEP_CODES, true)) {
             return back()->withErrors([

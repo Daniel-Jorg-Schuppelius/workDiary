@@ -55,6 +55,15 @@ class OnboardingChecklistResolver {
     ];
 
     /**
+     * Einzige Quelle der Schrittcodes — der Controller prüft Skip-Anfragen dagegen.
+     *
+     * @return list<string>
+     */
+    public static function stepCodes(): array {
+        return array_map(static fn(array $step): string => $step['code'], self::STEPS);
+    }
+
+    /**
      * @return array{steps:list<array{code:string,title:string,required:bool,done:bool,state:OnboardingStepState,skipped_reason:?string}>, required_done:int, required_total:int, progress_percent:int, all_required_done:bool}
      */
     public function forOrganization(Organization $organization, ?User $actor = null): array {

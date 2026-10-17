@@ -11,6 +11,7 @@
 namespace Tests\Feature\Onboarding;
 
 use App\Models\Platform\{OnboardingProgress, Organization, User};
+use App\Services\Onboarding\OnboardingChecklistResolver;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Exceptions;
@@ -95,6 +96,26 @@ class OnboardingPageTest extends TestCase {
             'event' => 'onboarding.stepSkipped',
             'auditable_type' => MorphMap::stableKey(OnboardingProgress::class),
         ]);
+    }
+
+    /** 404 auf org.workspaces (2026-10-16): Controller-Liste war gegenüber dem Resolver veraltet. */
+    public function test_every_skippable_resolver_step_is_accepted_by_the_skip_route(): void {
+        $admin = User::factory()->admin()->create();
+        $hardRequired = ['org.profile', 'roles.check', 'customer.first', 'work.first'];
+
+        foreach (array_diff(OnboardingChecklistResolver::stepCodes(), $hardRequired) as $code) {
+            $this->actingAs($admin)
+                ->from(route('onboarding.index'))
+                ->post(route('onboarding.steps.skip', ['step' => $code]), ['reason' => 'Später'])
+                ->assertRedirect(route('onboarding.index'))
+                ->assertSessionHasNoErrors();
+
+            $this->assertDatabaseHas('onboarding_progress', [
+                'organization_id' => $admin->organization_id,
+                'step_code' => $code,
+                'state' => 'skipped',
+            ]);
+        }
     }
 
     public function test_hard_step_cannot_be_skipped(): void {
