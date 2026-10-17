@@ -17,7 +17,6 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Sales\AssignCommissionRequest;
 use App\Models\Customer\Customer;
-use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Models\Sales\{CommissionAgent, CommissionRule, InvoiceCommission};
 use App\Services\Sales\Commission\CommissionDocuments;
@@ -71,25 +70,16 @@ class CommissionController extends Controller {
         ]);
     }
 
-    /** Zuordnungs-Dialog einer lokalen Rechnung. */
-    public function assignForm(Invoice $invoice): View {
-        return $this->assignDialog($this->documents->of($invoice), route('commissions.assign', $invoice));
-    }
-
     /** Zuordnungs-Dialog eines Belegs jeder Quelle (MVP-1119). */
     public function assignDocumentForm(string $type, string $document): View {
         return $this->assignDialog($this->document($type, $document), route('commissions.document.assign', ['type' => $type, 'document' => $document]));
     }
 
     /**
-     * Manuelle Zuordnung setzen oder loesen. Bei einer bereits bezahlten
-     * Rechnung wird die Provision unmittelbar neu berechnet (offene Zeilen
+     * Manuelle Zuordnung setzen oder loesen. Bei einem bereits bezahlten
+     * Beleg wird die Provision unmittelbar neu berechnet (offene Zeilen
      * werden zurueckgerechnet, festgeschriebene bleiben stehen).
      */
-    public function assign(AssignCommissionRequest $request, Invoice $invoice): RedirectResponse {
-        return $this->assignTo($request, $this->documents->of($invoice));
-    }
-
     public function assignDocument(AssignCommissionRequest $request, string $type, string $document): RedirectResponse {
         return $this->assignTo($request, $this->document($type, $document));
     }

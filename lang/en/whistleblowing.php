@@ -55,4 +55,10 @@ return [
         'processor' => 'Processor',
         'reviewer' => 'Reviewer',
     ],
+    'attachment_scan' => [
+        'pending' => 'Scan pending',
+        'clean' => 'Released',
+        'rejected' => 'Rejected',
+        'failed' => 'Scan failed',
+    ],
 ];

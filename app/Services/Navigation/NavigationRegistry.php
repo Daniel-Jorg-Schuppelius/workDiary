@@ -340,6 +340,8 @@ class NavigationRegistry {
                         ['route' => 'today.show', 'label' => __('Heute'), 'icon' => 'today', 'modal' => false, 'matches' => ['today.show', 'day-close.*']],
                         ['route' => $indexRoute, 'label' => __('Arbeitsliste'), 'icon' => 'list_alt', 'modal' => false, 'matches' => [$indexRoute, 'diary.*']],
                         ['route' => 'week.index', 'label' => __('Wochenansicht'), 'icon' => 'calendar_view_week', 'modal' => false, 'matches' => ['week.index']],
+                        // Kalender (Bereitschaft, Notdienst, Auftragsbuch): hing seit dem Kimai-Umbau an keinem Menü.
+                        ['route' => 'calendar.index', 'label' => __('Kalender'), 'icon' => 'calendar_month', 'modal' => false, 'matches' => ['calendar.index']],
                         ['route' => 'kanban.index', 'label' => __('Kanban'), 'icon' => 'view_kanban', 'modal' => false, 'matches' => ['kanban.index']],
                         // Agile Übersicht (Feature 064): org-weiter Einstieg; Board/Backlog sind projektgebunden.
                         Gate::allows(Permission::AgileReportView->value)
@@ -644,6 +646,10 @@ class NavigationRegistry {
                         ['route' => 'finance.transfers.index', 'label' => __('finance.title.menu'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['finance.transfers.*', 'finance.reconciliation.*', 'finance.bank-accounts.*']],
                         ['route' => 'finance.payment-runs.index', 'label' => __('sepa.title'), 'icon' => 'account_balance', 'modal' => false, 'matches' => ['finance.payment-runs.*']],
                         ['route' => 'finance.mandates.index', 'label' => __('sepa.mandate.title'), 'icon' => 'assignment_turned_in', 'modal' => false, 'matches' => ['finance.mandates.*']],
+                        // Kassenbuch (MVP-414): Bargeschäfte gehören zum Geldverkehr; hing an keinem Menü.
+                        ...(Gate::allows(Permission::CashView->value)
+                            ? [['route' => 'cash-registers.index', 'label' => __('Kassenbuch'), 'icon' => 'point_of_sale', 'modal' => false, 'matches' => ['cash-registers.*']]]
+                            : []),
                     ],
                 ],
                 [
@@ -1821,6 +1827,7 @@ class NavigationRegistry {
             : [
                 ['route' => $indexRoute, 'label' => __('Arbeitsliste'), 'icon' => 'list_alt', 'modal' => false, 'matches' => [$indexRoute, 'diary.*']],
                 ['route' => 'week.index', 'label' => __('Wochenansicht'), 'icon' => 'calendar_view_week', 'modal' => false, 'matches' => ['week.index']],
+                ['route' => 'calendar.index', 'label' => __('Kalender'), 'icon' => 'calendar_month', 'modal' => false, 'matches' => ['calendar.index']],
                 ['route' => 'kanban.index', 'label' => __('Kanban'), 'icon' => 'view_kanban', 'modal' => false, 'matches' => ['kanban.index']],
                 ['route' => 'chat.index', 'label' => __('Chat'), 'icon' => 'forum', 'modal' => false, 'matches' => ['chat.*']],
                 ['route' => 'duty-plans.index', 'label' => __('Dienstpläne'), 'icon' => 'event_available', 'modal' => false, 'matches' => ['duty-plans.*']],
@@ -1853,6 +1860,9 @@ class NavigationRegistry {
                 ['route' => 'finance.transfers.index', 'label' => __('finance.title.menu'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['finance.transfers.*']],
                 ['route' => 'finance.reconciliation.index', 'label' => __('bank.title.menu'), 'icon' => 'account_balance', 'modal' => false, 'matches' => ['finance.reconciliation.*', 'finance.bank-accounts.*']],
                 ...$this->pluginNavItems('sales-billing'),
+                ...(Gate::allows(Permission::CashView->value)
+                    ? [['route' => 'cash-registers.index', 'label' => __('Kassenbuch'), 'icon' => 'point_of_sale', 'modal' => false, 'matches' => ['cash-registers.*']]]
+                    : []),
                 ['route' => 'events.index', 'label' => __('Veranstaltungen'), 'icon' => 'event', 'modal' => false, 'matches' => ['events.*']],
                 ['route' => 'flex.index', 'label' => __('Arbeitszeitkonto'), 'icon' => 'hourglass_top', 'modal' => false, 'matches' => ['flex.*']],
                 ['route' => 'archive.index', 'label' => __('Archiv'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['archive.*']],
@@ -1898,6 +1908,16 @@ class NavigationRegistry {
                     $adminNavItems[] = ['route' => 'admin.organizations.edit', 'route_params' => [$user->organization->sqid], 'label' => __('Organisation'), 'icon' => 'corporate_fare', 'modal' => true];
                 }
                 $adminNavItems[] = ['route' => 'admin.branding.edit', 'label' => __('Branding'), 'icon' => 'palette', 'modal' => false];
+                // Datenschutz-Cockpit (MVP-005), SSO (Feature 057) und Demo-Mandant: waren nur per Direkt-URL erreichbar.
+                if ($user->organization !== null && Gate::allows(Permission::PrivacyView->value)) {
+                    $adminNavItems[] = ['route' => 'admin.privacy.index', 'label' => __('Datenschutz'), 'icon' => 'privacy_tip', 'modal' => false, 'matches' => ['admin.privacy.*']];
+                }
+                if (Gate::allows('manage-plugins')) {
+                    $adminNavItems[] = ['route' => 'admin.sso.index', 'label' => __('sso.title'), 'icon' => 'vpn_key', 'modal' => false, 'matches' => ['admin.sso.*']];
+                }
+                if ($isPlatformAdmin && $user->organization !== null && Gate::allows(Permission::OrgDemoSeed->value)) {
+                    $adminNavItems[] = ['route' => 'admin.demo.index', 'label' => __('Demo-Mandant'), 'icon' => 'science', 'modal' => false, 'matches' => ['admin.demo.*']];
+                }
                 // Eigene Felder je Träger (MVP-868).
                 if (Gate::allows(Permission::OrganizationCustomFieldsManage->value)) {
                     $adminNavItems[] = ['route' => 'admin.custom-fields.index', 'label' => __('fields.custom.title'), 'icon' => 'dashboard_customize', 'modal' => false, 'matches' => ['admin.custom-fields.*']];
@@ -2001,6 +2021,18 @@ class NavigationRegistry {
                         : 0;
                     $adminNavItems[] = ['route' => 'admin.integration.inbox', 'label' => __('Zuordnungs-Inbox'), 'icon' => 'rule', 'modal' => false, 'matches' => ['admin.integration.*'], 'badge' => $iiOpen];
                 }
+                // Kommunikationsanbindungen (Feature 056) und Stempelterminals (Feature 061):
+                // Postfächer, Messenger-Kanäle, Telefonie, Terminals — waren nur per Direkt-URL erreichbar.
+                if (Gate::allows('manage-plugins')) {
+                    $adminNavItems[] = ['route' => 'admin.mail.index', 'label' => __('mail.title'), 'icon' => 'mail', 'modal' => false, 'matches' => ['admin.mail.*']];
+                    $adminNavItems[] = ['route' => 'admin.chat.index', 'label' => __('chat.title'), 'icon' => 'forum', 'modal' => false, 'matches' => ['admin.chat.*']];
+                    $adminNavItems[] = ['route' => 'admin.cti.index', 'label' => __('cti.title'), 'icon' => 'call', 'modal' => false, 'matches' => ['admin.cti.*']];
+                    $adminNavItems[] = ['route' => 'admin.terminals.index', 'label' => __('terminal.title'), 'icon' => 'point_of_sale', 'modal' => false, 'matches' => ['admin.terminals.*']];
+                }
+                // Datenführerschaft (Restpunkt 69): je Datenbereich ein führendes System.
+                if ($user->organization !== null && Gate::allows('update', $user->organization)) {
+                    $adminNavItems[] = ['route' => 'admin.data-ownership.index', 'label' => __('Datenführerschaft'), 'icon' => 'hub', 'modal' => false, 'matches' => ['admin.data-ownership.*']];
+                }
                 // Systemmenü-Beiträge aktiver Plugins (MVP-1037), z. B. Tarifprofil, Fernwartungs-Inbox.
                 array_push($adminNavItems, ...$this->pluginNavItems('admin'));
             }
@@ -2069,6 +2101,13 @@ class NavigationRegistry {
                 }
                 if (Gate::allows(Permission::ProblemReportManage->value)) {
                     $adminNavItems[] = ['route' => 'admin.problem-reports.index', 'label' => __('problemreport.title.inbox'), 'icon' => 'flag', 'modal' => false];
+                }
+                // Diagnose (Plattform-Betreiber) und Supportbericht: waren nur per Direkt-URL erreichbar.
+                if ($isPlatformAdmin && Gate::allows(Permission::PlatformDiagnosticsView->value)) {
+                    $adminNavItems[] = ['route' => 'admin.diagnostics.index', 'label' => __('Diagnose'), 'icon' => 'troubleshoot', 'modal' => false, 'matches' => ['admin.diagnostics.*']];
+                }
+                if (Gate::allows(Permission::PlatformSupportExport->value)) {
+                    $adminNavItems[] = ['route' => 'admin.support.report.index', 'label' => __('Supportbericht'), 'icon' => 'summarize', 'modal' => false, 'matches' => ['admin.support.report.*']];
                 }
                 if (Gate::allows(Permission::SupportGrantManage->value)) {
                     $adminNavItems[] = ['route' => 'admin.support.grants.index', 'label' => __('Supportfreigaben'), 'icon' => 'support_agent', 'modal' => false];

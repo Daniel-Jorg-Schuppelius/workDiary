@@ -51,6 +51,14 @@ use Tests\TestCase;
  * Neu aufgenommen 2026-10-12 (`MVP-1130`): einziges Delta ist
  * `/admin/number-formats` im Header-Systemmenü der Org-Admin-Personas.
  *
+ * Neu aufgenommen 2026-10-17 (Prüfung unerreichbarer Seiten): nur Zugänge,
+ * keine Streichungen. Im Header-Systemmenü der Org-Admin-Personas kommen
+ * `/admin/mail`, `/admin/chat`, `/admin/cti`, `/admin/terminals`,
+ * `/admin/privacy`, `/admin/datenfuehrerschaft` und `/admin/support/report`
+ * hinzu, bei `enterprise_admin` zusätzlich `/admin/sso` (module.sso) und in
+ * der Sidebar `/cash-registers` (Kassenwart-Recht); `/calendar` erscheint in
+ * der Sektion Tagesgeschäft neben der Wochenansicht.
+ *
  * Neu aufgenommen 2026-09-24 (`MVP-868`, eigene Felder je Organisation):
  * einziges Delta ist `/admin/custom-fields` im Header-Systemmenü der
  * Org-Admin-Personas.

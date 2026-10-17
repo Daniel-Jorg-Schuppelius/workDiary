@@ -67,7 +67,7 @@ class InternalCaseController extends Controller {
         Gate::authorize('view', $case);
         $this->event($case)->record($case, WhistleblowingEventService::CASE_VIEWED, $this->user());
 
-        $case->load(['assignments.user', 'messages']);
+        $case->load(['assignments.user', 'messages', 'attachments']);
 
         return view('whistleblowing.internal.show', ['case' => $case]);
     }

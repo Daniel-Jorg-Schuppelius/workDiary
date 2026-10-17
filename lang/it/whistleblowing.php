@@ -55,4 +55,10 @@ return [
         'processor' => 'Elaborazione',
         'reviewer' => 'Revisione',
     ],
+    'attachment_scan' => [
+        'pending' => 'Analisi in corso',
+        'clean' => 'Rilasciato',
+        'rejected' => 'Respinto',
+        'failed' => 'Analisi non riuscita',
+    ],
 ];

@@ -266,12 +266,13 @@ final class CommissionTest extends TestCase {
         $this->rule();
         $invoice = $this->pay($this->invoice());
 
+        $document = ['type' => $invoice->getMorphClass(), 'document' => $invoice->sqid];
         $this->actingAs($this->admin)
-            ->get(route('commissions.assign.form', $invoice))
+            ->get(route('commissions.document.assign.form', $document))
             ->assertOk();
 
         $this->actingAs($this->admin)
-            ->post(route('commissions.assign', $invoice), ['user_id' => $this->seller->sqid])
+            ->post(route('commissions.document.assign', $document), ['user_id' => $this->seller->sqid])
             ->assertRedirect();
 
         $this->assertSame($this->seller->id, $invoice->refresh()->sales_user_id);

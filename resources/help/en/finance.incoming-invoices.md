@@ -44,9 +44,10 @@ duplicate check, security check, reading the e-invoice or recognising it from
 PDF or image, validation and deviations. The unchanged original is stored as
 a document of type invoice in the DMS.
 
-**Invoice mailbox:** Under Administration → Email intake, a mailbox becomes
-part of incoming invoices with the “Invoice mailbox” switch. Each email is
-evaluated by invoice, not by attachment:
+**Invoice mailbox:** Under Administration → Data & interfaces → Email intake,
+open the mailbox via “Edit” (or add a new one) and switch on “Invoice mailbox”
+under “Usage” in the dialog. The mailbox list then shows the “Invoices”
+badge. Each email is evaluated by invoice, not by attachment:
 
 - An XRechnung (XML) is the original. A PDF of the same invoice sent along is
   attached as a companion file.

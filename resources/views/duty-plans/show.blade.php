@@ -23,6 +23,7 @@
                     <x-button tone="ghost" :href="route('print.duty-plan.roster', $dutyPlan)" target="_blank">{{ __('Monats-Aushang (A3 quer)') }}</x-button>
                     <x-button tone="ghost" :href="route('print.duty-plan.week', $dutyPlan)" target="_blank">{{ __('Wochenplan (A4 quer)') }}</x-button>
                     <x-button tone="ghost" :href="route('print.duty-plan.day', [$dutyPlan, 'date' => $dutyPlan->from_date->toDateString()])" target="_blank">{{ __('Tagesbriefing (A4 hoch)') }}</x-button>
+                    <x-button tone="ghost" :href="route('print.user.month', [auth()->user(), 'month' => $dutyPlan->from_date->toDateString()])" target="_blank">{{ __('Mein Monatszettel (A4 hoch)') }}</x-button>
                     <p class="wd-menu-heading">{{ __('Datenschutz') }}</p>
                     <x-button tone="ghost" :href="route('print.duty-plan.roster', [$dutyPlan, 'anonymous' => 1])" target="_blank">{{ __('Aushang anonymisiert') }}</x-button>
                 </x-action-menu>

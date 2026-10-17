@@ -13,8 +13,9 @@ namespace Tests\Feature\Whistleblowing;
 use App\Enums\Whistleblowing\CaseStatus;
 use App\Models\Platform\{Organization, User};
 use App\Models\Whistleblowing\{CaseAssignment, CaseConflict, CaseEvent, CaseTombstone, WhistleblowingCase};
-use App\Services\Whistleblowing\{InvalidCaseTransition, ReporterCredentialService, WhistleblowingCaseWorkflowService, WhistleblowingMessageService, WhistleblowingPermissions};
+use App\Services\Whistleblowing\{InvalidCaseTransition, ReporterCredentialService, WhistleblowingAttachmentScanService, WhistleblowingAttachmentService, WhistleblowingCaseWorkflowService, WhistleblowingMessageService, WhistleblowingPermissions};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{DB, Storage};
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
@@ -98,6 +99,32 @@ class InternalCaseTest extends TestCase {
 
         $this->actingAs($other)->get(route('whistleblowing.internal.show', $case))
             ->assertForbidden();
+    }
+
+    /**
+     * Beweismittel des Melders standen Bearbeitern nicht zur Verfügung: Die
+     * Fallakte lud keine Anhänge, der freigegebene Download-Pfad hing an
+     * keiner Oberfläche (Prüfung unerreichbarer Seiten 2026-10-17). Nur
+     * freigegebene Anhänge bekommen einen Download-Link, offene nur den Status.
+     */
+    public function test_case_file_lists_attachments_and_links_only_released_ones(): void {
+        Storage::fake('whistleblowing');
+        $org = Organization::factory()->create();
+        $handler = $this->handler($org);
+        $case = $this->makeCase($org);
+        $this->assignTo($case, $handler);
+
+        $attachments = app(WhistleblowingAttachmentService::class);
+        $pending = $attachments->storeReporterUpload($case, UploadedFile::fake()->create('offen.pdf', 10, 'application/pdf'));
+        $clean = $attachments->storeReporterUpload($case, UploadedFile::fake()->create('freigegeben.pdf', 10, 'application/pdf'));
+        app(WhistleblowingAttachmentScanService::class)->markClean($clean);
+
+        $this->actingAs($handler)->get(route('whistleblowing.internal.show', $case))
+            ->assertOk()
+            ->assertSee('freigegeben.pdf')
+            ->assertSee(route('whistleblowing.internal.attachment', ['case' => $case, 'attachment' => $clean]), false)
+            ->assertSee('offen.pdf')
+            ->assertDontSee(route('whistleblowing.internal.attachment', ['case' => $case, 'attachment' => $pending]), false);
     }
 
     public function test_category_and_priority_are_listed_only_after_assignment(): void {

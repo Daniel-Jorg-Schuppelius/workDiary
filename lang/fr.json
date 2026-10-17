@@ -10821,5 +10821,10 @@
     "Anderer Beleg – neu anlegen": "Autre justificatif – créer",
     "Mit dem vorhandenen Beleg verknüpft.": "Lié au justificatif existant.",
     "Übergabe als neuer Beleg angestoßen.": "Transmission comme nouveau justificatif lancée.",
-    "Kein möglicher Doppel-Eingang offen.": "Aucun doublon possible en attente."
+    "Kein möglicher Doppel-Eingang offen.": "Aucun doublon possible en attente.",
+    "Mein Monatszettel (A4 hoch)": "Ma feuille mensuelle (A4 portrait)",
+    "ICS-Download": "Téléchargement ICS",
+    "Für einen einmaligen Import in einen anderen Kalender.": "Pour un import unique dans un autre calendrier.",
+    "Meine Termine als ICS": "Mes rendez-vous en ICS",
+    "Öffentliche Termine als ICS": "Rendez-vous publics en ICS"
 }

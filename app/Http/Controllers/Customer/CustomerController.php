@@ -10,7 +10,6 @@
 
 namespace App\Http\Controllers\Customer;
 
-use App\Enums\Import\ImportEntity;
 use App\Enums\Numbering\NumberScope;
 use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery, ResolvesGlobalDateRange};
 use App\Http\Controllers\Concerns\SavesCustomFields;
@@ -19,10 +18,9 @@ use App\Http\Controllers\Diary\DiaryController;
 use App\Http\Requests\Customer\SaveCustomerRequest;
 use App\Models\Classification\Tag;
 use App\Models\Customer\Customer;
-use App\Models\Platform\{Organization, User};
+use App\Models\Platform\{User};
 use App\Plugins\PluginManager;
 use App\Services\Customer\CustomerDetailAssembler;
-use App\Services\Import\DirectCsvImportService;
 use App\Services\Numbering\NumberAuthority;
 use App\Services\Stammdaten\ContactMasterDataPusher;
 use App\Support\{CsvExport, Setting};
@@ -285,61 +283,5 @@ class CustomerController extends Controller {
             'Archiviert',
             'Angelegt',
         ], $rows);
-    }
-
-    /**
-     * Zeigt das CSV-Import-Formular.
-     */
-    public function importForm(): View {
-        Gate::authorize('viewAny', Customer::class);
-        /** @var User|null $authUser */
-        $authUser = Auth::user();
-        if (! $authUser?->canManageBilling()) {
-            abort(403);
-        }
-
-        return view('customers.import');
-    }
-
-    /**
-     * Verarbeitet einen CSV-Upload und legt/aktualisiert Kunden — synchron
-     * über die EntitySpec-Pipeline (CustomerSpec, Direkt-Upsert ohne Inbox).
-     */
-    public function import(Request $request, DirectCsvImportService $importer): RedirectResponse {
-        Gate::authorize('viewAny', Customer::class);
-        /** @var User|null $authUser */
-        $authUser = Auth::user();
-        if (! $authUser?->canManageBilling()) {
-            abort(403);
-        }
-
-        $request->validate([
-            'file' => ['required', 'file', 'mimetypes:text/csv,text/plain,application/csv,application/vnd.ms-excel', 'max:' . (int) Setting::get('uploads.csv_import_kb', 10240)],
-        ]);
-
-        $file = $request->file('file');
-        if ($file === null) {
-            return back()->with('error', __('Keine Datei hochgeladen.'));
-        }
-
-        $organization = app()->bound('currentOrganization') && app('currentOrganization') instanceof Organization
-            ? app('currentOrganization')
-            : $authUser->organization;
-        abort_unless($organization instanceof Organization, 403);
-
-        $result = $importer->import($file, ImportEntity::Customers, $organization);
-
-        $message = __('CSV-Import: :c angelegt, :u aktualisiert, :s übersprungen.', [
-            'c' => $result['created'],
-            'u' => $result['updated'],
-            's' => $result['skipped'],
-        ]);
-
-        if ($result['errors'] !== []) {
-            return redirect()->toList('customers.index')
-                ->with('error', $message . ' Fehler: ' . implode(' | ', array_slice($result['errors'], 0, 5)));
-        }
-
-        return redirect()->toList('customers.index')->with('success', $message);
     }
 }

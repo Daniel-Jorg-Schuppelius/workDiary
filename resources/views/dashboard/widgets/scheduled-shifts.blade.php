@@ -28,9 +28,15 @@
                     @if ($sshift->resolvedStartTime())
                         <span class="text-muted">{{ $sshift->resolvedStartTime() }}{{ $sshift->resolvedEndTime() ? '–'.$sshift->resolvedEndTime() : '' }}</span>
                     @endif
-                    @if ($sshift->shiftType)
-                        <span class="ml-auto text-xs text-muted">{{ $sshift->shiftType->name }}</span>
-                    @endif
+                    <span class="ml-auto flex items-center gap-2">
+                        @if ($sshift->shiftType)
+                            <span class="text-xs text-muted">{{ $sshift->shiftType->name }}</span>
+                        @endif
+                        @can('update', $sshift)
+                            <x-icon-btn icon="edit" tone="ghost" size="xs" data-entry-modal-trigger
+                                        :href="route('scheduled-shifts.edit', $sshift)" :label="__('Bearbeiten')" />
+                        @endcan
+                    </span>
                 </li>
             @endforeach
         </ul>

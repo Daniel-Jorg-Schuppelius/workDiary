@@ -42,6 +42,28 @@
             </div>
         </x-card>
 
+        {{-- Beweismittel des Melders: Download nur nach freigegebener Prüfung (Quarantäne-Gate im Controller). --}}
+        <x-card>
+            <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Anhänge') }}</h2>
+            <ul class="mt-2 space-y-1">
+                @forelse ($case->attachments as $attachment)
+                    <li class="flex flex-wrap items-center gap-2">
+                        <span class="break-all">{{ $attachment->original_name_ciphertext }}</span>
+                        <span class="text-xs text-muted">{{ \CommonToolkit\Helper\Data\NumberHelper::formatBytes((int) $attachment->size, 1) }}</span>
+                        @if ($attachment->scan_status === \App\Enums\Whistleblowing\AttachmentScanStatus::Clean)
+                            <x-icon-btn icon="download" tone="ghost" size="xs"
+                                        :href="route('whistleblowing.internal.attachment', ['case' => $case, 'attachment' => $attachment])"
+                                        :label="__('Herunterladen')" />
+                        @else
+                            <x-status-badge size="xs" :tone="$attachment->scan_status === \App\Enums\Whistleblowing\AttachmentScanStatus::Pending ? 'warning' : 'error'">{{ $attachment->scan_status->label() }}</x-status-badge>
+                        @endif
+                    </li>
+                @empty
+                    <li class="text-muted">{{ __('Keine Anhänge.') }}</li>
+                @endforelse
+            </ul>
+        </x-card>
+
         <x-card>
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Bearbeiter') }}</h2>
             <ul class="mt-2 list-disc ml-5">

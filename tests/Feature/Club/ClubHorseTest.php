@@ -39,6 +39,9 @@ class ClubHorseTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        // Festdaten liegen im Oktober 2026; Freigaben gelten ab „heute“ — ohne
+        // eingefrorene Zeit riss der Test ab dem 17.10.2026 (Datumsfalle).
+        CarbonImmutable::setTestNow('2026-10-12 08:00:00');
         $this->setUpOrganization();
         $this->admin = $this->orgAdmin();
         $this->group = ClubGroup::factory()->create(['name' => 'Reitgruppe Anfänger', 'leader_user_id' => $this->admin->id]);

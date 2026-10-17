@@ -10821,5 +10821,10 @@
     "Anderer Beleg – neu anlegen": "Altro giustificativo – crea nuovo",
     "Mit dem vorhandenen Beleg verknüpft.": "Collegato al giustificativo esistente.",
     "Übergabe als neuer Beleg angestoßen.": "Trasmissione come nuovo giustificativo avviata.",
-    "Kein möglicher Doppel-Eingang offen.": "Nessun possibile doppione in sospeso."
+    "Kein möglicher Doppel-Eingang offen.": "Nessun possibile doppione in sospeso.",
+    "Mein Monatszettel (A4 hoch)": "Il mio foglio mensile (A4 verticale)",
+    "ICS-Download": "Download ICS",
+    "Für einen einmaligen Import in einen anderen Kalender.": "Per un'importazione una tantum in un altro calendario.",
+    "Meine Termine als ICS": "I miei appuntamenti come ICS",
+    "Öffentliche Termine als ICS": "Appuntamenti pubblici come ICS"
 }

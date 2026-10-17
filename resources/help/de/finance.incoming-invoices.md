@@ -44,8 +44,10 @@ dieselbe Verarbeitung: Dublettenprüfung, Sicherheitsprüfung, Lesen der
 E-Rechnung bzw. Erkennung aus PDF oder Bild, Validierung und Abweichungen.
 Das unveränderte Original liegt als Dokument vom Typ Rechnung im DMS.
 
-**Rechnungspostfach:** Unter Verwaltung → E-Mail-Eingang wird ein Postfach
-mit dem Schalter „Rechnungspostfach“ zum Rechnungseingang. Jede Mail wird
+**Rechnungspostfach:** Unter Verwaltung → Daten & Schnittstellen → E-Mail-Eingang
+öffnen Sie das Postfach über „Bearbeiten“ (oder legen ein neues an) und schalten
+im Dialog unter „Verwendung“ den Umschalter „Rechnungspostfach“ ein. In der
+Postfachliste erscheint danach das Kennzeichen „Rechnungen“. Jede Mail wird
 nach Rechnungen ausgewertet, nicht nach Anhängen:
 
 - Eine XRechnung (XML) ist das Original. Ein mitgeschicktes PDF derselben

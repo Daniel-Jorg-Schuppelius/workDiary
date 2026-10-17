@@ -20,6 +20,9 @@
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('isms.subtitle.vulnerabilities')">
         <x-slot:actions>
+            <x-icon-btn icon="campaign" tone="outline" size="sm"
+                        :href="route('isms.advisories.index')"
+                        show-label>{{ __('isms.title.advisories') }}</x-icon-btn>
             <x-icon-btn icon="upload_file" tone="outline" size="sm"
                         data-entry-modal-trigger
                         :href="route('isms.advisories.create')"

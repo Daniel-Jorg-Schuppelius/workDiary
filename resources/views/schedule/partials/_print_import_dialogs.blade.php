@@ -25,6 +25,8 @@
                 data-print-src="{{ route('print.on-call') }}" icon="print">{{ __('Bereitschaft & Notdienst (A4 quer)') }}</x-button>
         <x-button type="button" tone="outline" class="schedule-print-pick"
                 data-print-src="{{ route('print.vacations', ['year' => $anchor->year]) }}" icon="print">{{ __('Urlaubsübersicht ') . $anchor->year . __(' (A4 hoch)') }}</x-button>
+        <x-button type="button" tone="outline" class="schedule-print-pick"
+                data-print-src="{{ route('print.user.month', [auth()->user(), 'month' => $anchor->toDateString()]) }}" icon="print">{{ __('Mein Monatszettel (A4 hoch)') }}</x-button>
     </div>
 
     <iframe id="schedule-print-frame" title="{{ __('Druckvorschau') }}"

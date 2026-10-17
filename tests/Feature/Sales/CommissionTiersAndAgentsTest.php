@@ -260,8 +260,9 @@ final class CommissionTiersAndAgentsTest extends TestCase {
         $this->actingAs($this->admin)->get(route('commission-rules.edit', $rule))->assertOk()->assertSee('10000.00');
 
         $invoice = $this->invoice('100.00');
-        $this->actingAs($this->admin)->get(route('commissions.assign.form', $invoice))->assertOk()->assertSee('Anna Agentin');
-        $this->actingAs($this->admin)->post(route('commissions.assign', $invoice), ['commission_agent_id' => $agent->sqid])->assertRedirect();
+        $document = ['type' => $invoice->getMorphClass(), 'document' => $invoice->sqid];
+        $this->actingAs($this->admin)->get(route('commissions.document.assign.form', $document))->assertOk()->assertSee('Anna Agentin');
+        $this->actingAs($this->admin)->post(route('commissions.document.assign', $document), ['commission_agent_id' => $agent->sqid])->assertRedirect();
         $this->assertSame($agent->id, $invoice->refresh()->sales_agent_id);
         $this->assertNull($invoice->sales_user_id);
     }

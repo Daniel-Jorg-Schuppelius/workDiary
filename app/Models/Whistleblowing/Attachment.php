@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Whistleblowing;
 
 use App\Enums\Whistleblowing\AttachmentScanStatus;
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use App\Models\Whistleblowing\Casts\CaseEncrypted;
 use App\Models\Whistleblowing\Concerns\ProvidesCaseDek;
 use Illuminate\Database\Eloquent\Model;
@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $original_name_ciphertext Klartext beim Lesen/Setzen
  */
 class Attachment extends Model implements ProvidesCaseDek {
-    use BelongsToOrganization;
+    use BelongsToOrganization, HasSqid;
 
     protected $table = 'whistleblowing_attachments';
 

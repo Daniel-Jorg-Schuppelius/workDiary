@@ -67,5 +67,15 @@
             </form>
         @endif
     </x-card>
+
+    {{-- Einmaliger Export der Termine (angemeldet, kein Abo): ergänzt den Token-Feed der Schichten. --}}
+    <x-card class="flex flex-col gap-2">
+        <h3 class="font-semibold">{{ __('ICS-Download') }}</h3>
+        <p class="text-sm">{{ __('Für einen einmaligen Import in einen anderen Kalender.') }}</p>
+        <div class="flex flex-wrap gap-2">
+            <x-icon-btn icon="download" size="sm" :href="route('events.ics.personal')" show-label>{{ __('Meine Termine als ICS') }}</x-icon-btn>
+            <x-icon-btn icon="download" size="sm" :href="route('events.ics.public')" show-label>{{ __('Öffentliche Termine als ICS') }}</x-icon-btn>
+        </div>
+    </x-card>
 </x-page-shell>
 @endsection

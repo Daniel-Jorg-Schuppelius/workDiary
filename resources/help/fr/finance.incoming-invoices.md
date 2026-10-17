@@ -46,9 +46,11 @@ lecture de la facture électronique ou reconnaissance à partir du PDF ou de
 l’image, validation et écarts. L’original inchangé est conservé comme
 document de type facture dans la GED.
 
-**Boîte des factures :** Sous Administration → Réception d'e-mails, une boîte
-devient partie des factures reçues avec l’interrupteur « Boîte des
-factures ». Chaque e-mail est évalué par facture, non par pièce jointe :
+**Boîte des factures :** Sous Administration → Données et interfaces → Réception
+d'e-mails, ouvrez la boîte via « Modifier » (ou créez-en une nouvelle) et
+activez dans la boîte de dialogue, sous « Utilisation », l’interrupteur « Boîte
+des factures ». La liste des boîtes affiche ensuite le badge « Factures ».
+Chaque e-mail est évalué par facture, non par pièce jointe :
 
 - Une XRechnung (XML) est l’original. Un PDF de la même facture envoyé avec
   elle est joint comme fichier d’accompagnement.

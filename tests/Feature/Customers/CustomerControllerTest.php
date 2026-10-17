@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Customers;
 
+use App\Enums\Import\ImportEntity;
 use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Project\ProjectStatus;
 use App\Models\Audit\AuditLog;
@@ -19,6 +20,7 @@ use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Services\Import\DirectCsvImportService;
 use App\Support\MorphMap;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Database\Eloquent\Relations\{MorphMany, MorphToMany};
@@ -426,6 +428,11 @@ class CustomerControllerTest extends TestCase {
             ->count();
     }
 
+    /**
+     * Der eigene Kunden-CSV-Upload ist entfallen (zentraler Import unter
+     * Verwaltung → Datentransfer, 2026-10-17); die Upsert-Regeln der
+     * CustomerSpec bleiben über den Direktimport-Dienst abgesichert.
+     */
     public function test_csv_import_creates_and_updates_customers(): void {
         $existing = Customer::factory()->create([
             'organization_id' => $this->organization->id,
@@ -443,22 +450,12 @@ class CustomerControllerTest extends TestCase {
         ToolkitFile::write($tmp, $csv);
         $upload = new UploadedFile($tmp, 'customers.csv', 'text/csv', null, true);
 
-        $response = $this->postAsAdmin('customers.import', ['file' => $upload]);
+        $this->actingAs($this->admin);
+        $result = app(DirectCsvImportService::class)->import($upload, ImportEntity::Customers, $this->organization);
 
-        $response->assertRedirect(route('customers.index'));
+        $this->assertSame(1, $result['updated']);
         $this->assertDatabaseHas('customers', ['id' => $existing->id, 'name' => 'Neu Name', 'hourly_rate' => 95.5]);
         $this->assertDatabaseHas('customers', ['number' => 'K-0099', 'name' => 'Frischer Kunde', 'billable' => true]);
-    }
-
-    public function test_csv_import_requires_billing_permission(): void {
-        $csv = "Nummer;Name\nK-0001;Foo\n";
-        $tmp = tempnam(sys_get_temp_dir(), 'csv');
-        ToolkitFile::write($tmp, $csv);
-        $upload = new UploadedFile($tmp, 'customers.csv', 'text/csv', null, true);
-
-        $this->actingAs($this->user)
-            ->post(route('customers.import'), ['file' => $upload])
-            ->assertForbidden();
     }
 
     public function test_customer_supports_tags_and_attachments_relations(): void {

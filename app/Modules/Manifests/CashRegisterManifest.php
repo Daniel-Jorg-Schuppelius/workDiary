@@ -57,4 +57,13 @@ final class CashRegisterManifest extends Manifest {
             'cash-registers.*',
         ];
     }
+
+    /** @return array{sections: list<string>, items: list<string>, groups: list<string>} */
+    public function navigation(): array {
+        return [
+            'sections' => [],
+            'items' => ['cash-registers.index'],
+            'groups' => [],
+        ];
+    }
 }

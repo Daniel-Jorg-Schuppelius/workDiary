@@ -79,7 +79,7 @@ class AttachmentDownloadTest extends TestCase {
     }
 
     private function url(WhistleblowingCase $case, Attachment $a): string {
-        return route('whistleblowing.internal.attachment', ['case' => $case, 'attachment' => $a->id]);
+        return route('whistleblowing.internal.attachment', ['case' => $case, 'attachment' => $a]);
     }
 
     /**

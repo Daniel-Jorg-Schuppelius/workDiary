@@ -1452,8 +1452,6 @@ Route::middleware('auth')->group(function () {
                 ->where('type', '[a-z0-9_]+')->name('commissions.document.assign.form');
             Route::post('zuordnung/beleg/{type}/{document}', [\App\Http\Controllers\Sales\CommissionController::class, 'assignDocument'])
                 ->where('type', '[a-z0-9_]+')->name('commissions.document.assign');
-            Route::get('zuordnung/{invoice}', [\App\Http\Controllers\Sales\CommissionController::class, 'assignForm'])->name('commissions.assign.form');
-            Route::post('zuordnung/{invoice}', [\App\Http\Controllers\Sales\CommissionController::class, 'assign'])->name('commissions.assign');
         });
 
         // Umfragen (Feature 090, MVP-660–662): Fragebögen, Einladungen, NPS.
@@ -1467,8 +1465,6 @@ Route::middleware('auth')->group(function () {
         Route::post('umfragen/{survey}/aktiv', [\App\Http\Controllers\Survey\SurveyController::class, 'toggleActive'])->name('surveys.toggle-active');
 
         Route::get('customers/export', [CustomerController::class, 'export'])->name('customers.export');
-        Route::get('customers/import', [CustomerController::class, 'importForm'])->name('customers.import.form');
-        Route::post('customers/import', [CustomerController::class, 'import'])->name('customers.import');
         // Kunden-Abgleich (Dubletten-Bereinigung) — VOR der Resource-Route, damit
         // "customers/duplicates" nicht als customers/{customer} interpretiert wird.
         Route::get('customers/duplicates', [CustomerMergeController::class, 'index'])->name('customers.duplicates.index');

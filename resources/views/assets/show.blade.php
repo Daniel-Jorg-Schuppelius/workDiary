@@ -73,6 +73,7 @@
                     @endcan
                     <x-icon-btn icon="description" size="sm" :href="route('assets.dossier', $asset)" target="_blank" show-label>{{ __('Objektakte') }}</x-icon-btn>
                     <x-icon-btn icon="qr_code_2" size="sm" :href="route('assets.label', $asset)" target="_blank" show-label>{{ __('asset.label.print') }}</x-icon-btn>
+                    <x-icon-btn icon="account_tree" size="sm" :href="route('assets.components.index', $asset)" show-label>{{ __('asset.components.title') }}</x-icon-btn>
                     <span data-nfc-scope class="contents">
                         <x-icon-btn icon="nfc" size="sm" class="hidden" type="button" :data-nfc-write="route('assets.show', $asset)" show-label>{{ __('asset.nfc.write') }}</x-icon-btn>
                         <span class="self-center text-xs text-muted" data-nfc-status aria-live="polite"></span>

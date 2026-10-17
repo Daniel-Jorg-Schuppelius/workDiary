@@ -12,9 +12,18 @@ declare(strict_types=1);
 
 namespace App\Enums\Whistleblowing;
 
-enum AttachmentScanStatus: string {
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
+enum AttachmentScanStatus: string implements HasLabel {
+    use HasOptions;
+
     case Pending = 'pending';
     case Clean = 'clean';
     case Rejected = 'rejected';
     case Failed = 'failed';
+
+    public function label(): string {
+        return (string) __('whistleblowing.attachment_scan.' . $this->value);
+    }
 }

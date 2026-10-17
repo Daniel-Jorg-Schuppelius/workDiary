@@ -28,6 +28,9 @@
                                 :href="route('learning.courses.edit', $course)"
                                 show-label>{{ __('learning.action.edit') }}</x-icon-btn>
                 @endif
+                <x-icon-btn icon="download" tone="outline" size="sm"
+                            :href="route('learning.courses.export', $course)"
+                            show-label>{{ __('learning.action.export_course') }}</x-icon-btn>
                 @can('create', \App\Models\Learning\LearningCourse::class)
                     <form method="POST" action="{{ route('learning.courses.duplicate', $course) }}"
                           data-confirm-dialog data-confirm-message="{{ __('learning.confirm.duplicate') }}">

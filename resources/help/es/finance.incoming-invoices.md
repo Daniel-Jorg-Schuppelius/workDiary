@@ -45,9 +45,11 @@ de la factura electrónica o reconocimiento a partir de PDF o imagen,
 validación y desviaciones. El original sin cambios se guarda como documento
 de tipo factura en el DMS.
 
-**Buzón de facturas:** En Administración → Recepción de correo, un buzón
-pasa a formar parte de las facturas recibidas con el interruptor «Buzón de
-facturas». Cada correo se evalúa por facturas, no por adjuntos:
+**Buzón de facturas:** En Administración → Datos e interfaces → Recepción de
+correo, abra el buzón con «Editar» (o cree uno nuevo) y active en el diálogo,
+bajo «Uso», el interruptor «Buzón de facturas». La lista de buzones muestra
+después la etiqueta «Facturas». Cada correo se evalúa por facturas, no por
+adjuntos:
 
 - Una XRechnung (XML) es el original. Un PDF de la misma factura enviado con
   ella se adjunta como archivo complementario.

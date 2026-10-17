@@ -45,9 +45,11 @@ sicurezza, lettura della fattura elettronica o riconoscimento da PDF o
 immagine, validazione e scostamenti. L’originale invariato viene archiviato
 come documento di tipo fattura nel DMS.
 
-**Casella delle fatture:** in Amministrazione → Ricezione e-mail, una casella
-entra a far parte delle fatture ricevute con l’interruttore «Casella delle
-fatture». Ogni e-mail viene valutata per fatture, non per allegati:
+**Casella delle fatture:** in Amministrazione → Dati e interfacce → Ricezione
+e-mail, apra la casella con «Modifica» (o ne crei una nuova) e attivi nella
+finestra, sotto «Utilizzo», l’interruttore «Casella delle fatture». Nell’elenco
+delle caselle compare poi il contrassegno «Fatture». Ogni e-mail viene valutata
+per fatture, non per allegati:
 
 - Una XRechnung (XML) è l’originale. Un PDF della stessa fattura inviato
   insieme viene allegato come file di accompagnamento.

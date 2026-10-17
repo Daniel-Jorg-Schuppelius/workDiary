@@ -10821,5 +10821,10 @@
     "Anderer Beleg – neu anlegen": "Otro comprobante – crear nuevo",
     "Mit dem vorhandenen Beleg verknüpft.": "Vinculado con el comprobante existente.",
     "Übergabe als neuer Beleg angestoßen.": "Entrega como comprobante nuevo iniciada.",
-    "Kein möglicher Doppel-Eingang offen.": "No hay ninguna posible entrada duplicada pendiente."
+    "Kein möglicher Doppel-Eingang offen.": "No hay ninguna posible entrada duplicada pendiente.",
+    "Mein Monatszettel (A4 hoch)": "Mi hoja mensual (A4 vertical)",
+    "ICS-Download": "Descarga ICS",
+    "Für einen einmaligen Import in einen anderen Kalender.": "Para una importación única en otro calendario.",
+    "Meine Termine als ICS": "Mis citas como ICS",
+    "Öffentliche Termine als ICS": "Citas públicas como ICS"
 }

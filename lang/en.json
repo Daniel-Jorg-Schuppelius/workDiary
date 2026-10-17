@@ -10821,5 +10821,10 @@
     "Anderer Beleg – neu anlegen": "Different voucher – create new",
     "Mit dem vorhandenen Beleg verknüpft.": "Linked with the existing voucher.",
     "Übergabe als neuer Beleg angestoßen.": "Handover as a new voucher started.",
-    "Kein möglicher Doppel-Eingang offen.": "No possible duplicate receipt open."
+    "Kein möglicher Doppel-Eingang offen.": "No possible duplicate receipt open.",
+    "Mein Monatszettel (A4 hoch)": "My monthly sheet (A4 portrait)",
+    "ICS-Download": "ICS download",
+    "Für einen einmaligen Import in einen anderen Kalender.": "For a one-off import into another calendar.",
+    "Meine Termine als ICS": "My events as ICS",
+    "Öffentliche Termine als ICS": "Public events as ICS"
 }

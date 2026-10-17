@@ -39,6 +39,10 @@ class ClubAttendanceTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        // Training liegt fest am 15.09.2026, Aufnahmen „vor einem Monat“ — ohne
+        // eingefrorene Zeit fielen die Mitglieder ab dem 16.10.2026 aus dem
+        // Kader des Termins (Datumsfalle).
+        CarbonImmutable::setTestNow('2026-09-20 10:00:00');
         $this->setUpOrganization();
         $this->admin = $this->orgAdmin();
     }
