@@ -59,6 +59,11 @@ adjuntos:
 - Si un correo no contiene ninguna factura reconocible, el adjunto pasa a ser
   un **documento no reconocido**: el original se conserva y usted introduce
   los valores.
+- Si al servidor le faltaba el reconocimiento de texto cuando llegó el correo,
+  la acción masiva «Reconocer de nuevo» en la lista de documentos por asignar
+  repite el reconocimiento de los documentos no reconocidos seleccionados a
+  partir del original conservado. Los valores introducidos y los documentos
+  transferidos o rechazados no cambian.
 - Los correos sin ningún adjunto de factura (por ejemplo, solo con un enlace
   de descarga) van a la bandeja de asignación de la Administración, marcados
   como buzón de facturas.

@@ -56,6 +56,10 @@ nach Rechnungen ausgewertet, nicht nach Anhängen:
 - Eingebettete Logos und Signaturbilder werden nicht verarbeitet.
 - Enthält eine Mail keine erkennbare Rechnung, wird der Anhang ein
   **Klärfall**: Das Original liegt vor, die Werte erfassen Sie selbst.
+- Fehlte dem Server beim Eingang die Texterkennung, wiederholt die
+  Sammelaktion „Erneut erkennen“ im Reiter „Zuzuordnen“ die Erkennung der
+  ausgewählten Klärfälle aus dem abgelegten Original. Erfasste Werte,
+  übergebene und abgelehnte Eingänge bleiben unverändert.
 - Mails ganz ohne Rechnungsanhang (etwa nur mit Download-Link) landen in der
   Zuordnungs-Inbox der Verwaltung, gekennzeichnet als Rechnungspostfach.
 - Eine als Anlage weitergeleitete Mail wird ausgepackt; die Rechnung darin

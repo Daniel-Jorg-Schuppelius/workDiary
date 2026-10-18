@@ -59,6 +59,11 @@ per fatture, non per allegati:
 - Se un’e-mail non contiene alcuna fattura riconoscibile, l’allegato diventa
   un **documento non riconosciuto**: l’originale viene conservato e Lei
   inserisce i valori.
+- Se al server mancava il riconoscimento del testo all’arrivo dell’e-mail,
+  l’azione di massa «Riconosci di nuovo» nell’elenco dei documenti da
+  assegnare ripete il riconoscimento dei documenti non riconosciuti
+  selezionati a partire dall’originale conservato. I valori inseriti e i
+  documenti trasmessi o rifiutati restano invariati.
 - Le e-mail senza alcun allegato di fattura (per esempio solo con un link di
   download) finiscono nella casella di assegnazione dell’Amministrazione,
   contrassegnate come casella delle fatture.

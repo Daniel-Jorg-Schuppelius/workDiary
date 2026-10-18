@@ -396,6 +396,15 @@ class IncomingEInvoiceService {
      * @return array<string, mixed>|null
      */
     private function analyze(\App\Models\Platform\User $actor, string $contents, ?string $mime, ?string $path, ?string $name): ?array {
+        return $this->analyzeFor($actor->organization, $contents, $mime, $path, $name);
+    }
+
+    /**
+     * Erkennung ohne handelnden Nutzer — die Nacherkennung läuft aus der Konsole.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function analyzeFor(?\App\Models\Platform\Organization $organization, string $contents, ?string $mime, ?string $path, ?string $name): ?array {
         $parsed = $this->parse($contents, $mime, $path);
         if ($parsed !== null) {
             $summary = $this->summary($parsed);
@@ -407,7 +416,7 @@ class IncomingEInvoiceService {
             return $summary;
         }
 
-        $summary = $this->unstructuredSummary($actor, $contents, $mime, $path, $name);
+        $summary = $this->unstructuredSummary($organization, $contents, $mime, $path, $name);
         if ($summary !== null) {
             $summary['validation'] = null;
             $summary['recognition'] = \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted->value;
@@ -438,36 +447,11 @@ class IncomingEInvoiceService {
         $summary ??= $this->unrecognizedSummary();
         $recognition = \App\Enums\Invoicing\IncomingInvoiceRecognition::from((string) $summary['recognition']);
 
-        $classification = $this->classify($actor->organization, $summary);
-        $summary['direction'] = $classification['direction']->value;
-        $summary['kind'] = $classification['kind']->value;
-        // Zuordnungs-VORSCHLÄGE + Abweichungen (MVP-167): nur Hinweise für
-        // den Prüfer — es entsteht NIE automatisch ein Stammdatensatz.
-        $summary['suggestions'] = $this->suggestions($organizationId, $summary);
-        $addressDeviations = $this->addressDeviations($actor->organization, $summary);
-        $summary['deviations'] = [...$this->deviations($summary), ...$addressDeviations];
-        $summary['notices'] = $this->notices($summary);
-        // Maschinenlesbar für das Übergabe-Tor (MVP-1111); die Meldungstexte sind nur für Menschen.
-        $summary['flags'] = array_values(array_filter([
-            $addressDeviations === [] ? null : ($classification['direction'] === \App\Enums\Billing\DocumentDirection::Outgoing ? 'own_invoice_copy' : 'not_addressed'),
-            self::totalsMismatch($summary) ? 'totals_mismatch' : null,
-        ]));
+        ['summary' => $summary, 'classification' => $classification] = $this->enrich($actor->organization, $organizationId, $summary);
 
         $attributes = [
-            'title' => match ($recognition) {
-                \App\Enums\Invoicing\IncomingInvoiceRecognition::Structured => (string) __('E-Rechnung :number — :seller', ['number' => $summary['number'], 'seller' => $summary['seller'] ?? '—']),
-                \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted => (string) __('Eingangsrechnung :number — :seller', ['number' => $summary['number'], 'seller' => $summary['seller'] ?? '—']),
-                \App\Enums\Invoicing\IncomingInvoiceRecognition::None => (string) __('Rechnungseingang ohne erkannte Daten — :file', ['file' => $originalName ?? $sha256]),
-            },
+            ...$this->documentAttributes($recognition, $summary, $originalName ?? $sha256),
             'document_type' => \App\Enums\Document\DocumentType::Invoice->value,
-            'description' => $recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::None
-                ? (string) __('Nicht erkannt — Werte am Original prüfen und erfassen.')
-                : (string) __(':profile · :gross :currency, fällig :due', [
-                    'profile' => $summary['profile'],
-                    'gross' => NumberHelper::toGermanFormat((float) $summary['gross'], 2, withThousandsSeparator: true),
-                    'currency' => $summary['currency'],
-                    'due' => $summary['due_date'] ?? '—',
-                ]),
         ];
 
         $documents = app(\App\Services\Document\DocumentService::class);
@@ -515,6 +499,117 @@ class IncomingEInvoiceService {
         app(IncomingInvoiceMatcher::class)->autoAssign($incoming);
 
         return ['incoming' => $incoming, 'document' => $document];
+    }
+
+    /**
+     * Nacherkennung (MVP-1207): ein Klärfall bleibt einer, bis jemand Werte
+     * erfasst — oder bis die Erkennung wiederholt wird, etwa nachdem die
+     * Textwerkzeuge des Servers (pdftotext, tesseract, ocrmypdf) nachinstalliert
+     * wurden. Erfasste Werte, Übergaben und Ablehnungen bleiben unangetastet.
+     */
+    public static function isReanalyzable(\App\Models\Invoicing\IncomingEInvoice $incoming): bool {
+        return $incoming->recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::None
+            && $incoming->transferred_at === null
+            && $incoming->status !== \App\Enums\Invoicing\IncomingEInvoiceStatus::Rejected
+            && ! isset(((array) $incoming->summary)['manual']);
+    }
+
+    /**
+     * Liest das abgelegte Original erneut; true, sobald der Eingang Werte trägt.
+     * Prüfsumme, Absender und Eingangszeit bleiben; Titel und Beschreibung des
+     * Dokuments ziehen nach, die Gegenpartei wird wie beim Eingang nur bei
+     * eindeutigem Treffer gesetzt.
+     */
+    public function reanalyze(\App\Models\Invoicing\IncomingEInvoice $incoming): bool {
+        if (! self::isReanalyzable($incoming)) {
+            return false;
+        }
+        $document = $incoming->document;
+        $version = $document?->currentVersion;
+        if ($document === null || $version === null) {
+            return false;
+        }
+        $disk = \Illuminate\Support\Facades\Storage::disk((string) ($version->disk ?: 'local'));
+        $path = (string) $version->path;
+        if ($path === '' || ! $disk->exists($path)) {
+            return false;
+        }
+
+        $organization = $incoming->organization;
+        $summary = $this->analyzeFor($organization, (string) $disk->get($path), $version->mime !== null ? (string) $version->mime : null, $disk->path($path), (string) $version->original_name);
+        if ($summary === null) {
+            return false;
+        }
+        $recognition = \App\Enums\Invoicing\IncomingInvoiceRecognition::from((string) $summary['recognition']);
+        ['summary' => $summary, 'classification' => $classification] = $this->enrich($organization, (int) $incoming->organization_id, $summary);
+
+        $document->forceFill($this->documentAttributes($recognition, $summary, (string) $version->original_name))->save();
+        $incoming->forceFill([
+            'direction' => $classification['direction'],
+            'kind' => $classification['kind'],
+            'recognition' => $recognition,
+            'summary' => $summary,
+            ...\App\Models\Invoicing\IncomingEInvoice::columnsFromSummary($summary),
+        ])->save();
+        $incoming->audit('incoming_einvoice.reanalyzed', [
+            'number' => $summary['number'],
+            'seller' => $summary['seller'],
+            'gross' => $summary['gross'],
+            'recognition' => $recognition->value,
+        ]);
+        app(IncomingInvoiceMatcher::class)->autoAssign($incoming);
+
+        return true;
+    }
+
+    /**
+     * Richtung, Belegart, Vorschläge, Abweichungen und Tor-Flags — beim Eingang
+     * wie bei der Nacherkennung dieselbe Anreicherung.
+     *
+     * @param  array<string, mixed>  $summary
+     * @return array{summary: array<string, mixed>, classification: array{direction: \App\Enums\Billing\DocumentDirection, kind: \App\Enums\Billing\DocumentKind}}
+     */
+    private function enrich(?\App\Models\Platform\Organization $organization, int $organizationId, array $summary): array {
+        $classification = $this->classify($organization, $summary);
+        $summary['direction'] = $classification['direction']->value;
+        $summary['kind'] = $classification['kind']->value;
+        // Zuordnungs-VORSCHLÄGE + Abweichungen (MVP-167): nur Hinweise für
+        // den Prüfer — es entsteht NIE automatisch ein Stammdatensatz.
+        $summary['suggestions'] = $this->suggestions($organizationId, $summary);
+        $addressDeviations = $this->addressDeviations($organization, $summary);
+        $summary['deviations'] = [...$this->deviations($summary), ...$addressDeviations];
+        $summary['notices'] = $this->notices($summary);
+        // Maschinenlesbar für das Übergabe-Tor (MVP-1111); die Meldungstexte sind nur für Menschen.
+        $summary['flags'] = array_values(array_filter([
+            $addressDeviations === [] ? null : ($classification['direction'] === \App\Enums\Billing\DocumentDirection::Outgoing ? 'own_invoice_copy' : 'not_addressed'),
+            self::totalsMismatch($summary) ? 'totals_mismatch' : null,
+        ]));
+
+        return ['summary' => $summary, 'classification' => $classification];
+    }
+
+    /**
+     * Titel und Beschreibung des Dokuments aus der Zusammenfassung.
+     *
+     * @param  array<string, mixed>  $summary
+     * @return array{title: string, description: string}
+     */
+    private function documentAttributes(\App\Enums\Invoicing\IncomingInvoiceRecognition $recognition, array $summary, string $fileLabel): array {
+        return [
+            'title' => match ($recognition) {
+                \App\Enums\Invoicing\IncomingInvoiceRecognition::Structured => (string) __('E-Rechnung :number — :seller', ['number' => $summary['number'], 'seller' => $summary['seller'] ?? '—']),
+                \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted => (string) __('Eingangsrechnung :number — :seller', ['number' => $summary['number'], 'seller' => $summary['seller'] ?? '—']),
+                \App\Enums\Invoicing\IncomingInvoiceRecognition::None => (string) __('Rechnungseingang ohne erkannte Daten — :file', ['file' => $fileLabel]),
+            },
+            'description' => $recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::None
+                ? (string) __('Nicht erkannt — Werte am Original prüfen und erfassen.')
+                : (string) __(':profile · :gross :currency, fällig :due', [
+                    'profile' => $summary['profile'],
+                    'gross' => NumberHelper::toGermanFormat((float) $summary['gross'], 2, withThousandsSeparator: true),
+                    'currency' => $summary['currency'],
+                    'due' => $summary['due_date'] ?? '—',
+                ]),
+        ];
     }
 
     /**
@@ -816,7 +911,7 @@ class IncomingEInvoiceService {
      *
      * @return array<string, mixed>|null
      */
-    private function unstructuredSummary(\App\Models\Platform\User $actor, string $contents, ?string $mime, ?string $path, ?string $originalName): ?array {
+    private function unstructuredSummary(?\App\Models\Platform\Organization $organization, string $contents, ?string $mime, ?string $path, ?string $originalName): ?array {
         $extension = match (true) {
             str_contains((string) $mime, 'pdf') || str_ends_with(mb_strtolower((string) $originalName), '.pdf') => 'pdf',
             str_contains((string) $mime, 'png') => 'png',
@@ -824,7 +919,6 @@ class IncomingEInvoiceService {
             str_contains((string) $mime, 'tif') => 'tif',
             default => null,
         };
-        $organization = $actor->organization;
         if ($extension === null || $organization === null) {
             return null;
         }

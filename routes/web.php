@@ -3182,6 +3182,8 @@ Route::middleware('auth')->group(function () {
             Route::post('/', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'store'])->name('store');
             // Rechnungspostfach (Feature 163, MVP-1110): Zuordnen, Werte erfassen, Sammelaktion.
             Route::post('sammel-zuordnen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'bulkAssign'])->name('bulk-assign');
+            // Nacherkennung offener Klärfälle (MVP-1207), z. B. nach nachinstallierten Textwerkzeugen.
+            Route::post('sammel-erkennen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'bulkReanalyze'])->name('bulk-reanalyze');
             Route::get('{incoming}/zuordnen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'assignForm'])->name('assign.form');
             Route::post('{incoming}/zuordnen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'assign'])->name('assign');
             Route::get('{incoming}/werte', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'valuesForm'])->name('values.form');

@@ -454,6 +454,7 @@ return [
         'candidate_dismissed' => 'Übergabe trotz Treffer neu angelegt',
         'direction_corrected' => 'Richtung des Eingangs korrigiert',
         'values_captured' => 'Werte des Eingangs erfasst',
+        'reanalyzed' => 'Erkennung des Eingangs wiederholt',
         'assigned' => 'Eingangsrechnung zugeordnet',
         'sender_rule_saved' => 'Absenderregel gespeichert',
         'decided' => 'Eingangsrechnung entschieden',

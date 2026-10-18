@@ -454,6 +454,7 @@ return [
         'candidate_dismissed' => 'Entrega creada pese a una coincidencia',
         'direction_corrected' => 'Dirección del documento corregida',
         'values_captured' => 'Valores del documento registrados',
+        'reanalyzed' => 'Reconocimiento del documento repetido',
         'assigned' => 'Factura entrante asignada',
         'sender_rule_saved' => 'Regla de remitente guardada',
         'decided' => 'Factura entrante decidida',

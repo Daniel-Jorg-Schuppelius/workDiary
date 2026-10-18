@@ -10,6 +10,16 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Rechnungseingang: Nacherkennung offener Klärfälle (MVP-1207). Fehlten dem
+  Server beim Eingang die Textwerkzeuge, blieben Mail-Rechnungen Klärfälle
+  ohne Nummer und Betrag, und die Erkennung lief nur einmal. Die
+  Sammelaktion „Erneut erkennen“ im Reiter „Zuzuordnen“ und der Befehl
+  `incoming-invoices:reanalyze` (alle Organisationen oder `--organization=`)
+  lesen das abgelegte Original erneut, führen Werte, Richtung, Belegart,
+  Vorschläge, Dokumenttitel und die eindeutige Gegenpartei nach und
+  protokollieren das im Audit. Erfasste Werte, übergebene und abgelehnte
+  Eingänge bleiben unangetastet.
+
 - Deploy installiert die Systemwerkzeuge der Toolkits (`pdftotext`,
   `tesseract`, `ocrmypdf`, Java …): das Install-Werkzeug
   `DSchuppelius/install-dependencies` ist als Git-Submodul `installscript/`

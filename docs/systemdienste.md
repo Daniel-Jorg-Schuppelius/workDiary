@@ -156,6 +156,14 @@ php scripts/check-tools.php          # erforderliche Werkzeuge
 php scripts/check-tools.php --all    # auch optionale
 ```
 
+Rechnungen, die vor der Installation ohne Texterkennung eingingen, stehen im
+Rechnungseingang als Klärfall ohne Nummer und Betrag. Die Erkennung läuft
+nur beim Eingang; nachholen lässt sie sich für alle offenen Klärfälle mit
+`php artisan incoming-invoices:reanalyze` (eine Organisation mit
+`--organization=<ID oder Slug>`) oder in der Liste über die Sammelaktion
+„Erneut erkennen“. Erfasste Werte, übergebene und abgelehnte Eingänge bleiben
+unverändert.
+
 ## Manuelle Wartungsbefehle
 
 Diese Befehle laufen **nicht** im Zeitplan. Sie sind fuer einmalige

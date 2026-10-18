@@ -60,6 +60,11 @@ Chaque e-mail est évalué par facture, non par pièce jointe :
 - Si un e-mail ne contient aucune facture reconnaissable, la pièce jointe
   devient un **document non reconnu** : l’original est conservé et vous
   saisissez vous-même les valeurs.
+- Si la reconnaissance de texte manquait au serveur à l’arrivée de l’e-mail,
+  l’action groupée « Reconnaître à nouveau » dans la liste des documents à
+  attribuer répète la reconnaissance des documents non reconnus sélectionnés
+  à partir de l’original conservé. Les valeurs saisies, les documents transmis
+  et refusés restent inchangés.
 - Les e-mails sans aucune facture jointe (par exemple seulement avec un lien
   de téléchargement) arrivent dans la boîte d’attribution de
   l’Administration, marqués comme boîte des factures.

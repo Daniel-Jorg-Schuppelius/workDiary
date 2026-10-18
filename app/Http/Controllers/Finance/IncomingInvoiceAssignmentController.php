@@ -21,7 +21,7 @@ use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Supplier\Supplier;
 use App\Rules\Iban;
 use App\Services\Integration\Profiles\{CustomerMatchProfile, SupplierMatchProfile};
-use App\Services\Invoicing\EInvoice\IncomingInvoiceMatcher;
+use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, IncomingInvoiceMatcher};
 use App\Services\Stammdaten\CollectiveContacts;
 use App\Support\{ErrorText, Sqid};
 use CommonToolkit\Enums\CountryCode;
@@ -45,6 +45,7 @@ class IncomingInvoiceAssignmentController extends Controller {
     public function __construct(
         private readonly IncomingInvoiceMatcher $matcher,
         private readonly CollectiveContacts $collective,
+        private readonly IncomingEInvoiceService $invoices,
     ) {}
 
     public function assignForm(IncomingEInvoice $incoming): View {
@@ -201,6 +202,33 @@ class IncomingInvoiceAssignmentController extends Controller {
 
         return redirect()->toList('finance.incoming-invoices.index')
             ->with($skipped > 0 ? 'warning' : 'success', __(':assigned Eingänge zugeordnet, :skipped übersprungen.', ['assigned' => $assigned, 'skipped' => $skipped]));
+    }
+
+    /** Erkennung ausgewählter Klärfälle wiederholen (Sammelaktion, MVP-1207). */
+    public function bulkReanalyze(Request $request): RedirectResponse {
+        $this->authorizeBilling();
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'max:200'],
+            'ids.*' => ['string', 'max:64'],
+        ]);
+        $ids = array_values(array_filter(array_map(static fn (string $sqid): ?int => Sqid::decode(IncomingEInvoice::class, $sqid), $data['ids'])));
+        $recognized = 0;
+        $unchanged = 0;
+        $skipped = 0;
+        foreach (IncomingEInvoice::query()->whereKey($ids)->get() as $incoming) {
+            if (! IncomingEInvoiceService::isReanalyzable($incoming)) {
+                $skipped++;
+            } elseif ($this->invoices->reanalyze($incoming)) {
+                $recognized++;
+            } else {
+                $unchanged++;
+            }
+        }
+
+        return redirect()->toList('finance.incoming-invoices.index')
+            ->with($recognized > 0 && $unchanged === 0 && $skipped === 0 ? 'success' : 'warning', __(':recognized Eingänge erkannt, :unchanged weiterhin Klärfall, :skipped übersprungen.', [
+                'recognized' => $recognized, 'unchanged' => $unchanged, 'skipped' => $skipped,
+            ]));
     }
 
     /**

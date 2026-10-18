@@ -454,6 +454,7 @@ return [
         'candidate_dismissed' => 'Transmission créée malgré une correspondance',
         'direction_corrected' => 'Direction du document corrigée',
         'values_captured' => 'Valeurs du document saisies',
+        'reanalyzed' => 'Reconnaissance du document répétée',
         'assigned' => 'Facture entrante attribuée',
         'sender_rule_saved' => 'Règle d’expéditeur enregistrée',
         'decided' => 'Facture entrante tranchée',

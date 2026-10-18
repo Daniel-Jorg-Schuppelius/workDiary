@@ -454,6 +454,7 @@ return [
         'candidate_dismissed' => 'Handover created despite a match',
         'direction_corrected' => 'Incoming document direction corrected',
         'values_captured' => 'Incoming document values recorded',
+        'reanalyzed' => 'Incoming document recognised again',
         'assigned' => 'Incoming invoice assigned',
         'sender_rule_saved' => 'Sender rule saved',
         'decided' => 'Incoming invoice decided',

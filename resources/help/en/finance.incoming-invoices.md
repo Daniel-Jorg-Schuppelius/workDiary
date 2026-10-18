@@ -57,6 +57,10 @@ badge. Each email is evaluated by invoice, not by attachment:
 - If an email contains no recognisable invoice, the attachment becomes an
   **unrecognised document**: the original is kept and you enter the values
   yourself.
+- If the server lacked text recognition when the email arrived, the bulk
+  action “Recognise again” in the list of documents to assign repeats the
+  recognition of the selected unrecognised documents from the stored
+  original. Entered values, transferred and rejected documents stay unchanged.
 - Emails without any invoice attachment (for example only a download link)
   go to the assignment inbox in Administration, marked as invoice mailbox.
 - An email forwarded as an attachment is unpacked; the invoice inside counts
