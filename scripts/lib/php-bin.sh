@@ -65,12 +65,19 @@ resolve_php_bin() {
 # Composer mit $PHP_BIN starten: `composer` trägt den Shebang
 # `#!/usr/bin/env php` und liefe sonst mit dem Standard-php der Shell.
 # Ein Wrapper ohne PHP-Shebang wählt seinen Interpreter selbst.
-run_composer() {
+# composer_cmd füllt COMPOSER_CMD (Array) mit dem Startkommando — für Aufrufer,
+# die es weiterreichen müssen (runuser in scripts/composer.sh).
+composer_cmd() {
     local bin first=""
     bin="$(command -v composer 2>/dev/null)" || { echo "FEHLER: composer nicht gefunden." >&2; return 127; }
     IFS= read -r first < "$bin" 2>/dev/null || true
     case "$first" in
-        '#!'*php* | '<?php'*) "$PHP_BIN" "$bin" "$@" ;;
-        *) "$bin" "$@" ;;
+        '#!'*php* | '<?php'*) COMPOSER_CMD=("$PHP_BIN" "$bin") ;;
+        *) COMPOSER_CMD=("$bin") ;;
     esac
+}
+
+run_composer() {
+    composer_cmd || return $?
+    "${COMPOSER_CMD[@]}" "$@"
 }

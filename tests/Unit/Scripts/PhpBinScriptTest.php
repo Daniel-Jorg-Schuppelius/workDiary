@@ -133,6 +133,25 @@ class PhpBinScriptTest extends TestCase {
         $this->assertSame(3, $process->getExitCode());
     }
 
+    public function test_composer_skript_startet_composer_im_app_verzeichnis_mit_dem_gefundenen_php(): void {
+        $this->executable('php7.9', "#!/bin/sh\nif [ \"\$1\" = \"-r\" ]; then echo 7.9; exit 0; fi\npwd\nprintf '[%s]\\n' \"\$@\"\necho \"cache=\$COMPOSER_CACHE_DIR\"\nexit 3\n");
+        $this->executable('composer', "#!/usr/bin/env php\n<?php echo 'mit dem Standard-php gestartet';\n");
+
+        $process = new Process(
+            ['bash', dirname(__DIR__, 3) . '/scripts/composer.sh', 'update', 'daniel-jorg-schuppelius/php-erechnung-toolkit', '--no-install'],
+            null,
+            ['PATH' => $this->dir . '/bin:' . getenv('PATH'), 'APP_DIR' => $this->dir . '/app', 'COMPOSER_CACHE_DIR' => false],
+        );
+        $process->run();
+
+        $this->assertSame(
+            $this->dir . "/app\n[{$this->dir}/bin/composer]\n[update]\n[daniel-jorg-schuppelius/php-erechnung-toolkit]\n[--no-install]\ncache={$this->dir}/app/storage/framework/cache/composer\n",
+            $process->getOutput(),
+            $process->getErrorOutput()
+        );
+        $this->assertSame(3, $process->getExitCode());
+    }
+
     public function test_skripte_rufen_php_und_composer_nur_ueber_die_erkennung_auf(): void {
         $root = dirname(__DIR__, 3);
         $violations = [];

@@ -120,8 +120,8 @@ Installer erzeugt.
 > `ebics-api/ebics-client-php` (ab 3.1) PHP 8.5 verlangen. Bei vielen
 > Hostern laesst sich die PHP-Version im Hosting-Panel oder per `.htaccess`
 > umstellen. Zeigt `php` auf der Kommandozeile auf eine aeltere Version,
-> artisan ueber `scripts/artisan.sh <befehl>` aufrufen (sucht das Binary
-> selbst) und Composer mit `php8.5 "$(command -v composer)" install`;
+> artisan ueber `scripts/artisan.sh <befehl>` und Composer ueber
+> `scripts/composer.sh install` aufrufen (beide suchen das Binary selbst);
 > `deploy.sh` und alle Skripte unter `scripts/` suchen das passende Binary
 > ebenfalls selbst (`PHP_BIN=<pfad>` gibt eines vor).
 
