@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7d7d2e5a9572e08db5c81ffc0bd07474",
+    "content-hash": "1c00d5dc089ea5bcf7ddcdc67bc7401c",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -954,23 +954,23 @@
         },
         {
             "name": "daniel-jorg-schuppelius/php-pdf-toolkit",
-            "version": "v0.17.3",
+            "version": "v0.25.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/php-pdf-toolkit.git",
-                "reference": "da564a4f4bc5f7d6a746b20e8878a8b50bf68385"
+                "reference": "fd3c358331fde71ab301fbd5b219365e16cec448"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-pdf-toolkit/zipball/da564a4f4bc5f7d6a746b20e8878a8b50bf68385",
-                "reference": "da564a4f4bc5f7d6a746b20e8878a8b50bf68385",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-pdf-toolkit/zipball/fd3c358331fde71ab301fbd5b219365e16cec448",
+                "reference": "fd3c358331fde71ab301fbd5b219365e16cec448",
                 "shasum": ""
             },
             "require": {
                 "dompdf/dompdf": "^3.1",
-                "dschuppelius/php-common-toolkit": "^1.22 || ^2.0",
+                "dschuppelius/php-common-toolkit": "^2.9",
                 "ext-gd": "*",
-                "php": ">=8.1 <8.6",
+                "php": ">=8.2 <8.6",
                 "setasign/fpdf": "^1.8",
                 "setasign/fpdi": "^2.3",
                 "tecnickcom/tcpdf": "^6.6 || ^7.0"
@@ -996,15 +996,18 @@
             "authors": [
                 {
                     "name": "Daniel Jörg Schuppelius",
-                    "email": "info@schuppelius.org"
+                    "email": "info@schuppelius.org",
+                    "homepage": "https://schuppelius.org",
+                    "role": "Developer"
                 }
             ],
             "description": "PHP 8.2+ library for PDF text extraction with automatic reader selection. Supports embedded text and scanned documents via OCR.",
+            "homepage": "https://github.com/Daniel-Jorg-Schuppelius/php-pdf-toolkit",
             "support": {
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/php-pdf-toolkit/issues",
-                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-pdf-toolkit/tree/v0.17.3"
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-pdf-toolkit"
             },
-            "time": "2026-09-19T10:52:33+00:00"
+            "time": "2026-10-14T10:05:29+00:00"
         },
         {
             "name": "darkaonline/l5-swagger",
