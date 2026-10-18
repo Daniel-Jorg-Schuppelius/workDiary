@@ -16,11 +16,13 @@ use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\{PluginSetting, User};
 use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\Lexoffice\Services\LexofficeService;
+use App\Plugins\PluginManager;
 use App\Plugins\SevDesk\SevDeskPlugin;
 use App\Services\Finance\Accounting\ContactPushService;
 use App\Services\Numbering\{NumberAuthority, NumberSequenceService};
 use App\Settings\SettingScope;
-use App\Support\Setting;
+use App\Support\{OrganizationContext, Setting};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
 use Tests\Concerns\WithOrganization;
@@ -221,6 +223,25 @@ class ContactNumberIssuingTest extends TestCase {
             'referenceable_id' => $customer->id,
             'external_number' => '10088',
         ]);
+    }
+
+    /**
+     * Scheduler-Fall: schedule:run löst Plugins und den Lexoffice-Dienst ohne gebundene Organisation auf —
+     * den Schlüssel der Organisation muss der Nachlauf trotzdem finden (Produktionsbefund 2026-10-17).
+     */
+    public function test_follow_up_command_uses_the_key_of_the_organization_without_bound_context(): void {
+        $this->lexofficeIssuesCustomerNumbers();
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Importkunde', 'number' => null]);
+        $this->fakeLexoffice(10099);
+
+        OrganizationContext::runWithout(function (): void {
+            app()->forgetInstance(LexofficeService::class);
+            app()->forgetInstance(PluginManager::class);
+            app(PluginManager::class);
+        });
+
+        $this->assertSame(0, \Illuminate\Support\Facades\Artisan::call('accounting:issue-contact-numbers'));
+        $this->assertSame('10099', $customer->fresh()?->number);
     }
 
     public function test_number_field_is_locked_while_the_program_issues_numbers(): void {

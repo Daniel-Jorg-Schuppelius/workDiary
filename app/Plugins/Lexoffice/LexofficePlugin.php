@@ -28,6 +28,7 @@ use App\Plugins\Lexoffice\Exceptions\LexofficeRateLimitException;
 use App\Plugins\Lexoffice\Models\LexofficePostingCategory;
 use App\Plugins\Lexoffice\Services\{LexofficeIncomingInvoiceTarget, LexofficeMapper, LexofficeService, LexofficeVoucherSync, LexofficeWebhookService};
 use App\Plugins\Lexoffice\Tariff\LexwareTariffService;
+use App\Plugins\Support\PluginOrgContext;
 use App\Services\Stammdaten\ContactNumberAdopter;
 use App\Support\Query\DateRange;
 use App\Support\Sqid;
@@ -61,6 +62,46 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
         private readonly LexofficeService $service,
     ) {}
 
+    /** @var array<int, array{config: array<string, mixed>, service: LexofficeService}> Dienst je Organisation, solange ihre Zugangsdaten gleich bleiben. */
+    private array $orgServices = [];
+
+    /**
+     * Dienst mit den Zugangsdaten der Organisation. Der injizierte Dienst trägt den Schlüssel, den der
+     * Prozess beim Start auflösen konnte — in Konsole und Queue ohne gebundene Organisation keinen
+     * (Scheduler-Nachlauf MVP-1131, Befund 2026-10-17). Ohne eigenen Schlüssel der Organisation bleibt
+     * der injizierte Dienst (Einzelplatz mit ENV-Schlüssel, Tests).
+     */
+    private function serviceFor(?int $organizationId): LexofficeService {
+        $organizationId ??= PluginOrgContext::currentId();
+        if ($organizationId === null || $organizationId <= 0) {
+            return $this->service;
+        }
+
+        $config = LexofficeConfig::resolve($organizationId);
+        if (empty($config['api_key'])) {
+            return $this->service;
+        }
+
+        $credentials = array_intersect_key($config, ['api_key' => 1, 'base_url' => 1, 'defaults' => 1, 'request_interval' => 1]);
+        $cached = $this->orgServices[$organizationId] ?? null;
+        if ($cached === null || $cached['config'] !== $credentials) {
+            $cached = $this->orgServices[$organizationId] = ['config' => $credentials, 'service' => self::buildService($config)];
+        }
+
+        return $cached['service'];
+    }
+
+    /** @param  array{api_key: ?string, base_url: string, defaults: array<string, mixed>, request_interval: float}  $config */
+    private static function buildService(array $config): LexofficeService {
+        return new LexofficeService(
+            apiKey: $config['api_key'],
+            mapper: new LexofficeMapper,
+            defaults: $config['defaults'],
+            baseUrl: $config['base_url'],
+            requestInterval: $config['request_interval'],
+        );
+    }
+
     public function name(): string {
         return 'Lexoffice';
     }
@@ -79,13 +120,7 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
         // (nicht env/Singleton). Ohne Key (kein Kontext/env leer) greift der injizierte Service (DI/Tests/Single-Tenant).
         $config = LexofficeConfig::resolve();
         if (! empty($config['api_key'])) {
-            $health = $this->checkService(new LexofficeService(
-                apiKey: $config['api_key'],
-                mapper: new LexofficeMapper,
-                defaults: $config['defaults'],
-                baseUrl: $config['base_url'],
-                requestInterval: $config['request_interval'],
-            ));
+            $health = $this->checkService(self::buildService($config));
 
             return $this->withWebhookState($health, $config);
         }
@@ -277,7 +312,7 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
             ->forReferenceable($party)
             ->value('external_id');
 
-        $result = $this->service->pushContact($party, $linkedId !== null ? (string) $linkedId : null);
+        $result = $this->serviceFor((int) $party->organization_id)->pushContact($party, $linkedId !== null ? (string) $linkedId : null);
         app(ContactNumberAdopter::class)->linked($party, self::ID, $result['id'], $result['number']);
 
         return $result['id'];
@@ -412,7 +447,7 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
 
         $contactExternalId = $contactRef !== null ? $contactRef->external_id : $this->pushContact($customer);
 
-        $result = $this->service->createTimeVoucher($customer, $entries, $from, $to, $contactExternalId);
+        $result = $this->serviceFor((int) $customer->organization_id)->createTimeVoucher($customer, $entries, $from, $to, $contactExternalId);
 
         $voucherRef = ExternalReference::create([
             'organization_id' => $customer->organization_id,

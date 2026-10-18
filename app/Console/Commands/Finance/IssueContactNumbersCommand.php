@@ -20,6 +20,7 @@ use App\Models\Supplier\Supplier;
 use App\Services\Finance\Accounting\ContactPushService;
 use App\Services\Numbering\{NumberAuthority, NumberSequenceService};
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
@@ -40,7 +41,7 @@ class IssueContactNumbersCommand extends Command {
     public function handle(ContactPushService $contacts): int {
         $totals = ['adopted' => 0, 'taken' => 0, 'pending' => 0, 'failed' => 0];
 
-        $this->forEachOrganization(function (Organization $organization) use ($contacts, &$totals): void {
+        $organizationFailures = $this->forEachOrganization(function (Organization $organization) use ($contacts, &$totals): void {
             foreach ([Customer::class, Supplier::class] as $class) {
                 $parties = $class::query()
                     ->withoutCollective()
@@ -57,6 +58,15 @@ class IssueContactNumbersCommand extends Command {
                     } catch (Throwable $e) {
                         $totals['failed']++;
                         $this->warn(sprintf('Organisation #%d, %s #%d: %s', $organization->id, class_basename($party), $party->id, $e->getMessage()));
+                        // Der Scheduler bewahrt nur den Exit-Code, die Konsolenausgabe verwirft der Cron.
+                        Log::warning('accounting.contact_number_issue_failed', [
+                            'organization_id' => $organization->id,
+                            'party' => class_basename($party),
+                            'party_id' => $party->id,
+                            'plugin' => (string) $party->number_source,
+                            'exception' => $e::class,
+                            'message' => $e->getMessage(),
+                        ]);
 
                         continue;
                     }
@@ -77,6 +87,6 @@ class IssueContactNumbersCommand extends Command {
             $totals['failed'],
         ));
 
-        return $totals['failed'] > 0 ? self::FAILURE : self::SUCCESS;
+        return ($totals['failed'] > 0 || $organizationFailures > 0) ? self::FAILURE : self::SUCCESS;
     }
 }
