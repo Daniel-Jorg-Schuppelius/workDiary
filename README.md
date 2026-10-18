@@ -119,10 +119,11 @@ Installer erzeugt.
 > bricht `composer install` ab, weil Abhaengigkeiten wie die EBICS-Bibliothek
 > `ebics-api/ebics-client-php` (ab 3.1) PHP 8.5 verlangen. Bei vielen
 > Hostern laesst sich die PHP-Version im Hosting-Panel oder per `.htaccess`
-> umstellen. Zeigt `php` auf der Kommandozeile auf eine aeltere Version, die
-> Befehle mit dem versionierten Binary aufrufen (`php8.5 artisan …`,
-> `php8.5 "$(command -v composer)" install`). `deploy.sh` und die Skripte unter
-> `scripts/` suchen das passende Binary selbst (`PHP_BIN=<pfad>` gibt eines vor).
+> umstellen. Zeigt `php` auf der Kommandozeile auf eine aeltere Version,
+> artisan ueber `scripts/artisan.sh <befehl>` aufrufen (sucht das Binary
+> selbst) und Composer mit `php8.5 "$(command -v composer)" install`;
+> `deploy.sh` und alle Skripte unter `scripts/` suchen das passende Binary
+> ebenfalls selbst (`PHP_BIN=<pfad>` gibt eines vor).
 
 ```bash
 git clone --recurse-submodules <repository-url> workdiary
@@ -163,7 +164,7 @@ vorhandener `APP_KEY` wird niemals ueberschrieben.
 Alternativ laeuft derselbe Ablauf interaktiv auf der Kommandozeile:
 
 ```bash
-php artisan app:install
+scripts/artisan.sh app:install
 ```
 
 ## Installation auf einem Webspace
@@ -246,20 +247,20 @@ Fuer den laufenden Betrieb muss ein Cronjob fuer den Scheduler eingerichtet
 werden:
 
 ```cron
-* * * * * cd /pfad/zum/workdiary && php artisan schedule:run >> /dev/null 2>&1
+* * * * * cd /pfad/zum/workdiary && scripts/artisan.sh schedule:run >> /dev/null 2>&1
 ```
 
 Queues laufen produktiv am besten als dauerhafter Prozess:
 
 ```bash
-php artisan queue:work --tries=3
+scripts/artisan.sh queue:work --tries=3
 ```
 
 Wenn der Hoster keinen dauerhaften Worker erlaubt, kann fuer kleine
 Installationen alternativ ein regelmaessiger Cronjob genutzt werden:
 
 ```cron
-* * * * * cd /pfad/zum/workdiary && php artisan queue:work --stop-when-empty --tries=3 >> /dev/null 2>&1
+* * * * * cd /pfad/zum/workdiary && scripts/artisan.sh queue:work --stop-when-empty --tries=3 >> /dev/null 2>&1
 ```
 
 Videoverarbeitung (Feature 150) laeuft in einer **eigenen Warteschlange**:
@@ -268,7 +269,7 @@ und Exporte hinter sich blockieren. Sie braucht deshalb einen eigenen
 Worker — ohne ihn bleiben hochgeladene Videos in „wird verarbeitet" stehen:
 
 ```bash
-php artisan queue:work media --queue=media --tries=1 --timeout=3600
+scripts/artisan.sh queue:work media --queue=media --tries=1 --timeout=3600
 ```
 
 `scripts/cron.sh` erledigt beides in einem Cron-Eintrag (abschaltbar ueber
@@ -324,7 +325,7 @@ Der `REVERB_APP_KEY` ist dagegen eine oeffentliche Anwendungskennung und wird
 beim Frontend-Build eingebettet. Nach Aenderungen:
 
 ```bash
-php artisan optimize:clear
+scripts/artisan.sh optimize:clear
 npm run build
 ```
 
@@ -350,7 +351,7 @@ Type=simple
 User=www-data
 Group=www-data
 WorkingDirectory=/pfad/zum/workdiary
-ExecStart=/usr/bin/php artisan reverb:start --host=127.0.0.1 --port=8080
+ExecStart=/pfad/zum/workdiary/scripts/artisan.sh reverb:start --host=127.0.0.1 --port=8080
 Restart=always
 RestartSec=5
 TimeoutStopSec=10
@@ -373,7 +374,7 @@ Type=simple
 User=www-data
 Group=www-data
 WorkingDirectory=/pfad/zum/workdiary
-ExecStart=/usr/bin/php artisan queue:work --tries=3 --timeout=90 --max-time=3600
+ExecStart=/pfad/zum/workdiary/scripts/artisan.sh queue:work --tries=3 --timeout=90 --max-time=3600
 Restart=always
 RestartSec=5
 TimeoutStopSec=100
@@ -411,7 +412,7 @@ gegebenenfalls der Benutzer des jeweiligen Webauftritts verwendet werden.
 
 Ein Fehler wie `Pusher\Pusher::__construct(): ... auth_key ... null given`
 bedeutet, dass `REVERB_APP_KEY` in `.env` fehlt oder noch eine alte Laravel-
-Konfiguration gecacht ist. Nach dem Eintragen hilft `php artisan optimize:clear`.
+Konfiguration gecacht ist. Nach dem Eintragen hilft `scripts/artisan.sh optimize:clear`.
 
 #### Betrieb mit Supervisor
 
@@ -477,7 +478,7 @@ Ohne Supervisor laesst sich Reverb per **Cron-Watchdog** am Leben halten (minuet
 neu starten, falls abgestuerzt):
 
 ```cron
-* * * * * pgrep -f "artisan reverb:start" >/dev/null || (cd /pfad/zum/workdiary && nohup php artisan reverb:start --port=8080 >> storage/logs/reverb.log 2>&1 &)
+* * * * * pgrep -f "artisan reverb:start" >/dev/null || (cd /pfad/zum/workdiary && nohup scripts/artisan.sh reverb:start --port=8080 >> storage/logs/reverb.log 2>&1 &)
 ```
 
 Wer auf Reverb verzichtet, bleibt beim Polling — der Chat funktioniert
@@ -543,9 +544,9 @@ durch `LEGACY_WRITE_ENABLED=true` geschuetzt.
 Hilfreiche Legacy-Befehle:
 
 ```bash
-php artisan legacy:import-plan
-php artisan legacy:import
-php artisan legacy:archive
+scripts/artisan.sh legacy:import-plan
+scripts/artisan.sh legacy:import
+scripts/artisan.sh legacy:archive
 ```
 
 ## Qualitaetssicherung
@@ -562,12 +563,12 @@ npm run build
 Weitere Hilfsbefehle:
 
 ```bash
-php artisan plugin:list
-php artisan plugin:healthcheck
-php artisan help:reindex
-php artisan recurrence:generate
-php artisan attendance:close-open
-php artisan workdiary:backup:check-restore
+scripts/artisan.sh plugin:list
+scripts/artisan.sh plugin:healthcheck
+scripts/artisan.sh help:reindex
+scripts/artisan.sh recurrence:generate
+scripts/artisan.sh attendance:close-open
+scripts/artisan.sh workdiary:backup:check-restore
 ```
 
 ## Architektur
@@ -597,8 +598,8 @@ Vor dem Produktiv-Deployment:
   `SESSION_SAME_SITE=lax` und `SESSION_ENCRYPT=true` setzen.
 - HTTPS ueber Reverse Proxy erzwingen und `TrustProxies` passend
   konfigurieren.
-- `php artisan config:cache` und `php artisan route:cache` ausfuehren.
-- `php artisan view:cache` nicht verwenden. Das Projekt laesst Views bewusst
+- `scripts/artisan.sh config:cache` und `scripts/artisan.sh route:cache` ausfuehren.
+- `scripts/artisan.sh view:cache` nicht verwenden. Das Projekt laesst Views bewusst
   lazy pro Request kompilieren, weil gecachte Sammelkompilierung bei
   `@forelse`-Views zu fehlerhaften internen Counter-Namen fuehren kann.
 - Queue-Worker, Scheduler, Backup, Restore-Test und Storage-Sicherung

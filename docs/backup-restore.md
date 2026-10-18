@@ -65,7 +65,7 @@ Backups werden **nicht manuell in der Oberfläche registriert** — das
 Backup-Skript meldet jeden erfolgreichen Lauf per Heartbeat; danach erscheint
 die Quelle automatisch auf der Statusseite.
 
-- Token erzeugen: `php artisan workdiary:backup:rotate-token` schreibt
+- Token erzeugen: `scripts/artisan.sh workdiary:backup:rotate-token` schreibt
   `BACKUP_HEARTBEAT_TOKEN` in die `.env` — `scripts/install-system.sh` führt
   das automatisch aus, wenn der Token noch fehlt. Ohne gesetzten Token ist der
   Endpoint deaktiviert (HTTP 503) **und `backup.sh` überspringt den Heartbeat**
@@ -79,13 +79,13 @@ die Quelle automatisch auf der Statusseite.
 
 ### 2.3 Überwachung
 
-- `php artisan workdiary:backup:status` — Gesamtübersicht beider Backup-Wege
+- `scripts/artisan.sh workdiary:backup:status` — Gesamtübersicht beider Backup-Wege
   (Heartbeat, Schlüssel, Ziele, Restore-Test) mit Handlungshinweisen;
   Exit-Code 1 bei betriebsverhindernden Lücken (Cron-/CI-tauglich).
 - Frische-Schwelle je Quelle: `BACKUP_HEARTBEAT_FRESHNESS_HOURS`
   (Default 26 h). Ältere Heartbeats markiert die Statusseite als „überfällig",
   ganz fehlende als „kein Backup registriert".
-- `php artisan workdiary:backup:check-restore` prüft Alter und Größe des
+- `scripts/artisan.sh workdiary:backup:check-restore` prüft Alter und Größe des
   letzten Heartbeats (für Cron/CI); Plausibilitätsgrenzen über
   `BACKUP_MIN_SIZE_BYTES` und `BACKUP_SIZE_DROP_RATIO`.
 
@@ -109,7 +109,7 @@ nur für Mail und Aufgaben, Feature 102).
 **kein frei wählbarer Text**, sondern ein base64-kodierter 32-Byte-Schlüssel:
 
 ```bash
-php artisan workdiary:backup:generate-master-key
+scripts/artisan.sh workdiary:backup:generate-master-key
 ```
 
 Der Befehl erzeugt den Schlüssel, schreibt ihn in die `.env` und zeigt ihn
@@ -129,7 +129,7 @@ bzw. `openssl rand -base64 32`, Wert selbst in die `.env` eintragen.
 als Notfall-Zweitweg. Schlüsselpaar erzeugen:
 
 ```bash
-php artisan workdiary:backup:generate-recovery-key
+scripts/artisan.sh workdiary:backup:generate-recovery-key
 ```
 
 Der Befehl schreibt den Public-Key in die `.env` und zeigt den Secret-Key
@@ -147,9 +147,9 @@ echo "public: ", base64_encode(sodium_crypto_box_publickey($kp)), PHP_EOL,
 ### 3.2 Betrieb
 
 ```bash
-php artisan workdiary:backup:run           # Snapshot erstellen, hochladen, committen, Retention anwenden
-php artisan workdiary:backup:verify        # Commit-Manifest + Stichproben-Teile der jüngsten Generationen prüfen
-php artisan workdiary:backup:restore-test  # Generation isoliert wiederherstellen, Integrität protokollieren
+scripts/artisan.sh workdiary:backup:run           # Snapshot erstellen, hochladen, committen, Retention anwenden
+scripts/artisan.sh workdiary:backup:verify        # Commit-Manifest + Stichproben-Teile der jüngsten Generationen prüfen
+scripts/artisan.sh workdiary:backup:restore-test  # Generation isoliert wiederherstellen, Integrität protokollieren
 ```
 
 `run` (täglich 01:30), `verify` (wöchentlich Sa 03:30) und `restore-test`
@@ -203,19 +203,19 @@ cp <name>_env_YYYYMMDD_HHMMSS.txt /var/www/workdiary/.env
 chmod 600 /var/www/workdiary/.env
 
 # 4) Caches löschen
-php artisan optimize:clear
+scripts/artisan.sh optimize:clear
 
 # 5) Migrationen (nur bei neuerer Codebase-Version)
-php artisan migrate --force
+scripts/artisan.sh migrate --force
 
 # 6) Heartbeat-Token erneuern (der alte Token steckt im Backup)
-php artisan workdiary:backup:rotate-token
+scripts/artisan.sh workdiary:backup:rotate-token
 
 # 7) Smoke-Test
-php artisan system:health
+scripts/artisan.sh system:health
 ```
 
-Cloud-Generationen werden über `php artisan workdiary:backup:restore-test`
+Cloud-Generationen werden über `scripts/artisan.sh workdiary:backup:restore-test`
 isoliert wiederhergestellt und geprüft; im Notfall (Master-Key verloren)
 lässt sich der Datenschlüssel mit dem Recovery-Secret-Key öffnen.
 
@@ -259,7 +259,7 @@ Kopie danach per `artisan serve` anschauen.
 Manuelle Tests (z. B. auf einer anderen Maschine, §4) unter
 **Backup & Restore → Restore-Test protokollieren** ins Register eintragen
 (Datum, Quelle, Ergebnis, Umfang, Dauer) — oder per CLI:
-`php artisan workdiary:backup:record-restore-test --source=... --result=passed`.
+`scripts/artisan.sh workdiary:backup:record-restore-test --source=... --result=passed`.
 
 ## 6. Sicherheitsregeln
 

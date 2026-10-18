@@ -38,14 +38,14 @@ gecacht) — der Befehl legt das Verzeichnis an, lädt die Datei des laufenden
 Monats (sonst des Vormonats), prüft sie und legt sie ab:
 
 ```bash
-php artisan security:geoip-update --force
+scripts/artisan.sh security:geoip-update --force
 ```
 
 Prüfen — die Auflösung liegt im common-toolkit (`IpLocationHelper`), nicht in
 einer App-Klasse (nachgeführt am 2026-09-16, `MVP-796`, Befund `P12-40`):
 
 ```bash
-php artisan tinker --execute='var_export(\CommonToolkit\Helper\Geo\IpLocationHelper::lookup("8.8.8.8"));'
+scripts/artisan.sh tinker --execute='var_export(\CommonToolkit\Helper\Geo\IpLocationHelper::lookup("8.8.8.8"));'
 # → array('country' => 'Vereinigte Staaten von Amerika', 'country_iso' => 'US', 'city' => 'Mountain View')
 ```
 

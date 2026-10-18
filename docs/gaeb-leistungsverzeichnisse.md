@@ -397,7 +397,7 @@ Bekanntmachungen des Bundes. Betrieb und Bedienung sind im Hilfethema
   den **Vortag** — ein Veröffentlichungstag ist erst am Folgetag vollständig.
 - Die Quelle (`oeffentlichevergabe.de`, OpenData unter CC0) braucht **keine
   Zugangsdaten**. Fällt der Abruf aus, lässt sich ein Tag nachholen:
-  `php artisan tenders:fetch-notices --day=2026-08-17`.
+  `scripts/artisan.sh tenders:fetch-notices --day=2026-08-17`.
 - **Ohne Suchprofil sucht der Radar nichts.** Das ist kein Fehler, sondern die
   Voreinstellung — es gibt keinen sinnvollen Standardfilter.
 

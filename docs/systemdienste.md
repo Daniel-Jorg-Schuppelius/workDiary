@@ -89,9 +89,9 @@ Status/Deinstallation jeweils mit demselben `--instance` aufrufen.
 ```bash
 scripts/install-system.sh --status
 systemctl status workdiary-queue
-php artisan schedule:list          # kein Job darf in einer Abschaltzeit liegen
-php artisan workdiary:backup:status         # Backup-Einrichtung mit Handlungshinweisen
-php artisan workdiary:backup:rotate-token   # Heartbeat-Token rotieren (angelegt wird er vom Installer)
+scripts/artisan.sh schedule:list          # kein Job darf in einer Abschaltzeit liegen
+scripts/artisan.sh workdiary:backup:status         # Backup-Einrichtung mit Handlungshinweisen
+scripts/artisan.sh workdiary:backup:rotate-token   # Heartbeat-Token rotieren (angelegt wird er vom Installer)
 ```
 
 **Server mit Abschaltzeiten** (z. B. nachts aus): Der Laravel-Scheduler holt
@@ -159,7 +159,7 @@ php scripts/check-tools.php --all    # auch optionale
 Rechnungen, die vor der Installation ohne Texterkennung eingingen, stehen im
 Rechnungseingang als Klärfall ohne Nummer und Betrag. Die Erkennung läuft
 nur beim Eingang; nachholen lässt sie sich für alle offenen Klärfälle mit
-`php artisan incoming-invoices:reanalyze` (eine Organisation mit
+`scripts/artisan.sh incoming-invoices:reanalyze` (eine Organisation mit
 `--organization=<ID oder Slug>`) oder in der Liste über die Sammelaktion
 „Erneut erkennen“. Erfasste Werte, übergebene und abgelehnte Eingänge bleiben
 unverändert.
