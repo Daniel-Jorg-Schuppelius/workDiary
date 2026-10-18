@@ -32,6 +32,22 @@ final class ModulesDocCommandTest extends TestCase {
         File::delete($path);
     }
 
+    public function test_rewrite_keeps_the_wiki_chronik_block(): void {
+        $path = storage_path('framework/testing/modul-register-chronik-' . getmypid() . '.md');
+        /** @var array<string, string> $helpRoutes */
+        $helpRoutes = (array) config('help-topics.routes', []);
+        $rendered = (new ModuleRegisterDocument(app(ModuleRegistry::class)))->render($helpRoutes);
+        // Block, wie ihn scripts/wiki-backlinks.php ans Seitenende schreibt (2026-10-18).
+        $chronik = "\n<!-- chronik:start -->\n\n## Chronik zu dieser Seite\n\n- 2026-09-24 · [MVP-873](../chronik/umsetzungen/mvp-873.md)\n\n<!-- chronik:end -->\n";
+        File::write($path, $rendered . $chronik);
+
+        $this->artisan('modules:doc', ['--path' => $path])->assertExitCode(0);
+
+        $this->assertSame($rendered . $chronik, File::read($path));
+        $this->assertSame(ModuleRegisterDocument::generatedPart($rendered), ModuleRegisterDocument::generatedPart($rendered . $chronik));
+        File::delete($path);
+    }
+
     public function test_missing_target_folder_writes_nothing(): void {
         $path = storage_path('framework/testing/fehlt-' . getmypid() . '/modul-register.md');
 

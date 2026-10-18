@@ -37,7 +37,8 @@ class ModulesCheckCommand extends Command {
         if (File::exists($register)) {
             /** @var array<string, string> $helpRoutes */
             $helpRoutes = (array) config('help-topics.routes', []);
-            if (File::read($register) !== (new ModuleRegisterDocument($registry))->render($helpRoutes)) {
+            $rendered = (new ModuleRegisterDocument($registry))->render($helpRoutes);
+            if (ModuleRegisterDocument::generatedPart(File::read($register)) !== ModuleRegisterDocument::generatedPart($rendered)) {
                 $violations[] = 'modul-register.md ist veraltet — php artisan modules:doc (MVP-873).';
             }
         }

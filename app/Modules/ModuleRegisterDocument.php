@@ -20,9 +20,13 @@ use Illuminate\Support\Str;
  * Modulregister als Markdown (MVP-873) für `WorkDiary-Architecture/konventionen/modul-register.md`.
  * Deterministisch (keine Zeitstempel, feste Sortierung, deutsche Labels),
  * damit `modules:check` die Datei gegen den Generatorstand vergleichen kann.
+ * Den Chronik-Block am Seitenende pflegt das Wiki (`scripts/wiki-backlinks.php`,
+ * seit 2026-10-18): Prüfung und Neuschreiben lassen ihn unangetastet.
  */
 final class ModuleRegisterDocument {
     public const RELATIVE_PATH = '../WorkDiary-Architecture/konventionen/modul-register.md';
+
+    private const CHRONIK_START = '<!-- chronik:start -->';
 
     /** Gates, die den Modulschnitt und die Kernbausteine absichern (Phase 111). */
     private const GATES = [
@@ -53,6 +57,20 @@ final class ModuleRegisterDocument {
         } finally {
             app()->setLocale($previous);
         }
+    }
+
+    /** Generatorteil einer Registerseite — alles vor dem Chronik-Block, auf eine Endzeile normiert. */
+    public static function generatedPart(string $page): string {
+        $pos = strpos($page, self::CHRONIK_START);
+
+        return rtrim($pos === false ? $page : substr($page, 0, $pos)) . "\n";
+    }
+
+    /** Chronik-Block einer bestehenden Seite samt trennender Leerzeile; leer ohne Block. */
+    public static function chronikPart(string $page): string {
+        $pos = strpos($page, self::CHRONIK_START);
+
+        return $pos === false ? '' : "\n" . substr($page, $pos);
     }
 
     /** @param  array<string, string>  $helpRoutes */

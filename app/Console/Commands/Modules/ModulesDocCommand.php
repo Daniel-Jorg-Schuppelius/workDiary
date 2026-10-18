@@ -32,7 +32,8 @@ class ModulesDocCommand extends Command {
         }
         /** @var array<string, string> $helpRoutes */
         $helpRoutes = (array) config('help-topics.routes', []);
-        File::write($path, (new ModuleRegisterDocument($registry))->render($helpRoutes));
+        $chronik = File::exists($path) ? ModuleRegisterDocument::chronikPart(File::read($path)) : '';
+        File::write($path, (new ModuleRegisterDocument($registry))->render($helpRoutes) . $chronik);
         $this->info('Modulregister geschrieben: ' . $path);
 
         return self::SUCCESS;
