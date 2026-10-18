@@ -22,7 +22,7 @@ use App\Models\Time\TimeEntry;
 use App\Services\Integration\{InboxActionService, InboxGroupBookerRegistry, MatchProfileRegistry};
 use App\Support\{ErrorText, MorphMap};
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{MorphTo, Relation};
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, Schema};
 use Illuminate\View\View;
@@ -60,10 +60,8 @@ class IntegrationInboxController extends Controller {
             ->when($target !== 'all', fn($q) => $q->where('target_type', $target))
             // Zeiteintrag-Kontext (Datum/Zeit/Projekt/Kunde) wird je Item
             // angezeigt — die Relationen kommen ohne N+1 mit.
-            ->with(['referenceable' => function (Relation $relation): void {
-                if ($relation instanceof MorphTo) {
-                    $relation->morphWith([TimeEntry::class => ['project.customer', 'user:id,name']]);
-                }
+            ->with(['referenceable' => function (MorphTo $relation): void {
+                $relation->morphWith([TimeEntry::class => ['project.customer', 'user:id,name']]);
             }])
             ->orderByDesc('id');
 

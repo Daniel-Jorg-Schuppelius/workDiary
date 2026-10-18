@@ -99,7 +99,7 @@ class AuditDiffController extends Controller {
             'typeKey' => $type !== null ? $typeKey : '',
             'records' => $records,
             'record' => $record,
-            'recordSqid' => $record !== null && $type !== null ? Sqid::encode($type['class'], (int) $record->id) : '',
+            'recordSqid' => $record !== null ? Sqid::encode($type['class'], (int) $record->id) : '',
             'logs' => $logs,
             'diff' => $diff,
             'selectedA' => $selectedA,

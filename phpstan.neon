@@ -4,6 +4,9 @@ includes:
 
 parameters:
     level: 8
+    # Nach Larastans bootstrap.php (aus extension.neon): registriert die entdeckten Artisan-Befehle für die Signatur-Typisierung nach.
+    bootstrapFiles:
+        - phpstan-bootstrap.php
     paths:
         - app
     # ext-inotify (integrity:watch) ist in der CI nicht installiert — der Stub

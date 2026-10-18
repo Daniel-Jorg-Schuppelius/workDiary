@@ -125,11 +125,15 @@ final class InspectionOrderService {
             $reported = 0;
             foreach ($order->items()->get() as $item) {
                 $row = $items[$item->sqid] ?? null;
-                if (! is_array($row) || AssetInspectionResult::tryFrom((string) ($row['result'] ?? '')) === null) {
+                if (! is_array($row)) {
+                    continue;
+                }
+                $result = (string) ($row['result'] ?? '');
+                if (AssetInspectionResult::tryFrom($result) === null) {
                     continue;
                 }
                 $item->forceFill([
-                    'result' => $row['result'],
+                    'result' => $result,
                     'performed_on' => $row['performed_on'] ?? now()->toDateString(),
                     'valid_until' => $row['valid_until'] ?? null,
                     'certificate_no' => $row['certificate_no'] ?? null,

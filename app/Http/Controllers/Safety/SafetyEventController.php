@@ -111,7 +111,7 @@ class SafetyEventController extends Controller {
             'attachments',
             'subject',
             'hazardAssessment',
-            'openIssues' => fn($q) => $q->with(['assignee:id,name', 'events'])->latest(),
+            'openIssues' => fn($q) => $q->with(['assignee:id,name', 'journal'])->latest(),
         ]);
 
         return view('safety-events.show', [

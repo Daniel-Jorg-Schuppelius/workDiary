@@ -182,7 +182,7 @@
                                 @php
                                     $note = $issue->closed_reason;
                                     if (! $note) {
-                                        $lastReasonEvent = $issue->events->last(fn($e) => filled(data_get($e->payload, 'reason')) || filled(data_get($e->payload, 'resolution')));
+                                        $lastReasonEvent = $issue->journal->last(fn($e) => filled(data_get($e->payload, 'reason')) || filled(data_get($e->payload, 'resolution')));
                                         $note = $lastReasonEvent ? (data_get($lastReasonEvent->payload, 'reason') ?? data_get($lastReasonEvent->payload, 'resolution')) : null;
                                     }
                                 @endphp
@@ -196,7 +196,7 @@
                                      Aktionen mit Pflichteingabe öffnen ein Dialog-Formular. --}}
                                 @can('update', $issue)
                                     <div class="mt-2 flex flex-wrap gap-1">
-                                        @foreach ($issue->status->allowedTransitions() as $action)
+                                        @foreach ($issue->status->allowedActions() as $action)
                                             @php $needsInput = in_array($action, ['block', 'wontDo', 'reopen', 'complete'], true); @endphp
                                             @if ($needsInput)
                                                 <x-icon-btn size="xs" tone="outline"

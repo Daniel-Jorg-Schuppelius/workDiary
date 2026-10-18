@@ -92,7 +92,7 @@ abstract class AbstractEntityMergeService {
         $tables = [];
         foreach (Schema::getTableListing(Schema::getCurrentSchemaListing(), false) as $name) {
             foreach (Schema::getColumns($name) as $col) {
-                if (($col['name'] ?? null) === $column) {
+                if ($col['name'] === $column) {
                     $tables[] = $name;
                     break;
                 }
@@ -171,11 +171,11 @@ abstract class AbstractEntityMergeService {
             }
 
             foreach (Schema::getIndexes($table) as $index) {
-                if (($index['unique'] ?? false) !== true) {
+                if (! $index['unique']) {
                     continue;
                 }
 
-                $columns = array_values($index['columns'] ?? []);
+                $columns = $index['columns'];
                 if (count($columns) < 2 || ! in_array($fk, $columns, true)) {
                     continue;
                 }

@@ -12,7 +12,6 @@ namespace App\Http\Controllers\CustomerPortal;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\Failed;
-use Illuminate\Auth\SessionGuard;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -38,8 +37,8 @@ class LoginController extends Controller {
         // merkte sich das Gerät damit ohne ihn (Sicherheitsaudit 2026-09-17,
         // portal-auth-1; Spiegelbild von S-51 im internen Login).
         $guard = Auth::guard('customer');
-        // `getLastAttempted()` gehört dem SessionGuard, nicht dem Vertrag.
-        $attempted = static fn (): ?\Illuminate\Contracts\Auth\Authenticatable => $guard instanceof SessionGuard ? $guard->getLastAttempted() : null;
+        // `getLastAttempted()` gehört dem SessionGuard (config/auth.php: Treiber session), nicht dem Vertrag.
+        $attempted = static fn () => $guard->getLastAttempted();
 
         if (! $guard->validate($credentials)) {
             event(new Failed('customer', $attempted(), ['email' => $credentials['email']]));

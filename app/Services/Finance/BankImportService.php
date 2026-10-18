@@ -145,7 +145,7 @@ class BankImportService {
             }
         }
 
-        if ($unmatchedTotal > 0 && $statements !== []) {
+        if ($unmatchedTotal > 0) {
             $dispatcher->notify(
                 \App\Enums\Notification\NotificationEvent::FinanceReconciliationReview,
                 $statements[0],

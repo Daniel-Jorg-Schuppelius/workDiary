@@ -11,6 +11,7 @@
 namespace Tests\Feature\Safety;
 
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
+use App\Enums\OpenIssue\OpenIssueEventType;
 use App\Enums\Safety\{SafetyEventKind, SafetyEventSeverity, SafetyEventStatus};
 use App\Models\Diary\OpenIssue;
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
@@ -179,6 +180,17 @@ class SafetyEventTest extends TestCase {
             'subject_id' => $event->id,
             'title' => 'Geländer reparieren',
         ]);
+    }
+
+    /** Befund 2026-10-18: Controller und Ansicht luden `events` (OpenIssue führt seit MVP-864 `journal()`), die Ansicht iterierte über Enum-Fälle statt Aktionsnamen. */
+    public function test_show_page_renders_open_issue_with_journal_reason(): void {
+        $lead = $this->lead();
+        $service = app(SafetyEventService::class);
+        $event = $service->create($lead, ['kind' => SafetyEventKind::Defect->value, 'description' => 'X']);
+        $issue = $service->createFollowUpIssue($event, $lead, 'Geländer reparieren');
+        $issue->record(OpenIssueEventType::Blocked, ['reason' => 'Material fehlt noch'], $lead);
+
+        $this->actingAs($lead)->get(route('safety-events.show', $event))->assertOk()->assertSee('Material fehlt noch');
     }
 
     public function test_field_staff_cannot_manage(): void {

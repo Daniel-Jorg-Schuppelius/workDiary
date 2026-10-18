@@ -131,7 +131,7 @@ class WhistleblowingAttachmentService {
         $attachment->encrypted = true;
         $attachment->original_name_ciphertext = $file->getClientOriginalName();
         $attachment->mime_detected = $file->getMimeType(); // serverseitig aus Inhalt
-        $attachment->size = (int) $file->getSize();
+        $attachment->size = max(0, (int) $file->getSize());
         try {
             $attachment->sha256 = File::hash($file->getRealPath(), HashAlgorithm::SHA256);
         } catch (Throwable) {

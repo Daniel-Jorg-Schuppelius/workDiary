@@ -437,7 +437,7 @@ class LexofficeContactSync {
         $this->syncContactPersons($record, $remote);
         $this->touchSnapshot($record, $remote, $externalId);
 
-        return $changed || $changes !== [];
+        return $changed;
     }
 
     /**

@@ -36,11 +36,12 @@ final class InspectionRoundService {
      */
     public function open(Organization $organization, User $actor, array $data): AssetInspectionRound {
         $dueUntil = CarbonImmutable::parse($data['due_until']);
+        $profileId = $data['asset_compliance_profile_id'] ?? null;
         $assignments = AssetComplianceAssignment::query()
             ->where('organization_id', $organization->id)
             ->where('is_active', true)
             ->where(fn ($q) => $q->whereNull('next_due_on')->orWhere('next_due_on', '<', DateRange::dayAfter($dueUntil)))
-            ->when(($data['asset_compliance_profile_id'] ?? null) !== null, fn ($q) => $q->where('asset_compliance_profile_id', $data['asset_compliance_profile_id']))
+            ->when($profileId !== null, fn ($q) => $q->where('asset_compliance_profile_id', $profileId))
             ->whereHas('asset', function ($q) use ($data): void {
                 $q->whereNull('decommissioned_on');
                 foreach (['location_text', 'category_code', 'customer_id'] as $column) {

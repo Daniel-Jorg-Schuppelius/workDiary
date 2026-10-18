@@ -107,11 +107,13 @@ class TravelChargeService {
             return new Collection;
         }
 
+        $from = $range['from'] ?? null;
+        $to = $range['to'] ?? null;
         $tours = Tour::query()
             ->when(! $includeBilled, fn($q) => $q->where('travel_billed', false))
             ->where('status', '!=', TourStatus::Cancelled->value)
-            ->when(! empty($range['from']), fn($q) => $q->whereDate('tour_date', '>=', Carbon::parse($range['from'])->toDateString()))
-            ->when(! empty($range['to']), fn($q) => $q->whereDate('tour_date', '<=', Carbon::parse($range['to'])->toDateString()))
+            ->when(! empty($from), fn($q) => $q->whereDate('tour_date', '>=', Carbon::parse($from)->toDateString()))
+            ->when(! empty($to), fn($q) => $q->whereDate('tour_date', '<=', Carbon::parse($to)->toDateString()))
             ->whereHas('diaryEntries', function ($q) use ($customer, $project, $foreignCustomer): void {
                 $q->where('customer_id', $customer->id);
                 if ($project !== null) {

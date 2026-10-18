@@ -63,7 +63,8 @@ final class TakeoffService {
         }
         $formula = $data['formula'] instanceof TakeoffFormula ? $data['formula'] : TakeoffFormula::from((string) $data['formula']);
         $values = self::cleanValues($formula, $data['values']);
-        $factor = trim((string) ($data['factor'] ?? '')) === '' ? '1' : NumberHelper::normalizeDecimalStringOrNull($data['factor']);
+        $rawFactor = $data['factor'] ?? null;
+        $factor = trim((string) ($rawFactor ?? '')) === '' ? '1' : NumberHelper::normalizeDecimalStringOrNull($rawFactor);
         $quantity = $values === null || $factor === null ? null : $this->quantityOf($formula, $values, $factor);
         if ($values === null || $factor === null || $quantity === null) {
             throw new RuntimeException((string) __('takeoff.error.not_computable'));

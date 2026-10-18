@@ -308,7 +308,6 @@ class ProtocolItemPhotoService {
                 'image/jpeg' => imagejpeg($src, $absolutePath, 90),
                 'image/png' => imagepng($src, $absolutePath),
                 'image/webp' => imagewebp($src, $absolutePath, 90),
-                default => null,
             };
         } catch (\Throwable $e) {
             throw new InvalidArgumentException('Foto konnte nicht bereinigt werden (EXIF-Stripping) — Upload abgelehnt.', previous: $e);
