@@ -279,6 +279,7 @@ return [
     'EbicsConnection' => 'EBICS-Bankzugang',
     'DatevOnlineConnection' => 'DATEV-Online-Verbindung',
     'InvoiceSenderRule' => 'Absenderregel (Rechnungspostfach)',
+    'IncomingInvoiceExclusion' => 'Ausschlussregel (Rechnungspostfach)',
     'InvoiceSchedule' => 'Rechnungsplan',
     'InvoiceScheduleItem' => 'Rechnungsplan-Position',
     'InvoiceTemplate' => 'Rechnungs-Vorlage',

@@ -44,6 +44,7 @@ final class InvoicingManifest extends Manifest {
             'base_interest_rates',
             'incoming_einvoices',
             'invoice_sender_rules',
+            'incoming_invoice_exclusions',
             'incoming_einvoice_transfers',
             'invoice_commissions',
             'invoice_inquiries',

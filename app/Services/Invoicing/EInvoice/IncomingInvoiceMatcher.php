@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Invoicing\EInvoice;
 
 use App\Enums\Billing\DocumentDirection;
-use App\Enums\Invoicing\{IncomingInvoiceMatchKind, IncomingInvoiceRecognition};
+use App\Enums\Invoicing\{IncomingEInvoiceStatus, IncomingInvoiceMatchKind, IncomingInvoiceRecognition};
 use App\Events\Invoicing\IncomingInvoiceAssigned;
 use App\Exceptions\CollectiveContactException;
 use App\Models\Contacts\ContactBankAccount;
@@ -111,6 +111,31 @@ class IncomingInvoiceMatcher {
         $this->assign($incoming, $outcome['party'], $outcome['kind'], null);
 
         return true;
+    }
+
+    /**
+     * Offene Eingänge der Organisation erneut abgleichen — nach einer neuen
+     * Partei oder Absenderregel treffen ältere Eingänge derselben Gegenpartei.
+     *
+     * @return array{assigned: int, open: int}
+     */
+    public function rematchOpen(int $organizationId, ?IncomingEInvoice $except = null): array {
+        $assigned = 0;
+        $open = 0;
+        IncomingEInvoice::query()->withoutGlobalScopes()
+            ->where('organization_id', $organizationId)
+            ->whereNull('supplier_id')->whereNull('customer_id')
+            ->whereNull('transferred_at')
+            ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value)
+            ->when($except, static fn ($query, IncomingEInvoice $skip) => $query->whereKeyNot($skip->getKey()))
+            ->orderBy('id')
+            ->chunkById(200, function ($incomings) use (&$assigned, &$open): void {
+                foreach ($incomings as $incoming) {
+                    $this->autoAssign($incoming) ? $assigned++ : $open++;
+                }
+            });
+
+        return ['assigned' => $assigned, 'open' => $open];
     }
 
     /**

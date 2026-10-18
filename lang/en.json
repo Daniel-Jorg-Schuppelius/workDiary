@@ -10844,5 +10844,20 @@
     "ICS-Download": "ICS download",
     "Für einen einmaligen Import in einen anderen Kalender.": "For a one-off import into another calendar.",
     "Meine Termine als ICS": "My events as ICS",
-    "Öffentliche Termine als ICS": "Public events as ICS"
+    "Öffentliche Termine als ICS": "Public events as ICS",
+    "Gründe: :reasons": "Reasons: :reasons",
+    "Eingang zugeordnet, :count weiterer offener Eingang derselben Partei automatisch zugeordnet.|Eingang zugeordnet, :count weitere offene Eingänge derselben Partei automatisch zugeordnet.": "Document assigned, :count further open document of the same party assigned automatically.|Document assigned, :count further open documents of the same party assigned automatically.",
+    "Auch den :count anderen offenen Eingang von „:party“ genauso behandeln|Auch die :count anderen offenen Eingänge von „:party“ genauso behandeln": "Also treat the :count other open document from “:party” the same way|Also treat the :count other open documents from “:party” the same way",
+    "Künftige Eingänge von „:party“ automatisch als keine Rechnung ablegen": "Automatically file future documents from “:party” as “not an invoice”",
+    ":count weiterer offener Eingang von „:party“ ebenfalls abgelegt.|:count weitere offene Eingänge von „:party“ ebenfalls abgelegt.": ":count further open document from “:party” filed as well.|:count further open documents from “:party” filed as well.",
+    "Künftige Eingänge von „:party“ werden automatisch als keine Rechnung abgelegt.": "Future documents from “:party” will be filed automatically as “not an invoice”.",
+    "Laut Ausschlussregel keine Rechnung.": "Not an invoice according to an exclusion rule.",
+    "Regeln des Rechnungseingangs": "Incoming invoice rules",
+    "Absenderregeln ordnen künftige Mails eines Absenders einer Partei zu. Ausschlüsse legen Eingänge einer Gegenpartei automatisch als keine Rechnung ab.": "Sender rules assign future emails from a sender to a party. Exclusions automatically file documents from a counterparty as “not an invoice”.",
+    "Absenderregel": "Sender rule",
+    "Ausschluss": "Exclusion",
+    "Regel löschen?": "Delete rule?",
+    "Keine Regeln.": "No rules.",
+    "Wirkung": "Effect",
+    "Regeln": "Rules"
 }

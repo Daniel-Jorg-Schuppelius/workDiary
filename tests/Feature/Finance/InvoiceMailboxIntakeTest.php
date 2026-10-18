@@ -14,7 +14,7 @@ use App\Enums\Billing\{DocumentDirection, DocumentKind};
 use App\Enums\Invoicing\{IncomingEInvoiceStatus, IncomingInvoiceRecognition, InvoiceStatus};
 use App\Models\Customer\Customer;
 use App\Models\Integration\IntegrationInboxItem;
-use App\Models\Invoicing\{IncomingEInvoice, Invoice};
+use App\Models\Invoicing\{IncomingEInvoice, IncomingInvoiceExclusion, Invoice};
 use App\Models\Mail\EmailConnection;
 use App\Models\Platform\User;
 use App\Services\Billing\Sepa\PaymentProposalService;
@@ -79,6 +79,24 @@ final class InvoiceMailboxIntakeTest extends TestCase {
 
         $this->actingAs($this->admin)->get(route('finance.incoming-invoices.show', $incoming->document))
             ->assertOk()->assertSee('agb.pdf')->assertSee('lieferant@example.test');
+    }
+
+    public function test_an_exclusion_rule_files_the_document_as_no_invoice_on_intake(): void {
+        IncomingInvoiceExclusion::query()->create([
+            'organization_id' => $this->organization->id, 'direction' => DocumentDirection::Incoming,
+            'party_name' => 'Lieferant GmbH', 'party_name_key' => IncomingInvoiceExclusion::keyFor('Lieferant  GmbH'),
+            'note' => 'Testbeleg des Mailsystems', 'created_by' => $this->admin->id,
+        ]);
+        $xml = $this->incomingXml($this->localInvoice('ER-2026-0099'));
+
+        $this->assertSame('einvoice', $this->intake([new MailAttachment('ER-2026-0099.xml', 'application/xml', $xml)]));
+
+        $incoming = IncomingEInvoice::query()->sole();
+        $this->assertSame('Lieferant GmbH', $incoming->seller_name);
+        $this->assertSame(IncomingEInvoiceStatus::Rejected, $incoming->status);
+        $this->assertSame('Testbeleg des Mailsystems', $incoming->decision_note);
+        $this->assertNull($incoming->decided_by);
+        $this->assertNull($incoming->supplier_id);
     }
 
     public function test_two_invoice_pdfs_in_one_mail_become_two_incomings(): void {

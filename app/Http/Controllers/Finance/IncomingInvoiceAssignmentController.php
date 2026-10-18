@@ -21,7 +21,7 @@ use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Supplier\Supplier;
 use App\Rules\Iban;
 use App\Services\Integration\Profiles\{CustomerMatchProfile, SupplierMatchProfile};
-use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, IncomingInvoiceMatcher};
+use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, IncomingInvoiceExclusions, IncomingInvoiceMatcher};
 use App\Services\Stammdaten\CollectiveContacts;
 use App\Support\{ErrorText, Sqid};
 use CommonToolkit\Enums\CountryCode;
@@ -46,6 +46,7 @@ class IncomingInvoiceAssignmentController extends Controller {
         private readonly IncomingInvoiceMatcher $matcher,
         private readonly CollectiveContacts $collective,
         private readonly IncomingEInvoiceService $invoices,
+        private readonly IncomingInvoiceExclusions $exclusions,
     ) {}
 
     public function assignForm(IncomingEInvoice $incoming): View {
@@ -56,6 +57,8 @@ class IncomingInvoiceAssignmentController extends Controller {
 
         return view('finance.incoming-invoices._assign_dialog', [
             'incoming' => $incoming,
+            'partyName' => $incoming->counterpartyName(),
+            'otherOpen' => $incoming->openOfSameParty()->count(),
             'suppliers' => Supplier::query()->withoutCollective()->whereNull('archived_at')->orderBy('name')->get(['id', 'name', 'vat_id']),
             'customers' => Customer::query()->withoutCollective()->whereNull('archived_at')->orderBy('name')->get(['id', 'name', 'vat_id']),
             'suggestions' => (array) ($summary['suggestions'] ?? []),
@@ -91,19 +94,24 @@ class IncomingInvoiceAssignmentController extends Controller {
             'new_city' => ['nullable', 'string', 'max:255'],
             'new_country' => ['nullable', Rule::enum(CountryCode::class)],
             'remember_sender' => ['nullable', 'boolean'],
+            'apply_to_open' => ['nullable', 'boolean'],
+            'exclude_party' => ['nullable', 'boolean'],
             'note' => ['nullable', 'required_if:mode,not_invoice', 'string', 'max:500'],
         ]);
         if ($incoming->transferred_at !== null) {
             return back()->with('error', __('Der Eingang ist bereits an die Buchhaltung übergeben — die Zuordnung ist dort zu ändern.'));
         }
 
+        $applyToOpen = (bool) ($data['apply_to_open'] ?? false);
         if ($data['mode'] === 'not_invoice') {
-            return $this->rejectAsNoInvoice($incoming, (string) $data['note'], $actor);
+            return $this->rejectAsNoInvoice($incoming, (string) $data['note'], $actor, (bool) ($data['exclude_party'] ?? false), $applyToOpen);
         }
 
         $direction = DocumentDirection::from((string) $data['direction']);
+        $rememberSender = (bool) ($data['remember_sender'] ?? false);
+        $party = null;
         try {
-            DB::transaction(function () use ($incoming, $direction, $data, $actor): void {
+            DB::transaction(function () use ($incoming, $direction, $data, $actor, $rememberSender, &$party): void {
                 if ($incoming->direction !== $direction) {
                     // Richtung korrigiert: die bisherige Partei passt nicht mehr.
                     $incoming->forceFill(['direction' => $direction, 'supplier_id' => null, 'customer_id' => null])->save();
@@ -111,7 +119,7 @@ class IncomingInvoiceAssignmentController extends Controller {
                 }
                 $party = $this->partyFor($direction, $data);
                 $this->matcher->assign($incoming, $party, IncomingInvoiceMatchKind::Manual, $actor);
-                if ((bool) ($data['remember_sender'] ?? false)) {
+                if ($rememberSender) {
                     $this->matcher->rememberSender($incoming, $party, $actor);
                 }
             });
@@ -119,7 +127,26 @@ class IncomingInvoiceAssignmentController extends Controller {
             return back()->with('error', ErrorText::for($e));
         }
 
-        return redirect()->toList('finance.incoming-invoices.index')->with('success', __('Eingang zugeordnet.'));
+        // Ausdrücklich gewünscht: die anderen offenen Eingänge mit demselben Gegenparteinamen (MVP-1208).
+        $followers = 0;
+        if ($applyToOpen && $party !== null) {
+            foreach ($incoming->openOfSameParty() as $other) {
+                try {
+                    $this->matcher->assign($other, $party, IncomingInvoiceMatchKind::Manual, $actor);
+                    $followers++;
+                } catch (RuntimeException|\InvalidArgumentException) {
+                    // z. B. Sammelkontakt bei Reverse Charge — bleibt offen.
+                }
+            }
+        }
+        // Neue Partei oder Absenderregel: ältere offene Eingänge derselben Gegenpartei treffen jetzt.
+        if ($data['mode'] === 'new' || $rememberSender) {
+            $followers += $this->matcher->rematchOpen((int) $incoming->organization_id, $incoming)['assigned'];
+        }
+
+        return redirect()->toList('finance.incoming-invoices.index')->with('success', $followers > 0
+            ? trans_choice('Eingang zugeordnet, :count weiterer offener Eingang derselben Partei automatisch zugeordnet.|Eingang zugeordnet, :count weitere offene Eingänge derselben Partei automatisch zugeordnet.', $followers, ['count' => $followers])
+            : __('Eingang zugeordnet.'));
     }
 
     public function valuesForm(IncomingEInvoice $incoming): View {
@@ -183,25 +210,39 @@ class IncomingInvoiceAssignmentController extends Controller {
         ]);
         $ids = array_values(array_filter(array_map(static fn (string $sqid): ?int => Sqid::decode(IncomingEInvoice::class, $sqid), $data['ids'])));
         $assigned = 0;
-        $skipped = 0;
+        /** @var array<string, int> $skipped Grund → Anzahl; ohne Grund wüsste niemand, warum nichts passiert ist. */
+        $skipped = [];
         foreach (IncomingEInvoice::query()->whereKey($ids)->get() as $incoming) {
             try {
                 $direction = $incoming->direction === DocumentDirection::Outgoing ? DocumentDirection::Outgoing : DocumentDirection::Incoming;
                 $party = $this->bulkParty((string) $data['party'], $direction);
-                if ($party === null || $incoming->transferred_at !== null) {
-                    $skipped++;
+                if ($party === null) {
+                    $reason = (string) __('Eingangsbelege gehören zu Lieferanten, Ausgangsbelege zu Kunden.');
+                } elseif ($incoming->transferred_at !== null) {
+                    $reason = (string) __('Der Eingang ist bereits an die Buchhaltung übergeben — die Zuordnung ist dort zu ändern.');
+                } else {
+                    $this->matcher->assign($incoming, $party, IncomingInvoiceMatchKind::Manual, $actor);
+                    $assigned++;
 
                     continue;
                 }
-                $this->matcher->assign($incoming, $party, IncomingInvoiceMatchKind::Manual, $actor);
-                $assigned++;
-            } catch (RuntimeException|\InvalidArgumentException) {
-                $skipped++;
+            } catch (RuntimeException|\InvalidArgumentException $e) {
+                $reason = ErrorText::for($e);
             }
+            $skipped[$reason] = ($skipped[$reason] ?? 0) + 1;
         }
 
-        return redirect()->toList('finance.incoming-invoices.index')
-            ->with($skipped > 0 ? 'warning' : 'success', __(':assigned Eingänge zugeordnet, :skipped übersprungen.', ['assigned' => $assigned, 'skipped' => $skipped]));
+        $message = (string) __(':assigned Eingänge zugeordnet, :skipped übersprungen.', ['assigned' => $assigned, 'skipped' => array_sum($skipped)]);
+        if ($skipped !== []) {
+            arsort($skipped);
+            $message .= ' ' . __('Gründe: :reasons', ['reasons' => implode(' ', array_map(
+                static fn (string $reason, int $count): string => $count . ' × ' . $reason,
+                array_keys($skipped),
+                $skipped,
+            ))]);
+        }
+
+        return redirect()->toList('finance.incoming-invoices.index')->with($skipped !== [] ? 'warning' : 'success', $message);
     }
 
     /** Erkennung ausgewählter Klärfälle wiederholen (Sammelaktion, MVP-1207). */
@@ -296,19 +337,35 @@ class IncomingInvoiceAssignmentController extends Controller {
         return $this->existingParty($kind === 'supplier', $sqid);
     }
 
-    private function rejectAsNoInvoice(IncomingEInvoice $incoming, string $note, \App\Models\Platform\User $actor): RedirectResponse {
+    /**
+     * „Keine Rechnung“: ablehnen, auf Wunsch die Gegenpartei künftig ausschließen
+     * und die anderen offenen Eingänge desselben Namens gleich mit ablegen (MVP-1208).
+     */
+    private function rejectAsNoInvoice(IncomingEInvoice $incoming, string $note, \App\Models\Platform\User $actor, bool $excludeParty, bool $applyToOpen): RedirectResponse {
         if (! $incoming->status->canTransitionTo(IncomingEInvoiceStatus::Rejected)) {
             return back()->with('error', __('Übergang :from → :to ist nicht zulässig.', ['from' => $incoming->status->value, 'to' => IncomingEInvoiceStatus::Rejected->value]));
         }
-        $incoming->update([
-            'status' => IncomingEInvoiceStatus::Rejected,
-            'decided_by' => $actor->id,
-            'decided_at' => now(),
-            'decision_note' => $note,
-        ]);
-        $incoming->audit('incoming_einvoice.decided', ['to' => IncomingEInvoiceStatus::Rejected->value, 'reason' => 'not_invoice']);
+        $siblings = $applyToOpen ? $incoming->openOfSameParty() : new \Illuminate\Database\Eloquent\Collection();
+        $this->exclusions->reject($incoming, $note, $actor);
+        $rule = $excludeParty ? $this->exclusions->remember($incoming, $actor, $note) : null;
+        $others = 0;
+        foreach ($siblings as $other) {
+            if ($other->status->canTransitionTo(IncomingEInvoiceStatus::Rejected)) {
+                $this->exclusions->reject($other, $note, $actor, $rule !== null ? ['exclusion_id' => $rule->id] : []);
+                $others++;
+            }
+        }
 
-        return redirect()->toList('finance.incoming-invoices.index')->with('success', __('Als „keine Rechnung“ abgelegt.'));
+        $party = (string) $incoming->counterpartyName();
+        $message = (string) __('Als „keine Rechnung“ abgelegt.');
+        if ($others > 0) {
+            $message .= ' ' . trans_choice(':count weiterer offener Eingang von „:party“ ebenfalls abgelegt.|:count weitere offene Eingänge von „:party“ ebenfalls abgelegt.', $others, ['count' => $others, 'party' => $party]);
+        }
+        if ($rule !== null) {
+            $message .= ' ' . __('Künftige Eingänge von „:party“ werden automatisch als keine Rechnung abgelegt.', ['party' => $rule->party_name]);
+        }
+
+        return redirect()->toList('finance.incoming-invoices.index')->with('success', $message);
     }
 
     private function authorizeBilling(): \App\Models\Platform\User {

@@ -535,6 +535,10 @@ class IncomingEInvoiceService {
             'source' => $source,
         ]);
 
+        // Ausschlussregel (MVP-1208): Belege dieser Gegenpartei sind keine Rechnungen.
+        if (app(IncomingInvoiceExclusions::class)->applyTo($incoming)) {
+            return ['incoming' => $incoming, 'document' => $document];
+        }
         // Gegenpartei nur bei eindeutigem, exaktem Treffer (MVP-1108).
         app(IncomingInvoiceMatcher::class)->autoAssign($incoming);
 
@@ -601,7 +605,9 @@ class IncomingEInvoiceService {
             'gross' => $summary['gross'],
             'recognition' => $recognition->value,
         ]);
-        app(IncomingInvoiceMatcher::class)->autoAssign($incoming);
+        if (! app(IncomingInvoiceExclusions::class)->applyTo($incoming)) {
+            app(IncomingInvoiceMatcher::class)->autoAssign($incoming);
+        }
 
         return true;
     }

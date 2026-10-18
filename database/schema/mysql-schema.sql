@@ -11831,6 +11831,26 @@ CREATE TABLE `incoming_einvoices` (
   CONSTRAINT `ine_transferred_by_fk` FOREIGN KEY (`transferred_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `incoming_invoice_exclusions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `incoming_invoice_exclusions` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `direction` varchar(16) NOT NULL,
+  `party_name` varchar(191) NOT NULL,
+  `party_name_key` varchar(191) NOT NULL,
+  `note` varchar(500) DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `incoming_invoice_exclusion_org_dir_key_unique` (`organization_id`,`direction`,`party_name_key`),
+  KEY `incoming_invoice_exclusions_created_by_foreign` (`created_by`),
+  CONSTRAINT `incoming_invoice_exclusions_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `incoming_invoice_exclusions_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `incoming_invoice_retentions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -26945,3 +26965,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (987,'2027_03_21_13
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (988,'2027_03_22_090000_create_invoice_inquiries',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (989,'2027_03_23_090000_add_delta_unsupported_at_to_msgraph_task_list_links',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (990,'2027_03_24_090000_rewrite_counterparty_types_to_aliases',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (991,'2027_03_25_090000_create_incoming_invoice_exclusions_table',1);

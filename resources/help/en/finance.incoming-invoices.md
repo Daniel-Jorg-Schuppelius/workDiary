@@ -113,6 +113,13 @@ document itself does not name another party. For unrecognised and recognised
 documents, enter number, date and amounts with “Enter values”. Assign several
 documents of the same party together in the list.
 
+With “Also treat the other open documents the same way” you handle all open
+documents of the same counterparty in one step, when assigning as well as when
+rejecting. Under “Not an invoice” you can also exclude the counterparty: future
+documents with this name are filed automatically as “not an invoice”, for
+example test documents or advertising. You can view and delete sender rules and
+exclusions via “Rules” in the page menu.
+
 **Collective supplier and collective customer:** For one-off suppliers and
 customers, each organisation has one collective contact. The name of the
 real party stays on the document. A collective contact is never transferred

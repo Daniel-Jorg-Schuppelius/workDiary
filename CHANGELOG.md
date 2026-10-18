@@ -10,6 +10,27 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Rechnungseingang: Ausschlussregeln je Gegenpartei (MVP-1208). Wer einen
+  Eingang als „keine Rechnung“ ablehnt, kann die Gegenpartei ausschließen:
+  Künftige Belege mit diesem Namen legt der Eingang beim Abruf, Upload und
+  bei der Nacherkennung von selbst abgelehnt ab, mit Begründung und Audit —
+  Anlass waren 270 Testbelege eines Mailsystems an einem Vormittag. Der
+  Zuordnen-Dialog behandelt auf Wunsch die anderen offenen Eingänge
+  derselben Gegenpartei gleich mit, beim Zuordnen wie beim Ablehnen. Die
+  neue Seite „Regeln“ im Menü des Rechnungseingangs zeigt Absenderregeln
+  und Ausschlüsse und löscht sie; Absenderregeln waren bisher unsichtbar
+  (Befund 2026-10-18).
+
+- Rechnungseingang: Wer einen Eingang mit „Neu aus Belegdaten“ einer neuen
+  Partei zuordnet oder den Absender merken lässt, bekommt die bereits
+  eingegangenen offenen Eingänge derselben Gegenpartei gleich mit zugeordnet
+  (`IncomingInvoiceMatcher::rematchOpen()`, derselbe Abgleich wie beim
+  Eingang: USt-IdNr., Steuernummer, IBAN, Absenderregel; auch Grundlage
+  von `incoming-invoices:match`, das abgelehnte Eingänge jetzt auslässt).
+  Die Meldung nennt die Zahl. Bisher blieben sie offen, bis jemand sie von
+  Hand sammelzuordnete (Befund 2026-10-18: 20 E-Rechnungen eines
+  Lieferanten, alle offen).
+
 - Rechnungseingang: Nacherkennung offener Klärfälle (MVP-1207). Fehlten dem
   Server beim Eingang die Textwerkzeuge, blieben Mail-Rechnungen Klärfälle
   ohne Nummer und Betrag, und die Erkennung lief nur einmal. Die
@@ -1354,6 +1375,12 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
   das Ergebnis nur, wenn die Summen aufgehen.
 
 ### Fixed
+
+- Rechnungseingang: Die Sammelaktion „Zuordnen“ meldete nur „:n
+  übersprungen“, ohne den Grund — etwa wenn die Vorgabe „Sammelkontakt“ auf
+  Rechnungen aus dem EU-Ausland oder mit Reverse Charge traf, die einen
+  echten Firmenkontakt brauchen, oder ein Eingang schon übergeben war. Die
+  Meldung nennt jetzt je Grund die Zahl (Befund 2026-10-18).
 
 - Rechnungseingang: PDFs, die der Absender als `application/x-download`
   o. ä. meldet und die vor `%PDF-` Vorspann tragen, hielt der Eingang für

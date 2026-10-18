@@ -423,6 +423,7 @@ return [
         'import_value_mappings' => \App\Models\Integration\ImportValueMapping::class,
         'incoming_einvoice_transfers' => \App\Models\Invoicing\IncomingEInvoiceTransfer::class,
         'incoming_einvoices' => \App\Models\Invoicing\IncomingEInvoice::class,
+        'incoming_invoice_exclusions' => \App\Models\Invoicing\IncomingInvoiceExclusion::class,
         'incoming_invoice_retentions' => \App\Models\Finance\IncomingInvoiceRetention::class,
         'integration_inbox_items' => \App\Models\Integration\IntegrationInboxItem::class,
         'integration_outbox' => \App\Models\Integration\IntegrationOutboxEntry::class,

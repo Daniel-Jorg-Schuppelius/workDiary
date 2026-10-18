@@ -10844,5 +10844,20 @@
     "ICS-Download": "Descarga ICS",
     "Für einen einmaligen Import in einen anderen Kalender.": "Para una importación única en otro calendario.",
     "Meine Termine als ICS": "Mis citas como ICS",
-    "Öffentliche Termine als ICS": "Citas públicas como ICS"
+    "Öffentliche Termine als ICS": "Citas públicas como ICS",
+    "Gründe: :reasons": "Motivos: :reasons",
+    "Eingang zugeordnet, :count weiterer offener Eingang derselben Partei automatisch zugeordnet.|Eingang zugeordnet, :count weitere offene Eingänge derselben Partei automatisch zugeordnet.": "Documento asignado, :count documento abierto más de la misma parte asignado automáticamente.|Documento asignado, :count documentos abiertos más de la misma parte asignados automáticamente.",
+    "Auch den :count anderen offenen Eingang von „:party“ genauso behandeln|Auch die :count anderen offenen Eingänge von „:party“ genauso behandeln": "Tratar igual también :count documento abierto más de «:party»|Tratar igual también :count documentos abiertos más de «:party»",
+    "Künftige Eingänge von „:party“ automatisch als keine Rechnung ablegen": "Archivar automáticamente los futuros documentos de «:party» como «no es una factura»",
+    ":count weiterer offener Eingang von „:party“ ebenfalls abgelegt.|:count weitere offene Eingänge von „:party“ ebenfalls abgelegt.": ":count documento abierto más de «:party» archivado también.|:count documentos abiertos más de «:party» archivados también.",
+    "Künftige Eingänge von „:party“ werden automatisch als keine Rechnung abgelegt.": "Los futuros documentos de «:party» se archivarán automáticamente como «no es una factura».",
+    "Laut Ausschlussregel keine Rechnung.": "No es una factura según una regla de exclusión.",
+    "Regeln des Rechnungseingangs": "Reglas de las facturas recibidas",
+    "Absenderregeln ordnen künftige Mails eines Absenders einer Partei zu. Ausschlüsse legen Eingänge einer Gegenpartei automatisch als keine Rechnung ab.": "Las reglas de remitente asignan los correos futuros de un remitente a una parte. Las exclusiones archivan automáticamente los documentos de una contraparte como «no es una factura».",
+    "Absenderregel": "Regla de remitente",
+    "Ausschluss": "Exclusión",
+    "Regel löschen?": "¿Eliminar la regla?",
+    "Keine Regeln.": "Sin reglas.",
+    "Wirkung": "Efecto",
+    "Regeln": "Reglas"
 }

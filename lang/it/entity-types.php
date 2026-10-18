@@ -279,6 +279,7 @@ return [
     'EbicsConnection' => 'Accesso bancario EBICS',
     'DatevOnlineConnection' => 'Connessione DATEV Online',
     'InvoiceSenderRule' => 'Regola mittente (casella delle fatture)',
+    'IncomingInvoiceExclusion' => 'Regola di esclusione (casella delle fatture)',
     'InvoiceSchedule' => 'Piano di fatturazione',
     'InvoiceScheduleItem' => 'Riga del piano di fatturazione',
     'InvoiceTemplate' => 'Modello di fattura',

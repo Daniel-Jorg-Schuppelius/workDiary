@@ -119,6 +119,13 @@ documento stesso non indichi un’altra parte. Per i documenti non riconosciuti
 e riconosciuti inserisca numero, data e importi con «Inserire i valori».
 Assegni insieme nell’elenco più documenti della stessa parte.
 
+Con «Trattare allo stesso modo anche gli altri documenti aperti» sbriga tutti i
+documenti aperti della stessa controparte in un passaggio, sia nell’assegnazione
+sia nel rifiuto. In «Non è una fattura» può inoltre escludere la controparte: i
+futuri documenti con questo nome vengono archiviati automaticamente come «non è
+una fattura», ad esempio documenti di prova o pubblicità. Le regole mittente e le
+esclusioni si consultano ed eliminano tramite «Regole» nel menu della pagina.
+
 **Fornitore collettivo e cliente collettivo:** per fornitori e clienti
 occasionali ogni organizzazione dispone di un contatto collettivo. Il nome
 della parte reale resta sul documento. Un contatto collettivo non viene mai

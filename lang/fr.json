@@ -10844,5 +10844,20 @@
     "ICS-Download": "Téléchargement ICS",
     "Für einen einmaligen Import in einen anderen Kalender.": "Pour un import unique dans un autre calendrier.",
     "Meine Termine als ICS": "Mes rendez-vous en ICS",
-    "Öffentliche Termine als ICS": "Rendez-vous publics en ICS"
+    "Öffentliche Termine als ICS": "Rendez-vous publics en ICS",
+    "Gründe: :reasons": "Motifs : :reasons",
+    "Eingang zugeordnet, :count weiterer offener Eingang derselben Partei automatisch zugeordnet.|Eingang zugeordnet, :count weitere offene Eingänge derselben Partei automatisch zugeordnet.": "Document attribué, :count autre document ouvert de la même partie attribué automatiquement.|Document attribué, :count autres documents ouverts de la même partie attribués automatiquement.",
+    "Auch den :count anderen offenen Eingang von „:party“ genauso behandeln|Auch die :count anderen offenen Eingänge von „:party“ genauso behandeln": "Traiter de la même façon :count autre document ouvert de « :party »|Traiter de la même façon les :count autres documents ouverts de « :party »",
+    "Künftige Eingänge von „:party“ automatisch als keine Rechnung ablegen": "Classer automatiquement les futurs documents de « :party » comme « pas une facture »",
+    ":count weiterer offener Eingang von „:party“ ebenfalls abgelegt.|:count weitere offene Eingänge von „:party“ ebenfalls abgelegt.": ":count autre document ouvert de « :party » classé également.|:count autres documents ouverts de « :party » classés également.",
+    "Künftige Eingänge von „:party“ werden automatisch als keine Rechnung abgelegt.": "Les futurs documents de « :party » seront classés automatiquement comme « pas une facture ».",
+    "Laut Ausschlussregel keine Rechnung.": "Pas une facture selon une règle d’exclusion.",
+    "Regeln des Rechnungseingangs": "Règles des factures entrantes",
+    "Absenderregeln ordnen künftige Mails eines Absenders einer Partei zu. Ausschlüsse legen Eingänge einer Gegenpartei automatisch als keine Rechnung ab.": "Les règles d’expéditeur attribuent les futurs e-mails d’un expéditeur à une partie. Les exclusions classent automatiquement les documents d’une contrepartie comme « pas une facture ».",
+    "Absenderregel": "Règle d’expéditeur",
+    "Ausschluss": "Exclusion",
+    "Regel löschen?": "Supprimer la règle ?",
+    "Keine Regeln.": "Aucune règle.",
+    "Wirkung": "Effet",
+    "Regeln": "Règles"
 }

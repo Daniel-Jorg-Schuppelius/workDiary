@@ -48,5 +48,8 @@
     "{1}:n Urlaubsantrag wartet auf Freigabe|[2,*]:n Urlaubsanträge warten auf Freigabe": "{1}:n Urlaubsantrag wartet auf Freigabe|[2,*]:n Urlaubsanträge warten auf Freigabe",
     "Kundengruppen": "Kundengruppen",
     "Kundengruppe": "Kundengruppe",
-    ":n Eintrag der Auswahl ist nicht (mehr) verfügbar und wurde entfernt.|:n Einträge der Auswahl sind nicht (mehr) verfügbar und wurden entfernt.": ":n Eintrag der Auswahl ist nicht (mehr) verfügbar und wurde entfernt.|:n Einträge der Auswahl sind nicht (mehr) verfügbar und wurden entfernt."
+    ":n Eintrag der Auswahl ist nicht (mehr) verfügbar und wurde entfernt.|:n Einträge der Auswahl sind nicht (mehr) verfügbar und wurden entfernt.": ":n Eintrag der Auswahl ist nicht (mehr) verfügbar und wurde entfernt.|:n Einträge der Auswahl sind nicht (mehr) verfügbar und wurden entfernt.",
+    "Eingang zugeordnet, :count weiterer offener Eingang derselben Partei automatisch zugeordnet.|Eingang zugeordnet, :count weitere offene Eingänge derselben Partei automatisch zugeordnet.": "Eingang zugeordnet, :count weiterer offener Eingang derselben Partei automatisch zugeordnet.|Eingang zugeordnet, :count weitere offene Eingänge derselben Partei automatisch zugeordnet.",
+    "Auch den :count anderen offenen Eingang von „:party“ genauso behandeln|Auch die :count anderen offenen Eingänge von „:party“ genauso behandeln": "Auch den :count anderen offenen Eingang von „:party“ genauso behandeln|Auch die :count anderen offenen Eingänge von „:party“ genauso behandeln",
+    ":count weiterer offener Eingang von „:party“ ebenfalls abgelegt.|:count weitere offene Eingänge von „:party“ ebenfalls abgelegt.": ":count weiterer offener Eingang von „:party“ ebenfalls abgelegt.|:count weitere offene Eingänge von „:party“ ebenfalls abgelegt."
 }

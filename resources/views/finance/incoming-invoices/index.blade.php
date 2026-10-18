@@ -48,6 +48,9 @@
                             show-label>{{ __('Rechnungen hochladen') }}</x-icon-btn>
             </form>
         @endif
+        @if ($canManage)
+            <x-icon-btn icon="rule_settings" size="sm" placement="menu" :href="route('finance.incoming-invoices.rules')" show-label>{{ __('Regeln') }}</x-icon-btn>
+        @endif
     </x-slot:actions>
 
     <x-tab-nav :items="$tabItems" />

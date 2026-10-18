@@ -10844,5 +10844,20 @@
     "ICS-Download": "Download ICS",
     "Für einen einmaligen Import in einen anderen Kalender.": "Per un'importazione una tantum in un altro calendario.",
     "Meine Termine als ICS": "I miei appuntamenti come ICS",
-    "Öffentliche Termine als ICS": "Appuntamenti pubblici come ICS"
+    "Öffentliche Termine als ICS": "Appuntamenti pubblici come ICS",
+    "Gründe: :reasons": "Motivi: :reasons",
+    "Eingang zugeordnet, :count weiterer offener Eingang derselben Partei automatisch zugeordnet.|Eingang zugeordnet, :count weitere offene Eingänge derselben Partei automatisch zugeordnet.": "Documento assegnato, :count ulteriore documento aperto della stessa parte assegnato automaticamente.|Documento assegnato, :count ulteriori documenti aperti della stessa parte assegnati automaticamente.",
+    "Auch den :count anderen offenen Eingang von „:party“ genauso behandeln|Auch die :count anderen offenen Eingänge von „:party“ genauso behandeln": "Trattare allo stesso modo anche :count altro documento aperto di «:party»|Trattare allo stesso modo anche gli altri :count documenti aperti di «:party»",
+    "Künftige Eingänge von „:party“ automatisch als keine Rechnung ablegen": "Archiviare automaticamente i futuri documenti di «:party» come «non è una fattura»",
+    ":count weiterer offener Eingang von „:party“ ebenfalls abgelegt.|:count weitere offene Eingänge von „:party“ ebenfalls abgelegt.": ":count ulteriore documento aperto di «:party» archiviato anch’esso.|:count ulteriori documenti aperti di «:party» archiviati anch’essi.",
+    "Künftige Eingänge von „:party“ werden automatisch als keine Rechnung abgelegt.": "I futuri documenti di «:party» verranno archiviati automaticamente come «non è una fattura».",
+    "Laut Ausschlussregel keine Rechnung.": "Non è una fattura secondo una regola di esclusione.",
+    "Regeln des Rechnungseingangs": "Regole delle fatture in entrata",
+    "Absenderregeln ordnen künftige Mails eines Absenders einer Partei zu. Ausschlüsse legen Eingänge einer Gegenpartei automatisch als keine Rechnung ab.": "Le regole mittente assegnano le future e-mail di un mittente a una parte. Le esclusioni archiviano automaticamente i documenti di una controparte come «non è una fattura».",
+    "Absenderregel": "Regola mittente",
+    "Ausschluss": "Esclusione",
+    "Regel löschen?": "Eliminare la regola?",
+    "Keine Regeln.": "Nessuna regola.",
+    "Wirkung": "Effetto",
+    "Regeln": "Regole"
 }

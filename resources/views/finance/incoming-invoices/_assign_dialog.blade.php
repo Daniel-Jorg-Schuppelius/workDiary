@@ -65,6 +65,10 @@
         @if ($incoming->sender_email)
             <x-checkbox-field name="remember_sender" :label="__('Absender :email künftig dieser Partei zuordnen', ['email' => $incoming->sender_email])" :checked="(bool) old('remember_sender')" />
         @endif
+        {{-- MVP-1208: gilt für jeden Weg, auch „Keine Rechnung“. --}}
+        @if ($otherOpen > 0 && $partyName !== null)
+            <x-checkbox-field name="apply_to_open" :label="trans_choice('Auch den :count anderen offenen Eingang von „:party“ genauso behandeln|Auch die :count anderen offenen Eingänge von „:party“ genauso behandeln', $otherOpen, ['count' => $otherOpen, 'party' => $partyName])" :checked="(bool) old('apply_to_open')" />
+        @endif
     </x-form-group>
 
     <x-form-group :legend="__('Neu aus Belegdaten')" icon="person_add" cols="2" :description="__('Nur beim Weg „Neu aus Belegdaten“.')">
@@ -80,6 +84,9 @@
 
     <x-form-group :legend="__('Keine Rechnung')" icon="block" cols="1" :description="__('Nur beim Weg „Keine Rechnung“: Der Eingang wird mit Begründung abgelehnt.')">
         <x-textarea-field name="note" :label="__('Begründung')" :value="old('note')" />
+        @if ($partyName !== null)
+            <x-checkbox-field name="exclude_party" :label="__('Künftige Eingänge von „:party“ automatisch als keine Rechnung ablegen', ['party' => $partyName])" :checked="(bool) old('exclude_party')" />
+        @endif
     </x-form-group>
 
     <x-validation-errors />

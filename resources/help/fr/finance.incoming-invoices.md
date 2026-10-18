@@ -124,6 +124,14 @@ documents non reconnus et reconnus, saisissez numéro, date et montants avec
 « Saisir les valeurs ». Attribuez ensemble dans la liste plusieurs documents
 d’une même partie.
 
+Avec « Traiter de la même façon les autres documents ouverts », vous réglez
+tous les documents ouverts de la même contrepartie en une étape, à
+l’attribution comme au refus. Sous « Pas une facture », vous pouvez en plus
+exclure la contrepartie : les futurs documents portant ce nom sont classés
+automatiquement comme « pas une facture », par exemple des documents de test ou
+de la publicité. Vous consultez et supprimez les règles d’expéditeur et les
+exclusions via « Règles » dans le menu de la page.
+
 **Fournisseur collectif et client collectif :** Pour les fournisseurs et
 clients occasionnels, chaque organisation dispose d’un contact collectif. Le
 nom de la partie réelle reste sur le document. Un contact collectif n’est

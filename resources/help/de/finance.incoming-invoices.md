@@ -111,6 +111,13 @@ Beleg selbst keine andere Partei nennt. Bei Klärfällen und erkannten Belegen
 tragen Sie über „Werte erfassen“ Nummer, Datum und Beträge ein. Mehrere
 Eingänge derselben Partei ordnen Sie in der Liste gemeinsam zu.
 
+Mit „Auch die anderen offenen Eingänge genauso behandeln“ erledigen Sie alle
+offenen Belege derselben Gegenpartei in einem Schritt, beim Zuordnen wie beim
+Ablehnen. Unter „Keine Rechnung“ schließen Sie die Gegenpartei auf Wunsch aus:
+Künftige Belege mit diesem Namen legt der Eingang von selbst als „keine
+Rechnung“ ab, etwa Testbelege oder Werbung. Absenderregeln und Ausschlüsse
+sehen und löschen Sie über „Regeln“ im Menü der Seite.
+
 **Sammellieferant und Sammelkunde:** Für Einmallieferanten und Einmalkunden
 gibt es je Organisation einen Sammelkontakt. Der Name der echten Partei
 bleibt am Beleg. Ein Sammelkontakt wird nie als eigener Kontakt an ein

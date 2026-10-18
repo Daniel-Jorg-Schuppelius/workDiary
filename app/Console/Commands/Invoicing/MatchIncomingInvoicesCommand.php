@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Console\Commands\Invoicing;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Platform\Organization;
 use App\Services\Invoicing\EInvoice\IncomingInvoiceMatcher;
 use Illuminate\Console\Command;
@@ -33,19 +32,8 @@ class MatchIncomingInvoicesCommand extends Command {
     public function handle(IncomingInvoiceMatcher $matcher): int {
         foreach ($this->organizationsToProcess() as $org) {
             $this->withOrganizationContext($org, function (Organization $org) use ($matcher): void {
-                $assigned = 0;
-                $open = 0;
-                IncomingEInvoice::query()->withoutGlobalScopes()
-                    ->where('organization_id', $org->id)
-                    ->whereNull('supplier_id')->whereNull('customer_id')
-                    ->whereNull('transferred_at')
-                    ->orderBy('id')
-                    ->chunkById(200, static function ($incomings) use ($matcher, &$assigned, &$open): void {
-                        foreach ($incomings as $incoming) {
-                            $matcher->autoAssign($incoming) ? $assigned++ : $open++;
-                        }
-                    });
-                $this->info(sprintf('Organisation #%d: %d zugeordnet, %d weiter offen.', $org->id, $assigned, $open));
+                $result = $matcher->rematchOpen((int) $org->id);
+                $this->info(sprintf('Organisation #%d: %d zugeordnet, %d weiter offen.', $org->id, $result['assigned'], $result['open']));
             });
         }
 

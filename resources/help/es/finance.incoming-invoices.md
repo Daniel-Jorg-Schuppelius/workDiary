@@ -118,6 +118,14 @@ propio documento no indique otra parte. En documentos no reconocidos y
 reconocidos, introduzca número, fecha e importes con «Introducir valores».
 Asigne juntos en la lista varios documentos de la misma parte.
 
+Con «Tratar igual también los otros documentos abiertos» resuelve todos los
+documentos abiertos de la misma contraparte en un paso, tanto al asignar como
+al rechazar. En «No es una factura» puede además excluir la contraparte: los
+futuros documentos con ese nombre se archivan automáticamente como «no es una
+factura», por ejemplo documentos de prueba o publicidad. Las reglas de
+remitente y las exclusiones se consultan y eliminan en «Reglas», en el menú de
+la página.
+
 **Proveedor colectivo y cliente colectivo:** Para proveedores y clientes
 ocasionales, cada organización tiene un contacto colectivo. El nombre de la
 parte real permanece en el documento. Un contacto colectivo nunca se

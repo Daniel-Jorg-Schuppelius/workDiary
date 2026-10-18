@@ -267,6 +267,42 @@ class IncomingEInvoice extends Model {
         return $this->supplier ?? $this->customer;
     }
 
+    /** Name der Gegenpartei laut Beleg: Verkäufer beim Eingang, Käufer beim Ausgang. */
+    public function counterpartyName(): ?string {
+        $name = $this->direction === DocumentDirection::Outgoing ? $this->buyer_name : $this->seller_name;
+
+        return is_string($name) && trim($name) !== '' ? $name : null;
+    }
+
+    /**
+     * Offene Eingänge derselben Richtung, deren Gegenpartei laut Beleg denselben
+     * Namen trägt (MVP-1208) — für ausdrückliche Sammelentscheidungen im Dialog,
+     * nie für den automatischen Abgleich.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, self>
+     */
+    public function openOfSameParty(): \Illuminate\Database\Eloquent\Collection {
+        $key = IncomingInvoiceExclusion::keyFor($this->counterpartyName());
+        if ($key === null) {
+            return new \Illuminate\Database\Eloquent\Collection();
+        }
+        $outgoing = $this->direction === DocumentDirection::Outgoing;
+        $column = $outgoing ? 'buyer_name' : 'seller_name';
+
+        return self::query()->withoutGlobalScopes()
+            ->where('organization_id', $this->organization_id)
+            ->where('direction', ($outgoing ? DocumentDirection::Outgoing : DocumentDirection::Incoming)->value)
+            ->whereNull('supplier_id')->whereNull('customer_id')
+            ->whereNull('transferred_at')
+            ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value)
+            ->whereNotNull($column)
+            ->whereKeyNot($this->getKey())
+            ->orderBy('id')
+            ->get()
+            ->filter(static fn (self $other): bool => IncomingInvoiceExclusion::keyFor($other->{$column}) === $key)
+            ->values();
+    }
+
     /** @return BelongsTo<Document, $this> */
     public function document(): BelongsTo {
         return $this->belongsTo(Document::class);

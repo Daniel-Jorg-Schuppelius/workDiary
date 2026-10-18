@@ -3184,6 +3184,10 @@ Route::middleware('auth')->group(function () {
             Route::post('sammel-zuordnen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'bulkAssign'])->name('bulk-assign');
             // Nacherkennung offener Klärfälle (MVP-1207), z. B. nach nachinstallierten Textwerkzeugen.
             Route::post('sammel-erkennen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'bulkReanalyze'])->name('bulk-reanalyze');
+            // Regeln des Rechnungseingangs (MVP-1208): Absenderregeln und Ausschlüsse einsehen und löschen.
+            Route::get('regeln', [\App\Http\Controllers\Finance\IncomingInvoiceRuleController::class, 'index'])->name('rules');
+            Route::delete('regeln/absender/{rule}', [\App\Http\Controllers\Finance\IncomingInvoiceRuleController::class, 'destroySenderRule'])->name('rules.sender.destroy');
+            Route::delete('regeln/ausschluss/{exclusion}', [\App\Http\Controllers\Finance\IncomingInvoiceRuleController::class, 'destroyExclusion'])->name('rules.exclusion.destroy');
             Route::get('{incoming}/zuordnen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'assignForm'])->name('assign.form');
             Route::post('{incoming}/zuordnen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'assign'])->name('assign');
             Route::get('{incoming}/werte', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'valuesForm'])->name('values.form');

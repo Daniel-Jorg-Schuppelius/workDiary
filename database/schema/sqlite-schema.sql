@@ -23839,6 +23839,24 @@ CREATE INDEX "iiq_org_external_idx" on "invoice_inquiries"(
   "external_source",
   "external_key"
 );
+CREATE TABLE IF NOT EXISTS "incoming_invoice_exclusions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "direction" varchar not null,
+  "party_name" varchar not null,
+  "party_name_key" varchar not null,
+  "note" varchar,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "incoming_invoice_exclusion_org_dir_key_unique" on "incoming_invoice_exclusions"(
+  "organization_id",
+  "direction",
+  "party_name_key"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -24830,3 +24848,4 @@ INSERT INTO migrations VALUES(987,'2027_03_21_130000_create_location_pending_tri
 INSERT INTO migrations VALUES(988,'2027_03_22_090000_create_invoice_inquiries',1);
 INSERT INTO migrations VALUES(989,'2027_03_23_090000_add_delta_unsupported_at_to_msgraph_task_list_links',1);
 INSERT INTO migrations VALUES(990,'2027_03_24_090000_rewrite_counterparty_types_to_aliases',1);
+INSERT INTO migrations VALUES(991,'2027_03_25_090000_create_incoming_invoice_exclusions_table',1);
