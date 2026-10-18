@@ -54,6 +54,73 @@ PHP_BIN_WISH="${PHP_BIN:-}"
 PHP_BIN="$(resolve_php_bin . "$PHP_BIN_WISH")"
 echo "→ PHP-Binary: $PHP_BIN ($("$PHP_BIN" -r 'echo PHP_VERSION;'))"
 
+# Systemwerkzeuge der Toolkits: installscript/install-dependencies.sh liest
+# config/executables.json (App-eigene Pakete) und die *executables.json unter
+# vendor/ und installiert fehlende apt-Pakete, JARs und Installer — dafür ruft
+# es sudo auf, auch als root. Fehlende Werkzeuge schalten im Betrieb nur ihre
+# Funktion ab (OCR, Textextraktion, Validierung), deshalb bricht der Deploy
+# ihretwegen nie ab. DEPLOY_SKIP_TOOLS=1 überspringt den Schritt (Container
+# mit eigenem Image), DEPLOY_TOOLS_ALL=1 nimmt auch optionale Werkzeuge mit
+# (LibreOffice, ffmpeg …).
+TOOLS_INSTALLER="installscript/install-dependencies.sh"
+TOOLS_ARGS=()
+if [ "${DEPLOY_TOOLS_ALL:-0}" = "1" ]; then
+    TOOLS_ARGS+=(--all)
+fi
+tools_can_install() {
+    command -v sudo >/dev/null 2>&1 || return 1
+    [ "$(id -u)" = "0" ] || sudo -n true 2>/dev/null
+}
+# Prüfung mit der Pfadauflösung der Toolkits (config-toolkit); Exit 1 = es fehlt etwas.
+tools_report() {
+    "$PHP_BIN" scripts/check-tools.php ${TOOLS_ARGS[@]+"${TOOLS_ARGS[@]}"}
+}
+tools_install() {
+    if ! bash "$TOOLS_INSTALLER" ${TOOLS_ARGS[@]+"${TOOLS_ARGS[@]}"}; then
+        echo "  ⚠ Installer fehlgeschlagen — Ausgabe oben; nachholen: sudo bash $PWD/$TOOLS_INSTALLER" >&2
+        return 0
+    fi
+    # JARs mit relativem Ziel (KoSIT-Validator des erechnung-toolkit) legt der
+    # Installer per sudo root-eigen unter vendor/ ab — das nächste composer
+    # install könnte das Paket dann nicht mehr ersetzen.
+    local vendor_owner
+    vendor_owner="$(stat -c '%U:%G' vendor)"
+    if [ "$vendor_owner" != "root:root" ]; then
+        find vendor -user root -print0 | xargs -0 -r sudo chown -h "$vendor_owner" \
+            || echo "  ⚠ root-eigene Dateien unter vendor/ — manuell: sudo chown -R $vendor_owner vendor" >&2
+    fi
+}
+
+# Als root gestartet (sudo ./deploy.sh): die Anwendungsschritte laufen als
+# Eigentümer von storage/ (wie scripts/artisan.sh) — root-eigene Dateien im
+# Webspace brächen den nächsten Deploy (install-webspace.sh --chown). root
+# übernimmt danach nur die Systemwerkzeuge (apt braucht ihn) und startet die
+# Worker neu, weil laufende Prozesse die Werkzeuge beim Start aufgelöst haben.
+if [ "$(id -u)" = "0" ] && [ -z "${DEPLOY_AS_OWNER:-}" ]; then
+    DEPLOY_OWNER="$(stat -c %U storage)"
+    if [ "$DEPLOY_OWNER" = "root" ]; then
+        echo "ABBRUCH: storage/ gehört root — Deploy als Betriebs-User starten oder Eigentümer korrigieren (scripts/install-webspace.sh --chown=USER:GROUP)." >&2
+        exit 1
+    fi
+    echo "→ Als root gestartet: Deploy läuft als $DEPLOY_OWNER, die Systemwerkzeuge installiert root im Anschluss"
+    DEPLOY_AS_OWNER=1 DEPLOY_TOOLS_BY_ROOT=1 runuser -u "$DEPLOY_OWNER" -- bash "$0" "$@" || exit $?
+    if [ "${DEPLOY_SKIP_TOOLS:-0}" = "1" ]; then
+        exit 0
+    fi
+    echo "→ Systemwerkzeuge der Toolkits als root installieren"
+    if [ ! -f "$TOOLS_INSTALLER" ]; then
+        echo "  ⚠ $TOOLS_INSTALLER fehlt (Submodul nicht geladen) — nur Prüfung." >&2
+    elif ! command -v sudo >/dev/null 2>&1; then
+        echo "  ⚠ sudo fehlt — der Installer ruft es auch als root auf (apt install sudo); nur Prüfung." >&2
+    else
+        tools_install
+        runuser -u "$DEPLOY_OWNER" -- "$PHP_BIN" artisan queue:restart || true
+    fi
+    runuser -u "$DEPLOY_OWNER" -- "$PHP_BIN" scripts/check-tools.php ${TOOLS_ARGS[@]+"${TOOLS_ARGS[@]}"} \
+        || echo "  ⚠ Es fehlen weiterhin Werkzeuge (Paket nicht verfügbar?) — siehe Bericht." >&2
+    exit 0
+fi
+
 # Liest einen Wert aus einer .env-artigen Datei. Fehlende Datei und fehlender
 # Schlüssel sind KEIN Fehler, sondern leere Ausgabe: unter `set -o pipefail`
 # reicht sonst der grep-Exit (1 = kein Treffer, 2 = Datei fehlt) durch die
@@ -230,48 +297,18 @@ else
 fi
 
 echo "→ Systemwerkzeuge der Toolkits (pdftotext, tesseract, ocrmypdf, Java …)"
-# installscript/install-dependencies.sh liest config/executables.json (App-
-# eigene Pakete) und die *executables.json unter vendor/ und installiert
-# fehlende apt-Pakete, JARs und Installer — dafür ruft es sudo auf, auch als
-# root. Als Web-User (ISPConfig) bleibt nur die Prüfung samt Root-Befehl zum
-# Nachholen. Fehlende Werkzeuge schalten im Betrieb nur ihre Funktion ab
-# (OCR, Textextraktion, Validierung), deshalb bricht der Deploy hier nicht ab.
-# DEPLOY_SKIP_TOOLS=1 überspringt den Schritt (Container mit eigenem Image),
-# DEPLOY_TOOLS_ALL=1 nimmt auch optionale Werkzeuge mit (LibreOffice, ffmpeg …).
-TOOLS_INSTALLER="installscript/install-dependencies.sh"
-TOOLS_ARGS=()
-if [ "${DEPLOY_TOOLS_ALL:-0}" = "1" ]; then
-    TOOLS_ARGS+=(--all)
-fi
-tools_can_install() {
-    command -v sudo >/dev/null 2>&1 || return 1
-    [ "$(id -u)" = "0" ] || sudo -n true 2>/dev/null
-}
-# Prüfung mit der Pfadauflösung der Toolkits (config-toolkit); Exit 1 = es fehlt etwas.
-tools_report() {
-    "$PHP_BIN" scripts/check-tools.php ${TOOLS_ARGS[@]+"${TOOLS_ARGS[@]}"}
-}
-if [ "${DEPLOY_SKIP_TOOLS:-0}" = "1" ]; then
+if [ "${DEPLOY_TOOLS_BY_ROOT:-0}" = "1" ]; then
+    echo "  (installiert root nach dem Deploy)"
+elif [ "${DEPLOY_SKIP_TOOLS:-0}" = "1" ]; then
     echo "  ⚠ DEPLOY_SKIP_TOOLS=1 — Systemwerkzeuge übersprungen."
 elif [ ! -f "$TOOLS_INSTALLER" ]; then
     echo "  ⚠ $TOOLS_INSTALLER fehlt (Submodul nicht geladen: git submodule update --init) — nur Prüfung." >&2
     tools_report || true
 elif tools_can_install; then
-    if bash "$TOOLS_INSTALLER" ${TOOLS_ARGS[@]+"${TOOLS_ARGS[@]}"}; then
-        # JARs mit relativem Ziel (KoSIT-Validator des erechnung-toolkit) legt
-        # der Installer per sudo root-eigen unter vendor/ ab — das nächste
-        # composer install könnte das Paket dann nicht mehr ersetzen.
-        vendor_owner="$(stat -c '%U:%G' vendor)"
-        if [ "$vendor_owner" != "root:root" ]; then
-            find vendor -user root -print0 | xargs -0 -r sudo chown -h "$vendor_owner" \
-                || echo "  ⚠ root-eigene Dateien unter vendor/ — manuell: sudo chown -R $vendor_owner vendor" >&2
-        fi
-    else
-        echo "  ⚠ Installer fehlgeschlagen — Ausgabe oben; nachholen: sudo bash $PWD/$TOOLS_INSTALLER" >&2
-    fi
+    tools_install
     tools_report || echo "  ⚠ Es fehlen weiterhin Werkzeuge (Paket nicht verfügbar?) — siehe Bericht." >&2
 elif ! tools_report; then
-    echo "  ⚠ Installation braucht root oder passwortloses sudo (und das Programm sudo) — als root nachholen:" >&2
+    echo "  ⚠ Installation braucht root: Deploy als root starten (sudo ./deploy.sh — läuft dann als $(id -un) und installiert selbst) oder nachholen:" >&2
     echo "    sudo bash $PWD/$TOOLS_INSTALLER" >&2
 fi
 

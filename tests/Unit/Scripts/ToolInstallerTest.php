@@ -63,6 +63,8 @@ class ToolInstallerTest extends TestCase {
         $this->assertStringContainsString('bash "$TOOLS_INSTALLER"', $deploy);
         $this->assertStringContainsString('scripts/check-tools.php', $deploy, 'Ohne Root-Rechte muss der Deploy wenigstens melden, was fehlt.');
         $this->assertStringContainsString('find vendor -user root', $deploy, 'Root-eigene JARs unter vendor/ blockieren das nächste composer install.');
+        $this->assertStringContainsString('runuser -u "$DEPLOY_OWNER" -- bash "$0" "$@"', $deploy, 'Als root gestartet laufen die App-Schritte als Eigentümer von storage/, root installiert danach nur die Werkzeuge.');
+        $this->assertStringContainsString('DEPLOY_TOOLS_BY_ROOT=1', $deploy);
 
         $process = new Process(['bash', '-n', $this->root . '/deploy.sh']);
         $process->run();

@@ -138,10 +138,11 @@ Die Systemwerkzeuge der Toolkits (PDF-Text, OCR, Java) installiert
 `*executables.json` unter `vendor/` und aus `config/executables.json` der App;
 es braucht root und `jq`. Ohne diese Werkzeuge laeuft die Anwendung, schaltet
 aber die abhaengigen Funktionen ab (Textextraktion, OCR, E-Rechnungs-
-Validierung). `deploy.sh` fuehrt den Installer bei jedem Update selbst aus,
-sobald es root oder passwortloses `sudo` hat, und meldet sonst mit
-`scripts/check-tools.php`, was fehlt — siehe
-[docs/systemdienste.md](docs/systemdienste.md).
+Validierung). `deploy.sh` fuehrt den Installer bei jedem Update selbst aus:
+als root gestartet (`sudo ./deploy.sh`) laeuft es fuer die App-Schritte als
+Eigentuemer von `storage/` und installiert die Werkzeuge danach als root; als
+Web-User ohne `sudo` meldet es mit `scripts/check-tools.php`, was fehlt —
+siehe [docs/systemdienste.md](docs/systemdienste.md).
 
 Anschliessend die Domain auf `public/` zeigen lassen und im Browser `/install`
 oeffnen. Der Assistent fuehrt durch folgende Schritte:

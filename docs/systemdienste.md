@@ -136,9 +136,15 @@ Sprachdaten für Tesseract (`deu`, `eng`) lädt das pdf-toolkit bei Bedarf
 selbst nach `vendor/…/php-pdf-toolkit/data/tesseract`; wer das Nachladen im
 Betrieb vermeiden will, installiert `tesseract-ocr-deu tesseract-ocr-eng`.
 
-`deploy.sh` führt den Installer bei jedem Update nach `composer install`
-selbst aus, sobald es als root läuft oder passwortloses `sudo` hat. Als
-Web-User (ISPConfig) kann es nicht installieren und meldet stattdessen mit
+`deploy.sh` führt den Installer bei jedem Update selbst aus. Als root
+gestartet (`sudo ./deploy.sh`) läuft der Deploy für alle Anwendungsschritte
+als Eigentümer von `storage/` (wie `scripts/artisan.sh`; root-eigene Dateien
+im Webspace brächen den nächsten Deploy) und installiert im Anschluss als
+root die Werkzeuge, gibt heruntergeladene JARs unter `vendor/` dem
+Eigentümer zurück und startet die Queue-Worker neu, damit laufende Prozesse
+die neuen Programme sehen. Als Betriebs-User mit passwortlosem `sudo` läuft
+der Installer direkt nach `composer install`. Als Web-User ohne `sudo`
+(ISPConfig) kann der Deploy nicht installieren und meldet stattdessen mit
 `scripts/check-tools.php`, welche Pakete fehlen, samt dem Befehl zum
 Nachholen; der Deploy bricht deswegen nicht ab. `DEPLOY_SKIP_TOOLS=1`
 überspringt den Schritt (Container mit eigenem Image), `DEPLOY_TOOLS_ALL=1`

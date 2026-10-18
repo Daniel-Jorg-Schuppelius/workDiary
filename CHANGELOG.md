@@ -14,8 +14,10 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   `tesseract`, `ocrmypdf`, Java …): das Install-Werkzeug
   `DSchuppelius/install-dependencies` ist als Git-Submodul `installscript/`
   eingebunden (Composer liefert die Submodule der Toolkit-Pakete nicht mit),
-  `deploy.sh` lädt es mit dem Stand und führt es nach `composer install` aus,
-  sobald es root oder passwortloses sudo hat; sonst meldet
+  `deploy.sh` lädt es mit dem Stand und führt es selbst aus: als root
+  gestartet (`sudo ./deploy.sh`) laufen die App-Schritte als Eigentümer von
+  `storage/`, root installiert danach die Werkzeuge und startet die Worker
+  neu; mit passwortlosem sudo direkt nach `composer install`; sonst meldet
   `scripts/check-tools.php` mit der Pfadauflösung des config-toolkit, welche
   Pakete fehlen, samt Root-Befehl. `config/executables.json` nennt die
   App-eigenen Pakete (Java headless, Ghostscript, qpdf, `file`, `sqlite3`,
