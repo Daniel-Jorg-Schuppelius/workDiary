@@ -320,7 +320,7 @@ class InvoicePdfImportService {
         return $this->mapStructured(
             $document,
             $extension,
-            $xml !== null ? $incoming->validateXml($xml) : null,
+            $xml !== null ? $incoming->validateXml($xml, $document->getProfile()) : null,
         );
     }
 

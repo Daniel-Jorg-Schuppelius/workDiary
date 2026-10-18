@@ -98,6 +98,9 @@ final class EInvoiceValidationTest extends TestCase {
             $this->assertNull($report['kosit_valid']);
         }
         $this->assertTrue($report['valid'], 'KoSIT-Fehler: ' . implode(' | ', array_slice($report['kosit_errors'], 0, 8)));
+        if ($report['kosit_available']) {
+            $this->assertStringContainsString('EN16931', (string) $report['kosit_scenario'], 'Prüfszenario wird mitgeführt');
+        }
     }
 
     public function test_incomplete_invoice_fails_preflight_without_xml(): void {

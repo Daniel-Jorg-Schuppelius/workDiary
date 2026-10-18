@@ -1355,6 +1355,23 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
 
 ### Fixed
 
+- Rechnungseingang: ZUGFeRD-1.0-Rechnungen (Altformat, seit dem
+  erechnung-toolkit 0.17.3 strukturiert gelesen) liefen bei jeder Erkennung
+  durch den KoSIT-Validator, obwohl dessen XRechnung-Konfiguration kein
+  Prüfszenario für das Format kennt: je Dokument ein JVM-Start von sechs bis
+  acht Sekunden, das Urteil „abgelehnt“ ohne Einzelmeldung und eine Warnung
+  `java endete mit Exit-Code 1` im Log. Für Altprofile entfällt die
+  KoSIT-Prüfung jetzt (`validation.kosit_applicable`), die Abweichungen
+  nennen das Altformat, und die Detailseite erklärt eine Ablehnung ohne
+  Einzelmeldungen (kein passendes Prüfszenario) statt eine leere Liste zu
+  zeigen; bestandene Prüfungen nennen das Prüfszenario
+  (`validation.kosit_scenario`, auch in der Ausgangs-Validierung). Die
+  Toolkits ziehen nach: der KoSIT-Aufruf wertet den Exit-Code nicht mehr als
+  Fehler (common-toolkit `Shell`/`Java` mit `expectedResultCode: null`,
+  erechnung-toolkit `ValidationResult::isScenarioMatched()`), das pdf-toolkit
+  meldet eine leere zeilentreue Extraktion als Info und räumt nur noch
+  vorhandene Temp-Dateien auf.
+
 - Lexoffice (Phase 145): Rechnungen trugen bei jeder Position den
   Steuersatz der Rechnung, Positions- und Belegrabatte fehlten, und
   Positionen gingen als `service` ohne Artikel-ID hinüber; das PDF einer

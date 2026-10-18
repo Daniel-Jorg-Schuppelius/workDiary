@@ -16,6 +16,7 @@ use CommonToolkit\Helper\Data\{CryptoHelper, XmlHelper};
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\Helper\FileSystem\File;
 use ERechnungToolkit\Entities\Document as EInvoiceDocument;
+use ERechnungToolkit\Enums\ERechnungProfile;
 use ERechnungToolkit\Parsers\{ERechnungParser, ZugferdPdfParser};
 use ERechnungToolkit\Validators\{CiiSchemaValidator, UblSchemaValidator};
 use ERRORToolkit\Exceptions\FileSystem\FileNotWrittenException;
@@ -85,16 +86,20 @@ class IncomingEInvoiceService {
     /**
      * Eingangs-Validierung (MVP-166): XSD der tatsächlichen Syntax (UBL oder
      * CII, gewählt am Wurzelelement) + KoSIT (XSD/EN-16931/CIUS).
-     * Verfügbarkeit wird transparent ausgewiesen.
+     * Verfügbarkeit wird transparent ausgewiesen. Für Altprofile (ZUGFeRD 1.0)
+     * entfällt KoSIT: die XRechnung-Konfiguration kennt kein Szenario dafür,
+     * jeder Lauf kostete einen JVM-Start und endete „abgelehnt“ ohne Meldung.
      *
-     * @return array{schema_checked: bool, schema_errors: array<int, string>, kosit_available: bool, kosit_valid: bool|null, kosit_errors: array<int, string>}
+     * @return array{schema_checked: bool, schema_errors: array<int, string>, kosit_applicable: bool, kosit_available: bool, kosit_valid: bool|null, kosit_scenario: string|null, kosit_errors: array<int, string>}
      */
-    public function validateXml(string $xml): array {
+    public function validateXml(string $xml, ?ERechnungProfile $profile = null): array {
         $result = [
             'schema_checked' => false,
             'schema_errors' => [],
+            'kosit_applicable' => ! ($profile?->isLegacy() ?? false),
             'kosit_available' => false,
             'kosit_valid' => null,
+            'kosit_scenario' => null,
             'kosit_errors' => [],
         ];
 
@@ -116,11 +121,17 @@ class IncomingEInvoiceService {
             }
         }
 
+        if (! $result['kosit_applicable']) {
+            return $result;
+        }
+
         $kosit = new \ERechnungToolkit\Validators\KositValidator;
         $result['kosit_available'] = $kosit->isAvailable();
         if ($result['kosit_available']) {
             $report = $kosit->validate($xml);
             $result['kosit_valid'] = $report->isAccepted();
+            // null = kein Prüfszenario für dieses Format: abgelehnt ohne Einzelmeldung.
+            $result['kosit_scenario'] = $report->getScenarioName();
             $result['kosit_errors'] = array_map('strval', $report->getErrors());
         }
 
@@ -131,7 +142,7 @@ class IncomingEInvoiceService {
      * Kernfelder für Anzeige/Flash — die Detailseite parst das Original
      * bei jedem Aufruf erneut (kein eigenes Schema, Quelle bleibt die Datei).
      *
-     * @return array{number: string, issue_date: ?string, due_date: ?string, seller: ?string, seller_vat: ?string, seller_tax_number: ?string, seller_country: ?string, seller_email: ?string, buyer: ?string, buyer_vat: ?string, buyer_country: ?string, seller_address: array{street: ?string, zip: ?string, city: ?string, country: ?string}, buyer_address: array{street: ?string, zip: ?string, city: ?string, country: ?string}, type_code: string, tax_breakdown: list<array{category: string, percent: float, net: string, tax: string}>, currency: string, net: string, tax: string, gross: string, profile: string, lines: int, order_reference: ?string, buyer_reference: ?string, project_reference: ?string, creditor_iban: ?string, creditor_bic: ?string, discount_percent: ?float, discount_days: ?int}
+     * @return array{number: string, issue_date: ?string, due_date: ?string, seller: ?string, seller_vat: ?string, seller_tax_number: ?string, seller_country: ?string, seller_email: ?string, buyer: ?string, buyer_vat: ?string, buyer_country: ?string, seller_address: array{street: ?string, zip: ?string, city: ?string, country: ?string}, buyer_address: array{street: ?string, zip: ?string, city: ?string, country: ?string}, type_code: string, tax_breakdown: list<array{category: string, percent: float, net: string, tax: string}>, currency: string, net: string, tax: string, gross: string, profile: string, profile_legacy: bool, lines: int, order_reference: ?string, buyer_reference: ?string, project_reference: ?string, creditor_iban: ?string, creditor_bic: ?string, discount_percent: ?float, discount_days: ?int}
      */
     public function summary(EInvoiceDocument $document): array {
         $seller = $document->getSeller();
@@ -165,6 +176,7 @@ class IncomingEInvoiceService {
             'tax' => $document->getTaxAmount()->getAmount(),
             'gross' => $document->getGrossAmount()->getAmount(),
             'profile' => $document->getProfile()->label(),
+            'profile_legacy' => $document->getProfile()->isLegacy(),
             'lines' => $document->countLines(),
             'order_reference' => $document->getOrderReference(),
             'buyer_reference' => $document->getBuyerReference(),
@@ -410,7 +422,7 @@ class IncomingEInvoiceService {
             $summary = $this->summary($parsed);
             // Eingangs-Validierung (MVP-166): getrennt vom Original abgelegt.
             $xml = $this->extractXml($contents, $mime, $path);
-            $summary['validation'] = $xml !== null ? $this->validateXml($xml) : null;
+            $summary['validation'] = $xml !== null ? $this->validateXml($xml, $parsed->getProfile()) : null;
             $summary['recognition'] = \App\Enums\Invoicing\IncomingInvoiceRecognition::Structured->value;
 
             return $summary;
@@ -758,7 +770,7 @@ class IncomingEInvoiceService {
             'number' => null, 'issue_date' => null, 'due_date' => null,
             'seller' => null, 'seller_vat' => null, 'buyer' => null, 'buyer_vat' => null,
             'currency' => null, 'net' => null, 'tax' => null, 'gross' => null,
-            'profile' => (string) __('Nicht erkannt'), 'lines' => 0, 'type_code' => null,
+            'profile' => (string) __('Nicht erkannt'), 'profile_legacy' => false, 'lines' => 0, 'type_code' => null,
             'order_reference' => null, 'buyer_reference' => null, 'project_reference' => null,
             'creditor_iban' => null, 'creditor_bic' => null, 'discount_percent' => null, 'discount_days' => null,
             'validation' => null,
@@ -883,6 +895,9 @@ class IncomingEInvoiceService {
         if ($summary['unstructured'] ?? false) {
             $deviations[] = (string) __('Ohne E-Rechnungsdaten aus PDF bzw. Bild erkannt — alle Werte am Original prüfen.');
         }
+        if ($summary['profile_legacy'] ?? false) {
+            $deviations[] = (string) __('Altformat ZUGFeRD 1.0: keine E-Rechnung nach § 14 UStG. Die Werte stammen aus der eingebetteten XML; eine Regelprüfung nach EN 16931 ist für dieses Format nicht möglich.');
+        }
 
         $net = $summary['net'] ?? null;
         $tax = $summary['tax'] ?? null;
@@ -952,6 +967,7 @@ class IncomingEInvoiceService {
             'tax' => $result['tax'] ?? null,
             'gross' => $result['gross'],
             'profile' => (string) __('PDF/Bild (erkannt)'),
+            'profile_legacy' => false,
             'lines' => count((array) ($result['lines'] ?? [])),
             'order_reference' => null,
             'buyer_reference' => $result['buyer_reference'] ?? null,

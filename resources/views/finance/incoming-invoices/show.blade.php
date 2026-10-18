@@ -186,10 +186,15 @@
                 {{-- raw-markup-ok: Ergebnisaussage der Schemaprüfung mit Verweis, kein Leerzustand --}}
                 <p class="text-sm text-muted">{{ __('Kein UBL-Schema anwendbar (z. B. CII) — Regelprüfung siehe KoSIT.') }}</p>
             @endif
-            @if (! $validation['kosit_available'])
+            @if (! ($validation['kosit_applicable'] ?? true))
+                <p class="mt-1 text-sm text-muted">{{ __('KoSIT-Prüfung nicht anwendbar: Altformat ZUGFeRD 1.0 ohne EN-16931-Prüfszenario.') }}</p>
+            @elseif (! $validation['kosit_available'])
                 <p class="mt-1 text-sm text-warning">{{ __('KoSIT-Validator nicht verfügbar — Regelprüfung wurde nicht durchgeführt.') }}</p>
             @elseif ($validation['kosit_valid'])
-                <p class="mt-1 text-sm text-success">{{ __('KoSIT-Prüfung bestanden.') }}</p>
+                <p class="mt-1 text-sm text-success">{{ __('KoSIT-Prüfung bestanden.') }}@if (! empty($validation['kosit_scenario'])) <span class="text-muted">{{ __('Prüfszenario: :scenario', ['scenario' => $validation['kosit_scenario']]) }}</span>@endif</p>
+            @elseif ($validation['kosit_errors'] === [])
+                {{-- Kein Szenario = Report ohne Einzelregeln; eine leere Liste sagte bisher gar nichts. --}}
+                <p class="mt-1 text-sm text-error">{{ __('KoSIT-Prüfung nicht bestanden, ohne Einzelmeldungen: Der Validator fand kein passendes Prüfszenario für dieses Format.') }}</p>
             @else
                 <ul class="mt-1 space-y-1 text-sm">
                     @foreach ($validation['kosit_errors'] as $error)

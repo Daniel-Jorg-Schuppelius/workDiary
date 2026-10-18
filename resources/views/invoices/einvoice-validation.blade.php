@@ -67,10 +67,12 @@
                 <span>{{ __('KoSIT-Validator nicht verfügbar (Java-Laufzeit oder Validator-JAR fehlt) — die Regelprüfung wurde NICHT durchgeführt.') }}</span>
             </div>
         @elseif ($report['kosit_valid'])
-            <p class="text-sm text-success">{{ __('KoSIT-Prüfung bestanden.') }}</p>
+            <p class="text-sm text-success">{{ __('KoSIT-Prüfung bestanden.') }}@if (! empty($report['kosit_scenario'])) <span class="text-muted">{{ __('Prüfszenario: :scenario', ['scenario' => $report['kosit_scenario']]) }}</span>@endif</p>
             @foreach ($report['kosit_warnings'] as $warning)
                 <p class="text-sm text-warning">⚠ {{ $warning }}</p>
             @endforeach
+        @elseif ($report['kosit_errors'] === [])
+            <p class="text-sm text-error">{{ __('KoSIT-Prüfung nicht bestanden, ohne Einzelmeldungen: Der Validator fand kein passendes Prüfszenario für dieses Format.') }}</p>
         @else
             <ul class="space-y-1 text-sm">
                 @foreach ($report['kosit_errors'] as $error)

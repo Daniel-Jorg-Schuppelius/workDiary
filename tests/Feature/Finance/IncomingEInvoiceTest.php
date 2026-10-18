@@ -255,6 +255,59 @@ final class IncomingEInvoiceTest extends TestCase {
         $this->assertNotSame([], $broken['schema_errors']);
     }
 
+    /**
+     * Befund 2026-10-18: ZUGFeRD 1.0 trifft im KoSIT-Validator kein Szenario —
+     * jeder Lauf kostete einen JVM-Start und endete „abgelehnt“ ohne Meldung.
+     */
+    public function test_legacy_zugferd_profile_skips_the_kosit_check(): void {
+        $xml = '<?xml version="1.0"?><rsm:CrossIndustryDocument xmlns:rsm="urn:ferd:CrossIndustryDocument:invoice:1p0"><rsm:HeaderExchangedDocument/></rsm:CrossIndustryDocument>';
+
+        $started = microtime(true);
+        $result = app(IncomingEInvoiceService::class)->validateXml($xml, \ERechnungToolkit\Enums\ERechnungProfile::ZUGFERD1_COMFORT);
+
+        $this->assertFalse($result['kosit_applicable']);
+        $this->assertFalse($result['kosit_available']);
+        $this->assertNull($result['kosit_valid']);
+        $this->assertNull($result['kosit_scenario']);
+        $this->assertSame([], $result['kosit_errors']);
+        $this->assertFalse($result['schema_checked']);
+        $this->assertLessThan(3.0, microtime(true) - $started, 'Kein JVM-Start für ein Altformat');
+    }
+
+    public function test_legacy_profile_adds_a_deviation_hint(): void {
+        $service = app(IncomingEInvoiceService::class);
+        $summary = [
+            'recognition' => \App\Enums\Invoicing\IncomingInvoiceRecognition::Structured->value,
+            'net' => '100.00', 'tax' => '19.00', 'gross' => '119.00', 'seller_vat' => 'DE123456789',
+        ];
+
+        $this->assertSame([], $service->deviations($summary));
+        $hints = $service->deviations($summary + ['profile_legacy' => true]);
+        $this->assertCount(1, $hints);
+        $this->assertStringContainsString('ZUGFeRD 1.0', $hints[0]);
+    }
+
+    /** Eine Ablehnung ohne Einzelmeldungen zeigte bisher nur eine leere Liste. */
+    public function test_show_explains_kosit_results_without_messages(): void {
+        $this->actingAs($this->admin)->post(route('finance.incoming-invoices.store'), [
+            'file' => UploadedFile::fake()->createWithContent('rechnung.xml', $this->sampleXml()),
+        ]);
+        $document = Document::query()->where('document_type', DocumentType::Invoice->value)->firstOrFail();
+        $incoming = \App\Models\Invoicing\IncomingEInvoice::query()->firstOrFail();
+        $base = ['schema_checked' => false, 'schema_errors' => [], 'kosit_applicable' => true, 'kosit_available' => true, 'kosit_valid' => false, 'kosit_scenario' => null, 'kosit_errors' => []];
+        $show = function (array $validation) use ($incoming, $document): \Illuminate\Testing\TestResponse {
+            $incoming->forceFill(['summary' => array_merge((array) $incoming->summary, ['validation' => $validation])])->save();
+
+            return $this->actingAs($this->admin)->get(route('finance.incoming-invoices.show', $document))->assertOk();
+        };
+
+        $show($base)->assertSee('kein passendes Prüfszenario');
+        $show([...$base, 'kosit_applicable' => false, 'kosit_available' => false])->assertSee('KoSIT-Prüfung nicht anwendbar');
+        $show([...$base, 'kosit_valid' => true, 'kosit_scenario' => 'EN16931 XRechnung (UBL Invoice)'])
+            ->assertSee('KoSIT-Prüfung bestanden.')
+            ->assertSee('EN16931 XRechnung (UBL Invoice)');
+    }
+
     public function test_parse_roundtrip_extracts_core_fields(): void {
         $service = app(IncomingEInvoiceService::class);
 

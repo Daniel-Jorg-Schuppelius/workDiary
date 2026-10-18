@@ -35,7 +35,7 @@ class EInvoiceValidationService {
      *   xml_generated: bool,
      *   syntax: string,
      *   schema_errors: array<int, string>,
-     *   kosit_available: bool, kosit_valid: bool|null,
+     *   kosit_available: bool, kosit_valid: bool|null, kosit_scenario: string|null,
      *   kosit_errors: array<int, string>, kosit_warnings: array<int, string>,
      *   consistency: array{checked: bool, zugferd_checked: bool, errors: array<int, string>},
      *   valid: bool
@@ -51,6 +51,7 @@ class EInvoiceValidationService {
             'schema_errors' => [],
             'kosit_available' => false,
             'kosit_valid' => null,
+            'kosit_scenario' => null,
             'kosit_errors' => [],
             'kosit_warnings' => [],
             'consistency' => ['checked' => false, 'zugferd_checked' => false, 'errors' => []],
@@ -77,6 +78,7 @@ class EInvoiceValidationService {
         if ($report['kosit_available']) {
             $result = $kosit->validate($xml);
             $report['kosit_valid'] = $result->isAccepted();
+            $report['kosit_scenario'] = $result->getScenarioName();
             $report['kosit_errors'] = array_map('strval', $result->getErrors());
             $report['kosit_warnings'] = array_map('strval', $result->getWarnings());
         }
