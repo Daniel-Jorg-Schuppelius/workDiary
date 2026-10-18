@@ -300,7 +300,7 @@ class AccountingInboxTest extends TestCase {
 
         $this->assertTrue($proposal->isPostable());
         $this->assertNotNull($payableLine);
-        $this->assertSame(User::class, $payableLine->counterpartyType);
+        $this->assertSame(MorphMap::alias(User::class), $payableLine->counterpartyType);
         $this->assertSame($this->admin->id, $payableLine->counterpartyId);
     }
 

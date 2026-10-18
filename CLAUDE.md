@@ -88,7 +88,10 @@ Zwei Schlüsselarten, `App\Support\MorphMap`:
 
 Nie `X::class`, `$x::class`, `get_class()` oder `=== X::class` an einer
 Typspalte (Gate `RawMorphClassLiteralRuleTest`, auch qualifizierte Spalten,
-Operator- und Ternärform). Werte von Clients (Formulare, Offline-Sync) dürfen
+Operator- und Ternärform). Das gilt auch für positional durchgereichte
+Typargumente (`$this->line(…, Customer::class, $id)`), die das Gate nicht
+sieht: seit Laravel 13.37 wirft jedes Lesen eines Klassennamens aus einer
+Typspalte `ClassMorphViolationException` (Befund 2026-10-18). Werte von Clients (Formulare, Offline-Sync) dürfen
 Alias oder Klassenname sein → mit `classFor()` auflösen, Alias speichern.
 Enum-Casts (`'kind_type' => KindEnum::class`) sind keine Morph-Werte. Zieht
 eine Klasse um, bleibt ihr `legacy`-Schlüssel und nur der Wert wird nachgeführt.

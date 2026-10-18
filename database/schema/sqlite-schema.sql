@@ -24829,3 +24829,4 @@ INSERT INTO migrations VALUES(986,'2027_03_21_120000_add_tour_zones_and_stop_lin
 INSERT INTO migrations VALUES(987,'2027_03_21_130000_create_location_pending_trips',1);
 INSERT INTO migrations VALUES(988,'2027_03_22_090000_create_invoice_inquiries',1);
 INSERT INTO migrations VALUES(989,'2027_03_23_090000_add_delta_unsupported_at_to_msgraph_task_list_links',1);
+INSERT INTO migrations VALUES(990,'2027_03_24_090000_rewrite_counterparty_types_to_aliases',1);

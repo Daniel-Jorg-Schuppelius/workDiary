@@ -17,6 +17,7 @@ use App\Enums\Finance\{PostingAccountRole, PostingSourceKind};
 use App\Models\Platform\{Organization, User};
 use App\Models\Travel\Expense;
 use App\Services\Accounting\Posting\{PostingProposal, PostingProposalLine};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Model;
@@ -113,7 +114,7 @@ class ExpenseAdapter extends AbstractPostingAdapter {
                 '0.00',
                 $gross,
                 (string) $source->description,
-                User::class,
+                MorphMap::alias(User::class),
                 $source->user_id,
             );
             if ($line instanceof PostingProposalLine) {

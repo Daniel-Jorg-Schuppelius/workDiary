@@ -18,6 +18,7 @@ use App\Models\Finance\CostCenter;
 use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\Filing\VatSpecialPrepaymentService;
 use App\Services\Accounting\Posting\PostingInboxService;
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\StringHelper;
@@ -25,6 +26,7 @@ use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 
 /**
  * @phpstan-type EntryDraftData array{booked_on: CarbonImmutable, memo: string,
@@ -574,7 +576,7 @@ class JournalService {
                 'currency' => $entry->currency,
                 'accounting_tax_code_id' => $line['accounting_tax_code_id'] ?? null,
                 'tax_amount' => $line['tax_amount'] ?? null,
-                'counterparty_type' => $line['counterparty_type'] ?? null,
+                'counterparty_type' => $this->counterpartyAlias(isset($line['counterparty_type']) ? (string) $line['counterparty_type'] : null),
                 'counterparty_id' => $line['counterparty_id'] ?? null,
                 'project_id' => $line['project_id'] ?? null,
                 'asset_id' => $line['asset_id'] ?? null,
@@ -583,6 +585,19 @@ class JournalService {
                 'memo' => $line['memo'] ?? null,
             ]);
         }
+    }
+
+    /** Morph-Alias der Gegenpartei; Aufrufer dürfen Alias oder Klassennamen liefern (MVP-860). */
+    private function counterpartyAlias(?string $type): ?string {
+        if ($type === null || $type === '') {
+            return null;
+        }
+        $class = MorphMap::classFor($type);
+        if ($class === null) {
+            throw new InvalidArgumentException("Unbekannter Gegenpartei-Typ [{$type}].");
+        }
+
+        return MorphMap::alias($class);
     }
 
     /**

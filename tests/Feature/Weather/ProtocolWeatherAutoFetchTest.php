@@ -17,6 +17,7 @@ use App\Models\Project\Project;
 use App\Models\Protocol\Protocol;
 use App\Models\Weather\WeatherSnapshot;
 use App\Services\Weather\Contracts\WeatherProvider;
+use App\Support\MorphMap;
 use Carbon\CarbonInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
@@ -71,7 +72,7 @@ final class ProtocolWeatherAutoFetchTest extends TestCase {
     private function protocolFor(string $type, int $id): Protocol {
         return Protocol::factory()->create([
             'organization_id' => $this->organization->id,
-            'subject_type' => $type,
+            'subject_type' => MorphMap::alias($type),
             'subject_id' => $id,
             'occurred_at' => '2025-06-15 08:00:00',
             'status' => ProtocolStatus::Draft->value,

@@ -74,6 +74,7 @@ abstract class AbstractPostingAdapter implements PostingSourceAdapter {
     /**
      * @param  numeric-string  $debit
      * @param  numeric-string  $credit
+     * @param  string|null  $counterpartyType  Morph-Alias der Gegenpartei (`MorphMap::alias()`), nie der Klassenname
      * @param  numeric-string|null  $taxAmount
      */
     protected function line(

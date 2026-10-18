@@ -17,6 +17,7 @@ use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
 use App\Services\Accounting\Posting\{PostingProposal, PostingProposalLine};
+use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\Money;
@@ -81,7 +82,7 @@ class SalesInvoiceAdapter extends AbstractPostingAdapter {
                 $source->total?->getAmount() ?? '0.00',
                 '0.00',
                 $source->number,
-                Customer::class,
+                MorphMap::alias(Customer::class),
                 $source->customer_id,
             );
             if ($line instanceof PostingProposalLine) {
