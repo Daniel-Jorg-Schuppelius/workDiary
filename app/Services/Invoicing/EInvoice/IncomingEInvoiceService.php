@@ -922,7 +922,8 @@ class IncomingEInvoiceService {
         if ($extension === null || $organization === null) {
             return null;
         }
-        $extract = static fn (string $file): array => app(\App\Services\Invoicing\InvoicePdfImportService::class)->extract($file, $extension, $mime, $organization);
+        // Der E-Rechnungs-Zweig lief schon in analyzeFor(): hier nur noch Text, Tabellen, OCR, KI.
+        $extract = static fn (string $file): array => app(\App\Services\Invoicing\InvoicePdfImportService::class)->extract($file, $extension, $mime, $organization, structured: false);
         try {
             $result = $path !== null && File::isFile($path) ? $extract($path) : File::withTemp($contents, $extract, 'incoming-invoice-', $extension);
         } catch (FileNotWrittenException) {

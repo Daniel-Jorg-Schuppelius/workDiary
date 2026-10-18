@@ -319,6 +319,29 @@ final class InvoicePdfImportTest extends TestCase {
         $this->assertSame(2, $invoice->items()->count());
     }
 
+    /** Der Rechnungseingang hat das Original schon als E-Rechnung geprüft — kein zweiter ZUGFeRD-Lauf. */
+    public function test_unstructured_extract_skips_the_embedded_xml(): void {
+        if (! app(XRechnungGenerator::class)->zugferdAvailable()
+            || ! (new \ERechnungToolkit\Parsers\ZugferdPdfParser)->isAvailable()) {
+            $this->markTestSkipped('ZUGFeRD-Werkzeuge (pdf-toolkit/pdfdetach) nicht verfügbar.');
+        }
+
+        $pdf = $this->sampleZugferdPdf();
+        $extract = static fn (bool $structured): array => \CommonToolkit\Helper\FileSystem\File::withTemp(
+            $pdf,
+            static fn (string $path): array => app(\App\Services\Invoicing\InvoicePdfImportService::class)->extract($path, 'pdf', 'application/pdf', null, $structured),
+            'import-test-',
+            'pdf',
+        );
+
+        $this->assertSame('erechnung-toolkit', $extract(true)['reader']);
+
+        $unstructured = $extract(false);
+        $this->assertNotSame('erechnung-toolkit', $unstructured['reader'] ?? null);
+        $this->assertSame('pdf', $unstructured['source_format']);
+        $this->assertArrayNotHasKey('structured', $unstructured);
+    }
+
     /**
      * Roundtrip-Fixture: echte XRechnung aus dem Ausgangs-Generator einer
      * ZWEITEN Organisation (Nummern-/Scope-Kollisionen ausgeschlossen).

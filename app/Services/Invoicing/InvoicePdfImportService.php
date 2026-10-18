@@ -44,14 +44,17 @@ class InvoicePdfImportService {
     private const OFFICE_MAX_BYTES = 64 * 1024 * 1024;
 
     /**
+     * `$structured = false` überspringt den E-Rechnungs-Zweig — für Aufrufer,
+     * die das Original schon erfolglos als E-Rechnung geparst haben.
+     *
      * @return array<string, mixed>
      */
-    public function extract(string $path, string $extension = 'pdf', ?string $mime = null, ?\App\Models\Platform\Organization $organization = null): array {
+    public function extract(string $path, string $extension = 'pdf', ?string $mime = null, ?\App\Models\Platform\Organization $organization = null, bool $structured = true): array {
         $extension = mb_strtolower($extension);
 
-        $structured = $this->structuredExtract($path, $extension, $mime);
-        if ($structured !== null) {
-            return $structured;
+        $structuredResult = $structured ? $this->structuredExtract($path, $extension, $mime) : null;
+        if ($structuredResult !== null) {
+            return $structuredResult;
         }
 
         [$text, $reader, $ocrUsed, $rows, $alignedText] = match ($extension) {
