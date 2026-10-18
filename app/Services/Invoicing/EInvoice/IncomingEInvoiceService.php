@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing\EInvoice;
 
-use CommonToolkit\Helper\Data\{CryptoHelper, XmlHelper};
+use CommonToolkit\Helper\Data\{CryptoHelper, StringHelper, XmlHelper};
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\Helper\FileSystem\File;
 use ERechnungToolkit\Entities\Document as EInvoiceDocument;
@@ -40,15 +40,12 @@ class IncomingEInvoiceService {
      * (lesbare) E-Rechnung ist — Aufrufer behandeln das als „normale Datei".
      */
     public function parse(string $contents, ?string $mime = null, ?string $path = null): ?EInvoiceDocument {
-        $isPdf = str_starts_with($contents, '%PDF')
-            || ($mime !== null && str_contains($mime, 'pdf'));
-
-        if ($isPdf) {
+        $kind = self::contentKind($contents, $mime);
+        if ($kind === 'pdf') {
             return $this->parsePdf($contents, $path);
         }
-
-        if (! str_contains(substr($contents, 0, 512), '<')) {
-            return null; // offensichtlich kein XML
+        if ($kind !== 'xml') {
+            return null;
         }
 
         try {
@@ -63,9 +60,9 @@ class IncomingEInvoiceService {
      * ZUGFeRD-PDFs über die Toolkit-Extraktion (null = nicht extrahierbar).
      */
     public function extractXml(string $contents, ?string $mime = null, ?string $path = null): ?string {
-        $isPdf = str_starts_with($contents, '%PDF') || ($mime !== null && str_contains($mime, 'pdf'));
-        if (! $isPdf) {
-            return str_contains(substr($contents, 0, 512), '<') ? $contents : null;
+        $kind = self::contentKind($contents, $mime);
+        if ($kind !== 'pdf') {
+            return $kind === 'xml' ? $contents : null;
         }
         $parser = new ZugferdPdfParser;
         if (! $parser->isAvailable()) {
@@ -81,6 +78,29 @@ class IncomingEInvoiceService {
         } catch (Throwable) {
             return null;
         }
+    }
+
+    /**
+     * PDF oder XML am Inhalt entschieden, nicht am gemeldeten Typ: Absender
+     * melden PDFs als `application/x-download`, vor `%PDF-` darf Vorspann
+     * stehen, und `<<` steht in jedem PDF-Kopf — ein Präfix-Sniff gab solche
+     * PDFs als „XML“ an den E-Rechnungs-Parser. XML ohne Prolog meldet finfo
+     * als Text, deshalb entscheidet dort die erste Klammer.
+     *
+     * @return 'pdf'|'xml'|null
+     */
+    private static function contentKind(string $contents, ?string $mime): ?string {
+        if ($contents === '') {
+            return null;
+        }
+        if (File::mimeTypeFromContent($contents) === 'application/pdf') {
+            return 'pdf';
+        }
+        if (str_starts_with(ltrim(StringHelper::stripBom($contents), " \t\r\n"), '<')) {
+            return 'xml';
+        }
+
+        return $mime !== null && str_contains($mime, 'pdf') ? 'pdf' : null;
     }
 
     /**

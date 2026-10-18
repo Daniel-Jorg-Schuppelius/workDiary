@@ -15,9 +15,12 @@ use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Supplier\Supplier;
+use App\Services\Invoicing\EInvoice\IncomingEInvoiceService;
 use Dompdf\Dompdf;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
+use Mockery;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -113,5 +116,28 @@ class IncomingPdfInvoiceTest extends TestCase {
             'file' => UploadedFile::fake()->createWithContent('agb.pdf', $this->pdf('<p>Nur Text ohne Rechnung.</p>')),
         ])->assertRedirect()->assertSessionHas('error');
         $this->assertSame(0, IncomingEInvoice::query()->count());
+    }
+
+    /**
+     * Befund 2026-10-18: Absender melden PDFs als `application/x-download`,
+     * und vor `%PDF-` darf Vorspann stehen. Der Präfix-Sniff hielt solche
+     * PDFs für XML (`<<` steht in jedem PDF-Kopf) — der E-Rechnungs-Parser
+     * schrieb bei jeder Nacherkennung „Failed to parse XML“ ins Fehlerlog,
+     * und extractXml() gab die PDF-Bytes als Rechnungs-XML zurück.
+     */
+    public function test_content_not_declared_mime_decides_between_pdf_and_xml(): void {
+        $service = app(IncomingEInvoiceService::class);
+        $pdf = "\r\n" . $this->pdf('<h1>Rechnung</h1><p>Rechnungsnummer: RE-2026-0815</p>');
+        $log = Log::spy();
+
+        $this->assertNull($service->parse($pdf, 'application/x-download'));
+        $this->assertNull($service->extractXml($pdf, 'application/x-download'), 'PDF-Bytes sind kein Rechnungs-XML.');
+        $log->shouldNotHaveReceived('log', ['error', Mockery::on(static fn (string $message): bool => str_contains($message, 'Failed to parse XML')), Mockery::any()]);
+
+        // XML ohne Prolog meldet finfo als Text — die erste Klammer entscheidet, auch hinter BOM und Leerraum.
+        $xml = "\xEF\xBB\xBF\n  <Invoice xmlns=\"urn:oasis:names:specification:ubl:schema:xsd:Invoice-2\"><ID>1</ID></Invoice>";
+        $this->assertSame($xml, $service->extractXml($xml, 'text/plain'));
+        // Gemeldeter Typ zählt nur, wenn der Inhalt nichts hergibt.
+        $this->assertNull($service->extractXml('kein Beleg', 'text/plain'));
     }
 }

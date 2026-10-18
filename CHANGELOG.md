@@ -1355,6 +1355,16 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
 
 ### Fixed
 
+- Rechnungseingang: PDFs, die der Absender als `application/x-download`
+  o. ä. meldet und die vor `%PDF-` Vorspann tragen, hielt der Eingang für
+  XML (`<<` steht in jedem PDF-Kopf) und gab sie an den E-Rechnungs-Parser,
+  der bei jedem Eingang und jeder Nacherkennung `Failed to parse XML: Start
+  tag expected` ins Fehlerlog schrieb; `extractXml()` lieferte die PDF-Bytes
+  als Rechnungs-XML. PDF oder XML entscheidet jetzt der Inhalt
+  (common-toolkit `File::mimeTypeFromContent()`, XML ohne Prolog an der
+  ersten Klammer hinter BOM und Leerraum), der gemeldete Typ zählt nur noch,
+  wenn der Inhalt nichts hergibt (Befund 2026-10-18).
+
 - Rechnungseingang: ZUGFeRD-1.0-Rechnungen (Altformat, seit dem
   erechnung-toolkit 0.17.3 strukturiert gelesen) liefen bei jeder Erkennung
   durch den KoSIT-Validator, obwohl dessen XRechnung-Konfiguration kein
