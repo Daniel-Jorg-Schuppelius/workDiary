@@ -40,6 +40,33 @@ final class InvoicePdfImportServiceTest extends TestCase {
         self::assertSame([], $result['warnings']);
     }
 
+    /** Befund 2026-10-18: Lieferanten schreiben „Rechnung Nr.“, „Rechnungs-Nr.:“, „Re.-Nr.“, „Gesamtsumme“, „Endbetrag“ — die Klärfälle entstanden an der Beschriftung. */
+    public function test_it_recognises_common_label_variants_for_number_and_gross(): void {
+        $service = new InvoicePdfImportService;
+        $cases = [
+            ["Rechnung Nr. 4711\nGesamtsumme 119,00 EUR", '4711', '119.00'],
+            ["Rechnungs-Nr.: RE-2025-0042\nEndbetrag: 1.190,00 €", 'RE-2025-0042', '1190.00'],
+            ["Re.-Nr. 2025/17\nSumme brutto 59,50", '2025/17', '59.50'],
+            ["Rg.-Nr. 88\nzu zahlen: 12,02 EUR", '88', '12.02'],
+            ["Beleg-Nr. B-77\nGesamt brutto 10,25 EUR", 'B-77', '10.25'],
+            ["Invoice # INV-9\nTotal amount EUR 38.35", 'INV-9', '38.35'],
+            ["RECHNUNGSNUMMER 2501202\nRechnungssumme 38,35 EUR", '2501202', '38.35'],
+        ];
+        foreach ($cases as [$text, $number, $gross]) {
+            $result = $service->analyzeText($text);
+            self::assertSame($number, $result['number'], $text);
+            self::assertSame($gross, $result['gross'], $text);
+        }
+    }
+
+    public function test_it_ignores_number_labels_without_digits_and_unrelated_nr_labels(): void {
+        $service = new InvoicePdfImportService;
+
+        self::assertNull($service->analyzeText("Rechnungsnummer siehe oben\nGesamtbetrag 10,00 EUR")['number']);
+        self::assertNull($service->analyzeText("Ihre Nr. 12345\nKunden-Nr. 777\nGesamtbetrag 10,00 EUR")['number']);
+        self::assertNull($service->analyzeText("Gesamt netto 100,00 EUR")['gross'], '„Gesamt netto“ ist kein Bruttobetrag.');
+    }
+
     public function test_it_derives_missing_net_and_reports_uncertain_fields(): void {
         $result = (new InvoicePdfImportService)->analyzeText(<<<'TEXT'
             Invoice date: 2026-08-14

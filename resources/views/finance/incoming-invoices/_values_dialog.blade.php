@@ -8,6 +8,8 @@
 --}}
 {{-- Dialog: Werte eines Klärfalls bzw. einer Erkennung erfassen (Feature 163, MVP-1110). --}}
 @php($isOutgoing = $incoming->direction === \App\Enums\Billing\DocumentDirection::Outgoing)
+{{-- Teilweise erkannte Werte eines Klärfalls (summary.extraction.found) belegen die Felder vor. --}}
+@php($found = (array) data_get($incoming->summary, 'extraction.found', []))
 <x-modal
     :title="__('Werte erfassen')"
     :eyebrow="$incoming->document?->title"
@@ -17,18 +19,18 @@
     :submit-label="__('Speichern')"
 >
     <x-form-group :legend="__('Rechnung')" icon="receipt_long" cols="2" :description="__('Werte am Original ablesen; das Original bleibt unverändert.')">
-        <x-input-field name="invoice_number" :label="__('Rechnungsnummer')" :value="old('invoice_number', $incoming->invoice_number)" required />
+        <x-input-field name="invoice_number" :label="__('Rechnungsnummer')" :value="old('invoice_number', $incoming->invoice_number ?? $found['number'] ?? null)" required />
         <x-input-field name="currency" :label="__('Währung')" :value="old('currency', $incoming->currency?->value ?? 'EUR')" required />
-        <x-input-field name="issue_date" type="date" :label="__('Rechnungsdatum')" :value="old('issue_date', $incoming->issue_date?->toDateString())" required />
-        <x-input-field name="due_date" type="date" :label="__('Fällig am')" :value="old('due_date', $incoming->due_date?->toDateString())" />
+        <x-input-field name="issue_date" type="date" :label="__('Rechnungsdatum')" :value="old('issue_date', $incoming->issue_date?->toDateString() ?? $found['issued_on'] ?? null)" required />
+        <x-input-field name="due_date" type="date" :label="__('Fällig am')" :value="old('due_date', $incoming->due_date?->toDateString() ?? $found['due_on'] ?? null)" />
         <x-input-field name="party_name" :label="$isOutgoing ? __('Käufer') : __('Verkäufer')" :value="old('party_name', $isOutgoing ? $incoming->buyer_name : $incoming->seller_name)" />
         <x-input-field name="party_vat_id" :label="__('USt-IdNr.')" :value="old('party_vat_id', $isOutgoing ? $incoming->buyer_vat_id : $incoming->seller_vat_id)" />
     </x-form-group>
 
     <x-form-group :legend="__('Beträge')" icon="euro" cols="3">
-        <x-input-field name="amount_net" :label="__('Netto')" inputmode="decimal" :value="old('amount_net', $incoming->amount_net?->getAmount())" />
-        <x-input-field name="amount_tax" :label="__('Steuer')" inputmode="decimal" :value="old('amount_tax', $incoming->amount_tax?->getAmount())" />
-        <x-input-field name="amount_gross" :label="__('Brutto')" inputmode="decimal" :value="old('amount_gross', $incoming->amount_gross?->getAmount())" required />
+        <x-input-field name="amount_net" :label="__('Netto')" inputmode="decimal" :value="old('amount_net', $incoming->amount_net?->getAmount() ?? $found['net'] ?? null)" />
+        <x-input-field name="amount_tax" :label="__('Steuer')" inputmode="decimal" :value="old('amount_tax', $incoming->amount_tax?->getAmount() ?? $found['tax'] ?? null)" />
+        <x-input-field name="amount_gross" :label="__('Brutto')" inputmode="decimal" :value="old('amount_gross', $incoming->amount_gross?->getAmount() ?? $found['gross'] ?? null)" required />
     </x-form-group>
 
     <x-validation-errors />

@@ -87,6 +87,12 @@ class IncomingInvoiceReanalysisTest extends TestCase {
         $this->assertSame(IncomingInvoiceRecognition::Structured, $recognisable->refresh()->recognition);
         $this->assertSame(IncomingInvoiceRecognition::None, $unreadable->refresh()->recognition);
         $this->assertSame(IncomingInvoiceRecognition::None, $captured->refresh()->recognition);
+        // Bleibt es ein Klärfall, sagt die Diagnose wenigstens, woran es lag.
+        $this->assertSame('format_not_supported', data_get($unreadable->summary, 'extraction.reason'));
+        $this->assertContains(
+            __('Dateityp :type wird nicht als Beleg gelesen — erkannt werden PDF, Bilder und E-Rechnungs-XML.', ['type' => 'text/plain']),
+            (array) data_get($unreadable->summary, 'deviations'),
+        );
     }
 
     public function test_command_reanalyses_open_clarification_cases_per_organization(): void {

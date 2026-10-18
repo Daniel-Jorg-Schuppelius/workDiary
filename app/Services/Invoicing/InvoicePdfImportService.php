@@ -723,21 +723,25 @@ class InvoicePdfImportService {
         $text = str_replace(["\r\n", "\r"], "\n", $text);
         $text = preg_replace('/[\x{00A0}\t]+/u', ' ', $text) ?? $text;
 
+        // Schreibweisen aus echten Eingängen: „Rechnung Nr.“, „Rechnungs-Nr.:“, „Re.-Nr.“, „Beleg-Nr.“, „Invoice #“;
+        // der Wert muss eine Ziffer enthalten, sonst fängt „Rechnungsnummer siehe oben“ das Wort „siehe“.
         $number = $this->labeledValue($text, [
-            'Rechnungs(?:nummer|nr\.?|\s*Nr\.?)', 'Belegnummer',
-            'Invoice\s*(?:Number|No\.?)',
-        ], '[A-Z0-9][A-Z0-9._\/-]{1,63}');
+            'Rechnungs?\s*[-.\/]?\s*(?:Nummer|Nr\.?)', 'Beleg\s*[-.]?\s*(?:nummer|Nr\.?)',
+            '\b(?:Re|Rg|RE)\.?\s*-?\s*Nr\.?', 'Invoice\s*(?:Number|No\.?|ID|#)',
+        ], '(?=[A-Z0-9._\/-]*\d)[A-Z0-9][A-Z0-9._\/-]{1,63}');
         $issuedOn = $this->labeledDate($text, ['Rechnungsdatum', 'Belegdatum', 'Invoice\s*date']);
         $dueOn = $this->labeledDate($text, ['F.llig(?:keit(?:sdatum)?|\s*am)', 'Zahlbar\s*bis', 'Due\s*date']);
         $buyerReference = $this->labeledValue($text, [
             'Leitweg-?ID', 'Käuferreferenz', 'Bestellreferenz', 'Buyer\s*reference',
         ], '[A-Z0-9][A-Z0-9._\/-]{2,99}');
 
-        $net = $this->labeledAmount($text, ['Nettobetrag', 'Netto(?:summe)?', 'Net\s*amount', 'Subtotal']);
+        $net = $this->labeledAmount($text, ['Nettobetrag', 'Netto(?:summe)?', 'Gesamt\s*netto', 'Summe\s*netto', 'Zwischensumme', 'Net\s*amount', 'Subtotal']);
         $tax = $this->labeledAmount($text, ['Umsatzsteuer', 'Mehrwertsteuer', 'MwSt\.?', 'USt\.?(?!-Id)', 'VAT']);
         $gross = $this->labeledAmount($text, [
-            'Rechnungsbetrag', 'Gesamtbetrag', 'Bruttobetrag', 'Zahlbetrag',
-            'Grand\s*total', 'Amount\s*due', 'Total',
+            'Rechnungsbetrag', 'Rechnungssumme', 'Gesamtbetrag', 'Gesamtsumme', 'Endbetrag', 'Endsumme',
+            'Gesamt\s*(?:brutto|inkl\.?\s*(?:MwSt|USt)\.?)', 'Summe\s*brutto', 'Brutto(?:betrag|summe)', 'Zahlbetrag',
+            'Zahlungsbetrag', 'zu\s*zahlen(?:der\s*Betrag)?',
+            'Grand\s*total', 'Total\s*amount', 'Amount\s*(?:due|payable)', 'Balance\s*due', 'Total',
         ], last: true);
 
         if ($net === null && $gross !== null && $tax !== null) {

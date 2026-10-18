@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Finance;
 
+use App\Enums\Invoicing\IncomingInvoiceRecognition;
 use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
@@ -74,6 +75,37 @@ class IncomingPdfInvoiceTest extends TestCase {
         $this->assertContains(__('Ohne E-Rechnungsdaten aus PDF bzw. Bild erkannt — alle Werte am Original prüfen.'), (array) data_get($incoming->summary, 'deviations'));
 
         $this->get(route('finance.incoming-invoices.show', $incoming->document))->assertOk()->assertSee('MP-4711');
+    }
+
+    /** Befund 2026-10-18: Ein Klärfall erklärt sich — Leseweg, Textmenge, gefundene Teilwerte, Vorbelegung im Werte-Dialog. */
+    public function test_unrecognised_mail_attachment_carries_a_recognition_diagnosis(): void {
+        $pdf = $this->pdf(<<<'HTML'
+            <h1>Rechnung</h1>
+            <p>Rechnungsdatum: 14.09.2026</p>
+            <p>Gesamtbetrag 119,00 EUR</p>
+            HTML);
+
+        $result = app(\App\Services\Invoicing\EInvoice\IncomingEInvoiceService::class)->storeMessage(
+            $this->admin,
+            [new \App\Services\Mail\MailAttachment('beleg.pdf', 'application/pdf', $pdf)],
+            new \App\Services\Invoicing\EInvoice\IncomingOrigin('lieferant@example.test', '<diag@example.test>'),
+        );
+        $this->assertSame(1, $result['unrecognized']);
+
+        $incoming = IncomingEInvoice::query()->sole();
+        $this->assertSame(IncomingInvoiceRecognition::None, $incoming->recognition);
+        $this->assertNull($incoming->invoice_number);
+        $extraction = (array) data_get($incoming->summary, 'extraction');
+        $this->assertSame('no_number', $extraction['reason']);
+        $this->assertSame('pdftotext', $extraction['reader']);
+        $this->assertGreaterThan(0, $extraction['text_length']);
+        $this->assertSame(['issued_on' => '2026-09-14', 'gross' => '119.00'], $extraction['found']);
+        $this->assertStringContainsString('keine Rechnungsnummer bei einer bekannten Beschriftung', implode(' ', (array) data_get($incoming->summary, 'deviations')));
+
+        $this->actingAs($this->admin)->get(route('finance.incoming-invoices.show', $incoming->document))
+            ->assertOk()->assertSee(__('Erkennungsdiagnose'))->assertSee('119,00');
+        $this->actingAs($this->admin)->get(route('finance.incoming-invoices.values.form', $incoming))
+            ->assertOk()->assertSee('value="119.00"', false)->assertSee('value="2026-09-14"', false);
     }
 
     public function test_single_unreadable_file_is_rejected(): void {

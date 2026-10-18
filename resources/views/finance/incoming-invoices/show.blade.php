@@ -74,6 +74,32 @@
         <x-empty-state icon="help" tone="warning" framed
                        :title="__('Keine Rechnungsdaten erkannt (Klärfall).')"
                        :message="__('Das Original liegt unverändert vor. Prüfen Sie die Datei und erfassen Sie die Werte.')" />
+        @php($extraction = (array) data_get($incoming->summary, 'extraction', []))
+        @php($found = (array) ($extraction['found'] ?? []))
+        @if (($extraction['reader'] ?? null) !== null || $found !== [])
+            {{-- Diagnose der Erkennung (Befund 2026-10-18): was gelesen wurde und was trotzdem gefunden wurde. --}}
+            @php($foundLabels = ['number' => __('Rechnungsnummer'), 'issued_on' => __('Rechnungsdatum'), 'due_on' => __('Fällig am'), 'net' => __('Netto'), 'tax' => __('Steuer'), 'gross' => __('Brutto')])
+            <x-card :title="__('Erkennungsdiagnose')">
+                <x-detail-grid>
+                    <x-detail-grid.row :label="__('Gelesen mit')">{{ $extraction['reader'] ?? '—' }}@if ($extraction['ocr_used'] ?? false) ({{ __('OCR') }})@endif</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Textlänge')">{{ __(':count Zeichen', ['count' => (int) ($extraction['text_length'] ?? 0)]) }}</x-detail-grid.row>
+                    @foreach ($found as $key => $value)
+                        <x-detail-grid.row :label="$foundLabels[$key] ?? $key">
+                            @if (in_array($key, ['net', 'tax', 'gross'], true))
+                                {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $value, 2, withThousandsSeparator: true) }}
+                            @elseif (in_array($key, ['issued_on', 'due_on'], true))
+                                {{ \Illuminate\Support\Carbon::parse((string) $value)->isoFormat('L') }}
+                            @else
+                                {{ $value }}
+                            @endif
+                        </x-detail-grid.row>
+                    @endforeach
+                </x-detail-grid>
+                @if ($found !== [])
+                    <p class="mt-2 text-xs text-muted">{{ __('Teilweise gefundene Werte sind im Dialog „Werte erfassen“ vorbelegt — am Original prüfen.') }}</p>
+                @endif
+            </x-card>
+        @endif
     @elseif ($parsed === null || $summary === null)
         <x-empty-state icon="report" tone="warning" framed
                        :title="__('Das Original konnte nicht (mehr) als E-Rechnung geparst werden.')"

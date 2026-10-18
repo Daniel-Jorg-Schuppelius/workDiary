@@ -254,7 +254,7 @@ class IncomingEInvoiceService {
 
         $name = $originalName ?? $file?->getClientOriginalName();
         $summary = $this->analyze($actor, $contents, $mime, $path, $name);
-        if ($summary === null) {
+        if (self::isUnrecognized($summary)) {
             return ['status' => 'unreadable', 'incoming' => null, 'document' => null];
         }
 
@@ -292,7 +292,7 @@ class IncomingEInvoiceService {
             return $result;
         }
 
-        /** @var list<array{attachment: \App\Services\Mail\MailAttachment, sha256: string, summary: array<string, mixed>|null}> $analysed */
+        /** @var list<array{attachment: \App\Services\Mail\MailAttachment, sha256: string, summary: array<string, mixed>}> $analysed */
         $analysed = [];
         $seen = [];
         foreach ($candidates as $attachment) {
@@ -318,11 +318,11 @@ class IncomingEInvoiceService {
         // Strukturierte Belege zuerst, XML vor PDF: die XML ist das Original.
         usort($analysed, static fn (array $a, array $b): int => self::leadRank($a) <=> self::leadRank($b));
 
-        /** @var array<int, array{item: array{attachment: \App\Services\Mail\MailAttachment, sha256: string, summary: array<string, mixed>|null}, companions: list<\App\Services\Mail\MailAttachment>}> $leading */
+        /** @var array<int, array{item: array{attachment: \App\Services\Mail\MailAttachment, sha256: string, summary: array<string, mixed>}, companions: list<\App\Services\Mail\MailAttachment>}> $leading */
         $leading = [];
         $unrecognized = [];
         foreach ($analysed as $item) {
-            if ($item['summary'] === null) {
+            if (self::isUnrecognized($item['summary'])) {
                 $unrecognized[] = $item;
 
                 continue;
@@ -351,7 +351,7 @@ class IncomingEInvoiceService {
         foreach ($leading as $lead) {
             $item = $lead['item'];
             $incoming = $this->persist($actor, $item['sha256'], $item['attachment']->content, $item['attachment']->mime, $source, null, $item['attachment']->filename, $item['summary'], $origin)['incoming'];
-            $result[$item['summary'] === null ? 'unrecognized' : 'stored']++;
+            $result[self::isUnrecognized($item['summary']) ? 'unrecognized' : 'stored']++;
             $result['incomings'][] = $incoming;
             foreach ([...$lead['companions'], ...$companions] as $companion) {
                 app(\App\Services\Attachments\FileAttacher::class)->storeContent($incoming, $companion->content, $companion->filename, $companion->mime, (int) $actor->id);
@@ -377,7 +377,7 @@ class IncomingEInvoiceService {
     }
 
     /**
-     * @param  array{attachment: \App\Services\Mail\MailAttachment, summary: array<string, mixed>|null}  $item
+     * @param  array{attachment: \App\Services\Mail\MailAttachment, summary: array<string, mixed>}  $item
      */
     private static function leadRank(array $item): int {
         $recognition = $item['summary']['recognition'] ?? null;
@@ -402,21 +402,27 @@ class IncomingEInvoiceService {
     }
 
     /**
-     * E-Rechnung parsen, sonst aus PDF bzw. Bild erkennen (MVP-1066); null,
-     * wenn keine Rechnung zu erkennen ist.
+     * E-Rechnung parsen, sonst aus PDF bzw. Bild erkennen (MVP-1066). Ohne
+     * erkannte Werte kommt das Klärfall-Summary ({@see isUnrecognized()}) mit
+     * der Diagnose der Erkennung unter `extraction`.
      *
-     * @return array<string, mixed>|null
+     * @return array<string, mixed>
      */
-    private function analyze(\App\Models\Platform\User $actor, string $contents, ?string $mime, ?string $path, ?string $name): ?array {
+    private function analyze(\App\Models\Platform\User $actor, string $contents, ?string $mime, ?string $path, ?string $name): array {
         return $this->analyzeFor($actor->organization, $contents, $mime, $path, $name);
+    }
+
+    /** @param  array<string, mixed>  $summary */
+    private static function isUnrecognized(array $summary): bool {
+        return ($summary['recognition'] ?? null) === \App\Enums\Invoicing\IncomingInvoiceRecognition::None->value;
     }
 
     /**
      * Erkennung ohne handelnden Nutzer — die Nacherkennung läuft aus der Konsole.
      *
-     * @return array<string, mixed>|null
+     * @return array<string, mixed>
      */
-    private function analyzeFor(?\App\Models\Platform\Organization $organization, string $contents, ?string $mime, ?string $path, ?string $name): ?array {
+    private function analyzeFor(?\App\Models\Platform\Organization $organization, string $contents, ?string $mime, ?string $path, ?string $name): array {
         $parsed = $this->parse($contents, $mime, $path);
         if ($parsed !== null) {
             $summary = $this->summary($parsed);
@@ -428,13 +434,15 @@ class IncomingEInvoiceService {
             return $summary;
         }
 
-        $summary = $this->unstructuredSummary($organization, $contents, $mime, $path, $name);
+        ['summary' => $summary, 'extraction' => $extraction] = $this->unstructuredSummary($organization, $contents, $mime, $path, $name);
         if ($summary !== null) {
             $summary['validation'] = null;
             $summary['recognition'] = \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted->value;
+
+            return $summary;
         }
 
-        return $summary;
+        return [...$this->unrecognizedSummary(), 'extraction' => $extraction];
     }
 
     /**
@@ -549,7 +557,11 @@ class IncomingEInvoiceService {
 
         $organization = $incoming->organization;
         $summary = $this->analyzeFor($organization, (string) $disk->get($path), $version->mime !== null ? (string) $version->mime : null, $disk->path($path), (string) $version->original_name);
-        if ($summary === null) {
+        if (self::isUnrecognized($summary)) {
+            // Weiterhin Klärfall: nur Diagnose und Hinweise nachführen — sie zeigen den aktuellen Werkzeugstand.
+            ['summary' => $enriched] = $this->enrich($organization, (int) $incoming->organization_id, $summary);
+            $incoming->forceFill(['summary' => [...(array) $incoming->summary, ...$enriched]])->save();
+
             return false;
         }
         $recognition = \App\Enums\Invoicing\IncomingInvoiceRecognition::from((string) $summary['recognition']);
@@ -889,8 +901,12 @@ class IncomingEInvoiceService {
      */
     public function deviations(array $summary): array {
         $deviations = [];
-        if (($summary['recognition'] ?? null) === \App\Enums\Invoicing\IncomingInvoiceRecognition::None->value) {
+        if (self::isUnrecognized($summary)) {
             $deviations[] = (string) __('Keine Rechnungsdaten erkannt — Original prüfen und die Werte erfassen.');
+            $hint = self::recognitionHint((array) ($summary['extraction'] ?? []));
+            if ($hint !== null) {
+                $deviations[] = $hint;
+            }
         }
         if ($summary['unstructured'] ?? false) {
             $deviations[] = (string) __('Ohne E-Rechnungsdaten aus PDF bzw. Bild erkannt — alle Werte am Original prüfen.');
@@ -921,12 +937,13 @@ class IncomingEInvoiceService {
      * Rechnung ohne eingebettete XML (MVP-1066): die vorhandene Erkennung aus
      * Text, Tabellen, OCR und KI-Rückfall ({@see \App\Services\Invoicing\InvoicePdfImportService}).
      * Ohne erkannte Rechnungsnummer und Bruttobetrag ist es keine Rechnung —
-     * dann bleibt es bei „nicht lesbar“. Der Aussteller wird über die
-     * USt-IdNr. im Text gesucht; die eigene zählt nicht.
+     * dann bleibt `summary` null und `extraction` sagt, was gelesen wurde und
+     * woran es scheiterte. Der Aussteller wird über die USt-IdNr. im Text
+     * gesucht; die eigene zählt nicht.
      *
-     * @return array<string, mixed>|null
+     * @return array{summary: array<string, mixed>|null, extraction: array<string, mixed>}
      */
-    private function unstructuredSummary(?\App\Models\Platform\Organization $organization, string $contents, ?string $mime, ?string $path, ?string $originalName): ?array {
+    private function unstructuredSummary(?\App\Models\Platform\Organization $organization, string $contents, ?string $mime, ?string $path, ?string $originalName): array {
         $extension = match (true) {
             str_contains((string) $mime, 'pdf') || str_ends_with(mb_strtolower((string) $originalName), '.pdf') => 'pdf',
             str_contains((string) $mime, 'png') => 'png',
@@ -934,18 +951,28 @@ class IncomingEInvoiceService {
             str_contains((string) $mime, 'tif') => 'tif',
             default => null,
         };
-        if ($extension === null || $organization === null) {
-            return null;
+        if ($extension === null) {
+            return ['summary' => null, 'extraction' => self::recognitionDiagnostics('format_not_supported', [], $mime ?? $originalName)];
+        }
+        if ($organization === null) {
+            return ['summary' => null, 'extraction' => self::recognitionDiagnostics('not_attempted', [], $extension)];
         }
         // Der E-Rechnungs-Zweig lief schon in analyzeFor(): hier nur noch Text, Tabellen, OCR, KI.
         $extract = static fn (string $file): array => app(\App\Services\Invoicing\InvoicePdfImportService::class)->extract($file, $extension, $mime, $organization, structured: false);
         try {
             $result = $path !== null && File::isFile($path) ? $extract($path) : File::withTemp($contents, $extract, 'incoming-invoice-', $extension);
         } catch (FileNotWrittenException) {
-            return null;
+            return ['summary' => null, 'extraction' => self::recognitionDiagnostics('not_attempted', [], $extension)];
         }
         if (($result['number'] ?? null) === null || ($result['gross'] ?? null) === null) {
-            return null;
+            $reason = match (true) {
+                (int) ($result['text_length'] ?? 0) === 0 => 'no_text',
+                ($result['number'] ?? null) === null && ($result['gross'] ?? null) === null => 'no_number_and_gross',
+                ($result['number'] ?? null) === null => 'no_number',
+                default => 'no_gross',
+            };
+
+            return ['summary' => null, 'extraction' => self::recognitionDiagnostics($reason, $result, $extension)];
         }
 
         $ownVat = \CommonToolkit\Helper\Data\VatNumberHelper::normalize(app(XRechnungGenerator::class)->sellerDataFor($organization)['vat_id']);
@@ -956,7 +983,7 @@ class IncomingEInvoiceService {
         $supplier = $vatIds === [] ? null : \App\Models\Supplier\Supplier::query()->withoutGlobalScopes()
             ->where('organization_id', $organization->id)->whereIn('vat_id', $vatIds)->first();
 
-        return [
+        return ['extraction' => [], 'summary' => [
             'number' => $result['number'],
             'issue_date' => $result['issued_on'] ?? null,
             'due_date' => $result['due_on'] ?? null,
@@ -984,7 +1011,61 @@ class IncomingEInvoiceService {
                 'warnings' => (array) ($result['warnings'] ?? []),
             ],
             'reference_tokens' => array_values((array) ($result['reference_tokens'] ?? [])),
+        ]];
+    }
+
+    /**
+     * Diagnose einer gescheiterten Erkennung: Leseweg, Textmenge, Warnungen
+     * und die Felder, die trotzdem gefunden wurden (sie belegen den Dialog
+     * „Werte erfassen“ vor).
+     *
+     * @param  array<string, mixed>  $result
+     * @return array<string, mixed>
+     */
+    private static function recognitionDiagnostics(string $reason, array $result, ?string $format): array {
+        $found = array_filter(
+            [
+                'number' => $result['number'] ?? null,
+                'issued_on' => $result['issued_on'] ?? null,
+                'due_on' => $result['due_on'] ?? null,
+                'net' => $result['net'] ?? null,
+                'tax' => $result['tax'] ?? null,
+                'gross' => $result['gross'] ?? null,
+            ],
+            static fn (mixed $value): bool => is_string($value) && $value !== '',
+        );
+
+        return [
+            'reason' => $reason,
+            'reader' => $result['reader'] ?? null,
+            'ocr_used' => (bool) ($result['ocr_used'] ?? false),
+            'text_length' => (int) ($result['text_length'] ?? 0),
+            'confidence' => $result['confidence'] ?? null,
+            'warnings' => array_values(array_filter((array) ($result['warnings'] ?? []), 'is_string')),
+            'source_format' => $format,
+            'found' => $found,
         ];
+    }
+
+    /**
+     * Lesbarer Grund für den Prüfer, abgeleitet aus {@see recognitionDiagnostics()}.
+     *
+     * @param  array<string, mixed>  $extraction
+     */
+    private static function recognitionHint(array $extraction): ?string {
+        $source = (($extraction['ocr_used'] ?? false) ? 'OCR/' : '') . (string) ($extraction['reader'] ?? '?');
+        $read = ['length' => (int) ($extraction['text_length'] ?? 0), 'source' => $source];
+
+        return match ($extraction['reason'] ?? null) {
+            'format_not_supported' => (string) __('Dateityp :type wird nicht als Beleg gelesen — erkannt werden PDF, Bilder und E-Rechnungs-XML.', ['type' => (string) ($extraction['source_format'] ?? '?')]),
+            'no_text' => ($extraction['ocr_used'] ?? false)
+                ? (string) __('Kein lesbarer Text, auch nicht per OCR — vermutlich kein Beleg oder eine unbrauchbare Vorlage.')
+                : (string) __('Kein Text in der Datei gefunden — Textschicht fehlt und OCR war nicht verfügbar.'),
+            'no_number' => (string) __('Text gelesen (:length Zeichen, :source), aber keine Rechnungsnummer bei einer bekannten Beschriftung gefunden.', $read),
+            'no_gross' => (string) __('Text gelesen (:length Zeichen, :source), aber kein Bruttobetrag bei einer bekannten Beschriftung gefunden.', $read),
+            'no_number_and_gross' => (string) __('Text gelesen (:length Zeichen, :source), aber weder Rechnungsnummer noch Bruttobetrag bei einer bekannten Beschriftung gefunden.', $read),
+            default => null,
+        };
     }
 
     private function parsePdf(string $contents, ?string $path): ?EInvoiceDocument {
