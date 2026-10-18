@@ -13101,6 +13101,7 @@ CREATE TABLE IF NOT EXISTS "msgraph_task_list_links"(
   "subscription_id" varchar,
   "subscription_expires_at" datetime,
   "webhook_secret" text,
+  "delta_unsupported_at" datetime,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("project_id") references "projects"("id") on delete cascade
 );
@@ -24827,3 +24828,4 @@ INSERT INTO migrations VALUES(985,'2027_03_21_110000_create_tour_stops_proposals
 INSERT INTO migrations VALUES(986,'2027_03_21_120000_add_tour_zones_and_stop_links',1);
 INSERT INTO migrations VALUES(987,'2027_03_21_130000_create_location_pending_trips',1);
 INSERT INTO migrations VALUES(988,'2027_03_22_090000_create_invoice_inquiries',1);
+INSERT INTO migrations VALUES(989,'2027_03_23_090000_add_delta_unsupported_at_to_msgraph_task_list_links',1);

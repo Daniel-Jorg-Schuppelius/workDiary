@@ -11,6 +11,7 @@
 namespace App\Plugins\Msgraph\Api;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
+use App\Plugins\Msgraph\Exceptions\TodoDeltaRejectedException;
 use App\Plugins\Msgraph\Models\MsgraphTaskConnection;
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginHttpFactory};
@@ -113,7 +114,9 @@ class MsgraphTodoClient implements GraphSubscriptionClient {
      * Seite ohne Checkpoint = vollständige Sicht inkl. finalem Delta-Token;
      * Folge-Aufrufe über die absolute Checkpoint-URL liefern nur Änderungen —
      * gelöschte Aufgaben als `@removed`-Einträge. 410 Gone (Token abgelaufen)
-     * ⇒ {@see StaleCheckpointException}, der Aufrufer startet voll neu.
+     * ⇒ {@see StaleCheckpointException}, der Aufrufer startet voll neu;
+     * 400 ⇒ {@see TodoDeltaRejectedException} (Liste ohne Delta oder
+     * unbrauchbarer Checkpoint — der Aufrufer unterscheidet).
      *
      * @return array{items: list<array<string, mixed>>, checkpoint: string, hasMore: bool}
      */
@@ -126,6 +129,10 @@ class MsgraphTodoClient implements GraphSubscriptionClient {
 
         if ($response->status() === 410) {
             throw new StaleCheckpointException('To-Do-Delta-Token abgelaufen (410 Gone).');
+        }
+        if ($response->status() === 400) {
+            $error = (array) ($response->json('error') ?? []);
+            throw new TodoDeltaRejectedException($listId, (string) ($error['code'] ?? ''), (string) ($error['message'] ?? ''));
         }
         if (! $response->successful()) {
             throw new RuntimeException('Graph todo tasks/delta fehlgeschlagen (HTTP ' . $response->status() . ').');

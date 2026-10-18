@@ -26,6 +26,8 @@ return [
         'add' => 'Vincular',
         'remove' => 'Quitar',
         'remove_confirm' => '¿Quitar realmente esta vinculación? Las tareas y referencias ya sincronizadas se conservan.',
+        'full_view' => 'Sincronización completa',
+        'full_view_hint' => 'Microsoft Graph no admite consultas delta para esta lista. Cada ejecución obtiene la lista completa; la consulta delta se vuelve a intentar después de :days días.',
     ],
     'mode' => [
         'bidirectional' => 'Ambas direcciones',

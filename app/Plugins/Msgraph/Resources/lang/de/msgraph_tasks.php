@@ -26,6 +26,8 @@ return [
         'add' => 'Zuordnen',
         'remove' => 'Entfernen',
         'remove_confirm' => 'Zuordnung wirklich entfernen? Bereits synchronisierte Aufgaben und Referenzen bleiben erhalten.',
+        'full_view' => 'Vollabgleich',
+        'full_view_hint' => 'Microsoft Graph unterstützt für diese Liste keine Delta-Abfrage. Jeder Lauf holt die vollständige Liste; die Delta-Abfrage wird nach :days Tagen erneut versucht.',
     ],
     'mode' => [
         'bidirectional' => 'Beide Richtungen',

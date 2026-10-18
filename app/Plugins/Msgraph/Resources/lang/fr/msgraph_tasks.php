@@ -26,6 +26,8 @@ return [
         'add' => 'Lier',
         'remove' => 'Retirer',
         'remove_confirm' => 'Retirer vraiment cette liaison ? Les tâches et références déjà synchronisées sont conservées.',
+        'full_view' => 'Synchronisation complète',
+        'full_view_hint' => 'Microsoft Graph ne prend pas en charge les requêtes delta pour cette liste. Chaque exécution récupère la liste complète ; la requête delta est retentée après :days jours.',
     ],
     'mode' => [
         'bidirectional' => 'Les deux directions',

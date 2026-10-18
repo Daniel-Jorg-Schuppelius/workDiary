@@ -308,6 +308,77 @@ final class MsgraphTodoSyncTest extends TestCase {
         $this->assertStringContainsString('frisch', (string) $link->fresh()?->delta_link);
     }
 
+    public function test_list_without_delta_support_falls_back_to_full_view(): void {
+        $this->connection();
+        $project = Project::factory()->create(['organization_id' => $this->organization->id]);
+        $link = $this->link($project);
+
+        // Graph-Antwort vom 2026-10-18 (Produktivbefund): Delta für die Liste abgewiesen.
+        FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/delta*' => FakePluginHttp::response([
+                'error' => ['code' => 'BadRequest', 'message' => 'Invalid request. Delta query is not supported by this resource.'],
+            ], 400),
+            'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks*' => FakePluginHttp::response(['value' => [$this->remoteTask()]]),
+        ]);
+        $first = (new MsgraphPlugin())->syncTasks($this->organization);
+
+        $this->assertSame(1, $first['created']);
+        $this->assertSame(0, $first['failed']);
+        $link->refresh();
+        $this->assertNotNull($link->delta_unsupported_at);
+        $this->assertNull($link->delta_link);
+
+        // Folgelauf: kein Delta-Versuch mehr (sonst stündlich derselbe 400), volle
+        // Sicht mit Lösch-Markierung wie vor dem Delta-Ausbau.
+        $fake = FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks*' => FakePluginHttp::response(['value' => []]),
+        ]);
+        $second = (new MsgraphPlugin())->syncTasks($this->organization);
+
+        $this->assertSame(1, $second['inbox']);
+        $this->assertSame(0, $second['failed']);
+        $fake->assertNotSent(fn ($request): bool => str_contains((string) $request->getUri(), '/delta'));
+        $this->assertSame(1, Task::query()->count());
+
+        // Nach der Frist wird Delta erneut probiert — klappt es, fällt der Marker.
+        $link->forceFill(['delta_unsupported_at' => now()->subDays(MsgraphTaskListLink::DELTA_RETRY_DAYS + 1)])->save();
+        FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/delta*' => FakePluginHttp::response([
+                'value' => [$this->remoteTask()],
+                '@odata.deltaLink' => 'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/delta?$deltatoken=spaeter',
+            ]),
+        ]);
+        $third = (new MsgraphPlugin())->syncTasks($this->organization);
+
+        $this->assertSame(0, $third['failed']);
+        $this->assertNull($link->fresh()?->delta_unsupported_at);
+        $this->assertStringContainsString('spaeter', (string) $link->fresh()?->delta_link);
+    }
+
+    public function test_rejected_delta_checkpoint_is_rebuilt_before_falling_back(): void {
+        $this->connection();
+        $project = Project::factory()->create(['organization_id' => $this->organization->id]);
+        $link = $this->link($project);
+        $link->forceFill(['delta_link' => 'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/delta?$deltatoken=kaputt'])->save();
+
+        // 400 auf den Checkpoint heißt nicht „Liste ohne Delta": erst die Kette neu aufbauen.
+        FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/delta?$deltatoken=kaputt' => FakePluginHttp::response([
+                'error' => ['code' => 'BadRequest', 'message' => 'Invalid delta token.'],
+            ], 400),
+            'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/delta*' => FakePluginHttp::response([
+                'value' => [$this->remoteTask()],
+                '@odata.deltaLink' => 'https://graph.microsoft.com/v1.0/me/todo/lists/list-1/tasks/delta?$deltatoken=neu',
+            ]),
+        ]);
+        $result = (new MsgraphPlugin())->syncTasks($this->organization);
+
+        $this->assertSame(1, $result['created']);
+        $this->assertSame(0, $result['failed']);
+        $this->assertNull($link->fresh()?->delta_unsupported_at);
+        $this->assertStringContainsString('neu', (string) $link->fresh()?->delta_link);
+    }
+
     // ── Folgeausbau: Live-Export (Observer → Outbox → Dispatcher) ───────
 
     public function test_local_changes_enqueue_outbox_and_dispatcher_exports(): void {

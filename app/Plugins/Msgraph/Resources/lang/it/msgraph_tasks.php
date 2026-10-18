@@ -26,6 +26,8 @@ return [
         'add' => 'Collega',
         'remove' => 'Rimuovi',
         'remove_confirm' => 'Rimuovere davvero questo collegamento? Le attività e i riferimenti già sincronizzati vengono mantenuti.',
+        'full_view' => 'Sincronizzazione completa',
+        'full_view_hint' => 'Microsoft Graph non supporta le query delta per questa lista. Ogni esecuzione recupera l\'elenco completo; la query delta viene ritentata dopo :days giorni.',
     ],
     'mode' => [
         'bidirectional' => 'Entrambe le direzioni',

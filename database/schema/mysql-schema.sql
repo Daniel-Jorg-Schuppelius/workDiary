@@ -16535,6 +16535,7 @@ CREATE TABLE `msgraph_task_list_links` (
   `sync_mode` varchar(32) NOT NULL DEFAULT 'bidirectional',
   `status` varchar(16) NOT NULL DEFAULT 'active',
   `delta_link` text DEFAULT NULL,
+  `delta_unsupported_at` timestamp NULL DEFAULT NULL,
   `subscription_id` varchar(190) DEFAULT NULL,
   `subscription_expires_at` timestamp NULL DEFAULT NULL,
   `webhook_secret` text DEFAULT NULL,
@@ -26942,3 +26943,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (985,'2027_03_21_11
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (986,'2027_03_21_120000_add_tour_zones_and_stop_links',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (987,'2027_03_21_130000_create_location_pending_trips',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (988,'2027_03_22_090000_create_invoice_inquiries',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (989,'2027_03_23_090000_add_delta_unsupported_at_to_msgraph_task_list_links',1);

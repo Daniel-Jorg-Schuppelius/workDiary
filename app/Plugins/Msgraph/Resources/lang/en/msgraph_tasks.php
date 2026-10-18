@@ -26,6 +26,8 @@ return [
         'add' => 'Link',
         'remove' => 'Remove',
         'remove_confirm' => 'Really remove this link? Already synced tasks and references are kept.',
+        'full_view' => 'Full sync',
+        'full_view_hint' => 'Microsoft Graph does not support delta queries for this list. Every run fetches the complete list; the delta query is retried after :days days.',
     ],
     'mode' => [
         'bidirectional' => 'Both directions',

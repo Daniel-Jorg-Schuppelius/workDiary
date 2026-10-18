@@ -195,7 +195,12 @@
                     </x-slot:head>
                     @foreach ($taskLinks as $link)
                         <tr>
-                            <td>{{ $link->todo_list_name ?? $link->todo_list_id }}</td>
+                            <td>
+                                {{ $link->todo_list_name ?? $link->todo_list_id }}
+                                @if ($link->deltaUnsupported())
+                                    <x-status-badge tone="warning" size="xs" :title="__('msgraph::msgraph_tasks.link.full_view_hint', ['days' => \App\Plugins\Msgraph\Models\MsgraphTaskListLink::DELTA_RETRY_DAYS])">{{ __('msgraph::msgraph_tasks.link.full_view') }}</x-status-badge>
+                                @endif
+                            </td>
                             <td>{{ $link->target_kind === 'project' ? ($link->project?->name ?? '—') : __('msgraph::msgraph_tasks.link.global') }}</td>
                             <td>{{ __('msgraph::msgraph_tasks.mode.' . $link->sync_mode) }}</td>
                             <td class="text-right">

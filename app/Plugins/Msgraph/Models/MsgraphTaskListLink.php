@@ -33,6 +33,7 @@ use Illuminate\Support\Carbon;
  * @property string $sync_mode
  * @property MsgraphTaskListLinkStatus $status
  * @property string|null $delta_link
+ * @property Carbon|null $delta_unsupported_at
  * @property string|null $subscription_id
  * @property Carbon|null $subscription_expires_at
  * @property string|null $webhook_secret
@@ -52,6 +53,9 @@ class MsgraphTaskListLink extends Model implements TaskSyncLink {
     public const MODE_WORKDIARY_TO_TODO = 'workdiary_to_todo';
 
     public const MODE_BIDIRECTIONAL = 'bidirectional';
+
+    /** Nach so vielen Tagen probiert der Import die Delta-Abfrage einer als delta-los markierten Liste erneut. */
+    public const DELTA_RETRY_DAYS = 30;
 
     protected $table = 'msgraph_task_list_links';
 
@@ -76,6 +80,7 @@ class MsgraphTaskListLink extends Model implements TaskSyncLink {
     protected $casts = [
         'last_run_at' => 'datetime',
         'last_run_counters' => 'array',
+        'delta_unsupported_at' => 'datetime',
         'status' => MsgraphTaskListLinkStatus::class,
         'subscription_expires_at' => 'datetime',
         'webhook_secret' => 'encrypted',
@@ -97,5 +102,11 @@ class MsgraphTaskListLink extends Model implements TaskSyncLink {
 
     public function exportsToTodo(): bool {
         return in_array($this->sync_mode, [self::MODE_WORKDIARY_TO_TODO, self::MODE_BIDIRECTIONAL], true);
+    }
+
+    /** Graph hat die Delta-Abfrage dieser Liste abgewiesen; bis zur nächsten Probe importiert der Lauf die volle Sicht. */
+    public function deltaUnsupported(): bool {
+        return $this->delta_unsupported_at !== null
+            && $this->delta_unsupported_at->greaterThan(now()->subDays(self::DELTA_RETRY_DAYS));
     }
 }

@@ -19,12 +19,14 @@ use App\Models\Platform\Organization;
 use App\Models\Project\Task;
 use App\Plugins\Msgraph\Api\MsgraphTodoClient;
 use App\Plugins\Msgraph\Enums\MsgraphTaskListLinkStatus;
+use App\Plugins\Msgraph\Exceptions\TodoDeltaRejectedException;
 use App\Plugins\Msgraph\Models\{MsgraphTaskConnection, MsgraphTaskListLink};
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Msgraph\Observers\MsgraphTodoTaskObserver;
 use App\Plugins\Support\TaskSync\{AbstractTaskSyncService, TaskSyncLink};
 use App\Services\CloudIntake\StaleCheckpointException;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
@@ -118,19 +120,34 @@ class MsgraphTodoSyncService extends AbstractTaskSyncService {
      * Checkpoint nur Änderungen — `@removed`-Einträge werden explizit als
      * remote-gelöscht behandelt, `flagRemoteDeletions()` entfällt dort
      * (Teilsicht!). Abgelaufener Checkpoint (410) ⇒ Neuaufbau ab voller Sicht.
+     * Listen ohne Delta (400 auf die erste Delta-Abfrage, Befund 2026-10-18)
+     * ⇒ volle Sicht über `tasks()` und Marker `delta_unsupported_at`; nach
+     * {@see MsgraphTaskListLink::DELTA_RETRY_DAYS} wird Delta erneut probiert.
      *
      * @return array{created: int, updated: int, unchanged: int, conflicts: int, inbox: int, failed: int}
      */
     private function importFromRemote(MsgraphTaskListLink $link, MsgraphTodoClient $client): array {
+        if ($link->deltaUnsupported()) {
+            return $this->import($link, collect($client->tasks($link->todo_list_id)));
+        }
+
         $checkpoint = trim((string) $link->delta_link);
         $incremental = $checkpoint !== '';
 
         try {
             [$items, $newCheckpoint] = $this->collectDelta($client, $link->todo_list_id, $incremental ? $checkpoint : null);
-        } catch (StaleCheckpointException) {
+        } catch (StaleCheckpointException|TodoDeltaRejectedException $e) {
+            if ($e instanceof TodoDeltaRejectedException && ! $incremental) {
+                return $this->fallBackToFullView($link, $client, $e);
+            }
+            // Checkpoint abgelaufen (410) oder abgewiesen (400): Kette neu aufbauen.
             $link->forceFill(['delta_link' => null])->save();
-            [$items, $newCheckpoint] = $this->collectDelta($client, $link->todo_list_id, null);
             $incremental = false;
+            try {
+                [$items, $newCheckpoint] = $this->collectDelta($client, $link->todo_list_id, null);
+            } catch (TodoDeltaRejectedException $e) {
+                return $this->fallBackToFullView($link, $client, $e);
+            }
         }
 
         $remoteTasks = collect($items);
@@ -140,10 +157,31 @@ class MsgraphTodoSyncService extends AbstractTaskSyncService {
             : $this->import($link, $remoteTasks->filter(fn (array $t): bool => ! isset($t['@removed']))->values());
 
         if ($newCheckpoint !== '') {
-            $link->forceFill(['delta_link' => $newCheckpoint])->save();
+            $link->forceFill(['delta_link' => $newCheckpoint, 'delta_unsupported_at' => null])->save();
         }
 
         return $result;
+    }
+
+    /**
+     * Graph kann für diese Liste kein Delta: volle Sicht wie vor dem Folgeausbau
+     * (Verschwundenes wird markiert) und Marker setzen — sonst liefe jeder
+     * Stundenlauf in denselben 400 und das Protokoll voll.
+     *
+     * @return array{created: int, updated: int, unchanged: int, conflicts: int, inbox: int, failed: int}
+     */
+    private function fallBackToFullView(MsgraphTaskListLink $link, MsgraphTodoClient $client, TodoDeltaRejectedException $e): array {
+        Log::warning('msgraph.todo_delta_unsupported', [
+            'organization_id' => $link->organization_id,
+            'link_id' => $link->id,
+            'list' => $link->todo_list_name ?? $link->todo_list_id,
+            'graph_code' => $e->graphCode,
+            'graph_message' => $e->graphMessage,
+            'retry_after_days' => MsgraphTaskListLink::DELTA_RETRY_DAYS,
+        ]);
+        $link->forceFill(['delta_link' => null, 'delta_unsupported_at' => now()])->save();
+
+        return $this->import($link, collect($client->tasks($link->todo_list_id)));
     }
 
     /**
