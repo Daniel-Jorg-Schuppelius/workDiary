@@ -99,6 +99,7 @@ class FakePluginHttp extends PluginHttpFactory {
     /** Provider-SDK-Client gegen den Mock-Handler statt gegen die echte API. */
     public function sdkClient(string $pluginId, string $baseUrl, callable $make): ClientAbstract {
         $client = parent::sdkClient($pluginId, $baseUrl, $make);
+        $client->setRequestInterval(0.0);
         $client->setBaseRetryDelay(0);
         $client->setMaxRetryDelay(0);
 

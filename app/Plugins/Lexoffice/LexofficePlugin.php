@@ -24,7 +24,7 @@ use App\Models\Time\TimeEntry;
 use App\Plugins\{AbstractPlugin, PluginHealth, PluginManager};
 use App\Plugins\Contracts\{ContactNumberIssuer, ContactSyncer, ContributesWhileInactive, NavigationContributor, PaymentSyncer, Plugin, PluginCapability, SlotRenderer, TimeExporter};
 use App\Plugins\Lexoffice\Enums\LexwareFeature;
-use App\Plugins\Lexoffice\Exceptions\LexofficeRateLimitException;
+use App\Plugins\Lexoffice\Exceptions\{LexofficeApiBusyException, LexofficeRateLimitException};
 use App\Plugins\Lexoffice\Models\LexofficePostingCategory;
 use App\Plugins\Lexoffice\Services\{LexofficeIncomingInvoiceTarget, LexofficeMapper, LexofficeService, LexofficeVoucherSync, LexofficeWebhookService};
 use App\Plugins\Lexoffice\Tariff\LexwareTariffService;
@@ -34,6 +34,8 @@ use App\Support\Query\DateRange;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use GuzzleHttp\Exception\ConnectException;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 /**
@@ -64,6 +66,12 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
 
     /** @var array<int, array{config: array<string, mixed>, service: LexofficeService}> Dienst je Organisation, solange ihre Zugangsdaten gleich bleiben. */
     private array $orgServices = [];
+
+    /** So lange weicht ein Lauf nach einer belegten API-Sperre aus, ohne je Kontakt erneut zu warten. */
+    private const API_BUSY_BACKOFF_SECONDS = 60;
+
+    /** @var array<int, CarbonImmutable> Organisation → bis wann die API-Sperre als belegt gilt */
+    private array $apiBusyUntil = [];
 
     /**
      * Dienst mit den Zugangsdaten der Organisation. Der injizierte Dienst trägt den Schlüssel, den der
@@ -307,6 +315,25 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
      * schreibt der Übernehmer, die Kundennummer nur bei Lexoffice-Vergabe.
      */
     private function pushParty(Customer|Supplier $party): string {
+        $organizationId = (int) $party->organization_id;
+        if (isset($this->apiBusyUntil[$organizationId]) && $this->apiBusyUntil[$organizationId]->isFuture()) {
+            throw new LexofficeApiBusyException;
+        }
+
+        try {
+            // Unter der API-Sperre der Organisation wie Sync-Läufe und Jobs: parallel zum stündlichen
+            // Abgleich rissen beide zusammen das Anfragelimit (Befund 2026-10-17). Oberfläche und
+            // Nachlauf warten nur kurz und weichen aus; der Nachlauf holt den Kontakt später nach.
+            return Cache::lock(LexofficeConfig::apiLockKey($organizationId), 60)
+                ->block(LexofficeConfig::API_LOCK_WAIT_SHORT, fn (): string => $this->transferParty($party));
+        } catch (LockTimeoutException) {
+            $this->apiBusyUntil[$organizationId] = CarbonImmutable::now()->addSeconds(self::API_BUSY_BACKOFF_SECONDS);
+
+            throw new LexofficeApiBusyException;
+        }
+    }
+
+    private function transferParty(Customer|Supplier $party): string {
         $linkedId = ExternalReference::query()
             ->forPlugin($party->organization_id, self::ID, self::EXT_TYPE_CONTACT)
             ->forReferenceable($party)

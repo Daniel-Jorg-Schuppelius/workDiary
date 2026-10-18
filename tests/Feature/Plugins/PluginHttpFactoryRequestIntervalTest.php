@@ -54,6 +54,17 @@ class PluginHttpFactoryRequestIntervalTest extends TestCase {
         $this->assertSame(PluginHttpFactory::MAX_REQUEST_INTERVAL, (new PluginHttpFactory)->client('sevdesk', 'https://my.sevdesk.de/api/v1')->getRequestInterval());
     }
 
+    /** SDK-Clients takten wie der API-Client; ein SDK hält seine Untergrenze (Lexoffice 0,5 s). */
+    public function test_sdk_client_takes_the_plugin_interval_but_not_below_its_floor(): void {
+        $make = static fn (?\GuzzleHttp\Client $transport): \Lexoffice\API\Client => new \Lexoffice\API\Client('k', 'https://api.lexware.io/v1', null, false, $transport);
+
+        $this->assertSame(0.5, (new PluginHttpFactory)->sdkClient('lexoffice', 'https://api.lexware.io/v1', $make)->getRequestInterval());
+        $this->assertSame(0.0, (new PluginHttpFactory)->sdkClient('zammad', 'https://zammad.example.test/api/v1', $make)->getRequestInterval());
+
+        $this->enablePluginFor($this->organization, 'lexoffice', ['request_interval' => '0.3']);
+        $this->assertSame(0.5, (new PluginHttpFactory)->sdkClient('lexoffice', 'https://api.lexware.io/v1', $make)->getRequestInterval());
+    }
+
     public function test_explicit_interval_from_the_caller_wins(): void {
         $this->enablePluginFor($this->organization, 'lexoffice', ['request_interval' => '2']);
 

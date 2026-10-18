@@ -117,7 +117,10 @@ class PluginHttpFactory {
      */
     protected function configureSdkClient(ClientAbstract $client, string $pluginId): ClientAbstract {
         $client->setUserAgent('workDiary-plugin/' . $pluginId);
-        $client->setRequestInterval(0.0);
+        // Derselbe Tarifabstand wie beim API-Client (Lexoffice-429 im Kontakt-Push, 2026-10-17);
+        // ein SDK darf seine Untergrenze höher legen als die Einstellung.
+        $interval = self::configuredRequestInterval($pluginId);
+        $client->setRequestInterval($interval > 0 ? max($interval, $client::MIN_INTERVAL) : 0.0);
         // Health-Kontext (W3c): reduziertes Timeout-Budget, max. 1 Retry.
         if (\App\Plugins\PluginHealthService::inHealthCheck()) {
             $client->setTimeout((float) config('plugins.health_timeout_seconds', 10));

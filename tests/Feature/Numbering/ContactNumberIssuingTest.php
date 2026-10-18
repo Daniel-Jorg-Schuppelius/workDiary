@@ -15,7 +15,7 @@ use App\Enums\Numbering\NumberScope;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\{PluginSetting, User};
-use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use App\Plugins\Lexoffice\Services\LexofficeService;
 use App\Plugins\PluginManager;
 use App\Plugins\SevDesk\SevDeskPlugin;
@@ -24,6 +24,8 @@ use App\Services\Numbering\{NumberAuthority, NumberSequenceService};
 use App\Settings\SettingScope;
 use App\Support\{OrganizationContext, Setting};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Sleep;
 use Psr\Http\Message\RequestInterface;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\FakePluginHttp;
@@ -242,6 +244,35 @@ class ContactNumberIssuingTest extends TestCase {
 
         $this->assertSame(0, \Illuminate\Support\Facades\Artisan::call('accounting:issue-contact-numbers'));
         $this->assertSame('10099', $customer->fresh()?->number);
+    }
+
+    /** Ein laufender Lexoffice-Abgleich hält die API-Sperre: der Push weicht aus statt ins Anfragelimit zu laufen. */
+    public function test_the_push_steps_aside_while_another_lexoffice_run_holds_the_api_lock(): void {
+        $this->lexofficeIssuesCustomerNumbers();
+        $fake = $this->fakeLexoffice();
+        Sleep::fake(syncWithCarbon: true);
+        $this->assertTrue(Cache::lock(LexofficeConfig::apiLockKey($this->organization->id), 600)->get());
+
+        $this->actingAs($this->admin)
+            ->post(route('customers.store'), ['name' => 'Wartekunde', 'currency' => 'EUR'])
+            ->assertRedirect()
+            ->assertSessionHas('warning');
+
+        $fake->assertNothingSent();
+        $this->assertTrue(NumberSequenceService::isDraft(Customer::query()->where('name', 'Wartekunde')->value('number')));
+    }
+
+    public function test_follow_up_command_sends_nothing_while_the_api_lock_is_held(): void {
+        $this->lexofficeIssuesCustomerNumbers();
+        Customer::factory()->count(2)->create(['organization_id' => $this->organization->id, 'number' => null]);
+        $fake = $this->fakeLexoffice();
+        Sleep::fake(syncWithCarbon: true);
+        $this->assertTrue(Cache::lock(LexofficeConfig::apiLockKey($this->organization->id), 600)->get());
+
+        $this->assertSame(1, \Illuminate\Support\Facades\Artisan::call('accounting:issue-contact-numbers', ['--organization' => $this->organization->id]));
+
+        $fake->assertNothingSent();
+        $this->assertSame(2, Customer::query()->where('number', 'like', NumberSequenceService::DRAFT_PREFIX . '%')->count());
     }
 
     public function test_number_field_is_locked_while_the_program_issues_numbers(): void {

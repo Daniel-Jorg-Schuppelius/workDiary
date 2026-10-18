@@ -14,7 +14,7 @@ use App\Models\Customer\Customer;
 use App\Models\Supplier\Supplier;
 use App\Models\Time\TimeEntry;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
-use App\Plugins\Lexoffice\Exceptions\LexofficeRateLimitException;
+use App\Plugins\Lexoffice\Exceptions\{LexofficeApiException, LexofficeRateLimitException};
 use App\Plugins\Support\PluginApiClient;
 use App\Services\Finance\Accounting\ContactPushService;
 use App\Services\Stammdaten\ContactIdentity;
@@ -23,7 +23,7 @@ use CommonToolkit\Helper\Data\JsonHelper;
 use GuzzleHttp\Exception\ConnectException;
 use Illuminate\Support\Collection;
 use Lexoffice\API\Client;
-use Lexoffice\API\Endpoints\{ContactsEndpoint, VouchersEndpoint};
+use Lexoffice\API\Endpoints\VouchersEndpoint;
 use Lexoffice\Entities\Contacts\Contact;
 use Lexoffice\Entities\Files\File as LexofficeFile;
 use Lexoffice\Entities\Vouchers\Voucher;
@@ -106,11 +106,15 @@ class LexofficeService {
     }
 
     private function client(): Client {
+        $this->assertConfigured();
+
+        return $this->client ??= app(LexofficeClientFactory::class)->sdk((string) $this->apiKey, $this->baseUrl);
+    }
+
+    private function assertConfigured(): void {
         if (! $this->isConfigured()) {
             throw new RuntimeException('Lexoffice API key is not configured (LEXOFFICE_API_KEY).');
         }
-
-        return $this->client ??= app(LexofficeClientFactory::class)->sdk((string) $this->apiKey, $this->baseUrl);
     }
 
     /**
@@ -124,6 +128,7 @@ class LexofficeService {
      * @return array{id: string, number: ?string}
      */
     public function pushContact(Customer|Supplier $party, ?string $linkedId = null): array {
+        $this->assertConfigured();
         $linked = $linkedId !== null ? $this->fetchContact($linkedId) : null;
         $existing = $linked ?? $this->findSameContact($party);
         // Führt die Buchhaltung die Stammdaten, wird ein Treffer nur verknüpft, nicht überschrieben.
@@ -135,15 +140,20 @@ class LexofficeService {
             ? $this->mapper->supplierToContactPayload($party, $this->defaults)
             : $this->mapper->customerToContactPayload($party, $this->defaults);
 
-        $endpoint = new ContactsEndpoint($this->client());
-
+        // Anlegen und Ändern gehen über denselben gedrosselten Client wie Suche und Abruf: der
+        // SDK-Client taktet nur für sich, zusammen überschritten beide die zwei Anfragen je Sekunde —
+        // 429 beim POST, den das Toolkit nicht wiederholt (Befund 2026-10-17). Die Entität prüft
+        // die Nutzlast weiterhin.
         if ($existing !== null) {
             $existingId = (string) $existing['id'];
             $payload['version'] = (int) ($existing['version'] ?? 0);
             $payload['id'] = $existingId;
 
-            $contact = Contact::fromJson(JsonHelper::encode($payload));
-            $id = $endpoint->update(new \Lexoffice\Entities\Contacts\ContactID($existingId), $contact)->getId()->toString();
+            $response = $this->api()->putJson($this->baseUrl . '/contacts/' . rawurlencode($existingId), Contact::fromJson(JsonHelper::encode($payload))->toArray());
+            if (! $response->successful()) {
+                throw LexofficeApiException::fromResponse($response, __('Kontakte'), __('Kontakte bearbeiten'));
+            }
+            $id = (string) ($response->json('id') ?? '');
             if ($id === '') {
                 throw new RuntimeException('Lexoffice contact update returned no id.');
             }
@@ -151,8 +161,11 @@ class LexofficeService {
             return ['id' => $id, 'number' => $this->contactNumber($existing, $party)];
         }
 
-        $contact = Contact::fromJson(JsonHelper::encode($payload));
-        $id = $endpoint->create($contact)->getId()->toString();
+        $response = $this->api()->postJson($this->baseUrl . '/contacts', Contact::fromJson(JsonHelper::encode($payload))->toArray());
+        if (! $response->successful()) {
+            throw LexofficeApiException::fromResponse($response, __('Kontakte'), __('Kontakte anlegen'));
+        }
+        $id = (string) ($response->json('id') ?? '');
         if ($id === '') {
             throw new RuntimeException('Lexoffice contact create returned no id.');
         }
