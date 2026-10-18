@@ -19,7 +19,7 @@ use RecursiveIteratorIterator;
  * „User-Modell org-scoping absichern"): Das {@see \App\Models\Platform\User}-Modell
  * trägt aus Sicherheitsgründen bewusst KEINEN globalen `OrganizationScope`
  * (Authenticatable-/Org-Wechsel-Sonderfall, siehe
- * ../WorkDiary-Architecture/security/tenant-audit-2026.md, Allow-List Z. 111).
+ * ../WorkDiary-Architecture/security/tenant-modell-inventar.md, Abschnitt „Allow-List").
  *
  * Folge: Jede org-Daten-Query, die eine LISTE/Collection von Usern rendert
  * (Mitglieder-/Assignee-/Empfänger-/Report-Picker, Dropdowns, plucks), muss die
@@ -204,7 +204,7 @@ class UserOrgScopingRuleTest extends TestCase {
         $this->assertSame([], $violations, sprintf(
             "Ungescopte User-Listen-Query in Org-Kontext gefunden (Cross-Tenant-Leak-Klasse).\n"
             . "Kanonisch scopen (User::inCurrentOrganization()/scopeForOrganization() bzw. ->where('organization_id', …))\n"
-            . "oder mit (A)-Begründung in die Allow-List eintragen (siehe tenant-audit-2026.md):\n%s",
+            . "oder mit (A)-Begründung in die Allow-List eintragen (siehe tenant-modell-inventar.md):\n%s",
             implode("\n", $violations),
         ));
     }

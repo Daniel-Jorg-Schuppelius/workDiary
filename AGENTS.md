@@ -36,10 +36,10 @@ Diese Dokumente sind **normativ**. Bei UI-Arbeit zuerst hier nachschlagen:
 
 | Thema                                    | Quelle                                                               |
 | ---------------------------------------- | -------------------------------------------------------------------- |
-| **UX-Pattern-Katalog** (Leitdokument)    | [ux-pattern-katalog.md](../WorkDiary-Architecture/ux-pattern-katalog.md)             |
-| Status- & Aktionssemantik (Labels/Tones) | [status-aktionsglossar.md](../WorkDiary-Architecture/status-aktionsglossar.md)       |
-| Barrierefreiheit                         | [accessibility-checkliste.md](../WorkDiary-Architecture/accessibility-checkliste.md) |
-| UI-Vereinheitlichung / Ausnahmen         | [ui-unification-audit.md](../WorkDiary-Architecture/ui-unification-audit.md)         |
+| **UX-Pattern-Katalog** (Leitdokument)    | [ux-pattern-katalog.md](../WorkDiary-Architecture/konventionen/ux-pattern-katalog.md)             |
+| Status- & Aktionssemantik (Labels/Tones) | [status-aktionsglossar.md](../WorkDiary-Architecture/konventionen/status-aktionsglossar.md)       |
+| Barrierefreiheit                         | [accessibility-checkliste.md](../WorkDiary-Architecture/konventionen/accessibility-checkliste.md) |
+| UI-Vereinheitlichung / Ausnahmen         | [ui-unification-audit.md](../WorkDiary-Architecture/konventionen/ui-unification-audit.md)         |
 
 **Bediengrundsätze (Kurzfassung):** Eine Aktion – ein Name – ein Icon · eine
 Statuslogik · eine Listen-Anatomie · eine Formular-Anatomie (modal-first) ·
@@ -119,7 +119,7 @@ Edit-Seite** ist nur die **begründete Ausnahme** für umfangreiche Formulare �
 wenn so viele Felder/Abschnitte nötig sind, dass ein Dialog unübersichtlich oder
 zu hoch würde (mehrstufige Assistenten, viele Gruppen). Dann das Body-Fragment
 (`_form_body.blade.php`) zwischen Seite und Dialog teilen und die Abweichung im PR
-begründen (siehe `../WorkDiary-Architecture/ui-unification-audit.md`).
+begründen (siehe `../WorkDiary-Architecture/konventionen/ui-unification-audit.md`).
 
 1. **Maximale Höhe** je Dialog (`--wd-dialog-max-h`, Default `78vh`) — luftig, nicht den ganzen Viewport füllen.
 2. **Body scrollbar** (`overflow-y-auto`); Header & Footer bleiben sichtbar.

@@ -3,7 +3,7 @@
 # Entra-App-Registrierung für workDiary automatisch anlegen/aktualisieren
 # ----------------------------------------------------------------------
 # Ersetzt das manuelle Zusammenklicken im Entra-Portal (Runbook §1,
-# WorkDiary-Architecture/ms365-pilot-runbook-2026-08.md): legt die
+# WorkDiary-Architecture/betrieb/ms365-pilot-runbook.md): legt die
 # App-Registrierung an (oder aktualisiert die vorhandene gleichen Namens),
 # setzt alle Redirect-URIs und delegierten Graph-Berechtigungen und gibt
 # die ENV-/Plugin-Werte aus.

@@ -14,7 +14,7 @@ use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Lohnarten-Mapping für den Zeitexport (A21 · MVP-019, ../WorkDiary-Architecture/zeit-export.md §5.1):
+ * Lohnarten-Mapping für den Zeitexport (A21 · MVP-019, ../WorkDiary-Architecture/konzepte/zeit-export.md §5.1):
  * ordnet je Organisation und Export-Profil eine interne Lohnart
  * (TimeExportLine.wage_type — work.normal, surcharge.<code>, absence.*, …)
  * einer externen Lohnartennummer des Ziel-Lohnprogramms zu. Aufgelöst vom
@@ -32,7 +32,7 @@ class WageTypeMapping extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    /** Interne Standard-Lohnarten laut ../WorkDiary-Architecture/zeit-export.md §5.1. */
+    /** Interne Standard-Lohnarten laut ../WorkDiary-Architecture/konzepte/zeit-export.md §5.1. */
     public const STANDARD_WAGE_TYPES = [
         'work.normal',
         'work.night',

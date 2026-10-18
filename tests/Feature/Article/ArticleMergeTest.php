@@ -19,7 +19,7 @@ use Tests\TestCase;
 
 /**
  * Artikel-Zusammenführung (Audit 2026-08, W2.9; Semantik:
- * `WorkDiary-Architecture/artikel-merge-semantik.md`).
+ * `WorkDiary-Architecture/konzepte/artikel-merge-semantik.md`).
  *
  * Kern der Prüfungen: Varianten wandern als Ganzes mit — der append-only
  * Lagerledger wird NIE umgeschrieben —, und der Merge verweigert sich, wo

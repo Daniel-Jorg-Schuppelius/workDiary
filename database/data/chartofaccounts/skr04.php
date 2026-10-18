@@ -15,7 +15,7 @@
  *
  * Dieselben Regeln wie bei der SKR03-Vorlage: eigene Zusammenstellung,
  * Auszug für den Einstieg, Deutschland only, fachliche Prüfung vorausgesetzt.
- * Hintergrund: ../WorkDiary-Architecture/kontenrahmen-lizenzrecherche-2026-08.md
+ * Hintergrund: ../WorkDiary-Architecture/chronik/analysen/kontenrahmen-lizenzrecherche-2026-08.md
  */
 
 return [

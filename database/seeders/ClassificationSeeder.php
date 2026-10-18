@@ -17,7 +17,7 @@ use Illuminate\Database\Seeder;
 /**
  * Seedet Plattform-Defaults (organization_id = NULL) für alle Kern-Domänen.
  *
- * Quelle: ../WorkDiary-Architecture/kernklassifikationen.md §2.
+ * Quelle: ../WorkDiary-Architecture/konzepte/kernklassifikationen.md §2.
  */
 class ClassificationSeeder extends Seeder {
     public function run(): void {

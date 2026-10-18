@@ -106,6 +106,7 @@
         "lang:coverage": "@php scripts/translations-coverage.php",
         "help:coverage": "@php artisan help:coverage",
         "features:check": "@php scripts/check-feature-status.php",
+        "docs:check": "@php scripts/check-architecture-wiki.php",
         "modules:check": "@php artisan modules:check",
         "lang:sync-core": "@php scripts/sync-laravel-core-lang.php",
         "lang:sync-core:write": "@php scripts/sync-laravel-core-lang.php --write",
@@ -120,6 +121,7 @@
             "@lang:coverage",
             "@help:coverage",
             "@features:check",
+            "@docs:check",
             "@modules:check"
         ],
         "post-autoload-dump": [

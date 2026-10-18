@@ -17,7 +17,7 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
 
 /**
  * Gate MVP-870: neue Spalten folgen den Datenbank-Konventionen
- * (WorkDiary-Architecture/datenbank-konventionen.md). Geprüft werden nur
+ * (WorkDiary-Architecture/konventionen/datenbank-konventionen.md). Geprüft werden nur
  * Migrationen nach dem Stichtag; der Bestand bleibt unberührt.
  */
 class ColumnNamingRuleTest extends TestCase {

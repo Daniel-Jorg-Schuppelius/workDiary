@@ -25,7 +25,7 @@ use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
 /**
- * Tagesabschluss (MVP-015, ../WorkDiary-Architecture/tagesabschluss.md):
+ * Tagesabschluss (MVP-015, ../WorkDiary-Architecture/konzepte/tagesabschluss.md):
  * Seite (§2), Statusmaschine + Audits (§3/§6), ⛔-Block beim Abschluss (§4),
  * Korrektur-Workflow (§5) und Permissions/Tenant-Grenzen (§7).
  */

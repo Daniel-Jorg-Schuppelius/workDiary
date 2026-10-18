@@ -10,7 +10,7 @@ Service, Parser, Formatter, Validator, Konverter oder Generator app-lokal
 geschrieben wird, gilt:
 
 1. **Erst die Toolkits prüfen.** Nachschlagen in der Capability-Map im
-   Schwester-Repo: [toolkit-capability-map.md](../WorkDiary-Architecture/toolkit-capability-map.md)
+   Schwester-Repo: [toolkit-capability-map.md](../WorkDiary-Architecture/konventionen/toolkit-capability-map.md)
    (öffentliche API-Oberfläche aller Toolkits). Bei Unsicherheit die
    Zielklasse unter `vendor/<paket>/src/...` gegenlesen.
 2. **Existiert die Funktion → direkt nutzen** (an der Aufrufstelle, **keine
@@ -53,7 +53,7 @@ Allowlist der Regel — Geschäftsregel oder belegter Unterschied, nicht Bequeml
 `CurrencyHelper::normalizeAmount` (DE-Format), `CryptoHelper::secureHash`
 (gesalzen/base64 statt Hex für Hash-Ketten), `CreditCardHelper`-Luhn (validiert
 nur, erzeugt keine Prüfziffer). Begründungen:
-[toolkit-konsolidierung-2026-06.md](../WorkDiary-Architecture/toolkit-konsolidierung-2026-06.md).
+[toolkit-konsolidierung-2026-06.md](../WorkDiary-Architecture/chronik/audits/toolkit-konsolidierung-2026-06.md).
 
 ### Shell-Kommandos: CommandBuilder escaped selbst — NICHT caller-seitig escapen
 
@@ -113,7 +113,7 @@ Modul-Gate, Rechtegruppen, Navigationsschlüssel, `requires()` und Plugins.
 - Betrieb: `modules:cache` nach dem Deploy (steht in deploy.sh), `modules:clear`
   beim Entwickeln nach neuen Manifesten.
 - **Modulregister:** nach jeder Manifest-Änderung `php artisan modules:doc`
-  (schreibt `../WorkDiary-Architecture/modul-register.md`); `modules:check`
+  (schreibt `../WorkDiary-Architecture/konventionen/modul-register.md`); `modules:check`
   meldet ein veraltetes Register, sobald das Architektur-Repo daneben liegt.
 
 ## Domänenordner: keine Klasse direkt im Schichtordner (MVP-862)
@@ -324,11 +324,11 @@ eine Projektion (`address_*`, `bank_*`, `ContactDetailsProjectionObserver`).
   Auskunftsabschnitte geben die Anschrift aus; harte Löschung der Partei
   räumt die Satelliten selbst ab.
 - Konventionen für Spaltennamen und Kontaktdaten:
-  [datenbank-konventionen.md](../WorkDiary-Architecture/datenbank-konventionen.md).
+  [datenbank-konventionen.md](../WorkDiary-Architecture/konventionen/datenbank-konventionen.md).
 
 ## Spaltennamen (MVP-870)
 
-Neue Spalten folgen [datenbank-konventionen.md](../WorkDiary-Architecture/datenbank-konventionen.md):
+Neue Spalten folgen [datenbank-konventionen.md](../WorkDiary-Architecture/konventionen/datenbank-konventionen.md):
 `created_by`/`updated_by`, `<rolle>_user_id`, `note`, `is_*`, `valid_from`/
 `valid_until`, Fachart `kind`, `<name>_type` nur mit `<name>_id`,
 `*_amount` + `currency`. Gate `ColumnNamingRuleTest` prüft Migrationen nach
@@ -370,10 +370,25 @@ Namespace, und beide laufen auseinander (Gate `EnumLabelContractTest`).
 
 Die gesamte Entwicklungs-/Architekturdoku liegt im Schwester-Repo
 **WorkDiary-Architecture** (`../WorkDiary-Architecture/`, im Workspace
-eingebunden): Feature-/MVP-Doku unter `features/`, Security-Doku unter
-`security/`, Querschnittsdoku auf Root-Ebene.
+eingebunden), aufgebaut als Wiki mit zwei Schichten; die Regeln stehen dort
+in `CLAUDE.md`:
 
-- Toolkit-API-Referenz: [toolkit-capability-map.md](../WorkDiary-Architecture/toolkit-capability-map.md)
-- Migrationslog & A–F-Klassifikation: [toolkit-konsolidierung-2026-06.md](../WorkDiary-Architecture/toolkit-konsolidierung-2026-06.md)
-- Audit-Befunde (offene Migrations-/Erweiterungskandidaten): [toolkit-audit-2026-06.md](../WorkDiary-Architecture/toolkit-audit-2026-06.md)
-- Audit 2026-09 (Eigenbau statt Toolkit, Gate, Toolkit-Kandidaten): [toolkit-audit-2026-09.md](../WorkDiary-Architecture/toolkit-audit-2026-09.md)
+- **Gültiger Stand:** `konzepte/` (Fach- und Architekturkonzepte, darunter
+  `branchenprofile/`), `konventionen/` (Regeln, Kataloge, Register),
+  `betrieb/`, `features/` (eine Seite je Feature, Register
+  `features/README.md`), `security/`. Seiten ohne Datum im Namen.
+- **Chronik:** `chronik/plaene|umsetzungen|audits|analysen/` — datiert, nach
+  Abschluss unverändert. Fremdspezifikationen unter `quellen/`.
+- **Einstieg:** zuerst `index.md` (Katalog mit einem Satz je Seite), Historie
+  über `chronik/index.md`. Neue Seite: Schicht wählen, dann
+  `php scripts/wiki-index.php` und `php scripts/wiki-lint.php` (null Fehler;
+  läuft hier als `composer docs:check` im `composer qa`).
+  Verschieben nur mit `php scripts/wiki-move.php <alt> <neu>` (zieht Links
+  nach und meldet Fundstellen hier im App-Repo). Nach jeder Phase wandern die
+  Entscheidungen aus Plan und Umsetzungsbericht in die Konzeptseiten
+  (Ablauf „Ingest" in der dortigen `CLAUDE.md`).
+
+- Toolkit-API-Referenz: [toolkit-capability-map.md](../WorkDiary-Architecture/konventionen/toolkit-capability-map.md)
+- Migrationslog & A–F-Klassifikation: [toolkit-konsolidierung-2026-06.md](../WorkDiary-Architecture/chronik/audits/toolkit-konsolidierung-2026-06.md)
+- Audit-Befunde (offene Migrations-/Erweiterungskandidaten): [toolkit-audit-2026-06.md](../WorkDiary-Architecture/chronik/audits/toolkit-audit-2026-06.md)
+- Audit 2026-09 (Eigenbau statt Toolkit, Gate, Toolkit-Kandidaten): [toolkit-audit-2026-09.md](../WorkDiary-Architecture/chronik/audits/toolkit-audit-2026-09.md)

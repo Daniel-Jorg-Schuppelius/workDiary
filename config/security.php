@@ -32,7 +32,7 @@ return [
 
     /*
     | CVD-Meldekanal via /.well-known/security.txt (RFC 9116; CRA-Welle 1,
-    | WorkDiary-Architecture/security/cra-red-compliance-2026-07.md §5).
+    | WorkDiary-Architecture/security/cra-red-compliance.md §5).
     | Ohne konfigurierten Contact liefert der Endpunkt 404 — bewusst kein
     | erfundener Default (analog Rechtstexte-Platzhalter). E-Mail oder URL.
     */

@@ -22,7 +22,7 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
  * Quoting, symlink-folgendes rrmdir, Menge „10" als „1", abgeschnittene
  * Steuerbeträge. Begründete Ausnahmen stehen je Regel mit Grund in der Allowlist.
  *
- * Referenz der Toolkit-API: WorkDiary-Architecture/toolkit-capability-map.md.
+ * Referenz der Toolkit-API: WorkDiary-Architecture/konventionen/toolkit-capability-map.md.
  */
 class ToolkitFirstRuleTest extends TestCase {
     use ScansSourceTree;

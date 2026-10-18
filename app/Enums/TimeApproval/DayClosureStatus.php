@@ -14,7 +14,7 @@ use App\Enums\Concerns\{HasOptions, HasTransitions};
 use App\Enums\Contracts\HasStatusTransitions;
 
 /**
- * Status eines Tagesabschlusses (MVP-015, ../WorkDiary-Architecture/tagesabschluss.md §3).
+ * Status eines Tagesabschlusses (MVP-015, ../WorkDiary-Architecture/konzepte/tagesabschluss.md §3).
  *
  * Persistiert werden nur open|closed|correction. `locked` ist ein
  * abgeleiteter Anzeige-Status: ein Tag gilt als gesperrt, sobald sein

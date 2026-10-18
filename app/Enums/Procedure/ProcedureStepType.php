@@ -17,7 +17,7 @@ use App\Enums\Fields\FieldType;
 
 /**
  * Definiert die in MVP-025 unterstuetzten Schritt-Typen einer
- * Prozedurvorlage (siehe ../WorkDiary-Architecture/prozedurvorlagen.md §5).
+ * Prozedurvorlage (siehe ../WorkDiary-Architecture/konzepte/prozedurvorlagen.md §5).
  */
 enum ProcedureStepType: string implements FieldTyped, HasLabel {
     use HasOptions;

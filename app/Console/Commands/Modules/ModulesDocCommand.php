@@ -18,9 +18,9 @@ use Illuminate\Console\Command;
 
 /** Schreibt das Modulregister ins Architektur-Repo (MVP-873). */
 class ModulesDocCommand extends Command {
-    protected $signature = 'modules:doc {--path= : Zieldatei (Standard: ../WorkDiary-Architecture/modul-register.md)}';
+    protected $signature = 'modules:doc {--path= : Zieldatei (Standard: ../WorkDiary-Architecture/konventionen/modul-register.md)}';
 
-    protected $description = 'Erzeugt ../WorkDiary-Architecture/modul-register.md aus den Modul-Manifesten.';
+    protected $description = 'Erzeugt ../WorkDiary-Architecture/konventionen/modul-register.md aus den Modul-Manifesten.';
 
     public function handle(ModuleRegistry $registry): int {
         $option = $this->option('path');

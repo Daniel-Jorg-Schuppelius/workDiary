@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasOne};
  * Bewusst KEIN BelongsToOrganization-Trait: Kind-Tabelle von Document,
  * Mandantengrenze wird transitiv über `documents.organization_id`
  * durchgesetzt (Allow-List in TenantTraitCoverageTest, Begründung in
- * ../WorkDiary-Architecture/security/tenant-audit-2026.md).
+ * ../WorkDiary-Architecture/security/tenant-modell-inventar.md).
  *
  * @property int $id
  * @property int $document_id

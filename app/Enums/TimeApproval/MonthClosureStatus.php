@@ -15,7 +15,7 @@ use App\Enums\Contracts\HasStatusTransitions;
 
 /**
  * Status einer Monatsfreigabe (MVP-016).
- * Siehe ../WorkDiary-Architecture/monatsfreigabe.md §4 für die Übergänge.
+ * Siehe ../WorkDiary-Architecture/konzepte/monatsfreigabe.md §4 für die Übergänge.
  */
 enum MonthClosureStatus: string implements HasStatusTransitions {
     use HasOptions;

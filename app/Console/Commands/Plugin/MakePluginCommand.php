@@ -18,7 +18,7 @@ use Illuminate\Support\Str;
  * Gerüst für ein neues Plugin (Review 2026-08, W5d): erzeugt Plugin-Klasse
  * (auf {@see \App\Plugins\AbstractPlugin}), ServiceProvider, die
  * verpflichtende config.php und ein Test-Skeleton. Konventionen siehe
- * WorkDiary-Architecture/plugin-autorenleitfaden.md.
+ * WorkDiary-Architecture/konventionen/plugin-autorenleitfaden.md.
  */
 class MakePluginCommand extends Command {
     protected $signature = 'make:plugin {name : Studly-Name, z. B. "Acme" → app/Plugins/Acme/AcmePlugin.php}';
@@ -48,7 +48,7 @@ class MakePluginCommand extends Command {
 
         $this->info("Plugin-Gerüst erzeugt: app/Plugins/{$studly}/ (ID: {$id})");
         $this->line('Nächste Schritte: capabilities() + settingsSchema() ausfüllen, healthCheck() implementieren,');
-        $this->line('dann `php artisan plugin:doctor` — Leitfaden: WorkDiary-Architecture/plugin-autorenleitfaden.md');
+        $this->line('dann `php artisan plugin:doctor` — Leitfaden: WorkDiary-Architecture/konventionen/plugin-autorenleitfaden.md');
 
         return self::SUCCESS;
     }

@@ -25,7 +25,7 @@ use Tests\TestCase;
 
 /**
  * Regressionstests zur Welle 1 des Sicherheitsaudits 2026-10-04
- * (WorkDiary-Architecture/security/sicherheitsaudit-2026-10-04-behebung.md).
+ * (WorkDiary-Architecture/chronik/audits/sicherheitsaudit-2026-10-04-behebung.md).
  */
 final class SecurityAudit202610Wave1Test extends TestCase {
     use BuildsPolicyActors;

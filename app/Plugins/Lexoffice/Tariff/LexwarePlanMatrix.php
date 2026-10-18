@@ -17,7 +17,7 @@ use App\Plugins\Lexoffice\Enums\{LexwareCoverage, LexwareFeature, LexwarePlan};
 /**
  * Versionierte Funktionsmatrix der Lexware-Office-Tarife (Feature 158,
  * MVP-831). Herstellerstand vom 2026-09-21 laut
- * `WorkDiary-Architecture/lexoffice-ergaenzungen-mvp-plan-2026-09-21.md`;
+ * `WorkDiary-Architecture/chronik/plaene/lexoffice-ergaenzungen-mvp-plan-2026-09-21.md`;
  * eine geänderte Tarifpolitik ändert VERSION und die Tabelle, nie stille
  * Sonderfälle in Views.
  */

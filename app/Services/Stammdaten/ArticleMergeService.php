@@ -21,7 +21,7 @@ use InvalidArgumentException;
 
 /**
  * Führt zwei Artikel zusammen (Audit 2026-08, W2.9; Semantik und Sperren:
- * `WorkDiary-Architecture/artikel-merge-semantik.md`).
+ * `WorkDiary-Architecture/konzepte/artikel-merge-semantik.md`).
  *
  * **Kernregel — der Lagerledger wird nie umgeschrieben.** `stock_movements`
  * ist append-only, die `stock_valuation_layers` bilden die FIFO-Schichten;

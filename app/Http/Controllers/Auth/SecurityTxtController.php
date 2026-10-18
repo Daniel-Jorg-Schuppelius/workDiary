@@ -17,7 +17,7 @@ use Illuminate\Http\Response;
 
 /**
  * CVD-Meldekanal nach RFC 9116: /.well-known/security.txt (CRA-Welle 1,
- * WorkDiary-Architecture/security/cra-red-compliance-2026-07.md §5).
+ * WorkDiary-Architecture/security/cra-red-compliance.md §5).
  * Ohne konfigurierten Kontakt (SECURITY_TXT_CONTACT) antwortet der
  * Endpunkt 404 — bewusst kein erfundener Default.
  *

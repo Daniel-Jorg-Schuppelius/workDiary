@@ -17,7 +17,7 @@ use App\Models\Time\TimeExport;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 /**
- * Berechtigungen für ApprovedTimeExporter (MVP-019, ../WorkDiary-Architecture/zeit-export.md §7).
+ * Berechtigungen für ApprovedTimeExporter (MVP-019, ../WorkDiary-Architecture/konzepte/zeit-export.md §7).
  */
 class TimeExportPolicy {
     use ChecksOwnership;

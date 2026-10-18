@@ -1587,7 +1587,7 @@ return [
         ],
     ],
 
-    // Tagesabschluss (MVP-015, WorkDiary-Architecture/tagesabschluss.md §3/§5).
+    // Tagesabschluss (MVP-015, WorkDiary-Architecture/konzepte/tagesabschluss.md §3/§5).
     'dayClosure' => [
         'status' => [
             'open' => 'Offen',

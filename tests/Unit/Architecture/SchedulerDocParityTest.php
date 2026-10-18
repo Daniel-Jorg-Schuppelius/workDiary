@@ -19,7 +19,7 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
  * (stündlich/täglich/5-min), registriert war keiner — HinSchG-Fristen und die
  * Quarantäne-Freigabe liefen nie automatisch.
  *
- * Regel: Jede Artisan-Signatur, die ein `*-betrieb.md` des Architecture-Repos
+ * Regel: Jede Artisan-Signatur, die ein `betrieb/*-betrieb.md` des Architecture-Repos
  * in seiner Scheduler-Tabelle führt, hat einen Eintrag in config/scheduler.php.
  * Zusätzlich gilt die Plugin-Zusicherung aus Feature 060 (Polling = verlässliche
  * Quelle) für zammad/github/gitlab:sync. Fehlt das Schwester-Repo (CI, frischer
@@ -72,7 +72,7 @@ class SchedulerDocParityTest extends TestCase {
             return [];
         }
 
-        $docs = glob($architecture . '/*-betrieb.md') ?: [];
+        $docs = glob($architecture . '/betrieb/*-betrieb.md') ?: [];
         sort($docs);
 
         return $docs;

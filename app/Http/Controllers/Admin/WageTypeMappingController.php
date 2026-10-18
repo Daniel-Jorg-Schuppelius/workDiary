@@ -222,7 +222,7 @@ class WageTypeMappingController extends Controller {
     }
 
     /**
-     * Interne Lohnarten für das Formular: Standard-Katalog (../WorkDiary-Architecture/zeit-export.md §5.1)
+     * Interne Lohnarten für das Formular: Standard-Katalog (../WorkDiary-Architecture/konzepte/zeit-export.md §5.1)
      * plus die Zuschlagsarten der Organisation (surcharge.<code>).
      *
      * @return array<string, array<string, string>> Gruppe → (wage_type → Label)

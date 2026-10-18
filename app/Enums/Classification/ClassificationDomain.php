@@ -16,7 +16,7 @@ use App\Enums\Contracts\HasLabel;
 /**
  * Kern-Domänen der Klassifikationen (MVP-030).
  *
- * Quelle: ../WorkDiary-Architecture/kernklassifikationen.md §2.
+ * Quelle: ../WorkDiary-Architecture/konzepte/kernklassifikationen.md §2.
  */
 enum ClassificationDomain: string implements HasLabel {
     use HasOptions;

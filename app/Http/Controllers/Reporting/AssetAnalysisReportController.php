@@ -26,7 +26,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Produkt-/Objektanalyse (MVP-041).
  *
  * Aggregiert Aufträge, offene Punkte und Defekte je Asset / Produktgruppe / Modell.
- * Vereinfachtes MVP gemäss ../WorkDiary-Architecture/produkt-analyse.md auf Basis der vorhandenen
+ * Vereinfachtes MVP gemäss ../WorkDiary-Architecture/konzepte/produkt-analyse.md auf Basis der vorhandenen
  * Strukturen (Asset, DiaryEntry.asset_id, OpenIssue subject, Protocol Defect).
  */
 class AssetAnalysisReportController extends Controller {

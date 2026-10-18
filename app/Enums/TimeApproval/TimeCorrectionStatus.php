@@ -14,7 +14,7 @@ use App\Enums\Concerns\{HasOptions, HasTransitions};
 use App\Enums\Contracts\HasStatusTransitions;
 
 /**
- * Status eines Zeit-Korrekturantrags (MVP-017, ../WorkDiary-Architecture/zeit-korrekturen.md §4).
+ * Status eines Zeit-Korrekturantrags (MVP-017, ../WorkDiary-Architecture/konzepte/zeit-korrekturen.md §4).
  */
 enum TimeCorrectionStatus: string implements HasStatusTransitions {
     use HasOptions;

@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * Automatische Export-Lieferung je Organisation × Export-Profil
- * (A21 · MVP-019, ../WorkDiary-Architecture/zeit-export.md §11 „Automatische Lieferung"):
+ * (A21 · MVP-019, ../WorkDiary-Architecture/konzepte/zeit-export.md §11 „Automatische Lieferung"):
  * optionaler E-Mail-Versand (Empfängerliste) und/oder SFTP-Upload beim
  * Export-Abschluss. SFTP-Passwort liegt at-rest verschlüsselt
  * (`encrypted`-Cast, APP_KEY); leere Strings werden als NULL gespeichert.

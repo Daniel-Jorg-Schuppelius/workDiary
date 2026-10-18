@@ -13,7 +13,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Lohnarten-Mapping für den Zeitexport (A21 · MVP-019, ../WorkDiary-Architecture/zeit-export.md §5.1):
+ * Lohnarten-Mapping für den Zeitexport (A21 · MVP-019, ../WorkDiary-Architecture/konzepte/zeit-export.md §5.1):
  * je Organisation und Export-Profil die Zuordnung interner Lohnarten
  * (work.normal, surcharge.<code>, absence.*, …) auf externe Lohnartennummern
  * des Ziel-Lohnprogramms (DATEV LODAS, Lexware, …).

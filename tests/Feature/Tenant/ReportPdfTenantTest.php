@@ -24,7 +24,7 @@ use Tests\TestCase;
 /**
  * Systematischer Cross-Org-Tenant-Test über die Reporting-PDF-Exporte
  * (Bauturbo A17, MVP-335). Quelle: ../WorkDiary-Architecture/security/
- * tenant-audit-2026.md:277 ("18 Report-PDFs — bislang nur stichprobenartig
+ * tenant-audit-2026.md, Abschnitt „Test-Coverage" ("18 Report-PDFs — bislang nur stichprobenartig
  * getestet"); Standardpattern siehe adr-export-authorization.md.
  *
  * Vorgehen: Organisation B erhält markante Fixtures (User-/Kunden-/Projekt-

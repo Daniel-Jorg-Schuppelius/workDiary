@@ -17,12 +17,12 @@ use App\Enums\User\PermissionGroup;
 use Illuminate\Support\Str;
 
 /**
- * Modulregister als Markdown (MVP-873) für `WorkDiary-Architecture/modul-register.md`.
+ * Modulregister als Markdown (MVP-873) für `WorkDiary-Architecture/konventionen/modul-register.md`.
  * Deterministisch (keine Zeitstempel, feste Sortierung, deutsche Labels),
  * damit `modules:check` die Datei gegen den Generatorstand vergleichen kann.
  */
 final class ModuleRegisterDocument {
-    public const RELATIVE_PATH = '../WorkDiary-Architecture/modul-register.md';
+    public const RELATIVE_PATH = '../WorkDiary-Architecture/konventionen/modul-register.md';
 
     /** Gates, die den Modulschnitt und die Kernbausteine absichern (Phase 111). */
     private const GATES = [

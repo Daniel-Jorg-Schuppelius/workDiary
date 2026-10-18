@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 /**
- * Statusmaschine für Tagesabschlüsse (MVP-015, ../WorkDiary-Architecture/tagesabschluss.md §3/§5).
+ * Statusmaschine für Tagesabschlüsse (MVP-015, ../WorkDiary-Architecture/konzepte/tagesabschluss.md §3/§5).
  *
  * Übergänge: open → closed → correction → open; `locked` ist abgeleitet
  * (Monat submitted|approved|locked, MVP-016). Jede Methode kapselt die

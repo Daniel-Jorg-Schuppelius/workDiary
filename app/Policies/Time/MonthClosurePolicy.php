@@ -17,7 +17,7 @@ use App\Models\Time\MonthClosure;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 /**
- * Berechtigungen für Monatsfreigaben (MVP-016, ../WorkDiary-Architecture/monatsfreigabe.md §6).
+ * Berechtigungen für Monatsfreigaben (MVP-016, ../WorkDiary-Architecture/konzepte/monatsfreigabe.md §6).
  */
 class MonthClosurePolicy {
     use ChecksOwnership;

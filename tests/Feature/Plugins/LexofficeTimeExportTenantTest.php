@@ -19,7 +19,7 @@ use Tests\TestCase;
 
 /**
  * Tenant-Regressionstest für den Lexoffice-Zeiten-Export (Bauturbo A17,
- * MVP-335). Quelle: ../WorkDiary-Architecture/security/tenant-audit-2026.md:278
+ * MVP-335). Quelle: ../WorkDiary-Architecture/security/tenant-audit-2026.md, Abschnitt „Test-Coverage"
  * ("Lexoffice Time-Export — offen (Plugin, separate Tests)"); laut Audit
  * gehört der Test in die Plugin-Suite, nicht nach tests/Feature/Tenant/.
  *

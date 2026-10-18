@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\{Auth, DB};
 use Illuminate\Support\Str;
 
 /**
- * Statusmaschine für Zeit-Korrekturanträge (MVP-017, ../WorkDiary-Architecture/zeit-korrekturen.md).
+ * Statusmaschine für Zeit-Korrekturanträge (MVP-017, ../WorkDiary-Architecture/konzepte/zeit-korrekturen.md).
  *
  * Übergänge:
  *  draft → submitted → approved → applied

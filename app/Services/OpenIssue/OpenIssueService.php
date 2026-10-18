@@ -44,7 +44,7 @@ class OpenIssueService {
         $dueAt = isset($attributes['due_at']) ? Carbon::parse($attributes['due_at']) : null;
 
         // Critical-Issues brauchen Frist; wenn keine angegeben, Default
-        // gemäß ../WorkDiary-Architecture/offene-punkte.md §4 auf now+7d setzen statt zu blocken.
+        // gemäß ../WorkDiary-Architecture/konzepte/offene-punkte.md §4 auf now+7d setzen statt zu blocken.
         if ($severity === OpenIssueSeverity::Critical && $dueAt === null) {
             $dueAt = Carbon::now()->addDays(7);
         }

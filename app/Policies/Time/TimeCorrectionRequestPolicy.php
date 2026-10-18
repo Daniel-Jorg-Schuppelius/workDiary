@@ -17,7 +17,7 @@ use App\Models\Time\TimeCorrectionRequest;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 /**
- * Berechtigungen für Zeit-Korrekturanträge (MVP-017, ../WorkDiary-Architecture/zeit-korrekturen.md §7).
+ * Berechtigungen für Zeit-Korrekturanträge (MVP-017, ../WorkDiary-Architecture/konzepte/zeit-korrekturen.md §7).
  */
 class TimeCorrectionRequestPolicy {
     use ChecksOwnership;

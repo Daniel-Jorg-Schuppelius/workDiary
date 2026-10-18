@@ -39,10 +39,10 @@ Projektvorgaben** (AGENTS.md, CLAUDE.md, `../WorkDiary-Architecture/`). Jede
 | Thema                             | Quelle                                                                  |
 | --------------------------------- | ----------------------------------------------------------------------- |
 | **Arbeitsanweisung (kanonisch)**  | [AGENTS.md](../AGENTS.md)                                               |
-| UX-Pattern-Katalog (Leitdokument) | [ux-pattern-katalog.md](../../WorkDiary-Architecture/ux-pattern-katalog.md)             |
-| Status- & Aktionssemantik         | [status-aktionsglossar.md](../../WorkDiary-Architecture/status-aktionsglossar.md)       |
-| Barrierefreiheit                  | [accessibility-checkliste.md](../../WorkDiary-Architecture/accessibility-checkliste.md) |
-| UI-Vereinheitlichung / Ausnahmen  | [ui-unification-audit.md](../../WorkDiary-Architecture/ui-unification-audit.md)         |
+| UX-Pattern-Katalog (Leitdokument) | [ux-pattern-katalog.md](../../WorkDiary-Architecture/konventionen/ux-pattern-katalog.md)             |
+| Status- & Aktionssemantik         | [status-aktionsglossar.md](../../WorkDiary-Architecture/konventionen/status-aktionsglossar.md)       |
+| Barrierefreiheit                  | [accessibility-checkliste.md](../../WorkDiary-Architecture/konventionen/accessibility-checkliste.md) |
+| UI-Vereinheitlichung / Ausnahmen  | [ui-unification-audit.md](../../WorkDiary-Architecture/konventionen/ui-unification-audit.md)         |
 
 ## Wichtigste Regeln (Kurzfassung)
 

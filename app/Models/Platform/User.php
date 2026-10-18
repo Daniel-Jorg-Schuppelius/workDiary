@@ -367,7 +367,7 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
     /**
      * EXPLIZITE, opt-in Mandanten-Einschränkung. Das User-Modell trägt aus
      * Sicherheitsgründen bewusst KEINEN globalen OrganizationScope
-     * (Authenticatable-/Org-Wechsel-Sonderfall, tenant-audit-2026.md §Allow-List) —
+     * (Authenticatable-/Org-Wechsel-Sonderfall, tenant-modell-inventar.md §Allow-List) —
      * deshalb muss jede org-Daten-Query (Mitglieder-/Assignee-/Report-Picker)
      * die Mandantengrenze selbst ziehen. Diese beiden Scopes sind der EINE
      * kanonische Weg dafür; rohes `User::query()` in Org-Kontexten ist per

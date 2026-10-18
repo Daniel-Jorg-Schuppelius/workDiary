@@ -41,7 +41,7 @@ class TenantTraitCoverageTest extends TestCase {
     /**
      * Modelle, die bewusst KEIN BelongsToOrganization-Trait nutzen.
      * Erweiterungen brauchen einen Audit-Eintrag in
-     * ../WorkDiary-Architecture/security/tenant-audit-2026.md (Abschnitt „Allow-List").
+     * ../WorkDiary-Architecture/security/tenant-modell-inventar.md (Abschnitt „Allow-List").
      *
      * @var array<int, class-string>
      */
@@ -479,7 +479,7 @@ class TenantTraitCoverageTest extends TestCase {
             [],
             $offenders,
             'Folgende Modelle nutzen weder BelongsToOrganization noch sind sie in der Allow-List '
-                . "(siehe ../WorkDiary-Architecture/security/tenant-audit-2026.md):\n - " . implode("\n - ", $offenders),
+                . "(siehe ../WorkDiary-Architecture/security/tenant-modell-inventar.md):\n - " . implode("\n - ", $offenders),
         );
     }
 

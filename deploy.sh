@@ -20,7 +20,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
-# Release-Prozess (Vollscan 2026-08-23, J5 — WorkDiary-Architecture/release-prozess.md §3/§4):
+# Release-Prozess (Vollscan 2026-08-23, J5 — WorkDiary-Architecture/betrieb/release-prozess.md §3/§4):
 # Backup VOR der Migration, Wartungsmodus während des Umbaus, system:health als
 # harter Exit-Check, Wartungsmodus erst danach beenden. Abschaltbar für
 # Sonderfälle: DEPLOY_SKIP_BACKUP=1 (z. B. direkt nach einem frischen Backup),

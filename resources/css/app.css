@@ -33,7 +33,7 @@
 
 /* Dunkles Gegenstück zu corporate: Flächen, Neutral und Geometrie von dim,
    Marken- und Statusfarben von corporate (Herleitung:
-   WorkDiary-Architecture/theming.md). */
+   WorkDiary-Architecture/konventionen/theming.md). */
 @plugin '../../node_modules/daisyui/theme/index.js' {
     name: "corporate-dark";
     prefersdark: true;

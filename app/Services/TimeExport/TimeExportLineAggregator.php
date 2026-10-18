@@ -33,7 +33,7 @@ use Carbon\CarbonImmutable;
  * Aggregation im MVP:
  *   - work.normal aus Attendance.duration_minutes (Stunden, 4 Nachkommastellen)
  *   - Erweiterungen (Nacht/Sonn/Feiertag/Urlaub/Krank/Bereitschaft/Reise)
- *     sind im ../WorkDiary-Architecture/zeit-export.md vorgesehen und greifen via gleicher Pipeline.
+ *     sind im ../WorkDiary-Architecture/konzepte/zeit-export.md vorgesehen und greifen via gleicher Pipeline.
  */
 class TimeExportLineAggregator {
     public function __construct(

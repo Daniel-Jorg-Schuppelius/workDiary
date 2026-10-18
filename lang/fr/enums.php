@@ -1582,7 +1582,7 @@ return [
         ],
     ],
 
-    // Clôture journalière (MVP-015, WorkDiary-Architecture/tagesabschluss.md §3/§5).
+    // Clôture journalière (MVP-015, WorkDiary-Architecture/konzepte/tagesabschluss.md §3/§5).
     'dayClosure' => [
         'status' => [
             'open' => 'Ouvert',

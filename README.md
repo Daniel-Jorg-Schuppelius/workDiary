@@ -481,7 +481,7 @@ neu starten, falls abgestuerzt):
 ```
 
 Wer auf Reverb verzichtet, bleibt beim Polling — der Chat funktioniert
-vollstaendig, nur eben mit ~3 s statt sofort. Details: [chat.md](https://github.com/Daniel-Jorg-Schuppelius/WorkDiary-Architecture/blob/main/chat.md).
+vollstaendig, nur eben mit ~3 s statt sofort. Details: [chat.md](https://github.com/Daniel-Jorg-Schuppelius/WorkDiary-Architecture/blob/main/konzepte/chat.md).
 
 ## Wichtige Konfiguration
 

@@ -18,7 +18,7 @@
  * Fakten; die hier verwendeten wurden gegen öffentlich publizierte Quellen
  * geprüft (u. a. den Prüfungskontenplan des Klausurenverbunds der
  * Steuerberaterkammern). Rechtlicher Hintergrund:
- * ../WorkDiary-Architecture/kontenrahmen-lizenzrecherche-2026-08.md
+ * ../WorkDiary-Architecture/chronik/analysen/kontenrahmen-lizenzrecherche-2026-08.md
  *
  * Gilt für Deutschland. Österreich (KFS/BW 6) und die Schweiz (Kontenrahmen
  * KMU) haben ausdrückliche Rechtevorbehalte — dafür gibt es bewusst KEINE

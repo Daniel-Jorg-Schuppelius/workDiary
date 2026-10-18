@@ -29,7 +29,7 @@ use Tests\TestCase;
 
 /**
  * Regressionstests zur Welle 5 des Sicherheitsaudits 2026-10-04
- * (WorkDiary-Architecture/security/sicherheitsaudit-2026-10-04-behebung.md).
+ * (WorkDiary-Architecture/chronik/audits/sicherheitsaudit-2026-10-04-behebung.md).
  * `authz-a-11` und `authz-a-12` stehen bei den Vereinstests
  * (`ClubExamTest`, `ClubCheckInTest`, `ClubAttendanceTest`).
  */

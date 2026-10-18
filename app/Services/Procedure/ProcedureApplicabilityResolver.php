@@ -17,7 +17,7 @@ use Illuminate\Support\{Carbon, Collection};
 /**
  * Filtert veroeffentlichte Prozedurvorlagen anhand des
  * `applicability`-JSONs ihrer aktuellen Version gegen einen
- * Tagebucheintrag (MVP-025 §3.2 & §8.4 / ../WorkDiary-Architecture/prozedurvorlagen.md).
+ * Tagebucheintrag (MVP-025 §3.2 & §8.4 / ../WorkDiary-Architecture/konzepte/prozedurvorlagen.md).
  *
  * Unterstuetzte Kriterien:
  *  - `diary_entry_type`: Liste von EntryType-Slugs (OR).
