@@ -106,6 +106,50 @@ die Backup-Zeit (`--backup-time`) und die Restore-Test-Zeit
 > ein „22:10"-Job lief um 00:10 Ortszeit und fiel auf Servern mit nächtlicher
 > Abschaltung dauerhaft aus.
 
+## Systemwerkzeuge der Toolkits (PDF-Text, OCR, Java)
+
+Textextraktion, OCR, PDF-Bearbeitung und E-Rechnungs-Validierung laufen über
+Programme des Systems (`pdftotext`, `pdfinfo`, `pdftoppm`, `tesseract`,
+`ocrmypdf`, `java`, …). Welche das sind, steht nicht in diesem Handbuch,
+sondern in den `*executables.json` der Toolkits unter `vendor/` und in
+`config/executables.json` der App (Java headless, Ghostscript, qpdf, `file`,
+`sqlite3`, `mysqldump`, `catdoc`, `jq`, `curl`, `git`). Fehlt ein Programm,
+startet die Anwendung trotzdem: der ConfigToolkit lädt den Eintrag als
+„nicht verfügbar", schaltet die abhängige Funktion ab und schreibt bei jedem
+Laden eine Fehlerzeile ins Log (`Fehlender ausführbarer Pfad für 'pdftotext' …`).
+
+Installiert werden sie mit dem Install-Werkzeug der Toolkits, das als
+Git-Submodul `installscript/` eingebunden ist — Composer liefert die Submodule
+der Toolkit-Pakete nicht mit, daher `git clone --recurse-submodules` bzw.
+`git submodule update --init`:
+
+```bash
+cd /pfad/zur/app
+sudo installscript/install-dependencies.sh          # erforderliche Werkzeuge
+sudo installscript/install-dependencies.sh --all    # auch optionale (LibreOffice, ffmpeg, pdftk …)
+```
+
+Das Skript braucht `jq` und ruft `sudo` auf — auch als root. Es prüft je
+Eintrag zuerst den Pfad und installiert nur, was fehlt; erneutes Ausführen ist
+gefahrlos. JARs (PDFBox, KoSIT-Validator) lädt es mit Prüfsumme herunter.
+Sprachdaten für Tesseract (`deu`, `eng`) lädt das pdf-toolkit bei Bedarf
+selbst nach `vendor/…/php-pdf-toolkit/data/tesseract`; wer das Nachladen im
+Betrieb vermeiden will, installiert `tesseract-ocr-deu tesseract-ocr-eng`.
+
+`deploy.sh` führt den Installer bei jedem Update nach `composer install`
+selbst aus, sobald es als root läuft oder passwortloses `sudo` hat. Als
+Web-User (ISPConfig) kann es nicht installieren und meldet stattdessen mit
+`scripts/check-tools.php`, welche Pakete fehlen, samt dem Befehl zum
+Nachholen; der Deploy bricht deswegen nicht ab. `DEPLOY_SKIP_TOOLS=1`
+überspringt den Schritt (Container mit eigenem Image), `DEPLOY_TOOLS_ALL=1`
+entspricht `--all`. Die Prüfung von Hand, mit derselben Pfadauflösung wie die
+Toolkits zur Laufzeit (Exit 1, wenn ein erforderliches Werkzeug fehlt):
+
+```bash
+php scripts/check-tools.php          # erforderliche Werkzeuge
+php scripts/check-tools.php --all    # auch optionale
+```
+
 ## Manuelle Wartungsbefehle
 
 Diese Befehle laufen **nicht** im Zeitplan. Sie sind fuer einmalige

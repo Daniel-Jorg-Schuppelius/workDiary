@@ -10,6 +10,19 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Deploy installiert die Systemwerkzeuge der Toolkits (`pdftotext`,
+  `tesseract`, `ocrmypdf`, Java …): das Install-Werkzeug
+  `DSchuppelius/install-dependencies` ist als Git-Submodul `installscript/`
+  eingebunden (Composer liefert die Submodule der Toolkit-Pakete nicht mit),
+  `deploy.sh` lädt es mit dem Stand und führt es nach `composer install` aus,
+  sobald es root oder passwortloses sudo hat; sonst meldet
+  `scripts/check-tools.php` mit der Pfadauflösung des config-toolkit, welche
+  Pakete fehlen, samt Root-Befehl. `config/executables.json` nennt die
+  App-eigenen Pakete (Java headless, Ghostscript, qpdf, `file`, `sqlite3`,
+  `mysqldump`, `catdoc`, `jq`, `curl`, `git`); die CI nutzt dasselbe Submodul
+  statt eines eigenen Checkouts. `DEPLOY_SKIP_TOOLS=1` überspringt den
+  Schritt, `DEPLOY_TOOLS_ALL=1` nimmt optionale Werkzeuge mit.
+
 - `scripts/artisan.sh`: artisan-Befehle von Hand mit dem passenden
   PHP-Binary (Suche wie `cron.sh`/`deploy.sh`), aus jedem Verzeichnis, alle
   Argumente durchgereicht. Als root gestartet läuft es als Eigentümer von

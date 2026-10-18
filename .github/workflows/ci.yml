@@ -182,18 +182,13 @@ jobs:
     timeout-minutes: 90
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repository (incl. installscript submodule)
         uses: actions/checkout@v7
         with:
           persist-credentials: false
-
-      - name: Checkout system dependency installer
-        uses: actions/checkout@v7
-        with:
-          repository: DSchuppelius/install-dependencies
-          ref: 8cfd278a89be3f58b734fac40779b5cb9d11a195
-          path: .tools/install-dependencies
-          persist-credentials: false
+          # Das Install-Werkzeug der Toolkits liegt als Submodul unter
+          # installscript/ — derselbe Stand wie im Deploy (deploy.sh).
+          submodules: true
 
       - name: Set up PHP
         uses: shivammathur/setup-php@2.37.2
@@ -214,14 +209,12 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Install system dependencies (PDF + common toolkit)
-        env:
-          CONFIG_DIR: ${{ github.workspace }}/vendor/daniel-jorg-schuppelius/php-pdf-toolkit/config
-        # --all installiert auch optionale Tools (required=false), u. a. die
-        # vom php-common-toolkit benötigten file/chardet/uchardet für die
-        # Encoding-Erkennung bei CSV-/Datei-Imports. Die Vendor-Rekursion des
-        # Skripts findet dafür vendor/dschuppelius/php-common-toolkit/config.
-        run: bash .tools/install-dependencies/install-dependencies.sh --all
+      - name: Install system dependencies (App + Toolkits)
+        # Liest config/executables.json der App und die *executables.json
+        # unter vendor/. --all installiert auch optionale Tools (required=false),
+        # u. a. die vom php-common-toolkit benötigten file/chardet/uchardet für
+        # die Encoding-Erkennung bei CSV-/Datei-Imports.
+        run: bash installscript/install-dependencies.sh --all
 
       - name: Prepare test environment
         run: |

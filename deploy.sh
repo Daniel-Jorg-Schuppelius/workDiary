@@ -184,6 +184,13 @@ if [ "$PHP_BIN_NEW" != "$PHP_BIN" ]; then
     PHP_BIN="$PHP_BIN_NEW"
     echo "  PHP-Binary für den neuen Stand: $PHP_BIN ($("$PHP_BIN" -r 'echo PHP_VERSION;'))"
 fi
+# Das Install-Werkzeug der Toolkits liegt als Submodul unter installscript/
+# (Composer liefert die Submodule der Toolkit-Pakete nicht mit) und folgt dem
+# Stand des Commits. Schlägt das fehl (kein Netz), bleibt der Schritt
+# „Systemwerkzeuge" unten eine reine Prüfung.
+if ! { git submodule sync --quiet -- installscript && git submodule update --init -- installscript; }; then
+    echo "  ⚠ Submodul installscript nicht aktualisiert — Systemwerkzeuge werden unten nur geprüft." >&2
+fi
 
 echo "→ Lizenz-Signierschlüssel absichern (falls vorhanden)"
 [ -f storage/license-keys.env ] && chmod 600 storage/license-keys.env || true
@@ -220,6 +227,52 @@ if [ -f composer.local.json ]; then
         --no-dev --optimize-autoloader --no-interaction
 else
     run_composer install --no-dev --optimize-autoloader --no-interaction
+fi
+
+echo "→ Systemwerkzeuge der Toolkits (pdftotext, tesseract, ocrmypdf, Java …)"
+# installscript/install-dependencies.sh liest config/executables.json (App-
+# eigene Pakete) und die *executables.json unter vendor/ und installiert
+# fehlende apt-Pakete, JARs und Installer — dafür ruft es sudo auf, auch als
+# root. Als Web-User (ISPConfig) bleibt nur die Prüfung samt Root-Befehl zum
+# Nachholen. Fehlende Werkzeuge schalten im Betrieb nur ihre Funktion ab
+# (OCR, Textextraktion, Validierung), deshalb bricht der Deploy hier nicht ab.
+# DEPLOY_SKIP_TOOLS=1 überspringt den Schritt (Container mit eigenem Image),
+# DEPLOY_TOOLS_ALL=1 nimmt auch optionale Werkzeuge mit (LibreOffice, ffmpeg …).
+TOOLS_INSTALLER="installscript/install-dependencies.sh"
+TOOLS_ARGS=()
+if [ "${DEPLOY_TOOLS_ALL:-0}" = "1" ]; then
+    TOOLS_ARGS+=(--all)
+fi
+tools_can_install() {
+    command -v sudo >/dev/null 2>&1 || return 1
+    [ "$(id -u)" = "0" ] || sudo -n true 2>/dev/null
+}
+# Prüfung mit der Pfadauflösung der Toolkits (config-toolkit); Exit 1 = es fehlt etwas.
+tools_report() {
+    "$PHP_BIN" scripts/check-tools.php ${TOOLS_ARGS[@]+"${TOOLS_ARGS[@]}"}
+}
+if [ "${DEPLOY_SKIP_TOOLS:-0}" = "1" ]; then
+    echo "  ⚠ DEPLOY_SKIP_TOOLS=1 — Systemwerkzeuge übersprungen."
+elif [ ! -f "$TOOLS_INSTALLER" ]; then
+    echo "  ⚠ $TOOLS_INSTALLER fehlt (Submodul nicht geladen: git submodule update --init) — nur Prüfung." >&2
+    tools_report || true
+elif tools_can_install; then
+    if bash "$TOOLS_INSTALLER" ${TOOLS_ARGS[@]+"${TOOLS_ARGS[@]}"}; then
+        # JARs mit relativem Ziel (KoSIT-Validator des erechnung-toolkit) legt
+        # der Installer per sudo root-eigen unter vendor/ ab — das nächste
+        # composer install könnte das Paket dann nicht mehr ersetzen.
+        vendor_owner="$(stat -c '%U:%G' vendor)"
+        if [ "$vendor_owner" != "root:root" ]; then
+            find vendor -user root -print0 | xargs -0 -r sudo chown -h "$vendor_owner" \
+                || echo "  ⚠ root-eigene Dateien unter vendor/ — manuell: sudo chown -R $vendor_owner vendor" >&2
+        fi
+    else
+        echo "  ⚠ Installer fehlgeschlagen — Ausgabe oben; nachholen: sudo bash $PWD/$TOOLS_INSTALLER" >&2
+    fi
+    tools_report || echo "  ⚠ Es fehlen weiterhin Werkzeuge (Paket nicht verfügbar?) — siehe Bericht." >&2
+elif ! tools_report; then
+    echo "  ⚠ Installation braucht root oder passwortloses sudo (und das Programm sudo) — als root nachholen:" >&2
+    echo "    sudo bash $PWD/$TOOLS_INSTALLER" >&2
 fi
 
 echo "→ Frontend-Assets bauen (Vite-Manifest für public/build)"

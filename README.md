@@ -125,11 +125,23 @@ Installer erzeugt.
 > `scripts/` suchen das passende Binary selbst (`PHP_BIN=<pfad>` gibt eines vor).
 
 ```bash
-git clone <repository-url> workdiary
+git clone --recurse-submodules <repository-url> workdiary
 cd workdiary
 composer install
+sudo installscript/install-dependencies.sh   # Systemwerkzeuge: poppler, tesseract, ocrmypdf, Java …
 npm ci && npm run build
 ```
+
+Die Systemwerkzeuge der Toolkits (PDF-Text, OCR, Java) installiert
+`installscript/install-dependencies.sh` (Git-Submodul, daher
+`--recurse-submodules` bzw. `git submodule update --init`) aus den
+`*executables.json` unter `vendor/` und aus `config/executables.json` der App;
+es braucht root und `jq`. Ohne diese Werkzeuge laeuft die Anwendung, schaltet
+aber die abhaengigen Funktionen ab (Textextraktion, OCR, E-Rechnungs-
+Validierung). `deploy.sh` fuehrt den Installer bei jedem Update selbst aus,
+sobald es root oder passwortloses `sudo` hat, und meldet sonst mit
+`scripts/check-tools.php`, was fehlt — siehe
+[docs/systemdienste.md](docs/systemdienste.md).
 
 Anschliessend die Domain auf `public/` zeigen lassen und im Browser `/install`
 oeffnen. Der Assistent fuehrt durch folgende Schritte:
@@ -164,7 +176,7 @@ konfigurieren koennen.
 Empfohlener Ablauf per SSH:
 
 ```bash
-git clone <repository-url> workdiary
+git clone --recurse-submodules <repository-url> workdiary
 cd workdiary
 cp .env.example .env
 ```

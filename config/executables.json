@@ -1,0 +1,74 @@
+{
+    "shellExecutables": {
+        "java": {
+            "path": "java",
+            "required": true,
+            "description": "Java-Laufzeit für KoSIT-Validator, PDFBox und pdftk — headless statt default-jre des common-toolkit (zieht X11-Bibliotheken nach); dieser Eintrag steht vor den vendor-Konfigurationen, damit der Installer die GUI-Variante überspringt",
+            "package": "default-jre-headless",
+            "arguments": []
+        },
+        "gs": {
+            "path": "gs",
+            "required": true,
+            "description": "Ghostscript: Zuschnitt und Skalierung im pdf-toolkit, Laufzeitabhängigkeit von ocrmypdf",
+            "package": "ghostscript",
+            "arguments": []
+        },
+        "qpdf": {
+            "path": "qpdf",
+            "required": true,
+            "description": "PDF entschlüsseln, prüfen und drehen (common-toolkit pdf-decrypt/-check, pdf-toolkit qpdf-rotate)",
+            "package": "qpdf",
+            "arguments": []
+        },
+        "file": {
+            "path": "file",
+            "required": true,
+            "description": "MIME-Typ und Zeichensatz von Uploads und Importen (common-toolkit mimetype/mime-encoding)",
+            "package": "file",
+            "arguments": []
+        },
+        "sqlite3": {
+            "path": "sqlite3",
+            "required": true,
+            "description": "Konsistentes Online-Backup der SQLite-Datenbank (scripts/backup.sh)",
+            "package": "sqlite3",
+            "arguments": []
+        },
+        "mysqldump": {
+            "path": "mysqldump",
+            "required": true,
+            "description": "Datenbank-Dump für MySQL/MariaDB (scripts/backup.sh, BackupSnapshotBuilder); ein vorhandener MySQL-Client bleibt, der Installer prüft den Pfad vor der Installation",
+            "package": "mariadb-client",
+            "arguments": []
+        },
+        "catdoc": {
+            "path": "catdoc",
+            "required": true,
+            "description": "Text aus Legacy-.doc im Rechnungsimport (InvoicePdfImportService)",
+            "package": "catdoc",
+            "arguments": []
+        },
+        "jq": {
+            "path": "jq",
+            "required": true,
+            "description": "Voraussetzung von installscript/install-dependencies.sh (liest die *executables.json)",
+            "package": "jq",
+            "arguments": []
+        },
+        "curl": {
+            "path": "curl",
+            "required": true,
+            "description": "JAR-Downloads des Installers (PDFBox, KoSIT-Validator), HTTPS-Integrationen",
+            "package": "curl",
+            "arguments": []
+        },
+        "git": {
+            "path": "git",
+            "required": true,
+            "description": "deploy.sh: Stand von origin/main und Submodul installscript",
+            "package": "git",
+            "arguments": []
+        }
+    }
+}
