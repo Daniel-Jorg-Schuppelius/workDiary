@@ -53,6 +53,26 @@ class EasybillClient {
         return $this->rows($body);
     }
 
+    /** @return array<int, mixed> GET /customers?emails= — exakte E-Mail (Phase 152, MVP-1226). */
+    public function customersByEmail(string $email): array {
+        $body = (array) $this->guard(
+            $this->api()->requestResponse('get', $this->baseUrl . '/customers', ['query' => ['emails' => $email, 'limit' => 25]]),
+            '/customers',
+        );
+
+        return $this->rows($body);
+    }
+
+    /** @return array<int, mixed> GET /customers?company_name= — exakter Firmenname (Phase 152, MVP-1226). */
+    public function customersByCompanyName(string $name): array {
+        $body = (array) $this->guard(
+            $this->api()->requestResponse('get', $this->baseUrl . '/customers', ['query' => ['company_name' => $name, 'limit' => 25]]),
+            '/customers',
+        );
+
+        return $this->rows($body);
+    }
+
     /**
      * POST /customers — projizierten Kunden anlegen.
      *

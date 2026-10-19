@@ -168,6 +168,26 @@ come zona; dopo la seconda corrispondenza la zona appresa vale come confermata
 e prevale sull’euristica. I modelli si trovano sotto «Regole» e possono
 esservi eliminati. Le zone esistono solo per documenti PDF.
 
+**Correggere le assegnazioni e azione di massa:** L’azione di massa richiede
+una scelta; «Nuovo dai dati del documento (per controparte)» crea
+un’anagrafica per controparte dal primo documento o usa una controparte
+esistente con la stessa partita IVA o lo stesso nome; il contatto collettivo
+sta in fondo e chiede conferma con i gruppi della selezione. Rimuova
+un’assegnazione nella finestra tramite «Rimuovi assegnazione» o come azione di
+massa finché il documento non è stato trasferito; spostare significa assegnare
+di nuovo, anche nelle schede «Da verificare» e «Tutti». Sotto «Regole»,
+«Parcheggiato al contatto collettivo» elenca i documenti del fornitore o
+cliente collettivo per controparte; «Crea e sposta» crea o usa la controparte
+e sposta i documenti aperti. Se è collegato un programma di contabilità
+(Lexware Office, easybill, sevDesk, orgaMAX), la finestra vi cerca per e-mail e
+nome e propone le corrispondenze come «Acquisisci dalla contabilità»:
+l’anagrafica nasce dal contatto e viene collegata insieme al numero di
+contatto. sevDesk non fornisce né e-mail né indirizzo, i fornitori orgaMAX
+nessuna partita IVA. Prima di «Nuovo dai dati del documento» la finestra
+avverte di anagrafiche simili; una controparte esistente con la stessa partita
+IVA blocca la creazione. Se la contabilità gestisce le anagrafiche, la finestra
+indica che la nuova anagrafica non viene trasferita.
+
 **Fornitore collettivo e cliente collettivo:** per fornitori e clienti
 occasionali ogni organizzazione dispone di un contatto collettivo. Il nome
 della parte reale resta sul documento. Un contatto collettivo non viene mai

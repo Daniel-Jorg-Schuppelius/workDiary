@@ -13,6 +13,9 @@
     $current = $incoming->counterparty();
     $currentValue = $current === null ? null : ($current instanceof \App\Models\Supplier\Supplier ? 'supplier:' : 'customer:') . $current->sqid;
     $suggested = collect((array) ($suggestions[$isOutgoing ? 'customers' : 'suppliers'] ?? []))->pluck('id')->all();
+    // Ähnliche Stammsätze (MVP-1227) stehen wie Vorschläge vorn.
+    $similarIds = collect($similar)->map(static fn (array $hit): int => (int) $hit['party']->id)->all();
+    $similarNames = collect($similar)->map(static fn (array $hit): string => (string) $hit['party']->name)->implode(', ');
 @endphp
 <x-modal
     :title="__('Eingang zuordnen')"
@@ -59,24 +62,34 @@
                 <input type="radio" name="mode" value="existing" class="join-item btn btn-sm" aria-label="{{ __('Bestehende Partei') }}" @checked($mode === 'existing')>
                 <input type="radio" name="mode" value="collective" class="join-item btn btn-sm" aria-label="{{ __('Sammelkontakt') }}" @checked($mode === 'collective') @disabled(! $collectiveAllowed)>
                 <input type="radio" name="mode" value="new" class="join-item btn btn-sm" aria-label="{{ __('Neu aus Belegdaten') }}" @checked($mode === 'new')>
+                @if ($lookup['sources'] !== [])
+                    <input type="radio" name="mode" value="adopt" class="join-item btn btn-sm" aria-label="{{ __('Aus Buchhaltung übernehmen') }}" @checked($mode === 'adopt') @disabled($lookup['candidates'] === [])>
+                @endif
                 <input type="radio" name="mode" value="not_invoice" class="join-item btn btn-sm" aria-label="{{ __('Keine Rechnung') }}" @checked($mode === 'not_invoice')>
+                @if ($canUnassign)
+                    <input type="radio" name="mode" value="unassign" class="join-item btn btn-sm" aria-label="{{ __('Zuordnung aufheben') }}" @checked($mode === 'unassign')>
+                @endif
             </div>
             @unless ($collectiveAllowed)
                 <p class="mt-1 text-xs text-warning">{{ __('Reverse Charge, innergemeinschaftlicher Fall oder Drittland: Dafür braucht es einen echten Firmenkontakt, keinen Sammelkontakt.') }}</p>
             @endunless
+            {{-- MVP-1225: Ein Beleg mit USt-IdNr. gehört an einen Stammsatz, nicht an den Sammelkontakt. --}}
+            @if ($collectiveAllowed && $prefill['vat_id'] !== null && $partyName !== null)
+                <p class="mt-1 text-xs text-muted">{{ __('Der Beleg nennt „:party“ mit USt-IdNr. :vat. Ein Sammelkontakt ist für Belege ohne Stammsatz gedacht; „Neu aus Belegdaten“ legt die Partei an und erkennt künftige Belege automatisch.', ['party' => $partyName, 'vat' => $prefill['vat_id']]) }}</p>
+            @endif
         </div>
 
         <x-select-field name="party" :label="__('Bestehende Partei')" :hint="__('Vorschläge stehen oben.')">
             <option value="">—</option>
             @foreach ([['suppliers', 'supplier', __('Lieferanten')], ['customers', 'customer', __('Kunden')]] as [$list, $kind, $groupLabel])
                 @php($parties = $kind === 'supplier' ? $suppliers : $customers)
-                @php($ranked = $parties->sortByDesc(fn ($p) => in_array($p->id, $kind === ($isOutgoing ? 'customer' : 'supplier') ? $suggested : [], true))->values())
+                @php($ranked = $parties->sortByDesc(fn ($p) => in_array($p->id, $kind === ($isOutgoing ? 'customer' : 'supplier') ? [...$suggested, ...$similarIds] : [], true))->values())
                 <optgroup label="{{ $groupLabel }}">
                     @foreach ($ranked as $party)
                         @php($value = $kind . ':' . $party->sqid)
                         <option value="{{ $value }}" @selected(old('party', $currentValue) === $value)>
                             {{ $party->name }}@if ($party->vat_id) · {{ $party->vat_id }}@endif
-                            @if (in_array($party->id, $kind === ($isOutgoing ? 'customer' : 'supplier') ? $suggested : [], true)) ({{ __('Vorschlag') }})@endif
+                            @if (in_array($party->id, $kind === ($isOutgoing ? 'customer' : 'supplier') ? $suggested : [], true)) ({{ __('Vorschlag') }})@elseif (in_array($party->id, $kind === ($isOutgoing ? 'customer' : 'supplier') ? $similarIds : [], true)) ({{ __('ähnlich') }})@endif
                         </option>
                     @endforeach
                 </optgroup>
@@ -92,7 +105,31 @@
         @endif
     </x-form-group>
 
-    <x-form-group :legend="__('Neu aus Belegdaten')" icon="person_add" cols="2" :description="__('Nur beim Weg „Neu aus Belegdaten“.')">
+    @if ($lookup['sources'] !== [])
+        {{-- MVP-1226: Kandidaten aus den angebundenen Buchhaltungsprogrammen; übernommen wird nach Schlüssel, nie nach Formularwerten. --}}
+        <x-form-group :legend="__('Im Buchhaltungsprogramm gefunden')" icon="account_balance" cols="1" :description="__('Nur beim Weg „Aus Buchhaltung übernehmen“: Der Stammsatz entsteht aus dem Kontakt des Programms und wird samt Kontaktnummer verknüpft.')">
+            @forelse ($lookup['candidates'] as $candidate)
+                <label class="label cursor-pointer justify-start gap-2">
+                    <input type="radio" name="candidate" value="{{ $candidate->key() }}" class="radio radio-sm" @checked(old('candidate', $loop->first ? $candidate->key() : null) === $candidate->key())>
+                    <span class="label-text">{{ $candidate->describe() }} <span class="text-xs text-muted">· {{ $candidate->pluginLabel }}</span></span>
+                </label>
+            @empty
+                <x-empty-state compact icon="search_off" :message="__('Kein passender Kontakt gefunden.')" />
+            @endforelse
+            <p class="text-xs text-muted">
+                @foreach ($lookup['sources'] as $source)
+                    {{ $source['label'] }}: {{ match ($source['state']) { 'found' => __('Treffer'), 'failed' => __('Suche nicht möglich'), default => __('nichts gefunden') } }}{{ $loop->last ? '' : ' · ' }}
+                @endforeach
+            </p>
+        </x-form-group>
+    @endif
+
+    <x-form-group :legend="__('Neu aus Belegdaten')" icon="person_add" cols="2" :description="$accountingLeads ? __('Nur beim Weg „Neu aus Belegdaten“. Die Buchhaltung führt die Stammdaten: Der neue Stammsatz wird nicht übertragen, die Übergabe wartet, bis der Kontakt dort verknüpft ist.') : __('Nur beim Weg „Neu aus Belegdaten“.')">
+        @if ($sameVat !== null)
+            <p class="text-xs text-warning md:col-span-2">{{ __('„:name“ trägt dieselbe USt-IdNr.; eine Neuanlage ist gesperrt — bitte „Bestehende Partei“ wählen.', ['name' => $sameVat->name]) }}</p>
+        @elseif ($similarNames !== '')
+            <p class="text-xs text-warning md:col-span-2">{{ __('Ähnliche Stammsätze: :names — bei Treffer oben „Bestehende Partei“ wählen.', ['names' => $similarNames]) }}</p>
+        @endif
         <x-input-field name="new_name" :label="__('Name')" :value="old('new_name', $prefill['name'])" span="2" />
         <x-input-field name="new_vat_id" :label="__('USt-IdNr.')" :value="old('new_vat_id', $prefill['vat_id'])" />
         <x-input-field name="new_email" type="email" :label="__('E-Mail')" :value="old('new_email', $prefill['email'])" />

@@ -168,6 +168,25 @@ zona; tras la segunda coincidencia, la zona aprendida se considera confirmada
 y prevalece sobre la heurística. Las plantillas figuran en «Reglas» y pueden
 eliminarse allí. Las zonas solo existen para documentos PDF.
 
+**Corregir asignaciones y acción masiva:** La acción masiva exige una
+elección; «Nuevo a partir del documento (por contraparte)» crea una ficha por
+contraparte a partir del primer documento o usa una parte existente con el
+mismo NIF-IVA o nombre; el contacto colectivo va al final y pide confirmación
+con los grupos de la selección. Elimine una asignación en el diálogo mediante
+«Eliminar asignación» o como acción masiva mientras el documento no se haya
+transferido; mover es volver a asignar, también en las pestañas «Por revisar»
+y «Todos». En «Reglas», «Aparcado en el contacto colectivo» muestra los
+documentos del proveedor o cliente colectivo por contraparte; «Crear y mover»
+crea o usa la parte y mueve los documentos abiertos. Si hay un programa de
+contabilidad conectado (Lexware Office, easybill, sevDesk, orgaMAX), el
+diálogo busca allí por correo y nombre y ofrece las coincidencias como
+«Adoptar de la contabilidad»: la ficha se crea a partir del contacto y se
+vincula junto con el número de contacto. sevDesk no devuelve correo ni
+dirección; los proveedores de orgaMAX no tienen NIF-IVA. Antes de «Nuevo a
+partir del documento», el diálogo avisa de fichas similares; una parte
+existente con el mismo NIF-IVA bloquea la creación. Si la contabilidad lleva
+los datos maestros, el diálogo indica que la nueva ficha no se transfiere.
+
 **Proveedor colectivo y cliente colectivo:** Para proveedores y clientes
 ocasionales, cada organización tiene un contacto colectivo. El nombre de la
 parte real permanece en el documento. Un contacto colectivo nunca se

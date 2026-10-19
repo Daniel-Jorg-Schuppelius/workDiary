@@ -20,12 +20,11 @@ use App\Models\Customer\Customer;
 use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Supplier\Supplier;
 use App\Rules\Iban;
-use App\Services\Integration\Profiles\{CustomerMatchProfile, SupplierMatchProfile};
-use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, IncomingInvoiceKindHints, IncomingInvoiceMatcher, IncomingInvoiceRules};
+use App\Services\Finance\Accounting\ContactPushService;
+use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, IncomingInvoiceKindHints, IncomingInvoiceMatcher, IncomingInvoiceParties, IncomingInvoiceRules, IncomingInvoiceTransferService};
 use App\Services\Stammdaten\CollectiveContacts;
 use App\Support\{ErrorText, Sqid};
 use CommonToolkit\Enums\CountryCode;
-use CommonToolkit\Helper\Data\BankHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -40,7 +39,7 @@ use RuntimeException;
 class IncomingInvoiceAssignmentController extends Controller {
     use ResolvesCurrentOrganization;
 
-    private const MODES = ['existing', 'collective', 'new', 'not_invoice'];
+    private const MODES = ['existing', 'collective', 'new', 'adopt', 'not_invoice', 'unassign'];
 
     public function __construct(
         private readonly IncomingInvoiceMatcher $matcher,
@@ -48,18 +47,26 @@ class IncomingInvoiceAssignmentController extends Controller {
         private readonly IncomingEInvoiceService $invoices,
         private readonly IncomingInvoiceRules $rules,
         private readonly IncomingInvoiceKindHints $kindHints,
+        private readonly IncomingInvoiceParties $parties,
     ) {}
 
     public function assignForm(IncomingEInvoice $incoming): View {
         $this->authorizeBilling();
         $summary = (array) $incoming->summary;
         $isPurchase = $incoming->direction !== DocumentDirection::Outgoing;
-        $address = (array) ($summary[$isPurchase ? 'seller_address' : 'buyer_address'] ?? []);
+        $prefill = $this->parties->fieldsOf($incoming);
+        $organization = $incoming->organization;
 
         return view('finance.incoming-invoices._assign_dialog', [
             'incoming' => $incoming,
             'partyName' => $incoming->counterpartyName(),
             'otherOpen' => $incoming->openOfSameParty()->count(),
+            // Phase 152: Bestand vor Neuanlage (MVP-1227), Kandidaten aus der Buchhaltung (MVP-1226), Aufheben (MVP-1224), Stammdaten-Hoheit (MVP-1228).
+            'similar' => $this->parties->similarLocal($incoming),
+            'sameVat' => $this->parties->withSameVat((int) $incoming->organization_id, $isPurchase, $prefill['vat_id']),
+            'lookup' => $incoming->transferred_at === null ? $this->parties->lookupCandidates($incoming) : ['candidates' => [], 'sources' => []],
+            'canUnassign' => $incoming->counterparty() !== null && $incoming->transferred_at === null,
+            'accountingLeads' => $organization !== null && ! app(ContactPushService::class)->pushAllowed() && app(IncomingInvoiceTransferService::class)->hasTargets($organization),
             // Belegart-Hinweis (MVP-1216): Mahnung, Lieferschein, Versandmarke … — Vorschlag „Keine Rechnung“.
             'kindHintLabel' => $this->kindHints->label($incoming->kindHint()),
             'proposal' => $this->kindHints->proposal($incoming),
@@ -68,16 +75,7 @@ class IncomingInvoiceAssignmentController extends Controller {
             'customers' => Customer::query()->withoutCollective()->whereNull('archived_at')->orderBy('name')->get(['id', 'name', 'vat_id']),
             'suggestions' => (array) ($summary['suggestions'] ?? []),
             'collectiveAllowed' => ! CollectiveContacts::requiresNamedContact($incoming),
-            'prefill' => [
-                'name' => $isPurchase ? $incoming->seller_name : $incoming->buyer_name,
-                'vat_id' => $isPurchase ? $incoming->seller_vat_id : $incoming->buyer_vat_id,
-                'email' => $isPurchase ? ($summary['seller_email'] ?? $incoming->sender_email) : null,
-                'iban' => $isPurchase ? $incoming->creditor_iban : null,
-                'street' => $address['street'] ?? null,
-                'zip' => $address['zip'] ?? null,
-                'city' => $address['city'] ?? null,
-                'country' => $address['country'] ?? null,
-            ],
+            'prefill' => $prefill,
         ]);
     }
 
@@ -102,6 +100,7 @@ class IncomingInvoiceAssignmentController extends Controller {
             'apply_to_open' => ['nullable', 'boolean'],
             'exclude_action' => ['nullable', Rule::in(['', 'reject', 'discard'])],
             'note' => ['nullable', 'required_if:mode,not_invoice', 'string', 'max:500'],
+            'candidate' => ['nullable', 'required_if:mode,adopt', 'string', 'max:160'],
         ]);
         if ($incoming->transferred_at !== null) {
             return back()->with('error', __('Der Eingang ist bereits an die Buchhaltung übergeben — die Zuordnung ist dort zu ändern.'));
@@ -110,6 +109,15 @@ class IncomingInvoiceAssignmentController extends Controller {
         $applyToOpen = (bool) ($data['apply_to_open'] ?? false);
         if ($data['mode'] === 'not_invoice') {
             return $this->rejectAsNoInvoice($incoming, (string) $data['note'], $actor, (string) ($data['exclude_action'] ?? ''), $applyToOpen);
+        }
+        if ($data['mode'] === 'unassign') {
+            try {
+                $this->matcher->unassign($incoming, $actor);
+            } catch (RuntimeException $e) {
+                return back()->with('error', ErrorText::for($e));
+            }
+
+            return redirect()->toList('finance.incoming-invoices.index')->with('success', __('Zuordnung aufgehoben.'));
         }
 
         $direction = DocumentDirection::from((string) $data['direction']);
@@ -122,7 +130,7 @@ class IncomingInvoiceAssignmentController extends Controller {
                     $incoming->forceFill(['direction' => $direction, 'supplier_id' => null, 'customer_id' => null])->save();
                     $incoming->audit('incoming_einvoice.direction_corrected', ['direction' => $direction->value]);
                 }
-                $party = $this->partyFor($direction, $data);
+                $party = $this->partyFor($incoming, $direction, $data, $actor);
                 $this->matcher->assign($incoming, $party, IncomingInvoiceMatchKind::Manual, $actor);
                 if ($rememberSender) {
                     $this->matcher->rememberSender($incoming, $party, $actor);
@@ -145,7 +153,7 @@ class IncomingInvoiceAssignmentController extends Controller {
             }
         }
         // Neue Partei oder Absenderregel: ältere offene Eingänge derselben Gegenpartei treffen jetzt.
-        if ($data['mode'] === 'new' || $rememberSender) {
+        if (in_array($data['mode'], ['new', 'adopt'], true) || $rememberSender) {
             $followers += $this->matcher->rematchOpen((int) $incoming->organization_id, $incoming)['assigned'];
         }
 
@@ -214,19 +222,35 @@ class IncomingInvoiceAssignmentController extends Controller {
         return redirect()->toList('finance.incoming-invoices.index')->with('success', $message);
     }
 
-    /** Mehrere Eingänge derselben Partei zuordnen (Sammelaktion). */
+    /**
+     * Mehrere Eingänge zuordnen (Sammelaktion). Sammelkontakt und „Neu aus
+     * Belegdaten“ fragen vorher mit den Gruppen der Auswahl zurück (MVP-1222).
+     */
     public function bulkAssign(Request $request): RedirectResponse {
         $actor = $this->authorizeBilling();
         $data = $request->validate([
             'ids' => ['required', 'array', 'max:200'],
             'ids.*' => ['string', 'max:64'],
             'party' => ['required', 'string', 'max:80'],
+            'confirmed' => ['nullable', 'boolean'],
         ]);
+        $party = (string) $data['party'];
+        if (in_array($party, ['collective', 'new'], true) && ! (bool) ($data['confirmed'] ?? false)) {
+            return redirect()->toList('finance.incoming-invoices.index')
+                ->with('open_dialog', route('finance.incoming-invoices.bulk-assign.confirm', ['party' => $party, 'ids' => array_values($data['ids'])]));
+        }
         $ids = array_values(array_filter(array_map(static fn (string $sqid): ?int => Sqid::decode(IncomingEInvoice::class, $sqid), $data['ids'])));
+        $incomings = IncomingEInvoice::query()->whereKey($ids)->get();
+        if ($party === 'new') {
+            return $this->bulkCreate($incomings, $actor);
+        }
+        if ($party === 'unassign') {
+            return $this->bulkUnassign($incomings, $actor);
+        }
         $assigned = 0;
         /** @var array<string, int> $skipped Grund → Anzahl; ohne Grund wüsste niemand, warum nichts passiert ist. */
         $skipped = [];
-        foreach (IncomingEInvoice::query()->whereKey($ids)->get() as $incoming) {
+        foreach ($incomings as $incoming) {
             try {
                 $direction = $incoming->direction === DocumentDirection::Outgoing ? DocumentDirection::Outgoing : DocumentDirection::Incoming;
                 $party = $this->bulkParty((string) $data['party'], $direction);
@@ -254,6 +278,113 @@ class IncomingInvoiceAssignmentController extends Controller {
                 array_keys($skipped),
                 $skipped,
             ))]);
+        }
+
+        return redirect()->toList('finance.incoming-invoices.index')->with($skipped !== [] ? 'warning' : 'success', $message);
+    }
+
+    /** Rückfrage vor Sammelkontakt und „Neu aus Belegdaten“ (MVP-1222): die Auswahl nach Gegenpartei gruppiert. */
+    public function bulkAssignConfirm(Request $request): View {
+        $this->authorizeBilling();
+        $data = $request->validate([
+            'party' => ['required', Rule::in(['collective', 'new'])],
+            'ids' => ['required', 'array', 'max:200'],
+            'ids.*' => ['string', 'max:64'],
+        ]);
+        $ids = array_values(array_filter(array_map(static fn (string $sqid): ?int => Sqid::decode(IncomingEInvoice::class, $sqid), $data['ids'])));
+        $incomings = IncomingEInvoice::query()->whereKey($ids)->whereNull('transferred_at')
+            ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value)->get();
+
+        return view('finance.incoming-invoices._bulk_confirm_dialog', [
+            'party' => (string) $data['party'],
+            'collective' => $data['party'] === 'collective',
+            'ids' => $incomings->map(static fn (IncomingEInvoice $incoming): string => $incoming->sqid)->all(),
+            'groups' => array_map(static fn (array $group): array => [...$group, 'named_contact' => CollectiveContacts::requiresNamedContact($group['incomings'][0])], $this->parties->groups($incomings)),
+        ]);
+    }
+
+    /**
+     * „Neu aus Belegdaten“ je Gegenpartei (MVP-1223): bestehende Partei mit
+     * gleicher USt-IdNr. oder gleichem Namen wird genommen, sonst entsteht sie
+     * aus dem ersten Beleg der Gruppe.
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection<int, IncomingEInvoice>  $incomings
+     */
+    private function bulkCreate(\Illuminate\Database\Eloquent\Collection $incomings, \App\Models\Platform\User $actor): RedirectResponse {
+        $assigned = 0;
+        $created = [];
+        $adopted = [];
+        /** @var array<string, int> $skipped */
+        $skipped = [];
+        $organizationId = null;
+        foreach ($this->parties->groups($incomings) as $group) {
+            try {
+                $party = $group['existing'];
+                if ($party === null) {
+                    $party = $this->parties->createFromIncoming($group['incomings'][0]);
+                    $created[] = (string) $party->name;
+                } else {
+                    $adopted[] = (string) $party->name;
+                }
+            } catch (RuntimeException $e) {
+                $skipped[ErrorText::for($e)] = ($skipped[ErrorText::for($e)] ?? 0) + count($group['incomings']);
+
+                continue;
+            }
+            foreach ($group['incomings'] as $incoming) {
+                $organizationId ??= (int) $incoming->organization_id;
+                try {
+                    if ($incoming->transferred_at !== null) {
+                        throw new RuntimeException((string) __('Der Eingang ist bereits an die Buchhaltung übergeben — die Zuordnung ist dort zu ändern.'));
+                    }
+                    $this->matcher->assign($incoming, $party, IncomingInvoiceMatchKind::Manual, $actor);
+                    $assigned++;
+                } catch (RuntimeException|\InvalidArgumentException $e) {
+                    $skipped[ErrorText::for($e)] = ($skipped[ErrorText::for($e)] ?? 0) + 1;
+                }
+            }
+        }
+        $followers = $organizationId !== null && ($created !== [] || $adopted !== []) ? $this->matcher->rematchOpen($organizationId)['assigned'] : 0;
+
+        $parts = [(string) __(':assigned Eingänge zugeordnet, :skipped übersprungen.', ['assigned' => $assigned, 'skipped' => array_sum($skipped)])];
+        if ($created !== []) {
+            $parts[] = (string) trans_choice(':count Partei angelegt: :names.|:count Parteien angelegt: :names.', count($created), ['count' => count($created), 'names' => implode(', ', $created)]);
+        }
+        if ($adopted !== []) {
+            $parts[] = (string) trans_choice(':count bestehende Partei übernommen: :names.|:count bestehende Parteien übernommen: :names.', count($adopted), ['count' => count($adopted), 'names' => implode(', ', $adopted)]);
+        }
+        if ($followers > 0) {
+            $parts[] = (string) trans_choice(':count weiterer offener Eingang automatisch zugeordnet.|:count weitere offene Eingänge automatisch zugeordnet.', $followers, ['count' => $followers]);
+        }
+        if ($skipped !== []) {
+            arsort($skipped);
+            $parts[] = (string) __('Gründe: :reasons', ['reasons' => implode(' ', array_map(static fn (string $reason, int $count): string => $count . ' × ' . $reason, array_keys($skipped), $skipped))]);
+        }
+
+        return redirect()->toList('finance.incoming-invoices.index')->with($skipped !== [] ? 'warning' : 'success', implode(' ', $parts));
+    }
+
+    /**
+     * Zuordnungen aufheben (Sammelaktion, MVP-1224).
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection<int, IncomingEInvoice>  $incomings
+     */
+    private function bulkUnassign(\Illuminate\Database\Eloquent\Collection $incomings, \App\Models\Platform\User $actor): RedirectResponse {
+        $done = 0;
+        /** @var array<string, int> $skipped */
+        $skipped = [];
+        foreach ($incomings as $incoming) {
+            try {
+                $this->matcher->unassign($incoming, $actor);
+                $done++;
+            } catch (RuntimeException $e) {
+                $skipped[ErrorText::for($e)] = ($skipped[ErrorText::for($e)] ?? 0) + 1;
+            }
+        }
+        $message = (string) __(':done Zuordnungen aufgehoben, :skipped übersprungen.', ['done' => $done, 'skipped' => array_sum($skipped)]);
+        if ($skipped !== []) {
+            arsort($skipped);
+            $message .= ' ' . __('Gründe: :reasons', ['reasons' => implode(' ', array_map(static fn (string $reason, int $count): string => $count . ' × ' . $reason, array_keys($skipped), $skipped))]);
         }
 
         return redirect()->toList('finance.incoming-invoices.index')->with($skipped !== [] ? 'warning' : 'success', $message);
@@ -289,13 +420,14 @@ class IncomingInvoiceAssignmentController extends Controller {
     /**
      * @param  array<string, mixed>  $data
      */
-    private function partyFor(DocumentDirection $direction, array $data): Supplier|Customer {
+    private function partyFor(IncomingEInvoice $incoming, DocumentDirection $direction, array $data, \App\Models\Platform\User $actor): Supplier|Customer {
         $isPurchase = $direction === DocumentDirection::Incoming;
         $organization = $this->currentOrganization();
 
         return match ($data['mode']) {
             'collective' => $isPurchase ? $this->collective->supplier($organization) : $this->collective->customer($organization),
             'new' => $this->createParty($isPurchase, $data),
+            'adopt' => $this->parties->adopt($incoming, (string) $data['candidate'], $actor),
             default => $this->bulkParty((string) $data['party'], $direction)
                 ?? throw new RuntimeException((string) __('Eingangsbelege gehören zu Lieferanten, Ausgangsbelege zu Kunden.')),
         };
@@ -312,26 +444,29 @@ class IncomingInvoiceAssignmentController extends Controller {
         return $party;
     }
 
-    /** @param  array<string, mixed>  $data */
+    /**
+     * Neuanlage aus dem Formular; eine bestehende Partei mit derselben
+     * USt-IdNr. sperrt sie (MVP-1227, L2).
+     *
+     * @param  array<string, mixed>  $data
+     */
     private function createParty(bool $isPurchase, array $data): Supplier|Customer {
-        $mapped = array_filter([
-            'name' => $data['new_name'],
-            'company' => $data['new_name'],
-            'vat_id' => $data['new_vat_id'] ?? null,
-            'email' => $data['new_email'] ?? null,
-            'address_street' => $data['new_street'] ?? null,
-            'address_zip' => $data['new_zip'] ?? null,
-            'address_city' => $data['new_city'] ?? null,
-            'country' => $data['new_country'] ?? null,
-            'bank_iban' => isset($data['new_iban']) ? BankHelper::normalizeIBAN((string) $data['new_iban']) : null,
-        ], static fn (mixed $value): bool => $value !== null && $value !== '');
-        $profile = $isPurchase ? app(SupplierMatchProfile::class) : app(CustomerMatchProfile::class);
-        $party = $profile->create($this->currentOrganization(), $mapped);
-        if (! $party instanceof Supplier && ! $party instanceof Customer) {
-            throw new RuntimeException('Neuanlage lieferte keine Partei.');
+        $organization = $this->currentOrganization();
+        $existing = $this->parties->withSameVat((int) $organization->id, $isPurchase, isset($data['new_vat_id']) ? (string) $data['new_vat_id'] : null);
+        if ($existing !== null) {
+            throw new RuntimeException((string) __('Eine Partei mit dieser USt-IdNr. gibt es schon: „:name“ — bitte „Bestehende Partei“ wählen.', ['name' => (string) $existing->name]));
         }
 
-        return $party;
+        return $this->parties->create($organization, $isPurchase, [
+            'name' => $data['new_name'],
+            'vat_id' => $data['new_vat_id'] ?? null,
+            'email' => $data['new_email'] ?? null,
+            'street' => $data['new_street'] ?? null,
+            'zip' => $data['new_zip'] ?? null,
+            'city' => $data['new_city'] ?? null,
+            'country' => $data['new_country'] ?? null,
+            'iban' => $data['new_iban'] ?? null,
+        ]);
     }
 
     /**

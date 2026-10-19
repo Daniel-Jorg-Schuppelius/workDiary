@@ -10,6 +10,24 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Rechnungseingang: Zuordnung korrigieren, Sammelaktion ohne gefährlichen
+  Standard, Sammelkontakt sichtbar, Partei aus dem Buchhaltungsprogramm
+  (Phase 152, MVP-1222–1228). Die Sammelaktion verlangt eine Wahl, kennt „Neu
+  aus Belegdaten (je Gegenpartei)“ (bestehende Partei mit gleicher USt-IdNr.
+  oder gleichem Namen vor Neuanlage) und fragt bei Sammelkontakt und Neuanlage
+  mit den Gruppen der Auswahl zurück; „Zuordnung aufheben“ im Dialog und als
+  Sammelaktion (nicht abgeschlossene Übergabe-Journale entfallen, Audit
+  `unassigned`), Sammelaktion auch in „Zu prüfen“ und „Alle“. Seite „Regeln“
+  zeigt „Am Sammelkontakt geparkt“ nach Gegenpartei mit „Anlegen und
+  umhängen“. Neuer Erweiterungspunkt `IncomingPartyLookup`: Lexware Office,
+  easybill, sevDesk und orgaMAX suchen Kontakte nach E-Mail und Name, der
+  Dialog bietet Treffer als „Aus Buchhaltung übernehmen“ (Stammsatz aus dem
+  Kontakt, verknüpft samt Kontaktnummer). Dublettenwarnung vor „Neu aus
+  Belegdaten“ (Name, E-Mail, Domain, unscharfer Name), Sperre bei gleicher
+  USt-IdNr., Hinweis bei Sammelkontakt mit USt-IdNr. und zur Stammdaten-Hoheit.
+  Befund 2026-10-19: 14 JTL-E-Rechnungen über die vorausgewählte Sammelaktion
+  am Sammellieferanten.
+
 - Kommunikation: E-Mail-Signatur je Benutzer und E-Mail-Fußzeile je
   Organisation. Die Signatur pflegt jede Person im Profil (Gruppe „E-Mail“,
   Präferenz `mail_signature`; leer: Name und Organisation), die Fußzeile die

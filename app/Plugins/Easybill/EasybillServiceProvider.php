@@ -44,5 +44,7 @@ class EasybillServiceProvider extends PluginServiceProviderBase {
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Numbering\Contracts\DocumentIssuer::class, \App\Plugins\Easybill\Services\EasybillDocumentIssuer::class);
         // Zugehörige Belege (MVP-1158).
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Billing\Contracts\DocumentRelationSource::class, \App\Plugins\Easybill\Services\EasybillRelationSource::class);
+        // Kontaktsuche im Zuordnen-Dialog des Rechnungseingangs (Phase 152, MVP-1226).
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Invoicing\Contracts\IncomingPartyLookup::class, \App\Plugins\Easybill\Services\EasybillIncomingPartyLookup::class);
     }
 }

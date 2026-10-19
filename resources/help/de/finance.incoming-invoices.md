@@ -158,6 +158,25 @@ Treffer gilt die gelernte Zone als bestätigt und schlägt die Heuristik.
 Vorlagen stehen unter „Regeln“ und lassen sich dort löschen. Zonen gibt es
 nur für PDF-Belege.
 
+**Zuordnung korrigieren und Sammelaktion:** Die Sammelaktion verlangt eine
+Wahl; „Neu aus Belegdaten (je Gegenpartei)“ legt je Gegenpartei einen
+Stammsatz aus dem ersten Beleg an oder nimmt eine bestehende Partei mit
+gleicher USt-IdNr. oder gleichem Namen, der Sammelkontakt steht hinten und
+fragt mit den Gruppen der Auswahl zurück. Eine Zuordnung heben Sie im Dialog
+über „Zuordnung aufheben“ oder als Sammelaktion auf, solange der Beleg nicht
+übergeben ist; umhängen ist erneutes Zuordnen, auch in den Reitern „Zu
+prüfen“ und „Alle“. Unter „Regeln“ zeigt „Am Sammelkontakt geparkt“ die
+Belege am Sammellieferanten oder Sammelkunden nach Gegenpartei; „Anlegen und
+umhängen“ erzeugt oder übernimmt die Partei und hängt die offenen Belege um.
+Ist ein Buchhaltungsprogramm angebunden (Lexware Office, easybill, sevDesk,
+orgaMAX), sucht der Dialog dort nach E-Mail und Name und bietet Treffer als
+„Aus Buchhaltung übernehmen“ an: Der Stammsatz entsteht aus dem Kontakt und
+wird samt Kontaktnummer verknüpft. sevDesk liefert dabei weder E-Mail noch
+Anschrift, orgaMAX-Lieferanten keine USt-IdNr. Vor „Neu aus Belegdaten“
+warnt der Dialog vor ähnlichen Stammsätzen; eine bestehende Partei mit
+derselben USt-IdNr. sperrt die Neuanlage. Führt die Buchhaltung die
+Stammdaten, sagt der Dialog, dass der neue Stammsatz nicht übertragen wird.
+
 **Sammellieferant und Sammelkunde:** Für Einmallieferanten und Einmalkunden
 gibt es je Organisation einen Sammelkontakt. Der Name der echten Partei
 bleibt am Beleg. Ein Sammelkontakt wird nie als eigener Kontakt an ein

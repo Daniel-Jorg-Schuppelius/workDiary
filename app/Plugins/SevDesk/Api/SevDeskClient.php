@@ -99,6 +99,16 @@ class SevDeskClient {
         return $this->rows($body);
     }
 
+    /** @return array<int, mixed> GET /Contact?name= — Organisationen und Personen mit diesem Namen (Phase 152, MVP-1226). */
+    public function contactsByName(string $name): array {
+        $body = (array) $this->guard(
+            $this->api()->requestResponse('get', $this->baseUrl . '/Contact', ['query' => ['name' => $name, 'depth' => 1, 'limit' => 25]]),
+            '/Contact',
+        );
+
+        return $this->rows($body);
+    }
+
     /** GET /Contact/Factory/getNextCustomerNumber — nächste freie Kundennummer, wenn sevDesk vergibt (MVP-1131). */
     public function nextCustomerNumber(): string {
         $body = $this->guard(

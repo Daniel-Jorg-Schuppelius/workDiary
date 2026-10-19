@@ -159,6 +159,24 @@ hit a learned zone counts as confirmed and overrides the heuristics. Templates
 are listed under “Rules” and can be deleted there. Zones exist for PDF
 documents only.
 
+**Correcting assignments and bulk action:** The bulk action requires a
+choice; “New from document data (per counterparty)” creates one master record
+per counterparty from the first document or uses an existing party with the
+same VAT ID or name, the collective contact comes last and asks back with the
+groups of the selection. Remove an assignment in the dialog via “Remove
+assignment” or as a bulk action as long as the document has not been handed
+over; moving is simply assigning again, also in the “To review” and “All”
+tabs. Under “Rules”, “Parked at the collective contact” lists the documents at
+the collective supplier or customer by counterparty; “Create and move” creates
+or uses the party and moves the open documents. If an accounting program is
+connected (Lexware Office, easybill, sevDesk, orgaMAX), the dialog searches it
+by email and name and offers matches as “Adopt from accounting”: the master
+record is created from the contact and linked together with the contact
+number. sevDesk returns neither email nor address, orgaMAX suppliers no VAT ID.
+Before “New from document data” the dialog warns about similar master records;
+an existing party with the same VAT ID blocks the creation. If accounting
+leads the master data, the dialog says that the new record is not transferred.
+
 **Collective supplier and collective customer:** For one-off suppliers and
 customers, each organisation has one collective contact. The name of the
 real party stays on the document. A collective contact is never transferred

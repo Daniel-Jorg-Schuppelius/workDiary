@@ -99,8 +99,10 @@
             @csrf
             <x-bulk-toolbar :label="__(':n Eingänge ausgewählt')">
                 <x-slot:actions>
-                    <select name="party" class="select select-sm select-bordered w-64" aria-label="{{ __('Zuordnen zu') }}">
-                        <option value="collective">{{ __('Sammelkontakt') }}</option>
+                    {{-- MVP-1222: kein vorausgewählter Sammelkontakt; Sammelkontakt und „Neu“ fragen mit den Gruppen der Auswahl zurück. --}}
+                    <select name="party" class="select select-sm select-bordered w-64" aria-label="{{ __('Zuordnen zu') }}" required>
+                        <option value="" selected disabled>{{ __('Partei wählen …') }}</option>
+                        <option value="new">{{ __('Neu aus Belegdaten (je Gegenpartei)') }}</option>
                         <optgroup label="{{ __('Lieferanten') }}">
                             @foreach ($bulkParties['suppliers'] as $supplier)
                                 <option value="supplier:{{ $supplier->sqid }}">{{ $supplier->name }}</option>
@@ -111,6 +113,8 @@
                                 <option value="customer:{{ $customer->sqid }}">{{ $customer->name }}</option>
                             @endforeach
                         </optgroup>
+                        <option value="unassign">{{ __('Zuordnung aufheben') }}</option>
+                        <option value="collective">{{ __('Sammelkontakt (mit Rückfrage)') }}</option>
                     </select>
                     <x-button type="submit" tone="primary" size="sm" icon="rule">{{ __('Zuordnen') }}</x-button>
                     {{-- Nacherkennung (MVP-1207): nur Klärfälle ohne erfasste Werte, Übergabe oder Ablehnung werden neu gelesen. --}}
@@ -145,7 +149,11 @@
             @php($isOutgoing = $incoming->direction === \App\Enums\Billing\DocumentDirection::Outgoing)
             <tr>
                 @if ($bulk)
-                    <td><input type="checkbox" class="checkbox checkbox-sm" data-bulk-checkbox name="ids[]" value="{{ $incoming->sqid }}" aria-label="{{ __('Auswählen') }}"></td>
+                    <td>
+                        @if ($bulkDiscard || ($incoming->transferred_at === null && $incoming->status !== \App\Enums\Invoicing\IncomingEInvoiceStatus::Rejected))
+                            <input type="checkbox" class="checkbox checkbox-sm" data-bulk-checkbox name="ids[]" value="{{ $incoming->sqid }}" aria-label="{{ __('Auswählen') }}">
+                        @endif
+                    </td>
                 @endif
                 <td class="whitespace-nowrap tabular-nums text-sm">{{ $incoming->received_at?->fdatetime() }}</td>
                 <td class="max-w-72">

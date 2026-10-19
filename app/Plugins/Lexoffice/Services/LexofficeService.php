@@ -174,6 +174,27 @@ class LexofficeService {
     }
 
     /**
+     * Kontakte nach E-Mail und Name (Phase 152, MVP-1226) — ungeprüft, die
+     * Identität prüft der Kern.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function findContacts(?string $email, ?string $name): array {
+        $rows = [];
+        foreach ([['email' => $email], ['name' => $name]] as $query) {
+            $value = trim((string) reset($query));
+            if ($value === '') {
+                continue;
+            }
+            foreach ($this->searchContacts([array_key_first($query) => $value]) as $candidate) {
+                $rows[(string) ($candidate['id'] ?? count($rows))] = $candidate;
+            }
+        }
+
+        return array_values($rows);
+    }
+
+    /**
      * Sucht einen vorhandenen Lexoffice-Kontakt über E-Mail bzw. — mit
      * USt-IdNr. — über den Namen. Ein Treffer zählt nur, wenn er derselbe
      * Kontakt ist; die Namenssuche trifft sonst auch fremde Firmen.

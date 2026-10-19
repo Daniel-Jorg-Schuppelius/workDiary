@@ -49,6 +49,8 @@ class OrgaMaxServiceProvider extends PluginServiceProviderBase {
 
         // Zugehörige Belege (MVP-1158).
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Billing\Contracts\DocumentRelationSource::class, \App\Plugins\OrgaMax\Services\OrgaMaxRelationSource::class);
+        // Kontaktsuche im Zuordnen-Dialog des Rechnungseingangs (Phase 152, MVP-1226).
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Invoicing\Contracts\IncomingPartyLookup::class, \App\Plugins\OrgaMax\Services\OrgaMaxIncomingPartyLookup::class);
         // Phase 145 (MVP-1161/1164/1166): Angebot, AB und Rechnung nummeriert orgaMAX beim Festschreiben.
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Numbering\Contracts\DocumentIssuer::class, \App\Plugins\OrgaMax\Services\OrgaMaxDocumentIssuer::class);
     }

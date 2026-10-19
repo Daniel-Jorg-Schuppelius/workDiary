@@ -54,5 +54,10 @@
     ":count weiterer offener Eingang von „:party“ ebenfalls abgelegt.|:count weitere offene Eingänge von „:party“ ebenfalls abgelegt.": ":count weiterer offener Eingang von „:party“ ebenfalls abgelegt.|:count weitere offene Eingänge von „:party“ ebenfalls abgelegt.",
     ":count weiterer offener Eingang von „:party“ ebenfalls verworfen.|:count weitere offene Eingänge von „:party“ ebenfalls verworfen.": ":count weiterer offener Eingang von „:party“ ebenfalls verworfen.|:count weitere offene Eingänge von „:party“ ebenfalls verworfen.",
     ":count weiterer offener Eingang neu erkannt.|:count weitere offene Eingänge neu erkannt.": ":count weiterer offener Eingang neu erkannt.|:count weitere offene Eingänge neu erkannt.",
-    "Auch auf :count offenen Eingang anwenden|Auch auf :count offene Eingänge anwenden": "Auch auf :count offenen Eingang anwenden|Auch auf :count offene Eingänge anwenden"
+    "Auch auf :count offenen Eingang anwenden|Auch auf :count offene Eingänge anwenden": "Auch auf :count offenen Eingang anwenden|Auch auf :count offene Eingänge anwenden",
+    ":count Partei angelegt: :names.|:count Parteien angelegt: :names.": ":count Partei angelegt: :names.|:count Parteien angelegt: :names.",
+    ":count bestehende Partei übernommen: :names.|:count bestehende Parteien übernommen: :names.": ":count bestehende Partei übernommen: :names.|:count bestehende Parteien übernommen: :names.",
+    ":count weiterer offener Eingang automatisch zugeordnet.|:count weitere offene Eingänge automatisch zugeordnet.": ":count weiterer offener Eingang automatisch zugeordnet.|:count weitere offene Eingänge automatisch zugeordnet.",
+    ":count bereits übergebener Eingang bleibt am Sammelkontakt.|:count bereits übergebene Eingänge bleiben am Sammelkontakt.": ":count bereits übergebener Eingang bleibt am Sammelkontakt.|:count bereits übergebene Eingänge bleiben am Sammelkontakt.",
+    ":count Eingang|:count Eingänge": ":count Eingang|:count Eingänge"
 }

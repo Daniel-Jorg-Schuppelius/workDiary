@@ -44,6 +44,8 @@ class SevDeskServiceProvider extends PluginServiceProviderBase {
 
         // Zugehörige Belege (MVP-1158).
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Billing\Contracts\DocumentRelationSource::class, \App\Plugins\SevDesk\Services\SevDeskRelationSource::class);
+        // Kontaktsuche im Zuordnen-Dialog des Rechnungseingangs (Phase 152, MVP-1226).
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Invoicing\Contracts\IncomingPartyLookup::class, \App\Plugins\SevDesk\Services\SevDeskIncomingPartyLookup::class);
         // Phase 145 (MVP-1166/1167): Rechnung und Storno nummeriert sevDesk beim Ausstellen.
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Numbering\Contracts\DocumentIssuer::class, \App\Plugins\SevDesk\Services\SevDeskDocumentIssuer::class);
     }

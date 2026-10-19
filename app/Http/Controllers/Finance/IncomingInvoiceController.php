@@ -124,7 +124,8 @@ class IncomingInvoiceController extends Controller {
             'rejectedCount' => $rejected($base())->count(),
             'canUpload' => Gate::allows('create', Document::class),
             'canManage' => $user->canManageBilling(),
-            'bulkParties' => $tab === 'assign' && $user->canManageBilling() ? $this->assignmentOptions() : null,
+            // Sammelaktion (MVP-1224) auch für zugeordnete, noch nicht übergebene Eingänge: umhängen, aufheben.
+            'bulkParties' => in_array($tab, ['assign', 'review', 'all'], true) && $user->canManageBilling() ? $this->assignmentOptions() : null,
             'bulkDiscard' => $tab === 'rejected' && $user->canManageBilling(),
             'kindHints' => app(\App\Services\Invoicing\EInvoice\IncomingInvoiceKindHints::class),
         ]);

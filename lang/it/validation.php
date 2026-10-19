@@ -199,6 +199,7 @@ return [
         'new_country' => 'Paese',
         'remember_sender' => 'Ricordare il mittente',
         'apply_to_open' => 'Anche gli altri documenti aperti',
+        'candidate' => 'Contatto dalla contabilità',
         'h' => 'Altezza',
         'w' => 'Larghezza',
         'x' => 'Posizione X',

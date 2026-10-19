@@ -20,6 +20,27 @@
             <x-icon-btn icon="tune" size="sm" :href="route('admin.automations.index')" show-label>{{ __('Automationsregeln bearbeiten') }}</x-icon-btn>
         </x-slot:actions>
     @endif
+    @if ($parked !== [])
+        {{-- Am Sammelkontakt geparkt (MVP-1225): nach Gegenpartei gruppiert, auf eine echte Partei umhängen. --}}
+        <x-card :title="__('Am Sammelkontakt geparkt')" :subtitle="__('Belege am Sammellieferanten oder Sammelkunden. „Anlegen und umhängen“ nimmt eine bestehende Partei mit gleicher USt-IdNr. oder gleichem Namen, sonst entsteht sie aus dem ersten Beleg; bereits übergebene Belege bleiben.')">
+            <ul class="divide-y divide-base-200 text-sm">
+                @foreach ($parked as $group)
+                    <li class="flex flex-wrap items-center justify-between gap-2 py-1">
+                        <span>
+                            <strong>{{ $group['name'] ?? __('Ohne Namen') }}</strong>
+                            @if ($group['vat_id'])<span class="text-xs text-muted"> · {{ $group['vat_id'] }}</span>@endif
+                            <span class="text-xs text-muted"> · {{ $group['direction']->label() }} · {{ __(':open offen von :total', ['open' => $group['open'], 'total' => $group['total']]) }}</span>
+                        </span>
+                        <x-action-form :action="route('finance.incoming-invoices.rules.collective.promote')" :confirm="__('Partei anlegen bzw. übernehmen und die offenen Eingänge umhängen?')" class="inline">
+                            <input type="hidden" name="direction" value="{{ $group['direction']->value }}">
+                            <input type="hidden" name="key" value="{{ $group['key'] }}">
+                            <x-button type="submit" size="xs" icon="move_up">{{ $group['existing'] !== null ? __('„:name“ zuordnen', ['name' => $group['existing']->name]) : __('Anlegen und umhängen') }}</x-button>
+                        </x-action-form>
+                    </li>
+                @endforeach
+            </ul>
+        </x-card>
+    @endif
     <x-table scroll="flex" :pinRows="true" :zebra="true">
         <x-slot:head>
             <tr>

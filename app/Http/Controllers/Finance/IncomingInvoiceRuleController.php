@@ -12,14 +12,18 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Finance;
 
+use App\Enums\Billing\DocumentDirection;
 use App\Http\Controllers\Controller;
 use App\Models\Automation\AutomationRule;
 use App\Models\Invoicing\{IncomingInvoiceTemplate, InvoiceSenderRule};
 use App\Models\Platform\User;
 use App\Services\Invoicing\Automation\IncomingInvoiceReceivedTrigger;
-use App\Services\Invoicing\EInvoice\IncomingInvoiceRules;
-use Illuminate\Http\RedirectResponse;
+use App\Services\Invoicing\EInvoice\{IncomingInvoiceParties, IncomingInvoiceRules};
+use App\Support\ErrorText;
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use RuntimeException;
 
 /**
  * Regeln des Rechnungseingangs (Feature 163, MVP-1208/1211): Absenderregeln
@@ -28,7 +32,7 @@ use Illuminate\View\View;
  * werden sie im Zuordnen-Dialog oder auf der Automationsseite.
  */
 class IncomingInvoiceRuleController extends Controller {
-    public function __construct(private readonly IncomingInvoiceRules $rules) {}
+    public function __construct(private readonly IncomingInvoiceRules $rules, private readonly IncomingInvoiceParties $parties) {}
 
     public function index(): View {
         $user = $this->authorizeBilling();
@@ -41,7 +45,29 @@ class IncomingInvoiceRuleController extends Controller {
             'describe' => $this->rules,
             'canEditAutomations' => $user->isAdmin(),
             'templates' => IncomingInvoiceTemplate::query()->with('supplier:id,name')->orderBy('name')->get(),
+            // Am Sammelkontakt geparkte Belege (MVP-1225).
+            'parked' => $this->parties->parkedAtCollective((int) $user->organization_id),
         ]);
+    }
+
+    /** Vom Sammelkontakt auf eine echte Partei umhängen (MVP-1225). */
+    public function promoteCollective(Request $request): RedirectResponse {
+        $user = $this->authorizeBilling();
+        $data = $request->validate([
+            'direction' => ['required', Rule::enum(DocumentDirection::class)->only([DocumentDirection::Incoming, DocumentDirection::Outgoing])],
+            'key' => ['required', 'string', 'max:200'],
+        ]);
+        try {
+            $result = $this->parties->promote((int) $user->organization_id, DocumentDirection::from((string) $data['direction']), (string) $data['key'], $user);
+        } catch (RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
+        $message = (string) __('„:party“: :moved Eingänge umgehängt.', ['party' => (string) $result['party']->name, 'moved' => $result['moved']]);
+        if ($result['left'] > 0) {
+            $message .= ' ' . trans_choice(':count bereits übergebener Eingang bleibt am Sammelkontakt.|:count bereits übergebene Eingänge bleiben am Sammelkontakt.', $result['left'], ['count' => $result['left']]);
+        }
+
+        return redirect()->route('finance.incoming-invoices.rules')->with('success', $message);
     }
 
     public function destroyTemplate(IncomingInvoiceTemplate $template): RedirectResponse {

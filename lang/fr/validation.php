@@ -199,6 +199,7 @@ return [
         'new_country' => 'Pays',
         'remember_sender' => 'Mémoriser l’expéditeur',
         'apply_to_open' => 'Aussi les autres documents ouverts',
+        'candidate' => 'Contact de la comptabilité',
         'h' => 'Hauteur',
         'w' => 'Largeur',
         'x' => 'Position X',

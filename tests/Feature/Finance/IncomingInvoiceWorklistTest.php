@@ -266,7 +266,7 @@ final class IncomingInvoiceWorklistTest extends TestCase {
 
         $collective = __('Reverse Charge, innergemeinschaftlicher Fall oder Drittland: Dafür braucht es einen echten Firmenkontakt, keinen Sammelkontakt.');
         $handedOver = __('Der Eingang ist bereits an die Buchhaltung übergeben — die Zuordnung ist dort zu ändern.');
-        $this->post(route('finance.incoming-invoices.bulk-assign'), ['ids' => [$austrian->sqid, $transferred->sqid], 'party' => 'collective'])
+        $this->post(route('finance.incoming-invoices.bulk-assign'), ['ids' => [$austrian->sqid, $transferred->sqid], 'party' => 'collective', 'confirmed' => '1'])
             ->assertRedirect()
             ->assertSessionHas('warning', static fn (string $message): bool => str_contains($message, '0 Eingänge zugeordnet, 2 übersprungen.')
                 && str_contains($message, '1 × ' . $collective) && str_contains($message, '1 × ' . $handedOver));

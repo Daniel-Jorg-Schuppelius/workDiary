@@ -13,12 +13,12 @@ declare(strict_types=1);
 namespace App\Services\Invoicing\EInvoice;
 
 use App\Enums\Billing\DocumentDirection;
-use App\Enums\Invoicing\{IncomingEInvoiceStatus, IncomingInvoiceMatchKind, IncomingInvoiceRecognition};
+use App\Enums\Invoicing\{IncomingEInvoiceStatus, IncomingInvoiceMatchKind, IncomingInvoiceRecognition, IncomingInvoiceTransferStatus};
 use App\Events\Invoicing\IncomingInvoiceAssigned;
 use App\Exceptions\CollectiveContactException;
 use App\Models\Contacts\ContactBankAccount;
 use App\Models\Customer\Customer;
-use App\Models\Invoicing\{IncomingEInvoice, InvoiceSenderRule};
+use App\Models\Invoicing\{IncomingEInvoice, IncomingEInvoiceTransfer, InvoiceSenderRule};
 use App\Models\Platform\User;
 use App\Models\Supplier\Supplier;
 use App\Services\Stammdaten\CollectiveContacts;
@@ -171,6 +171,29 @@ class IncomingInvoiceMatcher {
         ]);
 
         IncomingInvoiceAssigned::dispatch($incoming);
+    }
+
+    /**
+     * Zuordnung aufheben (Phase 152, MVP-1224): nur, solange nichts übergeben
+     * ist; nicht abgeschlossene Übergabe-Journale entfallen, sonst versuchte
+     * der nächste Lauf die Übergabe an die falsche Partei (E2).
+     */
+    public function unassign(IncomingEInvoice $incoming, ?User $actor): void {
+        if ($incoming->transferred_at !== null) {
+            throw new RuntimeException((string) __('Der Eingang ist bereits an die Buchhaltung übergeben — die Zuordnung ist dort zu ändern.'));
+        }
+        if ($incoming->supplier_id === null && $incoming->customer_id === null) {
+            throw new RuntimeException((string) __('Der Eingang ist keiner Partei zugeordnet.'));
+        }
+        $previous = ['supplier_id' => $incoming->supplier_id, 'customer_id' => $incoming->customer_id, 'kind' => $incoming->match_kind?->value];
+        $open = IncomingEInvoiceTransfer::query()->withoutGlobalScopes()
+            ->where('incoming_einvoice_id', $incoming->id)
+            ->whereNotIn('status', [IncomingInvoiceTransferStatus::Transferred->value, IncomingInvoiceTransferStatus::Linked->value]);
+        $removed = $open->clone()->pluck('target')->all();
+        $open->delete();
+
+        $incoming->forceFill(['supplier_id' => null, 'customer_id' => null, 'match_kind' => null, 'matched_user_id' => null, 'matched_at' => null])->save();
+        $incoming->audit('incoming_einvoice.unassigned', [...$previous, 'actor_user_id' => $actor?->id, 'journals_removed' => $removed]);
     }
 
     /** Absender für künftige Eingänge merken (nur auf ausdrücklichen Wunsch). */

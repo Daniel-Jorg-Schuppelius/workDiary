@@ -3182,6 +3182,8 @@ Route::middleware('auth')->group(function () {
             Route::post('/', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'store'])->name('store');
             // Rechnungspostfach (Feature 163, MVP-1110): Zuordnen, Werte erfassen, Sammelaktion.
             Route::post('sammel-zuordnen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'bulkAssign'])->name('bulk-assign');
+            // Rückfrage vor Sammelkontakt und „Neu aus Belegdaten“ (Phase 152, MVP-1222).
+            Route::get('sammel-zuordnen/bestaetigen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'bulkAssignConfirm'])->name('bulk-assign.confirm');
             // Nacherkennung offener Klärfälle (MVP-1207), z. B. nach nachinstallierten Textwerkzeugen.
             Route::post('sammel-erkennen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'bulkReanalyze'])->name('bulk-reanalyze');
             // Abgelehnte Eingänge endgültig löschen (MVP-1212).
@@ -3192,6 +3194,8 @@ Route::middleware('auth')->group(function () {
             Route::post('regeln/automation/{rule}/umschalten', [\App\Http\Controllers\Finance\IncomingInvoiceRuleController::class, 'toggleRule'])->name('rules.automation.toggle');
             Route::delete('regeln/automation/{rule}', [\App\Http\Controllers\Finance\IncomingInvoiceRuleController::class, 'destroyRule'])->name('rules.automation.destroy');
             Route::delete('regeln/vorlagen/{template}', [\App\Http\Controllers\Finance\IncomingInvoiceRuleController::class, 'destroyTemplate'])->name('rules.template.destroy');
+            // Vom Sammelkontakt auf eine echte Partei umhängen (Phase 152, MVP-1225).
+            Route::post('regeln/sammelkontakt/umhaengen', [\App\Http\Controllers\Finance\IncomingInvoiceRuleController::class, 'promoteCollective'])->name('rules.collective.promote');
             Route::get('{incoming}/zuordnen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'assignForm'])->name('assign.form');
             Route::post('{incoming}/zuordnen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'assign'])->name('assign');
             Route::get('{incoming}/werte', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'valuesForm'])->name('values.form');

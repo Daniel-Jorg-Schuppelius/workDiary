@@ -177,6 +177,26 @@ correspondance, une zone apprise est considérée comme confirmée et l’emport
 sur l’heuristique. Les modèles figurent sous « Règles » et peuvent y être
 supprimés. Les zones n’existent que pour les documents PDF.
 
+**Corriger une affectation et action groupée :** L’action groupée exige un
+choix ; « Nouveau d’après le document (par contrepartie) » crée une fiche par
+contrepartie d’après le premier document ou reprend une partie existante avec
+le même numéro de TVA ou le même nom, le contact collectif vient en dernier et
+demande confirmation avec les groupes de la sélection. Supprimez une
+affectation dans la boîte de dialogue via « Supprimer l’affectation » ou en
+action groupée tant que le document n’est pas transmis ; déplacer revient à
+affecter de nouveau, aussi dans les onglets « À vérifier » et « Tous ». Sous
+« Règles », « En attente au contact collectif » liste les documents du
+fournisseur ou client collectif par contrepartie ; « Créer et déplacer » crée
+ou reprend la partie et déplace les documents ouverts. Si un logiciel comptable
+est connecté (Lexware Office, easybill, sevDesk, orgaMAX), la boîte de dialogue
+y cherche par e-mail et nom et propose les correspondances comme « Reprendre de
+la comptabilité » : la fiche est créée d’après le contact et liée avec son
+numéro. sevDesk ne fournit ni e-mail ni adresse, les fournisseurs orgaMAX pas
+de numéro de TVA. Avant « Nouveau d’après le document », la boîte de dialogue
+signale les fiches similaires ; une partie existante avec le même numéro de
+TVA bloque la création. Si la comptabilité gère les fiches, la boîte de
+dialogue indique que la nouvelle fiche n’est pas transmise.
+
 **Fournisseur collectif et client collectif :** Pour les fournisseurs et
 clients occasionnels, chaque organisation dispose d’un contact collectif. Le
 nom de la partie réelle reste sur le document. Un contact collectif n’est

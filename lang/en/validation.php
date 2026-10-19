@@ -233,6 +233,7 @@ return [
         'new_country' => 'Country',
         'remember_sender' => 'Remember sender',
         'apply_to_open' => 'Also the other open documents',
+        'candidate' => 'Contact from accounting',
         'h' => 'Height',
         'w' => 'Width',
         'x' => 'X position',

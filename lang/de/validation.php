@@ -199,6 +199,7 @@ return [
         'new_country' => 'Land',
         'remember_sender' => 'Absender merken',
         'apply_to_open' => 'Auch die anderen offenen Eingänge',
+        'candidate' => 'Kontakt aus der Buchhaltung',
         'h' => 'Höhe',
         'w' => 'Breite',
         'x' => 'X-Position',
