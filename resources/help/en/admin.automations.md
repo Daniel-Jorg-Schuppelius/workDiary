@@ -32,7 +32,7 @@ The overview lists all rules with **Prio**, **Name**, **Trigger**,
 following actions are available:
 
 - **Create new rule (JSON)**: opens the **New automation rule** dialog
-  with **Name**, **Trigger** (e.g. “Expense report submitted”),
+  with **Name**, **Trigger** (e.g. “Expense report submitted” or “Incoming invoice received”),
   **Action** (e.g. “Approve expenses”), **Priority** and **Conditions
   (JSON)**. The action must match the trigger; an empty condition
   always applies. **Create rule** saves the rule.

@@ -10,6 +10,7 @@
 
 return [
     'retention_area' => [
+        'incoming_invoices_rejected' => 'Factures entrantes refusées',
         'audit_logs' => 'Journal d’audit',
         'exports' => 'Exports de paie et de temps',
         'gobd_financial' => 'Données fiscalement pertinentes',

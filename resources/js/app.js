@@ -37,6 +37,7 @@ import {
 import { initCharts } from "./charts.js";
 import "./sortable-tables.js";
 import "./bulk-selection.js";
+import "./zone-editor.js";
 import "./inline-actions.js";
 import "./contact-persons.js";
 import "./global-search.js";

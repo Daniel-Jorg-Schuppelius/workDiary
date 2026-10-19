@@ -22,6 +22,10 @@ return [
     // Hand setzen.
     'quote_follow_up_days' => (int) env('INVOICING_QUOTE_FOLLOW_UP_DAYS', 7),
 
+    // Abgelehnte Rechnungseingänge („Keine Rechnung“, Phase 150, MVP-1213):
+    // nach so vielen Tagen schlägt die Aufbewahrung die Vernichtung vor; 0 = nie.
+    'rejected_retention_days' => (int) env('INVOICING_REJECTED_RETENTION_DAYS', 30),
+
     /** Standard VAT/tax rate applied to new invoices, e.g. "19.00". */
     'default_tax_rate' => (string) env('INVOICING_DEFAULT_TAX_RATE', '19.00'),
 

@@ -78,6 +78,9 @@ use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider {
     public function register(): void {
+        // Wortboxen und Seitenbilder (Phase 151): Toolkit im Betrieb, Fälschung in Tests.
+        $this->app->bind(\App\Services\Invoicing\Recognition\Contracts\WordBoxSource::class, \App\Services\Invoicing\Recognition\ToolkitWordBoxSource::class);
+        $this->app->bind(\App\Services\Invoicing\Recognition\Contracts\PageImageSource::class, \App\Services\Invoicing\Recognition\ToolkitPageImageSource::class);
         // Modulregister (MVP-861): Manifeste unter app/Modules/Manifests, optional
         // gecacht (modules:cache) — Quelle für Routen-Gate, Navigation, Katalog.
         $this->app->singleton(\App\Modules\ModuleRegistry::class, static fn ($app): \App\Modules\ModuleRegistry => new \App\Modules\ModuleRegistry(

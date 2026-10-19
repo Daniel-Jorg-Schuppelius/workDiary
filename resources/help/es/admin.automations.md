@@ -34,7 +34,7 @@ prioridad. Están disponibles las siguientes acciones:
 
 - **Crear nueva regla (JSON)**: abre el diálogo **Nueva regla de
   automatización** con **Nombre**, **Desencadenante** (p. ej.
-  «Liquidación de gastos enviada»), **Acción** (p. ej. «Aprobar
+  «Liquidación de gastos enviada» o «Factura recibida»), **Acción** (p. ej. «Aprobar
   gastos»), **Prioridad** y **Condiciones (JSON)**. La acción debe
   corresponder al desencadenante; una condición vacía se aplica
   siempre. **Crear regla** guarda la regla.

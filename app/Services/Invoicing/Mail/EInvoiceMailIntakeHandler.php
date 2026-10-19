@@ -45,7 +45,7 @@ final class EInvoiceMailIntakeHandler implements MailIntakeHandler {
             return null; // Organisation ohne Person: kein automatischer DMS-Eintrag
         }
 
-        $result = $this->invoices->storeMessage($actor, $message->attachments, new IncomingOrigin($message->fromEmail, $message->messageId));
+        $result = $this->invoices->storeMessage($actor, $message->attachments, new IncomingOrigin($message->fromEmail, $message->messageId, $message->subject, array_map(static fn ($attachment): string => (string) $attachment->filename, $message->attachments)));
         $incoming = $result['incomings'][0] ?? null;
         if ($incoming !== null) {
             $this->inbox->resolveOpenInboxItem((int) $connection->organization_id, $message->messageId, $incoming);
@@ -53,7 +53,7 @@ final class EInvoiceMailIntakeHandler implements MailIntakeHandler {
 
         return match (true) {
             $result['stored'] + $result['unrecognized'] > 0 => 'einvoice',
-            $result['duplicates'] > 0 => 'skipped',
+            $result['duplicates'] + $result['discarded'] > 0 => 'skipped',
             default => null,
         };
     }

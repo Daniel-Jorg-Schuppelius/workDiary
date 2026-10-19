@@ -10,6 +10,8 @@
 @php($isOutgoing = $incoming->direction === \App\Enums\Billing\DocumentDirection::Outgoing)
 {{-- Teilweise erkannte Werte eines Klärfalls (summary.extraction.found) belegen die Felder vor. --}}
 @php($found = (array) data_get($incoming->summary, 'extraction.found', []))
+{{-- Datum aus dem Lieferdatum (MVP-1215) nur als Vorschlag: vorbelegt, aber gekennzeichnet. --}}
+@php($hints = (array) data_get($incoming->summary, 'extraction.hints', []))
 <x-modal
     :title="__('Werte erfassen')"
     :eyebrow="$incoming->document?->title"
@@ -21,7 +23,7 @@
     <x-form-group :legend="__('Rechnung')" icon="receipt_long" cols="2" :description="__('Werte am Original ablesen; das Original bleibt unverändert.')">
         <x-input-field name="invoice_number" :label="__('Rechnungsnummer')" :value="old('invoice_number', $incoming->invoice_number ?? $found['number'] ?? null)" required />
         <x-input-field name="currency" :label="__('Währung')" :value="old('currency', $incoming->currency?->value ?? 'EUR')" required />
-        <x-input-field name="issue_date" type="date" :label="__('Rechnungsdatum')" :value="old('issue_date', $incoming->issue_date?->toDateString() ?? $found['issued_on'] ?? null)" required />
+        <x-input-field name="issue_date" type="date" :label="__('Rechnungsdatum')" :value="old('issue_date', $incoming->issue_date?->toDateString() ?? $found['issued_on'] ?? $hints['issue_date'] ?? null)" :hint="! isset($found['issued_on']) && isset($hints['issue_date']) && $incoming->issue_date === null ? __('Vorschlag aus dem Lieferdatum, bitte am Original prüfen.') : null" required />
         <x-input-field name="due_date" type="date" :label="__('Fällig am')" :value="old('due_date', $incoming->due_date?->toDateString() ?? $found['due_on'] ?? null)" />
         <x-input-field name="party_name" :label="$isOutgoing ? __('Käufer') : __('Verkäufer')" :value="old('party_name', $isOutgoing ? $incoming->buyer_name : $incoming->seller_name)" />
         <x-input-field name="party_vat_id" :label="__('USt-IdNr.')" :value="old('party_vat_id', $isOutgoing ? $incoming->buyer_vat_id : $incoming->seller_vat_id)" />

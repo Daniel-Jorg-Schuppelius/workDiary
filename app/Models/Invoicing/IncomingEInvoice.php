@@ -106,6 +106,8 @@ class IncomingEInvoice extends Model {
         'sender_email', 'source_reference',
         // MVP-1108: Gegenpartei.
         'supplier_id', 'customer_id', 'match_kind', 'matched_user_id', 'matched_at',
+        // MVP-1219: Belegvorlage, die beim Eingang getroffen hat.
+        'template_id',
     ];
 
     /** @var array<string, string> */
@@ -147,6 +149,43 @@ class IncomingEInvoice extends Model {
         $key = is_scalar($number) ? mb_strtoupper(\CommonToolkit\Helper\Data\StringHelper::removeWhitespace((string) $number, true)) : '';
 
         return $key !== '' ? mb_substr($key, 0, 64) : null;
+    }
+
+    /** Belegart-Hinweis der Erkennung (MVP-1216): reminder, delivery_note, order_confirmation, quote, shipping_label. */
+    public function kindHint(): ?string {
+        $hint = ((array) $this->summary)['kind_hint'] ?? null;
+
+        return is_string($hint) && $hint !== '' ? $hint : null;
+    }
+
+    /**
+     * Eingänge, auf die eine Mahnung verweist (MVP-1216): Nummern aus
+     * `summary.reminder_for` gegen die Rechnungsnummern derselben Organisation.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, self>
+     */
+    public function reminderTargets(): \Illuminate\Database\Eloquent\Collection {
+        $keys = array_values(array_filter(array_map(
+            static fn (mixed $number): ?string => self::numberKey($number),
+            (array) (((array) $this->summary)['reminder_for'] ?? []),
+        )));
+        if ($keys === []) {
+            return new \Illuminate\Database\Eloquent\Collection();
+        }
+
+        return self::query()->withoutGlobalScopes()
+            ->where('organization_id', $this->organization_id)
+            ->whereKeyNot($this->getKey())
+            ->whereIn('invoice_number_key', $keys)
+            ->orderBy('id')
+            ->get();
+    }
+
+    /** Vergleichsschlüssel eines Gegenparteinamens (MVP-1208): Kleinschreibung, Leerraum auf ein Leerzeichen. */
+    public static function nameKey(?string $name): ?string {
+        $key = \CommonToolkit\Helper\Data\StringHelper::normalizeColumnName($name);
+
+        return $key === '' ? null : mb_substr($key, 0, 191);
     }
 
     /**
@@ -282,7 +321,7 @@ class IncomingEInvoice extends Model {
      * @return \Illuminate\Database\Eloquent\Collection<int, self>
      */
     public function openOfSameParty(): \Illuminate\Database\Eloquent\Collection {
-        $key = IncomingInvoiceExclusion::keyFor($this->counterpartyName());
+        $key = self::nameKey($this->counterpartyName());
         if ($key === null) {
             return new \Illuminate\Database\Eloquent\Collection();
         }
@@ -299,8 +338,13 @@ class IncomingEInvoice extends Model {
             ->whereKeyNot($this->getKey())
             ->orderBy('id')
             ->get()
-            ->filter(static fn (self $other): bool => IncomingInvoiceExclusion::keyFor($other->{$column}) === $key)
+            ->filter(static fn (self $other): bool => self::nameKey($other->{$column}) === $key)
             ->values();
+    }
+
+    /** @return BelongsTo<IncomingInvoiceTemplate, $this> Belegvorlage (MVP-1219) */
+    public function template(): BelongsTo {
+        return $this->belongsTo(IncomingInvoiceTemplate::class, 'template_id');
     }
 
     /** @return BelongsTo<Document, $this> */

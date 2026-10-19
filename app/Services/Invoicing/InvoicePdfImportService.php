@@ -69,7 +69,7 @@ class InvoicePdfImportService {
             default => ['', null, false, [], null],
         };
 
-        $result = $this->analyzeText($text);
+        $result = $this->analyzeText($text, $alignedText);
         $result['reader'] = $reader;
         $result['ocr_used'] = $ocrUsed;
         $result['text_length'] = mb_strlen($text);
@@ -77,6 +77,10 @@ class InvoicePdfImportService {
         $this->augmentWithLines($result, $rows, $alignedText);
         $this->augmentWithPaymentData($result, $text);
         $this->augmentWithReferences($result, $text);
+        // Belegvorlage (Phase 151): Zonen schlagen die Heuristik, gelernte füllen Lücken.
+        if ($organization !== null && $extension === 'pdf') {
+            app(\App\Services\Invoicing\Recognition\TemplateRecognizer::class)->apply($result, $path, $organization);
+        }
         if ($organization !== null) {
             $this->augmentWithAiFallback($result, $text, $organization);
         }
@@ -707,10 +711,412 @@ class InvoicePdfImportService {
         }
     }
 
+    /** Felder, die Lesetext, zeilentreuer Text und Paarungen füllen (MVP-1215). */
+    private const MERGE_FIELDS = ['number', 'issued_on', 'due_on', 'net', 'tax', 'gross', 'tax_rate', 'buyer_reference'];
+
+    /**
+     * Beschriftungen für Kopf-/Wertezeilen und Blockpaarung (MVP-1215):
+     * Feld oder `skip` (nimmt einen Wert, ohne ihn zu verwenden). Reihenfolge
+     * zählt — Zusammensetzungen vor Teilwörtern.
+     *
+     * @var list<array{0: string, 1: string}>
+     */
+    private const PAIR_LABELS = [
+        ['Liefer(?:ungs)?datum\s*\/\s*Rechnungsdatum', 'issued_on'],
+        ['Rechnungs?\s*[-.\/]?\s*(?:Nummer|Nr\.?)', 'number'],
+        ['Beleg\s*[-.]?\s*(?:nummer|Nr\.?)', 'number'],
+        ['Invoice\s*(?:No\.?|Number|#)', 'number'],
+        ['Re\s*\.?\s*-?\s*Nr\.?', 'number'],
+        ['Rechnungsdatum', 'issued_on'],
+        ['Belegdatum', 'issued_on'],
+        ['Erstellt\s*am', 'issued_on'],
+        ['Invoice\s*date', 'issued_on'],
+        ['F.llig(?:keits?(?:datum)?)?(?:\s*am)?', 'due_on'],
+        ['Zahlbar\s*bis', 'due_on'],
+        ['Due\s*date', 'due_on'],
+        ['Gesamtbetrag', 'gross'],
+        ['Rechnungsbetrag', 'gross'],
+        ['Gesamtsumme', 'gross'],
+        ['Endbetrag', 'gross'],
+        ['Zu\s*zahlen', 'gross'],
+        ['Kunden\s*[-.]?\s*(?:Nummer|Nr\.?)', 'skip'],
+        ['Auftrags?\s*[-.]?\s*(?:Nummer|Nr\.?)', 'skip'],
+        ['Bestell\s*[-.]?\s*(?:Nummer|Nr\.?)', 'skip'],
+        ['Liefer(?:ungs)?datum', 'skip'],
+        ['Bestelldatum', 'skip'],
+        ['Auftragsdatum', 'skip'],
+        ['Leistungsdatum', 'skip'],
+        ['Ust\.?\s*-?\s*Id\.?(?:Nr\.?)?', 'skip'],
+        ['Belegart', 'skip'],
+        ['Mahnbetrag', 'skip'],
+        ['Mahnstufe', 'skip'],
+        ['W.hrung', 'skip'],
+        ['Seite', 'skip'],
+        ['Datum', 'issued_on'],
+        ['Betrag', 'gross'],
+        ['Total', 'gross'],
+    ];
+
     /**
      * Deterministische Heuristik für deutsch-/englischsprachige Rechnungen.
      * Öffentliche Methode, damit die Felder unabhängig von System-OCR testbar
-     * bleiben.
+     * bleiben. Seit MVP-1215 laufen Lesetext und zeilentreuer Text getrennt
+     * durch die Beschriftungssuche; danach füllen Kopf-/Wertezeilen und
+     * Blockpaarungen die Lücken, und die Belegart wird abgeschätzt.
+     *
+     * @return array{
+     *   number: ?string, issued_on: ?string, due_on: ?string,
+     *   currency: string, net: ?string, tax: ?string, gross: ?string,
+     *   tax_rate: ?string, buyer_reference: ?string,
+     *   confidence: int, warnings: list<string>,
+     *   sources: array<string, string>, issued_on_hint: ?string,
+     *   kind_hint: ?string, reminder_numbers: list<string>
+     * }
+     */
+    public function analyzeText(string $text, ?string $alignedText = null): array {
+        $text = str_replace(["\r\n", "\r"], "\n", $text);
+        $result = $this->analyzeFields($text);
+        $sources = [];
+        foreach (self::MERGE_FIELDS as $field) {
+            if (($result[$field] ?? null) !== null) {
+                $sources[$field] = 'text';
+            }
+        }
+        if ($alignedText !== null && trim($alignedText) !== '' && $alignedText !== $text) {
+            $this->mergeFields($result, $sources, $this->analyzeFields(str_replace(["\r\n", "\r"], "\n", $alignedText)), 'aligned');
+        }
+        foreach (array_values(array_unique(array_filter([$alignedText, $text]))) as $variant) {
+            $this->mergeFields($result, $sources, $this->pairedRows($variant), 'rows');
+            $this->mergeFields($result, $sources, $this->pairedBlocks($variant), 'blocks');
+        }
+
+        ['kind' => $kindHint, 'numbers' => $reminderNumbers] = $this->kindHint($text, $result);
+        if ($kindHint === 'reminder' && $result['number'] !== null) {
+            // Die Nummer einer Mahnung ist die der angemahnten Rechnung, nicht die des Belegs.
+            $reminderNumbers = array_values(array_unique([$result['number'], ...$reminderNumbers]));
+            $result['number'] = null;
+            unset($sources['number']);
+        }
+        $result['sources'] = $sources;
+        $result['issued_on_hint'] = $result['issued_on'] === null ? $this->labeledDate($text, ['Liefer(?:ungs)?datum', 'Leistungsdatum', 'Delivery\s*date']) : null;
+        $result['kind_hint'] = $kindHint;
+        $result['reminder_numbers'] = $reminderNumbers;
+
+        return $this->finalize($result);
+    }
+
+    /**
+     * Füllt leere Felder aus einer zweiten Auswertung; ein in sich stimmiges
+     * Summentrio (Netto + Steuer = Brutto) ersetzt ein unstimmiges.
+     *
+     * @param  array<string, mixed>  $result
+     * @param  array<string, string>  $sources
+     * @param  array<string, mixed>  $other
+     */
+    private function mergeFields(array &$result, array &$sources, array $other, string $source): void {
+        foreach (self::MERGE_FIELDS as $field) {
+            if (($result[$field] ?? null) === null && ($other[$field] ?? null) !== null) {
+                $result[$field] = $other[$field];
+                $sources[$field] = $source;
+            }
+        }
+        if (self::totalsConsistent($other) && ! self::totalsConsistent($result)) {
+            foreach (['net', 'tax', 'gross'] as $field) {
+                $result[$field] = $other[$field];
+                $sources[$field] = $source;
+            }
+        }
+    }
+
+    /** @param  array<string, mixed>  $fields */
+    private static function totalsConsistent(array $fields): bool {
+        $net = $fields['net'] ?? null;
+        $tax = $fields['tax'] ?? null;
+        $gross = $fields['gross'] ?? null;
+
+        return is_numeric($net) && is_numeric($tax) && is_numeric($gross) && abs(((float) $net + (float) $tax) - (float) $gross) <= 0.02;
+    }
+
+    /**
+     * Ableitungen, Warnungen und Konfidenz nach dem Zusammenführen.
+     *
+     * @param  array<string, mixed>  $result
+     * @return array{
+     *   number: ?string, issued_on: ?string, due_on: ?string,
+     *   currency: string, net: ?string, tax: ?string, gross: ?string,
+     *   tax_rate: ?string, buyer_reference: ?string,
+     *   confidence: int, warnings: list<string>,
+     *   sources: array<string, string>, issued_on_hint: ?string,
+     *   kind_hint: ?string, reminder_numbers: list<string>
+     * }
+     */
+    private function finalize(array $result): array {
+        $text = static fn (string $key) => is_string($result[$key] ?? null) && $result[$key] !== '' ? (string) $result[$key] : null;
+        $net = $text('net');
+        $tax = $text('tax');
+        $gross = $text('gross');
+        $taxRate = $text('tax_rate');
+        if ($net === null && $gross !== null && $tax !== null) {
+            $net = $this->decimal((float) $gross - (float) $tax);
+        }
+        if ($tax === null && $gross !== null && $net !== null) {
+            $tax = $this->decimal((float) $gross - (float) $net);
+        }
+        if ($taxRate === null && $net !== null && $tax !== null && (float) $net > 0.0) {
+            $taxRate = $this->decimal(((float) $tax / (float) $net) * 100);
+        }
+        $fields = [
+            'number' => $text('number'),
+            'issued_on' => $text('issued_on'),
+            'due_on' => $text('due_on'),
+            'net' => $net,
+            'tax' => $tax,
+            'gross' => $gross,
+            'tax_rate' => $taxRate,
+            'buyer_reference' => $text('buyer_reference'),
+        ];
+        $warnings = [];
+        foreach (['number', 'issued_on', 'net'] as $field) {
+            if ($fields[$field] === null) {
+                $warnings[] = 'missing_' . $field;
+            }
+        }
+        if ($net !== null && $tax !== null && $gross !== null && abs(((float) $net + (float) $tax) - (float) $gross) > 0.02) {
+            $warnings[] = 'totals_mismatch';
+        }
+        $sources = [];
+        foreach ((array) ($result['sources'] ?? []) as $field => $source) {
+            if (is_string($field) && is_string($source)) {
+                $sources[$field] = $source;
+            }
+        }
+
+        return [
+            ...$fields,
+            'currency' => (string) ($result['currency'] ?? 'EUR'),
+            'confidence' => min(100, count(array_filter($fields, static fn (?string $value): bool => $value !== null)) * 12),
+            'warnings' => $warnings,
+            'sources' => $sources,
+            'issued_on_hint' => $text('issued_on_hint'),
+            'kind_hint' => $text('kind_hint'),
+            'reminder_numbers' => array_values(array_filter((array) ($result['reminder_numbers'] ?? []), 'is_string')),
+        ];
+    }
+
+    /**
+     * Kopf-/Wertezeilen (MVP-1215): eine Zeile aus Beschriftungen, die nächste
+     * mit den Werten in derselben Reihenfolge — typisch für Rechnungsköpfe in
+     * Tabellenform. Werte werden nach Art (Datum, Betrag, Kennung) verbraucht.
+     *
+     * @return array<string, string>
+     */
+    private function pairedRows(string $text): array {
+        $lines = preg_split('/\n/', $text) ?: [];
+        $found = [];
+        foreach ($lines as $index => $line) {
+            $labels = $this->labelsOf($line);
+            if (count($labels) < 2 || $this->isValueLine($line)) {
+                continue;
+            }
+            for ($next = $index + 1; $next <= min($index + 3, count($lines) - 1); $next++) {
+                $candidate = $lines[$next];
+                if (trim($candidate) === '') {
+                    continue;
+                }
+                if (preg_match('/\d/', $candidate) !== 1 || count($this->labelsOf($candidate)) >= 2) {
+                    break;
+                }
+                $found += $this->assign($labels, $this->tokensOf($candidate));
+                break;
+            }
+        }
+
+        return $found;
+    }
+
+    /**
+     * Blockpaarung (MVP-1215): mehrere Zeilen, die je nur eine Beschriftung
+     * tragen, und später ein Block aus je einem Wert pro Zeile in derselben
+     * Reihenfolge — so gibt pdftotext Spaltenblöcke aus (erst alle
+     * Beschriftungen, dann alle Werte).
+     *
+     * @return array<string, string>
+     */
+    private function pairedBlocks(string $text): array {
+        $lines = array_values(array_filter(array_map(trim(...), preg_split('/\n/', $text) ?: []), static fn (string $line): bool => $line !== ''));
+        $found = [];
+        $count = count($lines);
+        for ($index = 0; $index < $count; $index++) {
+            $labels = [];
+            $end = $index;
+            while ($end < $count) {
+                $only = $this->labelsOf($lines[$end]);
+                if (count($only) !== 1 || ! $this->isLabelOnly($lines[$end], $only[0][0])) {
+                    break;
+                }
+                $labels[] = $only[0];
+                $end++;
+            }
+            if (count($labels) < 2) {
+                continue;
+            }
+            for ($start = $end; $start <= min($end + 40, $count - 1); $start++) {
+                $values = [];
+                for ($cursor = $start; $cursor < $count && count($values) < count($labels); $cursor++) {
+                    $tokens = $this->tokensOf($lines[$cursor]);
+                    if (count($tokens) !== 1 || $tokens[0]['type'] === 'other' || $this->labelsOf($lines[$cursor]) !== []) {
+                        break;
+                    }
+                    $values[] = $tokens[0];
+                }
+                if (count($values) >= 2) {
+                    $found += $this->assign(array_slice($labels, 0, count($values)), $values);
+                    break;
+                }
+            }
+            $index = $end - 1;
+        }
+
+        return $found;
+    }
+
+    /**
+     * @param  list<array{0: string, 1: string}>  $labels
+     * @param  list<array{type: string, value: string}>  $tokens
+     * @return array<string, string>
+     */
+    private function assign(array $labels, array $tokens): array {
+        $found = [];
+        $position = 0;
+        foreach ($labels as [, $field]) {
+            // Währungszeichen und Füllwörter zwischen den Werten überspringen.
+            while ($position < count($tokens) && $tokens[$position]['type'] === 'other') {
+                $position++;
+            }
+            if ($position >= count($tokens)) {
+                break;
+            }
+            $token = $tokens[$position];
+            $expected = match ($field) {
+                'issued_on', 'due_on' => 'date',
+                'gross', 'net', 'tax' => 'amount',
+                'number' => 'id',
+                default => null,
+            };
+            if ($expected !== null && $token['type'] !== $expected) {
+                break;
+            }
+            $position++;
+            if ($field === 'skip' || isset($found[$field])) {
+                continue;
+            }
+            $value = match ($expected) {
+                'date' => DateHelper::parseWithCountryPreference($token['value'], CountryCode::Germany)?->format('Y-m-d'),
+                'amount' => ($normalized = NumberHelper::normalizeDecimalStringOrNull($token['value'], CountryCode::Germany)) !== null ? $this->decimal((float) $normalized) : null,
+                default => mb_substr($token['value'], 0, 100),
+            };
+            if ($value !== null) {
+                $found[$field] = $value;
+            }
+        }
+
+        return $found;
+    }
+
+    /** @return list<array{0: string, 1: string}> Beschriftungen einer Zeile in Lesereihenfolge (Muster, Feld) */
+    private function labelsOf(string $line): array {
+        $alternatives = implode('|', array_map(static fn (array $label): string => '(?:' . $label[0] . ')', self::PAIR_LABELS));
+        if (preg_match_all('/(?<![\p{L}])(' . $alternatives . ')(?![\p{L}])/iu', $line, $matches) < 1) {
+            return [];
+        }
+        $labels = [];
+        foreach ($matches[1] as $match) {
+            foreach (self::PAIR_LABELS as $label) {
+                if (preg_match('/^(?:' . $label[0] . ')$/iu', $match) === 1) {
+                    $labels[] = $label;
+                    break;
+                }
+            }
+        }
+
+        return $labels;
+    }
+
+    private function isLabelOnly(string $line, string $pattern): bool {
+        return preg_match('/^\s*(?:' . $pattern . ')\s*[:.]?\s*$/iu', $line) === 1;
+    }
+
+    /** Eine Zeile, die schon Werte trägt (Datum oder Betrag), ist keine reine Kopfzeile. */
+    private function isValueLine(string $line): bool {
+        return preg_match('/\d{1,2}[.\/-]\d{1,2}[.\/-]\d{2,4}|\d+,\d{2}\b/', $line) === 1;
+    }
+
+    /** @return list<array{type: string, value: string}> Werte einer Zeile: Datum, Betrag, Kennung oder Sonstiges */
+    private function tokensOf(string $line): array {
+        $tokens = [];
+        foreach (preg_split('/\s+/', trim($line)) ?: [] as $raw) {
+            $value = trim($raw, " \t:;");
+            if ($value === '') {
+                continue;
+            }
+            $tokens[] = ['type' => match (true) {
+                preg_match('/^\d{1,2}[.\/-]\d{1,2}[.\/-]\d{2,4}$|^\d{4}-\d{2}-\d{2}$/', $value) === 1 => 'date',
+                preg_match('/^[+-]?\d{1,3}(?:[.\s]\d{3})*,\d{2}$|^[+-]?\d+\.\d{2}$|^[+-]?\d+,\d{2}$/', $value) === 1 => 'amount',
+                preg_match('/^(?=[A-Z0-9._\/-]*\d)[A-Z0-9][A-Z0-9._\/-]{1,63}$/i', $value) === 1 => 'id',
+                default => 'other',
+            }, 'value' => $value];
+        }
+
+        return $tokens;
+    }
+
+    /**
+     * Belegart aus dem Text (MVP-1216): Mahnung, Lieferschein, Auftrags-/
+     * Bestellbestätigung, Angebot, Versandmarke. Nur ein Hinweis — die
+     * Entscheidung bleibt beim Menschen. Mahnungen nennen die angemahnten
+     * Rechnungsnummern.
+     *
+     * @param  array<string, mixed>  $result
+     * @return array{kind: ?string, numbers: list<string>}
+     */
+    private function kindHint(string $text, array $result): array {
+        $head = mb_substr($text, 0, 4000);
+        $titled = static fn (string $pattern): bool => preg_match('/^[ \t]*(?:' . $pattern . ')(?![\p{L}])/imu', $head) === 1;
+        $mentions = static fn (string $pattern): bool => preg_match('/(?<![\p{L}])(?:' . $pattern . ')(?![\p{L}])/iu', $head) === 1;
+        $hasAmount = $result['gross'] !== null || $result['net'] !== null || preg_match('/\d+,\d{2}\s*(?:€|EUR)/u', $head) === 1;
+
+        if ($titled('(?:\d\.\s*)?Mahnung|Zahlungserinnerung|Letzte\s+Mahnung|Payment\s+reminder') || $mentions('Mahnstufe|Mahngeb.hr(?:en)?|Mahnbetrag')) {
+            preg_match_all('/(?<![\p{L}\d])([A-Z]{2,8}-?\d{5,}|\d{6,12})(?![\p{L}\d])/u', $head, $matches);
+            $numbers = [];
+            foreach ($matches[1] as $candidate) {
+                // Reine Ziffernfolgen nur aus Zeilen, die von Rechnungen sprechen — sonst Telefon, IBAN, Kundennummer.
+                if (preg_match('/^\d+$/', $candidate) === 1 && preg_match('/^[^\n]*(?:Rechnung|ReNr|Re\.-?Nr|Beleg)[^\n]*' . preg_quote($candidate, '/') . '/imu', $head) !== 1) {
+                    continue;
+                }
+                $numbers[] = $candidate;
+            }
+
+            return ['kind' => 'reminder', 'numbers' => array_values(array_unique($numbers))];
+        }
+        $invoiceTitled = $titled('Rechnung|Invoice|Gutschrift|Rechnungskorrektur');
+        if (! $invoiceTitled && $titled('Lieferschein|Delivery\s+note')) {
+            return ['kind' => 'delivery_note', 'numbers' => []];
+        }
+        if (! $invoiceTitled && $titled('Auftragsbest.tigung|Bestellbest.tigung|Order\s+confirmation')) {
+            return ['kind' => 'order_confirmation', 'numbers' => []];
+        }
+        if (! $invoiceTitled && ($titled('Angebot|Kostenvoranschlag|Quotation') || $mentions('Angebot\s+g.ltig\s+bis'))) {
+            return ['kind' => 'quote', 'numbers' => []];
+        }
+        if (! $invoiceTitled && ! $hasAmount && $mentions('Versandmarke|Paketmarke|Sendungsnummer|Sendungsnr\.?|Entgelt\s+bezahlt|Online\s+Frankierung|Frankierung')) {
+            return ['kind' => 'shipping_label', 'numbers' => []];
+        }
+
+        return ['kind' => null, 'numbers' => []];
+    }
+
+    /**
+     * Beschriftungssuche in einem Text: Nummer, Daten, Beträge, Referenz.
      *
      * @return array{
      *   number: ?string, issued_on: ?string, due_on: ?string,
@@ -719,7 +1125,7 @@ class InvoicePdfImportService {
      *   confidence: int, warnings: list<string>
      * }
      */
-    public function analyzeText(string $text): array {
+    private function analyzeFields(string $text): array {
         $text = str_replace(["\r\n", "\r"], "\n", $text);
         $text = preg_replace('/[\x{00A0}\t]+/u', ' ', $text) ?? $text;
 
@@ -729,32 +1135,37 @@ class InvoicePdfImportService {
             'Rechnungs?\s*[-.\/]?\s*(?:Nummer|Nr\.?)', 'Beleg\s*[-.]?\s*(?:nummer|Nr\.?)',
             '\b(?:Re|Rg|RE)\.?\s*-?\s*Nr\.?', 'Invoice\s*(?:Number|No\.?|ID|#)',
         ], '(?=[A-Z0-9._\/-]*\d)[A-Z0-9][A-Z0-9._\/-]{1,63}');
-        $issuedOn = $this->labeledDate($text, ['Rechnungsdatum', 'Belegdatum', 'Invoice\s*date']);
+        // Datum: beschriftet, sonst „Ort, Datum“ im Briefkopf, sonst nacktes „Datum:“ (MVP-1215, F4).
+        $issuedOn = $this->labeledDate($text, ['Rechnungsdatum', 'Belegdatum', 'Ausstellungsdatum', 'Invoice\s*date'])
+            ?? $this->placeDate($text)
+            ?? $this->labeledDate($text, ['(?<![\p{L}])Datum']);
         $dueOn = $this->labeledDate($text, ['F.llig(?:keit(?:sdatum)?|\s*am)', 'Zahlbar\s*bis', 'Due\s*date']);
         $buyerReference = $this->labeledValue($text, [
             'Leitweg-?ID', 'Käuferreferenz', 'Bestellreferenz', 'Buyer\s*reference',
         ], '[A-Z0-9][A-Z0-9._\/-]{2,99}');
 
-        $net = $this->labeledAmount($text, ['Nettobetrag', 'Netto(?:summe)?', 'Gesamt\s*netto', 'Summe\s*netto', 'Zwischensumme', 'Net\s*amount', 'Subtotal']);
-        $tax = $this->labeledAmount($text, ['Umsatzsteuer', 'Mehrwertsteuer', 'MwSt\.?', 'USt\.?(?!-Id)', 'VAT']);
+        $net = $this->labeledAmount($text, [
+            'Nettobetrag', 'Netto(?:summe|warenwert|auftragswert)?', 'Gesamt(?:preis|wert|betrag)?\s*(?:EUR|€)?\s*\(?\s*(?:netto|ohne\s*(?:MwSt|USt)\.?|exkl\.?\s*(?:MwSt|USt)\.?)\s*\)?',
+            'Summe\s*netto', 'Rechnungsbetrag\s*\(?\s*netto\s*\)?', 'Zwischensumme', 'Net\s*amount', 'Subtotal',
+        ]);
+        // Steuer: „MwSt.-Betrag (19%) 89,00“ zählt, „ohne/inkl./zzgl. MwSt. 468,41“ nennt den Netto- bzw. Bruttobetrag (MVP-1215).
+        $notQualified = '(?<!ohne )(?<!exkl\\. )(?<!inkl\\. )(?<!zzgl\\. )(?<!exkl )(?<!inkl )(?<!zzgl )';
+        $tax = $this->labeledAmount($text, [
+            $notQualified . '(?:Umsatzsteuer|Mehrwertsteuer|MwSt|USt(?!-Id))\\.?\\s*-?\\s*Betrag',
+            $notQualified . '(?:Umsatzsteuer|Mehrwertsteuer|MwSt\\.?|USt\\.?(?!-Id)|VAT)',
+        ]);
+        // Brutto (MVP-1215, F3): „Gesamt EUR inkl. MwSt.“, „Gesamtpreis (inkl. MwSt.)“; „… Netto“ zählt nie.
         $gross = $this->labeledAmount($text, [
-            'Rechnungsbetrag', 'Rechnungssumme', 'Gesamtbetrag', 'Gesamtsumme', 'Endbetrag', 'Endsumme',
-            'Gesamt\s*(?:brutto|inkl\.?\s*(?:MwSt|USt)\.?)', 'Summe\s*brutto', 'Brutto(?:betrag|summe)', 'Zahlbetrag',
+            'Rechnungsbetrag\s*\(?\s*(?:brutto|inkl\.?\s*(?:MwSt|USt)\.?)\s*\)?', 'Rechnungsbetrag(?!\s*\(?\s*(?:netto|brutto))', 'Rechnungssumme', 'Gesamtbetrag', 'Gesamtsumme', 'Endbetrag', 'Endsumme',
+            'Gesamt(?:preis|wert|summe)?\s*(?:EUR|€)?\s*\(?\s*(?:brutto|inkl\.?\s*(?:MwSt|USt|Mehrwertsteuer|Umsatzsteuer)\.?)\s*\)?',
+            'Summe\s*(?:EUR|€)?\s*(?:brutto|inkl\.?\s*(?:MwSt|USt)\.?)', 'Brutto(?:betrag|summe|preis)', 'Zahlbetrag',
             'Zahlungsbetrag', 'zu\s*zahlen(?:der\s*Betrag)?',
-            'Grand\s*total', 'Total\s*amount', 'Amount\s*(?:due|payable)', 'Balance\s*due', 'Total',
+            'Grand\s*total', 'Total\s*amount', 'Amount\s*(?:due|payable)', 'Balance\s*due', 'Total(?!\s*(?:net|excl))',
         ], last: true);
 
-        if ($net === null && $gross !== null && $tax !== null) {
-            $net = $this->decimal((float) $gross - (float) $tax);
-        }
-        if ($tax === null && $gross !== null && $net !== null) {
-            $tax = $this->decimal((float) $gross - (float) $net);
-        }
-
+        // Keine Ableitung hier: nur gefundene Werte zählen für die Summenprobe beim
+        // Zusammenführen (MVP-1215); abgeleitet wird einmal am Ende in finalize().
         $taxRate = $this->taxRate($text);
-        if ($taxRate === null && $net !== null && $tax !== null && (float) $net > 0.0) {
-            $taxRate = $this->decimal(((float) $tax / (float) $net) * 100);
-        }
 
         $currency = match (true) {
             preg_match('/(?:\bCHF\b|Fr\.)/iu', $text) === 1 => 'CHF',
@@ -817,7 +1228,8 @@ class InvoicePdfImportService {
 
     /** @param list<string> $labels */
     private function labeledAmount(string $text, array $labels, bool $last = false): ?string {
-        $pattern = '/(?:' . implode('|', $labels) . ')\s*[:]?\s*(?:\d{1,2}(?:[,.]\d{1,2})?\s*%\s*)?(?:EUR|USD|CHF|GBP|€|\$|£)?\s*([+-]?[\d .]+(?:,\d{2}|\.\d{2}))\s*(?:EUR|USD|CHF|GBP|€|\$|£)?/iu';
+        // Ein Klammerzusatz hinter der Beschriftung („Gesamtbetrag (Versandkostenanteil 8,20 EUR)“) wird übersprungen.
+        $pattern = '/(?:' . implode('|', $labels) . ')(?:\s*\([^()\n]{0,80}\))?\s*[:]?\s*(?:\d{1,2}(?:[,.]\d{1,2})?\s*%\s*)?(?:EUR|USD|CHF|GBP|€|\$|£)?\s*([+-]?[\d .]+(?:,\d{2}|\.\d{2}))\s*(?:EUR|USD|CHF|GBP|€|\$|£)?/iu';
         if (preg_match_all($pattern, $text, $matches) < 1) {
             return null;
         }
@@ -827,6 +1239,15 @@ class InvoicePdfImportService {
         $normalized = NumberHelper::normalizeDecimalStringOrNull((string) $raw, CountryCode::Germany);
 
         return $normalized !== null ? $this->decimal((float) $normalized) : null;
+    }
+
+    /** „Starnberg, 31.08.2025“ bzw. „Potsdam, den 12.03.2025“ im Briefkopf (MVP-1215). */
+    private function placeDate(string $text): ?string {
+        if (preg_match('/(?<![\p{L}])[A-ZÄÖÜ][\p{L}.\-]{2,30}(?:\s[A-ZÄÖÜ][\p{L}.\-]{2,30})?,\s*(?:den\s+)?(\d{1,2}\.\d{1,2}\.\d{2,4})(?!\d)/u', $text, $matches) !== 1) {
+            return null;
+        }
+
+        return DateHelper::parseWithCountryPreference($matches[1], CountryCode::Germany)?->format('Y-m-d');
     }
 
     private function taxRate(string $text): ?string {

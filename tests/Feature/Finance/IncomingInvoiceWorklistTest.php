@@ -13,12 +13,15 @@ namespace Tests\Feature\Finance;
 use App\Enums\Billing\DocumentDirection;
 use App\Enums\Document\DocumentType;
 use App\Enums\Invoicing\{IncomingEInvoiceStatus, IncomingInvoiceMatchKind, IncomingInvoiceRecognition};
+use App\Models\Automation\AutomationRule;
 use App\Models\Customer\Customer;
 use App\Models\Document\Document;
-use App\Models\Invoicing\{IncomingEInvoice, IncomingInvoiceExclusion, InvoiceSenderRule};
+use App\Models\Invoicing\{IncomingEInvoice, InvoiceSenderRule};
 use App\Models\Platform\User;
 use App\Models\Supplier\Supplier;
 use App\Notifications\Finance\IncomingInvoicesDigestNotification;
+use App\Services\Invoicing\Automation\{AssignIncomingInvoiceAction, IncomingInvoiceReceivedTrigger, RejectIncomingInvoiceAction};
+use App\Services\Invoicing\EInvoice\IncomingEInvoiceService;
 use App\Support\Crypto\BlindIndex;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Artisan, Notification};
@@ -74,7 +77,7 @@ final class IncomingInvoiceWorklistTest extends TestCase {
         $this->assertDatabaseMissing('invoice_sender_rules', ['id' => $rule->id]);
     }
 
-    public function test_rejecting_as_no_invoice_can_exclude_the_party_and_file_the_other_open_documents(): void {
+    public function test_rejecting_as_no_invoice_can_create_an_inbox_rule_and_file_the_other_open_documents(): void {
         $first = $this->incoming(['seller_name' => 'CKonverter.de']);
         $second = $this->incoming(['seller_name' => ' ckonverter.de']);
         $rejected = $this->incoming(['seller_name' => 'CKonverter.de', 'status' => IncomingEInvoiceStatus::Rejected]);
@@ -82,7 +85,7 @@ final class IncomingInvoiceWorklistTest extends TestCase {
 
         $this->get(route('finance.incoming-invoices.assign.form', $first))->assertOk()->assertSee('CKonverter.de');
         $this->post(route('finance.incoming-invoices.assign', $first), [
-            'direction' => 'incoming', 'mode' => 'not_invoice', 'note' => 'Testnachricht', 'exclude_party' => '1', 'apply_to_open' => '1',
+            'direction' => 'incoming', 'mode' => 'not_invoice', 'note' => 'Testnachricht', 'exclude_action' => 'reject', 'apply_to_open' => '1',
         ])->assertRedirect()->assertSessionHas('success', static fn (string $message): bool => str_contains($message, '1 weiterer offener Eingang von „CKonverter.de“'));
 
         $this->assertSame(IncomingEInvoiceStatus::Rejected, $first->refresh()->status);
@@ -92,19 +95,78 @@ final class IncomingInvoiceWorklistTest extends TestCase {
         $this->assertSame(IncomingEInvoiceStatus::Received, $other->refresh()->status);
         $this->assertNull($rejected->refresh()->decision_note);
 
-        $rule = IncomingInvoiceExclusion::query()->sole();
-        $this->assertSame('ckonverter.de', $rule->party_name_key);
-        $this->assertSame('Testnachricht', $rule->note);
+        $rule = AutomationRule::query()->sole();
+        $this->assertSame(IncomingInvoiceReceivedTrigger::KEY, $rule->trigger_event);
+        $this->assertSame('ckonverter.de', data_get($rule->conditions, 'all.0.value'));
+        $this->assertSame(RejectIncomingInvoiceAction::TYPE, data_get($rule->actions, '0.type'));
 
-        // Nacherkennung (MVP-1207) und neue Eingänge: die Regel greift sofort.
+        // Neue Eingänge und die Nacherkennung laufen durch dieselbe Regel.
         $late = $this->incoming(['seller_name' => 'CKONVERTER.DE']);
-        $this->assertTrue(app(\App\Services\Invoicing\EInvoice\IncomingInvoiceExclusions::class)->applyTo($late));
+        $this->assertTrue(app(IncomingEInvoiceService::class)->applyRules($late));
         $this->assertSame(IncomingEInvoiceStatus::Rejected, $late->refresh()->status);
+        $this->assertSame('Testnachricht', $late->decision_note);
         $this->assertNull($late->decided_by);
 
-        $this->get(route('finance.incoming-invoices.rules'))->assertOk()->assertSee('CKonverter.de')->assertSee('Testnachricht');
-        $this->delete(route('finance.incoming-invoices.rules.exclusion.destroy', $rule))->assertRedirect()->assertSessionHas('success');
-        $this->assertDatabaseMissing('incoming_invoice_exclusions', ['id' => $rule->id]);
+        $this->get(route('finance.incoming-invoices.rules'))->assertOk()->assertSee('ckonverter.de')->assertSee('Testnachricht');
+        $this->post(route('finance.incoming-invoices.rules.automation.toggle', $rule))->assertRedirect()->assertSessionHas('success');
+        $this->assertFalse($rule->refresh()->is_active);
+        $this->delete(route('finance.incoming-invoices.rules.automation.destroy', $rule))->assertRedirect()->assertSessionHas('success');
+        $this->assertDatabaseMissing('automation_rules', ['id' => $rule->id]);
+    }
+
+    public function test_discarding_removes_document_and_file_and_future_documents_are_discarded_by_rule(): void {
+        $first = $this->incoming(['seller_name' => 'CKonverter.de']);
+        $second = $this->incoming(['seller_name' => 'CKonverter.de']);
+        $documentIds = [$first->document_id, $second->document_id];
+
+        $this->post(route('finance.incoming-invoices.assign', $first), [
+            'direction' => 'incoming', 'mode' => 'not_invoice', 'note' => 'Testnachricht', 'exclude_action' => 'discard', 'apply_to_open' => '1',
+        ])->assertRedirect()->assertSessionHas('success', static fn (string $message): bool => str_contains($message, 'verworfen'));
+
+        $this->assertDatabaseMissing('incoming_einvoices', ['id' => $first->id]);
+        $this->assertDatabaseMissing('incoming_einvoices', ['id' => $second->id]);
+        foreach ($documentIds as $documentId) {
+            $this->assertDatabaseMissing('documents', ['id' => $documentId]);
+        }
+        $this->assertDatabaseHas('audit_logs', ['event' => 'incoming_einvoice.discarded', 'auditable_id' => $first->id]);
+        $this->assertDatabaseHas('audit_logs', ['event' => 'document.purged', 'auditable_id' => $documentIds[0]]);
+
+        $late = $this->incoming(['seller_name' => 'CKonverter.de']);
+        $lateDocumentId = $late->document_id;
+        $this->assertTrue(app(IncomingEInvoiceService::class)->applyRules($late));
+        $this->assertFalse($late->exists);
+        $this->assertDatabaseMissing('incoming_einvoices', ['id' => $late->id]);
+        $this->assertDatabaseMissing('documents', ['id' => $lateDocumentId]);
+    }
+
+    public function test_rejected_tab_lists_rejected_documents_and_deletes_them_permanently(): void {
+        $rejected = $this->incoming(['invoice_number' => 'REJ-1', 'status' => IncomingEInvoiceStatus::Rejected]);
+        $open = $this->incoming(['invoice_number' => 'OPEN-2']);
+
+        $this->get(route('finance.incoming-invoices.index', ['tab' => 'rejected']))
+            ->assertOk()->assertSee('REJ-1')->assertDontSee('OPEN-2')->assertSee(__('Endgültig löschen'));
+        $this->post(route('finance.incoming-invoices.bulk-discard'), ['ids' => [$rejected->sqid, $open->sqid]])
+            ->assertRedirect()->assertSessionHas('warning', static fn (string $message): bool => str_contains($message, '1 Eingänge endgültig gelöscht, 1 übersprungen'));
+
+        $this->assertDatabaseMissing('incoming_einvoices', ['id' => $rejected->id]);
+        $this->assertDatabaseHas('incoming_einvoices', ['id' => $open->id]);
+        $this->get(route('finance.incoming-invoices.index', ['tab' => 'all', 'status' => 'received']))->assertOk()->assertSee('OPEN-2');
+    }
+
+    public function test_an_inbox_rule_can_assign_a_party_by_seller_name(): void {
+        $supplier = Supplier::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Pinsel GmbH']);
+        AutomationRule::query()->create([
+            'organization_id' => $this->organization->id, 'name' => 'Pinsel', 'trigger_event' => IncomingInvoiceReceivedTrigger::KEY,
+            'conditions' => ['all' => [['field' => 'seller_name_key', 'op' => 'contains', 'value' => 'pinsel']]],
+            'actions' => [['type' => AssignIncomingInvoiceAction::TYPE, 'params' => ['party' => 'supplier:' . $supplier->sqid]]],
+            'is_active' => true, 'priority' => 100, 'created_by_id' => $this->admin->id,
+        ]);
+        $incoming = $this->incoming(['seller_name' => 'Pinsel  GmbH & Co.']);
+
+        $this->assertTrue(app(IncomingEInvoiceService::class)->applyRules($incoming));
+        $this->assertSame($supplier->id, $incoming->refresh()->supplier_id);
+        $this->assertSame(IncomingInvoiceMatchKind::Rule, $incoming->match_kind);
+        $this->get(route('finance.incoming-invoices.rules'))->assertOk()->assertSee('Pinsel GmbH');
     }
 
     public function test_assigning_can_apply_to_the_other_open_documents_of_the_same_party_name(): void {
@@ -270,5 +332,23 @@ final class IncomingInvoiceWorklistTest extends TestCase {
             'summary' => [],
             ...$attributes,
         ]);
+    }
+
+    public function test_a_reminder_hint_proposes_no_invoice_and_links_the_reminded_documents(): void {
+        $invoice = $this->incoming(['invoice_number' => 'RZLRE2501475', 'seller_name' => 'Rechenzentrum Christoph Ludwigs']);
+        $reminder = $this->incoming([
+            'invoice_number' => null, 'seller_name' => null, 'recognition' => IncomingInvoiceRecognition::None, 'amount_gross' => null,
+            'summary' => ['kind_hint' => 'reminder', 'reminder_for' => ['RZLRE2501475'], 'extraction' => ['reason' => 'no_number', 'reader' => 'pdftotext', 'found' => ['gross' => '16.51'], 'hints' => ['issue_date' => '2025-07-07'], 'kind_hint' => 'reminder', 'reminder_for' => ['RZLRE2501475']]],
+        ]);
+
+        $this->get(route('finance.incoming-invoices.index'))->assertOk()->assertSee(__('enums.billing.kind.reminder'));
+        $this->get(route('finance.incoming-invoices.assign.form', $reminder))->assertOk()
+            ->assertSee(__('Sieht aus wie'))->assertSee('Mahnung zu RZLRE2501475')
+            ->assertSee(route('finance.incoming-invoices.show', $invoice->document), false)
+            ->assertSee('value="not_invoice" class="join-item btn btn-sm" aria-label="' . __('Keine Rechnung') . '" checked', false);
+        $this->get(route('finance.incoming-invoices.values.form', $reminder))->assertOk()
+            ->assertSee('value="2025-07-07"', false)->assertSee(__('Vorschlag aus dem Lieferdatum, bitte am Original prüfen.'));
+        $this->get(route('finance.incoming-invoices.show', $reminder->document))->assertOk()
+            ->assertSee(__('Bezieht sich auf'))->assertSee('RZLRE2501475');
     }
 }

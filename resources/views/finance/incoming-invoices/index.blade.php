@@ -20,6 +20,7 @@
     $queryBase = array_filter([
         'direction' => request('direction'),
         'recognition' => request('recognition'),
+        'status' => request('status'),
         'q' => request('q'),
     ], static fn ($value) => $value !== null && $value !== '');
     $tabItems = [
@@ -28,9 +29,10 @@
         ...($transferCount > 0 || $tab === 'transfer' ? [['label' => __('Übergabe offen'), 'route' => 'finance.incoming-invoices.index', 'params' => ['tab' => 'transfer'] + $queryBase, 'active' => $tab === 'transfer', 'count' => $transferCount, 'icon' => 'outbox']] : []),
         ...($failedCount > 0 || $tab === 'failed' ? [['label' => __('Übergabe fehlgeschlagen'), 'route' => 'finance.incoming-invoices.index', 'params' => ['tab' => 'failed'] + $queryBase, 'active' => $tab === 'failed', 'count' => $failedCount, 'icon' => 'sync_problem']] : []),
         ...($duplicateCount > 0 || $tab === 'duplicates' ? [['label' => __('Möglicher Doppel-Eingang'), 'route' => 'finance.incoming-invoices.index', 'params' => ['tab' => 'duplicates'] + $queryBase, 'active' => $tab === 'duplicates', 'count' => $duplicateCount, 'icon' => 'content_copy']] : []),
+        ...($rejectedCount > 0 || $tab === 'rejected' ? [['label' => __('Abgelehnt'), 'route' => 'finance.incoming-invoices.index', 'params' => ['tab' => 'rejected'] + $queryBase, 'active' => $tab === 'rejected', 'count' => $rejectedCount, 'icon' => 'block']] : []),
         ['label' => __('Alle'), 'route' => 'finance.incoming-invoices.index', 'params' => ['tab' => 'all'] + $queryBase, 'active' => $tab === 'all', 'icon' => 'list'],
     ];
-    $bulk = $bulkParties !== null && $incomings->isNotEmpty();
+    $bulk = ($bulkParties !== null || $bulkDiscard) && $incomings->isNotEmpty();
     $colspan = $bulk ? 9 : 8;
 @endphp
 
@@ -71,9 +73,28 @@
                 <option value="{{ $r->value }}" @selected(request('recognition') === $r->value)>{{ $r->label() }}</option>
             @endforeach
         </select>
+        @if ($tab === 'all')
+            <select name="status" class="select select-sm select-bordered w-48 shrink-0" aria-label="{{ __('Status') }}">
+                <option value="">{{ __('Jeder Status') }}</option>
+                @foreach (\App\Enums\Invoicing\IncomingEInvoiceStatus::cases() as $s)
+                    <option value="{{ $s->value }}" @selected(request('status') === $s->value)>{{ $s->label() }}</option>
+                @endforeach
+            </select>
+        @endif
     </x-filter-bar>
 
-    @if ($bulk)
+    @if ($bulk && $bulkDiscard)
+        {{-- Abgelehnt (MVP-1212): endgültig löschen — Beleg, Dokument, Dateien; es bleibt der Audit-Eintrag. --}}
+        <form method="POST" action="{{ route('finance.incoming-invoices.bulk-discard') }}" data-bulk-form class="contents"
+              data-confirm-dialog data-confirm-message="{{ __('Ausgewählte Eingänge endgültig löschen? Beleg, Dokument und Dateien werden entfernt; es bleibt der Audit-Eintrag.') }}"
+              data-confirm-tone="error" data-confirm-icon="delete_forever" data-confirm-label="{{ __('Endgültig löschen') }}">
+            @csrf
+            <x-bulk-toolbar :label="__(':n Eingänge ausgewählt')" tone="error">
+                <x-slot:actions>
+                    <x-button type="submit" tone="error" size="sm" icon="delete_forever">{{ __('Endgültig löschen') }}</x-button>
+                </x-slot:actions>
+            </x-bulk-toolbar>
+    @elseif ($bulk)
         <form method="POST" action="{{ route('finance.incoming-invoices.bulk-assign') }}" data-bulk-form class="contents">
             @csrf
             <x-bulk-toolbar :label="__(':n Eingänge ausgewählt')">
@@ -152,7 +173,12 @@
                 <td class="whitespace-nowrap text-right tabular-nums text-sm">
                     @if ($incoming->amount_gross !== null){{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($incoming->amount_gross->toFloat(), 2, withThousandsSeparator: true) }} {{ $incoming->currency?->value }}@else—@endif
                 </td>
-                <td><x-status-badge :tone="$incoming->recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::None ? 'warning' : 'ghost'">{{ $incoming->recognition->label() }}</x-status-badge></td>
+                <td>
+                    <x-status-badge :tone="$incoming->recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::None ? 'warning' : 'ghost'">{{ $incoming->recognition->label() }}</x-status-badge>
+                    @if (($hintLabel = $kindHints->label($incoming->kindHint())) !== null)
+                        <x-status-badge tone="ghost" :title="__('Sieht aus wie')">{{ $hintLabel }}</x-status-badge>
+                    @endif
+                </td>
                 <td>
                     <x-status-badge outline>{{ $incoming->status->label() }}</x-status-badge>
                     @if ($incoming->isPossibleDuplicate())

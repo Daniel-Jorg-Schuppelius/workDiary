@@ -115,10 +115,49 @@ documents of the same party together in the list.
 
 With “Also treat the other open documents the same way” you handle all open
 documents of the same counterparty in one step, when assigning as well as when
-rejecting. Under “Not an invoice” you can also exclude the counterparty: future
-documents with this name are filed automatically as “not an invoice”, for
-example test documents or advertising. You can view and delete sender rules and
-exclusions via “Rules” in the page menu.
+rejecting. Under “Not an invoice” you decide what happens to future documents
+from this counterparty: “file automatically as not an invoice” or “do not take
+in at all (discard)”. Discarding removes the document, its file and
+attachments; the audit entry with checksum, number, seller, sender and reason
+remains. WorkDiary creates an inbox rule for this.
+
+**Inbox rules** are automation rules for the trigger “Incoming invoice
+received”. You see them via “Rules” in the page menu together with the sender
+rules, switch them off and on and delete them; administrators edit conditions
+and actions on the automation page. Conditions check, among others, seller
+(`seller_name_key`, normalised), VAT ID (`seller_vat_id`), sender
+(`sender_email`, `sender_domain`), subject (`mail_subject`), attachment names
+(`attachment_names`), file name (`file_name`), country (`country`), gross
+amount (`amount_gross`) and recognition (`recognition`); operators include
+“is”, “contains”, “starts with”, “ends with” and “matches” (regular
+expression). Actions: discard, file as not an invoice, assign to a party. The
+first matching rule wins; rules apply on retrieval, on upload and on
+re-recognition.
+
+Rejected documents are listed in the “Rejected” tab, where you can delete them
+permanently. After the configured period (default 30 days) retention proposes
+their destruction; deletion happens only after approval.
+
+**Recognition of PDFs and scans:** WorkDiary reads labels and values even when
+they sit in separate columns or in a header row above the value row. If there
+is no invoice date, “Place, date” in the letterhead or a bare “Date” counts; a
+delivery date is only suggested and marked in the “Enter values” dialog.
+Reminders, delivery notes, order confirmations, quotes and shipping labels are
+recognised as such: the list shows “Looks like”, the assignment dialog
+preselects “Not an invoice”, and reminders name the invoices concerned with a
+link. Administrators measure recognition with
+`incoming-invoices:measure-recognition` against the stored document texts.
+
+**Document templates:** Via “Template” on the document page you draw
+rectangles on the rendered document for invoice number, date, amounts, VAT ID
+and seller; the recognised value appears immediately. The template is saved
+with a fingerprint of the header and footer of the first page, so it matches
+every further document of the same supplier, on request the open ones right
+away. Every correction in “Enter values” learns as well: the entered value is
+located on the document and remembered as a zone; after the second matching
+hit a learned zone counts as confirmed and overrides the heuristics. Templates
+are listed under “Rules” and can be deleted there. Zones exist for PDF
+documents only.
 
 **Collective supplier and collective customer:** For one-off suppliers and
 customers, each organisation has one collective contact. The name of the

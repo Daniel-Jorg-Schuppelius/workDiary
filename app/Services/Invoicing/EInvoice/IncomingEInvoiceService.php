@@ -247,7 +247,7 @@ class IncomingEInvoiceService {
      * quittiert nicht. Nur das Rechnungspostfach legt Klärfälle an
      * ({@see storeMessage()}), weil die Mail sonst in der allgemeinen Inbox landet.
      *
-     * @return array{status: 'created'|'duplicate'|'infected'|'unreadable', incoming: ?\App\Models\Invoicing\IncomingEInvoice, document: ?\App\Models\Document\Document}
+     * @return array{status: 'created'|'discarded'|'duplicate'|'infected'|'unreadable', incoming: ?\App\Models\Invoicing\IncomingEInvoice, document: ?\App\Models\Document\Document}
      */
     public function storeIncoming(
         \App\Models\Platform\User $actor,
@@ -278,7 +278,9 @@ class IncomingEInvoiceService {
             return ['status' => 'unreadable', 'incoming' => null, 'document' => null];
         }
 
-        return ['status' => 'created', ...$this->persist($actor, $sha256, $contents, $mime, $source, $file, $name, $summary, $origin)];
+        $stored = $this->persist($actor, $sha256, $contents, $mime, $source, $file, $name, $summary, $origin);
+
+        return ['status' => $stored['incoming']->exists ? 'created' : 'discarded', ...$stored];
     }
 
     /**
@@ -292,10 +294,10 @@ class IncomingEInvoiceService {
      * - Inline-Teile, Signaturen und kleine Bilder sind nie Belege.
      *
      * @param  list<\App\Services\Mail\MailAttachment>  $attachments
-     * @return array{stored: int, unrecognized: int, duplicates: int, infected: int, candidates: int, incomings: list<\App\Models\Invoicing\IncomingEInvoice>}
+     * @return array{stored: int, unrecognized: int, duplicates: int, infected: int, candidates: int, discarded: int, incomings: list<\App\Models\Invoicing\IncomingEInvoice>}
      */
     public function storeMessage(\App\Models\Platform\User $actor, array $attachments, IncomingOrigin $origin, string $source = 'mail'): array {
-        $result = ['stored' => 0, 'unrecognized' => 0, 'duplicates' => 0, 'infected' => 0, 'candidates' => 0, 'incomings' => []];
+        $result = ['stored' => 0, 'unrecognized' => 0, 'duplicates' => 0, 'infected' => 0, 'candidates' => 0, 'discarded' => 0, 'incomings' => []];
         $organizationId = (int) $actor->organization_id;
 
         $candidates = [];
@@ -371,6 +373,11 @@ class IncomingEInvoiceService {
         foreach ($leading as $lead) {
             $item = $lead['item'];
             $incoming = $this->persist($actor, $item['sha256'], $item['attachment']->content, $item['attachment']->mime, $source, null, $item['attachment']->filename, $item['summary'], $origin)['incoming'];
+            if (! $incoming->exists) {
+                $result['discarded']++; // Posteingangsregel hat verworfen: kein Eingang, keine Begleitdateien
+
+                continue;
+            }
             $result[self::isUnrecognized($item['summary']) ? 'unrecognized' : 'stored']++;
             $result['incomings'][] = $incoming;
             foreach ([...$lead['companions'], ...$companions] as $companion) {
@@ -462,7 +469,12 @@ class IncomingEInvoiceService {
             return $summary;
         }
 
-        return [...$this->unrecognizedSummary(), 'extraction' => $extraction];
+        return [
+            ...$this->unrecognizedSummary(),
+            'extraction' => $extraction,
+            'kind_hint' => $extraction['kind_hint'] ?? null,
+            'reminder_for' => array_values((array) ($extraction['reminder_for'] ?? [])),
+        ];
     }
 
     /**
@@ -488,6 +500,14 @@ class IncomingEInvoiceService {
         $recognition = \App\Enums\Invoicing\IncomingInvoiceRecognition::from((string) $summary['recognition']);
 
         ['summary' => $summary, 'classification' => $classification] = $this->enrich($actor->organization, $organizationId, $summary);
+        // Herkunft für die Posteingangsregeln (MVP-1209): Dateiname, Betreff, Anhangsnamen.
+        $summary['file_name'] = $originalName;
+        if ($origin?->subject !== null && trim($origin->subject) !== '') {
+            $summary['mail_subject'] = mb_substr(trim($origin->subject), 0, 500);
+        }
+        if ($origin !== null && $origin->attachmentNames !== []) {
+            $summary['mail_attachments'] = array_map(static fn (string $name): string => mb_substr($name, 0, 191), $origin->attachmentNames);
+        }
 
         $attributes = [
             ...$this->documentAttributes($recognition, $summary, $originalName ?? $sha256),
@@ -523,6 +543,7 @@ class IncomingEInvoiceService {
             'direction' => $classification['direction'],
             'kind' => $classification['kind'],
             'recognition' => $recognition,
+            'template_id' => is_array($summary['extraction']['template'] ?? null) ? (int) ($summary['extraction']['template']['id'] ?? 0) ?: null : null,
             'summary' => $summary,
             ...\App\Models\Invoicing\IncomingEInvoice::columnsFromSummary($summary),
         ]);
@@ -535,14 +556,70 @@ class IncomingEInvoiceService {
             'source' => $source,
         ]);
 
-        // Ausschlussregel (MVP-1208): Belege dieser Gegenpartei sind keine Rechnungen.
-        if (app(IncomingInvoiceExclusions::class)->applyTo($incoming)) {
+        // Posteingangsregeln (MVP-1209): erste passende Regel gewinnt — danach kein Abgleich mehr.
+        if ($this->applyRules($incoming)) {
             return ['incoming' => $incoming, 'document' => $document];
         }
         // Gegenpartei nur bei eindeutigem, exaktem Treffer (MVP-1108).
         app(IncomingInvoiceMatcher::class)->autoAssign($incoming);
 
         return ['incoming' => $incoming, 'document' => $document];
+    }
+
+    /**
+     * Posteingangsregeln (MVP-1209): Automationsregeln zum Auslöser
+     * „Rechnungseingang eingegangen“ — verwerfen, ablehnen oder zuordnen.
+     * true, sobald eine Regel entschieden hat; dann entfällt der Abgleich.
+     */
+    public function applyRules(\App\Models\Invoicing\IncomingEInvoice $incoming): bool {
+        app(\App\Automation\RuleEngine::class)->dispatch(\App\Services\Invoicing\Automation\IncomingInvoiceReceivedTrigger::KEY, $incoming);
+        if (! $incoming->exists) {
+            return true;
+        }
+        $incoming->refresh();
+
+        return $incoming->status === \App\Enums\Invoicing\IncomingEInvoiceStatus::Rejected
+            || $incoming->supplier_id !== null
+            || $incoming->customer_id !== null;
+    }
+
+    /**
+     * Beleg endgültig entfernen (MVP-1210): nur Treffer einer Verwerfen-Regel
+     * oder abgelehnte Eingänge — nie übergebene, zugeordnete oder gehaltene.
+     * Es bleibt die Audit-Zeile mit Prüfsumme, Nummer, Verkäufer, Absender und
+     * Grund; Anhänge räumt HasAttachments ab, Übergaben und Einbehalte der FK.
+     *
+     * @param  'manual'|'rule'|'retention'  $trigger
+     */
+    public function discard(\App\Models\Invoicing\IncomingEInvoice $incoming, string $reason, ?\App\Models\Platform\User $actor, string $trigger = 'manual'): void {
+        if ($incoming->transferred_at !== null || $incoming->supplier_id !== null || $incoming->customer_id !== null) {
+            throw new \RuntimeException((string) __('Nur abgelehnte oder nicht zugeordnete Eingänge lassen sich endgültig löschen.'));
+        }
+        if ($trigger !== 'rule' && $incoming->status !== \App\Enums\Invoicing\IncomingEInvoiceStatus::Rejected) {
+            throw new \RuntimeException((string) __('Nur abgelehnte oder nicht zugeordnete Eingänge lassen sich endgültig löschen.'));
+        }
+        $holds = app(\App\Services\Retention\LegalHoldService::class);
+        $holds->assertNotHeld($incoming);
+        $document = $incoming->document;
+        if ($document !== null) {
+            $holds->assertNotHeld($document);
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($incoming, $document, $reason, $actor, $trigger): void {
+            $incoming->audit('incoming_einvoice.discarded', [
+                'sha256' => $incoming->sha256,
+                'number' => $incoming->invoice_number,
+                'seller' => $incoming->seller_name,
+                'sender' => $incoming->sender_email,
+                'reason' => $reason,
+                'trigger' => $trigger,
+                'actor_user_id' => $actor?->id,
+            ]);
+            $incoming->delete();
+            if ($document !== null) {
+                app(\App\Services\Document\DocumentService::class)->purge($document, $actor, $reason);
+            }
+        });
     }
 
     /**
@@ -605,7 +682,7 @@ class IncomingEInvoiceService {
             'gross' => $summary['gross'],
             'recognition' => $recognition->value,
         ]);
-        if (! app(IncomingInvoiceExclusions::class)->applyTo($incoming)) {
+        if (! $this->applyRules($incoming)) {
             app(IncomingInvoiceMatcher::class)->autoAssign($incoming);
         }
 
@@ -680,12 +757,20 @@ class IncomingEInvoiceService {
             || ($sellerTax !== '' && $sellerTax === $own['tax_number'])
             || ($sellerIban !== null && in_array($sellerIban, $own['ibans'], true));
 
+        // Belegart aus dem Text (MVP-1216): Mahnung, Lieferschein, Bestätigung, Angebot — nur für unstrukturierte Belege.
+        $hinted = match ((string) ($summary['kind_hint'] ?? '')) {
+            'reminder' => \App\Enums\Billing\DocumentKind::Reminder,
+            'delivery_note' => \App\Enums\Billing\DocumentKind::DeliveryNote,
+            'order_confirmation' => \App\Enums\Billing\DocumentKind::OrderConfirmation,
+            'quote' => \App\Enums\Billing\DocumentKind::Quote,
+            default => null,
+        };
         $kind = match ((string) ($summary['type_code'] ?? '')) {
             '381' => \App\Enums\Billing\DocumentKind::CreditNote,
             '386' => \App\Enums\Billing\DocumentKind::DownPayment,
-            default => is_numeric($summary['gross'] ?? null) && (float) $summary['gross'] < 0
+            default => $hinted ?? (is_numeric($summary['gross'] ?? null) && (float) $summary['gross'] < 0
                 ? \App\Enums\Billing\DocumentKind::CreditNote
-                : \App\Enums\Billing\DocumentKind::Invoice,
+                : \App\Enums\Billing\DocumentKind::Invoice),
         };
 
         return [
@@ -1030,11 +1115,16 @@ class IncomingEInvoiceService {
             'discount_percent' => $result['skonto']['percent'] ?? null,
             'discount_days' => $result['skonto']['days'] ?? null,
             'unstructured' => true,
+            'kind_hint' => $result['kind_hint'] ?? null,
+            'reminder_for' => array_values((array) ($result['reminder_numbers'] ?? [])),
             'extraction' => [
                 'reader' => $result['reader'] ?? null,
                 'ocr_used' => (bool) ($result['ocr_used'] ?? false),
                 'confidence' => $result['confidence'] ?? null,
                 'warnings' => (array) ($result['warnings'] ?? []),
+                'sources' => (array) ($result['sources'] ?? []),
+                'hints' => array_filter(['issue_date' => $result['issued_on_hint'] ?? null]),
+                'template' => $result['template'] ?? null,
             ],
             'reference_tokens' => array_values((array) ($result['reference_tokens'] ?? [])),
         ]];
@@ -1070,6 +1160,10 @@ class IncomingEInvoiceService {
             'warnings' => array_values(array_filter((array) ($result['warnings'] ?? []), 'is_string')),
             'source_format' => $format,
             'found' => $found,
+            'sources' => (array) ($result['sources'] ?? []),
+            'hints' => array_filter(['issue_date' => $result['issued_on_hint'] ?? null]),
+            'kind_hint' => $result['kind_hint'] ?? null,
+            'reminder_for' => array_values((array) ($result['reminder_numbers'] ?? [])),
         ];
     }
 

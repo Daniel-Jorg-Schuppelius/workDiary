@@ -35,6 +35,7 @@ final class InvoicingManifest extends Manifest {
         return [
             'Invoicing',
             'Peppol',
+            'Recognition',
         ];
     }
 
@@ -44,8 +45,8 @@ final class InvoicingManifest extends Manifest {
             'base_interest_rates',
             'incoming_einvoices',
             'invoice_sender_rules',
-            'incoming_invoice_exclusions',
             'incoming_einvoice_transfers',
+            'incoming_invoice_templates',
             'invoice_commissions',
             'invoice_inquiries',
             'invoice_item_time_entries',
@@ -83,6 +84,18 @@ final class InvoicingManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            // Posteingangsregeln (Phase 150, MVP-1209/1210) und Aufräumen abgelehnter Eingänge (MVP-1213).
+            \App\Automation\Triggers\RuleTrigger::class => [
+                \App\Services\Invoicing\Automation\IncomingInvoiceReceivedTrigger::class,
+            ],
+            \App\Automation\Actions\RuleAction::class => [
+                \App\Services\Invoicing\Automation\DiscardIncomingInvoiceAction::class,
+                \App\Services\Invoicing\Automation\RejectIncomingInvoiceAction::class,
+                \App\Services\Invoicing\Automation\AssignIncomingInvoiceAction::class,
+            ],
+            \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
+                \App\Services\Invoicing\Retention\InvoicingRetentionPolicies::class,
+            ],
             \App\Services\Billing\Contracts\DocumentRelationSource::class => [
                 \App\Services\Invoicing\Relations\InvoiceRelationSource::class,
             ],

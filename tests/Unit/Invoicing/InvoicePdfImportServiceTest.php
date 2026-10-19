@@ -129,4 +129,76 @@ final class InvoicePdfImportServiceTest extends TestCase {
             @unlink($path);
         }
     }
+
+    public function test_it_reads_labels_and_values_from_separate_blocks_and_from_header_rows(): void {
+        $service = new InvoicePdfImportService;
+
+        // F1: pdftotext gibt Spaltenblöcke aus — erst alle Beschriftungen, dann alle Werte.
+        $blocks = $service->analyzeText("Rechnung\nRechnungsnummer\nRechnungsdatum\nKundennummer\nHerr Max Muster\nMusterweg 1\n12345 Musterstadt\n9653702\n30.07.2025\n23940\nGesamtwert netto\nMwSt. 19,00 %\nGesamtbetrag\n100,00 €\n19,00 €\n119,00 €");
+        self::assertSame('9653702', $blocks['number']);
+        self::assertSame('2025-07-30', $blocks['issued_on']);
+        self::assertSame('blocks', $blocks['sources']['number']);
+
+        // F2: Kopfzeile über Wertezeile, wie im zeilentreuen Text.
+        $rows = $service->analyzeText("Belegnummer   Erstellt am   Gesamtbetrag   Fällig am\nAB-4711   12.03.2026   1.190,00 €   26.03.2026");
+        self::assertSame('AB-4711', $rows['number']);
+        self::assertSame('2026-03-12', $rows['issued_on']);
+        self::assertSame('1190.00', $rows['gross']);
+        self::assertSame('2026-03-26', $rows['due_on']);
+        self::assertSame('rows', $rows['sources']['gross']);
+
+        // Der zeilentreue Zweittext füllt, was der Lesetext schuldig bleibt — und gewinnt bei stimmigen Summen.
+        $merged = $service->analyzeText(
+            "Rechnung Nr. DR8824717\nBelegdatum\n21.08.2025\nGesamt EUR ohne MwSt.\nMwSt.-Betrag (19%)\nGesamt EUR inkl. MwSt.\n468,41\n89,00\n557,41",
+            "Rechnung Nr. DR8824717\nBelegdatum 21.08.2025\nGesamt EUR ohne MwSt. 468,41\nMwSt.-Betrag (19%) 89,00\nZahlbar: 8 Tage nach Rechnungsdatum netto  Gesamt EUR inkl. MwSt. 557,41",
+        );
+        self::assertSame('DR8824717', $merged['number']);
+        self::assertSame('2025-08-21', $merged['issued_on']);
+        self::assertSame('557.41', $merged['gross']);
+        self::assertSame('468.41', $merged['net']);
+        self::assertSame([], $merged['warnings']);
+    }
+
+    public function test_it_knows_more_total_and_date_spellings_and_never_takes_a_net_line_as_gross(): void {
+        $service = new InvoicePdfImportService;
+
+        $cases = [
+            ["Rechnungsnummer: INV2025-3518408\nRechnungsdatum: 27.08.2025\nGesamtpreis (exkl. MwSt.):\n28,12 €\nMwSt. 19% (19%):\n5,34 €\nGesamtpreis (inkl. MwSt.):\n33,46 €", '33.46', '28.12'],
+            ["Rechnung Nr. 14192399\nGesamtbetrag (Versandkostenanteil 8,20 EUR) 48,20 EUR", '48.20', null],
+            ["Rechnung Nr. IN4046824113\nRechnungsbetrag Netto 100,00 EUR\nRechnungsbetrag Brutto 119,00 EUR", '119.00', '100.00'],
+            ["Rechnung Nr. 77\nGesamtpreis Netto 102,54 €\nSumme inkl. MwSt. 122,02 €", '122.02', '102.54'],
+        ];
+        foreach ($cases as [$text, $gross, $net]) {
+            $result = $service->analyzeText($text);
+            self::assertSame($gross, $result['gross'], $text);
+            if ($net !== null) {
+                self::assertSame($net, $result['net'], $text);
+            }
+        }
+
+        $placeDate = $service->analyzeText("Rechnungs-Nr: AR20250831AD012409   Starnberg, 31.08.2025\nGesamtbetrag 127,56 €");
+        self::assertSame('2025-08-31', $placeDate['issued_on']);
+        $bareDate = $service->analyzeText("Rechnungsnummer 4711\nDatum: 07.07.2025\nGesamtbetrag 16,51");
+        self::assertSame('2025-07-07', $bareDate['issued_on']);
+        $delivery = $service->analyzeText("Rechnung Nr. 14192399\nLieferdatum : 05.08.25\nGesamtbetrag 48,20 EUR");
+        self::assertNull($delivery['issued_on'], 'Ein Lieferdatum ist kein Rechnungsdatum.');
+        self::assertSame('2025-08-05', $delivery['issued_on_hint']);
+        self::assertNull($service->analyzeText("Bestelldatum: 01.02.2025\nRechnung Nr. 1")['issued_on'], '„Bestelldatum“ ist kein nacktes „Datum“.');
+    }
+
+    public function test_it_hints_the_document_kind_for_reminders_and_other_non_invoices(): void {
+        $service = new InvoicePdfImportService;
+
+        $reminder = $service->analyzeText("Kundennummer: 1804771\nDatum: 07.07.2025\n2. Mahnung\nReNr. Datum Fällig Belegart Betrag Mahnbetrag\nRZLRE2501475 17.06.2025 17.06.2025 Rechnung 13,51 13,51 2\nMahngebühren: 3,00\nZu zahlen: 16,51");
+        self::assertSame('reminder', $reminder['kind_hint']);
+        self::assertSame(['RZLRE2501475'], $reminder['reminder_numbers']);
+        self::assertNull($reminder['number'], 'Die Nummer der angemahnten Rechnung ist nicht die Nummer der Mahnung.');
+
+        $label = $service->analyzeText("DHL Online Frankierung\nPaket bis 20 kg\nSendungsnummer: 91.000.326471 3\nEntgelt Bezahlt\nAbsender: Daniel Muster");
+        self::assertSame('shipping_label', $label['kind_hint']);
+
+        self::assertSame('delivery_note', $service->analyzeText("Lieferschein\nLieferschein-Nr. 5566\nMenge Artikel\n1 Schraube")['kind_hint']);
+        self::assertSame('order_confirmation', $service->analyzeText("Auftragsbestätigung\nAuftragsnummer 99\nGesamtbetrag 10,00 EUR")['kind_hint']);
+        self::assertNull($service->analyzeText("Rechnung\nRechnungsnummer 1\nLieferschein-Nr. 5\nGesamtbetrag 10,00 EUR")['kind_hint'], 'Ein Rechnungstitel schlägt den Lieferscheinverweis.');
+    }
 }

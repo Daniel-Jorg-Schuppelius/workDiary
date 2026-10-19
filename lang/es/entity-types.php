@@ -279,7 +279,7 @@ return [
     'EbicsConnection' => 'Acceso bancario EBICS',
     'DatevOnlineConnection' => 'Conexión DATEV Online',
     'InvoiceSenderRule' => 'Regla de remitente (buzón de facturas)',
-    'IncomingInvoiceExclusion' => 'Regla de exclusión (buzón de facturas)',
+    'IncomingInvoiceTemplate' => 'Plantilla de documento (facturas recibidas)',
     'InvoiceSchedule' => 'Plan de facturación',
     'InvoiceScheduleItem' => 'Línea del plan de facturación',
     'InvoiceTemplate' => 'Plantilla de factura',

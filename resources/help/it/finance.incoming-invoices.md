@@ -121,10 +121,52 @@ Assegni insieme nell’elenco più documenti della stessa parte.
 
 Con «Trattare allo stesso modo anche gli altri documenti aperti» sbriga tutti i
 documenti aperti della stessa controparte in un passaggio, sia nell’assegnazione
-sia nel rifiuto. In «Non è una fattura» può inoltre escludere la controparte: i
-futuri documenti con questo nome vengono archiviati automaticamente come «non è
-una fattura», ad esempio documenti di prova o pubblicità. Le regole mittente e le
-esclusioni si consultano ed eliminano tramite «Regole» nel menu della pagina.
+sia nel rifiuto. In «Non è una fattura» decide cosa accade ai futuri documenti
+di questa controparte: «archiviare automaticamente come non è una fattura»
+oppure «non acquisire affatto (scartare)». Scartare rimuove il documento, il
+file e gli allegati; resta la voce di audit con checksum, numero, venditore,
+mittente e motivo. WorkDiary crea a tale scopo una regola della posta in arrivo.
+
+Le **regole della posta in arrivo** sono regole di automazione dell’attivatore
+«Fattura in entrata ricevuta». Le vede tramite «Regole» nel menu della pagina,
+insieme alle regole mittente, le disattiva, le attiva e le elimina; gli
+amministratori modificano condizioni e azioni nella pagina delle automazioni.
+Le condizioni verificano tra l’altro venditore (`seller_name_key`,
+normalizzato), partita IVA (`seller_vat_id`), mittente (`sender_email`,
+`sender_domain`), oggetto (`mail_subject`), nomi degli allegati
+(`attachment_names`), nome file (`file_name`), paese (`country`), importo
+lordo (`amount_gross`) e riconoscimento (`recognition`); gli operatori
+comprendono «è», «contiene», «inizia con», «termina con» e «corrisponde a»
+(espressione regolare). Azioni: scartare, archiviare come non è una fattura,
+assegnare a una parte. Vince la prima regola corrispondente; le regole si
+applicano al recupero, al caricamento e al nuovo riconoscimento.
+
+I documenti rifiutati si trovano nella scheda «Rifiutato», dove può eliminarli
+definitivamente. Trascorso il periodo impostato (30 giorni per impostazione
+predefinita), la conservazione ne propone la distruzione; l’eliminazione
+avviene solo dopo l’approvazione.
+
+**Riconoscimento di PDF e scansioni:** WorkDiary legge etichette e valori
+anche quando si trovano in colonne separate o in una riga di intestazione
+sopra la riga dei valori. Se manca la data della fattura, vale «Luogo, data»
+nell’intestazione o una semplice «Data»; una data di consegna viene solo
+proposta e segnalata nella finestra «Inserire i valori». Solleciti, bolle di
+consegna, conferme d’ordine, preventivi ed etichette di spedizione vengono
+riconosciuti come tali: l’elenco mostra «Sembra», la finestra di assegnazione
+preseleziona «Non è una fattura» e i solleciti indicano le fatture interessate
+con un link. Gli amministratori misurano il riconoscimento con
+`incoming-invoices:measure-recognition` sui testi archiviati dei documenti.
+
+**Modelli di documento:** Tramite «Modello» nella pagina del documento traccia
+sul documento renderizzato rettangoli per numero fattura, data, importi,
+partita IVA e venditore; il valore riconosciuto compare subito. Il modello
+viene salvato con un’impronta di intestazione e piè di pagina della prima
+pagina, così corrisponde a ogni ulteriore documento dello stesso fornitore, su
+richiesta subito a quelli aperti. Ogni correzione in «Inserire i valori»
+apprende: il valore inserito viene individuato sul documento e memorizzato
+come zona; dopo la seconda corrispondenza la zona appresa vale come confermata
+e prevale sull’euristica. I modelli si trovano sotto «Regole» e possono
+esservi eliminati. Le zone esistono solo per documenti PDF.
 
 **Fornitore collettivo e cliente collettivo:** per fornitori e clienti
 occasionali ogni organizzazione dispone di un contatto collettivo. Il nome

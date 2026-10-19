@@ -10,7 +10,7 @@
 
 namespace App\Models\Automation;
 
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  */
 class AutomationRule extends Model {
     use BelongsToOrganization;
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

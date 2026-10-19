@@ -11788,6 +11788,7 @@ CREATE TABLE `incoming_einvoices` (
   `supplier_id` bigint(20) unsigned DEFAULT NULL,
   `customer_id` bigint(20) unsigned DEFAULT NULL,
   `match_kind` varchar(16) DEFAULT NULL,
+  `template_id` bigint(20) unsigned DEFAULT NULL,
   `matched_user_id` bigint(20) unsigned DEFAULT NULL,
   `matched_at` timestamp NULL DEFAULT NULL,
   `recognition` varchar(16) NOT NULL DEFAULT 'structured',
@@ -11818,37 +11819,19 @@ CREATE TABLE `incoming_einvoices` (
   KEY `ine_duplicate_of_fk` (`duplicate_of_id`),
   KEY `ine_duplicate_cleared_user_fk` (`duplicate_cleared_user_id`),
   KEY `ine_org_number_key_idx` (`organization_id`,`invoice_number_key`),
+  KEY `incoming_einvoices_template_fk` (`template_id`),
   CONSTRAINT `fk_inc_einv_iban_confirmed_by` FOREIGN KEY (`creditor_iban_confirmed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `incoming_einvoices_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
   CONSTRAINT `incoming_einvoices_matched_user_id_foreign` FOREIGN KEY (`matched_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `incoming_einvoices_paid_in_run_id_foreign` FOREIGN KEY (`paid_in_run_id`) REFERENCES `payment_runs` (`id`) ON DELETE SET NULL,
   CONSTRAINT `incoming_einvoices_supplier_id_foreign` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `incoming_einvoices_template_fk` FOREIGN KEY (`template_id`) REFERENCES `incoming_invoice_templates` (`id`) ON DELETE SET NULL,
   CONSTRAINT `ine_decided_by_fk` FOREIGN KEY (`decided_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `ine_document_fk` FOREIGN KEY (`document_id`) REFERENCES `documents` (`id`) ON DELETE CASCADE,
   CONSTRAINT `ine_duplicate_cleared_user_fk` FOREIGN KEY (`duplicate_cleared_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `ine_duplicate_of_fk` FOREIGN KEY (`duplicate_of_id`) REFERENCES `incoming_einvoices` (`id`) ON DELETE SET NULL,
   CONSTRAINT `ine_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `ine_transferred_by_fk` FOREIGN KEY (`transferred_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `incoming_invoice_exclusions`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `incoming_invoice_exclusions` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `organization_id` bigint(20) unsigned NOT NULL,
-  `direction` varchar(16) NOT NULL,
-  `party_name` varchar(191) NOT NULL,
-  `party_name_key` varchar(191) NOT NULL,
-  `note` varchar(500) DEFAULT NULL,
-  `created_by` bigint(20) unsigned DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `incoming_invoice_exclusion_org_dir_key_unique` (`organization_id`,`direction`,`party_name_key`),
-  KEY `incoming_invoice_exclusions_created_by_foreign` (`created_by`),
-  CONSTRAINT `incoming_invoice_exclusions_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `incoming_invoice_exclusions_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `incoming_invoice_retentions`;
@@ -11883,6 +11866,31 @@ CREATE TABLE `incoming_invoice_retentions` (
   CONSTRAINT `incoming_ret_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `incoming_ret_releaser_fk` FOREIGN KEY (`releaser_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `incoming_ret_run_fk` FOREIGN KEY (`paid_in_run_id`) REFERENCES `payment_runs` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `incoming_invoice_templates`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `incoming_invoice_templates` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `supplier_id` bigint(20) unsigned DEFAULT NULL,
+  `name` varchar(191) NOT NULL,
+  `fingerprint` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`fingerprint`)),
+  `zones` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`zones`)),
+  `source` varchar(16) NOT NULL DEFAULT 'manual',
+  `hits` int(10) unsigned NOT NULL DEFAULT 0,
+  `last_matched_at` timestamp NULL DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `incoming_invoice_templates_supplier_id_foreign` (`supplier_id`),
+  KEY `incoming_invoice_templates_created_by_foreign` (`created_by`),
+  KEY `incoming_invoice_templates_org_supplier_idx` (`organization_id`,`supplier_id`),
+  CONSTRAINT `incoming_invoice_templates_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `incoming_invoice_templates_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `incoming_invoice_templates_supplier_id_foreign` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `integration_inbox_items`;
@@ -26966,3 +26974,6 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (988,'2027_03_22_09
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (989,'2027_03_23_090000_add_delta_unsupported_at_to_msgraph_task_list_links',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (990,'2027_03_24_090000_rewrite_counterparty_types_to_aliases',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (991,'2027_03_25_090000_create_incoming_invoice_exclusions_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (992,'2027_03_29_090000_drop_incoming_invoice_exclusions_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (993,'2027_03_27_090000_decode_entities_in_mail_texts',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (994,'2027_03_28_090000_create_incoming_invoice_templates_table',1);

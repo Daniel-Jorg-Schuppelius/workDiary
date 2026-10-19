@@ -279,7 +279,7 @@ return [
     'EbicsConnection' => 'Accès bancaire EBICS',
     'DatevOnlineConnection' => 'Connexion DATEV Online',
     'InvoiceSenderRule' => 'Règle d’expéditeur (boîte des factures)',
-    'IncomingInvoiceExclusion' => 'Règle d’exclusion (boîte des factures)',
+    'IncomingInvoiceTemplate' => 'Modèle de document (factures entrantes)',
     'InvoiceSchedule' => 'Échéancier de facturation',
     'InvoiceScheduleItem' => 'Ligne de l’échéancier',
     'InvoiceTemplate' => 'Modèle de facture',

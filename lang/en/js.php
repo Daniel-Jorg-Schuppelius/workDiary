@@ -52,6 +52,13 @@ return [
         'type_active_yes' => 'yes',
         'type_active_no' => 'no',
     ],
+    'zone_editor' => [
+        'no_value' => 'no value',
+        'learned' => '(learned, not yet confirmed)',
+        'remove' => 'Remove',
+        'preview_failed' => 'Preview not available',
+        'page' => 'Page',
+    ],
     'bulk' => [
         'select_one' => 'Please select at least one entry first.',
     ],

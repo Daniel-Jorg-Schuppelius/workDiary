@@ -373,16 +373,7 @@ class DocumentService implements \App\Plugins\Support\Mirror\Contracts\DocumentV
      * Datenlebenszyklus (außerhalb des MVP).
      */
     public function delete(Document $document, User $actor): void {
-        // Als Nachweis gebundene Versionen (Feature 157) überleben jeden
-        // gewöhnlichen Löschweg — der FK der Manifestzeile ist RESTRICT, der
-        // Soft-Delete endet hier mit einer Meldung statt still.
-        $bound = \App\Models\Contract\ContractSigningManifestItem::query()
-            ->withoutGlobalScopes()
-            ->whereIn('document_version_id', $document->versions()->select('id'))
-            ->exists();
-        if ($bound) {
-            throw ValidationException::withMessages(['document' => (string) __('contract-signing.error.document_bound')]);
-        }
+        $this->assertNotBound($document);
 
         DB::transaction(function () use ($document, $actor): void {
             // Fachliches Event VOR dem Delete, damit es gemeinsam mit dem
@@ -390,6 +381,46 @@ class DocumentService implements \App\Plugins\Support\Mirror\Contracts\DocumentV
             $document->audit('document.deleted', ['actor_user_id' => $actor->id]);
             $document->delete();
         });
+    }
+
+    /**
+     * Endgültig vernichten (MVP-1210): Versionen samt Dateien und Dokument hart
+     * löschen — nur für Nicht-Rechnungen (verworfene oder abgelegte Eingänge).
+     * Gebundene Nachweise und Legal Hold sperren wie beim Soft-Delete.
+     */
+    public function purge(Document $document, ?User $actor, string $reason): void {
+        $this->assertNotBound($document);
+        app(\App\Services\Retention\LegalHoldService::class)->assertNotHeld($document);
+
+        // Versionen sind für Eloquent append-only; sie fallen per FK mit dem
+        // Dokument, die Dateien danach — wie bei der Personalakte (Feature 141).
+        $files = $document->versions()->get()
+            ->map(static fn (DocumentVersion $version): array => [(string) ($version->disk ?: 'local'), (string) $version->path])
+            ->all();
+        DB::transaction(function () use ($document, $actor, $reason): void {
+            $document->audit('document.purged', ['actor_user_id' => $actor?->id, 'reason' => $reason]);
+            $document->forceFill(['current_version_id' => null])->saveQuietly();
+            $document->forceDelete();
+        });
+        foreach ($files as [$disk, $path]) {
+            if ($path !== '') {
+                Storage::disk($disk)->delete($path);
+            }
+        }
+    }
+
+    /**
+     * Als Nachweis gebundene Versionen (Feature 157) überleben jeden Löschweg —
+     * der FK der Manifestzeile ist RESTRICT, hier endet es mit einer Meldung statt still.
+     */
+    private function assertNotBound(Document $document): void {
+        $bound = \App\Models\Contract\ContractSigningManifestItem::query()
+            ->withoutGlobalScopes()
+            ->whereIn('document_version_id', $document->versions()->select('id'))
+            ->exists();
+        if ($bound) {
+            throw ValidationException::withMessages(['document' => (string) __('contract-signing.error.document_bound')]);
+        }
     }
 
     /**

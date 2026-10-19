@@ -63,7 +63,8 @@ class RuleEngine {
             return;
         }
 
-        $context = $this->context($subject);
+        $trigger = $this->triggerFor($triggerEvent);
+        $context = $trigger !== null ? $trigger->context($subject) : $this->context($subject);
 
         foreach ($rules as $rule) {
             if ($this->alreadyMatched($rule, $subject)) {
@@ -125,6 +126,16 @@ class RuleEngine {
             ->where('subject_id', (int) $subject->getKey())
             ->where('decision', 'matched')
             ->exists();
+    }
+
+    private function triggerFor(string $key): ?RuleTrigger {
+        foreach ($this->triggers() as $trigger) {
+            if ($trigger->key() === $key) {
+                return $trigger;
+            }
+        }
+
+        return null;
     }
 
     private function resolveAction(string $type): ?RuleAction {

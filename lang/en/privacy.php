@@ -10,6 +10,7 @@
 
 return [
     'retention_area' => [
+        'incoming_invoices_rejected' => 'Rejected incoming invoices',
         'audit_logs' => 'Audit log',
         'exports' => 'Payroll and time exports',
         'gobd_financial' => 'Tax-relevant data',

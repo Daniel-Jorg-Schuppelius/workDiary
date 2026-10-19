@@ -1266,6 +1266,7 @@ return [
             'cancellation' => 'Annulation',
             'expense' => 'Note de frais',
             'other' => 'Autre document',
+            'reminder' => 'Relance',
         ],
         'origin' => [
             'local' => 'Local',
@@ -2103,7 +2104,7 @@ return [
         ],
         'incoming_e_invoice_status' => ['received' => 'Reçue', 'approved' => 'Validée (contrôle)', 'rejected' => 'Refusé', 'question' => 'Question', 'payment_released' => 'Paiement libéré'],
         'incoming_invoice_recognition' => ['structured' => 'Facture électronique (structurée)', 'extracted' => 'Reconnue à partir du PDF ou de l’image', 'none' => 'Non reconnue (à clarifier)'],
-        'incoming_invoice_match_kind' => ['vat_id' => 'N° de TVA', 'tax_number' => 'Numéro fiscal', 'iban' => 'IBAN', 'sender_rule' => 'Règle d’expéditeur', 'manual' => 'Manuel'],
+        'incoming_invoice_match_kind' => ['vat_id' => 'N° de TVA', 'tax_number' => 'Numéro fiscal', 'iban' => 'IBAN', 'sender_rule' => 'Règle d’expéditeur', 'manual' => 'Manuel', 'rule' => 'Règle de boîte de réception'],
         'incoming_invoice_transfer_status' => ['pending' => 'En attente', 'waiting' => 'À clarifier', 'failed' => 'Échouée', 'transferred' => 'Transmise', 'linked' => 'Déjà présente, liée'],
         'invoice_schedule_status' => ['active' => 'Active', 'paused' => 'En pause', 'ended' => 'Terminé'],
         'invoice_inquiry_status' => ['open' => 'Ouverte', 'answered' => 'Répondue'],

@@ -9,7 +9,7 @@
 {{-- Dialog: Rechnungseingang zuordnen (Feature 163, MVP-1110). --}}
 @php
     $isOutgoing = old('direction', $incoming->direction->value) === \App\Enums\Billing\DocumentDirection::Outgoing->value;
-    $mode = old('mode', 'existing');
+    $mode = old('mode', $proposal['mode'] ?? 'existing');
     $current = $incoming->counterparty();
     $currentValue = $current === null ? null : ($current instanceof \App\Models\Supplier\Supplier ? 'supplier:' : 'customer:') . $current->sqid;
     $suggested = collect((array) ($suggestions[$isOutgoing ? 'customers' : 'suppliers'] ?? []))->pluck('id')->all();
@@ -22,6 +22,27 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="__('Zuordnen')"
 >
+    @if ($kindHintLabel !== null)
+        {{-- Belegart-Hinweis (MVP-1216): „Keine Rechnung“ ist vorbelegt, die Entscheidung bleibt beim Menschen. --}}
+        <div class="alert alert-info alert-soft text-sm" role="status">
+            <x-icon name="lightbulb" />
+            <div>
+                <strong>{{ __('Sieht aus wie') }}: {{ $kindHintLabel }}.</strong>
+                @if ($reminderTargets->isNotEmpty())
+                    {{ __('Bezieht sich auf') }}:
+                    @foreach ($reminderTargets as $target)
+                        @if ($target->document !== null)
+                            <a class="link" href="{{ route('finance.incoming-invoices.show', $target->document) }}">{{ $target->invoice_number }}</a>
+                        @else
+                            {{ $target->invoice_number }}
+                        @endif
+                        {{ $loop->last ? '' : ', ' }}
+                    @endforeach
+                @endif
+            </div>
+        </div>
+    @endif
+
     <x-form-group :legend="__('Richtung')" icon="swap_horiz" cols="1">
         <x-select-field name="direction" :label="__('Richtung')">
             @foreach ([\App\Enums\Billing\DocumentDirection::Incoming, \App\Enums\Billing\DocumentDirection::Outgoing] as $d)
@@ -83,9 +104,14 @@
     </x-form-group>
 
     <x-form-group :legend="__('Keine Rechnung')" icon="block" cols="1" :description="__('Nur beim Weg „Keine Rechnung“: Der Eingang wird mit Begründung abgelehnt.')">
-        <x-textarea-field name="note" :label="__('Begründung')" :value="old('note')" />
+        <x-textarea-field name="note" :label="__('Begründung')" :value="old('note', $proposal['note'] ?? '')" />
         @if ($partyName !== null)
-            <x-checkbox-field name="exclude_party" :label="__('Künftige Eingänge von „:party“ automatisch als keine Rechnung ablegen', ['party' => $partyName])" :checked="(bool) old('exclude_party')" />
+            {{-- MVP-1211: legt eine Posteingangsregel an; Verwerfen entfernt Beleg, Dokument und Dateien, es bleibt der Audit-Eintrag. --}}
+            <x-select-field name="exclude_action" :label="__('Künftige Eingänge von „:party“', ['party' => $partyName])" :hint="__('Verwerfen entfernt Beleg, Dokument und Dateien; es bleibt der Audit-Eintrag. Beides gilt auch für diesen Eingang.')">
+                <option value="">{{ __('wie bisher behandeln') }}</option>
+                <option value="reject" @selected(old('exclude_action') === 'reject')>{{ __('automatisch als keine Rechnung ablegen') }}</option>
+                <option value="discard" @selected(old('exclude_action') === 'discard')>{{ __('gar nicht aufnehmen (verwerfen)') }}</option>
+            </x-select-field>
         @endif
     </x-form-group>
 

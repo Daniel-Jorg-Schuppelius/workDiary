@@ -31,6 +31,8 @@ enum DocumentKind: string implements HasLabel {
     case CreditNote = 'credit_note';
     case Cancellation = 'cancellation';
     case Expense = 'expense';
+    /** Mahnung oder Zahlungserinnerung zu einem Beleg (MVP-1216) — kein eigener Umsatz. */
+    case Reminder = 'reminder';
     case Other = 'other';
 
     public function label(): string {
@@ -44,7 +46,7 @@ enum DocumentKind: string implements HasLabel {
     public function sign(): int {
         return match ($this) {
             self::CreditNote, self::Cancellation, self::DownPaymentDeduction => -1,
-            self::Quote, self::OrderConfirmation, self::DeliveryNote => 0,
+            self::Quote, self::OrderConfirmation, self::DeliveryNote, self::Reminder => 0,
             default => 1,
         };
     }

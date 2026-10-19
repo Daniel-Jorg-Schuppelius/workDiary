@@ -27,4 +27,9 @@ final class OpenIssueCreatedTrigger implements RuleTrigger {
     public function exampleConditions(): array {
         return ['all' => [['field' => 'severity', 'op' => 'in', 'value' => ['high', 'critical']]]];
     }
+
+    /** @return array<string, mixed> */
+    public function context(\Illuminate\Database\Eloquent\Model $subject): array {
+        return $subject->toArray();
+    }
 }

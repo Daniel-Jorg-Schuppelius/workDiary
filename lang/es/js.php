@@ -47,6 +47,13 @@ return [
         'type_active_yes' => 'sí',
         'type_active_no' => 'no',
     ],
+    'zone_editor' => [
+        'no_value' => 'sin valor',
+        'learned' => '(aprendida, aún sin confirmar)',
+        'remove' => 'Quitar',
+        'preview_failed' => 'Vista previa no disponible',
+        'page' => 'Página',
+    ],
     'bulk' => [
         'select_one' => 'Seleccione primero al menos una entrada.',
     ],

@@ -33,7 +33,7 @@ actions suivantes sont disponibles :
 
 - **Créer une nouvelle règle (JSON)** : ouvre la boîte de dialogue
   **Nouvelle règle d’automatisation** avec un nom, le **Déclencheur**
-  (par ex. « Note de frais soumise »), l'**Action** (par ex.
+  (par ex. « Note de frais soumise » ou « Facture entrante reçue »), l'**Action** (par ex.
   « Approuver les frais »), la **Priorité** et les **Conditions
   (JSON)**. L'action doit correspondre au déclencheur ; une condition
   vide s'applique toujours. **Créer une règle** enregistre la règle.

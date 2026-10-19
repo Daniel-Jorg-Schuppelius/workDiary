@@ -12,12 +12,15 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind};
 use App\Enums\Invoicing\{IncomingEInvoiceStatus, IncomingInvoiceRecognition, InvoiceStatus};
+use App\Models\Automation\AutomationRule;
 use App\Models\Customer\Customer;
+use App\Models\Document\{Document, DocumentVersion};
 use App\Models\Integration\IntegrationInboxItem;
-use App\Models\Invoicing\{IncomingEInvoice, IncomingInvoiceExclusion, Invoice};
+use App\Models\Invoicing\{IncomingEInvoice, Invoice};
 use App\Models\Mail\EmailConnection;
 use App\Models\Platform\User;
 use App\Services\Billing\Sepa\PaymentProposalService;
+use App\Services\Invoicing\Automation\{DiscardIncomingInvoiceAction, IncomingInvoiceReceivedTrigger};
 use App\Services\Invoicing\EInvoice\XRechnungGenerator;
 use App\Services\Mail\{MailAttachment, MailIntakeService, ParsedMessage};
 use Dompdf\Dompdf;
@@ -81,22 +84,27 @@ final class InvoiceMailboxIntakeTest extends TestCase {
             ->assertOk()->assertSee('agb.pdf')->assertSee('lieferant@example.test');
     }
 
-    public function test_an_exclusion_rule_files_the_document_as_no_invoice_on_intake(): void {
-        IncomingInvoiceExclusion::query()->create([
-            'organization_id' => $this->organization->id, 'direction' => DocumentDirection::Incoming,
-            'party_name' => 'Lieferant GmbH', 'party_name_key' => IncomingInvoiceExclusion::keyFor('Lieferant  GmbH'),
-            'note' => 'Testbeleg des Mailsystems', 'created_by' => $this->admin->id,
+    public function test_an_inbox_rule_can_discard_a_document_before_it_is_filed(): void {
+        AutomationRule::query()->create([
+            'organization_id' => $this->organization->id, 'name' => 'Testbelege', 'trigger_event' => IncomingInvoiceReceivedTrigger::KEY,
+            'conditions' => ['all' => [
+                ['field' => 'seller_name_key', 'op' => '=', 'value' => 'lieferant gmbh'],
+                ['field' => 'mail_subject', 'op' => 'contains', 'value' => 'Rechnung'],
+                ['field' => 'attachment_names', 'op' => 'ends_with', 'value' => '.xml'],
+            ]],
+            'actions' => [['type' => DiscardIncomingInvoiceAction::TYPE, 'params' => ['note' => 'Testbeleg des Mailsystems']]],
+            'is_active' => true, 'priority' => 50, 'created_by_id' => $this->admin->id,
         ]);
         $xml = $this->incomingXml($this->localInvoice('ER-2026-0099'));
 
-        $this->assertSame('einvoice', $this->intake([new MailAttachment('ER-2026-0099.xml', 'application/xml', $xml)]));
+        $this->assertSame('skipped', $this->intake([new MailAttachment('ER-2026-0099.xml', 'application/xml', $xml)]));
 
-        $incoming = IncomingEInvoice::query()->sole();
-        $this->assertSame('Lieferant GmbH', $incoming->seller_name);
-        $this->assertSame(IncomingEInvoiceStatus::Rejected, $incoming->status);
-        $this->assertSame('Testbeleg des Mailsystems', $incoming->decision_note);
-        $this->assertNull($incoming->decided_by);
-        $this->assertNull($incoming->supplier_id);
+        $this->assertSame(0, IncomingEInvoice::query()->count());
+        $this->assertSame(0, Document::query()->withTrashed()->count());
+        $this->assertSame(0, DocumentVersion::query()->count());
+        $this->assertDatabaseHas('audit_logs', ['event' => 'incoming_einvoice.discarded']);
+        $this->assertDatabaseHas('audit_logs', ['event' => 'document.purged']);
+        $this->assertDatabaseHas('automation_rule_runs', ['decision' => 'matched']);
     }
 
     public function test_two_invoice_pdfs_in_one_mail_become_two_incomings(): void {

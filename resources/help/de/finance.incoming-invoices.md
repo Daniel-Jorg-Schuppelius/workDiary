@@ -113,10 +113,50 @@ Eingänge derselben Partei ordnen Sie in der Liste gemeinsam zu.
 
 Mit „Auch die anderen offenen Eingänge genauso behandeln“ erledigen Sie alle
 offenen Belege derselben Gegenpartei in einem Schritt, beim Zuordnen wie beim
-Ablehnen. Unter „Keine Rechnung“ schließen Sie die Gegenpartei auf Wunsch aus:
-Künftige Belege mit diesem Namen legt der Eingang von selbst als „keine
-Rechnung“ ab, etwa Testbelege oder Werbung. Absenderregeln und Ausschlüsse
-sehen und löschen Sie über „Regeln“ im Menü der Seite.
+Ablehnen. Unter „Keine Rechnung“ legen Sie fest, was mit künftigen Belegen
+dieser Gegenpartei geschieht: „automatisch als keine Rechnung ablegen“ oder
+„gar nicht aufnehmen (verwerfen)“. Verwerfen entfernt Beleg, Dokument und
+Dateien; es bleibt der Audit-Eintrag mit Prüfsumme, Nummer, Verkäufer,
+Absender und Grund. WorkDiary legt dafür eine Posteingangsregel an.
+
+**Posteingangsregeln** sind Automationsregeln zum Auslöser „Rechnungseingang
+eingegangen“. Sie sehen sie über „Regeln“ im Menü der Seite, zusammen mit den
+Absenderregeln, schalten sie aus und ein und löschen sie; Bedingungen und
+Aktionen bearbeiten Administratoren auf der Automationsseite. Bedingungen
+prüfen unter anderem Verkäufer (`seller_name_key`, normalisiert), USt-IdNr.
+(`seller_vat_id`), Absender (`sender_email`, `sender_domain`), Betreff
+(`mail_subject`), Anhangsnamen (`attachment_names`), Dateiname (`file_name`),
+Land (`country`), Brutto (`amount_gross`) und Erkennung (`recognition`);
+Operatoren sind unter anderem „ist“, „enthält“, „beginnt mit“, „endet mit“ und
+„entspricht“ (regulärer Ausdruck). Aktionen: verwerfen, als keine Rechnung
+ablegen, einer Partei zuordnen. Die erste passende Regel gewinnt; Regeln
+greifen beim Abruf, beim Upload und bei der Nacherkennung.
+
+Abgelehnte Belege stehen im Reiter „Abgelehnt“ und lassen sich dort endgültig
+löschen. Nach der eingestellten Frist (Standard 30 Tage) schlägt die
+Aufbewahrung ihre Vernichtung vor; gelöscht wird erst nach Freigabe.
+
+**Erkennung von PDF und Scan:** WorkDiary liest Beschriftungen und Werte auch
+dann, wenn sie in getrennten Spalten oder in einer Kopfzeile über der
+Wertezeile stehen. Fehlt ein Rechnungsdatum, gilt „Ort, Datum“ im Briefkopf
+oder ein nacktes „Datum“; ein Lieferdatum wird nur als Vorschlag im Dialog
+„Werte erfassen“ vorbelegt und gekennzeichnet. Mahnungen, Lieferscheine,
+Auftragsbestätigungen, Angebote und Versandmarken erkennt der Eingang als
+solche: Die Liste zeigt „Sieht aus wie“, der Zuordnen-Dialog belegt „Keine
+Rechnung“ vor, Mahnungen nennen die angemahnten Rechnungen mit Link.
+Administratoren messen die Erkennung mit `incoming-invoices:measure-recognition`
+gegen die gespeicherten Belegtexte.
+
+**Belegvorlagen:** Über „Vorlage“ auf der Belegseite zeichnen Sie auf dem
+gerenderten Beleg Rechtecke für Rechnungsnummer, Datum, Beträge, USt-IdNr.
+und Verkäufer; der erkannte Wert erscheint sofort. Gespeichert wird die
+Vorlage mit einem Fingerabdruck aus Kopf und Fuß der ersten Seite, so trifft
+sie jeden weiteren Beleg desselben Lieferanten, auf Wunsch gleich die offenen.
+Jede Korrektur in „Werte erfassen“ lernt mit: Der eingegebene Wert wird auf
+dem Beleg gesucht und als Zone gemerkt; nach dem zweiten übereinstimmenden
+Treffer gilt die gelernte Zone als bestätigt und schlägt die Heuristik.
+Vorlagen stehen unter „Regeln“ und lassen sich dort löschen. Zonen gibt es
+nur für PDF-Belege.
 
 **Sammellieferant und Sammelkunde:** Für Einmallieferanten und Einmalkunden
 gibt es je Organisation einen Sammelkontakt. Der Name der echten Partei

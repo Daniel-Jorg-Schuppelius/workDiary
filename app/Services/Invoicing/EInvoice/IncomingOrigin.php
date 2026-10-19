@@ -14,8 +14,11 @@ namespace App\Services\Invoicing\EInvoice;
 
 /** Herkunft eines Rechnungseingangs aus dem Postfach (MVP-1107): Absender und Message-ID. */
 final class IncomingOrigin {
+    /** @param  list<string>  $attachmentNames */
     public function __construct(
         public readonly ?string $senderEmail = null,
         public readonly ?string $reference = null,
+        public readonly ?string $subject = null,
+        public readonly array $attachmentNames = [],
     ) {}
 }

@@ -32,6 +32,11 @@
                                     :href="route('finance.incoming-invoices.values.form', $incoming)"
                                     show-label>{{ __('Werte erfassen') }}</x-icon-btn>
                     @endif
+                    @if ($canTemplate)
+                        <x-icon-btn icon="crop_free" tone="outline" size="sm"
+                                    :href="route('finance.incoming-invoices.template.edit', $document)"
+                                    show-label>{{ __('Vorlage') }}</x-icon-btn>
+                    @endif
                 @endif
                 <x-icon-btn icon="download" tone="outline" size="sm"
                             :href="route('documents.download', $document)"
@@ -83,6 +88,27 @@
                 <x-detail-grid>
                     <x-detail-grid.row :label="__('Gelesen mit')">{{ $extraction['reader'] ?? '—' }}@if ($extraction['ocr_used'] ?? false) ({{ __('OCR') }})@endif</x-detail-grid.row>
                     <x-detail-grid.row :label="__('Textlänge')">{{ __(':count Zeichen', ['count' => (int) ($extraction['text_length'] ?? 0)]) }}</x-detail-grid.row>
+                    {{-- Belegart-Hinweis und Mahnungsbezug (MVP-1216), Datum aus dem Lieferdatum nur als Vorschlag (MVP-1215). --}}
+                    @if ($kindHintLabel !== null)
+                        <x-detail-grid.row :label="__('Sieht aus wie')">{{ $kindHintLabel }}</x-detail-grid.row>
+                    @endif
+                    @if ($reminderTargets->isNotEmpty())
+                        <x-detail-grid.row :label="__('Bezieht sich auf')">
+                            @foreach ($reminderTargets as $target)
+                                @if ($target->document !== null)
+                                    <a class="link link-hover" href="{{ route('finance.incoming-invoices.show', $target->document) }}">{{ $target->invoice_number }}</a>
+                                @else
+                                    {{ $target->invoice_number }}
+                                @endif
+                                {{ $loop->last ? '' : ', ' }}
+                            @endforeach
+                        </x-detail-grid.row>
+                    @elseif (($extraction['reminder_for'] ?? []) !== [])
+                        <x-detail-grid.row :label="__('Bezieht sich auf')">{{ implode(', ', array_map(strval(...), (array) $extraction['reminder_for'])) }}</x-detail-grid.row>
+                    @endif
+                    @if (($extraction['hints']['issue_date'] ?? null) !== null && ! isset($found['issued_on']))
+                        <x-detail-grid.row :label="__('Rechnungsdatum')">{{ \Illuminate\Support\Carbon::parse((string) $extraction['hints']['issue_date'])->isoFormat('L') }} <span class="text-xs text-muted">({{ __('Vorschlag aus dem Lieferdatum, bitte am Original prüfen.') }})</span></x-detail-grid.row>
+                    @endif
                     @foreach ($found as $key => $value)
                         <x-detail-grid.row :label="$foundLabels[$key] ?? $key">
                             @if (in_array($key, ['net', 'tax', 'gross'], true))

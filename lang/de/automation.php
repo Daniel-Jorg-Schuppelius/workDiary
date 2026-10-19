@@ -13,10 +13,14 @@ return [
         'expense_submitted' => 'Spesenabrechnung eingereicht',
         'open_issue_created' => 'Offener Punkt angelegt',
         'procedure_deviation_recorded' => 'Prozedur-Abweichung erfasst',
+        'incoming_invoice_received' => 'Rechnungseingang eingegangen',
     ],
     'action' => [
         'expense_approve' => 'Spesen freigeben',
         'diary_follow_up' => 'Folgeauftrag anlegen',
+        'incoming_invoice_discard' => 'Rechnungseingang verwerfen',
+        'incoming_invoice_reject' => 'Rechnungseingang als keine Rechnung ablegen',
+        'incoming_invoice_assign' => 'Rechnungseingang zuordnen',
     ],
     'form' => [
         'title' => 'Neue Automationsregel',

@@ -24,6 +24,7 @@ enum IncomingInvoiceMatchKind: string implements HasLabel {
     case Iban = 'iban';
     case SenderRule = 'sender_rule';
     case Manual = 'manual';
+    case Rule = 'rule';
 
     public function label(): string {
         return match ($this) {
@@ -32,6 +33,7 @@ enum IncomingInvoiceMatchKind: string implements HasLabel {
             self::Iban => (string) __('enums.invoicing.incoming_invoice_match_kind.iban'),
             self::SenderRule => (string) __('enums.invoicing.incoming_invoice_match_kind.sender_rule'),
             self::Manual => (string) __('enums.invoicing.incoming_invoice_match_kind.manual'),
+            self::Rule => (string) __('enums.invoicing.incoming_invoice_match_kind.rule'),
         };
     }
 }

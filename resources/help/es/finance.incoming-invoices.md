@@ -120,11 +120,53 @@ Asigne juntos en la lista varios documentos de la misma parte.
 
 Con «Tratar igual también los otros documentos abiertos» resuelve todos los
 documentos abiertos de la misma contraparte en un paso, tanto al asignar como
-al rechazar. En «No es una factura» puede además excluir la contraparte: los
-futuros documentos con ese nombre se archivan automáticamente como «no es una
-factura», por ejemplo documentos de prueba o publicidad. Las reglas de
-remitente y las exclusiones se consultan y eliminan en «Reglas», en el menú de
-la página.
+al rechazar. En «No es una factura» decide qué ocurre con los futuros
+documentos de esta contraparte: «archivar automáticamente como no es una
+factura» o «no incorporar (descartar)». Descartar elimina el documento, su
+archivo y los adjuntos; queda la entrada de auditoría con suma de
+verificación, número, vendedor, remitente y motivo. WorkDiary crea para ello
+una regla de bandeja de entrada.
+
+Las **reglas de bandeja de entrada** son reglas de automatización del
+desencadenante «Factura recibida». Las ve en «Reglas», en el menú de la
+página, junto con las reglas de remitente; las desactiva, activa y elimina;
+los administradores editan condiciones y acciones en la página de
+automatizaciones. Las condiciones comprueban, entre otros, el vendedor
+(`seller_name_key`, normalizado), el NIF-IVA (`seller_vat_id`), el remitente
+(`sender_email`, `sender_domain`), el asunto (`mail_subject`), los nombres de
+los adjuntos (`attachment_names`), el nombre de archivo (`file_name`), el país
+(`country`), el importe bruto (`amount_gross`) y el reconocimiento
+(`recognition`); los operadores incluyen «es», «contiene», «empieza por»,
+«termina en» y «coincide con» (expresión regular). Acciones: descartar,
+archivar como no es una factura, asignar a una parte. Gana la primera regla
+que coincide; las reglas se aplican en la recogida, en la subida y en el
+nuevo reconocimiento.
+
+Los documentos rechazados figuran en la pestaña «Rechazado», donde puede
+eliminarlos definitivamente. Tras el plazo configurado (30 días por defecto),
+la conservación propone su destrucción; solo se eliminan tras la aprobación.
+
+**Reconocimiento de PDF y escaneos:** WorkDiary lee etiquetas y valores
+incluso cuando están en columnas separadas o en una fila de encabezado sobre
+la fila de valores. Si falta la fecha de factura, cuenta «Lugar, fecha» del
+membrete o una simple «Fecha»; una fecha de entrega solo se sugiere y se
+señala en el diálogo «Introducir valores». Recordatorios de pago, albaranes,
+confirmaciones de pedido, presupuestos y etiquetas de envío se reconocen como
+tales: la lista muestra «Parece», el diálogo de asignación preselecciona «No es
+una factura», y los recordatorios nombran las facturas afectadas con enlace.
+Los administradores miden el reconocimiento con
+`incoming-invoices:measure-recognition` sobre los textos guardados.
+
+**Plantillas de documento:** Mediante «Plantilla» en la página del documento
+traza sobre el documento renderizado rectángulos para número de factura,
+fecha, importes, NIF-IVA y vendedor; el valor reconocido aparece al instante.
+La plantilla se guarda con una huella del encabezado y del pie de la primera
+página, de modo que coincide con cualquier otro documento del mismo proveedor,
+a petición también con los abiertos. Cada corrección en «Introducir valores»
+aprende: el valor introducido se localiza en el documento y se recuerda como
+zona; tras la segunda coincidencia, la zona aprendida se considera confirmada
+y prevalece sobre la heurística. Las plantillas figuran en «Reglas» y pueden
+eliminarse allí. Las zonas solo existen para documentos PDF.
 
 **Proveedor colectivo y cliente colectivo:** Para proveedores y clientes
 ocasionales, cada organización tiene un contacto colectivo. El nombre de la

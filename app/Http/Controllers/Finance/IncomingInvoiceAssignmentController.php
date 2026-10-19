@@ -21,7 +21,7 @@ use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Supplier\Supplier;
 use App\Rules\Iban;
 use App\Services\Integration\Profiles\{CustomerMatchProfile, SupplierMatchProfile};
-use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, IncomingInvoiceExclusions, IncomingInvoiceMatcher};
+use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, IncomingInvoiceKindHints, IncomingInvoiceMatcher, IncomingInvoiceRules};
 use App\Services\Stammdaten\CollectiveContacts;
 use App\Support\{ErrorText, Sqid};
 use CommonToolkit\Enums\CountryCode;
@@ -46,7 +46,8 @@ class IncomingInvoiceAssignmentController extends Controller {
         private readonly IncomingInvoiceMatcher $matcher,
         private readonly CollectiveContacts $collective,
         private readonly IncomingEInvoiceService $invoices,
-        private readonly IncomingInvoiceExclusions $exclusions,
+        private readonly IncomingInvoiceRules $rules,
+        private readonly IncomingInvoiceKindHints $kindHints,
     ) {}
 
     public function assignForm(IncomingEInvoice $incoming): View {
@@ -59,6 +60,10 @@ class IncomingInvoiceAssignmentController extends Controller {
             'incoming' => $incoming,
             'partyName' => $incoming->counterpartyName(),
             'otherOpen' => $incoming->openOfSameParty()->count(),
+            // Belegart-Hinweis (MVP-1216): Mahnung, Lieferschein, Versandmarke … — Vorschlag „Keine Rechnung“.
+            'kindHintLabel' => $this->kindHints->label($incoming->kindHint()),
+            'proposal' => $this->kindHints->proposal($incoming),
+            'reminderTargets' => $incoming->reminderTargets(),
             'suppliers' => Supplier::query()->withoutCollective()->whereNull('archived_at')->orderBy('name')->get(['id', 'name', 'vat_id']),
             'customers' => Customer::query()->withoutCollective()->whereNull('archived_at')->orderBy('name')->get(['id', 'name', 'vat_id']),
             'suggestions' => (array) ($summary['suggestions'] ?? []),
@@ -95,7 +100,7 @@ class IncomingInvoiceAssignmentController extends Controller {
             'new_country' => ['nullable', Rule::enum(CountryCode::class)],
             'remember_sender' => ['nullable', 'boolean'],
             'apply_to_open' => ['nullable', 'boolean'],
-            'exclude_party' => ['nullable', 'boolean'],
+            'exclude_action' => ['nullable', Rule::in(['', 'reject', 'discard'])],
             'note' => ['nullable', 'required_if:mode,not_invoice', 'string', 'max:500'],
         ]);
         if ($incoming->transferred_at !== null) {
@@ -104,7 +109,7 @@ class IncomingInvoiceAssignmentController extends Controller {
 
         $applyToOpen = (bool) ($data['apply_to_open'] ?? false);
         if ($data['mode'] === 'not_invoice') {
-            return $this->rejectAsNoInvoice($incoming, (string) $data['note'], $actor, (bool) ($data['exclude_party'] ?? false), $applyToOpen);
+            return $this->rejectAsNoInvoice($incoming, (string) $data['note'], $actor, (string) ($data['exclude_action'] ?? ''), $applyToOpen);
         }
 
         $direction = DocumentDirection::from((string) $data['direction']);
@@ -196,8 +201,17 @@ class IncomingInvoiceAssignmentController extends Controller {
         $incoming->audit('incoming_einvoice.values_captured', ['number' => $data['invoice_number'], 'gross' => (string) $data['amount_gross']]);
         // Mit erfasster USt-IdNr. kann der Abgleich jetzt eindeutig sein.
         $this->matcher->autoAssign($incoming);
+        // Lernen aus der Korrektur (Phase 151): Werte im Wortgitter → Zonen der Lieferantenvorlage.
+        $learned = app(\App\Services\Invoicing\Recognition\TemplateLearner::class)->learnFromValues($incoming, $data, $actor);
+        $message = (string) __('Werte erfasst.');
+        if ($learned['fields'] !== []) {
+            $message .= ' ' . __('Vorlage „:name“ hat gelernt: :fields.', [
+                'name' => (string) $learned['template']?->name,
+                'fields' => implode(', ', array_map(\App\Services\Invoicing\Recognition\ZoneFields::label(...), $learned['fields'])),
+            ]);
+        }
 
-        return redirect()->toList('finance.incoming-invoices.index')->with('success', __('Werte erfasst.'));
+        return redirect()->toList('finance.incoming-invoices.index')->with('success', $message);
     }
 
     /** Mehrere Eingänge derselben Partei zuordnen (Sammelaktion). */
@@ -338,31 +352,48 @@ class IncomingInvoiceAssignmentController extends Controller {
     }
 
     /**
-     * „Keine Rechnung“: ablehnen, auf Wunsch die Gegenpartei künftig ausschließen
-     * und die anderen offenen Eingänge desselben Namens gleich mit ablegen (MVP-1208).
+     * „Keine Rechnung“ (MVP-1208/1211): ablehnen — beim Ausschluss „gar nicht
+     * aufnehmen“ danach verwerfen —, auf Wunsch die Gegenpartei als Regel merken
+     * und die anderen offenen Eingänge desselben Namens gleich mit behandeln.
+     *
+     * `$excludeAction`: leer (nichts merken), `reject` oder `discard`.
      */
-    private function rejectAsNoInvoice(IncomingEInvoice $incoming, string $note, \App\Models\Platform\User $actor, bool $excludeParty, bool $applyToOpen): RedirectResponse {
+    private function rejectAsNoInvoice(IncomingEInvoice $incoming, string $note, \App\Models\Platform\User $actor, string $excludeAction, bool $applyToOpen): RedirectResponse {
         if (! $incoming->status->canTransitionTo(IncomingEInvoiceStatus::Rejected)) {
             return back()->with('error', __('Übergang :from → :to ist nicht zulässig.', ['from' => $incoming->status->value, 'to' => IncomingEInvoiceStatus::Rejected->value]));
         }
         $siblings = $applyToOpen ? $incoming->openOfSameParty() : new \Illuminate\Database\Eloquent\Collection();
-        $this->exclusions->reject($incoming, $note, $actor);
-        $rule = $excludeParty ? $this->exclusions->remember($incoming, $actor, $note) : null;
+        $rule = $excludeAction !== '' ? $this->rules->rememberExclusion($incoming, $actor, $excludeAction, $note) : null;
+        $discard = $excludeAction === 'discard';
+        $party = (string) $incoming->counterpartyName();
         $others = 0;
-        foreach ($siblings as $other) {
-            if ($other->status->canTransitionTo(IncomingEInvoiceStatus::Rejected)) {
-                $this->exclusions->reject($other, $note, $actor, $rule !== null ? ['exclusion_id' => $rule->id] : []);
-                $others++;
+        try {
+            foreach ([$incoming, ...$siblings->all()] as $other) {
+                if (! $other->status->canTransitionTo(IncomingEInvoiceStatus::Rejected)) {
+                    continue;
+                }
+                $this->rules->reject($other, $note, $actor, $rule !== null ? ['rule_id' => $rule->id] : []);
+                if ($discard) {
+                    $this->invoices->discard($other, $note, $actor);
+                }
+                if ($other !== $incoming) {
+                    $others++;
+                }
             }
+        } catch (RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
         }
 
-        $party = (string) $incoming->counterpartyName();
-        $message = (string) __('Als „keine Rechnung“ abgelegt.');
+        $message = (string) ($discard ? __('Eingang verworfen.') : __('Als „keine Rechnung“ abgelegt.'));
         if ($others > 0) {
-            $message .= ' ' . trans_choice(':count weiterer offener Eingang von „:party“ ebenfalls abgelegt.|:count weitere offene Eingänge von „:party“ ebenfalls abgelegt.', $others, ['count' => $others, 'party' => $party]);
+            $message .= ' ' . trans_choice($discard
+                ? ':count weiterer offener Eingang von „:party“ ebenfalls verworfen.|:count weitere offene Eingänge von „:party“ ebenfalls verworfen.'
+                : ':count weiterer offener Eingang von „:party“ ebenfalls abgelegt.|:count weitere offene Eingänge von „:party“ ebenfalls abgelegt.', $others, ['count' => $others, 'party' => $party]);
         }
         if ($rule !== null) {
-            $message .= ' ' . __('Künftige Eingänge von „:party“ werden automatisch als keine Rechnung abgelegt.', ['party' => $rule->party_name]);
+            $message .= ' ' . ($discard
+                ? __('Künftige Eingänge von „:party“ werden automatisch verworfen.', ['party' => $party])
+                : __('Künftige Eingänge von „:party“ werden automatisch als keine Rechnung abgelegt.', ['party' => $party]));
         }
 
         return redirect()->toList('finance.incoming-invoices.index')->with('success', $message);

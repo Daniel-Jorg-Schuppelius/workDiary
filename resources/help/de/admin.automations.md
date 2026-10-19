@@ -35,7 +35,7 @@ Folgende Aktionen stehen bereit:
 
 - **Neue Regel anlegen (JSON)**: öffnet den Dialog **Neue
   Automationsregel** mit **Name**, **Auslöser** (z. B. „Spesenabrechnung
-  eingereicht“), **Aktion** (z. B. „Spesen freigeben“), **Priorität**
+  eingereicht“ oder „Rechnungseingang eingegangen“), **Aktion** (z. B. „Spesen freigeben“), **Priorität**
   und **Bedingungen (JSON)**. Die Aktion muss zum Auslöser passen; eine
   leere Bedingung gilt immer. **Regel anlegen** speichert die Regel.
 - **Deaktivieren**/**Aktivieren**: deaktivierte Regeln bleiben

@@ -11,6 +11,7 @@
 return [
     // Löschbereiche der Aufbewahrung (Schlüssel == config/retention.php areas.*).
     'retention_area' => [
+        'incoming_invoices_rejected' => 'Abgelehnte Rechnungseingänge',
         'audit_logs' => 'Audit-Protokoll',
         'exports' => 'Lohn-/Zeitexporte',
         'gobd_financial' => 'Steuerlich relevante Daten',

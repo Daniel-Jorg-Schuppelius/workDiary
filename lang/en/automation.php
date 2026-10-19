@@ -13,10 +13,14 @@ return [
         'expense_submitted' => 'Expense report submitted',
         'open_issue_created' => 'Open issue created',
         'procedure_deviation_recorded' => 'Procedure deviation recorded',
+        'incoming_invoice_received' => 'Incoming invoice received',
     ],
     'action' => [
         'expense_approve' => 'Approve expenses',
         'diary_follow_up' => 'Create follow-up order',
+        'incoming_invoice_discard' => 'Discard incoming invoice',
+        'incoming_invoice_reject' => 'File incoming invoice as “not an invoice”',
+        'incoming_invoice_assign' => 'Assign incoming invoice',
     ],
     'form' => [
         'title' => 'New automation rule',

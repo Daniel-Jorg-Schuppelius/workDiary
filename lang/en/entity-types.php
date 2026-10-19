@@ -279,7 +279,7 @@ return [
     'EbicsConnection' => 'EBICS bank access',
     'DatevOnlineConnection' => 'DATEV Online connection',
     'InvoiceSenderRule' => 'Sender rule (invoice mailbox)',
-    'IncomingInvoiceExclusion' => 'Exclusion rule (invoice mailbox)',
+    'IncomingInvoiceTemplate' => 'Document template (incoming invoices)',
     'InvoiceSchedule' => 'Invoice schedule',
     'InvoiceScheduleItem' => 'Invoice schedule line',
     'InvoiceTemplate' => 'Invoice template',

@@ -10,6 +10,35 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Rechnungseingang: Belegvorlagen mit Zonen und lernende Erkennung (Phase 151,
+  MVP-1218–1221). Das php-pdf-toolkit 0.27 liefert Wortboxen (Rechteck je
+  Wort relativ zur Seitengröße, Textlayer oder OCR); die App steigt von 0.17
+  auf 0.27. Eine Vorlage trägt einen Fingerabdruck aus Kopf und Fuß der ersten
+  Seite und Zonen für Rechnungsnummer, Datum, Fälligkeit, Netto, Steuer, Brutto,
+  USt-IdNr. und Verkäufer; beim Eingang schlagen gezeichnete und bestätigte
+  Zonen die Heuristik, gelernte unbestätigte füllen nur Lücken. Jede Korrektur
+  in „Werte erfassen“ lernt mit (eindeutiger Treffer im Wortgitter wird zur
+  Zone, der zweite Treffer bestätigt sie). Neuer Zonen-Editor „Vorlage“ auf der
+  Belegseite: gerenderte Seite, Wortboxen als Overlay, Rechtecke ziehen,
+  Vorschau des Werts, speichern und auf die offenen Eingänge derselben Form
+  anwenden. Vorlagen stehen unter „Regeln“. Nur für PDF-Belege.
+
+- Rechnungseingang: Erkennung von PDF und Scan (Phase 151, MVP-1215–1217).
+  Die Textheuristik wertet jetzt auch den zeilentreuen Zweittext aus,
+  paart Kopfzeilen mit Wertezeilen und Beschriftungsblöcke mit Werteblöcken
+  (pdftotext gibt Spalten nacheinander aus), kennt „Gesamt EUR inkl. MwSt.“,
+  „Gesamtpreis (inkl. MwSt.)“, Klammerzusätze und nimmt „Rechnungsbetrag
+  Netto“ nie als Brutto; als Rechnungsdatum gelten auch „Ort, Datum“ im
+  Briefkopf und ein nacktes „Datum“, ein Lieferdatum nur als gekennzeichneter
+  Vorschlag im Dialog „Werte erfassen“. Mahnungen, Lieferscheine,
+  Auftragsbestätigungen, Angebote und Versandmarken werden als Belegart
+  erkannt (neue Belegart „Mahnung“): Liste und Beleg zeigen „Sieht aus wie“,
+  der Zuordnen-Dialog belegt „Keine Rechnung“ vor, Mahnungen verlinken die
+  angemahnten Rechnungen; Posteingangsregeln können auf `kind_hint` prüfen.
+  Neuer Befehl `incoming-invoices:measure-recognition` misst die Erkennung
+  gegen die gespeicherten Belegtexte je Feld, ohne zu schreiben (Analyse
+  2026-10-19: 177 Klärfälle, davon 168 mit lesbarem Text).
+
 - Kommunikation: E-Mail-Notizen zeigen die Mail dahinter (Absender,
   Empfangszeit, Postfach, Anhänge, zugehörige Rechnungsnachfrage mit Stand) und
   lassen sich mit **Antworten** direkt aus der Notiz beantworten: Empfänger und

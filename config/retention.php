@@ -184,6 +184,15 @@ return [
             'basis' => ['DE' => 'Art. 5 Abs. 1 lit. c/e DSGVO (Datenminimierung); Vollzug: location:purge-points', 'AT' => 'Art. 5 DSGVO', 'CH' => 'DSG (Zweckbindung)'],
         ],
 
+        // Abgelehnte Rechnungseingänge („Keine Rechnung“, Phase 150): Tage statt
+        // Jahre; Quelle invoicing.rejected_retention_days (ENV
+        // INVOICING_REJECTED_RETENTION_DAYS, 0 = nie). Vollzug nur als
+        // bestätigter Vorschlag (approve → purge = IncomingEInvoiceService::discard).
+        'incoming_invoices_rejected' => [
+            'days_source' => 'invoicing.rejected_retention_days',
+            'basis' => ['DE' => 'Keine Rechnung laut Entscheidung — keine Aufbewahrungspflicht; Art. 5 Abs. 1 lit. e DSGVO', 'AT' => 'Art. 5 DSGVO', 'CH' => 'DSG (Zweckbindung)'],
+        ],
+
         // Allgemeine Dokumente ohne Steuer-/Handelsrecht-Bezug: NUR Ausweis/
         // Review im MVP, kein Auto-Purge und keine Scan-Policy — die
         // steuerrelevanten Dokumenttypen laufen über documents_invoice/gobd.

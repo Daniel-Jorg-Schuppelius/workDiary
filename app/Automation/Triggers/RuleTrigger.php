@@ -27,4 +27,12 @@ interface RuleTrigger {
      * @return array<string, mixed>
      */
     public function exampleConditions(): array;
+
+    /**
+     * Kontext für die Bedingungen (MVP-1209): Standard ist `toArray()` des
+     * Subjekts; ein Auslöser kann abgeleitete Felder ergänzen.
+     *
+     * @return array<string, mixed>
+     */
+    public function context(\Illuminate\Database\Eloquent\Model $subject): array;
 }

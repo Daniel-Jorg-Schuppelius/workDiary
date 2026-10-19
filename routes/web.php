@@ -3184,10 +3184,14 @@ Route::middleware('auth')->group(function () {
             Route::post('sammel-zuordnen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'bulkAssign'])->name('bulk-assign');
             // Nacherkennung offener Klärfälle (MVP-1207), z. B. nach nachinstallierten Textwerkzeugen.
             Route::post('sammel-erkennen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'bulkReanalyze'])->name('bulk-reanalyze');
-            // Regeln des Rechnungseingangs (MVP-1208): Absenderregeln und Ausschlüsse einsehen und löschen.
+            // Abgelehnte Eingänge endgültig löschen (MVP-1212).
+            Route::post('sammel-loeschen', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'bulkDiscard'])->name('bulk-discard');
+            // Regeln des Rechnungseingangs (MVP-1208/1211): Absenderregeln und Posteingangsregeln einsehen, schalten, löschen.
             Route::get('regeln', [\App\Http\Controllers\Finance\IncomingInvoiceRuleController::class, 'index'])->name('rules');
             Route::delete('regeln/absender/{rule}', [\App\Http\Controllers\Finance\IncomingInvoiceRuleController::class, 'destroySenderRule'])->name('rules.sender.destroy');
-            Route::delete('regeln/ausschluss/{exclusion}', [\App\Http\Controllers\Finance\IncomingInvoiceRuleController::class, 'destroyExclusion'])->name('rules.exclusion.destroy');
+            Route::post('regeln/automation/{rule}/umschalten', [\App\Http\Controllers\Finance\IncomingInvoiceRuleController::class, 'toggleRule'])->name('rules.automation.toggle');
+            Route::delete('regeln/automation/{rule}', [\App\Http\Controllers\Finance\IncomingInvoiceRuleController::class, 'destroyRule'])->name('rules.automation.destroy');
+            Route::delete('regeln/vorlagen/{template}', [\App\Http\Controllers\Finance\IncomingInvoiceRuleController::class, 'destroyTemplate'])->name('rules.template.destroy');
             Route::get('{incoming}/zuordnen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'assignForm'])->name('assign.form');
             Route::post('{incoming}/zuordnen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'assign'])->name('assign');
             Route::get('{incoming}/werte', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'valuesForm'])->name('values.form');
@@ -3201,6 +3205,11 @@ Route::middleware('auth')->group(function () {
             Route::post('{incoming}/einbehalte', [\App\Http\Controllers\Finance\IncomingRetentionController::class, 'store'])->name('retentions.store');
             Route::post('einbehalte/{retention}/freigeben', [\App\Http\Controllers\Finance\IncomingRetentionController::class, 'release'])->name('retentions.release');
             Route::delete('einbehalte/{retention}', [\App\Http\Controllers\Finance\IncomingRetentionController::class, 'destroy'])->name('retentions.destroy');
+            // Zonen-Editor und Belegvorlagen (Phase 151, MVP-1220).
+            Route::get('{document}/vorlage', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'edit'])->name('template.edit');
+            Route::get('{document}/vorlage/seite/{page}', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'page'])->whereNumber('page')->name('template.page');
+            Route::post('{document}/vorlage/vorschau', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'preview'])->name('template.preview');
+            Route::post('{document}/vorlage', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'store'])->name('template.store');
             Route::get('{document}/xml', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'xml'])->name('xml');
             Route::get('{document}', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'show'])->name('show');
         });

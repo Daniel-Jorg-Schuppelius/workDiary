@@ -1269,6 +1269,7 @@ return [
             'cancellation' => 'Storno',
             'expense' => 'Auslage',
             'other' => 'Sonstiger Beleg',
+            'reminder' => 'Mahnung',
         ],
         'origin' => [
             'local' => 'Lokal',
@@ -2108,7 +2109,7 @@ return [
         ],
         'incoming_e_invoice_status' => ['received' => 'Empfangen', 'approved' => 'Fachlich freigegeben', 'rejected' => 'Abgelehnt', 'question' => 'Rückfrage', 'payment_released' => 'Zahlung freigegeben'],
         'incoming_invoice_recognition' => ['structured' => 'E-Rechnung (strukturiert)', 'extracted' => 'Aus PDF bzw. Bild erkannt', 'none' => 'Nicht erkannt (Klärfall)'],
-        'incoming_invoice_match_kind' => ['vat_id' => 'USt-IdNr.', 'tax_number' => 'Steuernummer', 'iban' => 'IBAN', 'sender_rule' => 'Absenderregel', 'manual' => 'Von Hand'],
+        'incoming_invoice_match_kind' => ['vat_id' => 'USt-IdNr.', 'tax_number' => 'Steuernummer', 'iban' => 'IBAN', 'sender_rule' => 'Absenderregel', 'manual' => 'Von Hand', 'rule' => 'Posteingangsregel'],
         'incoming_invoice_transfer_status' => ['pending' => 'Ausstehend', 'waiting' => 'Wartet auf Klärung', 'failed' => 'Fehlgeschlagen', 'transferred' => 'Übergeben', 'linked' => 'Schon vorhanden, verknüpft'],
         'invoice_schedule_status' => ['active' => 'Aktiv', 'paused' => 'Pausiert', 'ended' => 'Beendet'],
         'invoice_inquiry_status' => ['open' => 'Offen', 'answered' => 'Beantwortet'],

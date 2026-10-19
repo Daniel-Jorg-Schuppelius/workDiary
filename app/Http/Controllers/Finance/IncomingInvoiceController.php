@@ -24,7 +24,7 @@ use App\Models\Invoicing\{IncomingEInvoice, IncomingEInvoiceTransfer};
 use App\Models\Platform\User;
 use App\Models\Supplier\Supplier;
 use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, IncomingInvoiceTransferGate, IncomingInvoiceTransferService};
-use App\Support\{CarbonFmt, SortableQuery};
+use App\Support\{CarbonFmt, SortableQuery, Sqid};
 use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
@@ -46,7 +46,7 @@ class IncomingInvoiceController extends Controller {
     ) {}
 
     /** Reiter der Arbeitsliste (MVP-1110/1111): benannte Filterzustände. */
-    public const TABS = ['assign', 'review', 'transfer', 'failed', 'duplicates', 'all'];
+    public const TABS = ['assign', 'review', 'transfer', 'failed', 'duplicates', 'rejected', 'all'];
 
     /** Sortierbare Spalten → SQL-Spalte. */
     private const SORTS = [
@@ -68,6 +68,7 @@ class IncomingInvoiceController extends Controller {
         [$sort, $dir] = SortableQuery::resolve($request, self::SORTS, 'received_at');
         $direction = DocumentDirection::tryFrom($request->string('direction')->toString());
         $recognition = IncomingInvoiceRecognition::tryFrom($request->string('recognition')->toString());
+        $status = IncomingEInvoiceStatus::tryFrom($request->string('status')->toString());
         $term = trim($request->string('q')->toString());
 
         $base = static fn (): \Illuminate\Database\Eloquent\Builder => IncomingEInvoice::query()
@@ -85,6 +86,9 @@ class IncomingInvoiceController extends Controller {
             ->whereNotNull('duplicate_of_id')->whereNull('duplicate_cleared_at')
             ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value)
             ->whereHas('duplicateOf', static fn ($earlier) => $earlier->withoutGlobalScopes()->where('status', '!=', IncomingEInvoiceStatus::Rejected->value));
+        // Abgelehnt (MVP-1212): „Keine Rechnung“ — von hier aus endgültig löschbar.
+        $rejected = static fn (\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder => $query
+            ->where('status', IncomingEInvoiceStatus::Rejected->value);
         $open = [IncomingInvoiceTransferStatus::Pending, IncomingInvoiceTransferStatus::Waiting];
         $failed = [IncomingInvoiceTransferStatus::Failed];
         [$from, $to] = $this->globalDateRangeBounds();
@@ -95,12 +99,14 @@ class IncomingInvoiceController extends Controller {
             'transfer' => $inTransfer($base(), $open),
             'failed' => $inTransfer($base(), $failed),
             'duplicates' => $duplicates($base()),
+            'rejected' => $rejected($base()),
             default => $base()->whereBetween('received_at', [$from, $to]),
         };
         $query->with(['document', 'supplier:id,name,is_collective', 'customer:id,name,is_collective', 'duplicateOf:id,status'])
             ->when(in_array($tab, ['transfer', 'failed'], true), static fn ($q) => $q->with('transfers'))
             ->when($direction !== null, static fn ($q) => $q->where('direction', $direction?->value))
             ->when($recognition !== null, static fn ($q) => $q->where('recognition', $recognition?->value))
+            ->when($status !== null && $tab === 'all', static fn ($q) => $q->where('status', $status?->value))
             ->when($term !== '', static fn ($q) => $q->where(static fn ($w) => $w->whereLikeEscaped('invoice_number', $term)
                 ->orWhereLikeEscaped('seller_name', $term)->orWhereLikeEscaped('buyer_name', $term)->orWhereLikeEscaped('sender_email', $term)));
         $query->orderBy(self::SORTS[$sort], $dir)->orderByDesc('id');
@@ -115,10 +121,38 @@ class IncomingInvoiceController extends Controller {
             'transferCount' => $inTransfer($base(), $open)->count(),
             'failedCount' => $inTransfer($base(), $failed)->count(),
             'duplicateCount' => $duplicates($base())->count(),
+            'rejectedCount' => $rejected($base())->count(),
             'canUpload' => Gate::allows('create', Document::class),
             'canManage' => $user->canManageBilling(),
             'bulkParties' => $tab === 'assign' && $user->canManageBilling() ? $this->assignmentOptions() : null,
+            'bulkDiscard' => $tab === 'rejected' && $user->canManageBilling(),
+            'kindHints' => app(\App\Services\Invoicing\EInvoice\IncomingInvoiceKindHints::class),
         ]);
+    }
+
+    /** Abgelehnte Eingänge endgültig löschen (Sammelaktion, MVP-1212): Beleg, Dokument, Dateien — es bleibt der Audit-Eintrag. */
+    public function bulkDiscard(Request $request): RedirectResponse {
+        $actor = $this->authUser();
+        abort_unless($actor->canManageBilling(), 403);
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'max:200'],
+            'ids.*' => ['string', 'max:64'],
+        ]);
+        $ids = array_values(array_filter(array_map(static fn (string $sqid): ?int => Sqid::decode(IncomingEInvoice::class, $sqid), $data['ids'])));
+        $deleted = 0;
+        $skipped = 0;
+        foreach (IncomingEInvoice::query()->whereKey($ids)->where('status', IncomingEInvoiceStatus::Rejected->value)->get() as $incoming) {
+            try {
+                $this->eInvoices->discard($incoming, (string) __('Von Hand endgültig gelöscht.'), $actor);
+                $deleted++;
+            } catch (\RuntimeException) {
+                $skipped++;
+            }
+        }
+        $skipped = count($ids) - $deleted;
+
+        return redirect()->toList('finance.incoming-invoices.index')
+            ->with($skipped > 0 ? 'warning' : 'success', __(':deleted Eingänge endgültig gelöscht, :skipped übersprungen.', ['deleted' => $deleted, 'skipped' => $skipped]));
     }
 
     /**
@@ -163,11 +197,16 @@ class IncomingInvoiceController extends Controller {
         if (count($results) > 1) {
             $count = static fn (string $status): int => count(array_filter($results, static fn (array $r): bool => $r['status'] === $status));
 
-            return redirect()->toList('finance.incoming-invoices.index')->with('success', __(':created Rechnungen erfasst, :duplicates Dubletten, :failed nicht lesbar oder abgewiesen.', [
+            $message = (string) __(':created Rechnungen erfasst, :duplicates Dubletten, :failed nicht lesbar oder abgewiesen.', [
                 'created' => $count('created'),
                 'duplicates' => $count('duplicate'),
                 'failed' => $count('unreadable') + $count('infected'),
-            ]));
+            ]);
+            if ($count('discarded') > 0) {
+                $message .= ' ' . __(':count laut Posteingangsregel verworfen.', ['count' => $count('discarded')]);
+            }
+
+            return redirect()->toList('finance.incoming-invoices.index')->with('success', $message);
         }
 
         $result = $results[0];
@@ -177,6 +216,9 @@ class IncomingInvoiceController extends Controller {
                 ->with('error', __('Diese E-Rechnung wurde bereits am :date erfasst (Dublette).', [
                     'date' => CarbonFmt::orgTz($incoming->received_at)->isoFormat('L LT'),
                 ]));
+        }
+        if ($result['status'] === 'discarded') {
+            return redirect()->toList('finance.incoming-invoices.index')->with('warning', __('Die Datei wurde laut Posteingangsregel verworfen und nicht abgelegt.'));
         }
         if ($result['status'] !== 'created' || $incoming === null || $result['document'] === null) {
             if ($result['status'] === 'infected') {
@@ -375,6 +417,9 @@ class IncomingInvoiceController extends Controller {
             'document' => $document->load('currentVersion'),
             'parsed' => $parsed,
             'summary' => $parsed !== null ? $this->eInvoices->summary($parsed) : null,
+            'kindHintLabel' => $incoming === null ? null : app(\App\Services\Invoicing\EInvoice\IncomingInvoiceKindHints::class)->label($incoming->kindHint()),
+            'canTemplate' => $incoming !== null && $incoming->recognition !== IncomingInvoiceRecognition::Structured && str_contains(mb_strtolower((string) $version?->mime), 'pdf') && (auth()->user()?->canManageBilling() ?? false),
+            'reminderTargets' => $incoming?->reminderTargets() ?? new \Illuminate\Database\Eloquent\Collection(),
             'fixedAsset' => $incoming === null ? null : FixedAsset::query()
                 ->where('source_type', $incoming->getMorphClass())->where('source_id', $incoming->id)->first(),
         ]);

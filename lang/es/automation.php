@@ -13,10 +13,14 @@ return [
         'expense_submitted' => 'Liquidación de gastos enviada',
         'open_issue_created' => 'Punto abierto creado',
         'procedure_deviation_recorded' => 'Desviación de procedimiento registrada',
+        'incoming_invoice_received' => 'Factura recibida',
     ],
     'action' => [
         'expense_approve' => 'Aprobar gastos',
         'diary_follow_up' => 'Crear orden de seguimiento',
+        'incoming_invoice_discard' => 'Descartar la factura recibida',
+        'incoming_invoice_reject' => 'Archivar la factura recibida como «no es una factura»',
+        'incoming_invoice_assign' => 'Asignar la factura recibida',
     ],
     'form' => [
         'title' => 'Nueva regla de automatización',

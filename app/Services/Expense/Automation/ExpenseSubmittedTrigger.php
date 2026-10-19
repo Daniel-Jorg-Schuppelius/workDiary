@@ -27,4 +27,9 @@ final class ExpenseSubmittedTrigger implements RuleTrigger {
     public function exampleConditions(): array {
         return ['all' => [['field' => 'amount_gross', 'op' => '<=', 'value' => 50]]];
     }
+
+    /** @return array<string, mixed> */
+    public function context(\Illuminate\Database\Eloquent\Model $subject): array {
+        return $subject->toArray();
+    }
 }

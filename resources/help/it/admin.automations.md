@@ -34,7 +34,7 @@ predefinita per priorità. Sono disponibili le seguenti azioni:
 
 - **Crea nuova regola (JSON)**: apre la finestra di dialogo **Nuova
   regola di automazione** con **Nome**, **Attivatore** (ad es. «Nota
-  spese inviata»), **Azione** (ad es. «Approvare le spese»),
+  spese inviata» o «Fattura in entrata ricevuta»), **Azione** (ad es. «Approvare le spese»),
   **Priorità** e **Condizioni (JSON)**. L'azione deve corrispondere
   all'attivatore; una condizione vuota vale sempre. **Crea regola**
   salva la regola.

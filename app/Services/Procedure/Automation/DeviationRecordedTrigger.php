@@ -27,4 +27,9 @@ final class DeviationRecordedTrigger implements RuleTrigger {
     public function exampleConditions(): array {
         return ['all' => [['field' => 'severity', 'op' => '=', 'value' => 'critical']]];
     }
+
+    /** @return array<string, mixed> */
+    public function context(\Illuminate\Database\Eloquent\Model $subject): array {
+        return $subject->toArray();
+    }
 }

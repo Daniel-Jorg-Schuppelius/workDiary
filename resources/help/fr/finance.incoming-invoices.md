@@ -126,11 +126,56 @@ d’une même partie.
 
 Avec « Traiter de la même façon les autres documents ouverts », vous réglez
 tous les documents ouverts de la même contrepartie en une étape, à
-l’attribution comme au refus. Sous « Pas une facture », vous pouvez en plus
-exclure la contrepartie : les futurs documents portant ce nom sont classés
-automatiquement comme « pas une facture », par exemple des documents de test ou
-de la publicité. Vous consultez et supprimez les règles d’expéditeur et les
-exclusions via « Règles » dans le menu de la page.
+l’attribution comme au refus. Sous « Pas une facture », vous décidez du sort
+des futurs documents de cette contrepartie : « classer automatiquement comme
+pas une facture » ou « ne pas prendre en charge (rejeter et supprimer) ». La
+suppression retire le document, son fichier et ses pièces jointes ; l’entrée
+d’audit avec somme de contrôle, numéro, vendeur, expéditeur et motif est
+conservée. WorkDiary crée pour cela une règle de boîte de réception.
+
+Les **règles de boîte de réception** sont des règles d’automatisation du
+déclencheur « Facture entrante reçue ». Vous les consultez via « Règles » dans
+le menu de la page, avec les règles d’expéditeur, les désactivez, les activez
+et les supprimez ; les administrateurs modifient conditions et actions sur la
+page des automatisations. Les conditions vérifient entre autres le vendeur
+(`seller_name_key`, normalisé), le numéro de TVA (`seller_vat_id`),
+l’expéditeur (`sender_email`, `sender_domain`), l’objet (`mail_subject`), les
+noms des pièces jointes (`attachment_names`), le nom de fichier (`file_name`),
+le pays (`country`), le montant TTC (`amount_gross`) et la reconnaissance
+(`recognition`) ; les opérateurs comprennent « est », « contient », « commence
+par », « se termine par » et « correspond à » (expression régulière). Actions :
+rejeter et supprimer, classer comme pas une facture, attribuer à une partie. La
+première règle correspondante l’emporte ; les règles s’appliquent à la
+relève, à l’import et à la nouvelle reconnaissance.
+
+Les documents refusés figurent dans l’onglet « Refusé », où vous pouvez les
+supprimer définitivement. Après le délai configuré (30 jours par défaut), la
+conservation propose leur destruction ; la suppression n’a lieu qu’après
+validation.
+
+**Reconnaissance des PDF et des scans :** WorkDiary lit les libellés et les
+valeurs même lorsqu’ils se trouvent dans des colonnes séparées ou dans une
+ligne d’en-tête au-dessus de la ligne de valeurs. Sans date de facture, « Lieu,
+date » de l’en-tête ou un simple « Date » compte ; une date de livraison n’est
+que proposée et signalée dans la boîte de dialogue « Saisir les valeurs ». Les
+relances, bons de livraison, confirmations de commande, devis et étiquettes
+d’expédition sont reconnus comme tels : la liste affiche « Ressemble à », la
+boîte d’attribution présélectionne « Pas une facture », et les relances
+nomment les factures concernées avec un lien. Les administrateurs mesurent la
+reconnaissance avec `incoming-invoices:measure-recognition` sur les textes
+enregistrés des documents.
+
+**Modèles de document :** Via « Modèle » sur la page du document, vous tracez
+sur le document rendu des rectangles pour le numéro de facture, la date, les
+montants, le numéro de TVA et le vendeur ; la valeur reconnue apparaît
+aussitôt. Le modèle est enregistré avec une empreinte de l’en-tête et du pied
+de la première page, il s’applique donc à tout autre document du même
+fournisseur, sur demande tout de suite aux documents ouverts. Chaque
+correction dans « Saisir les valeurs » apprend aussi : la valeur saisie est
+localisée sur le document et mémorisée comme zone ; après la deuxième
+correspondance, une zone apprise est considérée comme confirmée et l’emporte
+sur l’heuristique. Les modèles figurent sous « Règles » et peuvent y être
+supprimés. Les zones n’existent que pour les documents PDF.
 
 **Fournisseur collectif et client collectif :** Pour les fournisseurs et
 clients occasionnels, chaque organisation dispose d’un contact collectif. Le

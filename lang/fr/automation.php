@@ -13,10 +13,14 @@ return [
         'expense_submitted' => 'Note de frais soumise',
         'open_issue_created' => 'Point ouvert créé',
         'procedure_deviation_recorded' => 'Écart de procédure enregistré',
+        'incoming_invoice_received' => 'Facture entrante reçue',
     ],
     'action' => [
         'expense_approve' => 'Approuver les frais',
         'diary_follow_up' => 'Créer une commande de suivi',
+        'incoming_invoice_discard' => 'Rejeter et supprimer la facture entrante',
+        'incoming_invoice_reject' => 'Classer la facture entrante comme « pas une facture »',
+        'incoming_invoice_assign' => 'Attribuer la facture entrante',
     ],
     'form' => [
         'title' => 'Nouvelle règle d’automatisation',

@@ -73,6 +73,9 @@ class ConditionEvaluator {
             'not_in' => is_array($expected) && ! in_array($this->loose($actual), array_map([$this, 'loose'], $expected), true),
             'contains' => is_string($actual) && is_string($expected) && str_contains($actual, $expected),
             'starts_with' => is_string($actual) && is_string($expected) && str_starts_with($actual, $expected),
+            'ends_with' => is_string($actual) && is_string($expected) && str_ends_with($actual, $expected),
+            'not_contains' => is_string($actual) && is_string($expected) && ! str_contains($actual, $expected),
+            'matches' => is_string($actual) && is_string($expected) && $this->matchesPattern($actual, $expected),
             default => false,
         };
     }
@@ -88,6 +91,23 @@ class ConditionEvaluator {
             $value instanceof Decimal => $value->getValue(),
             default => $value,
         };
+    }
+
+    /** Regulärer Ausdruck ohne Begrenzer, Groß-/Kleinschreibung egal; ein ungültiges Muster trifft nie. */
+    private function matchesPattern(string $actual, string $pattern): bool {
+        if ($pattern === '') {
+            return false;
+        }
+        // Ein ungültiges Muster meldet preg_match als Warnung; die darf weder den
+        // Lauf noch einen Test stören — der Handler schluckt sie, das Ergebnis ist „kein Treffer“.
+        set_error_handler(static fn (): bool => true);
+        try {
+            return preg_match('~' . str_replace('~', '\\~', $pattern) . '~iu', $actual) === 1;
+        } catch (\Throwable) {
+            return false;
+        } finally {
+            restore_error_handler();
+        }
     }
 
     private function loose(mixed $value): mixed {
