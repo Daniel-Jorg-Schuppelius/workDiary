@@ -244,6 +244,27 @@ class MsgraphMailClient implements GraphSubscriptionClient {
     }
 
     /**
+     * Nachricht über ihre Internet-Message-ID (mit spitzen Klammern, so führt
+     * Graph sie); null, wenn das Postfach sie nicht mehr hat.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function findByInternetMessageId(?string $mailbox, string $internetMessageId): ?array {
+        $response = $this->api->getResponse($this->mailboxBase($mailbox) . '/messages', [
+            '$filter' => "internetMessageId eq '" . str_replace("'", "''", $internetMessageId) . "'",
+            '$select' => self::MESSAGE_FIELDS,
+            '$top' => '1',
+        ]);
+        if (! $response->successful()) {
+            throw new RuntimeException('Graph message-Suche fehlgeschlagen (HTTP ' . $response->status() . ').');
+        }
+        $data = (array) $response->json();
+        $first = $data['value'][0] ?? null;
+
+        return is_array($first) ? $first : null;
+    }
+
+    /**
      * Datei-Anhänge einer Nachricht (base64). Eine angehängte Mail
      * (`itemAttachment`, „Als Anlage weiterleiten“) liefert ihre Dateianhänge
      * mit, eine Ebene tief (MVP-1142); Verweise auf Cloud-Dateien bleiben

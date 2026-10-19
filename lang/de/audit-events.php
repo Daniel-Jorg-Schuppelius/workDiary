@@ -234,6 +234,7 @@ return [
         ],
         'published' => 'Kommunikationsnotiz veröffentlicht',
         'replied' => 'Auf E-Mail geantwortet',
+        'mail_text_refreshed' => 'Mailtext aus dem Postfach erneuert',
     ],
     'compliance' => [
         'finding' => [

@@ -234,6 +234,7 @@ return [
         ],
         'published' => 'Nota de comunicación publicada',
         'replied' => 'Respuesta al correo enviada',
+        'mail_text_refreshed' => 'Texto del correo renovado desde el buzón',
     ],
     'compliance' => [
         'finding' => [

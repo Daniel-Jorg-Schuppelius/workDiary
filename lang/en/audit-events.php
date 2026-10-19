@@ -234,6 +234,7 @@ return [
         ],
         'published' => 'Communication note published',
         'replied' => 'Replied to e-mail',
+        'mail_text_refreshed' => 'Mail text refreshed from the mailbox',
     ],
     'compliance' => [
         'finding' => [

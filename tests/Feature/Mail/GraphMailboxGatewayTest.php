@@ -93,6 +93,22 @@ final class GraphMailboxGatewayTest extends TestCase {
         return [$messages, $generator->getReturn()];
     }
 
+    public function test_find_reads_a_message_by_its_internet_message_id(): void {
+        $this->graphMailConnection();
+        $mailbox = $this->mailbox();
+        FakePluginHttp::fake([
+            self::GRAPH . '/me/messages?*internetMessageId*graph-id-9*' => FakePluginHttp::response(['value' => [$this->graphMessage('graph-id-9')]]),
+            self::GRAPH . '/me/messages?*internetMessageId*' => FakePluginHttp::response(['value' => []]),
+        ]);
+
+        $found = (new MsgraphMailboxGateway())->find($mailbox, 'graph-id-9@firma.example');
+
+        $this->assertNotNull($found);
+        $this->assertSame('<graph-id-9@firma.example>', $found->messageId);
+        $this->assertSame("Bitte prüfen.\nDanke & Gruß\nAcme", $found->body);
+        $this->assertNull((new MsgraphMailboxGateway())->find($mailbox, '<unbekannt@firma.example>'));
+    }
+
     public function test_fetch_reads_delta_and_maps_messages(): void {
         $this->graphMailConnection();
         $mailbox = $this->mailbox();

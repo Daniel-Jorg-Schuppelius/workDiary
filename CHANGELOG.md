@@ -50,6 +50,16 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   „E-Mail beim Kunden eingegangen“ (`communication.mailReceived`), wenn der
   Postfachabruf eine Rechnungsnachfrage automatisch als Notiz erfasst —
   Standardempfänger ist die Person hinter dem Postfach (Befund 2026-10-19).
+- Kommunikation: Im Kommunikations-Panel folgen die Zeilenaktionen dem
+  UX-Katalog (Ghost-Symbole, nur Löschen im Fehlerton), jede Notiz hat
+  **Anzeigen**, Notizen mit eingegangener Mail zusätzlich **Antworten**; die
+  Freigabe für Kunden trägt das Symbol „public“ statt des Auges. Neuer Befehl
+  `communication-notes:refresh-mail-text` (`--org`, `--since`, `--dry-run`)
+  liest Bestandsnotizen aus HTML-Mails erneut über ihre Message-ID aus dem
+  Postfach (Eingangs- und Verarbeitet-Ordner, IMAP und Microsoft 365) und
+  setzt Text, Eingangs-Snapshot und Herkunftsverweis mit Zeilenstruktur neu —
+  die Migration konnte nur die Entities bereinigen, nicht die Umbrüche
+  (`MailboxGateway::find()`, Audit `communication.mail_text_refreshed`).
 - Rechnungseingang: Posteingangsregeln (Phase 150, MVP-1208–1214). Wer einen
   Eingang als „keine Rechnung“ ablehnt, legt fest, was mit künftigen Belegen
   dieser Gegenpartei geschieht: „automatisch als keine Rechnung ablegen“ oder

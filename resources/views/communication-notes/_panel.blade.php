@@ -28,6 +28,8 @@
     $canCreate = \Illuminate\Support\Facades\Gate::allows('create', \App\Models\Communication\CommunicationNote::class);
     $canPublish = \Illuminate\Support\Facades\Gate::allows('publishToCustomer', \App\Models\Communication\CommunicationNote::class);
     $canManageConfidential = \Illuminate\Support\Facades\Gate::allows('manageConfidential', \App\Models\Communication\CommunicationNote::class);
+    // Notizen mit eingegangener Mail dahinter bieten „Antworten“ (zwei Abfragen statt einer je Notiz).
+    $mailNoteIds = \App\Models\Communication\CommunicationNote::idsWithInboundMail($notes);
     // Notiz strukturieren (Feature 148, MVP-732): Chips je Feld, nie Auto-Apply.
     $aiView = app(\App\Services\Ai\Contracts\SuggestionView::class);
     $aiStructureUsable = $aiView->capabilityUsable(\App\Services\Ai\Suggestions\CommunicationNoteSuggestionService::CAPABILITY);
@@ -94,6 +96,7 @@
                     $canUpdate = \Illuminate\Support\Facades\Gate::allows('update', $note);
                     $canDelete = \Illuminate\Support\Facades\Gate::allows('delete', $note);
                     $canComplete = \Illuminate\Support\Facades\Gate::allows('completeFollowup', $note);
+                    $canReply = in_array((int) $note->id, $mailNoteIds, true) && \Illuminate\Support\Facades\Gate::allows('reply', $note);
                     $isCustomerVisible = $note->visibility === \App\Enums\Communication\CommunicationVisibility::Customer;
                     $publishable = $canPublish
                         && ! $isCustomerVisible
@@ -149,62 +152,73 @@
                             </p>
                         </div>
 
-                        @if ($canUpdate || $canDelete || $publishable || $canManageConfidential || $canComplete)
-                            <div class="flex flex-wrap gap-1">
-                                @if ($canUpdate)
-                                    <x-icon-btn icon="edit" tone="outline" size="xs"
-                                                data-entry-modal-trigger
-                                                :href="route('communication-notes.edit', $note)"
-                                                :label="__('communication.action.edit')" />
-                                @endif
+                        {{-- Zeilenaktionen nach UX-Katalog: Ghost-Symbole, nur Löschen im Fehlerton. --}}
+                        <div class="flex flex-wrap gap-1">
+                            <x-icon-btn icon="visibility" size="xs"
+                                        data-entry-modal-trigger
+                                        :href="route('communication-notes.show', $note)"
+                                        :label="__('communication.action.show')" />
 
-                                @if ($canUpdate && $aiStructureUsable && ! $note->confidential && ($aiStructure[$note->id] ?? null) === null)
-                                    <x-action-form :action="route('ai.assist.communication-note', $note)">
-                                        <x-icon-btn icon="auto_awesome" tone="info" size="xs" type="submit"
-                                                    :label="__('ai.assist.structure_note')" />
-                                    </x-action-form>
-                                @endif
+                            @if ($canReply)
+                                <x-icon-btn icon="reply" size="xs"
+                                            data-entry-modal-trigger
+                                            :href="route('communication-notes.reply', $note)"
+                                            :label="__('communication.reply.action')" show-label />
+                            @endif
 
-                                @if ($note->hasOpenFollowUp() && $canComplete)
-                                    <form method="POST" action="{{ route('communication-notes.followup-complete', $note) }}">
-                                        @csrf
-                                        <x-icon-btn icon="task_alt" tone="success" size="xs" type="submit"
-                                                    :label="__('communication.action.complete_followup')" />
-                                    </form>
-                                @endif
+                            @if ($canUpdate)
+                                <x-icon-btn icon="edit" size="xs"
+                                            data-entry-modal-trigger
+                                            :href="route('communication-notes.edit', $note)"
+                                            :label="__('communication.action.edit')" />
+                            @endif
 
-                                @if ($publishable)
-                                    <x-action-form :action="route('communication-notes.publish', $note)"
-                                          data-confirm-title="{{ __('communication.action.publish') }}"
-                                          :confirm="__('communication.confirm_publish')"
-                                          confirm-icon="visibility"
-                                          confirm-tone="success"
-                                          :confirm-label="__('communication.action.publish')">
-                                        <x-icon-btn icon="visibility" tone="success" size="xs" type="submit"
-                                                    :label="__('communication.action.publish')" />
-                                    </x-action-form>
-                                @endif
+                            @if ($canUpdate && $aiStructureUsable && ! $note->confidential && ($aiStructure[$note->id] ?? null) === null)
+                                <x-action-form :action="route('ai.assist.communication-note', $note)">
+                                    <x-icon-btn icon="auto_awesome" size="xs" type="submit"
+                                                :label="__('ai.assist.structure_note')" />
+                                </x-action-form>
+                            @endif
 
-                                @if ($canManageConfidential && ! $isCustomerVisible)
-                                    <x-action-form :action="route('communication-notes.confidential', $note)">
-                                        <input type="hidden" name="confidential" value="{{ $note->confidential ? 0 : 1 }}">
-                                        <x-icon-btn :icon="$note->confidential ? 'lock_open' : 'lock'" tone="warning" size="xs" type="submit"
-                                                    :label="$note->confidential ? __('communication.action.unmark_confidential') : __('communication.action.mark_confidential')" />
-                                    </x-action-form>
-                                @endif
+                            @if ($note->hasOpenFollowUp() && $canComplete)
+                                <form method="POST" action="{{ route('communication-notes.followup-complete', $note) }}">
+                                    @csrf
+                                    <x-icon-btn icon="task_alt" size="xs" type="submit"
+                                                :label="__('communication.action.complete_followup')" />
+                                </form>
+                            @endif
 
-                                @if ($canDelete)
-                                    <x-action-form :action="route('communication-notes.destroy', $note)" method="DELETE"
-                                          data-confirm-title="{{ __('communication.action.delete') }}"
-                                          :confirm="__('communication.confirm_delete')"
-                                          confirm-icon="delete"
-                                          confirm-tone="error"
-                                          :confirm-label="__('communication.action.delete')">
-                                        <x-icon-btn icon="delete" tone="error" size="xs" type="submit" :label="__('communication.action.delete')" />
-                                    </x-action-form>
-                                @endif
-                            </div>
-                        @endif
+                            @if ($publishable)
+                                <x-action-form :action="route('communication-notes.publish', $note)"
+                                      data-confirm-title="{{ __('communication.action.publish') }}"
+                                      :confirm="__('communication.confirm_publish')"
+                                      confirm-icon="public"
+                                      confirm-tone="success"
+                                      :confirm-label="__('communication.action.publish')">
+                                    <x-icon-btn icon="public" size="xs" type="submit"
+                                                :label="__('communication.action.publish')" />
+                                </x-action-form>
+                            @endif
+
+                            @if ($canManageConfidential && ! $isCustomerVisible)
+                                <x-action-form :action="route('communication-notes.confidential', $note)">
+                                    <input type="hidden" name="confidential" value="{{ $note->confidential ? 0 : 1 }}">
+                                    <x-icon-btn :icon="$note->confidential ? 'lock_open' : 'lock'" size="xs" type="submit"
+                                                :label="$note->confidential ? __('communication.action.unmark_confidential') : __('communication.action.mark_confidential')" />
+                                </x-action-form>
+                            @endif
+
+                            @if ($canDelete)
+                                <x-action-form :action="route('communication-notes.destroy', $note)" method="DELETE"
+                                      data-confirm-title="{{ __('communication.action.delete') }}"
+                                      :confirm="__('communication.confirm_delete')"
+                                      confirm-icon="delete"
+                                      confirm-tone="error"
+                                      :confirm-label="__('communication.action.delete')">
+                                    <x-icon-btn icon="delete" tone="error" size="xs" type="submit" :label="__('communication.action.delete')" />
+                                </x-action-form>
+                            @endif
+                        </div>
                     </div>
 
                     @if (($aiStructure[$note->id] ?? null) !== null)

@@ -36,6 +36,18 @@ class MsgraphMailboxGateway implements MailboxGateway {
     /** @var array<string, string> aufgelöste Verarbeitet-Ordner je Postfach und Pfad */
     private array $processedFolders = [];
 
+    public function find(EmailConnection $connection, string $messageId): ?ParsedMessage {
+        $bare = trim($messageId, "<> \t");
+        if ($bare === '') {
+            return null;
+        }
+        $client = $this->client($connection);
+        $mailbox = $connection->mailbox_address;
+        $raw = $client->findByInternetMessageId($mailbox, '<' . $bare . '>');
+
+        return $raw === null ? null : $this->parse($client, $mailbox, $raw);
+    }
+
     public function fetch(EmailConnection $connection, MailboxCursor $cursor, int $limit): Generator {
         $client = $this->client($connection);
         $mailbox = $connection->mailbox_address;

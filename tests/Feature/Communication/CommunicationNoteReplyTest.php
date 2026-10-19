@@ -105,6 +105,19 @@ final class CommunicationNoteReplyTest extends TestCase {
             ->assertDontSee('communication-notes/' . $this->manualNote()->sqid . '/reply');
     }
 
+    public function test_the_customer_panel_offers_show_and_reply_only_for_mail_notes(): void {
+        $note = $this->inboundNote();
+        $manual = $this->manualNote();
+
+        $response = $this->actingAs($this->user)->get(route('customers.show', $this->customer));
+
+        $response->assertOk();
+        $response->assertSee(route('communication-notes.reply', $note), false);
+        $response->assertSee(route('communication-notes.show', $note), false);
+        $response->assertSee(route('communication-notes.show', $manual), false);
+        $response->assertDontSee(route('communication-notes.reply', $manual), false);
+    }
+
     public function test_the_reply_dialog_is_prefilled_with_sender_and_subject(): void {
         $note = $this->inboundNote();
 

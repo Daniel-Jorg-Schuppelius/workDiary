@@ -39,6 +39,10 @@ class TransportSelectingMailboxGateway implements MailboxGateway {
         return $this->gatewayFor($connection)->folders($connection);
     }
 
+    public function find(EmailConnection $connection, string $messageId): ?ParsedMessage {
+        return $this->gatewayFor($connection)->find($connection, $messageId);
+    }
+
     private function gatewayFor(EmailConnection $connection): MailboxGateway {
         if ($connection->usesImap()) {
             return $this->imap;

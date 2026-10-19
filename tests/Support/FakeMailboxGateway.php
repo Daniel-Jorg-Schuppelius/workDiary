@@ -60,4 +60,15 @@ class FakeMailboxGateway implements MailboxGateway {
     public function folders(EmailConnection $connection): array {
         return $this->folderList;
     }
+
+    public function find(EmailConnection $connection, string $messageId): ?ParsedMessage {
+        $bare = trim($messageId, "<> \t");
+        foreach ($this->messages as $message) {
+            if (trim($message->messageId, "<> \t") === $bare) {
+                return $message;
+            }
+        }
+
+        return null;
+    }
 }

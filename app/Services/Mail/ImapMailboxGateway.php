@@ -103,6 +103,34 @@ class ImapMailboxGateway implements MailboxGateway {
         }
     }
 
+    public function find(EmailConnection $connection, string $messageId): ?ParsedMessage {
+        $bare = trim($messageId, "<> \t");
+        if ($bare === '') {
+            return null;
+        }
+        $client = $this->connect($connection);
+
+        try {
+            $paths = array_values(array_unique(array_filter([(string) $connection->folder, trim((string) $connection->processed_folder)])));
+            foreach ($paths as $path) {
+                $folder = $this->resolveFolder($client, $path);
+                if ($folder === null) {
+                    continue;
+                }
+                // HEADER-Suche trifft die ID mit und ohne Klammern.
+                $message = $folder->query()->leaveUnread()->whereMessageId($bare)->limit(1)->get()->first();
+                if ($message instanceof Message) {
+                    return $this->parse($message);
+                }
+            }
+
+            return null;
+        } finally {
+            unset($this->folderLists[spl_object_id($client)]);
+            $this->disconnect($client);
+        }
+    }
+
     public function folders(EmailConnection $connection): array {
         $client = $this->connect($connection);
 

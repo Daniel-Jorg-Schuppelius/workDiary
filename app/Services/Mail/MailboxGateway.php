@@ -48,4 +48,11 @@ interface MailboxGateway {
      * @return list<string>
      */
     public function folders(EmailConnection $connection): array;
+
+    /**
+     * Eine bereits abgerufene Nachricht erneut lesen (Message-ID mit oder ohne
+     * spitze Klammern), etwa um ihren Text neu umzuwandeln; gesucht wird im
+     * Eingangs- und im Verarbeitet-Ordner. null, wenn das Postfach sie nicht mehr hat.
+     */
+    public function find(EmailConnection $connection, string $messageId): ?ParsedMessage;
 }

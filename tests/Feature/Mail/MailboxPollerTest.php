@@ -139,6 +139,10 @@ final class MailboxPollerTest extends TestCase {
             public function folders(EmailConnection $connection): array {
                 return [];
             }
+
+            public function find(EmailConnection $connection, string $messageId): ?ParsedMessage {
+                return null;
+            }
         };
 
         $result = $this->poller($gateway)->poll($this->organization, $connection);

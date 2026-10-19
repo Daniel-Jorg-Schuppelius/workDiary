@@ -185,6 +185,34 @@ class CommunicationNote extends Model {
         return StringHelper::truncate(preg_replace("/\n[ \t]*\n+/", "\n", $body) ?? $body, $limit);
     }
 
+    /**
+     * IDs der Notizen, hinter denen eine eingegangene E-Mail steht — für Panel
+     * und Listen mit zwei Abfragen statt einer je Notiz.
+     *
+     * @param  iterable<int, self>  $notes
+     * @return list<int>
+     */
+    public static function idsWithInboundMail(iterable $notes): array {
+        $ids = [];
+        foreach ($notes as $note) {
+            if ($note->type === CommunicationNoteType::Email && $note->direction === CommunicationDirection::Inbound) {
+                $ids[] = (int) $note->getKey();
+            }
+        }
+        if ($ids === []) {
+            return [];
+        }
+        $referenced = ExternalReference::query()->withoutGlobalScopes()
+            ->where('plugin_id', MailIntakeService::PLUGIN_ID)
+            ->where('external_type', MailIntakeService::EXTERNAL_TYPE)
+            ->where('referenceable_type', (new self)->getMorphClass())
+            ->whereIn('referenceable_id', $ids)
+            ->pluck('referenceable_id');
+        $inquired = InvoiceInquiry::query()->withoutGlobalScopes()->whereIn('communication_note_id', $ids)->pluck('communication_note_id');
+
+        return array_values(array_unique(array_map('intval', [...$referenced->all(), ...$inquired->all()])));
+    }
+
     /** Die E-Mail hinter der Notiz — eingegangen (Mail-Eingang, Rechnungsnachfrage) oder aus WorkDiary gesendet; sonst null. */
     public function mailOrigin(): ?MailOrigin {
         if ($this->type !== CommunicationNoteType::Email) {

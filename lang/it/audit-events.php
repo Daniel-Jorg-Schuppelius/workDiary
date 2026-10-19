@@ -234,6 +234,7 @@ return [
         ],
         'published' => 'Nota di comunicazione pubblicata',
         'replied' => 'Risposta all’e-mail inviata',
+        'mail_text_refreshed' => 'Testo dell’e-mail rinnovato dalla casella di posta',
     ],
     'compliance' => [
         'finding' => [
