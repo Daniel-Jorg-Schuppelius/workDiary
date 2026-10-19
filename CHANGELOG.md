@@ -10,6 +10,12 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Änderungsverlauf an Kunde, Lieferant und Fremdkunde gekürzt: Die Liste
+  zeigt acht Einträge, der Rest steht hinter „Weitere Einträge anzeigen“; ein
+  generisches „Geändert“ derselben Person innerhalb einer Minute neben einem
+  Fachereignis (etwa „Portal-Sichtbarkeit geändert“) entfällt, weil das
+  Fachereignis die Änderung erklärt. Komponente `x-audit-log-list`, Test.
+
 - Abrechnungskonto: Anfahrt wahlweise gesondert ausweisen oder in der Dauer
   mitführen (Feature 098, MVP-1235). Neuer Haken „Anfahrt gesondert ausweisen“
   in der Vereinbarung (Standard an). Ohne den Haken zeigen Kundenportal,

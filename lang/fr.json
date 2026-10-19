@@ -10969,5 +10969,6 @@
     "„:name“ zuordnen": "Affecter à « :name »",
     "Anlegen und umhängen": "Créer et déplacer",
     "E-Mail-Signatur": "Signature e-mail",
-    "Steht unter Antworten aus WorkDiary (Notizen, Tickets). Leer: Ihr Name und die Organisation; die Fußzeile der Organisation folgt automatisch.": "Figure sous les réponses envoyées depuis WorkDiary (notes, tickets). Vide : votre nom et l’organisation ; le pied de page de l’organisation suit automatiquement."
+    "Steht unter Antworten aus WorkDiary (Notizen, Tickets). Leer: Ihr Name und die Organisation; die Fußzeile der Organisation folgt automatisch.": "Figure sous les réponses envoyées depuis WorkDiary (notes, tickets). Vide : votre nom et l’organisation ; le pied de page de l’organisation suit automatiquement.",
+    "Weitere Einträge anzeigen (:count)": "Afficher plus d’entrées (:count)"
 }

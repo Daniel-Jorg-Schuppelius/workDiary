@@ -10969,5 +10969,6 @@
     "„:name“ zuordnen": "Asignar a «:name»",
     "Anlegen und umhängen": "Crear y mover",
     "E-Mail-Signatur": "Firma de correo",
-    "Steht unter Antworten aus WorkDiary (Notizen, Tickets). Leer: Ihr Name und die Organisation; die Fußzeile der Organisation folgt automatisch.": "Aparece bajo las respuestas enviadas desde WorkDiary (notas, tickets). Vacío: su nombre y la organización; el pie de la organización se añade automáticamente."
+    "Steht unter Antworten aus WorkDiary (Notizen, Tickets). Leer: Ihr Name und die Organisation; die Fußzeile der Organisation folgt automatisch.": "Aparece bajo las respuestas enviadas desde WorkDiary (notas, tickets). Vacío: su nombre y la organización; el pie de la organización se añade automáticamente.",
+    "Weitere Einträge anzeigen (:count)": "Mostrar más entradas (:count)"
 }
