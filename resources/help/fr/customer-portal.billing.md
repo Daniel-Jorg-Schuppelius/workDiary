@@ -1,7 +1,7 @@
 ---
 title: "Facturation"
 topic: customer-portal.billing
-version: 2
+version: 3
 keywords:
     - solde du compte
     - relevé de compte
@@ -52,7 +52,7 @@ En dessous, **Présences** liste chaque intervention facturable du mois :
 - **Motif** – le type d'activité,
 - **Début** et **Fin**,
 - **Durée**,
-- **Déplacement** – uniquement si du temps de déplacement a été facturé dans le mois,
+- **Déplacement** – uniquement si du temps de déplacement a été facturé dans le mois et que votre prestataire l'indique séparément ; sinon, le déplacement est compris dans la durée et dans les heures sous **Total**,
 - **Montant** – la valeur de l'intervention.
 
 S'il y a des paiements dans le mois, ils suivent sous **Derniers paiements** avec date et montant. Si un mois ne comporte aucune intervention, il affiche **Aucune entrée ce mois-ci.**

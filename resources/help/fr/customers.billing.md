@@ -1,7 +1,7 @@
 ---
 title: "Conditions particulières & compte client"
 topic: customers.billing
-version: 3
+version: 4
 keywords:
     - prix spéciaux
     - taux horaire client
@@ -34,7 +34,7 @@ saisie de temps facturable apporte alors x minutes supplémentaires,
 valorisées au tarif de la saisie — au choix uniquement pour certaines
 activités. Le temps de travail saisi reste inchangé, le compte de temps
 et l’horaire variable ne bougent donc pas ; le justificatif et le PDF
-présentent le déplacement dans une colonne dédiée. Dans la saisie de
+présentent le déplacement dans une colonne dédiée tant que **Indiquer le déplacement séparément** est coché ; sans la coche, le déplacement est compris dans la durée dans le portail et le justificatif, le montant reste identique. Dans la saisie de
 temps, la valeur peut être remplacée au cas par cas (0 compris). Les
 temps de trajet ou d’astreinte et les saisies au forfait n’obtiennent
 aucun déplacement.

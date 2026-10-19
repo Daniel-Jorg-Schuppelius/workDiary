@@ -16,6 +16,7 @@ use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
+use App\Services\Billing\CustomerAccountStatementService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Hash, URL};
 use Spatie\Permission\PermissionRegistrar;
@@ -170,5 +171,36 @@ class BillingPageTest extends TestCase {
         $response = $this->get($signed);
         $response->assertOk();
         $this->assertSame('application/pdf', $response->headers->get('Content-Type'));
+    }
+
+    /** MVP-1235: Anfahrt wahlweise in der Dauer statt in einer eigenen Spalte — Portal, Monatsliste und PDF. */
+    public function test_travel_can_be_folded_into_the_duration(): void {
+        $this->agreement->forceFill(['travel_minutes_per_entry' => 20])->save();
+        $this->agreement->rates()->update(['hourly_rate' => 18.00]);
+        app(CustomerAccountStatementService::class)->reapplyRates($this->agreement);
+
+        // Standard: gesondert ausgewiesen.
+        $this->actingAs($this->portalUser, 'customer')
+            ->get(route('customer.billing.show', ['year' => 2026, 'month' => 6]))
+            ->assertOk()
+            ->assertSee(__('customer-billing.travel'))
+            ->assertSee('2:00 h')
+            ->assertSee('0:20 h')
+            ->assertSee('42,00');
+
+        $this->agreement->forceFill(['is_travel_itemized' => false])->save();
+
+        $show = $this->get(route('customer.billing.show', ['year' => 2026, 'month' => 6]))->assertOk();
+        $show->assertDontSee(__('customer-billing.travel'))
+            ->assertSee('2:20 h')
+            ->assertDontSee('0:20 h')
+            ->assertSee('42,00');
+
+        $this->get(route('customer.billing.index'))->assertOk()->assertSee('2:20 h');
+
+        $data = app(CustomerAccountStatementService::class)->monthData($this->agreement, 2026, 6);
+        $pdf = view('customer.billing.pdf', $data + ['agreement' => $this->agreement])->render();
+        $this->assertStringNotContainsString(__('customer-billing.travel'), $pdf);
+        $this->assertStringContainsString('2:20 h', $pdf);
     }
 }

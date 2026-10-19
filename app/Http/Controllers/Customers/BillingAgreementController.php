@@ -85,6 +85,8 @@ class BillingAgreementController extends Controller {
                         (array) $request->validated('travel_categories', [])
                     )),
                     'holidays_as_weekend' => $request->boolean('holidays_as_weekend'),
+                    // Standard „gesondert ausweisen“ bleibt, wenn ein Aufrufer das Feld nicht sendet (MVP-1235).
+                    'is_travel_itemized' => ! $request->has('is_travel_itemized') || $request->boolean('is_travel_itemized'),
                     'opening_balance' => (float) ($request->validated('opening_balance') ?? 0),
                     'opening_balance_date' => $request->validated('opening_balance_date'),
                     'active' => $request->boolean('active'),

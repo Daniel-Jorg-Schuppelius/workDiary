@@ -1,7 +1,7 @@
 ---
 title: "Facturación"
 topic: customer-portal.billing
-version: 2
+version: 3
 keywords:
     - saldo de la cuenta
     - extracto de cuenta
@@ -52,7 +52,7 @@ Debajo, **Asistencias** enumera cada intervención facturable del mes:
 - **Motivo** – el tipo de actividad,
 - **Inicio** y **Fin**,
 - **Duración**,
-- **Desplazamiento** – solo si en el mes se ha cobrado tiempo de desplazamiento,
+- **Desplazamiento** – solo si en el mes se ha cobrado tiempo de desplazamiento y su proveedor lo muestra por separado; de lo contrario, el desplazamiento está incluido en la duración y en las horas de **Total**,
 - **Importe** – el valor de la intervención.
 
 Si hay pagos en el mes, aparecen a continuación en **Últimos pagos** con fecha e importe. Si un mes no tiene intervenciones, muestra **No hay registros en este mes.**

@@ -1,7 +1,7 @@
 ---
 title: "Fatturazione"
 topic: customer-portal.billing
-version: 2
+version: 3
 keywords:
     - saldo del conto
     - estratto conto
@@ -52,7 +52,7 @@ Sotto, **Presenze** elenca ogni intervento fatturabile del mese:
 - **Motivo** – il tipo di attività,
 - **Inizio** e **Fine**,
 - **Durata**,
-- **Trasferta** – solo se nel mese è stato addebitato tempo di trasferta,
+- **Trasferta** – solo se nel mese è stato addebitato tempo di trasferta e il Suo fornitore la indica separatamente; altrimenti la trasferta è inclusa nella durata e nelle ore sotto **Totale**,
 - **Importo** – il valore dell'intervento.
 
 Se nel mese ci sono pagamenti, seguono in **Ultimi pagamenti** con data e importo. Se un mese non ha interventi, compare **Nessuna voce in questo mese.**

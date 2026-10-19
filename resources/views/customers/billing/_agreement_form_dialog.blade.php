@@ -117,6 +117,10 @@
                           :label="__('customer-billing.holidays_as_weekend')"
                           :hint="__('customer-billing.holidays_as_weekend_hint')"
                           :checked="(bool) old('holidays_as_weekend', $agreement?->holidays_as_weekend ?? false)" />
+        <x-checkbox-field name="is_travel_itemized"
+                          :label="__('customer-billing.travel_itemized')"
+                          :hint="__('customer-billing.travel_itemized_hint')"
+                          :checked="(bool) old('is_travel_itemized', $agreement?->is_travel_itemized ?? true)" />
         <div class="md:col-span-2">
             <p class="fieldset-label">{{ __('customer-billing.travel_categories') }}</p>
             <p class="text-xs text-muted mb-2">{{ __('customer-billing.travel_categories_hint') }}</p>

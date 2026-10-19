@@ -1,7 +1,7 @@
 ---
 title: "Condizioni speciali & conto cliente"
 topic: customers.billing
-version: 3
+version: 4
 keywords:
     - prezzi speciali
     - tariffa oraria cliente
@@ -34,7 +34,7 @@ registrazione fatturabile porta con sé x minuti aggiuntivi, valorizzati
 alla tariffa della registrazione — a scelta solo per determinate
 attività. Il tempo di lavoro registrato resta invariato, quindi conto ore
 e orario flessibile non cambiano; il giustificativo e il PDF indicano la
-trasferta in una colonna propria. Nella registrazione il valore si può
+trasferta in una colonna propria finché **Indicare la trasferta separatamente** è attivo; senza la spunta la trasferta è inclusa nella durata nel portale e nel giustificativo, l'importo resta invariato. Nella registrazione il valore si può
 sovrascrivere caso per caso (anche a 0). Tempi di viaggio o reperibilità
 e registrazioni a prezzo fisso non ricevono alcuna trasferta.
 

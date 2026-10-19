@@ -1,7 +1,7 @@
 ---
 title: "Sonderkonditionen & Abrechnungskonto"
 topic: customers.billing
-version: 3
+version: 4
 keywords:
     - Sonderpreise
     - Kundenstundensatz
@@ -36,7 +36,7 @@ abrechenbare Zeiteintrag bringt dann zusätzlich x Minuten mit, bewertet
 mit dem Satz des Eintrags — wahlweise nur für ausgewählte Tätigkeiten.
 Die erfasste Arbeitszeit bleibt unangetastet, Arbeitszeitkonto und
 Gleitzeit ändern sich also nicht; Nachweis und PDF weisen die Anfahrt in
-einer eigenen Spalte aus. Im Zeiteintrag lässt sich der Wert für den
+einer eigenen Spalte aus, solange **Anfahrt gesondert ausweisen** gesetzt ist; ohne den Haken steckt die Anfahrt im Portal und im Nachweis in der Dauer, der Betrag bleibt gleich. Im Zeiteintrag lässt sich der Wert für den
 Einzelfall übersteuern (auch auf 0). Fahrt- und Bereitschaftszeiten sowie
 Festpreis-Einträge bekommen keine Anfahrt.
 

@@ -10,6 +10,14 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Abrechnungskonto: Anfahrt wahlweise gesondert ausweisen oder in der Dauer
+  mitführen (Feature 098, MVP-1235). Neuer Haken „Anfahrt gesondert ausweisen“
+  in der Vereinbarung (Standard an). Ohne den Haken zeigen Kundenportal,
+  Monatsliste und Anwesenheitsnachweis-PDF keine Anfahrtsspalte mehr; die
+  Dauer je Zeile und die Stunden unter „Gesamt“ enthalten die Anfahrt, die
+  Beträge bleiben gleich. Intern bleibt die Anfahrt sichtbar, der Nachweis
+  trägt einen Hinweis. Texte und Hilfe ×5, Tests.
+
 - Kundenportal: Vorschau als Kunde und Zugang mit Startpasswort (Phase 153,
   MVP-1229–1234, Feature 167). In der Kundenakte öffnet „Portal ansehen“ das
   Kundenportal in einem neuen Tab in der Sicht eines Portalkontos (Recht

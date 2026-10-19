@@ -37,7 +37,7 @@
                         {{ $statement->periodLabel() }}
                     </a>
                 </td>
-                <td class="text-right tabular-nums">{{ $hours($statement->total_minutes) }}</td>
+                <td class="text-right tabular-nums">{{ $hours((int) $statement->total_minutes + ((bool) ($agreement->is_travel_itemized ?? true) ? 0 : (int) $statement->travel_minutes)) }}</td>
                 <td class="text-right tabular-nums">{{ $money($statement->gross_value) }}</td>
                 <td class="text-right tabular-nums">{{ $money($statement->payments_total) }}</td>
                 <td class="text-right tabular-nums">{{ $money($statement->carry_in) }}</td>

@@ -1,7 +1,7 @@
 ---
 title: "Abrechnung"
 topic: customer-portal.billing
-version: 2
+version: 3
 keywords:
     - Kundenkonto
     - Kontostand
@@ -54,7 +54,7 @@ Darunter listet **Anwesenheiten** jeden abrechenbaren Einsatz des Monats:
 - **Grund** – die Art der Tätigkeit,
 - **Beginn** und **Ende**,
 - **Dauer**,
-- **Anfahrt** – nur, wenn im Monat Anfahrtszeit berechnet wurde,
+- **Anfahrt** – nur, wenn im Monat Anfahrtszeit berechnet wurde und Ihr Auftragnehmer sie gesondert ausweist; sonst ist die Anfahrt in der Dauer und in den Stunden unter **Gesamt** enthalten,
 - **Betrag** – der Wert des Einsatzes.
 
 Gibt es im Monat Zahlungen, folgen sie unter **Letzte Zahlungen** mit Datum und Betrag. Hat ein Monat keine Einsätze, steht dort **Keine Einträge in diesem Monat.**

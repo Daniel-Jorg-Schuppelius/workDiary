@@ -51,6 +51,7 @@ class SaveBillingAgreementRequest extends BaseFormRequest {
             'travel_categories' => ['array'],
             'travel_categories.*' => ['integer', new ExistsInCurrentOrganization('activity_categories', includeGlobal: true)],
             'holidays_as_weekend' => ['sometimes', 'boolean'],
+            'is_travel_itemized' => ['sometimes', 'boolean'],
             'opening_balance' => ['nullable', 'numeric', 'min:-9999999', 'max:9999999'],
             'opening_balance_date' => ['nullable', 'date'],
             'active' => ['sometimes', 'boolean'],

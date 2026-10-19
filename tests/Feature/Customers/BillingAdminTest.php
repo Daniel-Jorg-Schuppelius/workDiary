@@ -259,4 +259,28 @@ class BillingAdminTest extends TestCase {
             ->get(route('customers.billing.payments.create', $this->customer))
             ->assertOk();
     }
+
+    /** MVP-1235: Haken „Anfahrt gesondert ausweisen“ — Standard an, bleibt an, wenn ein Aufrufer das Feld nicht sendet. */
+    public function test_travel_itemization_is_saved_and_defaults_to_on(): void {
+        $base = [
+            'mode' => 'account',
+            'currency' => 'EUR',
+            'workdays_per_week' => 6,
+            'active' => '1',
+            'travel_minutes_per_entry' => '20',
+            'rate_activity_category_id' => [''],
+            'rate_day_type' => ['weekday'],
+            'rate_hourly_rate' => ['16.50'],
+        ];
+
+        $this->actingAs($this->admin)->post(route('customers.billing.agreement.save', $this->customer), $base)->assertRedirect();
+        $agreement = $this->customer->billingAgreement()->firstOrFail();
+        $this->assertTrue($agreement->is_travel_itemized);
+
+        $this->post(route('customers.billing.agreement.save', $this->customer), $base + ['is_travel_itemized' => '0'])->assertRedirect();
+        $this->assertFalse($agreement->refresh()->is_travel_itemized);
+
+        $this->get(route('customers.billing.agreement.edit', $this->customer))->assertOk()
+            ->assertSee(__('customer-billing.travel_itemized'));
+    }
 }

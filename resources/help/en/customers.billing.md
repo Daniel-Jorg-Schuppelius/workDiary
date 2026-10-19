@@ -1,7 +1,7 @@
 ---
 title: "Special terms & billing account"
 topic: customers.billing
-version: 3
+version: 4
 keywords:
     - special prices
     - customer hourly rate
@@ -34,7 +34,7 @@ The terms also cover a **travel flat rate**: every billable time entry
 then carries an extra x minutes, valued at the entry's rate — optionally
 only for selected activities. Recorded working time stays untouched, so
 working-time accounts and flexitime are unaffected; the statement and the
-PDF show travel in its own column. On the time entry the value can be
+PDF show travel in its own column as long as **Show travel separately** is ticked; without the tick, the travel is included in the duration in the portal and the statement, the amount stays the same. On the time entry the value can be
 overridden for a single case (including 0). Travel and standby entries as
 well as fixed-price entries never receive a travel flat rate.
 

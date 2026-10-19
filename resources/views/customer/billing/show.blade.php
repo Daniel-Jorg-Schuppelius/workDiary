@@ -15,6 +15,10 @@
     // Aus den Zeilen, nicht aus der Statement-Spalte: gesperrte Monate zeigen
     // ihren eingefrorenen Snapshot (Altmonate ohne Anfahrt bleiben unverändert).
     $travelMinutes = collect($rows)->sum(fn (array $row): int => (int) ($row['travel_minutes'] ?? 0));
+    // Anfahrt gesondert nur, wenn die Vereinbarung es ausweist (MVP-1235); sonst steckt sie je Zeile in der Dauer.
+    $itemizeTravel = $travelMinutes > 0 && (bool) ($agreement->is_travel_itemized ?? true);
+    $rowMinutes = fn (array $row): int => (int) $row['minutes'] + ($itemizeTravel ? 0 : (int) ($row['travel_minutes'] ?? 0));
+    $totalMinutes = (int) $statement->total_minutes + ($itemizeTravel ? 0 : $travelMinutes);
 @endphp
 
 @section('content')
@@ -37,8 +41,8 @@
             <div class="text-xs text-muted">{{ __('customer-billing.gross_value') }}</div>
             <div class="text-lg font-semibold tabular-nums">{{ $money($statement->gross_value) }}</div>
             <div class="text-xs text-muted tabular-nums">
-                {{ $hours($statement->total_minutes) }}
-                @if ($travelMinutes > 0)
+                {{ $hours($totalMinutes) }}
+                @if ($itemizeTravel)
                     + {{ $hours($travelMinutes) }} {{ __('customer-billing.travel') }}
                 @endif
             </div>
@@ -67,7 +71,7 @@
                 <x-table.th>{{ __('customer-billing.start') }}</x-table.th>
                 <x-table.th>{{ __('customer-billing.end') }}</x-table.th>
                 <x-table.th class="text-right">{{ __('customer-billing.duration') }}</x-table.th>
-                @if ($travelMinutes > 0)
+                @if ($itemizeTravel)
                     <x-table.th class="text-right">{{ __('customer-billing.travel') }}</x-table.th>
                 @endif
                 <x-table.th class="text-right">{{ __('customer-billing.amount') }}</x-table.th>
@@ -80,14 +84,14 @@
                 <td>{{ $row['category'] }}</td>
                 <td class="tabular-nums">{{ $row['start'] }}</td>
                 <td class="tabular-nums">{{ $row['end'] }}</td>
-                <td class="text-right tabular-nums">{{ $hours((int) $row['minutes']) }}</td>
-                @if ($travelMinutes > 0)
+                <td class="text-right tabular-nums">{{ $hours($rowMinutes($row)) }}</td>
+                @if ($itemizeTravel)
                     <td class="text-right tabular-nums">{{ (int) ($row['travel_minutes'] ?? 0) > 0 ? $hours((int) $row['travel_minutes']) : '—' }}</td>
                 @endif
                 <td class="text-right tabular-nums">{{ $money($row['amount']) }}</td>
             </tr>
         @empty
-            <x-table.empty :colspan="$travelMinutes > 0 ? 8 : 7" :title="__('customer-billing.no_entries')" />
+            <x-table.empty :colspan="$itemizeTravel ? 8 : 7" :title="__('customer-billing.no_entries')" />
         @endforelse
     </x-table>
 

@@ -1,7 +1,7 @@
 ---
 title: "Billing"
 topic: customer-portal.billing
-version: 2
+version: 3
 keywords:
     - account balance
     - statement
@@ -53,7 +53,7 @@ Below that, **Attendance** lists every billable assignment of the month:
 - **Reason** – the type of activity,
 - **Start** and **End**,
 - **Duration**,
-- **Travel** – only if travel time was charged in the month,
+- **Travel** – only if travel time was charged in the month and your contractor shows it separately; otherwise the travel is included in the duration and in the hours under **Total**,
 - **Amount** – the value of the assignment.
 
 If there are payments in the month, they follow under **Recent payments** with date and amount. If a month has no assignments, it shows **No entries in this month.**

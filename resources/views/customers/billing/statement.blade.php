@@ -41,6 +41,9 @@
                     + {{ $hours($travelMinutes) }} {{ __('customer-billing.travel') }}
                 @endif
             </div>
+            @if ($travelMinutes > 0 && ! (bool) ($agreement->is_travel_itemized ?? true))
+                <div class="text-xs text-muted mt-1">{{ __('customer-billing.travel_included_hint') }}</div>
+            @endif
         </x-card>
         <x-card padding="p-3">
             <div class="text-xs text-muted">{{ __('customer-billing.payments_total') }}</div>

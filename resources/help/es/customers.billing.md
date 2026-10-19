@@ -1,7 +1,7 @@
 ---
 title: "Condiciones especiales & cuenta de cliente"
 topic: customers.billing
-version: 3
+version: 4
 keywords:
     - precios especiales
     - tarifa horaria del cliente
@@ -34,7 +34,7 @@ cada registro de tiempo facturable aporta entonces x minutos
 adicionales, valorados con la tarifa del registro — opcionalmente solo
 para determinadas actividades. El tiempo de trabajo registrado no cambia,
 así que la cuenta de horas y el horario flexible quedan intactos; el
-justificante y el PDF muestran el desplazamiento en una columna propia.
+justificante y el PDF muestran el desplazamiento en una columna propia mientras **Mostrar el desplazamiento por separado** esté activado; sin la marca, el desplazamiento queda incluido en la duración en el portal y en el justificante, el importe no cambia.
 En el registro de tiempo el valor puede sobrescribirse caso por caso
 (también a 0). Los tiempos de viaje o guardia y los registros a precio
 fijo no reciben desplazamiento.
