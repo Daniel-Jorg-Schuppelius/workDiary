@@ -78,6 +78,12 @@ use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider {
     public function register(): void {
+        // Jede neue Datenbankverbindung läuft über die eigenen Connectors: MariaDB
+        // ab 11.6.2 schaltet innodb_snapshot_isolation ein, die App braucht das
+        // Warten auf die Sperre (Befund 2026-10-19, siehe MariaDbSnapshotIsolation).
+        $this->app->bind('db.connector.mysql', \App\Support\Database\MySqlConnector::class);
+        $this->app->bind('db.connector.mariadb', \App\Support\Database\MariaDbConnector::class);
+
         // Wortboxen und Seitenbilder (Phase 151): Toolkit im Betrieb, Fälschung in Tests.
         $this->app->bind(\App\Services\Invoicing\Recognition\Contracts\WordBoxSource::class, \App\Services\Invoicing\Recognition\ToolkitWordBoxSource::class);
         $this->app->bind(\App\Services\Invoicing\Recognition\Contracts\PageImageSource::class, \App\Services\Invoicing\Recognition\ToolkitPageImageSource::class);

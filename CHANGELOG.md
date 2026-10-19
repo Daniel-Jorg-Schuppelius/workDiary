@@ -1489,6 +1489,20 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
 
 ### Fixed
 
+- Datenbank: Sperrende Lesezugriffe scheiterten unter MariaDB ab 11.6.2 mit
+  Fehler 1020 „Record has changed since last read“ (Befund 2026-10-19,
+  Produktion 11.8: Speichern einer Abrechnungsvereinbarung brach beim
+  Audit-Insert ab, während ein zweiter Prozess dieselbe Kette fortschrieb).
+  Ursache ist `innodb_snapshot_isolation`, dort seit 11.6.2 standardmäßig an:
+  ein `FOR UPDATE` nach einem ungesperrten Lesen derselben Transaktion wird
+  abgewiesen, statt auf die Sperre zu warten. Die App schaltet die Variable
+  jetzt je Verbindung ab (eigene Connectors `App\Support\Database\MySqlConnector`
+  und `MariaDbConnector`, gebunden als `db.connector.mysql`/`mariadb`; auch
+  nach Reconnects); Server ohne die Variable (ältere MariaDB, MySQL) bleiben
+  unberührt. Betriebsseite `betrieb/datenbank-mariadb.md`, Tests
+  (Versionsmatrix; gegen MariaDB: neue Verbindung ohne die Variable, Ablauf der
+  Audit-Kette mit zwei Sitzungen, Gegenprobe erwartet 1020).
+
 - Kommunikation: Notizen aus HTML-Mails (Postfachabruf per IMAP und
   Microsoft 365) zeigten `&nbsp;` und `&amp;` wörtlich und klebten Absätze
   aneinander, weil die Gateways HTML nur von Tags befreiten. Die Umwandlung
