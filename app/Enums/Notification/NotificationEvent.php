@@ -35,6 +35,8 @@ enum NotificationEvent: string implements HasLabel {
     case CommunicationFollowupDueSoon = 'communication.followupDueSoon';
     /** Scanner: Kommunikationsnotiz mit überfälliger Folgeaktion */
     case CommunicationFollowupOverdue = 'communication.followupOverdue';
+    /** Synchron: der Postfachabruf hat eine Rechnungsnachfrage als E-Mail-Notiz beim Kunden erfasst (Befund 2026-10-19). */
+    case CommunicationMailReceived = 'communication.mailReceived';
     /** Scanner: Dokument läuft innerhalb des Vorlaufs ab */
     case DocumentExpiringSoon = 'document.expiringSoon';
     /** Scanner: Dokument ist abgelaufen */
@@ -565,6 +567,7 @@ enum NotificationEvent: string implements HasLabel {
             self::OpenIssueOverdue => 'assignment_late',
             self::CommunicationFollowupDueSoon,
             self::CommunicationFollowupOverdue => 'forward_to_inbox',
+            self::CommunicationMailReceived => 'mark_email_unread',
             self::DocumentExpiringSoon,
             self::DocumentExpired => 'folder_open',
             self::TimeCorrectionRequested,

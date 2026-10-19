@@ -233,6 +233,7 @@ return [
             'completed' => 'Suivi terminé',
         ],
         'published' => 'Note de communication publiée',
+        'replied' => 'Réponse à l’e-mail envoyée',
     ],
     'compliance' => [
         'finding' => [

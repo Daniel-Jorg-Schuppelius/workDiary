@@ -484,6 +484,7 @@ return [
             'communication' => [
                 'followupDueSoon' => 'Follow-up in scadenza',
                 'followupOverdue' => 'Follow-up scaduto',
+                'mailReceived' => 'E-mail ricevuta per un cliente',
             ],
             'document' => [
                 'expiringSoon' => 'Documento in scadenza',

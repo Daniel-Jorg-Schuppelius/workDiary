@@ -233,6 +233,7 @@ return [
             'completed' => 'Follow-up completed',
         ],
         'published' => 'Communication note published',
+        'replied' => 'Replied to e-mail',
     ],
     'compliance' => [
         'finding' => [

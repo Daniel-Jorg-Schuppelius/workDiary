@@ -43,7 +43,7 @@ class OneNoteNotebookReader {
                 $documents[] = new ImportedDocument(
                     externalId: $page['id'],
                     title: $page['title'],
-                    text: $isKnown ? '' : $this->text($client->pageContent($page['id'])),
+                    text: $isKnown ? '' : StringHelper::htmlToText($client->pageContent($page['id'])),
                     folders: $folders,
                     names: [$page['title']],
                     modifiedAt: $page['modified'] !== null ? CarbonImmutable::parse($page['modified']) : null,
@@ -54,17 +54,5 @@ class OneNoteNotebookReader {
         }
 
         return ['documents' => $documents, 'limited' => false];
-    }
-
-    /** Seiten-HTML als lesbarer Text: Absätze und Listenpunkte bleiben Zeilen. */
-    public function text(string $html): string {
-        $html = preg_replace('#<(script|style|head)\b[^>]*>.*?</\1>#is', '', $html) ?? $html;
-        $html = preg_replace('#<li\b[^>]*>#i', "\n- ", $html) ?? $html;
-        $html = preg_replace('#<br\s*/?>|</(p|div|h[1-6]|tr|table|ul|ol)>#i', "\n", $html) ?? $html;
-        $text = StringHelper::htmlEntitiesToText(strip_tags($html));
-
-        $lines = array_map(static fn (string $line): string => trim(preg_replace('/[ \t\x{00A0}]+/u', ' ', $line) ?? $line), explode("\n", $text));
-
-        return trim(preg_replace("/\n{3,}/", "\n\n", implode("\n", $lines)) ?? '');
     }
 }

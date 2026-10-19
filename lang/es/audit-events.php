@@ -233,6 +233,7 @@ return [
             'completed' => 'Seguimiento completado',
         ],
         'published' => 'Nota de comunicación publicada',
+        'replied' => 'Respuesta al correo enviada',
     ],
     'compliance' => [
         'finding' => [

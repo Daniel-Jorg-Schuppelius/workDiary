@@ -21,13 +21,16 @@ use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
 use App\Services\Communication\CommunicationNoteService;
+use App\Services\Communication\Mail\CommunicationNoteReplyService;
 use App\Support\{EntityUrl, Sqid, Tz};
 use App\Support\MorphMap;
+use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\{Auth, Gate, Log};
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 class CommunicationNoteController extends Controller {
     use AuthorizesCarrier;
@@ -153,6 +156,75 @@ class CommunicationNoteController extends Controller {
                 ? null
                 : EntityUrl::byType($note->notable_type, (int) $note->notable_id),
         ]);
+    }
+
+    /** Antwort auf die E-Mail hinter der Notiz (Dialog). */
+    public function reply(CommunicationNote $note, CommunicationNoteReplyService $replies): View {
+        Gate::authorize('reply', $note);
+        $this->guardPrivate($note);
+        $origin = $note->mailOrigin();
+        abort_if($origin === null || ! $origin->isInbound(), 404);
+
+        return view('communication-notes._reply_dialog', [
+            'note' => $note,
+            'origin' => $origin,
+            'subjectDefault' => $replies->replySubject($note->subject),
+            'replyTo' => $replies->replyToFor($note, $origin),
+        ]);
+    }
+
+    public function sendReply(Request $request, CommunicationNote $note, CommunicationNoteReplyService $replies): RedirectResponse {
+        Gate::authorize('reply', $note);
+        $this->guardPrivate($note);
+        abort_if($note->mailOrigin()?->isInbound() !== true, 404);
+
+        $data = $request->validate([
+            'recipients' => ['required', 'string', 'max:1000'],
+            'cc' => ['nullable', 'string', 'max:1000'],
+            'subject' => ['required', 'string', 'max:250'],
+            'body' => ['required', 'string', 'max:20000'],
+        ]);
+        $to = $this->addressList((string) $data['recipients'], 'recipients');
+        $cc = $this->addressList((string) ($data['cc'] ?? ''), 'cc');
+        if ($to === []) {
+            throw ValidationException::withMessages(['recipients' => (string) __('communication.reply.error.recipients')]);
+        }
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        try {
+            $reply = $replies->reply($note, $actor, $to, $cc, trim((string) $data['subject']), trim((string) $data['body']));
+        } catch (TransportExceptionInterface $e) {
+            Log::warning('communication: reply mail failed', ['note_id' => $note->getKey(), 'error' => $e->getMessage()]);
+
+            return redirect()->back()->withInput()->with('error', __('communication.reply.flash.failed'));
+        }
+
+        return redirect()
+            ->back()
+            ->with('success', __('communication.reply.flash.sent'))
+            ->withFragment('communication-note-' . $reply->id);
+    }
+
+    /**
+     * Kommagetrennte Adressen; eine ungültige bricht mit Feldfehler ab.
+     *
+     * @return list<string>
+     */
+    private function addressList(string $raw, string $field): array {
+        $addresses = [];
+        foreach (preg_split('/[,;\s]+/', trim($raw)) ?: [] as $candidate) {
+            if ($candidate === '') {
+                continue;
+            }
+            $address = EmailHelper::normalize($candidate);
+            if (! EmailHelper::isEmail($address)) {
+                throw ValidationException::withMessages([$field => (string) __('communication.reply.error.invalid_address', ['address' => $candidate])]);
+            }
+            $addresses[] = $address;
+        }
+
+        return array_values(array_unique($addresses));
     }
 
     public function create(Request $request): View {

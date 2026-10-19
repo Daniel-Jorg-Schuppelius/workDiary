@@ -132,4 +132,43 @@ return [
             'existing' => 'Questa nota è già stata convertita.',
         ],
     ],
+
+    'mail' => [
+        'section' => 'E-mail',
+        'from' => 'Mittente',
+        'to' => 'Destinatari',
+        'cc' => 'CC',
+        'received_at' => 'Ricevuta',
+        'sent_at' => 'Inviata',
+        'mailbox' => 'Casella di posta',
+        'reply_to' => 'Indirizzo di risposta',
+        'inquiry' => 'Richiesta sulla fattura',
+        'inquiry_number' => 'Richiesta sulla fattura :number',
+        'notification_title' => 'E-mail da :sender su :customer',
+        'notification_message' => ':subject — richiesta sulla fattura :number',
+    ],
+
+    'reply' => [
+        'title' => 'Rispondere all’e-mail',
+        'action' => 'Rispondi',
+        'action_send' => 'Invia',
+        'recipients_legend' => 'Destinatari',
+        'recipients' => 'A',
+        'recipients_hint' => 'Separi più indirizzi con virgole.',
+        'cc' => 'CC',
+        'body_legend' => 'Risposta',
+        'body' => 'Testo',
+        'subject_prefix' => 'R: ',
+        'quote_header' => 'Il :date, :sender ha scritto:',
+        'quote_hint' => 'Il messaggio originale viene citato sotto la Sua risposta.',
+        'reply_to_hint' => 'Le risposte vanno a :address e ricompaiono nella posta in arrivo.',
+        'error' => [
+            'recipients' => 'Indichi almeno un indirizzo e-mail valido.',
+            'invalid_address' => 'Indirizzo e-mail non valido: :address',
+        ],
+        'flash' => [
+            'sent' => 'La risposta è stata inviata e archiviata come nota.',
+            'failed' => 'Impossibile inviare la risposta. I dettagli sono nel registro.',
+        ],
+    ],
 ];

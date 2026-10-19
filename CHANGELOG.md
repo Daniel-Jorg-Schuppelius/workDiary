@@ -10,16 +10,37 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
-- Rechnungseingang: Ausschlussregeln je Gegenpartei (MVP-1208). Wer einen
-  Eingang als „keine Rechnung“ ablehnt, kann die Gegenpartei ausschließen:
-  Künftige Belege mit diesem Namen legt der Eingang beim Abruf, Upload und
-  bei der Nacherkennung von selbst abgelehnt ab, mit Begründung und Audit —
-  Anlass waren 270 Testbelege eines Mailsystems an einem Vormittag. Der
-  Zuordnen-Dialog behandelt auf Wunsch die anderen offenen Eingänge
-  derselben Gegenpartei gleich mit, beim Zuordnen wie beim Ablehnen. Die
-  neue Seite „Regeln“ im Menü des Rechnungseingangs zeigt Absenderregeln
-  und Ausschlüsse und löscht sie; Absenderregeln waren bisher unsichtbar
-  (Befund 2026-10-18).
+- Kommunikation: E-Mail-Notizen zeigen die Mail dahinter (Absender,
+  Empfangszeit, Postfach, Anhänge, zugehörige Rechnungsnachfrage mit Stand) und
+  lassen sich mit **Antworten** direkt aus der Notiz beantworten: Empfänger und
+  Betreff vorbelegt, Ursprungsnachricht zitiert, Versand mit Faden-Kopfzeilen
+  (Message-ID, In-Reply-To, References) und Reply-To auf das Eingangspostfach,
+  die Antwort liegt als ausgehende Notiz mit Versandverweis beim Kunden, eine
+  offene Rechnungsnachfrage gilt damit als beantwortet (Ereignis
+  `CommunicationNoteReplied`, Listener im Faktura-Modul). Neue Benachrichtigung
+  „E-Mail beim Kunden eingegangen“ (`communication.mailReceived`), wenn der
+  Postfachabruf eine Rechnungsnachfrage automatisch als Notiz erfasst —
+  Standardempfänger ist die Person hinter dem Postfach (Befund 2026-10-19).
+- Rechnungseingang: Posteingangsregeln (Phase 150, MVP-1208–1214). Wer einen
+  Eingang als „keine Rechnung“ ablehnt, legt fest, was mit künftigen Belegen
+  dieser Gegenpartei geschieht: „automatisch als keine Rechnung ablegen“ oder
+  „gar nicht aufnehmen (verwerfen)“; WorkDiary legt dafür eine Automationsregel
+  an. Der neue Auslöser „Rechnungseingang eingegangen“ feuert beim Abruf,
+  Upload und bei der Nacherkennung vor dem Abgleich, mit Verkäufer (normalisiert),
+  USt-IdNr., Absender, Absender-Domain, Betreff, Anhangsnamen, Dateiname, Land,
+  Brutto und Erkennung im Kontext; Aktionen „verwerfen“ (Beleg, Dokument,
+  Dateien und Anhänge weg, Audit-Zeile mit Prüfsumme, Nummer, Verkäufer,
+  Absender und Grund bleibt), „als keine Rechnung ablegen“ und „zuordnen“;
+  Bedingungen kennen zusätzlich „endet mit“, „enthält nicht“ und „entspricht“
+  (regulärer Ausdruck). Der Zuordnen-Dialog behandelt auf Wunsch die anderen
+  offenen Eingänge derselben Gegenpartei gleich mit, beim Zuordnen wie beim
+  Ablehnen. Die Seite „Regeln“ im Menü des Rechnungseingangs zeigt
+  Absenderregeln und Posteingangsregeln mit Trefferzahl, schaltet und löscht
+  sie. Neuer Reiter „Abgelehnt“ mit Sammelaktion „Endgültig löschen“ und
+  Statusfilter in „Alle“; die Aufbewahrung schlägt abgelehnte Eingänge nach
+  `INVOICING_REJECTED_RETENTION_DAYS` (Standard 30) zur Vernichtung vor,
+  gelöscht wird erst nach Freigabe. Anlass: 270 Testbelege eines Mailsystems
+  an einem Vormittag (Befund 2026-10-18).
 
 - Rechnungseingang: Wer einen Eingang mit „Neu aus Belegdaten“ einer neuen
   Partei zuordnet oder den Absender merken lässt, bekommt die bereits
@@ -1376,6 +1397,18 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
 
 ### Fixed
 
+- Kommunikation: Notizen aus HTML-Mails (Postfachabruf per IMAP und
+  Microsoft 365) zeigten `&nbsp;` und `&amp;` wörtlich und klebten Absätze
+  aneinander, weil die Gateways HTML nur von Tags befreiten. Die Umwandlung
+  übernimmt jetzt `StringHelper::htmlToText()` des common-toolkit (Absätze,
+  Umbrüche, Listen und Tabellenzeilen bleiben Zeilen, Entities werden
+  dekodiert) — für den Mail-Eingang, Microsoft-To-do-Beschreibungen und
+  OneNote-Seiten gleichermaßen. Eine Migration dekodiert die Entities in
+  bereits übernommenen Mail-Texten (Eingangs-Snapshots, Herkunftsverweise,
+  daraus gebuchte Notizen, Tickets und Ticket-Nachrichten); verlorene
+  Zeilenumbrüche lassen sich nicht nachträglich herstellen. Im
+  Kommunikations-Panel öffnet der Betreff jetzt die Notiz in der Vollansicht,
+  die Vorschau zeigt die ersten vier Zeilen ohne Leerzeilen (Befund 2026-10-19).
 - Rechnungseingang: Die Sammelaktion „Zuordnen“ meldete nur „:n
   übersprungen“, ohne den Grund — etwa wenn die Vorgabe „Sammelkontakt“ auf
   Rechnungen aus dem EU-Ausland oder mit Reverse Charge traf, die einen

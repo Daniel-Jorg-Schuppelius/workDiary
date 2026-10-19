@@ -1,7 +1,7 @@
 ---
 title: "Note di comunicazione"
 topic: communication.notes
-version: 3
+version: 4
 keywords:
     - nota telefonica
     - registro chiamate
@@ -33,6 +33,23 @@ visibilità predefinita è **"Interna"**; la pubblicazione come
 accesso viene registrato nell'audit). La data non può trovarsi che pochi
 minuti nel futuro; l'autore può modificare entro 24 ore, dopo solo
 l'amministratore, e l'**eliminazione** è riservata agli amministratori.
+
+## E-mail come note
+
+Le e-mail della posta in arrivo e le richieste sulla fattura riconosciute
+automaticamente vengono archiviate presso il cliente come note di tipo
+«E-mail». La nota mostra mittente, ora di ricezione, casella di posta e
+allegati; per una richiesta sulla fattura compaiono la fattura e il suo stato.
+Con **Rispondi** scrive direttamente dalla nota: destinatari e oggetto sono
+precompilati, il messaggio originale viene citato, l’invio passa dall’invio
+e-mail di WorkDiary e la risposta resta presso il cliente come nota in uscita.
+Le risposte del destinatario rientrano dalla casella di posta in arrivo. Una
+richiesta sulla fattura aperta risulta risposta con la risposta inviata.
+
+Se il recupero della casella registra automaticamente una richiesta sulla
+fattura, la persona che ha creato la casella riceve la notifica «E-mail
+ricevuta per un cliente». Altri destinatari e canali si impostano in
+**Notifiche**.
 
 ## Elenco centrale delle note
 

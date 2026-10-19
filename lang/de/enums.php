@@ -484,6 +484,7 @@ return [
             'communication' => [
                 'followupDueSoon' => 'Folgeaktion bald fällig',
                 'followupOverdue' => 'Folgeaktion überfällig',
+                'mailReceived' => 'E-Mail beim Kunden eingegangen',
             ],
             'document' => [
                 'expiringSoon' => 'Dokument läuft bald ab',

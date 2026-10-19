@@ -116,8 +116,10 @@
                                 @endif
                                 <span class="text-xs text-muted">{{ $note->occurred_at->fdatetime() }}</span>
                             </div>
-                            <p class="font-semibold text-base-content">{{ $note->subject }}</p>
-                            <p class="mt-1 whitespace-pre-wrap text-sm text-base-content/80">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($note->body, 400) }}</p>
+                            <p class="font-semibold text-base-content">
+                                <a href="{{ route('communication-notes.show', $note) }}" data-entry-modal-trigger class="link link-hover">{{ $note->subject }}</a>
+                            </p>
+                            <p class="mt-1 line-clamp-4 whitespace-pre-wrap text-sm text-base-content/80">{{ $note->excerpt() }}</p>
                             @if ($note->result)
                                 <p class="mt-1 text-sm italic text-base-content/70">
                                     {{ __('communication.field.result') }}: {{ $note->result }}

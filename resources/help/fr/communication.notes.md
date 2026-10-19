@@ -1,7 +1,7 @@
 ---
 title: "Notes de communication"
 topic: communication.notes
-version: 3
+version: 4
 keywords:
     - note téléphonique
     - compte rendu d'appel
@@ -32,6 +32,24 @@ d'intervention. La visibilité est par défaut **« Interne »** ; le partage
 **confidentielles** ne sont visibles que par l'auteur et l'admin. L'auteur
 peut modifier pendant 24 heures, ensuite seul l'admin ; la **suppression**
 (soft delete) est réservée aux admins.
+
+## E-mails sous forme de notes
+
+Les e-mails de la boîte de réception et les demandes sur facture reconnues
+automatiquement sont classés chez le client comme notes de type « E-mail ». La
+note affiche l’expéditeur, l’heure de réception, la boîte aux lettres et les
+pièces jointes ; pour une demande sur facture, la facture et son état sont
+indiqués. **Répondre** permet d’écrire directement depuis la note :
+destinataires et objet sont préremplis, le message d’origine est cité, l’envoi
+passe par l’envoi d’e-mails de WorkDiary et la réponse est classée chez le
+client comme note sortante. Les réponses du destinataire reviennent par la
+boîte de réception. Une demande sur facture ouverte est considérée comme
+répondue avec la réponse.
+
+Lorsque la relève de la boîte aux lettres enregistre automatiquement une
+demande sur facture, la personne qui a créé la boîte reçoit la notification
+« E-mail reçu pour un client ». Les autres destinataires et canaux se
+définissent sous **Notifications**.
 
 ## Liste centrale des notes
 

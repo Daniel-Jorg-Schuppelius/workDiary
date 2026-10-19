@@ -132,4 +132,43 @@ return [
             'existing' => 'Cette note a déjà été convertie.',
         ],
     ],
+
+    'mail' => [
+        'section' => 'E-mail',
+        'from' => 'Expéditeur',
+        'to' => 'Destinataires',
+        'cc' => 'CC',
+        'received_at' => 'Reçu',
+        'sent_at' => 'Envoyé',
+        'mailbox' => 'Boîte aux lettres',
+        'reply_to' => 'Adresse de réponse',
+        'inquiry' => 'Demande sur facture',
+        'inquiry_number' => 'Demande concernant la facture :number',
+        'notification_title' => 'E-mail de :sender concernant :customer',
+        'notification_message' => ':subject — demande concernant la facture :number',
+    ],
+
+    'reply' => [
+        'title' => 'Répondre à l’e-mail',
+        'action' => 'Répondre',
+        'action_send' => 'Envoyer',
+        'recipients_legend' => 'Destinataires',
+        'recipients' => 'À',
+        'recipients_hint' => 'Séparez plusieurs adresses par des virgules.',
+        'cc' => 'CC',
+        'body_legend' => 'Réponse',
+        'body' => 'Texte',
+        'subject_prefix' => 'RE : ',
+        'quote_header' => 'Le :date, :sender a écrit :',
+        'quote_hint' => 'Le message d’origine est cité sous votre réponse.',
+        'reply_to_hint' => 'Les réponses vont à :address et réapparaissent dans la boîte de réception.',
+        'error' => [
+            'recipients' => 'Veuillez indiquer au moins une adresse e-mail valide.',
+            'invalid_address' => 'Adresse e-mail non valide : :address',
+        ],
+        'flash' => [
+            'sent' => 'La réponse a été envoyée et classée comme note.',
+            'failed' => 'La réponse n’a pas pu être envoyée. Les détails figurent dans le journal.',
+        ],
+    ],
 ];

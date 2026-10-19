@@ -88,6 +88,11 @@ class CommunicationNotePolicy {
      * Folgeaktion erledigen: Erfasser oder Verantwortlicher der Folgeaktion
      * (Org-Admin via before()-Bypass).
      */
+    /** Antwort per E-Mail: lesen und Notizen anlegen dürfen; ob eine Mail dahintersteht, prüft der Dienst. */
+    public function reply(User $user, CommunicationNote $note): bool {
+        return $this->view($user, $note) && $this->create($user);
+    }
+
     public function completeFollowup(User $user, CommunicationNote $note): bool {
         if (! $this->canSeeConfidential($user, $note)) {
             return false;

@@ -25,6 +25,7 @@ use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Msgraph\Observers\MsgraphTodoTaskObserver;
 use App\Plugins\Support\TaskSync\{AbstractTaskSyncService, TaskSyncLink};
 use App\Services\CloudIntake\StaleCheckpointException;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -476,7 +477,7 @@ class MsgraphTodoSyncService extends AbstractTaskSyncService {
         $body = (array) ($remote['body'] ?? []);
         $content = trim((string) ($body['content'] ?? ''));
         if (strcasecmp((string) ($body['contentType'] ?? ''), 'html') === 0) {
-            $content = trim(strip_tags($content));
+            $content = StringHelper::htmlToText($content);
         }
 
         $due = null;

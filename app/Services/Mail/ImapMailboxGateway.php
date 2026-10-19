@@ -14,7 +14,7 @@ namespace App\Services\Mail;
 
 use App\Exceptions\MailboxFolderMissingException;
 use App\Models\Mail\EmailConnection;
-use CommonToolkit\Helper\Data\EmailHelper;
+use CommonToolkit\Helper\Data\{EmailHelper, StringHelper};
 use Generator;
 use Illuminate\Support\Carbon;
 use Throwable;
@@ -218,7 +218,7 @@ class ImapMailboxGateway implements MailboxGateway {
 
         $body = $message->getTextBody();
         if (trim($body) === '') {
-            $body = trim(strip_tags($message->getHTMLBody()));
+            $body = StringHelper::htmlToText($message->getHTMLBody());
         }
 
         $messageId = trim((string) $message->getMessageId());

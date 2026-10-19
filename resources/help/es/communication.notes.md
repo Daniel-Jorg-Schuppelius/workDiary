@@ -1,7 +1,7 @@
 ---
 title: "Notas de comunicación"
 topic: communication.notes
-version: 3
+version: 4
 keywords:
     - nota telefónica
     - registro de llamadas
@@ -33,6 +33,22 @@ organización y las notas **confidenciales** solo las ven el autor y el
 administrador. La fecha no puede estar más que unos minutos en el
 futuro, el autor puede editar durante 24 horas (después solo el
 administrador) y el **borrado** está reservado a administradores.
+
+## Correos como notas
+
+Los correos de la bandeja de entrada y las consultas sobre facturas reconocidas
+automáticamente se archivan en el cliente como notas de tipo «Correo
+electrónico». La nota muestra remitente, hora de recepción, buzón y adjuntos;
+en una consulta sobre factura aparece la factura con su estado. Con
+**Responder** escribe directamente desde la nota: destinatarios y asunto están
+rellenados, el mensaje original se cita, el envío pasa por el envío de correo
+de WorkDiary y la respuesta queda en el cliente como nota saliente. Las
+respuestas del destinatario vuelven a entrar por el buzón de entrada. Una
+consulta sobre factura abierta se considera respondida con la respuesta.
+
+Si la consulta de buzón registra automáticamente una consulta sobre factura, la
+persona que creó el buzón recibe la notificación «Correo recibido para un
+cliente». Otros destinatarios y canales se definen en **Notificaciones**.
 
 ## Lista central de notas
 

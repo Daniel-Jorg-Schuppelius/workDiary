@@ -4273,6 +4273,8 @@ Route::middleware('auth')->group(function () {
         Route::get('communication-notes/create', [CommunicationNoteController::class, 'create'])->name('communication-notes.create');
         Route::post('communication-notes', [CommunicationNoteController::class, 'store'])->name('communication-notes.store');
         Route::get('communication-notes/{note}/edit', [CommunicationNoteController::class, 'edit'])->name('communication-notes.edit');
+        Route::get('communication-notes/{note}/reply', [CommunicationNoteController::class, 'reply'])->name('communication-notes.reply');
+        Route::post('communication-notes/{note}/reply', [CommunicationNoteController::class, 'sendReply'])->name('communication-notes.reply.send');
         Route::get('communication-notes/{note}', [CommunicationNoteController::class, 'show'])->name('communication-notes.show');
         Route::put('communication-notes/{note}', [CommunicationNoteController::class, 'update'])->name('communication-notes.update');
         Route::post('communication-notes/{note}/publish', [CommunicationNoteController::class, 'publish'])->name('communication-notes.publish');

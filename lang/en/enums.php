@@ -484,6 +484,7 @@ return [
             'communication' => [
                 'followupDueSoon' => 'Follow-up due soon',
                 'followupOverdue' => 'Follow-up overdue',
+                'mailReceived' => 'E-mail received for a customer',
             ],
             'document' => [
                 'expiringSoon' => 'Document expiring soon',

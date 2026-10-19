@@ -132,4 +132,43 @@ return [
             'existing' => 'Esta nota ya se convirtió.',
         ],
     ],
+
+    'mail' => [
+        'section' => 'Correo electrónico',
+        'from' => 'Remitente',
+        'to' => 'Destinatarios',
+        'cc' => 'CC',
+        'received_at' => 'Recibido',
+        'sent_at' => 'Enviado',
+        'mailbox' => 'Buzón',
+        'reply_to' => 'Dirección de respuesta',
+        'inquiry' => 'Consulta sobre factura',
+        'inquiry_number' => 'Consulta sobre la factura :number',
+        'notification_title' => 'Correo de :sender sobre :customer',
+        'notification_message' => ':subject — consulta sobre la factura :number',
+    ],
+
+    'reply' => [
+        'title' => 'Responder al correo',
+        'action' => 'Responder',
+        'action_send' => 'Enviar',
+        'recipients_legend' => 'Destinatarios',
+        'recipients' => 'Para',
+        'recipients_hint' => 'Separe varias direcciones con comas.',
+        'cc' => 'CC',
+        'body_legend' => 'Respuesta',
+        'body' => 'Texto',
+        'subject_prefix' => 'RE: ',
+        'quote_header' => 'El :date, :sender escribió:',
+        'quote_hint' => 'El mensaje original se cita debajo de su respuesta.',
+        'reply_to_hint' => 'Las respuestas van a :address y vuelven a aparecer en la bandeja de correo.',
+        'error' => [
+            'recipients' => 'Indique al menos una dirección de correo válida.',
+            'invalid_address' => 'Dirección de correo no válida: :address',
+        ],
+        'flash' => [
+            'sent' => 'La respuesta se envió y se archivó como nota.',
+            'failed' => 'No se pudo enviar la respuesta. Consulte el registro para más detalles.',
+        ],
+    ],
 ];

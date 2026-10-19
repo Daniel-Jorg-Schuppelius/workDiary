@@ -132,6 +132,10 @@ final class InvoicingManifest extends Manifest {
                 \App\Listeners\Invoicing\RepointMergedServiceArticles::class,
             ],
             // Rechnungseingang (MVP-1111): nach der Zuordnung an die Buchhaltung.
+            // Die Antwort auf die Mail einer Rechnungsnachfrage beantwortet die Nachfrage (Feature 166).
+            \App\Events\Communication\CommunicationNoteReplied::class => [
+                \App\Listeners\Invoicing\AnswerInquiryOnNoteReply::class,
+            ],
             \App\Events\Invoicing\IncomingInvoiceAssigned::class => [
                 \App\Listeners\Invoicing\TransferAssignedIncomingInvoice::class,
             ],

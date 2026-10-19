@@ -14,6 +14,7 @@ namespace Tests\Feature\Invoicing;
 
 use App\Enums\Document\DocumentDispatchStatus;
 use App\Enums\Invoicing\InvoiceInquiryMatchKind;
+use App\Enums\Notification\NotificationEvent;
 use App\Models\Audit\AuditLog;
 use App\Models\Communication\CommunicationNote;
 use App\Models\Customer\Customer;
@@ -23,12 +24,14 @@ use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Invoicing\{Invoice, InvoiceInquiry};
 use App\Models\Mail\EmailConnection;
 use App\Models\Platform\{Organization, User};
+use App\Notifications\GenericEventNotification;
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use App\Services\Invoicing\Mail\InvoiceInquiryMailIntakeHandler;
 use App\Services\Mail\{MailIntakeService, ParsedMessage};
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Notification;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -304,5 +307,19 @@ final class InvoiceInquiryIntakeTest extends TestCase {
 
         $this->assertSame(InvoiceInquiryMailIntakeHandler::RESULT, $this->intake($this->message('<ext@x>', 'kunde@acme.test', 'Rechnung LX-9000')));
         $this->assertSame($invoice->id, InvoiceInquiry::query()->sole()->invoice_id);
+    }
+
+    public function test_an_automatically_recorded_inquiry_notifies_the_person_behind_the_mailbox(): void {
+        Notification::fake();
+        $invoice = $this->issuedInvoice('RE-2026-0102');
+        $this->dispatch($invoice, '<versand-2@workdiary.test>', 'kunde@acme.test');
+
+        $this->intake($this->message('<antwort-2@x>', 'kunde@acme.test', 'AW: Ihre Rechnung', 'Frage zur Position 3', inReplyTo: 'versand-2@workdiary.test'));
+
+        $note = CommunicationNote::query()->sole();
+        Notification::assertSentTo($this->user, GenericEventNotification::class, fn (GenericEventNotification $notification): bool => $notification->event === NotificationEvent::CommunicationMailReceived
+            && str_ends_with((string) ($notification->payload['url'] ?? ''), '#communication-note-' . $note->id)
+            && ($notification->payload['title_params']['number'] ?? null) === 'RE-2026-0102'
+            && ($notification->payload['title_params']['customer'] ?? null) === $this->customer->name);
     }
 }

@@ -132,4 +132,43 @@ return [
             'existing' => 'This note has already been converted.',
         ],
     ],
+
+    'mail' => [
+        'section' => 'E-mail',
+        'from' => 'Sender',
+        'to' => 'Recipients',
+        'cc' => 'CC',
+        'received_at' => 'Received',
+        'sent_at' => 'Sent',
+        'mailbox' => 'Mailbox',
+        'reply_to' => 'Reply address',
+        'inquiry' => 'Invoice inquiry',
+        'inquiry_number' => 'Inquiry about invoice :number',
+        'notification_title' => 'E-mail from :sender about :customer',
+        'notification_message' => ':subject — inquiry about invoice :number',
+    ],
+
+    'reply' => [
+        'title' => 'Reply to e-mail',
+        'action' => 'Reply',
+        'action_send' => 'Send',
+        'recipients_legend' => 'Recipients',
+        'recipients' => 'To',
+        'recipients_hint' => 'Separate several addresses with commas.',
+        'cc' => 'CC',
+        'body_legend' => 'Reply',
+        'body' => 'Text',
+        'subject_prefix' => 'Re: ',
+        'quote_header' => 'On :date, :sender wrote:',
+        'quote_hint' => 'The original message is quoted below your reply.',
+        'reply_to_hint' => 'Replies go to :address and appear in the mail inbox again.',
+        'error' => [
+            'recipients' => 'Please enter at least one valid e-mail address.',
+            'invalid_address' => 'Invalid e-mail address: :address',
+        ],
+        'flash' => [
+            'sent' => 'The reply was sent and filed as a note.',
+            'failed' => 'The reply could not be sent. See the log for details.',
+        ],
+    ],
 ];

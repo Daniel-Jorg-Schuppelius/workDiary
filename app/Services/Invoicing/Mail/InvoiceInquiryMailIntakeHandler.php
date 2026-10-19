@@ -13,12 +13,17 @@ declare(strict_types=1);
 namespace App\Services\Invoicing\Mail;
 
 use App\Enums\Invoicing\InvoiceInquiryMatchKind;
+use App\Enums\Notification\NotificationEvent;
+use App\Models\Communication\CommunicationNote;
+use App\Models\Invoicing\InvoiceInquiry;
 use App\Models\Mail\EmailConnection;
-use App\Models\Platform\Organization;
+use App\Models\Platform\{Organization, User};
 use App\Services\Invoicing\Inquiries\{InvoiceInquiryMatcher, InvoiceInquiryService, InvoiceInquiryTarget};
 use App\Services\Mail\Contracts\{MailIntakeAnnotator, MailIntakeHandler};
 use App\Services\Mail\ParsedMessage;
+use App\Services\Notification\NotificationDispatcher;
 use App\Services\Platform\IntakeActor;
+use App\Support\EntityUrl;
 
 /**
  * Rechnungsnachfrage aus dem Mail-Eingang (Feature 166, MVP-1200): Antwort
@@ -38,6 +43,7 @@ final class InvoiceInquiryMailIntakeHandler implements MailIntakeAnnotator, Mail
     public function __construct(
         private readonly InvoiceInquiryMatcher $matcher,
         private readonly InvoiceInquiryService $inquiries,
+        private readonly NotificationDispatcher $notifications,
     ) {}
 
     /** Nach dem Ticket-Faden (40): eine Antwort in einen Ticketverlauf bleibt dort. */
@@ -60,8 +66,43 @@ final class InvoiceInquiryMailIntakeHandler implements MailIntakeAnnotator, Mail
 
         $actor = IntakeActor::resolve((int) $organization->id, $connection->created_by);
         $inquiry = $this->inquiries->record($organization, $resolution['target'], $message, $resolution['kind'], $actor);
+        if ($inquiry === null) {
+            return 'skipped';
+        }
+        $this->notifyRecorded($inquiry, $actor, $message);
 
-        return $inquiry === null ? 'skipped' : self::RESULT;
+        return self::RESULT;
+    }
+
+    /** Beim Abruf sitzt niemand davor: die Person hinter dem Postfach erfährt von der neuen Notiz (Regel `communication.mailReceived`). */
+    private function notifyRecorded(InvoiceInquiry $inquiry, ?User $actor, ParsedMessage $message): void {
+        $note = $inquiry->communication_note_id !== null
+            ? CommunicationNote::query()->withoutGlobalScopes()->find($inquiry->communication_note_id)
+            : null;
+        $link = route('invoices.inquiries.index');
+        if ($note instanceof CommunicationNote) {
+            $url = EntityUrl::byType($note->notable_type, (int) $note->notable_id);
+            if ($url !== null) {
+                $link = $url . '#communication-note-' . $note->getKey();
+            }
+        }
+        $params = [
+            'sender' => $message->fromName !== '' ? $message->fromName : $message->fromEmail,
+            'customer' => (string) ($inquiry->customer()->withoutGlobalScopes()->value('name') ?? '—'),
+            'subject' => $message->subject !== '' ? $message->subject : (string) __('mail.inbox.no_subject'),
+            'number' => $inquiry->invoice_number,
+        ];
+
+        $this->notifications->notify(NotificationEvent::CommunicationMailReceived, $note ?? $inquiry, $actor, [
+            'title' => (string) __('communication.mail.notification_title', $params),
+            'title_key' => 'communication.mail.notification_title',
+            'title_params' => $params,
+            'message' => (string) __('communication.mail.notification_message', $params),
+            'message_key' => 'communication.mail.notification_message',
+            'message_params' => $params,
+            'url' => $link,
+            'icon' => NotificationEvent::CommunicationMailReceived->icon(),
+        ]);
     }
 
     public function annotate(Organization $organization, EmailConnection $connection, ParsedMessage $message): array {

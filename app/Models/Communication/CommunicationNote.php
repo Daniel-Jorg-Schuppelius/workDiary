@@ -15,8 +15,13 @@ use App\Enums\User\Permission;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid, HasTags};
 use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
+use App\Models\Integration\ExternalReference;
+use App\Models\Invoicing\InvoiceInquiry;
 use App\Models\Platform\{Organization, User};
+use App\Services\Communication\Mail\MailOrigin;
+use App\Services\Mail\MailIntakeService;
 use App\Support\MorphMap;
+use CommonToolkit\Helper\Data\StringHelper;
 use Database\Factories\Communication\CommunicationNoteFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -168,6 +173,35 @@ class CommunicationNote extends Model {
 
     public function hasOpenFollowUp(): bool {
         return $this->next_action !== null && $this->next_action_completed_at === null;
+    }
+
+    /**
+     * Kurzfassung für Panel und Listen: Leerzeilen fallen weg, damit die
+     * sichtbaren Zeilen Inhalt tragen; die Vollansicht zeigt den Text ungekürzt.
+     */
+    public function excerpt(int $limit = 400): string {
+        $body = trim((string) $this->body);
+
+        return StringHelper::truncate(preg_replace("/\n[ \t]*\n+/", "\n", $body) ?? $body, $limit);
+    }
+
+    /** Die E-Mail hinter der Notiz — eingegangen (Mail-Eingang, Rechnungsnachfrage) oder aus WorkDiary gesendet; sonst null. */
+    public function mailOrigin(): ?MailOrigin {
+        if ($this->type !== CommunicationNoteType::Email) {
+            return null;
+        }
+        $reference = ExternalReference::query()->withoutGlobalScopes()
+            ->where('organization_id', $this->organization_id)
+            ->where('plugin_id', MailIntakeService::PLUGIN_ID)
+            ->where('external_type', MailIntakeService::EXTERNAL_TYPE)
+            ->forReferenceable($this)
+            ->first();
+        $inquiry = InvoiceInquiry::query()->withoutGlobalScopes()
+            ->where('organization_id', $this->organization_id)
+            ->where('communication_note_id', $this->getKey())
+            ->first();
+
+        return MailOrigin::fromNote($this, $reference, $inquiry);
     }
 
     /** Interne Notiz ohne Fachbezug, abgelegt bei der Organisation selbst (Feature 154). */

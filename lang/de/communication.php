@@ -132,4 +132,43 @@ return [
             'existing' => 'Diese Notiz wurde bereits überführt.',
         ],
     ],
+
+    'mail' => [
+        'section' => 'E-Mail',
+        'from' => 'Absender',
+        'to' => 'Empfänger',
+        'cc' => 'CC',
+        'received_at' => 'Empfangen',
+        'sent_at' => 'Gesendet',
+        'mailbox' => 'Postfach',
+        'reply_to' => 'Antwortadresse',
+        'inquiry' => 'Rechnungsnachfrage',
+        'inquiry_number' => 'Nachfrage zu Rechnung :number',
+        'notification_title' => 'E-Mail von :sender zu :customer',
+        'notification_message' => ':subject — Nachfrage zu Rechnung :number',
+    ],
+
+    'reply' => [
+        'title' => 'Auf E-Mail antworten',
+        'action' => 'Antworten',
+        'action_send' => 'Senden',
+        'recipients_legend' => 'Empfänger',
+        'recipients' => 'An',
+        'recipients_hint' => 'Mehrere Adressen durch Komma trennen.',
+        'cc' => 'CC',
+        'body_legend' => 'Antwort',
+        'body' => 'Text',
+        'subject_prefix' => 'AW: ',
+        'quote_header' => 'Am :date schrieb :sender:',
+        'quote_hint' => 'Die ursprüngliche Nachricht wird unter Ihrer Antwort zitiert.',
+        'reply_to_hint' => 'Antworten gehen an :address und erscheinen wieder im Mail-Eingang.',
+        'error' => [
+            'recipients' => 'Bitte mindestens eine gültige E-Mail-Adresse angeben.',
+            'invalid_address' => 'Ungültige E-Mail-Adresse: :address',
+        ],
+        'flash' => [
+            'sent' => 'Die Antwort wurde gesendet und als Notiz abgelegt.',
+            'failed' => 'Die Antwort konnte nicht gesendet werden. Details stehen im Protokoll.',
+        ],
+    ],
 ];

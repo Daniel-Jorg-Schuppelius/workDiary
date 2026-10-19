@@ -73,7 +73,7 @@ final class GraphMailboxGatewayTest extends TestCase {
             'subject' => 'Rechnung 4711',
             'from' => ['emailAddress' => ['address' => 'Kunde@Acme.test', 'name' => 'Acme GmbH']],
             'receivedDateTime' => '2026-08-05T09:00:00Z',
-            'body' => ['contentType' => 'html', 'content' => '<p>Bitte <b>prüfen</b>.</p>'],
+            'body' => ['contentType' => 'html', 'content' => "<div>Bitte <b>pr&uuml;fen</b>.<br>Danke&nbsp;&amp; Gru&szlig;</div>\r\n<p>Acme</p>"],
             'hasAttachments' => $attachments,
             'internetMessageHeaders' => [
                 ['name' => 'In-Reply-To', 'value' => '<parent@acme.test>'],
@@ -122,7 +122,7 @@ final class GraphMailboxGatewayTest extends TestCase {
         $this->assertSame('graph-id-1', $message->externalId);
         $this->assertSame('kunde@acme.test', $message->fromEmail);
         $this->assertSame('Acme GmbH', $message->fromName);
-        $this->assertSame('Bitte prüfen.', $message->body);
+        $this->assertSame("Bitte prüfen.\nDanke & Gruß\nAcme", $message->body);
         $this->assertSame('<parent@acme.test>', $message->inReplyTo);
         $this->assertSame(['<a@acme.test>', '<parent@acme.test>'], $message->references);
         $this->assertTrue($message->isAutoSubmitted);

@@ -18,7 +18,7 @@ use App\Plugins\Msgraph\Api\MsgraphMailClient;
 use App\Plugins\Msgraph\Models\MsgraphMailConnection;
 use App\Services\CloudIntake\StaleCheckpointException;
 use App\Services\Mail\{MailAttachment, MailboxCursor, MailboxGateway, ParsedMessage};
-use CommonToolkit\Helper\Data\EmailHelper;
+use CommonToolkit\Helper\Data\{EmailHelper, StringHelper};
 use Generator;
 use Illuminate\Support\Carbon;
 use Throwable;
@@ -142,7 +142,7 @@ class MsgraphMailboxGateway implements MailboxGateway {
         $body = (array) ($message['body'] ?? []);
         $content = (string) ($body['content'] ?? '');
         if (strcasecmp((string) ($body['contentType'] ?? ''), 'html') === 0) {
-            $content = trim(strip_tags($content));
+            $content = StringHelper::htmlToText($content);
         }
 
         // Threading + Loop-Schutz aus den Internet-Headern (IMAP-Parität).

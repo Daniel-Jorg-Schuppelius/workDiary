@@ -1,7 +1,7 @@
 ---
 title: "Kommunikationsnotizen"
 topic: communication.notes
-version: 3
+version: 4
 keywords:
     - Telefonnotiz
     - Gesprächsnotiz
@@ -53,6 +53,23 @@ Wichtige Regeln:
 
 Nächste Schritte: Wiederkehrende Lösungen aus Telefonaten lohnen sich
 als Artikel in der **Wissensbasis**.
+
+## E-Mails als Notiz
+
+Mails aus dem Mail-Eingang und automatisch erkannte Rechnungsnachfragen liegen
+als Notiz vom Typ „E-Mail“ beim Kunden. Die Notiz zeigt Absender, Empfangszeit,
+Postfach und Anhänge der Mail; bei einer Rechnungsnachfrage steht die Rechnung
+mit ihrem Stand dabei. Mit **Antworten** schreiben Sie direkt aus der Notiz
+zurück: Empfänger und Betreff sind vorbelegt, die ursprüngliche Nachricht wird
+zitiert, der Versand läuft über den Mailversand von WorkDiary, und die Antwort
+liegt danach als ausgehende Notiz beim Kunden. Antworten des Empfängers laufen
+über das Eingangspostfach wieder ein. Eine offene Rechnungsnachfrage gilt mit
+der Antwort als beantwortet.
+
+Erfasst der Postfachabruf eine Rechnungsnachfrage automatisch, erhält die
+Person, die das Postfach angelegt hat, die Benachrichtigung „E-Mail beim Kunden
+eingegangen“. Weitere Empfänger und Kanäle legen Sie unter
+**Benachrichtigungen** fest.
 
 ## Zentrale Notizliste
 
