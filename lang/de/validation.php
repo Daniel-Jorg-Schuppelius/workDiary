@@ -1318,6 +1318,7 @@ return [
         'holder_user' => 'Mitarbeiter',
         'holiday_provider' => 'Feiertags-Region',
         'holidays_as_weekend' => 'Feiertage wie Wochenende abrechnen',
+        'is_travel_itemized' => 'Anfahrt gesondert ausweisen',
         'home' => 'Heim',
         'home_site_label' => 'Heimatstandort',
         'homepage' => 'Homepage',

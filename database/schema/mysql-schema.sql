@@ -8382,6 +8382,7 @@ CREATE TABLE `customer_billing_agreements` (
   `travel_minutes_per_entry` smallint(5) unsigned NOT NULL DEFAULT 0,
   `travel_categories` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`travel_categories`)),
   `holidays_as_weekend` tinyint(1) NOT NULL DEFAULT 0,
+  `is_travel_itemized` tinyint(1) NOT NULL DEFAULT 1,
   `opening_balance` decimal(12,2) NOT NULL DEFAULT 0.00,
   `opening_balance_date` date DEFAULT NULL,
   `active` tinyint(1) NOT NULL DEFAULT 1,
@@ -26977,3 +26978,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (991,'2027_03_25_09
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (992,'2027_03_29_090000_drop_incoming_invoice_exclusions_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (993,'2027_03_27_090000_decode_entities_in_mail_texts',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (994,'2027_03_28_090000_create_incoming_invoice_templates_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (995,'2027_03_30_090000_add_is_travel_itemized_to_customer_billing_agreements_table',2);

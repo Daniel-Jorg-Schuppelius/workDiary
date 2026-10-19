@@ -1352,6 +1352,7 @@ return [
         'holder_user' => 'Employee',
         'holiday_provider' => 'Holiday region',
         'holidays_as_weekend' => 'Bill public holidays as weekend',
+        'is_travel_itemized' => 'show travel separately',
         'home' => 'Home',
         'home_site_label' => 'Home site',
         'homepage' => 'Homepage',

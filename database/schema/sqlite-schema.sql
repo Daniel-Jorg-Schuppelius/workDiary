@@ -12261,6 +12261,7 @@ CREATE TABLE IF NOT EXISTS "customer_billing_agreements"(
   "travel_minutes_per_entry" integer not null default '0',
   "travel_categories" text,
   "holidays_as_weekend" tinyint(1) not null default '0',
+  "is_travel_itemized" tinyint(1) not null default '1',
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("customer_id") references "customers"("id") on delete cascade
 );
@@ -24857,3 +24858,4 @@ INSERT INTO migrations VALUES(991,'2027_03_25_090000_create_incoming_invoice_exc
 INSERT INTO migrations VALUES(992,'2027_03_29_090000_drop_incoming_invoice_exclusions_table',1);
 INSERT INTO migrations VALUES(993,'2027_03_27_090000_decode_entities_in_mail_texts',1);
 INSERT INTO migrations VALUES(994,'2027_03_28_090000_create_incoming_invoice_templates_table',1);
+INSERT INTO migrations VALUES(995,'2027_03_30_090000_add_is_travel_itemized_to_customer_billing_agreements_table',2);

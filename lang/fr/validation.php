@@ -1318,6 +1318,7 @@ return [
         'holder_user' => 'Employé',
         'holiday_provider' => 'Région des jours fériés',
         'holidays_as_weekend' => 'Facturer les jours fériés comme le week-end',
+        'is_travel_itemized' => 'indiquer le déplacement séparément',
         'home' => 'Domicile',
         'home_site_label' => 'Site d\'attache',
         'homepage' => 'Homepage',

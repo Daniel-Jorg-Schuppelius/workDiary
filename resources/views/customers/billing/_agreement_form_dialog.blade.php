@@ -113,14 +113,17 @@
                        :label="__('customer-billing.travel_minutes_per_entry')"
                        :hint="__('customer-billing.travel_minutes_hint')"
                        :value="old('travel_minutes_per_entry', $agreement?->travel_minutes_per_entry ?? 0)" />
-        <x-checkbox-field name="holidays_as_weekend"
-                          :label="__('customer-billing.holidays_as_weekend')"
-                          :hint="__('customer-billing.holidays_as_weekend_hint')"
-                          :checked="(bool) old('holidays_as_weekend', $agreement?->holidays_as_weekend ?? false)" />
-        <x-checkbox-field name="is_travel_itemized"
-                          :label="__('customer-billing.travel_itemized')"
-                          :hint="__('customer-billing.travel_itemized_hint')"
-                          :checked="(bool) old('is_travel_itemized', $agreement?->is_travel_itemized ?? true)" />
+        {{-- Schalter in einer eigenen Zeile: neben dem beschrifteten Eingabefeld sprang der Schalter auf Label-Höhe. --}}
+        <div class="md:col-span-2 grid gap-x-6 gap-y-3 md:grid-cols-2">
+            <x-checkbox-field name="is_travel_itemized"
+                              :label="__('customer-billing.travel_itemized')"
+                              :hint="__('customer-billing.travel_itemized_hint')"
+                              :checked="(bool) old('is_travel_itemized', $agreement?->is_travel_itemized ?? true)" />
+            <x-checkbox-field name="holidays_as_weekend"
+                              :label="__('customer-billing.holidays_as_weekend')"
+                              :hint="__('customer-billing.holidays_as_weekend_hint')"
+                              :checked="(bool) old('holidays_as_weekend', $agreement?->holidays_as_weekend ?? false)" />
+        </div>
         <div class="md:col-span-2">
             <p class="fieldset-label">{{ __('customer-billing.travel_categories') }}</p>
             <p class="text-xs text-muted mb-2">{{ __('customer-billing.travel_categories_hint') }}</p>

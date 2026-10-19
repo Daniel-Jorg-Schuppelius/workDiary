@@ -1318,6 +1318,7 @@ return [
         'holder_user' => 'Dipendente',
         'holiday_provider' => 'Regione festività',
         'holidays_as_weekend' => 'Fatturare i festivi come il fine settimana',
+        'is_travel_itemized' => 'indicare la trasferta separatamente',
         'home' => 'Casa',
         'home_site_label' => 'Sede di riferimento',
         'homepage' => 'Sito web',

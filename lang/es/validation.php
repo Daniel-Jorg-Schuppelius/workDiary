@@ -1318,6 +1318,7 @@ return [
         'holder_user' => 'Empleado',
         'holiday_provider' => 'Región de festivos',
         'holidays_as_weekend' => 'Facturar los festivos como fin de semana',
+        'is_travel_itemized' => 'mostrar el desplazamiento por separado',
         'home' => 'Local',
         'home_site_label' => 'Ubicación base',
         'homepage' => 'Página web',
