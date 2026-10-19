@@ -72,6 +72,9 @@ enum PortalCapability: string implements HasLabel {
     /** Anfragen und Aufträge (Feature 162): Leistung anfragen, Dateien nachreichen, Angebot entscheiden. */
     case Intakes = 'intakes';
 
+    /** Schulungen (Feature 149): freigegebene Kurse mit Zielgruppe Kunde — bisher ohne Freigabe sichtbar, seit MVP-1236 Default-Deny. */
+    case Learning = 'learning';
+
     public function label(): string {
         return (string) match ($this) {
             self::Diary => __('enums.customer_portal.portal_capability.diary'),
@@ -90,6 +93,7 @@ enum PortalCapability: string implements HasLabel {
             self::Subscriptions => __('enums.customer_portal.portal_capability.subscriptions'),
             self::Agreements => __('contract-signing.portal.capability'),
             self::Intakes => __('customer_intake.portal.capability'),
+            self::Learning => __('enums.customer_portal.portal_capability.learning'),
         };
     }
 
@@ -106,6 +110,7 @@ enum PortalCapability: string implements HasLabel {
             self::Appointments => 'module.planung',
             self::Subscriptions => 'module.reselling',
             self::Agreements => 'module.contracts',
+            self::Learning => 'module.lms',
             default => null,
         };
     }

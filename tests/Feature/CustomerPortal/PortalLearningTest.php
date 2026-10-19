@@ -267,4 +267,18 @@ class PortalLearningTest extends TestCase {
     public function test_ohne_anmeldung_kein_zugriff(): void {
         $this->get(route('customer.learning.index'))->assertRedirect();
     }
+
+    /** MVP-1236: Schulungen hängen an der Bereichsfreigabe `learning` — ohne sie kein Menüpunkt und 404. */
+    public function test_ohne_bereichsfreigabe_sind_schulungen_unsichtbar(): void {
+        $this->course();
+
+        $this->actingAs($this->portalUser, 'customer')->get(route('customer.learning.index'))->assertOk();
+        $this->get(route('customer.dashboard'))->assertOk()->assertSee(route('customer.learning.index'));
+
+        $this->allowPortal($this->customer, ['diary']);
+        $this->actingAs($this->portalUser->fresh(), 'customer');
+
+        $this->get(route('customer.learning.index'))->assertNotFound();
+        $this->get(route('customer.dashboard'))->assertOk()->assertDontSee(route('customer.learning.index'));
+    }
 }

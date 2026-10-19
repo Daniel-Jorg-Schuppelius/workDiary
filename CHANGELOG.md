@@ -27,6 +27,15 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   oHG kam aus Lexoffice mit zwei Ansprechpartnern, aber leerem
   Hauptansprechpartner.
 
+- Kundenportal: Bereichsfreigabe „Schulungen“ (MVP-1236). Der Menüpunkt und
+  die Kursseiten hängen jetzt wie alle anderen Bereiche an der
+  Portal-Konfiguration des Kunden (Default-Deny: Bestandskunden sehen
+  Schulungen erst nach ausdrücklicher Freigabe); das Lernmodul bleibt
+  Voraussetzung. Hilfethema folgt der Freigabe. Labels ×5, Tests.
+- Kundenportal: Die Suche findet auch Belege des Buchhaltungsprogramms
+  (Belegspiegel) nach Nummer — bisher nur lokale Rechnungen, ein Kunde ohne
+  lokale Rechnungen fand seine Belegnummern nicht (Befund 2026-10-19). Test.
+
 - Änderungsverlauf an Kunde, Lieferant und Fremdkunde gekürzt: Die Liste
   zeigt acht Einträge, der Rest steht hinter „Weitere Einträge anzeigen“; ein
   generisches „Geändert“ derselben Person innerhalb einer Minute neben einem

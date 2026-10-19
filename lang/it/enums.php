@@ -2157,7 +2157,7 @@ return [
         'indexation_method' => ['none' => 'Nessuna indicizzazione', 'consumer_price_index' => 'Indice dei prezzi al consumo (IPC)', 'fixed_percent' => 'Percentuale fissa', 'custom' => 'Regola personalizzata'],
     ],
     'customer_portal' => [
-        'portal_capability' => ['diary' => 'Ordini e fascicolo', 'time_entries' => 'Tempi di progetto', 'invoices' => 'Fatture e conto di fatturazione', 'documents' => 'Documenti', 'assets' => 'Oggetti', 'open_issues' => 'Punti aperti', 'tickets' => 'Ticket, catalogo servizi ed errori noti', 'claims' => 'Reclami', 'rentals' => 'Operazioni di noleggio', 'queries' => 'Richieste e commenti', 'appointments' => 'Prenotazione appuntamenti online', 'rental_requests' => 'Richiesta di noleggio', 'subscriptions' => 'Abbonamenti e licenze'],
+        'portal_capability' => ['diary' => 'Ordini e fascicolo', 'time_entries' => 'Tempi di progetto', 'invoices' => 'Fatture e conto di fatturazione', 'documents' => 'Documenti', 'assets' => 'Oggetti', 'open_issues' => 'Punti aperti', 'tickets' => 'Ticket, catalogo servizi ed errori noti', 'claims' => 'Reclami', 'rentals' => 'Operazioni di noleggio', 'queries' => 'Richieste e commenti', 'appointments' => 'Prenotazione appuntamenti online', 'rental_requests' => 'Richiesta di noleggio', 'subscriptions' => 'Abbonamenti e licenze', 'learning' => 'Formazioni'],
         'portal_time_detail' => ['none' => 'Nessun tempo', 'summary' => 'Solo totali', 'entries' => 'Voci (data, durata, progetto, collaboratore)', 'entries_with_description' => 'Voci con descrizione (solo pubblicate)'],
     ],
     'disposal' => [

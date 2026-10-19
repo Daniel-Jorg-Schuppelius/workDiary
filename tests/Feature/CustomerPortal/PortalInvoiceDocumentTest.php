@@ -240,7 +240,9 @@ class PortalInvoiceDocumentTest extends TestCase {
     }
 
     public function test_menu_shows_training_only_with_the_learning_module(): void {
-        $this->actingAs($this->portalUser, 'customer')
+        // MVP-1236: Schulungen brauchen zusätzlich die Bereichsfreigabe; das Modul bleibt Voraussetzung.
+        $this->allowPortal($this->customer, ['invoices', 'learning']);
+        $this->actingAs($this->portalUser->fresh(), 'customer')
             ->get(route('customer.dashboard'))
             ->assertOk()
             ->assertSee(route('customer.learning.index'))

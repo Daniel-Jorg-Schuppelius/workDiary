@@ -282,7 +282,8 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
 
     // Kundenschulungen (Feature 149, MVP-742): Default-Deny — sichtbar sind
     // nur freigegebene Kurse mit ausdrücklicher Zielgruppe `customer`; ohne Lernmodul 404.
-    Route::middleware(['auth:customer', 'two-factor.setup:customer', 'requires-feature:module.lms,hidden'])->group(function (): void {
+    // Seit MVP-1236 zusätzlich Bereichsfreigabe `learning` je Kunde.
+    Route::middleware(['auth:customer', 'two-factor.setup:customer', 'requires-feature:module.lms,hidden', 'portal.capability:learning'])->group(function (): void {
         Route::get('/schulungen', [\App\Http\Controllers\Learning\Portal\PortalLearningController::class, 'index'])->name('learning.index');
         Route::post('/schulungen/{course}/einschreiben', [\App\Http\Controllers\Learning\Portal\PortalLearningController::class, 'enroll'])->name('learning.enroll');
         Route::post('/schulungen/{course}/buchen', [\App\Http\Controllers\Learning\Portal\PortalLearningController::class, 'requestBooking'])->name('learning.book');

@@ -21,6 +21,8 @@ use App\Models\Document\Document;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Models\ServiceTicket\ServiceTicket;
+use App\Services\Billing\Contracts\ExternalRevenue;
+use App\Services\Billing\Dto\{ExternalInvoice, ExternalInvoiceQuery};
 use App\Services\CustomerPortal\PortalVisibility;
 use App\Support\Tz;
 use Illuminate\Http\Request;
@@ -46,9 +48,21 @@ class SearchController extends Controller {
 
         if (mb_strlen($q) >= 2) {
             if ($this->visibility->allows($customer, PortalCapability::Invoices)) {
-                $groups['invoices'] = Invoice::query()->where('customer_id', $customer->id)->where('status', '!=', InvoiceStatus::Draft)
+                $local = Invoice::query()->where('customer_id', $customer->id)->where('status', '!=', InvoiceStatus::Draft)
                     ->whereLikeEscaped('number', $q)->orderByDesc('issued_on')->limit(self::LIMIT)->get()
                     ->map(fn (Invoice $invoice): array => ['label' => (string) $invoice->number, 'meta' => $invoice->issued_on?->format('d.m.Y'), 'url' => route('customer.invoices.index')])->all();
+                // Belege des Buchhaltungsprogramms (MVP-1118): dieselbe Quelle wie die Rechnungsliste —
+                // ein Kunde ohne lokale Rechnungen fand seine Belegnummern sonst nicht (Befund 2026-10-19).
+                $external = collect(app(ExternalRevenue::class)->invoices(new ExternalInvoiceQuery(
+                    customerId: (int) $customer->id,
+                    organizationId: (int) $user->organization_id,
+                )))
+                    ->filter(fn (ExternalInvoice $invoice): bool => mb_stripos($invoice->number, $q) !== false)
+                    ->sortByDesc(fn (ExternalInvoice $invoice): int => $invoice->issuedOn?->getTimestamp() ?? 0)
+                    ->take(self::LIMIT)
+                    ->map(fn (ExternalInvoice $invoice): array => ['label' => $invoice->number, 'meta' => $invoice->issuedOn?->format('d.m.Y'), 'url' => route('customer.invoices.index')])
+                    ->values()->all();
+                $groups['invoices'] = array_slice(array_merge($local, $external), 0, self::LIMIT);
             }
             if ($this->visibility->allows($customer, PortalCapability::Diary)) {
                 $groups['diary'] = DiaryEntry::query()->where('customer_id', $customer->id)->whereLikeEscaped('title', $q)

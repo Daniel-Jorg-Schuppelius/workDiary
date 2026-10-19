@@ -17,6 +17,9 @@ use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
+use App\Services\Billing\Contracts\ExternalRevenue;
+use App\Services\Billing\Dto\{ExternalInvoice, ExternalInvoiceFile, ExternalInvoiceQuery};
+use Carbon\{CarbonImmutable, CarbonInterface};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\{WithOrganization, WithPortalVisibility};
@@ -63,5 +66,50 @@ final class PortalSearchTest extends TestCase {
         $this->actingAs($portalUser->fresh(), 'customer');
         $this->get(route('customer.search', ['q' => 'SUCH']))->assertOk()->assertSee('SUCH-Auftrag');
         $this->get(route('customer.search', ['q' => 'x']))->assertOk()->assertDontSee('RE-2026-SUCH-1');
+    }
+
+    /** Befund 2026-10-19: ein Kunde ohne lokale Rechnungen fand seine Belegnummern aus dem Buchhaltungsprogramm nicht. */
+    public function test_search_finds_invoices_of_the_accounting_program(): void {
+        $this->setUpOrganization();
+        app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $this->allowPortal($customer, ['invoices']);
+        $portalUser = User::factory()->kunde((int) $customer->id, (int) $this->organization->id)->create(['organization_id' => $this->organization->id]);
+
+        $external = static fn (string $number, int $customerId): ExternalInvoice => new ExternalInvoice(
+            source: 'lexoffice', key: 'key-' . $number, number: $number, customerId: $customerId, contactName: null, type: 'invoice',
+            status: InvoiceStatus::Issued, issuedOn: CarbonImmutable::parse('2026-09-30'), dueOn: null, paidOn: null,
+            gross: 119.0, net: 100.0, open: 0.0, currency: 'EUR', url: null,
+        );
+        $this->app->instance(ExternalRevenue::class, new class($external((string) 'RE-1086', (int) $customer->id), $external('RE-2000', (int) $customer->id)) implements ExternalRevenue {
+            /** @var list<ExternalInvoice> */
+            private array $invoices;
+
+            public function __construct(ExternalInvoice ...$invoices) { $this->invoices = array_values($invoices); }
+
+            public function invoices(ExternalInvoiceQuery $query): array { return array_values(array_filter($this->invoices, fn (ExternalInvoice $i): bool => $i->customerId === $query->customerId)); }
+
+            public function invoicesByNumber(int $organizationId, array $numbers): array { return []; }
+
+            public function perCustomer(string $from, string $to, ?int $customerId = null, array $excludedCustomerIds = []): array { return []; }
+
+            public function monthlyRevenue(int $customerId, CarbonInterface $from, CarbonInterface $to): array { return []; }
+
+            public function overdueCount(int $organizationId, string $today): int { return 0; }
+
+            public function productRevenue(CarbonInterface $from, CarbonInterface $to): array { return []; }
+
+            public function customerIdsWithDocuments(int $organizationId): array { return []; }
+
+            public function file(string $source, int $organizationId, string $key): ?ExternalInvoiceFile { return null; }
+
+            public function fileForInvoice(Invoice $invoice): ?ExternalInvoiceFile { return null; }
+        });
+
+        $this->actingAs($portalUser, 'customer');
+        $this->get(route('customer.search', ['q' => '1086']))->assertOk()
+            ->assertSee('RE-1086')
+            ->assertDontSee('RE-2000');
+        $this->get(route('customer.search', ['q' => '9999']))->assertOk()->assertDontSee('RE-1086');
     }
 }

@@ -125,11 +125,10 @@
                 @if ($portalAllows(PortalCapability::Appointments))
                     <a href="{{ route('customer.appointments.index') }}" class="hover:underline">{{ __('Termin anfragen') }}</a>
                 @endif
-                {{-- Schulungen haben keine Bereichsfreigabe: sichtbar sind ohnehin nur
-                     freigegebene Kurse mit Zielgruppe Kunde (Feature 149). --}}
-                @feature('module.lms')
+                {{-- Schulungen: Bereichsfreigabe je Kunde (MVP-1236), das Lernmodul prüft allows() mit. --}}
+                @if ($portalAllows(PortalCapability::Learning))
                     <a href="{{ route('customer.learning.index') }}" class="hover:underline">{{ __('learning.title.portal') }}</a>
-                @endfeature
+                @endif
                 @if ($portalAllows(PortalCapability::Queries))
                     <a href="{{ route('customer.queries.index') }}" class="hover:underline">{{ __('Rückfragen') }}</a>
                 @endif

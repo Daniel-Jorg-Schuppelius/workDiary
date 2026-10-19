@@ -2157,7 +2157,7 @@ return [
         'indexation_method' => ['none' => 'No indexation', 'consumer_price_index' => 'Consumer price index (CPI)', 'fixed_percent' => 'Fixed percentage', 'custom' => 'Custom rule'],
     ],
     'customer_portal' => [
-        'portal_capability' => ['diary' => 'Orders & case file', 'time_entries' => 'Project times', 'invoices' => 'Invoices & billing account', 'documents' => 'Documents', 'assets' => 'Objects', 'open_issues' => 'Open issues', 'tickets' => 'Tickets, service catalog & known errors', 'claims' => 'Complaints', 'rentals' => 'Rental transactions', 'queries' => 'Queries & comments', 'appointments' => 'Online appointment booking', 'rental_requests' => 'Rental request', 'subscriptions' => 'Subscriptions & licences'],
+        'portal_capability' => ['diary' => 'Orders & case file', 'time_entries' => 'Project times', 'invoices' => 'Invoices & billing account', 'documents' => 'Documents', 'assets' => 'Objects', 'open_issues' => 'Open issues', 'tickets' => 'Tickets, service catalog & known errors', 'claims' => 'Complaints', 'rentals' => 'Rental transactions', 'queries' => 'Queries & comments', 'appointments' => 'Online appointment booking', 'rental_requests' => 'Rental request', 'subscriptions' => 'Subscriptions & licences', 'learning' => 'Training'],
         'portal_time_detail' => ['none' => 'No times', 'summary' => 'Totals only', 'entries' => 'Entries (date, duration, project, employee)', 'entries_with_description' => 'Entries incl. description (published only)'],
     ],
     'disposal' => [
