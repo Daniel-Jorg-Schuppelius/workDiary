@@ -162,6 +162,8 @@ return [
         'quote_header' => 'Am :date schrieb :sender:',
         'quote_hint' => 'Die ursprüngliche Nachricht wird unter Ihrer Antwort zitiert.',
         'reply_to_hint' => 'Antworten gehen an :address und erscheinen wieder im Mail-Eingang.',
+        'signature_legend' => 'Signatur und Fußzeile',
+        'signature_hint' => 'Wird unter Ihrer Antwort angefügt. Die Signatur pflegen Sie im Profil, die Fußzeile die Organisation in den Einstellungen.',
         'error' => [
             'recipients' => 'Bitte mindestens eine gültige E-Mail-Adresse angeben.',
             'invalid_address' => 'Ungültige E-Mail-Adresse: :address',

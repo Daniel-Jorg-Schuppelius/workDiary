@@ -350,6 +350,9 @@ return [
     // --- Rechtstexte (config/legal.php, MVP-326) ---
     // Öffentliches Impressum/Datenschutzerklärung — betreiberspezifisch (nur
     // System-Scope); Klartext, Ausgabe HTML-escaped auf /impressum bzw. /datenschutz.
+    // --- Kommunikation: Fußzeile unter Mails, die Personen aus WorkDiary schreiben (Antwort aus der Notiz, Ticket-Antwort) ---
+    'communication.mail_footer' => ['type' => 'text', 'scopes' => ['system', 'organization'], 'rules' => 'nullable|max:4000'],
+
     'legal.imprint' => ['type' => 'text', 'scopes' => ['system'], 'rules' => 'nullable|max:65535'],
     'legal.privacy' => ['type' => 'text', 'scopes' => ['system'], 'rules' => 'nullable|max:65535'],
     'legal.accessibility' => ['type' => 'text', 'scopes' => ['system'], 'rules' => 'nullable|max:65535'],

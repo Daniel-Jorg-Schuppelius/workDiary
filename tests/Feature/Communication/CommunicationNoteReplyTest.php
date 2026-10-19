@@ -22,7 +22,9 @@ use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\InvoiceInquiry;
 use App\Models\Mail\EmailConnection;
 use App\Models\Platform\User;
-use App\Support\MorphMap;
+use App\Services\Mail\MailSignature;
+use App\Settings\SettingScope;
+use App\Support\{MorphMap, Setting};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Tests\Concerns\WithOrganization;
@@ -127,6 +129,7 @@ final class CommunicationNoteReplyTest extends TestCase {
         $response->assertSee('value="ralph@acme.test"', false);
         $response->assertSee('value="AW: Mahnung RE-2025-0865"', false);
         $response->assertSee('soeben überwiesen.');
+        $response->assertSee($this->user->name);
     }
 
     public function test_reply_sends_the_mail_records_the_outbound_note_and_answers_the_inquiry(): void {
@@ -144,6 +147,8 @@ final class CommunicationNoteReplyTest extends TestCase {
             'active' => true,
             'created_by' => $this->user->id,
         ]);
+        $this->user->setPreference(MailSignature::PREFERENCE, "Daniel S.\nTel. 1");
+        Setting::set(MailSignature::FOOTER_KEY, 'Firma GmbH · Musterstraße 1', SettingScope::Organization, $this->organization);
         $note = $this->inboundNote();
         $inquiry = InvoiceInquiry::factory()->create([
             'organization_id' => $this->organization->id,
@@ -166,7 +171,7 @@ final class CommunicationNoteReplyTest extends TestCase {
             && $mail->mailSubject === 'AW: Mahnung RE-2025-0865'
             && $mail->inReplyTo === 'kunde-1@acme.test'
             && $mail->replyToAddress === 'buero@firma.test'
-            && str_contains($mail->messageText, "Danke, der Betrag ist angekommen.\n\n")
+            && str_contains($mail->messageText, "Danke, der Betrag ist angekommen.\n\nDaniel S.\nTel. 1\n\nFirma GmbH · Musterstraße 1\n\n")
             && str_contains($mail->messageText, '> soeben überwiesen.'));
 
         $reply = CommunicationNote::query()->where('direction', CommunicationDirection::Outbound->value)->sole();

@@ -62,6 +62,12 @@ return [
         'remote_shared_sessions' => 'Boîte de télémaintenance : sessions par carte d\'appareil',
         'notifications' => 'Notifications, tâches d\'exploitation, fenêtres de maintenance, signalements de problèmes',
     ],
+    'communication' => [
+        'heading' => 'Communication',
+        'mail_footer' => 'Pied de page e-mail',
+        'mail_footer_hint' => 'Figure sous les réponses que vos collaborateurs envoient depuis WorkDiary (notes, tickets), après leur signature : raison sociale, adresse, registre, mentions obligatoires. Vide : pas de pied de page.',
+    ],
+
     'invoicing' => [
         'heading' => 'Valeurs par défaut de facturation',
         'description' => 'Valeurs pré-remplies lors de la création d\'une nouvelle facture.',

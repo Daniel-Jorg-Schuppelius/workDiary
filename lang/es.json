@@ -10920,5 +10920,7 @@
     "Zonen ziehen, Wert prüfen, als Vorlage des Lieferanten speichern.": "Trace zonas, compruebe el valor y guárdelas como plantilla del proveedor.",
     "Zum Beleg": "Al documento",
     "Keine Seitenbilder": "Sin imágenes de página",
-    "Das Original konnte nicht gerendert werden.": "No se pudo renderizar el original."
+    "Das Original konnte nicht gerendert werden.": "No se pudo renderizar el original.",
+    "E-Mail-Signatur": "Firma de correo",
+    "Steht unter Antworten aus WorkDiary (Notizen, Tickets). Leer: Ihr Name und die Organisation; die Fußzeile der Organisation folgt automatisch.": "Aparece bajo las respuestas enviadas desde WorkDiary (notas, tickets). Vacío: su nombre y la organización; el pie de la organización se añade automáticamente."
 }

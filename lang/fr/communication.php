@@ -162,6 +162,8 @@ return [
         'quote_header' => 'Le :date, :sender a écrit :',
         'quote_hint' => 'Le message d’origine est cité sous votre réponse.',
         'reply_to_hint' => 'Les réponses vont à :address et réapparaissent dans la boîte de réception.',
+        'signature_legend' => 'Signature et pied de page',
+        'signature_hint' => 'Ajouté sous votre réponse. Vous gérez la signature dans votre profil, l’organisation gère le pied de page dans les paramètres.',
         'error' => [
             'recipients' => 'Veuillez indiquer au moins une adresse e-mail valide.',
             'invalid_address' => 'Adresse e-mail non valide : :address',

@@ -162,6 +162,8 @@ return [
         'quote_header' => 'Il :date, :sender ha scritto:',
         'quote_hint' => 'Il messaggio originale viene citato sotto la Sua risposta.',
         'reply_to_hint' => 'Le risposte vanno a :address e ricompaiono nella posta in arrivo.',
+        'signature_legend' => 'Firma e piè di pagina',
+        'signature_hint' => 'Viene aggiunto sotto la Sua risposta. La firma la gestisce nel profilo, il piè di pagina l’organizzazione nelle impostazioni.',
         'error' => [
             'recipients' => 'Indichi almeno un indirizzo e-mail valido.',
             'invalid_address' => 'Indirizzo e-mail non valido: :address',

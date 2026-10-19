@@ -162,6 +162,8 @@ return [
         'quote_header' => 'El :date, :sender escribió:',
         'quote_hint' => 'El mensaje original se cita debajo de su respuesta.',
         'reply_to_hint' => 'Las respuestas van a :address y vuelven a aparecer en la bandeja de correo.',
+        'signature_legend' => 'Firma y pie',
+        'signature_hint' => 'Se añade bajo su respuesta. La firma la gestiona en su perfil, el pie lo gestiona la organización en los ajustes.',
         'error' => [
             'recipients' => 'Indique al menos una dirección de correo válida.',
             'invalid_address' => 'Dirección de correo no válida: :address',

@@ -10920,5 +10920,7 @@
     "Zonen ziehen, Wert prüfen, als Vorlage des Lieferanten speichern.": "Draw zones, check the value, save as the supplier’s template.",
     "Zum Beleg": "To the document",
     "Keine Seitenbilder": "No page images",
-    "Das Original konnte nicht gerendert werden.": "The original could not be rendered."
+    "Das Original konnte nicht gerendert werden.": "The original could not be rendered.",
+    "E-Mail-Signatur": "E-mail signature",
+    "Steht unter Antworten aus WorkDiary (Notizen, Tickets). Leer: Ihr Name und die Organisation; die Fußzeile der Organisation folgt automatisch.": "Appears below replies sent from WorkDiary (notes, tickets). Empty: your name and the organisation; the organisation's footer follows automatically."
 }

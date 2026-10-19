@@ -65,6 +65,12 @@ return [
         'remote_shared_sessions' => 'Fernwartungs-Inbox: Sitzungen je Gerätekarte',
         'notifications' => 'Benachrichtigungen, Betriebsaufgaben, Wartungsfenster, Fehlermeldungen',
     ],
+    'communication' => [
+        'heading' => 'Kommunikation',
+        'mail_footer' => 'E-Mail-Fußzeile',
+        'mail_footer_hint' => 'Steht unter Antworten, die Ihre Mitarbeitenden aus WorkDiary schreiben (Notizen, Tickets), nach deren Signatur: Firmierung, Anschrift, Register, Pflichtangaben. Leer: keine Fußzeile.',
+    ],
+
     'invoicing' => [
         'heading' => 'Rechnungs-Defaults',
         'description' => 'Werte, die beim Anlegen neuer Rechnungen vorbelegt werden.',

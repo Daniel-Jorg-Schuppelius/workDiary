@@ -162,6 +162,8 @@ return [
         'quote_header' => 'On :date, :sender wrote:',
         'quote_hint' => 'The original message is quoted below your reply.',
         'reply_to_hint' => 'Replies go to :address and appear in the mail inbox again.',
+        'signature_legend' => 'Signature and footer',
+        'signature_hint' => 'Appended below your reply. You maintain the signature in your profile, the organisation maintains the footer in its settings.',
         'error' => [
             'recipients' => 'Please enter at least one valid e-mail address.',
             'invalid_address' => 'Invalid e-mail address: :address',

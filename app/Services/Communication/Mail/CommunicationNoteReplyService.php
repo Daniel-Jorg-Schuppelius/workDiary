@@ -21,7 +21,7 @@ use App\Models\Integration\ExternalReference;
 use App\Models\Mail\EmailConnection;
 use App\Models\Platform\User;
 use App\Services\Communication\CommunicationNoteService;
-use App\Services\Mail\MailIntakeService;
+use App\Services\Mail\{MailIntakeService, MailSignature};
 use App\Support\CarbonFmt;
 use CommonToolkit\Helper\Data\{EmailHelper, WebLinkHelper};
 use Illuminate\Database\Eloquent\Model;
@@ -36,7 +36,10 @@ use Illuminate\Support\Str;
  * gilt als beantwortet).
  */
 final class CommunicationNoteReplyService {
-    public function __construct(private readonly CommunicationNoteService $notes) {}
+    public function __construct(
+        private readonly CommunicationNoteService $notes,
+        private readonly MailSignature $signatures,
+    ) {}
 
     /**
      * Adresse des Eingangspostfachs als Reply-To, damit die nächste Antwort des
@@ -85,7 +88,8 @@ final class CommunicationNoteReplyService {
         if ($cc !== []) {
             $pending->cc($cc);
         }
-        $pending->send(new CommunicationNoteReplyMail($subject, $body . "\n\n" . $this->quote($note, $origin), $messageId, $origin->messageId, $replyTo));
+        $text = $body . "\n\n" . $this->signatures->blockFor($actor, $note->organization) . "\n\n" . $this->quote($note, $origin);
+        $pending->send(new CommunicationNoteReplyMail($subject, $text, $messageId, $origin->messageId, $replyTo));
 
         $reply = DB::transaction(function () use ($note, $notable, $actor, $to, $cc, $subject, $body, $origin, $messageId, $replyTo): CommunicationNote {
             $reply = $this->notes->create($notable, $actor, [

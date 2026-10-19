@@ -1,7 +1,7 @@
 ---
 title: "Profil & Konto"
 topic: account.profile
-version: 2
+version: 3
 keywords:
     - Benutzerkonto
     - Einstellungen
@@ -48,3 +48,11 @@ Zeiten als Grundlage für Zeitkonten und Auswertungen. Das Kalender-Abo
 stellt Ihre Termine als ICS-Feed bereit, den Sie in einem externen
 Kalender abonnieren können. Den Zugangslink können Sie jederzeit neu
 erzeugen oder widerrufen, etwa bei Geräteverlust.
+
+## E-Mail-Signatur
+
+Unter **E-Mail** hinterlegen Sie Ihre Signatur für Antworten, die Sie aus
+WorkDiary schreiben (Antwort auf eine E-Mail-Notiz, Antwort im Ticket). Bleibt
+das Feld leer, stehen Ihr Name und die Organisation unter der Antwort. Die
+E-Mail-Fußzeile der Organisation (Firmierung, Anschrift, Pflichtangaben) folgt
+automatisch; sie pflegt die Organisationsverwaltung in den Einstellungen.

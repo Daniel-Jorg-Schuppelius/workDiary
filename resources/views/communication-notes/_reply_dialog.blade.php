@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
   Antwort auf eine eingegangene E-Mail-Notiz, in #entry-modal geladen.
-  Variablen: $note (CommunicationNote), $origin (MailOrigin), $subjectDefault (string), $replyTo (string|null)
+  Variablen: $note (CommunicationNote), $origin (MailOrigin), $subjectDefault (string), $replyTo (string|null), $signature (string)
 --}}
 
 <x-modal
@@ -32,6 +32,11 @@
 
     <x-form-group :legend="__('communication.reply.body_legend')" icon="edit_note" tone="primary">
         <x-textarea-field name="body" :label="__('communication.reply.body')" rows="8" required :value="old('body')" />
+    </x-form-group>
+
+    <x-form-group :legend="__('communication.reply.signature_legend')" icon="draw" tone="ghost" cols="1">
+        <p class="whitespace-pre-wrap text-sm text-base-content/70">{{ $signature }}</p>
+        <p class="text-xs text-muted">{{ __('communication.reply.signature_hint') }}</p>
     </x-form-group>
 
     <div class="rounded-box border border-base-300 bg-base-200 p-3 text-xs text-base-content/70">

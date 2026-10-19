@@ -156,6 +156,15 @@
             @endcan
         </x-form-group>
 
+        {{-- KOMMUNIKATION: Fußzeile unter Antworten, die Mitarbeitende aus WorkDiary schreiben (Notizen, Tickets). --}}
+        <x-form-group :legend="__('settings.communication.heading')" icon="mail" tone="info" cols="1" compact>
+            <x-textarea-field name="settings[communication][mail_footer]" rows="4" maxlength="4000"
+                              :label="__('settings.communication.mail_footer')"
+                              error="settings.communication.mail_footer"
+                              :value="old('settings.communication.mail_footer', data_get($stored, 'communication.mail_footer', ''))"
+                              :hint="__('settings.communication.mail_footer_hint')" />
+        </x-form-group>
+
         {{-- MAHNWESEN (Feature 127, MVP-691): Stufen-Defaults für Einzelmahnung und Mahnlauf. --}}
         <x-form-group :legend="__('settings.dunning.heading')" icon="notification_important" tone="warning" cols="3" compact
                       :description="__('settings.dunning.description')">

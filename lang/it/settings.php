@@ -62,6 +62,12 @@ return [
         'remote_shared_sessions' => 'Inbox teleassistenza: sessioni per scheda dispositivo',
         'notifications' => 'Notifiche, attività operative, finestre di manutenzione, segnalazioni di problemi',
     ],
+    'communication' => [
+        'heading' => 'Comunicazione',
+        'mail_footer' => 'Piè di pagina e-mail',
+        'mail_footer_hint' => 'Compare sotto le risposte che i Suoi collaboratori inviano da WorkDiary (note, ticket), dopo la loro firma: ragione sociale, indirizzo, registro, dati obbligatori. Vuoto: nessun piè di pagina.',
+    ],
+
     'invoicing' => [
         'heading' => 'Valori predefiniti di fatturazione',
         'description' => 'Valori precompilati alla creazione di una nuova fattura.',

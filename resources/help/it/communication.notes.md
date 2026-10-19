@@ -44,7 +44,9 @@ Con **Rispondi** scrive direttamente dalla nota: destinatari e oggetto sono
 precompilati, il messaggio originale viene citato, l’invio passa dall’invio
 e-mail di WorkDiary e la risposta resta presso il cliente come nota in uscita.
 Le risposte del destinatario rientrano dalla casella di posta in arrivo. Una
-richiesta sulla fattura aperta risulta risposta con la risposta inviata.
+richiesta sulla fattura aperta risulta risposta con la risposta inviata. Sotto
+la risposta compaiono la Sua firma e-mail del profilo e il piè di pagina e-mail
+dell’organizzazione.
 
 Se il recupero della casella registra automaticamente una richiesta sulla
 fattura, la persona che ha creato la casella riceve la notifica «E-mail

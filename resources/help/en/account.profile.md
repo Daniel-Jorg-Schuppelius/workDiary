@@ -1,7 +1,7 @@
 ---
 title: "Profile & Account"
 topic: account.profile
-version: 2
+version: 3
 keywords:
     - user settings
     - change password
@@ -46,3 +46,11 @@ for time accounts and reports. The calendar subscription provides your
 appointments as an ICS feed that you can subscribe to in an external
 calendar. You can regenerate or revoke the access link at any time, for
 example after losing a device.
+
+## E-mail signature
+
+Under **E-mail** you store your signature for replies you send from WorkDiary
+(reply to an e-mail note, reply in a ticket). If the field stays empty, your
+name and the organisation appear below the reply. The organisation's e-mail
+footer (company name, address, mandatory details) follows automatically; the
+organisation administration maintains it in the settings.

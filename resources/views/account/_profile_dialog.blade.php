@@ -169,6 +169,12 @@
     @php
         $notifPrefs = (array) ($prefs['notifications'] ?? []);
     @endphp
+    <x-form-group :legend="__('E-Mail')" icon="mail" tone="ghost" cols="1">
+        <x-textarea-field name="preferences[mail_signature]" :label="__('E-Mail-Signatur')" rows="4"
+                          :value="old('preferences.mail_signature', $prefs['mail_signature'] ?? '')"
+                          :hint="__('Steht unter Antworten aus WorkDiary (Notizen, Tickets). Leer: Ihr Name und die Organisation; die Fußzeile der Organisation folgt automatisch.')" />
+    </x-form-group>
+
     <x-form-group :legend="__('notification.title.preferences')" icon="notifications" tone="info" cols="2"
                   :description="__('notification.field.preferences_help')">
         <div class="fieldset md:col-span-2">

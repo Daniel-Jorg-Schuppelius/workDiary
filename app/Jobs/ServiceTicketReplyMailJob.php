@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Enums\ServiceTicket\{TicketMessageDeliveryStatus, TicketMessageKind};
+use App\Models\Platform\User;
 use App\Models\ServiceTicket\ServiceTicketMessage;
+use App\Services\Mail\MailSignature;
 use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -73,7 +75,14 @@ class ServiceTicketReplyMailJob implements ShouldQueue {
         $ticket = $message->ticket()->withoutGlobalScopes()->firstOrFail();
         $subject = sprintf('[%s] %s', $ticket->ticket_no, $message->subject ?? $ticket->title);
 
-        Mail::raw($message->body, function ($mail) use ($recipients, $subject): void {
+        // Signatur und Fußzeile wie bei der Antwort aus der Notiz; Portal-Antworten von Kundenkonten bleiben ohne.
+        $author = $message->author;
+        $text = $message->body;
+        if ($author instanceof User) {
+            $text .= "\n\n" . app(MailSignature::class)->blockFor($author, $ticket->organization()->withoutGlobalScopes()->first());
+        }
+
+        Mail::raw($text, function ($mail) use ($recipients, $subject): void {
             $mail->to($recipients)->subject($subject);
         });
 

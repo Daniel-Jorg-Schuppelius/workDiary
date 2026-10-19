@@ -64,7 +64,8 @@ zurück: Empfänger und Betreff sind vorbelegt, die ursprüngliche Nachricht wir
 zitiert, der Versand läuft über den Mailversand von WorkDiary, und die Antwort
 liegt danach als ausgehende Notiz beim Kunden. Antworten des Empfängers laufen
 über das Eingangspostfach wieder ein. Eine offene Rechnungsnachfrage gilt mit
-der Antwort als beantwortet.
+der Antwort als beantwortet. Unter der Antwort stehen Ihre E-Mail-Signatur
+aus dem Profil und die E-Mail-Fußzeile der Organisation.
 
 Erfasst der Postfachabruf eine Rechnungsnachfrage automatisch, erhält die
 Person, die das Postfach angelegt hat, die Benachrichtigung „E-Mail beim Kunden

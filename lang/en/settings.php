@@ -62,6 +62,12 @@ return [
         'remote_shared_sessions' => 'Remote support inbox: sessions per device card',
         'notifications' => 'Notifications, operations tasks, maintenance windows, problem reports',
     ],
+    'communication' => [
+        'heading' => 'Communication',
+        'mail_footer' => 'E-mail footer',
+        'mail_footer_hint' => 'Appears below replies your staff send from WorkDiary (notes, tickets), after their signature: company name, address, register, mandatory details. Empty: no footer.',
+    ],
+
     'invoicing' => [
         'heading' => 'Invoicing defaults',
         'description' => 'Values pre-filled when creating a new invoice.',

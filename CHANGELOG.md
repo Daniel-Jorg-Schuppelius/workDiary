@@ -10,6 +10,14 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Kommunikation: E-Mail-Signatur je Benutzer und E-Mail-Fußzeile je
+  Organisation. Die Signatur pflegt jede Person im Profil (Gruppe „E-Mail“,
+  Präferenz `mail_signature`; leer: Name und Organisation), die Fußzeile die
+  Organisation in ihren Einstellungen (`communication.mail_footer`,
+  Org-Override vor System-Override). Beides steht unter Antworten aus WorkDiary:
+  Antwort auf eine E-Mail-Notiz (mit Vorschau im Dialog) und Ticket-Antwort
+  (nur bei Mitarbeitenden, nicht bei Portal-Antworten). Beleg- und Systemmails
+  behalten ihre Vorlagen.
 - Rechnungseingang: Belegvorlagen mit Zonen und lernende Erkennung (Phase 151,
   MVP-1218–1221). Das php-pdf-toolkit 0.27 liefert Wortboxen (Rechteck je
   Wort relativ zur Seitengröße, Textlayer oder OCR); die App steigt von 0.17

@@ -44,7 +44,9 @@ en una consulta sobre factura aparece la factura con su estado. Con
 rellenados, el mensaje original se cita, el envío pasa por el envío de correo
 de WorkDiary y la respuesta queda en el cliente como nota saliente. Las
 respuestas del destinatario vuelven a entrar por el buzón de entrada. Una
-consulta sobre factura abierta se considera respondida con la respuesta.
+consulta sobre factura abierta se considera respondida con la respuesta. Bajo
+la respuesta aparecen su firma de correo del perfil y el pie de correo de la
+organización.
 
 Si la consulta de buzón registra automáticamente una consulta sobre factura, la
 persona que creó el buzón recibe la notificación «Correo recibido para un

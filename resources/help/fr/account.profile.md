@@ -1,7 +1,7 @@
 ---
 title: "Profil & compte"
 topic: account.profile
-version: 2
+version: 3
 keywords:
     - paramètres
     - changer le mot de passe
@@ -39,3 +39,12 @@ la page d'accueil définie par votre organisation pour votre rôle s'applique.
 
 Le plus rapide pour passer en mode sombre est **Paramètres** dans
 l'en-tête. Les détails figurent dans la rubrique **Interface et affichage**.
+
+## Signature e-mail
+
+Sous **E-mail**, vous enregistrez votre signature pour les réponses envoyées
+depuis WorkDiary (réponse à une note e-mail, réponse dans un ticket). Si le
+champ reste vide, votre nom et l’organisation figurent sous la réponse. Le pied
+de page e-mail de l’organisation (raison sociale, adresse, mentions
+obligatoires) suit automatiquement ; l’administration de l’organisation le gère
+dans les paramètres.

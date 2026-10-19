@@ -22,6 +22,7 @@ use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
 use App\Services\Communication\CommunicationNoteService;
 use App\Services\Communication\Mail\CommunicationNoteReplyService;
+use App\Services\Mail\MailSignature;
 use App\Support\{EntityUrl, Sqid, Tz};
 use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\EmailHelper;
@@ -159,17 +160,20 @@ class CommunicationNoteController extends Controller {
     }
 
     /** Antwort auf die E-Mail hinter der Notiz (Dialog). */
-    public function reply(CommunicationNote $note, CommunicationNoteReplyService $replies): View {
+    public function reply(CommunicationNote $note, CommunicationNoteReplyService $replies, MailSignature $signatures): View {
         Gate::authorize('reply', $note);
         $this->guardPrivate($note);
         $origin = $note->mailOrigin();
         abort_if($origin === null || ! $origin->isInbound(), 404);
+        /** @var User $viewer */
+        $viewer = Auth::user();
 
         return view('communication-notes._reply_dialog', [
             'note' => $note,
             'origin' => $origin,
             'subjectDefault' => $replies->replySubject($note->subject),
             'replyTo' => $replies->replyToFor($note, $origin),
+            'signature' => $signatures->blockFor($viewer, $note->organization),
         ]);
     }
 

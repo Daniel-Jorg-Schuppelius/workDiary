@@ -58,6 +58,7 @@ class ProfileController extends Controller {
             'preferences.date_format' => ['nullable', Rule::in(\App\Support\Formats::dateOptions())],
             'preferences.time_format' => ['nullable', Rule::in(\App\Support\Formats::timeOptions())],
             'preferences.startpage' => ['nullable', 'string', Rule::in(\App\Services\Navigation\StartPageResolver::routeOptions())],
+            'preferences.mail_signature' => ['nullable', 'string', 'max:2000'],
             // Benachrichtigungs-Präferenzen (MVP-018): Mail global an/aus, Ruhezeit nur für Mail/Push — In-App sammelt immer.
             'preferences.notifications' => ['sometimes', 'array'],
             'preferences.notifications.mail_enabled' => ['nullable', 'boolean'],
@@ -100,7 +101,7 @@ class ProfileController extends Controller {
             // Vom Profilformular verwaltete Keys ersetzt die Eingabe (bzw. leert sie); andere Keys — v. a.
             // color_scheme vom Header-Umschalter — bleiben, damit Speichern die Hell/Dunkel-Wahl nicht zurücksetzt.
             $existing = (array) ($user->preferences ?? []);
-            $formKeys = ['theme', 'locale', 'timezone', 'date_format', 'time_format', 'startpage', 'notifications'];
+            $formKeys = ['theme', 'locale', 'timezone', 'date_format', 'time_format', 'startpage', 'mail_signature', 'notifications'];
             $preserved = array_diff_key($existing, array_flip($formKeys));
             // Innerhalb von `notifications` gibt es Schlüssel, die das Formular
             // NICHT kennt: das SMS-Opt-in (Feature 147) entsteht über den

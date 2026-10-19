@@ -10920,5 +10920,7 @@
     "Zonen ziehen, Wert prüfen, als Vorlage des Lieferanten speichern.": "Tracez des zones, vérifiez la valeur, enregistrez comme modèle du fournisseur.",
     "Zum Beleg": "Vers le document",
     "Keine Seitenbilder": "Aucune image de page",
-    "Das Original konnte nicht gerendert werden.": "L’original n’a pas pu être rendu."
+    "Das Original konnte nicht gerendert werden.": "L’original n’a pas pu être rendu.",
+    "E-Mail-Signatur": "Signature e-mail",
+    "Steht unter Antworten aus WorkDiary (Notizen, Tickets). Leer: Ihr Name und die Organisation; die Fußzeile der Organisation folgt automatisch.": "Figure sous les réponses envoyées depuis WorkDiary (notes, tickets). Vide : votre nom et l’organisation ; le pied de page de l’organisation suit automatiquement."
 }

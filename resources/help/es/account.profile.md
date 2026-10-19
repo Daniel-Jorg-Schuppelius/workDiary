@@ -1,7 +1,7 @@
 ---
 title: "Perfil y cuenta"
 topic: account.profile
-version: 2
+version: 3
 keywords:
     - ajustes
     - cambiar contraseña
@@ -38,3 +38,12 @@ página de inicio que su organización ha fijado para su rol.
 
 La forma más rápida de activar el modo oscuro es **Configuración** en la
 cabecera. Los detalles están en el tema **Interfaz y apariencia**.
+
+## Firma de correo
+
+En **Correo electrónico** guarda su firma para las respuestas que envía desde
+WorkDiary (respuesta a una nota de correo, respuesta en un ticket). Si el campo
+queda vacío, bajo la respuesta aparecen su nombre y la organización. El pie de
+correo de la organización (razón social, dirección, datos obligatorios) se
+añade automáticamente; lo gestiona la administración de la organización en los
+ajustes.

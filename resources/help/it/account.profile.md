@@ -1,7 +1,7 @@
 ---
 title: "Profilo e account"
 topic: account.profile
-version: 2
+version: 3
 keywords:
     - impostazioni
     - cambiare password
@@ -39,3 +39,12 @@ pagina iniziale impostata dalla sua organizzazione per il suo ruolo.
 Il modo più rapido per passare alla modalità scura è **Impostazioni**
 nell'intestazione. I dettagli sono nell'argomento **Interfaccia e
 visualizzazione**.
+
+## Firma e-mail
+
+In **E-mail** inserisce la Sua firma per le risposte inviate da WorkDiary
+(risposta a una nota e-mail, risposta in un ticket). Se il campo resta vuoto,
+sotto la risposta compaiono il Suo nome e l’organizzazione. Il piè di pagina
+e-mail dell’organizzazione (ragione sociale, indirizzo, dati obbligatori) segue
+automaticamente; lo gestisce l’amministrazione dell’organizzazione nelle
+impostazioni.

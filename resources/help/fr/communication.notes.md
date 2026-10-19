@@ -44,7 +44,8 @@ destinataires et objet sont préremplis, le message d’origine est cité, l’e
 passe par l’envoi d’e-mails de WorkDiary et la réponse est classée chez le
 client comme note sortante. Les réponses du destinataire reviennent par la
 boîte de réception. Une demande sur facture ouverte est considérée comme
-répondue avec la réponse.
+répondue avec la réponse. Votre signature e-mail du profil et le pied de page
+e-mail de l’organisation figurent sous la réponse.
 
 Lorsque la relève de la boîte aux lettres enregistre automatiquement une
 demande sur facture, la personne qui a créé la boîte reçoit la notification

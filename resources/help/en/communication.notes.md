@@ -63,7 +63,9 @@ its status are listed. **Reply** writes back directly from the note: recipients
 and subject are prefilled, the original message is quoted, the mail is sent
 through WorkDiary's mail delivery, and the reply is filed with the customer as
 an outbound note. Replies from the recipient arrive through the inbox mailbox
-again. An open invoice inquiry counts as answered with the reply.
+again. An open invoice inquiry counts as answered with the reply. Your e-mail
+signature from the profile and the organisation's e-mail footer appear below
+the reply.
 
 When the mailbox poll records an invoice inquiry automatically, the person who
 set up the mailbox receives the notification "E-mail received for a customer".

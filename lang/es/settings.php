@@ -62,6 +62,12 @@ return [
         'remote_shared_sessions' => 'Bandeja de mantenimiento remoto: sesiones por tarjeta de equipo',
         'notifications' => 'Notificaciones, tareas operativas, ventanas de mantenimiento, informes de problemas',
     ],
+    'communication' => [
+        'heading' => 'Comunicación',
+        'mail_footer' => 'Pie de correo',
+        'mail_footer_hint' => 'Aparece bajo las respuestas que su personal envía desde WorkDiary (notas, tickets), tras su firma: razón social, dirección, registro, datos obligatorios. Vacío: sin pie.',
+    ],
+
     'invoicing' => [
         'heading' => 'Valores predeterminados de facturación',
         'description' => 'Valores precargados al crear una nueva factura.',

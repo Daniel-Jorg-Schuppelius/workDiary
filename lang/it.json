@@ -10920,5 +10920,7 @@
     "Zonen ziehen, Wert prüfen, als Vorlage des Lieferanten speichern.": "Tracci le zone, verifichi il valore, salvi come modello del fornitore.",
     "Zum Beleg": "Al documento",
     "Keine Seitenbilder": "Nessuna immagine di pagina",
-    "Das Original konnte nicht gerendert werden.": "Impossibile eseguire il rendering dell’originale."
+    "Das Original konnte nicht gerendert werden.": "Impossibile eseguire il rendering dell’originale.",
+    "E-Mail-Signatur": "Firma e-mail",
+    "Steht unter Antworten aus WorkDiary (Notizen, Tickets). Leer: Ihr Name und die Organisation; die Fußzeile der Organisation folgt automatisch.": "Compare sotto le risposte inviate da WorkDiary (note, ticket). Vuoto: il Suo nome e l’organizzazione; il piè di pagina dell’organizzazione segue automaticamente."
 }
