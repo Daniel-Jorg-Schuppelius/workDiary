@@ -633,6 +633,8 @@ enum Permission: string implements HasLabel {
     case CustomerPortalAccessManage = 'customerPortal.access.manage';
         // Sichtbare Portalbereiche/Zeitdetails je Kunde konfigurieren + Zeiten veröffentlichen (MVP-511).
     case CustomerPortalVisibilityManage = 'customerPortal.visibility.manage';
+        // Portal in der Sicht eines Portalkontos ansehen (Phase 153, MVP-1229): nur lesend, Recht je Request geprüft.
+    case CustomerPortalPreview = 'customerPortal.preview';
         // Kundeneingänge aus dem Portal (MVP-1074/1075): lesen, bearbeiten, in die Fachakte übernehmen.
     case CustomerPortalIntakeView = 'customerPortal.intake.view';
     case CustomerPortalIntakeManage = 'customerPortal.intake.manage';

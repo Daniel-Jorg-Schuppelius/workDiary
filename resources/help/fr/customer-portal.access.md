@@ -1,8 +1,10 @@
 ---
 title: "Accès & sécurité"
 topic: customer-portal.access
-version: 5
+version: 6
 keywords:
+    - Changer le mot de passe
+    - Mot de passe initial
     - connexion
     - se connecter
     - mot de passe
@@ -37,6 +39,10 @@ Le mot de passe doit comporter au moins 12 caractères, avec majuscules et minus
 Si le lien a expiré, la page ne s'ouvre plus. Demandez alors à votre prestataire de vous renvoyer l'invitation.
 
 Si votre prestataire a réinitialisé votre accès, votre mot de passe précédent n'est plus valable et toutes les sessions de votre accès sont fermées. Vous recevez alors une nouvelle invitation avec l'objet « Votre accès au portail client de … » et définissez à nouveau votre mot de passe comme décrit ci-dessus. Un second facteur déjà configuré est conservé.
+
+### Mot de passe initial
+
+Si votre prestataire vous a remis un **mot de passe initial** en personne ou par téléphone, il n'y a pas d'e-mail d'invitation : connectez-vous avec votre e-mail et le mot de passe initial. Le portail vous conduit d'abord à la page **Changer le mot de passe** ; vous n'utilisez le portail qu'avec un mot de passe qui vous est propre. Si vous avez perdu le mot de passe initial, demandez-en un nouveau à votre prestataire : un mot de passe initial ne peut pas être réinitialisé via **Mot de passe oublié ?**.
 
 ## Se connecter
 
@@ -82,6 +88,16 @@ Vous modifiez vous-même votre e-mail de connexion :
 3. Ouvrez dans les 24 heures le lien de l'e-mail envoyé à la nouvelle adresse.
 
 Ce n'est qu'après le clic sur le lien que la nouvelle adresse devient votre e-mail de connexion ; l'ancienne adresse reçoit une information sur ce changement. D'ici là, vous vous connectez avec l'ancienne adresse, et le profil indique pour quelle adresse une confirmation est en attente et jusqu'à quand. Une nouvelle demande remplace celle en cours. Si la nouvelle adresse est déjà utilisée, aucun e-mail n'arrive ; le message du portail est identique dans tous les cas, afin que personne ne puisse tirer de conclusions sur d'autres comptes.
+
+## Changer le mot de passe
+
+Sous **Profil**, la section **Mot de passe** propose le bouton **Changer le mot de passe**.
+
+1. Saisissez votre mot de passe actuel sous **Mot de passe actuel**.
+2. Saisissez un mot de passe sous **Nouveau mot de passe** et répétez-le sous **Répéter le nouveau mot de passe**.
+3. Cliquez sur **Enregistrer le mot de passe**.
+
+Les mêmes règles s'appliquent au nouveau mot de passe que lors de l'activation de l'accès ; il doit être différent de l'actuel. Après l'enregistrement, vous restez connecté ; les connexions sur d'autres appareils sont fermées. Un second facteur configuré est conservé.
 
 ## Configurer l'authentification à deux facteurs
 

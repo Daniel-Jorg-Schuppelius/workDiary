@@ -740,6 +740,9 @@ return [
             'reactivated' => 'Portal access reactivated',
             'reset' => 'Portal access reset',
             'second_factor_reset' => 'Portal access second factor reset',
+            'created_with_start_password' => 'Portal access created with start password',
+            'start_password_issued' => 'New start password issued for portal access',
+            'password_changed' => 'Portal password changed',
         ],
         'profile' => [
             'email_change_requested' => 'Email change requested in portal',
@@ -1141,6 +1144,10 @@ return [
         'ticket_target_switched' => 'Zammad ticket target switched',
     ],
     'customer' => [
+        'portal_preview' => [
+            'started' => 'Customer portal preview started',
+            'ended' => 'Customer portal preview ended',
+        ],
         'design_profile_assigned' => 'Customer design profile assigned/changed',
         'peppolChecked' => 'Peppol registration checked',
     ],

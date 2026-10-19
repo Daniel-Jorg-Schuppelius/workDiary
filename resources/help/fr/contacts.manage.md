@@ -1,8 +1,11 @@
 ---
 title: "Clients & fournisseurs"
 topic: contacts.manage
-version: 7
+version: 8
 keywords:
+    - Aperçu en tant que client
+    - Mot de passe initial
+    - Créer un accès
     - fichier clients
     - base clients
     - données de base
@@ -97,6 +100,10 @@ mesure. Les zones visibles pour un accès sont définies par la configuration du
 portail du client.
 
 Si un contact a perdu toutes ses méthodes à deux facteurs et ses codes de récupération, **Réinitialiser le second facteur** supprime toutes les méthodes après une confirmation du mot de passe et une demande de confirmation, et ferme toutes les sessions. Le contact en est informé par e-mail et se connecte ensuite avec son mot de passe ; si votre organisation exige l’authentification à deux facteurs, il la configure à nouveau à ce moment-là. Vérifiez auparavant son identité, par exemple en le rappelant.
+
+**Créer un accès** crée un accès sans e-mail d'invitation, par exemple au téléphone ou en rendez-vous : après **Nom** et **E-mail**, la fiche client affiche une seule fois un **mot de passe initial** aléatoire. Remettez-le en personne ou par téléphone, jamais par e-mail ; le portail ne l'envoie pas et ne l'enregistre nulle part en clair. Jusqu'à la première connexion, l'accès affiche **Mot de passe initial en attente** ; à la première connexion, le contact doit définir son propre mot de passe. S'il l'a perdu, **Générer un mot de passe initial** en crée un nouveau (le mot de passe précédent cesse immédiatement d'être valable, toutes les sessions sont fermées). Les deux actions exigent une confirmation de votre mot de passe et sont journalisées.
+
+**Voir le portail** ouvre le portail client dans un nouvel onglet tel que ce contact le voit – avec ses zones, documents et factures – et aide pour des questions comme « Où trouver … ? ». L'aperçu est une simple vue : les actions sont verrouillées, les pages de sécurité et de mot de passe ne sont pas accessibles, et il ne compte pas comme une connexion du contact. Il se termine avec **Terminer l'aperçu** dans la barre jaune ou dans la fiche client, au plus tard après 60 minutes, et est journalisé avec début et fin. Il exige le droit **Voir le portail client en tant que client** ; sans accès, pas d'aperçu : créez-en d'abord un.
 
 ## Exemple pratique
 

@@ -740,6 +740,9 @@ return [
             'reactivated' => 'Portalzugang reaktiviert',
             'reset' => 'Portalzugang zurückgesetzt',
             'second_factor_reset' => 'Zweiter Faktor des Portalzugangs zurückgesetzt',
+            'created_with_start_password' => 'Portalzugang mit Startpasswort angelegt',
+            'start_password_issued' => 'Neues Startpasswort für Portalzugang erzeugt',
+            'password_changed' => 'Portal-Passwort geändert',
         ],
         'profile' => [
             'email_change_requested' => 'E-Mail-Änderung im Portal angefordert',
@@ -1141,6 +1144,10 @@ return [
         'ticket_target_switched' => 'Zammad-Ticketziel gewechselt',
     ],
     'customer' => [
+        'portal_preview' => [
+            'started' => 'Portalvorschau als Kunde gestartet',
+            'ended' => 'Portalvorschau als Kunde beendet',
+        ],
         'design_profile_assigned' => 'Kunden-Sonderdesign zugewiesen/geändert',
         'peppolChecked' => 'Peppol-Registrierung geprüft',
     ],

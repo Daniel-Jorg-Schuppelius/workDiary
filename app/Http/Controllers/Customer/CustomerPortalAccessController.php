@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Services\CustomerPortal\PortalAccessService;
+use App\Support\Auth\RecentAuthentication;
 use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -53,6 +54,61 @@ class CustomerPortalAccessController extends Controller {
 
         return redirect()->route('customers.show', ['customer' => $customer, '#' => 'portal-access'])
             ->with('success', __('Einladung an :email versendet.', ['email' => EmailHelper::normalize((string) $data['email'])]));
+    }
+
+    /**
+     * Dialog „Zugang anlegen“ (Phase 153, MVP-1232). Das Erzeugen verlangt eine
+     * frische Anmeldung (`reauth` auf dem POST); fehlt sie, bietet das Fragment
+     * zuerst die Bestätigung an, damit die Eingabe nicht verloren geht (E10).
+     */
+    public function createDirectDialog(Customer $customer, Request $request): View {
+        $this->authorizeManage($customer);
+
+        if (! RecentAuthentication::isRecent($request)) {
+            $request->session()->put('url.intended', route('customers.show', ['customer' => $customer, '#' => 'portal-access']));
+
+            return view('customers._portal_reauth_dialog', ['customer' => $customer]);
+        }
+
+        return view('customers._portal_create_dialog', [
+            'customer' => $customer,
+            'isDialog' => true,
+        ]);
+    }
+
+    /** Konto mit Startpasswort; das Passwort geht einmalig per Flash ins Panel (Muster API-Token). */
+    public function storeDirect(Customer $customer, Request $request): RedirectResponse {
+        $this->authorizeManage($customer);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:191'],
+            'email' => ['required', 'email', 'max:191'],
+        ]);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        $result = $this->service->createWithStartPassword($customer, $data['name'], $data['email'], $actor);
+
+        return redirect()->route('customers.show', ['customer' => $customer, '#' => 'portal-access'])
+            ->with('success', __('customer_portal.direct.flash', ['email' => $result['user']->email]))
+            ->with('portal_start_password', $result['password'])
+            ->with('portal_start_password_email', $result['user']->email);
+    }
+
+    /** Neues Startpasswort für ein nicht deaktiviertes Konto; Route verlangt Passwortbestätigung. */
+    public function issueStartPassword(Customer $customer, User $portalUser): RedirectResponse {
+        $this->authorizeManage($customer);
+        $this->assertBelongsToCustomer($customer, $portalUser);
+        abort_if($this->service->state($portalUser) === PortalAccessService::STATE_DEACTIVATED, 404);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        $password = $this->service->issueStartPassword($portalUser, $actor);
+
+        return redirect()->route('customers.show', ['customer' => $customer, '#' => 'portal-access'])
+            ->with('success', __('customer_portal.direct.reissue_flash', ['email' => $portalUser->email]))
+            ->with('portal_start_password', $password)
+            ->with('portal_start_password_email', $portalUser->email);
     }
 
     public function resend(Customer $customer, User $portalUser): RedirectResponse {

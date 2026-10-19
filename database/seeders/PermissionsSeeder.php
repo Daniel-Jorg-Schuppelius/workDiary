@@ -733,6 +733,7 @@ class PermissionsSeeder extends Seeder {
             // Portalzugänge der Kunden verwalten (MVP-510) + Sichtbarkeiten (MVP-511).
             PermissionEnum::CustomerPortalAccessManage,
             PermissionEnum::CustomerPortalVisibilityManage,
+            PermissionEnum::CustomerPortalPreview,
             PermissionEnum::ForeignCustomerViewAny,
             PermissionEnum::ForeignCustomerView,
             PermissionEnum::ForeignCustomerCreate,

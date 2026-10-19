@@ -590,6 +590,7 @@ return [
         'customerPortal.access' => 'Acceder al portal del cliente',
         'customerPortal.access.manage' => 'Gestionar los accesos al portal del cliente',
         'customerPortal.visibility.manage' => 'Configurar la visibilidad del portal del cliente',
+        'customerPortal.preview' => 'Ver el portal del cliente como cliente (vista previa)',
         'customerPortal.intake.view' => 'Ver entradas de clientes',
         'customerPortal.intake.manage' => 'Gestionar entradas de clientes (consultas, presupuesto, rechazo)',
         'customerPortal.intake.handover' => 'Transferir entradas de clientes al expediente operativo',

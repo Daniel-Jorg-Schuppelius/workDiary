@@ -16,6 +16,9 @@
     $portalCustomer = $portalUser?->customer;
     $portalVisibility = app(\App\Services\CustomerPortal\PortalVisibility::class);
     $portalAllows = fn (PortalCapability $cap): bool => $portalCustomer !== null && $portalVisibility->allows($portalCustomer, $cap);
+    // Vorschau als Kunde (Phase 153): Leiste statt Abmelden, Sicherheitsseiten ausgeblendet.
+    $portalPreview = app(\App\Services\CustomerPortal\PortalPreview::class);
+    $portalPreviewState = $portalPreview->activeState(request());
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -23,7 +26,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? __('Customer-Portal') }} | {{ config('app.name') }}</title>
+    <title>{{ $portalPreviewState !== null ? __('customer_portal.preview.title_prefix') . ' – ' : '' }}{{ $title ?? __('Customer-Portal') }} | {{ config('app.name') }}</title>
     @include('partials.font-bootstrap')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -35,6 +38,20 @@
         {{ __('Zum Inhalt springen') }}
     </a>
     <header class="bg-base-100 border-b border-base-300">
+        @if ($portalPreviewState !== null)
+            <div role="status" class="bg-warning text-warning-content">
+                <div class="max-w-5xl mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
+                    <span class="flex items-center gap-2">
+                        <x-icon name="visibility" />
+                        <span>{{ __('customer_portal.preview.banner', ['name' => $portalUser?->name, 'customer' => $portalCustomer?->name]) }} {{ __('customer_portal.preview.banner_until', ['time' => $portalPreview->expiresAt($portalPreviewState)->ftime()]) }}</span>
+                    </span>
+                    <form method="POST" action="{{ route('customer.preview.stop') }}">
+                        @csrf
+                        <x-button type="submit" tone="neutral" size="sm" icon="visibility_off"><span>{{ __('customer_portal.preview.stop') }}</span></x-button>
+                    </form>
+                </div>
+            </div>
+        @endif
         <div class="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
             <a href="{{ route('customer.dashboard') }}" class="flex items-center gap-2 font-semibold">
                 <x-icon name="support_agent" />
@@ -45,11 +62,13 @@
                     @php($portalHelpTopic = app(\App\Services\Help\HelpContextResolver::class)->currentTopicFor(request()))
                     <a href="{{ $portalHelpTopic !== null && str_starts_with($portalHelpTopic, 'customer-portal.') && app(\App\Http\Controllers\CustomerPortal\HelpController::class)->allowed($portalHelpTopic) ? route('customer.help.show', $portalHelpTopic) : route('customer.help.index') }}" class="hover:underline">{{ __('customer_help.nav') }}</a>
                     <a href="{{ route('customer.profile.show') }}" class="hover:underline">{{ __('Profil') }}</a>
-                    <a href="{{ route('customer.2fa.show') }}" class="hover:underline" title="{{ __('Zwei-Faktor-Authentifizierung') }}">{{ __('Sicherheit') }}</a>
-                    <form method="POST" action="{{ route('customer.logout') }}">
-                        @csrf
-                        <x-button type="submit" tone="ghost" size="sm" icon="logout"><span>{{ __('Abmelden') }}</span></x-button>
-                    </form>
+                    @if ($portalPreviewState === null)
+                        <a href="{{ route('customer.2fa.show') }}" class="hover:underline" title="{{ __('Zwei-Faktor-Authentifizierung') }}">{{ __('Sicherheit') }}</a>
+                        <form method="POST" action="{{ route('customer.logout') }}">
+                            @csrf
+                            <x-button type="submit" tone="ghost" size="sm" icon="logout"><span>{{ __('Abmelden') }}</span></x-button>
+                        </form>
+                    @endif
                 </div>
             @endif
         </div>

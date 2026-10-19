@@ -1,8 +1,10 @@
 ---
 title: "Acceso y seguridad"
 topic: customer-portal.access
-version: 5
+version: 6
 keywords:
+    - Cambiar contraseña
+    - Contraseña inicial
     - inicio de sesión
     - iniciar sesión
     - contraseña
@@ -37,6 +39,10 @@ La contraseña debe tener al menos 12 caracteres y contener mayúsculas y minús
 Si el enlace ha caducado, la página ya no se abre. En ese caso, pida a su proveedor que le envíe de nuevo la invitación.
 
 Si su proveedor ha restablecido su acceso, su contraseña anterior deja de ser válida y se cierran todas las sesiones de su acceso. Recibirá entonces una nueva invitación con el asunto «Su acceso al portal de clientes de …» y establecerá de nuevo su contraseña como se describe arriba. Un segundo factor ya configurado se mantiene.
+
+### Contraseña inicial
+
+Si su proveedor le ha entregado una **contraseña inicial** en persona o por teléfono, no hay correo de invitación: inicie sesión con su correo electrónico y la contraseña inicial. El portal le lleva primero a la página **Cambiar contraseña**; solo con una contraseña propia puede usar el portal. Si ha perdido la contraseña inicial, pida una nueva a su proveedor: una contraseña inicial no se puede restablecer mediante **¿Olvidó su contraseña?**.
 
 ## Iniciar sesión
 
@@ -82,6 +88,16 @@ El correo de inicio de sesión lo cambia usted mismo:
 3. En un plazo de 24 horas, abra el enlace del correo enviado a la nueva dirección.
 
 Solo después de hacer clic en el enlace la nueva dirección pasa a ser su correo de inicio de sesión; la dirección anterior recibe una información sobre el cambio. Hasta entonces inicia sesión con la dirección anterior, y el perfil muestra para qué dirección hay una confirmación pendiente y hasta cuándo. Una nueva solicitud sustituye a la pendiente. Si la nueva dirección ya está en uso, no llega ningún correo; el mensaje del portal es siempre el mismo para que nadie pueda sacar conclusiones sobre otras cuentas.
+
+## Cambiar la contraseña
+
+En **Perfil**, la sección **Contraseña** ofrece el botón **Cambiar contraseña**.
+
+1. Introduzca su contraseña actual en **Contraseña actual**.
+2. Introduzca una contraseña en **Nueva contraseña** y repítala en **Repetir la nueva contraseña**.
+3. Haga clic en **Guardar contraseña**.
+
+Para la nueva contraseña rigen las mismas reglas que al activar el acceso; debe ser distinta de la actual. Tras guardar sigue con la sesión iniciada; las sesiones en otros dispositivos finalizan. Un segundo factor configurado se mantiene.
 
 ## Configurar la autenticación de dos factores
 

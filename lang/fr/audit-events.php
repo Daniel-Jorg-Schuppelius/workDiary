@@ -740,6 +740,9 @@ return [
             'reactivated' => 'Accès au portail réactivé',
             'reset' => 'Accès au portail réinitialisé',
             'second_factor_reset' => 'Second facteur de l’accès au portail réinitialisé',
+            'created_with_start_password' => 'Accès au portail créé avec mot de passe initial',
+            'start_password_issued' => 'Nouveau mot de passe initial généré pour l’accès au portail',
+            'password_changed' => 'Mot de passe du portail modifié',
         ],
         'profile' => [
             'email_change_requested' => 'Changement d’e-mail demandé dans le portail',
@@ -1141,6 +1144,10 @@ return [
         'ticket_target_switched' => 'Cible de tickets Zammad changée',
     ],
     'customer' => [
+        'portal_preview' => [
+            'started' => 'Aperçu du portail en tant que client démarré',
+            'ended' => 'Aperçu du portail en tant que client terminé',
+        ],
         'design_profile_assigned' => 'Design spécifique du client attribué/modifié',
         'peppolChecked' => 'Enregistrement Peppol vérifié',
     ],

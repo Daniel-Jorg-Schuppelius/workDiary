@@ -11,6 +11,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Platform\User;
+use App\Services\CustomerPortal\PortalPreview;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,6 +27,11 @@ class RequireTwoFactorSetup {
         // Die Prioritätsliste zieht `auth:customer` vor die Instanz im Web-Stapel; ohne
         // Parameter gilt deshalb der aktive Guard, sonst greifen für Portalkonten die internen Ausnahmen.
         $guard ??= Auth::getDefaultDriver();
+        // Vorschau als Kunde (Phase 153): die Pflicht gilt dem Portalkonto; die
+        // Mitarbeiterin hat ihre eigene erfüllt, die 2FA-Seiten sind dort gesperrt.
+        if ($request->attributes->has(PortalPreview::REQUEST_ATTRIBUTE)) {
+            return $next($request);
+        }
         $user = Auth::guard($guard)->user();
         $isCustomer = $guard === 'customer';
         $setupRoute = $isCustomer ? 'customer.2fa.show' : 'account.2fa.show';
@@ -62,6 +68,8 @@ class RequireTwoFactorSetup {
             return $request->routeIs('customer.2fa.*')
                 || $request->routeIs('customer.two-factor.*')
                 || $request->routeIs('customer.password.confirm', 'customer.password.confirm.store')
+                // Pflichtwechsel nach Startpasswort kommt vor der 2FA-Einrichtung (MVP-1233).
+                || $request->routeIs('customer.password.change', 'customer.password.change.update')
                 || $request->routeIs('customer.logout');
         }
 

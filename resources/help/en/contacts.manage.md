@@ -1,8 +1,11 @@
 ---
 title: "Customers & suppliers"
 topic: contacts.manage
-version: 7
+version: 8
 keywords:
+    - Preview as customer
+    - Start password
+    - Create access
     - customer master data
     - supplier master data
     - add customer
@@ -90,6 +93,10 @@ blocks sign-in, **Reactivate** lifts this again. Which areas an access can see
 is determined by the customer's portal configuration.
 
 If a contact has lost all two-factor methods and recovery codes, **Reset second factor** removes all methods after a password confirmation and a confirmation prompt and ends all sessions. The contact receives an email about it and then signs in with their password; if your organization requires two-factor authentication, they set it up again at that point. Verify their identity beforehand, for example by calling them back.
+
+**Create access** creates an access without an invitation email, for example on the phone or in a meeting: after **Name** and **Email**, the customer record shows a random **start password** once. Hand it over in person or by phone, never by email; the portal does not send it and stores it nowhere in plain text. Until the first login the access shows **Start password pending**; at the first login the contact must set their own password. If they lost the start password, **Generate start password** creates a new one (the previous password stops working immediately, all sessions end). Both require a password confirmation from you and are logged.
+
+**View portal** opens the customer portal in a new tab the way this contact sees it – with their areas, documents and invoices – and helps with questions like "Where do I find …?". The preview is a view only: actions are locked, security and password pages are not reachable, and it does not count as a login of the contact. It ends with **End preview** in the yellow bar or in the customer record, after 60 minutes at the latest, and is logged with start and end. It requires the permission **View the customer portal as a customer**; without an access there is no preview – create one first.
 
 ## Practical example
 

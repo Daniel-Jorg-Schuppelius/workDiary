@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Middleware\{AssignRequestId, AuthenticateScim, EnforceMaintenanceMode, EnforceSupportImpersonation, EnforceTenantStatus, EnsureNewSystemAccess, EnsureValidLicense, ForcePasswordChange, HandleDatabaseUnavailable, PrepareInstaller, RedirectIfNotInstalled, RememberListUrl, RequireTwoFactorSetup, RequiresFeature, SecurityHeaders, SetLocale, SetOrganizationContext};
+use App\Http\Middleware\{ApplyPortalPreview, AssignRequestId, AuthenticateScim, EnforceMaintenanceMode, EnforcePortalPreview, EnforceSupportImpersonation, EnforceTenantStatus, EnsureNewSystemAccess, EnsureValidLicense, ForcePasswordChange, HandleDatabaseUnavailable, PrepareInstaller, RedirectIfNotInstalled, RememberListUrl, RequireTwoFactorSetup, RequiresFeature, SecurityHeaders, SetLocale, SetOrganizationContext};
 use App\Legacy\Http\Middleware\{EnsureLegacyAccess, EnsureLegacyCallcenterAuthenticated, EnsureLegacyWriteAllowed};
 use App\Support\DatabaseHealth;
 use Illuminate\Database\QueryException;
@@ -137,6 +137,11 @@ return Application::configure(basePath: dirname(__DIR__))
             // Support-Impersonation (Rang 64): Sperrliste + Scope-Grenzen,
             // Ablauf/Widerruf der Freigabe beendet die Sitzung sofort.
             EnforceSupportImpersonation::class,
+            // Vorschau als Kunde (Phase 153): Teil 1 setzt das Portalkonto per
+            // Prioritätsliste vor auth:customer, Teil 2 erzwingt nach dem
+            // Org-Kontext Recht, Organisation, Nur-Lesen und Sperrliste.
+            ApplyPortalPreview::class,
+            EnforcePortalPreview::class,
             // Optionale IP-Allowlist für Plattform-Admins in admin.*-Routen
             // (Feature 096, MVP-446); leer = aus.
             \App\Http\Middleware\EnforcePlatformAdminIpAllowlist::class,
@@ -279,6 +284,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // läuft per Priority-Liste vor SubstituteBindings, der Auth-Status
         // ist also bereits verfügbar, wenn wir die Org auflösen.
         $middleware->prependToPriorityList(SubstituteBindings::class, SetOrganizationContext::class);
+        // Die Vorschau als Kunde muss das Portalkonto gesetzt haben, bevor
+        // auth:customer prüft — vor jeder Authenticate-Middleware.
+        $middleware->prependToPriorityList(\Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class, ApplyPortalPreview::class);
         $middleware->alias([
             'legacy.callcenter.auth' => EnsureLegacyCallcenterAuthenticated::class,
             'legacy.write' => EnsureLegacyWriteAllowed::class,

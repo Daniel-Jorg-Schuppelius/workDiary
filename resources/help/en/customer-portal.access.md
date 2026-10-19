@@ -1,8 +1,10 @@
 ---
 title: "Access & Security"
 topic: customer-portal.access
-version: 5
+version: 6
 keywords:
+    - Change password
+    - Start password
     - login
     - sign in
     - password
@@ -37,6 +39,10 @@ The password must be at least 12 characters long and contain upper- and lower-ca
 If the link has expired, the page can no longer be opened. In that case ask your contractor to send you the invitation again.
 
 If your contractor has reset your access, your previous password no longer works and all sessions of your access are ended. You then receive a new invitation with the subject “Your access to the … customer portal” and set your password again as described above. A second factor you have set up remains in place.
+
+### Start password
+
+If your contractor handed you a **start password** in person or by phone, there is no invitation email: sign in with your email and the start password. The portal then takes you to the **Change password** page first; you can only use the portal with a password of your own. If you lost the start password, ask your contractor for a new one – a start password cannot be reset via **Forgot password?**.
 
 ## Signing in
 
@@ -81,6 +87,16 @@ You change your login email yourself:
 3. Within 24 hours, open the link in the email sent to the new address.
 
 Only after you click the link does the new address become your login email; the previous address receives a notice about the change. Until then you sign in with the previous address, and the profile shows for which address a confirmation is pending and until when. A new request replaces the pending one. If the new address is already in use, no email arrives; the message in the portal is the same in every case so that nobody can draw conclusions about other accounts.
+
+## Changing your password
+
+Under **Profile**, the **Password** section offers the button **Change password**.
+
+1. Enter your current password under **Current password**.
+2. Enter a password under **New password** and repeat it under **Repeat new password**.
+3. Click **Save password**.
+
+The same rules apply to the new password as when activating your access; it must differ from the current one. After saving you stay signed in, logins on other devices are ended. A second factor that has been set up remains in place.
 
 ## Setting up two-factor authentication
 

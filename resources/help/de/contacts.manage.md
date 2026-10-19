@@ -1,8 +1,11 @@
 ---
 title: "Kunden & Lieferanten"
 topic: contacts.manage
-version: 7
+version: 8
 keywords:
+    - Vorschau als Kunde
+    - Startpasswort
+    - Zugang anlegen
     - Kundenstamm
     - Kundendaten
     - Stammdaten
@@ -94,6 +97,10 @@ wieder auf. Welche Bereiche ein Zugang sieht, legt die Portal-Konfiguration
 des Kunden fest.
 
 Hat ein Kontakt alle Zwei-Faktor-Methoden und Recovery-Codes verloren, entfernt **Zweiten Faktor zurücksetzen** nach einer Passwortbestätigung und einer Rückfrage alle Methoden und beendet alle Sitzungen. Der Kontakt erhält dazu eine E-Mail und meldet sich danach mit seinem Passwort an; verlangt Ihre Organisation Zwei-Faktor-Authentifizierung, richtet er sie dabei neu ein. Prüfen Sie vorher seine Identität, etwa durch einen Rückruf.
+
+**Zugang anlegen** legt einen Zugang ohne Einladungs-E-Mail an, etwa am Telefon oder im Gespräch: Nach **Name** und **E-Mail** zeigt die Kundenakte einmalig ein zufälliges **Startpasswort**. Übergeben Sie es persönlich oder telefonisch, nie per E-Mail; das Portal versendet es nicht und speichert es nirgends im Klartext. Der Zugang steht bis zur ersten Anmeldung auf **Startpasswort ausstehend**; bei der ersten Anmeldung muss der Kontakt ein eigenes Passwort festlegen. Hat er das Startpasswort verloren, erzeugt **Startpasswort erzeugen** ein neues (das bisherige Passwort gilt sofort nicht mehr, alle Sitzungen enden). Beides verlangt eine Passwortbestätigung von Ihnen und wird protokolliert.
+
+**Portal ansehen** öffnet das Kundenportal in einem neuen Tab so, wie dieser Kontakt es sieht – mit seinen Bereichen, Dokumenten und Rechnungen – und hilft bei Fragen wie „Wo finde ich …?“. Die Vorschau ist eine reine Ansicht: Aktionen sind gesperrt, Sicherheits- und Passwortseiten nicht erreichbar, und sie gilt nicht als Anmeldung des Kontakts. Sie endet mit **Vorschau beenden** in der gelben Leiste oder in der Kundenakte, spätestens nach 60 Minuten, und wird mit Beginn und Ende protokolliert. Dafür braucht es das Recht **Kundenportal in der Sicht eines Kunden ansehen**; ohne Zugang gibt es keine Vorschau – legen Sie zuerst einen an.
 
 ## Beispiel aus der Praxis
 

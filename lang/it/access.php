@@ -590,6 +590,7 @@ return [
         'customerPortal.access' => 'Accedi al portale clienti',
         'customerPortal.access.manage' => 'Gestisci gli accessi al portale clienti',
         'customerPortal.visibility.manage' => 'Configura la visibilità del portale clienti',
+        'customerPortal.preview' => 'Visualizzare il portale clienti come cliente (anteprima)',
         'customerPortal.intake.view' => 'Visualizzare le richieste dei clienti',
         'customerPortal.intake.manage' => 'Gestire le richieste dei clienti (domande, preventivo, rifiuto)',
         'customerPortal.intake.handover' => 'Trasferire le richieste dei clienti nella pratica operativa',

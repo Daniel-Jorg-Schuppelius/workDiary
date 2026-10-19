@@ -1,8 +1,10 @@
 ---
 title: "Zugang & Sicherheit"
 topic: customer-portal.access
-version: 5
+version: 6
 keywords:
+    - Passwort ändern
+    - Startpasswort
     - Anmeldung Kundenportal
     - Login
     - Passwort
@@ -37,6 +39,10 @@ Das Passwort muss mindestens 12 Zeichen lang sein und Groß- und Kleinbuchstaben
 Ist der Link abgelaufen, lässt sich die Seite nicht mehr öffnen. Bitten Sie dann Ihren Auftragnehmer, Ihnen die Einladung erneut zu senden.
 
 Hat Ihr Auftragnehmer Ihren Zugang zurückgesetzt, gilt Ihr bisheriges Passwort nicht mehr, und alle Anmeldungen Ihres Zugangs sind beendet. Sie erhalten dann eine neue Einladung mit dem Betreff „Ihr Zugang zum Kundenportal von …“ und legen Ihr Passwort wie oben beschrieben neu fest. Ein eingerichteter zweiter Faktor bleibt bestehen.
+
+### Startpasswort
+
+Hat Ihr Auftragnehmer Ihnen ein **Startpasswort** persönlich oder telefonisch übergeben, gibt es keine Einladungs-E-Mail: Melden Sie sich mit Ihrer E-Mail und dem Startpasswort an. Das Portal führt Sie dann zuerst auf die Seite **Passwort ändern**; erst mit einem eigenen Passwort nutzen Sie das Portal. Haben Sie das Startpasswort verloren, bitten Sie Ihren Auftragnehmer um ein neues – ein Startpasswort lässt sich nicht über **Passwort vergessen?** zurücksetzen.
 
 ## Anmelden
 
@@ -81,6 +87,16 @@ Ihre Anmelde-E-Mail ändern Sie selbst:
 3. Öffnen Sie innerhalb von 24 Stunden den Link in der E-Mail, die an die neue Adresse geht.
 
 Erst nach dem Klick auf den Link ist die neue Adresse Ihre Anmelde-E-Mail; die bisherige Adresse erhält eine Information über die Änderung. Bis dahin melden Sie sich mit der bisherigen Adresse an, und das Profil zeigt, für welche Adresse eine Bestätigung aussteht und bis wann. Eine neue Anfrage ersetzt die offene. Ist die neue Adresse schon vergeben, kommt keine E-Mail an; die Meldung im Portal lautet in jedem Fall gleich, damit niemand Rückschlüsse auf fremde Konten ziehen kann.
+
+## Passwort ändern
+
+Unter **Profil** finden Sie im Abschnitt **Passwort** den Knopf **Passwort ändern**.
+
+1. Geben Sie unter **Bisheriges Passwort** Ihr aktuelles Passwort ein.
+2. Geben Sie unter **Neues Passwort** ein Passwort ein und wiederholen Sie es unter **Neues Passwort wiederholen**.
+3. Klicken Sie auf **Passwort speichern**.
+
+Für das neue Passwort gelten dieselben Regeln wie beim Aktivieren des Zugangs; es muss sich vom bisherigen unterscheiden. Nach dem Speichern bleiben Sie angemeldet, Anmeldungen auf anderen Geräten werden beendet. Ein eingerichteter zweiter Faktor bleibt bestehen.
 
 ## Zwei-Faktor-Authentifizierung einrichten
 

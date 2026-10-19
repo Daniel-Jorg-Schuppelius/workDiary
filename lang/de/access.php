@@ -625,6 +625,7 @@ return [
         'customerPortal.access' => 'Kundenportal betreten',
         'customerPortal.access.manage' => 'Kundenportal-Zugänge verwalten',
         'customerPortal.visibility.manage' => 'Kundenportal-Sichtbarkeiten konfigurieren',
+        'customerPortal.preview' => 'Kundenportal in der Sicht eines Kunden ansehen (Vorschau)',
         'customerPortal.intake.view' => 'Kundeneingänge einsehen',
         'customerPortal.intake.manage' => 'Kundeneingänge bearbeiten (Rückfragen, Angebot, Ablehnung)',
         'customerPortal.intake.handover' => 'Kundeneingänge in die Fachakte übernehmen',

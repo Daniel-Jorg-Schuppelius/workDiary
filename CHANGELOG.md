@@ -10,6 +10,25 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Kundenportal: Vorschau als Kunde und Zugang mit Startpasswort (Phase 153,
+  MVP-1229–1234, Feature 167). In der Kundenakte öffnet „Portal ansehen“ das
+  Kundenportal in einem neuen Tab in der Sicht eines Portalkontos (Recht
+  `customerPortal.preview`, Standard wie die Portalzugangsverwaltung). Die
+  Vorschau ist eine Sicht, keine Anmeldung: Das Konto wird je Request per
+  `setUser()` gesetzt (kein Login-Ereignis, keine Kundensitzung, Sitzungszeile
+  bleibt beim Mitarbeitenden), jede Schreibmethode antwortet 403, Seiten mit
+  Anmeldemitteln sind auch lesend gesperrt, „Abmelden“ beendet nur die Vorschau;
+  sie endet nach 60 Minuten, bei Logout, Org-Wechsel, Rechteverlust,
+  Deaktivierung oder Passwortwechsel des Kontos, nie verschachtelt mit einer
+  Support-Sitzung; Audit `customer.portal_preview.started/ended` mit Grund und
+  Dauer. „Zugang anlegen“ erzeugt ein Konto mit zufälligem Startpasswort (drei
+  Vierergruppen ohne verwechselbare Zeichen), einmal angezeigt, nie per Mail
+  oder Log, nach Passwortbestätigung; Zustand „Startpasswort ausstehend“ bis zum
+  Pflichtwechsel bei der ersten Anmeldung, „Startpasswort erzeugen“ für
+  bestehende Konten. Neu im Portal: „Passwort ändern“ im Profil; die
+  Passwortwechsel-Pflicht kennt jetzt Portalkonten (bisher landeten sie auf der
+  internen Seite). Texte, Rechte-, Audit-Labels und Hilfe ×5, Tests.
+
 - Rechnungseingang: Zuordnung korrigieren, Sammelaktion ohne gefährlichen
   Standard, Sammelkontakt sichtbar, Partei aus dem Buchhaltungsprogramm
   (Phase 152, MVP-1222–1228). Die Sammelaktion verlangt eine Wahl, kennt „Neu

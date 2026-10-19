@@ -27,6 +27,17 @@
             </x-detail-grid>
         </div>
 
+        @unless (app(\App\Services\CustomerPortal\PortalPreview::class)->isActive(request()))
+            {{-- Passwort ändern (Phase 153, MVP-1233); in der Vorschau als Kunde gesperrt. --}}
+            <div class="border border-base-300 bg-base-100 rounded p-4">
+                <p class="font-semibold">{{ __('customer_portal.password_change.profile_heading') }}</p>
+                <p class="mt-1 text-sm text-muted">{{ __('customer_portal.password_change.profile_intro') }}</p>
+                <div class="mt-3 flex justify-end">
+                    <x-button :href="route('customer.password.change')" tone="ghost" icon="password"><span>{{ __('customer_portal.password_change.profile_link') }}</span></x-button>
+                </div>
+            </div>
+        @endunless
+
         <div class="border border-base-300 bg-base-100 rounded p-4">
             <p class="font-semibold">{{ __('E-Mail-Adresse ändern') }}</p>
             <p class="mt-1 text-sm text-muted">

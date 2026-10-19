@@ -1,8 +1,11 @@
 ---
 title: "Clienti & fornitori"
 topic: contacts.manage
-version: 7
+version: 8
 keywords:
+    - Anteprima come cliente
+    - Password iniziale
+    - Crea accesso
     - anagrafica clienti
     - anagrafica fornitori
     - creare un cliente
@@ -93,6 +96,10 @@ blocco. Le aree visibili per un accesso sono stabilite dalla configurazione
 del portale del cliente.
 
 Se un contatto ha perso tutti i metodi a due fattori e i codici di recupero, **Reimposta il secondo fattore** rimuove tutti i metodi dopo una conferma della password e una richiesta di conferma e termina tutte le sessioni. Il contatto riceve un’e-mail al riguardo e accede poi con la propria password; se la Sua organizzazione richiede l’autenticazione a due fattori, la configura nuovamente in quel momento. Verifichi prima la sua identità, ad esempio richiamandolo.
+
+**Crea accesso** crea un accesso senza e-mail di invito, ad esempio al telefono o in un colloquio: dopo **Nome** ed **E-mail** la scheda cliente mostra una sola volta una **password iniziale** casuale. La consegni di persona o per telefono, mai per e-mail; il portale non la invia e non la salva da nessuna parte in chiaro. Fino al primo accesso l'accesso mostra **Password iniziale in sospeso**; al primo accesso il contatto deve impostare una propria password. Se l'ha persa, **Genera password iniziale** ne crea una nuova (la password precedente non è più valida da subito, tutte le sessioni terminano). Entrambe le azioni richiedono una conferma della Sua password e vengono registrate.
+
+**Visualizza portale** apre il portale clienti in una nuova scheda così come lo vede questo contatto – con le sue aree, i documenti e le fatture – e aiuta con domande come «Dove trovo …?». L'anteprima è solo una visualizzazione: le azioni sono bloccate, le pagine di sicurezza e password non sono raggiungibili e non conta come accesso del contatto. Termina con **Termina anteprima** nella barra gialla o nella scheda cliente, al più tardi dopo 60 minuti, e viene registrata con inizio e fine. Richiede il permesso **Visualizzare il portale clienti come cliente**; senza un accesso non c'è anteprima: ne crei prima uno.
 
 ## Esempio pratico
 

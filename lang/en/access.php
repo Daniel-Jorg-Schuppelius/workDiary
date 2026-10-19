@@ -625,6 +625,7 @@ return [
         'customerPortal.access' => 'Access customer portal',
         'customerPortal.access.manage' => 'Manage customer portal access',
         'customerPortal.visibility.manage' => 'Configure customer portal visibility',
+        'customerPortal.preview' => 'View the customer portal as a customer (preview)',
         'customerPortal.intake.view' => 'View customer intakes',
         'customerPortal.intake.manage' => 'Manage customer intakes (queries, quote, rejection)',
         'customerPortal.intake.handover' => 'Hand over customer intakes to the operational record',

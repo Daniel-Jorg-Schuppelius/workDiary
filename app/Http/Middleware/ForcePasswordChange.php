@@ -10,6 +10,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\CustomerPortal\PortalPreview;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,15 +29,30 @@ class ForcePasswordChange {
         'locale.update',
     ];
 
+    /**
+     * Portalkonten (Phase 153, MVP-1233): Pflichtwechsel nach einem
+     * Startpasswort führt auf die Portal-Seite, nie auf die interne.
+     */
+    private const CUSTOMER_ALLOWED_ROUTES = [
+        'customer.password.change',
+        'customer.password.change.update',
+        'customer.logout',
+    ];
+
     public function handle(Request $request, Closure $next): Response {
         $user = Auth::user();
 
         if (! $user || empty($user->must_change_password)) {
             return $next($request);
         }
+        // Vorschau als Kunde: die Pflicht gilt dem Portalkonto, nicht der Mitarbeiterin dahinter.
+        if ($request->attributes->has(PortalPreview::REQUEST_ATTRIBUTE)) {
+            return $next($request);
+        }
 
+        $isCustomer = $user->isCustomer();
         $routeName = optional($request->route())->getName();
-        if ($routeName && in_array($routeName, self::ALLOWED_ROUTES, true)) {
+        if ($routeName && in_array($routeName, $isCustomer ? self::CUSTOMER_ALLOWED_ROUTES : self::ALLOWED_ROUTES, true)) {
             return $next($request);
         }
 
@@ -47,7 +63,7 @@ class ForcePasswordChange {
             ], 423);
         }
 
-        return redirect()->route('account.password.edit')
+        return redirect()->route($isCustomer ? 'customer.password.change' : 'account.password.edit')
             ->with('warning', __('Bitte legen Sie zuerst ein neues Passwort fest.'));
     }
 }

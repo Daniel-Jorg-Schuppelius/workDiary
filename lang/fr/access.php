@@ -590,6 +590,7 @@ return [
         'customerPortal.access' => 'Accéder au portail client',
         'customerPortal.access.manage' => 'Gérer les accès au portail client',
         'customerPortal.visibility.manage' => 'Configurer la visibilité du portail client',
+        'customerPortal.preview' => 'Voir le portail client en tant que client (aperçu)',
         'customerPortal.intake.view' => 'Consulter les demandes clients',
         'customerPortal.intake.manage' => 'Traiter les demandes clients (questions, devis, refus)',
         'customerPortal.intake.handover' => 'Transférer les demandes clients vers le dossier opérationnel',

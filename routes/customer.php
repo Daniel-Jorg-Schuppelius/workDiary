@@ -20,6 +20,9 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:login')->name('login.attempt');
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+    // Vorschau als Kunde beenden (Phase 153, MVP-1229): ohne auth:customer, damit das Ende auch
+    // nach Ablauf oder Deaktivierung des Kontos erreichbar bleibt; CSRF über den Web-Stack.
+    Route::post('/vorschau-beenden', [\App\Http\Controllers\Customer\CustomerPortalPreviewController::class, 'stop'])->name('preview.stop');
 
     // Einladungs-Annahme (MVP-510): einmaliger, befristeter Link zur
     // Passwortvergabe — bewusst ohne Session/Guard, neutral bei Fehlern.
@@ -250,6 +253,11 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
         // Wie intern (ProfileController::update): Adresswechsel nur mit frischer Anmeldung.
         Route::post('/profile/email', [\App\Http\Controllers\CustomerPortal\ProfileController::class, 'requestEmailChange'])
             ->middleware(['throttle:6,1', 'reauth:customer'])->name('profile.email.request');
+
+        // Passwort ändern (Phase 153, MVP-1233): freiwillig aus dem Profil und als Pflicht nach einem Startpasswort.
+        Route::get('/passwort-aendern', [\App\Http\Controllers\CustomerPortal\PasswordController::class, 'edit'])->name('password.change');
+        Route::post('/passwort-aendern', [\App\Http\Controllers\CustomerPortal\PasswordController::class, 'update'])
+            ->middleware('throttle:6,1')->name('password.change.update');
 
         // Passwortbestätigung vor Anmeldemittel-Änderungen — Ziel von `reauth:customer`.
         Route::get('/passwort-bestaetigen', [\App\Http\Controllers\Auth\ConfirmPasswordController::class, 'show'])->name('password.confirm');

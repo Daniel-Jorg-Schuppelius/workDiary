@@ -42,6 +42,12 @@ class PortalAccessService {
 
     public const STATE_DEACTIVATED = 'deactivated';
 
+    /** Konto mit Startpasswort (Phase 153, MVP-1232): bis zum Pflichtwechsel bei der ersten Anmeldung. */
+    public const STATE_PROVISIONAL = 'provisional';
+
+    /** Zeichen eines Startpassworts: diktier- und abtippbar, ohne 0/O, 1/l/I. */
+    private const START_PASSWORD_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+
     /** Gültigkeit eines Einladungs-Links in Tagen. */
     public const INVITE_TTL_DAYS = 7;
 
@@ -59,20 +65,7 @@ class PortalAccessService {
      *                             Grund — keine Konten-Enumeration)
      */
     public function invite(Customer $customer, string $name, string $email, User $actor): User {
-        // Der Sammelkunde (MVP-1109) steht für viele Einmalkunden.
-        if ($customer->is_collective) {
-            throw ValidationException::withMessages(['email' => (string) __('Der Sammelkunde erhält keinen Portalzugang.')]);
-        }
-        $email = EmailHelper::normalize($email);
-
-        // users.email ist global eindeutig. Die Antwort verrät nicht, ob die
-        // Adresse intern, in einer anderen Organisation oder bereits als
-        // Portalkonto existiert.
-        if (User::query()->withoutGlobalScopes()->whereRaw('LOWER(email) = ?', [$email])->exists()) {
-            throw ValidationException::withMessages([
-                'email' => (string) __('Für diese E-Mail-Adresse kann kein Portalzugang erstellt werden.'),
-            ]);
-        }
+        $email = $this->assertCreatable($customer, $email);
 
         $user = User::query()->create([
             'organization_id' => $customer->organization_id,
@@ -87,6 +80,76 @@ class PortalAccessService {
         $this->issueInvite($user, $actor, 'portal.access.invited');
 
         return $user;
+    }
+
+    /**
+     * Legt einen Zugang mit Startpasswort an (Phase 153, MVP-1232): für die
+     * persönliche oder telefonische Übergabe, ohne E-Mail-Verkehr. Das Passwort
+     * verlässt die Methode nur als Rückgabe an den Aufrufer, der es einmal
+     * anzeigt; bei der ersten Anmeldung erzwingt `must_change_password` ein
+     * eigenes Passwort. Die Adresse bleibt unbestätigt (E11).
+     *
+     * @return array{user: User, password: string}
+     *
+     * @throws ValidationException wie {@see invite()}
+     */
+    public function createWithStartPassword(Customer $customer, string $name, string $email, User $actor): array {
+        $email = $this->assertCreatable($customer, $email);
+        $password = $this->generateStartPassword();
+
+        $user = User::query()->make([
+            'organization_id' => $customer->organization_id,
+            'customer_id' => $customer->id,
+            'name' => trim($name),
+            'email' => $email,
+            'password' => Hash::make($password),
+            'is_new_system' => true,
+            'must_change_password' => true,
+        ]);
+        $user->save();
+
+        $user->audit('portal.access.created_with_start_password', ['by' => (int) $actor->id]);
+
+        return ['user' => $user, 'password' => $password];
+    }
+
+    /**
+     * Neues Startpasswort für ein bestehendes Konto: das bisherige Passwort und
+     * eine offene Einladung gelten nicht mehr, alle Sitzungen enden, der
+     * nächste Login erzwingt den Wechsel. Zwei-Faktor-Methoden bleiben.
+     */
+    public function issueStartPassword(User $portalUser, User $actor): string {
+        $this->assertPortalUser($portalUser);
+        $password = $this->generateStartPassword();
+
+        $portalUser->forceFill([
+            'password' => Hash::make($password),
+            'must_change_password' => true,
+            'portal_invite_token_hash' => null,
+            'portal_invite_expires_at' => null,
+        ])->save();
+        $this->sessions->invalidateAll($portalUser);
+
+        $portalUser->audit('portal.access.start_password_issued', ['by' => (int) $actor->id]);
+
+        return $password;
+    }
+
+    /**
+     * Passwortwechsel des angemeldeten Kunden (MVP-1233): hebt den Pflichtwechsel
+     * auf und beendet die Sitzungen anderer Geräte; die eigene bleibt.
+     */
+    public function changePassword(User $portalUser, string $password, ?string $keepSessionId): void {
+        $this->assertPortalUser($portalUser);
+
+        $portalUser->forceFill([
+            'password' => Hash::make($password),
+            'is_new_system' => true,
+            'must_change_password' => false,
+        ])->save();
+        $this->sessions->invalidateOthers($portalUser, $keepSessionId);
+
+        $portalUser->audit('portal.access.password_changed', []);
     }
 
     /** Erneuert Token/Ablauf und versendet die Einladung erneut. */
@@ -270,7 +333,49 @@ class PortalAccessService {
                 : self::STATE_INVITED;
         }
 
+        if ($portalUser->must_change_password) {
+            return self::STATE_PROVISIONAL;
+        }
+
         return self::STATE_ACTIVE;
+    }
+
+    /**
+     * Gemeinsame Prüfungen vor dem Anlegen eines Kontos: kein Sammelkunde,
+     * Adresse global eindeutig — die Meldung verrät nicht, ob die Adresse
+     * intern, in einer anderen Organisation oder als Portalkonto existiert.
+     *
+     * @throws ValidationException
+     */
+    private function assertCreatable(Customer $customer, string $email): string {
+        // Der Sammelkunde (MVP-1109) steht für viele Einmalkunden.
+        if ($customer->is_collective) {
+            throw ValidationException::withMessages(['email' => (string) __('Der Sammelkunde erhält keinen Portalzugang.')]);
+        }
+        $email = EmailHelper::normalize($email);
+
+        if (User::query()->withoutGlobalScopes()->whereRaw('LOWER(email) = ?', [$email])->exists()) {
+            throw ValidationException::withMessages([
+                'email' => (string) __('Für diese E-Mail-Adresse kann kein Portalzugang erstellt werden.'),
+            ]);
+        }
+
+        return $email;
+    }
+
+    /** Drei Vierergruppen aus dem eindeutigen Alphabet (E8), z. B. `k7Rp-3Wmd-Qz9t`. */
+    private function generateStartPassword(): string {
+        $last = mb_strlen(self::START_PASSWORD_ALPHABET) - 1;
+        $groups = [];
+        for ($g = 0; $g < 3; $g++) {
+            $chunk = '';
+            for ($i = 0; $i < 4; $i++) {
+                $chunk .= self::START_PASSWORD_ALPHABET[random_int(0, $last)];
+            }
+            $groups[] = $chunk;
+        }
+
+        return implode('-', $groups);
     }
 
     /**

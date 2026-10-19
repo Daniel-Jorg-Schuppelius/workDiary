@@ -1,8 +1,10 @@
 ---
 title: "Accesso e sicurezza"
 topic: customer-portal.access
-version: 5
+version: 6
 keywords:
+    - Cambia password
+    - Password iniziale
     - accesso al portale
     - login
     - password
@@ -37,6 +39,10 @@ La password deve avere almeno 12 caratteri e contenere lettere maiuscole e minus
 Se il link è scaduto, la pagina non si apre più. Chieda allora al Suo fornitore di inviarLe di nuovo l'invito.
 
 Se il Suo fornitore ha reimpostato il Suo accesso, la password precedente non è più valida e tutte le sessioni del Suo accesso vengono chiuse. Riceve quindi un nuovo invito con l'oggetto «Il suo accesso al portale clienti di …» e imposta di nuovo la password come descritto sopra. Un secondo fattore già configurato resta attivo.
+
+### Password iniziale
+
+Se il Suo fornitore Le ha consegnato una **password iniziale** di persona o per telefono, non c'è alcuna e-mail di invito: acceda con la Sua e-mail e la password iniziale. Il portale La porta prima alla pagina **Cambia password**; solo con una password personale può usare il portale. Se ha perso la password iniziale, ne chieda una nuova al Suo fornitore: una password iniziale non può essere reimpostata tramite **Password dimenticata?**.
 
 ## Accedere
 
@@ -81,6 +87,16 @@ L'e-mail di accesso la modifica Lei stesso:
 3. Entro 24 ore apra il link contenuto nell'e-mail inviata al nuovo indirizzo.
 
 Solo dopo il clic sul link il nuovo indirizzo diventa la Sua e-mail di accesso; il vecchio indirizzo riceve un'informazione sulla modifica. Fino ad allora accede con il vecchio indirizzo, e il profilo mostra per quale indirizzo è in sospeso una conferma e fino a quando. Una nuova richiesta sostituisce quella in sospeso. Se il nuovo indirizzo è già in uso, non arriva alcuna e-mail; il messaggio del portale è sempre lo stesso, affinché nessuno possa trarre conclusioni su altri account.
+
+## Cambiare la password
+
+In **Profilo**, la sezione **Password** offre il pulsante **Cambia password**.
+
+1. Inserisca la password attuale in **Password attuale**.
+2. Inserisca una password in **Nuova password** e la ripeta in **Ripeti la nuova password**.
+3. Clicchi su **Salva password**.
+
+Per la nuova password valgono le stesse regole dell'attivazione dell'accesso; deve essere diversa da quella attuale. Dopo il salvataggio resta connesso; gli accessi su altri dispositivi vengono terminati. Un secondo fattore configurato resta attivo.
 
 ## Configurare l'autenticazione a due fattori
 

@@ -1483,6 +1483,12 @@ Route::middleware('auth')->group(function () {
         Route::post('customers/{customer}/portal-access/{portalUser}/reactivate', [\App\Http\Controllers\Customer\CustomerPortalAccessController::class, 'reactivate'])->name('customers.portal-access.reactivate');
         Route::post('customers/{customer}/portal-access/{portalUser}/reset', [\App\Http\Controllers\Customer\CustomerPortalAccessController::class, 'reset'])->name('customers.portal-access.reset');
         Route::post('customers/{customer}/portal-access/{portalUser}/reset-second-factor', [\App\Http\Controllers\Customer\CustomerPortalAccessController::class, 'resetSecondFactor'])->middleware('reauth')->name('customers.portal-access.reset-second-factor');
+        // Zugang mit Startpasswort (Phase 153, MVP-1232): Erzeugen verlangt Passwortbestätigung wie der 2FA-Reset.
+        Route::get('customers/{customer}/portal-access/create-direct', [\App\Http\Controllers\Customer\CustomerPortalAccessController::class, 'createDirectDialog'])->name('customers.portal-access.create-direct');
+        Route::post('customers/{customer}/portal-access/direct', [\App\Http\Controllers\Customer\CustomerPortalAccessController::class, 'storeDirect'])->middleware('reauth')->name('customers.portal-access.store-direct');
+        Route::post('customers/{customer}/portal-access/{portalUser}/start-password', [\App\Http\Controllers\Customer\CustomerPortalAccessController::class, 'issueStartPassword'])->middleware('reauth')->name('customers.portal-access.start-password');
+        // Vorschau als Kunde (Phase 153, MVP-1229): Sicht eines Portalkontos, nur lesend; Ende über customer.preview.stop.
+        Route::post('customers/{customer}/portal-preview/{portalUser}', [\App\Http\Controllers\Customer\CustomerPortalPreviewController::class, 'start'])->name('customers.portal-preview.start');
         // Portal-Sichtbarkeiten je Kunde (MVP-511).
         Route::put('customers/{customer}/portal-visibility', [\App\Http\Controllers\Customer\CustomerPortalVisibilityController::class, 'update'])->name('customers.portal-visibility.update');
 
