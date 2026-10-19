@@ -172,7 +172,7 @@
 
     <x-form-group-collapsible :legend="__('Weitere Ansprechpartner')" icon="group" tone="ghost"
                               :fields="['contact_persons']"
-                              :values="[old('contact_persons', $customer?->contact_persons ?? [])]">
+                              :values="\App\Services\Stammdaten\ContactPersons::normalizeAll(old('contact_persons', $customer?->contact_persons ?? []))">
         <x-contact-persons-editor :persons="$customer?->contact_persons ?? []" />
     </x-form-group-collapsible>
 

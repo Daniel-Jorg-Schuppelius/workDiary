@@ -109,6 +109,16 @@ class SevDeskClient {
         return $this->rows($body);
     }
 
+    /** @return array<int, mixed> GET /Contact?parent[id]= — Personen einer Organisation (sevDesk-Filter „contacts with id as a parent organisation“). */
+    public function contactsByParent(string $contactId): array {
+        $body = (array) $this->guard(
+            $this->api()->requestResponse('get', $this->baseUrl . '/Contact', ['query' => ['parent[id]' => $contactId, 'parent[objectName]' => 'Contact', 'depth' => 1, 'limit' => 25]]),
+            '/Contact',
+        );
+
+        return $this->rows($body);
+    }
+
     /** GET /Contact/Factory/getNextCustomerNumber — nächste freie Kundennummer, wenn sevDesk vergibt (MVP-1131). */
     public function nextCustomerNumber(): string {
         $body = $this->guard(

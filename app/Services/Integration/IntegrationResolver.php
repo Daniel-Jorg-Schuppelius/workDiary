@@ -20,6 +20,7 @@ use App\Models\Platform\Organization;
 use App\Models\Supplier\Supplier;
 use App\Services\Integration\Match\{EntityMatcher, MatchProfile};
 use App\Services\Stammdaten\ContactDetailsWriter;
+use BackedEnum;
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Database\Eloquent\Model;
@@ -196,7 +197,8 @@ class IntegrationResolver {
 
     /**
      * Felder, in denen sich der lokale Datensatz vom gemappten Remote-Satz
-     * unterscheidet (nur nicht-leere Remote-Werte zählen).
+     * unterscheidet (nur nicht-leere Remote-Werte zählen). Enum-Casts zählen
+     * mit ihrem Wert, Listen (contact_persons) als Ganzes.
      *
      * @param  array<string, mixed>  $attributes
      * @return list<string>
@@ -208,10 +210,21 @@ class IntegrationResolver {
             if (! in_array($field, $fillable, true)) {
                 continue;
             }
-            if ($value === null || $value === '') {
+            if ($value === null || $value === '' || $value === []) {
                 continue;
             }
-            if ((string) $model->getAttribute($field) !== (string) $value) {
+            $local = $model->getAttribute($field);
+            if ($local instanceof BackedEnum) {
+                $local = $local->value;
+            }
+            if (is_array($value) || is_array($local)) {
+                if ($local != $value) {
+                    $diff[] = $field;
+                }
+
+                continue;
+            }
+            if ((string) $local !== (string) $value) {
                 $diff[] = $field;
             }
         }

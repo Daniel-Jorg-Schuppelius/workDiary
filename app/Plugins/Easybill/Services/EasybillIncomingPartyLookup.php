@@ -20,6 +20,7 @@ use App\Plugins\PluginManager;
 use App\Services\Invoicing\Contracts\IncomingPartyLookup;
 use App\Services\Invoicing\Dto\IncomingPartyCandidate;
 use App\Services\Invoicing\EInvoice\IncomingInvoiceParties;
+use App\Services\Stammdaten\ContactPersons;
 
 /**
  * Kontaktsuche in easybill (Phase 152, MVP-1226): `GET /customers` filtert
@@ -82,6 +83,14 @@ final class EasybillIncomingPartyLookup implements IncomingPartyLookup {
             zip: self::text($row['zip_code'] ?? null),
             city: self::text($row['city'] ?? null),
             country: self::text($row['country'] ?? null),
+            // Der easybill-Kunde trägt Anrede (1 Herr, 2 Frau), Titel und Namen des Ansprechpartners selbst.
+            contact: ContactPersons::fromExternal(
+                match ((int) ($row['salutation'] ?? 0)) { 1 => 'mr', 2 => 'ms', default => null },
+                self::text($row['first_name'] ?? null),
+                self::text($row['last_name'] ?? null),
+                self::text($row['title'] ?? null),
+                primary: true,
+            ),
         );
     }
 

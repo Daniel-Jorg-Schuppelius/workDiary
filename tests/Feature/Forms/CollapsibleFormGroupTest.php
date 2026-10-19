@@ -79,7 +79,8 @@ class CollapsibleFormGroupTest extends TestCase {
     }
 
     public function test_edit_form_opens_groups_with_values_and_keeps_them_in_the_dom(): void {
-        $customer = Customer::factory()->create(['organization_id' => $this->org->id, 'bank_iban' => 'DE02120300000000202051', 'comment' => 'Stammkunde']);
+        $customer = Customer::factory()->create(['organization_id' => $this->org->id, 'bank_iban' => 'DE02120300000000202051', 'comment' => 'Stammkunde',
+            'contact_persons' => [['first_name' => 'Ralph', 'last_name' => 'Hartig'], ['first_name' => 'Birgit', 'last_name' => 'Hartig']]]);
 
         $html = $this->actingAs($this->admin)->get(route('customers.edit', [$customer, 'dialog' => 1]))->assertOk()->getContent();
         $groups = $this->formGroups($html);
@@ -87,6 +88,9 @@ class CollapsibleFormGroupTest extends TestCase {
         $this->assertTrue($this->formGroup($groups, __('Bankverbindung'))['open']);
         $this->assertTrue($this->formGroup($groups, __('Portal & Sonstiges'))['open']);
         $this->assertStringContainsString('DE02120300000000202051', $html);
+        // Jede Person der Liste zählt als Angabe, nicht die Liste als Ganzes.
+        $this->assertTrue($this->formGroup($groups, __('Weitere Ansprechpartner'))['open']);
+        $this->assertStringContainsString(trans_choice('fields.collapsible.filled', 2, ['count' => 2]), $html);
         // Zugeklappte Gruppe: Feld bleibt im DOM und wird mitgesendet.
         $this->assertFalse($this->formGroup($groups, __('Anfahrt (Übersteuerung)'))['open']);
         $this->assertStringContainsString('name="travel_settings[mode]"', $html);

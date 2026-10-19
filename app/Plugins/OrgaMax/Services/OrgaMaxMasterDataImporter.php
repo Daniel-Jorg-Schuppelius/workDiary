@@ -52,7 +52,7 @@ class OrgaMaxMasterDataImporter {
                 'address_zip' => (string) ($address?->getZipCode() ?? ''),
                 'address_city' => (string) ($address?->getCity() ?? ''),
                 'external_number' => (string) ($customer->getNumber() ?? ''),
-            ];
+            ] + OrgaMaxContactPersons::mapped($customer);
         });
     }
 
@@ -72,7 +72,7 @@ class OrgaMaxMasterDataImporter {
                 'address_zip' => (string) ($address?->getZipCode() ?? ''),
                 'address_city' => (string) ($address?->getCity() ?? ''),
                 'external_number' => (string) ($supplier->getNumber() ?? ''),
-            ];
+            ] + OrgaMaxContactPersons::mapped($supplier);
         });
     }
 

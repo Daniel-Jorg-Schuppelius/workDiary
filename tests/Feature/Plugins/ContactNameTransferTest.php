@@ -32,7 +32,8 @@ use Tests\TestCase;
 /**
  * Phase 142 (MVP-1138): Anrede, Titel und Namensteile des Ansprechpartners
  * gehen an Lexoffice, easybill und orgaMAX; der Lexoffice-Abgleich bringt sie
- * zurück.
+ * zurück und füllt den leeren Hauptansprechpartner (primär, sonst der erste;
+ * Privatperson selbst).
  */
 class ContactNameTransferTest extends TestCase {
     use OrgaMaxApiResponses;
@@ -119,6 +120,75 @@ class ContactNameTransferTest extends TestCase {
         $this->assertSame('Heinz', $person['middle_names'] ?? null);
         $this->assertSame('Berg', $person['last_name'] ?? null);
         $this->assertSame('Prof. Karl Heinz Berg', $person['name'] ?? null);
+    }
+
+    public function test_lexoffice_sync_fills_the_empty_main_contact_from_the_primary_person(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Stimmgerecht oHG', 'company' => 'Stimmgerecht oHG', 'contact_name' => null]);
+        $this->link($customer, 'lex-2');
+        $this->fakeContacts([[
+            'id' => 'lex-2',
+            'company' => ['name' => 'Stimmgerecht oHG', 'contactPersons' => [
+                ['salutation' => 'Herr', 'firstName' => 'Ralph', 'lastName' => 'Hartig', 'emailAddress' => 'r@stimmgerecht.test'],
+                ['salutation' => 'Frau', 'firstName' => 'Birgit', 'lastName' => 'Hartig', 'emailAddress' => 'b@stimmgerecht.test', 'primary' => true],
+            ]],
+        ]]);
+
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LexofficeWins, 'k');
+
+        $customer->refresh();
+        $this->assertSame([ContactSalutation::Ms, 'Birgit', 'Hartig', 'Birgit Hartig'], [$customer->contact_salutation, $customer->contact_first_name, $customer->contact_last_name, $customer->contact_name]);
+        $this->assertCount(2, $customer->contact_persons ?? []);
+    }
+
+    public function test_lexoffice_sync_takes_the_first_person_without_a_primary_flag_and_keeps_a_maintained_main_contact(): void {
+        $empty = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Leer GmbH', 'company' => 'Leer GmbH', 'contact_name' => null]);
+        $maintained = $this->company();
+        $this->link($empty, 'lex-3');
+        $this->link($maintained, 'lex-4');
+        $persons = [
+            ['salutation' => 'Herr', 'firstName' => 'Ralph', 'lastName' => 'Hartig'],
+            ['salutation' => 'Frau', 'firstName' => 'Birgit', 'lastName' => 'Hartig'],
+        ];
+        $this->fakeContacts([
+            ['id' => 'lex-3', 'company' => ['name' => 'Leer GmbH', 'contactPersons' => $persons]],
+            ['id' => 'lex-4', 'company' => ['name' => 'ACME GmbH', 'contactPersons' => $persons]],
+        ]);
+
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LexofficeWins, 'k');
+
+        $this->assertSame(['Ralph', 'Hartig'], [$empty->refresh()->contact_first_name, $empty->contact_last_name]);
+        $this->assertSame(['Anna', 'Müller'], [$maintained->refresh()->contact_first_name, $maintained->contact_last_name]);
+        $this->assertCount(2, $maintained->contact_persons ?? []);
+    }
+
+    public function test_lexoffice_private_person_becomes_the_main_contact_on_creation(): void {
+        $this->fakeContacts([[
+            'id' => 'lex-5',
+            'person' => ['salutation' => 'Frau', 'firstName' => 'Maria Luise', 'lastName' => 'Mustermann'],
+            'emailAddresses' => ['business' => ['maria@mustermann.test']],
+        ]]);
+
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins, 'k', createMissingLocal: true);
+
+        $customer = Customer::query()->where('name', 'Maria Luise Mustermann')->sole();
+        $this->assertNull($customer->company);
+        $this->assertSame([ContactSalutation::Ms, 'Maria', 'Luise', 'Mustermann'], [$customer->contact_salutation, $customer->contact_first_name, $customer->contact_middle_names, $customer->contact_last_name]);
+    }
+
+    private function link(Customer $customer, string $externalId): void {
+        ExternalReference::create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => LexofficePlugin::ID,
+            'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+            'referenceable_type' => $customer->getMorphClass(),
+            'referenceable_id' => $customer->id,
+            'external_id' => $externalId,
+        ]);
+    }
+
+    /** @param  list<array<string, mixed>>  $items */
+    private function fakeContacts(array $items): void {
+        FakePluginHttp::fake(['https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['content' => $items, 'totalPages' => 1])]);
     }
 
     public function test_easybill_customer_gets_the_contact_name_fields(): void {

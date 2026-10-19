@@ -22,7 +22,7 @@ use App\Modules\ModuleRegistry;
 use App\Services\Integration\Profiles\{CustomerMatchProfile, SupplierMatchProfile};
 use App\Services\Invoicing\Contracts\IncomingPartyLookup;
 use App\Services\Invoicing\Dto\IncomingPartyCandidate;
-use App\Services\Stammdaten\{ContactIdentity, ContactNumberAdopter};
+use App\Services\Stammdaten\{ContactIdentity, ContactNumberAdopter, ContactPersons};
 use CommonToolkit\Helper\Data\{BankHelper, StringHelper};
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\{Cache, Log};
@@ -86,7 +86,8 @@ class IncomingInvoiceParties {
     }
 
     /**
-     * @param  array<string, mixed>  $fields  name, vat_id, email, street, zip, city, country, iban
+     * @param  array<string, mixed>  $fields  name, vat_id, email, street, zip, city, country, iban; aus dem
+     *                                        Buchhaltungsprogramm dazu contact (Hauptansprechpartner) und contact_persons
      */
     public function create(Organization $organization, bool $isPurchase, array $fields): Supplier|Customer {
         $name = trim((string) ($fields['name'] ?? ''));
@@ -94,6 +95,7 @@ class IncomingInvoiceParties {
             throw new RuntimeException((string) __('Ohne Namen lässt sich keine Partei anlegen.'));
         }
         $iban = trim((string) ($fields['iban'] ?? ''));
+        $persons = ContactPersons::normalizeAll(is_array($fields['contact_persons'] ?? null) ? $fields['contact_persons'] : []);
         $mapped = array_filter([
             'name' => $name,
             'company' => $name,
@@ -104,11 +106,16 @@ class IncomingInvoiceParties {
             'address_city' => $fields['city'] ?? null,
             'country' => isset($fields['country']) && is_string($fields['country']) ? strtoupper(trim($fields['country'])) : null,
             'bank_iban' => $iban !== '' ? BankHelper::normalizeIBAN($iban) : null,
+            'contact_persons' => $persons !== [] ? $persons : null,
         ], static fn (mixed $value): bool => $value !== null && $value !== '');
         $profile = $isPurchase ? app(SupplierMatchProfile::class) : app(CustomerMatchProfile::class);
         $party = $profile->create($organization, $mapped);
         if (! $party instanceof Supplier && ! $party instanceof Customer) {
             throw new RuntimeException('Neuanlage lieferte keine Partei.');
+        }
+        $contact = is_array($fields['contact'] ?? null) ? ContactPersons::normalize($fields['contact']) : null;
+        if (ContactPersons::adoptPrimary($party, $contact)) {
+            $party->save();
         }
 
         return $party;
@@ -227,7 +234,8 @@ class IncomingInvoiceParties {
         if ($organization === null || ($fields['name'] === null && $fields['email'] === null)) {
             return $empty;
         }
-        $cacheKey = 'incoming-party-lookup:' . $incoming->id . ':' . ($incoming->updated_at?->getTimestamp() ?? 0);
+        // Versionsteil im Schlüssel: Kandidaten liegen serialisiert im Cache, ein älterer Stand kennt die Ansprechpartner-Felder nicht.
+        $cacheKey = 'incoming-party-lookup:2:' . $incoming->id . ':' . ($incoming->updated_at?->getTimestamp() ?? 0);
         if (! $fresh) {
             $cached = Cache::get($cacheKey);
             if (is_array($cached) && isset($cached['candidates'], $cached['sources'])) {

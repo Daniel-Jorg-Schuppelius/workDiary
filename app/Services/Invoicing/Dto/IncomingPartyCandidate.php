@@ -26,6 +26,10 @@ final class IncomingPartyCandidate {
         public readonly ?string $zip = null,
         public readonly ?string $city = null,
         public readonly ?string $country = null,
+        /** @var array<string, mixed>|null Hauptansprechpartner (`ContactPersons::normalize()`) */
+        public readonly ?array $contact = null,
+        /** @var list<array<string, mixed>> Ansprechpartner des Kontakts */
+        public readonly array $persons = [],
     ) {}
 
     /** Formularwert: Plugin und externe ID — die Stammdaten holt der Kern beim Übernehmen erneut (E4). */
@@ -48,9 +52,9 @@ final class IncomingPartyCandidate {
         return implode(' · ', $parts);
     }
 
-    /** @return array<string, string> Felder für die Neuanlage (nur gefüllte) */
+    /** @return array<string, mixed> Felder für die Neuanlage (nur gefüllte) */
     public function partyFields(): array {
-        return array_filter([
+        $fields = array_filter([
             'name' => $this->name,
             'vat_id' => $this->vatId,
             'email' => $this->email,
@@ -59,5 +63,13 @@ final class IncomingPartyCandidate {
             'city' => $this->city,
             'country' => $this->country,
         ], static fn (?string $value): bool => $value !== null && trim($value) !== '');
+        if ($this->contact !== null) {
+            $fields['contact'] = $this->contact;
+        }
+        if ($this->persons !== []) {
+            $fields['contact_persons'] = $this->persons;
+        }
+
+        return $fields;
     }
 }

@@ -185,6 +185,56 @@ class LexofficeMapper {
     }
 
     /**
+     * Ansprechpartner einer Lexoffice-Firma als Einträge für contact_persons:
+     * Anrede samt Titel steht in Lexoffice in einem Feld („Herr Dr.“), die
+     * weiteren Vornamen im Vornamen (MVP-1138); Einträge ohne Namen entfallen.
+     *
+     * @param  array<string, mixed>  $remote
+     * @return list<array<string, mixed>>
+     */
+    public static function contactPersonsFromRemote(array $remote): array {
+        $list = [];
+        foreach ((array) data_get($remote, 'company.contactPersons', []) as $p) {
+            if (! is_array($p) || trim(((string) ($p['firstName'] ?? '')) . ((string) ($p['lastName'] ?? ''))) === '') {
+                continue;
+            }
+            $entry = ContactPersons::fromExternal(
+                is_string($p['salutation'] ?? null) ? $p['salutation'] : null,
+                is_string($p['firstName'] ?? null) ? $p['firstName'] : null,
+                is_string($p['lastName'] ?? null) ? $p['lastName'] : null,
+                email: is_string($p['emailAddress'] ?? null) ? $p['emailAddress'] : null,
+                phone: is_string($p['phoneNumber'] ?? null) ? $p['phoneNumber'] : null,
+                primary: (bool) ($p['primary'] ?? false),
+            );
+            if ($entry !== null) {
+                $list[] = $entry;
+            }
+        }
+
+        return $list;
+    }
+
+    /**
+     * Die Person eines Lexoffice-Privatkontakts (`person`) als Hauptansprechpartner.
+     *
+     * @param  array<string, mixed>  $remote
+     * @return array<string, mixed>|null
+     */
+    public static function personFromRemote(array $remote): ?array {
+        $person = $remote['person'] ?? null;
+        if (! is_array($person) || trim(((string) ($person['firstName'] ?? '')) . ((string) ($person['lastName'] ?? ''))) === '') {
+            return null;
+        }
+
+        return ContactPersons::fromExternal(
+            is_string($person['salutation'] ?? null) ? $person['salutation'] : null,
+            is_string($person['firstName'] ?? null) ? $person['firstName'] : null,
+            is_string($person['lastName'] ?? null) ? $person['lastName'] : null,
+            primary: true,
+        );
+    }
+
+    /**
      * Anrede für Lexoffice (Freitext, höchstens 25 Zeichen): das deutsche
      * Anredewort, ein Titel dahinter („Herr Dr.“).
      */

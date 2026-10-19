@@ -10,6 +10,23 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Stammdaten: Hauptansprechpartner aus dem Buchhaltungsprogramm. Der
+  Lexoffice-Abgleich übernimmt neben der Liste der Ansprechpartner auch den
+  Hauptansprechpartner (Anrede, Titel, Vornamen, Nachname): den in Lexoffice
+  als primär markierten, sonst den ersten, bei einem Privatkontakt die Person
+  selbst — nur, solange er lokal leer ist; ein gepflegter bleibt. Kandidaten
+  aus dem Rechnungseingang tragen die Ansprechpartner aller vier Programme
+  (Lexoffice contactPersons/Person, easybill Anrede/Titel/Namen des Kunden,
+  sevDesk Personen der Organisation über `parent` und Privatperson, orgaMAX
+  contactPersons mit Hauptkontakt), die Übernahme legt die Partei damit an.
+  Der orgaMAX-Stammdatenimport führt den Hauptansprechpartner und die Liste
+  in Zuordnung, Konfliktprüfung und Anlage aus der Integrations-Inbox mit.
+  Dialog „Kunde bearbeiten“: das Badge an „Weitere Ansprechpartner“ zählt
+  jede Person, nicht die Liste als Ganzes. Gemeinsame Regel
+  `ContactPersons::fromExternal()`/`adoptPrimary()`, Tests. Anlass: Stimmgerecht
+  oHG kam aus Lexoffice mit zwei Ansprechpartnern, aber leerem
+  Hauptansprechpartner.
+
 - Änderungsverlauf an Kunde, Lieferant und Fremdkunde gekürzt: Die Liste
   zeigt acht Einträge, der Rest steht hinter „Weitere Einträge anzeigen“; ein
   generisches „Geändert“ derselben Person innerhalb einer Minute neben einem

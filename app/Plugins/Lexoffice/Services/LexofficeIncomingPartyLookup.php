@@ -81,6 +81,8 @@ final class LexofficeIncomingPartyLookup implements IncomingPartyLookup {
             zip: self::text($billing['zip'] ?? null),
             city: self::text($billing['city'] ?? null),
             country: self::text($billing['countryCode'] ?? null),
+            contact: $company === '' ? LexofficeMapper::personFromRemote($contact) : null,
+            persons: LexofficeMapper::contactPersonsFromRemote($contact),
         );
     }
 

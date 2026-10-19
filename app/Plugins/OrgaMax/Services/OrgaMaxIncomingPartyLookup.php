@@ -60,7 +60,8 @@ final class OrgaMaxIncomingPartyLookup implements IncomingPartyLookup {
                 if ($id === '' || $name === '') {
                     continue;
                 }
-                $candidates[$id] = new IncomingPartyCandidate(OrgaMaxPlugin::ID, $this->label(), $id, $name, self::text($row->getNumber()), self::text($row->getVatNumber()), self::text($row->getEmail()));
+                ['contact' => $contact, 'persons' => $persons] = OrgaMaxContactPersons::of($row);
+                $candidates[$id] = new IncomingPartyCandidate(OrgaMaxPlugin::ID, $this->label(), $id, $name, self::text($row->getNumber()), self::text($row->getVatNumber()), self::text($row->getEmail()), contact: $contact, persons: $persons);
             }
         } else {
             foreach ((new SuppliersEndpoint($client))->search($query)?->getValues() ?? [] as $row) {
@@ -69,7 +70,8 @@ final class OrgaMaxIncomingPartyLookup implements IncomingPartyLookup {
                 if ($id === '' || $name === '') {
                     continue;
                 }
-                $candidates[$id] = new IncomingPartyCandidate(OrgaMaxPlugin::ID, $this->label(), $id, $name, self::text($row->getNumber()), null, self::text($row->getEmail()));
+                ['contact' => $contact, 'persons' => $persons] = OrgaMaxContactPersons::of($row);
+                $candidates[$id] = new IncomingPartyCandidate(OrgaMaxPlugin::ID, $this->label(), $id, $name, self::text($row->getNumber()), null, self::text($row->getEmail()), contact: $contact, persons: $persons);
             }
         }
 

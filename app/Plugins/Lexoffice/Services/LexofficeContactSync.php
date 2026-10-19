@@ -22,7 +22,6 @@ use App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy;
 use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use App\Services\Stammdaten\{ContactNumberAdopter, ContactPersons};
-use CommonToolkit\Helper\Data\{PersonNameHelper, StringHelper};
 use CommonToolkit\ValueObjects\VatNumber;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use RuntimeException;
@@ -516,7 +515,9 @@ class LexofficeContactSync {
     }
 
     /**
-     * Übernimmt die Lexoffice-Ansprechpartner in das contact_persons-JSON.
+     * Übernimmt die Lexoffice-Ansprechpartner: die Liste einer Firma nach
+     * contact_persons, dazu den Hauptansprechpartner (primär, sonst der erste;
+     * bei einem Privatkontakt die Person selbst), solange er lokal leer ist.
      *
      * @param  array<string, mixed>  $remote
      */
@@ -524,35 +525,16 @@ class LexofficeContactSync {
         if (! ($record instanceof Customer) && ! ($record instanceof Supplier)) {
             return;
         }
-        $persons = (array) data_get($remote, 'company.contactPersons', []);
-        if ($persons === []) {
-            return;
-        }
-
-        // Anrede samt Titel steht in Lexoffice in einem Feld („Herr Dr.“), die
-        // weiteren Vornamen im Vornamen (MVP-1138).
-        $rows = [];
-        foreach ($persons as $p) {
-            if (! is_array($p) || trim(((string) ($p['firstName'] ?? '')) . ((string) ($p['lastName'] ?? ''))) === '') {
-                continue;
-            }
-            $salutation = PersonNameHelper::splitSalutation(is_string($p['salutation'] ?? null) ? $p['salutation'] : null);
-            $firstNames = explode(' ', StringHelper::normalizeWhitespace((string) ($p['firstName'] ?? '')), 2);
-            $rows[] = [
-                'salutation' => $salutation['salutation'],
-                'title' => $salutation['title'],
-                'first_name' => $firstNames[0],
-                'middle_names' => $firstNames[1] ?? null,
-                'last_name' => $p['lastName'] ?? null,
-                'email' => $p['emailAddress'] ?? null,
-                'phone' => $p['phoneNumber'] ?? null,
-                'primary' => (bool) ($p['primary'] ?? false),
-            ];
-        }
-        $list = ContactPersons::normalizeAll($rows);
-
+        $changed = false;
+        $list = LexofficeMapper::contactPersonsFromRemote($remote);
         if ($list !== []) {
             $record->contact_persons = $list;
+            $changed = true;
+        }
+        if (ContactPersons::adoptPrimary($record, LexofficeMapper::personFromRemote($remote))) {
+            $changed = true;
+        }
+        if ($changed) {
             $record->save();
         }
     }

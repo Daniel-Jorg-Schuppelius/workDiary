@@ -15,7 +15,7 @@ namespace App\Services\Stammdaten;
 use App\Enums\Stammdaten\ContactSalutation;
 use App\Models\Customer\Customer;
 use App\Models\Supplier\Supplier;
-use CommonToolkit\Helper\Data\PersonNameHelper;
+use CommonToolkit\Helper\Data\{PersonNameHelper, StringHelper};
 
 /**
  * Einträge der Liste weiterer Ansprechpartner (`contact_persons`, MVP-1137).
@@ -78,6 +78,73 @@ final class ContactPersons {
         }
 
         return $list;
+    }
+
+    /**
+     * Eintrag aus den Feldern eines Fremdsystems: Anrede als Text („Herr Dr.“,
+     * „Frau“) oder Enum-Wert, alle Vornamen in einem Feld (weitere Vornamen
+     * dahinter), ein getrennter Titel wird mit dem aus der Anrede zusammengeführt.
+     *
+     * @return array{salutation: ?string, title: ?string, first_name: ?string, middle_names: ?string, last_name: ?string, name: ?string, email: ?string, phone: ?string, primary: bool}|null
+     */
+    public static function fromExternal(
+        ?string $salutation,
+        ?string $firstNames,
+        ?string $lastName,
+        ?string $title = null,
+        ?string $email = null,
+        ?string $phone = null,
+        bool $primary = false,
+    ): ?array {
+        $names = explode(' ', StringHelper::normalizeWhitespace(trim((string) $firstNames)), 2);
+        $title = trim(((string) $title) . ' ' . ((string) PersonNameHelper::splitSalutation($salutation)['title']));
+
+        return self::normalize([
+            'salutation' => ContactSalutation::fromText($salutation)?->value,
+            'title' => $title !== '' ? $title : null,
+            'first_name' => $names[0] !== '' ? $names[0] : null,
+            'middle_names' => $names[1] ?? null,
+            'last_name' => $lastName,
+            'email' => $email,
+            'phone' => $phone,
+            'primary' => $primary,
+        ]);
+    }
+
+    /**
+     * Füllt den leeren Hauptansprechpartner einer Partei aus einem Fremdsystem:
+     * mit der übergebenen Person, sonst mit dem als primär markierten, sonst
+     * dem ersten Eintrag der Liste. Ein gepflegter Hauptansprechpartner bleibt,
+     * gespeichert wird nicht.
+     *
+     * @param  array<string, mixed>|null  $person  normalisierter Eintrag
+     */
+    public static function adoptPrimary(Customer|Supplier $party, ?array $person = null): bool {
+        if (trim((string) $party->contact_name) !== '' || array_filter([$party->contact_first_name, $party->contact_last_name]) !== []) {
+            return false;
+        }
+        $entry = $person;
+        if ($entry === null) {
+            $list = self::normalizeAll($party->contact_persons ?? []);
+            foreach ($list as $candidate) {
+                if ($candidate['primary']) {
+                    $entry = $candidate;
+                    break;
+                }
+            }
+            $entry ??= $list[0] ?? null;
+        }
+        if ($entry === null || trim((string) ($entry['name'] ?? '')) === '') {
+            return false;
+        }
+
+        $party->contact_salutation = ContactSalutation::tryFrom((string) ($entry['salutation'] ?? ''));
+        $party->contact_title = $entry['title'] ?? null;
+        $party->contact_first_name = $entry['first_name'] ?? null;
+        $party->contact_middle_names = $entry['middle_names'] ?? null;
+        $party->contact_last_name = $entry['last_name'] ?? null;
+
+        return true;
     }
 
     /**
