@@ -163,16 +163,32 @@ preselects “Not an invoice”, and reminders name the invoices concerned with 
 link. Administrators measure recognition with
 `incoming-invoices:measure-recognition` against the stored document texts.
 
-**Document templates:** Via “Template” on the document page you draw
-rectangles on the rendered document for invoice number, date, amounts, VAT ID
-and seller; the recognised value appears immediately. The template is saved
-with a fingerprint of the header and footer of the first page, so it matches
-every further document of the same supplier, on request the open ones right
-away. Every correction in “Enter values” learns as well: the entered value is
-located on the document and remembered as a zone; after the second matching
-hit a learned zone counts as confirmed and overrides the heuristics. Templates
-are listed under “Rules” and can be deleted there. Zones exist for PDF
-documents only.
+**Document templates:** Via “Template” on the document page you draw, per
+field, a rectangle over label and value on the rendered document (invoice
+number, date, due date, amounts, VAT ID). The label becomes the anchor: the
+value is read next to it, whichever page and height it is at, because totals
+blocks move with the number of line items. Without a label the zone stays at
+a fixed position. The rectangle stays as you drew it and moves to the found anchor when
+applied; switch the anchor off per zone if the position should stay fixed.
+Per zone you choose the scope (fixed, first, last or any page) and may add a
+line pattern for special cases (a regular expression on the text inside the
+rectangle, line by line; the first capture group is the value, for instance
+to pick one value out of a larger rectangle). The
+editor shows the first three pages and the last one. The trial run checks the
+drawn zones against the open documents of the same form without saving. The
+template’s supplier is assigned to every matched document and is the seller.
+The template is saved with a fingerprint of the header and footer of the
+first page; it fills invoices only, never reminders or delivery notes of the
+same sender, and only plausible values (no percentage as an amount, no date
+as a number). Every correction in “Enter values” learns as well: the entered
+value is located on the document and remembered as a zone together with its
+label; after the second matching hit a learned zone counts as confirmed and
+overrides the heuristics. The “Document templates” page (via “Rules”) lists
+all templates with fields, hits and the last matched document; there you
+rename, set the supplier, open the zone editor, start a trial run, merge
+duplicate templates and delete. Zones exist for PDF documents only. If a
+document has no invoice number at all, the order number stands in for it
+with a notice.
 
 **Correcting assignments and bulk action:** The bulk action requires a
 choice; “New from document data (per counterparty)” creates one master record

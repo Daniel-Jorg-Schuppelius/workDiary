@@ -3206,9 +3206,16 @@ Route::middleware('auth')->group(function () {
             Route::delete('regeln/absender/{rule}', [\App\Http\Controllers\Finance\IncomingInvoiceRuleController::class, 'destroySenderRule'])->name('rules.sender.destroy');
             Route::post('regeln/automation/{rule}/umschalten', [\App\Http\Controllers\Finance\IncomingInvoiceRuleController::class, 'toggleRule'])->name('rules.automation.toggle');
             Route::delete('regeln/automation/{rule}', [\App\Http\Controllers\Finance\IncomingInvoiceRuleController::class, 'destroyRule'])->name('rules.automation.destroy');
-            Route::delete('regeln/vorlagen/{template}', [\App\Http\Controllers\Finance\IncomingInvoiceRuleController::class, 'destroyTemplate'])->name('rules.template.destroy');
             // Vom Sammelkontakt auf eine echte Partei umhängen (Phase 152, MVP-1225).
             Route::post('regeln/sammelkontakt/umhaengen', [\App\Http\Controllers\Finance\IncomingInvoiceRuleController::class, 'promoteCollective'])->name('rules.collective.promote');
+            // Belegvorlagen verwalten (Phase 155, MVP-1253): Liste, Bearbeiten, Zusammenführen, Probelauf, Löschen.
+            Route::get('vorlagen', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'index'])->name('templates.index');
+            Route::get('vorlagen/{template}/bearbeiten', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'editForm'])->name('templates.edit');
+            Route::put('vorlagen/{template}', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'update'])->name('templates.update');
+            Route::get('vorlagen/{template}/zusammenfuehren', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'mergeForm'])->name('templates.merge.form');
+            Route::post('vorlagen/{template}/zusammenfuehren', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'merge'])->name('templates.merge');
+            Route::post('vorlagen/{template}/probelauf', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'trialFromList'])->name('templates.trial');
+            Route::delete('vorlagen/{template}', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'destroy'])->name('templates.destroy');
             Route::get('{incoming}/zuordnen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'assignForm'])->name('assign.form');
             Route::post('{incoming}/zuordnen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'assign'])->name('assign');
             Route::get('{incoming}/werte', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'valuesForm'])->name('values.form');
@@ -3222,10 +3229,11 @@ Route::middleware('auth')->group(function () {
             Route::post('{incoming}/einbehalte', [\App\Http\Controllers\Finance\IncomingRetentionController::class, 'store'])->name('retentions.store');
             Route::post('einbehalte/{retention}/freigeben', [\App\Http\Controllers\Finance\IncomingRetentionController::class, 'release'])->name('retentions.release');
             Route::delete('einbehalte/{retention}', [\App\Http\Controllers\Finance\IncomingRetentionController::class, 'destroy'])->name('retentions.destroy');
-            // Zonen-Editor und Belegvorlagen (Phase 151, MVP-1220).
+            // Zonen-Editor (Phase 151, MVP-1220; Anker, letzte Seite und Probelauf seit Phase 155).
             Route::get('{document}/vorlage', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'edit'])->name('template.edit');
             Route::get('{document}/vorlage/seite/{page}', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'page'])->whereNumber('page')->name('template.page');
             Route::post('{document}/vorlage/vorschau', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'preview'])->name('template.preview');
+            Route::post('{document}/vorlage/probelauf', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'trial'])->name('template.trial');
             Route::post('{document}/vorlage', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'store'])->name('template.store');
             Route::get('{document}/xml', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'xml'])->name('xml');
             Route::get('{document}', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'show'])->name('show');

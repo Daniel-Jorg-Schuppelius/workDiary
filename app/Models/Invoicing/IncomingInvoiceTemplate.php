@@ -21,7 +21,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Belegvorlage mit Zonen (Phase 151, MVP-1219): Fingerabdruck aus Kopf und Fuß
  * der ersten Seite plus Zonen je Feld (relativ zur Seitengröße). Gezeichnet im
  * Editor oder aus Korrekturen gelernt; eine gelernte Zone gilt erst nach dem
- * zweiten übereinstimmenden Treffer als bestätigt.
+ * zweiten übereinstimmenden Treffer als bestätigt. Seit Phase 155 trägt eine
+ * Zone optional `anchor`/`anchor_box` (Beschriftung, neben der der Wert steht),
+ * `scope` (page|first|last|any) und `pattern` (Zeilenmuster).
  *
  * @property int $id
  * @property int $organization_id
@@ -59,9 +61,9 @@ class IncomingInvoiceTemplate extends Model {
         return $this->belongsTo(Supplier::class);
     }
 
-    /** @return list<array<string, mixed>> */
+    /** @return list<array<string, mixed>> Zonen bekannter Felder; Bestandszonen entfallener Felder (seller_name) werden übergangen */
     public function zoneList(): array {
-        return array_values(array_filter((array) $this->zones, 'is_array'));
+        return array_values(array_filter((array) $this->zones, static fn (array $zone): bool => isset(\App\Services\Invoicing\Recognition\ZoneFields::FIELDS[(string) ($zone['field'] ?? '')])));
     }
 
     /** @return list<string> Felder, für die eine Zone existiert */

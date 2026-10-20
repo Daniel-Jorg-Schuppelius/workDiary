@@ -1048,6 +1048,11 @@ class IncomingEInvoiceService {
             ]);
         }
 
+        // Marktplatzrechnung ohne Rechnungsnummer: die Auftrags- bzw. Bestellnummer vertritt sie (MVP-1251, E9).
+        if ((($summary['extraction']['hints']['number'] ?? null) === 'order_reference') && ($summary['number'] ?? null) !== null) {
+            $notices[] = (string) __('Keine Rechnungsnummer im Beleg — die Auftrags- bzw. Bestellnummer :number vertritt sie, bitte am Original prüfen.', ['number' => (string) $summary['number']]);
+        }
+
         $sellerVat = self::normalizedVat($summary['seller_vat'] ?? null);
         $isDomestic = $sellerVat === '' || str_starts_with($sellerVat, 'DE');
         $gross = is_numeric($summary['gross'] ?? null) ? (float) $summary['gross'] : 0.0;
@@ -1281,6 +1286,12 @@ class IncomingEInvoiceService {
         ));
         $supplier = $vatIds === [] ? null : \App\Models\Supplier\Supplier::query()->withoutGlobalScopes()
             ->where('organization_id', $organization->id)->whereIn('vat_id', $vatIds)->first();
+        // Der Lieferant der getroffenen Belegvorlage gilt, wenn keine USt-IdNr. ihn nennt (Phase 155, E5).
+        $templateSupplierId = (int) ($result['template']['supplier_id'] ?? 0);
+        if ($supplier === null && $templateSupplierId > 0) {
+            $supplier = \App\Models\Supplier\Supplier::query()->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)->whereKey($templateSupplierId)->first();
+        }
 
         return ['extraction' => [], 'summary' => [
             'number' => $result['number'],
@@ -1311,7 +1322,7 @@ class IncomingEInvoiceService {
                 'confidence' => $result['confidence'] ?? null,
                 'warnings' => (array) ($result['warnings'] ?? []),
                 'sources' => (array) ($result['sources'] ?? []),
-                'hints' => array_filter(['issue_date' => $result['issued_on_hint'] ?? null]),
+                'hints' => array_filter(['issue_date' => $result['issued_on_hint'] ?? null, 'number' => $result['number_hint'] ?? null]),
                 'template' => $result['template'] ?? null,
             ],
             'reference_tokens' => array_values((array) ($result['reference_tokens'] ?? [])),
@@ -1349,7 +1360,7 @@ class IncomingEInvoiceService {
             'source_format' => $format,
             'found' => $found,
             'sources' => (array) ($result['sources'] ?? []),
-            'hints' => array_filter(['issue_date' => $result['issued_on_hint'] ?? null]),
+            'hints' => array_filter(['issue_date' => $result['issued_on_hint'] ?? null, 'number' => $result['number_hint'] ?? null]),
             'kind_hint' => $result['kind_hint'] ?? null,
             'reminder_for' => array_values((array) ($result['reminder_numbers'] ?? [])),
         ];
