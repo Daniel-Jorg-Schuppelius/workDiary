@@ -13,8 +13,7 @@
 
 @section('content')
 <div class="space-y-4">
-    <h1 class="text-xl font-semibold">{{ __('claims.portal_return.title') }}</h1>
-    <p class="text-sm text-muted">{{ __('claims.portal_return.intro') }}</p>
+    <x-page-toolbar :title="__('claims.portal_return.title')" :subtitle="__('claims.portal_return.intro')" />
 
     @if ($deliveries->isEmpty() && $assets->isEmpty())
         <x-empty-state framed icon="assignment_return" :title="__('claims.portal_return.empty')" />
@@ -61,8 +60,8 @@
         </x-card>
     @endif
 
-    <h2 class="text-lg font-semibold">{{ __('claims.portal_return.list.title') }}</h2>
-    <x-table>
+    <x-card :title="__('claims.portal_return.list.title')" icon="assignment_return" padding="p-0">
+    <x-table bare>
         <x-slot:head>
             <tr>
                 <x-table.th>{{ __('claims.portal_return.list.rma') }}</x-table.th>
@@ -75,7 +74,7 @@
             <tr>
                 <td class="font-mono">{{ $rma->rma_number }}</td>
                 <td>{{ $rma->claimCase?->number }} — {{ $rma->claimCase?->title }}</td>
-                <td>{{ $rma->status->label() }}</td>
+                <td><x-status-badge size="sm" outline>{{ $rma->status->label() }}</x-status-badge></td>
                 <td class="text-right">
                     @foreach ($rma->returnShipments as $shipment)
                         @if ($shipment->labelAttachment())
@@ -85,9 +84,10 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty :colspan="4" :title="__('claims.portal_return.list.empty')" />
+            <x-table.empty :colspan="4" icon="assignment_return" :title="__('claims.portal_return.list.empty')" compact />
         @endforelse
     </x-table>
+    </x-card>
     <x-pagination :paginator="$rmas" standing />
 </div>
 @endsection

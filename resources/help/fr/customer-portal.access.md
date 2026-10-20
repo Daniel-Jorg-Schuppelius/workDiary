@@ -1,7 +1,7 @@
 ---
 title: "Accès & sécurité"
 topic: customer-portal.access
-version: 6
+version: 7
 keywords:
     - Changer le mot de passe
     - Mot de passe initial
@@ -88,6 +88,10 @@ Vous modifiez vous-même votre e-mail de connexion :
 3. Ouvrez dans les 24 heures le lien de l'e-mail envoyé à la nouvelle adresse.
 
 Ce n'est qu'après le clic sur le lien que la nouvelle adresse devient votre e-mail de connexion ; l'ancienne adresse reçoit une information sur ce changement. D'ici là, vous vous connectez avec l'ancienne adresse, et le profil indique pour quelle adresse une confirmation est en attente et jusqu'à quand. Une nouvelle demande remplace celle en cours. Si la nouvelle adresse est déjà utilisée, aucun e-mail n'arrive ; le message du portail est identique dans tous les cas, afin que personne ne puisse tirer de conclusions sur d'autres comptes.
+
+## Affichage : thème et langue
+
+Dans la carte **Affichage** du profil, vous choisissez le **thème** – **Comme le système**, **Clair** ou **Sombre** – et validez avec **Enregistrer** ; le commutateur de l'en-tête bascule de la même manière entre clair et sombre. En dessous, vous choisissez la **langue** du portail. Les deux s'appliquent à votre accès sur tous les appareils. Les couleurs du mode clair et du mode sombre sont définies par votre prestataire.
 
 ## Changer le mot de passe
 

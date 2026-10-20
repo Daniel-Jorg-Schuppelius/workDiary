@@ -35,6 +35,7 @@ class CustomerPortalVisibilityController extends Controller {
             'capabilities.*' => ['string', 'max:64'],
             'time_detail' => ['required', 'string', 'in:none,summary,entries,entries_with_description'],
             'time_scope' => ['required', 'string', 'in:published,all'],
+            'time_years' => ['nullable', 'integer', 'min:0', 'max:' . PortalVisibility::TIME_YEARS_MAX],
         ]);
 
         $visibility->update($customer, [
@@ -42,6 +43,7 @@ class CustomerPortalVisibilityController extends Controller {
             'capabilities' => (array) ($data['capabilities'] ?? []),
             'time_detail' => (string) $data['time_detail'],
             'time_scope' => (string) $data['time_scope'],
+            'time_years' => $data['time_years'] ?? null,
         ], $user);
 
         return redirect()->route('customers.show', ['customer' => $customer, '#' => 'portal-visibility'])

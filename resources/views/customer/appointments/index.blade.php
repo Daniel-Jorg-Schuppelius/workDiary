@@ -11,10 +11,9 @@
 @extends('customer.layout')
 
 @section('content')
-    <h1 class="mb-1 text-2xl font-semibold">{{ __('Termin anfragen') }}</h1>
-    <p class="mb-4 text-sm text-base-content/70">{{ __('Sie wählen ein Zeitfenster, wir bestätigen verbindlich — erst dann ist der Termin fest.') }}</p>
+    <x-page-toolbar :title="__('Termin anfragen')" :subtitle="__('Sie wählen ein Zeitfenster, wir bestätigen verbindlich — erst dann ist der Termin fest.')" class="mb-4" />
 
-    <div class="mb-6 rounded-box bg-base-100 p-4 shadow">
+    <x-card class="mb-6">
         <form method="GET" action="{{ route('customer.appointments.index') }}" class="flex flex-wrap items-end gap-3">
             <label class="form-control">
                 <span class="label-text">{{ __('Leistung') }}</span>
@@ -58,10 +57,10 @@
                 @endif
             </div>
         @endif
-    </div>
+    </x-card>
 
-    <h2 class="mb-2 font-semibold">{{ __('Meine Anfragen') }}</h2>
-    <x-table>
+    <x-card :title="__('Meine Anfragen')" icon="event" padding="p-0">
+    <x-table bare>
         <x-slot:head>
             <tr>
                 <x-table.th>{{ __('Termin') }}</x-table.th>
@@ -97,9 +96,10 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty :colspan="4" :title="__('Noch keine Terminanfragen.')" />
+            <x-table.empty :colspan="4" icon="event" :title="__('Noch keine Terminanfragen.')" compact />
         @endforelse
     </x-table>
+    </x-card>
 
     <x-pagination :paginator="$requests" standing />
 @endsection

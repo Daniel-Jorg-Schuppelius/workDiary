@@ -10,10 +10,7 @@
 @extends('customer.layout')
 
 @section('content')
-    <h1 class="text-2xl font-semibold mb-4">{{ __('Rückfragen und Kommentare') }}</h1>
-    <p class="mb-4 text-sm text-base-content/70">
-        {{ __('Ihre Rückfragen zu freigegebenen Aufträgen, Zeiten und Dokumenten. Nach dem Absenden ist der Text aus Nachweisgründen nicht änderbar; eine Rücknahme wird protokolliert.') }}
-    </p>
+    <x-page-toolbar :title="__('Rückfragen und Kommentare')" :subtitle="__('Ihre Rückfragen zu freigegebenen Aufträgen, Zeiten und Dokumenten. Nach dem Absenden ist der Text aus Nachweisgründen nicht änderbar; eine Rücknahme wird protokolliert.')" class="mb-4" />
 
     <div class="space-y-3">
         @forelse ($queries as $query)

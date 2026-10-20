@@ -131,6 +131,12 @@ return [
         'enabled' => 'Consenti assistenti IA tramite MCP',
         'enabled_hint' => 'Se disattivato non è possibile un nuovo collegamento; quelli esistenti non ricevono strumenti e non possono essere rinnovati.',
     ],
+    'customer_portal' => [
+        'heading' => 'Portale clienti',
+        'description' => 'Vale per tutti i clienti con accesso al portale; nella scheda cliente il periodo può essere impostato diversamente per ogni cliente.',
+        'time_entry_years' => 'Tempi visibili (anni civili, anno in corso compreso)',
+        'time_entry_years_hint' => 'Predefinito 3 anni; 0 = illimitato. Limita solo la visualizzazione nel portale, non la conservazione.',
+    ],
     'rental_terms' => [
         'heading' => 'Condizioni di noleggio attrezzature',
         'description' => 'Le condizioni di noleggio si gestiscono come accordo cliente «Condizioni di noleggio (noleggio attrezzature)» con versione e firma.',

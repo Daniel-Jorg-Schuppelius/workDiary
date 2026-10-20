@@ -17,6 +17,7 @@ use App\Models\Asset\Asset;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Services\Licensing\FeatureFlagResolver;
+use App\Settings\SettingsRegistry;
 
 /**
  * Zentrale Freigabeentscheidung des Kundenportals (MVP-511): Navigation,
@@ -34,7 +35,18 @@ class PortalVisibility {
     /** Kompatibilitäts-Scope „alle kundenbezogenen Zeiten" (bewusste Wahl). */
     public const TIME_SCOPE_ALL = 'all';
 
-    public function __construct(private readonly FeatureFlagResolver $features) {}
+    /** Jahresgrenze der Portalzeiten (MVP-1237): 0 = unbegrenzt, Obergrenze wie die Registry. */
+    public const TIME_YEARS_UNLIMITED = 0;
+
+    public const TIME_YEARS_MAX = 50;
+
+    /** Registry-Schlüssel des Organisationsstandards. */
+    public const TIME_YEARS_SETTING = 'customer_portal.time_entry_years';
+
+    public function __construct(
+        private readonly FeatureFlagResolver $features,
+        private readonly SettingsRegistry $settings,
+    ) {}
 
     /** Globaler Schalter „Kundenportal aktiv" je Kunde. */
     public function enabled(Customer $customer): bool {
@@ -94,6 +106,36 @@ class PortalVisibility {
             ?? PortalTimeDetail::None;
     }
 
+    /**
+     * Sichtbare Portalzeiten in Kalenderjahren einschließlich des laufenden
+     * (MVP-1237): Abweichung je Kunde (`portal_settings.time_years`), sonst der
+     * Organisationsstandard; 0 = unbegrenzt. Eine Sichtgrenze, keine Löschung —
+     * gilt für Liste, Summen, Zähler und Auswertungen gleichermaßen.
+     */
+    public function timeYears(Customer $customer): int {
+        $own = self::customerTimeYears($customer);
+
+        return $own ?? $this->organizationTimeYears($customer);
+    }
+
+    /** Organisationsstandard aus der Registry (`customer_portal.time_entry_years`). */
+    public function organizationTimeYears(Customer $customer): int {
+        $value = $this->settings->effective(self::TIME_YEARS_SETTING, $customer->organization)->value;
+
+        return self::clampYears(is_numeric($value) ? (int) $value : 3);
+    }
+
+    /** Abweichung des Kunden oder null = Organisationsstandard. */
+    public static function customerTimeYears(Customer $customer): ?int {
+        $own = ($customer->portal_settings ?? [])['time_years'] ?? null;
+
+        return is_numeric($own) ? self::clampYears((int) $own) : null;
+    }
+
+    private static function clampYears(int $years): int {
+        return max(self::TIME_YEARS_UNLIMITED, min(self::TIME_YEARS_MAX, $years));
+    }
+
     /** `published` (Standard) oder ausdrücklich gewählter Kompat-Scope `all`. */
     public function timeScope(Customer $customer): string {
         $scope = (string) (($customer->portal_settings ?? [])['time_scope'] ?? self::TIME_SCOPE_PUBLISHED);
@@ -104,7 +146,7 @@ class PortalVisibility {
     /**
      * Speichert die Konfiguration und auditiert Akteur, alte und neue Freigabe.
      *
-     * @param  array{enabled: bool, capabilities: array<int, string>, time_detail: string, time_scope: string}  $input
+     * @param  array{enabled: bool, capabilities: array<int, string>, time_detail: string, time_scope: string, time_years?: int|string|null}  $input
      */
     public function update(Customer $customer, array $input, User $actor): void {
         $available = array_map(static fn (PortalCapability $c): string => $c->value, $this->availableCapabilities());
@@ -120,6 +162,10 @@ class PortalVisibility {
             'time_detail' => (PortalTimeDetail::tryFrom((string) $input['time_detail']) ?? PortalTimeDetail::None)->value,
             'time_scope' => $input['time_scope'] === self::TIME_SCOPE_ALL ? self::TIME_SCOPE_ALL : self::TIME_SCOPE_PUBLISHED,
         ];
+        // Jahresgrenze nur als ausdrückliche Abweichung speichern; leer = Organisationsstandard.
+        if (is_numeric($input['time_years'] ?? null)) {
+            $settings['time_years'] = self::clampYears((int) $input['time_years']);
+        }
         // Herkunftsmarker der Einmal-Migration erhalten (Nachvollziehbarkeit).
         if (isset($before['migrated_legacy_at'])) {
             $settings['migrated_legacy_at'] = $before['migrated_legacy_at'];

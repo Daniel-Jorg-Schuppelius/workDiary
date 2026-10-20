@@ -1,7 +1,7 @@
 ---
 title: "My Invoices"
 topic: customer-portal.invoices
-version: 5
+version: 6
 keywords:
     - view invoices
     - invoice list
@@ -48,6 +48,10 @@ All invoices are sorted together by date, newest first – the invoices from you
 - **Partially paid** – part of the amount has been received.
 - **Paid** – the invoice has been settled in full.
 - **Cancelled** – the invoice has been cancelled and no longer needs to be paid.
+
+## Year, status and month
+
+The list shows one **calendar year**; at the top you switch to other years with tabs. In the filter bar you narrow down by **status** (open or paid) and **month**; **Reset** shows the whole year again. From **Insights**, the charts lead directly to this list with the matching month.
 
 ## Downloading an invoice
 

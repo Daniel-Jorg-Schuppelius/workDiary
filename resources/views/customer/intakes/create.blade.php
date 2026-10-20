@@ -18,10 +18,10 @@
     $conditions = fn ($fields) => collect($fields->all())->filter(fn ($f) => $f->hasCondition())->mapWithKeys(fn ($f) => [$f->key => $f->visibleIf])->all();
     $initial = fn ($fields, string $prefix) => collect($fields->all())->mapWithKeys(fn ($f) => [$f->key => is_scalar(old("{$prefix}.{$f->key}")) ? (string) old("{$prefix}.{$f->key}") : ''])->all();
 @endphp
-    <div class="mx-auto max-w-2xl">
+    <div class="mx-auto max-w-2xl space-y-4">
+        <x-page-toolbar :title="$catalogItem !== null ? __('customer_intake.portal.request_catalog', ['item' => $catalogItem->name]) : __('customer_intake.portal.create_title', ['kind' => $kind->label()])"
+                        :subtitle="__('customer_intake.portal.create_intro')" :back="route('customer.intakes.index')" :back-label="__('customer_intake.portal.title')" />
         <x-card padding="p-6">
-            <h1 class="mb-1 text-xl font-semibold">{{ $catalogItem !== null ? __('customer_intake.portal.request_catalog', ['item' => $catalogItem->name]) : __('customer_intake.portal.create_title', ['kind' => $kind->label()]) }}</h1>
-            <p class="mb-4 text-sm text-base-content/70">{{ __('customer_intake.portal.create_intro') }}</p>
 
             <form method="POST" action="{{ $action }}" enctype="multipart/form-data" class="space-y-4" data-upload-form>
                 @csrf

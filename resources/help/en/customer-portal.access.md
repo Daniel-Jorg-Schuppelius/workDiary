@@ -1,7 +1,7 @@
 ---
 title: "Access & Security"
 topic: customer-portal.access
-version: 6
+version: 7
 keywords:
     - Change password
     - Start password
@@ -87,6 +87,10 @@ You change your login email yourself:
 3. Within 24 hours, open the link in the email sent to the new address.
 
 Only after you click the link does the new address become your login email; the previous address receives a notice about the change. Until then you sign in with the previous address, and the profile shows for which address a confirmation is pending and until when. A new request replaces the pending one. If the new address is already in use, no email arrives; the message in the portal is the same in every case so that nobody can draw conclusions about other accounts.
+
+## Appearance: colour scheme and language
+
+In the **Appearance** card of the profile you choose the **colour scheme** – **Follow the system**, **Light** or **Dark** – and confirm with **Save**; the switch in the header toggles the same between light and dark. Below it you choose the **language** of the portal. Both apply to your access on all devices. Which colours light and dark use is decided by your contractor.
 
 ## Changing your password
 

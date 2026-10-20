@@ -12,13 +12,7 @@
      Katalogeintrags; Upload-/Signatur-Felder werden im Portal ausgelassen. --}}
 
 @section('content')
-    <div class="mb-4">
-        <a class="link link-hover text-sm" href="{{ route('customer.catalog.index') }}">← {{ __('Zurück zum Servicekatalog') }}</a>
-        <h1 class="mt-1 text-2xl font-semibold">{{ $item->name }}</h1>
-        @if ($item->description)
-            <p class="mt-1 text-base-content/70">{{ $item->description }}</p>
-        @endif
-    </div>
+    <x-page-toolbar :title="$item->name" :subtitle="$item->description" :back="route('customer.catalog.index')" :back-label="__('Servicekatalog')" class="mb-4" />
 
     <x-card as="form" class="space-y-3" method="POST" action="{{ route('customer.catalog.order', $item) }}">
         @csrf

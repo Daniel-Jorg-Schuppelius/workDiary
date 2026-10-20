@@ -12,11 +12,8 @@
 @extends('customer.layout')
 
 @section('content')
-    <div class="max-w-md mx-auto mt-8 space-y-4">
-        <h1 class="text-2xl font-semibold flex items-center gap-2">
-            <x-icon name="lock" />
-            {{ __('Passwort bestätigen') }}
-        </h1>
+    <div class="max-w-md mx-auto space-y-4">
+        <x-page-toolbar :title="__('Passwort bestätigen')" />
 
         <x-validation-errors first />
 

@@ -13,14 +13,10 @@
      status=known_error UND visibility=customer der eigenen Organisation. --}}
 
 @section('content')
-    <div class="mb-4">
-        <h1 class="text-2xl font-semibold">{{ __('Bekannte Fehler') }}</h1>
-        <p class="text-sm text-muted">{{ __('Bekannte Störungen mit empfohlenem Workaround — an der dauerhaften Lösung wird gearbeitet.') }}</p>
-    </div>
+    <x-page-toolbar :title="__('Bekannte Fehler')" :subtitle="__('Bekannte Störungen mit empfohlenem Workaround — an der dauerhaften Lösung wird gearbeitet.')" class="mb-4" />
 
     @forelse ($problems as $problem)
-        <x-card class="mb-3">
-            <h2 class="font-semibold">{{ $problem->title }}</h2>
+        <x-card class="mb-3" :title="$problem->title" icon="bug_report">
             @if ($problem->workaround)
                 <div class="mt-2 text-sm">
                     <span class="text-xs uppercase text-muted">{{ __('Workaround') }}</span>
@@ -29,9 +25,7 @@
             @endif
         </x-card>
     @empty
-        <x-card class="text-sm text-muted">
-            {{ __('Derzeit sind keine bekannten Fehler dokumentiert.') }}
-        </x-card>
+        <x-empty-state framed icon="bug_report" :title="__('Derzeit sind keine bekannten Fehler dokumentiert.')" />
     @endforelse
 
     <x-pagination :paginator="$problems" standing />

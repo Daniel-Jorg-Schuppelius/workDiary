@@ -14,7 +14,7 @@
 @section('title', __('learning.title.portal'))
 @section('content')
 <div class="space-y-4">
-    <h1 class="text-xl font-semibold">{{ __('learning.title.portal') }}</h1>
+    <x-page-toolbar :title="__('learning.title.portal')" :subtitle="__('customer_portal.nav.learning')" />
 
     @if ($categories->isNotEmpty())
         <form method="GET" action="{{ route('customer.learning.index') }}" class="flex flex-wrap items-end gap-2">
@@ -84,7 +84,7 @@
             </div>
         </x-card>
     @empty
-        <x-empty-state icon="school" :title="__('learning.empty.portal')" />
+        <x-empty-state framed icon="school" :title="__('learning.empty.portal')" />
     @endforelse
 </div>
 @endsection

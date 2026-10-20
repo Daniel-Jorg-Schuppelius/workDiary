@@ -203,6 +203,8 @@ return [
     'invoicing.dunning.interest_rate' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:30', 'fallback' => 0],
     'invoicing.dunning.interest_mode' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['fixed', 'base_rate'], 'fallback' => 'fixed'],
     'invoicing.dunning.interest_points' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:20', 'fallback' => 0],
+    // Kundenportal (MVP-1237): sichtbare Portalzeiten in Kalenderjahren einschließlich des laufenden; 0 = unbegrenzt.
+    'customer_portal.time_entry_years' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:50', 'fallback' => 3],
     // Mietbedingungen (MVP-895): Übergabe nur mit unterschriebener Fassung.
     'rental.require_signed_terms' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
     // Direktbuchung im Kundenportal (MVP-916): freie, freigegebene Geräte ohne Anfrage reservieren.

@@ -12,8 +12,7 @@
 @section('title', __('customer_help.title'))
 
 @section('content')
-    <h1 class="mb-1 text-2xl font-semibold">{{ __('customer_help.title') }}</h1>
-    <p class="mb-4 text-sm text-base-content/70">{{ __('customer_help.subtitle') }}</p>
+    <x-page-toolbar :title="__('customer_help.title')" :subtitle="__('customer_help.subtitle')" class="mb-4" />
     <ul class="grid gap-2 sm:grid-cols-2">
         @forelse ($topics as $topic)
             <li>

@@ -134,6 +134,12 @@ return [
         'enabled' => 'KI-Assistenten über MCP zulassen',
         'enabled_hint' => 'Ausgeschaltet gibt es keine neue Anbindung, bestehende Zugänge liefern keine Werkzeuge und lassen sich nicht erneuern.',
     ],
+    'customer_portal' => [
+        'heading' => 'Kundenportal',
+        'description' => 'Gilt für alle Kunden mit Portalzugang; in der Kundenakte lässt sich der Zeitraum je Kunde abweichend festlegen.',
+        'time_entry_years' => 'Sichtbare Zeiten (Kalenderjahre einschließlich des laufenden)',
+        'time_entry_years_hint' => 'Standard 3 Jahre; 0 = unbegrenzt. Begrenzt nur die Sicht im Portal, nicht die Aufbewahrung.',
+    ],
     'rental_terms' => [
         'heading' => 'Mietbedingungen im Geräteverleih',
         'description' => 'Die Mietbedingungen führen Sie als Kundenvereinbarung „Mietbedingungen (Geräteverleih)“ mit Fassung und Unterschrift.',

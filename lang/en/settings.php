@@ -131,6 +131,12 @@ return [
         'enabled' => 'Allow AI assistants via MCP',
         'enabled_hint' => 'When switched off, no new connection is possible; existing connections get no tools and cannot be renewed.',
     ],
+    'customer_portal' => [
+        'heading' => 'Customer portal',
+        'description' => 'Applies to all customers with portal access; the customer file can set a different period per customer.',
+        'time_entry_years' => 'Visible times (calendar years including the current one)',
+        'time_entry_years_hint' => 'Default 3 years; 0 = unlimited. Limits only the portal view, not retention.',
+    ],
     'rental_terms' => [
         'heading' => 'Rental terms in equipment rental',
         'description' => 'Rental terms are kept as the customer agreement “Rental terms (equipment rental)” with version and signature.',

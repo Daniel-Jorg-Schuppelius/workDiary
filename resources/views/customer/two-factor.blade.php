@@ -16,14 +16,12 @@
 @endphp
 
 @section('content')
-    <div class="max-w-2xl mx-auto mt-8 space-y-4">
-        <div class="flex items-center justify-between gap-3">
-            <h1 class="text-2xl font-semibold flex items-center gap-2">
-                <x-icon name="verified_user" />
-                {{ __('Zwei-Faktor-Authentifizierung') }}
-            </h1>
-            <x-status-badge :tone="$statusTone" size="sm">{{ $statusBadge }}</x-status-badge>
-        </div>
+    <div class="max-w-2xl mx-auto space-y-4">
+        <x-page-toolbar :title="__('Zwei-Faktor-Authentifizierung')" :back="route('customer.profile.show')" :back-label="__('Profil')">
+            <x-slot:badges>
+                <x-status-badge :tone="$statusTone" size="sm">{{ $statusBadge }}</x-status-badge>
+            </x-slot:badges>
+        </x-page-toolbar>
 
         <x-validation-errors first />
 
@@ -40,7 +38,7 @@
 
         {{-- Aktive Faktoren --}}
         @if ($enabled)
-            <div class="border border-base-300 bg-base-100 rounded p-4">
+            <x-card>
                 <p class="font-semibold">{{ __('Aktive Faktoren') }}</p>
                 <ul class="mt-2 divide-y divide-base-200">
                     @if ($hasTotp)
@@ -53,11 +51,11 @@
                         </li>
                     @endforeach
                 </ul>
-            </div>
+            </x-card>
         @endif
 
         {{-- Methode hinzufügen --}}
-        <div class="border border-base-300 bg-base-100 rounded p-4">
+        <x-card>
             <p class="font-semibold">{{ __('Methode hinzufügen') }}</p>
             <div class="mt-2 grid gap-4 md:grid-cols-2">
                 {{-- Authenticator-App --}}
@@ -72,7 +70,7 @@
                         </div>
                         <form method="POST" action="{{ route('customer.2fa.confirm') }}" class="flex items-end gap-2">
                             @csrf
-                            <input aria-label="{{ __('Bestätigungscode') }}" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required class="w-full border border-base-300 rounded px-3 py-2 bg-base-100 text-center tracking-[0.3em] font-mono" placeholder="000000">
+                            <input aria-label="{{ __('Bestätigungscode') }}" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required class="input input-bordered w-full text-center tracking-[0.3em] font-mono" placeholder="000000">
                             <x-icon-btn icon="check" tone="primary" size="sm" type="submit" show-label>{{ __('Bestätigen') }}</x-icon-btn>
                         </form>
                     @else
@@ -90,7 +88,7 @@
                         <p class="text-sm text-base-content/70">{{ __('Wir haben einen Code an Ihre E-Mail gesendet.') }}</p>
                         <form method="POST" action="{{ route('customer.2fa.email.confirm') }}" class="flex items-end gap-2">
                             @csrf
-                            <input aria-label="{{ __('Code aus der E-Mail') }}" name="email_code" type="text" inputmode="numeric" autocomplete="one-time-code" required class="w-full border border-base-300 rounded px-3 py-2 bg-base-100 text-center tracking-[0.3em] font-mono" placeholder="000000">
+                            <input aria-label="{{ __('Code aus der E-Mail') }}" name="email_code" type="text" inputmode="numeric" autocomplete="one-time-code" required class="input input-bordered w-full text-center tracking-[0.3em] font-mono" placeholder="000000">
                             <x-icon-btn icon="check" tone="primary" size="sm" type="submit" show-label>{{ __('Bestätigen') }}</x-icon-btn>
                         </form>
                         <form method="POST" action="{{ route('customer.2fa.email.resend') }}">@csrf<x-icon-btn icon="refresh" tone="ghost" size="sm" type="submit" show-label>{{ __('Code erneut senden') }}</x-icon-btn></form>
@@ -112,7 +110,7 @@
                                 data-error="passkey-error">{{ __('Passkey hinzufügen') }}</x-icon-btn>
                 </div>
             </div>
-        </div>
+        </x-card>
 
         {{-- Recovery + Deaktivieren --}}
         @if ($enabled)

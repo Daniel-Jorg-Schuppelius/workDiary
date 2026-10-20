@@ -6,11 +6,17 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
+{{-- Startseite des Kundenportals (MVP-511, Phase 154). Erwartet: $user, $customer, $stats, $notices, $areas. --}}
 @extends('customer.layout')
 
+@section('title', __('Übersicht'))
+
 @section('content')
-    <h1 class="text-2xl font-semibold mb-6">{{ __('Willkommen') }}, {{ $user->name }}</h1>
-    <p class="text-sm text-base-content/70 mb-6">{{ $customer?->name }}</p>
+    @php
+        $year = (int) now()->year;
+        $hours = fn (int $minutes): string => \App\Support\Formats::duration($minutes, 'clock');
+    @endphp
+    <x-page-toolbar :title="__('Willkommen') . ', ' . $user->name" :subtitle="$customer?->name" class="mb-4" />
 
     @if (($notices ?? []) !== [])
         <x-portal-notices :notices="$notices" class="mb-6" />
@@ -18,71 +24,62 @@
 
     {{-- Kacheln nur für freigegebene Bereiche (MVP-511); ohne Freigaben ein
          erklärter Leerzustand statt automatischer Vollsicht. --}}
-    @if ($stats === [])
-        <x-card padding="p-8" class="text-center">
-            <x-icon name="visibility_off" class="mb-2 text-4xl text-muted" />
-            <p class="font-medium">{{ __('Für Ihren Zugang sind noch keine Bereiche freigegeben.') }}</p>
-            <p class="mt-1 text-sm text-muted">{{ __('Bitte wenden Sie sich an Ihre Ansprechperson, um Inhalte freischalten zu lassen.') }}</p>
-        </x-card>
+    @if ($stats === [] && $areas === [])
+        <x-empty-state framed icon="visibility_off"
+                       :title="__('Für Ihren Zugang sind noch keine Bereiche freigegeben.')"
+                       :message="__('Bitte wenden Sie sich an Ihre Ansprechperson, um Inhalte freischalten zu lassen.')" />
     @else
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            @isset($stats['diary'])
-                <a href="{{ route('customer.diary.index') }}" class="bg-base-100 border border-base-300 rounded p-4 hover:border-primary">
-                    <div class="flex items-center justify-between">
-                        <x-icon name="menu_book" />
-                        <span class="text-2xl font-semibold">{{ $stats['diary'] }}</span>
-                    </div>
-                    <div class="mt-2 text-sm">{{ __('Auftragsbuch-Einträge') }}</div>
-                </a>
-            @endisset
-            @isset($stats['time_entries'])
-                <a href="{{ route('customer.time-entries.index') }}" class="bg-base-100 border border-base-300 rounded p-4 hover:border-primary">
-                    <div class="flex items-center justify-between">
-                        <x-icon name="schedule" />
-                        <span class="text-2xl font-semibold">{{ $stats['time_entries'] }}</span>
-                    </div>
-                    <div class="mt-2 text-sm">{{ __('Zeiterfassungen') }}</div>
-                </a>
-            @endisset
-            @isset($stats['invoices'])
-                <a href="{{ route('customer.invoices.index') }}" class="bg-base-100 border border-base-300 rounded p-4 hover:border-primary">
-                    <div class="flex items-center justify-between">
-                        <x-icon name="receipt_long" />
-                        <span class="text-2xl font-semibold">{{ $stats['invoices'] }}</span>
-                    </div>
-                    <div class="mt-2 text-sm">{{ __('Rechnungen') }}</div>
-                </a>
-            @endisset
-            @isset($stats['open_issues'])
-                <a href="{{ route('customer.open-issues.index') }}" class="bg-base-100 border border-base-300 rounded p-4 hover:border-primary">
-                    <div class="flex items-center justify-between">
-                        <x-icon name="flag" />
-                        <span class="text-2xl font-semibold">{{ $stats['open_issues'] }}</span>
-                    </div>
-                    <div class="mt-2 text-sm">{{ __('open-issue.title.index') }}</div>
-                </a>
-            @endisset
-            @isset($stats['intakes'])
-                <a href="{{ route('customer.intakes.index') }}" class="bg-base-100 border rounded p-4 hover:border-primary {{ $stats['intakes_action'] > 0 ? 'border-warning' : 'border-base-300' }}">
-                    <div class="flex items-center justify-between">
-                        <x-icon name="move_to_inbox" />
-                        <span class="text-2xl font-semibold">{{ $stats['intakes'] }}</span>
-                    </div>
-                    <div class="mt-2 text-sm">{{ __('customer_intake.portal.dashboard_tile') }}</div>
-                    @if ($stats['intakes_action'] > 0)
-                        <div class="mt-1 text-xs text-warning">{{ __('customer_intake.portal.dashboard_action', ['count' => $stats['intakes_action']]) }}</div>
-                    @endif
-                </a>
-            @endisset
-            @isset($stats['subscriptions'])
-                <a href="{{ route('customer.subscriptions.index') }}" class="bg-base-100 border border-base-300 rounded p-4 hover:border-primary">
-                    <div class="flex items-center justify-between">
-                        <x-icon name="workspace_premium" />
-                        <span class="text-2xl font-semibold">{{ $stats['subscriptions'] }}</span>
-                    </div>
-                    <div class="mt-2 text-sm">{{ __('resale_portal.dashboard.tile') }}</div>
-                </a>
-            @endisset
-        </div>
+        @if ($stats !== [])
+            <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+                @isset($stats['diary'])
+                    <x-kpi-tile :label="__('Auftragsbuch-Einträge')" :value="$stats['diary']" tone="primary" :href="route('customer.diary.index')" />
+                @endisset
+                @isset($stats['time_minutes'])
+                    <x-kpi-tile :label="__('customer_portal.dashboard.time_tile', ['year' => $year])" :value="$hours($stats['time_minutes'])" format="text" tone="info"
+                                :hint="$stats['time_entries'] > 0 ? __('customer_portal.dashboard.time_entries_hint', ['count' => $stats['time_entries']]) : null"
+                                :href="route('customer.time-entries.index')" />
+                @endisset
+                @isset($stats['invoices'])
+                    <x-kpi-tile :label="__('Rechnungen')" :value="$stats['invoices']" :tone="($stats['invoices_open'] ?? 0) > 0 ? 'warning' : 'success'"
+                                :hint="($stats['invoices_open'] ?? 0) > 0 ? __('customer_portal.dashboard.invoices_open_hint', ['count' => $stats['invoices_open']]) : __('customer_portal.dashboard.invoices_settled_hint')"
+                                :href="route('customer.invoices.index')" />
+                @endisset
+                @isset($stats['open_issues'])
+                    <x-kpi-tile :label="__('open-issue.title.index')" :value="$stats['open_issues']" :tone="$stats['open_issues'] > 0 ? 'warning' : 'neutral'" :href="route('customer.open-issues.index')" />
+                @endisset
+                @isset($stats['intakes'])
+                    <x-kpi-tile :label="__('customer_intake.portal.dashboard_tile')" :value="$stats['intakes']" :tone="$stats['intakes_action'] > 0 ? 'warning' : 'neutral'"
+                                :hint="$stats['intakes_action'] > 0 ? __('customer_intake.portal.dashboard_action', ['count' => $stats['intakes_action']]) : null"
+                                :href="route('customer.intakes.index')" />
+                @endisset
+                @isset($stats['subscriptions'])
+                    <x-kpi-tile :label="__('resale_portal.dashboard.tile')" :value="$stats['subscriptions']" :href="route('customer.subscriptions.index')" />
+                @endisset
+            </div>
+        @endif
+
+        @if (($insights ?? null) !== null)
+            @include('customer.insights._dashboard_row', ['insights' => $insights, 'year' => $year])
+        @endif
+
+        @if ($areas !== [])
+            {{-- Bereiche aus derselben Liste wie die Navigation (E5): Symbol, Titel, Kurztext. --}}
+            <section class="mt-6" aria-labelledby="portal-areas-title">
+                <h2 id="portal-areas-title" class="mb-3 text-base font-semibold">{{ __('customer_portal.dashboard_areas.title') }}</h2>
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    @foreach ($areas as $area)
+                        <x-card as="a" padding="p-4" href="{{ route($area['route']) }}" class="flex items-start gap-3 transition hover:border-primary hover:shadow-md">
+                            <span class="flex size-10 shrink-0 items-center justify-center rounded-box bg-primary/10 text-primary">
+                                <x-icon :name="$area['icon']" class="text-xl" />
+                            </span>
+                            <span class="min-w-0">
+                                <span class="block font-medium">{{ $area['label'] }}</span>
+                                <span class="block text-sm text-muted">{{ $area['description'] }}</span>
+                            </span>
+                        </x-card>
+                    @endforeach
+                </div>
+            </section>
+        @endif
     @endif
 @endsection

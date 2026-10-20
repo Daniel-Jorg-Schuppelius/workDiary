@@ -2157,7 +2157,7 @@ return [
         'indexation_method' => ['none' => 'Aucune indexation', 'consumer_price_index' => 'Indice des prix à la consommation (IPC)', 'fixed_percent' => 'Pourcentage fixe', 'custom' => 'Règle personnalisée'],
     ],
     'customer_portal' => [
-        'portal_capability' => ['diary' => 'Commandes & dossier', 'time_entries' => 'Temps projet', 'invoices' => 'Factures & compte de facturation', 'documents' => 'Documents', 'assets' => 'Objets', 'open_issues' => 'Points ouverts', 'tickets' => 'Tickets, catalogue de services & erreurs connues', 'claims' => 'Réclamations', 'rentals' => 'Opérations de location', 'queries' => 'Questions & commentaires', 'appointments' => 'Réservation de rendez-vous en ligne', 'rental_requests' => 'Demande de location', 'subscriptions' => 'Abonnements & licences', 'learning' => 'Formations'],
+        'portal_capability' => ['diary' => 'Commandes & dossier', 'time_entries' => 'Temps projet', 'invoices' => 'Factures & compte de facturation', 'documents' => 'Documents', 'assets' => 'Objets', 'open_issues' => 'Points ouverts', 'tickets' => 'Tickets, catalogue de services & erreurs connues', 'claims' => 'Réclamations', 'rentals' => 'Opérations de location', 'queries' => 'Questions & commentaires', 'appointments' => 'Réservation de rendez-vous en ligne', 'rental_requests' => 'Demande de location', 'subscriptions' => 'Abonnements & licences', 'learning' => 'Formations', 'insights' => 'Analyses'],
         'portal_time_detail' => ['none' => 'Aucun temps', 'summary' => 'Totaux uniquement', 'entries' => 'Entrées (date, durée, projet, collaborateur)', 'entries_with_description' => 'Entrées avec description (publiées uniquement)'],
     ],
     'disposal' => [

@@ -12,30 +12,31 @@
 
 @section('content')
 <div class="space-y-4">
-    <h1 class="text-xl font-semibold">{{ __('Verleihvorgang :number', ['number' => $case->number]) }}</h1>
+    <x-page-toolbar :title="__('Verleihvorgang :number', ['number' => $case->number])" :subtitle="$case->starts_at->fdatetime() . ' – ' . $case->ends_at->fdatetime()"
+                    :back="route('customer.rentals.index')" :back-label="__('Meine Leihgeräte')">
+        <x-slot:badges>
+            <x-status-badge tone="plain" size="sm" outline>{{ $case->status->label() }}</x-status-badge>
+        </x-slot:badges>
+    </x-page-toolbar>
 
-
-    <div class="flex flex-wrap items-center gap-2 text-sm">
-        <x-status-badge tone="plain" size="md" outline>{{ $case->status->label() }}</x-status-badge>
-        <span>{{ $case->starts_at->fdatetime() }} – {{ $case->ends_at->fdatetime() }}</span>
-    </div>
-
-    <x-table>
+    <x-card :title="__('Geräte')" icon="handyman" padding="p-0">
+    <x-table bare>
         <x-slot:head>
-            <tr><th>{{ __('Gerät') }}</th><th>{{ __('Status') }}</th></tr>
+            <tr><x-table.th>{{ __('Gerät') }}</x-table.th><x-table.th>{{ __('Status') }}</x-table.th></tr>
         </x-slot:head>
         @foreach ($case->caseAssets as $caseAsset)
             <tr class="hover">
                 <td>{{ $caseAsset->asset->name ?? '—' }}</td>
-                <td><x-status-badge tone="plain" size="md" outline>{{ $caseAsset->status->label() }}</x-status-badge></td>
+                <td><x-status-badge tone="plain" size="sm" outline>{{ $caseAsset->status->label() }}</x-status-badge></td>
             </tr>
         @endforeach
     </x-table>
+    </x-card>
 
-    <h2 class="text-lg font-medium">{{ __('Übergaben') }}</h2>
-    <x-table>
+    <x-card :title="__('Übergaben')" icon="swap_horiz" padding="p-0">
+    <x-table bare>
         <x-slot:head>
-            <tr><th>{{ __('Zeitpunkt') }}</th><th>{{ __('Zubehör') }}</th><th>{{ __('Bestätigung') }}</th></tr>
+            <tr><x-table.th>{{ __('Zeitpunkt') }}</x-table.th><x-table.th>{{ __('Zubehör') }}</x-table.th><x-table.th>{{ __('Bestätigung') }}</x-table.th></tr>
         </x-slot:head>
                 @forelse ($case->handoverReports as $report)
                     <tr>
@@ -53,8 +54,9 @@
                         </td>
                     </tr>
                 @empty
-                    <x-table.empty :colspan="3" :title="__('Noch keine Übergabe.')" compact />
+                    <x-table.empty :colspan="3" icon="swap_horiz" :title="__('Noch keine Übergabe.')" compact />
                 @endforelse
     </x-table>
+    </x-card>
 </div>
 @endsection

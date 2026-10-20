@@ -53,6 +53,7 @@ class InvoiceController extends Controller {
             'number' => (string) $invoice->number,
             'date' => $invoice->issued_on,
             'statusLabel' => $invoice->status->label(),
+            'open' => in_array($invoice->status, [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid], true),
             'total' => $invoice->total?->toFloat() ?? 0.0,
             'currency' => $invoice->currency->value,
             'pdf' => route('customer.invoices.pdf', $invoice),
@@ -63,12 +64,26 @@ class InvoiceController extends Controller {
                 'number' => $invoice->number,
                 'date' => $invoice->issuedOn,
                 'statusLabel' => $invoice->status->label(),
+                'open' => $invoice->open > 0,
                 'total' => $invoice->gross,
                 'currency' => $invoice->currency,
                 'pdf' => route('customer.invoices.external', ['source' => $invoice->source, 'key' => $invoice->key]),
             ];
         }
         usort($rows, static fn (array $a, array $b): int => ($b['date']?->getTimestamp() ?? 0) <=> ($a['date']?->getTimestamp() ?? 0));
+
+        // Jahr als Tabs, Status und Monat als Filter (Phase 154, MVP-1243) — Ziel der Drilldowns aus der Auswertung.
+        // Belege ohne Datum zählen zum laufenden Jahr, damit sie nicht aus jeder Sicht fallen.
+        $rowYear = static fn (array $row): int => (int) ($row['date']->year ?? now()->year);
+        $years = array_values(array_unique(array_map($rowYear, $rows)));
+        rsort($years);
+        $year = \App\Services\CustomerPortal\PortalInsights::pickYear((int) $request->query('year', 0), $years);
+        $status = in_array($request->query('status'), ['open', 'paid'], true) ? (string) $request->query('status') : null;
+        $month = (int) $request->query('month', 0);
+        $month = $month >= 1 && $month <= 12 ? $month : null;
+        $rows = array_values(array_filter($rows, static fn (array $row): bool => $rowYear($row) === $year
+            && ($month === null || ($row['date'] !== null && (int) $row['date']->month === $month))
+            && ($status === null || ($status === 'open') === $row['open'])));
 
         $page = LengthAwarePaginator::resolveCurrentPage();
         $invoices = new LengthAwarePaginator(array_slice($rows, ($page - 1) * 25, 25), count($rows), 25, $page, [
@@ -87,6 +102,10 @@ class InvoiceController extends Controller {
         return view('customer.invoices.index', [
             'invoices' => $invoices,
             'payLinks' => $payLinks,
+            'year' => $year,
+            'years' => $years === [] ? [$year] : $years,
+            'status' => $status,
+            'month' => $month,
         ]);
     }
 
@@ -103,7 +122,7 @@ class InvoiceController extends Controller {
 
         return $file !== null
             ? $this->download($file)
-            : redirect()->route('customer.invoices.index')->with('error', __('customer_portal.invoices.document_unavailable'));
+            : redirect()->toList('customer.invoices.index')->with('error', __('customer_portal.invoices.document_unavailable'));
     }
 
     /** @return list<ExternalInvoice> */
@@ -144,7 +163,7 @@ class InvoiceController extends Controller {
 
             return $file !== null
                 ? $this->download($file)
-                : redirect()->route('customer.invoices.index')->with('error', __('customer_portal.invoices.document_unavailable'));
+                : redirect()->toList('customer.invoices.index')->with('error', __('customer_portal.invoices.document_unavailable'));
         }
 
         $invoice->load(['items', 'customer', 'project']);

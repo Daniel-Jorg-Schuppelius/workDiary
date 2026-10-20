@@ -1,7 +1,7 @@
 ---
 title: "Portail client – vue d'ensemble"
 topic: customer-portal.overview
-version: 4
+version: 5
 keywords:
     - accueil du portail
     - espace client
@@ -41,23 +41,29 @@ Plus bas peuvent apparaître des annonces de votre prestataire, chacune avec obj
 Pour chaque zone libérée, la page d'accueil affiche une tuile avec un chiffre. Un clic sur la tuile ouvre la zone.
 
 - **Entrées de journal** – le nombre de vos commandes.
-- **Saisies de temps** – le nombre de saisies de temps que vous pouvez consulter. La tuile n'apparaît que si les saisies individuelles vous sont affichées.
-- **Factures** – le nombre de vos factures émises.
-- **Points ouverts** – le nombre de points ouverts libérés pour vous et pas encore clôturés. La page **Points ouverts** n'est accessible que par cette tuile.
+- **Heures** de l'année en cours – la somme des temps que vous pouvez consulter ; en dessous, le nombre total de saisies.
+- **Factures** – le nombre de vos factures émises ; en dessous, combien d'entre elles sont en attente.
+- **Points ouverts** – le nombre de points ouverts libérés pour vous et pas encore clôturés.
 - **Demandes en cours** – vos demandes et commandes en cours. Si des dossiers attendent une réaction de votre part, la tuile est encadrée en couleur et en indique le nombre (« Dont … vous attendent »).
 - **Abonnements & licences** – le nombre d'abonnements et de licences de votre liste.
 
 Si aucune zone n'a encore été libérée pour votre accès, vous voyez à la place des tuiles le message **Aucune zone n'a encore été libérée pour votre accès.** Adressez-vous alors à votre interlocuteur chez votre prestataire.
 
+Si **Analyses** est ouvert, la ligne **Cette année** suit avec les heures, le montant facturé et le montant en attente ; **Voir les analyses** ouvre les graphiques. En dessous figurent **Vos espaces** : une tuile par espace ouvert avec icône et courte description.
+
 ## Le menu
 
-L'en-tête affiche toujours **Aperçu**, **Recherche**, **Aide**, **Profil**, **Sécurité** et **Se déconnecter**. Entre ces entrées n'apparaissent que les zones libérées pour vous :
+L'en-tête affiche à gauche le logo de votre prestataire (un clic mène à l'aperçu) et à droite la **Recherche**, l'**Aide**, le commutateur **clair/sombre**, la **langue** et le **menu du compte** avec votre nom : vous y trouvez **Profil**, **Sécurité** et **Se déconnecter**. Votre choix de thème et de langue reste enregistré pour votre accès – aussi sur d'autres appareils.
+
+En dessous se trouve la barre des zones ; la zone actuelle est mise en évidence. Sur le téléphone, l'icône de menu en haut à gauche ouvre les zones dans un panneau latéral. **Aperçu** et **Recherche** apparaissent toujours, sinon seulement les zones libérées pour vous :
 
 - **Journal** – vos commandes avec photos, matériel et protocoles,
 - **Objets** – vos objets,
 - **Documents** – les documents libérés pour vous,
 - **Temps** – les temps saisis pour vos projets,
 - **Factures** et, si votre prestataire vous facture via un compte de facturation, **Facturation**,
+- **Analyses** – indicateurs et évolutions des temps, factures, compte de facturation et tickets,
+- **Points ouverts** – les points ouverts libérés pour vous,
 - **Tickets**, **Catalogue de services** et **Erreurs connues**,
 - **Réclamations** et **Déclarer un retour**,
 - **Location** et **Demande de location**,
@@ -71,6 +77,8 @@ L'en-tête affiche toujours **Aperçu**, **Recherche**, **Aide**, **Profil**, **
 **Formations** apparaît si votre prestataire propose des formations dans le portail ; vous n'y voyez que les cours qu'il a ouverts aux clients.
 
 **Aide** ouvre la rubrique d'aide de la page sur laquelle vous vous trouvez ; s'il n'y en a pas, la liste des rubriques d'aide du portail. Là aussi, vous ne voyez que les rubriques des zones libérées pour vous. **Profil** et **Sécurité** sont décrits dans la rubrique « Accès & sécurité ». **Se déconnecter** met fin à votre session.
+
+En bas de page, vous trouvez les **Mentions légales**, la **Protection des données** et l'**Accessibilité** de votre prestataire ainsi que l'**Aide**.
 
 ## Rechercher
 

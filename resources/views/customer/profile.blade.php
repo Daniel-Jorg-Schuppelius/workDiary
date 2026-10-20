@@ -10,37 +10,59 @@
 @extends('customer.layout')
 
 @section('content')
-    <div class="max-w-2xl mx-auto mt-8 space-y-4">
-        <h1 class="text-2xl font-semibold flex items-center gap-2">
-            <x-icon name="account_circle" />
-            {{ __('Profil') }}
-        </h1>
+    @php($portalPreviewActive = app(\App\Services\CustomerPortal\PortalPreview::class)->isActive(request()))
+    <div class="max-w-2xl mx-auto space-y-4">
+        <x-page-toolbar :title="__('Profil')" :subtitle="__('customer_portal.profile.subtitle')" />
 
         <x-validation-errors first />
 
-        <div class="border border-base-300 bg-base-100 rounded p-4">
-            <p class="font-semibold">{{ __('Ihr Zugang') }}</p>
+        <x-card :title="__('Ihr Zugang')" icon="badge">
             <x-detail-grid class="mt-2">
                 <x-detail-grid.row :label="__('Name')">{{ $user->name }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Anmelde-E-Mail')">{{ $user->email }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Kunde')">{{ $user->customer?->name ?? '—' }}</x-detail-grid.row>
             </x-detail-grid>
-        </div>
+        </x-card>
 
-        @unless (app(\App\Services\CustomerPortal\PortalPreview::class)->isActive(request()))
+        @unless ($portalPreviewActive)
+            {{-- Darstellung (Phase 154, MVP-1241): Farbschema wie der Kopfzeilen-Umschalter, Sprache wie intern. --}}
+            @php($portalScheme = (string) (((array) ($user->preferences ?? []))['color_scheme'] ?? 'auto'))
+            <x-card :title="__('customer_portal.appearance.title')" icon="palette">
+                <p class="text-sm text-muted">{{ __('customer_portal.appearance.intro') }}</p>
+                <form method="POST" action="{{ route('customer.theme.update') }}" class="mt-3 space-y-3">
+                    @csrf
+                    <fieldset class="fieldset">
+                        <legend class="fieldset-legend">{{ __('customer_portal.appearance.scheme') }}</legend>
+                        <div class="flex flex-wrap gap-4">
+                            @foreach (['auto' => 'customer_portal.appearance.scheme_auto', 'light' => 'customer_portal.appearance.scheme_light', 'dark' => 'customer_portal.appearance.scheme_dark'] as $scheme => $labelKey)
+                                <label class="label cursor-pointer gap-2">
+                                    <input type="radio" name="scheme" value="{{ $scheme }}" class="radio radio-sm" @checked($portalScheme === $scheme)>
+                                    <span>{{ __($labelKey) }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </fieldset>
+                    <div class="flex justify-end">
+                        <x-button type="submit" tone="primary" icon="check"><span>{{ __('customer_portal.appearance.save') }}</span></x-button>
+                    </div>
+                </form>
+                <div class="mt-3 border-t border-base-300 pt-3">
+                    <p class="mb-2 text-sm font-medium">{{ __('customer_portal.appearance.language') }}</p>
+                    <x-locale-switcher variant="inline" />
+                </div>
+            </x-card>
+
             {{-- Passwort ändern (Phase 153, MVP-1233); in der Vorschau als Kunde gesperrt. --}}
-            <div class="border border-base-300 bg-base-100 rounded p-4">
-                <p class="font-semibold">{{ __('customer_portal.password_change.profile_heading') }}</p>
-                <p class="mt-1 text-sm text-muted">{{ __('customer_portal.password_change.profile_intro') }}</p>
+            <x-card :title="__('customer_portal.password_change.profile_heading')" icon="password">
+                <p class="text-sm text-muted">{{ __('customer_portal.password_change.profile_intro') }}</p>
                 <div class="mt-3 flex justify-end">
                     <x-button :href="route('customer.password.change')" tone="ghost" icon="password"><span>{{ __('customer_portal.password_change.profile_link') }}</span></x-button>
                 </div>
-            </div>
+            </x-card>
         @endunless
 
-        <div class="border border-base-300 bg-base-100 rounded p-4">
-            <p class="font-semibold">{{ __('E-Mail-Adresse ändern') }}</p>
-            <p class="mt-1 text-sm text-muted">
+        <x-card :title="__('E-Mail-Adresse ändern')" icon="mail">
+            <p class="text-sm text-muted">
                 {{ __('Wir senden einen Bestätigungslink an die neue Adresse. Erst nach dem Klick wird sie zur Anmelde-E-Mail; Ihre bisherige Adresse erhält eine Information.') }}
             </p>
 
@@ -57,6 +79,6 @@
                     <x-button type="submit" tone="primary" icon="mail"><span>{{ __('Bestätigungslink senden') }}</span></x-button>
                 </div>
             </form>
-        </div>
+        </x-card>
     </div>
 @endsection

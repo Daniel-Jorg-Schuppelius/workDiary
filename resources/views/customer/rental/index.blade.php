@@ -12,21 +12,22 @@
 
 @section('content')
 <div class="space-y-4">
-    <div class="flex flex-wrap items-center justify-between gap-2">
-        <h1 class="text-xl font-semibold">{{ __('Meine Leihgeräte') }}</h1>
+    <x-page-toolbar :title="__('Meine Leihgeräte')" :subtitle="__('customer_portal.nav.rentals')">
         @if (app(\App\Services\CustomerPortal\PortalVisibility::class)->allows(auth('customer')->user()?->customer, \App\Enums\CustomerPortal\PortalCapability::RentalRequests))
-            <x-button :href="route('customer.rentals.requests.index')" tone="outline">{{ __('Verleih-Anfrage stellen') }}</x-button>
+            <x-slot:actions>
+                <x-icon-btn icon="event_available" tone="primary" :href="route('customer.rentals.requests.index')" show-label>{{ __('Verleih-Anfrage stellen') }}</x-icon-btn>
+            </x-slot:actions>
         @endif
-    </div>
+    </x-page-toolbar>
 
-
-    <x-table>
+    <x-card>
+    <x-table bare>
         <x-slot:head>
             <tr>
-                <th>{{ __('Nummer') }}</th>
-                <th>{{ __('Geräte') }}</th>
-                <th>{{ __('Zeitraum') }}</th>
-                <th>{{ __('Status') }}</th>
+                <x-table.th>{{ __('Nummer') }}</x-table.th>
+                <x-table.th>{{ __('Geräte') }}</x-table.th>
+                <x-table.th>{{ __('Zeitraum') }}</x-table.th>
+                <x-table.th>{{ __('Status') }}</x-table.th>
             </tr>
         </x-slot:head>
         @forelse ($cases as $case)
@@ -37,9 +38,10 @@
                 <td><x-status-badge tone="plain" size="md" outline>{{ $case->status->label() }}</x-status-badge></td>
             </tr>
         @empty
-            <x-table.empty :colspan="4" :title="__('Keine Verleihvorgänge vorhanden.')" />
+            <x-table.empty :colspan="4" icon="handyman" :title="__('Keine Verleihvorgänge vorhanden.')" compact />
         @endforelse
     </x-table>
+    </x-card>
     <x-pagination :paginator="$cases" standing />
 </div>
 @endsection

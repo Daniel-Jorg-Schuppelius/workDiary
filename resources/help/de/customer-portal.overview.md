@@ -1,7 +1,7 @@
 ---
 title: "Kundenportal – Übersicht"
 topic: customer-portal.overview
-version: 4
+version: 5
 keywords:
     - Startseite Kundenportal
     - Kundenbereich
@@ -41,23 +41,29 @@ Darunter können Mitteilungen Ihres Auftragnehmers stehen, jeweils mit Betreff, 
 Für jeden freigegebenen Bereich zeigt die Startseite eine Kachel mit einer Zahl. Ein Klick auf die Kachel öffnet den Bereich.
 
 - **Auftragsbuch-Einträge** – die Zahl Ihrer Aufträge.
-- **Zeiterfassungen** – die Zahl der Zeiteinträge, die Sie einsehen können. Die Kachel erscheint nur, wenn Ihnen einzelne Zeiteinträge angezeigt werden.
-- **Rechnungen** – die Zahl Ihrer ausgestellten Rechnungen.
-- **Offene Punkte** – die Zahl der noch nicht geschlossenen offenen Punkte, die für Sie freigegeben sind. Die Seite **Offene Punkte** erreichen Sie nur über diese Kachel.
+- **Stunden** des laufenden Jahres – die Summe der Zeiten, die Sie einsehen können; darunter die Zahl der Einträge insgesamt.
+- **Rechnungen** – die Zahl Ihrer ausgestellten Rechnungen; darunter, wie viele davon offen sind.
+- **Offene Punkte** – die Zahl der noch nicht geschlossenen offenen Punkte, die für Sie freigegeben sind.
 - **Laufende Anfragen** – Ihre laufenden Anfragen und Aufträge. Warten Vorgänge auf eine Reaktion von Ihnen, ist die Kachel farbig umrandet und nennt deren Zahl („Davon warten … auf Sie“).
 - **Abos & Lizenzen** – die Zahl der Abos und Lizenzen in Ihrer Liste.
 
 Ist für Ihren Zugang noch kein Bereich freigegeben, sehen Sie statt der Kacheln den Hinweis **Für Ihren Zugang sind noch keine Bereiche freigegeben.** Wenden Sie sich dann an Ihre Ansprechperson bei Ihrem Auftragnehmer.
 
+Ist **Auswertungen** freigegeben, folgt die Zeile **Dieses Jahr** mit Stunden, Rechnungsbetrag und offenem Betrag; **Zu den Auswertungen** öffnet die Diagramme. Darunter stehen **Ihre Bereiche**: eine Kachel je freigegebenem Bereich mit Symbol und Kurzbeschreibung.
+
 ## Das Menü
 
-In der Kopfzeile stehen immer **Übersicht**, **Suche**, **Hilfe**, **Profil**, **Sicherheit** und **Abmelden**. Dazwischen erscheinen nur die Bereiche, die für Sie freigegeben sind:
+Die Kopfzeile zeigt links das Logo Ihres Auftragnehmers (ein Klick führt zur Übersicht), rechts die **Suche**, die **Hilfe**, den Umschalter für **Hell/Dunkel**, die **Sprache** und das **Kontomenü** mit Ihrem Namen: darin **Profil**, **Sicherheit** und **Abmelden**. Ihre Wahl von Farbschema und Sprache bleibt für Ihren Zugang gespeichert – auch auf anderen Geräten.
+
+Darunter liegt die Leiste mit den Bereichen; der aktuelle Bereich ist hervorgehoben. Auf dem Handy öffnet das Menüsymbol links oben die Bereiche als Seitenleiste. Es erscheinen immer **Übersicht** und **Suche** und sonst nur die Bereiche, die für Sie freigegeben sind:
 
 - **Auftragsbuch** – Ihre Aufträge mit Fotos, Material und Protokollen,
 - **Objekte** – Ihre Objekte,
 - **Dokumente** – für Sie freigegebene Dokumente,
 - **Zeiten** – erfasste Zeiten zu Ihren Projekten,
 - **Rechnungen** und, wenn Ihr Auftragnehmer Sie über ein Abrechnungskonto abrechnet, **Abrechnung**,
+- **Auswertungen** – Kennzahlen und Verläufe zu Zeiten, Rechnungen, Abrechnungskonto und Tickets,
+- **Offene Punkte** – für Sie freigegebene offene Punkte,
 - **Tickets**, **Servicekatalog** und **Bekannte Fehler**,
 - **Reklamationen** und **Rücksendung anmelden**,
 - **Verleih** und **Verleih-Anfrage**,
@@ -71,6 +77,8 @@ In der Kopfzeile stehen immer **Übersicht**, **Suche**, **Hilfe**, **Profil**, 
 **Schulungen** erscheint, wenn Ihr Auftragnehmer Schulungen im Portal anbietet; darin sehen Sie nur Kurse, die er für Kunden freigegeben hat.
 
 **Hilfe** öffnet das Hilfethema zu der Seite, auf der Sie gerade sind; gibt es dazu keines, die Liste der Hilfethemen des Portals. Auch dort sehen Sie nur Themen zu Bereichen, die für Sie freigegeben sind. **Profil** und **Sicherheit** beschreibt das Thema „Zugang & Sicherheit“. Mit **Abmelden** beenden Sie Ihre Sitzung.
+
+Am Seitenende finden Sie **Impressum**, **Datenschutz** und **Barrierefreiheit** Ihres Auftragnehmers sowie die **Hilfe**.
 
 ## Suchen
 

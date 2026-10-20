@@ -12,10 +12,10 @@
 @extends('customer.layout')
 
 @section('content')
-    <h1 class="text-2xl font-semibold mb-1">{{ __('contract-signing.portal.title') }}</h1>
-    <p class="text-sm text-muted mb-4">{{ __('contract-signing.portal.subtitle') }}</p>
+    <x-page-toolbar :title="__('contract-signing.portal.title')" :subtitle="__('contract-signing.portal.subtitle')" class="mb-4" />
 
-    <x-table>
+    <x-card>
+    <x-table bare>
         <x-slot:head>
             <tr>
                 <x-table.th>{{ __('Vertragsart') }}</x-table.th>
@@ -62,9 +62,10 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty :colspan="5" :title="__('contract-signing.portal.empty')" />
+            <x-table.empty :colspan="5" icon="history_edu" :title="__('contract-signing.portal.empty')" compact />
         @endforelse
     </x-table>
+    </x-card>
 
     <x-pagination :paginator="$revisions" standing />
 @endsection

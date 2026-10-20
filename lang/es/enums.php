@@ -2157,7 +2157,7 @@ return [
         'indexation_method' => ['none' => 'Sin indexación', 'consumer_price_index' => 'Índice de precios al consumo (IPC)', 'fixed_percent' => 'Porcentaje fijo', 'custom' => 'Regla propia'],
     ],
     'customer_portal' => [
-        'portal_capability' => ['diary' => 'Pedidos y expediente', 'time_entries' => 'Tiempos de proyecto', 'invoices' => 'Facturas y cuenta de facturación', 'documents' => 'Documentos', 'assets' => 'Objetos', 'open_issues' => 'Puntos abiertos', 'tickets' => 'Tickets, catálogo de servicios y errores conocidos', 'claims' => 'Reclamaciones', 'rentals' => 'Operaciones de alquiler', 'queries' => 'Consultas y comentarios', 'appointments' => 'Reserva de citas en línea', 'rental_requests' => 'Solicitud de alquiler', 'subscriptions' => 'Suscripciones y licencias', 'learning' => 'Formaciones'],
+        'portal_capability' => ['diary' => 'Pedidos y expediente', 'time_entries' => 'Tiempos de proyecto', 'invoices' => 'Facturas y cuenta de facturación', 'documents' => 'Documentos', 'assets' => 'Objetos', 'open_issues' => 'Puntos abiertos', 'tickets' => 'Tickets, catálogo de servicios y errores conocidos', 'claims' => 'Reclamaciones', 'rentals' => 'Operaciones de alquiler', 'queries' => 'Consultas y comentarios', 'appointments' => 'Reserva de citas en línea', 'rental_requests' => 'Solicitud de alquiler', 'subscriptions' => 'Suscripciones y licencias', 'learning' => 'Formaciones', 'insights' => 'Análisis'],
         'portal_time_detail' => ['none' => 'Sin tiempos', 'summary' => 'Solo totales', 'entries' => 'Entradas (fecha, duración, proyecto, empleado)', 'entries_with_description' => 'Entradas con descripción (solo publicadas)'],
     ],
     'disposal' => [

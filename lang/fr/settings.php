@@ -131,6 +131,12 @@ return [
         'enabled' => 'Autoriser les assistants IA via MCP',
         'enabled_hint' => 'Désactivé, aucune nouvelle connexion n’est possible ; les connexions existantes n’obtiennent aucun outil et ne peuvent pas être renouvelées.',
     ],
+    'customer_portal' => [
+        'heading' => 'Portail client',
+        'description' => 'S\'applique à tous les clients disposant d\'un accès au portail ; la fiche client permet de définir une période différente par client.',
+        'time_entry_years' => 'Temps visibles (années civiles, année en cours comprise)',
+        'time_entry_years_hint' => 'Par défaut 3 ans ; 0 = illimité. Limite uniquement l\'affichage dans le portail, pas la conservation.',
+    ],
     'rental_terms' => [
         'heading' => 'Conditions de location du matériel',
         'description' => 'Les conditions de location sont gérées comme accord client « Conditions de location (location de matériel) » avec version et signature.',

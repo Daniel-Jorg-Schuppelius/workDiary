@@ -1,7 +1,7 @@
 ---
 title: "Accesso e sicurezza"
 topic: customer-portal.access
-version: 6
+version: 7
 keywords:
     - Cambia password
     - Password iniziale
@@ -87,6 +87,10 @@ L'e-mail di accesso la modifica Lei stesso:
 3. Entro 24 ore apra il link contenuto nell'e-mail inviata al nuovo indirizzo.
 
 Solo dopo il clic sul link il nuovo indirizzo diventa la Sua e-mail di accesso; il vecchio indirizzo riceve un'informazione sulla modifica. Fino ad allora accede con il vecchio indirizzo, e il profilo mostra per quale indirizzo è in sospeso una conferma e fino a quando. Una nuova richiesta sostituisce quella in sospeso. Se il nuovo indirizzo è già in uso, non arriva alcuna e-mail; il messaggio del portale è sempre lo stesso, affinché nessuno possa trarre conclusioni su altri account.
+
+## Aspetto: schema colori e lingua
+
+Nella scheda **Aspetto** del profilo sceglie lo **schema colori** – **Come il sistema**, **Chiaro** o **Scuro** – e conferma con **Salva**; l'interruttore nell'intestazione passa allo stesso modo tra chiaro e scuro. Sotto sceglie la **lingua** del portale. Entrambi valgono per il Suo accesso su tutti i dispositivi. Quali colori abbiano chiaro e scuro lo stabilisce il Suo fornitore.
 
 ## Cambiare la password
 

@@ -14,18 +14,15 @@
 @extends('customer.layout')
 
 @section('content')
-    <h1 class="text-2xl font-semibold">{{ $asset->name }}</h1>
-    <p class="mb-4 text-sm opacity-70">
-        @if ($asset->serial_no){{ __('Seriennummer') }}: {{ $asset->serial_no }}@endif
-    </p>
+    <x-page-toolbar :title="$asset->name" :subtitle="$asset->serial_no ? __('Seriennummer') . ': ' . $asset->serial_no : null"
+                    :back="route('customer.assets.index')" :back-label="__('Objekte')" class="mb-4" />
 
     <div class="space-y-6">
-        <x-card as="section">
-            <h2 class="mb-2 font-semibold">{{ __('Prüf- & Wartungstermine') }}</h2>
+        <x-card as="section" :title="__('Prüf- & Wartungstermine')" icon="event">
             @if ($asset->maintenancePlans->isEmpty())
                 <x-empty-state icon="event" :title="__('Keine Termine hinterlegt.')" compact />
             @else
-                <x-table>
+                <x-table bare>
                     <x-slot:head>
                         <tr>
                             <x-table.th>{{ __('Bezeichnung') }}</x-table.th>
@@ -42,8 +39,7 @@
             @endif
         </x-card>
 
-        <x-card as="section">
-            <h2 class="mb-2 font-semibold">{{ __('Abgeschlossene Wartungen') }}</h2>
+        <x-card as="section" :title="__('Abgeschlossene Wartungen')" icon="build">
             @if ($timeline === [])
                 <x-empty-state icon="build" :title="__('Noch keine abgeschlossenen Wartungen.')" compact />
             @else
@@ -58,8 +54,7 @@
             @endif
         </x-card>
 
-        <x-card as="section">
-            <h2 class="mb-2 font-semibold">{{ __('Protokolle') }}</h2>
+        <x-card as="section" :title="__('Protokolle')" icon="description">
             @if ($asset->protocols->isEmpty())
                 <x-empty-state icon="description" :title="__('Keine freigegebenen Protokolle.')" compact />
             @else

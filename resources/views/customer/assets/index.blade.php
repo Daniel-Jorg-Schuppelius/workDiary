@@ -12,8 +12,9 @@
 @extends('customer.layout')
 
 @section('content')
-    <h1 class="text-2xl font-semibold mb-4">{{ __('Objekte') }}</h1>
-    <x-table>
+    <x-page-toolbar :title="__('Objekte')" :subtitle="__('customer_portal.nav.assets')" class="mb-4" />
+    <x-card>
+    <x-table bare>
         <x-slot:head>
             <tr>
                 <x-table.th>{{ __('Name') }}</x-table.th>
@@ -26,8 +27,9 @@
                 <td class="font-mono text-sm">{{ $asset->serial_no ?? '—' }}</td>
             </tr>
         @empty
-            <x-table.empty :colspan="2" :title="__('Keine Objekte vorhanden.')" />
+            <x-table.empty :colspan="2" icon="devices_other" :title="__('Keine Objekte vorhanden.')" compact />
         @endforelse
     </x-table>
+    </x-card>
     <x-pagination :paginator="$assets" standing />
 @endsection

@@ -15,7 +15,8 @@ namespace App\Http\Controllers\CustomerPortal;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Services\CustomerPortal\PortalEmailChangeService;
-use Illuminate\Http\{RedirectResponse, Request};
+use App\Services\UI\ThemeService;
+use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -69,6 +70,24 @@ class ProfileController extends Controller {
 
         return redirect($target)
             ->with('status', __('Ihre E-Mail-Adresse wurde geändert. Bitte verwenden Sie ab jetzt die neue Adresse zur Anmeldung.'));
+    }
+
+    /**
+     * Farbschema des Portalkontos (MVP-1241): Kopfzeilen-Umschalter (JSON, PUT)
+     * und Karte „Darstellung" im Profil (Formular) speichern dieselbe Wahl wie
+     * intern über {@see ThemeService::rememberScheme()}.
+     */
+    public function updateTheme(Request $request, ThemeService $themes): JsonResponse|RedirectResponse {
+        $data = $request->validate([
+            'scheme' => ['required', 'in:auto,light,dark'],
+        ]);
+        $themes->rememberScheme($this->portalUser(), (string) $data['scheme']);
+
+        if ($request->expectsJson()) {
+            return response()->json(['ok' => true, 'scheme' => $data['scheme']]);
+        }
+
+        return redirect()->route('customer.profile.show')->with('success', __('customer_portal.appearance.saved'));
     }
 
     private function portalUser(): User {

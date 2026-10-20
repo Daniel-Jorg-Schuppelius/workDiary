@@ -10,10 +10,9 @@
 @extends('customer.layout')
 
 @section('content')
-    <div class="mx-auto max-w-xl">
+    <div class="mx-auto max-w-xl space-y-4">
+        <x-page-toolbar :title="__('customer_intake.portal.upload_files')" :subtitle="__('customer_intake.portal.upload_intro')" :back="route('customer.intakes.index')" :back-label="__('customer_intake.portal.title')" />
         <x-card padding="p-6">
-            <h1 class="mb-1 text-xl font-semibold">{{ __('customer_intake.portal.upload_files') }}</h1>
-            <p class="mb-4 text-sm text-base-content/70">{{ __('customer_intake.portal.upload_intro') }}</p>
 
             <form method="POST" action="{{ route('customer.intakes.upload.store') }}" enctype="multipart/form-data" class="space-y-4" data-upload-form>
                 @csrf

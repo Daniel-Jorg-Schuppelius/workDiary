@@ -15,10 +15,10 @@
 @endphp
 
 @section('content')
-    <h1 class="text-2xl font-semibold mb-1">{{ __('customer-billing.portal_title') }}</h1>
-    <p class="text-sm text-muted mb-4">{{ __('customer-billing.portal_intro') }}</p>
+    <x-page-toolbar :title="__('customer-billing.portal_title')" :subtitle="__('customer-billing.portal_intro')" class="mb-4" />
 
-    <x-table>
+    <x-card>
+    <x-table bare>
         <x-slot:head>
             <tr>
                 <x-table.th>{{ __('customer-billing.month') }}</x-table.th>
@@ -42,16 +42,17 @@
                 <td class="text-right tabular-nums">{{ $money($statement->payments_total) }}</td>
                 <td class="text-right tabular-nums">{{ $money($statement->carry_in) }}</td>
                 <td class="text-right tabular-nums font-medium">{{ $money($statement->balance) }}</td>
-                <td>
+                <td class="text-right">
                     @unless ($statement->locked)
-                        <x-status-badge>{{ __('customer-billing.provisional') }}</x-status-badge>
+                        <x-status-badge tone="warning" size="sm" outline>{{ __('customer-billing.provisional') }}</x-status-badge>
                     @endunless
                 </td>
             </tr>
         @empty
-            <x-table.empty :colspan="7" :title="__('customer-billing.no_statements')" />
+            <x-table.empty :colspan="7" icon="account_balance_wallet" :title="__('customer-billing.no_statements')" compact />
         @endforelse
     </x-table>
+    </x-card>
 
     <x-pagination :paginator="$statements" standing />
 @endsection

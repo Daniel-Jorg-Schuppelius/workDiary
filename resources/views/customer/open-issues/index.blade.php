@@ -9,7 +9,7 @@
 @extends('customer.layout')
 
 @section('content')
-    <h1 class="text-2xl font-semibold mb-4">{{ __('open-issue.title.index') }}</h1>
+    <x-page-toolbar :title="__('open-issue.title.index')" :subtitle="__('customer_portal.nav.open_issues')" class="mb-4" />
 
     @if ($issues->isEmpty())
         <x-empty-state framed icon="flag"
@@ -17,7 +17,7 @@
     @else
         <ul class="space-y-3">
             @foreach ($issues as $issue)
-                <li class="rounded bg-base-100 border border-base-300 p-4">
+                <x-card as="li">
                     <div class="flex flex-wrap items-start justify-between gap-3">
                         <div class="min-w-0 flex-1">
                             <div class="mb-1 flex flex-wrap items-center gap-2">
@@ -44,7 +44,7 @@
                             </p>
                         </div>
                     </div>
-                </li>
+                </x-card>
             @endforeach
         </ul>
         <x-pagination :paginator="$issues" standing />

@@ -12,11 +12,13 @@
 
 @section('content')
 <div class="space-y-4">
-    <h1 class="text-xl font-semibold">{{ $claim->number }} — {{ $claim->title }}</h1>
-
+    <x-page-toolbar :title="$claim->title" :subtitle="$claim->number" :back="route('customer.claims.index')" :back-label="__('Meine Reklamationen')">
+        <x-slot:badges>
+            <x-status-badge tone="plain" size="sm" outline>{{ $claim->status->label() }}</x-status-badge>
+        </x-slot:badges>
+    </x-page-toolbar>
 
     <x-card class="flex flex-col gap-2">
-        <p><x-status-badge tone="plain" size="md" outline>{{ $claim->status->label() }}</x-status-badge></p>
         <x-detail-grid class="grid-cols-2">
             <x-detail-grid.row :label="__('Gemeldet am')">{{ $claim->reported_at->fdate() }}</x-detail-grid.row>
             <x-detail-grid.row :label="__('Rücksendungen')">
@@ -41,8 +43,7 @@
         @endif
     </x-card>
 
-    <x-card class="flex flex-col gap-2">
-        <h2 class="card-title text-base">{{ __('Nachreichung') }}</h2>
+    <x-card :title="__('Nachreichung')" icon="forum" class="flex flex-col gap-2">
         <p class="text-sm text-muted">{{ __('Ergänzende Informationen zu Ihrer Reklamation übermitteln.') }}</p>
         <form method="POST" action="{{ route('customer.claims.note', $claim) }}" class="space-y-2">
             @csrf
@@ -62,7 +63,5 @@
             </ul>
         @endif
     </x-card>
-
-    <a class="link" href="{{ route('customer.claims.index') }}">{{ __('Zurück zur Übersicht') }}</a>
 </div>
 @endsection

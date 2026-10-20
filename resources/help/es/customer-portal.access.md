@@ -1,7 +1,7 @@
 ---
 title: "Acceso y seguridad"
 topic: customer-portal.access
-version: 6
+version: 7
 keywords:
     - Cambiar contraseña
     - Contraseña inicial
@@ -88,6 +88,10 @@ El correo de inicio de sesión lo cambia usted mismo:
 3. En un plazo de 24 horas, abra el enlace del correo enviado a la nueva dirección.
 
 Solo después de hacer clic en el enlace la nueva dirección pasa a ser su correo de inicio de sesión; la dirección anterior recibe una información sobre el cambio. Hasta entonces inicia sesión con la dirección anterior, y el perfil muestra para qué dirección hay una confirmación pendiente y hasta cuándo. Una nueva solicitud sustituye a la pendiente. Si la nueva dirección ya está en uso, no llega ningún correo; el mensaje del portal es siempre el mismo para que nadie pueda sacar conclusiones sobre otras cuentas.
+
+## Apariencia: esquema de colores e idioma
+
+En la tarjeta **Apariencia** del perfil elige el **esquema de colores** – **Como el sistema**, **Claro** u **Oscuro** – y confirma con **Guardar**; el conmutador de la cabecera alterna del mismo modo entre claro y oscuro. Debajo elige el **idioma** del portal. Ambos se aplican a su acceso en todos los dispositivos. Qué colores tienen el modo claro y el oscuro lo determina su proveedor.
 
 ## Cambiar la contraseña
 

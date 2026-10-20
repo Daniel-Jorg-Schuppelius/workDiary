@@ -1,7 +1,7 @@
 ---
 title: "Portal de clientes – Resumen"
 topic: customer-portal.overview
-version: 4
+version: 5
 keywords:
     - inicio del portal
     - área de clientes
@@ -41,23 +41,29 @@ Más abajo pueden aparecer avisos de su proveedor, cada uno con asunto, fecha, h
 Para cada área liberada, la página de inicio muestra un mosaico con un número. Un clic en el mosaico abre el área.
 
 - **Entradas del libro de órdenes** – el número de sus pedidos.
-- **Registros de tiempo** – el número de registros de tiempo que usted puede consultar. El mosaico solo aparece si se le muestran registros individuales.
-- **Facturas** – el número de sus facturas emitidas.
-- **Puntos abiertos** – el número de puntos abiertos liberados para usted que aún no están cerrados. A la página **Puntos abiertos** solo se llega a través de este mosaico.
+- **Horas** del año en curso – la suma de los tiempos que puede consultar; debajo, el número total de registros.
+- **Facturas** – el número de sus facturas emitidas; debajo, cuántas de ellas están pendientes.
+- **Puntos abiertos** – el número de puntos abiertos liberados para usted que aún no están cerrados.
 - **Solicitudes en curso** – sus solicitudes y pedidos en curso. Si hay asuntos que esperan una reacción suya, el mosaico tiene un borde de color e indica cuántos son («De ellas, … le esperan a usted»).
 - **Suscripciones y licencias** – el número de suscripciones y licencias de su lista.
 
 Si todavía no se ha liberado ningún área para su acceso, en lugar de los mosaicos verá el aviso **Aún no se han liberado áreas para su acceso.** En ese caso, diríjase a su persona de contacto en su proveedor.
 
+Si **Análisis** está habilitado, sigue la fila **Este año** con horas, importe facturado e importe pendiente; **Ir a los análisis** abre los gráficos. Debajo están **Sus áreas**: un mosaico por área habilitada con icono y breve descripción.
+
 ## El menú
 
-La cabecera muestra siempre **Vista general**, **Búsqueda**, **Ayuda**, **Perfil**, **Seguridad** y **Cerrar sesión**. Entre ellas solo aparecen las áreas liberadas para usted:
+La cabecera muestra a la izquierda el logotipo de su proveedor (un clic lleva a la vista general) y a la derecha la **Búsqueda**, la **Ayuda**, el conmutador **claro/oscuro**, el **idioma** y el **menú de cuenta** con su nombre: allí encuentra **Perfil**, **Seguridad** y **Cerrar sesión**. Su elección de esquema de colores e idioma queda guardada para su acceso – también en otros dispositivos.
+
+Debajo está la barra de áreas; el área actual aparece resaltada. En el móvil, el icono de menú arriba a la izquierda abre las áreas como panel lateral. **Vista general** y **Búsqueda** aparecen siempre; por lo demás, solo las áreas liberadas para usted:
 
 - **Libro de órdenes** – sus pedidos con fotos, material y protocolos,
 - **Objetos** – sus objetos,
 - **Documentos** – los documentos liberados para usted,
 - **Tiempos** – los tiempos registrados para sus proyectos,
 - **Facturas** y, si su proveedor le factura mediante una cuenta de facturación, **Facturación**,
+- **Análisis** – indicadores y evolución de tiempos, facturas, cuenta de facturación y tickets,
+- **Puntos abiertos** – los puntos abiertos liberados para usted,
 - **Tickets**, **Catálogo de servicios** y **Errores conocidos**,
 - **Reclamaciones** y **Registrar devolución**,
 - **Alquiler** y **Solicitud de alquiler**,
@@ -71,6 +77,8 @@ La cabecera muestra siempre **Vista general**, **Búsqueda**, **Ayuda**, **Perfi
 **Formación** aparece si su proveedor ofrece formación en el portal; allí solo ve los cursos que ha puesto a disposición de los clientes.
 
 **Ayuda** abre el tema de ayuda de la página en la que se encuentra; si no lo hay, la lista de temas de ayuda del portal. También allí solo ve los temas de las áreas liberadas para usted. **Perfil** y **Seguridad** se describen en el tema «Acceso y seguridad». **Cerrar sesión** finaliza su sesión.
+
+Al final de la página encuentra el **Aviso legal**, la **Protección de datos** y la **Accesibilidad** de su proveedor, así como la **Ayuda**.
 
 ## Buscar
 

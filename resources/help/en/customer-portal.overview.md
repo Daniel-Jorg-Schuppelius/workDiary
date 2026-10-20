@@ -1,7 +1,7 @@
 ---
 title: "Customer Portal – Overview"
 topic: customer-portal.overview
-version: 4
+version: 5
 keywords:
     - portal home
     - customer area
@@ -41,23 +41,29 @@ Below that there may be announcements from your contractor, each with subject, d
 For each released area the start page shows a tile with a number. Clicking the tile opens the area.
 
 - **Diary entries** – the number of your orders.
-- **Time entries** – the number of time entries you can view. The tile only appears if individual time entries are shown to you.
-- **Invoices** – the number of your issued invoices.
-- **Open Issues** – the number of open issues released to you that are not yet closed. You can reach the **Open Issues** page only through this tile.
+- **Hours** of the current year – the total of the times you can view; below it the number of entries in total.
+- **Invoices** – the number of your issued invoices; below it, how many of them are open.
+- **Open Issues** – the number of open issues released to you that are not yet closed.
 - **Open requests** – your ongoing requests and orders. If items are waiting for a reaction from you, the tile has a coloured border and states their number (“Of which … await you”).
 - **Subscriptions & licences** – the number of subscriptions and licences in your list.
 
 If no area has been released for your access yet, instead of the tiles you see the notice **No areas have been released for your access yet.** In that case, please contact your contact person at your contractor.
 
+If **Insights** is released, the row **This year** follows with hours, invoice amount and open amount; **Go to insights** opens the charts. Below that are **Your areas**: one tile per released area with icon and short description.
+
 ## The menu
 
-The header always shows **Overview**, **Search**, **Help**, **Profile**, **Security** and **Sign out**. In between, only the areas released to you appear:
+The header shows your contractor's logo on the left (a click leads to the overview), and on the right the **Search**, the **Help**, the **light/dark** switch, the **language** and the **account menu** with your name: there you find **Profile**, **Security** and **Sign out**. Your choice of colour scheme and language is saved for your access – on other devices too.
+
+Below it is the bar with the areas; the current area is highlighted. On the phone, the menu icon at the top left opens the areas as a side panel. **Overview** and **Search** always appear, otherwise only the areas released to you:
 
 - **Diary** – your orders with photos, material and protocols,
 - **Objects** – your objects,
 - **Documents** – documents released to you,
 - **Times** – recorded times for your projects,
 - **Invoices** and, if your contractor bills you through a billing account, **Billing**,
+- **Insights** – key figures and trends for times, invoices, billing account and tickets,
+- **Open Issues** – open issues released to you,
 - **Tickets**, **Service catalog** and **Known errors**,
 - **Complaints** and **Register a return**,
 - **Rental** and **Rental request**,
@@ -71,6 +77,8 @@ The header always shows **Overview**, **Search**, **Help**, **Profile**, **Secur
 **Training** appears if your contractor offers training in the portal; there you only see courses that your contractor has released for customers.
 
 **Help** opens the help topic for the page you are currently on; if there is none, the list of the portal's help topics. There, too, you only see topics for areas that have been released to you. **Profile** and **Security** are described in the topic “Access & Security”. **Sign out** ends your session.
+
+At the bottom of the page you find your contractor's **Imprint**, **Privacy** and **Accessibility** as well as the **Help**.
 
 ## Searching
 

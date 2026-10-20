@@ -30,6 +30,12 @@
         ));
         $timeDetail = $portalVisibility->timeDetail($customer);
         $timeScope = $portalVisibility->timeScope($customer);
+        // Jahresgrenze (MVP-1237): Abweichung des Kunden oder Organisationsstandard.
+        $timeYearsOwn = PortalVisibility::customerTimeYears($customer);
+        $timeYearsOrg = $portalVisibility->organizationTimeYears($customer);
+        $timeYearsLabel = fn (int $years): string => $years === PortalVisibility::TIME_YEARS_UNLIMITED
+            ? __('customer_portal.visibility.years_unlimited')
+            : trans_choice('customer_portal.visibility.years_count', $years, ['count' => $years]);
     @endphp
     <x-card :title="__('Portal-Sichtbarkeit')" id="portal-visibility">
         <form method="POST" action="{{ route('customers.portal-visibility.update', $customer) }}" class="space-y-4">
@@ -64,7 +70,7 @@
                 </div>
             </fieldset>
 
-            <div class="grid gap-3 sm:grid-cols-2">
+            <div class="grid gap-3 sm:grid-cols-3">
                 <div class="fieldset">
                     <label class="fieldset-label" for="portal-time-detail">{{ __('Projektzeiten — Detailstufe') }}</label>
                     <select id="portal-time-detail" name="time_detail" class="select select-bordered select-sm w-full">
@@ -81,6 +87,17 @@
                     </select>
                     <p class="mt-1 text-xs text-muted">{{ __('Einzelne Zeiten veröffentlichen Sie über die Massenaktion im Projekt-Zeittab; Beschreibungen erscheinen nur für veröffentlichte Einträge.') }}</p>
                 </div>
+                <div class="fieldset">
+                    <label class="fieldset-label" for="portal-time-years">{{ __('customer_portal.visibility.years_label') }}</label>
+                    <select id="portal-time-years" name="time_years" class="select select-bordered select-sm w-full">
+                        <option value="" @selected($timeYearsOwn === null)>{{ __('customer_portal.visibility.years_default', ['value' => $timeYearsLabel($timeYearsOrg)]) }}</option>
+                        @foreach ([1, 2, 3, 5, 10] as $years)
+                            <option value="{{ $years }}" @selected($timeYearsOwn === $years)>{{ $timeYearsLabel($years) }}</option>
+                        @endforeach
+                        <option value="0" @selected($timeYearsOwn === PortalVisibility::TIME_YEARS_UNLIMITED)>{{ __('customer_portal.visibility.years_unlimited') }}</option>
+                    </select>
+                    <p class="mt-1 text-xs text-muted">{{ __('customer_portal.visibility.years_hint') }}</p>
+                </div>
             </div>
 
             {{-- Vorschau: „Dieser Kunde sieht …" --}}
@@ -91,7 +108,7 @@
                 @else
                     <span>{{ collect($grantedCaps)->map(fn (PortalCapability $c): string => $c->label())->implode(', ') }}</span>
                     @if ($timeDetail !== PortalTimeDetail::None)
-                        <span class="text-muted">· {{ __('Zeiten: :detail', ['detail' => $timeDetail->label()]) }}</span>
+                        <span class="text-muted">· {{ __('Zeiten: :detail', ['detail' => $timeDetail->label()]) }} · {{ $timeYearsLabel($portalVisibility->timeYears($customer)) }}</span>
                     @endif
                 @endif
             </div>

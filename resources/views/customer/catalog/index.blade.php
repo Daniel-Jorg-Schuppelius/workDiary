@@ -12,14 +12,10 @@
      Einträge; darunter der Status der eigenen Bestellungen. --}}
 
 @section('content')
-    <div class="mb-4 flex items-center justify-between">
-        <h1 class="text-2xl font-semibold">{{ __('Servicekatalog') }}</h1>
-    </div>
+    <x-page-toolbar :title="__('Servicekatalog')" :subtitle="__('customer_portal.nav.catalog')" class="mb-4" />
 
     @if ($items->isEmpty())
-        <x-card padding="p-6" class="text-center text-muted">
-            {{ __('Derzeit sind keine Leistungen bestellbar.') }}
-        </x-card>
+        <x-empty-state framed icon="storefront" :title="__('Derzeit sind keine Leistungen bestellbar.')" />
     @else
         <div class="grid gap-3 sm:grid-cols-2">
             @foreach ($items as $item)
@@ -36,8 +32,8 @@
         </div>
     @endif
 
-    <h2 class="mt-8 mb-2 text-lg font-semibold">{{ __('Meine Bestellungen') }}</h2>
-    <x-table>
+    <x-card :title="__('Meine Bestellungen')" icon="shopping_cart" padding="p-0" class="mt-8">
+    <x-table bare>
         <x-slot:head>
             <tr>
                 <x-table.th>{{ __('Nummer') }}</x-table.th>
@@ -57,13 +53,14 @@
                 </td>
                 <td>{{ $request->catalog_snapshot['name'] ?? $request->requestItem?->name ?? '—' }}</td>
                 {{-- „Erfüllt" heißt beim Request nur „Zielvorgang angelegt" (MVP-1077) — maßgeblich ist das Ticket. --}}
-                <td>{{ in_array($request->status, [\App\Enums\ServiceTicket\ServiceRequestStatus::PendingApproval, \App\Enums\ServiceTicket\ServiceRequestStatus::Rejected], true) || $request->ticket === null ? $request->status->label() : $request->ticket->status->label() }}</td>
+                <td><x-status-badge size="sm" outline>{{ in_array($request->status, [\App\Enums\ServiceTicket\ServiceRequestStatus::PendingApproval, \App\Enums\ServiceTicket\ServiceRequestStatus::Rejected], true) || $request->ticket === null ? $request->status->label() : $request->ticket->status->label() }}</x-status-badge></td>
                 <td class="whitespace-nowrap">{{ $request->created_at?->isoFormat('L') }}</td>
             </tr>
         @empty
-            <x-table.empty :colspan="4" :title="__('Noch keine Bestellungen vorhanden.')" />
+            <x-table.empty :colspan="4" icon="shopping_cart" :title="__('Noch keine Bestellungen vorhanden.')" compact />
         @endforelse
     </x-table>
+    </x-card>
 
     <x-pagination :paginator="$requests" standing />
 @endsection

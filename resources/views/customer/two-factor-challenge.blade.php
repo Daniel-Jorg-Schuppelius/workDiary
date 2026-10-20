@@ -9,7 +9,7 @@
 @extends('customer.layout')
 
 @section('content')
-    <div class="max-w-md mx-auto bg-base-100 border border-base-300 rounded p-6 mt-10" x-data="twoFactorChallenge">
+    <x-card padding="p-6" class="mx-auto mt-6 max-w-md" x-data="twoFactorChallenge">
         <h1 class="text-xl font-semibold mb-2 flex items-center gap-2">
             <x-icon name="verified_user" />
             {{ __('Zwei-Faktor-Bestätigung') }}
@@ -33,14 +33,14 @@
         <form method="POST" action="{{ route('customer.two-factor.login.attempt') }}" class="space-y-4">
             @csrf
             <div x-show="authMode">
-                <label class="block text-sm mb-1" for="code">{{ __('Code') }}</label>
+                <label class="mb-1 block text-sm font-medium" for="code">{{ __('Code') }}</label>
                 <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" autofocus
-                       placeholder="000000" class="w-full border border-base-300 rounded px-3 py-2 bg-base-100 text-center tracking-[0.4em]">
+                       placeholder="000000" class="input input-bordered w-full text-center tracking-[0.4em]">
             </div>
             <div x-show="recovery" x-cloak>
-                <label class="block text-sm mb-1" for="recovery_code">{{ __('Recovery-Code') }}</label>
+                <label class="mb-1 block text-sm font-medium" for="recovery_code">{{ __('Recovery-Code') }}</label>
                 <input id="recovery_code" name="recovery_code" type="text" autocomplete="one-time-code"
-                       class="w-full border border-base-300 rounded px-3 py-2 bg-base-100">
+                       class="input input-bordered w-full">
             </div>
             <x-button type="submit" tone="primary" class="w-full">{{ __('Bestätigen') }}</x-button>
         </form>
@@ -60,7 +60,7 @@
                 <form method="POST" action="{{ route('customer.two-factor.login.attempt') }}" class="space-y-2">
                     @csrf
                     <input aria-label="{{ __('E-Mail-Code') }}" name="email_code" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="{{ __('E-Mail-Code') }}"
-                           class="w-full border border-base-300 rounded px-3 py-2 bg-base-100 text-center tracking-[0.4em]">
+                           class="input input-bordered w-full text-center tracking-[0.4em]">
                     <x-button type="submit" tone="primary" size="sm" class="w-full">{{ __('Mit E-Mail-Code bestätigen') }}</x-button>
                 </form>
             </div>
@@ -70,6 +70,6 @@
             @csrf
             <button type="submit" class="text-sm text-muted hover:underline">← {{ __('Abbrechen') }}</button>
         </form>
-    </div>
+    </x-card>
     @include('partials.webauthn-script')
 @endsection

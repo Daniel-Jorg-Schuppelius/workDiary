@@ -12,16 +12,16 @@
 
 @section('content')
 <div class="space-y-4">
-    <h1 class="text-xl font-semibold">{{ __('Meine Reklamationen') }}</h1>
+    <x-page-toolbar :title="__('Meine Reklamationen')" :subtitle="__('customer_portal.nav.claims')" />
 
-
-    <x-table>
+    <x-card>
+    <x-table bare>
         <x-slot:head>
             <tr>
-                <th>{{ __('Nummer') }}</th>
-                <th>{{ __('Titel') }}</th>
-                <th>{{ __('Status') }}</th>
-                <th>{{ __('Gemeldet am') }}</th>
+                <x-table.th>{{ __('Nummer') }}</x-table.th>
+                <x-table.th>{{ __('Titel') }}</x-table.th>
+                <x-table.th>{{ __('Status') }}</x-table.th>
+                <x-table.th>{{ __('Gemeldet am') }}</x-table.th>
             </tr>
         </x-slot:head>
         @forelse ($cases as $case)
@@ -32,9 +32,10 @@
                 <td>{{ $case->reported_at->fdate() }}</td>
             </tr>
         @empty
-            <x-table.empty :colspan="4" :title="__('Keine Reklamationen vorhanden.')" />
+            <x-table.empty :colspan="4" icon="report_problem" :title="__('Keine Reklamationen vorhanden.')" compact />
         @endforelse
     </x-table>
+    </x-card>
     <x-pagination :paginator="$cases" standing />
 </div>
 @endsection

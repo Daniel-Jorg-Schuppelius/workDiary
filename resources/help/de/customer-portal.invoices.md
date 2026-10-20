@@ -1,7 +1,7 @@
 ---
 title: "Meine Rechnungen"
 topic: customer-portal.invoices
-version: 5
+version: 6
 keywords:
     - Rechnungen ansehen
     - Rechnungsübersicht
@@ -48,6 +48,10 @@ Alle Rechnungen stehen gemeinsam nach Datum sortiert, die neueste oben – die R
 - **Teilweise bezahlt** – ein Teil des Betrags ist eingegangen.
 - **Bezahlt** – die Rechnung ist vollständig beglichen.
 - **Storniert** – die Rechnung wurde storniert und ist nicht mehr zu zahlen.
+
+## Jahr, Status und Monat
+
+Die Liste zeigt ein **Kalenderjahr**; oben wechseln Sie per Reiter in andere Jahre. In der Filterleiste grenzen Sie nach **Status** (offen oder bezahlt) und **Monat** ein; **Zurücksetzen** zeigt wieder das ganze Jahr. Aus den **Auswertungen** führen die Diagramme direkt in diese Liste mit dem passenden Monat.
 
 ## Rechnung herunterladen
 

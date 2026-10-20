@@ -771,6 +771,7 @@ return [
         'customer.subscriptions.*' => 'customer-portal.subscriptions',
         'customer.agreements.*' => 'customer-portal.agreements',
         'customer.time-entries.*' => 'customer-portal.time',
+        'customer.insights.*' => 'customer-portal.insights',
         'customer.documents.*' => 'customer-portal.documents',
         'customer.tickets.*' => 'customer-portal.tickets',
         // Anfragepfad des Katalogs gehört zu „Anfragen und Aufträge" (MVP-1077).

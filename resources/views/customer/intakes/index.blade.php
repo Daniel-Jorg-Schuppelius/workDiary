@@ -10,18 +10,18 @@
 @extends('customer.layout')
 
 @section('content')
-    <h1 class="mb-2 text-2xl font-semibold">{{ __('customer_intake.portal.title') }}</h1>
-    <p class="mb-4 text-sm text-base-content/70">{{ __('customer_intake.portal.intro') }}</p>
+    <x-page-toolbar :title="__('customer_intake.portal.title')" :subtitle="__('customer_intake.portal.intro')" class="mb-4">
+        <x-slot:actions>
+            <x-icon-btn icon="print" tone="primary" :href="route('customer.intakes.create', ['kind' => 'print'])" show-label placement="bar">{{ __('customer_intake.portal.request_print') }}</x-icon-btn>
+            <x-icon-btn icon="computer" tone="primary" :href="route('customer.intakes.create', ['kind' => 'it'])" show-label placement="bar">{{ __('customer_intake.portal.request_it') }}</x-icon-btn>
+            @if ($hasUploadTargets)
+                <x-icon-btn icon="upload_file" :href="route('customer.intakes.upload')" show-label>{{ __('customer_intake.portal.upload_files') }}</x-icon-btn>
+            @endif
+        </x-slot:actions>
+    </x-page-toolbar>
 
-    <div class="mb-4 flex flex-wrap gap-2">
-        <x-button :href="route('customer.intakes.create', ['kind' => 'print'])" icon="print">{{ __('customer_intake.portal.request_print') }}</x-button>
-        <x-button :href="route('customer.intakes.create', ['kind' => 'it'])" icon="computer">{{ __('customer_intake.portal.request_it') }}</x-button>
-        @if ($hasUploadTargets)
-            <x-button :href="route('customer.intakes.upload')" tone="outline" icon="upload_file">{{ __('customer_intake.portal.upload_files') }}</x-button>
-        @endif
-    </div>
-
-    <x-table>
+    <x-card>
+    <x-table bare>
         <x-slot:head>
             <tr>
                 <x-table.th>{{ __('Nummer') }}</x-table.th>
@@ -46,9 +46,10 @@
                 <td class="whitespace-nowrap">{{ $intake->created_at?->fdate() }}</td>
             </tr>
         @empty
-            <x-table.empty :colspan="5" :title="__('customer_intake.portal.empty')" />
+            <x-table.empty :colspan="5" icon="move_to_inbox" :title="__('customer_intake.portal.empty')" compact />
         @endforelse
     </x-table>
+    </x-card>
 
     <x-pagination :paginator="$intakes" standing />
 @endsection

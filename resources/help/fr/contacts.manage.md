@@ -1,7 +1,7 @@
 ---
 title: "Clients & fournisseurs"
 topic: contacts.manage
-version: 8
+version: 9
 keywords:
     - Aperçu en tant que client
     - Mot de passe initial
@@ -104,6 +104,8 @@ Si un contact a perdu toutes ses méthodes à deux facteurs et ses codes de réc
 **Créer un accès** crée un accès sans e-mail d'invitation, par exemple au téléphone ou en rendez-vous : après **Nom** et **E-mail**, la fiche client affiche une seule fois un **mot de passe initial** aléatoire. Remettez-le en personne ou par téléphone, jamais par e-mail ; le portail ne l'envoie pas et ne l'enregistre nulle part en clair. Jusqu'à la première connexion, l'accès affiche **Mot de passe initial en attente** ; à la première connexion, le contact doit définir son propre mot de passe. S'il l'a perdu, **Générer un mot de passe initial** en crée un nouveau (le mot de passe précédent cesse immédiatement d'être valable, toutes les sessions sont fermées). Les deux actions exigent une confirmation de votre mot de passe et sont journalisées.
 
 **Voir le portail** ouvre le portail client dans un nouvel onglet tel que ce contact le voit – avec ses zones, documents et factures – et aide pour des questions comme « Où trouver … ? ». L'aperçu est une simple vue : les actions sont verrouillées, les pages de sécurité et de mot de passe ne sont pas accessibles, et il ne compte pas comme une connexion du contact. Il se termine avec **Terminer l'aperçu** dans la barre jaune ou dans la fiche client, au plus tard après 60 minutes, et est journalisé avec début et fin. Il exige le droit **Voir le portail client en tant que client** ; sans accès, pas d'aperçu : créez-en d'abord un.
+
+**Visibilité du portail :** à côté des zones, vous choisissez ici la **période visible des temps** – **valeur par défaut de l'organisation** (réglage **Portail client** dans les paramètres de l'organisation, par défaut trois années civiles, année en cours comprise), un nombre fixe d'années ou **illimitée**. C'est une limite d'affichage dans le portail, pas une suppression. L'ouverture **Analyses** montre au client des indicateurs et des graphiques – uniquement issus des zones également ouvertes (temps au niveau de détail configuré, factures, compte de facturation, tickets) ; comme toute nouvelle ouverture, elle démarre « désactivée ».
 
 ## Exemple pratique
 

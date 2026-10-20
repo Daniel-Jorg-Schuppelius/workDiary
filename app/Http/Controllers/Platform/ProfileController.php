@@ -199,15 +199,7 @@ class ProfileController extends Controller {
             'scheme' => ['required', 'in:auto,light,dark'],
         ]);
 
-        $prefs = (array) ($user->preferences ?? []);
-        unset($prefs['theme']); // konkretes Theme weicht der Modus-Wahl
-        if (($data['scheme'] ?? 'auto') === 'auto') {
-            unset($prefs['color_scheme']);
-        } else {
-            $prefs['color_scheme'] = $data['scheme'];
-        }
-        $user->preferences = $prefs === [] ? null : $prefs;
-        $user->save();
+        app(\App\Services\UI\ThemeService::class)->rememberScheme($user, (string) $data['scheme']);
 
         return response()->json(['ok' => true, 'scheme' => $data['scheme']]);
     }

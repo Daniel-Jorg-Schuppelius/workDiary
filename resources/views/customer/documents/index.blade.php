@@ -14,8 +14,7 @@
 @extends('customer.layout')
 
 @section('content')
-    <h1 class="text-2xl font-semibold mb-1">{{ __('document.customer.portal.title') }}</h1>
-    <p class="text-sm text-muted mb-4">{{ __('document.customer.portal.subtitle') }}</p>
+    <x-page-toolbar :title="__('document.customer.portal.title')" :subtitle="__('document.customer.portal.subtitle')" class="mb-4" />
 
     @php
         // Rückfragen (MVP-512): CTA nur mit eigener Capability.
@@ -24,7 +23,8 @@
             && app(\App\Services\CustomerPortal\PortalVisibility::class)->allows($portalQueryCustomer, \App\Enums\CustomerPortal\PortalCapability::Queries);
     @endphp
 
-    <x-table>
+    <x-card>
+    <x-table bare>
         <x-slot:head>
             <tr>
                 <x-table.th>{{ __('document.field.title') }}</x-table.th>
@@ -56,9 +56,10 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty :colspan="5" :title="__('document.customer.portal.empty')" />
+            <x-table.empty :colspan="5" icon="folder_open" :title="__('document.customer.portal.empty')" compact />
         @endforelse
     </x-table>
+    </x-card>
 
     <x-pagination :paginator="$documents" standing />
 @endsection

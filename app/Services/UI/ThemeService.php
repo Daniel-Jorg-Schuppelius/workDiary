@@ -225,6 +225,23 @@ class ThemeService {
         ];
     }
 
+    /**
+     * Modus-Wahl des Kopfzeilen-Umschalters am Konto speichern (intern wie im
+     * Kundenportal, MVP-1241): `light`/`dark` setzen `color_scheme`, `auto`
+     * löscht sie; ein konkretes persönliches Theme weicht der Modus-Wahl.
+     */
+    public function rememberScheme(User $user, string $scheme): void {
+        $prefs = (array) ($user->preferences ?? []);
+        unset($prefs['theme']);
+        if ($scheme === 'auto') {
+            unset($prefs['color_scheme']);
+        } else {
+            $prefs['color_scheme'] = $scheme;
+        }
+        $user->preferences = $prefs === [] ? null : $prefs;
+        $user->save();
+    }
+
     /** Cache zurücksetzen (nach Änderung der Org-Themes im selben Request). */
     public function flush(): void {
         $this->customCache = null;

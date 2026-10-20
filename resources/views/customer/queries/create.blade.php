@@ -10,10 +10,9 @@
 @extends('customer.layout')
 
 @section('content')
-    <div class="mx-auto max-w-xl">
+    <div class="mx-auto max-w-xl space-y-4">
+        <x-page-toolbar :title="__('Rückfrage stellen')" :subtitle="$subjectLabel" :back="route('customer.queries.index')" :back-label="__('Rückfragen')" />
         <x-card padding="p-6">
-            <h1 class="mb-1 text-xl font-semibold">{{ __('Rückfrage stellen') }}</h1>
-            <p class="mb-4 text-sm text-base-content/70">{{ $subjectLabel }}</p>
 
             <form method="POST" action="{{ route('customer.queries.store') }}" enctype="multipart/form-data" class="space-y-3">
                 @csrf

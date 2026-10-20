@@ -10,6 +10,35 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Kundenportal: Zeitraum und Filter der Zeiten, Oberfläche, Farbschema,
+  Auswertungen (Phase 154, MVP-1237–1245, Feature 168). Die Portalzeiten
+  sind auf Kalenderjahre begrenzt (Organisationsstandard 3 Jahre
+  einschließlich des laufenden, je Kunde im Panel „Portal-Sichtbarkeit“
+  abweichend bis unbegrenzt; eine Sichtgrenze, keine Löschung) und öffnen
+  mit dem laufenden Jahr: Jahres-Tabs, Filter nach Projekt, Mitarbeiter
+  (nur in Einzelstufen), Zeitraum und Beschreibung (nur veröffentlichte
+  Einträge), Sortierung, Kennzahlenzeile; Liste, Startseite und Auswertung
+  nutzen eine Grundmenge (`PortalTimeEntries`). Das Portal trägt Logo und
+  Rechtsangaben der Organisation, eine Navigation aus einer Liste
+  (`PortalNavigation`) mit Symbolen, aktivem Eintrag und Drawer am Handy,
+  Kontomenü, Sprachumschalter und Fuß; alle Portalseiten nutzen Seitenkopf,
+  Karten, Leerzustände mit Symbol und Status-Badges; die Startseite zeigt
+  Kennzahlkacheln mit Hinweis (Stunden dieses Jahr, offene Rechnungen) und
+  die freigegebenen Bereiche als Kacheln. Hell/Dunkel ist im Portal wählbar
+  und bleibt am Portalkonto gespeichert (Kopfzeilen-Umschalter, Karte
+  „Darstellung“ im Profil, Hell/Dunkel-Paar der Organisation, gemeinsames
+  Theme-Seed-Partial mit dem App-Layout; in der Vorschau als Kunde
+  ausgeblendet). Neue Bereichsfreigabe „Auswertungen“ (Default-Deny) mit
+  Jahres-Tabs: Stunden je Monat (mit Vorjahr), je Projekt und je Monat nach
+  Projekt; Rechnungsbeträge je Monat mit Gutschriften gesondert, offener
+  Betrag je Monatsende, Zahlungsstand, überfällige Beträge; Saldo des
+  Abrechnungskontos; Tickets je Monat mit mittlerer Lösungszeit ab fünf
+  gelösten Tickets — jeder Diagrammpunkt führt in die gefilterte Liste, die
+  Rechnungsliste hat dafür Jahres-Tabs sowie Status- und Monatsfilter; die
+  Startseite zeigt mit der Freigabe eine Zeile „Dieses Jahr“. Hilfe ×5
+  (neues Thema Auswertungen, Zeiten, Übersicht, Rechnungen, Zugang,
+  Kontakte), Texte ×5, Tests.
+
 - Stammdaten: Hauptansprechpartner aus dem Buchhaltungsprogramm. Der
   Lexoffice-Abgleich übernimmt neben der Liste der Ansprechpartner auch den
   Hauptansprechpartner (Anrede, Titel, Vornamen, Nachname): den in Lexoffice

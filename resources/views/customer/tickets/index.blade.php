@@ -11,9 +11,7 @@
 {{-- Portal-Tickets (Feature 065, MVP-160): nur eigene Tickets. --}}
 
 @section('content')
-    <div class="mb-4 flex items-center justify-between">
-        <h1 class="text-2xl font-semibold">{{ __('Meine Tickets') }}</h1>
-    </div>
+    <x-page-toolbar :title="__('Meine Tickets')" :subtitle="__('customer_portal.nav.tickets')" class="mb-4" />
 
     <x-card as="details" padding="p-3" class="mb-4">
         <summary class="cursor-pointer text-sm font-semibold">{{ __('Neues Ticket melden') }}</summary>
@@ -31,7 +29,8 @@
         </form>
     </x-card>
 
-    <x-table>
+    <x-card>
+    <x-table bare>
         <x-slot:head>
             <tr>
                 <x-table.th>{{ __('Nummer') }}</x-table.th>
@@ -44,13 +43,14 @@
             <tr>
                 <td class="whitespace-nowrap font-mono text-sm">{{ $ticket->ticket_no }}</td>
                 <td><a class="link link-hover" href="{{ route('customer.tickets.show', $ticket) }}">{{ $ticket->title }}</a></td>
-                <td>{{ $ticket->status->label() }}</td>
+                <td><x-status-badge size="sm" :tone="$ticket->status->isResolved() ? 'success' : 'info'" outline>{{ $ticket->status->label() }}</x-status-badge></td>
                 <td class="whitespace-nowrap">{{ $ticket->reported_at?->isoFormat('L') }}</td>
             </tr>
         @empty
-            <x-table.empty :colspan="4" :title="__('Keine Tickets vorhanden.')" />
+            <x-table.empty :colspan="4" icon="confirmation_number" :title="__('Keine Tickets vorhanden.')" compact />
         @endforelse
     </x-table>
+    </x-card>
 
     <x-pagination :paginator="$tickets" standing />
 @endsection

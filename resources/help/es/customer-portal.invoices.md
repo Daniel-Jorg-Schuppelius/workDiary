@@ -1,7 +1,7 @@
 ---
 title: "Mis facturas"
 topic: customer-portal.invoices
-version: 5
+version: 6
 keywords:
     - ver facturas
     - listado de facturas
@@ -46,6 +46,10 @@ Todas las facturas aparecen juntas ordenadas por fecha, la más reciente arriba;
 - **Pagada parcialmente** – se ha recibido una parte del importe.
 - **Pagada** – la factura está saldada por completo.
 - **Cancelada** – la factura se ha cancelado y ya no hay que pagarla.
+
+## Año, estado y mes
+
+La lista muestra un **año natural**; arriba cambia a otros años mediante pestañas. En la barra de filtros acota por **estado** (pendiente o pagada) y **mes**; **Restablecer** vuelve a mostrar todo el año. Desde los **Análisis**, los gráficos llevan directamente a esta lista con el mes correspondiente.
 
 ## Descargar una factura
 

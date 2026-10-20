@@ -1,7 +1,7 @@
 ---
 title: "Temps enregistrés"
 topic: customer-portal.time
-version: 3
+version: 4
 keywords:
     - suivi du temps
     - feuille de temps
@@ -57,6 +57,21 @@ pagination en bas de page pour voir les suivantes.
 
 Si une saisie attendue manque, elle n'est pas encore publiée ou n'est
 rattachée à aucun de vos projets.
+
+## Année, filtres et période
+
+La liste affiche une **année civile** ; à l'ouverture, l'année en cours. En haut, vous passez à d'autres années par onglets – seules les années avec des saisies sont proposées. En dessous, vous affinez :
+
+- **Projet** – uniquement les temps d'un projet,
+- **Collaborateur** – uniquement les temps d'une personne (seulement dans les niveaux avec saisies individuelles),
+- **Période** – de/à au sein de l'année,
+- **Rechercher dans la description** – seulement dans le niveau avec description ; seules les saisies publiées sont trouvées.
+
+**Filtrer** applique la sélection, **Réinitialiser** affiche de nouveau toute l'année. Les en-têtes de colonne trient par date, durée, projet ou collaborateur. Au-dessus du tableau figurent les **heures de l'année**, les **heures de la sélection**, le nombre d'**entrées** et de **projets** – les totaux correspondent toujours à la sélection affichée.
+
+## Quelle période vous voyez
+
+Votre prestataire définit combien d'années civiles vous pouvez consulter en arrière – par défaut trois, année en cours comprise. Sous le tableau figure la date à partir de laquelle les temps sont affichés. Les temps plus anciens ne sont pas supprimés, seulement invisibles dans le portail ; en cas de besoin, adressez-vous à votre prestataire.
 
 ## Poser une question sur une saisie
 

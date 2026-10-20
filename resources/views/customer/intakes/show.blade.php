@@ -14,13 +14,11 @@
 @extends('customer.layout')
 
 @section('content')
-    <div class="mb-4 flex flex-wrap items-start justify-between gap-2">
-        <div>
-            <p class="font-mono text-sm text-muted">{{ $intake->number }} · {{ $intake->kind->label() }}</p>
-            <h1 class="text-2xl font-semibold">{{ $intake->subject }}</h1>
-        </div>
-        <x-status-badge :tone="$stage->tone">{{ $stage->label }}</x-status-badge>
-    </div>
+    <x-page-toolbar :title="$intake->subject" :subtitle="$intake->number . ' · ' . $intake->kind->label()" :back="route('customer.intakes.index')" :back-label="__('customer_intake.portal.title')" class="mb-4">
+        <x-slot:badges>
+            <x-status-badge :tone="$stage->tone" size="sm">{{ $stage->label }}</x-status-badge>
+        </x-slot:badges>
+    </x-page-toolbar>
 
     @if ($stage->nextStep !== null)
         <div role="status" class="alert alert-warning mb-4 text-sm">

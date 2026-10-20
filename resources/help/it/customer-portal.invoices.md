@@ -1,7 +1,7 @@
 ---
 title: "Le mie fatture"
 topic: customer-portal.invoices
-version: 5
+version: 6
 keywords:
     - visualizzare le fatture
     - elenco fatture
@@ -46,6 +46,10 @@ Tutte le fatture sono ordinate insieme per data, la più recente in alto – le 
 - **Parzialmente pagata** – è stata ricevuta una parte dell'importo.
 - **Pagata** – la fattura è saldata per intero.
 - **Annullata** – la fattura è stata annullata e non va più pagata.
+
+## Anno, stato e mese
+
+La lista mostra un **anno civile**; in alto passa ad altri anni tramite schede. Nella barra dei filtri restringe per **stato** (aperta o pagata) e **mese**; **Reimposta** mostra di nuovo l'intero anno. Dalle **Analisi** i grafici portano direttamente a questa lista con il mese corrispondente.
 
 ## Scaricare una fattura
 

@@ -2579,6 +2579,7 @@ return [
         'time_limit_minutes' => 'Zeitlimit (Min.)',
         'time_policy' => 'Zeitpolitik',
         'time_scope' => 'Sichtbare Zeiten',
+        'time_years' => 'Sichtbarer Zeitraum der Zeiten',
         'time_unit' => 'Zeitbuchung ins Ticket',
         'time_window_end' => 'Zeitfenster bis',
         'time_window_start' => 'Zeitfenster ab',

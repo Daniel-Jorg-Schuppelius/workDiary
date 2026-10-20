@@ -14,17 +14,17 @@
      wiedereröffnen/bewerten nach Abschluss. --}}
 
 @section('content')
-    <h1 class="text-2xl font-semibold mb-1">{{ $ticket->title }}</h1>
-    <p class="mb-4 text-sm text-muted">
-        {{ $ticket->ticket_no }} · {{ $ticket->status->label() }}
-        @if ($ticket->resolution_due_at)
-            · {{ __('Lösung zugesagt bis :date', ['date' => $ticket->resolution_due_at->orgTz()->isoFormat('L LT')]) }}
-        @endif
-    </p>
+    <x-page-toolbar :title="$ticket->title"
+                    :subtitle="$ticket->ticket_no . ($ticket->resolution_due_at ? ' · ' . __('Lösung zugesagt bis :date', ['date' => $ticket->resolution_due_at->orgTz()->isoFormat('L LT')]) : '')"
+                    :back="route('customer.tickets.index')" :back-label="__('Meine Tickets')" class="mb-4">
+        <x-slot:badges>
+            <x-status-badge size="sm" :tone="$ticket->status->isResolved() ? 'success' : 'info'" outline>{{ $ticket->status->label() }}</x-status-badge>
+        </x-slot:badges>
+    </x-page-toolbar>
 
     <div class="space-y-2">
         @forelse ($timeline['items'] as $item)
-            <div class="rounded border border-base-300 bg-base-100 px-3 py-2">
+            <x-card padding="px-3 py-2">
                 <p class="mb-1 text-xs text-muted">
                     {{ $item->occurredAt?->isoFormat('L LT') ?? '—' }} · {{ $item->title }}
                     @if ($item->actor)
@@ -40,9 +40,9 @@
                 @elseif ($item->summary)
                     <p class="whitespace-pre-line text-sm">{{ $item->summary }}</p>
                 @endif
-            </div>
+            </x-card>
         @empty
-            <x-empty-state icon="forum" :title="__('Noch keine Nachrichten.')" compact />
+            <x-empty-state framed icon="forum" :title="__('Noch keine Nachrichten.')" compact />
         @endforelse
     </div>
 

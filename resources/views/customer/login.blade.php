@@ -9,7 +9,7 @@
 @extends('customer.layout')
 
 @section('content')
-    <div class="max-w-md mx-auto bg-base-100 border border-base-300 rounded p-6 mt-10">
+    <x-card padding="p-6" class="mx-auto mt-6 max-w-md">
         <h1 class="text-xl font-semibold mb-4 flex items-center gap-2">
             <x-icon name="login" />
             {{ __('Anmelden') }}
@@ -17,17 +17,17 @@
         <form method="POST" action="{{ route('customer.login.attempt') }}" class="space-y-4">
             @csrf
             <div>
-                <label class="block text-sm mb-1" for="email">{{ __('E-Mail') }}</label>
+                <label class="mb-1 block text-sm font-medium" for="email">{{ __('E-Mail') }}</label>
                 <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username"
-                       class="w-full border border-base-300 rounded px-3 py-2 bg-base-100">
+                       class="input input-bordered w-full">
                 @error('email')
                     <p class="text-error text-sm mt-1">{{ $message }}</p>
                 @enderror
             </div>
             <div>
-                <label class="block text-sm mb-1" for="password">{{ __('Passwort') }}</label>
+                <label class="mb-1 block text-sm font-medium" for="password">{{ __('Passwort') }}</label>
                 <input id="password" type="password" name="password" required autocomplete="current-password"
-                       class="w-full border border-base-300 rounded px-3 py-2 bg-base-100">
+                       class="input input-bordered w-full">
             </div>
             <label class="flex items-center gap-2 text-sm">
                 <input type="checkbox" name="remember" value="1" class="checkbox checkbox-sm">
@@ -38,5 +38,5 @@
         <p class="mt-4 text-center text-sm">
             <a href="{{ route('customer.password.request') }}" class="link link-hover">{{ __('Passwort vergessen?') }}</a>
         </p>
-    </div>
+    </x-card>
 @endsection

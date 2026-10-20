@@ -1107,7 +1107,7 @@ class AppServiceProvider extends ServiceProvider {
      * bereit (kein eigenes resolve nötig).
      */
     private function registerBrandingViewComposer(): void {
-        View::composer(['layouts.*', 'auth.*', 'pdf.*', 'reports.pdf.*', 'reports.drilldown.pdf.*', 'components.pdf-layout', 'components.guest-header'], function ($view): void {
+        View::composer(['layouts.*', 'auth.*', 'customer.layout', 'pdf.*', 'reports.pdf.*', 'reports.drilldown.pdf.*', 'components.pdf-layout', 'components.guest-header'], function ($view): void {
             try {
                 $branding = app(BrandingService::class);
             } catch (\Throwable $e) {
@@ -1118,8 +1118,9 @@ class AppServiceProvider extends ServiceProvider {
         });
 
         // ThemeService als `$theme` für das App-Layout (Theme-Injektion +
-        // Anti-Flash-Seed) und die Auth-Seiten. PDFs nutzen kein Runtime-Theme.
-        View::composer(['layouts.*', 'auth.*'], function ($view): void {
+        // Anti-Flash-Seed), die Auth-Seiten und das Kundenportal (MVP-1241).
+        // PDFs nutzen kein Runtime-Theme.
+        View::composer(['layouts.*', 'auth.*', 'customer.layout'], function ($view): void {
             try {
                 $theme = app(\App\Services\UI\ThemeService::class);
             } catch (\Throwable $e) {

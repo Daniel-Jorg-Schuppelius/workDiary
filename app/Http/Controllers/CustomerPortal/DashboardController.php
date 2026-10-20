@@ -20,13 +20,12 @@ use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Reselling\ResaleSubscription;
-use App\Models\Time\TimeEntry;
 use App\Modules\ModuleRegistry;
 use App\Services\Billing\Contracts\ExternalRevenue;
 use App\Services\Billing\Dto\ExternalInvoiceQuery;
 use App\Services\Customer\Intake\CustomerIntakeStages;
 use App\Services\CustomerPortal\Contracts\PortalNoticeSource;
-use App\Services\CustomerPortal\PortalVisibility;
+use App\Services\CustomerPortal\{PortalInsights, PortalNavigation, PortalTimeEntries, PortalVisibility};
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\{Auth, Log};
@@ -34,7 +33,7 @@ use Illuminate\View\View;
 use Throwable;
 
 class DashboardController extends Controller {
-    public function __invoke(PortalVisibility $visibility, ModuleRegistry $modules, CustomerIntakeStages $stages): View {
+    public function __invoke(PortalVisibility $visibility, ModuleRegistry $modules, CustomerIntakeStages $stages, PortalTimeEntries $portalTimes, PortalNavigation $navigation): View {
         /** @var User $user */
         $user = Auth::guard('customer')->user();
         $customerId = (int) $user->customer_id;
@@ -46,19 +45,19 @@ class DashboardController extends Controller {
         if ($customer !== null && $visibility->allows($customer, PortalCapability::Diary)) {
             $stats['diary'] = DiaryEntry::query()->where('customer_id', $customerId)->count();
         }
-        if ($customer !== null && $visibility->timeDetail($customer)->showsEntries()) {
-            $timeQuery = TimeEntry::query()
-                ->whereHas('project', fn($q) => $q->where('customer_id', $customerId));
-            if ($visibility->timeScope($customer) === PortalVisibility::TIME_SCOPE_PUBLISHED) {
-                $timeQuery->whereNotNull('customer_visible_at');
-            }
-            $stats['time_entries'] = $timeQuery->count();
+        if ($customer !== null && $visibility->timeDetail($customer) !== \App\Enums\CustomerPortal\PortalTimeDetail::None) {
+            // Dieselbe Grundmenge wie die Liste (MVP-1237): Stunden des laufenden Jahres, Einträge gesamt.
+            $stats['time_minutes'] = (int) $portalTimes->yearQuery($customer, (int) now()->year)->sum('time_entries.minutes');
+            $stats['time_entries'] = $portalTimes->baseQuery($customer)->count();
         }
         if ($customer !== null && $visibility->allows($customer, PortalCapability::Invoices)) {
             // Wie die Liste: Entwürfe sind interne Arbeitsstände (MVP-1019), dazu die
-            // Rechnungen des Buchhaltungsprogramms (MVP-1118).
-            $stats['invoices'] = Invoice::query()->where('customer_id', $customerId)->where('status', '!=', InvoiceStatus::Draft)->count()
-                + count(app(ExternalRevenue::class)->invoices(new ExternalInvoiceQuery(customerId: $customerId, organizationId: (int) $customer->organization_id)));
+            // Rechnungen des Buchhaltungsprogramms (MVP-1118); offen = nicht bezahlt bzw. Restbetrag.
+            $local = Invoice::query()->where('customer_id', $customerId)->where('status', '!=', InvoiceStatus::Draft)->get(['id', 'status']);
+            $external = app(ExternalRevenue::class)->invoices(new ExternalInvoiceQuery(customerId: $customerId, organizationId: (int) $customer->organization_id));
+            $stats['invoices'] = $local->count() + count($external);
+            $stats['invoices_open'] = $local->filter(static fn (Invoice $invoice): bool => in_array($invoice->status, [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid], true))->count()
+                + count(array_filter($external, static fn ($invoice): bool => $invoice->open > 0));
         }
         if ($customer !== null && $visibility->allows($customer, PortalCapability::OpenIssues)) {
             $stats['open_issues'] = OpenIssue::query()
@@ -120,11 +119,19 @@ class DashboardController extends Controller {
             }
         }
 
+        // Kennzahlenzeile „Dieses Jahr" (MVP-1243): nur mit Freigabe „Auswertungen", keine Diagramme.
+        $insights = $customer !== null && $visibility->allows($customer, PortalCapability::Insights)
+            ? app(PortalInsights::class)->summary($customer, (int) now()->year)
+            : null;
+
         return view('customer.dashboard', [
             'user' => $user,
             'customer' => $customer,
             'stats' => $stats,
             'notices' => $notices,
+            'insights' => $insights,
+            // Bereichskacheln aus derselben Liste wie die Navigation (E5).
+            'areas' => $customer !== null ? $navigation->areas($customer) : [],
         ]);
     }
 }

@@ -12,11 +12,10 @@
 @section('title', $row->title)
 
 @section('content')
-    <a href="{{ route('customer.help.index') }}" class="text-sm hover:underline">← {{ __('customer_help.back') }}</a>
-    <h1 class="mb-3 mt-2 text-2xl font-semibold">{{ $row->title }}</h1>
-    <article class="prose max-w-none">
+    <x-page-toolbar :title="$row->title" :back="route('customer.help.index')" :back-label="__('customer_help.back')" class="mb-4" />
+    <x-card as="article" class="prose max-w-none">
         {!! $row->body_html !!}
-    </article>
+    </x-card>
     @if ($related !== [])
         <h2 class="mb-2 mt-6 text-lg font-semibold">{{ __('customer_help.related') }}</h2>
         <ul class="list-disc pl-5 text-sm">

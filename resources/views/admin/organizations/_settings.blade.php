@@ -342,6 +342,17 @@
                               :checked="(string) old('settings.mcp.enabled', data_get($stored, 'mcp.enabled') ? '1' : '0') === '1'" />
         </x-form-group>
 
+        {{-- KUNDENPORTAL (MVP-1237): sichtbarer Zeitraum der Portalzeiten, je Kunde abweichbar. --}}
+        <x-form-group :legend="__('settings.customer_portal.heading')" icon="support_agent" tone="info" cols="1" compact
+                      :description="__('settings.customer_portal.description')">
+            <x-input-field name="settings[customer_portal][time_entry_years]" type="number" min="0" max="50"
+                           :label="__('settings.customer_portal.time_entry_years')"
+                           :hint="__('settings.customer_portal.time_entry_years_hint')"
+                           error="settings.customer_portal.time_entry_years"
+                           :value="old('settings.customer_portal.time_entry_years', data_get($stored, 'customer_portal.time_entry_years', ''))"
+                           placeholder="3" />
+        </x-form-group>
+
         {{-- MIETBEDINGUNGEN (MVP-895): Übergabe nur mit unterschriebener Fassung. --}}
         <x-form-group :legend="__('settings.rental_terms.heading')" icon="handshake" tone="info" cols="1" compact
                       :description="__('settings.rental_terms.description')">

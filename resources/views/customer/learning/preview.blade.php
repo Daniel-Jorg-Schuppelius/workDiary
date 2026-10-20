@@ -14,12 +14,8 @@
 @section('title', $course->title)
 @section('content')
 <div class="space-y-4">
-    <div class="flex flex-wrap items-start justify-between gap-3">
-        <div>
-            <h1 class="text-xl font-semibold">{{ $course->title }}</h1>
-            <p class="text-sm text-muted">{{ __('learning.title.preview') }}</p>
-        </div>
-        <div class="flex flex-wrap items-center gap-2">
+    <x-page-toolbar :title="$course->title" :subtitle="__('learning.title.preview')" :back="route('customer.learning.index')" :back-label="__('learning.action.back')">
+        <x-slot:actions>
             @if ($enrollment)
                 <x-icon-btn icon="play_arrow" tone="primary" size="sm"
                             :href="route('customer.learning.show', $enrollment)"
@@ -37,11 +33,8 @@
             @else
                 <span class="text-xs text-muted">{{ __('learning.help.enroll_by_operator') }}</span>
             @endif
-            <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                        :href="route('customer.learning.index')"
-                        show-label>{{ __('learning.action.back') }}</x-icon-btn>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-page-toolbar>
 
     @if ($course->description)
         <x-card>
@@ -70,7 +63,7 @@
             @endforeach
         </x-card>
     @empty
-        <x-empty-state icon="visibility_off" :title="__('learning.empty.preview')" />
+        <x-empty-state framed icon="visibility_off" :title="__('learning.empty.preview')" />
     @endforelse
 </div>
 @endsection

@@ -10,9 +10,9 @@
 @extends('customer.layout')
 
 @section('content')
-    <div class="mx-auto max-w-md">
+    <div class="mx-auto max-w-md space-y-4">
+        <x-page-toolbar :title="__('customer_portal.password_change.title')" :back="$forced ? null : route('customer.profile.show')" :back-label="__('Profil')" />
         <x-card padding="p-6">
-            <h1 class="mb-1 font-['Space_Grotesk'] text-xl font-bold">{{ __('customer_portal.password_change.title') }}</h1>
             @if ($forced)
                 <div role="status" class="alert alert-warning mb-4 text-sm">{{ __('customer_portal.password_change.forced_hint') }}</div>
             @endif

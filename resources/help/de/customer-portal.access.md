@@ -1,7 +1,7 @@
 ---
 title: "Zugang & Sicherheit"
 topic: customer-portal.access
-version: 6
+version: 7
 keywords:
     - Passwort ändern
     - Startpasswort
@@ -87,6 +87,10 @@ Ihre Anmelde-E-Mail ändern Sie selbst:
 3. Öffnen Sie innerhalb von 24 Stunden den Link in der E-Mail, die an die neue Adresse geht.
 
 Erst nach dem Klick auf den Link ist die neue Adresse Ihre Anmelde-E-Mail; die bisherige Adresse erhält eine Information über die Änderung. Bis dahin melden Sie sich mit der bisherigen Adresse an, und das Profil zeigt, für welche Adresse eine Bestätigung aussteht und bis wann. Eine neue Anfrage ersetzt die offene. Ist die neue Adresse schon vergeben, kommt keine E-Mail an; die Meldung im Portal lautet in jedem Fall gleich, damit niemand Rückschlüsse auf fremde Konten ziehen kann.
+
+## Darstellung: Farbschema und Sprache
+
+In der Karte **Darstellung** des Profils wählen Sie das **Farbschema** – **Wie das System**, **Hell** oder **Dunkel** – und speichern mit **Speichern**; der Umschalter in der Kopfzeile wechselt dasselbe zwischen Hell und Dunkel. Darunter wählen Sie die **Sprache** des Portals. Beides gilt für Ihren Zugang auf allen Geräten. Welche Farben Hell und Dunkel haben, bestimmt Ihr Auftragnehmer.
 
 ## Passwort ändern
 

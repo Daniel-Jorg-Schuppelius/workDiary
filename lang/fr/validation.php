@@ -2579,6 +2579,7 @@ return [
         'time_limit_minutes' => 'Limite de temps (min)',
         'time_policy' => 'Politique de temps',
         'time_scope' => 'Temps visibles',
+        'time_years' => 'Période visible des temps',
         'time_unit' => 'Imputation du temps dans le ticket',
         'time_window_end' => 'Créneau jusqu’à',
         'time_window_start' => 'Créneau à partir de',

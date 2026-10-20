@@ -2613,6 +2613,7 @@ return [
         'time_limit_minutes' => 'Time limit (min)',
         'time_policy' => 'Time policy',
         'time_scope' => 'Visible times',
+        'time_years' => 'Visible period of times',
         'time_unit' => 'Time booking to the ticket',
         'time_window_end' => 'Time slot until',
         'time_window_start' => 'Time slot from',

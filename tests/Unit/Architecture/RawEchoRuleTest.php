@@ -36,6 +36,7 @@ class RawEchoRuleTest extends TestCase {
         'resources/views/components/sort-th.blade.php' => 'Icon-Markup aus dem eigenen Icon-Satz.',
         'resources/views/components/table.blade.php' => 'Attribut-Bag der Komponente, von Blade selbst erzeugt.',
         'resources/views/layouts/app.blade.php' => 'Theme-CSS und Layout-CSS der Installation (keine Nutzereingabe).',
+        'resources/views/partials/theme-seed.blade.php' => 'Theme-CSS der Organisation, aus dem App-Layout gezogen (ThemeDefinition sanitisiert, keine Nutzereingabe; Phase 154).',
         'resources/views/components/pdf-layout.blade.php' => 'nl2br(e(...)) — escapt und danach nur Zeilenumbrüche.',
         'resources/views/pdf/timesheet.blade.php' => 'nl2br(e(...)) — escapt und danach nur Zeilenumbrüche.',
         'resources/views/suppliers/show.blade.php' => 'e(...) mit anschließendem Zeilenumbruch-Markup; Plugin-Slot.',

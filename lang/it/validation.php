@@ -2579,6 +2579,7 @@ return [
         'time_limit_minutes' => 'Limite di tempo (min)',
         'time_policy' => 'Politica oraria',
         'time_scope' => 'Tempi visibili',
+        'time_years' => 'Periodo visibile dei tempi',
         'time_unit' => 'Registrazione del tempo nel ticket',
         'time_window_end' => 'Finestra oraria a',
         'time_window_start' => 'Finestra oraria da',

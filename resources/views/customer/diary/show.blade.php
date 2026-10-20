@@ -14,19 +14,21 @@
 @extends('customer.layout')
 
 @section('content')
-    <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div>
-            <h1 class="text-2xl font-semibold">{{ $diary->title }}</h1>
-            <p class="text-sm opacity-70">{{ optional($diary->start_at)->fdate() }} · {{ $diary->status?->label() }}</p>
-        </div>
-        <x-button :href="$pdfUrl" tone="outline">{{ __('Fallakte als PDF') }}</x-button>
-    </div>
+    <x-page-toolbar :title="$diary->title" :subtitle="optional($diary->start_at)->fdate()" :back="route('customer.diary.index')" :back-label="__('Auftragsbuch')" class="mb-4">
+        @if ($diary->status)
+            <x-slot:badges>
+                <x-status-badge size="sm" outline>{{ $diary->status->label() }}</x-status-badge>
+            </x-slot:badges>
+        @endif
+        <x-slot:actions>
+            <x-icon-btn icon="picture_as_pdf" tone="primary" :href="$pdfUrl" show-label>{{ __('Fallakte als PDF') }}</x-icon-btn>
+        </x-slot:actions>
+    </x-page-toolbar>
 
     <x-validation-errors first class="mb-3" />
 
     <div class="space-y-6">
-        <x-card as="section">
-            <h2 class="mb-2 font-semibold">{{ __('Fotos') }}</h2>
+        <x-card as="section" :title="__('Fotos')" icon="photo_library">
             @if ($photos->isEmpty())
                 <x-empty-state icon="photo_library" :title="__('Keine freigegebenen Fotos.')" compact />
             @else
@@ -71,12 +73,11 @@
             @endif
         </x-card>
 
-        <x-card as="section">
-            <h2 class="mb-2 font-semibold">{{ __('Material') }}</h2>
+        <x-card as="section" :title="__('Material')" icon="inventory_2">
             @if ($materials->isEmpty())
                 <x-empty-state icon="inventory_2" :title="__('Kein Material erfasst.')" compact />
             @else
-                <x-table>
+                <x-table bare>
                     <x-slot:head>
                         <tr>
                             <x-table.th>{{ __('Bezeichnung') }}</x-table.th>
@@ -93,8 +94,7 @@
             @endif
         </x-card>
 
-        <x-card as="section">
-            <h2 class="mb-2 font-semibold">{{ __('Protokolle') }}</h2>
+        <x-card as="section" :title="__('Protokolle')" icon="description">
             @if ($protocols->isEmpty())
                 <x-empty-state icon="description" :title="__('Keine freigegebenen Protokolle.')" compact />
             @else
@@ -113,8 +113,7 @@
         </x-card>
 
         {{-- Vollaudit 2026-07 (H9): freigegebene Kommunikationsnotizen (Spec §4/§11.4). --}}
-        <x-card as="section">
-            <h2 class="mb-2 font-semibold">{{ __('Kommunikation') }}</h2>
+        <x-card as="section" :title="__('Kommunikation')" icon="forum">
             @if ($notes->isEmpty())
                 <x-empty-state icon="forum" :title="__('Keine freigegebenen Notizen.')" compact />
             @else
@@ -155,11 +154,10 @@
                     ->orderByDesc('created_at')
                     ->get();
             @endphp
-            <x-card as="section">
-                <div class="mb-2 flex items-center justify-between gap-2">
-                    <h2 class="font-semibold">{{ __('Rückfragen und Kommentare') }}</h2>
-                    <x-button :href="route('customer.queries.create', ['subject_type' => 'diary', 'subject' => $diary->sqid])">{{ __('Rückfrage stellen') }}</x-button>
-                </div>
+            <x-card as="section" :title="__('Rückfragen und Kommentare')" icon="contact_support">
+                <x-slot:actions>
+                    <x-button :href="route('customer.queries.create', ['subject_type' => 'diary', 'subject' => $diary->sqid])" icon="help">{{ __('Rückfrage stellen') }}</x-button>
+                </x-slot:actions>
                 @if ($diaryQueries->isEmpty())
                     <x-empty-state icon="contact_support" :title="__('Noch keine Rückfragen zu diesem Auftrag.')" compact />
                 @else

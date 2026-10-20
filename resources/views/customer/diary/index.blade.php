@@ -9,8 +9,9 @@
 @extends('customer.layout')
 
 @section('content')
-    <h1 class="text-2xl font-semibold mb-4">{{ __('Auftragsbuch') }}</h1>
-    <x-table>
+    <x-page-toolbar :title="__('Auftragsbuch')" :subtitle="__('customer_portal.nav.diary')" class="mb-4" />
+    <x-card>
+    <x-table bare>
         <x-slot:head>
             <tr>
                 <x-table.th>{{ __('Datum') }}</x-table.th>
@@ -22,11 +23,12 @@
             <tr>
                 <td class="whitespace-nowrap">{{ optional($entry->start_at)->fdate() }}</td>
                 <td><a class="link link-hover" href="{{ route('customer.diary.show', $entry) }}">{{ $entry->title }}</a></td>
-                <td>{{ $entry->status?->label() }}</td>
+                <td>@if ($entry->status)<x-status-badge size="sm" outline>{{ $entry->status->label() }}</x-status-badge>@endif</td>
             </tr>
         @empty
-            <x-table.empty :colspan="3" :title="__('Keine Einträge vorhanden.')" />
+            <x-table.empty :colspan="3" icon="menu_book" :title="__('Keine Einträge vorhanden.')" compact />
         @endforelse
     </x-table>
+    </x-card>
     <x-pagination :paginator="$entries" standing />
 @endsection

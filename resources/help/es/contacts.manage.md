@@ -1,7 +1,7 @@
 ---
 title: "Clientes & proveedores"
 topic: contacts.manage
-version: 8
+version: 9
 keywords:
     - Vista previa como cliente
     - Contraseña inicial
@@ -100,6 +100,8 @@ Si un contacto ha perdido todos los métodos de dos factores y los códigos de r
 **Crear acceso** crea un acceso sin correo de invitación, por ejemplo por teléfono o en una reunión: tras **Nombre** y **Correo electrónico**, la ficha del cliente muestra una sola vez una **contraseña inicial** aleatoria. Entréguela en persona o por teléfono, nunca por correo electrónico; el portal no la envía ni la guarda en texto claro. Hasta el primer inicio de sesión el acceso muestra **Contraseña inicial pendiente**; en el primer inicio de sesión el contacto debe establecer su propia contraseña. Si la ha perdido, **Generar contraseña inicial** crea una nueva (la contraseña anterior deja de ser válida de inmediato y todas las sesiones finalizan). Ambas acciones requieren una confirmación de su contraseña y quedan registradas.
 
 **Ver portal** abre el portal de clientes en una pestaña nueva tal como lo ve este contacto – con sus áreas, documentos y facturas – y ayuda con preguntas como «¿Dónde encuentro …?». La vista previa es solo una vista: las acciones están bloqueadas, las páginas de seguridad y contraseña no son accesibles y no cuenta como inicio de sesión del contacto. Termina con **Finalizar vista previa** en la barra amarilla o en la ficha del cliente, como máximo tras 60 minutos, y se registra con inicio y fin. Requiere el permiso **Ver el portal del cliente como cliente**; sin acceso no hay vista previa: cree primero uno.
+
+**Visibilidad del portal:** junto a las áreas elige aquí el **periodo visible de los tiempos** – **valor predeterminado de la organización** (ajuste **Portal de clientes** en la configuración de la organización, por defecto tres años naturales, incluido el actual), un número fijo de años o **ilimitado**. Es un límite de vista en el portal, no un borrado. La habilitación **Análisis** muestra al cliente indicadores y gráficos – solo de áreas también habilitadas (tiempos en el nivel de detalle configurado, facturas, cuenta de facturación, tickets); como toda nueva habilitación, empieza «desactivada».
 
 ## Ejemplo práctico
 

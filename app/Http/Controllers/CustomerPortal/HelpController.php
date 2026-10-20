@@ -47,6 +47,7 @@ class HelpController extends Controller {
         'agreements' => PortalCapability::Agreements,
         'intakes' => PortalCapability::Intakes,
         'learning' => PortalCapability::Learning,
+        'insights' => PortalCapability::Insights,
     ];
 
     public function __construct(

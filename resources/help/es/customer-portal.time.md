@@ -1,7 +1,7 @@
 ---
 title: "Tiempos registrados"
 topic: customer-portal.time
-version: 3
+version: 4
 keywords:
     - registro de horas
     - hoja de horas
@@ -55,6 +55,21 @@ la paginación en la parte inferior.
 
 Si falta un registro que usted espera, aún no se ha publicado o no está
 asignado a ninguno de sus proyectos.
+
+## Año, filtros y periodo
+
+La lista muestra un **año natural**; al abrirla, el año en curso. Arriba cambia a otros años mediante pestañas – solo se ofrecen años con registros. Debajo puede acotar:
+
+- **Proyecto** – solo los tiempos de un proyecto,
+- **Empleado** – solo los tiempos de una persona (solo en los niveles con registros individuales),
+- **Periodo** – desde/hasta dentro del año,
+- **Buscar en la descripción** – solo en el nivel con descripción; solo se encuentran registros publicados.
+
+**Filtrar** aplica la selección, **Restablecer** vuelve a mostrar todo el año. Las cabeceras de columna ordenan por fecha, duración, proyecto o empleado. Encima de la tabla están las **horas del año**, las **horas de la selección**, el número de **entradas** y de **proyectos** – los totales siempre coinciden con la selección mostrada.
+
+## Qué periodo ve
+
+Su proveedor determina cuántos años naturales puede consultar hacia atrás – por defecto tres, incluido el actual. Debajo de la tabla se indica a partir de qué fecha se muestran los tiempos. Los tiempos más antiguos no se borran, solo no son visibles en el portal; si lo necesita, diríjase a su proveedor.
 
 ## Hacer una consulta sobre un registro
 

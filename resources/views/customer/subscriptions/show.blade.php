@@ -16,18 +16,13 @@
 
 @section('content')
 <div class="space-y-4">
-    <div class="flex flex-wrap items-start justify-between gap-2">
-        <div>
-            <h1 class="text-xl font-semibold">{{ $subscription->label }}</h1>
-            <p class="text-sm text-muted">
-                {{ $subscription->kind->label() }}
-                @if ($subscription->productLabel() !== null && $subscription->productLabel() !== $subscription->label)
-                    · {{ $subscription->productLabel() }}
-                @endif
-            </p>
-        </div>
-        <x-button :href="route('customer.subscriptions.index')" tone="ghost">{{ __('resale_portal.back') }}</x-button>
-    </div>
+    <x-page-toolbar :title="$subscription->label"
+                    :subtitle="$subscription->kind->label() . ($subscription->productLabel() !== null && $subscription->productLabel() !== $subscription->label ? ' · ' . $subscription->productLabel() : '')"
+                    :back="route('customer.subscriptions.index')" :back-label="__('resale_portal.back')">
+        <x-slot:badges>
+            <x-status-badge size="sm" :tone="$subscription->status->tone()" :label="$subscription->status->label()" />
+        </x-slot:badges>
+    </x-page-toolbar>
 
     <x-card>
         <x-detail-grid layout="cells" :cols="3" small-labels>
@@ -51,11 +46,8 @@
         </x-detail-grid>
     </x-card>
 
-    <div>
-        <h2 class="text-lg font-medium">{{ __('resale_portal.periods.title') }}</h2>
-        <p class="text-xs text-muted">{{ __('resale_portal.periods.hint') }}</p>
-    </div>
-    <x-table :caption="__('resale_portal.periods.title')">
+    <x-card :title="__('resale_portal.periods.title')" :subtitle="__('resale_portal.periods.hint')" icon="date_range" padding="p-0">
+    <x-table bare :caption="__('resale_portal.periods.title')">
         <x-slot:head>
             <tr>
                 <x-table.th>{{ __('resale_portal.field.period') }}</x-table.th>
@@ -70,8 +62,9 @@
                 <td><x-status-badge size="xs" outline :label="$periodStatusLabels[$period->status->value] ?? $period->status->value" /></td>
             </tr>
         @empty
-            <x-table.empty :colspan="3" :title="__('resale_portal.periods.empty')" compact />
+            <x-table.empty :colspan="3" icon="date_range" :title="__('resale_portal.periods.empty')" compact />
         @endforelse
     </x-table>
+    </x-card>
 </div>
 @endsection

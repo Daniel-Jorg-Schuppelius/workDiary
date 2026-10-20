@@ -1,7 +1,7 @@
 ---
 title: "Customers & suppliers"
 topic: contacts.manage
-version: 8
+version: 9
 keywords:
     - Preview as customer
     - Start password
@@ -97,6 +97,8 @@ If a contact has lost all two-factor methods and recovery codes, **Reset second 
 **Create access** creates an access without an invitation email, for example on the phone or in a meeting: after **Name** and **Email**, the customer record shows a random **start password** once. Hand it over in person or by phone, never by email; the portal does not send it and stores it nowhere in plain text. Until the first login the access shows **Start password pending**; at the first login the contact must set their own password. If they lost the start password, **Generate start password** creates a new one (the previous password stops working immediately, all sessions end). Both require a password confirmation from you and are logged.
 
 **View portal** opens the customer portal in a new tab the way this contact sees it – with their areas, documents and invoices – and helps with questions like "Where do I find …?". The preview is a view only: actions are locked, security and password pages are not reachable, and it does not count as a login of the contact. It ends with **End preview** in the yellow bar or in the customer record, after 60 minutes at the latest, and is logged with start and end. It requires the permission **View the customer portal as a customer**; without an access there is no preview – create one first.
+
+**Portal visibility:** Next to the areas you choose the **visible period of times** here – **organisation default** (setting **Customer portal** in the organisation settings, three calendar years including the current one by default), a fixed number of years or **unlimited**. This is a view limit in the portal, not a deletion. The **Insights** release shows the customer key figures and charts – only from areas that are released as well (times in the configured detail level, invoices, billing account, tickets); like every new release it starts “off”.
 
 ## Practical example
 

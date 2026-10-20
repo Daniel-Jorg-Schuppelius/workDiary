@@ -1,7 +1,7 @@
 ---
 title: "Erfasste Zeiten"
 topic: customer-portal.time
-version: 3
+version: 4
 keywords:
     - Zeiterfassung
     - Stundennachweis
@@ -57,6 +57,21 @@ Seitennummerierung am unteren Rand.
 
 Fehlt ein Eintrag, den Sie erwarten, ist er noch nicht veröffentlicht oder
 keinem Ihrer Projekte zugeordnet.
+
+## Jahr, Filter und Zeitraum
+
+Die Liste zeigt ein **Kalenderjahr**; beim Öffnen das laufende. Oben wechseln Sie per Reiter in andere Jahre – angeboten werden nur Jahre mit Einträgen. Darunter grenzen Sie ein:
+
+- **Projekt** – nur Zeiten eines Projekts,
+- **Mitarbeiter** – nur Zeiten einer Person (nur in den Stufen mit Einzeleinträgen),
+- **Zeitraum** – Von/Bis innerhalb des Jahres,
+- **Suche in der Beschreibung** – nur in der Stufe mit Beschreibung; gefunden werden nur veröffentlichte Einträge.
+
+**Filtern** wendet die Auswahl an, **Zurücksetzen** zeigt wieder das ganze Jahr. Spaltenköpfe sortieren nach Datum, Dauer, Projekt oder Mitarbeiter. Über der Tabelle stehen die **Stunden des Jahres**, die **Stunden im gefilterten Ausschnitt**, die Zahl der **Einträge** und der **Projekte** – die Summen passen immer zur angezeigten Auswahl.
+
+## Welchen Zeitraum Sie sehen
+
+Ihr Auftragnehmer legt fest, wie viele Kalenderjahre Sie zurückblicken können – im Standard drei einschließlich des laufenden. Unter der Tabelle steht, ab welchem Datum Zeiten angezeigt werden. Ältere Zeiten sind nicht gelöscht, sondern nur im Portal nicht sichtbar; bei Bedarf wenden Sie sich an Ihren Auftragnehmer.
 
 ## Rückfrage zu einem Eintrag stellen
 

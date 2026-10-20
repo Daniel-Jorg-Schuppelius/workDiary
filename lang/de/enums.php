@@ -2162,7 +2162,7 @@ return [
         'indexation_method' => ['none' => 'Keine Indexierung', 'consumer_price_index' => 'Verbraucherpreisindex (VPI)', 'fixed_percent' => 'Fester Prozentsatz', 'custom' => 'Eigene Regel'],
     ],
     'customer_portal' => [
-        'portal_capability' => ['diary' => 'Aufträge & Fallakte', 'time_entries' => 'Projektzeiten', 'invoices' => 'Rechnungen & Abrechnungskonto', 'documents' => 'Dokumente', 'assets' => 'Objekte', 'open_issues' => 'Offene Punkte', 'tickets' => 'Tickets, Servicekatalog & bekannte Fehler', 'claims' => 'Reklamationen', 'rentals' => 'Verleihvorgänge', 'queries' => 'Rückfragen & Kommentare', 'appointments' => 'Online-Terminbuchung', 'rental_requests' => 'Verleih-Anfrage', 'subscriptions' => 'Abos & Lizenzen', 'learning' => 'Schulungen'],
+        'portal_capability' => ['diary' => 'Aufträge & Fallakte', 'time_entries' => 'Projektzeiten', 'invoices' => 'Rechnungen & Abrechnungskonto', 'documents' => 'Dokumente', 'assets' => 'Objekte', 'open_issues' => 'Offene Punkte', 'tickets' => 'Tickets, Servicekatalog & bekannte Fehler', 'claims' => 'Reklamationen', 'rentals' => 'Verleihvorgänge', 'queries' => 'Rückfragen & Kommentare', 'appointments' => 'Online-Terminbuchung', 'rental_requests' => 'Verleih-Anfrage', 'subscriptions' => 'Abos & Lizenzen', 'learning' => 'Schulungen', 'insights' => 'Auswertungen'],
         'portal_time_detail' => ['none' => 'Keine Zeiten', 'summary' => 'Nur Summen', 'entries' => 'Einträge (Datum, Dauer, Projekt, Mitarbeiter)', 'entries_with_description' => 'Einträge inkl. Beschreibung (nur veröffentlichte)'],
     ],
     'disposal' => [

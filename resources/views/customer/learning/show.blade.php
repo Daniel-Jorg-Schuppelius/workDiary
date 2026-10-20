@@ -12,12 +12,11 @@
 @section('title', $course?->title ?? __('learning.title.portal'))
 @section('content')
 <div class="space-y-4">
-    <div class="flex flex-wrap items-start justify-between gap-3">
-        <h1 class="text-xl font-semibold">{{ $course?->title }}</h1>
-        <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
-                    :href="route('customer.learning.index')"
-                    show-label>{{ __('learning.action.back') }}</x-icon-btn>
-    </div>
+    <x-page-toolbar :title="$course?->title" :back="route('customer.learning.index')" :back-label="__('learning.action.back')">
+        <x-slot:badges>
+            <x-status-badge :tone="$enrollment->status->tone()" size="sm">{{ $enrollment->status->label() }}</x-status-badge>
+        </x-slot:badges>
+    </x-page-toolbar>
 
     @if ($enrollment->status === \App\Enums\Learning\LearningEnrollmentStatus::Completed)
         <div role="status" class="alert alert-success text-sm">

@@ -131,6 +131,12 @@ return [
         'enabled' => 'Permitir asistentes de IA mediante MCP',
         'enabled_hint' => 'Desactivado, no es posible una nueva conexión; las existentes no obtienen herramientas y no pueden renovarse.',
     ],
+    'customer_portal' => [
+        'heading' => 'Portal de clientes',
+        'description' => 'Se aplica a todos los clientes con acceso al portal; en la ficha del cliente se puede definir un periodo distinto por cliente.',
+        'time_entry_years' => 'Tiempos visibles (años naturales, incluido el actual)',
+        'time_entry_years_hint' => 'Por defecto 3 años; 0 = ilimitado. Limita solo la vista en el portal, no la conservación.',
+    ],
     'rental_terms' => [
         'heading' => 'Condiciones de alquiler de equipos',
         'description' => 'Las condiciones de alquiler se gestionan como acuerdo con el cliente «Condiciones de alquiler (alquiler de equipos)» con versión y firma.',

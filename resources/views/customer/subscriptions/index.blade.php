@@ -17,12 +17,10 @@
 
 @section('content')
 <div class="space-y-4">
-    <div>
-        <h1 class="text-xl font-semibold">{{ __('resale_portal.title') }}</h1>
-        <p class="text-sm text-muted">{{ __('resale_portal.subtitle') }}</p>
-    </div>
+    <x-page-toolbar :title="__('resale_portal.title')" :subtitle="__('resale_portal.subtitle')" />
 
-    <x-table :caption="__('resale_portal.title')">
+    <x-card>
+    <x-table bare :caption="__('resale_portal.title')">
         <x-slot:head>
             <tr>
                 <x-table.th>{{ __('resale_portal.field.product') }}</x-table.th>
@@ -67,9 +65,10 @@
                 <td><x-status-badge size="xs" :tone="$subscription->status->tone()" :label="$subscription->status->label()" /></td>
             </tr>
         @empty
-            <x-table.empty :colspan="8" :title="__('resale_portal.empty')" />
+            <x-table.empty :colspan="8" icon="workspace_premium" :title="__('resale_portal.empty')" compact />
         @endforelse
     </x-table>
+    </x-card>
     <x-pagination :paginator="$subscriptions" standing />
 </div>
 @endsection

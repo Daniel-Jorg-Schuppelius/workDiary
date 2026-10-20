@@ -1,7 +1,7 @@
 ---
 title: "Recorded Times"
 topic: customer-portal.time
-version: 3
+version: 4
 keywords:
     - time tracking
     - timesheet
@@ -56,6 +56,21 @@ see more.
 
 If an entry you expect is missing, it has not been published yet or is not
 assigned to one of your projects.
+
+## Year, filters and period
+
+The list shows one **calendar year**; the current one when you open it. At the top you switch to other years with tabs – only years with entries are offered. Below you narrow down:
+
+- **Project** – only times of one project,
+- **Employee** – only times of one person (only in the levels with individual entries),
+- **Period** – from/to within the year,
+- **Search in description** – only in the level with description; only published entries are found.
+
+**Filter** applies the selection, **Reset** shows the whole year again. Column headers sort by date, duration, project or employee. Above the table you see the **hours of the year**, the **hours in the filtered selection**, the number of **entries** and **projects** – the totals always match the displayed selection.
+
+## Which period you see
+
+Your contractor sets how many calendar years you can look back – three including the current one by default. Below the table you see from which date times are shown. Older times are not deleted, only not visible in the portal; if needed, contact your contractor.
 
 ## Asking a query about an entry
 

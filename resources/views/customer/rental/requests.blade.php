@@ -13,10 +13,9 @@
 @section('title', __('Verleih-Anfrage'))
 
 @section('content')
-    <h1 class="mb-1 text-2xl font-semibold">{{ __('Verleih-Anfrage') }}</h1>
-    <p class="mb-4 text-sm text-base-content/70">{{ $direct ? __('rental.portal.direct_intro') : __('Sie fragen Gerät oder Gerätegruppe für einen Zeitraum an — wir prüfen die Verfügbarkeit und bestätigen verbindlich.') }}</p>
+    <x-page-toolbar :title="__('Verleih-Anfrage')" :subtitle="$direct ? __('rental.portal.direct_intro') : __('Sie fragen Gerät oder Gerätegruppe für einen Zeitraum an — wir prüfen die Verfügbarkeit und bestätigen verbindlich.')" class="mb-4" />
 
-    <div class="mb-6 rounded-box bg-base-100 p-4 shadow">
+    <x-card class="mb-6">
         <form method="GET" action="{{ route('customer.rentals.requests.index') }}" class="flex flex-wrap items-end gap-3">
             <x-date-range type="datetime-local" from-name="from" to-name="to"
                           :from="$from?->format('Y-m-d\TH:i')" :to="$to?->format('Y-m-d\TH:i')"
@@ -93,10 +92,10 @@
                 </form>
             @endif
         @endif
-    </div>
+    </x-card>
 
-    <h2 class="mb-2 font-semibold">{{ __('Meine Anfragen') }}</h2>
-    <x-table>
+    <x-card :title="__('Meine Anfragen')" icon="event_available" padding="p-0">
+    <x-table bare>
         <x-slot:head>
             <tr>
                 <x-table.th>{{ __('Zeitraum') }}</x-table.th>
@@ -125,7 +124,8 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty :colspan="4" :title="__('Noch keine Verleih-Anfragen.')" />
+            <x-table.empty :colspan="4" icon="event_available" :title="__('Noch keine Verleih-Anfragen.')" compact />
         @endforelse
     </x-table>
+    </x-card>
 @endsection

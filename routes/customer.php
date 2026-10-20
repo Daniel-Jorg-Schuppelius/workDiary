@@ -90,6 +90,11 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
             Route::get('/time-entries', [TimeEntryController::class, 'index'])->name('time-entries.index');
         });
 
+        // Auswertungen (Phase 154, MVP-1242): eigene Freigabe; Abschnitte folgen den Freigaben der Bereiche.
+        Route::middleware('portal.capability:insights')->group(function (): void {
+            Route::get('/auswertungen', [\App\Http\Controllers\CustomerPortal\InsightsController::class, 'index'])->name('insights.index');
+        });
+
         Route::middleware('portal.capability:invoices')->group(function (): void {
             Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
             // Belegdatei des Buchhaltungsprogramms (MVP-1118), nur aus der eigenen Liste.
@@ -253,6 +258,10 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
         // Wie intern (ProfileController::update): Adresswechsel nur mit frischer Anmeldung.
         Route::post('/profile/email', [\App\Http\Controllers\CustomerPortal\ProfileController::class, 'requestEmailChange'])
             ->middleware(['throttle:6,1', 'reauth:customer'])->name('profile.email.request');
+
+        // Farbschema (Phase 154, MVP-1241): Kopfzeilen-Umschalter (PUT, JSON) und Profilkarte (POST).
+        Route::match(['put', 'post'], '/farbschema', [\App\Http\Controllers\CustomerPortal\ProfileController::class, 'updateTheme'])
+            ->middleware('throttle:30,1')->name('theme.update');
 
         // Passwort ändern (Phase 153, MVP-1233): freiwillig aus dem Profil und als Pflicht nach einem Startpasswort.
         Route::get('/passwort-aendern', [\App\Http\Controllers\CustomerPortal\PasswordController::class, 'edit'])->name('password.change');

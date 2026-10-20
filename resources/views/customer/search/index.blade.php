@@ -11,8 +11,7 @@
 @extends('customer.layout')
 
 @section('content')
-    <h1 class="text-2xl font-semibold mb-1">{{ __('customer_search.title') }}</h1>
-    <p class="text-sm text-muted mb-4">{{ __('customer_search.subtitle') }}</p>
+    <x-page-toolbar :title="__('customer_search.title')" :subtitle="__('customer_search.subtitle')" class="mb-4" />
 
     <form method="GET" action="{{ route('customer.search') }}" class="mb-6 flex gap-2" role="search">
         <label for="portal-search" class="sr-only">{{ __('customer_search.field') }}</label>
@@ -23,13 +22,12 @@
 
     @if ($q !== '' && mb_strlen($q) >= 2)
         @if (collect($groups)->flatten(1)->isEmpty())
-            <x-empty-state icon="search_off" :title="__('customer_search.empty', ['q' => $q])" compact />
+            <x-empty-state framed icon="search_off" :title="__('customer_search.empty', ['q' => $q])" compact />
         @endif
         @foreach ($groups as $group => $hits)
             @continue($hits === [])
-            <section class="mb-6">
-                <h2 class="mb-2 text-lg font-semibold">{{ __('customer_search.group.' . $group) }}</h2>
-                <ul class="divide-y divide-base-300 rounded-box border border-base-300">
+            <x-card as="section" class="mb-6" :title="__('customer_search.group.' . $group)" :count="count($hits)">
+                <ul class="divide-y divide-base-300">
                     @foreach ($hits as $hit)
                         <li class="flex items-center justify-between gap-3 px-4 py-2 text-sm">
                             <a href="{{ $hit['url'] }}" class="link link-hover">{{ $hit['label'] }}</a>
@@ -37,7 +35,7 @@
                         </li>
                     @endforeach
                 </ul>
-            </section>
+            </x-card>
         @endforeach
     @endif
 @endsection

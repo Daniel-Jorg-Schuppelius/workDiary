@@ -22,47 +22,28 @@
 @endphp
 
 @section('content')
-    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
-        <div>
-            <a href="{{ route('customer.billing.index') }}" class="text-sm link link-hover">&larr; {{ __('customer-billing.portal_title') }}</a>
-            <h1 class="text-2xl font-semibold">
-                {{ $statement->periodLabel() }}
-                @unless ($locked)
-                    <x-status-badge size="md" class="align-middle">{{ __('customer-billing.provisional') }}</x-status-badge>
-                @endunless
-            </h1>
-        </div>
-        <x-button :href="$pdfUrl">{{ __('customer-billing.download_pdf') }}</x-button>
-    </div>
+    <x-page-toolbar :title="$statement->periodLabel()" :back="route('customer.billing.index')" :back-label="__('customer-billing.portal_title')" class="mb-4">
+        @unless ($locked)
+            <x-slot:badges>
+                <x-status-badge tone="warning" size="sm" outline>{{ __('customer-billing.provisional') }}</x-status-badge>
+            </x-slot:badges>
+        @endunless
+        <x-slot:actions>
+            <x-icon-btn icon="picture_as_pdf" tone="primary" :href="$pdfUrl" show-label>{{ __('customer-billing.download_pdf') }}</x-icon-btn>
+        </x-slot:actions>
+    </x-page-toolbar>
 
     {{-- Abrechnungsblock (Excel-Analogie Gesamt/Abgerechnet/Vormonat/Offen) --}}
     <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 mb-6">
-        <div class="rounded-box border border-base-300 p-3">
-            <div class="text-xs text-muted">{{ __('customer-billing.gross_value') }}</div>
-            <div class="text-lg font-semibold tabular-nums">{{ $money($statement->gross_value) }}</div>
-            <div class="text-xs text-muted tabular-nums">
-                {{ $hours($totalMinutes) }}
-                @if ($itemizeTravel)
-                    + {{ $hours($travelMinutes) }} {{ __('customer-billing.travel') }}
-                @endif
-            </div>
-        </div>
-        <div class="rounded-box border border-base-300 p-3">
-            <div class="text-xs text-muted">{{ __('customer-billing.payments_total') }}</div>
-            <div class="text-lg font-semibold tabular-nums">{{ $money($statement->payments_total) }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 p-3">
-            <div class="text-xs text-muted">{{ __('customer-billing.carry_in') }}</div>
-            <div class="text-lg font-semibold tabular-nums">{{ $money($statement->carry_in) }}</div>
-        </div>
-        <div class="rounded-box border border-primary/40 bg-primary/5 p-3">
-            <div class="text-xs text-muted">{{ __('customer-billing.balance') }}</div>
-            <div class="text-lg font-semibold tabular-nums">{{ $money($statement->balance) }}</div>
-        </div>
+        <x-kpi-tile :label="__('customer-billing.gross_value')" :value="$money($statement->gross_value)" format="text"
+                    :hint="$hours($totalMinutes) . ($itemizeTravel ? ' + ' . $hours($travelMinutes) . ' ' . __('customer-billing.travel') : '')" />
+        <x-kpi-tile :label="__('customer-billing.payments_total')" :value="$money($statement->payments_total)" format="text" tone="success" />
+        <x-kpi-tile :label="__('customer-billing.carry_in')" :value="$money($statement->carry_in)" format="text" />
+        <x-kpi-tile :label="__('customer-billing.balance')" :value="$money($statement->balance)" format="text" tone="primary" />
     </div>
 
-    <h2 class="text-lg font-medium mb-2">{{ __('customer-billing.attendance') }}</h2>
-    <x-table>
+    <x-card :title="__('customer-billing.attendance')" icon="schedule" padding="p-0">
+    <x-table bare>
         <x-slot:head>
             <tr>
                 <x-table.th>{{ __('customer-billing.weekday') }}</x-table.th>
@@ -91,13 +72,14 @@
                 <td class="text-right tabular-nums">{{ $money($row['amount']) }}</td>
             </tr>
         @empty
-            <x-table.empty :colspan="$itemizeTravel ? 8 : 7" :title="__('customer-billing.no_entries')" />
+            <x-table.empty :colspan="$itemizeTravel ? 8 : 7" icon="schedule" :title="__('customer-billing.no_entries')" compact />
         @endforelse
     </x-table>
+    </x-card>
 
     @if ($payments !== [])
-        <h2 class="text-lg font-medium mt-6 mb-2">{{ __('customer-billing.recent_payments') }}</h2>
-        <x-table>
+        <x-card :title="__('customer-billing.recent_payments')" icon="payments" padding="p-0" class="mt-6">
+        <x-table bare>
             @foreach ($payments as $payment)
                 <tr>
                     <td class="whitespace-nowrap tabular-nums">{{ \Illuminate\Support\Carbon::parse($payment['paid_on'])->fdate() }}</td>
@@ -105,5 +87,6 @@
                 </tr>
             @endforeach
         </x-table>
+        </x-card>
     @endif
 @endsection

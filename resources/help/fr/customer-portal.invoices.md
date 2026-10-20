@@ -1,7 +1,7 @@
 ---
 title: "Mes factures"
 topic: customer-portal.invoices
-version: 5
+version: 6
 keywords:
     - consulter les factures
     - liste des factures
@@ -46,6 +46,10 @@ Toutes les factures sont triées ensemble par date, la plus récente en haut –
 - **Partiellement payée** – une partie du montant a été reçue.
 - **Payée** – la facture est intégralement réglée.
 - **Annulée** – la facture a été annulée et n'est plus à payer.
+
+## Année, statut et mois
+
+La liste affiche une **année civile** ; en haut, vous passez à d'autres années par onglets. Dans la barre de filtres, vous affinez par **statut** (en attente ou réglée) et **mois** ; **Réinitialiser** affiche de nouveau toute l'année. Depuis les **Analyses**, les graphiques mènent directement à cette liste avec le mois correspondant.
 
 ## Télécharger une facture
 

@@ -1,7 +1,7 @@
 ---
 title: "Tempi registrati"
 topic: customer-portal.time
-version: 3
+version: 4
 keywords:
     - rilevazione tempi
     - foglio ore
@@ -56,6 +56,21 @@ paginazione in fondo alla pagina.
 
 Se manca una registrazione che si aspetta, non è ancora stata pubblicata
 oppure non è assegnata a nessuno dei Suoi progetti.
+
+## Anno, filtri e periodo
+
+La lista mostra un **anno civile**; all'apertura quello in corso. In alto passa ad altri anni tramite schede – sono proposti solo gli anni con registrazioni. Sotto può restringere:
+
+- **Progetto** – solo i tempi di un progetto,
+- **Collaboratore** – solo i tempi di una persona (solo nei livelli con registrazioni singole),
+- **Periodo** – da/a all'interno dell'anno,
+- **Cerca nella descrizione** – solo nel livello con descrizione; vengono trovate solo le registrazioni pubblicate.
+
+**Filtra** applica la selezione, **Reimposta** mostra di nuovo l'intero anno. Le intestazioni di colonna ordinano per data, durata, progetto o collaboratore. Sopra la tabella trova le **ore dell'anno**, le **ore della selezione**, il numero di **voci** e **progetti** – i totali corrispondono sempre alla selezione mostrata.
+
+## Quale periodo vede
+
+Il Suo fornitore stabilisce per quanti anni civili può guardare indietro – di norma tre, anno in corso compreso. Sotto la tabella è indicato da quale data vengono mostrati i tempi. I tempi più vecchi non sono cancellati, solo non visibili nel portale; se necessario si rivolga al Suo fornitore.
 
 ## Inviare una domanda su una registrazione
 
