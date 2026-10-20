@@ -1579,6 +1579,25 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
 
 ### Fixed
 
+- Cache: Objekte im Cache kamen als `__PHP_Incomplete_Class` zurück (Befund
+  2026-10-20). Mit `cache.serializable_classes = false` (Laravel-Vorgabe gegen
+  Gadget-Ketten) liest kein Datei-, Datenbank- oder Array-Store ein Objekt
+  zurück, auch nicht verschachtelt in Arrays, und `Cache::remember` liefert den
+  unvollständigen Wert als Treffer. Folgen: der Zuordnungsdialog des
+  Rechnungseingangs brach mit „call a method on an incomplete object“ ab
+  (Kandidaten aus dem Buchhaltungsprogramm), die Erinnerungen im Seitenkopf
+  hätten denselben Fehler ausgelöst, geplante Wartungsfenster galten nur beim
+  ersten Aufruf je Minute (danach leere Liste), Tag- und Mitarbeiterlisten,
+  Lizenzprüfung und KI-Ergebnisse umgingen ihren Cache still (jeder Aufruf
+  neu, KI-Antworten erneut berechnet). Der Cache hält jetzt nur Arrays,
+  Skalare und Enums: Kandidaten, KI-Ergebnisse, Lizenzergebnis und
+  Erinnerungen über `toArray()`/`fromArray()`, Wartungsfenster und
+  Nachschlagelisten als Rohzeilen mit `hydrate()`; Schlüssel der Kandidaten
+  und Erinnerungen versioniert, Altbestand läuft aus. Testsuite: der
+  Array-Store serialisiert wie Datei und Datenbank, jeder Schreibzugriff mit
+  Objekt bricht den Test ab (`Tests\TestCase`, `CacheValueRuleTest`);
+  produktiv protokolliert ein Treffer mit Objekt eine Warnung. Regel in
+  CLAUDE.md „Cache“, Tests für Kandidaten, Erinnerungen und Lizenz.
 - Rechnungseingang: XML und Sichtrechnung derselben Mail wurden zwei Eingänge
   (Befund 2026-10-20, MVP-1247). Ein niederländischer Shop schickt UBL ohne
   Verkäuferblock, mit „Name, Bestellnummer, USt-IdNr.“ als Rechnungsnummer

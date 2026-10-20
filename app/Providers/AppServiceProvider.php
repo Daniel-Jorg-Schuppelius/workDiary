@@ -64,6 +64,7 @@ use App\Services\Timesheet\Stopwatch;
 use App\Services\UI\{BrandingService, DateRangeContext};
 use App\Session\AnonymousStackSessionHandler;
 use App\Support\{CarbonFmt, MorphMap, Setting};
+use App\Support\Reminders\ReminderItem;
 use Carbon\{Carbon as CarbonMutable, CarbonImmutable};
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\CryptoHelper;
@@ -367,6 +368,12 @@ class AppServiceProvider extends ServiceProvider {
     }
 
     public function boot(): void {
+        // Objekte liest kein Cache-Store zurück (`cache.serializable_classes`); ein
+        // Treffer würde sonst still zur __PHP_Incomplete_Class (Befund 2026-10-20).
+        \Illuminate\Support\Facades\Cache::handleUnserializableClassUsing(static function (string $key, ?string $class): void {
+            \Illuminate\Support\Facades\Log::warning('Cache-Wert hält ein Objekt, das nicht zurückgelesen wird', ['key' => $key, 'class' => $class]);
+        });
+
         // Modulgrenzen (MVP-863): Null-Bindungen der definierenden Module zuerst,
         // dann die Bindungen der implementierenden Module. Erst hier, nicht in
         // register()/booting(): die Manifest-Discovery protokolliert über das
@@ -1051,10 +1058,11 @@ class AppServiceProvider extends ServiceProvider {
                     // 3–5 Count-Queries je Seitenaufruf (Vollscan 2026-08-23, A7):
                     // je Nutzer + Locale eine Minute cachen — Erinnerungen sind
                     // keine Echtzeitdaten.
+                    // Als Arrays, der Cache liest keine Objekte zurück (Schlüssel „2“: Altbestand mit Objekten läuft aus).
                     $items = \Illuminate\Support\Facades\Cache::remember(
-                        'reminders:' . (int) $user->id . ':' . app()->getLocale(),
+                        'reminders:2:' . (int) $user->id . ':' . app()->getLocale(),
                         \App\Services\Navigation\NavigationRegistry::BADGE_TTL,
-                        static fn (): array => app(ReminderService::class)->for($user),
+                        static fn (): array => array_map(static fn (ReminderItem $item): array => $item->toArray(), app(ReminderService::class)->for($user)),
                     );
                 }
             } catch (\Throwable $e) {

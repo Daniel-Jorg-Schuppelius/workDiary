@@ -20,4 +20,14 @@ final class AiTextResult {
         public readonly string $text,
         public readonly AiUsage $usage = new AiUsage(),
     ) {}
+
+    /** @return array<string, mixed> Cache-Form: der Cache hält nur Arrays, keine Objekte (CLAUDE.md „Cache“) */
+    public function toArray(): array {
+        return ['text' => $this->text, 'usage' => $this->usage->toArray()];
+    }
+
+    /** @param  array<string, mixed>  $data */
+    public static function fromArray(array $data): self {
+        return new self((string) ($data['text'] ?? ''), AiUsage::fromArray((array) ($data['usage'] ?? [])));
+    }
 }

@@ -22,4 +22,14 @@ final class AiFindResult {
         public readonly array $matches,
         public readonly AiUsage $usage = new AiUsage(),
     ) {}
+
+    /** @return array<string, mixed> Cache-Form: der Cache hält nur Arrays, keine Objekte (CLAUDE.md „Cache“) */
+    public function toArray(): array {
+        return ['matches' => $this->matches, 'usage' => $this->usage->toArray()];
+    }
+
+    /** @param  array<string, mixed>  $data */
+    public static function fromArray(array $data): self {
+        return new self(array_values(array_map('strval', (array) ($data['matches'] ?? []))), AiUsage::fromArray((array) ($data['usage'] ?? [])));
+    }
 }

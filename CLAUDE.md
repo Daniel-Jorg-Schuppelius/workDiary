@@ -369,6 +369,32 @@ ein Präfix vor `. $this->value` ist erlaubt. Keine deutschen JSON-Texte wie
 `__('Offen')` — ein gleichlautender JSON-Schlüssel überschattet sonst den
 Namespace, und beide laufen auseinander (Gate `EnumLabelContractTest`).
 
+## Cache: nur Arrays, Skalare und Enums (Befund 2026-10-20)
+
+`config/cache.php` setzt `serializable_classes => false` (Laravel-Vorgabe gegen
+Gadget-Ketten bei geleaktem `APP_KEY`): Datei-, Datenbank- und Array-Store lesen
+**kein Objekt** zurück, es kommt als `__PHP_Incomplete_Class` — auch
+verschachtelt in Arrays, und `Cache::remember` liefert diesen Wert als Treffer.
+Produktiv brach so der Zuordnungsdialog des Rechnungseingangs; Wartungsfenster,
+Nachschlagelisten, Lizenz und KI umgingen ihren Cache still.
+
+- In den Cache gehen nur Arrays, Skalare und Enums. DTOs bekommen
+  `toArray()`/`fromArray()` (`IncomingPartyCandidate`, `Ai*Result`,
+  `LicenseResult`, `ReminderItem`); Modelle werden als Rohzeilen abgelegt
+  (`->map(fn ($m) => $m->getAttributes())->all()`) und mit `Model::hydrate()`
+  gelesen (`MaintenanceWindow::openWindows()`, `LookupCache`). Kein Carbon,
+  keine Collection, kein Modell im Wert.
+- Lesen immer mit Formprüfung (`is_array(…)`), nie `instanceof` gegen den
+  Cache-Wert; ändert sich die Form, den Schlüssel versionieren
+  (`incoming-party-lookup:3:`, `reminders:2:`).
+- Gate: `Tests\TestCase` bricht jeden Schreibzugriff mit Objekt ab
+  (`KeyWritten`-Listener, `CacheValueRuleTest`); der Array-Store serialisiert
+  in Tests wie Datei und Datenbank. Produktiv protokolliert
+  `Cache::handleUnserializableClassUsing` einen Treffer mit Objekt.
+- `serializable_classes` bleibt `false`; eine Allowlist wäre bei jeder
+  verschachtelten Klasse (Carbon, Collection) wieder lückenhaft.
+  Details: [cache-konventionen.md](../WorkDiary-Architecture/konventionen/cache-konventionen.md).
+
 ## Verweise
 
 Die gesamte Entwicklungs-/Architekturdoku liegt im Schwester-Repo

@@ -25,4 +25,24 @@ final class AiTranslationResult {
         public readonly ?string $detectedSourceLanguage = null,
         public readonly AiUsage $usage = new AiUsage(),
     ) {}
+
+    /** @return array<string, mixed> Cache-Form: der Cache hält nur Arrays, keine Objekte (CLAUDE.md „Cache“) */
+    public function toArray(): array {
+        return [
+            'text' => $this->text,
+            'deterministic_terminology' => $this->deterministicTerminology,
+            'detected_source_language' => $this->detectedSourceLanguage,
+            'usage' => $this->usage->toArray(),
+        ];
+    }
+
+    /** @param  array<string, mixed>  $data */
+    public static function fromArray(array $data): self {
+        return new self(
+            (string) ($data['text'] ?? ''),
+            (bool) ($data['deterministic_terminology'] ?? false),
+            isset($data['detected_source_language']) ? (string) $data['detected_source_language'] : null,
+            AiUsage::fromArray((array) ($data['usage'] ?? [])),
+        );
+    }
 }

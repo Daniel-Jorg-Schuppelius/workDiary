@@ -52,4 +52,14 @@ final class AiExtractionResult {
 
         return ($this->confidence[$field] ?? 0) >= $minConfidence ? trim($value) : null;
     }
+
+    /** @return array<string, mixed> Cache-Form: der Cache hält nur Arrays, keine Objekte (CLAUDE.md „Cache“) */
+    public function toArray(): array {
+        return ['values' => $this->values, 'confidence' => $this->confidence, 'usage' => $this->usage->toArray()];
+    }
+
+    /** @param  array<string, mixed>  $data */
+    public static function fromArray(array $data): self {
+        return new self((array) ($data['values'] ?? []), (array) ($data['confidence'] ?? []), AiUsage::fromArray((array) ($data['usage'] ?? [])));
+    }
 }

@@ -96,22 +96,27 @@ class MaintenanceWindow extends Model {
     }
 
     /**
-     * Offene Fenster, gecacht (Middleware-Hot-Path) und DB-ausfallsicher.
+     * Offene Fenster, gecacht (Middleware-Hot-Path) und DB-ausfallsicher. Der
+     * Cache hält die Rohzeilen, keine Modelle — Objekte liest er nicht zurück.
      *
      * @return Collection<int, self>
      */
     public static function openWindows(): Collection {
         try {
-            /** @var Collection<int, self> $windows */
-            $windows = Cache::remember(self::CACHE_KEY, 60, static function (): Collection {
-                return self::query()
+            $rows = Cache::get(self::CACHE_KEY);
+            if (! is_array($rows)) {
+                $rows = self::query()
                     ->whereIn('status', MaintenanceWindowStatus::open())
                     ->where('ends_at', '>', now()->subHour())
                     ->orderBy('starts_at')
-                    ->get();
-            });
+                    ->get()
+                    ->map(static fn (self $window): array => $window->getAttributes())
+                    ->all();
+                Cache::put(self::CACHE_KEY, $rows, 60);
+            }
 
-            return $windows;
+            /** @var list<array<string, mixed>> $rows */
+            return self::hydrate($rows);
         } catch (\Throwable) {
             return new Collection;
         }

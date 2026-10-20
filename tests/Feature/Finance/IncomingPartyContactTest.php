@@ -45,6 +45,8 @@ use Tests\TestCase;
 
 /** Gefälschte Kontaktsuche mit Ansprechpartnern. */
 final class PartyContactFakeLookup implements IncomingPartyLookup {
+    public static int $lookups = 0;
+
     public function key(): string {
         return 'fakecontact';
     }
@@ -58,6 +60,8 @@ final class PartyContactFakeLookup implements IncomingPartyLookup {
     }
 
     public function lookup(IncomingEInvoice $incoming): array {
+        self::$lookups++;
+
         return [new IncomingPartyCandidate('fakecontact', 'Fakebuch', 'c-9', 'Stimmgerecht oHG', 'K-10007', 'DE286103889', 'info@stimmgerecht.test',
             persons: [
                 ContactPersons::fromExternal('Herr', 'Ralph', 'Hartig', email: 'r@stimmgerecht.test') ?? [],
@@ -172,6 +176,26 @@ final class IncomingPartyContactTest extends TestCase {
         ]);
         $this->assertSame(['Ralph', 'Birgit'], array_column($candidates[0]->persons, 'first_name'));
         $this->assertSame(['mr', 'Max', 'Mustermann'], [$candidates[1]->contact['salutation'] ?? null, $candidates[1]->contact['first_name'] ?? null, $candidates[1]->contact['last_name'] ?? null]);
+    }
+
+    /** Der Cache hält die Kandidaten als Arrays (Objekte liest er nicht zurück, Befund 2026-10-20); der Treffer liefert wieder Kandidaten-Objekte, auch im Dialog. */
+    public function test_candidates_come_back_from_the_cache_as_objects(): void {
+        app(ModuleRegistry::class)->contribute(IncomingPartyLookup::class, PartyContactFakeLookup::class);
+        $incoming = $this->incoming(['seller_name' => 'Stimmgerecht oHG', 'seller_vat_id' => 'DE286103889']);
+        PartyContactFakeLookup::$lookups = 0;
+
+        $first = app(IncomingInvoiceParties::class)->lookupCandidates($incoming);
+        $second = app(IncomingInvoiceParties::class)->lookupCandidates($incoming);
+
+        $this->assertSame(1, PartyContactFakeLookup::$lookups);
+        $this->assertInstanceOf(IncomingPartyCandidate::class, $second['candidates'][0]);
+        $this->assertEquals($first['candidates'][0], $second['candidates'][0]);
+        $this->assertSame('fakecontact:c-9', $second['candidates'][0]->key());
+        $this->assertSame(['Ralph', 'Birgit'], array_column($second['candidates'][0]->persons, 'first_name'));
+        $this->assertSame([['label' => 'Fakebuch', 'state' => 'found']], $second['sources']);
+
+        $this->get(route('finance.incoming-invoices.assign.form', $incoming))->assertOk()->assertSee('Stimmgerecht oHG · Nr. K-10007');
+        $this->assertSame(1, PartyContactFakeLookup::$lookups);
     }
 
     public function test_adopting_a_candidate_creates_the_party_with_main_contact_and_list(): void {

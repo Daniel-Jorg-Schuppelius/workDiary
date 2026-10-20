@@ -57,8 +57,8 @@ class LicenseService {
         $ttl = (int) config('license.cache_ttl', 300);
         if ($ttl > 0) {
             $cached = $this->safeCacheGet(self::CACHE_KEY . ':_');
-            if ($cached instanceof LicenseResult) {
-                return $cached;
+            if (is_array($cached) && ($result = LicenseResult::fromArray($cached)) !== null) {
+                return $result;
             }
         }
 
@@ -67,7 +67,7 @@ class LicenseService {
         $this->recordStatusTransition($result);
 
         if ($ttl > 0) {
-            $this->safeCacheCall(fn() => $this->cache->put(self::CACHE_KEY . ':_', $result, $ttl));
+            $this->safeCacheCall(fn() => $this->cache->put(self::CACHE_KEY . ':_', $result->toArray(), $ttl));
         }
 
         return $result;
@@ -406,15 +406,15 @@ class LicenseService {
         $cacheKey = self::CACHE_KEY . ':org:' . (string) $org->getKey();
         if ($ttl > 0) {
             $cached = $this->safeCacheGet($cacheKey);
-            if ($cached instanceof LicenseResult) {
-                return $cached;
+            if (is_array($cached) && ($result = LicenseResult::fromArray($cached)) !== null) {
+                return $result;
             }
         }
 
         $result = $this->verify(trim($key), null, (string) $org->license_uid);
 
         if ($ttl > 0) {
-            $this->safeCacheCall(fn() => $this->cache->put($cacheKey, $result, $ttl));
+            $this->safeCacheCall(fn() => $this->cache->put($cacheKey, $result->toArray(), $ttl));
         }
 
         return $result;

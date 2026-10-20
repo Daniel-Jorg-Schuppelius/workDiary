@@ -31,16 +31,16 @@ class LookupCache {
      */
     public static function tagOptions(): Collection {
         $key = self::tagOptionsKey(self::currentOrganizationId());
-        $tags = Cache::get($key);
+        $rows = Cache::get($key);
 
-        if (! $tags instanceof Collection) {
-            Cache::forget($key);
-            $tags = Tag::query()->orderBy('name')->get(['id', 'name', 'slug', 'color']);
-            Cache::put($key, $tags, now()->addMinutes(5));
+        // Rohzeilen statt Modelle: Objekte liest der Cache nicht zurück.
+        if (! is_array($rows)) {
+            $rows = Tag::query()->orderBy('name')->get(['id', 'name', 'slug', 'color'])->map(static fn (Tag $tag): array => $tag->getAttributes())->all();
+            Cache::put($key, $rows, now()->addMinutes(5));
         }
 
-        /** @var Collection<int, Tag> $tags */
-        return $tags;
+        /** @var list<array<string, mixed>> $rows */
+        return Tag::hydrate($rows);
     }
 
     /**
@@ -53,16 +53,15 @@ class LookupCache {
      */
     public static function userDropdown(): Collection {
         $key = self::userDropdownKey(self::currentOrganizationId());
-        $users = Cache::get($key);
+        $rows = Cache::get($key);
 
-        if (! $users instanceof Collection) {
-            Cache::forget($key);
-            $users = User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']);
-            Cache::put($key, $users, now()->addMinutes(10));
+        if (! is_array($rows)) {
+            $rows = User::inCurrentOrganization()->orderBy('name')->get(['id', 'name'])->map(static fn (User $user): array => $user->getAttributes())->all();
+            Cache::put($key, $rows, now()->addMinutes(10));
         }
 
-        /** @var Collection<int, User> $users */
-        return $users;
+        /** @var list<array<string, mixed>> $rows */
+        return User::hydrate($rows);
     }
 
     /**

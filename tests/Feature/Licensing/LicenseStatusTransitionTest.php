@@ -83,6 +83,20 @@ class LicenseStatusTransitionTest extends TestCase {
         $this->assertSame(1, AuditLog::query()->where('event', 'license.gracePeriodEntered')->count());
     }
 
+    /** Der Cache hält das Ergebnis als Array (Objekte liest er nicht zurück); der Treffer liefert wieder ein LicenseResult mit Payload. */
+    public function test_cached_result_comes_back_as_license_result_with_payload(): void {
+        config(['license.cache_ttl' => 300]);
+        $first = $this->makeService(LicenseStatus::Valid)->current();
+
+        // Zweiter Dienst würde „Expired“ liefern — der Treffer aus dem Cache gewinnt.
+        $second = $this->makeService(LicenseStatus::Expired)->current();
+
+        $this->assertSame(LicenseStatus::Valid, $second->status);
+        $this->assertSame(['TestCo', 'test-license'], [$second->payload?->licensee, $second->payload?->licenseId]);
+        // Sekundengenau: die Payload geht als ISO-8601 in den Cache, Mikrosekunden fallen weg.
+        $this->assertSame($first->payload?->issuedAt->toIso8601String(), $second->payload?->issuedAt->toIso8601String());
+    }
+
     private function makeService(LicenseStatus $status): LicenseService {
         return new class($status, app(CacheRepository::class)) extends LicenseService {
             public function __construct(

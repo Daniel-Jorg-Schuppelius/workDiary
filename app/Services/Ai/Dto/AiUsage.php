@@ -31,4 +31,14 @@ final class AiUsage {
             ? $this->characters
             : $this->inputTokens + $this->outputTokens;
     }
+
+    /** @return array{input_tokens: int, output_tokens: int, characters: int} */
+    public function toArray(): array {
+        return ['input_tokens' => $this->inputTokens, 'output_tokens' => $this->outputTokens, 'characters' => $this->characters];
+    }
+
+    /** @param  array<string, mixed>  $data */
+    public static function fromArray(array $data): self {
+        return new self((int) ($data['input_tokens'] ?? 0), (int) ($data['output_tokens'] ?? 0), (int) ($data['characters'] ?? 0));
+    }
 }

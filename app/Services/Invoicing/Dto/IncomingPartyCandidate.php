@@ -32,6 +32,46 @@ final class IncomingPartyCandidate {
         public readonly array $persons = [],
     ) {}
 
+    /** @return array<string, mixed> Cache-Form: der Cache hält nur Arrays, keine Objekte (CLAUDE.md „Cache“) */
+    public function toArray(): array {
+        return [
+            'plugin_id' => $this->pluginId,
+            'plugin_label' => $this->pluginLabel,
+            'external_id' => $this->externalId,
+            'name' => $this->name,
+            'number' => $this->number,
+            'vat_id' => $this->vatId,
+            'email' => $this->email,
+            'street' => $this->street,
+            'zip' => $this->zip,
+            'city' => $this->city,
+            'country' => $this->country,
+            'contact' => $this->contact,
+            'persons' => $this->persons,
+        ];
+    }
+
+    /** @param  array<string, mixed>  $data */
+    public static function fromArray(array $data): self {
+        $text = static fn (string $key): ?string => isset($data[$key]) && $data[$key] !== '' ? (string) $data[$key] : null;
+
+        return new self(
+            pluginId: (string) ($data['plugin_id'] ?? ''),
+            pluginLabel: (string) ($data['plugin_label'] ?? ''),
+            externalId: (string) ($data['external_id'] ?? ''),
+            name: (string) ($data['name'] ?? ''),
+            number: $text('number'),
+            vatId: $text('vat_id'),
+            email: $text('email'),
+            street: $text('street'),
+            zip: $text('zip'),
+            city: $text('city'),
+            country: $text('country'),
+            contact: is_array($data['contact'] ?? null) ? $data['contact'] : null,
+            persons: is_array($data['persons'] ?? null) ? array_values($data['persons']) : [],
+        );
+    }
+
     /** Formularwert: Plugin und externe ID — die Stammdaten holt der Kern beim Übernehmen erneut (E4). */
     public function key(): string {
         return $this->pluginId . ':' . $this->externalId;

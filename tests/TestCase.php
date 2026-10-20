@@ -12,8 +12,10 @@ namespace Tests;
 
 use App\Support\DatabaseHealth;
 use Database\Seeders\TestingSeeder;
+use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Foundation\Testing\{RefreshDatabaseState, TestCase as BaseTestCase};
-use Tests\Support\PersistedTestDatabase;
+use Illuminate\Support\Facades\Event;
+use Tests\Support\{CacheValueGuard, PersistedTestDatabase};
 
 abstract class TestCase extends BaseTestCase {
     /**
@@ -70,6 +72,16 @@ abstract class TestCase extends BaseTestCase {
         // PDOExceptions ausl\u00f6sen (z. B. DatabaseUnavailableTest), w\u00fcrden
         // sonst nachfolgende Tests pauschal in 503 laufen lassen.
         DatabaseHealth::reset();
+
+        // Der Cache hält nur Arrays, Skalare und Enums: Objekte liest kein Store
+        // zurück (Befund 2026-10-20, CLAUDE.md „Cache“). Ein Objekt im Wert bricht
+        // den Test hier ab, statt produktiv still zum Cache-Miss zu werden.
+        Event::listen(KeyWritten::class, static function (KeyWritten $event): void {
+            $class = CacheValueGuard::objectIn($event->value);
+            if ($class !== null) {
+                throw new \LogicException(sprintf('Cache-Schlüssel „%s“ hält ein Objekt der Klasse %s; der Cache nimmt nur Arrays, Skalare und Enums (CLAUDE.md „Cache“).', $event->key, $class));
+            }
+        });
     }
 
     /**

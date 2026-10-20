@@ -44,7 +44,9 @@ return [
 
         'array' => [
             'driver' => 'array',
-            'serialize' => false,
+            // Wie Datei- und DB-Store serialisieren: so liest auch die Testsuite
+            // Objekte nicht zurück (`serializable_classes`), Befund 2026-10-20.
+            'serialize' => true,
         ],
 
         'database' => [

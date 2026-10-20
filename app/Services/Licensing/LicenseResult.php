@@ -28,4 +28,26 @@ final class LicenseResult {
     public function isUsable(): bool {
         return $this->status->isUsable();
     }
+
+    /** @return array{status: string, payload: array<string, mixed>|null, message: string|null} Cache-Form: der Cache hält nur Arrays, keine Objekte (CLAUDE.md „Cache“) */
+    public function toArray(): array {
+        return ['status' => $this->status->value, 'payload' => $this->payload?->toArray(), 'message' => $this->message];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return self|null null bei unbekanntem Status (Altbestand im Cache)
+     */
+    public static function fromArray(array $data): ?self {
+        $status = LicenseStatus::tryFrom((string) ($data['status'] ?? ''));
+        if ($status === null) {
+            return null;
+        }
+
+        return new self(
+            $status,
+            is_array($data['payload'] ?? null) ? LicensePayload::fromArray($data['payload']) : null,
+            isset($data['message']) ? (string) $data['message'] : null,
+        );
+    }
 }

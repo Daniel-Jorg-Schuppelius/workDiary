@@ -572,8 +572,8 @@
                             @endunless
                             @php
                                 $_reminders = $reminderItems ?? [];
-                                $_reminderTotal = collect($_reminders)->sum(fn($r) => is_object($r) ? $r->count : (int) ($r['count'] ?? 0));
-                                $_reminderHasError = collect($_reminders)->contains(fn($r) => (is_object($r) ? $r->severity : ($r['severity'] ?? '')) === 'error');
+                                $_reminderTotal = collect($_reminders)->sum(fn(array $r): int => (int) ($r['count'] ?? 0));
+                                $_reminderHasError = collect($_reminders)->contains(fn(array $r): bool => ($r['severity'] ?? '') === 'error');
                             @endphp
                             @if (! $isLegacyMode)
                             @php
@@ -711,10 +711,7 @@
                                         @endif
                                     </div>
                                     <div class="max-h-96 overflow-y-auto">
-                                        @forelse ($_reminders as $_reminder)
-                                            @php
-                                                $_r = is_object($_reminder) ? $_reminder->toArray() : $_reminder;
-                                            @endphp
+                                        @forelse ($_reminders as $_r)
                                             <a href="{{ $_r['url'] }}"
                                                class="flex items-start gap-3 px-4 py-3 hover:bg-base-200 border-b border-base-200 last:border-b-0">
                                                 @php

@@ -34,6 +34,15 @@ use Throwable;
  * Prompt-/Antwort-Klartext.
  */
 class AiInvocationService implements AiInvoker {
+    /** Cache-Art je Ergebnisklasse: kurze Schlüssel statt Klassennamen im Cache. */
+    private const RESULT_KINDS = [
+        'text' => AiTextResult::class,
+        'classification' => AiClassificationResult::class,
+        'find' => AiFindResult::class,
+        'translation' => AiTranslationResult::class,
+        'extraction' => AiExtractionResult::class,
+    ];
+
     public function __construct(
         private readonly AiCapabilityRegistry $registry,
         private readonly AiRoutingResolver $resolver,
@@ -63,12 +72,8 @@ class AiInvocationService implements AiInvoker {
         foreach ($candidates as $index => $connection) {
             $cacheKey = $this->cacheKey($organization, $capability, $connection, $request);
 
-            $cached = Cache::get($cacheKey);
-            if ($cached instanceof AiTextResult
-                || $cached instanceof AiClassificationResult
-                || $cached instanceof AiFindResult
-                || $cached instanceof AiTranslationResult
-                || $cached instanceof AiExtractionResult) {
+            $cached = $this->fromCache(Cache::get($cacheKey));
+            if ($cached !== null) {
                 return $this->wrap($organization, $capability, $connection, $cached, $index > 0, true);
             }
 
@@ -94,7 +99,7 @@ class AiInvocationService implements AiInvoker {
                 $units > 0 ? $units : $request->estimatedUnits()
             );
 
-            Cache::put($cacheKey, $result, now()->addDays(max(1, (int) config('ai.cache_ttl_days', 7))));
+            Cache::put($cacheKey, $this->cacheable($result), now()->addDays(max(1, (int) config('ai.cache_ttl_days', 7))));
 
             return $this->wrap($organization, $capability, $connection, $result, $index > 0, false);
         }
@@ -170,6 +175,26 @@ class AiInvocationService implements AiInvoker {
             fallbackUsed: $fallbackUsed,
             fromCache: $fromCache,
         );
+    }
+
+    /**
+     * Cache-Form des Ergebnisses: Art und Felder — der Cache hält keine Objekte (CLAUDE.md „Cache“).
+     *
+     * @return array{kind: string, data: array<string, mixed>}
+     */
+    private function cacheable(AiTextResult|AiClassificationResult|AiFindResult|AiTranslationResult|AiExtractionResult $result): array {
+        return ['kind' => (string) array_search($result::class, self::RESULT_KINDS, true), 'data' => $result->toArray()];
+    }
+
+    private function fromCache(mixed $cached): AiTextResult|AiClassificationResult|AiFindResult|AiTranslationResult|AiExtractionResult|null {
+        if (! is_array($cached)) {
+            return null;
+        }
+        $kind = $cached['kind'] ?? null;
+        $data = $cached['data'] ?? null;
+        $class = is_string($kind) ? (self::RESULT_KINDS[$kind] ?? null) : null;
+
+        return $class !== null && is_array($data) ? $class::fromArray($data) : null;
     }
 
     private function cacheKey(

@@ -33,4 +33,14 @@ final class AiClassificationResult {
             ? $this
             : new self($filtered, $this->usage);
     }
+
+    /** @return array<string, mixed> Cache-Form: der Cache hält nur Arrays, keine Objekte (CLAUDE.md „Cache“) */
+    public function toArray(): array {
+        return ['values' => $this->values, 'usage' => $this->usage->toArray()];
+    }
+
+    /** @param  array<string, mixed>  $data */
+    public static function fromArray(array $data): self {
+        return new self(array_values(array_map('strval', (array) ($data['values'] ?? []))), AiUsage::fromArray((array) ($data['usage'] ?? [])));
+    }
 }

@@ -234,13 +234,13 @@ class IncomingInvoiceParties {
         if ($organization === null || ($fields['name'] === null && $fields['email'] === null)) {
             return $empty;
         }
-        // Versionsteil im Schlüssel: Kandidaten liegen serialisiert im Cache, ein älterer Stand kennt die Ansprechpartner-Felder nicht.
-        $cacheKey = 'incoming-party-lookup:2:' . $incoming->id . ':' . ($incoming->updated_at?->getTimestamp() ?? 0);
+        // Versionsteil im Schlüssel: die Kandidaten liegen als Arrays im Cache (Objekte liest er nicht zurück), ein älterer Stand kennt die Ansprechpartner-Felder nicht.
+        $cacheKey = 'incoming-party-lookup:3:' . $incoming->id . ':' . ($incoming->updated_at?->getTimestamp() ?? 0);
         if (! $fresh) {
             $cached = Cache::get($cacheKey);
-            if (is_array($cached) && isset($cached['candidates'], $cached['sources'])) {
-                /** @var array{candidates: list<IncomingPartyCandidate>, sources: list<array{label: string, state: 'found'|'none'|'failed'}>} $cached */
-                return $cached;
+            if (is_array($cached) && is_array($cached['candidates'] ?? null) && is_array($cached['sources'] ?? null)) {
+                /** @var array{candidates: list<array<string, mixed>>, sources: list<array{label: string, state: 'found'|'none'|'failed'}>} $cached */
+                return ['candidates' => array_map(IncomingPartyCandidate::fromArray(...), $cached['candidates']), 'sources' => $cached['sources']];
             }
         }
         $isPurchase = $incoming->direction !== DocumentDirection::Outgoing;
@@ -276,7 +276,7 @@ class IncomingInvoiceParties {
             }
             $result['sources'][] = ['label' => $source->label(), 'state' => $matching > 0 ? 'found' : 'none'];
         }
-        Cache::put($cacheKey, $result, self::LOOKUP_TTL);
+        Cache::put($cacheKey, ['candidates' => array_map(static fn (IncomingPartyCandidate $candidate): array => $candidate->toArray(), $result['candidates']), 'sources' => $result['sources']], self::LOOKUP_TTL);
 
         return $result;
     }
