@@ -61,6 +61,14 @@ badge. Each email is evaluated by invoice, not by attachment:
   action “Recognise again” in the list of documents to assign repeats the
   recognition of the selected unrecognised documents from the stored
   original. Entered values, transferred and rejected documents stay unchanged.
+- If the XML and the visual PDF of the same invoice arrive in one email, the
+  XML stays the original and the PDF becomes a companion file, even if the
+  XML carries a longer number. If the XML names no seller, VAT ID or bank
+  details, the PDF supplies these values; the detail page lists the added
+  fields.
+- “Check again” repeats the schema and KoSIT check of e-invoices on the
+  stored original, for example if the validator was missing on receipt.
+  Values, assignment and transfer stay unchanged.
 - Emails without any invoice attachment (for example only a download link)
   go to the assignment inbox in Administration, marked as invoice mailbox.
 - An email forwarded as an attachment is unpacked; the invoice inside counts

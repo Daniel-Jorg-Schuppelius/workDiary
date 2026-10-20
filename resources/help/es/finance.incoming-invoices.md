@@ -64,6 +64,15 @@ adjuntos:
   repite el reconocimiento de los documentos no reconocidos seleccionados a
   partir del original conservado. Los valores introducidos y los documentos
   transferidos o rechazados no cambian.
+- Si el XML y la factura en PDF de la misma factura llegan en un correo, el
+  XML sigue siendo el original y el PDF pasa a ser archivo complementario,
+  aunque el XML lleve un número más largo. Si el XML no indica vendedor,
+  NIF-IVA ni datos bancarios, el PDF aporta esos valores; la página de detalle
+  nombra los campos completados.
+- «Comprobar de nuevo» repite la comprobación de esquema y KoSIT de las
+  facturas electrónicas sobre el original conservado, por ejemplo si el
+  validador faltaba en la recepción. Los valores, la asignación y la
+  transferencia no cambian.
 - Los correos sin ningún adjunto de factura (por ejemplo, solo con un enlace
   de descarga) van a la bandeja de asignación de la Administración, marcados
   como buzón de facturas.

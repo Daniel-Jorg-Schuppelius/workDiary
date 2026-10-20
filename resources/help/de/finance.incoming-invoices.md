@@ -60,6 +60,14 @@ nach Rechnungen ausgewertet, nicht nach Anhängen:
   Sammelaktion „Erneut erkennen“ im Reiter „Zuzuordnen“ die Erkennung der
   ausgewählten Klärfälle aus dem abgelegten Original. Erfasste Werte,
   übergebene und abgelehnte Eingänge bleiben unverändert.
+- Liegen XML und Sichtrechnung derselben Rechnung in einer Mail, bleibt die
+  XML das Original und die PDF wird Begleitdatei, auch wenn die XML eine
+  längere Nummer trägt. Nennt die XML keinen Verkäufer, keine USt-IdNr. oder
+  keine Bankverbindung, ergänzt die PDF diese Werte; die Detailseite nennt die
+  ergänzten Felder.
+- „Erneut prüfen“ wiederholt für E-Rechnungen die Schema- und KoSIT-Prüfung
+  am abgelegten Original, etwa wenn der Validator beim Empfang fehlte. Werte,
+  Zuordnung und Übergabe bleiben unverändert.
 - Mails ganz ohne Rechnungsanhang (etwa nur mit Download-Link) landen in der
   Zuordnungs-Inbox der Verwaltung, gekennzeichnet als Rechnungspostfach.
 - Eine als Anlage weitergeleitete Mail wird ausgepackt; die Rechnung darin

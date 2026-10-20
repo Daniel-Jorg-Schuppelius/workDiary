@@ -65,6 +65,15 @@ Chaque e-mail est évalué par facture, non par pièce jointe :
   attribuer répète la reconnaissance des documents non reconnus sélectionnés
   à partir de l’original conservé. Les valeurs saisies, les documents transmis
   et refusés restent inchangés.
+- Si le XML et la facture PDF d’une même facture arrivent dans un e-mail, le
+  XML reste l’original et le PDF devient un fichier d’accompagnement, même si
+  le XML porte un numéro plus long. Si le XML n’indique ni vendeur, ni numéro
+  de TVA, ni coordonnées bancaires, le PDF fournit ces valeurs ; la page de
+  détail nomme les champs complétés.
+- « Vérifier à nouveau » répète la vérification du schéma et de KoSIT des
+  factures électroniques sur l’original conservé, par exemple si le
+  validateur manquait à la réception. Les valeurs, l’attribution et la
+  transmission restent inchangées.
 - Les e-mails sans aucune facture jointe (par exemple seulement avec un lien
   de téléchargement) arrivent dans la boîte d’attribution de
   l’Administration, marqués comme boîte des factures.

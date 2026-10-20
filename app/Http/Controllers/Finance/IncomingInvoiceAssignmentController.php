@@ -417,6 +417,30 @@ class IncomingInvoiceAssignmentController extends Controller {
             ]));
     }
 
+    /** Eingangs-Validierung ausgewählter strukturierter Eingänge wiederholen — etwa nach nachinstalliertem KoSIT-Validator (Sammelaktion, MVP-1248). */
+    public function bulkRevalidate(Request $request): RedirectResponse {
+        $this->authorizeBilling();
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'max:200'],
+            'ids.*' => ['string', 'max:64'],
+        ]);
+        $ids = array_values(array_filter(array_map(static fn (string $sqid): ?int => Sqid::decode(IncomingEInvoice::class, $sqid), $data['ids'])));
+        $checked = 0;
+        $skipped = 0;
+        foreach (IncomingEInvoice::query()->whereKey($ids)->get() as $incoming) {
+            if ($this->invoices->revalidate($incoming)) {
+                $checked++;
+            } else {
+                $skipped++;
+            }
+        }
+
+        return redirect()->toList('finance.incoming-invoices.index')
+            ->with($checked > 0 && $skipped === 0 ? 'success' : 'warning', __(':checked Eingänge neu geprüft, :skipped übersprungen.', [
+                'checked' => $checked, 'skipped' => $skipped,
+            ]));
+    }
+
     /**
      * @param  array<string, mixed>  $data
      */

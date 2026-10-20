@@ -64,6 +64,15 @@ per fatture, non per allegati:
   assegnare ripete il riconoscimento dei documenti non riconosciuti
   selezionati a partire dall’originale conservato. I valori inseriti e i
   documenti trasmessi o rifiutati restano invariati.
+- Se l’XML e la fattura PDF della stessa fattura arrivano in un’e-mail, l’XML
+  resta l’originale e il PDF diventa file di accompagnamento, anche se l’XML
+  porta un numero più lungo. Se l’XML non indica venditore, partita IVA o
+  coordinate bancarie, il PDF fornisce questi valori; la pagina di dettaglio
+  elenca i campi completati.
+- «Controlla di nuovo» ripete il controllo dello schema e di KoSIT delle
+  fatture elettroniche sull’originale conservato, per esempio se il
+  validatore mancava alla ricezione. Valori, assegnazione e trasmissione
+  restano invariati.
 - Le e-mail senza alcun allegato di fattura (per esempio solo con un link di
   download) finiscono nella casella di assegnazione dell’Amministrazione,
   contrassegnate come casella delle fatture.

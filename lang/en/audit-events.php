@@ -458,6 +458,7 @@ return [
         'direction_corrected' => 'Incoming document direction corrected',
         'values_captured' => 'Incoming document values recorded',
         'reanalyzed' => 'Incoming document recognised again',
+        'revalidated' => 'Incoming document checked again',
         'assigned' => 'Incoming invoice assigned',
         'sender_rule_saved' => 'Sender rule saved',
         'sender_rule_deleted' => 'Sender rule deleted',

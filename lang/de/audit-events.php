@@ -458,6 +458,7 @@ return [
         'direction_corrected' => 'Richtung des Eingangs korrigiert',
         'values_captured' => 'Werte des Eingangs erfasst',
         'reanalyzed' => 'Erkennung des Eingangs wiederholt',
+        'revalidated' => 'Prüfung des Eingangs wiederholt',
         'assigned' => 'Eingangsrechnung zugeordnet',
         'sender_rule_saved' => 'Absenderregel gespeichert',
         'sender_rule_deleted' => 'Absenderregel gelöscht',

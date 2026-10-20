@@ -120,6 +120,8 @@
                     {{-- Nacherkennung (MVP-1207): Klärfälle und aus PDF bzw. Bild gelesene Eingänge ohne erfasste Werte, Übergabe oder Ablehnung werden neu gelesen.
                          formnovalidate: das Pflichtfeld „Partei“ gehört nur zum Zuordnen, sonst blockt der Browser den Knopf (Befund 2026-10-20). --}}
                     <x-button type="submit" size="sm" icon="document_scanner" formaction="{{ route('finance.incoming-invoices.bulk-reanalyze') }}" formnovalidate>{{ __('Erneut erkennen') }}</x-button>
+                    {{-- Neuvalidierung (MVP-1248): Schema- und KoSIT-Prüfung strukturierter E-Rechnungen am Original wiederholen; Werte und Zuordnung bleiben. --}}
+                    <x-button type="submit" size="sm" icon="verified" formaction="{{ route('finance.incoming-invoices.bulk-revalidate') }}" formnovalidate>{{ __('Erneut prüfen') }}</x-button>
                 </x-slot:actions>
             </x-bulk-toolbar>
     @endif

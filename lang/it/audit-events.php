@@ -458,6 +458,7 @@ return [
         'direction_corrected' => 'Direzione del documento corretta',
         'values_captured' => 'Valori del documento registrati',
         'reanalyzed' => 'Riconoscimento del documento ripetuto',
+        'revalidated' => 'Controllo del documento ripetuto',
         'assigned' => 'Fattura in entrata assegnata',
         'sender_rule_saved' => 'Regola mittente salvata',
         'sender_rule_deleted' => 'Regola mittente eliminata',

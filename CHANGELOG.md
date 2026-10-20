@@ -10,6 +10,15 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Rechnungseingang: Eingangs-Validierung wiederholen (MVP-1248). Die
+  Sammelaktion „Erneut prüfen“ und der Befehl `incoming-invoices:revalidate`
+  (ohne `--all` nur Eingänge ohne KoSIT-Urteil) wiederholen die Schema- und
+  KoSIT-Prüfung strukturierter E-Rechnungen am abgelegten Original; Werte,
+  Zuordnung, Regeln und Übergabe bleiben unberührt, abgelehnte Eingänge
+  bleiben außen vor, jeder Lauf schreibt ein Audit. Anlass: neun UBL-Eingänge
+  vom 17./18.10.2026 trugen „KoSIT-Validator nicht verfügbar“ aus dem
+  damaligen Toolkit-Stand, obwohl der Validator auf dem Server läuft. Texte
+  ×5, Audit-Label ×5, Hilfe ×5, Tests.
 - Kundenportal: Portalzugang entfernen (MVP-1246). Ein Zugang, der sich nie
   angemeldet hat (Einladung offen oder abgelaufen, Startpasswort ausstehend),
   lässt sich in der Kundenakte endgültig löschen; ein Zugang mit Anmeldung
@@ -1570,6 +1579,18 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
 
 ### Fixed
 
+- Rechnungseingang: XML und Sichtrechnung derselben Mail wurden zwei Eingänge
+  (Befund 2026-10-20, MVP-1247). Ein niederländischer Shop schickt UBL ohne
+  Verkäuferblock, mit „Name, Bestellnummer, USt-IdNr.“ als Rechnungsnummer
+  und die PDF dazu; seit die Heuristik die PDF erkennt, glichen sich die
+  Nummernschlüssel nicht mehr, und die PDF war keine Begleitdatei mehr. Zwei
+  Belege einer Mail gehören jetzt zusammen, wenn der kürzere Nummernschlüssel
+  (mindestens vier Zeichen, mit Ziffer) im längeren steckt; leere Felder der
+  XML (Nummer, Verkäufer, USt-IdNr., Daten, IBAN, BIC) ergänzt die erkannte
+  PDF, vorhandene Werte bleiben, die Detailseite nennt die ergänzten Felder.
+  Mit der USt-IdNr. aus der PDF greift der Lieferantenabgleich. Der
+  Schemafehler selbst („AccountingCustomerParty … not expected“) liegt beim
+  Absender und bleibt sichtbar. Tests.
 - Rechnungseingang: Ein Datum vor dem Betrag wurde Teil des Betrags (Befund
   2026-10-20, Belegspiegel mit 19 Milliarden Euro Aufwand aus zwei
   Eingängen). Das Betragsmuster der Beschriftungssuche nahm jede Folge aus

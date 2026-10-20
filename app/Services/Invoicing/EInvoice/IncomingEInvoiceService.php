@@ -351,11 +351,14 @@ class IncomingEInvoiceService {
             }
             $number = \App\Models\Invoicing\IncomingEInvoice::numberKey($item['summary']['number'] ?? null);
             foreach ($leading as $index => $lead) {
-                if ($number !== null && $number === \App\Models\Invoicing\IncomingEInvoice::numberKey($lead['item']['summary']['number'] ?? null)) {
-                    $leading[$index]['companions'][] = $item['attachment'];
-
-                    continue 2;
+                if (! self::sameInvoice($number, \App\Models\Invoicing\IncomingEInvoice::numberKey($lead['item']['summary']['number'] ?? null))) {
+                    continue;
                 }
+                // Die Begleitdatei ergänzt, was die Leitdatei schuldig bleibt (MVP-1247).
+                $leading[$index]['item']['summary'] = self::fillFromCompanion($lead['item']['summary'], $item['summary'], $item['attachment']->filename);
+                $leading[$index]['companions'][] = $item['attachment'];
+
+                continue 2;
             }
             $leading[] = ['item' => $item, 'companions' => []];
         }
@@ -416,6 +419,56 @@ class IncomingEInvoiceService {
             $recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted->value => 2,
             default => 3,
         };
+    }
+
+    /**
+     * Zwei Belege einer Mail meinen dieselbe Rechnung, wenn ihre Nummernschlüssel
+     * gleich sind oder der kürzere (mindestens vier Zeichen, mit Ziffer) im
+     * längeren steckt — Shops schreiben auch „Name, 2219519, USt-IdNr." in die
+     * cbc:ID der UBL, während die PDF nur 2219519 nennt (MVP-1247).
+     */
+    private static function sameInvoice(?string $a, ?string $b): bool {
+        if ($a === null || $b === null) {
+            return false;
+        }
+        if ($a === $b) {
+            return true;
+        }
+        [$short, $long] = mb_strlen($a) <= mb_strlen($b) ? [$a, $b] : [$b, $a];
+
+        return mb_strlen($short) >= 4 && preg_match('/\d/', $short) === 1 && str_contains($long, $short);
+    }
+
+    /** Felder, die eine erkannte Begleitdatei an einer strukturierten Leitdatei ergänzen darf (MVP-1247). */
+    private const COMPANION_FIELDS = ['number', 'seller', 'seller_vat', 'issue_date', 'due_date', 'creditor_iban', 'creditor_bic'];
+
+    /**
+     * Leere Felder der strukturierten Leitdatei aus der erkannten Begleitdatei
+     * füllen; jeder vorhandene Wert der XML bleibt. `companion_fill` nennt Datei
+     * und Felder, {@see notices()} macht daraus den Hinweis auf der Detailseite.
+     *
+     * @param  array<string, mixed>  $lead
+     * @param  array<string, mixed>  $companion
+     * @return array<string, mixed>
+     */
+    private static function fillFromCompanion(array $lead, array $companion, string $file): array {
+        if (($lead['recognition'] ?? null) !== \App\Enums\Invoicing\IncomingInvoiceRecognition::Structured->value
+            || ($companion['recognition'] ?? null) !== \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted->value) {
+            return $lead;
+        }
+        $blank = static fn (mixed $value): bool => $value === null || (is_scalar($value) && trim((string) $value) === '');
+        $filled = [];
+        foreach (self::COMPANION_FIELDS as $field) {
+            if ($blank($lead[$field] ?? null) && ! $blank($companion[$field] ?? null)) {
+                $lead[$field] = $companion[$field];
+                $filled[] = $field;
+            }
+        }
+        if ($filled !== []) {
+            $lead['companion_fill'] = ['file' => $file, 'fields' => $filled];
+        }
+
+        return $lead;
     }
 
     private function duplicateOf(int $organizationId, string $sha256): ?\App\Models\Invoicing\IncomingEInvoice {
@@ -648,18 +701,13 @@ class IncomingEInvoiceService {
             return false;
         }
         $document = $incoming->document;
-        $version = $document?->currentVersion;
-        if ($document === null || $version === null) {
-            return false;
-        }
-        $disk = \Illuminate\Support\Facades\Storage::disk((string) ($version->disk ?: 'local'));
-        $path = (string) $version->path;
-        if ($path === '' || ! $disk->exists($path)) {
+        $original = $this->storedOriginal($incoming);
+        if ($document === null || $original === null) {
             return false;
         }
 
         $organization = $incoming->organization;
-        $summary = $this->analyzeFor($organization, (string) $disk->get($path), $version->mime !== null ? (string) $version->mime : null, $disk->path($path), (string) $version->original_name);
+        $summary = $this->analyzeFor($organization, $original['contents'], $original['mime'], $original['path'], $original['name']);
         if (self::isUnrecognized($summary)) {
             // Weiterhin Klärfall: nur Diagnose und Hinweise nachführen — sie zeigen den aktuellen Werkzeugstand.
             ['summary' => $enriched] = $this->enrich($organization, (int) $incoming->organization_id, $summary);
@@ -670,7 +718,7 @@ class IncomingEInvoiceService {
         $recognition = \App\Enums\Invoicing\IncomingInvoiceRecognition::from((string) $summary['recognition']);
         ['summary' => $summary, 'classification' => $classification] = $this->enrich($organization, (int) $incoming->organization_id, $summary);
 
-        $document->forceFill($this->documentAttributes($recognition, $summary, (string) $version->original_name))->save();
+        $document->forceFill($this->documentAttributes($recognition, $summary, $original['name']))->save();
         $incoming->forceFill([
             'direction' => $classification['direction'],
             'kind' => $classification['kind'],
@@ -689,6 +737,79 @@ class IncomingEInvoiceService {
         }
 
         return true;
+    }
+
+    /** Strukturierte Eingänge, deren Eingangs-Validierung sich wiederholen lässt: alle außer abgelehnten (MVP-1248). */
+    public static function isRevalidatable(\App\Models\Invoicing\IncomingEInvoice $incoming): bool {
+        return $incoming->recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::Structured
+            && $incoming->status !== \App\Enums\Invoicing\IncomingEInvoiceStatus::Rejected;
+    }
+
+    /**
+     * Ohne KoSIT-Urteil: beim Empfang fehlte der Validator oder die Prüfung lief
+     * nie — der Befehl nimmt sich standardmäßig nur diese Eingänge vor (MVP-1248).
+     */
+    public static function lacksKositVerdict(\App\Models\Invoicing\IncomingEInvoice $incoming): bool {
+        $validation = ((array) $incoming->summary)['validation'] ?? null;
+
+        return ! is_array($validation)
+            || (($validation['kosit_applicable'] ?? true) && ! ($validation['kosit_available'] ?? false));
+    }
+
+    /**
+     * Wiederholt nur die Eingangs-Validierung (XSD + KoSIT) am abgelegten
+     * Original (MVP-1248): Werte, Zuordnung, Regeln und Übergabe bleiben
+     * unberührt. true, sobald ein neues Ergebnis geschrieben wurde.
+     */
+    public function revalidate(\App\Models\Invoicing\IncomingEInvoice $incoming): bool {
+        if (! self::isRevalidatable($incoming)) {
+            return false;
+        }
+        $original = $this->storedOriginal($incoming);
+        if ($original === null) {
+            return false;
+        }
+        $parsed = $this->parse($original['contents'], $original['mime'], $original['path']);
+        $xml = $this->extractXml($original['contents'], $original['mime'], $original['path']);
+        if ($parsed === null || $xml === null) {
+            return false;
+        }
+
+        $validation = $this->validateXml($xml, $parsed->getProfile());
+        $incoming->forceFill(['summary' => [...(array) $incoming->summary, 'validation' => $validation]])->save();
+        $incoming->audit('incoming_einvoice.revalidated', [
+            'schema_errors' => count($validation['schema_errors']),
+            'kosit_available' => $validation['kosit_available'],
+            'kosit_valid' => $validation['kosit_valid'],
+            'kosit_scenario' => $validation['kosit_scenario'],
+        ]);
+
+        return true;
+    }
+
+    /**
+     * Abgelegtes Original des Eingangs (aktuelle Dokumentversion) für
+     * Nacherkennung und Neuvalidierung; null ohne Version oder Datei.
+     *
+     * @return array{contents: string, mime: ?string, path: string, name: string}|null
+     */
+    private function storedOriginal(\App\Models\Invoicing\IncomingEInvoice $incoming): ?array {
+        $version = $incoming->document?->currentVersion;
+        if ($version === null) {
+            return null;
+        }
+        $disk = \Illuminate\Support\Facades\Storage::disk((string) ($version->disk ?: 'local'));
+        $path = (string) $version->path;
+        if ($path === '' || ! $disk->exists($path)) {
+            return null;
+        }
+
+        return [
+            'contents' => (string) $disk->get($path),
+            'mime' => $version->mime !== null ? (string) $version->mime : null,
+            'path' => $disk->path($path),
+            'name' => (string) $version->original_name,
+        ];
     }
 
     /**
@@ -875,6 +996,15 @@ class IncomingEInvoiceService {
      * @return list<string>
      */
     private function notices(array $summary): array {
+        $notices = [];
+        $fill = is_array($summary['companion_fill'] ?? null) ? $summary['companion_fill'] : [];
+        if (($fill['fields'] ?? []) !== []) {
+            $notices[] = (string) __('Aus der Begleitdatei :file ergänzt: :fields', [
+                'file' => (string) ($fill['file'] ?? ''),
+                'fields' => implode(', ', array_map(self::companionFieldLabel(...), (array) $fill['fields'])),
+            ]);
+        }
+
         $sellerVat = self::normalizedVat($summary['seller_vat'] ?? null);
         $isDomestic = $sellerVat === '' || str_starts_with($sellerVat, 'DE');
         $gross = is_numeric($summary['gross'] ?? null) ? (float) $summary['gross'] : 0.0;
@@ -883,10 +1013,23 @@ class IncomingEInvoiceService {
         if (($summary['recognition'] ?? null) === \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted->value
             && ($summary['direction'] ?? null) === \App\Enums\Billing\DocumentDirection::Incoming->value
             && $isDomestic && $gross > 250.0) {
-            return [(string) __('Keine E-Rechnung (PDF bzw. Bild). Im inländischen B2B-Verkehr ist das nur übergangsweise zulässig: bis Ende 2026, für Aussteller mit höchstens 800.000 € Vorjahresumsatz bis Ende 2027.')];
+            $notices[] = (string) __('Keine E-Rechnung (PDF bzw. Bild). Im inländischen B2B-Verkehr ist das nur übergangsweise zulässig: bis Ende 2026, für Aussteller mit höchstens 800.000 € Vorjahresumsatz bis Ende 2027.');
         }
 
-        return [];
+        return $notices;
+    }
+
+    private static function companionFieldLabel(string $field): string {
+        return (string) match ($field) {
+            'number' => __('Rechnungsnummer'),
+            'seller' => __('Verkäufer'),
+            'seller_vat' => __('USt-IdNr.'),
+            'issue_date' => __('Rechnungsdatum'),
+            'due_date' => __('Fälligkeitsdatum'),
+            'creditor_iban' => __('IBAN'),
+            'creditor_bic' => __('BIC'),
+            default => $field,
+        };
     }
 
     /** @return array<string, mixed> Klärfall ohne erkannte Werte */
