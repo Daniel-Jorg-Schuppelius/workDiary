@@ -89,10 +89,33 @@ final class InvoicePdfImportServiceTest extends TestCase {
             ['Total 1,234.56', '1234.56'],
             ['Total USD 38.35', '38.35'],
             ['Endbetrag -12,50 €', '0.00'],
+            ['Gesamtbetrag EUR 1.190,00', '1190.00'],
+            ["Gesamtbetrag:\n1.190,00 EUR", '1190.00'],
+            ["Total CHF 1'234.50", '1234.50'],
+            ['Gesamtbetrag (inkl. Versand 8,20 EUR) 1.190,00 EUR', '1190.00'],
         ];
         foreach ($cases as [$text, $gross]) {
             self::assertSame($gross, $service->analyzeText($text)['gross'], $text);
         }
+        self::assertNull($service->analyzeText('Gesamtbetrag fällig am 16.03.2025 201,93 EUR')['gross'], 'Zwischen Beschriftung und Betrag steht höchstens eine Währung.');
+    }
+
+    /** Währung aus dem common-toolkit (CurrencyCode): am Betrag, sonst als Code oder Symbol im Text, sonst EUR. */
+    public function test_it_reads_the_document_currency_from_the_amounts_or_the_text(): void {
+        $service = new InvoicePdfImportService;
+
+        self::assertSame('EUR', $service->analyzeText("Gesamtbetrag 1.190,00 EUR")['currency']);
+        self::assertSame('CHF', $service->analyzeText("Total CHF 1'234.50")['currency']);
+        self::assertSame('USD', $service->analyzeText("Total $ 38.35")['currency']);
+        self::assertSame('GBP', $service->analyzeText("Total £38.35")['currency']);
+        self::assertSame('AUD', $service->analyzeText("Total AU$ 38.35")['currency']);
+        self::assertSame('GBP', $service->analyzeText("Alle Preise in GBP\nTotal 10.00")['currency'], 'Ohne Währung am Betrag zählt der genannte Code.');
+        self::assertSame('EUR', $service->analyzeText("Rechnung\nGesamtbetrag 10,00")['currency']);
+        self::assertSame('EUR', $service->analyzeText("USD-Konto siehe Anhang\nNetto 10,00 EUR\nGesamtbetrag 11,90 EUR")['currency'], 'Die Währung an den Beträgen schlägt eine Erwähnung im Text.');
+        self::assertSame('EUR', $service->analyzeText("z. Hd. Fr. Müller\nGesamtbetrag 10,00")['currency'], '„Fr.“ als Anrede ist keine Währung.');
+        self::assertSame('CHF', $service->analyzeText("Total Fr. 1'234.50")['currency'], '„Fr.“ am Betrag ist der Franken (common-toolkit ≥ 2.12.2).');
+        self::assertSame('1234.50', $service->analyzeText("Total Fr. 1'234.50")['gross']);
+        self::assertSame('USD', $service->analyzeText('Total US$ 38.35')['currency'], 'Bis v2.12.1 las der Tokenizer „S$“ (Singapur) heraus.');
     }
 
     public function test_it_ignores_number_labels_without_digits_and_unrelated_nr_labels(): void {

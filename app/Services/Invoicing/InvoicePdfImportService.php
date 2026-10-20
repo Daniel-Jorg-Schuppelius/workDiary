@@ -14,8 +14,8 @@ namespace App\Services\Invoicing;
 
 use App\Services\Billing\DocumentTotalsCalculator;
 use App\Services\Invoicing\EInvoice\IncomingEInvoiceService;
-use CommonToolkit\Enums\CountryCode;
-use CommonToolkit\Helper\Data\{DateHelper, NumberHelper};
+use CommonToolkit\Enums\{CountryCode, CurrencyCode};
+use CommonToolkit\Helper\Data\{AmountTokenizer, DateHelper, NumberHelper};
 use CommonToolkit\Helper\FileSystem\File;
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use CommonToolkit\Helper\Shell;
@@ -1083,7 +1083,8 @@ class InvoicePdfImportService {
         $head = mb_substr($text, 0, 4000);
         $titled = static fn (string $pattern): bool => preg_match('/^[ \t]*(?:' . $pattern . ')(?![\p{L}])/imu', $head) === 1;
         $mentions = static fn (string $pattern): bool => preg_match('/(?<![\p{L}])(?:' . $pattern . ')(?![\p{L}])/iu', $head) === 1;
-        $hasAmount = $result['gross'] !== null || $result['net'] !== null || preg_match('/\d+,\d{2}\s*(?:€|EUR)/u', $head) === 1;
+        $hasAmount = $result['gross'] !== null || $result['net'] !== null
+            || array_filter(AmountTokenizer::tokens($head), static fn (\CommonToolkit\ValueObjects\AmountToken $token): bool => $token->currency !== null) !== [];
 
         if ($titled('(?:\d\.\s*)?Mahnung|Zahlungserinnerung|Letzte\s+Mahnung|Payment\s+reminder') || $mentions('Mahnstufe|Mahngeb.hr(?:en)?|Mahnbetrag')) {
             preg_match_all('/(?<![\p{L}\d])([A-Z]{2,8}-?\d{5,}|\d{6,12})(?![\p{L}\d])/u', $head, $matches);
@@ -1167,12 +1168,7 @@ class InvoicePdfImportService {
         // Zusammenführen (MVP-1215); abgeleitet wird einmal am Ende in finalize().
         $taxRate = $this->taxRate($text);
 
-        $currency = match (true) {
-            preg_match('/(?:\bCHF\b|Fr\.)/iu', $text) === 1 => 'CHF',
-            preg_match('/(?:\bUSD\b|US\$)/iu', $text) === 1 => 'USD',
-            preg_match('/(?:\bGBP\b|£)/u', $text) === 1 => 'GBP',
-            default => 'EUR',
-        };
+        $currency = $this->documentCurrency($text);
 
         $warnings = [];
         foreach ([
@@ -1228,20 +1224,63 @@ class InvoicePdfImportService {
 
     /** @param list<string> $labels */
     private function labeledAmount(string $text, array $labels, bool $last = false): ?string {
-        // Ein Klammerzusatz hinter der Beschriftung („Gesamtbetrag (Versandkostenanteil 8,20 EUR)“) wird übersprungen.
-        // Der Betrag ist eine Zahl mit Tausendergruppen und zwei Nachkommastellen — ein loses „[\d .]+“ nahm ein
-        // voranstehendes Datum mit („16.03.2025 201,93“ → 16.032.025.201,93; Befund 2026-10-20).
-        $amount = '[+-]?(?:\d{1,3}(?:[. ]\d{3})+,\d{2}|\d+,\d{2}|\d{1,3}(?:,\d{3})+\.\d{2}|\d+\.\d{2})(?![.,]?\d)';
-        $pattern = '/(?:' . implode('|', $labels) . ')(?:\s*\([^()\n]{0,80}\))?\s*[:]?\s*(?:\d{1,2}(?:[,.]\d{1,2})?\s*%\s*)?(?:EUR|USD|CHF|GBP|€|\$|£)?\s*(' . $amount . ')\s*(?:EUR|USD|CHF|GBP|€|\$|£)?/iu';
+        // Klammerzusatz („Gesamtbetrag (Versandkostenanteil 8,20 EUR)“) und Steuersatz („MwSt. 19 %“) hinter der
+        // Beschriftung werden übersprungen; den Betrag liest der AmountTokenizer (Schreibweisen und Währungen aus
+        // dem common-toolkit). Er muss direkt hinter der Beschriftung stehen, höchstens eine Währung dazwischen —
+        // ein loses „[\d .]+“ nahm früher ein Datum mit („16.03.2025 201,93“ → 16.032.025.201,93, Befund 2026-10-20).
+        $pattern = '/(?:' . implode('|', $labels) . ')(?:\s*\([^()\n]{0,80}\))?[ \t]*:?[ \t]*(?:\d{1,2}(?:[,.]\d{1,2})?[ \t]*%)?((?:[ \t]*\n)*[^\n]*)/iu';
         if (preg_match_all($pattern, $text, $matches) < 1) {
             return null;
         }
 
-        $values = $matches[1];
-        $raw = $last ? end($values) : reset($values);
-        $normalized = NumberHelper::normalizeDecimalStringOrNull((string) $raw, CountryCode::Germany);
+        $values = [];
+        foreach ($matches[1] as $rest) {
+            $token = AmountTokenizer::first($rest);
+            if ($token === null) {
+                continue;
+            }
+            $between = preg_replace('/[\s+\-−–]/u', '', mb_substr($rest, 0, $token->start)) ?? '';
+            if (preg_match('/\d/', $between) === 1 || mb_strlen($between) > 4) {
+                continue;
+            }
+            $values[] = $this->decimal($token->value);
+        }
+        if ($values === []) {
+            return null;
+        }
 
-        return $normalized !== null ? $this->decimal((float) $normalized) : null;
+        return $last ? end($values) : reset($values);
+    }
+
+    /**
+     * Belegwährung: die häufigste Währung an den Beträgen; steht keine am Betrag,
+     * der erste genannte Code bzw. das Symbol einer Auszugswährung; sonst EUR.
+     */
+    private function documentCurrency(string $text): string {
+        $counts = [];
+        foreach (AmountTokenizer::tokens($text) as $token) {
+            if ($token->currency !== null) {
+                $counts[$token->currency] = ($counts[$token->currency] ?? 0) + 1;
+            }
+        }
+        if ($counts !== []) {
+            arsort($counts);
+
+            return (string) array_key_first($counts);
+        }
+        foreach (CurrencyCode::cases() as $code) {
+            if (! $code->isStatementCurrency() || $code === CurrencyCode::Euro) {
+                continue;
+            }
+            // Nur Code und Zeichen ohne Buchstaben zählen frei im Text — „Fr.“ ist auch die Anrede, als Währung erkennt es nur der Tokenizer am Betrag.
+            $symbols = array_filter($code->getSymbols(), static fn (string $symbol): bool => preg_match('/\p{L}/u', $symbol) !== 1);
+            $spellings = ['(?<![\p{L}])' . $code->value . '(?![\p{L}])', ...array_map(static fn (string $symbol): string => preg_quote($symbol, '/'), $symbols)];
+            if (preg_match('/' . implode('|', $spellings) . '/u', $text) === 1) {
+                return $code->value;
+            }
+        }
+
+        return CurrencyCode::Euro->value;
     }
 
     /** „Starnberg, 31.08.2025“ bzw. „Potsdam, den 12.03.2025“ im Briefkopf (MVP-1215). */

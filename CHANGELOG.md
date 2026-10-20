@@ -1574,9 +1574,15 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
   2026-10-20, Belegspiegel mit 19 Milliarden Euro Aufwand aus zwei
   Eingängen). Das Betragsmuster der Beschriftungssuche nahm jede Folge aus
   Ziffern, Punkten und Leerzeichen; aus „16.03.2025 201,93“ wurden
-  16.032.025.201,93 EUR, aus „Rechnungsbetrag 16.03.2025“ 1.603,20 EUR. Ein
-  Betrag ist jetzt eine Zahl mit Tausendergruppen und zwei Nachkommastellen;
-  steht hinter der Beschriftung ein Datum, bleibt das Feld leer. Die
+  16.032.025.201,93 EUR, aus „Rechnungsbetrag 16.03.2025“ 1.603,20 EUR. Den
+  Betrag hinter einer Beschriftung liest jetzt der `AmountTokenizer` des
+  common-toolkit (deutsche, englische und Schweizer Schreibweise, Währung
+  davor oder dahinter); er muss direkt auf die Beschriftung folgen, höchstens
+  eine Währung dazwischen, sonst bleibt das Feld leer. Die Belegwährung kommt
+  aus den Währungen an den Beträgen, sonst aus einem genannten Code oder
+  Symbol der Auszugswährungen des `CurrencyCode`-Enums, sonst EUR; die
+  hart verdrahteten Listen EUR/USD/CHF/GBP in Beschriftungssuche und
+  Positionserkennung sind weg. Die
   Sammelaktion „Erneut erkennen“ liest auch aus PDF bzw. Bild gelesene
   Eingänge ohne erfasste Werte, Übergabe oder Ablehnung neu, damit sich
   solche Fehllesungen nachträglich korrigieren lassen; der Konsolenbefehl

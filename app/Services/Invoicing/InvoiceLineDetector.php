@@ -14,7 +14,7 @@ namespace App\Services\Invoicing;
 
 use App\Services\Billing\DocumentTotalsCalculator;
 use CommonToolkit\Enums\CountryCode;
-use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\Helper\Data\{CurrencyHelper, NumberHelper};
 
 /**
  * Regelbasierte Positionserkennung für unstrukturierte Rechnungsdateien
@@ -195,7 +195,7 @@ class InvoiceLineDetector {
             return null;
         }
         // Währungssymbole/Einheiten neben der Zahl tolerieren („119,00 EUR", „19 %").
-        $raw = trim((string) preg_replace('/(?:EUR|USD|CHF|GBP|€|\$|£|%)/u', '', $raw));
+        $raw = trim(str_replace('%', '', CurrencyHelper::stripSymbols($raw)));
         $normalized = NumberHelper::normalizeDecimalStringOrNull($raw, CountryCode::Germany);
 
         return $normalized !== null ? (float) $normalized : null;
