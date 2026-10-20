@@ -390,7 +390,7 @@ class IncomingInvoiceAssignmentController extends Controller {
         return redirect()->toList('finance.incoming-invoices.index')->with($skipped !== [] ? 'warning' : 'success', $message);
     }
 
-    /** Erkennung ausgewählter Klärfälle wiederholen (Sammelaktion, MVP-1207). */
+    /** Erkennung ausgewählter Eingänge wiederholen — Klärfälle und aus PDF bzw. Bild gelesene (Sammelaktion, MVP-1207). */
     public function bulkReanalyze(Request $request): RedirectResponse {
         $this->authorizeBilling();
         $data = $request->validate([

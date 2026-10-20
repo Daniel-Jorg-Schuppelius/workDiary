@@ -626,10 +626,12 @@ class IncomingEInvoiceService {
      * Nacherkennung (MVP-1207): ein Klärfall bleibt einer, bis jemand Werte
      * erfasst — oder bis die Erkennung wiederholt wird, etwa nachdem die
      * Textwerkzeuge des Servers (pdftotext, tesseract, ocrmypdf) nachinstalliert
-     * wurden. Erfasste Werte, Übergaben und Ablehnungen bleiben unangetastet.
+     * wurden. Auch ein aus PDF bzw. Bild gelesener Eingang darf neu gelesen
+     * werden, wenn die Heuristik danebenlag (Befund 2026-10-20: Datum im
+     * Betrag). Erfasste Werte, Übergaben und Ablehnungen bleiben unangetastet.
      */
     public static function isReanalyzable(\App\Models\Invoicing\IncomingEInvoice $incoming): bool {
-        return $incoming->recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::None
+        return in_array($incoming->recognition, [\App\Enums\Invoicing\IncomingInvoiceRecognition::None, \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted], true)
             && $incoming->transferred_at === null
             && $incoming->status !== \App\Enums\Invoicing\IncomingEInvoiceStatus::Rejected
             && ! isset(((array) $incoming->summary)['manual']);

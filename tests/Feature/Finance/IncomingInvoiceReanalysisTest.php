@@ -105,6 +105,34 @@ class IncomingInvoiceReanalysisTest extends TestCase {
         $this->assertSame(IncomingInvoiceRecognition::Structured, $incoming->refresh()->recognition);
     }
 
+    /** Befund 2026-10-20: zwei aus PDF gelesene Eingänge trugen das Datum im Betrag (16.032.025.201,93 EUR) — auch sie lassen sich neu lesen. */
+    public function test_an_extracted_entry_without_captured_values_is_read_again(): void {
+        $misread = $this->clarificationCase($this->invoiceXml('ER-2026-0047'), [
+            'recognition' => IncomingInvoiceRecognition::Extracted, 'invoice_number' => 'Datum',
+            'summary' => ['number' => 'Datum', 'gross' => '16032025201.93', 'recognition' => IncomingInvoiceRecognition::Extracted->value],
+        ]);
+        $transferred = $this->clarificationCase($this->invoiceXml('ER-2026-0048'), ['recognition' => IncomingInvoiceRecognition::Extracted, 'transferred_at' => now()]);
+        $captured = $this->clarificationCase($this->invoiceXml('ER-2026-0049'), ['recognition' => IncomingInvoiceRecognition::Extracted, 'summary' => ['manual' => ['invoice_number' => 'HAND-3']]]);
+
+        $this->assertTrue(IncomingEInvoiceService::isReanalyzable($misread));
+        $this->assertFalse(IncomingEInvoiceService::isReanalyzable($transferred));
+        $this->assertFalse(IncomingEInvoiceService::isReanalyzable($captured));
+
+        $this->post(route('finance.incoming-invoices.bulk-reanalyze'), ['ids' => [$misread->sqid, $transferred->sqid, $captured->sqid]])
+            ->assertRedirect()
+            ->assertSessionHas('warning', __(':recognized Eingänge erkannt, :unchanged weiterhin Klärfall, :skipped übersprungen.', [
+                'recognized' => 1, 'unchanged' => 0, 'skipped' => 2,
+            ]));
+
+        $misread->refresh();
+        $this->assertSame(IncomingInvoiceRecognition::Structured, $misread->recognition);
+        $this->assertSame('ER-2026-0047', $misread->invoice_number);
+        $this->assertSame('238.00', $misread->amount_gross?->getAmount());
+        $this->assertStringContainsString('ER-2026-0047', (string) $misread->document?->title);
+        $this->assertSame(IncomingInvoiceRecognition::Extracted, $transferred->refresh()->recognition);
+        $this->assertSame(IncomingInvoiceRecognition::Extracted, $captured->refresh()->recognition);
+    }
+
     private function invoiceXml(string $number): string {
         $customer = Customer::query()->firstOrCreate(['organization_id' => $this->organization->id, 'name' => 'Muster GmbH'], [
             'currency' => 'EUR', 'email' => 'einkauf@muster.example', 'address_street' => 'Kundenweg 7',

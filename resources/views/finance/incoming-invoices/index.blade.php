@@ -117,7 +117,7 @@
                         <option value="collective">{{ __('Sammelkontakt (mit Rückfrage)') }}</option>
                     </select>
                     <x-button type="submit" tone="primary" size="sm" icon="rule">{{ __('Zuordnen') }}</x-button>
-                    {{-- Nacherkennung (MVP-1207): nur Klärfälle ohne erfasste Werte, Übergabe oder Ablehnung werden neu gelesen. --}}
+                    {{-- Nacherkennung (MVP-1207): Klärfälle und aus PDF bzw. Bild gelesene Eingänge ohne erfasste Werte, Übergabe oder Ablehnung werden neu gelesen. --}}
                     <x-button type="submit" size="sm" icon="document_scanner" formaction="{{ route('finance.incoming-invoices.bulk-reanalyze') }}">{{ __('Erneut erkennen') }}</x-button>
                 </x-slot:actions>
             </x-bulk-toolbar>

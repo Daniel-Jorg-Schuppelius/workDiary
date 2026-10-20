@@ -1229,7 +1229,10 @@ class InvoicePdfImportService {
     /** @param list<string> $labels */
     private function labeledAmount(string $text, array $labels, bool $last = false): ?string {
         // Ein Klammerzusatz hinter der Beschriftung („Gesamtbetrag (Versandkostenanteil 8,20 EUR)“) wird übersprungen.
-        $pattern = '/(?:' . implode('|', $labels) . ')(?:\s*\([^()\n]{0,80}\))?\s*[:]?\s*(?:\d{1,2}(?:[,.]\d{1,2})?\s*%\s*)?(?:EUR|USD|CHF|GBP|€|\$|£)?\s*([+-]?[\d .]+(?:,\d{2}|\.\d{2}))\s*(?:EUR|USD|CHF|GBP|€|\$|£)?/iu';
+        // Der Betrag ist eine Zahl mit Tausendergruppen und zwei Nachkommastellen — ein loses „[\d .]+“ nahm ein
+        // voranstehendes Datum mit („16.03.2025 201,93“ → 16.032.025.201,93; Befund 2026-10-20).
+        $amount = '[+-]?(?:\d{1,3}(?:[. ]\d{3})+,\d{2}|\d+,\d{2}|\d{1,3}(?:,\d{3})+\.\d{2}|\d+\.\d{2})(?![.,]?\d)';
+        $pattern = '/(?:' . implode('|', $labels) . ')(?:\s*\([^()\n]{0,80}\))?\s*[:]?\s*(?:\d{1,2}(?:[,.]\d{1,2})?\s*%\s*)?(?:EUR|USD|CHF|GBP|€|\$|£)?\s*(' . $amount . ')\s*(?:EUR|USD|CHF|GBP|€|\$|£)?/iu';
         if (preg_match_all($pattern, $text, $matches) < 1) {
             return null;
         }

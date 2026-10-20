@@ -1570,6 +1570,20 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
 
 ### Fixed
 
+- Rechnungseingang: Ein Datum vor dem Betrag wurde Teil des Betrags (Befund
+  2026-10-20, Belegspiegel mit 19 Milliarden Euro Aufwand aus zwei
+  Eingängen). Das Betragsmuster der Beschriftungssuche nahm jede Folge aus
+  Ziffern, Punkten und Leerzeichen; aus „16.03.2025 201,93“ wurden
+  16.032.025.201,93 EUR, aus „Rechnungsbetrag 16.03.2025“ 1.603,20 EUR. Ein
+  Betrag ist jetzt eine Zahl mit Tausendergruppen und zwei Nachkommastellen;
+  steht hinter der Beschriftung ein Datum, bleibt das Feld leer. Die
+  Sammelaktion „Erneut erkennen“ liest auch aus PDF bzw. Bild gelesene
+  Eingänge ohne erfasste Werte, Übergabe oder Ablehnung neu, damit sich
+  solche Fehllesungen nachträglich korrigieren lassen; der Konsolenbefehl
+  bleibt auf Klärfälle beschränkt. Kennzahlkacheln verkleinern lange Werte
+  stufenweise und brechen sie um, statt über die Kachel hinauszulaufen.
+  Tests.
+
 - Kopfzeile: Laufende Stoppuhr und Stempelung schoben die Symbolleiste über
   den Zeitraum (Befund 2026-10-20, Breiten zwischen 1400 und 1700 Pixel). Die
   rechte Rasterspalte war auf die Hälfte des Restplatzes begrenzt und durfte

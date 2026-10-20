@@ -59,6 +59,42 @@ final class InvoicePdfImportServiceTest extends TestCase {
         }
     }
 
+    /** Befund 2026-10-20: „[\d .]+“ nahm ein Datum vor dem Betrag mit — aus „16.03.2025 201,93“ wurden 16.032.025.201,93 EUR im Belegspiegel. */
+    public function test_a_date_in_front_of_an_amount_never_becomes_part_of_the_amount(): void {
+        $service = new InvoicePdfImportService;
+
+        $result = $service->analyzeText(<<<'TEXT'
+            Rechnung
+            Rechnungsnummer: 250723880
+            Rechnungsdatum: 14.02.2025
+            Zwischensumme 169,69 EUR
+            MwSt. 19 % 16.03.2025 32,24 EUR
+            Gesamtbetrag 16.03.2025 201,93 EUR
+            TEXT);
+
+        self::assertSame('250723880', $result['number']);
+        self::assertSame('2025-02-14', $result['issued_on']);
+        self::assertSame('169.69', $result['net']);
+        self::assertNull($result['tax'], 'Steht hinter der Beschriftung ein Datum, bleibt das Feld leer.');
+        self::assertNull($result['gross'], 'Steht hinter der Beschriftung ein Datum, bleibt das Feld leer.');
+
+        self::assertNull($service->analyzeText("Rechnungsbetrag 16.03.2025\nNetto 100,00")['gross'], 'Ein Datum ist kein Betrag (vorher 1.603,20).');
+        self::assertNull($service->analyzeText("Umsatzsteuer 19 % 16.03.2025")['tax']);
+
+        $cases = [
+            ['Gesamtbetrag 1.190,00 EUR', '1190.00'],
+            ['Gesamtbetrag 1 190,00 EUR', '1190.00'],
+            ['Gesamtbetrag 12.345.678,90 EUR', '12345678.90'],
+            ['Gesamtbetrag: 0,00', '0.00'],
+            ['Total 1,234.56', '1234.56'],
+            ['Total USD 38.35', '38.35'],
+            ['Endbetrag -12,50 €', '0.00'],
+        ];
+        foreach ($cases as [$text, $gross]) {
+            self::assertSame($gross, $service->analyzeText($text)['gross'], $text);
+        }
+    }
+
     public function test_it_ignores_number_labels_without_digits_and_unrelated_nr_labels(): void {
         $service = new InvoicePdfImportService;
 

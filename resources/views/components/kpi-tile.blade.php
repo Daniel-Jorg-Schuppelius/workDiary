@@ -54,12 +54,18 @@
     } else {
         $displayValue = (string) $value;
     }
+    // Lange Werte (Milliardenbeträge samt Währung) schrumpfen stufenweise und brechen notfalls um, statt über die Kachel hinauszulaufen.
+    $valueSize = match (true) {
+        mb_strlen($displayValue) > 20 => 'text-xl',
+        mb_strlen($displayValue) > 14 => 'text-2xl',
+        default => 'text-3xl',
+    };
 @endphp
 
 @if ($href)
     <a href="{{ $href }}" {{ $attributes->class([$base]) }}>
         <p class="text-xs uppercase tracking-[0.18em] text-muted"><x-term :glossary="$term">{{ $label }}</x-term></p>
-        <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold {{ $valueTone }}">{{ $displayValue }}</p>
+        <p class="mt-2 font-['Space_Grotesk'] {{ $valueSize }} font-semibold wrap-anywhere {{ $valueTone }}">{{ $displayValue }}</p>
         @if ($hint)
             <p class="mt-1 text-xs text-base-content/55">{{ $hint }}</p>
         @endif
@@ -67,7 +73,7 @@
 @else
     <div {{ $attributes->class([$base]) }}>
         <p class="text-xs uppercase tracking-[0.18em] text-muted"><x-term :glossary="$term">{{ $label }}</x-term></p>
-        <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold {{ $valueTone }}">{{ $displayValue }}</p>
+        <p class="mt-2 font-['Space_Grotesk'] {{ $valueSize }} font-semibold wrap-anywhere {{ $valueTone }}">{{ $displayValue }}</p>
         @if ($hint)
             <p class="mt-1 text-xs text-base-content/55">{{ $hint }}</p>
         @endif
