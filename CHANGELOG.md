@@ -10,6 +10,14 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Rechnungseingang: „Fachlich freigeben“ als Sammelaktion (MVP-1249). In den
+  Reitern „Zu prüfen“ und „Alle“ gibt die Sammelaktion die ausgewählten
+  Eingänge über denselben Weg frei wie die Einzelentscheidung (Statusübergang,
+  Entscheider, Audit); vor dem Absenden wird nachgefragt. Eingänge ohne
+  Partei, mit unzulässigem Status oder mit Hindernissen am Übergabe-Tor
+  (Summen, Adressierung, möglicher Doppel-Eingang, Sammelkontakt bei Reverse
+  Charge) bleiben stehen, die Meldung zählt die Gründe. Texte ×5, Hilfe ×5,
+  Tests.
 - Rechnungseingang: Eingangs-Validierung wiederholen (MVP-1248). Die
   Sammelaktion „Erneut prüfen“ und der Befehl `incoming-invoices:revalidate`
   (ohne `--all` nur Eingänge ohne KoSIT-Urteil) wiederholen die Schema- und
@@ -1579,6 +1587,14 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
 
 ### Fixed
 
+- Rechnungseingang: Eigene Adressen machten fremde Stammsätze „ähnlich“
+  (Befund 2026-10-20, MVP-1250). Nennt eine E-Rechnung keine Verkäufer-E-Mail,
+  nahm der Zuordnungsdialog den Mail-Absender als Adresse der Gegenpartei;
+  bei weitergeleiteten Mails ist das die eigene Adresse, und jeder Lieferant
+  mit derselben Domain galt als ähnlicher Stammsatz. „Neu aus Belegdaten“
+  schrieb die eigene Adresse zudem als E-Mail der neuen Partei. Absender und
+  Domains der eigenen Organisation (E-Rechnungs-Absender, Postfächer,
+  Nutzerkonten) zählen jetzt nirgends als Gegenpartei. Tests.
 - Cache: Objekte im Cache kamen als `__PHP_Incomplete_Class` zurück (Befund
   2026-10-20). Mit `cache.serializable_classes = false` (Laravel-Vorgabe gegen
   Gadget-Ketten) liest kein Datei-, Datenbank- oder Array-Store ein Objekt

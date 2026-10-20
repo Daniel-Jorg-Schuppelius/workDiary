@@ -122,6 +122,12 @@
                     <x-button type="submit" size="sm" icon="document_scanner" formaction="{{ route('finance.incoming-invoices.bulk-reanalyze') }}" formnovalidate>{{ __('Erneut erkennen') }}</x-button>
                     {{-- Neuvalidierung (MVP-1248): Schema- und KoSIT-Prüfung strukturierter E-Rechnungen am Original wiederholen; Werte und Zuordnung bleiben. --}}
                     <x-button type="submit" size="sm" icon="verified" formaction="{{ route('finance.incoming-invoices.bulk-revalidate') }}" formnovalidate>{{ __('Erneut prüfen') }}</x-button>
+                    @if ($tab !== 'assign')
+                        {{-- Sammelfreigabe (MVP-1249): nur Eingänge mit Partei, zulässigem Übergang und ohne Hindernis am Übergabe-Tor; der Rest bleibt mit Grund stehen. --}}
+                        <x-button type="submit" tone="success" size="sm" icon="gavel" formaction="{{ route('finance.incoming-invoices.bulk-approve') }}" formnovalidate
+                                  data-confirm-dialog data-confirm-message="{{ __('Ausgewählte Eingänge fachlich freigeben? Eingänge mit Hindernissen am Übergabe-Tor bleiben stehen.') }}"
+                                  data-confirm-icon="gavel" data-confirm-label="{{ __('Fachlich freigeben') }}">{{ __('Fachlich freigeben') }}</x-button>
+                    @endif
                 </x-slot:actions>
             </x-bulk-toolbar>
     @endif

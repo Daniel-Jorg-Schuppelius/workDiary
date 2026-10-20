@@ -3197,6 +3197,8 @@ Route::middleware('auth')->group(function () {
             Route::post('sammel-erkennen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'bulkReanalyze'])->name('bulk-reanalyze');
             // Eingangs-Validierung strukturierter E-Rechnungen wiederholen (MVP-1248), z. B. nach nachinstalliertem KoSIT-Validator.
             Route::post('sammel-pruefen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'bulkRevalidate'])->name('bulk-revalidate');
+            // Fachliche Freigabe für die Auswahl im Reiter „Zu prüfen“ (MVP-1249); Hindernisse am Übergabe-Tor lassen den Eingang stehen.
+            Route::post('sammel-freigeben', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'bulkApprove'])->name('bulk-approve');
             // Abgelehnte Eingänge endgültig löschen (MVP-1212).
             Route::post('sammel-loeschen', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'bulkDiscard'])->name('bulk-discard');
             // Regeln des Rechnungseingangs (MVP-1208/1211): Absenderregeln und Posteingangsregeln einsehen, schalten, löschen.

@@ -69,6 +69,13 @@ badge. Each email is evaluated by invoice, not by attachment:
 - “Check again” repeats the schema and KoSIT check of e-invoices on the
   stored original, for example if the validator was missing on receipt.
   Values, assignment and transfer stay unchanged.
+- “Approve” as a bulk action in the “To review” tab approves the selected
+  documents. Documents without a party, with an inadmissible status or with
+  obstacles at the transfer gate (totals, addressing, possible duplicate) stay
+  as they are; the message names the reasons.
+- Your own organisation is never the counterparty: senders and mail domains
+  of your own mailboxes, user accounts and e-invoice master data count
+  neither as a suggestion nor as a similar record, even for forwarded emails.
 - Emails without any invoice attachment (for example only a download link)
   go to the assignment inbox in Administration, marked as invoice mailbox.
 - An email forwarded as an attachment is unpacked; the invoice inside counts

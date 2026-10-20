@@ -15,6 +15,7 @@ namespace App\Http\Controllers\Finance;
 use App\Enums\Billing\DocumentDirection;
 use App\Enums\Document\DocumentType;
 use App\Enums\Invoicing\{IncomingEInvoiceStatus, IncomingInvoiceRecognition, IncomingInvoiceTransferStatus};
+use App\Exceptions\IncomingInvoiceDecisionException;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\Accounting\FixedAsset;
@@ -360,23 +361,11 @@ class IncomingInvoiceController extends Controller {
         ]);
 
         $target = IncomingEInvoiceStatus::from((string) $data['decision']);
-        // Ausgangsbelege aus dem Postfach (MVP-1107) bezahlt nicht die Organisation.
-        if ($target === IncomingEInvoiceStatus::PaymentReleased && $incoming->direction === DocumentDirection::Outgoing) {
-            return back()->with('error', __('Ausgangsbelege werden nicht zur Zahlung freigegeben.'));
+        try {
+            $this->eInvoices->decide($incoming, $target, $this->authUser(), $data['note'] ?? null);
+        } catch (IncomingInvoiceDecisionException $e) {
+            return back()->with('error', $e->getMessage());
         }
-        // Eine Rückfrage darf mit neuer Anmerkung wiederholt werden.
-        $repeatedQuestion = $target === IncomingEInvoiceStatus::Question && $incoming->status === $target;
-        if (! $repeatedQuestion && ! $incoming->status->canTransitionTo($target)) {
-            return back()->with('error', __('Übergang :from → :to ist nicht zulässig.', ['from' => $incoming->status->value, 'to' => $target->value]));
-        }
-
-        $incoming->update([
-            'status' => $target,
-            'decided_by' => (int) Auth::id(),
-            'decided_at' => now(),
-            'decision_note' => $data['note'] ?? null,
-        ]);
-        $incoming->audit('incoming_einvoice.decided', ['to' => $target->value]);
 
         $redirect = redirect()->route('finance.incoming-invoices.show', $incoming->document)
             ->with('success', __('Entscheidung gespeichert.'));
@@ -390,6 +379,43 @@ class IncomingInvoiceController extends Controller {
             : null;
 
         return $warning === null ? $redirect : $redirect->with('warning', $warning);
+    }
+
+    /**
+     * Fachliche Freigabe für die Auswahl (Sammelaktion, MVP-1249): nur Eingänge
+     * mit zulässigem Übergang und ohne Hindernis am Übergabe-Tor; der Rest
+     * bleibt mit Grund stehen — eine Freigabe lässt sich nicht zurücknehmen.
+     */
+    public function bulkApprove(Request $request, IncomingInvoiceTransferGate $gate): RedirectResponse {
+        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'max:200'],
+            'ids.*' => ['string', 'max:64'],
+        ]);
+        $ids = array_values(array_filter(array_map(static fn (string $sqid): ?int => Sqid::decode(IncomingEInvoice::class, $sqid), $data['ids'])));
+        $actor = $this->authUser();
+        $done = 0;
+        /** @var array<string, int> $skipped */
+        $skipped = [];
+        foreach (IncomingEInvoice::query()->whereKey($ids)->get() as $incoming) {
+            $reason = $incoming->status->canTransitionTo(IncomingEInvoiceStatus::Approved)
+                ? ($gate->blockers($incoming)[0] ?? null)
+                : (string) __('Status :status erlaubt keine fachliche Freigabe.', ['status' => $incoming->status->label()]);
+            if ($reason !== null) {
+                $skipped[$reason] = ($skipped[$reason] ?? 0) + 1;
+
+                continue;
+            }
+            $this->eInvoices->decide($incoming, IncomingEInvoiceStatus::Approved, $actor);
+            $done++;
+        }
+        $message = (string) __(':done Eingänge fachlich freigegeben, :skipped übersprungen.', ['done' => $done, 'skipped' => array_sum($skipped)]);
+        if ($skipped !== []) {
+            arsort($skipped);
+            $message .= ' ' . __('Gründe: :reasons', ['reasons' => implode(' ', array_map(static fn (string $reason, int $count): string => $count . ' × ' . $reason, array_keys($skipped), $skipped))]);
+        }
+
+        return redirect()->toList('finance.incoming-invoices.index')->with($skipped !== [] ? 'warning' : 'success', $message);
     }
 
     public function show(Document $document): View {

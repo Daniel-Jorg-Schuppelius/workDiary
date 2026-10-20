@@ -73,6 +73,14 @@ adjuntos:
   facturas electrónicas sobre el original conservado, por ejemplo si el
   validador faltaba en la recepción. Los valores, la asignación y la
   transferencia no cambian.
+- «Aprobar» como acción masiva en la pestaña «Por revisar» aprueba los
+  documentos seleccionados. Los documentos sin parte, con un estado no
+  admitido o con obstáculos en el control de transferencia (totales,
+  destinatario, posible duplicado) se mantienen; el mensaje indica los motivos.
+- Su propia organización nunca es la contraparte: los remitentes y dominios de
+  correo de sus propios buzones, cuentas de usuario y datos maestros de
+  factura electrónica no cuentan ni como sugerencia ni como registro similar,
+  tampoco en correos reenviados.
 - Los correos sin ningún adjunto de factura (por ejemplo, solo con un enlace
   de descarga) van a la bandeja de asignación de la Administración, marcados
   como buzón de facturas.

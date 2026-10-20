@@ -39,7 +39,10 @@ class IncomingInvoiceParties {
     public const LOOKUP_TTL = 600;
 
     /** Freie Postfächer: gleiche Domain heißt dort nicht gleiche Firma. */
-    private const SHARED_MAIL_DOMAINS = ['gmail.com', 'googlemail.com', 'web.de', 'gmx.de', 'gmx.net', 't-online.de', 'outlook.com', 'outlook.de', 'hotmail.com', 'hotmail.de', 'yahoo.com', 'yahoo.de', 'icloud.com', 'me.com', 'live.de', 'freenet.de', 'posteo.de', 'mail.de'];
+    public const SHARED_MAIL_DOMAINS =['gmail.com', 'googlemail.com', 'web.de', 'gmx.de', 'gmx.net', 't-online.de', 'outlook.com', 'outlook.de', 'hotmail.com', 'hotmail.de', 'yahoo.com', 'yahoo.de', 'icloud.com', 'me.com', 'live.de', 'freenet.de', 'posteo.de', 'mail.de'];
+
+    /** @var array<int, array{vat: string, tax_number: string, ibans: list<string>, emails: list<string>, domains: list<string>}> eigene Kennungen je Organisation, einmal je Anfrage */
+    private array $ownMail = [];
 
     public function __construct(
         private readonly IncomingInvoiceMatcher $matcher,
@@ -62,7 +65,7 @@ class IncomingInvoiceParties {
         return [
             'name' => $text($isPurchase ? $incoming->seller_name : $incoming->buyer_name),
             'vat_id' => $text($isPurchase ? $incoming->seller_vat_id : $incoming->buyer_vat_id),
-            'email' => $text($isPurchase ? ($summary['seller_email'] ?? $incoming->sender_email) : ($summary['buyer_email'] ?? null)),
+            'email' => $this->unlessOwn($incoming, $text($isPurchase ? ($summary['seller_email'] ?? $incoming->sender_email) : ($summary['buyer_email'] ?? null))),
             'iban' => $isPurchase ? $text($incoming->creditor_iban) : null,
             'street' => $text($address['street'] ?? null),
             'zip' => $text($address['zip'] ?? null),
@@ -163,7 +166,7 @@ class IncomingInvoiceParties {
         $isPurchase = $incoming->direction !== DocumentDirection::Outgoing;
         $nameKey = self::partyKey($fields['name']);
         $email = mb_strtolower((string) $fields['email']);
-        $domain = self::companyDomain($email !== '' ? $email : mb_strtolower((string) $incoming->sender_email));
+        $domain = self::companyDomain($email !== '' ? $email : (string) $this->unlessOwn($incoming, $incoming->sender_email));
         $probe = $this->probe($isPurchase, $fields);
         $current = $incoming->counterparty();
         $found = [];
@@ -412,6 +415,26 @@ class IncomingInvoiceParties {
         $key = StringHelper::slugify(trim((string) $name));
 
         return $key === '' ? null : mb_substr($key, 0, 191);
+    }
+
+    /**
+     * Eine eigene Adresse ist nie die Gegenpartei (MVP-1250): weitergeleitete
+     * Mails tragen den eigenen Absender, und Shop-Konten hinterlegen die eigene
+     * Adresse am Lieferanten — beides machte fremde Stammsätze „ähnlich“ und
+     * landete bei „Neu aus Belegdaten“ als E-Mail der Partei.
+     */
+    private function unlessOwn(IncomingEInvoice $incoming, ?string $email): ?string {
+        $email = mb_strtolower(trim((string) $email));
+        if ($email === '') {
+            return null;
+        }
+        $organizationId = (int) $incoming->organization_id;
+        $this->ownMail[$organizationId] ??= app(IncomingEInvoiceService::class)->ownIdentity($incoming->organization);
+        $own = $this->ownMail[$organizationId];
+        $at = strrpos($email, '@');
+        $domain = $at === false ? '' : substr($email, $at + 1);
+
+        return in_array($email, $own['emails'], true) || ($domain !== '' && in_array($domain, $own['domains'], true)) ? null : $email;
     }
 
     private static function companyDomain(string $email): ?string {

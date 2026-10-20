@@ -258,6 +258,26 @@ final class IncomingInvoiceReassignmentTest extends TestCase {
     }
 
     /** @param  array<string, mixed>  $attributes */
+    /** Befund 2026-10-20 (MVP-1250): weitergeleitete Mails tragen den eigenen Absender — Stammsätze mit der eigenen Adresse galten als „ähnlich“ und bekamen sie bei „Neu aus Belegdaten“ als E-Mail. */
+    public function test_own_addresses_and_domains_never_make_a_party_similar(): void {
+        $this->admin->update(['email' => 'buero@eigene-firma.example']);
+        Supplier::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Elovade Deutschland GmbH', 'company' => 'Elovade Deutschland GmbH', 'email' => 'buero@eigene-firma.example']);
+        Supplier::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Synology GmbH', 'company' => 'Synology GmbH', 'email' => 'konto@eigene-firma.example']);
+        Supplier::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Fahrradladen GmbH', 'company' => 'Fahrradladen GmbH', 'email' => 'billing@fahrradladen.example']);
+
+        $forwarded = $this->incoming(['seller_name' => 'Eins und Eins Telecom GmbH', 'sender_email' => 'buero@eigene-firma.example']);
+        $this->get(route('finance.incoming-invoices.assign.form', $forwarded))->assertOk()
+            ->assertDontSee('(ähnlich)')->assertDontSee('Ähnliche Stammsätze');
+
+        // Der Absender eines fremden Shops bleibt ein Ähnlichkeitssignal.
+        $direct = $this->incoming(['seller_name' => 'Fahrradladen', 'sender_email' => 'noreply@fahrradladen.example']);
+        $this->get(route('finance.incoming-invoices.assign.form', $direct))->assertOk()->assertSee('Ähnliche Stammsätze: Fahrradladen GmbH');
+
+        // „Neu aus Belegdaten“ übernimmt den eigenen Absender nicht als E-Mail der Partei.
+        $this->post(route('finance.incoming-invoices.assign', $forwarded), ['direction' => 'incoming', 'mode' => 'new', 'new_name' => 'Eins und Eins Telecom GmbH'])->assertRedirect();
+        $this->assertNull(Supplier::query()->where('name', 'Eins und Eins Telecom GmbH')->sole()->email);
+    }
+
     private function incoming(array $attributes): IncomingEInvoice {
         $document = Document::factory()->create(['organization_id' => $this->organization->id, 'document_type' => DocumentType::Invoice, 'created_by_user_id' => $this->admin->id]);
 

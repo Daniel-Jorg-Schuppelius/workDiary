@@ -74,6 +74,14 @@ Chaque e-mail est évalué par facture, non par pièce jointe :
   factures électroniques sur l’original conservé, par exemple si le
   validateur manquait à la réception. Les valeurs, l’attribution et la
   transmission restent inchangées.
+- « Approuver » comme action groupée dans l’onglet « À vérifier » approuve les
+  documents sélectionnés. Les documents sans partie, avec un statut non admis
+  ou bloqués par le contrôle de transmission (totaux, adressage, doublon
+  possible) restent inchangés ; le message indique les raisons.
+- Votre propre organisation n’est jamais la contrepartie : les expéditeurs et
+  domaines de vos propres boîtes aux lettres, comptes utilisateurs et données
+  de base de facturation électronique ne comptent ni comme suggestion ni comme
+  fiche similaire, même pour les e-mails transférés.
 - Les e-mails sans aucune facture jointe (par exemple seulement avec un lien
   de téléchargement) arrivent dans la boîte d’attribution de
   l’Administration, marqués comme boîte des factures.

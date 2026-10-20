@@ -739,6 +739,33 @@ class IncomingEInvoiceService {
         return true;
     }
 
+    /**
+     * Fachliche Entscheidung (MVP-1110): Übergang nach dem Enum-Vertrag,
+     * Entscheider, Zeitpunkt, Anmerkung und Audit — Einzelentscheidung und
+     * Sammelfreigabe (MVP-1249) gehen denselben Weg. Eine Rückfrage darf mit
+     * neuer Anmerkung wiederholt werden; Ausgangsbelege aus dem Postfach
+     * bezahlt nicht die Organisation.
+     *
+     * @throws \App\Exceptions\IncomingInvoiceDecisionException
+     */
+    public function decide(\App\Models\Invoicing\IncomingEInvoice $incoming, \App\Enums\Invoicing\IncomingEInvoiceStatus $target, \App\Models\Platform\User $actor, ?string $note = null): void {
+        if ($target === \App\Enums\Invoicing\IncomingEInvoiceStatus::PaymentReleased && $incoming->direction === \App\Enums\Billing\DocumentDirection::Outgoing) {
+            throw \App\Exceptions\IncomingInvoiceDecisionException::outgoingNotPayable();
+        }
+        $repeatedQuestion = $target === \App\Enums\Invoicing\IncomingEInvoiceStatus::Question && $incoming->status === $target;
+        if (! $repeatedQuestion && ! $incoming->status->canTransitionTo($target)) {
+            throw \App\Exceptions\IncomingInvoiceDecisionException::transitionNotAllowed($incoming->status, $target);
+        }
+
+        $incoming->update([
+            'status' => $target,
+            'decided_by' => (int) $actor->id,
+            'decided_at' => now(),
+            'decision_note' => $note,
+        ]);
+        $incoming->audit('incoming_einvoice.decided', ['to' => $target->value]);
+    }
+
     /** Strukturierte Eingänge, deren Eingangs-Validierung sich wiederholen lässt: alle außer abgelehnten (MVP-1248). */
     public static function isRevalidatable(\App\Models\Invoicing\IncomingEInvoice $incoming): bool {
         return $incoming->recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::Structured
@@ -906,11 +933,11 @@ class IncomingEInvoiceService {
      * Eigene Kennungen der Organisation. Sie zählen nie als Treffer für eine
      * fremde Partei (verschmutzte Lexoffice-Kontakte trugen die eigene USt-IdNr.).
      *
-     * @return array{vat: string, tax_number: string, ibans: list<string>}
+     * @return array{vat: string, tax_number: string, ibans: list<string>, emails: list<string>, domains: list<string>}
      */
     public function ownIdentity(?\App\Models\Platform\Organization $organization): array {
         if ($organization === null) {
-            return ['vat' => '', 'tax_number' => '', 'ibans' => []];
+            return ['vat' => '', 'tax_number' => '', 'ibans' => [], 'emails' => [], 'domains' => []];
         }
         $seller = app(XRechnungGenerator::class)->sellerDataFor($organization);
         $ibans = array_values(array_filter([
@@ -920,11 +947,27 @@ class IncomingEInvoiceService {
                 ->map(static fn (\App\Models\Finance\BankAccount $account): ?string => \CommonToolkit\Helper\Data\BankHelper::normalizeIBAN($account->iban))
                 ->all(),
         ]));
+        // Eigene Adressen (MVP-1250): E-Rechnungs-Absender, Postfächer, Nutzerkonten — nie die Gegenpartei.
+        $emails = array_values(array_unique(array_filter(array_map(
+            static fn (mixed $email): string => mb_strtolower(trim((string) $email)),
+            [
+                $seller['contact_email'],
+                ...\App\Models\Platform\User::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->pluck('email')->all(),
+                ...\App\Models\Mail\EmailConnection::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->get(['username', 'mailbox_address'])
+                    ->flatMap(static fn (\App\Models\Mail\EmailConnection $connection): array => [$connection->username, $connection->mailbox_address])->all(),
+            ],
+        ), static fn (string $email): bool => str_contains($email, '@'))));
+        $domains = array_values(array_unique(array_filter(
+            array_map(static fn (string $email): string => substr($email, strrpos($email, '@') + 1), $emails),
+            static fn (string $domain): bool => $domain !== '' && ! in_array($domain, IncomingInvoiceParties::SHARED_MAIL_DOMAINS, true),
+        )));
 
         return [
             'vat' => self::normalizedVat($seller['vat_id']),
             'tax_number' => self::digitsOf($seller['tax_number']),
             'ibans' => array_values(array_unique($ibans)),
+            'emails' => $emails,
+            'domains' => $domains,
         ];
     }
 

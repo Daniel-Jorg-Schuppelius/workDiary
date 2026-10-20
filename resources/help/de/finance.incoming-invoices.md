@@ -68,6 +68,13 @@ nach Rechnungen ausgewertet, nicht nach Anhängen:
 - „Erneut prüfen“ wiederholt für E-Rechnungen die Schema- und KoSIT-Prüfung
   am abgelegten Original, etwa wenn der Validator beim Empfang fehlte. Werte,
   Zuordnung und Übergabe bleiben unverändert.
+- „Fachlich freigeben“ als Sammelaktion im Reiter „Zu prüfen“ gibt die
+  ausgewählten Eingänge frei. Eingänge ohne Partei, mit unzulässigem Status
+  oder mit Hindernissen am Übergabe-Tor (Summen, Adressierung, möglicher
+  Doppel-Eingang) bleiben stehen; die Meldung nennt die Gründe.
+- Die eigene Organisation ist nie die Gegenpartei: Absender und Mail-Domains
+  der eigenen Postfächer, Nutzerkonten und E-Rechnungs-Stammdaten zählen weder
+  als Vorschlag noch als ähnlicher Stammsatz, auch bei weitergeleiteten Mails.
 - Mails ganz ohne Rechnungsanhang (etwa nur mit Download-Link) landen in der
   Zuordnungs-Inbox der Verwaltung, gekennzeichnet als Rechnungspostfach.
 - Eine als Anlage weitergeleitete Mail wird ausgepackt; die Rechnung darin

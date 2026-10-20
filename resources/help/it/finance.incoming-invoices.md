@@ -73,6 +73,14 @@ per fatture, non per allegati:
   fatture elettroniche sull’originale conservato, per esempio se il
   validatore mancava alla ricezione. Valori, assegnazione e trasmissione
   restano invariati.
+- «Approvare» come azione di massa nella scheda «Da verificare» approva i
+  documenti selezionati. I documenti senza controparte, con uno stato non
+  ammesso o con ostacoli al controllo di trasmissione (totali, destinatario,
+  possibile duplicato) restano invariati; il messaggio indica i motivi.
+- La propria organizzazione non è mai la controparte: mittenti e domini di
+  posta delle proprie caselle, degli account utente e dei dati anagrafici
+  della fattura elettronica non contano né come suggerimento né come
+  anagrafica simile, nemmeno nelle e-mail inoltrate.
 - Le e-mail senza alcun allegato di fattura (per esempio solo con un link di
   download) finiscono nella casella di assegnazione dell’Amministrazione,
   contrassegnate come casella delle fatture.
