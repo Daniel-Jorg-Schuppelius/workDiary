@@ -174,7 +174,10 @@ oder jede Seite) und können für Sonderfälle ein Zeilenmuster hinterlegen
 (regulärer Ausdruck auf den Text im Kästchen, Zeile für Zeile; die erste
 Klammergruppe ist der Wert, etwa um aus einem größeren Kästchen einen
 bestimmten Wert zu holen). Der Editor zeigt die
-ersten drei Seiten und die letzte. Der Probelauf prüft die gezeichneten Zonen
+ersten drei Seiten und die letzte. Im Speichern-Block wählen Sie, welche
+Vorlage Sie bearbeiten, oder legen eine neue an; die Zonenliste ist der neue
+Stand dieser Vorlage, entfernte Zonen sind nach dem Speichern weg, und die
+Vorlage merkt sich die Kopfform des Belegs als weitere Variante. Der Probelauf prüft die gezeichneten Zonen
 gegen die offenen Belege derselben Form, ohne zu speichern. Der Lieferant der
 Vorlage wird jedem getroffenen Beleg zugeordnet und ist der Verkäufer.
 Gespeichert wird die Vorlage mit einem Fingerabdruck aus Kopf und Fuß der

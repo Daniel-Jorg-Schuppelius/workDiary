@@ -20,7 +20,11 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   und ein Zeilenmuster wählbar (regulärer Ausdruck auf den Text im Kästchen,
   zeilenweise, erste Klammergruppe ist der Wert), gezeigt werden die ersten
   drei Seiten und die letzte, ein Probelauf prüft die Zonen gegen die offenen
-  Belege derselben Form ohne zu speichern. Eine Vorlage füllt nur
+  Belege derselben Form ohne zu speichern. Im Speichern-Block wird die
+  bearbeitete Vorlage ausdrücklich gewählt oder neu angelegt, die Zonenliste
+  des Editors ersetzt den Stand der Vorlage (entfernte Zonen sind weg), und
+  die Vorlage merkt sich die Kopfform des Belegs als weitere Variante ihres
+  Fingerabdrucks. Eine Vorlage füllt nur
   Rechnungen (keine Mahnungen, Lieferscheine, Auftragsbestätigungen, Angebote,
   Versandmarken desselben Absenders), bringt ihren Lieferanten mit (Verkäufer
   und Zuordnung; der Verkäufername ist kein Zonenfeld mehr), prüft Werte auf

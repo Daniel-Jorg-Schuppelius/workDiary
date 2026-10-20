@@ -53,6 +53,12 @@
                     <div class="mt-2" data-zone-trial-result></div>
                 </x-card>
                 <x-card :title="__('Speichern')">
+                    <x-select-field name="template" :label="__('Vorlage')" data-zone-template :hint="__('Die Zonenliste zeigt den Stand der gewählten Vorlage; entfernte Zonen sind nach dem Speichern weg. Ein Wechsel lädt die Zonen der anderen Vorlage.')">
+                        <option value="new" @selected($template === null)>{{ __('Neue Vorlage anlegen') }}</option>
+                        @foreach ($templates as $candidate)
+                            <option value="{{ $candidate->sqid }}" @selected($template?->is($candidate))>{{ $candidate->name }}@if ($candidate->supplier) · {{ $candidate->supplier->name }}@endif ({{ trans_choice(':count Treffer|:count Treffer', $candidate->hits, ['count' => $candidate->hits]) }})</option>
+                        @endforeach
+                    </x-select-field>
                     <x-input-field name="name" :label="__('Name der Vorlage')" :value="old('name', $template?->name ?? $incoming->seller_name ?? $incoming->counterparty()?->name ?? '')" required maxlength="191" />
                     <x-select-field name="supplier" :label="__('Lieferant')" :hint="__('Wird jedem getroffenen Beleg zugeordnet; sein Name ist der Verkäufer.')">
                         <option value="">—</option>

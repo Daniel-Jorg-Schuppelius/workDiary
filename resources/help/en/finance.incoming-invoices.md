@@ -174,7 +174,10 @@ Per zone you choose the scope (fixed, first, last or any page) and may add a
 line pattern for special cases (a regular expression on the text inside the
 rectangle, line by line; the first capture group is the value, for instance
 to pick one value out of a larger rectangle). The
-editor shows the first three pages and the last one. The trial run checks the
+editor shows the first three pages and the last one. In the save block you
+choose which template you are editing or create a new one; the zone list is
+the new state of that template, removed zones are gone once saved, and the
+template remembers the document’s header form as a further variant. The trial run checks the
 drawn zones against the open documents of the same form without saving. The
 template’s supplier is assigned to every matched document and is the seller.
 The template is saved with a fingerprint of the header and footer of the

@@ -11017,5 +11017,7 @@
     "letzte Seite": "dernière page",
     "Übernommene Felder: :fields.": "Champs repris : :fields.",
     ":count Eingang umgehängt.|:count Eingänge umgehängt.": ":count document rattaché.|:count documents rattachés.",
-    "Der gewählte Lieferant ist unbekannt.": "Le fournisseur sélectionné est inconnu."
+    "Der gewählte Lieferant ist unbekannt.": "Le fournisseur sélectionné est inconnu.",
+    "Neue Vorlage anlegen": "Créer un nouveau modèle",
+    "Die Zonenliste zeigt den Stand der gewählten Vorlage; entfernte Zonen sind nach dem Speichern weg. Ein Wechsel lädt die Zonen der anderen Vorlage.": "La liste des zones montre l’état du modèle choisi ; les zones retirées disparaissent à l’enregistrement. Changer de modèle charge ses zones."
 }
