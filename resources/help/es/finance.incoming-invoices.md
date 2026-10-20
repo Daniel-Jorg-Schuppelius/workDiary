@@ -186,7 +186,11 @@ cualquiera) y puede añadir un patrón de línea para casos especiales
 (expresión regular sobre el texto del rectángulo, línea a línea; el primer
 grupo de captura es el valor, por ejemplo para extraer un valor concreto de un
 rectángulo mayor). El
-editor muestra las tres primeras páginas y la última. La prueba comprueba las
+editor muestra las tres primeras páginas y la última. En el bloque de guardar
+elige qué plantilla edita o crea una nueva; la lista de zonas pasa a ser el
+estado de esa plantilla, las zonas quitadas desaparecen al guardar y la
+plantilla memoriza la forma del encabezado del documento como variante
+adicional. La prueba comprueba las
 zonas dibujadas contra los documentos abiertos de la misma forma, sin
 guardar. El proveedor de la plantilla se asigna a cada documento reconocido y
 es el vendedor. La plantilla se guarda con una huella del encabezado y del

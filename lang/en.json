@@ -11017,5 +11017,7 @@
     "letzte Seite": "last page",
     "Übernommene Felder: :fields.": "Fields taken over: :fields.",
     ":count Eingang umgehängt.|:count Eingänge umgehängt.": ":count document re-linked.|:count documents re-linked.",
-    "Der gewählte Lieferant ist unbekannt.": "The selected supplier is unknown."
+    "Der gewählte Lieferant ist unbekannt.": "The selected supplier is unknown.",
+    "Neue Vorlage anlegen": "Create a new template",
+    "Die Zonenliste zeigt den Stand der gewählten Vorlage; entfernte Zonen sind nach dem Speichern weg. Ein Wechsel lädt die Zonen der anderen Vorlage.": "The zone list shows the state of the selected template; removed zones are gone once saved. Switching loads the other template’s zones."
 }

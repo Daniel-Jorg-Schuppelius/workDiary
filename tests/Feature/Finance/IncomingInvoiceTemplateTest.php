@@ -329,6 +329,47 @@ final class IncomingInvoiceTemplateTest extends TestCase {
         $this->get(route('finance.incoming-invoices.template.page', [$long->document, 4]))->assertNotFound();
     }
 
+    public function test_saving_replaces_the_zone_list_keeps_learned_zones_and_edits_the_chosen_template(): void {
+        $template = $this->template([
+            ['field' => 'invoice_number', 'page' => 1, 'x' => 0.73, 'y' => 0.11, 'w' => 0.17, 'h' => 0.04, 'scope' => 'page'],
+            ['field' => 'amount_gross', 'page' => 1, 'x' => 0.79, 'y' => 0.696, 'w' => 0.08, 'h' => 0.028, 'scope' => 'page'],
+            ['field' => 'issue_date', 'page' => 1, 'x' => 0.55, 'y' => 0.14, 'w' => 0.3, 'h' => 0.04, 'scope' => 'page', 'source' => IncomingInvoiceTemplate::SOURCE_LEARNED, 'confirmed' => false],
+        ], 'RZL Rechnung');
+        $other = $this->template([['field' => 'due_date', 'page' => 1, 'x' => 0.1, 'y' => 0.1, 'w' => 0.1, 'h' => 0.04, 'scope' => 'page']], 'Andere Form');
+        $other->forceFill(['fingerprint' => ['tokens' => ['fremd', 'firma', 'ort']]])->save();
+        $incoming = $this->incoming(['invoice_number' => null, 'amount_gross' => null, 'recognition' => IncomingInvoiceRecognition::None]);
+
+        // Der Editor lädt die ähnlichste Vorlage und bietet die Wahl an.
+        $this->get(route('finance.incoming-invoices.template.edit', $incoming->document))->assertOk()
+            ->assertSee('data-zone-template', false)->assertSee('RZL Rechnung')->assertSee('Andere Form')->assertSee(__('Neue Vorlage anlegen'));
+
+        // Brutto-Zone entfernt, gelernte Datumszone unverändert zurückgegeben: die Liste ist der neue Stand.
+        $zones = json_encode([
+            ['field' => 'invoice_number', 'page' => 1, 'x' => 0.73, 'y' => 0.11, 'w' => 0.17, 'h' => 0.04, 'scope' => 'page'],
+            ['field' => 'issue_date', 'page' => 1, 'x' => 0.55, 'y' => 0.14, 'w' => 0.3, 'h' => 0.04, 'scope' => 'page', 'source' => IncomingInvoiceTemplate::SOURCE_LEARNED, 'confirmed' => false],
+        ], JSON_THROW_ON_ERROR);
+        $this->post(route('finance.incoming-invoices.template.store', $incoming->document), ['name' => 'RZL Rechnung', 'zones' => $zones, 'template' => $template->sqid])
+            ->assertRedirect(route('finance.incoming-invoices.show', $incoming->document))->assertSessionHas('success');
+        $template->refresh();
+        $this->assertEqualsCanonicalizing(['invoice_number', 'issue_date'], $template->fieldKeys(), 'Die entfernte Brutto-Zone ist weg.');
+        $date = collect($template->zoneList())->firstWhere('field', 'issue_date');
+        $this->assertSame(IncomingInvoiceTemplate::SOURCE_LEARNED, $date['source']);
+        $this->assertFalse($date['confirmed']);
+        $this->assertSame(2, IncomingInvoiceTemplate::query()->count(), 'Keine Doppelvorlage.');
+
+        // Ausdrücklich die andere Vorlage bearbeiten: sie bekommt die Zonen und die Kopfform dieses Belegs als Variante.
+        $this->post(route('finance.incoming-invoices.template.store', $incoming->document), ['name' => 'Andere Form', 'zones' => $zones, 'template' => $other->sqid])->assertRedirect();
+        $other->refresh();
+        $this->assertEqualsCanonicalizing(['invoice_number', 'issue_date'], $other->fieldKeys());
+        $this->assertSame(['fremd', 'firma', 'ort'], $other->fingerprint['tokens'], 'Der erste Fingerabdruck bleibt.');
+        $this->assertContains('rechenzentrum', $other->fingerprint['variants'][0] ?? [], 'Die Kopfform des Belegs ist als Variante gemerkt.');
+        $this->assertSame($other->id, $incoming->refresh()->template_id);
+
+        // „Neue Vorlage anlegen“ legt eine dritte an, auch wenn eine ähnliche existiert.
+        $this->post(route('finance.incoming-invoices.template.store', $incoming->document), ['name' => 'Dritte', 'zones' => $zones, 'template' => 'new'])->assertRedirect();
+        $this->assertSame(3, IncomingInvoiceTemplate::query()->count());
+    }
+
     /** @param  list<array<string, mixed>>  $zones */
     private function template(array $zones, string $name = 'RZL', ?int $supplierId = null): IncomingInvoiceTemplate {
         return IncomingInvoiceTemplate::query()->create([

@@ -11017,5 +11017,7 @@
     "letzte Seite": "última página",
     "Übernommene Felder: :fields.": "Campos incorporados: :fields.",
     ":count Eingang umgehängt.|:count Eingänge umgehängt.": ":count documento reasignado.|:count documentos reasignados.",
-    "Der gewählte Lieferant ist unbekannt.": "El proveedor seleccionado es desconocido."
+    "Der gewählte Lieferant ist unbekannt.": "El proveedor seleccionado es desconocido.",
+    "Neue Vorlage anlegen": "Crear una plantilla nueva",
+    "Die Zonenliste zeigt den Stand der gewählten Vorlage; entfernte Zonen sind nach dem Speichern weg. Ein Wechsel lädt die Zonen der anderen Vorlage.": "La lista de zonas muestra el estado de la plantilla elegida; las zonas quitadas desaparecen al guardar. Cambiar de plantilla carga sus zonas."
 }

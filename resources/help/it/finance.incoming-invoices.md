@@ -186,7 +186,11 @@ fissa. Per ogni zona sceglie l’ambito (pagina fissa, prima, ultima o
 qualsiasi) e può aggiungere uno schema di riga per i casi particolari
 (espressione regolare sul testo del rettangolo, riga per riga; il primo gruppo
 di cattura è il valore, ad esempio per estrarre un valore preciso da un
-rettangolo più grande). L’editor mostra le prime tre pagine e l’ultima. La
+rettangolo più grande). L’editor mostra le prime tre pagine e l’ultima. Nel blocco di salvataggio
+sceglie quale modello sta modificando o ne crea uno nuovo; l’elenco delle
+zone diventa lo stato di quel modello, le zone rimosse spariscono al
+salvataggio e il modello memorizza la forma dell’intestazione del documento
+come ulteriore variante. La
 prova verifica le zone tracciate sui documenti aperti della stessa forma,
 senza salvare. Il fornitore del modello viene assegnato a ogni documento
 riconosciuto ed è il venditore. Il modello viene salvato con un’impronta di

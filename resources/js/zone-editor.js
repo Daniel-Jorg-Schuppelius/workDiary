@@ -8,6 +8,7 @@
  *   - [data-zone-list]       Liste der Zonen mit Anker, Bereich, Zeilenmuster und Vorschauwert
  *   - [data-zone-input]      verstecktes Feld, das beim Absenden die Zonen als JSON trägt
  *   - [data-zone-trial]      Knopf „Probelauf“, [data-zone-trial-result] seine Ausgabe
+ *   - [data-zone-template]   Select der bearbeiteten Vorlage; ein Wechsel lädt die Seite mit deren Zonen neu
  *
  * Koordinaten sind relativ zur Seite (0–1); gezeichnet wird mit Pointer-Events. In einem Rechteck über
  * Beschriftung und Wert erkennt der Server die Beschriftung als Anker; das Rechteck bleibt, wie gezeichnet,
@@ -75,12 +76,14 @@ const init = (root) => {
     };
 
     /** @param {Zone} zone */
-    const payload = ({ field, page, x, y, w, h, anchor, anchor_box, scope, pattern }) => ({
+    const payload = ({ field, page, x, y, w, h, anchor, anchor_box, scope, pattern, source, confirmed }) => ({
         field, page, x, y, w, h,
         anchor: anchor ?? null,
         anchor_box: anchor_box ?? null,
         scope: scope ?? (anchor ? "any" : "page"),
         pattern: pattern && pattern.trim() !== "" ? pattern.trim() : null,
+        source: source ?? "manual",
+        confirmed: confirmed ?? true,
     });
 
     const serialize = () => {
@@ -333,6 +336,12 @@ const init = (root) => {
 
     showBoxesEl?.addEventListener("change", toggleBoxes);
     trialEl?.addEventListener("click", () => void trial());
+    const templateEl = /** @type {HTMLSelectElement | null} */ (root.querySelector("[data-zone-template]"));
+    templateEl?.addEventListener("change", () => {
+        const url = new URL(window.location.href);
+        url.searchParams.set("template", templateEl.value);
+        window.location.assign(url.toString());
+    });
     root.addEventListener("submit", serialize);
     renderZones();
     for (const zone of zones) void preview(zone, false);

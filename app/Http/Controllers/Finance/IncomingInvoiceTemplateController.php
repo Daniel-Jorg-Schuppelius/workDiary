@@ -61,7 +61,7 @@ class IncomingInvoiceTemplateController extends Controller {
             return redirect()->route('finance.incoming-invoices.show', $document)->with('error', __('Zonen lassen sich nur auf PDF-Belegen zeichnen.'));
         }
         $boxes = $this->boxes->boxesFor($pdf);
-        $template = $this->templateFor($incoming, $boxes);
+        $template = $this->chosenTemplate(request()->query('template'), $incoming, $boxes);
         $pageCount = self::pageCount($boxes);
         $shownPages = PageImages::shownPages($pageCount);
         $pages = $this->images->pages($incoming, $shownPages);
@@ -87,6 +87,7 @@ class IncomingInvoiceTemplateController extends Controller {
             'pageCount' => $pageCount,
             'fields' => ZoneFields::labels(),
             'suppliers' => $this->suppliers(),
+            'templates' => IncomingInvoiceTemplate::query()->with('supplier:id,name')->orderBy('name')->get(),
             'openCount' => $this->openSiblings($incoming)->count(),
         ]);
     }
@@ -146,6 +147,7 @@ class IncomingInvoiceTemplateController extends Controller {
             'zones' => ['required', 'string', 'max:40000'],
             'apply_to_open' => ['nullable', 'boolean'],
             'supplier' => ['nullable', 'string', 'max:64'],
+            'template' => ['nullable', 'string', 'max:64'],
         ]);
         $supplierId = $this->supplierIdFrom($data['supplier'] ?? null);
         $zones = self::decodeZones((string) $data['zones']);
@@ -154,7 +156,7 @@ class IncomingInvoiceTemplateController extends Controller {
         }
         $pdf = TemplateRecognizer::pdfPathFor($incoming);
         $boxes = $pdf === null ? [] : $this->boxes->boxesFor($pdf);
-        $template = $this->templateFor($incoming, $boxes);
+        $template = $this->chosenTemplate($data['template'] ?? null, $incoming, $boxes);
         if ($template === null) {
             $template = IncomingInvoiceTemplate::query()->create([
                 'organization_id' => $incoming->organization_id,
@@ -166,14 +168,13 @@ class IncomingInvoiceTemplateController extends Controller {
                 'created_by' => $actor->id,
             ]);
         } else {
-            // Gezeichnete Zonen ersetzen gelernte desselben Feldes; andere gelernte bleiben.
-            $drawn = array_fill_keys(array_column($zones, 'field'), true);
-            $kept = array_values(array_filter($template->zoneList(), static fn (array $z): bool => ! isset($drawn[(string) ($z['field'] ?? '')])));
+            // Die Zonenliste des Editors ist der neue Stand der Vorlage — entfernte Zonen sind weg (Befund 2026-10-20);
+            // die Kopfform dieses Belegs wird als Variante des Fingerabdrucks gemerkt.
             $template->forceFill([
                 'name' => $data['name'],
-                'zones' => [...$kept, ...$zones],
+                'zones' => $zones,
                 'supplier_id' => $supplierId ?? $template->supplier_id ?? $incoming->supplier_id,
-                'fingerprint' => $template->fingerprint !== [] ? $template->fingerprint : TemplateFingerprint::fromBoxes($boxes),
+                'fingerprint' => TemplateFingerprint::withVariant((array) $template->fingerprint, TemplateFingerprint::fromBoxes($boxes)),
             ])->save();
         }
         $template->audit('incoming_einvoice.template_saved', ['source' => IncomingInvoiceTemplate::SOURCE_MANUAL, 'fields' => array_column($zones, 'field')]);
@@ -202,14 +203,14 @@ class IncomingInvoiceTemplateController extends Controller {
     /** Probelauf im Editor (MVP-1254): die gezeichneten, noch ungespeicherten Zonen gegen die offenen Belege derselben Form. */
     public function trial(Request $request, Document $document): JsonResponse {
         [$incoming] = $this->resolve($document);
-        $data = $request->validate(['zones' => ['required', 'string', 'max:40000']]);
+        $data = $request->validate(['zones' => ['required', 'string', 'max:40000'], 'template' => ['nullable', 'string', 'max:64']]);
         $zones = self::decodeZones((string) $data['zones']);
         if ($zones === []) {
             return response()->json(['total' => 0, 'filled' => 0, 'fields' => [], 'rows' => []]);
         }
         $pdf = TemplateRecognizer::pdfPathFor($incoming);
         $boxes = $pdf === null ? [] : $this->boxes->boxesFor($pdf);
-        $existing = $this->templateFor($incoming, $boxes);
+        $existing = $this->chosenTemplate($data['template'] ?? null, $incoming, $boxes);
         $fingerprint = $existing->fingerprint ?? [];
         $probe = new IncomingInvoiceTemplate([
             'organization_id' => $incoming->organization_id,
@@ -340,6 +341,27 @@ class IncomingInvoiceTemplateController extends Controller {
         abort_if($incoming === null || $incoming->recognition === IncomingInvoiceRecognition::Structured, 404);
 
         return [$incoming, $user];
+    }
+
+    /**
+     * Vorlage, die der Editor bearbeitet: ausdrücklich gewählt (Sqid), ausdrücklich neu (`new`) oder — ohne Angabe —
+     * die am Beleg hängende bzw. die ähnlichste (Befund 2026-10-20: das Raten allein legte Doppelvorlagen an).
+     *
+     * @param  list<WordBox>  $boxes
+     */
+    private function chosenTemplate(mixed $choice, IncomingEInvoice $incoming, array $boxes): ?IncomingInvoiceTemplate {
+        $choice = is_string($choice) ? trim($choice) : '';
+        if ($choice === 'new') {
+            return null;
+        }
+        if ($choice !== '') {
+            $chosen = (new IncomingInvoiceTemplate)->resolveRouteBinding($choice);
+            if ($chosen instanceof IncomingInvoiceTemplate) {
+                return $chosen;
+            }
+        }
+
+        return $this->templateFor($incoming, $boxes);
     }
 
     /** @param  list<WordBox>  $boxes */
@@ -505,7 +527,7 @@ class IncomingInvoiceTemplateController extends Controller {
     }
 
     /**
-     * Zonen aus dem JSON des Editors: nur bekannte Felder, je Feld die letzte; gezeichnet und bestätigt.
+     * Zonen aus dem JSON des Editors: nur bekannte Felder, je Feld die letzte; gezeichnete gelten als bestätigt.
      *
      * @return list<array<string, mixed>>
      */
@@ -520,7 +542,12 @@ class IncomingInvoiceTemplateController extends Controller {
             if ($zone['w'] <= 0.0 || $zone['h'] <= 0.0) {
                 continue;
             }
-            $byField[$zone['field']] = $zone + ['source' => IncomingInvoiceTemplate::SOURCE_MANUAL, 'confirmed' => true];
+            // Gelernte Zonen behalten Quelle und Bestätigung, wenn der Editor sie unverändert zurückgibt.
+            $learned = ($raw['source'] ?? '') === IncomingInvoiceTemplate::SOURCE_LEARNED;
+            $byField[$zone['field']] = $zone + [
+                'source' => $learned ? IncomingInvoiceTemplate::SOURCE_LEARNED : IncomingInvoiceTemplate::SOURCE_MANUAL,
+                'confirmed' => $learned ? (bool) ($raw['confirmed'] ?? false) : true,
+            ];
         }
 
         return array_values($byField);

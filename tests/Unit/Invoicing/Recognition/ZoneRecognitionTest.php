@@ -33,6 +33,22 @@ final class ZoneRecognitionTest extends TestCase {
         self::assertEqualsWithDelta(1.0, TemplateFingerprint::similarity($fingerprint, $fingerprint), 1e-9);
         self::assertEqualsWithDelta(2 / 5, TemplateFingerprint::similarity($fingerprint, ['tokens' => ['ludwigs', 'rechenzentrum', 'postbank', 'berlin']]), 1e-9);
         self::assertSame(0.0, TemplateFingerprint::similarity($fingerprint, ['tokens' => []]));
+
+        // Varianten (Phase 155): eine Vorlage merkt sich weitere Kopfformen, die Ähnlichkeit ist die beste über alle.
+        $other = ['tokens' => ['postbank', 'berlin', 'muster']];
+        $withVariant = TemplateFingerprint::withVariant($fingerprint, $other);
+        $variant = $withVariant['variants'][0];
+        sort($variant);
+        self::assertSame(['berlin', 'muster', 'postbank'], $variant, 'Variante gemerkt');
+        self::assertEqualsWithDelta(1.0, TemplateFingerprint::similarity($other, $withVariant), 1e-9);
+        self::assertEqualsWithDelta(1.0, TemplateFingerprint::similarity($fingerprint, $withVariant), 1e-9);
+        self::assertSame($withVariant, TemplateFingerprint::withVariant($withVariant, $other), 'eine bekannte Form wird nicht doppelt gemerkt');
+        self::assertSame($fingerprint, TemplateFingerprint::withVariant($fingerprint, $fingerprint), 'die eigene Form ist keine Variante');
+        $many = $withVariant;
+        foreach (range(1, 6) as $i) {
+            $many = TemplateFingerprint::withVariant($many, ['tokens' => ['form' . $i, 'x' . $i, 'y' . $i]]);
+        }
+        self::assertCount(TemplateFingerprint::MAX_VARIANTS, $many['variants'], 'die älteste Variante weicht');
     }
 
     public function test_zone_text_is_read_in_reading_order_and_parsed_by_field_type(): void {

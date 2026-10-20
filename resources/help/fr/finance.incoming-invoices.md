@@ -194,7 +194,11 @@ toute page) et pouvez ajouter un motif de ligne pour les cas particuliers
 (expression régulière sur le texte du rectangle, ligne par ligne ; le premier
 groupe capturant est la valeur, par exemple pour extraire une valeur précise
 d’un rectangle plus grand). L’éditeur
-affiche les trois premières pages et la dernière. L’essai vérifie les zones
+affiche les trois premières pages et la dernière. Dans le bloc
+d’enregistrement, vous choisissez le modèle à modifier ou en créez un ; la
+liste des zones devient l’état de ce modèle, les zones retirées disparaissent
+à l’enregistrement, et le modèle mémorise la forme d’en-tête du document
+comme variante supplémentaire. L’essai vérifie les zones
 tracées sur les documents ouverts de même forme, sans enregistrer. Le
 fournisseur du modèle est attribué à chaque document reconnu et en est le
 vendeur. Le modèle est enregistré avec une empreinte de l’en-tête et du pied
