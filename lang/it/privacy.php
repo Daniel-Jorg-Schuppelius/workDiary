@@ -26,6 +26,7 @@ return [
         'documents_invoice' => 'Fatture (DMS)',
         'passenger_rides' => 'Fascicoli delle corse (dati di luogo e passeggeri)',
         'employee_records' => 'Anagrafica del personale (dipendenti cessati)',
+        'portal_accounts' => 'Accessi al portale (disattivati)',
         'personnel_files' => 'Fascicoli del personale (dipendenti cessati)',
         'customer_master' => 'Anagrafica clienti (senza operazioni)',
         'customer_intakes' => 'Richieste dei clienti (respinte o ritirate)',

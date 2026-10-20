@@ -1,7 +1,7 @@
 ---
 title: "Kunden & Lieferanten"
 topic: contacts.manage
-version: 9
+version: 10
 keywords:
     - Vorschau als Kunde
     - Startpasswort
@@ -103,6 +103,8 @@ Hat ein Kontakt alle Zwei-Faktor-Methoden und Recovery-Codes verloren, entfernt 
 **Portal ansehen** öffnet das Kundenportal in einem neuen Tab so, wie dieser Kontakt es sieht – mit seinen Bereichen, Dokumenten und Rechnungen – und hilft bei Fragen wie „Wo finde ich …?“. Die Vorschau ist eine reine Ansicht: Aktionen sind gesperrt, Sicherheits- und Passwortseiten nicht erreichbar, und sie gilt nicht als Anmeldung des Kontakts. Sie endet mit **Vorschau beenden** in der gelben Leiste oder in der Kundenakte, spätestens nach 60 Minuten, und wird mit Beginn und Ende protokolliert. Dafür braucht es das Recht **Kundenportal in der Sicht eines Kunden ansehen**; ohne Zugang gibt es keine Vorschau – legen Sie zuerst einen an.
 
 **Portal-Sichtbarkeit:** Neben den Bereichen wählen Sie hier den **sichtbaren Zeitraum der Zeiten** – **Standard der Organisation** (Einstellung **Kundenportal** in den Organisationseinstellungen, im Standard drei Kalenderjahre einschließlich des laufenden), eine feste Zahl von Jahren oder **unbegrenzt**. Das ist eine Sichtgrenze im Portal, keine Löschung. Die Freigabe **Auswertungen** zeigt dem Kunden Kennzahlen und Diagramme – nur aus Bereichen, die ebenfalls freigegeben sind (Zeiten in der eingestellten Detailstufe, Rechnungen, Abrechnungskonto, Tickets); wie jede neue Freigabe startet sie „aus“.
+
+**Zugang entfernen:** Einen Zugang, der sich **nie angemeldet** hat (Einladung offen oder abgelaufen, Startpasswort ausstehend), löschen Sie mit **Zugang löschen** endgültig – es gibt keine Nachweise an ihm. Hat sich der Kontakt schon einmal angemeldet, bleibt der Datensatz: Deaktivieren Sie den Zugang und wählen Sie **Zugang entfernen**. Dann fallen Name, Anschrift und Anmeldemittel weg, die E-Mail-Adresse wird für eine neue Einladung frei, und Foto-Bestätigungen, Rückfragen und Anfragen bleiben als Nachweis („Ehemaliger Portalzugang“). Beides verlangt eine Passwortbestätigung und wird am Kunden protokolliert; entfernte Zugänge stehen nur noch in der Summenzeile unter der Liste. Deaktivierte Zugänge schlägt die Löschfristen-Prüfung (Bereich **Portalzugänge**) nach einem Jahr zur Entfernung vor.
 
 ## Beispiel aus der Praxis
 

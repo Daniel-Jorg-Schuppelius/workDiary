@@ -1,7 +1,7 @@
 ---
 title: "Clientes & proveedores"
 topic: contacts.manage
-version: 9
+version: 10
 keywords:
     - Vista previa como cliente
     - Contraseña inicial
@@ -102,6 +102,8 @@ Si un contacto ha perdido todos los métodos de dos factores y los códigos de r
 **Ver portal** abre el portal de clientes en una pestaña nueva tal como lo ve este contacto – con sus áreas, documentos y facturas – y ayuda con preguntas como «¿Dónde encuentro …?». La vista previa es solo una vista: las acciones están bloqueadas, las páginas de seguridad y contraseña no son accesibles y no cuenta como inicio de sesión del contacto. Termina con **Finalizar vista previa** en la barra amarilla o en la ficha del cliente, como máximo tras 60 minutos, y se registra con inicio y fin. Requiere el permiso **Ver el portal del cliente como cliente**; sin acceso no hay vista previa: cree primero uno.
 
 **Visibilidad del portal:** junto a las áreas elige aquí el **periodo visible de los tiempos** – **valor predeterminado de la organización** (ajuste **Portal de clientes** en la configuración de la organización, por defecto tres años naturales, incluido el actual), un número fijo de años o **ilimitado**. Es un límite de vista en el portal, no un borrado. La habilitación **Análisis** muestra al cliente indicadores y gráficos – solo de áreas también habilitadas (tiempos en el nivel de detalle configurado, facturas, cuenta de facturación, tickets); como toda nueva habilitación, empieza «desactivada».
+
+**Retirar un acceso:** un acceso que **nunca ha iniciado sesión** (invitación pendiente o caducada, contraseña inicial pendiente) se elimina definitivamente con **Eliminar acceso**: no tiene justificantes asociados. Si el contacto ya ha iniciado sesión, el registro se conserva: desactive el acceso y elija **Retirar acceso**. El nombre, la dirección y las credenciales desaparecen, la dirección de correo queda libre para una nueva invitación, y las confirmaciones de fotos, consultas y solicitudes se conservan como justificante («Antiguo acceso al portal»). Ambas acciones exigen una confirmación de contraseña y se registran en el cliente; los accesos retirados solo aparecen en la línea de resumen bajo la lista. La comprobación de plazos de conservación (área **Accesos al portal**) propone los accesos desactivados para su retirada al cabo de un año.
 
 ## Ejemplo práctico
 

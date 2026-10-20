@@ -252,4 +252,19 @@ return [
         'service' => 'Service',
         'documents' => 'Dokumente',
     ],
+    // Zugang entfernen: Löschen ohne Anmeldung, Anonymisierung (MVP-1246).
+    'remove' => [
+        'delete_action' => 'Zugang löschen',
+        'delete_confirm_message' => 'Der Zugang :email hat sich nie angemeldet und wird endgültig gelöscht. Eine offene Einladung verfällt.',
+        'delete_confirm_label' => 'Löschen',
+        'delete_flash' => 'Portalzugang gelöscht.',
+        'delete_refused' => 'Dieser Zugang hat sich bereits angemeldet und kann nicht gelöscht werden — deaktivieren Sie ihn und entfernen Sie dann den Personenbezug.',
+        'anonymize_action' => 'Zugang entfernen',
+        'anonymize_confirm_message' => 'Der Personenbezug von :email wird entfernt: Name, Anschrift und Anmeldemittel fallen weg, die E-Mail-Adresse wird frei. Foto-Bestätigungen, Rückfragen und Anfragen bleiben als Nachweis erhalten. Das lässt sich nicht rückgängig machen.',
+        'anonymize_confirm_label' => 'Entfernen',
+        'anonymize_flash' => 'Portalzugang entfernt — der Personenbezug ist gelöscht, die Nachweise bleiben.',
+        'anonymize_refused' => 'Der Zugang ist noch aktiv — deaktivieren Sie ihn zuerst.',
+        'removed_summary' => ':count entfernter Zugang|:count entfernte Zugänge',
+        'removed_at' => 'deaktiviert am :deactivated, entfernt am :removed',
+    ],
 ];

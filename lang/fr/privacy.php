@@ -26,6 +26,7 @@ return [
         'documents_invoice' => 'Factures (DMS)',
         'passenger_rides' => 'Dossiers de courses (données de lieu et de passagers)',
         'employee_records' => 'Données du personnel (salariés sortis)',
+        'portal_accounts' => 'Accès au portail (désactivés)',
         'personnel_files' => 'Dossiers du personnel (salariés sortis)',
         'customer_master' => 'Fichier clients (sans opérations)',
         'customer_intakes' => 'Demandes clients (refusées ou retirées)',

@@ -731,6 +731,8 @@ return [
     ],
     'portal' => [
         'access' => [
+            'anonymized' => 'Portalzugang entfernt (Personenbezug gelöscht)',
+            'deleted' => 'Portalzugang gelöscht (nie angemeldet)',
             'deactivated' => 'Portalzugang deaktiviert',
             'invite_accepted' => 'Portal-Einladung angenommen',
             'invite_resent' => 'Portal-Einladung erneut versendet',

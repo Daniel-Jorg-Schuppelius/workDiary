@@ -26,6 +26,7 @@ return [
         'documents_invoice' => 'Invoices (DMS)',
         'passenger_rides' => 'Ride records (location and passenger data)',
         'employee_records' => 'Employee master data (former employees)',
+        'portal_accounts' => 'Portal accesses (deactivated)',
         'personnel_files' => 'Personnel files (former employees)',
         'customer_master' => 'Customer master data (no transactions)',
         'customer_intakes' => 'Customer intakes (rejected or withdrawn)',

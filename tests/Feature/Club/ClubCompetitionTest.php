@@ -40,6 +40,9 @@ class ClubCompetitionTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        // Feste Zeit: die Wettkämpfe des Tests liegen ab dem 20.10.2026, Leistungen davor —
+        // ohne Einfrieren galt der Standardtermin am 20.10.2026 als bereits begonnen.
+        $this->travelTo(CarbonImmutable::parse('2026-10-01 09:00:00'));
         $this->setUpOrganization();
         $this->admin = $this->orgAdmin();
         $this->athletics = app(ClubTeamService::class)->createProfile($this->organization, [

@@ -10,6 +10,20 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Kundenportal: Portalzugang entfernen (MVP-1246). Ein Zugang, der sich nie
+  angemeldet hat (Einladung offen oder abgelaufen, Startpasswort ausstehend),
+  lässt sich in der Kundenakte endgültig löschen; ein Zugang mit Anmeldung
+  wird nach dem Deaktivieren entfernt: Name, Anschrift, Anmeldemittel,
+  Zwei-Faktor-Methoden und Sitzungen fallen weg, die E-Mail-Adresse wird
+  frei, der Datensatz bleibt als „Ehemaliger Portalzugang“ erhalten, damit
+  Foto-Bestätigungen, Rückfragen, Anfragen und Audit-Einträge ihren Urheber
+  behalten. Beides verlangt eine Passwortbestätigung und schreibt ein Audit am
+  Kunden; entfernte Zugänge stehen nur noch in einer Summenzeile unter der
+  Liste. Neuer Löschfristen-Bereich „Portalzugänge (deaktiviert)“ schlägt
+  deaktivierte Konten nach einem Jahr zur Anonymisierung vor. Maßgeblich für
+  „nie angemeldet“ ist das Login-Audit. Hilfe ×5, Texte ×5, Audit-Labels ×5,
+  Tests.
+
 - Kundenportal: Zeitraum und Filter der Zeiten, Oberfläche, Farbschema,
   Auswertungen (Phase 154, MVP-1237–1245, Feature 168). Die Portalzeiten
   sind auf Kalenderjahre begrenzt (Organisationsstandard 3 Jahre

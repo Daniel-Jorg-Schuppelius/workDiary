@@ -68,6 +68,22 @@ final class PrivacyRetentionPolicies implements RetentionPolicyProvider {
                     app(\App\Services\Privacy\UserAnonymizationService::class)->anonymize($subject, $actor);
                 },
             ),
+            // Portalzugänge (MVP-1246): deaktivierte Kundenportal-Konten, Anker
+            // ist die Deaktivierung. Vollzug = Anonymisierung über den
+            // Portaldienst — die Nachweise des Kontos bleiben verknüpft.
+            new RetentionPolicy(
+                area: 'portal_accounts',
+                modelClass: \App\Models\Platform\User::class,
+                overdueQuery: fn($organization, $cutoff) => \App\Models\Platform\User::query()
+                    ->where('organization_id', $organization->id)
+                    ->whereNotNull('customer_id')
+                    ->whereNotNull('deactivated_at')
+                    ->whereNull('anonymized_at')
+                    ->where('deactivated_at', '<', \App\Support\Query\DateRange::dayStart($cutoff)),
+                purge: function (\App\Models\Platform\User $subject, \App\Models\Platform\User $actor): void {
+                    app(\App\Services\CustomerPortal\PortalAccessService::class)->anonymize($subject, $actor);
+                },
+            ),
         ];
     }
 }

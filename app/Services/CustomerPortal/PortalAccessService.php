@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Services\CustomerPortal;
 
+use App\Exceptions\PortalAccessException;
 use App\Mail\{CustomerPortalInvitationMail, CustomerPortalPasswordResetMail, PortalSecondFactorResetNoticeMail};
+use App\Models\Attachments\Attachment;
+use App\Models\Audit\AuditLog;
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};
+use App\Services\Attachments\ImageMetaUploader;
 use App\Services\Auth\UserSessionInvalidator;
-use App\Support\CanonicalUrl;
+use App\Services\Retention\LegalHoldService;
+use App\Support\{CanonicalUrl, MorphMap};
 use CommonToolkit\Helper\Data\{CryptoHelper, EmailHelper};
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\{Hash, Mail, URL};
@@ -54,7 +59,11 @@ class PortalAccessService {
     /** Gültigkeit eines „Passwort vergessen“-Links in Minuten (wie intern). */
     public const PASSWORD_RESET_TTL_MINUTES = 60;
 
-    public function __construct(private readonly UserSessionInvalidator $sessions) {}
+    public function __construct(
+        private readonly UserSessionInvalidator $sessions,
+        private readonly ImageMetaUploader $images,
+        private readonly LegalHoldService $legalHolds,
+    ) {}
 
     /**
      * Lädt einen neuen Portalzugang für den Kunden ein und versendet den
@@ -176,6 +185,107 @@ class PortalAccessService {
         $this->sessions->invalidateAll($portalUser);
 
         $portalUser->audit('portal.access.deactivated', ['by' => (int) $actor->id]);
+    }
+
+    /**
+     * Hat sich das Konto je am Portal angemeldet? Maßgeblich ist das
+     * Login-Audit (append-only), nicht die flüchtige Sitzungstabelle.
+     */
+    public function hasEverSignedIn(User $portalUser): bool {
+        return AuditLog::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $portalUser->organization_id)
+            ->where('auditable_type', MorphMap::stableKey(User::class))
+            ->where('auditable_id', $portalUser->id)
+            ->where('event', 'auth.login')
+            ->exists();
+    }
+
+    /**
+     * Löscht einen Zugang, der sich nie angemeldet hat (MVP-1246): ohne
+     * Anmeldung gibt es keine Nachweise am Konto. Ein Login-Audit sperrt die
+     * Löschung — dann bleibt nur {@see anonymize()}. Der Nachweis der Löschung
+     * steht am Kunden, weil der Kontodatensatz verschwindet.
+     */
+    public function delete(User $portalUser, User $actor): void {
+        $this->assertPortalUser($portalUser);
+        if ($this->hasEverSignedIn($portalUser)) {
+            throw PortalAccessException::hasSignedIn();
+        }
+        $this->legalHolds->assertNotHeld($portalUser);
+
+        $customer = $this->customerOf($portalUser);
+        $state = $this->state($portalUser);
+        $this->sessions->invalidateAll($portalUser);
+        $portalUser->twoFactorCredentials()->delete();
+        $portalUser->delete();
+
+        $customer?->audit('portal.access.deleted', [
+            'by' => (int) $actor->id,
+            'portal_user_id' => (int) $portalUser->id,
+            'state' => $state,
+        ]);
+    }
+
+    /**
+     * Entfernt den Personenbezug eines deaktivierten Zugangs (MVP-1246, Muster
+     * UserAnonymizationService): der Datensatz bleibt, weil Foto-Bestätigungen,
+     * Rückfragen, Anfragen und Audit-Einträge daran hängen; Name, Adresse und
+     * Anmeldemittel fallen, die E-Mail-Adresse wird frei. Idempotent.
+     */
+    public function anonymize(User $portalUser, User $actor): void {
+        $this->assertPortalUser($portalUser);
+        if ($portalUser->anonymized_at !== null) {
+            return;
+        }
+        if (! $portalUser->isDeactivated()) {
+            throw PortalAccessException::stillActive();
+        }
+        $this->legalHolds->assertNotHeld($portalUser);
+
+        $portalUser->addresses()->delete();
+        $portalUser->bankAccounts()->delete();
+        $this->images->delete($portalUser, Attachment::META_AVATAR);
+        $portalUser->twoFactorCredentials()->delete();
+        $this->sessions->invalidateAll($portalUser);
+
+        $portalUser->forceFill([
+            'name' => sprintf('Ehemaliger Portalzugang #%d', $portalUser->id),
+            'first_name' => null,
+            'middle_names' => null,
+            'last_name' => null,
+            // users.email ist unique — deterministische, unzustellbare Adresse; die bisherige wird frei.
+            'email' => sprintf('anonymisiert-%d@example.invalid', $portalUser->id),
+            'email_verified_at' => null,
+            'phone' => null,
+            'mobile' => null,
+            'fax' => null,
+            'preferences' => null,
+            'two_factor_secret' => null,
+            'two_factor_recovery_codes' => null,
+            'two_factor_confirmed_at' => null,
+            'portal_invite_token_hash' => null,
+            'portal_invite_expires_at' => null,
+            'portal_invited_at' => null,
+            'portal_pending_email' => null,
+            'portal_pending_email_requested_at' => null,
+            'must_change_password' => false,
+            // Zugangsreste rotieren ('hashed'-Cast hasht das Zufallspasswort).
+            'password' => Str::random(48),
+            'remember_token' => Str::random(60),
+            'anonymized_at' => Carbon::now(),
+        ])->save();
+
+        $portalUser->audit('user.anonymized', ['reason' => 'portal_access', 'by_user_id' => (int) $actor->id]);
+        $this->customerOf($portalUser)?->audit('portal.access.anonymized', [
+            'by' => (int) $actor->id,
+            'portal_user_id' => (int) $portalUser->id,
+        ]);
+    }
+
+    /** Kunde des Kontos ohne Organisations-Scope (Audit am Träger). */
+    private function customerOf(User $portalUser): ?Customer {
+        return Customer::query()->withoutGlobalScopes()->find((int) $portalUser->customer_id);
     }
 
     /** Reaktiviert einen widerrufenen Zugang (ohne neue Einladung). */

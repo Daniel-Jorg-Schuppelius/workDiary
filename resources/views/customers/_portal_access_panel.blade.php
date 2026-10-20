@@ -18,6 +18,9 @@
         $portalService = app(\App\Services\CustomerPortal\PortalAccessService::class);
         $portalPreview = app(\App\Services\CustomerPortal\PortalPreview::class);
         $canPreview = auth()->user()?->isAdmin() || \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::CustomerPortalPreview->value);
+        // Entfernte (anonymisierte) Zugänge stehen nicht in der Liste, nur in der Summenzeile darunter (MVP-1246).
+        $removedUsers = $portalUsers->filter(fn ($u) => $u->anonymized_at !== null)->values();
+        $portalUsers = $portalUsers->reject(fn ($u) => $u->anonymized_at !== null)->values();
         // Vorschau braucht ein Konto: erst ein aktives, sonst das erste nicht deaktivierte (E1).
         $previewUser = $portalUsers->first(fn ($u) => $portalService->state($u) === \App\Services\CustomerPortal\PortalAccessService::STATE_ACTIVE)
             ?? $portalUsers->first(fn ($u) => $portalService->state($u) !== \App\Services\CustomerPortal\PortalAccessService::STATE_DEACTIVATED);
@@ -88,7 +91,11 @@
                 </tr>
             </x-slot:head>
             @forelse ($portalUsers as $portalUser)
-                @php $state = $portalService->state($portalUser); @endphp
+                @php
+                    $state = $portalService->state($portalUser);
+                    // Ohne jede Anmeldung gibt es keine Nachweise — dann ist Löschen erlaubt, sonst nur Entfernen (MVP-1246).
+                    $neverSignedIn = ! $portalService->hasEverSignedIn($portalUser);
+                @endphp
                 <tr>
                     <td class="text-sm font-medium">{{ $portalUser->name }}</td>
                     <td class="text-sm">{{ $portalUser->email }}</td>
@@ -129,6 +136,19 @@
                                 @csrf
                                 <x-icon-btn icon="person_check" tone="success" type="submit" :label="__('Reaktivieren')" />
                             </form>
+                            @if ($neverSignedIn)
+                                <x-action-form :action="route('customers.portal-access.destroy', [$customer, $portalUser])" method="DELETE" class="inline"
+                                               :confirm="__('customer_portal.remove.delete_confirm_message', ['email' => $portalUser->email])" confirm-icon="delete" confirm-tone="error"
+                                               :confirm-label="__('customer_portal.remove.delete_confirm_label')">
+                                    <x-icon-btn icon="delete" tone="error" type="submit" :label="__('customer_portal.remove.delete_action')" />
+                                </x-action-form>
+                            @else
+                                <x-action-form :action="route('customers.portal-access.anonymize', [$customer, $portalUser])" method="POST" class="inline"
+                                               :confirm="__('customer_portal.remove.anonymize_confirm_message', ['email' => $portalUser->email])" confirm-icon="person_remove" confirm-tone="error"
+                                               :confirm-label="__('customer_portal.remove.anonymize_confirm_label')">
+                                    <x-icon-btn icon="person_remove" tone="error" type="submit" :label="__('customer_portal.remove.anonymize_action')" />
+                                </x-action-form>
+                            @endif
                         @else
                             @if ($canPreview)
                                 <form method="POST" action="{{ route('customers.portal-preview.start', [$customer, $portalUser]) }}" target="_blank" class="inline">
@@ -185,6 +205,13 @@
                                 @csrf
                                 <x-icon-btn icon="person_off" tone="error" type="submit" :label="__('Deaktivieren')" />
                             </form>
+                            @if ($neverSignedIn)
+                                <x-action-form :action="route('customers.portal-access.destroy', [$customer, $portalUser])" method="DELETE" class="inline"
+                                               :confirm="__('customer_portal.remove.delete_confirm_message', ['email' => $portalUser->email])" confirm-icon="delete" confirm-tone="error"
+                                               :confirm-label="__('customer_portal.remove.delete_confirm_label')">
+                                    <x-icon-btn icon="delete" tone="error" type="submit" :label="__('customer_portal.remove.delete_action')" />
+                                </x-action-form>
+                            @endif
                         @endif
                     </td>
                 </tr>
@@ -192,5 +219,15 @@
                 <x-table.empty :colspan="7" :title="__('Noch keine Portalzugänge — lade den ersten Kontakt ein.')" compact />
             @endforelse
         </x-table>
+        @if ($removedUsers->isNotEmpty())
+            <details class="border-t border-base-300 px-4 py-2 text-sm">
+                <summary class="cursor-pointer text-muted">{{ trans_choice('customer_portal.remove.removed_summary', $removedUsers->count(), ['count' => $removedUsers->count()]) }}</summary>
+                <ul class="mt-2 space-y-1 text-xs text-muted">
+                    @foreach ($removedUsers as $removed)
+                        <li>{{ $removed->name }} · {{ __('customer_portal.remove.removed_at', ['deactivated' => $removed->deactivated_at?->fdate() ?? '—', 'removed' => $removed->anonymized_at?->fdate() ?? '—']) }}</li>
+                    @endforeach
+                </ul>
+            </details>
+        @endif
     </x-card>
 @endcan

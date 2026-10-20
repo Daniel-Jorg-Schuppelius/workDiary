@@ -138,6 +138,15 @@ return [
             'basis' => ['DE' => '§195 BGB (Regelverjährung, ab Austritt)', 'AT' => '§1486 ABGB (3 J.)', 'CH' => 'OR Art. 128 Ziff. 3 (5 J.)'],
         ],
 
+        // Portalzugänge (MVP-1246): deaktivierte Kundenportal-Konten ab der
+        // Deaktivierung. Vollzug = ANONYMISIERUNG (PortalAccessService::anonymize),
+        // die Nachweise des Kontos (Foto-Bestätigungen, Rückfragen, Anfragen)
+        // bleiben verknüpft; Konten ohne jede Anmeldung löscht die Kundenakte.
+        'portal_accounts' => [
+            'years' => ['DE' => 1, 'AT' => 1, 'CH' => 1],
+            'basis' => ['DE' => 'Art. 5 Abs. 1 lit. e DSGVO (Speicherbegrenzung, ab Deaktivierung)', 'AT' => 'Art. 5 DSGVO (Speicherbegrenzung)', 'CH' => 'DSG (Zweckbindung)'],
+        ],
+
         // Digitale Personalakte (Feature 141, MVP-708): Anker ist der Austritt;
         // die konkrete Frist steht je Dokument (retention_until = left_at +
         // Kategorie-Jahre, HrDocumentCategory: 3 J. Regelverjährung, 2 J.

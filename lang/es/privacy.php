@@ -26,6 +26,7 @@ return [
         'documents_invoice' => 'Facturas (DMS)',
         'passenger_rides' => 'Expedientes de trayectos (datos de lugar y pasajeros)',
         'employee_records' => 'Datos maestros de personal (empleados que causaron baja)',
+        'portal_accounts' => 'Accesos al portal (desactivados)',
         'personnel_files' => 'Expedientes de personal (empleados que causaron baja)',
         'customer_master' => 'Datos maestros de clientes (sin operaciones)',
         'customer_intakes' => 'Entradas de clientes (rechazadas o retiradas)',

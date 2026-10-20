@@ -1,7 +1,7 @@
 ---
 title: "Customers & suppliers"
 topic: contacts.manage
-version: 9
+version: 10
 keywords:
     - Preview as customer
     - Start password
@@ -99,6 +99,8 @@ If a contact has lost all two-factor methods and recovery codes, **Reset second 
 **View portal** opens the customer portal in a new tab the way this contact sees it – with their areas, documents and invoices – and helps with questions like "Where do I find …?". The preview is a view only: actions are locked, security and password pages are not reachable, and it does not count as a login of the contact. It ends with **End preview** in the yellow bar or in the customer record, after 60 minutes at the latest, and is logged with start and end. It requires the permission **View the customer portal as a customer**; without an access there is no preview – create one first.
 
 **Portal visibility:** Next to the areas you choose the **visible period of times** here – **organisation default** (setting **Customer portal** in the organisation settings, three calendar years including the current one by default), a fixed number of years or **unlimited**. This is a view limit in the portal, not a deletion. The **Insights** release shows the customer key figures and charts – only from areas that are released as well (times in the configured detail level, invoices, billing account, tickets); like every new release it starts “off”.
+
+**Removing an access:** An access that has **never signed in** (invitation pending or expired, start password outstanding) is deleted permanently with **Delete access** – there is no evidence attached to it. If the contact has signed in before, the record stays: deactivate the access and choose **Remove access**. Name, address and credentials are dropped, the e-mail address becomes available for a new invitation, and photo confirmations, queries and requests remain as evidence (“Former portal access”). Both require a password confirmation and are logged on the customer; removed accesses only appear in the summary line below the list. The retention check (area **Portal accesses**) proposes deactivated accesses for removal after one year.
 
 ## Practical example
 

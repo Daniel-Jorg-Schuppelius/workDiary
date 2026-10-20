@@ -252,4 +252,19 @@ return [
         'service' => 'Service',
         'documents' => 'Documents',
     ],
+    // Zugang entfernen: Löschen ohne Anmeldung, Anonymisierung (MVP-1246).
+    'remove' => [
+        'delete_action' => 'Delete access',
+        'delete_confirm_message' => 'The access :email has never signed in and will be deleted permanently. A pending invitation expires.',
+        'delete_confirm_label' => 'Delete',
+        'delete_flash' => 'Portal access deleted.',
+        'delete_refused' => 'This access has already signed in and cannot be deleted — deactivate it and then remove the personal reference.',
+        'anonymize_action' => 'Remove access',
+        'anonymize_confirm_message' => 'The personal reference of :email will be removed: name, address and credentials are dropped, the e-mail address becomes available again. Photo confirmations, queries and requests remain as evidence. This cannot be undone.',
+        'anonymize_confirm_label' => 'Remove',
+        'anonymize_flash' => 'Portal access removed — the personal reference is deleted, the evidence remains.',
+        'anonymize_refused' => 'The access is still active — deactivate it first.',
+        'removed_summary' => ':count removed access|:count removed accesses',
+        'removed_at' => 'deactivated on :deactivated, removed on :removed',
+    ],
 ];

@@ -1,7 +1,7 @@
 ---
 title: "Clienti & fornitori"
 topic: contacts.manage
-version: 9
+version: 10
 keywords:
     - Anteprima come cliente
     - Password iniziale
@@ -102,6 +102,8 @@ Se un contatto ha perso tutti i metodi a due fattori e i codici di recupero, **R
 **Visualizza portale** apre il portale clienti in una nuova scheda così come lo vede questo contatto – con le sue aree, i documenti e le fatture – e aiuta con domande come «Dove trovo …?». L'anteprima è solo una visualizzazione: le azioni sono bloccate, le pagine di sicurezza e password non sono raggiungibili e non conta come accesso del contatto. Termina con **Termina anteprima** nella barra gialla o nella scheda cliente, al più tardi dopo 60 minuti, e viene registrata con inizio e fine. Richiede il permesso **Visualizzare il portale clienti come cliente**; senza un accesso non c'è anteprima: ne crei prima uno.
 
 **Visibilità del portale:** accanto alle aree sceglie qui il **periodo visibile dei tempi** – **predefinito dell'organizzazione** (impostazione **Portale clienti** nelle impostazioni dell'organizzazione, di norma tre anni civili, anno in corso compreso), un numero fisso di anni o **illimitato**. È un limite di visualizzazione nel portale, non una cancellazione. L'abilitazione **Analisi** mostra al cliente indicatori e grafici – solo dalle aree anch'esse abilitate (tempi nel livello di dettaglio impostato, fatture, conto di fatturazione, ticket); come ogni nuova abilitazione parte «disattivata».
+
+**Rimuovere un accesso:** un accesso che **non ha mai effettuato il login** (invito in sospeso o scaduto, password iniziale in attesa) si elimina definitivamente con **Elimina accesso** – non vi sono prove collegate. Se il contatto ha già effettuato il login, il record resta: disattivi l'accesso e scelga **Rimuovi accesso**. Nome, indirizzo e credenziali decadono, l'indirizzo e-mail torna disponibile per un nuovo invito, e conferme foto, domande e richieste restano come prova («Ex accesso al portale»). Entrambe le operazioni richiedono una conferma della password e vengono registrate sul cliente; gli accessi rimossi compaiono solo nella riga riepilogativa sotto l'elenco. Il controllo dei termini di conservazione (area **Accessi al portale**) propone gli accessi disattivati per la rimozione dopo un anno.
 
 ## Esempio pratico
 

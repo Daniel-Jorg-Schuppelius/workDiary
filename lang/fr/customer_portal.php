@@ -252,4 +252,19 @@ return [
         'service' => 'Service',
         'documents' => 'Documents',
     ],
+    // Zugang entfernen: Löschen ohne Anmeldung, Anonymisierung (MVP-1246).
+    'remove' => [
+        'delete_action' => 'Supprimer l\'accès',
+        'delete_confirm_message' => 'L\'accès :email ne s\'est jamais connecté et sera supprimé définitivement. Une invitation en attente expire.',
+        'delete_confirm_label' => 'Supprimer',
+        'delete_flash' => 'Accès au portail supprimé.',
+        'delete_refused' => 'Cet accès s\'est déjà connecté et ne peut pas être supprimé : désactivez-le, puis retirez le lien personnel.',
+        'anonymize_action' => 'Retirer l\'accès',
+        'anonymize_confirm_message' => 'Le lien personnel de :email sera retiré : nom, adresse et moyens de connexion disparaissent, l\'adresse e-mail redevient disponible. Les confirmations de photos, questions et demandes restent comme justificatifs. Cette action est irréversible.',
+        'anonymize_confirm_label' => 'Retirer',
+        'anonymize_flash' => 'Accès au portail retiré : le lien personnel est supprimé, les justificatifs restent.',
+        'anonymize_refused' => 'L\'accès est encore actif : désactivez-le d\'abord.',
+        'removed_summary' => ':count accès retiré|:count accès retirés',
+        'removed_at' => 'désactivé le :deactivated, retiré le :removed',
+    ],
 ];

@@ -170,6 +170,38 @@ class CustomerPortalAccessController extends Controller {
         return back()->with('success', __('customer_portal.second_factor.flash', ['email' => $portalUser->email]));
     }
 
+    /** Löscht einen Zugang, der sich nie angemeldet hat (MVP-1246); Route verlangt Passwortbestätigung. */
+    public function destroy(Customer $customer, User $portalUser): RedirectResponse {
+        $this->authorizeManage($customer);
+        $this->assertBelongsToCustomer($customer, $portalUser);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        try {
+            $this->service->delete($portalUser, $actor);
+        } catch (\App\Exceptions\PortalAccessException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', __('customer_portal.remove.delete_flash'));
+    }
+
+    /** Entfernt den Personenbezug eines deaktivierten Zugangs (MVP-1246); Route verlangt Passwortbestätigung. */
+    public function anonymize(Customer $customer, User $portalUser): RedirectResponse {
+        $this->authorizeManage($customer);
+        $this->assertBelongsToCustomer($customer, $portalUser);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        try {
+            $this->service->anonymize($portalUser, $actor);
+        } catch (\App\Exceptions\PortalAccessException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', __('customer_portal.remove.anonymize_flash'));
+    }
+
     private function authorizeManage(Customer $customer): void {
         $user = Auth::user();
         abort_unless($user instanceof User && ($user->isAdmin() || Gate::allows(Permission::CustomerPortalAccessManage->value)), 403);

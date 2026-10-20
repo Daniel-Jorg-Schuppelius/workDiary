@@ -1487,6 +1487,9 @@ Route::middleware('auth')->group(function () {
         Route::get('customers/{customer}/portal-access/create-direct', [\App\Http\Controllers\Customer\CustomerPortalAccessController::class, 'createDirectDialog'])->name('customers.portal-access.create-direct');
         Route::post('customers/{customer}/portal-access/direct', [\App\Http\Controllers\Customer\CustomerPortalAccessController::class, 'storeDirect'])->middleware('reauth')->name('customers.portal-access.store-direct');
         Route::post('customers/{customer}/portal-access/{portalUser}/start-password', [\App\Http\Controllers\Customer\CustomerPortalAccessController::class, 'issueStartPassword'])->middleware('reauth')->name('customers.portal-access.start-password');
+        // Zugang entfernen (MVP-1246): Löschen nur ohne jede Anmeldung, sonst Anonymisierung — beide mit Passwortbestätigung.
+        Route::delete('customers/{customer}/portal-access/{portalUser}', [\App\Http\Controllers\Customer\CustomerPortalAccessController::class, 'destroy'])->middleware('reauth')->name('customers.portal-access.destroy');
+        Route::post('customers/{customer}/portal-access/{portalUser}/anonymize', [\App\Http\Controllers\Customer\CustomerPortalAccessController::class, 'anonymize'])->middleware('reauth')->name('customers.portal-access.anonymize');
         // Vorschau als Kunde (Phase 153, MVP-1229): Sicht eines Portalkontos, nur lesend; Ende über customer.preview.stop.
         Route::post('customers/{customer}/portal-preview/{portalUser}', [\App\Http\Controllers\Customer\CustomerPortalPreviewController::class, 'start'])->name('customers.portal-preview.start');
         // Portal-Sichtbarkeiten je Kunde (MVP-511).

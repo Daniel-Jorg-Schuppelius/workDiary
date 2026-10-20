@@ -27,6 +27,7 @@ return [
         'documents_invoice' => 'Rechnungen (DMS)',
         'passenger_rides' => 'Fahrtakten (Orts-/Fahrgastbezug)',
         'employee_records' => 'Personalstamm (ausgeschiedene Mitarbeiter)',
+        'portal_accounts' => 'Portalzugänge (deaktiviert)',
         'personnel_files' => 'Personalakten (ausgeschiedene Mitarbeiter)',
         'customer_master' => 'Kundenstamm (ohne Geschäftsvorfälle)',
         'customer_intakes' => 'Kundeneingänge (abgelehnt oder zurückgenommen)',
