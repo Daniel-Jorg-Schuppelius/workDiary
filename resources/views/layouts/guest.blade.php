@@ -64,7 +64,7 @@
                 <div class="mb-8 text-center">
                     <a href="{{ route('home') }}" class="inline-block">
                         @if ($brandLogo)
-                            <img src="{{ $brandLogo }}" alt="{{ $brandName }}" class="mx-auto mb-4 h-20 w-auto max-w-xs object-contain">
+                            <x-brand-logo class="mx-auto mb-4 h-20 w-auto max-w-xs" :alt="$brandName" />
                         @else
                             {{-- Kein Logo gesetzt: App-Name als Text-Fallback rendern. --}}
                             <p class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary">{{ $brandName }}</p>

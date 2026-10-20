@@ -2280,3 +2280,18 @@
     clip-path: inset(50%);
     white-space: nowrap;
 }
+
+/* Logo je Farbschema (Phase 154, Nachtrag): <x-brand-logo> rendert beide
+   Varianten, das Theme-Skript setzt html[data-scheme] vor dem ersten Paint
+   und der Umschalter zieht nach. Ohne dunkles Logo gibt es nur ein <img>. */
+@layer components {
+    .wd-logo-dark {
+        display: none;
+    }
+    html[data-scheme="dark"] .wd-logo-light {
+        display: none;
+    }
+    html[data-scheme="dark"] .wd-logo-dark {
+        display: inline-block;
+    }
+}

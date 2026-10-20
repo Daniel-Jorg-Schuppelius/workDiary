@@ -246,4 +246,10 @@ return [
         'empty_filtered' => 'No hay facturas para esta selección.',
         'since_hint' => 'Facturas de :year',
     ],
+    'nav_groups' => [
+        'orders' => 'Encargos',
+        'finance' => 'Finanzas',
+        'service' => 'Servicio',
+        'documents' => 'Documentos',
+    ],
 ];

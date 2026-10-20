@@ -21,14 +21,20 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   nutzen eine Grundmenge (`PortalTimeEntries`). Das Portal trägt Logo und
   Rechtsangaben der Organisation, eine Navigation aus einer Liste
   (`PortalNavigation`) mit Symbolen, aktivem Eintrag und Drawer am Handy,
-  Kontomenü, Sprachumschalter und Fuß; alle Portalseiten nutzen Seitenkopf,
+  Kontomenü, Sprachumschalter und Fuß (die Leiste fasst die Bereiche zu den
+  Gruppen Aufträge, Finanzen, Service und Dokumente zusammen, eine Gruppe mit
+  einem Bereich bleibt ein Link; die Suche steht nur in der Kopfzeile); alle
+  Portalseiten nutzen Seitenkopf,
   Karten, Leerzustände mit Symbol und Status-Badges; die Startseite zeigt
   Kennzahlkacheln mit Hinweis (Stunden dieses Jahr, offene Rechnungen) und
   die freigegebenen Bereiche als Kacheln. Hell/Dunkel ist im Portal wählbar
   und bleibt am Portalkonto gespeichert (Kopfzeilen-Umschalter, Karte
   „Darstellung“ im Profil, Hell/Dunkel-Paar der Organisation, gemeinsames
   Theme-Seed-Partial mit dem App-Layout; in der Vorschau als Kunde
-  ausgeblendet). Neue Bereichsfreigabe „Auswertungen“ (Default-Deny) mit
+  ausgeblendet; neue Komponente `x-brand-logo` zeigt im Dunkelmodus das
+  dunkle Logo der Organisation, sobald eines hinterlegt ist — im Portal, in
+  der Anwendung und auf den Gastseiten, über `html[data-scheme]` ohne
+  Skript). Neue Bereichsfreigabe „Auswertungen“ (Default-Deny) mit
   Jahres-Tabs: Stunden je Monat (mit Vorjahr), je Projekt und je Monat nach
   Projekt; Rechnungsbeträge je Monat mit Gutschriften gesondert, offener
   Betrag je Monatsende, Zahlungsstand, überfällige Beträge; Saldo des

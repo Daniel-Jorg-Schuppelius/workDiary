@@ -246,4 +246,10 @@ return [
         'empty_filtered' => 'No invoices for this selection.',
         'since_hint' => 'Invoices of :year',
     ],
+    'nav_groups' => [
+        'orders' => 'Orders',
+        'finance' => 'Finance',
+        'service' => 'Service',
+        'documents' => 'Documents',
+    ],
 ];

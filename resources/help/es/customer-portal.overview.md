@@ -1,7 +1,7 @@
 ---
 title: "Portal de clientes – Resumen"
 topic: customer-portal.overview
-version: 5
+version: 6
 keywords:
     - inicio del portal
     - área de clientes
@@ -55,7 +55,7 @@ Si **Análisis** está habilitado, sigue la fila **Este año** con horas, import
 
 La cabecera muestra a la izquierda el logotipo de su proveedor (un clic lleva a la vista general) y a la derecha la **Búsqueda**, la **Ayuda**, el conmutador **claro/oscuro**, el **idioma** y el **menú de cuenta** con su nombre: allí encuentra **Perfil**, **Seguridad** y **Cerrar sesión**. Su elección de esquema de colores e idioma queda guardada para su acceso – también en otros dispositivos.
 
-Debajo está la barra de áreas; el área actual aparece resaltada. En el móvil, el icono de menú arriba a la izquierda abre las áreas como panel lateral. **Vista general** y **Búsqueda** aparecen siempre; por lo demás, solo las áreas liberadas para usted:
+Debajo está la barra de áreas; el área actual aparece resaltada. En el móvil, el icono de menú arriba a la izquierda abre las áreas como panel lateral. Las áreas están agrupadas – **Encargos**, **Finanzas**, **Servicio** y **Documentos** – y se abren como menús; un grupo con una sola área aparece como enlace directo. **Vista general** aparece siempre, la búsqueda está en la cabecera; por lo demás, solo ve las áreas liberadas para usted:
 
 - **Libro de órdenes** – sus pedidos con fotos, material y protocolos,
 - **Objetos** – sus objetos,

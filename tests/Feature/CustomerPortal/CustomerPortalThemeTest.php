@@ -86,6 +86,32 @@ class CustomerPortalThemeTest extends TestCase {
         $this->assertNull($internal->fresh()->preferences['color_scheme'] ?? null);
     }
 
+    public function test_brand_logo_renders_both_variants_only_with_a_dark_logo(): void {
+        $this->app->instance(\App\Services\UI\BrandingService::class, new class extends \App\Services\UI\BrandingService {
+            public function logoUrl(string $variant = 'light'): ?string {
+                return $variant === 'dark' ? '/logo-dark.png' : '/logo-light.png';
+            }
+        });
+        $html = (string) $this->blade('<x-brand-logo class="h-9" alt="Org" />');
+        $this->assertStringContainsString('src="/logo-light.png"', $html);
+        $this->assertStringContainsString('wd-logo-light', $html);
+        $this->assertStringContainsString('src="/logo-dark.png"', $html);
+        $this->assertStringContainsString('wd-logo-dark', $html);
+
+        // Ohne eigenes dunkles Logo liefert das Branding dieselbe Datei — nur ein Bild, keine Schaltklassen.
+        $this->app->instance(\App\Services\UI\BrandingService::class, new class extends \App\Services\UI\BrandingService {
+            public function logoUrl(string $variant = 'light'): ?string {
+                return '/logo.png';
+            }
+        });
+        $html = (string) $this->blade('<x-brand-logo class="h-9" alt="Org" />');
+        $this->assertSame(1, substr_count($html, '<img'));
+        $this->assertStringNotContainsString('wd-logo-', $html);
+
+        $this->actingAs($this->portalUser, 'customer');
+        $this->get(route('customer.dashboard'))->assertOk()->assertSee("root.setAttribute('data-scheme', scheme)", false);
+    }
+
     public function test_guest_login_page_uses_local_choice_without_update_url(): void {
         $this->get(route('customer.login'))->assertOk()
             ->assertSee('"authenticated":false', false)

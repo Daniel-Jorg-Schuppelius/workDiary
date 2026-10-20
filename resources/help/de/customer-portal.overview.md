@@ -1,7 +1,7 @@
 ---
 title: "Kundenportal – Übersicht"
 topic: customer-portal.overview
-version: 5
+version: 6
 keywords:
     - Startseite Kundenportal
     - Kundenbereich
@@ -55,7 +55,7 @@ Ist **Auswertungen** freigegeben, folgt die Zeile **Dieses Jahr** mit Stunden, R
 
 Die Kopfzeile zeigt links das Logo Ihres Auftragnehmers (ein Klick führt zur Übersicht), rechts die **Suche**, die **Hilfe**, den Umschalter für **Hell/Dunkel**, die **Sprache** und das **Kontomenü** mit Ihrem Namen: darin **Profil**, **Sicherheit** und **Abmelden**. Ihre Wahl von Farbschema und Sprache bleibt für Ihren Zugang gespeichert – auch auf anderen Geräten.
 
-Darunter liegt die Leiste mit den Bereichen; der aktuelle Bereich ist hervorgehoben. Auf dem Handy öffnet das Menüsymbol links oben die Bereiche als Seitenleiste. Es erscheinen immer **Übersicht** und **Suche** und sonst nur die Bereiche, die für Sie freigegeben sind:
+Darunter liegt die Leiste mit den Bereichen; der aktuelle Bereich ist hervorgehoben. Auf dem Handy öffnet das Menüsymbol links oben die Bereiche als Seitenleiste. Die Bereiche sind zu Gruppen zusammengefasst – **Aufträge**, **Finanzen**, **Service** und **Dokumente** –, die sich aufklappen; eine Gruppe mit nur einem Bereich erscheint als direkter Link. **Übersicht** erscheint immer, die Suche steht in der Kopfzeile; sonst sehen Sie nur die Bereiche, die für Sie freigegeben sind:
 
 - **Auftragsbuch** – Ihre Aufträge mit Fotos, Material und Protokollen,
 - **Objekte** – Ihre Objekte,

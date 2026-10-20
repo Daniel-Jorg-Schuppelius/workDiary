@@ -1,7 +1,7 @@
 ---
 title: "Customer Portal – Overview"
 topic: customer-portal.overview
-version: 5
+version: 6
 keywords:
     - portal home
     - customer area
@@ -55,7 +55,7 @@ If **Insights** is released, the row **This year** follows with hours, invoice a
 
 The header shows your contractor's logo on the left (a click leads to the overview), and on the right the **Search**, the **Help**, the **light/dark** switch, the **language** and the **account menu** with your name: there you find **Profile**, **Security** and **Sign out**. Your choice of colour scheme and language is saved for your access – on other devices too.
 
-Below it is the bar with the areas; the current area is highlighted. On the phone, the menu icon at the top left opens the areas as a side panel. **Overview** and **Search** always appear, otherwise only the areas released to you:
+Below it is the bar with the areas; the current area is highlighted. On the phone, the menu icon at the top left opens the areas as a side panel. The areas are grouped – **Orders**, **Finance**, **Service** and **Documents** – and open as menus; a group with only one area appears as a direct link. **Overview** always appears, the search is in the header; otherwise you only see the areas released to you:
 
 - **Diary** – your orders with photos, material and protocols,
 - **Objects** – your objects,

@@ -1,7 +1,7 @@
 ---
 title: "Portail client – vue d'ensemble"
 topic: customer-portal.overview
-version: 5
+version: 6
 keywords:
     - accueil du portail
     - espace client
@@ -55,7 +55,7 @@ Si **Analyses** est ouvert, la ligne **Cette année** suit avec les heures, le m
 
 L'en-tête affiche à gauche le logo de votre prestataire (un clic mène à l'aperçu) et à droite la **Recherche**, l'**Aide**, le commutateur **clair/sombre**, la **langue** et le **menu du compte** avec votre nom : vous y trouvez **Profil**, **Sécurité** et **Se déconnecter**. Votre choix de thème et de langue reste enregistré pour votre accès – aussi sur d'autres appareils.
 
-En dessous se trouve la barre des zones ; la zone actuelle est mise en évidence. Sur le téléphone, l'icône de menu en haut à gauche ouvre les zones dans un panneau latéral. **Aperçu** et **Recherche** apparaissent toujours, sinon seulement les zones libérées pour vous :
+En dessous se trouve la barre des zones ; la zone actuelle est mise en évidence. Sur le téléphone, l'icône de menu en haut à gauche ouvre les zones dans un panneau latéral. Les zones sont regroupées – **Interventions**, **Finances**, **Service** et **Documents** – et s'ouvrent en menus ; un groupe avec une seule zone apparaît comme lien direct. **Aperçu** apparaît toujours, la recherche se trouve dans l'en-tête ; sinon vous ne voyez que les zones libérées pour vous :
 
 - **Journal** – vos commandes avec photos, matériel et protocoles,
 - **Objets** – vos objets,

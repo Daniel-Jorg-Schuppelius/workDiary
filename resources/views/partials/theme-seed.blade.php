@@ -66,5 +66,6 @@
             || (theme === 'corporate-dark' || theme === 'dim' || theme === 'dark' || theme === 'business' ? 'dark' : 'light');
         root.setAttribute('data-theme', theme);
         root.style.colorScheme = scheme;
+        root.setAttribute('data-scheme', scheme);
     })();
 </script>

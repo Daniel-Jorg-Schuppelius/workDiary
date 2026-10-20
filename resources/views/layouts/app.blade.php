@@ -186,7 +186,7 @@
                             $_brandName = isset($branding) && $branding ? $branding->appName() : 'WorkDiary';
                         @endphp
                         @if ($_brandLogo)
-                            <img src="{{ $_brandLogo }}" alt="{{ $_brandName }}" class="h-9 w-auto max-w-40 object-contain shrink-0">
+                            <x-brand-logo class="h-9 w-auto max-w-40 shrink-0" :alt="$_brandName" />
                         @else
                             <span class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary transition group-hover:opacity-80 shrink-0">{{ $_brandName }}</span>
                         @endif

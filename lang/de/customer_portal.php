@@ -246,4 +246,10 @@ return [
         'empty_filtered' => 'Keine Rechnungen für diese Auswahl.',
         'since_hint' => 'Rechnungen des Jahres :year',
     ],
+    'nav_groups' => [
+        'orders' => 'Aufträge',
+        'finance' => 'Finanzen',
+        'service' => 'Service',
+        'documents' => 'Dokumente',
+    ],
 ];

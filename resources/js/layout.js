@@ -66,6 +66,8 @@ import { putJson } from "./lib/http.js";
             var next = goDark ? darkTheme : lightTheme;
             root.setAttribute("data-theme", next);
             root.style.colorScheme = schemeOf(next);
+            // Logo je Schema (x-brand-logo) folgt dem Attribut.
+            root.setAttribute("data-scheme", schemeOf(next));
             try {
                 localStorage.setItem("workDiaryTheme", next);
             } catch (e) {}

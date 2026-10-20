@@ -1,7 +1,7 @@
 ---
 title: "Portale clienti – panoramica"
 topic: customer-portal.overview
-version: 5
+version: 6
 keywords:
     - home del portale
     - area clienti
@@ -55,7 +55,7 @@ Se **Analisi** è abilitata, segue la riga **Quest'anno** con ore, importo fattu
 
 L'intestazione mostra a sinistra il logo del Suo fornitore (un clic porta alla panoramica) e a destra la **Ricerca**, l'**Aiuto**, l'interruttore **chiaro/scuro**, la **lingua** e il **menu dell'account** con il Suo nome: lì trova **Profilo**, **Sicurezza** e **Disconnetti**. La Sua scelta di schema colori e lingua resta salvata per il Suo accesso – anche su altri dispositivi.
 
-Sotto c'è la barra delle aree; l'area corrente è evidenziata. Sul telefono l'icona del menu in alto a sinistra apre le aree come pannello laterale. **Panoramica** e **Ricerca** compaiono sempre, altrimenti solo le aree rilasciate per Lei:
+Sotto c'è la barra delle aree; l'area corrente è evidenziata. Sul telefono l'icona del menu in alto a sinistra apre le aree come pannello laterale. Le aree sono raggruppate – **Incarichi**, **Finanze**, **Assistenza** e **Documenti** – e si aprono come menu; un gruppo con una sola area compare come link diretto. **Panoramica** compare sempre, la ricerca si trova nell'intestazione; altrimenti vede solo le aree rilasciate per Lei:
 
 - **Registro ordini** – i Suoi ordini con foto, materiale e protocolli,
 - **Oggetti** – i Suoi oggetti,

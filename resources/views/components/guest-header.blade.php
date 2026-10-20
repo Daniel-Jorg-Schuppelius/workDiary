@@ -23,7 +23,7 @@
     <div class="flex min-h-14 w-full items-center justify-between gap-4 px-3 py-2 xl:px-4">
         <a href="{{ route('home') }}" class="flex min-w-0 items-center gap-2">
             @if ($brandLogo)
-                <img src="{{ $brandLogo }}" alt="{{ $brandName }}" class="h-9 w-auto max-w-40 shrink-0 object-contain">
+                <x-brand-logo class="h-9 w-auto max-w-40 shrink-0" :alt="$brandName" />
             @else
                 <span class="font-['Space_Grotesk'] text-lg font-bold tracking-tight text-base-content">{{ $brandName }}</span>
             @endif

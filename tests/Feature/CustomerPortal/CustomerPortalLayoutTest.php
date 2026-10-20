@@ -68,7 +68,23 @@ class CustomerPortalLayoutTest extends TestCase {
         $items = app(PortalNavigation::class)->items($this->customer->refresh());
         $this->assertContains('time', array_column($items, 'key'));
         $this->assertContains('insights', array_column($items, 'key'));
-        $this->assertSame(['dashboard', 'search'], array_column(array_filter($items, static fn (array $i): bool => $i['always']), 'key'));
+        $this->assertSame(['dashboard'], array_column(array_filter($items, static fn (array $i): bool => $i['always']), 'key'), 'Die Suche steht in der Kopfzeile, nicht in der Leiste.');
+    }
+
+    public function test_bar_groups_areas_and_shows_single_items_directly(): void {
+        $this->allowPortal($this->customer, ['diary', 'open_issues', 'documents']);
+        $this->actingAs($this->portalUser, 'customer');
+
+        // Aufträge (Auftragsbuch, Offene Punkte) als Aufklappmenü, Dokumente allein als Link:
+        // genau zwei Aktionsmenüs auf der Seite — die Gruppe und das Kontomenü.
+        $page = $this->get(route('customer.diary.index'))->assertOk();
+        $page->assertSee(__('customer_portal.nav_groups.orders'))
+            ->assertSee(route('customer.documents.index'), false);
+        $this->assertSame(2, substr_count((string) $page->getContent(), 'data-action-menu-items'));
+        $groups = app(PortalNavigation::class)->groups($this->customer->refresh());
+        $this->assertSame(['orders', 'documents'], array_column($groups, 'key'));
+        $this->assertSame(['diary', 'open_issues'], array_column($groups[0]['items'], 'key'));
+        $this->assertTrue(PortalNavigation::isGroupActive($groups[0]));
     }
 
     public function test_dashboard_lists_areas_from_the_same_list(): void {

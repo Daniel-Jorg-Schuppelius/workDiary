@@ -17,6 +17,9 @@
     $portalPreviewState = $portalPreview->activeState(request());
     // Bereiche aus EINER Liste (Phase 154, E5): nur, was für diesen Kunden freigegeben ist (Default-Deny).
     $portalNav = $portalUser !== null && $portalCustomer !== null ? app(PortalNavigation::class)->items($portalCustomer) : [];
+    // Leiste und Drawer zeigen die Bereiche in Gruppen (Nachtrag Phase 154); die Suche steht in der Kopfzeile.
+    $portalGroups = $portalUser !== null && $portalCustomer !== null ? app(PortalNavigation::class)->groups($portalCustomer) : [];
+    $portalAlways = array_values(array_filter($portalNav, static fn (array $item): bool => $item['always']));
     $brandName = isset($branding) && $branding ? $branding->appName() : config('app.name', 'WorkDiary');
     $brandLogo = isset($branding) && $branding ? $branding->logoUrl() : null;
     $portalTitle = trim($__env->yieldContent('title', $title ?? ''));
@@ -84,7 +87,7 @@
                         @endif
                         <a href="{{ route('customer.dashboard') }}" class="flex min-w-0 items-center gap-3">
                             @if ($brandLogo)
-                                <img src="{{ $brandLogo }}" alt="{{ $brandName }}" class="h-9 w-auto max-w-36 shrink-0 object-contain">
+                                <x-brand-logo class="h-9 w-auto max-w-36 shrink-0" :alt="$brandName" />
                             @else
                                 <span class="font-['Space_Grotesk'] text-lg font-bold tracking-tight">{{ $brandName }}</span>
                             @endif
@@ -128,8 +131,8 @@
                 </div>
                 @if ($portalNav !== [])
                     {{-- Bereiche ab md als Leiste mit Symbolen und aktivem Eintrag; darunter im Drawer. --}}
-                    <nav class="mx-auto hidden w-full max-w-6xl flex-wrap gap-x-1 gap-y-0.5 px-2 pb-2 text-sm md:flex" aria-label="{{ __('Hauptnavigation') }}">
-                        @foreach ($portalNav as $item)
+                    <nav class="mx-auto hidden w-full max-w-6xl flex-wrap items-center gap-x-1 gap-y-0.5 px-2 pb-2 text-sm md:flex" aria-label="{{ __('Hauptnavigation') }}">
+                        @foreach ($portalAlways as $item)
                             @php($active = PortalNavigation::isActive($item))
                             <a href="{{ $navLink($item) }}"
                                @class(['flex items-center gap-1.5 rounded-field px-2.5 py-1.5 transition hover:bg-base-200', 'bg-base-200 font-semibold text-primary' => $active])
@@ -137,6 +140,26 @@
                                 <x-icon :name="$item['icon']" class="text-base" />
                                 <span>{{ $item['label'] }}</span>
                             </a>
+                        @endforeach
+                        @foreach ($portalGroups as $group)
+                            @if (count($group['items']) === 1)
+                                @php($item = $group['items'][0])
+                                @php($active = PortalNavigation::isActive($item))
+                                <a href="{{ $navLink($item) }}"
+                                   @class(['flex items-center gap-1.5 rounded-field px-2.5 py-1.5 transition hover:bg-base-200', 'bg-base-200 font-semibold text-primary' => $active])
+                                   @if ($active) aria-current="page" @endif>
+                                    <x-icon :name="$item['icon']" class="text-base" />
+                                    <span>{{ $item['label'] }}</span>
+                                </a>
+                            @else
+                                {{-- Gruppe als Aufklappmenü; die aktive Gruppe ist umrandet, der aktive Bereich darin hervorgehoben. --}}
+                                <x-action-menu :icon="$group['icon']" :label="$group['label']" size="sm" align="start"
+                                               :tone="PortalNavigation::isGroupActive($group) ? 'outline' : 'ghost'">
+                                    @foreach ($group['items'] as $item)
+                                        <x-icon-btn :icon="$item['icon']" size="sm" :href="$navLink($item)" :tone="PortalNavigation::isActive($item) ? 'primary' : 'ghost'" show-label>{{ $item['label'] }}</x-icon-btn>
+                                    @endforeach
+                                </x-action-menu>
+                            @endif
                         @endforeach
                     </nav>
                 @endif
@@ -192,7 +215,7 @@
                         </label>
                     </div>
                     <ul class="menu w-full p-0">
-                        @foreach ($portalNav as $item)
+                        @foreach ($portalAlways as $item)
                             @php($active = PortalNavigation::isActive($item))
                             <li>
                                 <a href="{{ $navLink($item) }}" @class(['menu-active' => $active]) @if ($active) aria-current="page" @endif>
@@ -200,6 +223,18 @@
                                     <span>{{ $item['label'] }}</span>
                                 </a>
                             </li>
+                        @endforeach
+                        @foreach ($portalGroups as $group)
+                            <li class="menu-title">{{ $group['label'] }}</li>
+                            @foreach ($group['items'] as $item)
+                                @php($active = PortalNavigation::isActive($item))
+                                <li>
+                                    <a href="{{ $navLink($item) }}" @class(['menu-active' => $active]) @if ($active) aria-current="page" @endif>
+                                        <x-icon :name="$item['icon']" class="text-base" />
+                                        <span>{{ $item['label'] }}</span>
+                                    </a>
+                                </li>
+                            @endforeach
                         @endforeach
                     </ul>
                 </nav>

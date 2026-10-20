@@ -29,5 +29,6 @@
         var root = document.documentElement;
         root.setAttribute('data-theme', theme);
         root.style.colorScheme = schemes[theme] || 'light';
+        root.setAttribute('data-scheme', schemes[theme] || 'light');
     })();
 </script>
