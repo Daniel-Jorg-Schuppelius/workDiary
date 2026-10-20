@@ -1556,6 +1556,17 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
 
 ### Fixed
 
+- Kopfzeile: Laufende Stoppuhr und Stempelung schoben die Symbolleiste über
+  den Zeitraum (Befund 2026-10-20, Breiten zwischen 1400 und 1700 Pixel). Die
+  rechte Rasterspalte war auf die Hälfte des Restplatzes begrenzt und durfte
+  im einzeiligen Band nicht umbrechen; die Pillen liefen deshalb nach links
+  über die Datumsfelder. Die rechte Spalte ist jetzt nie schmaler als ihr
+  Inhalt, die linke behält mindestens Platz für das Logo (der Seitentitel
+  wird gekürzt), und mit laufenden Timern beginnt das einzeilige Band erst ab
+  1500 (ein Timer) bzw. 1600 Pixel (beide); darunter steht der Zeitraum in der
+  zweiten Zeile. Im zweizeiligen Band bekommt die Symbolleiste zuerst ihren
+  Platz, bei 1280 Pixel mit Timern bricht sie nicht mehr um. Gemessen im
+  Headless-Browser bei 700–1920 Pixel.
 - Datenbank: Sperrende Lesezugriffe scheiterten unter MariaDB ab 11.6.2 mit
   Fehler 1020 „Record has changed since last read“ (Befund 2026-10-19,
   Produktion 11.8: Speichern einer Abrechnungsvereinbarung brach beim

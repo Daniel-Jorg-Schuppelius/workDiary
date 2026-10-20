@@ -172,7 +172,12 @@
             $showOrgSwitch = $_isPlatformAdmin && $_orgList->count() > 1;
         @endphp
 
-        <header id="app-header" class="sticky top-0 z-50 bg-base-100 border-b border-base-300 shadow-xs">
+        @php
+            // Laufende Stoppuhr und Stempelung verbreitern die rechte Gruppe;
+            // das einzeilige Band braucht dann mehr Platz (Stufen in layout.css).
+            $_headerExtras = count(array_filter([$stopwatchEntry ?? null, $attendanceCurrent ?? null]));
+        @endphp
+        <header id="app-header" class="sticky top-0 z-50 bg-base-100 border-b border-base-300 shadow-xs{{ $_headerExtras > 0 ? ' header-dense-' . $_headerExtras : '' }}">
             @php
                 $_hasCenter = \Illuminate\Support\Facades\View::hasSection('nav-center');
                 $_showCenteredRange = ! $_hasCenter && auth()->check() && ! $isLegacyMode;

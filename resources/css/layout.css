@@ -224,24 +224,39 @@ body.sidebar-collapsed {
 /* 3-stufiger Header über CSS Container Queries statt Viewport-
                Breakpoints. Vorteil: das Layout reagiert auf den tatsächlich
                verfügbaren Header-Platz (also nach Abzug der Sidebar) und nicht
-               auf die Bildschirmbreite. Dadurch greift das 3-Spalten-Layout
-               erst dann, wenn auch zusätzliche header-rechts-Pillen (z. B.
-               die Stempeluhr-Anzeige) noch reinpassen — keine Überschneidung
-               mit dem zentrierten Zeitraum-Element mehr.
+               auf die Bildschirmbreite.
 
                Stufen:
                - <600cqi:           gestapelt (3 Zeilen)
                - 600-1399cqi:       zwei Zeilen ("left right" oben, "center" unten)
-               - >=1400cqi:         eine Zeile ("left center right") */
+               - >=1400cqi:         eine Zeile ("left center right")
+
+               Laufende Stoppuhr und Stempelung (Klassen header-dense-1/-2,
+               setzt das Layout) verbreitern die rechte Gruppe um je rund 125px.
+               Das einzeilige Band beginnt dann erst ab 1500 bzw. 1600cqi, damit
+               Seitentitel und zentrierter Zeitraum ihren Platz behalten.
+
+               Die Bänder setzen nur Variablen am .header-row; die Regeln an
+               den Spalten lesen sie. Die rechte Spalte ist nie schmaler als
+               ihr Inhalt (auto bzw. minmax(max-content, 1fr)): bei einer
+               festen Hälfte liefen die Pillen mit justify-content: flex-end
+               nach links über den Zeitraum. Die linke Spalte behält
+               mindestens Platz fürs Logo (12rem), damit es nicht in die
+               Nachbarspalte ragt; der Seitentitel wird stattdessen gekürzt. */
 #app-header {
     container-type: inline-size;
     container-name: app-header;
 }
 .header-row {
+    --header-cols: 1fr;
+    --header-areas: "left" "right" "center";
+    --header-side-align: center;
+    --header-right-wrap: wrap;
+    --header-username-max: 5rem;
     display: grid;
     gap: 0.5rem 0.75rem;
-    grid-template-columns: 1fr;
-    grid-template-areas: "left" "right" "center";
+    grid-template-columns: var(--header-cols);
+    grid-template-areas: var(--header-areas);
     justify-items: center;
     align-items: center;
 }
@@ -249,6 +264,7 @@ body.sidebar-collapsed {
     grid-area: left;
     min-width: 0;
     max-width: 100%;
+    align-self: var(--header-side-align);
 }
 .header-row .header-center {
     grid-area: center;
@@ -262,17 +278,18 @@ body.sidebar-collapsed {
     min-width: 0;
     max-width: 100%;
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: var(--header-right-wrap);
     justify-content: center;
     align-items: center;
     gap: 0.5rem;
+    align-self: var(--header-side-align);
 }
 /* Benutzername-Button: max. Breite je Header-Band. Im gestapelten
                Portrait/Mobile-Band (<600cqi) früh kürzen, damit der Header nie über
                die Seite hinausläuft; breitere Bänder dürfen mehr Name zeigen
                (container-query-konsistent zum übrigen Header). */
 .header-row .header-username {
-    max-width: 5rem;
+    max-width: var(--header-username-max);
 }
 /* Sehr enger Header (viele Icon-Buttons rechts): den Benutzernamen
                ganz ausblenden, nur das Account-Icon bleibt. Spart Platz, das Menü
@@ -400,46 +417,60 @@ body.sidebar-collapsed {
 }
 @container app-header (min-width: 600px) {
     .header-row {
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        grid-template-areas: "left right" "center center";
+        /* Rechts bekommt zuerst, was die Icon-Leiste braucht (bis zu ihrer
+           einzeiligen Breite), links den Rest; bei einer festen Hälfte brach
+           die Leiste mit laufenden Timern schon bei 1280px um. Links
+           mindestens 30%, damit der Seitentitel auf dem Tablet lesbar bleibt,
+           wenn die Leiste ohnehin umbricht. */
+        --header-cols: minmax(max(12rem, 30%), 1fr) auto;
+        --header-areas: "left right" "center center";
+        /* start → Logo + Icon-Leiste oben in der ersten Zeile verankern.
+           Bricht die Icon-Leiste um (viele Icons, z. B. iPad), bleibt das
+           Logo oben, statt vertikal in die Mitte der dadurch höheren Zeile
+           zu rutschen. */
+        --header-side-align: start;
+        --header-username-max: 7rem;
         justify-items: stretch;
     }
-    /* align-self: start → Logo + Icon-Leiste oben in der ersten Zeile
-                   verankern. Bricht die Icon-Leiste um (viele Icons, z. B. iPad),
-                   bleibt das Logo oben, statt vertikal in die Mitte der dadurch
-                   höheren Zeile zu rutschen. */
     .header-row .header-left {
         justify-self: start;
-        align-self: start;
     }
     .header-row .header-right {
         justify-self: end;
-        align-self: start;
-        flex-wrap: wrap;
         justify-content: flex-end;
     }
     .header-row .header-center {
         justify-self: center;
     }
-    .header-row .header-username {
-        max-width: 7rem;
+}
+/* Einzeiliges Band: ohne laufende Timer ab 1400cqi, mit einem ab 1500cqi,
+               mit beiden ab 1600cqi (Bedarf: Logo + Titel ~250px, Zeitraum
+               ~520px, Icon-Leiste ~400px + ~125px je Timer, Abstände ~55px). */
+@container app-header (min-width: 1400px) {
+    #app-header:not(.header-dense-1):not(.header-dense-2) .header-row {
+        --header-cols: minmax(12rem, 1fr) auto minmax(max-content, 1fr);
+        --header-areas: "left center right";
+        --header-side-align: center;
+        --header-right-wrap: nowrap;
+        --header-username-max: 12rem;
     }
 }
-@container app-header (min-width: 1400px) {
-    .header-row {
-        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-        grid-template-areas: "left center right";
+@container app-header (min-width: 1500px) {
+    #app-header.header-dense-1 .header-row {
+        --header-cols: minmax(12rem, 1fr) auto minmax(max-content, 1fr);
+        --header-areas: "left center right";
+        --header-side-align: center;
+        --header-right-wrap: nowrap;
+        --header-username-max: 12rem;
     }
-    /* Einzeiliges Band: wieder vertikal mittig in der Leiste. */
-    .header-row .header-left,
-    .header-row .header-right {
-        align-self: center;
-    }
-    .header-row .header-right {
-        flex-wrap: nowrap;
-    }
-    .header-row .header-username {
-        max-width: 12rem;
+}
+@container app-header (min-width: 1600px) {
+    #app-header.header-dense-2 .header-row {
+        --header-cols: minmax(12rem, 1fr) auto minmax(max-content, 1fr);
+        --header-areas: "left center right";
+        --header-side-align: center;
+        --header-right-wrap: nowrap;
+        --header-username-max: 12rem;
     }
 }
 body.sidebar-collapsed #app-sidebar [data-sidebar-label],
