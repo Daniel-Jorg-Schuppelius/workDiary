@@ -15,7 +15,7 @@ namespace App\Services\Invoicing;
 use App\Services\Billing\DocumentTotalsCalculator;
 use App\Services\Invoicing\EInvoice\IncomingEInvoiceService;
 use CommonToolkit\Enums\{CountryCode, CurrencyCode};
-use CommonToolkit\Helper\Data\{AmountTokenizer, DateHelper, NumberHelper};
+use CommonToolkit\Helper\Data\{AmountTokenizer, CurrencyHelper, DateHelper, NumberHelper};
 use CommonToolkit\Helper\FileSystem\File;
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use CommonToolkit\Helper\Shell;
@@ -269,7 +269,10 @@ class InvoicePdfImportService {
         $result['payment'] = ['iban' => $iban, 'bic' => $bic];
 
         $vat = $this->labeledValue($text, [
-            'USt[-\s]?IdNr\.?', 'USt[-\s]?ID', 'Umsatzsteuer-?Identifikationsnummer', 'VAT\s*(?:ID|number|no\.?)',
+            'USt[-\s]?IdNr\.?',
+            'USt[-\s]?ID',
+            'Umsatzsteuer-?Identifikationsnummer',
+            'VAT\s*(?:ID|number|no\.?)',
         ], '[A-Z]{2}\s?[0-9A-Z][0-9A-Z ]{5,13}');
         if ($vat !== null) {
             $vat = \CommonToolkit\Helper\Data\VatNumberHelper::normalize($vat);
@@ -737,8 +740,11 @@ class InvoicePdfImportService {
         ['Gesamtbetrag', 'gross'],
         ['Rechnungsbetrag', 'gross'],
         ['Gesamtsumme', 'gross'],
+        ['Gesamtwert', 'gross'],
         ['Endbetrag', 'gross'],
         ['Zu\s*zahlen', 'gross'],
+        ['Netto(?:warenwert|betrag|summe|wert)?', 'net'],
+        ['(?:MwSt|USt|Umsatzsteuer|Mehrwertsteuer)\.?(?:\s*-?\s*Betrag|(?:\s*entspricht)?\s*\(?\d{1,2}(?:[,.]\d{1,2})?\s*%\)?)', 'tax'],
         ['Kunden\s*[-.]?\s*(?:Nummer|Nr\.?)', 'skip'],
         ['Auftrags?\s*[-.]?\s*(?:Nummer|Nr\.?)', 'skip'],
         ['Bestell\s*[-.]?\s*(?:Nummer|Nr\.?)', 'skip'],
@@ -797,6 +803,17 @@ class InvoicePdfImportService {
             $result['number'] = null;
             unset($sources['number']);
         }
+        // Marktplatzrechnungen (Conrad, Amazon) tragen keine Rechnungsnummer, nur die Auftrags- bzw. Bestellnummer;
+        // sie wird mit Hinweis zur Belegnummer — nur ohne jede Rechnungsnummer-Beschriftung im Text (MVP-1251, E9).
+        $result['number_hint'] = null;
+        if ($result['number'] === null && $kindHint !== 'reminder' && ! $this->mentionsInvoiceNumberLabel($text)) {
+            $order = $this->labeledValue($text, ['Auftrags?\s*[-.]?\s*(?:Nummer|Nr\.?)', 'Bestell\s*[-.]?\s*(?:Nummer|Nr\.?)', 'Order\s*(?:No\.?|Number|#)'], self::ID_PATTERN);
+            if ($order !== null) {
+                $result['number'] = $order;
+                $sources['number'] = 'order';
+                $result['number_hint'] = 'order_reference';
+            }
+        }
         $result['sources'] = $sources;
         $result['issued_on_hint'] = $result['issued_on'] === null ? $this->labeledDate($text, ['Liefer(?:ungs)?datum', 'Leistungsdatum', 'Delivery\s*date']) : null;
         $result['kind_hint'] = $kindHint;
@@ -851,7 +868,7 @@ class InvoicePdfImportService {
      * }
      */
     private function finalize(array $result): array {
-        $text = static fn (string $key) => is_string($result[$key] ?? null) && $result[$key] !== '' ? (string) $result[$key] : null;
+        $text = static fn(string $key) => is_string($result[$key] ?? null) && $result[$key] !== '' ? (string) $result[$key] : null;
         $net = $text('net');
         $tax = $text('tax');
         $gross = $text('gross');
@@ -894,13 +911,33 @@ class InvoicePdfImportService {
         return [
             ...$fields,
             'currency' => (string) ($result['currency'] ?? 'EUR'),
-            'confidence' => min(100, count(array_filter($fields, static fn (?string $value): bool => $value !== null)) * 12),
+            'confidence' => min(100, count(array_filter($fields, static fn(?string $value): bool => $value !== null)) * 12),
             'warnings' => $warnings,
             'sources' => $sources,
             'issued_on_hint' => $text('issued_on_hint'),
+            'number_hint' => $text('number_hint'),
             'kind_hint' => $text('kind_hint'),
             'reminder_numbers' => array_values(array_filter((array) ($result['reminder_numbers'] ?? []), 'is_string')),
         ];
+    }
+
+    /** Kennung einer Rechnung: mindestens eine Ziffer, Buchstaben, Ziffern und ._/- (MVP-1251). */
+    private const ID_PATTERN = '(?=[A-Z0-9._\/-]*\d)[A-Z0-9][A-Z0-9._\/-]{1,63}';
+
+    private function mentionsInvoiceNumberLabel(string $text): bool {
+        return preg_match('/Rechnungs?\s*[-.\/]?\s*(?:Nummer|Nr\.?)|Beleg\s*[-.]?\s*(?:nummer|Nr\.?)|\b(?:Re|Rg|RE)\.?\s*-?\s*Nr\.?|Invoice\s*(?:Number|No\.?|ID|#)/iu', $text) === 1;
+    }
+
+    /**
+     * „Rechnung 2025-0815“, „RECHNUNG Nr. 4711“, „Invoice 10023“: Kennung direkt hinter dem Titel am Zeilenanfang
+     * (MVP-1251). Ein Datum hinter dem Titel ist keine Nummer, eine Kennung braucht vier Zeichen mit Ziffer.
+     */
+    private function titledNumber(string $text): ?string {
+        if (preg_match('/^[ \t]*(?:Rechnung|Invoice)(?:\s*\/\s*(?:Rechnung|Invoice))?[ \t]*(?:Nr\.?|No\.?|#)?[ \t]*[:#]?[ \t]*(?!\d{1,2}\.\d{1,2}\.\d{2,4}(?![\d.]))((?=[A-Z0-9._\/-]*\d)[A-Z0-9][A-Z0-9._\/-]{3,63})(?![\p{L}\d])/imu', $text, $matches) !== 1) {
+            return null;
+        }
+
+        return $matches[1];
     }
 
     /**
@@ -943,7 +980,7 @@ class InvoicePdfImportService {
      * @return array<string, string>
      */
     private function pairedBlocks(string $text): array {
-        $lines = array_values(array_filter(array_map(trim(...), preg_split('/\n/', $text) ?: []), static fn (string $line): bool => $line !== ''));
+        $lines = array_values(array_filter(array_map(trim(...), preg_split('/\n/', $text) ?: []), static fn(string $line): bool => $line !== ''));
         $found = [];
         $count = count($lines);
         for ($index = 0; $index < $count; $index++) {
@@ -963,7 +1000,12 @@ class InvoicePdfImportService {
             for ($start = $end; $start <= min($end + 40, $count - 1); $start++) {
                 $values = [];
                 for ($cursor = $start; $cursor < $count && count($values) < count($labels); $cursor++) {
-                    $tokens = $this->tokensOf($lines[$cursor]);
+                    // Reine Währungs- oder Prozentzeilen („EUR“, „19,0%“) unterbrechen den Wertblock nicht, eine
+                    // Währung hinter dem Wert („139,95 EUR“) gehört zu ihm (MVP-1251).
+                    $tokens = $this->valueTokens($lines[$cursor]);
+                    if ($tokens === []) {
+                        continue;
+                    }
                     if (count($tokens) !== 1 || $tokens[0]['type'] === 'other' || $this->labelsOf($lines[$cursor]) !== []) {
                         break;
                     }
@@ -1025,7 +1067,7 @@ class InvoicePdfImportService {
 
     /** @return list<array{0: string, 1: string}> Beschriftungen einer Zeile in Lesereihenfolge (Muster, Feld) */
     private function labelsOf(string $line): array {
-        $alternatives = implode('|', array_map(static fn (array $label): string => '(?:' . $label[0] . ')', self::PAIR_LABELS));
+        $alternatives = implode('|', array_map(static fn(array $label): string => '(?:' . $label[0] . ')', self::PAIR_LABELS));
         if (preg_match_all('/(?<![\p{L}])(' . $alternatives . ')(?![\p{L}])/iu', $line, $matches) < 1) {
             return [];
         }
@@ -1044,6 +1086,21 @@ class InvoicePdfImportService {
 
     private function isLabelOnly(string $line, string $pattern): bool {
         return preg_match('/^\s*(?:' . $pattern . ')\s*[:.]?\s*$/iu', $line) === 1;
+    }
+
+    /**
+     * Werte einer Zeile ohne Währungs- und Prozent-Token (MVP-1251); leer, wenn die Zeile nur daraus besteht.
+     *
+     * @return list<array{type: string, value: string}>
+     */
+    private function valueTokens(string $line): array {
+        return array_values(array_filter($this->tokensOf($line), static function (array $token): bool {
+            if ($token['type'] !== 'other') {
+                return true;
+            }
+
+            return trim(CurrencyHelper::stripSymbols($token['value'])) !== '' && preg_match('/^\d{1,2}(?:[,.]\d{1,2})?\s*%$/', $token['value']) !== 1;
+        }));
     }
 
     /** Eine Zeile, die schon Werte trägt (Datum oder Betrag), ist keine reine Kopfzeile. */
@@ -1081,10 +1138,10 @@ class InvoicePdfImportService {
      */
     private function kindHint(string $text, array $result): array {
         $head = mb_substr($text, 0, 4000);
-        $titled = static fn (string $pattern): bool => preg_match('/^[ \t]*(?:' . $pattern . ')(?![\p{L}])/imu', $head) === 1;
-        $mentions = static fn (string $pattern): bool => preg_match('/(?<![\p{L}])(?:' . $pattern . ')(?![\p{L}])/iu', $head) === 1;
+        $titled = static fn(string $pattern): bool => preg_match('/^[ \t]*(?:' . $pattern . ')(?![\p{L}])/imu', $head) === 1;
+        $mentions = static fn(string $pattern): bool => preg_match('/(?<![\p{L}])(?:' . $pattern . ')(?![\p{L}])/iu', $head) === 1;
         $hasAmount = $result['gross'] !== null || $result['net'] !== null
-            || array_filter(AmountTokenizer::tokens($head), static fn (\CommonToolkit\ValueObjects\AmountToken $token): bool => $token->currency !== null) !== [];
+            || array_filter(AmountTokenizer::tokens($head), static fn(\CommonToolkit\ValueObjects\AmountToken $token): bool => $token->currency !== null) !== [];
 
         if ($titled('(?:\d\.\s*)?Mahnung|Zahlungserinnerung|Letzte\s+Mahnung|Payment\s+reminder') || $mentions('Mahnstufe|Mahngeb.hr(?:en)?|Mahnbetrag')) {
             preg_match_all('/(?<![\p{L}\d])([A-Z]{2,8}-?\d{5,}|\d{6,12})(?![\p{L}\d])/u', $head, $matches);
@@ -1133,21 +1190,32 @@ class InvoicePdfImportService {
         // Schreibweisen aus echten Eingängen: „Rechnung Nr.“, „Rechnungs-Nr.:“, „Re.-Nr.“, „Beleg-Nr.“, „Invoice #“;
         // der Wert muss eine Ziffer enthalten, sonst fängt „Rechnungsnummer siehe oben“ das Wort „siehe“.
         $number = $this->labeledValue($text, [
-            'Rechnungs?\s*[-.\/]?\s*(?:Nummer|Nr\.?)', 'Beleg\s*[-.]?\s*(?:nummer|Nr\.?)',
-            '\b(?:Re|Rg|RE)\.?\s*-?\s*Nr\.?', 'Invoice\s*(?:Number|No\.?|ID|#)',
-        ], '(?=[A-Z0-9._\/-]*\d)[A-Z0-9][A-Z0-9._\/-]{1,63}');
+            'Rechnungs?\s*[-.\/]?\s*(?:Nummer|Nr\.?)',
+            'Beleg\s*[-.]?\s*(?:nummer|Nr\.?)',
+            '\b(?:Re|Rg|RE)\.?\s*-?\s*Nr\.?',
+            'Invoice\s*(?:Number|No\.?|ID|#)',
+        ], self::ID_PATTERN) ?? $this->titledNumber($text);
         // Datum: beschriftet, sonst „Ort, Datum“ im Briefkopf, sonst nacktes „Datum:“ (MVP-1215, F4).
         $issuedOn = $this->labeledDate($text, ['Rechnungsdatum', 'Belegdatum', 'Ausstellungsdatum', 'Invoice\s*date'])
             ?? $this->placeDate($text)
             ?? $this->labeledDate($text, ['(?<![\p{L}])Datum']);
         $dueOn = $this->labeledDate($text, ['F.llig(?:keit(?:sdatum)?|\s*am)', 'Zahlbar\s*bis', 'Due\s*date']);
         $buyerReference = $this->labeledValue($text, [
-            'Leitweg-?ID', 'Käuferreferenz', 'Bestellreferenz', 'Buyer\s*reference',
+            'Leitweg-?ID',
+            'Käuferreferenz',
+            'Bestellreferenz',
+            'Buyer\s*reference',
         ], '[A-Z0-9][A-Z0-9._\/-]{2,99}');
 
         $net = $this->labeledAmount($text, [
-            'Nettobetrag', 'Netto(?:summe|warenwert|auftragswert)?', 'Gesamt(?:preis|wert|betrag)?\s*(?:EUR|€)?\s*\(?\s*(?:netto|ohne\s*(?:MwSt|USt)\.?|exkl\.?\s*(?:MwSt|USt)\.?)\s*\)?',
-            'Summe\s*netto', 'Rechnungsbetrag\s*\(?\s*netto\s*\)?', 'Zwischensumme', 'Net\s*amount', 'Subtotal',
+            'Nettobetrag',
+            'Netto(?:summe|warenwert|auftragswert|wert)?',
+            'Gesamt(?:preis|wert|betrag)?\s*(?:[A-Z]{3}|€|\$|£)?\s*\(?\s*(?:netto|ohne\s*(?:MwSt|USt)\.?|exkl\.?\s*(?:MwSt|USt)\.?)\s*\)?',
+            'Summe\s*netto(?:wert|betrag)?',
+            'Rechnungsbetrag\s*\(?\s*netto\s*\)?',
+            'Zwischensumme',
+            'Net\s*amount',
+            'Subtotal',
         ]);
         // Steuer: „MwSt.-Betrag (19%) 89,00“ zählt, „ohne/inkl./zzgl. MwSt. 468,41“ nennt den Netto- bzw. Bruttobetrag (MVP-1215).
         $notQualified = '(?<!ohne )(?<!exkl\\. )(?<!inkl\\. )(?<!zzgl\\. )(?<!exkl )(?<!inkl )(?<!zzgl )';
@@ -1155,13 +1223,29 @@ class InvoicePdfImportService {
             $notQualified . '(?:Umsatzsteuer|Mehrwertsteuer|MwSt|USt(?!-Id))\\.?\\s*-?\\s*Betrag',
             $notQualified . '(?:Umsatzsteuer|Mehrwertsteuer|MwSt\\.?|USt\\.?(?!-Id)|VAT)',
         ]);
-        // Brutto (MVP-1215, F3): „Gesamt EUR inkl. MwSt.“, „Gesamtpreis (inkl. MwSt.)“; „… Netto“ zählt nie.
+        // Brutto (MVP-1215, F3): „Gesamt EUR inkl. MwSt.“, „Gesamtpreis (inkl. MwSt.)“, „Total EUR inkl. MwSt.“,
+        // „Gesamtwert“ (MVP-1251); „… Netto“ zählt nie.
         $gross = $this->labeledAmount($text, [
-            'Rechnungsbetrag\s*\(?\s*(?:brutto|inkl\.?\s*(?:MwSt|USt)\.?)\s*\)?', 'Rechnungsbetrag(?!\s*\(?\s*(?:netto|brutto))', 'Rechnungssumme', 'Gesamtbetrag', 'Gesamtsumme', 'Endbetrag', 'Endsumme',
-            'Gesamt(?:preis|wert|summe)?\s*(?:EUR|€)?\s*\(?\s*(?:brutto|inkl\.?\s*(?:MwSt|USt|Mehrwertsteuer|Umsatzsteuer)\.?)\s*\)?',
-            'Summe\s*(?:EUR|€)?\s*(?:brutto|inkl\.?\s*(?:MwSt|USt)\.?)', 'Brutto(?:betrag|summe|preis)', 'Zahlbetrag',
-            'Zahlungsbetrag', 'zu\s*zahlen(?:der\s*Betrag)?',
-            'Grand\s*total', 'Total\s*amount', 'Amount\s*(?:due|payable)', 'Balance\s*due', 'Total(?!\s*(?:net|excl))',
+            'Rechnungsbetrag\s*\(?\s*(?:brutto|inkl\.?\s*(?:MwSt|USt)\.?)\s*\)?',
+            'Rechnungsbetrag(?!\s*\(?\s*(?:netto|brutto))',
+            'Rechnungssumme',
+            'Gesamtbetrag',
+            'Gesamtsumme',
+            'Gesamtwert(?!\s*\(?\s*netto)',
+            'Endbetrag',
+            'Endsumme',
+            'Gesamt(?:preis|wert|summe)?\s*(?:[A-Z]{3}|€|\$|£)?\s*\(?\s*(?:brutto|inkl\.?\s*(?:MwSt|USt|Mehrwertsteuer|Umsatzsteuer)\.?)\s*\)?',
+            'Summe\s*(?:[A-Z]{3}|€|\$|£)?\s*(?:brutto|inkl\.?\s*(?:MwSt|USt)\.?)',
+            'Brutto(?:betrag|summe|preis)',
+            'Zahlbetrag',
+            'Zahlungsbetrag',
+            'zu\s*zahlen(?:der\s*Betrag)?',
+            'Total\s*(?:[A-Z]{3}|€|\$|£)?\s*\(?\s*(?:brutto|incl\.?|inkl\.?\s*(?:MwSt|USt|VAT|Mehrwertsteuer|Umsatzsteuer)\.?)\s*\)?',
+            'Grand\s*total',
+            'Total\s*amount',
+            'Amount\s*(?:due|payable)',
+            'Balance\s*due',
+            'Total(?!\s*(?:net|excl))',
         ], last: true);
 
         // Keine Ableitung hier: nur gefundene Werte zählen für die Summenprobe beim
@@ -1171,17 +1255,21 @@ class InvoicePdfImportService {
         $currency = $this->documentCurrency($text);
 
         $warnings = [];
-        foreach ([
-            'number' => $number,
-            'issued_on' => $issuedOn,
-            'net' => $net,
-        ] as $field => $value) {
+        foreach (
+            [
+                'number' => $number,
+                'issued_on' => $issuedOn,
+                'net' => $net,
+            ] as $field => $value
+        ) {
             if ($value === null) {
                 $warnings[] = 'missing_' . $field;
             }
         }
-        if ($net !== null && $tax !== null && $gross !== null
-            && abs(((float) $net + (float) $tax) - (float) $gross) > 0.02) {
+        if (
+            $net !== null && $tax !== null && $gross !== null
+            && abs(((float) $net + (float) $tax) - (float) $gross) > 0.02
+        ) {
             $warnings[] = 'totals_mismatch';
         }
 
@@ -1224,32 +1312,54 @@ class InvoicePdfImportService {
 
     /** @param list<string> $labels */
     private function labeledAmount(string $text, array $labels, bool $last = false): ?string {
-        // Klammerzusatz („Gesamtbetrag (Versandkostenanteil 8,20 EUR)“) und Steuersatz („MwSt. 19 %“) hinter der
-        // Beschriftung werden übersprungen; den Betrag liest der AmountTokenizer (Schreibweisen und Währungen aus
-        // dem common-toolkit). Er muss direkt hinter der Beschriftung stehen, höchstens eine Währung dazwischen —
-        // ein loses „[\d .]+“ nahm früher ein Datum mit („16.03.2025 201,93“ → 16.032.025.201,93, Befund 2026-10-20).
-        $pattern = '/(?:' . implode('|', $labels) . ')(?:\s*\([^()\n]{0,80}\))?[ \t]*:?[ \t]*(?:\d{1,2}(?:[,.]\d{1,2})?[ \t]*%)?((?:[ \t]*\n)*[^\n]*)/iu';
+        // Klammerzusatz („Gesamtbetrag (Versandkostenanteil 8,20 EUR)“), Steuerzusatz („Rechnungsbetrag inkl.
+        // Versicherungssteuer“) und Steuersatz („MwSt. 19 %“) hinter der Beschriftung werden übersprungen; den
+        // Betrag liest der AmountTokenizer (Schreibweisen und Währungen aus dem common-toolkit). Er muss an der
+        // Beschriftung hängen — ein loses „[\d .]+“ nahm früher ein Datum mit („16.03.2025 201,93“ →
+        // 16.032.025.201,93, Befund 2026-10-20).
+        $pattern = '/(?:' . implode('|', $labels) . ')(?:\s*\([^()\n]{0,80}\))?(?:[ \t]*(?:inkl|incl|zzgl|inklusive|zuz.glich)\.?[ \t]*\p{L}*(?:steuer|tax)(?![\p{L}]))?[ \t]*:?[ \t]*(?:\d{1,2}(?:[,.]\d{1,2})?[ \t]*%)?((?:[ \t]*\n)*[^\n]*)/iu';
         if (preg_match_all($pattern, $text, $matches) < 1) {
             return null;
         }
 
         $values = [];
         foreach ($matches[1] as $rest) {
-            $token = AmountTokenizer::first($rest);
-            if ($token === null) {
-                continue;
+            $value = $this->attachedAmount($rest);
+            if ($value !== null) {
+                $values[] = $value;
             }
-            $between = preg_replace('/[\s+\-−–]/u', '', mb_substr($rest, 0, $token->start)) ?? '';
-            if (preg_match('/\d/', $between) === 1 || mb_strlen($between) > 4) {
-                continue;
-            }
-            $values[] = $this->decimal($token->value);
         }
         if ($values === []) {
             return null;
         }
 
         return $last ? end($values) : reset($values);
+    }
+
+    /**
+     * Erster Betrag, der an der Beschriftung hängt (MVP-1251): zwischen Beschriftung bzw. vorigem Betrag und dem
+     * Betrag nur Leerraum, Vorzeichen, Währung und höchstens vier weitere Zeichen ohne Ziffer. Ein Betrag vor einem
+     * Prozentzeichen ist ein Satz („Endbetrag sind 19,00% Umsatzsteuer“), einer hinter „aus/von“ die
+     * Bemessungsgrundlage („MwSt 19% aus 49,21 EUR  9,35“) — beide werden übersprungen.
+     */
+    private function attachedAmount(string $rest): ?string {
+        $cursor = 0;
+        foreach (AmountTokenizer::tokens($rest) as $token) {
+            $between = mb_substr($rest, $cursor, $token->start - $cursor);
+            $cursor = $token->end;
+            $isBase = preg_match('/(?:^|[\s(])(?:aus|von|auf|on|of|from)\s*$/iu', $between) === 1;
+            $filler = preg_replace('/[\s+\-−–]/u', '', CurrencyHelper::stripSymbols($between)) ?? '';
+            if (preg_match('/\d/', $filler) === 1 || mb_strlen($filler) > 4) {
+                return null;
+            }
+            if ($isBase || preg_match('/^\s*%/u', mb_substr($rest, $token->end)) === 1) {
+                continue;
+            }
+
+            return $this->decimal($token->value);
+        }
+
+        return null;
     }
 
     /**
@@ -1273,8 +1383,8 @@ class InvoicePdfImportService {
                 continue;
             }
             // Nur Code und Zeichen ohne Buchstaben zählen frei im Text — „Fr.“ ist auch die Anrede, als Währung erkennt es nur der Tokenizer am Betrag.
-            $symbols = array_filter($code->getSymbols(), static fn (string $symbol): bool => preg_match('/\p{L}/u', $symbol) !== 1);
-            $spellings = ['(?<![\p{L}])' . $code->value . '(?![\p{L}])', ...array_map(static fn (string $symbol): string => preg_quote($symbol, '/'), $symbols)];
+            $symbols = array_filter($code->getSymbols(), static fn(string $symbol): bool => preg_match('/\p{L}/u', $symbol) !== 1);
+            $spellings = ['(?<![\p{L}])' . $code->value . '(?![\p{L}])', ...array_map(static fn(string $symbol): string => preg_quote($symbol, '/'), $symbols)];
             if (preg_match('/' . implode('|', $spellings) . '/u', $text) === 1) {
                 return $code->value;
             }

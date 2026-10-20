@@ -467,6 +467,8 @@ return [
         'template_learned' => 'Modello di documento appreso',
         'template_applied' => 'Modello di documento applicato',
         'template_deleted' => 'Modello di documento eliminato',
+        'template_updated' => 'Modello di documento modificato',
+        'template_merged' => 'Modelli di documento uniti',
         'unassigned' => 'Assegnazione rimossa',
         'party_adopted' => 'Controparte acquisita dalla contabilità',
         'collective_promoted' => 'Spostato dal contatto collettivo',

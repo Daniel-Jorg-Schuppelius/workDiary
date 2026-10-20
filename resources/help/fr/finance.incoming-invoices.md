@@ -182,17 +182,34 @@ nomment les factures concernées avec un lien. Les administrateurs mesurent la
 reconnaissance avec `incoming-invoices:measure-recognition` sur les textes
 enregistrés des documents.
 
-**Modèles de document :** Via « Modèle » sur la page du document, vous tracez
-sur le document rendu des rectangles pour le numéro de facture, la date, les
-montants, le numéro de TVA et le vendeur ; la valeur reconnue apparaît
-aussitôt. Le modèle est enregistré avec une empreinte de l’en-tête et du pied
-de la première page, il s’applique donc à tout autre document du même
-fournisseur, sur demande tout de suite aux documents ouverts. Chaque
+**Modèles de document :** Via « Modèle » sur la page du document, vous tracez,
+pour chaque champ, un rectangle sur le libellé et la valeur du document rendu
+(numéro de facture, date, échéance, montants, numéro de TVA). Le libellé
+devient l’ancre : la valeur est lue à côté, quelle que soit la page et la
+hauteur, car les blocs de totaux se déplacent avec le nombre de lignes. Sans
+libellé, la zone reste à position fixe. Le rectangle reste tel que tracé et se déplace vers l’ancre trouvée lors de
+l’application ; désactivez l’ancre par zone si la position doit rester fixe.
+Pour chaque zone, vous choisissez la portée (page fixe, première, dernière ou
+toute page) et pouvez ajouter un motif de ligne pour les cas particuliers
+(expression régulière sur le texte du rectangle, ligne par ligne ; le premier
+groupe capturant est la valeur, par exemple pour extraire une valeur précise
+d’un rectangle plus grand). L’éditeur
+affiche les trois premières pages et la dernière. L’essai vérifie les zones
+tracées sur les documents ouverts de même forme, sans enregistrer. Le
+fournisseur du modèle est attribué à chaque document reconnu et en est le
+vendeur. Le modèle est enregistré avec une empreinte de l’en-tête et du pied
+de la première page ; il ne remplit que des factures, jamais des relances ou
+bons de livraison du même expéditeur, et seulement des valeurs plausibles
+(pas de pourcentage comme montant, pas de date comme numéro). Chaque
 correction dans « Saisir les valeurs » apprend aussi : la valeur saisie est
-localisée sur le document et mémorisée comme zone ; après la deuxième
-correspondance, une zone apprise est considérée comme confirmée et l’emporte
-sur l’heuristique. Les modèles figurent sous « Règles » et peuvent y être
-supprimés. Les zones n’existent que pour les documents PDF.
+localisée sur le document et mémorisée comme zone avec son libellé ; après la
+deuxième correspondance, une zone apprise est considérée comme confirmée et
+l’emporte sur l’heuristique. La page « Modèles de document » (via « Règles »)
+liste tous les modèles avec champs, occurrences et dernier document reconnu ;
+vous y renommez, définissez le fournisseur, ouvrez l’éditeur de zones, lancez
+un essai, fusionnez les doublons et supprimez. Les zones n’existent que pour
+les documents PDF. Si un document n’a aucun numéro de facture, le numéro de
+commande le remplace avec un avertissement.
 
 **Corriger une affectation et action groupée :** L’action groupée exige un
 choix ; « Nouveau d’après le document (par contrepartie) » crée une fiche par

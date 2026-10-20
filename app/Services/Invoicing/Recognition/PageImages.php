@@ -19,7 +19,8 @@ use Illuminate\Support\Facades\Storage;
 
 /**
  * Seitenbilder für den Zonen-Editor (Phase 151, E5): nur auf Anfrage, unter
- * dem SHA-256 des Belegs abgelegt, höchstens die ersten Seiten.
+ * dem SHA-256 des Belegs abgelegt. Gezeigt werden die ersten Seiten und seit
+ * Phase 155 zusätzlich die letzte (E8) — Summen stehen vorn oder hinten.
  */
 final class PageImages {
     public const DPI = 110;
@@ -28,9 +29,23 @@ final class PageImages {
 
     public function __construct(private readonly PageImageSource $renderer) {}
 
+    /**
+     * Seiten, die der Editor zeigt: 1 bis MAX_PAGES und die letzte Seite.
+     *
+     * @return list<int>
+     */
+    public static function shownPages(int $pageCount): array {
+        $pages = range(1, max(1, min(self::MAX_PAGES, $pageCount)));
+        if ($pageCount > self::MAX_PAGES) {
+            $pages[] = $pageCount;
+        }
+
+        return $pages;
+    }
+
     /** Absoluter Pfad des PNG der Seite; null, wenn das Original kein PDF ist oder das Rendern scheitert. */
     public function pathFor(IncomingEInvoice $incoming, int $page): ?string {
-        if ($page < 1 || $page > self::MAX_PAGES) {
+        if ($page < 1) {
             return null;
         }
         $pdf = TemplateRecognizer::pdfPathFor($incoming);
@@ -38,25 +53,28 @@ final class PageImages {
             return null;
         }
         $disk = Storage::disk('local');
-        $relative = 'recognition/' . $incoming->sha256 . '/page-' . $page . '.png';
+        $directory = 'recognition/' . $incoming->sha256;
+        $relative = $directory . '/page-' . $page . '.png';
         if (! $disk->exists($relative)) {
-            $disk->makeDirectory('recognition/' . $incoming->sha256);
-            $rendered = $this->renderer->render($pdf, $disk->path('recognition/' . $incoming->sha256), 1, self::MAX_PAGES, self::DPI);
-            foreach ($rendered as $index => $file) {
-                $target = $disk->path('recognition/' . $incoming->sha256 . '/page-' . ($index + 1) . '.png');
-                if ($file !== $target && File::isFile($file)) {
-                    File::move($file, dirname($target), basename($target));
-                }
+            $disk->makeDirectory($directory);
+            $rendered = $this->renderer->render($pdf, $disk->path($directory), $page, $page, self::DPI);
+            $file = $rendered[0] ?? null;
+            $target = $disk->path($relative);
+            if ($file !== null && $file !== $target && File::isFile($file)) {
+                File::move($file, dirname($target), basename($target));
             }
         }
 
         return $disk->exists($relative) ? $disk->path($relative) : null;
     }
 
-    /** @return list<int> Seiten, für die ein Bild vorliegt oder entsteht */
-    public function pages(IncomingEInvoice $incoming): array {
+    /**
+     * @param  list<int>  $candidates  Seiten laut {@see shownPages()}
+     * @return list<int> Seiten, für die ein Bild vorliegt oder entsteht
+     */
+    public function pages(IncomingEInvoice $incoming, array $candidates): array {
         $pages = [];
-        for ($page = 1; $page <= self::MAX_PAGES; $page++) {
+        foreach ($candidates as $page) {
             if ($this->pathFor($incoming, $page) === null) {
                 break;
             }

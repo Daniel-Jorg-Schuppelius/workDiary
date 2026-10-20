@@ -174,16 +174,33 @@ preseleziona «Non è una fattura» e i solleciti indicano le fatture interessat
 con un link. Gli amministratori misurano il riconoscimento con
 `incoming-invoices:measure-recognition` sui testi archiviati dei documenti.
 
-**Modelli di documento:** Tramite «Modello» nella pagina del documento traccia
-sul documento renderizzato rettangoli per numero fattura, data, importi,
-partita IVA e venditore; il valore riconosciuto compare subito. Il modello
-viene salvato con un’impronta di intestazione e piè di pagina della prima
-pagina, così corrisponde a ogni ulteriore documento dello stesso fornitore, su
-richiesta subito a quelli aperti. Ogni correzione in «Inserire i valori»
-apprende: il valore inserito viene individuato sul documento e memorizzato
-come zona; dopo la seconda corrispondenza la zona appresa vale come confermata
-e prevale sull’euristica. I modelli si trovano sotto «Regole» e possono
-esservi eliminati. Le zone esistono solo per documenti PDF.
+**Modelli di documento:** Tramite «Modello» nella pagina del documento
+traccia, per ogni campo, un rettangolo su etichetta e valore nel documento
+renderizzato (numero fattura, data, scadenza, importi, partita IVA).
+L’etichetta diventa l’ancora: il valore viene letto accanto, su qualsiasi
+pagina e a qualsiasi altezza si trovi, perché i blocchi dei totali si
+spostano con il numero di righe. Senza etichetta la zona resta in posizione
+fissa. Il rettangolo resta come tracciato e si sposta sull’ancora trovata
+all’applicazione; disattivi l’ancora per zona se la posizione deve restare
+fissa. Per ogni zona sceglie l’ambito (pagina fissa, prima, ultima o
+qualsiasi) e può aggiungere uno schema di riga per i casi particolari
+(espressione regolare sul testo del rettangolo, riga per riga; il primo gruppo
+di cattura è il valore, ad esempio per estrarre un valore preciso da un
+rettangolo più grande). L’editor mostra le prime tre pagine e l’ultima. La
+prova verifica le zone tracciate sui documenti aperti della stessa forma,
+senza salvare. Il fornitore del modello viene assegnato a ogni documento
+riconosciuto ed è il venditore. Il modello viene salvato con un’impronta di
+intestazione e piè di pagina della prima pagina; compila solo fatture, mai
+solleciti o bolle di consegna dello stesso mittente, e solo valori plausibili
+(nessuna percentuale come importo, nessuna data come numero). Ogni correzione
+in «Inserire i valori» apprende: il valore inserito viene individuato sul
+documento e memorizzato come zona insieme alla sua etichetta; dopo la seconda
+corrispondenza la zona appresa vale come confermata e prevale sull’euristica.
+La pagina «Modelli di documento» (da «Regole») elenca tutti i modelli con
+campi, occorrenze e ultimo documento riconosciuto; lì rinomina, imposta il
+fornitore, apre l’editor delle zone, avvia una prova, unisce modelli doppi ed
+elimina. Le zone esistono solo per documenti PDF. Se un documento non ha
+alcun numero di fattura, lo sostituisce il numero d’ordine con un avviso.
 
 **Correggere le assegnazioni e azione di massa:** L’azione di massa richiede
 una scelta; «Nuovo dai dati del documento (per controparte)» crea

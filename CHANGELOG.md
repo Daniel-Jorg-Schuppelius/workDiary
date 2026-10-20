@@ -10,6 +10,41 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Rechnungseingang: Belegvorlagen mit Anker, Vorlagenseite und Probelauf
+  (Phase 155, MVP-1252–1254). Eine Zone kennt jetzt ihre Beschriftung als
+  Anker („Gesamt EUR inkl. MwSt.“) und liest den Wert daneben, auf welcher
+  Seite und in welcher Höhe er auch steht; der Editor erkennt die Beschriftung
+  im gezeichneten Kästchen als Anker, das Kästchen bleibt wie gezeichnet und
+  wandert beim Anwenden an den gefundenen Anker, der Anker ist je Zone
+  abschaltbar, je Zone sind Seitenbereich (feste, erste, letzte, jede Seite)
+  und ein Zeilenmuster wählbar (regulärer Ausdruck auf den Text im Kästchen,
+  zeilenweise, erste Klammergruppe ist der Wert), gezeigt werden die ersten
+  drei Seiten und die letzte, ein Probelauf prüft die Zonen gegen die offenen
+  Belege derselben Form ohne zu speichern. Eine Vorlage füllt nur
+  Rechnungen (keine Mahnungen, Lieferscheine, Auftragsbestätigungen, Angebote,
+  Versandmarken desselben Absenders), bringt ihren Lieferanten mit (Verkäufer
+  und Zuordnung; der Verkäufername ist kein Zonenfeld mehr), prüft Werte auf
+  Plausibilität (kein Prozentsatz als Betrag, kein Datum als Nummer) und zählt
+  Treffer nur, wenn sie ein Feld gelesen hat; gelernte Zonen merken sich die
+  Beschriftung links des Wertes. Neue Seite „Belegvorlagen“ (über „Regeln“):
+  Felder mit Ankerkennzeichen, Treffer, Eingänge, zuletzt getroffener Beleg,
+  Bearbeiten (Name, Lieferant), Zonen-Editor öffnen, Probelauf, Zusammenführen
+  doppelter Vorlagen, Löschen; Audit `template_updated`, `template_merged`.
+  Texte ×5, Hilfe ×5, Tests.
+
+- Rechnungseingang: Heuristik der PDF-Erkennung (Phase 155, MVP-1251).
+  Summenbeschriftungen „Total EUR inkl. MwSt.“ und „Gesamtwert“, ein
+  Steuerzusatz hinter der Beschriftung („Rechnungsbetrag inkl.
+  Versicherungssteuer“) wird übersprungen, ein Betrag vor einem Prozentzeichen
+  ist kein Betrag („Im Endbetrag sind 19,00 % Umsatzsteuer“), ein Betrag
+  hinter „aus/von“ ist die Bemessungsgrundlage und nicht die Steuer, die
+  Blockpaarung toleriert Währungs- und Prozentzeilen sowie eine Währung hinter
+  dem Wert („139,95 EUR“) und kennt Netto- und Steuerbeschriftungen mit Satz
+  („MwSt. entspricht 19,0 %“); ohne jede Rechnungsnummer vertritt die
+  Auftrags- bzw. Bestellnummer sie mit Hinweis am Eingang. Messung über die
+  65 offenen Klärfälle mit Indextext (lokal, nur Lesen): vorher 17, nachher 29
+  erkannt; 14 sind Mahnungen und bleiben gewollt Klärfall.
+
 - Rechnungseingang: „Fachlich freigeben“ als Sammelaktion (MVP-1249). In den
   Reitern „Zu prüfen“ und „Alle“ gibt die Sammelaktion die ausgewählten
   Eingänge über denselben Weg frei wie die Einzelentscheidung (Statusübergang,
@@ -1956,3 +1991,4 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
     der Geocode-Cache gilt je Anbieter, CalDAV/CardDAV folgen keinen fremden
     Adressen aus Server-Antworten, und die Sperrliste kennt CGNAT, NAT64,
     6to4 und Teredo.
+

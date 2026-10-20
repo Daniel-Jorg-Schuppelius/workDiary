@@ -24,14 +24,19 @@ use PDFToolkit\Entities\WordBox;
  * eingegebene Wert wird im Wortgitter des Belegs gesucht; ein eindeutiger
  * Treffer wird zur Zone der Vorlage des Lieferanten. Eine gelernte Zone gilt
  * erst nach dem zweiten übereinstimmenden Treffer als bestätigt (E4);
- * gezeichnete Zonen bleiben unangetastet.
+ * gezeichnete Zonen bleiben unangetastet. Seit Phase 155 lernt die Zone auch
+ * ihren Anker: die Beschriftungswörter links des Wertes in derselben Zeile.
  */
 final class TemplateLearner {
     private const MARGIN_X = 0.01;
 
     private const MARGIN_Y = 0.004;
 
-    public function __construct(private readonly WordBoxSource $boxes, private readonly TemplateMatcher $matcher) {}
+    public function __construct(
+        private readonly WordBoxSource $boxes,
+        private readonly TemplateMatcher $matcher,
+        private readonly ZoneExtractor $extractor,
+    ) {}
 
     /**
      * @param  array<string, mixed>  $values  Eingaben des Dialogs (invoice_number, issue_date, …, party_vat_id)
@@ -62,7 +67,7 @@ final class TemplateLearner {
             }
             $box = $this->locate($field, (string) $value, $boxes);
             if ($box !== null) {
-                $zones[$field] = $this->zoneAround($box, $field);
+                $zones[$field] = $this->zoneAround($box, $field, $boxes);
             }
         }
         if ($zones === []) {
@@ -112,21 +117,30 @@ final class TemplateLearner {
         };
     }
 
-    /** @return array<string, mixed> */
-    private function zoneAround(WordBox $box, string $field): array {
-        $clamp = static fn (float $v): float => max(0.0, min(1.0, $v));
-
-        return [
+    /**
+     * Zone um den gefundenen Wert; mit Beschriftungswörtern links davon wird sie zur Ankerzone (Phase 155).
+     *
+     * @param  list<WordBox>  $boxes
+     * @return array<string, mixed>
+     */
+    private function zoneAround(WordBox $box, string $field, array $boxes): array {
+        $anchorWords = $this->extractor->anchorWordsLeftOf($box, $boxes);
+        $zone = [
             'field' => $field,
             'page' => $box->page,
-            'x' => $clamp($box->x - self::MARGIN_X),
-            'y' => $clamp($box->y - self::MARGIN_Y),
-            'w' => $clamp($box->w + 2 * self::MARGIN_X),
-            'h' => $clamp($box->h + 2 * self::MARGIN_Y),
+            ...ZoneExtractor::bounds([$box], self::MARGIN_X, self::MARGIN_Y),
             'parse' => ZoneFields::parseOf($field),
             'source' => IncomingInvoiceTemplate::SOURCE_LEARNED,
             'confirmed' => false,
+            'scope' => 'page',
         ];
+        if ($anchorWords !== []) {
+            $zone['anchor'] = trim(implode(' ', array_map(static fn (WordBox $word): string => $word->text, $anchorWords)));
+            $zone['anchor_box'] = ZoneExtractor::bounds($anchorWords);
+            $zone['scope'] = 'any';
+        }
+
+        return $zone;
     }
 
     /** @param  list<WordBox>  $boxes */
@@ -161,8 +175,9 @@ final class TemplateLearner {
     }
 
     /**
-     * Zweiter übereinstimmender Treffer bestätigt eine gelernte Zone; ein
-     * abweichender ersetzt sie unbestätigt; gezeichnete Zonen bleiben.
+     * Zweiter übereinstimmender Treffer (gleicher Anker oder überlappende
+     * Lage) bestätigt eine gelernte Zone; ein abweichender ersetzt sie
+     * unbestätigt; gezeichnete Zonen bleiben.
      *
      * @param  list<array<string, mixed>>  $existing
      * @param  array<string, array<string, mixed>>  $learned
@@ -181,7 +196,7 @@ final class TemplateLearner {
             $seen[$field] = true;
             if (($zone['source'] ?? '') === IncomingInvoiceTemplate::SOURCE_MANUAL) {
                 $result[] = $zone;
-            } elseif (self::overlaps($zone, $learned[$field])) {
+            } elseif (self::agrees($zone, $learned[$field])) {
                 $result[] = ['confirmed' => true] + $zone;
                 $result[count($result) - 1]['confirmed'] = true;
             } else {
@@ -195,6 +210,20 @@ final class TemplateLearner {
         }
 
         return $result;
+    }
+
+    /**
+     * @param  array<string, mixed>  $a
+     * @param  array<string, mixed>  $b
+     */
+    private static function agrees(array $a, array $b): bool {
+        $anchorA = ZoneExtractor::anchorKey((string) ($a['anchor'] ?? ''));
+        $anchorB = ZoneExtractor::anchorKey((string) ($b['anchor'] ?? ''));
+        if ($anchorA !== '' && $anchorB !== '') {
+            return $anchorA === $anchorB;
+        }
+
+        return self::overlaps($a, $b);
     }
 
     /**

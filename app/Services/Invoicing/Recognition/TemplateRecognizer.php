@@ -22,9 +22,14 @@ use PDFToolkit\Entities\WordBox;
 /**
  * Belegvorlage anwenden (Phase 151, L5): bestätigte und gezeichnete Zonen
  * schlagen die Heuristik, gelernte unbestätigte füllen nur Lücken; die
- * Diagnose nennt je Feld die Quelle `zone`.
+ * Diagnose nennt je Feld die Quelle `zone`. Seit Phase 155 füllt eine Vorlage
+ * nur Rechnungen (E4), bringt ihren Lieferanten mit (E5) und zählt einen
+ * Treffer nur, wenn sie ein Feld gelesen hat (E6).
  */
 final class TemplateRecognizer {
+    /** Belegarten, für die keine Vorlage füllt: Kopf und Fuß gleichen der Rechnung, der Inhalt nicht. */
+    public const BLOCKED_KINDS = ['reminder', 'delivery_note', 'order_confirmation', 'quote', 'shipping_label'];
+
     public function __construct(
         private readonly WordBoxSource $boxes,
         private readonly TemplateMatcher $matcher,
@@ -37,6 +42,9 @@ final class TemplateRecognizer {
      * @param  array<string, mixed>  $result
      */
     public function apply(array &$result, string $pdfPath, Organization $organization): void {
+        if (in_array($result['kind_hint'] ?? null, self::BLOCKED_KINDS, true)) {
+            return;
+        }
         $boxes = $this->boxes->boxesFor($pdfPath);
         if ($boxes === []) {
             return;
@@ -55,50 +63,96 @@ final class TemplateRecognizer {
                 $sources[$key] = 'zone';
             }
         }
+        $supplier = $template->supplier;
+        if ($supplier !== null && ($result['seller_vat'] ?? null) === null && trim((string) $supplier->vat_id) !== '') {
+            $result['seller_vat'] = $supplier->vat_id;
+            $sources['seller_vat'] = 'template';
+        }
         $result['sources'] = $sources;
-        $result['template'] = ['id' => (int) $template->id, 'name' => (string) $template->name, 'similarity' => round($match['similarity'], 2), 'fields' => array_keys($values)];
-        $template->forceFill(['hits' => (int) $template->hits + 1, 'last_matched_at' => now()])->saveQuietly();
+        $result['template'] = [
+            'id' => (int) $template->id,
+            'name' => (string) $template->name,
+            'similarity' => round($match['similarity'], 2),
+            'fields' => array_keys($values),
+            'supplier_id' => $supplier?->id,
+        ];
+        if ($values !== []) {
+            $this->countHit($template);
+        }
     }
 
     /**
-     * Vorlage auf einen abgelegten Eingang anwenden (Editor, „auf offene anwenden“).
+     * Vorlage auf einen abgelegten Eingang anwenden (Editor, „auf offene anwenden“, Probelauf).
      *
-     * @return list<string> geänderte Felder
+     * @return list<string> geänderte Felder (Zonenfelder, dazu `supplier`, wenn der Lieferant der Vorlage gesetzt wurde)
      */
     public function applyToIncoming(IncomingEInvoice $incoming, IncomingInvoiceTemplate $template, ?User $actor): array {
+        if (in_array($incoming->kindHint(), self::BLOCKED_KINDS, true)) {
+            return [];
+        }
         $path = self::pdfPathFor($incoming);
         if ($path === null) {
             return [];
         }
-        $boxes = $this->boxes->boxesFor($path);
-        $values = $this->valuesFor($template, $boxes);
-        if ($values === []) {
-            return [];
-        }
+        $values = $this->valuesFor($template, $this->boxes->boxesFor($path));
+        $changes = [];
+        $applied = [];
         $summary = (array) $incoming->summary;
         $extraction = (array) ($summary['extraction'] ?? []);
         $sources = (array) ($extraction['sources'] ?? []);
-        $changes = ['template_id' => $template->id];
-        $applied = [];
         foreach ($values as $field => ['value' => $value]) {
-            $column = ZoneFields::FIELDS[$field]['column'];
-            $changes[$column] = $value;
+            $changes[ZoneFields::FIELDS[$field]['column']] = $value;
             $sources[ZoneFields::FIELDS[$field]['result']] = 'zone';
             $applied[] = $field;
         }
+        $supplier = $template->supplier;
+        if ($supplier !== null && $incoming->supplier_id === null && $incoming->customer_id === null) {
+            $changes['supplier_id'] = $supplier->id;
+            $changes['seller_name'] = $supplier->name;
+            if ($incoming->seller_vat_id === null && trim((string) $supplier->vat_id) !== '') {
+                $changes['seller_vat_id'] = $supplier->vat_id;
+            }
+            $applied[] = 'supplier';
+        }
+        if ($applied === []) {
+            return [];
+        }
         $extraction['sources'] = $sources;
-        $extraction['template'] = ['id' => (int) $template->id, 'name' => (string) $template->name, 'fields' => $applied];
+        $extraction['template'] = ['id' => (int) $template->id, 'name' => (string) $template->name, 'fields' => $applied, 'supplier_id' => $supplier?->id];
         $summary['extraction'] = $extraction;
         if ($incoming->recognition === IncomingInvoiceRecognition::None
             && ($changes['invoice_number'] ?? $incoming->invoice_number) !== null
             && ($changes['amount_gross'] ?? $incoming->amount_gross) !== null) {
             $changes['recognition'] = IncomingInvoiceRecognition::Extracted;
         }
-        $incoming->forceFill([...$changes, 'summary' => $summary])->save();
+        $incoming->forceFill([...$changes, 'template_id' => $template->id, 'summary' => $summary])->save();
         $incoming->audit('incoming_einvoice.template_applied', ['template_id' => $template->id, 'fields' => $applied, 'actor_user_id' => $actor?->id]);
-        $template->forceFill(['hits' => (int) $template->hits + 1, 'last_matched_at' => now()])->saveQuietly();
+        if ($values !== []) {
+            $this->countHit($template);
+        }
 
         return $applied;
+    }
+
+    /**
+     * Probelauf ohne Schreiben: welche Felder die Zonen auf einem Eingang lesen würden.
+     *
+     * @return array<string, string> Feld → Wert
+     */
+    public function trial(IncomingEInvoice $incoming, IncomingInvoiceTemplate $template): array {
+        if (in_array($incoming->kindHint(), self::BLOCKED_KINDS, true)) {
+            return [];
+        }
+        $path = self::pdfPathFor($incoming);
+        if ($path === null) {
+            return [];
+        }
+        $values = [];
+        foreach ($this->valuesFor($template, $this->boxes->boxesFor($path)) as $field => ['value' => $value]) {
+            $values[$field] = $value;
+        }
+
+        return $values;
     }
 
     /**
@@ -116,7 +170,7 @@ final class TemplateRecognizer {
             if ($value === null) {
                 continue;
             }
-            // Gezeichnet oder zweimal bestätigt: die Zone gilt; sonst nur Lückenfüller (E4).
+            // Gezeichnet oder zweimal bestätigt: die Zone gilt; sonst nur Lückenfüller (E4 der Phase 151).
             $authoritative = ($zone['source'] ?? IncomingInvoiceTemplate::SOURCE_MANUAL) === IncomingInvoiceTemplate::SOURCE_MANUAL || (bool) ($zone['confirmed'] ?? false);
             $values[$field] = ['value' => $value, 'authoritative' => $authoritative];
         }
@@ -133,5 +187,9 @@ final class TemplateRecognizer {
         $disk = Storage::disk((string) ($version->disk ?: 'local'));
 
         return $disk->exists((string) $version->path) ? $disk->path((string) $version->path) : null;
+    }
+
+    private function countHit(IncomingInvoiceTemplate $template): void {
+        $template->forceFill(['hits' => (int) $template->hits + 1, 'last_matched_at' => now()])->saveQuietly();
     }
 }

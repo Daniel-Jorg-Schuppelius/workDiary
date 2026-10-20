@@ -467,6 +467,8 @@ return [
         'template_learned' => 'Document template learned',
         'template_applied' => 'Document template applied',
         'template_deleted' => 'Document template deleted',
+        'template_updated' => 'Document template edited',
+        'template_merged' => 'Document templates merged',
         'unassigned' => 'Assignment removed',
         'party_adopted' => 'Party adopted from accounting',
         'collective_promoted' => 'Moved from collective contact',

@@ -260,4 +260,55 @@ final class InvoicePdfImportServiceTest extends TestCase {
         self::assertSame('order_confirmation', $service->analyzeText("Auftragsbestätigung\nAuftragsnummer 99\nGesamtbetrag 10,00 EUR")['kind_hint']);
         self::assertNull($service->analyzeText("Rechnung\nRechnungsnummer 1\nLieferschein-Nr. 5\nGesamtbetrag 10,00 EUR")['kind_hint'], 'Ein Rechnungstitel schlägt den Lieferscheinverweis.');
     }
+
+    /** Fehlerklassen aus Phase 155 (MVP-1251) an synthetischen Texten: Summen mit Zusatz, Prozentsätze, Spaltenblöcke mit Währung. */
+    public function test_it_closes_total_label_gaps_of_phase_155(): void {
+        $service = new InvoicePdfImportService;
+
+        // „Total EUR inkl. MwSt.“ und Kopfzeile „MwSt. Netto-Betrag MwSt.-Betrag“ über der Wertezeile (Musikhändler-Form).
+        $total = $service->analyzeText("Rechnung-Nr.   TN-100200\nRechnungsdatum:   28.03.2025\nSumme   2   Total EUR inkl. MwSt.   11,90\nMwSt.   Netto-Betrag   MwSt.-Betrag\nGesamt EUR   10,00   1,90");
+        self::assertSame('11.90', $total['gross']);
+        self::assertSame('10.00', $total['net']);
+        self::assertSame('1.90', $total['tax']);
+        self::assertSame([], $total['warnings']);
+
+        // Steuerzusatz hinter der Beschriftung (Versicherungsform).
+        $insurance = $service->analyzeText("Rechnungs-Nr.:   90001\nRechnungsbetrag inkl. Versicherungssteuer   100,00\nDen o.g. Rechnungsbetrag ziehen wir am 19.03.25 per Lastschrift ein.");
+        self::assertSame('100.00', $insurance['gross']);
+
+        // Ein Betrag vor einem Prozentzeichen ist ein Satz, keine Summe (Baumarkt-Form).
+        $percent = $service->analyzeText("Rechnung\nRechnungsbetrag Brutto   59,50\nRechnungsbetrag Netto   50,00\nRechnungsbetrag wurde bereits bezahlt.\nIm Endbetrag sind 19,00% Umsatzsteuer ( 9,50 € aus 59,50 € ) enthalten.");
+        self::assertSame('59.50', $percent['gross']);
+        self::assertSame('50.00', $percent['net']);
+
+        // Bemessungsgrundlage hinter „aus“ ist nicht die Steuer; „Summe Nettowert“; Auftragsnummer als Belegnummer mit Hinweis (Marktplatz-Form).
+        $marketplace = $service->analyzeText("Rechnung von Marktplatz AG im Namen und Auftrag von\nRechnungsdatum 09.01.25\nAuftragsnummer: 5001234567-00-A\nSumme Nettowert   EUR   40,00\nMwSt (01) 19.0% aus 40,00 EUR   EUR   7,60\nEndbetrag   EUR   47,60");
+        self::assertSame('47.60', $marketplace['gross']);
+        self::assertSame('40.00', $marketplace['net']);
+        self::assertSame('7.60', $marketplace['tax']);
+        self::assertSame('5001234567-00-A', $marketplace['number']);
+        self::assertSame('order_reference', $marketplace['number_hint']);
+        self::assertSame('order', $marketplace['sources']['number']);
+        self::assertNull($service->analyzeText("Rechnungsnummer siehe Anlage\nAuftragsnummer: 4711\nEndbetrag 1,00")['number'], 'Mit Rechnungsnummer-Beschriftung bleibt die Auftragsnummer außen vor.');
+
+        // Spaltenblock mit Währung hinter den Werten und Steuersatz in der Beschriftung (Versandhändler-Form).
+        $columns = $service->analyzeText("RECHNUNG\nKundennr.:\nRechnungsnr.:\nAuftragsnr.:\nLieferdatum/Rechnungsdatum:\n000111222\n300400500\n600700800\n04.08.2025\nNettowarenwert\nMwSt. entspricht 19,0%\nRechnungsbetrag\nZahlart: Karte\nGesamtpreis\n100,00 EUR\n19,00 EUR\n119,00 EUR");
+        self::assertSame('300400500', $columns['number']);
+        self::assertSame('2025-08-04', $columns['issued_on']);
+        self::assertSame('119.00', $columns['gross']);
+        self::assertSame('100.00', $columns['net']);
+        self::assertSame('19.00', $columns['tax']);
+
+        // Währungszeile zwischen den Werten und „Gesamtwert“ (Bürohändler-Form).
+        $office = $service->analyzeText("RECHNUNG\nRechnung Nr.\nDatum\nKunden-Nr.\n: 770011223344\n: 21.05.2025\n: 5544332\nNetto\n20,00\nMwSt 19%\n3,80\nSteuerfrei\nEUR\nGesamtwert\n23,80");
+        self::assertSame('770011223344', $office['number']);
+        self::assertSame('23.80', $office['gross']);
+        self::assertSame('20.00', $office['net']);
+        self::assertSame('3.80', $office['tax']);
+
+        // Kennung direkt hinter dem Titel; ein Datum hinter dem Titel ist keine Nummer.
+        self::assertSame('2025-0815', $service->analyzeText("Rechnung 2025-0815\nGesamtbetrag 10,00")['number']);
+        self::assertNull($service->analyzeText("Rechnung 13.01.2025\nGesamtbetrag 10,00")['number']);
+        self::assertNull($service->analyzeText("Rechnung 2025-0815\nGesamtbetrag 10,00")['number_hint']);
+    }
 }

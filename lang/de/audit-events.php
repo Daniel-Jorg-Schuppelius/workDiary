@@ -467,6 +467,8 @@ return [
         'template_learned' => 'Belegvorlage gelernt',
         'template_applied' => 'Belegvorlage angewendet',
         'template_deleted' => 'Belegvorlage gelöscht',
+        'template_updated' => 'Belegvorlage bearbeitet',
+        'template_merged' => 'Belegvorlagen zusammengeführt',
         'unassigned' => 'Zuordnung aufgehoben',
         'party_adopted' => 'Partei aus der Buchhaltung übernommen',
         'collective_promoted' => 'Vom Sammelkontakt umgehängt',

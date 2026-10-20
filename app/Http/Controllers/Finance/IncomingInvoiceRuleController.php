@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Finance;
 use App\Enums\Billing\DocumentDirection;
 use App\Http\Controllers\Controller;
 use App\Models\Automation\AutomationRule;
-use App\Models\Invoicing\{IncomingInvoiceTemplate, InvoiceSenderRule};
+use App\Models\Invoicing\InvoiceSenderRule;
 use App\Models\Platform\User;
 use App\Services\Invoicing\Automation\IncomingInvoiceReceivedTrigger;
 use App\Services\Invoicing\EInvoice\{IncomingInvoiceParties, IncomingInvoiceRules};
@@ -44,7 +44,6 @@ class IncomingInvoiceRuleController extends Controller {
             'hits' => $this->rules->hits($rules),
             'describe' => $this->rules,
             'canEditAutomations' => $user->isAdmin(),
-            'templates' => IncomingInvoiceTemplate::query()->with('supplier:id,name')->orderBy('name')->get(),
             // Am Sammelkontakt geparkte Belege (MVP-1225).
             'parked' => $this->parties->parkedAtCollective((int) $user->organization_id),
         ]);
@@ -68,14 +67,6 @@ class IncomingInvoiceRuleController extends Controller {
         }
 
         return redirect()->route('finance.incoming-invoices.rules')->with('success', $message);
-    }
-
-    public function destroyTemplate(IncomingInvoiceTemplate $template): RedirectResponse {
-        $this->authorizeBilling();
-        $template->audit('incoming_einvoice.template_deleted', ['name' => $template->name]);
-        $template->delete();
-
-        return redirect()->toList('finance.incoming-invoices.rules')->with('success', __('Vorlage gelöscht.'));
     }
 
     public function toggleRule(AutomationRule $rule): RedirectResponse {

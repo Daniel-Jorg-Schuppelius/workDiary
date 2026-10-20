@@ -467,6 +467,8 @@ return [
         'template_learned' => 'Plantilla de documento aprendida',
         'template_applied' => 'Plantilla de documento aplicada',
         'template_deleted' => 'Plantilla de documento eliminada',
+        'template_updated' => 'Plantilla de documento editada',
+        'template_merged' => 'Plantillas de documento fusionadas',
         'unassigned' => 'Asignación eliminada',
         'party_adopted' => 'Parte adoptada de la contabilidad',
         'collective_promoted' => 'Movido desde el contacto colectivo',

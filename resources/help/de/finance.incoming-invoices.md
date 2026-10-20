@@ -162,16 +162,33 @@ Rechnung“ vor, Mahnungen nennen die angemahnten Rechnungen mit Link.
 Administratoren messen die Erkennung mit `incoming-invoices:measure-recognition`
 gegen die gespeicherten Belegtexte.
 
-**Belegvorlagen:** Über „Vorlage“ auf der Belegseite zeichnen Sie auf dem
-gerenderten Beleg Rechtecke für Rechnungsnummer, Datum, Beträge, USt-IdNr.
-und Verkäufer; der erkannte Wert erscheint sofort. Gespeichert wird die
-Vorlage mit einem Fingerabdruck aus Kopf und Fuß der ersten Seite, so trifft
-sie jeden weiteren Beleg desselben Lieferanten, auf Wunsch gleich die offenen.
-Jede Korrektur in „Werte erfassen“ lernt mit: Der eingegebene Wert wird auf
-dem Beleg gesucht und als Zone gemerkt; nach dem zweiten übereinstimmenden
-Treffer gilt die gelernte Zone als bestätigt und schlägt die Heuristik.
-Vorlagen stehen unter „Regeln“ und lassen sich dort löschen. Zonen gibt es
-nur für PDF-Belege.
+**Belegvorlagen:** Über „Vorlage“ auf der Belegseite ziehen Sie auf dem
+gerenderten Beleg je Feld ein Rechteck über Beschriftung und Wert
+(Rechnungsnummer, Datum, Fälligkeit, Beträge, USt-IdNr.). Die Beschriftung
+wird zum Anker: Der Wert wird daneben gelesen, auf welcher Seite und in
+welcher Höhe er auch steht, denn Summenblöcke wandern mit der Zahl der
+Positionen. Ohne Beschriftung bleibt die Zone an fester Stelle. Das Kästchen bleibt, wie Sie es gezeichnet haben, und wandert beim
+Anwenden an den gefundenen Anker; den Anker schalten Sie je Zone ab, wenn die
+Lage fest bleiben soll. Je Zone wählen Sie den Bereich (feste, erste, letzte
+oder jede Seite) und können für Sonderfälle ein Zeilenmuster hinterlegen
+(regulärer Ausdruck auf den Text im Kästchen, Zeile für Zeile; die erste
+Klammergruppe ist der Wert, etwa um aus einem größeren Kästchen einen
+bestimmten Wert zu holen). Der Editor zeigt die
+ersten drei Seiten und die letzte. Der Probelauf prüft die gezeichneten Zonen
+gegen die offenen Belege derselben Form, ohne zu speichern. Der Lieferant der
+Vorlage wird jedem getroffenen Beleg zugeordnet und ist der Verkäufer.
+Gespeichert wird die Vorlage mit einem Fingerabdruck aus Kopf und Fuß der
+ersten Seite; sie füllt nur Rechnungen, nie Mahnungen oder Lieferscheine
+desselben Absenders, und nur plausible Werte (kein Prozentsatz als Betrag,
+kein Datum als Nummer). Jede Korrektur in „Werte erfassen“ lernt mit: Der
+eingegebene Wert wird auf dem Beleg gesucht und samt Beschriftung als Zone
+gemerkt; nach dem zweiten übereinstimmenden Treffer gilt die gelernte Zone
+als bestätigt und schlägt die Heuristik. Die Seite „Belegvorlagen“ (über
+„Regeln“) listet alle Vorlagen mit Feldern, Treffern und zuletzt getroffenem
+Beleg; dort benennen Sie um, setzen den Lieferanten, öffnen den Zonen-Editor,
+starten einen Probelauf, führen doppelte Vorlagen zusammen und löschen. Zonen
+gibt es nur für PDF-Belege. Fehlt einem Beleg jede Rechnungsnummer, vertritt
+die Auftrags- bzw. Bestellnummer sie mit Hinweis.
 
 **Zuordnung korrigieren und Sammelaktion:** Die Sammelaktion verlangt eine
 Wahl; „Neu aus Belegdaten (je Gegenpartei)“ legt je Gegenpartei einen

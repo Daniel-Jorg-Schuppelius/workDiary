@@ -175,15 +175,33 @@ Los administradores miden el reconocimiento con
 `incoming-invoices:measure-recognition` sobre los textos guardados.
 
 **Plantillas de documento:** Mediante «Plantilla» en la página del documento
-traza sobre el documento renderizado rectángulos para número de factura,
-fecha, importes, NIF-IVA y vendedor; el valor reconocido aparece al instante.
-La plantilla se guarda con una huella del encabezado y del pie de la primera
-página, de modo que coincide con cualquier otro documento del mismo proveedor,
-a petición también con los abiertos. Cada corrección en «Introducir valores»
-aprende: el valor introducido se localiza en el documento y se recuerda como
-zona; tras la segunda coincidencia, la zona aprendida se considera confirmada
-y prevalece sobre la heurística. Las plantillas figuran en «Reglas» y pueden
-eliminarse allí. Las zonas solo existen para documentos PDF.
+traza, por campo, un rectángulo sobre la etiqueta y el valor en el documento
+renderizado (número de factura, fecha, vencimiento, importes, NIF-IVA). La
+etiqueta se convierte en ancla: el valor se lee a su lado, esté en la página
+y a la altura que esté, porque los bloques de totales se desplazan con el
+número de líneas. Sin etiqueta, la zona permanece en una posición fija. El rectángulo se conserva tal como lo dibujó y se desplaza al ancla
+encontrada al aplicarse; desactive el ancla por zona si la posición debe
+quedar fija. Por zona elige el ámbito (página fija, primera, última o
+cualquiera) y puede añadir un patrón de línea para casos especiales
+(expresión regular sobre el texto del rectángulo, línea a línea; el primer
+grupo de captura es el valor, por ejemplo para extraer un valor concreto de un
+rectángulo mayor). El
+editor muestra las tres primeras páginas y la última. La prueba comprueba las
+zonas dibujadas contra los documentos abiertos de la misma forma, sin
+guardar. El proveedor de la plantilla se asigna a cada documento reconocido y
+es el vendedor. La plantilla se guarda con una huella del encabezado y del
+pie de la primera página; solo rellena facturas, nunca recordatorios ni
+albaranes del mismo remitente, y solo valores plausibles (ningún porcentaje
+como importe, ninguna fecha como número). Cada corrección en «Introducir
+valores» aprende: el valor introducido se localiza en el documento y se
+recuerda como zona junto con su etiqueta; tras la segunda coincidencia, la
+zona aprendida se considera confirmada y prevalece sobre la heurística. La
+página «Plantillas de documento» (desde «Reglas») lista todas las plantillas
+con campos, coincidencias y último documento reconocido; allí renombra,
+asigna el proveedor, abre el editor de zonas, inicia una prueba, fusiona
+plantillas duplicadas y elimina. Las zonas solo existen para documentos PDF.
+Si un documento no tiene ningún número de factura, lo sustituye el número de
+pedido con un aviso.
 
 **Corregir asignaciones y acción masiva:** La acción masiva exige una
 elección; «Nuevo a partir del documento (por contraparte)» crea una ficha por
