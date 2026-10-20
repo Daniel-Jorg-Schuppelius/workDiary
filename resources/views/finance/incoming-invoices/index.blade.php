@@ -117,8 +117,9 @@
                         <option value="collective">{{ __('Sammelkontakt (mit Rückfrage)') }}</option>
                     </select>
                     <x-button type="submit" tone="primary" size="sm" icon="rule">{{ __('Zuordnen') }}</x-button>
-                    {{-- Nacherkennung (MVP-1207): Klärfälle und aus PDF bzw. Bild gelesene Eingänge ohne erfasste Werte, Übergabe oder Ablehnung werden neu gelesen. --}}
-                    <x-button type="submit" size="sm" icon="document_scanner" formaction="{{ route('finance.incoming-invoices.bulk-reanalyze') }}">{{ __('Erneut erkennen') }}</x-button>
+                    {{-- Nacherkennung (MVP-1207): Klärfälle und aus PDF bzw. Bild gelesene Eingänge ohne erfasste Werte, Übergabe oder Ablehnung werden neu gelesen.
+                         formnovalidate: das Pflichtfeld „Partei“ gehört nur zum Zuordnen, sonst blockt der Browser den Knopf (Befund 2026-10-20). --}}
+                    <x-button type="submit" size="sm" icon="document_scanner" formaction="{{ route('finance.incoming-invoices.bulk-reanalyze') }}" formnovalidate>{{ __('Erneut erkennen') }}</x-button>
                 </x-slot:actions>
             </x-bulk-toolbar>
     @endif

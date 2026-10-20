@@ -1586,7 +1586,10 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
   Sammelaktion „Erneut erkennen“ liest auch aus PDF bzw. Bild gelesene
   Eingänge ohne erfasste Werte, Übergabe oder Ablehnung neu, damit sich
   solche Fehllesungen nachträglich korrigieren lassen; der Konsolenbefehl
-  bleibt auf Klärfälle beschränkt. Kennzahlkacheln verkleinern lange Werte
+  bleibt auf Klärfälle beschränkt. Der Knopf „Erneut erkennen“ scheiterte
+  bisher an der Pflichtfeldprüfung des Partei-Dropdowns im selben Formular
+  („Wähle ein Element in der Liste aus“); er nimmt sich jetzt mit
+  `formnovalidate` davon aus. Kennzahlkacheln verkleinern lange Werte
   stufenweise und brechen sie um, statt über die Kachel hinauszulaufen.
   Tests.
 

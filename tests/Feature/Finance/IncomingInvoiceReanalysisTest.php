@@ -95,6 +95,16 @@ class IncomingInvoiceReanalysisTest extends TestCase {
         );
     }
 
+    /** Befund 2026-10-20: Der Browser blockte „Erneut erkennen“ mit „Wähle ein Element in der Liste aus“ — das Pflichtfeld „Partei“ gehört nur zum Zuordnen. */
+    public function test_the_reanalyse_button_skips_the_party_requirement_of_the_bulk_form(): void {
+        $this->clarificationCase($this->invoiceXml('ER-2026-0050'));
+
+        $html = $this->get(route('finance.incoming-invoices.index', ['tab' => 'all']))->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('/<button[^>]*formaction="[^"]*sammel-erkennen"[^>]*formnovalidate/', $html);
+        $this->assertStringContainsString('name="party"', $html);
+    }
+
     public function test_command_reanalyses_open_clarification_cases_per_organization(): void {
         $incoming = $this->clarificationCase($this->invoiceXml('ER-2026-0046'));
 
