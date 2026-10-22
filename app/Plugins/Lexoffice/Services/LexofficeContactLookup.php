@@ -12,20 +12,22 @@ declare(strict_types=1);
 
 namespace App\Plugins\Lexoffice\Services;
 
+use APIToolkit\Exceptions\ApiException;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Plugins\Lexoffice\LexofficePlugin;
-use App\Plugins\Support\PluginApiClient;
+use Lexoffice\API\Client;
+use Lexoffice\API\Endpoints\ContactsEndpoint;
 
 /**
  * Lexoffice-Kontakt eines Kunden für einen ausgehenden Beleg: bestehender
  * Nachweis, sonst die Kontaktsuche per E-Mail — der Treffer wird als Nachweis
  * gemerkt. Stand wortgleich in Übergabeziel, Auftragsbelegen und Lieferschein
- * (Konsolidierungs-Audit 2026-10, k2-02). Bleibt roh, weil die Suche den
- * gedrosselten Client der rohen Beleg-POSTs der Aufrufer teilt.
+ * (Konsolidierungs-Audit 2026-10, k2-02). Die Suche läuft über den Client des
+ * Aufrufers, damit sie mit dessen Beleg-POST gedrosselt bleibt.
  */
 class LexofficeContactLookup {
-    public function find(Customer $customer, PluginApiClient $api, string $baseUrl): ?string {
+    public function find(Customer $customer, Client $client): ?string {
         $existing = ExternalReference::query()
             ->forPlugin($customer->organization_id, LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT)
             ->forReferenceable($customer)
@@ -40,13 +42,14 @@ class LexofficeContactLookup {
             return null;
         }
 
-        $response = $api->getResponse($baseUrl . '/contacts', ['email' => $email, 'page' => 0, 'size' => 1]);
-        if (! $response->successful()) {
+        try {
+            $first = (new ContactsEndpoint($client))->search(['email' => $email, 'page' => 0, 'size' => 1])->getValues()[0] ?? null;
+        } catch (ApiException) {
             return null;
         }
 
-        $first = ((array) ($response->json('content') ?? []))[0] ?? null;
-        if (! is_array($first) || empty($first['id'])) {
+        $id = (string) ($first?->toArray()['id'] ?? '');
+        if ($id === '') {
             return null;
         }
 
@@ -59,11 +62,11 @@ class LexofficeContactLookup {
             ],
             [
                 'organization_id' => $customer->organization_id,
-                'external_id' => (string) $first['id'],
+                'external_id' => $id,
                 'synced_at' => now(),
             ],
         );
 
-        return (string) $first['id'];
+        return $id;
     }
 }

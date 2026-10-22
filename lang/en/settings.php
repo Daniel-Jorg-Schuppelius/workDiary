@@ -91,6 +91,8 @@ return [
         'transfer_closing_text' => 'Template: transfer closing remark',
         'transfer_text_hint' => 'Copied into the receipt when a transfer is created and editable there. Placeholders: :customer, :from, :to, :channel. Empty = the target’s previous default text.',
         'transfer_closing_hint' => 'As above; without a template the customer’s invoice text applies, otherwise the closing remark stays empty.',
+        'quote_validity_days' => 'Quote validity (days)',
+        'quote_validity_days_hint' => 'Prefills “valid until” on new quotes and applies in Lexware when a quote has none (required there).',
     ],
     'accounting' => [
         'heading' => 'Accounting',

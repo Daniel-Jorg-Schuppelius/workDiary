@@ -83,6 +83,13 @@
                            error="settings.invoicing.time_unit" maxlength="8"
                            :value="old('settings.invoicing.time_unit', data_get($stored, 'invoicing.time_unit', ''))"
                            :placeholder="__('settings.placeholder_default', ['value' => (string) config('invoicing.time_unit')])" />
+            {{-- Bindefrist: Vorbelegung von „gültig bis“ und Ablaufdatum bei Lexware. --}}
+            <x-input-field name="settings[invoicing][quote_validity_days]" type="number" min="1" max="365"
+                           :label="__('settings.invoicing.quote_validity_days')"
+                           error="settings.invoicing.quote_validity_days"
+                           :value="old('settings.invoicing.quote_validity_days', data_get($stored, 'invoicing.quote_validity_days', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => (string) config('invoicing.quote_validity_days')])"
+                           :hint="__('settings.invoicing.quote_validity_days_hint')" />
 
             {{-- Standardleistung (MVP-486): Artikel aus dem Artikelkatalog (MVP-1026)
                  für Bezeichnung, Einheit, Standardtext und Preis-Rückfall.

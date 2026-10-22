@@ -98,4 +98,23 @@ final class OrganizationSettingsDialogTest extends TestCase {
 
         $this->assertTrue((bool) data_get($this->organization->refresh()->settings, 'finance.accounting_four_eyes'));
     }
+
+    /** Bindefrist für Angebote: im Dialog einstellbar und Vorbelegung von „gültig bis“ im Angebotsdialog. */
+    public function test_quote_validity_is_set_in_the_dialog_and_prefills_new_quotes(): void {
+        $admin = $this->orgAdmin();
+        $this->assertStringContainsString('name="settings[invoicing][quote_validity_days]"', $this->dialog($admin));
+
+        $this->actingAs($admin)->put(route('admin.organizations.update', $this->organization), [
+            'name' => $this->organization->name,
+            'locale' => 'de',
+            'timezone' => 'Europe/Berlin',
+            'settings' => ['invoicing' => ['quote_validity_days' => '10']],
+        ])->assertRedirect();
+        $this->assertSame(10, (int) data_get($this->organization->refresh()->settings, 'invoicing.quote_validity_days'));
+        $this->travelTo('2030-05-04 09:00:00');
+        // Frisch geladen: der angemeldete Nutzer hielt seine Organisation mit dem alten Stand.
+        $this->actingAs($admin->fresh())->get(route('quotes.create'))
+            ->assertOk()
+            ->assertSee('value="2030-05-14"', false);
+    }
 }

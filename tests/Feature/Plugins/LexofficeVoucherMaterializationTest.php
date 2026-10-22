@@ -16,12 +16,11 @@ use App\Models\Platform\Organization;
 use App\Plugins\Lexoffice\Exceptions\LexofficeVoucherFileMissingException;
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use App\Plugins\Lexoffice\Services\{LexofficeVoucherFileService, LexofficeVoucherSync};
-use App\Plugins\Support\PluginApiClient;
-use GuzzleHttp\{Client, HandlerStack};
-use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use Psr\Http\Message\RequestInterface;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 /**
@@ -55,34 +54,42 @@ final class LexofficeVoucherMaterializationTest extends TestCase {
         ], $attributes));
     }
 
-    private function service(MockHandler $mock): LexofficeVoucherFileService {
-        $service = new LexofficeVoucherFileService('key', 'https://api.lexoffice.test/v1');
-        // Mock-Transport über die private PluginApiClient-Naht (C10-Muster).
-        $client = new PluginApiClient('lexoffice', 'https://api.lexoffice.test/v1', new Client(['handler' => HandlerStack::create($mock)]));
-        \Closure::bind(function () use ($client): void {
-            $this->api = $client;
-        }, $service, LexofficeVoucherFileService::class)();
+    private FakePluginHttp $http;
 
-        return $service;
+    /** Antworten in Aufrufreihenfolge; die letzte wiederholt sich. */
+    private function service(Response ...$responses): LexofficeVoucherFileService {
+        $this->http = FakePluginHttp::fake(['https://api.lexware.io/*' => $responses]);
+
+        return new LexofficeVoucherFileService('key', 'https://api.lexware.io/v1');
+    }
+
+    /** @return list<string> */
+    private function sent(): array {
+        return array_map(static fn (array $entry): string => $entry['request']->getMethod() . ' ' . $entry['request']->getUri() . ' ' . $entry['request']->getHeaderLine('Accept'), $this->http->recorded());
     }
 
     public function test_materialize_stores_the_file_locally_and_serves_it_without_api(): void {
         $voucher = $this->voucher();
         // Generischer Beleg: (1) /vouchers/{id} liefert das files-Array,
         // (2) /files/{id} das Belegbild.
-        $service = $this->service(new MockHandler([
-            new Response(200, ['Content-Type' => 'application/json'], (string) json_encode(['files' => ['file-1']])),
+        $service = $this->service(
+            new Response(200, ['Content-Type' => 'application/json'], (string) json_encode(['files' => ['0b6f1c2e-4a5d-4e8f-9a1b-2c3d4e5f6a7b']])),
             new Response(200, ['Content-Type' => 'application/pdf'], '%PDF-fake'),
-        ]));
+        );
 
         $this->assertTrue($service->materialize($voucher));
         $voucher->refresh();
         $this->assertNotNull($voucher->file_path);
         Storage::disk('local')->assertExists((string) $voucher->file_path);
+        // VouchersEndpoint::get(), dann FilesEndpoint::downloadContent() mit der Accept-Liste der Belegbilder.
+        $this->assertSame([
+            'GET https://api.lexware.io/v1/vouchers/' . $voucher->external_id . ' application/json',
+            'GET https://api.lexware.io/v1/files/0b6f1c2e-4a5d-4e8f-9a1b-2c3d4e5f6a7b application/pdf, image/png, image/jpeg, image/gif, image/tiff, application/xml, */*',
+        ], $this->sent());
 
-        // Idempotent: zweiter Aufruf braucht keinen weiteren API-Call
-        // (der MockHandler hätte keine Antwort mehr).
+        // Idempotent: zweiter Aufruf braucht keinen weiteren API-Call.
         $this->assertTrue($service->materialize($voucher));
+        $this->http->assertSentCount(2);
 
         $local = $service->localFile($voucher);
         $this->assertSame('%PDF-fake', $local['body'] ?? null);
@@ -91,10 +98,10 @@ final class LexofficeVoucherMaterializationTest extends TestCase {
 
     public function test_missing_file_marks_the_voucher_checked_without_local_file(): void {
         $voucher = $this->voucher();
-        $service = $this->service(new MockHandler([
-            new Response(200, ['Content-Type' => 'application/json'], (string) json_encode(['files' => ['file-1']])),
+        $service = $this->service(
+            new Response(200, ['Content-Type' => 'application/json'], (string) json_encode(['files' => ['0b6f1c2e-4a5d-4e8f-9a1b-2c3d4e5f6a7b']])),
             new Response(404, ['Content-Type' => 'application/json'], '{"message":"not found"}'),
-        ]));
+        );
 
         $this->assertFalse($service->materialize($voucher));
         $voucher->refresh();
@@ -109,10 +116,10 @@ final class LexofficeVoucherMaterializationTest extends TestCase {
      */
     public function test_auth_or_server_errors_are_not_mistaken_for_a_missing_file(): void {
         $voucher = $this->voucher();
-        $service = $this->service(new MockHandler([
-            new Response(200, ['Content-Type' => 'application/json'], (string) json_encode(['files' => ['file-1']])),
+        $service = $this->service(
+            new Response(200, ['Content-Type' => 'application/json'], (string) json_encode(['files' => ['0b6f1c2e-4a5d-4e8f-9a1b-2c3d4e5f6a7b']])),
             new Response(401, ['Content-Type' => 'application/json'], '{"message":"unauthorized"}'),
-        ]));
+        );
 
         try {
             $service->materialize($voucher);
@@ -127,9 +134,9 @@ final class LexofficeVoucherMaterializationTest extends TestCase {
         // 401 bereits beim Nachschlagen der Datei-Referenz (/vouchers/{id}):
         // vorher lief das als leere Referenz in „kein Belegbild".
         $voucher = $this->voucher();
-        $service = $this->service(new MockHandler([
+        $service = $this->service(
             new Response(401, ['Content-Type' => 'application/json'], '{"message":"unauthorized"}'),
-        ]));
+        );
 
         try {
             $service->materialize($voucher);
@@ -138,6 +145,54 @@ final class LexofficeVoucherMaterializationTest extends TestCase {
             $this->assertNotInstanceOf(LexofficeVoucherFileMissingException::class, $e);
         }
         $this->assertNull($voucher->fresh()?->file_materialized_at);
+    }
+
+    /**
+     * Verkaufsbeleg: PDF über `/{beleg}/{id}/file` (`/document` ist laut Referenz veraltet); ein Entwurf
+     * (409) fällt auf `/vouchers/{id}` zurück, ohne Belegbild dort gibt es keine Datei.
+     */
+    public function test_sales_document_is_fetched_through_the_file_endpoint(): void {
+        $invoice = $this->voucher(['voucher_type' => 'salesinvoice']);
+        $draft = $this->voucher(['voucher_type' => 'salescreditnote']);
+        $fake = FakePluginHttp::fake([
+            'https://api.lexware.io/v1/invoices/' . $invoice->external_id . '/file' => new Response(200, ['Content-Type' => 'application/pdf'], '%PDF-1'),
+            'https://api.lexware.io/v1/credit-notes/' . $draft->external_id . '/file' => FakePluginHttp::response(['message' => 'draft'], 409),
+            'https://api.lexware.io/v1/vouchers/' . $draft->external_id => FakePluginHttp::response(['files' => []]),
+        ]);
+        $service = new LexofficeVoucherFileService('key', 'https://api.lexware.io/v1');
+
+        $file = $service->download($invoice);
+        $this->assertSame(['body' => '%PDF-1', 'content_type' => 'application/pdf', 'extension' => 'pdf'], $file);
+        $fake->assertSent(static fn (RequestInterface $request): bool => str_ends_with((string) $request->getUri(), '/invoices/' . $invoice->external_id . '/file')
+            && $request->getHeaderLine('Accept') === 'application/pdf');
+        $fake->assertNotSent(static fn (RequestInterface $request): bool => str_contains((string) $request->getUri(), '/document'));
+
+        $this->expectException(LexofficeVoucherFileMissingException::class);
+        $service->download($draft);
+    }
+
+    /**
+     * Der Antwort-Body geht an den Browser (S-10): einer Weiterleitung folgt der
+     * Dateiabruf nicht, auch nicht über den injizierten Transport des SDK-Clients.
+     */
+    public function test_file_download_does_not_follow_redirects(): void {
+        $voucher = $this->voucher();
+        $service = $this->service(
+            new Response(200, ['Content-Type' => 'application/json'], (string) json_encode(['files' => ['0b6f1c2e-4a5d-4e8f-9a1b-2c3d4e5f6a7b']])),
+            new Response(302, ['Location' => 'https://elsewhere.example/file.pdf']),
+        );
+
+        try {
+            $service->download($voucher);
+            $this->fail('Eine Weiterleitung muss als Fehler enden.');
+        } catch (\RuntimeException $e) {
+            $this->assertSame('Lexoffice file fetch failed: 302', $e->getMessage());
+        }
+        $this->http->assertSentCount(2);
+        $this->http->assertNotSent(static fn (RequestInterface $request): bool => $request->getUri()->getHost() === 'elsewhere.example');
+        foreach ($this->http->recorded() as $entry) {
+            $this->assertFalse($entry['options']['allow_redirects']);
+        }
     }
 
     public function test_empty_seen_list_does_not_archive_the_mirror(): void {

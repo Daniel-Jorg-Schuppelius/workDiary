@@ -10,14 +10,20 @@
 
 namespace App\Plugins\Lexoffice\Services;
 
+use APIToolkit\Entities\ID;
+use APIToolkit\Exceptions\ApiException;
 use App\Enums\Sales\OrderConfirmationStatus;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\Invoice;
 use App\Models\Sales\{OrderConfirmation, Quote};
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\LexofficePlugin;
-use App\Plugins\Support\PluginApiClient;
 use App\Support\MorphMap;
+use InvalidArgumentException;
+use Lexoffice\API\Client;
+use Lexoffice\API\Endpoints\Documents\{CreditNotesEndpoint, InvoicesEndpoint};
+use Lexoffice\Entities\Documents\CreditNotes\CreditNote;
+use Lexoffice\Entities\Documents\Invoices\Invoice as LexofficeInvoice;
 use RuntimeException;
 
 /**
@@ -27,10 +33,9 @@ use RuntimeException;
  * MVP-1154/1166). Die Verknüpfung steht in einer ExternalReference, die
  * Lexoffice-Nummer übernimmt das lokale Ausstellen.
  *
- * Roh über {@see PluginApiClient}: das SDK legt Rechnung und Gutschrift nur
- * ohne Vorgänger mit Inhalt an (`pursue()` sendet `{}`), seine Entitäten
- * lehnen die Adresse mit `contactId` ab, die Gutschrift verliert
- * `discountPercentage` und `shippingConditions`, und `/{art}/{id}/file` fehlt.
+ * Über das SDK; nur das Anlegen der Gutschrift bleibt roh (auf demselben
+ * Client): ihre Entität modelliert laut Lexware-Referenz weder
+ * `shippingConditions` noch `discountPercentage`, die der Mapper sendet.
  */
 class LexofficeInvoiceService {
     /** Gilt für jeden übertragenen lokalen Beleg, auch Korrekturen; die Ressource steht in `payload._resource`. */
@@ -40,7 +45,7 @@ class LexofficeInvoiceService {
 
     public const RESOURCE_CREDIT_NOTES = 'credit-notes';
 
-    private ?PluginApiClient $api = null;
+    private ?Client $client = null;
 
     public function __construct(
         private readonly LexofficeInvoiceMapper $mapper,
@@ -55,8 +60,8 @@ class LexofficeInvoiceService {
         return $this->apiKey !== null && $this->apiKey !== '';
     }
 
-    private function api(): PluginApiClient {
-        return $this->api ??= app(LexofficeClientFactory::class)->make((string) $this->apiKey, $this->baseUrl, $this->requestInterval);
+    private function client(): Client {
+        return $this->client ??= app(LexofficeClientFactory::class)->sdk((string) $this->apiKey, $this->baseUrl, $this->requestInterval);
     }
 
     /**
@@ -93,18 +98,7 @@ class LexofficeInvoiceService {
                 : $this->mapper->toPayload($invoice, $contactId, $this->defaults);
             // Korrektur ohne übertragene Ursprungsrechnung entsteht ohne Bezug (Original aus der Zeit lokaler Nummern).
             $preceding = $correction ? $this->precedingVoucherId($invoice) : $this->orderVoucherId($invoice);
-            $response = $this->create($resource, $payload, $preceding);
-            // Lexoffice lehnt einen ungültigen Vorgänger mit 406 ab (etwa ein Angebot mit Optionspositionen) — dann ohne Bezug.
-            if ($response->status() === 406 && $preceding !== null && ! $correction) {
-                $response = $this->create($resource, $payload, null);
-            }
-            if (! $response->successful()) {
-                throw new RuntimeException('Lexoffice ' . $resource . ' create failed: ' . $response->status() . ' ' . mb_substr((string) $response->body(), 0, 500));
-            }
-            $externalId = (string) ($response->json('id') ?? '');
-            if ($externalId === '') {
-                throw new RuntimeException('Lexoffice invoice create returned no id.');
-            }
+            $externalId = $this->create($resource, $payload, $preceding, ! $correction);
             $reference = ExternalReference::create([
                 'organization_id' => $invoice->organization_id,
                 'plugin_id' => LexofficePlugin::ID,
@@ -144,11 +138,34 @@ class LexofficeInvoiceService {
         return ['external_id' => $result['external_id'], 'payload' => $result['payload']];
     }
 
-    /** @param array<string, mixed> $payload */
-    private function create(string $resource, array $payload, ?string $preceding): \Illuminate\Http\Client\Response {
-        $query = array_filter(['precedingSalesVoucherId' => $preceding, 'finalize' => 'true']);
+    /**
+     * Festgeschrieben anlegen und die Lexoffice-ID liefern.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    private function create(string $resource, array $payload, ?string $preceding, bool $retryWithoutPreceding): string {
+        try {
+            $precedingId = $preceding !== null ? new ID($preceding) : null;
+            $created = $resource === self::RESOURCE_CREDIT_NOTES
+                ? (new CreditNotesEndpoint($this->client()))->create(CreditNote::fromArray($payload), $precedingId, true)->toArray()
+                : (new InvoicesEndpoint($this->client()))->create(LexofficeInvoice::fromArray($payload), $precedingId, true)->toArray();
+        } catch (ApiException $e) {
+            // Lexoffice lehnt einen ungültigen Vorgänger mit 406 ab (etwa ein Angebot mit Optionspositionen) — dann ohne Bezug.
+            if ($e->getCode() === 406 && $preceding !== null && $retryWithoutPreceding) {
+                return $this->create($resource, $payload, null, false);
+            }
 
-        return $this->api()->postJson($this->baseUrl . '/' . $resource . '?' . http_build_query($query), $payload);
+            throw new RuntimeException('Lexoffice ' . $resource . ' create failed: ' . $e->getCode() . ' ' . mb_substr((string) $e->getContent(), 0, 500), 0, $e);
+        } catch (InvalidArgumentException $e) {
+            // isValid() der Entität; die Aufrufer fangen RuntimeException.
+            throw new RuntimeException('Lexoffice ' . $resource . ' create failed: ' . $e->getMessage(), 0, $e);
+        }
+        $externalId = (string) ($created['id'] ?? '');
+        if ($externalId === '') {
+            throw new RuntimeException('Lexoffice invoice create returned no id.');
+        }
+
+        return $externalId;
     }
 
     /**
@@ -193,13 +210,11 @@ class LexofficeInvoiceService {
         if (! $this->isConfigured()) {
             throw new RuntimeException('Lexoffice API key is not configured.');
         }
-        $response = $this->api()->getResponse($this->baseUrl . '/' . $resource . '/' . $externalId);
-
-        if (! $response->successful()) {
-            throw new RuntimeException('Lexoffice invoice fetch failed: ' . $response->status() . ' ' . $response->body());
+        try {
+            return $this->endpoint($resource)->get(new ID($externalId))->toArray();
+        } catch (ApiException $e) {
+            throw new RuntimeException('Lexoffice invoice fetch failed: ' . $e->getCode() . ' ' . $e->getContent(), 0, $e);
         }
-
-        return (array) ($response->json() ?? []);
     }
 
     /**
@@ -211,16 +226,15 @@ class LexofficeInvoiceService {
             throw new RuntimeException('Lexoffice API key is not configured.');
         }
 
-        $pdf = $this->api()->getResponse(
-            $this->baseUrl . '/' . $resource . '/' . $externalId . '/file',
-            [],
-            ['headers' => ['Accept' => 'application/pdf']],
-        );
-        if (! $pdf->successful()) {
-            throw new RuntimeException('Lexoffice file fetch failed: ' . $pdf->status());
+        try {
+            return $this->endpoint($resource)->downloadContent(new ID($externalId), 'application/pdf')->getContent();
+        } catch (ApiException $e) {
+            throw new RuntimeException('Lexoffice file fetch failed: ' . $e->getCode(), 0, $e);
         }
+    }
 
-        return (string) $pdf->body();
+    private function endpoint(string $resource): InvoicesEndpoint|CreditNotesEndpoint {
+        return $resource === self::RESOURCE_CREDIT_NOTES ? new CreditNotesEndpoint($this->client()) : new InvoicesEndpoint($this->client());
     }
 
     /** Lexoffice-ID der übertragenen Ursprungsrechnung einer Korrektur. */

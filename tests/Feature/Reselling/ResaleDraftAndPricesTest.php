@@ -150,7 +150,7 @@ class ResaleDraftAndPricesTest extends TestCase {
         $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'LDS Systems GmbH', 'billing_mode' => \App\Enums\Finance\BillingMode::Lexoffice]);
         ExternalReference::create([
             'organization_id' => $this->organization->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
-            'external_id' => 'c-lds', 'referenceable_type' => $partner->getMorphClass(), 'referenceable_id' => $partner->getKey(),
+            'external_id' => '7c6b5a49-3827-4e16-9f05-e4d3c2b1a098', 'referenceable_type' => $partner->getMorphClass(), 'referenceable_id' => $partner->getKey(),
         ]);
         $kaik = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik']);
         $article = LexofficeArticle::create([
@@ -188,7 +188,7 @@ class ResaleDraftAndPricesTest extends TestCase {
             ->assertSessionHas('success');
 
         $this->assertNotNull($captured, 'Entwurf wurde an Lexoffice gesendet');
-        $this->assertSame('c-lds', $captured['address']['contactId']);
+        $this->assertSame('7c6b5a49-3827-4e16-9f05-e4d3c2b1a098', $captured['address']['contactId']);
         $this->assertArrayNotHasKey('finalize', $captured);
         $this->assertCount(2, $captured['lineItems'], 'eine Position je Periode');
         $this->assertSame('Microsoft 365 Business Basic', $captured['lineItems'][0]['name']);
@@ -233,7 +233,7 @@ class ResaleDraftAndPricesTest extends TestCase {
         $this->actingAs($admin)->post(route('finance.resale.periods.waive', $second->sqid), ['decision' => 'waived', 'reason' => 'Kulanz'])->assertRedirect();
         $this->assertSame('draft-42', $second->fresh()?->draft_reference);
         $voucher = \App\Plugins\Lexoffice\Models\LexofficeVoucher::create([
-            'organization_id' => $this->organization->id, 'external_id' => 'draft-42', 'contact_external_id' => 'c-lds', 'voucher_type' => 'invoice',
+            'organization_id' => $this->organization->id, 'external_id' => 'draft-42', 'contact_external_id' => '7c6b5a49-3827-4e16-9f05-e4d3c2b1a098', 'voucher_type' => 'invoice',
             'voucher_status' => 'open', 'voucher_number' => 'RE/2026/0900', 'voucher_date' => '2026-09-04', 'total_amount' => 100, 'currency' => 'EUR', 'archived' => false, 'lines_synced_at' => now(),
         ]);
         $line = \App\Plugins\Lexoffice\Models\LexofficeVoucherLine::create([

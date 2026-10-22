@@ -87,7 +87,7 @@ class RetainerLexofficeTest extends TestCase {
             'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
             'referenceable_type' => $this->customer->getMorphClass(),
             'referenceable_id' => $this->customer->id,
-            'external_id' => 'contact-uuid-1',
+            'external_id' => 'c0a8e1f2-3b4d-4c5e-8f60-718293a4b5c6',
             'synced_at' => now(),
         ]);
     }

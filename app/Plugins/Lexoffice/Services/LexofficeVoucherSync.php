@@ -21,12 +21,13 @@ use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
-use App\Plugins\Support\PluginApiClient;
-use CommonToolkit\Helper\Data\JsonHelper;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Carbon;
 use Lexoffice\API\Client;
+use Lexoffice\API\Endpoints\{PaymentsEndpoint, VoucherListEndpoint};
+use Lexoffice\Entities\VoucherList\VoucherListPage;
 use RuntimeException;
+use UnexpectedValueException;
 
 /**
  * Zieht die Lexoffice-Belege (voucherlist) für alle verknüpften Kontakte einer
@@ -38,18 +39,9 @@ use RuntimeException;
  * Kontakts — ein Kontakt mit Doppelrolle setzt sowohl customer_id als auch
  * supplier_id.
  *
- * Die Belegliste läuft roh über den API-Client: `voucherType=any` liefert
- * Arten, die die Aufzählung `VoucherType` des SDK nicht kennt (`quotation`,
- * `orderconfirmation`, `deliverynote`, `downpaymentdeduction`, `voucher`,
- * {@see VoucherTypes}) — eine solche Zeile ließe die ganze Seite scheitern.
- * Zahlungen laufen über den SDK-Client, aber ohne Entitäten-Mapping: dem Enum
- * `PaymentItemType` fehlt „irrecoverableReceivable“.
- *
  * Quelle: https://developers.lexware.io/docs/#voucherlist-endpoint
  */
 class LexofficeVoucherSync {
-    private ?PluginApiClient $api = null;
-
     private ?Client $client = null;
 
     private float $requestInterval;
@@ -69,11 +61,7 @@ class LexofficeVoucherSync {
         $this->requestInterval = $requestInterval ?? LexofficeConfig::requestInterval();
     }
 
-    private function api(): PluginApiClient {
-        // 429/5xx wiederholt der Client selbst (Retry-After/Backoff) — keine eigene Schleife.
-        return $this->api ??= app(LexofficeClientFactory::class)->make((string) $this->apiKey, $this->baseUrl, $this->requestInterval);
-    }
-
+    /** 429/5xx wiederholt der Client selbst (Retry-After/Backoff) — keine eigene Schleife. */
     private function client(): Client {
         return $this->client ??= app(LexofficeClientFactory::class)->sdk((string) $this->apiKey, $this->baseUrl, $this->requestInterval);
     }
@@ -255,21 +243,17 @@ class LexofficeVoucherSync {
 
         $enriched = 0;
         foreach ($candidates as $voucher) {
-            // Gleicher SDK-Client (Drosselung), aber ohne Entitäten-Mapping: Dem Enum
-            // PaymentItemType fehlt „irrecoverableReceivable“ — abgeschriebene Forderungen
-            // fielen sonst still aus dem Abgleich.
             try {
-                $response = $this->client()->get('payments/' . rawurlencode((string) $voucher->external_id));
-            } catch (ApiException) {
+                $paidDate = (new PaymentsEndpoint($this->client()))->get(new ID((string) $voucher->external_id))->getPaidDate();
+            } catch (ApiException|UnexpectedValueException) {
+                // Auch eine nicht lesbare Antwort bleibt ein Fehler dieses Belegs, nicht des Laufs.
                 continue;
             }
-            $decoded = $response->getStatusCode() === 200 ? JsonHelper::decode((string) $response->getBody(), true) : null;
-            $paidDate = is_array($decoded) ? ($decoded['paidDate'] ?? null) : null;
-            if (! is_string($paidDate) || $paidDate === '') {
+            if ($paidDate === null) {
                 continue;
             }
 
-            $voucher->forceFill(['paid_date' => substr($paidDate, 0, 10)])->save();
+            $voucher->forceFill(['paid_date' => $paidDate->format('Y-m-d')])->save();
             $enriched++;
         }
 
@@ -488,10 +472,7 @@ class LexofficeVoucherSync {
         $all = [];
 
         do {
-            $response = $this->requestVoucherlist($contactExternalId, $page, $pageSize, $updatedFrom);
-
-            /** @var array<string, mixed> $body */
-            $body = $response->json() ?? [];
+            $body = $this->requestVoucherlist($contactExternalId, $page, $pageSize, $updatedFrom)->toArray();
             foreach ((array) ($body['content'] ?? []) as $item) {
                 if (is_array($item)) {
                     /** @var array<string, mixed> $item */
@@ -511,9 +492,9 @@ class LexofficeVoucherSync {
      * (Retry-After/Backoff) übernimmt der Client; was danach noch scheitert,
      * ist ein regulärer API-Fehler.
      */
-    private function requestVoucherlist(?string $contactExternalId, int $page, int $pageSize, ?string $updatedFrom = null): \Illuminate\Http\Client\Response {
-        $response = $this->api()
-            ->getResponse($this->baseUrl . '/voucherlist', array_filter([
+    private function requestVoucherlist(?string $contactExternalId, int $page, int $pageSize, ?string $updatedFrom = null): VoucherListPage {
+        try {
+            return (new VoucherListEndpoint($this->client()))->search(array_filter([
                 'voucherType' => 'any',
                 'voucherStatus' => 'any',
                 'contactId' => $contactExternalId,
@@ -521,12 +502,9 @@ class LexofficeVoucherSync {
                 'page' => $page,
                 'size' => $pageSize,
             ], static fn (mixed $value): bool => $value !== null));
-
-        if (! $response->successful()) {
-            throw LexofficeApiException::fromResponse($response, __('Belege'), __('Belegliste filtern und abrufen'));
+        } catch (ApiException $e) {
+            throw LexofficeApiException::fromApiException($e, __('Belege'), __('Belegliste filtern und abrufen'));
         }
-
-        return $response;
     }
 
     /**

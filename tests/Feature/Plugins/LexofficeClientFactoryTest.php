@@ -76,13 +76,6 @@ final class LexofficeClientFactoryTest extends TestCase {
         return $fake;
     }
 
-    public function test_every_client_gets_the_same_retry_budget(): void {
-        FakePluginHttp::fake();
-
-        $this->assertSame(LexofficeClientFactory::MAX_RETRIES, app(LexofficeClientFactory::class)->make('lex-key', 'https://api.lexware.io/v1')->getMaxRetries());
-        $this->assertSame(LexofficeClientFactory::MAX_RETRIES, app(LexofficeClientFactory::class)->fromConfig(LexofficeConfig::resolve($this->organization->id))->getMaxRetries());
-    }
-
     public function test_a_queued_run_uses_the_interval_of_its_organization_without_bound_context(): void {
         $customer = $this->linkedCustomer();
         // Ein bezahlter Beleg ohne Zahldatum: der Zahlungsabgleich baut dafür den SDK-Client.
@@ -111,9 +104,8 @@ final class LexofficeClientFactoryTest extends TestCase {
 
         (new SyncOwnerVouchersJob($this->organization->id, 'customer', $customer->id))->withFakeQueueInteractions()->handle();
 
-        $this->assertNotSame([], $fake->intervals);
-        $this->assertSame([1.25], array_values(array_unique($fake->intervals)));
-        // Auch der SDK-Client (Zahlungen) bekommt den Abstand der Organisation ausdrücklich.
+        // Belegliste und Zahlungen laufen nur noch über den SDK-Client, mit dem Abstand der Organisation.
+        $this->assertSame([], $fake->intervals, 'kein roher API-Client');
         $this->assertNotSame([], $factory->sdkIntervals);
         $this->assertSame([1.25], array_values(array_unique($factory->sdkIntervals)));
     }

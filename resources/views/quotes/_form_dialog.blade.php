@@ -27,7 +27,7 @@
         <x-project-select :label="__('Projekt (optional)')" :placeholder="__('ohne Projektbezug')" span="2"
             :projects="$projects" :selected="(string) old('project_id', $prefillProjectId ?? '')"
             data-depends-on="customer_id" :data-parent="true" />
-        <x-input-field name="valid_until" type="date" :label="__('Bindefrist (gültig bis)')" :value="old('valid_until')" />
+        <x-input-field name="valid_until" type="date" :label="__('Bindefrist (gültig bis)')" :value="old('valid_until', $defaultValidUntil ?? null)" />
         <x-textarea-field name="terms" :label="__('Bedingungen / Leistungsumfang (optional)')" rows="3" span="2">{{ old('terms') }}</x-textarea-field>
         @php
             $labourRule = \App\Models\Sales\Quote::labourCostDisclosureRule(auth()->user()?->organization);

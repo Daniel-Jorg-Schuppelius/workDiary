@@ -21,8 +21,8 @@ use App\Models\Platform\{Organization, PluginSetting, User};
 use App\Models\Sales\{OrderConfirmation, Quote};
 use App\Plugins\Easybill\EasybillPlugin;
 use App\Plugins\Easybill\Services\EasybillTarget;
-use App\Plugins\Lexoffice\LexofficePlugin;
-use App\Plugins\Lexoffice\Services\LexofficeOrderConfirmationService;
+use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
+use App\Plugins\Lexoffice\Services\{LexofficeInvoiceMapper, LexofficeOrderConfirmationService};
 use App\Plugins\SevDesk\SevDeskPlugin;
 use App\Services\Invoicing\InvoiceGenerator;
 use App\Services\Numbering\NumberSequenceService;
@@ -39,6 +39,9 @@ use Tests\TestCase;
 /** Phase 145, P4/P5 (MVP-1165–1169): Rechnung, Gutschrift und Storno an das vergebende Programm. */
 final class InvoiceTransferTest extends TestCase {
     use RefreshDatabase;
+
+    /** Lexware vergibt UUIDs; isValid() der Belegadresse prüft darauf. */
+    private const LEXOFFICE_CONTACT = 'e5b7a6c4-1f2d-4c3b-9a8e-7d6c5b4a3f21';
 
     private Organization $org;
 
@@ -84,13 +87,23 @@ final class InvoiceTransferTest extends TestCase {
         return $invoice->refresh();
     }
 
+    /** @return list<string> */
+    private static function sent(FakePluginHttp $fake): array {
+        return array_map(static fn (array $entry): string => $entry['request']->getMethod() . ' ' . $entry['request']->getUri(), $fake->recorded());
+    }
+
+    /** @return array<string, mixed> */
+    private static function body(FakePluginHttp $fake, int $index): array {
+        return (array) json_decode((string) $fake->recorded()[$index]['request']->getBody(), true);
+    }
+
     /** @param array<string, mixed> $body */
     private static function reply(array $body, int $status = 200): \Closure {
         return static fn (): Psr7Response => FakePluginHttp::response($body, $status);
     }
 
     public function test_lexoffice_invoice_follows_the_order_confirmation(): void {
-        $this->program(LexofficePlugin::ID, contactId: 'lex-contact-1');
+        $this->program(LexofficePlugin::ID, contactId: self::LEXOFFICE_CONTACT);
         $quote = Quote::factory()->create(['organization_id' => $this->org->id, 'customer_id' => $this->customer->id]);
         $confirmation = OrderConfirmation::factory()->create(['organization_id' => $this->org->id, 'customer_id' => $this->customer->id, 'quote_id' => $quote->id, 'status' => OrderConfirmationStatus::Confirmed]);
         ExternalReference::create(['organization_id' => $this->org->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => LexofficeOrderConfirmationService::EXT_TYPE_ORDER_CONFIRMATION,
@@ -98,6 +111,7 @@ final class InvoiceTransferTest extends TestCase {
         $invoice = $this->draft(['quote_id' => $quote->id]);
         $this->assertTrue(NumberSequenceService::isDraft($invoice->number));
         $this->actingAs($this->user)->get(route('invoices.show', $invoice))->assertOk()->assertSee(__('numbering.issue.invoice_pending', ['program' => 'Lexoffice']));
+        $expected = (new LexofficeInvoiceMapper)->toPayload($invoice, self::LEXOFFICE_CONTACT, LexofficeConfig::resolve($this->org->id)['defaults']);
         $fake = FakePluginHttp::fake([
             'https://api.lexware.io/v1/invoices?precedingSalesVoucherId=lex-oc-1&finalize=true' => self::reply(['id' => 'lex-inv-1'], 201),
             'https://api.lexware.io/v1/invoices/lex-inv-1' => self::reply(['id' => 'lex-inv-1', 'voucherNumber' => 'RE0042']),
@@ -107,6 +121,12 @@ final class InvoiceTransferTest extends TestCase {
 
         $invoice->refresh();
         $this->assertSame([InvoiceStatus::Issued, 'RE0042'], [$invoice->status, $invoice->number]);
+        // InvoicesEndpoint::create(…, Vorgänger, finalize: true) und ::get(); Body inhaltlich gleich dem Mapper-Payload.
+        $this->assertSame([
+            'POST https://api.lexware.io/v1/invoices?precedingSalesVoucherId=lex-oc-1&finalize=true',
+            'GET https://api.lexware.io/v1/invoices/lex-inv-1',
+        ], self::sent($fake));
+        $this->assertEquals($expected, self::body($fake, 0));
         $fake->assertSent(function (RequestInterface $request): bool {
             $body = json_decode((string) $request->getBody(), true);
 
@@ -119,7 +139,7 @@ final class InvoiceTransferTest extends TestCase {
     }
 
     public function test_lexoffice_rejected_predecessor_is_dropped(): void {
-        $this->program(LexofficePlugin::ID, contactId: 'lex-contact-1');
+        $this->program(LexofficePlugin::ID, contactId: self::LEXOFFICE_CONTACT);
         $quote = Quote::factory()->create(['organization_id' => $this->org->id, 'customer_id' => $this->customer->id]);
         ExternalReference::create(['organization_id' => $this->org->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => 'quotation',
             'referenceable_type' => $quote->getMorphClass(), 'referenceable_id' => $quote->id, 'external_id' => 'lex-q-1', 'external_number' => 'AN0001']);
@@ -133,12 +153,17 @@ final class InvoiceTransferTest extends TestCase {
         $this->actingAs($this->user)->post(route('invoices.issue', $invoice));
 
         $this->assertSame('RE0043', $invoice->refresh()->number);
-        $fake->assertSentCount(3);
+        $this->assertSame([
+            'POST https://api.lexware.io/v1/invoices?precedingSalesVoucherId=lex-q-1&finalize=true',
+            'POST https://api.lexware.io/v1/invoices?finalize=true',
+            'GET https://api.lexware.io/v1/invoices/lex-inv-2',
+        ], self::sent($fake));
+        $this->assertSame(self::body($fake, 0), self::body($fake, 1));
     }
 
     public function test_mail_transfers_before_the_subject_is_rendered(): void {
         Mail::fake();
-        $this->program(LexofficePlugin::ID, contactId: 'lex-contact-1');
+        $this->program(LexofficePlugin::ID, contactId: self::LEXOFFICE_CONTACT);
         $template = InvoiceMailTemplate::query()->create(['organization_id' => null, 'name' => 'T', 'is_default' => true,
             'subject' => 'Rechnung {{invoice_number}}', 'body_html' => '<p>x</p>', 'body_text' => 'x']);
         $invoice = $this->draft();

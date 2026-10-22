@@ -521,7 +521,8 @@ class InvoiceTest extends TestCase {
             'position' => 1,
         ]);
 
-        \Tests\Support\FakePluginHttp::fake([
+        $expected = (new \App\Plugins\Lexoffice\Services\LexofficeInvoiceMapper)->toPayload($invoice, null, \App\Plugins\Lexoffice\LexofficeConfig::resolve($this->organization->id)['defaults']);
+        $fake = \Tests\Support\FakePluginHttp::fake([
             'https://api.lexware.io/v1/invoices?finalize=true' => \Tests\Support\FakePluginHttp::response([
                 'id' => 'lex-inv-1',
                 'resourceUri' => 'https://api.lexware.io/v1/invoices/lex-inv-1',
@@ -539,6 +540,12 @@ class InvoiceTest extends TestCase {
         $invoice->refresh();
         $this->assertSame(InvoiceStatus::Issued, $invoice->status);
         $this->assertSame('RE-2030-007', $invoice->number);
+        // Ohne Kontakt die einmalige Adresse; Body inhaltlich gleich dem Mapper-Payload.
+        $this->assertSame(['POST https://api.lexware.io/v1/invoices?finalize=true', 'GET https://api.lexware.io/v1/invoices/lex-inv-1'], array_map(
+            static fn (array $entry): string => $entry['request']->getMethod() . ' ' . $entry['request']->getUri(),
+            $fake->recorded(),
+        ));
+        $this->assertEquals($expected, json_decode((string) $fake->recorded()[0]['request']->getBody(), true));
         // B1 (Vollscan 2026-08-23): auch der Lexoffice-Push friert Partei-Snapshot
         // und Steuerkontext ein — vorher setzte er nur den Status.
         $this->assertNotNull($invoice->party_snapshot);
@@ -611,6 +618,7 @@ class InvoiceTest extends TestCase {
         $this->assertTrue(NumberSequenceService::isDraft($cancellation->number));
         $this->assertSame(__('numbering.flash.transfer_pending', ['document' => $cancellation->documentLabel(), 'program' => 'Lexoffice']), session('status'));
 
+        $expected = (new \App\Plugins\Lexoffice\Services\LexofficeInvoiceMapper)->toCreditNotePayload($cancellation, null, \App\Plugins\Lexoffice\LexofficeConfig::resolve($this->organization->id)['defaults']);
         $fake = \Tests\Support\FakePluginHttp::fake([
             'https://api.lexware.io/v1/credit-notes?precedingSalesVoucherId=lex-inv-9&finalize=true' => \Tests\Support\FakePluginHttp::response(['id' => 'lex-cn-1'], 201),
             'https://api.lexware.io/v1/credit-notes/lex-cn-1' => \Tests\Support\FakePluginHttp::response(['id' => 'lex-cn-1', 'voucherNumber' => 'RK-2030-001'], 200),
@@ -632,6 +640,16 @@ class InvoiceTest extends TestCase {
         });
         $reference = \App\Models\Integration\ExternalReference::query()->where('referenceable_id', $cancellation->id)->firstOrFail();
         $this->assertSame(['lex-cn-1', 'credit-notes'], [$reference->external_id, $reference->payload['_resource'] ?? null]);
+        // CreditNotesEndpoint::create(): Vorgänger und finalize im Query; Gutschriften haben laut Referenz
+        // weder Versandbedingungen noch Positionsrabatt, der Mapper sendet beides nicht mehr.
+        $this->assertSame([
+            'POST https://api.lexware.io/v1/credit-notes?precedingSalesVoucherId=lex-inv-9&finalize=true',
+            'GET https://api.lexware.io/v1/credit-notes/lex-cn-1',
+        ], array_map(static fn (array $entry): string => $entry['request']->getMethod() . ' ' . $entry['request']->getUri(), $fake->recorded()));
+        $body = json_decode((string) $fake->recorded()[0]['request']->getBody(), true);
+        $this->assertEquals($expected, $body);
+        $this->assertArrayNotHasKey('shippingConditions', $body);
+        $this->assertArrayNotHasKey('discountPercentage', $body['lineItems'][0]);
     }
 
     public function test_correction_without_transferred_original_goes_to_lexoffice_without_link(): void {
@@ -756,6 +774,9 @@ class InvoiceTest extends TestCase {
         $this->assertSame('application/pdf', $response->headers->get('Content-Type'));
         $this->assertStringStartsWith('%PDF', (string) $response->getContent());
         $fake->assertSentCount(1);
+        // InvoicesEndpoint::downloadContent(): `GET /invoices/{id}/file` mit Accept application/pdf.
+        $request = $fake->recorded()[0]['request'];
+        $this->assertSame(['GET', 'https://api.lexware.io/v1/invoices/lex-inv-9/file', 'application/pdf'], [$request->getMethod(), (string) $request->getUri(), $request->getHeaderLine('Accept')]);
     }
 
     /** @return TestResponse<\Symfony\Component\HttpFoundation\Response> */

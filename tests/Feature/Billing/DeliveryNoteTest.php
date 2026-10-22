@@ -187,15 +187,26 @@ final class DeliveryNoteTest extends TestCase {
         $this->actingAs($this->user)->post(route('delivery-notes.deliver', $note))->assertSessionHasNoErrors();
 
         $this->assertSame('LS0007', $note->refresh()->number);
-        $fake->assertSent(function (RequestInterface $request): bool {
-            $body = json_decode((string) $request->getBody(), true);
-
-            return $request->getMethod() === 'POST'
-                && ! str_contains((string) $request->getUri(), 'precedingSalesVoucherId')
-                && data_get($body, 'shippingConditions.shippingType') === 'delivery'
-                && data_get($body, 'lineItems.0.quantity') === 3
-                && data_get($body, 'lineItems.0.unitPrice') === null;
-        });
+        // DeliveryNotesEndpoint::create(…, finalize: true) und ::get(): ohne Vorgänger, ohne Preise, Body wie vorher roh.
+        $this->assertSame(
+            ['POST https://api.lexware.io/v1/delivery-notes?finalize=true', 'GET https://api.lexware.io/v1/delivery-notes/lex-ls-7'],
+            array_map(static fn (array $entry): string => $entry['request']->getMethod() . ' ' . $entry['request']->getUri(), $fake->recorded()),
+        );
+        $body = json_decode((string) $fake->recorded()[0]['request']->getBody(), true);
+        $this->assertSame(['Pumpe P-200', 'Montage'], array_column($body['lineItems'], 'name'));
+        $this->assertEquals([
+            'voucherDate' => now()->format('Y-m-d\\TH:i:s.vP'),
+            'address' => ['contactId' => 'e5b7a6c4-1f2d-4c3b-9a8e-7d6c5b4a3f21'],
+            'lineItems' => $note->items->map(static fn ($item): array => [
+                'type' => 'custom',
+                'name' => trim($item->description) . (filled($item->sku) ? ' (' . $item->sku . ')' : ''),
+                'quantity' => (float) $item->quantity,
+                'unitName' => $item->unit ?: (string) __('invoicing.unit_piece'),
+            ])->all(),
+            'taxConditions' => ['taxType' => 'net'],
+            'shippingConditions' => ['shippingType' => 'delivery', 'shippingDate' => ($note->delivered_on ?? now())->copy()->startOfDay()->format('Y-m-d\\TH:i:s.vP')],
+            'title' => (string) __('manufacturing.delivery_note.title'),
+        ] + array_filter(['remark' => $note->note ?: null]), $body);
         $relations = collect(app(DocumentRelations::class)->of($note))->keyBy(fn (array $r): string => (string) $r['node']->number);
         $this->assertSame(DocumentRelationKind::Counterpart, $relations['LS0007']['kind'] ?? null);
     }
@@ -242,7 +253,7 @@ final class DeliveryNoteTest extends TestCase {
     private function lexoffice(): void {
         PluginSetting::create(['organization_id' => $this->org->id, 'plugin_id' => LexofficePlugin::ID, 'enabled' => true, 'settings' => ['api_key' => 'k']]);
         ExternalReference::create(['organization_id' => $this->org->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => ExternalReference::TYPE_CONTACT,
-            'referenceable_type' => $this->customer->getMorphClass(), 'referenceable_id' => $this->customer->id, 'external_id' => 'lex-contact-1']);
+            'referenceable_type' => $this->customer->getMorphClass(), 'referenceable_id' => $this->customer->id, 'external_id' => 'e5b7a6c4-1f2d-4c3b-9a8e-7d6c5b4a3f21']);
     }
 
     /** @return array{0: ManufacturingOrder, 1: ArticleVariant, 2: Warehouse} */

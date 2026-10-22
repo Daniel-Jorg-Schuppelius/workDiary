@@ -91,6 +91,8 @@ return [
         'transfer_closing_text' => 'Modello: nota finale del trasferimento',
         'transfer_text_hint' => 'Viene copiato nella ricevuta alla creazione del trasferimento ed è lì modificabile. Segnaposto: :customer, :from, :to, :channel. Vuoto = il testo predefinito della destinazione.',
         'transfer_closing_hint' => 'Come sopra; senza modello vale il testo di fattura del cliente, altrimenti la nota resta vuota.',
+        'quote_validity_days' => 'Validità dei preventivi (giorni)',
+        'quote_validity_days_hint' => 'Precompila «valido fino al» dei nuovi preventivi e vale in Lexware quando un preventivo non ne ha (lì è obbligatorio).',
     ],
     'accounting' => [
         'heading' => 'Contabilità',

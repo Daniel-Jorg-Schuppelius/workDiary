@@ -137,7 +137,7 @@ class FinanceTransferExecuteTest extends TestCase {
         $fake = FakePluginHttp::fake([
             // Contact-Lookup (kein bestehender Kontakt → Suche per E-Mail)
             'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response([
-                'content' => [['id' => 'contact-uuid-1']],
+                'content' => [['id' => 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d']],
             ], 200),
             // Invoice-Create (Entwurf) → 201
             'https://api.lexware.io/v1/invoices*' => FakePluginHttp::response([
@@ -168,6 +168,14 @@ class FinanceTransferExecuteTest extends TestCase {
         // Quellen sind verbraucht.
         $this->assertTrue((bool) $entry->fresh()->exported);
 
+        // ContactsEndpoint::search(), dann InvoicesEndpoint::create() ohne finalize; Body inhaltlich gleich dem Payload der App.
+        $this->assertSame([
+            'GET https://api.lexware.io/v1/contacts?' . http_build_query(['email' => $this->customer->email, 'page' => 0, 'size' => 1]),
+            'POST https://api.lexware.io/v1/invoices',
+        ], array_map(static fn (array $entry): string => $entry['request']->getMethod() . ' ' . $entry['request']->getUri(), $fake->recorded()));
+        $this->assertEquals($reference->payload['_request'], json_decode((string) $fake->recorded()[1]['request']->getBody(), true));
+        $this->assertSame('https://api.lexware.io/v1/invoices/lex-invoice-1', data_get($reference->payload, 'resourceUri'));
+
         // Entwurf — kein finalize, korrekter Payload-Kern.
         $fake->assertSent(function (RequestInterface $request): bool {
             $url = (string) $request->getUri();
@@ -178,7 +186,7 @@ class FinanceTransferExecuteTest extends TestCase {
 
             // json_decode liefert für ganzzahlige Floats int → für den Vergleich casten.
             return ! str_contains($url, 'finalize')
-                && $data['address']['contactId'] === 'contact-uuid-1'
+                && $data['address']['contactId'] === 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d'
                 && $data['lineItems'][0]['type'] === 'custom'
                 && (float) $data['lineItems'][0]['quantity'] === 2.0
                 && $data['lineItems'][0]['unitName'] === 'h'
@@ -213,7 +221,7 @@ class FinanceTransferExecuteTest extends TestCase {
         $transfer = $this->confirmedTransfer(TransferTarget::Lexoffice);
 
         $fake = FakePluginHttp::fake([
-            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'contact-uuid-1']]], 200),
+            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d']]], 200),
             'https://api.lexware.io/v1/invoices*' => FakePluginHttp::response(['id' => 'lex-invoice-2'], 201),
         ]);
 
@@ -247,7 +255,7 @@ class FinanceTransferExecuteTest extends TestCase {
             'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
             'referenceable_type' => $this->customer->getMorphClass(),
             'referenceable_id' => $this->customer->getKey(),
-            'external_id' => 'contact-existing',
+            'external_id' => 'f6e5d4c3-b2a1-4f0e-9d8c-7b6a5f4e3d2c',
             'synced_at' => now(),
         ]);
 
@@ -259,7 +267,7 @@ class FinanceTransferExecuteTest extends TestCase {
 
         $this->assertSame(TransferStatus::Transferred, $transfer->fresh()->status);
         $fake->assertSent(fn(RequestInterface $request) => str_contains((string) $request->getUri(), '/invoices')
-            && json_decode((string) $request->getBody(), true)['address']['contactId'] === 'contact-existing');
+            && json_decode((string) $request->getBody(), true)['address']['contactId'] === 'f6e5d4c3-b2a1-4f0e-9d8c-7b6a5f4e3d2c');
         // Kein Contact-Lookup nötig.
         $fake->assertNotSent(fn(RequestInterface $request) => str_contains((string) $request->getUri(), '/contacts'));
     }
@@ -269,7 +277,7 @@ class FinanceTransferExecuteTest extends TestCase {
         $transfer = $this->confirmedTransfer(TransferTarget::Lexoffice);
 
         FakePluginHttp::fake([
-            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'contact-uuid-1']]], 200),
+            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d']]], 200),
             'https://api.lexware.io/v1/invoices*' => FakePluginHttp::response(['message' => 'boom'], 500),
         ]);
 
@@ -298,7 +306,7 @@ class FinanceTransferExecuteTest extends TestCase {
         $marker = LexofficeTarget::MARKER_PREFIX . substr($transfer->payload_hash, 0, 16);
 
         FakePluginHttp::fake([
-            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'contact-uuid-1']]], 200),
+            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d']]], 200),
             'https://api.lexware.io/v1/invoices*' => fn (RequestInterface $request) => throw new ConnectException('cURL error 28: Operation timed out', $request),
         ]);
 
@@ -332,6 +340,12 @@ class FinanceTransferExecuteTest extends TestCase {
 
         $fake->assertNotSent(fn (RequestInterface $request): bool => $request->getMethod() === 'POST');
         $fake->assertNotSent(fn (RequestInterface $request): bool => str_contains((string) $request->getUri(), 'lex-old'));
+        // VoucherListEndpoint::search() mit derselben Query wie vorher roh, dann InvoicesEndpoint::get() je Kandidat.
+        $this->assertSame([
+            'GET https://api.lexware.io/v1/voucherlist?' . http_build_query(['voucherType' => 'invoice', 'voucherStatus' => 'draft', 'contactId' => 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d', 'sort' => 'createdDate,DESC', 'page' => 0, 'size' => 25]),
+            'GET https://api.lexware.io/v1/invoices/lex-foreign',
+            'GET https://api.lexware.io/v1/invoices/lex-draft-9',
+        ], array_map(static fn (array $entry): string => $entry['request']->getMethod() . ' ' . $entry['request']->getUri(), $fake->recorded()));
     }
 
     public function test_execute_lexoffice_writes_the_source_marker_into_the_remark(): void {
@@ -341,7 +355,7 @@ class FinanceTransferExecuteTest extends TestCase {
         $marker = LexofficeTarget::MARKER_PREFIX . substr($transfer->payload_hash, 0, 16);
 
         $fake = FakePluginHttp::fake([
-            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'contact-uuid-1']]], 200),
+            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d']]], 200),
             'https://api.lexware.io/v1/invoices*' => FakePluginHttp::response(['id' => 'lex-invoice-1'], 201),
         ]);
 
@@ -364,7 +378,7 @@ class FinanceTransferExecuteTest extends TestCase {
         $transfer = $this->confirmedTransfer(TransferTarget::Lexoffice);
 
         $fake = FakePluginHttp::fake([
-            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'contact-uuid-1']]], 200),
+            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d']]], 200),
             'https://api.lexware.io/v1/invoices*' => FakePluginHttp::response(['id' => 'lex-invoice-1'], 201),
         ]);
 
@@ -402,7 +416,7 @@ class FinanceTransferExecuteTest extends TestCase {
         $transfer = $this->confirmedTransfer(TransferTarget::Lexoffice);
 
         FakePluginHttp::fake([
-            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'c1']]], 200),
+            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => '0f1e2d3c-4b5a-4968-8776-655443322110']]], 200),
             'https://api.lexware.io/v1/invoices*' => FakePluginHttp::response([], 201),
         ]);
 

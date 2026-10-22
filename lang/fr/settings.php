@@ -91,6 +91,8 @@ return [
         'transfer_closing_text' => 'Modèle : remarque finale du transfert',
         'transfer_text_hint' => 'Copié dans le justificatif à la création du transfert et modifiable sur place. Variables : :customer, :from, :to, :channel. Vide = le texte par défaut de la cible.',
         'transfer_closing_hint' => 'Comme ci-dessus ; sans modèle, le texte de facture du client s’applique, sinon la remarque reste vide.',
+        'quote_validity_days' => 'Durée de validité des devis (jours)',
+        'quote_validity_days_hint' => 'Préremplit « valable jusqu’au » des nouveaux devis et s’applique dans Lexware lorsqu’un devis n’en a pas (obligatoire là-bas).',
     ],
     'accounting' => [
         'heading' => 'Comptabilité',

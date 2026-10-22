@@ -10,14 +10,18 @@
 
 namespace App\Plugins\Lexoffice\Services;
 
+use APIToolkit\Entities\ID;
+use APIToolkit\Exceptions\ApiException;
 use App\Enums\Manufacturing\DeliveryFacturationStatus;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Inventory\StockDelivery;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
-use App\Plugins\Support\PluginApiClient;
 use App\Services\Manufacturing\DeliveryService;
+use InvalidArgumentException;
+use Lexoffice\API\Endpoints\Documents\DeliveryNotesEndpoint;
+use Lexoffice\Entities\Documents\DeliveryNotes\DeliveryNote;
 use RuntimeException;
 
 /**
@@ -31,10 +35,9 @@ use RuntimeException;
  * Pull: liest den verknüpften Lexoffice-Lieferschein (GET /v1/delivery-notes/{id})
  * zurück — z. B. für Status/Belegnummer.
  *
- * HTTP läuft roh über {@see PluginApiClient}: die Lieferschein-Entität des SDK
- * verwirft `deliveryConditions`, ergänzt `address.countryCode = DE` und setzt
- * fehlende `shippingConditions` auf „service, heute“ — beim Anlegen wie beim
- * Zurücklesen.
+ * Zurücklesen über den Lieferschein-Endpunkt des SDK. Das Anlegen bleibt roh
+ * (auf demselben SDK-Client): die Entität kennt `deliveryConditions` nicht —
+ * Lexware laut Referenz auch nicht — und verwürfe das Feld.
  */
 class LexofficeDeliveryNoteService {
     public const EXT_TYPE_DELIVERY_NOTE = 'delivery_note';
@@ -65,23 +68,25 @@ class LexofficeDeliveryNoteService {
             throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_delivery_no_customer'));
         }
 
-        $api = app(LexofficeClientFactory::class)->fromConfig($config);
-        $contactId = app(LexofficeContactLookup::class)->find($customer, $api, $config['base_url'])
+        $client = app(LexofficeClientFactory::class)->sdk((string) $config['api_key'], $config['base_url'], $config['request_interval']);
+        $contactId = app(LexofficeContactLookup::class)->find($customer, $client)
             ?? throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_contact_missing'));
         $payload = $this->buildPayload($delivery, $contactId);
 
-        $response = $api->postJson($config['base_url'] . '/delivery-notes', $payload);
-
-        if (! $response->successful()) {
+        try {
+            $body = (new DeliveryNotesEndpoint($client))->create(DeliveryNote::fromArray($payload))->toArray();
+        } catch (ApiException $e) {
             $this->deliveries->markFacturationResult($delivery, DeliveryFacturationStatus::Failed);
             throw new RuntimeException(sprintf(
                 'Lexoffice delivery note failed: HTTP %d %s',
-                $response->status(),
-                mb_substr((string) $response->body(), 0, 500),
-            ));
+                $e->getCode(),
+                mb_substr((string) $e->getContent(), 0, 500),
+            ), 0, $e);
+        } catch (InvalidArgumentException $e) {
+            $this->deliveries->markFacturationResult($delivery, DeliveryFacturationStatus::Failed);
+            throw new RuntimeException('Lexoffice delivery note failed: ' . $e->getMessage(), 0, $e);
         }
 
-        $body = (array) ($response->json() ?? []);
         $externalId = (string) ($body['id'] ?? '');
         if ($externalId === '') {
             throw new RuntimeException('Lexoffice delivery note returned no id.');
@@ -119,13 +124,12 @@ class LexofficeDeliveryNoteService {
             throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_delivery_not_linked'));
         }
 
-        $response = app(LexofficeClientFactory::class)->fromConfig($config)
-            ->getResponse($config['base_url'] . '/delivery-notes/' . $reference->external_id);
-        if (! $response->successful()) {
-            throw new RuntimeException(sprintf('Lexoffice delivery note fetch failed: HTTP %d', $response->status()));
+        $client = app(LexofficeClientFactory::class)->sdk((string) $config['api_key'], $config['base_url'], $config['request_interval']);
+        try {
+            return (new DeliveryNotesEndpoint($client))->get(new ID((string) $reference->external_id))->toArray();
+        } catch (ApiException $e) {
+            throw new RuntimeException(sprintf('Lexoffice delivery note fetch failed: HTTP %d', $e->getCode()), 0, $e);
         }
-
-        return (array) ($response->json() ?? []);
     }
 
     /**
@@ -161,7 +165,8 @@ class LexofficeDeliveryNoteService {
                 'quantity' => round(($delivery->quantity?->getValue()->toFloat() ?? 0.0), 4),
                 'unitName' => trim((string) $delivery->unit) ?: (string) __('invoicing.unit_piece'),
             ]],
-            'deliveryConditions' => ['deliveryDate' => $deliveredAt->format('Y-m-d\TH:i:s.vP')],
+            // Lexware kennt am Lieferschein kein `deliveryConditions`; das Lieferdatum trägt `shippingConditions`.
+            'shippingConditions' => ['shippingType' => 'delivery', 'shippingDate' => $deliveredAt->format('Y-m-d\TH:i:s.vP')],
             'title' => (string) __('lexoffice::finance.lexoffice.delivery_title'),
         ];
     }

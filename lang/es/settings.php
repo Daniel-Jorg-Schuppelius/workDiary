@@ -91,6 +91,8 @@ return [
         'transfer_closing_text' => 'Plantilla: observación final del traspaso',
         'transfer_text_hint' => 'Se copia en el justificante al crear el traspaso y allí es editable. Marcadores: :customer, :from, :to, :channel. Vacío = el texto estándar del destino.',
         'transfer_closing_hint' => 'Como arriba; sin plantilla se aplica el texto de factura del cliente, si no la observación queda vacía.',
+        'quote_validity_days' => 'Validez de los presupuestos (días)',
+        'quote_validity_days_hint' => 'Rellena «válido hasta» en los nuevos presupuestos y se aplica en Lexware cuando un presupuesto no lo tiene (allí es obligatorio).',
     ],
     'accounting' => [
         'heading' => 'Contabilidad',

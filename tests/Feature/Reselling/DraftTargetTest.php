@@ -122,7 +122,7 @@ class DraftTargetTest extends TestCase {
         $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'LDS Systems GmbH', 'billing_mode' => BillingMode::Lexoffice]);
         ExternalReference::create([
             'organization_id' => $this->organization->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
-            'external_id' => 'c-lds', 'referenceable_type' => $partner->getMorphClass(), 'referenceable_id' => $partner->getKey(),
+            'external_id' => '7c6b5a49-3827-4e16-9f05-e4d3c2b1a098', 'referenceable_type' => $partner->getMorphClass(), 'referenceable_id' => $partner->getKey(),
         ]);
         $subscription = $this->subscription($partner);
         FakePluginHttp::fake([
@@ -146,7 +146,7 @@ class DraftTargetTest extends TestCase {
         $period->load('links');
         $this->assertFalse($period->draftIsInvoiced());
         $voucher = LexofficeVoucher::create([
-            'organization_id' => $this->organization->id, 'external_id' => 'draft-77', 'contact_external_id' => 'c-lds', 'voucher_type' => 'invoice',
+            'organization_id' => $this->organization->id, 'external_id' => 'draft-77', 'contact_external_id' => '7c6b5a49-3827-4e16-9f05-e4d3c2b1a098', 'voucher_type' => 'invoice',
             'voucher_status' => 'draft', 'voucher_number' => null, 'voucher_date' => '2026-09-04', 'total_amount' => 100, 'currency' => 'EUR', 'archived' => false, 'lines_synced_at' => now(),
         ]);
         $this->assertFalse($period->fresh()?->load('links')->draftIsInvoiced() ?? true, 'gespiegelter Entwurf ist keine Rechnung');

@@ -17,9 +17,10 @@ use App\Models\Integration\ExternalReference;
 use App\Models\Manufacturing\ManufacturingOrder;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
-use App\Plugins\Support\PluginApiClient;
+use InvalidArgumentException;
 use Lexoffice\API\Client;
 use Lexoffice\Contracts\Abstracts\API\DocumentEndpointAbstract;
+use Lexoffice\Contracts\Abstracts\NamedDocument;
 use RuntimeException;
 
 /**
@@ -31,10 +32,7 @@ use RuntimeException;
  * Netto-Verkaufspreis) und unterscheiden sich nur in Endpoint, Titel,
  * ExternalReference-Typ und Fehlermeldungen — diese liefern die Subklassen.
  *
- * Das Anlegen läuft roh über {@see PluginApiClient}: `isValid()` der
- * Angebots- und AB-Entität des SDK lehnt jede Adresse mit `contactId` ab
- * (die Kontakt-ID ist eine UUID, das SDK erwartet eine Zahl). Das Zurücklesen
- * geht über den Beleg-Endpunkt des SDK.
+ * Anlegen und Zurücklesen gehen über den Beleg-Endpunkt des SDK.
  */
 abstract class LexofficeOrderDocumentService {
     /** Lexoffice-Voucher-Endpoint (z. B. `order-confirmations`, `quotations`). */
@@ -43,8 +41,22 @@ abstract class LexofficeOrderDocumentService {
     /** Beleg-Endpunkt des SDK zu {@see endpointPath()}. */
     abstract protected function endpoint(Client $client): DocumentEndpointAbstract;
 
+    /**
+     * Beleg-Entität des SDK aus dem Payload.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    abstract protected function document(array $payload): NamedDocument;
+
     /** ExternalReference-Typ (z. B. `order_confirmation`, `quotation`). */
     abstract public function extType(): string;
+
+    /**
+     * Pflichtfelder der Belegart laut Lexware-Referenz, die der Fertigungsauftrag nicht kennt.
+     *
+     * @return array<string, mixed>
+     */
+    abstract protected function requiredFields(): array;
 
     /** Beleg-Titel in Lexoffice. */
     abstract protected function documentTitle(): string;
@@ -80,23 +92,25 @@ abstract class LexofficeOrderDocumentService {
             throw new RuntimeException((string) __($this->noCustomerErrorKey()));
         }
 
-        $api = app(LexofficeClientFactory::class)->fromConfig($config);
-        $contactId = app(LexofficeContactLookup::class)->find($customer, $api, $config['base_url'])
+        $client = app(LexofficeClientFactory::class)->sdk((string) $config['api_key'], $config['base_url'], $config['request_interval']);
+        $contactId = app(LexofficeContactLookup::class)->find($customer, $client)
             ?? throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_contact_missing'));
-        $payload = $this->buildPayload($order, $contactId, (array) $config['defaults']);
+        $payload = $this->buildPayload($order, $contactId, (array) $config['defaults']) + $this->requiredFields();
 
-        $response = $api->postJson($config['base_url'] . '/' . $this->endpointPath(), $payload);
-
-        if (! $response->successful()) {
+        try {
+            $body = $this->endpoint($client)->create($this->document($payload))->toArray();
+        } catch (ApiException $e) {
             throw new RuntimeException(sprintf(
                 'Lexoffice %s failed: HTTP %d %s',
                 $this->endpointPath(),
-                $response->status(),
-                mb_substr((string) $response->body(), 0, 500),
-            ));
+                $e->getCode(),
+                mb_substr((string) $e->getContent(), 0, 500),
+            ), 0, $e);
+        } catch (InvalidArgumentException $e) {
+            // isValid() der Entität: nichts gesendet; der Controller fängt RuntimeException.
+            throw new RuntimeException(sprintf('Lexoffice %s failed: %s', $this->endpointPath(), $e->getMessage()), 0, $e);
         }
 
-        $body = (array) ($response->json() ?? []);
         $externalId = (string) ($body['id'] ?? '');
         if ($externalId === '') {
             throw new RuntimeException(sprintf('Lexoffice %s returned no id.', $this->endpointPath()));
@@ -130,7 +144,7 @@ abstract class LexofficeOrderDocumentService {
             throw new RuntimeException((string) __($this->notLinkedErrorKey()));
         }
 
-        $client = app(LexofficeClientFactory::class)->sdk((string) $config['api_key'], (string) $config['base_url'], $config['request_interval']);
+        $client = app(LexofficeClientFactory::class)->sdk((string) $config['api_key'], $config['base_url'], $config['request_interval']);
         try {
             return $this->endpoint($client)->get(new ID((string) $reference->external_id))->toArray();
         } catch (ApiException $e) {
