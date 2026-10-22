@@ -14,8 +14,11 @@ namespace App\Services\Invoicing;
 
 use App\Services\Billing\DocumentTotalsCalculator;
 use App\Services\Invoicing\EInvoice\IncomingEInvoiceService;
+use App\Services\Invoicing\Recognition\ValueWords;
+use App\Support\ReferenceTokens;
 use CommonToolkit\Enums\{CountryCode, CurrencyCode};
 use CommonToolkit\Helper\Data\{AmountTokenizer, CurrencyHelper, DateHelper, NumberHelper};
+use CommonToolkit\Helper\Data\{StringHelper, XmlHelper};
 use CommonToolkit\Helper\FileSystem\File;
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use CommonToolkit\Helper\Shell;
@@ -235,18 +238,7 @@ class InvoicePdfImportService {
         }
         $result['vat_ids'] = array_keys($vatIds);
 
-        $tokens = [];
-        if (preg_match_all('/[\p{L}\d][\p{L}\d\-\/._]{2,38}[\p{L}\d]/u', $text, $matches) > 0) {
-            foreach ($matches[0] as $token) {
-                if (preg_match('/\d/', $token) === 1) {
-                    $tokens[$token] = true;
-                }
-                if (count($tokens) >= 200) {
-                    break;
-                }
-            }
-        }
-        $result['reference_tokens'] = array_keys($tokens);
+        $result['reference_tokens'] = ReferenceTokens::fromText($text, 200);
     }
 
     /**
@@ -568,47 +560,40 @@ class InvoicePdfImportService {
         $parts = [];
         $rows = [];
         foreach ($documentParts as $xml) {
-            if (str_contains($xml, '<!DOCTYPE') || str_contains($xml, '<!ENTITY')) {
+            // Ohne DOCTYPE/Entitäten, ohne Netz, Fehler intern (common-toolkit 2.13).
+            $dom = XmlHelper::safeLoadDom($xml);
+            if ($dom === null) {
                 continue;
             }
-            $dom = new \DOMDocument;
-            $previous = libxml_use_internal_errors(true);
-            try {
-                if ($dom->loadXML($xml, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING)) {
-                    $xpath = new \DOMXPath($dom);
-                    $paragraphs = $xpath->query('//*[local-name()="p"]');
-                    if ($paragraphs !== false) {
-                        foreach ($paragraphs as $paragraph) {
-                            if (! $paragraph instanceof \DOMNode) {
-                                continue;
-                            }
-                            $value = trim((string) $paragraph->textContent);
-                            if ($value !== '') {
-                                $parts[] = $value;
-                            }
-                        }
+            $xpath = new \DOMXPath($dom);
+            $paragraphs = $xpath->query('//*[local-name()="p"]');
+            if ($paragraphs !== false) {
+                foreach ($paragraphs as $paragraph) {
+                    if (! $paragraph instanceof \DOMNode) {
+                        continue;
                     }
-                    $tableRows = $xpath->query('//*[local-name()="tbl"][not(ancestor::*[local-name()="tbl"])]/*[local-name()="tr"]');
-                    if ($tableRows !== false) {
-                        foreach ($tableRows as $tableRow) {
-                            if (! $tableRow instanceof \DOMElement) {
-                                continue;
-                            }
-                            $cells = [];
-                            foreach ($tableRow->childNodes as $cell) {
-                                if ($cell instanceof \DOMElement && $cell->localName === 'tc') {
-                                    $cells[] = trim((string) $cell->textContent);
-                                }
-                            }
-                            if ($cells !== []) {
-                                $rows[] = $cells;
-                            }
-                        }
+                    $value = trim((string) $paragraph->textContent);
+                    if ($value !== '') {
+                        $parts[] = $value;
                     }
                 }
-            } finally {
-                libxml_clear_errors();
-                libxml_use_internal_errors($previous);
+            }
+            $tableRows = $xpath->query('//*[local-name()="tbl"][not(ancestor::*[local-name()="tbl"])]/*[local-name()="tr"]');
+            if ($tableRows !== false) {
+                foreach ($tableRows as $tableRow) {
+                    if (! $tableRow instanceof \DOMElement) {
+                        continue;
+                    }
+                    $cells = [];
+                    foreach ($tableRow->childNodes as $cell) {
+                        if ($cell instanceof \DOMElement && $cell->localName === 'tc') {
+                            $cells[] = trim((string) $cell->textContent);
+                        }
+                    }
+                    if ($cells !== []) {
+                        $rows[] = $cells;
+                    }
+                }
             }
         }
 
@@ -1105,20 +1090,20 @@ class InvoicePdfImportService {
 
     /** Eine Zeile, die schon Werte trägt (Datum oder Betrag), ist keine reine Kopfzeile. */
     private function isValueLine(string $line): bool {
-        return preg_match('/\d{1,2}[.\/-]\d{1,2}[.\/-]\d{2,4}|\d+,\d{2}\b/', $line) === 1;
+        return ValueWords::lineHasValue($line);
     }
 
     /** @return list<array{type: string, value: string}> Werte einer Zeile: Datum, Betrag, Kennung oder Sonstiges */
     private function tokensOf(string $line): array {
         $tokens = [];
-        foreach (preg_split('/\s+/', trim($line)) ?: [] as $raw) {
+        foreach (StringHelper::words($line) as $raw) {
             $value = trim($raw, " \t:;");
             if ($value === '') {
                 continue;
             }
             $tokens[] = ['type' => match (true) {
-                preg_match('/^\d{1,2}[.\/-]\d{1,2}[.\/-]\d{2,4}$|^\d{4}-\d{2}-\d{2}$/', $value) === 1 => 'date',
-                preg_match('/^[+-]?\d{1,3}(?:[.\s]\d{3})*,\d{2}$|^[+-]?\d+\.\d{2}$|^[+-]?\d+,\d{2}$/', $value) === 1 => 'amount',
+                ValueWords::isDate($value) => 'date',
+                ValueWords::isAmount($value) => 'amount',
                 preg_match('/^(?=[A-Z0-9._\/-]*\d)[A-Z0-9][A-Z0-9._\/-]{1,63}$/i', $value) === 1 => 'id',
                 default => 'other',
             }, 'value' => $value];

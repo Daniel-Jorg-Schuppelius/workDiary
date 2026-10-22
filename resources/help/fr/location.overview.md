@@ -1,7 +1,7 @@
 ---
 title: "Saisie des temps basée sur la localisation"
 topic: location.overview
-version: 2
+version: 3
 keywords:
     - pointage GPS
     - géorepérage
@@ -34,6 +34,12 @@ confirmation explicite.
 périmètre est défini par un centre et un rayon. Ce n'est qu'à l'intérieur
 de ces zones que des séjours sont créés ; les déplacements en dehors
 restent sans signification métier.
+
+**Zones à partir d'adresses :** sur un client (« Zone depuis l’adresse du
+client ») et sur un site (« Zone depuis l’adresse »), la zone est créée
+directement à partir des coordonnées de l'adresse ; « Pour tous les clients »
+la crée pour chaque client ayant des coordonnées et aucune zone. Le rayon
+provient des valeurs par défaut de la localisation.
 
 **Sources de données :** Les positions proviennent au choix des
 applications OwnTracks ou Traccar via un accès d'appareil personnel,

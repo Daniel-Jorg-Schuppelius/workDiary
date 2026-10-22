@@ -99,6 +99,7 @@ return [
         ],
         'billing' => [
             'account-invoices' => 'Monatsrechnungen aus Sonderkonditionen erzeugen',
+            'recalculate-statements' => 'Offene Monate der Kundenkonten nachrechnen',
             'push-retainers' => 'Retainer-Pauschalen an Lexoffice übergeben',
         ],
         'datev-online' => ['sync' => 'DATEV-Online: Belegbilder übertragen und Importe abfragen'],

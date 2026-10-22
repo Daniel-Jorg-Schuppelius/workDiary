@@ -13,7 +13,7 @@ namespace App\Plugins\Msgraph;
 use App\Plugins\Msgraph\Services\MsgraphMailScopes;
 use App\Plugins\Support\PluginSettingsResolver;
 use App\Support\OrganizationContext;
-use CommonToolkit\Helper\Data\WebLinkHelper;
+use CommonToolkit\Helper\Data\{StringHelper, WebLinkHelper};
 
 /**
  * Microsoft-365-Konfiguration (MVP-328, Bauturbo A8; Feature 102 Variante B):
@@ -106,7 +106,7 @@ class MsgraphConfig {
         }
         $sets[] = implode(' ', MsgraphMailScopes::intakeScopesFor($organizationId ?? OrganizationContext::currentId()));
         foreach ($sets as $set) {
-            foreach (preg_split('/\s+/', trim($set)) ?: [] as $scope) {
+            foreach (StringHelper::words($set) as $scope) {
                 if ($scope !== '') {
                     $scopes[in_array($scope, $oidc, true) ? $scope : $resource . '/' . $scope] = true;
                 }

@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Http\Requests\OpenIssue;
 
 use App\Http\Requests\BaseFormRequest;
+use App\Http\Requests\Concerns\DecodesSqidInputs;
+use App\Models\Platform\User;
 
 /**
  * Validierung für die (De-)Zuweisung eines offenen Punkts — leeres Feld
@@ -20,6 +22,11 @@ use App\Http\Requests\BaseFormRequest;
  * (OpenIssuePolicy::assign).
  */
 class AssignOpenIssueRequest extends BaseFormRequest {
+    use DecodesSqidInputs;
+
+    /** @var array<string, class-string> Der Zuweisen-Dialog sendet die Sqid der Person. */
+    protected array $sqidFields = ['assignee_user_id' => User::class];
+
     /** @return array<string, mixed> */
     public function rules(): array {
         return [

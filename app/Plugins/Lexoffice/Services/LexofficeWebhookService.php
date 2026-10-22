@@ -12,17 +12,21 @@ declare(strict_types=1);
 
 namespace App\Plugins\Lexoffice\Services;
 
+use APIToolkit\Entities\ID;
+use APIToolkit\Exceptions\ApiException;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
-use App\Plugins\Support\PluginApiClient;
+use CommonToolkit\Helper\Data\JsonHelper;
+use Lexoffice\API\Client;
+use Lexoffice\API\Endpoints\EventSubscriptionsEndpoint;
+use Lexoffice\Entities\EventSubscriptions\EventSubscription;
 use RuntimeException;
 
 /**
  * Verwaltung der Lexoffice-Event-Subscriptions (Audit 2026-08, Welle 1.3):
  * legt je Organisation die Webhook-Abos für Kontakt-/Beleg-/Zahlungs-Events
- * an bzw. räumt sie ab. Läuft — wie der VoucherSync — über die
- * {@see LexofficeClientFactory} (kein SDK nötig; die Http::fake-Blockade der
- * SDK-Migration betrifft diesen Pfad nicht).
+ * an bzw. räumt sie ab. Läuft über den SDK-Client der
+ * {@see LexofficeClientFactory}.
  */
 class LexofficeWebhookService {
     /** Abonnierte Events: Webhook ist nur Anstoß für gezielte Pull-Syncs. */
@@ -34,7 +38,7 @@ class LexofficeWebhookService {
         'payment.changed',
     ];
 
-    private ?PluginApiClient $api = null;
+    private ?Client $client = null;
 
     public function __construct(
         private readonly ?string $apiKey,
@@ -42,8 +46,8 @@ class LexofficeWebhookService {
         private readonly ?float $requestInterval = null,
     ) {}
 
-    private function api(): PluginApiClient {
-        return $this->api ??= app(LexofficeClientFactory::class)->make((string) $this->apiKey, $this->baseUrl, $this->requestInterval);
+    private function client(): Client {
+        return $this->client ??= app(LexofficeClientFactory::class)->sdk((string) $this->apiKey, $this->baseUrl, $this->requestInterval);
     }
 
     /**
@@ -52,15 +56,23 @@ class LexofficeWebhookService {
      * @return list<array{id: string, eventType: string, callbackUrl: string}>
      */
     public function subscriptions(): array {
-        $response = $this->api()->getResponse($this->baseUrl . '/event-subscriptions');
-        if (! $response->successful()) {
-            throw new LexofficeApiException('Lexoffice: Event-Subscriptions nicht abrufbar (HTTP ' . $response->status() . ').', $response->status());
+        // Gleicher SDK-Client (Drosselung), aber ohne Entitäten-Mapping: Das Enum
+        // EventType des SDK kennt nicht jede Ereignisart der API (etwa
+        // delivery-note.status.changed), und ein fremdes Abo des API-Schlüssels
+        // ließe sonst die ganze Liste scheitern.
+        try {
+            $response = $this->client()->get('event-subscriptions');
+        } catch (ApiException $e) {
+            throw new LexofficeApiException('Lexoffice: Event-Subscriptions nicht abrufbar (HTTP ' . $e->getCode() . ').', $e->getCode());
+        }
+        if ($response->getStatusCode() !== 200) {
+            throw new LexofficeApiException('Lexoffice: Event-Subscriptions nicht abrufbar (HTTP ' . $response->getStatusCode() . ').', $response->getStatusCode());
         }
 
-        $rows = $response->json('content');
-
+        $decoded = JsonHelper::decode((string) $response->getBody(), true);
+        $rows = is_array($decoded) && is_array($decoded['content'] ?? null) ? $decoded['content'] : [];
         $result = [];
-        foreach (is_array($rows) ? $rows : [] as $row) {
+        foreach ($rows as $row) {
             if (! is_array($row)) {
                 continue;
             }
@@ -95,12 +107,13 @@ class LexofficeWebhookService {
             if (isset($existing[$eventType])) {
                 continue;
             }
-            $response = $this->api()->postJson($this->baseUrl . '/event-subscriptions', [
-                'eventType' => $eventType,
-                'callbackUrl' => $callbackUrl,
-            ]);
-            if (! $response->successful()) {
-                throw new LexofficeApiException('Lexoffice: Subscription für ' . $eventType . ' nicht anlegbar (HTTP ' . $response->status() . ').', $response->status());
+            try {
+                (new EventSubscriptionsEndpoint($this->client()))->create(EventSubscription::fromArray([
+                    'eventType' => $eventType,
+                    'callbackUrl' => $callbackUrl,
+                ]));
+            } catch (ApiException $e) {
+                throw new LexofficeApiException('Lexoffice: Subscription für ' . $eventType . ' nicht anlegbar (HTTP ' . $e->getCode() . ').', $e->getCode());
             }
             $created++;
         }
@@ -120,9 +133,10 @@ class LexofficeWebhookService {
             if ($subscription['callbackUrl'] !== $callbackUrl || $subscription['id'] === '') {
                 continue;
             }
-            $response = $this->api()->deleteResponse($this->baseUrl . '/event-subscriptions/' . $subscription['id']);
-            if (! $response->successful()) {
-                throw new LexofficeApiException('Lexoffice: Subscription ' . $subscription['id'] . ' nicht löschbar (HTTP ' . $response->status() . ').', $response->status());
+            try {
+                (new EventSubscriptionsEndpoint($this->client()))->delete(new ID($subscription['id']));
+            } catch (ApiException $e) {
+                throw new LexofficeApiException('Lexoffice: Subscription ' . $subscription['id'] . ' nicht löschbar (HTTP ' . $e->getCode() . ').', $e->getCode());
             }
             $removed++;
         }

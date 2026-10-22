@@ -13,6 +13,7 @@ namespace App\Services\Domain;
 use App\Enums\Domain\{DomainCapabilityArea, DomainDnsRecordType};
 use App\Models\Domain\{DomainDnsRecordProjection, DomainDnsZoneProjection, DomainProjection, DomainProviderCommand, DomainProviderConnection};
 use App\Models\Platform\User;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Carbon;
 
 /**
@@ -214,7 +215,7 @@ class DomainDnsService {
     /** @return array{type: string, name: string, ttl: int|null, priority: int|null, content: string}|null */
     private function parseRr(string $rr): ?array {
         // Format: NAME TTL IN TYPE [PRIORITY] CONTENT
-        $parts = preg_split('/\s+/', trim($rr)) ?: [];
+        $parts = StringHelper::words($rr);
         if (count($parts) < 5) {
             return null;
         }

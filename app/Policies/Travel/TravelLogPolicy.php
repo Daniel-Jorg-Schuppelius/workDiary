@@ -10,6 +10,7 @@
 
 namespace App\Policies\Travel;
 
+use App\Enums\User\Permission;
 use App\Models\Platform\User;
 use App\Models\Travel\TravelLog;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
@@ -18,8 +19,9 @@ class TravelLogPolicy {
     use ChecksOwnership;
     use HasAdminBypass;
 
+    /** Das eigene Fahrtenbuch (travel-log.viewAny); fremde Fahrten sieht niemand außer Admins. */
     public function viewAny(User $user): bool {
-        return true;
+        return $user->can(Permission::TravelLogViewAny->value);
     }
 
     public function view(User $user, TravelLog $log): bool {
@@ -27,14 +29,14 @@ class TravelLogPolicy {
     }
 
     public function create(User $user): bool {
-        return true;
+        return $user->can(Permission::TravelLogManage->value);
     }
 
     public function update(User $user, TravelLog $log): bool {
-        return $this->owns($user, $log, 'user_id');
+        return $this->owns($user, $log, 'user_id') && $user->can(Permission::TravelLogManage->value);
     }
 
     public function delete(User $user, TravelLog $log): bool {
-        return $this->owns($user, $log, 'user_id');
+        return $this->update($user, $log);
     }
 }

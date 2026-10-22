@@ -10,14 +10,15 @@
 
 namespace App\Policies\Customer;
 
-use App\Enums\User\UserRole;
+use App\Enums\User\Permission;
 use App\Models\Customer\ForeignCustomer;
 use App\Models\Platform\User;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 /**
  * Berechtigungen für Fremdkunden (Endkunden). Analog {@see CustomerPolicy};
- * zusätzlich `promote` (Fremdkunde → echter Kunde), nur für Buchhaltung/GF.
+ * zusätzlich `promote` (Fremdkunde → echter Kunde). Prüfung über die
+ * foreignCustomer.*-Rechte (lk-06).
  */
 class ForeignCustomerPolicy {
     use ChecksOwnership;
@@ -28,20 +29,22 @@ class ForeignCustomerPolicy {
     }
 
     public function view(User $user, ForeignCustomer $foreignCustomer): bool {
-        return $this->sharesOrganization($user, $foreignCustomer);
+        return $this->sharesOrganization($user, $foreignCustomer) && $user->can(Permission::ForeignCustomerView->value);
     }
 
     public function create(User $user): bool {
-        return $user->canManageBilling() || $user->hasRole(UserRole::User->value);
+        return $user->can(Permission::ForeignCustomerCreate->value);
     }
 
+    /** Fremde Datensätze mit foreignCustomer.update, eigene Anlagen immer. */
     public function update(User $user, ForeignCustomer $foreignCustomer): bool {
-        return $user->canManageBilling() || $this->owns($user, $foreignCustomer, 'created_by');
+        return $this->owns($user, $foreignCustomer, 'created_by')
+            || ($this->sharesOrganization($user, $foreignCustomer) && $user->can(Permission::ForeignCustomerUpdate->value));
     }
 
     /** Hartes Löschen nur ohne zugeordnete Projekte und externe Referenzen — sonst archivieren. */
     public function delete(User $user, ForeignCustomer $foreignCustomer): bool {
-        if (! $user->canManageBilling()) {
+        if (! $this->sharesOrganization($user, $foreignCustomer) || ! $user->can(Permission::ForeignCustomerDelete->value)) {
             return false;
         }
         if ($foreignCustomer->projects()->exists()) {
@@ -52,7 +55,7 @@ class ForeignCustomerPolicy {
     }
 
     public function archive(User $user, ForeignCustomer $foreignCustomer): bool {
-        return $user->canManageBilling() || $this->owns($user, $foreignCustomer, 'created_by');
+        return $this->update($user, $foreignCustomer);
     }
 
     public function restore(User $user, ForeignCustomer $foreignCustomer): bool {
@@ -60,6 +63,6 @@ class ForeignCustomerPolicy {
     }
 
     public function promote(User $user, ForeignCustomer $foreignCustomer): bool {
-        return $user->canManageBilling();
+        return $this->sharesOrganization($user, $foreignCustomer) && $user->can(Permission::ForeignCustomerPromote->value);
     }
 }

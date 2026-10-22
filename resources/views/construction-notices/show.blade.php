@@ -29,6 +29,14 @@
             <x-icon-btn icon="mail" tone="primary" size="sm"
                         data-entry-modal-trigger
                         :href="route('construction-notices.mail.form', $notice)" show-label>{{ __('construction.action.send') }}</x-icon-btn>
+            @if ($notice->isEditable())
+                @can('create', \App\Models\Project\Project::class)
+                    <x-action-form :action="route('construction-notices.destroy', $notice)" method="DELETE" :confirm="__('construction.action.delete_confirm')"
+                                   confirm-icon="delete" confirm-tone="error" :confirm-label="__('construction.action.delete')">
+                        <x-icon-btn placement="danger" icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('construction.action.delete') }}</x-icon-btn>
+                    </x-action-form>
+                @endcan
+            @endif
         </x-slot:actions>
 
         <div class="grid md:grid-cols-3 gap-4">

@@ -12,6 +12,7 @@ namespace App\Http\Requests\Time;
 
 use App\Enums\WorkSchedule\ScheduleType;
 use App\Http\Requests\BaseFormRequest;
+use CommonToolkit\Helper\Data\StringHelper;
 use CommonToolkit\ValueObjects\Duration;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
@@ -121,7 +122,7 @@ class SaveWorkScheduleRequest extends BaseFormRequest {
                 continue;
             }
             // Nur aktivierte Tage berücksichtigen.
-            if (! filter_var($cfg['enabled'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
+            if (! (StringHelper::parseBool($cfg['enabled'] ?? false) ?? false)) {
                 continue;
             }
 

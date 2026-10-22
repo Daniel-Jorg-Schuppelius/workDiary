@@ -12,6 +12,7 @@ namespace App\Plugins\GoogleCalendar\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth};
 use App\Plugins\Support\Calendar\RemoteCalendarConnection;
+use App\Plugins\Support\Contracts\ManagedPluginConnection;
 use App\Plugins\Support\OAuthConnectionStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -38,7 +39,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $sync_token
  * @property Carbon|null $last_imported_at
  */
-class GoogleCalendarConnection extends Model implements RemoteCalendarConnection {
+class GoogleCalendarConnection extends Model implements ManagedPluginConnection, RemoteCalendarConnection {
     use Auditable;
     use BelongsToOrganization;
     use HasConnectionHealth;

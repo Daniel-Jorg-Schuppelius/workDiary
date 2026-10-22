@@ -145,7 +145,9 @@ ENV_BACKUP="$BACKUP_DIR/${BACKUP_NAME}_env_${STAMP}.txt"
 # weder das Arbeitsverzeichnis noch Test-DB und DB-User streitig machen.
 DB_SLUG=$(printf '%s' "$BACKUP_NAME" | tr -c 'a-z0-9\n' '_' | cut -c1-20)
 WORK_DIR_BASE="/var/tmp/${BACKUP_NAME}-restore-test"
-WORK_DIR="${WORK_DIR:-${WORK_DIR_BASE}-${STAMP}}"
+# Zufallsendung: /var/tmp ist geteilt, ein vorhersehbarer Name liesse sich von
+# einem anderen Konto vorab belegen (Sicherheitsaudit 2026-10-21, pub-1).
+WORK_DIR="${WORK_DIR:-${WORK_DIR_BASE}-${STAMP}.$(od -An -N4 -tx4 /dev/urandom | tr -d ' \n')}"
 TEST_DB="wd_restore_${DB_SLUG}_${STAMP}"
 TEST_DB_USER="wd_restore_${DB_SLUG}"
 
@@ -154,7 +156,9 @@ TEST_DB_USER="wd_restore_${DB_SLUG}"
 # /var/tmp mit jedem gescheiterten Cron-Lauf.
 if [[ $PRUNE -eq 1 ]]; then
   for stale_dir in "${WORK_DIR_BASE}"-*; do
-    [[ -d "$stale_dir" && "$stale_dir" != "$WORK_DIR" ]] || continue
+    # Nur eigene Reste: echte Verzeichnisse von root, keine Links, nichts Fremdes.
+    [[ -d "$stale_dir" && ! -L "$stale_dir" && "$stale_dir" != "$WORK_DIR" ]] || continue
+    [[ "$(stat -c %u "$stale_dir")" == "0" ]] || { note "übersprungen (nicht von root): $stale_dir"; continue; }
     rm -rf "$stale_dir"; note "aufgeraeumt: $stale_dir"
   done
   if [[ "$DB_KIND" == "mysql" ]]; then
@@ -233,7 +237,9 @@ trap on_exit EXIT
 
 # 2) Codebase kopieren + Storage aus dem Backup entpacken
 CURRENT_STEP="Codebase-Kopie"
-mkdir -p "$WORK_DIR/app"
+# Ohne -p: scheitert, wenn das Verzeichnis inzwischen jemand anderes angelegt hat.
+mkdir -m 0700 "$WORK_DIR"
+mkdir "$WORK_DIR/app"
 if command -v rsync >/dev/null 2>&1; then
   rsync -a --exclude=.git --exclude=node_modules --exclude=storage/app --exclude=.env "$APP_DIR/" "$WORK_DIR/app/"
 else

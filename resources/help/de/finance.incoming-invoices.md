@@ -1,7 +1,7 @@
 ---
 title: "Rechnungseingang"
 topic: finance.incoming-invoices
-version: 3
+version: 4
 keywords:
     - Eingangsrechnung
     - Lieferantenrechnung
@@ -161,6 +161,15 @@ solche: Die Liste zeigt „Sieht aus wie“, der Zuordnen-Dialog belegt „Keine
 Rechnung“ vor, Mahnungen nennen die angemahnten Rechnungen mit Link.
 Administratoren messen die Erkennung mit `incoming-invoices:measure-recognition`
 gegen die gespeicherten Belegtexte.
+
+**KI-Rückfall:** Ist unter **Verwaltung → KI-Dienste** eine Verbindung
+eingerichtet und die Fähigkeit „Rechnungseingang: Belegfelder auslesen“
+freigegeben, ergänzt die KI nur noch fehlende Kernfelder (Nummer, Datum,
+Fälligkeit, Beträge, Steuersatz, Käuferreferenz) — geprüft auf Format und
+Plausibilität, nie für E-Rechnungen und nie ohne Ihre Prüfung. Ohne
+Verbindung arbeitet die Erkennung unverändert. Fehlt einem Beleg der
+Textindex (etwa nach einem Ausfall der Textwerkzeuge), liest
+`search:extract-texts --retry-failed` ihn nach.
 
 **Belegvorlagen:** Über „Vorlage“ auf der Belegseite ziehen Sie auf dem
 gerenderten Beleg je Feld ein Rechteck über Beschriftung und Wert

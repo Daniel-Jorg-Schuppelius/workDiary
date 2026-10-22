@@ -50,6 +50,33 @@ final class ParsedMessage {
         public readonly ?MailboxCursor $cursorAfter = null,
     ) {}
 
+    /**
+     * Message-IDs aus In-Reply-To und References in beiden Schreibweisen —
+     * gespeichert wird je nach Weg mit oder ohne spitze Klammern, Clients
+     * zitieren beides (Konsolidierungs-Audit 2026-10-21, ko-07).
+     *
+     * @return list<string>
+     */
+    public function referencedIds(): array {
+        $variants = [];
+        foreach ([$this->inReplyTo, ...$this->references] as $id) {
+            $bare = self::bareMessageId((string) $id);
+            if ($bare !== null) {
+                $variants[$bare] = true;
+                $variants['<' . $bare . '>'] = true;
+            }
+        }
+
+        return array_map('strval', array_keys($variants));
+    }
+
+    /** Message-ID ohne spitze Klammern, null wenn leer. */
+    public static function bareMessageId(string $id): ?string {
+        $bare = trim($id, "<> \t");
+
+        return $bare !== '' ? $bare : null;
+    }
+
     public function withCursorAfter(?MailboxCursor $cursor): self {
         return $this->copy(['cursorAfter' => $cursor]);
     }

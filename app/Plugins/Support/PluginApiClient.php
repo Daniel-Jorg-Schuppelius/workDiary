@@ -234,19 +234,23 @@ class PluginApiClient extends ClientAbstract {
     protected function buildClientConfig(): array {
         $config = parent::buildClientConfig();
         if (is_array($config['allow_redirects'] ?? null)) {
-            $privateAllowed = $this->privateNetworkAllowed;
-            $config['allow_redirects']['on_redirect'] = static function ($request, $response, $uri) use ($privateAllowed): void {
-                $target = (string) $uri;
-                $scheme = strtolower((string) parse_url($target, PHP_URL_SCHEME));
-                $allowed = $privateAllowed
-                    ? in_array($scheme, ['http', 'https'], true)
-                    : \App\Support\UrlSafety::isPubliclyRoutableHttpUrl($target);
-                if (! $allowed) {
-                    throw new \GuzzleHttp\Exception\RequestException('Weiterleitung auf ein nicht erlaubtes Ziel blockiert.', $request, $response);
-                }
-            };
+            $config['allow_redirects']['on_redirect'] = self::redirectGuard($this->privateNetworkAllowed);
         }
 
         return $config;
+    }
+
+    /** Prüfung jedes Weiterleitungsziels; auch für den Transport der SDK-Clients ({@see PluginHttpFactory::sdkTransport()}). */
+    public static function redirectGuard(bool $privateAllowed): \Closure {
+        return static function ($request, $response, $uri) use ($privateAllowed): void {
+            $target = (string) $uri;
+            $scheme = strtolower((string) parse_url($target, PHP_URL_SCHEME));
+            $allowed = $privateAllowed
+                ? in_array($scheme, ['http', 'https'], true)
+                : \App\Support\UrlSafety::isPubliclyRoutableHttpUrl($target);
+            if (! $allowed) {
+                throw new \GuzzleHttp\Exception\RequestException('Weiterleitung auf ein nicht erlaubtes Ziel blockiert.', $request, $response);
+            }
+        };
     }
 }

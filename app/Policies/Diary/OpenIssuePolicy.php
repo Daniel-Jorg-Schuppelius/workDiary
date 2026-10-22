@@ -26,18 +26,17 @@ class OpenIssuePolicy {
     }
 
     public function view(User $user, OpenIssue $issue): bool {
-        return $this->isParticipant($user, $issue)
+        return ($this->isParticipant($user, $issue) && $user->can(P::OpenIssueView->value))
             || $user->can(P::OpenIssueViewAny->value);
     }
 
     public function create(User $user): bool {
-        unset($user);
-
-        return true;
+        return $user->can(P::OpenIssueCreate->value);
     }
 
+    /** Eigene und zugewiesene Punkte mit openIssue.update, fremde nur mit openIssue.assign. */
     public function update(User $user, OpenIssue $issue): bool {
-        return $this->isParticipant($user, $issue)
+        return ($this->isParticipant($user, $issue) && $user->can(P::OpenIssueUpdate->value))
             || $user->can(P::OpenIssueAssign->value);
     }
 

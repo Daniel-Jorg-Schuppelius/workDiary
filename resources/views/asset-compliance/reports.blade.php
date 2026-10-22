@@ -18,7 +18,7 @@
         <x-report-export :url="fn (string $format) => route('asset-compliance.reports.index', ['export' => $format, 'from' => $from->toDateString(), 'to' => $to->toDateString()])" :formats="['csv', 'xlsx']" tone="ghost" />
         <form method="POST" action="{{ route('asset-compliance.reports.snapshot', ['from' => $from->toDateString(), 'to' => $to->toDateString()]) }}">
             @csrf
-            <x-button type="submit" tone="ghost">{{ __('Snapshot einfrieren') }}</x-button>
+            <x-button type="submit" tone="ghost">{{ __('Stand einfrieren') }}</x-button>
         </form>
     </x-slot:actions>
 

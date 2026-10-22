@@ -36,7 +36,7 @@ class OrderConfirmationPdfRenderer {
             'quotes.order-confirmation-pdf',
             $this->viewData($confirmation),
             $confirmation->organization,
-            payload: $this->designPayload($confirmation),
+            payload: $this->design->payloadForDocument($confirmation, RenderDocumentKind::OrderConfirmation),
         ));
     }
 
@@ -47,19 +47,7 @@ class OrderConfirmationPdfRenderer {
         return [
             'confirmation' => $confirmation,
             'orgLegal' => app(BrandingService::class)->legalFor($confirmation->organization),
-            'design' => $this->design->context($this->designPayload($confirmation)),
+            'design' => $this->design->context($this->design->payloadForDocument($confirmation, RenderDocumentKind::OrderConfirmation)),
         ];
-    }
-
-    /** @return array<string, mixed>|null */
-    private function designPayload(OrderConfirmation $confirmation): ?array {
-        $snapshot = $this->design->payloadFromSnapshot($confirmation, RenderDocumentKind::OrderConfirmation);
-        if ($snapshot !== null) {
-            return $snapshot;
-        }
-
-        return $confirmation->organization === null
-            ? null
-            : $this->design->payloadFor($confirmation->organization, RenderDocumentKind::OrderConfirmation, (int) $confirmation->customer_id);
     }
 }

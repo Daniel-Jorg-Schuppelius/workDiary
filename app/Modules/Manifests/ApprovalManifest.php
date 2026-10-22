@@ -36,6 +36,13 @@ final class ApprovalManifest extends Manifest {
         ];
     }
 
+    /** @return list<string> Nur zur Doku: Kernrouten sind nicht lizenzgebunden. */
+    public function routePatterns(): array {
+        return [
+            'approvals.*',
+        ];
+    }
+
     /** @return list<string> */
     public function tables(): array {
         return [

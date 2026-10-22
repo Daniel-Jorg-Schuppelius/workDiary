@@ -17,21 +17,10 @@
     $accent = $design->accentColor();
 @endphp
 <style>
-    body { font-family: 'DejaVu Sans', sans-serif; font-size: 11px; color: #222; }
-    h1 { font-size: 18px; margin: 0 0 4px; color: {{ $accent }}; }
-    .header { display: table; width: 100%; margin-bottom: 16px; }
-    .header .left, .header .right { display: table-cell; vertical-align: top; width: 50%; }
-    .right { text-align: right; }
-    table { border-collapse: collapse; width: 100%; margin-top: 12px; }
-    th, td { padding: 4px 6px; border-bottom: 1px solid #ccc; }
-    th { background: #f3f3f3; text-align: left; }
-    td.num, th.num { text-align: right; }
-    tfoot td { border-top: 2px solid {{ $accent }}; font-weight: bold; border-bottom: none; }
+    @include('pdf._document_styles')
     .banner { padding: 8px 12px; margin-bottom: 12px; font-weight: bold; border: 2px solid; }
     .banner-cancelled { color: #b91c1c; border-color: #b91c1c; background: #fee2e2; }
     .banner-credit { color: #b45309; border-color: #b45309; background: #fef3c7; }
-    .tpl-header { margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #ddd; white-space: pre-line; }
-    .tpl-footer { margin-top: 24px; padding-top: 8px; border-top: 1px solid #ddd; font-size: 10px; color: #555; white-space: pre-line; }
     .bank-block { margin-top: 18px; padding: 8px 10px; border: 1px solid #ddd; font-size: 10px; }
     .bank-block table { width: 100%; margin: 0; }
     .bank-block table td { border: none; padding: 2px 6px; }
@@ -40,7 +29,6 @@
     .bank-block .giro { width: 30mm; vertical-align: top; text-align: center; padding-left: 8px; }
     .bank-block .giro img { width: 26mm; height: 26mm; }
     .bank-block .giro span { display: block; font-size: 7px; color: #666; line-height: 1.2; }
-    @page { margin: 20mm; }
 </style>
 </head>
 <body>

@@ -16,6 +16,7 @@ use App\Enums\Communication\CommunicationDirection;
 use App\Models\Communication\CommunicationNote;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\InvoiceInquiry;
+use App\Services\Mail\ParsedMessage;
 use Carbon\CarbonImmutable;
 use Throwable;
 
@@ -54,7 +55,7 @@ final readonly class MailOrigin {
 
             return new self(
                 direction: CommunicationDirection::Outbound,
-                messageId: self::bareId((string) $reference->external_id),
+                messageId: ParsedMessage::bareMessageId((string) $reference->external_id),
                 fromEmail: null,
                 fromName: null,
                 to: self::addresses($payload['to'] ?? []),
@@ -76,7 +77,7 @@ final readonly class MailOrigin {
 
             return new self(
                 direction: CommunicationDirection::Inbound,
-                messageId: self::bareId((string) ($payload['message_id'] ?? $reference->external_id)),
+                messageId: ParsedMessage::bareMessageId((string) ($payload['message_id'] ?? $reference->external_id)),
                 fromEmail: self::text($from['email'] ?? null),
                 fromName: self::text($from['name'] ?? null),
                 to: [],
@@ -92,7 +93,7 @@ final readonly class MailOrigin {
         if ($inquiry !== null) {
             return new self(
                 direction: CommunicationDirection::Inbound,
-                messageId: self::bareId((string) $inquiry->message_id),
+                messageId: ParsedMessage::bareMessageId((string) $inquiry->message_id),
                 fromEmail: self::text($inquiry->from_email),
                 fromName: self::text($inquiry->from_name),
                 to: [],
@@ -119,13 +120,6 @@ final readonly class MailOrigin {
         }
 
         return $this->fromName ?? $this->fromEmail ?? '';
-    }
-
-    /** Message-ID ohne spitze Klammern; Clients zitieren sie mit oder ohne. */
-    private static function bareId(string $id): ?string {
-        $bare = trim($id, "<> \t");
-
-        return $bare !== '' ? $bare : null;
     }
 
     private static function text(mixed $value): ?string {

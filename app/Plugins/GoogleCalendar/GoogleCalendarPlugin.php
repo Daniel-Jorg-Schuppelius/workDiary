@@ -84,24 +84,19 @@ class GoogleCalendarPlugin extends AbstractPlugin implements CalendarPublisher {
      * @return array{published: int, deleted: int, unchanged: int, failed: int}
      */
     private function publishItems(Organization $organization, Closure $items, bool $removeOrphans = false): array {
-        $counters = ['published' => 0, 'deleted' => 0, 'unchanged' => 0, 'failed' => 0];
-
         $connection = GoogleCalendarConnection::query()->where('organization_id', $organization->id)->first();
-        if (! $connection instanceof GoogleCalendarConnection || ! $connection->isActive()) {
-            return $counters;
+        if (! $connection instanceof GoogleCalendarConnection) {
+            return RemoteCalendarPublishService::NO_COUNTS;
         }
 
-        try {
-            $gateway = new GoogleCalendarClient($connection);
-            $result = app(RemoteCalendarPublishService::class)->publish(self::ID, $connection, $gateway, $items(), removeOrphans: $removeOrphans);
-            foreach ($counters as $key => $value) {
-                $counters[$key] = $value + $result[$key];
-            }
-        } catch (Throwable) {
-            $counters['failed']++;
-        }
-
-        return $counters;
+        return app(RemoteCalendarPublishService::class)->publishIfActive(
+            self::ID,
+            $connection,
+            $connection->isActive(),
+            static fn (): GoogleCalendarClient => new GoogleCalendarClient($connection),
+            $items,
+            $removeOrphans,
+        );
     }
 
     public function adminPanel(): ?array {

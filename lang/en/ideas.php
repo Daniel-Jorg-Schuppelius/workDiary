@@ -109,6 +109,10 @@ return [
         'share_invalid' => 'Invalid share selection (exactly one person or one team).',
     ],
 
+    'offboarding' => [
+        'maps' => '{1} One idea map|[2,*] :count idea maps',
+    ],
+
     'share' => [
         'title' => 'Shares',
         'none' => 'This map is private — no shares.',
@@ -118,6 +122,9 @@ return [
         'add' => 'Share',
         'revoke' => 'Revoke share',
         'hint' => 'Exactly one person OR one team per share. Team membership is checked on access.',
+        'transfer' => 'Transfer ownership',
+        'transfer_hint' => 'The selected person becomes owner of the map. Your own share does not change.',
+        'transfer_confirm' => 'Really transfer ownership?',
     ],
 
     'notification' => [
@@ -132,6 +139,16 @@ return [
     'context' => [
         'customer' => 'Customer',
         'project' => 'Project',
+    ],
+
+    'link' => [
+        'action' => 'Link',
+        'title' => 'Link node to an existing record',
+        'target' => 'Target',
+        'done' => 'Node linked.',
+        'customers' => 'Customers',
+        'projects' => 'Projects',
+        'orders' => 'Orders (recent)',
     ],
 
     'convert' => [

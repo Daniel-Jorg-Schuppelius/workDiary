@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Whistleblowing;
 
 use App\Exceptions\ModuleKeyMissingException;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use SensitiveParameter;
 
 /**
@@ -58,7 +59,7 @@ class ReporterCredentialService {
      * Klartext oder den Verschluesselungs-Key zu beruehren.
      */
     public function lookupHmac(#[SensitiveParameter] string $secret): string {
-        return hash_hmac('sha256', $this->normalize($secret), $this->lookupKey());
+        return CryptoHelper::hmac($this->normalize($secret), $this->lookupKey());
     }
 
     /**
@@ -103,6 +104,6 @@ class ReporterCredentialService {
             throw new ModuleKeyMissingException('Weder WHISTLEBLOWING_LOOKUP_KEY noch WHISTLEBLOWING_KEY sind gesetzt.');
         }
 
-        return hash_hmac('sha256', 'lookup', $moduleKey);
+        return CryptoHelper::hmac('lookup', $moduleKey);
     }
 }

@@ -142,6 +142,34 @@ class OrgaMaxConnectionTest extends TestCase {
         $third->assertSee('RE-001')->assertSee(route('admin.orgamax.invoices.pdf', 'inv-1'));
     }
 
+    /** Vollscan 2026-10-21, lk-02: Senden und Zahlung haben einen Einstieg; Zahlung nur, wenn WorkDiary den Zahlungseingang führt. */
+    public function test_invoice_rows_offer_send_and_payment_dialogs(): void {
+        $connection = OrgaMaxConnection::create([
+            'organization_id' => $this->organization->id,
+            'mode' => OrgaMaxConnection::MODE_PRIVATE,
+            'status' => OrgaMaxConnectionStatus::Active,
+            'capabilities' => ['payments' => ['enabled' => true, 'leader' => 'orgamax']],
+        ]);
+        ExternalReference::link(
+            $this->organization,
+            OrgaMaxPlugin::ID,
+            OrgaMaxInvoiceProjector::EXT_TYPE_INVOICE,
+            OrgaMaxInvoice::query()->create(['organization_id' => $this->organization->id, 'external_id' => 'inv-7']),
+            'inv-7',
+            ['number' => 'RE-007', 'status' => 'open', 'outstanding_amount' => 119.0],
+            Carbon::parse('2026-09-01 08:00:00'),
+        );
+
+        $this->get(route('admin.orgamax.index'))->assertOk()
+            ->assertSee(route('admin.orgamax.invoices.send', 'inv-7'), false)
+            ->assertDontSee(route('admin.orgamax.invoices.payment', 'inv-7'), false);
+
+        $connection->forceFill(['capabilities' => ['payments' => ['enabled' => true, 'leader' => 'workdiary']]])->save();
+        $this->get(route('admin.orgamax.index'))->assertOk()
+            ->assertSee(route('admin.orgamax.invoices.payment', 'inv-7'), false)
+            ->assertSee('value="119"', false);
+    }
+
     /** „Übergebene Aufträge“ blättert in der Karte — früher endete die Liste still nach 50. */
     public function test_handed_over_orders_page_independently_of_the_invoice_page(): void {
         OrgaMaxConnection::create([

@@ -19,6 +19,7 @@ use App\Plugins\OrgaMax\Models\OrgaMaxInvoice;
 use App\Plugins\OrgaMax\{OrgaMaxPlugin, OrgaMaxServiceProvider};
 use App\Services\Billing\DocumentFeedFilters;
 use App\Services\Billing\Feed\{DocumentFeedSource, FeedProjection, PresentsFeedRows, SuppressesCoreInvoices};
+use App\Services\Billing\Feed\SuppressesCoreInvoicesByNumber;
 use App\Support\Query\DateRange;
 use App\Support\Sqid;
 use App\Support\Ui\UiAction;
@@ -33,6 +34,8 @@ use Illuminate\Support\Facades\{DB, Route};
  * {@see OrgaMaxServiceProvider} — der Kern kennt `orgamax_invoices` nicht.
  */
 class OrgaMaxDocumentFeedSource implements DocumentFeedSource, PresentsFeedRows, SuppressesCoreInvoices {
+    use SuppressesCoreInvoicesByNumber;
+
     public function key(): string {
         return OrgaMaxPlugin::ID;
     }
@@ -98,15 +101,7 @@ class OrgaMaxDocumentFeedSource implements DocumentFeedSource, PresentsFeedRows,
 
     /** Dieselbe Dublettenregel wie beim Lexoffice-Spiegel (MVP-670): extern führt. */
     public function suppressCoreInvoices(Builder $invoices): void {
-        $invoices->whereNotExists(function (Builder $sub): void {
-            $sub->select(DB::raw(1))
-                ->from('orgamax_invoices')
-                ->whereColumn('orgamax_invoices.organization_id', 'invoices.organization_id')
-                ->where(function (Builder $q): void {
-                    $q->whereColumn('orgamax_invoices.invoice_number', 'invoices.number')
-                        ->orWhereColumn('orgamax_invoices.invoice_number', 'invoices.external_number');
-                });
-        });
+        $this->suppressByMirroredNumber($invoices, 'orgamax_invoices', 'invoice_number');
     }
 
     public function presents(\stdClass $row): bool {

@@ -11,6 +11,7 @@
 namespace App\Models\Protocol;
 
 use App\Enums\Protocol\{ProtocolStatus, ProtocolType, ProtocolVisibility};
+use App\Exceptions\InvalidProtocolTransitionException;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasCommunicationNotes, HasJournal, HasSqid, HasTags};
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
@@ -91,6 +92,15 @@ class Protocol extends Model {
     /** @return BelongsTo<ProtocolTemplate, $this> */
     public function template(): BelongsTo {
         return $this->belongsTo(ProtocolTemplate::class, 'template_id');
+    }
+
+    protected static function booted(): void {
+        // Unterschriebene und archivierte Protokolle sind Nachweise; auch der Admin-Durchgriff der Policy löscht sie nicht.
+        static::deleting(static function (self $protocol): void {
+            if (! $protocol->status->isEditable()) {
+                throw InvalidProtocolTransitionException::immutable($protocol->status);
+            }
+        });
     }
 
     /** @return MorphTo<Model, $this> */

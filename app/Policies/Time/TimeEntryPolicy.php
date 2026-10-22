@@ -10,6 +10,7 @@
 
 namespace App\Policies\Time;
 
+use App\Enums\User\Permission;
 use App\Models\Platform\User;
 use App\Models\Time\TimeEntry;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
@@ -20,11 +21,11 @@ class TimeEntryPolicy {
     use HasAdminBypass;
 
     public function viewAny(User $user): bool {
-        return true;
+        return $user->can(Permission::TimeEntryViewOwn->value) || $user->canViewAllTimeEntries();
     }
 
     public function view(User $user, TimeEntry $entry): bool {
-        if ($this->owns($user, $entry, 'user_id')) {
+        if ($this->owns($user, $entry, 'user_id') && $user->can(Permission::TimeEntryViewOwn->value)) {
             return true;
         }
         if (! $this->sharesOrganization($user, $entry)) {
@@ -35,22 +36,18 @@ class TimeEntryPolicy {
     }
 
     public function create(User $user): bool {
-        return true;
+        return $user->can(Permission::TimeEntryCreate->value);
     }
 
     public function update(User $user, TimeEntry $entry): bool {
-        if (! $this->owns($user, $entry, 'user_id')) {
-            return false;
-        }
-
-        return app(TimeEntryEditPolicy::class)->canSelfEdit($entry);
+        return $this->owns($user, $entry, 'user_id')
+            && $user->can(Permission::TimeEntryUpdate->value)
+            && app(TimeEntryEditPolicy::class)->canSelfEdit($entry);
     }
 
     public function delete(User $user, TimeEntry $entry): bool {
-        if (! $this->owns($user, $entry, 'user_id')) {
-            return false;
-        }
-
-        return app(TimeEntryEditPolicy::class)->canSelfEdit($entry);
+        return $this->owns($user, $entry, 'user_id')
+            && $user->can(Permission::TimeEntryDelete->value)
+            && app(TimeEntryEditPolicy::class)->canSelfEdit($entry);
     }
 }

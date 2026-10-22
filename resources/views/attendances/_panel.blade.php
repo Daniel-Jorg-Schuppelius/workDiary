@@ -59,6 +59,14 @@
                         {{ $current->errand_started_at !== null ? __('attendance.intermediate.end_errand') : __('attendance.intermediate.start_errand') }}
                     </x-button>
                 </form>
+                {{-- Pause schon während der Schicht eintragen; beim Ausstempeln kommt die dort genannte hinzu. --}}
+                <form method="POST" action="{{ route('attendance.break') }}" class="leading-none">
+                    @csrf
+                    <div class="join">
+                        <input type="number" name="minutes" min="1" max="600" value="30" required class="input input-bordered input-xs join-item h-7 min-h-7 w-14 px-2 text-right tabular-nums" aria-label="{{ __('Pause (Min.)') }}">
+                        <x-button type="submit" tone="ghost" size="xs" class="join-item h-7 min-h-7 gap-1 px-2" icon="coffee">{{ __('Pause hinzufügen') }}</x-button>
+                    </div>
+                </form>
                 <form method="POST" action="{{ route('attendance.clock-out') }}" class="flex flex-wrap items-center justify-end gap-1.5" data-offline-sync="attendance.clock-out">
                     @csrf
                     <div class="join">

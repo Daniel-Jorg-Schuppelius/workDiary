@@ -14,6 +14,7 @@ use App\Enums\TimeApproval\MonthClosureStatus;
 use App\Models\Platform\User;
 use App\Models\Time\{MonthClosure, MonthClosureEvent};
 use App\Services\Concerns\ResolvesActorId;
+use App\Services\TimeApproval\Concerns\GuardsApprovalWorkflow;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
@@ -32,9 +33,11 @@ use Illuminate\Support\Facades\DB;
  * geworfen, damit Controller fachlich sprechende Antworten erzeugen können.
  */
 class MonthClosureService {
-    use ResolvesActorId;
+    use GuardsApprovalWorkflow, ResolvesActorId;
 
     public const REASON_MIN_LENGTH = 20;
+
+    private const WORKFLOW_EXCEPTION = MonthClosureWorkflowException::class;
 
     public function __construct(
         private readonly MonthTotalsSnapshotter $snapshotter,
@@ -86,7 +89,7 @@ class MonthClosureService {
      * Friert den Totals-Snapshot ein.
      */
     public function submit(MonthClosure $closure, ?User $actor = null): MonthClosure {
-        $this->ensureTransition($closure, MonthClosureStatus::Submitted);
+        $this->assertWorkflowTransition($closure->status, MonthClosureStatus::Submitted);
 
         $owner = $this->ownerOf($closure);
         $snapshot = $this->snapshotter->build($owner, $closure->period_year, $closure->period_month);
@@ -160,7 +163,7 @@ class MonthClosureService {
      * Speichert finalen, immutable Snapshot.
      */
     public function approve(MonthClosure $closure, ?User $actor = null, ?string $note = null): MonthClosure {
-        $this->ensureTransition($closure, MonthClosureStatus::Approved);
+        $this->assertWorkflowTransition($closure->status, MonthClosureStatus::Approved);
 
         // Snapshot beim Approval erneut bauen — der zuletzt eingefrorene
         // Zustand ist exakt das, was offiziell genehmigt wurde.
@@ -193,7 +196,7 @@ class MonthClosureService {
      * submitted → rejected. Pflicht-Begründung ≥ {@see REASON_MIN_LENGTH} Zeichen.
      */
     public function reject(MonthClosure $closure, string $reason, ?User $actor = null): MonthClosure {
-        $this->ensureTransition($closure, MonthClosureStatus::Rejected);
+        $this->assertWorkflowTransition($closure->status, MonthClosureStatus::Rejected);
         $this->assertReason($reason);
 
         $actorId = $this->resolveActorId($actor);
@@ -246,7 +249,7 @@ class MonthClosureService {
         }
 
         // Admin-Reopen
-        $this->ensureTransition($closure, MonthClosureStatus::Reopened);
+        $this->assertWorkflowTransition($closure->status, MonthClosureStatus::Reopened);
         $this->assertReason($reason ?? '');
 
         $closure = DB::transaction(function () use ($closure, $reason, $actorId): MonthClosure {
@@ -304,7 +307,7 @@ class MonthClosureService {
      * approved → locked. Wird typischerweise vom Export-Job (MVP-019) gesetzt.
      */
     public function lock(MonthClosure $closure, ?User $actor = null): MonthClosure {
-        $this->ensureTransition($closure, MonthClosureStatus::Locked);
+        $this->assertWorkflowTransition($closure->status, MonthClosureStatus::Locked);
 
         $actorId = $this->resolveActorId($actor);
 
@@ -341,16 +344,6 @@ class MonthClosureService {
 
     // ── intern ─────────────────────────────────────────────────────────
 
-    private function ensureTransition(MonthClosure $closure, MonthClosureStatus $target): void {
-        if (! $closure->status->canTransitionTo($target)) {
-            throw new MonthClosureWorkflowException(
-                'illegalTransition',
-                __('Aktion nicht erlaubt: Monatsstatus ist :status.', ['status' => $closure->status->value]),
-                ['from' => $closure->status->value, 'to' => $target->value],
-            );
-        }
-    }
-
     /**
      * Sperrt die Closure-Zeile in der laufenden Transaktion und prüft den
      * Status ERNEUT gegen den frischen Wert. Die Vorprüfung läuft
@@ -361,19 +354,9 @@ class MonthClosureService {
     private function lockAndAssert(MonthClosure $closure, MonthClosureStatus $target): MonthClosure {
         /** @var MonthClosure $fresh */
         $fresh = MonthClosure::query()->whereKey($closure->getKey())->lockForUpdate()->firstOrFail();
-        $this->ensureTransition($fresh, $target);
+        $this->assertWorkflowTransition($fresh->status, $target);
 
         return $fresh;
-    }
-
-    private function assertReason(string $reason): void {
-        if (mb_strlen(trim($reason)) < self::REASON_MIN_LENGTH) {
-            throw new MonthClosureWorkflowException(
-                'reasonTooShort',
-                __('Eine Begründung von mindestens :n Zeichen ist erforderlich.', ['n' => self::REASON_MIN_LENGTH]),
-                ['min' => self::REASON_MIN_LENGTH],
-            );
-        }
     }
 
     /** Liegt die Periode im zulässigen Bereich (Jahr 2000–2999, Monat 1–12)? */
@@ -411,5 +394,13 @@ class MonthClosureService {
         }
 
         return $owner;
+    }
+
+    private function illegalStatusMessage(string $status): string {
+        return (string) __('Aktion nicht erlaubt: Monatsstatus ist :status.', ['status' => $status]);
+    }
+
+    private function reasonTooShortMessage(int $minLength): string {
+        return (string) __('Eine Begründung von mindestens :n Zeichen ist erforderlich.', ['n' => $minLength]);
     }
 }

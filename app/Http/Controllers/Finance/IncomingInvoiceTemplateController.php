@@ -179,7 +179,9 @@ class IncomingInvoiceTemplateController extends Controller {
         }
         $template->audit('incoming_einvoice.template_saved', ['source' => IncomingInvoiceTemplate::SOURCE_MANUAL, 'fields' => array_column($zones, 'field')]);
 
-        $applied = $this->recognizer->applyToIncoming($incoming, $template, $actor);
+        // Ein übergebener oder abgelehnter Eingang bekommt keine neuen Werte (Sicherheitsaudit 2026-10-21, li-2).
+        $locked = $incoming->transferred_at !== null || $incoming->status === IncomingEInvoiceStatus::Rejected;
+        $applied = $locked ? [] : $this->recognizer->applyToIncoming($incoming, $template, $actor);
         $others = 0;
         if ((bool) ($data['apply_to_open'] ?? false)) {
             foreach ($this->openSiblings($incoming) as $sibling) {
@@ -195,6 +197,9 @@ class IncomingInvoiceTemplateController extends Controller {
         $message = (string) __('Vorlage „:name“ gespeichert (:fields).', ['name' => $template->name, 'fields' => implode(', ', array_map(ZoneFields::label(...), $applied !== [] ? $applied : array_column($zones, 'field')))]);
         if ($others > 0) {
             $message .= ' ' . trans_choice(':count weiterer offener Eingang neu erkannt.|:count weitere offene Eingänge neu erkannt.', $others, ['count' => $others]);
+        }
+        if ($locked) {
+            $message .= ' ' . __('Der Eingang ist bereits übergeben oder abgelehnt — seine Werte bleiben unverändert.');
         }
 
         return redirect()->route('finance.incoming-invoices.show', $document)->with('success', $message);

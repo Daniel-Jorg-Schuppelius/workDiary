@@ -17,18 +17,19 @@ use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Services\Auth\UserSessionInvalidator;
 use App\Services\Licensing\LimitGuard;
+use App\Services\Org\OrganizationRoles;
 use App\Support\SortableQuery;
 use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate, Hash};
+use Illuminate\Support\Facades\{Auth, Hash};
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
-use Spatie\Permission\Models\Role;
 
 /**
  * Verwaltet Mitglieder der eigenen Organisation.
- * Nur Org-Admins dürfen zugreifen (Gate 'manage-members' via OrganizationPolicy).
+ * Zugriff über die Benutzerrechte (user.viewAny/create/update/delete/reset-password);
+ * Personal-/Lohndaten über user.payroll.manage.
  */
 class OrgMemberController extends Controller {
     use AuditsAccessChanges;
@@ -55,32 +56,32 @@ class OrgMemberController extends Controller {
 
         $members = $query->paginate(25)->withQueryString();
 
-        $roles = [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value];
-        $canManageMembers = $this->canManageMembers($auth);
+        $roles = $this->assignableRoles($auth);
+        $canCreateMembers = $this->mayMember($auth, Permission::UserCreate);
         $canManagePayroll = $this->canManagePayroll($auth);
+        $canEditMembers = $this->mayMember($auth, Permission::UserUpdate) || $canManagePayroll;
+        $canDeleteMembers = $this->mayMember($auth, Permission::UserDelete);
         // Legal Hold (MVP-801): sichtbar machen, warum Löschen gesperrt ist.
         $heldUserIds = app(\App\Services\Retention\LegalHoldService::class)->heldUserIds();
 
-        return view('org.members.index', compact('members', 'roles', 'sort', 'dir', 'canManageMembers', 'canManagePayroll', 'heldUserIds'));
+        return view('org.members.index', compact('members', 'roles', 'sort', 'dir', 'canCreateMembers', 'canManagePayroll', 'canEditMembers', 'canDeleteMembers', 'heldUserIds'));
     }
 
     public function create(): View {
-        Gate::authorize('manage-members');
-
         /** @var User $auth */
         $auth = Auth::user();
-        $roles = [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value];
-        $canManageMembers = $this->canManageMembers($auth);
+        abort_unless($this->mayMember($auth, Permission::UserCreate), 403);
+        $roles = $this->assignableRoles($auth);
+        $canManageMembers = true;
         $canManagePayroll = $this->canManagePayroll($auth);
 
         return view('org.members._form_dialog', compact('roles', 'canManageMembers', 'canManagePayroll') + ['member' => null, 'isEdit' => false]);
     }
 
     public function store(Request $request, LimitGuard $limits): RedirectResponse {
-        Gate::authorize('manage-members');
-
         /** @var User $auth */
         $auth = Auth::user();
+        abort_unless($this->mayMember($auth, Permission::UserCreate), 403);
 
         // Lizenz-Nutzerlimit der Organisation durchsetzen (Feature 021).
         // Wirft LimitExceededException (HTTP 423 / Flash-Error) bei Erreichen.
@@ -98,7 +99,7 @@ class OrgMemberController extends Controller {
                     ->where('organization_id', $auth->organization_id),
             ],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'role' => ['required', 'in:' . implode(',', [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value])],
+            'role' => ['required', Rule::in($this->assignableRoles($auth))],
             'password' => ['required', 'string', 'confirmed', Password::defaults()],
         ] + $this->payrollDetailRules($auth) + $this->contactDetailRules());
 
@@ -118,7 +119,7 @@ class OrgMemberController extends Controller {
         $this->syncUserAddress($user, (array) ($data['address'] ?? []));
         $this->syncUserBankAccount($user, (array) ($data['bank'] ?? []));
 
-        $role = Role::findOrCreate($data['role'], 'web');
+        $role = OrganizationRoles::named($data['role'], $this->currentOrganization()->id);
         $user->assignRole($role);
         // Bauturbo A17 (MVP-335): Rollen-Vergabe revisionssicher auditieren
         // (supportzugriff-grundsaetze.md §4.1). Neuer User → immer echte Vergabe.
@@ -130,14 +131,14 @@ class OrgMemberController extends Controller {
 
     /** MVP-537 (Q1 S. 110): Import-Dialog (CSV-Upload) der Benutzerverwaltung. */
     public function importForm(): View {
-        Gate::authorize('manage-members');
+        abort_unless($this->mayMember($this->authUser(), Permission::UserCreate), 403);
 
         return view('org.members._import_dialog');
     }
 
     /** MVP-537: CSV-Vorlage mit den erwarteten Spalten. */
     public function importTemplate(): \Symfony\Component\HttpFoundation\Response {
-        Gate::authorize('manage-members');
+        abort_unless($this->mayMember($this->authUser(), Permission::UserCreate), 403);
 
         return response("name;email;personnel_number;role\nMax Mustermann;max@example.com;1001;user\n", 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
@@ -152,10 +153,9 @@ class OrgMemberController extends Controller {
      * Grund übersprungen. Nutzerlimit der Lizenz wird je Zeile durchgesetzt.
      */
     public function import(Request $request, LimitGuard $limits): RedirectResponse {
-        Gate::authorize('manage-members');
-
         /** @var User $auth */
         $auth = Auth::user();
+        abort_unless($this->mayMember($auth, Permission::UserCreate), 403);
         $request->validate([
             'csv' => ['required', 'file', 'mimes:csv,txt', 'max:5120'],
         ]);
@@ -175,7 +175,7 @@ class OrgMemberController extends Controller {
         if (! in_array('name', $header, true) || ! in_array('email', $header, true)) {
             return back()->withErrors(['csv' => __('Kopfzeile muss mindestens die Spalten name und email enthalten.')]);
         }
-        $allowedRoles = [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value];
+        $allowedRoles = $this->assignableRoles($auth);
 
         $created = 0;
         $skipped = [];
@@ -235,7 +235,7 @@ class OrgMemberController extends Controller {
                 'must_change_password' => true,
                 'is_new_system' => true,
             ]);
-            $roleModel = Role::findOrCreate($role, 'web');
+            $roleModel = OrganizationRoles::named($role, $this->currentOrganization()->id);
             $user->assignRole($roleModel);
             $this->auditAssignedRole($user, $roleModel);
             $created++;
@@ -255,14 +255,15 @@ class OrgMemberController extends Controller {
     public function edit(User $member): View {
         /** @var User $auth */
         $auth = Auth::user();
-        $this->authorizeMemberDirectoryAccess($auth);
         $this->ensureSameOrg($member);
         $this->ensureMayManagePlatformAdmin($member);
+        $canManageMembers = $this->mayMember($auth, Permission::UserUpdate, $member);
+        $canManagePayroll = $this->canManagePayroll($auth);
+        abort_unless($canManageMembers || $canManagePayroll, 403);
         $member->loadMissing(['addresses', 'bankAccounts']);
 
-        $roles = [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value];
-        $canManageMembers = $this->canManageMembers($auth);
-        $canManagePayroll = $this->canManagePayroll($auth);
+        $roles = $this->assignableRoles($auth);
+        $canResetPassword = $this->mayMember($auth, Permission::UserResetPassword, $member);
         // Stellvertreter-Auswahl (MVP-523): Mitglieder derselben Organisation.
         $deputyOptions = User::withoutGlobalScopes()
             ->where('organization_id', $auth->organization_id)
@@ -270,7 +271,7 @@ class OrgMemberController extends Controller {
             ->orderBy('name')
             ->get(['id', 'name']);
 
-        return view('org.members._form_dialog', compact('member', 'roles', 'canManageMembers', 'canManagePayroll', 'deputyOptions') + ['isEdit' => true]);
+        return view('org.members._form_dialog', compact('member', 'roles', 'canManageMembers', 'canManagePayroll', 'canResetPassword', 'deputyOptions') + ['isEdit' => true]);
     }
 
     public function update(Request $request, User $member): RedirectResponse {
@@ -279,11 +280,10 @@ class OrgMemberController extends Controller {
 
         /** @var User $auth */
         $auth = Auth::user();
-        $this->authorizeMemberDirectoryAccess($auth);
 
-        // Personalverwaltung/Geschäftsführung (kein Admin): dürfen ausschließlich
-        // den Personal-/Payroll-Block pflegen — keine Identität, Rolle, Passwort.
-        if (! $this->canManageMembers($auth)) {
+        // Ohne user.update (Personalverwaltung/Geschäftsführung): ausschließlich
+        // der Personal-/Payroll-Block — keine Identität, Rolle, Passwort.
+        if (! $this->mayMember($auth, Permission::UserUpdate, $member)) {
             abort_unless($this->canManagePayroll($auth), 403);
 
             $data = $request->validate($this->payrollDetailRules($auth));
@@ -305,9 +305,11 @@ class OrgMemberController extends Controller {
                     ->ignore($member->id),
             ],
             'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $member->id],
-            'role' => ['required', 'in:' . implode(',', [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value])],
-            // Admin kann optional ein neues Passwort setzen (Mitarbeiter ändert es beim nächsten Login).
-            'new_password' => ['nullable', 'confirmed', Password::defaults()],
+            'role' => ['required', Rule::in($this->assignableRoles($auth))],
+            // Optional ein neues Passwort (Mitarbeiter ändert es beim nächsten Login), nur mit user.reset-password.
+            'new_password' => $this->mayMember($auth, Permission::UserResetPassword, $member)
+                ? ['nullable', 'confirmed', Password::defaults()]
+                : ['prohibited'],
             // Stellvertretung (MVP-523): Sqid eines Org-Mitglieds oder leer.
             'deputy_user_id' => ['nullable', 'string'],
         ] + $this->payrollDetailRules($auth) + $this->contactDetailRules());
@@ -354,7 +356,7 @@ class OrgMemberController extends Controller {
         $this->syncUserAddress($member, (array) ($data['address'] ?? []));
         $this->syncUserBankAccount($member, (array) ($data['bank'] ?? []));
 
-        $role = Role::findOrCreate($data['role'], 'web');
+        $role = OrganizationRoles::named($data['role'], $this->currentOrganization()->id);
         // Bauturbo A17 (MVP-335): Rollen-Wechsel als assigned/revoked-Diff
         // auditieren; unveränderte Rolle erzeugt kein Event.
         $this->syncRolesAudited($member, [$role]);
@@ -370,7 +372,7 @@ class OrgMemberController extends Controller {
      */
     /** Austritts-Dialog mit Stichtag und Übergabeliste (MVP-798, Befund P1-21). */
     public function offboardDialog(User $member): View {
-        Gate::authorize('manage-members');
+        abort_unless($this->mayMember($this->authUser(), Permission::UserDelete, $member), 403);
         $this->ensureSameOrg($member);
         $this->ensureMayManagePlatformAdmin($member);
 
@@ -382,7 +384,7 @@ class OrgMemberController extends Controller {
     }
 
     public function offboard(\Illuminate\Http\Request $request, User $member): RedirectResponse {
-        Gate::authorize('manage-members');
+        abort_unless($this->mayMember($this->authUser(), Permission::UserDelete, $member), 403);
         $this->ensureSameOrg($member);
         $this->ensureMayManagePlatformAdmin($member);
 
@@ -392,7 +394,11 @@ class OrgMemberController extends Controller {
             return back()->with('error', __('Sie können sich nicht selbst entfernen.'));
         }
 
-        $data = $request->validate(['left_at' => ['required', 'date'], 'deputy_replacements' => ['nullable', 'array'], 'deputy_replacements.*' => ['nullable', 'string', 'max:64']]);
+        $data = $request->validate([
+            'left_at' => ['required', 'date'],
+            'deputy_replacements' => ['nullable', 'array'], 'deputy_replacements.*' => ['nullable', 'string', 'max:64'],
+            'handovers' => ['nullable', 'array'], 'handovers.*' => ['nullable', 'string', 'max:64'],
+        ]);
 
         $blockers = app(\App\Services\Org\UserOffboardingService::class)->blockers($member);
         if ($blockers !== []) {
@@ -413,6 +419,18 @@ class OrgMemberController extends Controller {
         if ($replacements !== []) {
             app(\App\Services\Org\UserOffboardingService::class)->replaceDeputies($member, $replacements, $auth);
         }
+        // Übergaben der Fachmodule (z. B. Ideenkarten): Abschnittsschlüssel → Sqid der Nachfolge.
+        $successors = [];
+        foreach ((array) ($data['handovers'] ?? []) as $key => $successorKey) {
+            $successorId = filled($successorKey) ? \App\Support\Sqid::decode(User::class, (string) $successorKey) : null;
+            $successor = $successorId !== null ? User::inCurrentOrganization()->whereKey($successorId)->whereKeyNot($member->id)->first() : null;
+            if ($successor instanceof User) {
+                $successors[(string) $key] = $successor;
+            }
+        }
+        if ($successors !== []) {
+            app(\App\Services\Org\UserOffboardingService::class)->handOver($member, $successors, $auth);
+        }
 
         return redirect()->toList('org.members.index')
             ->with('success', $member->fresh()?->isDeactivated()
@@ -421,7 +439,7 @@ class OrgMemberController extends Controller {
     }
 
     public function destroy(User $member): RedirectResponse {
-        Gate::authorize('manage-members');
+        abort_unless($this->mayMember($this->authUser(), Permission::UserDelete, $member), 403);
         $this->ensureSameOrg($member);
         $this->ensureMayManagePlatformAdmin($member);
 
@@ -486,12 +504,34 @@ class OrgMemberController extends Controller {
     }
 
     private function authorizeMemberDirectoryAccess(User $user): void {
-        abort_unless($this->canManageMembers($user) || $this->canManagePayroll($user), 403);
+        abort_unless(
+            $this->mayMember($user, Permission::UserViewAny) || $this->canManagePayroll($user) || $this->mayMember($user, Permission::UserCreate),
+            403,
+        );
     }
 
-    /** Voller Mitglieder-Stamm (Identität, Rolle, Passwort, Anlegen/Löschen) — nur Admin. */
-    private function canManageMembers(User $user): bool {
-        return $user->isAdmin() && $user->organization_id !== null;
+    /**
+     * Mitgliedsaktion über das Benutzerrecht (lk-06). Wer nicht Admin ist,
+     * handelt nie an einem Admin und vergibt keine Admin-Rolle
+     * ({@see assignableRoles()}) — sonst übernähme ein delegiertes Recht
+     * das Admin-Konto.
+     */
+    private function mayMember(User $user, Permission $permission, ?User $member = null): bool {
+        if ($user->organization_id === null) {
+            return false;
+        }
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $user->can($permission->value) && ($member === null || ! $member->isAdmin());
+    }
+
+    /** @return list<string> */
+    private function assignableRoles(User $user): array {
+        return $user->isAdmin()
+            ? [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value]
+            : [UserRole::User->value, UserRole::Buchhaltung->value];
     }
 
     /**

@@ -11,6 +11,7 @@
 namespace App\Plugins\Webdav\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth, HasPrivateNetworkOptIn};
+use App\Plugins\Support\Contracts\ManagedPluginConnection;
 use App\Plugins\Support\Mirror\{MirrorConnection, MirrorsDocumentFolders};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -38,7 +39,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $created_by
  * @property \Illuminate\Support\Carbon|null $last_mirrored_at
  */
-class WebdavConnection extends Model implements MirrorConnection {
+class WebdavConnection extends Model implements ManagedPluginConnection, MirrorConnection {
     use Auditable;
 
     use BelongsToOrganization;

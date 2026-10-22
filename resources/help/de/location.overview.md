@@ -1,7 +1,7 @@
 ---
 title: "Standortbasierte Zeiterfassung"
 topic: location.overview
-version: 2
+version: 3
 keywords:
     - GPS-Zeiterfassung
     - Geofencing
@@ -34,6 +34,12 @@ sondern erst nach ausdrücklicher Bestätigung.
 ein Umkreis aus Mittelpunkt und Radius definiert. Nur innerhalb dieser Zonen
 entstehen überhaupt Aufenthalte; Bewegungen außerhalb bleiben ohne fachliche
 Bedeutung.
+
+**Zonen aus Adressen:** An einem Kunden („Zone aus Kundenadresse“) und an
+einem Standort („Zone aus Adresse“) entsteht die Zone direkt aus den
+Koordinaten der Adresse; „Für alle Kunden“ legt sie für alle Kunden mit
+Koordinaten ohne Zone an. Der Radius kommt aus den Standardwerten der
+Standorterfassung.
 
 **Datenquellen:** Positionsmeldungen kommen wahlweise aus den Apps OwnTracks
 oder Traccar über einen persönlichen Gerätezugang, direkt aus dem Browser

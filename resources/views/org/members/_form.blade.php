@@ -57,7 +57,7 @@
                 <x-button tone="ghost" icon="key" data-password-suggest="password password_confirmation">{{ __('Passwort vorschlagen') }}</x-button>
             </div>
         </x-form-group>
-    @else
+    @elseif ($canResetPassword ?? true)
         <x-form-group :legend="__('Passwort zurücksetzen')" icon="lock_reset" tone="warning" cols="2"
                       :description="__('Leer lassen = unverändert. Sonst muss der Mitarbeiter es beim nächsten Login ändern.')">
             <x-input-field name="new_password" type="password" :label="__('Neues Passwort')" autocomplete="new-password" minlength="12"

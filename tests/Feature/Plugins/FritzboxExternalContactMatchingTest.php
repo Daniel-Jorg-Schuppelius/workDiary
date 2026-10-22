@@ -48,7 +48,7 @@ final class FritzboxExternalContactMatchingTest extends TestCase {
         ]);
         $this->linkContact(LexofficePlugin::ID, 'lex-contact-1', $customer);
 
-        FakePluginHttp::fake([
+        $fake = FakePluginHttp::fake([
             'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response([
                 'content' => [[
                     'id' => 'lex-contact-1',
@@ -67,6 +67,11 @@ final class FritzboxExternalContactMatchingTest extends TestCase {
         );
 
         $this->assertSame('created', $status);
+        // ContactsEndpoint::search(): eine Seite à 100 wie zuvor.
+        $this->assertSame(['GET https://api.lexware.io/v1/contacts?page=0&size=100'], array_map(
+            static fn (array $entry): string => $entry['request']->getMethod() . ' ' . $entry['request']->getUri(),
+            $fake->recorded(),
+        ));
         $this->assertSame($customer->defaultProjectOrCreate()->id, TimeEntry::query()->withoutGlobalScopes()->firstOrFail()->project_id);
         $this->assertDatabaseMissing('integration_inbox_items', ['plugin_id' => FritzboxPlugin::ID]);
     }

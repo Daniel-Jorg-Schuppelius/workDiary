@@ -42,7 +42,11 @@ class WhistleblowingExportService {
     /**
      * @return array{path: string, filename: string}
      */
-    public function export(WhistleblowingCase $case, string $reason, User $actor): array {
+    public function export(WhistleblowingCase $case, string $reason, User $actor, string $password): array {
+        // Ohne AES-256 entsteht kein Paket — ein unverschlüsselter Fallexport verlässt die Anwendung nie.
+        if (! ZipFile::supportsEncryption()) {
+            throw new \RuntimeException((string) __('Der Server kann keine verschlüsselten ZIP-Archive erzeugen (libzip mit AES-256 fehlt). Der Export ist deshalb gesperrt.'));
+        }
         $this->messages->addInternalNote($case, 'Export-Grund: ' . $reason, $actor);
 
         $entries = [];
@@ -94,7 +98,7 @@ class WhistleblowingExportService {
         // Toolkit prueft das Schliessen des Archivs (vorher ungeprueft) und raeumt bei Fehlern auf.
         $path = File::createTemp('', 'wbexport_', 'zip');
         try {
-            ZipFile::createFromEntries($entries, $path);
+            ZipFile::createFromEntries($entries, $path, $password);
         } catch (Throwable $e) {
             File::delete($path);
 

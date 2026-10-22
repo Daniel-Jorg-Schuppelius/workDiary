@@ -166,7 +166,6 @@ class StationeryOverlayRegressionTest extends TestCase {
         imagefill($img, 0, 0, (int) imagecolorallocate($img, 230, 240, 250));
         ob_start();
         imagepng($img);
-        imagedestroy($img);
         $file = UploadedFile::fake()->createWithContent('bogen.png', (string) ob_get_clean());
 
         $asset = app(LetterheadAssetService::class)->store($org, $file, LetterheadPageRole::First, 'Bogen', $admin);

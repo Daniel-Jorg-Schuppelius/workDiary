@@ -20,7 +20,7 @@ use App\Models\Platform\User;
 use App\Models\Sales\{OrderConfirmation, Quote};
 use App\Services\DocumentDesign\DocumentDesignRenderer;
 use App\Services\Numbering\{DocumentIssuers, NumberSequenceService};
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{Cache, DB};
 use RuntimeException;
 
 /**
@@ -96,6 +96,18 @@ final class OrderConfirmationService {
      * @throws RuntimeException wenn die AB nicht im Entwurf ist oder das Programm ablehnt
      */
     public function confirm(OrderConfirmation $confirmation, User $actor): OrderConfirmation {
+        // Sperre nehmen, unter der Sperre neu prüfen (Sicherheitsaudit 2026-10-21, li-1): ein zweiter Aufruf
+        // wartet und sieht den geschriebenen Stand. Bewusst keine DB-Transaktion — vergibt ein Programm die
+        // Nummer, muss die Verknüpfung zum dort angelegten Beleg einen Fehlschlag überleben.
+        return Cache::lock('document-issue:' . $confirmation->getMorphClass() . ':' . $confirmation->getKey(), 120)
+            ->block(30, function () use ($confirmation, $actor): OrderConfirmation {
+                $confirmation->refresh();
+
+                return $this->confirmLocked($confirmation, $actor);
+            });
+    }
+
+    private function confirmLocked(OrderConfirmation $confirmation, User $actor): OrderConfirmation {
         if (! $confirmation->status->canTransitionTo(OrderConfirmationStatus::Confirmed)) {
             throw new RuntimeException((string) __('quotes.order_confirmation.error.not_draft'));
         }

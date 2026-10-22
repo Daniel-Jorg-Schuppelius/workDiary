@@ -14,9 +14,9 @@
     @unless ($isDialog)
     <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div class="flex flex-wrap items-center gap-3">
-            <x-status-badge :tone="$diary->status->badgeTone()">{{ $diary->statusLabel() }}</x-status-badge>
+            <x-status-badge :tone="$diary->status->tone()">{{ $diary->statusLabel() }}</x-status-badge>
             @php($dispatchStatus = app(\App\Services\Dispatch\DispatchStatusResolver::class)->resolve($diary))
-            <x-status-badge :tone="$dispatchStatus->badgeTone()" outline>{{ __('dispatch.badge_prefix') }}: {{ $dispatchStatus->label() }}</x-status-badge>
+            <x-status-badge :tone="$dispatchStatus->tone()" outline>{{ __('dispatch.badge_prefix') }}: {{ $dispatchStatus->label() }}</x-status-badge>
             <span class="text-sm text-base-content/70">{{ optional($diary->user)->name ?? '—' }}</span>
             @if ($diary->is_archived)
                 <x-status-badge tone="neutral">{{ __('Archiviert') }}{{ $diary->archived_at ? ' · ' . $diary->archived_at->fdate() : '' }}</x-status-badge>

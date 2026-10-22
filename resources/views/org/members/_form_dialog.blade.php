@@ -29,6 +29,7 @@
         'roles' => $roles,
         'canManageMembers' => $canManageMembers ?? true,
         'canManagePayroll' => $canManagePayroll ?? false,
+        'canResetPassword' => $canResetPassword ?? true,
     ])
 
     <x-validation-errors />

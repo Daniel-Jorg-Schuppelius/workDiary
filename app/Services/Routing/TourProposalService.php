@@ -171,6 +171,18 @@ class TourProposalService {
      * @return list<Tour>
      */
     public function adopt(TourProposal $proposal, User $actor): array {
+        // Sperre nehmen, unter der Sperre neu prüfen (Sicherheitsaudit 2026-10-21, li-1/li-7): ein gleichzeitiger
+        // zweiter Aufruf wartet und sieht dann den schon geschriebenen Stand.
+        return DB::transaction(function () use ($proposal, $actor): array {
+            $proposal->newQueryWithoutScopes()->whereKey($proposal->getKey())->lockForUpdate()->firstOrFail();
+            $proposal->refresh();
+
+            return $this->adoptLocked($proposal, $actor);
+        });
+    }
+
+    /** @return list<Tour> */
+    private function adoptLocked(TourProposal $proposal, User $actor): array {
         $this->assertStatusTransition($proposal->status, TourProposalStatus::Adopted);
         $plan = TourPlan::fromArray($proposal->plan ?? []);
         $timezone = (string) ($proposal->problem['timezone'] ?? Tz::current());

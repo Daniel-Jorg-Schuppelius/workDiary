@@ -17,7 +17,7 @@ use App\Models\Club\{ClubDonation, ClubDonationReceipt, ClubMember};
 use App\Models\Platform\{Organization, User};
 use App\Services\Concerns\AssignsSequentialNo;
 use CommonToolkit\Enums\CurrencyCode;
-use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -62,7 +62,7 @@ class ClubDonationService {
     }
 
     public function membershipFeesConfirmable(Organization $organization): bool {
-        return filter_var(data_get($organization->settings, 'club.donations.membership_fees_confirmable', false), FILTER_VALIDATE_BOOL);
+        return StringHelper::parseBool(data_get($organization->settings, 'club.donations.membership_fees_confirmable', false)) ?? false;
     }
 
     /** @param array{club_member_id: ?int, donor_name: ?string, donor_address: ?string, kind: ClubDonationKind, amount: string, received_on: string, is_expense_waiver: bool, note: ?string} $data */

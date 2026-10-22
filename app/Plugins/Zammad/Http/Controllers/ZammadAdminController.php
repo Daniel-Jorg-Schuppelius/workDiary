@@ -14,14 +14,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Platform\{Organization, PluginState};
 use App\Models\Project\Project;
 use App\Models\ServiceTicket\ServiceQueue;
-use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
+use App\Plugins\Support\Concerns\{ManagesPluginConnection, ResolvesPluginOrgContext};
 use App\Plugins\Zammad\Models\ZammadConnection;
 use App\Plugins\Zammad\Services\ZammadTicketImporter;
 use App\Plugins\Zammad\ZammadPlugin;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Support\{ErrorText, SqidEncoder, UrlSafety};
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
 use InvalidArgumentException;
 use RuntimeException;
@@ -34,6 +33,7 @@ use RuntimeException;
  * ein leeres Token-Feld beim Speichern lässt das bestehende Token unangetastet.
  */
 class ZammadAdminController extends Controller {
+    use ManagesPluginConnection;
     use ResolvesPluginOrgContext;
 
     private const HELPDESK_MODULE = 'module.helpdesk';
@@ -197,34 +197,12 @@ class ZammadAdminController extends Controller {
 
     /** Manueller Ticket-Import (Polling-Äquivalent, auditiert). */
     public function sync(): RedirectResponse {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
-
-        $connection = ZammadConnection::query()->where('organization_id', $organization->id)->first();
-        if (! $connection instanceof ZammadConnection || ! $connection->isActive()) {
-            return back()->with('error', __('zammad::zammad.flash.no_connection'));
-        }
-
-        // Queue statt Request (Vollscan 2026-08-23, J17): ein Voll-Sync im Web-
-        // Request lief in den PHP-Timeout; der Worker hat Retry und Laufzeitbudget.
-        Artisan::queue('zammad:sync', ['--organization' => (string) $organization->id]);
-        $connection->audit('zammad.sync_manual', ['by_user_id' => (int) $admin->id]);
-
-        return back()->with('success', __('zammad::zammad.flash.sync_done'));
+        return $this->queueConnectionRun(ZammadConnection::class, 'zammad:sync', [], 'zammad.sync_manual', 'zammad::zammad.flash.sync_done', 'zammad::zammad.flash.no_connection');
     }
 
     /** Deaktiviert die Anbindung; Aufgaben und Referenzen bleiben erhalten (DoD). */
     public function disconnect(): RedirectResponse {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
-
-        $connection = ZammadConnection::query()->where('organization_id', $organization->id)->first();
-        if ($connection instanceof ZammadConnection) {
-            $connection->forceFill(['active' => false])->save();
-            $connection->audit('zammad.disconnected', ['by_user_id' => (int) $admin->id]);
-        }
-
-        return back()->with('success', __('zammad::zammad.flash.disconnected'));
+        return $this->deactivateConnection(ZammadConnection::class, 'zammad.disconnected', 'zammad::zammad.flash.disconnected');
     }
 
     /**

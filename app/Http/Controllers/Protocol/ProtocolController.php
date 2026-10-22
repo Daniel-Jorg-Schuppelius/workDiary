@@ -24,7 +24,7 @@ use App\Models\Protocol\{Protocol, ProtocolItem, ProtocolItemPhoto};
 use App\Services\Protocol\Fields\ProtocolItemFields;
 use App\Services\Protocol\{ProtocolItemPhotoService, ProtocolPdfRenderer, ProtocolService, ProtocolSignatureTokenService, ProtocolTemplateService};
 use App\Services\Weather\WeatherService;
-use App\Support\{ErrorText, Sqid};
+use App\Support\{EntityUrl, ErrorText, Sqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -128,6 +128,13 @@ class ProtocolController extends Controller {
             ->with('success', __('protocol.flash.created'));
     }
 
+    /** Stammdaten bearbeiten; die Policy lässt das nur bei bearbeitbarem Status zu (Vollscan 2026-10-21). */
+    public function edit(Protocol $protocol): View {
+        Gate::authorize('update', $protocol);
+
+        return view('protocols._form_dialog', ['protocol' => $protocol]);
+    }
+
     public function update(UpdateProtocolRequest $request, Protocol $protocol): RedirectResponse {
         Gate::authorize('update', $protocol);
 
@@ -152,9 +159,16 @@ class ProtocolController extends Controller {
     public function destroy(Protocol $protocol): RedirectResponse {
         Gate::authorize('delete', $protocol);
 
+        // Die Detailseite des Protokolls gibt es danach nicht mehr: zurück zum Träger.
+        // Die Policy prüft den Status nicht für Admins; das Modell wirft dann, hier gibt es die Meldung.
+        if (! $protocol->status->isEditable()) {
+            return redirect()->route('protocols.show', $protocol)->withErrors(['status' => InvalidProtocolTransitionException::immutable($protocol->status)->getMessage()]);
+        }
+        $carrierUrl = EntityUrl::for($protocol->subject);
         $protocol->delete();
 
-        return redirect()->back()->with('success', __('protocol.flash.deleted'));
+        return ($carrierUrl !== null ? redirect()->to($carrierUrl) : redirect()->route('dashboard'))
+            ->with('success', __('protocol.flash.deleted'));
     }
 
     /** Dialog für Übergänge mit Eingabe (MVP-883): Unterschrift, Begründung. */
@@ -303,7 +317,7 @@ class ProtocolController extends Controller {
         ProtocolItem $item,
         ProtocolItemPhotoService $photos,
     ): RedirectResponse {
-        Gate::authorize('update', $item->protocol);
+        Gate::authorize('addPhoto', $item->protocol);
         /** @var User $u */
         $u = Auth::user();
         $allowGeo = $u->can(Permission::ProtocolItemPhotoViewGeo->value);
@@ -338,7 +352,7 @@ class ProtocolController extends Controller {
         if ($item === null) {
             abort(404);
         }
-        Gate::authorize('update', $item->protocol);
+        Gate::authorize('removePhoto', $item->protocol);
         /** @var User $u */
         $u = Auth::user();
 

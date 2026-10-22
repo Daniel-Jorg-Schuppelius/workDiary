@@ -104,6 +104,26 @@ class ExpenseWorkflowTest extends TestCase {
         Notification::assertSentTo($this->admin, ExpenseSubmittedNotification::class);
     }
 
+    /** Vollscan 2026-10-21: genehmigte, noch nicht erstattete Spesen lassen sich stornieren; davor bleibt Löschen. */
+    public function test_approved_expense_can_be_cancelled_from_the_list(): void {
+        // Datum fest im laufenden Monat: die Liste filtert nach Zeitraum, die Factory würfelt 30 Tage zurück.
+        $expense = Expense::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->user->id,
+            'expense_category_id' => $this->category->id,
+            'date' => now()->startOfDay(),
+        ]);
+        app(ExpenseService::class)->submitForApproval($expense);
+        $this->actingAs($this->user)->get(route('expenses.index'))->assertOk()
+            ->assertDontSee(route('expenses.cancel', $expense), false);
+        app(ExpenseService::class)->approve($expense->fresh(), $this->admin);
+
+        $this->actingAs($this->user)->get(route('expenses.index'))->assertOk()
+            ->assertSee(route('expenses.cancel', $expense), false);
+        $this->post(route('expenses.cancel', $expense))->assertRedirect();
+        $this->assertSame(ExpenseStatus::Cancelled, $expense->fresh()?->status);
+    }
+
     public function test_approve_sets_status_and_decided_metadata(): void {
         $expense = Expense::factory()->pending()->create([
             'organization_id' => $this->organization->id,

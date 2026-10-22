@@ -10,22 +10,22 @@
 
 namespace App\Http\Controllers\Calendar;
 
+use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Models\Audit\AuditLog;
 use App\Models\Platform\Holiday;
 use App\Services\Calendar\HolidayService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class HolidayController extends Controller {
     use ResolvesGlobalDateRange;
 
     public function index(Request $request, HolidayService $holidayService): View {
-        Gate::authorize('viewAny', AuditLog::class);
+        $this->authorizeManage();
 
         $year = (int) $this->globalDateRange()['from']->year;
         if ($year < 1970 || $year > 2100) {
@@ -66,7 +66,7 @@ class HolidayController extends Controller {
     }
 
     public function create(): View {
-        Gate::authorize('viewAny', AuditLog::class);
+        $this->authorizeManage();
 
         return view('holidays._form_dialog', [
             'holiday' => null,
@@ -76,7 +76,7 @@ class HolidayController extends Controller {
     }
 
     public function store(Request $request): RedirectResponse {
-        Gate::authorize('viewAny', AuditLog::class);
+        $this->authorizeManage();
 
         $data = $this->validateInput($request);
 
@@ -89,7 +89,7 @@ class HolidayController extends Controller {
     }
 
     public function edit(Holiday $holiday): View {
-        Gate::authorize('viewAny', AuditLog::class);
+        $this->authorizeManage();
 
         return view('holidays._form_dialog', [
             'holiday' => $holiday,
@@ -99,7 +99,7 @@ class HolidayController extends Controller {
     }
 
     public function update(Request $request, Holiday $holiday): RedirectResponse {
-        Gate::authorize('viewAny', AuditLog::class);
+        $this->authorizeManage();
 
         $data = $this->validateInput($request, $holiday);
 
@@ -111,7 +111,7 @@ class HolidayController extends Controller {
     }
 
     public function destroy(Holiday $holiday): RedirectResponse {
-        Gate::authorize('viewAny', AuditLog::class);
+        $this->authorizeManage();
 
         $holiday->delete();
 
@@ -161,5 +161,10 @@ class HolidayController extends Controller {
         }
 
         return $result;
+    }
+
+    private function authorizeManage(): void {
+        $user = $this->authUser();
+        abort_unless($user->isAdmin() || $user->can(Permission::HolidayManage->value), 403);
     }
 }

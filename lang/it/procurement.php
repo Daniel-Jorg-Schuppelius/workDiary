@@ -594,11 +594,12 @@ return [
         'no_document' => 'Nessun documento registrato',
         'saved' => 'Documento registrato.',
         'deleted' => 'Documento rimosso.',
+        'confirm_delete' => 'Rimuovere il documento «:type»?',
         'blocked' => 'Ordine bloccato — documenti mancanti o scaduti: :names.',
         'blocking_on' => 'I documenti mancanti o scaduti BLOCCANO l’ordine (impostazione dell’organizzazione).',
         'blocking_off' => 'I documenti mancanti vengono solo segnalati, non bloccano. Il blocco si attiva nelle impostazioni.',
         'valid_until_hint' => 'Senza data di fine il documento vale come illimitato — è il caso più raro, verificare.',
-        'action' => ['add' => 'Aggiungi documento'],
+        'action' => ['add' => 'Aggiungi documento', 'remove' => 'Rimuovi documento'],
         'column' => [
             'supplier' => 'Fornitore',
             'status' => 'Semaforo',

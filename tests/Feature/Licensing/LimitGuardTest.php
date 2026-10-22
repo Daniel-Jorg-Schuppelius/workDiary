@@ -207,4 +207,23 @@ class LimitGuardTest extends TestCase {
             licenseId: 'test-' . bin2hex(random_bytes(4)),
         );
     }
+
+    /** Sicherheitsaudit 2026-10-21, pub-2: auch Inhalte aus Mails und Kopien (storeContent) zählen gegen das Kontingent. */
+    public function test_stored_content_respects_the_storage_quota(): void {
+        $this->bindLicense(LicenseResult::ok(LicenseStatus::Valid, $this->payload(maxUsers: null, storageQuotaGb: 1)));
+        $entry = DiaryEntry::factory()->create(['organization_id' => $this->organization->id]);
+        Attachment::factory()->create([
+            'organization_id' => $this->organization->id,
+            'attachable_type' => MorphMap::alias(DiaryEntry::class),
+            'attachable_id' => $entry->id,
+            'size' => 1024 * 1024 * 1024 - 1000,
+        ]);
+
+        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        try {
+            app(\App\Services\Attachments\FileAttacher::class)->storeContent($entry, str_repeat('x', 2000), 'anhang.txt', 'text/plain', null);
+        } finally {
+            $this->assertSame(1, Attachment::query()->where('attachable_id', $entry->id)->count());
+        }
+    }
 }

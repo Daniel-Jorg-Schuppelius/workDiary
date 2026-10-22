@@ -19,6 +19,7 @@ use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Services\Agile\{AgileBoardService, AgileConflictException};
 use App\Support\ErrorText;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -103,7 +104,7 @@ class AgileBoardController extends Controller {
             'lock_version' => ['required', 'integer', 'min:1'],
         ]);
 
-        $dodItems = array_values(array_filter(array_map('trim', explode("\n", (string) ($data['dod_items'] ?? '')))));
+        $dodItems = array_map('trim', StringHelper::lines((string) ($data['dod_items'] ?? ''), true));
 
         /** @var User $actor */
         $actor = Auth::user();

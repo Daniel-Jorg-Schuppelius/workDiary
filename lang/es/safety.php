@@ -54,6 +54,8 @@ return [
         'show' => 'Ver',
         'back' => 'Volver',
         'create_followup' => 'Crear seguimiento',
+        'delete' => 'Eliminar',
+        'delete_confirm' => '¿Eliminar definitivamente este evento de seguridad? En los accidentes pueden aplicarse obligaciones de conservación.',
     ],
 
     'transition' => [

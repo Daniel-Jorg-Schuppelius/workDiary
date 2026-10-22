@@ -74,6 +74,8 @@ return [
         'pdf' => 'PDF',
         'send' => 'Invia',
         'acknowledge' => 'Conferma ricezione',
+        'delete' => 'Elimina bozza',
+        'delete_confirm' => 'Eliminare questa bozza?',
     ],
 
     'badge' => [

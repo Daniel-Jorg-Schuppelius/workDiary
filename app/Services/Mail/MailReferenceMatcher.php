@@ -17,6 +17,7 @@ use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
 use App\Models\Project\Project;
 use App\Services\Integration\Match\MatchStrategy;
+use App\Support\ReferenceTokens;
 
 /**
  * Betreff-/Referenz-Matching für eingehende Mails (Feature 056, MVP-117): sucht
@@ -38,7 +39,7 @@ class MailReferenceMatcher {
      * @return list<array{model: Customer, confidence: string, reasons: list<string>}>
      */
     public function customerCandidates(Organization $organization, string $text): array {
-        $tokens = $this->tokens($text);
+        $tokens = ReferenceTokens::fromText($text, self::MAX_TOKENS);
         if ($tokens === []) {
             return [];
         }
@@ -73,32 +74,5 @@ class MailReferenceMatcher {
         }
 
         return $candidates;
-    }
-
-    /**
-     * Referenzartige Tokens aus dem Text (optionales Buchstabenpräfix + Ziffern
-     * mit -/‑Trennern), in Original- UND Großschreibung (case-tolerantes Matching
-     * gegen die gespeicherten Nummern). Öffentlich, weil die
-     * Rechnungsnachfrage (MVP-1200) dieselben Nummern gegen Rechnungen und
-     * Belegspiegel auflöst.
-     *
-     * @return list<string>
-     */
-    public function tokens(string $text): array {
-        if (! preg_match_all('/\b[A-Za-z]{0,5}[-\/]?\d{2,}(?:[-\/]\d+)*\b/u', $text, $matches)) {
-            return [];
-        }
-
-        $tokens = [];
-        foreach ($matches[0] as $raw) {
-            $token = trim($raw);
-            if (strlen($token) < 3) {
-                continue;
-            }
-            $tokens[$token] = true;
-            $tokens[strtoupper($token)] = true;
-        }
-
-        return array_slice(array_keys($tokens), 0, self::MAX_TOKENS);
     }
 }

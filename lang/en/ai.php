@@ -88,7 +88,13 @@ return [
     ],
     // Readable label per registered use case (config/ai.php).
     'capability_label' => [
+        'learning' => [
+            'course_outline' => 'Learning platform: draft course outline',
+            'question_draft' => 'Learning platform: draft test questions',
+            'tutor' => 'Learning platform: learning tutor',
+        ],
         'invoicing' => [
+            'document_extraction' => 'Incoming invoices: read document fields',
             'item_text' => 'Invoice: line item text',
             'block_text' => 'Invoice: summary text',
             'item_translate' => 'Invoice: translate line item',

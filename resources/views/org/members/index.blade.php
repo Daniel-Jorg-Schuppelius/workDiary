@@ -17,7 +17,7 @@
             {{-- Einreichungen zur Personalakte (MVP-987) --}}
             <x-icon-btn icon="outbox" tone="outline" size="sm" :href="route('personnel-file.submissions.index')" show-label>{{ __('hr.personnel_file.submission.title') }}</x-icon-btn>
         @endif
-        @if ($canManageMembers ?? true)
+        @if ($canCreateMembers ?? false)
             {{-- Personalstamm-CSV-Import (Feature 103, MVP-537) --}}
             <x-icon-btn icon="upload_file" tone="outline" size="sm"
                         data-entry-modal-trigger
@@ -78,6 +78,8 @@
                             @php
                                 // Plattform-Admins verwaltet nur ein Plattform-Admin (OrgMemberController::ensureMayManagePlatformAdmin).
                                 $mayManageMember = ! $member->isGlobalAdmin() || (bool) auth()->user()?->isGlobalAdmin();
+                                // Delegierte Benutzerrechte handeln nie an Admins (OrgMemberController::mayMember).
+                                $actsOnAdmin = ! (bool) auth()->user()?->isAdmin() && $member->isAdmin();
                             @endphp
                             <div class="flex justify-end gap-1">
                                 @can('viewAny', [\App\Models\Time\FlexEligibility::class, $member])
@@ -91,7 +93,7 @@
                                                 :href="route('org.members.personnel-file.index', $member)"
                                                 :label="__('hr.personnel_file.title')" />
                                 @endcan
-                                @if ($mayManageMember)
+                                @if ($mayManageMember && ($canEditMembers ?? false) && (! $actsOnAdmin || ($canManagePayroll ?? false)))
                                     <x-icon-btn icon="edit"
                                                 data-entry-modal-trigger
                                                 :href="route('org.members.edit', $member)"
@@ -109,12 +111,12 @@
                                 @if (! $member->isDeactivated() && (auth()->user()?->hasEffectivePermission(\App\Services\Hr\PersonnelFilePermissions::CREATE) ?? false))
                                     <x-icon-btn icon="draw" data-entry-modal-trigger :href="route('contracts.employment.member.create', $member)" :label="__('hr.employment.title')" />
                                 @endif
-                                @if (($canManageMembers ?? true) && $mayManageMember && ! $member->isDeactivated() && $member->id !== auth()->id())
+                                @if (($canDeleteMembers ?? false) && $mayManageMember && ! $actsOnAdmin && ! $member->isDeactivated() && $member->id !== auth()->id())
                                     {{-- Feature 126 (H1/E4): Regelweg Austritt — deaktiviert, Nachweise bleiben. --}}
                                     <x-icon-btn icon="logout" tone="warning" data-entry-modal-trigger
                                                 :href="route('org.members.offboard.dialog', $member)" :label="__('Austritt')" />
                                 @endif
-                                @if (($canManageMembers ?? true) && $mayManageMember)
+                                @if (($canDeleteMembers ?? false) && $mayManageMember && ! $actsOnAdmin)
                                     <x-action-form :action="route('org.members.destroy', $member)" method="DELETE"
                                           :confirm="__('Mitarbeiter wirklich entfernen? Nur ohne aufbewahrungspflichtige Nachweise möglich — sonst den Austritt nutzen.')"
                                           :confirm-label="__('Entfernen')">

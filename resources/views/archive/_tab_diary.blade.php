@@ -26,7 +26,7 @@
         <tr class="hover">
             <td class="whitespace-nowrap">{{ $entry->user?->name ?? '—' }}</td>
             <td class="text-center">
-                <x-status-badge :tone="$entry->status->badgeTone()">{{ $entry->statusLabel() }}</x-status-badge>
+                <x-status-badge :tone="$entry->status->tone()">{{ $entry->statusLabel() }}</x-status-badge>
             </td>
             <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->start_at?->fdatetime() ?? '—' }}</td>
             <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->end_at?->fdatetime() ?? '—' }}</td>

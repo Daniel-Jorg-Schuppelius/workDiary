@@ -108,6 +108,9 @@ return [
         'deputies_hint' => 'Queste persone hanno indicato il membro uscente come sostituto. Senza scelta la sostituzione termina.',
         'deputy_for' => 'Nuovo sostituto per :name',
         'no_deputy' => '— nessun sostituto —',
+        'handovers' => 'Trasferire a un’altra persona',
+        'handovers_hint' => 'La persona scelta diventa la nuova proprietaria. I contenuti non vengono mostrati; ogni trasferimento viene registrato. Senza selezione tutto resta all’account uscente.',
+        'no_handover' => '— non trasferire —',
     ],
     // Arbeitsvertrag zur Unterschrift (MVP-939).
     'employment' => [

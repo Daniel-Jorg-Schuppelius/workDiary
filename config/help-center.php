@@ -28,7 +28,7 @@ return [
             'patterns' => [
                 'dashboard.*', 'onboarding.*', 'auth.*', 'account.*',
                 'navigation.*', 'search.*', 'workspaces.*', 'install.*',
-                'offline.*', 'week.*', 'work.*', 'glossary*', 'help.*',
+                'offline.*', 'week.*', 'work.*', 'approvals.*', 'glossary*', 'help.*',
                 'knowledge.*',
             ],
         ],

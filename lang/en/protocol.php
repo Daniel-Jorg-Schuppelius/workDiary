@@ -188,6 +188,7 @@ return [
         'ttl_days' => 'Valid (days)',
         'token_url_hint' => 'Signature link created. If the email does not arrive, you can pass on this link:',
         'archive_confirm' => 'Archive protocol?',
+        'delete_confirm' => 'Permanently delete the protocol?',
         'remove_confirm' => 'Remove item “:label”?',
         'defect_severity' => 'Severity',
         'defect_category' => 'Category',

@@ -262,4 +262,32 @@ final class AgileBacklogTest extends TestCase {
         $event = AgileEvent::query()->where('event', 'points.changed')->firstOrFail();
         $this->assertSame(['from' => null, 'to' => 8], $event->payload);
     }
+
+    /** Umsetzungslücken 2026-10-21, lk-01: Akzeptanzkriterien haben eine Oberfläche — Zähler in der Zeile, Dialog zum Pflegen. */
+    public function test_backlog_offers_the_criteria_dialog(): void {
+        $item = app(AgileWorkItemService::class)->create($this->board, ['title' => 'Anmeldung'], $this->lead);
+        $project = $this->board->project()->firstOrFail();
+
+        $this->actingAs($this->lead)->get(route('agile.backlog', $project))
+            ->assertOk()
+            ->assertSee(route('agile.criteria.dialog', [$project, $item]), false)
+            ->assertSee('0/0');
+
+        $this->actingAs($this->lead)->get(route('agile.criteria.dialog', [$project, $item]))
+            ->assertOk()
+            ->assertSee(__('Noch kein Kriterium.'))
+            ->assertSee(route('agile.criteria.store', [$project, $item]), false);
+
+        $this->actingAs($this->lead)->post(route('agile.criteria.store', [$project, $item]), ['text' => 'Passwort vergessen funktioniert'])
+            ->assertSessionHas('open_dialog', route('agile.criteria.dialog', [$project, $item]));
+        $criterion = \App\Models\Agile\AgileAcceptanceCriterion::query()->sole();
+        $this->actingAs($this->lead)->patch(route('agile.criteria.toggle', [$project, $item, $criterion]));
+
+        $this->actingAs($this->lead)->get(route('agile.criteria.dialog', [$project, $item]))
+            ->assertOk()
+            ->assertSee('Passwort vergessen funktioniert')
+            ->assertSee(route('agile.criteria.toggle', [$project, $item, $criterion]), false)
+            ->assertSee(route('agile.criteria.destroy', [$project, $item, $criterion]), false);
+        $this->actingAs($this->lead)->get(route('agile.backlog', $project))->assertSee('1/1');
+    }
 }

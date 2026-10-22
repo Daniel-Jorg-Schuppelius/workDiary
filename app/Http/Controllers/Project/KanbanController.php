@@ -86,7 +86,6 @@ class KanbanController extends Controller {
             'columns' => self::columns(),
             'byStatus' => $byStatus,
             'teamScope' => $teamScope,
-            'canEditOthers' => $auth->canCreateEntriesForOthers(),
             'isLimited' => $entries->count() === self::MAX_ENTRIES,
         ]);
     }

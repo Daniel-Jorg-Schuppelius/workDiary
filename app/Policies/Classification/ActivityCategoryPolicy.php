@@ -10,6 +10,7 @@
 
 namespace App\Policies\Classification;
 
+use App\Enums\User\Permission;
 use App\Policies\Concerns\HasAdminBypass;
 use App\Policies\PermissionPolicy;
 
@@ -19,8 +20,8 @@ class ActivityCategoryPolicy extends PermissionPolicy {
     protected const ABILITIES = [
         'viewAny' => true,
         'view' => true,
-        'create' => false, // Pflege nur Admin (before-Hook)
-        'update' => false,
-        'delete' => false,
+        'create' => Permission::ActivityCategoryManage,
+        'update' => Permission::ActivityCategoryManage,
+        'delete' => Permission::ActivityCategoryManage,
     ];
 }

@@ -1,7 +1,7 @@
 ---
 title: "Planning tours"
 topic: tours.manage
-version: 2
+version: 3
 keywords:
     - route planning
     - tour proposal
@@ -50,5 +50,16 @@ route the straight-line distance applies and the trip is marked
 accordingly. For a vehicle in logbook mode the odometer reading is
 requested and the readings of the trips follow on without gaps. Adoption is
 possible once per tour.
+
+**On the road:** The tour's driver view shows the next stop with navigation,
+“Start tour”, per stop “Arrived”, “Done” or “Not met”, and “End tour”; the
+times become the actuals of the stops. “Replan remainder” on a running tour
+keeps completed stops and replans only the open ones from the last completed
+stop.
+
+**Plan and actual:** The report “Tours plan vs. actual” compares planned and
+actual arrival and dwell time per stop, with deviations per driver and order
+type; it provides experience values for the service duration of future
+proposals.
 
 Coordinate changes to active tours with the people involved.

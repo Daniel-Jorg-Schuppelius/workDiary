@@ -13,11 +13,10 @@ namespace App\Plugins\GoogleCalendar\Http\Controllers;
 use App\Plugins\GoogleCalendar\Api\{GoogleCalendarClient, GoogleCalendarOAuth};
 use App\Plugins\GoogleCalendar\{GoogleCalendarConfig, GoogleCalendarPlugin};
 use App\Plugins\GoogleCalendar\Models\GoogleCalendarConnection;
-use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
+use App\Plugins\Support\Concerns\{ManagesPluginConnection, ResolvesPluginOrgContext};
 use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
 use App\Plugins\Support\OAuthConnectionStatus;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
 use Throwable;
 
@@ -29,6 +28,7 @@ use Throwable;
  * Fehlermeldungen oder Audit-Payloads.
  */
 class GoogleCalendarAdminController extends ConnectionOAuthController {
+    use ManagesPluginConnection;
     use ResolvesPluginOrgContext;
 
     public function index(): View {
@@ -159,19 +159,6 @@ class GoogleCalendarAdminController extends ConnectionOAuthController {
 
     /** Manuelles Publish (auditierter Admin-Vorgang; CalDAV-Muster). */
     public function publish(): RedirectResponse {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
-
-        $connection = GoogleCalendarConnection::query()->where('organization_id', $organization->id)->first();
-        if (! $connection instanceof GoogleCalendarConnection || ! $connection->isActive()) {
-            return back()->with('error', __('google_calendar::google_calendar.flash.no_connection'));
-        }
-
-        // Queue statt Request (Vollscan 2026-08-23, J17): ein Voll-Sync im Web-
-        // Request lief in den PHP-Timeout; der Worker hat Retry und Laufzeitbudget.
-        Artisan::queue('google-calendar:publish', ['--organization' => (string) $organization->id]);
-        $connection->audit('google_calendar.publish_manual', ['by_user_id' => (int) $admin->id]);
-
-        return back()->with('success', __('google_calendar::google_calendar.flash.publish_done'));
+        return $this->queueConnectionRun(GoogleCalendarConnection::class, 'google-calendar:publish', [], 'google_calendar.publish_manual', 'google_calendar::google_calendar.flash.publish_done', 'google_calendar::google_calendar.flash.no_connection');
     }
 }

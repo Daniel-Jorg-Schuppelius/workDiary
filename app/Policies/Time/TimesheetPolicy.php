@@ -10,6 +10,7 @@
 
 namespace App\Policies\Time;
 
+use App\Enums\User\Permission;
 use App\Models\Platform\User;
 use App\Models\Time\Timesheet;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
@@ -18,6 +19,7 @@ class TimesheetPolicy {
     use ChecksOwnership;
     use HasAdminBypass;
 
+    /** Eigene Zettel sieht jeder; die Team-Sicht der Liste hängt an timesheet.viewAny. */
     public function viewAny(User $user): bool {
         return true;
     }
@@ -27,29 +29,24 @@ class TimesheetPolicy {
             return true;
         }
 
-        // Wer alle Zeiten sehen darf, liest auch fremde Stundenzettel —
-        // Ändern, Signieren und Löschen bleiben beim Eigentümer.
-        return $this->sharesOrganization($user, $timesheet) && $user->canViewAllTimeEntries();
+        // Fremde Stundenzettel lesen; Ändern, Signieren und Löschen bleiben beim Eigentümer.
+        return $this->sharesOrganization($user, $timesheet) && $user->can(Permission::TimesheetViewAny->value);
     }
 
     public function create(User $user): bool {
-        return true;
+        return $user->can(Permission::TimesheetCreate->value);
     }
 
     public function update(User $user, Timesheet $timesheet): bool {
-        if ($timesheet->isSigned()) {
-            return false;
-        }
-
-        return $this->owns($user, $timesheet, 'user_id');
+        return ! $timesheet->isSigned()
+            && $this->owns($user, $timesheet, 'user_id')
+            && $user->can(Permission::TimesheetUpdate->value);
     }
 
     public function delete(User $user, Timesheet $timesheet): bool {
-        if ($timesheet->isSigned()) {
-            return false;
-        }
-
-        return $this->owns($user, $timesheet, 'user_id');
+        return ! $timesheet->isSigned()
+            && $this->owns($user, $timesheet, 'user_id')
+            && $user->can(Permission::TimesheetDelete->value);
     }
 
     public function submit(User $user, Timesheet $timesheet): bool {
@@ -57,15 +54,16 @@ class TimesheetPolicy {
     }
 
     public function sign(User $user, Timesheet $timesheet): bool {
-        return ! $timesheet->isLocked() && $this->owns($user, $timesheet, 'user_id');
+        return ! $timesheet->isLocked()
+            && $this->owns($user, $timesheet, 'user_id')
+            && $user->can(Permission::TimesheetSign->value);
     }
 
     public function lock(User $user, Timesheet $timesheet): bool {
-        // Admin via before(); reguläre Owner dürfen nicht locken
-        return false;
+        return $this->sharesOrganization($user, $timesheet) && $user->can(Permission::TimesheetLock->value);
     }
 
     public function unlock(User $user, Timesheet $timesheet): bool {
-        return false;
+        return $this->sharesOrganization($user, $timesheet) && $user->can(Permission::TimesheetUnlock->value);
     }
 }

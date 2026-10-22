@@ -10,6 +10,7 @@
 
 namespace App\Policies\Audit;
 
+use App\Enums\User\Permission;
 use App\Policies\Concerns\HasAdminBypass;
 use App\Policies\PermissionPolicy;
 
@@ -17,7 +18,7 @@ class AuditLogPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
     protected const ABILITIES = [
-        'viewAny' => false,
-        'view' => false,
+        'viewAny' => Permission::AuditLogView,
+        'view' => Permission::AuditLogView,
     ];
 }

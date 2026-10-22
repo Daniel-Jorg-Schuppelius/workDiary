@@ -31,6 +31,11 @@ use RuntimeException;
  *     adressiert wird.
  *
  * In beiden Fällen liefert `GET /files/{fileId}` schließlich die Binärdatei.
+ *
+ * Alle drei Abrufe bleiben roh: die Beleg-Entität des SDK scheitert an `files`
+ * (Liste von IDs), `render()` an `documentFileId`, und `FilesEndpoint::download()`
+ * schreibt auf die Platte, sendet `Accept: application/json` und nennt den
+ * Inhaltstyp nicht.
  */
 class LexofficeVoucherFileService {
     /**
@@ -125,7 +130,7 @@ class LexofficeVoucherFileService {
         return [
             'body' => (string) $response->body(),
             'content_type' => $contentType,
-            'extension' => $this->extensionFor($contentType),
+            'extension' => File::extensionForMimeType($contentType) ?? 'bin',
         ];
     }
 
@@ -284,16 +289,5 @@ class LexofficeVoucherFileService {
         }
 
         return $this->api;
-    }
-
-    private function extensionFor(string $contentType): string {
-        return match ($contentType) {
-            'application/pdf' => 'pdf',
-            'image/jpeg' => 'jpg',
-            'image/png' => 'png',
-            'image/gif' => 'gif',
-            'image/tiff' => 'tif',
-            default => 'bin',
-        };
     }
 }

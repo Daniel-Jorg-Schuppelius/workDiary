@@ -13,7 +13,7 @@ namespace App\Plugins\Webdav\Http\Controllers;
 use App\Enums\Document\DocumentType;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\PluginState;
-use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
+use App\Plugins\Support\Concerns\{ManagesPluginConnection, ResolvesPluginOrgContext};
 use App\Plugins\Webdav\Models\WebdavConnection;
 use App\Plugins\Webdav\WebdavPlugin;
 use App\Support\UrlSafety;
@@ -29,6 +29,7 @@ use Illuminate\View\View;
  * Passwortfeld lässt das bestehende Passwort unangetastet.
  */
 class WebdavAdminController extends Controller {
+    use ManagesPluginConnection;
     use ResolvesPluginOrgContext;
 
     public function index(): View {
@@ -127,15 +128,6 @@ class WebdavAdminController extends Controller {
 
     /** Deaktiviert die Ablage; bereits gespiegelte Dateien bleiben extern erhalten. */
     public function disconnect(): RedirectResponse {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
-
-        $connection = WebdavConnection::query()->where('organization_id', $organization->id)->first();
-        if ($connection instanceof WebdavConnection) {
-            $connection->forceFill(['active' => false])->save();
-            $connection->audit('webdav.disconnected', ['by_user_id' => (int) $admin->id]);
-        }
-
-        return back()->with('success', __('webdav::webdav.flash.disconnected'));
+        return $this->deactivateConnection(WebdavConnection::class, 'webdav.disconnected', 'webdav::webdav.flash.disconnected');
     }
 }

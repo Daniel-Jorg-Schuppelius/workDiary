@@ -14,10 +14,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Platform\PluginState;
 use App\Plugins\CalDav\CalDavPlugin;
 use App\Plugins\CalDav\Models\CalDavConnection;
-use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
+use App\Plugins\Support\Concerns\{ManagesPluginConnection, ResolvesPluginOrgContext};
 use App\Support\UrlSafety;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
 
 /**
@@ -28,6 +27,7 @@ use Illuminate\View\View;
  * lässt das bestehende Passwort unangetastet.
  */
 class CalDavAdminController extends Controller {
+    use ManagesPluginConnection;
     use ResolvesPluginOrgContext;
 
     public function index(): View {
@@ -118,33 +118,11 @@ class CalDavAdminController extends Controller {
 
     /** Manuelles Publish (Scheduler-Äquivalent, auditiert). */
     public function publish(): RedirectResponse {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
-
-        $connection = CalDavConnection::query()->where('organization_id', $organization->id)->first();
-        if (! $connection instanceof CalDavConnection || ! $connection->isActive()) {
-            return back()->with('error', __('caldav::caldav.flash.no_connection'));
-        }
-
-        // Queue statt Request (Vollscan 2026-08-23, J17): ein Voll-Sync im Web-
-        // Request lief in den PHP-Timeout; der Worker hat Retry und Laufzeitbudget.
-        Artisan::queue('caldav:publish', ['--organization' => (string) $organization->id]);
-        $connection->audit('caldav.publish_manual', ['by_user_id' => (int) $admin->id]);
-
-        return back()->with('success', __('caldav::caldav.flash.publish_done'));
+        return $this->queueConnectionRun(CalDavConnection::class, 'caldav:publish', [], 'caldav.publish_manual', 'caldav::caldav.flash.publish_done', 'caldav::caldav.flash.no_connection');
     }
 
     /** Deaktiviert die Anbindung; publizierte Termine bleiben extern erhalten. */
     public function disconnect(): RedirectResponse {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
-
-        $connection = CalDavConnection::query()->where('organization_id', $organization->id)->first();
-        if ($connection instanceof CalDavConnection) {
-            $connection->forceFill(['active' => false])->save();
-            $connection->audit('caldav.disconnected', ['by_user_id' => (int) $admin->id]);
-        }
-
-        return back()->with('success', __('caldav::caldav.flash.disconnected'));
+        return $this->deactivateConnection(CalDavConnection::class, 'caldav.disconnected', 'caldav::caldav.flash.disconnected');
     }
 }

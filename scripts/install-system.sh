@@ -14,6 +14,7 @@
 #                       BACKUP_HEARTBEAT_TOKEN       (falls er in der App-.env fehlt,
 #                                                     via artisan rotate-token erzeugt)
 #                       workdiary-queue.service      (QUEUE_CONNECTION=database!)
+#                       workdiary-media.service      (Warteschlange media, lange Jobs)
 #   --with-reverb:      workdiary-reverb.service     (WebSocket/Chat)
 #   --with-integrity-watch: workdiary-integrity-watch.service (braucht ext-inotify)
 #   --with-fail2ban:    Filter + Jail aus deploy/fail2ban (logpath eingesetzt)
@@ -128,7 +129,7 @@ RESTORE_TEST_MIN="${RESTORE_TEST_TIME##*:}";  RESTORE_TEST_MIN=$((10#$RESTORE_TE
 if [[ -n "$INSTANCE" ]]; then
   [[ "$INSTANCE" =~ ^[a-z0-9][a-z0-9-]*$ ]] || fail "--instance erwartet einen Slug aus [a-z0-9-], beginnend mit [a-z0-9] (bekam: $INSTANCE)."
   case "$INSTANCE" in
-    queue|reverb|integrity-watch|strict|backup)
+    queue|media|reverb|integrity-watch|strict|backup)
       fail "--instance darf nicht '$INSTANCE' heißen (Kollision mit Dienst-/Dateinamen)." ;;
   esac
   NAME="workdiary-$INSTANCE"
@@ -156,7 +157,9 @@ F2B_JAIL="$F2B_DIR/jail.d/$NAME.conf"
 
 # Rollen = Basisnamen der Unit-Templates (workdiary-<rolle>.service.template);
 # die tatsächlichen Unit-Namen sind instanz-scoped (${NAME}-<rolle>).
-ROLES=(queue)
+# media: eigene Warteschlange für lange Jobs (Textindex, Transcoding, Importe) — ohne
+# diesen Dienst blieben sie auf systemd-Installationen liegen (Vollscan 2026-10-21).
+ROLES=(queue media)
 [[ $WITH_REVERB -eq 1 ]] && ROLES+=(reverb)
 [[ $WITH_WATCH -eq 1 ]] && ROLES+=(integrity-watch)
 UNITS=()
@@ -207,7 +210,8 @@ install_root_copy() { # $1 Skript unter scripts/, $2 Ziel
     return
   fi
   mkdir -p "$(dirname "$2")"
-  install -o root -g root -m 0755 "$src" "$2"
+  # `command`: die Funktion install() unten würde sich sonst selbst aufrufen.
+  command install -o root -g root -m 0755 "$src" "$2"
   note "installiert: $2 (root:root, 0755)"
 }
 
@@ -289,7 +293,7 @@ ensure_heartbeat_token() {
 
 status() {
   echo "WorkDiary-Systemdienste (Instanz=${INSTANCE:-<klassisch>}, APP_DIR=$APP_DIR):"
-  for u in "${NAME}-queue" "${NAME}-reverb" "${NAME}-integrity-watch"; do
+  for u in "${NAME}-queue" "${NAME}-media" "${NAME}-reverb" "${NAME}-integrity-watch"; do
     if [[ -f "/etc/systemd/system/$u.service" ]]; then
       printf '  %-32s %s / %s\n' "$u" "$(systemctl is-enabled "$u" 2>/dev/null || true)" "$(systemctl is-active "$u" 2>/dev/null || true)"
     else
@@ -306,7 +310,7 @@ status() {
 
 uninstall() {
   echo "Entferne WorkDiary-Systemdienste …"
-  for u in "${NAME}-queue" "${NAME}-reverb" "${NAME}-integrity-watch"; do
+  for u in "${NAME}-queue" "${NAME}-media" "${NAME}-reverb" "${NAME}-integrity-watch"; do
     if [[ -f "$SYSTEMD_DIR/$u.service" ]]; then
       sysctl_do disable --now "$u" || true
       rm -f "$SYSTEMD_DIR/$u.service"; note "entfernt: $SYSTEMD_DIR/$u.service"

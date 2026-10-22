@@ -15,6 +15,7 @@ namespace App\Plugins\Msgraph\Services;
 use App\Models\Mail\EmailConnection;
 use App\Plugins\Msgraph\Models\MsgraphMailConnection;
 use App\Plugins\Msgraph\MsgraphPlugin;
+use CommonToolkit\Helper\Data\StringHelper;
 
 /**
  * Rechte des Mail-Eingangs über Graph (MVP-1141). Die Anmeldung fordert sie
@@ -50,7 +51,7 @@ final class MsgraphMailScopes {
     public static function missingFor(MsgraphMailConnection $mail, EmailConnection $connection): ?string {
         $granted = array_map(
             static fn (string $scope): string => mb_strtolower((string) substr($scope, (int) strrpos('/' . $scope, '/'))),
-            preg_split('/\s+/', trim((string) $mail->scopes), -1, PREG_SPLIT_NO_EMPTY) ?: [],
+            StringHelper::words((string) $mail->scopes),
         );
         if ($granted === []) {
             return null;

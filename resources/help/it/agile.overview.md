@@ -1,7 +1,7 @@
 ---
 title: "Gestione agile dei progetti"
 topic: agile.overview
-version: 1
+version: 2
 keywords:
     - Kanban
     - Scrum
@@ -39,6 +39,11 @@ o dall'acquisizione di attività esistenti. Ogni elemento porta un tipo
 se necessario, un contrassegno di blocco. L'ordine si gestisce con lo
 spostamento su/giù; i filtri per tipo, blocchi e termine di ricerca
 mantengono leggibili anche i backlog di grandi dimensioni.
+
+**Criteri di accettazione:** l'icona elenco nella riga di un elemento apre i
+suoi criteri: aggiungere, spuntare uno per uno, rimuovere. Il numero accanto
+mostra i criteri soddisfatti ed esistenti; prima di spostare in una colonna
+«fatto», la board indica i criteri non soddisfatti.
 
 **Board:** le colonne rappresentano il flusso di lavoro; le schede si
 spostano da sinistra a destra. Con uno sprint selezionato, la board

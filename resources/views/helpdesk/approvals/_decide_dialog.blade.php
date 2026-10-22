@@ -18,7 +18,7 @@
     icon="rule"
     tone="primary"
     size="md"
-    :action="route('servicedesk.approvals.decide', $approval)"
+    :action="route('approvals.decide', $approval)"
     method="POST"
     :form-data="['data-entry-form' => '']"
     :submit-label="__('Entscheiden')">

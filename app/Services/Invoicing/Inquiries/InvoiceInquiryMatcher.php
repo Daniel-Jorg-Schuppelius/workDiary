@@ -14,11 +14,12 @@ namespace App\Services\Invoicing\Inquiries;
 
 use App\Models\Customer\Customer;
 use App\Models\Document\DocumentDispatch;
-use App\Models\Invoicing\Invoice;
-use App\Models\Platform\{Organization, User};
+use App\Models\Integration\ExternalReference;
+use App\Models\Invoicing\{Invoice, InvoiceInquiry};
+use App\Models\Platform\Organization;
 use App\Services\Billing\Contracts\ExternalRevenue;
-use App\Services\Mail\{MailReferenceMatcher, ParsedMessage};
-use CommonToolkit\Helper\Data\EmailHelper;
+use App\Services\Mail\{KnownSenders, MailIntakeService, ParsedMessage};
+use App\Support\ReferenceTokens;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -30,29 +31,16 @@ use Illuminate\Database\Eloquent\Builder;
 final class InvoiceInquiryMatcher {
     public function __construct(
         private readonly ExternalRevenue $external,
-        private readonly MailReferenceMatcher $references,
     ) {}
 
     /**
      * Antwort auf eine von WorkDiary versandte Rechnung: In-Reply-To oder
-     * References nennen die Message-ID eines Versandversuchs. Nur die eigene
+     * References nennen die Message-ID eines Versandversuchs, einer früheren
+     * Nachfrage oder einer eigenen Antwort darauf. Nur die eigene
      * Organisation; fremde Message-IDs laufen ins Leere.
      */
     public function threaded(Organization $organization, ParsedMessage $message): ?InvoiceInquiryTarget {
-        $referenced = array_values(array_filter([$message->inReplyTo, ...$message->references]));
-        if ($referenced === []) {
-            return null;
-        }
-        // Der Versand speichert die ID mit spitzen Klammern, Clients zitieren sie mit oder ohne.
-        $variants = [];
-        foreach ($referenced as $id) {
-            $bare = trim((string) $id, "<> \t");
-            if ($bare === '') {
-                continue;
-            }
-            $variants[] = $bare;
-            $variants[] = '<' . $bare . '>';
-        }
+        $variants = $message->referencedIds();
         if ($variants === []) {
             return null;
         }
@@ -61,12 +49,60 @@ final class InvoiceInquiryMatcher {
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->whereNotNull('invoice_id')
-            ->whereIn('meta->message_id', array_values(array_unique($variants)))
+            ->whereIn('meta->message_id', $variants)
             ->orderByDesc('id')
             ->first();
         $invoice = $dispatch?->invoice()->withoutGlobalScopes()->first();
+        if ($invoice instanceof Invoice) {
+            return InvoiceInquiryTarget::local($invoice);
+        }
 
-        return $invoice instanceof Invoice ? InvoiceInquiryTarget::local($invoice) : null;
+        return $this->threadedInquiry($organization, $variants);
+    }
+
+    /**
+     * Antwort auf eine frühere Nachfrage oder auf eine eigene Antwort aus der
+     * Notiz (lk-20): die References nennen die Nachfrage selbst, oder
+     * In-Reply-To nennt die Message-ID der Antwort, deren Versandverweis auf
+     * die Nachfrage zeigt.
+     *
+     * @param  list<string>  $variants
+     */
+    private function threadedInquiry(Organization $organization, array $variants): ?InvoiceInquiryTarget {
+        $candidates = $variants;
+        $replies = ExternalReference::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('plugin_id', MailIntakeService::PLUGIN_ID)
+            ->where('external_type', MailIntakeService::EXTERNAL_TYPE)
+            ->whereIn('external_id', $variants)
+            ->get(['payload']);
+        foreach ($replies as $reply) {
+            $bare = ParsedMessage::bareMessageId((string) (((array) $reply->payload)['in_reply_to'] ?? ''));
+            if ($bare !== null) {
+                array_push($candidates, $bare, '<' . $bare . '>');
+            }
+        }
+
+        $inquiry = InvoiceInquiry::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->whereIn('message_id', array_values(array_unique($candidates)))
+            ->orderByDesc('id')
+            ->first();
+        if (! $inquiry instanceof InvoiceInquiry) {
+            return null;
+        }
+        if ($inquiry->invoice_id !== null) {
+            $invoice = Invoice::query()->withoutGlobalScopes()->find($inquiry->invoice_id);
+
+            return $invoice instanceof Invoice ? InvoiceInquiryTarget::local($invoice) : null;
+        }
+        foreach ($this->byNumbers($organization, [(string) $inquiry->invoice_number]) as $target) {
+            if (! $target->isLocal() && $target->source() === $inquiry->external_source && $target->key() === $inquiry->external_key) {
+                return $target;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -75,7 +111,7 @@ final class InvoiceInquiryMatcher {
      * @return list<InvoiceInquiryTarget>
      */
     public function fromText(Organization $organization, string $text): array {
-        return $this->byNumbers($organization, $this->references->tokens($text));
+        return $this->byNumbers($organization, ReferenceTokens::fromText($text));
     }
 
     /**
@@ -129,27 +165,10 @@ final class InvoiceInquiryMatcher {
      * ingress-1: Rechnungsnummern sind fortlaufend und erratbar).
      */
     public function senderBelongs(InvoiceInquiryTarget $target, string $fromEmail): bool {
-        $sender = EmailHelper::normalize($fromEmail);
-        if ($sender === '') {
-            return false;
-        }
-
-        $known = [];
         $customer = $target->customerId !== null
             ? Customer::query()->withoutGlobalScopes()->whereKey($target->customerId)->first()
             : null;
-        if ($customer !== null) {
-            $known[] = (string) $customer->email;
-            foreach ($customer->contact_persons ?? [] as $person) {
-                $known[] = (string) ($person['email'] ?? '');
-            }
-            foreach (User::query()->withoutGlobalScopes()
-                ->where('organization_id', $customer->organization_id)
-                ->where('customer_id', $customer->getKey())
-                ->pluck('email') as $portalEmail) {
-                $known[] = (string) $portalEmail;
-            }
-        }
+        $known = $customer?->knownEmailAddresses() ?? [];
 
         if ($target->invoice !== null) {
             foreach (DocumentDispatch::query()->withoutGlobalScopes()
@@ -162,13 +181,6 @@ final class InvoiceInquiryMatcher {
             }
         }
 
-        foreach ($known as $candidate) {
-            $candidate = EmailHelper::normalize($candidate);
-            if ($candidate !== '' && hash_equals($candidate, $sender)) {
-                return true;
-            }
-        }
-
-        return false;
+        return KnownSenders::contains($known, $fromEmail);
     }
 }

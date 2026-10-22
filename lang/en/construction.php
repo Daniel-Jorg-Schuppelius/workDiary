@@ -74,6 +74,8 @@ return [
         'pdf' => 'PDF',
         'send' => 'Send',
         'acknowledge' => 'Confirm receipt',
+        'delete' => 'Delete draft',
+        'delete_confirm' => 'Delete this draft?',
     ],
 
     'badge' => [

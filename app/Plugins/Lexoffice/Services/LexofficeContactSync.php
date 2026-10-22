@@ -10,6 +10,7 @@
 
 namespace App\Plugins\Lexoffice\Services;
 
+use APIToolkit\Exceptions\ApiException;
 use App\Enums\Integration\IntegrationInboxStatus;
 use App\Enums\Numbering\ContactNumberOutcome;
 use App\Models\Contacts\ContactAddress;
@@ -24,6 +25,7 @@ use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use App\Services\Stammdaten\{ContactNumberAdopter, ContactPersons};
 use CommonToolkit\ValueObjects\VatNumber;
 use Illuminate\Database\Eloquent\{Builder, Model};
+use Lexoffice\API\Endpoints\ContactsEndpoint;
 use RuntimeException;
 
 /**
@@ -38,8 +40,8 @@ use RuntimeException;
  * ExternalReference-Zeilen mit identischer external_id, aber unterschiedlichem
  * referenceable_type.
  *
- * Verwendet bewusst HTTP direkt statt SDK, weil wir mit dem Roh-JSON arbeiten
- * (Konflikt-Vergleich Feld für Feld).
+ * Arbeitet mit der Array-Form der SDK-Kontakte (Konflikt-Vergleich Feld für
+ * Feld).
  */
 class LexofficeContactSync {
     /** @var array<string, int> */
@@ -82,27 +84,21 @@ class LexofficeContactSync {
         ];
 
         // Abstand der Organisation ausdrücklich — Konsole und Queue binden keinen Organisationskontext.
-        $api = app(LexofficeClientFactory::class)->make($apiKey, $baseUrl, LexofficeConfig::requestInterval((int) $organization->id));
+        $contacts = new ContactsEndpoint(app(LexofficeClientFactory::class)->sdk($apiKey, $baseUrl, LexofficeConfig::requestInterval((int) $organization->id)));
 
         $page = 0;
         $pageSize = 100;
 
         do {
-            $response = $api->getResponse($baseUrl . '/contacts', [
-                'page' => $page,
-                'size' => $pageSize,
-            ]);
-
-            if (! $response->successful()) {
-                throw LexofficeApiException::fromResponse($response, __('Kontakte'), __('Kontakte abrufen'));
+            try {
+                $found = $contacts->search(['page' => $page, 'size' => $pageSize]);
+            } catch (ApiException $e) {
+                throw LexofficeApiException::fromApiException($e, __('Kontakte'), __('Kontakte abrufen'));
             }
 
-            /** @var array<string, mixed> $body */
-            $body = $response->json() ?? [];
-            $items = (array) ($body['content'] ?? []);
-
-            foreach ($items as $remote) {
-                if (! is_array($remote) || empty($remote['id'])) {
+            foreach ($found->getValues() as $contact) {
+                $remote = $contact->toArray();
+                if (empty($remote['id'])) {
                     continue;
                 }
                 foreach ($this->kindsFor($remote, $only) as $kind) {
@@ -110,7 +106,7 @@ class LexofficeContactSync {
                 }
             }
 
-            $totalPages = (int) ($body['totalPages'] ?? 1);
+            $totalPages = $found->getTotalPages();
             $page++;
         } while ($page < $totalPages);
 

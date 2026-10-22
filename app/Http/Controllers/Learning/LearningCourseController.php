@@ -1124,6 +1124,13 @@ class LearningCourseController extends Controller {
         );
     }
 
+    /** Dialog: Kurs aus einer WorkDiary-Exportdatei übernehmen (Vollscan 2026-10-21). */
+    public function importCourseDialog(): View {
+        Gate::authorize('create', LearningCourse::class);
+
+        return view('learning.courses._course_import_dialog');
+    }
+
     /** Kurs aus einer Exportdatei übernehmen — immer als Entwurf. */
     public function importCourse(Request $request): RedirectResponse {
         Gate::authorize('create', LearningCourse::class);

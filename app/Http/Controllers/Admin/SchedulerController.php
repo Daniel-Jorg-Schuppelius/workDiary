@@ -21,6 +21,7 @@ use App\Models\Platform\{ScheduledJobOverride, ScheduledJobState, User};
 use App\Scheduling\{Cadence, CadenceType, JobCriticality, JobDefinition, JobRegistry, SchedulerOverrideService, SchedulerRegistrar};
 use App\Support\{MorphMap, SortableQuery};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\StringHelper;
 use Cron\CronExpression;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\{Collection, Str};
@@ -291,7 +292,7 @@ class SchedulerController extends Controller {
      * @return array{0: string, 1: array<string, mixed>}
      */
     private function splitCommand(string $command): array {
-        $tokens = preg_split('/\s+/', trim($command)) ?: [];
+        $tokens = StringHelper::words($command);
         $name = (string) array_shift($tokens);
         $parameters = [];
         foreach ($tokens as $token) {

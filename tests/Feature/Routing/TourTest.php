@@ -492,6 +492,16 @@ class TourTest extends TestCase {
             ['from' => 'start', 'to' => (string) $stop->id, 'distance_m' => 650, 'duration_s' => 70],
             ['from' => (string) $stop->id, 'to' => 'end', 'distance_m' => 650, 'duration_s' => 70],
         ], $legs);
+
+        // Konsolidierungs-Audit 2026-10-21, ko-12: ein Routenabruf für beide Wege.
+        $recalculated = $tour->fresh();
+        $geometry = $recalculated->route_geometry;
+        $this->assertNotNull($geometry);
+        $recalculated->forceFill(['route_legs' => null, 'route_geometry' => null, 'planned_distance_km' => '0.00'])->save();
+        $service->refreshRoute($recalculated);
+        $this->assertSame($legs, $recalculated->fresh()->route_legs);
+        $this->assertSame($geometry, $recalculated->fresh()->route_geometry);
+        $this->assertSame('1.30', (string) $recalculated->fresh()->planned_distance_km);
     }
 
     /** MVP-1172: Fahrten nehmen Straßenkilometer aus den Abschnitten, kennen ihre Tour und entstehen nur einmal. */
@@ -533,6 +543,10 @@ class TourTest extends TestCase {
         $b = DiaryEntry::factory()->service()->create(['organization_id' => $this->organization->id, 'scheduled_for' => '2026-06-01', 'address_lat' => 52.5, 'address_lng' => 13.2]);
         $service->assignOrders($tour, [$a->id, $b->id]);
 
+        // Ohne Fahrzeug fragt der Dialog keinen Tachostand ab.
+        $this->actingAs($driver)->get(route('tours.materialize.form', $tour))->assertOk()
+            ->assertSee(route('tours.materialize', $tour), false)->assertDontSee('name="odometer_start_km"', false);
+
         // Entwurf: keine Übernahme.
         $this->actingAs($driver)->post(route('tours.materialize', $tour))->assertSessionHasErrors('tour');
         $this->assertSame(0, TravelLog::query()->count());
@@ -540,6 +554,9 @@ class TourTest extends TestCase {
         $vehicle = Vehicle::factory()->create(['organization_id' => $this->organization->id, 'logbook_mode' => true]);
         $tour->forceFill(['vehicle_id' => $vehicle->id])->save();
         $service->start($tour->fresh());
+        $this->actingAs($driver)->get(route('tours.materialize.form', $tour))->assertOk()->assertSee('name="odometer_start_km"', false);
+        $stranger = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $this->actingAs($stranger)->get(route('tours.materialize.form', $tour))->assertForbidden();
 
         // Fahrtenbuch-Modus ohne Tachostand: Formularfehler statt Serverfehler.
         $this->actingAs($driver)->post(route('tours.materialize', $tour))->assertSessionHasErrors('odometer_start_km');

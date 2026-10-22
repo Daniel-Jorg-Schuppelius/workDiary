@@ -11,6 +11,7 @@
 namespace App\Plugins\Msgraph\Api;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
+use App\Plugins\Msgraph\Api\Concerns\ReadsGraphAccount;
 use App\Plugins\Msgraph\Models\MsgraphMailConnection;
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginHttpFactory};
@@ -32,7 +33,7 @@ use Throwable;
  * reiner HTTP-Zugriff.
  */
 class MsgraphMailClient implements GraphSubscriptionClient {
-    use Concerns\ManagesGraphSubscriptions;
+    use Concerns\ManagesGraphSubscriptions, ReadsGraphAccount;
 
     /** Chunk-Größe der Anhangs-Upload-Session: Vielfaches von 320 KiB (Graph-Vorgabe). */
     public const UPLOAD_CHUNK_SIZE = 10 * 320 * 1024;
@@ -141,26 +142,6 @@ class MsgraphMailClient implements GraphSubscriptionClient {
         if (! $response->successful()) {
             throw new RuntimeException('Graph Draft-Send fehlgeschlagen (HTTP ' . $response->status() . ').');
         }
-    }
-
-    /**
-     * Bestätigte Kontoidentität (`GET /me`) für das Admin-Panel.
-     *
-     * @return array{id: string, label: string}
-     */
-    public function account(): array {
-        $response = $this->api->getResponse($this->base . '/me');
-        if (! $response->successful()) {
-            throw new RuntimeException('Graph /me fehlgeschlagen (HTTP ' . $response->status() . ').');
-        }
-
-        /** @var array{id?: string, displayName?: string, mail?: string, userPrincipalName?: string} $data */
-        $data = (array) $response->json();
-
-        return [
-            'id' => (string) ($data['id'] ?? ''),
-            'label' => trim((string) ($data['displayName'] ?? '') . ' <' . (string) ($data['mail'] ?? $data['userPrincipalName'] ?? '') . '>'),
-        ];
     }
 
     /** Liveness/Auth-Check: Konto erreichbar. */

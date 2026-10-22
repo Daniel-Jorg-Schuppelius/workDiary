@@ -10,6 +10,7 @@
 
 namespace App\Http\Requests\Schedule;
 
+use App\Enums\User\Permission;
 use App\Models\Platform\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -18,7 +19,7 @@ class StoreShiftTypeRequest extends FormRequest {
     public function authorize(): bool {
         $user = Auth::user();
 
-        return $user instanceof User && $user->isAdmin();
+        return $user instanceof User && $user->can(Permission::ShiftTypeManage->value);
     }
 
     protected function prepareForValidation(): void {

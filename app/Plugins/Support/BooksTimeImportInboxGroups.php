@@ -332,15 +332,6 @@ trait BooksTimeImportInboxGroups {
         ]);
     }
 
-    public function dismissInboxGroup(Organization $organization, string $groupKey): int {
-        $items = $this->openInboxItems($organization)->where('group_key', $groupKey);
-        foreach ($items as $item) {
-            $this->resolveItem($item, IntegrationInboxStatus::Dismissed, null);
-        }
-
-        return $items->count();
-    }
-
     /**
      * @param  array<string, mixed>  $snap
      */

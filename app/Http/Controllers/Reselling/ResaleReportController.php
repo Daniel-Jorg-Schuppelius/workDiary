@@ -82,7 +82,7 @@ class ResaleReportController extends Controller {
         }
         $export = $margins->exportRows($report);
 
-        return $this->tabular($format, $filename, $export['header'], $export['rows']);
+        return $this->tabular($request, 'resale.margin', ['from' => $from->toDateString(), 'to' => $to->toDateString()], $format, $filename, $export['header'], $export['rows']);
     }
 
     /** Verlängerungen: Abos, die sich im Zeitraum verlängern oder enden (Kacheln 30/60/90 Tage). */
@@ -106,7 +106,7 @@ class ResaleReportController extends Controller {
         [$from, $to] = $this->renewalRange($request, $today);
         $export = $renewals->exportRows($renewals->build($from, $to, $today)['rows']);
 
-        return $this->tabular($format, (string) __('resale.renewals.file') . '-' . $from->toDateString() . '_' . $to->toDateString(), $export['header'], $export['rows']);
+        return $this->tabular($request, 'resale.renewals', ['from' => $from->toDateString(), 'to' => $to->toDateString()], $format, (string) __('resale.renewals.file') . '-' . $from->toDateString() . '_' . $to->toDateString(), $export['header'], $export['rows']);
     }
 
     /** „Abo ohne Rechnung > N Tage" (Prozesse 6): älteste offene fällige Periode älter als N Tage. */
@@ -126,19 +126,21 @@ class ResaleReportController extends Controller {
         $days = $this->unbilledDays($request);
         $export = $unbilled->exportRows($unbilled->build($days, ResalePeriod::today()));
 
-        return $this->tabular($format, (string) __('resale.unbilled.file') . '-' . $days, $export['header'], $export['rows']);
+        return $this->tabular($request, 'resale.unbilled', ['days' => $days], $format, (string) __('resale.unbilled.file') . '-' . $days, $export['header'], $export['rows']);
     }
 
     /** Offene Perioden als Rechnungsvorschlag (CSV, eine Zeile je Periode). */
-    public function export(): StreamedResponse {
+    public function export(Request $request): StreamedResponse {
         [$header, $rows, $filename] = $this->proposalRows();
+        $this->auditExport($request, 'resale.proposal', 'csv', []);
 
         return CsvExport::streamFromRows($filename . '.csv', $header, $rows);
     }
 
     /** Derselbe Rechnungsvorschlag als XLSX (Review 2026-09-10, A5). */
-    public function exportXlsx(): StreamedResponse {
+    public function exportXlsx(Request $request): StreamedResponse {
         [$header, $rows, $filename] = $this->proposalRows();
+        $this->auditExport($request, 'resale.proposal', 'xlsx', []);
 
         return XlsxExport::streamFromArray($filename . '.xlsx', $header, $rows);
     }
@@ -354,11 +356,15 @@ class ResaleReportController extends Controller {
     }
 
     /**
+     * CSV oder XLSX mit Export-Audit wie beim PDF (Phase 137, MVP-1101).
+     *
+     * @param  array<string, mixed>  $filters
      * @param  list<string>  $header
      * @param  list<list<int|float|string|null>>  $rows
      */
-    private function tabular(string $format, string $filename, array $header, array $rows): Response {
+    private function tabular(Request $request, string $reportCode, array $filters, string $format, string $filename, array $header, array $rows): Response {
         abort_unless(in_array($format, self::EXPORT_FORMATS, true), 404);
+        $this->auditExport($request, $reportCode, $format, $filters);
         if ($format === 'xlsx') {
             return XlsxExport::streamFromArray($filename . '.xlsx', $header, $rows);
         }

@@ -10,23 +10,27 @@
      Erwartet: $project, $timesheet, $tasks, $recentDescriptions,
      $allTags, $selectedTagIds, $recentTagIds --}}
 @php
+    $entry ??= null;
     // Von/Bis bleibt der Standard — der unterschriebene Zettel weist die
     // Einsatzzeiten aus. Dauer ist der schnelle Weg fürs Nacherfassen.
-    $initialMode = old('_time_mode', 'range');
-    $currentMinutes = (int) old('minutes', 0);
+    $initialMode = old('_time_mode', $entry !== null && $entry->started_at === null ? 'duration' : 'range');
+    $currentMinutes = (int) old('minutes', $entry?->minutes ?? 0);
+    $entryStart = $entry?->started_at?->orgTz()->format('H:i');
+    $entryEnd = $entry?->ended_at?->orgTz()->format('H:i');
+    $entryKind = $entry?->kind instanceof \BackedEnum ? $entry->kind->value : $entry?->kind;
     $hh = str_pad((string) intdiv($currentMinutes, 60), 2, '0', STR_PAD_LEFT);
     $mm = str_pad((string) ($currentMinutes % 60), 2, '0', STR_PAD_LEFT);
     $descriptionListId = 'ts-entry-descriptions-' . $timesheet->id;
 @endphp
 <x-modal
-    :title="__('Zeile hinzufügen')"
+    :title="$entry ? __('Zeile bearbeiten') : __('Zeile hinzufügen')"
     :eyebrow="__('Zeiteintrag')"
     icon="schedule"
     tone="primary"
-    :action="route('projects.timesheets.entries.store', [$project, $timesheet])"
-    method="POST"
+    :action="$entry ? route('projects.timesheets.entries.update', [$project, $timesheet, $entry]) : route('projects.timesheets.entries.store', [$project, $timesheet])"
+    :method="$entry ? 'PUT' : 'POST'"
     :form-data="['data-entry-form' => '']"
-    :submit-label="__('Hinzufügen')"
+    :submit-label="$entry ? __('Speichern') : __('Hinzufügen')"
 >
     <input type="hidden" name="date" value="{{ optional($timesheet->work_date)->toDateString() }}">
     {{-- Wird im Dauer-Modus per JS aus HH:MM befüllt; im Von/Bis-Modus rechnet
@@ -54,16 +58,16 @@
              Element mit data-time-mode-pane samt Kind-Inputs — der Wrapper
              bleibt daher außerhalb der Feld-Komponente. --}}
         <div data-time-mode-pane="range">
-            <x-input-field name="start_time" type="time" :label="__('Start (Uhrzeit)')" />
+            <x-input-field name="start_time" type="time" :label="__('Start (Uhrzeit)')" :value="old('start_time', $entryStart)" />
         </div>
         <div data-time-mode-pane="range">
-            <x-input-field name="end_time" type="time" :label="__('Ende (Uhrzeit)')" />
+            <x-input-field name="end_time" type="time" :label="__('Ende (Uhrzeit)')" :value="old('end_time', $entryEnd)" />
         </div>
         <p class="text-xs text-muted md:col-span-2" data-time-mode-pane="range">
             {{ __('Datum stammt aus dem Stundenzettel (:date). Endet die Zeit nach Mitternacht? Einfach die kleinere Uhrzeit eintragen.', ['date' => optional($timesheet->work_date)->fdate()]) }}
         </p>
         <div data-time-mode-pane="range">
-            <x-input-field name="break_minutes" type="number" :label="__('Pause (Min.)')" value="0" min="0" max="480" />
+            <x-input-field name="break_minutes" type="number" :label="__('Pause (Min.)')" :value="old('break_minutes', $entry?->break_minutes ?? 0)" min="0" max="480" />
         </div>
 
         <div class="fieldset" data-time-mode-pane="duration">
@@ -80,9 +84,9 @@
         </div>
 
         <x-select-field name="kind" :label="__('Art')">
-            <option value="work">{{ __('Arbeit') }}</option>
-            <option value="travel">{{ __('Anfahrt') }}</option>
-            <option value="standby">{{ __('Bereitschaft') }}</option>
+            <option value="work" @selected(old('kind', $entryKind) === 'work')>{{ __('Arbeit') }}</option>
+            <option value="travel" @selected(old('kind', $entryKind) === 'travel')>{{ __('Anfahrt') }}</option>
+            <option value="standby" @selected(old('kind', $entryKind) === 'standby')>{{ __('Bereitschaft') }}</option>
         </x-select-field>
     </x-form-group>
 
@@ -90,7 +94,7 @@
         <x-select-field name="task_id" :label="__('Aufgabe')">
             <option value="">—</option>
             @foreach ($tasks as $t)
-                <option value="{{ $t->sqid }}" @selected((string) old('task_id') === $t->sqid)>{{ $t->title }}</option>
+                <option value="{{ $t->sqid }}" @selected((string) old('task_id', $entry?->task?->sqid) === $t->sqid)>{{ $t->title }}</option>
             @endforeach
         </x-select-field>
         {{-- Vorschlagsliste aus den letzten Buchungstexten dieses Projekts —
@@ -100,7 +104,7 @@
                        list="{{ $descriptionListId }}"
                        autocomplete="off"
                        :placeholder="__('Woran haben Sie gearbeitet?')"
-                       :value="old('description')" />
+                       :value="old('description', $entry?->description)" />
         @if (! empty($recentDescriptions))
             <datalist id="{{ $descriptionListId }}">
                 @foreach ($recentDescriptions as $suggestion)

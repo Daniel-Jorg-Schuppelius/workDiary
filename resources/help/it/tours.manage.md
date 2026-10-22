@@ -1,7 +1,7 @@
 ---
 title: "Pianificare i giri"
 topic: tours.manage
-version: 2
+version: 3
 keywords:
     - pianificazione percorsi
     - proposta di giro
@@ -50,5 +50,16 @@ senza percorso vale la linea d'aria e il viaggio è contrassegnato di
 conseguenza. Per un veicolo in modalità libro di bordo viene richiesto il
 chilometraggio e i chilometraggi dei viaggi si susseguono senza
 interruzioni. La ripresa è possibile una sola volta per giro.
+
+**In viaggio:** la vista conducente del giro mostra la prossima fermata con la
+navigazione, «Avvia giro», per ogni fermata «Arrivato», «Completato» o «Non
+trovato» e «Termina giro»; gli orari diventano il consuntivo delle fermate.
+«Ripianifica il resto» su un giro in corso mantiene le fermate concluse e
+ripianifica solo quelle aperte a partire dall'ultima conclusa.
+
+**Piano e consuntivo:** il report «Giri previsto/effettivo» confronta arrivo e
+permanenza previsti ed effettivi per fermata, con gli scostamenti per
+conducente e tipo di ordine; ne derivano valori di esperienza per la durata
+del servizio nelle proposte future.
 
 Concordi con le persone coinvolte le modifiche ai giri in corso.

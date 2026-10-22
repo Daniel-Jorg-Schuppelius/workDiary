@@ -33,11 +33,14 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
  * `hasEffectivePermission`, `@can`) jeweils exakt treffen zu müssen; genau daran
  * sind zwei Vormessungen gescheitert.
  *
- * Die BASELINE friert den Stand vom 2026-09-16 ein und darf nur **schrumpfen**.
- * Die Umstellung der Altfälle läuft domänenweise: sie ist keine Mechanik,
- * sondern je Domäne eine Entscheidung darüber, wer künftig darf — heute geben
- * die betroffenen Policies überwiegend `true` zurück oder prüfen Eigentümer-
- * schaft, sodass eine blosse Umstellung Rollen den Zugriff entzöge.
+ * Die BASELINE darf nur **schrumpfen**. Die Umstellung lief domänenweise
+ * (lk-06, 2026-10-21): je Domäne die Entscheidung, wer künftig darf, mit
+ * Seeder-Vergabe, wo Rollen sonst Zugriff verloren hätten. Übrig sind
+ * Portal-Rechte (Steuerung über PortalVisibility), Prüfstellen im
+ * Lexoffice-Plugin, `domain.invoice.*` (Feature 083: erst mit belegter
+ * Capability) sowie Konzeptlücken mit Plan (Phase 156): Anfordern und
+ * Widerrufen der zweiten Person, Sicht `access.audit.view`. Rechte ohne
+ * Funktion entfernt der Seeder (`PermissionsSeeder::RETIRED`).
  */
 class PermissionEnforcementRuleTest extends TestCase {
     use ScansSourceTree;
@@ -49,35 +52,18 @@ class PermissionEnforcementRuleTest extends TestCase {
     ];
 
     /**
-     * Altfälle ohne Prüfstelle (Stand 2026-09-16). Nur kürzer werden.
+     * Altfälle ohne Prüfstelle (Stand 2026-10-21, nach der Umstellung lk-06).
+     * Nur kürzer werden. `CustomerPortalAccess` verdeckte bis zur Wortgrenze
+     * der Treffer in `P::CustomerPortalAccessManage` — Messkorrektur, kein
+     * Neuzugang.
      *
      * @var list<string>
      */
     private const BASELINE = [
-        'AccessAssignGroups', 'AccessAssignRoles', 'AccessAuditView', 'ActivityCategoryManage',
-        'AssetBlockOverride', 'AttendanceManage',
-        'AuditLogView',
-        'BrandingUpdate', 'CoverageRequirementManage', 'CustomerDelete',
-        'CustomerLexofficeSync', 'CustomerPortalDiaryView',
+        'AccessAuditView', 'CustomerLexofficeSync', 'CustomerPortalAccess', 'CustomerPortalDiaryView',
         'CustomerPortalInvoiceView', 'CustomerPortalOpenIssueView', 'CustomerPortalTimeEntryView',
-        'DiaryCreateForOthers', 'DiaryExport', 'DiaryViewOwn', 'DomainInvoiceDownload',
-        'DomainInvoiceView', 'DutyPlanCreate', 'DutyPlanDelete', 'DutyPlanPublish', 'DutyPlanUpdate',
-        'EmergencyAssignmentManage', 'EnergyLogManage', 'EntryTypeManage', 'FlexBalanceManage',
-        'FlexBalanceView', 'ForeignCustomerCreate', 'ForeignCustomerDelete', 'ForeignCustomerPromote',
-        'ForeignCustomerUpdate', 'HolidayManage', 'ImportViewReports', 'InvoiceDelete',
-        'InvoiceIssue', 'InvoicePay', 'MaterialManage',
-        'MilestoneManage', 'OnCallShiftManage', 'OpenIssueCreate', 'OpenIssueUpdate',
-        'OrganizationView', 'PlatformDemoCreate', 'ProcedureSecondPersonRequest',
-        'ProcedureSecondPersonRevoke', 'ProcedureSecondPersonSign', 'ProcedureSecondPersonTake',
-        'ProjectArchive', 'ProjectCreate', 'ProjectDelete', 'ProjectManageBilling', 'ProtocolCreate', 'ProtocolItemPhotoAdd', 'ProtocolItemPhotoRemove',
-        'ScheduledShiftManage', 'ShiftManage', 'ShiftTypeManage',
-        'SupplierCreate', 'SupplierDelete', 'SupplierExport', 'SupplierLexofficeSync', 'TagManage',
-        'TaskManage', 'TimeEntryCreate', 'TimeEntryCreateForOthers',
-        'TimeEntryDelete', 'TimeEntryUpdate', 'TimeEntryViewOwn', 'TimesheetCreate', 'TimesheetDelete',
-        'TimesheetExport', 'TimesheetLock', 'TimesheetSign', 'TimesheetUnlock', 'TimesheetUpdate',
-        'TimesheetViewAny', 'TourManage', 'TravelLogManage', 'TravelLogViewAny',
-        'UserCreate', 'UserDelete', 'UserManageRates', 'UserResetPassword', 'UserUpdate',
-        'UserView', 'UserViewAny', 'VacationApprove', 'VacationCancel', 'VacationRequest',
+        'DomainInvoiceDownload', 'DomainInvoiceView', 'ProcedureSecondPersonRequest',
+        'ProcedureSecondPersonRevoke', 'SupplierLexofficeSync',
     ];
 
     public function test_every_permission_has_an_enforcement_point(): void {
@@ -117,10 +103,9 @@ class PermissionEnforcementRuleTest extends TestCase {
         $unenforced = [];
 
         foreach ($this->permissionCases() as $case => $value) {
-            foreach (['P', 'Permission', 'PermissionEnum'] as $alias) {
-                if (str_contains($haystack, $alias . '::' . $case)) {
-                    continue 2;
-                }
+            // Wortgrenze: `P::UserView` steckt sonst in `P::UserViewAny` (lk-06).
+            if (preg_match('/\b(?:P|Permission|PermissionEnum)::' . $case . '\b/', $haystack) === 1) {
+                continue;
             }
             if (str_contains($haystack, "'" . $value . "'") || str_contains($haystack, '"' . $value . '"')) {
                 continue;

@@ -10,6 +10,7 @@
 
 namespace App\Policies\Schedule;
 
+use App\Enums\User\Permission;
 use App\Models\Platform\User;
 use App\Models\Schedule\ScheduledShift;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
@@ -27,19 +28,19 @@ class ScheduledShiftPolicy {
     }
 
     public function create(User $user): bool {
-        return false;
+        return $user->can(Permission::ScheduledShiftManage->value);
     }
 
     public function update(User $user, ScheduledShift $shift): bool {
-        return false;
+        return $this->sharesOrganization($user, $shift) && $user->can(Permission::ScheduledShiftManage->value);
     }
 
     public function delete(User $user, ScheduledShift $shift): bool {
-        return false;
+        return $this->update($user, $shift);
     }
 
     public function publish(User $user, ScheduledShift $shift): bool {
-        return false;
+        return $this->update($user, $shift);
     }
 
     /**

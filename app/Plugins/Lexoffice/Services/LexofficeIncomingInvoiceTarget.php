@@ -73,7 +73,7 @@ final class LexofficeIncomingInvoiceTarget implements IncomingInvoiceTransferTar
 
     public function transfer(IncomingEInvoice $incoming, IncomingEInvoiceTransfer $journal): IncomingInvoiceTransferResult {
         $config = LexofficeConfig::resolve((int) $incoming->organization_id);
-        $client = app(LexofficeClientFactory::class)->sdk((string) $config['api_key'], (string) $config['base_url']);
+        $client = app(LexofficeClientFactory::class)->sdk((string) $config['api_key'], (string) $config['base_url'], $config['request_interval']);
         $vouchers = new VouchersEndpoint($client);
         $type = self::voucherType($incoming);
         $note = null;

@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Time;
 
+use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
@@ -35,6 +36,7 @@ class FlexController extends Controller {
         /** @var User $authUser */
         $authUser = Auth::user();
         $canSeeOthers = $authUser->canViewOthersFlex();
+        abort_unless($canSeeOthers || $authUser->can(Permission::FlexBalanceView->value), 403);
 
         // Admins/Buchhaltung dürfen via ?user=… (Sqid) die Gleitzeit eines anderen Users sehen.
         $rawTarget = (string) $request->input('user', '');

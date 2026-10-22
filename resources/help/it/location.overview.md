@@ -1,7 +1,7 @@
 ---
 title: "Rilevazione dei tempi basata sulla posizione"
 topic: location.overview
-version: 2
+version: 3
 keywords:
     - rilevazione presenze GPS
     - geofencing
@@ -32,6 +32,12 @@ si registra mai automaticamente, ma solo dopo conferma esplicita.
 definito un perimetro composto da punto centrale e raggio. Solo
 all'interno di queste zone nascono soggiorni; i movimenti all'esterno
 restano privi di rilevanza di merito.
+
+**Zone dagli indirizzi:** su un cliente («Zona dall’indirizzo del cliente») e
+su una sede («Zona dall’indirizzo») la zona nasce direttamente dalle
+coordinate dell'indirizzo; «Per tutti i clienti» la crea per ogni cliente con
+coordinate e senza zona. Il raggio deriva dai valori predefiniti della
+localizzazione.
 
 **Fonti di dati:** le segnalazioni di posizione provengono a scelta
 dalle app OwnTracks o Traccar tramite un accesso personale del

@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Media;
 
 use App\Enums\Media\{MediaRenditionKind, MediaState};
-use App\Http\Controllers\Learning\MyLearningController;
 use App\Models\Attachments\Attachment;
 use App\Models\Media\MediaRendition;
 use App\Services\Learning\LearningCourseService;
@@ -113,7 +112,7 @@ final class VideoQualityPreferenceTest extends TestCase {
         $learner = $this->orgUser();
         $this->actingAs($learner)->postJson(route('learning.my.video-quality'), ['quality' => '720p'])
             ->assertOk()->assertJson(['quality' => '720p']);
-        $this->assertSame('720p', $learner->fresh()?->getPreference(MyLearningController::VIDEO_QUALITY_PREFERENCE));
+        $this->assertSame('720p', $learner->fresh()?->getPreference(\App\Services\Learning\LearningMedia::VIDEO_QUALITY_PREFERENCE));
         $this->actingAs($learner)->postJson(route('learning.my.video-quality'), ['quality' => '4k'])
             ->assertUnprocessable()->assertJsonValidationErrors('quality');
     }

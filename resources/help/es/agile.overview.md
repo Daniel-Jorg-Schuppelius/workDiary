@@ -1,7 +1,7 @@
 ---
 title: "Gestión ágil de proyectos"
 topic: agile.overview
-version: 1
+version: 2
 keywords:
     - Kanban
     - Scrum
@@ -39,6 +39,11 @@ de aceptación y, si es necesario, una marca de bloqueado. El orden se
 mantiene desplazando hacia arriba/abajo; los filtros por tipo, bloqueos
 y término de búsqueda mantienen manejables incluso los backlogs
 grandes.
+
+**Criterios de aceptación:** El icono de lista en la fila de un elemento abre
+sus criterios: añadir, marcar uno a uno, eliminar. El número junto a él muestra
+los criterios cumplidos y existentes; antes de mover a una columna de
+terminado, el tablero nombra los criterios no cumplidos.
 
 **Tablero:** Las columnas representan el flujo de trabajo; las tarjetas
 avanzan de izquierda a derecha. Con un sprint seleccionado, el tablero

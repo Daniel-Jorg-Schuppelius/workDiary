@@ -46,7 +46,7 @@ enum ScheduleType: string implements HasLabel {
     }
 
     /** Badge-Farbton (daisyUI tone) für die Modell-Anzeige. */
-    public function badgeTone(): string {
+    public function tone(): string {
         return match ($this) {
             self::Flextime => 'primary',
             self::Weekly => 'info',

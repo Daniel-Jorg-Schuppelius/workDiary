@@ -188,6 +188,7 @@ return [
         'ttl_days' => 'Gültig (Tage)',
         'token_url_hint' => 'Signaturlink erstellt. Falls die E-Mail nicht ankommt, können Sie diesen Link weitergeben:',
         'archive_confirm' => 'Protokoll archivieren?',
+        'delete_confirm' => 'Protokoll endgültig löschen?',
         'remove_confirm' => 'Punkt „:label“ entfernen?',
         'defect_severity' => 'Schweregrad',
         'defect_category' => 'Kategorie',

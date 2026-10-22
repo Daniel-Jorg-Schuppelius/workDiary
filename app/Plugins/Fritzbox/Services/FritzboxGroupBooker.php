@@ -16,6 +16,7 @@ use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Platform\Organization;
 use App\Plugins\Fritzbox\FritzboxConfig;
 use App\Services\Integration\InboxGroupBooker;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 
@@ -82,7 +83,7 @@ class FritzboxGroupBooker implements InboxGroupBooker {
         }
 
         $target = $this->resolveTarget($organization, $input);
-        $remember = filter_var($input['remember'] ?? false, FILTER_VALIDATE_BOOL);
+        $remember = StringHelper::parseBool($input['remember'] ?? false) ?? false;
         $config = FritzboxConfig::resolve($organization->id);
 
         $result = $this->service->assignGroup($organization, $groupKey, $target, $remember, $config);

@@ -43,9 +43,10 @@ class LexofficeArticleSyncTest extends TestCase {
             'external_id' => $externalId,
             'external_version' => 1,
             'name' => 'Lokal geändert',
-            'type' => 'service',
+            'type' => 'SERVICE',
             'currency' => 'EUR',
             'net_unit_price' => '100.00',
+            'vat_rate' => '19',
             'is_dirty' => true,
         ]);
     }
@@ -54,7 +55,7 @@ class LexofficeArticleSyncTest extends TestCase {
     private function remoteItem(string $externalId = 'lex-8', int $version = 2): array {
         return [
             'id' => $externalId, 'version' => $version, 'title' => 'Remote geändert',
-            'type' => 'service', 'price' => ['netPrice' => 120.00, 'currency' => 'EUR'],
+            'type' => 'SERVICE', 'price' => ['netPrice' => 120.00, 'leadingPrice' => 'NET', 'taxRate' => 19.0],
         ];
     }
 
@@ -170,21 +171,21 @@ class LexofficeArticleSyncTest extends TestCase {
     }
 
     public function test_sync_creates_articles_from_paginated_response(): void {
-        FakePluginHttp::fake([
+        $fake = FakePluginHttp::fake([
             'https://api.lexware.io/v1/articles*' => [
                 FakePluginHttp::response([
                     'content' => [
                         [
                             'id' => 'lex-1',
                             'title' => 'Beratung',
-                            'type' => 'service',
+                            'type' => 'SERVICE',
                             'unitName' => 'Stunde',
                             'price' => ['netPrice' => 100.00, 'currency' => 'EUR', 'taxRate' => 19.0],
                         ],
                         [
                             'id' => 'lex-2',
                             'title' => 'Switch 24-Port',
-                            'type' => 'product',
+                            'type' => 'PRODUCT',
                             'unitName' => 'Stk',
                             'articleNumber' => 'SW24',
                             'price' => ['netPrice' => 250.00, 'currency' => 'EUR', 'taxRate' => 19.0],
@@ -197,7 +198,7 @@ class LexofficeArticleSyncTest extends TestCase {
                         [
                             'id' => 'lex-3',
                             'title' => 'Reisezeit',
-                            'type' => 'service',
+                            'type' => 'SERVICE',
                             'unitName' => 'Stunde',
                             'price' => ['netPrice' => 60.00, 'currency' => 'EUR', 'taxRate' => 19.0],
                         ],
@@ -218,8 +219,13 @@ class LexofficeArticleSyncTest extends TestCase {
             'external_id' => 'lex-2',
             'name' => 'Switch 24-Port',
             'article_number' => 'SW24',
-            'type' => 'product',
+            'type' => 'PRODUCT',
         ]);
+        // Blättern nach totalPages wie zuvor: genau zwei Seiten.
+        $this->assertSame(
+            ['https://api.lexware.io/v1/articles?page=0&size=100', 'https://api.lexware.io/v1/articles?page=1&size=100'],
+            array_map(static fn (array $entry): string => (string) $entry['request']->getUri(), $fake->recorded()),
+        );
     }
 
     public function test_sync_archives_missing_articles_and_is_idempotent(): void {
@@ -230,8 +236,8 @@ class LexofficeArticleSyncTest extends TestCase {
                 if ($callCount === 1) {
                     return FakePluginHttp::response([
                         'content' => [
-                            ['id' => 'lex-1', 'title' => 'A', 'type' => 'service', 'price' => ['netPrice' => 1, 'currency' => 'EUR']],
-                            ['id' => 'lex-2', 'title' => 'B', 'type' => 'service', 'price' => ['netPrice' => 2, 'currency' => 'EUR']],
+                            ['id' => 'lex-1', 'title' => 'A', 'type' => 'SERVICE', 'price' => ['netPrice' => 1, 'taxRate' => 19]],
+                            ['id' => 'lex-2', 'title' => 'B', 'type' => 'SERVICE', 'price' => ['netPrice' => 2, 'taxRate' => 19]],
                         ],
                         'totalPages' => 1,
                     ], 200);
@@ -239,7 +245,7 @@ class LexofficeArticleSyncTest extends TestCase {
 
                 return FakePluginHttp::response([
                     'content' => [
-                        ['id' => 'lex-1', 'title' => 'A neu', 'type' => 'service', 'price' => ['netPrice' => 1.5, 'currency' => 'EUR']],
+                        ['id' => 'lex-1', 'title' => 'A neu', 'type' => 'SERVICE', 'price' => ['netPrice' => 1.5, 'taxRate' => 19]],
                     ],
                     'totalPages' => 1,
                 ], 200);
@@ -264,7 +270,7 @@ class LexofficeArticleSyncTest extends TestCase {
     }
 
     public function test_push_creates_new_article_via_post_when_external_id_missing(): void {
-        FakePluginHttp::fake([
+        $fake = FakePluginHttp::fake([
             'https://api.lexware.io/v1/articles' => FakePluginHttp::response([
                 'id' => 'lex-new', 'version' => 1,
             ], 201),
@@ -289,6 +295,41 @@ class LexofficeArticleSyncTest extends TestCase {
         $this->assertSame(1, $article->external_version);
         $this->assertFalse($article->is_dirty);
         $this->assertNotNull($article->last_pushed_at);
+
+        // Felder der SDK-Entität Article; `price.currency` kennt die API nicht und entfällt, die Art geht groß hinüber.
+        $fake->assertSentCount(1);
+        $request = $fake->recorded()[0]['request'];
+        $this->assertSame('POST', $request->getMethod());
+        $this->assertSame('https://api.lexware.io/v1/articles', (string) $request->getUri());
+        $this->assertEquals([
+            'title' => 'Neu erstellt',
+            'type' => 'SERVICE',
+            'unitName' => 'Stunde',
+            'price' => ['netPrice' => 90.0, 'leadingPrice' => 'NET', 'taxRate' => 19.0],
+        ], json_decode((string) $request->getBody(), true));
+    }
+
+    public function test_push_without_tax_rate_sends_nothing(): void {
+        $fake = FakePluginHttp::fake();
+        $article = LexofficeArticle::create([
+            'organization_id' => $this->organization->id,
+            'external_id' => 'lex-5',
+            'external_version' => 1,
+            'name' => 'Ohne Satz',
+            'type' => 'SERVICE',
+            'currency' => 'EUR',
+            'is_dirty' => true,
+        ]);
+
+        try {
+            (new LexofficeArticleSync('test-key'))->push($article);
+            $this->fail('Ohne Steuersatz darf kein Artikel hinübergehen — das SDK sendete 0 %.');
+        } catch (\RuntimeException $e) {
+            $this->assertStringContainsString('no tax rate', $e->getMessage());
+        }
+
+        $fake->assertNothingSent();
+        $this->assertTrue($article->fresh()?->is_dirty);
     }
 
     public function test_push_updates_existing_article_via_put_with_version(): void {
@@ -303,8 +344,11 @@ class LexofficeArticleSyncTest extends TestCase {
             'external_id' => 'lex-7',
             'external_version' => 2,
             'name' => 'Geändert',
-            'type' => 'service',
+            'type' => 'SERVICE',
             'currency' => 'EUR',
+            'net_unit_price' => '80.00',
+            'vat_rate' => '7',
+            'leading_price' => 'NET',
             'is_dirty' => true,
         ]);
 
@@ -319,8 +363,39 @@ class LexofficeArticleSyncTest extends TestCase {
 
             return strtoupper($request->getMethod()) === 'PUT'
                 && (string) $request->getUri() === 'https://api.lexware.io/v1/articles/lex-7'
-                && ($data['version'] ?? null) === 2;
+                && $data == [
+                    'id' => 'lex-7',
+                    'title' => 'Geändert',
+                    'type' => 'SERVICE',
+                    'price' => ['netPrice' => 80.0, 'leadingPrice' => 'NET', 'taxRate' => 7.0],
+                    'version' => 2,
+                ];
         });
+    }
+
+    /** Ohne bekannte Version liest push() sie über ArticlesEndpoint::get() und sendet sie im PUT mit. */
+    public function test_push_without_known_version_reads_it_before_the_put(): void {
+        $remote = $this->remoteItem('lex-6', version: 6);
+        $fake = FakePluginHttp::fake([
+            'https://api.lexware.io/v1/articles/lex-6' => static fn (RequestInterface $request) => $request->getMethod() === 'GET'
+                ? FakePluginHttp::response($remote)
+                : FakePluginHttp::response(['id' => 'lex-6', 'version' => 7]),
+        ]);
+        $article = LexofficeArticle::create([
+            'organization_id' => $this->organization->id,
+            'external_id' => 'lex-6',
+            'name' => 'Ohne Version',
+            'type' => 'SERVICE',
+            'currency' => 'EUR',
+            'vat_rate' => '19',
+            'is_dirty' => true,
+        ]);
+
+        (new LexofficeArticleSync('test-key'))->push($article);
+
+        $this->assertSame(['GET', 'PUT'], array_map(static fn (array $entry): string => $entry['request']->getMethod(), $fake->recorded()));
+        $this->assertSame(6, json_decode((string) $fake->recorded()[1]['request']->getBody(), true)['version'] ?? null);
+        $this->assertSame(7, $article->fresh()?->external_version);
     }
 
     public function test_manual_review_records_article_conflict_when_dirty_and_remote_diverged(): void {
@@ -329,9 +404,11 @@ class LexofficeArticleSyncTest extends TestCase {
             'external_id' => 'lex-8',
             'external_version' => 1,
             'name' => 'Lokal geändert',
-            'type' => 'service',
+            'type' => 'SERVICE',
             'currency' => 'EUR',
             'net_unit_price' => '100.00',
+            'vat_rate' => '19',
+            'leading_price' => 'NET',
             'is_dirty' => true,
         ]);
 
@@ -339,7 +416,7 @@ class LexofficeArticleSyncTest extends TestCase {
             'https://api.lexware.io/v1/articles*' => FakePluginHttp::response([
                 'content' => [[
                     'id' => 'lex-8', 'version' => 2, 'title' => 'Remote geändert',
-                    'type' => 'service', 'price' => ['netPrice' => 120.00, 'currency' => 'EUR'],
+                    'type' => 'SERVICE', 'price' => ['netPrice' => 120.00, 'leadingPrice' => 'NET', 'taxRate' => 19.0],
                 ]],
                 'totalPages' => 1,
             ], 200),
@@ -377,7 +454,7 @@ class LexofficeArticleSyncTest extends TestCase {
         $attributes = [
             'organization_id' => $this->organization->id,
             'external_version' => 1,
-            'type' => 'service',
+            'type' => 'SERVICE',
             'currency' => 'EUR',
             'net_unit_price' => '100.00',
             'vat_rate' => '19',
@@ -387,8 +464,8 @@ class LexofficeArticleSyncTest extends TestCase {
         LexofficeArticle::create(['external_id' => 'lex-11', 'name' => 'Nur der Satz weicht ab'] + $attributes);
 
         $remote = fn (string $id, string $title, float $taxRate): array => [
-            'id' => $id, 'version' => 2, 'title' => $title, 'type' => 'service',
-            'price' => ['netPrice' => 100.0, 'currency' => 'EUR', 'taxRate' => $taxRate],
+            'id' => $id, 'version' => 2, 'title' => $title, 'type' => 'SERVICE',
+            'price' => ['netPrice' => 100.0, 'taxRate' => $taxRate],
         ];
         FakePluginHttp::fake([
             'https://api.lexware.io/v1/articles*' => FakePluginHttp::response([
@@ -415,7 +492,7 @@ class LexofficeArticleSyncTest extends TestCase {
             'external_id' => 'lex-9',
             'external_version' => 1,
             'name' => 'Lokal-Version',
-            'type' => 'service',
+            'type' => 'SERVICE',
             'currency' => 'EUR',
             'is_dirty' => true,
         ]);
@@ -424,7 +501,7 @@ class LexofficeArticleSyncTest extends TestCase {
             'https://api.lexware.io/v1/articles*' => FakePluginHttp::response([
                 'content' => [[
                     'id' => 'lex-9', 'version' => 5, 'title' => 'Remote-Version',
-                    'type' => 'service', 'price' => ['netPrice' => 50.0, 'currency' => 'EUR'],
+                    'type' => 'SERVICE', 'price' => ['netPrice' => 50.0, 'taxRate' => 19.0],
                 ]],
                 'totalPages' => 1,
             ], 200),

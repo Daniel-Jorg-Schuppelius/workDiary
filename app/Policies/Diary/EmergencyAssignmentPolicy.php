@@ -10,6 +10,7 @@
 
 namespace App\Policies\Diary;
 
+use App\Enums\User\Permission;
 use App\Models\Diary\EmergencyAssignment;
 use App\Models\Platform\User;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
@@ -27,17 +28,18 @@ class EmergencyAssignmentPolicy {
      * die im Web offen stand, hätte über die Policy verweigert werden müssen.
      * Vereinheitlicht wird deshalb auf das, was tatsächlich gilt.
      *
-     * Ändern bleibt beim Eigentümer.
+     * Ändern beim Eigentümer oder org-weit mit `emergency-assignment.manage` (lk-06).
      */
     public function view(User $user, EmergencyAssignment $assignment): bool {
         return $this->sharesOrganization($user, $assignment);
     }
 
     public function update(User $user, EmergencyAssignment $assignment): bool {
-        return $this->owns($user, $assignment);
+        return $this->owns($user, $assignment)
+            || ($this->sharesOrganization($user, $assignment) && $user->can(Permission::EmergencyAssignmentManage->value));
     }
 
     public function delete(User $user, EmergencyAssignment $assignment): bool {
-        return $this->owns($user, $assignment);
+        return $this->update($user, $assignment);
     }
 }

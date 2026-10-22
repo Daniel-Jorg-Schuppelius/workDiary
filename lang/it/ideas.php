@@ -109,6 +109,10 @@ return [
         'share_invalid' => 'Selezione di condivisione non valida (esattamente una persona o un team).',
     ],
 
+    'offboarding' => [
+        'maps' => '{1} Una mappa delle idee|[2,*] :count mappe delle idee',
+    ],
+
     'share' => [
         'title' => 'Condivisioni',
         'none' => 'Questa mappa è privata — nessuna condivisione.',
@@ -118,6 +122,9 @@ return [
         'add' => 'Condividi',
         'revoke' => 'Revoca condivisione',
         'hint' => 'Esattamente una persona O un team per condivisione. L\'appartenenza al team viene verificata all\'accesso.',
+        'transfer' => 'Trasferisci proprietà',
+        'transfer_hint' => 'La persona scelta diventa proprietaria della mappa. La Sua condivisione non cambia.',
+        'transfer_confirm' => 'Trasferire davvero la proprietà?',
     ],
 
     'notification' => [
@@ -132,6 +139,16 @@ return [
     'context' => [
         'customer' => 'Cliente',
         'project' => 'Progetto',
+    ],
+
+    'link' => [
+        'action' => 'Collega',
+        'title' => 'Collega il nodo a un record esistente',
+        'target' => 'Destinazione',
+        'done' => 'Nodo collegato.',
+        'customers' => 'Clienti',
+        'projects' => 'Progetti',
+        'orders' => 'Ordini (recenti)',
     ],
 
     'convert' => [

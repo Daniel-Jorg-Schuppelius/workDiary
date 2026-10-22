@@ -75,6 +75,23 @@ class EnumLabelContractTest extends TestCase {
     }
 
     /**
+     * Der Ton für `<x-status-badge>` heißt in jedem Enum `tone()`; eine
+     * fachliche Stufe daneben heißt `stage()` (Konsolidierungs-Audit
+     * 2026-10-21, ko-18: fünf Enums nannten den Ton `badgeTone()`).
+     */
+    public function test_badge_tone_is_called_tone(): void {
+        $root = (string) realpath(__DIR__ . '/../../..');
+        $violations = [];
+        foreach ($this->allEnumClasses($root) as $fqcn) {
+            if ((new ReflectionEnum($fqcn))->hasMethod('badgeTone')) {
+                $violations[] = $fqcn;
+            }
+        }
+
+        $this->assertSame([], $violations, "badgeTone() in tone() umbenennen (fachliche Stufe: stage()):\n" . implode("\n", $violations));
+    }
+
+    /**
      * Bezeichnungen kommen aus den Sprachdateien (`enums.<domäne>.<enum>.<fall>`,
      * im Plugin `<plugin-id>::enums.…`), nie aus dem JSON-Katalog: ein
      * gleichlautender JSON-Schlüssel überschattet sonst den Namespace, und beide

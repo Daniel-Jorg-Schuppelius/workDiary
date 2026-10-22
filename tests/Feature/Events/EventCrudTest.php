@@ -130,6 +130,33 @@ class EventCrudTest extends TestCase {
         $this->getAsUser('events.calendar')->assertOk();
     }
 
+    /** Vollscan 2026-10-21: eingeladene Personen sagen zu oder ab; Verwaltende setzen den Status. */
+    public function test_participant_responds_and_manager_sets_status(): void {
+        $event = Event::factory()->create([
+            'organization_id' => $this->organization->id,
+            'responsible_user_id' => $this->admin->id,
+            'visibility' => EventVisibility::Internal->value,
+        ]);
+        \App\Models\Calendar\EventParticipant::query()->create([
+            'organization_id' => $this->organization->id,
+            'event_id' => $event->id,
+            'user_id' => $this->user->id,
+            'role' => ParticipantRole::Attendee->value,
+            'status' => \App\Enums\Event\ParticipantStatus::Invited->value,
+        ]);
+
+        $this->actingAs($this->user)->get(route('events.show', $event))->assertOk()
+            ->assertSee(route('events.respond', $event), false);
+        $this->post(route('events.respond', $event), ['response' => 'accept'])->assertRedirect();
+        $pivot = \App\Models\Calendar\EventParticipant::query()->where('event_id', $event->id)->sole();
+        $this->assertSame(\App\Enums\Event\ParticipantStatus::Accepted, $pivot->status);
+
+        $this->actingAs($this->admin)->get(route('events.show', $event))->assertOk()
+            ->assertSee(route('events.participants.status', [$event, $this->user]), false);
+        $this->patch(route('events.participants.status', [$event, $this->user]), ['status' => \App\Enums\Event\ParticipantStatus::Waitlisted->value])->assertRedirect();
+        $this->assertSame(\App\Enums\Event\ParticipantStatus::Waitlisted, $pivot->fresh()?->status);
+    }
+
     public function test_admin_can_cancel_event(): void {
         $event = Event::factory()->create([
             'organization_id' => $this->organization->id,

@@ -30,6 +30,14 @@ return [
     'disk' => 'whistleblowing',
 
     /*
+    | Überlebender Tombstone-Ledger (Konzept §16): eine Zeile je Löschung,
+    | außerhalb der Datenbank. Gehört außerhalb des Baums, den ein Restore
+    | zurückspielt (z. B. /var/lib/workdiary/whistleblowing-tombstones.jsonl);
+    | nach dem Restore wendet whistleblowing:apply-tombstones ihn an.
+    */
+    'tombstone_ledger' => env('WHISTLEBLOWING_TOMBSTONE_LEDGER', storage_path('app/whistleblowing-ledger/tombstones.jsonl')),
+
+    /*
     | Malware-Scanner-Treiber. 'none' (Default) = kein Scanner konfiguriert →
     | Anhaenge bleiben in Quarantaene (fail-safe, werden nie ausgeliefert), bis
     | ein echter Scanner (z. B. ClamAV) eingerichtet und das Ergebnis gesetzt

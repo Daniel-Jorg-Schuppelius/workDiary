@@ -10,12 +10,14 @@
 
 namespace App\Plugins\Lexoffice\Services;
 
+use APIToolkit\Exceptions\ApiException;
 use App\Models\Material\Material;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\LexofficeConfig;
-use App\Plugins\Support\PluginApiClient;
 use App\Services\Material\MaterialProviderInterface;
 use Illuminate\Support\Collection;
+use Lexoffice\API\Client;
+use Lexoffice\API\Endpoints\ArticlesEndpoint;
 
 /**
  * Lexoffice-Artikel als Material-Provider. Seit MVP-1033 im Plugin; die
@@ -25,7 +27,7 @@ use Illuminate\Support\Collection;
  * Doku: https://developers.lexware.io/docs/#articles-endpoint-articles
  */
 class LexofficeMaterialProvider implements MaterialProviderInterface {
-    private ?PluginApiClient $api = null;
+    private ?Client $client = null;
 
     public function __construct(
         protected string $apiKey,
@@ -45,20 +47,19 @@ class LexofficeMaterialProvider implements MaterialProviderInterface {
             return collect();
         }
 
-        $response = $this->api()->getResponse($this->baseUrl . '/articles', [
-            'query' => $query,
-            'size' => $limit,
-        ]);
-
-        if (! $response->ok()) {
+        try {
+            $found = (new ArticlesEndpoint($this->client()))->search([
+                'query' => $query,
+                'size' => $limit,
+            ]);
+        } catch (ApiException) {
             return collect();
         }
 
-        $items = (array) ($response->json('content') ?? []);
         $models = collect();
 
-        foreach ($items as $item) {
-            $models->push($this->upsert($item));
+        foreach ($found->getValues() as $item) {
+            $models->push($this->upsert($item->toArray()));
         }
 
         return $models;
@@ -73,17 +74,17 @@ class LexofficeMaterialProvider implements MaterialProviderInterface {
         $page = 0;
 
         do {
-            $response = $this->api()->getResponse($this->baseUrl . '/articles', ['page' => $page, 'size' => 100]);
-            if (! $response->ok()) {
+            try {
+                $found = (new ArticlesEndpoint($this->client()))->search(['page' => $page, 'size' => 100]);
+            } catch (ApiException) {
                 break;
             }
-            $items = (array) ($response->json('content') ?? []);
-            foreach ($items as $item) {
-                $this->upsert($item);
+            foreach ($found->getValues() as $item) {
+                $this->upsert($item->toArray());
                 $count++;
             }
             $page++;
-            $isLast = (bool) ($response->json('last') ?? true);
+            $isLast = $found->isLast();
         } while (! $isLast);
 
         return $count;
@@ -112,7 +113,7 @@ class LexofficeMaterialProvider implements MaterialProviderInterface {
         );
     }
 
-    protected function api(): PluginApiClient {
-        return $this->api ??= app(LexofficeClientFactory::class)->make($this->apiKey, $this->baseUrl, $this->requestInterval);
+    protected function client(): Client {
+        return $this->client ??= app(LexofficeClientFactory::class)->sdk($this->apiKey, $this->baseUrl, $this->requestInterval);
     }
 }

@@ -55,7 +55,7 @@ class MailToServiceTicket {
             'service_ticket_id' => $ticket->id,
             'kind' => \App\Enums\ServiceTicket\TicketMessageKind::PublicReply->value,
             'subject' => (string) ($snapshot['subject'] ?? ''),
-            'body' => trim(strip_tags((string) ($snapshot['body'] ?? ''))),
+            'body' => trim((string) ($snapshot['body'] ?? '')),
             'channel' => 'mail',
             'message_id' => (string) ($snapshot['mail_message_id'] ?? $item->external_id ?? '') ?: null,
         ]);

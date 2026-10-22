@@ -1,7 +1,7 @@
 ---
 title: "Incoming invoices"
 topic: finance.incoming-invoices
-version: 3
+version: 4
 keywords:
     - supplier invoice
     - purchase invoice
@@ -162,6 +162,15 @@ recognised as such: the list shows “Looks like”, the assignment dialog
 preselects “Not an invoice”, and reminders name the invoices concerned with a
 link. Administrators measure recognition with
 `incoming-invoices:measure-recognition` against the stored document texts.
+
+**AI fallback:** If a connection is set up under **Administration → AI
+services** and the capability “Incoming invoices: read document fields” is
+enabled, AI only fills in missing core fields (number, date, due date,
+amounts, tax rate, buyer reference) — checked for format and plausibility,
+never for e-invoices and never without your review. Without a connection,
+recognition works as before. If a document lacks its text index (for
+example after the text tools failed), `search:extract-texts --retry-failed`
+reads it again.
 
 **Document templates:** Via “Template” on the document page you draw, per
 field, a rectangle over label and value on the rendered document (invoice

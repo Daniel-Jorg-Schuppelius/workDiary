@@ -180,6 +180,15 @@ class SupplierCredentialTest extends TestCase {
         $this->assertSame(CredentialStatus::Expired, $rows->first()['status']);
     }
 
+    public function test_index_offers_removal_of_stored_credentials(): void {
+        $credential = $this->credential(now()->addYear()->toDateString());
+        $destroy = route('suppliers.credentials.destroy', [$this->supplier, $credential]);
+
+        $this->actingAs($this->admin)->get(route('suppliers.credentials.index'))->assertOk()->assertSee('action="' . e($destroy) . '"', false);
+        $this->actingAs($this->admin)->delete($destroy)->assertRedirect();
+        $this->assertNull(SupplierCredential::query()->find($credential->id));
+    }
+
     public function test_endpoint_stores_a_credential(): void {
         $this->actingAs($this->admin)->post(route('suppliers.credentials.store', $this->supplier), [
             'supplier_credential_type_id' => $this->type()->sqid,

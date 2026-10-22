@@ -1,7 +1,7 @@
 ---
 title: "Fatture ricevute"
 topic: finance.incoming-invoices
-version: 3
+version: 4
 keywords:
     - fattura fornitore
     - fattura d'acquisto
@@ -173,6 +173,15 @@ riconosciuti come tali: l’elenco mostra «Sembra», la finestra di assegnazion
 preseleziona «Non è una fattura» e i solleciti indicano le fatture interessate
 con un link. Gli amministratori misurano il riconoscimento con
 `incoming-invoices:measure-recognition` sui testi archiviati dei documenti.
+
+**Ripiego IA:** se in **Amministrazione → Servizi IA** è configurata una
+connessione e la funzione «Fatture in entrata: leggere i campi del documento»
+è abilitata, l'IA completa solo i campi principali mancanti (numero, data,
+scadenza, importi, aliquota IVA, riferimento acquirente), verificati per
+formato e plausibilità, mai per le fatture elettroniche e mai senza la sua
+verifica. Senza connessione il riconoscimento funziona come prima. Se a un
+documento manca l'indice di testo (ad esempio dopo un guasto degli strumenti
+di testo), `search:extract-texts --retry-failed` lo rilegge.
 
 **Modelli di documento:** Tramite «Modello» nella pagina del documento
 traccia, per ogni campo, un rettangolo su etichetta e valore nel documento

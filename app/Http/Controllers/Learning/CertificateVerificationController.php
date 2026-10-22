@@ -15,6 +15,7 @@ namespace App\Http\Controllers\Learning;
 use App\Http\Controllers\Controller;
 use App\Models\Learning\{LearningCertificate, LearningIssuerKey};
 use App\Services\Learning\{LearningCredentialService, LearningJwtCredentialService};
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Http\{JsonResponse, Response};
 use Illuminate\View\View;
 
@@ -128,7 +129,7 @@ class CertificateVerificationController extends Controller {
 
     /** „Max Mustermann" → „Max M." — genug zum Abgleich, nicht mehr. */
     private function abbreviate(string $name): string {
-        $parts = preg_split('/\s+/', trim($name)) ?: [];
+        $parts = StringHelper::words($name);
         $parts = array_values(array_filter($parts));
 
         if ($parts === []) {

@@ -163,6 +163,29 @@ class Tour extends Model {
     }
 
     /**
+     * Kartenmarker: Start, Stopps mit Planungskoordinaten (nummeriert) und Ziel.
+     *
+     * @return list<array{lat: float, lng: float, label: string}>
+     */
+    public function mapMarkers(): array {
+        $markers = [];
+        if ($this->start_lat && $this->start_lng) {
+            $markers[] = ['lat' => (float) $this->start_lat, 'lng' => (float) $this->start_lng, 'label' => __('Start')];
+        }
+        foreach ($this->diaryEntries as $i => $stop) {
+            $point = $stop->planningCoordinates();
+            if ($point !== null) {
+                $markers[] = $point + ['label' => ($i + 1) . '. ' . $stop->title];
+            }
+        }
+        if ($this->end_lat && $this->end_lng) {
+            $markers[] = ['lat' => (float) $this->end_lat, 'lng' => (float) $this->end_lng, 'label' => __('Ziel')];
+        }
+
+        return $markers;
+    }
+
+    /**
      * @return array<string, mixed>|null
      */
     public function geometryArray(): ?array {

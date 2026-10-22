@@ -16,7 +16,7 @@ use App\Enums\Learning\{LearningEnrollmentSource, LearningEnrollmentStatus, Lear
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningQuiz, LearningSection, LearningUnit};
 use App\Models\Platform\{Organization, User};
 use CommonToolkit\Exceptions\Parsers\DocumentLimitExceededException;
-use CommonToolkit\Helper\Data\{EmailHelper, StringHelper};
+use CommonToolkit\Helper\Data\{EmailHelper, StringHelper, WebLinkHelper};
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -272,7 +272,7 @@ class LearnDashImportService {
         // Lektionsvideo: nur mit freigegebenem Host, sonst bleibt die Adresse als Text stehen.
         $settings = $this->settings($post, '_sfwd-lessons') ?: $this->settings($post, '_sfwd-topic');
         $videoUrl = trim((string) ($settings['sfwd-lessons_lesson_video_url'] ?? $settings['sfwd-topic_lesson_video_url'] ?? ''));
-        if ($videoUrl !== '' && filter_var($videoUrl, FILTER_VALIDATE_URL)) {
+        if (WebLinkHelper::isUrl($videoUrl)) {
             $host = mb_strtolower((string) parse_url($videoUrl, PHP_URL_HOST));
             $allowed = array_map('mb_strtolower', $this->content->allowedHosts($organization));
             if (in_array($host, $allowed, true)) {

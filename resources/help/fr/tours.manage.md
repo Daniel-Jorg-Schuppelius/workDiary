@@ -1,7 +1,7 @@
 ---
 title: "Planifier des tournées"
 topic: tours.manage
-version: 2
+version: 3
 keywords:
     - planification d'itinéraires
     - proposition de tournée
@@ -53,5 +53,17 @@ d'oiseau s'applique et le trajet est marqué en conséquence. Pour un véhicule
 en mode carnet de route, le relevé du compteur est demandé et les relevés
 des trajets se suivent sans interruption. La reprise n'est possible qu'une
 fois par tournée.
+
+**En route :** la vue conducteur de la tournée affiche l'arrêt suivant avec la
+navigation, « Démarrer la tournée », pour chaque arrêt « Arrivé », « Terminé »
+ou « Absent » et « Terminer la tournée » ; les heures deviennent le réalisé
+des arrêts. « Replanifier le reste » sur une tournée en cours conserve les
+arrêts terminés et ne replanifie que les arrêts ouverts à partir du dernier
+arrêt terminé.
+
+**Prévu et réalisé :** le rapport « Tournées prévu/réel » compare l'arrivée
+et la durée de présence prévues et réelles par arrêt, avec les écarts par
+conducteur et type de commande ; il fournit des valeurs d'expérience pour la
+durée d'intervention des propositions futures.
 
 Concertez-vous avec les intéressés avant de modifier une tournée en cours.

@@ -14,7 +14,7 @@ use App\Enums\Task\TaskStatus;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
-use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
+use App\Plugins\Support\Concerns\{ManagesPluginConnection, ResolvesPluginOrgContext};
 use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
 use App\Plugins\Todoist\Api\{TodoistApiClient, TodoistOAuth};
 use App\Plugins\Todoist\Enums\{TodoistConnectionStatus, TodoistProjectLinkStatus};
@@ -24,7 +24,6 @@ use App\Plugins\Todoist\{TodoistConfig, TodoistPlugin};
 use App\Support\SqidEncoder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Throwable;
@@ -38,6 +37,7 @@ use Throwable;
  * `data:read_write` — keine Lösch-Scopes (keine Löschweitergabe, DoD 055).
  */
 class TodoistAdminController extends ConnectionOAuthController {
+    use ManagesPluginConnection;
     use ResolvesPluginOrgContext;
 
     public function index(): View {
@@ -303,19 +303,6 @@ class TodoistAdminController extends ConnectionOAuthController {
 
     /** Manueller Vollabgleich (MVP-116): auditierter Admin-Vorgang. */
     public function sync(): RedirectResponse {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
-
-        $connection = TodoistConnection::query()->where('organization_id', $organization->id)->first();
-        if (! $connection instanceof TodoistConnection || ! $connection->isActive()) {
-            return back()->with('error', __('todoist::todoist.flash.no_connection'));
-        }
-
-        // Queue statt Request (Vollscan 2026-08-23, J17): ein Voll-Sync im Web-
-        // Request lief in den PHP-Timeout; der Worker hat Retry und Laufzeitbudget.
-        Artisan::queue('todoist:sync', ['--organization' => (string) $organization->id, '--full' => true]);
-        $connection->audit('todoist.sync_manual', ['by_user_id' => (int) $admin->id]);
-
-        return back()->with('success', __('todoist::todoist.flash.sync_done'));
+        return $this->queueConnectionRun(TodoistConnection::class, 'todoist:sync', ['--full' => true], 'todoist.sync_manual', 'todoist::todoist.flash.sync_done', 'todoist::todoist.flash.no_connection');
     }
 }

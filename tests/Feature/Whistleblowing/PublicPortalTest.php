@@ -192,4 +192,15 @@ class PublicPortalTest extends TestCase {
         $raw = DB::table('whistleblowing_attachments')->where('id', $attachment->id)->first();
         $this->assertStringNotContainsString('beweis.pdf', (string) $raw->original_name_ciphertext);
     }
+
+    /** Vollscan 2026-09-15, Top 9b: ein ausgefülltes Honeypot-Feld legt keinen Fall an. */
+    public function test_honeypot_submission_creates_no_case(): void {
+        $portal = $this->portal();
+
+        $this->get('/melden/' . $portal->public_slug)->assertOk()->assertSee('name="company_website"', false);
+        $this->post('/melden/' . $portal->public_slug, $this->payload(['company_website' => 'https://spam.example']))
+            ->assertRedirect(route('whistleblowing.portal', ['portal' => $portal->public_slug]));
+
+        $this->assertSame(0, WhistleblowingCase::withoutGlobalScopes()->count());
+    }
 }

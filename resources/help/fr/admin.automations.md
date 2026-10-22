@@ -1,7 +1,7 @@
 ---
 title: "Automatisations"
 topic: admin.automations
-version: 3
+version: 4
 keywords:
     - workflow
     - règles
@@ -56,3 +56,20 @@ de l'organisation.
 Remarque : pour de simples notifications, les **Règles de
 notification** sont souvent le choix le plus simple ; pour les systèmes
 externes, voir les **Webhooks**.
+
+## Règles de réception (factures entrantes)
+
+Le déclencheur « Facture entrante reçue » vérifie chaque nouveau document de
+la boîte de réception des factures. Outre les colonnes de la facture entrante,
+les conditions peuvent utiliser ces champs : `seller_name_key`, `buyer_name_key`, `party_name`, `party_name_key`, `sender_domain`, `mail_subject`, `attachment_names`, `file_name`, `country`, `kind_hint`. Les clés de nom sont en
+minuscules et sans forme juridique, de sorte que « Muster GmbH » et « MUSTER »
+comptent pareil ; `kind_hint` indique le type de pièce reconnu (par exemple
+`reminder` pour une relance). Opérateurs : `=`, `!=`, `<`, `<=`, `>`, `>=`,
+`in`, `not_in`, `contains`, `not_contains`, `starts_with`, `ends_with`,
+`matches`. Exemple :
+`{"all": [{"field": "sender_domain", "op": "=", "value": "exemple.fr"}]}`.
+Actions possibles : « Classer la facture entrante comme « pas une facture » »,
+« Attribuer la facture entrante » et « Rejeter et supprimer la facture
+entrante ». La page des règles des factures entrantes affiche ces règles pour
+la comptabilité ; on peut les activer, les désactiver et les supprimer, et
+chaque action figure dans le journal d'audit.

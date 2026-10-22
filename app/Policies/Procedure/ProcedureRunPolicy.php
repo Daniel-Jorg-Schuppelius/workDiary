@@ -37,6 +37,13 @@ class ProcedureRunPolicy {
             && $user->can(P::ProcedureRunExecute->value);
     }
 
+    /** Als zweite Person übernehmen und gegenzeichnen (Vier-Augen, MVP-028) — beides in einem Schritt. */
+    public function signSecondPerson(User $user, ProcedureRun $run): bool {
+        return $this->execute($user, $run)
+            && $user->can(P::ProcedureSecondPersonTake->value)
+            && $user->can(P::ProcedureSecondPersonSign->value);
+    }
+
     public function abort(User $user, ProcedureRun $run): bool {
         if (! $this->sharesOrganization($user, $run)) {
             return false;

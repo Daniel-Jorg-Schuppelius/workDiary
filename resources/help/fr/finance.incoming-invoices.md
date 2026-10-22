@@ -1,7 +1,7 @@
 ---
 title: "Factures reçues"
 topic: finance.incoming-invoices
-version: 3
+version: 4
 keywords:
     - facture fournisseur
     - facture d'achat
@@ -181,6 +181,16 @@ boîte d’attribution présélectionne « Pas une facture », et les relances
 nomment les factures concernées avec un lien. Les administrateurs mesurent la
 reconnaissance avec `incoming-invoices:measure-recognition` sur les textes
 enregistrés des documents.
+
+**Repli IA :** si une connexion est configurée sous **Administration →
+Services d'IA** et que la capacité « Factures entrantes : lire les champs de la
+pièce » est activée, l'IA ne complète que les champs principaux manquants
+(numéro, date, échéance, montants, taux de TVA, référence acheteur) —
+vérifiés quant au format et à la plausibilité, jamais pour les factures
+électroniques et jamais sans votre contrôle. Sans connexion, la
+reconnaissance fonctionne comme avant. S'il manque l'index de texte d'une
+pièce (par exemple après une panne des outils de texte),
+`search:extract-texts --retry-failed` le relit.
 
 **Modèles de document :** Via « Modèle » sur la page du document, vous tracez,
 pour chaque champ, un rectangle sur le libellé et la valeur du document rendu

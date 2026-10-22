@@ -16,7 +16,7 @@ use App\Enums\Agile\AgileItemType;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Project\Task;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
 /**
  * Agiles Arbeitselement (Feature 064): Beistelltabelle 1:1 zum Task —
@@ -71,6 +71,11 @@ class AgileWorkItem extends Model {
     /** @return BelongsTo<AgileBoardColumn, $this> */
     public function column(): BelongsTo {
         return $this->belongsTo(AgileBoardColumn::class, 'column_id');
+    }
+
+    /** @return HasMany<AgileAcceptanceCriterion, $this> */
+    public function acceptanceCriteria(): HasMany {
+        return $this->hasMany(AgileAcceptanceCriterion::class, 'work_item_id')->orderBy('position');
     }
 
     /** @return \Illuminate\Database\Eloquent\Relations\HasMany<AgileSprintItem, $this> */

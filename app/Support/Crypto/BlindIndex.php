@@ -40,7 +40,7 @@ use CommonToolkit\Helper\Data\EmailHelper;
 final class BlindIndex {
     /** Geschlüsselter Abdruck eines beliebigen Werts. */
     public static function of(string $value): string {
-        return hash_hmac('sha256', $value, self::key());
+        return CryptoHelper::hmac($value, self::key());
     }
 
     /** Alter, ungeschlüsselter Abdruck — nur noch zum Finden von Bestandszeilen. */
@@ -92,7 +92,7 @@ final class BlindIndex {
      * zurückgewinnen.
      */
     public static function keyFingerprint(): string {
-        return substr(hash_hmac('sha256', 'blind-index-fingerprint', self::key()), 0, 16);
+        return substr(CryptoHelper::hmac('blind-index-fingerprint', self::key()), 0, 16);
     }
 
     /**
@@ -107,7 +107,7 @@ final class BlindIndex {
 
         $configured = (string) config('app.blind_index_key', '');
         if ($configured !== '') {
-            return $key = hash_hmac('sha256', 'blind-index', $configured, true);
+            return $key = CryptoHelper::hmac('blind-index', $configured, binary: true);
         }
 
         $appKey = (string) config('app.key', '');
@@ -116,6 +116,6 @@ final class BlindIndex {
             $appKey = $decoded === false ? $appKey : $decoded;
         }
 
-        return $key = hash_hmac('sha256', 'blind-index', $appKey, true);
+        return $key = CryptoHelper::hmac('blind-index', $appKey, binary: true);
     }
 }

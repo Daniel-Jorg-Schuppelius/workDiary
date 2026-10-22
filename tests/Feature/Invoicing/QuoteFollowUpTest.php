@@ -247,4 +247,22 @@ class QuoteFollowUpTest extends TestCase {
             ->post(route('quotes.follow-ups.schedule', $quote), ['follow_up_at' => now()->addDay()->toDateString()])
             ->assertForbidden();
     }
+
+    /** Sicherheitsaudit 2026-10-21, li-1: ein zweites Versenden mit veralteter Instanz zieht keine zweite Nummer. */
+    public function test_a_stale_second_send_is_rejected(): void {
+        $quote = $this->quote(['status' => QuoteStatus::Approved, 'number' => \App\Services\Numbering\NumberSequenceService::DRAFT_PREFIX . 'STALEQ']);
+        $first = Quote::query()->findOrFail($quote->id);
+        $stale = Quote::query()->findOrFail($quote->id);
+
+        app(QuoteService::class)->send($first, $this->admin);
+        $number = (string) $quote->fresh()->number;
+
+        try {
+            app(QuoteService::class)->send($stale, $this->admin);
+            $this->fail('Ein schon versendetes Angebot darf nicht erneut versendet werden.');
+        } catch (\RuntimeException) {
+        }
+        $this->assertSame($number, (string) $quote->fresh()->number);
+        $this->assertFalse(\App\Services\Numbering\NumberSequenceService::isDraft($number));
+    }
 }

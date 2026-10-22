@@ -11,6 +11,7 @@
 namespace App\Http\Requests\Schedule;
 
 use App\Enums\Shift\ScheduledShiftStatus;
+use App\Enums\User\Permission;
 use App\Http\Requests\Concerns\{ChecksShiftCompliance, DecodesSqidInputs};
 use App\Models\Platform\User;
 use Illuminate\Foundation\Http\FormRequest;
@@ -32,7 +33,7 @@ class StoreScheduledShiftRequest extends FormRequest {
     public function authorize(): bool {
         $user = Auth::user();
 
-        return $user instanceof User && $user->isAdmin();
+        return $user instanceof User && $user->can(Permission::ScheduledShiftManage->value);
     }
 
     /** @return array<string, mixed> */

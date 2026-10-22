@@ -41,10 +41,12 @@
                             @csrf @method('PATCH')
                             <x-icon-btn placement="bar" icon="approval" tone="outline" size="sm" type="submit" show-label>{{ __('Zur Genehmigung beantragen') }}</x-icon-btn>
                         </form>
-                        <form method="POST" action="{{ route('duty-plans.publish', $dutyPlan) }}" class="inline">
-                            @csrf @method('PATCH')
-                            <x-icon-btn placement="bar" icon="publish" tone="success" size="sm" type="submit" show-label>{{ __('Veröffentlichen') }}</x-icon-btn>
-                        </form>
+                        @can('publish', $dutyPlan)
+                            <form method="POST" action="{{ route('duty-plans.publish', $dutyPlan) }}" class="inline">
+                                @csrf @method('PATCH')
+                                <x-icon-btn placement="bar" icon="publish" tone="success" size="sm" type="submit" show-label>{{ __('Veröffentlichen') }}</x-icon-btn>
+                            </form>
+                        @endcan
                     @elseif ($dutyPlan->status === \App\Enums\Shift\DutyPlanStatus::Submitted)
                         @can('approve', $dutyPlan)
                             <form method="POST" action="{{ route('duty-plans.approve', $dutyPlan) }}" class="inline">

@@ -225,7 +225,7 @@ class OpenProjectController extends Controller {
             ->get(['id', 'name', 'email'])
             ->map(fn(User $u): array => [
                 'sqid' => $u->sqid,
-                'name' => trim((string) $u->name) !== '' ? $u->name . ' (' . $u->email . ')' : (string) $u->email,
+                'name' => $u->labelWithEmail(),
             ])
             ->all();
     }

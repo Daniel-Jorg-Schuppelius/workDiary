@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Mirror;
 
+use App\Support\CarbonFmt;
 use Carbon\CarbonImmutable;
 
 /**
@@ -43,11 +44,6 @@ final readonly class MirrorVoucher {
 
     /** Anzeige „dd.mm.yyyy – dd.mm.yyyy" bzw. nur der Beginn. */
     public function servicePeriodLabel(): ?string {
-        if ($this->serviceFrom === null) {
-            return null;
-        }
-        $label = $this->serviceFrom->format('d.m.Y');
-
-        return $this->serviceTo === null ? $label : $label . ' – ' . $this->serviceTo->format('d.m.Y');
+        return CarbonFmt::period($this->serviceFrom, $this->serviceTo);
     }
 }

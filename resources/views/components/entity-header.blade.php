@@ -17,6 +17,9 @@
     'restoreRoute' => null,
     'archiveRoute' => null,
     'canManage' => false,
+    'deleteRoute' => null,
+    'deleteConfirm' => null,
+    'canDelete' => false,
 ])
 
 {{--
@@ -31,7 +34,8 @@
       - actions : zusätzliche Buttons links neben „Bearbeiten"
 
     Standard-Aktionen werden nur gerendert, wenn die jeweilige Route gesetzt
-    ist; Wiederherstellen/Archivieren/Bearbeiten zusätzlich nur bei :canManage.
+    ist; Wiederherstellen/Archivieren/Bearbeiten zusätzlich nur bei :canManage,
+    Löschen nur bei :canDelete (unabhängig von :canManage).
 --}}
 
 @php
@@ -60,6 +64,12 @@
                 <x-icon-btn icon="arrow_back" size="sm" :href="$backRoute" show-label>{{ $backLabel }}</x-icon-btn>
             @endif
             @isset($actions){{ $actions }}@endisset
+            @if ($deleteRoute && $canDelete)
+                <x-action-form :action="$deleteRoute" method="DELETE" :confirm="$deleteConfirm ?? __('Wirklich löschen?')"
+                               confirm-icon="delete" confirm-tone="error" :confirm-label="__('Löschen')">
+                    <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
+                </x-action-form>
+            @endif
             @if ($canManage)
                 @if ($archived && $restoreRoute)
                     <x-action-form :action="$restoreRoute">

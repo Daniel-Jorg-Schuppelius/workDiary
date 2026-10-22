@@ -6,16 +6,20 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Dialog: neue Leasing-/Finanzierungsakte (Feature 074, MVP-271) --}}
+{{-- Dialog: Leasing-/Finanzierungsakte anlegen (Feature 074, MVP-271) oder bearbeiten. --}}
+@php
+    $contract ??= null;
+    $mayEditTerms ??= true;
+@endphp
 <x-modal
-    :title="__('Neue Leasingakte')"
-    :eyebrow="__('Leasing & Verträge')"
+    :title="$contract ? __('Leasingakte bearbeiten') : __('Neue Leasingakte')"
+    :eyebrow="$contract?->number ?? __('Leasing & Verträge')"
     icon="request_quote"
     tone="primary"
-    :action="route('asset-finance.store')"
-    method="POST"
+    :action="$contract ? route('asset-finance.update', $contract) : route('asset-finance.store')"
+    :method="$contract ? 'PUT' : 'POST'"
     :form-data="['data-entry-form' => '']"
-    :submit-label="__('Akte anlegen')"
+    :submit-label="$contract ? __('Speichern') : __('Akte anlegen')"
 >
     @if (($analysis ?? null) !== null)
         {{-- Vorschläge aus dem Dokument (MVP-934): nur Hinweise, übernommen wird erst mit dem Speichern. --}}
@@ -37,17 +41,17 @@
     <x-form-group :legend="__('Vertrag')" icon="request_quote" tone="primary" cols="2">
         <x-select-field name="kind" :label="__('Vertragsart')" required>
             @foreach (\App\Enums\AssetFinance\AssetFinanceKind::cases() as $kind)
-                <option value="{{ $kind->value }}" @selected(old('kind') === $kind->value)>{{ $kind->label() }}</option>
+                <option value="{{ $kind->value }}" @selected(old('kind', $contract?->kind?->value) === $kind->value)>{{ $kind->label() }}</option>
             @endforeach
         </x-select-field>
-        <x-input-field name="partner_name" :label="__('Vertragspartner (Leasinggeber)')" :value="old('partner_name')" required />
+        <x-input-field name="partner_name" :label="__('Vertragspartner (Leasinggeber)')" :value="old('partner_name', $contract?->partner_name)" required />
         <x-select-field name="supplier_id" :label="__('Lieferant (optional)')">
             <option value="">{{ __('kein Lieferantenbezug') }}</option>
             @foreach ($suppliers as $s)
-                <option value="{{ $s->sqid }}" @selected((string) old('supplier_id') === $s->sqid)>{{ $s->name }}</option>
+                <option value="{{ $s->sqid }}" @selected((string) old('supplier_id', $contract?->supplier?->sqid) === $s->sqid)>{{ $s->name }}</option>
             @endforeach
         </x-select-field>
-        <x-input-field name="contract_no" :label="__('Vertragsnummer (extern)')" :value="old('contract_no')" />
+        <x-input-field name="contract_no" :label="__('Vertragsnummer (extern)')" :value="old('contract_no', $contract?->contract_no)" />
         <x-date-range class="md:col-span-2" layout="split" form-control
                       from-name="starts_on" to-name="ends_on" type="date" fromId="af-starts-on" toId="af-ends-on"
                       :from-label="__('Beginn')" :to-label="__('Ende')"
@@ -56,11 +60,16 @@
         <x-select-field name="responsible_user_id" :label="__('Verantwortlich')">
             <option value="">{{ __('-- später zuweisen --') }}</option>
             @foreach ($users as $u)
-                <option value="{{ $u->sqid }}" @selected((string) old('responsible_user_id') === $u->sqid)>{{ $u->name }}</option>
+                <option value="{{ $u->sqid }}" @selected((string) old('responsible_user_id', $contract?->responsible?->sqid) === $u->sqid)>{{ $u->name }}</option>
             @endforeach
         </x-select-field>
     </x-form-group>
 
+    @if (! $mayEditTerms)
+        {{-- Ohne finance-Recht bleiben die Konditionen verborgen und unverändert. --}}
+        <input type="hidden" name="payment_rhythm" value="{{ $preset['payment_rhythm'] ?? 'monthly' }}">
+        <x-input-field name="insurance_note" :label="__('Versicherung')" :value="old('insurance_note', $contract?->insurance_note)" />
+    @else
     <x-form-group :legend="__('Konditionen (vertraulich)')" icon="lock" tone="primary" cols="2">
         <x-select-field name="payment_rhythm" :label="__('Zahlungsrhythmus')" required>
             <option value="monthly" @selected(old('payment_rhythm', $preset['payment_rhythm'] ?? 'monthly') === 'monthly')>{{ __('monatlich') }}</option>
@@ -71,30 +80,35 @@
         <x-input-field name="special_payment" type="number" step="0.01" min="0" :label="__('Sonderzahlung')" :value="old('special_payment', $preset['special_payment'] ?? null)" />
         <x-input-field name="residual_value" type="number" step="0.01" min="0" :label="__('Restwertannahme')" :value="old('residual_value', $preset['residual_value'] ?? null)" />
         <x-input-field name="purchase_option_amount" type="number" step="0.01" min="0" :label="__('Kaufoption (Betrag)')" :value="old('purchase_option_amount', $preset['purchase_option_amount'] ?? null)" />
-        <x-input-field name="insurance_note" :label="__('Versicherung')" :value="old('insurance_note')" />
+        <x-input-field name="insurance_note" :label="__('Versicherung')" :value="old('insurance_note', $contract?->insurance_note)" />
     </x-form-group>
+    @endif
 
     <x-form-group :legend="__('Zuordnung')" icon="account_tree" tone="primary" cols="2">
-        <x-select-field name="asset_ids[]" :label="__('Assets (Mehrfachauswahl)')" multiple size="5" span="2">
-            @foreach ($assets as $a)
-                <option value="{{ $a->sqid }}" @selected(collect(old('asset_ids', []))->contains($a->sqid))>{{ $a->name }}</option>
-            @endforeach
-        </x-select-field>
+        @unless ($contract)
+            <x-select-field name="asset_ids[]" :label="__('Assets (Mehrfachauswahl)')" multiple size="5" span="2">
+                @foreach ($assets as $a)
+                    <option value="{{ $a->sqid }}" @selected(collect(old('asset_ids', []))->contains($a->sqid))>{{ $a->name }}</option>
+                @endforeach
+            </x-select-field>
+        @endunless
         <x-select-field name="cost_center_id" :label="__('Kostenstelle')">
             <option value="">{{ __('keine') }}</option>
             @foreach ($costCenters as $cc)
-                <option value="{{ $cc->sqid }}" @selected((string) old('cost_center_id') === $cc->sqid)>{{ $cc->code }} — {{ $cc->label }}</option>
+                <option value="{{ $cc->sqid }}" @selected((string) old('cost_center_id', $contract?->costCenter?->sqid) === $cc->sqid)>{{ $cc->code }} — {{ $cc->label }}</option>
             @endforeach
         </x-select-field>
         <x-project-select :label="__('Projekt (optional)')" :placeholder="__('ohne Projektbezug')"
-            :projects="$projects" :selected="(string) old('project_id')" />
-        <x-select-field name="investment_case_id" :label="__('Investitionsakte (optional)')" span="2">
-            <option value="">{{ __('keine Verknüpfung') }}</option>
-            @foreach ($investmentCases as $ic)
-                <option value="{{ $ic->sqid }}" @selected((string) old('investment_case_id') === $ic->sqid)>{{ $ic->title }}</option>
-            @endforeach
-        </x-select-field>
-        <x-textarea-field name="notes" :label="__('Notizen')" rows="2" span="2">{{ old('notes') }}</x-textarea-field>
+            :projects="$projects" :selected="(string) old('project_id', $contract?->project?->sqid)" />
+        @unless ($contract)
+            <x-select-field name="investment_case_id" :label="__('Investitionsakte (optional)')" span="2">
+                <option value="">{{ __('keine Verknüpfung') }}</option>
+                @foreach ($investmentCases as $ic)
+                    <option value="{{ $ic->sqid }}" @selected((string) old('investment_case_id') === $ic->sqid)>{{ $ic->title }}</option>
+                @endforeach
+            </x-select-field>
+        @endunless
+        <x-textarea-field name="notes" :label="__('Notizen')" rows="2" span="2">{{ old('notes', $contract?->notes) }}</x-textarea-field>
     </x-form-group>
 
     <p class="text-xs text-muted">

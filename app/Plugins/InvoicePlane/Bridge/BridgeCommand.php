@@ -70,7 +70,7 @@ final readonly class BridgeCommand {
      * verschlüsselt hinterlegten Bridge-Secret.
      */
     public function sign(string $secret): string {
-        return hash_hmac('sha256', JsonHelper::encode($this->canonical()), $secret);
+        return CryptoHelper::hmac(JsonHelper::encode($this->canonical()), $secret);
     }
 
     public function verify(string $signature, string $secret): bool {

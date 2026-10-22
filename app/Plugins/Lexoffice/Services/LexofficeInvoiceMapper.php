@@ -67,7 +67,7 @@ class LexofficeInvoiceMapper {
         $payload['title'] = $invoice->documentLabel();
         $payload['lineItems'] = array_map(
             static fn (array $line): array => isset($line['quantity']) ? ['quantity' => abs((float) $line['quantity'])] + $line : $line,
-            (array) $payload['lineItems'],
+            LexofficeLineItems::from($invoice->items->sortBy('position')->values(), fallbackRate: $invoice->tax_rate, discountInPrice: true),
         );
         // Lexoffice kehrt das Vorzeichen selbst; der Betragsrabatt der Korrektur ist negiert gespeichert.
         $payload['totalPrice'] = ['currency' => $invoice->currency->value] + $this->documentDiscount($invoice);

@@ -18,6 +18,7 @@ use App\Models\Material\Material;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Time\{TimeEntry, Timesheet};
+use App\Services\Notification\NotificationDispatcher;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -214,6 +215,56 @@ class TimesheetTest extends TestCase {
         Mail::assertSent(TimesheetSignedMail::class);
     }
 
+    /** Vollscan 2026-10-21: Zeit- und Materialzeilen lassen sich im Dialog bearbeiten. */
+    public function test_entry_and_material_rows_can_be_edited(): void {
+        $ts = $this->makeTimesheet();
+        $this->actingAs($this->user)->post(route('projects.timesheets.entries.store', [$this->project, $ts]), [
+            'start_time' => '08:00', 'end_time' => '10:00', 'break_minutes' => 0, 'kind' => 'work', 'description' => 'Montage',
+        ])->assertRedirect();
+        $this->post(route('projects.timesheets.materials.store', [$this->project, $ts]), [
+            'description' => 'Schrauben', 'quantity' => 10, 'unit' => 'Stk.', 'unit_price' => '0.25', 'tax_rate' => 19,
+        ])->assertRedirect();
+        $entry = $ts->entries()->sole();
+        $usage = $ts->materialUsages()->sole();
+
+        $this->get(route('projects.timesheets.show', [$this->project, $ts]))->assertOk()
+            ->assertSee(route('projects.timesheets.entries.edit', [$this->project, $ts, $entry]), false)
+            ->assertSee(route('projects.timesheets.materials.edit', [$this->project, $ts, $usage]), false);
+        $this->get(route('projects.timesheets.entries.edit', [$this->project, $ts, $entry]) . '?dialog=1')->assertOk()
+            ->assertSee('value="Montage"', false)->assertSee('value="08:00"', false);
+        $this->get(route('projects.timesheets.materials.edit', [$this->project, $ts, $usage]) . '?dialog=1')->assertOk()
+            ->assertSee('value="Schrauben"', false);
+
+        $this->put(route('projects.timesheets.entries.update', [$this->project, $ts, $entry]), [
+            'start_time' => '08:00', 'end_time' => '11:00', 'break_minutes' => 0, 'kind' => 'work', 'description' => 'Montage Dach',
+        ])->assertRedirect();
+        $this->put(route('projects.timesheets.materials.update', [$this->project, $ts, $usage]), [
+            'description' => 'Schrauben V2A', 'quantity' => 12, 'unit' => 'Stk.', 'unit_price' => '0.30', 'tax_rate' => 19,
+        ])->assertRedirect();
+        $this->assertSame('Montage Dach', $entry->fresh()?->description);
+        $this->assertSame(180, (int) $entry->fresh()?->minutes);
+        $this->assertSame('Schrauben V2A', $usage->fresh()?->description);
+    }
+
+    /** Vollscan 2026-10-21, lk-28: `timesheet.signature.max_kb` greift, bevor dekodiert wird. */
+    public function test_signature_respects_the_configured_size_limit(): void {
+        Storage::fake('local');
+        config(['timesheet.signature.max_kb' => 1]);
+        $ts = $this->makeTimesheet();
+        $oversized = 'data:image/png;base64,' . base64_encode("\x89PNG\r\n\x1a\n" . str_repeat('A', 4096));
+
+        try {
+            app(\App\Services\Timesheet\SignatureService::class)->sign($ts, $oversized, ['customer_name' => 'Max Kunde']);
+            $this->fail('Eine übergroße Unterschrift wurde angenommen.');
+        } catch (\RuntimeException $e) {
+            $this->assertSame('Signature too large.', $e->getMessage());
+        }
+        $this->assertNull($ts->fresh()?->signature_attachment_id);
+
+        app(\App\Services\Timesheet\SignatureService::class)->sign($ts, $this->fakePngBase64(), ['customer_name' => 'Max Kunde']);
+        $this->assertNotNull($ts->fresh()?->signature_attachment_id);
+    }
+
     public function test_signed_timesheet_blocks_entry_changes(): void {
         $ts = $this->makeTimesheet(['status' => TimesheetStatus::Signed->value]);
 
@@ -226,7 +277,8 @@ class TimesheetTest extends TestCase {
     }
 
     public function test_admin_can_lock_and_unlock_timesheet(): void {
-        $ts = $this->makeTimesheet(['status' => TimesheetStatus::Signed->value]);
+        $ts = $this->makeTimesheet(['status' => TimesheetStatus::Signed->value, 'signed_at' => now()]);
+        $this->mock(NotificationDispatcher::class)->shouldNotReceive('notify');
 
         $this->actingAs($this->admin)
             ->post(route('projects.timesheets.lock', [$this->project, $ts]))
@@ -239,6 +291,20 @@ class TimesheetTest extends TestCase {
             ->assertRedirect();
 
         $this->assertSame(TimesheetStatus::Signed, $ts->fresh()->status);
+    }
+
+    public function test_unlocking_an_unsigned_timesheet_returns_it_to_draft(): void {
+        $ts = $this->makeTimesheet();
+
+        $this->actingAs($this->admin)->post(route('projects.timesheets.lock', [$this->project, $ts]))->assertRedirect();
+        $this->assertSame(TimesheetStatus::Locked, $ts->fresh()->status);
+
+        $this->actingAs($this->admin)->post(route('projects.timesheets.unlock', [$this->project, $ts]))->assertRedirect();
+
+        $fresh = $ts->fresh();
+        $this->assertSame(TimesheetStatus::Draft, $fresh->status);
+        $this->assertNull($fresh->signed_at);
+        $this->assertTrue($fresh->canEdit());
     }
 
     public function test_public_signature_via_magic_token(): void {

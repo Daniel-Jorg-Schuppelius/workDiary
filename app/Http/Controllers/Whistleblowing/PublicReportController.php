@@ -30,6 +30,11 @@ class PublicReportController extends Controller {
         /** @var Portal $portal */
         $portal = $request->attributes->get('wb_portal');
 
+        // Honeypot gefüllt: keine Meldung, keine verwertbare Rückmeldung an den Bot.
+        if (trim((string) $request->input('company_website', '')) !== '') {
+            return redirect()->route('whistleblowing.portal', ['portal' => $portal->public_slug]);
+        }
+
         $mode = (string) $request->input('reporter_mode');
         if ($mode === ReporterMode::Anonymous->value && ! $portal->allow_anonymous) {
             return back()->withErrors(['reporter_mode' => __('Anonyme Meldungen sind für dieses Portal nicht aktiviert.')])->withInput();

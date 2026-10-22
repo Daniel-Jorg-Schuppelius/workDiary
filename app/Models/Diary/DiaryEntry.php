@@ -343,6 +343,11 @@ class DiaryEntry extends Model implements CustomFieldSubject {
         return $this->status->tone();
     }
 
+    /** Fachliche Stufe für CSS-Klassen (Wochenraster, PDF-Export). */
+    public function statusStage(): string {
+        return $this->status->stage();
+    }
+
     public function modeLabel(): string {
         return $this->mode->label();
     }

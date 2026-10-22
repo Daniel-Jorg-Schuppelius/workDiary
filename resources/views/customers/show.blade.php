@@ -20,7 +20,10 @@
                      :archived="$customer->isArchived()"
                      :restore-route="route('customers.restore', $customer)"
                      :archive-route="route('customers.archive', $customer)"
-                     :can-manage="auth()->user()->can('update', $customer)">
+                     :can-manage="auth()->user()->can('update', $customer)"
+                     :delete-route="route('customers.destroy', $customer)"
+                     :delete-confirm="__('Kunde wirklich löschen?')"
+                     :can-delete="auth()->user()->can('delete', $customer)">
         <x-slot:badges>
             @if ($customer->is_collective)
                 <x-status-badge tone="info">{{ __('Sammelkontakt') }}</x-status-badge>

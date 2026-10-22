@@ -10,6 +10,7 @@
 
 namespace App\Policies\Project;
 
+use App\Enums\User\Permission;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
@@ -23,6 +24,9 @@ class ProjectPolicy {
     }
 
     public function view(User $user, Project $project): bool {
+        if (! $user->can(Permission::ProjectView->value)) {
+            return false;
+        }
         $customer = $project->customer;
         if ($customer === null) {
             return $this->sharesOrganization($user, $project);
@@ -32,11 +36,17 @@ class ProjectPolicy {
     }
 
     public function create(User $user): bool {
-        return $user->canManageBilling() || $user->hasRole(\App\Enums\User\UserRole::User->value);
+        return $user->can(Permission::ProjectCreate->value);
     }
 
     public function update(User $user, Project $project): bool {
         return $this->owns($user, $project, 'created_by');
+    }
+
+    /** Archivieren: wer ändern darf, oder org-weit mit project.archive. */
+    public function archive(User $user, Project $project): bool {
+        return $this->update($user, $project)
+            || ($this->sharesOrganization($user, $project) && $user->can(Permission::ProjectArchive->value));
     }
 
     public function delete(User $user, Project $project): bool {
@@ -47,6 +57,6 @@ class ProjectPolicy {
             return false;
         }
 
-        return false;
+        return $this->sharesOrganization($user, $project) && $user->can(Permission::ProjectDelete->value);
     }
 }

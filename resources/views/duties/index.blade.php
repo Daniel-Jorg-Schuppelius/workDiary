@@ -75,7 +75,7 @@
             @if ($tab === 'diary')
                 @include('diary._filter_fields', ['idPrefix' => 'duties'])
             @elseif ($tab === 'urlaub')
-                @if ($isAdmin)
+                @if ($seesTeamVacations ?? $isAdmin)
                     <x-filter-field :label="__('Mitarbeiter')" for="duties-user" class="flex-1 min-w-44">
                         <select id="duties-user" name="user_id" class="select select-bordered select-sm w-full">
                             <option value="">{{ __('Alle') }}</option>

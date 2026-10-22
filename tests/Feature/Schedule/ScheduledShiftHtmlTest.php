@@ -24,15 +24,10 @@ class ScheduledShiftHtmlTest extends TestCase {
         $this->setUpOrganization();
     }
 
-    public function test_admin_can_view_show(): void {
-        $shift = ScheduledShift::factory()->create([
-            'organization_id' => $this->organization->id,
-        ]);
-
-        $this->actingAs($this->orgAdmin())
-            ->get(route('scheduled-shifts.show', $shift))
-            ->assertOk()
-            ->assertViewIs('scheduled-shifts._form_dialog');
+    /** Vollscan 2026-10-21: die Leseroute lieferte nur die Bearbeitungsmaske ein zweites Mal und ist entfallen. */
+    public function test_show_route_is_gone_edit_remains(): void {
+        $this->assertFalse(\Illuminate\Support\Facades\Route::has('scheduled-shifts.show'));
+        $this->assertTrue(\Illuminate\Support\Facades\Route::has('scheduled-shifts.edit'));
     }
 
     public function test_admin_can_edit(): void {

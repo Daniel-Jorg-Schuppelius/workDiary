@@ -10,6 +10,8 @@
 
 namespace App\Plugins\Lexoffice\Services;
 
+use APIToolkit\Entities\ID;
+use APIToolkit\Exceptions\ApiException;
 use App\Events\Invoicing\{ExternalInvoiceCancelled, ExternalInvoicePaymentReceived, ExternalInvoicePaymentReverted};
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
@@ -20,8 +22,10 @@ use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use App\Plugins\Support\PluginApiClient;
+use CommonToolkit\Helper\Data\JsonHelper;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Carbon;
+use Lexoffice\API\Client;
 use RuntimeException;
 
 /**
@@ -34,12 +38,19 @@ use RuntimeException;
  * Kontakts — ein Kontakt mit Doppelrolle setzt sowohl customer_id als auch
  * supplier_id.
  *
- * Verwendet den HTTP-Client direkt (analog Article-/Contact-Sync).
+ * Die Belegliste läuft roh über den API-Client: `voucherType=any` liefert
+ * Arten, die die Aufzählung `VoucherType` des SDK nicht kennt (`quotation`,
+ * `orderconfirmation`, `deliverynote`, `downpaymentdeduction`, `voucher`,
+ * {@see VoucherTypes}) — eine solche Zeile ließe die ganze Seite scheitern.
+ * Zahlungen laufen über den SDK-Client, aber ohne Entitäten-Mapping: dem Enum
+ * `PaymentItemType` fehlt „irrecoverableReceivable“.
  *
  * Quelle: https://developers.lexware.io/docs/#voucherlist-endpoint
  */
 class LexofficeVoucherSync {
     private ?PluginApiClient $api = null;
+
+    private ?Client $client = null;
 
     private float $requestInterval;
 
@@ -61,6 +72,10 @@ class LexofficeVoucherSync {
     private function api(): PluginApiClient {
         // 429/5xx wiederholt der Client selbst (Retry-After/Backoff) — keine eigene Schleife.
         return $this->api ??= app(LexofficeClientFactory::class)->make((string) $this->apiKey, $this->baseUrl, $this->requestInterval);
+    }
+
+    private function client(): Client {
+        return $this->client ??= app(LexofficeClientFactory::class)->sdk((string) $this->apiKey, $this->baseUrl, $this->requestInterval);
     }
 
     /**
@@ -240,12 +255,16 @@ class LexofficeVoucherSync {
 
         $enriched = 0;
         foreach ($candidates as $voucher) {
-            $response = $this->api()->getResponse($this->baseUrl . '/payments/' . $voucher->external_id);
-            if (! $response->successful()) {
+            // Gleicher SDK-Client (Drosselung), aber ohne Entitäten-Mapping: Dem Enum
+            // PaymentItemType fehlt „irrecoverableReceivable“ — abgeschriebene Forderungen
+            // fielen sonst still aus dem Abgleich.
+            try {
+                $response = $this->client()->get('payments/' . rawurlencode((string) $voucher->external_id));
+            } catch (ApiException) {
                 continue;
             }
-
-            $paidDate = $response->json('paidDate');
+            $decoded = $response->getStatusCode() === 200 ? JsonHelper::decode((string) $response->getBody(), true) : null;
+            $paidDate = is_array($decoded) ? ($decoded['paidDate'] ?? null) : null;
             if (! is_string($paidDate) || $paidDate === '') {
                 continue;
             }

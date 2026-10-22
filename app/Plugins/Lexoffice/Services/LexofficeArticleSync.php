@@ -10,6 +10,8 @@
 
 namespace App\Plugins\Lexoffice\Services;
 
+use APIToolkit\Entities\ID;
+use APIToolkit\Exceptions\ApiException;
 use App\Enums\Integration\ExternalArticleSyncStatus;
 use App\Enums\Integration\{ExternalConflictStatus, IntegrationInboxStatus};
 use App\Models\Article\ArticleVariant;
@@ -20,10 +22,12 @@ use App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy;
 use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\LexofficeArticle;
-use App\Plugins\Support\PluginApiClient;
 use App\Services\Inventory\VariantMatcher;
 use App\Support\MorphMap;
 use CommonToolkit\ValueObjects\{Money, Percentage};
+use Lexoffice\API\Client;
+use Lexoffice\API\Endpoints\ArticlesEndpoint;
+use Lexoffice\Entities\Articles\Article;
 use RuntimeException;
 
 /**
@@ -42,8 +46,7 @@ use RuntimeException;
  * lokalen Stammsatz bleiben bewusst reine Projektion (z. B.
  * Dienstleistungen) — anders als bei JTL blockiert hier nichts.
  *
- * Verwendet den HTTP-Client direkt, da das verwendete SDK keinen
- * Articles-Endpunkt anbietet.
+ * Läuft über den Articles-Endpunkt des SDK; gelesen wird dessen Array-Form.
  *
  * Quelle: https://developers.lexware.io/docs/#articles-endpoint
  */
@@ -53,7 +56,7 @@ class LexofficeArticleSync {
 
     private LexofficeMatchPolicy $policy = LexofficeMatchPolicy::LexofficeWins;
 
-    private ?PluginApiClient $api = null;
+    private ?Client $client = null;
 
     public function __construct(
         private readonly ?string $apiKey,
@@ -61,8 +64,8 @@ class LexofficeArticleSync {
         private readonly ?float $requestInterval = null,
     ) {}
 
-    private function api(): PluginApiClient {
-        return $this->api ??= app(LexofficeClientFactory::class)->make((string) $this->apiKey, $this->baseUrl, $this->requestInterval);
+    private function client(): Client {
+        return $this->client ??= app(LexofficeClientFactory::class)->sdk((string) $this->apiKey, $this->baseUrl, $this->requestInterval);
     }
 
     public function withPolicy(LexofficeMatchPolicy $policy): self {
@@ -89,22 +92,20 @@ class LexofficeArticleSync {
         $page = 0;
         $pageSize = 100;
 
+        $articles = new ArticlesEndpoint($this->client());
+
         do {
-            $response = $this->api()
-                ->getResponse($this->baseUrl . '/articles', [
+            try {
+                $found = $articles->search([
                     'page' => $page,
                     'size' => $pageSize,
                 ]);
-
-            if (! $response->successful()) {
-                throw LexofficeApiException::fromResponse($response, __('Artikel'), __('Artikel abrufen'));
+            } catch (ApiException $e) {
+                throw LexofficeApiException::fromApiException($e, __('Artikel'), __('Artikel abrufen'));
             }
 
-            /** @var array<string, mixed> $body */
-            $body = $response->json() ?? [];
-            $items = (array) ($body['content'] ?? []);
-
-            foreach ($items as $item) {
+            foreach ($found->getValues() as $remoteArticle) {
+                $item = $remoteArticle->toArray();
                 if (! isset($item['id'])) {
                     continue;
                 }
@@ -163,7 +164,7 @@ class LexofficeArticleSync {
                 $updated++;
             }
 
-            $totalPages = (int) ($body['totalPages'] ?? 1);
+            $totalPages = $found->getTotalPages();
             $page++;
         } while ($page < $totalPages);
 
@@ -271,23 +272,29 @@ class LexofficeArticleSync {
             throw new RuntimeException('Lexoffice API key is not configured (LEXOFFICE_API_KEY).');
         }
 
+        // Die Preis-Entität des SDK sendet einen fehlenden Steuersatz als 0 % — ohne Satz geht kein Artikel hinüber.
+        if ($article->vat_rate === null) {
+            throw new RuntimeException('Lexoffice article ' . ($article->external_id ?: $article->name) . ' has no tax rate.');
+        }
+
         $payload = $this->articleToPayload($article);
+        $articles = new ArticlesEndpoint($this->client());
 
-        if ($article->external_id === '') {
-            $response = $this->api()->postJson($this->baseUrl . '/articles', $payload);
-        } else {
-            // Beim PUT muss die aktuelle Version mitgesendet werden (optimistic locking).
-            $version = $article->external_version ?? $this->fetchRemoteVersion($article->external_id);
-            $payload['version'] = $version;
-            $payload['id'] = $article->external_id;
-            $response = $this->api()->putJson($this->baseUrl . '/articles/' . $article->external_id, $payload);
+        try {
+            if ($article->external_id === '') {
+                $resource = $articles->create(Article::fromArray($payload));
+            } else {
+                // Beim PUT muss die aktuelle Version mitgesendet werden (optimistic locking).
+                $version = $article->external_version ?? $this->fetchRemoteVersion($article->external_id);
+                $payload['version'] = $version;
+                $payload['id'] = $article->external_id;
+                $resource = $articles->update(new ID($article->external_id), Article::fromArray($payload));
+            }
+        } catch (ApiException $e) {
+            throw new RuntimeException('Lexoffice articles push failed: ' . $e->getCode() . ' ' . $e->getContent(), 0, $e);
         }
 
-        if (! $response->successful()) {
-            throw new RuntimeException('Lexoffice articles push failed: ' . $response->status() . ' ' . $response->body());
-        }
-
-        $body = (array) ($response->json() ?? []);
+        $body = $resource->toArray();
         $article->forceFill([
             'external_id' => (string) ($body['id'] ?? $article->external_id),
             'external_version' => isset($body['version']) ? (int) $body['version'] : ($article->external_version + 1),
@@ -313,13 +320,11 @@ class LexofficeArticleSync {
             throw new RuntimeException('Lexoffice article has no external id to adopt.');
         }
 
-        $response = $this->api()->getResponse($this->baseUrl . '/articles/' . $article->external_id);
-        if (! $response->successful()) {
-            throw LexofficeApiException::fromResponse($response, __('Artikel'), __('Artikel abrufen'));
+        try {
+            $item = (new ArticlesEndpoint($this->client()))->get(new ID($article->external_id))->toArray();
+        } catch (ApiException $e) {
+            throw LexofficeApiException::fromApiException($e, __('Artikel'), __('Artikel abrufen'));
         }
-
-        /** @var array<string, mixed> $item */
-        $item = (array) ($response->json() ?? []);
         $article->fill($this->itemToAttrs($item) + ['is_dirty' => false])->save();
 
         return $article;
@@ -384,7 +389,8 @@ class LexofficeArticleSync {
         return array_filter([
             'title' => $article->name,
             'description' => $article->description,
-            'type' => $article->type ?: 'service',
+            // Die API und die Artikelart des SDK kennen nur PRODUCT und SERVICE.
+            'type' => strtoupper($article->type ?: 'SERVICE'),
             'articleNumber' => $article->article_number,
             'gtin' => $article->gtin,
             'note' => $article->note,
@@ -450,12 +456,10 @@ class LexofficeArticleSync {
     }
 
     private function fetchRemoteVersion(string $externalId): int {
-        $response = $this->api()->getResponse($this->baseUrl . '/articles/' . $externalId);
-
-        if (! $response->successful()) {
+        try {
+            return (int) ((new ArticlesEndpoint($this->client()))->get(new ID($externalId))->toArray()['version'] ?? 0);
+        } catch (ApiException) {
             return 0;
         }
-
-        return (int) ($response->json('version') ?? 0);
     }
 }

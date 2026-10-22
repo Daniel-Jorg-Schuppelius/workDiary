@@ -188,6 +188,7 @@ return [
         'ttl_days' => 'Validità (giorni)',
         'token_url_hint' => 'Link di firma creato. Se l’e-mail non arriva, può inoltrare questo link:',
         'archive_confirm' => 'Archiviare il protocollo?',
+        'delete_confirm' => 'Eliminare definitivamente il protocollo?',
         'remove_confirm' => 'Rimuovere il punto «:label»?',
         'defect_severity' => 'Gravità',
         'defect_category' => 'Categoria',

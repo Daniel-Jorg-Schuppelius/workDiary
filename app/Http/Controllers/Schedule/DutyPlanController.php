@@ -124,7 +124,7 @@ class DutyPlanController extends Controller {
     }
 
     public function publish(DutyPlan $dutyPlan): RedirectResponse {
-        Gate::authorize('update', $dutyPlan);
+        Gate::authorize('publish', $dutyPlan);
 
         $this->freezeArchiveSnapshot($dutyPlan);
         $dutyPlan->update(['status' => DutyPlanStatus::Published, 'updated_by' => Auth::id()]);

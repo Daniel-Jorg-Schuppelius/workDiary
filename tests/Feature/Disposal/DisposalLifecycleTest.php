@@ -273,6 +273,15 @@ final class DisposalLifecycleTest extends TestCase {
         $this->service()->sign($job, $this->admin, 'Max Mustermann', 'data:image/png;base64,' . base64_encode('kein png'));
     }
 
+    /** Vollscan 2026-10-21, lk-28: die Grenze greift vor dem Dekodieren, mit eigener Meldung. */
+    public function test_sign_rejects_an_oversized_signature(): void {
+        $job = $this->openJob();
+        $oversized = 'data:image/png;base64,' . base64_encode("\x89PNG\r\n\x1a\n" . str_repeat('A', DisposalJobService::SIGNATURE_MAX_BYTES + 10));
+
+        $this->expectExceptionMessage((string) __('Die Unterschrift ist zu groß.'));
+        $this->service()->sign($job, $this->admin, 'Max Mustermann', $oversized);
+    }
+
     public function test_cancel_requires_reason_and_freezes(): void {
         $job = $this->openJob();
 

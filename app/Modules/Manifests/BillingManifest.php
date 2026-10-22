@@ -60,6 +60,15 @@ final class BillingManifest extends Manifest {
         ];
     }
 
+    /** @return array<class-string, list<class-string>> */
+    public function listeners(): array {
+        return [
+            \App\Events\Time\TimeEntryBillingChanged::class => [
+                \App\Listeners\Billing\RecalculateStatementsForTimeEntry::class,
+            ],
+        ];
+    }
+
     /** @return array<class-string, class-string> */
     public function bindings(): array {
         return [

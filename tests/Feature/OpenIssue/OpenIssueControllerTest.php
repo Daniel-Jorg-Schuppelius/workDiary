@@ -172,6 +172,30 @@ class OpenIssueControllerTest extends TestCase {
         $this->assertSame(OpenIssueStatus::InProgress, $issue->refresh()->status);
     }
 
+    /** Vollscan 2026-10-21: Bearbeiten und Zuweisen haben Dialoge; die Zuweisung nimmt die Sqid der Person. */
+    public function test_edit_and_assign_dialogs_write_through_their_endpoints(): void {
+        $author = User::factory()->user()->create();
+        $admin = User::factory()->admin()->create(['organization_id' => $author->organization_id]);
+        $assignee = User::factory()->user()->create(['organization_id' => $author->organization_id, 'name' => 'Petra Prüfer']);
+        $entry = DiaryEntry::factory()->for($author)->create();
+        $issue = OpenIssue::factory()
+            ->for($entry, 'subject')
+            ->state(['created_by_user_id' => $author->id, 'organization_id' => $author->organization_id, 'title' => 'Fuge undicht'])
+            ->create();
+
+        $this->actingAs($admin)->get(route('diary.show', $entry))->assertOk()
+            ->assertSee(route('open-issues.edit', $issue), false)
+            ->assertSee(route('open-issues.assign.form', $issue), false);
+        $this->get(route('open-issues.edit', $issue) . '?dialog=1')->assertOk()->assertSee('value="Fuge undicht"', false);
+        $this->get(route('open-issues.assign.form', $issue) . '?dialog=1')->assertOk()->assertSee('Petra Prüfer');
+
+        $this->from(route('diary.show', $entry))->put(route('open-issues.update', $issue), ['title' => 'Fuge Bad undicht'])->assertRedirect();
+        $this->from(route('diary.show', $entry))->put(route('open-issues.assign', $issue), ['assignee_user_id' => $assignee->sqid])->assertRedirect();
+        $issue->refresh();
+        $this->assertSame('Fuge Bad undicht', $issue->title);
+        $this->assertSame($assignee->id, (int) $issue->assignee_user_id);
+    }
+
     public function test_assign_endpoint_requires_assign_permission(): void {
         $author = User::factory()->user()->create();
         $assignee = User::factory()->user()->create(['organization_id' => $author->organization_id]);

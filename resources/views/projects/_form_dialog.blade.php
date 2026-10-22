@@ -176,7 +176,7 @@
             </div>
         </x-form-group>
 
-        @if (auth()->user()?->canManageBilling())
+        @can(\App\Enums\User\Permission::ProjectManageBilling->value)
             <x-form-group :legend="__('Abrechnung')" icon="payments" tone="warning" x-show="noParent" x-cloak>
                 <div class="fieldset">
                     <label class="label cursor-pointer justify-start gap-2">
@@ -188,7 +188,7 @@
                     <p class="text-xs text-muted">{{ __('Auto-Bucket für Ad-hoc-/Notfall-Stundenzettel. Pro Kunde gibt es genau ein Standardprojekt.') }}</p>
                 </div>
             </x-form-group>
-        @endif
+        @endcan
 
         {{-- Abrechenbar-Override (Tri-State) — Partial, s. Kommentar dort
              (Blade-Backtracking-Schwelle). --}}

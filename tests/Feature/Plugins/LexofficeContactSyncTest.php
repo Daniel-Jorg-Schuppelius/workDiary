@@ -14,6 +14,7 @@ use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy;
+use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Services\LexofficeContactSync;
 use App\Services\Stammdaten\CustomerMergeService;
@@ -31,9 +32,11 @@ class LexofficeContactSyncTest extends TestCase {
         $this->setUpOrganization();
     }
 
-    private function fakeContacts(array $items): void {
-        FakePluginHttp::fake([
-            'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response([
+    /** @param list<array<string, mixed>> $items */
+    private function fakeContacts(array $items): FakePluginHttp {
+        // Je Abruf eine frische Antwort: das SDK liest den Body ohne Zurückspulen.
+        return FakePluginHttp::fake([
+            'https://api.lexware.io/v1/contacts*' => static fn () => FakePluginHttp::response([
                 'content' => $items,
                 'totalPages' => 1,
             ], 200),
@@ -472,5 +475,36 @@ class LexofficeContactSyncTest extends TestCase {
             'number' => '10050',
             'number_source' => LexofficePlugin::ID,
         ]);
+    }
+
+    /** SDK-Kontaktendpunkt: dieselben Seitenabrufe wie zuvor, Ende nach totalPages. */
+    public function test_sync_pages_through_the_contacts_endpoint(): void {
+        $page = static fn (string $id, string $name): \GuzzleHttp\Psr7\Response => FakePluginHttp::response([
+            'content' => [['id' => $id, 'company' => ['name' => $name], 'roles' => ['customer' => []]]],
+            'totalPages' => 2,
+        ]);
+        $fake = FakePluginHttp::fake([
+            'https://api.lexware.io/v1/contacts*' => [$page('lex-p1', 'Seite Eins GmbH'), $page('lex-p2', 'Seite Zwei GmbH')],
+        ]);
+
+        $result = (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins, 'test-key', createMissingLocal: true);
+
+        $this->assertSame(2, $result['created']);
+        $this->assertSame(
+            ['GET https://api.lexware.io/v1/contacts?page=0&size=100', 'GET https://api.lexware.io/v1/contacts?page=1&size=100'],
+            array_map(static fn (array $entry): string => $entry['request']->getMethod() . ' ' . $entry['request']->getUri(), $fake->recorded()),
+        );
+    }
+
+    public function test_sync_reports_a_missing_scope_like_before(): void {
+        FakePluginHttp::fake(['https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['message' => 'forbidden'], 403)]);
+
+        try {
+            (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins, 'test-key');
+            $this->fail('403 muss als LexofficeApiException durchschlagen.');
+        } catch (LexofficeApiException $e) {
+            $this->assertStringContainsString('403', $e->getMessage());
+            $this->assertStringContainsString(__('Kontakte abrufen'), $e->getMessage());
+        }
     }
 }

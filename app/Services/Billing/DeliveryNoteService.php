@@ -23,7 +23,7 @@ use App\Models\Sales\{OrderConfirmation, OrderConfirmationItem};
 use App\Services\DocumentDesign\DocumentDesignRenderer;
 use App\Services\Numbering\{DocumentIssuers, NumberSequenceService};
 use CommonToolkit\ValueObjects\Decimal;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{Cache, DB};
 use RuntimeException;
 
 /**
@@ -179,6 +179,18 @@ final class DeliveryNoteService {
      * @throws RuntimeException wenn der Lieferschein kein Entwurf ist, leer ist oder das Programm ablehnt
      */
     public function deliver(DeliveryNote $note, ?User $actor): DeliveryNote {
+        // Sperre nehmen, unter der Sperre neu prüfen (Sicherheitsaudit 2026-10-21, li-1): ein zweiter Aufruf
+        // wartet und sieht den geschriebenen Stand. Bewusst keine DB-Transaktion — vergibt ein Programm die
+        // Nummer, muss die Verknüpfung zum dort angelegten Beleg einen Fehlschlag überleben.
+        return Cache::lock('document-issue:' . $note->getMorphClass() . ':' . $note->getKey(), 120)
+            ->block(30, function () use ($note, $actor): DeliveryNote {
+                $note->refresh();
+
+                return $this->deliverLocked($note, $actor);
+            });
+    }
+
+    private function deliverLocked(DeliveryNote $note, ?User $actor): DeliveryNote {
         if (! $note->status->canTransitionTo(DeliveryNoteStatus::Delivered)) {
             throw new RuntimeException((string) __('billing.delivery_note.error.not_draft'));
         }

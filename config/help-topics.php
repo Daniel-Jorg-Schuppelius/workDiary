@@ -258,7 +258,6 @@ return [
         // Servicekatalog + Genehmigungs-Inbox (Feature 065, MVP-154):
         // bewusst KEIN neues Topic (Paritätspflicht ×alle Locales).
         'servicedesk.catalog.*' => 'helpdesk.overview',
-        'servicedesk.approvals.*' => 'helpdesk.overview',
         // Problem-Management (Feature 065, MVP-156): gleiches Topic.
         'servicedesk.problems.*' => 'helpdesk.overview',
         // Change-/CAB-Management (Feature 065, MVP-157): gleiches Topic.
@@ -380,6 +379,7 @@ return [
         'travel-logs.*' => 'travel-expenses.manage',
         'expenses.*' => 'travel-expenses.manage',
         'expense-approvals.*' => 'travel-expenses.manage',
+        'approvals.*' => 'approvals.inbox',
         'per-diem-trips.*' => 'travel-expenses.manage',
         // Urlaubskonto (Phase 38, MVP-413)
         'vacation-entitlements.*' => 'absences.entitlements',

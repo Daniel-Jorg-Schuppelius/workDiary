@@ -185,4 +185,26 @@ class IntegrationInboxItem extends Model {
             ->when($grouped, static fn($query) => $query->whereNotNull('group_key'))
             ->count();
     }
+
+    /**
+     * Kandidaten eines Matchers so, wie die Inbox sie in `candidates`
+     * speichert und der Zuordnungsdialog sie zeigt.
+     *
+     * @param  list<array{model: Model, confidence: string, reasons: list<string>}>  $candidates
+     * @return list<array{id: int, sqid: string, label: string, confidence: string, reasons: list<string>}>
+     */
+    public static function candidatePayload(array $candidates): array {
+        return array_map(static function (array $candidate): array {
+            $model = $candidate['model'];
+            $label = $model->getAttribute('name') ?? $model->getAttribute('company');
+
+            return [
+                'id' => (int) $model->getKey(),
+                'sqid' => (string) $model->getRouteKey(),
+                'label' => $label !== null && $label !== '' ? (string) $label : '#' . $model->getKey(),
+                'confidence' => $candidate['confidence'],
+                'reasons' => $candidate['reasons'],
+            ];
+        }, $candidates);
+    }
 }

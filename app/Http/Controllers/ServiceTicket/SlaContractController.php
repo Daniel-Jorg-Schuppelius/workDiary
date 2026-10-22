@@ -84,13 +84,23 @@ class SlaContractController extends Controller {
         return redirect()->toList('sla-contracts.index')->with('success', __('SLA-Vertrag angelegt.'));
     }
 
+    /** Bearbeiten im Dialog der Detailseite (Vollscan 2026-10-21). */
+    public function edit(SlaContract $slaContract): View {
+        \Illuminate\Support\Facades\Gate::authorize(\App\Enums\User\Permission::SlaContractManage->value);
+
+        return view('sla-contracts._form_dialog', [
+            'contract' => $slaContract->loadMissing('project'),
+            'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
+        ]);
+    }
+
     public function update(Request $request, SlaContract $slaContract): \Illuminate\Http\RedirectResponse {
         \Illuminate\Support\Facades\Gate::authorize(\App\Enums\User\Permission::SlaContractManage->value);
 
         $slaContract->update($this->validatedContract($request, $slaContract));
         $this->ensureSingleDefault($slaContract);
 
-        return redirect()->toList('sla-contracts.index')->with('success', __('SLA-Vertrag gespeichert.'));
+        return redirect()->route('sla-contracts.show', $slaContract)->with('success', __('SLA-Vertrag gespeichert.'));
     }
 
     /** @return array<string, mixed> */

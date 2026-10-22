@@ -43,9 +43,10 @@ class AssetComplianceProfilePolicy extends PermissionPolicy {
     }
 
     /**
-     * Befristete Ausnahmefreigaben für Prüfsperren (D12, klassenweit).
+     * Befristete Ausnahmefreigaben für Prüfsperren (D12, klassenweit): das
+     * Prüfwesen-Recht und das Sperren-Übersteuern (asset.block.override).
      */
     public function release(User $user): bool {
-        return $this->allows($user, 'release');
+        return $this->allows($user, 'release') && $user->can(P::AssetBlockOverride->value);
     }
 }

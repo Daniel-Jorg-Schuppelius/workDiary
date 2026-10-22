@@ -76,7 +76,6 @@ class EvidenceSnapshotTest extends TestCase {
         $img = imagecreatetruecolor(80, 40);
         ob_start();
         imagepng($img);
-        imagedestroy($img);
         $png = 'data:image/png;base64,' . base64_encode((string) ob_get_clean());
         app(SignatureService::class)->sign($timesheet, $png, ['customer_name' => 'Erika Muster'], null, $this->admin);
 

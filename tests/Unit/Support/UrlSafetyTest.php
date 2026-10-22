@@ -119,4 +119,37 @@ final class UrlSafetyTest extends TestCase {
             $this->assertNull(UrlSafety::pinnedResolution($url), $url . ' darf nicht gebunden werden.');
         }
     }
+
+    /** Konsolidierungs-Audit 2026-10-21, ko-05: Betreiber-Vorgabe ja, Org-Adresse nur mit Opt-in und Instanzschalter. */
+    public function test_operator_target_allows_private_network_only_for_the_default_or_with_opt_in(): void {
+        config(['routing.osrm.base_url' => 'http://localhost:5000/', 'plugins.allow_private_network_opt_in' => true]);
+        $organization = new \App\Models\Platform\Organization(['settings' => []]);
+        app()->instance('currentOrganization', $organization);
+
+        $this->assertTrue(UrlSafety::operatorTargetAllowed('http://localhost:5000', 'routing.osrm.base_url'));
+        $this->assertFalse(UrlSafety::operatorTargetAllowed('http://10.0.0.5:5000', 'routing.osrm.base_url'));
+
+        $organization->settings = ['routing' => ['allow_private_network' => true]];
+        $this->assertTrue(UrlSafety::operatorTargetAllowed('http://10.0.0.5:5000', 'routing.osrm.base_url'));
+
+        config(['plugins.allow_private_network_opt_in' => false]);
+        $this->assertFalse(UrlSafety::operatorTargetAllowed('http://10.0.0.5:5000', 'routing.osrm.base_url'));
+        $this->assertTrue(UrlSafety::operatorTargetAllowed('http://localhost:5000/', 'routing.osrm.base_url'));
+    }
+
+    /** Die Regel steht an einer Stelle; eine vierte Kopie ohne Instanzschalter war der Befund. */
+    public function test_private_network_setting_is_read_only_by_url_safety(): void {
+        $hits = [];
+        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(base_path('app'), \FilesystemIterator::SKIP_DOTS));
+        foreach ($files as $file) {
+            if ($file->getExtension() !== 'php' || str_ends_with($file->getPathname(), 'app/Support/UrlSafety.php')) {
+                continue;
+            }
+            if (str_contains((string) file_get_contents($file->getPathname()), "'routing.allow_private_network'")) {
+                $hits[] = $file->getPathname();
+            }
+        }
+
+        $this->assertSame([], $hits, 'routing.allow_private_network nur über UrlSafety::operatorTargetAllowed() lesen.');
+    }
 }

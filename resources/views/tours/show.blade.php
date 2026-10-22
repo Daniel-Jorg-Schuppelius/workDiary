@@ -14,19 +14,7 @@
 @section('content')
     @php
         $stops = $tour->diaryEntries;
-        $markers = [];
-        if ($tour->start_lat && $tour->start_lng) {
-            $markers[] = ['lat' => (float) $tour->start_lat, 'lng' => (float) $tour->start_lng, 'label' => __('Start')];
-        }
-        foreach ($stops as $i => $s) {
-            $point = $s->planningCoordinates();
-            if ($point !== null) {
-                $markers[] = $point + ['label' => ($i + 1) . '. ' . $s->title];
-            }
-        }
-        if ($tour->end_lat && $tour->end_lng) {
-            $markers[] = ['lat' => (float) $tour->end_lat, 'lng' => (float) $tour->end_lng, 'label' => __('Ziel')];
-        }
+        $markers = $tour->mapMarkers();
         $center = $markers !== [] ? ['lat' => $markers[0]['lat'], 'lng' => $markers[0]['lng']] : null;
         $geometry = $tour->geometryArray();
     @endphp
@@ -147,7 +135,7 @@
                         @foreach ($tour->proposals->take(5) as $proposal)
                             <li class="flex flex-wrap items-center gap-2">
                                 <a href="{{ route('tour-proposals.show', $proposal) }}" class="link">{{ $proposal->created_at?->fdatetime() ?? '#' . $proposal->id }}</a>
-                                <x-status-badge :tone="$proposal->status->badgeTone()" size="xs">{{ $proposal->status->label() }}</x-status-badge>
+                                <x-status-badge :tone="$proposal->status->tone()" size="xs">{{ $proposal->status->label() }}</x-status-badge>
                                 @if (isset($proposal->metrics['after']['distance_km']))
                                     <span class="text-xs text-muted">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $proposal->metrics['after']['distance_km'], 2, withThousandsSeparator: true) }} km · {{ $proposal->metrics['after']['stops'] ?? 0 }} {{ __('Stopps') }}</span>
                                 @endif

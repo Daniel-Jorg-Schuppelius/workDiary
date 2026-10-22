@@ -2104,7 +2104,7 @@ return [
         ],
         'incoming_e_invoice_status' => ['received' => 'Recibida', 'approved' => 'Aprobada (revisión)', 'rejected' => 'Rechazado', 'question' => 'Consulta', 'payment_released' => 'Pago liberado'],
         'incoming_invoice_recognition' => ['structured' => 'Factura electrónica (estructurada)', 'extracted' => 'Reconocida a partir de PDF o imagen', 'none' => 'No reconocida (pendiente de aclarar)'],
-        'incoming_invoice_match_kind' => ['vat_id' => 'NIF-IVA', 'tax_number' => 'Número fiscal', 'iban' => 'IBAN', 'sender_rule' => 'Regla de remitente', 'manual' => 'Manual', 'rule' => 'Regla de bandeja de entrada'],
+        'incoming_invoice_match_kind' => ['vat_id' => 'NIF-IVA', 'tax_number' => 'Número fiscal', 'iban' => 'IBAN', 'sender_rule' => 'Regla de remitente', 'manual' => 'Manual', 'rule' => 'Regla de bandeja de entrada', 'template' => 'Plantilla de documento'],
         'incoming_invoice_transfer_status' => ['pending' => 'Pendiente', 'waiting' => 'Pendiente de aclarar', 'failed' => 'Fallida', 'transferred' => 'Transferida', 'linked' => 'Ya existente, vinculada'],
         'invoice_schedule_status' => ['active' => 'Activo', 'paused' => 'En pausa', 'ended' => 'Finalizado'],
         'invoice_inquiry_status' => ['open' => 'Abierta', 'answered' => 'Respondida'],

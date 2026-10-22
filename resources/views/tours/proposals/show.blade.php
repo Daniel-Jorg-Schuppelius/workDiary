@@ -33,7 +33,7 @@
 
     <x-page-shell>
         <x-slot:toolbar>
-            <x-page-toolbar :title="$title" :badge="$proposal->status->label()" :badge-tone="$proposal->status->badgeTone()">
+            <x-page-toolbar :title="$title" :badge="$proposal->status->label()" :badge-tone="$proposal->status->tone()">
                 <div class="text-sm text-base-content/70">
                     {{ $proposal->proposal_date->fdate() }}
                     @if ($tour)

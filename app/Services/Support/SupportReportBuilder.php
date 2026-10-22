@@ -15,6 +15,7 @@ use App\Models\Platform\PluginError;
 use App\Services\Diagnostics\DiagnosticsService;
 use App\Services\Release\ReleaseManifestService;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\StringHelper;
 use CommonToolkit\Helper\FileSystem\{File as ToolkitFile, Files, Folder as ToolkitFolder};
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -373,7 +374,7 @@ class SupportReportBuilder {
         }
 
         $keys = [];
-        foreach (explode("\n", ToolkitFile::read($envFile)) as $line) {
+        foreach (StringHelper::lines(ToolkitFile::read($envFile)) as $line) {
             $line = trim($line);
             if ($line === '' || str_starts_with($line, '#')) {
                 continue;

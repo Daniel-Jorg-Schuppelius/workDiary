@@ -13,6 +13,7 @@ namespace Tests\Feature\Location;
 use App\Enums\Location\{LocationPendingEntryStatus, LocationVisitStatus};
 use App\Http\Controllers\Api\LocationController;
 use App\Models\Customer\Customer;
+use App\Models\Facility\Site;
 use App\Models\Location\{CustomerGeofence, LocationDeviceToken, LocationPendingEntry, LocationVisit};
 use App\Models\Platform\User;
 use App\Models\Time\TimeEntry;
@@ -116,6 +117,26 @@ class GeofenceWebTest extends TestCase {
         app(VisitMaterializer::class)->materializeForUser($this->admin);
 
         return LocationPendingEntry::query()->firstOrFail();
+    }
+
+    public function test_zone_from_site_is_created_once_and_needs_coordinates_and_customer(): void {
+        $site = Site::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $this->customer->id, 'name' => 'Lager Nord', 'geo_lat' => 52.5, 'geo_lng' => 13.4]);
+
+        $this->actingAs($this->admin)->post(route('geofences.from-site', $site))
+            ->assertRedirect(route('sites.show', $site))->assertSessionHas('success');
+        $zone = CustomerGeofence::query()->where('site_id', $site->id)->sole();
+        $this->assertSame('Lager Nord', $zone->label);
+        $this->assertSame((int) $this->customer->id, (int) $zone->customer_id);
+
+        $this->actingAs($this->admin)->post(route('geofences.from-site', $site))->assertSessionHas('info');
+        $this->assertSame(1, CustomerGeofence::query()->where('site_id', $site->id)->count());
+
+        $bare = Site::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $this->customer->id]);
+        $this->actingAs($this->admin)->post(route('geofences.from-site', $bare))->assertSessionHas('info');
+        $this->assertSame(0, CustomerGeofence::query()->where('site_id', $bare->id)->count());
+
+        $member = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $this->actingAs($member)->post(route('geofences.from-site', $site))->assertForbidden();
     }
 
     public function test_review_confirm_creates_time_entry(): void {

@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Project;
 
 use App\Enums\TimeEntry\TimeEntryKind;
+use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Project\{SaveProjectBillingRuleRequest, SaveProjectBillingSettingsRequest, SaveProjectRatesRequest};
 use App\Models\Project\{Project, ProjectBillingRule};
@@ -27,6 +28,22 @@ class ProjectBillingRuleController extends Controller {
             'project' => $project,
             'rule' => new ProjectBillingRule,
             'articles' => $catalog->active((int) $project->organization_id),
+            'kinds' => TimeEntryKind::options(),
+            'itemTypes' => ProjectBillingRule::itemTypeOptions(),
+        ]);
+    }
+
+    /** Bestehende Regel im selben Dialog bearbeiten (Vollscan 2026-10-21, lk-04). */
+    public function edit(Project $project, ProjectBillingRule $billingRule, Request $request, ArticleCatalog $catalog): View {
+        $this->ensureBillingManager($request);
+        $this->ensureSameProject($project, $billingRule);
+        $articles = $catalog->active((int) $project->organization_id);
+
+        return view('projects._billing_rule_form_dialog', [
+            'project' => $project,
+            'rule' => $billingRule,
+            'articles' => $articles,
+            'selectedArticle' => collect($articles)->firstWhere('key', $billingRule->article_ref)?->formKey,
             'kinds' => TimeEntryKind::options(),
             'itemTypes' => ProjectBillingRule::itemTypeOptions(),
         ]);
@@ -99,7 +116,7 @@ class ProjectBillingRuleController extends Controller {
     }
 
     private function ensureBillingManager(Request $request): void {
-        if ($request->user()?->canManageBilling() !== true) {
+        if ($request->user()?->can(Permission::ProjectManageBilling->value) !== true) {
             throw new AccessDeniedHttpException;
         }
     }

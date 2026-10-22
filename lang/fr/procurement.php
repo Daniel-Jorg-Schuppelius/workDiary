@@ -594,11 +594,12 @@ return [
         'no_document' => 'Aucun document enregistré',
         'saved' => 'Justificatif enregistré.',
         'deleted' => 'Justificatif supprimé.',
+        'confirm_delete' => 'Retirer le justificatif « :type » ?',
         'blocked' => 'Commande bloquée — justificatifs manquants ou expirés : :names.',
         'blocking_on' => 'Les justificatifs manquants ou expirés BLOQUENT la commande (paramètre de l’organisation).',
         'blocking_off' => 'Les justificatifs manquants sont seulement signalés, pas bloquants. Le blocage s’active dans les paramètres.',
         'valid_until_hint' => 'Sans date de fin, le justificatif est considéré comme illimité — cas plus rare, à vérifier.',
-        'action' => ['add' => 'Ajouter un justificatif'],
+        'action' => ['add' => 'Ajouter un justificatif', 'remove' => 'Retirer le justificatif'],
         'column' => [
             'supplier' => 'Fournisseur',
             'status' => 'Feu',

@@ -177,4 +177,21 @@ class TourProposalTest extends TestCase {
         $this->assertNotNull($mid->fresh()->start_at);
         $this->assertTrue($near->fresh()->start_at->greaterThan($mid->fresh()->end_at));
     }
+
+    /** Sicherheitsaudit 2026-10-21, li-7: eine veraltete zweite Übernahme legt nichts doppelt an. */
+    public function test_a_stale_second_adoption_is_rejected(): void {
+        [$driver, $tour] = $this->tourWithThreeStops();
+        $proposal = app(TourProposalService::class)->request($tour, $driver)->fresh();
+        $stale = TourProposal::query()->findOrFail($proposal->id);
+
+        app(TourProposalService::class)->adopt($proposal, $driver);
+        $events = $tour->journal()->count();
+
+        try {
+            app(TourProposalService::class)->adopt($stale, $driver);
+            $this->fail('Ein übernommener Vorschlag darf nicht erneut übernommen werden.');
+        } catch (\RuntimeException|\Illuminate\Validation\ValidationException) {
+        }
+        $this->assertSame($events, $tour->journal()->count());
+    }
 }

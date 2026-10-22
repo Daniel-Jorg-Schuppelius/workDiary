@@ -106,7 +106,7 @@ class ProjectInactiveReportController extends Controller {
         $archived = 0;
         foreach ($projects as $project) {
             /** @var Project $project */
-            if (! Gate::allows('update', $project)) {
+            if (! Gate::allows('archive', $project)) {
                 continue;
             }
             if ($project->status === ProjectStatus::Archived) {

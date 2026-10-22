@@ -14,7 +14,7 @@ namespace App\Services\Org;
 
 use App\Models\Platform\User;
 use App\Modules\ModuleRegistry;
-use App\Services\Org\Contracts\OffboardingStep;
+use App\Services\Org\Contracts\{OffboardingHandover, OffboardingStep};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -112,6 +112,7 @@ class UserOffboardingService {
                 ->get(),
             'open_attendances' => \App\Models\Time\Attendance::query()->open()->where('user_id', $member->id)->count(),
             // MVP-941: Personen, die das austretende Mitglied als Vertretung eingetragen haben.
+            'handovers' => $this->handovers($member),
             'deputies' => User::query()->where('organization_id', $member->organization_id)->where('deputy_user_id', $member->id)->whereKeyNot($member->id)->orderBy('name')->get(['id', 'name']),
         ];
     }
@@ -214,6 +215,43 @@ class UserOffboardingService {
     /** @return list<string> Sperrgründe aller Offboarding-Schritte (Austritt und Entfernen) */
     public function blockers(User $member): array {
         return array_merge([], ...array_map(static fn (OffboardingStep $step): array => $step->blockers($member), $this->steps()));
+    }
+
+    /**
+     * Was Fachmodule beim Austritt übertragen lassen (Erweiterungspunkt
+     * {@see OffboardingHandover}); Abschnitte ohne Bestand entfallen.
+     *
+     * @return list<array{key: string, label: string}>
+     */
+    public function handovers(User $member): array {
+        $result = [];
+        foreach ($this->handoverProviders() as $provider) {
+            $count = $provider->count($member);
+            if ($count > 0) {
+                $result[] = ['key' => $provider->key(), 'label' => $provider->label($count)];
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Überträgt je gewähltem Abschnitt an die Nachfolge.
+     *
+     * @param  array<string, User>  $successors  Abschnittsschlüssel → Nachfolge
+     */
+    public function handOver(User $member, array $successors, User $actor): void {
+        foreach ($this->handoverProviders() as $provider) {
+            $successor = $successors[$provider->key()] ?? null;
+            if ($successor instanceof User && $successor->id !== $member->id) {
+                $provider->handOver($member, $successor, $actor);
+            }
+        }
+    }
+
+    /** @return list<OffboardingHandover> */
+    private function handoverProviders(): array {
+        return array_map(static fn (string $class): OffboardingHandover => app($class), app(ModuleRegistry::class)->extensions(OffboardingHandover::class));
     }
 
     /** @return list<OffboardingStep> */

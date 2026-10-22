@@ -14,6 +14,7 @@ namespace App\Dashboard\Widgets;
 
 use App\Dashboard\Widget;
 use App\Enums\Dashboard\WidgetGroup;
+use App\Enums\User\Permission;
 use App\Models\Platform\User;
 use App\Models\Time\FlexBalance;
 use App\Services\Flextime\FlexTrafficLight;
@@ -42,6 +43,10 @@ class FlexBalanceWidget extends Widget {
 
     public function defaultOrder(): int {
         return 26;
+    }
+
+    public function requiredAbility(): ?string {
+        return Permission::FlexBalanceView->value;
     }
 
     public function defaultHidden(): bool {

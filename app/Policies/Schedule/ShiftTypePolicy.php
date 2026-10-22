@@ -10,6 +10,7 @@
 
 namespace App\Policies\Schedule;
 
+use App\Enums\User\Permission;
 use App\Policies\Concerns\HasAdminBypass;
 use App\Policies\PermissionPolicy;
 
@@ -17,10 +18,10 @@ class ShiftTypePolicy extends PermissionPolicy {
     use HasAdminBypass;
 
     protected const ABILITIES = [
-        'viewAny' => false,
-        'view' => false,
-        'create' => false,
-        'update' => false,
-        'delete' => false,
+        'viewAny' => Permission::ShiftTypeManage,
+        'view' => Permission::ShiftTypeManage,
+        'create' => Permission::ShiftTypeManage,
+        'update' => Permission::ShiftTypeManage,
+        'delete' => Permission::ShiftTypeManage,
     ];
 }

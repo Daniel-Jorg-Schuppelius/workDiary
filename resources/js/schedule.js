@@ -39,7 +39,7 @@ import { pointerSort } from "./lib/pointer-sort.js";
  * @property {string} staffingSuggest
  *
  * @typedef {object} ScheduleConfig
- * @property {boolean} isAdmin
+ * @property {boolean} canManage
  * @property {string | null} currentUserId
  * @property {string} csrf
  * @property {ScheduleRoutes} routes
@@ -488,11 +488,11 @@ function openShiftDialog({
 
     // Publish / Confirm buttons (state-driven, edit only)
     const status = isEdit ? (shift?.status ?? "") : "";
-    const isAdmin = !!_cfg?.isAdmin;
+    const canManage = !!_cfg?.canManage;
     const isOwner =
         isEdit &&
         String(shift?.user_id ?? "") === String(_cfg?.currentUserId ?? "");
-    const showPublish = isEdit && isAdmin && status === "draft";
+    const showPublish = isEdit && canManage && status === "draft";
     const showConfirm = isEdit && isOwner && status === "published";
     document
         .getElementById("shift-dialog-publish")

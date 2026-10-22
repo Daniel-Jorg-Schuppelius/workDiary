@@ -74,7 +74,7 @@ class RoleProfilesTest extends TestCase {
                 [
                     PermissionEnum::InvoiceCreate,
                     PermissionEnum::CustomerCreate,
-                    PermissionEnum::TimesheetExport,
+                    PermissionEnum::CustomerExport,
                 ],
             ],
             'personalverwaltung' => [
@@ -107,7 +107,6 @@ class RoleProfilesTest extends TestCase {
             'support' => [
                 UserRole::Support->value,
                 [
-                    PermissionEnum::OrganizationView,
                     PermissionEnum::CustomerViewAny,
                     PermissionEnum::InvoiceViewAny,
                     PermissionEnum::AuditLogView,

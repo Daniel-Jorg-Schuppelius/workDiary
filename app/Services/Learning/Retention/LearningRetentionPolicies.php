@@ -14,6 +14,7 @@ namespace App\Services\Learning\Retention;
 
 use App\Services\Retention\Contracts\RetentionPolicyProvider;
 use App\Services\Retention\RetentionPolicy;
+use CommonToolkit\Helper\Data\StringHelper;
 
 /** Löschbereiche des Moduls (Aufbewahrung, Feature 130) — gemeldet über das Manifest (MVP-863). */
 final class LearningRetentionPolicies implements RetentionPolicyProvider {
@@ -61,7 +62,7 @@ final class LearningRetentionPolicies implements RetentionPolicyProvider {
                 purge: function (\App\Models\Learning\LearningCertificate $subject): void {
                     $initials = implode(' ', array_map(
                         static fn (string $part): string => mb_substr($part, 0, 1) . '.',
-                        array_filter(preg_split('/\s+/u', trim((string) $subject->holder_name)) ?: []),
+                        StringHelper::words((string) $subject->holder_name),
                     ));
                     $subject->forceFill(['holder_name' => $initials !== '' ? $initials : '–'])->save();
                 },

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Claims;
 
-use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Concerns\{FreezesReportSnapshot, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
 use App\Models\Claims\{ClaimCase, ClaimFinancialOutcome, ClaimReportSnapshot};
@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\Gate;
  * (Snapshot als Nachweis).
  */
 class ClaimsReportController extends Controller {
-    use ResolvesGlobalDateRange;
+    use FreezesReportSnapshot, ResolvesGlobalDateRange;
     use WritesReportCsv;
 
     public function index(Request $request): View|Response {
@@ -59,15 +59,7 @@ class ClaimsReportController extends Controller {
 
         $actor = $request->user() ?? abort(401);
         [$from, $to] = $this->resolveRange($request);
-        ClaimReportSnapshot::query()->create([
-            'organization_id' => $this->currentOrganization()->id,
-            'period_start' => $from->toDateString(),
-            'period_end' => $to->toDateString(),
-            'payload' => $this->aggregate($from, $to),
-            'created_by' => $actor->id,
-        ]);
-
-        return back()->with('status', __('Berichtsstand eingefroren.'));
+        return $this->freezeReportSnapshot(ClaimReportSnapshot::class, $from, $to, $this->aggregate($from, $to), (int) $actor->id);
     }
 
     /** @return array<string, mixed> */

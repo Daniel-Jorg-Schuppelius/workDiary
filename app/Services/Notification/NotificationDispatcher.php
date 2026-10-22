@@ -21,6 +21,7 @@ use App\Notifications\GenericEventNotification;
 use App\Services\Integration\WebhookDispatchService;
 use App\Services\Notification\Sms\SmsChannelService;
 use App\Support\{NotificationText, Setting, Tz};
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\{Carbon, Collection};
 use Illuminate\Support\Facades\Log;
@@ -264,11 +265,10 @@ class NotificationDispatcher {
         try {
             return User::query()
                 ->where('organization_id', $organizationId)
-                // Guard explizit pinnen: läuft der Request über den
-                // customer-Guard (Portal, z. B. Foto-Beanstandung), würde
-                // Spatie sonst die Org-Rollen im Guard `customer` suchen
-                // und mit RoleDoesNotExist abbrechen.
-                ->role($roles, 'web')
+                // Rollen als Modelle im Guard `web`: über den customer-Guard
+                // (Portal, z. B. Foto-Beanstandung) suchte Spatie die Namen
+                // sonst im falschen Guard und brach mit RoleDoesNotExist ab.
+                ->role(\App\Services\Org\OrganizationRoles::matching($roles, $organizationId))
                 ->get();
         } finally {
             $registrar->setPermissionsTeamId($previousTeamId);
@@ -326,7 +326,7 @@ class NotificationDispatcher {
             $channels[] = 'database';
         }
         if ($rule->usesChannel(NotificationChannel::Mail) && ! $quiet
-            && filter_var(data_get($prefs, 'mail_enabled', true), FILTER_VALIDATE_BOOL)) {
+            && (StringHelper::parseBool(data_get($prefs, 'mail_enabled', true)) ?? false)) {
             $channels[] = 'mail';
         }
 
@@ -345,7 +345,7 @@ class NotificationDispatcher {
         }
 
         if ($rule->usesChannel(NotificationChannel::Push) && ! $quiet
-            && filter_var(data_get($prefs, 'push_enabled', true), FILTER_VALIDATE_BOOL)) {
+            && (StringHelper::parseBool(data_get($prefs, 'push_enabled', true)) ?? false)) {
             $truncate = (int) Setting::get('notifications.push.body_truncate', 120);
             [$pushTitle, $pushBody] = $this->pushTextFor($user, $event, $payload);
             // Zustellung in der Queue (A2): ein Roundtrip je Subscription gehört

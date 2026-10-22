@@ -1,7 +1,7 @@
 ---
 title: "Location-based time tracking"
 topic: location.overview
-version: 2
+version: 3
 keywords:
     - GPS time tracking
     - geofencing
@@ -32,6 +32,12 @@ confirmation.
 **Geofences per customer site:** For each relevant customer site, a zone is
 defined by a centre point and radius. Stays only arise within these zones;
 movement outside them has no business meaning.
+
+**Zones from addresses:** On a customer (“Zone from customer address”) and on
+a site (“Zone from address”), the zone is created directly from the address
+coordinates; “For all customers” creates one for every customer with
+coordinates and no zone. The radius comes from the location tracking
+defaults.
 
 **Data sources:** Position reports come either from the OwnTracks or Traccar
 apps via a personal device access, directly from the browser, or

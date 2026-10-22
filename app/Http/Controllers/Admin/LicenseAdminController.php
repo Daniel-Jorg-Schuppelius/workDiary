@@ -334,7 +334,7 @@ class LicenseAdminController extends Controller {
             'changes' => ['license_id' => $result->payload?->licenseId, 'plan' => $result->payload?->plan, 'package' => $package, 'addons' => $result->payload->addons ?? $addons],
         ]);
 
-        return back()->with('success', __('Lizenz erstellt & installiert. Plan: ') . __('values.' . (string) $data['plan']));
+        return $this->withSetupDialog(back()->with('success', __('Lizenz erstellt & installiert. Plan: ') . __('values.' . (string) $data['plan'])), $user);
     }
 
     /**
@@ -384,7 +384,14 @@ class LicenseAdminController extends Controller {
 
         $plan = $result->payload !== null ? __('values.' . $result->payload->plan) : '—';
 
-        return back()->with('success', __('Org-Lizenz installiert. Plan: ') . $plan);
+        return $this->withSetupDialog(back()->with('success', __('Org-Lizenz installiert. Plan: ') . $plan), $user);
+    }
+
+    /** Nach einer neuen Lizenz folgt die Einrichtung „Was möchten Sie erledigen?“ (MVP-1189). */
+    private function withSetupDialog(RedirectResponse $response, User $user): RedirectResponse {
+        return $user->can(Permission::OrganizationScopeManage->value)
+            ? $response->with('open_dialog', route('admin.scope.setup'))
+            : $response;
     }
 
     public function removeOrg(Request $request): RedirectResponse {

@@ -21,7 +21,7 @@ use Illuminate\View\View;
 /**
  * Portal-Abrechnung (Feature 098): read-only Monatsübersicht des Kundenkontos
  * (Anwesenheiten + Abrechnungsblock Gesamt/Abgerechnet/Vormonat/Offen) für
- * Konto-Modus-Kunden. monthData() ist die EINZIGE Datenquelle für Seite und
+ * Konto-Modus-Kunden. storedMonthData() ist die EINZIGE Datenquelle für Seite und
  * PDF (kein internal_rate, keine fremden Kunden); das PDF läuft wie die
  * Fallakte über einen signierten 24-h-Link ohne Portal-Session.
  */
@@ -30,7 +30,6 @@ class BillingController extends Controller {
 
     public function index(): View {
         $agreement = $this->agreementOrAbort();
-        $this->statements->recalculateOpen($agreement);
 
         $statements = $agreement->statements()
             ->orderByDesc('year')->orderByDesc('month')
@@ -48,7 +47,7 @@ class BillingController extends Controller {
         abort_unless($year >= 2000 && $year <= 2100 && $month >= 1 && $month <= 12, 404);
         $agreement = $this->agreementOrAbort();
 
-        $data = $this->statements->monthData($agreement, $year, $month);
+        $data = $this->statements->storedMonthData($agreement, $year, $month);
         /** @var CustomerBillingStatement $statement */
         $statement = $data['statement'];
 
@@ -68,7 +67,7 @@ class BillingController extends Controller {
         abort_unless($request->hasValidSignature(), 403);
 
         $agreement = $statement->agreement()->firstOrFail();
-        $data = $this->statements->monthData($agreement, $statement->year, $statement->month);
+        $data = $this->statements->storedMonthData($agreement, $statement->year, $statement->month);
 
         $bytes = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->renderPdf(
             \App\Enums\DocumentDesign\RenderDocumentKind::Report,

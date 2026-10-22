@@ -194,7 +194,7 @@ class ServiceTicketController extends Controller {
         $data = $request->validate([
             'impact' => ['required', 'integer', 'in:1,2,3'],
             'urgency' => ['required', 'integer', 'in:1,2,3'],
-            'priority_override' => ['nullable', 'integer', 'in:1,2,3'],
+            'priority_override' => ['nullable', \Illuminate\Validation\Rule::enum(ServiceTicketPriority::class)],
             'workaround' => ['nullable', 'string', 'max:5000'],
         ]);
 
@@ -207,7 +207,7 @@ class ServiceTicketController extends Controller {
             $ticket,
             \App\Enums\ServiceTicket\TicketSeverity::from((int) $data['impact']),
             \App\Enums\ServiceTicket\TicketSeverity::from((int) $data['urgency']),
-            isset($data['priority_override']) ? ServiceTicketPriority::from((int) $data['priority_override']) : null,
+            isset($data['priority_override']) ? ServiceTicketPriority::from((string) $data['priority_override']) : null,
             $user,
         );
 

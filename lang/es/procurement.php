@@ -594,11 +594,12 @@ return [
         'no_document' => 'Sin documento registrado',
         'saved' => 'Justificante registrado.',
         'deleted' => 'Justificante eliminado.',
+        'confirm_delete' => '¿Quitar el justificante «:type»?',
         'blocked' => 'Pedido bloqueado — justificantes ausentes o caducados: :names.',
         'blocking_on' => 'Los justificantes ausentes o caducados BLOQUEAN el pedido (ajuste de la organización).',
         'blocking_off' => 'Los justificantes ausentes solo se muestran, no bloquean. El bloqueo se activa en los ajustes.',
         'valid_until_hint' => 'Sin fecha de fin el justificante se considera ilimitado — es el caso menos frecuente, compruébelo.',
-        'action' => ['add' => 'Añadir justificante'],
+        'action' => ['add' => 'Añadir justificante', 'remove' => 'Quitar justificante'],
         'column' => [
             'supplier' => 'Proveedor',
             'status' => 'Semáforo',

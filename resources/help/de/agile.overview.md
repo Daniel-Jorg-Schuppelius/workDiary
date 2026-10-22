@@ -1,7 +1,7 @@
 ---
 title: "Agiles Projektmanagement"
 topic: agile.overview
-version: 1
+version: 2
 keywords:
     - Kanban
     - Scrum
@@ -37,6 +37,11 @@ Aufgaben. Jedes Element trägt einen Typ (etwa Story oder Fehler), Story
 Points, Akzeptanzkriterien und bei Bedarf eine Blockiert-Markierung. Die
 Reihenfolge wird per Hoch-/Runter-Verschiebung gepflegt; Filter nach Typ,
 Blockierungen und Suchbegriff halten auch große Backlogs übersichtlich.
+
+**Akzeptanzkriterien:** Das Listensymbol in der Zeile eines Elements öffnet
+seine Kriterien: anlegen, einzeln abhaken, entfernen. Die Zahl daneben zeigt
+erfüllte und vorhandene Kriterien; vor dem Zug in eine Fertig-Spalte nennt
+das Board unerfüllte Kriterien.
 
 **Board:** Spalten bilden den Arbeitsfluss ab; die Karten wandern von links
 nach rechts. Mit gewähltem Sprint zeigt das Board ausschließlich die Elemente

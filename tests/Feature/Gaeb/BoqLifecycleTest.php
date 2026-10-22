@@ -353,6 +353,30 @@ final class BoqLifecycleTest extends TestCase {
             ->assertHeader('content-type', 'application/xml');
     }
 
+    /** Vollscan 2026-10-21: Statuswechsel und Verknüpfung haben eine Oberfläche; die Typspalte trägt den Alias. */
+    public function test_item_status_and_mapping_from_the_list(): void {
+        app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $boq = $this->importedBoq();
+        $item = $boq->items()->where('reference_no', '01.0010')->firstOrFail();
+        $material = \App\Models\Material\Material::query()->create(['organization_id' => $this->organization->id, 'name' => 'Beton C25/30', 'unit' => 'm³', 'is_active' => true]);
+
+        $this->actingAs($admin)->get(route('bill-of-quantities.show', $boq))->assertOk()
+            ->assertSee(route('bill-of-quantities.items.transition', $item), false)
+            ->assertSee(route('bill-of-quantities.items.mappings.create', $item), false);
+        $this->get(route('bill-of-quantities.items.mappings.create', $item) . '?dialog=1')->assertOk()
+            ->assertSee('material:' . $material->sqid, false);
+
+        $next = $item->status->allowedTransitions()[0];
+        $this->post(route('bill-of-quantities.items.transition', $item), ['status' => $next->value])->assertRedirect();
+        $this->assertSame($next, $item->fresh()?->status);
+
+        $this->post(route('bill-of-quantities.items.mappings.add', $item), ['target' => 'material:' . $material->sqid, 'factor' => '2'])->assertRedirect();
+        $mapping = $item->mappings()->sole();
+        $this->assertSame(\App\Support\MorphMap::alias(\App\Models\Material\Material::class), $mapping->mappable_type);
+        $this->assertTrue($mapping->mappable()->is($material));
+    }
+
     public function test_demo_seeder_builds_full_flow(): void {
         (new GaebDemoSeeder)->run($this->organization);
 

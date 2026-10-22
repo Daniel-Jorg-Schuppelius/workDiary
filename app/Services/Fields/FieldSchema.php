@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Fields;
 
 use App\Enums\Fields\FieldType;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -109,7 +110,7 @@ final class FieldSchema implements \Countable, \IteratorAggregate {
                 key: $key,
                 type: $type,
                 label: $label,
-                required: filter_var($row['required'] ?? false, FILTER_VALIDATE_BOOL),
+                required: StringHelper::parseBool($row['required'] ?? false) ?? false,
                 options: $options,
                 help: $help === '' ? null : Str::limit($help, 500, ''),
                 unit: ($type->supportsUnit() && $unit !== '') ? Str::limit($unit, 20, '') : null,
@@ -118,7 +119,7 @@ final class FieldSchema implements \Countable, \IteratorAggregate {
                 max: $max,
                 step: $step,
                 extension: self::extensionKey($row['extension'] ?? null),
-                listed: filter_var($row['listed'] ?? false, FILTER_VALIDATE_BOOL),
+                listed: StringHelper::parseBool($row['listed'] ?? false) ?? false,
             );
         }
         if ($fields === []) {

@@ -11,6 +11,7 @@
 namespace App\Http\Requests\Project;
 
 use App\Enums\TimeEntry\TimeEntryKind;
+use App\Enums\User\Permission;
 use App\Models\Project\Project;
 use App\Services\Platform\Catalog\{ArticleCatalog, CatalogArticle};
 use Illuminate\Foundation\Http\FormRequest;
@@ -18,7 +19,7 @@ use Illuminate\Validation\Rule;
 
 class SaveProjectBillingRuleRequest extends FormRequest {
     public function authorize(): bool {
-        return $this->user()?->canManageBilling() === true;
+        return $this->user()?->can(Permission::ProjectManageBilling->value) === true;
     }
 
     /** @return array<string, mixed> */

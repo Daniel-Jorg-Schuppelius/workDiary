@@ -490,11 +490,10 @@ class GaebImportService {
             return [];
         }
 
-        // Vollscan 2026-09-15 (`P9-10`): gemeldet wurden bisher nur die
-        // herstellerfreien Sätze 70–89. Lose (10/33), vertragliche Regelungen
-        // (T0/T1/T9), EP-Aufgliederung (06/30) und Hinweistexte (20) fielen
-        // still durch — beim Import fehlte ihr Inhalt, ohne dass es jemand
-        // erfuhr. Der Leser deutet sie weiterhin nicht; sichtbar sind sie nun.
+        // Gemeldet wird jede Satzart, die der Leser nicht deutet (P9-10): Lose
+        // (10/33), EP-Aufgliederung (06/30) und Kopfsätze. Hinweistexte (20),
+        // Gruppenende (31) und Vorbemerkungen (T0/T1/T9) liest er seit
+        // erechnung-toolkit 0.19 selbst.
         $vendor = $parser->vendorRecordTypes($decoded);
 
         $warnings = [];

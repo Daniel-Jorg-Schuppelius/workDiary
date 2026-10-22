@@ -12,6 +12,7 @@ namespace App\Plugins\CalDav\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth, HasPrivateNetworkOptIn};
 use App\Plugins\Support\Calendar\RemoteCalendarConnection;
+use App\Plugins\Support\Contracts\ManagedPluginConnection;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -39,7 +40,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $sync_token
  * @property \Illuminate\Support\Carbon|null $last_imported_at
  */
-class CalDavConnection extends Model implements RemoteCalendarConnection {
+class CalDavConnection extends Model implements ManagedPluginConnection, RemoteCalendarConnection {
     use Auditable;
 
     use BelongsToOrganization;

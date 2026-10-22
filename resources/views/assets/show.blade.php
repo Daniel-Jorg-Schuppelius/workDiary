@@ -318,6 +318,8 @@
                                     <td class="text-end">
                                         @if ($canManageMaintenance)
                                             <div class="join">
+                                                <x-icon-btn tone="ghost" size="xs" icon="edit" class="join-item" data-entry-modal-trigger
+                                                            :href="route('assets.maintenance-plans.edit', [$asset, $plan])" :label="__('Bearbeiten')" />
                                                 <x-action-form :action="route('assets.maintenance-plans.complete', [$asset, $plan])" class="join-item">
                                                     <x-icon-btn type="submit" tone="ghost" size="xs" icon="check" :label="__('Erledigt')" />
                                                 </x-action-form>

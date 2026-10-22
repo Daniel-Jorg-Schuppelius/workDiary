@@ -17,7 +17,7 @@ use App\Enums\Gaeb\BoqItemStatus;
 use App\Models\Gaeb\{BillOfQuantity, BoqItem};
 use App\Services\Billing\DocumentTotalsCalculator;
 use CommonToolkit\Enums\CurrencyCode;
-use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -72,7 +72,7 @@ final class BoqPricingService {
                     continue;
                 }
                 $currency = $item->currency ?? CurrencyCode::Euro;
-                $notOffered = filter_var($row['not_offered'] ?? false, FILTER_VALIDATE_BOOLEAN);
+                $notOffered = StringHelper::parseBool($row['not_offered'] ?? false) ?? false;
                 $components = $this->components((array) ($row['components'] ?? []), $slots);
                 $unitPrice = match (true) {
                     $notOffered => null,

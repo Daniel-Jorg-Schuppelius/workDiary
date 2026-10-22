@@ -202,6 +202,33 @@ return [
             'basis' => ['DE' => 'Keine Rechnung laut Entscheidung — keine Aufbewahrungspflicht; Art. 5 Abs. 1 lit. e DSGVO', 'AT' => 'Art. 5 DSGVO', 'CH' => 'DSG (Zweckbindung)'],
         ],
 
+        // Erledigte Vorschläge aus der Standortspur (Fahrten, Einträge): gleiche
+        // Tagesfrist wie die Rohspur (location.retention_days), Vollzug als
+        // bestätigter Vorschlag im Retention-Scan (Sicherheitsaudit 2026-10-21, li-6).
+        'location_trip_suggestions' => [
+            'days_source' => 'location.retention_days',
+            'basis' => ['DE' => 'Art. 5 Abs. 1 lit. c/e DSGVO; § 26 BDSG (Beschäftigtendaten)', 'AT' => 'Art. 5 DSGVO', 'CH' => 'DSG (Zweckbindung)'],
+        ],
+        'location_time_suggestions' => [
+            'days_source' => 'location.retention_days',
+            'basis' => ['DE' => 'Art. 5 Abs. 1 lit. c/e DSGVO; § 26 BDSG (Beschäftigtendaten)', 'AT' => 'Art. 5 DSGVO', 'CH' => 'DSG (Zweckbindung)'],
+        ],
+
+        // Entschiedene Terminanfragen (Kontaktdaten Anfragender): wie Leads
+        // (Vollscan 2026-09-15, P8-24).
+        'appointment_requests' => [
+            'years' => ['DE' => 1, 'AT' => 1, 'CH' => 1],
+            'basis' => ['DE' => 'Art. 6 Abs. 1 lit. b/f DSGVO (Anfrage erledigt)', 'AT' => 'Art. 6 Abs. 1 lit. b/f DSGVO', 'CH' => 'DSG (Zweckbindung)'],
+        ],
+
+        // Käuferdaten gespiegelter Marktplatz-Bestellungen (Etsy, P8-41): nach
+        // der handelsrechtlichen Frist werden Name, Anschrift und Rohdaten
+        // entfernt; Beträge und Kundenbezug bleiben.
+        'marketplace_buyers' => [
+            'years' => ['DE' => 10, 'AT' => 7, 'CH' => 10],
+            'basis' => ['DE' => 'AO §147 / HGB §257 (Handelsbriefe, Buchungsbelege)', 'AT' => 'BAO §132', 'CH' => 'OR Art. 958f'],
+        ],
+
         // Allgemeine Dokumente ohne Steuer-/Handelsrecht-Bezug: NUR Ausweis/
         // Review im MVP, kein Auto-Purge und keine Scan-Policy — die
         // steuerrelevanten Dokumenttypen laufen über documents_invoice/gobd.

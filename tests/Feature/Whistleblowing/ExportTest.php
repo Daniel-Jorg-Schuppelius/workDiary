@@ -81,7 +81,7 @@ class ExportTest extends TestCase {
         $case = $this->makeCase($org);
 
         $this->actingAs($unassigned)
-            ->post(route('whistleblowing.internal.export', $case), ['reason' => 'Pruefung'])
+            ->post(route('whistleblowing.internal.export', $case), ['reason' => 'Pruefung', 'password' => 'geheim-geheim-12', 'password_confirmation' => 'geheim-geheim-12'])
             ->assertForbidden();
     }
 
@@ -93,7 +93,7 @@ class ExportTest extends TestCase {
 
         $this->actingAs($handler)
             ->post(route('whistleblowing.internal.export', $case), [])
-            ->assertSessionHasErrors('reason');
+            ->assertSessionHasErrors(['reason', 'password']);
     }
 
     public function test_export_downloads_and_records_event(): void {
@@ -102,10 +102,19 @@ class ExportTest extends TestCase {
         $case = $this->makeCase($org);
         $this->assign($case, $handler);
 
-        $this->actingAs($handler)
-            ->post(route('whistleblowing.internal.export', $case), ['reason' => 'Behoerdenanfrage'])
+        $response = $this->actingAs($handler)
+            ->post(route('whistleblowing.internal.export', $case), ['reason' => 'Behoerdenanfrage', 'password' => 'geheim-geheim-12', 'password_confirmation' => 'geheim-geheim-12'])
             ->assertOk()
             ->assertHeader('content-disposition', 'attachment; filename=hinweisgeber-fall-' . $case->case_number . '.zip');
+
+        // Vollscan 2026-09-15, Top 9b: das Paket ist verschlüsselt — ohne Passwort kein Inhalt.
+        $zip = new ZipArchive;
+        $this->assertTrue($zip->open($response->baseResponse->getFile()->getPathname()));
+        $this->assertSame(ZipArchive::EM_AES_256, $zip->statIndex(0)['encryption_method']);
+        $this->assertFalse($zip->getFromIndex(0));
+        $zip->setPassword('geheim-geheim-12');
+        $this->assertNotFalse($zip->getFromIndex(0));
+        $zip->close();
 
         $this->assertDatabaseHas('whistleblowing_case_events', [
             'case_id' => $case->id, 'event' => 'case.exported',
@@ -130,5 +139,32 @@ class ExportTest extends TestCase {
 
         $wb = array_filter($names, fn($n) => str_contains((string) $n, 'whistleblowing_'));
         $this->assertEmpty($wb, 'Hinweisgeberdaten duerfen nicht im Standard-Export sein.');
+    }
+
+    /** Vollscan 2026-10-21: Export, Betroffene und Notfallfreigabe haben einen Einstieg in der Fallansicht. */
+    public function test_case_page_offers_export_subject_and_emergency(): void {
+        $org = Organization::factory()->create();
+        $handler = $this->handler($org);
+        $case = $this->makeCase($org);
+        $this->assign($case, $handler);
+
+        $page = $this->actingAs($handler)->get(route('whistleblowing.internal.show', $case))->assertOk();
+        $page->assertSee(route('whistleblowing.internal.export', $case), false)
+            ->assertSee('name="password_confirmation"', false)
+            ->assertSee(route('whistleblowing.internal.subject', $case), false);
+    }
+
+    public function test_export_needs_a_confirmed_password_of_twelve_characters(): void {
+        $org = Organization::factory()->create();
+        $handler = $this->handler($org);
+        $case = $this->makeCase($org);
+        $this->assign($case, $handler);
+
+        $this->actingAs($handler)
+            ->post(route('whistleblowing.internal.export', $case), ['reason' => 'x', 'password' => 'kurz', 'password_confirmation' => 'kurz'])
+            ->assertSessionHasErrors('password');
+        $this->actingAs($handler)
+            ->post(route('whistleblowing.internal.export', $case), ['reason' => 'x', 'password' => 'geheim-geheim-12', 'password_confirmation' => 'anders-anders-12'])
+            ->assertSessionHasErrors('password');
     }
 }

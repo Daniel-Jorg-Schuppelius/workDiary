@@ -121,6 +121,24 @@ class PerDiemTripControllerTest extends TestCase {
         $this->assertSame(ExpenseStatus::Pending->value, $trip->expense->status->value);
     }
 
+    /** Vollscan 2026-10-21: die Detailseite bietet Stornieren an. */
+    public function test_trip_can_be_cancelled_from_its_page(): void {
+        $this->postAsUser('per-diem-trips.store', [
+            'country' => 'DE',
+            'location' => 'Hamburg',
+            'purpose' => 'Kundentermin',
+            'started_at' => '2025-03-12T08:00',
+            'ended_at' => '2025-03-12T18:00',
+            'accommodation_provided' => 0,
+        ]);
+        $trip = PerDiemTrip::query()->where('user_id', $this->user->id)->firstOrFail();
+
+        $this->actingAs($this->user)->get(route('per-diem-trips.show', $trip))->assertOk()
+            ->assertSee(route('per-diem-trips.cancel', $trip), false);
+        $this->postAsUser('per-diem-trips.cancel', [], $trip)->assertRedirect();
+        $this->assertSame(PerDiemTripStatus::Cancelled, $trip->fresh()?->status);
+    }
+
     /** Der Rücksprung zeigte das nackte Bearbeiten-Fragment (#106) — jetzt die Liste mit offenem Dialog. */
     public function test_trip_from_travel_log_opens_the_edit_dialog_on_the_list(): void {
         $log = TravelLog::factory()->create([

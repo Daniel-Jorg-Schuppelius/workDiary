@@ -100,12 +100,7 @@ class HelpdeskMetricsService {
             ->whereBetween('reported_at', [$from, $to])
             ->get(['id', 'reported_at', 'acknowledged_at', 'resolved_at']);
 
-        $pausedByTicket = SlaClockSegment::query()
-            ->whereIn('service_ticket_id', $tickets->pluck('id'))
-            ->whereNotNull('paused_to')
-            ->get()
-            ->groupBy('service_ticket_id')
-            ->map(fn($segments) => (float) $segments->sum(fn(SlaClockSegment $s): float => $s->paused_from->diffInMinutes($s->paused_to)));
+        $pausedByTicket = SlaClockSegment::pausedMinutesByTicket($tickets->pluck('id'));
 
         $reaction = [];
         $resolution = [];
@@ -114,8 +109,9 @@ class HelpdeskMetricsService {
             if ($ticket->reported_at !== null && $ticket->acknowledged_at !== null) {
                 $reaction[] = round(max(0, $ticket->reported_at->diffInMinutes($ticket->acknowledged_at) - $paused) / 60, 2);
             }
-            if ($ticket->reported_at !== null && $ticket->resolved_at !== null) {
-                $resolution[] = round(max(0, $ticket->reported_at->diffInMinutes($ticket->resolved_at) - $paused) / 60, 2);
+            $net = $ticket->netResolutionMinutes($paused);
+            if ($net !== null) {
+                $resolution[] = round($net / 60, 2);
             }
         }
 

@@ -50,6 +50,14 @@
 
 <x-card :title="__('customer-billing.panel_title')" icon="request_quote" id="customer-billing" padding="p-0">
     <x-slot:actions>
+        {{-- Einzelübertragung in die Buchhaltung (Feature 122, MVP-611); sonst läuft der nächtliche Abgleich. --}}
+        @can('update', $customer)
+            @if (app(\App\Plugins\PluginManager::class)->enabled()->contains(static fn ($plugin): bool => $plugin instanceof \App\Plugins\Contracts\ContactSyncer))
+                <x-action-form :action="route('accounting.contacts.push', $customer)">
+                    <x-icon-btn icon="cloud_upload" tone="ghost" size="sm" type="submit" show-label>{{ __('accounting.action.push') }}</x-icon-btn>
+                </x-action-form>
+            @endif
+        @endcan
         @if ($billingAgreement?->isAccountMode())
             <x-icon-btn icon="payments" tone="primary" size="sm"
                         data-entry-modal-trigger

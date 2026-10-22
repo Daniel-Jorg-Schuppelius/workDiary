@@ -188,6 +188,7 @@ return [
         'ttl_days' => 'Validité (jours)',
         'token_url_hint' => 'Lien de signature créé. Si l’e-mail n’arrive pas, vous pouvez transmettre ce lien :',
         'archive_confirm' => 'Archiver le protocole ?',
+        'delete_confirm' => 'Supprimer définitivement le protocole ?',
         'remove_confirm' => 'Supprimer le point « :label » ?',
         'defect_severity' => 'Gravité',
         'defect_category' => 'Catégorie',

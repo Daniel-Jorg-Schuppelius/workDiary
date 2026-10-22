@@ -13,11 +13,11 @@ namespace App\Http\Controllers\Auth;
 use App\Enums\User\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\{Organization, User};
+use App\Services\Org\OrganizationRoles;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, Hash};
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
-use Spatie\Permission\Models\Role;
 
 class TenantRegistrationController extends Controller {
     /**
@@ -72,7 +72,7 @@ class TenantRegistrationController extends Controller {
             $org->update(['owner_id' => $user->id]);
 
             // Admin-Rolle zuweisen (Rolle muss existieren)
-            $adminRole = Role::findOrCreate(UserRole::Admin->value, 'web');
+            $adminRole = OrganizationRoles::named(UserRole::Admin->value, $org->id);
             $user->assignRole($adminRole);
 
             // Schlanker Standard (Feature 165, MVP-1189): Paketvorgabe innerhalb

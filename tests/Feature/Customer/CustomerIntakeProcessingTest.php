@@ -235,6 +235,75 @@ final class CustomerIntakeProcessingTest extends TestCase {
         Mail::assertSent(CustomerIntakeNoticeMail::class, fn (CustomerIntakeNoticeMail $mail): bool => $mail->notice === 'handed_over');
     }
 
+    public function test_dialogs_render_for_staff_only(): void {
+        $intake = $this->intake();
+        $quote = $this->sentQuote();
+
+        $this->actingAs($this->lead, 'web')->get(route('customer-intakes.assign.form', $intake))->assertOk()->assertSee($this->lead->sqid);
+        $this->actingAs($this->lead, 'web')->get(route('customer-intakes.message.form', [$intake, 'kind' => 'note']))->assertOk()->assertSee('value="note"', false);
+        $this->actingAs($this->lead, 'web')->get(route('customer-intakes.reject.form', $intake))->assertOk()->assertSee('name="reason"', false);
+        $this->actingAs($this->lead, 'web')->get(route('customer-intakes.quote.form', $intake))->assertOk()->assertSee($quote->sqid);
+        $this->actingAs($this->lead, 'web')->get(route('customer-intakes.handover.form', $intake))->assertOk();
+
+        $member = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        foreach (['assign.form', 'message.form', 'reject.form', 'quote.form', 'handover.form'] as $form) {
+            $this->actingAs($member, 'web')->get(route('customer-intakes.' . $form, $intake))->assertForbidden();
+        }
+    }
+
+    public function test_assign_takes_only_staff_of_the_own_organization(): void {
+        $intake = $this->intake();
+
+        $this->actingAs($this->lead, 'web')->post(route('customer-intakes.assign', $intake), ['assigned_user_id' => $this->lead->sqid])
+            ->assertRedirect(route('customer-intakes.show', $intake));
+        $intake->refresh();
+        $this->assertSame((int) $this->lead->id, (int) $intake->assigned_user_id);
+        $this->assertSame(IntakeStatus::InProgress, $intake->status);
+        $this->assertContains('assigned', $intake->journal()->get()->map->eventKey()->all());
+
+        $this->actingAs($this->lead, 'web')->post(route('customer-intakes.assign', $intake), ['assigned_user_id' => $this->portalUser->sqid])->assertNotFound();
+        $foreign = User::factory()->create();
+        $this->actingAs($this->lead, 'web')->post(route('customer-intakes.assign', $intake), ['assigned_user_id' => $foreign->sqid])->assertNotFound();
+        $this->assertSame((int) $this->lead->id, (int) $intake->fresh()?->assigned_user_id);
+
+        $this->actingAs($this->lead, 'web')->post(route('customer-intakes.assign', $intake), ['assigned_user_id' => ''])->assertRedirect();
+        $this->assertNull($intake->fresh()?->assigned_user_id);
+    }
+
+    public function test_quote_is_announced_only_when_sent_and_can_be_unlinked(): void {
+        $intake = $this->intake();
+        $draft = app(QuoteService::class)->create(['customer_id' => $this->customer->id], [['description' => 'Migration', 'quantity' => 1, 'unit_price' => 900]], $this->lead);
+        $this->actingAs($this->lead, 'web')->post(route('customer-intakes.quote.link', $intake), ['quote_id' => $draft->sqid])->assertRedirect();
+
+        $this->actingAs($this->lead, 'web')->post(route('customer-intakes.quote.announce', $intake))->assertSessionHasErrors('quote_id');
+        Mail::assertNotSent(CustomerIntakeNoticeMail::class, fn (CustomerIntakeNoticeMail $mail): bool => $mail->notice === 'quote');
+
+        app(QuoteService::class)->approve($draft, $this->lead);
+        app(QuoteService::class)->send($draft->refresh(), $this->lead);
+        $this->actingAs($this->lead, 'web')->post(route('customer-intakes.quote.announce', $intake))->assertRedirect(route('customer-intakes.show', $intake));
+        Mail::assertSent(CustomerIntakeNoticeMail::class, fn (CustomerIntakeNoticeMail $mail): bool => $mail->notice === 'quote');
+
+        $this->actingAs($this->lead, 'web')->delete(route('customer-intakes.quote.unlink', $intake))->assertRedirect(route('customer-intakes.show', $intake));
+        $this->assertNull($intake->fresh()?->quote_id);
+        $this->assertContains('quote_unlinked', $intake->journal()->get()->map->eventKey()->all());
+    }
+
+    public function test_upload_channel_opens_and_closes_only_after_handover(): void {
+        $intake = $this->intake();
+
+        $this->actingAs($this->lead, 'web')->post(route('customer-intakes.upload-channel', $intake), ['open' => '1'])->assertSessionHasErrors('status');
+
+        $intake->forceFill(['status' => IntakeStatus::HandedOver, 'is_upload_open' => false])->save();
+        $this->actingAs($this->lead, 'web')->post(route('customer-intakes.upload-channel', $intake), ['open' => '1'])->assertRedirect(route('customer-intakes.show', $intake));
+        $this->assertTrue($intake->fresh()?->is_upload_open);
+        $this->actingAs($this->lead, 'web')->post(route('customer-intakes.upload-channel', $intake), ['open' => '0'])->assertRedirect();
+        $this->assertFalse($intake->fresh()?->is_upload_open);
+        $this->assertSame(['upload_channel_opened', 'upload_channel_closed'], array_values(array_intersect(
+            $intake->journal()->orderBy('id')->get()->map->eventKey()->all(),
+            ['upload_channel_opened', 'upload_channel_closed'],
+        )));
+    }
+
     public function test_old_rejected_intakes_are_proposed_and_purged_with_their_files(): void {
         $old = $this->intake();
         $old->forceFill(['status' => IntakeStatus::Rejected, 'rejection_reason' => 'Nicht im Angebot', 'closed_at' => now()->subYears(4)])->save();

@@ -52,7 +52,7 @@ class LexofficeRateLimitTest extends TestCase {
     }
 
     public function test_ping_recovers_when_rate_limit_clears_on_retry(): void {
-        FakePluginHttp::fake([
+        $fake = FakePluginHttp::fake([
             'https://api.lexware.io/v1/profile' => [
                 FakePluginHttp::response('rate limited', 429),
                 FakePluginHttp::response(['organizationId' => 'org-1'], 200),
@@ -60,6 +60,19 @@ class LexofficeRateLimitTest extends TestCase {
         ]);
 
         $this->assertTrue($this->service()->ping());
+        // ProfileEndpoint::get(): GET /profile mit dem kurzen Ping-Timeout von 5 s.
+        $fake->assertSentCount(2);
+        foreach ($fake->recorded() as $entry) {
+            $this->assertSame('GET https://api.lexware.io/v1/profile', $entry['request']->getMethod() . ' ' . $entry['request']->getUri());
+            $this->assertSame(5.0, $entry['options']['timeout']);
+        }
+    }
+
+    public function test_profile_status_returns_the_status_of_a_client_error(): void {
+        FakePluginHttp::fake(['https://api.lexware.io/v1/profile' => FakePluginHttp::response(['message' => 'Unauthorized'], 401)]);
+
+        $this->assertSame(401, $this->service()->profileStatus());
+        $this->assertFalse($this->service()->ping());
     }
 
     public function test_healthcheck_returns_degraded_on_server_error(): void {

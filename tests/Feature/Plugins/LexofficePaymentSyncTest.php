@@ -66,7 +66,7 @@ class LexofficePaymentSyncTest extends TestCase {
             'paid_date' => null,
         ]);
 
-        FakePluginHttp::fake([
+        $fake = FakePluginHttp::fake([
             'https://api.lexware.io/v1/payments/lex-voucher-1' => FakePluginHttp::response(['paidDate' => '2026-08-05T00:00:00.000+02:00']),
         ]);
 
@@ -74,6 +74,32 @@ class LexofficePaymentSyncTest extends TestCase {
 
         $this->assertSame(1, $result['paid_dates']);
         $this->assertSame('2026-08-05', LexofficeVoucher::query()->firstOrFail()->paid_date?->format('Y-m-d'));
+        $fake->assertSentCount(1);
+        $this->assertSame('GET https://api.lexware.io/v1/payments/lex-voucher-1', $fake->recorded()[0]['request']->getMethod() . ' ' . $fake->recorded()[0]['request']->getUri());
+    }
+
+    /** PaymentsEndpoint: ein Fehler oder eine Antwort, die das SDK nicht abbilden kann, kostet nur diesen Beleg. */
+    /** „irrecoverableReceivable“ fehlt im Enum PaymentItemType des SDK; das Zahldatum kommt trotzdem an. */
+    public function test_sync_payments_reads_paid_date_even_for_payment_items_the_sdk_does_not_know(): void {
+        foreach (['lex-a' => '2026-08-02', 'lex-b' => '2026-08-01', 'lex-c' => '2026-07-31'] as $id => $date) {
+            LexofficeVoucher::query()->create([
+                'organization_id' => $this->organization->id,
+                'external_id' => $id,
+                'voucher_type' => 'salesinvoice',
+                'voucher_status' => 'paid',
+                'voucher_date' => $date,
+                'paid_date' => null,
+            ]);
+        }
+        FakePluginHttp::fake([
+            'https://api.lexware.io/v1/payments/lex-a' => FakePluginHttp::response(['openAmount' => 0, 'currency' => 'EUR', 'paymentStatus' => 'balanced', 'voucherType' => 'salesinvoice', 'voucherStatus' => 'paid', 'paidDate' => '2026-08-09T00:00:00.000+02:00', 'paymentItems' => [['paymentItemType' => 'irrecoverableReceivable', 'postingDate' => '2026-08-09T00:00:00.000+02:00', 'amount' => 119.0, 'currency' => 'EUR']]]),
+            'https://api.lexware.io/v1/payments/lex-b' => FakePluginHttp::response(['message' => 'not found'], 404),
+            'https://api.lexware.io/v1/payments/lex-c' => FakePluginHttp::response(['openAmount' => 0, 'currency' => 'EUR', 'paymentStatus' => 'balanced', 'voucherType' => 'salesinvoice', 'voucherStatus' => 'paid', 'paidDate' => '2026-08-07T00:00:00.000+02:00', 'paymentItems' => [['paymentItemType' => 'manualPayment', 'postingDate' => '2026-08-07T00:00:00.000+02:00', 'amount' => 119.0, 'currency' => 'EUR']]]),
+        ]);
+
+        $this->assertSame(['paid_dates' => 2], app(LexofficePlugin::class)->syncPayments($this->organization));
+        $paid = LexofficeVoucher::query()->pluck('paid_date', 'external_id')->map(fn ($date): ?string => $date?->format('Y-m-d'))->all();
+        $this->assertSame(['lex-a' => '2026-08-09', 'lex-b' => null, 'lex-c' => '2026-08-07'], $paid);
     }
 
     public function test_sync_payments_without_api_key_reports_error_without_calls(): void {

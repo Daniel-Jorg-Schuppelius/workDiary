@@ -10,7 +10,7 @@
 
 namespace App\Models\Automation;
 
-use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -27,6 +27,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property int|null $created_by_id
  */
 class AutomationRule extends Model {
+    // Anlegen, Schalten und Löschen hinterlassen eine Spur — auch auf der Regelseite des Rechnungseingangs (Sicherheitsaudit 2026-10-21, authz-1).
+    use Auditable;
     use BelongsToOrganization;
     use HasSqid;
 

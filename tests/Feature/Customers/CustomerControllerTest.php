@@ -378,7 +378,8 @@ class CustomerControllerTest extends TestCase {
             'created_by' => $this->user->id,
         ]);
 
-        $response = $this->getAsUser('customers.export');
+        $accounting = User::factory()->buchhaltung()->create(['organization_id' => $this->organization->id]);
+        $response = $this->actingAs($accounting)->get(route('customers.export'));
 
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
@@ -386,6 +387,14 @@ class CustomerControllerTest extends TestCase {
         $this->assertStringContainsString('Nummer;Name;', $body);
         // Header + 3 Zeilen → mindestens 4 Newlines
         $this->assertGreaterThanOrEqual(4, substr_count($body, "\n"));
+    }
+
+    public function test_csv_export_needs_the_export_right(): void {
+        $this->getAsUser('customers.export')->assertForbidden();
+
+        $this->getAsUser('customers.index')
+            ->assertOk()
+            ->assertDontSee(route('customers.export'), false);
     }
 
     public function test_audit_log_is_written_on_create_and_update(): void {

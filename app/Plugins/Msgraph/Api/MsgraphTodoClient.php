@@ -11,6 +11,7 @@
 namespace App\Plugins\Msgraph\Api;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
+use App\Plugins\Msgraph\Api\Concerns\ReadsGraphAccount;
 use App\Plugins\Msgraph\Exceptions\TodoDeltaRejectedException;
 use App\Plugins\Msgraph\Models\MsgraphTaskConnection;
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
@@ -31,7 +32,7 @@ use Throwable;
  *   Ändern per PATCH, 404 = remote gelöscht (Aufrufer entscheidet).
  */
 class MsgraphTodoClient implements GraphSubscriptionClient {
-    use Concerns\ManagesGraphSubscriptions;
+    use Concerns\ManagesGraphSubscriptions, ReadsGraphAccount;
 
     private PluginApiClient $api;
 
@@ -189,26 +190,6 @@ class MsgraphTodoClient implements GraphSubscriptionClient {
         }
 
         return true;
-    }
-
-    /**
-     * Bestätigte Kontoidentität (`GET /me`) für das Admin-Panel.
-     *
-     * @return array{id: string, label: string}
-     */
-    public function account(): array {
-        $response = $this->api->getResponse($this->base . '/me');
-        if (! $response->successful()) {
-            throw new RuntimeException('Graph /me fehlgeschlagen (HTTP ' . $response->status() . ').');
-        }
-
-        /** @var array{id?: string, displayName?: string, mail?: string, userPrincipalName?: string} $data */
-        $data = (array) $response->json();
-
-        return [
-            'id' => (string) ($data['id'] ?? ''),
-            'label' => trim((string) ($data['displayName'] ?? '') . ' <' . (string) ($data['mail'] ?? $data['userPrincipalName'] ?? '') . '>'),
-        ];
     }
 
     /** Liveness/Auth-Check: Listen erreichbar. */

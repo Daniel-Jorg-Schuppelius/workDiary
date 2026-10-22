@@ -34,6 +34,11 @@
                 <x-status-badge size="sm">{{ $protocol->status->label() }}</x-status-badge>
             </x-slot:badges>
             <x-slot:actions>
+                @if ($protocol->status->isEditable())
+                    @can('update', $protocol)
+                        <x-icon-btn placement="bar" icon="edit" size="sm" data-entry-modal-trigger :href="route('protocols.edit', $protocol)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
+                    @endcan
+                @endif
                 @can('requestReview', $protocol)
                     <x-action-form :action="route('protocols.transition', [$protocol, 'requestReview'])">
                         <x-icon-btn placement="bar" icon="rate_review" size="sm" type="submit" show-label>{{ __('protocol.action.requestReview') }}</x-icon-btn>
@@ -60,6 +65,12 @@
                     <x-icon-btn placement="menu" icon="library_add" size="sm" data-entry-modal-trigger :href="route('protocols.as-template.form', $protocol)" show-label>{{ __('protocol.template.save_title') }}</x-icon-btn>
                 @endcan
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm" :href="route('protocols.pdf', $protocol)" show-label>{{ __('PDF') }}</x-icon-btn>
+                @if ($protocol->status->isEditable() && auth()->user()->can('delete', $protocol))
+                    <x-action-form :action="route('protocols.destroy', $protocol)" method="DELETE" :confirm="__('protocol.dialog.delete_confirm')"
+                                   confirm-icon="delete" confirm-tone="error" :confirm-label="__('protocol.action.delete')">
+                        <x-icon-btn placement="danger" icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('protocol.action.delete') }}</x-icon-btn>
+                    </x-action-form>
+                @endif
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
@@ -197,7 +208,9 @@
                         {{-- Vollaudit 2026-07 (H7): Foto-Strip je Punkt (MVP-023 §3). --}}
                         <tr>
                             <td colspan="{{ $aiColumns }}" class="bg-base-200/40">
-                                <x-photo-strip :item="$item" :can-manage="(bool) $canManagePhotos" />
+                                <x-photo-strip :item="$item" :can-manage="(bool) $canManagePhotos"
+                                               :can-add="$canManagePhotos && auth()->user()?->can('addPhoto', $protocol)"
+                                               :can-remove="$canManagePhotos && auth()->user()?->can('removePhoto', $protocol)" />
                             </td>
                         </tr>
                     @endif

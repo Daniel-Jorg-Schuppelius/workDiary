@@ -117,7 +117,7 @@ class HttpCalDavGateway implements CalDavGateway {
                 . '<d:sync-collection xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">'
                 . '<d:sync-token>%s</d:sync-token><d:sync-level>1</d:sync-level>'
                 . '<d:prop><d:getetag/><c:calendar-data/></d:prop></d:sync-collection>',
-            htmlspecialchars($prevSyncToken, ENT_XML1),
+            XmlHelper::escape($prevSyncToken),
         );
 
         try {

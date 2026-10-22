@@ -16,10 +16,10 @@
 <x-card as="article" class="grid gap-4 transition hover:border-primary/30 md:grid-cols-[minmax(0,1fr)_auto]">
     <div class="min-w-0">
         <div class="flex flex-wrap items-center gap-3 mb-3">
-            <x-status-badge :tone="$entry->status->badgeTone()">{{ $entry->statusLabel() }}</x-status-badge>
+            <x-status-badge :tone="$entry->status->tone()">{{ $entry->statusLabel() }}</x-status-badge>
             @php($dispatchStatus = app(\App\Services\Dispatch\DispatchStatusResolver::class)->resolve($entry))
             @if ($dispatchStatus !== \App\Enums\Diary\DispatchStatus::Unplanned)
-                <x-status-badge :tone="$dispatchStatus->badgeTone()" outline>{{ $dispatchStatus->label() }}</x-status-badge>
+                <x-status-badge :tone="$dispatchStatus->tone()" outline>{{ $dispatchStatus->label() }}</x-status-badge>
             @endif
             @if ($entry->mode && $entry->mode !== \App\Enums\Diary\Mode::Fixed)
                 <x-status-badge tone="ghost" outline>{{ $entry->modeLabel() }}</x-status-badge>

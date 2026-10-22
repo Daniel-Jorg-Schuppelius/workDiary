@@ -77,14 +77,7 @@ final class TextCorrectionDiff {
 
     /** @return list<string> */
     private static function tokens(?string $text): array {
-        $text = StringHelper::normalizeWhitespace($text);
-        if ($text === '') {
-            return [];
-        }
-
-        $tokens = preg_split('/\s+/u', $text);
-
-        return $tokens === false ? [] : $tokens;
+        return StringHelper::words(StringHelper::normalizeWhitespace($text));
     }
 
     private static function stripPunctuation(string $token): string {

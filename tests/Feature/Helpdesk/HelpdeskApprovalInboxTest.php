@@ -82,20 +82,20 @@ final class HelpdeskApprovalInboxTest extends TestCase {
 
         // Schritt 1 ist user-gebunden an A — nur A sieht ihn.
         $this->actingAs($this->approverA)
-            ->get(route('servicedesk.approvals.index'))
+            ->get(route('approvals.index'))
             ->assertOk()
             ->assertSee('Inbox-Sichtbarkeit');
 
         // B hat das Recht und die Rolle für Schritt 2 — der ist aber noch
         // nicht der niedrigste offene Schritt.
         $this->actingAs($this->approverB)
-            ->get(route('servicedesk.approvals.index'))
+            ->get(route('approvals.index'))
             ->assertOk()
             ->assertDontSee('Inbox-Sichtbarkeit');
 
         // Ohne service_request.approve: 403.
         $member = User::factory()->create(['organization_id' => $this->organization->id]);
-        $this->actingAs($member)->get(route('servicedesk.approvals.index'))->assertForbidden();
+        $this->actingAs($member)->get(route('approvals.index'))->assertForbidden();
     }
 
     public function test_approve_flow_advances_chain_via_http(): void {
@@ -103,21 +103,21 @@ final class HelpdeskApprovalInboxTest extends TestCase {
         $step1 = $request->approvals()->where('step', 1)->firstOrFail();
 
         $this->actingAs($this->approverA)
-            ->post(route('servicedesk.approvals.decide', $step1), ['decision' => 'approved'])
-            ->assertRedirect(route('servicedesk.approvals.index'));
+            ->post(route('approvals.decide', $step1), ['decision' => 'approved'])
+            ->assertRedirect(route('approvals.index'));
 
         $this->assertSame(ServiceRequestStatus::PendingApproval, $request->fresh()->status);
 
         // Jetzt ist Schritt 2 (Rolle) der niedrigste offene — B sieht und entscheidet.
         $this->actingAs($this->approverB)
-            ->get(route('servicedesk.approvals.index'))
+            ->get(route('approvals.index'))
             ->assertOk()
             ->assertSee('Freigabe-Durchlauf');
 
         $step2 = $request->approvals()->where('step', 2)->firstOrFail();
         $this->actingAs($this->approverB)
-            ->post(route('servicedesk.approvals.decide', $step2), ['decision' => 'approved'])
-            ->assertRedirect(route('servicedesk.approvals.index'));
+            ->post(route('approvals.decide', $step2), ['decision' => 'approved'])
+            ->assertRedirect(route('approvals.index'));
 
         $this->assertSame(ServiceRequestStatus::Done, $request->fresh()->status);
     }
@@ -127,7 +127,7 @@ final class HelpdeskApprovalInboxTest extends TestCase {
         $step2 = $request->approvals()->where('step', 2)->firstOrFail();
 
         $this->actingAs($this->approverB)
-            ->post(route('servicedesk.approvals.decide', $step2), ['decision' => 'approved'])
+            ->post(route('approvals.decide', $step2), ['decision' => 'approved'])
             ->assertSessionHas('error');
 
         $this->assertNull($step2->fresh()->decision);
@@ -138,15 +138,15 @@ final class HelpdeskApprovalInboxTest extends TestCase {
         $step1 = $request->approvals()->where('step', 1)->firstOrFail();
 
         $this->actingAs($this->approverA)
-            ->post(route('servicedesk.approvals.decide', $step1), ['decision' => 'rejected'])
+            ->post(route('approvals.decide', $step1), ['decision' => 'rejected'])
             ->assertSessionHasErrors('reason');
 
         $this->actingAs($this->approverA)
-            ->post(route('servicedesk.approvals.decide', $step1), [
+            ->post(route('approvals.decide', $step1), [
                 'decision' => 'rejected',
                 'reason' => 'Kein Budget',
             ])
-            ->assertRedirect(route('servicedesk.approvals.index'));
+            ->assertRedirect(route('approvals.index'));
 
         $this->assertSame(ServiceRequestStatus::Rejected, $request->fresh()->status);
     }
@@ -156,18 +156,18 @@ final class HelpdeskApprovalInboxTest extends TestCase {
         $step1 = $request->approvals()->where('step', 1)->firstOrFail();
 
         $this->actingAs($this->approverA)
-            ->post(route('servicedesk.approvals.decide', $step1), [
+            ->post(route('approvals.decide', $step1), [
                 'decision' => 'question',
                 'reason' => 'Welche Ausstattung genau?',
             ])
-            ->assertRedirect(route('servicedesk.approvals.index'));
+            ->assertRedirect(route('approvals.index'));
 
         // question zählt NICHT als erledigt: Request bleibt pending, der
         // Schritt bleibt in der Inbox sichtbar und erneut entscheidbar.
         $this->assertSame('question', $step1->fresh()->decision);
         $this->assertSame(ServiceRequestStatus::PendingApproval, $request->fresh()->status);
         $this->actingAs($this->approverA)
-            ->get(route('servicedesk.approvals.index'))
+            ->get(route('approvals.index'))
             ->assertOk()
             ->assertSee('Rückfrage');
     }
@@ -178,7 +178,7 @@ final class HelpdeskApprovalInboxTest extends TestCase {
 
         // Delegation an den Antragsteller: Selbstfreigabe-Sperre greift.
         $this->actingAs($this->approverA)
-            ->post(route('servicedesk.approvals.decide', $step1), [
+            ->post(route('approvals.decide', $step1), [
                 'decision' => 'delegated',
                 'reason' => 'Bitte übernehmen',
                 'delegate' => $this->requester->sqid,
@@ -189,12 +189,12 @@ final class HelpdeskApprovalInboxTest extends TestCase {
         // Delegation an B: alter Schritt 'delegated', neuer offener Schritt
         // GLEICHER Nummer mit user-Regel auf B, Request bleibt pending.
         $this->actingAs($this->approverA)
-            ->post(route('servicedesk.approvals.decide', $step1), [
+            ->post(route('approvals.decide', $step1), [
                 'decision' => 'delegated',
                 'reason' => 'Urlaub — bitte übernehmen',
                 'delegate' => $this->approverB->sqid,
             ])
-            ->assertRedirect(route('servicedesk.approvals.index'));
+            ->assertRedirect(route('approvals.index'));
 
         $this->assertSame('delegated', $step1->fresh()->decision);
         $delegated = Approval::query()
@@ -208,13 +208,13 @@ final class HelpdeskApprovalInboxTest extends TestCase {
 
         // Der Delegat sieht den Schritt und kann ihn entscheiden.
         $this->actingAs($this->approverB)
-            ->get(route('servicedesk.approvals.index'))
+            ->get(route('approvals.index'))
             ->assertOk()
             ->assertSee('Delegation');
 
         $this->actingAs($this->approverB)
-            ->post(route('servicedesk.approvals.decide', $delegated), ['decision' => 'approved'])
-            ->assertRedirect(route('servicedesk.approvals.index'));
+            ->post(route('approvals.decide', $delegated), ['decision' => 'approved'])
+            ->assertRedirect(route('approvals.index'));
         $this->assertSame(ServiceRequestStatus::PendingApproval, $request->fresh()->status); // Schritt 2 noch offen
     }
 
@@ -227,7 +227,7 @@ final class HelpdeskApprovalInboxTest extends TestCase {
         $step = $request->approvals()->firstOrFail();
 
         $this->actingAs($this->requester)
-            ->post(route('servicedesk.approvals.decide', $step), ['decision' => 'approved'])
+            ->post(route('approvals.decide', $step), ['decision' => 'approved'])
             ->assertSessionHas('error');
         $this->assertNull($step->fresh()->decision);
     }
@@ -238,7 +238,7 @@ final class HelpdeskApprovalInboxTest extends TestCase {
 
         // B ist für Schritt 1 (user=A) nicht zuständig.
         $this->actingAs($this->approverB)
-            ->post(route('servicedesk.approvals.decide', $step1), ['decision' => 'approved'])
+            ->post(route('approvals.decide', $step1), ['decision' => 'approved'])
             ->assertForbidden();
     }
 
@@ -253,10 +253,10 @@ final class HelpdeskApprovalInboxTest extends TestCase {
         ]);
 
         $this->actingAs($this->approverA)
-            ->get(route('servicedesk.approvals.decide-form', $foreignApproval->sqid))
+            ->get(route('approvals.decide-form', $foreignApproval->sqid))
             ->assertNotFound();
         $this->actingAs($this->approverA)
-            ->post(route('servicedesk.approvals.decide', $foreignApproval->sqid), ['decision' => 'approved'])
+            ->post(route('approvals.decide', $foreignApproval->sqid), ['decision' => 'approved'])
             ->assertNotFound();
     }
 
@@ -267,16 +267,16 @@ final class HelpdeskApprovalInboxTest extends TestCase {
         $step2 = $request->approvals()->where('step', 2)->firstOrFail();
 
         $this->actingAs($this->approverA)
-            ->post(route('servicedesk.approvals.decide', $step1), ['decision' => 'rejected', 'reason' => 'Kein Budget'])
-            ->assertRedirect(route('servicedesk.approvals.index'));
+            ->post(route('approvals.decide', $step1), ['decision' => 'rejected', 'reason' => 'Kein Budget'])
+            ->assertRedirect(route('approvals.index'));
 
         $this->actingAs($this->approverB)
-            ->get(route('servicedesk.approvals.index'))
+            ->get(route('approvals.index'))
             ->assertOk()
             ->assertDontSee('Abgelehnt bleibt abgelehnt');
 
         $this->actingAs($this->approverB)
-            ->post(route('servicedesk.approvals.decide', $step2), ['decision' => 'approved'])
+            ->post(route('approvals.decide', $step2), ['decision' => 'approved'])
             ->assertSessionHas('error');
 
         $this->assertNull($step2->fresh()->decision);

@@ -10,11 +10,12 @@
 
 namespace App\Http\Requests\Project;
 
+use App\Enums\User\Permission;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SaveProjectBillingSettingsRequest extends FormRequest {
     public function authorize(): bool {
-        return $this->user()?->canManageBilling() === true;
+        return $this->user()?->can(Permission::ProjectManageBilling->value) === true;
     }
 
     protected function prepareForValidation(): void {

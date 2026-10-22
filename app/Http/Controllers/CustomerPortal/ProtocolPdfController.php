@@ -17,6 +17,7 @@ use App\Models\Asset\Asset;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Protocol\Protocol;
+use App\Services\CustomerPortal\PortalPreview;
 use App\Services\Protocol\{ProtocolPdfRenderer, ProtocolService};
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\{Auth, Storage};
@@ -31,6 +32,7 @@ class ProtocolPdfController extends Controller {
     public function __construct(
         private readonly ProtocolPdfRenderer $renderer,
         private readonly ProtocolService $protocols,
+        private readonly PortalPreview $preview,
     ) {}
 
     public function asset(Asset $asset, Protocol $protocol): StreamedResponse {
@@ -55,7 +57,10 @@ class ProtocolPdfController extends Controller {
         );
 
         $path = $this->renderer->render($protocol);
-        $this->protocols->recordPortalPdfDownload($protocol, $user);
+        // In der Vorschau als Kunde lädt eine Mitarbeiterin — das ist kein Abruf des Kunden (Sicherheitsaudit 2026-10-21, authz-2).
+        if (! $this->preview->isActive(request())) {
+            $this->protocols->recordPortalPdfDownload($protocol, $user);
+        }
 
         /** @var FilesystemAdapter $disk */
         $disk = Storage::disk(ProtocolPdfRenderer::DISK);

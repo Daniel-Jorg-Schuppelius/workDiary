@@ -13,6 +13,7 @@ namespace App\Plugins\Msgraph\Models;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth};
 use App\Plugins\Msgraph\Enums\MsgraphConnectionStatus;
 use App\Plugins\Support\Calendar\RemoteCalendarConnection;
+use App\Plugins\Support\Contracts\ManagedPluginConnection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -42,7 +43,7 @@ use Illuminate\Support\Carbon;
  * @property MsgraphConnectionStatus $status
  * @property Carbon|null $last_published_at
  */
-class MsgraphConnection extends Model implements RemoteCalendarConnection {
+class MsgraphConnection extends Model implements ManagedPluginConnection, RemoteCalendarConnection {
     use Auditable;
     use BelongsToOrganization;
     use HasConnectionHealth;

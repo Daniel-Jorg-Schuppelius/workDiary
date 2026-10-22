@@ -1018,6 +1018,9 @@ return [
         'unlimited' => 'illimité',
         'issuer' => 'Organisation émettrice',
         'number' => 'Numéro',
+        'machine_readable' => 'Attestation lisible par machine',
+        'credential_json' => 'Open Badges 3.0 (JSON-LD)',
+        'credential_jwt' => 'VC-JWT',
     ],
     'proof' => [
         'note' => 'Preuve issue de la plateforme d\'apprentissage : :course',

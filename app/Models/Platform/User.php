@@ -107,6 +107,11 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
     use InteractsWithWorkSchedule;
     use Searchable;
 
+    /** Auswahl-Beschriftung, wo gleichnamige Personen vorkommen: „Name (E-Mail)“, ohne Namen nur die E-Mail. */
+    public function labelWithEmail(): string {
+        return trim((string) $this->name) !== '' ? $this->name . ' (' . $this->email . ')' : (string) $this->email;
+    }
+
     public function isAdmin(): bool {
         // Plattform-Betreiber ist in jedem Org-Kontext Admin (behält seinen
         // Policy-Bypass auch in einer per Switch aktivierten Fremd-Org).
@@ -138,13 +143,6 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
     }
 
     /**
-     * Darf Diary-Einträge im Namen anderer Benutzer anlegen.
-     */
-    public function canCreateEntriesForOthers(): bool {
-        return $this->isAdmin() || $this->hasRole(UserRole::Buchhaltung->value);
-    }
-
-    /**
      * Darf Buchhaltungs-/Abrechnungsdaten verwalten (z. B. Kunden, Lexoffice-Sync).
      */
     public function canManageBilling(): bool {
@@ -170,11 +168,11 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
     }
 
     /**
-     * Darf Gleitzeit-Konten anderer Mitarbeiter einsehen (Admin + Buchhaltung).
+     * Darf Gleitzeit-Konten anderer Mitarbeiter einsehen (Admin oder `flex.manage`).
      * Mitarbeiter ohne dieses Recht sehen ausschließlich ihre eigenen Zeiten.
      */
     public function canViewOthersFlex(): bool {
-        return $this->isAdmin() || $this->hasRole(UserRole::Buchhaltung->value);
+        return $this->isAdmin() || $this->hasEffectivePermission(Permission::FlexBalanceManage->value);
     }
 
     /**

@@ -14,7 +14,6 @@ namespace App\Plugins\SevDesk;
 
 use APIToolkit\Exceptions\ApiException;
 use App\Enums\Numbering\NumberScope;
-use App\Exceptions\ContactNumberTakenException;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Plugins\{AbstractPlugin, PluginHealth};
@@ -179,10 +178,7 @@ class SevDeskPlugin extends AbstractPlugin implements ContactNumberIssuer, Conta
             if (! is_array($row) || (string) ($row['customerNumber'] ?? '') !== $number || empty($row['id'] ?? null)) {
                 continue;
             }
-            $name = (string) ($row['name'] ?? '') ?: trim(($row['surename'] ?? '') . ' ' . ($row['familyname'] ?? ''));
-            if (! app(ContactIdentity::class)->same($customer, ['name' => $name, 'vat_id' => $row['vatNumber'] ?? null])) {
-                throw ContactNumberTakenException::remote($number, $this->name(), $name);
-            }
+            app(ContactIdentity::class)->assertRemoteOwner($customer, $number, $this->name(), $row['name'] ?? null, $row['surename'] ?? null, $row['familyname'] ?? null, $row['vatNumber'] ?? null);
 
             return $row;
         }

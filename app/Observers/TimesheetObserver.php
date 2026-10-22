@@ -36,7 +36,8 @@ class TimesheetObserver {
             return;
         }
 
-        if ($timesheet->status !== TimesheetStatus::Signed) {
+        // Entsperren führt zurück nach „signiert“, unterschrieben wird dabei nichts.
+        if ($timesheet->status !== TimesheetStatus::Signed || $timesheet->getOriginal('status') === TimesheetStatus::Locked) {
             return;
         }
 

@@ -18,7 +18,7 @@ use App\Models\Mcp\{McpOAuthClient, McpOAuthCode, McpOAuthRefreshToken};
 use App\Models\Platform\{Organization, User};
 use App\Services\Mcp\Exceptions\McpOAuthException;
 use App\Settings\SettingsRegistry;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, StringHelper};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -49,7 +49,7 @@ final class McpAuthorizationServer {
     private const LOOPBACK_HOSTS = ['localhost', '127.0.0.1', '::1'];
 
     public function enabledFor(Organization $organization): bool {
-        return filter_var(app(SettingsRegistry::class)->effective('mcp.enabled', $organization)->value, FILTER_VALIDATE_BOOL);
+        return StringHelper::parseBool(app(SettingsRegistry::class)->effective('mcp.enabled', $organization)->value) ?? false;
     }
 
     /** @param  list<string>  $redirectUris */
@@ -299,7 +299,7 @@ final class McpAuthorizationServer {
         if (trim($scope) === '') {
             return [ApiAbility::McpRead->value];
         }
-        $scopes = array_values(array_intersect(self::SCOPES, preg_split('/\s+/', trim($scope)) ?: []));
+        $scopes = array_values(array_intersect(self::SCOPES, StringHelper::words($scope)));
         if ($scopes === []) {
             throw new McpOAuthException('invalid_scope', (string) __('mcp.oauth.error.scope'), redirectable: true);
         }

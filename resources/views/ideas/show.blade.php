@@ -112,6 +112,26 @@
                     <p class="text-xs opacity-60 basis-full">{{ __('ideas.share.hint') }}</p>
                 </form>
             @endunless
+
+            {{-- Eigentum übertragen: Eigentümer und Freigabeberechtigte; Admins ohne Inhaltszugriff erreichen das hier nicht. --}}
+            @unless ($map->isArchived())
+                <form method="POST" action="{{ route('ideas.transfer-ownership', $map) }}" class="flex flex-wrap items-end gap-2 border-t border-base-200 pt-4"
+                      data-confirm-dialog data-confirm-message="{{ __('ideas.share.transfer_confirm') }}">
+                    @csrf
+                    <div class="fieldset">
+                        <label for="transfer-owner" class="fieldset-label">{{ __('ideas.share.transfer') }}</label>
+                        <select id="transfer-owner" name="owner" class="select select-sm select-bordered" required>
+                            <option value="">—</option>
+                            @foreach ($shareUsers as $user)
+                                @continue((int) $user->id === (int) $map->owner_user_id)
+                                <option value="{{ $user->sqid }}">{{ $user->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <x-button type="submit" tone="outline">{{ __('ideas.share.transfer') }}</x-button>
+                    <p class="text-xs opacity-60 basis-full">{{ __('ideas.share.transfer_hint') }}</p>
+                </form>
+            @endunless
         </x-modal>
     @endif
 
@@ -168,6 +188,7 @@
                 'convert' => route('ideas.nodes.convert', [$map, '__NODE__']),
                 'comments' => route('ideas.nodes.comments', [$map, '__NODE__']),
                 'attachments' => route('ideas.nodes.attachments', [$map, '__NODE__']),
+                'linkForm' => route('ideas.nodes.link.form', [$map, '__NODE__']),
             ],
             // Überführungsziele (MVP-109): nur anbieten, was lizenziert UND erlaubt ist.
             'convert_targets' => array_values(array_filter([
@@ -419,6 +440,13 @@
                         <a class="badge badge-outline badge-sm gap-1" :href="ref.url" target="_blank">
                             <span class="material-symbols-outlined text-xs" aria-hidden="true" x-text="ref.kind === 'converted' ? 'east' : 'link'"></span>
                             <span x-text="ref.type + ': ' + ref.label"></span>
+                        </a>
+                    </template>
+                    <template x-if="cfg.can_update && !isRoot(selected)">
+                        {{-- raw-markup-ok: Link-Ziel setzt Alpine (:href); ohne serverseitiges href rendert die Knopf-Komponente kein a-Element --}}
+                        <a class="btn btn-xs btn-outline gap-1" data-entry-modal-trigger :href="urlFor('linkForm', selected)">
+                            <x-icon name="link" class="text-sm" />
+                            {{ __('ideas.link.action') }}
                         </a>
                     </template>
                     <template x-if="cfg.can_update && !isRoot(selected)">

@@ -113,6 +113,15 @@
                                     @endif
                                 @endforeach
 
+                                @if ($canUpdate && ! $issue->closed_at)
+                                    <x-icon-btn icon="edit" size="xs" tone="outline" data-entry-modal-trigger
+                                                :href="route('open-issues.edit', $issue)" show-label>{{ __('open-issue.action.edit') }}</x-icon-btn>
+                                @endif
+                                @if ($canAssign && ! $issue->closed_at)
+                                    <x-icon-btn icon="person_add" size="xs" tone="outline" data-entry-modal-trigger
+                                                :href="route('open-issues.assign.form', $issue)" show-label>{{ __('open-issue.action.assign') }}</x-icon-btn>
+                                @endif
+
                                 {{-- Folgeauftrag (Feature 139, mehrere seit MVP-991): öffnet den Auftragsdialog vorbefüllt; Verknüpfung beim Speichern. --}}
                                 @if ($canUpdate && ! $issue->closed_at)
                                     <x-icon-btn icon="add_task" size="xs" tone="outline"

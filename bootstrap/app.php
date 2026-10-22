@@ -127,6 +127,8 @@ return Application::configure(basePath: dirname(__DIR__))
             SetLocale::class,
             ForcePasswordChange::class,
             RequireTwoFactorSetup::class,
+            // Standardfilter einer Liste (gespeicherte Filter, „Standard für diesen Bereich“).
+            \App\Http\Middleware\ApplyDefaultFilterPreset::class,
             // Sperrt schreibende Aktionen bei gesperrtem/abgelaufenem Mandanten
             // (Feature 021). Läuft nach der Org-Auflösung; Auth-/Lizenz-/Logout-
             // Routen bleiben erreichbar (Aufhebung der Sperre).
@@ -327,15 +329,6 @@ return Application::configure(basePath: dirname(__DIR__))
             // LTI 1.3 als Tool: Die Plattform sendet das ID-Token als fremden POST;
             // geschützt durch den serverseitigen state, die Signatur und die Nonce.
             'lti/tool/launch',
-            // 'oci-carts/import' stand hier bis 2026-08-31 (Sicherheitsscan
-            // S-43) und ist bewusst ENTFERNT: die Ausnahme half nur, wenn ein
-            // Betreiber SESSION_SAME_SITE=none setzte — und genau dann war der
-            // Endpunkt klassisch CSRF-anfällig, weil jede fremde Seite im
-            // Browser eines angemeldeten Einkäufers Bestellentwürfe anlegen
-            // konnte. Mit dem Standard `lax` trägt der Cross-Site-POST ohnehin
-            // kein Session-Cookie, die Ausnahme war also wirkungslos, solange
-            // sie ungefährlich war. Externe Shops binden über die sitzungslosen
-            // Rücksprünge in routes/punchout.php an (ohne CSRF-Stack).
             // SAML-ACS (Feature 057, MVP-121): der IdP POSTet die Response
             // cross-site ohne CSRF-Token. Schutz kommt aus der SAML-Signatur,
             // dem InResponseTo-Abgleich (Session) und dem Replay-Cache.

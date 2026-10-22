@@ -948,6 +948,8 @@ return [
         'depreciation_method' => 'Método de amortización',
         'deputy_replacements' => 'Suplencias',
         'deputy_replacements.*' => 'Nuevo suplente',
+        'handovers' => 'Traspasos',
+        'handovers.*' => 'Traspasar a',
         'deputy_user_id' => 'Suplente',
         'description' => 'Descripción',
         'destination_address' => 'Destino',

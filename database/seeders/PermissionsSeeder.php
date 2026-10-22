@@ -12,6 +12,7 @@ namespace Database\Seeders;
 
 use App\Enums\User\{Permission as PermissionEnum, UserRole};
 use App\Models\Platform\Organization;
+use App\Services\Org\OrganizationRoles;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\{Permission, Role};
 use Spatie\Permission\PermissionRegistrar;
@@ -27,9 +28,25 @@ use Spatie\Permission\PermissionRegistrar;
  * die Admin-UI (Admin\Access\MemberController).
  */
 class PermissionsSeeder extends Seeder {
+    /**
+     * Ausgemusterte Rechte (Vollscan 2026-10-21, lk-06): ohne Prüfstelle,
+     * abgedeckt durch andere Rechte oder ohne gebaute Funktion. Der Seeder
+     * entfernt sie, damit der Rollen-Editor sie nicht mehr anbietet.
+     */
+    private const RETIRED = [
+        'organization.view',
+        'user.view',
+        'user.rates.manage',
+        'timeEntry.create-for-others',
+        'timesheet.export',
+        'shift.manage',
+    ];
+
     public function run(): void {
         /** @var PermissionRegistrar $registrar */
         $registrar = app(PermissionRegistrar::class);
+        // Die Kaskade räumt Rollen-, Nutzer- und Gruppenzuordnungen mit ab.
+        Permission::query()->where('guard_name', 'web')->whereIn('name', self::RETIRED)->delete();
         $registrar->forgetCachedPermissions();
 
         self::ensurePermissionsExist();
@@ -86,20 +103,10 @@ class PermissionsSeeder extends Seeder {
         // PermissionDoesNotExist-Exception laufen und Org-Anlage scheitern.
         self::ensurePermissionsExist();
 
-        $teamForeign = config('permission.column_names.team_foreign_key', 'team_id');
         $rolesAndPermissions = self::defaultRoleMatrix();
 
         foreach ($rolesAndPermissions as $roleName => $permissions) {
-            // Spatie's Role::findOrCreate würde auf eine bestehende globale
-            // Rolle (team_id = NULL) zurückfallen. Wir wollen pro Organisation
-            // eine eigene Rollen-Instanz und müssen daher direkt mit
-            // firstOrCreate gegen das volle Attribute-Set arbeiten.
-            /** @var Role $role */
-            $role = Role::query()->firstOrCreate([
-                $teamForeign => $organization->id,
-                'name' => $roleName,
-                'guard_name' => 'web',
-            ]);
+            $role = OrganizationRoles::named($roleName, $organization->id);
 
             // Direkter Pivot-Sync statt Spatie-syncPermissions: identische
             // Ergebnismenge, aber ohne die O(n)-Namensauflösung und ohne
@@ -221,7 +228,6 @@ class PermissionsSeeder extends Seeder {
                 }
 
                 return in_array($value, [
-                    PermissionEnum::OrganizationView->value,
                     PermissionEnum::ReportView->value,
                     PermissionEnum::ReportExport->value,
                     // Feature 002: Zielwert-Pflege ist GF-/Admin-Sache; die
@@ -230,6 +236,10 @@ class PermissionsSeeder extends Seeder {
                     PermissionEnum::AuditLogView->value,
                     PermissionEnum::AccessAuditView->value,
                     PermissionEnum::FlexBalanceView->value,
+                    // Auftragsliste exportieren (Reporting); vor lk-06 ohne Recht möglich.
+                    PermissionEnum::DiaryExport->value,
+                    // Kundenliste als CSV; vor dem Vollscan 2026-10-21 ohne Recht möglich.
+                    PermissionEnum::CustomerExport->value,
                     PermissionEnum::ClassificationList->value,
                     // Geschäftsführung darf — wie die Personalverwaltung —
                     // Personal-/Lohndaten und das Arbeitszeit-Modell pflegen.
@@ -286,7 +296,6 @@ class PermissionsSeeder extends Seeder {
 
         // Teamleitung: operative Führung (Personal, Zeit, Plan), ohne Finanzen.
         $teamleitung = [
-            PermissionEnum::OrganizationView,
             PermissionEnum::NumberFormatManage,
             // Feature 068: Ausschreibungsakten operativ führen (Unterlagen,
             // Fristen, Einreichung) — Go-/No-go und Zuschlag bleiben GF/Admin.
@@ -363,7 +372,6 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::PermitUpdate,
             PermissionEnum::PermitDelete,
             PermissionEnum::UserViewAny,
-            PermissionEnum::UserView,
             PermissionEnum::UserFlexManage,
             PermissionEnum::CustomerViewAny,
             PermissionEnum::CustomerView,
@@ -376,7 +384,6 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::MilestoneManage,
             PermissionEnum::TimeEntryViewAny,
             PermissionEnum::TimeEntryApprove,
-            PermissionEnum::TimeEntryCreateForOthers,
             PermissionEnum::TimeEntryReassign,
             PermissionEnum::TimesheetViewAny,
             PermissionEnum::TimesheetSign,
@@ -427,7 +434,6 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::DutyPlanCreate,
             PermissionEnum::DutyPlanUpdate,
             PermissionEnum::DutyPlanPublish,
-            PermissionEnum::ShiftManage,
             PermissionEnum::ScheduledShiftManage,
             PermissionEnum::CoverageRequirementManage,
             PermissionEnum::OnCallShiftManage,
@@ -614,9 +620,9 @@ class PermissionsSeeder extends Seeder {
         // Arbeitszeit-Modell, sieht Anwesenheit/Abwesenheit/Gleitzeit lesend.
         // KEINE Rollenvergabe, Passwörter, Neuanlage/Löschung (bleibt Admin).
         $personalverwaltung = [
-            PermissionEnum::OrganizationView,
+            // Projekte ansehen konnte jedes Konto schon vor lk-06 (ProjectPolicy::view).
+            PermissionEnum::ProjectView,
             PermissionEnum::UserViewAny,
-            PermissionEnum::UserView,
             // Vereinsverwaltung (Feature 159): Geschäftsstelle führt Mitglieder,
             // Gruppen, Vertretungen und den CSV-Erstimport.
             PermissionEnum::ClubViewAny,
@@ -674,7 +680,6 @@ class PermissionsSeeder extends Seeder {
         ];
 
         $buchhaltung = [
-            PermissionEnum::OrganizationView,
             // Vereinsverwaltung (Feature 159, MVP-849): Kassenwart führt Beitragstarife, Konten und Befreiungen.
             PermissionEnum::ClubFeesManage,
             // Feature 072: kaufmännische Reklamationsfolgen (Gutschrift/
@@ -717,6 +722,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::InvestmentManage,
             PermissionEnum::InvestmentApprove,
             PermissionEnum::DiaryViewAny,
+            // Auftragsliste für den Abrechnungsabgleich exportieren; vor lk-06 ohne Recht möglich.
+            PermissionEnum::DiaryExport,
             PermissionEnum::CommunicationViewAny,
             PermissionEnum::CommunicationView,
             // Dokumente (MVP-031): nur lesend (z. B. Verträge, Versicherungen).
@@ -764,6 +771,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::VoucherLexofficeSync,
             PermissionEnum::ProjectViewAny,
             PermissionEnum::ProjectView,
+            // Projekte anlegen durfte die Buchhaltung schon vor lk-06 (ProjectPolicy).
+            PermissionEnum::ProjectCreate,
             PermissionEnum::ProjectManageBilling,
             PermissionEnum::TimeEntryViewAny,
             PermissionEnum::TimeEntryApprove,
@@ -772,7 +781,6 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::TimesheetSign,
             PermissionEnum::TimesheetLock,
             PermissionEnum::TimesheetUnlock,
-            PermissionEnum::TimesheetExport,
             PermissionEnum::MonthViewOrganization,
             PermissionEnum::CorrectionViewOrganization,
             PermissionEnum::OvertimeViewTeam,
@@ -845,24 +853,20 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ComplianceViewAny,
             PermissionEnum::AuditLogView,
             PermissionEnum::UserViewAny,
-            PermissionEnum::UserView,
-            PermissionEnum::UserManageRates,
             PermissionEnum::UserFlexManage,
+            // Gleitzeit anderer Mitarbeiter sah die Buchhaltung schon vor lk-06 (FlexController).
+            PermissionEnum::FlexBalanceManage,
         ];
 
         $user = [
-            PermissionEnum::OrganizationView,
             PermissionEnum::ProjectViewAny,
             PermissionEnum::ProjectView,
+            // Projekte, Fremdkunden und Lieferanten anlegen durfte die Rolle schon vor lk-06.
+            PermissionEnum::ProjectCreate,
+            PermissionEnum::ForeignCustomerCreate,
+            PermissionEnum::SupplierCreate,
             PermissionEnum::TaskManage,
             PermissionEnum::MilestoneManage,
-            PermissionEnum::TimeEntryViewOwn,
-            PermissionEnum::TimeEntryCreate,
-            PermissionEnum::TimeEntryUpdate,
-            PermissionEnum::TimeEntryDelete,
-            PermissionEnum::TimesheetCreate,
-            PermissionEnum::TimesheetUpdate,
-            PermissionEnum::TimesheetSign,
             PermissionEnum::MonthViewOwn,
             PermissionEnum::MonthSubmitOwn,
             PermissionEnum::CorrectionCreateOwn,
@@ -937,6 +941,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ProcedureRunExecute,
             PermissionEnum::ProcedureBackupRegister,
             PermissionEnum::ProcedureSecondPersonRequest,
+            // Übernehmen und Gegenzeichnen laufen in einem Schritt; beides konnte die Rolle schon vor lk-06.
+            PermissionEnum::ProcedureSecondPersonTake,
             PermissionEnum::ProcedureSecondPersonSign,
             PermissionEnum::ProcedureDeviationRecord,
             PermissionEnum::ProcedureDeviationView,
@@ -955,19 +961,11 @@ class PermissionsSeeder extends Seeder {
         // Außendienst: schlanker als user, dafür mit vollem Touren-/Spesen-
         // Funktionsumfang und KEINER Mitarbeiter-/Finanz-/Planungssicht.
         $aussendienst = [
-            PermissionEnum::OrganizationView,
             PermissionEnum::CustomerViewAny,
             PermissionEnum::CustomerView,
             PermissionEnum::ProjectViewAny,
             PermissionEnum::ProjectView,
             PermissionEnum::TaskManage,
-            PermissionEnum::TimeEntryViewOwn,
-            PermissionEnum::TimeEntryCreate,
-            PermissionEnum::TimeEntryUpdate,
-            PermissionEnum::TimeEntryDelete,
-            PermissionEnum::TimesheetCreate,
-            PermissionEnum::TimesheetUpdate,
-            PermissionEnum::TimesheetSign,
             PermissionEnum::MonthViewOwn,
             PermissionEnum::MonthSubmitOwn,
             PermissionEnum::CorrectionCreateOwn,
@@ -1047,7 +1045,8 @@ class PermissionsSeeder extends Seeder {
         ];
 
         $callcenter = [
-            PermissionEnum::OrganizationView,
+            // Projekte ansehen konnte jedes Konto schon vor lk-06 (ProjectPolicy::view).
+            PermissionEnum::ProjectView,
             PermissionEnum::DiaryViewAny,
             PermissionEnum::DiaryCreate,
             PermissionEnum::DiaryCreateForOthers,
@@ -1072,7 +1071,6 @@ class PermissionsSeeder extends Seeder {
         // Support (Anbieter-Support): strikt read-only über fast alle Bereiche
         // plus Auditzugriff. KEINE Create/Update/Delete-Permissions.
         $support = [
-            PermissionEnum::OrganizationView,
             PermissionEnum::CustomerPortalIntakeView,
             // Feature 072: Reklamationsannahme aus Helpdesk/Telefon.
             PermissionEnum::ClaimViewAny,
@@ -1082,7 +1080,6 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::RecallViewAny,
             PermissionEnum::RecallView,
             PermissionEnum::UserViewAny,
-            PermissionEnum::UserView,
             PermissionEnum::CustomerViewAny,
             PermissionEnum::CustomerView,
             PermissionEnum::ProjectViewAny,
@@ -1170,16 +1167,44 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::TeamManageMembers,
         ];
 
+        // Eigenes (lk-06): bis zur Umstellung der Policies durfte das jedes Konto.
+        // Die Vergabe an alle internen Profile hält diesen Stand; Support bleibt lesend.
+        $ownView = [
+            PermissionEnum::TimeEntryViewOwn,
+            PermissionEnum::FlexBalanceView,
+            PermissionEnum::TravelLogViewAny,
+            PermissionEnum::DiaryViewOwn,
+            // Eigene bzw. zugewiesene Punkte und Protokolle.
+            PermissionEnum::OpenIssueView,
+            PermissionEnum::ProtocolView,
+        ];
+        $ownWork = [
+            ...$ownView,
+            PermissionEnum::TimeEntryCreate,
+            PermissionEnum::TimeEntryUpdate,
+            PermissionEnum::TimeEntryDelete,
+            PermissionEnum::TimesheetCreate,
+            PermissionEnum::TimesheetUpdate,
+            PermissionEnum::TimesheetDelete,
+            PermissionEnum::TimesheetSign,
+            PermissionEnum::AttendanceManage,
+            PermissionEnum::VacationRequest,
+            PermissionEnum::TravelLogManage,
+            PermissionEnum::EnergyLogManage,
+            // Offene Punkte lassen sich jedem zuweisen; wer einen hat, bearbeitet ihn.
+            PermissionEnum::OpenIssueUpdate,
+        ];
+
         return [
             UserRole::Admin->value => $all,
-            UserRole::Geschaeftsfuehrung->value => [...$proposals, ...$geschaeftsfuehrung],
-            UserRole::Personalverwaltung->value => [...$proposals, ...$personalverwaltung, ...$teamRead],
-            UserRole::Teamleitung->value => [...$proposals, ...$teamleitung, ...$foreignCustomerRead, ...$teamManage, ...$agileLead],
-            UserRole::Buchhaltung->value => [...$proposals, ...$buchhaltung, ...$teamRead],
-            UserRole::User->value => [...$proposals, ...$user, ...$foreignCustomerRead, ...$teamRead, ...$agileWork],
-            UserRole::Aussendienst->value => [...$proposals, ...$aussendienst, ...$foreignCustomerRead, ...$teamRead],
-            UserRole::Callcenter->value => [...$proposals, ...$callcenter, ...$foreignCustomerRead, ...$teamRead],
-            UserRole::Support->value => [...$proposals, ...$support, ...$foreignCustomerRead, ...$teamRead],
+            UserRole::Geschaeftsfuehrung->value => [...$proposals, ...$geschaeftsfuehrung, ...$ownWork],
+            UserRole::Personalverwaltung->value => [...$proposals, ...$personalverwaltung, ...$teamRead, ...$ownWork],
+            UserRole::Teamleitung->value => [...$proposals, ...$teamleitung, ...$foreignCustomerRead, ...$teamManage, ...$agileLead, ...$ownWork],
+            UserRole::Buchhaltung->value => [...$proposals, ...$buchhaltung, ...$teamRead, ...$ownWork],
+            UserRole::User->value => [...$proposals, ...$user, ...$foreignCustomerRead, ...$teamRead, ...$agileWork, ...$ownWork],
+            UserRole::Aussendienst->value => [...$proposals, ...$aussendienst, ...$foreignCustomerRead, ...$teamRead, ...$ownWork],
+            UserRole::Callcenter->value => [...$proposals, ...$callcenter, ...$foreignCustomerRead, ...$teamRead, ...$ownWork],
+            UserRole::Support->value => [...$proposals, ...$support, ...$foreignCustomerRead, ...$teamRead, ...$ownView],
             UserRole::Kunde->value => $kunde,
         ];
     }

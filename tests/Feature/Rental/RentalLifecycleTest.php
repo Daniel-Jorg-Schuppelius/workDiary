@@ -86,6 +86,27 @@ final class RentalLifecycleTest extends TestCase {
         ], $overrides), $assetIds ?? [$this->asset->id]);
     }
 
+    /** Vollscan 2026-10-21: Kopfdaten einer offenen Akte lassen sich bearbeiten; Leihobjekte bleiben unberührt. */
+    public function test_open_case_can_be_edited_in_the_dialog(): void {
+        $case = $this->openCase(['handover_location' => 'Hof']);
+
+        $this->actingAs($this->admin)->get(route('rental.show', $case))->assertOk()
+            ->assertSee(route('rental.edit', $case), false);
+        $this->get(route('rental.edit', $case) . '?dialog=1')->assertOk()
+            ->assertSee(__('Verleihakte bearbeiten'))
+            ->assertSee('value="Hof"', false)
+            ->assertDontSee('asset_ids[]', false);
+
+        $this->put(route('rental.update', $case), [
+            'customer_id' => $this->customer->sqid,
+            'starts_at' => $case->starts_at->orgTz()->format('Y-m-d\TH:i'),
+            'ends_at' => $case->ends_at->orgTz()->format('Y-m-d\TH:i'),
+            'handover_location' => 'Baustelle Nord',
+        ])->assertRedirect();
+        $this->assertSame('Baustelle Nord', $case->fresh()?->handover_location);
+        $this->assertSame(1, $case->fresh()?->caseAssets()->count());
+    }
+
     public function test_case_gets_number_and_freezes_rate_card_snapshot(): void {
         $card = $this->rateCard();
         $case = $this->openCase(['rental_rate_card_id' => $card->id]);

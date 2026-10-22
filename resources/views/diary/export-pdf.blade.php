@@ -62,7 +62,7 @@
             @foreach ($entries as $entry)
                 <tr>
                     <td>{{ $entry->id }}</td>
-                    <td class="status status-{{ $entry->statusTone() }}">{{ $entry->statusLabel() }}</td>
+                    <td class="status status-{{ $entry->statusStage() }}">{{ $entry->statusLabel() }}</td>
                     <td>{{ optional($entry->user)->name ?? '—' }}</td>
                     <td>{{ optional($entry->start_at)->fdatetime() }}</td>
                     <td>{{ optional($entry->end_at)->fdatetime() }}</td>

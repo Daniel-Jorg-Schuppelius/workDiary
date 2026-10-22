@@ -20,7 +20,10 @@
                      :archived="$supplier->isArchived()"
                      :restore-route="route('suppliers.restore', $supplier)"
                      :archive-route="route('suppliers.archive', $supplier)"
-                     :can-manage="auth()->user()->can('update', $supplier)">
+                     :can-manage="auth()->user()->can('update', $supplier)"
+                     :delete-route="route('suppliers.destroy', $supplier)"
+                     :delete-confirm="__('Lieferant wirklich löschen?')"
+                     :can-delete="auth()->user()->can('delete', $supplier)">
         <x-slot:badges>
             @if ($supplier->is_collective)
                 <x-status-badge tone="info">{{ __('Sammelkontakt') }}</x-status-badge>

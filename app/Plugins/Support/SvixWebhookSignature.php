@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support;
 
+use CommonToolkit\Helper\Data\CryptoHelper;
+
 /**
  * Konstantzeitliche Prüfung von Webhook-Signaturen im Svix-Format
  * (Feature 101, Etsy — das Schema ist provider-neutral wiederverwendbar):
@@ -31,7 +33,7 @@ final class SvixWebhookSignature {
             return false;
         }
 
-        $expected = base64_encode(hash_hmac('sha256', $webhookId . '.' . $timestamp . '.' . $rawBody, $key, true));
+        $expected = base64_encode(CryptoHelper::hmac($webhookId . '.' . $timestamp . '.' . $rawBody, $key, binary: true));
 
         foreach (explode(' ', trim($signatureHeader)) as $candidate) {
             $parts = explode(',', trim($candidate), 2);

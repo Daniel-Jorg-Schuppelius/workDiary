@@ -22,9 +22,11 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Kunden des Mandanten verwalten.')">
     <x-slot:actions>
-        <x-icon-btn icon="download" size="sm"
-                    :href="route('customers.export', array_filter(['status' => $status, 'q' => $search]))"
-                    show-label>{{ __('CSV-Export') }}</x-icon-btn>
+        @can(\App\Enums\User\Permission::CustomerExport->value)
+            <x-icon-btn icon="download" size="sm"
+                        :href="route('customers.export', array_filter(['status' => $status, 'q' => $search]))"
+                        show-label>{{ __('CSV-Export') }}</x-icon-btn>
+        @endcan
         @if (auth()->user()?->canManageBilling())
             <x-icon-btn icon="merge" size="sm"
                         :href="route('customers.duplicates.index')"

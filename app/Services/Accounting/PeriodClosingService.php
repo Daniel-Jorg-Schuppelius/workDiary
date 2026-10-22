@@ -16,6 +16,7 @@ use App\Enums\Finance\{AccountingEntryStatus, AccountingPeriodStatus};
 use App\Models\Accounting\{AccountingEntry, AccountingFiscalYear, AccountingPeriod};
 use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\Preflight\{AccountingPreflightCheck, AccountingPreflightReport};
+use App\Services\Concerns\AssertsValidatedTransition;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -37,6 +38,8 @@ use Illuminate\Validation\ValidationException;
  * offene Entwürfe und unausgeglichene Buchungen.
  */
 class PeriodClosingService {
+    use AssertsValidatedTransition;
+
     public function __construct(
         private readonly AccountingEventRecorder $events,
         private readonly FixedAssetService $fixedAssets,
@@ -99,7 +102,7 @@ class PeriodClosingService {
 
     /** Vorläufiger Abschluss — reversibel ohne Wiedereröffnungsnachweis. */
     public function softClose(AccountingPeriod $period, User $actor): AccountingPeriod {
-        $this->ensureTransition($period, AccountingPeriodStatus::SoftClosed);
+        $this->assertValidatedTransition($period->status, AccountingPeriodStatus::SoftClosed, 'accounting.closing.error.wrong_status');
 
         $period->update([
             'status' => AccountingPeriodStatus::SoftClosed,
@@ -113,7 +116,7 @@ class PeriodClosingService {
 
     /** Endgültiger Abschluss — danach nimmt die Periode keine Buchung mehr an. */
     public function close(AccountingPeriod $period, User $actor): AccountingPeriod {
-        $this->ensureTransition($period, AccountingPeriodStatus::Closed);
+        $this->assertValidatedTransition($period->status, AccountingPeriodStatus::Closed, 'accounting.closing.error.wrong_status');
 
         $report = $this->preflight($period);
         if (! $report->isReady()) {
@@ -221,14 +224,6 @@ class PeriodClosingService {
             ->with('fiscalYear')
             ->orderBy('starts_on')
             ->get();
-    }
-
-    private function ensureTransition(AccountingPeriod $period, AccountingPeriodStatus $target): void {
-        if (! $period->status->canTransitionTo($target)) {
-            throw ValidationException::withMessages([
-                'status' => (string) __('accounting.closing.error.wrong_status', ['status' => $period->status->label()]),
-            ]);
-        }
     }
 
     /** @param array<string, mixed> $payload */

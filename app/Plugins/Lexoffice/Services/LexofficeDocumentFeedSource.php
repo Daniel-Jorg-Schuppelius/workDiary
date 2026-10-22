@@ -19,6 +19,7 @@ use App\Plugins\Lexoffice\{LexofficePlugin, LexofficeServiceProvider};
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use App\Services\Billing\DocumentFeedFilters;
 use App\Services\Billing\Feed\{DocumentFeedSource, FeedProjection, MarksLinkedExpenses, PresentsFeedRows, SuppressesCoreInvoices};
+use App\Services\Billing\Feed\SuppressesCoreInvoicesByNumber;
 use App\Support\Query\DateRange;
 use App\Support\Sqid;
 use App\Support\Ui\UiAction;
@@ -35,6 +36,8 @@ use Illuminate\Support\Facades\DB;
  * Plugins, gespiegelte Zeilen existieren nur nach einem Sync.
  */
 class LexofficeDocumentFeedSource implements DocumentFeedSource, MarksLinkedExpenses, PresentsFeedRows, SuppressesCoreInvoices {
+    use SuppressesCoreInvoicesByNumber;
+
     public function key(): string {
         return LexofficePlugin::ID;
     }
@@ -119,15 +122,7 @@ class LexofficeDocumentFeedSource implements DocumentFeedSource, MarksLinkedExpe
      * gespiegelter Beleg existiert, erscheint nur als Beleg.
      */
     public function suppressCoreInvoices(Builder $invoices): void {
-        $invoices->whereNotExists(function (Builder $sub): void {
-            $sub->select(DB::raw(1))
-                ->from('lexoffice_vouchers')
-                ->whereColumn('lexoffice_vouchers.organization_id', 'invoices.organization_id')
-                ->where(function (Builder $q): void {
-                    $q->whereColumn('lexoffice_vouchers.voucher_number', 'invoices.number')
-                        ->orWhereColumn('lexoffice_vouchers.voucher_number', 'invoices.external_number');
-                });
-        });
+        $this->suppressByMirroredNumber($invoices, 'lexoffice_vouchers', 'voucher_number');
     }
 
     /** Bestätigte Auslagen-Zuordnung (MVP-551, {@see \App\Plugins\Lexoffice\Services\LexofficeExpenseLinkProvider}). */

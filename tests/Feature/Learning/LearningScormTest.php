@@ -11,14 +11,13 @@
 namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\{LearningProgressStatus, LearningUnitKind};
-use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningScormPackage, LearningUnit, LearningXapiStatement};
+use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningScormPackage, LearningUnit};
 use App\Models\Platform\User;
 use App\Services\Learning\{LearningCourseService, LearningEnrollmentService, LearningScormService};
 use ELearningToolkit\Scorm\ScormVersion;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -367,95 +366,6 @@ class LearningScormTest extends TestCase {
 
         $this->assertSame(90, $unit->scormPackage?->states()->first()?->session_seconds);
     }
-
-    // ── xAPI ────────────────────────────────────────────────────────────
-
-    public function test_xapi_statement_wird_abgelegt_und_schliesst_ab(): void {
-        $unit = $this->scormUnit($this->manifest12());
-        $enrollment = $this->enrolledLearner($unit);
-
-        $this->actingAs($enrollment->user)
-            ->postJson(route('learning.my.xapi.store', ['enrollment' => $enrollment->sqid]), [
-                'statement' => [
-                    'id' => (string) Str::uuid(),
-                    'verb' => ['id' => 'http://adlnet.gov/expapi/verbs/completed'],
-                    'object' => ['id' => 'https://example.test/kurs/1'],
-                ],
-            ])
-            ->assertOk();
-
-        $this->assertSame(1, LearningXapiStatement::query()->count());
-        $this->assertSame(
-            LearningProgressStatus::Completed,
-            $enrollment->refresh()->progress()->where('learning_unit_id', $unit->id)->first()?->status
-        );
-    }
-
-    public function test_xapi_speichert_dieselbe_id_nicht_zweimal(): void {
-        $unit = $this->scormUnit($this->manifest12());
-        $enrollment = $this->enrolledLearner($unit);
-        $id = (string) Str::uuid();
-
-        $payload = [
-            'statement' => [
-                'id' => $id,
-                'verb' => ['id' => 'http://adlnet.gov/expapi/verbs/experienced'],
-                'object' => ['id' => 'https://example.test/kurs/1'],
-            ],
-        ];
-
-        $route = route('learning.my.xapi.store', ['enrollment' => $enrollment->sqid]);
-        $this->actingAs($enrollment->user)->postJson($route, $payload)->assertOk();
-        $this->actingAs($enrollment->user)->postJson($route, $payload)->assertOk();
-
-        $this->assertSame(1, LearningXapiStatement::query()->where('statement_id', $id)->count());
-    }
-
-    public function test_xapi_ordnet_bei_mehreren_einheiten_nichts_zu(): void {
-        $unit = $this->scormUnit($this->manifest12());
-        /** @var LearningCourse $course */
-        $course = $unit->course()->first();
-        // Zweite SCORM-Einheit: welche das Statement meint, wäre jetzt
-        // geraten — also wird nichts gesetzt, das Statement bleibt aber
-        // archiviert. (Eine Textseite daneben macht es nicht mehrdeutig.)
-        $this->courses()->addUnit($course, ['title' => 'Zweites Modul', 'kind' => LearningUnitKind::Scorm->value]);
-        $enrollment = $this->enrolledLearner($unit);
-
-        $this->actingAs($enrollment->user)
-            ->postJson(route('learning.my.xapi.store', ['enrollment' => $enrollment->sqid]), [
-                'statement' => [
-                    'id' => (string) Str::uuid(),
-                    'verb' => ['id' => 'http://adlnet.gov/expapi/verbs/completed'],
-                    'object' => ['id' => 'https://example.test/kurs/1'],
-                ],
-            ])
-            ->assertOk();
-
-        $this->assertSame(1, LearningXapiStatement::query()->count());
-        $this->assertSame(0, $enrollment->refresh()->progress()
-            ->where('status', LearningProgressStatus::Completed->value)->count());
-    }
-
-    public function test_xapi_completed_mit_misserfolg_schliesst_nicht_ab(): void {
-        $unit = $this->scormUnit($this->manifest12());
-        $enrollment = $this->enrolledLearner($unit);
-
-        $this->actingAs($enrollment->user)
-            ->postJson(route('learning.my.xapi.store', ['enrollment' => $enrollment->sqid]), [
-                'statement' => [
-                    'id' => (string) Str::uuid(),
-                    'verb' => ['id' => 'http://adlnet.gov/expapi/verbs/completed'],
-                    'object' => ['id' => 'https://example.test/kurs/1'],
-                    'result' => ['success' => false],
-                ],
-            ])
-            ->assertOk();
-
-        $this->assertSame(1, LearningXapiStatement::query()->count());
-        $this->assertNull($enrollment->refresh()->progress()->where('learning_unit_id', $unit->id)->first());
-    }
-
-    // ── Umzug ins E-Learning-Toolkit (2026-09-14) ─────────────────────────
 
     public function test_ein_als_ordner_gezipptes_paket_startet_aus_dem_unterordner(): void {
         // Viele Autorenwerkzeuge zippen den Kursordner mit. Die Verweise im

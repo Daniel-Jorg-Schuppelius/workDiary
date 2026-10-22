@@ -196,7 +196,6 @@ return [
         'access.groups.assign' => 'Gruppen zuweisen',
         'access.audit.view' => 'Audit-Protokoll einsehen',
 
-        'organization.view' => 'Organisation einsehen',
         'organization.update' => 'Organisation bearbeiten',
         'organization.billing' => 'Abrechnung der Organisation',
         'branding.update' => 'Branding bearbeiten',
@@ -254,13 +253,11 @@ return [
         'privacy.report.export' => 'Datenschutzbericht exportieren',
 
         'user.viewAny' => 'Mitglieder auflisten',
-        'user.view' => 'Mitglied ansehen',
         'user.create' => 'Mitglied anlegen',
         'user.update' => 'Mitglied bearbeiten',
         'user.delete' => 'Mitglied entfernen',
         'user.impersonate' => 'Mitglied vertreten (Impersonation)',
         'user.reset-password' => 'Passwort zurücksetzen',
-        'user.rates.manage' => 'Stundensätze verwalten',
         'user.flex.manage' => 'Gleitzeit-Berechtigung verwalten',
         'user.payroll.manage' => 'Personal-/Lohndaten verwalten',
         'user.import' => 'Benutzer importieren',
@@ -324,7 +321,6 @@ return [
         'timeEntry.create' => 'Zeiteintrag anlegen',
         'timeEntry.update' => 'Zeiteintrag bearbeiten',
         'timeEntry.delete' => 'Zeiteintrag löschen',
-        'timeEntry.create-for-others' => 'Zeiteinträge für andere anlegen',
         'timeEntry.approve' => 'Zeiteinträge freigeben',
         'timeEntry.reassign' => 'Zeiteinträge anderen Benutzern zuordnen',
 
@@ -335,7 +331,6 @@ return [
         'timesheet.sign' => 'Stundenzettel unterschreiben',
         'timesheet.lock' => 'Stundenzettel sperren',
         'timesheet.unlock' => 'Stundenzettel entsperren',
-        'timesheet.export' => 'Stundenzettel exportieren',
 
         'month.view.own' => 'Eigene Monatsfreigaben einsehen',
         'month.view.team' => 'Monatsfreigaben des Teams einsehen',
@@ -415,7 +410,6 @@ return [
         'dutyPlan.update' => 'Dienstplan bearbeiten',
         'dutyPlan.delete' => 'Dienstplan löschen',
         'dutyPlan.publish' => 'Dienstplan veröffentlichen',
-        'shift.manage' => 'Schichten verwalten',
         'coverage-requirement.manage' => 'Soll-Besetzung verwalten',
         'on-call-shift.manage' => 'Rufbereitschaften verwalten',
         'emergency-assignment.manage' => 'Notdienst-Einsätze verwalten',

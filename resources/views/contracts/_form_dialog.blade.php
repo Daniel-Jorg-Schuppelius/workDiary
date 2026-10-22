@@ -10,6 +10,7 @@
      Aus der Kundenakte (Feature 157) mit vorbelegtem Kunden und, bei
      $agreementOnly, beschränkt auf AVV/NDA. --}}
 @php
+    $contract ??= null;
     $presetCustomer ??= null;
     $agreementOnly ??= false;
     $templates ??= collect();
@@ -18,14 +19,14 @@
     $defaultPartnerType = $presetCustomer ? \App\Enums\Contract\ContractPartnerType::Customer->value : 'other';
 @endphp
 <x-modal
-    :title="$agreementOnly ? __('contract-signing.dialog.new_agreement') : __('Neuer Vertrag')"
+    :title="$contract ? __('Vertrag bearbeiten') : ($agreementOnly ? __('contract-signing.dialog.new_agreement') : __('Neuer Vertrag'))"
     :eyebrow="$presetCustomer?->name ?? __('Vertragsverwaltung')"
     icon="contract"
     tone="primary"
-    :action="route('contracts.store')"
-    method="POST"
+    :action="$contract ? route('contracts.update', $contract) : route('contracts.store')"
+    :method="$contract ? 'PUT' : 'POST'"
     :form-data="['data-entry-form' => '']"
-    :submit-label="__('Vertrag anlegen')"
+    :submit-label="$contract ? __('Speichern') : __('Vertrag anlegen')"
 >
     @if ($agreementOnly)
         <p class="mb-3 text-sm text-muted">{{ __('contract-signing.dialog.new_agreement_intro') }}</p>
@@ -70,7 +71,7 @@
         <x-select-field name="responsible_user_id" :label="__('Verantwortlich')">
             <option value="">{{ __('-- später zuweisen --') }}</option>
             @foreach ($users as $u)
-                <option value="{{ $u->sqid }}" @selected((string) old('responsible_user_id') === $u->sqid)>{{ $u->name }}</option>
+                <option value="{{ $u->sqid }}" @selected((string) old('responsible_user_id', $preset['responsible_user_id'] ?? null) === $u->sqid)>{{ $u->name }}</option>
             @endforeach
         </x-select-field>
     </x-form-group>
@@ -78,10 +79,10 @@
     <x-form-group :legend="__('Vertragspartner')" icon="handshake" tone="primary" cols="2">
         <x-select-field name="partner_type" :label="__('Partnerbezug')" required>
             @foreach (\App\Enums\Contract\ContractPartnerType::cases() as $pt)
-                <option value="{{ $pt->value }}" @selected(old('partner_type', $defaultPartnerType) === $pt->value)>{{ $pt->label() }}</option>
+                <option value="{{ $pt->value }}" @selected(old('partner_type', $preset['partner_type'] ?? $defaultPartnerType) === $pt->value)>{{ $pt->label() }}</option>
             @endforeach
         </x-select-field>
-        <x-input-field name="partner_name" :label="__('Partner (Freitext)')" :value="old('partner_name')" />
+        <x-input-field name="partner_name" :label="__('Partner (Freitext)')" :value="old('partner_name', $preset['partner_name'] ?? null)" />
         <x-select-field name="customer_id" :label="$agreementOnly ? __('Kunde') : __('Kunde (optional)')" :required="$agreementOnly">
             @unless ($agreementOnly)
                 <option value="">{{ __('kein Kundenbezug') }}</option>
@@ -93,7 +94,7 @@
         <x-select-field name="supplier_id" :label="__('Lieferant (optional)')">
             <option value="">{{ __('kein Lieferantenbezug') }}</option>
             @foreach ($suppliers as $s)
-                <option value="{{ $s->sqid }}" @selected((string) old('supplier_id') === $s->sqid)>{{ $s->name }}</option>
+                <option value="{{ $s->sqid }}" @selected((string) old('supplier_id', $preset['supplier_id'] ?? null) === $s->sqid)>{{ $s->name }}</option>
             @endforeach
         </x-select-field>
     </x-form-group>
@@ -120,15 +121,15 @@
                 <option value="{{ $im->value }}" @selected(old('indexation_method', $preset['indexation_method'] ?? 'none') === $im->value)>{{ $im->label() }}</option>
             @endforeach
         </x-select-field>
-        <x-input-field name="indexation_value" type="number" step="0.0001" min="0" :label="__('Wert/Prozent')" :value="old('indexation_value')" />
-        <x-input-field name="indexation_review_on" type="date" :label="__('Nächster Anpassungsstichtag')" :value="old('indexation_review_on')" />
-        <x-input-field name="indexation_note" :label="__('Berechnungshinweis (kein externer Index)')" :value="old('indexation_note')" />
+        <x-input-field name="indexation_value" type="number" step="0.0001" min="0" :label="__('Wert/Prozent')" :value="old('indexation_value', $preset['indexation_value'] ?? null)" />
+        <x-input-field name="indexation_review_on" type="date" :label="__('Nächster Anpassungsstichtag')" :value="old('indexation_review_on', $preset['indexation_review_on'] ?? null)" />
+        <x-input-field name="indexation_note" :label="__('Berechnungshinweis (kein externer Index)')" :value="old('indexation_note', $preset['indexation_note'] ?? null)" />
     </x-form-group>
 
     <x-form-group :legend="__('Wert & Nachweis')" icon="payments" tone="primary" cols="2">
         <x-input-field name="value_amount" type="number" step="0.01" min="0" :label="__('Vertragswert')" :value="old('value_amount', $preset['value_amount'] ?? null)" />
         <x-select-field name="currency" :label="__('Währung')">
-            <x-currency-options :selected="old('currency', 'EUR')" />
+            <x-currency-options :selected="old('currency', $preset['currency'] ?? 'EUR')" />
         </x-select-field>
         <x-select-field name="value_period" :label="__('Wertbezug')" required>
             <option value="once" @selected(old('value_period', $preset['value_period'] ?? 'once') === 'once')>{{ __('einmalig') }}</option>
@@ -140,7 +141,7 @@
             <x-select-field name="cost_center_id" :label="__('contract.cost_center.field')">
                 <option value="">—</option>
                 @foreach ($costCenters as $costCenter)
-                    <option value="{{ $costCenter->sqid }}" @selected(old('cost_center_id') === $costCenter->sqid)>{{ $costCenter->code }} · {{ $costCenter->label }}</option>
+                    <option value="{{ $costCenter->sqid }}" @selected(old('cost_center_id', $preset['cost_center_id'] ?? null) === $costCenter->sqid)>{{ $costCenter->code }} · {{ $costCenter->label }}</option>
                 @endforeach
             </x-select-field>
         @endif
@@ -150,7 +151,7 @@
                 <option value="{{ $d->sqid }}" @selected((string) old('document_id', $preset['document_id'] ?? null) === $d->sqid)>{{ $d->title }}</option>
             @endforeach
         </x-select-field>
-        <x-textarea-field name="notes" :label="__('Notizen')" rows="2" span="2">{{ old('notes') }}</x-textarea-field>
+        <x-textarea-field name="notes" :label="__('Notizen')" rows="2" span="2">{{ old('notes', $preset['notes'] ?? null) }}</x-textarea-field>
     </x-form-group>
 
     <x-validation-errors />

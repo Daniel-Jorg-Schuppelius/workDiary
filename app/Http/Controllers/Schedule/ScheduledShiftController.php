@@ -19,16 +19,6 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class ScheduledShiftController extends Controller {
-    public function show(ScheduledShift $shift): View {
-        Gate::authorize('view', $shift);
-
-        $shift->load(['user', 'shiftType', 'dutyPlan']);
-        $users = User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']);
-        $types = ShiftType::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'abbreviation']);
-
-        return view('scheduled-shifts._form_dialog', compact('shift', 'users', 'types'));
-    }
-
     public function edit(ScheduledShift $shift): View {
         Gate::authorize('update', $shift);
 

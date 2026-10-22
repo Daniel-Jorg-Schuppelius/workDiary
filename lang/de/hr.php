@@ -108,6 +108,9 @@ return [
         'deputies_hint' => 'Diese Personen haben das austretende Mitglied als Vertretung eingetragen. Ohne Auswahl endet die Vertretung.',
         'deputy_for' => 'Neue Vertretung für :name',
         'no_deputy' => '— keine Vertretung —',
+        'handovers' => 'An eine andere Person übergeben',
+        'handovers_hint' => 'Die gewählte Person wird neue Eigentümerin. Inhalte werden dabei nicht angezeigt; jede Übertragung wird protokolliert. Ohne Auswahl bleibt alles beim ausgeschiedenen Konto.',
+        'no_handover' => '— nicht übertragen —',
     ],
     // Arbeitsvertrag zur Unterschrift (MVP-939).
     'employment' => [

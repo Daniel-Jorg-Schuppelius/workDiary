@@ -94,6 +94,9 @@ final class IdeasManifest extends Manifest {
             \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
                 \App\Services\Ideas\Retention\IdeasRetentionPolicies::class,
             ],
+            \App\Services\Org\Contracts\OffboardingHandover::class => [
+                \App\Services\Ideas\Offboarding\IdeaMapOffboardingHandover::class,
+            ],
         ];
     }
 }

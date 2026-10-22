@@ -33,7 +33,7 @@ use Illuminate\View\View;
  * emergency), template_snapshot ist READ-ONLY.
  *
  * ENTSCHEIDUNG (Plan A3/5): Change-Freigaben laufen über die GEMEINSAME
- * Genehmigungs-Inbox (servicedesk.approvals.*, MVP-154) mit dem Recht
+ * Genehmigungs-Inbox (approvals.*, MVP-154) mit dem Recht
  * service_request.approve — bewusst KEIN eigenes change.approve-Recht,
  * damit es genau EINE Genehmigungsmechanik gibt. Dieser Controller
  * genehmigt daher nichts; ApprovalInboxController::decide() verzweigt

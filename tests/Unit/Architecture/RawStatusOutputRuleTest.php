@@ -16,8 +16,8 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
 /**
  * Architektur-Gate „kein roher Status-Code in der Oberfläche" (Anlass
  * 2026-09-19: Scheduler-Badge „running" in der deutschen Oberfläche).
- * Die Übersetzungsskripte sehen das nicht — find-untranslated.php überspringt
- * jede Ausgabe mit Variable, lang:coverage prüft nur Literale und Keys. Und
+ * Die Übersetzungsskripte sehen das nicht — lang:coverage prüft nur Literale
+ * und Keys. Und
  * Blade gibt ein Backed Enum per `{{ }}` als ->value aus: auch ein sauber
  * gecasteter Status erscheint roh, wenn niemand label() aufruft.
  *

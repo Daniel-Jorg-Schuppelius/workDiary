@@ -10,6 +10,7 @@
 
 namespace App\Policies\Asset;
 
+use App\Enums\User\Permission;
 use App\Models\Asset\EnergyLog;
 use App\Models\Platform\User;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
@@ -27,14 +28,14 @@ class EnergyLogPolicy {
     }
 
     public function create(User $user): bool {
-        return true;
+        return $user->can(Permission::EnergyLogManage->value);
     }
 
     public function update(User $user, EnergyLog $log): bool {
-        return $this->owns($user, $log, 'user_id');
+        return $this->owns($user, $log, 'user_id') && $user->can(Permission::EnergyLogManage->value);
     }
 
     public function delete(User $user, EnergyLog $log): bool {
-        return $this->owns($user, $log, 'user_id');
+        return $this->update($user, $log);
     }
 }

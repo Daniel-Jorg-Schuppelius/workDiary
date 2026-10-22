@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\PhoneDirectory;
 
 use App\Plugins\Support\PluginSettingsResolver;
+use CommonToolkit\Helper\Data\StringHelper;
 
 /**
  * Effektive Telefonauskunft-Konfiguration: plugin_settings der gebundenen
@@ -40,7 +41,7 @@ class PhoneDirectoryConfig {
      */
     public static function parseEndpoints(string $raw): array {
         $out = [];
-        foreach (explode("\n", str_replace(["\r\n", "\r"], "\n", $raw)) as $line) {
+        foreach (StringHelper::lines($raw) as $line) {
             $line = trim($line);
             if ($line === '' || str_starts_with($line, '#')) {
                 continue;

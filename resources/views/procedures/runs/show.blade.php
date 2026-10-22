@@ -115,12 +115,14 @@
                             {{-- Aktionen für den aktuellen Schritt --}}
                             @if ($canExecute && $runActive && ! $isFinal && $step['blockReason'] === null && $step['isCurrent'])
                                 @if ($needsSecondPerson)
-                                    <form method="POST" action="{{ route('procedure-runs.steps.second-person', [$run, $sr]) }}" class="mt-3">
-                                        @csrf
-                                        <x-button type="submit" tone="secondary" icon="how_to_reg">
-                                            {{ __('procedure.run.signSecondPerson') }}
-                                        </x-button>
-                                    </form>
+                                    @can('signSecondPerson', $run)
+                                        <form method="POST" action="{{ route('procedure-runs.steps.second-person', [$run, $sr]) }}" class="mt-3">
+                                            @csrf
+                                            <x-button type="submit" tone="secondary" icon="how_to_reg">
+                                                {{ __('procedure.run.signSecondPerson') }}
+                                            </x-button>
+                                        </form>
+                                    @endcan
                                 @elseif ($isWait)
                                     @php $remaining = $step['waitRemaining']; @endphp
                                     @if ($sr->wait_until === null)

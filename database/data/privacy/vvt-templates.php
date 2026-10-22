@@ -89,4 +89,18 @@ return [
             'tom' => 'Monatsfreigabe vor Export, Vier-Augen-Prinzip, Exportnachweis mit Hash, Zugriff nur Lohn-/Admin-Rollen.',
         ],
     ],
+    'sicherheitsueberwachung' => [
+        'name' => 'Sicherheitsüberwachung und Angriffserkennung',
+        'purpose' => 'Erkennung und Abwehr von Angriffen auf die Anwendung: Sicherheitsprotokoll, Sperren nach Fehlversuchen, Alarm bei ungewöhnlichen Anmeldungen (Feature 096/097, MVP-443–453).',
+        'controller_role' => 'controller',
+        'area' => 'IT-Sicherheit',
+        'payload' => [
+            'data_categories' => 'IP-Adressen, Zeitpunkte und Ergebnis von Anmelde- und Zugriffsversuchen, Benutzerkennung, Browserkennung, gesperrte Adressen.',
+            'legal_basis' => 'Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an Systemsicherheit) i. V. m. Art. 32 DSGVO.',
+            'recipients' => 'Administratoren der Organisation und des Betriebs; bei Weiterleitung an ein SIEM dessen Betreiber.',
+            'transfers' => 'Keine Drittlandübermittlung (Betrieb in der EU vorausgesetzt).',
+            'retention' => 'Sicherheitsprotokoll nach SECURITY_LOG_DAYS (Standard 30 Tage), IP-Sperren bis zum Ablauf der Sperre.',
+            'tom' => 'Protokoll nur für Administratoren einsehbar, Sperren zeitlich begrenzt, Alarm an Verantwortliche, Export nur über den gesicherten Kanal.',
+        ],
+    ],
 ];

@@ -14,7 +14,7 @@
       $isHoliday, $holidayName, $fullHeight
 
     Zusätzlich aus dem View-Kontext (geerbt via @include):
-      $shiftsByDate, $openSlotsByDate, $complianceByShift, $isAdmin
+      $shiftsByDate, $openSlotsByDate, $complianceByShift, $canManageShifts
 
     Layout spiegelt EXAKT die Default-Cell aus
     `resources/views/components/month-calendar.blade.php` wider, damit
@@ -46,7 +46,7 @@
         ? 'flex min-h-0 flex-col gap-1 overflow-hidden'
         : 'flex flex-col gap-1 min-h-28';
 
-    $cellClickable = ($isAdmin ?? false) && ! $isOther;
+    $cellClickable = ($canManageShifts ?? false) && ! $isOther;
 
     // Open-Slots vorab ermitteln für das Count-Badge
     $slots          = ($openSlotsByDate ?? [])[$dateKey] ?? [];
@@ -107,15 +107,15 @@
             ];
         @endphp
         <div class="schedule-shift-badge mb-0.5 flex items-center gap-1 truncate rounded px-1.5 py-0.5 text-[0.65rem] font-semibold leading-tight shadow-xs
-                    @if ($isAdmin ?? false) cursor-pointer hover:opacity-80 @endif"
+                    @if ($canManageShifts ?? false) cursor-pointer hover:opacity-80 @endif"
              style="background:{{ $shift->shiftType?->color ?? '#6b7280' }};color:#fff;"
-             @if ($isAdmin ?? false)
+             @if ($canManageShifts ?? false)
                  data-shift-drag="{{ $shift->sqid }}"
                  data-shift-edit="{{ $shift->sqid }}"
                  data-shift-payload="{{ json_encode($shiftPayload) }}"
              @endif
              title="{{ $shift->shiftType?->name ?? __('Schicht') }}{{ $shift->resolvedStartTime() ? ': '.$shift->resolvedStartTime() : '' }}{{ $shift->note ? ' · '.$shift->note : '' }}{{ $complTitle }}{{ $qualTitle }}{{ $wishTitle }}">
-            @if ($isAdmin ?? false)
+            @if ($canManageShifts ?? false)
                 {{-- Griff für Finger und Stift; die Maus zieht am ganzen Abzeichen.
                      Trefferfläche: app.css ([data-shift-handle]::before). --}}
                 <x-icon name="drag_indicator" size="1.1em" data-shift-handle

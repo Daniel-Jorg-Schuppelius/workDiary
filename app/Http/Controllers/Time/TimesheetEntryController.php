@@ -36,6 +36,21 @@ class TimesheetEntryController extends Controller {
         ] + $this->tagPickerData());
     }
 
+    /** Zeile im selben Dialog bearbeiten (Vollscan 2026-10-21). */
+    public function edit(Project $project, Timesheet $timesheet, TimeEntry $entry): View {
+        Gate::authorize('update', $timesheet);
+        abort_unless((int) $entry->timesheet_id === (int) $timesheet->id, 404);
+        $entry->loadMissing(['task', 'tags']);
+
+        return view('timesheets._entry_form_dialog', [
+            'project' => $project,
+            'timesheet' => $timesheet,
+            'entry' => $entry,
+            'tasks' => $project->tasks()->orderBy('title')->get(['id', 'title']),
+            'recentDescriptions' => $this->recentDescriptions($project, (int) $timesheet->user_id),
+        ] + $this->tagPickerData($entry));
+    }
+
     public function store(Project $project, Timesheet $timesheet, SaveTimesheetEntryRequest $request): RedirectResponse {
         Gate::authorize('update', $timesheet);
 

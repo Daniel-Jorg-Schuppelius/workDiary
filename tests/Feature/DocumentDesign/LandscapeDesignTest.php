@@ -60,7 +60,6 @@ class LandscapeDesignTest extends TestCase {
         imagefill($img, 0, 0, (int) imagecolorallocate($img, 240, 245, 250));
         ob_start();
         imagepng($img);
-        imagedestroy($img);
         $file = UploadedFile::fake()->createWithContent('bogen.png', (string) ob_get_clean());
 
         return app(LetterheadAssetService::class)->store($this->org, $file, LetterheadPageRole::First, 'Bogen', $this->admin, $format);
@@ -122,7 +121,6 @@ class LandscapeDesignTest extends TestCase {
         $img = imagecreatetruecolor(900, 640);
         ob_start();
         imagepng($img);
-        imagedestroy($img);
         $file = UploadedFile::fake()->createWithContent('quer.png', (string) ob_get_clean());
         $mismatch = app(LetterheadAssetService::class)->store($this->org, $file, LetterheadPageRole::First, 'Falsch', $this->admin, PageFormat::A4Portrait);
         $this->assertFalse($mismatch->isReady());

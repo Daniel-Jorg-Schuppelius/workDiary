@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Fields;
 
 use App\Enums\Fields\FieldType;
+use CommonToolkit\Helper\Data\StringHelper;
 
 /**
  * Eine Felddefinition des Feldschema-Bausteins (MVP-866): Schlüssel, Typ,
@@ -69,7 +70,7 @@ final readonly class FieldDefinition {
             key: (string) ($row['key'] ?? ''),
             type: FieldType::fromStored((string) ($row['type'] ?? '')) ?? FieldType::Text,
             label: (string) ($row['label'] ?? ($row['key'] ?? '')),
-            required: filter_var($row['required'] ?? false, FILTER_VALIDATE_BOOL),
+            required: StringHelper::parseBool($row['required'] ?? false) ?? false,
             options: $options,
             help: self::stringOrNull($row['help'] ?? null),
             unit: self::stringOrNull($row['unit'] ?? null),
@@ -79,7 +80,7 @@ final readonly class FieldDefinition {
             step: self::numberOrNull($row['step'] ?? null),
             extension: self::stringOrNull($row['extension'] ?? null),
             optionLabels: self::labels($row['option_labels'] ?? null),
-            listed: filter_var($row['listed'] ?? false, FILTER_VALIDATE_BOOL),
+            listed: StringHelper::parseBool($row['listed'] ?? false) ?? false,
         );
     }
 

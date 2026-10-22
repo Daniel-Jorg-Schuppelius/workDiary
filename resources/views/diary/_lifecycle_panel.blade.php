@@ -22,7 +22,7 @@
         'problem' => __('Problem'),
         'done' => __('Erledigt'),
     ];
-    $statusTone = $toneMap[$diary->statusTone()] ?? 'ghost';
+    $statusTone = $toneMap[$diary->statusStage()] ?? 'ghost';
     $actions = $diary->status->allowedActions();
     $signedProtocol = $diary->protocols
         ->first(fn ($protocol) => $protocol->status === \App\Enums\Protocol\ProtocolStatus::Signed);

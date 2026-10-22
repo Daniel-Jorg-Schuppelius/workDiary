@@ -72,14 +72,14 @@ final class LexofficeArticleMatchingTest extends TestCase {
                     [
                         'id' => 'lex-sku',
                         'title' => 'Switch 24-Port',
-                        'type' => 'product',
+                        'type' => 'PRODUCT',
                         'articleNumber' => 'SW24',
                         'price' => ['netPrice' => 250.00, 'currency' => 'EUR', 'taxRate' => 19.0],
                     ],
                     [
                         'id' => 'lex-gtin',
                         'title' => 'Kabel 5m',
-                        'type' => 'product',
+                        'type' => 'PRODUCT',
                         'articleNumber' => 'ANDERE-NUMMER',
                         'gtin' => '4001234567890',
                         'price' => ['netPrice' => 9.90, 'currency' => 'EUR', 'taxRate' => 19.0],
@@ -87,14 +87,14 @@ final class LexofficeArticleMatchingTest extends TestCase {
                     [
                         'id' => 'lex-ambiguous',
                         'title' => 'Duplikat-GTIN',
-                        'type' => 'product',
+                        'type' => 'PRODUCT',
                         'gtin' => '4009999999999',
                         'price' => ['netPrice' => 5.00, 'currency' => 'EUR', 'taxRate' => 19.0],
                     ],
                     [
                         'id' => 'lex-service',
                         'title' => 'Beratung',
-                        'type' => 'service',
+                        'type' => 'SERVICE',
                         'unitName' => 'Stunde',
                         'price' => ['netPrice' => 100.00, 'currency' => 'EUR', 'taxRate' => 19.0],
                     ],
@@ -152,11 +152,12 @@ final class LexofficeArticleMatchingTest extends TestCase {
             'gtin' => '4009999999999',
         ]);
 
-        $stub = FakePluginHttp::response([
+        // Je Abruf eine frische Antwort: das SDK liest den Body ohne Zurückspulen.
+        $stub = static fn () => FakePluginHttp::response([
             'content' => [[
                 'id' => 'lex-dup',
                 'title' => 'Duplikat-GTIN',
-                'type' => 'product',
+                'type' => 'PRODUCT',
                 'gtin' => '4009999999999',
                 'price' => ['netPrice' => 5.00, 'currency' => 'EUR', 'taxRate' => 19.0],
             ]],

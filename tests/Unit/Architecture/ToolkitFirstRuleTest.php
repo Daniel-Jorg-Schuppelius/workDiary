@@ -109,6 +109,52 @@ class ToolkitFirstRuleTest extends TestCase {
             'CryptoHelper::base64UrlEncode / base64UrlDecode',
             [],
         ],
+        'bool-validation' => [
+            '/FILTER_VALIDATE_BOOL(?:EAN)?\b/',
+            'StringHelper::parseBool($value, false) — kennt auch ja/x/aktiv, unbekannt → Vorgabe',
+            [
+                'app/Http/Controllers/Auth/SsoController.php' => 'OIDC-Claim email_verified: nur true bzw. "true" gilt als bestätigte Adresse; parseBool nähme auch „x“ oder „ja“ an — Sicherheitsentscheidung, kein Formularwert',
+            ],
+        ],
+        'url-validation' => [
+            '/FILTER_VALIDATE_URL/',
+            'WebLinkHelper::isUrl (dieselbe Prüfung)',
+            [],
+        ],
+        'raw-hash' => [
+            '/(?<![\w>:$])(?<!\w\\\\)(?<!function\s)(?:md5|sha1)\s*\(/',
+            'CryptoHelper::hash($data, HashAlgorithm::MD5 bzw. SHA1)',
+            [],
+        ],
+        'strimwidth' => [
+            '/\bmb_strimwidth\s*\(/',
+            'StringHelper::truncate($text, $max, \'…\')',
+            [],
+        ],
+        // common-toolkit 2.13 (Vollscan 2026-10-21, tk-12): Wörter, Zeilen, HMAC, XML-Maskierung.
+        'whitespace-split' => [
+            '/preg_split\s*\(\s*[\'"]\/\\\\s\+\/u?[\'"]/',
+            'StringHelper::words($text) — trennt auch an Unicode-Leerzeichen, ohne leere Teile',
+            [],
+        ],
+        'newline-explode' => [
+            '/explode\s*\(\s*"\\\\n"/',
+            'StringHelper::lines($text, $skipEmpty) — \\r\\n, \\r und \\n gleich',
+            [],
+        ],
+        'raw-hmac' => [
+            '/(?<![\w>:$])(?<!\w\\\\)(?<!function\s)hash_hmac\s*\(/',
+            'CryptoHelper::hmac($data, $key, binary: true|false) — SHA-256 und stärker, kein Log',
+            [
+                'app/Plugins/RemoteSupport/Providers/AnyDeskAuthentication.php' => 'AnyDesk-API verlangt HMAC-SHA1; CryptoHelper::hmac lässt SHA-1 bewusst nicht zu.',
+                'app/Plugins/Support/WebhookSignature.php' => 'Prüft Signaturen fremder Anbieter mit deren Algorithmus, darunter SHA-1 (Zammad X-Hub-Signature).',
+            ],
+        ],
+        'xml-escape' => [
+            '/htmlspecialchars\s*\([^;]*ENT_XML1/',
+            'XmlHelper::escape($value)',
+            [],
+        ],
     ];
 
     /**
@@ -131,6 +177,10 @@ class ToolkitFirstRuleTest extends TestCase {
         'country-size-2' => [
             '/[\'"]size:2[\'"]/',
             'Rule::enum(CountryCode::class) — „xx“ ist zwei Zeichen lang, aber kein Land',
+        ],
+        'json-decode' => [
+            '/(?<![\w>:$])(?<!\w\\\\)(?<!function\s)json_decode\s*\(/',
+            'JsonHelper::decode (wirft bei Fehlern) bzw. JsonHelper::isValid vor tolerantem Lesen (Toolkit-Audit 2026-10-21, tk-07)',
         ],
     ];
 
@@ -207,11 +257,24 @@ class ToolkitFirstRuleTest extends TestCase {
             'trailing-zeros' => ["rtrim(rtrim(\$q, '0'), '.')"],
             'whitespace' => ["preg_replace('/\\s+/u', ' ', \$t)", "preg_replace('/\\s+/', '', \$id)"],
             'base64url' => ["strtr(base64_encode(\$b), '+/', '-_')"],
+            'bool-validation' => ['filter_var($v, FILTER_VALIDATE_BOOL)', 'FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE'],
+            'url-validation' => ['filter_var($u, FILTER_VALIDATE_URL)'],
+            'raw-hash' => ['md5($stamp)', 'sha1($x)', 'return \\md5($x);'],
+            'strimwidth' => ["mb_strimwidth(\$t, 0, 60, '…')"],
+            'whitespace-split' => ["preg_split('/\\s+/', trim(\$x))", "preg_split('/\\s+/u', \$q)"],
+            'newline-explode' => ['explode("\\n", $text)'],
+            'raw-hmac' => ["hash_hmac('sha256', \$d, \$k)", "\\hash_hmac('sha256', \$d, \$k, true)"],
+            'xml-escape' => ['htmlspecialchars($v, ENT_XML1)', 'htmlspecialchars($v, ENT_XML1 | ENT_QUOTES)'],
         ];
         $misses = [
             'json-encode' => ['JsonHelper::encode($x)', '$this->json_encode($x)', 'function json_encode(', 'Foo\\json_encode($x)'],
             'filesystem' => ['File::isFile($p)', '$disk->copy($a, $b)', 'Str::is_file(', 'function unlink('],
             'whitespace' => ["preg_replace('/\\s+\\d\$/', '', \$name)"],
+            'raw-hash' => ['$file->md5()', 'Str::sha1(', 'function md5(', 'hash_md5($x)'],
+            'whitespace-split' => ["preg_split('/,\\s*/', \$x)", 'StringHelper::words($x)'],
+            'newline-explode' => ["explode(',', \$x)", 'StringHelper::lines($x)'],
+            'raw-hmac' => ['CryptoHelper::hmac($d, $k)', 'function hash_hmac('],
+            'xml-escape' => ['htmlspecialchars($v)', 'e($v)'],
         ];
 
         foreach ($hits as $rule => $samples) {
@@ -223,6 +286,13 @@ class ToolkitFirstRuleTest extends TestCase {
             foreach ($samples as $sample) {
                 $this->assertSame(0, preg_match(self::RULES[$rule][0], $sample), "[$rule] meldet fälschlich: $sample");
             }
+        }
+
+        foreach (['$a = json_decode($s, true);', 'return \\json_decode($s);'] as $sample) {
+            $this->assertSame(1, preg_match(self::SHRINKING_RULES['json-decode'][0], $sample), "[json-decode] erkennt nicht: $sample");
+        }
+        foreach (['JsonHelper::decode($s)', '$this->json_decode($s)', 'function json_decode('] as $sample) {
+            $this->assertSame(0, preg_match(self::SHRINKING_RULES['json-decode'][0], $sample), "[json-decode] meldet fälschlich: $sample");
         }
     }
 

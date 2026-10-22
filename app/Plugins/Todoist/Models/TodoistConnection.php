@@ -12,6 +12,7 @@ namespace App\Plugins\Todoist\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization};
 use App\Models\Platform\User;
+use App\Plugins\Support\Contracts\ManagedPluginConnection;
 use App\Plugins\Support\PluginApiException;
 use App\Plugins\Todoist\Enums\TodoistConnectionStatus;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -41,7 +42,7 @@ use Throwable;
  * @property Carbon|null $last_full_sync_at
  * @property string|null $last_error
  */
-class TodoistConnection extends Model {
+class TodoistConnection extends Model implements ManagedPluginConnection {
     use Auditable;
     use BelongsToOrganization;
     /** @use HasFactory<Factory<static>> */

@@ -109,6 +109,18 @@ class ContactPushIdentityTest extends TestCase {
         $this->assertSame(self::LEX_LINKED, app(LexofficePlugin::class)->pushContact($customer));
 
         $this->assertTrue(self::sent($fake, 'PUT', '/contacts/' . self::LEX_LINKED));
+        // PUT über ContactsEndpoint::update(): Body aus der Contact-Entität mit ID und Version des Abrufs.
+        $fake->assertSent(function (RequestInterface $r): bool {
+            $body = json_decode((string) $r->getBody(), true);
+
+            return $r->getMethod() === 'PUT'
+                && data_get($body, 'id') === self::LEX_LINKED
+                && data_get($body, 'version') === 3
+                && array_key_exists('customer', (array) data_get($body, 'roles'))
+                && data_get($body, 'company.name') === 'ACME GmbH'
+                && data_get($body, 'company.vatRegistrationId') === 'DE111111117'
+                && data_get($body, 'emailAddresses.business') === ['neu@acme.test'];
+        });
         $fake->assertNotSent(fn (RequestInterface $r): bool => $r->getMethod() === 'POST');
         $fake->assertNotSent(fn (RequestInterface $r): bool => str_contains($r->getUri()->getQuery(), 'email='));
         $this->assertSame('10001', $customer->fresh()?->accounting_number);
@@ -116,18 +128,37 @@ class ContactPushIdentityTest extends TestCase {
 
     public function test_lexoffice_does_not_overwrite_a_foreign_contact_found_by_email(): void {
         $customer = $this->customer();
+        // E-Mail- und Namenssuche treffen dasselbe Muster: je Anfrage eine frische Antwort (das SDK spult den Body nicht zurück).
         $fake = FakePluginHttp::fake([
-            'https://api.lexware.io/v1/contacts?*' => FakePluginHttp::response(['content' => [
+            'https://api.lexware.io/v1/contacts?*' => fn () => FakePluginHttp::response(['content' => [
                 ['id' => self::LEX_FOREIGN, 'version' => 1, 'company' => ['name' => 'Steuerbüro Fremd', 'vatRegistrationId' => 'DE999999999']],
             ]]),
-            'https://api.lexware.io/v1/contacts/*' => FakePluginHttp::response(['id' => self::LEX_NEW, 'version' => 1, 'roles' => ['customer' => ['number' => 10002]]]),
-            'https://api.lexware.io/v1/contacts' => FakePluginHttp::response(['id' => self::LEX_NEW, 'resourceUri' => 'x', 'version' => 1]),
+            'https://api.lexware.io/v1/contacts/*' => fn () => FakePluginHttp::response(['id' => self::LEX_NEW, 'version' => 1, 'roles' => ['customer' => ['number' => 10002]]]),
+            'https://api.lexware.io/v1/contacts' => fn () => FakePluginHttp::response(['id' => self::LEX_NEW, 'resourceUri' => 'x', 'version' => 1], 201),
         ]);
 
         $this->assertSame(self::LEX_NEW, app(LexofficePlugin::class)->pushContact($customer));
 
         $this->assertFalse(self::sent($fake, 'PUT', '/contacts/' . self::LEX_FOREIGN));
         $this->assertTrue(self::sent($fake, 'POST', '/contacts'));
+        // Suche über ContactsEndpoint::search(): dieselben Parameter; Leerzeichen kodiert http_build_query als „+“.
+        $queries = array_map(static fn (array $entry): string => $entry['request']->getUri()->getQuery(), array_filter(
+            $fake->recorded(),
+            static fn (array $entry): bool => $entry['request']->getMethod() === 'GET' && $entry['request']->getUri()->getPath() === '/v1/contacts',
+        ));
+        $this->assertSame(['email=info%40acme.test&page=0&size=25', 'name=ACME+GmbH&page=0&size=25'], array_values($queries));
+        $fake->assertSent(function (RequestInterface $r): bool {
+            $body = json_decode((string) $r->getBody(), true);
+
+            return $r->getMethod() === 'POST'
+                && ! array_key_exists('id', (array) $body)
+                && data_get($body, 'version') === 0
+                && array_key_exists('customer', (array) data_get($body, 'roles'))
+                && data_get($body, 'company.name') === 'ACME GmbH'
+                && data_get($body, 'emailAddresses.business') === ['info@acme.test'];
+        });
+        // Die Nummer kommt aus dem Abruf nach dem Anlegen (GET contacts/{id}).
+        $this->assertTrue(self::sent($fake, 'GET', '/contacts/' . self::LEX_NEW));
     }
 
     public function test_lexoffice_only_links_a_match_when_accounting_leads(): void {
@@ -208,6 +239,21 @@ class ContactPushIdentityTest extends TestCase {
             app(EasybillPlugin::class)->pushContact($customer);
         } finally {
             $fake->assertNotSent(fn (RequestInterface $r): bool => $r->getMethod() === 'PUT');
+        }
+    }
+
+    /** Konsolidierungs-Audit 2026-10-21, ko-19: Personenkontakt ohne Firma — Name aus Vor- und Nachname über PersonNameHelper. */
+    public function test_person_contact_is_compared_by_its_joined_name(): void {
+        $person = $this->customer(['name' => 'Anna Maria Müller-Lüdenscheidt', 'company' => null, 'vat_id' => null]);
+        $identity = app(\App\Services\Stammdaten\ContactIdentity::class);
+
+        $identity->assertRemoteOwner($person, 'K-1001', 'easybill', '', ' Anna  Maria ', 'Müller-Lüdenscheidt', null);
+
+        try {
+            $identity->assertRemoteOwner($person, 'K-1001', 'sevDesk', null, 'Erika', 'Mustermann', null);
+            $this->fail('Ein anderer Personenkontakt mit derselben Nummer wurde nicht erkannt.');
+        } catch (ContactNumberTakenException $e) {
+            $this->assertStringContainsString('Erika Mustermann', $e->getMessage());
         }
     }
 

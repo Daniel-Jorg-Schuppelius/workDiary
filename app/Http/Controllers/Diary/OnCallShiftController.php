@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Diary;
 
+use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ManagesShiftLike;
 use App\Http\Controllers\Controller;
 use App\Models\Diary\OnCallShift;
@@ -22,10 +23,12 @@ use Illuminate\View\View;
 class OnCallShiftController extends Controller {
     use ManagesShiftLike;
 
+    private const MANAGE_PERMISSION = Permission::OnCallShiftManage;
+
     public function create(Request $request): View {
         /** @var User $auth */
         $auth = Auth::user();
-        $canAssignOthers = $auth->canCreateEntriesForOthers();
+        $canAssignOthers = $auth->can(self::MANAGE_PERMISSION->value);
 
         return view('shifts._form_dialog', [
             'shift' => null,
@@ -44,7 +47,7 @@ class OnCallShiftController extends Controller {
         /** @var User $auth */
         $auth = Auth::user();
 
-        if (! $auth->canCreateEntriesForOthers() || empty($data['user_id'])) {
+        if (! $auth->can(self::MANAGE_PERMISSION->value) || empty($data['user_id'])) {
             $data['user_id'] = $auth->id;
         }
 
@@ -57,7 +60,7 @@ class OnCallShiftController extends Controller {
         $this->authorizeManage();
         /** @var User $auth */
         $auth = Auth::user();
-        $canAssignOthers = $auth->canCreateEntriesForOthers();
+        $canAssignOthers = $auth->can(self::MANAGE_PERMISSION->value);
 
         return view('shifts._form_dialog', [
             'shift' => $shift,
@@ -76,7 +79,7 @@ class OnCallShiftController extends Controller {
         $data = $this->validateShift($request);
         /** @var User $auth */
         $auth = Auth::user();
-        if (! $auth->canCreateEntriesForOthers()) {
+        if (! $auth->can(self::MANAGE_PERMISSION->value)) {
             $data['user_id'] = $shift->user_id;
         }
         $shift->update($data);

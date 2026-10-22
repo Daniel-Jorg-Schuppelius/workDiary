@@ -37,7 +37,7 @@ enum RentalRequestStatus: string implements HasLabel {
         };
     }
 
-    public function badgeTone(): string {
+    public function tone(): string {
         return match ($this) {
             self::Requested => 'info',
             self::Accepted => 'success',

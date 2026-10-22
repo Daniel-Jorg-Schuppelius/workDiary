@@ -49,18 +49,15 @@ final class WhistleblowingMetadataScrubber {
             return null;
         }
 
-        try {
-            ob_start();
-            $ok = match (mb_strtolower(trim((string) $mime))) {
-                'image/jpeg' => imagejpeg($image, null, 92),
-                'image/png' => imagepng($image),
-                'image/webp' => function_exists('imagewebp') && imagewebp($image),
-                default => false,
-            };
-            $out = (string) ob_get_clean();
-        } finally {
-            imagedestroy($image);
-        }
+        // Kein imagedestroy(): seit PHP 8.0 wirkungslos, unter 8.5 veraltet — das GdImage wird mit dem Gültigkeitsbereich frei.
+        ob_start();
+        $ok = match (mb_strtolower(trim((string) $mime))) {
+            'image/jpeg' => imagejpeg($image, null, 92),
+            'image/png' => imagepng($image),
+            'image/webp' => function_exists('imagewebp') && imagewebp($image),
+            default => false,
+        };
+        $out = (string) ob_get_clean();
 
         return $ok && $out !== '' ? $out : null;
     }

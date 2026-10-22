@@ -10,6 +10,7 @@
 
 namespace App\Plugins\Lexoffice\Exceptions;
 
+use APIToolkit\Exceptions\ApiException;
 use Illuminate\Http\Client\Response;
 use RuntimeException;
 
@@ -28,9 +29,16 @@ class LexofficeApiException extends RuntimeException {
      * @param  string  $scope     Benötigte Lexoffice-Berechtigung, z. B. „Artikel abrufen"
      */
     public static function fromResponse(Response $response, string $resource, string $scope): self {
-        $status = $response->status();
+        return new self(self::message($response->status(), $resource, $scope));
+    }
 
-        $message = match ($status) {
+    /** Dasselbe für die Fehler der SDK-Endpunkte; der Status steht im Code der Toolkit-Exception. */
+    public static function fromApiException(ApiException $e, string $resource, string $scope): self {
+        return new self(self::message($e->getCode(), $resource, $scope), 0, $e);
+    }
+
+    private static function message(int $status, string $resource, string $scope): string {
+        return (string) match ($status) {
             401 => __('Lexoffice lehnt den API-Schlüssel ab (401). Bitte prüfe, ob der hinterlegte Schlüssel gültig ist.'),
             403 => __('Lexoffice verweigert den Zugriff auf :resource (403). Dem API-Schlüssel fehlt die Berechtigung „:scope" (oder der Tarif enthält diese Ressource nicht).', [
                 'resource' => $resource,
@@ -42,7 +50,5 @@ class LexofficeApiException extends RuntimeException {
                 'status' => $status,
             ]),
         };
-
-        return new self($message);
     }
 }

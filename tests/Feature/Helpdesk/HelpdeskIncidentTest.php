@@ -44,6 +44,25 @@ final class HelpdeskIncidentTest extends TestCase {
         ]);
     }
 
+    /** Vollscan 2026-10-21: Klassifizierung über die Ticketseite; die übersteuerte Priorität ist ein String-Enum. */
+    public function test_ticket_page_classifies_with_priority_override(): void {
+        $ticket = $this->ticket();
+
+        $this->actingAs($this->agent)->get(route('service-tickets.show', $ticket))->assertOk()
+            ->assertSee(route('service-tickets.classify', $ticket), false);
+        $this->post(route('service-tickets.classify', $ticket), [
+            'impact' => 3,
+            'urgency' => 1,
+            'priority_override' => ServiceTicketPriority::High->value,
+            'workaround' => 'Neustart des Druckers',
+        ])->assertRedirect();
+
+        $ticket->refresh();
+        $this->assertSame(TicketSeverity::High, $ticket->impact);
+        $this->assertSame(ServiceTicketPriority::High, $ticket->priority);
+        $this->assertSame('Neustart des Druckers', $ticket->workaround);
+    }
+
     public function test_priority_matrix_suggests_and_override_is_audited(): void {
         $service = app(TicketIncidentService::class);
         $ticket = $this->ticket();

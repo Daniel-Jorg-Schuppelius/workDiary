@@ -11,9 +11,11 @@
 namespace Tests\Feature\CustomerPortal;
 
 use App\Enums\Learning\{LearningAudience, LearningEnrollmentStatus};
+use App\Enums\Media\MediaRenditionKind;
 use App\Models\Attachments\Attachment;
 use App\Models\Customer\Customer;
 use App\Models\Learning\{LearningBooking, LearningCourse, LearningEnrollment};
+use App\Models\Media\MediaRendition;
 use App\Models\Platform\{Organization, User};
 use App\Notifications\GenericEventNotification;
 use App\Services\Learning\{LearningCourseService, LearningNotifier};
@@ -236,6 +238,54 @@ class PortalLearningTest extends TestCase {
         $otherCustomer = Customer::factory()->create(['organization_id' => $this->organization->id]);
         $other = User::factory()->kunde((int) $otherCustomer->id, (int) $this->organization->id)->create();
         $this->actingAs($other, 'customer')->get($media)->assertNotFound();
+    }
+
+    public function test_videofassung_nur_fuer_die_eigene_einschreibung(): void {
+        Storage::fake('local');
+        $course = $this->course(['access_kind' => 'open']);
+        $unit = $course->units()->firstOrFail();
+        $video = Attachment::factory()->create([
+            'organization_id' => $this->organization->id,
+            'attachable_type' => $unit->getMorphClass(),
+            'attachable_id' => $unit->id,
+            'disk' => 'local',
+            'path' => 'learning/test/clip.mp4',
+            'original_name' => 'clip.mp4',
+            'mime' => 'video/mp4',
+        ]);
+        $foreignAttachment = Attachment::factory()->create(['organization_id' => $this->organization->id, 'disk' => 'local', 'path' => 'x/other.mp4', 'mime' => 'video/mp4']);
+        Storage::disk('local')->put('learning/test/360p.mp4', 'fassung');
+        $rendition = MediaRendition::query()->create([
+            'organization_id' => $this->organization->id,
+            'attachment_id' => $video->id,
+            'kind' => MediaRenditionKind::Video->value,
+            'variant' => '360p',
+            'disk' => 'local',
+            'path' => 'learning/test/360p.mp4',
+            'mime' => 'video/mp4',
+            'size_bytes' => 7,
+        ]);
+        $unrelated = MediaRendition::query()->create([
+            'organization_id' => $this->organization->id,
+            'attachment_id' => $foreignAttachment->id,
+            'kind' => MediaRenditionKind::Video->value,
+            'variant' => '360p',
+            'disk' => 'local',
+            'path' => 'learning/test/360p.mp4',
+            'mime' => 'video/mp4',
+            'size_bytes' => 7,
+        ]);
+
+        $this->actingAs($this->portalUser, 'customer')->post(route('customer.learning.enroll', $course));
+        $enrollment = LearningEnrollment::query()->where('user_id', $this->portalUser->id)->firstOrFail();
+
+        $this->actingAs($this->portalUser, 'customer')->get(route('customer.learning.units.rendition', [$enrollment, $unit, $rendition]))
+            ->assertOk()->assertHeader('Content-Type', 'video/mp4');
+        $this->actingAs($this->portalUser, 'customer')->get(route('customer.learning.units.rendition', [$enrollment, $unit, $unrelated]))->assertNotFound();
+
+        $otherCustomer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $other = User::factory()->kunde((int) $otherCustomer->id, (int) $this->organization->id)->create();
+        $this->actingAs($other, 'customer')->get(route('customer.learning.units.rendition', [$enrollment, $unit, $rendition]))->assertNotFound();
     }
 
     /** Phase 137 (MVP-1105): Benachrichtigungen an Portalkonten verlinken die Portalseite, nicht die interne Lernansicht. */

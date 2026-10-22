@@ -16,10 +16,10 @@ use App\Plugins\CardDav\CardDavPlugin;
 use App\Plugins\CardDav\Contracts\CardDavGatewayFactory;
 use App\Plugins\CardDav\Models\{CardDavCard, CardDavConnection};
 use App\Plugins\CardDav\Services\CardDavAddressbook;
-use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
+use App\Plugins\Support\Concerns\{ManagesPluginConnection, ResolvesPluginOrgContext};
+use App\Plugins\Support\Contracts\ManagedPluginConnection;
 use App\Support\{ErrorText, UrlSafety};
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
 use Throwable;
 
@@ -37,6 +37,7 @@ use Throwable;
  * sich keine beliebige URL als Sync-Ziel unterschieben.
  */
 class CardDavAdminController extends Controller {
+    use ManagesPluginConnection;
     use ResolvesPluginOrgContext;
 
     /** Session-Key der zuletzt entdeckten Adressbücher (Discovery-Ergebnis). */
@@ -208,33 +209,11 @@ class CardDavAdminController extends Controller {
 
     /** Manueller Sync (Scheduler-Äquivalent, auditiert). */
     public function sync(): RedirectResponse {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
-
-        $connection = CardDavConnection::query()->where('organization_id', $organization->id)->first();
-        if (! $connection instanceof CardDavConnection || ! $connection->isSyncable()) {
-            return back()->with('error', __('carddav::carddav.flash.not_syncable'));
-        }
-
-        // Queue statt Request (Vollscan 2026-08-23, J17): ein Voll-Sync im Web-
-        // Request lief in den PHP-Timeout; der Worker hat Retry und Laufzeitbudget.
-        Artisan::queue('carddav:sync', ['--organization' => (string) $organization->id]);
-        $connection->audit('carddav.sync_manual', ['by_user_id' => (int) $admin->id]);
-
-        return back()->with('success', __('carddav::carddav.flash.sync_done'));
+        return $this->queueConnectionRun(CardDavConnection::class, 'carddav:sync', [], 'carddav.sync_manual', 'carddav::carddav.flash.sync_done', 'carddav::carddav.flash.not_syncable', static fn (ManagedPluginConnection $c): bool => $c instanceof CardDavConnection && $c->isSyncable());
     }
 
     /** Deaktiviert die Anbindung; bereits eingespeiste Inbox-Vorschläge bleiben erhalten. */
     public function disconnect(): RedirectResponse {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
-
-        $connection = CardDavConnection::query()->where('organization_id', $organization->id)->first();
-        if ($connection instanceof CardDavConnection) {
-            $connection->forceFill(['active' => false])->save();
-            $connection->audit('carddav.disconnected', ['by_user_id' => (int) $admin->id]);
-        }
-
-        return back()->with('success', __('carddav::carddav.flash.disconnected'));
+        return $this->deactivateConnection(CardDavConnection::class, 'carddav.disconnected', 'carddav::carddav.flash.disconnected');
     }
 }

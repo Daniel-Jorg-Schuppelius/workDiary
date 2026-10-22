@@ -948,6 +948,8 @@ return [
         'depreciation_method' => 'AfA-Methode',
         'deputy_replacements' => 'Vertretungen',
         'deputy_replacements.*' => 'Neue Vertretung',
+        'handovers' => 'Übergaben',
+        'handovers.*' => 'Übergabe an',
         'deputy_user_id' => 'Stellvertretung',
         'description' => 'Beschreibung',
         'destination_address' => 'Ziel',

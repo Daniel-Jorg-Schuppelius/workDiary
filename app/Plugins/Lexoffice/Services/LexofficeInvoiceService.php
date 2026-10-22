@@ -27,9 +27,10 @@ use RuntimeException;
  * MVP-1154/1166). Die Verknüpfung steht in einer ExternalReference, die
  * Lexoffice-Nummer übernimmt das lokale Ausstellen.
  *
- * Bewusst HTTP-basiert (statt SDK-Entities), weil wir auch das PDF
- * herunterladen und Status pullen wollen — der SDK-Workflow ist hier eher
- * im Weg.
+ * Roh über {@see PluginApiClient}: das SDK legt Rechnung und Gutschrift nur
+ * ohne Vorgänger mit Inhalt an (`pursue()` sendet `{}`), seine Entitäten
+ * lehnen die Adresse mit `contactId` ab, die Gutschrift verliert
+ * `discountPercentage` und `shippingConditions`, und `/{art}/{id}/file` fehlt.
  */
 class LexofficeInvoiceService {
     /** Gilt für jeden übertragenen lokalen Beleg, auch Korrekturen; die Ressource steht in `payload._resource`. */

@@ -197,4 +197,30 @@ class UserFilterPresetTest extends TestCase {
     public function guest_redirected_to_login(): void {
         $this->get(route('filter-presets.index'))->assertRedirect(route('login'));
     }
+
+    /** Vollscan 2026-10-21: Speichern aus der Filterleiste, Auswahl in der Leiste, Standard beim Öffnen, Zurücksetzen bleibt leer. */
+    #[Test]
+    public function filter_bar_saves_lists_and_applies_default_presets(): void {
+        $user = $this->orgUser();
+        $this->actingAs($user);
+
+        $page = $this->get(route('customers.index', ['q' => 'Müller', 'status' => 'active']))->assertOk();
+        $createUrl = route('filter-presets.create', ['scope' => 'customers.index', 'query' => ['q' => 'Müller', 'status' => 'active']]);
+        $page->assertSee(e($createUrl), false);
+
+        $this->get($createUrl . '&dialog=1')->assertOk()
+            ->assertSee('name="query[q]" value="Müller"', false)
+            ->assertSee(route('filter-presets.store'), false);
+
+        $this->post(route('filter-presets.store'), [
+            'scope' => 'customers.index',
+            'name' => 'Müller aktiv',
+            'query' => ['q' => 'Müller', 'status' => 'active'],
+            'is_default' => '1',
+        ])->assertRedirect();
+
+        $this->get(route('customers.index'))->assertRedirect(route('customers.index', ['q' => 'Müller', 'status' => 'active']));
+        $this->get(route('customers.index', ['preset' => 'none']))->assertOk();
+        $this->get(route('customers.index', ['q' => 'x']))->assertOk()->assertSee('Müller aktiv');
+    }
 }

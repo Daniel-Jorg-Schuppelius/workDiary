@@ -18,10 +18,10 @@ use App\Models\Billing\CustomerBillingStatement;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Project\Project;
-use App\Models\ServiceTicket\ServiceTicket;
+use App\Models\ServiceTicket\{ServiceTicket, SlaClockSegment};
 use App\Services\Billing\Contracts\ExternalRevenue;
-use App\Services\Billing\CustomerAccountStatementService;
 use App\Services\Billing\Dto\{ExternalInvoice, ExternalInvoiceQuery};
+use App\Services\Invoicing\DunningService;
 use App\Support\Query\DateRange;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
@@ -56,7 +56,7 @@ final class PortalInsights {
         private readonly PortalVisibility $visibility,
         private readonly PortalTimeEntries $times,
         private readonly ExternalRevenue $revenue,
-        private readonly CustomerAccountStatementService $statements,
+        private readonly DunningService $dunning,
     ) {}
 
     /**
@@ -311,7 +311,6 @@ final class PortalInsights {
         if ($agreement === null || ! $agreement->keepsLedger()) {
             return null;
         }
-        $this->statements->recalculateOpen($agreement);
         /** @var \Illuminate\Database\Eloquent\Collection<int, CustomerBillingStatement> $statements */
         $statements = $agreement->statements()->where('year', $year)->orderBy('month')->get();
         $series = [];
@@ -357,6 +356,7 @@ final class PortalInsights {
             })
             ->get(['id', 'reported_at', 'resolved_at', 'status']);
 
+        $paused = SlaClockSegment::pausedMinutesByTicket($tickets->pluck('id'));
         $opened = array_fill(1, 12, 0);
         $resolved = array_fill(1, 12, 0);
         $durations = [];
@@ -366,8 +366,10 @@ final class PortalInsights {
             }
             if ($ticket->resolved_at !== null && (int) $ticket->resolved_at->year === $year) {
                 $resolved[(int) $ticket->resolved_at->month]++;
-                if ($ticket->reported_at !== null) {
-                    $durations[] = $ticket->reported_at->diffInSeconds($ticket->resolved_at) / 86400;
+                // Wie im Helpdesk-Bericht: SLA-Pausen (Warten auf den Kunden) zählen nicht.
+                $net = $ticket->netResolutionMinutes($paused[$ticket->id] ?? 0.0);
+                if ($net !== null) {
+                    $durations[] = $net / 1440;
                 }
             }
         }
@@ -421,7 +423,9 @@ final class PortalInsights {
                 'due' => $invoice->due_on !== null ? CarbonImmutable::instance($invoice->due_on) : null,
                 'paid' => $invoice->paid_on !== null ? CarbonImmutable::instance($invoice->paid_on) : null,
                 'gross' => $gross,
-                'open' => $settled ? 0.0 : $gross,
+                // Offen ist, was das Mahnwesen offen nennt: Forderung abzüglich Zahlungen aus Bank und Kasse
+                // und offener Einbehalte — nicht der Brutto (Konsolidierungs-Audit 2026-10-21, ko-03).
+                'open' => $settled ? 0.0 : $this->dunning->openAmount($invoice)->toFloat(),
                 'currency' => $invoice->currency->value,
             ];
         }

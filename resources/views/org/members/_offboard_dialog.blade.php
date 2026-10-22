@@ -48,6 +48,20 @@
         @endif
     </x-form-group>
 
+    @if ($checklist['handovers'] !== [])
+        <x-form-group :legend="__('hr.offboarding.handovers')" icon="move_up" tone="primary">
+            <p class="text-sm text-muted">{{ __('hr.offboarding.handovers_hint') }}</p>
+            @foreach ($checklist['handovers'] as $handover)
+                <x-select-field :name="'handovers[' . $handover['key'] . ']'" :id="'handover-' . $handover['key']" :label="$handover['label']">
+                    <option value="">{{ __('hr.offboarding.no_handover') }}</option>
+                    @foreach ($deputyCandidates as $candidate)
+                        <option value="{{ $candidate->sqid }}">{{ $candidate->name }}</option>
+                    @endforeach
+                </x-select-field>
+            @endforeach
+        </x-form-group>
+    @endif
+
     @if ($checklist['deputies']->isNotEmpty())
         {{-- Vertretungen neu besetzen (MVP-941) --}}
         <x-form-group :legend="__('hr.offboarding.deputies')" icon="swap_horiz" tone="primary">

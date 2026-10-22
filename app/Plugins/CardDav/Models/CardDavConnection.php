@@ -12,6 +12,7 @@ namespace App\Plugins\CardDav\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth};
 use App\Models\Concerns\HasPrivateNetworkOptIn;
+use App\Plugins\Support\Contracts\ManagedPluginConnection;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -45,7 +46,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $consecutive_failures
  * @property \Illuminate\Support\Carbon|null $disabled_at
  */
-class CardDavConnection extends Model {
+class CardDavConnection extends Model implements ManagedPluginConnection {
     use Auditable;
 
     use BelongsToOrganization;

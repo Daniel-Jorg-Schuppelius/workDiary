@@ -10,30 +10,18 @@
 
 namespace App\Policies\Classification;
 
-use App\Models\Classification\EntryType;
-use App\Models\Platform\User;
+use App\Enums\User\Permission;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
-class EntryTypePolicy {
+class EntryTypePolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->isAdmin();
-    }
-
-    public function view(User $user, EntryType $type): bool {
-        return $user->isAdmin();
-    }
-
-    public function create(User $user): bool {
-        return $user->isAdmin();
-    }
-
-    public function update(User $user, EntryType $type): bool {
-        return $user->isAdmin();
-    }
-
-    public function delete(User $user, EntryType $type): bool {
-        return $user->isAdmin();
-    }
+    protected const ABILITIES = [
+        'viewAny' => Permission::EntryTypeManage,
+        'view' => Permission::EntryTypeManage,
+        'create' => Permission::EntryTypeManage,
+        'update' => Permission::EntryTypeManage,
+        'delete' => Permission::EntryTypeManage,
+    ];
 }

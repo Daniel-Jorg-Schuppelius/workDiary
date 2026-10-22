@@ -20,7 +20,7 @@
          :sort-params="$p">
         <x-slot:head>
             <tr class="bg-base-200">
-                @if ($isAdmin)
+                @if ($seesTeamVacations)
                     <x-table.th sort="mitarbeiter">{{ __('Mitarbeiter') }}</x-table.th>
                 @endif
                 <x-table.th sort="von" default>{{ __('Zeitraum') }}</x-table.th>
@@ -34,7 +34,7 @@
             @forelse ($vacations as $v)
                 @php $days = $v->workingDays($holidayService); @endphp
                 <tr class="hover">
-                    @if ($isAdmin)
+                    @if ($seesTeamVacations)
                         <td class="font-medium">{{ $v->user?->name ?? '—' }}</td>
                     @endif
                     <td class="whitespace-nowrap">
@@ -107,7 +107,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon="beach_access" :colspan="$isAdmin ? 7 : 6" :title="__('Keine Einträge gefunden')" compact />
+                <x-table.empty icon="beach_access" :colspan="$seesTeamVacations ? 7 : 6" :title="__('Keine Einträge gefunden')" compact />
             @endforelse
 </x-table>
 @if ($vacations->hasPages())

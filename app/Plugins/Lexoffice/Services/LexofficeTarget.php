@@ -38,9 +38,11 @@ use RuntimeException;
  *   Lookup über die Lexoffice-Kontaktsuche; als letzter Weg der bestehende
  *   pushContact-Mechanismus des {@see LexofficePlugin}.
  *
- * HTTP läuft über {@see PluginApiClient} (php-api-toolkit) — damit bleibt der
- * Adapter mit FakePluginHttp testbar. Fehler werden als RuntimeException
- * hochgereicht; der Controller ruft dann markFailed().
+ * HTTP läuft roh über {@see PluginApiClient}: `isValid()` der Rechnungs-Entität
+ * des SDK lehnt jede Adresse mit `contactId` ab (UUID, das SDK erwartet eine
+ * Zahl), und Kontaktsuche, Belegliste und Abruf teilen sich mit dem POST einen
+ * gedrosselten Client. Fehler werden als RuntimeException hochgereicht; der
+ * Controller ruft dann markFailed().
  *
  * Gegen Dubletten (Konsolidierungs-Audit 2026-10, k2-01): bestehender Nachweis
  * gewinnt; ein Abbruch nach dem Senden gilt als „Ausgang unklar"; nach einem

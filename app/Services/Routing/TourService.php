@@ -244,39 +244,10 @@ class TourService implements InspectionTourPlanner {
             $reordered = [...$reordered, ...$unlocated];
             $this->assignOrders($tour, $reordered);
 
-            // Try OSRM for a real geometry + duration.
-            $distanceMeters = (int) $result['distance'];
-            $durationSeconds = (int) $result['duration_estimate'];
-            $geometry = null;
-            $legs = null;
-
-            $routePoints = [];
-            $pointKeys = [];
-            if ($start !== null) {
-                $routePoints[] = $start;
-                $pointKeys[] = 'start';
-            }
-            foreach ($result['order'] as $idx) {
-                $routePoints[] = $coords[$idx];
-                $pointKeys[] = (string) $orderIds[$idx];
-            }
-            if ($end !== null) {
-                $routePoints[] = $end;
-                $pointKeys[] = 'end';
-            }
-
-            try {
-                if (count($routePoints) >= 2) {
-                    $coordPairs = array_map(static fn(Coordinate $c) => $c->toLngLat(), $routePoints);
-                    $route = $this->router->route($coordPairs);
-                    $distanceMeters = (int) round($route->distanceMeters);
-                    $durationSeconds = $route->durationSeconds;
-                    $geometry = $route->geometry !== [] ? JsonHelper::encode($route->geometry) : null;
-                    $legs = $this->legsFromRoute($route, $pointKeys);
-                }
-            } catch (RoutingException) {
-                // Offline / OSRM down → keep haversine fallback.
-            }
+            // Straßenroute in der neuen Reihenfolge; offline bleibt die Luftlinien-Schätzung.
+            $road = $this->roadRoute($tour);
+            $distanceMeters = $road['distance_m'] ?? (int) $result['distance'];
+            $durationSeconds = $road['duration_s'] ?? (int) $result['duration_estimate'];
 
             // Add service time of every stop to the planned duration.
             $serviceSeconds = 0;
@@ -287,8 +258,8 @@ class TourService implements InspectionTourPlanner {
 
             $tour->planned_distance_km = (string) round($distanceMeters / 1000, 2);
             $tour->planned_duration_minutes = (int) ceil($totalSeconds / 60);
-            $tour->route_geometry = $geometry;
-            $tour->route_legs = $legs;
+            $tour->route_geometry = $road['geometry'];
+            $tour->route_legs = $road['legs'];
             $tour->save();
 
             return [
@@ -306,6 +277,24 @@ class TourService implements InspectionTourPlanner {
      * gesetzt hat; ohne OSRM bleibt die Geometrie leer.
      */
     public function refreshRoute(Tour $tour): void {
+        $road = $this->roadRoute($tour);
+        if ($road['distance_m'] !== null) {
+            $tour->planned_distance_km = (string) round($road['distance_m'] / 1000, 2);
+        }
+        $tour->route_geometry = $road['geometry'];
+        $tour->route_legs = $road['legs'];
+        $tour->save();
+    }
+
+    /**
+     * Straßenroute durch Start, die Stopps in gespeicherter Reihenfolge und
+     * Ziel — der eine Routenabruf für Neuberechnung und Übernahme eines
+     * Vorschlags (Konsolidierungs-Audit 2026-10-21, ko-12). Ohne Router
+     * (offline) bleiben alle Werte leer.
+     *
+     * @return array{geometry: ?string, legs: list<array{from: string, to: string, distance_m: int, duration_s: int}>|null, distance_m: ?int, duration_s: ?int}
+     */
+    private function roadRoute(Tour $tour): array {
         /** @var list<DiaryEntry> $stops */
         $stops = $tour->orderedStops()->with('customer:id,address_lat,address_lng')->get()->all();
         $points = [];
@@ -327,21 +316,22 @@ class TourService implements InspectionTourPlanner {
             $keys[] = 'end';
         }
 
-        $geometry = null;
-        $legs = null;
         if (count($points) >= 2) {
             try {
                 $route = $this->router->route(array_map(static fn(Coordinate $c) => $c->toLngLat(), $points));
-                $geometry = $route->geometry !== [] ? JsonHelper::encode($route->geometry) : null;
-                $legs = $this->legsFromRoute($route, $keys);
-                $tour->planned_distance_km = (string) round($route->distanceMeters / 1000, 2);
+
+                return [
+                    'geometry' => $route->geometry !== [] ? JsonHelper::encode($route->geometry) : null,
+                    'legs' => $this->legsFromRoute($route, $keys),
+                    'distance_m' => (int) round($route->distanceMeters),
+                    'duration_s' => (int) $route->durationSeconds,
+                ];
             } catch (RoutingException) {
-                // Offline → Geometrie leer, Kennzahlen des Vorschlags bleiben.
+                // Offline: leere Geometrie, der Aufrufer behält seine Kennzahlen.
             }
         }
-        $tour->route_geometry = $geometry;
-        $tour->route_legs = $legs;
-        $tour->save();
+
+        return ['geometry' => null, 'legs' => null, 'distance_m' => null, 'duration_s' => null];
     }
 
     /**
@@ -489,6 +479,18 @@ class TourService implements InspectionTourPlanner {
      * @throws \App\Exceptions\LogbookViolationException
      */
     public function materializeToTravelLogs(Tour $tour, ?int $odometerStartKm = null): array {
+        // Sperre nehmen, unter der Sperre neu prüfen (Sicherheitsaudit 2026-10-21, li-1/li-7): ein gleichzeitiger
+        // zweiter Aufruf wartet und sieht dann den schon geschriebenen Stand.
+        return DB::transaction(function () use ($tour, $odometerStartKm): array {
+            $tour->newQueryWithoutScopes()->whereKey($tour->getKey())->lockForUpdate()->firstOrFail();
+            $tour->refresh();
+
+            return $this->materializeToTravelLogsLocked($tour, $odometerStartKm);
+        });
+    }
+
+    /** @return list<TravelLog> */
+    private function materializeToTravelLogsLocked(Tour $tour, ?int $odometerStartKm = null): array {
         /** @var list<DiaryEntry> $stops */
         $stops = $tour->orderedStops()->with('customer:id,address_lat,address_lng')->get()->all();
         if ($stops === [] || ! $this->travelLogs->available()) {

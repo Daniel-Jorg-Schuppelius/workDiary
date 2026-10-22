@@ -14,8 +14,10 @@ namespace App\Plugins\Support\Calendar;
 
 use App\Models\Integration\ExternalReference;
 use App\Support\MorphMap;
+use Closure;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes, SoftDeletingScope};
 use Illuminate\Support\Carbon;
+use Throwable;
 
 /**
  * Idempotenter Abgleich der Kalenderelemente gegen einen Kalender-Provider
@@ -41,6 +43,33 @@ use Illuminate\Support\Carbon;
  */
 class RemoteCalendarPublishService {
     public const EXTERNAL_TYPE = 'calendar_event';
+
+    /** Ergebnis eines Laufs ohne Verbindung. */
+    public const NO_COUNTS = ['published' => 0, 'deleted' => 0, 'unchanged' => 0, 'failed' => 0];
+
+    /**
+     * Veröffentlicht nur über eine aktive Verbindung; scheitert der Aufbau des
+     * Clients oder der Lauf, zählt das als `failed` (MS 365, Google Calendar;
+     * Konsolidierungs-Audit 2026-10-21, ko-20).
+     *
+     * @param  Closure(): RemoteCalendarGateway  $gateway  wird nur mit vorhandener, aktiver Verbindung aufgerufen
+     * @param  Closure(): list<RemoteCalendarItem>  $items
+     * @return array{published: int, deleted: int, unchanged: int, failed: int}
+     */
+    public function publishIfActive(string $pluginId, ?RemoteCalendarConnection $connection, bool $active, Closure $gateway, Closure $items, bool $removeOrphans = false): array {
+        $counters = self::NO_COUNTS;
+        if ($connection === null || ! $active) {
+            return $counters;
+        }
+
+        try {
+            return $this->publish($pluginId, $connection, $gateway(), $items(), removeOrphans: $removeOrphans);
+        } catch (Throwable) {
+            $counters['failed']++;
+
+            return $counters;
+        }
+    }
 
     /**
      * @param  list<RemoteCalendarItem>  $items

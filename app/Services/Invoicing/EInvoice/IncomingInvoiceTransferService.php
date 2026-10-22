@@ -29,6 +29,9 @@ use Throwable;
  * fünf Fehlversuchen; der Knopf auf der Detailseite versucht es erneut.
  */
 class IncomingInvoiceTransferService {
+    /** Sperre je Eingang: Übergabe und Aufheben der Zuordnung schließen einander aus. */
+    public const LOCK_PREFIX = 'incoming-invoice-transfer:';
+
     public const MAX_ATTEMPTS = 5;
 
     public function __construct(
@@ -73,7 +76,7 @@ class IncomingInvoiceTransferService {
         }
 
         // Ein Beleg im Zielsystem ist nicht mehr löschbar: nie zwei Läufe für denselben Eingang.
-        $lock = Cache::lock('incoming-invoice-transfer:' . $incoming->id, 300);
+        $lock = Cache::lock(self::LOCK_PREFIX . $incoming->id, 300);
         if (! $lock->get()) {
             return [];
         }

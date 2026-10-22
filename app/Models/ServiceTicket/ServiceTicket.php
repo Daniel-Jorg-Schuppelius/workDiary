@@ -253,6 +253,15 @@ class ServiceTicket extends Model {
         return app(SlaTimer::class)->reactionStatus($this);
     }
 
+    /** Lösungszeit in Minuten ohne SLA-Pausen; null, solange das Ticket nicht gelöst ist. */
+    public function netResolutionMinutes(float $pausedMinutes): ?float {
+        if ($this->reported_at === null || $this->resolved_at === null) {
+            return null;
+        }
+
+        return max(0.0, $this->reported_at->diffInMinutes($this->resolved_at) - $pausedMinutes);
+    }
+
     /** Verbleibende Minuten bis zur Lösungsfrist (negativ = überfällig). */
     public function slaMinutesRemaining(): ?int {
         return app(SlaTimer::class)->minutesRemaining($this->resolution_due_at);

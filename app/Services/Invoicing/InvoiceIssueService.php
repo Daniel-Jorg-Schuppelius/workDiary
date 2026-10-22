@@ -16,6 +16,7 @@ use App\Services\Integration\LifecycleWebhookPublisher;
 use App\Services\Invoicing\EInvoice\EInvoiceValidationService;
 use App\Services\Numbering\{DocumentIssuers, NumberAuthority, NumberSequenceService};
 use App\Support\ErrorText;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Einzige Schreibstelle für den Übergang draft → issued (Vollscan 2026-08-23,
@@ -86,6 +87,19 @@ final class InvoiceIssueService {
      * @param  array<string, mixed>  $extra
      */
     public function issue(Invoice $invoice, array $extra = []): Invoice {
+        // Sperre nehmen, unter der Sperre neu prüfen (Sicherheitsaudit 2026-10-21, li-1): ein zweiter Aufruf
+        // wartet und sieht den geschriebenen Stand. Bewusst keine DB-Transaktion — vergibt ein Programm die
+        // Nummer, muss die Verknüpfung zum dort angelegten Beleg einen Fehlschlag überleben.
+        return Cache::lock('document-issue:' . $invoice->getMorphClass() . ':' . $invoice->getKey(), 120)
+            ->block(30, function () use ($invoice, $extra): Invoice {
+                $invoice->refresh();
+
+                return $this->issueLocked($invoice, $extra);
+            });
+    }
+
+    /** @param  array<string, mixed>  $extra */
+    private function issueLocked(Invoice $invoice, array $extra = []): Invoice {
         if ($invoice->status !== InvoiceStatus::Draft) {
             return $invoice;
         }

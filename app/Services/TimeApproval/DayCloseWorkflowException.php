@@ -10,23 +10,10 @@
 
 namespace App\Services\TimeApproval;
 
-use RuntimeException;
-
 /**
  * Wirft jeder DayCloseService-Übergang, der die in ../WorkDiary-Architecture/konzepte/tagesabschluss.md
  * §3/§5 definierte Statusmaschine verletzt oder eine fachliche
  * Vorbedingung nicht erfüllt (⛔-Warnungen, Zukunftstag, gesperrter
  * Monat, zu kurze Begründung).
  */
-class DayCloseWorkflowException extends RuntimeException {
-    /**
-     * @param  array<string, mixed>  $context
-     */
-    public function __construct(
-        public readonly string $reasonCode,
-        string $message,
-        public readonly array $context = [],
-    ) {
-        parent::__construct($message);
-    }
-}
+class DayCloseWorkflowException extends TimeApprovalWorkflowException {}

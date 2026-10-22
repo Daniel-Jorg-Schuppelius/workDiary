@@ -25,6 +25,7 @@ use App\Models\Travel\{Expense, PerDiemTrip};
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Support\{CarbonFmt, OrganizationContext};
 use App\Support\MorphMap;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Facades\{Gate, URL};
 
 /**
@@ -248,7 +249,7 @@ class GlobalSearchService {
                         'id' => $t->id,
                         'title' => trim(($t->location ?: '—') . ($t->country ? ' (' . $t->country . ')' : '')),
                         'subtitle' => CarbonFmt::fdate(CarbonFmt::orgTz($t->started_at))
-                            . ($t->purpose ? ' · ' . mb_strimwidth($t->purpose, 0, 60, '…') : ''),
+                            . ($t->purpose ? ' · ' . StringHelper::truncate($t->purpose, 60, '…') : ''),
                         'url' => route('per-diem-trips.show', $t),
                     ])
                     ->all()

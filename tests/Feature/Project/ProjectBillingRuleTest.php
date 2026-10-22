@@ -222,6 +222,34 @@ class ProjectBillingRuleTest extends TestCase {
             ->assertSee(__('Neue Abrechnungs-Regel'));
     }
 
+    /** Vollscan 2026-10-21, lk-04: Regeln lassen sich bearbeiten statt nur löschen und neu anlegen. */
+    public function test_billing_rule_can_be_edited_in_the_dialog(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $project = $this->makeProject();
+        $article = Article::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Wartung', 'sellable' => true]);
+        $this->actingAs($admin)
+            ->post(route('projects.billing-rules.store', $project), ['article' => 'art:' . $article->sqid, 'item_type' => 'service', 'unit_name' => 'Stunde', 'priority' => 3])
+            ->assertRedirect();
+        $rule = $project->billingRules()->sole();
+
+        $this->get(route('projects.show', $project))->assertOk()
+            ->assertSee(route('projects.billing-rules.edit', [$project, $rule]), false);
+        $this->get(route('projects.billing-rules.edit', [$project, $rule]) . '?dialog=1')->assertOk()
+            ->assertSee(__('Abrechnungs-Regel bearbeiten'))
+            ->assertSee(route('projects.billing-rules.update', [$project, $rule]), false)
+            ->assertSee('value="Stunde"', false)
+            ->assertSee('value="art:' . $article->sqid . '" selected', false);
+
+        $this->put(route('projects.billing-rules.update', [$project, $rule]), [
+            'article' => 'art:' . $article->sqid,
+            'item_type' => 'service',
+            'unit_name' => 'Pauschale',
+            'priority' => 7,
+        ])->assertRedirect(route('projects.show', $project));
+        $this->assertSame('Pauschale', $rule->fresh()?->unit_name);
+        $this->assertSame(7, (int) $rule->fresh()?->priority);
+    }
+
     public function test_rule_stores_catalog_key_of_local_article_and_rejects_foreign_article(): void {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $project = $this->makeProject();

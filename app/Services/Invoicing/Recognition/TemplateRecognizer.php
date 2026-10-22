@@ -12,11 +12,13 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing\Recognition;
 
-use App\Enums\Invoicing\IncomingInvoiceRecognition;
+use App\Enums\Invoicing\IncomingEInvoiceStatus;
+use App\Enums\Invoicing\{IncomingInvoiceMatchKind, IncomingInvoiceRecognition};
 use App\Models\Invoicing\{IncomingEInvoice, IncomingInvoiceTemplate};
 use App\Models\Platform\{Organization, User};
+use App\Services\Invoicing\EInvoice\IncomingInvoiceMatcher;
 use App\Services\Invoicing\Recognition\Contracts\WordBoxSource;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\{Log, Storage};
 use PDFToolkit\Entities\WordBox;
 
 /**
@@ -34,6 +36,7 @@ final class TemplateRecognizer {
         private readonly WordBoxSource $boxes,
         private readonly TemplateMatcher $matcher,
         private readonly ZoneExtractor $extractor,
+        private readonly IncomingInvoiceMatcher $parties,
     ) {}
 
     /**
@@ -90,6 +93,12 @@ final class TemplateRecognizer {
         if (in_array($incoming->kindHint(), self::BLOCKED_KINDS, true)) {
             return [];
         }
+        // Übergebene und abgelehnte Eingänge bleiben, wie sie sind — der Beleg im Buchhaltungsziel ist schon
+        // angelegt; von Hand erfasste Werte überschreibt keine Vorlage (Sicherheitsaudit 2026-10-21, li-2).
+        if ($incoming->transferred_at !== null || $incoming->status === IncomingEInvoiceStatus::Rejected) {
+            return [];
+        }
+        $manual = isset(((array) $incoming->summary)['manual']);
         $path = self::pdfPathFor($incoming);
         if ($path === null) {
             return [];
@@ -101,13 +110,16 @@ final class TemplateRecognizer {
         $extraction = (array) ($summary['extraction'] ?? []);
         $sources = (array) ($extraction['sources'] ?? []);
         foreach ($values as $field => ['value' => $value]) {
+            if ($manual && $incoming->getAttribute(ZoneFields::FIELDS[$field]['column']) !== null) {
+                continue;
+            }
             $changes[ZoneFields::FIELDS[$field]['column']] = $value;
             $sources[ZoneFields::FIELDS[$field]['result']] = 'zone';
             $applied[] = $field;
         }
         $supplier = $template->supplier;
-        if ($supplier !== null && $incoming->supplier_id === null && $incoming->customer_id === null) {
-            $changes['supplier_id'] = $supplier->id;
+        $assignSupplier = $supplier !== null && $incoming->supplier_id === null && $incoming->customer_id === null;
+        if ($assignSupplier) {
             $changes['seller_name'] = $supplier->name;
             if ($incoming->seller_vat_id === null && trim((string) $supplier->vat_id) !== '') {
                 $changes['seller_vat_id'] = $supplier->vat_id;
@@ -126,6 +138,16 @@ final class TemplateRecognizer {
             $changes['recognition'] = IncomingInvoiceRecognition::Extracted;
         }
         $incoming->forceFill([...$changes, 'template_id' => $template->id, 'summary' => $summary])->save();
+        if ($assignSupplier) {
+            // Die Partei setzt nur der Matcher: Zuordnungsart, Audit, Sammelkontakt-/Richtungsprüfung und das
+            // Ereignis, das die Übergabe auslöst (Sicherheitsaudit 2026-10-21, li-3).
+            try {
+                $this->parties->assign($incoming, $supplier, IncomingInvoiceMatchKind::Template, $actor);
+            } catch (\RuntimeException|\InvalidArgumentException $e) {
+                Log::info('Vorlage: Lieferant nicht zugeordnet', ['incoming_id' => $incoming->id, 'template_id' => $template->id, 'error' => $e->getMessage()]);
+                $applied = array_values(array_diff($applied, ['supplier']));
+            }
+        }
         $incoming->audit('incoming_einvoice.template_applied', ['template_id' => $template->id, 'fields' => $applied, 'actor_user_id' => $actor?->id]);
         if ($values !== []) {
             $this->countHit($template);

@@ -23,6 +23,8 @@ class ExportWhistleblowingCaseRequest extends BaseFormRequest {
     public function rules(): array {
         return [
             'reason' => ['required', 'string', 'max:2000'],
+            // Das Paket verlässt die Anwendung nur verschlüsselt (Vollscan 2026-09-15, Top 9b).
+            'password' => ['required', 'string', 'min:12', 'max:200', 'confirmed'],
         ];
     }
 }

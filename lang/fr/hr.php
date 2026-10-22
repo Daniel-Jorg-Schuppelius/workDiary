@@ -108,6 +108,9 @@ return [
         'deputies_hint' => 'Ces personnes ont désigné le membre sortant comme suppléant. Sans choix, la suppléance prend fin.',
         'deputy_for' => 'Nouveau suppléant pour :name',
         'no_deputy' => '— aucun suppléant —',
+        'handovers' => 'Transférer à une autre personne',
+        'handovers_hint' => 'La personne choisie devient la nouvelle propriétaire. Les contenus ne sont pas affichés ; chaque transfert est journalisé. Sans sélection, tout reste attaché au compte sortant.',
+        'no_handover' => '— ne pas transférer —',
     ],
     // Arbeitsvertrag zur Unterschrift (MVP-939).
     'employment' => [

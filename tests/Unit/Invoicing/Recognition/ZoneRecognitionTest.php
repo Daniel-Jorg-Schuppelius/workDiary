@@ -174,4 +174,17 @@ final class ZoneRecognitionTest extends TestCase {
         $anchor = $extractor->anchorWordsLeftOf($row[5], $row);
         self::assertSame(['Gesamt', 'EUR'], array_map(static fn (WordBox $w): string => $w->text, $anchor));
     }
+
+    /** Konsolidierungs-Audit 2026-10-21, ko-02/tk-06: derselbe Betragsleser wie die Heuristik, USt-IdNr. nur im gültigen Format. */
+    public function test_amounts_in_every_notation_and_only_valid_vat_ids(): void {
+        self::assertSame('1234.56', ZoneExtractor::parse('Total 1,234.56 USD', 'money'));
+        self::assertSame('1234.56', ZoneExtractor::parse('Total USD 1,234.56', 'money'));
+        self::assertSame('1234.56', ZoneExtractor::parse('Gesamt 1.234,56 EUR', 'money'));
+        self::assertSame('1234.56', ZoneExtractor::parse('Summe 1 234,56', 'money'));
+        self::assertSame('234.56', ZoneExtractor::parse('MwSt 19,00 % 234,56', 'money'), 'Ein Satz vor dem Prozentzeichen ist kein Betrag.');
+        self::assertNull(ZoneExtractor::parse('Seite 2 von 3', 'money'));
+        self::assertNull(ZoneExtractor::parse('USt-IdNr. DE12345', 'vat_id'), 'DE mit falscher Länge ist keine USt-IdNr.');
+        self::assertSame('ZA4123456789', ZoneExtractor::parse('VAT Reg. No. ZA 4123456789', 'vat_id'), 'Länder ohne Toolkit-Format bleiben beim Rückfall.');
+        self::assertNull(ZoneExtractor::parse('MWST Nummer folgt', 'vat_id'));
+    }
 }

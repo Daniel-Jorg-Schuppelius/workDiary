@@ -128,7 +128,6 @@ class AttachmentDownloadTest extends TestCase {
         ob_start();
         imagejpeg($image);
         $jpeg = (string) ob_get_clean();
-        imagedestroy($image);
         $withExif = substr($jpeg, 0, 2) . "\xFF\xFE" . pack('n', 34) . 'GPS 52.5200 N / KANARIENVOGEL' . substr($jpeg, 2);
 
         $attachment = app(WhistleblowingAttachmentService::class)->storeReporterUpload(

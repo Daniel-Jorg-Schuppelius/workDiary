@@ -1018,6 +1018,9 @@ return [
         'unlimited' => 'ilimitado',
         'issuer' => 'Organización emisora',
         'number' => 'Número',
+        'machine_readable' => 'Credencial legible por máquina',
+        'credential_json' => 'Open Badges 3.0 (JSON-LD)',
+        'credential_jwt' => 'VC-JWT',
     ],
     'proof' => [
         'note' => 'Prueba de la plataforma de aprendizaje: :course',

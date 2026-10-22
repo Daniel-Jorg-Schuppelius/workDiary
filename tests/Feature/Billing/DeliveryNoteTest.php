@@ -260,4 +260,21 @@ final class DeliveryNoteTest extends TestCase {
 
         return [$order, $variant, $warehouse];
     }
+
+    /** Sicherheitsaudit 2026-10-21, li-1: ein veraltetes zweites Ausliefern zieht keine zweite Nummer. */
+    public function test_a_stale_second_delivery_is_rejected(): void {
+        $note = $this->noteFor($this->confirmedOrder());
+        $stale = DeliveryNote::query()->findOrFail($note->id);
+
+        app(\App\Services\Billing\DeliveryNoteService::class)->deliver($note, $this->user);
+        $number = (string) $note->fresh()->number;
+
+        try {
+            app(\App\Services\Billing\DeliveryNoteService::class)->deliver($stale, $this->user);
+            $this->fail('Ein ausgelieferter Lieferschein darf nicht erneut ausgeliefert werden.');
+        } catch (\RuntimeException) {
+        }
+        $this->assertSame($number, (string) $note->fresh()->number);
+        $this->assertSame(DeliveryNoteStatus::Delivered, $note->fresh()->status);
+    }
 }

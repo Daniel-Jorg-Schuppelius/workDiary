@@ -54,6 +54,8 @@ return [
         'show' => 'Visualizza',
         'back' => 'Indietro',
         'create_followup' => 'Crea follow-up',
+        'delete' => 'Elimina',
+        'delete_confirm' => 'Eliminare definitivamente questo evento di sicurezza? Per gli infortuni possono valere obblighi di conservazione.',
     ],
 
     'transition' => [

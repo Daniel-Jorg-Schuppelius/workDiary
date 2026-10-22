@@ -43,6 +43,12 @@
     <form class="wb-card" method="post" action="{{ route('whistleblowing.report.store', ['portal' => $portal->public_slug]) }}" enctype="multipart/form-data">
         @csrf
 
+        {{-- Honeypot: für Menschen unsichtbar, Bots füllen es aus (Vollscan 2026-09-15, Top 9b). --}}
+        <div class="hp" aria-hidden="true">
+            <label for="company_website">{{ __('whistleblowing.field.honeypot') }}</label>
+            <input id="company_website" name="company_website" type="text" tabindex="-1" autocomplete="off">
+        </div>
+
         <fieldset>
             <legend>{{ __('Art der Meldung') }}</legend>
             @if ($portal->allow_anonymous)

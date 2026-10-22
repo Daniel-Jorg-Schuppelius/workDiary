@@ -1,7 +1,7 @@
 ---
 title: "Automatizaciones"
 topic: admin.automations
-version: 3
+version: 4
 keywords:
     - workflow
     - flujo de trabajo
@@ -57,3 +57,20 @@ organización.
 
 Nota: para simples avisos, las **Reglas de notificación** suelen ser la
 opción más sencilla; para sistemas externos, consulte **Webhooks**.
+
+## Reglas de entrada (facturas recibidas)
+
+El disparador «Factura recibida» revisa cada documento nuevo del buzón de
+facturas. Además de las columnas de la factura recibida, las condiciones
+pueden usar estos campos: `seller_name_key`, `buyer_name_key`, `party_name`, `party_name_key`, `sender_domain`, `mail_subject`, `attachment_names`, `file_name`, `country`, `kind_hint`. Las claves de nombre van en minúsculas y
+sin forma jurídica, de modo que «Muster GmbH» y «MUSTER» cuentan igual;
+`kind_hint` indica el tipo de documento reconocido (por ejemplo `reminder`
+para un recordatorio de pago). Operadores: `=`, `!=`, `<`, `<=`, `>`, `>=`,
+`in`, `not_in`, `contains`, `not_contains`, `starts_with`, `ends_with`,
+`matches`. Ejemplo:
+`{"all": [{"field": "sender_domain", "op": "=", "value": "ejemplo.es"}]}`.
+Acciones posibles: «Archivar la factura recibida como «no es una factura»»,
+«Asignar la factura recibida» y «Descartar la factura recibida». La página de
+reglas de facturas recibidas muestra estas reglas a contabilidad; allí se
+pueden activar, desactivar y eliminar, y cada acción queda en el registro de
+auditoría.

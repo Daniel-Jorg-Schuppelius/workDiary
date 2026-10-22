@@ -41,10 +41,10 @@ final class DiaryEnumsTest extends TestCase {
 
     public function test_status_values_and_tones(): void {
         $this->assertSame([-1, 1, 2, 3, 4, 5, 6, 7, 8], Status::values());
-        $this->assertSame('done', Status::Done->tone());
-        $this->assertSame('progress', Status::InProgress->tone());
-        $this->assertSame('open', Status::Open->tone());
-        $this->assertSame('alert', Status::Problem->tone());
+        $this->assertSame('done', Status::Done->stage());
+        $this->assertSame('progress', Status::InProgress->stage());
+        $this->assertSame('open', Status::Open->stage());
+        $this->assertSame('alert', Status::Problem->stage());
         $this->assertSame(Status::Open, Status::Planned);
         $this->assertSame(Status::Done, Status::Completed);
         $this->assertSame(Status::Problem, Status::WaitingCustomer);
@@ -59,11 +59,11 @@ final class DiaryEnumsTest extends TestCase {
     public function test_badge_tones_are_component_tones(): void {
         $this->assertSame(
             ['done' => 'success', 'progress' => 'info', 'open' => 'warning', 'alert' => 'error', 'neutral' => 'ghost'],
-            collect(Status::cases())->mapWithKeys(static fn (Status $s): array => [$s->tone() => $s->badgeTone()])->all(),
+            collect(Status::cases())->mapWithKeys(static fn (Status $s): array => [$s->stage() => $s->tone()])->all(),
         );
         $this->assertSame(
             ['neutral' => 'ghost', 'open' => 'warning', 'progress' => 'info', 'done' => 'success'],
-            collect(DispatchStatus::cases())->mapWithKeys(static fn (DispatchStatus $s): array => [$s->tone() => $s->badgeTone()])->all(),
+            collect(DispatchStatus::cases())->mapWithKeys(static fn (DispatchStatus $s): array => [$s->stage() => $s->tone()])->all(),
         );
     }
 }

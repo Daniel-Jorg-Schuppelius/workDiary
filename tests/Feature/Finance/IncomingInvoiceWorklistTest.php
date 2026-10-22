@@ -112,6 +112,12 @@ final class IncomingInvoiceWorklistTest extends TestCase {
         $this->assertFalse($rule->refresh()->is_active);
         $this->delete(route('finance.incoming-invoices.rules.automation.destroy', $rule))->assertRedirect()->assertSessionHas('success');
         $this->assertDatabaseMissing('automation_rules', ['id' => $rule->id]);
+        // Sicherheitsaudit 2026-10-21, authz-1: Schalten und Löschen hinterlassen eine Spur.
+        $events = \App\Models\Audit\AuditLog::query()
+            ->where('auditable_type', \App\Support\MorphMap::stableKey(\App\Models\Automation\AutomationRule::class))
+            ->where('auditable_id', $rule->id)->pluck('event')->all();
+        $this->assertContains('updated', $events);
+        $this->assertContains('deleted', $events);
     }
 
     public function test_discarding_removes_document_and_file_and_future_documents_are_discarded_by_rule(): void {

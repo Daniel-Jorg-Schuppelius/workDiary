@@ -300,6 +300,15 @@ final class CostEstimateTest extends TestCase {
         $this->assertStringStartsWith('%PDF', $pdf->getContent());
     }
 
+    /** Vollscan 2026-10-21: der Import hat einen Einstieg in der LV-Liste. */
+    public function test_import_dialog_is_reachable_from_the_list(): void {
+        $this->actingAs($this->admin)->get(route('bill-of-quantities.index'))->assertOk()
+            ->assertSee(route('bill-of-quantities.cost-estimate.import-form'), false);
+        $this->get(route('bill-of-quantities.cost-estimate.import-form') . '?dialog=1')->assertOk()
+            ->assertSee(route('bill-of-quantities.cost-estimate.import'), false)
+            ->assertSee('name="project"', false);
+    }
+
     public function test_import_route_stores_the_estimate(): void {
         $this->actingAs($this->admin)->post(route('bill-of-quantities.cost-estimate.import'), [
             'file' => \Illuminate\Http\UploadedFile::fake()->createWithContent('kb.x51', $this->x51()),

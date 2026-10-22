@@ -123,20 +123,16 @@ class SaveTimeEntryRequest extends BaseFormRequest {
     }
 
     /**
-     * Für wen wird gebucht?
-     *
-     * Vorgesetzte erfassen Zeiten auch für andere; die Monatssperre gilt dann
-     * für den **Mitarbeiter**, nicht für den Erfasser.
+     * Wessen Monatssperre gilt: beim Bearbeiten die des Eigentümers, beim
+     * Anlegen die des Angemeldeten — der Controller bucht immer auf ihn. Eine
+     * `user_id` aus der Eingabe zählt nicht, sonst prüfte die Regel einen
+     * fremden Monat (Vollscan 2026-10-21).
      */
     private function targetUser(): ?\App\Models\Platform\User {
-        $userId = $this->input('user_id');
+        $entry = $this->route('time_entry');
 
-        if (filled($userId)) {
-            $user = \App\Models\Platform\User::query()->find(is_numeric($userId) ? (int) $userId : null);
-
-            if ($user instanceof \App\Models\Platform\User) {
-                return $user;
-            }
+        if ($entry instanceof \App\Models\Time\TimeEntry && $entry->user instanceof \App\Models\Platform\User) {
+            return $entry->user;
         }
 
         $auth = \Illuminate\Support\Facades\Auth::user();

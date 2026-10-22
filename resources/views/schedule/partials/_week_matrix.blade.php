@@ -8,7 +8,7 @@
 --}}
 {{--
     Week matrix — server-side Blade, no Alpine.js.
-    Available: $from, $to, $shifts, $users, $holidays (HolidayService), $isAdmin
+    Available: $from, $to, $shifts, $users, $holidays (HolidayService), $canManageShifts
 --}}
 @php
     /** @var \Carbon\Carbon $from */
@@ -16,7 +16,7 @@
     /** @var \Illuminate\Support\Collection<int, \App\Models\Diary\OnCallShift> $shifts */
     /** @var \Illuminate\Support\Collection<int, \App\Models\Platform\User> $users */
     /** @var \App\Services\Calendar\HolidayService $holidays */
-    /** @var bool $isAdmin */
+    /** @var bool $canManageShifts */
     $weekDays = [];
     $cursor   = $from->copy();
     while ($cursor->lte($to)) {
@@ -33,7 +33,7 @@
         $cursor = $cursor->addDay();
     }
 
-    $rowUsers = $isAdmin
+    $rowUsers = $canManageShifts
         ? $users
         : $users->filter(fn($u) => $shifts->contains('user_id', $u->id));
     if ($rowUsers->isEmpty()) { $rowUsers = $users; }
@@ -92,10 +92,10 @@
                         $cellStateClass = '';
                     }
                     $cellHolidayClass = $day['isHoliday'] ? 'bg-warning/5' : '';
-                    $cellCursorClass = $isAdmin ? 'cursor-pointer' : '';
+                    $cellCursorClass = $canManageShifts ? 'cursor-pointer' : '';
                 @endphp
                 <div class="schedule-cell group relative min-h-16 min-w-32 flex-1 border-r border-base-300 p-1 {{ $cellStateClass }} {{ $cellHolidayClass }} {{ $cellCursorClass }}"
-                     @if ($isAdmin)
+                     @if ($canManageShifts)
                          data-schedule-cell
                          data-date="{{ $day['date'] }}"
                          data-user-id="{{ $rowUser->sqid }}"
@@ -122,15 +122,15 @@
                             ];
                         @endphp
                         <div class="schedule-shift-badge mb-0.5 flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-semibold leading-tight shadow-xs
-                                    @if ($isAdmin) cursor-pointer hover:opacity-80 @endif"
+                                    @if ($canManageShifts) cursor-pointer hover:opacity-80 @endif"
                              style="background:{{ $shift->shiftType?->color ?? '#6b7280' }};color:#fff;"
-                             @if ($isAdmin)
+                             @if ($canManageShifts)
                                  data-shift-drag="{{ $shift->sqid }}"
                                  data-shift-edit="{{ $shift->sqid }}"
                                  data-shift-payload="{{ json_encode($shiftPayload) }}"
                              @endif
                              title="{{ $shift->shiftType?->name ?? __('Schicht') }}{{ $shift->resolvedStartTime() ? ': '.$shift->resolvedStartTime() : '' }}{{ $shift->resolvedEndTime() ? '–'.$shift->resolvedEndTime() : '' }}{{ $shift->note ? ' · '.$shift->note : '' }}{{ $complTitle }}{{ $qualTitle }}">
-                            @if ($isAdmin)
+                            @if ($canManageShifts)
                                 {{-- Griff für Finger und Stift; die Maus zieht am ganzen Abzeichen.
                                      Trefferfläche: app.css ([data-shift-handle]::before). --}}
                                 <x-icon name="drag_indicator" size="1.1em" data-shift-handle
@@ -152,7 +152,7 @@
                     @endforeach
 
                     {{-- Visual add hint --}}
-                    @if ($isAdmin)
+                    @if ($canManageShifts)
                         <div class="absolute inset-0 hidden items-center justify-center text-2xl text-base-content/20 group-hover:flex pointer-events-none select-none">+</div>
                     @endif
                 </div>
@@ -177,14 +177,14 @@
                     @foreach ($slots as $slot)
                         @for ($i = 0; $i < $slot['missing']; $i++)
                             <button type="button"
-                                    @if ($isAdmin)
+                                    @if ($canManageShifts)
                                         data-slot-open
                                         data-date="{{ $day['date'] }}"
                                         data-slot-type="{{ $slot['shift_type_id'] }}"
                                     @else
                                         disabled
                                     @endif
-                                    class="schedule-shift-badge mb-0.5 flex w-full items-center gap-1 rounded border-2 border-dashed px-1.5 py-0.5 text-xs font-semibold leading-tight text-base-content/70 hover:bg-base-100 @if ($isAdmin) cursor-pointer @endif"
+                                    class="schedule-shift-badge mb-0.5 flex w-full items-center gap-1 rounded border-2 border-dashed px-1.5 py-0.5 text-xs font-semibold leading-tight text-base-content/70 hover:bg-base-100 @if ($canManageShifts) cursor-pointer @endif"
                                     style="border-color:{{ $slot['color'] }};color:{{ $slot['color'] }};"
                                     title="{{ __('Offene Schicht') }}: {{ $slot['name'] }}">
                                 <span>{{ $slot['abbreviation'] }}</span>

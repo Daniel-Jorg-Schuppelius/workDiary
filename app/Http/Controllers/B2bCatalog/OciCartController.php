@@ -10,8 +10,7 @@
 
 namespace App\Http\Controllers\B2bCatalog;
 
-use App\Enums\User\Permission as P;
-use App\Http\Controllers\Concerns\{ChecksTenantPublicSurfaces, ResolvesCurrentOrganization};
+use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Procurement\SupplierCatalogController;
 use App\Models\Inventory\Warehouse;
@@ -23,7 +22,7 @@ use ERechnungToolkit\Entities\IdsConnect\IdsCartItem;
 use ERechnungToolkit\Enums\IdsItemCharacter;
 use ERechnungToolkit\Parsers\IdsCartParser;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Auth;
 use RuntimeException;
 
 /**
@@ -36,45 +35,6 @@ use RuntimeException;
  */
 class OciCartController extends Controller {
     use ChecksTenantPublicSurfaces;
-
-    use ResolvesCurrentOrganization;
-
-    /**
-     * Passiver Warenkorb-Import aus der eigenen Oberfläche.
-     *
-     * Die CSRF-Ausnahme für diese Route ist am 2026-08-31 entfallen
-     * (Sicherheitsscan S-43). Sie half nur, wenn ein Betreiber
-     * `SESSION_SAME_SITE=none` setzte — und genau dann war der Endpunkt
-     * klassisch CSRF-anfällig: jede fremde Seite konnte im Browser eines
-     * angemeldeten Einkäufers Bestellentwürfe anlegen, denn Supplier- und
-     * Warehouse-Sqids stehen sichtbar in der Oberfläche. Beim Standard `lax`
-     * trug der Cross-Site-POST ohnehin kein Session-Cookie, die Ausnahme war
-     * also wirkungslos, solange sie ungefährlich war.
-     *
-     * Externe Shops binden über {@see hookReturn()} an: sessionlos und über
-     * die signierte HOOK_URL autorisiert.
-     */
-    public function import(Request $request, OciCartImportService $service): RedirectResponse {
-        Gate::authorize(P::InventoryPost->value);
-
-        $supplier = $this->resolve(Supplier::class, (string) $request->input('supplier'));
-        $warehouse = $this->resolve(Warehouse::class, (string) $request->input('warehouse'));
-        if (! $supplier instanceof Supplier || ! $warehouse instanceof Warehouse) {
-            return redirect()->route('purchase-orders.index')->with('error', __('procurement.oci.flash.missing_context'));
-        }
-
-        $lines = $this->parseCart($request);
-        if ($lines === []) {
-            return redirect()->route('purchase-orders.index')->with('error', __('procurement.oci.flash.empty_cart'));
-        }
-
-        $result = $service->import($this->currentOrganization(), $supplier, $warehouse, $lines, Auth::id() !== null ? (int) Auth::id() : null);
-
-        $flash = __('procurement.oci.flash.imported', ['matched' => $result['matched'], 'unmatched' => $result['unmatched']]);
-
-        return redirect()->route('purchase-orders.show', $result['order'])
-            ->with($result['matched'] > 0 ? 'success' : 'error', $flash);
-    }
 
     /**
      * Rücksprung des aktiven OCI-Absprungs (MVP-096): Der Shop POSTet den

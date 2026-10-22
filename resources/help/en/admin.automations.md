@@ -1,7 +1,7 @@
 ---
 title: "Automations"
 topic: admin.automations
-version: 3
+version: 4
 keywords:
     - workflow
     - rules
@@ -53,3 +53,18 @@ administrators.
 
 Note: for plain notifications, the **Notification rules** are often the
 simpler choice; for external systems see **Webhooks**.
+
+## Inbox rules (incoming invoices)
+
+The trigger “Incoming invoice received” checks every new document of the
+invoice mailbox. Besides the columns of the incoming invoice, conditions can
+use these fields: `seller_name_key`, `buyer_name_key`, `party_name`, `party_name_key`, `sender_domain`, `mail_subject`, `attachment_names`, `file_name`, `country`, `kind_hint`. Name keys are lower case and without legal form,
+so “Muster GmbH” and “MUSTER” count as the same; `kind_hint` names the
+detected document type (for example `reminder` for a dunning letter).
+Operators: `=`, `!=`, `<`, `<=`, `>`, `>=`, `in`, `not_in`, `contains`,
+`not_contains`, `starts_with`, `ends_with`, `matches`. Example:
+`{"all": [{"field": "sender_domain", "op": "=", "value": "example.com"}]}`.
+Available actions: “File incoming invoice as “not an invoice””, “Assign
+incoming invoice” and “Discard incoming invoice”. The rules page of incoming
+invoices shows these rules for accounting; they can be switched and deleted
+there, and both are recorded in the audit log.

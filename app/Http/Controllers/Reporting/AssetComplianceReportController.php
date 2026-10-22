@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Reporting;
 
 use App\Enums\Asset\AssetBlockReason;
-use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Concerns\{FreezesReportSnapshot, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Models\Asset\AssetBlock;
 use App\Models\AssetCompliance\{AssetComplianceAssignment, AssetComplianceProfile, AssetComplianceReportSnapshot, AssetInspectionEvent};
@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Gate;
  * (Vollaudit 2026-07, M33).
  */
 class AssetComplianceReportController extends Controller {
-    use \App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
+    use \App\Http\Controllers\Reporting\Concerns\WritesReportCsv, FreezesReportSnapshot;
 
     use ResolvesGlobalDateRange;
 
@@ -94,15 +94,7 @@ class AssetComplianceReportController extends Controller {
         $actor = $request->user() ?? abort(401);
         [$from, $to] = $this->period($request);
 
-        AssetComplianceReportSnapshot::query()->create([
-            'organization_id' => $this->currentOrganization()->id,
-            'period_start' => $from->toDateString(),
-            'period_end' => $to->toDateString(),
-            'payload' => $this->aggregate($from, $to),
-            'created_by' => $actor->id,
-        ]);
-
-        return back()->with('status', __('Audit-Snapshot eingefroren.'));
+        return $this->freezeReportSnapshot(AssetComplianceReportSnapshot::class, $from, $to, $this->aggregate($from, $to), (int) $actor->id);
     }
 
     /** @return array{0: Carbon, 1: Carbon} */

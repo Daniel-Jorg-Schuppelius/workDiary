@@ -12,10 +12,12 @@ declare(strict_types=1);
 
 namespace App\Services\Stammdaten;
 
+use App\Exceptions\ContactNumberTakenException;
 use App\Models\Customer\Customer;
 use App\Models\Supplier\Supplier;
 use App\Services\Integration\Match\{FuzzyField, Normalize};
 use App\Services\Integration\Profiles\CustomerMatchProfile;
+use CommonToolkit\Helper\Data\PersonNameHelper;
 
 /**
  * Ist ein Kontakt im Buchhaltungsprogramm derselbe wie der lokale (MVP-1133)?
@@ -42,5 +44,20 @@ final class ContactIdentity {
         }
 
         return (new FuzzyField(['name', 'company'], CustomerMatchProfile::FUZZY_THRESHOLD))->matches($local, $remote);
+    }
+
+    /**
+     * Gehört die Kundennummer im Programm einem anderen Kontakt, bricht die
+     * Übertragung ab (easybill, sevDesk; Konsolidierungs-Audit 2026-10-21,
+     * ko-19). Name im Programm: Firma, sonst Vor- und Nachname.
+     *
+     * @throws ContactNumberTakenException
+     */
+    public function assertRemoteOwner(Customer $customer, string $number, string $program, ?string $company, ?string $firstName, ?string $lastName, mixed $vatId): void {
+        $company = trim((string) $company);
+        $name = $company !== '' ? $company : PersonNameHelper::join(['first_name' => $firstName, 'last_name' => $lastName]);
+        if (! $this->same($customer, ['name' => $name, 'vat_id' => $vatId])) {
+            throw ContactNumberTakenException::remote($number, $program, $name);
+        }
     }
 }

@@ -79,9 +79,10 @@ class EnvExampleRuleTest extends TestCase {
         $known = array_flip($documented[1]);
 
         $undocumented = [];
-        foreach ($this->phpFiles('config') as $file) {
-            $name = basename($file);
-            if (in_array($name, self::FRAMEWORK_CONFIGS, true)) {
+        // Plugins gehören dazu (Vollscan 2026-10-21, lk-31): 292 ihrer Schlüssel standen nirgends.
+        foreach ([...$this->phpFiles('config'), ...$this->filesUnder('app/Plugins', '/^config\.php$/')] as $file) {
+            $name = str_contains($file, '/app/Plugins/') ? 'app/Plugins/' . basename(dirname($file)) . '/config.php' : 'config/' . basename($file);
+            if (in_array(basename($name), self::FRAMEWORK_CONFIGS, true) && str_starts_with($name, 'config/')) {
                 continue;
             }
             preg_match_all('/env\(\s*[\'"]([A-Z][A-Z0-9_]*)[\'"]/', (string) file_get_contents($file), $found);
@@ -96,7 +97,7 @@ class EnvExampleRuleTest extends TestCase {
 
         $this->assertSame([], array_keys($undocumented), "Diese env()-Schlüssel stehen in keiner Vorlage:\n"
             . implode("\n", array_map(
-                static fn (string $key): string => sprintf('  %s (config/%s)', $key, $undocumented[$key]),
+                static fn (string $key): string => sprintf('  %s (%s)', $key, $undocumented[$key]),
                 array_keys($undocumented),
             ))
             . "\n\nIn .env.example aufnehmen — auskommentiert mit der Vorgabe genügt.");

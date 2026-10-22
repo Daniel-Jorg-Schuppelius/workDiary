@@ -168,7 +168,8 @@ Welle 4 leer; ein neuer Verstoß wird gelöst, nicht eingetragen.
   `VehicleReservationGuard`, `ProjectEconomicsDimension`, `RoomBlockingSource`,
   `CloudIntakeHandler`, `RetentionPolicyProvider`, `MailIntakeHandler`,
   `MailIntakeAnnotator` (Klärfall-Markierung im Mail-Eingang, Feature 166),
-  `OffboardingStep`, `NavigationCondition`, `PluginCapabilitySource`,
+  `OffboardingStep`, `OffboardingHandover` (Übergabe im Austritts-Dialog, etwa
+  Ideenkarten), `NavigationCondition`, `PluginCapabilitySource`,
   `MirrorPdfRenderer`, `RuleAction`, `RuleTrigger` (Automationsregeln), `EarlyWarningSource`,
   `PortalNoticeSource` (Hinweise im Kundenportal), `ArticleConflictHandler`
   (Artikelkonflikt: Fremdstand übernehmen, Plugins tragen sich per `contribute()` ein),
@@ -394,6 +395,17 @@ Nachschlagelisten, Lizenz und KI umgingen ihren Cache still.
 - `serializable_classes` bleibt `false`; eine Allowlist wäre bei jeder
   verschachtelten Klasse (Carbon, Collection) wieder lückenhaft.
   Details: [cache-konventionen.md](../WorkDiary-Architecture/konventionen/cache-konventionen.md).
+
+## Rollen nach Namen: nur über OrganizationRoles (Vollscan 2026-10-21)
+
+Neben jeder Org-Rolle `admin` liegt die globale Zeile gleichen Namens; Spatie
+(`Role::findOrCreate`, `findByName`, `assignRole('…')`, `User::role('…')`)
+nimmt ungeordnet die erste Zeile. Vergeben mit
+`App\Services\Org\OrganizationRoles::named($name, $orgId)`, filtern mit
+`OrganizationRoles::matching($names, $orgId)` (Gate
+`OrganizationRoleLookupRuleTest`). Ein Recht ohne Funktion entfällt über
+`PermissionsSeeder::RETIRED` (der Seeder löscht es samt Zuordnungen) — nie nur
+den Enum-Fall streichen.
 
 ## Verweise
 

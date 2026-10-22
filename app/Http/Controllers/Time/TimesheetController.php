@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Time;
 
 use App\Enums\Timesheet\TimesheetStatus;
+use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Project\ProjectController;
 use App\Http\Requests\Time\SaveTimesheetRequest;
@@ -39,8 +40,8 @@ class TimesheetController extends Controller {
         $userId = (int) Auth::id();
         $scope = $request->string('scope', 'mine')->toString();
         $authUser = Auth::user();
-        // Team-Sicht wie TimesheetPolicy::view: wer alle Zeiten sehen darf.
-        $seesTeam = $authUser instanceof User && $authUser->canViewAllTimeEntries();
+        // Team-Sicht wie TimesheetPolicy::view.
+        $seesTeam = $authUser instanceof User && $authUser->can(Permission::TimesheetViewAny->value);
 
         $globalRange = app(DateRangeContext::class)->current();
         $query = Timesheet::query()

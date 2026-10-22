@@ -147,7 +147,7 @@
                 @foreach ($service->layoutEntries($entriesByDay[$dayIndex], $day) as $placed)
                     @php
                         $entry = $placed['entry'];
-                        $toneClass = $statusToneClass[$entry->statusTone()] ?? 'wd-week-entry--neutral';
+                        $toneClass = $statusToneClass[$entry->statusStage()] ?? 'wd-week-entry--neutral';
                         $userHue = $entry->user_id ? $service->userHue((int) $entry->user_id) : 210;
                         $leftFrac = $placed['left'] / 100;
                         $widthFrac = $placed['width'] / 100;

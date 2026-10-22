@@ -14,7 +14,6 @@ namespace App\Plugins\Easybill;
 
 use App\Enums\Numbering\NumberScope;
 use App\Enums\Stammdaten\ContactSalutation;
-use App\Exceptions\ContactNumberTakenException;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Plugins\{AbstractPlugin, PluginHealth};
@@ -163,10 +162,7 @@ class EasybillPlugin extends AbstractPlugin implements ContactNumberIssuer, Cont
             if (! is_array($row) || (string) ($row['number'] ?? '') !== $number || empty($row['id'] ?? null)) {
                 continue;
             }
-            $name = (string) ($row['company_name'] ?? '') ?: trim(($row['first_name'] ?? '') . ' ' . ($row['last_name'] ?? ''));
-            if (! app(ContactIdentity::class)->same($customer, ['name' => $name, 'vat_id' => $row['vat_identifier'] ?? null])) {
-                throw ContactNumberTakenException::remote($number, $this->name(), $name);
-            }
+            app(ContactIdentity::class)->assertRemoteOwner($customer, $number, $this->name(), $row['company_name'] ?? null, $row['first_name'] ?? null, $row['last_name'] ?? null, $row['vat_identifier'] ?? null);
 
             return $row;
         }

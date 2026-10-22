@@ -11,16 +11,17 @@
 namespace App\Policies\Invoicing;
 
 use App\Enums\Invoicing\InvoiceStatus;
+use App\Enums\User\Permission;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 
 class InvoicePolicy {
     public function viewAny(User $user): bool {
-        return $user->canManageBilling();
+        return $this->holds($user, Permission::InvoiceViewAny);
     }
 
     public function view(User $user, Invoice $invoice): bool {
-        return $user->canManageBilling();
+        return $this->holds($user, Permission::InvoiceView);
     }
 
     public function create(User $user): bool {
@@ -32,15 +33,15 @@ class InvoicePolicy {
     }
 
     public function delete(User $user, Invoice $invoice): bool {
-        return $user->canManageBilling() && $invoice->status === InvoiceStatus::Draft;
+        return $this->holds($user, Permission::InvoiceDelete) && $invoice->status === InvoiceStatus::Draft;
     }
 
     public function issue(User $user, Invoice $invoice): bool {
-        return $user->canManageBilling() && $invoice->status === InvoiceStatus::Draft;
+        return $this->holds($user, Permission::InvoiceIssue) && $invoice->status === InvoiceStatus::Draft;
     }
 
     public function pay(User $user, Invoice $invoice): bool {
-        return $user->canManageBilling() && $invoice->status === InvoiceStatus::Issued;
+        return $this->holds($user, Permission::InvoicePay) && $invoice->status === InvoiceStatus::Issued;
     }
 
     /**
@@ -67,5 +68,10 @@ class InvoicePolicy {
      */
     public function send(User $user, Invoice $invoice): bool {
         return $user->canManageBilling();
+    }
+
+    /** Ohne Admin-Bypass: der Status (Entwurf, gestellt) gilt auch für Admins. */
+    private function holds(User $user, Permission $permission): bool {
+        return $user->isAdmin() || $user->can($permission->value);
     }
 }

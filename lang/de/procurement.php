@@ -594,11 +594,12 @@ return [
         'no_document' => 'Kein Dokument hinterlegt',
         'saved' => 'Nachweis hinterlegt.',
         'deleted' => 'Nachweis entfernt.',
+        'confirm_delete' => 'Nachweis „:type“ entfernen?',
         'blocked' => 'Beauftragung gesperrt — fehlende oder abgelaufene Nachweise: :names.',
         'blocking_on' => 'Fehlende oder abgelaufene Pflichtnachweise SPERREN die Beauftragung (Organisations-Einstellung).',
         'blocking_off' => 'Fehlende Nachweise werden nur angezeigt, nicht gesperrt. Das Sperren lässt sich in den Einstellungen aktivieren.',
         'valid_until_hint' => 'Ohne Gültigkeitsende gilt der Nachweis als unbefristet — das ist der seltenere Fall, bitte prüfen.',
-        'action' => ['add' => 'Nachweis hinterlegen'],
+        'action' => ['add' => 'Nachweis hinterlegen', 'remove' => 'Nachweis entfernen'],
         'column' => [
             'supplier' => 'Lieferant',
             'status' => 'Ampel',

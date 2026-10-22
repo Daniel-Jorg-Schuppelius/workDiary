@@ -353,24 +353,19 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
      * @return array{published: int, deleted: int, unchanged: int, failed: int}
      */
     private function publishItems(Organization $organization, Closure $items, bool $removeOrphans = false): array {
-        $counters = ['published' => 0, 'deleted' => 0, 'unchanged' => 0, 'failed' => 0];
-
         $connection = MsgraphConnection::query()->where('organization_id', $organization->id)->first();
-        if (! $connection instanceof MsgraphConnection || ! $connection->isActive()) {
-            return $counters;
+        if (! $connection instanceof MsgraphConnection) {
+            return RemoteCalendarPublishService::NO_COUNTS;
         }
 
-        try {
-            $gateway = new MsgraphCalendarClient($connection);
-            $result = app(RemoteCalendarPublishService::class)->publish(self::ID, $connection, $gateway, $items(), removeOrphans: $removeOrphans);
-            foreach ($counters as $key => $value) {
-                $counters[$key] = $value + $result[$key];
-            }
-        } catch (Throwable) {
-            $counters['failed']++;
-        }
-
-        return $counters;
+        return app(RemoteCalendarPublishService::class)->publishIfActive(
+            self::ID,
+            $connection,
+            $connection->isActive(),
+            static fn (): MsgraphCalendarClient => new MsgraphCalendarClient($connection),
+            $items,
+            $removeOrphans,
+        );
     }
 
     public function adminPanel(): ?array {

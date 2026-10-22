@@ -12,6 +12,10 @@
 
 @section('content')
     <x-index-page :subtitle="__('schedule.exchange.subtitle')">
+        <x-slot:actions>
+            <x-icon-btn icon="swap_horiz" tone="primary" size="sm" data-entry-modal-trigger
+                        :href="route('schedule.exchanges.create')" show-label>{{ __('schedule.exchange.request_action') }}</x-icon-btn>
+        </x-slot:actions>
 
         @include('schedule._shift_tabs')
 

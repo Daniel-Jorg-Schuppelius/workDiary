@@ -14,7 +14,8 @@ namespace App\Services\Help;
 
 use App\Models\Platform\{HelpTopic, User};
 use App\Services\Search\{SearchTextNormalizer, SearchVocabulary};
-use CommonToolkit\Helper\Data\StringHelper;
+use CommonToolkit\Enums\HashAlgorithm;
+use CommonToolkit\Helper\Data\{CryptoHelper, StringHelper};
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\{App, Cache};
@@ -375,7 +376,7 @@ final class HelpSearch {
     private function vocabulary(string $locale): array {
         $stamp = (string) HelpTopic::query()->where('locale', $locale)->max('updated_at') . '|' . HelpTopic::query()->where('locale', $locale)->count();
 
-        return Cache::remember('help-search:vocabulary:' . $locale . ':' . md5($stamp), 86400, function () use ($locale): array {
+        return Cache::remember('help-search:vocabulary:' . $locale . ':' . CryptoHelper::hash($stamp, HashAlgorithm::MD5), 86400, function () use ($locale): array {
             $words = [];
             foreach (HelpTopic::query()->where('locale', $locale)->get(['title', 'keywords', 'headings']) as $row) {
                 $texts = [(string) $row->title, ...array_map('strval', $row->keywords ?? []), ...array_map(static fn(array $heading): string => (string) $heading['text'], $row->headings ?? [])];

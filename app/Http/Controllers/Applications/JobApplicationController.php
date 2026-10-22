@@ -22,6 +22,7 @@ use App\Models\Platform\User;
 use App\Services\Applications\RecruitingService;
 use App\Services\Document\DocumentService;
 use App\Support\{ErrorText, SortableQuery, Tz};
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -296,7 +297,7 @@ class JobApplicationController extends Controller {
             'qualifications' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $qualifications = array_values(array_filter(array_map('trim', explode("\n", (string) ($data['qualifications'] ?? '')))));
+        $qualifications = array_map('trim', StringHelper::lines((string) ($data['qualifications'] ?? ''), true));
 
         try {
             $this->recruiting->createEmployeeDraft($application, $this->actor(), $qualifications);

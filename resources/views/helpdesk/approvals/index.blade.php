@@ -71,7 +71,7 @@
                         <td class="text-right whitespace-nowrap">
                             <x-icon-btn icon="rule" tone="primary" size="sm"
                                         data-entry-modal-trigger
-                                        :href="route('servicedesk.approvals.decide-form', $approval)"
+                                        :href="route('approvals.decide-form', $approval)"
                                         :label="__('Entscheiden')" />
                         </td>
                     </tr>

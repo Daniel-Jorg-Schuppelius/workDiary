@@ -22,6 +22,8 @@ use App\Models\Integration\ExternalReference;
 use App\Models\Material\MaterialCostAllocation;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Services\Stammdaten\ContactPersons;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne, MorphMany};
@@ -212,6 +214,9 @@ class Customer extends Model implements ContactDetailsHolder, ContactNameHolder,
     protected static function booted(): void {
         self::registerSequentialNumberHook();
 
+        // Belege hängen per ON DELETE CASCADE am Kunden und gingen sonst mit.
+        static::deleting(static fn(self $customer) => app(\App\Services\Stammdaten\PartyDeletionGuard::class)->assertDeletable($customer));
+
         self::assignSlugWhenMissing(static fn(self $customer): string => self::uniqueSlug(
             (string) $customer->name,
             $customer->organization_id,
@@ -320,7 +325,7 @@ class Customer extends Model implements ContactDetailsHolder, ContactNameHolder,
             'color' => (string) config('project.default_project.color', '#64748b'),
             'status' => ProjectStatus::Active->value,
             'is_default' => true,
-            'billable' => $billable === null ? null : filter_var($billable, FILTER_VALIDATE_BOOL),
+            'billable' => $billable === null ? null : StringHelper::parseBool($billable) ?? false,
             'global_activities' => true,
         ]);
 
@@ -360,10 +365,6 @@ class Customer extends Model implements ContactDetailsHolder, ContactNameHolder,
     /** @return HasMany<MaterialCostAllocation, $this> */
     public function materialCostAllocations(): HasMany {
         return $this->hasMany(MaterialCostAllocation::class);
-    }
-
-    public function hasProjects(): bool {
-        return $this->projects()->exists();
     }
 
     public function hasNonDefaultProjects(): bool {
@@ -407,5 +408,26 @@ class Customer extends Model implements ContactDetailsHolder, ContactNameHolder,
      */
     public function scopeWithoutCollective(Builder $query): Builder {
         return $query->where($query->qualifyColumn('is_collective'), false);
+    }
+
+    /**
+     * Adressen, unter denen der Kunde schreibt: Stammadresse, Ansprechpartner
+     * und Portalzugänge — Grundlage der Absenderprüfung (KnownSenders).
+     *
+     * @return list<string>
+     */
+    public function knownEmailAddresses(): array {
+        $known = [(string) $this->email];
+        foreach (ContactPersons::normalizeAll($this->contact_persons ?? []) as $person) {
+            $known[] = (string) ($person['email'] ?? '');
+        }
+        foreach (User::query()->withoutGlobalScopes()
+            ->where('organization_id', $this->organization_id)
+            ->where('customer_id', $this->getKey())
+            ->pluck('email') as $portalEmail) {
+            $known[] = (string) $portalEmail;
+        }
+
+        return array_values(array_filter($known, static fn (string $email): bool => trim($email) !== ''));
     }
 }

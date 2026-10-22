@@ -25,6 +25,8 @@
     /** @var \App\Services\Calendar\HolidayService $holidays */
     /** @var int $userFilter */
     /** @var bool $isAdmin */
+    /** @var bool $canManageShifts */
+    /** @var bool $canManageShiftTypes */
 @endphp
 
 <x-index-page overflow="clip" :subtitle="__('Personalplanung und Schichtzuweisung des Mandanten.')">
@@ -44,13 +46,17 @@
             <x-icon-btn icon="restart_alt" size="sm" :href="route('schedule.index')" show-label>{{ __('Zurücksetzen') }}</x-icon-btn>
         @endif
 
-        @if ($isAdmin)
+        @if ($isAdmin || $canManageShiftTypes)
             <x-slot:extra>
-                <x-icon-btn icon="tune" size="sm" type="button" id="btn-open-type-manager" show-label>{{ __('Schichttypen') }}</x-icon-btn>
-                {{-- Import & Drucken öffnen echte Dialoge (s. _print_import_dialogs) statt
-                     Vollseiten-Navigation bzw. CSS-Dropdown (das im overflow-clip-Container unsichtbar war). --}}
-                <x-icon-btn icon="upload" size="sm" type="button" id="btn-open-import" show-label>{{ __('Import') }}</x-icon-btn>
-                <x-icon-btn icon="print" size="sm" type="button" id="btn-open-print" show-label>{{ __('Drucken') }}</x-icon-btn>
+                @if ($canManageShiftTypes)
+                    <x-icon-btn icon="tune" size="sm" type="button" id="btn-open-type-manager" show-label>{{ __('Schichttypen') }}</x-icon-btn>
+                @endif
+                @if ($isAdmin)
+                    {{-- Import & Drucken öffnen echte Dialoge (s. _print_import_dialogs) statt
+                         Vollseiten-Navigation bzw. CSS-Dropdown (das im overflow-clip-Container unsichtbar war). --}}
+                    <x-icon-btn icon="upload" size="sm" type="button" id="btn-open-import" show-label>{{ __('Import') }}</x-icon-btn>
+                    <x-icon-btn icon="print" size="sm" type="button" id="btn-open-print" show-label>{{ __('Drucken') }}</x-icon-btn>
+                @endif
             </x-slot:extra>
         @endif
     </x-filter-bar>
@@ -62,7 +68,7 @@
         <div role="alert" class="alert alert-warning alert-soft mt-2 text-sm" data-prerequisite="shift-types">
             <x-icon name="settings_alert" />
             <span>{{ __('prerequisites.shift_types.missing') }}</span>
-            @if ($isAdmin)
+            @if ($canManageShiftTypes)
                 <x-button type="button" size="sm" tone="warning" id="btn-open-type-manager-hint"
                           data-open-dialog="shift-type-manager">
                     {{ __('prerequisites.shift_types.cta') }}
@@ -123,8 +129,10 @@
 @include('schedule.partials._shift_dialog')
 
 {{-- ── Shift-type manager + Druck/Import-Dialoge ───────────────────────── --}}
-@if ($isAdmin)
+@if ($canManageShiftTypes)
     @include('schedule.partials._shift_type_manager')
+@endif
+@if ($isAdmin)
     @include('schedule.partials._print_import_dialogs')
 @endif
 
@@ -139,7 +147,7 @@
 
 <script @cspNonce>
 window.__scheduleConfig = {
-    isAdmin: {{ $isAdmin ? 'true' : 'false' }},
+    canManage: {{ $canManageShifts ? 'true' : 'false' }},
     currentUserId: @json(auth()->user()?->sqid),
     csrf: @json(csrf_token()),
     routes: {

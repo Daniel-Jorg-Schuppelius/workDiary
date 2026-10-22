@@ -14,10 +14,9 @@ use App\Plugins\Msgraph\Api\{MsgraphCalendarClient, MsgraphOAuth};
 use App\Plugins\Msgraph\Enums\MsgraphConnectionStatus;
 use App\Plugins\Msgraph\Models\MsgraphConnection;
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
-use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
+use App\Plugins\Support\Concerns\{ManagesPluginConnection, ResolvesPluginOrgContext};
 use App\Plugins\Support\{ConnectionOAuthController, OAuthStateHandshake, PluginOAuthGrant};
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
 use Throwable;
 
@@ -29,6 +28,7 @@ use Throwable;
  * `Calendars.ReadWrite offline_access`.
  */
 class MsgraphAdminController extends ConnectionOAuthController {
+    use ManagesPluginConnection;
     use ResolvesPluginOrgContext;
 
     public function index(): View {
@@ -230,19 +230,6 @@ class MsgraphAdminController extends ConnectionOAuthController {
 
     /** Manuelles Publish (auditierter Admin-Vorgang; CalDAV-Muster). */
     public function publish(): RedirectResponse {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
-
-        $connection = MsgraphConnection::query()->where('organization_id', $organization->id)->first();
-        if (! $connection instanceof MsgraphConnection || ! $connection->isActive()) {
-            return back()->with('error', __('msgraph::msgraph.flash.no_connection'));
-        }
-
-        // Queue statt Request (Vollscan 2026-08-23, J17): ein Voll-Sync im Web-
-        // Request lief in den PHP-Timeout; der Worker hat Retry und Laufzeitbudget.
-        Artisan::queue('msgraph:publish', ['--organization' => (string) $organization->id]);
-        $connection->audit('msgraph.publish_manual', ['by_user_id' => (int) $admin->id]);
-
-        return back()->with('success', __('msgraph::msgraph.flash.publish_done'));
+        return $this->queueConnectionRun(MsgraphConnection::class, 'msgraph:publish', [], 'msgraph.publish_manual', 'msgraph::msgraph.flash.publish_done', 'msgraph::msgraph.flash.no_connection');
     }
 }

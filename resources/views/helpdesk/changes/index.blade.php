@@ -9,7 +9,7 @@
 
 {{-- Change-/CAB-Übersicht (Feature 065, MVP-157): kommende Fenster zuerst
      (CAB-Sicht), Filter nach Typ/Status/Outcome. Freigaben laufen über die
-     gemeinsame Genehmigungs-Inbox (servicedesk.approvals.*). --}}
+     gemeinsame Genehmigungs-Inbox (approvals.*). --}}
 
 @extends('layouts.app')
 @section('title', __('Changes'))

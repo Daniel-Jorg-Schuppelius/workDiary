@@ -19,6 +19,7 @@ use App\Models\Invoicing\Invoice;
 use App\Models\Travel\Expense;
 use App\Services\Finance\Banking\ReferenceExtractor;
 use App\Support\Crypto\BlindIndex;
+use Carbon\CarbonInterface;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Model;
 
@@ -148,7 +149,7 @@ class MatchingService {
                 $score += $amountScore;
                 $reasons[] = $amountReason;
             }
-            if ($this->dateNear($claim->due_on->toDateString(), $transaction->booking_date->toDateString())) {
+            if ($this->dateNear($claim->due_on, $transaction->booking_date)) {
                 $score += self::SCORE_DATE_NEAR;
                 $reasons[] = 'date';
             }
@@ -200,7 +201,7 @@ class MatchingService {
                 $reasons[] = $amountReason;
             }
 
-            if ($this->dateNear($invoice->issued_on?->toDateString(), $transaction->booking_date->toDateString())) {
+            if ($this->dateNear($invoice->issued_on, $transaction->booking_date)) {
                 $score += self::SCORE_DATE_NEAR;
                 $reasons[] = 'date';
             }
@@ -427,7 +428,7 @@ class MatchingService {
                     $score += self::SCORE_IBAN;
                     $reasons[] = 'mandate';
                 }
-                if ($this->dateNear($originalTx->booking_date->toDateString(), $returnTransaction->booking_date->toDateString())) {
+                if ($this->dateNear($originalTx->booking_date, $returnTransaction->booking_date)) {
                     $score += self::SCORE_DATE_NEAR;
                     $reasons[] = 'date';
                 }
@@ -533,12 +534,9 @@ class MatchingService {
         return array_values(array_unique(array_filter($refs, static fn(string $r): bool => $r !== '')));
     }
 
-    private function dateNear(?string $reference, string $booking, int $days = 45): bool {
-        if ($reference === null) {
-            return false;
-        }
-
-        return abs(strtotime($booking) - strtotime($reference)) <= $days * 86400;
+    private function dateNear(?CarbonInterface $reference, CarbonInterface $booking, int $days = 45): bool {
+        return $reference !== null
+            && $reference->copy()->startOfDay()->diffInDays($booking->copy()->startOfDay(), true) <= $days;
     }
 
     private function customerIbanMatches(Invoice $invoice, BankTransaction $transaction): bool {
