@@ -94,6 +94,7 @@ return [
     // Noms lisibles des tâches (clés registry, imbriquées à cause de la notation à points) ;
     // ajouter les nouvelles tâches ici dans toutes les langues — sinon repli = clé.
     'job' => [
+        'surveys' => ['scheduled' => 'Envoyer les enquêtes à intervalle fixe'],
         'demo' => [
             'prune' => 'Supprimer les organisations de démonstration après le délai de conservation',
         ],
@@ -193,6 +194,7 @@ return [
         'shipping' => ['track' => 'Mettre à jour le suivi des envois'],
         'orgamax' => ['sync' => 'Synchronisation orgaMAX'],
         'print' => ['purge_files' => 'Purger les fichiers de production après rétention'],
+        'uploads' => ['prune_chunks' => 'Supprimer les téléversements partiels abandonnés'],
         'search' => ['reconcile' => 'Synchroniser l’index de recherche (recherche d’activités)'],
         'payroll' => ['import_minimum_wages' => 'Importer les salaires minimums UE'],
         'plans' => ['purge' => 'Purger les données de modules rétrogradés'],

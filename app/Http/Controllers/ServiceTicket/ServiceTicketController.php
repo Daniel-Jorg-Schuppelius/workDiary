@@ -33,6 +33,7 @@ class ServiceTicketController extends Controller {
         $statusFilter = $request->string('status')->toString();
         $priorityFilter = $request->string('priority')->toString();
         $assigneeFilter = $request->string('assignee')->toString();
+        $serviceFilter = $request->string('service')->toString();
         // Whitelist-Auflösung zentral (C21; Vollaudit 2026-07, N26) — bei
         // ungültigem Key fallen Key UND Richtung auf die Defaults zurück.
         [$sort, $dir] = \App\Support\SortableQuery::resolve($request, self::ALLOWED_SORTS, 'reported_at');
@@ -55,6 +56,13 @@ class ServiceTicketController extends Controller {
         } elseif ($assigneeFilter === 'unassigned') {
             $query->whereNull('assigned_to_user_id');
         }
+        // Fachdienst (MVP-1257): unbekannte Sqid filtert nicht still alles weg.
+        $serviceId = \App\Support\Sqid::decode(\App\Models\ServiceTicket\BusinessService::class, $serviceFilter);
+        if ($serviceId !== null) {
+            $query->where('business_service_id', $serviceId);
+        } else {
+            $serviceFilter = '';
+        }
 
         $tickets = $query->paginate(25)->withQueryString();
 
@@ -67,7 +75,9 @@ class ServiceTicketController extends Controller {
                 'status' => $statusFilter,
                 'priority' => $priorityFilter,
                 'assignee' => $assigneeFilter,
+                'service' => $serviceFilter,
             ],
+            'serviceOptions' => $this->serviceOptions(),
             'canCreate' => Gate::allows('create', ServiceTicket::class),
             'sort' => $sort,
             'dir' => $dir,
@@ -82,7 +92,14 @@ class ServiceTicketController extends Controller {
             'slaClockSegments', 'watchers.user:id,name', 'links.linked', 'waitOwner:id,name', 'incidentLead:id,name',
             // Zugeordnete Probleme (MVP-156) + Changes (MVP-157) im Verknüpfungs-Widget.
             'problems', 'changes',
+            'businessService:id,name', 'serviceOffering:id,name', 'project:id,name,slug,customer_id', 'project.customer:id,name,slug',
         ]);
+
+        /** @var User $viewer */
+        $viewer = $request->user();
+        $impact = $this->impactFor($ticket);
+        // Zeiten am Ticket (MVP-1259): nur, was der Betrachter sehen darf.
+        $timeEntries = $ticket->timeEntries()->visibleTo($viewer)->with('user:id,name')->orderByDesc('date')->get();
 
         // Timeline (MVP-152): Konversation + Status-Audits + SLA + Anhänge
         // gemischt; Typ-Filter-Chips + „mehr laden" über GET-Parameter.
@@ -110,7 +127,34 @@ class ServiceTicketController extends Controller {
                 ->where('organization_id', $ticket->organization_id)
                 ->orderBy('name')
                 ->get(['id', 'name']),
+            'services' => Gate::allows('update', $ticket) ? $this->serviceOptions() : new \Illuminate\Database\Eloquent\Collection,
+            'impact' => $impact,
+            'timeEntries' => $timeEntries,
+            'canBookTime' => $ticket->project !== null && Gate::allows('create', \App\Models\Time\TimeEntry::class),
         ]);
+    }
+
+    /**
+     * Auswirkungsanalyse (MVP-1256): Fachdienste, die vom betroffenen abhängen,
+     * mit ihren offenen Tickets.
+     *
+     * @return list<array{service: \App\Models\ServiceTicket\BusinessService, openTickets: int}>
+     */
+    private function impactFor(ServiceTicket $ticket): array {
+        if ($ticket->business_service_id === null) {
+            return [];
+        }
+        $analyzer = app(\App\Services\ServiceTicket\ServiceImpactAnalyzer::class);
+        $organizationId = (int) $ticket->organization_id;
+        $ids = $analyzer->affectedBy($organizationId, (int) $ticket->business_service_id);
+        $open = $analyzer->openTicketCounts($organizationId, $ids);
+
+        return array_values(\App\Models\ServiceTicket\BusinessService::query()
+            ->whereIn('id', $ids)
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->map(fn (\App\Models\ServiceTicket\BusinessService $service): array => ['service' => $service, 'openTickets' => $open[$service->id] ?? 0])
+            ->all());
     }
 
     public function create(): View {
@@ -120,7 +164,29 @@ class ServiceTicketController extends Controller {
             'ticket' => null,
             'isDialog' => true,
             'priorityOptions' => $this->priorityOptions(),
+            'customers' => \App\Models\Customer\Customer::query()->orderBy('name')->get(['id', 'name']),
+            'projects' => \App\Models\Project\Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
+            'assets' => \App\Models\Asset\Asset::query()->with('customer:id')->orderBy('name')->get(['id', 'name', 'asset_no', 'customer_id']),
+            'services' => $this->serviceOptions(),
         ]);
+    }
+
+    /**
+     * Business-Services mit Angeboten für die Auswahl am Ticket (MVP-1257);
+     * leer, solange das Modul Service Desk nicht aktiv ist.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, \App\Models\ServiceTicket\BusinessService>
+     */
+    private function serviceOptions(): \Illuminate\Database\Eloquent\Collection {
+        if (! app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.service_desk')) {
+            return new \Illuminate\Database\Eloquent\Collection;
+        }
+
+        return \App\Models\ServiceTicket\BusinessService::query()
+            ->where('active', true)
+            ->with(['offerings' => fn ($q) => $q->where('active', true)->orderBy('name')])
+            ->orderBy('name')
+            ->get(['id', 'name']);
     }
 
     public function store(SaveServiceTicketRequest $request): RedirectResponse {
@@ -196,6 +262,8 @@ class ServiceTicketController extends Controller {
             'urgency' => ['required', 'integer', 'in:1,2,3'],
             'priority_override' => ['nullable', \Illuminate\Validation\Rule::enum(ServiceTicketPriority::class)],
             'workaround' => ['nullable', 'string', 'max:5000'],
+            'business_service_id' => ['nullable', 'string', 'max:40'],
+            'service_offering_id' => ['nullable', 'string', 'max:40'],
         ]);
 
         $user = $request->user();
@@ -213,6 +281,15 @@ class ServiceTicketController extends Controller {
 
         if (array_key_exists('workaround', $data)) {
             $ticket->forceFill(['workaround' => $data['workaround']])->save();
+        }
+
+        // Felder fehlen ohne Modul Service Desk — dann bleibt der Service unberührt.
+        if ($request->has('business_service_id')) {
+            $this->tickets->setService(
+                $ticket,
+                \App\Support\Sqid::decode(\App\Models\ServiceTicket\BusinessService::class, (string) ($data['business_service_id'] ?? '')),
+                \App\Support\Sqid::decode(\App\Models\Sales\ServiceOffering::class, (string) ($data['service_offering_id'] ?? '')),
+            );
         }
 
         return back()->with('success', __('Ticket klassifiziert.'));

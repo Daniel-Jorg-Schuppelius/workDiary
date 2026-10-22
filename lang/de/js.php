@@ -127,6 +127,11 @@ return [
     'quiz' => [
         'progress' => ':answered von :total beantwortet',
     ],
+    'chunk_upload' => [
+        'progress' => 'Große Datei wird in Teilen hochgeladen … :percent %',
+        'done' => 'Datei übertragen — der Block wird gespeichert.',
+        'failed' => 'Übertragung unterbrochen. Erneut speichern setzt beim letzten Teil fort.',
+    ],
     // NFC-Scan (MVP-903).
     'nfc' => [
         'hold' => 'Tag an das Gerät halten …',

@@ -66,11 +66,14 @@ class OrderService {
     }
 
     public function complete(DiaryEntry $entry, User $actor, string $summary): DiaryEntry {
-        return $this->transition($entry, $actor, 'complete', Status::Completed, [
+        $completed = $this->transition($entry, $actor, 'complete', Status::Completed, [
             'completed_at' => CarbonImmutable::now(),
             'completed_by_user_id' => $actor->id,
             'completion_summary' => $summary,
         ], $summary);
+        \App\Events\Diary\OrderCompleted::dispatch((int) $completed->organization_id, (int) $completed->id);
+
+        return $completed;
     }
 
     public function handover(DiaryEntry $entry, User $actor, Protocol $protocol): DiaryEntry {

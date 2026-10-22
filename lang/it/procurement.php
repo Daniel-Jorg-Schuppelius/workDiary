@@ -31,6 +31,10 @@ return [
         'incoming' => 'Entrate previste',
     ],
 
+    'credentials' => [
+        'badge' => 'Documenti: :status',
+        'hint' => 'Documenti obbligatori del fornitore (certificato di esenzione, assicurazione ecc.)',
+    ],
     'pdf' => [
         'title' => 'Ordine',
         'date' => 'Data ordine',

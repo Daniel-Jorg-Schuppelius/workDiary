@@ -134,6 +134,11 @@ final class BillOfQuantityImportTest extends TestCase {
      */
     public function test_imports_a_gaeb_90_file(): void {
         $records = [
+            'T0',
+            'T1 Zahlung binnen 30 Tagen.',
+            'T0',
+            'T1 Gewaehrleistung nach VOB/B.',
+            'T9',
             str_pad('00', 10) . '83' . str_pad('Musterprojekt', 50) . '1122PPPPI90',
             '1111       N',
             '12Erdarbeiten',
@@ -158,5 +163,12 @@ final class BillOfQuantityImportTest extends TestCase {
         $this->assertSame('11.11.10', $item->reference_no);
         $this->assertSame('m2', $item->unit);
         $this->assertSame('Boden loesen', $item->short_text);
+
+        // Vorbemerkungen (MVP-1303): ein Text je T0-Block, Einrückung wie in der Datei.
+        $this->assertSame([' Zahlung binnen 30 Tagen.', ' Gewaehrleistung nach VOB/B.'], $boq->preamble);
+        $admin = \App\Models\Platform\User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $this->actingAs($admin)->get(route('bill-of-quantities.show', $boq))->assertOk()
+            ->assertSee(__('gaeb.preamble.title'))
+            ->assertSee('Gewaehrleistung nach VOB/B.');
     }
 }

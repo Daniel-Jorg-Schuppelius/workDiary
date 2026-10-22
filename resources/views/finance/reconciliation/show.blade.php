@@ -13,6 +13,8 @@
   Zeile mit Betrag + gematchtem Posten); die Bestätigung läuft unverändert
   über den confirm-Mehrfach-Pfad. Sammel-Rücklastschriften bieten die
   Kompensation je Einzeltransaktion an.
+  MVP-1274/1279: Vorläufige Auszüge zeigen nur ihre Umsätze (die Policy sperrt
+  den Abgleich); Lücke oder Abweichung zum Vorauszug stehen als Hinweis oben.
 --}}
 
 @extends('layouts.app')
@@ -44,6 +46,9 @@
                 <div>
                     <div class="text-muted">{{ __('bank.field.balance_check') }}</div>
                     <x-status-badge :tone="$statement->balance_check->tone()" :label="$statement->balance_check->label()" />
+                    @if ($statement->chain_check)
+                        <x-status-badge :tone="$statement->chain_check->tone()" :label="$statement->chain_check->label()" outline />
+                    @endif
                 </div>
                 <div>
                     <div class="text-muted">{{ __('bank.field.opening_balance') }}</div>
@@ -55,6 +60,32 @@
                 </div>
             </div>
         </x-card>
+
+        @if ($statement->is_provisional)
+            <div class="alert alert-warning text-sm mb-4" role="status">
+                <span>
+                    {{ __('bank.statement.provisional_hint', ['format' => $statement->source_format->label()]) }}
+                    @if ($statement->superseded_at)
+                        {{ __('bank.statement.superseded_hint', ['date' => $statement->superseded_at->fdate()]) }}
+                    @endif
+                </span>
+            </div>
+        @elseif ($chainPrevious)
+            <div class="alert alert-warning text-sm mb-4" role="status">
+                <span>
+                    @if ($statement->chain_check === \App\Enums\Finance\StatementChainCheck::Mismatch)
+                        {{ __('bank.statement.chain_mismatch_hint', [
+                            'opening' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $statement->opening_balance, 2, withThousandsSeparator: true),
+                            'previous' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $chainPrevious->closing_balance, 2, withThousandsSeparator: true),
+                        ]) }}
+                    @else
+                        {{ __('bank.statement.chain_gap_hint', ['date' => $chainPrevious->period_to?->fdate()]) }}
+                    @endif
+                </span>
+                <x-icon-btn icon="visibility" size="xs" tone="ghost"
+                            :href="route('finance.reconciliation.show', $chainPrevious->sqid)" />
+            </div>
+        @endif
 
         <div class="space-y-3">
             @forelse ($statement->transactions as $transaction)

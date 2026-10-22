@@ -106,6 +106,8 @@ class HelpdeskReportController extends Controller {
                 'y' => $count,
                 'url' => $drill(['kind' => 'satisfaction_score', 'key' => $score, 'expected' => $count]),
             ])->values()->all(),
+            'trends' => $metrics->monthlyTrends($to),
+            'services' => $metrics->volumeByService($from, $to),
             'changeOutcomes' => $metrics->changeOutcomes($from, $to),
             'problemBacklog' => $metrics->problemBacklog(),
             'catalogDemand' => $metrics->catalogDemand($from, $to),

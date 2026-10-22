@@ -58,6 +58,8 @@ organización.
 Nota: para simples avisos, las **Reglas de notificación** suelen ser la
 opción más sencilla; para sistemas externos, consulte **Webhooks**.
 
+Las acciones con destino muestran además el campo **Destino** en el diálogo: **Inscribir en el curso** (desencadenantes **Persona empleada creada** o **Equipo entregado**) pide el curso. Para nuevas personas empleadas, las condiciones ven `role`, `roles` y `personnel_number`; para la entrega de equipos, entre otros `category_code`, `asset_class` y `manufacturer`. El rol solo queda fijado cuando se guarda el alta; por eso la regla comprueba después de guardar.
+
 ## Reglas de entrada (facturas recibidas)
 
 El disparador «Factura recibida» revisa cada documento nuevo del buzón de

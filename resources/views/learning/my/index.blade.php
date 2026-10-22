@@ -29,6 +29,9 @@
         <div class="mb-3 flex flex-wrap items-center gap-3 rounded-box border border-base-300 px-4 py-2 text-sm">
             <span class="flex items-center gap-1"><x-icon name="stars" class="text-warning" /> <strong>{{ $gamification['points'] }}</strong> {{ __('learning.field.points') }}</span>
             <span class="text-base-content/70">{{ $gamification['completed'] }} {{ __('learning.field.completed_courses') }}</span>
+            @if ($gamification['streak'] !== null)
+                <span class="flex items-center gap-1"><x-icon name="local_fire_department" class="text-error" /> {{ trans_choice('learning.badge.streak_days', $gamification['streak'], ['count' => $gamification['streak']]) }}</span>
+            @endif
             @foreach ($gamification['badges'] as $badge)
                 <x-status-badge tone="success" size="sm">{{ __('learning.badge.' . $badge) }}</x-status-badge>
             @endforeach

@@ -34,6 +34,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property bool $anonymous
  * @property bool $trigger_on_ticket_close
  * @property bool $trigger_on_course_completion
+ * @property bool $trigger_on_order_completion
+ * @property int|null $trigger_schedule_days
  * @property int|null $created_by
  */
 class Survey extends Model {
@@ -47,6 +49,8 @@ class Survey extends Model {
         'organization_id', 'title', 'purpose', 'active', 'anonymous',
         'trigger_on_ticket_close',
         'trigger_on_course_completion',
+        'trigger_on_order_completion',
+        'trigger_schedule_days',
         'created_by',
     ];
 
@@ -56,6 +60,8 @@ class Survey extends Model {
         'anonymous' => 'boolean',
         'trigger_on_ticket_close' => 'boolean',
         'trigger_on_course_completion' => 'boolean',
+        'trigger_on_order_completion' => 'boolean',
+        'trigger_schedule_days' => 'integer',
     ];
 
     /** @return HasMany<SurveyQuestion, $this> */

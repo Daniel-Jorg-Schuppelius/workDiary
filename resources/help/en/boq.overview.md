@@ -58,3 +58,9 @@ items, and the remaining-work view shows what is still open.
 selectable exchange phase (default: award). The export is deterministic
 and is logged with a content hash — the same state reproducibly yields
 the same hash.
+
+## Preliminary notes and check before submission
+
+If the GAEB file contains **preliminary notes** (contract texts ahead of the items), the bill of quantities view shows them in an expandable section, one text per block and unchanged as delivered. A reimport replaces them with the file. So far the import reads them from GAEB 90; DA XML follows with the next release of the GAEB component.
+
+The **check before submission** also reports items priced in a currency other than the bill of quantities and a VAT amount that does not match the rate on the net total or, together with it, misses the gross total (to the cent).

@@ -94,6 +94,7 @@ return [
     // Readable job names (registry keys, nested because of dot notation);
     // add new registry jobs here in all locales — otherwise fallback = key.
     'job' => [
+        'surveys' => ['scheduled' => 'Send surveys at a fixed interval'],
         'demo' => [
             'prune' => 'Delete demo organizations after the retention period',
         ],
@@ -193,6 +194,7 @@ return [
         'shipping' => ['track' => 'Update shipment tracking'],
         'orgamax' => ['sync' => 'orgaMAX sync'],
         'print' => ['purge_files' => 'Purge print production files after retention'],
+        'uploads' => ['prune_chunks' => 'Remove abandoned partial uploads'],
         'search' => ['reconcile' => 'Reconcile search index (activity search)'],
         'payroll' => ['import_minimum_wages' => 'Import EU minimum wages'],
         'plans' => ['purge' => 'Purge downgraded module data'],

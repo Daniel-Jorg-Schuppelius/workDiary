@@ -16,6 +16,7 @@ return [
         'sustainability_activities' => 'ESG consumption',
         'inspection_measurements' => 'Inspection measurements',
         'asset_positions' => 'Equipment positions',
+        'learning_questions' => 'Learning questions',
         'customers' => 'Customers',
         'suppliers' => 'Suppliers',
         'articles' => 'Articles',
@@ -97,6 +98,10 @@ return [
             'contactPersons' => 'More than :max contact persons per customer/supplier are not supported.',
         ],
         'meterReading' => ['decreasing' => 'Reading lower than the previous one.'],
+        'learningQuestion' => [
+            'points' => 'Points from 1 to 100.',
+            'image' => 'Hotspot questions need an image and cannot be imported from a file.',
+        ],
         'calendar' => [
             'fetch' => 'The calendar could not be fetched. Please check the connection.',
             'unknown' => 'Unknown calendar connection.',

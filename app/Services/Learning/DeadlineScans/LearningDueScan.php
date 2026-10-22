@@ -16,8 +16,10 @@ use App\Enums\Learning\LearningEnrollmentStatus;
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Learning\LearningEnrollment;
 use App\Models\Platform\User;
+use App\Services\Learning\LearningAccessService;
 use App\Services\Notification\DeadlineScans\{AbstractDeadlineScan, DeadlineScanOptions};
 use App\Services\Notification\NotificationDispatcher;
+use App\Support\Query\DateRange;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 
@@ -27,8 +29,10 @@ use Illuminate\Support\Carbon;
  * Frist (`overdue`, mit Eskalationsleiter). Dedup über das Dispatch-Log —
  * je Einschreibung und Phase genau eine Meldung.
  *
- * Nur Personen mit Konto: Externe ohne Konto erreichen die Org-Regeln
- * nicht; sie bekommen ihre Post über den Einstiegslink.
+ * Externe ohne Konto erreichen die Org-Regeln nicht (MVP-1270): sie bekommen
+ * im Vorlauf und am Tag vor der Frist je eine Erinnerung mit frischem
+ * Einstiegslink an ihre E-Mail-Adresse, gemerkt in `reminded_at` und
+ * `final_reminded_at`.
  */
 class LearningDueScan extends AbstractDeadlineScan {
     public function key(): string {
@@ -39,7 +43,7 @@ class LearningDueScan extends AbstractDeadlineScan {
         $today = Carbon::today();
         $horizon = $today->copy()->addDays($options->dueDays)->toDateString();
 
-        return $this->runScan($dispatcher, [
+        return $this->remindExternals($today, $horizon) + $this->runScan($dispatcher, [
             'affected' => fn (LearningEnrollment $enrollment): ?User => $enrollment->user()->first(),
             'require_affected' => true,
             'due' => [
@@ -56,6 +60,33 @@ class LearningDueScan extends AbstractDeadlineScan {
                 'payload' => fn (LearningEnrollment $enrollment): array => $this->payload($enrollment, 'learning_overdue'),
             ],
         ]);
+    }
+
+    /** Erst die letzte Stufe, damit eine kurze Frist nicht zwei Mails am selben Tag auslöst. */
+    private function remindExternals(Carbon $today, string $horizon): int {
+        $access = app(LearningAccessService::class);
+        $sent = 0;
+        $external = fn (): Builder => LearningEnrollment::query()
+            ->withoutGlobalScopes()
+            ->whereNotNull('due_at')
+            ->whereNotNull('external_participant_id')
+            ->whereIn('status', [LearningEnrollmentStatus::Assigned->value, LearningEnrollmentStatus::InProgress->value]);
+
+        $tomorrow = $today->copy()->addDay();
+        foreach ($external()->whereNull('final_reminded_at')->whereBetween('due_at', DateRange::days($tomorrow, $tomorrow))->lazyById(200) as $enrollment) {
+            if ($access->deliver($enrollment, null, null, null, $enrollment->due_at, true)) {
+                $enrollment->forceFill(['final_reminded_at' => Carbon::now(), 'reminded_at' => $enrollment->reminded_at ?? Carbon::now()])->save();
+                $sent++;
+            }
+        }
+        foreach ($external()->whereNull('reminded_at')->where('due_at', '>=', $today->toDateString())->where('due_at', '<=', $horizon)->lazyById(200) as $enrollment) {
+            if ($access->deliver($enrollment, null, null, null, $enrollment->due_at)) {
+                $enrollment->forceFill(['reminded_at' => Carbon::now()])->save();
+                $sent++;
+            }
+        }
+
+        return $sent;
     }
 
     /**

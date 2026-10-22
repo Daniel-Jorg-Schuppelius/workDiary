@@ -31,6 +31,10 @@ return [
         'incoming' => 'Erwartete Eingänge',
     ],
 
+    'credentials' => [
+        'badge' => 'Nachweise: :status',
+        'hint' => 'Pflichtnachweise des Lieferanten (Freistellungsbescheinigung, Versicherung usw.)',
+    ],
     'pdf' => [
         'title' => 'Bestellung',
         'date' => 'Bestelldatum',

@@ -60,6 +60,8 @@ final class InvoicingManifest extends Manifest {
             'invoices',
             'online_payments',
             'peppol_participant_lookups',
+            'self_billing_credit_lines',
+            'self_billing_credits',
             'text_corrections',
         ];
     }

@@ -96,3 +96,9 @@ Contano le fatture emesse e pagate con data documento nel periodo; le
 note di credito diventano scritture inverse. Dopo la consegna: curare
 l'abbinamento dei pagamenti ed esportare il periodo successivo solo
 dopo la sua chiusura.
+
+## Trasmissione e relazione di accompagnamento
+
+Dopo la finalizzazione, **Registra trasmissione** annota cosa accade al lotto: **trasmesso** allo studio e lì **confermato** o **rifiutato**. Un lotto rifiutato viene trasmesso di nuovo dopo il chiarimento; le correzioni dei documenti passano sempre dal lotto successivo. Ogni passaggio compare con data, persona e nota facoltativa nella cronologia del lotto, e l’elenco mostra lo stato attuale. Le note vanno scritte senza dati personali, perché la cronologia non è modificabile.
+
+La **relazione di accompagnamento (PDF)** riassume il lotto per lo studio: periodo, numero di consulente e di cliente, numero di registrazioni e storni, totale, checksum del file, totali per conto ricavi e per codice fiscale e la cronologia.

@@ -39,7 +39,11 @@ class BillableTimeAggregator {
         /** @var Collection<int, BillingBlock> $blocks */
         $blocks = new Collection;
 
-        $grouped = $entries->groupBy(fn(TimeEntry $e): string => $e->project_id . '|' . $e->kind->value);
+        if ($entries instanceof \Illuminate\Database\Eloquent\Collection) {
+            $entries->loadMissing('serviceTicket:id,ticket_no');
+        }
+        // Zeiten verschiedener Tickets bleiben getrennte Positionen (MVP-1259).
+        $grouped = $entries->groupBy(fn(TimeEntry $e): string => $e->project_id . '|' . $e->kind->value . '|' . $e->service_ticket_id);
 
         foreach ($grouped as $group) {
             /** @var TimeEntry $first */
@@ -172,6 +176,7 @@ class BillableTimeAggregator {
             lastEnd: $lastEnd,
             description: $description !== '' ? $description : null,
             travelMinutes: $travelMinutes,
+            ticketNo: $firstEntry->serviceTicket?->ticket_no,
         );
     }
 }

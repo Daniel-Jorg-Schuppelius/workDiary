@@ -62,9 +62,17 @@ class ServiceTicketService {
                 ->where('is_default', true)
                 ->value('id');
 
+        [$businessServiceId, $serviceOfferingId] = $this->resolveService(
+            $organization,
+            isset($payload['business_service_id']) ? (int) $payload['business_service_id'] : null,
+            isset($payload['service_offering_id']) ? (int) $payload['service_offering_id'] : null,
+        );
+
         $ticket = new ServiceTicket([
             'organization_id' => $organization->id,
             'queue_id' => $queueId,
+            'business_service_id' => $businessServiceId,
+            'service_offering_id' => $serviceOfferingId,
             'kind' => (string) ($payload['kind'] ?? \App\Enums\ServiceTicket\ServiceTicketKind::Incident->value),
             'ticket_no' => (string) ($payload['ticket_no'] ?? $this->generateTicketNo($organization, $reportedAt)),
             'customer_id' => $customerId,
@@ -122,6 +130,45 @@ class ServiceTicketService {
         return $ticket;
     }
 
+    /**
+     * Betroffener Service und Angebot (MVP-1257): nur Einträge der Organisation;
+     * ein Angebot bringt seinen Service mit, ein fremdes Paar fällt weg.
+     *
+     * @return array{0: int|null, 1: int|null}
+     */
+    public function resolveService(Organization $organization, ?int $businessServiceId, ?int $serviceOfferingId): array {
+        $offering = $serviceOfferingId !== null
+            ? \App\Models\Sales\ServiceOffering::query()->where('organization_id', $organization->id)->whereKey($serviceOfferingId)->first(['id', 'business_service_id'])
+            : null;
+        if ($offering !== null) {
+            if ($businessServiceId !== null && $businessServiceId !== (int) $offering->business_service_id) {
+                $offering = null;
+            } else {
+                $businessServiceId = (int) $offering->business_service_id;
+            }
+        }
+        $serviceExists = $businessServiceId !== null && \App\Models\ServiceTicket\BusinessService::query()
+            ->where('organization_id', $organization->id)->whereKey($businessServiceId)->exists();
+
+        return [$serviceExists ? $businessServiceId : null, $serviceExists ? $offering?->id : null];
+    }
+
+    /** Service am bestehenden Ticket setzen (Klassifizierung); protokolliert nur echte Änderungen. */
+    public function setService(ServiceTicket $ticket, ?int $businessServiceId, ?int $serviceOfferingId): void {
+        $organization = Organization::query()->findOrFail($ticket->organization_id);
+        [$serviceId, $offeringId] = $this->resolveService($organization, $businessServiceId, $serviceOfferingId);
+        $before = [$ticket->business_service_id, $ticket->service_offering_id];
+        if ($before === [$serviceId, $offeringId]) {
+            return;
+        }
+
+        $ticket->forceFill(['business_service_id' => $serviceId, 'service_offering_id' => $offeringId])->save();
+        $ticket->audit('service_ticket.service_changed', [
+            'from' => ['business_service_id' => $before[0], 'service_offering_id' => $before[1]],
+            'to' => ['business_service_id' => $serviceId, 'service_offering_id' => $offeringId],
+        ]);
+    }
+
     public function transition(ServiceTicket $ticket, User $actor, ServiceTicketStatus $to): ServiceTicket {
         $from = $ticket->status;
         if ($from === $to) {
@@ -176,7 +223,8 @@ class ServiceTicketService {
         return $ticket->refresh();
     }
 
-    public function assign(ServiceTicket $ticket, User $actor, ?int $assigneeId): ServiceTicket {
+    /** Ohne $actor: Zuweisung durch eine Routing-Regel. */
+    public function assign(ServiceTicket $ticket, ?User $actor, ?int $assigneeId): ServiceTicket {
         $previous = $ticket->assigned_to_user_id;
         $ticket->assigned_to_user_id = $assigneeId;
 

@@ -46,6 +46,8 @@ enum ImportEntity: string implements HasLabel {
     case SustainabilityActivities = 'sustainability_activities';
     case InspectionMeasurements = 'inspection_measurements';
     case AssetPositions = 'asset_positions';
+    // Fragen für den Fragenkatalog der Lernplattform (MVP-1262).
+    case LearningQuestions = 'learning_questions';
 
     public function label(): string {
         return (string) __('import.entity.' . $this->value);
@@ -76,6 +78,7 @@ enum ImportEntity: string implements HasLabel {
             self::SustainabilityActivities => 'sustainability.manage',
             self::InspectionMeasurements => 'assetCompliance.inspect',
             self::AssetPositions => 'asset.update',
+            self::LearningQuestions => 'learning.author',
         };
     }
 
@@ -109,6 +112,7 @@ enum ImportEntity: string implements HasLabel {
             self::SustainabilityActivities => \App\Models\Sustainability\SustainabilityActivityRecord::class,
             self::InspectionMeasurements => \App\Models\AssetCompliance\AssetMeasurementValue::class,
             self::AssetPositions => \App\Models\Asset\AssetPosition::class,
+            self::LearningQuestions => \App\Models\Learning\LearningQuestion::class,
         };
     }
 

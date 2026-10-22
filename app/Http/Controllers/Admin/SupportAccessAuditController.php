@@ -11,96 +11,28 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ListsAuditTrail;
 use App\Http\Controllers\Controller;
-use App\Models\Audit\AuditLog;
-use App\Models\Platform\User;
-use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
- * MVP-004: Read-only Audit-Sicht für Supportzugriffe (`support.*`).
- *
- * Listet AuditLog-Events mit Präfix `support.` für die eigene
- * Organisation (und optional Plattform-weit bei `platform.support.*`-
- * Berechtigung). Filter: Datumsbereich, Event-Typ, Akteur.
+ * MVP-004: Read-only Audit-Sicht für Supportzugriffe (`support.*`) der
+ * eigenen Organisation. Filter: Datumsbereich, Event-Typ, Akteur.
  */
 class SupportAccessAuditController extends Controller {
-    private const ALLOWED_SORTS = ['created_at', 'event'];
+    use ListsAuditTrail;
 
     public function index(Request $request): View {
         Gate::authorize(Permission::PrivacySupportView->value);
 
-        /** @var User $user */
-        $user = $request->user();
-        $organization = $user->organization;
-        abort_if($organization === null, Response::HTTP_NOT_FOUND);
-
-        $filters = [
-            'from' => (string) $request->query('from', ''),
-            'to' => (string) $request->query('to', ''),
-            'event' => (string) $request->query('event', ''),
-            'actor' => (string) $request->query('actor', ''),
-        ];
-
-        $from = $this->parseDate($filters['from']);
-        $to = $this->parseDate($filters['to']);
-
-        // Whitelist-Auflösung zentral (C21; Vollaudit 2026-07, N26) — bei
-        // ungültigem Key fallen Key UND Richtung auf die Defaults zurück.
-        [$sort, $dir] = \App\Support\SortableQuery::resolve($request, self::ALLOWED_SORTS, 'created_at');
-
-        $query = AuditLog::query()
-            ->where('organization_id', $organization->id)
-            ->where('event', 'like', 'support.%');
-
-        if ($from !== null) {
-            $query->where('created_at', '>=', $from->startOfDay());
-        }
-        if ($to !== null) {
-            $query->where('created_at', '<=', $to->endOfDay());
-        }
-        if ($filters['event'] !== '' && str_starts_with($filters['event'], 'support.')) {
-            $query->where('event', $filters['event']);
-        }
-        if ($filters['actor'] !== '' && ctype_digit($filters['actor'])) {
-            $query->where('user_id', (int) $filters['actor']);
-        }
-
-        $entries = $query->orderBy($sort, $dir)->paginate(50)->withQueryString();
-
-        $actorIds = collect($entries->items())->pluck('user_id')->filter()->unique();
-        $actors = User::query()->whereIn('id', $actorIds)->get()->keyBy('id');
-
-        $eventOptions = AuditLog::query()
-            ->where('organization_id', $organization->id)
-            ->where('event', 'like', 'support.%')
-            ->distinct()
-            ->orderBy('event')
-            ->pluck('event')
-            ->all();
-
-        return view('admin.support.access-audit.index', [
-            'organization' => $organization,
-            'entries' => $entries,
-            'actors' => $actors,
-            'filters' => $filters,
-            'eventOptions' => $eventOptions,
-            'sort' => $sort,
-            'dir' => $dir,
-        ]);
-    }
-
-    private function parseDate(string $value): ?CarbonImmutable {
-        if ($value === '') {
-            return null;
-        }
-        try {
-            return CarbonImmutable::parse($value);
-        } catch (\Throwable) {
-            return null;
-        }
+        return $this->auditTrail(
+            $request,
+            ['support.'],
+            'admin.support.access-audit.index',
+            __('Supportzugriffe'),
+            __('Audit-Spur aller Supportzugriffe (support.*) für :org.', ['org' => (string) $request->user()?->organization?->name]),
+        );
     }
 }

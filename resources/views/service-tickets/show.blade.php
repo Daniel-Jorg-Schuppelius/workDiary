@@ -66,6 +66,9 @@
             <x-detail-grid.row :label="__('Lösung bis')">{{ $resDue?->translatedFormat('d.m.Y H:i') ?: '—' }}</x-detail-grid.row>
             <x-detail-grid.row :label="__('Asset')">{{ $ticket->asset?->name ?: '—' }}</x-detail-grid.row>
             <x-detail-grid.row :label="__('Kunde')">{{ $ticket->customer?->name ?: '—' }}</x-detail-grid.row>
+            @if ($ticket->businessService || $services->isNotEmpty())
+                <x-detail-grid.row :label="__('helpdesk.service.label')">{{ $ticket->businessService?->name ?: '—' }}@if ($ticket->serviceOffering) · {{ $ticket->serviceOffering->name }}@endif</x-detail-grid.row>
+            @endif
         </x-detail-grid>
 
         @if ($ticket->description)
@@ -76,8 +79,42 @@
         @endif
     </x-card>
 
+    {{-- Materialvorschlag (MVP-1284): fällige Verschleißteile des Geräts am Ticket. --}}
+    @if ($ticket->asset)
+        @include('assets.components._suggestion_card', ['asset' => $ticket->asset])
+    @endif
+
+    {{-- Auswirkungsanalyse (MVP-1256): wer hängt vom betroffenen Fachdienst ab. --}}
+    @if ($ticket->businessService)
+        <x-card data-ticket-impact>
+            <div class="mb-2 flex items-center gap-2">
+                <x-icon name="account_tree" class="text-muted" />
+                <h3 class="font-semibold">{{ __('helpdesk.impact.title') }}</h3>
+                <span class="flex-1"></span>
+                <a class="link text-sm" href="{{ route('servicedesk.service-map.index') }}">{{ __('helpdesk.map.title') }}</a>
+            </div>
+            @if ($impact === [])
+                <x-empty-state compact icon="account_tree" :message="__('helpdesk.impact.none', ['service' => $ticket->businessService->name])" />
+            @else
+                <p class="text-sm">{{ __('helpdesk.impact.affected', ['service' => $ticket->businessService->name]) }}</p>
+                <ul class="mt-2 flex flex-wrap gap-2">
+                    @foreach ($impact as $row)
+                        <li>
+                            <a class="badge badge-outline gap-1" href="{{ route('service-tickets.index', ['service' => $row['service']->sqid]) }}">
+                                {{ $row['service']->name }}
+                                @if ($row['openTickets'] > 0)<span class="text-warning">· {{ trans_choice('helpdesk.impact.openTickets', $row['openTickets'], ['count' => $row['openTickets']]) }}</span>@endif
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </x-card>
+    @endif
+
     {{-- SLA-Uhr (MVP-160): Fristen + Snapshot + Wartefelder + offene Pausen. --}}
     @include('service-tickets._sla_clock')
+
+    @include('service-tickets._time_entries')
 
     @if ($canUpdate)
         {{-- Klassifizierung (ITIL): Auswirkung × Dringlichkeit ergibt die Priorität, übersteuern wird protokolliert (Vollscan 2026-10-21). --}}
@@ -101,6 +138,9 @@
                         <option value="{{ $priority->value }}">{{ $priority->label() }}</option>
                     @endforeach
                 </x-select-field>
+                @if ($services->isNotEmpty())
+                    @include('service-tickets._service_fields', ['selectedService' => $ticket->businessService?->sqid, 'selectedOffering' => $ticket->serviceOffering?->sqid])
+                @endif
                 <x-textarea-field name="workaround" id="ticket-workaround" :label="__('Workaround')" rows="2" span="3" :value="$ticket->workaround" />
                 <div class="md:col-span-3">
                     <x-button tone="primary" size="sm" type="submit">{{ __('Klassifizieren') }}</x-button>

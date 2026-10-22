@@ -14,7 +14,7 @@ namespace App\Services\Learning;
 
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Calendar\EventParticipant;
-use App\Models\Learning\{LearningBooking, LearningCertificate, LearningEnrollment, LearningSubmission, LearningTimeSession};
+use App\Models\Learning\{LearningBooking, LearningCertificate, LearningEnrollment, LearningQuizAttempt, LearningSubmission, LearningTimeSession};
 use App\Models\Platform\User;
 use App\Services\Notification\NotificationDispatcher;
 
@@ -115,6 +115,30 @@ class LearningNotifier {
             'message_params' => $params,
             'url' => $this->enrollmentUrl($enrollment),
         ]);
+    }
+
+    /**
+     * Prüfung endgültig nicht bestanden (MVP-1266): an die Person und ihre
+     * Teamleitung, einmal je Versuch. Die Einschreibung bleibt offen — eine
+     * Versuchsfreigabe ist weiter möglich.
+     */
+    public function failedFinal(LearningQuizAttempt $attempt): int {
+        $enrollment = $attempt->enrollment;
+        $user = $enrollment?->user;
+        if ($enrollment === null || $user === null) {
+            return 0;
+        }
+
+        $course = $this->courseTitle($enrollment);
+        $params = ['name' => $enrollment->learnerName(), 'quiz' => (string) ($attempt->quiz->title ?? ''), 'course' => $course];
+
+        return $this->dispatcher->notify(NotificationEvent::LearningFailedFinal, $attempt, $user, [
+            'title' => $course,
+            'message' => (string) __('notification.message.learning_failed_final', $params),
+            'message_key' => 'notification.message.learning_failed_final',
+            'message_params' => $params,
+            'url' => $this->enrollmentUrl($enrollment),
+        ], dedup: true);
     }
 
     public function waitlistPromoted(EventParticipant $participant): int {

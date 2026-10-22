@@ -39,3 +39,7 @@ in the customer portal.
 
 **Placeholders:** `:firma`, `:kunde` and `:ansprechpartner` are replaced per
 recipient. If a value is missing the spot stays empty — nothing is invented.
+
+## Templates and attachment
+
+When creating a circular, you can attach a **file** that every email carries. **Save as template** (circular menu) creates a copy with text, filters, switches and attachments. Templates are listed above the list; **Create from template** opens the dialog prefilled, and the template’s attachments are taken over. A template itself is never sent.

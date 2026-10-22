@@ -408,6 +408,7 @@ return [
                 'submissionReceived' => 'Entrega pendiente de evaluación',
                 'graded' => 'Evaluación disponible',
                 'certificateIssued' => 'Certificado emitido',
+                'failedFinal' => 'Examen no superado definitivamente',
                 'waitlistPromoted' => 'Promovido desde la lista de espera',
                 'bookingDecided' => 'Reserva de curso decidida',
                 'timeApprovalRequested' => 'Tiempo de aprendizaje pendiente de aprobación',
@@ -423,6 +424,7 @@ return [
             ],
             'procedure' => [
                 'deviationEscalated' => 'Desviación de procedimiento escalada',
+                'secondPersonRequested' => 'Aprobación de cuatro ojos solicitada',
             ],
             'report' => [
                 'warning' => 'Alerta temprana de los informes',
@@ -1550,11 +1552,25 @@ return [
             'qif' => 'QIF',
             'qxf' => 'QXF',
             'pain001' => 'PAIN.001',
+            'camt052' => 'CAMT.052',
+            'camt054' => 'CAMT.054',
             'pain008' => 'PAIN.008',
         ],
         'transaction-direction' => [
             'credit' => 'Entrada',
             'debit' => 'Salida',
+        ],
+        'statement-chain-check' => [
+            'ok' => 'Enlaza con el extracto anterior',
+            'gap' => 'Hueco respecto al extracto anterior',
+            'mismatch' => 'No enlaza con el extracto anterior',
+            'first' => 'Primer extracto',
+        ],
+        'datev-transmission-status' => [
+            'open' => 'No transmitido',
+            'transmitted' => 'Transmitido',
+            'confirmed' => 'Confirmado por la asesoría',
+            'rejected' => 'Rechazado por la asesoría',
         ],
         'balance-check' => [
             'ok' => 'Cadena de saldos coherente',
@@ -2094,6 +2110,11 @@ return [
         ],
     ],
     'invoicing' => [
+        'self-billing-status' => [
+            'draft' => 'Borrador',
+            'issued' => 'Emitida',
+            'cancelled' => 'Anulada',
+        ],
         'online-payment-status' => [
             'open' => 'Abierto',
             'paid' => 'Pagado',
@@ -2208,7 +2229,7 @@ return [
         'module_kind' => ['platform' => 'Servicio de plataforma', 'core' => 'Módulo principal', 'feature' => 'Módulo funcional'],
     ],
     'numbering' => [
-        'number_scope' => ['service_ticket' => 'Ticket de servicio', 'problem_report' => 'Mensaje de error', 'asset' => 'Activo', 'article' => 'Artículo', 'manufacturing_order' => 'Orden de fabricación', 'serial' => 'Número de serie', 'purchase_order' => 'Pedido', 'customer' => 'Cliente', 'supplier' => 'Proveedor', 'invoice' => 'Factura', 'credit_note' => 'Abono', 'cancellation' => 'Factura rectificativa', 'quote' => 'Oferta', 'order_confirmation' => 'Confirmación de pedido', 'delivery_note' => 'Albarán', 'proforma' => 'Factura proforma', 'claim' => 'Reclamación', 'rma' => 'Devolución (RMA)', 'rental' => 'Expediente de alquiler', 'asset_finance' => 'Expediente de leasing', 'contract' => 'Contrato', 'privacy_incident' => 'Incidente de protección de datos', 'data_subject_request' => 'Solicitud del interesado', 'disposal' => 'Expediente de eliminación', 'certificate' => 'Certificado', 'damage' => 'Siniestro', 'recall' => 'Retirada de producto'],
+        'number_scope' => ['service_ticket' => 'Ticket de servicio', 'problem_report' => 'Mensaje de error', 'asset' => 'Activo', 'article' => 'Artículo', 'manufacturing_order' => 'Orden de fabricación', 'serial' => 'Número de serie', 'purchase_order' => 'Pedido', 'customer' => 'Cliente', 'supplier' => 'Proveedor', 'invoice' => 'Factura', 'credit_note' => 'Abono', 'cancellation' => 'Factura rectificativa', 'self_billing' => 'Autofactura', 'quote' => 'Oferta', 'order_confirmation' => 'Confirmación de pedido', 'delivery_note' => 'Albarán', 'proforma' => 'Factura proforma', 'claim' => 'Reclamación', 'rma' => 'Devolución (RMA)', 'rental' => 'Expediente de alquiler', 'asset_finance' => 'Expediente de leasing', 'contract' => 'Contrato', 'privacy_incident' => 'Incidente de protección de datos', 'data_subject_request' => 'Solicitud del interesado', 'disposal' => 'Expediente de eliminación', 'certificate' => 'Certificado', 'damage' => 'Siniestro', 'recall' => 'Retirada de producto'],
     ],
     'patrol' => [
         'patrol_run_status' => ['running' => 'En curso', 'completed' => 'Completado', 'aborted' => 'Cancelado'],

@@ -1,6 +1,20 @@
 @component('mail::message')
-@if ($request->status === \App\Enums\Calendar\AppointmentRequestStatus::Confirmed)
-# {{ __('Ihr Termin ist bestätigt') }}
+@if ($request->status === \App\Enums\Calendar\AppointmentRequestStatus::Proposed)
+# {{ __('appointment.mail.proposed_title') }}
+
+{{ __('appointment.mail.proposed_body', ['service' => $request->service_label, 'wish' => $request->start_at?->orgTz()->format('d.m.Y H:i'), 'date' => $request->proposed_start_at?->orgTz()->format('d.m.Y H:i')]) }}
+
+@if ($request->proposal_note)
+{{ $request->proposal_note }}
+@endif
+
+@if ($request->portal_user_id)
+@component('mail::button', ['url' => route('customer.appointments.index')])
+{{ __('appointment.mail.proposed_action') }}
+@endcomponent
+@endif
+@elseif ($request->status === \App\Enums\Calendar\AppointmentRequestStatus::Confirmed)
+# {{ $rescheduled ? __('appointment.mail.rescheduled_title') : __('Ihr Termin ist bestätigt') }}
 
 {{ __(':service am :date Uhr.', ['service' => $request->service_label, 'date' => $request->start_at?->orgTz()->format('d.m.Y H:i')]) }}
 

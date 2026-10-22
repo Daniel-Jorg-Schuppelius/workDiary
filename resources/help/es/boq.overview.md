@@ -64,3 +64,9 @@ GAEB-DA-XML en una fase de intercambio seleccionable (estándar:
 adjudicación del encargo). La exportación es determinista y se registra
 con un hash de contenido — el mismo estado produce de forma reproducible
 el mismo hash.
+
+## Observaciones preliminares y comprobación antes de la entrega
+
+Si el archivo GAEB contiene **observaciones preliminares** (textos contractuales antes de las partidas), la vista del presupuesto las muestra en una sección desplegable, un texto por bloque y sin cambios. Una reimportación las sustituye con el archivo. Por ahora la importación las lee de GAEB 90; las de DA XML llegan con la próxima versión del componente GAEB.
+
+La **comprobación antes de la entrega** avisa además de partidas con precio en otra moneda que el presupuesto y de un IVA que no corresponde al tipo sobre el total neto o que, sumado a este, no da el total bruto (al céntimo).

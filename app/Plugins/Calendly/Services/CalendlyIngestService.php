@@ -37,6 +37,7 @@ class CalendlyIngestService {
         private readonly CalendlyAppointmentMatcher $matcher,
         private readonly CalendlyConfirmService $confirm,
         private readonly LeadService $leads,
+        private readonly \App\Services\Appointments\AppointmentRequestService $appointments,
     ) {}
 
     /**
@@ -114,6 +115,11 @@ class CalendlyIngestService {
         }
 
         $request->save();
+
+        // Die Disposition erfährt von Calendly-Buchungen wie von Portal-Anfragen (MVP-1286).
+        if ($isNew) {
+            $this->appointments->announce($request);
+        }
 
         if ($isNew && $request->customer_id === null) {
             $this->recordUnmatched($organization, $request, $invitee);

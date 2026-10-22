@@ -258,6 +258,7 @@ return [
         // Servicekatalog + Genehmigungs-Inbox (Feature 065, MVP-154):
         // bewusst KEIN neues Topic (Paritätspflicht ×alle Locales).
         'servicedesk.catalog.*' => 'helpdesk.overview',
+        'servicedesk.service-map.*' => 'helpdesk.overview',
         // Problem-Management (Feature 065, MVP-156): gleiches Topic.
         'servicedesk.problems.*' => 'helpdesk.overview',
         // Change-/CAB-Management (Feature 065, MVP-157): gleiches Topic.
@@ -590,6 +591,7 @@ return [
         'invoice-schedules.*' => 'invoices.schedules',
         // Kassenbuch (Phase 38, MVP-414)
         'cash-registers.*' => 'finance.cashbook',
+        'invoices.self-billing.*' => 'invoices.self-billing',
         'invoices.*' => 'invoices.manage',
         'lexoffice.vouchers.*' => 'invoices.manage',
         'events.*' => 'events.manage',

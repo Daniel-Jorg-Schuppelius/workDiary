@@ -21,6 +21,10 @@
                     data-entry-modal-trigger
                     :href="route('learning.questions.create')"
                     show-label>{{ __('learning.action.new_question') }}</x-icon-btn>
+        {{-- Fragen per Datei (MVP-1262): Antwortzeilen wie im Editor, untereinander in einer Zelle. --}}
+        <x-icon-btn icon="upload" tone="ghost" size="sm" placement="menu"
+                    :href="route('admin.imports.create', ['entity' => \App\Enums\Import\ImportEntity::LearningQuestions->value])"
+                    show-label>{{ __('learning.action.import_questions') }}</x-icon-btn>
         <x-help-button topic="learning.overview" />
     </x-slot:actions>
 

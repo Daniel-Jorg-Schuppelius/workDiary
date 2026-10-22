@@ -50,7 +50,7 @@ class HelpdeskReportExportController extends Controller {
     use ResolvesGlobalDateRange;
     use WritesReportCsv;
 
-    private const CSV_METRICS = ['volume', 'times', 'compliance', 'waiting', 'aging', 'fcr', 'satisfaction', 'changes', 'problems', 'catalog', 'knowledge'];
+    private const CSV_METRICS = ['volume', 'times', 'compliance', 'waiting', 'aging', 'fcr', 'satisfaction', 'changes', 'problems', 'catalog', 'knowledge', 'trends', 'services'];
 
     public function __construct(private readonly HelpdeskMetricsService $metrics) {}
 
@@ -323,6 +323,8 @@ class HelpdeskReportExportController extends Controller {
             'changes' => 'changes',
             'problems' => 'problems',
             'knowledge' => 'tickets',
+            'trends' => 'mixed_per_month',
+            'services' => 'tickets',
             default => 'requests',
         };
     }
@@ -367,6 +369,16 @@ class HelpdeskReportExportController extends Controller {
                     ->values()->all(),
             ],
             'fcr' => $this->fcrCsvRows($from, $to),
+            'trends' => [
+                ['month', 'created', 'resolved', 'reaction_p50_hours', 'resolution_p50_hours', 'resolution_met_percent', 'fcr_percent', 'csat_average'],
+                ...array_map(static fn (array $row): array => array_values($row), $this->metrics->monthlyTrends($to)),
+            ],
+            'services' => [
+                ['business_service', 'tickets', 'open', 'resolution_breached'],
+                ...collect($this->metrics->volumeByService($from, $to))
+                    ->map(fn (array $row, string $service): array => [$service, $row['total'], $row['open'], $row['breached']])
+                    ->values()->all(),
+            ],
             'satisfaction' => $this->satisfactionCsvRows($from, $to),
             'changes' => [
                 ['outcome', 'count'],

@@ -408,6 +408,7 @@ return [
                 'submissionReceived' => 'Consegna in attesa di valutazione',
                 'graded' => 'Valutazione disponibile',
                 'certificateIssued' => 'Certificato emesso',
+                'failedFinal' => 'Esame definitivamente non superato',
                 'waitlistPromoted' => 'Promosso dalla lista d’attesa',
                 'bookingDecided' => 'Prenotazione del corso decisa',
                 'timeApprovalRequested' => 'Tempo di apprendimento in attesa di approvazione',
@@ -423,6 +424,7 @@ return [
             ],
             'procedure' => [
                 'deviationEscalated' => 'Deviazione di procedura escalata',
+                'secondPersonRequested' => 'Approvazione a quattro occhi richiesta',
             ],
             'report' => [
                 'warning' => 'Allerta precoce dalle analisi',
@@ -1550,11 +1552,25 @@ return [
             'qif' => 'QIF',
             'qxf' => 'QXF',
             'pain001' => 'PAIN.001',
+            'camt052' => 'CAMT.052',
+            'camt054' => 'CAMT.054',
             'pain008' => 'PAIN.008',
         ],
         'transaction-direction' => [
             'credit' => 'Entrata',
             'debit' => 'Uscita',
+        ],
+        'statement-chain-check' => [
+            'ok' => 'Collegato all\'estratto precedente',
+            'gap' => 'Lacuna rispetto all\'estratto precedente',
+            'mismatch' => 'Non collegato all\'estratto precedente',
+            'first' => 'Primo estratto',
+        ],
+        'datev-transmission-status' => [
+            'open' => 'Non trasmesso',
+            'transmitted' => 'Trasmesso',
+            'confirmed' => 'Confermato dallo studio',
+            'rejected' => 'Rifiutato dallo studio',
         ],
         'balance-check' => [
             'ok' => 'Catena dei saldi coerente',
@@ -2094,6 +2110,11 @@ return [
         ],
     ],
     'invoicing' => [
+        'self-billing-status' => [
+            'draft' => 'Bozza',
+            'issued' => 'Emessa',
+            'cancelled' => 'Stornata',
+        ],
         'online-payment-status' => [
             'open' => 'Aperto',
             'paid' => 'Pagato',
@@ -2208,7 +2229,7 @@ return [
         'module_kind' => ['platform' => 'Servizio di piattaforma', 'core' => 'Modulo principale', 'feature' => 'Modulo funzionale'],
     ],
     'numbering' => [
-        'number_scope' => ['service_ticket' => 'Ticket di servizio', 'problem_report' => 'Messaggio di errore', 'asset' => 'Asset', 'article' => 'Articolo', 'manufacturing_order' => 'Ordine di produzione', 'serial' => 'Numero di serie', 'purchase_order' => 'Ordine', 'customer' => 'Cliente', 'supplier' => 'Fornitore', 'invoice' => 'Fattura', 'credit_note' => 'Nota di credito', 'cancellation' => 'Fattura di storno', 'quote' => 'Offerta', 'order_confirmation' => 'Conferma d\'ordine', 'delivery_note' => 'Documento di trasporto', 'proforma' => 'Fattura pro forma', 'claim' => 'Reclamo', 'rma' => 'Reso (RMA)', 'rental' => 'Pratica di noleggio', 'asset_finance' => 'Pratica di leasing', 'contract' => 'Contratto', 'privacy_incident' => 'Incidente di protezione dei dati', 'data_subject_request' => 'Richiesta dell\'interessato', 'disposal' => 'Pratica di smaltimento', 'certificate' => 'Certificato', 'damage' => 'Sinistro', 'recall' => 'Richiamo del prodotto'],
+        'number_scope' => ['service_ticket' => 'Ticket di servizio', 'problem_report' => 'Messaggio di errore', 'asset' => 'Asset', 'article' => 'Articolo', 'manufacturing_order' => 'Ordine di produzione', 'serial' => 'Numero di serie', 'purchase_order' => 'Ordine', 'customer' => 'Cliente', 'supplier' => 'Fornitore', 'invoice' => 'Fattura', 'credit_note' => 'Nota di credito', 'cancellation' => 'Fattura di storno', 'self_billing' => 'Autofattura', 'quote' => 'Offerta', 'order_confirmation' => 'Conferma d\'ordine', 'delivery_note' => 'Documento di trasporto', 'proforma' => 'Fattura pro forma', 'claim' => 'Reclamo', 'rma' => 'Reso (RMA)', 'rental' => 'Pratica di noleggio', 'asset_finance' => 'Pratica di leasing', 'contract' => 'Contratto', 'privacy_incident' => 'Incidente di protezione dei dati', 'data_subject_request' => 'Richiesta dell\'interessato', 'disposal' => 'Pratica di smaltimento', 'certificate' => 'Certificato', 'damage' => 'Sinistro', 'recall' => 'Richiamo del prodotto'],
     ],
     'patrol' => [
         'patrol_run_status' => ['running' => 'In corso', 'completed' => 'Completato', 'aborted' => 'Annullato'],

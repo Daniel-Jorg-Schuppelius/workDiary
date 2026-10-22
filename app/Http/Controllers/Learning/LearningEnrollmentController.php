@@ -18,7 +18,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Communication\ExternalParticipant;
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningQuiz};
 use App\Models\Platform\User;
-use App\Services\Learning\{LearningAccessService, LearningEnrollmentService};
+use App\Services\Learning\{LearningAccessService, LearningEnrollmentService, LearningQuizService, LearningVersionMigrationService};
 use App\Support\Sqid;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Contracts\Database\Eloquent\Builder;
@@ -93,6 +93,8 @@ class LearningEnrollmentController extends Controller {
             'mandatoryUnits' => $course->units()->where('is_mandatory', true)->count(),
             'canEnroll' => $course->status === LearningCourseStatus::Released,
             'hasQuizzes' => LearningQuiz::query()->whereIn('learning_unit_id', $course->units()->select('id'))->exists(),
+            'currentVersion' => $course->currentVersion(),
+            'behindCount' => app(LearningVersionMigrationService::class)->behind($course)->count(),
         ]);
     }
 
@@ -245,6 +247,61 @@ class LearningEnrollmentController extends Controller {
         return redirect()
             ->route('learning.courses.enrollments.index', $course)
             ->with('success', __('learning.flash.waiver_granted', ['name' => $enrollment->learnerName()]));
+    }
+
+    /** Nachteilsausgleich (MVP-1267): Zeitverlängerung je Person mit Begründung. */
+    public function timeExtensionDialog(LearningCourse $course, LearningEnrollment $enrollment): View {
+        Gate::authorize('updateMeta', $course);
+        $this->guardBelongsToCourse($course, $enrollment);
+
+        return view('learning.enrollments._time_extension_dialog', ['course' => $course, 'enrollment' => $enrollment]);
+    }
+
+    public function updateTimeExtension(Request $request, LearningCourse $course, LearningEnrollment $enrollment): RedirectResponse {
+        Gate::authorize('updateMeta', $course);
+        $this->guardBelongsToCourse($course, $enrollment);
+
+        $data = $request->validate([
+            'time_extension_percent' => ['nullable', 'integer', 'min:0', 'max:200'],
+            'reason' => ['required', 'string', 'min:2', 'max:255'],
+        ]);
+        $percent = isset($data['time_extension_percent']) ? (int) $data['time_extension_percent'] : null;
+        app(LearningQuizService::class)->setTimeExtension($enrollment, $percent, $this->actor(), $data['reason']);
+
+        return redirect()
+            ->route('learning.courses.enrollments.index', $course)
+            ->with('success', __('learning.flash.time_extension_saved', ['name' => $enrollment->learnerName()]));
+    }
+
+    /** Versionswechsel (MVP-1272): Vorschau je Ausgangsversion, dann mit Grund heben. */
+    public function versionDialog(LearningCourse $course, LearningVersionMigrationService $versions): View {
+        Gate::authorize('updateMeta', $course);
+        $current = $course->currentVersion();
+        abort_if($current === null, 404);
+
+        $groups = $versions->behind($course)
+            ->groupBy(fn (LearningEnrollment $enrollment): int => (int) $enrollment->learning_course_version_id)
+            ->map(fn ($group) => [
+                'version' => $group->first()?->courseVersion?->version,
+                'count' => $group->count(),
+                'diff' => $versions->diff($group->first()?->courseVersion, $current),
+            ])
+            ->values();
+
+        return view('learning.enrollments._version_dialog', ['course' => $course, 'current' => $current, 'groups' => $groups]);
+    }
+
+    public function moveToVersion(Request $request, LearningCourse $course, LearningVersionMigrationService $versions): RedirectResponse {
+        Gate::authorize('updateMeta', $course);
+        $data = $request->validate(['reason' => ['required', 'string', 'min:2', 'max:255']]);
+        $current = $course->currentVersion();
+        abort_if($current === null, 404);
+
+        $moved = $versions->moveAllToCurrent($course, $this->actor(), $data['reason']);
+
+        return redirect()
+            ->route('learning.courses.enrollments.index', $course)
+            ->with('success', __('learning.flash.version_moved', ['count' => $moved, 'version' => $current->version]));
     }
 
     /** Einstiegslink für eine externe Person erzeugen und mailen. */

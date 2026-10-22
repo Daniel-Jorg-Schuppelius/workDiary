@@ -26,6 +26,10 @@ return [
         'retired' => 'Support d’accès réformé',
     ],
     'appointment' => [
+        'proposed' => 'Autre créneau proposé',
+        'proposal_accepted' => 'Autre créneau accepté',
+        'proposal_declined' => 'Autre créneau refusé',
+        'rescheduled' => 'Rendez-vous déplacé',
         'requested' => 'Rendez-vous demandé',
         'confirmed' => 'Rendez-vous confirmé',
         'declined' => 'Demande de rendez-vous refusée',
@@ -621,6 +625,7 @@ return [
         'unlinked' => 'Lien de l\'article de connaissances retiré',
     ],
     'lead' => [
+        'quote_created' => 'Devis créé à partir du lead',
         'created' => 'Lead créé',
         'status_changed' => 'Statut du lead modifié',
         'converted' => 'Lead converti',
@@ -822,6 +827,7 @@ return [
         'mailed' => 'Bon de livraison envoyé par e-mail',
     ],
     'quote' => [
+        'viewed' => 'Devis consulté par le client',
         'intake_linked' => 'Lié à la demande client',
         'portal_decision' => 'Décision dans le portail client',
         'markup_applied' => 'Majoration répartie sur les prix unitaires',
@@ -899,6 +905,10 @@ return [
         'shared' => 'Vue de rapport partagée',
     ],
     'restored' => 'Restauré',
+    'self_billing_credit' => [
+        'issued' => 'Autofacture émise',
+        'cancelled' => 'Autofacture annulée',
+    ],
     'retention' => [
         'approved' => 'Proposition de suppression approuvée',
         'purged' => 'Données supprimées selon le plan de suppression',
@@ -935,7 +945,11 @@ return [
         'fulfilled' => 'Demande de service satisfaite',
         'submitted' => 'Demande de service soumise',
     ],
+    'business_service' => [
+        'dependencies_changed' => 'Dépendances du service métier modifiées',
+    ],
     'service_ticket' => [
+        'service_changed' => 'Service du ticket modifié',
         'opened_from_intake' => 'Ticket créé depuis la demande client',
         'accepted_by_customer' => 'Ticket accepté par le client',
         'assigned' => 'Ticket attribué',
@@ -1189,6 +1203,7 @@ return [
         'followUpCreated' => 'Mission de suivi créée à partir du point ouvert',
     ],
     'learning' => [
+        'settingsChanged' => 'Paramètres de la plateforme d’apprentissage modifiés',
         'dossierDisclosed' => 'Dossier de qualification communiqué nominativement',
         'attemptViewed' => 'Dossier de tentative consulté',
     ],

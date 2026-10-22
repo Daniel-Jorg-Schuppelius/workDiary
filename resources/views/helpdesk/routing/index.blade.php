@@ -33,12 +33,12 @@
                 <x-input-field name="name" :label="__('Name')" required maxlength="120" />
                 <x-input-field name="position" type="number" :label="__('Position')" required min="1" max="999" :value="old('position', 1)" />
                 <x-textarea-field name="conditions"
-                                  :label="__('Bedingungen (JSON)')"
+                                  :label="__('Bedingungen (JSON)')" :hint="__('helpdesk.routing.conditionsHint')"
                                   rows="3"
                                   required
                                   class="font-mono text-xs">{{ old('conditions', '{"kind": "incident"}') }}</x-textarea-field>
                 <x-textarea-field name="actions"
-                                  :label="__('Aktionen (JSON)')"
+                                  :label="__('Aktionen (JSON)')" :hint="__('helpdesk.routing.actionsHint')"
                                   rows="3"
                                   required
                                   class="font-mono text-xs">{{ old('actions', '{"set_priority": "high"}') }}</x-textarea-field>

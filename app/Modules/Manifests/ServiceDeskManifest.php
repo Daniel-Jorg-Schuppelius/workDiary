@@ -46,6 +46,7 @@ final class ServiceDeskManifest extends Manifest {
     public function tables(): array {
         return [
             'business_services',
+            'business_service_dependencies',
             'service_offerings',
             'service_queues',
             'service_requests',

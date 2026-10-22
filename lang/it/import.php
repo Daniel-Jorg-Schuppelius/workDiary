@@ -14,6 +14,7 @@ return [
         'sustainability_activities' => 'Consumi ESG',
         'inspection_measurements' => 'Misure di ispezione',
         'asset_positions' => 'Posizioni delle attrezzature',
+        'learning_questions' => 'Domande di apprendimento',
         'customers' => 'Clienti',
         'suppliers' => 'Fornitori',
         'articles' => 'Articoli',
@@ -92,6 +93,10 @@ return [
             'contactPersons' => 'Non sono previsti più di :max referenti per cliente/fornitore.',
         ],
         'meterReading' => ['decreasing' => 'Lettura inferiore alla precedente.'],
+        'learningQuestion' => [
+            'points' => 'Punti da 1 a 100.',
+            'image' => 'Le domande hotspot richiedono un’immagine e non possono essere importate da un file.',
+        ],
         'calendar' => [
             'fetch' => 'Non è stato possibile recuperare il calendario. Verifichi la connessione.',
             'unknown' => 'Connessione al calendario sconosciuta.',

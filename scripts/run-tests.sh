@@ -32,4 +32,7 @@ PHP_BIN="$(resolve_php_bin . "${PHP_BIN:-}")"
 "$PHP_BIN" artisan config:clear --ansi >/dev/null
 
 export XDEBUG_MODE=off
-exec "$PHP_BIN" artisan test --parallel --processes="${TEST_PROCESSES:-8}" "$@"
+# Ein Worker behält je Test rund 0,3 MB; bei ~1700 Testdateien auf 8 Worker
+# erreichte der schwerste das memory_limit (1G) kurz vor Schluss (2026-10-22).
+# Neustart nach N Testdateien hält den Speicher je Worker begrenzt.
+exec "$PHP_BIN" artisan test --parallel --processes="${TEST_PROCESSES:-8}" --max-batch-size="${TEST_MAX_BATCH:-100}" "$@"

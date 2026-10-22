@@ -67,6 +67,8 @@ rilascio dell'unità vale in aggiunta.
 
 Chi arriva da LearnDash importa lo **ZIP di esportazione** (**Catalogo dei corsi** → «Importazione LearnDash»): corsi, lezioni, argomenti e verifiche nascono come bozze, le domande finiscono nel catalogo con la loro categoria. Immagini e media non vengono copiati (segnaposto da completare), i video delle lezioni solo da host consentiti. I corsi completati vengono annotati come iscrizioni «importate» per le persone con e-mail corrispondente — senza certificato né attestato, perché un completamento importato non è una prova propria. La prova mostra in anticipo cosa verrebbe creato.
 
+L’editor carica i file grandi in parti. Se la connessione si interrompe, salvando di nuovo si riprende dalla prima parte mancante; le parti mai completate vengono eliminate dopo un giorno.
+
 ## La pubblicazione congela il contenuto
 
 Con la pubblicazione nasce una versione del corso con un'immagine completa del
@@ -92,6 +94,10 @@ iscrizioni obbligatorie lo ignorano. I compiti hanno **regole sui file**
 (estensioni, numero, dimensione — mai più permissive del sistema) e, a scelta,
 un'**approvazione automatica** a punteggio pieno, incompatibile con il
 principio dei quattro occhi.
+
+Nel piano di sblocco di un’unità si possono indicare anche un’**unità precedente** e una **sessione in presenza** del corso. Con l’unità precedente, l’unità si apre solo dopo il suo completamento (indicazione «Dopo …»). Con la sessione in presenza, si apre il giorno della sessione e la segue se viene spostata. Tra giorni, data e sessione vale la più tarda.
+
+Nella **gestione dei partecipanti**, **Portare alla versione …** porta tutte le iscrizioni aperte alla versione attuale del corso. L’anteprima mostra, per versione di partenza, quali unità restano invariate, sono cambiate, sono nuove o vengono eliminate. I progressi restano per ogni unità presente in entrambe le versioni; le nuove unità obbligatorie risultano poi aperte. Il cambio è registrato con il motivo nello storico di ogni iscrizione; le iscrizioni concluse restano sulla loro versione.
 
 ## Il tempo di apprendimento è orario di lavoro
 
@@ -145,6 +151,12 @@ Il **registro voti** per corso mostra chi apprende × componenti. Senza componen
 
 Finezze per domanda: le opzioni di risposta possono avere **punti propri** («Etichetta {3}», anche negativi) — conta allora l'opzione scelta invece del tutto-o-niente; un'**autovalutazione** è una scala senza risposta corretta, il livello scelto è il valore; un **elaborato** accetta testo, file o entrambi — il file è disponibile nella valutazione. Per verifica il superamento può essere richiesto in aggiunta **in punti** e il sottoinsieme per tentativo fissato **in percentuale** delle domande disponibili.
 
+Con **Importa domande** nel catalogo delle domande si caricano domande da un file CSV o Excel. Le colonne **kind** (tipo, come codice breve, ad es. single, o come denominazione) e **prompt** sono obbligatorie; **options** contiene le righe di risposta una sotto l’altra in un’unica cella, scritte come nell’editor. Sono facoltative **title**, **category** (le categorie mancanti vengono create), **points**, **explanation** e **hint**. La stessa domanda (tipo e testo) viene saltata in un secondo caricamento; le domande hotspot richiedono un’immagine e non possono essere importate da un file.
+
+Un **tempo per domanda** scandisce l’esame: le domande arrivano una alla volta senza tornare indietro. Quando il tempo di una domanda scade, la risposta viene salvata e compare la domanda successiva; la somma vale anche come limite complessivo. Come **misura compensativa**, la gestione dei partecipanti imposta per persona una **proroga del tempo** in percentuale, con il motivo nello storico. Vale per il limite complessivo e per il tempo per domanda.
+
+Se l’ultimo tentativo consentito non è superato e non resta aperta alcuna autorizzazione a un altro tentativo, la persona e il suo responsabile di team ricevono la notifica **Esame definitivamente non superato**. L’iscrizione resta aperta, così che un’ulteriore autorizzazione resti possibile.
+
 ## Prove
 
 Un corso superato produce effetti in un unico punto: certificato con codice di
@@ -162,6 +174,8 @@ la cancellazione delle iscrizioni concluse senza certificato una volta scaduto
 il termine regionale (tentativi e tempo di apprendimento seguono); i certificati
 restano più a lungo come prova e vengono poi ridotti alle iniziali — il link di
 verifica continua a rispondere.
+
+Accanto all’indirizzo e al codice di verifica, il certificato riporta un **codice QR** che porta direttamente alla pagina di verifica dallo smartphone.
 
 ## Competenze
 
@@ -205,6 +219,12 @@ e le valutazioni arretrate; la ricerca attività trova i corsi pubblicati —
 chi apprende i propri, gli autori tutti.
 
 Il **Catalogo dei corsi** si mostra come elenco o riquadri (la scelta resta salvata per persona) e riporta una **valutazione a stelle** dal feedback del corso — solo da cinque risposte, perché nulla sia riconducibile a singoli. Il portale mostra inoltre il **prezzo** dell'articolo collegato. Nel player la **modalità concentrazione** nasconde la barra laterale; «Duplica» crea una nuova bozza da un corso — materiale sì, iscrizioni e attestati no.
+
+Le persone esterne con una scadenza ricevono due **promemoria di scadenza** via e-mail: uno nel preavviso del controllo delle scadenze e uno il giorno prima della scadenza, ciascuno con un nuovo link di accesso. Se la scadenza cambia, i promemoria ricominciano.
+
+Come quinta via di assegnazione, l’automazione **Iscrivere al corso** iscrive persone a un corso scelto: con **Collaboratore creato** la nuova persona, con **Attrezzatura consegnata** la persona che riceve l’attrezzatura. L’iscrizione riporta l’origine «Regola».
+
+Nelle impostazioni si può attivare la **serie di apprendimento**: in «Le mie formazioni» ogni persona vede per quanti giorni consecutivi ha completato un’unità, solo per sé e senza confronto con altri. **Stampa configurazione** (catalogo, menu) genera un PDF con data e **versione della configurazione**: interruttori dell’organizzazione, regola del tempo di apprendimento per corso e periodi di conservazione, ad esempio come allegato a un accordo aziendale. Ogni modifica delle impostazioni aumenta la versione ed è registrata con i valori prima e dopo nel registro di audit.
 
 ## Percorsi di apprendimento
 

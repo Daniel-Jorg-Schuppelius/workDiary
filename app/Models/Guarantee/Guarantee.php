@@ -63,6 +63,7 @@ class Guarantee extends Model {
         'project_id',
         'contract_id',
         'invoice_retention_id',
+        'warranty_period_id',
         'status',
         'returned_on',
         'returned_note',
@@ -108,6 +109,15 @@ class Guarantee extends Model {
     /** @return BelongsTo<Contract, $this> */
     public function contract(): BelongsTo {
         return $this->belongsTo(Contract::class);
+    }
+
+    /**
+     * Gewährleistung, deren Ende die Rückgabe auslöst (MVP-1282).
+     *
+     * @return BelongsTo<\App\Models\Warranty\WarrantyPeriod, $this>
+     */
+    public function warrantyPeriod(): BelongsTo {
+        return $this->belongsTo(\App\Models\Warranty\WarrantyPeriod::class);
     }
 
     /** @return BelongsTo<InvoiceRetention, $this> */

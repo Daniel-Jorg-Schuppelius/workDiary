@@ -38,6 +38,11 @@ return [
         'members' => 'Membres',
         'permissions' => 'Permissions disponibles',
     ],
+    'audit' => [
+        'title' => 'Modifications des rôles et droits',
+        'subtitle' => 'Qui a modifié les rôles, droits et appartenances aux groupes dans :org, et quand.',
+        'link' => 'Modifications des droits',
+    ],
     'hint' => [
         'hub' => 'Gérez les rôles, les groupes d\'utilisateurs et les attributions de membres pour l\'organisation active. Les rôles à l\'échelle de la plateforme sont en outre gérés globalement.',
         'permissions_readonly' => 'Les permissions sont définies par le système et ne peuvent pas être créées à l\'exécution. Pour les accorder par rôle, passez à l\'édition de rôle.',
@@ -180,7 +185,7 @@ return [
         'access.manage' => 'Ouvrir la gestion des accès',
         'access.roles.assign' => 'Attribuer des rôles',
         'access.groups.assign' => 'Attribuer des groupes',
-        'access.audit.view' => 'Voir le journal d\'audit',
+        'access.audit.view' => 'Voir les modifications des rôles et droits',
         'organization.update' => 'Modifier l\'organisation',
         'organization.billing' => 'Gérer la facturation de l\'organisation',
         'branding.update' => 'Modifier l\'image de marque',

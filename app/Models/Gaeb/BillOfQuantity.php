@@ -36,6 +36,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property string|null $gaeb_version
  * @property array<int, array{no: int, label: ?string, category: ?string}>|null $up_components
  * @property array<string, string|null>|null $totals
+ * @property list<string>|null $preamble Vorbemerkungen, ein Text je Block (MVP-1303)
  * @property GaebPhase|null $phase
  * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property BoqItemStatus $status
@@ -58,6 +59,7 @@ class BillOfQuantity extends Model implements HasDocumentLines {
         'gaeb_version',
         'up_components',
         'totals',
+        'preamble',
         'phase',
         'currency',
         'status',
@@ -83,6 +85,7 @@ class BillOfQuantity extends Model implements HasDocumentLines {
         'status' => BoqItemStatus::class,
         'up_components' => 'array',
         'totals' => 'array',
+        'preamble' => 'array',
         'is_framework' => 'boolean',
     ];
 

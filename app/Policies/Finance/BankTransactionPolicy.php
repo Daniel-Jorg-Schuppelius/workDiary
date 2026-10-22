@@ -30,8 +30,11 @@ class BankTransactionPolicy {
         return $this->viewAny($user);
     }
 
-    /** Zuordnung bestätigen / ignorieren / als nicht zuordenbar markieren / unmatch. */
+    /**
+     * Zuordnung bestätigen / ignorieren / als nicht zuordenbar markieren / unmatch.
+     * Vorläufige Umsätze (MVP-1274) sind reine Vorschau.
+     */
     public function reconcile(User $user, BankTransaction $transaction): bool {
-        return $user->can(P::FinancePaymentReconcile->value);
+        return $user->can(P::FinancePaymentReconcile->value) && ! $transaction->isProvisional();
     }
 }

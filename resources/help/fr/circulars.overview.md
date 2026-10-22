@@ -43,3 +43,7 @@ apparaît dans le portail client.
 **Espaces réservés :** `:firma`, `:kunde` et `:ansprechpartner` sont
 remplacés pour chaque destinataire. Si une valeur manque, l’emplacement
 reste vide — rien n’est inventé.
+
+## Modèles et pièce jointe
+
+À la création d’une circulaire, un **fichier** peut être joint à chaque e-mail. **Enregistrer comme modèle** (menu de la circulaire) crée une copie avec texte, filtres, options et pièces jointes. Les modèles figurent au-dessus de la liste ; **Créer à partir du modèle** ouvre la boîte de dialogue préremplie et reprend les pièces jointes du modèle. Un modèle n’est jamais envoyé lui-même.

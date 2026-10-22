@@ -17,6 +17,7 @@ use App\Enums\Patrol\PatrolRunStatus;
 use App\Models\Diary\OpenIssue;
 use App\Models\Patrol\{PatrolCheckpoint, PatrolRoute, PatrolRun};
 use App\Models\Platform\User;
+use Carbon\CarbonInterface;
 use Illuminate\Support\{Carbon, Str};
 use RuntimeException;
 
@@ -94,7 +95,8 @@ class PatrolService {
      * bewertet das Soll-Fenster. Doppelscans desselben Punkts sind
      * idempotent (der erste zählt).
      */
-    public function scan(PatrolRun $run, string $token): PatrolCheckpoint {
+    /** $at: Scanzeit des Geräts bei offline erfassten Scans (MVP-1291). */
+    public function scan(PatrolRun $run, string $token, ?CarbonInterface $at = null): PatrolCheckpoint {
         if ($run->status !== PatrolRunStatus::Running) {
             throw new RuntimeException((string) __('Dieser Rundgang läuft nicht mehr.'));
         }
@@ -112,14 +114,20 @@ class PatrolService {
         }
 
         $now = Carbon::now();
-        $elapsed = (int) $run->started_at->diffInMinutes($now);
+        $scannedAt = $at !== null ? Carbon::instance($at) : $now;
+        // Gerätezeit nur innerhalb des Laufs, mit zwei Minuten Uhrenabweichung.
+        if ($scannedAt->lt($run->started_at->copy()->subMinutes(2)) || $scannedAt->gt($now->copy()->addMinutes(2))) {
+            throw new RuntimeException((string) __('patrol.scan.implausibleTime'));
+        }
+        $scannedAt = $scannedAt->max($run->started_at);
+        $elapsed = (int) $run->started_at->diffInMinutes($scannedAt);
         $delta = $elapsed - $checkpoint->expected_offset_minutes;
         $inWindow = abs($delta) <= $checkpoint->tolerance_minutes;
 
         $run->scans()->create([
             'organization_id' => $run->organization_id,
             'patrol_checkpoint_id' => $checkpoint->id,
-            'scanned_at' => $now,
+            'scanned_at' => $scannedAt,
             'delta_minutes' => $delta,
             'in_window' => $inWindow,
         ]);

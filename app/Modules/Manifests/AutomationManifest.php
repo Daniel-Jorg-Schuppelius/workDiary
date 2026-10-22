@@ -43,4 +43,23 @@ final class AutomationManifest extends Manifest {
             'automation_rules',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Automation\Triggers\RuleTrigger::class => [
+                \App\Automation\Triggers\UserCreatedTrigger::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, list<class-string>> */
+    public function listeners(): array {
+        return [
+            // Regeln auf „Mitarbeitende angelegt“ (MVP-1273).
+            \App\Events\Platform\UserCreated::class => [
+                \App\Listeners\Automation\DispatchUserCreatedRules::class,
+            ],
+        ];
+    }
 }

@@ -62,3 +62,9 @@ reste à réaliser montre ce qui est encore ouvert.
 GAEB-DA-XML dans une phase d'échange au choix (par défaut : attribution
 du marché). L'export est déterministe et journalisé avec un hachage du
 contenu — le même état produit de manière reproductible le même hachage.
+
+## Remarques préliminaires et contrôle avant remise
+
+Si le fichier GAEB contient des **remarques préliminaires** (textes contractuels avant les postes), la vue du bordereau les affiche dans une section dépliable, un texte par bloc et tel que livré. Une réimportation les remplace par celles du fichier. Pour l’instant, l’import les lit depuis GAEB 90 ; celles de DA XML suivront avec la prochaine version du composant GAEB.
+
+Le **contrôle avant remise** signale en outre les postes dont le prix est dans une autre devise que le bordereau et une TVA qui ne correspond pas au taux appliqué au total net ou qui, ajoutée à celui-ci, ne donne pas le total brut (au centime près).

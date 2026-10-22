@@ -42,6 +42,7 @@ class PatrolScanController extends Controller {
         parameters: [new OA\Parameter(name: 'token', in: 'path', required: true, description: 'Standort-Geräte-Token', schema: new OA\Schema(type: 'string'))],
         requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(required: ['checkpoint'], properties: [
             new OA\Property(property: 'checkpoint', type: 'string', maxLength: 64, description: 'Checkpoint-Token'),
+            new OA\Property(property: 'scanned_at', type: 'string', format: 'date-time', description: 'Scanzeit des Geräts bei offline erfassten Scans (höchstens zwei Minuten voraus, nicht vor dem Rundgangsbeginn)'),
         ])),
         responses: [
             new OA\Response(response: 200, description: 'OK'),
@@ -75,7 +76,10 @@ class PatrolScanController extends Controller {
             }
         }
 
-        $data = $request->validate(['checkpoint' => ['required', 'string', 'max:64']]);
+        $data = $request->validate([
+            'checkpoint' => ['required', 'string', 'max:64'],
+            'scanned_at' => ['nullable', 'date', new \App\Rules\TimestampRange()],
+        ]);
 
         $checkpoint = PatrolCheckpoint::query()
             ->withoutGlobalScopes()
@@ -97,7 +101,7 @@ class PatrolScanController extends Controller {
         }
 
         try {
-            $service->scan($run, (string) $data['checkpoint']);
+            $service->scan($run, (string) $data['checkpoint'], isset($data['scanned_at']) ? \Carbon\CarbonImmutable::parse((string) $data['scanned_at']) : null);
         } catch (RuntimeException $e) {
             return response()->json(['error' => 'scan_rejected', 'message' => ErrorText::for($e)], 422);
         }

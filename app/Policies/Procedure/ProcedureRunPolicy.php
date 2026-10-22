@@ -44,6 +44,17 @@ class ProcedureRunPolicy {
             && $user->can(P::ProcedureSecondPersonSign->value);
     }
 
+    public function requestSecondPerson(User $user, ProcedureRun $run): bool {
+        return $this->execute($user, $run)
+            && $user->can(P::ProcedureSecondPersonRequest->value);
+    }
+
+    /** Widerruf der Gegenzeichnung (Org-Admin bzw. Leitung, mit Begründung). */
+    public function revokeSecondPerson(User $user, ProcedureRun $run): bool {
+        return $this->sharesOrganization($user, $run)
+            && $user->can(P::ProcedureSecondPersonRevoke->value);
+    }
+
     public function abort(User $user, ProcedureRun $run): bool {
         if (! $this->sharesOrganization($user, $run)) {
             return false;

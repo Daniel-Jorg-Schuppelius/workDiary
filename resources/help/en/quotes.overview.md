@@ -122,3 +122,7 @@ fixes the number from the range “Delivery note”; if an accounting program
 note at that moment. After that, the PDF and e-mail sending are available.
 Delivery notes from manufacturing are created with every delivery (see
 manufacturing orders).
+
+## Viewed and signature
+
+When the customer opens the quote via the link or in the customer portal, the quote header shows **“Viewed by the customer on …”**; the first opening of a sent quote counts. On acceptance, the customer can optionally enter their **name** and **sign**. The signature is stored as an image on the quote and recorded with name and time in the frozen acceptance record; accepting without a signature remains possible.

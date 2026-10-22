@@ -24,6 +24,16 @@ return [
     'no_email' => 'aucune adresse e-mail',
     'confirm_send' => 'Envoyer la circulaire à :count destinataires maintenant ?',
     'body_hint' => 'Espaces réservés : :firma, :kunde, :ansprechpartner',
+    'attachment_hint' => 'Facultatif : un fichier joint à chaque e-mail.',
+    'template' => [
+        'heading' => 'Modèles',
+        'save' => 'Enregistrer comme modèle',
+        'saved' => 'Modèle enregistré.',
+        'use' => 'Créer à partir du modèle',
+        'based_on' => 'Sur la base du modèle « :subject ».',
+        'attachments' => 'Repris du modèle : :names',
+        'not_sendable' => 'Un modèle n’est pas envoyé — créez une circulaire à partir de celui-ci.',
+    ],
     'mandatory_hint' => 'Les communications obligatoires atteignent aussi les clients ayant refusé les envois groupés — uniquement pour les informations légalement requises.',
     'portal_hint' => 'La communication apparaît également dans le portail client.',
 
@@ -59,6 +69,7 @@ return [
     ],
 
     'field' => [
+        'attachment' => 'Pièce jointe',
         'body' => 'Texte',
         'is_mandatory' => 'Communication obligatoire',
         'portal_notice' => 'Afficher dans le portail client',

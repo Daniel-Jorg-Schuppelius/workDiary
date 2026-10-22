@@ -129,6 +129,9 @@ return [
     'calculation' => [
         'unpriced_hint' => ':count voce non porta alcun prezzo e resta quindi fuori dalla differenza complessiva.|:count voci non portano alcun prezzo e restano quindi fuori dalla differenza complessiva.',
     ],
+    'preamble' => [
+        'title' => 'Premesse',
+    ],
     'preflight' => [
         'version_unknown' => 'Impossibile rilevare la versione GAEB.',
         'version_unsupported' => 'La versione GAEB :version non è supportata (linea obiettivo 3.3).',
@@ -148,6 +151,9 @@ return [
         'up_components_mismatch' => 'Voce :ref: la somma delle componenti del prezzo unitario (:sum) non corrisponde al prezzo unitario (:price).',
         'missing_text' => 'La voce :ref non ha testo breve/lungo.',
         'total_mismatch' => 'Il totale indicato (:stated) differisce dal totale ricalcolato (:computed).',
+        'currency_mismatch' => 'Voce :ref: prezzo in :currency, ma il computo usa :expected.',
+        'vat_mismatch' => 'L\'IVA (:stated) non corrisponde al :rate % del totale netto (:computed).',
+        'gross_mismatch' => 'Il totale lordo (:stated) non è pari a netto più IVA (:computed).',
         'complement_empty' => 'Posizione :ref: l\'integrazione di testo dell\'offerente :mark non è compilata.',
         'contractor_missing' => 'Questa fase richiede l\'indirizzo dell\'offerente (nome, via, CAP e città nei dati anagrafici della fatturazione elettronica).',
     ],

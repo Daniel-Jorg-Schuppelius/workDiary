@@ -125,3 +125,7 @@ eine Position aus diesem Lieferschein, sie bleibt für den nächsten offen.
 Buchhaltungsprogramm (Lexoffice oder easybill) die Nummer, überträgt WorkDiary
 den Lieferschein dabei. Danach stehen PDF und E-Mail-Versand bereit. Lieferscheine
 aus der Fertigung entstehen mit jeder Auslieferung (siehe Fertigungsaufträge).
+
+## Angesehen und Unterschrift
+
+Öffnet der Kunde das Angebot über den Link oder im Kundenportal, steht es mit **„Vom Kunden angesehen am …“** im Kopf des Angebots; gezählt wird das erste Öffnen eines versendeten Angebots. Bei der Annahme kann der Kunde freiwillig seinen **Namen** angeben und **unterschreiben**. Die Unterschrift liegt als Bild am Angebot und steht mit Namen und Zeitpunkt im eingefrorenen Annahmestand; eine Annahme ohne Unterschrift bleibt möglich.

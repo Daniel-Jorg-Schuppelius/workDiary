@@ -43,6 +43,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $completed_at
  * @property int|null $score_percent
  * @property int $points_earned
+ * @property int|null $time_extension_percent
+ * @property \Illuminate\Support\Carbon|null $reminded_at
+ * @property \Illuminate\Support\Carbon|null $final_reminded_at
  * @property-read User|null $user
  * @property-read ExternalParticipant|null $externalParticipant
  * @property-read LearningCourse|null $course
@@ -78,6 +81,9 @@ class LearningEnrollment extends Model {
         'completed_at',
         'score_percent',
         'points_earned',
+        'time_extension_percent',
+        'reminded_at',
+        'final_reminded_at',
     ];
 
     /** @var array<string, string> */
@@ -90,6 +96,9 @@ class LearningEnrollment extends Model {
         'completed_at' => 'datetime',
         'score_percent' => 'integer',
         'points_earned' => 'integer',
+        'time_extension_percent' => 'integer',
+        'reminded_at' => 'datetime',
+        'final_reminded_at' => 'datetime',
     ];
 
     /** @return BelongsTo<LearningCourse, $this> */

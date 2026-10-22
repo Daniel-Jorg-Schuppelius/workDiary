@@ -6,10 +6,11 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Erwartet: $project, $entry (null = neu), $tasks, $diaryOptions, $reworkOptions, $goodwillOptions, $isDialog --}}
+{{-- Erwartet: $project, $entry (null = neu), $tasks, $diaryOptions, $ticketOptions, $prefillTicketId, $reworkOptions, $goodwillOptions, $isDialog --}}
 @php
     $isDialog  = $isDialog ?? false;
     $diaryOptions = $diaryOptions ?? collect();
+    $ticketOptions = $ticketOptions ?? collect();
     $action    = $entry
         ? route('projects.time-entries.update', [$project, $entry])
         : route('projects.time-entries.store', $project);
@@ -137,6 +138,16 @@
                             }
                         @endphp
                         <option value="{{ $d->sqid }}" @selected((string) old('diary_entry_id', \App\Support\Sqid::encode(\App\Models\Diary\DiaryEntry::class, $entry?->diary_entry_id)) === $d->sqid)>{{ $label }}</option>
+                    @endforeach
+                </x-select-field>
+            @endif
+
+            @if ($ticketOptions->isNotEmpty())
+                @php $currentTicket = \App\Support\Sqid::encode(\App\Models\ServiceTicket\ServiceTicket::class, $entry?->service_ticket_id ?? ($prefillTicketId ?? null)); @endphp
+                <x-select-field name="service_ticket_id" :label="__('helpdesk.time.ticketOptional')">
+                    <option value="">{{ __('helpdesk.time.noTicket') }}</option>
+                    @foreach ($ticketOptions as $t)
+                        <option value="{{ $t->sqid }}" @selected((string) old('service_ticket_id', $currentTicket) === $t->sqid)>{{ $t->ticket_no }} · {{ \Illuminate\Support\Str::limit((string) $t->title, 60) }}</option>
                     @endforeach
                 </x-select-field>
             @endif

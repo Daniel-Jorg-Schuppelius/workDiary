@@ -6,7 +6,8 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
-  Erwartet: $ticket (nullable), $priorityOptions, $isDialog
+  Erwartet: $ticket (nullable), $priorityOptions, $isDialog, $customers,
+  $projects, $assets, $services (leer ohne Modul Service Desk)
 --}}
 @php
     $isDialog = $isDialog ?? false;
@@ -41,11 +42,23 @@
     </x-form-group>
 
     <x-form-group :legend="__('Verknüpfungen (optional)')" icon="link" tone="ghost" cols="2">
-        <x-input-field name="customer_id" type="number" min="1" :label="__('Kunden-ID')"
-                       :value="old('customer_id', $ticket?->customer_id)" />
-        <x-input-field name="asset_id" type="number" min="1" :label="__('Asset-ID')"
-                       :value="old('asset_id', $ticket?->asset_id)" />
-        <x-input-field name="project_id" type="number" min="1" :label="__('Projekt-ID')"
-                       :value="old('project_id', $ticket?->project_id)" />
+        <x-select-field name="customer_id" :label="__('Kunde')">
+            <option value="">{{ __('helpdesk.form.noCustomer') }}</option>
+            @foreach ($customers as $c)
+                <option value="{{ $c->sqid }}" @selected((string) old('customer_id') === $c->sqid)>{{ $c->name }}</option>
+            @endforeach
+        </x-select-field>
+        <x-project-select :label="__('Projekt')" :placeholder="__('helpdesk.form.noProject')"
+            :projects="$projects" :selected="(string) old('project_id', '')"
+            data-depends-on="customer_id" :data-parent="true" />
+        <x-select-field name="asset_id" :label="__('Asset')" data-depends-on="customer_id" span="2">
+            <option value="">{{ __('helpdesk.form.noAsset') }}</option>
+            @foreach ($assets as $a)
+                <option value="{{ $a->sqid }}" data-parent="{{ $a->customer?->sqid }}" @selected((string) old('asset_id') === $a->sqid)>{{ $a->asset_no ? $a->asset_no . ' · ' : '' }}{{ $a->name }}</option>
+            @endforeach
+        </x-select-field>
+        @if ($services->isNotEmpty())
+            @include('service-tickets._service_fields', ['selectedService' => old('business_service_id'), 'selectedOffering' => old('service_offering_id')])
+        @endif
     </x-form-group>
 </x-modal>

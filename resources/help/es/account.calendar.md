@@ -26,3 +26,7 @@ permisos de administración puede cambiar a la vista de equipo y
 limitarla a una persona concreta. Si quiere suscribirse a sus citas
 desde un programa de calendario externo, use la suscripción de
 calendario ICS en su perfil.
+
+## Plazos de licitaciones
+
+Con el módulo de licitaciones, el calendario muestra los plazos de las licitaciones abiertas: plazo de consultas, de participación y de presentación, la fecha de apertura y el plazo de vinculación. En su calendario aparecen las licitaciones de las que es responsable; en la vista de equipo, todas. Al hacer clic se abre la licitación.

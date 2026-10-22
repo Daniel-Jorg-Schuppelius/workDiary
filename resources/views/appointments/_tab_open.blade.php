@@ -33,14 +33,21 @@
                     @if ($request->is_reschedule)
                         <x-status-badge tone="info" size="sm" icon="update">{{ __('Umbuchung') }}</x-status-badge>
                     @endif
+                    @if ($request->status === \App\Enums\Calendar\AppointmentRequestStatus::Proposed)
+                        <x-status-badge tone="warning" size="sm" icon="schedule_send">{{ __('appointment.proposal.badge', ['date' => $request->proposed_start_at?->orgTz()->fdatetime() ?? '—']) }}</x-status-badge>
+                    @endif
                 </td>
                 <td class="whitespace-nowrap tabular-nums text-muted">{{ $request->created_at?->fdatetime() }}</td>
                 @if ($canManage)
                     <td class="text-right whitespace-nowrap">
                         <div class="flex justify-end gap-1">
-                            <x-action-form :action="route('appointments.confirm', $request)">
-                                <x-icon-btn icon="check" tone="success" size="sm" type="submit" show-label>{{ __('Bestätigen') }}</x-icon-btn>
-                            </x-action-form>
+                            @if ($request->status === \App\Enums\Calendar\AppointmentRequestStatus::Requested)
+                                <x-action-form :action="route('appointments.confirm', $request)">
+                                    <x-icon-btn icon="check" tone="success" size="sm" type="submit" show-label>{{ __('Bestätigen') }}</x-icon-btn>
+                                </x-action-form>
+                            @endif
+                            <x-icon-btn icon="schedule_send" size="sm" show-label
+                                        data-open-dialog="appointment-propose-{{ $request->id }}">{{ __('appointment.proposal.action') }}</x-icon-btn>
                             <x-icon-btn icon="close" size="sm" show-label
                                         data-open-dialog="appointment-decline-{{ $request->id }}">{{ __('Ablehnen') }}</x-icon-btn>
                         </div>
@@ -59,6 +66,18 @@
                 :submit-label="__('Ablehnen')" submit-class="btn-error">
                 <x-textarea-field name="reason" :id="'decline-reason-' . $request->id" rows="3" required maxlength="500"
                                   :label="__('Ablehnungsgrund (geht an den Kunden)')" />
+            </x-modal>
+            {{-- Ersatztermin (MVP-1287): gleiche Dauer, der Kunde entscheidet im Portal. --}}
+            <x-modal :id="'appointment-propose-' . $request->id" :embedded="false" tone="warning" icon="schedule_send"
+                :title="__('appointment.proposal.title')"
+                :eyebrow="($request->start_at?->orgTz()->fdatetime() ?? '—') . ' · ' . ($request->customer?->name ?? $request->invitee_name ?? '—')"
+                :action="route('appointments.propose', $request)"
+                :submit-label="__('appointment.proposal.submit')">
+                <x-input-field name="start" type="datetime-local" :id="'propose-start-' . $request->id" required
+                               :label="__('appointment.proposal.start')"
+                               :value="$request->proposed_start_at?->orgTz()->format('Y-m-d\\TH:i')" />
+                <x-textarea-field name="note" :id="'propose-note-' . $request->id" rows="2" maxlength="500"
+                                  :label="__('appointment.proposal.note')" />
             </x-modal>
         @endforeach
     @endif

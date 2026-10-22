@@ -43,6 +43,17 @@ return [
             'expected_runtime_minutes' => 2,
         ],
 
+        // --- Umfragen im festen Abstand (Feature 090, MVP-1293) ---
+        // Lädt Kunden mit Auftrag oder Ticket im Abstand ein; Opt-out und
+        // Ermüdungsschutz gelten. Vormittags, damit Mails nicht nachts gehen.
+        'surveys.scheduled' => [
+            'command' => 'surveys:send-scheduled',
+            'cadence' => ['type' => 'dailyAt', 'time' => '09:30'],
+            'allowed' => ['dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 2,
+        ],
+
         // --- Wiederkehrende Rechnungen (Phase 38, MVP-415) ---
         // Erzeugt ausschließlich ENTWÜRFE aus fälligen Abrechnungsplänen;
         // Ausstellung und Versand bleiben manuelle, auditierte Schritte.
@@ -517,6 +528,14 @@ return [
         'learning.lti_prune_nonces' => [
             'command' => 'learning:lti-prune-nonces',
             'cadence' => ['type' => 'dailyAt', 'time' => '04:05'],
+            'allowed' => ['dailyAt', 'hourly'],
+            'criticality' => 'housekeeping',
+            'expected_runtime_minutes' => 1,
+        ],
+        // Teile abgebrochener Uploads (MVP-1265) nach einem Tag entfernen.
+        'uploads.prune_chunks' => [
+            'command' => 'uploads:prune-chunks',
+            'cadence' => ['type' => 'dailyAt', 'time' => '04:15'],
             'allowed' => ['dailyAt', 'hourly'],
             'criticality' => 'housekeeping',
             'expected_runtime_minutes' => 1,

@@ -14,6 +14,11 @@ return [
     'label' => 'File',
     'hint' => 'Consentiti: :formats · fino a :size per file · al massimo :count file, :total in totale.',
     'progress' => 'Caricamento … :percent %',
+    'chunked' => [
+        'invalid_chunk' => 'Questa parte non corrisponde al caricamento.',
+        'incomplete' => 'Il caricamento non è ancora stato trasferito completamente.',
+        'unknown' => 'Il caricamento è sconosciuto o scaduto. Selezioni di nuovo il file.',
+    ],
     'error' => [
         'type' => ':name: tipo di file non consentito.',
         'too_large' => ':name supera :size.',

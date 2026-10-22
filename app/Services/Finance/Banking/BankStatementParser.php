@@ -15,7 +15,9 @@ namespace App\Services\Finance\Banking;
 use App\Enums\Finance\{BankStatementFormat, TransactionDirection};
 use App\Services\Billing\FinancialFormatsSupport;
 use App\Services\Finance\BankImportException;
+use CommonToolkit\FinancialFormats\Entities\ISO20022\Camt\Type52\Transaction as Camt052Transaction;
 use CommonToolkit\FinancialFormats\Entities\ISO20022\Camt\Type53\{Document as Camt053Document, Transaction as Camt053Transaction};
+use CommonToolkit\FinancialFormats\Entities\ISO20022\Camt\Type54\Transaction as Camt054Transaction;
 use CommonToolkit\FinancialFormats\Entities\ISO20022\Pain\Type1\Document as Pain001Document;
 use CommonToolkit\FinancialFormats\Entities\ISO20022\Pain\Type8\Document as Pain008Document;
 use CommonToolkit\FinancialFormats\Entities\OFX\{Statement as OfxStatement, Transaction as OfxTransaction};
@@ -89,6 +91,8 @@ final class BankStatementParser {
 
         return match ($type) {
             CamtType::CAMT053 => BankStatementFormat::Camt053,
+            CamtType::CAMT052 => BankStatementFormat::Camt052,
+            CamtType::CAMT054 => BankStatementFormat::Camt054,
             PainType::PAIN_001 => BankStatementFormat::Pain001,
             PainType::PAIN_008 => BankStatementFormat::Pain008,
             default => throw new BankImportException(
@@ -112,6 +116,7 @@ final class BankStatementParser {
         try {
             return match ($format) {
                 BankStatementFormat::Camt053 => $this->parseCamt($content),
+                BankStatementFormat::Camt052, BankStatementFormat::Camt054 => $this->parseCamtNotification($content, $format),
                 BankStatementFormat::Mt940 => $this->parseMt940($content),
                 BankStatementFormat::Ofx => $this->parseOfx($content),
                 BankStatementFormat::Qif => $this->parseQif($content),
@@ -181,6 +186,67 @@ final class BankStatementParser {
         }
 
         return $statements;
+    }
+
+    /**
+     * CAMT.052 (Tagesauszug) und CAMT.054 (Umsatzmeldung, MVP-1274): vorläufige
+     * Umsätze ohne verbindliche Salden; den Zeitraum setzt der Import aus den
+     * Buchungstagen. Den Zweck trägt CAMT.052 oft nur in RmtInf.
+     *
+     * @return list<NormalizedStatement>
+     */
+    private function parseCamtNotification(string $content, BankStatementFormat $format): array {
+        $documents = $format === BankStatementFormat::Camt052
+            ? CamtParser::parseCamt052All($content)
+            : CamtParser::parseCamt054All($content);
+        $statements = [];
+
+        foreach ($documents as $document) {
+            $transactions = [];
+            $line = 0;
+
+            foreach ($document->getEntries() as $entry) {
+                /** @var Camt052Transaction|Camt054Transaction $entry */
+                if ($entry instanceof Camt054Transaction) {
+                    $endToEnd = $this->nullableRef($entry->getEndToEndId());
+                    $mandate = $this->nullableRef($entry->getFirstTransactionDetail()?->getMandateId());
+                    $purpose = $entry->getRemittanceInfo();
+                } else {
+                    $endToEnd = $this->nullableRef($entry->getReference()?->getEndToEndId());
+                    $mandate = $this->nullableRef($entry->getReference()?->getMandateId());
+                    $purpose = $entry->getPurpose() ?: $entry->getRemittanceInfo();
+                }
+
+                $transactions[] = new NormalizedTransaction(
+                    lineIndex: $line++,
+                    bookingDate: $this->dateString($entry->getBookingDate()),
+                    valutaDate: $this->nullableDateString($entry->getValutaDate()),
+                    amount: round($entry->getAmount()->toFloat(), 2),
+                    direction: TransactionDirection::fromCreditDebit($entry->getCreditDebit()),
+                    currency: $entry->getCurrency()->value,
+                    endToEndId: $endToEnd,
+                    mandateRef: $mandate,
+                    counterpartyName: $entry->getCounterpartyName(),
+                    counterpartyIban: $entry->getCounterpartyIban(),
+                    purpose: $purpose,
+                    extractedRefs: ReferenceExtractor::extract($purpose, $endToEnd),
+                    isReversal: $entry->isReversal(),
+                    returnReason: $entry->getReturnReason()?->value,
+                );
+            }
+
+            $statements[] = new NormalizedStatement(
+                format: $format,
+                accountIban: $document->getAccountIban() !== '' ? $document->getAccountIban() : null,
+                openingBalance: null,
+                closingBalance: null,
+                periodFrom: null,
+                periodTo: null,
+                transactions: $transactions,
+            );
+        }
+
+        return $this->requireStatements($statements);
     }
 
     /**

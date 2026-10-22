@@ -83,3 +83,9 @@ RF-Gläubigerreferenz (ISO 11649) aus ihrer Nummer — im Zahlungshinweis und
 im Girocode als strukturierte Referenz. Überweist der Kunde mit dieser
 Referenz, erkennt der Zahlungsabgleich die Rechnung daran, auch in
 Vierergruppen geschrieben.
+
+## Vorläufige Auszüge und Anschluss an den Vorauszug
+
+**CAMT.052** (Tagesauszug), **CAMT.054** (Umsatzmeldung) sowie die eigenen Zahlungsaufträge **PAIN.001/PAIN.008** werden als **vorläufig** eingelesen. Ihre Umsätze stehen zur Vorschau im Auszug, werden aber weder abgeglichen noch gebucht und zählen nicht in Liquidität und Kennzahlen. Kommt der verbindliche Kontoauszug (**CAMT.053** oder **MT940**) desselben Kontos, gelten die vorläufigen Auszüge bis zu seinem Ende als **ersetzt**; abgeglichen wird nur der verbindliche Auszug.
+
+Jeder verbindliche Auszug wird zusätzlich gegen seinen **Vorauszug** desselben Kontos geprüft: Der Eröffnungssaldo muss dem Schlusssaldo des Vorgängers entsprechen, und dazwischen dürfen keine Bankarbeitstage fehlen. Die Liste zeigt das als **Anschluss an Vorauszug** (stimmt, Lücke, weicht ab, erster Auszug). Eine Lücke heißt meist, dass ein Auszug noch nicht importiert ist; wird er nachgereicht, wird der Anschluss des Folgeauszugs neu geprüft.

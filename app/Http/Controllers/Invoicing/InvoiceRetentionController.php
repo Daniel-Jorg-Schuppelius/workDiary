@@ -37,7 +37,15 @@ class InvoiceRetentionController extends Controller {
     public function dialog(Invoice $invoice): View {
         Gate::authorize('update', $invoice);
 
-        return view('invoices._retention_dialog', ['invoice' => $invoice]);
+        return view('invoices._retention_dialog', [
+            'invoice' => $invoice,
+            // Gewährleistungsfristen des Kunden (MVP-1282), deren Ende den Einbehalt freigibt.
+            'warranties' => \App\Models\Warranty\WarrantyPeriod::query()
+                ->where('customer_id', $invoice->customer_id)
+                ->where('status', \App\Enums\Warranty\WarrantyStatus::Open->value)
+                ->orderBy('ends_on')
+                ->get(),
+        ]);
     }
 
     public function store(Request $request, Invoice $invoice): RedirectResponse {
@@ -53,7 +61,12 @@ class InvoiceRetentionController extends Controller {
             'amount' => ['nullable', 'numeric', 'min:0.01', 'required_if:basis,amount'],
             'due_on' => ['nullable', 'date'],
             'note' => ['nullable', 'string', 'max:500'],
+            'warranty_period_id' => ['nullable', 'string', 'max:64'],
         ]);
+        $warrantyId = \App\Support\Sqid::decode(\App\Models\Warranty\WarrantyPeriod::class, (string) ($data['warranty_period_id'] ?? ''));
+        $warranty = $warrantyId !== null
+            ? \App\Models\Warranty\WarrantyPeriod::query()->where('customer_id', $invoice->customer_id)->find($warrantyId)
+            : null;
 
         try {
             $this->retentions->add(
@@ -65,6 +78,7 @@ class InvoiceRetentionController extends Controller {
                 $user,
                 $data['note'] ?? null,
                 RetentionBase::tryFrom((string) ($data['base_kind'] ?? '')) ?? RetentionBase::Net,
+                $warranty,
             );
         } catch (RuntimeException $e) {
             return back()->withInput()->with('error', ErrorText::for($e));

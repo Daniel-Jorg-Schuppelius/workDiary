@@ -52,3 +52,7 @@ commandes** en tire des brouillons par fournisseur, à vérifier avant de
 commander. La création, la commande et l’enregistrement exigent le droit
 **Enregistrer des mouvements de stock** ; **Annuler** une commande est
 irréversible.
+
+## Feu des justificatifs
+
+Si des justificatifs obligatoires sont exigés du fournisseur (par exemple attestation d’exonération ou assurance), l’en-tête de la commande affiche leur **feu** : vert si tout est valable, jaune si une échéance approche, rouge s’ils manquent ou ont expiré. Un clic ouvre la vue d’ensemble des justificatifs. Le blocage de la transmission en cas de rouge reste régi par le paramètre des justificatifs.

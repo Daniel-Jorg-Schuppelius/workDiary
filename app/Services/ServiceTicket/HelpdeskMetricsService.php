@@ -509,6 +509,64 @@ class HelpdeskMetricsService {
     }
 
     /**
+     * Monatsverläufe (MVP-1260) der letzten zwölf Monate bis $to, je Monat mit
+     * denselben Definitionen wie die Zeitraum-Kennzahlen.
+     *
+     * @return list<array{month: string, created: int, resolved: int, reaction_p50: float, resolution_p50: float, resolution_met: float, fcr_rate: float, csat: float}>
+     */
+    public function monthlyTrends(Carbon $to, int $months = 12): array {
+        $rows = [];
+        $cursor = $to->copy()->startOfMonth()->subMonths($months - 1);
+        for ($i = 0; $i < $months; $i++) {
+            $start = $cursor->copy()->startOfMonth();
+            $end = $cursor->copy()->endOfMonth();
+            $times = $this->responseTimes($start, $end);
+            $rows[] = [
+                'month' => $start->format('Y-m'),
+                'created' => ServiceTicket::query()->whereBetween('reported_at', [$start, $end])->count(),
+                'resolved' => ServiceTicket::query()->whereBetween('resolved_at', [$start, $end])->count(),
+                'reaction_p50' => $times['reaction']['p50'],
+                'resolution_p50' => $times['resolution']['p50'],
+                'resolution_met' => $this->slaCompliance($start, $end)['resolution_met'],
+                'fcr_rate' => $this->fcrAndReopens($start, $end)['fcr_rate'],
+                'csat' => $this->satisfaction($start, $end)['average'],
+            ];
+            $cursor->addMonth();
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Tickets je Fachdienst im Zeitraum (MVP-1257): gemeldet, davon offen, mit
+     * verletzter Lösungsfrist.
+     *
+     * @return array<string, array{total: int, open: int, breached: int}>
+     */
+    public function volumeByService(Carbon $from, Carbon $to): array {
+        $tickets = ServiceTicket::query()
+            ->whereBetween('reported_at', [$from, $to])
+            ->with('businessService:id,name')
+            ->get(['id', 'business_service_id', 'status', 'resolution_breached']);
+
+        $rows = [];
+        foreach ($tickets as $ticket) {
+            $name = $ticket->businessService->name ?? (string) __('helpdesk.service.none');
+            $rows[$name] ??= ['total' => 0, 'open' => 0, 'breached' => 0];
+            $rows[$name]['total']++;
+            if (! $ticket->status->isResolved()) {
+                $rows[$name]['open']++;
+            }
+            if ((bool) $ticket->resolution_breached) {
+                $rows[$name]['breached']++;
+            }
+        }
+        ksort($rows);
+
+        return $rows;
+    }
+
+    /**
      * @param array<int, float> $values
      * @return array{p50: float, p85: float, p95: float, count: int}
      */

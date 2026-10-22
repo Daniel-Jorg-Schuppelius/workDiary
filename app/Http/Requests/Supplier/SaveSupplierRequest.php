@@ -46,6 +46,9 @@ class SaveSupplierRequest extends BaseFormRequest {
                     ->ignore($supplier?->id),
             ],
             'vendor_number' => ['nullable', 'string', 'max:64'],
+            'tax_number' => ['nullable', 'string', 'max:64'],
+            // Gutschriftsverfahren (MVP-1280): Datum der Vereinbarung nach § 14 Abs. 2 Satz 2 UStG.
+            'self_billing_agreed_on' => ['nullable', 'date'],
             'active' => ['sometimes', 'boolean'],
             'exclude_from_reports' => ['sometimes', 'boolean'],
         ]);

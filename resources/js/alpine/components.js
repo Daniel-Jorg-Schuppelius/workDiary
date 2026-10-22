@@ -2459,6 +2459,11 @@ export function registerAlpineComponents(Alpine) {
         flagged: new Set(),
         current: 0,
         remaining: "",
+        /** @type {number | null} */
+        questionSeconds: null,
+        /** @type {number | null} */
+        questionDeadline: null,
+        questionLeft: "",
         submitted: false,
         /** @type {number | null} */
         timer: null,
@@ -2473,13 +2478,44 @@ export function registerAlpineComponents(Alpine) {
             this.ids = Array.isArray(options.ids) ? options.ids.map(Number) : [];
             this.answered = new Set((options.answered || []).map(Number));
             this.flagged = new Set((options.flagged || []).map(Number));
+            this.questionSeconds = options.questionSeconds ? Number(options.questionSeconds) : null;
             if (this.single) {
                 const firstOpen = this.ids.findIndex((id) => !this.answered.has(id));
                 this.current = firstOpen >= 0 ? firstOpen : 0;
             }
+            // Zeit je Frage (MVP-1267): jede neue Frage bekommt ihre volle Zeit.
+            if (this.questionSeconds) {
+                this.startQuestionTimer();
+                this.$watch("current", () => this.startQuestionTimer());
+            }
             if (this.expiresAt) {
                 this.tick();
                 this.timer = setInterval(() => this.tick(), 1000);
+            }
+        },
+        startQuestionTimer() {
+            this.questionDeadline = Date.now() + /** @type {number} */ (this.questionSeconds) * 1000;
+        },
+        // Abgelaufene Frage: Antwort sichern, weiter — nach der letzten wird abgegeben.
+        questionTimeout() {
+            const id = this.ids[this.current];
+            if (id !== undefined) void this.save(id);
+            if (this.hasNext()) {
+                this.current++;
+            } else {
+                this.questionDeadline = null;
+                this.submitNow();
+            }
+        },
+        submitNow() {
+            if (this.submitted) return;
+            this.submitted = true;
+            clearInterval(this.timer ?? undefined);
+            const form = /** @type {HTMLFormElement} */ (this.$root);
+            if (form && typeof form.requestSubmit === "function") {
+                form.requestSubmit();
+            } else if (form) {
+                form.submit();
             }
         },
         // Läuft nur, wenn init() expiresAt gesetzt hat.
@@ -2487,16 +2523,12 @@ export function registerAlpineComponents(Alpine) {
             const left = Math.max(0, Math.floor((/** @type {number} */ (this.expiresAt) - Date.now()) / 1000));
             const p = (/** @type {number} */ n) => String(n).padStart(2, "0");
             this.remaining = p(Math.floor(left / 60)) + ":" + p(left % 60);
-            if (left <= 0 && !this.submitted) {
-                this.submitted = true;
-                clearInterval(this.timer ?? undefined);
-                const form = /** @type {HTMLFormElement} */ (this.$root);
-                if (form && typeof form.requestSubmit === "function") {
-                    form.requestSubmit();
-                } else if (form) {
-                    form.submit();
-                }
+            if (this.questionDeadline !== null) {
+                const questionLeft = Math.max(0, Math.floor((this.questionDeadline - Date.now()) / 1000));
+                this.questionLeft = p(Math.floor(questionLeft / 60)) + ":" + p(questionLeft % 60);
+                if (questionLeft <= 0 && !this.submitted) this.questionTimeout();
             }
+            if (left <= 0) this.submitNow();
         },
         /** @param {number} index */
         isVisible(index) {

@@ -25,3 +25,7 @@ dettaglio. Per impostazione predefinita vede solo le sue voci; con i
 diritti di amministrazione può passare alla vista team e filtrare per
 una persona specifica. Per abbonarsi agli appuntamenti in un programma
 di calendario esterno usi l'abbonamento ICS nel suo profilo.
+
+## Scadenze delle gare
+
+Con il modulo Gare, il calendario mostra le scadenze delle gare aperte: termine per i quesiti, per la partecipazione e per la presentazione, la data di apertura e il periodo di validità dell’offerta. Nel suo calendario compaiono le gare di cui è responsabile; nella vista del team tutte. Il clic apre la gara.

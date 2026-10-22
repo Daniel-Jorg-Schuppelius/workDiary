@@ -48,6 +48,14 @@
             <option value="me" @selected($filters['assignee'] === 'me')>{{ __('Mir zugewiesen') }}</option>
             <option value="unassigned" @selected($filters['assignee'] === 'unassigned')>{{ __('Unzugewiesen') }}</option>
         </select>
+        @if ($serviceOptions->isNotEmpty())
+            <select name="service" class="select select-sm select-bordered w-48 shrink-0" aria-label="{{ __('helpdesk.service.label') }}">
+                <option value="">{{ __('helpdesk.service.all') }}</option>
+                @foreach ($serviceOptions as $service)
+                    <option value="{{ $service->sqid }}" @selected($filters['service'] === $service->sqid)>{{ $service->name }}</option>
+                @endforeach
+            </select>
+        @endif
     </x-filter-bar>
 
     @if ($tickets->isEmpty())
@@ -56,7 +64,7 @@
     @else
         <x-table scroll="flex" :pinRows="true" table-sort="server"
                  :route="route('service-tickets.index')" :current-sort="$sort" :current-dir="$dir"
-                 :sort-params="array_filter(['q' => $filters['q'] ?: null, 'status' => $filters['status'] ?: null, 'priority' => $filters['priority'] ?: null, 'assignee' => $filters['assignee'] ?: null])">
+                 :sort-params="array_filter(['q' => $filters['q'] ?: null, 'status' => $filters['status'] ?: null, 'priority' => $filters['priority'] ?: null, 'assignee' => $filters['assignee'] ?: null, 'service' => $filters['service'] ?: null])">
             <x-slot:head>
                 <tr>
                     <x-table.th sort="ticket_no">{{ __('Ticket') }}</x-table.th>

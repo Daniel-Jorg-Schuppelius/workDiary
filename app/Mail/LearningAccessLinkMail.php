@@ -33,10 +33,14 @@ class LearningAccessLinkMail extends Mailable {
         public string $courseTitle,
         public string $accessUrl,
         public Carbon $expiresAt,
+        public ?Carbon $dueAt = null,
+        public bool $final = false,
     ) {}
 
     public function envelope(): Envelope {
-        return new Envelope(subject: (string) __('learning.mail.access_subject', ['course' => $this->courseTitle]));
+        return new Envelope(subject: $this->dueAt !== null
+            ? (string) __('learning.mail.reminder_subject', ['course' => $this->courseTitle, 'date' => $this->dueAt->translatedFormat('d.m.Y')])
+            : (string) __('learning.mail.access_subject', ['course' => $this->courseTitle]));
     }
 
     public function content(): Content {
@@ -45,6 +49,8 @@ class LearningAccessLinkMail extends Mailable {
             'courseTitle' => $this->courseTitle,
             'accessUrl' => $this->accessUrl,
             'expiresAt' => $this->expiresAt,
+            'dueAt' => $this->dueAt,
+            'final' => $this->final,
         ]);
     }
 }

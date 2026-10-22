@@ -134,4 +134,35 @@ class CalendarTest extends TestCase {
         $res->assertOk()->assertJsonCount(1);
         $this->assertStringContainsString($workerA->name, (string) $res->json('0.title'));
     }
+
+    /** Fristen offener Ausschreibungen kommen über den Erweiterungspunkt des Kalenders (MVP-1299). */
+    public function test_events_include_tender_deadlines_of_the_responsible_person(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $other = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $base = [
+            'organization_id' => $this->organization->id, 'kind' => 'tender', 'status' => \App\Enums\Applications\ApplicationOpportunityStatus::InProgress, 'created_by' => $admin->id,
+        ];
+        $mine = \App\Models\Applications\ApplicationOpportunity::query()->create([...$base, 'title' => 'Schule Nord', 'responsible_user_id' => $admin->id,
+            'submission_deadline' => '2026-06-19', 'opening_at' => '2026-06-19 10:00:00', 'binding_until' => '2026-09-30']);
+        \App\Models\Applications\ApplicationOpportunity::query()->create([...$base, 'title' => 'Halle Süd', 'responsible_user_id' => $other->id, 'submission_deadline' => '2026-06-18']);
+
+        $res = $this->actingAs($admin)->getJson(route('calendar.events', ['start' => '2026-06-15T00:00:00+02:00', 'end' => '2026-06-21T23:59:59+02:00']))->assertOk();
+        $tenderEvents = collect($res->json())->filter(fn (array $event): bool => str_starts_with($event['id'], 'tender-'))->values();
+
+        $this->assertCount(2, $tenderEvents);
+        $this->assertSame(['tender-' . $mine->sqid . '-submission_deadline', 'tender-' . $mine->sqid . '-opening_at'], $tenderEvents->pluck('id')->all());
+        $this->assertSame('2026-06-19', $tenderEvents[0]['start']);
+        $this->assertStringContainsString('Schule Nord', $tenderEvents[0]['title']);
+        $this->assertSame(route('tenders.show', $mine), $tenderEvents[0]['url']);
+
+        $team = $this->actingAs($admin)->getJson(route('calendar.events', ['start' => '2026-06-15T00:00:00+02:00', 'end' => '2026-06-21T23:59:59+02:00', 'team' => 1]))->assertOk();
+        $this->assertCount(3, collect($team->json())->filter(fn (array $event): bool => str_starts_with($event['id'], 'tender-')));
+
+        // Dieselben Fristen im persönlichen ICS-Feed, ganztägig bis auf die Eröffnung.
+        $ics = (string) $this->actingAs($admin)->get(route('events.ics.personal'))->assertOk()->getContent();
+        $this->assertStringContainsString('UID:tender-' . $mine->sqid . '-submission_deadline@workdiary', $ics);
+        $this->assertStringContainsString('DTSTART;VALUE=DATE:20260619', $ics);
+        $this->assertStringContainsString('UID:tender-' . $mine->sqid . '-binding_until@workdiary', $ics);
+        $this->assertStringNotContainsString('Halle', $ics);
+    }
 }

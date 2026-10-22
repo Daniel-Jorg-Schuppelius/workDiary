@@ -78,3 +78,7 @@ exportierbar. Einsehen darf ihn, wer das Recht **SLA-Status & -Report
 einsehen** hat; exportieren zusätzlich nur mit dem Recht **Auswertungen
 exportieren** – ohne das Recht fehlen die Exportknöpfe. Administratoren
 dürfen beides immer.
+
+## Materialvorschlag
+
+Ist dem Ticket ein Gerät mit Stückliste zugeordnet, zeigt es die **fälligen Verschleißteile** (aus Wechselintervall und Einbaudatum) als Vorschlag für den Einsatz — was wirklich getauscht wird, entscheidet der Monteur. Dieselbe Karte erscheint am Auftrag mit Gerät.

@@ -21,7 +21,7 @@ use App\Services\Org\OrganizationRoles;
 use App\Support\SortableQuery;
 use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Hash};
+use Illuminate\Support\Facades\{Auth, DB, Hash};
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
@@ -103,27 +103,30 @@ class OrgMemberController extends Controller {
             'password' => ['required', 'string', 'confirmed', Password::defaults()],
         ] + $this->payrollDetailRules($auth) + $this->contactDetailRules());
 
-        $user = User::create([
-            'organization_id' => $this->currentOrganization()->id,
-            'name' => $data['name'],
-            'personnel_number' => $this->blankToNull($data['personnel_number'] ?? null),
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'must_change_password' => true,
-            'is_new_system' => true,
-        ]);
-        $this->fillUserPayrollFields($user, $data, $auth);
-        $this->fillUserContactFields($user, $data);
-        $user->save();
+        // Eine Transaktion: Automationsregeln (MVP-1273) sehen nach dem Commit Rolle und Stammdaten.
+        DB::transaction(function () use ($data, $auth): void {
+            $user = User::create([
+                'organization_id' => $this->currentOrganization()->id,
+                'name' => $data['name'],
+                'personnel_number' => $this->blankToNull($data['personnel_number'] ?? null),
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
+                'must_change_password' => true,
+                'is_new_system' => true,
+            ]);
+            $this->fillUserPayrollFields($user, $data, $auth);
+            $this->fillUserContactFields($user, $data);
+            $user->save();
 
-        $this->syncUserAddress($user, (array) ($data['address'] ?? []));
-        $this->syncUserBankAccount($user, (array) ($data['bank'] ?? []));
+            $this->syncUserAddress($user, (array) ($data['address'] ?? []));
+            $this->syncUserBankAccount($user, (array) ($data['bank'] ?? []));
 
-        $role = OrganizationRoles::named($data['role'], $this->currentOrganization()->id);
-        $user->assignRole($role);
-        // Bauturbo A17 (MVP-335): Rollen-Vergabe revisionssicher auditieren
-        // (supportzugriff-grundsaetze.md §4.1). Neuer User → immer echte Vergabe.
-        $this->auditAssignedRole($user, $role);
+            $role = OrganizationRoles::named($data['role'], $this->currentOrganization()->id);
+            $user->assignRole($role);
+            // Bauturbo A17 (MVP-335): Rollen-Vergabe revisionssicher auditieren
+            // (supportzugriff-grundsaetze.md §4.1). Neuer User → immer echte Vergabe.
+            $this->auditAssignedRole($user, $role);
+        });
 
         return redirect()->toList('org.members.index')
             ->with('success', __('Mitglied wurde angelegt.'));
@@ -226,18 +229,20 @@ class OrgMemberController extends Controller {
                 break;
             }
 
-            $user = User::create([
-                'organization_id' => $this->currentOrganization()->id,
-                'name' => $name,
-                'personnel_number' => $personnelNumber !== '' ? $personnelNumber : null,
-                'email' => $email,
-                'password' => Hash::make(\Illuminate\Support\Str::password(40)),
-                'must_change_password' => true,
-                'is_new_system' => true,
-            ]);
-            $roleModel = OrganizationRoles::named($role, $this->currentOrganization()->id);
-            $user->assignRole($roleModel);
-            $this->auditAssignedRole($user, $roleModel);
+            DB::transaction(function () use ($name, $personnelNumber, $email, $role): void {
+                $user = User::create([
+                    'organization_id' => $this->currentOrganization()->id,
+                    'name' => $name,
+                    'personnel_number' => $personnelNumber !== '' ? $personnelNumber : null,
+                    'email' => $email,
+                    'password' => Hash::make(\Illuminate\Support\Str::password(40)),
+                    'must_change_password' => true,
+                    'is_new_system' => true,
+                ]);
+                $roleModel = OrganizationRoles::named($role, $this->currentOrganization()->id);
+                $user->assignRole($roleModel);
+                $this->auditAssignedRole($user, $roleModel);
+            });
             $created++;
         }
 

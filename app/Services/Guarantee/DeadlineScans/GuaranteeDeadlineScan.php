@@ -55,10 +55,13 @@ class GuaranteeDeadlineScan extends AbstractDeadlineScan {
             'overdue' => [
                 // Der abgelöste Einbehalt ist freigegeben ⇒ die Sicherung ist
                 // beendet, die Urkunde gehört zurück.
+                // Ebenso, wenn die gekoppelte Gewährleistung geendet hat (MVP-1282).
                 'query' => fn () => $active()
-                    ->whereHas('retention', fn ($q) => $q->whereIn('status', [
-                        \App\Enums\Invoicing\RetentionStatus::Released->value,
-                    ])),
+                    ->where(fn ($q) => $q
+                        ->whereHas('retention', fn ($r) => $r->whereIn('status', [
+                            \App\Enums\Invoicing\RetentionStatus::Released->value,
+                        ]))
+                        ->orWhereHas('warrantyPeriod', fn ($w) => $w->where('ends_on', '<', \App\Support\Query\DateRange::dayAfter($today)))),
                 'event' => NotificationEvent::GuaranteeReturnDue,
                 'payload' => fn (Guarantee $guarantee): array => $this->guaranteePayload($guarantee, 'guarantee_return_due', $guarantee->expires_on),
             ],

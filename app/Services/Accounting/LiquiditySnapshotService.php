@@ -79,7 +79,7 @@ final class LiquiditySnapshotService {
 
     /** @param array{from: string, to: string} $week */
     private function sum(int $organizationId, array $week, TransactionDirection $direction, CurrencyCode $currency): Money {
-        $sum = BankTransaction::query()->where('organization_id', $organizationId)
+        $sum = BankTransaction::query()->booked()->where('organization_id', $organizationId)
             ->where('currency', $currency->value)
             ->where('direction', $direction->value)
             ->whereBetween('booking_date', DateRange::days($week['from'], $week['to']))

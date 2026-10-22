@@ -14,6 +14,11 @@ return [
     'label' => 'Dateien',
     'hint' => 'Erlaubt: :formats · bis :size je Datei · höchstens :count Dateien, zusammen bis :total.',
     'progress' => 'Wird hochgeladen … :percent %',
+    'chunked' => [
+        'invalid_chunk' => 'Dieser Teil passt nicht zum Upload.',
+        'incomplete' => 'Der Upload ist noch nicht vollständig übertragen.',
+        'unknown' => 'Der Upload ist unbekannt oder abgelaufen. Bitte die Datei erneut wählen.',
+    ],
     'error' => [
         'type' => ':name: Dateityp nicht erlaubt.',
         'too_large' => ':name ist größer als :size.',

@@ -99,3 +99,9 @@ Sont prises en compte les factures émises et payées dont la date de
 pièce est dans la période ; les avoirs deviennent des écritures
 inversées. Après la remise : tenir le lettrage des paiements et
 n'exporter la période suivante qu'après sa clôture.
+
+## Transmission et rapport d’accompagnement
+
+Après la finalisation, **Saisir la transmission** consigne ce qu’il advient du lot : **transmis** au cabinet, puis **confirmé** ou **refusé** par celui-ci. Un lot refusé est transmis à nouveau une fois le point éclairci ; les corrections de pièces passent toujours par le lot suivant. Chaque étape figure avec la date, la personne et une remarque facultative dans l’historique du lot, et la liste affiche l’état actuel. Les remarques doivent rester sans données personnelles, car l’historique est immuable.
+
+Le **rapport d’accompagnement (PDF)** résume le lot pour le cabinet : période, numéros de conseiller et de client, nombre d’écritures et de contre-passations, total, somme de contrôle du fichier, totaux par compte de produits et par code fiscal, ainsi que l’historique.

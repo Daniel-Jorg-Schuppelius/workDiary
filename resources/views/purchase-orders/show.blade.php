@@ -22,6 +22,11 @@
         <x-page-toolbar :title="$order->supplier?->name" :subtitle="$order->number"
                         :badge="$order->status->label()" badge-tone="ghost">
             <span class="text-sm text-base-content/70">{{ __('procurement.field.warehouse') }}: <strong>{{ $order->warehouse?->name }}</strong></span>
+            @if ($credentialStatus !== null)
+                <a href="{{ route('suppliers.credentials.index') }}" class="inline-flex items-center gap-1 text-sm" title="{{ __('procurement.credentials.hint') }}">
+                    <x-status-badge :tone="$credentialStatus->tone()" size="sm">{{ __('procurement.credentials.badge', ['status' => $credentialStatus->label()]) }}</x-status-badge>
+                </a>
+            @endif
             @if ($canManage)
                 <x-slot:actions>
                     <x-button tone="ghost" icon="picture_as_pdf" :href="route('purchase-orders.pdf', $order)" target="_blank">{{ __('procurement.action.export_pdf') }}</x-button>

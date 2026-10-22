@@ -129,6 +129,9 @@ return [
     'calculation' => [
         'unpriced_hint' => ':count poste ne porte aucun prix et n’entre donc pas dans l’écart global.|:count postes ne portent aucun prix et n’entrent donc pas dans l’écart global.',
     ],
+    'preamble' => [
+        'title' => 'Remarques préliminaires',
+    ],
     'preflight' => [
         'version_unknown' => 'La version GAEB n’a pas pu être détectée.',
         'version_unsupported' => 'La version GAEB :version n’est pas prise en charge (cible 3.3).',
@@ -148,6 +151,9 @@ return [
         'up_components_mismatch' => 'Poste :ref : la somme des composantes du prix unitaire (:sum) diffère du prix unitaire (:price).',
         'missing_text' => 'Le poste :ref n’a pas de texte court/long.',
         'total_mismatch' => 'Le total indiqué (:stated) diffère du total recalculé (:computed).',
+        'currency_mismatch' => 'Poste :ref : prix en :currency, alors que le bordereau est en :expected.',
+        'vat_mismatch' => 'La TVA (:stated) ne correspond pas à :rate % du total net (:computed).',
+        'gross_mismatch' => 'Le total brut (:stated) n\'est pas égal au net plus TVA (:computed).',
         'complement_empty' => 'Poste :ref : le complément de texte du soumissionnaire :mark n\'est pas rempli.',
         'contractor_missing' => 'Cette phase exige l\'adresse du soumissionnaire (nom, rue, code postal et ville dans les données de facturation électronique).',
     ],

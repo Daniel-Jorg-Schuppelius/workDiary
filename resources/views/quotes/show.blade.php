@@ -44,6 +44,9 @@
             @if ($quote->valid_until)
                 <div class="text-sm text-base-content/70">{{ __('Bindefrist: :date', ['date' => $quote->valid_until->fdate()]) }}</div>
             @endif
+            @if ($quote->viewed_at !== null)
+                <div class="text-sm text-base-content/70">{{ __('quotes.viewed', ['date' => $quote->viewed_at->fdatetime()]) }}</div>
+            @endif
             @if ($quote->invoiced_externally_at !== null)
                 <div class="text-sm text-base-content/70">{{ $quote->external_invoice_number !== null
                     ? __('quotes.external_invoice.marked_with_number', ['date' => $quote->invoiced_externally_at->fdate(), 'number' => $quote->external_invoice_number])
@@ -381,6 +384,15 @@
 
     @if ($quote->decided_at !== null)
         <div class="text-sm text-base-content/70">{{ __('Entschieden am :date.', ['date' => $quote->decided_at->fdatetime()]) }}</div>
+        @php $signature = $quote->decision_snapshot['signature'] ?? null; @endphp
+        @if (is_array($signature))
+            <div class="text-sm text-base-content/70">
+                {{ ($signature['name'] ?? null) !== null ? __('quotes.signature.signed_by', ['name' => $signature['name']]) : __('quotes.signature.signed') }}
+                @if (($signature['attachment_id'] ?? null) !== null && ($signatureFile = $quote->attachments->firstWhere('id', $signature['attachment_id'])) !== null)
+                    · <a href="{{ \Illuminate\Support\Facades\URL::signedRoute('attachments.download', $signatureFile) }}" class="link link-hover" target="_blank">{{ __('quotes.signature.show') }}</a>
+                @endif
+            </div>
+        @endif
     @endif
 
     {{-- Zugehörige Belege lokal und im Buchhaltungsprogramm (MVP-1159). --}}

@@ -38,6 +38,11 @@ return [
         'members' => 'Membri',
         'permissions' => 'Autorizzazioni disponibili',
     ],
+    'audit' => [
+        'title' => 'Modifiche a ruoli e permessi',
+        'subtitle' => 'Chi ha modificato ruoli, permessi e appartenenze ai gruppi in :org e quando.',
+        'link' => 'Modifiche ai permessi',
+    ],
     'hint' => [
         'hub' => 'Gestisca ruoli, gruppi utenti e assegnazioni di membri per l\'organizzazione attualmente attiva. I ruoli a livello di piattaforma vengono inoltre gestiti globalmente.',
         'permissions_readonly' => 'Le autorizzazioni sono definite dal sistema e non possono essere create a runtime. Per concederle per ruolo, passi alla modifica del ruolo.',
@@ -180,7 +185,7 @@ return [
         'access.manage' => 'Apri la gestione accessi',
         'access.roles.assign' => 'Assegna ruoli',
         'access.groups.assign' => 'Assegna gruppi',
-        'access.audit.view' => 'Visualizza il registro di audit',
+        'access.audit.view' => 'Visualizzare le modifiche a ruoli e permessi',
         'organization.update' => 'Modifica l\'organizzazione',
         'organization.billing' => 'Gestisci la fatturazione dell\'organizzazione',
         'branding.update' => 'Modifica il branding',

@@ -129,6 +129,9 @@ return [
     'calculation' => [
         'unpriced_hint' => ':count item carries no price and is therefore left out of the overall difference.|:count items carry no price and are therefore left out of the overall difference.',
     ],
+    'preamble' => [
+        'title' => 'Preliminary notes',
+    ],
     'preflight' => [
         'version_unknown' => 'GAEB version could not be detected.',
         'version_unsupported' => 'GAEB version :version is not supported (target line 3.3).',
@@ -148,6 +151,9 @@ return [
         'up_components_mismatch' => 'Item :ref: the unit price components (:sum) do not add up to the unit price (:price).',
         'missing_text' => 'Item :ref has no short/long text.',
         'total_mismatch' => 'The stated total (:stated) differs from the computed total (:computed).',
+        'currency_mismatch' => 'Item :ref: price in :currency, but the bill of quantities uses :expected.',
+        'vat_mismatch' => 'The VAT (:stated) does not match :rate % of the net total (:computed).',
+        'gross_mismatch' => 'The gross total (:stated) is not net plus VAT (:computed).',
         'complement_empty' => 'Item :ref: bidder text complement :mark has not been filled in.',
         'contractor_missing' => 'This phase requires the bidder address (name, street, postal code and city in the e-invoicing master data).',
     ],

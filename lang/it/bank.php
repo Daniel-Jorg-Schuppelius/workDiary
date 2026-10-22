@@ -32,6 +32,7 @@ return [
         'opening_balance' => 'Saldo iniziale',
         'closing_balance' => 'Saldo finale',
         'balance_check' => 'Catena dei saldi',
+        'chain_check' => 'Collegamento all\'estratto precedente',
         'tx_count' => 'Movimenti',
         'open' => 'Aperto',
         'matched' => 'Assegnato',
@@ -105,6 +106,7 @@ return [
             'unmatched' => 'Assegnazione annullata.',
         ],
         'error' => [
+            'provisional' => 'I movimenti provvisori (CAMT.052/054, PAIN) non vengono riconciliati. Attenda l\'estratto conto definitivo.',
             'no_allocations' => 'Nessuna assegnazione indicata.',
             'target_not_found' => 'Destinazione dell’assegnazione non trovata.',
         ],
@@ -147,6 +149,14 @@ return [
         'error' => [
             'duplicate_iban' => 'Esiste già un conto bancario per questo IBAN.',
         ],
+    ],
+    'statement' => [
+        'provisional' => 'provvisorio',
+        'superseded' => 'sostituito',
+        'provisional_hint' => 'Estratto provvisorio (:format): i movimenti servono solo come anteprima. Non vengono riconciliati né contabilizzati e non rientrano nella liquidità né negli indicatori. L\'estratto conto definitivo (CAMT.053 o MT940) dello stesso conto li sostituisce.',
+        'superseded_hint' => 'Sostituito il :date dall\'estratto conto definitivo.',
+        'chain_gap_hint' => 'Mancano giorni lavorativi tra l\'estratto precedente (fino al :date) e questo. Importare l\'estratto mancante.',
+        'chain_mismatch_hint' => 'Il saldo iniziale (:opening) differisce dal saldo finale dell\'estratto precedente (:previous).',
     ],
     'empty' => [
         'statements' => 'Nessun estratto conto importato finora.',

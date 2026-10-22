@@ -79,3 +79,7 @@ personne disposant du droit **Consulter le statut et le rapport SLA**
 peut le consulter ; l'export nécessite en outre le droit **Exporter les
 rapports** – sans ce droit, les boutons d'export n'apparaissent pas. Les
 administrateurs peuvent toujours faire les deux.
+
+## Suggestion de matériel
+
+Si un équipement avec nomenclature est rattaché au ticket, celui-ci affiche les **pièces d’usure à échéance** (selon l’intervalle de remplacement et la date de montage) comme suggestion pour l’intervention — ce qui est réellement remplacé, c’est le technicien qui le décide. La même carte apparaît sur les ordres avec équipement.

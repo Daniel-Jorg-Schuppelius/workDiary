@@ -73,6 +73,8 @@ class MyLearningController extends Controller {
                 'badges' => $gamification->badgesFor($this->actor()),
                 'leaderboard' => $gamification->isLeaderboardEnabled($organization),
                 'optedIn' => $gamification->hasOptedIn($this->actor()),
+                // Lernserie (MVP-1264) nur mit eigenem Schalter der Organisation.
+                'streak' => $gamification->isStreakEnabled($organization) ? $gamification->streakFor($this->actor()) : null,
             ] : null,
         ]);
     }

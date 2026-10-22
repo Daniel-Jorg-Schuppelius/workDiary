@@ -32,6 +32,7 @@ return [
         'opening_balance' => 'Opening balance',
         'closing_balance' => 'Closing balance',
         'balance_check' => 'Balance chain',
+        'chain_check' => 'Link to previous statement',
         'tx_count' => 'Transactions',
         'open' => 'Open',
         'matched' => 'Allocated',
@@ -105,6 +106,7 @@ return [
             'unmatched' => 'Allocation undone.',
         ],
         'error' => [
+            'provisional' => 'Provisional transactions (CAMT.052/054, PAIN) are not reconciled. Wait for the binding account statement.',
             'no_allocations' => 'No allocation was provided.',
             'target_not_found' => 'The allocation target was not found.',
         ],
@@ -147,6 +149,14 @@ return [
         'error' => [
             'duplicate_iban' => 'A bank account already exists for this IBAN.',
         ],
+    ],
+    'statement' => [
+        'provisional' => 'provisional',
+        'superseded' => 'superseded',
+        'provisional_hint' => 'Provisional statement (:format): these transactions are for preview only. They are neither reconciled nor posted and do not count towards liquidity or key figures. The binding account statement (CAMT.053 or MT940) for the same account replaces them.',
+        'superseded_hint' => 'Superseded on :date by the binding account statement.',
+        'chain_gap_hint' => 'Business days are missing between the previous statement (until :date) and this one. Please import the missing statement.',
+        'chain_mismatch_hint' => 'The opening balance (:opening) differs from the closing balance of the previous statement (:previous).',
     ],
     'empty' => [
         'statements' => 'No bank statements imported yet.',

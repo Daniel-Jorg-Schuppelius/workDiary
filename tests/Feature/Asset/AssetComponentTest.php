@@ -261,4 +261,19 @@ class AssetComponentTest extends TestCase {
             ->assertOk()
             ->assertSee('SN-0815');
     }
+
+    public function test_ticket_and_order_of_the_asset_show_the_material_suggestion(): void {
+        $this->part(['label' => 'Keilriemen', 'installed_on' => now()->subMonths(13)->toDateString(), 'replace_interval_months' => 12]);
+        $this->part(['label' => 'Neu verbaut', 'installed_on' => now()->subMonth()->toDateString(), 'replace_interval_months' => 12]);
+        $ticket = \App\Models\ServiceTicket\ServiceTicket::factory()->create(['organization_id' => $this->org->id, 'asset_id' => $this->asset->id]);
+        $order = \App\Models\Diary\DiaryEntry::factory()->create(['organization_id' => $this->org->id, 'user_id' => $this->admin->id, 'asset_id' => $this->asset->id]);
+
+        foreach ([route('service-tickets.show', $ticket), route('diary.show', $order)] as $url) {
+            $this->actingAs($this->admin)->get($url)
+                ->assertOk()
+                ->assertSee(__('asset.components.due.heading'))
+                ->assertSee('Keilriemen')
+                ->assertDontSee('Neu verbaut');
+        }
+    }
 }

@@ -14,6 +14,7 @@ return [
         'sustainability_activities' => 'Consommations ESG',
         'inspection_measurements' => 'Mesures d\'inspection',
         'asset_positions' => 'Positions des appareils',
+        'learning_questions' => 'Questions d’apprentissage',
         'customers' => 'Clients',
         'suppliers' => 'Fournisseurs',
         'articles' => 'Articles',
@@ -92,6 +93,10 @@ return [
             'contactPersons' => 'Plus de :max interlocuteurs par client/fournisseur ne sont pas prévus.',
         ],
         'meterReading' => ['decreasing' => 'Relevé inférieur au précédent.'],
+        'learningQuestion' => [
+            'points' => 'Points de 1 à 100.',
+            'image' => 'Les questions à zone cliquable nécessitent une image et ne peuvent pas être importées depuis un fichier.',
+        ],
         'calendar' => [
             'fetch' => 'Le calendrier n\'a pas pu être récupéré. Veuillez vérifier la connexion.',
             'unknown' => 'Connexion de calendrier inconnue.',

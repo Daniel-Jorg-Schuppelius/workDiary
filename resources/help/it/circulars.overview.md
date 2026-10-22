@@ -42,3 +42,7 @@ nel portale clienti.
 **Segnaposto:** `:firma`, `:kunde` e `:ansprechpartner` vengono sostituiti
 per ciascun destinatario. Se un valore manca, il posto resta vuoto — non si
 inventa nulla.
+
+## Modelli e allegato
+
+Nel creare una circolare si può allegare un **file** che accompagna ogni e-mail. **Salva come modello** (menu della circolare) crea una copia con testo, filtri, opzioni e allegati. I modelli compaiono sopra l’elenco; **Crea dal modello** apre la finestra già compilata e riprende gli allegati del modello. Un modello non viene mai inviato.

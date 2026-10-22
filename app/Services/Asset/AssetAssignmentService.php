@@ -10,12 +10,14 @@
 
 namespace App\Services\Asset;
 
+use App\Automation\RuleEngine;
 use App\Enums\Asset\AssetStatus;
 use App\Enums\Asset\{DefectSeverity, DefectStatus};
 use App\Exceptions\AssetValidationException;
 use App\Models\Asset\{Asset, AssetAssignment, AssetDefect};
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Team, User};
+use App\Services\Asset\Automation\AssetCheckedOutTrigger;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -64,7 +66,7 @@ class AssetAssignmentService {
         // Rollback (Exception) sonst verloren ginge (wie im Rental-Pfad).
         $this->usageGuard->ensureUsable($asset, 'checkout');
 
-        return DB::transaction(function () use ($asset, $actor, $targetUser, $targetTeam, $expectedReturnAt, $diaryEntry, $conditionOut, $note): AssetAssignment {
+        $assignment = DB::transaction(function () use ($asset, $actor, $targetUser, $targetTeam, $expectedReturnAt, $diaryEntry, $conditionOut, $note): AssetAssignment {
             // Asset-Zeile sperren und Verfügbarkeit/offene Zuweisung INNERHALB der Transaktion prüfen. Vorher lagen
             // die Guards außerhalb → zwei parallele Checkouts gaben dasselbe Asset doppelt aus (kein partieller Unique-Index).
             $asset = Asset::query()->whereKey($asset->id)->lockForUpdate()->firstOrFail();
@@ -105,6 +107,11 @@ class AssetAssignmentService {
 
             return $assignment->refresh();
         });
+
+        // Automationsregeln (MVP-1273), etwa die Geräteeinweisung — nach der Ausgabe.
+        app(RuleEngine::class)->dispatch(AssetCheckedOutTrigger::KEY, $assignment);
+
+        return $assignment;
     }
 
     public function checkIn(AssetAssignment $assignment, User $actor, ?string $conditionIn = null): AssetAssignment {

@@ -79,13 +79,17 @@ class BankFormatImportTest extends TestCase {
         $withPurpose = str_replace('</Document>', '<!-- Verwendungszweck: Sammler pain.001 --></Document>', $camt053);
         $this->assertSame(BankStatementFormat::Camt053, BankStatementParser::detectFormat($withPurpose));
 
+        // CAMT.052 liest der Import seit MVP-1274 als vorläufigen Auszug, nicht als CAMT.053.
         $camt052 = '<?xml version="1.0" encoding="UTF-8"?><Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.052.001.08"><BkToCstmrAcctRpt/></Document>';
+        $this->assertSame(BankStatementFormat::Camt052, BankStatementParser::detectFormat($camt052));
+
+        $camt056 = '<?xml version="1.0" encoding="UTF-8"?><Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.056.001.08"><FIToFIPmtCxlReq/></Document>';
         try {
-            BankStatementParser::detectFormat($camt052);
-            $this->fail('camt.052 darf nicht als CAMT.053 durchgehen');
+            BankStatementParser::detectFormat($camt056);
+            $this->fail('camt.056 darf nicht als Auszug durchgehen');
         } catch (\App\Services\Finance\BankImportException $e) {
             $this->assertSame('unsupportedFormat', $e->reason);
-            $this->assertStringContainsString('CAMT.052', $e->getMessage());
+            $this->assertStringContainsString('CAMT.056', $e->getMessage());
         }
     }
 

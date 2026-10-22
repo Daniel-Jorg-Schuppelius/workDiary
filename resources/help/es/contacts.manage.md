@@ -128,3 +128,7 @@ Los cambios de datos maestros solo actúan hacia delante — las
 entregas cerradas quedan intactas. Después: crear los proyectos del
 cliente, revisar los datos de facturación y usar la importación CSV
 para volúmenes grandes.
+
+## Proveedor: datos fiscales y autofacturación
+
+En el proveedor se registran el **NIF-IVA** y el **número fiscal**. Si su organización factura ella misma los servicios de un proveedor, indique la fecha del **acuerdo de autofacturación**; solo entonces pueden emitirse autofacturas. La página del proveedor muestra el acuerdo y las últimas autofacturas.

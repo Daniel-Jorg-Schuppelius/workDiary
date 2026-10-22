@@ -6,7 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Variablen: $service, $isEdit --}}
+{{-- Variablen: $service, $isEdit, $otherServices, $dependsOn (Sqids) --}}
 @php
     /** @var \App\Models\ServiceTicket\BusinessService $service */
     /** @var bool $isEdit */
@@ -30,4 +30,17 @@
         <x-checkbox-field name="active" :label="__('Aktiv')" :checked="(bool) old('active', $service->active)"
                           :hint="__('Inaktive Fachdienste erscheinen nicht im bestellbaren Katalog.')" />
     </x-form-group>
+
+    @if ($otherServices->isNotEmpty())
+        {{-- Servicelandkarte (MVP-1256): fällt ein gewählter Dienst aus, ist dieser mitbetroffen. --}}
+        <x-form-group :legend="__('helpdesk.map.dependsOn')" icon="account_tree" tone="ghost">
+            @php $selected = old('depends_on', $dependsOn); @endphp
+            <x-select-field name="depends_on[]" id="service-depends-on" :label="__('helpdesk.map.dependsOn')" multiple size="6" class="h-auto py-1" error="depends_on"
+                            :hint="__('helpdesk.map.dependsOnHint')">
+                @foreach ($otherServices as $other)
+                    <option value="{{ $other->sqid }}" @selected(in_array($other->sqid, (array) $selected, true))>{{ $other->name }}</option>
+                @endforeach
+            </x-select-field>
+        </x-form-group>
+    @endif
 </x-modal>

@@ -79,3 +79,7 @@ consultarlo quien tenga el permiso **Ver estado e informe de SLA**; para
 exportarlo se requiere además el permiso **Exportar los informes**; sin él no
 aparecen los botones de exportación. Los administradores pueden hacer ambas
 cosas siempre.
+
+## Propuesta de material
+
+Si el ticket tiene asignado un equipo con lista de componentes, muestra las **piezas de desgaste vencidas** (según intervalo de sustitución y fecha de montaje) como propuesta para la intervención; lo que realmente se cambia lo decide el técnico. La misma tarjeta aparece en los pedidos con equipo.

@@ -178,6 +178,12 @@ class SystemHealthCommand extends Command {
             // Datenbank nicht erreichbar: meldet checkDatabase() bereits als Fehler.
         }
 
+        // OCR-Kette (MVP-1289): fehlt sie, liest die Belegerkennung Scans ohne Text.
+        $ocr = app(\App\Services\Diagnostics\DiagnosticsService::class)->checkOcr();
+        if ($ocr->messages !== []) {
+            $warnings[] = ['OCR', $ocr->messages[0]];
+        }
+
         return $warnings;
     }
 

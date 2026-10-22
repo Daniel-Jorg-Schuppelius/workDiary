@@ -32,7 +32,10 @@
         table.meta { width: 100%; border-collapse: collapse; margin-top: 26px; }
         table.meta th, table.meta td { padding: 5px 8px; border: 1px solid #ddd; text-align: left; vertical-align: top; }
         table.meta th { background: #f5f5f5; width: 190px; font-weight: 600; }
-        .verify { margin-top: 22px; font-size: 10px; color: #555; }
+        .verify { margin-top: 22px; width: 100%; border-collapse: collapse; font-size: 10px; color: #555; }
+        .verify td { vertical-align: middle; padding: 0; }
+        .verify .qr { width: 110px; text-align: right; }
+        .verify .qr img { width: 100px; height: 100px; }
         .verify code { font-family: DejaVu Sans Mono, monospace; }
         .revoked { margin: 0 0 18px; padding: 10px 12px; border: 2px solid #a00; color: #a00; font-weight: 700; }
     </style>
@@ -89,11 +92,18 @@
         @endif
     </table>
 
-    <p class="verify">
-        {{ __('learning.pdf.verify_hint') }}<br>
-        <code>{{ $verifyUrl }}</code><br>
-        {{ __('learning.field.verification_code') }}: <code>{{ $certificate->verification_code }}</code>
-    </p>
+    <table class="verify">
+        <tr>
+            <td>
+                {{ __('learning.pdf.verify_hint') }}<br>
+                <code>{{ $verifyUrl }}</code><br>
+                {{ __('learning.field.verification_code') }}: <code>{{ $certificate->verification_code }}</code>
+            </td>
+            @if (! empty($qrImage))
+                <td class="qr"><img src="{{ $qrImage }}" alt="{{ __('learning.pdf.verify_qr') }}"></td>
+            @endif
+        </tr>
+    </table>
 </div>
 </body>
 </html>

@@ -120,4 +120,33 @@ class AppointmentController extends Controller {
 
         return back()->with('success', __('Terminanfrage storniert.'));
     }
+
+    /** Vorgeschlagenen Ersatztermin annehmen (MVP-1287). */
+    public function acceptProposal(AppointmentRequest $appointmentRequest, AppointmentRequestService $service): RedirectResponse {
+        /** @var User $portalUser */
+        $portalUser = Auth::guard('customer')->user();
+        abort_unless($appointmentRequest->organization_id === (int) $portalUser->organization_id, 404);
+
+        try {
+            $service->acceptProposal($appointmentRequest, $portalUser);
+        } catch (RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
+
+        return back()->with('success', __('appointment.proposal.accepted'));
+    }
+
+    public function declineProposal(AppointmentRequest $appointmentRequest, AppointmentRequestService $service): RedirectResponse {
+        /** @var User $portalUser */
+        $portalUser = Auth::guard('customer')->user();
+        abort_unless($appointmentRequest->organization_id === (int) $portalUser->organization_id, 404);
+
+        try {
+            $service->declineProposal($appointmentRequest, $portalUser);
+        } catch (RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
+
+        return back()->with('success', __('appointment.proposal.declined'));
+    }
 }

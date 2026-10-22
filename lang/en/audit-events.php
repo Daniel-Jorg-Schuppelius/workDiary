@@ -26,6 +26,10 @@ return [
         'retired' => 'Access medium retired',
     ],
     'appointment' => [
+        'proposed' => 'Alternative appointment proposed',
+        'proposal_accepted' => 'Alternative appointment accepted',
+        'proposal_declined' => 'Alternative appointment declined',
+        'rescheduled' => 'Appointment rescheduled',
         'requested' => 'Appointment requested',
         'confirmed' => 'Appointment confirmed',
         'declined' => 'Appointment request declined',
@@ -621,6 +625,7 @@ return [
         'unlinked' => 'Knowledge article unlinked',
     ],
     'lead' => [
+        'quote_created' => 'Quote created from the lead',
         'created' => 'Lead created',
         'status_changed' => 'Lead status changed',
         'converted' => 'Lead converted',
@@ -822,6 +827,7 @@ return [
         'mailed' => 'Delivery note sent by email',
     ],
     'quote' => [
+        'viewed' => 'Quote viewed by the customer',
         'intake_linked' => 'Linked to customer intake',
         'portal_decision' => 'Decision in the customer portal',
         'markup_applied' => 'Markup distributed to unit prices',
@@ -899,6 +905,10 @@ return [
         'shared' => 'Report view shared',
     ],
     'restored' => 'Restored',
+    'self_billing_credit' => [
+        'issued' => 'Self-billed credit note issued',
+        'cancelled' => 'Self-billed credit note cancelled',
+    ],
     'retention' => [
         'approved' => 'Retention proposal approved',
         'purged' => 'Data purged per retention policy',
@@ -935,7 +945,11 @@ return [
         'fulfilled' => 'Service request fulfilled',
         'submitted' => 'Service request submitted',
     ],
+    'business_service' => [
+        'dependencies_changed' => 'Business service dependencies changed',
+    ],
     'service_ticket' => [
+        'service_changed' => 'Ticket service changed',
         'opened_from_intake' => 'Ticket created from customer intake',
         'accepted_by_customer' => 'Ticket accepted by customer',
         'assigned' => 'Ticket assigned',
@@ -1189,6 +1203,7 @@ return [
         'followUpCreated' => 'Follow-up job created from open issue',
     ],
     'learning' => [
+        'settingsChanged' => 'Learning platform settings changed',
         'dossierDisclosed' => 'Qualification dossier disclosed by name',
         'attemptViewed' => 'Attempt record viewed',
     ],

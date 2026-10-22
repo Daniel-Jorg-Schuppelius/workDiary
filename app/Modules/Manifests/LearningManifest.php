@@ -131,6 +131,12 @@ final class LearningManifest extends Manifest {
             \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
                 \App\Services\Learning\Retention\LearningRetentionPolicies::class,
             ],
+            \App\Services\Import\EntitySpec::class => [
+                \App\Services\Learning\Import\LearningQuestionSpec::class,
+            ],
+            \App\Automation\Actions\RuleAction::class => [
+                \App\Services\Learning\Automation\EnrollInCourseAction::class,
+            ],
         ];
     }
 

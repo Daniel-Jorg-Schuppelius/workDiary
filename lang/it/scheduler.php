@@ -94,6 +94,7 @@ return [
     // Nomi leggibili dei job (chiavi registry, annidate per via della notazione a punti);
     // aggiungere i nuovi job qui in tutte le lingue — altrimenti fallback = chiave.
     'job' => [
+        'surveys' => ['scheduled' => 'Inviare sondaggi a intervallo fisso'],
         'demo' => [
             'prune' => 'Eliminare le organizzazioni demo dopo il periodo di conservazione',
         ],
@@ -193,6 +194,7 @@ return [
         'shipping' => ['track' => 'Aggiornare il tracciamento delle spedizioni'],
         'orgamax' => ['sync' => 'Sincronizzazione orgaMAX'],
         'print' => ['purge_files' => 'Elimina i file di produzione di stampa dopo la conservazione'],
+        'uploads' => ['prune_chunks' => 'Rimuovere i caricamenti parziali abbandonati'],
         'search' => ['reconcile' => 'Riallineare l’indice di ricerca (ricerca attività)'],
         'payroll' => ['import_minimum_wages' => 'Importare i salari minimi UE'],
         'plans' => ['purge' => 'Eliminare i dati dei moduli retrocessi'],

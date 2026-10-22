@@ -33,3 +33,7 @@ und Termine zu prüfen.
 Dieser Kalender ist die interaktive Ansicht innerhalb von WorkDiary.
 Möchten Sie Ihre Termine in einem externen Kalenderprogramm abonnieren,
 nutzen Sie das ICS-Kalender-Abo in Ihrem Profil.
+
+## Ausschreibungsfristen
+
+Mit dem Modul Ausschreibungen zeigt der Kalender die Fristen offener Ausschreibungen: Rückfrage-, Teilnahme- und Abgabefrist, den Eröffnungstermin und die Bindefrist. In Ihrem Kalender stehen die Ausschreibungen, für die Sie verantwortlich sind, in der Teamansicht alle. Der Klick öffnet die Ausschreibung.

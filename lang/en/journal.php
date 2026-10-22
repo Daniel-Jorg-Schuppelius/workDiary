@@ -238,6 +238,8 @@ return [
         ],
     ],
     'learning' => [
+        'version_changed' => 'Course version changed',
+        'time_extension_set' => 'Time extension changed',
         'status_changed' => 'Status changed',
     ],
     'auth' => [

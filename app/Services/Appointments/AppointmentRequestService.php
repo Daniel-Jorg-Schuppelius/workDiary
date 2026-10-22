@@ -73,9 +73,120 @@ class AppointmentRequestService {
             'service_label' => $service->title,
         ]);
         $request->audit('appointment.requested', ['service' => $service->title]);
-        $this->notifyContractor(NotificationEvent::AppointmentRequested, 'appointment.notification.requested_title', $request, $customer, null);
+        $this->announce($request);
 
         return $request;
+    }
+
+    /** Neue Anfrage an die Disposition melden — auch aus Plugins wie Calendly (MVP-1286). */
+    public function announce(AppointmentRequest $request): void {
+        $this->notifyContractor(NotificationEvent::AppointmentRequested, 'appointment.notification.requested_title', $request, $request->customer, null);
+    }
+
+    /**
+     * Ersatztermin vorschlagen (MVP-1287): gleiche Dauer, der Kunde nimmt im
+     * Portal an oder lehnt ab. Ein neuer Vorschlag ersetzt den offenen.
+     */
+    public function proposeAlternative(AppointmentRequest $request, User $decider, CarbonImmutable $start, ?string $note = null): AppointmentRequest {
+        if ($start->isPast()) {
+            throw new RuntimeException((string) __('appointment.proposal.in_past'));
+        }
+
+        // Gesperrt: ein gleichzeitiges Bestätigen darf den Vorschlag nicht überholen.
+        $request = DB::transaction(function () use ($request, $decider, $start, $note): AppointmentRequest {
+            $locked = AppointmentRequest::query()->whereKey($request->id)->lockForUpdate()->firstOrFail();
+            if ($locked->status !== AppointmentRequestStatus::Proposed && ! $locked->status->canTransitionTo(AppointmentRequestStatus::Proposed)) {
+                throw new RuntimeException((string) __('Diese Anfrage ist bereits entschieden.'));
+            }
+            $minutes = $locked->start_at !== null && $locked->end_at !== null
+                ? (int) $locked->start_at->diffInMinutes($locked->end_at)
+                : (int) ($locked->bookableService->duration_minutes ?? 60);
+
+            $locked->forceFill([
+                'status' => AppointmentRequestStatus::Proposed,
+                'proposed_start_at' => $start->utc(),
+                'proposed_end_at' => $start->utc()->addMinutes(max(1, $minutes)),
+                'proposal_note' => $note,
+                'proposer_user_id' => $decider->id,
+            ])->save();
+            $locked->audit('appointment.proposed', ['start' => $start->toIso8601String()]);
+
+            return $locked;
+        });
+        $this->notifyInvitee($request);
+
+        return $request;
+    }
+
+    /** Kunde nimmt den Vorschlag an — bestätigt im Namen der vorschlagenden Person. */
+    public function acceptProposal(AppointmentRequest $request, User $portalUser): DiaryEntry {
+        $this->assertOwnProposal($request, $portalUser);
+        $proposer = User::query()->withoutGlobalScopes()->find($request->proposer_user_id);
+        if (! $proposer instanceof User) {
+            throw new RuntimeException((string) __('appointment.proposal.unavailable'));
+        }
+
+        return DB::transaction(function () use ($request, $proposer): DiaryEntry {
+            $request->forceFill([
+                'start_at' => $request->proposed_start_at,
+                'end_at' => $request->proposed_end_at,
+                'proposed_start_at' => null,
+                'proposed_end_at' => null,
+            ])->save();
+            $request->audit('appointment.proposal_accepted', ['start' => $request->start_at?->toIso8601String()]);
+
+            return $this->confirm($request, $proposer);
+        });
+    }
+
+    public function declineProposal(AppointmentRequest $request, User $portalUser): AppointmentRequest {
+        $this->assertOwnProposal($request, $portalUser);
+
+        $request->forceFill([
+            'status' => AppointmentRequestStatus::Canceled,
+            'cancellation' => ['by' => 'portal', 'reason' => 'proposal_declined', 'at' => Carbon::now()->toIso8601String()],
+        ])->save();
+        $request->audit('appointment.proposal_declined', []);
+        $this->notifyContractor(NotificationEvent::AppointmentCanceled, 'appointment.notification.canceled_title', $request, $request->customer, null);
+
+        return $request;
+    }
+
+    /** Bestätigten Termin umbuchen (MVP-1287): Anfrage und Auftrag wandern mit, der Kunde bekommt die neue Zeit. */
+    public function reschedule(AppointmentRequest $request, User $actor, CarbonImmutable $start): AppointmentRequest {
+        if ($request->status !== AppointmentRequestStatus::Confirmed) {
+            throw new RuntimeException((string) __('appointment.reschedule.not_confirmed'));
+        }
+        if ($start->isPast()) {
+            throw new RuntimeException((string) __('appointment.proposal.in_past'));
+        }
+        $minutes = $request->start_at !== null && $request->end_at !== null ? (int) $request->start_at->diffInMinutes($request->end_at) : 60;
+        $from = $request->start_at?->toIso8601String();
+
+        DB::transaction(function () use ($request, $start, $minutes): void {
+            $request->forceFill(['start_at' => $start->utc(), 'end_at' => $start->utc()->addMinutes(max(1, $minutes))])->save();
+            $entry = $request->diaryEntry;
+            if ($entry instanceof DiaryEntry) {
+                $entry->forceFill([
+                    'start_at' => $request->start_at,
+                    'end_at' => $request->end_at,
+                    'scheduled_for' => Carbon::parse($start->setTimezone(Tz::current())->toDateString()),
+                ])->save();
+            }
+        });
+        $request->audit('appointment.rescheduled', ['from' => $from, 'to' => $request->start_at?->toIso8601String(), 'by' => $actor->id]);
+        $this->notifyInvitee($request, rescheduled: true);
+
+        return $request;
+    }
+
+    private function assertOwnProposal(AppointmentRequest $request, User $portalUser): void {
+        if ($request->status !== AppointmentRequestStatus::Proposed || $request->proposed_start_at === null) {
+            throw new RuntimeException((string) __('appointment.proposal.unavailable'));
+        }
+        if ((int) $request->customer_id !== (int) $portalUser->customer_id) {
+            throw new RuntimeException((string) __('Diese Anfrage gehört nicht zu Ihrem Zugang.'));
+        }
     }
 
     /** Bestätigung durch die Disposition — erst hier entsteht der Eintrag. */
@@ -132,14 +243,14 @@ class AppointmentRequestService {
      * Ablehnung mit Grund). Fehlertolerant: Ein Mail-Fehler darf die
      * Entscheidung nie zurückrollen — sie ist im Zweifel längst getroffen.
      */
-    private function notifyInvitee(AppointmentRequest $request): void {
+    private function notifyInvitee(AppointmentRequest $request, bool $rescheduled = false): void {
         $email = trim((string) $request->invitee_email);
         if ($email === '') {
             return;
         }
 
         try {
-            \Illuminate\Support\Facades\Mail::to($email)->send(new \App\Mail\AppointmentDecisionMail($request->fresh() ?? $request));
+            \Illuminate\Support\Facades\Mail::to($email)->send(new \App\Mail\AppointmentDecisionMail($request->fresh() ?? $request, $rescheduled));
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::warning('Termin-Entscheidungs-Mail fehlgeschlagen.', [
                 'appointment_request_id' => $request->id,
@@ -183,20 +294,20 @@ class AppointmentRequestService {
             $request->audit('appointment.canceled', ['by' => 'portal']);
         });
 
-        if ($request->customer instanceof Customer) {
-            $this->notifyContractor(NotificationEvent::AppointmentCanceled, 'appointment.notification.canceled_title', $request, $request->customer, $entry?->assignedUser);
-        }
+        $this->notifyContractor(NotificationEvent::AppointmentCanceled, 'appointment.notification.canceled_title', $request, $request->customer, $entry?->assignedUser);
 
         return $request;
     }
 
     /** Disposition informieren; Texte werden beim Anzeigen in der Sprache der Empfänger gerendert. */
-    private function notifyContractor(NotificationEvent $event, string $titleKey, AppointmentRequest $request, Customer $customer, ?User $affected): void {
+    private function notifyContractor(NotificationEvent $event, string $titleKey, AppointmentRequest $request, ?Customer $customer, ?User $affected): void {
         $service = (string) ($request->service_label ?? '');
+        // Calendly-Gäste ohne Kundenzuordnung erscheinen mit ihrem Namen.
+        $name = $customer->name ?? (string) ($request->invitee_name ?? '—');
         DB::afterCommit(fn () => $this->notifier->notify($event, $request, $affected, [
-            'title' => (string) __($titleKey, ['customer' => $customer->name]),
+            'title' => (string) __($titleKey, ['customer' => $name]),
             'title_key' => $titleKey,
-            'title_params' => ['customer' => $customer->name],
+            'title_params' => ['customer' => $name],
             'message' => (string) __('appointment.notification.message', ['service' => $service, 'date' => $request->start_at?->copy()->setTimezone(Tz::current())->format('d.m.Y H:i')]),
             'message_key' => 'appointment.notification.message',
             'message_params' => ['service' => $service, 'date' => $request->start_at?->toIso8601String()],

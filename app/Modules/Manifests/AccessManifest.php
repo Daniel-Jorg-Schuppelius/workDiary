@@ -52,6 +52,9 @@ final class AccessManifest extends Manifest {
             \App\Services\Org\Contracts\OffboardingStep::class => [
                 \App\Services\Access\Offboarding\AccessMediaOffboardingStep::class,
             ],
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Access\Demo\AccessMediaDemoBlock::class,
+            ],
         ];
     }
 }

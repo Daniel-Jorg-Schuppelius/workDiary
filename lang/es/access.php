@@ -38,6 +38,11 @@ return [
         'members' => 'Miembros',
         'permissions' => 'Permisos disponibles',
     ],
+    'audit' => [
+        'title' => 'Cambios de roles y permisos',
+        'subtitle' => 'Quién cambió roles, permisos y miembros de grupos en :org y cuándo.',
+        'link' => 'Cambios de permisos',
+    ],
     'hint' => [
         'hub' => 'Gestione roles, grupos de usuarios y asignaciones de miembros para la organización activa. Los roles a nivel de plataforma se gestionan además de forma global.',
         'permissions_readonly' => 'Los permisos los define el sistema y no se pueden crear en tiempo de ejecución. Para concederlos por rol, cambie a la edición de rol.',
@@ -180,7 +185,7 @@ return [
         'access.manage' => 'Abrir la gestión de accesos',
         'access.roles.assign' => 'Asignar roles',
         'access.groups.assign' => 'Asignar grupos',
-        'access.audit.view' => 'Ver el registro de auditoría',
+        'access.audit.view' => 'Ver cambios de roles y permisos',
         'organization.update' => 'Editar la organización',
         'organization.billing' => 'Gestionar la facturación de la organización',
         'branding.update' => 'Editar la marca',

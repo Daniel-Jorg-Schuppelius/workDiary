@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany};
  * @property string|null $description
  * @property int $pass_percent
  * @property int|null $time_limit_minutes
+ * @property int|null $question_time_limit_seconds
  * @property int $max_attempts
  * @property int $retry_wait_hours
  * @property int|null $questions_per_attempt
@@ -53,6 +54,7 @@ class LearningQuiz extends Model {
         'description',
         'pass_percent',
         'time_limit_minutes',
+        'question_time_limit_seconds',
         'max_attempts',
         'retry_wait_hours',
         'questions_per_attempt',
@@ -73,6 +75,7 @@ class LearningQuiz extends Model {
     protected $casts = [
         'pass_percent' => 'integer',
         'time_limit_minutes' => 'integer',
+        'question_time_limit_seconds' => 'integer',
         'max_attempts' => 'integer',
         'retry_wait_hours' => 'integer',
         'questions_per_attempt' => 'integer',
@@ -119,7 +122,12 @@ class LearningQuiz extends Model {
 
     /** 0 = unbegrenzt. */
     public function isSingleQuestionMode(): bool {
-        return $this->display_mode === 'single';
+        return $this->display_mode === 'single' || $this->question_time_limit_seconds !== null;
+    }
+
+    /** Zeitlimit je Frage (MVP-1267) taktet Frage für Frage — ein Zurück gäbe die Zeit zurück. */
+    public function allowsBack(): bool {
+        return $this->allow_back && $this->question_time_limit_seconds === null;
     }
 
     /**

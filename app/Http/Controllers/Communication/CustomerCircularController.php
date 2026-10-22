@@ -39,7 +39,10 @@ class CustomerCircularController extends Controller {
         Gate::authorize('viewAny', Customer::class);
 
         return view('circulars.index', [
+            // Vorlagen (MVP-1285) stehen getrennt; versendet wird nur, was keine Vorlage ist.
+            'templates' => CustomerCircular::query()->where('is_template', true)->orderBy('subject')->get(['id', 'subject']),
             'circulars' => CustomerCircular::query()
+                ->where('is_template', false)
                 ->withCount([
                     'recipients',
                     'recipients as sent_count' => fn ($q) => $q->where('status', CustomerCircularRecipientStatus::Sent),
@@ -50,10 +53,14 @@ class CustomerCircularController extends Controller {
         ]);
     }
 
-    public function form(?CustomerCircular $circular = null): View {
+    public function form(Request $request, ?CustomerCircular $circular = null): View {
         Gate::authorize('create', Customer::class);
+        $templateId = \App\Support\Sqid::decode(CustomerCircular::class, $request->string('template')->toString());
 
-        return view('circulars._form_dialog', ['circular' => $circular]);
+        return view('circulars._form_dialog', [
+            'circular' => $circular,
+            'template' => $templateId !== null ? CustomerCircular::query()->where('is_template', true)->find($templateId) : null,
+        ]);
     }
 
     public function store(Request $request): RedirectResponse {
@@ -69,8 +76,25 @@ class CustomerCircularController extends Controller {
             'filters' => $this->filtersFrom($data),
             'created_by' => $request->user()?->id,
         ]);
+        // Anhänge der Vorlage gehen mit, ein neuer Anhang kommt dazu (MVP-1285).
+        $templateId = \App\Support\Sqid::decode(CustomerCircular::class, (string) ($data['template'] ?? ''));
+        $template = $templateId !== null ? CustomerCircular::query()->where('is_template', true)->find($templateId) : null;
+        if ($template !== null) {
+            $this->circulars->copyAttachments($template, $circular, $request->user());
+        }
+        if ($request->file('attachment') instanceof \Illuminate\Http\UploadedFile) {
+            app(\App\Services\Attachments\FileAttacher::class)->store($circular, $request->file('attachment'), (int) $request->user()?->id, ['organization_id' => $circular->organization_id]);
+        }
 
         return redirect()->route('circulars.show', $circular)->with('status', __('circular.created'));
+    }
+
+    /** Als Vorlage speichern (MVP-1285): Kopie mit Inhalt, Filtern und Anhängen, nie versendbar. */
+    public function saveTemplate(Request $request, CustomerCircular $circular): RedirectResponse {
+        Gate::authorize('create', Customer::class);
+        $template = $this->circulars->asTemplate($circular, $request->user());
+
+        return redirect()->route('circulars.show', $template)->with('status', __('circular.template.saved'));
     }
 
     /** Vorschau: Empfängerkreis mit Zahl — vor dem Versand, nicht danach. */
@@ -139,6 +163,8 @@ class CustomerCircularController extends Controller {
             'city' => ['nullable', 'string', 'max:191'],
             'zip_prefix' => ['nullable', 'string', 'max:10'],
             'with_active_projects' => ['nullable', 'boolean'],
+            'template' => ['nullable', 'string', 'max:64'],
+            'attachment' => array_merge(['nullable'], \App\Services\Attachments\FileAttacher::rule()),
         ]);
     }
 }

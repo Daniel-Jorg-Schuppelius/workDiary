@@ -54,6 +54,8 @@ administrators.
 Note: for plain notifications, the **Notification rules** are often the
 simpler choice; for external systems see **Webhooks**.
 
+Actions with a target also show the field **Target** in the dialog: **Enrol in course** (triggers **Employee created** or **Equipment checked out**) asks for the course. For new employees, conditions see `role`, `roles` and `personnel_number`; for checked-out equipment, among others `category_code`, `asset_class` and `manufacturer`. The role is only fixed once the new record is saved — so the rule checks after saving.
+
 ## Inbox rules (incoming invoices)
 
 The trigger “Incoming invoice received” checks every new document of the

@@ -14,6 +14,11 @@ return [
     'label' => 'Files',
     'hint' => 'Allowed: :formats · up to :size per file · at most :count files, :total in total.',
     'progress' => 'Uploading … :percent %',
+    'chunked' => [
+        'invalid_chunk' => 'This part does not match the upload.',
+        'incomplete' => 'The upload has not been fully transferred yet.',
+        'unknown' => 'The upload is unknown or has expired. Please select the file again.',
+    ],
     'error' => [
         'type' => ':name: file type not allowed.',
         'too_large' => ':name is larger than :size.',

@@ -1,7 +1,7 @@
 ---
 title: "Ejecutar un procedimiento"
 topic: procedures.run
-version: 1
+version: 2
 keywords:
     - completar checklist
     - seguir instrucciones
@@ -25,3 +25,21 @@ con el rol adecuado. Las desviaciones se registran con justificación y
 acción de seguimiento; no es posible omitir sin justificar. Al cerrar
 el procedimiento se fija la versión de la plantilla utilizada y los
 cambios posteriores no tienen efecto retroactivo.
+
+## Pasos de cuatro ojos
+
+La barra **Aprobación de cuatro ojos** del paso muestra el estado: aún no
+solicitada, solicitada, asumida o refrendada.
+
+1. Quien ejecuta el paso pulsa **Solicitar segunda persona**. Los
+   responsables de equipo reciben una notificación con enlace a la
+   ejecución.
+2. Otra persona autorizada abre la ejecución y pulsa **Refrendar como
+   segunda persona**. Quien la solicitó no puede refrendar.
+3. Solo entonces se puede completar el paso.
+
+Un refrendo se puede **revocar** con un motivo (permiso «Revocar la
+aprobación a cuatro ojos», normalmente responsables o administración).
+El paso vuelve a «abierto», la solicitud se mantiene y otra persona puede
+refrendar. Solicitud, refrendo y revocación quedan registrados con
+persona y hora en el historial de la ejecución.

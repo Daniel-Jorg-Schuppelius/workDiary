@@ -116,6 +116,8 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
             Route::post('/appointments', [\App\Http\Controllers\CustomerPortal\AppointmentController::class, 'store'])
                 ->middleware('throttle:12,1')->name('appointments.store');
             Route::post('/appointments/{appointmentRequest}/cancel', [\App\Http\Controllers\CustomerPortal\AppointmentController::class, 'cancel'])->name('appointments.cancel');
+            Route::post('/appointments/{appointmentRequest}/proposal/accept', [\App\Http\Controllers\CustomerPortal\AppointmentController::class, 'acceptProposal'])->name('appointments.proposal.accept');
+            Route::post('/appointments/{appointmentRequest}/proposal/decline', [\App\Http\Controllers\CustomerPortal\AppointmentController::class, 'declineProposal'])->name('appointments.proposal.decline');
         });
 
         Route::middleware('portal.capability:open_issues')->group(function (): void {

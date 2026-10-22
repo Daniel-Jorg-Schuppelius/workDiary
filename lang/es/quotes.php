@@ -10,6 +10,14 @@
 
 // Angebote (Feature 112, MVP-601: Nachfassen).
 return [
+    'viewed' => 'Visto por el cliente el :date',
+    'signature' => [
+        'name' => 'Nombre de la persona firmante (opcional)',
+        'pad' => 'Firma (opcional)',
+        'signed_by' => 'Aceptado con la firma de :name.',
+        'signed' => 'Aceptado con firma.',
+        'show' => 'Ver firma',
+    ],
     'follow_up' => [
         'title' => 'Seguimiento de presupuestos',
         'subtitle' => 'Seguimientos pendientes, presupuestos que vencen y enviados sin fecha',

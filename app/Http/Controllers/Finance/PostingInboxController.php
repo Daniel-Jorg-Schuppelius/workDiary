@@ -120,6 +120,7 @@ class PostingInboxController extends Controller {
         abort_unless(Gate::allows(Permission::AccountingLedgerPost->value), 403);
         $organization = $this->currentOrganizationOrAbort();
         abort_unless((int) $transaction->organization_id === (int) $organization->id, 404);
+        abort_if($transaction->isProvisional(), 404);
 
         return view('finance.accounting._clearing_dialog', [
             'transaction' => $transaction,

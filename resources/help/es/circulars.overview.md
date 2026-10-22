@@ -43,3 +43,7 @@ aparece en el portal de clientes.
 **Marcadores:** `:firma`, `:kunde` y `:ansprechpartner` se sustituyen para
 cada destinatario. Si falta un valor, el hueco queda vacío — no se inventa
 nada.
+
+## Plantillas y adjunto
+
+Al crear una circular se puede adjuntar un **archivo** que acompaña a cada correo. **Guardar como plantilla** (menú de la circular) crea una copia con texto, filtros, opciones y adjuntos. Las plantillas aparecen encima de la lista; **Crear desde la plantilla** abre el diálogo ya rellenado y se toman los adjuntos de la plantilla. Una plantilla nunca se envía.

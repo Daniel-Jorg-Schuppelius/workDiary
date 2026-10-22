@@ -45,6 +45,7 @@ class IndexListLayoutRuleTest extends TestCase {
 
     /** @var array<string, string> L1: Listen, die bewusst nicht paginieren — Pfad => Grund */
     private const UNPAGINATED_ALLOW = [
+        'resources/views/helpdesk/service-map/index.blade.php' => 'Servicelandkarte: alle Fachdienste auf einer Seite, weil jede Zeile auf andere verweist (hängt ab von, wird benötigt von) — geblättert zerrisse die Abhängigkeiten.',
         'app/Plugins/JtlWawi/Resources/views/admin/index.blade.php' => 'Einrichtungsseite: die Zähler des letzten Abgleichs und die Lager der angebundenen JTL-Wawi (eine Handvoll), je Zeile mit Zuordnungsformular — keine wachsende Liste.',
         'app/Plugins/Lexoffice/Resources/views/handover/index.blade.php' => 'Übergabeliste des gewählten Zeitraums: die Belege werden über alle Zeilen für ein Paket angekreuzt (ein Formular, bis 200 je Paket); der Übergabestand filtert in PHP über die Zustandstabelle.',
         'app/Plugins/Lexoffice/Resources/views/plan/index.blade.php' => 'Tarifseite: die Tabelle ist die Funktionsmatrix — eine Zeile je Lexware-Funktion (Enum LexwareFeature), keine Datensätze.',

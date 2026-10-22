@@ -48,7 +48,43 @@ class TicketController extends Controller {
                 ->where('customer_id', $user->customer_id)
                 ->orderByDesc('reported_at')
                 ->paginate(25),
+            'assets' => $this->portalAssets($user),
+            'offerings' => $this->portalOfferings($user),
         ]);
+    }
+
+    /**
+     * Freigegebene Assets des Kunden (MVP-1261).
+     *
+     * @return \Illuminate\Support\Collection<int, \App\Models\Asset\Asset>
+     */
+    private function portalAssets(User $user): \Illuminate\Support\Collection {
+        return $user->customer !== null ? app(\App\Services\CustomerPortal\PortalVisibility::class)->assetsFor($user->customer) : collect();
+    }
+
+    /**
+     * Serviceangebote mit mindestens einem für den Kunden sichtbaren
+     * Katalogeintrag (MVP-1261); leer ohne Modul Service Desk.
+     *
+     * @return \Illuminate\Support\Collection<int, \App\Models\Sales\ServiceOffering>
+     */
+    private function portalOfferings(User $user): \Illuminate\Support\Collection {
+        if (! app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.service_desk')) {
+            return collect();
+        }
+
+        $offeringIds = app(\App\Services\ServiceTicket\ServiceRequestService::class)->visibleItemsForPortal($user)
+            ->pluck('service_offering_id')
+            ->unique()
+            ->values()
+            ->all();
+
+        return \App\Models\Sales\ServiceOffering::query()
+            ->where('organization_id', $user->organization_id)
+            ->whereIn('id', $offeringIds)
+            ->where('active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'business_service_id']);
     }
 
     public function show(ServiceTicket $ticket, ServiceTicketTimelineService $timeline): View {
@@ -116,8 +152,21 @@ class TicketController extends Controller {
         $data = $request->validate([
             'title' => ['required', 'string', 'min:3', 'max:255'],
             'description' => ['nullable', 'string', 'max:10000'],
+            'asset' => ['nullable', 'string', 'max:40'],
+            'offering' => ['nullable', 'string', 'max:40'],
         ]);
         $files = $this->validatedUploads($request);
+
+        // Nur, was dem Kunden angeboten wurde — sonst 422 statt still ignoriert.
+        $assetId = \App\Support\Sqid::decode(\App\Models\Asset\Asset::class, (string) ($data['asset'] ?? ''));
+        if (($data['asset'] ?? '') !== '' && ! $this->portalAssets($user)->contains('id', $assetId)) {
+            abort(422);
+        }
+        $offeringId = \App\Support\Sqid::decode(\App\Models\Sales\ServiceOffering::class, (string) ($data['offering'] ?? ''));
+        if (($data['offering'] ?? '') !== '' && ! $this->portalOfferings($user)->contains('id', $offeringId)) {
+            abort(422);
+        }
+        unset($data['asset'], $data['offering']);
 
         $queueId = ServiceQueue::query()
             ->where('organization_id', $user->organization_id)
@@ -127,6 +176,8 @@ class TicketController extends Controller {
         $ticket = $tickets->create($user->organization()->firstOrFail(), null, [
             ...$data,
             'customer_id' => $user->customer_id,
+            'asset_id' => $assetId,
+            'service_offering_id' => $offeringId,
             'queue_id' => $queueId,
             'source' => ServiceTicketSource::CustomerPortal->value,
         ]);

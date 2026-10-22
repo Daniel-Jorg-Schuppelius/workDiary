@@ -88,3 +88,9 @@ ricavato dal suo numero — nelle indicazioni di pagamento e nel GiroCode
 come riferimento strutturato. Se il cliente effettua il bonifico con
 questo riferimento, la riconciliazione dei pagamenti riconosce la fattura
 grazie a esso, anche se scritto in gruppi di quattro.
+
+## Estratti provvisori e collegamento all’estratto precedente
+
+**CAMT.052** (estratto infragiornaliero), **CAMT.054** (avviso di movimento) e i propri ordini di pagamento **PAIN.001/PAIN.008** vengono importati come **provvisori**. I loro movimenti compaiono nell’estratto come anteprima, ma non vengono riconciliati né contabilizzati e non rientrano nella liquidità né negli indicatori. Quando arriva l’estratto conto definitivo (**CAMT.053** o **MT940**) dello stesso conto, gli estratti provvisori fino alla sua data finale risultano **sostituiti**; si riconcilia solo l’estratto definitivo.
+
+Ogni estratto definitivo viene inoltre confrontato con l’**estratto precedente** dello stesso conto: il saldo iniziale deve corrispondere al saldo finale del precedente e tra i due non devono mancare giorni lavorativi. L’elenco lo mostra come **Collegamento all’estratto precedente** (collegato, lacuna, non collegato, primo estratto). Una lacuna indica di solito che un estratto non è ancora stato importato; una volta aggiunto, il collegamento dell’estratto successivo viene ricontrollato.

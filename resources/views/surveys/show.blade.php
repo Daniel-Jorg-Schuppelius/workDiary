@@ -100,6 +100,26 @@
                 </x-detail-grid>
             </x-card>
 
+            {{-- NPS je Monat (MVP-1294): leere Monate ohne Punkt statt einer Null. --}}
+            @if (collect($npsTrend)->sum('count') > 0)
+                <x-charts.line :title="__('survey.trend.title')" :unit="__('survey.trend.unit')" :x-label="__('helpdesk.report.month')"
+                               :series="collect($npsTrend)->filter(fn (array $row): bool => $row['score'] !== null)->map(fn (array $row): array => ['x' => $row['month'], 'y' => $row['score'], 'url' => null])->values()->all()" />
+            @endif
+
+            @if ($canManage)
+                <x-card :title="__('survey.triggers.title')">
+                    <form method="POST" action="{{ route('surveys.triggers', $survey) }}" class="space-y-2">
+                        @csrf
+                        <x-checkbox-field name="trigger_on_ticket_close" id="survey-trigger-ticket" :label="__('Nach Ticketabschluss automatisch einladen')" :checked="$survey->trigger_on_ticket_close" />
+                        <x-checkbox-field name="trigger_on_order_completion" id="survey-trigger-order" :label="__('survey.triggers.order')" :checked="$survey->trigger_on_order_completion" />
+                        <x-checkbox-field name="trigger_on_course_completion" id="survey-trigger-course" :label="__('survey.triggers.course')" :checked="$survey->trigger_on_course_completion" />
+                        <x-input-field name="trigger_schedule_days" id="survey-trigger-days" type="number" min="7" max="730" :label="__('survey.triggers.schedule')"
+                                       :value="$survey->trigger_schedule_days" :hint="__('survey.triggers.scheduleHint')" />
+                        <x-button type="submit" size="sm" class="w-full">{{ __('Speichern') }}</x-button>
+                    </form>
+                </x-card>
+            @endif
+
             @if ($canManage && $survey->active)
                 <x-card :title="__('Einladen')">
                     <form method="POST" action="{{ route('surveys.invite', $survey) }}" class="space-y-3">

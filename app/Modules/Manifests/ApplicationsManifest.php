@@ -112,6 +112,9 @@ final class ApplicationsManifest extends Manifest {
             \App\Services\Demo\Contracts\DemoBlock::class => [
                 \App\Services\Applications\Demo\ApplicationsDemoBlock::class,
             ],
+            \App\Services\Calendar\Contracts\CalendarEventSource::class => [
+                \App\Services\Applications\Calendar\TenderCalendarSource::class,
+            ],
             \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
                 \App\Services\Applications\DeadlineScans\TenderDeadlineScan::class,
             ],

@@ -94,7 +94,7 @@ class DiagnosticsServiceTest extends TestCase {
         $report = $service->collect();
 
         $codes = array_map(static fn($s) => $s->code, $report->sections);
-        $this->assertSame(['version', 'license', 'modules', 'queue', 'scheduler', 'mail', 'connections', 'operations', 'storage', 'backup', 'security', 'terminals'], $codes);
+        $this->assertSame(['version', 'license', 'modules', 'queue', 'scheduler', 'mail', 'connections', 'operations', 'storage', 'backup', 'security', 'terminals', 'ocr'], $codes);
         $this->assertSame(DiagnosticStatus::Critical, $report->overallStatus());
     }
 
@@ -137,6 +137,17 @@ class DiagnosticsServiceTest extends TestCase {
         $section = app(DiagnosticsService::class)->checkOperations();
         $this->assertSame(DiagnosticStatus::Warn, $section->status);
         $this->assertSame(1, $section->metrics['severity_critical']);
+    }
+
+    /** MVP-1289: je Werkzeug ein Stand; „ok“ nur, wenn keins fehlt. */
+    public function test_ocr_section_reports_each_tool_and_warns_on_gaps(): void {
+        $section = app(DiagnosticsService::class)->checkOcr();
+
+        $this->assertSame('ocr', $section->code);
+        $this->assertSame(array_keys(DiagnosticsService::OCR_TOOLS), array_keys($section->metrics));
+        $missing = array_keys(array_filter($section->metrics, fn ($state): bool => $state !== 'ok'));
+        $this->assertSame($missing === [] ? DiagnosticStatus::Ok : DiagnosticStatus::Warn, $section->status);
+        $this->assertSame($missing === [], $section->messages === []);
     }
 
     public function test_terminals_section_warns_on_stale_active_terminal(): void {

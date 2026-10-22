@@ -35,3 +35,7 @@ is rejected — it would quietly reduce the security.
 **Return:** After expiry the certificate is reclaimed and the case closed as
 *returned*. A drawn guarantee stays documented permanently with date and
 reason.
+
+## Link to the warranty
+
+A guarantee can point to a **warranty period**. Once that period has ended, the deadline check reports the **return** of the guarantee deed — just as after the release of a replaced retention. Likewise, a retention on an invoice takes the end of the selected warranty as its release date and moves along if the period changes.

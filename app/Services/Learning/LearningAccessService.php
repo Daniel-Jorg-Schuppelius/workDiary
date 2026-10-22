@@ -79,7 +79,11 @@ class LearningAccessService {
      * Läuft der Zugang der Einschreibung früher ab als die Vorgabe, gilt der
      * Link nur bis dahin.
      */
-    public function deliver(LearningEnrollment $enrollment, ?User $actor = null, ?int $validDays = null, ?Carbon $now = null): bool {
+    /**
+     * Mit `$dueAt` ist die Mail eine Fristerinnerung (MVP-1270), `$final` die
+     * am Tag vor der Frist.
+     */
+    public function deliver(LearningEnrollment $enrollment, ?User $actor = null, ?int $validDays = null, ?Carbon $now = null, ?Carbon $dueAt = null, bool $final = false): bool {
         $now ??= Carbon::now();
         $enrollment->loadMissing(['externalParticipant', 'course']);
         $participant = $enrollment->externalParticipant;
@@ -101,6 +105,8 @@ class LearningAccessService {
             (string) ($enrollment->course->title ?? ''),
             route('learning.external.enter', $token),
             $now->copy()->addDays($validDays),
+            $dueAt,
+            $final,
         ));
 
         return true;

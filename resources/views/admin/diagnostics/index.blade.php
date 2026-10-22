@@ -38,6 +38,7 @@
         'backup' => __('Backupstatus'),
         'security' => __('Sicherheit'),
         'terminals' => __('Stempelterminals'),
+        'ocr' => __('Texterkennung (OCR)'),
     ];
     $sectionIcons = [
         'version' => 'info',
@@ -52,6 +53,7 @@
         'backup' => 'backup',
         'security' => 'security',
         'terminals' => 'point_of_sale',
+        'ocr' => 'document_scanner',
     ];
 @endphp
 

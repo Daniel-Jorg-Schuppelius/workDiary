@@ -94,4 +94,13 @@ class Lead extends Model implements ContactDetailsHolder, ContactNameHolder {
     public function displayName(): string {
         return trim((string) ($this->company ?: $this->contact_name)) ?: (string) __('Anonymisierter Lead');
     }
+
+    /**
+     * Angebote aus diesem Lead (MVP-1295).
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<Quote, $this>
+     */
+    public function quotes(): \Illuminate\Database\Eloquent\Relations\HasMany {
+        return $this->hasMany(Quote::class);
+    }
 }

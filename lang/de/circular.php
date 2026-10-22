@@ -24,6 +24,16 @@ return [
     'no_email' => 'keine E-Mail-Adresse',
     'confirm_send' => 'Rundschreiben jetzt an :count Empfänger versenden?',
     'body_hint' => 'Platzhalter: :firma, :kunde, :ansprechpartner',
+    'attachment_hint' => 'Optional: eine Datei, die jeder Mail beiliegt.',
+    'template' => [
+        'heading' => 'Vorlagen',
+        'save' => 'Als Vorlage speichern',
+        'saved' => 'Vorlage gespeichert.',
+        'use' => 'Aus Vorlage anlegen',
+        'based_on' => 'Auf Grundlage der Vorlage „:subject“.',
+        'attachments' => 'Aus der Vorlage kommen mit: :names',
+        'not_sendable' => 'Eine Vorlage wird nicht versendet — legen Sie daraus ein Rundschreiben an.',
+    ],
     'mandatory_hint' => 'Pflichtmitteilungen gehen auch an Kunden, die Sammelmails abbestellt haben — nur für rechtlich gebotene Informationen.',
     'portal_hint' => 'Die Mitteilung erscheint zusätzlich im Kundenportal.',
 
@@ -59,6 +69,7 @@ return [
     ],
 
     'field' => [
+        'attachment' => 'Anhang',
         'body' => 'Text',
         'is_mandatory' => 'Pflichtmitteilung',
         'portal_notice' => 'Im Kundenportal anzeigen',

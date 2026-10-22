@@ -29,6 +29,15 @@
                 @if ($canManage && ! $lead->status->isFinal() && ! $lead->anonymized_at)
                     <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('leads.edit', $lead)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
                 @endif
+                {{-- Angebot aus dem Lead (MVP-1295): ein offener Lead wird dabei Kunde. --}}
+                @if ($canManage && $lead->status !== \App\Enums\Sales\LeadStatus::Discarded && ! $lead->anonymized_at)
+                    @can('create', \App\Models\Sales\Quote::class)
+                        <x-action-form :action="route('leads.quote', $lead)"
+                                       :confirm="$lead->customer === null ? __('lead.quote.confirm') : null" confirm-icon="request_quote">
+                            <x-icon-btn icon="request_quote" tone="primary" size="sm" type="submit" show-label>{{ __('lead.quote.action') }}</x-icon-btn>
+                        </x-action-form>
+                    @endcan
+                @endif
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
@@ -115,6 +124,35 @@
                     </x-card>
                 @endunless
             @endif
+
+            @if ($quotes->isNotEmpty())
+                <x-card :title="__('lead.quote.title')">
+                    <ul class="space-y-1 text-sm">
+                        @foreach ($quotes as $quote)
+                            <li class="flex flex-wrap items-center justify-between gap-2">
+                                <a class="link" href="{{ route('quotes.show', $quote) }}">{{ $quote->number }}</a>
+                                <span class="text-muted tabular-nums">{{ $quote->total?->format() ?? '—' }}</span>
+                                <x-status-badge size="xs">{{ $quote->status->label() }}</x-status-badge>
+                            </li>
+                        @endforeach
+                    </ul>
+                </x-card>
+            @endif
+
+            <x-card :title="__('lead.history.title')">
+                @if ($history === [])
+                    <x-empty-state compact icon="history" :title="__('lead.history.empty')" />
+                @else
+                    <ol class="space-y-2 text-sm">
+                        @foreach ($history as $event)
+                            <li>
+                                <div class="text-xs text-muted tabular-nums">{{ $event['at']?->fdatetime() }}</div>
+                                <div>{{ $event['label'] }}@if ($event['quote']) · <a class="link" href="{{ route('quotes.show', $event['quote']) }}">{{ $event['quote']->number }}</a>@endif</div>
+                            </li>
+                        @endforeach
+                    </ol>
+                @endif
+            </x-card>
         </div>
     </div>
 </x-page-shell>

@@ -129,6 +129,9 @@ return [
     'calculation' => [
         'unpriced_hint' => ':count partida no lleva precio y por eso queda fuera de la diferencia total.|:count partidas no llevan precio y por eso quedan fuera de la diferencia total.',
     ],
+    'preamble' => [
+        'title' => 'Observaciones preliminares',
+    ],
     'preflight' => [
         'version_unknown' => 'No se pudo detectar la versión GAEB.',
         'version_unsupported' => 'La versión GAEB :version no es compatible (línea objetivo 3.3).',
@@ -148,6 +151,9 @@ return [
         'up_components_mismatch' => 'Partida :ref: la suma de los componentes del precio unitario (:sum) no coincide con el precio unitario (:price).',
         'missing_text' => 'La partida :ref no tiene texto corto/largo.',
         'total_mismatch' => 'El total indicado (:stated) difiere del total recalculado (:computed).',
+        'currency_mismatch' => 'Partida :ref: precio en :currency, pero el presupuesto usa :expected.',
+        'vat_mismatch' => 'El IVA (:stated) no corresponde al :rate % del total neto (:computed).',
+        'gross_mismatch' => 'El total bruto (:stated) no es neto más IVA (:computed).',
         'complement_empty' => 'Posición :ref: el complemento de texto del licitador :mark no está cumplimentado.',
         'contractor_missing' => 'Esta fase requiere la dirección del licitador (nombre, calle, código postal y ciudad en los datos maestros de facturación electrónica).',
     ],

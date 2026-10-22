@@ -42,12 +42,14 @@ class QuoteController extends Controller {
         // nur Sqids, nur Datensätze der eigenen Organisation.
         $prefillCustomer = Customer::query()->find(\App\Support\Sqid::decodeOrNumeric(Customer::class, $request->query('customer_id')));
         $prefillProject = \App\Models\Project\Project::query()->find(\App\Support\Sqid::decodeOrNumeric(\App\Models\Project\Project::class, $request->query('project_id')));
+        $prefillLead = \App\Models\Sales\Lead::query()->find(\App\Support\Sqid::decode(\App\Models\Sales\Lead::class, (string) $request->query('lead', '')));
 
         return view('quotes._form_dialog', [
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
             'projects' => \App\Models\Project\Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
             'prefillCustomerId' => $prefillCustomer?->sqid,
             'prefillProjectId' => $prefillProject?->sqid,
+            'prefillLeadId' => $prefillLead?->sqid,
             'defaultValidUntil' => \App\Services\Invoicing\QuoteService::defaultValidUntil()->toDateString(),
         ]);
     }
@@ -58,8 +60,10 @@ class QuoteController extends Controller {
         $request->merge([
             'customer_id' => \App\Support\Sqid::decodeOrNumeric(Customer::class, $request->input('customer_id')),
             'project_id' => \App\Support\Sqid::decodeOrNumeric(\App\Models\Project\Project::class, $request->input('project_id')),
+            'lead_id' => \App\Support\Sqid::decode(\App\Models\Sales\Lead::class, (string) $request->input('lead_id', '')),
         ]);
         $data = $request->validate([
+            'lead_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('leads')],
             'customer_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('customers')],
             'project_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('projects')],
             'valid_until' => ['nullable', 'date', 'after:today'],
@@ -73,10 +77,14 @@ class QuoteController extends Controller {
         $quote = $this->quotes->create([
             'customer_id' => (int) $data['customer_id'],
             'project_id' => $data['project_id'] ?? null,
+            'lead_id' => $data['lead_id'] ?? null,
             'valid_until' => $data['valid_until'] ?? null,
             'terms' => $data['terms'] ?? null,
             'is_labour_cost_disclosed' => isset($data['labour_cost_disclosure']) ? $data['labour_cost_disclosure'] === '1' : null,
         ], [], $actor);
+        if ($quote->lead !== null) {
+            $quote->lead->audit('lead.quote_created', ['quote' => $quote->number]);
+        }
 
         return redirect()->route('quotes.show', $quote)->with('status', __('Angebot :nr angelegt — Positionen hinzufügen und freigeben.', ['nr' => $quote->number]));
     }
@@ -351,6 +359,7 @@ class QuoteController extends Controller {
     public function portalShow(Request $request, Quote $quote): View {
         $this->assertPortalToken($quote, (string) $request->query('token', ''));
         $quote->load(['items', 'customer']);
+        $this->quotes->markViewed($quote, 'link');
 
         return view('quotes.portal', [
             'quote' => $quote,
@@ -368,6 +377,8 @@ class QuoteController extends Controller {
             'decision' => ['required', 'in:accept,reject'],
             'item_ids' => ['nullable', 'array'],
             'item_ids.*' => ['string'],
+            'signer_name' => ['nullable', 'string', 'max:120'],
+            'signature' => ['nullable', 'string', 'max:1400000'],
         ]);
 
         try {
@@ -381,7 +392,7 @@ class QuoteController extends Controller {
                     ));
                     $itemIds = $quote->items()->whereIn('id', $requested)->pluck('id')->map(fn($id): int => (int) $id)->all();
                 }
-                $this->quotes->accept($quote, $itemIds, $token);
+                $this->quotes->accept($quote, $itemIds, $token, ['name' => $data['signer_name'] ?? null, 'png' => $data['signature'] ?? null]);
             } else {
                 $this->quotes->reject($quote);
             }

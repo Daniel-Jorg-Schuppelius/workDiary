@@ -41,6 +41,11 @@ return [
         'permissions' => 'Available Permissions',
     ],
 
+    'audit' => [
+        'title' => 'Role and permission changes',
+        'subtitle' => 'Who changed roles, permissions and group memberships in :org, and when.',
+        'link' => 'Permission changes',
+    ],
     'hint' => [
         'hub' => 'Manage roles, user groups and member assignments for the currently active organization. Platform-wide roles are managed globally in addition.',
         'permissions_readonly' => 'Permissions are defined by the system and cannot be created at runtime. To grant them per role, switch to role editing.',
@@ -194,7 +199,7 @@ return [
         'access.manage' => 'Open access management',
         'access.roles.assign' => 'Assign roles',
         'access.groups.assign' => 'Assign groups',
-        'access.audit.view' => 'View audit log',
+        'access.audit.view' => 'View role and permission changes',
 
         'organization.update' => 'Edit organization',
         'organization.billing' => 'Manage organization billing',

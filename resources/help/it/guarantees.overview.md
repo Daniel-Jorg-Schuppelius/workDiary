@@ -34,3 +34,7 @@ alla ritenuta viene rifiutata — ridurrebbe silenziosamente la sicurezza.
 **Restituzione:** Alla scadenza l’atto viene richiesto indietro e la
 pratica chiusa come *restituita*. Una garanzia escussa resta documentata in
 modo permanente con data e motivo.
+
+## Collegamento alla garanzia
+
+Una fideiussione può riferirsi a un **periodo di garanzia**. Al suo termine, il controllo delle scadenze segnala la **restituzione** del documento, come dopo lo svincolo di una ritenuta sostituita. Allo stesso modo, una ritenuta in fattura assume la fine della garanzia scelta come data di svincolo e si aggiorna se il periodo cambia.

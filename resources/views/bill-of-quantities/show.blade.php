@@ -60,6 +60,20 @@
         </div>
     </x-card>
 
+    {{-- Vorbemerkungen (MVP-1303): Vertragstexte vor den Positionen, wie geliefert. --}}
+    @if (! empty($bill->preamble))
+        <x-card class="mt-4">
+            <details>
+                <summary class="cursor-pointer font-medium">{{ __('gaeb.preamble.title') }} ({{ count($bill->preamble) }})</summary>
+                <div class="mt-3 space-y-3 text-sm">
+                    @foreach ($bill->preamble as $block)
+                        <p class="whitespace-pre-line">{{ $block }}</p>
+                    @endforeach
+                </div>
+            </details>
+        </x-card>
+    @endif
+
     {{-- Positionen (MVP-082/083/084) --}}
     <x-card padding="p-0" class="mt-4">
         <x-table :bare="true">

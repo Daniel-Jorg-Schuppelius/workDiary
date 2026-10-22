@@ -22,6 +22,9 @@
                         data-entry-modal-trigger
                         :href="route('learning.settings.edit')"
                         show-label>{{ __('learning.title.settings') }}</x-icon-btn>
+            <x-icon-btn icon="print" tone="ghost" size="sm" placement="menu" target="_blank"
+                        :href="route('learning.settings.print')"
+                        show-label>{{ __('learning.action.print_configuration') }}</x-icon-btn>
             <x-icon-btn icon="hub" tone="ghost" size="sm"
                         :href="route('learning.lti-registrations.index')"
                         show-label>{{ __('learning.lti_registration.title') }}</x-icon-btn>

@@ -272,4 +272,20 @@ class SupplierCredentialTest extends TestCase {
             ->assertRedirect()
             ->assertSessionMissing('warning');
     }
+
+    public function test_purchase_order_shows_the_credential_light(): void {
+        $order = \App\Models\Procurement\PurchaseOrder::query()->create([
+            'organization_id' => $this->org->id,
+            'number' => 'BE-AMPEL-1',
+            'supplier_id' => $this->supplier->id,
+            'warehouse_id' => \App\Models\Inventory\Warehouse::factory()->create(['organization_id' => $this->org->id])->id,
+            'status' => \App\Enums\Procurement\PurchaseOrderStatus::Draft->value,
+            'currency' => 'EUR',
+        ]);
+        $badge = fn (CredentialStatus $status): string => __('procurement.credentials.badge', ['status' => $status->label()]);
+
+        $this->actingAs($this->admin)->get(route('purchase-orders.show', $order))->assertOk()->assertSee($badge(CredentialStatus::Missing));
+        $this->credential(now()->addYear()->toDateString());
+        $this->actingAs($this->admin)->get(route('purchase-orders.show', $order))->assertOk()->assertSee($badge(CredentialStatus::Ok));
+    }
 }

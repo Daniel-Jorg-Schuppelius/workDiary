@@ -16,6 +16,7 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Kontrollpunkte mit Soll-Fenstern und Scan-Nachweis — der belastbare Beleg gegenüber Auftraggebern.')">
     <x-slot:actions>
+        <x-icon-btn icon="summarize" size="sm" :href="route('patrols.report')" show-label>{{ __('patrol.report.title') }}</x-icon-btn>
         @if ($canManage)
             <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger
                         :href="route('patrols.create')" show-label>{{ __('Route anlegen') }}</x-icon-btn>

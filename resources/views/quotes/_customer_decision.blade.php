@@ -74,6 +74,22 @@
                     <textarea name="reason" rows="2" maxlength="1000" class="textarea textarea-bordered w-full">{{ old('reason') }}</textarea>
                 </label>
             @endif
+            {{-- Unterschrift zur Annahme (MVP-1281), freiwillig; wird nur bei „annehmen“ gespeichert. --}}
+            @vite('resources/js/signature.js')
+            <div class="grid gap-3 sm:grid-cols-2">
+                <label class="form-control">
+                    <span class="label-text">{{ __('quotes.signature.name') }}</span>
+                    <input type="text" name="signer_name" maxlength="120" autocomplete="name" class="input input-bordered w-full" value="{{ old('signer_name') }}">
+                </label>
+                <div class="form-control" x-data="signaturePad">
+                    <span class="label-text">{{ __('quotes.signature.pad') }}</span>
+                    <div class="rounded-box border border-base-300 bg-white p-2">
+                        <canvas x-ref="canvas" class="block h-28 w-full touch-none" aria-label="{{ __('quotes.signature.pad') }}"></canvas>
+                    </div>
+                    <input type="hidden" name="signature" x-ref="sigInput">
+                    <x-button type="button" tone="ghost" size="xs" class="mt-1 self-start" x-on:click="clear()">{{ __('fields.action.clear_signature') }}</x-button>
+                </div>
+            </div>
             <div class="flex flex-wrap gap-2">
                 <x-button type="submit" name="decision" value="accept">{{ __('Angebot annehmen') }}</x-button>
                 <x-button type="submit" tone="outline" name="decision" value="reject">{{ __('Angebot ablehnen') }}</x-button>

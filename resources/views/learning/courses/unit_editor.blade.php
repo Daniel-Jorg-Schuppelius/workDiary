@@ -123,9 +123,15 @@
                             {{-- Bild, Datei und Video tragen ihre Quelle als Anhang
                                  der Lerneinheit — ohne Upload bleibt der Block leer. --}}
                             <label class="label" for="block-media"><span class="label-text">{{ __('learning.field.block_media') }}</span></label>
+                            {{-- Große Dateien gehen in Teilen und setzen nach einem Abbruch fort (MVP-1265). --}}
                             <input type="file" id="block-media" name="media"
+                                   data-chunk-upload="{{ route('learning.courses.units.uploads.start', [$course, $unit]) }}"
+                                   data-chunk-threshold="{{ min(\App\Services\Attachments\FileAttacher::effectiveMaxKb() * 1024, 4 * 1024 * 1024) }}"
+                                   data-chunk-target="media_upload" data-chunk-status="block-media-status"
                                    class="file-input file-input-bordered file-input-sm w-full">
+                            <input type="hidden" name="media_upload" value="">
                             <p class="mt-1 text-xs text-muted">{{ __('learning.help.block_media', ['mb' => \App\Services\Attachments\FileAttacher::maxMb()]) }}</p>
+                            <p id="block-media-status" class="mt-1 text-xs" role="status" aria-live="polite"></p>
                         </div>
                         <div class="sm:col-span-2">
                             <label class="label" for="block-gallery"><span class="label-text">{{ __('learning.field.block_gallery') }}</span></label>
@@ -162,6 +168,18 @@
                         <x-input-field name="release_at" type="date" :label="__('learning.field.release_at')"
                                        :hint="__('learning.help.release_at')"
                                        :value="old('release_at', $unit->release_rule['at'] ?? null)" />
+                        <x-select-field name="release_after_unit" :label="__('learning.field.release_after_unit')" :hint="__('learning.help.release_after_unit')">
+                            <option value="">–</option>
+                            @foreach ($otherUnits as $other)
+                                <option value="{{ $other->sqid }}" @selected(old('release_after_unit', ($unit->release_rule['after_unit_id'] ?? null) === $other->id ? $other->sqid : null) === $other->sqid)>{{ $other->title }}</option>
+                            @endforeach
+                        </x-select-field>
+                        <x-select-field name="release_after_event" :label="__('learning.field.release_after_event')" :hint="__('learning.help.release_after_event')">
+                            <option value="">–</option>
+                            @foreach ($otherUnits->where('kind', \App\Enums\Learning\LearningUnitKind::Event) as $other)
+                                <option value="{{ $other->sqid }}" @selected(old('release_after_event', ($unit->release_rule['after_event_unit_id'] ?? null) === $other->id ? $other->sqid : null) === $other->sqid)>{{ $other->title }}</option>
+                            @endforeach
+                        </x-select-field>
                         <x-input-field name="min_seconds" type="number" min="0" max="86400" :label="__('learning.field.min_seconds')"
                                        :hint="__('learning.help.min_seconds')"
                                        :value="old('min_seconds', $unit->minSeconds() ?: null)" />

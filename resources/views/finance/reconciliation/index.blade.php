@@ -5,6 +5,8 @@
 
   Zahlungsabgleich (Feature 045, Priorität 3): Liste der importierten
   Bankauszüge mit Kennzahlen (offen/zugeordnet) und Saldenketten-Badge.
+  Vorläufige Auszüge (MVP-1274) tragen „vorläufig“ bzw. „ersetzt“ und keine
+  offenen Umsätze; verbindliche zeigen den Anschluss an den Vorauszug (MVP-1279).
 --}}
 
 @extends('layouts.app')
@@ -62,7 +64,14 @@
             @forelse ($statements as $statement)
                 <tr class="hover">
                     <td>{{ $statement->created_at?->fdatetime() }}</td>
-                    <td><x-status-badge :tone="$statement->source_format->tone()" :label="$statement->source_format->label()" /></td>
+                    <td>
+                        <x-status-badge :tone="$statement->source_format->tone()" :label="$statement->source_format->label()" />
+                        @if ($statement->superseded_at)
+                            <x-status-badge tone="neutral" outline :label="__('bank.statement.superseded')" />
+                        @elseif ($statement->is_provisional)
+                            <x-status-badge tone="warning" outline :label="__('bank.statement.provisional')" />
+                        @endif
+                    </td>
                     <td>{{ $statement->bankAccount?->label ?? '—' }}</td>
                     <td>
                         @if ($statement->period_from && $statement->period_to)
@@ -71,9 +80,16 @@
                             —
                         @endif
                     </td>
-                    <td><x-status-badge :tone="$statement->balance_check->tone()" :label="$statement->balance_check->label()" /></td>
+                    <td>
+                        <x-status-badge :tone="$statement->balance_check->tone()" :label="$statement->balance_check->label()" />
+                        @if ($statement->chain_check && $statement->chain_check !== \App\Enums\Finance\StatementChainCheck::Ok)
+                            <x-status-badge :tone="$statement->chain_check->tone()" :label="$statement->chain_check->label()" outline />
+                        @endif
+                    </td>
                     <td class="text-right">
-                        @if ($statement->open_count > 0)
+                        @if ($statement->is_provisional)
+                            —
+                        @elseif ($statement->open_count > 0)
                             <span class="text-warning font-medium">{{ $statement->open_count }}</span>
                         @else
                             0

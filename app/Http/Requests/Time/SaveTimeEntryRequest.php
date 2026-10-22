@@ -22,6 +22,7 @@ class SaveTimeEntryRequest extends BaseFormRequest {
     protected array $sqidFields = [
         'task_id' => \App\Models\Project\Task::class,
         'diary_entry_id' => \App\Models\Diary\DiaryEntry::class,
+        'service_ticket_id' => \App\Models\ServiceTicket\ServiceTicket::class,
         'rework_reason_classification_id' => \App\Models\Classification\Classification::class,
         'goodwill_reason_classification_id' => \App\Models\Classification\Classification::class,
         'tag_ids' => \App\Models\Classification\Tag::class,
@@ -44,6 +45,7 @@ class SaveTimeEntryRequest extends BaseFormRequest {
             'break_minutes' => ['nullable', 'integer', 'min:0', 'max:600'],
             'task_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('tasks')],
             'diary_entry_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('diary_entries')],
+            'service_ticket_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('service_tickets')],
             'description' => ['nullable', 'string', 'max:500'],
             // Anfahrtspauschale (Feature 098): leer = Automatik aus der Kondition.
             'billing_travel_minutes' => ['nullable', 'integer', 'min:0', 'max:480'],
@@ -73,7 +75,7 @@ class SaveTimeEntryRequest extends BaseFormRequest {
     }
 
     protected function prepareForValidation(): void {
-        foreach (['task_id', 'diary_entry_id', 'started_at', 'ended_at', 'rework_reason_classification_id', 'goodwill_reason_classification_id'] as $key) {
+        foreach (['task_id', 'diary_entry_id', 'service_ticket_id', 'started_at', 'ended_at', 'rework_reason_classification_id', 'goodwill_reason_classification_id'] as $key) {
             if ($this->input($key) === '' || $this->input($key) === '0') {
                 $this->merge([$key => null]);
             }

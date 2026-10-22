@@ -19,6 +19,26 @@
             @csrf
             <input aria-label="{{ __('Kurzbeschreibung') }}" name="title" required minlength="3" maxlength="255" class="input input-bordered w-full" placeholder="{{ __('Kurzbeschreibung') }}">
             <textarea aria-label="{{ __('Was ist passiert?') }}" name="description" rows="3" maxlength="10000" class="textarea textarea-bordered w-full" placeholder="{{ __('Was ist passiert?') }}"></textarea>
+            @if ($assets->isNotEmpty() || $offerings->isNotEmpty())
+                <div class="grid gap-2 sm:grid-cols-2">
+                    @if ($assets->isNotEmpty())
+                        <x-select-field name="asset" id="portal-ticket-asset" :label="__('helpdesk.portal.asset')">
+                            <option value="">{{ __('helpdesk.portal.noAsset') }}</option>
+                            @foreach ($assets as $asset)
+                                <option value="{{ $asset->sqid }}" @selected(old('asset') === $asset->sqid)>{{ $asset->name }}</option>
+                            @endforeach
+                        </x-select-field>
+                    @endif
+                    @if ($offerings->isNotEmpty())
+                        <x-select-field name="offering" id="portal-ticket-offering" :label="__('helpdesk.portal.service')">
+                            <option value="">{{ __('helpdesk.portal.noService') }}</option>
+                            @foreach ($offerings as $offering)
+                                <option value="{{ $offering->sqid }}" @selected(old('offering') === $offering->sqid)>{{ $offering->name }}</option>
+                            @endforeach
+                        </x-select-field>
+                    @endif
+                </div>
+            @endif
             <div class="flex flex-wrap items-center gap-2">
                 <input name="files[]" type="file" multiple class="file-input file-input-sm file-input-bordered"
                        aria-label="{{ __('Anhänge (optional)') }}">

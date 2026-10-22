@@ -25,9 +25,9 @@
         <x-input-field name="position" id="rule-edit-position" type="number" :label="__('Position')" required min="1" max="999"
                        :value="old('position', $rule->position)" />
     </div>
-    <x-textarea-field name="conditions" id="rule-edit-conditions" :label="__('Bedingungen (JSON)')" rows="5" required
+    <x-textarea-field name="conditions" id="rule-edit-conditions" :label="__('Bedingungen (JSON)')" :hint="__('helpdesk.routing.conditionsHint')" rows="5" required
                       class="font-mono text-xs">{{ old('conditions', $conditions) }}</x-textarea-field>
-    <x-textarea-field name="actions" id="rule-edit-actions" :label="__('Aktionen (JSON)')" rows="5" required
+    <x-textarea-field name="actions" id="rule-edit-actions" :label="__('Aktionen (JSON)')" :hint="__('helpdesk.routing.actionsHint')" rows="5" required
                       class="font-mono text-xs">{{ old('actions', $actions) }}</x-textarea-field>
     <x-checkbox-field name="active" id="rule-edit-active" :label="__('Aktiv')"
                       :checked="(bool) old('active', $rule->active)" />

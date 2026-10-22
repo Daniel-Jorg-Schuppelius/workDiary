@@ -10,6 +10,14 @@
 
 // Angebote (Feature 112, MVP-601: Nachfassen).
 return [
+    'viewed' => 'Consulté par le client le :date',
+    'signature' => [
+        'name' => 'Nom de la personne signataire (facultatif)',
+        'pad' => 'Signature (facultative)',
+        'signed_by' => 'Accepté avec la signature de :name.',
+        'signed' => 'Accepté avec signature.',
+        'show' => 'Voir la signature',
+    ],
     'follow_up' => [
         'title' => 'Relance des devis',
         'subtitle' => 'Relances dues, devis expirant et devis envoyés sans date',

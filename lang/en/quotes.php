@@ -10,6 +10,14 @@
 
 // Angebote (Feature 112, MVP-601: Nachfassen).
 return [
+    'viewed' => 'Viewed by the customer on :date',
+    'signature' => [
+        'name' => 'Name of the signing person (optional)',
+        'pad' => 'Signature (optional)',
+        'signed_by' => 'Accepted with the signature of :name.',
+        'signed' => 'Accepted with signature.',
+        'show' => 'View signature',
+    ],
     'follow_up' => [
         'title' => 'Quote follow-ups',
         'subtitle' => 'Due follow-ups, expiring quotes and sent quotes without a date',

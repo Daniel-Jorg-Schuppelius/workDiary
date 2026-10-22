@@ -41,7 +41,18 @@ final class BillingBlock {
         public readonly ?Carbon $lastEnd,
         public readonly ?string $description,
         public readonly int $travelMinutes = 0,
+        public readonly ?string $ticketNo = null,
     ) {}
+
+    /** Ticketbezug der Zeiten (MVP-1259) vor dem Positionstext. */
+    public function withTicketPrefix(string $text): string {
+        if ($this->ticketNo === null) {
+            return $text;
+        }
+        $label = (string) __('Ticket :no', ['no' => $this->ticketNo]);
+
+        return $text === '' ? $label : $label . ' · ' . $text;
+    }
 
     public function billedHours(): float {
         // 3 NK (statt 2): die Mengen-Quantisierung war die Hauptursache der Abweichung Rechnungsbetrag ↔
@@ -95,6 +106,6 @@ final class BillingBlock {
             $name = trim($this->description) . ' · ' . $name;
         }
 
-        return $name;
+        return $this->withTicketPrefix($name);
     }
 }

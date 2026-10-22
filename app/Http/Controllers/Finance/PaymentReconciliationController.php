@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers\Finance;
 
-use App\Enums\Finance\{AllocationKind, MatchStatus};
+use App\Enums\Finance\{AllocationKind, MatchStatus, StatementChainCheck};
 use App\Enums\Invoicing\InvoiceStatus;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
@@ -59,8 +59,8 @@ class PaymentReconciliationController extends Controller {
             ->paginate(25);
 
         $totals = [
-            'open' => BankTransaction::query()->whereIn('match_status', [MatchStatus::Unmatched->value, MatchStatus::Suggested->value])->count(),
-            'matched' => BankTransaction::query()->where('match_status', MatchStatus::Matched->value)->count(),
+            'open' => BankTransaction::query()->booked()->whereIn('match_status', [MatchStatus::Unmatched->value, MatchStatus::Suggested->value])->count(),
+            'matched' => BankTransaction::query()->booked()->where('match_status', MatchStatus::Matched->value)->count(),
         ];
 
         $importAvailable = FinancialFormatsSupport::isAvailable();
@@ -116,13 +116,16 @@ class PaymentReconciliationController extends Controller {
         Gate::authorize('view', $statement);
 
         $statement->load(['bankAccount', 'transactions.allocations']);
+        // Die Policy fragt je Umsatz nach dem Auszug — ohne Rückverweis lüde sie ihn je Zeile neu.
+        $statement->transactions->each->setRelation('statement', $statement);
 
         $suggestions = [];
         $returnOrigins = [];
         $splitSuggestions = [];
         $detailReturnOrigins = [];
         foreach ($statement->transactions as $transaction) {
-            if (! $transaction->match_status->isOpen()) {
+            // Vorläufige Auszüge (MVP-1274) sind Vorschau: keine Vorschläge.
+            if ($statement->is_provisional || ! $transaction->match_status->isOpen()) {
                 continue;
             }
 
@@ -146,7 +149,9 @@ class PaymentReconciliationController extends Controller {
 
         return view('finance.reconciliation.show', [
             'statement' => $statement,
-            'postingStates' => $this->postingStates($statement->transactions),
+            'postingStates' => $statement->is_provisional ? [] : $this->postingStates($statement->transactions),
+            // Gegenstück für den Hinweis bei Lücke oder Abweichung der Saldenkette (MVP-1279).
+            'chainPrevious' => in_array($statement->chain_check, [StatementChainCheck::Gap, StatementChainCheck::Mismatch], true) ? $statement->previousStatement() : null,
             'suggestions' => $suggestions,
             'returnOrigins' => $returnOrigins,
             'splitSuggestions' => $splitSuggestions,

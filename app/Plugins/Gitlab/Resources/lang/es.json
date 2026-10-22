@@ -11,6 +11,7 @@
     "Nur für On-Premise-Instanzen im eigenen Netz: erlaubt eine Instanz-URL mit privater/interner Adresse.": "Solo para instancias on-premise en la propia red: permite una URL de instancia con dirección privada/interna.",
     "Optional: Secret Token des GitLab-Webhooks (Issue-Events, X-Gitlab-Token). Ohne Token bleibt der Webhook-Endpunkt deaktiviert; das Polling holt alles nach.": "Opcional: token secreto del webhook de GitLab (eventos issue, X-Gitlab-Token). Sin token, el endpoint del webhook permanece desactivado; el sondeo lo recupera todo.",
     "Project Access Token (empfohlen) oder Personal Access Token mit read_api-Scope.": "Project access token (recomendado) o personal access token con el scope read_api.",
+    "Projekt-ID": "ID de proyecto",
     "Schließt das verknüpfte Issue (mit Notiz), wenn die Aufgabe in workDiary erledigt wird, und öffnet es beim Wiedereröffnen. Titel und Beschreibung bleiben quellsystem-geführt. Der Token braucht Schreibzugriff auf Issues (api-Scope).": "Cierra la incidencia vinculada (con una nota) cuando la tarea se completa en workDiary y la reabre si se reabre la tarea. El título y la descripción siguen gestionados por el sistema de origen. El token necesita acceso de escritura a las incidencias (scope api).",
     "Verbunden mit GitLab als :login.": "Conectado a GitLab como :login.",
     "Webhook-Token": "Token del webhook"

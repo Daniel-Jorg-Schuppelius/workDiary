@@ -67,6 +67,8 @@ date de publication de l'unité s'applique en plus.
 
 Depuis LearnDash, reprenez le **ZIP d'export** (**Catalogue de cours** → « Import LearnDash ») : cours, leçons, sujets et évaluations sont créés en brouillon, les questions vont au catalogue avec leur catégorie. Images et médias ne sont pas copiés (espaces réservés à compléter), les vidéos de leçon seulement depuis des hôtes autorisés. Les cours achevés sont notés comme inscriptions « importées » pour les personnes avec e-mail correspondant — sans certificat ni preuve d'instruction, car un achèvement importé n'est pas une preuve en soi. L'essai montre au préalable ce qui serait créé.
 
+L’éditeur téléverse les fichiers volumineux par parties. Si la connexion est interrompue, enregistrer à nouveau reprend à la première partie manquante ; les parties jamais terminées sont supprimées au bout d’un jour.
+
 ## La publication fige le contenu
 
 La publication crée une version du cours contenant une image complète du
@@ -92,6 +94,10 @@ l'administration ; seules les inscriptions obligatoires la contournent. Les
 devoirs portent des **règles de fichiers** (extensions, nombre, taille — jamais
 plus permissives que le système) et, au choix, une **validation automatique**
 avec points complets, incompatible avec le principe des quatre yeux.
+
+Le planning d’ouverture d’une unité peut aussi désigner une **unité précédente** et une **session présentielle** du cours. Avec une unité précédente, l’unité ne s’ouvre qu’une fois celle-ci terminée (mention « Après … »). Avec une session présentielle, elle s’ouvre le jour de la session et suit son éventuel report. Entre jours, date et session, la plus tardive s’applique.
+
+Dans la **gestion des participants**, **Passer à la version …** fait passer toutes les inscriptions ouvertes à la version actuelle du cours. L’aperçu indique, par version de départ, quelles unités restent inchangées, ont changé, sont nouvelles ou disparaissent. La progression est conservée pour chaque unité présente dans les deux versions ; les nouvelles unités obligatoires sont ensuite ouvertes. Le changement figure avec son motif dans l’historique de chaque inscription ; les inscriptions terminées restent sur leur version.
 
 ## Le temps d'apprentissage est du temps de travail
 
@@ -148,6 +154,12 @@ Le **carnet de notes** par cours montre apprenants × composantes. Sans composan
 
 Finesse par question : les options de réponse peuvent porter **leurs propres points** (« Libellé {3} », négatif possible) — l'option choisie compte alors au lieu du tout-ou-rien ; une **auto-évaluation** est une échelle sans bonne réponse, le niveau choisi est le score ; une **rédaction** accepte du texte, un fichier ou les deux — le fichier est disponible à l'évaluation. Par évaluation, la réussite peut en plus être exigée **en points** et le sous-ensemble par tentative fixé **en pourcentage** des questions disponibles.
 
+**Importer des questions** dans le catalogue de questions lit des questions depuis un fichier CSV ou Excel. Les colonnes **kind** (type, sous forme de code court comme single ou de libellé) et **prompt** sont obligatoires ; **options** contient les lignes de réponse les unes sous les autres dans une seule cellule, écrites comme dans l’éditeur. **title**, **category** (les catégories manquantes sont créées), **points**, **explanation** et **hint** sont facultatives. La même question (type et texte) est ignorée lors d’un second passage ; les questions à zone cliquable nécessitent une image et ne peuvent pas être importées depuis un fichier.
+
+Un **temps par question** rythme l’examen : les questions arrivent une à une, sans retour en arrière. Lorsque le temps d’une question est écoulé, la réponse est enregistrée et la question suivante s’affiche ; la somme sert aussi de délai global. Au titre d’un **aménagement**, la gestion des participants fixe par personne une **prolongation du temps** en pourcentage, avec le motif dans l’historique. Elle s’applique au délai global et au temps par question.
+
+Si la dernière tentative autorisée échoue et qu’aucune autorisation de tentative n’est ouverte, la personne et son responsable d’équipe reçoivent la notification **Examen définitivement échoué**. L’inscription reste ouverte afin qu’une autorisation de tentative reste possible.
+
 ## Preuves
 
 Un cours réussi produit ses effets en un seul endroit : certificat avec code
@@ -166,6 +178,8 @@ conservation** propose la suppression des inscriptions terminées sans
 certificat une fois le délai régional écoulé (tentatives et temps
 d'apprentissage suivent) ; les certificats restent plus longtemps comme preuve,
 puis sont réduits aux initiales — le lien de vérification continue de répondre.
+
+À côté de l’adresse et du code de vérification, le certificat porte un **code QR** qui mène directement à la page de vérification depuis un téléphone.
 
 ## Compétences
 
@@ -209,6 +223,12 @@ formations ouvertes et le retard d'évaluation ; la recherche d'activité trouve
 les cours publiés — les apprenants les leurs, les auteurs tous.
 
 Le **Catalogue de cours** s'affiche en liste ou en vignettes (le choix est mémorisé par personne) et porte une **note en étoiles** issue du retour de cours — seulement à partir de cinq réponses, pour que rien ne se rapporte à une personne. Le portail affiche en plus le **prix** de l'article lié. Dans le lecteur, le **mode concentration** masque la barre latérale ; « Dupliquer » crée un nouveau brouillon à partir d'un cours — le matériel oui, les inscriptions et preuves non.
+
+Les personnes externes ayant une échéance reçoivent deux **rappels d’échéance** par e-mail : l’un dans le délai d’anticipation du contrôle des échéances, l’autre la veille de l’échéance, chacun avec un nouveau lien d’accès. Si l’échéance change, les rappels recommencent.
+
+Cinquième voie d’affectation, l’automatisation **Inscrire au cours** inscrit des personnes à un cours choisi — pour **Collaborateur créé**, la nouvelle personne ; pour **Équipement remis**, la personne qui reçoit l’équipement. L’inscription porte l’origine « Règle ».
+
+La **série d’apprentissage** peut être activée dans les paramètres : sous « Mes formations », chaque personne voit combien de jours d’affilée elle a terminé une unité — pour elle seule, sans comparaison avec les autres. **Imprimer la configuration** (catalogue, menu) génère un PDF avec la date et la **version de la configuration** : interrupteurs de l’organisation, règle de temps d’apprentissage par cours et durées de conservation, par exemple en annexe d’un accord d’entreprise. Chaque modification des paramètres augmente la version et figure avec l’avant et l’après dans le journal d’audit.
 
 ## Parcours d’apprentissage
 

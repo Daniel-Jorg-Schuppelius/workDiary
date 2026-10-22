@@ -34,3 +34,7 @@ que la retención se rechaza — reduciría la garantía en silencio.
 **Devolución:** Al vencer se reclama el documento y el expediente se cierra
 como *devuelto*. Un aval ejecutado queda documentado de forma permanente con
 fecha y motivo.
+
+## Vínculo con la garantía
+
+Un aval puede referirse a un **plazo de garantía**. Cuando este termina, la comprobación de plazos avisa de la **devolución** del documento, igual que tras liberar una retención sustituida. Del mismo modo, una retención en la factura toma el fin de la garantía elegida como fecha de liberación y se ajusta si el plazo cambia.

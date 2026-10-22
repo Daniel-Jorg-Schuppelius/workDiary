@@ -26,6 +26,10 @@ return [
         'retired' => 'Supporto di accesso dismesso',
     ],
     'appointment' => [
+        'proposed' => 'Appuntamento alternativo proposto',
+        'proposal_accepted' => 'Appuntamento alternativo accettato',
+        'proposal_declined' => 'Appuntamento alternativo rifiutato',
+        'rescheduled' => 'Appuntamento spostato',
         'requested' => 'Appuntamento richiesto',
         'confirmed' => 'Appuntamento confermato',
         'declined' => 'Richiesta di appuntamento rifiutata',
@@ -621,6 +625,7 @@ return [
         'unlinked' => 'Collegamento dell\'articolo di conoscenza rimosso',
     ],
     'lead' => [
+        'quote_created' => 'Preventivo creato dal lead',
         'created' => 'Lead creato',
         'status_changed' => 'Stato del lead modificato',
         'converted' => 'Lead convertito',
@@ -822,6 +827,7 @@ return [
         'mailed' => 'Bolla di consegna inviata via e-mail',
     ],
     'quote' => [
+        'viewed' => 'Offerta visualizzata dal cliente',
         'intake_linked' => 'Collegato alla richiesta del cliente',
         'portal_decision' => 'Decisione nel portale clienti',
         'markup_applied' => 'Maggiorazione distribuita sui prezzi unitari',
@@ -899,6 +905,10 @@ return [
         'shared' => 'Vista report condivisa',
     ],
     'restored' => 'Ripristinato',
+    'self_billing_credit' => [
+        'issued' => 'Autofattura emessa',
+        'cancelled' => 'Autofattura stornata',
+    ],
     'retention' => [
         'approved' => 'Proposta di cancellazione approvata',
         'purged' => 'Dati eliminati secondo il piano di cancellazione',
@@ -935,7 +945,11 @@ return [
         'fulfilled' => 'Richiesta di servizio evasa',
         'submitted' => 'Richiesta di servizio presentata',
     ],
+    'business_service' => [
+        'dependencies_changed' => 'Dipendenze del servizio aziendale modificate',
+    ],
     'service_ticket' => [
+        'service_changed' => 'Servizio del ticket modificato',
         'opened_from_intake' => 'Ticket creato dalla richiesta del cliente',
         'accepted_by_customer' => 'Ticket accettato dal cliente',
         'assigned' => 'Ticket assegnato',
@@ -1189,6 +1203,7 @@ return [
         'followUpCreated' => 'Incarico di follow-up creato dal punto aperto',
     ],
     'learning' => [
+        'settingsChanged' => 'Impostazioni della piattaforma di apprendimento modificate',
         'dossierDisclosed' => 'Fascicolo delle qualifiche rilasciato con i nomi',
         'attemptViewed' => 'Atto del tentativo consultato',
     ],

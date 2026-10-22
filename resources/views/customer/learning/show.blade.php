@@ -38,7 +38,7 @@
                     {{ $unit->title }}
                 </h2>
                 @if ($isLocked)
-                    <x-status-badge tone="neutral" size="sm" outline>{{ $unit->releaseDateFor($enrollment)?->isFuture() ? __('learning.badge.available_from', ['date' => $unit->releaseDateFor($enrollment)?->translatedFormat('d.m.Y')]) : __('learning.badge.after_previous_unit') }}</x-status-badge>
+                    <x-status-badge tone="neutral" size="sm" outline>{{ $unit->lockLabelFor($enrollment, $completedUnitIds) }}</x-status-badge>
                 @endif
                 @unless ($isDone || $isLocked)
                     <form method="POST" action="{{ route('customer.learning.units.complete', [$enrollment, $unit]) }}">

@@ -14,6 +14,11 @@ return [
     'label' => 'Fichiers',
     'hint' => 'Autorisé : :formats · jusqu’à :size par fichier · au plus :count fichiers, :total au total.',
     'progress' => 'Envoi en cours … :percent %',
+    'chunked' => [
+        'invalid_chunk' => 'Cette partie ne correspond pas au téléversement.',
+        'incomplete' => 'Le téléversement n’est pas encore entièrement transféré.',
+        'unknown' => 'Le téléversement est inconnu ou a expiré. Veuillez sélectionner à nouveau le fichier.',
+    ],
     'error' => [
         'type' => ':name : type de fichier non autorisé.',
         'too_large' => ':name dépasse :size.',

@@ -9,21 +9,23 @@
 
 @extends('layouts.app')
 
-@section('title', __('Supportzugriffe'))
-@section('nav-title', __('Supportzugriffe'))
+@section('title', $title)
+@section('nav-title', $title)
 @include('partials.page-fill')
 
 @php
-    /** @var \App\Models\Platform\Organization $organization */
     /** @var \Illuminate\Contracts\Pagination\LengthAwarePaginator $entries */
-    /** @var \Illuminate\Database\Eloquent\Collection $actors */
+    /** @var \Illuminate\Support\Collection $users */
+    /** @var \Illuminate\Support\Collection $groups */
     /** @var array<string, string> $filters */
     /** @var array<int, string> $eventOptions */
+    $userKey = \App\Support\MorphMap::stableKey(\App\Models\Platform\User::class);
+    $groupKey = \App\Support\MorphMap::stableKey(\App\Models\Platform\UserGroup::class);
 @endphp
 
 @section('content')
-<x-index-page overflow="clip" :subtitle="__('Audit-Spur aller Supportzugriffe (support.*) für :org.', ['org' => $organization->name])">
-    <x-filter-bar :action="route('admin.support.access-audit.index')" :reset="route('admin.support.access-audit.index')">
+<x-index-page overflow="clip" :subtitle="$subtitle">
+    <x-filter-bar :action="route($route)" :reset="route($route)">
         <x-date-range class="w-80 shrink-0" :label="false"
                       from-name="from" to-name="to"
                       :from="$filters['from'] ?? ''" :to="$filters['to'] ?? ''"
@@ -31,7 +33,7 @@
         <select name="event" class="select select-sm select-bordered w-56 shrink-0" aria-label="{{ __('Ereignis') }}">
             <option value="">{{ __('Alle Ereignisse') }}</option>
             @foreach ($eventOptions as $opt)
-                <option value="{{ $opt }}" @selected(($filters['event'] ?? '') === $opt)>{{ $opt }}</option>
+                <option value="{{ $opt }}" @selected(($filters['event'] ?? '') === $opt)>{{ (new \App\Models\Audit\AuditLog(['event' => $opt]))->eventLabel() }}</option>
             @endforeach
         </select>
         <input type="text" name="actor" value="{{ $filters['actor'] ?? '' }}"
@@ -44,23 +46,36 @@
             icon="policy" />
     @else
         <x-table scroll="flex" :pinRows="true" table-sort="server"
-                 :route="route('admin.support.access-audit.index')" :current-sort="$sort" :current-dir="$dir"
+                 :route="route($route)" :current-sort="$sort" :current-dir="$dir"
                  :sort-params="array_filter(['from' => $filters['from'] ?: null, 'to' => $filters['to'] ?: null, 'event' => $filters['event'] ?: null, 'actor' => $filters['actor'] ?: null])">
             <x-slot:head>
                 <x-table.th sort="created_at">{{ __('Zeitpunkt') }}</x-table.th>
                 <x-table.th sort="event">{{ __('Ereignis') }}</x-table.th>
                 <th>{{ __('Akteur') }}</th>
+                <th>{{ __('Betroffen') }}</th>
                 <th>{{ __('Details') }}</th>
             </x-slot:head>
             @foreach ($entries as $entry)
                 <tr>
                     <td class="whitespace-nowrap text-sm">{{ $entry->created_at?->orgTz()->format('Y-m-d H:i') }}</td>
-                    <td class="font-mono text-xs">{{ $entry->event }}</td>
                     <td class="text-sm">
-                        @if ($entry->user_id && $actors->has($entry->user_id))
-                            {{ $actors[$entry->user_id]->name }}
+                        {{ $entry->eventLabel() }}
+                        <div class="font-mono text-xs text-muted">{{ $entry->event }}</div>
+                    </td>
+                    <td class="text-sm">
+                        @if ($entry->user_id && $users->has($entry->user_id))
+                            {{ $users[$entry->user_id]->name }}
                         @else
                             <span class="text-muted">{{ __('System') }}</span>
+                        @endif
+                    </td>
+                    <td class="text-sm">
+                        @if ($entry->auditable_type === $userKey && $users->has($entry->auditable_id))
+                            {{ $users[$entry->auditable_id]->name }}
+                        @elseif ($entry->auditable_type === $groupKey && $groups->has($entry->auditable_id))
+                            {{ $groups[$entry->auditable_id]->name }}
+                        @else
+                            <span class="text-muted">{{ $entry->auditableTypeLabel() }} #{{ $entry->auditable_id }}</span>
                         @endif
                     </td>
                     <td class="text-xs">

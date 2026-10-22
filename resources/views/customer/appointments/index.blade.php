@@ -78,8 +78,26 @@
                     @if ($request->status === \App\Enums\Calendar\AppointmentRequestStatus::Declined && $request->decline_reason)
                         <span class="block text-xs text-muted">{{ $request->decline_reason }}</span>
                     @endif
+                    @if ($request->status === \App\Enums\Calendar\AppointmentRequestStatus::Proposed && $request->proposed_start_at)
+                        <span class="block text-xs">{{ __('appointment.portal.proposal', ['date' => $request->proposed_start_at->fdatetime()]) }}</span>
+                        @if ($request->proposal_note)
+                            <span class="block text-xs text-muted">{{ $request->proposal_note }}</span>
+                        @endif
+                    @endif
                 </td>
                 <td class="text-right">
+                    @if ($request->status === \App\Enums\Calendar\AppointmentRequestStatus::Proposed)
+                        <div class="inline-flex flex-wrap justify-end gap-1">
+                            <form method="POST" action="{{ route('customer.appointments.proposal.accept', $request) }}">
+                                @csrf
+                                <x-button type="submit" size="xs">{{ __('appointment.portal.proposal_accept') }}</x-button>
+                            </form>
+                            <form method="POST" action="{{ route('customer.appointments.proposal.decline', $request) }}">
+                                @csrf
+                                <x-button type="submit" tone="ghost" size="xs">{{ __('appointment.portal.proposal_decline') }}</x-button>
+                            </form>
+                        </div>
+                    @endif
                     @if (in_array($request->status, [\App\Enums\Calendar\AppointmentRequestStatus::Requested, \App\Enums\Calendar\AppointmentRequestStatus::Confirmed], true))
                         @if ($request->withinCancelDeadline())
                             <form method="POST" action="{{ route('customer.appointments.cancel', $request) }}" class="inline-flex flex-col items-end">

@@ -33,6 +33,20 @@
             <option value="{{ $action->type() }}" @selected(old('action_type') === $action->type())>{{ $action->label() }}</option>
         @endforeach
     </x-select-field>
+    @if ($targets !== [])
+        {{-- Ziel der Aktion (MVP-1273), etwa der Kurs einer Einschreibung — je Aktion gefiltert. --}}
+        <x-select-field name="action_target" :label="__('automation.form.target')" :hint="__('automation.form.target_hint')"
+                        data-depends-on="action_type" data-depends-autoselect="off">
+            <option value="">–</option>
+            @foreach ($targets as $type => $target)
+                <optgroup label="{{ $target['label'] }}">
+                    @foreach ($target['options'] as $value => $label)
+                        <option value="{{ $value }}" data-parent="{{ $type }}" @selected(old('action_target') === (string) $value)>{{ $label }}</option>
+                    @endforeach
+                </optgroup>
+            @endforeach
+        </x-select-field>
+    @endif
     <x-input-field name="priority" type="number" :label="__('Priorität')" :value="old('priority', 100)" min="1" max="9999" />
     <x-textarea-field name="conditions" :label="__('automation.form.conditions')" :hint="__('automation.form.conditions_hint') . ' ' . $examples"
         :value="old('conditions', $firstTrigger ? json_encode($firstTrigger->exampleConditions(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : '')" rows="4" required class="font-mono text-xs" />

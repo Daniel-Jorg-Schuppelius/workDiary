@@ -40,11 +40,11 @@ class AppointmentInboxController extends Controller {
 
         return view('appointments.index', [
             'tab' => $tab,
-            'openCount' => AppointmentRequest::query()->where('status', AppointmentRequestStatus::Requested)->count(),
+            'openCount' => AppointmentRequest::query()->whereIn('status', [AppointmentRequestStatus::Requested, AppointmentRequestStatus::Proposed])->count(),
             'serviceCount' => BookableService::query()->where('active', true)->count(),
             'requests' => $tab === 'open'
                 ? AppointmentRequest::query()
-                    ->where('status', AppointmentRequestStatus::Requested)
+                    ->whereIn('status', [AppointmentRequestStatus::Requested, AppointmentRequestStatus::Proposed])
                     ->with(['customer:id,name', 'bookableService:id,title'])
                     ->orderBy('start_at')
                     ->get()
@@ -102,6 +102,46 @@ class AppointmentInboxController extends Controller {
         }
 
         return back()->with('success', __('Anfrage abgelehnt.'));
+    }
+
+    /** Ersatztermin vorschlagen (MVP-1287); die Uhrzeit gilt in der Zeitzone der Organisation. */
+    public function propose(Request $request, AppointmentRequest $appointmentRequest, AppointmentRequestService $service): RedirectResponse {
+        Gate::authorize(Permission::DispatchManage->value);
+        $this->guard($appointmentRequest);
+
+        $data = $request->validate([
+            'start' => ['required', 'date', new \App\Rules\TimestampRange()],
+            'note' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        try {
+            $service->proposeAlternative($appointmentRequest, $this->actor(), $this->localStart((string) $data['start']), $data['note'] ?? null);
+        } catch (RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
+
+        return back()->with('success', __('appointment.proposal.sent'));
+    }
+
+    /** Bestätigten Termin verschieben (MVP-1287). */
+    public function reschedule(Request $request, AppointmentRequest $appointmentRequest, AppointmentRequestService $service): RedirectResponse {
+        Gate::authorize(Permission::DispatchManage->value);
+        $this->guard($appointmentRequest);
+
+        $data = $request->validate(['start' => ['required', 'date', new \App\Rules\TimestampRange()]]);
+
+        try {
+            $service->reschedule($appointmentRequest, $this->actor(), $this->localStart((string) $data['start']));
+        } catch (RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
+
+        return back()->with('success', __('appointment.reschedule.done'));
+    }
+
+    /** Eingabe aus datetime-local in der Zeitzone der Organisation. */
+    private function localStart(string $value): \Carbon\CarbonImmutable {
+        return Tz::parse($value);
     }
 
     /** Buchbare Leistungsart anlegen (kuratiert — nichts ist automatisch buchbar). */

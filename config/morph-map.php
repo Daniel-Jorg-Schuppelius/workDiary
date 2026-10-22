@@ -755,6 +755,8 @@ return [
         'security_advisories' => \App\Models\Auth\SecurityAdvisory::class,
         'security_events' => \App\Models\Auth\SecurityEvent::class,
         'security_ip_bans' => \App\Models\Auth\SecurityIpBan::class,
+        'self_billing_credit_lines' => \App\Models\Invoicing\SelfBillingCreditLine::class,
+        'self_billing_credits' => \App\Models\Invoicing\SelfBillingCredit::class,
         'sepa_mandates' => \App\Models\Finance\SepaMandate::class,
         'service_offerings' => \App\Models\Sales\ServiceOffering::class,
         'service_queues' => \App\Models\ServiceTicket\ServiceQueue::class,

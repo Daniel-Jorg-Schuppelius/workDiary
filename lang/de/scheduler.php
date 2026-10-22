@@ -94,6 +94,7 @@ return [
     // Lesbare Job-Namen (Registry-Keys, geschachtelt wegen Punkt-Notation);
     // neue Registry-Jobs hier in allen Locales ergänzen — sonst Fallback = Key.
     'job' => [
+        'surveys' => ['scheduled' => 'Umfragen im festen Abstand versenden'],
         'demo' => [
             'prune' => 'Demo-Organisationen nach Aufbewahrungsfrist löschen',
         ],
@@ -193,6 +194,7 @@ return [
         'shipping' => ['track' => 'Sendungsverfolgung abgleichen'],
         'orgamax' => ['sync' => 'orgaMAX-Abgleich'],
         'print' => ['purge_files' => 'Druck-Produktionsdateien nach Löschfrist bereinigen'],
+        'uploads' => ['prune_chunks' => 'Liegengebliebene Teil-Uploads entfernen'],
         'search' => ['reconcile' => 'Suchindex abgleichen (Tätigkeitsrecherche)'],
         'payroll' => ['import_minimum_wages' => 'EU-Mindestlöhne importieren'],
         'plans' => ['purge' => 'Downgrade-Daten bereinigen'],

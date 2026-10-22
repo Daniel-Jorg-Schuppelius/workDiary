@@ -10,6 +10,14 @@
 
 // Angebote (Feature 112, MVP-601: Nachfassen).
 return [
+    'viewed' => 'Visualizzato dal cliente il :date',
+    'signature' => [
+        'name' => 'Nome della persona firmataria (facoltativo)',
+        'pad' => 'Firma (facoltativa)',
+        'signed_by' => 'Accettato con la firma di :name.',
+        'signed' => 'Accettato con firma.',
+        'show' => 'Vedi firma',
+    ],
     'follow_up' => [
         'title' => 'Solleciti preventivi',
         'subtitle' => 'Solleciti in scadenza, preventivi in scadenza e inviati senza data',

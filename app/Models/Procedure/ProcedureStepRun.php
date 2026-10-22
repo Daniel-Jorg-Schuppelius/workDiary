@@ -30,6 +30,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $executed_at
  * @property int|null $second_person_user_id
  * @property \Illuminate\Support\Carbon|null $second_person_signed_at
+ * @property \Illuminate\Support\Carbon|null $second_person_requested_at
+ * @property int|null $second_person_requester_user_id
  * @property int|null $proof_attachment_id
  * @property string|null $note
  * @property int|null $deviation_id
@@ -47,6 +49,8 @@ class ProcedureStepRun extends Model {
         'executed_at',
         'second_person_user_id',
         'second_person_signed_at',
+        'second_person_requested_at',
+        'second_person_requester_user_id',
         'proof_attachment_id',
         'note',
         'deviation_id',
@@ -59,6 +63,7 @@ class ProcedureStepRun extends Model {
         'value_json' => 'array',
         'executed_at' => 'datetime',
         'second_person_signed_at' => 'datetime',
+        'second_person_requested_at' => 'datetime',
         'wait_started_at' => 'datetime',
         'wait_until' => 'datetime',
     ];
@@ -81,5 +86,10 @@ class ProcedureStepRun extends Model {
     /** @return BelongsTo<User, $this> */
     public function secondPerson(): BelongsTo {
         return $this->belongsTo(User::class, 'second_person_user_id');
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function secondPersonRequester(): BelongsTo {
+        return $this->belongsTo(User::class, 'second_person_requester_user_id');
     }
 }

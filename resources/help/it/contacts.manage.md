@@ -127,3 +127,7 @@ mancanti.
 Le modifiche anagrafiche valgono solo in avanti — le consegne chiuse
 restano invariate. Poi: creare i progetti del cliente, controllare i
 dati di fatturazione e usare l'import CSV per grandi quantità.
+
+## Fornitore: dati fiscali e autofatturazione
+
+Sul fornitore si registrano **partita IVA** e **codice fiscale**. Se la sua organizzazione fattura essa stessa le prestazioni di un fornitore, inserisca la data dell’**accordo di autofatturazione**; solo allora si possono emettere autofatture. La pagina del fornitore mostra l’accordo e le ultime autofatture.

@@ -57,6 +57,8 @@ dell'organizzazione.
 Nota: per le semplici notifiche le **Regole di notifica** sono spesso
 la scelta più semplice; per i sistemi esterni consulti i **Webhook**.
 
+Le azioni con destinazione mostrano inoltre il campo **Destinazione** nella finestra: **Iscrivere al corso** (attivatori **Collaboratore creato** o **Attrezzatura consegnata**) chiede il corso. Per i nuovi collaboratori le condizioni vedono `role`, `roles` e `personnel_number`; per la consegna di attrezzature, tra gli altri, `category_code`, `asset_class` e `manufacturer`. Il ruolo è fissato solo dopo il salvataggio della creazione: per questo la regola verifica dopo il salvataggio.
+
 ## Regole di posta in entrata (fatture in entrata)
 
 Il trigger «Fattura in entrata ricevuta» controlla ogni nuovo documento della

@@ -31,3 +31,7 @@ person to review their on-call shifts and appointments.
 This calendar is the interactive view within WorkDiary. If you want to
 subscribe to your appointments in an external calendar application, use
 the ICS calendar subscription in your profile.
+
+## Tender deadlines
+
+With the tenders module, the calendar shows the deadlines of open tenders: question, participation and submission deadlines, the opening date and the binding period. Your calendar contains the tenders you are responsible for; the team view shows all of them. Clicking opens the tender.

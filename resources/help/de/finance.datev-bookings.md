@@ -98,3 +98,9 @@ Berücksichtigt werden gestellte und bezahlte Rechnungen mit Belegdatum
 im Zeitraum; Gutschriften werden als umgekehrte Buchung gebildet. Nach
 der Übergabe: Zahlungsabgleich pflegen und den nächsten Zeitraum erst
 nach dessen Abschluss exportieren.
+
+## Übermittlung und Begleitbericht
+
+Nach dem Finalisieren hält **Übermittlung erfassen** fest, was mit dem Stapel geschieht: **übermittelt** an die Kanzlei, dort **bestätigt** oder **abgelehnt**. Ein abgelehnter Stapel wird nach der Klärung erneut übermittelt; Korrekturen an Belegen laufen weiterhin über den nächsten Stapel. Jeder Schritt steht mit Zeitpunkt, Person und optionalem Vermerk im Verlauf des Stapels, die Liste zeigt den aktuellen Stand. Vermerke bitte ohne personenbezogene Angaben, denn der Verlauf ist unveränderlich.
+
+Der **Begleitbericht (PDF)** fasst den Stapel für die Kanzlei zusammen: Zeitraum, Berater- und Mandantennummer, Zahl der Buchungssätze und Generalumkehr, Summe, Prüfsumme der Datei, Summen je Erlöskonto und je BU-Schlüssel sowie den Verlauf.

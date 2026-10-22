@@ -127,6 +127,7 @@
                     </a>
                 @endif
             </div>
+            @include('assets.components._suggestion_card', ['asset' => $diary->asset])
         @endif
         <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
             <p class="mb-1 text-xs text-muted">{{ __('Erstellt') }}</p>

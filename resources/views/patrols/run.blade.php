@@ -46,7 +46,9 @@
 
     @if ($run->status === \App\Enums\Patrol\PatrolRunStatus::Running)
         <x-card>
-            <form method="POST" action="{{ route('patrols.runs.scan', $run) }}" class="flex gap-2">
+            {{-- Offline: der Scan wartet auf dem Gerät und zählt mit seiner Scanzeit (MVP-1291). --}}
+            <form method="POST" action="{{ route('patrols.runs.scan', $run) }}" class="flex gap-2"
+                  data-offline-sync="patrol.scan" data-sync-payload-run="{{ $run->sqid }}">
                 @csrf
                 <input type="text" name="token" required maxlength="64" autofocus autocomplete="off"
                        class="input input-bordered w-full font-mono"

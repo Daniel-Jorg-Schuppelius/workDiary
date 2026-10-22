@@ -209,4 +209,33 @@ final class GaebPreflightTest extends TestCase {
 
         $this->assertTrue($report['ok'], implode(' | ', $report['errors']));
     }
+
+    /** Preise in fremder Währung und eine Steuer, die nicht zum Satz passt, sind Befunde (MVP-1297). */
+    public function test_export_preflight_checks_currency_and_vat(): void {
+        $eur = static fn (string $amount): Money => Money::of($amount, CurrencyCode::Euro, 4);
+        $foreign = new GaebItem(reference: '01.0020', type: GaebItemType::Standard, shortText: 'B', quantity: '1', unit: 'm', unitPrice: Money::of('5.00', CurrencyCode::USDollar, 4), position: 1);
+        $boq = new GaebBoq(
+            version: '3.3',
+            phaseCode: '84',
+            projectName: 'P',
+            items: [$this->item(quantity: '2.000', unitPrice: '10.00'), $foreign],
+            totals: new GaebTotals(vatRate: '19', totalNet: $eur('100.00'), vatAmount: $eur('18.00'), totalGross: $eur('119.00')),
+        );
+
+        $errors = implode(' | ', (new GaebPreflight)->checkForExport($boq, GaebPhase::Bid, true)['errors']);
+
+        $this->assertStringContainsString(__('gaeb.preflight.currency_mismatch', ['ref' => '01.0020', 'currency' => 'USD', 'expected' => 'EUR']), $errors);
+        $this->assertStringContainsString(__('gaeb.preflight.vat_mismatch', ['rate' => '19', 'stated' => '18,00', 'computed' => '19,00']), $errors);
+        $this->assertStringContainsString(__('gaeb.preflight.gross_mismatch', ['stated' => '119,00', 'computed' => '118,00']), $errors);
+
+        $consistent = new GaebBoq(
+            version: '3.3',
+            phaseCode: '84',
+            projectName: 'P',
+            items: [$this->item(quantity: '2.000', unitPrice: '10.00')],
+            totals: new GaebTotals(total: $eur('20.00'), vatRate: '19', totalNet: $eur('20.00'), vatAmount: $eur('3.80'), totalGross: $eur('23.80')),
+        );
+        $report = (new GaebPreflight)->checkForExport($consistent, GaebPhase::Bid, true);
+        $this->assertTrue($report['ok'], implode(' | ', $report['errors']));
+    }
 }

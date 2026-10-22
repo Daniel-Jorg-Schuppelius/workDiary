@@ -38,9 +38,8 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
  * Seeder-Vergabe, wo Rollen sonst Zugriff verloren hätten. Übrig sind
  * Portal-Rechte (Steuerung über PortalVisibility), Prüfstellen im
  * Lexoffice-Plugin, `domain.invoice.*` (Feature 083: erst mit belegter
- * Capability) sowie Konzeptlücken mit Plan (Phase 156): Anfordern und
- * Widerrufen der zweiten Person, Sicht `access.audit.view`. Rechte ohne
- * Funktion entfernt der Seeder (`PermissionsSeeder::RETIRED`).
+ * Capability). Rechte ohne Funktion entfernt der Seeder
+ * (`PermissionsSeeder::RETIRED`).
  */
 class PermissionEnforcementRuleTest extends TestCase {
     use ScansSourceTree;
@@ -60,10 +59,9 @@ class PermissionEnforcementRuleTest extends TestCase {
      * @var list<string>
      */
     private const BASELINE = [
-        'AccessAuditView', 'CustomerLexofficeSync', 'CustomerPortalAccess', 'CustomerPortalDiaryView',
+        'CustomerLexofficeSync', 'CustomerPortalAccess', 'CustomerPortalDiaryView',
         'CustomerPortalInvoiceView', 'CustomerPortalOpenIssueView', 'CustomerPortalTimeEntryView',
-        'DomainInvoiceDownload', 'DomainInvoiceView', 'ProcedureSecondPersonRequest',
-        'ProcedureSecondPersonRevoke', 'SupplierLexofficeSync',
+        'DomainInvoiceDownload', 'DomainInvoiceView', 'SupplierLexofficeSync',
     ];
 
     public function test_every_permission_has_an_enforcement_point(): void {

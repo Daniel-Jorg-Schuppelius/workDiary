@@ -57,6 +57,8 @@ Remarque : pour de simples notifications, les **Règles de
 notification** sont souvent le choix le plus simple ; pour les systèmes
 externes, voir les **Webhooks**.
 
+Les actions avec une cible affichent en plus le champ **Cible** dans la boîte de dialogue : **Inscrire au cours** (déclencheurs **Collaborateur créé** ou **Équipement remis**) demande le cours. Pour les nouveaux collaborateurs, les conditions voient `role`, `roles` et `personnel_number` ; pour la remise d’équipement, entre autres `category_code`, `asset_class` et `manufacturer`. Le rôle n’est fixé qu’une fois la création enregistrée — la règle vérifie donc après l’enregistrement.
+
 ## Règles de réception (factures entrantes)
 
 Le déclencheur « Facture entrante reçue » vérifie chaque nouveau document de

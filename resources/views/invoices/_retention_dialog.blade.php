@@ -65,6 +65,16 @@
                    :value="old('due_on', '')"
                    :hint="__('invoicing.retention.due_on_hint')" />
 
+    {{-- Gewährleistung (MVP-1282): ihr Ende wird Freigabetermin und zieht bei Verschiebung nach. --}}
+    @if ($warranties->isNotEmpty())
+        <x-select-field name="warranty_period_id" :label="__('invoicing.retention.warranty')" :hint="__('invoicing.retention.warranty_hint')">
+            <option value="">–</option>
+            @foreach ($warranties as $warranty)
+                <option value="{{ $warranty->sqid }}" @selected(old('warranty_period_id') === $warranty->sqid)>{{ $warranty->basis->label() }} · {{ $warranty->starts_on?->fdate() }} – {{ $warranty->ends_on?->fdate() }}{{ $warranty->trade ? ' · ' . $warranty->trade : '' }}</option>
+            @endforeach
+        </x-select-field>
+    @endif
+
     <x-input-field name="note" type="text" maxlength="500"
                    :label="__('invoicing.retention.note')"
                    :value="old('note', '')" />

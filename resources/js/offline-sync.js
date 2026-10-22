@@ -518,6 +518,15 @@ function buildPayload(type, form) {
         return payload;
     }
 
+    if (type === "patrol.scan") {
+        // Kontrollpunkt (MVP-1291): gewertet wird die Scanzeit auf dem Gerät.
+        return {
+            run: form.dataset.syncPayloadRun || "",
+            token: /** @type {FormField | null} */ (form.querySelector('[name="token"]'))?.value || "",
+            at: now,
+        };
+    }
+
     if (type === "takeoff.line") {
         // Aufmaßzeile (MVP-1059): gerechnet wird beim Abgleich auf dem Server,
         // das Foto wandert als angekündigte Datei in die Warteschlange.

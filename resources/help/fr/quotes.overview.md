@@ -126,3 +126,7 @@ logiciel de comptabilité (Lexoffice ou easybill) attribue le numéro, WorkDiary
 transmet le bon de livraison à ce moment. Ensuite, le PDF et l'envoi par
 e-mail sont disponibles. Les bons de livraison de la fabrication naissent à
 chaque livraison (voir ordres de fabrication).
+
+## Consulté et signature
+
+Lorsque le client ouvre le devis via le lien ou dans le portail client, l’en-tête indique **« Consulté par le client le … »** ; c’est la première ouverture d’un devis envoyé qui compte. Lors de l’acceptation, le client peut indiquer son **nom** et **signer**, de manière facultative. La signature est enregistrée comme image sur le devis et figure avec le nom et la date dans l’état d’acceptation figé ; l’acceptation sans signature reste possible.
