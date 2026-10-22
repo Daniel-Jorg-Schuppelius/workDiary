@@ -129,15 +129,16 @@ class CustomerIntakeQuoteService {
      * bzw. Alternativen) oder Ablehnung.
      *
      * @param  list<string>  $itemSqids  gewählte Positionen; leer = Vollannahme der Pflichtpositionen
+     * @param  array{name?: ?string, png?: ?string}|null  $signature  Unterschrift bei der Annahme (MVP-1281)
      */
-    public function decide(CustomerIntake $intake, User $portalUser, bool $accept, array $itemSqids = [], ?string $reason = null): Quote {
+    public function decide(CustomerIntake $intake, User $portalUser, bool $accept, array $itemSqids = [], ?string $reason = null, ?array $signature = null): Quote {
         $quote = $intake->quote;
         if (! $intake->status->isOpen() || $quote === null || ! $this->decidable($quote)) {
             throw ValidationException::withMessages(['decision' => (string) __('customer_intake.error.quote_not_decidable')]);
         }
 
         try {
-            $decided = DB::transaction(function () use ($intake, $quote, $portalUser, $accept, $itemSqids, $reason): Quote {
+            $decided = DB::transaction(function () use ($intake, $quote, $portalUser, $accept, $itemSqids, $reason, $signature): Quote {
                 if ($accept) {
                     $itemIds = null;
                     if ($itemSqids !== []) {
@@ -145,7 +146,7 @@ class CustomerIntakeQuoteService {
                         $requested = array_filter(array_map(static fn (string $sqid): ?int => Sqid::decode(QuoteItem::class, $sqid), $itemSqids));
                         $itemIds = $quote->items()->whereIn('id', $requested)->pluck('id')->map(static fn ($id): int => (int) $id)->all();
                     }
-                    $decided = $this->quotes->accept($quote, $itemIds);
+                    $decided = $this->quotes->accept($quote, $itemIds, null, $signature);
                 } else {
                     $decided = $this->quotes->reject($quote, $reason);
                 }

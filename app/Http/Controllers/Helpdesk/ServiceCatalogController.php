@@ -59,6 +59,8 @@ class ServiceCatalogController extends Controller {
         return view('helpdesk.catalog._service_dialog', [
             'service' => new BusinessService(['active' => true]),
             'isEdit' => false,
+            'otherServices' => BusinessService::query()->orderBy('name')->get(['id', 'name']),
+            'dependsOn' => [],
         ]);
     }
 
@@ -69,16 +71,20 @@ class ServiceCatalogController extends Controller {
         return view('helpdesk.catalog._service_dialog', [
             'service' => $service,
             'isEdit' => true,
+            'otherServices' => BusinessService::query()->whereKeyNot($service->id)->orderBy('name')->get(['id', 'name']),
+            'dependsOn' => $service->dependsOn()->get(['business_services.id'])->map(fn (BusinessService $s): string => $s->sqid)->all(),
         ]);
     }
 
     public function storeService(Request $request): RedirectResponse {
         Gate::authorize('create', RequestItem::class);
 
-        BusinessService::query()->create([
+        $dependsOn = $this->validatedDependencies($request, null);
+        $service = BusinessService::query()->create([
             ...$this->validatedService($request),
             'organization_id' => $this->orgId(),
         ]);
+        $this->syncDependencies($service, $dependsOn);
 
         return redirect()->route('servicedesk.catalog.index')
             ->with('success', __('Fachdienst angelegt.'));
@@ -88,7 +94,9 @@ class ServiceCatalogController extends Controller {
         Gate::authorize('create', RequestItem::class);
         $this->assertSameOrg((int) $service->organization_id);
 
+        $dependsOn = $this->validatedDependencies($request, $service);
         $service->update($this->validatedService($request, $service));
+        $this->syncDependencies($service, $dependsOn);
 
         return redirect()->route('servicedesk.catalog.index')
             ->with('success', __('Fachdienst gespeichert.'));
@@ -247,6 +255,37 @@ class ServiceCatalogController extends Controller {
         $data['active'] = (bool) ($data['active'] ?? false);
 
         return $data;
+    }
+
+    /**
+     * „Hängt ab von“ (MVP-1256): Sqids anderer Fachdienste der Organisation, ohne Kreis.
+     *
+     * @return list<int>
+     */
+    private function validatedDependencies(Request $request, ?BusinessService $service): array {
+        $data = $request->validate([
+            'depends_on' => ['nullable', 'array', 'max:50'],
+            'depends_on.*' => ['string', 'max:40'],
+        ]);
+        $ids = array_values(array_unique(array_filter(array_map(
+            fn (string $sqid): ?int => Sqid::decode(BusinessService::class, $sqid),
+            $data['depends_on'] ?? [],
+        ))));
+        if ($service !== null && app(\App\Services\ServiceTicket\ServiceImpactAnalyzer::class)->wouldCreateCycle($this->orgId(), (int) $service->id, $ids)) {
+            throw ValidationException::withMessages(['depends_on' => __('helpdesk.map.cycle')]);
+        }
+
+        return $ids;
+    }
+
+    /** @param list<int> $dependsOn */
+    private function syncDependencies(BusinessService $service, array $dependsOn): void {
+        $before = $service->dependsOn()->pluck('business_services.name')->sort()->values()->all();
+        app(\App\Services\ServiceTicket\ServiceImpactAnalyzer::class)->syncDependencies($service, $dependsOn);
+        $after = $service->dependsOn()->pluck('business_services.name')->sort()->values()->all();
+        if ($before !== $after) {
+            $service->audit('business_service.dependencies_changed', ['before' => $before, 'after' => $after]);
+        }
     }
 
     /** @return array<string, mixed> */

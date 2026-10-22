@@ -17,6 +17,9 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="__('Entwurf anlegen')"
 >
+    @if (! empty($prefillLeadId))
+        <input type="hidden" name="lead_id" value="{{ $prefillLeadId }}">
+    @endif
     <x-form-group :legend="__('Angebot')" icon="request_quote" tone="primary" cols="2">
         <x-select-field name="customer_id" :label="__('Kunde')" required span="2">
             <option value="">{{ __('-- bitte wählen --') }}</option>

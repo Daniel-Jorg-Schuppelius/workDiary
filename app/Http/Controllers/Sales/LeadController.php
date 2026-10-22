@@ -81,7 +81,9 @@ class LeadController extends Controller {
         $this->guard($lead);
 
         return view('leads.show', [
-            'lead' => $lead->load(['responsible:id,name', 'customer:id,name']),
+            'lead' => $lead->load(['responsible:id,name', 'customer:id,name,slug']),
+            'quotes' => $lead->quotes()->orderByDesc('id')->get(['id', 'organization_id', 'customer_id', 'number', 'status', 'total', 'created_at', 'decided_at']),
+            'history' => $this->service->history($lead),
             'canManage' => Gate::allows(Permission::CustomerUpdate->value),
             // Kandidaten NUR im offenen Zustand - nach der Konvertierung gibt
             // es nichts mehr zu warnen.
@@ -179,6 +181,25 @@ class LeadController extends Controller {
             ->with('success', $existing !== null
                 ? __('Lead mit Bestandskunde :name verbunden.', ['name' => $customer->name])
                 : __('Lead konvertiert — Kunde :name angelegt.', ['name' => $customer->name]));
+    }
+
+    /**
+     * Angebot aus dem Lead (MVP-1295): ein noch offener Lead wird erst Kunde,
+     * dann öffnet der Angebotsdialog mit Kunde und Lead vorbelegt.
+     */
+    public function startQuote(Lead $lead): RedirectResponse {
+        Gate::authorize(Permission::CustomerCreate->value);
+        Gate::authorize('create', \App\Models\Sales\Quote::class);
+        $this->guard($lead);
+
+        try {
+            $customer = $lead->customer ?? $this->service->convert($lead, $this->actor());
+        } catch (RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
+
+        return redirect()->route('leads.show', $lead)
+            ->with('open_dialog', route('quotes.create', ['customer_id' => $customer->sqid, 'lead' => $lead->sqid]));
     }
 
     /** @return array<string, mixed> */

@@ -20,6 +20,11 @@
         /** @var array<string, string> $filters */
     @endphp
     <x-index-page overflow="clip" :subtitle="__('Prüfprotokoll über Änderungen und Aktionen im System.')">
+        @can(\App\Enums\User\Permission::AccessAuditView->value)
+            <x-slot:actions>
+                <x-icon-btn icon="manage_history" size="sm" :href="route('admin.access.audit')" show-label>{{ __('access.audit.link') }}</x-icon-btn>
+            </x-slot:actions>
+        @endcan
 
         <x-filter-bar :action="route('audit.index')" :reset="route('audit.index')">
                 <x-filter-field :label="__('Aktion')" for="audit-event">

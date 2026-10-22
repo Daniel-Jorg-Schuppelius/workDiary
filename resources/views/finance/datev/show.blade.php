@@ -26,6 +26,19 @@
                             :href="route('finance.datev.download', $batch)"
                             show-label>{{ __('finance.datev.action.download') }}</x-icon-btn>
             @endif
+            @if ($batch->isFinal())
+                @can('download', $batch)
+                    <x-icon-btn icon="picture_as_pdf" tone="ghost" size="sm"
+                                :href="route('finance.datev.report', $batch)"
+                                show-label>{{ __('finance.datev.action.report') }}</x-icon-btn>
+                @endcan
+            @endif
+            @if ($canTransmit && $transmission->allowedTransitions() !== [])
+                <x-icon-btn icon="send" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('finance.datev.transmission.dialog', $batch)"
+                            show-label>{{ __('finance.datev.action.transmission') }}</x-icon-btn>
+            @endif
             @if ($canReshape)
                 <x-action-form :action="route('finance.datev.destroy', $batch)" method="DELETE"
                                :confirm="__('finance.datev.action.discard') . '?'">
@@ -48,7 +61,13 @@
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-4">
             <x-card>
                 <div class="text-sm text-muted">{{ __('finance.datev.field.status') }}</div>
-                <div><x-status-badge :tone="$batch->status->tone()" :label="$batch->status->label()" /></div>
+                <div class="flex flex-wrap gap-1">
+                    <x-status-badge :tone="$batch->status->tone()" :label="$batch->status->label()" />
+                    @if ($batch->isFinal())
+                        {{-- Übermittlungsstand aus dem Journal (MVP-1277). --}}
+                        <x-status-badge :tone="$transmission->tone()" :label="$transmission->label()" outline />
+                    @endif
+                </div>
             </x-card>
             <x-card>
                 <div class="text-sm text-muted">{{ __('finance.datev.field.booking_count') }}</div>
@@ -158,5 +177,9 @@
                 </div>
             </form>
         @endif
+
+        <x-card :title="__('finance.datev.report.history')" class="mt-4">
+            <x-journal :entries="$batch->journal" />
+        </x-card>
     </x-index-page>
 @endsection

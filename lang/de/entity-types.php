@@ -19,6 +19,8 @@ declare(strict_types=1);
  */
 return [
     'AccountingReportController' => 'Report-Export: Buchhaltung',
+    'LeadReportController' => 'Report-Export: Leads',
+    'PatrolReportController' => 'Report-Export: Rundgänge',
     'ContractTemplate' => 'Vertragsvorlage',
     'ResaleReportController' => 'Report-Export: Abo-Reselling',
     'AccountingBudgetController' => 'Report-Export: Budget',
@@ -275,6 +277,8 @@ return [
     'InvoiceItem' => 'Rechnungsposition',
     'InvoiceMailTemplate' => 'Rechnungs-Mail-Vorlage',
     'InvoiceRetention' => 'Sicherheitseinbehalt',
+    'SelfBillingCredit' => 'Gutschrift (Gutschriftsverfahren)',
+    'SelfBillingCreditLine' => 'Position einer Gutschrift (Gutschriftsverfahren)',
     'OnlinePayment' => 'Online-Zahlung',
     'EbicsConnection' => 'EBICS-Bankzugang',
     'DatevOnlineConnection' => 'DATEV-Online-Verbindung',

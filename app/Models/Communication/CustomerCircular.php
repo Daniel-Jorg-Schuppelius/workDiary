@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Communication;
 
 use App\Enums\Communication\CustomerCircularStatus;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -32,6 +32,7 @@ use Illuminate\Support\Carbon;
 class CustomerCircular extends Model {
     use Auditable;
     use BelongsToOrganization;
+    use HasAttachments;
     use HasSqid;
 
     protected $fillable = [
@@ -40,6 +41,8 @@ class CustomerCircular extends Model {
         'body',
         'is_mandatory',
         'portal_notice',
+        // Vorlage (MVP-1285): wird nie versendet, nur kopiert.
+        'is_template',
         'filters',
         'status',
         'sent_at',
@@ -53,6 +56,7 @@ class CustomerCircular extends Model {
     protected $casts = [
         'is_mandatory' => 'boolean',
         'portal_notice' => 'boolean',
+        'is_template' => 'boolean',
         'filters' => 'array',
         'sent_at' => 'datetime',
         'approved_at' => 'datetime',

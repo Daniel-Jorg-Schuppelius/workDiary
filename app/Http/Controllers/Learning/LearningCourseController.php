@@ -23,14 +23,14 @@ use App\Models\Platform\User;
 use App\Models\Training\TrainingCourse;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Ai\Exceptions\AiException;
-use App\Services\Attachments\FileAttacher;
+use App\Services\Attachments\{ChunkedUploadStore, FileAttacher};
 use App\Services\Learning\{LearningAiSuggestionService, LearningAttendanceListPdfRenderer, LearningContentService, LearningCoursePortabilityService, LearningCourseService, LearningOutlineParser, LearningQuestionCatalogService, LearningQuestionEditorService, LearningTranslationService};
 use App\Services\Media\VideoTranscodingService;
 use App\Support\Sqid;
 use CommonToolkit\Helper\Data\JsonHelper;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request, Response, UploadedFile};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\{Auth, Gate, Validator};
 use Illuminate\Validation\{Rule, ValidationException};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -309,6 +309,8 @@ class LearningCourseController extends Controller {
             'unit' => $unit,
             'blocks' => $unit->blocks(),
             'sections' => $course->sections()->get(),
+            // Freischaltplan (MVP-1268): andere Einheiten des Kurses als Vorgänger, Präsenztermine als Stichtag.
+            'otherUnits' => $course->units()->where('learning_units.id', '!=', $unit->id)->get(['learning_units.id', 'learning_units.title', 'learning_units.kind', 'learning_units.event_id']),
             'allowedHosts' => $this->content->allowedHosts($this->currentOrganization()),
             // Prozedurblock (MVP-806): nur aktive Vorlagen der eigenen Organisation.
             'procedureTemplates' => \App\Models\Procedure\ProcedureTemplate::query()->where('active', true)->orderBy('name')->get(['id', 'name', 'code']),
@@ -338,14 +340,19 @@ class LearningCourseController extends Controller {
             'is_preview' => ['nullable', 'boolean'],
             'release_after_days' => ['nullable', 'integer', 'min:0', 'max:3650'],
             'release_at' => ['nullable', 'date'],
+            'release_after_unit' => ['nullable', 'string', 'max:64'],
+            'release_after_event' => ['nullable', 'string', 'max:64'],
             'min_seconds' => ['nullable', 'integer', 'min:0', 'max:86400'],
         ]);
 
-        // Freischaltplan (Drip, MVP-788): Tage ab Einschreibung und/oder festes
-        // Datum — es gilt das spätere; ohne beides ist die Einheit sofort offen.
+        // Freischaltplan (Drip, MVP-788/1268): Tage ab Einschreibung, festes
+        // Datum und Tag eines Präsenztermins — es gilt das späteste; dazu
+        // optional eine Vorgängereinheit. Ohne alles ist die Einheit sofort offen.
         $release = array_filter([
             'after_days' => (int) ($data['release_after_days'] ?? 0) > 0 ? (int) $data['release_after_days'] : null,
             'at' => ! empty($data['release_at']) ? \Illuminate\Support\Carbon::parse((string) $data['release_at'])->toDateString() : null,
+            'after_unit_id' => $this->releaseUnitId($course, $unit, (string) ($data['release_after_unit'] ?? ''), 'release_after_unit', null),
+            'after_event_unit_id' => $this->releaseUnitId($course, $unit, (string) ($data['release_after_event'] ?? ''), 'release_after_event', LearningUnitKind::Event),
         ], static fn ($v) => $v !== null);
         $completion = (array) ($unit->completion_rule ?? []);
         if ((int) ($data['min_seconds'] ?? 0) > 0) {
@@ -367,6 +374,23 @@ class LearningCourseController extends Controller {
         return redirect()->back()->with('success', __('learning.flash.unit_updated'));
     }
 
+    /** Einheit des Freischaltplans: aus demselben Kurs, nicht die Einheit selbst. */
+    private function releaseUnitId(LearningCourse $course, LearningUnit $unit, string $sqid, string $field, ?LearningUnitKind $kind): ?int {
+        if ($sqid === '') {
+            return null;
+        }
+        $id = Sqid::decode(LearningUnit::class, $sqid);
+        $exists = $id !== null && $id !== (int) $unit->id && $course->units()
+            ->where('learning_units.id', $id)
+            ->when($kind !== null, fn ($q) => $q->where('kind', $kind?->value))
+            ->exists();
+        if (! $exists) {
+            throw ValidationException::withMessages([$field => (string) __('learning.errors.release_unit_foreign')]);
+        }
+
+        return $id;
+    }
+
     public function storeBlock(Request $request, LearningCourse $course, LearningUnit $unit): RedirectResponse {
         Gate::authorize('update', $course);
         $this->guardUnitBelongsToCourse($course, $unit);
@@ -383,6 +407,8 @@ class LearningCourseController extends Controller {
             'autoplay' => ['nullable', 'boolean'],
             'remember_position' => ['nullable', 'boolean'],
             'media' => array_merge(['nullable'], $this->learningMediaRule()),
+            // Teil-Upload (MVP-1265): Kennzeichen eines vollständig übertragenen Uploads.
+            'media_upload' => ['nullable', 'string', 'size:40'],
             // MVP-806
             'language' => ['nullable', 'string', 'max:40', 'regex:/^[A-Za-z0-9+#._ -]+$/'],
             'sections' => ['nullable', 'string', 'max:10000'],
@@ -396,6 +422,12 @@ class LearningCourseController extends Controller {
 
         $kind = LearningBlockKind::from($data['type']);
         $media = $request->file('media');
+        $chunked = (string) ($data['media_upload'] ?? '');
+        if (! $media instanceof UploadedFile && $chunked !== '') {
+            $media = app(ChunkedUploadStore::class)->assemble((int) Auth::id(), LearningMediaUploadController::scope($unit), $chunked);
+            // Zusammengesetzt gelten dieselben Regeln wie für einen Upload in einem Stück.
+            Validator::make(['media' => $media], ['media' => $this->learningMediaRule()])->validate();
+        }
         /** @var list<UploadedFile> $galleryFiles */
         $galleryFiles = $kind === LearningBlockKind::Gallery ? array_values(array_filter((array) $request->file('gallery', []), static fn (mixed $file): bool => $file instanceof UploadedFile)) : [];
 
@@ -442,6 +474,9 @@ class LearningCourseController extends Controller {
             );
 
             $data['attachment_id'] = $attachment->id;
+            if ($chunked !== '') {
+                app(ChunkedUploadStore::class)->discard($chunked);
+            }
 
             // Videos werden umgerechnet (Feature 150): Handy-Aufnahmen sind
             // groß und liegen oft in Formaten vor, die nicht jeder Browser
@@ -561,6 +596,7 @@ class LearningCourseController extends Controller {
             'description' => ['nullable', 'string', 'max:2000'],
             'pass_percent' => ['required', 'integer', 'min:1', 'max:100'],
             'time_limit_minutes' => ['nullable', 'integer', 'min:1', 'max:600'],
+            'question_time_limit_seconds' => ['nullable', 'integer', 'min:10', 'max:3600'],
             'max_attempts' => ['required', 'integer', 'min:0', 'max:50'],
             'retry_wait_hours' => ['required', 'integer', 'min:0', 'max:8760'],
             'questions_per_attempt' => ['nullable', 'integer', 'min:1', 'max:500'],
@@ -585,6 +621,7 @@ class LearningCourseController extends Controller {
                 'description' => $data['description'] ?? null,
                 'pass_percent' => (int) $data['pass_percent'],
                 'time_limit_minutes' => $data['time_limit_minutes'] ?? null,
+                'question_time_limit_seconds' => $data['question_time_limit_seconds'] ?? null,
                 'max_attempts' => (int) $data['max_attempts'],
                 'retry_wait_hours' => (int) $data['retry_wait_hours'],
                 'questions_per_attempt' => $data['questions_per_attempt'] ?? null,

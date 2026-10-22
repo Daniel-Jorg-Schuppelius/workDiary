@@ -67,6 +67,8 @@ de publicación de la unidad se aplica además.
 
 Quien viene de LearnDash adopta el **ZIP de exportación** (**Catálogo de cursos** → «Importación de LearnDash»): cursos, lecciones, temas y exámenes se crean como borradores, las preguntas van al catálogo con su categoría. Imágenes y medios no se copian (marcadores para completar), los vídeos de lección solo de hosts permitidos. Los cursos finalizados se anotan como inscripciones «importadas» para personas con correo coincidente — sin certificado ni registro de instrucción, porque una finalización importada no es prueba propia. La prueba muestra de antemano lo que se crearía.
 
+El editor sube los archivos grandes por partes. Si se corta la conexión, al guardar de nuevo se reanuda desde la primera parte que falta; las partes que nunca se completan se eliminan al cabo de un día.
+
 ## Publicar congela el contenido
 
 Al publicar se crea una versión del curso con una imagen completa del
@@ -93,6 +95,10 @@ las inscripciones obligatorias lo omiten. Las tareas llevan **reglas de
 archivos** (extensiones, número, tamaño — nunca más laxas que el sistema) y,
 opcionalmente, una **aprobación automática** con puntos completos, incompatible
 con el principio de cuatro ojos.
+
+En el plan de liberación de una unidad también se puede elegir una **unidad previa** y una **sesión presencial** del curso. Con unidad previa, la unidad solo se abre cuando esta se ha completado (indicación «Después de …»). Con sesión presencial, se abre el día de la sesión y cambia con ella si se mueve. De días, fecha y sesión vale la más tardía.
+
+En la **gestión de participantes**, **Pasar a la versión …** pasa todas las inscripciones abiertas a la versión actual del curso. La vista previa muestra, por versión de origen, qué unidades quedan sin cambios, han cambiado, son nuevas o desaparecen. El progreso se mantiene en cada unidad que existe en ambas versiones; las nuevas unidades obligatorias quedan abiertas. El cambio figura con su motivo en el historial de cada inscripción; las inscripciones finalizadas permanecen en su versión.
 
 ## El tiempo de aprendizaje es jornada laboral
 
@@ -147,6 +153,12 @@ El **libro de calificaciones** por curso muestra alumnado × componentes. Sin co
 
 Matices por pregunta: las opciones de respuesta pueden llevar **puntos propios** («Etiqueta {3}», también negativos) — cuenta entonces la opción elegida en vez de todo o nada; una **autoevaluación** es una escala sin respuesta correcta, el nivel elegido es el valor; una **redacción** admite texto, archivo o ambos — el archivo está disponible en la evaluación. Por examen puede exigirse además el aprobado **en puntos** y fijarse el subconjunto por intento **en porcentaje** de las preguntas disponibles.
 
+Con **Importar preguntas** en el catálogo de preguntas se cargan preguntas desde un archivo CSV o Excel. Las columnas **kind** (tipo, como código corto, p. ej. single, o como denominación) y **prompt** son obligatorias; **options** contiene las líneas de respuesta una debajo de otra en una sola celda, con la misma escritura que en el editor. Son opcionales **title**, **category** (las categorías que faltan se crean), **points**, **explanation** y **hint**. La misma pregunta (tipo y texto) se omite en una segunda carga; las preguntas de zona activa necesitan una imagen y no pueden importarse desde un archivo.
+
+Un **tiempo por pregunta** marca el ritmo del examen: las preguntas aparecen de una en una y sin volver atrás. Cuando se agota el tiempo de una pregunta, la respuesta se guarda y se muestra la siguiente; la suma es también el plazo total. Como **ajuste razonable**, la gestión de participantes fija por persona una **ampliación de tiempo** en porcentaje, con el motivo en el historial. Se aplica al plazo total y al tiempo por pregunta.
+
+Si el último intento permitido no se supera y no queda ninguna autorización de intento abierta, la persona y su jefatura de equipo reciben la notificación **Examen no superado definitivamente**. La inscripción permanece abierta para que siga siendo posible autorizar otro intento.
+
 ## Pruebas
 
 Un curso superado surte efecto en un único punto: certificado con código de
@@ -164,6 +176,8 @@ conservación** propone borrar las inscripciones finalizadas sin certificado una
 vez vencido el plazo regional (intentos y tiempo de aprendizaje van con ellas);
 los certificados permanecen más tiempo como prueba y luego se reducen a
 iniciales — el enlace de verificación sigue respondiendo.
+
+Junto a la dirección y el código de verificación, el certificado lleva un **código QR** que lleva directamente a la página de verificación desde el móvil.
 
 ## Competencias
 
@@ -207,6 +221,12 @@ abiertos propios y las evaluaciones pendientes; la búsqueda de actividad
 encuentra los cursos publicados — el alumnado los suyos, la autoría todos.
 
 El **Catálogo de cursos** puede verse como lista o mosaicos (la elección se guarda por persona) y lleva una **valoración con estrellas** de la encuesta del curso — solo a partir de cinco respuestas, para que nada sea atribuible a personas. El portal muestra además el **precio** del artículo vinculado. En el reproductor, el **modo concentración** oculta la barra lateral; «Duplicar» crea un nuevo borrador a partir de un curso — material sí, inscripciones y registros no.
+
+Las personas externas con fecha de vencimiento reciben dos **recordatorios de plazo** por correo electrónico: uno dentro de la antelación de la comprobación de plazos y otro el día anterior al vencimiento, cada uno con un enlace de acceso nuevo. Si cambia la fecha, los recordatorios empiezan de nuevo.
+
+Como quinta vía de asignación, la automatización **Inscribir en el curso** inscribe a personas en un curso elegido: con **Persona empleada creada**, a la nueva persona; con **Equipo entregado**, a quien recibe el equipo. La inscripción lleva el origen «Regla».
+
+En los ajustes se puede activar la **racha de aprendizaje**: en «Mis formaciones» cada persona ve cuántos días seguidos ha completado una unidad, solo para sí misma y sin compararse con otras. **Imprimir configuración** (catálogo, menú) genera un PDF con fecha y **versión de la configuración**: interruptores de la organización, regla de tiempo de aprendizaje por curso y plazos de conservación, por ejemplo como anexo a un acuerdo de empresa. Cada cambio de los ajustes aumenta la versión y queda registrado con los valores anteriores y posteriores en el registro de auditoría.
 
 ## Itinerarios de aprendizaje
 

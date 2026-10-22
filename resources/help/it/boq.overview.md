@@ -66,3 +66,9 @@ GAEB-DA-XML in una fase di scambio selezionabile (predefinita:
 conferimento dell'incarico). L'esportazione è deterministica e viene
 protocollata con hash del contenuto — lo stesso stato produce in modo
 riproducibile lo stesso hash.
+
+## Premesse e controllo prima della consegna
+
+Se il file GAEB contiene **premesse** (testi contrattuali prima delle voci), la vista del computo le mostra in una sezione espandibile, un testo per blocco e invariato come fornito. Una reimportazione le sostituisce con quelle del file. Per ora l’importazione le legge da GAEB 90; quelle da DA XML arriveranno con la prossima versione del componente GAEB.
+
+Il **controllo prima della consegna** segnala inoltre le voci con prezzo in una valuta diversa da quella del computo e un’IVA che non corrisponde all’aliquota sul totale netto o che, sommata a esso, non dà il totale lordo (al centesimo).

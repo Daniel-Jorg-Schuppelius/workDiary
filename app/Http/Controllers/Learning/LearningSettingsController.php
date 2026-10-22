@@ -17,8 +17,8 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Learning\LearningCourseCategory;
 use App\Rules\MaxLineLength;
-use App\Services\Learning\{LearningCourseService, LearningQuestionEditorService};
-use Illuminate\Http\{RedirectResponse, Request};
+use App\Services\Learning\{LearningConfigurationPdfRenderer, LearningCourseService, LearningQuestionEditorService};
+use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
@@ -39,6 +39,7 @@ class LearningSettingsController extends Controller {
             'scopeToCourses' => (bool) ($settings['scope_to_courses'] ?? false),
             'gamificationEnabled' => (bool) ($settings['gamification']['enabled'] ?? false),
             'leaderboardEnabled' => (bool) ($settings['gamification']['leaderboard'] ?? false),
+            'streakEnabled' => (bool) ($settings['gamification']['streak'] ?? false),
             'embedHosts' => implode("\n", array_map('strval', (array) ($settings['embed_hosts'] ?? []))),
             // Kurskategorien (MVP-788): eine je Zeile, Reihenfolge = Position.
             'categories' => LearningCourseCategory::query()->orderBy('position')->orderBy('name')->pluck('name')->implode("\n"),
@@ -52,20 +53,31 @@ class LearningSettingsController extends Controller {
             'scope_to_courses' => ['nullable', 'boolean'],
             'gamification_enabled' => ['nullable', 'boolean'],
             'leaderboard_enabled' => ['nullable', 'boolean'],
+            'streak_enabled' => ['nullable', 'boolean'],
             'embed_hosts' => ['nullable', 'string', 'max:2000'],
             'categories' => ['nullable', 'string', 'max:4000', new MaxLineLength(120)],
         ]);
 
         $organization = $this->currentOrganization();
         $settings = (array) ($organization->settings ?? []);
+        $before = (array) ($settings['learning'] ?? []);
         data_set($settings, 'learning.scope_to_courses', (bool) ($data['scope_to_courses'] ?? false));
         data_set($settings, 'learning.gamification.enabled', (bool) ($data['gamification_enabled'] ?? false));
         // Die Bestenliste setzt Punkte voraus — ohne sie gäbe es nichts zu listen.
         data_set($settings, 'learning.gamification.leaderboard', (bool) ($data['gamification_enabled'] ?? false) && (bool) ($data['leaderboard_enabled'] ?? false));
+        data_set($settings, 'learning.gamification.streak', (bool) ($data['gamification_enabled'] ?? false) && (bool) ($data['streak_enabled'] ?? false));
         data_set($settings, 'learning.embed_hosts', array_values(array_unique(array_map(
             static fn (string $host): string => strtolower(trim($host)),
             LearningQuestionEditorService::linesOf((string) ($data['embed_hosts'] ?? '')),
         ))));
+        // Konfigurationsversion (MVP-1271): jede Änderung zählt hoch und steht mit Vorher/Nachher im Audit-Log.
+        $after = (array) $settings['learning'];
+        unset($before['version'], $after['version']);
+        if ($before != $after) {
+            $version = (int) ($organization->settings['learning']['version'] ?? 0) + 1;
+            data_set($settings, 'learning.version', $version);
+            $organization->audit('learning.settingsChanged', ['version' => $version, 'before' => $before, 'after' => $after]);
+        }
         $organization->update(['settings' => $settings]);
 
         app(LearningCourseService::class)->syncCategories(
@@ -76,5 +88,16 @@ class LearningSettingsController extends Controller {
         return redirect()
             ->toList('learning.courses.index')
             ->with('success', __('learning.flash.settings_saved'));
+    }
+
+    /** Konfigurationsausdruck (MVP-1271) mit Stand und Version. */
+    public function print(LearningConfigurationPdfRenderer $renderer): Response {
+        Gate::authorize(Permission::LearningManage->value);
+        $organization = $this->currentOrganization();
+
+        return response($renderer->output($organization), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="lernplattform-konfiguration.pdf"',
+        ]);
     }
 }

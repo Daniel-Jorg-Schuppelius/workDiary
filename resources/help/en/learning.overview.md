@@ -66,6 +66,8 @@ unit applies in addition.
 
 Coming from LearnDash, take over the **export ZIP** (**Course catalogue** → "LearnDash import"): courses, lessons, topics and quizzes are created as drafts, questions land in the catalog with their category. Images and media are not copied (placeholders to fill in), lesson videos only from allowed hosts. Completed courses are recorded as "imported" enrollments for people with a matching e-mail — without certificate and without instruction record, because an imported completion is no proof of its own. The dry run shows beforehand what would be created.
 
+The editor uploads large files in parts. If the connection drops, saving again resumes from the first missing part; parts that are never completed are deleted after one day.
+
 ## Releasing freezes the content
 
 Releasing creates a course version holding a snapshot of the entire content.
@@ -89,6 +91,10 @@ management; only mandatory enrollments bypass it.
 Assignments carry **file rules** (extensions, count, size — never looser than
 the system) and optionally an **auto-approve** with full points, which excludes
 the four-eyes principle.
+
+A unit’s release schedule can also name a **predecessor unit** and a **classroom session** of the course. With a predecessor, the unit opens only once that unit is completed (note “After …”). With a classroom session, it opens on the session’s day and moves along if the session is rescheduled. Of days, date and session, the latest applies.
+
+In **participant management**, **Move to version …** moves all open enrolments to the current course version. The preview shows, per starting version, which units stay unchanged, have changed, are new or are removed. Progress is kept for every unit both versions contain; new mandatory units are open afterwards. The change is recorded with its reason in the history of each enrolment; completed enrolments stay on their version.
 
 ## Learning time is working time
 
@@ -143,6 +149,12 @@ The **gradebook** per course shows learners × components. Without components it
 
 Refinements per question: answer options can carry **their own points** (“Label {3}”, negative allowed) — the chosen option then counts instead of all-or-nothing; a **self-assessment** is a scale without a correct answer, the chosen level is the score; an **essay** accepts text, a file or both — the file is available in grading. Per quiz, passing can additionally be required **in points**, and the subset per attempt can be set **as a percentage** of the available questions.
 
+**Import questions** in the question catalogue reads questions from a CSV or Excel file. The columns **kind** (type, as a short code such as single or as its label) and **prompt** are required; **options** holds the answer lines one below the other in a single cell, written as in the editor. **title**, **category** (missing categories are created), **points**, **explanation** and **hint** are optional. The same question (type and question text) is skipped on a second run; hotspot questions need an image and cannot be imported from a file.
+
+A **time limit per question** paces the exam: questions come one at a time without going back. When a question’s time runs out, the answer is saved and the next question is shown; the sum is also the overall time limit. As a **reasonable accommodation**, participant management sets a **time extension** in percent per person, with the reason recorded in the history. It applies to the overall limit and to the time per question.
+
+If the last permitted attempt is failed and no attempt waiver is open, the person and their team lead receive the notification **Exam finally failed**. The enrolment stays open so that an attempt waiver remains possible.
+
 ## Records
 
 A passed course takes effect in exactly one place: certificate with
@@ -160,6 +172,8 @@ answers. The **retention review** proposes finished enrollments without a
 certificate for deletion once the regional period has passed (attempts and
 learning time go with them); certificates stay longer because they serve as
 proof and are then reduced to initials — the verification link keeps working.
+
+Next to the verification address and code, the certificate carries a **QR code** that leads straight to the verification page on a phone.
 
 ## Competencies
 
@@ -202,6 +216,12 @@ tiles (hidden by default) show your own open courses and the grading backlog;
 the activity search finds released courses — learners their own, authors all.
 
 The **Course catalogue** can be shown as a list or as tiles (the choice is stored per person) and carries a **star rating** from course feedback — only from five answers, so nothing can be traced back to individuals. The portal additionally shows the **price** from the linked article. In the player, **focus mode** hides the sidebar; "Duplicate" creates a new draft from a course — learning material yes, enrollments and records no.
+
+External participants with a due date receive two **deadline reminders** by email: one within the lead time of the deadline check and one on the day before the deadline, each with a fresh access link. If the due date changes, the reminders start again.
+
+As the fifth assignment route, the automation **Enrol in course** enrols people in a chosen course — for **Employee created** the new person, for **Equipment checked out** the person receiving the equipment. The enrolment carries the source “Rule”.
+
+The **learning streak** can be switched on in the settings: under “My training”, each person sees on how many days in a row they completed a unit — only for themselves, without comparison to others. **Print configuration** (course catalogue, menu) creates a PDF with date and **configuration version**: the organisation’s switches, the learning time rule per course and the retention periods, for example as an annex to a works agreement. Every change to the settings increases the version and is recorded with before and after values in the audit log.
 
 ## Learning paths
 

@@ -125,3 +125,7 @@ la serie «Albarán»; si un programa de contabilidad (Lexoffice o easybill)
 asigna el número, WorkDiary transfiere el albarán en ese momento. Después están
 disponibles el PDF y el envío por correo. Los albaranes de fabricación se crean
 con cada entrega (véase órdenes de fabricación).
+
+## Visto y firma
+
+Cuando el cliente abre la oferta mediante el enlace o en el portal de clientes, la cabecera muestra **«Visto por el cliente el …»**; cuenta la primera apertura de una oferta enviada. Al aceptar, el cliente puede indicar opcionalmente su **nombre** y **firmar**. La firma se guarda como imagen en la oferta y queda registrada con nombre y fecha en el estado de aceptación congelado; aceptar sin firma sigue siendo posible.

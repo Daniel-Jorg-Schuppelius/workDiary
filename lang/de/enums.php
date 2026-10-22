@@ -408,6 +408,7 @@ return [
                 'submissionReceived' => 'Abgabe wartet auf Bewertung',
                 'graded' => 'Bewertung liegt vor',
                 'certificateIssued' => 'Zertifikat ausgestellt',
+                'failedFinal' => 'Prüfung endgültig nicht bestanden',
                 'waitlistPromoted' => 'Von der Warteliste nachgerückt',
                 'bookingDecided' => 'Kursbuchung entschieden',
                 'timeApprovalRequested' => 'Lernzeit wartet auf Freigabe',
@@ -423,6 +424,7 @@ return [
             ],
             'procedure' => [
                 'deviationEscalated' => 'Prozedur-Abweichung eskaliert',
+                'secondPersonRequested' => 'Vier-Augen-Freigabe angefordert',
             ],
             'report' => [
                 'warning' => 'Frühwarnung aus den Auswertungen',
@@ -1554,11 +1556,25 @@ return [
             'qif' => 'QIF',
             'qxf' => 'QXF',
             'pain001' => 'PAIN.001',
+            'camt052' => 'CAMT.052',
+            'camt054' => 'CAMT.054',
             'pain008' => 'PAIN.008',
         ],
         'transaction-direction' => [
             'credit' => 'Geldeingang',
             'debit' => 'Geldausgang',
+        ],
+        'statement-chain-check' => [
+            'ok' => 'Anschluss stimmt',
+            'gap' => 'Lücke zum Vorauszug',
+            'mismatch' => 'Anschluss weicht ab',
+            'first' => 'Erster Auszug',
+        ],
+        'datev-transmission-status' => [
+            'open' => 'Nicht übermittelt',
+            'transmitted' => 'Übermittelt',
+            'confirmed' => 'Von der Kanzlei bestätigt',
+            'rejected' => 'Von der Kanzlei abgelehnt',
         ],
         'balance-check' => [
             'ok' => 'Saldenkette stimmig',
@@ -2099,6 +2115,11 @@ return [
         ],
     ],
     'invoicing' => [
+        'self-billing-status' => [
+            'draft' => 'Entwurf',
+            'issued' => 'Ausgestellt',
+            'cancelled' => 'Storniert',
+        ],
         'online-payment-status' => [
             'open' => 'Offen',
             'paid' => 'Bezahlt',
@@ -2213,7 +2234,7 @@ return [
         'module_kind' => ['platform' => 'Plattformdienst', 'core' => 'Kernmodul', 'feature' => 'Fachmodul'],
     ],
     'numbering' => [
-        'number_scope' => ['service_ticket' => 'Service-Ticket', 'problem_report' => 'Fehlermeldung', 'asset' => 'Asset', 'article' => 'Artikel', 'manufacturing_order' => 'Fertigungsauftrag', 'serial' => 'Seriennummer', 'purchase_order' => 'Bestellung', 'customer' => 'Kunde', 'supplier' => 'Lieferant', 'invoice' => 'Rechnung', 'credit_note' => 'Gutschrift', 'cancellation' => 'Stornorechnung', 'quote' => 'Angebot', 'order_confirmation' => 'Auftragsbestätigung', 'delivery_note' => 'Lieferschein', 'proforma' => 'Pro-forma-Rechnung', 'claim' => 'Reklamation', 'rma' => 'Rücksendung (RMA)', 'rental' => 'Verleihakte', 'asset_finance' => 'Leasingakte', 'contract' => 'Vertrag', 'privacy_incident' => 'Datenschutzvorfall', 'data_subject_request' => 'Betroffenenanfrage', 'disposal' => 'Entsorgungsakte', 'certificate' => 'Zertifikat', 'damage' => 'Schadensfall', 'recall' => 'Rückrufaktion'],
+        'number_scope' => ['service_ticket' => 'Service-Ticket', 'problem_report' => 'Fehlermeldung', 'asset' => 'Asset', 'article' => 'Artikel', 'manufacturing_order' => 'Fertigungsauftrag', 'serial' => 'Seriennummer', 'purchase_order' => 'Bestellung', 'customer' => 'Kunde', 'supplier' => 'Lieferant', 'invoice' => 'Rechnung', 'credit_note' => 'Gutschrift', 'cancellation' => 'Stornorechnung', 'self_billing' => 'Gutschrift (Gutschriftsverfahren)', 'quote' => 'Angebot', 'order_confirmation' => 'Auftragsbestätigung', 'delivery_note' => 'Lieferschein', 'proforma' => 'Pro-forma-Rechnung', 'claim' => 'Reklamation', 'rma' => 'Rücksendung (RMA)', 'rental' => 'Verleihakte', 'asset_finance' => 'Leasingakte', 'contract' => 'Vertrag', 'privacy_incident' => 'Datenschutzvorfall', 'data_subject_request' => 'Betroffenenanfrage', 'disposal' => 'Entsorgungsakte', 'certificate' => 'Zertifikat', 'damage' => 'Schadensfall', 'recall' => 'Rückrufaktion'],
     ],
     'patrol' => [
         'patrol_run_status' => ['running' => 'Laufend', 'completed' => 'Abgeschlossen', 'aborted' => 'Abgebrochen'],

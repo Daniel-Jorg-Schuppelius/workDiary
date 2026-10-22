@@ -85,6 +85,9 @@ final class AssetManifest extends Manifest {
             \App\Services\Reporting\Contracts\EarlyWarningSource::class => [
                 \App\Services\Asset\EarlyWarnings\AssetDefectWarningSource::class,
             ],
+            \App\Automation\Triggers\RuleTrigger::class => [
+                \App\Services\Asset\Automation\AssetCheckedOutTrigger::class,
+            ],
             \App\Services\Import\EntitySpec::class => [
                 \App\Services\Asset\Import\AssetSpec::class,
                 \App\Services\MeterReading\Import\MeterReadingSpec::class,

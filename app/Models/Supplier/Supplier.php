@@ -37,6 +37,7 @@ use Illuminate\Support\Carbon;
  * @property string $number_source
  * @property string|null $company
  * @property string|null $vat_id
+ * @property \Illuminate\Support\Carbon|null $self_billing_agreed_on
  * @property string|null $tax_number
  * @property string|null $contact_name Ansprechpartner zur Anzeige, gebildet aus den Teilen (MVP-1136)
  * @property \App\Enums\Stammdaten\ContactSalutation|null $contact_salutation
@@ -98,6 +99,7 @@ class Supplier extends Model implements ContactDetailsHolder, ContactNameHolder 
         'company',
         'vat_id',
         'tax_number',
+        'self_billing_agreed_on',
         'contact_name',
         'contact_salutation',
         'contact_title',
@@ -144,6 +146,7 @@ class Supplier extends Model implements ContactDetailsHolder, ContactNameHolder 
         'active' => 'boolean',
         'exclude_from_reports' => 'boolean',
         'archived_at' => 'datetime',
+        'self_billing_agreed_on' => 'date',
         'address_lat' => 'decimal:7',
         'address_lng' => 'decimal:7',
         'contact_persons' => 'array',

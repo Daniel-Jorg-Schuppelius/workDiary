@@ -18,7 +18,16 @@
 @section('content')
     <x-index-page :subtitle="$circular->subject">
         <x-slot:actions>
-            @if ($circular->isDraft() && $approvalRequired && ! $circular->isApproved())
+            @if ($circular->is_template)
+                {{-- Vorlage (MVP-1285): wird nie versendet, nur als Entwurf übernommen. --}}
+                <x-icon-btn icon="content_copy" tone="primary" size="sm" data-entry-modal-trigger
+                            :href="route('circulars.create', ['template' => $circular->sqid])" show-label>{{ __('circular.template.use') }}</x-icon-btn>
+            @else
+                <x-action-form :action="route('circulars.save-template', $circular)">
+                    <x-icon-btn icon="bookmark_add" size="sm" placement="menu" type="submit" show-label>{{ __('circular.template.save') }}</x-icon-btn>
+                </x-action-form>
+            @endif
+            @if (! $circular->is_template && $circular->isDraft() && $approvalRequired && ! $circular->isApproved())
                 {{-- Feature 119: Der Versand bleibt gesperrt, bis eine zweite
                      Person freigegeben hat. --}}
                 <x-action-form :action="route('circulars.approve', $circular)">
@@ -26,7 +35,7 @@
                                 show-label>{{ __('circular.action.approve') }}</x-icon-btn>
                 </x-action-form>
             @endif
-            @if ($circular->isDraft())
+            @if (! $circular->is_template && $circular->isDraft())
                 <x-action-form :action="route('circulars.send', $circular)"
                                :confirm="__('circular.confirm_send', ['count' => $audience->count()])">
                     <x-icon-btn icon="send" tone="primary" size="sm" type="submit"
@@ -53,9 +62,16 @@
                 @endif
             </div>
             <p class="mt-3 whitespace-pre-line text-sm">{{ $circular->body }}</p>
+            @if ($circular->attachments->isNotEmpty())
+                <ul class="mt-3 flex flex-wrap gap-2 text-sm">
+                    @foreach ($circular->attachments as $file)
+                        <li><a class="link link-hover inline-flex items-center gap-1" href="{{ \Illuminate\Support\Facades\URL::signedRoute('attachments.download', $file) }}"><x-icon name="attach_file" />{{ $file->original_name }}</a></li>
+                    @endforeach
+                </ul>
+            @endif
         </x-card>
 
-        @if ($circular->isDraft())
+        @if (! $circular->is_template && $circular->isDraft())
             {{-- Die Zahl steht VOR dem Knopf: eine Mail an alle Kunden ist
                  nichts, das man versehentlich auslösen können soll. --}}
             <x-card :title="__('circular.audience.heading', ['count' => $audience->count()])">

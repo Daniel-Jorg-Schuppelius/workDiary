@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Learning;
 
 use App\Enums\Learning\LearningEnrollmentStatus;
-use App\Models\Learning\LearningEnrollment;
+use App\Models\Learning\{LearningEnrollment, LearningUnitProgress};
 use App\Models\Platform\{Organization, User};
+use App\Support\Tz;
+use Illuminate\Support\Carbon;
 
 /**
  * Punkte, Abzeichen und Bestenliste (Feature 149, MVP-747).
@@ -38,6 +40,9 @@ class LearningGamificationService {
         10 => 'ten_courses',
     ];
 
+    /** Längste betrachtete Serie — ein Jahr genügt für jede Anzeige. */
+    private const STREAK_WINDOW_DAYS = 366;
+
     public function isEnabled(?Organization $organization): bool {
         return (bool) ($organization->settings['learning']['gamification']['enabled'] ?? false);
     }
@@ -45,6 +50,38 @@ class LearningGamificationService {
     public function isLeaderboardEnabled(?Organization $organization): bool {
         return $this->isEnabled($organization)
             && (bool) ($organization->settings['learning']['gamification']['leaderboard'] ?? false);
+    }
+
+    /** Lernserie (MVP-1264): eigener Schalter, Vorgabe aus wie die Bestenliste. */
+    public function isStreakEnabled(?Organization $organization): bool {
+        return $this->isEnabled($organization)
+            && (bool) ($organization->settings['learning']['gamification']['streak'] ?? false);
+    }
+
+    /**
+     * Kalendertage in Folge mit mindestens einer abgeschlossenen Einheit. Ein
+     * Tag ohne Lernen bricht die Serie erst, wenn er vorbei ist — heute zählt
+     * mit, fehlt aber nicht.
+     */
+    public function streakFor(User $user, ?Carbon $now = null): int {
+        $timezone = Tz::current();
+        $today = ($now ?? Carbon::now())->copy()->setTimezone($timezone)->startOfDay();
+        $days = LearningUnitProgress::query()
+            ->whereIn('learning_enrollment_id', LearningEnrollment::query()->where('user_id', $user->id)->select('id'))
+            ->whereNotNull('completed_at')
+            ->where('completed_at', '>=', $today->copy()->subDays(self::STREAK_WINDOW_DAYS)->utc())
+            ->pluck('completed_at')
+            ->map(static fn (mixed $at): string => Carbon::parse($at)->setTimezone($timezone)->toDateString())
+            ->flip();
+
+        $day = $days->has($today->toDateString()) ? $today : $today->copy()->subDay();
+        $streak = 0;
+        while ($days->has($day->toDateString())) {
+            $streak++;
+            $day = $day->copy()->subDay();
+        }
+
+        return $streak;
     }
 
     /** Persönliches Opt-in — ohne das erscheint niemand in der Liste. */

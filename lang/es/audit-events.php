@@ -26,6 +26,10 @@ return [
         'retired' => 'Medio de acceso retirado',
     ],
     'appointment' => [
+        'proposed' => 'Cita alternativa propuesta',
+        'proposal_accepted' => 'Cita alternativa aceptada',
+        'proposal_declined' => 'Cita alternativa rechazada',
+        'rescheduled' => 'Cita cambiada',
         'requested' => 'Cita solicitada',
         'confirmed' => 'Cita confirmada',
         'declined' => 'Solicitud de cita rechazada',
@@ -621,6 +625,7 @@ return [
         'unlinked' => 'Vínculo del artículo de conocimiento eliminado',
     ],
     'lead' => [
+        'quote_created' => 'Presupuesto creado a partir del lead',
         'created' => 'Lead creado',
         'status_changed' => 'Estado del lead cambiado',
         'converted' => 'Lead convertido',
@@ -822,6 +827,7 @@ return [
         'mailed' => 'Albarán enviado por correo electrónico',
     ],
     'quote' => [
+        'viewed' => 'Oferta vista por el cliente',
         'intake_linked' => 'Vinculado a la entrada de cliente',
         'portal_decision' => 'Decisión en el portal de clientes',
         'markup_applied' => 'Recargo repartido en los precios unitarios',
@@ -899,6 +905,10 @@ return [
         'shared' => 'Vista de informe compartida',
     ],
     'restored' => 'Restaurado',
+    'self_billing_credit' => [
+        'issued' => 'Autofactura emitida',
+        'cancelled' => 'Autofactura anulada',
+    ],
     'retention' => [
         'approved' => 'Propuesta de eliminación aprobada',
         'purged' => 'Datos eliminados según el plan de borrado',
@@ -935,7 +945,11 @@ return [
         'fulfilled' => 'Solicitud de servicio atendida',
         'submitted' => 'Solicitud de servicio presentada',
     ],
+    'business_service' => [
+        'dependencies_changed' => 'Dependencias del servicio de negocio cambiadas',
+    ],
     'service_ticket' => [
+        'service_changed' => 'Servicio del ticket cambiado',
         'opened_from_intake' => 'Ticket creado desde la entrada de cliente',
         'accepted_by_customer' => 'Ticket aceptado por el cliente',
         'assigned' => 'Ticket asignado',
@@ -1189,6 +1203,7 @@ return [
         'followUpCreated' => 'Encargo de seguimiento creado desde el punto abierto',
     ],
     'learning' => [
+        'settingsChanged' => 'Ajustes de la plataforma de aprendizaje modificados',
         'dossierDisclosed' => 'Expediente de cualificaciones entregado con nombres',
         'attemptViewed' => 'Expediente del intento consultado',
     ],

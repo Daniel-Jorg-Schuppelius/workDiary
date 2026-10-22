@@ -1172,6 +1172,8 @@ Route::middleware('auth')->group(function () {
         Route::get('terminanfragen', [\App\Http\Controllers\Calendar\AppointmentInboxController::class, 'index'])->name('appointments.index');
         Route::post('terminanfragen/{appointmentRequest}/bestaetigen', [\App\Http\Controllers\Calendar\AppointmentInboxController::class, 'confirm'])->name('appointments.confirm');
         Route::post('terminanfragen/{appointmentRequest}/ablehnen', [\App\Http\Controllers\Calendar\AppointmentInboxController::class, 'decline'])->name('appointments.decline');
+        Route::post('terminanfragen/{appointmentRequest}/vorschlagen', [\App\Http\Controllers\Calendar\AppointmentInboxController::class, 'propose'])->name('appointments.propose');
+        Route::post('terminanfragen/{appointmentRequest}/umbuchen', [\App\Http\Controllers\Calendar\AppointmentInboxController::class, 'reschedule'])->name('appointments.reschedule');
         Route::get('terminanfragen/leistungsarten/neu', [\App\Http\Controllers\Calendar\AppointmentInboxController::class, 'createService'])->name('appointments.services.create');
         Route::post('terminanfragen/leistungsarten', [\App\Http\Controllers\Calendar\AppointmentInboxController::class, 'storeService'])->name('appointments.services.store');
         Route::post('terminanfragen/leistungsarten/{bookableService}/aktiv', [\App\Http\Controllers\Calendar\AppointmentInboxController::class, 'toggleService'])->name('appointments.services.toggle');
@@ -1180,6 +1182,7 @@ Route::middleware('auth')->group(function () {
         // Soll-Fenstern, Scan-Nachweis und Abweichungs-Eskalation.
         Route::get('rundgaenge', [\App\Http\Controllers\Patrol\PatrolController::class, 'index'])->name('patrols.index');
         Route::get('rundgaenge/neu', [\App\Http\Controllers\Patrol\PatrolController::class, 'create'])->name('patrols.create');
+        Route::get('rundgaenge/bericht', [\App\Http\Controllers\Patrol\PatrolReportController::class, 'index'])->name('patrols.report');
         Route::post('rundgaenge', [\App\Http\Controllers\Patrol\PatrolController::class, 'store'])->name('patrols.store');
         Route::get('rundgaenge/lauf/{patrolRun}', [\App\Http\Controllers\Patrol\PatrolController::class, 'showRun'])->name('patrols.runs.show');
         Route::post('rundgaenge/lauf/{patrolRun}/scan', [\App\Http\Controllers\Patrol\PatrolController::class, 'scan'])->name('patrols.runs.scan');
@@ -1416,12 +1419,14 @@ Route::middleware('auth')->group(function () {
         // Kundenstatus; Rechte über customer.*, Modul module.vertrieb.
         Route::get('leads', [\App\Http\Controllers\Sales\LeadController::class, 'index'])->name('leads.index');
         Route::get('leads/neu', [\App\Http\Controllers\Sales\LeadController::class, 'create'])->name('leads.create');
+        Route::get('leads/auswertung', [\App\Http\Controllers\Sales\LeadReportController::class, 'index'])->name('leads.report');
         Route::post('leads', [\App\Http\Controllers\Sales\LeadController::class, 'store'])->name('leads.store');
         Route::get('leads/{lead}', [\App\Http\Controllers\Sales\LeadController::class, 'show'])->name('leads.show');
         Route::get('leads/{lead}/bearbeiten', [\App\Http\Controllers\Sales\LeadController::class, 'edit'])->name('leads.edit');
         Route::put('leads/{lead}', [\App\Http\Controllers\Sales\LeadController::class, 'update'])->name('leads.update');
         Route::post('leads/{lead}/status', [\App\Http\Controllers\Sales\LeadController::class, 'transition'])->name('leads.transition');
         Route::post('leads/{lead}/konvertieren', [\App\Http\Controllers\Sales\LeadController::class, 'convert'])->name('leads.convert');
+        Route::post('leads/{lead}/angebot', [\App\Http\Controllers\Sales\LeadController::class, 'startQuote'])->name('leads.quote');
 
         // Provisionen (Feature 146, MVP-729): Regeln, Provisionszeilen je Beleg
         // und Abrechnungsläufe. Rechte über commission.* (Policies auf
@@ -1465,6 +1470,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('umfragen/{survey}/fragen/{question}', [\App\Http\Controllers\Survey\SurveyController::class, 'removeQuestion'])->name('surveys.questions.remove');
         Route::post('umfragen/{survey}/einladen', [\App\Http\Controllers\Survey\SurveyController::class, 'invite'])->name('surveys.invite');
         Route::post('umfragen/{survey}/aktiv', [\App\Http\Controllers\Survey\SurveyController::class, 'toggleActive'])->name('surveys.toggle-active');
+        Route::post('umfragen/{survey}/ausloeser', [\App\Http\Controllers\Survey\SurveyController::class, 'updateTriggers'])->name('surveys.triggers');
 
         Route::get('customers/export', [CustomerController::class, 'export'])->name('customers.export');
         // Kunden-Abgleich (Dubletten-Bereinigung) — VOR der Resource-Route, damit
@@ -2102,6 +2108,21 @@ Route::middleware('auth')->group(function () {
         // MVP-549: Bestandsroute → Feed mit vorgesetztem Tab.
         Route::get('invoices', [\App\Http\Controllers\Billing\DocumentFeedController::class, 'fromInvoices'])->name('invoices.index');
         Route::get('invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');
+        // Gutschriftsverfahren (MVP-1280) — feste Pfade vor invoices/{invoice}.
+        Route::prefix('invoices/gutschriftsverfahren')->name('invoices.self-billing.')->controller(\App\Http\Controllers\Invoicing\SelfBillingCreditController::class)->group(function (): void {
+            Route::get('/', 'index')->name('index');
+            Route::get('neu', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+            Route::get('{selfBillingCredit}', 'show')->name('show');
+            Route::get('{selfBillingCredit}/positionen/neu', 'createLine')->name('lines.create');
+            Route::post('{selfBillingCredit}/positionen', 'storeLine')->name('lines.store');
+            Route::delete('{selfBillingCredit}/positionen/{line}', 'destroyLine')->name('lines.destroy');
+            Route::post('{selfBillingCredit}/ausstellen', 'issue')->name('issue');
+            Route::get('{selfBillingCredit}/stornieren', 'cancelDialog')->name('cancel-dialog');
+            Route::post('{selfBillingCredit}/stornieren', 'cancel')->name('cancel');
+            Route::get('{selfBillingCredit}/pdf', 'pdf')->name('pdf');
+            Route::get('{selfBillingCredit}/xml', 'xml')->name('xml');
+        });
         // Rechnungsnachfragen aus E-Mails (Feature 166, MVP-1202) — feste Pfade vor invoices/{invoice}.
         Route::get('invoices/nachfragen', [\App\Http\Controllers\Invoicing\InvoiceInquiryController::class, 'index'])->name('invoices.inquiries.index');
         Route::post('invoices/nachfragen/{inquiry}/beantwortet', [\App\Http\Controllers\Invoicing\InvoiceInquiryController::class, 'answer'])->name('invoices.inquiries.answer');
@@ -2128,6 +2149,7 @@ Route::middleware('auth')->group(function () {
             Route::get('{circular}', [\App\Http\Controllers\Communication\CustomerCircularController::class, 'show'])->name('show');
             Route::post('{circular}/freigeben', [\App\Http\Controllers\Communication\CustomerCircularController::class, 'approve'])->name('approve');
             Route::post('{circular}/versenden', [\App\Http\Controllers\Communication\CustomerCircularController::class, 'send'])->name('send');
+            Route::post('{circular}/als-vorlage', [\App\Http\Controllers\Communication\CustomerCircularController::class, 'saveTemplate'])->name('save-template');
         });
 
         // Anlagen-Stückliste (Feature 118, MVP-607).
@@ -3186,6 +3208,10 @@ Route::middleware('auth')->group(function () {
             Route::get('{batch}', [\App\Http\Controllers\Finance\DatevBookingController::class, 'show'])->name('show');
             Route::post('{batch}/finalisieren', [\App\Http\Controllers\Finance\DatevBookingController::class, 'finalize'])->name('finalize');
             Route::get('{batch}/download', [\App\Http\Controllers\Finance\DatevBookingController::class, 'download'])->name('download');
+            // Übermittlung an die Kanzlei und Begleitbericht (MVP-1277/1278).
+            Route::get('{batch}/uebermittlung', [\App\Http\Controllers\Finance\DatevBookingController::class, 'transmissionDialog'])->name('transmission.dialog');
+            Route::post('{batch}/uebermittlung', [\App\Http\Controllers\Finance\DatevBookingController::class, 'transmission'])->name('transmission');
+            Route::get('{batch}/begleitbericht', [\App\Http\Controllers\Finance\DatevBookingController::class, 'report'])->name('report');
             // Teilauswahl/mehrere Stapel (MVP-334): Zuschnitt am Draft ändern bzw. Draft verwerfen.
             Route::post('{batch}/quellen-entfernen', [\App\Http\Controllers\Finance\DatevBookingController::class, 'removeSources'])->name('sources.remove');
             Route::delete('{batch}', [\App\Http\Controllers\Finance\DatevBookingController::class, 'destroy'])->name('destroy');
@@ -4049,6 +4075,10 @@ Route::middleware('auth')->group(function () {
             Route::get('kurse/{course}/einheiten/{unit}/bearbeiten', [\App\Http\Controllers\Learning\LearningCourseController::class, 'editUnit'])->name('courses.units.edit');
             Route::put('kurse/{course}/einheiten/{unit}', [\App\Http\Controllers\Learning\LearningCourseController::class, 'updateUnit'])->name('courses.units.update');
             Route::post('kurse/{course}/einheiten/{unit}/bloecke', [\App\Http\Controllers\Learning\LearningCourseController::class, 'storeBlock'])->name('courses.units.blocks.store');
+            // Teil-Upload großer Medien (MVP-1265): Start, Stand, Teil; abgeschlossen wird im Blockformular.
+            Route::post('kurse/{course}/einheiten/{unit}/uploads', [\App\Http\Controllers\Learning\LearningMediaUploadController::class, 'start'])->name('courses.units.uploads.start');
+            Route::get('kurse/{course}/einheiten/{unit}/uploads/{token}', [\App\Http\Controllers\Learning\LearningMediaUploadController::class, 'status'])->where('token', '[A-Za-z0-9]{40}')->name('courses.units.uploads.status');
+            Route::post('kurse/{course}/einheiten/{unit}/uploads/{token}/{index}', [\App\Http\Controllers\Learning\LearningMediaUploadController::class, 'chunk'])->where('token', '[A-Za-z0-9]{40}')->whereNumber('index')->name('courses.units.uploads.chunk');
             Route::delete('kurse/{course}/einheiten/{unit}/bloecke/{index}', [\App\Http\Controllers\Learning\LearningCourseController::class, 'destroyBlock'])->whereNumber('index')->name('courses.units.blocks.destroy');
             Route::post('kurse/{course}/einheiten/{unit}/bloecke/{index}/verschieben', [\App\Http\Controllers\Learning\LearningCourseController::class, 'moveBlock'])->whereNumber('index')->name('courses.units.blocks.move');
 
@@ -4067,6 +4097,8 @@ Route::middleware('auth')->group(function () {
             // Einstellungen der Lernplattform (MVP-786): Trainer-Scoping, Gamification, Einbettungs-Hosts.
             Route::get('einstellungen', [\App\Http\Controllers\Learning\LearningSettingsController::class, 'edit'])->name('settings.edit');
             Route::put('einstellungen', [\App\Http\Controllers\Learning\LearningSettingsController::class, 'update'])->name('settings.update');
+            // Konfigurationsausdruck (MVP-1271), etwa als Anlage zur Betriebsvereinbarung.
+            Route::get('einstellungen/ausdruck', [\App\Http\Controllers\Learning\LearningSettingsController::class, 'print'])->name('settings.print');
             // Trainer je Kurs (MVP-786).
             Route::post('kurse/{course}/trainer', [\App\Http\Controllers\Learning\LearningCourseController::class, 'storeTrainer'])->name('courses.trainers.store');
             Route::delete('kurse/{course}/trainer/{user}', [\App\Http\Controllers\Learning\LearningCourseController::class, 'destroyTrainer'])->name('courses.trainers.destroy');
@@ -4077,6 +4109,9 @@ Route::middleware('auth')->group(function () {
             Route::get('kurse/{course}/teilnehmer', [\App\Http\Controllers\Learning\LearningEnrollmentController::class, 'index'])->name('courses.enrollments.index');
             Route::get('kurse/{course}/teilnehmer/create', [\App\Http\Controllers\Learning\LearningEnrollmentController::class, 'create'])->name('courses.enrollments.create');
             Route::post('kurse/{course}/teilnehmer', [\App\Http\Controllers\Learning\LearningEnrollmentController::class, 'store'])->name('courses.enrollments.store');
+            // Versionswechsel (MVP-1272): offene Einschreibungen auf die aktuelle Kursversion heben.
+            Route::get('kurse/{course}/teilnehmer/version', [\App\Http\Controllers\Learning\LearningEnrollmentController::class, 'versionDialog'])->name('courses.enrollments.version');
+            Route::post('kurse/{course}/teilnehmer/version', [\App\Http\Controllers\Learning\LearningEnrollmentController::class, 'moveToVersion'])->name('courses.enrollments.version.update');
             Route::get('kurse/{course}/teilnehmer/{enrollment}/edit', [\App\Http\Controllers\Learning\LearningEnrollmentController::class, 'edit'])->name('courses.enrollments.edit');
             Route::patch('kurse/{course}/teilnehmer/{enrollment}', [\App\Http\Controllers\Learning\LearningEnrollmentController::class, 'update'])->name('courses.enrollments.update');
             Route::post('kurse/{course}/teilnehmer/{enrollment}/stornieren', [\App\Http\Controllers\Learning\LearningEnrollmentController::class, 'cancel'])->name('courses.enrollments.cancel');
@@ -4084,6 +4119,9 @@ Route::middleware('auth')->group(function () {
             // Versuchsfreigabe (MVP-785): ein weiterer Versuch trotz Grenze oder Sperrfrist.
             Route::get('kurse/{course}/teilnehmer/{enrollment}/versuchsfreigabe', [\App\Http\Controllers\Learning\LearningEnrollmentController::class, 'waiverDialog'])->name('courses.enrollments.waiver');
             Route::post('kurse/{course}/teilnehmer/{enrollment}/versuchsfreigabe', [\App\Http\Controllers\Learning\LearningEnrollmentController::class, 'grantWaiver'])->name('courses.enrollments.attempt-waiver');
+            // Nachteilsausgleich (MVP-1267): Zeitverlängerung je Person mit Begründung.
+            Route::get('kurse/{course}/teilnehmer/{enrollment}/zeitverlaengerung', [\App\Http\Controllers\Learning\LearningEnrollmentController::class, 'timeExtensionDialog'])->name('courses.enrollments.time-extension');
+            Route::post('kurse/{course}/teilnehmer/{enrollment}/zeitverlaengerung', [\App\Http\Controllers\Learning\LearningEnrollmentController::class, 'updateTimeExtension'])->name('courses.enrollments.time-extension.update');
 
             // KI-Eingänge (MVP-781): Gliederungs- und Fragenentwurf — nur Vorschläge,
             // der Autor übernimmt einzeln; nichts wird bewertet oder entschieden.
@@ -4538,6 +4576,8 @@ Route::middleware('auth')->group(function () {
         Route::post('procedure-runs/{run}/steps/{stepRun}/wait/continue', [\App\Http\Controllers\Procedure\ProcedureRunController::class, 'continueWait'])->name('procedure-runs.steps.wait.continue');
         Route::post('procedure-runs/{run}/steps/{stepRun}/abweichung', [\App\Http\Controllers\Procedure\ProcedureRunController::class, 'recordDeviation'])->name('procedure-runs.steps.deviation');
         Route::post('procedure-runs/{run}/steps/{stepRun}/second-person', [\App\Http\Controllers\Procedure\ProcedureRunController::class, 'signSecondPerson'])->name('procedure-runs.steps.second-person');
+        Route::post('procedure-runs/{run}/steps/{stepRun}/second-person/request', [\App\Http\Controllers\Procedure\ProcedureRunController::class, 'requestSecondPerson'])->name('procedure-runs.steps.second-person.request');
+        Route::post('procedure-runs/{run}/steps/{stepRun}/second-person/revoke', [\App\Http\Controllers\Procedure\ProcedureRunController::class, 'revokeSecondPerson'])->name('procedure-runs.steps.second-person.revoke');
         Route::post('procedure-runs/{run}/complete', [\App\Http\Controllers\Procedure\ProcedureRunController::class, 'complete'])->name('procedure-runs.complete');
         Route::post('procedure-runs/{run}/abort', [\App\Http\Controllers\Procedure\ProcedureRunController::class, 'abort'])->name('procedure-runs.abort');
 
@@ -4775,6 +4815,7 @@ Route::middleware('auth')->group(function () {
         Route::post('helpdesk/routing/dry-run', [\App\Http\Controllers\Helpdesk\TicketRoutingController::class, 'dryRun'])->name('helpdesk.routing.dry-run');
         // Servicekatalog-Pflege (Feature 065, MVP-154) — servicedesk.* → module.service_desk!
         Route::get('servicedesk/catalog', [\App\Http\Controllers\Helpdesk\ServiceCatalogController::class, 'index'])->name('servicedesk.catalog.index');
+        Route::get('servicedesk/servicelandkarte', [\App\Http\Controllers\Helpdesk\ServiceMapController::class, 'index'])->name('servicedesk.service-map.index');
         Route::get('servicedesk/catalog/services/create', [\App\Http\Controllers\Helpdesk\ServiceCatalogController::class, 'createService'])->name('servicedesk.catalog.services.create');
         Route::post('servicedesk/catalog/services', [\App\Http\Controllers\Helpdesk\ServiceCatalogController::class, 'storeService'])->name('servicedesk.catalog.services.store');
         Route::get('servicedesk/catalog/services/{service}/edit', [\App\Http\Controllers\Helpdesk\ServiceCatalogController::class, 'editService'])->name('servicedesk.catalog.services.edit');
@@ -5602,6 +5643,9 @@ Route::middleware('auth')->group(function () {
                 ->name('groups.members.attach');
             Route::delete('groups/{group}/members/{user}', [AccessUserGroupController::class, 'detachMember'])
                 ->name('groups.members.detach');
+
+            // Rollen- und Rechteänderungen (MVP-1302): eigenes Recht, auch ohne access.manage.
+            Route::get('audit', [\App\Http\Controllers\Admin\Access\AccessAuditController::class, 'index'])->name('audit');
 
             Route::get('members', [AccessMemberController::class, 'index'])->name('members.index');
             Route::get('members/{member}/edit', [AccessMemberController::class, 'edit'])->name('members.edit');

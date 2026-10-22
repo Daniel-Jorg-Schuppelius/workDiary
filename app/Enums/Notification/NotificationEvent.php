@@ -112,6 +112,8 @@ enum NotificationEvent: string implements HasLabel {
     case LearningGraded = 'learning.graded';
     /** Synchron: LearningCompletionService::issueCertificate() */
     case LearningCertificateIssued = 'learning.certificateIssued';
+    /** Synchron: LearningQuizService — Prüfung nicht bestanden und keine Versuche mehr (MVP-1266) */
+    case LearningFailedFinal = 'learning.failedFinal';
     /** Synchron: LearningEventService::promoteFromWaitlist() */
     case LearningWaitlistPromoted = 'learning.waitlistPromoted';
     /** Synchron: LearningBookingService::confirm()/reject() */
@@ -174,6 +176,8 @@ enum NotificationEvent: string implements HasLabel {
 
     // Feature 026: Prozedur-Abweichung mit Folgeaktion „eskalieren“ (MVP-881).
     case ProcedureDeviationEscalated = 'procedure.deviationEscalated';
+    /** Synchron: Vier-Augen-Schritt wartet auf eine zweite Person (MVP-1301). */
+    case ProcedureSecondPersonRequested = 'procedure.secondPersonRequested';
 
     // Feature 073: überfällige Verleih-Rückgabe (MVP-264).
     case RentalReturnOverdue = 'rental.returnOverdue';
@@ -366,7 +370,7 @@ enum NotificationEvent: string implements HasLabel {
             return false;
         }
 
-        return ! in_array($this, [self::TimeCorrectionRequested, self::OvertimeRequested, self::VacationRequested, self::MonthClosureSubmitted, self::IsmsCertificateExpiring, self::IsmsIncidentCritical, self::SafetyCriticalEvent, self::ProcedureDeviationEscalated, self::ClaimPattern, self::ReportWarning, self::SafetyAssessmentReviewDue, self::ShiftExchangeRequested, self::CustomerQueryRaised, self::CustomerIntakeSubmitted, self::RentalRequested, self::AppointmentRequested, self::ShipmentDeliveryProblem, self::SlaQuotaWarning,
+        return ! in_array($this, [self::TimeCorrectionRequested, self::OvertimeRequested, self::VacationRequested, self::MonthClosureSubmitted, self::IsmsCertificateExpiring, self::IsmsIncidentCritical, self::SafetyCriticalEvent, self::ProcedureDeviationEscalated, self::ProcedureSecondPersonRequested, self::ClaimPattern, self::ReportWarning, self::SafetyAssessmentReviewDue, self::ShiftExchangeRequested, self::CustomerQueryRaised, self::CustomerIntakeSubmitted, self::RentalRequested, self::AppointmentRequested, self::ShipmentDeliveryProblem, self::SlaQuotaWarning,
             // Domain-/Finanz-/Fristereignisse betreffen keine Einzelperson (Vollaudit 2026-07, W3.2).
             self::DomainExpiring, self::DomainTransferChanged, self::DomainSyncFailed, self::DomainHighRiskAction,
             self::FinanceTransferFailed, self::FinanceBankImportFailed, self::FinanceReconciliationReview, self::RetentionReleaseDue,
@@ -434,6 +438,8 @@ enum NotificationEvent: string implements HasLabel {
             // synchron an die Leitungs-/Admin-Rollen der Organisation.
             self::SafetyCriticalEvent => [UserRole::Teamleitung->value, UserRole::Admin->value],
             self::ProcedureDeviationEscalated => [UserRole::Admin->value],
+            // Gegenzeichnen dürfen Leitung und Mitarbeitende; vorgegeben ist die Leitung, die Org-Regel erweitert.
+            self::ProcedureSecondPersonRequested => [UserRole::Teamleitung->value],
             self::ClaimPattern, self::ReportWarning => [UserRole::Teamleitung->value, UserRole::Admin->value],
             // Arbeitsschutz-Fristen (Feature 132): GBU-Wiedervorlage betrifft keine
             // Einzelperson; Unterweisung/Vorsorge primär die Person (notify_affected),
@@ -446,6 +452,7 @@ enum NotificationEvent: string implements HasLabel {
             // Lernplattform (Feature 149, MVP-780): überfällig und Lernzeit-
             // Freigabe an die Teamleitung, Abgaben an die bewertende Rolle.
             self::LearningOverdue,
+            self::LearningFailedFinal,
             self::LearningTimeApprovalRequested => [UserRole::Teamleitung->value],
             self::LearningSubmissionReceived => [UserRole::Personalverwaltung->value],
             // Ablaufende Qualifikation/Unterweisung: primär die betroffene
@@ -553,6 +560,7 @@ enum NotificationEvent: string implements HasLabel {
             self::LearningSubmissionReceived,
             self::LearningGraded,
             self::LearningCertificateIssued,
+            self::LearningFailedFinal,
             self::LearningWaitlistPromoted,
             self::LearningBookingDecided,
             self::LearningTimeApprovalRequested,
@@ -602,6 +610,7 @@ enum NotificationEvent: string implements HasLabel {
             self::CrisisAlert => 'emergency_home',
             self::ClaimEscalation => 'assignment_late',
             self::ProcedureDeviationEscalated => 'report',
+            self::ProcedureSecondPersonRequested => 'how_to_reg',
             self::ClaimPattern => 'troubleshoot',
             self::ClaimCustomerNote => 'mark_chat_unread',
             self::ReportWarning => 'crisis_alert',

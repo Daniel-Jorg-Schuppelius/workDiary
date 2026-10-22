@@ -122,6 +122,10 @@
                 {{ __('invoicing.inquiries.title') }}@if (($inquiryOpenCount ?? 0) > 0) <x-status-badge tone="warning" size="xs">{{ $inquiryOpenCount }}</x-status-badge>@endif
             </x-icon-btn>
         @endif
+        {{-- Gutschriftsverfahren (MVP-1280) --}}
+        @can(\App\Enums\User\Permission::InvoiceViewAny->value)
+            <x-icon-btn icon="receipt_long" size="sm" placement="menu" :href="route('invoices.self-billing.index')" show-label>{{ __('invoicing.self_billing.action.open') }}</x-icon-btn>
+        @endcan
         @if ($_canDesign)
             <x-icon-btn icon="design_services" size="sm" :href="route('admin.document-design.index')"
                         :label="__('document_design.link.feed_title')" show-label>

@@ -1,7 +1,7 @@
 ---
 title: "Rôles & droits"
 topic: admin.roles
-version: 2
+version: 3
 keywords:
     - permissions
     - autorisations
@@ -80,3 +80,10 @@ Les changements de rôle prennent effet immédiatement pour tous les
 membres concernés — menus, contenus d'aide et accès aux modules
 compris. Ensuite : tenir les attributions sous « Membres » et lire
 les consignes de sécurité du manuel d'administration.
+
+Chaque modification des rôles, droits et appartenances aux groupes figure
+avec la personne et l'heure sous **Modifications des droits** (bouton en
+haut du contrôle d'accès et du journal d'audit). La vue est en lecture
+seule et nécessite le droit « Voir les modifications des rôles et droits » ; les
+comptes de support l'ont afin de retracer les opérations sans rien
+modifier.

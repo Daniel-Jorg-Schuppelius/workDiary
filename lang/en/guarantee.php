@@ -64,6 +64,7 @@ return [
         'customer' => 'Customer',
         'supplier' => 'Supplier',
         'project' => 'Project',
+        'warranty' => 'Warranty (return after the period ends)',
         'responsible' => 'Owner',
         'note' => 'Note',
     ],

@@ -57,6 +57,8 @@ Hinweis: Für reine Benachrichtigungen sind die
 **Benachrichtigungsregeln** oft die einfachere Wahl; für externe
 Systeme siehe **Webhooks**.
 
+Aktionen mit Ziel zeigen im Dialog zusätzlich das Feld **Ziel**: **In Kurs einschreiben** (Auslöser **Mitarbeitende Person angelegt** oder **Gerät ausgegeben**) fragt nach dem Kurs. Bedingungen sehen bei neuen Mitarbeitenden `role`, `roles` und `personnel_number`, bei der Geräteausgabe unter anderem `category_code`, `asset_class` und `manufacturer`. Die Rolle steht erst fest, wenn die Anlage gespeichert ist — deshalb prüft die Regel nach dem Speichern.
+
 ## Posteingangsregeln (Rechnungseingang)
 
 Der Auslöser „Rechnungseingang eingegangen“ prüft jeden neuen Eingang des

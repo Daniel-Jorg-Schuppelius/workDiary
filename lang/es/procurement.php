@@ -31,6 +31,10 @@ return [
         'incoming' => 'Entradas previstas',
     ],
 
+    'credentials' => [
+        'badge' => 'Justificantes: :status',
+        'hint' => 'Justificantes obligatorios del proveedor (certificado de exención, seguro, etc.)',
+    ],
     'pdf' => [
         'title' => 'Pedido',
         'date' => 'Fecha de pedido',

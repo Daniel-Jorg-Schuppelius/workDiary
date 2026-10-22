@@ -31,6 +31,10 @@ return [
         'incoming' => 'Expected receipts',
     ],
 
+    'credentials' => [
+        'badge' => 'Credentials: :status',
+        'hint' => 'Mandatory supplier credentials (exemption certificate, insurance etc.)',
+    ],
     'pdf' => [
         'title' => 'Purchase order',
         'date' => 'Order date',

@@ -30,6 +30,8 @@
                           :hint="__('learning.help.gamification')" :checked="(bool) old('gamification_enabled', $gamificationEnabled)" />
         <x-checkbox-field name="leaderboard_enabled" :label="__('learning.field.leaderboard_enabled')"
                           :hint="__('learning.help.leaderboard')" :checked="(bool) old('leaderboard_enabled', $leaderboardEnabled)" />
+        <x-checkbox-field name="streak_enabled" :label="__('learning.field.streak_enabled')"
+                          :hint="__('learning.help.streak')" :checked="(bool) old('streak_enabled', $streakEnabled)" />
     </x-form-group>
 
     <x-form-group :legend="__('learning.field.categories')" icon="category" tone="info" cols="1">

@@ -10,10 +10,18 @@
 
 namespace App\Observers;
 
+use App\Events\Platform\UserCreated;
 use App\Models\Platform\User;
 use App\Support\LookupCache;
 
 class UserObserver {
+    /** Interne Konten melden sich nach dem Commit (MVP-1273); Portalkonten nicht. */
+    public function created(User $user): void {
+        if ($user->organization_id !== null && ! $user->isCustomer()) {
+            event(new UserCreated((int) $user->organization_id, (int) $user->id));
+        }
+    }
+
     public function saved(User $user): void {
         LookupCache::forgetUserDropdown($user->organization_id !== null ? (int) $user->organization_id : null);
     }

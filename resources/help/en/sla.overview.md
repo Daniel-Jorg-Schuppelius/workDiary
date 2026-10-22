@@ -75,3 +75,7 @@ report can be exported as PDF, CSV and Excel. Anyone with the **View SLA
 status & report** permission may view it; exporting additionally requires the
 permission **Export reports** – without it, the export buttons are missing.
 Administrators may always do both.
+
+## Material suggestion
+
+If the ticket has equipment with a component list, it shows the **due wear parts** (from replacement interval and installation date) as a suggestion for the job — what is actually replaced is decided by the technician. The same card appears on orders with equipment.

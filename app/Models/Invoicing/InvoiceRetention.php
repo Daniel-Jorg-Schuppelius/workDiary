@@ -27,6 +27,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $organization_id
  * @property int $invoice_id
+ * @property int|null $warranty_period_id
  * @property RetentionKind $kind
  * @property \CommonToolkit\ValueObjects\Percentage|null $percent
  * @property Money $base_amount
@@ -51,6 +52,7 @@ class InvoiceRetention extends Model {
         'amount',
         'currency',
         'due_on',
+        'warranty_period_id',
         'status',
         'released_on',
         'note',
@@ -71,6 +73,11 @@ class InvoiceRetention extends Model {
 
     /** @var array<string, mixed> */
     protected $attributes = ['status' => 'open', 'currency' => 'EUR'];
+
+    /** @return BelongsTo<\App\Models\Warranty\WarrantyPeriod, $this> */
+    public function warrantyPeriod(): BelongsTo {
+        return $this->belongsTo(\App\Models\Warranty\WarrantyPeriod::class);
+    }
 
     /** @return BelongsTo<Invoice, $this> */
     public function invoice(): BelongsTo {

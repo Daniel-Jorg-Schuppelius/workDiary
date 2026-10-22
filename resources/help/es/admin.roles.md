@@ -1,7 +1,7 @@
 ---
 title: "Roles & permisos"
 topic: admin.roles
-version: 2
+version: 3
 keywords:
     - permisos de usuario
     - derechos de acceso
@@ -79,3 +79,9 @@ Los cambios de rol surten efecto inmediato para todos los miembros
 asignados — también en menús, contenidos de ayuda y acceso a módulos.
 Después: mantener las asignaciones en «Miembros» y leer las notas de
 seguridad del manual de administración.
+
+Cada cambio de roles, permisos y miembros de grupos aparece con persona y
+hora en **Cambios de permisos** (botón en la parte superior del control de
+acceso y del registro de auditoría). La vista es de solo lectura y requiere
+el permiso «Ver cambios de roles y permisos»; las cuentas de soporte lo tienen
+para poder reconstruir lo ocurrido sin modificar nada.

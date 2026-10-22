@@ -32,6 +32,7 @@ return [
         'opening_balance' => 'Eröffnungssaldo',
         'closing_balance' => 'Schlusssaldo',
         'balance_check' => 'Saldenkette',
+        'chain_check' => 'Anschluss an Vorauszug',
         'tx_count' => 'Umsätze',
         'open' => 'Offen',
         'matched' => 'Zugeordnet',
@@ -105,6 +106,7 @@ return [
             'unmatched' => 'Zuordnung zurückgenommen.',
         ],
         'error' => [
+            'provisional' => 'Vorläufige Umsätze (CAMT.052/054, PAIN) werden nicht abgeglichen. Warten Sie auf den verbindlichen Kontoauszug.',
             'no_allocations' => 'Es wurde keine Zuordnung angegeben.',
             'target_not_found' => 'Das Zuordnungsziel wurde nicht gefunden.',
         ],
@@ -147,6 +149,14 @@ return [
         'error' => [
             'duplicate_iban' => 'Für diese IBAN existiert bereits ein Bankkonto.',
         ],
+    ],
+    'statement' => [
+        'provisional' => 'vorläufig',
+        'superseded' => 'ersetzt',
+        'provisional_hint' => 'Vorläufiger Auszug (:format): Die Umsätze dienen nur zur Vorschau. Sie werden weder abgeglichen noch gebucht und zählen nicht in Liquidität und Kennzahlen. Der verbindliche Kontoauszug (CAMT.053 oder MT940) desselben Kontos ersetzt sie.',
+        'superseded_hint' => 'Am :date durch den verbindlichen Kontoauszug ersetzt.',
+        'chain_gap_hint' => 'Zwischen dem Vorauszug (bis :date) und diesem Auszug fehlen Bankarbeitstage. Bitte den fehlenden Auszug importieren.',
+        'chain_mismatch_hint' => 'Der Eröffnungssaldo (:opening) weicht vom Schlusssaldo des Vorauszugs (:previous) ab.',
     ],
     'empty' => [
         'statements' => 'Noch keine Bankauszüge importiert.',

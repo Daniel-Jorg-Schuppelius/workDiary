@@ -24,6 +24,16 @@ return [
     'no_email' => 'sin dirección de correo',
     'confirm_send' => '¿Enviar ahora la circular a :count destinatarios?',
     'body_hint' => 'Marcadores: :firma, :kunde, :ansprechpartner',
+    'attachment_hint' => 'Opcional: un archivo que se adjunta a cada correo.',
+    'template' => [
+        'heading' => 'Plantillas',
+        'save' => 'Guardar como plantilla',
+        'saved' => 'Plantilla guardada.',
+        'use' => 'Crear desde la plantilla',
+        'based_on' => 'Basado en la plantilla «:subject».',
+        'attachments' => 'Se toman de la plantilla: :names',
+        'not_sendable' => 'Una plantilla no se envía: cree una circular a partir de ella.',
+    ],
     'mandatory_hint' => 'Las comunicaciones obligatorias también llegan a clientes que rechazaron los envíos masivos — solo para información exigida legalmente.',
     'portal_hint' => 'La comunicación aparece además en el portal de clientes.',
 
@@ -59,6 +69,7 @@ return [
     ],
 
     'field' => [
+        'attachment' => 'Adjunto',
         'body' => 'Texto',
         'is_mandatory' => 'Comunicación obligatoria',
         'portal_notice' => 'Mostrar en el portal de clientes',

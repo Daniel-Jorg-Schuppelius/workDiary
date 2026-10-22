@@ -206,6 +206,15 @@ return [
             'reset_per_year' => true,
             'starts_at' => 0,
         ],
+        'self_billing' => [
+            'prefix' => 'GS',
+            'prefix_separator' => '-',
+            'include_year' => true,
+            'year_separator' => '-',
+            'padding' => 4,
+            'reset_per_year' => true,
+            'starts_at' => 0,
+        ],
         'credit_note' => [
             'prefix' => 'G',
             'prefix_separator' => '',

@@ -98,3 +98,9 @@ Cuentan las facturas emitidas y pagadas con fecha de documento en el
 periodo; los abonos se forman como asiento inverso. Tras la entrega:
 mantener la conciliación de pagos y exportar el periodo siguiente
 solo tras su cierre.
+
+## Transmisión e informe adjunto
+
+Tras finalizar, **Registrar transmisión** deja constancia de lo que ocurre con el lote: **transmitido** a la asesoría y allí **confirmado** o **rechazado**. Un lote rechazado se vuelve a transmitir una vez aclarado; las correcciones de documentos siguen yendo en el lote siguiente. Cada paso queda con fecha, persona y nota opcional en el historial del lote, y la lista muestra el estado actual. Las notas, sin datos personales, ya que el historial no se puede modificar.
+
+El **informe adjunto (PDF)** resume el lote para la asesoría: periodo, número de asesor y de cliente, número de asientos y anulaciones, total, suma de control del archivo, totales por cuenta de ingresos y por clave fiscal, y el historial.

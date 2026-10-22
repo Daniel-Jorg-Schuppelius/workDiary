@@ -13,6 +13,7 @@ namespace App\Models\Learning;
 use App\Enums\Learning\{LearningProgressStatus, LearningUnitKind};
 use App\Models\Calendar\Event;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
+use App\Support\CarbonFmt;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasOne};
@@ -145,13 +146,21 @@ class LearningUnit extends Model {
     }
 
     /**
-     * Freischaltplan (MVP-788): Tag, ab dem die Einheit für diese Einschreibung
-     * offen ist — `after_days` ab Einschreibung und/oder festes Datum `at`;
-     * es gilt das spätere. NULL = sofort.
+     * Freischaltplan (MVP-788, MVP-1268): Tag, ab dem die Einheit für diese
+     * Einschreibung offen ist — `after_days` ab Einschreibung, festes Datum
+     * `at` und der Tag des Präsenztermins `after_event_unit_id`; es gilt das
+     * späteste. NULL = sofort.
      */
     public function releaseDateFor(LearningEnrollment $enrollment): ?Carbon {
         $rule = $this->release_rule ?? [];
         $latest = null;
+
+        $eventUnitId = (int) ($rule['after_event_unit_id'] ?? 0);
+        if ($eventUnitId > 0) {
+            $startsAt = self::query()->whereKey($eventUnitId)->where('learning_course_id', $this->learning_course_id)->first()?->event?->started_at;
+            // Kalendertag des Termins in Ortszeit, wie das feste Datum `at`.
+            $latest = $startsAt !== null ? Carbon::parse(CarbonFmt::orgTz($startsAt)->toDateString())->startOfDay() : null;
+        }
 
         $afterDays = (int) ($rule['after_days'] ?? 0);
         if ($afterDays > 0) {
@@ -168,6 +177,43 @@ class LearningUnit extends Model {
     }
 
     /**
+     * Vorgängereinheit aus dem Freischaltplan (MVP-1268), solange sie für diese
+     * Einschreibung nicht abgeschlossen ist; nur aus demselben Kurs.
+     *
+     * @param  list<int>|null  $completedUnitIds
+     */
+    public function blockingPredecessorFor(LearningEnrollment $enrollment, ?array $completedUnitIds = null): ?self {
+        $id = (int) (($this->release_rule ?? [])['after_unit_id'] ?? 0);
+        if ($id <= 0) {
+            return null;
+        }
+        $done = $completedUnitIds !== null
+            ? in_array($id, array_map('intval', $completedUnitIds), true)
+            : $enrollment->progress()->where('learning_unit_id', $id)->where('status', LearningProgressStatus::Completed)->exists();
+
+        return $done ? null : self::query()->whereKey($id)->where('learning_course_id', $this->learning_course_id)->first();
+    }
+
+    /**
+     * Beschriftung einer gesperrten Einheit: Datum, Vorgängereinheit oder
+     * Reihenfolge — in dieser Rangfolge.
+     *
+     * @param  list<int>|null  $completedUnitIds
+     */
+    public function lockLabelFor(LearningEnrollment $enrollment, ?array $completedUnitIds = null): string {
+        $date = $this->releaseDateFor($enrollment);
+        if ($date !== null && $date->isFuture()) {
+            return (string) __('learning.badge.available_from', ['date' => $date->translatedFormat('d.m.Y')]);
+        }
+        $predecessor = $this->blockingPredecessorFor($enrollment, $completedUnitIds);
+        if ($predecessor !== null) {
+            return (string) __('learning.badge.after_unit', ['unit' => $predecessor->title]);
+        }
+
+        return (string) __('learning.badge.after_previous_unit');
+    }
+
+    /**
      * Die Sperre selbst — an jeder Abschlussstelle geprüft, nicht nur in der
      * Ansicht (Player, Externe, Portal, Offline-Sync, Prüfung, Abgabe).
      *
@@ -176,6 +222,9 @@ class LearningUnit extends Model {
     public function isReleasedFor(LearningEnrollment $enrollment, ?Carbon $now = null, ?array $completedUnitIds = null): bool {
         $date = $this->releaseDateFor($enrollment);
         if ($date !== null && $date->gt(($now ?? Carbon::now())->copy()->startOfDay())) {
+            return false;
+        }
+        if ($this->blockingPredecessorFor($enrollment, $completedUnitIds) !== null) {
             return false;
         }
 

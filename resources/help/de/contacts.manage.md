@@ -130,3 +130,7 @@ Stammdatenänderungen wirken nur nach vorn — abgeschlossene Übergaben
 bleiben unverändert. Als Nächstes: Projekte am Kunden anlegen, die
 Abrechnungsdaten für Rechnungen prüfen und bei größeren Beständen den
 CSV-Import statt der Einzelanlage nutzen.
+
+## Lieferant: Steuerdaten und Gutschriftsverfahren
+
+Am Lieferanten werden **USt-IdNr.** und **Steuernummer** gepflegt. Rechnet Ihre Organisation die Leistungen eines Lieferanten selbst ab, tragen Sie das Datum der **Vereinbarung über das Gutschriftsverfahren** ein; erst dann lassen sich Gutschriften an ihn ausstellen. Die Lieferantenseite zeigt die Vereinbarung und die letzten Gutschriften.

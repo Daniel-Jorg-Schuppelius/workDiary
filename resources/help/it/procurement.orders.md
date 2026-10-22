@@ -50,3 +50,7 @@ quantità minima d’ordine e del fornitore preferito. **Crea ordini** ne
 ricava bozze per fornitore, da verificare prima di ordinare. Creare,
 ordinare e registrare richiedono il permesso **Registra movimenti di
 magazzino**; **Annulla** su un ordine non è reversibile.
+
+## Semaforo dei documenti
+
+Se al fornitore sono richiesti documenti obbligatori (ad esempio certificato di esenzione o assicurazione), l’intestazione dell’ordine mostra il loro **semaforo**: verde se tutto è valido, giallo se qualcosa scade a breve, rosso se mancano o sono scaduti. Il clic apre la panoramica dei documenti. Se il rosso blocca l’invio resta stabilito dall’impostazione dei documenti.

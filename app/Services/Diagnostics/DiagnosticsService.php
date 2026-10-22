@@ -30,7 +30,15 @@ use Throwable;
  * Fehlermeldung zurückgegeben, wenn ein Check unerwartet wirft.
  */
 class DiagnosticsService {
-    public const SECTIONS = ['version', 'license', 'modules', 'queue', 'scheduler', 'mail', 'connections', 'operations', 'storage', 'backup', 'security', 'terminals'];
+    public const SECTIONS = ['version', 'license', 'modules', 'queue', 'scheduler', 'mail', 'connections', 'operations', 'storage', 'backup', 'security', 'terminals', 'ocr'];
+
+    /** OCR-Kette der Belegerkennung (MVP-1289): Programm → Aufgabe. */
+    public const OCR_TOOLS = [
+        'tesseract' => 'Texterkennung in Bildern',
+        'ocrmypdf' => 'Texterkennung in gescannten PDF',
+        'pdftoppm' => 'Seiten als Bild für die Texterkennung',
+        'gs-compress' => 'Ghostscript (Laufzeitabhängigkeit von ocrmypdf)',
+    ];
 
     /** Warnschwelle: aktives Terminal ohne Kontakt seit … Stunden gilt als „stale". */
     public const TERMINAL_STALE_HOURS = 24;
@@ -78,6 +86,7 @@ class DiagnosticsService {
                 'backup' => $this->checkBackup(),
                 'security' => $this->checkSecurity(),
                 'terminals' => $this->checkTerminals(),
+                'ocr' => $this->checkOcr(),
                 default => DiagnosticSection::unknown($section, 'Unbekannter Diagnose-Abschnitt.'),
             };
         } catch (Throwable $e) {
@@ -773,6 +782,33 @@ class DiagnosticsService {
                 'buffered' => $buffered,
             ],
             messages: $messages,
+            checkedAt: CarbonImmutable::now(),
+        );
+    }
+
+    /**
+     * OCR-Werkzeuge (MVP-1289): Ohne sie bleiben gescannte Belege, Reisekosten-
+     * fotos und Bildanhänge ohne Text — die Erkennung meldet keinen Fehler,
+     * sie findet nur nichts.
+     */
+    public function checkOcr(): DiagnosticSection {
+        $config = \PDFToolkit\Config\Config::getInstance();
+        $metrics = [];
+        $missing = [];
+        foreach (self::OCR_TOOLS as $tool => $purpose) {
+            // getShellExecutable() liefert auch fehlende Programme; nur der aufgelöste Pfad belegt die Installation.
+            $available = $config->getExecutablePath($tool) !== null;
+            $metrics[$tool] = $available ? 'ok' : 'fehlt';
+            if (! $available) {
+                $missing[] = sprintf('%s (%s)', $tool === 'gs-compress' ? 'gs' : $tool, $purpose);
+            }
+        }
+
+        return new DiagnosticSection(
+            code: 'ocr',
+            status: $missing === [] ? DiagnosticStatus::Ok : DiagnosticStatus::Warn,
+            metrics: $metrics,
+            messages: $missing === [] ? [] : ['Nicht gefunden: ' . implode(', ', $missing) . ' — gescannte Belege werden ohne Text gelesen. Installation: scripts/check-tools.php --all.'],
             checkedAt: CarbonImmutable::now(),
         );
     }

@@ -49,14 +49,19 @@ class TimeEntryController extends Controller {
         ]);
     }
 
-    public function create(Project $project): View {
+    public function create(Request $request, Project $project): View {
         Gate::authorize('create', TimeEntry::class);
+
+        // Vom Ticket aus (MVP-1259): das Ticket ist vorgewählt.
+        $prefillTicket = \App\Support\Sqid::decodeOrNumeric(\App\Models\ServiceTicket\ServiceTicket::class, $request->string('service_ticket')->toString());
 
         return view('projects._time_entry_dialog', [
             'project' => $project,
             'entry' => null,
             'tasks' => $this->taskOptions($project),
             'diaryOptions' => $this->diaryOptions($project),
+            'ticketOptions' => $this->ticketOptions($project, $prefillTicket),
+            'prefillTicketId' => $prefillTicket,
             'travelFlatMinutes' => $this->travelFlatMinutes($project),
             'isDialog' => true,
         ] + $this->classificationOptions($project) + $this->tagPickerData());
@@ -97,6 +102,7 @@ class TimeEntryController extends Controller {
             'entry' => $timeEntry->load('tags:id,name,color'),
             'tasks' => $tasks,
             'diaryOptions' => $this->diaryOptions($project, $timeEntry->diary_entry_id),
+            'ticketOptions' => $this->ticketOptions($project, $timeEntry->service_ticket_id),
             'travelFlatMinutes' => $this->travelFlatMinutes($project),
             'isDialog' => true,
         ] + $this->classificationOptions($project) + $this->tagPickerData($timeEntry));

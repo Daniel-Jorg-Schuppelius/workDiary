@@ -10,6 +10,66 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- GAEB und Vergabe (Phase 156, MVP-1297, 1299, 1303): Die Prüfung vor der
+  Abgabe meldet Preise in fremder Währung und eine Umsatzsteuer oder
+  Bruttosumme, die nicht zur Nettosumme passt. Fristen offener
+  Ausschreibungen (Rückfrage, Teilnahme, Abgabe, Eröffnung, Bindefrist)
+  stehen im Kalender und im persönlichen ICS-Feed, über den neuen
+  Erweiterungspunkt `CalendarEventSource`. Vorbemerkungen des LV werden aus
+  GAEB 90 übernommen und in der LV-Ansicht gezeigt.
+- Bank und DATEV (Phase 156, MVP-1274, 1277–1279): CAMT.052
+  (Tagesauszug) und CAMT.054 (Umsatzmeldung) werden gelesen — wie die
+  eigenen Zahlungsaufträge PAIN.001/008 als vorläufige Auszüge: Vorschau
+  ohne Abgleich, Buchung, Liquidität und Kennzahlen, bis der verbindliche
+  Kontoauszug (CAMT.053/MT940) desselben Kontos sie ersetzt. Jeder
+  verbindliche Auszug zeigt seinen Anschluss an den Vorauszug (Saldo und
+  Lücke an Bankarbeitstagen). DATEV-Stapel tragen einen Übermittlungsstand
+  (übermittelt, von der Kanzlei bestätigt oder abgelehnt) im Verlauf und
+  haben einen Begleitbericht als PDF.
+- Faktura und Einkauf (Phase 156, MVP-1280–1285): Gutschriftsverfahren
+  als eigener Belegtyp — Gutschrift an Lieferanten mit eigenem Nummernkreis
+  (`GS-Jahr-Nummer`), Pflichtangabe „Gutschrift“, XRechnung mit Typcode 389,
+  Vereinbarung am Lieferanten als Voraussetzung; ausgestellte Gutschriften
+  gehen dem Lieferanten zugeordnet in den Rechnungseingang und von dort an
+  DATEV bzw. das angebundene Programm. Lieferanten führen jetzt auch die
+  Steuernummer. Angebote zeigen „vom Kunden angesehen“, die Annahme im Portal
+  nimmt freiwillig Name und Unterschrift. Einbehalt und Bürgschaft lassen
+  sich an eine Gewährleistungsfrist koppeln (Freigabetermin bzw.
+  Rückgabemeldung). Nachweis-Ampel des Lieferanten an der Bestellung,
+  Materialvorschlag aus der Stückliste an Ticket und Auftrag, Rundschreiben
+  mit Anhang und Vorlagen.
+- Lernplattform (Phase 156, MVP-1262–1273): Fragen per CSV/Excel in den
+  Fragenkatalog; QR-Code zur Prüfseite auf dem Zertifikat; Lernserie (Tage in
+  Folge, abschaltbar); große Medien in Teilen mit Wiederaufnahme; Meldung
+  „Prüfung endgültig nicht bestanden“ an Person und Teamleitung; Zeitlimit je
+  Frage und Zeitverlängerung je Person als Nachteilsausgleich; Freischaltung
+  nach einer Vorgängereinheit und ab Präsenztermin; Fristerinnerungen per
+  E-Mail für Externe ohne Konto; Konfigurationsausdruck mit Version und
+  Audit; laufende Einschreibungen auf die aktuelle Kursversion heben, mit
+  Vorschau; Einschreibung über Automationsregeln bei neuen Mitarbeitenden und
+  bei der Geräteausgabe (Regelformular mit Zielauswahl).
+- Betrieb und Vertrieb (Phase 156, MVP-1286–1296): Calendly-Buchungen melden
+  sich bei der Disposition; Ersatztermin vorschlagen (Kunde nimmt im Portal an
+  oder lehnt ab) und bestätigte Termine umbuchen; Demodaten für Umfragen,
+  Leads, Zutrittsmedien, Rundgänge und Terminanfragen; OCR-Werkzeuge in
+  Systemdiagnose und `system:health`; Rundgang offline mit der Scanzeit des
+  Geräts und Rundgangsbericht je Route, Objekt und Zeitraum (PDF, CSV, Excel);
+  Umfragen nach Auftragsabschluss und im festen Abstand, NPS je Monat; Angebot
+  aus dem Lead mit Verlauf und Lead-Auswertung nach Quelle und Konversion.
+- Helpdesk (Phase 156, MVP-1256–1261): Fachdienst und Serviceangebot am
+  Ticket mit Filter und Bericht; Servicelandkarte mit Abhängigkeiten und
+  Auswirkungsanalyse am Ticket; Routing nach Vertrag, Fachdienst, Angebot,
+  Sprache und Geschäftszeit sowie Zuweisung reihum oder nach Auslastung;
+  Zeiten am Ticket mit Summe und Ticketbezug in der Rechnung; Monatsverläufe
+  im Helpdesk-Bericht; Portal-Ticket mit Gerät und Service.
+- Vier-Augen-Schritt (Phase 156, MVP-1301): Leiste „Vier-Augen-Freigabe“
+  am Schritt mit Stand, „Zweite Person anfordern“ (benachrichtigt die
+  Teamleitung), Gegenzeichnen und Widerruf mit Begründung. Wer angefordert
+  hat, kann nicht selbst gegenzeichnen; ein Widerruf gibt die Freigabe für
+  eine andere Person frei.
+- Sicht „Rechteänderungen“ (Phase 156, MVP-1302): Rollen, Rollen- und
+  Direktrechte und Gruppenmitglieder mit Akteur, Betroffenem und Änderung,
+  lesend mit `access.audit.view` (Support und Administration).
 - Bindefrist für Angebote je Organisation (Einstellungen → Faktura,
   Vorgabe 30 Tage, `INVOICING_QUOTE_VALIDITY_DAYS`). Sie belegt „gültig bis“
   neuer Angebote vor und gilt bei Lexware, wenn ein Angebot keine Bindefrist
@@ -1712,6 +1772,8 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
 
 ### Changed
 
+- Ticket anlegen: Kunde, Projekt und Asset werden ausgewählt statt als
+  Nummer eingetippt.
 - Der Genehmigungs-Eingang gehört zum Kernmodul „Freigaben“ statt zum
   Lizenzmodul Service Desk: Adresse `/genehmigungen`, Menü „Tagesgeschäft →
   Erfassung“, eigenes Hilfethema; die alte Adresse leitet weiter.
@@ -1762,6 +1824,9 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
 
 ### Fixed
 
+- Prozedurlauf: „Als zweite Person gegenzeichnen“ war nie erreichbar, weil
+  ein Vier-Augen-Schritt ohne Gegenzeichnung als gesperrt galt und die
+  Ansicht dann keine Aktionen anbot.
 - **Lexoffice-Belege nach der API-Referenz:**
   - Die AB aus dem Fertigungsauftrag sendet jetzt Versandbedingungen
     (`none`). Ohne sie hat Lexware die AB abgelehnt.

@@ -548,8 +548,8 @@ class InvoiceGenerator {
         if (count($block->entryIds) <= 1) {
             $date = $block->firstStart ?? $primary?->date;
 
-            return trim((string) ($block->description
-                ?: __('invoicing.service_on', ['date' => optional($date)->format('d.m.Y')])));
+            return $block->withTicketPrefix(trim((string) ($block->description
+                ?: __('invoicing.service_on', ['date' => optional($date)->format('d.m.Y')]))));
         }
 
         $projectName = $block->project?->name ?: (string) __('Leistung');
@@ -563,7 +563,7 @@ class InvoiceGenerator {
             $span = optional($from)->format('d.m.Y') ?? '';
         }
 
-        return trim(sprintf('%s%s%s', $projectName, $kindSuffix, $span !== '' ? ' (' . $span . ')' : ''));
+        return $block->withTicketPrefix(trim(sprintf('%s%s%s', $projectName, $kindSuffix, $span !== '' ? ' (' . $span . ')' : '')));
     }
 
     /**

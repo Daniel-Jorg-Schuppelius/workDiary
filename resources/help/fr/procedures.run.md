@@ -1,7 +1,7 @@
 ---
 title: "Exécuter une procédure"
 topic: procedures.run
-version: 1
+version: 2
 keywords:
     - remplir une check-list
     - suivre une instruction
@@ -26,3 +26,22 @@ avec le rôle adéquat. Les **écarts** doivent être justifiés avec action
 de suivi — impossible de sauter une étape sans motif. À la clôture, le
 numéro de version du modèle est figé ; les modifications ultérieures du
 modèle n'ont **pas** d'effet rétroactif.
+
+## Étapes à double contrôle
+
+La barre **Validation à quatre yeux** de l'étape indique l'état : pas
+encore demandée, demandée, prise en charge ou contresignée.
+
+1. La personne qui exécute l'étape clique sur **Demander une seconde
+   personne**. Les responsables d'équipe reçoivent une notification avec
+   un lien vers le déroulement.
+2. Une autre personne autorisée ouvre le déroulement et clique sur
+   **Contresigner en tant que seconde personne**. La personne qui a fait
+   la demande ne peut pas contresigner elle-même.
+3. Ce n'est qu'ensuite que l'étape peut être terminée.
+
+Une contresignature peut être **révoquée** avec un motif (droit
+« Révoquer l'approbation à quatre yeux », en général responsables ou
+administration). L'étape repasse à « ouverte », la demande reste active
+et une autre personne peut contresigner. Demande, contresignature et
+révocation sont consignées avec la personne et l'heure dans l'historique.

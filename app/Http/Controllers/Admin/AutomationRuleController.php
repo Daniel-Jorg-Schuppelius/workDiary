@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Automation\Actions\RuleAction;
+use App\Automation\Actions\{RuleAction, TargetedRuleAction};
 use App\Automation\RuleEngine;
 use App\Automation\Triggers\RuleTrigger;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
@@ -62,9 +62,18 @@ class AutomationRuleController extends Controller {
 
         $engine = app(RuleEngine::class);
 
+        $organizationId = (int) $this->currentOrganization()->id;
+        $targets = [];
+        foreach ($engine->actions() as $action) {
+            if ($action instanceof TargetedRuleAction) {
+                $targets[$action->type()] = ['label' => $action->targetLabel(), 'options' => $action->targetOptions($organizationId)];
+            }
+        }
+
         return view('admin.automations._form_dialog', [
             'triggers' => $engine->triggers(),
             'actions' => $engine->actions(),
+            'targets' => $targets,
         ]);
     }
 
@@ -105,6 +114,7 @@ class AutomationRuleController extends Controller {
             'trigger_event' => ['required', 'string', Rule::in(array_map(static fn (RuleTrigger $t): string => $t->key(), $engine->triggers()))],
             'conditions' => 'required|string',
             'action_type' => ['required', 'string', Rule::in(array_map(static fn (RuleAction $a): string => $a->type(), $engine->actions()))],
+            'action_target' => ['nullable', 'string', 'max:120'],
             'priority' => 'nullable|integer|min:1|max:9999',
         ]);
 
@@ -116,7 +126,16 @@ class AutomationRuleController extends Controller {
         if (! $action instanceof RuleAction || ! in_array($data['trigger_event'], $action->triggers(), true)) {
             throw ValidationException::withMessages(['action_type' => __('automation.error.action_trigger_mismatch')]);
         }
-        $actions = [['type' => $action->type(), 'params' => []]];
+        $params = [];
+        // Aktionen mit Ziel (MVP-1273): nur ein Ziel, das die Aktion für diese Organisation anbietet.
+        if ($action instanceof TargetedRuleAction) {
+            $target = (string) ($data['action_target'] ?? '');
+            if (! array_key_exists($target, $action->targetOptions((int) $this->currentOrganization()->id))) {
+                throw ValidationException::withMessages(['action_target' => __('automation.error.target_required')]);
+            }
+            $params['target'] = $target;
+        }
+        $actions = [['type' => $action->type(), 'params' => $params]];
 
         AutomationRule::create([
             'organization_id' => (int) $this->currentOrganization()->id,

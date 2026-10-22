@@ -14,7 +14,7 @@ namespace App\Models\Sales;
 
 use App\Casts\MoneyCast;
 use App\Enums\Sales\QuoteStatus;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, DisclosesLabourCosts, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, DisclosesLabourCosts, HasAttachments, HasSqid};
 use App\Models\Contracts\{AuditsChanges, HasDocumentLines};
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
@@ -43,6 +43,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property \Illuminate\Support\Carbon|null $follow_up_at
  * @property int|null $follow_up_user_id
  * @property \Illuminate\Support\Carbon|null $followed_up_at
+ * @property \Illuminate\Support\Carbon|null $viewed_at
  * @property array<string, mixed>|null $decision_snapshot
  * @property Money|null $subtotal
  * @property Money|null $tax_amount
@@ -55,15 +56,18 @@ class Quote extends Model implements AuditsChanges, HasDocumentLines {
     use Auditable;
     use BelongsToOrganization;
     use DisclosesLabourCosts;
+    use HasAttachments;
     /** @use HasFactory<\Database\Factories\Sales\QuoteFactory> */
     use HasFactory;
     use HasSqid;
 
     protected $fillable = [
-        'organization_id', 'customer_id', 'project_id', 'number', 'version',
+        'organization_id', 'customer_id', 'project_id', 'lead_id', 'number', 'version',
         'previous_version_id', 'status', 'valid_until', 'terms',
         // Nachfassen (Feature 112, MVP-601) — Vertriebstermin, nicht Rechtsfrist.
         'follow_up_at', 'follow_up_user_id', 'followed_up_at',
+        // Angesehen (MVP-1281): erstes Öffnen durch den Kunden.
+        'viewed_at',
         'subtotal', 'tax_amount', 'total', 'acceptance_token_hash',
         'decided_at', 'decision_snapshot', 'created_by', 'is_labour_cost_disclosed',
         'invoiced_externally_at', 'external_invoice_number',
@@ -76,6 +80,7 @@ class Quote extends Model implements AuditsChanges, HasDocumentLines {
         'is_labour_cost_disclosed' => 'boolean',
         'follow_up_at' => 'date',
         'followed_up_at' => 'datetime',
+        'viewed_at' => 'datetime',
         'decided_at' => 'datetime',
         'invoiced_externally_at' => 'datetime',
         'decision_snapshot' => 'array',
@@ -97,6 +102,15 @@ class Quote extends Model implements AuditsChanges, HasDocumentLines {
     /** @return HasMany<QuoteItem, $this> */
     public function lines(): HasMany {
         return $this->items();
+    }
+
+    /**
+     * Herkunft aus dem Vertrieb (MVP-1295).
+     *
+     * @return BelongsTo<Lead, $this>
+     */
+    public function lead(): BelongsTo {
+        return $this->belongsTo(Lead::class);
     }
 
     /** @return BelongsTo<Customer, $this> */

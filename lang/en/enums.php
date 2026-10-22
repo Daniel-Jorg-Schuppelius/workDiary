@@ -408,6 +408,7 @@ return [
                 'submissionReceived' => 'Submission awaiting grading',
                 'graded' => 'Grading available',
                 'certificateIssued' => 'Certificate issued',
+                'failedFinal' => 'Exam finally failed',
                 'waitlistPromoted' => 'Promoted from the waiting list',
                 'bookingDecided' => 'Course booking decided',
                 'timeApprovalRequested' => 'Learning time awaiting approval',
@@ -423,6 +424,7 @@ return [
             ],
             'procedure' => [
                 'deviationEscalated' => 'Procedure deviation escalated',
+                'secondPersonRequested' => 'Four-eyes approval requested',
             ],
             'report' => [
                 'warning' => 'Early warning from reports',
@@ -1550,11 +1552,25 @@ return [
             'qif' => 'QIF',
             'qxf' => 'QXF',
             'pain001' => 'PAIN.001',
+            'camt052' => 'CAMT.052',
+            'camt054' => 'CAMT.054',
             'pain008' => 'PAIN.008',
         ],
         'transaction-direction' => [
             'credit' => 'Incoming',
             'debit' => 'Outgoing',
+        ],
+        'statement-chain-check' => [
+            'ok' => 'Follows previous statement',
+            'gap' => 'Gap to previous statement',
+            'mismatch' => 'Does not match previous statement',
+            'first' => 'First statement',
+        ],
+        'datev-transmission-status' => [
+            'open' => 'Not transmitted',
+            'transmitted' => 'Transmitted',
+            'confirmed' => 'Confirmed by the accountant',
+            'rejected' => 'Rejected by the accountant',
         ],
         'balance-check' => [
             'ok' => 'Balance chain consistent',
@@ -2094,6 +2110,11 @@ return [
         ],
     ],
     'invoicing' => [
+        'self-billing-status' => [
+            'draft' => 'Draft',
+            'issued' => 'Issued',
+            'cancelled' => 'Cancelled',
+        ],
         'online-payment-status' => [
             'open' => 'Open',
             'paid' => 'Paid',
@@ -2208,7 +2229,7 @@ return [
         'module_kind' => ['platform' => 'Platform service', 'core' => 'Core module', 'feature' => 'Feature module'],
     ],
     'numbering' => [
-        'number_scope' => ['service_ticket' => 'Service ticket', 'problem_report' => 'Error message', 'asset' => 'Asset', 'article' => 'Article', 'manufacturing_order' => 'Manufacturing order', 'serial' => 'Serial number', 'purchase_order' => 'Order', 'customer' => 'Customer', 'supplier' => 'Supplier', 'invoice' => 'Invoice', 'credit_note' => 'Credit note', 'cancellation' => 'Cancellation invoice', 'quote' => 'Quotation', 'order_confirmation' => 'Order confirmation', 'delivery_note' => 'Delivery note', 'proforma' => 'Pro forma invoice', 'claim' => 'Complaint', 'rma' => 'Return shipment (RMA)', 'rental' => 'Rental file', 'asset_finance' => 'Leasing file', 'contract' => 'Contract', 'privacy_incident' => 'Data protection incident', 'data_subject_request' => 'Data subject request', 'disposal' => 'Disposal case', 'certificate' => 'Certificate', 'damage' => 'Damage case', 'recall' => 'Recall'],
+        'number_scope' => ['service_ticket' => 'Service ticket', 'problem_report' => 'Error message', 'asset' => 'Asset', 'article' => 'Article', 'manufacturing_order' => 'Manufacturing order', 'serial' => 'Serial number', 'purchase_order' => 'Order', 'customer' => 'Customer', 'supplier' => 'Supplier', 'invoice' => 'Invoice', 'credit_note' => 'Credit note', 'cancellation' => 'Cancellation invoice', 'self_billing' => 'Self-billed credit note', 'quote' => 'Quotation', 'order_confirmation' => 'Order confirmation', 'delivery_note' => 'Delivery note', 'proforma' => 'Pro forma invoice', 'claim' => 'Complaint', 'rma' => 'Return shipment (RMA)', 'rental' => 'Rental file', 'asset_finance' => 'Leasing file', 'contract' => 'Contract', 'privacy_incident' => 'Data protection incident', 'data_subject_request' => 'Data subject request', 'disposal' => 'Disposal case', 'certificate' => 'Certificate', 'damage' => 'Damage case', 'recall' => 'Recall'],
     ],
     'patrol' => [
         'patrol_run_status' => ['running' => 'Active', 'completed' => 'Completed', 'aborted' => 'Cancelled'],

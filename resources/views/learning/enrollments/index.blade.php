@@ -25,6 +25,13 @@
                         show-label>{{ __('learning.action.add_participant') }}</x-icon-btn>
         @endif
         <x-help-button topic="learning.overview" />
+        @if ($behindCount > 0)
+            {{-- Versionswechsel (MVP-1272): offene Einschreibungen auf die aktuelle Version. --}}
+            <x-icon-btn icon="upgrade" tone="ghost" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('learning.courses.enrollments.version', $course)"
+                        show-label>{{ __('learning.action.move_to_version', ['version' => $currentVersion?->version]) }}</x-icon-btn>
+        @endif
     </x-slot:actions>
 
     @unless ($canEnroll)
@@ -85,6 +92,9 @@
                     @if ($enrollment->courseVersion)
                         <span class="text-xs text-muted">· v{{ $enrollment->courseVersion->version }}</span>
                     @endif
+                    @if ($enrollment->time_extension_percent)
+                        <span class="text-xs text-muted" title="{{ __('learning.field.time_extension_percent') }}">· +{{ $enrollment->time_extension_percent }} %</span>
+                    @endif
                 </td>
                 <td class="text-sm">
                     <x-status-badge :tone="$enrollment->status->tone()" size="sm">{{ $enrollment->status->label() }}</x-status-badge>
@@ -113,6 +123,10 @@
                                             data-entry-modal-trigger
                                             :href="route('learning.courses.enrollments.waiver', [$course, $enrollment])"
                                             :label="__('learning.action.grant_waiver')" />
+                                <x-icon-btn icon="more_time" tone="outline" size="xs"
+                                            data-entry-modal-trigger
+                                            :href="route('learning.courses.enrollments.time-extension', [$course, $enrollment])"
+                                            :label="__('learning.action.time_extension')" />
                             @endif
                             @if ($isExternal)
                                 <form method="POST" action="{{ route('learning.courses.enrollments.access-link', [$course, $enrollment]) }}"

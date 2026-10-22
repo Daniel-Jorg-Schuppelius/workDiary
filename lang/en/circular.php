@@ -24,6 +24,16 @@ return [
     'no_email' => 'no e-mail address',
     'confirm_send' => 'Send the circular to :count recipients now?',
     'body_hint' => 'Placeholders: :firma, :kunde, :ansprechpartner',
+    'attachment_hint' => 'Optional: one file attached to every email.',
+    'template' => [
+        'heading' => 'Templates',
+        'save' => 'Save as template',
+        'saved' => 'Template saved.',
+        'use' => 'Create from template',
+        'based_on' => 'Based on the template “:subject”.',
+        'attachments' => 'Taken over from the template: :names',
+        'not_sendable' => 'A template is not sent — create a circular from it.',
+    ],
     'mandatory_hint' => 'Mandatory notices also reach customers who opted out of bulk mail — for legally required information only.',
     'portal_hint' => 'The notice additionally appears in the customer portal.',
 
@@ -59,6 +69,7 @@ return [
     ],
 
     'field' => [
+        'attachment' => 'Attachment',
         'body' => 'Text',
         'is_mandatory' => 'Mandatory notice',
         'portal_notice' => 'Show in customer portal',

@@ -9,7 +9,15 @@
 @component('mail::message')
 # {{ __('learning.mail.access_heading') }}
 
+@if ($dueAt)
+{{ __('learning.mail.reminder_intro', ['name' => $participant->name, 'course' => $courseTitle, 'date' => $dueAt->translatedFormat('d.m.Y')]) }}
+@if ($final)
+
+**{{ __('learning.mail.reminder_final') }}**
+@endif
+@else
 {{ __('learning.mail.access_intro', ['name' => $participant->name, 'course' => $courseTitle]) }}
+@endif
 
 @component('mail::button', ['url' => $accessUrl])
 {{ __('learning.mail.access_button') }}

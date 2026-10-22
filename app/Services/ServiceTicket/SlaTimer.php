@@ -229,6 +229,30 @@ class SlaTimer implements ServiceLevelResolver {
     }
 
     /**
+     * Liegt der Zeitpunkt (Wanduhrzeit der Organisation) in einem Fenster?
+     * Ohne Fenster gilt jeder Zeitpunkt als Geschäftszeit (MVP-1258).
+     *
+     * @param  array<int|string, mixed>|null  $businessHours
+     */
+    public function isWithinBusinessHours(?array $businessHours, Carbon $at): bool {
+        $windows = $this->normalizeBusinessHours($businessHours);
+        if ($windows === []) {
+            return true;
+        }
+        if (! $this->isBusinessDay($at, $windows, $this->holidays())) {
+            return false;
+        }
+        $minute = $at->hour * 60 + $at->minute;
+        foreach ($windows[$at->dayOfWeekIso] ?? [] as $window) {
+            if ($minute >= $window['from'] && $minute < $window['to']) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @param  array<int, list<array{from: int, to: int}>>  $windows
      */
     private function isBusinessDay(Carbon $date, array $windows, HolidayService $holidays): bool {

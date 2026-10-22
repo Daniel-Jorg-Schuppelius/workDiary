@@ -51,3 +51,7 @@ pedidos** genera a partir de ellas borradores por proveedor, que conviene
 revisar antes de pedir. Crear, pedir y registrar requieren el permiso
 **Registrar movimientos de stock**; **Cancelar** un pedido es
 irreversible.
+
+## Semáforo de justificantes
+
+Si el proveedor debe aportar justificantes obligatorios (por ejemplo, certificado de exención o seguro), la cabecera del pedido muestra su **semáforo**: verde si todo es válido, amarillo si algo vence pronto, rojo si faltan o han caducado. Al hacer clic se abre el resumen de justificantes. Si el rojo bloquea el envío lo sigue determinando el ajuste de los justificantes.

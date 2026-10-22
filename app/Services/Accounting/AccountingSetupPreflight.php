@@ -187,6 +187,7 @@ class AccountingSetupPreflight {
             ->count();
 
         $count += BankTransaction::query()
+            ->booked()
             ->where('organization_id', $organization->id)
             ->where('booking_date', '>=', DateRange::day($date))
             ->whereNotNull('currency')

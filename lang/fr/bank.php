@@ -32,6 +32,7 @@ return [
         'opening_balance' => 'Solde d’ouverture',
         'closing_balance' => 'Solde de clôture',
         'balance_check' => 'Chaîne de soldes',
+        'chain_check' => 'Lien avec le relevé précédent',
         'tx_count' => 'Opérations',
         'open' => 'Ouvert',
         'matched' => 'Affecté',
@@ -105,6 +106,7 @@ return [
             'unmatched' => 'Affectation annulée.',
         ],
         'error' => [
+            'provisional' => 'Les opérations provisoires (CAMT.052/054, PAIN) ne sont pas rapprochées. Attendez le relevé définitif.',
             'no_allocations' => 'Aucune affectation n’a été indiquée.',
             'target_not_found' => 'La cible d’affectation est introuvable.',
         ],
@@ -147,6 +149,14 @@ return [
         'error' => [
             'duplicate_iban' => 'Un compte bancaire existe déjà pour cet IBAN.',
         ],
+    ],
+    'statement' => [
+        'provisional' => 'provisoire',
+        'superseded' => 'remplacé',
+        'provisional_hint' => 'Relevé provisoire (:format) : ces opérations ne servent que d\'aperçu. Elles ne sont ni rapprochées ni comptabilisées et ne comptent ni dans la trésorerie ni dans les indicateurs. Le relevé définitif (CAMT.053 ou MT940) du même compte les remplace.',
+        'superseded_hint' => 'Remplacé le :date par le relevé définitif.',
+        'chain_gap_hint' => 'Des jours ouvrés manquent entre le relevé précédent (jusqu\'au :date) et celui-ci. Veuillez importer le relevé manquant.',
+        'chain_mismatch_hint' => 'Le solde d\'ouverture (:opening) diffère du solde de clôture du relevé précédent (:previous).',
     ],
     'empty' => [
         'statements' => 'Aucun relevé bancaire importé pour le moment.',

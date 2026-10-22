@@ -58,6 +58,7 @@ class ReconciliationService implements PaymentStatusProvider {
         if ($allocations === []) {
             throw new BankImportException('noAllocations', (string) __('bank.reconcile.error.no_allocations'), []);
         }
+        $this->assertBooked($transaction);
 
         $actorId = $this->resolveActorId($actor);
 
@@ -164,6 +165,8 @@ class ReconciliationService implements PaymentStatusProvider {
         ?string $reason = null,
         ?User $actor = null,
     ): BankTransaction {
+        $this->assertBooked($returnTransaction);
+
         // Org-Isolation hart erzwingen (Whitebox-Konvention: nie über die
         // Mandantengrenze kompensieren).
         if ((int) $original->organization_id !== (int) $returnTransaction->organization_id) {
@@ -275,6 +278,7 @@ class ReconciliationService implements PaymentStatusProvider {
     }
 
     private function setStatus(BankTransaction $transaction, MatchStatus $status, string $event, ?User $actor): BankTransaction {
+        $this->assertBooked($transaction);
         $actorId = $this->resolveActorId($actor);
 
         return DB::transaction(function () use ($transaction, $status, $event, $actorId): BankTransaction {
@@ -284,6 +288,21 @@ class ReconciliationService implements PaymentStatusProvider {
 
             return $transaction->refresh();
         });
+    }
+
+    /**
+     * Vorläufige Umsätze (CAMT.052/054, PAIN; MVP-1274) werden nicht
+     * abgeglichen — sonst zählte die Zahlung doppelt, sobald der verbindliche
+     * Auszug sie noch einmal bringt.
+     *
+     * @throws BankImportException
+     */
+    private function assertBooked(BankTransaction $transaction): void {
+        if ($transaction->isProvisional()) {
+            throw new BankImportException('provisional', (string) __('bank.reconcile.error.provisional'), [
+                'transaction_id' => $transaction->id,
+            ]);
+        }
     }
 
     private function applyEffect(Model $target, BankTransaction $transaction, ?int $actorId = null, ?PaymentAllocation $allocation = null): void {

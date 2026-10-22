@@ -58,6 +58,8 @@ final class PdfGeneratorInventory {
         'app/Services/Protocol/ProtocolPdfRenderer.php' => ['protocol'],
         'app/Services/Takeoff/TakeoffPdfRenderer.php' => ['protocol'],
         'app/Services/Finance/Ebics/EbicsLetterPdfRenderer.php' => ['report'],
+        // Begleitbericht zum DATEV-Stapel (MVP-1278).
+        'app/Services/Finance/DatevBatchReportPdfRenderer.php' => ['report'],
         'app/Services/Disposal/DisposalRecordPdfRenderer.php' => ['protocol'],
         'app/Services/Safety/SafetyEvidencePdfRenderer.php' => ['protocol'],
         'app/Services/Manufacturing/ManufacturingRecordPdfRenderer.php' => ['manufacturing_record'],
@@ -70,6 +72,8 @@ final class PdfGeneratorInventory {
         'app/Services/Learning/LearningReportCardPdfRenderer.php' => ['certificate'],
         'app/Services/Learning/LearningDossierPdfRenderer.php' => ['report'],
         'app/Services/Learning/LearningAttendanceListPdfRenderer.php' => ['report'],
+        'app/Services/Learning/LearningConfigurationPdfRenderer.php' => ['report'],
+        'app/Services/Invoicing/SelfBillingPdfRenderer.php' => ['credit_note'],
         // Vereinsverwaltung (Feature 159, MVP-847): Graduierungsbescheinigung — dieselbe Dokumentart wie das Zertifikat.
         'app/Services/Club/ClubGradeCertificatePdfRenderer.php' => ['certificate'],
         // Zuwendungsbestätigung nach amtlichem Muster (MVP-1003): Aussteller muss erkennbar sein.

@@ -15,8 +15,9 @@ namespace App\Models\Finance;
 use App\Enums\Finance\{MatchStatus, TransactionDirection};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasJournal, HasSqid};
 use Database\Factories\Finance\BankTransactionFactory;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
 
@@ -109,6 +110,21 @@ class BankTransaction extends Model {
     /** @return BelongsTo<BankStatement, $this> */
     public function statement(): BelongsTo {
         return $this->belongsTo(BankStatement::class, 'bank_statement_id');
+    }
+
+    /**
+     * Nur Umsätze verbindlicher Auszüge (MVP-1274): vorläufige aus CAMT.052/054
+     * und PAIN zählen weder im Abgleich noch in Liquidität und Kennzahlen.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function booked(Builder $query): void {
+        $query->whereHas('statement', static fn (Builder $statement) => $statement->where('is_provisional', false));
+    }
+
+    public function isProvisional(): bool {
+        return (bool) $this->statement?->is_provisional;
     }
 
     /** @return HasMany<PaymentAllocation, $this> */

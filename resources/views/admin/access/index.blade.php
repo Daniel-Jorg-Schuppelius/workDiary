@@ -13,6 +13,11 @@
 
 @section('content')
 <x-index-page :subtitle="$organization ? __('Rollen, Gruppen, Mitglieder und Berechtigungen für :org verwalten.', ['org' => $organization->name]) : __('Zugriffssteuerung & Berechtigungen.')">
+    @can(\App\Enums\User\Permission::AccessAuditView->value)
+        <x-slot:actions>
+            <x-icon-btn icon="manage_history" size="sm" :href="route('admin.access.audit')" show-label>{{ __('access.audit.link') }}</x-icon-btn>
+        </x-slot:actions>
+    @endcan
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <x-card as="a" href="{{ route('admin.access.roles.index') }}" class="hover:shadow-md transition-shadow flex flex-col gap-2">

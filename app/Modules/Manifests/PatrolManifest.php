@@ -45,4 +45,16 @@ final class PatrolManifest extends Manifest {
             'patrol_scans',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Sync\Contracts\SyncCommandHandler::class => [
+                \App\Services\Patrol\Sync\PatrolScanSyncHandler::class,
+            ],
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Patrol\Demo\PatrolDemoBlock::class,
+            ],
+        ];
+    }
 }

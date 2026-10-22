@@ -13,6 +13,7 @@ namespace App\Http\Controllers\Concerns;
 use App\Enums\Task\TaskStatus;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Project\{Project, Task};
+use App\Models\ServiceTicket\ServiceTicket;
 use Illuminate\Support\Collection;
 
 /**
@@ -58,6 +59,34 @@ trait BuildsTimeEntryOptions {
                 }
             })
             ->orderByDesc('updated_at')
+            ->limit(50)
+            ->get();
+    }
+
+    /**
+     * Tickets für die Zeitbuchung (MVP-1259): offene des Projekts oder des
+     * Projektkunden ohne Projekt, dazu das aktuell verknüpfte.
+     *
+     * @return Collection<int, ServiceTicket>
+     */
+    protected function ticketOptions(Project $project, ?int $currentId = null): Collection {
+        return ServiceTicket::query()
+            ->select(['id', 'ticket_no', 'title', 'status'])
+            ->where(function ($q) use ($project, $currentId): void {
+                $q->where(function ($open) use ($project): void {
+                    $open->whereNotIn('status', [\App\Enums\ServiceTicket\ServiceTicketStatus::Closed, \App\Enums\ServiceTicket\ServiceTicketStatus::Done])
+                        ->where(function ($scope) use ($project): void {
+                            $scope->where('project_id', $project->id);
+                            if ($project->customer_id !== null) {
+                                $scope->orWhere(fn ($c) => $c->whereNull('project_id')->where('customer_id', $project->customer_id));
+                            }
+                        });
+                });
+                if ($currentId !== null) {
+                    $q->orWhere('id', $currentId);
+                }
+            })
+            ->orderByDesc('reported_at')
             ->limit(50)
             ->get();
     }

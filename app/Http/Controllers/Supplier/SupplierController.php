@@ -116,6 +116,7 @@ class SupplierController extends Controller {
             'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($voucherRange['from'], $voucherRange['to'])),
             // Selbstauskunft (MVP-937).
             'questionnaireRequests' => SupplierQuestionnaireRequest::query()->where('supplier_id', $supplier->id)->with('questionnaire')->orderByDesc('id')->limit(10)->get(),
+            'selfBillingCredits' => \App\Models\Invoicing\SelfBillingCredit::query()->where('supplier_id', $supplier->id)->orderByDesc('id')->limit(10)->get(),
             'voucherRange' => $voucherRange,
             'externalDocuments' => app(PartyDocumentSources::class)->forParty($supplier, $voucherRange['from'], $voucherRange['to']),
             'attachments' => $supplier->attachments()->get(),

@@ -129,6 +129,9 @@ return [
     'calculation' => [
         'unpriced_hint' => ':count Position trägt keinen Preis und geht deshalb nicht in die Gesamtdifferenz ein.|:count Positionen tragen keinen Preis und gehen deshalb nicht in die Gesamtdifferenz ein.',
     ],
+    'preamble' => [
+        'title' => 'Vorbemerkungen',
+    ],
     'preflight' => [
         'version_unknown' => 'GAEB-Version konnte nicht erkannt werden.',
         'version_unsupported' => 'GAEB-Version :version wird nicht unterstützt (Ziellinie 3.3).',
@@ -148,6 +151,9 @@ return [
         'up_components_mismatch' => 'Position :ref: Summe der Einheitspreisanteile (:sum) weicht vom Einheitspreis (:price) ab.',
         'missing_text' => 'Position :ref ohne Kurz-/Langtext.',
         'total_mismatch' => 'Die angegebene Summe (:stated) weicht von der nachgerechneten Summe (:computed) ab.',
+        'currency_mismatch' => 'Position :ref: Preis in :currency, das Leistungsverzeichnis rechnet in :expected.',
+        'vat_mismatch' => 'Die Umsatzsteuer (:stated) passt nicht zu :rate % auf die Nettosumme (:computed).',
+        'gross_mismatch' => 'Die Bruttosumme (:stated) ist nicht Netto plus Umsatzsteuer (:computed).',
         'complement_empty' => 'Position :ref: Bieter-Textergänzung :mark ist nicht ausgefüllt.',
         'contractor_missing' => 'Für diese Phase fehlt die Anschrift des Bieters (Name, Straße, PLZ und Ort in den E-Rechnungs-Stammdaten).',
     ],

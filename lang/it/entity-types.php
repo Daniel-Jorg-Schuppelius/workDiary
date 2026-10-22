@@ -19,6 +19,8 @@ declare(strict_types=1);
  */
 return [
     'AccountingReportController' => 'Esportazione report: contabilità',
+    'LeadReportController' => 'Esportazione report: lead',
+    'PatrolReportController' => 'Esportazione report: ronde',
     'ContractTemplate' => 'Modello di contratto',
     'ResaleReportController' => 'Esportazione report: rivendita abbonamenti',
     'AccountingBudgetController' => 'Esportazione report: budget',
@@ -275,6 +277,8 @@ return [
     'InvoiceItem' => 'Voce di fattura',
     'InvoiceMailTemplate' => 'Modello e-mail fattura',
     'InvoiceRetention' => 'Ritenuta a garanzia',
+    'SelfBillingCredit' => 'Autofattura',
+    'SelfBillingCreditLine' => 'Riga di autofattura',
     'OnlinePayment' => 'Pagamento online',
     'EbicsConnection' => 'Accesso bancario EBICS',
     'DatevOnlineConnection' => 'Connessione DATEV Online',

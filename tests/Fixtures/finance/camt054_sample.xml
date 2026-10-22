@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.054.001.08">
+    <BkToCstmrDbtCdtNtfctn>
+        <GrpHdr>
+            <MsgId>TEST-CAMT-054-0001</MsgId>
+            <CreDtTm>2026-05-15T09:00:00+02:00</CreDtTm>
+        </GrpHdr>
+        <Ntfctn>
+            <Id>NTF-0001</Id>
+            <CreDtTm>2026-05-15T09:00:00+02:00</CreDtTm>
+            <Acct>
+                <Id>
+                    <IBAN>DE89370400440532013000</IBAN>
+                </Id>
+                <Ccy>EUR</Ccy>
+            </Acct>
+            <Ntry>
+                <NtryRef>0001</NtryRef>
+                <Amt Ccy="EUR">250.00</Amt>
+                <CdtDbtInd>DBIT</CdtDbtInd>
+                <Sts><Cd>BOOK</Cd></Sts>
+                <BookgDt><Dt>2026-05-15</Dt></BookgDt>
+                <ValDt><Dt>2026-05-15</Dt></ValDt>
+                <NtryDtls>
+                    <TxDtls>
+                        <Refs>
+                            <EndToEndId>ER-2026-0042</EndToEndId>
+                        </Refs>
+                        <Amt Ccy="EUR">250.00</Amt>
+                        <RltdPties>
+                            <Cdtr>
+                                <Nm>Lieferant AG</Nm>
+                            </Cdtr>
+                            <CdtrAcct>
+                                <Id><IBAN>DE75512108001245126199</IBAN></Id>
+                            </CdtrAcct>
+                        </RltdPties>
+                        <RmtInf>
+                            <Ustrd>Rechnung ER-2026-0042</Ustrd>
+                        </RmtInf>
+                    </TxDtls>
+                </NtryDtls>
+            </Ntry>
+        </Ntfctn>
+    </BkToCstmrDbtCdtNtfctn>
+</Document>

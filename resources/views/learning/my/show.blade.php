@@ -98,7 +98,7 @@
                             @if ($isLocked)
                                 <x-status-badge tone="neutral" size="sm" outline>
                                     <x-icon name="lock_clock" />
-                                    {{ $unit->releaseDateFor($enrollment)?->isFuture() ? __('learning.badge.available_from', ['date' => $unit->releaseDateFor($enrollment)?->translatedFormat('d.m.Y')]) : __('learning.badge.after_previous_unit') }}
+                                    {{ $unit->lockLabelFor($enrollment, $completedUnitIds) }}
                                 </x-status-badge>
                             @elseif ($unit->kind === \App\Enums\Learning\LearningUnitKind::Event && $unit->event)
                                 @php $participation = $eventParticipations[$unit->event_id] ?? null; @endphp

@@ -124,3 +124,7 @@ blocked by missing master data.
 Master data changes only apply going forward — completed handovers
 remain unchanged. Next: create projects for the customer, check the
 billing data for invoices and use the CSV import for larger sets.
+
+## Supplier: tax data and self-billing
+
+The supplier carries the **VAT ID** and **tax number**. If your organisation bills a supplier’s services itself, enter the date of the **self-billing agreement**; only then can self-billed credit notes be issued to the supplier. The supplier page shows the agreement and the latest credit notes.

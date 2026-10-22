@@ -24,6 +24,16 @@ return [
     'no_email' => 'nessun indirizzo e-mail',
     'confirm_send' => 'Inviare ora la circolare a :count destinatari?',
     'body_hint' => 'Segnaposto: :firma, :kunde, :ansprechpartner',
+    'attachment_hint' => 'Facoltativo: un file allegato a ogni e-mail.',
+    'template' => [
+        'heading' => 'Modelli',
+        'save' => 'Salva come modello',
+        'saved' => 'Modello salvato.',
+        'use' => 'Crea dal modello',
+        'based_on' => 'Basato sul modello «:subject».',
+        'attachments' => 'Ripresi dal modello: :names',
+        'not_sendable' => 'Un modello non viene inviato: crei una circolare a partire da esso.',
+    ],
     'mandatory_hint' => 'Le comunicazioni obbligatorie raggiungono anche i clienti che hanno rifiutato gli invii collettivi — solo per informazioni previste dalla legge.',
     'portal_hint' => 'La comunicazione compare anche nel portale clienti.',
 
@@ -59,6 +69,7 @@ return [
     ],
 
     'field' => [
+        'attachment' => 'Allegato',
         'body' => 'Testo',
         'is_mandatory' => 'Comunicazione obbligatoria',
         'portal_notice' => 'Mostra nel portale clienti',

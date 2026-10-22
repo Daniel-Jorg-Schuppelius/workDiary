@@ -46,4 +46,23 @@ final class SurveyManifest extends Manifest {
             'surveys',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Survey\Demo\SurveyDemoBlock::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, list<class-string>> */
+    public function listeners(): array {
+        return [
+            // Umfrage nach Auftragsabschluss (MVP-1293).
+            \App\Events\Diary\OrderCompleted::class => [
+                \App\Listeners\Survey\InviteSurveyOnOrderCompleted::class,
+            ],
+        ];
+    }
 }

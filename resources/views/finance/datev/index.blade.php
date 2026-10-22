@@ -70,7 +70,12 @@
                 <tr class="hover">
                     <td>#{{ $batch->batch_no }}</td>
                     <td>{{ $batch->period_from?->toDateString() }} – {{ $batch->period_to?->toDateString() }}</td>
-                    <td><x-status-badge :tone="$batch->status->tone()" :label="$batch->status->label()" /></td>
+                    <td>
+                        <x-status-badge :tone="$batch->status->tone()" :label="$batch->status->label()" />
+                        @if ($batch->isFinal())
+                            <x-status-badge :tone="$transmissions[$batch->id]->tone()" :label="$transmissions[$batch->id]->label()" outline />
+                        @endif
+                    </td>
                     <td class="text-right">{{ $batch->booking_count }}</td>
                     <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $batch->total_amount, 2, withThousandsSeparator: true) }}</td>
                     <td class="font-mono text-xs">{{ $batch->file_hash ? \Illuminate\Support\Str::limit($batch->file_hash, 12, '…') : '—' }}</td>

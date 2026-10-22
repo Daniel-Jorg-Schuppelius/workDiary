@@ -200,4 +200,29 @@ class LeadService {
             'anonymized_at' => Carbon::now(),
         ])->save();
     }
+
+    /**
+     * Verlauf des Leads (MVP-1295): eigene Ereignisse und die der Angebote aus
+     * ihm, neueste zuerst — aus der Audit-Kette, nicht nachgebaut.
+     *
+     * @return list<array{at: \Carbon\Carbon|null, label: string, quote: \App\Models\Sales\Quote|null}>
+     */
+    public function history(Lead $lead, int $limit = 50): array {
+        /** @var \Illuminate\Support\Collection<int, \App\Models\Sales\Quote> $quotes */
+        $quotes = $lead->quotes()->get(['id', 'number', 'organization_id'])->keyBy('id');
+        $logs = \App\Models\Audit\AuditLog::query()
+            ->where('organization_id', $lead->organization_id)
+            ->where(fn ($q) => $q
+                ->where(fn ($l) => $l->where('auditable_type', \App\Support\MorphMap::stableKey(Lead::class))->where('auditable_id', $lead->id))
+                ->orWhere(fn ($l) => $l->where('auditable_type', \App\Support\MorphMap::stableKey(\App\Models\Sales\Quote::class))->whereIn('auditable_id', $quotes->keys())))
+            ->orderByDesc('created_at')->orderByDesc('id')
+            ->limit($limit)
+            ->get(['id', 'event', 'auditable_type', 'auditable_id', 'created_at']);
+
+        return array_values($logs->map(fn (\App\Models\Audit\AuditLog $log): array => [
+            'at' => $log->created_at,
+            'label' => $log->eventLabel(),
+            'quote' => $log->auditable_type === \App\Support\MorphMap::stableKey(\App\Models\Sales\Quote::class) ? $quotes->get($log->auditable_id) : null,
+        ])->all());
+    }
 }

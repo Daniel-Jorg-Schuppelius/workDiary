@@ -15,7 +15,7 @@ namespace App\Services\Gaeb;
 use App\Enums\Gaeb\GaebPhase;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
-use ERechnungToolkit\Entities\Gaeb\GaebBoq;
+use ERechnungToolkit\Entities\Gaeb\{GaebBoq, GaebTotals};
 use ERechnungToolkit\Enums\GaebItemType;
 use ERechnungToolkit\Helper\Gaeb\GaebCalculator;
 
@@ -62,7 +62,20 @@ class GaebPreflight {
             ]);
         }
 
+        array_push($errors, ...$this->vatFindings($boq->getTotals()));
+
+        $currency = $boq->getCurrency();
         foreach ($boq->getItems() as $item) {
+            // Ein Preis in fremder Währung ließe die Summe zwei Währungen addieren (MVP-1297).
+            $price = $item->getUnitPrice();
+            if ($price !== null && $price->getCurrency() !== $currency) {
+                $errors[] = __('gaeb.preflight.currency_mismatch', [
+                    'ref' => $item->getReference(),
+                    'currency' => $price->getCurrency()->value,
+                    'expected' => $currency->value,
+                ]);
+            }
+
             foreach ($item->getTextComplements() as $complement) {
                 if (!$complement->isBidderComplement()) {
                     continue;
@@ -88,6 +101,47 @@ class GaebPreflight {
             'warnings' => $warnings,
             'meta' => $report['meta'],
         ];
+    }
+
+    /**
+     * Umsatzsteuer der Angebotssumme (MVP-1297): Steuer = Netto × Satz, auf
+     * Cent gerundet; Brutto = Netto + Steuer. Fehlt ein Wert, gibt es nichts
+     * zu vergleichen.
+     *
+     * @return list<string>
+     */
+    private function vatFindings(?GaebTotals $totals): array {
+        $net = $totals?->getTotalNet();
+        $vat = $totals?->getVatAmount();
+        if ($totals === null || $net === null || $vat === null || $net->getCurrency() !== $vat->getCurrency()) {
+            return [];
+        }
+
+        $findings = [];
+        $rate = $totals->getVatRate();
+        if (is_numeric($rate)) {
+            $computed = $net->withScale(2)->percentage($rate);
+            if ($computed->compareTo($vat->withScale(2)) !== 0) {
+                $findings[] = (string) __('gaeb.preflight.vat_mismatch', [
+                    'rate' => $rate,
+                    'stated' => $vat->withScale(2)->format(false),
+                    'computed' => $computed->format(false),
+                ]);
+            }
+        }
+
+        $gross = $totals->getTotalGross();
+        if ($gross !== null && $gross->getCurrency() === $net->getCurrency()) {
+            $computed = $net->plus($vat)->withScale(2);
+            if ($computed->compareTo($gross->withScale(2)) !== 0) {
+                $findings[] = (string) __('gaeb.preflight.gross_mismatch', [
+                    'stated' => $gross->withScale(2)->format(false),
+                    'computed' => $computed->format(false),
+                ]);
+            }
+        }
+
+        return $findings;
     }
 
     /**

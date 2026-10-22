@@ -41,6 +41,11 @@ return [
         'permissions' => 'Verfügbare Berechtigungen',
     ],
 
+    'audit' => [
+        'title' => 'Rollen- und Rechteänderungen',
+        'subtitle' => 'Wer hat wann Rollen, Rechte und Gruppenmitgliedschaften in :org geändert.',
+        'link' => 'Rechteänderungen',
+    ],
     'hint' => [
         'hub' => 'Verwalte Rollen, Benutzergruppen und Mitgliederzuweisungen für die aktuell aktive Organisation. Plattformweite Rollen werden zusätzlich global gepflegt.',
         'permissions_readonly' => 'Berechtigungen sind systemseitig definiert und können nicht zur Laufzeit angelegt werden. Zur Vergabe pro Rolle wechsle in die Rollen-Bearbeitung.',
@@ -194,7 +199,7 @@ return [
         'access.manage' => 'Rechteverwaltung öffnen',
         'access.roles.assign' => 'Rollen zuweisen',
         'access.groups.assign' => 'Gruppen zuweisen',
-        'access.audit.view' => 'Audit-Protokoll einsehen',
+        'access.audit.view' => 'Rollen- und Rechteänderungen einsehen',
 
         'organization.update' => 'Organisation bearbeiten',
         'organization.billing' => 'Abrechnung der Organisation',

@@ -112,6 +112,7 @@ class TimeEntry extends Model {
         'timesheet_id',
         'task_id',
         'diary_entry_id',
+        'service_ticket_id',
         'user_id',
         'activity_category_id',
         'rework_reason_classification_id',
@@ -350,6 +351,11 @@ class TimeEntry extends Model {
     /** @return BelongsTo<DiaryEntry, $this> */
     public function diaryEntry(): BelongsTo {
         return $this->belongsTo(DiaryEntry::class);
+    }
+
+    /** @return BelongsTo<\App\Models\ServiceTicket\ServiceTicket, $this> */
+    public function serviceTicket(): BelongsTo {
+        return $this->belongsTo(\App\Models\ServiceTicket\ServiceTicket::class);
     }
 
     /** @return BelongsTo<User, $this> */

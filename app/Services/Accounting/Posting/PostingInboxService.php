@@ -144,6 +144,13 @@ class PostingInboxService {
             ]);
         }
 
+        // Vorläufige Umsätze (MVP-1274) bucht erst der verbindliche Auszug.
+        if ($transaction->isProvisional()) {
+            throw ValidationException::withMessages([
+                'clearing_account' => [(string) __('bank.reconcile.error.provisional')],
+            ]);
+        }
+
         if (trim($note) === '') {
             throw ValidationException::withMessages([
                 'note' => [(string) __('accounting.clearing.error.note_required')],

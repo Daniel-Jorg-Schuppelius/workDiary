@@ -126,3 +126,7 @@ della serie «Documento di trasporto»; se un programma di contabilità
 (Lexoffice o easybill) assegna il numero, WorkDiary trasmette la bolla in quel
 momento. Dopo sono disponibili il PDF e l'invio per e-mail. Le bolle della
 produzione nascono con ogni consegna (vedi ordini di produzione).
+
+## Visualizzato e firma
+
+Quando il cliente apre l’offerta tramite il link o nel portale clienti, l’intestazione mostra **«Visualizzato dal cliente il …»**; conta la prima apertura di un’offerta inviata. All’accettazione il cliente può indicare facoltativamente il proprio **nome** e **firmare**. La firma viene salvata come immagine sull’offerta e registrata con nome e data nello stato di accettazione congelato; accettare senza firma resta possibile.

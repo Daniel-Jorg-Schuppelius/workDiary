@@ -27,4 +27,7 @@
                       :hint="__('Antworten werden ohne Personenbezug gespeichert — technisch nicht rückführbar.')" />
     <x-checkbox-field name="trigger_on_ticket_close" :label="__('Nach Ticketabschluss automatisch einladen')"
                       :hint="__('Der Ermüdungsschutz (Standard: 90 Tage je Adresse) gilt immer.')" />
+    <x-checkbox-field name="trigger_on_order_completion" :label="__('survey.triggers.order')" />
+    <x-input-field name="trigger_schedule_days" type="number" min="7" max="730" :label="__('survey.triggers.schedule')"
+                   :hint="__('survey.triggers.scheduleHint')" />
 </x-modal>

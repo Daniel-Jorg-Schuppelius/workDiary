@@ -132,3 +132,7 @@ Les modifications de données de base ne valent que pour l'avenir —
 les remises clôturées restent inchangées. Ensuite : créer les projets
 du client, vérifier les données de facturation et utiliser l'import
 CSV pour les gros volumes.
+
+## Fournisseur : données fiscales et autofacturation
+
+Le fournisseur porte le **numéro de TVA** et le **numéro fiscal**. Si votre organisation facture elle-même les prestations d’un fournisseur, saisissez la date de l’**accord d’autofacturation** ; ce n’est qu’ensuite que des autofactures peuvent être émises. La page du fournisseur affiche l’accord et les dernières autofactures.

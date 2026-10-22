@@ -1,7 +1,7 @@
 ---
 title: "Ruoli & permessi"
 topic: admin.roles
-version: 2
+version: 3
 keywords:
     - autorizzazioni
     - diritti utente
@@ -79,3 +79,10 @@ Le modifiche ai ruoli hanno effetto immediato su tutti i membri
 assegnati — anche su menu, contenuti di aiuto e accesso ai moduli.
 Poi: curare le assegnazioni in «Membri» e leggere le note di
 sicurezza nel manuale di amministrazione.
+
+Ogni modifica a ruoli, permessi e appartenenze ai gruppi è elencata con
+persona e orario in **Modifiche ai permessi** (pulsante in alto nel
+controllo accessi e nel registro di audit). La vista è in sola lettura e
+richiede il permesso «Visualizzare le modifiche a ruoli e permessi»; gli
+account di supporto lo hanno per ricostruire gli eventi senza modificare
+nulla.

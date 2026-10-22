@@ -114,12 +114,15 @@ class GaebImportService {
                 'source_format' => $format->value,
                 'up_components' => $this->mapUpComponents($parsed),
                 'totals' => $this->mapTotals($parsed->getTotals()),
+                'preamble' => $parsed->getPreamble() !== [] ? $parsed->getPreamble() : null,
                 'phase' => GaebPhase::fromCode($parsed->getPhaseCode()),
                 'status' => BoqItemStatus::Imported,
                 'created_by' => $options['created_by'] ?? null,
             ]);
 
             if ($target !== null) {
+                // Die Vorbemerkungen gehören zur Datei wie die Positionen (MVP-1303).
+                $boq->update(['preamble' => $parsed->getPreamble() !== [] ? $parsed->getPreamble() : null]);
                 // Reimport ohne Ausführungsbezug: alte Struktur ersetzen.
                 $boq->items()->delete();
                 $boq->sections()->delete();

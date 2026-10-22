@@ -126,7 +126,16 @@ class PurchaseOrderController extends Controller {
             'articles' => Article::query()->where('purchasable', true)->orderBy('name')->limit(500)->get(),
             'canManage' => Auth::user()?->can(P::InventoryPost->value) ?? false,
             'canImportAdvice' => app(DespatchAdviceImportService::class)->available(),
+            // Nachweis-Ampel des Lieferanten (MVP-1283); ohne geforderte Nachweise keine Ampel.
+            'credentialStatus' => $this->credentialStatus($purchaseOrder),
         ]);
+    }
+
+    private function credentialStatus(PurchaseOrder $order): ?\App\Enums\Supplier\CredentialStatus {
+        $supplier = $order->supplier;
+        $credentials = app(\App\Services\Supplier\SupplierCredentialService::class);
+
+        return $supplier !== null && $credentials->statusFor($supplier)->isNotEmpty() ? $credentials->overallStatus($supplier) : null;
     }
 
     /**

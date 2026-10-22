@@ -43,7 +43,7 @@ class ProcedureRunController extends Controller {
      * Mobile Ausführungsansicht: alle Schritte in Reihenfolge mit Status,
      * Sperrgrund, dem aktuell ausführbaren Schritt sowie Wartezeit-Restzeit.
      */
-    public function show(ProcedureRun $run, ProcedureExecutionService $execution, ProcedureRunBlockTracker $blocks): View {
+    public function show(ProcedureRun $run, ProcedureExecutionService $execution, ProcedureRunBlockTracker $blocks, SecondPersonGate $secondPerson): View {
         Gate::authorize('view', $run);
         if ($run->status === ProcedureRunStatus::Blocked) {
             $blocks->refresh($run); // abgelaufene Wartezeit löst kein Ereignis aus
@@ -57,6 +57,7 @@ class ProcedureRunController extends Controller {
             'stepRuns.stepDef',
             'stepRuns.executedBy:id,name',
             'stepRuns.secondPerson:id,name',
+            'stepRuns.secondPersonRequester:id,name',
         ]);
 
         /** @var User $viewer */
@@ -80,7 +81,7 @@ class ProcedureRunController extends Controller {
         }
 
         $currentAssigned = false;
-        $steps = $stepRuns->map(function (ProcedureStepRun $sr) use ($execution, $viewer, $valuesByStepCode, &$currentAssigned): array {
+        $steps = $stepRuns->map(function (ProcedureStepRun $sr) use ($execution, $secondPerson, $viewer, $valuesByStepCode, &$currentAssigned): array {
             $blockReason = $execution->blockReasonFor($sr, $viewer);
             $applicable = $execution->isStepApplicable($sr, $valuesByStepCode);
             $isCurrent = false;
@@ -96,6 +97,7 @@ class ProcedureRunController extends Controller {
                 'applicable' => $applicable,
                 'isCurrent' => $isCurrent,
                 'waitRemaining' => $this->waitRemainingSeconds($sr),
+                'requiresSecondPerson' => $secondPerson->requiresSecondPerson($sr),
             ];
         });
 
@@ -268,10 +270,48 @@ class ProcedureRunController extends Controller {
             $gate->take($stepRun, $signer);
             $gate->sign($stepRun, $signer);
         } catch (ProcedureSecondPersonException $e) {
-            return back()->with('error', __('procedure.validation.secondPersonSelfNotAllowed'));
+            return back()->with('error', __('procedure.secondPerson.reason.' . $e->reason));
         }
 
         return back()->with('success', __('procedure.flash.secondPersonSigned'));
+    }
+
+    public function requestSecondPerson(ProcedureRun $run, ProcedureStepRun $stepRun, SecondPersonGate $gate): RedirectResponse {
+        Gate::authorize('requestSecondPerson', $run);
+        $this->assertStepBelongsToRun($run, $stepRun);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+
+        try {
+            $gate->request($stepRun, $actor);
+        } catch (ProcedureSecondPersonException $e) {
+            return back()->with('error', __('procedure.secondPerson.reason.' . $e->reason));
+        }
+
+        return back()->with('success', __('procedure.flash.secondPersonRequested'));
+    }
+
+    public function revokeSecondPerson(Request $request, ProcedureRun $run, ProcedureStepRun $stepRun, SecondPersonGate $gate): RedirectResponse {
+        Gate::authorize('revokeSecondPerson', $run);
+        $this->assertStepBelongsToRun($run, $stepRun);
+        abort_unless($run->status->isActive(), 409);
+        abort_if($stepRun->second_person_user_id === null, 409);
+
+        $data = $request->validate([
+            'reason' => ['required', 'string', 'min:5', 'max:2000'],
+        ]);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+
+        try {
+            $gate->revoke($stepRun, $actor, $data['reason']);
+        } catch (ProcedureSecondPersonException $e) {
+            return back()->with('error', __('procedure.secondPerson.reason.' . $e->reason));
+        }
+
+        return back()->with('success', __('procedure.flash.secondPersonRevoked'));
     }
 
     /** Schließt den Lauf ab (alle Pflichtschritte final, keine kritische Abweichung). */

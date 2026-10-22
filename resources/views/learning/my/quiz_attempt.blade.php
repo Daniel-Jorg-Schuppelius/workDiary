@@ -29,7 +29,9 @@
         $runnerOptions = [
             'total' => count($questions),
             'single' => $quiz->isSingleQuestionMode(),
-            'allowBack' => (bool) $quiz->allow_back,
+            'allowBack' => $quiz->allowsBack(),
+            // Zeit je Frage (MVP-1267) samt Nachteilsausgleich; die Gesamtfrist prüft der Server.
+            'questionSeconds' => app(\App\Services\Learning\LearningQuizService::class)->questionSeconds($quiz, $enrollment),
             'allowSkip' => (bool) $quiz->allow_skip,
             'expiresAt' => $attempt->expires_at?->toIso8601String(),
             'saveUrl' => route('learning.my.quiz.answer', [$enrollment, $attempt]),
@@ -55,6 +57,12 @@
                         {{ __('learning.field.remaining_time') }}:
                         <span class="font-mono" x-text="remaining">{{ $attempt->expires_at->orgTz()->translatedFormat('H:i') }}</span>
                     </span>
+                </div>
+            @endif
+            @if ($quiz->question_time_limit_seconds !== null)
+                <div class="alert alert-info text-sm" role="status" aria-live="polite">
+                    <x-icon name="hourglass_top" />
+                    <span>{{ __('learning.field.question_remaining') }}: <span class="font-mono" x-text="questionLeft"></span></span>
                 </div>
             @endif
 
@@ -281,7 +289,7 @@
                     @if ($quiz->isSingleQuestionMode())
                         <div class="mt-3 flex flex-wrap justify-between gap-2" data-quiz-nav>
                             <div class="flex gap-2">
-                                @if ($quiz->allow_back)
+                                @if ($quiz->allowsBack())
                                     <x-icon-btn icon="arrow_back" tone="ghost" size="sm" type="button" @click="previous()" x-show="hasPrevious()" show-label>{{ __('learning.action.previous_question') }}</x-icon-btn>
                                 @endif
                             </div>

@@ -1,7 +1,7 @@
 ---
 title: "Roles & permissions"
 topic: admin.roles
-version: 2
+version: 3
 keywords:
     - permissions
     - user rights
@@ -76,3 +76,9 @@ creation works — exactly as intended.
 Role changes take effect immediately for all assigned members — also
 for menus, help content and module access. Next: maintain assignments
 under "Members" and read the security notes in the admin handbook.
+
+Every change to roles, permissions and group memberships is listed with
+person and time under **Permission changes** (button at the top of access
+control and of the audit log). The view is read-only and needs the
+permission “View role and permission changes”; support accounts have it so they can
+trace what happened without changing anything.

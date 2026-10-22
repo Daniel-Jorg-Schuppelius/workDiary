@@ -10,10 +10,12 @@
 
 namespace App\Services\Procedure;
 
+use App\Enums\Notification\NotificationEvent;
 use App\Enums\Procedure\{ProcedureRunEventType, ProcedureStepRunStatus, ProcedureStepType};
 use App\Exceptions\ProcedureSecondPersonException;
 use App\Models\Platform\User;
 use App\Models\Procedure\ProcedureStepRun;
+use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -25,6 +27,10 @@ use Illuminate\Support\Facades\DB;
 class SecondPersonGate {
     // Zentraler Event-Schreiber + stepConfig (Vollaudit 2026-07, N38).
     use \App\Services\Procedure\Concerns\RecordsProcedureRunEvents;
+
+    public function __construct(
+        private readonly NotificationDispatcher $notifications,
+    ) {}
 
     /**
      * Wirft eine {@see ProcedureSecondPersonException}, wenn der
@@ -54,13 +60,23 @@ class SecondPersonGate {
         }
     }
 
+    /** Fordert die zweite Person an; eine offene Anforderung wird nicht erneut gemeldet. */
     public function request(ProcedureStepRun $stepRun, User $actor): ProcedureStepRun {
         $this->assertRequiresSecondPerson($stepRun);
+
+        if ($stepRun->second_person_requested_at !== null) {
+            return $stepRun;
+        }
+
+        $stepRun->second_person_requested_at = Carbon::now();
+        $stepRun->second_person_requester_user_id = $actor->id;
+        $stepRun->save();
 
         $this->recordStepEvent($stepRun, ProcedureRunEventType::SecondPersonRequested, $actor, [
             'requested_by' => $actor->id,
         ]);
         $this->announceProgress($stepRun, $actor);
+        $this->notifyRequested($stepRun, $actor);
 
         return $stepRun->refresh();
     }
@@ -78,10 +94,10 @@ class SecondPersonGate {
 
         $config = $this->stepConfig($stepRun);
 
+        // Vor dem Erledigen steht die ausführende Person nur als Anfordernde fest.
         if (
             $this->selfExclusion($stepRun)
-            && $stepRun->executed_by_user_id !== null
-            && $stepRun->executed_by_user_id === $taker->id
+            && in_array($taker->id, [$stepRun->executed_by_user_id, $stepRun->second_person_requester_user_id], true)
         ) {
             throw ProcedureSecondPersonException::selfNotAllowed($stepRun);
         }
@@ -154,8 +170,10 @@ class SecondPersonGate {
     public function revoke(ProcedureStepRun $stepRun, User $actor, string $reason): ProcedureStepRun {
         $this->assertRequiresSecondPerson($stepRun);
 
+        // Die Anforderung bleibt offen: eine andere Person kann übernehmen.
         return DB::transaction(function () use ($stepRun, $actor, $reason) {
             $previousSigner = $stepRun->second_person_user_id;
+            $stepRun->second_person_user_id = null;
             $stepRun->second_person_signed_at = null;
             if ($stepRun->status === ProcedureStepRunStatus::Done) {
                 $stepRun->status = ProcedureStepRunStatus::Pending;
@@ -184,6 +202,22 @@ class SecondPersonGate {
         }
 
         return $def->step_type === ProcedureStepType::Freigabe;
+    }
+
+    private function notifyRequested(ProcedureStepRun $stepRun, User $actor): void {
+        $run = $stepRun->run;
+        if ($run === null) {
+            return;
+        }
+
+        $step = (string) $stepRun->stepDef?->label;
+        $this->notifications->notify(NotificationEvent::ProcedureSecondPersonRequested, $run, null, [
+            'title' => (string) ($run->templateVersion?->template->name ?? $step),
+            'message' => (string) __('notification.message.procedure_second_person_requested', ['step' => $step, 'name' => $actor->name]),
+            'message_key' => 'notification.message.procedure_second_person_requested',
+            'message_params' => ['step' => $step, 'name' => $actor->name],
+            'url' => route('procedure-runs.show', $run),
+        ]);
     }
 
     private function selfExclusion(ProcedureStepRun $stepRun): bool {

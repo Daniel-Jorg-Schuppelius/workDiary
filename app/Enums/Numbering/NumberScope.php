@@ -28,6 +28,8 @@ enum NumberScope: string implements HasLabel {
     case Invoice = 'invoice';
     case CreditNote = 'credit_note';
     case Cancellation = 'cancellation';
+    // Gutschrift im Gutschriftsverfahren (MVP-1280), eigener Kreis nach § 14 Abs. 4 UStG.
+    case SelfBilling = 'self_billing';
     case Quote = 'quote';
     // Auftragsbestätigung und Lieferschein als eigene Belege (Phase 145, MVP-1162/1163).
     case OrderConfirmation = 'order_confirmation';
@@ -64,6 +66,7 @@ enum NumberScope: string implements HasLabel {
             self::Invoice => __('enums.numbering.number_scope.invoice'),
             self::CreditNote => __('enums.numbering.number_scope.credit_note'),
             self::Cancellation => __('enums.numbering.number_scope.cancellation'),
+            self::SelfBilling => __('enums.numbering.number_scope.self_billing'),
             self::Quote => __('enums.numbering.number_scope.quote'),
             self::OrderConfirmation => __('enums.numbering.number_scope.order_confirmation'),
             self::DeliveryNote => __('enums.numbering.number_scope.delivery_note'),
@@ -93,6 +96,7 @@ enum NumberScope: string implements HasLabel {
             self::Quote => true, // Programm vergibt beim Versand (Phase 145, MVP-1160)
             self::OrderConfirmation, self::DeliveryNote => true, // Programm vergibt beim Bestätigen bzw. Ausliefern (MVP-1164)
             self::Proforma => false, // keine steuerliche Belegwirkung
+            self::SelfBilling => false, // die Organisation stellt aus; die Buchhaltung bekommt den Beleg als Eingang
             self::ServiceTicket, self::Asset, self::Article, self::ManufacturingOrder, self::Serial, self::PurchaseOrder, self::ProblemReport => false,
             self::Claim, self::Rma => false, // Fallakten/Logistik, keine Belegwirkung
             self::Rental, self::AssetFinance => false, // Fallakten, keine Belegwirkung

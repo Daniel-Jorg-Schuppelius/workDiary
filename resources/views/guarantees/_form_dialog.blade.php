@@ -97,6 +97,16 @@
                 <x-project-options :projects="$projects" :selected="old('project_id', $guarantee?->project_id !== null ? \App\Support\Sqid::encode(\App\Models\Project\Project::class, (int) $guarantee->project_id) : '')" />
             </select>
         </div>
+        {{-- Gewährleistung (MVP-1282): nach ihrem Ende meldet der Fristenscan die Rückgabe. --}}
+        <div>
+            <label class="label" for="g-form-warranty"><span class="label-text">{{ __('guarantee.column.warranty') }}</span></label>
+            <select id="g-form-warranty" name="warranty_period_id" class="select select-bordered w-full">
+                <option value="">—</option>
+                @foreach ($warranties as $w)
+                    <option value="{{ $w->sqid }}" @selected(old('warranty_period_id', $guarantee?->warranty_period_id !== null ? \App\Support\Sqid::encode(\App\Models\Warranty\WarrantyPeriod::class, (int) $guarantee->warranty_period_id) : null) === $w->sqid)>{{ $w->partyLabel() }} · {{ $w->ends_on?->fdate() }}{{ $w->trade ? ' · ' . $w->trade : '' }}</option>
+                @endforeach
+            </select>
+        </div>
         <div>
             <label class="label" for="g-form-responsible"><span class="label-text">{{ __('guarantee.column.responsible') }}</span></label>
             <select id="g-form-responsible" name="responsible_user_id" class="select select-bordered w-full">

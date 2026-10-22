@@ -61,3 +61,9 @@ noch offen ist.
 wählbaren Austauschphase herunterladen (Standard: Auftragserteilung).
 Der Export ist deterministisch und wird mit Inhalts-Hash protokolliert —
 derselbe Stand ergibt reproduzierbar denselben Hash.
+
+## Vorbemerkungen und Prüfung vor der Abgabe
+
+Liefert die GAEB-Datei **Vorbemerkungen** (Vertragstexte vor den Positionen), stehen sie in der LV-Ansicht zum Aufklappen, ein Text je Block und unverändert wie geliefert. Ein Reimport ersetzt sie mit der Datei. Bisher liest der Import sie aus GAEB 90; aus DA XML folgen sie mit dem nächsten Release des GAEB-Bausteins.
+
+Die **Prüfung vor der Abgabe** meldet zusätzlich Positionen, deren Preis in einer anderen Währung steht als das Leistungsverzeichnis, und eine Umsatzsteuer, die nicht zum Satz auf die Nettosumme passt oder mit ihr die Bruttosumme verfehlt (auf den Cent gerechnet).

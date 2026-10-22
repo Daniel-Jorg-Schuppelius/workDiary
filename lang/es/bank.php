@@ -32,6 +32,7 @@ return [
         'opening_balance' => 'Saldo inicial',
         'closing_balance' => 'Saldo final',
         'balance_check' => 'Cadena de saldos',
+        'chain_check' => 'Enlace con el extracto anterior',
         'tx_count' => 'Movimientos',
         'open' => 'Abierto',
         'matched' => 'Asignado',
@@ -105,6 +106,7 @@ return [
             'unmatched' => 'Asignación deshecha.',
         ],
         'error' => [
+            'provisional' => 'Los movimientos provisionales (CAMT.052/054, PAIN) no se concilian. Espere al extracto definitivo.',
             'no_allocations' => 'No se indicó ninguna asignación.',
             'target_not_found' => 'No se encontró el destino de la asignación.',
         ],
@@ -147,6 +149,14 @@ return [
         'error' => [
             'duplicate_iban' => 'Ya existe una cuenta bancaria para este IBAN.',
         ],
+    ],
+    'statement' => [
+        'provisional' => 'provisional',
+        'superseded' => 'sustituido',
+        'provisional_hint' => 'Extracto provisional (:format): los movimientos son solo una vista previa. No se concilian ni se contabilizan y no cuentan en la liquidez ni en los indicadores. El extracto definitivo (CAMT.053 o MT940) de la misma cuenta los sustituye.',
+        'superseded_hint' => 'Sustituido el :date por el extracto definitivo.',
+        'chain_gap_hint' => 'Faltan días hábiles entre el extracto anterior (hasta :date) y este. Importe el extracto que falta.',
+        'chain_mismatch_hint' => 'El saldo inicial (:opening) difiere del saldo final del extracto anterior (:previous).',
     ],
     'empty' => [
         'statements' => 'Aún no se han importado extractos bancarios.',

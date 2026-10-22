@@ -98,3 +98,9 @@ Issued and paid invoices with a document date in the period are
 considered; credit notes become reversed postings. After the
 handover: maintain payment reconciliation and export the next period
 only after it has been closed.
+
+## Transmission and cover report
+
+After finalising, **Record transmission** captures what happens to the batch: **transmitted** to the accountant, then **confirmed** or **rejected** there. A rejected batch is transmitted again once the issue is resolved; corrections to documents still go through the next batch. Each step is recorded with time, person and an optional note in the batch history, and the list shows the current status. Please keep notes free of personal data, as the history cannot be changed.
+
+The **cover report (PDF)** summarises the batch for the accountant: period, advisor and client number, number of booking records and reversals, total, file checksum, totals by revenue account and by tax key, and the history.

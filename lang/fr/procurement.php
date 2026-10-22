@@ -31,6 +31,10 @@ return [
         'incoming' => 'Réceptions attendues',
     ],
 
+    'credentials' => [
+        'badge' => 'Justificatifs : :status',
+        'hint' => 'Justificatifs obligatoires du fournisseur (attestation d’exonération, assurance, etc.)',
+    ],
     'pdf' => [
         'title' => 'Commande',
         'date' => 'Date de commande',

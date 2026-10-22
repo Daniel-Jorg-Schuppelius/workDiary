@@ -51,3 +51,7 @@ preferred supplier into account. **Create orders** creates drafts per
 supplier from them, which you should review before ordering. Creating,
 ordering and booking require the **Post stock movements** permission;
 **Cancel** on a purchase order is irreversible.
+
+## Credential light
+
+If mandatory credentials are required for the supplier (such as an exemption certificate or insurance), the order header shows their **traffic light**: green if everything is valid, yellow if something expires soon, red if credentials are missing or expired. Clicking it opens the credential overview. Whether red blocks submission is still governed by the credential settings.

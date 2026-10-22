@@ -81,6 +81,8 @@ return [
     'event' => [
         'created' => 'Angelegt',
         'created_as_correction' => 'Als Korrektur angelegt',
+        'transmitted' => 'Übermittelt',
+        'rejected' => 'Abgelehnt',
         'correction_created' => 'Korrektur angelegt',
         'draft' => 'Auf Entwurf zurückgesetzt',
         'confirmed' => 'Bestätigt',
@@ -190,6 +192,8 @@ return [
         'empty_sources' => 'Keine Buchungssätze in diesem Stapel.',
 
         'field' => [
+            'transmission' => 'Übermittlung',
+            'transmission_note' => 'Vermerk',
             'batch_no' => 'Stapel-Nr.',
             'period' => 'Zeitraum',
             'status' => 'Status',
@@ -236,11 +240,15 @@ return [
             'discard' => 'Entwurf verwerfen',
             'remove_selected' => 'Auswahl entfernen',
             'select_source' => 'Buchungssatz auswählen',
+            'transmission' => 'Übermittlung erfassen',
+            'report' => 'Begleitbericht (PDF)',
         ],
 
         'dialog' => [
             'create_title' => 'DATEV-Buchungsstapel anlegen',
             'create_hint' => 'Buchungsreife Belege des Zeitraums werden zusammengestellt. Extern geführte Rechnungen werden ausgeschlossen.',
+            'transmission_title' => 'Übermittlung des Stapels',
+            'transmission_hint' => 'Halten Sie fest, wann der Stapel an die Kanzlei ging und wie sie geantwortet hat. Der Stapel selbst bleibt unverändert; jeder Schritt steht im Verlauf. Vermerke ohne personenbezogene Angaben.',
         ],
 
         'hint' => [
@@ -255,6 +263,7 @@ return [
             'config_saved' => 'Buchhaltungs-Konfiguration gespeichert.',
             'sources_removed' => 'Ausgewählte Buchungssätze entfernt — sie stehen für den nächsten Stapel wieder bereit.',
             'discarded' => 'Entwurfs-Stapel verworfen — die Quellen sind wieder verfügbar.',
+            'transmission' => 'Übermittlungsstand erfasst.',
         ],
 
         'error' => [
@@ -269,8 +278,29 @@ return [
             'no_selection' => 'Keine Buchungssätze ausgewählt.',
             'selection_empty_batch' => 'Mindestens ein Buchungssatz muss im Stapel verbleiben.',
             'source_already_exported' => 'Beleg :ref hängt bereits in einem anderen exportierten Stapel.',
+            'not_finalized' => 'Nur finalisierte Stapel lassen sich übermitteln.',
+            'transmission_transition' => 'Von „:from“ geht es nicht zu „:to“.',
         ],
 
+        'report' => [
+            'title' => 'Begleitbericht DATEV-Stapel :number',
+            'batch' => 'Stapel',
+            'advisor_client' => 'Berater / Mandant',
+            'booking_count' => 'Buchungssätze',
+            'reversals' => ':count Generalumkehr',
+            'total' => 'Summe',
+            'finalized' => 'Finalisiert',
+            'transmission' => 'Übermittlung',
+            'file_hash' => 'Prüfsumme der Datei (SHA-256)',
+            'by_account' => 'Summen je Erlöskonto',
+            'by_tax_key' => 'Summen je BU-Schlüssel',
+            'account' => 'Konto',
+            'tax_key' => 'BU-Schlüssel',
+            'count' => 'Anzahl',
+            'debit' => 'Soll',
+            'credit' => 'Haben',
+            'history' => 'Verlauf',
+        ],
         'preflight' => [
             'no_sources' => 'Der Stapel enthält keine Buchungssätze.',
             'missing_client_numbers' => 'Berater- und Mandantennummer müssen in der Konfiguration hinterlegt sein.',

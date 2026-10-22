@@ -21,6 +21,8 @@ enum AppointmentRequestStatus: string implements HasStatusTransitions {
     use HasTransitions;
 
     case Requested = 'requested';
+    /** Die Disposition schlägt einen anderen Termin vor (MVP-1287). */
+    case Proposed = 'proposed';
     case Confirmed = 'confirmed';
     case Declined = 'declined';
     case Canceled = 'canceled';
@@ -35,6 +37,7 @@ enum AppointmentRequestStatus: string implements HasStatusTransitions {
     public function tone(): string {
         return match ($this) {
             self::Requested => 'info',
+            self::Proposed => 'warning',
             self::Confirmed => 'success',
             self::Declined => 'error',
             self::Canceled, self::Superseded => 'ghost',
@@ -49,7 +52,8 @@ enum AppointmentRequestStatus: string implements HasStatusTransitions {
      */
     public function allowedTransitions(): array {
         return match ($this) {
-            self::Requested => [self::Confirmed, self::Declined, self::Canceled, self::Superseded],
+            self::Requested => [self::Proposed, self::Confirmed, self::Declined, self::Canceled, self::Superseded],
+            self::Proposed => [self::Confirmed, self::Declined, self::Canceled],
             self::Confirmed, self::Declined => [self::Canceled, self::Superseded],
             self::Canceled, self::Superseded => [],
         };

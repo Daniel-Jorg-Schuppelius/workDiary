@@ -70,8 +70,8 @@
                                 default => 'ghost',
                             };
                             $isWait = $def?->step_type === \App\Enums\Procedure\ProcedureStepType::Wait;
-                            $needsSecondPerson = $def?->requires_second_person
-                                && ($sr->second_person_user_id === null || $sr->second_person_signed_at === null);
+                            // Ohne Gegenzeichnung meldet blockReasonFor() den Schritt als gesperrt — die Vier-Augen-Leiste ersetzt dann den Sperrhinweis.
+                            $awaitsSecondPerson = $step['blockReason'] === \App\Exceptions\ProcedureStepBlockedException::REASON_SECOND_PERSON_REQUIRED;
                         @endphp
                         <li class="rounded-box border {{ $step['isCurrent'] ? 'border-primary ring-1 ring-primary/30' : 'border-base-300' }} bg-base-200/30 p-4">
                             <div class="flex items-start justify-between gap-2">
@@ -104,8 +104,12 @@
                                 @if ($sr->note)<p class="mt-1 whitespace-pre-wrap text-sm text-base-content/70">{{ $sr->note }}</p>@endif
                             @endif
 
+                            @if ($step['requiresSecondPerson'] && ($awaitsSecondPerson || $sr->second_person_user_id !== null))
+                                @include('procedures.runs._second_person', ['sr' => $sr, 'run' => $run, 'isFinal' => $isFinal, 'runActive' => $runActive])
+                            @endif
+
                             {{-- Sperrgrund --}}
-                            @if (! $isFinal && $step['blockReason'])
+                            @if (! $isFinal && $step['blockReason'] && ! $awaitsSecondPerson)
                                 <div class="mt-3 flex items-center gap-2 rounded-box bg-base-300/40 px-3 py-2 text-xs text-muted">
                                     <x-icon name="lock" class="text-muted" />
                                     {{ __('procedure.blocked.' . $step['blockReason']) }}
@@ -114,16 +118,7 @@
 
                             {{-- Aktionen für den aktuellen Schritt --}}
                             @if ($canExecute && $runActive && ! $isFinal && $step['blockReason'] === null && $step['isCurrent'])
-                                @if ($needsSecondPerson)
-                                    @can('signSecondPerson', $run)
-                                        <form method="POST" action="{{ route('procedure-runs.steps.second-person', [$run, $sr]) }}" class="mt-3">
-                                            @csrf
-                                            <x-button type="submit" tone="secondary" icon="how_to_reg">
-                                                {{ __('procedure.run.signSecondPerson') }}
-                                            </x-button>
-                                        </form>
-                                    @endcan
-                                @elseif ($isWait)
+                                @if ($isWait)
                                     @php $remaining = $step['waitRemaining']; @endphp
                                     @if ($sr->wait_until === null)
                                         <form method="POST" action="{{ route('procedure-runs.steps.wait.begin', [$run, $sr]) }}" class="mt-3 flex flex-wrap items-end gap-2">

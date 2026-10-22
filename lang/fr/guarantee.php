@@ -64,6 +64,7 @@ return [
         'customer' => 'Client',
         'supplier' => 'Fournisseur',
         'project' => 'Projet',
+        'warranty' => 'Garantie (restitution à la fin du délai)',
         'responsible' => 'Responsable',
         'note' => 'Note',
     ],

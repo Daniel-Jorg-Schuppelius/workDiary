@@ -2913,6 +2913,11 @@
                                         "description": "Checkpoint-Token",
                                         "type": "string",
                                         "maxLength": 64
+                                    },
+                                    "scanned_at": {
+                                        "description": "Scanzeit des Geräts bei offline erfassten Scans (höchstens zwei Minuten voraus, nicht vor dem Rundgangsbeginn)",
+                                        "type": "string",
+                                        "format": "date-time"
                                     }
                                 },
                                 "type": "object"

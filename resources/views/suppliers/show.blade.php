@@ -98,6 +98,7 @@
             <x-detail-grid>
                 <x-detail-grid.row :label="__('Aktiv')" :value="$supplier->active ? __('Ja') : __('Nein')" />
                 <x-detail-grid.row :label="__('USt-IdNr.')" :value="$supplier->vat_id" />
+                <x-detail-grid.row :label="__('Steuernummer')" :value="$supplier->tax_number" />
                 <x-detail-grid.row :label="__('Kreditorennummer')" :value="$supplier->vendor_number" />
                 <x-detail-grid.row :label="__('Währung')" :value="$supplier->currency->value" />
                 <x-detail-grid.row :label="__('Zeitzone')" :value="$supplier->timezone" />
@@ -122,6 +123,35 @@
             @endif
         </x-card>
     </div>
+
+    {{-- Gutschriftsverfahren (MVP-1280): Vereinbarung und Gutschriften an diesen Lieferanten. --}}
+    @can(\App\Enums\User\Permission::InvoiceViewAny->value)
+        <x-card :title="__('invoicing.self_billing.title')" icon="receipt_long" :count="$selfBillingCredits->count()">
+            @if ($supplier->self_billing_agreed_on !== null)
+                @can(\App\Enums\User\Permission::InvoiceCreate->value)
+                    <x-slot:actions>
+                        <x-icon-btn icon="add" size="sm" data-entry-modal-trigger :href="route('invoices.self-billing.create', ['supplier' => $supplier->sqid])" show-label>{{ __('invoicing.self_billing.action.create') }}</x-icon-btn>
+                    </x-slot:actions>
+                @endcan
+            @endif
+            <p class="text-sm text-muted">{{ $supplier->self_billing_agreed_on !== null
+                ? __('invoicing.self_billing.field.agreement') . ' ' . $supplier->self_billing_agreed_on->fdate()
+                : __('invoicing.self_billing.help.agreement') }}</p>
+            @if ($selfBillingCredits->isNotEmpty())
+                <ul class="mt-2 divide-y divide-base-200 text-sm">
+                    @foreach ($selfBillingCredits as $credit)
+                        <li class="flex flex-wrap items-center justify-between gap-2 py-1">
+                            <a href="{{ route('invoices.self-billing.show', $credit) }}" class="link link-hover">{{ $credit->number ?? __('invoicing.self_billing.draft_label') }}</a>
+                            <span class="flex items-center gap-2">
+                                <span>{{ $credit->gross_amount?->format() ?? '—' }}</span>
+                                <x-status-badge :tone="$credit->status->tone()" size="xs">{{ $credit->status->label() }}</x-status-badge>
+                            </span>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </x-card>
+    @endcan
 
     {{-- Selbstauskunft (MVP-937) --}}
     <x-card :title="__('supplier_questionnaire.card')" icon="fact_check">

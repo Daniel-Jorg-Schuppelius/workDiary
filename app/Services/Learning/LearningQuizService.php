@@ -110,8 +110,8 @@ class LearningQuizService {
                 'learning_enrollment_id' => $enrollment->id,
                 'attempt_no' => $count + 1,
                 'started_at' => $now,
-                'expires_at' => $quiz->time_limit_minutes !== null
-                    ? $now->copy()->addMinutes($quiz->time_limit_minutes)
+                'expires_at' => ($seconds = $this->timeLimitSeconds($quiz, $enrollment, count($snapshot))) !== null
+                    ? $now->copy()->addSeconds($seconds)
                     : null,
                 'questions_snapshot' => JsonHelper::encode($snapshot, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                 'max_points' => array_sum(array_map(static fn (array $q): int => (int) $q['points'], $snapshot)),
@@ -221,6 +221,7 @@ class LearningQuizService {
             ]);
 
             $this->completeUnitIfPassed($attempt->refresh());
+            $this->notifyIfFinallyFailed($attempt);
 
             return $attempt;
         });
@@ -347,6 +348,7 @@ class LearningQuizService {
         ]);
 
         $this->completeUnitIfPassed($attempt->refresh());
+        $this->notifyIfFinallyFailed($attempt);
     }
 
     /**
@@ -367,6 +369,52 @@ class LearningQuizService {
             'granted_by_user_id' => $actor?->id,
             'reason' => trim($reason),
         ]);
+    }
+
+    /**
+     * Gesamtfrist eines Versuchs in Sekunden (MVP-1267): das Zeitlimit des
+     * Tests, bei Zeit je Frage höchstens deren Summe, verlängert um den
+     * Nachteilsausgleich der Einschreibung. NULL = ohne Frist.
+     */
+    public function timeLimitSeconds(LearningQuiz $quiz, LearningEnrollment $enrollment, int $questions): ?int {
+        $limits = array_filter([
+            $quiz->time_limit_minutes !== null ? $quiz->time_limit_minutes * 60 : null,
+            $quiz->question_time_limit_seconds !== null ? $quiz->question_time_limit_seconds * max(1, $questions) : null,
+        ], static fn (?int $limit): bool => $limit !== null);
+
+        return $limits === [] ? null : $this->extended(min($limits), $enrollment);
+    }
+
+    /** Zeit je Frage einschließlich Nachteilsausgleich — der Takt im Browser. */
+    public function questionSeconds(LearningQuiz $quiz, LearningEnrollment $enrollment): ?int {
+        return $quiz->question_time_limit_seconds !== null ? $this->extended($quiz->question_time_limit_seconds, $enrollment) : null;
+    }
+
+    /**
+     * Nachteilsausgleich (MVP-1267) setzen; 0 oder leer hebt ihn auf. Der
+     * Grund steht im Verlauf der Einschreibung.
+     */
+    public function setTimeExtension(LearningEnrollment $enrollment, ?int $percent, ?User $actor, string $reason): LearningEnrollment {
+        $percent = $percent !== null && $percent > 0 ? min(200, $percent) : null;
+        if ($percent === $enrollment->time_extension_percent) {
+            return $enrollment;
+        }
+
+        return DB::transaction(function () use ($enrollment, $percent, $actor, $reason): LearningEnrollment {
+            $from = $enrollment->time_extension_percent;
+            $enrollment->update(['time_extension_percent' => $percent]);
+            $enrollment->record('time_extension_set', ['from' => $from, 'to' => $percent], $actor, extra: [
+                'from_status' => $enrollment->status,
+                'to_status' => $enrollment->status,
+                'reason' => trim($reason),
+            ]);
+
+            return $enrollment->refresh();
+        });
+    }
+
+    private function extended(int $seconds, LearningEnrollment $enrollment): int {
+        return (int) ceil($seconds * (100 + (int) ($enrollment->time_extension_percent ?? 0)) / 100);
     }
 
     public function openAttempt(LearningEnrollment $enrollment, LearningQuiz $quiz): ?LearningQuizAttempt {
@@ -390,6 +438,30 @@ class LearningQuizService {
         }
 
         $this->enrollments->completeUnit($enrollment, $unit);
+    }
+
+    /**
+     * Nicht bestanden und kein Versuch mehr offen (MVP-1266) — weder über die
+     * Grenze noch über eine ungenutzte Versuchsfreigabe, und kein früherer
+     * Versuch hat bestanden.
+     */
+    private function notifyIfFinallyFailed(LearningQuizAttempt $attempt): void {
+        $quiz = $attempt->quiz;
+        $enrollment = $attempt->enrollment;
+        if ($attempt->passed !== false || $quiz === null || $enrollment === null || $quiz->allowsUnlimitedAttempts()) {
+            return;
+        }
+        if ($this->attemptsQuery($enrollment, $quiz)->count() < $quiz->max_attempts || $this->attemptsQuery($enrollment, $quiz)->where('passed', true)->exists()) {
+            return;
+        }
+        $waiverOpen = LearningQuizAttemptWaiver::query()
+            ->where('learning_enrollment_id', $enrollment->id)
+            ->where('learning_quiz_id', $quiz->id)
+            ->whereNull('used_at')
+            ->exists();
+        if (! $waiverOpen) {
+            app(LearningNotifier::class)->failedFinal($attempt);
+        }
     }
 
     /**

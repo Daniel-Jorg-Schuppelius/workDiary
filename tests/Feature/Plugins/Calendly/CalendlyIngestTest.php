@@ -102,6 +102,17 @@ final class CalendlyIngestTest extends TestCase {
         $this->assertSame(1, AppointmentRequest::query()->where('source_uri', 'inv-3')->count());
     }
 
+    /** MVP-1286: die Disposition erfährt einmal von der Buchung, auch ohne Kundenzuordnung. */
+    public function test_new_booking_notifies_the_lead_once(): void {
+        $lead = \App\Models\Platform\User::factory()->teamleitung()->create(['organization_id' => $this->organization->id]);
+
+        $this->service()->handlePayload($this->organization, $this->created('inv-notify', 'fremd@example.org'));
+        $this->service()->handlePayload($this->organization, $this->created('inv-notify', 'fremd@example.org'));
+
+        $notes = $lead->notifications()->get()->filter(fn ($n): bool => ($n->data['event'] ?? null) === 'appointment.requested');
+        $this->assertCount(1, $notes);
+    }
+
     public function test_canceled_marks_request_canceled(): void {
         $this->service()->handlePayload($this->organization, $this->created('inv-4'));
         $this->service()->handlePayload($this->organization, $this->canceled('inv-4'));

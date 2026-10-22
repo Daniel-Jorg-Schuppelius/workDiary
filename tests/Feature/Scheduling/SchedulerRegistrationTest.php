@@ -34,6 +34,8 @@ class SchedulerRegistrationTest extends TestCase {
         // Neu mit MVP-058 (kein Alt-Eintrag): Betriebsaufgaben-Sync.
         // Neu mit Feature 072 (MVP-255): Reklamations-Fristeneskalation.
         'claims:escalate' => ['15 7 * * *', true, true],
+        // Umfragen im festen Abstand (MVP-1293).
+        'surveys:send-scheduled' => ['30 9 * * *', true, true],
         'operations:scan' => ['0 * * * *', true, true],
         // Neu mit MVP-1095: Sendungsverfolgung offener Versandaufträge.
         'shipping:track' => ['0 * * * *', true, true],
@@ -77,6 +79,8 @@ class SchedulerRegistrationTest extends TestCase {
         // Feature 149 (LTI 1.3): Schlüsseltausch nach Frist, Nonce-Kehraus.
         'learning:lti-rotate-keys' => ['50 3 * * *', true, true],
         'learning:lti-prune-nonces' => ['5 4 * * *', true, true],
+        // Teil-Uploads (MVP-1265).
+        'uploads:prune-chunks' => ['15 4 * * *', true, true],
         // MVP-803: Abend-Erinnerung bei offener Stempelung.
         'attendance:remind-open' => ['0 19 * * *', true, true],
         'attendance:close-open' => ['*/15 * * * *', true, true],

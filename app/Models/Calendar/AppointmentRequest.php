@@ -41,6 +41,10 @@ use Illuminate\Support\Carbon;
  * @property int|null $decided_by
  * @property Carbon|null $decided_at
  * @property string|null $decline_reason
+ * @property Carbon|null $proposed_start_at
+ * @property Carbon|null $proposed_end_at
+ * @property string|null $proposal_note
+ * @property int|null $proposer_user_id
  * @property int|null $diary_entry_id
  * @property Carbon|null $start_at
  * @property Carbon|null $end_at
@@ -90,6 +94,10 @@ class AppointmentRequest extends Model {
         'diary_entry_id',
         'start_at',
         'end_at',
+        'proposed_start_at',
+        'proposed_end_at',
+        'proposal_note',
+        'proposer_user_id',
         'invitee_timezone',
         'invitee_name',
         'invitee_email',
@@ -115,6 +123,8 @@ class AppointmentRequest extends Model {
         'status' => AppointmentRequestStatus::class,
         'start_at' => 'datetime',
         'end_at' => 'datetime',
+        'proposed_start_at' => 'datetime',
+        'proposed_end_at' => 'datetime',
         'decided_at' => 'datetime',
         'is_reschedule' => 'boolean',
         'questions_and_answers' => 'array',

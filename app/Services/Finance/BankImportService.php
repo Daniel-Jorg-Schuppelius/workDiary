@@ -12,12 +12,14 @@ declare(strict_types=1);
 
 namespace App\Services\Finance;
 
-use App\Enums\Finance\{BalanceCheck, MatchStatus};
+use App\Enums\Finance\{BalanceCheck, MatchStatus, StatementChainCheck};
 use App\Models\Finance\{BankAccount, BankStatement, BankTransaction};
 use App\Models\Platform\User;
+use App\Services\Calendar\HolidayService;
 use App\Services\Concerns\ResolvesActorId;
 use App\Services\Finance\Banking\{BankStatementParser, NormalizedStatement, NormalizedTransaction};
 use App\Support\Crypto\BlindIndex;
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\{CryptoHelper, NumberHelper};
 use Illuminate\Http\UploadedFile;
@@ -34,6 +36,10 @@ use Illuminate\Support\Facades\{DB, Storage};
  *  - Saldenkette: opening + Σ signierte Beträge ≈ closing (Toleranz 1 ct) ⇒
  *    balance_check.
  *  - Auto-Zuordnung des eigenen Bankkontos über statement_iban_hash.
+ *  - Vorläufige Formate (CAMT.052/054, PAIN; MVP-1274) bleiben Vorschau, bis
+ *    ein verbindlicher Auszug desselben Kontos sie ersetzt.
+ *  - Anschluss an den Vorauszug (MVP-1279): Eröffnungssaldo = Schlusssaldo
+ *    des Vorgängers, dazwischen kein Bankarbeitstag ohne Auszug.
  */
 class BankImportService {
     use ResolvesActorId;
@@ -102,6 +108,15 @@ class BankImportService {
             );
         }
 
+        foreach ($created as $statement) {
+            if ($statement->is_provisional) {
+                $this->supersedeIfCovered($statement);
+            } else {
+                $this->supersedeProvisional($statement);
+                $this->recheckChain($statement);
+            }
+        }
+
         // Vollaudit 2026-07 (M16): Registry-Anbindung der Finanzschnittstelle —
         // Saldensprung (Mismatch) und ungeklärte Zahlungseingänge melden.
         $this->notifyImportFindings($created);
@@ -124,6 +139,9 @@ class BankImportService {
 
         $unmatchedTotal = 0;
         foreach ($statements as $statement) {
+            if ($statement->is_provisional) {
+                continue;
+            }
             $unmatchedTotal += (int) BankTransaction::query()
                 ->where('bank_statement_id', $statement->id)
                 ->where('match_status', MatchStatus::Unmatched)
@@ -148,7 +166,7 @@ class BankImportService {
         if ($unmatchedTotal > 0) {
             $dispatcher->notify(
                 \App\Enums\Notification\NotificationEvent::FinanceReconciliationReview,
-                $statements[0],
+                collect($statements)->firstWhere('is_provisional', false) ?? $statements[0],
                 null,
                 [
                     'title' => (string) __('notification.message.finance_reconciliation_review_title', ['count' => $unmatchedTotal]),
@@ -171,6 +189,11 @@ class BankImportService {
     ): BankStatement {
         $statementIbanHash = BlindIndex::ofIban($normalized->accountIban);
         $resolvedAccount = $bankAccount ?? $this->resolveAccount($organizationId, $statementIbanHash);
+        $provisional = $normalized->format->isProvisional();
+        // Vorläufige Formate tragen keine Salden; ihr Zeitraum sind die Buchungstage.
+        $bookingDates = array_map(static fn (NormalizedTransaction $tx): string => $tx->bookingDate, $normalized->transactions);
+        $periodFrom = $normalized->periodFrom ?? ($provisional && $bookingDates !== [] ? min($bookingDates) : null);
+        $periodTo = $normalized->periodTo ?? ($provisional && $bookingDates !== [] ? max($bookingDates) : null);
 
         return DB::transaction(function () use (
             $normalized,
@@ -180,19 +203,23 @@ class BankImportService {
             $fileHash,
             $statementIbanHash,
             $actorId,
+            $provisional,
+            $periodFrom,
+            $periodTo,
         ): BankStatement {
             /** @var BankStatement $statement */
             $statement = BankStatement::query()->create([
                 'organization_id' => $organizationId,
                 'bank_account_id' => $resolvedAccount?->id,
                 'source_format' => $normalized->format,
+                'is_provisional' => $provisional,
                 'file_path' => $filePath,
                 'file_hash' => $fileHash,
                 'statement_iban_hash' => $statementIbanHash,
                 'opening_balance' => $normalized->openingBalance !== null ? (string) $normalized->openingBalance : null,
                 'closing_balance' => $normalized->closingBalance !== null ? (string) $normalized->closingBalance : null,
-                'period_from' => $normalized->periodFrom,
-                'period_to' => $normalized->periodTo,
+                'period_from' => $periodFrom,
+                'period_to' => $periodTo,
                 'tx_count' => 0,
                 'balance_check' => BalanceCheck::Unknown,
                 'imported_by_user_id' => $actorId,
@@ -314,6 +341,76 @@ class BankImportService {
         return abs($expected - $normalized->closingBalance) <= self::BALANCE_TOLERANCE
             ? BalanceCheck::Ok
             : BalanceCheck::Mismatch;
+    }
+
+    /**
+     * Vorläufige Auszüge desselben Kontos bis zum Ende des verbindlichen gelten
+     * als ersetzt (MVP-1274); ihre Umsätze bleiben zur Nachvollziehbarkeit stehen.
+     */
+    private function supersedeProvisional(BankStatement $final): void {
+        if ($final->period_to === null) {
+            return;
+        }
+
+        BankStatement::query()
+            ->sameAccountAs($final)
+            ->where('is_provisional', true)
+            ->whereNull('superseded_at')
+            ->where('period_to', '<', DateRange::dayAfter($final->period_to))
+            ->get()
+            ->each(static fn (BankStatement $provisional) => $provisional->update(['superseded_at' => now()]));
+    }
+
+    /** Kam der verbindliche Auszug zuerst, ist der vorläufige gleich ersetzt. */
+    private function supersedeIfCovered(BankStatement $provisional): void {
+        $covered = $provisional->period_to !== null && BankStatement::query()
+            ->sameAccountAs($provisional)
+            ->where('is_provisional', false)
+            ->where('period_to', '>=', DateRange::day($provisional->period_to))
+            ->exists();
+        if ($covered) {
+            $provisional->update(['superseded_at' => now()]);
+        }
+    }
+
+    /**
+     * Prüft den Anschluss des Auszugs und den seines Nachfolgers — ein
+     * nachgereichter Auszug schließt dessen Lücke (MVP-1279).
+     */
+    private function recheckChain(BankStatement $statement): void {
+        $statement->update(['chain_check' => $this->chainCheck($statement)]);
+
+        $successor = $statement->period_to !== null
+            ? BankStatement::query()
+                ->sameAccountAs($statement)
+                ->where('is_provisional', false)
+                ->whereNotNull('opening_balance')
+                ->where('period_from', '>=', DateRange::day($statement->period_to))
+                ->orderBy('period_from')
+                ->orderBy('id')
+                ->first()
+            : null;
+        $successor?->update(['chain_check' => $this->chainCheck($successor)]);
+    }
+
+    private function chainCheck(BankStatement $statement): ?StatementChainCheck {
+        if ($statement->opening_balance === null || $statement->period_from === null) {
+            return null;
+        }
+
+        $previous = $statement->previousStatement();
+        if ($previous === null || $previous->period_to === null) {
+            return StatementChainCheck::First;
+        }
+
+        if (abs((float) $statement->opening_balance - (float) $previous->closing_balance) > self::BALANCE_TOLERANCE) {
+            return StatementChainCheck::Mismatch;
+        }
+
+        // Wochenenden und Feiertage im Rechtsraum der Organisation sind keine Lücke.
+        $nextBusinessDay = app(HolidayService::class)->nextBusinessDay($previous->period_to->copy()->addDay());
+
+        return $nextBusinessDay->lt($statement->period_from) ? StatementChainCheck::Gap : StatementChainCheck::Ok;
     }
 
     private function resolveAccount(int $organizationId, ?string $ibanHash): ?BankAccount {

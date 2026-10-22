@@ -26,6 +26,20 @@
                         show-label>{{ __('circular.action.create') }}</x-icon-btn>
         </x-slot:actions>
 
+        {{-- Vorlagen (MVP-1285): als Entwurf übernehmen, Anhänge inklusive. --}}
+        @if ($templates->isNotEmpty())
+            <div class="mb-3 flex flex-wrap items-center gap-2 text-sm">
+                <span class="text-base-content/70">{{ __('circular.template.heading') }}:</span>
+                @foreach ($templates as $template)
+                    <span class="inline-flex items-center gap-1">
+                        <a href="{{ route('circulars.show', $template) }}" class="link link-hover">{{ $template->subject }}</a>
+                        <x-icon-btn icon="content_copy" tone="ghost" size="xs" data-entry-modal-trigger
+                                    :href="route('circulars.create', ['template' => $template->sqid])" :label="__('circular.template.use')" />
+                    </span>
+                @endforeach
+            </div>
+        @endif
+
         <x-table scroll="flex" :pin-rows="true" :zebra="true" table-sort="client">
             <x-slot:head>
                 <tr>

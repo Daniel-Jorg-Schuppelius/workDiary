@@ -201,11 +201,14 @@ class LearningEnrollmentService {
         }
 
         $date = $unit->releaseDateFor($enrollment);
+        $predecessor = $unit->blockingPredecessorFor($enrollment);
 
         throw ValidationException::withMessages([
-            'unit' => $date !== null && $date->gt(($now ?? Carbon::now())->copy()->startOfDay())
-                ? (string) __('learning.errors.unit_not_released', ['date' => $date->translatedFormat('d.m.Y')])
-                : (string) __('learning.errors.unit_locked_by_sequence'),
+            'unit' => match (true) {
+                $date !== null && $date->gt(($now ?? Carbon::now())->copy()->startOfDay()) => (string) __('learning.errors.unit_not_released', ['date' => $date->translatedFormat('d.m.Y')]),
+                $predecessor !== null => (string) __('learning.errors.unit_locked_by_predecessor', ['unit' => $predecessor->title]),
+                default => (string) __('learning.errors.unit_locked_by_sequence'),
+            },
         ]);
     }
 
@@ -330,9 +333,12 @@ class LearningEnrollmentService {
         }
 
         return DB::transaction(function () use ($enrollment, $dueAt, $accessUntil, $actor, $reason): LearningEnrollment {
+            $moved = $enrollment->due_at?->toDateString() !== $dueAt;
             $enrollment->update([
                 'due_at' => $dueAt,
                 'access_until' => $accessUntil,
+                // Eine neue Frist bekommt ihre eigenen Erinnerungen (MVP-1270).
+                ...($moved ? ['reminded_at' => null, 'final_reminded_at' => null] : []),
             ]);
             $this->recordEvent($enrollment, $enrollment->status, $enrollment->status, $reason, $actor);
 

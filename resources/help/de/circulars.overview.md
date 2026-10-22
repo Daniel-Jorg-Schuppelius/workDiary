@@ -42,3 +42,7 @@ auch im Kundenportal.
 **Platzhalter:** `:firma`, `:kunde` und `:ansprechpartner` werden je
 Empfänger ersetzt. Fehlt ein Wert, bleibt die Stelle leer — es wird nichts
 erfunden.
+
+## Vorlagen und Anhang
+
+Einem Rundschreiben kann beim Anlegen eine **Datei** beiliegen, die jede Mail mitbringt. **Als Vorlage speichern** (Menü des Rundschreibens) legt eine Kopie mit Text, Filtern, Schaltern und Anhängen an. Vorlagen stehen über der Liste; **Aus Vorlage anlegen** öffnet den Dialog vorbelegt, und die Anhänge der Vorlage kommen mit. Eine Vorlage selbst wird nie versendet.

@@ -37,6 +37,19 @@ class CustomerCircularMail extends Mailable {
         return new Envelope(subject: (string) $this->circular->subject);
     }
 
+    /**
+     * Anhänge des Rundschreibens (MVP-1285).
+     *
+     * @return list<\Illuminate\Mail\Mailables\Attachment>
+     */
+    public function attachments(): array {
+        return array_values($this->circular->attachments
+            ->map(static fn (\App\Models\Attachments\Attachment $file): \Illuminate\Mail\Mailables\Attachment => \Illuminate\Mail\Mailables\Attachment::fromStorageDisk((string) $file->disk, (string) $file->path)
+                ->as((string) $file->original_name)
+                ->withMime((string) $file->mime))
+            ->all());
+    }
+
     public function content(): Content {
         return new Content(markdown: 'mail.customer-circular', with: [
             'circular' => $this->circular,

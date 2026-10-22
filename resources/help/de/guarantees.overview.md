@@ -37,3 +37,7 @@ Sicherheit stillschweigend verringern.
 **Rückgabe:** Nach Ablauf wird die Urkunde zurückgefordert und der Vorgang
 als *zurückgegeben* geschlossen. Eine gezogene Bürgschaft bleibt mit Datum
 und Grund dauerhaft dokumentiert.
+
+## Kopplung an die Gewährleistung
+
+Eine Bürgschaft kann auf eine **Gewährleistungsfrist** zeigen. Ist deren Ende erreicht, meldet die Fristenprüfung die **Rückgabe** der Urkunde — wie nach der Freigabe eines abgelösten Einbehalts. Ebenso übernimmt ein Sicherheitseinbehalt an der Rechnung das Ende der gewählten Gewährleistung als Freigabetermin und zieht nach, wenn sich die Frist verschiebt.

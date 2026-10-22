@@ -51,3 +51,7 @@ bevorzugtem Lieferanten vor. **Bestellungen erzeugen** legt daraus je
 Lieferant Entwürfe an, die Sie vor dem Bestellen prüfen sollten.
 Anlegen, Bestellen und Buchen erfordern das Recht **Lagerbewegungen
 buchen**; das **Stornieren** einer Bestellung ist nicht umkehrbar.
+
+## Nachweis-Ampel
+
+Verlangt der Lieferant Pflichtnachweise (etwa Freistellungsbescheinigung oder Versicherung), zeigt die Bestellung im Kopf ihre **Ampel**: grün, wenn alles gültig ist, gelb bei bald ablaufenden, rot bei fehlenden oder abgelaufenen Nachweisen. Der Klick führt zur Nachweisübersicht. Ob ein roter Stand die Übermittlung sperrt, regelt weiter die Einstellung der Nachweise.

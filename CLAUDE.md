@@ -176,7 +176,9 @@ Welle 4 leer; ein neuer Verstoß wird gelöst, nicht eingetragen.
   `ApprovalInboxSubject` (Gegenstand im Genehmigungs-Eingang; entschieden wird auf dem
   Weg des Gegenstands, Zuständigkeit über `ApprovalResponsibility`),
   `IncomingInvoiceTransferTarget` (Buchhaltungsziel des Rechnungseingangs; Tor, Journal
-  `incoming_einvoice_transfers` und Wiederholung führt der Kern). Neue Scans, Specs, Quellen,
+  `incoming_einvoice_transfers` und Wiederholung führt der Kern),
+  `CalendarEventSource` (Termine eines Moduls im Kalender, etwa Ausschreibungsfristen;
+  Rechte und Modulfreischaltung prüft die Quelle). Neue Scans, Specs, Quellen,
   Demo-Blöcke, Löschbereiche usw. **nie** in eine feste Liste, sondern ins
   Manifest des Moduls. Plugins haben kein Manifest und tragen sich beim Booten
   über `ModuleRegistry::contribute(Interface, Klasse)` ein (MVP-1045) — nie

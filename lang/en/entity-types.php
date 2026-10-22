@@ -19,6 +19,8 @@ declare(strict_types=1);
  */
 return [
     'AccountingReportController' => 'Report export: accounting',
+    'LeadReportController' => 'Report export: leads',
+    'PatrolReportController' => 'Report export: patrols',
     'ContractTemplate' => 'Contract template',
     'ResaleReportController' => 'Report export: subscription reselling',
     'AccountingBudgetController' => 'Report export: budget',
@@ -275,6 +277,8 @@ return [
     'InvoiceItem' => 'Invoice item',
     'InvoiceMailTemplate' => 'Invoice mail template',
     'InvoiceRetention' => 'Retention',
+    'SelfBillingCredit' => 'Self-billed credit note',
+    'SelfBillingCreditLine' => 'Self-billed credit note line',
     'OnlinePayment' => 'Online payment',
     'EbicsConnection' => 'EBICS bank access',
     'DatevOnlineConnection' => 'DATEV Online connection',

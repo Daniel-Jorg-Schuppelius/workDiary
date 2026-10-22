@@ -34,3 +34,7 @@ inférieure à la retenue est refusée — elle réduirait la sûreté en silenc
 **Restitution :** À l’échéance, l’acte est réclamé et le dossier clos comme
 *restitué*. Une garantie appelée reste documentée durablement avec sa date
 et son motif.
+
+## Lien avec la garantie
+
+Une caution peut renvoyer à un **délai de garantie**. Une fois ce délai écoulé, le contrôle des échéances signale la **restitution** de l’acte — comme après la libération d’une retenue remplacée. De même, une retenue sur facture reprend la fin de la garantie choisie comme date de libération et suit si le délai change.

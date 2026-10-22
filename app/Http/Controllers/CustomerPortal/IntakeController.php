@@ -92,6 +92,10 @@ class IntakeController extends Controller {
         $intake->load(['quote.items', 'messages.author:id,name,customer_id', 'asset:id,name', 'requestItem:id,name']);
 
         $quote = $intake->quote;
+        // Angesehen (MVP-1281): erst das sichtbare, entscheidbare Angebot zählt.
+        if ($quote !== null && $this->quotes->visibleToCustomer($quote) && $this->quotes->decidable($quote)) {
+            app(\App\Services\Invoicing\QuoteService::class)->markViewed($quote, 'portal');
+        }
         $adapter = $this->handover->targetFor($intake->kind);
         $target = $intake->target_id !== null ? $intake->target()->withoutGlobalScopes()->first() : null;
 
@@ -183,8 +187,13 @@ class IntakeController extends Controller {
             'item_ids' => ['nullable', 'array'],
             'item_ids.*' => ['string', 'max:64'],
             'reason' => ['nullable', 'string', 'max:1000'],
+            'signer_name' => ['nullable', 'string', 'max:120'],
+            'signature' => ['nullable', 'string', 'max:1400000'],
         ]);
-        $this->quotes->decide($intake, $user, $data['decision'] === 'accept', array_values((array) ($data['item_ids'] ?? [])), $data['reason'] ?? null);
+        $this->quotes->decide($intake, $user, $data['decision'] === 'accept', array_values((array) ($data['item_ids'] ?? [])), $data['reason'] ?? null, [
+            'name' => $data['signer_name'] ?? null,
+            'png' => $data['signature'] ?? null,
+        ]);
 
         return redirect()->route('customer.intakes.show', $intake)->with('status', __('customer_intake.flash.quote_decided'));
     }

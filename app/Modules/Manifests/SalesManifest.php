@@ -129,6 +129,9 @@ final class SalesManifest extends Manifest {
             \App\Services\Reporting\Contracts\ProjectEconomicsDimension::class => [
                 \App\Services\Sales\Reporting\QuoteCalculationEconomicsDimension::class,
             ],
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Sales\Demo\LeadDemoBlock::class,
+            ],
         ];
     }
 

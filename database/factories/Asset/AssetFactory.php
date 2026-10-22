@@ -22,7 +22,8 @@ class AssetFactory extends Factory {
     public function definition(): array {
         return [
             'organization_id' => Organization::factory(),
-            'asset_no' => 'AS-' . now()->format('Y') . '-' . str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT),
+            // Eindeutig je Organisation (assets_uniq_asset_no): reiner Zufall kollidierte gelegentlich im Volllauf.
+            'asset_no' => 'AS-' . now()->format('Y') . '-' . str_pad((string) fake()->unique()->numberBetween(1, 9999), 4, '0', STR_PAD_LEFT),
             'asset_class' => AssetClass::Device->value,
             'category_code' => null,
             'name' => fake()->words(2, true),

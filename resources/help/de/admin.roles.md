@@ -1,7 +1,7 @@
 ---
 title: "Rollen & Rechte"
 topic: admin.roles
-version: 2
+version: 3
 keywords:
     - Berechtigungen
     - Benutzerrechte
@@ -80,3 +80,9 @@ Rollenänderungen wirken sofort auf alle zugewiesenen Mitglieder — auch
 auf Menüs, Hilfe-Inhalte und Modulzugriffe. Als Nächstes: Zuweisungen
 unter „Mitglieder" pflegen und die Sicherheitshinweise im
 Admin-Handbuch lesen.
+
+Jede Änderung an Rollen, Rechten und Gruppenmitgliedschaften steht mit
+Person und Zeitpunkt unter **Rechteänderungen** (Knopf oben in der
+Zugriffssteuerung und im Prüfprotokoll). Die Sicht ist lesend und braucht
+das Recht „Rollen- und Rechteänderungen einsehen“; Support-Konten haben es, damit
+sie Vorgänge nachvollziehen können, ohne etwas zu verändern.

@@ -28,6 +28,8 @@
                     <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('helpdesk.reports.csv', ['metric' => 'aging', 'from' => $from->toDateString(), 'to' => $to->toDateString()])" show-label>{{ __('CSV Aging') }}</x-icon-btn>
                     <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('helpdesk.reports.csv', ['metric' => 'satisfaction', 'from' => $from->toDateString(), 'to' => $to->toDateString()])" show-label>{{ __('CSV Zufriedenheit') }}</x-icon-btn>
                     <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('helpdesk.reports.csv', ['metric' => 'knowledge', 'from' => $from->toDateString(), 'to' => $to->toDateString()])" show-label>{{ __('CSV Probleme trotz Artikel') }}</x-icon-btn>
+                    <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('helpdesk.reports.csv', ['metric' => 'trends', 'from' => $from->toDateString(), 'to' => $to->toDateString()])" show-label>{{ __('helpdesk.report.csvTrends') }}</x-icon-btn>
+                    <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('helpdesk.reports.csv', ['metric' => 'services', 'from' => $from->toDateString(), 'to' => $to->toDateString()])" show-label>{{ __('helpdesk.report.csvServices') }}</x-icon-btn>
                 </x-action-menu>
             </x-slot:actions>
         </x-page-toolbar>
@@ -97,6 +99,66 @@
                       :x-label="__('Score')"
                       :series="$satisfactionSeries" />
     </div>
+
+    {{-- Monatsverläufe (MVP-1260): zwölf Monate bis zum Ende des Zeitraums. --}}
+    <div class="chart-grid grid gap-3 xl:grid-cols-2">
+        <x-charts.line :title="__('helpdesk.report.trendCreated')" :unit="__('Tickets')" :x-label="__('helpdesk.report.month')"
+                       :series="collect($trends)->map(fn (array $row): array => ['x' => $row['month'], 'y' => $row['created'], 'url' => null])->all()" />
+        <x-charts.line :title="__('helpdesk.report.trendResolution')" :unit="__('Stunden')" :x-label="__('helpdesk.report.month')"
+                       :series="collect($trends)->map(fn (array $row): array => ['x' => $row['month'], 'y' => $row['resolution_p50'], 'url' => null])->all()" />
+    </div>
+
+    <x-card :title="__('helpdesk.report.trendTable')">
+        <x-table bare>
+            <x-slot:head>
+                <tr>
+                    <th>{{ __('helpdesk.report.month') }}</th>
+                    <th class="text-right">{{ __('helpdesk.report.created') }}</th>
+                    <th class="text-right">{{ __('Gelöst') }}</th>
+                    <th class="text-right">{{ __('helpdesk.report.reactionP50') }}</th>
+                    <th class="text-right">{{ __('helpdesk.report.resolutionP50') }}</th>
+                    <th class="text-right">{{ __('SLA-Erfüllung (Lösung)') }}</th>
+                    <th class="text-right">{{ __('FCR-Quote') }}</th>
+                    <th class="text-right">{{ __('Zufriedenheit (Ø)') }}</th>
+                </tr>
+            </x-slot:head>
+            @foreach ($trends as $row)
+                <tr>
+                    <td class="tabular-nums">{{ $row['month'] }}</td>
+                    <td class="text-right tabular-nums">{{ $row['created'] }}</td>
+                    <td class="text-right tabular-nums">{{ $row['resolved'] }}</td>
+                    <td class="text-right tabular-nums">{{ $row['reaction_p50'] }}</td>
+                    <td class="text-right tabular-nums">{{ $row['resolution_p50'] }}</td>
+                    <td class="text-right tabular-nums">{{ $row['resolution_met'] }} %</td>
+                    <td class="text-right tabular-nums">{{ $row['fcr_rate'] }} %</td>
+                    <td class="text-right tabular-nums">{{ $row['csat'] > 0 ? $row['csat'] : '—' }}</td>
+                </tr>
+            @endforeach
+        </x-table>
+    </x-card>
+
+    @if ($services !== [])
+        <x-card :title="__('helpdesk.report.byService')">
+            <x-table bare>
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('helpdesk.service.label') }}</th>
+                        <th class="text-right">{{ __('Tickets') }}</th>
+                        <th class="text-right">{{ __('helpdesk.report.open') }}</th>
+                        <th class="text-right">{{ __('helpdesk.report.breached') }}</th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($services as $service => $row)
+                    <tr>
+                        <td>{{ $service }}</td>
+                        <td class="text-right tabular-nums">{{ $row['total'] }}</td>
+                        <td class="text-right tabular-nums">{{ $row['open'] }}</td>
+                        <td class="text-right tabular-nums">{{ $row['breached'] }}</td>
+                    </tr>
+                @endforeach
+            </x-table>
+        </x-card>
+    @endif
 
     <x-card :title="__('FCR je Queue')">
         @if ($fcr['queues'] === [])

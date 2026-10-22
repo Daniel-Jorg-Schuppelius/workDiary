@@ -47,6 +47,11 @@ class DatevBookingBatchPolicy {
         return $user->can(P::FinanceBookingExport->value) && ! $batch->isFinal();
     }
 
+    /** Übermittlung an die Kanzlei festhalten (MVP-1277) — nur für exportierte Stapel. */
+    public function transmit(User $user, DatevBookingBatch $batch): bool {
+        return $user->can(P::FinanceBookingExport->value) && $batch->isFinal();
+    }
+
     /** Erzeugte CSV herunterladen (pfadsicher zusätzlich im Controller geprüft). */
     public function download(User $user, DatevBookingBatch $batch): bool {
         return $user->can(P::FinanceBookingExport->value);

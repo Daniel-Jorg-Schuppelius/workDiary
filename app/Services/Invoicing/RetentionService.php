@@ -46,7 +46,10 @@ class RetentionService {
         ?User $actor = null,
         ?string $note = null,
         RetentionBase $baseKind = RetentionBase::Net,
+        ?\App\Models\Warranty\WarrantyPeriod $warranty = null,
     ): InvoiceRetention {
+        // Gekoppelt an die Gewährleistung (MVP-1282): ihr Ende ist der Freigabetermin, solange keiner gesetzt ist.
+        $dueOn ??= $warranty?->ends_on?->toDateString();
         if (! $this->isMutable($invoice)) {
             throw new RuntimeException((string) __('invoicing.retention.locked'));
         }
@@ -88,7 +91,7 @@ class RetentionService {
             throw new RuntimeException((string) __('invoicing.retention.exceeds_total'));
         }
 
-        return DB::transaction(function () use ($invoice, $kind, $percent, $baseKind, $base, $amount, $dueOn, $actor, $note): InvoiceRetention {
+        return DB::transaction(function () use ($invoice, $kind, $percent, $baseKind, $base, $amount, $dueOn, $actor, $note, $warranty): InvoiceRetention {
             $retention = InvoiceRetention::query()->create([
                 'organization_id' => $invoice->organization_id,
                 'invoice_id' => $invoice->id,
@@ -99,6 +102,7 @@ class RetentionService {
                 'amount' => $amount,
                 'currency' => $invoice->currency->value,
                 'due_on' => $dueOn,
+                'warranty_period_id' => $warranty?->id,
                 'status' => RetentionStatus::Open->value,
                 'note' => $note,
                 'created_by' => $actor?->id,

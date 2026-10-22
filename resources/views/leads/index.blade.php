@@ -21,6 +21,7 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Interessenten vor dem Kundenstatus: erfassen, qualifizieren, konvertieren — ohne Excel-Nebenliste.')">
     <x-slot:actions>
+        <x-icon-btn icon="insights" size="sm" :href="route('leads.report')" show-label>{{ __('lead.report.title') }}</x-icon-btn>
         @if ($canManage)
             <x-icon-btn icon="person_add" tone="primary" size="sm" data-entry-modal-trigger
                         :href="route('leads.create')" show-label>{{ __('Lead anlegen') }}</x-icon-btn>

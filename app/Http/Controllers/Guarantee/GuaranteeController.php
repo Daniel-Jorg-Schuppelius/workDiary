@@ -85,6 +85,11 @@ class GuaranteeController extends Controller {
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name', 'company']),
             'suppliers' => Supplier::query()->orderBy('name')->get(['id', 'name', 'company']),
             'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
+            'warranties' => \App\Models\Warranty\WarrantyPeriod::query()
+                ->where('status', \App\Enums\Warranty\WarrantyStatus::Open->value)
+                ->with(['customer:id,name', 'supplier:id,name'])
+                ->orderBy('ends_on')
+                ->get(),
             // Nutzerliste ausdrücklich org-gefiltert: User trägt keinen
             // globalen Org-Scope (Login/2FA laufen vor dem Org-Kontext).
             'users' => User::query()->where('organization_id', $organizationId)->orderBy('name')->get(['id', 'name']),

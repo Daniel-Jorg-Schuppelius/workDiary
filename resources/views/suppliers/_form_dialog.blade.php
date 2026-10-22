@@ -33,6 +33,9 @@
                            :hint="($numberLockedBy ?? null) !== null ? __('numbering.field.locked_hint', ['program' => $numberLockedBy]) : null" />
             <x-input-field name="company" :label="__('Firma')" maxlength="200" :value="old('company', $supplier?->company)" />
             <x-input-field name="vat_id" :label="__('USt-IdNr.')" maxlength="64" :value="old('vat_id', $supplier?->vat_id)" />
+            <x-input-field name="tax_number" :label="__('Steuernummer')" maxlength="64" :value="old('tax_number', $supplier?->tax_number)" />
+            <x-input-field name="self_billing_agreed_on" type="date" :label="__('invoicing.self_billing.field.agreement')"
+                           :hint="__('invoicing.self_billing.help.agreement')" :value="old('self_billing_agreed_on', $supplier?->self_billing_agreed_on?->toDateString())" />
             <x-input-field name="vendor_number" :label="__('Kreditorennummer')" maxlength="64" :value="old('vendor_number', $supplier?->vendor_number)" />
             <x-checkbox-field name="active" :label="__('Aktiv')" :checked="old('active', $supplier?->active ?? true)" />
             <x-checkbox-field name="exclude_from_reports" :label="__('In Auswertungen ausblenden')"

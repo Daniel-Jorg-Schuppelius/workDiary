@@ -17,6 +17,7 @@ use App\Models\Applications\JobApplicationInterview;
 use App\Models\Calendar\{AppointmentRequest, Event};
 use App\Models\Platform\{Organization, User};
 use App\Models\Schedule\ScheduledShift;
+use App\Services\Calendar\CalendarEventService;
 use Carbon\CarbonImmutable;
 use DateTimeZone;
 use Spatie\IcalendarGenerator\Components\{Calendar, Event as IcsEvent};
@@ -29,16 +30,24 @@ use Spatie\IcalendarGenerator\Enums\Classification;
  */
 class IcsFeedService {
     public function feedForUser(User $user): string {
+        $from = now()->subDays(30);
+        $to = now()->addDays(180);
         $events = Event::query()
             ->with(['rooms', 'category'])
             ->whereNull('cancelled_at')
             ->forUser($user)
-            ->where('started_at', '>=', now()->subDays(30))
-            ->where('started_at', '<=', now()->addDays(180))
+            ->where('started_at', '>=', $from)
+            ->where('started_at', '<=', $to)
             ->orderBy('started_at')
             ->get();
 
-        return $this->build($events->all(), 'workDiary – Persönlicher Kalender');
+        // Termine der Module wie im Kalender, etwa Ausschreibungsfristen (MVP-1299).
+        $moduleEvents = array_map(
+            fn (array $event): IcsEvent => $this->toIcsModuleEvent($event),
+            app(CalendarEventService::class)->moduleEvents($from, $to, $user),
+        );
+
+        return $this->build($events->all(), 'workDiary – Persönlicher Kalender', $moduleEvents);
     }
 
     /**
@@ -246,8 +255,9 @@ class IcsFeedService {
 
     /**
      * @param array<int, Event> $events
+     * @param list<IcsEvent> $extra
      */
-    private function build(array $events, string $name): string {
+    private function build(array $events, string $name, array $extra = []): string {
         $calendar = Calendar::create($name)
             ->productIdentifier((string) config('events.ics.product_id', '-//workDiary//Events//DE'))
             ->refreshInterval(60);
@@ -257,8 +267,34 @@ class IcsFeedService {
         foreach ($events as $event) {
             $calendar->event($this->toIcsEvent($event, $tz));
         }
+        foreach ($extra as $event) {
+            $calendar->event($event);
+        }
 
         return $calendar->get();
+    }
+
+    /**
+     * Modultermin als ICS: Fristen (nur Datum) ganztägig, sonst ein Zeitpunkt.
+     * DTSTAMP am Termin, damit der Feed bei unverändertem Stand gleich bleibt.
+     *
+     * @param  array{id: string, title: string, start: string, end: string|null, color: string, url: string|null}  $event
+     */
+    private function toIcsModuleEvent(array $event): IcsEvent {
+        $start = CarbonImmutable::parse($event['start'])->toDateTimeImmutable();
+        $ics = IcsEvent::create($event['title'])
+            ->uniqueIdentifier($event['id'] . '@workdiary')
+            ->startsAt($start)
+            ->createdAt($start)
+            ->withoutTimezone();
+        if (strlen($event['start']) === 10) {
+            $ics->fullDay();
+        }
+        if ($event['url'] !== null) {
+            $ics->url($event['url']);
+        }
+
+        return $ics;
     }
 
     /** Bildet ein Event auf eine ICS-Event-Komponente ab (Feed + CalDAV-Publish teilen diese Abbildung). */

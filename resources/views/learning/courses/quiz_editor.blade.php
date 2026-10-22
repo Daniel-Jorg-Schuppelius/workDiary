@@ -179,6 +179,8 @@
                         <x-input-field name="title" :label="__('learning.field.title')" required minlength="2" maxlength="180" :value="old('title', $quiz?->title ?? $unit->title)" />
                         <x-input-field name="pass_percent" type="number" min="1" max="100" :label="__('learning.field.pass_percent')" required :value="old('pass_percent', $quiz?->pass_percent ?? 80)" />
                         <x-input-field name="time_limit_minutes" type="number" min="1" max="600" :label="__('learning.field.time_limit_minutes')" :value="old('time_limit_minutes', $quiz?->time_limit_minutes)" />
+                        <x-input-field name="question_time_limit_seconds" type="number" min="10" max="3600" :label="__('learning.field.question_time_limit_seconds')"
+                                       :hint="__('learning.help.question_time_limit')" :value="old('question_time_limit_seconds', $quiz?->question_time_limit_seconds)" />
                         <x-input-field name="max_attempts" type="number" min="0" max="50" :label="__('learning.field.max_attempts')" required :value="old('max_attempts', $quiz?->max_attempts ?? 3)" />
                         <x-input-field name="retry_wait_hours" type="number" min="0" max="8760" :label="__('learning.field.retry_wait_hours')" required :value="old('retry_wait_hours', $quiz?->retry_wait_hours ?? 0)" />
                         <x-input-field name="questions_per_attempt" type="number" min="1" max="500" :label="__('learning.field.questions_per_attempt')" :value="old('questions_per_attempt', $quiz?->questions_per_attempt)" />

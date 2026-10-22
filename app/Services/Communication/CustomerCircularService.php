@@ -82,6 +82,9 @@ class CustomerCircularService {
      * werden; der Job überspringt bereits erreichte Empfänger.
      */
     public function send(CustomerCircular $circular, User $actor): CustomerCircular {
+        if ($circular->is_template) {
+            throw new RuntimeException((string) __('circular.template.not_sendable'));
+        }
         $resume = $circular->status === CustomerCircularStatus::Sending;
         if (! $resume && ! $circular->status->canTransitionTo(CustomerCircularStatus::Sending)) {
             throw new RuntimeException((string) __('circular.already_sent'));
@@ -160,7 +163,46 @@ class CustomerCircularService {
      * Freigabe erteilen. Die freigebende Person muss eine andere sein als die
      * anlegende — sonst wäre es keine Kontrolle, sondern ein zweiter Klick.
      */
+    /** Kopie als Vorlage (MVP-1285): Inhalt, Filter und Anhänge, ohne Versand- und Freigabestand. */
+    public function asTemplate(CustomerCircular $circular, ?User $actor): CustomerCircular {
+        return DB::transaction(function () use ($circular, $actor): CustomerCircular {
+            $template = CustomerCircular::query()->create([
+                'organization_id' => $circular->organization_id,
+                'subject' => $circular->subject,
+                'body' => $circular->body,
+                'is_mandatory' => $circular->is_mandatory,
+                'portal_notice' => $circular->portal_notice,
+                'filters' => $circular->filters,
+                'is_template' => true,
+                'created_by' => $actor?->id,
+            ]);
+            $this->copyAttachments($circular, $template, $actor);
+
+            return $template;
+        });
+    }
+
+    /** Anhänge als eigene Dateien kopieren — eine Vorlage überlebt das Löschen ihrer Kopien und umgekehrt. */
+    public function copyAttachments(CustomerCircular $from, CustomerCircular $to, ?User $actor): void {
+        foreach ($from->attachments as $attachment) {
+            $path = 'attachments/' . now()->format('Y/m') . '/' . \Illuminate\Support\Str::uuid()->toString() . '.' . (\CommonToolkit\Helper\FileSystem\File::extension((string) $attachment->path) ?: 'bin');
+            \Illuminate\Support\Facades\Storage::disk((string) $attachment->disk)->copy((string) $attachment->path, $path);
+            $to->attachments()->create([
+                'organization_id' => $to->organization_id,
+                'user_id' => $actor->id ?? $attachment->user_id,
+                'disk' => $attachment->disk,
+                'path' => $path,
+                'original_name' => $attachment->original_name,
+                'mime' => $attachment->mime,
+                'size' => $attachment->size,
+            ]);
+        }
+    }
+
     public function approve(CustomerCircular $circular, User $actor): CustomerCircular {
+        if ($circular->is_template) {
+            throw new RuntimeException((string) __('circular.template.not_sendable'));
+        }
         if (! $circular->isDraft()) {
             throw new RuntimeException((string) __('circular.already_sent'));
         }

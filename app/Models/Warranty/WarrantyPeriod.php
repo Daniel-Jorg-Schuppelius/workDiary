@@ -12,11 +12,13 @@ declare(strict_types=1);
 
 namespace App\Models\Warranty;
 
+use App\Enums\Invoicing\RetentionStatus;
 use App\Enums\Warranty\{WarrantyBasis, WarrantySide, WarrantyStatus};
 use App\Models\Claims\ClaimCase;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
+use App\Models\Invoicing\InvoiceRetention;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Protocol\Protocol;
@@ -70,6 +72,18 @@ class WarrantyPeriod extends Model {
 
     /** @var array<string, mixed> */
     protected $attributes = ['status' => 'open'];
+
+    protected static function booted(): void {
+        // Gekoppelte offene Einbehalte (MVP-1282) folgen einem verschobenen Fristende.
+        static::updated(static function (self $period): void {
+            if ($period->wasChanged('ends_on')) {
+                InvoiceRetention::query()
+                    ->where('warranty_period_id', $period->id)
+                    ->where('status', RetentionStatus::Open->value)
+                    ->update(['due_on' => $period->ends_on->toDateString()]);
+            }
+        });
+    }
 
     /** @return BelongsTo<Protocol, $this> */
     public function protocol(): BelongsTo {

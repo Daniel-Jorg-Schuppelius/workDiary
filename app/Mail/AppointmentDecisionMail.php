@@ -30,10 +30,14 @@ class AppointmentDecisionMail extends Mailable {
     use Queueable;
     use SerializesModels;
 
-    public function __construct(public readonly AppointmentRequest $request) {}
+    /** $rescheduled: bestätigter Termin wurde verschoben (MVP-1287). */
+    public function __construct(public readonly AppointmentRequest $request, public readonly bool $rescheduled = false) {}
 
     public function envelope(): Envelope {
         $confirmed = $this->request->status === AppointmentRequestStatus::Confirmed;
+        if ($this->request->status === AppointmentRequestStatus::Proposed) {
+            return new Envelope(subject: (string) __('appointment.mail.proposed_subject', ['service' => (string) $this->request->service_label]));
+        }
 
         return new Envelope(subject: $confirmed
             ? (string) __('Terminbestätigung: :service am :date', [

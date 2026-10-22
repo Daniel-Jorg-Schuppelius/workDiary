@@ -365,4 +365,36 @@ class CustomerCircularTest extends TestCase {
         $this->assertTrue((bool) $customer->fresh()?->no_bulk_mail);
         $this->assertCount(0, $this->service()->audience([]));
     }
+
+    public function test_template_with_attachment_is_reused_and_never_sent(): void {
+        Mail::fake();
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $this->customer(['name' => 'Alpha GmbH', 'company' => 'Alpha GmbH', 'email' => 'a@example.test']);
+
+        $this->actingAs($this->admin)->post(route('circulars.store'), [
+            'subject' => 'Preisliste 2027', 'body' => 'Guten Tag :firma, anbei die neue Liste.', 'city' => 'Musterstadt',
+            'attachment' => \Illuminate\Http\UploadedFile::fake()->create('preisliste.pdf', 20, 'application/pdf'),
+        ])->assertRedirect();
+        $first = CustomerCircular::query()->latest('id')->firstOrFail();
+        $this->assertSame(['preisliste.pdf'], $first->attachments->pluck('original_name')->all());
+
+        $this->actingAs($this->admin)->post(route('circulars.save-template', $first))->assertRedirect();
+        $template = CustomerCircular::query()->where('is_template', true)->sole();
+        $this->assertSame('Musterstadt', $template->filters['city'] ?? null);
+        $this->assertCount(1, $template->attachments);
+        $this->assertNotSame($first->attachments->first()->path, $template->attachments->first()->path);
+        $this->assertThrows(fn () => $this->service()->send($template, $this->admin), RuntimeException::class, (string) __('circular.template.not_sendable'));
+
+        $this->actingAs($this->admin)->get(route('circulars.index'))->assertOk()->assertSee(route('circulars.create', ['template' => $template->sqid]), false);
+        $this->actingAs($this->admin)->get(route('circulars.create', ['template' => $template->sqid]))->assertOk()->assertSee('Preisliste 2027')->assertSee('preisliste.pdf');
+        $this->actingAs($this->admin)->post(route('circulars.store'), [
+            'subject' => 'Preisliste 2027 (Nachtrag)', 'body' => 'Guten Tag :firma.', 'template' => $template->sqid,
+        ])->assertRedirect();
+        $copy = CustomerCircular::query()->where('is_template', false)->latest('id')->firstOrFail();
+        $this->assertSame(['preisliste.pdf'], $copy->attachments->pluck('original_name')->all());
+
+        $copy->update(['filters' => []]);
+        $this->service()->send($copy, $this->admin);
+        Mail::assertSent(CustomerCircularMail::class, fn (CustomerCircularMail $mail): bool => count($mail->attachments()) === 1);
+    }
 }

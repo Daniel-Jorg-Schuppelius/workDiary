@@ -76,6 +76,9 @@ final class CalendarManifest extends Manifest {
             \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
                 \App\Services\Calendar\Retention\CalendarRetentionPolicies::class,
             ],
+            \App\Services\Demo\Contracts\DemoBlock::class => [
+                \App\Services\Calendar\Demo\AppointmentDemoBlock::class,
+            ],
         ];
     }
 }

@@ -17,6 +17,7 @@
 @section('content')
     <x-index-page :subtitle="__('Bestellbare Leistungen mit Formular, Genehmigungskette und Fulfillment — Änderungen wirken nur auf neue Bestellungen (Snapshots).')">
         <x-slot:actions>
+            <x-icon-btn icon="account_tree" size="sm" :href="route('servicedesk.service-map.index')" show-label>{{ __('helpdesk.map.title') }}</x-icon-btn>
             @if ($canManage)
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger

@@ -17,11 +17,13 @@ use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Models\Sales\ServiceOffering;
+use App\Models\Time\TimeEntry;
 use App\Services\ServiceTicket\SlaTimer;
 use Database\Factories\ServiceTicket\ServiceTicketFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
 
 /**
@@ -75,6 +77,8 @@ class ServiceTicket extends Model {
         'project_id',
         'diary_entry_id',
         'sla_contract_id',
+        'business_service_id',
+        'service_offering_id',
         'title',
         'description',
         'status',
@@ -210,6 +214,21 @@ class ServiceTicket extends Model {
     /** @return BelongsTo<SlaContract, $this> */
     public function slaContract(): BelongsTo {
         return $this->belongsTo(SlaContract::class);
+    }
+
+    /** @return BelongsTo<BusinessService, $this> */
+    public function businessService(): BelongsTo {
+        return $this->belongsTo(BusinessService::class);
+    }
+
+    /** @return BelongsTo<ServiceOffering, $this> */
+    public function serviceOffering(): BelongsTo {
+        return $this->belongsTo(ServiceOffering::class);
+    }
+
+    /** @return HasMany<TimeEntry, $this> */
+    public function timeEntries(): HasMany {
+        return $this->hasMany(TimeEntry::class);
     }
 
     /** @return BelongsTo<User, $this> */

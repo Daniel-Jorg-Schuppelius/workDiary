@@ -14,6 +14,11 @@ return [
     'label' => 'Archivos',
     'hint' => 'Permitido: :formats · hasta :size por archivo · como máximo :count archivos, :total en total.',
     'progress' => 'Subiendo … :percent %',
+    'chunked' => [
+        'invalid_chunk' => 'Esta parte no corresponde a la carga.',
+        'incomplete' => 'La carga aún no se ha transferido por completo.',
+        'unknown' => 'La carga es desconocida o ha caducado. Seleccione de nuevo el archivo.',
+    ],
     'error' => [
         'type' => ':name: tipo de archivo no permitido.',
         'too_large' => ':name supera :size.',

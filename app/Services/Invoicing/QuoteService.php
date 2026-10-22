@@ -80,7 +80,7 @@ class QuoteService {
         }
 
         return DB::transaction(function () use ($quote, $actor): Quote {
-            $next = $quote->replicate(['acceptance_token_hash', 'decided_at', 'decision_snapshot']);
+            $next = $quote->replicate(['acceptance_token_hash', 'decided_at', 'decision_snapshot', 'viewed_at']);
             $next->version = $quote->version + 1;
             $next->previous_version_id = (int) $quote->id;
             // Vergibt ein Programm, ist jede Version dort ein eigenes Angebot mit eigener Nummer (MVP-1161).
@@ -181,7 +181,23 @@ class QuoteService {
      *
      * @param array<int, int>|null $acceptedItemIds null = Vollannahme
      */
-    public function accept(Quote $quote, ?array $acceptedItemIds = null, ?string $token = null): Quote {
+    /**
+     * Erstes Öffnen durch den Kunden (MVP-1281) über Link oder Portal; nur
+     * solange das Angebot entschieden werden kann, und nur einmal.
+     */
+    public function markViewed(Quote $quote, string $channel): void {
+        if ($quote->viewed_at !== null || $quote->status !== QuoteStatus::Sent) {
+            return;
+        }
+        $quote->forceFill(['viewed_at' => now()])->save();
+        $quote->audit('quote.viewed', ['channel' => $channel]);
+    }
+
+    /**
+     * @param array<int, int>|null $acceptedItemIds null = Vollannahme
+     * @param array{name?: ?string, png?: ?string}|null $signature Unterschrift bei der Annahme (MVP-1281), optional
+     */
+    public function accept(Quote $quote, ?array $acceptedItemIds = null, ?string $token = null, ?array $signature = null): Quote {
         if ($quote->isExpired()) {
             $quote->update(['status' => QuoteStatus::Expired]);
             throw new \RuntimeException((string) __('Die Bindefrist ist abgelaufen.'));
@@ -193,7 +209,7 @@ class QuoteService {
             throw new \RuntimeException((string) __('Ungültiges Annahme-Token.'));
         }
 
-        return DB::transaction(function () use ($quote, $acceptedItemIds): Quote {
+        return DB::transaction(function () use ($quote, $acceptedItemIds, $signature): Quote {
             $partial = false;
             foreach ($quote->items as $item) {
                 $kind = $item->lineKind();
@@ -232,9 +248,10 @@ class QuoteService {
                 ])->all(),
                 'total' => $quote->total?->toFloat(),
                 'decided_at' => now()->toIso8601String(),
+                'signature' => $this->storeSignature($quote, $signature),
             ];
             $quote->save();
-            $quote->audit('quote.accepted', ['partial' => $partial]);
+            $quote->audit('quote.accepted', ['partial' => $partial, 'signed' => $quote->decision_snapshot['signature'] !== null]);
 
             // MVP-650: die Auftragsbestätigung rendert dauerhaft mit dem
             // Designstand des Annahme-Zeitpunkts.
@@ -242,6 +259,38 @@ class QuoteService {
 
             return $quote->refresh();
         });
+    }
+
+    /**
+     * Unterschrift als PNG-Anhang am Angebot; der Snapshot nennt Name, Anhang
+     * und Zeitpunkt. Ohne Bild bleibt nur ein angegebener Name.
+     *
+     * @param array{name?: ?string, png?: ?string}|null $signature
+     * @return array{name: ?string, attachment_id: ?int, signed_at: string}|null
+     */
+    private function storeSignature(Quote $quote, ?array $signature): ?array {
+        $name = trim((string) ($signature['name'] ?? ''));
+        $png = trim((string) ($signature['png'] ?? ''));
+        $binary = $png !== '' ? \CommonToolkit\Helper\Data\DataUrlHelper::decode($png, ['image/png'], 1_000_000) : false;
+        if ($name === '' && $binary === false) {
+            return null;
+        }
+        $attachmentId = null;
+        if ($binary !== false) {
+            $path = 'quote-signatures/' . now()->format('Y/m') . '/' . \Illuminate\Support\Str::uuid()->toString() . '.png';
+            \Illuminate\Support\Facades\Storage::disk('local')->put($path, $binary);
+            $attachmentId = (int) $quote->attachments()->create([
+                'organization_id' => $quote->organization_id,
+                'disk' => 'local',
+                'path' => $path,
+                'original_name' => 'unterschrift.png',
+                'mime' => 'image/png',
+                'size' => strlen($binary),
+                'meta_type' => 'signature',
+            ])->id;
+        }
+
+        return ['name' => $name !== '' ? mb_substr($name, 0, 120) : null, 'attachment_id' => $attachmentId, 'signed_at' => now()->toIso8601String()];
     }
 
     public function reject(Quote $quote, ?string $reason = null): Quote {

@@ -35,7 +35,7 @@ final class PartyDeletionGuard {
         ],
         'suppliers' => [
             'purchase_orders', 'claim_supplier_recourses', 'supplier_questionnaire_requests',
-            'investment_supplier_ratings', 'supplier_credentials',
+            'investment_supplier_ratings', 'supplier_credentials', 'self_billing_credits',
         ],
     ];
 

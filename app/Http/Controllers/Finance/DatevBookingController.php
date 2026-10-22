@@ -10,18 +10,19 @@
 
 namespace App\Http\Controllers\Finance;
 
-use App\Enums\Finance\{ChartOfAccounts, DatevBatchStatus};
+use App\Enums\Finance\{ChartOfAccounts, DatevBatchStatus, DatevTransmissionStatus};
 use App\Http\Controllers\Controller;
 use App\Models\Finance\DatevBookingBatch;
 use App\Models\Platform\{Organization, User};
 use App\Models\Travel\ExpenseCategory;
 use App\Services\Billing\FinancialFormatsSupport;
 use App\Services\Finance\Datev\DatevBookingConfig;
-use App\Services\Finance\{DatevBookingException, DatevBookingService};
+use App\Services\Finance\{DatevBatchReportPdfRenderer, DatevBookingException, DatevBookingService};
 use App\Settings\SettingsTree;
 use App\Support\Sqid;
-use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -42,7 +43,7 @@ class DatevBookingController extends Controller {
         Gate::authorize('viewAny', DatevBookingBatch::class);
 
         $batches = DatevBookingBatch::query()
-            ->with('creator:id,name')
+            ->with(['creator:id,name', 'journal' => fn ($q) => $q->whereIn('event', DatevBookingService::TRANSMISSION_EVENTS)])
             ->withCount('sources')
             ->orderByDesc('created_at')
             ->paginate(25);
@@ -64,6 +65,7 @@ class DatevBookingController extends Controller {
 
         return view('finance.datev.index', [
             'batches' => $batches,
+            'transmissions' => $batches->getCollection()->mapWithKeys(fn (DatevBookingBatch $batch): array => [$batch->id => $this->service->transmissionStatus($batch)]),
             'openCount' => $openCount,
             'draftCount' => $draftCount,
             'exportedCount' => $exportedCount,
@@ -134,6 +136,8 @@ class DatevBookingController extends Controller {
         return view('finance.datev.show', [
             'batch' => $batch,
             'preflight' => $preflight,
+            'transmission' => $this->service->transmissionStatus($batch),
+            'canTransmit' => Gate::allows('transmit', $batch),
             'importAvailable' => FinancialFormatsSupport::isAvailable(),
             'canFinalize' => Gate::allows('finalize', $batch),
             'canReshape' => Gate::allows('reshape', $batch),
@@ -204,6 +208,43 @@ class DatevBookingController extends Controller {
         }
 
         return back()->with('success', __('finance.datev.flash.finalized'));
+    }
+
+    /** Dialog: Übermittlungsschritt erfassen (MVP-1277). */
+    public function transmissionDialog(DatevBookingBatch $batch): View {
+        Gate::authorize('transmit', $batch);
+
+        $current = $this->service->transmissionStatus($batch);
+
+        return view('finance.datev._transmission_dialog', [
+            'batch' => $batch,
+            'current' => $current,
+            'targets' => $current->allowedTransitions(),
+        ]);
+    }
+
+    public function transmission(Request $request, DatevBookingBatch $batch): RedirectResponse {
+        Gate::authorize('transmit', $batch);
+
+        $data = $request->validate([
+            'status' => ['required', Rule::enum(DatevTransmissionStatus::class)->except([DatevTransmissionStatus::Open])],
+            'note' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $this->service->recordTransmission($batch, DatevTransmissionStatus::from($data['status']), $data['note'] ?? null, $this->actor());
+
+        return back()->with('success', __('finance.datev.flash.transmission'));
+    }
+
+    /** Begleitbericht als PDF (MVP-1278). */
+    public function report(DatevBookingBatch $batch, DatevBatchReportPdfRenderer $renderer): Response {
+        Gate::authorize('download', $batch);
+        abort_unless($batch->isFinal(), 404);
+
+        return response($renderer->output($batch), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $renderer->filename($batch) . '"',
+        ]);
     }
 
     /** Download der erzeugten CSV (Gate-geprüft, pfadsicher). */

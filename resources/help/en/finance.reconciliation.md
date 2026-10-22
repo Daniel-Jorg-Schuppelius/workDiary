@@ -79,3 +79,9 @@ RF creditor reference (ISO 11649) derived from its number — in the payment
 details and as a structured reference in the GiroCode. When the customer
 pays with this reference, the reconciliation recognises the invoice by it,
 even when written in groups of four.
+
+## Provisional statements and link to the previous statement
+
+**CAMT.052** (intraday report), **CAMT.054** (debit/credit notification) and your own payment orders **PAIN.001/PAIN.008** are imported as **provisional**. Their transactions are shown in the statement as a preview but are neither reconciled nor posted and do not count towards liquidity or key figures. When the binding account statement (**CAMT.053** or **MT940**) for the same account arrives, the provisional statements up to its end date count as **superseded**; only the binding statement is reconciled.
+
+Each binding statement is also checked against its **previous statement** for the same account: the opening balance must equal the predecessor’s closing balance, and no business days may be missing in between. The list shows this as **Link to previous statement** (follows, gap, does not match, first statement). A gap usually means a statement has not been imported yet; once it is added, the link of the following statement is checked again.

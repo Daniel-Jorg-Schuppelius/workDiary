@@ -10,14 +10,14 @@
 
 namespace App\Services\Finance;
 
-use App\Enums\Finance\DatevBatchStatus;
+use App\Enums\Finance\{DatevBatchStatus, DatevTransmissionStatus};
 use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Finance\{DatevBookingBatch, DatevBookingEvent, DatevBookingSource};
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Models\Travel\Expense;
 use App\Services\Billing\{BillingModeResolver, FinancialFormatsSupport};
-use App\Services\Concerns\ResolvesActorId;
+use App\Services\Concerns\{AssertsValidatedTransition, ResolvesActorId};
 use App\Services\Export\ExportRunner;
 use App\Services\Finance\Datev\{DatevBookingAdapter, DatevBookingConfig, DatevBookingFieldResolver};
 use App\Support\MorphMap;
@@ -27,6 +27,7 @@ use CommonToolkit\Helper\Data\{CryptoHelper, NumberHelper};
 use DateTimeImmutable;
 use Illuminate\Support\{Carbon, Collection};
 use Illuminate\Support\Facades\{DB, Storage};
+use Illuminate\Validation\ValidationException;
 
 /**
  * DATEV-Buchungsstapel (Feature 045): stellt gestellte Rechnungen/Gutschriften
@@ -59,9 +60,13 @@ use Illuminate\Support\Facades\{DB, Storage};
 class DatevBookingService {
     use \App\Services\Concerns\AssignsSequentialNo;
 
+    use AssertsValidatedTransition;
     use ResolvesActorId;
 
     public const DISK = ExportRunner::DISK;
+
+    /** Journal-Ereignisse der Übermittlung (MVP-1277), siehe {@see DatevTransmissionStatus::event()}. */
+    public const TRANSMISSION_EVENTS = ['transmitted', 'confirmed', 'rejected'];
 
     public const BASE_PATH = 'exports/finance/datev';
 
@@ -745,6 +750,44 @@ class DatevBookingService {
             ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::Paid])
             ->whereHas('customer', fn($q) => $q->where('billing_mode', '!=', 'workdiary')->whereNotNull('billing_mode'))
             ->count();
+    }
+
+    /**
+     * Übermittlungsstand eines exportierten Stapels (MVP-1277) — aus dem
+     * Journal gelesen, denn der Stapel selbst ist festgeschrieben.
+     */
+    public function transmissionStatus(DatevBookingBatch $batch): DatevTransmissionStatus {
+        $events = $batch->relationLoaded('journal') ? $batch->journal : $batch->journal()->get();
+        $last = $events->whereIn('event', self::TRANSMISSION_EVENTS)->sortBy('id')->last();
+
+        return $last !== null ? DatevTransmissionStatus::from((string) $last->getAttribute('event')) : DatevTransmissionStatus::Open;
+    }
+
+    /**
+     * Hält einen Übermittlungsschritt im Journal fest (MVP-1277). Die Sperre
+     * auf den Stapel ordnet parallele Meldungen, bevor der Übergang geprüft wird.
+     *
+     * @throws ValidationException
+     */
+    public function recordTransmission(DatevBookingBatch $batch, DatevTransmissionStatus $to, ?string $note, ?User $actor = null): DatevBookingBatch {
+        if (! $batch->isFinal()) {
+            throw ValidationException::withMessages(['status' => (string) __('finance.datev.error.not_finalized')]);
+        }
+        $actorId = $this->resolveActorId($actor);
+
+        return DB::transaction(function () use ($batch, $to, $note, $actorId): DatevBookingBatch {
+            $locked = DatevBookingBatch::query()->lockForUpdate()->findOrFail($batch->id);
+            $from = $this->transmissionStatus($locked);
+            $this->assertValidatedTransition($from, $to, 'finance.datev.error.transmission_transition');
+
+            $note = trim((string) $note);
+            $this->recordEvent($locked, (string) $to->event(), $actorId, array_filter([
+                'from' => $from->value,
+                'note' => $note !== '' ? $note : null,
+            ], static fn (?string $value): bool => $value !== null));
+
+            return $locked->load('journal');
+        });
     }
 
     private function nextBatchNo(Organization $organization): int {

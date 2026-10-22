@@ -32,6 +32,7 @@ class SaveGuaranteeRequest extends BaseFormRequest {
         'customer_id' => \App\Models\Customer\Customer::class,
         'supplier_id' => \App\Models\Supplier\Supplier::class,
         'project_id' => \App\Models\Project\Project::class,
+        'warranty_period_id' => \App\Models\Warranty\WarrantyPeriod::class,
         'responsible_user_id' => \App\Models\Platform\User::class,
     ];
 
@@ -49,6 +50,7 @@ class SaveGuaranteeRequest extends BaseFormRequest {
             'customer_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('customers')],
             'supplier_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('suppliers')],
             'project_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('projects')],
+            'warranty_period_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('warranty_periods')],
             'responsible_user_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('users')],
             'note' => ['nullable', 'string', 'max:2000'],
         ];

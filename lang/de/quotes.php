@@ -10,6 +10,14 @@
 
 // Angebote (Feature 112, MVP-601: Nachfassen).
 return [
+    'viewed' => 'Vom Kunden angesehen am :date',
+    'signature' => [
+        'name' => 'Name der unterzeichnenden Person (freiwillig)',
+        'pad' => 'Unterschrift (freiwillig)',
+        'signed_by' => 'Angenommen mit Unterschrift von :name.',
+        'signed' => 'Angenommen mit Unterschrift.',
+        'show' => 'Unterschrift ansehen',
+    ],
     'follow_up' => [
         'title' => 'Angebote nachfassen',
         'subtitle' => 'Fällige Nachfasstermine, ablaufende Angebote und Versandtes ohne Termin',

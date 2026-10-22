@@ -12,12 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Learning;
 
-use App\Mail\SurveyInvitationMail;
 use App\Models\Learning\LearningEnrollment;
-use App\Models\Survey\Survey;
+use App\Models\Survey\SurveyInvitation;
 use App\Services\Survey\SurveyService;
-use Illuminate\Support\Facades\{Log, Mail};
-use RuntimeException;
 
 /**
  * Kursfeedback nach Abschluss (Feature 149, MVP-747).
@@ -42,30 +39,10 @@ class LearningSurveyTrigger {
             return;
         }
 
-        $surveys = Survey::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $enrollment->organization_id)
-            ->where('active', true)
-            ->where('trigger_on_course_completion', true)
-            ->get();
-
-        foreach ($surveys as $survey) {
-            try {
-                $issued = $this->surveys->invite($survey, $email, null, 'learning');
-                // Kursbezug für den Sternewert (MVP-794) — nur der Kurs, keine Person.
-                $issued['invitation']->forceFill(['learning_course_id' => $enrollment->learning_course_id])->save();
-                Mail::to($email)->send(new SurveyInvitationMail($survey, $issued['token']));
-            } catch (RuntimeException) {
-                // Opt-out/Ermüdungsschutz: bewusst still — der Deckel ist
-                // Pflichtbestandteil, kein Fehler.
-                continue;
-            } catch (\Throwable $e) {
-                Log::warning('Kursfeedback-Einladung fehlgeschlagen.', [
-                    'survey_id' => $survey->id,
-                    'enrollment_id' => $enrollment->id,
-                    'error' => $e->getMessage(),
-                ]);
-            }
-        }
+        // Kursbezug für den Sternewert (MVP-794) — nur der Kurs, keine Person.
+        $this->surveys->inviteByTrigger((int) $enrollment->organization_id, 'trigger_on_course_completion', $email, null, 'learning',
+            function (SurveyInvitation $invitation) use ($enrollment): void {
+                $invitation->forceFill(['learning_course_id' => $enrollment->learning_course_id])->save();
+            });
     }
 }

@@ -78,3 +78,7 @@ esportabile in PDF, CSV ed Excel. Può consultarlo chi dispone del
 permesso **Visualizzare stato e report SLA**; per esportarlo serve inoltre il
 permesso **Esporta i report** – senza di esso i pulsanti di esportazione non
 compaiono. Gli amministratori possono sempre fare entrambe le cose.
+
+## Proposta di materiale
+
+Se al ticket è assegnata un’attrezzatura con distinta componenti, mostra i **pezzi soggetti a usura in scadenza** (da intervallo di sostituzione e data di montaggio) come proposta per l’intervento: cosa sostituire davvero lo decide il tecnico. La stessa scheda compare negli ordini con attrezzatura.

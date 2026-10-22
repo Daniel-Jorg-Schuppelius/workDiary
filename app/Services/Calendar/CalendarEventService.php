@@ -12,7 +12,11 @@ namespace App\Services\Calendar;
 
 use App\Models\Diary\{DiaryEntry, EmergencyAssignment, OnCallShift};
 use App\Models\Platform\User;
+use App\Modules\ModuleRegistry;
+use App\Services\Calendar\Contracts\CalendarEventSource;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class CalendarEventService {
     /**
@@ -89,6 +93,29 @@ class CalendarEventService {
                 'color' => '#16a34a',
                 'url' => route('diary.show', $entry),
             ];
+        }
+
+        array_push($events, ...$this->moduleEvents($start, $end, $user, $teamScope, $filterUserId));
+
+        return $events;
+    }
+
+    /**
+     * Termine der Module (MVP-1299) — auch für den persönlichen ICS-Feed; eine
+     * fehlerhafte Quelle fällt einzeln aus.
+     *
+     * @return list<array{id: string, title: string, start: string, end: string|null, color: string, url: string|null}>
+     */
+    public function moduleEvents(CarbonInterface $start, CarbonInterface $end, User $user, bool $teamScope = false, ?int $filterUserId = null): array {
+        $events = [];
+        foreach (app(ModuleRegistry::class)->extensions(CalendarEventSource::class) as $class) {
+            try {
+                /** @var CalendarEventSource $source */
+                $source = app($class);
+                array_push($events, ...$source->events($start, $end, $user, $teamScope, $filterUserId));
+            } catch (Throwable $e) {
+                Log::warning('calendar event source failed', ['source' => $class, 'error' => $e->getMessage()]);
+            }
         }
 
         return $events;

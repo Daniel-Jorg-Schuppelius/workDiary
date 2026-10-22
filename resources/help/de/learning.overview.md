@@ -67,6 +67,8 @@ Einheit“. Ein Freigabedatum der Einheit gilt zusätzlich.
 
 Wer von LearnDash kommt, übernimmt das **Export-ZIP** (**Lernkatalog** → „LearnDash-Import“): Kurse, Lektionen, Themen und Prüfungen entstehen als Entwürfe, Fragen landen im Katalog mit ihrer Kategorie. Bilder und Medien werden nicht kopiert (Platzhalter zum Nachpflegen), Lektionsvideos nur von freigegebenen Hosts. Abgeschlossene Kurse werden für Personen mit passender E-Mail als Einschreibung „importiert“ vermerkt — ohne Zertifikat und ohne Unterweisungsnachweis, denn ein importierter Abschluss ist kein eigener Nachweis. Der Probelauf zeigt vorher, was entstünde.
 
+Große Dateien lädt der Editor in Teilen hoch. Bricht die Verbindung ab, setzt erneutes Speichern beim ersten fehlenden Teil fort; Teile, die nie fertig werden, löscht das System nach einem Tag.
+
 ## Freigabe friert den Inhalt ein
 
 Mit der Freigabe entsteht eine Kursversion mit einem Abbild des gesamten
@@ -92,6 +94,10 @@ Pflicht-Einschreibungen umgehen sie. Aufgaben
 tragen **Dateiregeln** (Endungen, Anzahl, Größe — nie lockerer als das System)
 und auf Wunsch eine **Auto-Freigabe** mit vollen Punkten, die sich mit dem
 Vier-Augen-Prinzip ausschließt.
+
+Im Freischaltplan einer Einheit lassen sich zusätzlich eine **Vorgängereinheit** und ein **Präsenztermin** des Kurses wählen. Mit Vorgängereinheit öffnet die Einheit erst, wenn diese abgeschlossen ist (Hinweis „Nach …“). Mit Präsenztermin öffnet sie an dessen Tag und wandert mit, wenn sich der Termin verschiebt. Von Tagen, Datum und Termin gilt der späteste.
+
+In der **Teilnehmerverwaltung** hebt **Auf Version … heben** alle offenen Einschreibungen auf die aktuelle Kursversion. Die Vorschau zeigt je Ausgangsversion, welche Einheiten unverändert bleiben, sich geändert haben, neu hinzukommen oder entfallen. Der Fortschritt bleibt für jede Einheit erhalten, die beide Versionen kennen; neue Pflichteinheiten sind danach offen. Der Wechsel steht mit Begründung im Verlauf jeder Einschreibung; abgeschlossene Einschreibungen bleiben auf ihrer Version.
 
 ## Lernzeit ist Arbeitszeit
 
@@ -147,6 +153,12 @@ Das **Notenbuch** je Kurs zeigt Lernende × Bestandteile. Ohne Komponenten addie
 
 Feinheiten je Frage: Antwortoptionen können **eigene Punkte** tragen („Label {3}“, auch negativ) — dann zählt die gewählte Option statt alles-oder-nichts; eine **Selbsteinschätzung** ist eine Skala ohne richtige Antwort, die gewählte Stufe ist der Wert; ein **Aufsatz** nimmt Text, eine Datei oder beides an — die Datei liegt in der Bewertung bereit. Je Prüfung lässt sich das Bestehen zusätzlich **in Punkten** verlangen und die Teilmenge je Versuch **in Prozent** der verfügbaren Fragen festlegen.
 
+Über **Fragen importieren** im Fragenkatalog kommen Fragen aus einer CSV- oder Excel-Datei. Pflicht sind die Spalten **kind** (Art, als Kürzel wie single oder als Bezeichnung) und **prompt**; **options** enthält die Antwortzeilen untereinander in einer Zelle, mit derselben Schreibweise wie im Editor. Optional sind **title**, **category** (fehlende Kategorien werden angelegt), **points**, **explanation** und **hint**. Dieselbe Frage (Art und Fragetext) wird beim zweiten Lauf übersprungen; Hotspot-Fragen brauchen ein Bild und lassen sich nicht über eine Datei einlesen.
+
+Ein **Zeitlimit je Frage** taktet die Prüfung: Fragen kommen einzeln und ohne Zurück. Läuft die Zeit einer Frage ab, wird die Antwort gespeichert und die nächste Frage gezeigt; die Summe gilt zugleich als Gesamtfrist. Als **Nachteilsausgleich** setzt die Teilnehmerverwaltung je Person eine **Zeitverlängerung** in Prozent, mit Begründung im Verlauf. Sie gilt für die Gesamtfrist und für die Zeit je Frage.
+
+Ist der letzte erlaubte Versuch nicht bestanden und keine Versuchsfreigabe mehr offen, erhalten die Person und ihre Teamleitung die Benachrichtigung **Prüfung endgültig nicht bestanden**. Die Einschreibung bleibt offen, damit eine Versuchsfreigabe weiter möglich ist.
+
 ## Nachweise
 
 Ein bestandener Kurs wirkt an genau einer Stelle nach außen: Zertifikat mit
@@ -164,6 +176,8 @@ schlägt abgeschlossene Einschreibungen ohne Zertifikat nach der Frist des
 Rechtsraums zum Löschen vor (Versuche und Lernzeit gehen mit); Zertifikate
 bleiben wegen ihrer Nachweisfunktion länger und werden danach auf Initialen
 gekürzt — der Prüflink antwortet weiter.
+
+Auf dem Zertifikat steht neben Prüfadresse und Prüfcode ein **QR-Code**, der mit dem Handy direkt zur Prüfseite führt.
 
 ## Kompetenzen
 
@@ -208,6 +222,12 @@ Tätigkeitsrecherche findet freigegebene Kurse — Lernende ihre eigenen,
 Autoren alle.
 
 Der **Lernkatalog** lässt sich als Liste oder als Kacheln zeigen (die Wahl bleibt je Person gespeichert) und trägt einen **Sternewert** aus dem Kursfeedback — erst ab fünf Antworten, damit sich nichts auf Einzelne zurückrechnen lässt. Das Portal zeigt zusätzlich den **Preis** aus dem verknüpften Artikel. Im Player blendet der **Fokusmodus** die Seitenleiste aus; „Duplizieren“ legt aus einem Kurs einen neuen Entwurf an — Lehrmaterial ja, Einschreibungen und Nachweise nein.
+
+Externe mit Fälligkeit erhalten zwei **Fristerinnerungen** per E-Mail: eine im Vorlauf der Fristenprüfung und eine am Tag vor der Frist, jeweils mit frischem Einstiegslink. Wird die Frist geändert, beginnen die Erinnerungen von vorn.
+
+Als fünfter Zuweisungsweg schreibt die Automatisierung **In Kurs einschreiben** Personen in einen gewählten Kurs ein — bei **Mitarbeitende Person angelegt** die neue Person, bei **Gerät ausgegeben** die Person, die das Gerät erhält. Die Einschreibung trägt die Quelle „Regel“.
+
+In den Einstellungen lässt sich die **Lernserie** zuschalten: Jede Person sieht unter „Meine Schulungen“, an wie vielen Tagen in Folge sie eine Einheit abgeschlossen hat — nur für sich, ohne Vergleich mit anderen. **Konfiguration drucken** (Lernkatalog, Menü) erzeugt ein PDF mit Stand und **Konfigurationsversion**: Schalter der Organisation, Lernzeitregel je Kurs und Aufbewahrungsfristen, etwa als Anlage zur Betriebsvereinbarung. Jede Änderung der Einstellungen erhöht die Version und steht mit Vorher und Nachher im Audit-Log.
 
 ## Lernpfade
 

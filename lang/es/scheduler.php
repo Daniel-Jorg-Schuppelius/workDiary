@@ -94,6 +94,7 @@ return [
     // Nombres legibles de los trabajos (claves del registro, anidadas por la notación de puntos);
     // añadir los nuevos trabajos aquí en todos los idiomas — si no, respaldo = clave.
     'job' => [
+        'surveys' => ['scheduled' => 'Enviar encuestas a intervalo fijo'],
         'demo' => [
             'prune' => 'Eliminar organizaciones de demostración tras el plazo de conservación',
         ],
@@ -193,6 +194,7 @@ return [
         'shipping' => ['track' => 'Actualizar el seguimiento de envíos'],
         'orgamax' => ['sync' => 'Sincronización orgaMAX'],
         'print' => ['purge_files' => 'Depurar archivos de producción de impresión tras la retención'],
+        'uploads' => ['prune_chunks' => 'Eliminar cargas parciales abandonadas'],
         'search' => ['reconcile' => 'Conciliar el índice de búsqueda (búsqueda de actividades)'],
         'payroll' => ['import_minimum_wages' => 'Importar salarios mínimos de la UE'],
         'plans' => ['purge' => 'Depurar datos de módulos degradados'],

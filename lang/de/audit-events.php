@@ -26,6 +26,10 @@ return [
         'retired' => 'Zutrittsmedium ausgemustert',
     ],
     'appointment' => [
+        'proposed' => 'Ersatztermin vorgeschlagen',
+        'proposal_accepted' => 'Ersatztermin angenommen',
+        'proposal_declined' => 'Ersatztermin abgelehnt',
+        'rescheduled' => 'Termin umgebucht',
         'requested' => 'Termin angefragt',
         'confirmed' => 'Termin bestätigt',
         'declined' => 'Terminanfrage abgelehnt',
@@ -621,6 +625,7 @@ return [
         'unlinked' => 'Wissensartikel-Verknüpfung gelöst',
     ],
     'lead' => [
+        'quote_created' => 'Angebot aus dem Lead erstellt',
         'created' => 'Lead angelegt',
         'status_changed' => 'Lead-Status geändert',
         'converted' => 'Lead konvertiert',
@@ -822,6 +827,7 @@ return [
         'mailed' => 'Lieferschein per E-Mail versendet',
     ],
     'quote' => [
+        'viewed' => 'Angebot vom Kunden angesehen',
         'intake_linked' => 'Mit Kundeneingang verknüpft',
         'portal_decision' => 'Entscheidung im Kundenportal',
         'markup_applied' => 'Zuschlag auf Einzelpreise verteilt',
@@ -899,6 +905,10 @@ return [
         'shared' => 'Report-Ansicht geteilt',
     ],
     'restored' => 'Wiederhergestellt',
+    'self_billing_credit' => [
+        'issued' => 'Gutschrift im Gutschriftsverfahren ausgestellt',
+        'cancelled' => 'Gutschrift im Gutschriftsverfahren storniert',
+    ],
     'retention' => [
         'approved' => 'Löschvorschlag genehmigt',
         'purged' => 'Daten gemäß Löschkonzept gelöscht',
@@ -935,7 +945,11 @@ return [
         'fulfilled' => 'Service-Request erfüllt',
         'submitted' => 'Service-Request eingereicht',
     ],
+    'business_service' => [
+        'dependencies_changed' => 'Abhängigkeiten des Fachdienstes geändert',
+    ],
     'service_ticket' => [
+        'service_changed' => 'Service des Tickets geändert',
         'opened_from_intake' => 'Ticket aus Kundeneingang angelegt',
         'accepted_by_customer' => 'Ticket vom Kunden abgenommen',
         'assigned' => 'Ticket zugewiesen',
@@ -1189,6 +1203,7 @@ return [
         'followUpCreated' => 'Folgeauftrag aus offenem Punkt angelegt',
     ],
     'learning' => [
+        'settingsChanged' => 'Einstellungen der Lernplattform geändert',
         'dossierDisclosed' => 'Nachweismappe namentlich herausgegeben',
         'attemptViewed' => 'Prüfungsakte eingesehen',
     ],

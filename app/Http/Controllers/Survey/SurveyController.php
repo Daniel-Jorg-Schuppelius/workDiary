@@ -53,6 +53,7 @@ class SurveyController extends Controller {
         return view('surveys.show', [
             'survey' => $survey->load('questions'),
             'nps' => $this->service->npsScore($survey),
+            'npsTrend' => $this->service->npsByMonth($survey),
             'responseCount' => $survey->responses()->count(),
             'invitations' => $survey->invitations()->with('customer:id,name')->orderByDesc('id')->limit(50)->get(),
             'textAnswers' => SurveyAnswer::query()
@@ -78,6 +79,8 @@ class SurveyController extends Controller {
             'purpose' => ['nullable', 'string', 'max:500'],
             'anonymous' => ['nullable', 'boolean'],
             'trigger_on_ticket_close' => ['nullable', 'boolean'],
+            'trigger_on_order_completion' => ['nullable', 'boolean'],
+            'trigger_schedule_days' => ['nullable', 'integer', 'min:7', 'max:730'],
         ]);
 
         $survey = Survey::query()->create([
@@ -87,11 +90,34 @@ class SurveyController extends Controller {
             'active' => true,
             'anonymous' => $request->boolean('anonymous'),
             'trigger_on_ticket_close' => $request->boolean('trigger_on_ticket_close'),
+            'trigger_on_order_completion' => $request->boolean('trigger_on_order_completion'),
+            'trigger_schedule_days' => $data['trigger_schedule_days'] ?? null,
             'created_by' => Auth::id(),
         ]);
         $survey->audit('survey.created', ['anonymous' => $survey->anonymous]);
 
         return redirect()->route('surveys.show', $survey)->with('success', __('Fragebogen angelegt — jetzt Fragen hinzufügen.'));
+    }
+
+    /** Auslöser ändern (MVP-1293): Ticket, Auftrag, Kurs, fester Abstand. */
+    public function updateTriggers(Request $request, Survey $survey): RedirectResponse {
+        Gate::authorize(Permission::CustomerUpdate->value);
+        $this->guard($survey);
+
+        $data = $request->validate([
+            'trigger_on_ticket_close' => ['nullable', 'boolean'],
+            'trigger_on_order_completion' => ['nullable', 'boolean'],
+            'trigger_on_course_completion' => ['nullable', 'boolean'],
+            'trigger_schedule_days' => ['nullable', 'integer', 'min:7', 'max:730'],
+        ]);
+        $survey->update([
+            'trigger_on_ticket_close' => $request->boolean('trigger_on_ticket_close'),
+            'trigger_on_order_completion' => $request->boolean('trigger_on_order_completion'),
+            'trigger_on_course_completion' => $request->boolean('trigger_on_course_completion'),
+            'trigger_schedule_days' => $data['trigger_schedule_days'] ?? null,
+        ]);
+
+        return back()->with('success', __('survey.triggers.saved'));
     }
 
     public function addQuestion(Request $request, Survey $survey): RedirectResponse {
