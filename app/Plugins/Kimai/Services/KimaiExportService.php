@@ -16,7 +16,7 @@ use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
-use App\Plugins\Kimai\Api\KimaiApiClient;
+use App\Plugins\Kimai\Api\{KimaiApiClient, KimaiClientFactory};
 use App\Plugins\Kimai\Exceptions\KimaiApiException;
 use App\Plugins\Kimai\KimaiPlugin;
 use App\Plugins\Support\AbstractTimeEntryPushService;
@@ -51,12 +51,7 @@ class KimaiExportService extends AbstractTimeEntryPushService {
             return (string) __('Kimai-Export ist deaktiviert (Plugin-Einstellung „Rückbuchung aktivieren").');
         }
 
-        $this->client = new KimaiApiClient(
-            is_string($config['api_token'] ?? null) ? $config['api_token'] : null,
-            is_string($config['base_url'] ?? null) ? $config['base_url'] : null,
-            Tz::ofOrganization($organization),
-            (bool) ($config['allow_private_network'] ?? false),
-        );
+        $this->client = app(KimaiClientFactory::class)->for((int) $organization->id);
         if (! $this->client->isConfigured()) {
             return (string) __('Kimai-API ist nicht konfiguriert (Basis-URL und API-Token in den Plugin-Einstellungen hinterlegen).');
         }

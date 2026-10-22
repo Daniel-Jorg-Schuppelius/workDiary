@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Lexoffice\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
+use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\LexofficeConfig;
 use App\Plugins\Lexoffice\Services\LexofficeVoucherLineSync;
 use Illuminate\Console\Command;
@@ -43,13 +44,13 @@ class LexofficeSyncVoucherLinesCommand extends Command {
         $limit = max(1, (int) $this->option('limit'));
         foreach ($organizations as $org) {
             $config = LexofficeConfig::resolve($org->id);
-            if ($config['enabled'] !== true || ! is_string($config['api_key']) || $config['api_key'] === '') {
+            if ($config['enabled'] !== true || ! app(LexofficeClientFactory::class)->isConfigured($org->id)) {
                 continue;
             }
             try {
-                Cache::lock(LexofficeConfig::apiLockKey((int) $org->id), 3600)->block(LexofficeConfig::API_LOCK_WAIT_SCHEDULED, function () use ($org, $config, $limit): void {
+                Cache::lock(LexofficeConfig::apiLockKey((int) $org->id), 3600)->block(LexofficeConfig::API_LOCK_WAIT_SCHEDULED, function () use ($org, $limit): void {
                     try {
-                        $sync = new LexofficeVoucherLineSync($config['api_key'], $config['base_url'], $config['request_interval']);
+                        $sync = new LexofficeVoucherLineSync($org->id);
                         if ($this->option('refresh')) {
                             $reset = $sync->resetSynced($org);
                             $this->line("Organisation #{$org->id} ({$org->name}): {$reset} Rechnungen zum Neuladen markiert");

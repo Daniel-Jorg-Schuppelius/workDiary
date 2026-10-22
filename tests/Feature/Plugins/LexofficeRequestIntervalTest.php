@@ -38,21 +38,20 @@ class LexofficeRequestIntervalTest extends TestCase {
         $this->enablePluginFor($this->organization, LexofficePlugin::ID, ['api_key' => 'lex-key']);
 
         $this->assertSame(0.5, LexofficeConfig::resolve($this->organization->id)['request_interval']);
-        $this->assertSame(0.5, LexofficeConfig::requestInterval($this->organization->id));
     }
 
     public function test_setting_overrides_and_is_clamped(): void {
         $setting = $this->enablePluginFor($this->organization, LexofficePlugin::ID, ['api_key' => 'lex-key', 'request_interval' => '1.25']);
-        $this->assertSame(1.25, LexofficeConfig::requestInterval($this->organization->id));
+        $this->assertSame(1.25, LexofficeConfig::resolve($this->organization->id)['request_interval']);
 
         // settings ist verschlüsselt gespeichert — immer über das Modell schreiben.
         $setting->settings = ['api_key' => 'lex-key', 'request_interval' => '42'];
         $setting->save();
-        $this->assertSame(5.0, LexofficeConfig::requestInterval($this->organization->id), 'nach oben auf 5 s begrenzt');
+        $this->assertSame(5.0, LexofficeConfig::resolve($this->organization->id)['request_interval'], 'nach oben auf 5 s begrenzt');
 
         $setting->settings = ['api_key' => 'lex-key', 'request_interval' => '-3'];
         $setting->save();
-        $this->assertSame(0.0, LexofficeConfig::requestInterval($this->organization->id), 'nie negativ');
+        $this->assertSame(0.0, LexofficeConfig::resolve($this->organization->id)['request_interval'], 'nie negativ');
     }
 
     public function test_lock_key_is_per_organization(): void {

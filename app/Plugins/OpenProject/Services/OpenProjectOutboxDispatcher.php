@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\OpenProject\Services;
 
 use App\Models\Integration\IntegrationOutboxEntry;
-use App\Plugins\OpenProject\Api\OpenProjectApiClient;
+use App\Plugins\OpenProject\Api\{OpenProjectClientFactory};
 use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
 use App\Plugins\Support\{MirrorsCreatedEntries, RemoteTimeWriter, TimeWritebackDispatcher};
 
@@ -70,7 +70,7 @@ class OpenProjectOutboxDispatcher extends TimeWritebackDispatcher implements Mir
             return null;
         }
 
-        $client = new OpenProjectApiClient($config['api_token'], $config['base_url'], $config['allow_private_network']);
+        $client = app(OpenProjectClientFactory::class)->for($organizationId);
 
         return $client->isConfigured() ? $client : null;
     }

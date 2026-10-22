@@ -33,10 +33,9 @@ use RuntimeException;
 final class LexofficeDraftInvoiceService {
     private ?Client $client = null;
 
+    /** @param  int|null  $organizationId  null = gebundene Organisation bzw. Einzelplatz-Konfiguration */
     public function __construct(
-        private readonly string $apiKey,
-        private readonly string $baseUrl = 'https://api.lexware.io/v1',
-        private readonly ?float $requestInterval = null,
+        private readonly ?int $organizationId,
     ) {}
 
     /**
@@ -83,6 +82,6 @@ final class LexofficeDraftInvoiceService {
     }
 
     private function client(): Client {
-        return $this->client ??= app(LexofficeClientFactory::class)->sdk($this->apiKey, $this->baseUrl, $this->requestInterval);
+        return $this->client ??= app(LexofficeClientFactory::class)->for($this->organizationId);
     }
 }

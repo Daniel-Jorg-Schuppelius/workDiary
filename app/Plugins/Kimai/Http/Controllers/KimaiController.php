@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Kimai\Http\Controllers;
 
+use App\Plugins\Kimai\Api\KimaiClientFactory;
 use App\Plugins\Kimai\{KimaiConfig, KimaiPlugin};
 use App\Plugins\Kimai\Services\{KimaiExportService, KimaiImportService};
 use App\Plugins\Support\AbstractTimeEntryPushService;
@@ -31,8 +32,8 @@ class KimaiController extends TimeImportAdminController {
         return KimaiConfig::resolve($organizationId);
     }
 
-    protected function apiConfigured(array $config): bool {
-        return ($config['api_token'] ?? null) !== null && ($config['base_url'] ?? null) !== null;
+    protected function apiConfigured(?int $organizationId): bool {
+        return app(KimaiClientFactory::class)->isConfigured($organizationId);
     }
 
     protected function importer(): CsvAndApiTimeImporter {

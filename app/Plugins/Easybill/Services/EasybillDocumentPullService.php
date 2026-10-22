@@ -40,7 +40,7 @@ class EasybillDocumentPullService {
     /** @return array{checked: int, pulled: int, pending: int} */
     public function pull(int $organizationId): array {
         $config = EasybillConfig::resolve($organizationId);
-        if (empty($config['api_key']) || ! $config['pull_documents']) {
+        if (! $config['pull_documents'] || ! app(EasybillClientFactory::class)->isConfigured($organizationId)) {
             return ['checked' => 0, 'pulled' => 0, 'pending' => 0];
         }
 

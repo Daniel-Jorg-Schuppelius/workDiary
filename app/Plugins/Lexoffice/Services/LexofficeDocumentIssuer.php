@@ -67,9 +67,7 @@ final class LexofficeDocumentIssuer implements DocumentIssuer {
 
     public function issue(Model $document, NumberScope $scope): IssuedDocument {
         if ($document instanceof Invoice && in_array($scope, [NumberScope::Invoice, NumberScope::CreditNote, NumberScope::Cancellation], true)) {
-            $config = LexofficeConfig::resolve((int) $document->organization_id);
-            $service = new LexofficeInvoiceService(new LexofficeInvoiceMapper, $config['api_key'], $config['defaults'], $config['base_url'], $config['request_interval']);
-            $result = $service->transfer($document);
+            $result = (new LexofficeInvoiceService((int) $document->organization_id))->transfer($document);
 
             return new IssuedDocument($result['external_id'], $result['number']);
         }
@@ -90,11 +88,7 @@ final class LexofficeDocumentIssuer implements DocumentIssuer {
             return new IssuedDocument((string) $existing->external_id, (string) $existing->external_number);
         }
 
-        $config = LexofficeConfig::resolve((int) $document->getAttribute('organization_id'));
-        if (empty($config['api_key'])) {
-            throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_not_configured'));
-        }
-        $client = app(LexofficeClientFactory::class)->sdk((string) $config['api_key'], $config['base_url'], $config['request_interval']);
+        $client = app(LexofficeClientFactory::class)->for((int) $document->getAttribute('organization_id'));
         $endpoint = new $endpointClass($client);
 
         // Erst die Verknüpfung, dann die Nummer: Scheitert der Abruf, legt der nächste Versuch keinen zweiten Beleg an.
@@ -104,7 +98,7 @@ final class LexofficeDocumentIssuer implements DocumentIssuer {
             'external_type' => $extType,
             'referenceable_type' => $document->getMorphClass(),
             'referenceable_id' => $document->getKey(),
-            'external_id' => $this->create($endpoint, $entityClass::fromArray($payload($client, (array) $config['defaults'])), $resource),
+            'external_id' => $this->create($endpoint, $entityClass::fromArray($payload($client, LexofficeConfig::resolve((int) $document->getAttribute('organization_id'))['defaults'])), $resource),
             'payload' => ['_resource' => $resource],
             'synced_at' => now(),
         ]);

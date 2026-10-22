@@ -24,7 +24,7 @@ use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Psr\Http\Message\RequestInterface;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Feature\Plugins\OrgaMax\OrgaMaxApiResponses;
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
@@ -39,10 +39,12 @@ class ContactNameTransferTest extends TestCase {
     use OrgaMaxApiResponses;
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
+        $this->pluginSecret('lexoffice', ['api_key' => 'test-key']);
     }
 
     private function company(): Customer {
@@ -111,7 +113,7 @@ class ContactNameTransferTest extends TestCase {
             ]],
         ]], 'totalPages' => 1])]);
 
-        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LexofficeWins, 'k');
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LexofficeWins);
 
         $person = $customer->fresh()?->contact_persons[0] ?? [];
         $this->assertSame('mr', $person['salutation'] ?? null);
@@ -133,7 +135,7 @@ class ContactNameTransferTest extends TestCase {
             ]],
         ]]);
 
-        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LexofficeWins, 'k');
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LexofficeWins);
 
         $customer->refresh();
         $this->assertSame([ContactSalutation::Ms, 'Birgit', 'Hartig', 'Birgit Hartig'], [$customer->contact_salutation, $customer->contact_first_name, $customer->contact_last_name, $customer->contact_name]);
@@ -154,7 +156,7 @@ class ContactNameTransferTest extends TestCase {
             ['id' => 'lex-4', 'company' => ['name' => 'ACME GmbH', 'contactPersons' => $persons]],
         ]);
 
-        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LexofficeWins, 'k');
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LexofficeWins);
 
         $this->assertSame(['Ralph', 'Hartig'], [$empty->refresh()->contact_first_name, $empty->contact_last_name]);
         $this->assertSame(['Anna', 'Müller'], [$maintained->refresh()->contact_first_name, $maintained->contact_last_name]);
@@ -168,7 +170,7 @@ class ContactNameTransferTest extends TestCase {
             'emailAddresses' => ['business' => ['maria@mustermann.test']],
         ]]);
 
-        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins, 'k', createMissingLocal: true);
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins, createMissingLocal: true);
 
         $customer = Customer::query()->where('name', 'Maria Luise Mustermann')->sole();
         $this->assertNull($customer->company);

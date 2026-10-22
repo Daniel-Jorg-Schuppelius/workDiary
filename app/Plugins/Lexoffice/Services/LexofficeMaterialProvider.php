@@ -29,10 +29,9 @@ use Lexoffice\API\Endpoints\ArticlesEndpoint;
 class LexofficeMaterialProvider implements MaterialProviderInterface {
     private ?Client $client = null;
 
+    /** @param  int|null  $organizationId  null = gebundene Organisation bzw. Einzelplatz-Konfiguration */
     public function __construct(
-        protected string $apiKey,
-        protected string $baseUrl = 'https://api.lexware.io/v1',
-        protected ?float $requestInterval = null,
+        private readonly ?int $organizationId,
     ) {}
 
     public function name(): string {
@@ -43,7 +42,7 @@ class LexofficeMaterialProvider implements MaterialProviderInterface {
      * @return Collection<int, Material>
      */
     public function search(string $query, int $limit = 20): Collection {
-        if ($this->apiKey === '') {
+        if (! app(LexofficeClientFactory::class)->isConfigured($this->organizationId)) {
             return collect();
         }
 
@@ -66,7 +65,7 @@ class LexofficeMaterialProvider implements MaterialProviderInterface {
     }
 
     public function sync(): int {
-        if ($this->apiKey === '') {
+        if (! app(LexofficeClientFactory::class)->isConfigured($this->organizationId)) {
             return 0;
         }
 
@@ -114,6 +113,6 @@ class LexofficeMaterialProvider implements MaterialProviderInterface {
     }
 
     protected function client(): Client {
-        return $this->client ??= app(LexofficeClientFactory::class)->sdk($this->apiKey, $this->baseUrl, $this->requestInterval);
+        return $this->client ??= app(LexofficeClientFactory::class)->for($this->organizationId);
     }
 }

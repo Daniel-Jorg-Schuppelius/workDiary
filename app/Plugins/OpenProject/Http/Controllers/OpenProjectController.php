@@ -14,7 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\{Project, Task};
-use App\Plugins\OpenProject\Api\OpenProjectApiClient;
+use App\Plugins\OpenProject\Api\{OpenProjectClientFactory};
 use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
 use App\Plugins\OpenProject\Services\{OpenProjectExportService, OpenProjectImportService, OpenProjectStructureSync};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
@@ -56,11 +56,11 @@ class OpenProjectController extends Controller {
     public function syncStructure(): RedirectResponse {
         $admin = $this->admin();
         $config = OpenProjectConfig::resolve($admin->organization_id);
-        if ($config['api_token'] === null || $config['base_url'] === null) {
+        if (! app(OpenProjectClientFactory::class)->isConfigured($admin->organization_id)) {
             return back()->withErrors(['base_url' => __('Keine OpenProject-Zugangsdaten hinterlegt.')]);
         }
 
-        $client = new OpenProjectApiClient($config['api_token'], $config['base_url'], $config['allow_private_network']);
+        $client = app(OpenProjectClientFactory::class)->for($admin->organization_id);
         $result = $this->import->syncStructure($this->organization($admin), $config, $client);
 
         return back()->with('status', (string) __('Struktur synchronisiert: :p Projekte, :w Work Packages, :u Benutzer zugeordnet.', [
@@ -74,7 +74,7 @@ class OpenProjectController extends Controller {
     public function sync(): RedirectResponse {
         $admin = $this->admin();
         $config = OpenProjectConfig::resolve($admin->organization_id);
-        if ($config['api_token'] === null || $config['base_url'] === null) {
+        if (! app(OpenProjectClientFactory::class)->isConfigured($admin->organization_id)) {
             return back()->withErrors(['base_url' => __('Keine OpenProject-Zugangsdaten hinterlegt.')]);
         }
 

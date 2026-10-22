@@ -210,8 +210,7 @@ class SevDeskPlugin extends AbstractPlugin implements ContactNumberIssuer, Conta
             return $organization;
         }
 
-        $config = SevDeskConfig::resolve((int) $organization->id);
-        if (empty($config['api_key'])) {
+        if (! app(SevDeskClientFactory::class)->isConfigured((int) $organization->id)) {
             return PluginHealth::degraded(__('sevDesk ist nicht konfiguriert (API-Token fehlt).'), 'not_configured');
         }
 

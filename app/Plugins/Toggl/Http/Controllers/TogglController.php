@@ -15,7 +15,7 @@ use App\Models\Integration\{ExternalReference, ExternalReferenceAlias, Integrati
 use App\Models\Platform\Organization;
 use App\Models\Time\TimeEntry;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
-use App\Plugins\Toggl\Api\TogglApiClient;
+use App\Plugins\Toggl\Api\{TogglClientFactory};
 use App\Plugins\Toggl\Exceptions\TogglArchiveException;
 use App\Plugins\Toggl\Services\{TogglExportArchiveService, TogglExportImporter, TogglExportService, TogglImportService, TogglOptionBuilder, TogglUserMappingService};
 use App\Plugins\Toggl\Sources\{ApiWorkspaceSource, TogglCsvParser, TogglWorkspaceReader};
@@ -72,7 +72,7 @@ class TogglController extends Controller {
 
         return view('toggl::admin.import', [
             'inboxOpenCount' => $inboxOpenCount,
-            'apiConfigured' => $config['api_token'] !== null,
+            'apiConfigured' => app(TogglClientFactory::class)->isConfigured($admin->organization_id),
             'exportEnabled' => (bool) $config['export_enabled'],
             'singleUserMode' => $singleUserMode,
             'defaultUserName' => $defaultUserName,
@@ -117,7 +117,7 @@ class TogglController extends Controller {
         $admin = $this->admin();
 
         $config = TogglConfig::resolve($admin->organization_id);
-        if ($config['api_token'] === null) {
+        if (! app(TogglClientFactory::class)->isConfigured($admin->organization_id)) {
             return back()->withErrors(['api_token' => __('Kein Toggl API-Token hinterlegt.')]);
         }
 
@@ -141,7 +141,7 @@ class TogglController extends Controller {
         abort_unless($item->plugin_id === TogglPlugin::ID && $item->case_type === IntegrationInboxItem::CASE_CONFLICT, 404);
 
         $config = TogglConfig::resolve($admin->organization_id);
-        if ($config['api_token'] === null) {
+        if (! app(TogglClientFactory::class)->isConfigured($admin->organization_id)) {
             return back()->withErrors(['api_token' => __('Kein Toggl API-Token hinterlegt.')]);
         }
 
@@ -150,7 +150,7 @@ class TogglController extends Controller {
             return back()->withErrors(['item' => __('Keine Toggl-Eintrags-ID am Konflikt gefunden.')]);
         }
 
-        $client = TogglApiClient::fromConfig($config);
+        $client = app(TogglClientFactory::class)->for($admin->organization_id);
         $result = $client->fetchEntry($togglId);
         if ($result['status'] === 'error') {
             return back()->withErrors(['item' => __('Fremdstand konnte nicht geladen werden (Toggl nicht erreichbar?).')]);
@@ -402,12 +402,12 @@ class TogglController extends Controller {
         $admin = $this->admin();
 
         $config = TogglConfig::resolve($admin->organization_id);
-        $tokenSet = $config['api_token'] !== null;
+        $tokenSet = app(TogglClientFactory::class)->isConfigured($admin->organization_id);
         $workspaces = [];
         $togglUsers = [];
 
         if ($tokenSet) {
-            $client = TogglApiClient::fromConfig($config);
+            $client = app(TogglClientFactory::class)->for($admin->organization_id);
             foreach ($client->workspaces() as $ws) {
                 $source = new ApiWorkspaceSource($client, $ws['id']);
                 $users = $source->users();
@@ -457,14 +457,14 @@ class TogglController extends Controller {
         ]);
 
         $config = TogglConfig::resolve($admin->organization_id);
-        if ($config['api_token'] === null) {
+        if (! app(TogglClientFactory::class)->isConfigured($admin->organization_id)) {
             return back()->withErrors(['api_token' => __('Kein Toggl API-Token hinterlegt.')]);
         }
 
         $from = ! empty($validated['date_from']) ? CarbonImmutable::parse($validated['date_from'])->startOfDay() : null;
         $to = ! empty($validated['date_to']) ? CarbonImmutable::parse($validated['date_to'])->endOfDay() : null;
 
-        $client = TogglApiClient::fromConfig($config);
+        $client = app(TogglClientFactory::class)->for($admin->organization_id);
 
         $sources = [];
         $workspaceModes = [];

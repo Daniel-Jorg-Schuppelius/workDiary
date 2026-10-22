@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Clockify\Http\Controllers;
 
+use App\Plugins\Clockify\Api\ClockifyClientFactory;
 use App\Plugins\Clockify\{ClockifyConfig, ClockifyPlugin};
 use App\Plugins\Clockify\Services\{ClockifyExportService, ClockifyImportService};
 use App\Plugins\Support\AbstractTimeEntryPushService;
@@ -31,8 +32,8 @@ class ClockifyController extends TimeImportAdminController {
         return ClockifyConfig::resolve($organizationId);
     }
 
-    protected function apiConfigured(array $config): bool {
-        return ($config['api_key'] ?? null) !== null;
+    protected function apiConfigured(?int $organizationId): bool {
+        return app(ClockifyClientFactory::class)->isConfigured($organizationId);
     }
 
     protected function importer(): CsvAndApiTimeImporter {

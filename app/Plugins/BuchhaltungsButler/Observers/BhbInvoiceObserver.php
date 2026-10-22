@@ -14,6 +14,7 @@ namespace App\Plugins\BuchhaltungsButler\Observers;
 
 use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Invoicing\Invoice;
+use App\Plugins\BuchhaltungsButler\Api\BhbClientFactory;
 use App\Plugins\BuchhaltungsButler\{BhbConfig, BuchhaltungsButlerPlugin};
 use App\Plugins\BuchhaltungsButler\Services\BhbOutboxDispatcher;
 use App\Services\Billing\BillingModeResolver;
@@ -38,8 +39,7 @@ class BhbInvoiceObserver {
         }
 
         $config = BhbConfig::resolve((int) $invoice->organization_id);
-        if (! $config['enabled'] || ! $config['push_enabled']
-            || empty($config['api_client']) || empty($config['api_secret']) || empty($config['api_key'])) {
+        if (! $config['enabled'] || ! $config['push_enabled'] || ! app(BhbClientFactory::class)->isConfigured((int) $invoice->organization_id)) {
             return;
         }
 

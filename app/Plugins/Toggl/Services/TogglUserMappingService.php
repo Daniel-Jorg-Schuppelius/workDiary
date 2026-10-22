@@ -14,7 +14,7 @@ use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Integration\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem};
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
-use App\Plugins\Toggl\Api\TogglApiClient;
+use App\Plugins\Toggl\Api\{TogglClientFactory};
 use App\Plugins\Toggl\{TogglConfig, TogglPlugin};
 use App\Support\Sqid;
 use Illuminate\Support\Collection;
@@ -121,9 +121,9 @@ class TogglUserMappingService {
         $bucket = [];
 
         $config = TogglConfig::resolve($organization->id);
-        if ($config['enabled'] && $config['api_token'] !== null) {
+        if ($config['enabled'] && app(TogglClientFactory::class)->isConfigured($organization->id)) {
             try {
-                $client = TogglApiClient::fromConfig($config);
+                $client = app(TogglClientFactory::class)->for($organization->id);
                 foreach ($client->workspaces() as $workspace) {
                     $this->options->collectTogglUsers($bucket, $client->workspaceUsers((int) $workspace['id']));
                 }

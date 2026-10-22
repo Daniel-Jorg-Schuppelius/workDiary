@@ -15,6 +15,7 @@ namespace App\Plugins\Lexoffice\Services;
 use App\Enums\Finance\BillingMode;
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};
+use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\LexofficeConfig;
 use App\Services\Billing\BillingModeResolver;
 use App\Services\Invoicing\TaxResolver;
@@ -58,8 +59,7 @@ final class LexofficeInvoiceDraftTarget implements InvoiceDraftTarget {
      * @throws RuntimeException Plugin inaktiv / kein Kontakt
      */
     private function contactFor(Organization $organization, Customer $recipient): string {
-        $config = LexofficeConfig::resolve($organization->id);
-        if ($config['enabled'] !== true || ! is_string($config['api_key']) || $config['api_key'] === '') {
+        if (LexofficeConfig::resolve($organization->id)['enabled'] !== true || ! app(LexofficeClientFactory::class)->isConfigured($organization->id)) {
             throw new RuntimeException((string) __('lexoffice::resale.draft.error.lexoffice'));
         }
         $contacts = LexofficeContactMap::forCustomer($recipient)->byCustomer($recipient->id);
@@ -81,7 +81,7 @@ final class LexofficeInvoiceDraftTarget implements InvoiceDraftTarget {
         }
 
         $tax = $this->taxes->resolve($organization, $recipient);
-        $service = $this->service ?? new LexofficeDraftInvoiceService((string) $config['api_key'], (string) $config['base_url'], $config['request_interval']);
+        $service = $this->service ?? new LexofficeDraftInvoiceService($organization->id);
         $draftId = $service->createDraft(
             $contact,
             $items,

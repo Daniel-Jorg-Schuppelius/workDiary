@@ -64,7 +64,7 @@ final class LexofficeIncomingInvoiceTarget implements IncomingInvoiceTransferTar
     public function isEnabled(Organization $organization): bool {
         $config = LexofficeConfig::resolve((int) $organization->id);
 
-        return $config['enabled'] && is_string($config['api_key']) && $config['api_key'] !== '' && $config['incoming_transfer'];
+        return $config['enabled'] && $config['incoming_transfer'] && app(LexofficeClientFactory::class)->isConfigured((int) $organization->id);
     }
 
     public function appliesTo(IncomingEInvoice $incoming): bool {
@@ -73,7 +73,7 @@ final class LexofficeIncomingInvoiceTarget implements IncomingInvoiceTransferTar
 
     public function transfer(IncomingEInvoice $incoming, IncomingEInvoiceTransfer $journal): IncomingInvoiceTransferResult {
         $config = LexofficeConfig::resolve((int) $incoming->organization_id);
-        $client = app(LexofficeClientFactory::class)->sdk((string) $config['api_key'], (string) $config['base_url'], $config['request_interval']);
+        $client = app(LexofficeClientFactory::class)->for((int) $incoming->organization_id);
         $vouchers = new VouchersEndpoint($client);
         $type = self::voucherType($incoming);
         $note = null;

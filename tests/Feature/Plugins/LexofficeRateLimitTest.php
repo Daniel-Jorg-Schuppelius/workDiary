@@ -13,7 +13,7 @@ namespace Tests\Feature\Plugins;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Exceptions\LexofficeRateLimitException;
 use App\Plugins\Lexoffice\LexofficePlugin;
-use App\Plugins\Lexoffice\Services\{LexofficeMapper, LexofficeService};
+use App\Plugins\Lexoffice\Services\{LexofficeService};
 use App\Plugins\PluginHealth;
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
@@ -25,8 +25,14 @@ use Tests\TestCase;
  * versuchen es bei 429 automatisch erneut.
  */
 class LexofficeRateLimitTest extends TestCase {
+    protected function setUp(): void {
+        parent::setUp();
+        // Ohne Organisation: Einzelplatz-Konfiguration mit Schlüssel aus der .env.
+        config(['plugins.lexoffice.api_key' => 'test-key', 'plugins.allow_env_secret_fallback' => true]);
+    }
+
     private function service(): LexofficeService {
-        return new LexofficeService('test-key', new LexofficeMapper);
+        return new LexofficeService(null);
     }
 
     public function test_healthcheck_returns_degraded_on_persistent_rate_limit(): void {
@@ -34,7 +40,7 @@ class LexofficeRateLimitTest extends TestCase {
             'https://api.lexware.io/v1/profile' => FakePluginHttp::response('rate limited', 429),
         ]);
 
-        $health = (new LexofficePlugin($this->service()))->healthCheck();
+        $health = (new LexofficePlugin)->healthCheck();
 
         $this->assertSame(PluginHealth::STATUS_DEGRADED, $health->status);
         // Direkt aufgerufen gilt das Budget der Fabrik; über PluginHealthService ist es ein Versuch.
@@ -81,7 +87,7 @@ class LexofficeRateLimitTest extends TestCase {
             'https://api.lexware.io/v1/profile' => FakePluginHttp::response('boom', 503),
         ]);
 
-        $health = (new LexofficePlugin($this->service()))->healthCheck();
+        $health = (new LexofficePlugin)->healthCheck();
 
         $this->assertSame(PluginHealth::STATUS_DEGRADED, $health->status);
         $this->assertStringContainsString('503', $health->message);
@@ -93,7 +99,7 @@ class LexofficeRateLimitTest extends TestCase {
             'https://api.lexware.io/v1/profile' => FakePluginHttp::response('forbidden', 403),
         ]);
 
-        $health = (new LexofficePlugin($this->service()))->healthCheck();
+        $health = (new LexofficePlugin)->healthCheck();
 
         $this->assertSame(PluginHealth::STATUS_FAILING, $health->status);
         $this->assertStringContainsString('403', $health->message);

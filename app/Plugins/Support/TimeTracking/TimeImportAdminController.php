@@ -39,8 +39,7 @@ abstract class TimeImportAdminController extends Controller {
     /** @return array<string, mixed> */
     abstract protected function config(?int $organizationId): array;
 
-    /** @param  array<string, mixed>  $config */
-    abstract protected function apiConfigured(array $config): bool;
+    abstract protected function apiConfigured(?int $organizationId): bool;
 
     abstract protected function importer(): CsvAndApiTimeImporter;
 
@@ -61,7 +60,7 @@ abstract class TimeImportAdminController extends Controller {
             'inboxOpenCount' => $organization instanceof Organization
                 ? IntegrationInboxItem::openCount((int) $organization->id, $this->pluginId(), grouped: true)
                 : 0,
-            'apiConfigured' => $this->apiConfigured($config),
+            'apiConfigured' => $this->apiConfigured($admin->organization_id),
             'exportEnabled' => (bool) ($config['export_enabled'] ?? false),
             'syncWindowDays' => $config['sync_window_days'] ?? null,
         ]);

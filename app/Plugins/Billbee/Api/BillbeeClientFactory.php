@@ -25,7 +25,7 @@ use RuntimeException;
 class BillbeeClientFactory {
     public function for(int $organizationId): BillbeeApiClient {
         $config = BillbeeConfig::resolve($organizationId);
-        if (empty($config['api_key']) || empty($config['username']) || empty($config['api_password'])) {
+        if (! self::hasCredentials($config)) {
             throw new RuntimeException((string) __('Billbee ist für diese Organisation nicht konfiguriert (API-Key/Benutzer/API-Passwort fehlen).'));
         }
 
@@ -37,5 +37,14 @@ class BillbeeClientFactory {
             (string) $config['base_url'],
             (float) config('plugins.billbee.request_interval', 0.5),
         );
+    }
+
+    public function isConfigured(int $organizationId): bool {
+        return self::hasCredentials(BillbeeConfig::resolve($organizationId));
+    }
+
+    /** @param  array<string, mixed>  $config */
+    private static function hasCredentials(array $config): bool {
+        return ! (empty($config['api_key']) || empty($config['username']) || empty($config['api_password']));
     }
 }

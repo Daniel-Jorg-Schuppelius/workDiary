@@ -13,6 +13,7 @@ namespace App\Plugins\Lexoffice\Http\Controllers;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
+use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy;
 use App\Plugins\Lexoffice\LexofficeConfig;
 use App\Plugins\Lexoffice\Models\LexofficeArticle;
@@ -94,7 +95,7 @@ class LexofficeArticleController extends Controller {
         abort_unless($user->can(Permission::ArticleLexofficeSync->value), 403);
 
         $config = LexofficeConfig::resolve($user->organization_id);
-        if (! is_string($config['api_key']) || $config['api_key'] === '') {
+        if (! app(LexofficeClientFactory::class)->isConfigured($user->organization_id)) {
             return back()->with('error', __('Lexoffice ist für diese Organisation nicht konfiguriert.'));
         }
 
@@ -108,7 +109,7 @@ class LexofficeArticleController extends Controller {
 
         try {
             $result = Cache::lock(LexofficeConfig::apiLockKey((int) $organization->id), 1800)
-                ->block(LexofficeConfig::API_LOCK_WAIT_SHORT, static fn (): array => (new LexofficeArticleSync($config['api_key'], $config['base_url'], $config['request_interval']))
+                ->block(LexofficeConfig::API_LOCK_WAIT_SHORT, static fn (): array => (new LexofficeArticleSync((int) $organization->id))
                     ->withPolicy($policy)
                     ->sync($organization));
 

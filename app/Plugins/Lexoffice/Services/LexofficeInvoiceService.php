@@ -17,7 +17,8 @@ use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\Invoice;
 use App\Models\Sales\{OrderConfirmation, Quote};
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
-use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\Lexoffice\Exceptions\LexofficeNotConfiguredException;
+use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use App\Support\MorphMap;
 use InvalidArgumentException;
 use Lexoffice\API\Client;
@@ -47,21 +48,26 @@ class LexofficeInvoiceService {
 
     private ?Client $client = null;
 
+    /** @var array<string, mixed>|null */
+    private ?array $defaults = null;
+
+    /** @param  int|null  $organizationId  null = gebundene Organisation bzw. Einzelplatz-Konfiguration */
     public function __construct(
-        private readonly LexofficeInvoiceMapper $mapper,
-        private readonly ?string $apiKey,
-        /** @var array<string, mixed> */
-        private readonly array $defaults = [],
-        private readonly string $baseUrl = 'https://api.lexware.io/v1',
-        private readonly ?float $requestInterval = null,
+        private readonly ?int $organizationId,
+        private readonly LexofficeInvoiceMapper $mapper = new LexofficeInvoiceMapper,
     ) {}
 
     public function isConfigured(): bool {
-        return $this->apiKey !== null && $this->apiKey !== '';
+        return app(LexofficeClientFactory::class)->isConfigured($this->organizationId);
     }
 
     private function client(): Client {
-        return $this->client ??= app(LexofficeClientFactory::class)->sdk((string) $this->apiKey, $this->baseUrl, $this->requestInterval);
+        return $this->client ??= app(LexofficeClientFactory::class)->for($this->organizationId);
+    }
+
+    /** @return array<string, mixed> */
+    private function defaults(): array {
+        return $this->defaults ??= LexofficeConfig::resolve($this->organizationId)['defaults'];
     }
 
     /**
@@ -75,7 +81,7 @@ class LexofficeInvoiceService {
      */
     public function transfer(Invoice $invoice, ?string $externalContactId = null): array {
         if (! $this->isConfigured()) {
-            throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_not_configured'));
+            throw new LexofficeNotConfiguredException();
         }
 
         $correction = $invoice->isCreditNote() || $invoice->type === Invoice::TYPE_CANCELLATION;
@@ -94,8 +100,8 @@ class LexofficeInvoiceService {
                 ->forReferenceable($invoice->customer)
                 ->value('external_id');
             $payload = $correction
-                ? $this->mapper->toCreditNotePayload($invoice, $contactId, $this->defaults)
-                : $this->mapper->toPayload($invoice, $contactId, $this->defaults);
+                ? $this->mapper->toCreditNotePayload($invoice, $contactId, $this->defaults())
+                : $this->mapper->toPayload($invoice, $contactId, $this->defaults());
             // Korrektur ohne übertragene Ursprungsrechnung entsteht ohne Bezug (Original aus der Zeit lokaler Nummern).
             $preceding = $correction ? $this->precedingVoucherId($invoice) : $this->orderVoucherId($invoice);
             $externalId = $this->create($resource, $payload, $preceding, ! $correction);
@@ -208,7 +214,7 @@ class LexofficeInvoiceService {
      */
     public function fetchInvoice(string $externalId, string $resource = self::RESOURCE_INVOICES): array {
         if (! $this->isConfigured()) {
-            throw new RuntimeException('Lexoffice API key is not configured.');
+            throw new LexofficeNotConfiguredException();
         }
         try {
             return $this->endpoint($resource)->get(new ID($externalId))->toArray();
@@ -223,7 +229,7 @@ class LexofficeInvoiceService {
      */
     public function downloadPdf(string $externalId, string $resource = self::RESOURCE_INVOICES): string {
         if (! $this->isConfigured()) {
-            throw new RuntimeException('Lexoffice API key is not configured.');
+            throw new LexofficeNotConfiguredException();
         }
 
         try {

@@ -15,7 +15,7 @@ use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
 use App\Models\Project\Project;
 use App\Plugins\Support\{ImportedTimeEntry, MatchingTimeImportService, RemoteSyncWindow};
-use App\Plugins\Toggl\Api\TogglApiClient;
+use App\Plugins\Toggl\Api\{TogglClientFactory};
 use App\Plugins\Toggl\Sources\{TogglCsvParser, TogglEntry};
 use App\Plugins\Toggl\{TogglConfig, TogglPlugin};
 use App\Support\Tz;
@@ -54,7 +54,7 @@ class TogglImportService extends MatchingTimeImportService {
      * @return array{created: int, skipped: int, unmatched: int, unresolved_users: int, updated: int, conflicts: int, removed: int, incomplete: bool}
      */
     public function importFromApi(Organization $organization, array $config, CarbonImmutable $from, CarbonImmutable $to): array {
-        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id'], $config['request_interval']);
+        $client = app(TogglClientFactory::class)->for((int) $organization->id);
         if (! $client->isConfigured()) {
             return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'unresolved_users' => 0, 'updated' => 0, 'conflicts' => 0, 'removed' => 0, 'incomplete' => false];
         }
@@ -238,7 +238,7 @@ class TogglImportService extends MatchingTimeImportService {
      */
     public function backfillIdReferences(Organization $organization): array {
         $config = TogglConfig::resolve($organization->id);
-        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id'], $config['request_interval']);
+        $client = app(TogglClientFactory::class)->for((int) $organization->id);
         if (! $client->isConfigured()) {
             return ['projects' => 0, 'clients' => 0];
         }

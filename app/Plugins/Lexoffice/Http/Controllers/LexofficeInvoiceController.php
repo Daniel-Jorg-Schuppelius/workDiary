@@ -24,10 +24,6 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * (Phase 145, MVP-1166) — der Core-InvoiceController kennt Lexoffice nicht.
  */
 class LexofficeInvoiceController extends Controller {
-    public function __construct(
-        private readonly LexofficeInvoiceService $lexofficeInvoice,
-    ) {}
-
     /**
      * Liefert das Lexoffice-PDF einer verknüpften Rechnung. Aufrufer ist
      * der Core-InvoiceController via Hook, der hierhin redirected wenn
@@ -41,7 +37,7 @@ class LexofficeInvoiceController extends Controller {
             ->forReferenceable($invoice)
             ->firstOrFail();
 
-        $pdf = $this->lexofficeInvoice->downloadPdf($ref->external_id, (string) ($ref->payload['_resource'] ?? LexofficeInvoiceService::RESOURCE_INVOICES));
+        $pdf = (new LexofficeInvoiceService($invoice->organization_id))->downloadPdf($ref->external_id, (string) ($ref->payload['_resource'] ?? LexofficeInvoiceService::RESOURCE_INVOICES));
 
         return response($pdf, 200, [
             'Content-Type' => 'application/pdf',

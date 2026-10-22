@@ -59,7 +59,7 @@ class SipgatePlugin extends AbstractPlugin implements SmsProvider {
 
     public function sendSms(Organization $organization, string $recipientE164, string $text, string $reference): SmsSendResult {
         $config = SipgateConfig::resolve((int) $organization->id);
-        if ((string) ($config['token_id'] ?? '') === '' || (string) ($config['token'] ?? '') === '') {
+        if (! SipgateConfig::isConfigured((int) $organization->id)) {
             return SmsSendResult::failed('not_configured');
         }
 
@@ -88,7 +88,7 @@ class SipgatePlugin extends AbstractPlugin implements SmsProvider {
         }
 
         $config = SipgateConfig::resolve((int) $organization->id);
-        if ((string) ($config['token_id'] ?? '') === '' || (string) ($config['token'] ?? '') === '') {
+        if (! SipgateConfig::isConfigured((int) $organization->id)) {
             return PluginHealth::degraded(__('Kein Personal Access Token hinterlegt.'), code: 'not_configured');
         }
 

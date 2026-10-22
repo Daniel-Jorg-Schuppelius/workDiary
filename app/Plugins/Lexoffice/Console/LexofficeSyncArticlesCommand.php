@@ -11,6 +11,7 @@
 namespace App\Plugins\Lexoffice\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
+use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use App\Plugins\Lexoffice\Services\LexofficeArticleSync;
@@ -49,7 +50,7 @@ class LexofficeSyncArticlesCommand extends Command {
                 continue;
             }
 
-            if (! is_string($config['api_key']) || $config['api_key'] === '') {
+            if (! app(LexofficeClientFactory::class)->isConfigured($org->id)) {
                 $this->warn("Organisation #{$org->id} ({$org->name}): Lexoffice nicht konfiguriert — übersprungen.");
 
                 continue;
@@ -58,10 +59,10 @@ class LexofficeSyncArticlesCommand extends Command {
             $policy = LexofficeMatchPolicy::fromSetting((string) ($this->option('policy') ?: $config['match_policy']));
 
             try {
-                Cache::lock(LexofficeConfig::apiLockKey((int) $org->id), 1800)->block(LexofficeConfig::API_LOCK_WAIT_SCHEDULED, function () use ($org, $config, $policy): void {
+                Cache::lock(LexofficeConfig::apiLockKey((int) $org->id), 1800)->block(LexofficeConfig::API_LOCK_WAIT_SCHEDULED, function () use ($org, $policy): void {
                     $this->info("Sync Lexoffice-Artikel für Organisation #{$org->id} ({$org->name}) [policy={$policy->value}]...");
                     try {
-                        $result = (new LexofficeArticleSync($config['api_key'], $config['base_url'], $config['request_interval']))->withPolicy($policy)->sync($org);
+                        $result = (new LexofficeArticleSync($org->id))->withPolicy($policy)->sync($org);
                         $this->line("  created: {$result['created']}, updated: {$result['updated']}, archived: {$result['archived']}, conflicts: {$result['conflicts']}");
                     } catch (\Throwable $e) {
                         $this->error("  Fehler: {$e->getMessage()}");

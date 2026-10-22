@@ -59,7 +59,7 @@ class SevenIoPlugin extends AbstractPlugin implements SmsProvider {
 
     public function sendSms(Organization $organization, string $recipientE164, string $text, string $reference): SmsSendResult {
         $config = SevenIoConfig::resolve((int) $organization->id);
-        if ((string) ($config['api_key'] ?? '') === '') {
+        if (! SevenIoConfig::isConfigured((int) $organization->id)) {
             return SmsSendResult::failed('not_configured');
         }
 
@@ -89,7 +89,7 @@ class SevenIoPlugin extends AbstractPlugin implements SmsProvider {
         }
 
         $config = SevenIoConfig::resolve((int) $organization->id);
-        if ((string) ($config['api_key'] ?? '') === '') {
+        if (! SevenIoConfig::isConfigured((int) $organization->id)) {
             return PluginHealth::degraded(__('Kein API-Key hinterlegt.'), code: 'not_configured');
         }
 

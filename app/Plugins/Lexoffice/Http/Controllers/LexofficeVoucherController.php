@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Supplier\Supplier;
+use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Jobs\SyncVouchersJob;
 use App\Plugins\Lexoffice\LexofficeConfig;
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
@@ -54,8 +55,7 @@ class LexofficeVoucherController extends Controller {
         $user = $this->user();
         abort_unless($user->can(Permission::VoucherLexofficeSync->value), 403);
 
-        $config = LexofficeConfig::resolve($user->organization_id);
-        if (! is_string($config['api_key']) || $config['api_key'] === '') {
+        if (! app(LexofficeClientFactory::class)->isConfigured($user->organization_id)) {
             return back()->with('error', __('Lexoffice ist für diese Organisation nicht konfiguriert.'));
         }
 
@@ -90,15 +90,14 @@ class LexofficeVoucherController extends Controller {
         abort_unless($user->can(Permission::VoucherLexofficeSync->value), 403);
         abort_unless((int) $owner->organization_id === (int) $user->organization_id, 403);
 
-        $config = LexofficeConfig::resolve($user->organization_id);
-        if (! is_string($config['api_key']) || $config['api_key'] === '') {
+        if (! app(LexofficeClientFactory::class)->isConfigured($user->organization_id)) {
             return back()->with('error', __('Lexoffice ist für diese Organisation nicht konfiguriert.'));
         }
 
         try {
             $result = Cache::lock(LexofficeConfig::apiLockKey((int) $owner->organization_id), 1800)
-                ->block(LexofficeConfig::API_LOCK_WAIT_SHORT, static function () use ($config, $owner, $user): array {
-                    $result = (new LexofficeVoucherSync($config['api_key'], $config['base_url'], $config['request_interval']))->syncFor($owner);
+                ->block(LexofficeConfig::API_LOCK_WAIT_SHORT, static function () use ($owner, $user): array {
+                    $result = (new LexofficeVoucherSync((int) $owner->organization_id))->syncFor($owner);
 
                     // Retainer-Zahlstatus (Feature 098) mitziehen — sonst holt der
                     // Knopf zwar die Belege, der Leistungssaldo bliebe aber bis zum
@@ -164,8 +163,7 @@ class LexofficeVoucherController extends Controller {
         abort_unless($user->can(Permission::VoucherViewAny->value), 403);
         abort_unless($voucher->organization_id === $user->organization_id, 403);
 
-        $config = LexofficeConfig::resolve($user->organization_id);
-        $service = new LexofficeVoucherFileService($config['api_key'], $config['base_url'], $config['request_interval']);
+        $service = new LexofficeVoucherFileService((int) $voucher->organization_id);
 
         // MVP-690 (G3): materialisierte Belegbilder zuerst — nach dem
         // Buchhaltungswechsel gibt es keine Live-API mehr.

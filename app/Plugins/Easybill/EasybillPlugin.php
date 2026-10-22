@@ -192,8 +192,7 @@ class EasybillPlugin extends AbstractPlugin implements ContactNumberIssuer, Cont
             return $organization;
         }
 
-        $config = EasybillConfig::resolve((int) $organization->id);
-        if (empty($config['api_key'])) {
+        if (! app(EasybillClientFactory::class)->isConfigured((int) $organization->id)) {
             return PluginHealth::degraded(__('easybill ist nicht konfiguriert (API-Key fehlt).'), 'not_configured');
         }
 

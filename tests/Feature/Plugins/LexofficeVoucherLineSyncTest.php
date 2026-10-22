@@ -23,7 +23,7 @@ use App\Plugins\Lexoffice\Services\{LexofficeInvoiceParser, LexofficeVoucherLine
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Support\Facades\Log;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\{FakePluginHttp, InteractsWithPlugins};
 use Tests\TestCase;
 
@@ -38,10 +38,12 @@ class LexofficeVoucherLineSyncTest extends TestCase {
     use InteractsWithPlugins;
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
+        $this->pluginSecret('lexoffice', ['api_key' => 'test-key']);
     }
 
     private function voucher(string $externalId, string $number, string $date, string $type = 'invoice', ?int $customerId = null): LexofficeVoucher {
@@ -113,7 +115,7 @@ class LexofficeVoucherLineSyncTest extends TestCase {
     }
 
     private function lineSync(): LexofficeVoucherLineSync {
-        return (new LexofficeVoucherLineSync('lex-key', 'https://api.lexware.io/v1'))->withoutThrottle();
+        return new LexofficeVoucherLineSync($this->organization->id);
     }
 
     private function linkContact(string $externalId, Customer $customer): void {
@@ -158,7 +160,7 @@ class LexofficeVoucherLineSyncTest extends TestCase {
         $booking = $this->voucher('bk-1', '10021-01-2025', '2025-01-05', 'salesinvoice');
         $fake = $this->fakeInvoices();
 
-        $sync = (new LexofficeVoucherLineSync('lex-key', 'https://api.lexware.io/v1'))->withoutThrottle();
+        $sync = (new LexofficeVoucherLineSync($this->organization->id));
         $result = $sync->syncMissing($this->organization, 10);
         $this->assertSame(['synced' => 2, 'lines' => 2, 'failed' => 0, 'remaining' => 0], $result);
 
@@ -354,7 +356,7 @@ class LexofficeVoucherLineSyncTest extends TestCase {
             ],
             'https://api.lexware.io/v1/invoices/inv-1' => FakePluginHttp::response($this->invoicePayload()),
         ]);
-        $sync = new LexofficeVoucherSync('lex-key', 'https://api.lexware.io/v1', 0.0);
+        $sync = new LexofficeVoucherSync($this->organization->id);
 
         $this->assertSame(0, $sync->sync($this->organization)['lines'], 'Entwürfe werden nicht gespiegelt');
         $voucher = LexofficeVoucher::query()->where('external_id', 'inv-1')->firstOrFail();

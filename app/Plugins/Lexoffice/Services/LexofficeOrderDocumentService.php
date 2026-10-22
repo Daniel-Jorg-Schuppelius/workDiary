@@ -81,10 +81,7 @@ abstract class LexofficeOrderDocumentService {
             return $existing;
         }
 
-        $config = LexofficeConfig::resolve($order->organization_id);
-        if (empty($config['api_key'])) {
-            throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_not_configured'));
-        }
+        $client = app(LexofficeClientFactory::class)->for($order->organization_id);
 
         $order->loadMissing(['customer', 'article', 'variant']);
         $customer = $order->customer;
@@ -92,10 +89,9 @@ abstract class LexofficeOrderDocumentService {
             throw new RuntimeException((string) __($this->noCustomerErrorKey()));
         }
 
-        $client = app(LexofficeClientFactory::class)->sdk((string) $config['api_key'], $config['base_url'], $config['request_interval']);
         $contactId = app(LexofficeContactLookup::class)->find($customer, $client)
             ?? throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_contact_missing'));
-        $payload = $this->buildPayload($order, $contactId, (array) $config['defaults']) + $this->requiredFields();
+        $payload = $this->buildPayload($order, $contactId, LexofficeConfig::resolve($order->organization_id)['defaults']) + $this->requiredFields();
 
         try {
             $body = $this->endpoint($client)->create($this->document($payload))->toArray();
@@ -134,17 +130,13 @@ abstract class LexofficeOrderDocumentService {
      * @return array<string, mixed>
      */
     public function pull(ManufacturingOrder $order): array {
-        $config = LexofficeConfig::resolve($order->organization_id);
-        if (empty($config['api_key'])) {
-            throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_not_configured'));
-        }
+        $client = app(LexofficeClientFactory::class)->for($order->organization_id);
 
         $reference = $this->reference($order);
         if ($reference === null) {
             throw new RuntimeException((string) __($this->notLinkedErrorKey()));
         }
 
-        $client = app(LexofficeClientFactory::class)->sdk((string) $config['api_key'], $config['base_url'], $config['request_interval']);
         try {
             return $this->endpoint($client)->get(new ID((string) $reference->external_id))->toArray();
         } catch (ApiException $e) {

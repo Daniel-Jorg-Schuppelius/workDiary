@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Lexoffice\Services;
 
 use App\Models\Integration\PendingExternalConflict;
+use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
+use App\Plugins\Lexoffice\Exceptions\LexofficeNotConfiguredException;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use App\Plugins\Lexoffice\Models\LexofficeArticle;
 use App\Services\Inventory\Contracts\ArticleConflictHandler;
@@ -43,14 +45,13 @@ final class LexofficeArticleConflictHandler implements ArticleConflictHandler {
             throw new RuntimeException((string) __('Der Artikel wurde lokal nicht gefunden.'));
         }
 
-        $config = LexofficeConfig::resolve($conflict->organization_id);
-        if (! is_string($config['api_key']) || $config['api_key'] === '') {
-            throw new RuntimeException((string) __('Lexoffice ist für diese Organisation nicht konfiguriert.'));
+        if (! app(LexofficeClientFactory::class)->isConfigured($conflict->organization_id)) {
+            throw new LexofficeNotConfiguredException();
         }
 
         try {
             Cache::lock(LexofficeConfig::apiLockKey((int) $conflict->organization_id), 60)
-                ->block(LexofficeConfig::API_LOCK_WAIT_SHORT, static fn (): LexofficeArticle => (new LexofficeArticleSync($config['api_key'], $config['base_url'], $config['request_interval']))->adoptRemote($article));
+                ->block(LexofficeConfig::API_LOCK_WAIT_SHORT, static fn (): LexofficeArticle => (new LexofficeArticleSync($conflict->organization_id))->adoptRemote($article));
         } catch (LockTimeoutException) {
             throw new RuntimeException((string) __('Lexoffice wird gerade von einem anderen Lauf abgeglichen. Bitte versuchen Sie es in einigen Minuten erneut.'));
         }

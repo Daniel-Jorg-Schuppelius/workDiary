@@ -38,7 +38,7 @@ final class EasybillIncomingPartyLookup implements IncomingPartyLookup {
     public function isEnabled(Organization $organization): bool {
         $config = EasybillConfig::resolve((int) $organization->id);
 
-        return $config['enabled'] && is_string($config['api_key']) && $config['api_key'] !== '';
+        return $config['enabled'] && app(EasybillClientFactory::class)->isConfigured((int) $organization->id);
     }
 
     public function lookup(IncomingEInvoice $incoming): array {

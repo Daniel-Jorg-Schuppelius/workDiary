@@ -11,7 +11,7 @@
 namespace App\Plugins\Clockify\Services;
 
 use App\Models\Platform\Organization;
-use App\Plugins\Clockify\Api\ClockifyApiClient;
+use App\Plugins\Clockify\Api\{ClockifyApiClient, ClockifyClientFactory};
 use App\Plugins\Clockify\{ClockifyConfig, ClockifyPlugin};
 use App\Plugins\Clockify\Sources\ClockifyCsvParser;
 use App\Plugins\Support\{ImportedTimeEntry, MatchingTimeImportService, RemoteSyncWindow};
@@ -61,12 +61,7 @@ class ClockifyImportService extends MatchingTimeImportService implements CsvAndA
      * @return array{created: int, skipped: int, unmatched: int, unresolved_users?: int, updated?: int, conflicts?: int, removed?: int, error?: string}
      */
     public function importFromApi(Organization $organization, array $config, ?CarbonImmutable $from = null, ?CarbonImmutable $to = null): array {
-        $client = new ClockifyApiClient(
-            is_string($config['api_key'] ?? null) ? $config['api_key'] : null,
-            is_string($config['base_url'] ?? null) && $config['base_url'] !== '' ? $config['base_url'] : ClockifyConfig::DEFAULT_BASE_URL,
-            is_string($config['reports_base_url'] ?? null) && $config['reports_base_url'] !== '' ? $config['reports_base_url'] : ClockifyConfig::DEFAULT_REPORTS_BASE_URL,
-            is_string($config['workspace_id'] ?? null) ? $config['workspace_id'] : null,
-        );
+        $client = app(ClockifyClientFactory::class)->for((int) $organization->id);
         if (! $client->isConfigured()) {
             return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'unresolved_users' => 0, 'error' => (string) __('Clockify-API ist nicht konfiguriert (API-Key in den Plugin-Einstellungen hinterlegen).')];
         }

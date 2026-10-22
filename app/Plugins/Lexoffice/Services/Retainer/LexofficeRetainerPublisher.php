@@ -15,9 +15,11 @@ use App\Models\Billing\CustomerBillingAgreement;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\Invoice;
+use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Services\LexofficeInvoiceService;
 use App\Plugins\PluginManager;
+use App\Plugins\Support\PluginOrgContext;
 use App\Services\Billing\Contracts\RetainerPublisher;
 use App\Services\Billing\CustomerAccountStatementService;
 use App\Services\Invoicing\InvoiceGenerator;
@@ -44,7 +46,6 @@ use RuntimeException;
 class LexofficeRetainerPublisher implements RetainerPublisher {
     public function __construct(
         private readonly InvoiceGenerator $generator,
-        private readonly LexofficeInvoiceService $lexoffice,
         private readonly CustomerAccountStatementService $statements,
     ) {}
 
@@ -53,7 +54,7 @@ class LexofficeRetainerPublisher implements RetainerPublisher {
     }
 
     public function isConfigured(): bool {
-        return $this->lexoffice->isConfigured();
+        return app(LexofficeClientFactory::class)->isConfigured(PluginOrgContext::currentId());
     }
 
     /**
@@ -64,7 +65,7 @@ class LexofficeRetainerPublisher implements RetainerPublisher {
         if (! $agreement->isRetainerMode()) {
             return null;
         }
-        $this->assertConfigured();
+        $this->assertConfigured($agreement);
 
         $customer = $agreement->customer()->firstOrFail();
         $amount = $agreement->expected_monthly_amount;
@@ -101,7 +102,7 @@ class LexofficeRetainerPublisher implements RetainerPublisher {
 
             // Push nach Lexoffice (festgeschrieben → Lexoffice-Nummer + status=issued);
             // schlägt der Push fehl, rollt die Transaktion den Draft zurück.
-            $this->lexoffice->publish($invoice, $this->resolveContactExternalId($customer));
+            (new LexofficeInvoiceService($customer->organization_id))->publish($invoice, $this->resolveContactExternalId($customer));
 
             $locked->update(['retainer_invoice_id' => $invoice->id]);
 
@@ -118,7 +119,7 @@ class LexofficeRetainerPublisher implements RetainerPublisher {
         if (! $agreement->isRetainerMode()) {
             throw ValidationException::withMessages(['agreement' => __('lexoffice::customer-billing.retainer_only')]);
         }
-        $this->assertConfigured();
+        $this->assertConfigured($agreement);
 
         $this->statements->recalculateOpen($agreement);
         $balance = $this->openBalance($agreement);
@@ -146,14 +147,14 @@ class LexofficeRetainerPublisher implements RetainerPublisher {
                 Invoice::TYPE_RETAINER,
                 $now,
             );
-            $this->lexoffice->publish($invoice, $this->resolveContactExternalId($customer));
+            (new LexofficeInvoiceService($customer->organization_id))->publish($invoice, $this->resolveContactExternalId($customer));
 
             return $invoice->refresh();
         });
     }
 
-    private function assertConfigured(): void {
-        if (! $this->lexoffice->isConfigured()) {
+    private function assertConfigured(CustomerBillingAgreement $agreement): void {
+        if (! app(LexofficeClientFactory::class)->isConfigured($agreement->organization_id)) {
             throw ValidationException::withMessages(['agreement' => __('lexoffice::customer-billing.channel_not_configured', ['system' => $this->label()])]);
         }
     }

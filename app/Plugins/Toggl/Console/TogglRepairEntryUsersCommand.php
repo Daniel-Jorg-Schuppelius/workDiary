@@ -14,7 +14,7 @@ use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
 use App\Models\Time\TimeEntry;
-use App\Plugins\Toggl\Api\TogglApiClient;
+use App\Plugins\Toggl\Api\{TogglClientFactory};
 use App\Plugins\Toggl\Services\TogglImportService;
 use App\Plugins\Toggl\Sources\TogglCsvParser;
 use App\Plugins\Toggl\{TogglConfig, TogglPlugin};
@@ -173,11 +173,11 @@ class TogglRepairEntryUsersCommand extends Command {
      */
     private function apiEntries(Organization $organization): array {
         $config = TogglConfig::resolve($organization->id);
-        if (! $config['enabled'] || $config['api_token'] === null) {
+        if (! $config['enabled'] || ! app(TogglClientFactory::class)->isConfigured($organization->id)) {
             return [];
         }
 
-        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id'], $config['request_interval']);
+        $client = app(TogglClientFactory::class)->for($organization->id);
         $to = CarbonImmutable::now();
         $from = $to->subDays(max(1, (int) $this->option('days')));
 

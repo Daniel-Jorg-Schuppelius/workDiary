@@ -62,7 +62,7 @@ class EasybillTarget implements FacturationTarget {
 
     public function transfer(BillingTransfer $transfer): TargetResult {
         $config = EasybillConfig::resolve((int) $transfer->organization_id);
-        if (empty($config['api_key'])) {
+        if (! $this->clients->isConfigured((int) $transfer->organization_id)) {
             throw new RuntimeException((string) __('easybill::finance.error.easybill_not_configured'));
         }
 

@@ -14,6 +14,7 @@ namespace App\Plugins\Clockify\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Platform\Organization;
+use App\Plugins\Clockify\Api\ClockifyClientFactory;
 use App\Plugins\Clockify\{ClockifyConfig, ClockifyPlugin};
 use App\Plugins\Clockify\Services\ClockifyImportService;
 use App\Plugins\Support\Console\ChecksPluginSwitch;
@@ -42,7 +43,7 @@ class ClockifyImportCommand extends Command {
                 return;
             }
             $config = ClockifyConfig::resolve((int) $org->id);
-            if ($config['api_key'] === null) {
+            if (! app(ClockifyClientFactory::class)->isConfigured((int) $org->id)) {
                 return;
             }
 

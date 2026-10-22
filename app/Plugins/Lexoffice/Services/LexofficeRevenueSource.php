@@ -13,7 +13,7 @@ namespace App\Plugins\Lexoffice\Services;
 use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\Invoice;
-use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
+use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\{LexofficeVoucher, LexofficeVoucherLine};
 use App\Services\Billing\Contracts\ExternalRevenueSource;
 use App\Services\Billing\Dto\{ExternalInvoice, ExternalInvoiceFile, ExternalInvoiceQuery, ExternalProductRevenue};
@@ -172,8 +172,7 @@ class LexofficeRevenueSource implements ExternalRevenueSource {
 
     /** Materialisiertes Belegbild zuerst (MVP-690), sonst der Abruf aus Lexoffice. */
     private function voucherFile(LexofficeVoucher $voucher): ?ExternalInvoiceFile {
-        $config = LexofficeConfig::resolve((int) $voucher->organization_id);
-        $service = new LexofficeVoucherFileService($config['api_key'], $config['base_url'], $config['request_interval']);
+        $service = new LexofficeVoucherFileService((int) $voucher->organization_id);
         $file = $service->localFile($voucher);
         if ($file === null && $service->isConfigured()) {
             try {

@@ -64,7 +64,7 @@ class SevDeskTarget implements FacturationTarget {
 
     public function transfer(BillingTransfer $transfer): TargetResult {
         $config = SevDeskConfig::resolve($transfer->organization_id);
-        if (empty($config['api_key'])) {
+        if (! $this->clients->isConfigured((int) $transfer->organization_id)) {
             throw new RuntimeException((string) __('sevdesk::finance.error.sevdesk_not_configured'));
         }
 

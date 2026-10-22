@@ -17,7 +17,7 @@ use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Inventory\StockDelivery;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
-use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
+use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Services\Manufacturing\DeliveryService;
 use InvalidArgumentException;
 use Lexoffice\API\Endpoints\Documents\DeliveryNotesEndpoint;
@@ -57,10 +57,7 @@ class LexofficeDeliveryNoteService {
             return $existing;
         }
 
-        $config = LexofficeConfig::resolve($delivery->organization_id);
-        if (empty($config['api_key'])) {
-            throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_not_configured'));
-        }
+        $client = app(LexofficeClientFactory::class)->for($delivery->organization_id);
 
         $delivery->loadMissing('customer');
         $customer = $delivery->customer;
@@ -68,7 +65,6 @@ class LexofficeDeliveryNoteService {
             throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_delivery_no_customer'));
         }
 
-        $client = app(LexofficeClientFactory::class)->sdk((string) $config['api_key'], $config['base_url'], $config['request_interval']);
         $contactId = app(LexofficeContactLookup::class)->find($customer, $client)
             ?? throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_contact_missing'));
         $payload = $this->buildPayload($delivery, $contactId);
@@ -114,17 +110,13 @@ class LexofficeDeliveryNoteService {
      * @return array<string, mixed>
      */
     public function pull(StockDelivery $delivery): array {
-        $config = LexofficeConfig::resolve($delivery->organization_id);
-        if (empty($config['api_key'])) {
-            throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_not_configured'));
-        }
+        $client = app(LexofficeClientFactory::class)->for($delivery->organization_id);
 
         $reference = $this->reference($delivery);
         if ($reference === null) {
             throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_delivery_not_linked'));
         }
 
-        $client = app(LexofficeClientFactory::class)->sdk((string) $config['api_key'], $config['base_url'], $config['request_interval']);
         try {
             return (new DeliveryNotesEndpoint($client))->get(new ID((string) $reference->external_id))->toArray();
         } catch (ApiException $e) {

@@ -40,7 +40,7 @@ final class SevDeskIncomingPartyLookup implements IncomingPartyLookup {
     public function isEnabled(Organization $organization): bool {
         $config = SevDeskConfig::resolve((int) $organization->id);
 
-        return $config['enabled'] && is_string($config['api_key']) && $config['api_key'] !== '';
+        return $config['enabled'] && app(SevDeskClientFactory::class)->isConfigured((int) $organization->id);
     }
 
     public function lookup(IncomingEInvoice $incoming): array {

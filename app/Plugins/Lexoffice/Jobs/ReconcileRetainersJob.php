@@ -11,9 +11,9 @@
 namespace App\Plugins\Lexoffice\Jobs;
 
 use App\Models\Platform\Organization;
+use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Jobs\Concerns\RunsUnderApiLock;
 use App\Plugins\Lexoffice\LexofficeConfig;
-use App\Plugins\Lexoffice\Services\LexofficeInvoiceService;
 use App\Plugins\Lexoffice\Services\Retainer\LexofficeRetainerVouchers;
 use App\Support\OrganizationContext;
 use Illuminate\Bus\Queueable;
@@ -48,7 +48,7 @@ class ReconcileRetainersJob implements ShouldBeUnique, ShouldQueue {
     public function handle(): void {
         $config = LexofficeConfig::resolve($this->organizationId);
         // Abgeschaltet steht auch der Job — sonst liefe er mit einem Schlüssel aus der Installation weiter (S-28, k2-06).
-        if ($config['enabled'] !== true || ! is_string($config['api_key']) || $config['api_key'] === '') {
+        if ($config['enabled'] !== true || ! app(LexofficeClientFactory::class)->isConfigured($this->organizationId)) {
             return;
         }
 
@@ -59,9 +59,6 @@ class ReconcileRetainersJob implements ShouldBeUnique, ShouldQueue {
 
         $this->underApiLock($this->organizationId, static function () use ($organization): void {
             OrganizationContext::run($organization, static function () use ($organization): void {
-                // Singleton mit org-spezifischem Key neu auflösen — der Netto-
-                // Nachschlag ruft sonst mit dem Key einer fremden Organisation an.
-                app()->forgetInstance(LexofficeInvoiceService::class);
                 app(LexofficeRetainerVouchers::class)->reconcile($organization);
             });
         });

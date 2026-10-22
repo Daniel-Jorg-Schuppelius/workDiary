@@ -13,11 +13,9 @@ declare(strict_types=1);
 namespace App\Plugins\Kimai\Services;
 
 use App\Models\Integration\IntegrationOutboxEntry;
-use App\Models\Platform\Organization;
-use App\Plugins\Kimai\Api\KimaiApiClient;
+use App\Plugins\Kimai\Api\{KimaiClientFactory};
 use App\Plugins\Kimai\{KimaiConfig, KimaiPlugin};
 use App\Plugins\Support\{MirrorsCreatedEntries, RemoteTimeWriter, TimeWritebackDispatcher};
-use App\Support\Tz;
 
 /**
  * Rückrichtung nach Kimai (PATCH/DELETE auf `/api/timesheets/{id}`).
@@ -73,8 +71,7 @@ class KimaiOutboxDispatcher extends TimeWritebackDispatcher implements MirrorsCr
             return null;
         }
 
-        $organization = Organization::query()->withoutGlobalScopes()->find($organizationId);
-        $client = new KimaiApiClient($config['api_token'], $config['base_url'], $organization instanceof Organization ? Tz::ofOrganization($organization) : null, $config['allow_private_network']);
+        $client = app(KimaiClientFactory::class)->for($organizationId);
 
         return $client->isConfigured() ? $client : null;
     }

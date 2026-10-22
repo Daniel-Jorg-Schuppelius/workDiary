@@ -18,15 +18,14 @@ use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
 use App\Models\Supplier\Supplier;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
-use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
-use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
+use App\Plugins\Lexoffice\Exceptions\{LexofficeApiException, LexofficeNotConfiguredException};
+use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Carbon;
 use Lexoffice\API\Client;
 use Lexoffice\API\Endpoints\{PaymentsEndpoint, VoucherListEndpoint};
 use Lexoffice\Entities\VoucherList\VoucherListPage;
-use RuntimeException;
 use UnexpectedValueException;
 
 /**
@@ -44,26 +43,17 @@ use UnexpectedValueException;
 class LexofficeVoucherSync {
     private ?Client $client = null;
 
-    private float $requestInterval;
-
     /** Rechnungen, deren Positionen je Sync-Lauf nachgeladen werden (Ratenlimit). */
     private const LINES_PER_RUN = 100;
 
-    /**
-     * @param  float|null  $requestInterval  Anfrageabstand in Sekunden; null = Einstellung der gebundenen Organisation.
-     *                                       Die Konsole bindet keinen Org-Kontext und reicht den Wert deshalb explizit durch.
-     */
+    /** @param  int|null  $organizationId  null = gebundene Organisation bzw. Einzelplatz-Konfiguration */
     public function __construct(
-        private readonly ?string $apiKey,
-        private readonly string $baseUrl = 'https://api.lexware.io/v1',
-        ?float $requestInterval = null,
-    ) {
-        $this->requestInterval = $requestInterval ?? LexofficeConfig::requestInterval();
-    }
+        private readonly ?int $organizationId,
+    ) {}
 
     /** 429/5xx wiederholt der Client selbst (Retry-After/Backoff) — keine eigene Schleife. */
     private function client(): Client {
-        return $this->client ??= app(LexofficeClientFactory::class)->sdk((string) $this->apiKey, $this->baseUrl, $this->requestInterval);
+        return $this->client ??= app(LexofficeClientFactory::class)->for($this->organizationId);
     }
 
     /**
@@ -82,8 +72,8 @@ class LexofficeVoucherSync {
             return ['contacts' => 0, 'created' => 0, 'updated' => 0, 'archived' => 0, 'paid_dates' => 0, 'lines' => 0, 'categories' => 0, 'frozen' => true];
         }
 
-        if ($this->apiKey === null || $this->apiKey === '') {
-            throw new RuntimeException('Lexoffice API key is not configured (LEXOFFICE_API_KEY).');
+        if (! app(LexofficeClientFactory::class)->isConfigured($this->organizationId)) {
+            throw new LexofficeNotConfiguredException();
         }
 
         $contactMap = $this->buildContactMap($organization);
@@ -124,14 +114,14 @@ class LexofficeVoucherSync {
         // Ein Fehler hier darf den Belegsync nicht als gescheitert melden
         // (Review 2026-09-10, C8): nur melden, der Rest des Laufs steht.
         try {
-            $result['lines'] = (new LexofficeVoucherLineSync((string) $this->apiKey, $this->baseUrl, $this->requestInterval))->syncMissing($organization, self::LINES_PER_RUN)['synced'];
+            $result['lines'] = (new LexofficeVoucherLineSync($this->organizationId))->syncMissing($organization, self::LINES_PER_RUN)['synced'];
         } catch (\Throwable $e) {
             $result['lines_error'] = class_basename($e) . ': ' . mb_substr($e->getMessage(), 0, 200);
             \Illuminate\Support\Facades\Log::warning('LexofficeVoucherSync: Positions-Sync abgebrochen.', ['organization_id' => $organization->id, 'error' => $result['lines_error']]);
         }
         // MVP-905: Kategoriezeilen der Einkaufsbelege, gleiche Regeln wie die Positionen.
         try {
-            $result['categories'] = (new LexofficeVoucherCategorySync((string) $this->apiKey, $this->baseUrl, $this->requestInterval))->syncMissing($organization, self::LINES_PER_RUN)['synced'];
+            $result['categories'] = (new LexofficeVoucherCategorySync($this->organizationId))->syncMissing($organization, self::LINES_PER_RUN)['synced'];
         } catch (\Throwable $e) {
             $result['categories_error'] = class_basename($e) . ': ' . mb_substr($e->getMessage(), 0, 200);
             \Illuminate\Support\Facades\Log::warning('LexofficeVoucherSync: Kategorie-Sync abgebrochen.', ['organization_id' => $organization->id, 'error' => $result['categories_error']]);
@@ -269,8 +259,8 @@ class LexofficeVoucherSync {
      * @return array{contacts: int, created: int, updated: int, archived: int, paid_dates: int}
      */
     public function syncFor(Customer|Supplier $owner): array {
-        if ($this->apiKey === null || $this->apiKey === '') {
-            throw new RuntimeException('Lexoffice API key is not configured (LEXOFFICE_API_KEY).');
+        if (! app(LexofficeClientFactory::class)->isConfigured($this->organizationId)) {
+            throw new LexofficeNotConfiguredException();
         }
 
         $organizationId = (int) $owner->organization_id;

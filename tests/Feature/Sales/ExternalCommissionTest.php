@@ -23,7 +23,7 @@ use App\Plugins\Lexoffice\Services\LexofficeVoucherSync;
 use App\Support\Sqid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
@@ -31,6 +31,7 @@ use Tests\TestCase;
 final class ExternalCommissionTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     private User $admin;
 
@@ -41,6 +42,7 @@ final class ExternalCommissionTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
+        $this->pluginSecret('lexoffice', ['api_key' => 'test-key']);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $this->seller = User::factory()->user()->create(['organization_id' => $this->organization->id, 'name' => 'Vera Vertrieb']);
@@ -83,7 +85,7 @@ final class ExternalCommissionTest extends TestCase {
             // Zahlungen laufen über das SDK, das den Body nicht zurückspult: je Abruf eine frische Antwort.
             'https://api.lexware.io/v1/payments/*' => static fn () => FakePluginHttp::response([]),
         ]);
-        (new LexofficeVoucherSync('test-key'))->sync($this->organization);
+        (new LexofficeVoucherSync($this->organization->id))->sync($this->organization);
     }
 
     /** @return array<string, mixed> */
@@ -160,8 +162,8 @@ final class ExternalCommissionTest extends TestCase {
             'id' => 'gs2', 'title' => 'Gutschrift', 'totalPrice' => ['currency' => 'EUR', 'totalNetAmount' => 20.0],
             'relatedVouchers' => [['id' => 'v1', 'voucherNumber' => 'LX-v1', 'voucherType' => 'invoice']], 'lineItems' => [],
         ])]);
-        (new \App\Plugins\Lexoffice\Services\LexofficeVoucherLineSync('test-key'))->withoutThrottle()->syncVoucher($creditNote);
-        (new \App\Plugins\Lexoffice\Services\LexofficeVoucherLineSync('test-key'))->withoutThrottle()->syncVoucher($creditNote->fresh() ?? $creditNote);
+        (new \App\Plugins\Lexoffice\Services\LexofficeVoucherLineSync($this->organization->id))->syncVoucher($creditNote);
+        (new \App\Plugins\Lexoffice\Services\LexofficeVoucherLineSync($this->organization->id))->syncVoucher($creditNote->fresh() ?? $creditNote);
 
         $reversal = InvoiceCommission::query()->whereNotNull('reversal_of_id')->sole();
         $this->assertSame('-20.00', $reversal->base_amount?->getAmount());

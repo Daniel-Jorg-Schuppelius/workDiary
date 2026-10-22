@@ -81,8 +81,7 @@ class BillbeePlugin extends AbstractPlugin {
             return $organization;
         }
 
-        $config = BillbeeConfig::resolve((int) $organization->id);
-        if (empty($config['api_key']) || empty($config['username']) || empty($config['api_password'])) {
+        if (! app(BillbeeClientFactory::class)->isConfigured((int) $organization->id)) {
             return PluginHealth::degraded(__('Billbee ist nicht konfiguriert (API-Key/Benutzer/API-Passwort fehlen).'), 'not_configured');
         }
 

@@ -23,10 +23,11 @@ use App\Models\Supplier\Supplier;
 use App\Models\Time\TimeEntry;
 use App\Plugins\{AbstractPlugin, PluginHealth, PluginManager};
 use App\Plugins\Contracts\{ContactNumberIssuer, ContactSyncer, ContributesWhileInactive, NavigationContributor, PaymentSyncer, Plugin, PluginCapability, SlotRenderer, TimeExporter};
+use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Enums\LexwareFeature;
 use App\Plugins\Lexoffice\Exceptions\{LexofficeApiBusyException, LexofficeRateLimitException};
 use App\Plugins\Lexoffice\Models\LexofficePostingCategory;
-use App\Plugins\Lexoffice\Services\{LexofficeIncomingInvoiceTarget, LexofficeMapper, LexofficeService, LexofficeVoucherSync, LexofficeWebhookService};
+use App\Plugins\Lexoffice\Services\{LexofficeIncomingInvoiceTarget, LexofficeService, LexofficeVoucherSync, LexofficeWebhookService};
 use App\Plugins\Lexoffice\Tariff\LexwareTariffService;
 use App\Plugins\Support\PluginOrgContext;
 use App\Services\Stammdaten\ContactNumberAdopter;
@@ -60,55 +61,11 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
     /** Gegenbeleg zu einer gepushten Auslage (MVP-802). */
     public const EXT_TYPE_COUNTER_VOUCHER = 'counter_voucher';
 
-    public function __construct(
-        private readonly LexofficeService $service,
-    ) {}
-
-    /** @var array<int, array{config: array<string, mixed>, service: LexofficeService}> Dienst je Organisation, solange ihre Zugangsdaten gleich bleiben. */
-    private array $orgServices = [];
-
     /** So lange weicht ein Lauf nach einer belegten API-Sperre aus, ohne je Kontakt erneut zu warten. */
     private const API_BUSY_BACKOFF_SECONDS = 60;
 
     /** @var array<int, CarbonImmutable> Organisation → bis wann die API-Sperre als belegt gilt */
     private array $apiBusyUntil = [];
-
-    /**
-     * Dienst mit den Zugangsdaten der Organisation. Der injizierte Dienst trägt den Schlüssel, den der
-     * Prozess beim Start auflösen konnte — in Konsole und Queue ohne gebundene Organisation keinen
-     * (Scheduler-Nachlauf MVP-1131, Befund 2026-10-17). Ohne eigenen Schlüssel der Organisation bleibt
-     * der injizierte Dienst (Einzelplatz mit ENV-Schlüssel, Tests).
-     */
-    private function serviceFor(?int $organizationId): LexofficeService {
-        $organizationId ??= PluginOrgContext::currentId();
-        if ($organizationId === null || $organizationId <= 0) {
-            return $this->service;
-        }
-
-        $config = LexofficeConfig::resolve($organizationId);
-        if (empty($config['api_key'])) {
-            return $this->service;
-        }
-
-        $credentials = array_intersect_key($config, ['api_key' => 1, 'base_url' => 1, 'defaults' => 1, 'request_interval' => 1]);
-        $cached = $this->orgServices[$organizationId] ?? null;
-        if ($cached === null || $cached['config'] !== $credentials) {
-            $cached = $this->orgServices[$organizationId] = ['config' => $credentials, 'service' => self::buildService($config)];
-        }
-
-        return $cached['service'];
-    }
-
-    /** @param  array{api_key: ?string, base_url: string, defaults: array<string, mixed>, request_interval: float}  $config */
-    private static function buildService(array $config): LexofficeService {
-        return new LexofficeService(
-            apiKey: $config['api_key'],
-            mapper: new LexofficeMapper,
-            defaults: $config['defaults'],
-            baseUrl: $config['base_url'],
-            requestInterval: $config['request_interval'],
-        );
-    }
 
     public function name(): string {
         return 'Lexoffice';
@@ -124,32 +81,25 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
     }
 
     public function healthCheck(): PluginHealth {
-        // Per-Org-Plugin: healthcheck bindet je Org den Kontext → Schlüssel der gebundenen Org frisch auflösen
-        // (nicht env/Singleton). Ohne Key (kein Kontext/env leer) greift der injizierte Service (DI/Tests/Single-Tenant).
-        $config = LexofficeConfig::resolve();
-        if (! empty($config['api_key'])) {
-            $health = $this->checkService(self::buildService($config));
+        // Per-Org-Plugin: der Healthcheck bindet je Organisation den Kontext; ohne Organisation gilt die Einzelplatz-Konfiguration.
+        $organizationId = PluginOrgContext::currentId();
 
-            return $this->withWebhookState($health, $config);
-        }
-
-        return $this->checkService($this->service);
+        return $this->withWebhookState($this->checkService(new LexofficeService($organizationId)), $organizationId);
     }
 
     /**
      * Webhook-Zustand (Welle 1.3): Ist ein URL-Token hinterlegt, müssen
      * drüben auch Subscriptions existieren — sonst laufen die Events ins
      * Leere und der geplante Sync ist die einzige Quelle.
-     *
-     * @param  array{api_key: ?string, base_url: string, webhook_secret: ?string, request_interval: float}  $config
      */
-    private function withWebhookState(PluginHealth $health, array $config): PluginHealth {
-        if (! $health->isOk() || ! is_string($config['webhook_secret']) || $config['webhook_secret'] === '') {
+    private function withWebhookState(PluginHealth $health, ?int $organizationId): PluginHealth {
+        $secret = LexofficeConfig::resolve($organizationId)['webhook_secret'];
+        if (! $health->isOk() || ! is_string($secret) || $secret === '') {
             return $health;
         }
 
         try {
-            $subscriptions = (new LexofficeWebhookService($config['api_key'], $config['base_url'], $config['request_interval']))->subscriptions();
+            $subscriptions = (new LexofficeWebhookService($organizationId))->subscriptions();
         } catch (Throwable) {
             // Zustand nicht ermittelbar (transient) — Ping war ok, kein Downgrade.
             return $health;
@@ -201,12 +151,12 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
             if ($org instanceof Organization) {
                 $row = PluginSetting::forOrganization($org->id, self::ID);
                 if ($row->exists || ($row->enabled || ($row->settings['api_key'] ?? null) !== null)) {
-                    return $row->enabled && (string) ($row->get('api_key') ?? '') !== '';
+                    return $row->enabled && app(LexofficeClientFactory::class)->isConfigured($org->id);
                 }
             }
         }
 
-        return (bool) config('plugins.lexoffice.enabled') && $this->service->isConfigured();
+        return (bool) config('plugins.lexoffice.enabled') && app(LexofficeClientFactory::class)->isConfigured(null);
     }
 
     public function capabilities(): array {
@@ -229,13 +179,12 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
      * @return array<string, int|string>
      */
     public function syncPayments(Organization $organization): array {
-        $config = LexofficeConfig::resolve((int) $organization->id);
-        if (! is_string($config['api_key']) || $config['api_key'] === '') {
+        if (! app(LexofficeClientFactory::class)->isConfigured((int) $organization->id)) {
             return ['paid_dates' => 0, 'error' => (string) __('Lexoffice ist nicht konfiguriert.')];
         }
 
         return [
-            'paid_dates' => (new LexofficeVoucherSync($config['api_key'], $config['base_url'], $config['request_interval']))
+            'paid_dates' => (new LexofficeVoucherSync((int) $organization->id))
                 ->enrichPaidDates((int) $organization->id),
         ];
     }
@@ -339,7 +288,7 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
             ->forReferenceable($party)
             ->value('external_id');
 
-        $result = $this->serviceFor((int) $party->organization_id)->pushContact($party, $linkedId !== null ? (string) $linkedId : null);
+        $result = (new LexofficeService((int) $party->organization_id))->pushContact($party, $linkedId !== null ? (string) $linkedId : null);
         app(ContactNumberAdopter::class)->linked($party, self::ID, $result['id'], $result['number']);
 
         return $result['id'];
@@ -474,7 +423,7 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
 
         $contactExternalId = $contactRef !== null ? $contactRef->external_id : $this->pushContact($customer);
 
-        $result = $this->serviceFor((int) $customer->organization_id)->createTimeVoucher($customer, $entries, $from, $to, $contactExternalId);
+        $result = (new LexofficeService((int) $customer->organization_id))->createTimeVoucher($customer, $entries, $from, $to, $contactExternalId);
 
         $voucherRef = ExternalReference::create([
             'organization_id' => $customer->organization_id,

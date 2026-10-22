@@ -11,6 +11,7 @@
 namespace App\Plugins\Clockify\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
+use App\Plugins\Clockify\Api\ClockifyClientFactory;
 use App\Plugins\Clockify\{ClockifyConfig, ClockifyPlugin};
 use App\Plugins\Clockify\Services\ClockifyExportService;
 use App\Plugins\Support\Console\ChecksPluginSwitch;
@@ -48,7 +49,7 @@ class ClockifyPushCommand extends Command {
             if (! $this->pluginEnabledFor(ClockifyPlugin::ID, (int) $org->id) || ! $config['export_enabled']) {
                 continue;
             }
-            if ($config['api_key'] === null) {
+            if (! app(ClockifyClientFactory::class)->isConfigured($org->id)) {
                 $this->warn("Organisation #{$org->id} ({$org->name}): kein Clockify-API-Key — übersprungen.");
 
                 continue;

@@ -73,7 +73,7 @@ final class LexofficeVoucherSyncJobTest extends TestCase {
         $mk('ext-open', 'open', null);         // kein Kandidat (unbezahlt)
         $mk('ext-done', 'paid', '2030-01-01'); // schon angereichert
 
-        $count = (new LexofficeVoucherSync('test-key'))->enrichPaidDates($this->organization->id);
+        $count = (new LexofficeVoucherSync($this->organization->id))->enrichPaidDates($this->organization->id);
 
         $this->assertSame(1, $count);
         $this->assertSame('2030-01-15', $paid->fresh()?->paid_date?->toDateString());

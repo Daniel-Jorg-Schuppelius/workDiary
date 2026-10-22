@@ -18,6 +18,7 @@ use App\Plugins\Lexoffice\Models\{LexofficePostingCategory, LexofficeVoucher, Le
 use App\Plugins\Lexoffice\Services\LexofficeVoucherCategorySync;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
+use Tests\Concerns\WithPluginSecrets;
 use Tests\Support\{FakePluginHttp, InteractsWithPlugins};
 use Tests\TestCase;
 
@@ -27,10 +28,12 @@ final class LexofficeVoucherCategorySyncTest extends TestCase {
     use RefreshDatabase;
     use WithGlobalDateRange;
     use WithOrganization;
+    use WithPluginSecrets;
 
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
+        $this->pluginSecret('lexoffice', ['api_key' => 'test-key']);
     }
 
     private function voucher(string $externalId, string $type, int $supplierId, string $status = 'paid'): LexofficeVoucher {
@@ -61,7 +64,7 @@ final class LexofficeVoucherCategorySyncTest extends TestCase {
             ]]),
         ]);
 
-        $sync = (new LexofficeVoucherCategorySync('key'))->withoutThrottle();
+        $sync = (new LexofficeVoucherCategorySync($this->organization->id));
         $this->assertSame(['synced' => 2, 'failed' => 0, 'remaining' => 0], $sync->syncMissing($this->organization));
         $this->assertSame(2, LexofficePostingCategory::query()->count());
         // PostingCategoriesEndpoint::list(): ein GET ohne Parameter, Gruppe und Art wie zuvor übernommen.
@@ -109,7 +112,7 @@ final class LexofficeVoucherCategorySyncTest extends TestCase {
             'https://api.lexware.io/v1/vouchers/pv-404' => FakePluginHttp::response(['message' => 'not found'], 404),
             'https://api.lexware.io/v1/vouchers/pv-401' => FakePluginHttp::response(['message' => 'unauthorized'], 401),
         ]);
-        $sync = (new LexofficeVoucherCategorySync('key'))->withoutThrottle();
+        $sync = (new LexofficeVoucherCategorySync($this->organization->id));
 
         $this->assertSame(0, $sync->syncVoucher($deleted));
         $this->assertNotNull($deleted->fresh()?->categories_synced_at);

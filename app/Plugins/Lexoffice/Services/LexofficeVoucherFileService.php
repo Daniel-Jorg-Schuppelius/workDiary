@@ -13,7 +13,7 @@ namespace App\Plugins\Lexoffice\Services;
 use APIToolkit\Entities\ID;
 use APIToolkit\Exceptions\ApiException;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
-use App\Plugins\Lexoffice\Exceptions\{LexofficeRateLimitException, LexofficeVoucherFileMissingException};
+use App\Plugins\Lexoffice\Exceptions\{LexofficeNotConfiguredException, LexofficeRateLimitException, LexofficeVoucherFileMissingException};
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use CommonToolkit\Helper\FileSystem\File;
 use Lexoffice\API\Client;
@@ -73,14 +73,13 @@ class LexofficeVoucherFileService {
 
     private ?Client $client = null;
 
+    /** @param  int|null  $organizationId  null = gebundene Organisation bzw. Einzelplatz-Konfiguration */
     public function __construct(
-        private readonly ?string $apiKey,
-        private readonly string $baseUrl = 'https://api.lexware.io/v1',
-        private readonly ?float $requestInterval = null,
+        private readonly ?int $organizationId,
     ) {}
 
     public function isConfigured(): bool {
-        return $this->apiKey !== null && $this->apiKey !== '';
+        return app(LexofficeClientFactory::class)->isConfigured($this->organizationId);
     }
 
     /**
@@ -102,7 +101,7 @@ class LexofficeVoucherFileService {
      */
     public function download(LexofficeVoucher $voucher): array {
         if (! $this->isConfigured()) {
-            throw new RuntimeException('Lexoffice API key is not configured (LEXOFFICE_API_KEY).');
+            throw new LexofficeNotConfiguredException();
         }
 
         $file = $this->fetchFile($voucher);
@@ -242,7 +241,7 @@ class LexofficeVoucherFileService {
 
     private function client(): Client {
         if ($this->client === null) {
-            $this->client = app(LexofficeClientFactory::class)->sdk((string) $this->apiKey, $this->baseUrl, $this->requestInterval);
+            $this->client = app(LexofficeClientFactory::class)->for($this->organizationId);
             // Der Antwort-Body geht unverändert an den Browser. Die SSRF-Schranke
             // prüft die Basis-URL; einer Weiterleitung folgt dieser Client nicht
             // (Sicherheitsscan 2026-08-23, S-10). Je Anfrage, weil der Transport
