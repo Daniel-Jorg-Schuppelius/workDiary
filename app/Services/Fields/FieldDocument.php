@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Fields;
 
 use App\Enums\Fields\FieldType;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Str;
 
 /**
@@ -120,7 +121,7 @@ final class FieldDocument {
                     continue;
                 }
                 $labels[] = $label;
-                if (filter_var($entry['done'] ?? $entry['checked'] ?? $entry['value'] ?? false, FILTER_VALIDATE_BOOL)) {
+                if (StringHelper::parseBool($entry['done'] ?? $entry['checked'] ?? $entry['value'] ?? false) ?? false) {
                     $done[] = $label;
                 }
 
@@ -128,7 +129,7 @@ final class FieldDocument {
             }
             if (is_string($key)) {
                 $labels[] = $key;
-                if (filter_var($entry, FILTER_VALIDATE_BOOL)) {
+                if (StringHelper::parseBool($entry) ?? false) {
                     $done[] = $key;
                 }
 

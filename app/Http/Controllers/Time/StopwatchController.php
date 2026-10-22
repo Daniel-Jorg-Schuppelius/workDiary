@@ -18,19 +18,12 @@ use App\Services\Timesheet\{Stopwatch, StopwatchAlreadyRunningException, Timeshe
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{Auth, Gate};
-use Illuminate\View\View;
 
 class StopwatchController extends Controller {
     public function __construct(
         protected Stopwatch $stopwatch,
         protected TimesheetResolver $resolver,
     ) {}
-
-    public function current(): View {
-        return view('stopwatch._panel', [
-            'current' => $this->stopwatch->current($this->authUser()),
-        ]);
-    }
 
     public function start(StartStopwatchRequest $request): RedirectResponse {
         $data = $request->validated();

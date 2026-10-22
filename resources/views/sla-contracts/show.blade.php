@@ -39,6 +39,11 @@
                     {{ $contract->is_active ? __('Aktiv') : __('Inaktiv') }}
                 </x-status-badge>
             </x-slot:badges>
+            @can(\App\Enums\User\Permission::SlaContractManage->value)
+                <x-slot:actions>
+                    <x-icon-btn placement="bar" icon="edit" size="sm" data-entry-modal-trigger :href="route('sla-contracts.edit', $contract)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
+                </x-slot:actions>
+            @endcan
         </x-page-toolbar>
     </x-slot:toolbar>
 

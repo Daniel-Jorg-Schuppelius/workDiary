@@ -136,6 +136,15 @@
                                         :href="route('expenses.edit', $expense)"
                                         :label="__('Bearbeiten')" />
                         @endcan
+                        @can('cancel', $expense)
+                            @cannot('delete', $expense)
+                                <x-action-form :action="route('expenses.cancel', $expense)"
+                                      :confirm="__('Spese wirklich stornieren?')"
+                                      :confirm-label="__('Stornieren')">
+                                    <x-icon-btn icon="block" tone="error" type="submit" :label="__('Stornieren')" />
+                                </x-action-form>
+                            @endcannot
+                        @endcan
                         @can('delete', $expense)
                             <x-action-form :action="route('expenses.destroy', $expense)" method="DELETE"
                                   :confirm="__('Spese wirklich löschen?')"

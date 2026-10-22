@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Diary;
 
+use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Diary\DiaryEntry;
 use App\Services\UI\DateRangeContext;
@@ -85,6 +86,10 @@ class DiaryExportController extends Controller {
             ->visibleInBulkTo($user)
             ->with(['user:id,name', 'tags:id,name'])
             ->orderByDesc('start_at');
+        // Eigene und zugewiesene Aufträge exportiert jeder, fremde nur mit diary.export.
+        if (! $user->can(Permission::DiaryExport->value)) {
+            $query->where(static fn (Builder $own) => $own->where('user_id', $user->id)->orWhere('assigned_user_id', $user->id));
+        }
 
         if ($request->filled('status') && $request->status !== 'all') {
             $query->where('status', (int) $request->status);

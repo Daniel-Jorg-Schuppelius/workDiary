@@ -41,6 +41,12 @@
                                 :href="route('safety-events.edit', $event)"
                                 show-label>{{ __('safety.action.edit') }}</x-icon-btn>
                 @endif
+                @can('delete', $event)
+                    <x-action-form :action="route('safety-events.destroy', $event)" method="DELETE" :confirm="__('safety.action.delete_confirm')"
+                                   confirm-icon="delete" confirm-tone="error" :confirm-label="__('safety.action.delete')">
+                        <x-icon-btn placement="danger" icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('safety.action.delete') }}</x-icon-btn>
+                    </x-action-form>
+                @endcan
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

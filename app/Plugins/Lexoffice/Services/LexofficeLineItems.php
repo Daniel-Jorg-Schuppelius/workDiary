@@ -25,9 +25,11 @@ use Illuminate\Database\Eloquent\Model;
 final class LexofficeLineItems {
     /**
      * @param  iterable<DocumentLine&Model>  $lines
+     * @param  bool  $discountInPrice  auch Prozentrabatte in den Einzelpreis: Gutschriften kennen laut
+     *                                 Lexware-Doku keinen Positionsrabatt, er fiele still weg
      * @return list<array<string, mixed>>
      */
-    public static function from(iterable $lines, bool $withOptional = false, ?Percentage $fallbackRate = null): array {
+    public static function from(iterable $lines, bool $withOptional = false, ?Percentage $fallbackRate = null, bool $discountInPrice = false): array {
         $items = [];
         foreach ($lines as $line) {
             $name = trim((string) $line->getAttribute('description')) ?: (string) __('Position');
@@ -38,7 +40,8 @@ final class LexofficeLineItems {
 
             $quantity = (float) $line->lineQuantity();
             $amountDiscount = $line->discountAmount();
-            $byAmount = $amountDiscount !== null && ! $amountDiscount->isZero() && $quantity !== 0.0;
+            $percentDiscount = (float) ($line->discountPercent()?->getNumericValue() ?? 0);
+            $byAmount = $quantity !== 0.0 && (($amountDiscount !== null && ! $amountDiscount->isZero()) || ($discountInPrice && $percentDiscount !== 0.0));
             $item = [
                 'type' => 'custom',
                 'name' => mb_substr($name, 0, 255),
@@ -49,7 +52,7 @@ final class LexofficeLineItems {
                     'netAmount' => round($byAmount ? $line->netAmount()->toFloat() / $quantity : ($line->unitPrice()?->toFloat() ?? 0.0), 4),
                     'taxRatePercentage' => (float) (($line->taxRate() ?? $fallbackRate)?->getNumericValue() ?? 0),
                 ],
-                'discountPercentage' => $byAmount ? 0.0 : (float) ($line->discountPercent()?->getNumericValue() ?? 0),
+                'discountPercentage' => $byAmount ? 0.0 : $percentDiscount,
             ];
             if (mb_strlen($name) > 255) {
                 $item['description'] = $name;

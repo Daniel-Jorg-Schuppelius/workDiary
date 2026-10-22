@@ -10,6 +10,88 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Löschen auf der Detailseite (Vollscan 2026-10-21, Entscheidung des
+  Inhabers): Kunden, Lieferanten, Fremdkunden, Abrechnungspläne,
+  Service-Tickets, Lieferantennachweise, Protokolle und VOB/B-Schreiben (beide
+  nur im Entwurf) sowie Sicherheitsereignisse, jeweils mit Bestätigung und nur
+  mit dem passenden Recht.
+- Oberflächen für Aktionen, die es bisher nur als Route gab (Vollscan
+  2026-10-21): Bearbeiten von Wartungsplänen, Protokollen, SLA-Verträgen,
+  Verleih-, Vertrags- und Leasingakten, offenen Punkten (auch Zuweisen),
+  Stundenzettel-Zeilen und -Material, Verfügbarkeiten und Abrechnungsregeln;
+  „Aktuellen Filter speichern“ und gespeicherte Filter in der Filterleiste,
+  der Standardfilter einer Liste greift beim Öffnen; Schichttausch beantragen;
+  Pause nachtragen; Ticket klassifizieren; genehmigte Spesen und Reisen
+  stornieren; Zusagen und Teilnehmerstatus bei Terminen; Kontakt ins
+  Buchhaltungsprogramm übertragen; Ideenkarten verknüpfen und das Eigentum
+  übertragen; Kursimport als Dialog; LV-Statuswechsel, Katalog-Zuordnung und
+  Import der Kostenermittlung; orgaMAX „Rechnung senden“ und „Zahlung buchen“;
+  Links zu den maschinenlesbaren Zertifikatsnachweisen.
+- Nach dem Einspielen oder Erstellen der Organisationslizenz öffnet die
+  Einrichtung „Was möchten Sie erledigen?“.
+- Austritt: Ideenkarten der Person lassen sich an eine andere Person
+  übertragen; die verwaltende Person sieht nur die Anzahl, nie Titel oder
+  Inhalt.
+- Rechnungsnachfragen: Antwortet ein Kunde auf eine Antwort aus der Notiz oder
+  verweist seine Mail auf eine frühere Nachfrage, ordnet sie sich derselben
+  Rechnung zu. Automatisch erfasste Nachfragen tragen die Anhänge der Mail.
+- Kundenkonten: Zeitänderungen rechnen die Monatskette selbst nach (im
+  Hintergrund, je Konto ein Lauf); nächtlicher Lauf
+  `customer-billing:recalculate-statements` als Sicherung.
+
+- Agile Projekte: Akzeptanzkriterien haben eine Oberfläche (Umsetzungslücken
+  2026-10-21). Jede Backlog-Zeile zeigt erfüllte und vorhandene Kriterien und
+  öffnet über das Listensymbol einen Dialog zum Anlegen, Abhaken und Entfernen;
+  bisher gab es dafür nur Routen.
+- Hinweisgebersystem: Fallexport, „Betroffene Person markieren“ und
+  Notfallfreigabe sind in der Fallansicht erreichbar; der Export verlangt ein
+  Passwort und liefert ein AES-256-verschlüsseltes ZIP. Neuer Befehl
+  `whistleblowing:apply-tombstones` wendet nach einem Restore die Löschungen
+  aus dem überlebenden Tombstone-Ledger erneut an
+  (`WHISTLEBLOWING_TOMBSTONE_LEDGER`, Pfad außerhalb des Restore-Baums).
+- Löschfristen: erledigte Fahrt- und Zeitvorschläge aus der Standortspur,
+  entschiedene Terminanfragen und Käuferdaten von Marktplatz-Bestellungen
+  (Etsy) gehen in den Löschfrist-Scan; neue VVT-Vorlage
+  „Sicherheitsüberwachung und Angriffserkennung“.
+- Rechnungsnachfragen aus E-Mails (Phase 148, MVP-1199–1203, Feature 166):
+  Eingehende Mails, die sich über Faden, Rechnungsnummer im Betreff oder Text
+  einer Rechnung zuordnen lassen, werden als Nachfrage an der Rechnung erfasst
+  (Historie, Absender, Zeitpunkt, Nachrichtenreferenz, mehrere je Rechnung,
+  keine Dubletten bei erneuter Verarbeitung); unklare Mails lassen sich in der
+  Integrations-Inbox einer Rechnung oder einem Auftrag zuordnen; Arbeitsliste
+  „Nachfragen“ mit offen/beantwortet.
+- Einfacher Einstieg mit Wachstumspaketen (Phase 147, MVP-1187–1197,
+  Feature 165): Paketkatalog, dauerhafte Umfangswahl, Einrichtungsdialog
+  „Was möchten Sie erledigen?“, kompakte Arbeitsbereiche und Startseiten,
+  Schnellerstellung, „Heute“ mit Kernblock, einklappbare Kernformulare,
+  optionaler Angebots- und Rechnungsweg, Erweiterung mit Vorschau,
+  Bestandswechsel und Rücknahme.
+- Tourvorschlag, Tagesplanung und Tour-Ist (Phase 146, MVP-1170–1186,
+  Feature 164): Stopp-Tabelle mit Plan- und Ist-Zeiten, Solver-Vertrag mit
+  Heuristik und VROOM, Tourvorschlag als Dialog, Mehrfahrer-Tagesvorschlag,
+  „Rest neu planen“, Zonen aus Adressen, Fahreransicht mit Stopp-Status,
+  Plan-Ist-Auswertung mit gelernter Servicedauer, Fahrtvorschläge aus der
+  Standortspur; Fahrtenbuch aus Straßenkilometern je Abschnitt.
+- Lieferanten „In Auswertungen ausblenden“ (Phase 140, MVP-1121), etwa für
+  Finanzamt und Krankenkasse.
+- Rechnungspostfach (Phase 138, MVP-1107–1112, Feature 163): ein Eingang je
+  Rechnung aus dem Postfach, Abgleich der Gegenpartei, Sammelkunde und
+  Sammellieferant, Arbeitsliste mit manueller Zuordnung, Übergabe an die
+  Buchhaltung nach der Zuordnung.
+- Hilfe ohne Lücken (Phase 135, MVP-1083–1089): Themen für
+  Organisationseinstellungen, Auswertungen, Integrationen und Einzelseiten,
+  ausgebautes Kundenportal, vollständige Übersetzungen und Gates gegen leere
+  Themen.
+- Hilfesuche findet Funktionen (Phase 134, MVP-1079–1082): Suchdienst mit
+  Suchbegriffen je Thema, Thema „Bedienoberfläche und Darstellung“ und
+  Sprung direkt zur Funktion.
+- Nextcloud als Upload-Kanal für Kundeneingänge (Phase 133, MVP-1078): Der
+  Kunde öffnet am eigenen Eingang einen File-Drop-Link; WorkDiary übernimmt
+  die Dateien alle 15 Minuten oder auf Knopfdruck als feste Kopie.
+- Kundeneingang mit Dateiupload (Phase 132, MVP-1074–1077, Feature 162):
+  Portalfreigabe „Anfragen“, Anfrage mit Dateien, Zuständigkeit, Rückfragen,
+  Angebot und Annahme; Vorlagen für Druckaufträge und IT-Anfragen.
+
 - Rechnungseingang: Belegvorlagen mit Anker, Vorlagenseite und Probelauf
   (Phase 155, MVP-1252–1254). Eine Zone kennt jetzt ihre Beschriftung als
   Anker („Gesamt EUR inkl. MwSt.“) und liest den Wert daneben, auf welcher
@@ -1624,7 +1706,112 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
   Auslagen-Scan und bei Quality-Hosting-Rechnungen entziffert; übernommen wird
   das Ergebnis nur, wenn die Summen aufgehen.
 
+### Changed
+
+- Der Genehmigungs-Eingang gehört zum Kernmodul „Freigaben“ statt zum
+  Lizenzmodul Service Desk: Adresse `/genehmigungen`, Menü „Tagesgeschäft →
+  Erfassung“, eigenes Hilfethema; die alte Adresse leitet weiter.
+- Kundenportal: Kontoauszug und Auswertung lesen nur noch und rechnen beim
+  Öffnen nicht mehr nach.
+- `.env.example` nennt alle Umgebungsvariablen der Plugins; das Gate prüft
+  auch die Plugin-Konfigurationen.
+- Rechnungseingang: Der Probelauf des Zonen-Editors liest Wortboxen aus einem
+  Cache je Dokument und ist auf sechs Läufe je Minute begrenzt.
+- Wiederverkauf: CSV- und Excel-Exporte schreiben das Export-Audit wie das PDF.
+- Unterschriften auf Stundenzetteln und Entsorgungsnachweisen halten die
+  Grenze `TIMESHEET_SIGNATURE_MAX_KB` ein.
+
+### Removed
+
+- Routen ohne Oberfläche und ohne Aufrufer: Tour optimieren (ersetzt durch
+  Vorschläge), das Stoppuhr-Fragment, die Listen-API des Schichtplans, die
+  Schicht-Detailseite (gleich dem Bearbeiten-Dialog), der xAPI-Endpunkt im
+  Lernbereich (xAPI-Inhalte laufen über cmi5) und der OCI-Warenkorb-Import
+  (Shops nutzen den signierten Rücksprung).
+- Stempelungen lassen sich nicht mehr direkt bearbeiten oder löschen; der Weg
+  führt über den Korrekturantrag mit Freigabe.
+- Sechs Rechte ohne Funktion: `organization.view`, `user.view`,
+  `user.rates.manage` (Stundensätze pflegt `user.payroll.manage`),
+  `timeEntry.create-for-others` (Nachträge laufen über Zeitkorrekturen),
+  `timesheet.export` und `shift.manage` (Schichten plant
+  `scheduled-shift.manage`). Der Seeder entfernt sie samt Zuordnungen, der
+  Rollen-Editor bietet sie nicht mehr an. Demo-Mandanten anlegen prüft jetzt
+  `platform.demo.create` (wie das Zurücksetzen `platform.demo.reset`).
+
 ### Fixed
+
+- **Rollenvergabe nach Namen** (Vollscan 2026-10-21): Mitglied anlegen und
+  ändern, CSV-Import, Mandanten-Registrierung, Installer, SSO-Erstanmeldung
+  und Recruiting lösten Rollen über Spatie `Role::findOrCreate()` auf, das neben
+  der Org-Rolle auch die globale `admin`-Zeile ohne Ordnung trifft; die Rolle
+  kommt jetzt immer aus der Organisation (`OrganizationRoles::named()`, Gate
+  `OrganizationRoleLookupRuleTest`). Dieselbe Unschärfe hatten die Filter nach
+  Rollennamen (Benachrichtigungen an Rollen, SLA-Eskalation,
+  Support-Kandidaten): Je nach Abfrageplan fehlten Admins, deren Rolle an der
+  jeweils anderen Zeile hing; `OrganizationRoles::matching()` nimmt beide.
+  `app:admin` ohne Organisation meldet das jetzt, statt an der Rollentabelle
+  zu scheitern.
+- **Stundenzettel entsperren** setzte immer „signiert“, auch bei Zetteln, die
+  ohne Unterschrift gesperrt worden waren; sie gehen jetzt zurück in den
+  Entwurf. Entsperren meldet dem Besitzer auch keine Unterschrift mehr.
+- **Kunden mit Belegen ließen sich löschen** (Vollscan 2026-10-21): Rechnungen,
+  Angebote, Auftragsbestätigungen, Übergaben, SEPA-Mandate,
+  Entsorgungsaufträge, Verleihakten und Kundenkonten hängen per
+  Fremdschlüssel-Kaskade am Kunden und verschwanden an den GoBD-Guards vorbei;
+  Lieferanten nahmen Bestellungen und Nachweise mit. Kunde und Lieferant
+  prüfen jetzt vor dem Löschen (auch über die API, 409), ein Gate ordnet jede
+  Kaskade ein.
+- Die Buchhaltung konnte Kunden nie löschen, weil das automatisch angelegte
+  Standardprojekt die Prüfung sperrte.
+- Unterschriebene Protokolle ließen sich von Admins löschen; nach dem Löschen
+  eines Entwurfs geht es zum Träger statt auf eine leere Seite.
+- LV: Katalog-Zuordnungen wurden nie gefunden (Klassenname in der Typspalte).
+- Service-Tickets: Klassifizieren mit übersteuerter Priorität brach ab.
+- Lernplattform: Der Kursimport lief ins 404 (Route verdeckt).
+- Gespeicherte Filtervorlagen ließen sich speichern, aber nie anwenden.
+- Installer: `install-system.sh` stürzte ab (Funktion rief sich selbst auf).
+- Mails: Inhalte in spitzen Klammern („Max <max@…>“, URLs) verschwanden in
+  Ticket-Faden und Ticket aus Mail; Faden-IDs ohne Klammern wurden nicht
+  erkannt.
+- Kundenportal: Die Lösungszeit rechnete SLA-Pausen mit.
+- Lexoffice: Gutschriften mit Positionsrabatt kamen ohne Rabatt an — Lexware
+  kennt bei Gutschriften keinen Positionsrabatt und verwirft das Feld. Der
+  Rabatt steckt jetzt im Einzelpreis, wie schon beim Betragsrabatt.
+- Lexoffice: Der Zahlungsabgleich übersprang Belege mit abgeschriebener
+  Forderung; ein fremdes Webhook-Abo eines dem SDK unbekannten Typs ließ das
+  Einrichten der Webhooks scheitern.
+
+- Belege: Rechnung stellen, Angebot senden, Auftragsbestätigung bestätigen und
+  Lieferschein ausliefern laufen unter einer Sperre und prüfen den Status
+  danach neu — ein Doppelklick zog vorher zwei Nummern und konnte im
+  Buchhaltungsprogramm zwei festgeschriebene Belege anlegen (Sicherheitsaudit
+  2026-10-21). Ebenso Zahlungsfreigabe/Ablehnung im Rechnungseingang,
+  Fahrtenbuch aus der Tour und Übernahme eines Tourvorschlags.
+- Rechnungseingang: Der Zonen-Editor schrieb Werte in schon übergebene oder
+  abgelehnte Eingänge und überschrieb von Hand erfasste Werte; der Lieferant
+  einer Vorlage wird jetzt über die normale Zuordnung gesetzt (Audit,
+  Übergabe sofort, neue Zuordnungsart „Belegvorlage“). „Zuordnung aufheben“
+  wartet auf eine laufende Übergabe.
+- Rechnungseingang: Vorlagen lasen „Total 1,234.56 USD“ als 4,56 — Heuristik
+  und Zonen lesen Beträge und Daten jetzt über denselben Baustein;
+  „31.02.2026“ ist kein Datum mehr, eine USt-IdNr. mit falscher Länge wird
+  nicht mehr übernommen.
+- Kundenportal: Die Auswertung zeigte als offenen Betrag den vollen Brutto,
+  auch nach Teilzahlungen; sie nimmt jetzt den offenen Betrag des
+  Mahnwesens. Ein Protokoll-PDF, das eine Mitarbeiterin in der Vorschau als
+  Kunde lädt, steht nicht mehr als Kundenabruf im Verlauf.
+- Chat: „Angeheftete Nachrichten“ scheiterte immer (falscher Pfad im Skript).
+- Service-Tickets: Eine wiederholte Versandaufgabe schickte die Antwort ein
+  zweites Mal.
+- PHP 8.5: `imagedestroy()` (veraltet) entfernt.
+- Befunde aus Phase 135 (Phase 136/137, MVP-1090–1106): Suchtreffer auf
+  Dialogseiten öffnen als Dialog, Teamsicht der Personal-Auswertungen über
+  Fachrechte, Soll/Ist einheitlich, Lohnfortzahlung nach § 3 EntgFG,
+  CalDAV-Referenztyp, Versand (Sendungsverfolgung, Storno, Label),
+  Kundenportal (Passwort vergessen, Zugang und zweiten Faktor zurücksetzen,
+  Rechnungs-PDF), Krankheit ohne Soll, planübergreifende Soll-Besetzung sowie
+  Restbefunde in Auswertungen, Buchhaltung, Organisationseinstellungen,
+  Plugins und Kundenportal.
 
 - Rechnungseingang: Eigene Adressen machten fremde Stammsätze „ähnlich“
   (Befund 2026-10-20, MVP-1250). Nennt eine E-Rechnung keine Verkäufer-E-Mail,
@@ -1919,6 +2106,33 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
   Alle `@php`-Vorkommen der View nutzen jetzt die Blockform.
 
 ### Security
+
+- Zeiterfassung: Die Monatssperre beim Buchen prüfte eine `user_id` aus der
+  Eingabe statt des Eigentümers — mit der ID eines Kollegen ließ sich in den
+  eigenen freigegebenen Monat buchen, und beim Bearbeiten fremder Einträge
+  galt die Sperre des Bearbeiters. Jetzt zählt beim Anlegen der Angemeldete,
+  beim Bearbeiten der Eigentümer.
+- Kunden: Den CSV-Export der Kundenliste konnte jedes Konto abrufen; er
+  verlangt jetzt `customer.export` wie der Kundenexport im Exportzentrum
+  (Standard: Admin, Geschäftsführung, Buchhaltung).
+- Plugins: SDK-Clients (Lexoffice, orgaMAX, DATEV Online, Übersetzungsdienste)
+  verbanden sich ohne Bindung an die geprüften Adressen und folgten
+  Weiterleitungen ungeprüft; sie nutzen jetzt dieselben Schranken wie die
+  übrigen Plugin-Abrufe.
+- Routing: Organisationen konnten private Netzziele für OSRM, VROOM und
+  Nominatim freischalten, obwohl die Instanz solche Opt-ins sperrt
+  (`plugins.allow_private_network_opt_in`); die Prüfung liegt jetzt an einer
+  Stelle (Konsolidierungs-Audit 2026-10-21).
+- **Sicherheitsaudit 2026-10-21** (Vollscan über die Phasen 132–155): kein
+  hoher Befund. Behoben: Belegfestschreibung ohne Sperre, Zonen-Editor an
+  übergebenen Eingängen, Mail-Anhänge am Speicherkontingent vorbei (die
+  Ablage aus Inhalten prüft jetzt das Kontingent), vorhersehbares
+  Arbeitsverzeichnis des root-Restore-Tests in `/var/tmp` (Zufallsendung,
+  atomares Anlegen, Aufräumen nur eigener Reste), Automationsregeln ohne
+  Audit-Spur, Hinweisgeber-Export unverschlüsselt und Meldeformular ohne
+  Honeypot. Neues Architektur-Gate `StatusCheckLockRuleTest`: Statusprüfung
+  mit anschließendem Schreiben braucht eine Sperre (Bestand als
+  Schrumpf-Baseline).
 
 - **Datenfluss-Sicherheitsaudit 2026-09-17: alle schweren und mittleren Befunde
   behoben.** Anlass waren zwei CodeQL-Warnungen; geprüft wurde in neun

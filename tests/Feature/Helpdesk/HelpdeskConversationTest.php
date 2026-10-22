@@ -309,4 +309,84 @@ final class HelpdeskConversationTest extends TestCase {
         $this->assertSame(1, ServiceTicketMessage::query()->where('service_ticket_id', $ticket->id)->where('message_id', '<neu-1@kunde>')->count());
         $this->assertNotSame(IntegrationInboxStatus::Open, $item->fresh()->status);
     }
+
+    /** Konsolidierungs-Audit 2026-10-21, ko-07: der Client zitiert die Message-ID ohne spitze Klammern. */
+    public function test_thread_id_without_angle_brackets_still_threads(): void {
+        [, $connection] = $this->queueWithMailbox();
+        $ticket = $this->ticket();
+        ServiceTicketMessage::query()->create([
+            'organization_id' => $this->org->id,
+            'service_ticket_id' => $ticket->id,
+            'kind' => TicketMessageKind::PublicReply->value,
+            'body' => 'Unsere Rückfrage',
+            'channel' => 'mail',
+            'message_id' => '<frage-7@workdiary>',
+        ]);
+
+        $inbound = new ParsedMessage(
+            messageId: '<antwort-7@kunde>',
+            uid: 17,
+            fromEmail: 'fremd@example.org',
+            fromName: 'Kunde',
+            subject: 'Re: Rückfrage',
+            body: 'Hier die Info.',
+            receivedAt: Carbon::now(),
+            references: ['frage-7@workdiary'],
+        );
+
+        $this->assertSame('ticket_message', app(MailIntakeService::class)->intake($this->org, $connection, $inbound));
+        $this->assertSame(2, ServiceTicketMessage::query()->where('service_ticket_id', $ticket->id)->count());
+    }
+
+    /** Toolkit-Audit 2026-10-21, tk-02: Mail-Text ist Klartext — Adressen in spitzen Klammern und „a < b“ bleiben stehen. */
+    public function test_angle_brackets_in_plain_text_survive_into_the_ticket(): void {
+        [, $connection] = $this->queueWithMailbox();
+        $inbound = new ParsedMessage(
+            messageId: '<klammer-1@kunde>',
+            uid: 13,
+            fromEmail: 'neu@acme.test',
+            fromName: 'Neukunde',
+            subject: 'Weiterleitung',
+            body: "Von: Max <max@example.de>\nSiehe <https://example.de/x>",
+            receivedAt: Carbon::now(),
+        );
+        app(MailIntakeService::class)->intake($this->org, $connection, $inbound);
+        $ticket = app(MailToServiceTicket::class)->bookAsServiceTicket(IntegrationInboxItem::query()->firstOrFail(), null, $this->agent);
+
+        $first = ServiceTicketMessage::query()->where('service_ticket_id', $ticket->id)->firstOrFail();
+        $this->assertStringContainsString('Max <max@example.de>', $first->body);
+        $this->assertStringContainsString('<https://example.de/x>', $first->body);
+
+        $reply = app(TicketConversationService::class)->inbound($ticket, 'Wert a < b und c > d', 'portal');
+        $this->assertSame('Wert a < b und c > d', $reply->body);
+    }
+
+    /** Sicherheitsaudit 2026-10-21, li-8: eine Wiederholung des Jobs schickt eine versendete Antwort nicht noch einmal. */
+    public function test_a_repeated_job_does_not_send_the_reply_twice(): void {
+        Mail::shouldReceive('raw')->once();
+        $ticket = $this->ticket();
+        $reply = app(TicketConversationService::class)->reply($ticket, $this->agent, 'Antwort', ['kunde@acme.test']);
+        $this->assertSame(TicketMessageDeliveryStatus::Sent, $reply->fresh()->delivery_status);
+
+        (new ServiceTicketReplyMailJob($reply->id))->handle();
+
+        $this->assertSame(TicketMessageDeliveryStatus::Sent, $reply->fresh()->delivery_status);
+    }
+
+    /** Scheitert der Versand, bleibt die Antwort wartend und darf wiederholt werden. */
+    public function test_a_failed_send_keeps_the_reply_queued(): void {
+        $ticket = $this->ticket();
+        Mail::fake();
+        $reply = app(TicketConversationService::class)->reply($ticket, $this->agent, 'Antwort', ['kunde@acme.test']);
+        $reply->refresh()->forceFill(['delivery_status' => TicketMessageDeliveryStatus::Queued])->save();
+        Mail::shouldReceive('raw')->once()->andThrow(new \RuntimeException('SMTP weg'));
+
+        try {
+            (new ServiceTicketReplyMailJob($reply->id))->handle();
+            $this->fail('Der Versandfehler muss den Job scheitern lassen.');
+        } catch (\RuntimeException $e) {
+            $this->assertSame('SMTP weg', $e->getMessage());
+        }
+        $this->assertSame(TicketMessageDeliveryStatus::Queued, $reply->fresh()->delivery_status);
+    }
 }

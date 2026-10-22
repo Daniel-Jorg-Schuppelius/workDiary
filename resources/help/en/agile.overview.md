@@ -1,7 +1,7 @@
 ---
 title: "Agile project management"
 topic: agile.overview
-version: 1
+version: 2
 keywords:
     - Kanban
     - Scrum
@@ -36,6 +36,11 @@ carries a type (such as story or bug), story points, acceptance criteria and,
 if needed, a blocked marker. The order is maintained by moving items up and
 down; filters by type, blockers and search term keep even large backlogs
 manageable.
+
+**Acceptance criteria:** The list icon in an item's row opens its criteria:
+add, tick off one by one, remove. The number next to it shows fulfilled and
+existing criteria; before a move into a done column, the board names
+unfulfilled criteria.
 
 **Board:** Columns represent the workflow; cards move from left to right.
 With a sprint selected, the board shows only the items of that sprint.

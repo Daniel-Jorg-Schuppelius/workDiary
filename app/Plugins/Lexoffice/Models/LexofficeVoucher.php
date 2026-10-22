@@ -14,6 +14,7 @@ use App\Casts\MoneyCast;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
 use App\Models\Supplier\Supplier;
+use App\Support\CarbonFmt;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -147,12 +148,7 @@ class LexofficeVoucher extends Model {
 
     /** Anzeige „dd.mm.yyyy – dd.mm.yyyy" bzw. nur der Beginn. */
     public function servicePeriodLabel(): ?string {
-        if ($this->service_starts_on === null) {
-            return null;
-        }
-        $label = $this->service_starts_on->format('d.m.Y');
-
-        return $this->service_ends_on === null ? $label : $label . ' – ' . $this->service_ends_on->format('d.m.Y');
+        return CarbonFmt::period($this->service_starts_on, $this->service_ends_on);
     }
 
     /**

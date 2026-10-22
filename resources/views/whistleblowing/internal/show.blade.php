@@ -182,6 +182,57 @@
                 </x-card>
             @endcan
 
+            {{-- Betroffene markieren, Notfallfreigabe und Export hatten keinen Einstieg (Vollscan 2026-10-21). --}}
+            @can('process', $case)
+                <x-card>
+                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Betroffene Person markieren') }}</h2>
+                    <p class="mt-1 text-sm text-base-content/70">{{ __('Die markierte Person wird für diesen Fall gesperrt; bestehende Zuweisungen enden.') }}</p>
+                    <x-action-form :action="route('whistleblowing.internal.subject', $case)" class="mt-2 space-y-2"
+                                   :confirm="__('Person als betroffen markieren? Sie verliert sofort jeden Zugriff auf diesen Fall.')"
+                                   confirm-icon="person_off" confirm-tone="warning"
+                                   :confirm-label="__('Markieren')">
+                        <x-form-group tone="ghost" cols="1">
+                            <x-input-field name="user_id" id="subject-user-id" type="number" :label="__('Benutzer-ID')" required />
+                            <x-textarea-field name="note" id="subject-note" rows="2" maxlength="2000" :label="__('Notiz (optional)')" />
+                        </x-form-group>
+                        <x-icon-btn icon="person_off" tone="warning" size="sm" type="submit" show-label>{{ __('Markieren') }}</x-icon-btn>
+                    </x-action-form>
+                </x-card>
+            @endcan
+
+            @can('grantEmergency', $case)
+                <x-card>
+                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Notfallfreigabe') }}</h2>
+                    <p class="mt-1 text-sm text-base-content/70">{{ __('Gibt einer nicht zugewiesenen Person für :minutes Minuten Zugriff auf diesen Fall. Freigeben darf nur eine andere Person; jede Freigabe wird protokolliert.', ['minutes' => (int) config('whistleblowing.emergency_ttl_minutes', 240)]) }}</p>
+                    <x-action-form :action="route('whistleblowing.internal.emergency', $case)" class="mt-2 space-y-2"
+                                   :confirm="__('Notfallfreigabe erteilen?')"
+                                   confirm-icon="emergency" confirm-tone="warning"
+                                   :confirm-label="__('Freigeben')">
+                        <x-form-group tone="ghost" cols="1">
+                            <x-input-field name="user_id" id="emergency-user-id" type="number" :label="__('Benutzer-ID')" required />
+                            <x-textarea-field name="reason" id="emergency-reason" rows="2" maxlength="2000" :label="__('Begründung')" required />
+                        </x-form-group>
+                        <x-icon-btn icon="emergency" tone="warning" size="sm" type="submit" show-label>{{ __('Freigeben') }}</x-icon-btn>
+                    </x-action-form>
+                </x-card>
+            @endcan
+
+            @can('export', $case)
+                <x-card>
+                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Fall exportieren') }}</h2>
+                    <p class="mt-1 text-sm text-base-content/70">{{ __('Das Paket ist mit AES-256 verschlüsselt. Geben Sie das Passwort getrennt vom Paket weiter; der Export wird im Fall protokolliert.') }}</p>
+                    <form method="post" action="{{ route('whistleblowing.internal.export', $case) }}" class="mt-2 space-y-2">
+                        @csrf
+                        <x-form-group tone="ghost" cols="1">
+                            <x-textarea-field name="reason" id="export-reason" rows="2" maxlength="2000" :label="__('Begründung')" required />
+                            <x-input-field name="password" id="export-password" type="password" autocomplete="new-password" minlength="12" :label="__('Passwort')" required />
+                            <x-input-field name="password_confirmation" id="export-password-confirmation" type="password" autocomplete="new-password" minlength="12" :label="__('Passwort wiederholen')" required />
+                        </x-form-group>
+                        <x-icon-btn icon="download" tone="ghost" size="sm" type="submit" show-label>{{ __('Exportieren') }}</x-icon-btn>
+                    </form>
+                </x-card>
+            @endcan
+
             {{-- Selbstsperre (Konzept 7.4): Die Zuweisung endet sofort; aufheben kann die Sperre niemand über die Oberfläche. --}}
             @can('declareConflict', $case)
                 <x-card>

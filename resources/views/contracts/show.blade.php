@@ -38,6 +38,9 @@
             @endcan
             <x-slot:actions>
                 @can('update', $contract)
+                    @if ($contract->status->isOpen() && $contract->kind !== \App\Enums\Contract\ContractKind::Employment)
+                        <x-icon-btn placement="bar" icon="edit" size="sm" data-entry-modal-trigger :href="route('contracts.edit', $contract)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
+                    @endif
                     @if ($contract->status === \App\Enums\Contract\ContractStatus::Draft && ! $activationBlocked)
                         <x-action-form :action="route('contracts.activate', $contract)">
                             <x-button type="submit" placement="bar">{{ __('Aktivieren') }}</x-button>

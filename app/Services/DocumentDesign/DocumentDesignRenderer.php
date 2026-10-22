@@ -365,6 +365,25 @@ class DocumentDesignRenderer {
     }
 
     /**
+     * Gestaltung eines Belegs: der beim Festschreiben eingefrorene Stand, sonst
+     * das aktive Profil der Organisation für den Kunden (Angebot,
+     * Auftragsbestätigung; Konsolidierungs-Audit 2026-10-21, ko-20).
+     *
+     * @return array<string, mixed>|null
+     */
+    public function payloadForDocument(Model $document, RenderDocumentKind $kind): ?array {
+        $snapshot = $this->payloadFromSnapshot($document, $kind);
+        if ($snapshot !== null) {
+            return $snapshot;
+        }
+        $organization = $document->getAttribute('organization');
+
+        return $organization instanceof Organization
+            ? $this->payloadFor($organization, $kind, (int) $document->getAttribute('customer_id'))
+            : null;
+    }
+
+    /**
      * Render-Payload für ein finalisiertes Dokument: eingefrorener Snapshot
      * (mit nachgeladenen Asset-Data-URIs) oder null, wenn keiner existiert.
      *

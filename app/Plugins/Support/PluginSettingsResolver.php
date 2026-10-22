@@ -14,6 +14,7 @@ namespace App\Plugins\Support;
 
 use App\Models\Platform\PluginSetting;
 use App\Plugins\Contracts\Plugin;
+use CommonToolkit\Helper\Data\StringHelper;
 
 /**
  * Gemeinsames Overlay der Plugin-Configs (Konsolidierung C10): lädt die
@@ -175,7 +176,7 @@ final class PluginSettingsResolver {
     public function bool(string $key, bool $default): bool {
         $value = $this->settings[$key] ?? null;
         if ($value !== null) {
-            return filter_var($value, FILTER_VALIDATE_BOOL);
+            return StringHelper::parseBool($value) ?? false;
         }
 
         return (bool) config($this->configPrefix . '.' . $key, $default);

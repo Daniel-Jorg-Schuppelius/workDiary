@@ -115,6 +115,7 @@
                         </td>
                         <td class="text-xs">{{ $window->note }}</td>
                         <td class="text-right">
+                            <x-button tone="ghost" size="xs" icon="edit" data-open-dialog="aw-edit-{{ $loop->index }}">{{ __('Bearbeiten') }}</x-button>
                             <form method="POST" action="{{ route('schedule.availability.windows.destroy', $window) }}" class="inline">
                                 @csrf @method('DELETE')
                                 <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('Löschen') }}</x-button>
@@ -125,6 +126,67 @@
                     <x-table.empty :colspan="5" :title="__('schedule.availability.no_windows')" />
                 @endforelse
             </x-table>
+
+            {{-- Bearbeiten je Fenster (lk-03): derselbe Request wie beim Anlegen. --}}
+            @foreach ($windows as $window)
+                <x-modal id="aw-edit-{{ $loop->index }}" :embedded="false" icon="event_available"
+                         :title="__('schedule.availability.edit_window')"
+                         :action="route('schedule.availability.windows.update', $window)" method="PUT"
+                         :submit-label="__('Speichern')">
+                    <div class="grid grid-cols-1 gap-2 md:grid-cols-2">
+                        <div class="fieldset">
+                            <label class="fieldset-label" for="aw-{{ $loop->index }}-weekday">{{ __('Wochentag') }}</label>
+                            <select id="aw-{{ $loop->index }}-weekday" name="weekday" class="select select-bordered select-sm w-full">
+                                <option value="">{{ __('—') }}</option>
+                                @foreach ($weekdays as $val => $label)
+                                    <option value="{{ $val }}" @selected($window->weekday !== null && (int) $window->weekday === $val)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="fieldset">
+                            <label class="fieldset-label" for="aw-{{ $loop->index }}-date">{{ __('oder Datum') }}</label>
+                            <input id="aw-{{ $loop->index }}-date" type="date" name="specific_date" value="{{ $window->specific_date?->toDateString() }}" class="input input-bordered input-sm w-full">
+                        </div>
+                        <div class="fieldset">
+                            <label class="fieldset-label" for="aw-{{ $loop->index }}-kind">{{ __('Art') }}</label>
+                            <select id="aw-{{ $loop->index }}-kind" name="kind" class="select select-bordered select-sm w-full">
+                                @foreach (AvailabilityKind::cases() as $kind)
+                                    <option value="{{ $kind->value }}" @selected($window->kind === $kind)>{{ $kind->label() }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="fieldset">
+                            <label class="fieldset-label" for="aw-{{ $loop->index }}-priority">{{ __('schedule.wish.priority_label') }}</label>
+                            <select id="aw-{{ $loop->index }}-priority" name="priority" class="select select-bordered select-sm w-full">
+                                <option value="">{{ __('schedule.wish.priority_none') }}</option>
+                                @foreach ([1, 2, 3] as $prio)
+                                    <option value="{{ $prio }}" @selected((int) $window->priority === $prio)>{{ __('schedule.wish.priority_' . $prio) }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="fieldset">
+                            <label class="fieldset-label" for="aw-{{ $loop->index }}-start">{{ __('Von') }}</label>
+                            <input id="aw-{{ $loop->index }}-start" type="time" name="start_time" value="{{ \Illuminate\Support\Str::of((string) $window->start_time)->substr(0, 5) }}" class="input input-bordered input-sm w-full">
+                        </div>
+                        <div class="fieldset">
+                            <label class="fieldset-label" for="aw-{{ $loop->index }}-end">{{ __('Bis') }}</label>
+                            <input id="aw-{{ $loop->index }}-end" type="time" name="end_time" value="{{ \Illuminate\Support\Str::of((string) $window->end_time)->substr(0, 5) }}" class="input input-bordered input-sm w-full">
+                        </div>
+                        <div class="fieldset">
+                            <label class="fieldset-label" for="aw-{{ $loop->index }}-from">{{ __('Gültig ab') }}</label>
+                            <input id="aw-{{ $loop->index }}-from" type="date" name="valid_from" value="{{ $window->valid_from?->toDateString() }}" class="input input-bordered input-sm w-full">
+                        </div>
+                        <div class="fieldset">
+                            <label class="fieldset-label" for="aw-{{ $loop->index }}-until">{{ __('Gültig bis') }}</label>
+                            <input id="aw-{{ $loop->index }}-until" type="date" name="valid_until" value="{{ $window->valid_until?->toDateString() }}" class="input input-bordered input-sm w-full">
+                        </div>
+                        <div class="fieldset md:col-span-2">
+                            <label class="fieldset-label" for="aw-{{ $loop->index }}-note">{{ __('Notiz') }}</label>
+                            <input id="aw-{{ $loop->index }}-note" type="text" name="note" value="{{ $window->note }}" maxlength="255" class="input input-bordered input-sm w-full">
+                        </div>
+                    </div>
+                </x-modal>
+            @endforeach
         </x-form-group>
 
         {{-- ── Wunschdienste ───────────────────────────────────────────── --}}
@@ -194,6 +256,7 @@
                         </td>
                         <td class="text-xs">{{ $wish->note }}</td>
                         <td class="text-right">
+                            <x-button tone="ghost" size="xs" icon="edit" data-open-dialog="ds-edit-{{ $loop->index }}">{{ __('Bearbeiten') }}</x-button>
                             <form method="POST" action="{{ route('schedule.availability.desired.destroy', $wish) }}" class="inline">
                                 @csrf @method('DELETE')
                                 <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('Löschen') }}</x-button>
@@ -204,6 +267,50 @@
                     <x-table.empty :colspan="5" :title="__('schedule.availability.no_desired')" />
                 @endforelse
             </x-table>
+
+            @foreach ($desired as $wish)
+                <x-modal id="ds-edit-{{ $loop->index }}" :embedded="false" icon="favorite"
+                         :title="__('schedule.availability.edit_desired')"
+                         :action="route('schedule.availability.desired.update', $wish)" method="PUT"
+                         :submit-label="__('Speichern')">
+                    <div class="grid grid-cols-1 gap-2 md:grid-cols-2">
+                        <div class="fieldset">
+                            <label class="fieldset-label" for="ds-{{ $loop->index }}-date">{{ __('Datum') }}</label>
+                            <input id="ds-{{ $loop->index }}-date" type="date" name="date" value="{{ $wish->date->toDateString() }}" class="input input-bordered input-sm w-full" required>
+                        </div>
+                        <div class="fieldset">
+                            <label class="fieldset-label" for="ds-{{ $loop->index }}-type">{{ __('Schichttyp') }}</label>
+                            <select id="ds-{{ $loop->index }}-type" name="shift_type_id" class="select select-bordered select-sm w-full">
+                                <option value="">{{ __('beliebig') }}</option>
+                                @foreach ($shiftTypes as $type)
+                                    <option value="{{ $type->sqid }}" @selected((int) $wish->shift_type_id === (int) $type->id)>{{ $type->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="fieldset">
+                            <label class="fieldset-label" for="ds-{{ $loop->index }}-pref">{{ __('Wunsch') }}</label>
+                            <select id="ds-{{ $loop->index }}-pref" name="preference" class="select select-bordered select-sm w-full">
+                                @foreach (ShiftPreference::cases() as $pref)
+                                    <option value="{{ $pref->value }}" @selected($wish->preference === $pref)>{{ $pref->label() }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="fieldset">
+                            <label class="fieldset-label" for="ds-{{ $loop->index }}-priority">{{ __('schedule.wish.priority_label') }}</label>
+                            <select id="ds-{{ $loop->index }}-priority" name="priority" class="select select-bordered select-sm w-full">
+                                <option value="">{{ __('schedule.wish.priority_none') }}</option>
+                                @foreach ([1, 2, 3] as $prio)
+                                    <option value="{{ $prio }}" @selected((int) $wish->priority === $prio)>{{ __('schedule.wish.priority_' . $prio) }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="fieldset md:col-span-2">
+                            <label class="fieldset-label" for="ds-{{ $loop->index }}-note">{{ __('Notiz') }}</label>
+                            <input id="ds-{{ $loop->index }}-note" type="text" name="note" value="{{ $wish->note }}" maxlength="255" class="input input-bordered input-sm w-full">
+                        </div>
+                    </div>
+                </x-modal>
+            @endforeach
         </x-form-group>
 
         <x-pagination :paginator="$desired" standing />

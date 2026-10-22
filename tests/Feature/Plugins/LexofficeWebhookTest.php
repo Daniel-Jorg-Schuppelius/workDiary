@@ -11,10 +11,13 @@
 namespace Tests\Feature\Plugins;
 
 use App\Models\Platform\PluginSetting;
+use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
 use App\Plugins\Lexoffice\Jobs\{SyncContactsJob, SyncVouchersJob};
 use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\Lexoffice\Services\LexofficeWebhookService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
+use Psr\Http\Message\RequestInterface;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
@@ -149,17 +152,98 @@ class LexofficeWebhookTest extends TestCase {
             'settings' => ['api_key' => 'lex-key'],
         ]);
 
-        FakePluginHttp::fake([
-            'https://api.lexware.io/v1/event-subscriptions' => FakePluginHttp::response(['content' => []], 200),
-        ]);
+        $fake = $this->fakeSubscriptions();
 
         $this->artisan('lexoffice:webhooks', ['--organization' => $this->organization->id])
             ->assertExitCode(0);
+        $this->assertCount(count(LexofficeWebhookService::EVENTS), array_filter($fake->recorded(), static fn (array $entry): bool => $entry['request']->getMethod() === 'POST'));
 
         $setting = PluginSetting::query()
             ->where('organization_id', $this->organization->id)
             ->where('plugin_id', LexofficePlugin::ID)
             ->firstOrFail();
         $this->assertNotSame('', (string) ($setting->settings['webhook_secret'] ?? ''));
+    }
+
+    /**
+     * Abo-Liste, Anlegen (201) und Löschen (204) wie die Lexware-API.
+     *
+     * @param  list<array<string, string>>  $content
+     */
+    private function fakeSubscriptions(array $content = []): FakePluginHttp {
+        return FakePluginHttp::fake([
+            'https://api.lexware.io/v1/event-subscriptions*' => static fn (RequestInterface $request) => match ($request->getMethod()) {
+                'POST' => FakePluginHttp::response(['id' => 'sub-new', 'resourceUri' => 'https://api.lexware.io/v1/event-subscriptions/sub-new', 'version' => 0], 201),
+                'DELETE' => FakePluginHttp::response(null, 204),
+                default => FakePluginHttp::response(['content' => $content]),
+            },
+        ]);
+    }
+
+    public function test_ensure_subscriptions_sends_event_type_and_callback_for_missing_events_only(): void {
+        $callback = 'https://workdiary.test/api/webhooks/lexoffice/7/token';
+        $fake = $this->fakeSubscriptions([
+            ['subscriptionId' => 'sub-1', 'eventType' => 'contact.created', 'callbackUrl' => $callback],
+            ['subscriptionId' => 'sub-9', 'eventType' => 'contact.changed', 'callbackUrl' => 'https://fremd.test/hook'],
+        ]);
+
+        $result = (new LexofficeWebhookService('lex-key'))->ensureSubscriptions($callback);
+
+        $this->assertSame(['created' => 4, 'existing' => 1], $result);
+        $posted = [];
+        foreach ($fake->recorded() as $entry) {
+            if ($entry['request']->getMethod() === 'POST') {
+                $this->assertSame('https://api.lexware.io/v1/event-subscriptions', (string) $entry['request']->getUri());
+                $posted[] = json_decode((string) $entry['request']->getBody(), true);
+            }
+        }
+        $this->assertSame([
+            ['eventType' => 'contact.changed', 'callbackUrl' => $callback],
+            ['eventType' => 'voucher.created', 'callbackUrl' => $callback],
+            ['eventType' => 'voucher.changed', 'callbackUrl' => $callback],
+            ['eventType' => 'payment.changed', 'callbackUrl' => $callback],
+        ], $posted);
+    }
+
+    public function test_remove_subscriptions_deletes_only_the_own_callback(): void {
+        $callback = 'https://workdiary.test/api/webhooks/lexoffice/7/token';
+        $fake = $this->fakeSubscriptions([
+            ['subscriptionId' => 'sub-1', 'eventType' => 'contact.created', 'callbackUrl' => $callback],
+            ['subscriptionId' => 'sub-2', 'eventType' => 'payment.changed', 'callbackUrl' => $callback],
+            ['subscriptionId' => 'sub-9', 'eventType' => 'contact.changed', 'callbackUrl' => 'https://fremd.test/hook'],
+        ]);
+
+        $this->assertSame(2, (new LexofficeWebhookService('lex-key'))->removeSubscriptions($callback));
+
+        $deleted = array_values(array_map(
+            static fn (array $entry): string => (string) $entry['request']->getUri(),
+            array_filter($fake->recorded(), static fn (array $entry): bool => $entry['request']->getMethod() === 'DELETE'),
+        ));
+        $this->assertSame(['https://api.lexware.io/v1/event-subscriptions/sub-1', 'https://api.lexware.io/v1/event-subscriptions/sub-2'], $deleted);
+    }
+
+    /** Ein fremdes Abo mit einer Ereignisart, die das SDK-Enum nicht kennt, darf die Liste nicht brechen. */
+    public function test_foreign_subscription_with_an_unknown_event_type_does_not_break_the_list(): void {
+        $callback = 'https://workdiary.test/api/webhooks/lexoffice/7/token';
+        $this->fakeSubscriptions([
+            ['subscriptionId' => 'sub-7', 'eventType' => 'delivery-note.status.changed', 'callbackUrl' => 'https://fremd.test/hook'],
+            ['subscriptionId' => 'sub-1', 'eventType' => 'contact.created', 'callbackUrl' => $callback],
+        ]);
+
+        $result = (new LexofficeWebhookService('lex-key'))->ensureSubscriptions($callback);
+
+        $this->assertSame(['created' => 4, 'existing' => 1], $result);
+    }
+
+    public function test_subscription_errors_keep_the_http_status(): void {
+        FakePluginHttp::fake(['https://api.lexware.io/v1/event-subscriptions' => FakePluginHttp::response(['message' => 'Unauthorized'], 401)]);
+
+        try {
+            (new LexofficeWebhookService('lex-key'))->subscriptions();
+            $this->fail('401 muss durchschlagen.');
+        } catch (LexofficeApiException $e) {
+            $this->assertSame('Lexoffice: Event-Subscriptions nicht abrufbar (HTTP 401).', $e->getMessage());
+            $this->assertSame(401, $e->getCode());
+        }
     }
 }

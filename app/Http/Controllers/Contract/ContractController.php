@@ -153,6 +153,44 @@ class ContractController extends Controller {
         ]));
     }
 
+    /** Laufenden Vertrag im Anlege-Dialog bearbeiten, vorbelegt mit seinem Stand (Vollscan 2026-10-21). */
+    public function edit(Contract $contract): View {
+        Gate::authorize('update', $contract);
+        abort_if($contract->kind === ContractKind::Employment || ! $contract->status->isOpen(), 409);
+
+        $contract->loadMissing(['customer', 'supplier', 'document', 'responsible', 'costCenter']);
+
+        return view('contracts._form_dialog', array_merge($this->formOptions(), [
+            'contract' => $contract,
+            'presetCustomer' => $contract->customer,
+            'preset' => [
+                'title' => $contract->title,
+                'kind' => $contract->kind->value,
+                'partner_type' => $contract->partner_type->value,
+                'partner_name' => $contract->partner_name,
+                'supplier_id' => $contract->supplier?->sqid,
+                'responsible_user_id' => $contract->responsible?->sqid,
+                'term_kind' => $contract->term_kind->value,
+                'notice_period_days' => $contract->notice_period_days,
+                'starts_on' => $contract->starts_on->toDateString(),
+                'ends_on' => $contract->ends_on?->toDateString(),
+                'min_term_months' => $contract->min_term_months,
+                'renew_period_months' => $contract->renew_period_months,
+                'auto_renew' => $contract->auto_renew,
+                'indexation_method' => $contract->indexation_method->value,
+                'indexation_value' => $contract->indexation_value,
+                'indexation_review_on' => $contract->indexation_review_on?->toDateString(),
+                'indexation_note' => $contract->indexation_note,
+                'value_amount' => $contract->value_amount,
+                'currency' => $contract->currency->value,
+                'value_period' => $contract->value_period,
+                'cost_center_id' => $contract->costCenter?->sqid,
+                'document_id' => $contract->document?->sqid,
+                'notes' => $contract->notes,
+            ],
+        ]));
+    }
+
     public function store(Request $request): RedirectResponse {
         Gate::authorize('create', Contract::class);
 

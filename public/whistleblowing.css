@@ -19,3 +19,4 @@ button { margin-top: 1.25rem; padding: .7rem 1.4rem; border: 0; border-radius: 6
 .wb-success { border-color: #16a34a; }
 .wb-credentials code { font-size: 1.1rem; background: #f1f5f9; padding: .25rem .5rem; border-radius: 4px; }
 .wb-footer { font-size: .8rem; color: #777; margin-top: 2rem; }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }

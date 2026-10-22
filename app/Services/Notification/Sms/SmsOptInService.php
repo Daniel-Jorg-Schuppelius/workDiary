@@ -16,7 +16,7 @@ use App\Enums\Notification\SmsDeliveryStatus;
 use App\Models\Platform\{Organization, User};
 use App\Plugins\Contracts\SmsProvider;
 use App\Support\PhoneSearchKey;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, StringHelper};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use RuntimeException;
@@ -52,7 +52,7 @@ class SmsOptInService {
         }
 
         $prefs = $this->bag($user);
-        if (! filter_var($prefs['sms_opt_in'] ?? false, FILTER_VALIDATE_BOOL)) {
+        if (! (StringHelper::parseBool($prefs['sms_opt_in'] ?? false) ?? false)) {
             return null;
         }
 
@@ -140,7 +140,7 @@ class SmsOptInService {
 
     /** Widerruf — jederzeit und ohne Bedingung (Art. 7 Abs. 3 DSGVO). */
     public function revoke(User $user): void {
-        if (! filter_var($this->bag($user)['sms_opt_in'] ?? false, FILTER_VALIDATE_BOOL)) {
+        if (! (StringHelper::parseBool($this->bag($user)['sms_opt_in'] ?? false) ?? false)) {
             return;
         }
 

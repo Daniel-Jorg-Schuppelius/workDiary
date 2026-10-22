@@ -1018,6 +1018,9 @@ return [
         'unlimited' => 'unbefristet',
         'issuer' => 'Ausstellende Organisation',
         'number' => 'Nummer',
+        'machine_readable' => 'Maschinenlesbarer Nachweis',
+        'credential_json' => 'Open Badges 3.0 (JSON-LD)',
+        'credential_jwt' => 'VC-JWT',
     ],
     'proof' => [
         'note' => 'Nachweis aus der Lernplattform: :course',

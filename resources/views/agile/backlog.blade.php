@@ -148,8 +148,13 @@
                         <td class="text-right tabular-nums">{{ $item->story_points ?? '—' }}</td>
                         <td class="text-sm text-muted">{{ $item->column?->name ?? __('Produkt-Backlog') }}</td>
                         <td class="text-right">
-                            @if ($canPrioritize)
-                                <div class="flex justify-end gap-1">
+                            <div class="flex justify-end gap-1">
+                                <span class="self-center text-xs tabular-nums text-muted" title="{{ __('Akzeptanzkriterien') }}">{{ $item->criteria_checked_count }}/{{ $item->acceptance_criteria_count }}</span>
+                                <x-icon-btn icon="checklist" tone="ghost" size="xs"
+                                            data-entry-modal-trigger
+                                            :href="route('agile.criteria.dialog', [$project, $item])"
+                                            :label="__('Akzeptanzkriterien')" />
+                                @if ($canPrioritize)
                                     <x-icon-btn icon="edit" tone="ghost" size="xs"
                                                 data-entry-modal-trigger
                                                 :href="route('agile.items.edit', [$project, $item])"
@@ -170,8 +175,8 @@
                                             <x-icon-btn icon="arrow_downward" tone="ghost" size="xs" type="submit" :label="__('Nach unten')" />
                                         </form>
                                     @endif
-                                </div>
-                            @endif
+                                @endif
+                            </div>
                         </td>
                     </tr>
                 @endforeach

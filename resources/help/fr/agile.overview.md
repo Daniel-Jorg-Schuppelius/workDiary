@@ -1,7 +1,7 @@
 ---
 title: "Gestion de projet agile"
 topic: agile.overview
-version: 1
+version: 2
 keywords:
     - Kanban
     - Scrum
@@ -38,6 +38,11 @@ bug), des story points, des critères d'acceptation et, si besoin, un
 marquage « bloqué ». L'ordre s'entretient par déplacement vers le haut ou le
 bas ; des filtres par type, blocages et terme de recherche gardent même les
 grands backlogs lisibles.
+
+**Critères d'acceptation :** L'icône de liste dans la ligne d'un élément ouvre
+ses critères : ajouter, cocher un à un, supprimer. Le nombre à côté indique les
+critères remplis et existants ; avant un déplacement vers une colonne
+« terminé », le tableau nomme les critères non remplis.
 
 **Tableau :** Les colonnes représentent le flux de travail ; les cartes se
 déplacent de gauche à droite. Avec un sprint sélectionné, le tableau

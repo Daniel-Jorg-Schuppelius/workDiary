@@ -1,7 +1,7 @@
 ---
 title: "Disposición y avisos de conflicto"
 topic: dispatch.overview
-version: 2
+version: 3
 keywords:
     - planificación de trabajos
     - asignar trabajo
@@ -48,3 +48,11 @@ En la orden puede reservarse un vehículo para una franja horaria. Si el
 vehículo ya está reservado en el periodo deseado, el sistema impide la
 doble reserva. Las reservas de cada vehículo pueden consultarse en la
 lista de reservas y anularse.
+
+## Propuesta del día
+
+En «Propuesta del día», la central reparte en una sola pasada todos los
+pedidos abiertos de un día entre los conductores. Se tienen en cuenta las
+ventanas de trabajo, las franjas horarias de los pedidos, las pausas y las
+cualificaciones; los conductores salen y vuelven a casa. La propuesta solo se
+convierte en rutas al adoptarla.

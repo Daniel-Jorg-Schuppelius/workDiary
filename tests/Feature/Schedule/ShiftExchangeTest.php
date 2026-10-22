@@ -42,6 +42,20 @@ class ShiftExchangeTest extends TestCase {
         ]);
     }
 
+    /** Vollscan 2026-10-21: der Antrag hat einen Dialog auf der Tauschseite; vergangene Schichten stehen nicht zur Wahl. */
+    public function test_request_dialog_lists_own_upcoming_shifts(): void {
+        $user = User::factory()->user()->create();
+        $upcoming = ScheduledShift::factory()->create(['organization_id' => $user->organization_id, 'user_id' => $user->id, 'date' => now()->addDays(3)->toDateString()]);
+        $past = ScheduledShift::factory()->create(['organization_id' => $user->organization_id, 'user_id' => $user->id, 'date' => now()->subDays(3)->toDateString()]);
+
+        $this->actingAs($user)->get(route('schedule.exchanges.index'))->assertOk()
+            ->assertSee(route('schedule.exchanges.create'), false);
+        $this->get(route('schedule.exchanges.create') . '?dialog=1')->assertOk()
+            ->assertSee('value="' . $upcoming->sqid . '"', false)
+            ->assertDontSee('value="' . $past->sqid . '"', false)
+            ->assertSee(route('schedule.exchanges.store'), false);
+    }
+
     public function test_employee_cannot_request_exchange_for_foreign_shift(): void {
         $owner = User::factory()->user()->create();
         $other = User::factory()->user()->create(['organization_id' => $owner->organization_id]);

@@ -224,6 +224,8 @@ class SchedulerRegistrationTest extends TestCase {
         // Retainer-Pauschalen an Lexoffice (jeweils am Monatsersten).
         'customer-billing:generate-invoices' => ['25 5 1 * *', true, true],
         'customer-billing:push-retainers' => ['35 5 1 * *', true, true],
+        // Neu mit dem Vollscan 2026-10-21 (lk-13): Kundenkonten nächtlich, das Portal rechnet nicht mehr.
+        'customer-billing:recalculate-statements' => ['40 2 * * *', true, true],
     ];
 
     /** @return array<string, array{expression: string, onOneServer: bool, withoutOverlapping: bool}> */

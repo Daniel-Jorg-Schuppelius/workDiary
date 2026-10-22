@@ -35,6 +35,16 @@
 @php
     $methodUpper = strtoupper($method);
     $isGet = $methodUpper === 'GET';
+    // Gespeicherte Filter je Liste (Bereich = Routenname); Standardfilter lädt ApplyDefaultFilterPreset.
+    $presetScope = $isGet ? request()->route()?->getName() : null;
+    $presetUser = auth()->user();
+    $presets = $presetScope !== null && $presetUser instanceof \App\Models\Platform\User
+        ? $presetUser->filterPresets()->where('scope', $presetScope)->get(['id', 'name', 'query', 'is_default'])
+        : collect();
+    $currentFilter = \Illuminate\Support\Arr::except(request()->query(), ['page', 'preset']);
+    $resetHref = $reset !== null && $presets->contains('is_default', true)
+        ? $reset . (str_contains($reset, '?') ? '&' : '?') . 'preset=none'
+        : $reset;
 @endphp
 
 <form
@@ -55,11 +65,35 @@
             @isset($extra)
                 {{ $extra }}
             @endisset
+            @if ($presetScope !== null && $presetUser !== null && ($presets->isNotEmpty() || $currentFilter !== []))
+                <details class="dropdown dropdown-end">
+                    <summary class="btn btn-sm btn-ghost gap-1" aria-label="{{ __('Gespeicherte Filter') }}">
+                        <x-icon name="bookmarks" /> <span class="hidden sm:inline">{{ __('Gespeicherte Filter') }}</span>
+                    </summary>
+                    <ul class="dropdown-content menu z-20 mt-1 w-64 rounded-box border border-base-300 bg-base-100 p-2 shadow">
+                        @foreach ($presets as $preset)
+                            <li>
+                                <a href="{{ url()->current() . '?' . http_build_query((array) $preset->query) }}">
+                                    @if ($preset->is_default)<x-icon name="star" class="text-warning" />@endif
+                                    {{ $preset->name }}
+                                </a>
+                            </li>
+                        @endforeach
+                        @if ($currentFilter !== [])
+                            <li>
+                                <a href="{{ route('filter-presets.create', ['scope' => $presetScope, 'query' => $currentFilter]) }}" data-entry-modal-trigger>
+                                    <x-icon name="bookmark_add" /> {{ __('Aktuellen Filter speichern') }}
+                                </a>
+                            </li>
+                        @endif
+                    </ul>
+                </details>
+            @endif
             <x-icon-btn icon="filter_alt" tone="primary" size="sm" type="submit"
                         show-label>{{ $submitLabel ?? __('Filtern') }}</x-icon-btn>
             @if ($reset)
                 <x-icon-btn icon="restart_alt" size="sm"
-                            :href="$reset"
+                            :href="$resetHref"
                             show-label>{{ __('Zurücksetzen') }}</x-icon-btn>
             @endif
         </div>

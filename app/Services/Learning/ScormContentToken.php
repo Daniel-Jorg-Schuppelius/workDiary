@@ -44,7 +44,7 @@ final class ScormContentToken {
             'x' => $now->getTimestamp() + max(60, (int) config('learning.scorm.token_ttl', 28800)),
         ]));
 
-        return $body . '.' . CryptoHelper::base64UrlEncode(hash_hmac('sha256', $body, self::key($package instanceof LearningCmi5Package ? self::KIND_CMI5 : self::KIND_SCORM), true));
+        return $body . '.' . CryptoHelper::base64UrlEncode(CryptoHelper::hmac($body, self::key($package instanceof LearningCmi5Package ? self::KIND_CMI5 : self::KIND_SCORM), binary: true));
     }
 
     /**
@@ -59,7 +59,7 @@ final class ScormContentToken {
 
         [$body, $mac] = $parts;
 
-        if (! hash_equals(CryptoHelper::base64UrlEncode(hash_hmac('sha256', $body, self::key($kind), true)), $mac)) {
+        if (! hash_equals(CryptoHelper::base64UrlEncode(CryptoHelper::hmac($body, self::key($kind), binary: true)), $mac)) {
             return null;
         }
 
@@ -90,6 +90,6 @@ final class ScormContentToken {
         }
 
         // Eigener Ableitungszweck: ein Token lässt sich nicht als anderes Signat verwenden.
-        return hash_hmac('sha256', $kind === self::KIND_CMI5 ? 'cmi5-content-token' : 'scorm-content-token', $appKey, true);
+        return CryptoHelper::hmac($kind === self::KIND_CMI5 ? 'cmi5-content-token' : 'scorm-content-token', $appKey, binary: true);
     }
 }

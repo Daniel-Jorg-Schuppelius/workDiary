@@ -10,6 +10,7 @@
 
 namespace App\Policies\Classification;
 
+use App\Enums\User\Permission;
 use App\Policies\Concerns\HasAdminBypass;
 use App\Policies\PermissionPolicy;
 
@@ -20,7 +21,7 @@ class TagPolicy extends PermissionPolicy {
         'viewAny' => true,
         'view' => true,
         'create' => true, // Tags darf jeder eingeloggte User ad-hoc anlegen
-        'update' => false, // Pflege/Löschen nur Admin (before-Hook)
-        'delete' => false,
+        'update' => Permission::TagManage,
+        'delete' => Permission::TagManage,
     ];
 }

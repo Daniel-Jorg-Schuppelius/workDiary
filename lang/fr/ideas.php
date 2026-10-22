@@ -109,6 +109,10 @@ return [
         'share_invalid' => 'Sélection de partage non valide (exactement une personne ou une équipe).',
     ],
 
+    'offboarding' => [
+        'maps' => '{1} Une carte d\'idées|[2,*] :count cartes d\'idées',
+    ],
+
     'share' => [
         'title' => 'Partages',
         'none' => 'Cette carte est privée — aucun partage.',
@@ -118,6 +122,9 @@ return [
         'add' => 'Partager',
         'revoke' => 'Retirer le partage',
         'hint' => 'Exactement une personne OU une équipe par partage. L\'appartenance à l\'équipe est vérifiée à l\'accès.',
+        'transfer' => 'Transférer la propriété',
+        'transfer_hint' => 'La personne choisie devient propriétaire de la carte. Votre propre partage reste inchangé.',
+        'transfer_confirm' => 'Transférer vraiment la propriété ?',
     ],
 
     'notification' => [
@@ -132,6 +139,16 @@ return [
     'context' => [
         'customer' => 'Client',
         'project' => 'Projet',
+    ],
+
+    'link' => [
+        'action' => 'Lier',
+        'title' => 'Lier le nœud à un enregistrement existant',
+        'target' => 'Cible',
+        'done' => 'Nœud lié.',
+        'customers' => 'Clients',
+        'projects' => 'Projets',
+        'orders' => 'Commandes (récentes)',
     ],
 
     'convert' => [

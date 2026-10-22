@@ -11,6 +11,7 @@
 namespace App\Models\Platform;
 
 use App\Models\Concerns\BelongsToOrganization;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -74,7 +75,7 @@ class PluginSetting extends Model {
             return null;
         }
 
-        return hash_hmac('sha256', $pluginId . '|' . $workspaceId, (string) config('app.key'));
+        return CryptoHelper::hmac($pluginId . '|' . $workspaceId, (string) config('app.key'));
     }
 
     /**

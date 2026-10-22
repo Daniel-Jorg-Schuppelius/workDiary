@@ -14,19 +14,7 @@
 @section('content')
     @php
         $stops = $tour->diaryEntries;
-        $markers = [];
-        if ($tour->start_lat && $tour->start_lng) {
-            $markers[] = ['lat' => (float) $tour->start_lat, 'lng' => (float) $tour->start_lng, 'label' => __('Start')];
-        }
-        foreach ($stops as $i => $s) {
-            $point = $s->planningCoordinates();
-            if ($point !== null) {
-                $markers[] = $point + ['label' => ($i + 1) . '. ' . $s->title];
-            }
-        }
-        if ($tour->end_lat && $tour->end_lng) {
-            $markers[] = ['lat' => (float) $tour->end_lat, 'lng' => (float) $tour->end_lng, 'label' => __('Ziel')];
-        }
+        $markers = $tour->mapMarkers();
         $center = $markers !== [] ? ['lat' => $markers[0]['lat'], 'lng' => $markers[0]['lng']] : null;
         $geometry = $tour->geometryArray();
     @endphp

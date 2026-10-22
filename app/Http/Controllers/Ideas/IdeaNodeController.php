@@ -275,10 +275,33 @@ class IdeaNodeController extends Controller {
     }
 
     /** Verweist den Knoten auf einen bestehenden Kunden/Projekt/Auftrag (kind = linked). */
-    public function link(Request $request, IdeaMap $map, IdeaNode $node, NodeConversionService $conversions): JsonResponse {
+    /** Dialog: Knoten mit vorhandenem Kunden, Projekt oder Auftrag verknüpfen (Vollscan 2026-10-21). */
+    public function linkForm(IdeaMap $map, IdeaNode $node): View {
         Gate::authorize('update', $map);
         $this->assertNodeOfMap($map, $node);
 
+        /** @var User $actor */
+        $actor = Auth::user();
+
+        return view('ideas._link_dialog', [
+            'map' => $map,
+            'node' => $node,
+            'customers' => \App\Models\Customer\Customer::query()->orderBy('name')->get(['id', 'name']),
+            'projects' => \App\Models\Project\Project::query()->orderBy('name')->get(['id', 'name']),
+            'orders' => \App\Models\Diary\DiaryEntry::query()->visibleInBulkTo($actor)->latest('id')->limit(200)->get(['id', 'title', 'start_at']),
+        ]);
+    }
+
+    public function link(Request $request, IdeaMap $map, IdeaNode $node, NodeConversionService $conversions): JsonResponse|RedirectResponse {
+        Gate::authorize('update', $map);
+        $this->assertNodeOfMap($map, $node);
+
+        // Der Editor sendet Typ und Sqid getrennt, der Dialog „typ:sqid“ in einem Feld.
+        $target = $request->input('target');
+        if (is_string($target) && str_contains($target, ':')) {
+            [$type, $id] = explode(':', $target, 2);
+            $request->merge(['type' => $type, 'id' => $id]);
+        }
         $data = $request->validate([
             'type' => ['required', Rule::in(array_keys(NodeConversionService::LINKABLE_MAP))],
             'id' => ['required', 'string'],
@@ -295,10 +318,14 @@ class IdeaNodeController extends Controller {
         try {
             $reference = $conversions->linkTo($node, $target, $actor);
         } catch (RuntimeException $e) {
-            return response()->json(['message' => ErrorText::for($e)], 422);
+            return $request->expectsJson()
+                ? response()->json(['message' => ErrorText::for($e)], 422)
+                : back()->with('error', ErrorText::for($e));
         }
 
-        return response()->json(['reference' => $this->serializeReference($reference)], 201);
+        return $request->expectsJson()
+            ? response()->json(['reference' => $this->serializeReference($reference)], 201)
+            : redirect()->route('ideas.show', $map)->with('success', __('ideas.link.done'));
     }
 
     /** @return array<string, mixed> */

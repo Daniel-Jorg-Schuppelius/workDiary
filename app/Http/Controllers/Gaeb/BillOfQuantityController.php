@@ -19,7 +19,7 @@ use App\Models\Gaeb\{BillOfQuantity, BoqItem};
 use App\Models\Material\Material;
 use App\Models\Project\Project;
 use App\Services\Gaeb\{BoqCostingService, BoqExportService, BoqImportConflictException, BoqProgressService, BoqWorkflowException, BoqWorkflowService, GaebImportService};
-use App\Support\{ErrorText, SqidEncoder};
+use App\Support\{ErrorText, MorphMap, SqidEncoder};
 use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\Helper\FileSystem\File;
 use ERechnungToolkit\Enums\GaebFormat;
@@ -101,23 +101,44 @@ class BillOfQuantityController extends Controller {
         return back()->with('success', __('gaeb.progress.flash.recorded'));
     }
 
+    /** Dialog zum Verknüpfen; Artikel und Material werden erst beim Öffnen geladen (Vollscan 2026-10-21). */
+    public function mappingForm(BoqItem $boqItem): View {
+        $this->canManage();
+        abort_unless($boqItem->organization_id === $this->currentOrganization()->id, 404);
+
+        return view('bill-of-quantities._mapping_dialog', [
+            'item' => $boqItem,
+            'articles' => Article::query()->orderBy('name')->get(['id', 'name', 'number']),
+            'materials' => Material::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'unit']),
+        ]);
+    }
+
     /** MVP-083: LV-Position mit Artikel/Material verknüpfen. */
     public function addMapping(Request $request, BoqItem $boqItem): RedirectResponse {
         $this->canManage();
         abort_unless($boqItem->organization_id === $this->currentOrganization()->id, 404);
 
         $validated = $request->validate([
-            'target_type' => ['required', 'in:article,material'],
+            'target_type' => ['nullable', 'in:article,material'],
             'target' => ['required', 'string'],
             'factor' => ['nullable', 'numeric'],
         ]);
 
-        $class = $validated['target_type'] === 'article' ? Article::class : Material::class;
-        $targetId = app(SqidEncoder::class)->decode($class, (string) $validated['target']);
+        // Der Dialog sendet „typ:sqid“ in einem Feld, die API Typ und Sqid getrennt.
+        $type = $validated['target_type'] ?? null;
+        $target = (string) $validated['target'];
+        if (str_contains($target, ':')) {
+            [$type, $target] = explode(':', $target, 2);
+        }
+        abort_unless(in_array($type, ['article', 'material'], true), 422);
+
+        $class = $type === 'article' ? Article::class : Material::class;
+        $targetId = app(SqidEncoder::class)->decode($class, $target);
         abort_unless($targetId !== null && $class::query()->whereKey($targetId)->exists(), 422);
 
         $boqItem->mappings()->updateOrCreate(
-            ['mappable_type' => $class, 'mappable_id' => $targetId],
+            // Typspalte trägt den Alias (Morph-Map); die Leser vergleichen damit (Vollscan 2026-10-21).
+            ['mappable_type' => MorphMap::alias($class), 'mappable_id' => $targetId],
             ['organization_id' => $boqItem->organization_id, 'factor' => (string) ($validated['factor'] ?? '1'), 'created_by' => Auth::user()?->id],
         );
 
@@ -593,6 +614,15 @@ class BillOfQuantityController extends Controller {
     }
 
     /** Fremde Kostenermittlung als Budget übernehmen (MVP-646). */
+    /** Dialog: fremde X51 als Kostenermittlung übernehmen (Vollscan 2026-10-21). */
+    public function costEstimateImportForm(): View {
+        $this->canImport();
+
+        return view('bill-of-quantities._cost_estimate_import_dialog', [
+            'projects' => Project::query()->orderBy('name')->limit(500)->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
+        ]);
+    }
+
     public function costEstimateImport(Request $request, \App\Services\Gaeb\CostEstimateService $estimates): RedirectResponse {
         $this->canImport();
 

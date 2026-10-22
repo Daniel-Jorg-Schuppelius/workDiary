@@ -37,7 +37,7 @@ class QuotePdfRenderer {
             'quotes.pdf',
             $this->viewData($quote),
             $quote->organization,
-            payload: $this->designPayload($quote),
+            payload: $this->design->payloadForDocument($quote, RenderDocumentKind::Quote),
         ));
     }
 
@@ -53,35 +53,11 @@ class QuotePdfRenderer {
         return [
             'quote' => $quote,
             'orgLegal' => app(BrandingService::class)->legalFor($quote->organization),
-            'design' => $this->design->context($this->designPayload($quote)),
+            'design' => $this->design->context($this->design->payloadForDocument($quote, RenderDocumentKind::Quote)),
             'taxRows' => $this->taxBreakdown($quote),
         ];
     }
 
-    /**
-     * Design-Payload: eingefrorener Snapshot (versendete/entschiedene
-     * Angebote) vor aktivem Profil vor Systemfallback (null).
-     *
-     * @return array<string, mixed>|null
-     */
-    private function designPayload(Quote $quote): ?array {
-        $snapshot = $this->design->payloadFromSnapshot($quote, RenderDocumentKind::Quote);
-        if ($snapshot !== null) {
-            return $snapshot;
-        }
-
-        return $quote->organization === null
-            ? null
-            : $this->design->payloadFor($quote->organization, RenderDocumentKind::Quote, (int) $quote->customer_id);
-    }
-
-    /**
-     * Steueraufriss je Satz über die ZÄHLENDEN Positionen (Spiegel von
-     * {@see Quote::recalculate()}: vor der Entscheidung Pflichtpositionen,
-     * danach nur Angenommenes; Positionen ohne Satz → TaxResolver-Fallback).
-     *
-     * @return array<int, array{rate: float, net: float, tax: float}>
-     */
     /**
      * Steueraufriss aus der einen Berechnungsstelle (Quote::taxBreakdownByRate,
      * B3) — Float nur für die View.
@@ -95,5 +71,4 @@ class QuotePdfRenderer {
             'tax' => $row['tax']->toFloat(),
         ], $quote->taxBreakdownByRate());
     }
-
 }

@@ -88,7 +88,13 @@ return [
     ],
     // Libellé lisible par cas d'usage enregistré (config/ai.php).
     'capability_label' => [
+        'learning' => [
+            'course_outline' => 'Plateforme de formation : esquisser le plan du cours',
+            'question_draft' => 'Plateforme de formation : rédiger des questions d’examen',
+            'tutor' => 'Plateforme de formation : tuteur',
+        ],
         'invoicing' => [
+            'document_extraction' => 'Factures entrantes : lire les champs de la pièce',
             'item_text' => 'Facture : texte du poste',
             'block_text' => 'Facture : texte récapitulatif',
             'item_translate' => 'Facture : traduire le poste',

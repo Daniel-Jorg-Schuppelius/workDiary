@@ -152,6 +152,9 @@ final class FileAttacher {
      * @param  array<string, mixed>  $extra
      */
     public function storeContent(Model $parent, string $content, string $originalName, ?string $mime, ?int $userId, array $extra = [], ?string $folder = null): Attachment {
+        // Wie store(): auch Inhalte aus Mails und Kopien zählen gegen das Speicherkontingent (Sicherheitsaudit 2026-10-21, pub-2).
+        $this->guardQuota($parent, strlen($content));
+
         // Wie store(): Endung aus dem am INHALT erkannten Typ, nie aus dem Namen —
         // eine Mail-Anlage „rechnung.pdf.php" landete sonst als .php in der Ablage.
         // Leerer Inhalt ist hier legitim; das Toolkit protokollierte ihn als Fehler.

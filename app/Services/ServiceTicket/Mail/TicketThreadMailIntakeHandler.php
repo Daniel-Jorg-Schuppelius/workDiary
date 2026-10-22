@@ -17,9 +17,8 @@ use App\Models\Mail\EmailConnection;
 use App\Models\Platform\{Organization, User};
 use App\Models\ServiceTicket\{ServiceQueue, ServiceTicket, ServiceTicketMessage};
 use App\Services\Mail\Contracts\MailIntakeHandler;
-use App\Services\Mail\{MailAttachmentStore, ParsedMessage};
+use App\Services\Mail\{KnownSenders, MailAttachmentStore, ParsedMessage};
 use App\Services\ServiceTicket\TicketConversationService;
-use CommonToolkit\Helper\Data\EmailHelper;
 
 /**
  * Ticket-Pipeline des Queue-Postfachs (Feature 065, P2): Antworten auf ein
@@ -74,7 +73,7 @@ final class TicketThreadMailIntakeHandler implements MailIntakeHandler {
      * Nur org-eigene Treffer — fremde Message-IDs (Spoofing) laufen ins Leere.
      */
     private function matchThreadedTicket(Organization $organization, ParsedMessage $message): ?ServiceTicket {
-        $referencedIds = array_values(array_filter([$message->inReplyTo, ...$message->references]));
+        $referencedIds = $message->referencedIds();
         if ($referencedIds !== []) {
             $known = ServiceTicketMessage::query()
                 ->withoutGlobalScopes()
@@ -114,29 +113,10 @@ final class TicketThreadMailIntakeHandler implements MailIntakeHandler {
      * sowie jede Adresse, die im Verlauf schon angeschrieben wurde.
      */
     private function senderBelongsToTicket(ServiceTicket $ticket, ParsedMessage $message): bool {
-        $sender = EmailHelper::normalize((string) $message->fromEmail);
-        if ($sender === '') {
-            return false;
-        }
-
-        $known = [];
-
         $customer = $ticket->customer_id !== null
             ? Customer::query()->withoutGlobalScopes()->whereKey($ticket->customer_id)->first()
             : null;
-        if ($customer !== null) {
-            $known[] = (string) $customer->email;
-            foreach ($customer->contact_persons ?? [] as $person) {
-                $known[] = (string) ($person['email'] ?? '');
-            }
-
-            foreach (User::query()->withoutGlobalScopes()
-                ->where('organization_id', $ticket->organization_id)
-                ->where('customer_id', $customer->getKey())
-                ->pluck('email') as $portalEmail) {
-                $known[] = (string) $portalEmail;
-            }
-        }
+        $known = $customer?->knownEmailAddresses() ?? [];
 
         if ($ticket->reported_by_user_id !== null) {
             $known[] = (string) User::query()->withoutGlobalScopes()
@@ -153,13 +133,6 @@ final class TicketThreadMailIntakeHandler implements MailIntakeHandler {
             }
         }
 
-        foreach ($known as $candidate) {
-            $candidate = EmailHelper::normalize($candidate);
-            if ($candidate !== '' && hash_equals($candidate, $sender)) {
-                return true;
-            }
-        }
-
-        return false;
+        return KnownSenders::contains($known, (string) $message->fromEmail);
     }
 }

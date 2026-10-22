@@ -18,10 +18,11 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
 trait ManagesShiftLike {
+    /** Verwalten und Zuweisen über das Recht des nutzenden Controllers (MANAGE_PERMISSION). */
     private function authorizeManage(): void {
         /** @var User $auth */
         $auth = Auth::user();
-        abort_unless($auth->canCreateEntriesForOthers(), 403);
+        abort_unless($auth->can(self::MANAGE_PERMISSION->value), 403);
     }
 
     /**
@@ -34,7 +35,7 @@ trait ManagesShiftLike {
         /** @var User $auth */
         $auth = Auth::user();
 
-        if ($auth->canCreateEntriesForOthers()) {
+        if ($auth->can(self::MANAGE_PERMISSION->value)) {
             return LookupCache::userDropdown();
         }
 

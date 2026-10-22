@@ -10,6 +10,7 @@
 
 namespace App\Policies\Platform;
 
+use App\Enums\User\Permission;
 use App\Models\Platform\{User, UserGroup};
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
@@ -39,6 +40,16 @@ class UserGroupPolicy {
     public function update(User $user, UserGroup $group): bool {
         return $this->sharesOrganization($user, $group)
             && $user->hasEffectivePermission('access.manage');
+    }
+
+    /** Mitglieder aufnehmen und entfernen (access.groups.assign). */
+    public function manageMembers(User $user, UserGroup $group): bool {
+        return $this->update($user, $group) && $user->can(Permission::AccessAssignGroups->value);
+    }
+
+    /** Rollen der Gruppe vergeben (access.roles.assign). */
+    public function assignRoles(User $user, UserGroup $group): bool {
+        return $this->update($user, $group) && $user->can(Permission::AccessAssignRoles->value);
     }
 
     public function delete(User $user, UserGroup $group): bool {

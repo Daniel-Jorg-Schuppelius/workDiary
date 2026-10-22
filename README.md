@@ -335,9 +335,12 @@ beide bereits in `composer dev` enthalten.
 
 #### Betrieb mit systemd
 
-Auf Systemen mit systemd werden zwei Dienste angelegt. In beiden Dateien muessen
-`/pfad/zum/workdiary` und gegebenenfalls `/usr/bin/php` angepasst werden
-(`command -v php` zeigt den PHP-Pfad).
+Auf Systemen mit systemd werden drei Dienste angelegt: WebSocket-Server,
+Queue-Worker und Medien-Worker. `scripts/install-system.sh` richtet Queue- und
+Medien-Worker samt Cron und Backup ein; die Dateien unten zeigen den Aufbau
+fuer eine Einrichtung von Hand. Darin muessen `/pfad/zum/workdiary` und
+gegebenenfalls `/usr/bin/php` angepasst werden (`command -v php` zeigt den
+PHP-Pfad).
 
 `/etc/systemd/system/workdiary-reverb.service`:
 
@@ -385,12 +388,38 @@ StandardError=journal
 WantedBy=multi-user.target
 ```
 
+`/etc/systemd/system/workdiary-media.service` — lange Jobs (Textindex der
+Dokumente, Transcoding, Google-Zeitachsen-Import) laufen auf der Verbindung
+`media` mit `retry_after` von zwei Stunden; der normale Worker wuerde sie nach
+630 Sekunden ein zweites Mal starten:
+
+```ini
+[Unit]
+Description=WorkDiary Medien-Worker
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/pfad/zum/workdiary
+ExecStart=/pfad/zum/workdiary/scripts/artisan.sh queue:work media --queue=media --tries=1 --timeout=3600 --sleep=5 --max-time=7200
+Restart=always
+RestartSec=5
+TimeoutStopSec=3660
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+```
+
 Dienste laden, beim Systemstart aktivieren und sofort starten:
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable --now workdiary-reverb workdiary-queue
-sudo systemctl status workdiary-reverb workdiary-queue
+sudo systemctl enable --now workdiary-reverb workdiary-queue workdiary-media
+sudo systemctl status workdiary-reverb workdiary-queue workdiary-media
 ```
 
 Logs lassen sich ueber das Journal verfolgen:
@@ -398,12 +427,13 @@ Logs lassen sich ueber das Journal verfolgen:
 ```bash
 sudo journalctl -u workdiary-reverb -f
 sudo journalctl -u workdiary-queue -f
+sudo journalctl -u workdiary-media -f
 ```
 
-Nach einem Deployment beide Prozesse neu starten:
+Nach einem Deployment alle drei Prozesse neu starten:
 
 ```bash
-sudo systemctl restart workdiary-reverb workdiary-queue
+sudo systemctl restart workdiary-reverb workdiary-queue workdiary-media
 ```
 
 Der konfigurierte Benutzer muss `.env` lesen und in `storage` sowie

@@ -74,6 +74,8 @@ return [
         'pdf' => 'PDF',
         'send' => 'Versenden',
         'acknowledge' => 'Zugang bestätigen',
+        'delete' => 'Entwurf löschen',
+        'delete_confirm' => 'Diesen Entwurf löschen?',
     ],
 
     'badge' => [

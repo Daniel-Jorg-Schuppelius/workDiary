@@ -303,4 +303,23 @@ class CustomerPortalPreviewTest extends TestCase {
             ->assertSee(route('customer.preview.stop'))
             ->assertSee('Erika Portal');
     }
+
+    /** Sicherheitsaudit 2026-10-21, authz-2: in der Vorschau lädt eine Mitarbeiterin — kein Kundenabruf im Protokoll-Verlauf. */
+    public function test_protocol_download_in_the_preview_is_not_journaled_as_customer_download(): void {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $asset = \App\Models\Asset\Asset::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $this->customer->id]);
+        $protocol = \App\Models\Protocol\Protocol::factory()->signed()->create([
+            'organization_id' => $this->organization->id,
+            'subject_type' => $asset->getMorphClass(),
+            'subject_id' => $asset->id,
+            'created_by_user_id' => $this->admin->id,
+            'title' => 'Prüfprotokoll',
+            'visibility' => \App\Enums\Protocol\ProtocolVisibility::Customer->value,
+        ]);
+
+        $this->start()->assertRedirect(route('customer.dashboard'));
+        $this->get(route('customer.assets.protocols.pdf', [$asset, $protocol]))->assertOk();
+
+        $this->assertFalse($protocol->journal()->where('event', \App\Enums\Protocol\ProtocolEventType::PortalPdfDownloaded)->exists());
+    }
 }

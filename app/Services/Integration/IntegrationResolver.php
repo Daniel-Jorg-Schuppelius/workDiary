@@ -303,7 +303,7 @@ class IntegrationResolver {
             'case_type' => $caseType,
             'referenceable_type' => $mainCandidate?->getMorphClass(),
             'referenceable_id' => $mainCandidate?->getKey(),
-            'candidate_ids' => $this->candidatePayload($candidates),
+            'candidate_ids' => $candidates === [] ? null : IntegrationInboxItem::candidatePayload($candidates),
             'remote_snapshot' => $rawRemote !== [] ? $rawRemote : $attributes,
             'mapped_snapshot' => $attributes,
             'local_snapshot' => $localSnapshot,
@@ -314,28 +314,6 @@ class IntegrationResolver {
         $item->save();
 
         return $item;
-    }
-
-    /**
-     * @param  list<array{model: Model, confidence: string, reasons: list<string>}>  $candidates
-     * @return list<array{id: int, sqid: string, label: string, confidence: string, reasons: list<string>}>|null
-     */
-    private function candidatePayload(array $candidates): ?array {
-        if ($candidates === []) {
-            return null;
-        }
-
-        return array_map(static function (array $c): array {
-            $model = $c['model'];
-
-            return [
-                'id' => (int) $model->getKey(),
-                'sqid' => $model->getRouteKey(),
-                'label' => (string) ($model->getAttribute('name') ?? ('#' . $model->getKey())),
-                'confidence' => $c['confidence'],
-                'reasons' => $c['reasons'],
-            ];
-        }, $candidates);
     }
 
     /**

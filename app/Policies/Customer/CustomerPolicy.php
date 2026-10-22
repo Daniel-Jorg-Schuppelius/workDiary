@@ -10,7 +10,7 @@
 
 namespace App\Policies\Customer;
 
-use App\Enums\User\UserRole;
+use App\Enums\User\{Permission, UserRole};
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
@@ -49,11 +49,12 @@ class CustomerPolicy {
      * (z. B. Lexoffice-Kontakte) am Kunden hängen. Sonst bitte archivieren.
      */
     public function delete(User $user, Customer $customer): bool {
-        if (! $user->canManageBilling()) {
+        if (! $this->sharesOrganization($user, $customer) || ! $user->can(Permission::CustomerDelete->value)) {
             return false;
         }
 
-        if ($customer->hasProjects()) {
+        // Das Standardprojekt legt der Observer immer an; der Controller löscht es mit.
+        if ($customer->hasNonDefaultProjects()) {
             return false;
         }
 

@@ -47,7 +47,7 @@ final class LexofficeVoucherCategorySyncTest extends TestCase {
         $credit = $this->voucher('pc-1', 'purchasecreditnote', $supplier->id);
         $this->voucher('pv-draft', 'purchaseinvoice', $supplier->id, 'draft');
 
-        FakePluginHttp::fake([
+        $fake = FakePluginHttp::fake([
             'https://api.lexware.io/v1/posting-categories' => FakePluginHttp::response([
                 ['id' => 'cat-office', 'name' => 'Bürobedarf', 'type' => 'outgo', 'groupName' => 'Büro'],
                 ['id' => 'cat-fuel', 'name' => 'Kraftstoff', 'type' => 'outgo', 'groupName' => 'Kfz'],
@@ -64,6 +64,9 @@ final class LexofficeVoucherCategorySyncTest extends TestCase {
         $sync = (new LexofficeVoucherCategorySync('key'))->withoutThrottle();
         $this->assertSame(['synced' => 2, 'failed' => 0, 'remaining' => 0], $sync->syncMissing($this->organization));
         $this->assertSame(2, LexofficePostingCategory::query()->count());
+        // PostingCategoriesEndpoint::list(): ein GET ohne Parameter, Gruppe und Art wie zuvor übernommen.
+        $fake->assertSent(fn (\Psr\Http\Message\RequestInterface $r): bool => $r->getMethod() === 'GET' && (string) $r->getUri() === 'https://api.lexware.io/v1/posting-categories');
+        $this->assertDatabaseHas('lexoffice_posting_categories', ['external_id' => 'cat-fuel', 'name' => 'Kraftstoff', 'kind' => 'outgo', 'group_name' => 'Kfz']);
         $this->assertSame(['100.00', '50.00'], LexofficeVoucherCategory::query()->where('voucher_id', $invoice->id)->orderBy('position')->get()->map(fn ($r) => $r->net_amount->getAmount())->all());
         $this->assertSame('20.00', LexofficeVoucherCategory::query()->where('voucher_id', $credit->id)->firstOrFail()->net_amount->getAmount());
         $this->assertNotNull($invoice->fresh()->categories_synced_at);

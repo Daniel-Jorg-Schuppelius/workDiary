@@ -267,4 +267,20 @@ class ChatTest extends TestCase {
 
         $this->assertDatabaseHas('chat_channels', ['id' => $channel->id, 'name' => 'Neu']);
     }
+
+    /** Konsolidierungs-Audit 2026-10-21, ko-01: das Skript fragt die angehefteten Nachrichten unter dem Pfad der Route ab. */
+    public function test_pinned_messages_are_loaded_from_the_route_the_script_calls(): void {
+        $user = $this->member();
+        $channel = Channel::create(['organization_id' => $user->organization_id, 'name' => 'P', 'slug' => 'p', 'type' => 'channel', 'visibility' => 'public', 'created_by' => $user->id]);
+        $channel->members()->attach($user->id, ['role' => 'owner']);
+        $msg = $channel->messages()->create(['user_id' => $user->id, 'body' => 'Angeheftet', 'type' => 'text']);
+        $this->actingAs($user)->postJson(route('chat.messages.pin', $msg))->assertOk();
+
+        $this->actingAs($user)->getJson('/chat/' . $channel->getRouteKey() . '/pinned')
+            ->assertOk()
+            ->assertJsonCount(1, 'messages');
+        $this->assertSame('/chat/' . $channel->getRouteKey() . '/pinned', parse_url(route('chat.messages.pinned', $channel), PHP_URL_PATH));
+        $script = (string) file_get_contents(resource_path('js/chat.js'));
+        $this->assertStringContainsString('getJson(`/chat/${channelId}/pinned`)', $script);
+    }
 }

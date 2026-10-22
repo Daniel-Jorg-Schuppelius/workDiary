@@ -27,7 +27,6 @@ use App\Support\ErrorText;
 use App\Support\Query\DateRange;
 use App\Support\{Setting, SortableQuery, Tz};
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -77,7 +76,7 @@ class TourController extends Controller {
             'from' => $from,
             'to' => $to,
             'targetUser' => $target,
-            'selectableUsers' => $auth->isAdmin() ? $this->loadSelectableUsers() : null,
+            'selectableUsers' => $this->managesTours($auth) ? $this->loadSelectableUsers() : null,
             'statuses' => TourStatus::options(),
             'selectedStatus' => $request->query('status'),
             'sort' => $sort,
@@ -108,8 +107,8 @@ class TourController extends Controller {
         $driver = User::query()
             ->where('organization_id', $auth->organization_id)
             ->findOrFail((int) $data['user_id']);
-        if (! $auth->isAdmin() && (int) $driver->id !== (int) $auth->id) {
-            throw new AccessDeniedHttpException('Nur Admins dürfen Touren für andere Nutzer anlegen.');
+        if (! $this->managesTours($auth) && (int) $driver->id !== (int) $auth->id) {
+            throw new AccessDeniedHttpException('Touren für andere Fahrer verlangen tour.manage.');
         }
 
         $tour = $this->tours->createDraft(
@@ -227,8 +226,8 @@ class TourController extends Controller {
         // Fahrerwechsel wie beim Anlegen: eigene Org, fremde Fahrer nur als Admin (Audit 2026-09-17, authz-tour-1).
         if (isset($data['user_id']) && (int) $data['user_id'] !== (int) $tour->user_id) {
             $driver = User::query()->where('organization_id', $auth->organization_id)->findOrFail((int) $data['user_id']);
-            if (! $auth->isAdmin() && (int) $driver->id !== (int) $auth->id) {
-                throw new AccessDeniedHttpException('Nur Admins dürfen Touren für andere Nutzer anlegen.');
+            if (! $this->managesTours($auth) && (int) $driver->id !== (int) $auth->id) {
+                throw new AccessDeniedHttpException('Touren für andere Fahrer verlangen tour.manage.');
             }
         }
         $tour->fill($data)->save();
@@ -258,18 +257,6 @@ class TourController extends Controller {
 
         return redirect()->toList('tours.index')
             ->with('success', __('Tour gelöscht.'));
-    }
-
-    public function optimize(Tour $tour): RedirectResponse {
-        Gate::authorize('update', $tour);
-
-        $result = $this->tours->recalculate($tour);
-
-        return redirect()->route('tours.edit', $tour)
-            ->with('success', __('Tour optimiert (:km km, :min min).', [
-                'km' => NumberHelper::toGermanFormat($result['distance_km'], 2, withThousandsSeparator: true),
-                'min' => $result['duration_minutes'],
-            ]));
     }
 
     public function start(Tour $tour): RedirectResponse {
@@ -474,7 +461,7 @@ class TourController extends Controller {
             'from' => $from,
             'to' => $to,
             'targetUser' => $target,
-            'selectableUsers' => $auth->isAdmin() ? $this->loadSelectableUsers() : null,
+            'selectableUsers' => $this->managesTours($auth) ? $this->loadSelectableUsers() : null,
             'statuses' => TourStatus::options(),
             'selectedStatus' => $request->query('status'),
             'markers' => $markers,
@@ -517,9 +504,15 @@ class TourController extends Controller {
         return $this->resolveRequestedUserOrAll(
             $request,
             $authUser,
-            'Nur Admins dürfen alle Touren einsehen.',
-            'Nur Admins dürfen fremde Touren einsehen.',
+            'Alle Touren verlangen tour.manage.',
+            'Fremde Touren verlangen tour.manage.',
+            $this->managesTours($authUser),
         );
+    }
+
+    /** Touren anderer Fahrer planen und einsehen (Disposition). */
+    private function managesTours(User $user): bool {
+        return $user->isAdmin() || $user->can(Permission::TourManage->value);
     }
 
     /** @return Collection<int, User> */

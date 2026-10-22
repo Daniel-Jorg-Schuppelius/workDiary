@@ -158,6 +158,25 @@ final class HelpdeskRoutingSlaTest extends TestCase {
         $contract = SlaContract::query()->where('code', 'GOLD')->firstOrFail();
         $this->assertSame(['waiting_customer'], $contract->pause_rules);
         $this->assertTrue($contract->is_default);
+
+        // Vollscan 2026-10-21: Bearbeiten über den Dialog der Detailseite, auch Deaktivieren.
+        $this->get(route('sla-contracts.show', $contract))->assertOk()
+            ->assertSee(route('sla-contracts.edit', $contract), false);
+        $this->get(route('sla-contracts.edit', $contract) . '?dialog=1')->assertOk()
+            ->assertSee('value="Gold-SLA"', false)
+            ->assertSee('value="waiting_customer" class="checkbox checkbox-sm" checked', false);
+        $this->patch(route('sla-contracts.update', $contract), [
+            'code' => 'GOLD',
+            'label' => 'Gold-SLA 2027',
+            'priority_table' => '{"normal": {"reaction_minutes": 30, "resolution_minutes": 240} }',
+            'is_active' => '0',
+            'is_default' => '0',
+            'is_ola' => '0',
+        ])->assertRedirect(route('sla-contracts.show', $contract));
+        $contract->refresh();
+        $this->assertSame('Gold-SLA 2027', $contract->label);
+        $this->assertFalse($contract->is_active);
+        $this->assertSame([], $contract->pause_rules);
     }
 
     private function routingRule(?Organization $org = null): TicketRoutingRule {

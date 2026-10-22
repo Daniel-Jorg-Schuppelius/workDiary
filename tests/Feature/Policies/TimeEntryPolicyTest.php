@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Policies;
 
+use App\Enums\User\Permission as P;
 use App\Models\Platform\{Organization, User};
 use App\Models\Time\TimeEntry;
 use App\Policies\Time\TimeEntryPolicy;
@@ -29,6 +30,9 @@ final class TimeEntryPolicyTest extends TestCase {
     use BuildsPolicyActors;
     use RefreshDatabase;
     use WithOrganization;
+
+    /** Eigene Zeiten verlangen seit lk-06 die timeEntry-Rechte. */
+    private const OWN_TIME = [P::TimeEntryViewOwn, P::TimeEntryCreate, P::TimeEntryUpdate, P::TimeEntryDelete];
 
     private TimeEntryPolicy $policy;
 
@@ -49,7 +53,7 @@ final class TimeEntryPolicyTest extends TestCase {
     }
 
     public function test_owner_views_and_edits_unlocked_entry(): void {
-        $owner = $this->actorIn($this->organization);
+        $owner = $this->actorIn($this->organization, self::OWN_TIME);
         $entry = $this->entry($owner);
 
         $this->assertTrue($this->policy->viewAny($owner));
@@ -60,7 +64,7 @@ final class TimeEntryPolicyTest extends TestCase {
     }
 
     public function test_exported_entries_are_hard_locked_even_for_owner(): void {
-        $owner = $this->actorIn($this->organization);
+        $owner = $this->actorIn($this->organization, self::OWN_TIME);
         $exported = $this->entry($owner, true);
 
         $this->assertFalse($this->policy->update($owner, $exported), 'Exportierte Einträge sind festgeschrieben.');

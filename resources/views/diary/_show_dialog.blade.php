@@ -7,8 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 @php
-    $statusToneMap = ['done' => 'success', 'progress' => 'info', 'open' => 'warning', 'alert' => 'error', 'neutral' => 'ghost'];
-    $diaryBadgeTone = $statusToneMap[$diary->statusTone()] ?? 'ghost';
+    $diaryBadgeTone = $diary->statusTone();
 @endphp
 <x-modal
     :title="$diary->title ?: __('Eintrag')"

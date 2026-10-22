@@ -292,6 +292,31 @@ final class AssetFinanceLifecycleTest extends TestCase {
         $this->assertNotNull($open->fresh()->exercised_at);
     }
 
+    /** Vollscan 2026-10-21: offene Akten lassen sich bearbeiten; Assets und Investitionsakte stehen nicht im Dialog. */
+    public function test_open_contract_can_be_edited_in_the_dialog(): void {
+        $contract = $this->createContract(['contract_no' => 'LV-77']);
+
+        $this->actingAs($this->admin)->get(route('asset-finance.show', $contract))->assertOk()
+            ->assertSee(route('asset-finance.edit', $contract), false);
+        $this->get(route('asset-finance.edit', $contract) . '?dialog=1')->assertOk()
+            ->assertSee(__('Leasingakte bearbeiten'))
+            ->assertSee('value="LV-77"', false)
+            ->assertSee('value="400.00"', false)
+            ->assertDontSee('asset_ids[]', false);
+
+        $this->put(route('asset-finance.update', $contract), [
+            'kind' => AssetFinanceKind::OperatingLease->value,
+            'partner_name' => 'Muster-Leasing GmbH',
+            'contract_no' => 'LV-78',
+            'starts_on' => $contract->starts_on->toDateString(),
+            'ends_on' => $contract->ends_on?->toDateString(),
+            'payment_rhythm' => 'monthly',
+            'rate_amount' => '410.00',
+        ])->assertRedirect();
+        $this->assertSame('LV-78', $contract->fresh()?->contract_no);
+        $this->assertSame('410.00', (string) $contract->fresh()?->rate_amount);
+    }
+
     public function test_finance_permission_gates_confidential_terms(): void {
         $contract = $this->createContract();
 

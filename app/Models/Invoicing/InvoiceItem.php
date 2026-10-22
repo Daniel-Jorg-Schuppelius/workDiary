@@ -257,13 +257,6 @@ class InvoiceItem extends Model implements DocumentLine {
      * nur der Beginn, ohne Zeitraum das Leistungsdatum, sonst null.
      */
     public function servicePeriodLabel(): ?string {
-        $from = $this->service_from ?? $this->service_date;
-        if ($from === null) {
-            return null;
-        }
-        $label = CarbonFmt::fdate($from);
-        $to = $this->service_from !== null ? $this->service_to : null;
-
-        return $to === null ? $label : $label . ' – ' . CarbonFmt::fdate($to);
+        return CarbonFmt::period($this->service_from ?? $this->service_date, $this->service_from !== null ? $this->service_to : null);
     }
 }

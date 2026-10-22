@@ -366,7 +366,7 @@ class ZammadTicketImporter {
                 'status' => IntegrationInboxStatus::Open,
                 'referenceable_type' => $best instanceof Model ? $best->getMorphClass() : null,
                 'referenceable_id' => $best instanceof Model ? $best->getKey() : null,
-                'candidate_ids' => $this->candidatePayload($candidates),
+                'candidate_ids' => IntegrationInboxItem::candidatePayload($candidates),
                 'remote_snapshot' => [
                     'ticket_id' => $ticket['id'],
                     'number' => (string) ($ticket['number'] ?? ''),
@@ -393,25 +393,5 @@ class ZammadTicketImporter {
             ->first();
 
         return $project?->id;
-    }
-
-    /**
-     * @param  list<array{model: Model, confidence: string, reasons: list<string>}>  $candidates
-     * @return list<array<string, mixed>>
-     */
-    private function candidatePayload(array $candidates): array {
-        $out = [];
-        foreach ($candidates as $candidate) {
-            $model = $candidate['model'];
-            $out[] = [
-                'id' => $model->getKey(),
-                'sqid' => $model->getRouteKey(),
-                'label' => (string) ($model->getAttribute('name') ?? $model->getAttribute('company') ?? ''),
-                'confidence' => $candidate['confidence'],
-                'reasons' => $candidate['reasons'],
-            ];
-        }
-
-        return $out;
     }
 }

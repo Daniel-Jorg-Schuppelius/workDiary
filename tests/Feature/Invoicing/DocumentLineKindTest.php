@@ -164,6 +164,21 @@ class DocumentLineKindTest extends TestCase {
         $this->assertSame(['text', 'custom', 'custom', 'text', 'text', 'custom'], array_column($payload['lineItems'], 'type'));
     }
 
+    /** Gutschriften kennen bei Lexware keinen Positionsrabatt (API-Doku): der Rabatt steckt im Einzelpreis. */
+    public function test_lexoffice_credit_note_carries_the_line_discount_in_the_unit_price(): void {
+        $invoice = $this->invoice([['description' => 'Wartung', 'discount_percent' => '10.00']]);
+        $mapper = app(LexofficeInvoiceMapper::class);
+
+        $line = $mapper->toPayload($invoice, null)['lineItems'][0];
+        $this->assertSame(100.0, $line['unitPrice']['netAmount']);
+        $this->assertSame(10.0, $line['discountPercentage']);
+
+        $invoice->forceFill(['type' => Invoice::TYPE_CREDIT_NOTE]);
+        $line = $mapper->toCreditNotePayload($invoice, null)['lineItems'][0];
+        $this->assertSame(90.0, $line['unitPrice']['netAmount']);
+        $this->assertSame(0.0, $line['discountPercentage']);
+    }
+
     public function test_title_can_be_added_without_quantity_and_price(): void {
         $invoice = $this->invoice([['description' => 'Leistung']]);
 

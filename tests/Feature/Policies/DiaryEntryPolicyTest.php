@@ -50,7 +50,7 @@ final class DiaryEntryPolicyTest extends TestCase {
     }
 
     public function test_owner_may_view_edit_and_work_own_entry(): void {
-        $owner = $this->actorIn($this->organization);
+        $owner = $this->actorIn($this->organization, [P::DiaryViewOwn]);
         $entry = $this->entry($owner);
 
         $this->assertTrue($this->policy->view($owner, $entry));
@@ -65,7 +65,7 @@ final class DiaryEntryPolicyTest extends TestCase {
 
     public function test_assignee_may_work_but_not_edit_foreign_entry(): void {
         $owner = $this->actorIn($this->organization);
-        $assignee = $this->actorIn($this->organization);
+        $assignee = $this->actorIn($this->organization, [P::DiaryViewOwn]);
         $entry = $this->entry($owner, $assignee);
 
         $this->assertTrue($this->policy->accept($assignee, $entry));
@@ -74,8 +74,8 @@ final class DiaryEntryPolicyTest extends TestCase {
         $this->assertTrue($this->policy->resume($assignee, $entry));
         $this->assertTrue($this->policy->complete($assignee, $entry));
         $this->assertTrue($this->policy->handover($assignee, $entry));
-        // Lesen darf der Zugewiesene (Entscheidung 2026-10-04) — sonst könnte er
-        // nicht öffnen, was er bearbeitet.
+        // Lesen darf der Zugewiesene mit diary.viewOwn (Entscheidung 2026-10-04,
+        // Recht seit lk-06) — sonst könnte er nicht öffnen, was er bearbeitet.
         $this->assertTrue($this->policy->view($assignee, $entry));
         // Bearbeiten/Löschen verlangt Eigentum oder diary.viewAny+diary.update/delete.
         $this->assertFalse($this->policy->update($assignee, $entry));

@@ -18,11 +18,13 @@ use App\Models\Communication\CommunicationNote;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\InvoiceInquiry;
 use App\Models\Platform\{Organization, User};
+use App\Services\Attachments\FileAttacher;
 use App\Services\Communication\CommunicationNoteService;
 use App\Services\Concerns\AssertsStatusTransition;
-use App\Services\Mail\ParsedMessage;
+use App\Services\Mail\{MailAttachmentStore, ParsedMessage};
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Einzige Schreibstelle für Rechnungsnachfragen (Feature 166, MVP-1200):
@@ -35,6 +37,8 @@ final class InvoiceInquiryService {
 
     public function __construct(
         private readonly CommunicationNoteService $notes,
+        private readonly MailAttachmentStore $attachments,
+        private readonly FileAttacher $files,
     ) {}
 
     public function exists(int $organizationId, string $messageId): bool {
@@ -75,6 +79,7 @@ final class InvoiceInquiryService {
                 'body' => $message->body,
                 'occurred_at' => $message->receivedAt->toIso8601String(),
             ]);
+            $this->attachMailFiles($note, $message, $actor);
         }
 
         try {
@@ -109,6 +114,24 @@ final class InvoiceInquiryService {
         ]);
 
         return $inquiry;
+    }
+
+    /**
+     * Anhänge der Mail an die automatisch erfasste Notiz (lk-20), mit denselben
+     * Grenzen wie der Mail-Eingang; eingebettete Bilder (Signatur-Logos) bleiben weg.
+     * Ist das Speicherkontingent erschöpft, bleibt die Nachfrage trotzdem erfasst.
+     */
+    private function attachMailFiles(CommunicationNote $note, ParsedMessage $message, User $actor): void {
+        foreach ($message->attachments as $attachment) {
+            if ($attachment->isInline || $this->attachments->rejectionReason($attachment) !== null) {
+                continue;
+            }
+            try {
+                $this->files->storeContent($note, $attachment->content, $attachment->filename, $attachment->mime !== '' ? $attachment->mime : null, (int) $actor->id, ['organization_id' => $note->organization_id]);
+            } catch (ValidationException) {
+                return;
+            }
+        }
     }
 
     public function answer(InvoiceInquiry $inquiry, User $actor): void {

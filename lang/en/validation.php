@@ -982,6 +982,8 @@ return [
         'depreciation_method' => 'Depreciation method',
         'deputy_replacements' => 'Deputies',
         'deputy_replacements.*' => 'New deputy',
+        'handovers' => 'Handovers',
+        'handovers.*' => 'Hand over to',
         'deputy_user_id' => 'Deputy',
         'description' => 'Description',
         'destination_address' => 'Destination',

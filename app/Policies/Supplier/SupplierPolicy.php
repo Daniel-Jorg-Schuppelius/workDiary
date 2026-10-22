@@ -10,7 +10,7 @@
 
 namespace App\Policies\Supplier;
 
-use App\Enums\User\UserRole;
+use App\Enums\User\Permission;
 use App\Models\Platform\User;
 use App\Models\Supplier\Supplier;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
@@ -28,7 +28,7 @@ class SupplierPolicy {
     }
 
     public function create(User $user): bool {
-        return $user->canManageBilling() || $user->hasRole(UserRole::User->value);
+        return $user->can(Permission::SupplierCreate->value);
     }
 
     public function update(User $user, Supplier $supplier): bool {
@@ -40,7 +40,7 @@ class SupplierPolicy {
      * Kontakte) am Lieferanten hängen. Sonst bitte archivieren.
      */
     public function delete(User $user, Supplier $supplier): bool {
-        if (! $user->canManageBilling()) {
+        if (! $this->sharesOrganization($user, $supplier) || ! $user->can(Permission::SupplierDelete->value)) {
             return false;
         }
 
@@ -53,5 +53,9 @@ class SupplierPolicy {
 
     public function restore(User $user, Supplier $supplier): bool {
         return $this->archive($user, $supplier);
+    }
+
+    public function export(User $user): bool {
+        return $user->can(Permission::SupplierExport->value);
     }
 }

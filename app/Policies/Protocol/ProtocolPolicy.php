@@ -26,14 +26,12 @@ class ProtocolPolicy {
     }
 
     public function view(User $user, Protocol $protocol): bool {
-        return $this->isParticipant($user, $protocol)
+        return ($this->isParticipant($user, $protocol) && $user->can(P::ProtocolView->value))
             || $user->can(P::ProtocolViewAny->value);
     }
 
     public function create(User $user): bool {
-        unset($user);
-
-        return true;
+        return $user->can(P::ProtocolCreate->value);
     }
 
     public function update(User $user, Protocol $protocol): bool {
@@ -52,6 +50,14 @@ class ProtocolPolicy {
 
         return $this->isParticipant($user, $protocol)
             || $user->can(P::ProtocolDelete->value);
+    }
+
+    public function addPhoto(User $user, Protocol $protocol): bool {
+        return $this->update($user, $protocol) && $user->can(P::ProtocolItemPhotoAdd->value);
+    }
+
+    public function removePhoto(User $user, Protocol $protocol): bool {
+        return $this->update($user, $protocol) && $user->can(P::ProtocolItemPhotoRemove->value);
     }
 
     public function requestReview(User $user, Protocol $protocol): bool {

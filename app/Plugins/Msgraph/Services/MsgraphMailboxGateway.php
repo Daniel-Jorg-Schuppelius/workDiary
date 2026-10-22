@@ -167,7 +167,7 @@ class MsgraphMailboxGateway implements MailboxGateway {
             if ($headerName === 'in-reply-to') {
                 $inReplyTo = $value;
             } elseif ($headerName === 'references') {
-                $references = array_values(array_filter(preg_split('/\s+/', $value) ?: []));
+                $references = StringHelper::words($value);
             } elseif ($headerName === 'auto-submitted' && $value !== '' && strcasecmp($value, 'no') !== 0) {
                 $autoSubmitted = true;
             } elseif ($headerName === 'x-auto-response-suppress' && $value !== '') {

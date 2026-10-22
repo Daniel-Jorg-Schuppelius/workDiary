@@ -128,7 +128,7 @@ class TicketConversationService {
             'author_type' => $author instanceof \Illuminate\Database\Eloquent\Model ? $author->getMorphClass() : null,
             'author_id' => $author instanceof \Illuminate\Database\Eloquent\Model ? $author->getKey() : null,
             'subject' => $subject,
-            'body' => trim(strip_tags($body)),
+            'body' => trim($body),
             'channel' => $channel,
             'message_id' => $messageId,
             'in_reply_to' => $inReplyTo,

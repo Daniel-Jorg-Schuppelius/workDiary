@@ -403,4 +403,39 @@ final class IncomingInvoiceTemplateTest extends TestCase {
 
         return $incoming;
     }
+
+    /** Sicherheitsaudit 2026-10-21, li-2/li-3: Übergebenes, Abgelehntes und von Hand Erfasstes bleibt; der Lieferant kommt über den Matcher. */
+    public function test_templates_respect_handed_over_rejected_and_manual_documents_and_assign_through_the_matcher(): void {
+        \Illuminate\Support\Facades\Event::fake([\App\Events\Invoicing\IncomingInvoiceAssigned::class]);
+        $supplier = Supplier::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Rechenzentrum Christoph Ludwigs', 'vat_id' => 'DE123456789']);
+        $template = $this->template([
+            ['field' => 'amount_gross', 'page' => 1, 'x' => 0.79, 'y' => 0.696, 'w' => 0.08, 'h' => 0.028, 'anchor' => 'Zu zahlen:', 'anchor_box' => ['x' => 0.60, 'y' => 0.70, 'w' => 0.17, 'h' => 0.02], 'scope' => 'any'],
+        ], 'RZL', $supplier->id);
+        $recognizer = app(TemplateRecognizer::class);
+
+        $transferred = $this->incoming(['amount_gross' => '99.00', 'transferred_at' => now()]);
+        $this->assertSame([], $recognizer->applyToIncoming($transferred, $template, $this->admin));
+        $this->assertSame(99.0, $transferred->refresh()->amount_gross?->toFloat());
+        $this->assertNull($transferred->supplier_id);
+
+        $rejected = $this->incoming(['amount_gross' => '99.00', 'status' => IncomingEInvoiceStatus::Rejected]);
+        $this->assertSame([], $recognizer->applyToIncoming($rejected, $template, $this->admin));
+        $this->assertSame(99.0, $rejected->refresh()->amount_gross?->toFloat());
+
+        $manual = $this->incoming(['amount_gross' => '99.00', 'summary' => ['manual' => ['by' => $this->admin->id]]]);
+        $this->assertSame(['supplier'], $recognizer->applyToIncoming($manual, $template, $this->admin));
+        $manual->refresh();
+        $this->assertSame(99.0, $manual->amount_gross?->toFloat(), 'Von Hand erfasste Werte überschreibt keine Vorlage.');
+        $this->assertSame($supplier->id, $manual->supplier_id);
+        $this->assertSame(\App\Enums\Invoicing\IncomingInvoiceMatchKind::Template, $manual->match_kind);
+        $this->assertNotNull($manual->matched_at);
+        $this->assertTrue($manual->auditLogs()->where('event', 'incoming_einvoice.assigned')->exists());
+        \Illuminate\Support\Facades\Event::assertDispatched(\App\Events\Invoicing\IncomingInvoiceAssigned::class);
+
+        // Der Editor speichert die Vorlage, lässt aber den übergebenen Eingang unverändert und sagt es.
+        $zones = json_encode([['field' => 'amount_gross', 'page' => 1, 'x' => 0.79, 'y' => 0.696, 'w' => 0.08, 'h' => 0.028]]);
+        $this->actingAs($this->admin)->post(route('finance.incoming-invoices.template.store', $transferred->document), ['name' => 'RZL 2', 'zones' => $zones])
+            ->assertSessionHas('success', static fn (string $m): bool => str_contains($m, __('Der Eingang ist bereits übergeben oder abgelehnt — seine Werte bleiben unverändert.')));
+        $this->assertSame(99.0, $transferred->refresh()->amount_gross?->toFloat());
+    }
 }

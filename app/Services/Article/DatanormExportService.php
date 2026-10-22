@@ -512,7 +512,7 @@ class DatanormExportService {
         foreach (preg_split('/\r\n|\r|\n/', $text) ?: [] as $paragraph) {
             // Zeichen statt Bytes: wordwrap brach Umlaute nach 20 Zeichen um.
             $wrapped = StringHelper::wrap($paragraph, 40, "\n", true);
-            foreach (explode("\n", $wrapped) as $line) {
+            foreach (StringHelper::lines($wrapped) as $line) {
                 $lines[] = $line;
             }
         }

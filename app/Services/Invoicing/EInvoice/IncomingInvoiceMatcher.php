@@ -25,6 +25,8 @@ use App\Services\Stammdaten\CollectiveContacts;
 use App\Support\Crypto\BlindIndex;
 use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\BankHelper;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 use RuntimeException;
 
@@ -179,6 +181,19 @@ class IncomingInvoiceMatcher {
      * der nächste Lauf die Übergabe an die falsche Partei (E2).
      */
     public function unassign(IncomingEInvoice $incoming, ?User $actor): void {
+        // Unter der Übergabesperre: eine laufende Übergabe verliert nicht mittendrin ihre Partei und ihr Journal
+        // (Sicherheitsaudit 2026-10-21, li-4).
+        try {
+            Cache::lock(IncomingInvoiceTransferService::LOCK_PREFIX . $incoming->id, 300)->block(5, function () use ($incoming, $actor): void {
+                $incoming->refresh();
+                $this->unassignLocked($incoming, $actor);
+            });
+        } catch (LockTimeoutException) {
+            throw new RuntimeException((string) __('Die Übergabe dieses Eingangs läuft gerade — bitte gleich noch einmal versuchen.'));
+        }
+    }
+
+    private function unassignLocked(IncomingEInvoice $incoming, ?User $actor): void {
         if ($incoming->transferred_at !== null) {
             throw new RuntimeException((string) __('Der Eingang ist bereits an die Buchhaltung übergeben — die Zuordnung ist dort zu ändern.'));
         }

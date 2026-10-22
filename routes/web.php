@@ -431,6 +431,7 @@ Route::middleware('auth')->group(function () {
 
     // Filter-Presets (Folge-Iteration zu Phase H).
     Route::get('account/filter-presets', [\App\Http\Controllers\Platform\UserFilterPresetController::class, 'index'])->name('filter-presets.index');
+    Route::get('account/filter-presets/create', [\App\Http\Controllers\Platform\UserFilterPresetController::class, 'create'])->name('filter-presets.create');
     Route::post('account/filter-presets', [\App\Http\Controllers\Platform\UserFilterPresetController::class, 'store'])->name('filter-presets.store');
     Route::get('account/filter-presets/{preset}/edit', [\App\Http\Controllers\Platform\UserFilterPresetController::class, 'edit'])->name('filter-presets.edit');
     Route::put('account/filter-presets/{preset}', [\App\Http\Controllers\Platform\UserFilterPresetController::class, 'update'])->name('filter-presets.update');
@@ -1256,6 +1257,7 @@ Route::middleware('auth')->group(function () {
             Route::post('backlog', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'store'])->name('items.store');
             Route::post('backlog/uebernehmen', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'adopt'])->name('items.adopt');
             Route::get('backlog/{item}/bearbeiten', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'editItem'])->name('items.edit');
+            Route::get('backlog/{item}/kriterien', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'criteriaDialog'])->name('criteria.dialog');
             Route::patch('backlog/{item}/rang', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'rerank'])->name('items.rerank');
             Route::patch('backlog/{item}', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'updateItem'])->name('items.update');
             // Epic-Zuordnung über task.parent_task_id (Vollaudit 2026-07, M25).
@@ -1799,7 +1801,6 @@ Route::middleware('auth')->group(function () {
         Route::delete('pricing-margin-rules/{pricingMarginRule}', [\App\Http\Controllers\Article\PricingMarginRuleController::class, 'destroy'])->name('pricing-margin-rules.destroy');
 
         // ── OCI-/IDS-Warenkorb-Hook (Feature 050, MVP-096) ─ Gate oci-carts.* → module.lager
-        Route::post('oci-carts/import', [\App\Http\Controllers\B2bCatalog\OciCartController::class, 'import'])->name('oci-carts.import');
         // Meldungen des sitzungslosen Shop-Rücksprungs (routes/punchout.php) abholen.
         Route::get('oci-carts/result/{key}', [\App\Http\Controllers\B2bCatalog\OciCartController::class, 'result'])
             ->where('key', '[A-Za-z0-9]{40}')->name('oci-carts.result');
@@ -1830,6 +1831,7 @@ Route::middleware('auth')->group(function () {
         Route::match(['get', 'post'], 'bill-of-quantities/{billOfQuantity}/zuordnung/ausgabe', [\App\Http\Controllers\Gaeb\BillOfQuantityController::class, 'catalogEdition'])->name('bill-of-quantities.catalog-edition');
         // Kostenermittlung (Feature 109, MVP-646): X51 rein als Budget, raus
         // als Kostenanschlag bzw. Kostenfeststellung.
+        Route::get('bill-of-quantities/kostenermittlung/import', [\App\Http\Controllers\Gaeb\BillOfQuantityController::class, 'costEstimateImportForm'])->name('bill-of-quantities.cost-estimate.import-form');
         Route::post('bill-of-quantities/kostenermittlung', [\App\Http\Controllers\Gaeb\BillOfQuantityController::class, 'costEstimateImport'])->name('bill-of-quantities.cost-estimate.import');
         Route::get('bill-of-quantities/{billOfQuantity}/kostenermittlung', [\App\Http\Controllers\Gaeb\BillOfQuantityController::class, 'costEstimateExport'])->name('bill-of-quantities.cost-estimate.export');
         // Baukostenkataloge (Feature 109, MVP-645): Kennwerte als
@@ -1858,6 +1860,7 @@ Route::middleware('auth')->group(function () {
         Route::post('bill-of-quantities/{billOfQuantity}/addenda', [\App\Http\Controllers\Gaeb\BillOfQuantityController::class, 'addAddendum'])->name('bill-of-quantities.addenda.add');
         // MVP-083/084: Positionen — Aufmaß, Verknüpfung, Status
         Route::post('bill-of-quantities/items/{boqItem}/progress', [\App\Http\Controllers\Gaeb\BillOfQuantityController::class, 'recordProgress'])->name('bill-of-quantities.items.progress');
+        Route::get('bill-of-quantities/items/{boqItem}/mappings/neu', [\App\Http\Controllers\Gaeb\BillOfQuantityController::class, 'mappingForm'])->name('bill-of-quantities.items.mappings.create');
         Route::post('bill-of-quantities/items/{boqItem}/mappings', [\App\Http\Controllers\Gaeb\BillOfQuantityController::class, 'addMapping'])->name('bill-of-quantities.items.mappings.add');
         Route::post('bill-of-quantities/items/{boqItem}/transition', [\App\Http\Controllers\Gaeb\BillOfQuantityController::class, 'transitionItem'])->name('bill-of-quantities.items.transition');
         // MVP-931: Zeitvertragsarbeiten (Rahmen-LV, Abrufe).
@@ -2558,6 +2561,7 @@ Route::middleware('auth')->group(function () {
             Route::get('anfragen', [\App\Http\Controllers\Rental\RentalRequestController::class, 'index'])->name('requests.index');
             Route::post('anfragen/{rentalRequest}/annehmen', [\App\Http\Controllers\Rental\RentalRequestController::class, 'accept'])->name('requests.accept');
             Route::post('anfragen/{rentalRequest}/ablehnen', [\App\Http\Controllers\Rental\RentalRequestController::class, 'decline'])->name('requests.decline');
+            Route::get('{rental}/bearbeiten', [\App\Http\Controllers\Rental\RentalCaseController::class, 'edit'])->name('edit');
             Route::get('{rental}', [\App\Http\Controllers\Rental\RentalCaseController::class, 'show'])->name('show');
             Route::put('{rental}', [\App\Http\Controllers\Rental\RentalCaseController::class, 'update'])->name('update');
             Route::post('{rental}/reservieren', [\App\Http\Controllers\Rental\RentalCaseController::class, 'reserve'])->name('reserve');
@@ -2613,6 +2617,7 @@ Route::middleware('auth')->group(function () {
             Route::get('fristen', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'deadlines'])->name('deadlines.index');
             Route::get('bericht', [\App\Http\Controllers\AssetFinance\AssetFinanceReportController::class, 'index'])->name('reports.index');
             Route::post('bericht/snapshot', [\App\Http\Controllers\AssetFinance\AssetFinanceReportController::class, 'snapshot'])->name('reports.snapshot');
+            Route::get('{contract}/bearbeiten', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'edit'])->name('edit');
             Route::get('{contract}', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'show'])->name('show');
             Route::put('{contract}', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'update'])->name('update');
             Route::post('{contract}/aktivieren', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'activate'])->name('activate');
@@ -2655,6 +2660,7 @@ Route::middleware('auth')->group(function () {
             Route::put('{contract}/indexierung', [\App\Http\Controllers\Contract\ContractIndexationController::class, 'update'])->name('indexation.update');
             Route::post('{contract}/indexierung/pruefen', [\App\Http\Controllers\Contract\ContractIndexationController::class, 'propose'])->name('indexation.propose');
             Route::post('/', [\App\Http\Controllers\Contract\ContractController::class, 'store'])->name('store');
+            Route::get('{contract}/bearbeiten', [\App\Http\Controllers\Contract\ContractController::class, 'edit'])->name('edit');
             Route::get('{contract}', [\App\Http\Controllers\Contract\ContractController::class, 'show'])->name('show');
             Route::put('{contract}', [\App\Http\Controllers\Contract\ContractController::class, 'update'])->name('update');
             Route::post('{contract}/aktivieren', [\App\Http\Controllers\Contract\ContractController::class, 'activate'])->name('activate');
@@ -3214,7 +3220,7 @@ Route::middleware('auth')->group(function () {
             Route::put('vorlagen/{template}', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'update'])->name('templates.update');
             Route::get('vorlagen/{template}/zusammenfuehren', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'mergeForm'])->name('templates.merge.form');
             Route::post('vorlagen/{template}/zusammenfuehren', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'merge'])->name('templates.merge');
-            Route::post('vorlagen/{template}/probelauf', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'trialFromList'])->name('templates.trial');
+            Route::post('vorlagen/{template}/probelauf', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'trialFromList'])->name('templates.trial')->middleware('throttle:recognition-trial');
             Route::delete('vorlagen/{template}', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'destroy'])->name('templates.destroy');
             Route::get('{incoming}/zuordnen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'assignForm'])->name('assign.form');
             Route::post('{incoming}/zuordnen', [\App\Http\Controllers\Finance\IncomingInvoiceAssignmentController::class, 'assign'])->name('assign');
@@ -3233,7 +3239,7 @@ Route::middleware('auth')->group(function () {
             Route::get('{document}/vorlage', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'edit'])->name('template.edit');
             Route::get('{document}/vorlage/seite/{page}', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'page'])->whereNumber('page')->name('template.page');
             Route::post('{document}/vorlage/vorschau', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'preview'])->name('template.preview');
-            Route::post('{document}/vorlage/probelauf', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'trial'])->name('template.trial');
+            Route::post('{document}/vorlage/probelauf', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'trial'])->name('template.trial')->middleware('throttle:recognition-trial');
             Route::post('{document}/vorlage', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'store'])->name('template.store');
             Route::get('{document}/xml', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'xml'])->name('xml');
             Route::get('{document}', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'show'])->name('show');
@@ -3467,7 +3473,7 @@ Route::middleware('auth')->group(function () {
         // Zeitaufteilung (Feature 103, MVP-514): Anteile eines Zeiteintrags auf Dimensionen.
         Route::get('time-entries/{timeEntry}/allocations', [\App\Http\Controllers\Time\TimeAllocationController::class, 'edit'])->name('time-entries.allocations.edit');
         Route::put('time-entries/{timeEntry}/allocations', [\App\Http\Controllers\Time\TimeAllocationController::class, 'update'])->name('time-entries.allocations.update');
-        Route::resource('projects.billing-rules', ProjectBillingRuleController::class)->except(['index', 'show', 'edit']);
+        Route::resource('projects.billing-rules', ProjectBillingRuleController::class)->except(['index', 'show']);
         Route::patch('projects/{project}/billing-settings', [ProjectBillingRuleController::class, 'updateSettings'])->name('projects.billing-settings.update');
         // Projektstufe der Satzhierarchie (MVP-482) — eigene Route, damit das
         // Taktungsformular die Sätze nicht mit leeren Werten überschreibt.
@@ -3494,11 +3500,13 @@ Route::middleware('auth')->group(function () {
         Route::get('projects/{project}/timesheets/{timesheet}/entries/adopt', [TimesheetEntryController::class, 'adoptForm'])->name('projects.timesheets.entries.adopt.form');
         Route::post('projects/{project}/timesheets/{timesheet}/entries/adopt', [TimesheetEntryController::class, 'adopt'])->name('projects.timesheets.entries.adopt');
         Route::post('projects/{project}/timesheets/{timesheet}/entries', [TimesheetEntryController::class, 'store'])->name('projects.timesheets.entries.store');
+        Route::get('projects/{project}/timesheets/{timesheet}/entries/{entry}/edit', [TimesheetEntryController::class, 'edit'])->name('projects.timesheets.entries.edit');
         Route::put('projects/{project}/timesheets/{timesheet}/entries/{entry}', [TimesheetEntryController::class, 'update'])->name('projects.timesheets.entries.update');
         Route::delete('projects/{project}/timesheets/{timesheet}/entries/{entry}', [TimesheetEntryController::class, 'destroy'])->name('projects.timesheets.entries.destroy');
 
         Route::get('projects/{project}/timesheets/{timesheet}/materials/create', [TimesheetMaterialController::class, 'create'])->name('projects.timesheets.materials.create');
         Route::post('projects/{project}/timesheets/{timesheet}/materials', [TimesheetMaterialController::class, 'store'])->name('projects.timesheets.materials.store');
+        Route::get('projects/{project}/timesheets/{timesheet}/materials/{usage}/edit', [TimesheetMaterialController::class, 'edit'])->name('projects.timesheets.materials.edit');
         Route::put('projects/{project}/timesheets/{timesheet}/materials/{usage}', [TimesheetMaterialController::class, 'update'])->name('projects.timesheets.materials.update');
         Route::delete('projects/{project}/timesheets/{timesheet}/materials/{usage}', [TimesheetMaterialController::class, 'destroy'])->name('projects.timesheets.materials.destroy');
 
@@ -3511,7 +3519,6 @@ Route::middleware('auth')->group(function () {
         Route::delete('projects/{project}/timesheets/{timesheet}/magic-link', [TimesheetSignatureController::class, 'revokeMagicLink'])->name('projects.timesheets.magic-link.revoke');
 
         // ── Stoppuhr ────────────────────────────────────────────────────────────
-        Route::get('stopwatch', [StopwatchController::class, 'current'])->name('stopwatch.current');
         Route::post('stopwatch/start', [StopwatchController::class, 'start'])->name('stopwatch.start');
         Route::post('stopwatch/stop', [StopwatchController::class, 'stop'])->name('stopwatch.stop');
         // ── Stempeluhr / Anwesenheit ──────────────────────────────────────────────────────────
@@ -3526,8 +3533,6 @@ Route::middleware('auth')->group(function () {
         // QR-/NFC-Check-in an Standort oder Fahrzeug (MVP-800).
         Route::get('checkin/{token}', [\App\Http\Controllers\Attendance\CheckinController::class, 'show'])->name('checkin.show');
         Route::post('checkin/{token}', [\App\Http\Controllers\Attendance\CheckinController::class, 'stamp'])->middleware('throttle:30,1')->name('checkin.stamp');
-        Route::put('attendance/{attendance}', [AttendanceController::class, 'update'])->name('attendance.update');
-        Route::delete('attendance/{attendance}', [AttendanceController::class, 'destroy'])->name('attendance.destroy');
 
         // ── Tages-Dashboard ───────────────────────────────────────────────────
         Route::get('today', [TodayController::class, 'show'])->name('today.show');
@@ -3592,6 +3597,8 @@ Route::middleware('auth')->group(function () {
         // ── Offene Punkte (Snagging / Restpunkte) ──────────────────────────
         Route::get('open-issues/create', [OpenIssueController::class, 'create'])->name('open-issues.create');
         Route::post('open-issues', [OpenIssueController::class, 'store'])->name('open-issues.store');
+        Route::get('open-issues/{issue}/edit', [OpenIssueController::class, 'edit'])->name('open-issues.edit');
+        Route::get('open-issues/{issue}/assignee', [OpenIssueController::class, 'assignForm'])->name('open-issues.assign.form');
         Route::put('open-issues/{issue}', [OpenIssueController::class, 'update'])->name('open-issues.update');
         Route::delete('open-issues/{issue}', [OpenIssueController::class, 'destroy'])->name('open-issues.destroy');
         Route::put('open-issues/{issue}/assignee', [OpenIssueController::class, 'assign'])->name('open-issues.assign');
@@ -4018,6 +4025,8 @@ Route::middleware('auth')->group(function () {
         Route::prefix('lernen')->name('learning.')->group(function (): void {
             Route::get('kurse', [\App\Http\Controllers\Learning\LearningCourseController::class, 'index'])->name('courses.index');
             Route::get('kurse/create', [\App\Http\Controllers\Learning\LearningCourseController::class, 'create'])->name('courses.create');
+            // Feste Route vor kurse/{course} (Gate RouteShadowingTest).
+            Route::get('kurse/import', [\App\Http\Controllers\Learning\LearningCourseController::class, 'importCourseDialog'])->name('courses.import.create');
             Route::post('kurse', [\App\Http\Controllers\Learning\LearningCourseController::class, 'store'])->name('courses.store');
             Route::get('kurse/{course}', [\App\Http\Controllers\Learning\LearningCourseController::class, 'show'])->name('courses.show');
             Route::get('kurse/{course}/edit', [\App\Http\Controllers\Learning\LearningCourseController::class, 'edit'])->name('courses.edit');
@@ -4265,7 +4274,6 @@ Route::middleware('auth')->group(function () {
             Route::get('{enrollment}/einheiten/{unit}/cmi5/inhalt/{path?}', [\App\Http\Controllers\Learning\LearningCmi5Controller::class, 'asset'])->where('path', '.*')->name('cmi5.asset');
             // LTI-Einheit starten (Feature 149): Login-Anstoß beim Tool.
             Route::post('{enrollment}/einheiten/{unit}/lti/start', [\App\Http\Controllers\Learning\LearningLtiPlatformController::class, 'launch'])->name('lti.launch');
-            Route::post('{enrollment}/xapi', [\App\Http\Controllers\Learning\LearningScormController::class, 'xapi'])->name('xapi.store');
 
             // Bild einer Bildmarkierungsfrage (MVP-738): geprüft gegen den
             // Versuch, damit die Route kein Leseschlüssel wird.
@@ -4400,6 +4408,7 @@ Route::middleware('auth')->group(function () {
         Route::post('ideas/{map}/nodes/{node}/reorder', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'reorder'])->name('ideas.nodes.reorder');
         Route::post('ideas/{map}/nodes/{nodeSqid}/restore', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'restore'])->name('ideas.nodes.restore');
         Route::post('ideas/{map}/nodes/{node}/convert', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'convert'])->name('ideas.nodes.convert'); // MVP-109 Überführung
+        Route::get('ideas/{map}/nodes/{node}/link', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'linkForm'])->name('ideas.nodes.link.form');
         Route::post('ideas/{map}/nodes/{node}/link', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'link'])->name('ideas.nodes.link');
         Route::get('ideas/{map}/nodes/{node}/comments', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'comments'])->name('ideas.nodes.comments'); // MVP-1005
         Route::post('ideas/{map}/nodes/{node}/comments', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'storeComment'])->name('ideas.nodes.comments.store');
@@ -4556,6 +4565,7 @@ Route::middleware('auth')->group(function () {
         Route::get('protocols/{protocol}/as-template', [\App\Http\Controllers\Protocol\ProtocolTemplateController::class, 'fromProtocolForm'])->name('protocols.as-template.form');
         Route::post('protocols/{protocol}/as-template', [\App\Http\Controllers\Protocol\ProtocolTemplateController::class, 'fromProtocol'])->name('protocols.as-template');
         Route::post('protocols', [ProtocolController::class, 'store'])->name('protocols.store');
+        Route::get('protocols/{protocol}/edit', [ProtocolController::class, 'edit'])->name('protocols.edit');
         Route::put('protocols/{protocol}', [ProtocolController::class, 'update'])->name('protocols.update');
         Route::delete('protocols/{protocol}', [ProtocolController::class, 'destroy'])->name('protocols.destroy');
         Route::post('protocols/{protocol}/transitions/{action}', [ProtocolController::class, 'transition'])
@@ -4635,7 +4645,6 @@ Route::middleware('auth')->group(function () {
         Route::get('tours/{tour}/edit', [TourController::class, 'edit'])->name('tours.edit');
         Route::put('tours/{tour}', [TourController::class, 'update'])->name('tours.update');
         Route::delete('tours/{tour}', [TourController::class, 'destroy'])->name('tours.destroy');
-        Route::post('tours/{tour}/optimize', [TourController::class, 'optimize'])->name('tours.optimize');
         Route::post('tours/{tour}/start', [TourController::class, 'start'])->name('tours.start');
         Route::post('tours/{tour}/complete', [TourController::class, 'complete'])->name('tours.complete');
         Route::post('tours/{tour}/proposals', [\App\Http\Controllers\Schedule\TourProposalController::class, 'store'])->name('tours.proposals.store'); // MVP-1176
@@ -4676,6 +4685,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('assets/{asset}/maintenance-plans/create', [MaintenancePlanController::class, 'create'])->name('assets.maintenance-plans.create');
         Route::post('assets/{asset}/maintenance-plans', [MaintenancePlanController::class, 'store'])->name('assets.maintenance-plans.store');
+        Route::get('assets/{asset}/maintenance-plans/{plan}/edit', [MaintenancePlanController::class, 'edit'])->name('assets.maintenance-plans.edit');
         Route::put('assets/{asset}/maintenance-plans/{plan}', [MaintenancePlanController::class, 'update'])->name('assets.maintenance-plans.update');
         Route::post('assets/{asset}/maintenance-plans/{plan}/complete', [MaintenancePlanController::class, 'complete'])->name('assets.maintenance-plans.complete');
         Route::post('assets/{asset}/maintenance-plans/{plan}/toggle', [MaintenancePlanController::class, 'toggle'])->name('assets.maintenance-plans.toggle');
@@ -4748,6 +4758,7 @@ Route::middleware('auth')->group(function () {
         Route::get('sla-contracts', [\App\Http\Controllers\ServiceTicket\SlaContractController::class, 'index'])->name('sla-contracts.index');
         // SLA-CRUD (Feature 065, P3) — bestehendes Recht slaContract.manage.
         Route::post('sla-contracts', [\App\Http\Controllers\ServiceTicket\SlaContractController::class, 'store'])->name('sla-contracts.store');
+        Route::get('sla-contracts/{slaContract}/edit', [\App\Http\Controllers\ServiceTicket\SlaContractController::class, 'edit'])->name('sla-contracts.edit');
         Route::patch('sla-contracts/{slaContract}', [\App\Http\Controllers\ServiceTicket\SlaContractController::class, 'update'])->name('sla-contracts.update');
         // Helpdesk-Bericht (Feature 065, P9).
         Route::get('helpdesk/berichte', [\App\Http\Controllers\Helpdesk\HelpdeskReportController::class, 'index'])->name('helpdesk.reports.index');
@@ -4779,10 +4790,12 @@ Route::middleware('auth')->group(function () {
         Route::get('servicedesk/catalog/items/{item}/edit', [\App\Http\Controllers\Helpdesk\ServiceCatalogController::class, 'editItem'])->name('servicedesk.catalog.items.edit');
         Route::patch('servicedesk/catalog/items/{item}', [\App\Http\Controllers\Helpdesk\ServiceCatalogController::class, 'updateItem'])->name('servicedesk.catalog.items.update');
         Route::delete('servicedesk/catalog/items/{item}', [\App\Http\Controllers\Helpdesk\ServiceCatalogController::class, 'destroyItem'])->name('servicedesk.catalog.items.destroy');
-        // Genehmigungs-Inbox (Feature 065, MVP-154; MVP-157 nutzt sie für Changes mit).
-        Route::get('servicedesk/approvals', [\App\Http\Controllers\Helpdesk\ApprovalInboxController::class, 'index'])->name('servicedesk.approvals.index');
-        Route::get('servicedesk/approvals/{approval}/decide', [\App\Http\Controllers\Helpdesk\ApprovalInboxController::class, 'decideForm'])->name('servicedesk.approvals.decide-form');
-        Route::post('servicedesk/approvals/{approval}/decide', [\App\Http\Controllers\Helpdesk\ApprovalInboxController::class, 'decide'])->name('servicedesk.approvals.decide');
+        // Genehmigungs-Eingang (Feature 065, MVP-154): Kernmodul „Freigaben“ seit 2026-10-21,
+        // Gegenstände melden die Module über ApprovalInboxSubject (Requests, Changes, Verhandlungen).
+        Route::get('genehmigungen', [\App\Http\Controllers\Approval\ApprovalInboxController::class, 'index'])->name('approvals.index');
+        Route::get('genehmigungen/{approval}/entscheiden', [\App\Http\Controllers\Approval\ApprovalInboxController::class, 'decideForm'])->name('approvals.decide-form');
+        Route::post('genehmigungen/{approval}/entscheiden', [\App\Http\Controllers\Approval\ApprovalInboxController::class, 'decide'])->name('approvals.decide');
+        Route::redirect('servicedesk/approvals', '/genehmigungen');
         // Problem-Management (Feature 065, MVP-156) — servicedesk.* → module.service_desk!
         Route::get('servicedesk/problems', [\App\Http\Controllers\Helpdesk\ProblemController::class, 'index'])->name('servicedesk.problems.index');
         Route::get('servicedesk/problems/create', [\App\Http\Controllers\Helpdesk\ProblemController::class, 'create'])->name('servicedesk.problems.create');
@@ -4794,7 +4807,7 @@ Route::middleware('auth')->group(function () {
         Route::post('servicedesk/problems/{problem}/effectiveness', [\App\Http\Controllers\Helpdesk\ProblemController::class, 'effectiveness'])->name('servicedesk.problems.effectiveness');
         Route::post('servicedesk/problems/{problem}/publish', [\App\Http\Controllers\Helpdesk\ProblemController::class, 'publish'])->name('servicedesk.problems.publish');
         // Change-/CAB-Management (Feature 065, MVP-157) — servicedesk.* → module.service_desk!
-        // Freigaben laufen über die GEMEINSAME Genehmigungs-Inbox (servicedesk.approvals.*).
+        // Freigaben laufen über den gemeinsamen Genehmigungs-Eingang (approvals.*).
         Route::get('servicedesk/changes', [\App\Http\Controllers\Helpdesk\ChangeController::class, 'index'])->name('servicedesk.changes.index');
         Route::get('servicedesk/changes/create', [\App\Http\Controllers\Helpdesk\ChangeController::class, 'create'])->name('servicedesk.changes.create');
         Route::post('servicedesk/changes', [\App\Http\Controllers\Helpdesk\ChangeController::class, 'store'])->name('servicedesk.changes.store');
@@ -5606,7 +5619,6 @@ Route::middleware('auth')->group(function () {
         Route::delete('shift-types/{shiftType}', [ShiftTypeController::class, 'htmlDestroy'])->name('shift-types.destroy');
 
         // ── Geplante Schichten (HTML, Admin) ────────────────────────────────────
-        Route::get('scheduled-shifts/{shift}', [ScheduledShiftController::class, 'show'])->name('scheduled-shifts.show');
         Route::get('scheduled-shifts/{shift}/edit', [ScheduledShiftController::class, 'edit'])->name('scheduled-shifts.edit');
         Route::put('scheduled-shifts/{shift}', [ScheduledShiftController::class, 'update'])->name('scheduled-shifts.update');
         Route::delete('scheduled-shifts/{shift}', [ScheduledShiftController::class, 'destroy'])->name('scheduled-shifts.destroy');
@@ -5615,7 +5627,6 @@ Route::middleware('auth')->group(function () {
         Route::prefix('schedule')->name('schedule.')->group(function () {
             Route::get('/', [ScheduleController::class, 'index'])->name('index');
             // JSON-API for Alpine.js (accepts ?view=week|month&date=YYYY-MM-DD&user=ID)
-            Route::get('/api/shifts', [ScheduleController::class, 'apiIndex'])->name('api.index');
             Route::post('/shifts', [ScheduleController::class, 'store'])->name('shifts.store');
             Route::put('/shifts/{shift}', [ScheduleController::class, 'update'])->name('shifts.update');
             Route::delete('/shifts/{shift}', [ScheduleController::class, 'destroy'])->name('shifts.destroy');
@@ -5633,6 +5644,7 @@ Route::middleware('auth')->group(function () {
             Route::delete('/availability/desired/{desired}', [AvailabilityController::class, 'destroyDesired'])->name('availability.desired.destroy');
             // Schichttausch mit Freigabe (Feature 007)
             Route::get('/exchanges', [ShiftExchangeController::class, 'index'])->name('exchanges.index');
+            Route::get('/exchanges/create', [ShiftExchangeController::class, 'create'])->name('exchanges.create');
             Route::post('/exchanges', [ShiftExchangeController::class, 'store'])->name('exchanges.store');
             Route::patch('/exchanges/{exchange}/accept', [ShiftExchangeController::class, 'accept'])->name('exchanges.accept');
             Route::patch('/exchanges/{exchange}/cancel', [ShiftExchangeController::class, 'cancel'])->name('exchanges.cancel');

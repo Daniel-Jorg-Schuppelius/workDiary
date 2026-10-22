@@ -181,6 +181,9 @@
                         <td class="text-right text-xs tabular-nums">{{ $rule->net_unit_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($rule->net_unit_price?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) . ' €' : '—' }}</td>
                         <td class="text-right text-xs tabular-nums">{{ $rule->priority }}</td>
                         <td class="whitespace-nowrap text-right">
+                            <x-icon-btn icon="edit" data-entry-modal-trigger
+                                        :href="route('projects.billing-rules.edit', [$project, $rule])"
+                                        :label="__('Bearbeiten')" />
                             <x-action-form :action="route('projects.billing-rules.destroy', [$project, $rule])" method="DELETE"
                                   :confirm="__('Regel wirklich löschen?')"
                                   confirm-icon="delete"

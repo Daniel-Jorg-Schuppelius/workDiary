@@ -88,7 +88,13 @@ return [
     ],
     // Lesbare Bezeichnung je registrierter Einsatzstelle (config/ai.php).
     'capability_label' => [
+        'learning' => [
+            'course_outline' => 'Lernplattform: Kursgliederung entwerfen',
+            'question_draft' => 'Lernplattform: Prüfungsfragen entwerfen',
+            'tutor' => 'Lernplattform: Lerntutor',
+        ],
         'invoicing' => [
+            'document_extraction' => 'Rechnungseingang: Belegfelder auslesen',
             'item_text' => 'Rechnung: Positionstext',
             'block_text' => 'Rechnung: Sammeltext',
             'item_translate' => 'Rechnung: Position übersetzen',

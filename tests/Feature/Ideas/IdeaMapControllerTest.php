@@ -134,6 +134,17 @@ final class IdeaMapControllerTest extends TestCase {
         $this->actingAs($this->orgAdmin)->get(route('ideas.show', $map))->assertForbidden();
     }
 
+    /** Vollscan 2026-10-21: der Eigentümer überträgt über die Freigabekarte. */
+    public function test_owner_transfers_ownership_from_the_share_dialog(): void {
+        $map = $this->mapOf($this->owner);
+
+        $this->actingAs($this->owner)->get(route('ideas.show', $map))->assertOk()
+            ->assertSee(route('ideas.transfer-ownership', $map), false)
+            ->assertSee('value="' . $this->colleague->sqid . '"', false);
+        $this->post(route('ideas.transfer-ownership', $map), ['owner' => $this->colleague->sqid])->assertRedirect();
+        $this->assertSame($this->colleague->id, (int) $map->fresh()->owner_user_id);
+    }
+
     public function test_colleague_cannot_transfer_ownership(): void {
         $map = $this->mapOf($this->owner);
 

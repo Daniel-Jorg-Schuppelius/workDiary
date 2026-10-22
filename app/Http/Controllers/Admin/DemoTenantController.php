@@ -105,6 +105,7 @@ class DemoTenantController extends Controller {
      */
     public function createFreshOrg(): View {
         Gate::authorize('create', Organization::class);
+        Gate::authorize(Permission::PlatformDemoCreate->value);
 
         return view('admin.demo._fresh_org_dialog', [
             'industries' => DemoIndustry::all(),
@@ -125,6 +126,7 @@ class DemoTenantController extends Controller {
      */
     public function storeFreshOrg(Request $request): RedirectResponse {
         Gate::authorize('create', Organization::class);
+        Gate::authorize(Permission::PlatformDemoCreate->value);
 
         $data = $request->validate([
             'industry' => ['required', \Illuminate\Validation\Rule::in(array_map(

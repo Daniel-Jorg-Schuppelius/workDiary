@@ -9,16 +9,32 @@
   Gespeicherten Filter umbenennen, einordnen und als Standard seines Bereichs
   setzen. Bereich und Filterwerte bleiben, wie sie gespeichert wurden.
 --}}
+@php
+    // Neue Vorlage aus der Filterleiste: die Filterwerte reisen als query[...] mit (verschachtelt höchstens eine Ebene).
+    $hiddenQuery = [];
+    if (! $preset->exists) {
+        foreach ((array) $preset->query as $key => $value) {
+            foreach (is_array($value) ? $value : [$value] as $item) {
+                if (is_scalar($item)) {
+                    $hiddenQuery[] = ['name' => is_array($value) ? 'query[' . $key . '][]' : 'query[' . $key . ']', 'value' => (string) $item];
+                }
+            }
+        }
+    }
+@endphp
 <x-modal
-    :title="__('Filter bearbeiten')"
+    :title="$preset->exists ? __('Filter bearbeiten') : __('Aktuellen Filter speichern')"
     :eyebrow="$preset->scope"
     icon="filter_alt"
-    :action="route('filter-presets.update', $preset)"
-    method="PUT"
+    :action="$preset->exists ? route('filter-presets.update', $preset) : route('filter-presets.store')"
+    :method="$preset->exists ? 'PUT' : 'POST'"
     :form-data="['data-entry-form' => '']"
     :submit-label="__('Speichern')"
 >
     <input type="hidden" name="scope" value="{{ $preset->scope }}">
+    @foreach ($hiddenQuery as $field)
+        <input type="hidden" name="{{ $field['name'] }}" value="{{ $field['value'] }}">
+    @endforeach
 
     <x-input-field name="name" id="preset-edit-name" :label="__('Name')" required maxlength="120"
                    :value="old('name', $preset->name)" />

@@ -91,7 +91,7 @@ class EnumTransitionContractTest extends TestCase {
                 continue;
             }
             $source = $this->stripComments((string) file_get_contents($file));
-            $pattern = '/function\s+(canTransition|transitionTo|assertTransition|isTransitionAllowed|allowedTransitions|assertStatus)\s*\(|const\s+\w*TRANSITIONS\b/';
+            $pattern = '/function\s+(canTransition|transitionTo|assertTransition|ensureTransition|guardTransition|isTransitionAllowed|allowedTransitions|assertStatus)\s*\(|const\s+\w*TRANSITIONS\b/';
             if (preg_match_all($pattern, $source, $matches, PREG_OFFSET_CAPTURE) === 0) {
                 continue;
             }

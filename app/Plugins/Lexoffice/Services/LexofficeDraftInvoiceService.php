@@ -23,6 +23,8 @@ use RuntimeException;
  * Rechnung, ohne Festschreiben: `POST /invoices` ohne `finalize`. Der
  * Betreiber prüft und schließt den Entwurf in Lexoffice ab; der stündliche
  * Belegspiegel holt die fertige Rechnung, der Vorschlagslauf ordnet sie zu.
+ * Roh über {@see PluginApiClient}: die Rechnungs-Entität des SDK lehnt die
+ * Adresse mit `contactId` ab ({@see LexofficeTarget}).
  *
  * @phpstan-type DraftLine array{name: string, description: string, quantity: float, unit_name: string, unit_net: float}
  */

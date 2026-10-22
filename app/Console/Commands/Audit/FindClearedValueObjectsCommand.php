@@ -20,7 +20,7 @@ use App\Models\Platform\User;
 use App\Models\Travel\{Expense, ExpenseCategory};
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\Data\{JsonHelper, StringHelper};
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
 
@@ -145,7 +145,7 @@ class FindClearedValueObjectsCommand extends Command {
         foreach (['name', 'label', 'number', 'description', 'vendor'] as $attribute) {
             $value = $model->getAttribute($attribute);
             if (is_string($value) && $value !== '') {
-                return "#{$id} " . mb_strimwidth($value, 0, 40, '…');
+                return "#{$id} " . StringHelper::truncate($value, 40, '…');
             }
         }
 

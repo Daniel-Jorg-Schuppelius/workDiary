@@ -20,18 +20,19 @@ use App\Models\Communication\CommunicationNote;
 use App\Models\Customer\Customer;
 use App\Models\Document\DocumentDispatch;
 use App\Models\Finance\AccountingVoucher;
-use App\Models\Integration\IntegrationInboxItem;
+use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Invoicing\{Invoice, InvoiceInquiry};
 use App\Models\Mail\EmailConnection;
 use App\Models\Platform\{Organization, User};
 use App\Notifications\GenericEventNotification;
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use App\Services\Invoicing\Mail\InvoiceInquiryMailIntakeHandler;
-use App\Services\Mail\{MailIntakeService, ParsedMessage};
+use App\Services\Communication\Mail\CommunicationNoteReplyService;
+use App\Services\Mail\{MailAttachment, MailIntakeService, ParsedMessage};
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\{Mail, Notification, Storage};
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -146,6 +147,52 @@ final class InvoiceInquiryIntakeTest extends TestCase {
         $this->assertSame(0, IntegrationInboxItem::query()->count());
     }
 
+    /** lk-20: Die Antwort des Kunden auf eine Antwort aus der Notiz nennt nur deren Message-ID. */
+    public function test_reply_to_an_answer_from_the_note_threads_back_to_the_invoice(): void {
+        Mail::fake();
+        $invoice = $this->issuedInvoice('RE-2026-0201');
+        $this->intake($this->message('<frage-2@x>', 'kunde@acme.test', 'Frage zu RE-2026-0201'));
+        $note = CommunicationNote::query()->sole();
+
+        $reply = app(CommunicationNoteReplyService::class)->reply($note, $this->user, ['kunde@acme.test'], [], 'AW: Frage', 'Die Zahlung ist am 30. fällig.');
+        $replyId = (string) ExternalReference::query()->forReferenceable($reply)->value('external_id');
+        $this->assertNotSame('', $replyId);
+
+        $result = $this->intake($this->message('<frage-3@x>', 'kunde@acme.test', 'AW: AW: Frage', 'Danke, und die Gutschrift?', inReplyTo: $replyId));
+
+        $this->assertSame(InvoiceInquiryMailIntakeHandler::RESULT, $result);
+        $followUp = InvoiceInquiry::query()->where('message_id', '<frage-3@x>')->sole();
+        $this->assertSame($invoice->id, $followUp->invoice_id);
+        $this->assertSame(InvoiceInquiryMatchKind::Thread, $followUp->match_kind);
+    }
+
+    public function test_references_to_an_earlier_inquiry_thread_back_to_the_invoice(): void {
+        $invoice = $this->issuedInvoice('RE-2026-0202');
+        $this->intake($this->message('<frage-4@x>', 'kunde@acme.test', 'Frage zu RE-2026-0202'));
+
+        $this->intake($this->message('<frage-5@x>', 'kunde@acme.test', 'Nachtrag', 'Noch eine Frage.', references: ['<frage-4@x>']));
+
+        $followUp = InvoiceInquiry::query()->where('message_id', '<frage-5@x>')->sole();
+        $this->assertSame($invoice->id, $followUp->invoice_id);
+        $this->assertSame(InvoiceInquiryMatchKind::Thread, $followUp->match_kind);
+    }
+
+    /** lk-20: Die automatische Erfassung hängt die Anhänge der Mail an die Notiz, eingebettete Bilder nicht. */
+    public function test_automatic_capture_attaches_the_mail_files_to_the_note(): void {
+        Storage::fake('local');
+        $this->issuedInvoice('RE-2026-0203');
+        $message = $this->message('<frage-6@x>', 'kunde@acme.test', 'Frage zu RE-2026-0203')->withAttachments([
+            new MailAttachment('kontoauszug.pdf', 'application/pdf', "%PDF-1.4\n1 0 obj\n<<>>\nendobj\n"),
+            new MailAttachment('logo.png', 'image/png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='), true),
+            new MailAttachment('makro.exe', 'application/x-msdownload', 'MZ'),
+        ]);
+
+        $this->intake($message);
+
+        $note = CommunicationNote::query()->sole();
+        $this->assertSame(['kontoauszug.pdf'], $note->attachments()->pluck('original_name')->all());
+    }
+
     public function test_invoice_number_from_customer_address_is_recorded(): void {
         $invoice = $this->issuedInvoice('RE-2026-0102');
 
@@ -155,6 +202,18 @@ final class InvoiceInquiryIntakeTest extends TestCase {
         $inquiry = InvoiceInquiry::query()->sole();
         $this->assertSame($invoice->id, $inquiry->invoice_id);
         $this->assertSame(InvoiceInquiryMatchKind::Number, $inquiry->match_kind);
+    }
+
+    /** Konsolidierungs-Audit 2026-10-21, ko-08/ko-07: Präfix mit Leerzeichen und Faden-ID ohne Klammern. */
+    public function test_spaced_number_and_bare_thread_id_are_recognised(): void {
+        $spaced = $this->issuedInvoice('RE 2026/0110');
+        $this->assertSame(InvoiceInquiryMailIntakeHandler::RESULT, $this->intake($this->message('<frage-10@x>', 'kunde@acme.test', 'Frage zu RE 2026/0110')));
+        $this->assertSame($spaced->id, InvoiceInquiry::query()->where('message_id', '<frage-10@x>')->value('invoice_id'));
+
+        $threaded = $this->issuedInvoice('RE-2026-0111');
+        $this->dispatch($threaded, '<versand-11@workdiary.test>', 'kunde@acme.test');
+        $this->assertSame(InvoiceInquiryMailIntakeHandler::RESULT, $this->intake($this->message('<frage-11@x>', 'fremd@example.org', 'Re: Rechnung', inReplyTo: 'versand-11@workdiary.test')));
+        $this->assertSame($threaded->id, InvoiceInquiry::query()->where('message_id', '<frage-11@x>')->value('invoice_id'));
     }
 
     public function test_contact_person_and_dispatch_cc_count_as_sender_of_the_case(): void {

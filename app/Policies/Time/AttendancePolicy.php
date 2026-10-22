@@ -10,6 +10,7 @@
 
 namespace App\Policies\Time;
 
+use App\Enums\User\Permission;
 use App\Models\Platform\User;
 use App\Models\Time\Attendance;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
@@ -27,18 +28,19 @@ class AttendancePolicy {
         return $this->owns($user, $attendance, 'user_id');
     }
 
+    /** Eigenes Stempeln (attendance.manage). */
     public function create(User $user): bool {
-        return true;
+        return $user->can(Permission::AttendanceManage->value);
     }
 
     public function update(User $user, Attendance $attendance): bool {
         return $this->owns($user, $attendance, 'user_id')
+            && $user->can(Permission::AttendanceManage->value)
             && ! $this->dayCloseLocked($attendance);
     }
 
     public function delete(User $user, Attendance $attendance): bool {
-        return $this->owns($user, $attendance, 'user_id')
-            && ! $this->dayCloseLocked($attendance);
+        return $this->update($user, $attendance);
     }
 
     /**

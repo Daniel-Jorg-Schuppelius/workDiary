@@ -149,4 +149,60 @@ final class LexofficeOrderConfirmationTest extends TestCase {
         $this->expectException(RuntimeException::class);
         app(LexofficeOrderConfirmationService::class)->push($order);
     }
+
+    /** Zurücklesen über QuotationsEndpoint/OrderConfirmationsEndpoint::get(): Pfad je Belegart, Inhalt in Array-Form. */
+    public function test_pull_reads_the_linked_document_through_the_sdk(): void {
+        $order = $this->makeOrder();
+        foreach ([LexofficeOrderConfirmationService::class => 'oc-9', LexofficeQuotationService::class => 'qu-9'] as $service => $externalId) {
+            ExternalReference::create([
+                'organization_id' => $this->organization->id,
+                'plugin_id' => LexofficePlugin::ID,
+                'external_type' => app($service)->extType(),
+                'referenceable_type' => $order->getMorphClass(),
+                'referenceable_id' => $order->getKey(),
+                'external_id' => $externalId,
+                'synced_at' => now(),
+            ]);
+        }
+        $document = static fn (string $id, string $number): array => [
+            'id' => $id, 'voucherStatus' => 'open', 'voucherNumber' => $number, 'voucherDate' => '2026-10-01T00:00:00.000+02:00',
+            'address' => ['contactId' => 'lex-contact-1', 'name' => 'Kunde', 'countryCode' => 'DE'],
+            'lineItems' => [['type' => 'custom', 'name' => 'Spezialteil', 'quantity' => 5, 'unitName' => 'Stk', 'unitPrice' => ['currency' => 'EUR', 'netAmount' => 200.0, 'grossAmount' => 238.0, 'taxRatePercentage' => 19]]],
+            'totalPrice' => ['currency' => 'EUR', 'totalNetAmount' => 1000.0, 'totalGrossAmount' => 1190.0, 'totalTaxAmount' => 190.0],
+            'taxConditions' => ['taxType' => 'net'],
+        ];
+        $fake = FakePluginHttp::fake([
+            'https://api.lexware.io/v1/order-confirmations/oc-9' => FakePluginHttp::response($document('oc-9', 'AB0009')),
+            'https://api.lexware.io/v1/quotations/qu-9' => FakePluginHttp::response($document('qu-9', 'AN0009')),
+        ]);
+
+        $confirmation = app(LexofficeOrderConfirmationService::class)->pull($order);
+        $quotation = app(LexofficeQuotationService::class)->pull($order);
+
+        $this->assertSame(['oc-9', 'AB0009', 'open'], [$confirmation['id'], $confirmation['voucherNumber'], $confirmation['voucherStatus']]);
+        $this->assertSame(['qu-9', 'AN0009'], [$quotation['id'], $quotation['voucherNumber']]);
+        $this->assertEquals(1190.0, $quotation['totalPrice']['totalGrossAmount']);
+        $this->assertSame(
+            ['GET https://api.lexware.io/v1/order-confirmations/oc-9', 'GET https://api.lexware.io/v1/quotations/qu-9'],
+            array_map(static fn (array $entry): string => $entry['request']->getMethod() . ' ' . $entry['request']->getUri(), $fake->recorded()),
+        );
+    }
+
+    public function test_pull_reports_the_http_status(): void {
+        $order = $this->makeOrder();
+        ExternalReference::create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => LexofficePlugin::ID,
+            'external_type' => app(LexofficeQuotationService::class)->extType(),
+            'referenceable_type' => $order->getMorphClass(),
+            'referenceable_id' => $order->getKey(),
+            'external_id' => 'qu-404',
+            'synced_at' => now(),
+        ]);
+        FakePluginHttp::fake(['https://api.lexware.io/v1/quotations/qu-404' => FakePluginHttp::response(['message' => 'not found'], 404)]);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Lexoffice quotations fetch failed: HTTP 404');
+        app(LexofficeQuotationService::class)->pull($order);
+    }
 }

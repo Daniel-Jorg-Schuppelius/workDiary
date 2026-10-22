@@ -174,6 +174,8 @@ class ConstructionNoticeTest extends TestCase {
             ->assertStatus(422);
         $this->actingAs($this->user)->get(route('construction-notices.edit', $notice))->assertStatus(422);
         $this->actingAs($this->user)->delete(route('construction-notices.destroy', $notice))->assertStatus(422);
+        $this->actingAs($this->user)->get(route('construction-notices.show', $notice))->assertOk()
+            ->assertDontSee('Diesen Entwurf löschen?');
 
         $this->assertSame('Fehlende Vorleistung Rohbau', $notice->refresh()->subject);
     }
@@ -202,6 +204,8 @@ class ConstructionNoticeTest extends TestCase {
 
     public function test_draft_can_be_deleted(): void {
         $notice = $this->createNotice();
+        $this->actingAs($this->user)->get(route('construction-notices.show', $notice))->assertOk()
+            ->assertSee('Diesen Entwurf löschen?');
 
         $this->actingAs($this->user)->delete(route('construction-notices.destroy', $notice))->assertRedirect();
         $this->assertSame(0, ConstructionNotice::withoutGlobalScopes()->count());

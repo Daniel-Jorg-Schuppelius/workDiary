@@ -13,13 +13,4 @@ namespace App\Services\TimeApproval;
 /**
  * Fachliche Verletzung der Korrekturantrag-Statusmaschine (MVP-017).
  */
-class TimeCorrectionWorkflowException extends \RuntimeException {
-    /** @param  array<string, mixed>  $context */
-    public function __construct(
-        public readonly string $reasonCode,
-        string $message,
-        public readonly array $context = [],
-    ) {
-        parent::__construct($message);
-    }
-}
+class TimeCorrectionWorkflowException extends TimeApprovalWorkflowException {}

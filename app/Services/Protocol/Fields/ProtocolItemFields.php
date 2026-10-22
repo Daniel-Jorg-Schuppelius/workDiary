@@ -15,6 +15,7 @@ namespace App\Services\Protocol\Fields;
 use App\Enums\Protocol\ProtocolItemType;
 use App\Models\Protocol\{Protocol, ProtocolItem};
 use App\Services\Fields\{FieldDefinition, FieldSchema, FieldValues};
+use CommonToolkit\Helper\Data\StringHelper;
 
 /**
  * Adapter zwischen Protokollpunkt und Feldschema-Baustein (MVP-867). Der
@@ -103,7 +104,7 @@ class ProtocolItemFields {
 
         return match ($item->item_type) {
             ProtocolItemType::Text => ['text' => is_scalar($input) ? trim((string) $input) : ''],
-            ProtocolItemType::Boolean => ['value' => filter_var($input, FILTER_VALIDATE_BOOL)],
+            ProtocolItemType::Boolean => ['value' => StringHelper::parseBool($input) ?? false],
             ProtocolItemType::Number, ProtocolItemType::Range => ['value' => self::number($input)],
             ProtocolItemType::Date, ProtocolItemType::DateTime => ['value' => is_scalar($input) && (string) $input !== '' ? (string) $input : null],
             ProtocolItemType::Choice => ['selected' => is_scalar($input) && (string) $input !== '' ? (string) $input : null],

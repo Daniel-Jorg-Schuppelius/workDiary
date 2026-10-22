@@ -24,6 +24,7 @@ use App\Services\Communication\CommunicationNoteService;
 use App\Services\Mail\{MailIntakeService, MailSignature};
 use App\Support\CarbonFmt;
 use CommonToolkit\Helper\Data\{EmailHelper, WebLinkHelper};
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\{DB, Mail};
 use Illuminate\Support\Str;
@@ -141,7 +142,7 @@ final class CommunicationNoteReplyService {
             'date' => $origin->at !== null ? CarbonFmt::fdatetime($origin->at) : '—',
             'sender' => $origin->senderLabel(),
         ]);
-        $lines = array_map(static fn (string $line): string => '> ' . $line, explode("\n", trim((string) $note->body)));
+        $lines = array_map(static fn (string $line): string => '> ' . $line, StringHelper::lines(trim((string) $note->body)));
 
         return $header . "\n" . implode("\n", $lines);
     }

@@ -18,8 +18,9 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 /**
  * Kanonische Auflösung des „angesehenen" Nutzers für Selbst-/Fremd-Listen:
  * ohne `user`-Parameter der eingeloggte Nutzer, `all` (→ null) und fremder
- * Nutzer nur für Admins. Bewusst EINE Implementierung der sicherheitsrelevanten
- * Eskalationssperre; nur die Fehlermeldungen werden hereingereicht.
+ * Nutzer nur für Admins oder wen der Aufrufer per `$seesOthers` zulässt
+ * (Verwaltungsrecht). Bewusst EINE Implementierung der sicherheitsrelevanten
+ * Eskalationssperre; nur Meldungen und Freigabe werden hereingereicht.
  */
 trait ResolvesRequestedUser {
     protected function resolveRequestedUserOrAll(
@@ -27,14 +28,16 @@ trait ResolvesRequestedUser {
         User $authUser,
         string $allDeniedMessage,
         string $foreignDeniedMessage,
+        ?bool $seesOthers = null,
     ): ?User {
+        $seesOthers ??= $authUser->isAdmin();
         if (! $request->filled('user')) {
             return $authUser;
         }
 
         $raw = (string) $request->query('user');
         if ($raw === 'all') {
-            if (! $authUser->isAdmin()) {
+            if (! $seesOthers) {
                 throw new AccessDeniedHttpException($allDeniedMessage);
             }
 
@@ -45,7 +48,7 @@ trait ResolvesRequestedUser {
         if ($requestedId === null || $requestedId === (int) $authUser->id) {
             return $authUser;
         }
-        if (! $authUser->isAdmin()) {
+        if (! $seesOthers) {
             throw new AccessDeniedHttpException($foreignDeniedMessage);
         }
 

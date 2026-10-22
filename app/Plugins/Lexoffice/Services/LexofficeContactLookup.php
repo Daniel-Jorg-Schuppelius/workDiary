@@ -21,7 +21,8 @@ use App\Plugins\Support\PluginApiClient;
  * Lexoffice-Kontakt eines Kunden für einen ausgehenden Beleg: bestehender
  * Nachweis, sonst die Kontaktsuche per E-Mail — der Treffer wird als Nachweis
  * gemerkt. Stand wortgleich in Übergabeziel, Auftragsbelegen und Lieferschein
- * (Konsolidierungs-Audit 2026-10, k2-02).
+ * (Konsolidierungs-Audit 2026-10, k2-02). Bleibt roh, weil die Suche den
+ * gedrosselten Client der rohen Beleg-POSTs der Aufrufer teilt.
  */
 class LexofficeContactLookup {
     public function find(Customer $customer, PluginApiClient $api, string $baseUrl): ?string {

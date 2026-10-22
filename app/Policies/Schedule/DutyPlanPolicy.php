@@ -10,6 +10,7 @@
 
 namespace App\Policies\Schedule;
 
+use App\Enums\User\Permission;
 use App\Models\Platform\User;
 use App\Models\Schedule\DutyPlan;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
@@ -39,11 +40,16 @@ class DutyPlanPolicy {
     }
 
     public function create(User $user): bool {
-        return $user->isAdmin();
+        return $user->can(Permission::DutyPlanCreate->value);
     }
 
     public function update(User $user, DutyPlan $dutyPlan): bool {
-        return $user->isAdmin() && $this->sharesOrganization($user, $dutyPlan);
+        return $this->sharesOrganization($user, $dutyPlan) && $user->can(Permission::DutyPlanUpdate->value);
+    }
+
+    /** Direkt veröffentlichen; der Weg über die Genehmigung (approve) bleibt Admin. */
+    public function publish(User $user, DutyPlan $dutyPlan): bool {
+        return $this->sharesOrganization($user, $dutyPlan) && $user->can(Permission::DutyPlanPublish->value);
     }
 
     /** Genehmigen (MVP-525): Admins via before(); sonst niemand. */
@@ -52,7 +58,7 @@ class DutyPlanPolicy {
     }
 
     public function delete(User $user, DutyPlan $dutyPlan): bool {
-        return $user->isAdmin()
+        return ($user->isAdmin() || $user->can(Permission::DutyPlanDelete->value))
             && $this->sharesOrganization($user, $dutyPlan)
             && $dutyPlan->isDraft();
     }

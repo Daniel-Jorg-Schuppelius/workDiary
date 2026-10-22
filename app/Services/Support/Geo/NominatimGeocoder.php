@@ -12,6 +12,7 @@ namespace App\Services\Support\Geo;
 
 use App\Models\Platform\GeocodeCache;
 use App\Plugins\Support\PluginHttpFactory;
+use App\Support\UrlSafety;
 use GuzzleHttp\Exception\ConnectException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{Cache, Log};
@@ -87,7 +88,7 @@ class NominatimGeocoder {
         $client = $this->http->coreClient(
             'nominatim',
             $base,
-            allowPrivateNetwork: $this->mayUsePrivateTarget($base),
+            allowPrivateNetwork: UrlSafety::operatorTargetAllowed($base, 'routing.nominatim.base_url'),
         );
         $client->setUserAgent($userAgent);
         $client->setTimeout((float) $timeout);
@@ -144,25 +145,4 @@ class NominatimGeocoder {
         }
         Cache::put($key, microtime(true), 60);
     }
-
-    /**
-     * Darf dieses Ziel im privaten Netz liegen?
-     *
-     * Zwei Fälle, die auseinandergehalten gehören (Sicherheitsscan
-     * 2026-08-23, S-10): Der **Betreiber** richtet den Dienst ein — die
-     * Vorgabe zeigt ab Werk auf `http://localhost/nominatim`, ein selbst gehosteter Routing-Server
-     * ist der Normalfall. Eine **Organisation** kann die Adresse über die
-     * Einstellungen aber überschreiben; dann ist sie eine von außen gesetzte
-     * URL und braucht das ausdrückliche Opt-in.
-     */
-    private function mayUsePrivateTarget(string $base): bool {
-        $operatorDefault = rtrim((string) config('routing.nominatim.base_url', ''), '/');
-
-        if ($operatorDefault !== '' && rtrim($base, '/') === $operatorDefault) {
-            return true;
-        }
-
-        return (bool) \App\Support\Setting::get('routing.allow_private_network', false);
-    }
-
 }

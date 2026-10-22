@@ -34,7 +34,8 @@ enum Status: int implements HasLabel {
         return (string) __('diary.status.' . $this->key());
     }
 
-    public function tone(): string {
+    /** Fachliche Stufe (done/progress/open/alert/neutral) für CSS-Klassen der Wochen- und PDF-Ansicht. */
+    public function stage(): string {
         return match ($this) {
             self::Done => 'done',
             self::InProgress, self::Accepted => 'progress',
@@ -45,9 +46,9 @@ enum Status: int implements HasLabel {
         };
     }
 
-    /** Ton für `<x-status-badge>`; tone() bleibt die fachliche Stufe. */
-    public function badgeTone(): string {
-        return match ($this->tone()) {
+    /** Ton für `<x-status-badge>`. */
+    public function tone(): string {
+        return match ($this->stage()) {
             'done' => 'success',
             'progress' => 'info',
             'open' => 'warning',

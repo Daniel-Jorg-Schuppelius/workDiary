@@ -10,6 +10,7 @@
 
 namespace App\Policies\Diary;
 
+use App\Enums\User\Permission;
 use App\Models\Diary\OnCallShift;
 use App\Models\Platform\User;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
@@ -27,17 +28,18 @@ class OnCallShiftPolicy {
      * die im Web offen stand, hätte über die Policy verweigert werden müssen.
      * Vereinheitlicht wird deshalb auf das, was tatsächlich gilt.
      *
-     * Ändern bleibt beim Eigentümer.
+     * Ändern beim Eigentümer oder org-weit mit `on-call-shift.manage` (lk-06).
      */
     public function view(User $user, OnCallShift $shift): bool {
         return $this->sharesOrganization($user, $shift);
     }
 
     public function update(User $user, OnCallShift $shift): bool {
-        return $this->owns($user, $shift);
+        return $this->owns($user, $shift)
+            || ($this->sharesOrganization($user, $shift) && $user->can(Permission::OnCallShiftManage->value));
     }
 
     public function delete(User $user, OnCallShift $shift): bool {
-        return $this->owns($user, $shift);
+        return $this->update($user, $shift);
     }
 }

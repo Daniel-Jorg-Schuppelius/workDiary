@@ -19,6 +19,7 @@ use App\Models\Audit\AuditLog;
 use App\Models\Platform\{Organization, SystemSetting};
 use App\Settings\{SettingDefinition, SettingScope, SettingType, SettingsRegistry};
 use App\Support\{ErrorText, MorphMap};
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -209,7 +210,7 @@ class SettingsController extends Controller {
 
     private function castValue(SettingType $type, mixed $raw): mixed {
         return match ($type) {
-            SettingType::Boolean => filter_var($raw, FILTER_VALIDATE_BOOLEAN),
+            SettingType::Boolean => StringHelper::parseBool($raw) ?? false,
             SettingType::Integer, SettingType::Duration => $raw === null || $raw === '' ? null : (int) $raw,
             SettingType::Decimal => $raw === null || $raw === '' ? null : (float) $raw,
             SettingType::Json => is_string($raw) ? (json_decode($raw, true) ?? $raw) : $raw,

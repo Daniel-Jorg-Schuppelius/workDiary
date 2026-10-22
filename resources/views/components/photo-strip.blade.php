@@ -12,7 +12,7 @@
   (nach vorn) und Löschen; Vorher/Nachher stehen nebeneinander. Upload mit
   Phase + Caption. Variablen: $item (ProtocolItem), $canManage (bool).
 --}}
-@props(['item', 'canManage' => false])
+@props(['item', 'canManage' => false, 'canAdd' => false, 'canRemove' => false])
 
 @php
     use App\Enums\Protocol\ProtocolItemPhotoPhase;
@@ -61,12 +61,14 @@
                                             <input name="caption" maxlength="180" value="{{ $photo->caption }}"
                                                    class="input input-bordered input-xs w-24" />
                                         </form>
-                                        <x-action-form :action="route('protocols.items.photos.destroy', $photo)" method="DELETE"
-                                                       :confirm="__('Foto wirklich entfernen?')">
-                                            <button type="submit" class="btn btn-ghost btn-xs px-1 text-error" title="{{ __('Entfernen') }}">
-                                                <x-icon name="delete" class="text-sm" />
-                                            </button>
-                                        </x-action-form>
+                                        @if ($canRemove)
+                                            <x-action-form :action="route('protocols.items.photos.destroy', $photo)" method="DELETE"
+                                                           :confirm="__('Foto wirklich entfernen?')">
+                                                <button type="submit" class="btn btn-ghost btn-xs px-1 text-error" title="{{ __('Entfernen') }}">
+                                                    <x-icon name="delete" class="text-sm" />
+                                                </button>
+                                            </x-action-form>
+                                        @endif
                                     </div>
                                 @endif
                             </figure>
@@ -77,7 +79,7 @@
         </div>
     @endif
 
-    @if ($canManage)
+    @if ($canAdd)
         <details class="text-sm">
             <summary class="cursor-pointer text-base-content/70">{{ __('Foto hinzufügen') }}</summary>
             <form method="POST" action="{{ route('protocols.items.photos.store', $item) }}"

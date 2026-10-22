@@ -1,7 +1,7 @@
 ---
 title: "Planificar rutas"
 topic: tours.manage
-version: 2
+version: 3
 keywords:
     - planificación de rutas
     - propuesta de ruta
@@ -51,5 +51,16 @@ calculada; sin ruta se aplica la línea recta y el viaje se marca como tal.
 Para un vehículo en modo libro de registro se solicita la lectura del
 cuentakilómetros y las lecturas de los viajes se suceden sin huecos. La
 adopción solo es posible una vez por ruta.
+
+**En ruta:** la vista de conductor de la ruta muestra la siguiente parada con
+navegación, «Iniciar ruta», en cada parada «Llegado», «Hecho» o «No
+encontrado» y «Finalizar ruta»; las horas pasan a ser el real de las paradas.
+«Replanificar el resto» en una ruta en curso conserva las paradas terminadas y
+solo replanifica las abiertas a partir de la última terminada.
+
+**Plan y real:** el informe «Rutas previsto/real» compara la llegada y la
+permanencia planificadas y reales por parada, con desviaciones por conductor y
+tipo de pedido; de ahí salen valores de experiencia para la duración del
+servicio en propuestas futuras.
 
 Coordine los cambios en rutas en curso con las personas implicadas.

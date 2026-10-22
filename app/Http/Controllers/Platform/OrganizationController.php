@@ -16,6 +16,7 @@ use App\Services\Org\OrganizationLifecycleService;
 use App\Services\Platform\Catalog\ArticleCatalog;
 use App\Settings\SettingsTree;
 use App\Support\{Setting, SortableQuery, Tz};
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use Illuminate\Validation\ValidationException;
@@ -252,12 +253,12 @@ class OrganizationController extends Controller {
                 $data['compliance'],
             );
             if (array_key_exists('driving_time_rules', $mergedSettings['compliance'])) {
-                $mergedSettings['compliance']['driving_time_rules'] = filter_var($mergedSettings['compliance']['driving_time_rules'], FILTER_VALIDATE_BOOL);
+                $mergedSettings['compliance']['driving_time_rules'] = StringHelper::parseBool($mergedSettings['compliance']['driving_time_rules']) ?? false;
             }
             // Boolean-Konvertierung für rules
             if (isset($mergedSettings['compliance']['rules']) && is_array($mergedSettings['compliance']['rules'])) {
                 $mergedSettings['compliance']['rules'] = array_map(
-                    static fn($v) => filter_var($v, FILTER_VALIDATE_BOOL),
+                    static fn($v) => StringHelper::parseBool($v) ?? false,
                     $mergedSettings['compliance']['rules'],
                 );
             }

@@ -48,7 +48,6 @@ class LetterheadPreviewTest extends TestCase {
         imagefill($img, 0, 0, (int) imagecolorallocate($img, 240, 240, 255));
         ob_start();
         imagepng($img);
-        imagedestroy($img);
 
         return UploadedFile::fake()->createWithContent($name, (string) ob_get_clean());
     }

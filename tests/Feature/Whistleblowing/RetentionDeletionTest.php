@@ -155,4 +155,39 @@ class RetentionDeletionTest extends TestCase {
         $this->expectException(RuntimeException::class);
         app(WhistleblowingDeletionService::class)->delete($case, $actor);
     }
+
+    /**
+     * Konzept §16, Vollscan 2026-09-15 Top 9b: Ein Restore spielt einen Stand
+     * vor der Löschung zurück — der überlebende Ledger stellt sie wieder her.
+     */
+    public function test_tombstone_ledger_reapplies_a_deletion_after_restore(): void {
+        $ledger = storage_path('framework/testing/wb-ledger-' . uniqid() . '.jsonl');
+        config()->set('whistleblowing.tombstone_ledger', $ledger);
+        $case = $this->makeCase('retention_review');
+        $actor = User::factory()->create(['organization_id' => $case->organization_id]);
+        app(WhistleblowingDeletionService::class)->delete($case, $actor);
+        $this->assertCount(1, app(\App\Services\Whistleblowing\WhistleblowingTombstoneLedger::class)->entries());
+
+        // Restore eines Backups von vor der Löschung: Fall mit Inhalt zurück, Grabstein fehlt.
+        DB::table('whistleblowing_cases')->where('id', $case->id)->update(['status' => 'retention_review', 'subject_ciphertext' => 'zurück', 'dek_wrapped' => 'alter-schluessel']);
+        DB::table('whistleblowing_case_tombstones')->where('public_id', $case->public_id)->delete();
+
+        $this->artisan('whistleblowing:apply-tombstones', ['--dry-run' => true])
+            ->expectsOutputToContain('Probelauf: 1 Fälle geschreddert, 1 Grabsteine wiederhergestellt')
+            ->assertSuccessful();
+        $this->assertSame('retention_review', $case->fresh()->status->value, 'Der Probelauf ändert nichts.');
+
+        $this->artisan('whistleblowing:apply-tombstones')->assertSuccessful();
+        $fresh = $case->fresh();
+        $this->assertSame('deleted', $fresh->status->value);
+        $this->assertNull($fresh->getAttribute('dek_wrapped'));
+        $this->assertNull(DB::table('whistleblowing_cases')->where('id', $case->id)->value('subject_ciphertext'));
+        $this->assertDatabaseHas('whistleblowing_case_tombstones', ['public_id' => $case->public_id, 'case_number' => $case->case_number]);
+
+        // Ein zweiter Lauf findet nichts mehr zu tun.
+        $this->artisan('whistleblowing:apply-tombstones')
+            ->expectsOutputToContain('Angewandt: 0 Fälle geschreddert, 0 Grabsteine wiederhergestellt')
+            ->assertSuccessful();
+        @unlink($ledger);
+    }
 }

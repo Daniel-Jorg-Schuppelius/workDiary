@@ -16,7 +16,7 @@ use App\Enums\Finance\ChartOfAccounts;
 use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
 use App\Models\Travel\Expense;
-use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use CommonToolkit\ValueObjects\Decimal;
 
 /**
@@ -217,6 +217,6 @@ final class DatevBookingConfig {
             return $default;
         }
 
-        return filter_var($value, FILTER_VALIDATE_BOOL);
+        return StringHelper::parseBool($value) ?? false;
     }
 }

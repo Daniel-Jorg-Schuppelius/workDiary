@@ -43,6 +43,7 @@ class AgileBacklogController extends Controller {
         $query = AgileWorkItem::query()
             ->where('board_id', $board->id)
             ->with(['task.assignees', 'column'])
+            ->withCount(['acceptanceCriteria', 'acceptanceCriteria as criteria_checked_count' => static fn ($q) => $q->whereNotNull('checked_at')])
             ->orderBy('backlog_rank');
 
         $type = trim((string) $request->query('type', ''));
@@ -234,7 +235,7 @@ class AgileBacklogController extends Controller {
             'text' => $data['text'],
         ]);
 
-        return back()->with('success', __('Kriterium hinzugefügt.'));
+        return back()->with('success', __('Kriterium hinzugefügt.'))->with('open_dialog', route('agile.criteria.dialog', [$project, $item]));
     }
 
     public function toggleCriterion(Project $project, AgileWorkItem $item, AgileAcceptanceCriterion $criterion): RedirectResponse {
@@ -248,7 +249,7 @@ class AgileBacklogController extends Controller {
             ? ['checked_at' => now(), 'checked_by' => $actor->id]
             : ['checked_at' => null, 'checked_by' => null]);
 
-        return back();
+        return back()->with('open_dialog', route('agile.criteria.dialog', [$project, $item]));
     }
 
     public function destroyCriterion(Project $project, AgileWorkItem $item, AgileAcceptanceCriterion $criterion): RedirectResponse {
@@ -258,7 +259,20 @@ class AgileBacklogController extends Controller {
 
         $criterion->delete();
 
-        return back()->with('success', __('Kriterium entfernt.'));
+        return back()->with('success', __('Kriterium entfernt.'))->with('open_dialog', route('agile.criteria.dialog', [$project, $item]));
+    }
+
+    /** Kriterienliste eines Elements als Dialog (Feature 064; Umsetzungslücken 2026-10-21, lk-01): anlegen, abhaken, entfernen. */
+    public function criteriaDialog(Project $project, AgileWorkItem $item): View {
+        $this->assertItemOnProject($item, $project);
+        Gate::authorize('view', $item);
+
+        return view('agile._criteria_dialog', [
+            'project' => $project,
+            'item' => $item->load('task:id,title'),
+            'criteria' => $item->acceptanceCriteria()->get(),
+            'canPrioritize' => Gate::allows('prioritize', $item),
+        ]);
     }
 
     /**

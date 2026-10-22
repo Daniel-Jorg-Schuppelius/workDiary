@@ -16,7 +16,7 @@
     <x-slot:actions>
         <form method="POST" action="{{ route('rental.reports.snapshot', ['from' => $from->toDateString(), 'to' => $to->toDateString()]) }}">
             @csrf
-            <x-button type="submit" tone="ghost">{{ __('Snapshot einfrieren') }}</x-button>
+            <x-button type="submit" tone="ghost">{{ __('Stand einfrieren') }}</x-button>
         </form>
     </x-slot:actions>
 

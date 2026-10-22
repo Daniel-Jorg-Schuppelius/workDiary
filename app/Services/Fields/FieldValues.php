@@ -14,7 +14,7 @@ namespace App\Services\Fields;
 
 use App\Enums\Fields\FieldType;
 use App\Support\CarbonFmt;
-use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use Illuminate\Support\Carbon;
 
 /**
@@ -51,7 +51,7 @@ final class FieldValues {
                 continue;
             }
             if ($field->type === FieldType::Boolean) {
-                $normalized[$field->key] = filter_var($raw ?? false, FILTER_VALIDATE_BOOL);
+                $normalized[$field->key] = StringHelper::parseBool($raw ?? false) ?? false;
 
                 continue;
             }

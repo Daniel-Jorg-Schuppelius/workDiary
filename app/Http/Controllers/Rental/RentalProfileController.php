@@ -18,6 +18,7 @@ use App\Models\Asset\Asset;
 use App\Models\Rental\{RentalCase, RentalProfile, RentalRateCard};
 use App\Rules\ExistsInCurrentOrganization;
 use App\Support\Sqid;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -104,7 +105,7 @@ class RentalProfileController extends Controller {
         // Auch das leere Textfeld (kommt als null an) wird zur Liste — sonst scheitert es an der Array-Regel.
         if ($request->has('accessories') && ! is_array($request->input('accessories'))) {
             $request->merge([
-                'accessories' => array_values(array_filter(array_map('trim', explode("\n", (string) $request->input('accessories'))))),
+                'accessories' => array_map('trim', StringHelper::lines((string) $request->input('accessories'), true)),
             ]);
         }
 

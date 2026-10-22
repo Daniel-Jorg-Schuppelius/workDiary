@@ -48,6 +48,10 @@
                             <x-icon-btn icon="stop" tone="error" size="sm" type="submit" placement="danger" show-label>{{ __('Beenden') }}</x-icon-btn>
                         </x-action-form>
                     @endif
+                    <x-action-form :action="route('invoice-schedules.destroy', $schedule)" method="DELETE" :confirm="__('Abrechnungsplan wirklich löschen? Bereits erzeugte Entwürfe bleiben erhalten.')"
+                                   confirm-icon="delete" confirm-tone="error" :confirm-label="__('Löschen')">
+                        <x-icon-btn placement="danger" icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
+                    </x-action-form>
                 @endcan
             </x-slot:actions>
         </x-page-toolbar>

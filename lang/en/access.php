@@ -196,7 +196,6 @@ return [
         'access.groups.assign' => 'Assign groups',
         'access.audit.view' => 'View audit log',
 
-        'organization.view' => 'View organization',
         'organization.update' => 'Edit organization',
         'organization.billing' => 'Manage organization billing',
         'branding.update' => 'Edit branding',
@@ -254,13 +253,11 @@ return [
         'privacy.report.export' => 'Export privacy report',
 
         'user.viewAny' => 'List members',
-        'user.view' => 'View member',
         'user.create' => 'Create member',
         'user.update' => 'Edit member',
         'user.delete' => 'Remove member',
         'user.impersonate' => 'Impersonate member',
         'user.reset-password' => 'Reset password',
-        'user.rates.manage' => 'Manage hourly rates',
         'user.flex.manage' => 'Manage flex eligibility',
         'user.payroll.manage' => 'Manage personnel & payroll data',
         'user.import' => 'Import users',
@@ -324,7 +321,6 @@ return [
         'timeEntry.create' => 'Create time entry',
         'timeEntry.update' => 'Edit time entry',
         'timeEntry.delete' => 'Delete time entry',
-        'timeEntry.create-for-others' => 'Create time entries for others',
         'timeEntry.approve' => 'Approve time entries',
         'timeEntry.reassign' => 'Reassign time entries to other users',
 
@@ -335,7 +331,6 @@ return [
         'timesheet.sign' => 'Sign timesheet',
         'timesheet.lock' => 'Lock timesheet',
         'timesheet.unlock' => 'Unlock timesheet',
-        'timesheet.export' => 'Export timesheet',
 
         'month.view.own' => 'View own month approvals',
         'month.view.team' => 'View team month approvals',
@@ -415,7 +410,6 @@ return [
         'dutyPlan.update' => 'Edit duty plan',
         'dutyPlan.delete' => 'Delete duty plan',
         'dutyPlan.publish' => 'Publish duty plan',
-        'shift.manage' => 'Manage shifts',
         'coverage-requirement.manage' => 'Manage coverage requirements',
         'on-call-shift.manage' => 'Manage on-call shifts',
         'emergency-assignment.manage' => 'Manage emergency assignments',

@@ -1,7 +1,7 @@
 ---
 title: "Touren planen"
 topic: tours.manage
-version: 2
+version: 3
 keywords:
     - Routenplanung
     - Tourenplanung
@@ -51,6 +51,17 @@ berechneten Route; ohne Route gilt die Luftlinie, die Fahrt ist dann so
 gekennzeichnet. Bei einem Fahrzeug im Fahrtenbuch-Modus wird der Tachostand
 abgefragt, die Stände der Fahrten folgen lückenlos aufeinander. Die
 Übernahme ist je Tour nur einmal möglich.
+
+**Unterwegs:** Die Fahreransicht der Tour zeigt den nächsten Stopp mit
+Navigation, „Tour starten“, je Stopp „Angekommen“, „Erledigt“ oder „Nicht
+angetroffen“ und „Tour beenden“; die Zeitpunkte werden zum Ist der Stopps.
+„Rest neu planen“ an einer laufenden Tour lässt erledigte Stopps stehen und
+plant nur die offenen ab dem letzten erledigten neu.
+
+**Plan und Ist:** Die Auswertung „Touren Plan-Ist“ stellt geplante und
+tatsächliche Ankunft und Verweildauer je Stopp gegenüber, mit Abweichungen je
+Fahrer und Auftragsart; daraus entstehen Erfahrungswerte für die
+Servicedauer künftiger Vorschläge.
 
 Änderungen an laufenden Touren sollten mit den Beteiligten abgestimmt
 werden.

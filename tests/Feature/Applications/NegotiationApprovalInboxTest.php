@@ -103,32 +103,32 @@ final class NegotiationApprovalInboxTest extends TestCase {
         $hr = $this->hrNegotiation();
 
         // Kaufmännisch ist jeweils Stufe 1 — beide bei der Buchhaltung, mit Verweis auf die Akte.
-        $this->actingAs($this->accounting)->get(route('servicedesk.approvals.index'))->assertOk()
+        $this->actingAs($this->accounting)->get(route('approvals.index'))->assertOk()
             ->assertSee('Vertragsverhandlung: Rahmenvertrag 2027')
             ->assertSee('Vertragsverhandlung: Arbeitsvertrag Kim')
             ->assertSee(route('tenders.show', $tender->negotiable), false)
             ->assertSee($this->responsibility(ApprovalStepKind::Commercial, UserRole::Buchhaltung));
 
         // Fachliche und HR-Stufe warten auf Stufe 1.
-        $this->actingAs($this->lead)->get(route('servicedesk.approvals.index'))->assertOk()
+        $this->actingAs($this->lead)->get(route('approvals.index'))->assertOk()
             ->assertDontSee('Vertragsverhandlung:');
-        $this->actingAs($this->personnel)->get(route('servicedesk.approvals.index'))->assertOk()
+        $this->actingAs($this->personnel)->get(route('approvals.index'))->assertOk()
             ->assertDontSee('Vertragsverhandlung:');
 
         $this->actingAs($this->accounting)
-            ->post(route('servicedesk.approvals.decide', $this->step($hr, 1)), ['decision' => 'approved'])
-            ->assertRedirect(route('servicedesk.approvals.index'));
+            ->post(route('approvals.decide', $this->step($hr, 1)), ['decision' => 'approved'])
+            ->assertRedirect(route('approvals.index'));
 
         // Die HR-Stufe sieht nur die Personalverwaltung, die Buchhaltung nicht mehr.
-        $this->actingAs($this->personnel)->get(route('servicedesk.approvals.index'))->assertOk()
+        $this->actingAs($this->personnel)->get(route('approvals.index'))->assertOk()
             ->assertSee('Vertragsverhandlung: Arbeitsvertrag Kim')
             ->assertDontSee('Vertragsverhandlung: Rahmenvertrag 2027')
             ->assertSee(route('recruiting.applications.show', $hr->negotiable), false)
             ->assertSee($this->responsibility(ApprovalStepKind::Hr, UserRole::Personalverwaltung));
-        $this->actingAs($this->accounting)->get(route('servicedesk.approvals.index'))->assertOk()
+        $this->actingAs($this->accounting)->get(route('approvals.index'))->assertOk()
             ->assertDontSee('Vertragsverhandlung: Arbeitsvertrag Kim')
             ->assertSee('Vertragsverhandlung: Rahmenvertrag 2027');
-        $this->actingAs($this->lead)->get(route('servicedesk.approvals.index'))->assertOk()
+        $this->actingAs($this->lead)->get(route('approvals.index'))->assertOk()
             ->assertDontSee('Vertragsverhandlung: Arbeitsvertrag Kim');
     }
 
@@ -140,25 +140,25 @@ final class NegotiationApprovalInboxTest extends TestCase {
         $this->service->approve($viaFile, $this->lead);
 
         $this->actingAs($this->accounting)
-            ->post(route('servicedesk.approvals.decide', $this->step($viaInbox, 1)), ['decision' => 'approved'])
-            ->assertRedirect(route('servicedesk.approvals.index'))
+            ->post(route('approvals.decide', $this->step($viaInbox, 1)), ['decision' => 'approved'])
+            ->assertRedirect(route('approvals.index'))
             ->assertSessionHas('success', __('Schritt genehmigt.'));
         $this->assertSame(ApplicationContractNegotiationStatus::InReview, $viaInbox->fresh()->status);
         $this->assertSame(['step' => 1, 'round' => 1, 'result' => 'pending'], $this->lastAudit($viaInbox, 'contract.approved_step'));
 
         // Die nächste Stufe steht jetzt bei der Teamleitung.
-        $this->actingAs($this->lead)->get(route('servicedesk.approvals.index'))->assertOk()
+        $this->actingAs($this->lead)->get(route('approvals.index'))->assertOk()
             ->assertSee('Vertragsverhandlung: Über den Eingang');
         $this->actingAs($this->lead)
-            ->post(route('servicedesk.approvals.decide', $this->step($viaInbox, 2)), ['decision' => 'approved'])
-            ->assertRedirect(route('servicedesk.approvals.index'));
+            ->post(route('approvals.decide', $this->step($viaInbox, 2)), ['decision' => 'approved'])
+            ->assertRedirect(route('approvals.index'));
 
         foreach ([$viaInbox, $viaFile] as $negotiation) {
             $this->assertSame(ApplicationContractNegotiationStatus::Approved, $negotiation->fresh()->status);
             $this->assertSame(['step' => 2, 'round' => 1, 'result' => 'approved_all'], $this->lastAudit($negotiation, 'contract.approved_step'));
             $this->assertSame(['approved', 'approved'], $negotiation->approvals()->orderBy('step')->pluck('decision')->all());
         }
-        $this->actingAs($this->lead)->get(route('servicedesk.approvals.index'))->assertOk()
+        $this->actingAs($this->lead)->get(route('approvals.index'))->assertOk()
             ->assertDontSee('Vertragsverhandlung: Über den Eingang');
 
         // Abschluss an der Akte wie gewohnt.
@@ -172,17 +172,17 @@ final class NegotiationApprovalInboxTest extends TestCase {
 
         Setting::set('approvals.step_role.commercial', UserRole::Teamleitung->value, SettingScope::Organization, $this->organization);
 
-        $this->actingAs($this->accounting)->get(route('servicedesk.approvals.index'))->assertOk()
+        $this->actingAs($this->accounting)->get(route('approvals.index'))->assertOk()
             ->assertDontSee('Vertragsverhandlung: Rahmenvertrag 2027');
-        $this->actingAs($this->accounting)->get(route('servicedesk.approvals.decide-form', $step))->assertForbidden();
+        $this->actingAs($this->accounting)->get(route('approvals.decide-form', $step))->assertForbidden();
         $this->actingAs($this->accounting)
-            ->post(route('servicedesk.approvals.decide', $step), ['decision' => 'approved'])
+            ->post(route('approvals.decide', $step), ['decision' => 'approved'])
             ->assertForbidden();
 
-        $this->actingAs($this->lead)->get(route('servicedesk.approvals.index'))->assertOk()
+        $this->actingAs($this->lead)->get(route('approvals.index'))->assertOk()
             ->assertSee('Vertragsverhandlung: Rahmenvertrag 2027')
             ->assertSee($this->responsibility(ApprovalStepKind::Commercial, UserRole::Teamleitung));
-        $this->actingAs($this->lead)->get(route('servicedesk.approvals.decide-form', $step))->assertOk()
+        $this->actingAs($this->lead)->get(route('approvals.decide-form', $step))->assertOk()
             ->assertSee('Vertragsverhandlung: Rahmenvertrag 2027');
         $this->assertNull($step->fresh()->decision);
     }
@@ -194,7 +194,7 @@ final class NegotiationApprovalInboxTest extends TestCase {
         data_set($settings, 'approvals.step_role.commercial', null);
         $this->organization->forceFill(['settings' => $settings])->save();
 
-        $this->actingAs($this->accounting)->get(route('servicedesk.approvals.index'))->assertOk()
+        $this->actingAs($this->accounting)->get(route('approvals.index'))->assertOk()
             ->assertSee('Vertragsverhandlung: Rahmenvertrag 2027')
             ->assertSee($this->responsibility(ApprovalStepKind::Commercial, UserRole::Buchhaltung));
     }
@@ -204,18 +204,18 @@ final class NegotiationApprovalInboxTest extends TestCase {
         $step1 = $this->step($negotiation, 1);
 
         $this->actingAs($this->accounting)
-            ->post(route('servicedesk.approvals.decide', $step1), ['decision' => 'rejected'])
+            ->post(route('approvals.decide', $step1), ['decision' => 'rejected'])
             ->assertSessionHasErrors('reason');
         $this->actingAs($this->accounting)
-            ->post(route('servicedesk.approvals.decide', $step1), ['decision' => 'rejected', 'reason' => 'Zahlungsziel zu lang'])
-            ->assertRedirect(route('servicedesk.approvals.index'));
+            ->post(route('approvals.decide', $step1), ['decision' => 'rejected', 'reason' => 'Zahlungsziel zu lang'])
+            ->assertRedirect(route('approvals.index'));
 
         $this->assertSame('rejected', $step1->fresh()->decision);
         $this->assertSame(ApplicationContractNegotiationStatus::InReview, $negotiation->fresh()->status);
         $this->assertSame(['step' => 1, 'round' => 1, 'result' => 'rejected'], $this->lastAudit($negotiation, 'contract.rejected_step'));
 
         // Die Kette ist beendet — weder Eingang noch Akte entscheiden Stufe 2.
-        $this->actingAs($this->lead)->get(route('servicedesk.approvals.index'))->assertOk()
+        $this->actingAs($this->lead)->get(route('approvals.index'))->assertOk()
             ->assertDontSee('Vertragsverhandlung: Rahmenvertrag 2027');
         try {
             $this->service->approve($negotiation, $this->lead);
@@ -226,7 +226,7 @@ final class NegotiationApprovalInboxTest extends TestCase {
 
         // Eine neue Version startet die nächste Runde wieder bei der Buchhaltung.
         $this->service->addVersion($negotiation, 'counter', 'Zahlungsziel 30 Tage', [], $this->creator);
-        $this->actingAs($this->accounting)->get(route('servicedesk.approvals.index'))->assertOk()
+        $this->actingAs($this->accounting)->get(route('approvals.index'))->assertOk()
             ->assertSee('Vertragsverhandlung: Rahmenvertrag 2027');
         $this->assertNull($this->step($negotiation, 1, 2)->decision);
     }
@@ -236,12 +236,12 @@ final class NegotiationApprovalInboxTest extends TestCase {
         $step1 = $this->step($negotiation, 1);
 
         $this->actingAs($this->accounting)
-            ->post(route('servicedesk.approvals.decide', $step1), ['decision' => 'question', 'reason' => 'Skonto vereinbart?'])
-            ->assertRedirect(route('servicedesk.approvals.index'));
+            ->post(route('approvals.decide', $step1), ['decision' => 'question', 'reason' => 'Skonto vereinbart?'])
+            ->assertRedirect(route('approvals.index'));
 
         $this->assertSame('question', $step1->fresh()->decision);
         $this->assertSame(['step' => 1, 'round' => 1, 'result' => 'pending'], $this->lastAudit($negotiation, 'contract.question_step'));
-        $this->actingAs($this->accounting)->get(route('servicedesk.approvals.index'))->assertOk()
+        $this->actingAs($this->accounting)->get(route('approvals.index'))->assertOk()
             ->assertSee('Vertragsverhandlung: Rahmenvertrag 2027')
             ->assertSee(__('Rückfrage offen'));
 
@@ -256,7 +256,7 @@ final class NegotiationApprovalInboxTest extends TestCase {
         $step1 = $this->step($negotiation, 1);
 
         $this->actingAs($creator)
-            ->post(route('servicedesk.approvals.decide', $step1), ['decision' => 'approved'])
+            ->post(route('approvals.decide', $step1), ['decision' => 'approved'])
             ->assertSessionHas('error', __('Selbstfreigabe ist nicht zulässig.'));
         $this->assertNull($step1->fresh()->decision);
     }
@@ -266,15 +266,15 @@ final class NegotiationApprovalInboxTest extends TestCase {
         $step1 = $this->step($hr, 1);
 
         // Mit Eingangsrecht, aber ohne zugeordnete Rolle.
-        $this->actingAs($this->lead)->get(route('servicedesk.approvals.index'))->assertOk()
+        $this->actingAs($this->lead)->get(route('approvals.index'))->assertOk()
             ->assertDontSee('Vertragsverhandlung: Arbeitsvertrag Kim');
         $this->actingAs($this->lead)
-            ->post(route('servicedesk.approvals.decide', $step1), ['decision' => 'approved'])
+            ->post(route('approvals.decide', $step1), ['decision' => 'approved'])
             ->assertForbidden();
 
         // Ohne Eingangsrecht kein Eingang.
         $member = $this->orgUser();
-        $this->actingAs($member)->get(route('servicedesk.approvals.index'))->assertForbidden();
+        $this->actingAs($member)->get(route('approvals.index'))->assertForbidden();
         $this->assertNull($step1->fresh()->decision);
     }
 
@@ -282,10 +282,10 @@ final class NegotiationApprovalInboxTest extends TestCase {
         $negotiation = $this->tenderNegotiation();
         $this->service->conclude($negotiation, 'declined', 'Kunde abgesprungen', $this->creator);
 
-        $this->actingAs($this->accounting)->get(route('servicedesk.approvals.index'))->assertOk()
+        $this->actingAs($this->accounting)->get(route('approvals.index'))->assertOk()
             ->assertDontSee('Vertragsverhandlung: Rahmenvertrag 2027');
         $this->actingAs($this->accounting)
-            ->post(route('servicedesk.approvals.decide', $this->step($negotiation, 1)), ['decision' => 'approved'])
+            ->post(route('approvals.decide', $this->step($negotiation, 1)), ['decision' => 'approved'])
             ->assertSessionHas('error', __('Die Verhandlung ist abgeschlossen.'));
         $this->assertNull($this->step($negotiation, 1)->decision);
     }
@@ -308,16 +308,16 @@ final class NegotiationApprovalInboxTest extends TestCase {
         $this->assertSame(UserRole::Buchhaltung, $responsibility->mappedRole($ownStep));
         $this->assertSame(UserRole::Teamleitung, $responsibility->mappedRole($this->step($foreign, 1)));
 
-        $this->actingAs($otherAccounting)->get(route('servicedesk.approvals.index'))->assertOk()
+        $this->actingAs($otherAccounting)->get(route('approvals.index'))->assertOk()
             ->assertDontSee('Vertragsverhandlung:');
-        $this->actingAs($otherLead)->get(route('servicedesk.approvals.index'))->assertOk()
+        $this->actingAs($otherLead)->get(route('approvals.index'))->assertOk()
             ->assertSee('Vertragsverhandlung: Fremdvertrag')
             ->assertDontSee('Vertragsverhandlung: Rahmenvertrag 2027');
 
-        $this->actingAs($this->accounting)->get(route('servicedesk.approvals.index'))->assertOk()
+        $this->actingAs($this->accounting)->get(route('approvals.index'))->assertOk()
             ->assertSee('Vertragsverhandlung: Rahmenvertrag 2027')
             ->assertDontSee('Vertragsverhandlung: Fremdvertrag');
-        $this->actingAs($this->lead)->get(route('servicedesk.approvals.index'))->assertOk()
+        $this->actingAs($this->lead)->get(route('approvals.index'))->assertOk()
             ->assertDontSee('Vertragsverhandlung:');
     }
 }

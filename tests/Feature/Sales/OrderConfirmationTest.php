@@ -174,4 +174,22 @@ final class OrderConfirmationTest extends TestCase {
         $this->actingAs($this->user)->post(route('order-confirmations.cancel', $confirmation))->assertRedirect();
         $this->assertSame(OrderConfirmationStatus::Cancelled, $confirmation->refresh()->status);
     }
+
+    /** Sicherheitsaudit 2026-10-21, li-1: eine veraltete zweite Bestätigung zieht keine zweite Nummer. */
+    public function test_a_stale_second_confirmation_is_rejected(): void {
+        $confirmation = app(\App\Services\Sales\OrderConfirmationService::class)->fromQuote($this->acceptedQuote(), $this->user);
+        $stale = OrderConfirmation::query()->findOrFail($confirmation->id);
+
+        app(\App\Services\Sales\OrderConfirmationService::class)->confirm($confirmation, $this->user);
+        $this->assertSame('AB-2026-0001', $confirmation->fresh()->number);
+
+        try {
+            app(\App\Services\Sales\OrderConfirmationService::class)->confirm($stale, $this->user);
+            $this->fail('Eine bestätigte AB darf nicht erneut bestätigt werden.');
+        } catch (\RuntimeException) {
+        }
+        $this->assertSame('AB-2026-0001', $confirmation->fresh()->number);
+        $next = app(\App\Services\Numbering\NumberSequenceService::class)->peekNext($this->org, \App\Enums\Numbering\NumberScope::OrderConfirmation);
+        $this->assertSame('AB-2026-0002', $next, 'Keine Nummer verbraucht.');
+    }
 }

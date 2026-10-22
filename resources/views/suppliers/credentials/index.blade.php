@@ -54,6 +54,22 @@
                                         data-entry-modal-trigger
                                         :href="route('suppliers.credentials.create', $row['supplier'])"
                                         :label="__('procurement.credentials.action.add')" />
+                            @php($stored = collect($row['items'])->pluck('credential')->filter())
+                            @if ($stored->isNotEmpty())
+                                @can('update', $row['supplier'])
+                                    <x-action-menu icon="delete" size="xs" icon-only :label="__('procurement.credentials.action.remove')">
+                                        @foreach ($row['items'] as $item)
+                                            @if ($item['credential'])
+                                                <x-action-form :action="route('suppliers.credentials.destroy', [$row['supplier'], $item['credential']])" method="DELETE"
+                                                               :confirm="__('procurement.credentials.confirm_delete', ['type' => $item['type']->name])"
+                                                               confirm-icon="delete" confirm-tone="error" :confirm-label="__('procurement.credentials.action.remove')">
+                                                    <x-button type="submit" tone="ghost" size="xs">{{ $item['type']->name }}</x-button>
+                                                </x-action-form>
+                                            @endif
+                                        @endforeach
+                                    </x-action-menu>
+                                @endcan
+                            @endif
                         </div>
                     </td>
                 </tr>

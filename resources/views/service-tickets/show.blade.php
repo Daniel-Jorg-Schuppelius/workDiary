@@ -24,6 +24,14 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="$ticket->title"
                         back-route="service-tickets.index" :back-label="__('Zurück')">
+            @can('delete', $ticket)
+                <x-slot:actions>
+                    <x-action-form :action="route('service-tickets.destroy', $ticket)" method="DELETE" :confirm="__('Ticket wirklich löschen?')"
+                                   confirm-icon="delete" confirm-tone="error" :confirm-label="__('Löschen')">
+                        <x-icon-btn placement="danger" icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
+                    </x-action-form>
+                </x-slot:actions>
+            @endcan
         </x-page-toolbar>
     </x-slot:toolbar>
 
@@ -72,6 +80,34 @@
     @include('service-tickets._sla_clock')
 
     @if ($canUpdate)
+        {{-- Klassifizierung (ITIL): Auswirkung × Dringlichkeit ergibt die Priorität, übersteuern wird protokolliert (Vollscan 2026-10-21). --}}
+        <x-card>
+            <h3 class="font-semibold mb-3">{{ __('Klassifizierung') }}</h3>
+            <form method="POST" action="{{ route('service-tickets.classify', $ticket) }}" class="grid gap-2 md:grid-cols-3">
+                @csrf
+                <x-select-field name="impact" id="ticket-impact" :label="__('Auswirkung')" required>
+                    @foreach (\App\Enums\ServiceTicket\TicketSeverity::cases() as $severity)
+                        <option value="{{ $severity->value }}" @selected(($ticket->impact?->value ?? 2) === $severity->value)>{{ $severity->label() }}</option>
+                    @endforeach
+                </x-select-field>
+                <x-select-field name="urgency" id="ticket-urgency" :label="__('Dringlichkeit')" required>
+                    @foreach (\App\Enums\ServiceTicket\TicketSeverity::cases() as $severity)
+                        <option value="{{ $severity->value }}" @selected(($ticket->urgency?->value ?? 2) === $severity->value)>{{ $severity->label() }}</option>
+                    @endforeach
+                </x-select-field>
+                <x-select-field name="priority_override" id="ticket-priority-override" :label="__('Priorität übersteuern')">
+                    <option value="">{{ __('aus Auswirkung und Dringlichkeit') }}</option>
+                    @foreach (\App\Enums\ServiceTicket\ServiceTicketPriority::cases() as $priority)
+                        <option value="{{ $priority->value }}">{{ $priority->label() }}</option>
+                    @endforeach
+                </x-select-field>
+                <x-textarea-field name="workaround" id="ticket-workaround" :label="__('Workaround')" rows="2" span="3" :value="$ticket->workaround" />
+                <div class="md:col-span-3">
+                    <x-button tone="primary" size="sm" type="submit">{{ __('Klassifizieren') }}</x-button>
+                </div>
+            </form>
+        </x-card>
+
         <x-card>
             <h3 class="font-semibold mb-3">{{ __('Status ändern') }}</h3>
             <form method="POST" action="{{ route('service-tickets.transition', $ticket) }}" class="flex flex-wrap items-end gap-2">

@@ -70,6 +70,23 @@ class OpenIssueController extends Controller {
         ]);
     }
 
+    /** Titel, Beschreibung und Kategorie bearbeiten (Vollscan 2026-10-21). */
+    public function edit(OpenIssue $issue): View {
+        Gate::authorize('update', $issue);
+
+        return view('open-issues._edit_dialog', ['issue' => $issue]);
+    }
+
+    /** Zuweisung ändern oder aufheben. */
+    public function assignForm(OpenIssue $issue): View {
+        Gate::authorize('assign', OpenIssue::class);
+
+        return view('open-issues._assign_dialog', [
+            'issue' => $issue->loadMissing('assignee'),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
+        ]);
+    }
+
     public function transitionForm(OpenIssue $issue, string $action): View {
         Gate::authorize('update', $issue);
 

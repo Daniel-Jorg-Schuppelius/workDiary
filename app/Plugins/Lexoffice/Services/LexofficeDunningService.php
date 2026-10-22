@@ -10,11 +10,14 @@
 
 namespace App\Plugins\Lexoffice\Services;
 
+use APIToolkit\Entities\ID;
+use APIToolkit\Exceptions\ApiException;
 use App\Models\Integration\ExternalReference;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
-use App\Plugins\Support\PluginApiClient;
+use Lexoffice\API\Endpoints\Documents\{DunningsEndpoint, InvoicesEndpoint};
+use Lexoffice\Entities\Documents\Dunnings\Dunning;
 use RuntimeException;
 
 /**
@@ -25,7 +28,7 @@ use RuntimeException;
  * als Folgebeleg einer Vorgänger-Rechnung: `POST /v1/dunnings?precedingSalesVoucherId={id}`.
  * Der Body wird aus der geladenen Rechnung abgeleitet (Adresse/Positionen).
  *
- * HTTP über {@see PluginApiClient} (php-api-toolkit, FakePluginHttp-testbar).
+ * Rechnung und Mahnung über die Beleg-Endpunkte des SDK mit einem Client.
  */
 class LexofficeDunningService {
     public const EXT_TYPE_DUNNING = 'dunning';
@@ -52,12 +55,12 @@ class LexofficeDunningService {
         $precedingId = (string) $voucher->external_id;
 
         // Vorgänger-Rechnung laden (Adresse/Positionen für den Mahnungs-Body).
-        $api = app(LexofficeClientFactory::class)->fromConfig($config);
-        $invoiceResponse = $api->getResponse($config['base_url'] . '/invoices/' . $precedingId);
-        if (! $invoiceResponse->successful()) {
-            throw new RuntimeException(sprintf('Lexoffice invoice fetch failed: HTTP %d', $invoiceResponse->status()));
+        $client = app(LexofficeClientFactory::class)->sdk((string) $config['api_key'], (string) $config['base_url'], $config['request_interval']);
+        try {
+            $invoice = (new InvoicesEndpoint($client))->get(new ID($precedingId))->toArray();
+        } catch (ApiException $e) {
+            throw new RuntimeException(sprintf('Lexoffice invoice fetch failed: HTTP %d', $e->getCode()), 0, $e);
         }
-        $invoice = (array) ($invoiceResponse->json() ?? []);
 
         $payload = [
             'voucherDate' => now()->format('Y-m-d\TH:i:s.vP'),
@@ -68,17 +71,16 @@ class LexofficeDunningService {
             'title' => (string) __('Mahnung'),
         ];
 
-        $response = $api->postJson($config['base_url'] . '/dunnings?precedingSalesVoucherId=' . $precedingId, $payload);
-
-        if (! $response->successful()) {
+        try {
+            $body = (new DunningsEndpoint($client))->create(Dunning::fromArray($payload), new ID($precedingId))->toArray();
+        } catch (ApiException $e) {
             throw new RuntimeException(sprintf(
                 'Lexoffice dunning failed: HTTP %d %s',
-                $response->status(),
-                mb_substr((string) $response->body(), 0, 500),
-            ));
+                $e->getCode(),
+                mb_substr((string) $e->getContent(), 0, 500),
+            ), 0, $e);
         }
 
-        $body = (array) ($response->json() ?? []);
         $externalId = (string) ($body['id'] ?? '');
         if ($externalId === '') {
             throw new RuntimeException('Lexoffice dunning returned no id.');

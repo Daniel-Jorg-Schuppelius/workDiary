@@ -74,6 +74,8 @@ return [
         'pdf' => 'PDF',
         'send' => 'Enviar',
         'acknowledge' => 'Confirmar recepción',
+        'delete' => 'Eliminar borrador',
+        'delete_confirm' => '¿Eliminar este borrador?',
     ],
 
     'badge' => [

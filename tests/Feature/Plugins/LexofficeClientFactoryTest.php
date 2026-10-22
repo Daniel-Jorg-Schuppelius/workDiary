@@ -18,10 +18,12 @@ use App\Models\Platform\User;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Jobs\SyncOwnerVouchersJob;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
+use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Sleep;
+use Lexoffice\API\Client;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\{FakePluginHttp, InteractsWithPlugins};
@@ -83,7 +85,27 @@ final class LexofficeClientFactoryTest extends TestCase {
 
     public function test_a_queued_run_uses_the_interval_of_its_organization_without_bound_context(): void {
         $customer = $this->linkedCustomer();
+        // Ein bezahlter Beleg ohne Zahldatum: der Zahlungsabgleich baut dafür den SDK-Client.
+        LexofficeVoucher::query()->create([
+            'organization_id' => $this->organization->id,
+            'external_id' => 'lex-paid-1',
+            'voucher_type' => 'salesinvoice',
+            'voucher_status' => 'paid',
+            'voucher_date' => '2026-10-01',
+            'paid_date' => null,
+        ]);
         $fake = $this->recordingHttp();
+        $factory = new class extends LexofficeClientFactory {
+            /** @var list<?float> */
+            public array $sdkIntervals = [];
+
+            public function sdk(string $apiKey, string $baseUrl, ?float $requestInterval = null): Client {
+                $this->sdkIntervals[] = $requestInterval;
+
+                return parent::sdk($apiKey, $baseUrl, $requestInterval);
+            }
+        };
+        app()->instance(LexofficeClientFactory::class, $factory);
         // Die Queue vergisst den Organisationskontext vor jedem Job.
         app()->forgetInstance('currentOrganization');
 
@@ -91,6 +113,31 @@ final class LexofficeClientFactoryTest extends TestCase {
 
         $this->assertNotSame([], $fake->intervals);
         $this->assertSame([1.25], array_values(array_unique($fake->intervals)));
+        // Auch der SDK-Client (Zahlungen) bekommt den Abstand der Organisation ausdrücklich.
+        $this->assertNotSame([], $factory->sdkIntervals);
+        $this->assertSame([1.25], array_values(array_unique($factory->sdkIntervals)));
+    }
+
+    /** Der SDK-Client bekommt Abstand, Budget und Weiterleitungsprüfung wie der API-Client; der Test-Transport bleibt ungedrosselt. */
+    public function test_the_sdk_client_gets_interval_retry_budget_and_guarded_redirects(): void {
+        // Echte Fabrik: eigener Transport, ohne dass eine Anfrage hinausgeht.
+        app()->instance(PluginHttpFactory::class, new PluginHttpFactory);
+        $factory = app(LexofficeClientFactory::class);
+
+        $explicit = $factory->sdk('lex-key', 'https://api.lexware.io/v1', 1.25);
+        $this->assertSame(1.25, $explicit->getRequestInterval());
+        $this->assertSame(LexofficeClientFactory::MAX_RETRIES, $explicit->getMaxRetries());
+        $transport = (fn () => $this->client)->call($explicit);
+        $this->assertInstanceOf(\Closure::class, $transport->getConfig('allow_redirects')['on_redirect'] ?? null, 'Weiterleitungen laufen durch die SSRF-Schranke');
+
+        $this->assertSame(1.25, $factory->sdk('lex-key', 'https://api.lexware.io/v1')->getRequestInterval(), 'ohne Angabe der Abstand der gebundenen Organisation');
+        $this->assertSame(Client::MIN_INTERVAL, $factory->sdk('lex-key', 'https://api.lexware.io/v1', 0.2)->getRequestInterval(), 'nie unter der Untergrenze des SDK');
+        $this->assertSame(0.0, $factory->sdk('lex-key', 'https://api.lexware.io/v1', 0.0)->getRequestInterval(), '0 schaltet die Drossel ab');
+
+        FakePluginHttp::fake();
+        $faked = $factory->sdk('lex-key', 'https://api.lexware.io/v1', 1.25);
+        $this->assertSame(0.0, $faked->getRequestInterval());
+        $this->assertSame(LexofficeClientFactory::MAX_RETRIES, $faked->getMaxRetries());
     }
 
     public function test_a_job_goes_back_to_the_queue_while_another_run_holds_the_api_lock(): void {

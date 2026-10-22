@@ -10,9 +10,10 @@
 
 namespace Tests\Feature\Media;
 
-use App\Enums\Media\MediaState;
+use App\Enums\Media\{MediaRenditionKind, MediaState};
 use App\Jobs\TranscodeVideoJob;
 use App\Models\Attachments\Attachment;
+use App\Models\Media\MediaRendition;
 use App\Services\Media\VideoTranscodingService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -226,5 +227,49 @@ class VideoTranscodingTest extends TestCase {
         $response->assertStatus(206);
         $this->assertSame('bytes', $response->headers->get('Accept-Ranges'));
         $this->assertSame('bytes 1000-1999/5000', $response->headers->get('Content-Range'));
+    }
+
+    public function test_fassung_wird_nur_zur_eigenen_einschreibung_und_einheit_ausgeliefert(): void {
+        Storage::fake('local');
+        $courses = app(\App\Services\Learning\LearningCourseService::class);
+        $course = $courses->createCourse($this->organization, null, ['title' => 'Erste Hilfe']);
+        $courses->addUnit($course, ['title' => 'Video']);
+        $courses->addUnit($course, ['title' => 'Quiz']);
+        [$unit, $otherUnit] = $course->refresh()->units()->orderBy('position')->get()->all();
+
+        $attachment = Attachment::query()->create([
+            'organization_id' => $this->organization->id,
+            'attachable_type' => $unit->getMorphClass(),
+            'attachable_id' => $unit->id,
+            'disk' => 'local',
+            'path' => 'videos/clip.mp4',
+            'original_name' => 'clip.mp4',
+            'mime' => 'video/mp4',
+            'size' => 5000,
+            'media_state' => MediaState::Ready,
+        ]);
+        Storage::disk('local')->put('videos/renditions/720p.mp4', 'fassung');
+        $rendition = MediaRendition::query()->create([
+            'organization_id' => $this->organization->id,
+            'attachment_id' => $attachment->id,
+            'kind' => MediaRenditionKind::Video->value,
+            'variant' => '720p',
+            'disk' => 'local',
+            'path' => 'videos/renditions/720p.mp4',
+            'mime' => 'video/mp4',
+            'size_bytes' => 7,
+        ]);
+
+        $courses->release($course->refresh(), null);
+        $enrollments = app(\App\Services\Learning\LearningEnrollmentService::class);
+        $learner = \App\Models\Platform\User::factory()->aussendienst()->create(['organization_id' => $this->organization->id]);
+        $enrollment = $enrollments->enroll($course->refresh(), $learner);
+
+        $this->actingAs($learner)->get(route('learning.my.units.rendition', [$enrollment->sqid, $unit->sqid, $rendition->sqid]))
+            ->assertOk()->assertHeader('Content-Type', 'video/mp4');
+        $this->actingAs($learner)->get(route('learning.my.units.rendition', [$enrollment->sqid, $otherUnit->sqid, $rendition->sqid]))->assertNotFound();
+
+        $other = \App\Models\Platform\User::factory()->aussendienst()->create(['organization_id' => $this->organization->id]);
+        $this->actingAs($other)->get(route('learning.my.units.rendition', [$enrollment->sqid, $unit->sqid, $rendition->sqid]))->assertNotFound();
     }
 }

@@ -263,6 +263,26 @@ class PortalInsightsTest extends TestCase {
         $this->assertSame(1, $tickets['series'][3]['resolved']);
     }
 
+    /** Konsolidierungs-Audit 2026-10-21, ko-13: Warten auf den Kunden (SLA-Pause) zählt wie im Helpdesk-Bericht nicht. */
+    public function test_average_resolution_excludes_sla_pauses(): void {
+        $this->setVisibility(['insights', 'tickets']);
+        foreach (range(1, 5) as $day) {
+            $ticket = ServiceTicket::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $this->customer->id, 'reported_at' => sprintf('2026-05-%02d 09:00:00', $day), 'resolved_at' => sprintf('2026-05-%02d 09:00:00', $day + 4), 'status' => ServiceTicketStatus::Done->value]);
+            \App\Models\ServiceTicket\SlaClockSegment::query()->create([
+                'organization_id' => $this->organization->id,
+                'service_ticket_id' => $ticket->id,
+                'target' => \App\Models\ServiceTicket\SlaClockSegment::TARGET_RESOLUTION,
+                'paused_from' => sprintf('2026-05-%02d 09:00:00', $day + 1),
+                'paused_to' => sprintf('2026-05-%02d 09:00:00', $day + 3),
+                'reason' => 'waiting_customer',
+            ]);
+        }
+
+        $this->actingAs($this->portalUser, 'customer');
+        $tickets = $this->get(route('customer.insights.index', ['year' => 2026]))->assertOk()->viewData('tickets');
+        $this->assertSame(2.0, $tickets['average_days']);
+    }
+
     public function test_dashboard_row_appears_only_with_the_release(): void {
         $this->setVisibility(['time_entries', 'invoices']);
         $this->entry('2026-01-10', 60);
@@ -294,5 +314,25 @@ class PortalInsightsTest extends TestCase {
         $page = $this->get(route('customer.insights.index'))->assertOk();
         $page->assertDontSee('FREMD-1');
         $this->assertSame([], $page->viewData('invoices')['currencies']);
+    }
+
+    /** Konsolidierungs-Audit 2026-10-21, ko-03: offen ist, was das Mahnwesen offen nennt — Teilzahlungen sind abgezogen. */
+    public function test_open_amount_follows_the_dunning_rule_with_partial_payments(): void {
+        $this->setVisibility(['insights', 'invoices']);
+        $partial = $this->invoice('RE-T', '2026-03-02', '1000.00', ['status' => InvoiceStatus::PartiallyPaid]);
+        $this->app->instance(\App\Services\Invoicing\Contracts\PaymentStatusProvider::class, new class((int) $partial->id) implements \App\Services\Invoicing\Contracts\PaymentStatusProvider {
+            public function __construct(private readonly int $invoiceId) {}
+
+            public function allocatedSum(Invoice $invoice): float {
+                return (int) $invoice->id === $this->invoiceId ? 600.0 : 0.0;
+            }
+        });
+        $this->fakeExternal();
+
+        $this->actingAs($this->portalUser, 'customer');
+        $block = $this->get(route('customer.insights.index', ['year' => 2026]))->assertOk()->viewData('invoices')['currencies'][0];
+        $this->assertSame(1000.0, $block['gross']);
+        $this->assertSame(400.0, $block['open']);
+        $this->assertSame(400.0, $block['overdue']);
     }
 }

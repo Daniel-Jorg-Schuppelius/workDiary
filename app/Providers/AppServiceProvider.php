@@ -974,6 +974,10 @@ class AppServiceProvider extends ServiceProvider {
         // eigentliche Schranke ist der Sitzungstoken.
         RateLimiter::for('cmi5-lrs', fn(Request $request) => Limit::perMinute(1200)->by('c5l:' . CryptoHelper::hash((string) $request->ip(), HashAlgorithm::SHA1)));
 
+        // Probelauf des Zonen-Editors (Sicherheitsaudit 2026-10-21, pub-3): bis zu
+        // 30 Belege mit Textlayer bzw. OCR je Aufruf — je Person begrenzt.
+        RateLimiter::for('recognition-trial', fn(Request $request) => Limit::perMinute(6)->by('rtr:' . ($request->user()?->getAuthIdentifier() ?? $request->ip())));
+
         // Stempelterminal-Ingest (MVP-516): zusätzlich zum IP-Limit ein
         // Limit je Gerätetoken — ein amoklaufendes/kopiertes Terminal drosselt
         // nur sich selbst, nicht den ganzen Standort hinter einem NAT.

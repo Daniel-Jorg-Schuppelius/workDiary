@@ -16,7 +16,6 @@ use App\Events\Invoicing\ExternalInvoicePaymentReceived;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\ResalePeriodLink;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
-use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
 use App\Plugins\Lexoffice\LexofficeConfig;
 use App\Plugins\Lexoffice\Models\{LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
 use App\Plugins\Support\PluginApiClient;
@@ -30,6 +29,8 @@ use Throwable;
  * `lines_synced_at` ein `GET /invoices/{id}` bzw. `GET /credit-notes/{id}`,
  * Positionen und Belegtexte in den Spiegel. Nur Lexoffice-eigene Belege
  * (`invoice`, `creditnote`) — Buchungsbelege haben keine Positionen.
+ * Roh über {@see PluginApiClient}: die Gutschrift-Entität des SDK verwirft
+ * `discountPercentage` und `shippingConditions`, die der Parser liest.
  * Positionen werden IN PLACE über `(voucher_id, position)` aktualisiert,
  * damit die IDs stabil bleiben: `resale_period_links` zeigt per Morph ohne
  * FK darauf (Review 2026-09-10, B1). Ratenlimit über den Client-
@@ -117,7 +118,7 @@ final class LexofficeVoucherLineSync {
      */
     public function syncVoucher(LexofficeVoucher $voucher): int {
         $creditNote = (string) $voucher->voucher_type === 'creditnote';
-        $invoice = $this->getJson((self::ENDPOINTS[(string) $voucher->voucher_type] ?? '/invoices/') . $voucher->external_id, $creditNote ? 'Gutschrift abrufen' : 'Rechnung abrufen');
+        $invoice = app(LexofficeClientFactory::class)->getJson($this->api(), $this->baseUrl . (self::ENDPOINTS[(string) $voucher->voucher_type] ?? '/invoices/') . $voucher->external_id, $creditNote ? 'Gutschrift abrufen' : 'Rechnung abrufen');
         if ($invoice === null) {
             // In Lexoffice gelöscht: als erledigt markieren, nicht ewig neu versuchen.
             $voucher->forceFill(['lines_synced_at' => now()] + self::CLEARED_FAILURE)->save();
@@ -339,24 +340,6 @@ final class LexofficeVoucherLineSync {
             ->pluck('id', 'external_id')
             ->map(static fn($id): int => (int) $id)
             ->all();
-    }
-
-    /**
-     * @return array<string, mixed>|null  null bei 404 (in Lexoffice gelöscht)
-     */
-    private function getJson(string $path, string $action): ?array {
-        // 429/5xx wiederholt der Client (LexofficeClientFactory::MAX_RETRIES, Retry-After); was danach
-        // noch fehlschlägt, ist ein normaler API-Fehler des Belegs.
-        $response = $this->api()->getResponse($this->baseUrl . $path);
-        if ($response->status() === 404) {
-            return null;
-        }
-        if (! $response->successful()) {
-            throw LexofficeApiException::fromResponse($response, 'Lexoffice', $action);
-        }
-        $json = $response->json();
-
-        return is_array($json) ? $json : [];
     }
 
     private function api(): PluginApiClient {

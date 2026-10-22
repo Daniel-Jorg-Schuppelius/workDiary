@@ -12,6 +12,9 @@
  */
 
 return [
+    'field' => [
+        'honeypot' => 'Bitte nicht ausfüllen',
+    ],
     'category' => [
         'corruption' => 'Korruption und Bestechung',
         'fraud' => 'Betrug, Untreue und Diebstahl',

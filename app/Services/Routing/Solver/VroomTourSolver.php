@@ -15,6 +15,7 @@ namespace App\Services\Routing\Solver;
 use App\Plugins\Support\PluginHttpFactory;
 use App\Services\Routing\RoutingException;
 use App\Services\Routing\Solver\Contracts\TourSolver;
+use App\Support\UrlSafety;
 use GuzzleHttp\Exception\ConnectException;
 
 /**
@@ -49,7 +50,7 @@ final class VroomTourSolver implements TourSolver {
             throw new RoutingException('VROOM is not configured.');
         }
         $base = rtrim((string) $this->config['base_url'], '/');
-        $client = $this->http->coreClient('vroom', $base, allowPrivateNetwork: $this->mayUsePrivateTarget($base));
+        $client = $this->http->coreClient('vroom', $base, allowPrivateNetwork: UrlSafety::operatorTargetAllowed($base, 'routing.vroom.base_url'));
         $client->setTimeout((float) ($this->config['timeout'] ?? 60));
 
         try {
@@ -228,15 +229,5 @@ final class VroomTourSolver implements TourSolver {
         }
 
         return UnassignedJob::REASON_UNREACHABLE;
-    }
-
-    /** Wie beim OSRM-Router: Betreiber-Vorgabe darf ins private Netz, eine Org-URL nur mit Opt-in. */
-    private function mayUsePrivateTarget(string $base): bool {
-        $operatorDefault = rtrim((string) config('routing.vroom.base_url', ''), '/');
-        if ($operatorDefault !== '' && rtrim($base, '/') === $operatorDefault) {
-            return true;
-        }
-
-        return (bool) \App\Support\Setting::get('routing.allow_private_network', false);
     }
 }

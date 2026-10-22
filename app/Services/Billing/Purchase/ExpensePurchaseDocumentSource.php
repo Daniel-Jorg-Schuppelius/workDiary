@@ -30,6 +30,10 @@ use Illuminate\Support\Facades\{Gate, Route};
  * sonst die Ersatznummer `AUS-<id>` (auch suchbar).
  */
 final class ExpensePurchaseDocumentSource implements PurchaseDocumentSource {
+    use ResolvesPurchaseDocuments;
+
+    private const DOCUMENT_MODEL = Expense::class;
+
     public const KEY = 'expense';
 
     public const NUMBER_PREFIX = 'AUS-';
@@ -61,29 +65,6 @@ final class ExpensePurchaseDocumentSource implements PurchaseDocumentSource {
         }
 
         return $this->map($builder->orderByDesc('date')->orderByDesc('id')->limit($limit)->get());
-    }
-
-    public function byKey(Organization $organization, string $key): ?PurchaseDocument {
-        $id = Sqid::decode(Expense::class, $key);
-        if ($id === null) {
-            return null;
-        }
-        $expense = $this->candidates($organization)->whereKey($id)->first();
-
-        return $expense === null ? null : $this->toDocument($expense);
-    }
-
-    public function byMorph(Organization $organization, int $id): ?PurchaseDocument {
-        return $this->byMorphIds($organization, [$id])->get($id);
-    }
-
-    public function byMorphIds(Organization $organization, array $ids): Collection {
-        if ($ids === []) {
-            return collect();
-        }
-
-        return $this->map($this->query($organization)->whereIn('id', $ids)->get())
-            ->keyBy(static fn(PurchaseDocument $document): int => $document->morphId);
     }
 
     public function toDocument(Expense $expense, ?bool $canOpen = null): PurchaseDocument {

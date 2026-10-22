@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Procurement\OpenMasterdata;
 
 use App\Models\Supplier\SupplierCatalogSource;
+use CommonToolkit\Helper\Data\StringHelper;
 
 /**
  * Zugang einer Katalogquelle zum Open-Masterdata-Webservice (MVP-1072). Die
@@ -59,7 +60,7 @@ final readonly class OpenMasterdataConfig {
             username: $string('username'),
             password: $string('password'),
             customerNumber: $string('customer_number'),
-            customerNumberInLogin: filter_var($values['customer_number_in_login'] ?? false, FILTER_VALIDATE_BOOL),
+            customerNumberInLogin: StringHelper::parseBool($values['customer_number_in_login'] ?? false) ?? false,
             scope: $string('scope', self::DEFAULT_SCOPE),
             packageMode: $string('package_mode') === self::PACKAGES_EXPLODED ? self::PACKAGES_EXPLODED : self::PACKAGES_PIPE,
             customerId: $string('customer_id'),

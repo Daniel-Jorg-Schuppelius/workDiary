@@ -69,7 +69,12 @@ class OrgaMaxAdminController extends Controller {
             ->paginate(25, ['*'], 'orders_page')
             ->withQueryString();
 
+        $viewer = Auth::user();
+
         return view('orgamax::admin.index', [
+            'maySend' => $viewer instanceof User && ($viewer->isAdmin() || $viewer->can(Permission::OrgamaxInvoiceSend->value)),
+            'mayRecordPayment' => $connection !== null && $connection->capabilityLeader('payments') === 'workdiary'
+                && $viewer instanceof User && ($viewer->isAdmin() || $viewer->can(Permission::OrgamaxPaymentRecord->value)),
             'connection' => $connection,
             'invoices' => $invoices,
             'orders' => $orders,

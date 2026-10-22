@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\AssetFinance;
 
 use App\Enums\AssetFinance\{AssetFinanceDeadlineStatus, AssetFinanceRateScheduleStatus};
-use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Concerns\{FreezesReportSnapshot, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
 use App\Models\AssetFinance\{AssetFinanceContract, AssetFinanceCostSnapshot, AssetFinanceDeadline, AssetFinanceRateSchedule, AssetFinanceReportSnapshot, AssetFinanceUsageLimit};
 use App\Services\AssetFinance\AssetFinanceService;
@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Gate;
  * Abgrenzung (keine Bilanzierung, W11).
  */
 class AssetFinanceReportController extends Controller {
-    use ResolvesCurrentOrganization;
+    use FreezesReportSnapshot, ResolvesCurrentOrganization;
 
     public function __construct(private readonly AssetFinanceService $service) {}
 
@@ -45,15 +45,7 @@ class AssetFinanceReportController extends Controller {
 
         $actor = $request->user() ?? abort(401);
 
-        AssetFinanceReportSnapshot::query()->create([
-            'organization_id' => $this->currentOrganization()->id,
-            'period_start' => now()->startOfMonth()->toDateString(),
-            'period_end' => now()->toDateString(),
-            'payload' => $this->aggregate(),
-            'created_by' => $actor->id,
-        ]);
-
-        return back()->with('status', __('Berichts-Snapshot eingefroren.'));
+        return $this->freezeReportSnapshot(AssetFinanceReportSnapshot::class, now()->startOfMonth(), now(), $this->aggregate(), (int) $actor->id);
     }
 
     /** Soll-/Ist-Snapshot je Vertrag (MVP-277, finance-Recht). */

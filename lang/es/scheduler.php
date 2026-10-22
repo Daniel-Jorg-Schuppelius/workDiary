@@ -99,6 +99,7 @@ return [
         ],
         'billing' => [
             'account-invoices' => 'Generar facturas mensuales de condiciones especiales',
+            'recalculate-statements' => 'Recalcular los meses abiertos de las cuentas de clientes',
             'push-retainers' => 'Enviar las cuotas fijas de retainer a Lexoffice',
         ],
         'datev-online' => ['sync' => 'DATEV Online: transferir imágenes de justificantes y consultar importaciones'],

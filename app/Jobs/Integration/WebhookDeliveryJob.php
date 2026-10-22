@@ -14,6 +14,7 @@ namespace App\Jobs\Integration;
 
 use App\Enums\Integration\WebhookDeliveryStatus;
 use App\Models\Integration\{WebhookDelivery, WebhookEndpoint};
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -168,7 +169,7 @@ class WebhookDeliveryJob implements ShouldQueue {
 
     /** HMAC-SHA256 über `<timestamp>.<body>` (Replay-Bindung). */
     private function sign(string $secret): string {
-        return hash_hmac('sha256', $this->timestamp . '.' . $this->body, $secret);
+        return CryptoHelper::hmac($this->timestamp . '.' . $this->body, $secret);
     }
 
     private function markSuccess(WebhookDelivery $delivery, WebhookEndpoint $endpoint): void {

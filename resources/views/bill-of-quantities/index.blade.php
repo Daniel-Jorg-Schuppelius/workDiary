@@ -16,6 +16,8 @@
     <x-slot:actions>
         <x-icon-btn icon="upload" tone="primary" size="sm" data-entry-modal-trigger
                     :href="route('bill-of-quantities.import-form')" show-label>{{ __('gaeb.import_button') }}</x-icon-btn>
+        <x-icon-btn icon="request_quote" size="sm" placement="menu" data-entry-modal-trigger
+                    :href="route('bill-of-quantities.cost-estimate.import-form')" show-label>{{ __('Kostenermittlung importieren') }}</x-icon-btn>
     </x-slot:actions>
 
     @if (session('gaebErrors'))

@@ -23,7 +23,8 @@ use App\Services\Ai\Exceptions\AiException;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Communication\CommunicationNoteService;
 use App\Services\Learning\{LearningAiSuggestionService, LearningAssignmentService, LearningCertificatePdfRenderer, LearningEnrollmentService, LearningEventService, LearningGamificationService, LearningQuestionService, LearningQuizService, LearningReportCardPdfRenderer, LearningTimeService, LearningTranslationService};
-use App\Services\Media\{MediaPresenter, MediaResponder, VideoTranscodingService};
+use App\Services\Learning\LearningMedia;
+use App\Services\Media\{MediaResponder, VideoTranscodingService};
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request, Response, UploadedFile};
 use Illuminate\Support\Facades\{Auth, Storage};
 use Illuminate\Validation\Rule;
@@ -40,9 +41,6 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Eigentümer-Prüfung.
  */
 class MyLearningController extends Controller {
-    /** Nutzerpräferenz der Videoqualität (MVP-1022): eine Stufe aus VideoTranscodingService::VARIANTS. */
-    public const VIDEO_QUALITY_PREFERENCE = 'video_quality';
-
     public function __construct(
         private readonly LearningEnrollmentService $enrollments,
         private readonly LearningTimeService $time,
@@ -189,7 +187,7 @@ class MyLearningController extends Controller {
             'timeTotals' => $this->time->secondsByClassification($enrollment),
             'translated' => $translated,
             // Videozustand und Ableitungen je Einheit (Feature 150).
-            'mediaState' => $this->mediaStateFor($enrollment),
+            'mediaState' => app(LearningMedia::class)->stateFor($enrollment, 'learning.my.units.rendition', $this->actor()),
             // Private Lernnotizen dieser Einschreibung (MVP-789).
             'notes' => $this->ownNotes()->where('notable_id', $enrollment->id)->get(),
             'askRecipients' => app(LearningQuestionService::class)->recipients($enrollment),
@@ -297,40 +295,13 @@ class MyLearningController extends Controller {
             ->orderByDesc('occurred_at');
     }
 
-    /**
-     * Videozustand je Anhang der Kurseinheiten.
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    private function mediaStateFor(LearningEnrollment $enrollment): array {
-        $attachments = [];
-        $unitOf = [];
-
-        foreach ($enrollment->course->units ?? [] as $unit) {
-            foreach ($unit->attachments as $attachment) {
-                $attachments[] = $attachment;
-                $unitOf[(int) $attachment->id] = $unit;
-            }
-        }
-
-        return app(MediaPresenter::class)->forAttachments(
-            $attachments,
-            fn (MediaRendition $rendition): string => route('learning.my.units.rendition', [
-                'enrollment' => $enrollment->sqid,
-                'unit' => $unitOf[(int) $rendition->attachment_id]->sqid,
-                'rendition' => $rendition->sqid,
-            ]),
-            $this->actor()->getPreference(self::VIDEO_QUALITY_PREFERENCE),
-        );
-    }
-
     /** Gewählte Videoqualität merken (MVP-1022) — gilt für jedes weitere Video. */
     public function videoQuality(Request $request): JsonResponse {
         $data = $request->validate([
             'quality' => ['required', 'string', Rule::in(array_keys(VideoTranscodingService::VARIANTS))],
         ]);
 
-        $this->actor()->setPreference(self::VIDEO_QUALITY_PREFERENCE, $data['quality']);
+        $this->actor()->setPreference(LearningMedia::VIDEO_QUALITY_PREFERENCE, $data['quality']);
 
         return response()->json(['quality' => $data['quality']]);
     }

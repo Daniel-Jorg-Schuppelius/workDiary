@@ -58,6 +58,7 @@ class UserGroupController extends Controller {
             'assignedRoles' => [],
             'assignedPermissions' => [],
             'roles' => $this->availableRoles(),
+            'canAssignRoles' => Gate::allows(PermissionEnum::AccessAssignRoles->value),
             'permissions' => PermissionEnum::grouped(),
         ]);
     }
@@ -86,7 +87,7 @@ class UserGroupController extends Controller {
             'is_system' => false,
         ]);
 
-        $this->syncRolesAndPermissions($group, $data['roles'] ?? [], $data['permissions'] ?? []);
+        $this->syncRolesAndPermissions($group, Gate::allows('assignRoles', $group) ? ($data['roles'] ?? []) : [], $data['permissions'] ?? []);
 
         return redirect()->route('admin.access.groups.show', $group)
             ->with('success', __('access.flash.group_created'));
@@ -117,6 +118,7 @@ class UserGroupController extends Controller {
             'assignedRoles' => $group->roles->pluck('id')->all(),
             'assignedPermissions' => $group->permissions->pluck('name')->all(),
             'roles' => $this->availableRoles(),
+            'canAssignRoles' => Gate::allows('assignRoles', $group),
             'permissions' => PermissionEnum::grouped(),
         ]);
     }
@@ -140,7 +142,9 @@ class UserGroupController extends Controller {
             'color' => $data['color'] ?? null,
         ]);
 
-        $this->syncRolesAndPermissions($group, $data['roles'] ?? [], $data['permissions'] ?? []);
+        // Ohne access.roles.assign bleiben die Rollen der Gruppe unverändert.
+        $roleIds = Gate::allows('assignRoles', $group) ? ($data['roles'] ?? []) : $group->roles()->pluck('id')->all();
+        $this->syncRolesAndPermissions($group, $roleIds, $data['permissions'] ?? []);
 
         return redirect()->route('admin.access.groups.show', $group)
             ->with('success', __('access.flash.group_updated'));
@@ -156,7 +160,7 @@ class UserGroupController extends Controller {
     }
 
     public function attachMemberForm(UserGroup $group): View {
-        Gate::authorize('update', $group);
+        Gate::authorize('manageMembers', $group);
 
         $memberIds = $group->members()->pluck('users.id')->all();
         $addableUsers = User::addableTo((int) $group->organization_id, $memberIds);
@@ -165,7 +169,7 @@ class UserGroupController extends Controller {
     }
 
     public function attachMember(Request $request, UserGroup $group): RedirectResponse {
-        Gate::authorize('update', $group);
+        Gate::authorize('manageMembers', $group);
 
         $data = $request->validate([
             'user_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
@@ -192,7 +196,7 @@ class UserGroupController extends Controller {
     }
 
     public function detachMember(UserGroup $group, User $user): RedirectResponse {
-        Gate::authorize('update', $group);
+        Gate::authorize('manageMembers', $group);
         abort_unless($user->organization_id === $group->organization_id, 403);
 
         $detached = $group->members()->detach($user->id);

@@ -95,6 +95,21 @@ class RentalCaseController extends Controller {
         ]);
     }
 
+    /** Kopfdaten einer offenen Akte bearbeiten; die Leihobjekte pflegt die Akte selbst (Vollscan 2026-10-21). */
+    public function edit(RentalCase $rental): View {
+        Gate::authorize('update', $rental);
+        abort_unless($rental->status->isOpen(), 409);
+
+        return view('rental._form_dialog', [
+            'rental' => $rental,
+            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
+            'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
+            'rateCards' => RentalRateCard::query()->active()->orderBy('name')->get(['id', 'name', 'version']),
+            'assets' => collect(),
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse {
         Gate::authorize('create', RentalCase::class);
 

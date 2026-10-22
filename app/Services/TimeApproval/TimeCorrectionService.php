@@ -14,6 +14,7 @@ use App\Enums\Attendance\AttendanceSource;
 use App\Enums\TimeApproval\TimeCorrectionStatus;
 use App\Models\Platform\User;
 use App\Models\Time\{Attendance, TimeCorrectionItem, TimeCorrectionRequest, TimeEntry};
+use App\Services\TimeApproval\Concerns\GuardsApprovalWorkflow;
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\{Auth, DB};
@@ -33,7 +34,11 @@ use Illuminate\Support\Str;
  * nicht in einem `submitted|approved|locked` Monat liegt.
  */
 class TimeCorrectionService {
+    use GuardsApprovalWorkflow;
+
     public const REASON_MIN_LENGTH = 20;
+
+    private const WORKFLOW_EXCEPTION = TimeCorrectionWorkflowException::class;
 
     /** @var list<string> Erlaubte Target-Typen für Items. */
     public const ALLOWED_TARGETS = [TimeEntry::class, Attendance::class];
@@ -122,7 +127,7 @@ class TimeCorrectionService {
 
     /** draft → submitted. */
     public function submit(TimeCorrectionRequest $request, ?User $actor = null): TimeCorrectionRequest {
-        $this->ensureTransition($request, TimeCorrectionStatus::Submitted);
+        $this->assertWorkflowTransition($request->status, TimeCorrectionStatus::Submitted);
         if ($request->items()->count() === 0) {
             throw new TimeCorrectionWorkflowException(
                 'noItems',
@@ -166,7 +171,7 @@ class TimeCorrectionService {
 
     /** submitted → withdrawn (nur durch Antragsteller). */
     public function withdraw(TimeCorrectionRequest $request, User $actor): TimeCorrectionRequest {
-        $this->ensureTransition($request, TimeCorrectionStatus::Withdrawn);
+        $this->assertWorkflowTransition($request->status, TimeCorrectionStatus::Withdrawn);
         if ((int) $actor->id !== (int) $request->requested_by_user_id) {
             throw new TimeCorrectionWorkflowException(
                 'notRequester',
@@ -181,7 +186,7 @@ class TimeCorrectionService {
 
     /** submitted → approved. */
     public function approve(TimeCorrectionRequest $request, User $actor, ?string $note = null): TimeCorrectionRequest {
-        $this->ensureTransition($request, TimeCorrectionStatus::Approved);
+        $this->assertWorkflowTransition($request->status, TimeCorrectionStatus::Approved);
 
         // MVP-531: konfigurierbare Stufen — Zwischenstufe lässt den Antrag
         // eingereicht (Vier-Augen erzwingt der ApprovalFlowService).
@@ -267,7 +272,7 @@ class TimeCorrectionService {
      * self_applied; formale Genehmigung durch den Antragsteller selbst.
      */
     public function selfApply(TimeCorrectionRequest $request): TimeCorrectionRequest {
-        $this->ensureTransition($request, TimeCorrectionStatus::Approved);
+        $this->assertWorkflowTransition($request->status, TimeCorrectionStatus::Approved);
 
         $request->fill([
             'status' => TimeCorrectionStatus::Approved,
@@ -282,7 +287,7 @@ class TimeCorrectionService {
 
     /** submitted → rejected. Pflicht-Begründung. */
     public function reject(TimeCorrectionRequest $request, User $actor, string $reason): TimeCorrectionRequest {
-        $this->ensureTransition($request, TimeCorrectionStatus::Rejected);
+        $this->assertWorkflowTransition($request->status, TimeCorrectionStatus::Rejected);
         $this->assertReason($reason);
 
         $request->fill([
@@ -308,7 +313,7 @@ class TimeCorrectionService {
         if ($request->status === TimeCorrectionStatus::Applied) {
             return $request;
         }
-        $this->ensureTransition($request, TimeCorrectionStatus::Applied);
+        $this->assertWorkflowTransition($request->status, TimeCorrectionStatus::Applied);
 
         $owner = $request->user;
         if (! $owner instanceof User) {
@@ -548,26 +553,6 @@ class TimeCorrectionService {
         }
     }
 
-    private function ensureTransition(TimeCorrectionRequest $request, TimeCorrectionStatus $target): void {
-        if (! $request->status->canTransitionTo($target)) {
-            throw new TimeCorrectionWorkflowException(
-                'illegalTransition',
-                __('Aktion nicht erlaubt: Antragsstatus ist :status.', ['status' => $request->status->value]),
-                ['from' => $request->status->value, 'to' => $target->value],
-            );
-        }
-    }
-
-    private function assertReason(string $reason): void {
-        if (mb_strlen(trim($reason)) < self::REASON_MIN_LENGTH) {
-            throw new TimeCorrectionWorkflowException(
-                'reasonTooShort',
-                __('Eine Begründung von mindestens :n Zeichen ist erforderlich.', ['n' => self::REASON_MIN_LENGTH]),
-                ['min' => self::REASON_MIN_LENGTH],
-            );
-        }
-    }
-
     /**
      * Zielklasse zu einem Typwert (Alias, alter oder aktueller Klassenname);
      * null, wenn der Typ nicht korrigierbar ist.
@@ -598,5 +583,13 @@ class TimeCorrectionService {
                 ['index' => $index, 'action' => $item['action']],
             );
         }
+    }
+
+    private function illegalStatusMessage(string $status): string {
+        return (string) __('Aktion nicht erlaubt: Antragsstatus ist :status.', ['status' => $status]);
+    }
+
+    private function reasonTooShortMessage(int $minLength): string {
+        return (string) __('Eine Begründung von mindestens :n Zeichen ist erforderlich.', ['n' => $minLength]);
     }
 }

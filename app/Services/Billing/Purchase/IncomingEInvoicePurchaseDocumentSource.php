@@ -34,6 +34,10 @@ use Illuminate\Support\Facades\Route;
  * (auch suchbar).
  */
 final class IncomingEInvoicePurchaseDocumentSource implements PurchaseDocumentSource {
+    use ResolvesPurchaseDocuments;
+
+    private const DOCUMENT_MODEL = IncomingEInvoice::class;
+
     public const KEY = 'incoming_einvoice';
 
     public const NUMBER_PREFIX = 'ER-';
@@ -66,29 +70,6 @@ final class IncomingEInvoicePurchaseDocumentSource implements PurchaseDocumentSo
         }
 
         return $this->map($builder->orderByDesc('issue_date')->orderByDesc('id')->limit($limit)->get());
-    }
-
-    public function byKey(Organization $organization, string $key): ?PurchaseDocument {
-        $id = Sqid::decode(IncomingEInvoice::class, $key);
-        if ($id === null) {
-            return null;
-        }
-        $invoice = $this->candidates($organization)->whereKey($id)->first();
-
-        return $invoice === null ? null : $this->toDocument($invoice);
-    }
-
-    public function byMorph(Organization $organization, int $id): ?PurchaseDocument {
-        return $this->byMorphIds($organization, [$id])->get($id);
-    }
-
-    public function byMorphIds(Organization $organization, array $ids): Collection {
-        if ($ids === []) {
-            return collect();
-        }
-
-        return $this->map($this->query($organization)->whereIn('id', $ids)->get())
-            ->keyBy(static fn(PurchaseDocument $document): int => $document->morphId);
     }
 
     public function toDocument(IncomingEInvoice $invoice, ?bool $canOpen = null): PurchaseDocument {

@@ -16,6 +16,7 @@ use App\Plugins\Contracts\SettingsField;
 use App\Plugins\PluginManager;
 use App\Support\UrlSafety;
 use GuzzleHttp\Client as GuzzleClient;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Baut die {@see PluginApiClient}-Instanzen der Plugins. Als Container-
@@ -98,15 +99,40 @@ class PluginHttpFactory {
      * @param  callable(GuzzleClient|null): TClient  $make
      * @return TClient
      */
-    public function sdkClient(string $pluginId, string $baseUrl, callable $make): ClientAbstract {
-        $this->assertTargetAllowed($pluginId, $baseUrl);
+    public function sdkClient(string $pluginId, string $baseUrl, callable $make, ?float $requestInterval = null): ClientAbstract {
+        $allowPrivateNetwork = $this->privateNetworkAllowed($pluginId);
+        $this->assertTargetAllowed($pluginId, $baseUrl, $allowPrivateNetwork);
 
-        return $this->configureSdkClient($make($this->sdkTransport($baseUrl)), $pluginId);
+        return $this->configureSdkClient($make($this->sdkTransport($baseUrl, $allowPrivateNetwork)), $pluginId, $requestInterval);
     }
 
-    /** Produktiv kein eigener Transport — der Test-Fake liefert hier den Mock-Handler. */
-    protected function sdkTransport(string $baseUrl): ?GuzzleClient {
-        return null;
+    /**
+     * Transport der SDK-Clients mit denselben Schranken wie {@see PluginApiClient}
+     * (Vollscan 2026-10-21): Verbindung an die geprüften Adressen des Hosts gebunden
+     * (sf-3) und jede Weiterleitung geprüft (ssrf-1). Der Test-Fake liefert hier
+     * den Mock-Handler.
+     */
+    protected function sdkTransport(string $baseUrl, bool $allowPrivateNetwork = false): ?GuzzleClient {
+        $config = [
+            'base_uri' => rtrim($baseUrl, '/'),
+            'allow_redirects' => ['max' => 5, 'strict' => true, 'referer' => false, 'on_redirect' => PluginApiClient::redirectGuard($allowPrivateNetwork)],
+        ];
+        if (! $allowPrivateNetwork) {
+            $host = (string) parse_url($baseUrl, PHP_URL_HOST);
+            $unresolved = false;
+            $pin = UrlSafety::tolerantPinnedResolution($baseUrl, $unresolved);
+            if ($unresolved) {
+                Log::warning('Plugin-Abruf ohne Adressbindung: der Host löst gerade nicht auf.', ['host' => $host]);
+            }
+            if ($pin === null) {
+                throw new PluginApiException('Das Ziel der Verbindung zeigt auf eine interne Adresse — Abruf unterlassen.', 0, $host);
+            }
+            if ($pin !== []) {
+                $config['curl'] = [CURLOPT_RESOLVE => $pin];
+            }
+        }
+
+        return new GuzzleClient($config);
     }
 
     /**
@@ -115,11 +141,11 @@ class PluginHttpFactory {
      * @param  TClient  $client
      * @return TClient
      */
-    protected function configureSdkClient(ClientAbstract $client, string $pluginId): ClientAbstract {
+    protected function configureSdkClient(ClientAbstract $client, string $pluginId, ?float $requestInterval = null): ClientAbstract {
         $client->setUserAgent('workDiary-plugin/' . $pluginId);
         // Derselbe Tarifabstand wie beim API-Client (Lexoffice-429 im Kontakt-Push, 2026-10-17);
         // ein SDK darf seine Untergrenze höher legen als die Einstellung.
-        $interval = self::configuredRequestInterval($pluginId);
+        $interval = $requestInterval ?? self::configuredRequestInterval($pluginId);
         $client->setRequestInterval($interval > 0 ? max($interval, $client::MIN_INTERVAL) : 0.0);
         // Health-Kontext (W3c): reduziertes Timeout-Budget, max. 1 Retry.
         if (\App\Plugins\PluginHealthService::inHealthCheck()) {

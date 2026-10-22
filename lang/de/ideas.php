@@ -109,6 +109,10 @@ return [
         'share_invalid' => 'Ungültige Freigabe-Auswahl (genau eine Person oder ein Team).',
     ],
 
+    'offboarding' => [
+        'maps' => '{1} Eine Ideenkarte|[2,*] :count Ideenkarten',
+    ],
+
     'share' => [
         'title' => 'Freigaben',
         'none' => 'Diese Karte ist privat — keine Freigaben.',
@@ -118,6 +122,9 @@ return [
         'add' => 'Freigeben',
         'revoke' => 'Freigabe entziehen',
         'hint' => 'Genau eine Person ODER ein Team je Freigabe. Teammitgliedschaft wird beim Zugriff geprüft.',
+        'transfer' => 'Eigentum übertragen',
+        'transfer_hint' => 'Die gewählte Person wird Eigentümerin der Karte. Ihre eigene Freigabe ändert sich dadurch nicht.',
+        'transfer_confirm' => 'Eigentum wirklich übertragen?',
     ],
 
     'notification' => [
@@ -132,6 +139,16 @@ return [
     'context' => [
         'customer' => 'Kunde',
         'project' => 'Projekt',
+    ],
+
+    'link' => [
+        'action' => 'Verknüpfen',
+        'title' => 'Knoten mit vorhandenem Datensatz verknüpfen',
+        'target' => 'Ziel',
+        'done' => 'Knoten verknüpft.',
+        'customers' => 'Kunden',
+        'projects' => 'Projekte',
+        'orders' => 'Aufträge (zuletzt)',
     ],
 
     'convert' => [

@@ -55,4 +55,26 @@ class SlaClockSegment extends Model {
     public function ticket(): BelongsTo {
         return $this->belongsTo(ServiceTicket::class, 'service_ticket_id');
     }
+
+    /**
+     * Abgeschlossene SLA-Pausen je Ticket in Minuten — die Lösungszeit zählt
+     * sie nicht (Helpdesk-Bericht und Kundenportal, ko-13).
+     *
+     * @param  iterable<int>  $ticketIds
+     * @return array<int, float>
+     */
+    public static function pausedMinutesByTicket(iterable $ticketIds): array {
+        $ids = collect($ticketIds)->values()->all();
+        if ($ids === []) {
+            return [];
+        }
+
+        return self::query()
+            ->whereIn('service_ticket_id', $ids)
+            ->whereNotNull('paused_to')
+            ->get()
+            ->groupBy('service_ticket_id')
+            ->map(static fn ($segments): float => (float) $segments->sum(static fn (self $s): float => $s->paused_from->diffInMinutes($s->paused_to)))
+            ->all();
+    }
 }

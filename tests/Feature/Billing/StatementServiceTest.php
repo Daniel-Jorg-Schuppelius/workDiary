@@ -114,6 +114,18 @@ class StatementServiceTest extends TestCase {
         $this->assertSame('140.00', $apr->balance?->getAmount());
     }
 
+    /** lk-13: Zeiten rechnen das Konto selbst nach; das Kundenportal liest nur. */
+    public function test_time_entry_changes_recalculate_the_chain_without_a_page_view(): void {
+        $entry = $this->makeEntry('2026-02-10');                     // 2h à 20 = 40
+        $this->assertSame('140.00', $this->statement(2026, 2)->balance?->getAmount());
+
+        $entry->update(['ended_at' => '2026-02-10 13:00:00']);       // 3h = 60
+        $this->assertSame('160.00', $this->statement(2026, 2)->balance?->getAmount());
+
+        $entry->delete();
+        $this->assertSame('100.00', $this->statement(2026, 2)->balance?->getAmount());
+    }
+
     public function test_close_requires_oldest_open_month_and_exports_entries(): void {
         $entry = $this->makeEntry('2026-02-10');
         $this->makeEntry('2026-03-02');

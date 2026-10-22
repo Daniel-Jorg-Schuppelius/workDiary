@@ -88,7 +88,13 @@ return [
     ],
     // Etichetta leggibile per caso d'uso registrato (config/ai.php).
     'capability_label' => [
+        'learning' => [
+            'course_outline' => 'Piattaforma di formazione: abbozzare la struttura del corso',
+            'question_draft' => 'Piattaforma di formazione: redigere domande d’esame',
+            'tutor' => 'Piattaforma di formazione: tutor di apprendimento',
+        ],
         'invoicing' => [
+            'document_extraction' => 'Fatture in entrata: leggere i campi del documento',
             'item_text' => 'Fattura: testo della voce',
             'block_text' => 'Fattura: testo riepilogativo',
             'item_translate' => 'Fattura: traduci la voce',

@@ -77,9 +77,9 @@ final class HelpdeskApprovalRoundTest extends TestCase {
     public function test_superseded_steps_leave_the_inbox_and_cannot_be_decided(): void {
         $request = $this->twoStepRequest('Rundenwechsel');
         $this->actingAs($this->approverA)
-            ->post(route('servicedesk.approvals.decide', $this->step($request, 1, 1)), ['decision' => 'approved'])
-            ->assertRedirect(route('servicedesk.approvals.index'));
-        $this->actingAs($this->approverB)->get(route('servicedesk.approvals.index'))->assertSee('Rundenwechsel');
+            ->post(route('approvals.decide', $this->step($request, 1, 1)), ['decision' => 'approved'])
+            ->assertRedirect(route('approvals.index'));
+        $this->actingAs($this->approverB)->get(route('approvals.index'))->assertSee('Rundenwechsel');
 
         $this->assertSame(2, app(ApprovalService::class)->startNextRound($request));
 
@@ -89,31 +89,31 @@ final class HelpdeskApprovalRoundTest extends TestCase {
         $this->assertSame(0, $request->approvals()->where('round', 2)->whereNotNull('decision')->count());
 
         // Stufe 2 der alten Runde ist abgelöst: B sieht nichts mehr, A wieder Stufe 1.
-        $this->actingAs($this->approverB)->get(route('servicedesk.approvals.index'))->assertOk()->assertDontSee('Rundenwechsel');
-        $this->actingAs($this->approverA)->get(route('servicedesk.approvals.index'))->assertOk()->assertSee('Rundenwechsel');
+        $this->actingAs($this->approverB)->get(route('approvals.index'))->assertOk()->assertDontSee('Rundenwechsel');
+        $this->actingAs($this->approverA)->get(route('approvals.index'))->assertOk()->assertSee('Rundenwechsel');
 
         $stale = $this->step($request, 1, 2);
         $this->actingAs($this->approverB)
-            ->post(route('servicedesk.approvals.decide', $stale), ['decision' => 'approved'])
+            ->post(route('approvals.decide', $stale), ['decision' => 'approved'])
             ->assertSessionHas('error');
         $this->assertNull($stale->fresh()->decision);
 
         // A entscheidet Stufe 1 erneut — dieselbe Person, neue Runde.
         $this->actingAs($this->approverA)
-            ->post(route('servicedesk.approvals.decide', $this->step($request, 2, 1)), ['decision' => 'approved'])
-            ->assertRedirect(route('servicedesk.approvals.index'));
+            ->post(route('approvals.decide', $this->step($request, 2, 1)), ['decision' => 'approved'])
+            ->assertRedirect(route('approvals.index'));
         $this->assertSame('approved', $this->step($request, 2, 1)->decision);
 
         // Innerhalb der Runde bleibt es bei zwei Personen.
         $this->actingAs($this->approverA)
-            ->post(route('servicedesk.approvals.decide', $this->step($request, 2, 2)), ['decision' => 'approved'])
+            ->post(route('approvals.decide', $this->step($request, 2, 2)), ['decision' => 'approved'])
             ->assertSessionHas('error');
         $this->assertNull($this->step($request, 2, 2)->decision);
 
         // „Alle genehmigt" zählt nur die geltende Runde — die offene alte Stufe 2 hält nichts auf.
         $this->actingAs($this->approverB)
-            ->post(route('servicedesk.approvals.decide', $this->step($request, 2, 2)), ['decision' => 'approved'])
-            ->assertRedirect(route('servicedesk.approvals.index'));
+            ->post(route('approvals.decide', $this->step($request, 2, 2)), ['decision' => 'approved'])
+            ->assertRedirect(route('approvals.index'));
         $this->assertSame(ServiceRequestStatus::Done, $request->fresh()->status);
         $this->assertNull($stale->fresh()->decision);
     }
@@ -124,19 +124,19 @@ final class HelpdeskApprovalRoundTest extends TestCase {
 
         // Stufe 2 wartet auf Stufe 1 ihrer eigenen Runde …
         $this->actingAs($this->approverB)
-            ->post(route('servicedesk.approvals.decide', $this->step($request, 2, 2)), ['decision' => 'approved'])
+            ->post(route('approvals.decide', $this->step($request, 2, 2)), ['decision' => 'approved'])
             ->assertSessionHas('error');
         $this->assertNull($this->step($request, 2, 2)->decision);
 
         // … und nicht auf die nie entschiedene Stufe 1 der abgelösten Runde.
         $this->actingAs($this->approverA)
-            ->post(route('servicedesk.approvals.decide', $this->step($request, 2, 1)), ['decision' => 'approved'])
-            ->assertRedirect(route('servicedesk.approvals.index'));
+            ->post(route('approvals.decide', $this->step($request, 2, 1)), ['decision' => 'approved'])
+            ->assertRedirect(route('approvals.index'));
         // Der Eingang zeigt B die Stufe 2 der geltenden Runde — die offene Stufe 1 der alten verdeckt sie nicht.
-        $this->actingAs($this->approverB)->get(route('servicedesk.approvals.index'))->assertOk()->assertSee('Reihenfolge je Runde');
+        $this->actingAs($this->approverB)->get(route('approvals.index'))->assertOk()->assertSee('Reihenfolge je Runde');
         $this->actingAs($this->approverB)
-            ->post(route('servicedesk.approvals.decide', $this->step($request, 2, 2)), ['decision' => 'approved'])
-            ->assertRedirect(route('servicedesk.approvals.index'));
+            ->post(route('approvals.decide', $this->step($request, 2, 2)), ['decision' => 'approved'])
+            ->assertRedirect(route('approvals.index'));
         $this->assertSame(ServiceRequestStatus::Done, $request->fresh()->status);
         $this->assertSame(0, $request->approvals()->where('round', 1)->whereNotNull('decision')->count());
     }
@@ -150,7 +150,7 @@ final class HelpdeskApprovalRoundTest extends TestCase {
         $approvals->startNextRound($request);
 
         $this->assertFalse($approvals->chainRejected($this->step($request, 2, 1)));
-        $this->actingAs($this->approverA)->get(route('servicedesk.approvals.index'))->assertOk()->assertSee('Ablehnung je Runde');
+        $this->actingAs($this->approverA)->get(route('approvals.index'))->assertOk()->assertSee('Ablehnung je Runde');
         $this->assertSame('pending', $approvals->decide($this->step($request, 2, 1), $this->approverA, 'approved', null, (int) $this->requester->id));
         $this->assertSame('approved_all', $approvals->decide($this->step($request, 2, 2), $this->approverB, 'approved', null, (int) $this->requester->id));
     }

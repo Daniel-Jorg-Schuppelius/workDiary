@@ -151,4 +151,22 @@ class LearningPortabilityTest extends TestCase {
             ->assertOk()
             ->assertHeader('content-type', 'application/json');
     }
+
+    /** Vollscan 2026-10-21: der Import hat einen Dialog in der Kursliste und legt über die Route einen Entwurf an. */
+    public function test_import_ueber_dialog_und_route(): void {
+        $course = $this->fullCourse();
+        $author = User::factory()->personalverwaltung()->create(['organization_id' => $this->organization->id]);
+        $export = (string) \CommonToolkit\Helper\Data\JsonHelper::encode($this->service()->export($course));
+
+        $this->actingAs($author)->get(route('learning.courses.index'))->assertOk()
+            ->assertSee(route('learning.courses.import.create'), false);
+        $this->get(route('learning.courses.import.create') . '?dialog=1')->assertOk()
+            ->assertSee(route('learning.courses.import'), false);
+
+        $before = LearningCourse::query()->count();
+        $this->post(route('learning.courses.import'), [
+            'file' => \Illuminate\Http\UploadedFile::fake()->createWithContent('kurs.json', $export),
+        ])->assertRedirect();
+        $this->assertSame($before + 1, LearningCourse::query()->count());
+    }
 }

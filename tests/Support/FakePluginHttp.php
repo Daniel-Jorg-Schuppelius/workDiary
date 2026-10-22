@@ -97,8 +97,8 @@ class FakePluginHttp extends PluginHttpFactory {
     }
 
     /** Provider-SDK-Client gegen den Mock-Handler statt gegen die echte API. */
-    public function sdkClient(string $pluginId, string $baseUrl, callable $make): ClientAbstract {
-        $client = parent::sdkClient($pluginId, $baseUrl, $make);
+    public function sdkClient(string $pluginId, string $baseUrl, callable $make, ?float $requestInterval = null): ClientAbstract {
+        $client = parent::sdkClient($pluginId, $baseUrl, $make, $requestInterval);
         $client->setRequestInterval(0.0);
         $client->setBaseRetryDelay(0);
         $client->setMaxRetryDelay(0);
@@ -106,7 +106,7 @@ class FakePluginHttp extends PluginHttpFactory {
         return $client;
     }
 
-    protected function sdkTransport(string $baseUrl): GuzzleClient {
+    protected function sdkTransport(string $baseUrl, bool $allowPrivateNetwork = false): GuzzleClient {
         return $this->mockedGuzzle($baseUrl);
     }
 
@@ -172,20 +172,29 @@ class FakePluginHttp extends PluginHttpFactory {
             }
 
             if ($stub instanceof Psr7Response) {
-                return $stub;
+                return self::rewound($stub);
             }
 
             if (is_array($stub) && $stub !== [] && array_is_list($stub) && $stub[0] instanceof Psr7Response) {
                 $index = $this->sequenceIndex[$pattern] ?? 0;
                 $this->sequenceIndex[$pattern] = $index + 1;
 
-                return $stub[min($index, count($stub) - 1)];
+                return self::rewound($stub[min($index, count($stub) - 1)]);
             }
 
             return self::response($stub);
         }
 
         return self::response([]);
+    }
+
+    /** Dieselbe Antwort kann mehrfach ausgeliefert werden; das SDK liest den Body, ohne zurückzuspulen. */
+    private static function rewound(Psr7Response $response): Psr7Response {
+        if ($response->getBody()->isSeekable()) {
+            $response->getBody()->rewind();
+        }
+
+        return $response;
     }
 
     /** @return array<int, array{request: RequestInterface, options: array<string, mixed>}> */

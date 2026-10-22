@@ -1,7 +1,7 @@
 ---
 title: "Dispatching et alertes de conflit"
 topic: dispatch.overview
-version: 2
+version: 3
 keywords:
     - planification des interventions
     - affecter une intervention
@@ -49,3 +49,11 @@ Un véhicule peut être réservé pour une plage horaire depuis la commande. Si
 le véhicule est déjà réservé pendant la période souhaitée, le système
 empêche la double réservation. Les réservations de chaque véhicule peuvent
 être consultées dans la liste des réservations et annulées.
+
+## Proposition du jour
+
+Sous « Proposition du jour », la régulation répartit en une seule passe toutes
+les commandes ouvertes d'une journée entre les conducteurs. Les plages de
+travail, les créneaux des commandes, les pauses et les qualifications sont pris
+en compte ; les conducteurs partent et rentrent à leur domicile. La proposition
+ne devient des tournées qu'après sa reprise.

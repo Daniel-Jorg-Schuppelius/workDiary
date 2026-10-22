@@ -111,7 +111,7 @@
                         <x-table.th sort type="string">{{ __('Rolle') }}</x-table.th>
                         <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
                         <x-table.th sort type="date">{{ __('Zertifikat bis') }}</x-table.th>
-                        <th class="w-32 text-right">{{ __('Aktion') }}</th>
+                        <th class="text-right">{{ __('Aktion') }}</th>
                     </tr>
                 </x-slot:head>
                     @forelse ($event->participants as $p)
@@ -125,7 +125,33 @@
                                 @else — @endif
                             </td>
                             <td class="text-right whitespace-nowrap">
+                                {{-- Eigene Einladung beantworten (Vollscan 2026-10-21). --}}
+                                @if ($p->is(auth()->user()) && in_array($p->pivot->status, [\App\Enums\Event\ParticipantStatus::Invited, \App\Enums\Event\ParticipantStatus::Accepted, \App\Enums\Event\ParticipantStatus::Declined], true))
+                                    @if ($p->pivot->status !== \App\Enums\Event\ParticipantStatus::Accepted)
+                                        <form method="POST" action="{{ route('events.respond', $event) }}" class="inline">
+                                            @csrf
+                                            <input type="hidden" name="response" value="accept">
+                                            <x-icon-btn type="submit" icon="event_available" tone="success" :label="__('Zusagen')" />
+                                        </form>
+                                    @endif
+                                    @if ($p->pivot->status !== \App\Enums\Event\ParticipantStatus::Declined)
+                                        <form method="POST" action="{{ route('events.respond', $event) }}" class="inline">
+                                            @csrf
+                                            <input type="hidden" name="response" value="decline">
+                                            <x-icon-btn type="submit" icon="event_busy" tone="warning" :label="__('Absagen')" />
+                                        </form>
+                                    @endif
+                                @endif
                                 @can('manageParticipants', $event)
+                                    <form method="POST" action="{{ route('events.participants.status', [$event, $p]) }}" class="inline-flex items-center gap-1">
+                                        @csrf @method('PATCH')
+                                        <select name="status" class="select select-bordered select-xs" aria-label="{{ __('Status ändern') }}">
+                                            @foreach (\App\Enums\Event\ParticipantStatus::cases() as $participantStatus)
+                                                <option value="{{ $participantStatus->value }}" @selected($p->pivot->status === $participantStatus)>{{ $participantStatus->label() }}</option>
+                                            @endforeach
+                                        </select>
+                                        <x-icon-btn type="submit" icon="save" :label="__('Status setzen')" />
+                                    </form>
                                     <form method="POST" action="{{ route('events.participants.attended', [$event, $p]) }}" class="inline">
                                         @csrf @method('PATCH')
                                         <x-icon-btn type="submit" icon="check_circle" tone="success" :label="__('Anwesend')" />

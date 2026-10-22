@@ -10,6 +10,7 @@
 
 namespace App\Policies\Platform;
 
+use App\Enums\User\Permission;
 use App\Models\Platform\{Organization, User};
 
 class OrganizationPolicy {
@@ -97,6 +98,7 @@ class OrganizationPolicy {
      * Admins werden über den `before()`-Hook bewusst durchgelassen.
      */
     public function manageBranding(User $user, Organization $organization): bool {
-        return $user->isAdmin() && $user->organization_id === $organization->id;
+        return ($user->isAdmin() || $user->can(Permission::BrandingUpdate->value))
+            && $user->organization_id === $organization->id;
     }
 }

@@ -10,6 +10,7 @@
 
 namespace App\Policies\Project;
 
+use App\Enums\User\Permission;
 use App\Models\Platform\User;
 use App\Models\Project\Task;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
@@ -27,15 +28,16 @@ class TaskPolicy {
     }
 
     public function create(User $user): bool {
-        return true;
+        return $user->can(Permission::TaskManage->value);
     }
 
     public function update(User $user, Task $task): bool {
-        return $this->owns($user, $task, 'created_by') || $this->participatesInProject($user, $task);
+        return $user->can(Permission::TaskManage->value)
+            && ($this->owns($user, $task, 'created_by') || $this->participatesInProject($user, $task));
     }
 
     public function delete(User $user, Task $task): bool {
-        return $this->owns($user, $task, 'created_by') || $this->participatesInProject($user, $task);
+        return $this->update($user, $task);
     }
 
     /**

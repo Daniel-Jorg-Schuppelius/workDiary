@@ -18,7 +18,7 @@ use App\Plugins\Contracts\ProvidesRemoteSessions;
 use App\Plugins\PluginManager;
 use App\Support\{MorphMap, Sqid};
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\UserAgentHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, UserAgentHelper};
 use CommonToolkit\Helper\Geo\IpLocationHelper;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\{DB, Schema};
@@ -215,7 +215,7 @@ class SessionManagementService {
      * zurückrechnen lässt.
      */
     public static function handleFor(string $sessionId): string {
-        return substr(hash_hmac('sha256', $sessionId, (string) config('app.key')), 0, 32);
+        return substr(CryptoHelper::hmac($sessionId, (string) config('app.key')), 0, 32);
     }
 
     /**

@@ -349,9 +349,9 @@ class IncomingEInvoiceService {
 
                 continue;
             }
-            $number = \App\Models\Invoicing\IncomingEInvoice::numberKey($item['summary']['number'] ?? null);
+            $number = \App\Support\ReferenceTokens::key($item['summary']['number'] ?? null);
             foreach ($leading as $index => $lead) {
-                if (! self::sameInvoice($number, \App\Models\Invoicing\IncomingEInvoice::numberKey($lead['item']['summary']['number'] ?? null))) {
+                if (! self::sameInvoice($number, \App\Support\ReferenceTokens::key($lead['item']['summary']['number'] ?? null))) {
                     continue;
                 }
                 // Die Begleitdatei ergänzt, was die Leitdatei schuldig bleibt (MVP-1247).
@@ -384,7 +384,12 @@ class IncomingEInvoiceService {
             $result[self::isUnrecognized($item['summary']) ? 'unrecognized' : 'stored']++;
             $result['incomings'][] = $incoming;
             foreach ([...$lead['companions'], ...$companions] as $companion) {
-                app(\App\Services\Attachments\FileAttacher::class)->storeContent($incoming, $companion->content, $companion->filename, $companion->mime, (int) $actor->id);
+                try {
+                    app(\App\Services\Attachments\FileAttacher::class)->storeContent($incoming, $companion->content, $companion->filename, $companion->mime, (int) $actor->id);
+                } catch (\Illuminate\Validation\ValidationException) {
+                    // Speicherkontingent erschöpft: der Eingang selbst bleibt, nur die Begleitdatei fehlt.
+                    \Illuminate\Support\Facades\Log::warning('Begleitdatei über dem Speicherkontingent nicht abgelegt', ['incoming_id' => $incoming->id, 'file' => $companion->filename]);
+                }
             }
         }
 
@@ -749,6 +754,17 @@ class IncomingEInvoiceService {
      * @throws \App\Exceptions\IncomingInvoiceDecisionException
      */
     public function decide(\App\Models\Invoicing\IncomingEInvoice $incoming, \App\Enums\Invoicing\IncomingEInvoiceStatus $target, \App\Models\Platform\User $actor, ?string $note = null): void {
+        // Sperre nehmen, unter der Sperre neu prüfen (Sicherheitsaudit 2026-10-21, li-1/li-7): ein gleichzeitiger
+        // zweiter Aufruf wartet und sieht dann den schon geschriebenen Stand.
+        \Illuminate\Support\Facades\DB::transaction(function () use ($incoming, $target, $actor, $note): void {
+            $incoming->newQueryWithoutScopes()->whereKey($incoming->getKey())->lockForUpdate()->firstOrFail();
+            $incoming->refresh();
+
+            $this->decideLocked($incoming, $target, $actor, $note);
+        });
+    }
+
+    private function decideLocked(\App\Models\Invoicing\IncomingEInvoice $incoming, \App\Enums\Invoicing\IncomingEInvoiceStatus $target, \App\Models\Platform\User $actor, ?string $note = null): void {
         if ($target === \App\Enums\Invoicing\IncomingEInvoiceStatus::PaymentReleased && $incoming->direction === \App\Enums\Billing\DocumentDirection::Outgoing) {
             throw \App\Exceptions\IncomingInvoiceDecisionException::outgoingNotPayable();
         }

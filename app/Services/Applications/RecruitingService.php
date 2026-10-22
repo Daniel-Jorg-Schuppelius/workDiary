@@ -429,7 +429,7 @@ class RecruitingService {
                 'must_change_password' => true,
                 'is_new_system' => true,
             ]);
-            $user->assignRole(\Spatie\Permission\Models\Role::findOrCreate('user', 'web'));
+            $user->assignRole(\App\Services\Org\OrganizationRoles::named(\App\Enums\User\UserRole::User->value, (int) $draft->organization_id));
 
             $draft->update(['status' => EmployeeDraftStatus::Invited, 'invited_user_id' => $user->id]);
             $draft->audit('recruiting.draft_invited', ['user_id' => $user->id, 'by' => $actor->id]);

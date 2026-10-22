@@ -130,7 +130,7 @@ final class ContractNegotiationApprovalRoundTest extends TestCase {
         // Auch der Genehmigungs-Eingang lehnt sie ab — selbst für die zuständige Rolle.
         $this->technical->assignRole('teamleitung');
         $this->actingAs($this->technical)
-            ->post(route('servicedesk.approvals.decide', $staleStep), ['decision' => 'approved'])
+            ->post(route('approvals.decide', $staleStep), ['decision' => 'approved'])
             ->assertSessionHas('error', __('Diese Freigaberunde wurde durch eine neue abgelöst.'));
         $this->assertNull($staleStep->fresh()->decision);
 

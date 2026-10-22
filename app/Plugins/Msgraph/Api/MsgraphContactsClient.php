@@ -12,6 +12,7 @@ namespace App\Plugins\Msgraph\Api;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
 use APIToolkit\API\Pagination\{CursorPage, CursorPaginator};
+use App\Plugins\Msgraph\Api\Concerns\ReadsGraphAccount;
 use App\Plugins\Msgraph\Models\MsgraphContactConnection;
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginHttpFactory};
@@ -29,6 +30,8 @@ use Throwable;
  *   der Aufrufer legt neu an (idempotenter Push, keine Dubletten).
  */
 class MsgraphContactsClient {
+    use ReadsGraphAccount;
+
     private const MAX_CONTACT_PAGES = 100;
 
     private PluginApiClient $api;
@@ -120,26 +123,6 @@ class MsgraphContactsClient {
         $contacts = $paginator->toArray();
 
         return $contacts;
-    }
-
-    /**
-     * Bestätigte Kontoidentität (`GET /me`) für das Admin-Panel.
-     *
-     * @return array{id: string, label: string}
-     */
-    public function account(): array {
-        $response = $this->api->getResponse($this->base . '/me');
-        if (! $response->successful()) {
-            throw new RuntimeException('Graph /me fehlgeschlagen (HTTP ' . $response->status() . ').');
-        }
-
-        /** @var array{id?: string, displayName?: string, mail?: string, userPrincipalName?: string} $data */
-        $data = (array) $response->json();
-
-        return [
-            'id' => (string) ($data['id'] ?? ''),
-            'label' => trim((string) ($data['displayName'] ?? '') . ' <' . (string) ($data['mail'] ?? $data['userPrincipalName'] ?? '') . '>'),
-        ];
     }
 
     /** Liveness/Auth-Check: Kontaktliste erreichbar. */

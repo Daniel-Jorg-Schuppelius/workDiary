@@ -10,6 +10,9 @@
 
 namespace App\Plugins\Lexoffice\Services;
 
+use Lexoffice\API\Client;
+use Lexoffice\API\Endpoints\Documents\OrderConfirmationsEndpoint;
+
 /**
  * Auftragsbestätigung-Anbindung an Lexoffice (Feature 045/047): erzeugt aus
  * einem kundenbezogenen Fertigungsauftrag eine Lexoffice-Auftragsbestätigung
@@ -21,6 +24,10 @@ class LexofficeOrderConfirmationService extends LexofficeOrderDocumentService {
 
     protected function endpointPath(): string {
         return 'order-confirmations';
+    }
+
+    protected function endpoint(Client $client): OrderConfirmationsEndpoint {
+        return new OrderConfirmationsEndpoint($client);
     }
 
     public function extType(): string {

@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Helpdesk;
+namespace App\Http\Controllers\Approval;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
@@ -128,7 +128,7 @@ class ApprovalInboxController extends Controller {
             return back()->with('error', ErrorText::for($e));
         }
 
-        return redirect()->route('servicedesk.approvals.index')
+        return redirect()->route('approvals.index')
             ->with('success', match ($data['decision']) {
                 'approved' => __('Schritt genehmigt.'),
                 'rejected' => __('Schritt abgelehnt.'),

@@ -10,12 +10,16 @@
 
 namespace App\Plugins\Lexoffice\Services;
 
+use APIToolkit\Entities\ID;
+use APIToolkit\Exceptions\ApiException;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Manufacturing\ManufacturingOrder;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use App\Plugins\Support\PluginApiClient;
+use Lexoffice\API\Client;
+use Lexoffice\Contracts\Abstracts\API\DocumentEndpointAbstract;
 use RuntimeException;
 
 /**
@@ -27,11 +31,17 @@ use RuntimeException;
  * Netto-Verkaufspreis) und unterscheiden sich nur in Endpoint, Titel,
  * ExternalReference-Typ und Fehlermeldungen — diese liefern die Subklassen.
  *
- * HTTP über {@see PluginApiClient} (php-api-toolkit, FakePluginHttp-testbar).
+ * Das Anlegen läuft roh über {@see PluginApiClient}: `isValid()` der
+ * Angebots- und AB-Entität des SDK lehnt jede Adresse mit `contactId` ab
+ * (die Kontakt-ID ist eine UUID, das SDK erwartet eine Zahl). Das Zurücklesen
+ * geht über den Beleg-Endpunkt des SDK.
  */
 abstract class LexofficeOrderDocumentService {
     /** Lexoffice-Voucher-Endpoint (z. B. `order-confirmations`, `quotations`). */
     abstract protected function endpointPath(): string;
+
+    /** Beleg-Endpunkt des SDK zu {@see endpointPath()}. */
+    abstract protected function endpoint(Client $client): DocumentEndpointAbstract;
 
     /** ExternalReference-Typ (z. B. `order_confirmation`, `quotation`). */
     abstract public function extType(): string;
@@ -120,13 +130,12 @@ abstract class LexofficeOrderDocumentService {
             throw new RuntimeException((string) __($this->notLinkedErrorKey()));
         }
 
-        $response = app(LexofficeClientFactory::class)->fromConfig($config)
-            ->getResponse($config['base_url'] . '/' . $this->endpointPath() . '/' . $reference->external_id);
-        if (! $response->successful()) {
-            throw new RuntimeException(sprintf('Lexoffice %s fetch failed: HTTP %d', $this->endpointPath(), $response->status()));
+        $client = app(LexofficeClientFactory::class)->sdk((string) $config['api_key'], (string) $config['base_url'], $config['request_interval']);
+        try {
+            return $this->endpoint($client)->get(new ID((string) $reference->external_id))->toArray();
+        } catch (ApiException $e) {
+            throw new RuntimeException(sprintf('Lexoffice %s fetch failed: HTTP %d', $this->endpointPath(), $e->getCode()), 0, $e);
         }
-
-        return (array) ($response->json() ?? []);
     }
 
     /**

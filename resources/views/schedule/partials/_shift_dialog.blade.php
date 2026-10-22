@@ -24,7 +24,7 @@
 
         {{-- Mitarbeiter / Datum --}}
         <x-form-group :legend="__('Zuordnung')" icon="person" tone="primary" cols="2">
-            @if (auth()->user()->isAdmin())
+            @if ($canManageShifts ?? false)
                 <x-select-field name="user_id" :label="__('Mitarbeiter')" required id="shift-dialog-user">
                     @foreach ($users as $u)
                         <option value="{{ $u->sqid }}">{{ $u->name }}</option>

@@ -10,12 +10,14 @@
 
 namespace App\Plugins\Lexoffice\Services;
 
+use APIToolkit\Contracts\Interfaces\NamedEntityInterface;
+use APIToolkit\Entities\ID;
+use APIToolkit\Exceptions\{ApiException, TooManyRequestsException};
 use App\Models\Customer\Customer;
 use App\Models\Supplier\Supplier;
 use App\Models\Time\TimeEntry;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Exceptions\{LexofficeApiException, LexofficeRateLimitException};
-use App\Plugins\Support\PluginApiClient;
 use App\Services\Finance\Accounting\ContactPushService;
 use App\Services\Stammdaten\ContactIdentity;
 use Carbon\CarbonImmutable;
@@ -23,7 +25,7 @@ use CommonToolkit\Helper\Data\JsonHelper;
 use GuzzleHttp\Exception\ConnectException;
 use Illuminate\Support\Collection;
 use Lexoffice\API\Client;
-use Lexoffice\API\Endpoints\VouchersEndpoint;
+use Lexoffice\API\Endpoints\{ContactsEndpoint, ProfileEndpoint, VouchersEndpoint};
 use Lexoffice\Entities\Contacts\Contact;
 use Lexoffice\Entities\Files\File as LexofficeFile;
 use Lexoffice\Entities\Vouchers\Voucher;
@@ -38,8 +40,6 @@ use RuntimeException;
  */
 class LexofficeService {
     private ?Client $client = null;
-
-    private ?PluginApiClient $api = null;
 
     public function __construct(
         private readonly ?string $apiKey,
@@ -84,31 +84,32 @@ class LexofficeService {
         if (! $this->isConfigured()) {
             return null;
         }
-        $response = $this->api()->getResponse($this->baseUrl . '/profile', [], ['timeout' => 5]);
+        $client = $this->client();
+        $timeout = $client->getTimeout();
+        $client->setTimeout(5.0);
 
-        if ($response->status() === 429) {
+        try {
+            (new ProfileEndpoint($client))->get();
+        } catch (TooManyRequestsException) {
             throw new LexofficeRateLimitException();
+        } catch (ApiException $e) {
+            return $e->getCode();
+        } finally {
+            $client->setTimeout($timeout);
         }
 
-        return $response->status();
+        return 200;
     }
 
     /**
-     * Basis-HTTP-Client für die rohen REST-Aufrufe. Nutzt die gemeinsame
-     * {@see PluginApiClient}-Basis (einheitlicher User-Agent, Default-Timeout,
-     * Retry bei Rate-Limit/Verbindungsfehlern mit Backoff inkl. `Retry-After`,
-     * Fehlerstatus als reguläre Response). Lexoffice erlaubt nur 2 Anfragen/
-     * Sekunde → 429 wird automatisch wiederholt; danach kommt die
-     * (Fehler-)Antwort regulär zurück.
+     * Ein gedrosselter Client für alle Aufrufe des Dienstes: zwei Clients takten
+     * je für sich und überschreiten zusammen die zwei Anfragen je Sekunde —
+     * 429 beim POST, den das Toolkit nicht wiederholt (Befund 2026-10-17).
      */
-    private function api(): PluginApiClient {
-        return $this->api ??= app(LexofficeClientFactory::class)->make((string) $this->apiKey, $this->baseUrl, $this->requestInterval);
-    }
-
     private function client(): Client {
         $this->assertConfigured();
 
-        return $this->client ??= app(LexofficeClientFactory::class)->sdk((string) $this->apiKey, $this->baseUrl);
+        return $this->client ??= app(LexofficeClientFactory::class)->sdk((string) $this->apiKey, $this->baseUrl, $this->requestInterval);
     }
 
     private function assertConfigured(): void {
@@ -140,20 +141,18 @@ class LexofficeService {
             ? $this->mapper->supplierToContactPayload($party, $this->defaults)
             : $this->mapper->customerToContactPayload($party, $this->defaults);
 
-        // Anlegen und Ändern gehen über denselben gedrosselten Client wie Suche und Abruf: der
-        // SDK-Client taktet nur für sich, zusammen überschritten beide die zwei Anfragen je Sekunde —
-        // 429 beim POST, den das Toolkit nicht wiederholt (Befund 2026-10-17). Die Entität prüft
-        // die Nutzlast weiterhin.
+        $contacts = new ContactsEndpoint($this->client());
         if ($existing !== null) {
             $existingId = (string) $existing['id'];
             $payload['version'] = (int) ($existing['version'] ?? 0);
             $payload['id'] = $existingId;
 
-            $response = $this->api()->putJson($this->baseUrl . '/contacts/' . rawurlencode($existingId), Contact::fromJson(JsonHelper::encode($payload))->toArray());
-            if (! $response->successful()) {
-                throw LexofficeApiException::fromResponse($response, __('Kontakte'), __('Kontakte bearbeiten'));
+            try {
+                $resource = $contacts->update(new ID($existingId), Contact::fromJson(JsonHelper::encode($payload)));
+            } catch (ApiException $e) {
+                throw LexofficeApiException::fromApiException($e, __('Kontakte'), __('Kontakte bearbeiten'));
             }
-            $id = (string) ($response->json('id') ?? '');
+            $id = (string) ($resource->toArray()['id'] ?? '');
             if ($id === '') {
                 throw new RuntimeException('Lexoffice contact update returned no id.');
             }
@@ -161,11 +160,12 @@ class LexofficeService {
             return ['id' => $id, 'number' => $this->contactNumber($existing, $party)];
         }
 
-        $response = $this->api()->postJson($this->baseUrl . '/contacts', Contact::fromJson(JsonHelper::encode($payload))->toArray());
-        if (! $response->successful()) {
-            throw LexofficeApiException::fromResponse($response, __('Kontakte'), __('Kontakte anlegen'));
+        try {
+            $resource = $contacts->create(Contact::fromJson(JsonHelper::encode($payload)));
+        } catch (ApiException $e) {
+            throw LexofficeApiException::fromApiException($e, __('Kontakte'), __('Kontakte anlegen'));
         }
-        $id = (string) ($response->json('id') ?? '');
+        $id = (string) ($resource->toArray()['id'] ?? '');
         if ($id === '') {
             throw new RuntimeException('Lexoffice contact create returned no id.');
         }
@@ -229,12 +229,13 @@ class LexofficeService {
         if (! $this->isConfigured()) {
             return [];
         }
-        $response = $this->api()->getResponse($this->baseUrl . '/contacts', $query + ['page' => 0, 'size' => 25]);
-        if (! $response->successful()) {
+        try {
+            $page = (new ContactsEndpoint($this->client()))->search($query + ['page' => 0, 'size' => 25]);
+        } catch (ApiException) {
             return [];
         }
 
-        return array_values(array_filter((array) ($response->json('content') ?? []), 'is_array'));
+        return array_values(array_map(static fn (NamedEntityInterface $contact): array => $contact->toArray(), $page->getValues()));
     }
 
     /** @return array<string, mixed>|null */
@@ -242,10 +243,13 @@ class LexofficeService {
         if (! $this->isConfigured()) {
             return null;
         }
-        $response = $this->api()->getResponse($this->baseUrl . '/contacts/' . rawurlencode($externalId));
-        $body = $response->successful() ? $response->json() : null;
+        try {
+            $body = (new ContactsEndpoint($this->client()))->get(new ID($externalId))->toArray();
+        } catch (ApiException) {
+            return null;
+        }
 
-        return is_array($body) && isset($body['id']) ? $body : null;
+        return isset($body['id']) ? $body : null;
     }
 
     /** @param array<string, mixed> $contact */

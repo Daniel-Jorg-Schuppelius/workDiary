@@ -594,11 +594,12 @@ return [
         'no_document' => 'No document on file',
         'saved' => 'Record stored.',
         'deleted' => 'Record removed.',
+        'confirm_delete' => 'Remove the record “:type”?',
         'blocked' => 'Ordering blocked — missing or expired records: :names.',
         'blocking_on' => 'Missing or expired records BLOCK ordering (organization setting).',
         'blocking_off' => 'Missing records are only shown, not blocked. Blocking can be enabled in the settings.',
         'valid_until_hint' => 'Without an end date the record counts as unlimited — that is the rarer case, please verify.',
-        'action' => ['add' => 'Add record'],
+        'action' => ['add' => 'Add record', 'remove' => 'Remove record'],
         'column' => [
             'supplier' => 'Supplier',
             'status' => 'Status',

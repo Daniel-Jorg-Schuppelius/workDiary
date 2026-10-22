@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Scheduling;
 
 use App\Support\Setting;
+use CommonToolkit\Helper\Data\StringHelper;
 
 /**
  * Betriebsfenster des Servers (Feature 067): Eine Installation, die nachts
@@ -88,7 +89,7 @@ final readonly class OperatingWindow {
      * sonst bleibt der Ausdruck, wie er ist.
      */
     private function applyToCron(Cadence $cadence): Cadence {
-        $fields = preg_split('/\s+/', trim((string) $cadence->expression)) ?: [];
+        $fields = StringHelper::words((string) $cadence->expression);
         if (count($fields) !== 5 || ! ctype_digit($fields[0]) || ! ctype_digit($fields[1])) {
             return $cadence;
         }

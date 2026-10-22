@@ -198,6 +198,10 @@ final class AccountingSymmetryTest extends TestCase {
             'https://my.sevdesk.de/api/v1/Contact*' => FakePluginHttp::response(['objects' => ['id' => '5150']]),
         ]);
 
+        // Vollscan 2026-10-21: Einstieg im Abrechnungspanel der Kundenseite.
+        $this->actingAs($this->admin)->get(route('customers.show', $customer))->assertOk()
+            ->assertSee(route('accounting.contacts.push', $customer), false);
+
         $this->actingAs($this->admin)
             ->post(route('accounting.contacts.push', $customer), ['plugin' => SevDeskPlugin::ID])
             ->assertRedirect();

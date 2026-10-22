@@ -109,7 +109,7 @@
                 <td class="whitespace-nowrap">{{ $request->starts_at->fdatetime() }} – {{ $request->ends_at->fdatetime() }}</td>
                 <td>{{ $request->subjectLabel() }}</td>
                 <td>
-                    <x-status-badge :tone="$request->status->badgeTone()">{{ $request->is_direct ? __('rental.portal.direct_status') : $request->status->label() }}</x-status-badge>
+                    <x-status-badge :tone="$request->status->tone()">{{ $request->is_direct ? __('rental.portal.direct_status') : $request->status->label() }}</x-status-badge>
                     @if ($request->status === \App\Enums\Rental\RentalRequestStatus::Declined && $request->decline_reason)
                         <span class="block text-xs text-muted">{{ $request->decline_reason }}</span>
                     @endif

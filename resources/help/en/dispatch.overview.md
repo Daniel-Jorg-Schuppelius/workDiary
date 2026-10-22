@@ -1,7 +1,7 @@
 ---
 title: "Dispatch and conflict warnings"
 topic: dispatch.overview
-version: 2
+version: 3
 keywords:
     - scheduling
     - assign job
@@ -49,3 +49,10 @@ A vehicle can be reserved for a time window on the order. If the vehicle is
 already reserved during the requested window, the system prevents a double
 booking. Reservations per vehicle can be reviewed and released in the
 reservation list.
+
+## Day proposal
+
+Under “Day proposal”, dispatch distributes all open orders of a day to the
+drivers in one run. Working windows, order time windows, breaks and
+qualifications are taken into account; drivers start and end at home. The
+proposal only becomes tours once it is adopted.

@@ -24,7 +24,7 @@ use App\Services\Numbering\{DocumentIssuers, NumberAuthority, NumberSequenceServ
 use App\Support\Setting;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\CryptoHelper;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{Cache, DB};
 use Illuminate\Support\Str;
 
 /**
@@ -112,6 +112,19 @@ class QuoteService {
      * @return array{quote: Quote, acceptance_token: string}
      */
     public function send(Quote $quote, User $actor): array {
+        // Sperre nehmen, unter der Sperre neu prüfen (Sicherheitsaudit 2026-10-21, li-1): ein zweiter Aufruf
+        // wartet und sieht den geschriebenen Stand. Bewusst keine DB-Transaktion — vergibt ein Programm die
+        // Nummer, muss die Verknüpfung zum dort angelegten Beleg einen Fehlschlag überleben.
+        return Cache::lock('document-issue:' . $quote->getMorphClass() . ':' . $quote->getKey(), 120)
+            ->block(30, function () use ($quote, $actor): array {
+                $quote->refresh();
+
+                return $this->sendLocked($quote, $actor);
+            });
+    }
+
+    /** @return array{quote: Quote, acceptance_token: string} */
+    private function sendLocked(Quote $quote, User $actor): array {
         if (! $quote->status->canTransitionTo(QuoteStatus::Sent)) {
             throw new \RuntimeException((string) __('Nur freigegebene Angebote können versendet werden.'));
         }

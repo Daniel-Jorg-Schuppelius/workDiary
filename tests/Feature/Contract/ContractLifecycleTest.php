@@ -114,6 +114,23 @@ final class ContractLifecycleTest extends TestCase {
             ->assertSee((string) __('Nächstmöglich kündbar zum'));
     }
 
+    /** Vollscan 2026-10-21: der Bearbeiten-Dialog ist mit dem gespeicherten Stand vorbelegt und schreibt per PUT. */
+    public function test_edit_dialog_is_prefilled_from_the_contract(): void {
+        $contract = $this->makeContract(['title' => 'Wartungsvertrag Kälte', 'partner_name' => 'Kühl GmbH', 'notes' => 'Ansprechpartner Herr Frost']);
+
+        $this->actingAs($this->admin)->get(route('contracts.show', $contract))->assertOk()
+            ->assertSee(route('contracts.edit', $contract), false);
+        $this->get(route('contracts.edit', $contract) . '?dialog=1')->assertOk()
+            ->assertSee(__('Vertrag bearbeiten'))
+            ->assertSee(route('contracts.update', $contract), false)
+            ->assertSee('value="Wartungsvertrag Kälte"', false)
+            ->assertSee('value="Kühl GmbH"', false)
+            ->assertSee('Ansprechpartner Herr Frost');
+
+        $contract->forceFill(['status' => ContractStatus::Cancelled])->save();
+        $this->get(route('contracts.edit', $contract) . '?dialog=1')->assertStatus(409);
+    }
+
     public function test_next_termination_fixed_term_without_auto_renew_is_end_date(): void {
         $contract = $this->makeContract(['auto_renew' => false, 'ends_on' => '2027-06-30', 'notice_period_days' => 90]);
         $service = app(ContractService::class);

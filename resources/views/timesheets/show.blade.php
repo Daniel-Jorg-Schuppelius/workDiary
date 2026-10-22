@@ -66,17 +66,19 @@
                         <x-icon-btn placement="danger" icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
                     </x-action-form>
                 @endcan
-                @can('lock', $timesheet)
-                    @if(! $timesheet->isLocked())
+                @if(! $timesheet->isLocked())
+                    @can('lock', $timesheet)
                         <x-action-form :action="route('projects.timesheets.lock', [$project, $timesheet])">
                             <x-icon-btn placement="menu" icon="lock" tone="warning" size="sm" type="submit" show-label>{{ __('Sperren') }}</x-icon-btn>
                         </x-action-form>
-                    @else
+                    @endcan
+                @else
+                    @can('unlock', $timesheet)
                         <x-action-form :action="route('projects.timesheets.unlock', [$project, $timesheet])">
                             <x-icon-btn placement="menu" icon="lock_open" size="sm" type="submit" show-label>{{ __('Entsperren') }}</x-icon-btn>
                         </x-action-form>
-                    @endif
-                @endcan
+                    @endcan
+                @endif
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
@@ -218,6 +220,7 @@
                     </td>
                     <td class="text-right">
                         @if($editable)
+                            <x-icon-btn icon="edit" data-entry-modal-trigger :href="route('projects.timesheets.entries.edit', [$project, $timesheet, $e])" :label="__('Bearbeiten')" />
                             <x-action-form :action="route('projects.timesheets.entries.destroy', [$project, $timesheet, $e])" method="DELETE"
                                   :confirm="__('Löschen?')"
                                   confirm-icon="delete"
@@ -265,6 +268,7 @@
                     <td class="text-right tabular-nums" data-sort-value="{{ ($u->line_total_net?->toFloat() ?? 0.0) }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($u->line_total_net?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} €</td>
                     <td class="text-right">
                         @if($editable)
+                            <x-icon-btn icon="edit" data-entry-modal-trigger :href="route('projects.timesheets.materials.edit', [$project, $timesheet, $u])" :label="__('Bearbeiten')" />
                             <x-action-form :action="route('projects.timesheets.materials.destroy', [$project, $timesheet, $u])" method="DELETE"
                                   :confirm="__('Löschen?')"
                                   confirm-icon="delete"

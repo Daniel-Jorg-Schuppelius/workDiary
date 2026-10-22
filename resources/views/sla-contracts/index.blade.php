@@ -28,30 +28,7 @@
             <summary class="cursor-pointer text-sm font-semibold">{{ __('Neuen SLA-Vertrag anlegen') }}</summary>
             <form method="POST" action="{{ route('sla-contracts.store') }}" class="mt-2 grid gap-2 md:grid-cols-2">
                 @csrf
-                <x-input-field name="code" :label="__('Code')" required maxlength="60" />
-                <x-input-field name="label" :label="__('Bezeichnung')" required maxlength="180" />
-                {{-- Optionale Projektbindung (W5.4): projektgebundener Vertrag gewinnt vor Kunden-/Default-Vertrag. --}}
-                <x-project-select :label="__('Projekt (optional)')" :placeholder="__('ohne Projektbezug (kunden-/org-weit)')"
-                    span="2" :projects="$projects" :selected="(string) old('project_id')" />
-                <x-textarea-field span="2" name="priority_table"
-                                  :label="__('Prioritätstabelle (JSON)')"
-                                  rows="3"
-                                  required
-                                  class="font-mono text-xs">{{ old('priority_table', '{"normal": {"reaction_minutes": 240, "resolution_minutes": 2880} }') }}</x-textarea-field>
-                <x-textarea-field span="2" name="business_hours"
-                                  :label="__('Geschäftszeiten (JSON, leer = Kalenderzeit)')"
-                                  rows="2"
-                                  class="font-mono text-xs">{{ old('business_hours') }}</x-textarea-field>
-                <div class="fieldset">
-                    <span class="fieldset-label">{{ __('SLA-Pause bei') }}</span>
-                    <label class="label cursor-pointer justify-start gap-2"><input type="checkbox" name="pause_rules[]" value="waiting_customer" class="checkbox checkbox-sm">{{ __('Wartet auf Kunde') }}</label>
-                    <label class="label cursor-pointer justify-start gap-2"><input type="checkbox" name="pause_rules[]" value="waiting_external" class="checkbox checkbox-sm">{{ __('Wartet auf Dritte') }}</label>
-                    <label class="label cursor-pointer justify-start gap-2"><input type="checkbox" name="pause_rules[]" value="paused" class="checkbox checkbox-sm">{{ __('Pausiert') }}</label>
-                </div>
-                <div class="fieldset">
-                    <x-checkbox-field name="is_default" :label="__('Standardvertrag')" />
-                    <x-checkbox-field name="is_ola" :label="__('OLA (internes Ziel)')" :hint="__('Internes Ziel je Team, kein Kundenversprechen.')" />
-                </div>
+                @include('sla-contracts._fields', ['contract' => null])
                 <div class="md:col-span-2">
                     <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Anlegen') }}</x-icon-btn>
                 </div>

@@ -14,13 +14,13 @@ namespace App\Http\Controllers\Learning\Portal;
 
 use App\Enums\Learning\{LearningAudience, LearningCourseStatus, LearningProgressStatus};
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Learning\MyLearningController;
 use App\Models\Attachments\Attachment;
 use App\Models\Learning\{LearningCourse, LearningCourseCategory, LearningEnrollment, LearningUnit};
 use App\Models\Media\MediaRendition;
 use App\Models\Platform\User;
 use App\Services\Learning\{LearningBookingService, LearningEnrollmentService};
-use App\Services\Media\{MediaPresenter, MediaResponder};
+use App\Services\Learning\LearningMedia;
+use App\Services\Media\MediaResponder;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
@@ -124,7 +124,7 @@ class PortalLearningController extends Controller {
                 ->where('status', LearningProgressStatus::Completed)
                 ->pluck('learning_unit_id')
                 ->all(),
-            'mediaState' => $this->mediaStateFor($enrollment),
+            'mediaState' => app(LearningMedia::class)->stateFor($enrollment, 'customer.learning.units.rendition', $this->actor()),
         ]);
     }
 
@@ -199,28 +199,6 @@ class PortalLearningController extends Controller {
     private function guardOwnUnit(LearningEnrollment $enrollment, LearningUnit $unit): void {
         $this->guardOwn($enrollment);
         abort_unless($unit->learning_course_id === $enrollment->learning_course_id, 404);
-    }
-
-    /** @return array<int, array<string, mixed>> */
-    private function mediaStateFor(LearningEnrollment $enrollment): array {
-        $attachments = [];
-        $unitOf = [];
-        foreach ($enrollment->course->units ?? [] as $unit) {
-            foreach ($unit->attachments as $attachment) {
-                $attachments[] = $attachment;
-                $unitOf[(int) $attachment->id] = $unit;
-            }
-        }
-
-        return app(MediaPresenter::class)->forAttachments(
-            $attachments,
-            fn (MediaRendition $rendition): string => route('customer.learning.units.rendition', [
-                'enrollment' => $enrollment->sqid,
-                'unit' => $unitOf[(int) $rendition->attachment_id]->sqid,
-                'rendition' => $rendition->sqid,
-            ]),
-            $this->actor()->getPreference(MyLearningController::VIDEO_QUALITY_PREFERENCE),
-        );
     }
 
     private function actor(): User {

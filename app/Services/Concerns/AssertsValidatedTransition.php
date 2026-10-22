@@ -23,16 +23,25 @@ use Illuminate\Validation\ValidationException;
  * ({@see \App\Services\Concerns\AssertsStatusTransition}).
  */
 trait AssertsValidatedTransition {
-    /** @throws ValidationException wenn der Übergang nicht erlaubt ist. */
-    private function assertValidatedTransition(HasStatusTransitions $current, HasStatusTransitions $target, string $messageKey = 'isms.error.invalid_transition'): void {
+    /**
+     * Platzhalter der Meldung: `:from`, `:to` und `:status` (Bezeichnung des
+     * aktuellen Status); `$replace` ergänzt oder überschreibt sie.
+     *
+     * @param  array<string, string>  $replace
+     *
+     * @throws ValidationException wenn der Übergang nicht erlaubt ist.
+     */
+    private function assertValidatedTransition(HasStatusTransitions $current, HasStatusTransitions $target, string $messageKey = 'isms.error.invalid_transition', array $replace = []): void {
         if (in_array($target, $current->allowedTransitions(), true)) {
             return;
         }
 
         throw ValidationException::withMessages([
-            'status' => __($messageKey, [
+            'status' => (string) __($messageKey, [
                 'from' => $current->label(),
                 'to' => $target->label(),
+                'status' => $current->label(),
+                ...$replace,
             ]),
         ]);
     }

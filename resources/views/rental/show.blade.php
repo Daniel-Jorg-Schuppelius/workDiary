@@ -30,6 +30,9 @@
             </div>
             <x-slot:actions>
                 @can('update', $case)
+                    @if ($case->status->isOpen())
+                        <x-icon-btn placement="bar" icon="edit" size="sm" data-entry-modal-trigger :href="route('rental.edit', $case)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
+                    @endif
                     @if ($case->status === \App\Enums\Rental\RentalCaseStatus::Draft)
                         <form method="POST" action="{{ route('rental.reserve', $case) }}">@csrf
                             <x-button type="submit" tone="primary">{{ __('Reservieren') }}</x-button>

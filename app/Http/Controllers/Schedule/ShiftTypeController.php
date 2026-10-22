@@ -23,7 +23,7 @@ use Illuminate\View\View;
 
 class ShiftTypeController extends Controller {
     use ResolvesCurrentOrganization;
-    // ── HTML CRUD (Verwaltungsoberfläche, Admin-only) ────────────────────────
+    // ── HTML CRUD (Verwaltungsoberfläche, shift-type.manage) ─────────────────
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', ShiftType::class);
@@ -123,11 +123,7 @@ class ShiftTypeController extends Controller {
     }
 
     public function destroy(ShiftType $shiftType): JsonResponse {
-        /** @var User $auth */
-        $auth = Auth::user();
-        if (! $auth->isAdmin()) {
-            abort(403);
-        }
+        Gate::authorize('delete', $shiftType);
 
         // Do not delete if shifts reference this type
         if ($shiftType->scheduledShifts()->exists()) {

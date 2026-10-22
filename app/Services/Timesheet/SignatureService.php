@@ -22,7 +22,10 @@ use Illuminate\Support\Str;
 use RuntimeException;
 
 class SignatureService {
-    public const MAX_BYTES = 1_000_000; // 1 MB für Canvas-PNG
+    /** Höchstgröße der Unterschrift (Canvas-PNG) aus `timesheet.signature.max_kb`. */
+    public static function maxBytes(): int {
+        return max(1, (int) config('timesheet.signature.max_kb', 1000)) * 1024;
+    }
 
     /**
      * Verarbeitet ein Base64-codiertes PNG aus dem Canvas und persistiert es als Attachment.
@@ -34,12 +37,10 @@ class SignatureService {
             throw new RuntimeException('Timesheet is locked.');
         }
 
-        $binary = DataUrlHelper::decode($base64Png, ['image/png']);
+        // Die Grenze geht an den Dekodierer: ein übergroßer Block wird gar nicht erst dekodiert.
+        $binary = DataUrlHelper::decode($base64Png, ['image/png'], self::maxBytes());
         if ($binary === false) {
-            throw new RuntimeException('Invalid PNG payload.');
-        }
-        if (strlen($binary) > self::MAX_BYTES) {
-            throw new RuntimeException('Signature too large.');
+            throw new RuntimeException(strlen($base64Png) > self::maxBytes() ? 'Signature too large.' : 'Invalid PNG payload.');
         }
 
         $folder = 'timesheets/signatures/' . now()->format('Y/m');
@@ -103,9 +104,10 @@ class SignatureService {
         return $timesheet;
     }
 
+    /** Ohne Unterschrift zurück in den Entwurf; der offene Status vor dem Sperren ist nicht gespeichert. */
     public function unlock(Timesheet $timesheet): Timesheet {
         $timesheet->forceFill([
-            'status' => TimesheetStatus::Signed->value,
+            'status' => ($timesheet->signed_at !== null ? TimesheetStatus::Signed : TimesheetStatus::Draft)->value,
             'locked_at' => null,
             'locked_by' => null,
         ])->save();

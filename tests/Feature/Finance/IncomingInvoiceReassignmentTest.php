@@ -290,4 +290,27 @@ final class IncomingInvoiceReassignmentTest extends TestCase {
             ...$attributes,
         ]);
     }
+
+    /** Sicherheitsaudit 2026-10-21, li-4: läuft die Übergabe gerade, bleibt die Zuordnung samt Journal stehen. */
+    public function test_an_assignment_is_not_removed_while_the_transfer_runs(): void {
+        $supplier = Supplier::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Pinsel GmbH']);
+        $assigned = $this->incoming(['supplier_id' => $supplier->id, 'match_kind' => IncomingInvoiceMatchKind::Manual]);
+        IncomingEInvoiceTransfer::query()->create([
+            'organization_id' => $this->organization->id, 'incoming_einvoice_id' => $assigned->id, 'target' => 'lexoffice',
+            'status' => IncomingInvoiceTransferStatus::Waiting->value,
+        ]);
+        $lock = \Illuminate\Support\Facades\Cache::lock(\App\Services\Invoicing\EInvoice\IncomingInvoiceTransferService::LOCK_PREFIX . $assigned->id, 300);
+        $this->assertTrue($lock->get());
+
+        try {
+            app(\App\Services\Invoicing\EInvoice\IncomingInvoiceMatcher::class)->unassign($assigned, null);
+            $this->fail('Während der Übergabe darf die Zuordnung nicht fallen.');
+        } catch (\RuntimeException $e) {
+            $this->assertSame(__('Die Übergabe dieses Eingangs läuft gerade — bitte gleich noch einmal versuchen.'), $e->getMessage());
+        } finally {
+            $lock->release();
+        }
+        $this->assertSame($supplier->id, $assigned->refresh()->supplier_id);
+        $this->assertDatabaseHas('incoming_einvoice_transfers', ['incoming_einvoice_id' => $assigned->id]);
+    }
 }

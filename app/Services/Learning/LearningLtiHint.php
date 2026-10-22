@@ -42,7 +42,7 @@ final class LearningLtiHint {
             'c' => $claims,
         ]));
 
-        return $body . '.' . CryptoHelper::base64UrlEncode(hash_hmac('sha256', $body, self::key(), true));
+        return $body . '.' . CryptoHelper::base64UrlEncode(CryptoHelper::hmac($body, self::key(), binary: true));
     }
 
     /** @return array<mixed>|null die Angaben, oder `null` bei falscher Signatur, fremdem Zweck oder Ablauf */
@@ -55,7 +55,7 @@ final class LearningLtiHint {
 
         [$body, $mac] = $parts;
 
-        if (! hash_equals(CryptoHelper::base64UrlEncode(hash_hmac('sha256', $body, self::key(), true)), $mac)) {
+        if (! hash_equals(CryptoHelper::base64UrlEncode(CryptoHelper::hmac($body, self::key(), binary: true)), $mac)) {
             return null;
         }
 
@@ -87,6 +87,6 @@ final class LearningLtiHint {
         }
 
         // Eigener Ableitungszweck: kein anderes Signat der Anwendung passt hierher.
-        return hash_hmac('sha256', 'learning-lti-hint', $appKey, true);
+        return CryptoHelper::hmac('learning-lti-hint', $appKey, binary: true);
     }
 }

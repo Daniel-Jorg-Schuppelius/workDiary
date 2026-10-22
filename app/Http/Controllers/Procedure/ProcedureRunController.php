@@ -258,7 +258,7 @@ class ProcedureRunController extends Controller {
      * MVP-028). Übernahme und Signatur in einem Schritt.
      */
     public function signSecondPerson(ProcedureRun $run, ProcedureStepRun $stepRun, SecondPersonGate $gate): RedirectResponse {
-        Gate::authorize('execute', $run);
+        Gate::authorize('signSecondPerson', $run);
         $this->assertStepBelongsToRun($run, $stepRun);
 
         /** @var User $signer */

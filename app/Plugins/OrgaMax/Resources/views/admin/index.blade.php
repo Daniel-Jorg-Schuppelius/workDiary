@@ -221,6 +221,12 @@
                             <td class="text-right">
                                 <div class="flex justify-end gap-1">
                                     <x-button :href="route('admin.orgamax.invoices.pdf', $projection->external_id)" tone="ghost" size="xs">PDF</x-button>
+                                    @if ($maySend)
+                                        <x-button tone="ghost" size="xs" icon="send" data-open-dialog="orgamax-send-{{ $loop->index }}">{{ __('orgamax::orgamax.invoice.send') }}</x-button>
+                                    @endif
+                                    @if ($mayRecordPayment)
+                                        <x-button tone="ghost" size="xs" icon="payments" data-open-dialog="orgamax-payment-{{ $loop->index }}">{{ __('orgamax::orgamax.invoice.payment') }}</x-button>
+                                    @endif
                                     <form method="POST" action="{{ route('admin.orgamax.invoices.lock', $projection->external_id) }}" class="inline"
                                           data-confirm-dialog data-confirm-message="{{ __('orgamax::orgamax.invoice.lock_confirm') }}">
                                         @csrf
@@ -231,6 +237,39 @@
                         </tr>
                     @endforeach
                 </x-table>
+
+                {{-- Versand und Zahlung (MVP-310/311): ausdrücklich bestätigt, laufen über die Outbox. --}}
+                @foreach ($invoices as $projection)
+                    @php($p = (array) $projection->payload)
+                    @if ($maySend)
+                        <x-modal id="orgamax-send-{{ $loop->index }}" :embedded="false" icon="send"
+                                 :eyebrow="(string) ($p['number'] ?? $projection->external_id)" :title="__('orgamax::orgamax.invoice.send_title')"
+                                 :action="route('admin.orgamax.invoices.send', $projection->external_id)"
+                                 :submit-label="__('orgamax::orgamax.invoice.send')">
+                            <p class="mb-2 text-sm text-muted">{{ __('orgamax::orgamax.invoice.send_hint') }}</p>
+                            <x-input-field name="recipient" id="orgamax-send-recipient-{{ $loop->index }}" type="email" required
+                                           :label="__('orgamax::orgamax.invoice.send_recipient')" />
+                            <x-input-field name="subject" id="orgamax-send-subject-{{ $loop->index }}"
+                                           :label="__('orgamax::orgamax.invoice.send_subject')"
+                                           :value="__('orgamax::orgamax.invoice.send_subject_default', ['number' => (string) ($p['number'] ?? $projection->external_id)])" />
+                        </x-modal>
+                    @endif
+                    @if ($mayRecordPayment)
+                        <x-modal id="orgamax-payment-{{ $loop->index }}" :embedded="false" icon="payments"
+                                 :eyebrow="(string) ($p['number'] ?? $projection->external_id)" :title="__('orgamax::orgamax.invoice.payment_title')"
+                                 :action="route('admin.orgamax.invoices.payment', $projection->external_id)"
+                                 :submit-label="__('orgamax::orgamax.invoice.payment')">
+                            <p class="mb-2 text-sm text-muted">{{ __('orgamax::orgamax.invoice.payment_hint') }}</p>
+                            <x-input-field name="amount" id="orgamax-payment-amount-{{ $loop->index }}" type="number" step="0.01" min="0.01" required
+                                           :label="__('orgamax::orgamax.invoice.payment_amount')"
+                                           :value="is_numeric($p['outstanding_amount'] ?? null) ? (string) $p['outstanding_amount'] : null" />
+                            <x-input-field name="date" id="orgamax-payment-date-{{ $loop->index }}" type="date" required
+                                           :label="__('orgamax::orgamax.invoice.payment_date')" :value="now()->toDateString()" />
+                            <x-input-field name="note" id="orgamax-payment-note-{{ $loop->index }}"
+                                           :label="__('orgamax::orgamax.invoice.payment_note')" />
+                        </x-modal>
+                    @endif
+                @endforeach
                 <x-pagination :paginator="$invoices" standing />
             @endif
         </x-card>

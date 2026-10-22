@@ -10,6 +10,7 @@
 
 namespace App\Policies\Project;
 
+use App\Enums\User\Permission;
 use App\Models\Platform\User;
 use App\Models\Project\Milestone;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
@@ -27,14 +28,14 @@ class MilestonePolicy {
     }
 
     public function create(User $user): bool {
-        return true;
+        return $user->can(Permission::MilestoneManage->value);
     }
 
     public function update(User $user, Milestone $milestone): bool {
-        return $this->owns($user, $milestone, 'created_by');
+        return $this->owns($user, $milestone, 'created_by') && $user->can(Permission::MilestoneManage->value);
     }
 
     public function delete(User $user, Milestone $milestone): bool {
-        return $this->owns($user, $milestone, 'created_by');
+        return $this->update($user, $milestone);
     }
 }

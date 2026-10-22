@@ -25,7 +25,7 @@ use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class ScheduleController extends Controller {
@@ -88,6 +88,8 @@ class ScheduleController extends Controller {
             'userFilterSqid' => $userFilter > 0 ? Sqid::encode(User::class, $userFilter) : null,
             'holidays' => $holidays,
             'isAdmin' => $auth->isAdmin(),
+            'canManageShifts' => $auth->can(Permission::ScheduledShiftManage->value),
+            'canManageShiftTypes' => $auth->can(Permission::ShiftTypeManage->value),
             'canSuggest' => $auth->hasPermissionTo(Permission::StaffingSuggest->value),
             'complianceByShift' => $complianceByShift,
             'qualificationGapByShift' => $this->computeQualificationGaps($shifts),
@@ -158,30 +160,6 @@ class ScheduleController extends Controller {
         return $gaps;
     }
 
-    // ── JSON-API for Alpine.js ───────────────────────────────────────────────
-
-    public function apiIndex(Request $request): JsonResponse {
-        $rawUserFilter = (string) $request->query('user', '');
-        $userFilter = (int) (Sqid::decodeOrNumeric(User::class, $rawUserFilter, 0) ?? 0);
-
-        $range = $this->globalDateRange();
-        $from = $range['from'];
-        $to = $range['to'];
-
-        $query = ScheduledShift::query()
-            ->with(['user:id,name', 'shiftType'])
-            ->forDateRange($from, $to)
-            ->orderBy('date')
-            ->orderBy('start_time');
-        if ($userFilter > 0) {
-            $query->forUser($userFilter);
-        }
-
-        return response()->json(
-            ScheduledShiftResource::collection($query->get())
-        );
-    }
-
     public function store(StoreScheduledShiftRequest $request): JsonResponse {
         /** @var User $auth */
         $auth = Auth::user();
@@ -224,11 +202,7 @@ class ScheduleController extends Controller {
     }
 
     public function destroy(ScheduledShift $shift): JsonResponse {
-        /** @var User $auth */
-        $auth = Auth::user();
-        if (! $auth->isAdmin()) {
-            abort(403);
-        }
+        Gate::authorize('delete', $shift);
 
         $shift->delete();
 
@@ -254,11 +228,9 @@ class ScheduleController extends Controller {
     }
 
     public function publish(ScheduledShift $shift): JsonResponse {
+        Gate::authorize('publish', $shift);
         /** @var User $auth */
         $auth = Auth::user();
-        if (! $auth->isAdmin()) {
-            abort(403);
-        }
 
         $shift->update(['status' => ScheduledShiftStatus::Published, 'updated_by' => $auth->id]);
         $shift->load(['user:id,name', 'shiftType']);

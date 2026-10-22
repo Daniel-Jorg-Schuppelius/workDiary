@@ -16,7 +16,7 @@
 
     Verfügbar (aus index.blade.php / schedule controller):
       $anchor, $from, $to, $shifts, $shiftsByDate, $users, $holidays,
-      $isAdmin, $openSlotsByDate, $complianceByShift
+      $canManageShifts, $openSlotsByDate, $complianceByShift
 
     Die komplexe Cell-Logik (Klick-Handler, Zeigerzug, Open-Slots, Compliance,
     Add-Hint) liegt im Schichtplan-Cell-Partial; die Komponente übergibt
@@ -28,7 +28,7 @@
     :holidays="$holidays"
     cell-view="schedule.partials._calendar_cell"
     :cell-data="[
-        'isAdmin'           => $isAdmin ?? false,
+        'canManageShifts'   => $canManageShifts ?? false,
         'shiftsByDate'      => $shiftsByDate ?? collect(),
         'openSlotsByDate'   => $openSlotsByDate ?? [],
         'complianceByShift' => $complianceByShift ?? [],

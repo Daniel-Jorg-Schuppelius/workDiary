@@ -229,11 +229,9 @@ class LetterheadAssetService {
         $white = (int) imagecolorallocate($out, 255, 255, 255);
         imagefill($out, 0, 0, $white);
         imagecopyresampled($out, $src, 0, 0, 0, 0, $outWidth, $outHeight, $width, $height);
-        imagedestroy($src);
 
         ob_start();
         imagepng($out, null, 6);
-        imagedestroy($out);
 
         return (string) ob_get_clean();
     }

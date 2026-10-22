@@ -126,6 +126,24 @@ final class IdeaNodeConversionTest extends TestCase {
         ])->assertNotFound();
     }
 
+    /** Vollscan 2026-10-21: Verknüpfen über den Dialog des Editors (Formular statt JSON). */
+    public function test_link_dialog_posts_a_typed_target(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Linkkunde GmbH']);
+
+        $this->actingAs($this->owner)->get(route('ideas.show', $this->map))->assertOk()
+            ->assertSee(__('ideas.link.action'))
+            ->assertSee(str_replace('/', '\\/', route('ideas.nodes.link.form', [$this->map, '__NODE__'])), false);
+        $this->get(route('ideas.nodes.link.form', [$this->map, $this->node]) . '?dialog=1')->assertOk()
+            ->assertSee('customer:' . $customer->sqid, false);
+
+        $this->post(route('ideas.nodes.link', [$this->map, $this->node]), ['target' => 'customer:' . $customer->sqid])
+            ->assertRedirect(route('ideas.show', $this->map));
+        $this->assertTrue(\App\Models\Knowledge\ContentReference::query()
+            ->where('target_type', \App\Support\MorphMap::alias(Customer::class))
+            ->where('target_id', $customer->id)
+            ->exists());
+    }
+
     public function test_private_map_stays_hidden_on_linked_project_page(): void {
         $project = Project::factory()->create(['organization_id' => $this->organization->id]);
         $this->map->forceFill(['project_id' => $project->id])->save();

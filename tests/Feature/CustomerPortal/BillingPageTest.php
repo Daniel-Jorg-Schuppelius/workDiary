@@ -92,6 +92,8 @@ class BillingPageTest extends TestCase {
     /** Konsolidierungs-Audit 2026-10 (k4-14): bisher endete die Liste still nach 24 Monaten. */
     public function test_index_pages_beyond_two_years(): void {
         $this->travelTo('2028-08-15 12:00:00');
+        // Die neuen Monate legt der nächtliche Lauf an; das Portal liest nur (lk-13).
+        $this->artisan('customer-billing:recalculate-statements')->assertSuccessful();
 
         $first = $this->actingAs($this->portalUser, 'customer')->get(route('customer.billing.index'))->assertOk();
         $statements = $first->viewData('statements');

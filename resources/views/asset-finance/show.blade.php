@@ -33,6 +33,9 @@
                     </form>
                 @endif
                 @can('update', $contract)
+                    @if ($contract->status->isOpen())
+                        <x-icon-btn placement="bar" icon="edit" size="sm" data-entry-modal-trigger :href="route('asset-finance.edit', $contract)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
+                    @endif
                     @if (in_array($contract->status, [\App\Enums\AssetFinance\AssetFinanceStatus::Returned, \App\Enums\AssetFinance\AssetFinanceStatus::Purchased, \App\Enums\AssetFinance\AssetFinanceStatus::Terminated], true))
                         <form method="POST" action="{{ route('asset-finance.close', $contract) }}">@csrf
                             <x-button type="submit" tone="ghost">{{ __('Abschließen') }}</x-button>

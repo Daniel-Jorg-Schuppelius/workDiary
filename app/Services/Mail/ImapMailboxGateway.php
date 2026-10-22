@@ -257,7 +257,7 @@ class ImapMailboxGateway implements MailboxGateway {
 
         // Threading + Loop-Schutz (Feature 065, P2) — Header defensiv lesen.
         $inReplyTo = trim((string) $message->getInReplyTo());
-        $references = array_values(array_filter(preg_split('/\s+/', trim((string) $message->getReferences())) ?: []));
+        $references = StringHelper::words((string) $message->getReferences());
         $autoSubmitted = false;
         try {
             $headers = $message->getHeader();

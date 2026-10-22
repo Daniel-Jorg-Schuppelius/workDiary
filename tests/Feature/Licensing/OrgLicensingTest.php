@@ -117,7 +117,8 @@ class OrgLicensingTest extends TestCase {
         // Einspielen ueber die Admin-Route.
         $this->actingAs($admin)
             ->post(route('admin.license.org.install'), ['license_key' => $this->keyFor($org, ['plan' => 'enterprise'])])
-            ->assertRedirect();
+            ->assertRedirect()
+            ->assertSessionHas('open_dialog', route('admin.scope.setup'));
 
         $org->refresh();
         $this->assertSame('enterprise', $org->plan); // Tier synchronisiert
@@ -156,7 +157,7 @@ class OrgLicensingTest extends TestCase {
             'licensee' => 'ACME',
             'plan' => 'enterprise',
             'addons' => [],
-        ])->assertRedirect();
+        ])->assertRedirect()->assertSessionHas('open_dialog', route('admin.scope.setup'));
 
         $org->refresh();
         $this->assertSame('enterprise', $org->plan);

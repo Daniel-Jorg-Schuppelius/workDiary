@@ -44,6 +44,12 @@
                     <x-detail-grid.row :label="__('learning.verify.valid_until')" :value="$certificate->valid_until?->translatedFormat('d.m.Y') ?? __('learning.verify.unlimited')" />
                     <x-detail-grid.row :label="__('learning.verify.issuer')" :value="$certificate->organization?->name ?? '–'" />
                     <x-detail-grid.row :label="__('learning.verify.number')" :value="$certificate->number" />
+                    {{-- Maschinenlesbare Nachweise (Open Badges 3.0) zur eigenen Prüfung durch Auftraggeber. --}}
+                    <x-detail-grid.row :label="__('learning.verify.machine_readable')">
+                        <a class="link" href="{{ route('learning.certificates.credential', $certificate->verification_code) }}" rel="alternate" type="application/ld+json">{{ __('learning.verify.credential_json') }}</a>
+                        ·
+                        <a class="link" href="{{ route('learning.certificates.credential-jwt', $certificate->verification_code) }}" rel="alternate">{{ __('learning.verify.credential_jwt') }}</a>
+                    </x-detail-grid.row>
                 </x-detail-grid>
             </x-card>
         @endif

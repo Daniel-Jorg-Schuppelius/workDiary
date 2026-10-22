@@ -28,6 +28,15 @@ final class CarbonFmt {
         return $dt->translatedFormat(Formats::date());
     }
 
+    /** Leistungszeitraum „von – bis“ bzw. nur der Beginn; null ohne Beginn. */
+    public static function period(?CarbonInterface $from, ?CarbonInterface $to): ?string {
+        if ($from === null) {
+            return null;
+        }
+
+        return $to === null ? self::fdate($from) : self::fdate($from) . ' – ' . self::fdate($to);
+    }
+
     /**
      * Datum + Uhrzeit in Anzeige-Zeitzone + konfiguriertem Format. Optional
      * mit expliziter Zeitzone (z. B. die des EMPFÄNGERS beim Push-Versand,

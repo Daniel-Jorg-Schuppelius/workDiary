@@ -16,6 +16,7 @@ use App\Enums\User\Permission;
 use App\Models\Platform\Organization;
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use App\Services\Billing\Purchase\{PurchaseDocument, PurchaseDocumentSource};
+use App\Services\Billing\Purchase\ResolvesPurchaseDocuments;
 use App\Support\Query\DateRange;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
@@ -33,6 +34,10 @@ use Illuminate\Support\Facades\{Gate, Route};
  * bleiben gültig.
  */
 final class LexofficePurchaseDocumentSource implements PurchaseDocumentSource {
+    use ResolvesPurchaseDocuments;
+
+    private const DOCUMENT_MODEL = LexofficeVoucher::class;
+
     public const KEY = 'lexoffice';
 
     public function key(): string {
@@ -56,29 +61,6 @@ final class LexofficePurchaseDocumentSource implements PurchaseDocumentSource {
         }
 
         return $this->map($builder->orderByDesc('voucher_date')->orderByDesc('id')->limit($limit)->get());
-    }
-
-    public function byKey(Organization $organization, string $key): ?PurchaseDocument {
-        $id = Sqid::decode(LexofficeVoucher::class, $key);
-        if ($id === null) {
-            return null;
-        }
-        $voucher = $this->candidates($organization)->whereKey($id)->first();
-
-        return $voucher === null ? null : $this->toDocument($voucher);
-    }
-
-    public function byMorph(Organization $organization, int $id): ?PurchaseDocument {
-        return $this->byMorphIds($organization, [$id])->get($id);
-    }
-
-    public function byMorphIds(Organization $organization, array $ids): Collection {
-        if ($ids === []) {
-            return collect();
-        }
-
-        return $this->map($this->query($organization)->whereIn('id', $ids)->get())
-            ->keyBy(static fn(PurchaseDocument $document): int => $document->morphId);
     }
 
     public function toDocument(LexofficeVoucher $voucher, ?bool $canPreview = null): PurchaseDocument {

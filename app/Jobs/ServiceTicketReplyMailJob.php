@@ -21,7 +21,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\{InteractsWithQueue, SerializesModels};
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\{Cache, Mail};
 
 /**
  * Versand einer Ticket-Antwort (Feature 065, MVP-152). HARTE Typ-Garantie:
@@ -55,8 +55,17 @@ class ServiceTicketReplyMailJob implements ShouldQueue {
     }
 
     public function handle(): void {
+        // Höchstens einmal versenden (Sicherheitsaudit 2026-10-21, li-8): unter der Sperre neu lesen, „versendet“
+        // vor dem Versand setzen und nur bei einem Versandfehler zurücknehmen — eine Wiederholung nach einem
+        // gescheiterten Statusschreiben schickt die Antwort nicht ein zweites Mal.
+        Cache::lock('ticket-reply-mail:' . $this->messageId, 120)->block(30, function (): void {
+            $this->send();
+        });
+    }
+
+    private function send(): void {
         $message = ServiceTicketMessage::query()->withoutGlobalScopes()->find($this->messageId);
-        if ($message === null) {
+        if ($message === null || $message->delivery_status === TicketMessageDeliveryStatus::Sent) {
             return;
         }
 
@@ -82,10 +91,16 @@ class ServiceTicketReplyMailJob implements ShouldQueue {
             $text .= "\n\n" . app(MailSignature::class)->blockFor($author, $ticket->organization()->withoutGlobalScopes()->first());
         }
 
-        Mail::raw($text, function ($mail) use ($recipients, $subject): void {
-            $mail->to($recipients)->subject($subject);
-        });
-
+        $previous = $message->delivery_status;
         $message->update(['delivery_status' => TicketMessageDeliveryStatus::Sent]);
+        try {
+            Mail::raw($text, function ($mail) use ($recipients, $subject): void {
+                $mail->to($recipients)->subject($subject);
+            });
+        } catch (\Throwable $e) {
+            $message->update(['delivery_status' => $previous]);
+
+            throw $e;
+        }
     }
 }

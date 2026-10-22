@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Schedule;
 
+use App\Enums\User\Permission;
 use App\Enums\Vacation\VacationStatus;
 use App\Http\Controllers\Concerns\{FiltersDiaryEntries, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
@@ -50,6 +51,8 @@ class DutyController extends Controller {
         /** @var User $authUser */
         $authUser = Auth::user();
         $isAdmin = $authUser->isAdmin();
+        // Urlaub anderer sehen (und mit vacation.approve entscheiden): Admin oder vacation.viewAny.
+        $seesTeamVacations = $isAdmin || $authUser->can(Permission::VacationViewAny->value);
 
         $range = $this->globalDateRange();
         $rangeFrom = $range['from']->toDateString();
@@ -57,7 +60,7 @@ class DutyController extends Controller {
 
         $diaryQuery = $this->buildDiaryQuery($request, $rangeFrom, $rangeTo);
         $shiftQuery = $this->buildShiftQuery($rangeFrom, $rangeTo);
-        $vacationQuery = $this->buildVacationQuery($request, $authUser, $isAdmin, $rangeFrom, $rangeTo);
+        $vacationQuery = $this->buildVacationQuery($request, $authUser, $seesTeamVacations, $rangeFrom, $rangeTo);
         $assignmentQuery = $this->buildAssignmentQuery($rangeFrom, $rangeTo);
         $sickQuery = $this->buildSickQuery($request, $authUser, $isAdmin, $rangeFrom, $rangeTo);
 
@@ -92,7 +95,7 @@ class DutyController extends Controller {
         }
 
         $allTags = Tag::orderBy('name')->get(['id', 'name', 'color']);
-        $users = $isAdmin
+        $users = $isAdmin || $seesTeamVacations
             ? User::query()->where('organization_id', $authUser->organization_id)->orderBy('name')->get(['id', 'name'])
             : collect();
         $filters = $request->only('status', 'mine', 'q', 'tag', 'vtype', 'vstatus', 'user_id', 'entry_type', 'kkind', 'kstatus',
@@ -118,7 +121,7 @@ class DutyController extends Controller {
 
         // MVP-413: Salden der Antragsteller offener Anträge (Genehmiger-Sicht, Schlüssel "userId-Jahr").
         $vacationBalances = [];
-        if ($tab === 'urlaub' && $isAdmin) {
+        if ($tab === 'urlaub' && $seesTeamVacations) {
             $balanceService = app(VacationBalanceService::class);
             foreach ($vacations as $vacationRow) {
                 if ($vacationRow->status !== VacationStatus::Pending || ! $vacationRow->type->countsAgainstEntitlement()) {
@@ -149,6 +152,7 @@ class DutyController extends Controller {
             'sicknessStatus' => $sicknessStatus,
             'sicknessStatusUser' => $sicknessStatusUser,
             'isAdmin' => $isAdmin,
+            'seesTeamVacations' => $seesTeamVacations,
             'users' => $users,
             'holidayService' => $holidayService,
             'sort' => $sort,
@@ -190,13 +194,13 @@ class DutyController extends Controller {
     /**
      * @return EloquentBuilder<Vacation>
      */
-    private function buildVacationQuery(Request $request, User $authUser, bool $isAdmin, string $rangeFrom, string $rangeTo): EloquentBuilder {
+    private function buildVacationQuery(Request $request, User $authUser, bool $seesTeam, string $rangeFrom, string $rangeTo): EloquentBuilder {
         /** @var EloquentBuilder<Vacation> $vacationQuery */
         $vacationQuery = Vacation::query()
             ->with('user:id,name')
             ->orderByDesc('start_date');
 
-        if (! $isAdmin) {
+        if (! $seesTeam) {
             $vacationQuery->where('user_id', $authUser->id);
         } elseif (($uid = Sqid::decodeOrNumeric(User::class, $request->query('user_id'))) !== null) {
             $vacationQuery->where('user_id', $uid);

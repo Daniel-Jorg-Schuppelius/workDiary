@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Lexoffice\Api;
 
 use APIToolkit\API\Authentication\BearerAuthentication;
+use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use App\Plugins\PluginHealthService;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
@@ -51,12 +52,42 @@ class LexofficeClientFactory {
         return $client;
     }
 
-    /** Client des Lexoffice-SDK (Kontakte, Belege, Dateien) mit demselben Transport. */
-    public function sdk(string $apiKey, string $baseUrl): Client {
-        return app(PluginHttpFactory::class)->sdkClient(
+    /**
+     * GET mit dem Fehlerbild der Belegabrufe: 404 (in Lexoffice gelöscht) →
+     * null, andere Fehler → LexofficeApiException. 429/5xx hat der Client
+     * vorher wiederholt (MAX_RETRIES, Retry-After).
+     *
+     * @return array<array-key, mixed>|null
+     */
+    public function getJson(PluginApiClient $api, string $url, string $action): ?array {
+        $response = $api->getResponse($url);
+        if ($response->status() === 404) {
+            return null;
+        }
+        if (! $response->successful()) {
+            throw LexofficeApiException::fromResponse($response, 'Lexoffice', $action);
+        }
+        $json = $response->json();
+
+        return is_array($json) ? $json : [];
+    }
+
+    /**
+     * Client des Lexoffice-SDK mit demselben Transport, Anfrageabstand und
+     * Wiederholungsbudget wie {@see make()}.
+     */
+    public function sdk(string $apiKey, string $baseUrl, ?float $requestInterval = null): Client {
+        $client = app(PluginHttpFactory::class)->sdkClient(
             LexofficePlugin::ID,
             $baseUrl,
             static fn (?GuzzleClient $transport): Client => new Client($apiKey, $baseUrl, null, false, $transport),
+            // Ohne Angabe nähme sdkClient() den Abstand der gebundenen Organisation — Konsole und Queue binden keine.
+            $requestInterval ?? LexofficeConfig::requestInterval(),
         );
+        if (! PluginHealthService::inHealthCheck()) {
+            $client->setMaxRetries(self::MAX_RETRIES);
+        }
+
+        return $client;
     }
 }

@@ -1,7 +1,7 @@
 ---
 title: "Registro de tiempo basado en ubicación"
 topic: location.overview
-version: 2
+version: 3
 keywords:
     - fichaje GPS
     - geovallas
@@ -34,6 +34,12 @@ confirmación expresa.
 relevante se define un perímetro a partir de un punto central y un
 radio. Solo dentro de estas zonas se generan estancias; los movimientos
 fuera de ellas carecen de relevancia funcional.
+
+**Zonas a partir de direcciones:** en un cliente («Zona desde la dirección del
+cliente») y en una ubicación («Zona desde la dirección») la zona se crea
+directamente con las coordenadas de la dirección; «Para todos los clientes» la
+crea para cada cliente con coordenadas y sin zona. El radio procede de los
+valores predeterminados de la localización.
 
 **Fuentes de datos:** Las notificaciones de posición proceden, a
 elección, de las apps OwnTracks o Traccar a través de un acceso personal

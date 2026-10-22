@@ -74,6 +74,32 @@ class MaintenancePlanControllerTest extends TestCase {
         ]);
     }
 
+    /** Vollscan 2026-10-21: Pläne lassen sich bearbeiten (vorher nur erledigen, pausieren, löschen). */
+    public function test_edit_dialog_prefills_and_update_saves(): void {
+        $plan = MaintenancePlan::factory()->create([
+            'organization_id' => $this->asset->organization_id,
+            'asset_id' => $this->asset->id,
+            'label' => 'Filterwechsel',
+            'interval_value' => 6,
+        ]);
+
+        $this->get(route('assets.show', $this->asset))->assertOk()
+            ->assertSee(route('assets.maintenance-plans.edit', [$this->asset, $plan]), false);
+        $this->get(route('assets.maintenance-plans.edit', [$this->asset, $plan]) . '?dialog=1')->assertOk()
+            ->assertSee(__('Wartungsplan bearbeiten'))
+            ->assertSee('value="Filterwechsel"', false)
+            ->assertSee(route('assets.maintenance-plans.update', [$this->asset, $plan]), false);
+
+        $this->put(route('assets.maintenance-plans.update', [$this->asset, $plan]), [
+            'label' => 'Filter und Dichtung',
+            'interval_kind' => 'months',
+            'interval_value' => 3,
+            'tolerance_days' => 5,
+        ])->assertRedirect(route('assets.show', $this->asset));
+        $this->assertSame('Filter und Dichtung', $plan->fresh()?->label);
+        $this->assertSame(3, (int) $plan->fresh()?->interval_value);
+    }
+
     public function test_complete_reschedules(): void {
         $plan = MaintenancePlan::factory()->create([
             'organization_id' => $this->org->id,

@@ -44,7 +44,6 @@ class LetterheadUploadTest extends TestCase {
         imagefill($img, 0, 0, (int) imagecolorallocate($img, 240, 240, 255));
         ob_start();
         imagepng($img);
-        imagedestroy($img);
         $bytes = (string) ob_get_clean();
 
         return UploadedFile::fake()->createWithContent('bogen.png', $bytes);
@@ -96,7 +95,6 @@ class LetterheadUploadTest extends TestCase {
         $img = imagecreatetruecolor(800, 600); // Querformat
         ob_start();
         imagepng($img);
-        imagedestroy($img);
         $file = UploadedFile::fake()->createWithContent('quer.png', (string) ob_get_clean());
 
         $this->actingAs($admin)->post(route('admin.document-design.assets.store'), [

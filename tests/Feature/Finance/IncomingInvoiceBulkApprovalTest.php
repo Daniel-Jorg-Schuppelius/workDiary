@@ -117,4 +117,21 @@ class IncomingInvoiceBulkApprovalTest extends TestCase {
             ...$attributes,
         ]);
     }
+
+    /** Sicherheitsaudit 2026-10-21, li-7: Zahlungsfreigabe und Ablehnung über zwei veraltete Instanzen — die zweite scheitert am Statusvertrag. */
+    public function test_a_stale_second_decision_respects_the_transition_table(): void {
+        $incoming = $this->incoming(['supplier_id' => $this->supplier->id, 'status' => IncomingEInvoiceStatus::Approved]);
+        $first = IncomingEInvoice::query()->findOrFail($incoming->id);
+        $stale = IncomingEInvoice::query()->findOrFail($incoming->id);
+        $service = app(IncomingEInvoiceService::class);
+
+        $service->decide($first, IncomingEInvoiceStatus::PaymentReleased, $this->admin);
+
+        $this->expectException(IncomingInvoiceDecisionException::class);
+        try {
+            $service->decide($stale, IncomingEInvoiceStatus::Rejected, $this->admin);
+        } finally {
+            $this->assertSame(IncomingEInvoiceStatus::PaymentReleased, $incoming->fresh()->status);
+        }
+    }
 }

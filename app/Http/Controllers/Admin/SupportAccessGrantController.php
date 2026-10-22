@@ -50,7 +50,7 @@ class SupportAccessGrantController extends Controller {
         $supportUsers = User::query()
             ->where('organization_id', $organization->id)
             ->whereNull('deactivated_at')
-            ->role(\App\Enums\User\UserRole::Support->value, 'web')
+            ->role(\App\Services\Org\OrganizationRoles::matching([\App\Enums\User\UserRole::Support->value], $organization->id))
             ->orderBy('name')
             ->get(['id', 'name']);
 
@@ -69,7 +69,7 @@ class SupportAccessGrantController extends Controller {
         $supportUsers = User::query()
             ->where('organization_id', $organization->id)
             ->whereNull('deactivated_at')
-            ->role(\App\Enums\User\UserRole::Support->value, 'web')
+            ->role(\App\Services\Org\OrganizationRoles::matching([\App\Enums\User\UserRole::Support->value], $organization->id))
             ->orderBy('name')
             ->get(['id', 'name']);
 

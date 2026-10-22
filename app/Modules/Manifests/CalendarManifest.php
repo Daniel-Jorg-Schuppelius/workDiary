@@ -69,4 +69,13 @@ final class CalendarManifest extends Manifest {
             \App\Services\Calendar\Contracts\FreeSlotSource::class => \App\Services\Calendar\Contracts\NullFreeSlotSource::class,
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
+                \App\Services\Calendar\Retention\CalendarRetentionPolicies::class,
+            ],
+        ];
+    }
 }

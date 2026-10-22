@@ -17,6 +17,7 @@ use App\Http\Requests\Numbering\SaveNumberFormatRequest;
 use App\Models\Numbering\NumberFormat;
 use App\Models\Platform\Organization;
 use App\Services\Numbering\{NumberAuthority, NumberFormatOverview, NumberSequenceService};
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -105,7 +106,7 @@ class NumberFormatController extends Controller {
         }
         foreach (['include_year', 'reset_per_year'] as $key) {
             if (array_key_exists($key, $row)) {
-                $attributes[$key] = filter_var($row[$key], FILTER_VALIDATE_BOOL);
+                $attributes[$key] = StringHelper::parseBool($row[$key]) ?? false;
             }
         }
         foreach (['padding', 'starts_at'] as $key) {

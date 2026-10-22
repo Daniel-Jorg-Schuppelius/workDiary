@@ -32,6 +32,18 @@ class MaintenancePlanController extends Controller {
         ]);
     }
 
+    /** Bestehenden Plan im selben Dialog bearbeiten (Vollscan 2026-10-21). */
+    public function edit(Asset $asset, MaintenancePlan $plan): View {
+        $this->ensurePlanBelongsToAsset($asset, $plan);
+        Gate::authorize('update', $plan);
+
+        return view('assets._maintenance_form_dialog', [
+            'asset' => $asset,
+            'plan' => $plan,
+            'intervalKindOptions' => $this->options->intervalKindOptions(),
+        ]);
+    }
+
     public function store(Asset $asset, SaveMaintenancePlanRequest $request): RedirectResponse {
         Gate::authorize('update', $asset);
         Gate::authorize('create', MaintenancePlan::class);

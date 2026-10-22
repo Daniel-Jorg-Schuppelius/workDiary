@@ -155,11 +155,15 @@ class InternalCaseController extends Controller {
         return back()->with('success', __('Betroffene Person markiert (für den Fall gesperrt).'));
     }
 
-    public function export(ExportWhistleblowingCaseRequest $request, WhistleblowingCase $case, WhistleblowingExportService $export): BinaryFileResponse {
+    public function export(ExportWhistleblowingCaseRequest $request, WhistleblowingCase $case, WhistleblowingExportService $export): BinaryFileResponse|RedirectResponse {
         Gate::authorize('export', $case);
         $data = $request->validated();
 
-        $result = $export->export($case, $data['reason'], $this->user());
+        try {
+            $result = $export->export($case, $data['reason'], $this->user(), (string) $data['password']);
+        } catch (RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
 
         return response()
             ->download($result['path'], $result['filename'], [

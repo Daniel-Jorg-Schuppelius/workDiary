@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Plugins\Lexoffice\Services;
 
+use APIToolkit\Exceptions\ApiException;
 use App\Models\Platform\Organization;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use App\Services\Contacts\{ExternalPhoneContact, ExternalPhoneContactSource};
+use Lexoffice\API\Endpoints\ContactsEndpoint;
 use RuntimeException;
 
 /** Lesende Lexoffice-Kontaktquelle für den provider-neutralen Rufnummernabgleich. */
@@ -35,31 +37,26 @@ final class LexofficePhoneContactSource implements ExternalPhoneContactSource {
             return [];
         }
 
-        $baseUrl = rtrim($config['base_url'], '/');
-        $api = app(LexofficeClientFactory::class)->make($apiKey, $baseUrl, $config['request_interval']);
+        $endpoint = new ContactsEndpoint(app(LexofficeClientFactory::class)->sdk($apiKey, $config['base_url'], $config['request_interval']));
 
         $contacts = [];
         $page = 0;
         do {
-            $response = $api->getResponse($baseUrl . '/contacts', ['page' => $page, 'size' => 100]);
-            if (! $response->successful()) {
-                throw new RuntimeException('Lexoffice-Kontaktabruf fehlgeschlagen (HTTP ' . $response->status() . ').');
+            try {
+                $found = $endpoint->search(['page' => $page, 'size' => 100]);
+            } catch (ApiException $e) {
+                throw new RuntimeException('Lexoffice-Kontaktabruf fehlgeschlagen (HTTP ' . $e->getCode() . ').', 0, $e);
             }
 
-            /** @var array<string, mixed> $body */
-            $body = (array) ($response->json() ?? []);
-            foreach ((array) ($body['content'] ?? []) as $remote) {
-                if (! is_array($remote)) {
-                    continue;
-                }
-                $contact = $this->mapContact($remote);
+            foreach ($found->getValues() as $remote) {
+                $contact = $this->mapContact($remote->toArray());
                 if ($contact instanceof ExternalPhoneContact) {
                     $contacts[] = $contact;
                 }
             }
 
             $page++;
-            $totalPages = min(self::PAGE_LIMIT, max(1, (int) ($body['totalPages'] ?? 1)));
+            $totalPages = min(self::PAGE_LIMIT, max(1, $found->getTotalPages()));
         } while ($page < $totalPages);
 
         return $contacts;

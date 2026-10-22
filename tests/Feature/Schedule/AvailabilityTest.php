@@ -89,6 +89,34 @@ class AvailabilityTest extends TestCase {
         $this->assertSoftDeleted('availability_windows', ['id' => $window->id]);
     }
 
+    /** Vollscan 2026-10-21, lk-03: Fenster und Wunschdienste lassen sich über den Dialog bearbeiten. */
+    public function test_user_can_edit_window_and_desired_shift_from_the_page(): void {
+        $user = User::factory()->user()->create();
+        $window = AvailabilityWindow::factory()->create(['organization_id' => $user->organization_id, 'user_id' => $user->id, 'weekday' => 1, 'specific_date' => null]);
+        $wish = DesiredShift::factory()->create(['organization_id' => $user->organization_id, 'user_id' => $user->id]);
+
+        $this->actingAs($user)->get(route('schedule.availability.index'))->assertOk()
+            ->assertSee(route('schedule.availability.windows.update', $window), false)
+            ->assertSee(route('schedule.availability.desired.update', $wish), false);
+
+        $this->put(route('schedule.availability.windows.update', $window), [
+            'weekday' => 3,
+            'kind' => AvailabilityKind::Unavailable->value,
+            'start_time' => '08:00',
+            'end_time' => '12:00',
+            'note' => 'Arzttermin',
+        ])->assertRedirect();
+        $this->assertSame(3, (int) $window->fresh()->weekday);
+        $this->assertSame('Arzttermin', $window->fresh()->note);
+
+        $this->put(route('schedule.availability.desired.update', $wish), [
+            'date' => '2026-11-02',
+            'preference' => ShiftPreference::PreferredOff->value,
+            'note' => 'frei',
+        ])->assertRedirect();
+        $this->assertSame('frei', $wish->fresh()->note);
+    }
+
     public function test_user_cannot_delete_foreign_window(): void {
         $owner = User::factory()->user()->create();
         $other = User::factory()->user()->create(['organization_id' => $owner->organization_id]);

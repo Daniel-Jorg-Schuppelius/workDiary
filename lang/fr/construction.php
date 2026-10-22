@@ -74,6 +74,8 @@ return [
         'pdf' => 'PDF',
         'send' => 'Envoyer',
         'acknowledge' => 'Confirmer la réception',
+        'delete' => 'Supprimer le brouillon',
+        'delete_confirm' => 'Supprimer ce brouillon ?',
     ],
 
     'badge' => [

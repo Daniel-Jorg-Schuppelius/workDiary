@@ -29,7 +29,7 @@ class LexofficeMaterialProviderTest extends TestCase {
     }
 
     public function test_search_calls_lexoffice_and_upserts_local_materials(): void {
-        FakePluginHttp::fake([
+        $fake = FakePluginHttp::fake([
             'https://api.lexware.io/v1/articles*' => FakePluginHttp::response([
                 'content' => [
                     [
@@ -51,7 +51,35 @@ class LexofficeMaterialProviderTest extends TestCase {
             'external_provider' => 'lexoffice',
             'external_id' => 'lex-1',
             'name' => 'Switch 24-Port',
+            'default_unit_price' => '250.0000',
         ]);
+        // ArticlesEndpoint::search() mit denselben Parametern wie zuvor.
+        $fake->assertSentCount(1);
+        $this->assertSame('GET https://api.lexware.io/v1/articles?query=switch&size=10', $fake->recorded()[0]['request']->getMethod() . ' ' . $fake->recorded()[0]['request']->getUri());
+    }
+
+    /** sync() blättert über `last`, ein Fehler beendet den Lauf ohne Ausnahme. */
+    public function test_sync_pages_until_last_and_stops_on_error(): void {
+        $page = static fn (string $id, bool $last): \GuzzleHttp\Psr7\Response => FakePluginHttp::response([
+            'content' => [['id' => $id, 'title' => 'Artikel ' . $id, 'type' => 'PRODUCT', 'unitName' => 'Stk', 'price' => ['netPrice' => 10.0, 'taxRate' => 19.0]]],
+            'last' => $last,
+            'totalPages' => 2,
+        ]);
+        $fake = FakePluginHttp::fake([
+            'https://api.lexware.io/v1/articles*' => [$page('lex-a', false), $page('lex-b', true)],
+        ]);
+
+        $provider = app(MaterialProviderRegistry::class)->get('lexoffice');
+        $this->assertInstanceOf(LexofficeMaterialProvider::class, $provider);
+        $this->assertSame(2, $provider->sync());
+        $this->assertSame(
+            ['https://api.lexware.io/v1/articles?page=0&size=100', 'https://api.lexware.io/v1/articles?page=1&size=100'],
+            array_map(static fn (array $entry): string => (string) $entry['request']->getUri(), $fake->recorded()),
+        );
+        $this->assertDatabaseHas('materials', ['external_id' => 'lex-b', 'tax_rate' => '19.00']);
+
+        FakePluginHttp::fake(['https://api.lexware.io/v1/articles*' => FakePluginHttp::response(['message' => 'forbidden'], 403)]);
+        $this->assertSame(0, app(MaterialProviderRegistry::class)->get('lexoffice')?->sync());
     }
 
     public function test_lexoffice_source_needs_the_key_of_the_current_organization(): void {

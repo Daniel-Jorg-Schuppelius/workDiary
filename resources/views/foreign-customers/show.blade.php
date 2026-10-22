@@ -48,6 +48,12 @@
                             </form>
                         @endif
                     @endcan
+                    @can('delete', $foreignCustomer)
+                        <x-action-form :action="route('foreign-customers.destroy', $foreignCustomer)" method="DELETE" :confirm="__('Fremdkunde wirklich löschen?')"
+                                       confirm-icon="delete" confirm-tone="error" :confirm-label="__('Löschen')">
+                            <x-icon-btn placement="danger" icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
+                        </x-action-form>
+                    @endcan
             </x-slot:actions>
         </x-page-toolbar>
 

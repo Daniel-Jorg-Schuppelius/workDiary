@@ -132,6 +132,36 @@ class AssetFinanceContractController extends Controller {
         ]);
     }
 
+    /** Offene Akte bearbeiten; Konditionen nur mit finance-Recht, Assets und Investitionsakte pflegt die Akte selbst (Vollscan 2026-10-21). */
+    public function edit(AssetFinanceContract $contract): View {
+        Gate::authorize('update', $contract);
+        abort_unless($contract->status->isOpen(), 409);
+        $contract->loadMissing(['supplier', 'responsible', 'costCenter', 'project']);
+
+        return view('asset-finance._form_dialog', [
+            'contract' => $contract,
+            'mayEditTerms' => Gate::allows('finance', $contract),
+            'preset' => [
+                'starts_on' => $contract->starts_on->toDateString(),
+                'ends_on' => $contract->ends_on?->toDateString(),
+                'notice_period_days' => $contract->notice_period_days,
+                'payment_rhythm' => $contract->payment_rhythm,
+                'rate_amount' => $contract->rate_amount,
+                'special_payment' => $contract->special_payment,
+                'residual_value' => $contract->residual_value,
+                'purchase_option_amount' => $contract->purchase_option_amount,
+            ],
+            'analysis' => null,
+            'analysisDocument' => null,
+            'suppliers' => Supplier::query()->orderBy('name')->get(['id', 'name']),
+            'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
+            'assets' => collect(),
+            'costCenters' => CostCenter::query()->where('active', true)->orderBy('code')->get(['id', 'code', 'label']),
+            'investmentCases' => collect(),
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse {
         Gate::authorize('create', AssetFinanceContract::class);
 

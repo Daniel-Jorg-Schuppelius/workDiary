@@ -16,7 +16,7 @@ use App\Enums\Learning\LearningBlockKind;
 use App\Models\Learning\LearningUnit;
 use App\Models\Platform\Organization;
 use App\Models\Procedure\ProcedureTemplate;
-use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\Data\{JsonHelper, StringHelper};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -166,7 +166,7 @@ class LearningContentService {
         if ($kind === LearningBlockKind::Video) {
             foreach (['autoplay', 'remember_position'] as $flag) {
                 if (array_key_exists($flag, $block)) {
-                    $block[$flag] = filter_var($block[$flag], FILTER_VALIDATE_BOOL);
+                    $block[$flag] = StringHelper::parseBool($block[$flag]) ?? false;
                 }
             }
         }

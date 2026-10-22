@@ -48,6 +48,17 @@ class UserFilterPresetController extends Controller {
         ]);
     }
 
+    /** Dialog „Aktuellen Filter speichern“ aus der Filterleiste: Bereich und Werte kommen aus der Liste. */
+    public function create(Request $request): View {
+        $scope = $request->string('scope')->toString();
+        abort_if($scope === '' || mb_strlen($scope) > 64, 404);
+        $query = $request->query('query');
+
+        return view('filter_presets._form_dialog', [
+            'preset' => new UserFilterPreset(['scope' => $scope, 'query' => is_array($query) ? $query : [], 'sort_order' => 0]),
+        ]);
+    }
+
     public function store(SaveUserFilterPresetRequest $request): RedirectResponse {
         /** @var \App\Models\Platform\User $user */
         $user = Auth::user();

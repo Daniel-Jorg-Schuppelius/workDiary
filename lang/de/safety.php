@@ -54,6 +54,8 @@ return [
         'show' => 'Ansehen',
         'back' => 'Zurück',
         'create_followup' => 'Folgemaßnahme anlegen',
+        'delete' => 'Löschen',
+        'delete_confirm' => 'Sicherheitsereignis endgültig löschen? Bei Unfällen können Aufbewahrungspflichten gelten.',
     ],
 
     'transition' => [

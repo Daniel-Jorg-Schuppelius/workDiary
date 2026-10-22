@@ -108,6 +108,9 @@ return [
         'deputies_hint' => 'These people have the leaving member as their deputy. Without a selection, the deputy role ends.',
         'deputy_for' => 'New deputy for :name',
         'no_deputy' => '— no deputy —',
+        'handovers' => 'Hand over to another person',
+        'handovers_hint' => 'The selected person becomes the new owner. Contents are not shown in the process; every transfer is logged. Without a selection everything stays with the former account.',
+        'no_handover' => '— do not transfer —',
     ],
     // Arbeitsvertrag zur Unterschrift (MVP-939).
     'employment' => [

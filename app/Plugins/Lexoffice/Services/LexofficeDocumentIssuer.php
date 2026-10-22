@@ -35,6 +35,11 @@ use RuntimeException;
  * weil Lexoffice beim Anlegen nur die ID liefert. AB und Lieferschein gehen
  * ohne Vorgänger hinüber: Mit Vorgänger legt Lexoffice sie nur als Entwurf an —
  * ohne Nummer, und aus einem Entwurf lässt sich keine Rechnung mehr ableiten.
+ *
+ * Roh über {@see PluginApiClient}: Angebot und AB scheitern an `isValid()` der
+ * SDK-Entitäten (Adresse mit `contactId`), der Lieferschein bekäme
+ * `address.countryCode = DE` dazu; Kontaktsuche und Nummernabruf teilen sich
+ * mit dem POST einen gedrosselten Client.
  */
 final class LexofficeDocumentIssuer implements DocumentIssuer {
     /** Kreis => [Referenztyp, Lexoffice-Ressource]. */

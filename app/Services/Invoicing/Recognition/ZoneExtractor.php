@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Invoicing\Recognition;
 
 use CommonToolkit\Enums\CountryCode;
+use CommonToolkit\Helper\Data\{AmountTokenizer, StringHelper};
 use CommonToolkit\Helper\Data\{DateHelper, NumberHelper, VatNumberHelper};
 use PDFToolkit\Entities\WordBox;
 
@@ -38,10 +39,6 @@ final class ZoneExtractor {
     private const MARGIN_Y = 0.004;
 
     public const PATTERN_MAX_LENGTH = 200;
-
-    private const AMOUNT_WORD = '/^[+-]?\d{1,3}(?:[.\s]\d{3})*(?:,\d{2})$|^[+-]?\d+[.,]\d{2}$/';
-
-    private const DATE_WORD = '/^\d{1,2}[.\/-]\d{1,2}[.\/-]\d{2,4}$|^\d{4}-\d{2}-\d{2}$/';
 
     /**
      * @param  array<string, mixed>  $zone
@@ -208,7 +205,7 @@ final class ZoneExtractor {
     /** @return list<string> normalisierte Wörter des Ankers */
     private static function anchorTokens(string $anchor): array {
         $tokens = [];
-        foreach (preg_split('/\s+/u', trim($anchor)) ?: [] as $word) {
+        foreach (StringHelper::words($anchor) as $word) {
             $token = self::normalizeWord($word);
             if ($token !== '') {
                 $tokens[] = $token;
@@ -327,7 +324,7 @@ final class ZoneExtractor {
         if ($parse === 'money') {
             $index = null;
             foreach ($words as $i => $word) {
-                if (preg_match(self::AMOUNT_WORD, $word->text) === 1) {
+                if (ValueWords::isAmount($word->text)) {
                     $index = $i;
                 }
             }
@@ -345,7 +342,7 @@ final class ZoneExtractor {
         }
         if ($parse === 'date') {
             foreach ($words as $word) {
-                if (preg_match(self::DATE_WORD, $word->text) === 1) {
+                if (ValueWords::isDate($word->text)) {
                     return [$word];
                 }
             }
@@ -428,18 +425,22 @@ final class ZoneExtractor {
         return $hits[0] ?? null;
     }
 
-    /** Der letzte Betrag im Text — Beträge sind rechtsbündig; einer vor einem Prozentzeichen ist ein Satz, kein Betrag (L4). */
+    /**
+     * Der letzte Betrag im Text — Beträge sind rechtsbündig; einer vor einem Prozentzeichen ist ein Satz,
+     * kein Betrag (L4). Derselbe Leser wie in der Heuristik (`AmountTokenizer`, DE/EN/CH-Schreibweise),
+     * damit Vorlage und Heuristik denselben Brutto lesen (Konsolidierungs-Audit 2026-10-21, ko-02).
+     */
     private static function money(string $raw): ?string {
-        if (preg_match_all('/[+-]?\d{1,3}(?:[.\s]\d{3})*(?:,\d{2})|[+-]?\d+[.,]\d{2}/', $raw, $matches, PREG_OFFSET_CAPTURE) < 1) {
-            return null;
+        $tokens = [];
+        foreach (AmountTokenizer::tokens($raw) as $token) {
+            $tokens[] = $token;
         }
-        foreach (array_reverse($matches[0]) as [$amount, $offset]) {
-            if (preg_match('/^\s*%/u', substr($raw, $offset + strlen($amount))) === 1) {
+        foreach (array_reverse($tokens) as $token) {
+            if (preg_match('/^\s*%/u', mb_substr($raw, $token->end)) === 1) {
                 continue;
             }
-            $normalized = NumberHelper::normalizeDecimalStringOrNull($amount, CountryCode::Germany);
 
-            return $normalized !== null ? NumberHelper::toUSFormat((float) $normalized, 2) : null;
+            return NumberHelper::toUSFormat((float) $token->value, 2);
         }
 
         return null;
@@ -447,29 +448,38 @@ final class ZoneExtractor {
 
     /** Erstes Wort mit Ziffer; ein Datum ist keine Kennung. */
     private static function identifier(string $raw): ?string {
-        foreach (preg_split('/\s+/u', $raw) ?: [] as $word) {
+        foreach (StringHelper::words($raw) as $word) {
             $word = trim($word, " \t:;,#");
             if ($word === '' || preg_match('/\d/', $word) !== 1) {
                 continue;
             }
 
-            return preg_match(self::DATE_WORD, $word) === 1 ? null : mb_substr($word, 0, 64);
+            return ValueWords::isDate($word) ? null : mb_substr($word, 0, 64);
         }
 
         return null;
     }
 
-    /** Die Zone darf die Beschriftung enthalten („USt-IdNr. DE 278 737 004“): erster Kandidat mit gültigem Format. */
+    /**
+     * Die Zone darf die Beschriftung enthalten („USt-IdNr. DE 278 737 004“): erster Kandidat mit gültigem Format.
+     * Kandidaten überlappen („MWST CHE-…“ prüft auch „CHE-…“). Ein Rückfall gilt nur für Länder, deren Format
+     * das Toolkit nicht kennt — was `isVatId` für ein bekanntes Land ablehnt, ist keine USt-IdNr. (tk-06).
+     */
     private static function vatId(string $raw): ?string {
-        preg_match_all('/\b[A-Z]{2}[\s.\-]*(?:[A-Z0-9][\s.\-]*){6,14}/u', $raw, $matches);
-        foreach ($matches[0] as $candidate) {
-            $vat = VatNumberHelper::normalize($candidate);
+        preg_match_all('/(?=\b([A-Z]{2}[\s.\-]*(?:[A-Z0-9][\s.\-]*){6,14}))/u', $raw, $matches);
+        $candidates = array_map(VatNumberHelper::normalize(...), $matches[1]);
+        foreach ($candidates as $vat) {
             if (VatNumberHelper::isVatId($vat)) {
                 return $vat;
             }
         }
-        $vat = VatNumberHelper::normalize($raw);
+        $supported = VatNumberHelper::getSupportedCountries();
+        foreach ($candidates as $vat) {
+            if (preg_match('/^([A-Z]{2})[A-Z]?\d[A-Z0-9]{1,12}$/', $vat, $match) === 1 && ! in_array($match[1], $supported, true)) {
+                return $vat;
+            }
+        }
 
-        return preg_match('/^[A-Z]{2}[A-Z0-9]{2,13}$/', $vat) === 1 ? $vat : null;
+        return null;
     }
 }

@@ -1093,7 +1093,7 @@ function initChat(root) {
 
         clearHtml(target);
         const d = /** @type {{ messages: ChatRenderedMessage[] } | null} */ (
-            await getJson(`/chat/${channelId}/messages/pinned`)
+            await getJson(`/chat/${channelId}/pinned`)
         );
         const items = d?.messages ?? null;
         if (items === null) {

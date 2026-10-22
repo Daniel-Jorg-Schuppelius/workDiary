@@ -166,4 +166,22 @@ final class InvoiceWorkflowTest extends TestCase {
         $this->assertSame(3, (int) $overdue->fresh()->dunning_level);
         $this->assertNotNull($overdue->fresh()->dunned_at);
     }
+
+    /** Sicherheitsaudit 2026-10-21, li-1: eine zweite, veraltete Instanz desselben Entwurfs zieht keine zweite Nummer. */
+    public function test_a_stale_second_issue_draws_no_second_number(): void {
+        $invoice = $this->draft(['number' => \App\Services\Numbering\NumberSequenceService::DRAFT_PREFIX . 'STALE1']);
+        $first = Invoice::query()->findOrFail($invoice->id);
+        $stale = Invoice::query()->findOrFail($invoice->id);
+        $issuer = app(\App\Services\Invoicing\InvoiceIssueService::class);
+
+        $issuer->issue($first);
+        $number = (string) $first->fresh()->number;
+        $drawn = (int) \Illuminate\Support\Facades\DB::table('number_sequences')->where('organization_id', $this->org->id)->sum('last_value');
+        $issuer->issue($stale);
+
+        $this->assertFalse(\App\Services\Numbering\NumberSequenceService::isDraft($number));
+        $this->assertSame($number, $stale->number, 'Die veraltete Instanz sieht unter der Sperre den ausgestellten Stand.');
+        $this->assertSame($number, (string) $invoice->fresh()->number);
+        $this->assertSame($drawn, (int) \Illuminate\Support\Facades\DB::table('number_sequences')->where('organization_id', $this->org->id)->sum('last_value'), 'Keine zweite Nummer gezogen.');
+    }
 }

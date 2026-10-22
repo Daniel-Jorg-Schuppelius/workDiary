@@ -12,10 +12,10 @@ namespace App\Services\Install;
 
 use App\Enums\User\UserRole;
 use App\Models\Platform\{Organization, User};
+use App\Services\Org\OrganizationRoles;
 use Illuminate\Support\Facades\{Config, DB, Hash};
 use Illuminate\Support\Str;
 use RuntimeException;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 /**
@@ -79,7 +79,7 @@ class OrganizationProvisioner {
             }
 
             app(PermissionRegistrar::class)->setPermissionsTeamId($org->id);
-            $adminRole = Role::findOrCreate(UserRole::Admin->value, 'web');
+            $adminRole = OrganizationRoles::named(UserRole::Admin->value, $org->id);
             $user->assignRole($adminRole);
 
             return $user;
@@ -112,11 +112,12 @@ class OrganizationProvisioner {
             $user->is_new_system = true;
             $user->save();
 
-            if ($user->organization_id !== null) {
-                app(PermissionRegistrar::class)->setPermissionsTeamId($user->organization_id);
+            // model_has_roles.team_id ist Pflicht: ohne Organisation gibt es keine Admin-Rolle zu vergeben.
+            if ($user->organization_id === null) {
+                throw new RuntimeException("Benutzer {$email} gehört zu keiner Organisation.");
             }
-            $adminRole = Role::findOrCreate(UserRole::Admin->value, 'web');
-            $user->assignRole($adminRole);
+            app(PermissionRegistrar::class)->setPermissionsTeamId($user->organization_id);
+            $user->assignRole(OrganizationRoles::named(UserRole::Admin->value, $user->organization_id));
 
             return $user;
         });

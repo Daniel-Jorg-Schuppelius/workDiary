@@ -79,7 +79,7 @@
                             @foreach ($recent as $proposal)
                                 <li class="flex flex-wrap items-center gap-2">
                                     <a href="{{ route('tour-proposals.show', $proposal) }}" class="link">{{ $proposal->created_at?->fdatetime() }}</a>
-                                    <x-status-badge :tone="$proposal->status->badgeTone()" size="xs">{{ $proposal->status->label() }}</x-status-badge>
+                                    <x-status-badge :tone="$proposal->status->tone()" size="xs">{{ $proposal->status->label() }}</x-status-badge>
                                     @if (isset($proposal->metrics['after']['tours']))
                                         <span class="text-xs text-muted">{{ $proposal->metrics['after']['tours'] }} {{ __('Touren') }} · {{ $proposal->metrics['after']['stops'] ?? 0 }} {{ __('Stopps') }} · {{ $proposal->metrics['after']['unassigned'] ?? 0 }} {{ __('offen') }}</span>
                                     @endif

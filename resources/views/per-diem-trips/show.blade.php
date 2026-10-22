@@ -29,6 +29,13 @@
                                     :href="route('per-diem-trips.edit', $trip)"
                                     show-label>{{ __('Bearbeiten') }}</x-icon-btn>
                     @endcan
+                    @can('cancel', $trip)
+                        <x-action-form :action="route('per-diem-trips.cancel', $trip)"
+                              :confirm="__('Reise wirklich stornieren?')"
+                              :confirm-label="__('Stornieren')">
+                            <x-icon-btn icon="block" tone="ghost" size="sm" placement="menu" type="submit" show-label>{{ __('Stornieren') }}</x-icon-btn>
+                        </x-action-form>
+                    @endcan
                     @can('convert', $trip)
                         <x-action-form :action="route('per-diem-trips.convert', $trip)"
                               :confirm="__('Reise als Spese einreichen?')"

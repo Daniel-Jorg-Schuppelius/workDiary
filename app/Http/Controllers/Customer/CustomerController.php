@@ -11,6 +11,8 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Enums\Numbering\NumberScope;
+use App\Enums\User\Permission;
+use App\Exceptions\PartyDeletionBlockedException;
 use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery, ResolvesGlobalDateRange};
 use App\Http\Controllers\Concerns\SavesCustomFields;
 use App\Http\Controllers\Controller;
@@ -18,11 +20,11 @@ use App\Http\Controllers\Diary\DiaryController;
 use App\Http\Requests\Customer\SaveCustomerRequest;
 use App\Models\Classification\Tag;
 use App\Models\Customer\Customer;
-use App\Models\Platform\{User};
+use App\Models\Platform\User;
 use App\Plugins\PluginManager;
 use App\Services\Customer\CustomerDetailAssembler;
 use App\Services\Numbering\NumberAuthority;
-use App\Services\Stammdaten\ContactMasterDataPusher;
+use App\Services\Stammdaten\{ContactMasterDataPusher, PartyDeletionGuard};
 use App\Support\{CsvExport, Setting};
 use App\Support\OrganizationContext;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -200,6 +202,12 @@ class CustomerController extends Controller {
                 ->with('error', __('Kunde kann nicht gelöscht werden: Es existieren externe Referenzen (z. B. Lexoffice). Bitte stattdessen archivieren.'));
         }
 
+        try {
+            app(PartyDeletionGuard::class)->assertDeletable($customer);
+        } catch (PartyDeletionBlockedException $e) {
+            return redirect()->route('customers.show', $customer)->with('error', $e->getMessage());
+        }
+
         // Vollaudit 2026-07 (M9): KI-Gedächtnis auditiert löschen (Einzel-Audit
         // je Eintrag + Provider-Glossar-Hook) statt stiller FK-Kaskade.
         app(\App\Services\Ai\Contracts\AiMemory::class)->deleteForCustomer(
@@ -227,7 +235,7 @@ class CustomerController extends Controller {
      * CSV-Export der aktuell sichtbaren Kunden (Filter & Suche aus Request).
      */
     public function export(Request $request): StreamedResponse {
-        Gate::authorize('viewAny', Customer::class);
+        Gate::authorize(Permission::CustomerExport->value);
 
         $status = $request->string('status')->toString() ?: 'active';
         $search = $request->string('q')->toString();

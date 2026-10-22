@@ -10,6 +10,7 @@
 
 namespace App\Policies\Absence;
 
+use App\Enums\User\Permission;
 use App\Enums\Vacation\VacationStatus;
 use App\Models\Absence\Vacation;
 use App\Models\Platform\User;
@@ -28,32 +29,39 @@ class VacationPolicy {
     }
 
     public function create(User $user): bool {
-        return true;
+        return $user->can(Permission::VacationRequest->value);
     }
 
     public function update(User $user, Vacation $vacation): bool {
         // Nur Antragssteller darf ändern, solange noch ausstehend
-        return $this->owns($user, $vacation) && $vacation->status === VacationStatus::Pending;
+        return $this->owns($user, $vacation)
+            && $vacation->status === VacationStatus::Pending
+            && $user->can(Permission::VacationRequest->value);
     }
 
     public function delete(User $user, Vacation $vacation): bool {
-        return $this->owns($user, $vacation) && $vacation->status === VacationStatus::Pending;
+        return $this->update($user, $vacation);
     }
 
-    /** Genehmigen / Ablehnen darf nur der Admin (via HasAdminBypass). */
+    /** Genehmigen / Ablehnen: vacation.approve oder die Stellvertretung eines abwesenden Admins (MVP-523). */
     public function decide(User $user, Vacation $vacation): bool {
-        // Admins via HasAdminBypass::before(); zusätzlich entscheidet die
-        // benannte Stellvertretung, solange der Vertretene abwesend ist (MVP-523).
         return $this->sharesOrganization($user, $vacation)
             // Keine Selbstfreigabe (S-35): auch eine Stellvertretung
             // entscheidet nicht über den eigenen Urlaub.
             && ! $this->owns($user, $vacation)
-            && app(\App\Services\Users\DeputyResolver::class)->actsAsDeputyForAbsentAdmin($user);
+            && (
+                $user->can(Permission::VacationApprove->value)
+                || app(\App\Services\Users\DeputyResolver::class)->actsAsDeputyForAbsentAdmin($user)
+            );
     }
 
-    /** Stornieren darf der Eigentümer, sofern noch nicht entschieden. */
+    /** Stornieren, sofern noch nicht abgeschlossen: der Antragsteller oder org-weit mit vacation.cancel. */
     public function cancel(User $user, Vacation $vacation): bool {
-        return $this->owns($user, $vacation)
-            && in_array($vacation->status, [VacationStatus::Pending, VacationStatus::Approved], true);
+        if (! in_array($vacation->status, [VacationStatus::Pending, VacationStatus::Approved], true)) {
+            return false;
+        }
+
+        return ($this->owns($user, $vacation) && $user->can(Permission::VacationRequest->value))
+            || ($this->sharesOrganization($user, $vacation) && $user->can(Permission::VacationCancel->value));
     }
 }

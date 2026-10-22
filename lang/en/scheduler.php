@@ -99,6 +99,7 @@ return [
         ],
         'billing' => [
             'account-invoices' => 'Generate monthly special-condition invoices',
+            'recalculate-statements' => 'Recalculate open months of customer accounts',
             'push-retainers' => 'Push retainer flat fees to Lexoffice',
         ],
         'datev-online' => ['sync' => 'DATEV Online: transfer document images and check imports'],

@@ -10,6 +10,7 @@
 
 namespace App\Policies\Material;
 
+use App\Enums\User\Permission;
 use App\Policies\Concerns\HasAdminBypass;
 use App\Policies\PermissionPolicy;
 
@@ -19,8 +20,8 @@ class MaterialPolicy extends PermissionPolicy {
     protected const ABILITIES = [
         'viewAny' => true,
         'view' => true,
-        'create' => false,
-        'update' => false,
-        'delete' => false,
+        'create' => Permission::MaterialManage,
+        'update' => Permission::MaterialManage,
+        'delete' => Permission::MaterialManage,
     ];
 }

@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Supplier;
 
 use App\Enums\Numbering\NumberScope;
+use App\Exceptions\PartyDeletionBlockedException;
 use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Supplier\SaveSupplierRequest;
@@ -19,7 +20,7 @@ use App\Models\Classification\Tag;
 use App\Models\Supplier\{Supplier, SupplierQuestionnaireRequest};
 use App\Services\Billing\PartyDocumentSources;
 use App\Services\Numbering\NumberAuthority;
-use App\Services\Stammdaten\{ContactMasterDataPusher, IdentifierIssueDetector};
+use App\Services\Stammdaten\{ContactMasterDataPusher, IdentifierIssueDetector, PartyDeletionGuard};
 use App\Support\{CarbonFmt, CsvExport, Setting};
 use App\Support\{MorphMap, OrganizationContext};
 use Illuminate\Http\{RedirectResponse, Request};
@@ -207,6 +208,12 @@ class SupplierController extends Controller {
                 ->with('error', __('Der Sammelkontakt hat Belege und lässt sich nicht löschen.'));
         }
 
+        try {
+            app(PartyDeletionGuard::class)->assertDeletable($supplier);
+        } catch (PartyDeletionBlockedException $e) {
+            return redirect()->route('suppliers.show', $supplier)->with('error', $e->getMessage());
+        }
+
         $supplier->delete();
 
         return redirect()->toList('suppliers.index')
@@ -225,7 +232,7 @@ class SupplierController extends Controller {
      * CSV-Export der aktuell sichtbaren Lieferanten (Filter & Suche aus Request).
      */
     public function export(Request $request): StreamedResponse {
-        Gate::authorize('viewAny', Supplier::class);
+        Gate::authorize('export', Supplier::class);
 
         $status = $request->string('status')->toString() ?: 'active';
         $search = $request->string('q')->toString();

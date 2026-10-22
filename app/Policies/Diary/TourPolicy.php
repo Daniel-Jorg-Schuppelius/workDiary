@@ -24,18 +24,23 @@ class TourPolicy {
     }
 
     public function view(User $user, Tour $tour): bool {
-        return $this->owns($user, $tour, 'user_id');
+        return $this->owns($user, $tour, 'user_id') || $this->managesForOthers($user, $tour);
     }
 
+    /** Eigene Touren legt jeder an; für andere Fahrer braucht es tour.manage (TourController). */
     public function create(User $user): bool {
         return true;
     }
 
     public function update(User $user, Tour $tour): bool {
-        return $this->owns($user, $tour, 'user_id');
+        return $this->owns($user, $tour, 'user_id') || $this->managesForOthers($user, $tour);
     }
 
     public function delete(User $user, Tour $tour): bool {
-        return $this->owns($user, $tour, 'user_id');
+        return $this->update($user, $tour);
+    }
+
+    private function managesForOthers(User $user, Tour $tour): bool {
+        return $this->sharesOrganization($user, $tour) && $user->can(Permission::TourManage->value);
     }
 }

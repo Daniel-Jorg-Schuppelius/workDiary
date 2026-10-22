@@ -350,6 +350,10 @@ class NavigationRegistry {
                         ['route' => 'attendance.index', 'label' => __('Stempeluhr'), 'icon' => 'punch_clock', 'modal' => false, 'matches' => ['attendance.*']],
                         // Feature 154: zentrale Notizen, auch ohne geöffnete Akte.
                         ['route' => 'communication-notes.index', 'label' => __('communication.title.notes'), 'icon' => 'sticky_note_2', 'modal' => false, 'matches' => ['communication-notes.*']],
+                        // Genehmigungs-Eingang (Kernmodul „Freigaben“): Gegenstände aus Service Desk und Vertragsverhandlungen.
+                        Gate::allows(Permission::ServiceRequestApprove->value)
+                            ? ['route' => 'approvals.index', 'label' => __('Genehmigungen'), 'icon' => 'approval', 'modal' => false, 'matches' => ['approvals.*']]
+                            : null,
                     ]),
                 ],
                 [
@@ -483,9 +487,6 @@ class NavigationRegistry {
                     : null,
                 Gate::allows('viewAny', \App\Models\Procurement\RequestItem::class)
                     ? ['route' => 'servicedesk.catalog.index', 'label' => __('Servicekatalog'), 'icon' => 'storefront', 'modal' => false, 'matches' => ['servicedesk.catalog.*']]
-                    : null,
-                Gate::allows(Permission::ServiceRequestApprove->value)
-                    ? ['route' => 'servicedesk.approvals.index', 'label' => __('Genehmigungen'), 'icon' => 'approval', 'modal' => false, 'matches' => ['servicedesk.approvals.*']]
                     : null,
                 Gate::allows('viewAny', \App\Models\ServiceTicket\Problem::class)
                     ? ['route' => 'servicedesk.problems.index', 'label' => __('Probleme'), 'icon' => 'troubleshoot', 'modal' => false, 'matches' => ['servicedesk.problems.*']]
@@ -2040,7 +2041,9 @@ class NavigationRegistry {
                 $adminNavItems[] = ['route' => 'admin.access.index', 'label' => __('access.title.hub'), 'icon' => 'admin_panel_settings', 'modal' => false];
             }
             if (! $isLegacyMode) {
-                $adminNavItems[] = ['route' => 'audit.index', 'label' => __('Audit-Log'), 'icon' => 'fact_check', 'modal' => false];
+                if (Gate::allows('viewAny', \App\Models\Audit\AuditLog::class)) {
+                    $adminNavItems[] = ['route' => 'audit.index', 'label' => __('Audit-Log'), 'icon' => 'fact_check', 'modal' => false];
+                }
                 if (Gate::allows('platform.license.view')) {
                     $adminNavItems[] = ['route' => 'admin.license.index', 'label' => __('Lizenz'), 'icon' => 'key', 'modal' => false];
                 }
@@ -2161,8 +2164,8 @@ class NavigationRegistry {
                 $adminNavItems[] = ['route' => 'admin.legacy-migration.index', 'label' => __('Legacy-Migration'), 'icon' => 'sync_alt', 'modal' => false];
             }
         }
-        if (! $isLegacyMode && (Gate::allows('manage-members') || $user->can(Permission::UserPayrollManage->value))) {
-            // Admin ODER Personalverwaltung/GF (Personal-/Lohndaten + Arbeitszeit-Modell).
+        if (! $isLegacyMode && (Gate::allows('manage-members') || $user->can(Permission::UserViewAny->value) || $user->can(Permission::UserPayrollManage->value))) {
+            // Admin, Mitarbeiterliste lesend (user.viewAny) oder Personal-/Lohndaten.
             $manageNavItems[] = ['route' => 'org.members.index', 'label' => __('user.employees'), 'icon' => 'group', 'modal' => false];
         } elseif (! $isLegacyMode && $isPlatformAdmin) {
             // Plattform-Betreiber ohne Org-Kontext: Link auf Mandanten-Verwaltung zur Zuordnung.

@@ -131,6 +131,19 @@ class AttendanceTest extends TestCase {
         ]);
     }
 
+    /** Vollscan 2026-10-21: Pause während der Schicht; direktes Ändern und Löschen gibt es nur über den Korrekturantrag. */
+    public function test_break_during_shift_and_no_direct_edit_route(): void {
+        $this->actingAs($this->user);
+        $this->post(route('attendance.clock-in'), [])->assertRedirect();
+
+        $this->get(route('today.show'))->assertOk()->assertSee(route('attendance.break'), false);
+        $this->post(route('attendance.break'), ['minutes' => 20])->assertRedirect();
+        $this->assertSame(20, (int) \App\Models\Time\Attendance::query()->where('user_id', $this->user->id)->value('break_minutes_manual'));
+
+        $this->assertFalse(\Illuminate\Support\Facades\Route::has('attendance.update'));
+        $this->assertFalse(\Illuminate\Support\Facades\Route::has('attendance.destroy'));
+    }
+
     public function test_api_clock_in_returns_attendance_payload(): void {
         // Token mit vollen Abilities: die API-Routen sind seit MVP-133/Rang 60
         // scope-geschützt (ability:attendance:write); actingAs ohne AccessToken

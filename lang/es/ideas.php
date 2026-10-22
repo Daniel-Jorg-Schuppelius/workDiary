@@ -109,6 +109,10 @@ return [
         'share_invalid' => 'Selección no válida (exactamente una persona o un equipo).',
     ],
 
+    'offboarding' => [
+        'maps' => '{1} Un mapa de ideas|[2,*] :count mapas de ideas',
+    ],
+
     'share' => [
         'title' => 'Compartidos',
         'none' => 'Este mapa es privado — sin compartidos.',
@@ -118,6 +122,9 @@ return [
         'add' => 'Compartir',
         'revoke' => 'Retirar acceso',
         'hint' => 'Exactamente una persona O un equipo por cada acceso compartido. La pertenencia al equipo se comprueba al acceder.',
+        'transfer' => 'Transferir la propiedad',
+        'transfer_hint' => 'La persona elegida pasa a ser propietaria del mapa. Su propio acceso compartido no cambia.',
+        'transfer_confirm' => '¿Transferir realmente la propiedad?',
     ],
 
     'notification' => [
@@ -132,6 +139,16 @@ return [
     'context' => [
         'customer' => 'Cliente',
         'project' => 'Proyecto',
+    ],
+
+    'link' => [
+        'action' => 'Vincular',
+        'title' => 'Vincular el nodo a un registro existente',
+        'target' => 'Destino',
+        'done' => 'Nodo vinculado.',
+        'customers' => 'Clientes',
+        'projects' => 'Proyectos',
+        'orders' => 'Pedidos (recientes)',
     ],
 
     'convert' => [

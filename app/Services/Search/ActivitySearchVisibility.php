@@ -105,7 +105,7 @@ final class ActivitySearchVisibility {
                 : self::own($me, 'user_id', 'assigned_user_id'),
             SearchSourceType::Timesheet => ! $this->features->isEnabled('module.planung')
                 ? false
-                : ($admin || $user->canViewAllTimeEntries() ? true : self::own($me, 'user_id')),
+                : ($admin || $user->can(Permission::TimesheetViewAny->value) ? true : self::own($me, 'user_id')),
             SearchSourceType::ServiceTicket => $this->ticketCondition($user),
             SearchSourceType::Protocol => $admin || $user->can(Permission::ProtocolViewAny->value)
                 ? true

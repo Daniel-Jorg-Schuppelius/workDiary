@@ -136,6 +136,15 @@ class LearningCredentialTest extends TestCase {
         $this->assertFalse($this->service()->verify($credential));
     }
 
+    /** Vollscan 2026-10-21: die Prüfseite nennt beide maschinenlesbaren Nachweise. */
+    public function test_pruefseite_verlinkt_die_nachweise(): void {
+        $certificate = $this->certificate();
+
+        $this->get(route('learning.certificates.verify', $certificate->verification_code))->assertOk()
+            ->assertSee(route('learning.certificates.credential', $certificate->verification_code), false)
+            ->assertSee(route('learning.certificates.credential-jwt', $certificate->verification_code), false);
+    }
+
     public function test_endpunkte_liefern_credential_und_oeffentlichen_schluessel(): void {
         $certificate = $this->certificate();
 

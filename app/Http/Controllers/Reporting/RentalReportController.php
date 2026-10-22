@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Reporting;
 
 use App\Enums\Rental\{RentalCaseStatus, RentalChargeStatus, RentalReturnFollowUp};
+use App\Http\Controllers\Concerns\FreezesReportSnapshot;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Models\Rental\{RentalCase, RentalCharge, RentalProfile, RentalReportSnapshot, RentalReturnReport};
@@ -27,7 +28,7 @@ use Illuminate\Support\Facades\Gate;
  * (P2 — spätere Datenänderungen bewerten alte Berichte nicht um).
  */
 class RentalReportController extends Controller {
-    use ResolvesCurrentOrganization;
+    use FreezesReportSnapshot, ResolvesCurrentOrganization;
     use ResolvesGlobalDateRange;
 
     public function index(Request $request): View {
@@ -48,15 +49,7 @@ class RentalReportController extends Controller {
         $actor = $request->user() ?? abort(401);
         [$from, $to] = $this->period($request);
 
-        RentalReportSnapshot::query()->create([
-            'organization_id' => $this->currentOrganization()->id,
-            'period_start' => $from->toDateString(),
-            'period_end' => $to->toDateString(),
-            'payload' => $this->aggregate($from, $to),
-            'created_by' => $actor->id,
-        ]);
-
-        return back()->with('status', __('Berichts-Snapshot eingefroren.'));
+        return $this->freezeReportSnapshot(RentalReportSnapshot::class, $from, $to, $this->aggregate($from, $to), (int) $actor->id);
     }
 
     /** @return array{0: Carbon, 1: Carbon} */

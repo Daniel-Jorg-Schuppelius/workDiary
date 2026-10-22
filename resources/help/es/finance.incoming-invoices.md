@@ -1,7 +1,7 @@
 ---
 title: "Facturas recibidas"
 topic: finance.incoming-invoices
-version: 3
+version: 4
 keywords:
     - factura de proveedor
     - factura de compra
@@ -173,6 +173,16 @@ tales: la lista muestra «Parece», el diálogo de asignación preselecciona «N
 una factura», y los recordatorios nombran las facturas afectadas con enlace.
 Los administradores miden el reconocimiento con
 `incoming-invoices:measure-recognition` sobre los textos guardados.
+
+**Recurso de IA:** si en **Administración → Servicios de IA** hay una
+conexión configurada y la capacidad «Facturas recibidas: leer los campos del
+documento» está habilitada, la IA solo completa los campos principales que
+faltan (número, fecha, vencimiento, importes, tipo impositivo, referencia del
+comprador), comprobados en formato y plausibilidad, nunca para facturas
+electrónicas y nunca sin su revisión. Sin conexión, el reconocimiento
+funciona igual que antes. Si a un documento le falta el índice de texto (por
+ejemplo tras un fallo de las herramientas de texto),
+`search:extract-texts --retry-failed` lo vuelve a leer.
 
 **Plantillas de documento:** Mediante «Plantilla» en la página del documento
 traza, por campo, un rectángulo sobre la etiqueta y el valor en el documento

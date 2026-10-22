@@ -63,7 +63,7 @@
     <x-card class="flex flex-col gap-2 space-y-4">
         <div class="flex items-center justify-between">
             <h3 class="card-title">{{ __('access.title.members') }} ({{ $group->members->count() }})</h3>
-            @if ($addableUsers->isNotEmpty())
+            @if ($addableUsers->isNotEmpty() && Gate::allows('manageMembers', $group))
                 <x-icon-btn icon="person_add" tone="primary" size="sm"
                             data-entry-modal-trigger
                             :href="route('admin.access.groups.members.attach.form', $group)"
@@ -86,11 +86,13 @@
                     <td class="text-sm text-base-content/70">{{ $member->email }}</td>
                     <td class="text-sm" @if ($member->pivot->joined_at) data-sort-value="{{ \Carbon\Carbon::parse($member->pivot->joined_at)->format('Y-m-d') }}" @endif>{{ optional($member->pivot->joined_at)->fdate() }}</td>
                     <td class="text-right">
-                        <form method="POST" action="{{ route('admin.access.groups.members.detach', [$group, $member]) }}" class="inline">
-                            @csrf @method('DELETE')
-                            <x-icon-btn type="submit" icon="person_remove" size="xs" tone="error"
-                                        :title="__('access.action.remove_member')" />
-                        </form>
+                        @can('manageMembers', $group)
+                            <form method="POST" action="{{ route('admin.access.groups.members.detach', [$group, $member]) }}" class="inline">
+                                @csrf @method('DELETE')
+                                <x-icon-btn type="submit" icon="person_remove" size="xs" tone="error"
+                                            :title="__('access.action.remove_member')" />
+                            </form>
+                        @endcan
                     </td>
                 </tr>
             @empty

@@ -178,26 +178,26 @@ final class HelpdeskChangeUiTest extends TestCase {
 
         // Schritt 1 (persönlich A) erscheint in der GEMEINSAMEN Inbox …
         $this->actingAs($this->approverA)
-            ->get(route('servicedesk.approvals.index'))
+            ->get(route('approvals.index'))
             ->assertOk()
             ->assertSee('Genehmigungspflichtiger Change');
 
         // … und ist entscheidbar.
         $step1 = $change->approvals()->where('step', 1)->firstOrFail();
         $this->actingAs($this->approverA)
-            ->post(route('servicedesk.approvals.decide', $step1), ['decision' => 'approved'])
-            ->assertRedirect(route('servicedesk.approvals.index'));
+            ->post(route('approvals.decide', $step1), ['decision' => 'approved'])
+            ->assertRedirect(route('approvals.index'));
         $this->assertSame(ChangeStatus::PendingApproval, $change->fresh()->status);
 
         // Schritt 2 (Rolle) wird DELEGIERT: neuer offener Schritt GLEICHER Nummer.
         $step2 = $change->approvals()->where('step', 2)->firstOrFail();
         $this->actingAs($this->approverB)
-            ->post(route('servicedesk.approvals.decide', $step2), [
+            ->post(route('approvals.decide', $step2), [
                 'decision' => 'delegated',
                 'reason' => 'Urlaub — bitte übernehmen',
                 'delegate' => $this->approverC->sqid,
             ])
-            ->assertRedirect(route('servicedesk.approvals.index'));
+            ->assertRedirect(route('approvals.index'));
 
         $delegated = Approval::query()
             ->where('approvable_type', MorphMap::alias(Change::class))
@@ -209,8 +209,8 @@ final class HelpdeskChangeUiTest extends TestCase {
 
         // Der Delegat entscheidet — der Change ist damit genehmigt.
         $this->actingAs($this->approverC)
-            ->post(route('servicedesk.approvals.decide', $delegated), ['decision' => 'approved'])
-            ->assertRedirect(route('servicedesk.approvals.index'));
+            ->post(route('approvals.decide', $delegated), ['decision' => 'approved'])
+            ->assertRedirect(route('approvals.index'));
         $this->assertSame(ChangeStatus::Approved, $change->fresh()->status);
     }
 
@@ -233,7 +233,7 @@ final class HelpdeskChangeUiTest extends TestCase {
 
         $step = $change->approvals()->firstOrFail();
         $this->actingAs($this->approverA)
-            ->post(route('servicedesk.approvals.decide', $step), ['decision' => 'approved']);
+            ->post(route('approvals.decide', $step), ['decision' => 'approved']);
         $this->assertSame(ChangeStatus::Approved, $change->fresh()->status);
 
         $this->actingAs($this->manager)

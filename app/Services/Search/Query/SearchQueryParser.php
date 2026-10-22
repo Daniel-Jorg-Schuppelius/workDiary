@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Search\Query;
 
 use App\Services\Search\{SearchSynonyms, SearchTextNormalizer, SearchVocabulary};
+use CommonToolkit\Helper\Data\StringHelper;
 
 /**
  * Suchanfrage → {@see ParsedSearchQuery} (Feature 153, MVP-771/772).
@@ -54,7 +55,7 @@ final class SearchQueryParser {
             return ' ';
         }, $query);
 
-        foreach (preg_split('/\s+/u', $query) ?: [] as $raw) {
+        foreach (StringHelper::words($query) as $raw) {
             $negative = str_starts_with($raw, '-') && strlen($raw) > 1;
             foreach ($this->normalizer->chunks($negative ? substr($raw, 1) : $raw) as $parts) {
                 if ($negative) {

@@ -14,6 +14,7 @@ use App\Enums\Expense\ExpenseStatus;
 use App\Models\Platform\User;
 use App\Models\Travel\{Expense, ExpenseCategory};
 use App\Notifications\Expense\{ExpenseDecidedNotification, ExpenseSubmittedNotification};
+use App\Services\Concerns\AssertsValidatedTransition;
 use Illuminate\Support\Facades\{DB, Notification};
 use Illuminate\Validation\ValidationException;
 
@@ -28,6 +29,8 @@ use Illuminate\Validation\ValidationException;
  *    bzw. den Eigentümer (Kanal-Auswahl liegt im Notification-Class).
  */
 class ExpenseService {
+    use AssertsValidatedTransition;
+
     public function __construct(
         private readonly ApproverResolver $approverResolver,
     ) {}
@@ -117,7 +120,7 @@ class ExpenseService {
 
     public function approve(Expense $expense, User $approver): Expense {
         $this->assertNotOwnExpense($expense, $approver);
-        $this->ensureTransition($expense, ExpenseStatus::Approved, 'approve');
+        $this->assertValidatedTransition($expense->status, ExpenseStatus::Approved, 'expenses.error.invalid_transition', ['action' => 'approve', 'status' => $expense->status->value]);
 
         $expense = DB::transaction(function () use ($expense, $approver): Expense {
             $expense->status = ExpenseStatus::Approved;
@@ -136,7 +139,7 @@ class ExpenseService {
 
     public function reject(Expense $expense, User $approver, ?string $reason = null): Expense {
         $this->assertNotOwnExpense($expense, $approver);
-        $this->ensureTransition($expense, ExpenseStatus::Rejected, 'reject');
+        $this->assertValidatedTransition($expense->status, ExpenseStatus::Rejected, 'expenses.error.invalid_transition', ['action' => 'reject', 'status' => $expense->status->value]);
 
         $expense = DB::transaction(function () use ($expense, $approver, $reason): Expense {
             $expense->status = ExpenseStatus::Rejected;
@@ -154,7 +157,7 @@ class ExpenseService {
     }
 
     public function markReimbursed(Expense $expense, ?string $reference = null): Expense {
-        $this->ensureTransition($expense, ExpenseStatus::Reimbursed, 'reimburse');
+        $this->assertValidatedTransition($expense->status, ExpenseStatus::Reimbursed, 'expenses.error.invalid_transition', ['action' => 'reimburse', 'status' => $expense->status->value]);
 
         $expense = DB::transaction(function () use ($expense, $reference): Expense {
             $expense->status = ExpenseStatus::Reimbursed;
@@ -227,23 +230,4 @@ class ExpenseService {
             ]);
         }
     }
-
-    /**
-     * Zustandsübergänge erzwingen (S-35).
-     *
-     * Ohne Vorbedingung ließ sich eine abgelehnte oder bereits erstattete
-     * Auslage erneut genehmigen und ein zweites Mal auszahlen — der Status war
-     * ein Etikett, keine Bedingung.
-     */
-    private function ensureTransition(Expense $expense, ExpenseStatus $target, string $action): void {
-        if (! $expense->status->canTransitionTo($target)) {
-            throw ValidationException::withMessages([
-                'status' => (string) __('expenses.error.invalid_transition', [
-                    'action' => $action,
-                    'status' => $expense->status->value,
-                ]),
-            ]);
-        }
-    }
-
 }

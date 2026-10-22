@@ -20,7 +20,7 @@ use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
-use CommonToolkit\Helper\Data\{CryptoHelper, DataUrlHelper};
+use CommonToolkit\Helper\Data\{CryptoHelper, DataUrlHelper, StringHelper};
 use Illuminate\Support\Str;
 
 /**
@@ -45,7 +45,7 @@ class InvoicePaymentLinkService {
         $organization = $invoice->organization;
         if ($organization === null
             || ! $this->payable($invoice)
-            || ($onDocuments && ! filter_var($this->settings->effective('payments.online.on_documents', $organization)->value, FILTER_VALIDATE_BOOL))
+            || ($onDocuments && ! (StringHelper::parseBool($this->settings->effective('payments.online.on_documents', $organization)->value) ?? false))
             || $this->providers->forOrganization($organization) === null) {
             return null;
         }

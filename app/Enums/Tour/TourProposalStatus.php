@@ -39,7 +39,7 @@ enum TourProposalStatus: string implements HasLabel, HasStatusTransitions {
         };
     }
 
-    public function badgeTone(): string {
+    public function tone(): string {
         return match ($this) {
             self::Computing => 'info',
             self::Open => 'warning',

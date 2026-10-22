@@ -30,7 +30,10 @@ use RuntimeException;
  * (gegen TOCTOU, Abschnitt 25).
  */
 class WhistleblowingDeletionService {
-    public function __construct(private readonly WhistleblowingEventService $events) {}
+    public function __construct(
+        private readonly WhistleblowingEventService $events,
+        private readonly WhistleblowingTombstoneLedger $ledger,
+    ) {}
 
     public function delete(WhistleblowingCase $case, User $actor): CaseTombstone {
         $disk = Storage::disk((string) config('whistleblowing.disk', 'whistleblowing'));
@@ -69,32 +72,7 @@ class WhistleblowingDeletionService {
                 'audit_hash' => $event->getAttribute('hash'),
             ]);
 
-            // Crypto-Shredding + Inhalte entfernen.
-            $locked->shredDek();
-            DB::table('whistleblowing_messages')->where('case_id', $locked->getKey())->delete();
-            DB::table('whistleblowing_attachments')->where('case_id', $locked->getKey())->delete();
-            // Personenbezuege rundherum (Sicherheitsaudit 2026-09-13): Beschuldigte,
-            // Konflikte, Bearbeiterzuweisungen, Fristen und Notfallfreigaben blieben
-            // stehen. Ihre Inhalte sind durch die Schluesselvernichtung zwar
-            // unlesbar, die Verknuepfung "diese Person, dieser Fall" blieb aber als
-            // Metadatum erhalten — nach einer Loeschung darf nur der Grabstein
-            // uebrig sein. Das Ereignisprotokoll bleibt bewusst: sein Hash traegt
-            // den Grabstein.
-            foreach ([
-                'whistleblowing_case_subjects',
-                'whistleblowing_case_conflicts',
-                'whistleblowing_case_assignments',
-                'whistleblowing_deadline_reminders',
-                'whistleblowing_emergency_grants',
-            ] as $table) {
-                DB::table($table)->where('case_id', $locked->getKey())->delete();
-            }
-            DB::table('whistleblowing_cases')->where('id', $locked->getKey())->update([
-                'subject_ciphertext' => null,
-                'description_ciphertext' => null,
-                'contact_ciphertext' => null,
-                'status' => CaseStatus::Deleted->value,
-            ]);
+            $this->shred($locked);
 
             return $tombstone;
         });
@@ -103,7 +81,110 @@ class WhistleblowingDeletionService {
         foreach ($storageKeys as $key) {
             $disk->delete($key);
         }
+        try {
+            $this->ledger->append($tombstone);
+        } catch (\Throwable $e) {
+            // Die Löschung steht; ohne Ledger-Zeile fehlt nur der Nachweis für einen späteren Restore — melden, nicht scheitern.
+            report($e);
+        }
 
         return $tombstone;
+    }
+
+    /**
+     * Löschungen nach einem Restore erneut anwenden (Konzept §16, Vollscan
+     * 2026-09-15 Top 9b): ein Fall, den der Ledger als gelöscht führt, den
+     * die zurückgespielte Datenbank aber noch mit Inhalt trägt, wird ohne
+     * Status- und Sperrprüfung geschreddert — die Entscheidung fiel schon vor
+     * dem Restore. Fehlt der Grabstein in der Datenbank, entsteht er aus dem
+     * Ledger neu.
+     *
+     * @return array{shredded: int, tombstones_restored: int, unknown: int}
+     */
+    public function reapplyLedger(?string $path = null, bool $dryRun = false): array {
+        $result = ['shredded' => 0, 'tombstones_restored' => 0, 'unknown' => 0];
+        $disk = Storage::disk((string) config('whistleblowing.disk', 'whistleblowing'));
+
+        foreach ($this->ledger->entries($path) as $entry) {
+            $case = WhistleblowingCase::withoutGlobalScopes()
+                ->where('organization_id', $entry['organization_id'])
+                ->where('public_id', $entry['public_id'])
+                ->first();
+            if ($case === null) {
+                $result['unknown']++;
+
+                continue;
+            }
+            $hasTombstone = CaseTombstone::query()->withoutGlobalScopes()
+                ->where('organization_id', $entry['organization_id'])
+                ->where('public_id', $entry['public_id'])
+                ->exists();
+            $needsShred = $case->status !== CaseStatus::Deleted;
+            if ($dryRun) {
+                $result['shredded'] += $needsShred ? 1 : 0;
+                $result['tombstones_restored'] += $hasTombstone ? 0 : 1;
+
+                continue;
+            }
+
+            /** @var list<string> $storageKeys */
+            $storageKeys = $needsShred ? $case->attachments()->pluck('storage_key')->all() : [];
+            DB::transaction(function () use ($case, $entry, $needsShred, $hasTombstone): void {
+                /** @var WhistleblowingCase $locked */
+                $locked = WhistleblowingCase::withoutGlobalScopes()->whereKey($case->getKey())->lockForUpdate()->firstOrFail();
+                if ($needsShred) {
+                    $this->events->record($locked, WhistleblowingEventService::CASE_DELETED, null, ['reason' => 'tombstone_ledger']);
+                    $this->shred($locked);
+                }
+                if (! $hasTombstone) {
+                    CaseTombstone::create([
+                        'organization_id' => $entry['organization_id'],
+                        'case_number' => $entry['case_number'],
+                        'public_id' => $entry['public_id'],
+                        'period_from' => $entry['period_from'],
+                        'period_to' => $entry['period_to'],
+                        'closed_category' => null,
+                        'deleted_at' => $entry['deleted_at'] !== null ? Carbon::parse($entry['deleted_at']) : Carbon::now(),
+                        'audit_hash' => $entry['audit_hash'],
+                    ]);
+                }
+            });
+            foreach ($storageKeys as $key) {
+                $disk->delete($key);
+            }
+            $result['shredded'] += $needsShred ? 1 : 0;
+            $result['tombstones_restored'] += $hasTombstone ? 0 : 1;
+        }
+
+        return $result;
+    }
+
+    private function shred(WhistleblowingCase $locked): void {
+        // Crypto-Shredding + Inhalte entfernen.
+        $locked->shredDek();
+        DB::table('whistleblowing_messages')->where('case_id', $locked->getKey())->delete();
+        DB::table('whistleblowing_attachments')->where('case_id', $locked->getKey())->delete();
+        // Personenbezuege rundherum (Sicherheitsaudit 2026-09-13): Beschuldigte,
+        // Konflikte, Bearbeiterzuweisungen, Fristen und Notfallfreigaben blieben
+        // stehen. Ihre Inhalte sind durch die Schluesselvernichtung zwar
+        // unlesbar, die Verknuepfung "diese Person, dieser Fall" blieb aber als
+        // Metadatum erhalten — nach einer Loeschung darf nur der Grabstein
+        // uebrig sein. Das Ereignisprotokoll bleibt bewusst: sein Hash traegt
+        // den Grabstein.
+        foreach ([
+            'whistleblowing_case_subjects',
+            'whistleblowing_case_conflicts',
+            'whistleblowing_case_assignments',
+            'whistleblowing_deadline_reminders',
+            'whistleblowing_emergency_grants',
+        ] as $table) {
+            DB::table($table)->where('case_id', $locked->getKey())->delete();
+        }
+        DB::table('whistleblowing_cases')->where('id', $locked->getKey())->update([
+            'subject_ciphertext' => null,
+            'description_ciphertext' => null,
+            'contact_ciphertext' => null,
+            'status' => CaseStatus::Deleted->value,
+        ]);
     }
 }

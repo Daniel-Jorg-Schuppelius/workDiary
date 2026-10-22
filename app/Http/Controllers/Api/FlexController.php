@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Services\Flextime\FlexCalculator;
 use Carbon\CarbonImmutable;
@@ -35,6 +36,7 @@ class FlexController extends Controller {
         ],
     )]
     public function summary(Request $request): JsonResponse {
+        abort_unless($this->authUser()->can(Permission::FlexBalanceView->value), 403);
         $year = (int) $request->input('year', CarbonImmutable::now()->year);
         $month = (int) $request->input('month', CarbonImmutable::now()->month);
 

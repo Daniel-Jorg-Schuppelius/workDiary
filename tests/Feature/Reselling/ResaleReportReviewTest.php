@@ -127,6 +127,13 @@ TXT;
         $csv = $this->actingAs($admin)->get(route('finance.resale.report.export'));
         $csv->assertOk()->assertHeader('content-type', 'text/csv; charset=UTF-8');
         $this->assertStringContainsString('Klimpel Bäder GmbH', $csv->streamedContent());
+
+        // Phase 137, MVP-1101: auch CSV und Excel hinterlassen den Export im Audit.
+        $formats = \App\Models\Audit\AuditLog::query()->where('event', 'report.exported')->get()
+            ->map(static fn ($log): string => (string) ($log->changes['report_code'] ?? '') . ':' . (string) ($log->changes['format'] ?? ''))
+            ->all();
+        $this->assertContains('resale.proposal:xlsx', $formats);
+        $this->assertContains('resale.proposal:csv', $formats);
     }
 
     public function test_margin_report_filters_by_period_start_sorts_by_expected_sale_and_keeps_currencies_apart(): void {

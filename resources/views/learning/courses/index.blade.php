@@ -31,6 +31,10 @@
                     :href="route('learning.courses.index', array_merge(request()->query(), ['view' => $viewMode === 'tiles' ? 'list' : 'tiles']))"
                     show-label>{{ $viewMode === 'tiles' ? __('learning.action.view_list') : __('learning.action.view_tiles') }}</x-icon-btn>
         @if ($canCreate)
+            <x-icon-btn icon="upload" tone="ghost" size="sm" placement="menu"
+                        data-entry-modal-trigger
+                        :href="route('learning.courses.import.create')"
+                        show-label>{{ __('learning.action.import_course') }}</x-icon-btn>
             <x-icon-btn icon="upload_file" tone="ghost" size="sm"
                         data-entry-modal-trigger
                         :href="route('learning.courses.import-learndash.create')"

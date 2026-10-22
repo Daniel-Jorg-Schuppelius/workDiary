@@ -80,7 +80,8 @@ final class ExternalCommissionTest extends TestCase {
         FakePluginHttp::fake([
             'https://api.lexware.io/v1/voucherlist*' => FakePluginHttp::response(['content' => $items, 'totalPages' => 1]),
             'https://api.lexware.io/v1/vouchers/*' => FakePluginHttp::response([]),
-            'https://api.lexware.io/v1/payments/*' => FakePluginHttp::response([]),
+            // Zahlungen laufen über das SDK, das den Body nicht zurückspult: je Abruf eine frische Antwort.
+            'https://api.lexware.io/v1/payments/*' => static fn () => FakePluginHttp::response([]),
         ]);
         (new LexofficeVoucherSync('test-key'))->sync($this->organization);
     }

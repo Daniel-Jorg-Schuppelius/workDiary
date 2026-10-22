@@ -120,7 +120,7 @@ class MeasureRecognitionCommand extends Command {
             $manual = (array) (((array) $incoming->summary)['manual'] ?? []);
             if ($manual !== []) {
                 $stats['manual']['compared']++;
-                if (IncomingEInvoice::numberKey($result['number']) !== null && IncomingEInvoice::numberKey($result['number']) === IncomingEInvoice::numberKey($manual['invoice_number'] ?? null)) {
+                if (\App\Support\ReferenceTokens::key($result['number']) !== null && \App\Support\ReferenceTokens::key($result['number']) === \App\Support\ReferenceTokens::key($manual['invoice_number'] ?? null)) {
                     $stats['manual']['number']++;
                 }
                 if ($result['issued_on'] !== null && $result['issued_on'] === substr((string) ($manual['issue_date'] ?? ''), 0, 10)) {

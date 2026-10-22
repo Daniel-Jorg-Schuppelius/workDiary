@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Diary;
 
 use App\Enums\Classification\ClassificationRequirementPhase;
+use App\Enums\User\Permission;
 use App\Exceptions\ClassificationRequirementException;
 use App\Http\Controllers\Concerns\{FiltersDiaryEntries, ResolvesGlobalDateRange};
 use App\Http\Controllers\Concerns\SavesCustomFields;
@@ -111,7 +112,7 @@ class DiaryController extends Controller {
     public function create(Request $request): View {
         /** @var User $auth */
         $auth = Auth::user();
-        $canCreateForOthers = $auth->canCreateEntriesForOthers();
+        $canCreateForOthers = $auth->can(Permission::DiaryCreateForOthers->value);
 
         // Prefills (z. B. aus der Wochenansicht)
         $prefillDate = $this->parsePrefillDate($request->query('date'));
@@ -187,7 +188,7 @@ class DiaryController extends Controller {
 
         $owner = $auth;
         $requestedUserId = (int) ($data['user_id'] ?? 0);
-        if ($requestedUserId > 0 && $requestedUserId !== $auth->id && $auth->canCreateEntriesForOthers()) {
+        if ($requestedUserId > 0 && $requestedUserId !== $auth->id && $auth->can(Permission::DiaryCreateForOthers->value)) {
             // Mandantengrenze explizit: fremde User-ID darf keinen Eintrag für
             // einen Benutzer einer anderen Organisation anlegen (User trägt
             // keinen globalen OrganizationScope; kanonischer Scope-Helfer).
@@ -314,7 +315,7 @@ class DiaryController extends Controller {
 
         /** @var User $auth */
         $auth = Auth::user();
-        $canCreateForOthers = $auth->canCreateEntriesForOthers();
+        $canCreateForOthers = $auth->can(Permission::DiaryCreateForOthers->value);
 
         return view('diary._form_dialog', [
             'entry' => $diary,

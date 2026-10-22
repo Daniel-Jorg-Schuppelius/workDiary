@@ -10,6 +10,7 @@
 
 namespace App\Policies\Schedule;
 
+use App\Enums\User\Permission;
 use App\Models\Platform\User;
 use App\Models\Schedule\CoverageRequirement;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
@@ -27,14 +28,14 @@ class CoverageRequirementPolicy {
     }
 
     public function create(User $user): bool {
-        return false;
+        return $user->can(Permission::CoverageRequirementManage->value);
     }
 
     public function update(User $user, CoverageRequirement $requirement): bool {
-        return false;
+        return $this->sharesOrganization($user, $requirement) && $user->can(Permission::CoverageRequirementManage->value);
     }
 
     public function delete(User $user, CoverageRequirement $requirement): bool {
-        return false;
+        return $this->update($user, $requirement);
     }
 }

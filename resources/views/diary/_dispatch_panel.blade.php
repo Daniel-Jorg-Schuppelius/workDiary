@@ -27,7 +27,7 @@
 <x-card as="section" padding="p-6" class="space-y-5">
     <div class="flex flex-wrap items-center justify-between gap-3">
         <h2 class="font-['Space_Grotesk'] text-xl font-bold text-base-content">{{ __('dispatch.heading') }}</h2>
-        <x-status-badge :tone="$dispatchStatus->badgeTone()" size="md">{{ $dispatchStatus->label() }}</x-status-badge>
+        <x-status-badge :tone="$dispatchStatus->tone()" size="md">{{ $dispatchStatus->label() }}</x-status-badge>
     </div>
 
     @if (! empty($blocking))

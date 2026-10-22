@@ -209,25 +209,7 @@ class IntegrationResolveInboxCommand extends Command {
             'case_type' => IntegrationInboxItem::CASE_AMBIGUOUS,
             'referenceable_type' => $best['model']->getMorphClass(),
             'referenceable_id' => $best['model']->getKey(),
-            'candidate_ids' => $this->candidatePayload($result->candidates()),
+            'candidate_ids' => IntegrationInboxItem::candidatePayload($result->candidates()),
         ]);
-    }
-
-    /**
-     * @param  list<array{model: Model, confidence: string, reasons: list<string>}>  $candidates
-     * @return list<array{id: int, sqid: string, label: string, confidence: string, reasons: list<string>}>
-     */
-    private function candidatePayload(array $candidates): array {
-        return array_map(static function (array $c): array {
-            $model = $c['model'];
-
-            return [
-                'id' => (int) $model->getKey(),
-                'sqid' => $model->getRouteKey(),
-                'label' => (string) ($model->getAttribute('name') ?? ('#' . $model->getKey())),
-                'confidence' => $c['confidence'],
-                'reasons' => $c['reasons'],
-            ];
-        }, $candidates);
     }
 }

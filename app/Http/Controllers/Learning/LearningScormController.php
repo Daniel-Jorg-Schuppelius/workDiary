@@ -16,9 +16,8 @@ use App\Enums\Learning\LearningUnitKind;
 use App\Http\Controllers\Controller;
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningScormPackage, LearningUnit};
 use App\Models\Platform\User;
-use App\Services\Learning\{LearningScormService, LearningXapiService, ScormContentToken, ScormPackageFiles};
+use App\Services\Learning\{LearningScormService, ScormContentToken, ScormPackageFiles};
 use App\Support\Learning\ScormContentHost;
-use CommonToolkit\Helper\Data\JsonHelper;
 use ELearningToolkit\Scorm\LaunchPath;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -39,7 +38,6 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 class LearningScormController extends Controller {
     public function __construct(
         private readonly LearningScormService $scorm,
-        private readonly LearningXapiService $xapi,
         private readonly ScormContentToken $contentTokens,
     ) {}
 
@@ -123,35 +121,6 @@ class LearningScormController extends Controller {
             'ok' => true,
             'passed' => $this->scorm->isPassed($package, $state),
         ]);
-    }
-
-    /**
-     * xAPI-Statement aufnehmen.
-     *
-     * Bewusst schlank: eine Ablage plus Fortschritt aus eindeutigen Verben,
-     * kein vollwertiges Learning Record Store.
-     */
-    public function xapi(Request $request, LearningEnrollment $enrollment): JsonResponse {
-        $this->authorizeOwn($enrollment);
-
-        $request->validate([
-            'statement' => ['required', 'array'],
-            'statement.verb.id' => ['required', 'string', 'max:500'],
-            'statement.object.id' => ['nullable', 'string', 'max:1000'],
-            'statement.id' => ['nullable', 'string', 'max:64'],
-        ]);
-
-        // Absichtlich der Roh-Eingabewert: `validate()` gäbe nur die
-        // geprüften Teilschlüssel zurück, und ein xAPI-Statement wird ganz
-        // aufbewahrt — auch was wir nicht auswerten (z. B. `result`).
-        /** @var array<string, mixed> $statement */
-        $statement = (array) $request->input('statement', []);
-
-        abort_if(strlen(JsonHelper::encode($statement)) > 64000, 413);
-
-        $record = $this->xapi->store($enrollment, $statement);
-
-        return response()->json(['ok' => true, 'id' => $record->statement_id]);
     }
 
     /**

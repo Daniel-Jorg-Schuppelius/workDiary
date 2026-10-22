@@ -38,7 +38,14 @@ final class ImportGoogleTimeline implements ShouldQueue {
 
     public int $timeout = 1800;
 
-    public function __construct(public readonly int $userId, public readonly string $storagePath) {}
+    public function __construct(public readonly int $userId, public readonly string $storagePath) {
+        // Länger als retry_after der Standardverbindung (630 s): dort stellte der Treiber den laufenden Import ein
+        // zweites Mal zu, und jeder Punkt kam doppelt (Vollscan 2026-10-21). Die Medien-Verbindung hält 2 h.
+        $this->onQueue('media');
+        if (config('queue.default') !== 'sync') {
+            $this->onConnection('media');
+        }
+    }
 
     public function handle(GoogleTimelineImporter $importer, LocationIngestService $ingest): void {
         $user = User::query()->find($this->userId);
@@ -50,14 +57,40 @@ final class ImportGoogleTimeline implements ShouldQueue {
             $json = (string) Storage::disk('local')->get($this->storagePath);
             $count = 0;
             foreach (array_chunk($importer->parse($json), self::CHUNK) as $chunk) {
-                $count += $ingest->ingest($user, $chunk, LocationPoint::SOURCE_GOOGLE);
+                $count += $ingest->ingest($user, $this->withoutKnownPoints($user, $chunk), LocationPoint::SOURCE_GOOGLE);
             }
             $user->notify(new GoogleImportFinishedNotification($count));
         };
-        try {
-            $organization instanceof Organization ? OrganizationContext::run($organization, $work) : $work();
-        } finally {
-            Storage::disk('local')->delete($this->storagePath);
+        $organization instanceof Organization ? OrganizationContext::run($organization, $work) : $work();
+        // Erst nach Erfolg löschen: eine Wiederholung nach einem Fehler braucht die Datei noch.
+        Storage::disk('local')->delete($this->storagePath);
+    }
+
+    /** Nach dem letzten Fehlversuch räumt der Job die hochgeladene Datei ab. */
+    public function failed(?\Throwable $exception): void {
+        Storage::disk('local')->delete($this->storagePath);
+    }
+
+    /**
+     * Punkte, die aus einem früheren Lauf derselben Datei schon gespeichert sind, nicht noch einmal anlegen —
+     * eine Wiederholung oder ein zweiter Upload verdoppelte sonst die Spur.
+     *
+     * @param  list<array{lat: float, lng: float, recorded_at: \Illuminate\Support\Carbon, accuracy_m?: int|null}>  $chunk
+     * @return list<array{lat: float, lng: float, recorded_at: \Illuminate\Support\Carbon, accuracy_m?: int|null}>
+     */
+    private function withoutKnownPoints(User $user, array $chunk): array {
+        if ($chunk === []) {
+            return [];
         }
+        $times = array_map(static fn (array $point): string => $point['recorded_at']->toDateTimeString(), $chunk);
+        $known = array_flip(LocationPoint::query()->withoutGlobalScopes()
+            ->where('user_id', $user->id)
+            ->where('source', LocationPoint::SOURCE_GOOGLE)
+            ->whereBetween('recorded_at', [min($times), max($times)])
+            ->pluck('recorded_at')
+            ->map(static fn ($at): string => \Illuminate\Support\Carbon::parse($at)->toDateTimeString())
+            ->all());
+
+        return array_values(array_filter($chunk, static fn (array $point): bool => ! isset($known[$point['recorded_at']->toDateTimeString()])));
     }
 }

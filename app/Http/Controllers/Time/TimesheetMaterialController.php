@@ -27,6 +27,15 @@ class TimesheetMaterialController extends Controller {
         return view('timesheets._material_form_dialog', compact('project', 'timesheet', 'materials'));
     }
 
+    /** Materialzeile im selben Dialog bearbeiten (Vollscan 2026-10-21). */
+    public function edit(Project $project, Timesheet $timesheet, MaterialUsage $usage): View {
+        Gate::authorize('update', $timesheet);
+        abort_unless((int) $usage->timesheet_id === (int) $timesheet->id, 404);
+        $materials = Material::query()->where('is_active', true)->orderBy('name')->get();
+
+        return view('timesheets._material_form_dialog', ['project' => $project, 'timesheet' => $timesheet, 'materials' => $materials, 'usage' => $usage->loadMissing('material')]);
+    }
+
     public function store(Project $project, Timesheet $timesheet, SaveMaterialUsageRequest $request): RedirectResponse {
         Gate::authorize('update', $timesheet);
 

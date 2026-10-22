@@ -1,7 +1,7 @@
 ---
 title: "Disposition und Konfliktwarnungen"
 topic: dispatch.overview
-version: 2
+version: 3
 keywords:
     - Einsatzplanung
     - disponieren
@@ -51,3 +51,10 @@ Am Auftrag kann ein Fahrzeug für ein Zeitfenster reserviert werden. Ist das
 Fahrzeug im gewünschten Zeitraum bereits reserviert, verhindert das System die
 Doppelreservierung. Die Reservierungen je Fahrzeug lassen sich in der
 Reservierungsliste einsehen und wieder aufheben.
+
+## Tagesvorschlag
+
+Unter „Tagesvorschlag“ verteilt die Leitstelle alle offenen Aufträge eines
+Tages in einem Lauf auf die Fahrer. Berücksichtigt werden Arbeitsfenster,
+Zeitfenster der Aufträge, Pausen und Qualifikationen; die Fahrer starten und
+enden zu Hause. Der Vorschlag wird erst mit der Übernahme zu Touren.

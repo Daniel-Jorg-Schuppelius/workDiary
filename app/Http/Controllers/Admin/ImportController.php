@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\Import\{ImportEntity, ImportRunState};
+use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessCsvImportJob;
@@ -297,7 +298,7 @@ class ImportController extends Controller {
 
     public function show(Request $request, ImportRun $import): View {
         $this->ensureOwned($import);
-        $this->authorizeImport($import->entity);
+        $this->authorizeReport($import->entity);
 
         $errors = $import->errors()
             ->orderBy('row_number')
@@ -318,7 +319,7 @@ class ImportController extends Controller {
         // Adresse ist hier das Unterscheidungsmerkmal).
         $userOptions = $isUserMapping
             ? \App\Models\Platform\User::query()->where('organization_id', $import->organization_id)->orderBy('name')->get(['id', 'name', 'email'])
-                ->map(fn (\App\Models\Platform\User $u): array => ['sqid' => $u->sqid, 'label' => $u->name . ' (' . $u->email . ')'])
+                ->map(fn (\App\Models\Platform\User $u): array => ['sqid' => $u->sqid, 'label' => $u->labelWithEmail()])
                 ->all()
             : [];
 
@@ -557,7 +558,7 @@ class ImportController extends Controller {
 
     public function downloadErrors(Request $request, ImportRun $import): Response {
         $this->ensureOwned($import);
-        $this->authorizeImport($import->entity);
+        $this->authorizeReport($import->entity);
 
         $rows = [];
         foreach ($import->errors()->orderBy('row_number')->orderBy('id')->cursor() as $err) {
@@ -610,7 +611,7 @@ class ImportController extends Controller {
     private function authorizeAnyImport(): void {
         $user = Auth::user();
 
-        if ($user instanceof User && $user->isAdmin()) {
+        if ($user instanceof User && ($user->isAdmin() || $user->hasEffectivePermission(Permission::ImportViewReports->value))) {
             return;
         }
 
@@ -625,6 +626,12 @@ class ImportController extends Controller {
 
     private function authorizeImport(ImportEntity $entity): void {
         abort_unless($this->mayImport($entity), 403);
+    }
+
+    /** Lauf und Fehlerliste lesen: Importrecht der Entität oder import.viewReports. */
+    private function authorizeReport(ImportEntity $entity): void {
+        $user = Auth::user();
+        abort_unless($this->mayImport($entity) || ($user instanceof User && $user->hasEffectivePermission(Permission::ImportViewReports->value)), 403);
     }
 
     private function mayImport(ImportEntity $entity): bool {

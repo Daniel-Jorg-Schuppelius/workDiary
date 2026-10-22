@@ -15,6 +15,7 @@ namespace App\Services\Weather;
 use App\Plugins\Support\PluginApiClient;
 use App\Services\Weather\Contracts\WeatherProvider;
 use Carbon\CarbonInterface;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Throwable;
 
 /**
@@ -52,7 +53,7 @@ class OpenMeteoProvider implements WeatherProvider {
                 return null;
             }
             /** @var array<string, mixed> $json */
-            $json = json_decode($response->body(), true, 512, JSON_THROW_ON_ERROR);
+            $json = JsonHelper::decode($response->body());
         } catch (Throwable) {
             return null;
         }
@@ -86,7 +87,7 @@ class OpenMeteoProvider implements WeatherProvider {
                 return null;
             }
             /** @var array<string, mixed> $json */
-            $json = json_decode($response->body(), true, 512, JSON_THROW_ON_ERROR);
+            $json = JsonHelper::decode($response->body());
         } catch (Throwable) {
             return null;
         }

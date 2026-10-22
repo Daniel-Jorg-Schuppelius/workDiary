@@ -12,6 +12,7 @@ namespace App\Plugins\Zammad\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasPrivateNetworkOptIn};
 use App\Models\Project\Project;
+use App\Plugins\Support\Contracts\ManagedPluginConnection;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -41,7 +42,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property bool $allow_private_network
  * @property \Illuminate\Support\Carbon|null $last_polled_at
  */
-class ZammadConnection extends Model {
+class ZammadConnection extends Model implements ManagedPluginConnection {
     use Auditable;
     use BelongsToOrganization;
     /** @use HasFactory<Factory<static>> */

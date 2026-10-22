@@ -135,7 +135,7 @@ class SlaTicketScan extends AbstractDeadlineScan {
         return \App\Models\Platform\User::query()->withoutGlobalScopes()
             ->where('organization_id', $ticket->organization_id)
             ->whereNull('deactivated_at')
-            ->role($notify)
+            ->role(\App\Services\Org\OrganizationRoles::matching([$notify], (int) $ticket->organization_id))
             ->orderBy('id')
             ->first();
     }

@@ -118,6 +118,22 @@ final class OciPunchoutTest extends TestCase {
             ->assertSessionHas('success');
     }
 
+    public function test_hook_return_takes_matched_lines_and_counts_unmatched(): void {
+        $this->articleWithSupply('V-1');
+        $this->articleWithSupply('V-2');
+
+        $this->post($this->hookUrl(), [
+            'NEW_ITEM-VENDORMAT' => [1 => 'V-1', 2 => 'V-2', 3 => 'V-UNKNOWN'],
+            'NEW_ITEM-DESCRIPTION' => [1 => 'Schraube', 2 => 'Mutter', 3 => 'Unbekannt'],
+            'NEW_ITEM-QUANTITY' => [1 => '10', 2 => '5', 3 => '7'],
+            'NEW_ITEM-PRICE' => [1 => '1.50', 2 => '0.80'],
+        ])->assertRedirect();
+
+        $order = PurchaseOrder::query()->where('supplier_id', $this->supplier->id)->latest('id')->firstOrFail();
+        $this->assertSame(2, $order->lines()->count());
+        $this->assertSame('10.0000', $order->lines()->orderBy('id')->firstOrFail()->ordered_qty?->getNumericValue());
+    }
+
     public function test_hook_return_rejects_missing_or_invalid_signature(): void {
         $this->post(route('oci-carts.return', [
             'source' => $this->source->id,

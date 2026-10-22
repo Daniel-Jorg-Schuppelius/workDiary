@@ -31,9 +31,10 @@ use RuntimeException;
  * Pull: liest den verknüpften Lexoffice-Lieferschein (GET /v1/delivery-notes/{id})
  * zurück — z. B. für Status/Belegnummer.
  *
- * HTTP läuft — analog {@see \App\Plugins\Lexoffice\Services\LexofficeTarget} —
- * über {@see PluginApiClient} (php-api-toolkit, mit FakePluginHttp testbar),
- * nicht über das SDK.
+ * HTTP läuft roh über {@see PluginApiClient}: die Lieferschein-Entität des SDK
+ * verwirft `deliveryConditions`, ergänzt `address.countryCode = DE` und setzt
+ * fehlende `shippingConditions` auf „service, heute“ — beim Anlegen wie beim
+ * Zurücklesen.
  */
 class LexofficeDeliveryNoteService {
     public const EXT_TYPE_DELIVERY_NOTE = 'delivery_note';

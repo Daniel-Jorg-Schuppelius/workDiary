@@ -1018,6 +1018,9 @@ return [
         'unlimited' => 'unlimited',
         'issuer' => 'Issuing organisation',
         'number' => 'Number',
+        'machine_readable' => 'Machine-readable credential',
+        'credential_json' => 'Open Badges 3.0 (JSON-LD)',
+        'credential_jwt' => 'VC-JWT',
     ],
     'proof' => [
         'note' => 'Record from the learning platform: :course',

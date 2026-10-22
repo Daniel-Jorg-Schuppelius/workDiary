@@ -12,6 +12,9 @@
  */
 
 return [
+    'field' => [
+        'honeypot' => 'Veuillez laisser vide',
+    ],
     'category' => [
         'corruption' => 'Corruption et pots-de-vin',
         'fraud' => 'Fraude, abus de confiance et vol',

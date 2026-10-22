@@ -14,6 +14,7 @@ namespace App\Services\Scim;
 
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\{Organization, User};
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\DB;
 
@@ -293,6 +294,6 @@ class ScimUserService {
     }
 
     private function boolish(mixed $value): bool {
-        return filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? (bool) $value;
+        return StringHelper::parseBool($value) ?? (bool) $value;
     }
 }

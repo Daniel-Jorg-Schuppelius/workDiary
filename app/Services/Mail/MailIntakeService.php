@@ -116,7 +116,7 @@ class MailIntakeService {
             'status' => IntegrationInboxStatus::Open,
             'referenceable_type' => $best instanceof Model ? $best->getMorphClass() : null,
             'referenceable_id' => $best instanceof Model ? $best->getKey() : null,
-            'candidate_ids' => $this->candidatePayload($candidates),
+            'candidate_ids' => IntegrationInboxItem::candidatePayload($candidates),
             'remote_snapshot' => $snapshot,
             'display_title' => $message->subject !== '' ? $message->subject : __('mail.inbox.no_subject'),
             'display_subtitle' => $connection->einvoice_intake ? __('mail.inbox.invoice_mailbox', ['from' => $message->fromEmail]) : $message->fromEmail,
@@ -137,26 +137,6 @@ class MailIntakeService {
         usort($handlers, static fn (MailIntakeHandler $a, MailIntakeHandler $b): int => $a->priority() <=> $b->priority());
 
         return $handlers;
-    }
-
-    /**
-     * @param  list<array{model: Model, confidence: string, reasons: list<string>}>  $candidates
-     * @return list<array<string, mixed>>
-     */
-    private function candidatePayload(array $candidates): array {
-        $out = [];
-        foreach ($candidates as $candidate) {
-            $model = $candidate['model'];
-            $out[] = [
-                'id' => $model->getKey(),
-                'sqid' => $model->getRouteKey(),
-                'label' => (string) ($model->getAttribute('name') ?? $model->getAttribute('company') ?? ''),
-                'confidence' => $candidate['confidence'],
-                'reasons' => $candidate['reasons'],
-            ];
-        }
-
-        return $out;
     }
 
     /**

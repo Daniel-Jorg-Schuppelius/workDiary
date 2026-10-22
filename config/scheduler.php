@@ -105,6 +105,15 @@ return [
             'criticality' => 'core',
             'expected_runtime_minutes' => 5,
         ],
+        // Sicherung der Kundenkonten (lk-13): neuer Monat und offene Monate,
+        // falls ein Änderungsereignis verloren ging; das Portal rechnet nicht.
+        'billing.recalculate-statements' => [
+            'command' => 'customer-billing:recalculate-statements',
+            'cadence' => ['type' => 'dailyAt', 'time' => '02:40'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 5,
+        ],
         'billing.account-invoices' => [
             'command' => 'customer-billing:generate-invoices',
             'cadence' => ['type' => 'cron', 'expression' => '25 5 1 * *'],

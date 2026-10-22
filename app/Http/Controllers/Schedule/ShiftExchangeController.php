@@ -60,6 +60,24 @@ class ShiftExchangeController extends Controller {
         ]);
     }
 
+    /** Antrag stellen: eigene kommende Schichten, optional eine Wunschperson (Vollscan 2026-10-21). */
+    public function create(): View {
+        /** @var User $auth */
+        $auth = Auth::user();
+
+        return view('shift-exchanges._request_dialog', [
+            'shifts' => ScheduledShift::query()
+                ->where('user_id', $auth->id)
+                ->where('date', '>=', now()->toDateString())
+                ->where('status', '!=', \App\Enums\Shift\ScheduledShiftStatus::Cancelled->value)
+                ->with('shiftType')
+                ->orderBy('date')
+                ->limit(100)
+                ->get(),
+            'colleagues' => User::inCurrentOrganization()->whereKeyNot($auth->id)->orderBy('name')->get(['id', 'name']),
+        ]);
+    }
+
     public function store(StoreShiftExchangeRequest $request): RedirectResponse {
         /** @var User $auth */
         $auth = Auth::user();

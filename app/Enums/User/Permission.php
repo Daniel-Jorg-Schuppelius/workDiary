@@ -33,7 +33,6 @@ enum Permission: string implements HasLabel {
     case AccessAuditView = 'access.audit.view';
 
         // ── Organisation / Branding ────────────────────────────────────────
-    case OrganizationView = 'organization.view';
     case OrganizationUpdate = 'organization.update';
     case OrganizationBilling = 'organization.billing';
     case BrandingUpdate = 'branding.update';
@@ -115,13 +114,11 @@ enum Permission: string implements HasLabel {
 
         // ── Mitglieder (User-Stamm der Org) ────────────────────────────────
     case UserViewAny = 'user.viewAny';
-    case UserView = 'user.view';
     case UserCreate = 'user.create';
     case UserUpdate = 'user.update';
     case UserDelete = 'user.delete';
     case UserImpersonate = 'user.impersonate';
     case UserResetPassword = 'user.reset-password';
-    case UserManageRates = 'user.rates.manage';
     case UserFlexManage = 'user.flex.manage';
     case UserPayrollManage = 'user.payroll.manage';
     case UserImport = 'user.import';
@@ -188,7 +185,6 @@ enum Permission: string implements HasLabel {
     case TimeEntryCreate = 'timeEntry.create';
     case TimeEntryUpdate = 'timeEntry.update';
     case TimeEntryDelete = 'timeEntry.delete';
-    case TimeEntryCreateForOthers = 'timeEntry.create-for-others';
     case TimeEntryApprove = 'timeEntry.approve';
     case TimeEntryReassign = 'timeEntry.reassign';
 
@@ -200,7 +196,6 @@ enum Permission: string implements HasLabel {
     case TimesheetSign = 'timesheet.sign';
     case TimesheetLock = 'timesheet.lock';
     case TimesheetUnlock = 'timesheet.unlock';
-    case TimesheetExport = 'timesheet.export';
 
         // ── Monatsfreigabe (MVP-016) ───────────────────────────────────────
     case MonthViewOwn = 'month.view.own';
@@ -357,7 +352,6 @@ enum Permission: string implements HasLabel {
     case DutyPlanUpdate = 'dutyPlan.update';
     case DutyPlanDelete = 'dutyPlan.delete';
     case DutyPlanPublish = 'dutyPlan.publish';
-    case ShiftManage = 'shift.manage';
     case CoverageRequirementManage = 'coverage-requirement.manage';
     case OnCallShiftManage = 'on-call-shift.manage';
     case EmergencyAssignmentManage = 'emergency-assignment.manage';

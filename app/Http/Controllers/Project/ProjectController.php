@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Project;
 
 use App\Enums\Project\ProjectStatus;
+use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\{ResolvesGlobalDateRange, SavesCustomFields};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Project\SaveProjectRequest;
@@ -235,7 +236,7 @@ class ProjectController extends Controller {
         $billingRules = collect();
         $parentBillingRules = collect();
         $billingArticles = [];
-        if ($viewer->canManageBilling()) {
+        if ($viewer->can(Permission::ProjectManageBilling->value)) {
             $billingRules = $project->billingRules()->orderByDesc('priority')->orderBy('id')->get();
             $billingArticles = app(\App\Services\Platform\Catalog\ArticleCatalog::class)
                 ->findMany((int) $project->organization_id, $billingRules->pluck('article_ref'));
@@ -260,7 +261,7 @@ class ProjectController extends Controller {
             'seesAllTimes' => $seesAllTimes,
             'nextMilestone' => $nextMilestone,
             'timesheets' => $project->timesheets()
-                ->when(! $seesAllTimes, fn($q) => $q->forUser((int) $viewer->id))
+                ->when(! $viewer->can(Permission::TimesheetViewAny->value), fn($q) => $q->forUser((int) $viewer->id))
                 ->with('user:id,name')
                 ->inRange($rangeFrom, $rangeTo)
                 ->withCount(['entries as non_billable_count' => fn($q) => $q->where('billable', false)])

@@ -111,6 +111,33 @@ class ProtocolControllerTest extends TestCase {
         $this->assertSame(['Neu'], $names);
     }
 
+    /** Vollscan 2026-10-21: Stammdaten eines Entwurfs lassen sich im Dialog bearbeiten; ein unterschriebenes nicht. */
+    public function test_edit_dialog_prefills_draft_and_is_refused_for_signed_protocol(): void {
+        $user = User::factory()->user()->create();
+        $entry = DiaryEntry::factory()->for($user)->create();
+        $protocol = Protocol::factory()->create([
+            'organization_id' => $user->organization_id,
+            'subject_type' => MorphMap::alias(DiaryEntry::class),
+            'subject_id' => $entry->id,
+            'created_by_user_id' => $user->id,
+            'status' => ProtocolStatus::Draft->value,
+            'title' => 'Abnahme Halle 3',
+        ]);
+
+        $this->actingAs($user)->get(route('protocols.show', $protocol))->assertOk()
+            ->assertSee(route('protocols.edit', $protocol), false);
+        $this->get(route('protocols.edit', $protocol) . '?dialog=1')->assertOk()
+            ->assertSee(__('protocol.title.edit'))
+            ->assertSee('value="Abnahme Halle 3"', false)
+            ->assertSee(route('protocols.update', $protocol), false)
+            ->assertSee(__('protocol.field.state_final'));
+
+        $protocol->forceFill(['status' => ProtocolStatus::Signed->value])->save();
+        $this->get(route('protocols.edit', $protocol) . '?dialog=1')->assertForbidden();
+        $this->get(route('protocols.show', $protocol))->assertOk()
+            ->assertDontSee(route('protocols.edit', $protocol), false);
+    }
+
     public function test_user_can_store_protocol_against_diary_entry(): void {
         $user = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($user)->create();

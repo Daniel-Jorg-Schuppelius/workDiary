@@ -174,7 +174,7 @@ class SsoLoginService {
         $role = trim((string) $connection->jit_role);
         if ($role !== '') {
             app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($connection->organization_id);
-            $user->assignRole(\Spatie\Permission\Models\Role::findOrCreate($role, 'web'));
+            $user->assignRole(\App\Services\Org\OrganizationRoles::named($role, (int) $connection->organization_id));
         }
 
         SsoIdentity::query()->create([

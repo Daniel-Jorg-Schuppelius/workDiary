@@ -18,6 +18,7 @@ use App\Models\Time\{Attendance, TimeEntry};
 use App\Models\Time\MonthClosure;
 use App\Services\Concerns\ResolvesActorId;
 use App\Services\Flextime\FlexCalculator;
+use App\Services\TimeApproval\Concerns\GuardsApprovalWorkflow;
 use App\Services\Timekeeping\BreakRuleEvaluator;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
@@ -39,9 +40,11 @@ use RuntimeException;
  * geworfen, damit Controller fachlich sprechende Antworten erzeugen.
  */
 class DayCloseService {
-    use ResolvesActorId;
+    use GuardsApprovalWorkflow, ResolvesActorId;
 
     public const REASON_MIN_LENGTH = 20;
+
+    private const WORKFLOW_EXCEPTION = DayCloseWorkflowException::class;
 
     public function __construct(
         private readonly FlexCalculator $flex,
@@ -244,7 +247,7 @@ class DayCloseService {
      * nicht gesperrt, keine ⛔-Warnung (§2.6/§4).
      */
     public function close(DayClosure $closure, ?User $actor = null): DayClosure {
-        $this->ensureTransition($closure, DayClosureStatus::Closed);
+        $this->assertWorkflowTransition($closure->status, DayClosureStatus::Closed);
 
         $day = CarbonImmutable::instance($closure->day);
         // "Zukunftstag" gegen den LOKALEN Kalendertag prüfen: um 00:30 lokal
@@ -296,7 +299,7 @@ class DayCloseService {
      * `locked`) sind ausgenommen — dort zuerst Monats-Reopen (MVP-016).
      */
     public function requestCorrection(DayClosure $closure, string $reason, ?User $actor = null): DayCorrectionRequest {
-        $this->ensureTransition($closure, DayClosureStatus::Correction);
+        $this->assertWorkflowTransition($closure->status, DayClosureStatus::Correction);
         $this->assertReason($reason);
 
         $owner = $this->ownerOf($closure);
@@ -335,7 +338,7 @@ class DayCloseService {
         $this->assertRequestPending($request);
 
         $closure = $this->closureOf($request);
-        $this->ensureTransition($closure, DayClosureStatus::Open);
+        $this->assertWorkflowTransition($closure->status, DayClosureStatus::Open);
 
         $actorId = $this->resolveActorId($actor);
 
@@ -369,7 +372,7 @@ class DayCloseService {
         $this->assertRequestPending($request);
 
         $closure = $this->closureOf($request);
-        $this->ensureTransition($closure, DayClosureStatus::Closed);
+        $this->assertWorkflowTransition($closure->status, DayClosureStatus::Closed);
 
         $actorId = $this->resolveActorId($actor);
 
@@ -399,7 +402,7 @@ class DayCloseService {
      * auch die Stempel-Sperre auf.
      */
     public function reopen(DayClosure $closure, string $reason, ?User $actor = null): DayClosure {
-        $this->ensureTransition($closure, DayClosureStatus::Open);
+        $this->assertWorkflowTransition($closure->status, DayClosureStatus::Open);
         $this->assertReason($reason);
 
         $owner = $this->ownerOf($closure);
@@ -531,16 +534,6 @@ class DayCloseService {
         return $balance;
     }
 
-    private function ensureTransition(DayClosure $closure, DayClosureStatus $target): void {
-        if (! $closure->status->canTransitionTo($target)) {
-            throw new DayCloseWorkflowException(
-                'illegalTransition',
-                __('day-close.errors.illegal_day_status', ['status' => $closure->status->value]),
-                ['from' => $closure->status->value, 'to' => $target->value],
-            );
-        }
-    }
-
     /**
      * Sperrt die Tagesabschluss-Zeile in der Transaktion und prüft den Status
      * erneut gegen den frischen Wert (verhindert doppelte Übergänge/Events bei
@@ -549,7 +542,7 @@ class DayCloseService {
     private function lockAndAssert(DayClosure $closure, DayClosureStatus $target): DayClosure {
         /** @var DayClosure $fresh */
         $fresh = DayClosure::query()->whereKey($closure->getKey())->lockForUpdate()->firstOrFail();
-        $this->ensureTransition($fresh, $target);
+        $this->assertWorkflowTransition($fresh->status, $target);
 
         return $fresh;
     }
@@ -560,16 +553,6 @@ class DayCloseService {
                 'illegalTransition',
                 __('day-close.errors.illegal_request_status', ['status' => $request->status->value]),
                 ['from' => $request->status->value],
-            );
-        }
-    }
-
-    private function assertReason(string $reason): void {
-        if (mb_strlen(trim($reason)) < self::REASON_MIN_LENGTH) {
-            throw new DayCloseWorkflowException(
-                'reasonTooShort',
-                __('day-close.errors.reason_too_short', ['n' => self::REASON_MIN_LENGTH]),
-                ['min' => self::REASON_MIN_LENGTH],
             );
         }
     }
@@ -608,5 +591,13 @@ class DayCloseService {
         }
 
         return $closure;
+    }
+
+    private function illegalStatusMessage(string $status): string {
+        return (string) __('day-close.errors.illegal_day_status', ['status' => $status]);
+    }
+
+    private function reasonTooShortMessage(int $minLength): string {
+        return (string) __('day-close.errors.reason_too_short', ['n' => $minLength]);
     }
 }

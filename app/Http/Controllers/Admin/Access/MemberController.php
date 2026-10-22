@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers\Admin\Access;
 
-use App\Enums\User\UserRole;
+use App\Enums\User\{Permission, UserRole};
 use App\Http\Controllers\Admin\Access\Concerns\OffersAssignableRoles;
 use App\Http\Controllers\Concerns\{AuditsAccessChanges, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
@@ -78,6 +78,8 @@ class MemberController extends Controller {
             'assignedRoles' => $member->roles->pluck('id')->all(),
             'assignedGroups' => $member->userGroups->pluck('id')->all(),
             'effectivePermissions' => $member->effectivePermissionNames()->sort()->values(),
+            'canAssignRoles' => $this->mayAssign(Permission::AccessAssignRoles),
+            'canAssignGroups' => $this->mayAssign(Permission::AccessAssignGroups),
         ]);
     }
 
@@ -94,6 +96,13 @@ class MemberController extends Controller {
             // Spatie-Role-Modell aus dem Vendor-Paket kein HasSqid tragen kann.
             'groups.*' => ['string'],
         ]);
+        // Ohne access.roles.assign bzw. access.groups.assign bleibt der jeweilige Teil unverändert.
+        if (! $this->mayAssign(Permission::AccessAssignRoles)) {
+            $data['roles'] = $member->roles->pluck('id')->all();
+        }
+        if (! $this->mayAssign(Permission::AccessAssignGroups)) {
+            $data['groups'] = $member->userGroups->map(static fn (UserGroup $group): string => (string) $group->sqid)->all();
+        }
 
         $teamForeign = config('permission.column_names.team_foreign_key', 'team_id');
 
@@ -175,6 +184,12 @@ class MemberController extends Controller {
         $auth = Auth::user();
 
         abort_unless($auth instanceof User && $auth->isGlobalAdmin(), 403);
+    }
+
+    private function mayAssign(Permission $permission): bool {
+        $auth = Auth::user();
+
+        return $auth instanceof User && ($auth->isAdmin() || $auth->can($permission->value));
     }
 
     private function ensureSameOrg(User $member): void {

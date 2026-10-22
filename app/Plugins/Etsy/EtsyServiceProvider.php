@@ -33,5 +33,6 @@ class EtsyServiceProvider extends PluginServiceProviderBase {
 
     protected function bootPlugin(): void {
         app(IntegrationOutboxDispatcherResolver::class)->register(app(EtsyShipmentDispatcher::class));
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Retention\Contracts\RetentionPolicyProvider::class, \App\Plugins\Etsy\Services\EtsyRetentionPolicies::class);
     }
 }

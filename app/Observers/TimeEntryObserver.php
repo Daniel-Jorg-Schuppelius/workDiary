@@ -11,7 +11,7 @@
 namespace App\Observers;
 
 use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
-use App\Events\Time\TimeEntryCreated;
+use App\Events\Time\{TimeEntryBillingChanged, TimeEntryCreated};
 use App\Models\Time\TimeEntry;
 
 /**
@@ -111,9 +111,14 @@ class TimeEntryObserver {
 
     public function saved(TimeEntry $entry): void {
         $entry->timesheet?->recalcTotals();
+
+        if ($entry->wasRecentlyCreated || array_diff_key($entry->getChanges(), ['updated_at' => true]) !== []) {
+            TimeEntryBillingChanged::dispatch(array_values(array_map('intval', array_filter([$entry->project_id, $entry->getOriginal('project_id')]))));
+        }
     }
 
     public function deleted(TimeEntry $entry): void {
         $entry->timesheet?->recalcTotals();
+        TimeEntryBillingChanged::dispatch($entry->project_id !== null ? [(int) $entry->project_id] : []);
     }
 }

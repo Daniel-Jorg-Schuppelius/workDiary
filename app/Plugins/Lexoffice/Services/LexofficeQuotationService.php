@@ -10,6 +10,9 @@
 
 namespace App\Plugins\Lexoffice\Services;
 
+use Lexoffice\API\Client;
+use Lexoffice\API\Endpoints\Documents\QuotationsEndpoint;
+
 /**
  * Angebot-Anbindung an Lexoffice (Feature 045/047): erzeugt aus einem
  * kundenbezogenen Fertigungsauftrag (typischerweise im Entwurf) ein
@@ -21,6 +24,10 @@ class LexofficeQuotationService extends LexofficeOrderDocumentService {
 
     protected function endpointPath(): string {
         return 'quotations';
+    }
+
+    protected function endpoint(Client $client): QuotationsEndpoint {
+        return new QuotationsEndpoint($client);
     }
 
     public function extType(): string {

@@ -54,6 +54,8 @@ return [
         'show' => 'View',
         'back' => 'Back',
         'create_followup' => 'Create follow-up',
+        'delete' => 'Delete',
+        'delete_confirm' => 'Permanently delete this safety event? Retention duties may apply to accidents.',
     ],
 
     'transition' => [

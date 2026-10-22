@@ -20,6 +20,7 @@ use App\Models\Document\Document;
 use App\Models\Finance\IncomingInvoiceRetention;
 use App\Models\Platform\User;
 use App\Models\Supplier\Supplier;
+use App\Support\ReferenceTokens;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
@@ -144,13 +145,6 @@ class IncomingEInvoice extends Model {
         });
     }
 
-    /** Vergleichsschlüssel einer Rechnungsnummer: ohne Leerraum, Großschreibung. */
-    public static function numberKey(mixed $number): ?string {
-        $key = is_scalar($number) ? mb_strtoupper(\CommonToolkit\Helper\Data\StringHelper::removeWhitespace((string) $number, true)) : '';
-
-        return $key !== '' ? mb_substr($key, 0, 64) : null;
-    }
-
     /** Belegart-Hinweis der Erkennung (MVP-1216): reminder, delivery_note, order_confirmation, quote, shipping_label. */
     public function kindHint(): ?string {
         $hint = ((array) $this->summary)['kind_hint'] ?? null;
@@ -166,7 +160,7 @@ class IncomingEInvoice extends Model {
      */
     public function reminderTargets(): \Illuminate\Database\Eloquent\Collection {
         $keys = array_values(array_filter(array_map(
-            static fn (mixed $number): ?string => self::numberKey($number),
+            static fn (mixed $number): ?string => ReferenceTokens::key($number),
             (array) (((array) $this->summary)['reminder_for'] ?? []),
         )));
         if ($keys === []) {
@@ -195,7 +189,7 @@ class IncomingEInvoice extends Model {
      * bei vielen Lieferanten.
      */
     public function refreshDuplicate(): void {
-        $this->invoice_number_key = self::numberKey($this->invoice_number);
+        $this->invoice_number_key = ReferenceTokens::key($this->invoice_number);
         $vat = trim((string) $this->seller_vat_id);
         if ($this->invoice_number_key === null || ($vat === '' && $this->supplier_id === null && $this->customer_id === null)) {
             $this->duplicate_of_id = null;

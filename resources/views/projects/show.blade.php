@@ -99,14 +99,14 @@
                     <x-status-badge tone="ghost" size="xs" class="ml-1">{{ $recurrenceRules->count() }}</x-status-badge>
                 @endif
             </button>
-            @if (auth()->user()?->canManageBilling())
+            @can(\App\Enums\User\Permission::ProjectManageBilling->value)
                 <button role="tab" @click="setTab('billing')" :class="tabClass('billing')" class="tab">
                     {{ __('Abrechnung') }}
                     @if ($billingRules->isNotEmpty())
                         <x-status-badge tone="ghost" size="xs" class="ml-1">{{ $billingRules->count() }}</x-status-badge>
                     @endif
                 </button>
-            @endif
+            @endcan
         </div>
 
         <div x-show="isTab('overview')" x-cloak>
@@ -130,11 +130,11 @@
         <div x-show="isTab('recurrence')" x-cloak>
             @include('projects._recurrence_tab')
         </div>
-        @if (auth()->user()?->canManageBilling())
+        @can(\App\Enums\User\Permission::ProjectManageBilling->value)
             <div x-show="isTab('billing')" x-cloak>
                 @include('projects._billing_tab')
             </div>
-        @endif
+        @endcan
     </div>
 </x-page-shell>
 @endsection

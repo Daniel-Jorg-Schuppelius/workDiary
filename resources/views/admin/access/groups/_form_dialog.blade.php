@@ -55,7 +55,8 @@
                              die Schutzlinie ist die org-/global-gescopte Whitelist im Controller (Audit W3.3). --}}
                         <input type="checkbox" name="roles[]" value="{{ $role->id }}"
                                class="checkbox checkbox-sm"
-                               @checked(in_array($role->id, $assignedRoles, true)) />
+                               @checked(in_array($role->id, $assignedRoles, true))
+                               @disabled(! ($canAssignRoles ?? true)) />
                         <span class="text-sm">{{ \App\Support\Trans::or("user.role.{$role->name}", $role->name) }}</span>
                         @if ($role->getAttribute(config('permission.column_names.team_foreign_key', 'team_id')) === null)
                             <x-status-badge tone="ghost" size="xs">{{ __('access.badge.global') }}</x-status-badge>

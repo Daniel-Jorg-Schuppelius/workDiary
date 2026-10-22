@@ -84,7 +84,7 @@
             </select>
         @endif
 
-        <x-status-badge :tone="$scheduleType->badgeTone()" size="md" class="badge-soft gap-1">
+        <x-status-badge :tone="$scheduleType->tone()" size="md" class="badge-soft gap-1">
             <x-icon :name="$scheduleType->icon()" class="text-sm" />
             {{ $scheduleType->label() }}
         </x-status-badge>

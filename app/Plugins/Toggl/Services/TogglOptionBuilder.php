@@ -58,9 +58,7 @@ class TogglOptionBuilder {
             ->get(['id', 'name', 'email'])
             ->map(fn(User $u): array => [
                 'sqid' => $u->sqid,
-                'label' => trim((string) $u->name) !== ''
-                    ? $u->name . ' (' . $u->email . ')'
-                    : (string) $u->email,
+                'label' => $u->labelWithEmail(),
             ])->all();
     }
 

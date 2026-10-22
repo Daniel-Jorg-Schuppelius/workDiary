@@ -90,6 +90,32 @@ class QueueConsumerRuleTest extends TestCase {
     }
 
     /**
+     * Ein Job, der länger rechnen darf als `retry_after` der Standardverbindung,
+     * wird dort ein zweites Mal zugestellt, während der erste noch läuft — der
+     * Google-Timeline-Import (1.800 s) verdoppelte so alle Punkte (Vollscan
+     * 2026-10-21). Solche Jobs gehören auf die Medien-Verbindung.
+     */
+    public function test_lange_jobs_laufen_auf_der_medien_verbindung(): void {
+        $config = (string) file_get_contents($this->repoRoot() . '/config/queue.php');
+        preg_match("/'database' => \\[.*?'retry_after' => \\(int\\) env\\('DB_QUEUE_RETRY_AFTER', (\\d+)\\)/s", $config, $m);
+        $this->assertNotEmpty($m, "config/queue.php: 'database' braucht ein retry_after.");
+        $retryAfter = (int) $m[1];
+
+        $offenders = [];
+        foreach ($this->phpFiles('app') as $file) {
+            $source = $this->stripComments((string) file_get_contents($file));
+            if (preg_match('/public int \\$timeout = (\\d+);/', $source, $t) !== 1 || (int) $t[1] < $retryAfter) {
+                continue;
+            }
+            if (preg_match("/onConnection\\(\\s*'media'\\s*\\)/", $source) !== 1) {
+                $offenders[] = $this->relativePath($file) . ' (timeout ' . $t[1] . ' s)';
+            }
+        }
+
+        $this->assertSame([], $offenders, "Jobs mit Timeout ≥ retry_after ({$retryAfter} s) ohne Medien-Verbindung:\n" . implode("\n", $offenders));
+    }
+
+    /**
      * @return array<string, list<string>> Queue-Name → Dateien, die darauf legen
      */
     private function declaredQueues(): array {

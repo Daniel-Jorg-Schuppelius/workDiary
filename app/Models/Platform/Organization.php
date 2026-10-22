@@ -14,6 +14,7 @@ use App\Enums\Organization\TenantStatus;
 use App\Models\Attachments\Attachment;
 use App\Models\Concerns\{Auditable, HasAttachments, HasSqid};
 use App\Services\Licensing\{LicenseResult, LicenseService};
+use CommonToolkit\Helper\Data\StringHelper;
 use Database\Factories\Platform\OrganizationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -404,7 +405,7 @@ class Organization extends Model {
      * Fahrzeug-Flag `subject_to_driving_time_rules` — beide müssen gesetzt sein.
      */
     public function drivingTimeRulesEnabled(): bool {
-        return filter_var($this->complianceSettings()['driving_time_rules'], FILTER_VALIDATE_BOOL);
+        return StringHelper::parseBool($this->complianceSettings()['driving_time_rules']) ?? false;
     }
 
     /**

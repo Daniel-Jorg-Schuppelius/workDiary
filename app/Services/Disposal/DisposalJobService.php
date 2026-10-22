@@ -267,12 +267,11 @@ class DisposalJobService {
             throw new RuntimeException((string) __('Die Übernahme ist bereits unterschrieben.'));
         }
 
-        $binary = DataUrlHelper::decode($base64Png, ['image/png']);
+        $binary = DataUrlHelper::decode($base64Png, ['image/png'], self::SIGNATURE_MAX_BYTES);
         if ($binary === false) {
-            throw new RuntimeException((string) __('Die Unterschrift ist kein gültiges PNG.'));
-        }
-        if (strlen($binary) > self::SIGNATURE_MAX_BYTES) {
-            throw new RuntimeException((string) __('Die Unterschrift ist zu groß.'));
+            throw new RuntimeException(strlen($base64Png) > self::SIGNATURE_MAX_BYTES
+                ? (string) __('Die Unterschrift ist zu groß.')
+                : (string) __('Die Unterschrift ist kein gültiges PNG.'));
         }
 
         return DB::transaction(function () use ($job, $actor, $signerName, $binary): DisposalJob {

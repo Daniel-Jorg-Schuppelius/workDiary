@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use CommonToolkit\Helper\Data\IPHelper;
+use CommonToolkit\Helper\Data\{IPHelper, WebLinkHelper};
 use RuntimeException;
 
 /**
@@ -81,7 +81,7 @@ final class UrlSafety {
         $host = (string) parse_url($url, PHP_URL_HOST);
         $subject ??= (string) __('plugins.url_guard.subject.base');
 
-        if (! in_array($scheme, ['http', 'https'], true) || $host === '' || filter_var($url, FILTER_VALIDATE_URL) === false) {
+        if (! in_array($scheme, ['http', 'https'], true) || $host === '' || ! WebLinkHelper::isUrl($url)) {
             throw new RuntimeException((string) __('plugins.url_guard.invalid', ['prefix' => $errorPrefix, 'subject' => $subject]));
         }
 
@@ -173,6 +173,27 @@ final class UrlSafety {
         }
 
         return true;
+    }
+
+    /**
+     * Darf ein vom Betreiber eingerichteter Dienst (Routing, Tourenplanung,
+     * Geocoding) diese Basis-URL im privaten Netz ansprechen? Die Vorgabe aus
+     * `$configKey` ja — ein selbst gehosteter Server ist der Normalfall. Eine
+     * Adresse, die eine Organisation gesetzt hat, nur mit ihrem Opt-in
+     * `routing.allow_private_network` und nur, wenn die Instanz Opt-ins
+     * zulässt (`plugins.allow_private_network_opt_in`, wie bei den Plugins).
+     * Sicherheitsscan 2026-08-23, S-10; Konsolidierungs-Audit 2026-10-21, ko-05.
+     */
+    public static function operatorTargetAllowed(string $base, string $configKey): bool {
+        $operatorDefault = rtrim((string) config($configKey, ''), '/');
+        if ($operatorDefault !== '' && rtrim($base, '/') === $operatorDefault) {
+            return true;
+        }
+        if (! (bool) config('plugins.allow_private_network_opt_in', true)) {
+            return false;
+        }
+
+        return (bool) Setting::get('routing.allow_private_network', false);
     }
 
     /**

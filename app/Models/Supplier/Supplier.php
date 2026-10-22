@@ -154,6 +154,9 @@ class Supplier extends Model implements ContactDetailsHolder, ContactNameHolder 
     protected static function booted(): void {
         self::registerSequentialNumberHook();
 
+        // Bestellungen und Nachweise hängen per ON DELETE CASCADE am Lieferanten und gingen sonst mit.
+        static::deleting(static fn(self $supplier) => app(\App\Services\Stammdaten\PartyDeletionGuard::class)->assertDeletable($supplier));
+
         self::assignSlugWhenMissing(static fn(self $supplier): string => self::uniqueSlug(
             (string) $supplier->name,
             $supplier->organization_id,

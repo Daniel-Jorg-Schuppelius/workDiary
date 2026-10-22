@@ -73,7 +73,7 @@
                 <th>{{ __('gaeb.columns.unit') }}</th>
                 <th class="text-right">{{ __('gaeb.columns.unit_price') }}</th>
                 <th>{{ __('gaeb.columns.status') }}</th>
-                @if ($canManage)<th class="text-right">{{ __('gaeb.progress.record') }}</th>@endif
+                @if ($canManage)<th class="text-right">{{ __('gaeb.progress.record') }}</th><th class="text-right">{{ __('Aktion') }}</th>@endif
             </x-slot:head>
             @foreach ($bill->items as $item)
                 <tr>
@@ -98,6 +98,20 @@
                                 <input aria-label="{{ __('Menge') }}" type="number" step="0.001" name="quantity" class="input input-bordered input-xs w-24" placeholder="0" required>
                                 <x-button type="submit" size="xs">+</x-button>
                             </form>
+                        </td>
+                        <td class="whitespace-nowrap text-right">
+                            {{-- Positionsstatus und Verknüpfung (MVP-083/084; Vollscan 2026-10-21). --}}
+                            @if ($item->status->allowedTransitions() !== [])
+                                <form method="POST" action="{{ route('bill-of-quantities.items.transition', $item) }}" class="inline-flex items-center gap-1">@csrf
+                                    <select name="status" class="select select-bordered select-xs" aria-label="{{ __('Status ändern') }}">
+                                        @foreach ($item->status->allowedTransitions() as $next)
+                                            <option value="{{ $next->value }}">{{ $next->label() }}</option>
+                                        @endforeach
+                                    </select>
+                                    <x-icon-btn type="submit" icon="save" size="xs" :label="__('Status setzen')" />
+                                </form>
+                            @endif
+                            <x-icon-btn icon="link" size="xs" data-entry-modal-trigger :href="route('bill-of-quantities.items.mappings.create', $item)" :label="__('gaeb.mapping.add')" />
                         </td>
                     @endif
                 </tr>

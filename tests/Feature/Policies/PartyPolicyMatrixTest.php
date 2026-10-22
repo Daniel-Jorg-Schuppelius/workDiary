@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Policies;
 
+use App\Enums\User\Permission as P;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Platform\{Organization, User};
 use App\Models\Supplier\Supplier;
@@ -26,9 +27,10 @@ use Tests\TestCase;
 /**
  * Matrix-Test über die drei baugleichen Stammdaten-Policies Kunde,
  * Fremd-/Endkunde und Lieferant: view strikt organisationsgebunden
- * (Defense-in-Depth zum OrganizationScope), Anlegen für Abrechnung ODER
- * User-Rolle, Ändern/Archivieren für Abrechnung ODER den Ersteller
- * (created_by), Löschen nur Abrechnung und nur ohne Referenzen.
+ * (Defense-in-Depth zum OrganizationScope; Fremdkunde zusätzlich mit
+ * foreignCustomer.view), Anlegen für Abrechnung ODER User-Rolle,
+ * Ändern/Archivieren für Abrechnung ODER den Ersteller (created_by),
+ * Löschen nur Abrechnung und nur ohne Referenzen.
  */
 final class PartyPolicyMatrixTest extends TestCase {
     use BuildsPolicyActors;
@@ -67,9 +69,10 @@ final class PartyPolicyMatrixTest extends TestCase {
     #[DataProvider('partyPolicies')]
     public function test_view_is_org_bound_for_everyone(string $policyClass, string $modelClass): void {
         $policy = new $policyClass;
-        $user = $this->actorIn($this->organization);
+        $user = $this->actorIn($this->organization, [P::ForeignCustomerView]);
         $own = $this->party($modelClass);
         $foreign = $this->party($modelClass, Organization::factory()->create()->id);
+        $this->actAsTeam($this->organization);
 
         $this->assertTrue($policy->viewAny($user));
         $this->assertTrue($policy->view($user, $own));

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Policies;
 
+use App\Enums\User\Permission as P;
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
@@ -51,8 +52,9 @@ final class ProjectPolicyTest extends TestCase {
     }
 
     public function test_view_follows_customer_org_with_project_fallback(): void {
-        $user = $this->actorIn($this->organization);
+        $user = $this->actorIn($this->organization, [P::ProjectView]);
         $foreignOrgId = Organization::factory()->create()->id;
+        $this->actAsTeam($this->organization);
 
         $ownCustomer = new Customer;
         $ownCustomer->organization_id = $this->organization->id;
