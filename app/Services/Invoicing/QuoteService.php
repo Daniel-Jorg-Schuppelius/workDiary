@@ -22,7 +22,7 @@ use App\Models\Sales\Quote;
 use App\Services\Billing\BillingModeResolver;
 use App\Services\Numbering\{DocumentIssuers, NumberAuthority, NumberSequenceService};
 use App\Support\Setting;
-use Carbon\CarbonImmutable;
+use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Facades\{Cache, DB};
 use Illuminate\Support\Str;
@@ -34,6 +34,13 @@ use Illuminate\Support\Str;
  * Überführung in eine Entwurfsrechnung (Snapshot, keine Rückwirkung).
  */
 class QuoteService {
+    /** „Gültig bis“ ohne Angabe: Bindefrist der Organisation ab dem Belegdatum. */
+    public static function defaultValidUntil(?CarbonInterface $from = null): CarbonImmutable {
+        $days = max(1, (int) Setting::get('invoicing.quote_validity_days', config('invoicing.quote_validity_days', 30)));
+
+        return CarbonImmutable::instance($from ?? now())->addDays($days);
+    }
+
     public function __construct(private readonly NumberSequenceService $numbers) {}
 
     /**

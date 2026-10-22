@@ -12,15 +12,19 @@ declare(strict_types=1);
 
 namespace App\Plugins\Lexoffice\Services;
 
+use APIToolkit\Entities\ID;
+use APIToolkit\Exceptions\{ApiException, NotFoundException};
 use App\Events\Invoicing\ExternalInvoicePaymentReceived;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\ResalePeriodLink;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
+use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
 use App\Plugins\Lexoffice\LexofficeConfig;
 use App\Plugins\Lexoffice\Models\{LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
-use App\Plugins\Support\PluginApiClient;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\{DB, Log};
+use Lexoffice\API\Client;
+use Lexoffice\API\Endpoints\Documents\{CreditNotesEndpoint, InvoicesEndpoint};
 use Throwable;
 
 /**
@@ -29,12 +33,13 @@ use Throwable;
  * `lines_synced_at` ein `GET /invoices/{id}` bzw. `GET /credit-notes/{id}`,
  * Positionen und Belegtexte in den Spiegel. Nur Lexoffice-eigene Belege
  * (`invoice`, `creditnote`) — Buchungsbelege haben keine Positionen.
- * Roh über {@see PluginApiClient}: die Gutschrift-Entität des SDK verwirft
- * `discountPercentage` und `shippingConditions`, die der Parser liest.
- * Positionen werden IN PLACE über `(voucher_id, position)` aktualisiert,
- * damit die IDs stabil bleiben: `resale_period_links` zeigt per Morph ohne
- * FK darauf (Review 2026-09-10, B1). Ratenlimit über den Client-
- * Anfrageabstand, 429 retryt der Client mit Retry-After/Backoff.
+ * Rechnungen über den Endpunkt des SDK; die Gutschrift roh auf demselben
+ * Client, weil ihre Entität `discountPercentage` und `shippingConditions`
+ * verwirft, die der Parser liest. Positionen werden IN PLACE über
+ * `(voucher_id, position)` aktualisiert, damit die IDs stabil bleiben:
+ * `resale_period_links` zeigt per Morph ohne FK darauf (Review 2026-09-10,
+ * B1). Ratenlimit über den Client-Anfrageabstand, 429 retryt der Client mit
+ * Retry-After/Backoff.
  *
  * Vorzeichen bei Gutschriften (Review A3): `quantity` und `unit_net` bleiben
  * positiv (LicenseMonths rechnet mit der Menge), nur `total_net` ist negativ;
@@ -42,9 +47,6 @@ use Throwable;
  */
 final class LexofficeVoucherLineSync {
     public const VOUCHER_TYPES = ['invoice', 'creditnote'];
-
-    /** Detailendpunkt je Belegtyp (gleiche `lineItems`-Struktur). */
-    private const ENDPOINTS = ['invoice' => '/invoices/', 'creditnote' => '/credit-notes/'];
 
     /** Backoff nach n Fehlschlägen: 2^n Stunden, ab 8 Versuchen fest 7 Tage. */
     public const MAX_BACKOFF_HOURS = 168;
@@ -54,7 +56,7 @@ final class LexofficeVoucherLineSync {
     /** Erfolg löscht den Fehlermarker. */
     private const CLEARED_FAILURE = ['lines_sync_failed_at' => null, 'lines_sync_attempts' => 0];
 
-    private ?PluginApiClient $api = null;
+    private ?Client $client = null;
 
     private float $requestInterval;
 
@@ -72,7 +74,7 @@ final class LexofficeVoucherLineSync {
     /** Tests: kein Anfrageabstand, keine Retry-Wartezeit. */
     public function withoutThrottle(): self {
         $this->requestInterval = 0.0;
-        $this->api = null;
+        $this->client = null;
 
         return $this;
     }
@@ -118,7 +120,7 @@ final class LexofficeVoucherLineSync {
      */
     public function syncVoucher(LexofficeVoucher $voucher): int {
         $creditNote = (string) $voucher->voucher_type === 'creditnote';
-        $invoice = app(LexofficeClientFactory::class)->getJson($this->api(), $this->baseUrl . (self::ENDPOINTS[(string) $voucher->voucher_type] ?? '/invoices/') . $voucher->external_id, $creditNote ? 'Gutschrift abrufen' : 'Rechnung abrufen');
+        $invoice = $this->fetch((string) $voucher->external_id, $creditNote);
         if ($invoice === null) {
             // In Lexoffice gelöscht: als erledigt markieren, nicht ewig neu versuchen.
             $voucher->forceFill(['lines_synced_at' => now()] + self::CLEARED_FAILURE)->save();
@@ -342,7 +344,24 @@ final class LexofficeVoucherLineSync {
             ->all();
     }
 
-    private function api(): PluginApiClient {
-        return $this->api ??= app(LexofficeClientFactory::class)->make($this->apiKey, $this->baseUrl, $this->requestInterval);
+    /**
+     * Rechnung bzw. Gutschrift als Array; 404 (in Lexoffice gelöscht) → null.
+     *
+     * @return array<array-key, mixed>|null
+     */
+    private function fetch(string $externalId, bool $creditNote): ?array {
+        try {
+            return $creditNote
+                ? (new CreditNotesEndpoint($this->client()))->get(new ID($externalId))->toArray()
+                : (new InvoicesEndpoint($this->client()))->get(new ID($externalId))->toArray();
+        } catch (NotFoundException) {
+            return null;
+        } catch (ApiException $e) {
+            throw LexofficeApiException::fromApiException($e, 'Lexoffice', $creditNote ? 'Gutschrift abrufen' : 'Rechnung abrufen');
+        }
+    }
+
+    private function client(): Client {
+        return $this->client ??= app(LexofficeClientFactory::class)->sdk($this->apiKey, $this->baseUrl, $this->requestInterval);
     }
 }

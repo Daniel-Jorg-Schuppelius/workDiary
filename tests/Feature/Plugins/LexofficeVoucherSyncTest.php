@@ -91,6 +91,20 @@ class LexofficeVoucherSyncTest extends TestCase {
         $voucher = LexofficeVoucher::query()->where('external_id', 'voucher-1')->firstOrFail();
         $this->assertSame('119.00', $voucher->total_amount?->getAmount());
         $this->assertSame('2026-05-01', $voucher->voucher_date?->toDateString());
+        // Die Zeile der VoucherListPage geht vollständig in den Spiegel.
+        $this->assertEquals([
+            'id' => 'voucher-1',
+            'contactId' => 'contact-1',
+            'voucherType' => 'salesinvoice',
+            'voucherStatus' => 'open',
+            'voucherNumber' => 'RE-1001',
+            'voucherDate' => '2026-05-01T00:00:00.000+02:00',
+            'dueDate' => '2026-05-15T00:00:00.000+02:00',
+            'totalAmount' => 119.00,
+            'openAmount' => 119.00,
+            'currency' => 'EUR',
+            'archived' => false,
+        ], $voucher->payload);
     }
 
     public function test_sync_assigns_supplier_for_vendor_contact(): void {
@@ -193,6 +207,11 @@ class LexofficeVoucherSyncTest extends TestCase {
         ]);
         $fake->assertSent(fn (RequestInterface $request): bool => str_contains((string) $request->getUri(), '/voucherlist')
             && str_contains((string) $request->getUri(), 'contactId=contact-1'));
+        // VoucherListEndpoint::search() mit derselben Query wie vorher roh.
+        $this->assertSame(
+            ['GET https://api.lexware.io/v1/voucherlist?voucherType=any&voucherStatus=any&contactId=contact-1&page=0&size=250'],
+            array_map(static fn (array $entry): string => $entry['request']->getMethod() . ' ' . $entry['request']->getUri(), $fake->recorded()),
+        );
     }
 
     public function test_sync_for_supplier_assigns_supplier_id(): void {

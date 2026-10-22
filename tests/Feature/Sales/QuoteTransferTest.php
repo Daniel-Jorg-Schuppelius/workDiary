@@ -19,11 +19,14 @@ use App\Models\Sales\Quote;
 use App\Plugins\Easybill\EasybillPlugin;
 use App\Plugins\Easybill\Services\EasybillDocumentIssuer;
 use App\Plugins\Lexoffice\LexofficePlugin;
-use App\Plugins\Lexoffice\Services\LexofficeQuotationService;
+use App\Plugins\Lexoffice\Services\{LexofficeLineItems, LexofficeQuotationService};
 use App\Services\Invoicing\QuoteService;
 use App\Services\Numbering\{NumberAuthority, NumberSequenceService};
+use App\Settings\SettingScope;
+use App\Support\Setting;
 use GuzzleHttp\Psr7\Response as Psr7Response;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Psr\Http\Message\RequestInterface;
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
@@ -31,6 +34,9 @@ use Tests\TestCase;
 /** Phase 145, P2 (MVP-1160/1161): Angebot schreibt workDiary, das Programm vergibt die Nummer beim Versand. */
 final class QuoteTransferTest extends TestCase {
     use RefreshDatabase;
+
+    /** Lexware vergibt UUIDs; isValid() der Belegadresse prüft darauf. */
+    private const LEXOFFICE_CONTACT = 'e5b7a6c4-1f2d-4c3b-9a8e-7d6c5b4a3f21';
 
     private Organization $org;
 
@@ -51,7 +57,7 @@ final class QuoteTransferTest extends TestCase {
         ExternalReference::create([
             'organization_id' => $this->org->id, 'plugin_id' => $pluginId, 'external_type' => ExternalReference::TYPE_CONTACT,
             'referenceable_type' => $this->customer->getMorphClass(), 'referenceable_id' => $this->customer->id,
-            'external_id' => $pluginId === LexofficePlugin::ID ? 'lex-contact-1' : '501',
+            'external_id' => $pluginId === LexofficePlugin::ID ? self::LEXOFFICE_CONTACT : '501',
         ]);
         app(NumberSequenceService::class)->setFormat($this->org, NumberScope::Quote, ['source' => $pluginId]);
     }
@@ -75,7 +81,9 @@ final class QuoteTransferTest extends TestCase {
         return static fn (): Psr7Response => FakePluginHttp::response($body, $status);
     }
 
+    /** QuotationsEndpoint::create(…, finalize: true) und ::get(): Pfad, Query und Body wie vorher roh. */
     public function test_lexoffice_numbers_the_quote_when_it_is_sent(): void {
+        Carbon::setTestNow('2026-10-13 10:00:00.250');
         $this->enable(LexofficePlugin::ID);
         $quote = $this->approvedQuote();
         $this->assertTrue(NumberSequenceService::isDraft($quote->number));
@@ -88,19 +96,48 @@ final class QuoteTransferTest extends TestCase {
 
         $this->assertSame('AG0007', $sent->number);
         $this->assertSame(QuoteStatus::Sent, $sent->status);
+        $this->assertSame(
+            ['POST https://api.lexware.io/v1/quotations?finalize=true', 'GET https://api.lexware.io/v1/quotations/lex-q-9'],
+            array_map(static fn (array $entry): string => $entry['request']->getMethod() . ' ' . $entry['request']->getUri(), $fake->recorded()),
+        );
+        $quote->refresh();
+        $this->assertEquals([
+            'voucherDate' => now()->format('Y-m-d\TH:i:s.vP'),
+            'expirationDate' => $quote->valid_until?->copy()->endOfDay()->format('Y-m-d\TH:i:s.vP'),
+            'address' => ['contactId' => self::LEXOFFICE_CONTACT],
+            'lineItems' => LexofficeLineItems::from($quote->items->sortBy('position')->values(), withOptional: true),
+            'totalPrice' => ['currency' => 'EUR', 'totalDiscountPercentage' => 0],
+            'taxConditions' => ['taxType' => 'net'],
+            'title' => (string) __('Angebot'),
+            'remark' => 'Zahlbar nach Annahme.',
+        ], json_decode((string) $fake->recorded()[0]['request']->getBody(), true));
         $fake->assertSent(function (RequestInterface $request): bool {
             $body = json_decode((string) $request->getBody(), true);
 
             return $request->getMethod() === 'POST'
-                && data_get($body, 'address.contactId') === 'lex-contact-1'
                 && data_get($body, 'lineItems.0.discountPercentage') === 10
-                && data_get($body, 'lineItems.1.optional') === true
-                && data_get($body, 'taxConditions.taxType') === 'net'
-                && data_get($body, 'remark') === 'Zahlbar nach Annahme.'
-                && data_get($body, 'totalPrice.totalDiscountPercentage') === 0;
+                && data_get($body, 'lineItems.1.optional') === true;
         });
         $reference = ExternalReference::query()->where('external_type', LexofficeQuotationService::EXT_TYPE_QUOTATION)->firstOrFail();
         $this->assertSame(['lex-q-9', 'AG0007'], [$reference->external_id, $reference->external_number]);
+    }
+
+    /** Lexware verlangt ein Ablaufdatum: ohne „gültig bis“ gilt die Bindefrist der Organisation. */
+    public function test_quote_without_validity_gets_the_organizations_validity_in_lexoffice(): void {
+        Carbon::setTestNow('2026-10-13 10:00:00');
+        Setting::set('invoicing.quote_validity_days', 14, SettingScope::Organization, $this->org);
+        $this->enable(LexofficePlugin::ID);
+        $quote = $this->approvedQuote();
+        $quote->forceFill(['valid_until' => null])->save();
+        $fake = FakePluginHttp::fake([
+            'https://api.lexware.io/v1/quotations?finalize=true' => self::reply(['id' => 'lex-q-9'], 201),
+            'https://api.lexware.io/v1/quotations/lex-q-9' => self::reply(['id' => 'lex-q-9', 'voucherNumber' => 'AG0008']),
+        ]);
+
+        app(QuoteService::class)->send($quote, $this->user);
+
+        $body = json_decode((string) $fake->recorded()[0]['request']->getBody(), true);
+        $this->assertSame('2026-10-27T23:59:59.999+00:00', $body['expirationDate']);
     }
 
     public function test_a_new_version_becomes_a_new_quotation(): void {

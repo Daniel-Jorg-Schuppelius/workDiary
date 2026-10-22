@@ -25,8 +25,9 @@ use Illuminate\Database\Eloquent\Model;
 final class LexofficeLineItems {
     /**
      * @param  iterable<DocumentLine&Model>  $lines
-     * @param  bool  $discountInPrice  auch Prozentrabatte in den Einzelpreis: Gutschriften kennen laut
-     *                                 Lexware-Doku keinen Positionsrabatt, er fiele still weg
+     * @param  bool  $discountInPrice  auch Prozentrabatte in den Einzelpreis und kein Feld
+     *                                 `discountPercentage`: Gutschriften kennen laut Lexware-Doku
+     *                                 keinen Positionsrabatt, er fiele still weg
      * @return list<array<string, mixed>>
      */
     public static function from(iterable $lines, bool $withOptional = false, ?Percentage $fallbackRate = null, bool $discountInPrice = false): array {
@@ -52,7 +53,7 @@ final class LexofficeLineItems {
                     'netAmount' => round($byAmount ? $line->netAmount()->toFloat() / $quantity : ($line->unitPrice()?->toFloat() ?? 0.0), 4),
                     'taxRatePercentage' => (float) (($line->taxRate() ?? $fallbackRate)?->getNumericValue() ?? 0),
                 ],
-                'discountPercentage' => $byAmount ? 0.0 : $percentDiscount,
+                'discountPercentage' => $discountInPrice ? null : ($byAmount ? 0.0 : $percentDiscount),
             ];
             if (mb_strlen($name) > 255) {
                 $item['description'] = $name;

@@ -10,8 +10,10 @@
 
 namespace App\Plugins\Lexoffice\Services;
 
+use App\Services\Invoicing\QuoteService;
 use Lexoffice\API\Client;
 use Lexoffice\API\Endpoints\Documents\QuotationsEndpoint;
+use Lexoffice\Entities\Documents\Quotations\Quotation;
 
 /**
  * Angebot-Anbindung an Lexoffice (Feature 045/047): erzeugt aus einem
@@ -28,6 +30,14 @@ class LexofficeQuotationService extends LexofficeOrderDocumentService {
 
     protected function endpoint(Client $client): QuotationsEndpoint {
         return new QuotationsEndpoint($client);
+    }
+
+    protected function document(array $payload): Quotation {
+        return Quotation::fromArray($payload);
+    }
+
+    protected function requiredFields(): array {
+        return ['expirationDate' => QuoteService::defaultValidUntil()->endOfDay()->format('Y-m-d\TH:i:s.vP')];
     }
 
     public function extType(): string {

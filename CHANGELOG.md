@@ -10,6 +10,10 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Bindefrist für Angebote je Organisation (Einstellungen → Faktura,
+  Vorgabe 30 Tage, `INVOICING_QUOTE_VALIDITY_DAYS`). Sie belegt „gültig bis“
+  neuer Angebote vor und gilt bei Lexware, wenn ein Angebot keine Bindefrist
+  hat; dort ist das Ablaufdatum Pflicht.
 - Löschen auf der Detailseite (Vollscan 2026-10-21, Entscheidung des
   Inhabers): Kunden, Lieferanten, Fremdkunden, Abrechnungspläne,
   Service-Tickets, Lieferantennachweise, Protokolle und VOB/B-Schreiben (beide
@@ -1720,6 +1724,11 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
 - Wiederverkauf: CSV- und Excel-Exporte schreiben das Export-Audit wie das PDF.
 - Unterschriften auf Stundenzetteln und Entsorgungsnachweisen halten die
   Grenze `TIMESHEET_SIGNATURE_MAX_KB` ein.
+- Lexoffice: Das Plugin spricht Lexware nur noch über das SDK an
+  (lexoffice-php-sdk 2.0). Ungültige Belege, etwa mit einer Kontakt-ID ohne
+  UUID-Form, werden vor dem Senden abgewiesen. Gespeicherte Antworten enthalten
+  nur die Felder, die das SDK kennt. Der Anfrageabstand beträgt mindestens
+  0,5 s.
 
 ### Removed
 
@@ -1740,6 +1749,20 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
 
 ### Fixed
 
+- **Lexoffice-Belege nach der API-Referenz:**
+  - Die AB aus dem Fertigungsauftrag sendet jetzt Versandbedingungen
+    (`none`). Ohne sie hat Lexware die AB abgelehnt.
+  - Der Lieferschein aus der Auslieferung trägt das Lieferdatum in
+    `shippingConditions`. Das bisherige Feld `deliveryConditions` hat Lexware
+    still verworfen.
+  - Gutschriften senden weder Versandbedingungen noch ein Feld für den
+    Positionsrabatt, beides kennt Lexware bei Gutschriften nicht. Der Rabatt
+    steckt im Einzelpreis.
+  - Angebote ohne „gültig bis“ und Angebote aus dem Fertigungsauftrag senden
+    ein Ablaufdatum, das bei Lexware Pflicht ist. Ohne Datum hat Lexware sie
+    abgelehnt.
+  - Belegdateien von Verkaufsbelegen kommen über `/file`; der bisherige Weg
+    `/document` ist laut Referenz veraltet.
 - **Rollenvergabe nach Namen** (Vollscan 2026-10-21): Mitglied anlegen und
   ändern, CSV-Import, Mandanten-Registrierung, Installer, SSO-Erstanmeldung
   und Recruiting lösten Rollen über Spatie `Role::findOrCreate()` auf, das neben

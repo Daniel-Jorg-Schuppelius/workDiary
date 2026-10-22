@@ -16,8 +16,9 @@ use App\Models\Integration\ExternalReference;
 use App\Models\Manufacturing\ManufacturingOrder;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Services\{LexofficeOrderConfirmationService, LexofficeQuotationService};
+use App\Settings\SettingScope;
+use App\Support\Setting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Psr\Http\Message\RequestInterface;
 use RuntimeException;
 use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
@@ -30,6 +31,9 @@ final class LexofficeOrderConfirmationTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
     use WithPluginSecrets;
+
+    /** Lexware vergibt UUIDs; isValid() der Belegadresse prüft darauf. */
+    private const CONTACT_ID = 'e5b7a6c4-1f2d-4c3b-9a8e-7d6c5b4a3f21';
 
     private Customer $customer;
 
@@ -69,58 +73,75 @@ final class LexofficeOrderConfirmationTest extends TestCase {
             'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
             'referenceable_type' => $this->customer->getMorphClass(),
             'referenceable_id' => $this->customer->getKey(),
-            'external_id' => 'lex-contact-1', 'synced_at' => now(),
+            'external_id' => self::CONTACT_ID, 'synced_at' => now(),
         ]);
     }
 
-    public function test_push_creates_order_confirmation(): void {
+    /**
+     * Die AB des Fertigungsauftrags trägt keine `shippingConditions` — laut
+     * Lexware-Referenz Pflicht beim Anlegen. isValid() der SDK-Entität bricht
+     * vor dem Senden ab; der Controller zeigt die RuntimeException.
+     */
+    /** Lexware verlangt Versandbedingungen an der AB; der Fertigungsauftrag hat keine, also „none“. */
+    public function test_order_confirmation_is_sent_with_shipping_type_none(): void {
         $this->seedContactReference();
         $order = $this->makeOrder();
-
         $fake = FakePluginHttp::fake([
             'https://api.lexware.io/v1/order-confirmations*' => FakePluginHttp::response(['id' => 'lex-oc-1'], 201),
         ]);
 
         $reference = app(LexofficeOrderConfirmationService::class)->push($order);
 
-        $this->assertSame(LexofficeOrderConfirmationService::EXT_TYPE_ORDER_CONFIRMATION, $reference->external_type);
         $this->assertSame('lex-oc-1', $reference->external_id);
-        $this->assertSame($order->getMorphClass(), $reference->referenceable_type);
-
-        $fake->assertSent(function (RequestInterface $request): bool {
-            if (! str_contains((string) $request->getUri(), '/order-confirmations')) {
-                return false;
-            }
-            $body = json_decode((string) $request->getBody(), true);
-
-            // json_decode liefert für ganzzahlige Floats int → für den Vergleich casten.
-            return data_get($body, 'address.contactId') === 'lex-contact-1'
-                && (float) data_get($body, 'lineItems.0.quantity') === 5.0
-                && (float) data_get($body, 'lineItems.0.unitPrice.netAmount') === 200.0
-                && str_contains((string) data_get($body, 'lineItems.0.name'), 'Spezialteil');
-        });
+        $fake->assertSentCount(1);
+        $request = $fake->recorded()[0]['request'];
+        $this->assertSame('https://api.lexware.io/v1/order-confirmations', (string) $request->getUri());
+        $body = json_decode((string) $request->getBody(), true);
+        $this->assertSame(['shippingType' => 'none'], $body['shippingConditions']);
+        $this->assertSame(['contactId' => self::CONTACT_ID], $body['address']);
     }
 
+    /** QuotationsEndpoint::create(): POST /quotations ohne Query, Body inhaltlich gleich dem Payload der App. */
     public function test_quotation_push_creates_quotation(): void {
         $this->seedContactReference();
         $order = $this->makeOrder();
 
         $fake = FakePluginHttp::fake([
-            'https://api.lexware.io/v1/quotations*' => FakePluginHttp::response(['id' => 'lex-q-1'], 201),
+            'https://api.lexware.io/v1/quotations*' => FakePluginHttp::response(['id' => 'lex-q-1', 'resourceUri' => 'https://api.lexware.io/v1/quotations/lex-q-1', 'version' => 1], 201),
         ]);
 
         $reference = app(LexofficeQuotationService::class)->push($order);
 
         $this->assertSame(LexofficeQuotationService::EXT_TYPE_QUOTATION, $reference->external_type);
         $this->assertSame('lex-q-1', $reference->external_id);
+        $this->assertSame('https://api.lexware.io/v1/quotations/lex-q-1', $reference->payload['resourceUri'] ?? null);
 
-        $fake->assertSent(function (RequestInterface $request): bool {
-            $body = json_decode((string) $request->getBody(), true);
+        $fake->assertSentCount(1);
+        $request = $fake->recorded()[0]['request'];
+        $this->assertSame('POST', $request->getMethod());
+        $this->assertSame('https://api.lexware.io/v1/quotations', (string) $request->getUri());
+        $body = json_decode((string) $request->getBody(), true);
+        $this->assertEquals($reference->payload['_request'], $body);
+        $this->assertSame(['contactId' => self::CONTACT_ID], $body['address']);
+        $this->assertEquals(['currency' => 'EUR', 'netAmount' => 200.0, 'taxRatePercentage' => 19.0], $body['lineItems'][0]['unitPrice']);
+        $this->assertEquals(5.0, $body['lineItems'][0]['quantity']);
+        $this->assertStringContainsString('Spezialteil', $body['lineItems'][0]['name']);
+    }
 
-            return str_contains((string) $request->getUri(), '/quotations')
-                && (float) data_get($body, 'lineItems.0.unitPrice.netAmount') === 200.0
-                && data_get($body, 'address.contactId') === 'lex-contact-1';
-        });
+    /** Lexware verlangt beim Angebot ein Ablaufdatum; der Fertigungsauftrag hat keins, also die Bindefrist der Organisation. */
+    public function test_quotation_expires_after_the_organizations_validity(): void {
+        $this->travelTo('2030-03-01 10:00:00');
+        Setting::set('invoicing.quote_validity_days', 21, SettingScope::Organization, $this->organization);
+        $this->seedContactReference();
+        $fake = FakePluginHttp::fake([
+            'https://api.lexware.io/v1/quotations*' => FakePluginHttp::response(['id' => 'lex-q-7'], 201),
+        ]);
+
+        $reference = app(LexofficeQuotationService::class)->push($this->makeOrder());
+
+        $body = json_decode((string) $fake->recorded()[0]['request']->getBody(), true);
+        $this->assertSame('2030-03-22T23:59:59.999+00:00', $body['expirationDate']);
+        $this->assertSame($body['expirationDate'], $reference->payload['_request']['expirationDate']);
     }
 
     public function test_second_push_returns_the_linked_document_without_creating_another(): void {
@@ -166,7 +187,7 @@ final class LexofficeOrderConfirmationTest extends TestCase {
         }
         $document = static fn (string $id, string $number): array => [
             'id' => $id, 'voucherStatus' => 'open', 'voucherNumber' => $number, 'voucherDate' => '2026-10-01T00:00:00.000+02:00',
-            'address' => ['contactId' => 'lex-contact-1', 'name' => 'Kunde', 'countryCode' => 'DE'],
+            'address' => ['contactId' => self::CONTACT_ID, 'name' => 'Kunde', 'countryCode' => 'DE'],
             'lineItems' => [['type' => 'custom', 'name' => 'Spezialteil', 'quantity' => 5, 'unitName' => 'Stk', 'unitPrice' => ['currency' => 'EUR', 'netAmount' => 200.0, 'grossAmount' => 238.0, 'taxRatePercentage' => 19]]],
             'totalPrice' => ['currency' => 'EUR', 'totalNetAmount' => 1000.0, 'totalGrossAmount' => 1190.0, 'totalTaxAmount' => 190.0],
             'taxConditions' => ['taxType' => 'net'],

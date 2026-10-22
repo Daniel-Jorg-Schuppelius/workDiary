@@ -63,8 +63,8 @@ class LexofficeVoucherLineSyncTest extends TestCase {
     /** @var list<string> Mitschnitt der Log-Meldungen (siehe listenToLog) */
     private array $logMessages = [];
 
-    private function fakeInvoices(): void {
-        FakePluginHttp::fake([
+    private function fakeInvoices(): FakePluginHttp {
+        return FakePluginHttp::fake([
             'https://api.lexware.io/v1/invoices/inv-1' => FakePluginHttp::response($this->invoicePayload()),
             'https://api.lexware.io/v1/invoices/inv-gone' => FakePluginHttp::response(['message' => 'not found'], 404),
         ]);
@@ -156,7 +156,7 @@ class LexofficeVoucherLineSyncTest extends TestCase {
         $invoice = $this->voucher('inv-1', 'RE/2025/0001', '2025-08-06');
         $gone = $this->voucher('inv-gone', 'RE/2025/0002', '2025-08-07');
         $booking = $this->voucher('bk-1', '10021-01-2025', '2025-01-05', 'salesinvoice');
-        $this->fakeInvoices();
+        $fake = $this->fakeInvoices();
 
         $sync = (new LexofficeVoucherLineSync('lex-key', 'https://api.lexware.io/v1'))->withoutThrottle();
         $result = $sync->syncMissing($this->organization, 10);
@@ -180,6 +180,11 @@ class LexofficeVoucherLineSyncTest extends TestCase {
 
         $this->assertNotNull($gone->fresh()?->lines_synced_at, 'gelöschte Rechnung gilt als erledigt');
         $this->assertNull($booking->fresh()?->lines_synced_at, 'Buchungsbelege werden nie geladen');
+        // InvoicesEndpoint::get() je Rechnung, ohne Query.
+        $this->assertEqualsCanonicalizing(
+            ['GET https://api.lexware.io/v1/invoices/inv-1', 'GET https://api.lexware.io/v1/invoices/inv-gone'],
+            array_map(static fn (array $entry): string => $entry['request']->getMethod() . ' ' . $entry['request']->getUri(), $fake->recorded()),
+        );
 
         // Zweiter Lauf: nichts mehr offen. --refresh markiert alles neu (Buchungsbelege bleiben außen vor).
         $this->assertSame(['synced' => 0, 'lines' => 0, 'failed' => 0, 'remaining' => 0], $sync->syncMissing($this->organization, 10));
@@ -389,6 +394,8 @@ class LexofficeVoucherLineSyncTest extends TestCase {
         $payload['id'] = 'cn-2';
         $payload['totalPrice'] = ['currency' => 'EUR', 'totalNetAmount' => 247.2];
         $payload['relatedVouchers'] = [['id' => 'inv-1', 'voucherNumber' => 'RE-1', 'voucherType' => 'invoice']];
+        // Gutschriften haben laut Lexware-Referenz keine Versandbedingungen.
+        unset($payload['shippingConditions']);
         FakePluginHttp::fake(['https://api.lexware.io/v1/credit-notes/cn-2' => FakePluginHttp::response($payload)]);
 
         $this->lineSync()->syncMissing($this->organization, 10);
@@ -403,13 +410,19 @@ class LexofficeVoucherLineSyncTest extends TestCase {
         $payload = $this->invoicePayload();
         $payload['id'] = 'cn-1';
         $payload['title'] = 'Gutschrift';
-        unset($payload['shippingConditions']);
+        // Gutschriften haben laut Lexware-Referenz weder Versandbedingungen noch Positionsrabatt.
+        unset($payload['shippingConditions'], $payload['lineItems'][2]['discountPercentage']);
         $fake = FakePluginHttp::fake(['https://api.lexware.io/v1/credit-notes/cn-1' => FakePluginHttp::response($payload)]);
 
         $sync = $this->lineSync();
         $this->assertSame(['synced' => 1, 'lines' => 2, 'failed' => 0, 'remaining' => 0], $sync->syncMissing($this->organization, 10));
         $fake->assertSent(static fn($request): bool => str_ends_with((string) $request->getUri(), '/credit-notes/cn-1'));
         $fake->assertNotSent(static fn($request): bool => str_contains((string) $request->getUri(), '/invoices/'));
+        $this->assertSame(['GET https://api.lexware.io/v1/credit-notes/cn-1 application/json'], array_map(
+            static fn (array $entry): string => $entry['request']->getMethod() . ' ' . $entry['request']->getUri() . ' ' . $entry['request']->getHeaderLine('Accept'),
+            $fake->recorded(),
+        ));
+        $this->assertSame('90.0000', LexofficeVoucherLine::query()->where('voucher_id', $creditNote->id)->where('position', 3)->firstOrFail()->unit_net->getAmount(), 'Stückpreis netto aus dem Bruttobetrag');
 
         $line = LexofficeVoucherLine::query()->where('voucher_id', $creditNote->id)->where('position', 1)->firstOrFail();
         $this->assertSame('12.000', $line->quantity, 'Menge bleibt positiv (LicenseMonths rechnet damit)');

@@ -176,7 +176,7 @@ class DocumentLineKindTest extends TestCase {
         $invoice->forceFill(['type' => Invoice::TYPE_CREDIT_NOTE]);
         $line = $mapper->toCreditNotePayload($invoice, null)['lineItems'][0];
         $this->assertSame(90.0, $line['unitPrice']['netAmount']);
-        $this->assertSame(0.0, $line['discountPercentage']);
+        $this->assertArrayNotHasKey('discountPercentage', $line);
     }
 
     public function test_title_can_be_added_without_quantity_and_price(): void {

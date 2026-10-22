@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Lexoffice\Services;
 
+use APIToolkit\Contracts\Interfaces\NamedEntityInterface;
+use APIToolkit\Entities\ID;
+use APIToolkit\Exceptions\ApiException;
 use App\Enums\Billing\DocumentLineKind;
 use App\Enums\Numbering\NumberScope;
 use App\Models\Billing\DeliveryNote;
@@ -21,11 +24,18 @@ use App\Models\Invoicing\Invoice;
 use App\Models\Sales\{OrderConfirmation, Quote};
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
-use App\Plugins\Support\PluginApiClient;
+use App\Services\Invoicing\QuoteService;
 use App\Services\Numbering\Contracts\DocumentIssuer;
 use App\Services\Numbering\Dto\IssuedDocument;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
+use Lexoffice\API\Client;
+use Lexoffice\API\Endpoints\Documents\{DeliveryNotesEndpoint, OrderConfirmationsEndpoint, QuotationsEndpoint};
+use Lexoffice\Contracts\Abstracts\API\DocumentEndpointAbstract;
+use Lexoffice\Entities\Documents\DeliveryNotes\DeliveryNote as LexofficeDeliveryNote;
+use Lexoffice\Entities\Documents\OrderConfirmations\OrderConfirmation as LexofficeOrderConfirmation;
+use Lexoffice\Entities\Documents\Quotations\Quotation as LexofficeQuotation;
 use RuntimeException;
 
 /**
@@ -36,17 +46,15 @@ use RuntimeException;
  * ohne Vorgänger hinüber: Mit Vorgänger legt Lexoffice sie nur als Entwurf an —
  * ohne Nummer, und aus einem Entwurf lässt sich keine Rechnung mehr ableiten.
  *
- * Roh über {@see PluginApiClient}: Angebot und AB scheitern an `isValid()` der
- * SDK-Entitäten (Adresse mit `contactId`), der Lieferschein bekäme
- * `address.countryCode = DE` dazu; Kontaktsuche und Nummernabruf teilen sich
- * mit dem POST einen gedrosselten Client.
+ * Kontaktsuche, Anlegen und Nummernabruf teilen sich einen gedrosselten
+ * SDK-Client.
  */
 final class LexofficeDocumentIssuer implements DocumentIssuer {
-    /** Kreis => [Referenztyp, Lexoffice-Ressource]. */
+    /** Kreis => [Referenztyp, Lexoffice-Ressource, SDK-Endpunkt, SDK-Entität]. */
     private const RESOURCES = [
-        'quote' => [LexofficeQuotationService::EXT_TYPE_QUOTATION, 'quotations'],
-        'order_confirmation' => [LexofficeOrderConfirmationService::EXT_TYPE_ORDER_CONFIRMATION, 'order-confirmations'],
-        'delivery_note' => [LexofficeDeliveryNoteService::EXT_TYPE_DELIVERY_NOTE, 'delivery-notes'],
+        'quote' => [LexofficeQuotationService::EXT_TYPE_QUOTATION, 'quotations', QuotationsEndpoint::class, LexofficeQuotation::class],
+        'order_confirmation' => [LexofficeOrderConfirmationService::EXT_TYPE_ORDER_CONFIRMATION, 'order-confirmations', OrderConfirmationsEndpoint::class, LexofficeOrderConfirmation::class],
+        'delivery_note' => [LexofficeDeliveryNoteService::EXT_TYPE_DELIVERY_NOTE, 'delivery-notes', DeliveryNotesEndpoint::class, LexofficeDeliveryNote::class],
     ];
 
     public function pluginId(): string {
@@ -66,11 +74,11 @@ final class LexofficeDocumentIssuer implements DocumentIssuer {
             return new IssuedDocument($result['external_id'], $result['number']);
         }
 
-        [$extType, $resource] = self::RESOURCES[$scope->value] ?? throw new InvalidArgumentException('Lexoffice issues no ' . $scope->value);
+        [$extType, $resource, $endpointClass, $entityClass] = self::RESOURCES[$scope->value] ?? throw new InvalidArgumentException('Lexoffice issues no ' . $scope->value);
         $payload = match (true) {
-            $document instanceof Quote && $scope === NumberScope::Quote => fn (PluginApiClient $api, string $baseUrl, array $defaults): array => $this->quotationPayload($document, $api, $baseUrl, $defaults),
-            $document instanceof OrderConfirmation && $scope === NumberScope::OrderConfirmation => fn (PluginApiClient $api, string $baseUrl, array $defaults): array => $this->orderConfirmationPayload($document, $api, $baseUrl, $defaults),
-            $document instanceof DeliveryNote && $scope === NumberScope::DeliveryNote => fn (PluginApiClient $api, string $baseUrl, array $defaults): array => $this->deliveryNotePayload($document, $api, $baseUrl, $defaults),
+            $document instanceof Quote && $scope === NumberScope::Quote => fn (Client $client, array $defaults): array => $this->quotationPayload($document, $client, $defaults),
+            $document instanceof OrderConfirmation && $scope === NumberScope::OrderConfirmation => fn (Client $client, array $defaults): array => $this->orderConfirmationPayload($document, $client, $defaults),
+            $document instanceof DeliveryNote && $scope === NumberScope::DeliveryNote => fn (Client $client, array $defaults): array => $this->deliveryNotePayload($document, $client, $defaults),
             default => throw new InvalidArgumentException('Lexoffice issues no ' . $scope->value . ' for ' . $document::class),
         };
 
@@ -86,8 +94,8 @@ final class LexofficeDocumentIssuer implements DocumentIssuer {
         if (empty($config['api_key'])) {
             throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_not_configured'));
         }
-        $api = app(LexofficeClientFactory::class)->fromConfig($config);
-        $baseUrl = (string) $config['base_url'];
+        $client = app(LexofficeClientFactory::class)->sdk((string) $config['api_key'], $config['base_url'], $config['request_interval']);
+        $endpoint = new $endpointClass($client);
 
         // Erst die Verknüpfung, dann die Nummer: Scheitert der Abruf, legt der nächste Versuch keinen zweiten Beleg an.
         $existing ??= ExternalReference::create([
@@ -96,11 +104,11 @@ final class LexofficeDocumentIssuer implements DocumentIssuer {
             'external_type' => $extType,
             'referenceable_type' => $document->getMorphClass(),
             'referenceable_id' => $document->getKey(),
-            'external_id' => $this->create($api, $baseUrl, $payload($api, $baseUrl, (array) $config['defaults']), $resource),
+            'external_id' => $this->create($endpoint, $entityClass::fromArray($payload($client, (array) $config['defaults'])), $resource),
             'payload' => ['_resource' => $resource],
             'synced_at' => now(),
         ]);
-        $number = $this->voucherNumber($api, $baseUrl . '/' . $resource . '/' . $existing->external_id);
+        $number = $this->voucherNumber($endpoint, (string) $existing->external_id);
         $existing->forceFill(['external_number' => $number, 'synced_at' => now()])->save();
 
         return new IssuedDocument((string) $existing->external_id, $number);
@@ -110,14 +118,15 @@ final class LexofficeDocumentIssuer implements DocumentIssuer {
      * @param  array<string, mixed>  $defaults
      * @return array<string, mixed>
      */
-    private function quotationPayload(Quote $quote, PluginApiClient $api, string $baseUrl, array $defaults): array {
+    private function quotationPayload(Quote $quote, Client $client, array $defaults): array {
         $quote->loadMissing(['items', 'customer']);
         $items = $quote->items->sortBy('position')->values();
 
         return array_filter([
             'voucherDate' => now()->format('Y-m-d\TH:i:s.vP'),
-            'expirationDate' => $quote->valid_until?->endOfDay()->format('Y-m-d\TH:i:s.vP'),
-            'address' => ['contactId' => $this->contactId($quote->customer, $api, $baseUrl)],
+            // Pflicht bei Lexware; ohne „gültig bis“ gilt die Bindefrist der Organisation.
+            'expirationDate' => CarbonImmutable::instance($quote->valid_until ?? QuoteService::defaultValidUntil())->endOfDay()->format('Y-m-d\TH:i:s.vP'),
+            'address' => ['contactId' => $this->contactId($quote->customer, $client)],
             'lineItems' => LexofficeLineItems::from($items, withOptional: true),
             'totalPrice' => ['currency' => $quote->documentCurrency()->value, 'totalDiscountPercentage' => 0],
             'taxConditions' => ['taxType' => LexofficeLineItems::taxType($items, $defaults)],
@@ -130,13 +139,13 @@ final class LexofficeDocumentIssuer implements DocumentIssuer {
      * @param  array<string, mixed>  $defaults
      * @return array<string, mixed>
      */
-    private function orderConfirmationPayload(OrderConfirmation $confirmation, PluginApiClient $api, string $baseUrl, array $defaults): array {
+    private function orderConfirmationPayload(OrderConfirmation $confirmation, Client $client, array $defaults): array {
         $confirmation->loadMissing(['items', 'customer']);
         $items = $confirmation->items->sortBy('position')->values();
 
         return array_filter([
             'voucherDate' => now()->format('Y-m-d\TH:i:s.vP'),
-            'address' => ['contactId' => $this->contactId($confirmation->customer, $api, $baseUrl)],
+            'address' => ['contactId' => $this->contactId($confirmation->customer, $client)],
             'lineItems' => LexofficeLineItems::from($items),
             'totalPrice' => ['currency' => $confirmation->documentCurrency()->value, 'totalDiscountPercentage' => 0],
             'taxConditions' => ['taxType' => LexofficeLineItems::taxType($items, $defaults)],
@@ -152,7 +161,7 @@ final class LexofficeDocumentIssuer implements DocumentIssuer {
      * @param  array<string, mixed>  $defaults
      * @return array<string, mixed>
      */
-    private function deliveryNotePayload(DeliveryNote $note, PluginApiClient $api, string $baseUrl, array $defaults): array {
+    private function deliveryNotePayload(DeliveryNote $note, Client $client, array $defaults): array {
         $note->loadMissing(['items', 'customer']);
         $lineItems = [];
         foreach ($note->items as $item) {
@@ -172,7 +181,7 @@ final class LexofficeDocumentIssuer implements DocumentIssuer {
 
         return array_filter([
             'voucherDate' => now()->format('Y-m-d\TH:i:s.vP'),
-            'address' => ['contactId' => $this->contactId($note->customer, $api, $baseUrl)],
+            'address' => ['contactId' => $this->contactId($note->customer, $client)],
             'lineItems' => $lineItems,
             'taxConditions' => ['taxType' => (string) ($defaults['default_tax_type'] ?? 'net')],
             'shippingConditions' => ['shippingType' => 'delivery', 'shippingDate' => ($note->delivered_on ?? now())->copy()->startOfDay()->format('Y-m-d\TH:i:s.vP')],
@@ -181,22 +190,24 @@ final class LexofficeDocumentIssuer implements DocumentIssuer {
         ], static fn ($value): bool => $value !== null);
     }
 
-    private function contactId(?Customer $customer, PluginApiClient $api, string $baseUrl): string {
+    private function contactId(?Customer $customer, Client $client): string {
         if (! $customer instanceof Customer) {
             throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_document_no_customer'));
         }
 
-        return app(LexofficeContactLookup::class)->find($customer, $api, $baseUrl)
+        return app(LexofficeContactLookup::class)->find($customer, $client)
             ?? throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_contact_missing'));
     }
 
-    /** @param array<string, mixed> $payload */
-    private function create(PluginApiClient $api, string $baseUrl, array $payload, string $resource): string {
-        $response = $api->postJson($baseUrl . '/' . $resource . '?finalize=true', $payload);
-        if (! $response->successful()) {
-            throw new RuntimeException(sprintf('Lexoffice %s failed: HTTP %d %s', $resource, $response->status(), mb_substr((string) $response->body(), 0, 500)));
+    private function create(DocumentEndpointAbstract $endpoint, NamedEntityInterface $document, string $resource): string {
+        try {
+            $externalId = (string) ($endpoint->create($document, null, true)->toArray()['id'] ?? '');
+        } catch (ApiException $e) {
+            throw new RuntimeException(sprintf('Lexoffice %s failed: HTTP %d %s', $resource, $e->getCode(), mb_substr((string) $e->getContent(), 0, 500)), 0, $e);
+        } catch (InvalidArgumentException $e) {
+            // isValid() der Entität: Lexware lehnte denselben Beleg ab, die Aufrufer fangen RuntimeException.
+            throw new RuntimeException(sprintf('Lexoffice %s failed: %s', $resource, $e->getMessage()), 0, $e);
         }
-        $externalId = (string) ($response->json('id') ?? '');
         if ($externalId === '') {
             throw new RuntimeException(sprintf('Lexoffice %s returned no id.', $resource));
         }
@@ -204,9 +215,12 @@ final class LexofficeDocumentIssuer implements DocumentIssuer {
         return $externalId;
     }
 
-    private function voucherNumber(PluginApiClient $api, string $url): string {
-        $response = $api->getResponse($url);
-        $number = $response->successful() ? (string) ($response->json('voucherNumber') ?? '') : '';
+    private function voucherNumber(DocumentEndpointAbstract $endpoint, string $externalId): string {
+        try {
+            $number = (string) ($endpoint->get(new ID($externalId))->toArray()['voucherNumber'] ?? '');
+        } catch (ApiException) {
+            $number = '';
+        }
         if ($number === '') {
             throw new RuntimeException((string) __('numbering.error.no_number', ['program' => 'Lexoffice']));
         }

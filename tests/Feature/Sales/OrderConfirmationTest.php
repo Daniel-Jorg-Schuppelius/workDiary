@@ -20,6 +20,7 @@ use App\Models\Sales\{OrderConfirmation, Quote};
 use App\Plugins\Easybill\EasybillPlugin;
 use App\Plugins\Easybill\Services\EasybillDocumentIssuer;
 use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\Lexoffice\Services\LexofficeLineItems;
 use App\Services\Billing\DocumentRelations;
 use App\Services\Invoicing\QuoteService;
 use App\Services\Numbering\NumberSequenceService;
@@ -99,7 +100,7 @@ final class OrderConfirmationTest extends TestCase {
     public function test_lexoffice_numbers_the_order_confirmation_without_predecessor(): void {
         PluginSetting::create(['organization_id' => $this->org->id, 'plugin_id' => LexofficePlugin::ID, 'enabled' => true, 'settings' => ['api_key' => 'k']]);
         ExternalReference::create(['organization_id' => $this->org->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => ExternalReference::TYPE_CONTACT,
-            'referenceable_type' => $this->customer->getMorphClass(), 'referenceable_id' => $this->customer->id, 'external_id' => 'lex-contact-1']);
+            'referenceable_type' => $this->customer->getMorphClass(), 'referenceable_id' => $this->customer->id, 'external_id' => 'e5b7a6c4-1f2d-4c3b-9a8e-7d6c5b4a3f21']);
         app(NumberSequenceService::class)->setFormat($this->org, NumberScope::OrderConfirmation, ['source' => LexofficePlugin::ID]);
         $quote = $this->acceptedQuote();
         $this->actingAs($this->user)->post(route('quotes.order-confirmation.store', $quote));
@@ -113,14 +114,21 @@ final class OrderConfirmationTest extends TestCase {
         $this->actingAs($this->user)->post(route('order-confirmations.confirm', $confirmation))->assertSessionHasNoErrors();
 
         $this->assertSame('AB0005', $confirmation->refresh()->number);
-        $fake->assertSent(function (RequestInterface $request): bool {
-            $body = json_decode((string) $request->getBody(), true);
-
-            return $request->getMethod() === 'POST'
-                && ! str_contains((string) $request->getUri(), 'precedingSalesVoucherId')
-                && data_get($body, 'shippingConditions.shippingType') === 'none'
-                && count((array) data_get($body, 'lineItems')) === 1;
-        });
+        // OrderConfirmationsEndpoint::create(…, finalize: true) und ::get(): ohne Vorgänger, Body wie vorher roh.
+        $this->assertSame(
+            ['POST https://api.lexware.io/v1/order-confirmations?finalize=true', 'GET https://api.lexware.io/v1/order-confirmations/lex-oc-5'],
+            array_map(static fn (array $entry): string => $entry['request']->getMethod() . ' ' . $entry['request']->getUri(), $fake->recorded()),
+        );
+        $this->assertEquals([
+            'voucherDate' => now()->format('Y-m-d\TH:i:s.vP'),
+            'address' => ['contactId' => 'e5b7a6c4-1f2d-4c3b-9a8e-7d6c5b4a3f21'],
+            'lineItems' => LexofficeLineItems::from($confirmation->items->sortBy('position')->values()),
+            'totalPrice' => ['currency' => 'EUR', 'totalDiscountPercentage' => 0],
+            'taxConditions' => ['taxType' => 'net'],
+            'shippingConditions' => ['shippingType' => 'none'],
+            'title' => (string) __('Auftragsbestätigung'),
+        ] + array_filter(['remark' => $confirmation->note ?: null]), json_decode((string) $fake->recorded()[0]['request']->getBody(), true));
+        $this->assertCount(1, $confirmation->items);
     }
 
     public function test_easybill_order_refers_to_the_transferred_offer(): void {

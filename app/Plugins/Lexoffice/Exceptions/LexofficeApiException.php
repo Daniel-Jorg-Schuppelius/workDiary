@@ -11,7 +11,6 @@
 namespace App\Plugins\Lexoffice\Exceptions;
 
 use APIToolkit\Exceptions\ApiException;
-use Illuminate\Http\Client\Response;
 use RuntimeException;
 
 /**
@@ -23,16 +22,12 @@ use RuntimeException;
  */
 class LexofficeApiException extends RuntimeException {
     /**
-     * Baut aus einer fehlgeschlagenen Antwort eine sprechende Exception.
+     * Baut aus einem Fehler der SDK-Endpunkte eine sprechende Exception; der
+     * Status steht im Code der Toolkit-Exception.
      *
      * @param  string  $resource  Menschlich lesbarer Ressourcenname, z. B. „Artikel"
      * @param  string  $scope     Benötigte Lexoffice-Berechtigung, z. B. „Artikel abrufen"
      */
-    public static function fromResponse(Response $response, string $resource, string $scope): self {
-        return new self(self::message($response->status(), $resource, $scope));
-    }
-
-    /** Dasselbe für die Fehler der SDK-Endpunkte; der Status steht im Code der Toolkit-Exception. */
     public static function fromApiException(ApiException $e, string $resource, string $scope): self {
         return new self(self::message($e->getCode(), $resource, $scope), 0, $e);
     }

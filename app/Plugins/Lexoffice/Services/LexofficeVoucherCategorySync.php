@@ -12,18 +12,18 @@ declare(strict_types=1);
 
 namespace App\Plugins\Lexoffice\Services;
 
+use APIToolkit\Entities\ID;
 use APIToolkit\Exceptions\{ApiException, NotFoundException};
 use App\Models\Platform\Organization;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
 use App\Plugins\Lexoffice\LexofficeConfig;
 use App\Plugins\Lexoffice\Models\{LexofficePostingCategory, LexofficeVoucher, LexofficeVoucherCategory};
-use App\Plugins\Support\PluginApiClient;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\{DB, Log};
 use Lexoffice\API\Client;
-use Lexoffice\API\Endpoints\PostingCategoriesEndpoint;
+use Lexoffice\API\Endpoints\{PostingCategoriesEndpoint, VouchersEndpoint};
 use Throwable;
 
 /**
@@ -32,13 +32,8 @@ use Throwable;
  * Spiegel der Buchungskategorien (`/posting-categories`). Grundlage der
  * Auswertung „Ausgaben je Kategorie“. Ein fehlerhafter Beleg bleibt offen und
  * wird im nächsten Lauf erneut versucht.
- *
- * `/vouchers/{id}` läuft roh: die Beleg-Entität des SDK scheitert an `files`,
- * das die API als Liste von IDs liefert. Die Kategorien gehen über das SDK.
  */
 final class LexofficeVoucherCategorySync {
-    private ?PluginApiClient $api = null;
-
     private ?Client $client = null;
 
     private float $requestInterval;
@@ -54,7 +49,6 @@ final class LexofficeVoucherCategorySync {
     /** Tests: kein Anfrageabstand. */
     public function withoutThrottle(): self {
         $this->requestInterval = 0.0;
-        $this->api = null;
         $this->client = null;
 
         return $this;
@@ -89,7 +83,13 @@ final class LexofficeVoucherCategorySync {
     }
 
     public function syncVoucher(LexofficeVoucher $voucher): int {
-        $json = app(LexofficeClientFactory::class)->getJson($this->api(), $this->baseUrl . '/vouchers/' . $voucher->external_id, 'Beleg abrufen');
+        try {
+            $json = (new VouchersEndpoint($this->client()))->get(new ID((string) $voucher->external_id))->toArray();
+        } catch (NotFoundException) {
+            $json = null;
+        } catch (ApiException $e) {
+            throw LexofficeApiException::fromApiException($e, 'Lexoffice', 'Beleg abrufen');
+        }
         $rows = [];
         if ($json !== null) {
             $gross = strtolower((string) ($json['taxType'] ?? 'net')) === 'gross';
@@ -154,10 +154,6 @@ final class LexofficeVoucherCategorySync {
             ->where('archived', false)
             ->where(static fn (Builder $q) => $q->whereNull('voucher_status')->orWhere('voucher_status', '<>', 'draft'))
             ->whereNull('categories_synced_at');
-    }
-
-    private function api(): PluginApiClient {
-        return $this->api ??= app(LexofficeClientFactory::class)->make($this->apiKey, $this->baseUrl, $this->requestInterval);
     }
 
     private function client(): Client {

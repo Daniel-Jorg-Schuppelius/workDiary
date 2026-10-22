@@ -66,6 +66,11 @@ final class LexofficeVoucherCategorySyncTest extends TestCase {
         $this->assertSame(2, LexofficePostingCategory::query()->count());
         // PostingCategoriesEndpoint::list(): ein GET ohne Parameter, Gruppe und Art wie zuvor übernommen.
         $fake->assertSent(fn (\Psr\Http\Message\RequestInterface $r): bool => $r->getMethod() === 'GET' && (string) $r->getUri() === 'https://api.lexware.io/v1/posting-categories');
+        // VouchersEndpoint::get() je Beleg, ohne Query.
+        $this->assertEqualsCanonicalizing(
+            ['GET https://api.lexware.io/v1/posting-categories', 'GET https://api.lexware.io/v1/vouchers/pv-1', 'GET https://api.lexware.io/v1/vouchers/pc-1'],
+            array_map(static fn (array $entry): string => $entry['request']->getMethod() . ' ' . $entry['request']->getUri(), $fake->recorded()),
+        );
         $this->assertDatabaseHas('lexoffice_posting_categories', ['external_id' => 'cat-fuel', 'name' => 'Kraftstoff', 'kind' => 'outgo', 'group_name' => 'Kfz']);
         $this->assertSame(['100.00', '50.00'], LexofficeVoucherCategory::query()->where('voucher_id', $invoice->id)->orderBy('position')->get()->map(fn ($r) => $r->net_amount->getAmount())->all());
         $this->assertSame('20.00', LexofficeVoucherCategory::query()->where('voucher_id', $credit->id)->firstOrFail()->net_amount->getAmount());
@@ -93,5 +98,28 @@ final class LexofficeVoucherCategorySyncTest extends TestCase {
             ->expectsOutputToContain('1 Belege, 0 Fehler, 0 offen')
             ->assertSuccessful();
         $this->assertSame('40.00', LexofficeVoucherCategory::query()->where('voucher_id', $voucher->id)->firstOrFail()->net_amount->getAmount());
+    }
+
+    /** 404 (in Lexoffice gelöscht) gilt als erledigt ohne Zeilen; jeder andere Fehler bleibt offen und meldet den Status. */
+    public function test_deleted_voucher_is_done_and_other_errors_keep_it_pending(): void {
+        $supplier = Supplier::create(['organization_id' => $this->organization->id, 'name' => 'Werkstattbedarf']);
+        $deleted = $this->voucher('pv-404', 'purchaseinvoice', $supplier->id);
+        $denied = $this->voucher('pv-401', 'purchaseinvoice', $supplier->id);
+        FakePluginHttp::fake([
+            'https://api.lexware.io/v1/vouchers/pv-404' => FakePluginHttp::response(['message' => 'not found'], 404),
+            'https://api.lexware.io/v1/vouchers/pv-401' => FakePluginHttp::response(['message' => 'unauthorized'], 401),
+        ]);
+        $sync = (new LexofficeVoucherCategorySync('key'))->withoutThrottle();
+
+        $this->assertSame(0, $sync->syncVoucher($deleted));
+        $this->assertNotNull($deleted->fresh()?->categories_synced_at);
+
+        try {
+            $sync->syncVoucher($denied);
+            $this->fail('401 muss durchschlagen.');
+        } catch (\App\Plugins\Lexoffice\Exceptions\LexofficeApiException $e) {
+            $this->assertStringContainsString('(401)', $e->getMessage());
+        }
+        $this->assertNull($denied->fresh()?->categories_synced_at);
     }
 }

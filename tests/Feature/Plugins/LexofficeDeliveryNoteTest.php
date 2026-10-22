@@ -80,7 +80,7 @@ final class LexofficeDeliveryNoteTest extends TestCase {
             'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
             'referenceable_type' => $this->customer->getMorphClass(),
             'referenceable_id' => $this->customer->getKey(),
-            'external_id' => 'lex-contact-1',
+            'external_id' => '5f1c2e3d-4b5a-4c6d-8e7f-90a1b2c3d4e5',
             'synced_at' => now(),
         ]);
     }
@@ -110,16 +110,29 @@ final class LexofficeDeliveryNoteTest extends TestCase {
             $body = json_decode((string) $request->getBody(), true);
 
             // json_decode liefert für ganzzahlige Floats int → für den Vergleich casten.
-            return data_get($body, 'address.contactId') === 'lex-contact-1'
+            return data_get($body, 'address.contactId') === '5f1c2e3d-4b5a-4c6d-8e7f-90a1b2c3d4e5'
                 && (float) data_get($body, 'lineItems.0.quantity') === 3.0
                 && str_contains((string) data_get($body, 'lineItems.0.name'), 'Bürostuhl');
         });
+
+        // DeliveryNotesEndpoint::create(): POST /delivery-notes ohne Query; das Lieferdatum steht in
+        // `shippingConditions` (ein `deliveryConditions` kennt Lexware nicht).
+        $fake->assertSentCount(1);
+        $request = $fake->recorded()[0]['request'];
+        $this->assertSame(['POST', 'https://api.lexware.io/v1/delivery-notes'], [$request->getMethod(), (string) $request->getUri()]);
+        $body = json_decode((string) $request->getBody(), true);
+        $this->assertEquals($reference->payload['_request'], $body);
+        $this->assertArrayNotHasKey('deliveryConditions', $body);
+        $this->assertEquals(
+            ['shippingType' => 'delivery', 'shippingDate' => Carbon::parse('2026-06-26 10:00:00')->format('Y-m-d\TH:i:s.vP')],
+            $body['shippingConditions'],
+        );
     }
 
     public function test_push_resolves_contact_via_email_search(): void {
         $delivery = $this->makeDelivery();
 
-        FakePluginHttp::fake([
+        $fake = FakePluginHttp::fake([
             'https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'lex-contact-2']]], 200),
             'https://api.lexware.io/v1/delivery-notes*' => FakePluginHttp::response(['id' => 'lex-dn-2'], 201),
         ]);
@@ -127,6 +140,12 @@ final class LexofficeDeliveryNoteTest extends TestCase {
         $reference = app(LexofficeDeliveryNoteService::class)->push($delivery);
 
         $this->assertSame('lex-dn-2', $reference->external_id);
+        // ContactsEndpoint::search() mit derselben Query wie vorher roh; der Treffer geht in den Beleg.
+        $this->assertSame([
+            'GET https://api.lexware.io/v1/contacts?email=kunde%40example.com&page=0&size=1',
+            'POST https://api.lexware.io/v1/delivery-notes',
+        ], array_map(static fn (array $entry): string => $entry['request']->getMethod() . ' ' . $entry['request']->getUri(), $fake->recorded()));
+        $this->assertSame('lex-contact-2', json_decode((string) $fake->recorded()[1]['request']->getBody(), true)['address']['contactId']);
         // Kontakt-Referenz wurde aus der Suche angelegt.
         $this->assertDatabaseHas('external_references', [
             'plugin_id' => LexofficePlugin::ID,
@@ -146,8 +165,8 @@ final class LexofficeDeliveryNoteTest extends TestCase {
         try {
             app(LexofficeDeliveryNoteService::class)->push($delivery);
             $this->fail('Expected RuntimeException.');
-        } catch (RuntimeException) {
-            // erwartet
+        } catch (RuntimeException $e) {
+            $this->assertSame('Lexoffice delivery note failed: HTTP 400 {"message":"bad"}', $e->getMessage());
         }
 
         $this->assertSame(DeliveryFacturationStatus::Failed, $delivery->fresh()->facturation_status);
@@ -165,13 +184,37 @@ final class LexofficeDeliveryNoteTest extends TestCase {
             'synced_at' => now(),
         ]);
 
-        FakePluginHttp::fake([
-            'https://api.lexware.io/v1/delivery-notes/lex-dn-9' => FakePluginHttp::response(['id' => 'lex-dn-9', 'voucherStatus' => 'open'], 200),
+        $fake = FakePluginHttp::fake([
+            'https://api.lexware.io/v1/delivery-notes/lex-dn-9' => FakePluginHttp::response(['id' => 'lex-dn-9', 'voucherStatus' => 'open', 'voucherNumber' => 'LS0009'], 200),
         ]);
 
         $result = app(LexofficeDeliveryNoteService::class)->pull($delivery);
 
         $this->assertSame('lex-dn-9', $result['id']);
         $this->assertSame('open', $result['voucherStatus']);
+        $this->assertSame('LS0009', $result['voucherNumber']);
+        // DeliveryNotesEndpoint::get().
+        $this->assertSame(['GET https://api.lexware.io/v1/delivery-notes/lex-dn-9'], array_map(
+            static fn (array $entry): string => $entry['request']->getMethod() . ' ' . $entry['request']->getUri(),
+            $fake->recorded(),
+        ));
+    }
+
+    public function test_pull_reports_the_http_status(): void {
+        $delivery = $this->makeDelivery();
+        ExternalReference::create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => LexofficePlugin::ID,
+            'external_type' => LexofficeDeliveryNoteService::EXT_TYPE_DELIVERY_NOTE,
+            'referenceable_type' => $delivery->getMorphClass(),
+            'referenceable_id' => $delivery->getKey(),
+            'external_id' => 'lex-dn-404',
+            'synced_at' => now(),
+        ]);
+        FakePluginHttp::fake(['https://api.lexware.io/v1/delivery-notes/lex-dn-404' => FakePluginHttp::response(['message' => 'not found'], 404)]);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Lexoffice delivery note fetch failed: HTTP 404');
+        app(LexofficeDeliveryNoteService::class)->pull($delivery);
     }
 }

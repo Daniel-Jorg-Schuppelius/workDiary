@@ -12,10 +12,14 @@ declare(strict_types=1);
 
 namespace App\Plugins\Lexoffice\Services;
 
+use APIToolkit\Exceptions\ApiException;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
-use App\Plugins\Support\PluginApiClient;
 use Carbon\CarbonImmutable;
+use InvalidArgumentException;
+use Lexoffice\API\Client;
+use Lexoffice\API\Endpoints\Documents\InvoicesEndpoint;
+use Lexoffice\Entities\Documents\Invoices\Invoice;
 use RuntimeException;
 
 /**
@@ -23,13 +27,11 @@ use RuntimeException;
  * Rechnung, ohne Festschreiben: `POST /invoices` ohne `finalize`. Der
  * Betreiber prüft und schließt den Entwurf in Lexoffice ab; der stündliche
  * Belegspiegel holt die fertige Rechnung, der Vorschlagslauf ordnet sie zu.
- * Roh über {@see PluginApiClient}: die Rechnungs-Entität des SDK lehnt die
- * Adresse mit `contactId` ab ({@see LexofficeTarget}).
  *
  * @phpstan-type DraftLine array{name: string, description: string, quantity: float, unit_name: string, unit_net: float}
  */
 final class LexofficeDraftInvoiceService {
-    private ?PluginApiClient $api = null;
+    private ?Client $client = null;
 
     public function __construct(
         private readonly string $apiKey,
@@ -65,11 +67,14 @@ final class LexofficeDraftInvoiceService {
             'remark' => $remark !== '' ? $remark : null,
         ], static fn($v) => $v !== null && $v !== '');
 
-        $response = $this->api()->postJson($this->baseUrl . '/invoices', $payload);
-        if (! $response->successful()) {
-            throw LexofficeApiException::fromResponse($response, 'Rechnungsentwurf', 'Rechnungen anlegen');
+        try {
+            $id = (string) ((new InvoicesEndpoint($this->client()))->create(Invoice::fromArray($payload))->toArray()['id'] ?? '');
+        } catch (ApiException $e) {
+            throw LexofficeApiException::fromApiException($e, 'Rechnungsentwurf', 'Rechnungen anlegen');
+        } catch (InvalidArgumentException $e) {
+            // isValid() der Entität; die Aufrufer fangen RuntimeException.
+            throw new RuntimeException('Rechnungsentwurf ungültig: ' . $e->getMessage(), 0, $e);
         }
-        $id = (string) ($response->json('id') ?? '');
         if ($id === '') {
             throw new RuntimeException('Lexoffice hat keine ID für den Rechnungsentwurf geliefert.');
         }
@@ -77,7 +82,7 @@ final class LexofficeDraftInvoiceService {
         return $id;
     }
 
-    private function api(): PluginApiClient {
-        return $this->api ??= app(LexofficeClientFactory::class)->make($this->apiKey, $this->baseUrl, $this->requestInterval);
+    private function client(): Client {
+        return $this->client ??= app(LexofficeClientFactory::class)->sdk($this->apiKey, $this->baseUrl, $this->requestInterval);
     }
 }

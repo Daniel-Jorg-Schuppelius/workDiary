@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a5e0fd32a116ef0d5d5586446d7008f4",
+    "content-hash": "4f86fb76ff9d573f7e9d443381913b7f",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -675,21 +675,21 @@
         },
         {
             "name": "daniel-jorg-schuppelius/lexoffice-php-sdk",
-            "version": "v1.3.2",
+            "version": "v2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/lexoffice-php-sdk.git",
-                "reference": "90b9f3fa83c01f9c41243ab08a8f841589e44c49"
+                "reference": "19e654c7ee5f95354cab7372507e2c21fbf33594"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/lexoffice-php-sdk/zipball/90b9f3fa83c01f9c41243ab08a8f841589e44c49",
-                "reference": "90b9f3fa83c01f9c41243ab08a8f841589e44c49",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/lexoffice-php-sdk/zipball/19e654c7ee5f95354cab7372507e2c21fbf33594",
+                "reference": "19e654c7ee5f95354cab7372507e2c21fbf33594",
                 "shasum": ""
             },
             "require": {
                 "daniel-jorg-schuppelius/php-api-toolkit": "^2.8",
-                "dschuppelius/php-common-toolkit": "^1.20 || ^2.0",
+                "dschuppelius/php-common-toolkit": "^1.34 || ^2.0",
                 "php": ">=8.2 <8.6"
             },
             "require-dev": {
@@ -716,9 +716,9 @@
             "description": "Lexoffice SDK for PHP",
             "support": {
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/lexoffice-php-sdk/issues",
-                "source": "https://github.com/Daniel-Jorg-Schuppelius/lexoffice-php-sdk/tree/v1.3.2"
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/lexoffice-php-sdk/tree/v2.0.0"
             },
-            "time": "2026-10-18T11:14:25+00:00"
+            "time": "2026-10-22T06:19:07+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/orgamax-php-sdk",

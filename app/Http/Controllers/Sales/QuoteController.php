@@ -48,6 +48,7 @@ class QuoteController extends Controller {
             'projects' => \App\Models\Project\Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
             'prefillCustomerId' => $prefillCustomer?->sqid,
             'prefillProjectId' => $prefillProject?->sqid,
+            'defaultValidUntil' => \App\Services\Invoicing\QuoteService::defaultValidUntil()->toDateString(),
         ]);
     }
 

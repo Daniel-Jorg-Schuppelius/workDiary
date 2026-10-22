@@ -193,7 +193,7 @@ final class ManufacturingOrderControllerTest extends TestCase {
             'external_type' => \App\Plugins\Lexoffice\LexofficePlugin::EXT_TYPE_CONTACT,
             'referenceable_type' => $customer->getMorphClass(),
             'referenceable_id' => $customer->getKey(),
-            'external_id' => 'lex-contact-1', 'synced_at' => now(),
+            'external_id' => 'e5b7a6c4-1f2d-4c3b-9a8e-7d6c5b4a3f21', 'synced_at' => now(),
         ]);
 
         $order = ManufacturingOrder::factory()->create([
@@ -242,7 +242,7 @@ final class ManufacturingOrderControllerTest extends TestCase {
             'external_type' => \App\Plugins\Lexoffice\LexofficePlugin::EXT_TYPE_CONTACT,
             'referenceable_type' => $customer->getMorphClass(),
             'referenceable_id' => $customer->getKey(),
-            'external_id' => 'lex-contact-1', 'synced_at' => now(),
+            'external_id' => 'e5b7a6c4-1f2d-4c3b-9a8e-7d6c5b4a3f21', 'synced_at' => now(),
         ]);
 
         $variant = ArticleVariant::query()->where('article_id', $this->product->id)->firstOrFail();
@@ -306,7 +306,7 @@ final class ManufacturingOrderControllerTest extends TestCase {
             'external_type' => \App\Plugins\Lexoffice\LexofficePlugin::EXT_TYPE_CONTACT,
             'referenceable_type' => $customer->getMorphClass(),
             'referenceable_id' => $customer->getKey(),
-            'external_id' => 'lex-contact-1', 'synced_at' => now(),
+            'external_id' => 'e5b7a6c4-1f2d-4c3b-9a8e-7d6c5b4a3f21', 'synced_at' => now(),
         ]);
 
         $variant = ArticleVariant::query()->where('article_id', $this->product->id)->firstOrFail();

@@ -22,6 +22,10 @@ return [
     // Hand setzen.
     'quote_follow_up_days' => (int) env('INVOICING_QUOTE_FOLLOW_UP_DAYS', 7),
 
+    // Bindefrist eines Angebots in Kalendertagen ab Belegdatum: Vorbelegung von
+    // „gültig bis“ und Ablaufdatum bei Lexware, das dort Pflicht ist.
+    'quote_validity_days' => (int) env('INVOICING_QUOTE_VALIDITY_DAYS', 30),
+
     // Abgelehnte Rechnungseingänge („Keine Rechnung“, Phase 150, MVP-1213):
     // nach so vielen Tagen schlägt die Aufbewahrung die Vernichtung vor; 0 = nie.
     'rejected_retention_days' => (int) env('INVOICING_REJECTED_RETENTION_DAYS', 30),

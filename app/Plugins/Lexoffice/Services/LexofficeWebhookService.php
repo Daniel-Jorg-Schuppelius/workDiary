@@ -16,7 +16,6 @@ use APIToolkit\Entities\ID;
 use APIToolkit\Exceptions\ApiException;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
-use CommonToolkit\Helper\Data\JsonHelper;
 use Lexoffice\API\Client;
 use Lexoffice\API\Endpoints\EventSubscriptionsEndpoint;
 use Lexoffice\Entities\EventSubscriptions\EventSubscription;
@@ -56,28 +55,18 @@ class LexofficeWebhookService {
      * @return list<array{id: string, eventType: string, callbackUrl: string}>
      */
     public function subscriptions(): array {
-        // Gleicher SDK-Client (Drosselung), aber ohne Entitäten-Mapping: Das Enum
-        // EventType des SDK kennt nicht jede Ereignisart der API (etwa
-        // delivery-note.status.changed), und ein fremdes Abo des API-Schlüssels
-        // ließe sonst die ganze Liste scheitern.
         try {
-            $response = $this->client()->get('event-subscriptions');
+            $subscriptions = (new EventSubscriptionsEndpoint($this->client()))->list()->getValues();
         } catch (ApiException $e) {
             throw new LexofficeApiException('Lexoffice: Event-Subscriptions nicht abrufbar (HTTP ' . $e->getCode() . ').', $e->getCode());
         }
-        if ($response->getStatusCode() !== 200) {
-            throw new LexofficeApiException('Lexoffice: Event-Subscriptions nicht abrufbar (HTTP ' . $response->getStatusCode() . ').', $response->getStatusCode());
-        }
 
-        $decoded = JsonHelper::decode((string) $response->getBody(), true);
-        $rows = is_array($decoded) && is_array($decoded['content'] ?? null) ? $decoded['content'] : [];
         $result = [];
-        foreach ($rows as $row) {
-            if (! is_array($row)) {
-                continue;
-            }
+        foreach ($subscriptions as $subscription) {
+            // Eine Ereignisart, die das SDK nicht kennt, liest es als null — das Abo bleibt in der Liste.
+            $row = $subscription->toArray();
             $result[] = [
-                'id' => (string) ($row['subscriptionId'] ?? ($row['id'] ?? '')),
+                'id' => (string) ($row['subscriptionId'] ?? ''),
                 'eventType' => (string) ($row['eventType'] ?? ''),
                 'callbackUrl' => (string) ($row['callbackUrl'] ?? ''),
             ];

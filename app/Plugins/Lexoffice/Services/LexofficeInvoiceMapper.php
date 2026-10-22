@@ -63,7 +63,8 @@ class LexofficeInvoiceMapper {
      */
     public function toCreditNotePayload(Invoice $invoice, ?string $externalContactId, array $defaults = []): array {
         $payload = $this->toPayload($invoice, $externalContactId, $defaults);
-        unset($payload['dueDate'], $payload['paymentConditions']);
+        // Gutschriften haben laut Lexware-Referenz weder Fälligkeit noch Zahlungs- oder Versandbedingungen.
+        unset($payload['dueDate'], $payload['paymentConditions'], $payload['shippingConditions']);
         $payload['title'] = $invoice->documentLabel();
         $payload['lineItems'] = array_map(
             static fn (array $line): array => isset($line['quantity']) ? ['quantity' => abs((float) $line['quantity'])] + $line : $line,

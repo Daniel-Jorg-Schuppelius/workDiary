@@ -94,6 +94,8 @@ return [
         'transfer_closing_text' => 'Vorlage: Schlussbemerkung der Übergabe',
         'transfer_text_hint' => 'Wird beim Anlegen einer Übergabe in den Nachweis kopiert und ist dort bearbeitbar. Platzhalter: :customer, :from, :to, :channel. Leer = der bisherige Standardtext des Ziels.',
         'transfer_closing_hint' => 'Wie oben; ohne Vorlage greift der Rechnungstext des Kunden, sonst bleibt die Schlussbemerkung leer.',
+        'quote_validity_days' => 'Bindefrist für Angebote (Tage)',
+        'quote_validity_days_hint' => 'Belegt „gültig bis“ neuer Angebote vor und gilt bei Lexware, wenn ein Angebot keine Bindefrist hat (dort Pflicht).',
     ],
     'accounting' => [
         'heading' => 'Buchhaltung',

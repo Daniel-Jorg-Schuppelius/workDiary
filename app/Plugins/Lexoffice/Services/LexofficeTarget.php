@@ -10,18 +10,24 @@
 
 namespace App\Plugins\Lexoffice\Services;
 
+use APIToolkit\Entities\ID;
+use APIToolkit\Exceptions\ApiException;
 use App\Enums\Finance\{TransferChannel, TransferTarget};
 use App\Models\Customer\Customer;
 use App\Models\Finance\BillingTransfer;
 use App\Models\Integration\ExternalReference;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
-use App\Plugins\Support\PluginApiClient;
 use App\Services\Finance\BillingPositionBuilder;
 use App\Services\Finance\Targets\Concerns\{LoadsBillingSources, ReconcilesByMarker};
 use App\Services\Finance\Targets\{FacturationTarget, TargetResult};
 use Carbon\CarbonImmutable;
 use GuzzleHttp\Exception\ConnectException;
+use InvalidArgumentException;
+use Lexoffice\API\Client;
+use Lexoffice\API\Endpoints\Documents\InvoicesEndpoint;
+use Lexoffice\API\Endpoints\VoucherListEndpoint;
+use Lexoffice\Entities\Documents\Invoices\Invoice;
 use RuntimeException;
 
 /**
@@ -38,10 +44,8 @@ use RuntimeException;
  *   Lookup über die Lexoffice-Kontaktsuche; als letzter Weg der bestehende
  *   pushContact-Mechanismus des {@see LexofficePlugin}.
  *
- * HTTP läuft roh über {@see PluginApiClient}: `isValid()` der Rechnungs-Entität
- * des SDK lehnt jede Adresse mit `contactId` ab (UUID, das SDK erwartet eine
- * Zahl), und Kontaktsuche, Belegliste und Abruf teilen sich mit dem POST einen
- * gedrosselten Client. Fehler werden als RuntimeException hochgereicht; der
+ * Kontaktsuche, Belegliste, Abruf und POST teilen sich einen gedrosselten
+ * SDK-Client. Fehler werden als RuntimeException hochgereicht; der
  * Controller ruft dann markFailed().
  *
  * Gegen Dubletten (Konsolidierungs-Audit 2026-10, k2-01): bestehender Nachweis
@@ -80,14 +84,14 @@ class LexofficeTarget implements FacturationTarget {
         }
 
         $transfer->loadMissing(['items', 'customer']);
-        $api = app(LexofficeClientFactory::class)->fromConfig($config);
+        $client = app(LexofficeClientFactory::class)->sdk((string) $config['api_key'], $config['base_url'], $config['request_interval']);
         $marker = self::MARKER_PREFIX . substr((string) $transfer->payload_hash, 0, self::MARKER_HASH_LENGTH);
-        $contactId = $this->resolveContactId($transfer->customer, $api, $config);
+        $contactId = $this->resolveContactId($transfer->customer, $client, $config);
 
         // Der Marker-Scan kostet je Entwurf eine Anfrage — nur nach einem Fehlversuch nötig.
         $firstFailure = $transfer->journal()->where('event', 'failed')->min('created_at');
         if ($firstFailure !== null) {
-            $adopted = $this->findByMarker($api, $config['base_url'], $contactId, $marker, CarbonImmutable::parse($firstFailure));
+            $adopted = $this->findByMarker($client, $contactId, $marker, CarbonImmutable::parse($firstFailure));
             if ($adopted !== null) {
                 return new TargetResult(externalReference: $this->storeReference($transfer, $adopted, $marker, adopted: true));
             }
@@ -97,21 +101,21 @@ class LexofficeTarget implements FacturationTarget {
 
         try {
             // Rechnungsentwurf — bewusst KEIN ?finalize=true (Hoheit bei Lexoffice).
-            $response = $api->postJson($config['base_url'] . '/invoices', $payload);
+            $body = (new InvoicesEndpoint($client))->create(Invoice::fromArray($payload))->toArray();
         } catch (ConnectException) {
             // Abbruch nach dem Senden: der Entwurf kann angelegt sein — der nächste Lauf sucht ihn.
             throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_outcome_unclear'));
-        }
-
-        if (! $response->successful()) {
+        } catch (ApiException $e) {
             throw new RuntimeException(sprintf(
                 'Lexoffice invoice draft failed: HTTP %d %s',
-                $response->status(),
-                mb_substr((string) $response->body(), 0, 500),
-            ));
+                $e->getCode(),
+                mb_substr((string) $e->getContent(), 0, 500),
+            ), 0, $e);
+        } catch (InvalidArgumentException $e) {
+            // isValid() der Entität: nichts gesendet, der Controller markiert den Fehlversuch.
+            throw new RuntimeException('Lexoffice invoice draft failed: ' . $e->getMessage(), 0, $e);
         }
 
-        $body = (array) ($response->json() ?? []);
         if ((string) ($body['id'] ?? '') === '') {
             throw new RuntimeException('Lexoffice invoice draft returned no id.');
         }
@@ -127,32 +131,38 @@ class LexofficeTarget implements FacturationTarget {
      *
      * @return array<string, mixed>|null
      */
-    private function findByMarker(PluginApiClient $api, string $baseUrl, string $contactId, string $marker, CarbonImmutable $since): ?array {
+    private function findByMarker(Client $client, string $contactId, string $marker, CarbonImmutable $since): ?array {
         $limit = max(1, (int) config('plugins.lexoffice.reconcile_scan_limit', 25));
-        $list = $api->getResponse($baseUrl . '/voucherlist', [
-            'voucherType' => 'invoice',
-            'voucherStatus' => 'draft',
-            'contactId' => $contactId,
-            'sort' => 'createdDate,DESC',
-            'page' => 0,
-            'size' => $limit,
-        ]);
-        if (! $list->successful()) {
-            throw new RuntimeException(sprintf('Lexoffice voucherlist failed: HTTP %d', $list->status()));
+        try {
+            $rows = (new VoucherListEndpoint($client))->search([
+                'voucherType' => 'invoice',
+                'voucherStatus' => 'draft',
+                'contactId' => $contactId,
+                'sort' => 'createdDate,DESC',
+                'page' => 0,
+                'size' => $limit,
+            ])->getValues();
+        } catch (ApiException $e) {
+            throw new RuntimeException(sprintf('Lexoffice voucherlist failed: HTTP %d', $e->getCode()), 0, $e);
         }
 
         // Ein Tag Spielraum gegen Zeitzonen- und Uhrenabweichung.
         $since = $since->subDay();
-        foreach ((array) ($list->json('content') ?? []) as $row) {
-            $id = is_array($row) ? (string) ($row['id'] ?? '') : '';
-            $created = is_array($row) ? (string) ($row['createdDate'] ?? '') : '';
+        foreach ($rows as $row) {
+            $row = $row->toArray();
+            $id = (string) ($row['id'] ?? '');
+            $created = (string) ($row['createdDate'] ?? '');
             if ($id === '' || ($created !== '' && CarbonImmutable::parse($created)->lt($since))) {
                 continue;
             }
 
-            $detail = $api->getResponse($baseUrl . '/invoices/' . $id);
-            if ($detail->successful() && str_contains((string) $detail->json('remark'), $marker)) {
-                return ['id' => $id] + (array) $detail->json();
+            try {
+                $detail = (new InvoicesEndpoint($client))->get(new ID($id))->toArray();
+            } catch (ApiException) {
+                continue;
+            }
+            if (str_contains((string) ($detail['remark'] ?? ''), $marker)) {
+                return ['id' => $id] + $detail;
             }
         }
 
@@ -305,8 +315,8 @@ class LexofficeTarget implements FacturationTarget {
      *
      * @param  array{api_key: ?string, base_url: string, defaults: array<string, mixed>, request_interval: float}  $config
      */
-    private function resolveContactId(Customer $customer, PluginApiClient $api, array $config): string {
-        $known = $this->contacts->find($customer, $api, $config['base_url']);
+    private function resolveContactId(Customer $customer, Client $client, array $config): string {
+        $known = $this->contacts->find($customer, $client);
         if ($known !== null) {
             return $known;
         }

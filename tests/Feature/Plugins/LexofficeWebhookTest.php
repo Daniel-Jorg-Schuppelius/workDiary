@@ -235,6 +235,26 @@ class LexofficeWebhookTest extends TestCase {
         $this->assertSame(['created' => 4, 'existing' => 1], $result);
     }
 
+    /**
+     * EventSubscriptionsEndpoint::list(): `GET /event-subscriptions`. Eine Art, die das
+     * SDK-Enum nicht kennt, liest es als null — das Abo bleibt mit leerem Typ in der Liste.
+     */
+    public function test_subscriptions_are_listed_through_the_sdk(): void {
+        $fake = $this->fakeSubscriptions([
+            ['subscriptionId' => 'sub-7', 'organizationId' => 'aa11bb22-cc33-4d44-8e55-ff6677889900', 'createdDate' => '2026-10-01T10:00:00.000+02:00', 'eventType' => 'delivery-note.status.changed', 'callbackUrl' => 'https://fremd.test/hook'],
+            ['subscriptionId' => 'sub-8', 'eventType' => 'something.new', 'callbackUrl' => 'https://fremd.test/new'],
+        ]);
+
+        $this->assertSame([
+            ['id' => 'sub-7', 'eventType' => 'delivery-note.status.changed', 'callbackUrl' => 'https://fremd.test/hook'],
+            ['id' => 'sub-8', 'eventType' => '', 'callbackUrl' => 'https://fremd.test/new'],
+        ], (new LexofficeWebhookService('lex-key'))->subscriptions());
+        $this->assertSame(['GET https://api.lexware.io/v1/event-subscriptions'], array_map(
+            static fn (array $entry): string => $entry['request']->getMethod() . ' ' . $entry['request']->getUri(),
+            $fake->recorded(),
+        ));
+    }
+
     public function test_subscription_errors_keep_the_http_status(): void {
         FakePluginHttp::fake(['https://api.lexware.io/v1/event-subscriptions' => FakePluginHttp::response(['message' => 'Unauthorized'], 401)]);
 

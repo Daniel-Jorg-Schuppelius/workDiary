@@ -187,6 +187,8 @@ return [
     'communication.circular_approval' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
     // Nachfass-Vorlauf in Werktagen (Feature 112, MVP-601); 0 = keine Vorbelegung.
     'invoicing.quote_follow_up_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:90', 'fallback' => 7],
+    // Bindefrist in Kalendertagen ab Belegdatum (Vollscan 2026-10-21, tk-09).
+    'invoicing.quote_validity_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:1|max:365', 'fallback' => 30],
     'invoicing.transfer_intro_text' => ['type' => 'text', 'scopes' => ['organization'], 'rules' => 'nullable|max:2000'],
     'invoicing.transfer_closing_text' => ['type' => 'text', 'scopes' => ['organization'], 'rules' => 'nullable|max:2000'],
     // Mahnwesen (Feature 127, MVP-691): Karenz/Gebühr/Zahlungsfrist je Stufe
