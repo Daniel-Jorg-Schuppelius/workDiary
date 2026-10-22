@@ -13,6 +13,7 @@ namespace App\Plugins\Lexoffice\Jobs;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Supplier\Supplier;
+use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\{ShouldBeUnique, ShouldQueue};
@@ -51,7 +52,7 @@ class SyncVouchersJob implements ShouldBeUnique, ShouldQueue {
     public function handle(): void {
         $config = LexofficeConfig::resolve($this->organizationId);
         // Abgeschaltet steht auch der Job — sonst liefe er mit einem Schlüssel aus der Installation weiter (S-28, k2-06).
-        if ($config['enabled'] !== true || ! is_string($config['api_key']) || $config['api_key'] === '') {
+        if ($config['enabled'] !== true || ! app(LexofficeClientFactory::class)->isConfigured($this->organizationId)) {
             return;
         }
 

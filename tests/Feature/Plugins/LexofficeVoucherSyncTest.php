@@ -19,17 +19,19 @@ use App\Plugins\Lexoffice\Services\LexofficeVoucherSync;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 class LexofficeVoucherSyncTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
+        $this->pluginSecret('lexoffice', ['api_key' => 'test-key']);
     }
 
     private function linkContact(string $externalId, Model $model): void {
@@ -75,7 +77,7 @@ class LexofficeVoucherSyncTest extends TestCase {
             'archived' => false,
         ]]);
 
-        $result = (new LexofficeVoucherSync('test-key'))->sync($this->organization);
+        $result = (new LexofficeVoucherSync($this->organization->id))->sync($this->organization);
 
         $this->assertSame(1, $result['contacts']);
         $this->assertSame(1, $result['created']);
@@ -124,7 +126,7 @@ class LexofficeVoucherSyncTest extends TestCase {
             'currency' => 'EUR',
         ]]);
 
-        (new LexofficeVoucherSync('test-key'))->sync($this->organization);
+        (new LexofficeVoucherSync($this->organization->id))->sync($this->organization);
 
         $this->assertDatabaseHas('lexoffice_vouchers', [
             'external_id' => 'voucher-v',
@@ -145,7 +147,7 @@ class LexofficeVoucherSyncTest extends TestCase {
             ['id' => 'v-buy', 'contactId' => 'contact-both', 'voucherType' => 'purchaseinvoice', 'voucherStatus' => 'open', 'voucherNumber' => 'ER-1', 'voucherDate' => '2026-04-02', 'totalAmount' => 50.0, 'currency' => 'EUR'],
         ]);
 
-        (new LexofficeVoucherSync('test-key'))->sync($this->organization);
+        (new LexofficeVoucherSync($this->organization->id))->sync($this->organization);
 
         $this->assertDatabaseHas('lexoffice_vouchers', ['external_id' => 'v-sale', 'customer_id' => $customer->id, 'supplier_id' => null]);
         $this->assertDatabaseHas('lexoffice_vouchers', ['external_id' => 'v-buy', 'customer_id' => null, 'supplier_id' => $supplier->id]);
@@ -175,11 +177,11 @@ class LexofficeVoucherSyncTest extends TestCase {
             ],
         ]);
 
-        $first = (new LexofficeVoucherSync('test-key'))->sync($this->organization);
+        $first = (new LexofficeVoucherSync($this->organization->id))->sync($this->organization);
         $this->assertSame(2, $first['created']);
 
         // Zweiter Lauf: v2 verschwindet → wird archiviert, v1 nur aktualisiert.
-        $second = (new LexofficeVoucherSync('test-key'))->sync($this->organization);
+        $second = (new LexofficeVoucherSync($this->organization->id))->sync($this->organization);
         $this->assertSame(0, $second['created']);
         $this->assertSame(1, $second['updated']);
         $this->assertSame(1, $second['archived']);
@@ -198,7 +200,7 @@ class LexofficeVoucherSyncTest extends TestCase {
             'totalAmount' => 119.00, 'currency' => 'EUR', 'archived' => false,
         ]]);
 
-        $result = (new LexofficeVoucherSync('test-key'))->syncFor($customer);
+        $result = (new LexofficeVoucherSync($this->organization->id))->syncFor($customer);
 
         $this->assertSame(1, $result['contacts']);
         $this->assertSame(1, $result['created']);
@@ -224,7 +226,7 @@ class LexofficeVoucherSyncTest extends TestCase {
             'totalAmount' => 50.00, 'currency' => 'EUR', 'archived' => false,
         ]]);
 
-        $result = (new LexofficeVoucherSync('test-key'))->syncFor($supplier);
+        $result = (new LexofficeVoucherSync($this->organization->id))->syncFor($supplier);
 
         $this->assertSame(1, $result['created']);
         $this->assertDatabaseHas('lexoffice_vouchers', [
@@ -251,13 +253,13 @@ class LexofficeVoucherSyncTest extends TestCase {
             },
         ]);
 
-        (new LexofficeVoucherSync('test-key'))->sync($this->organization);
+        (new LexofficeVoucherSync($this->organization->id))->sync($this->organization);
 
         $this->assertDatabaseHas('lexoffice_vouchers', ['external_id' => 'v-sammel', 'contact_external_id' => null, 'supplier_id' => $collective->id]);
         $this->assertDatabaseHas('lexoffice_vouchers', ['external_id' => 'v-kontakt', 'contact_external_id' => 'contact-v', 'supplier_id' => $supplier->id]);
         $fake->assertNotSent(static fn (RequestInterface $request): bool => str_contains((string) $request->getUri(), 'updatedDateFrom'));
 
-        (new LexofficeVoucherSync('test-key'))->sync($this->organization);
+        (new LexofficeVoucherSync($this->organization->id))->sync($this->organization);
 
         $fake->assertSent(static fn (RequestInterface $request): bool => ! str_contains((string) $request->getUri(), 'contactId=')
             && str_contains((string) $request->getUri(), 'updatedDateFrom=' . now()->subDay()->toDateString()));
@@ -271,7 +273,7 @@ class LexofficeVoucherSyncTest extends TestCase {
             'https://api.lexware.io/v1/voucherlist*' => static fn (RequestInterface $request): \GuzzleHttp\Psr7\Response => FakePluginHttp::response(['content' => [$unlinked], 'totalPages' => 1]),
         ]);
 
-        (new LexofficeVoucherSync('test-key'))->sync($this->organization);
+        (new LexofficeVoucherSync($this->organization->id))->sync($this->organization);
 
         $this->assertDatabaseHas('lexoffice_vouchers', [
             'external_id' => 'v-fremd', 'contact_external_id' => 'contact-new', 'contact_name' => 'Neukunde GmbH',
@@ -280,7 +282,7 @@ class LexofficeVoucherSyncTest extends TestCase {
 
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
         $this->linkContact('contact-new', $customer);
-        (new LexofficeVoucherSync('test-key'))->sync($this->organization);
+        (new LexofficeVoucherSync($this->organization->id))->sync($this->organization);
 
         $this->assertDatabaseHas('lexoffice_vouchers', ['external_id' => 'v-fremd', 'customer_id' => $customer->id]);
         $this->assertSame(1, LexofficeVoucher::query()->where('external_id', 'v-fremd')->count());
@@ -289,7 +291,7 @@ class LexofficeVoucherSyncTest extends TestCase {
     public function test_sync_for_unlinked_owner_is_noop(): void {
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
 
-        $result = (new LexofficeVoucherSync('test-key'))->syncFor($customer);
+        $result = (new LexofficeVoucherSync($this->organization->id))->syncFor($customer);
 
         $this->assertSame(0, $result['contacts']);
         $this->assertSame(0, $result['created']);

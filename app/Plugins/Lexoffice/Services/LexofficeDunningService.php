@@ -14,7 +14,7 @@ use APIToolkit\Entities\ID;
 use APIToolkit\Exceptions\ApiException;
 use App\Models\Integration\ExternalReference;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
-use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
+use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use Lexoffice\API\Endpoints\Documents\{DunningsEndpoint, InvoicesEndpoint};
 use Lexoffice\Entities\Documents\Dunnings\Dunning;
@@ -43,10 +43,7 @@ class LexofficeDunningService {
      *                          oder API-Fehler.
      */
     public function push(LexofficeVoucher $voucher): ExternalReference {
-        $config = LexofficeConfig::resolve($voucher->organization_id);
-        if (empty($config['api_key'])) {
-            throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_not_configured'));
-        }
+        $client = app(LexofficeClientFactory::class)->for($voucher->organization_id);
 
         if (! in_array((string) $voucher->voucher_type, self::INVOICE_TYPES, true)) {
             throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_dunning_not_invoice'));
@@ -55,7 +52,6 @@ class LexofficeDunningService {
         $precedingId = (string) $voucher->external_id;
 
         // Vorgänger-Rechnung laden (Adresse/Positionen für den Mahnungs-Body).
-        $client = app(LexofficeClientFactory::class)->sdk((string) $config['api_key'], (string) $config['base_url'], $config['request_interval']);
         try {
             $invoice = (new InvoicesEndpoint($client))->get(new ID($precedingId))->toArray();
         } catch (ApiException $e) {

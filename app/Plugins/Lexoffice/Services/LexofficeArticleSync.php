@@ -19,7 +19,7 @@ use App\Models\Integration\{ExternalArticleMapping, IntegrationInboxItem, Pendin
 use App\Models\Platform\Organization;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy;
-use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
+use App\Plugins\Lexoffice\Exceptions\{LexofficeApiException, LexofficeNotConfiguredException};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\LexofficeArticle;
 use App\Services\Inventory\VariantMatcher;
@@ -58,14 +58,13 @@ class LexofficeArticleSync {
 
     private ?Client $client = null;
 
+    /** @param  int|null  $organizationId  null = gebundene Organisation bzw. Einzelplatz-Konfiguration */
     public function __construct(
-        private readonly ?string $apiKey,
-        private readonly string $baseUrl = 'https://api.lexware.io/v1',
-        private readonly ?float $requestInterval = null,
+        private readonly ?int $organizationId,
     ) {}
 
     private function client(): Client {
-        return $this->client ??= app(LexofficeClientFactory::class)->sdk((string) $this->apiKey, $this->baseUrl, $this->requestInterval);
+        return $this->client ??= app(LexofficeClientFactory::class)->for($this->organizationId);
     }
 
     public function withPolicy(LexofficeMatchPolicy $policy): self {
@@ -79,8 +78,8 @@ class LexofficeArticleSync {
      * @return array{created: int, updated: int, archived: int, conflicts: int, linked: int, ambiguous: int}
      */
     public function sync(Organization $organization): array {
-        if ($this->apiKey === null || $this->apiKey === '') {
-            throw new RuntimeException('Lexoffice API key is not configured (LEXOFFICE_API_KEY).');
+        if (! app(LexofficeClientFactory::class)->isConfigured($this->organizationId)) {
+            throw new LexofficeNotConfiguredException();
         }
 
         $seen = [];
@@ -268,8 +267,8 @@ class LexofficeArticleSync {
      * wird zurückgesetzt und external_version wird aus der Antwort übernommen.
      */
     public function push(LexofficeArticle $article): void {
-        if ($this->apiKey === null || $this->apiKey === '') {
-            throw new RuntimeException('Lexoffice API key is not configured (LEXOFFICE_API_KEY).');
+        if (! app(LexofficeClientFactory::class)->isConfigured($this->organizationId)) {
+            throw new LexofficeNotConfiguredException();
         }
 
         // Die Preis-Entität des SDK sendet einen fehlenden Steuersatz als 0 % — ohne Satz geht kein Artikel hinüber.
@@ -313,8 +312,8 @@ class LexofficeArticleSync {
      * @throws RuntimeException Ohne API-Schlüssel oder external_id; bei Fehlern von Lexoffice als {@see LexofficeApiException}.
      */
     public function adoptRemote(LexofficeArticle $article): LexofficeArticle {
-        if ($this->apiKey === null || $this->apiKey === '') {
-            throw new RuntimeException('Lexoffice API key is not configured (LEXOFFICE_API_KEY).');
+        if (! app(LexofficeClientFactory::class)->isConfigured($this->organizationId)) {
+            throw new LexofficeNotConfiguredException();
         }
         if ($article->external_id === '') {
             throw new RuntimeException('Lexoffice article has no external id to adopt.');

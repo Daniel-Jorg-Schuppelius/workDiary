@@ -179,7 +179,7 @@ class LexofficeExpenseLinkProvider implements ExpenseLinkProvider {
             return $this->toRef($existing);
         }
 
-        $result = app(LexofficeService::class)->createExpenseVoucher($expense, (string) $categoryId);
+        $result = (new LexofficeService((int) $expense->organization_id))->createExpenseVoucher($expense, (string) $categoryId);
 
         // Spiegelzeile wie beim Voucher-Sync — damit hat der Beleg sofort eine
         // lokale Identität, ohne auf den nächsten Sync-Lauf zu warten.
@@ -207,7 +207,7 @@ class LexofficeExpenseLinkProvider implements ExpenseLinkProvider {
     }
 
     private function attachFiles(Expense $expense, LexofficeVoucher $voucher, ExternalReference $reference): void {
-        app(LexofficeService::class)->attachVoucherFiles((string) $voucher->external_id, $this->localFilePaths($expense));
+        (new LexofficeService((int) $expense->organization_id))->attachVoucherFiles((string) $voucher->external_id, $this->localFilePaths($expense));
         $reference->forceFill(['payload' => ['pushed' => true, 'files_attached' => true]])->save();
     }
 
@@ -238,7 +238,7 @@ class LexofficeExpenseLinkProvider implements ExpenseLinkProvider {
             throw new RuntimeException((string) __('Der Auslagenkategorie fehlt die Buchungskategorie des Buchhaltungssystems — ohne Zuordnung kein Push.'));
         }
 
-        $result = app(LexofficeService::class)->createExpenseCounterVoucher(
+        $result = (new LexofficeService((int) $expense->organization_id))->createExpenseCounterVoucher(
             $expense,
             (string) $categoryId,
             (string) ($original->voucher_number ?: $original->external_id),

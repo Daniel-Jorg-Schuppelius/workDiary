@@ -10,10 +10,11 @@
 
 namespace App\Plugins\Lexoffice;
 
+use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Console\{LexofficeMaterializeVoucherFilesCommand, LexofficeRepairResaleLinksCommand, LexofficeSyncArticlesCommand, LexofficeSyncContactsCommand, LexofficeSyncVoucherCategoriesCommand, LexofficeSyncVoucherLinesCommand, LexofficeSyncVouchersCommand, LexofficeWebhooksCommand};
-use App\Plugins\Lexoffice\Services\{LexofficeArticleCatalogSource, LexofficeContactSync, LexofficeDocumentFeedSource, LexofficeExpenseLinkProvider, LexofficeInvoiceDraftTarget, LexofficeInvoiceMapper, LexofficeInvoiceMirrorSource, LexofficeInvoiceService, LexofficeMapper, LexofficeMaterialProvider, LexofficePartyDocumentSource, LexofficePhoneContactSource, LexofficePurchaseDocumentSource, LexofficeRevenueSource, LexofficeService, LexofficeSpendSource, LexofficeTarget};
+use App\Plugins\Lexoffice\Services\{LexofficeArticleCatalogSource, LexofficeContactSync, LexofficeDocumentFeedSource, LexofficeExpenseLinkProvider, LexofficeInvoiceDraftTarget, LexofficeInvoiceMirrorSource, LexofficeMaterialProvider, LexofficePartyDocumentSource, LexofficePhoneContactSource, LexofficePurchaseDocumentSource, LexofficeRevenueSource, LexofficeSpendSource, LexofficeTarget};
 use App\Plugins\Lexoffice\Services\Retainer\{LexofficeRetainerPublisher, LexofficeRetainerVouchers};
-use App\Plugins\Support\PluginServiceProviderBase;
+use App\Plugins\Support\{PluginOrgContext, PluginServiceProviderBase};
 use App\Services\Billing\{BillingModeResolver, ExpenseLinkProviderResolver, ExternalPurchaseSources, ExternalRevenueSources, PartyDocumentSources, RetainerChannelResolver};
 use App\Services\Billing\Feed\DocumentFeedSourceRegistry;
 use App\Services\Billing\Purchase\PurchaseDocuments;
@@ -29,7 +30,8 @@ use App\Services\Reselling\Mirror\InvoiceMirror;
  * geladen sobald die LexofficePlugin-Klasse in der Plugin-Registry steht.
  *
  * Verantwortlichkeiten:
- *  - Container-Bindings (LexofficeService, LexofficeContactSync, LexofficeInvoiceService)
+ *  - Container-Binding LexofficeContactSync; Dienste mit Zugangsdaten entstehen je
+ *    Organisation über die {@see Api\LexofficeClientFactory}
  *  - Lazy-Loading der Plugin-Settings aus der DB (statt aus config())
  *  - Routes + Views aus dem Plugin-Verzeichnis registrieren
  *  - Artisan-Commands
@@ -44,33 +46,10 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
         $this->app->scoped(LexofficePhoneContactSource::class);
         $this->app->tag([LexofficePhoneContactSource::class], 'external-phone-contact-sources');
 
-        $this->app->singleton(LexofficeService::class, function (): LexofficeService {
-            $config = LexofficeConfig::resolve();
-
-            return new LexofficeService(
-                apiKey: $config['api_key'],
-                mapper: new LexofficeMapper,
-                defaults: $config['defaults'],
-                baseUrl: $config['base_url'],
-                requestInterval: $config['request_interval'],
-            );
-        });
-
         $this->app->singleton(LexofficeContactSync::class, function (): LexofficeContactSync {
             return new LexofficeContactSync;
         });
 
-        $this->app->singleton(LexofficeInvoiceService::class, function (): LexofficeInvoiceService {
-            $config = LexofficeConfig::resolve();
-
-            return new LexofficeInvoiceService(
-                mapper: new LexofficeInvoiceMapper,
-                apiKey: $config['api_key'],
-                defaults: $config['defaults'],
-                baseUrl: $config['base_url'],
-                requestInterval: $config['request_interval'],
-            );
-        });
     }
 
     protected function bootPlugin(): void {
@@ -107,11 +86,9 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
 
         // Material-Suche (MVP-1033) mit den Zugangsdaten der aktuellen Organisation.
         $this->app->make(MaterialProviderRegistry::class)->register('lexoffice', static function (): ?LexofficeMaterialProvider {
-            $config = LexofficeConfig::resolve();
+            $organizationId = PluginOrgContext::currentId();
 
-            return is_string($config['api_key']) && $config['api_key'] !== ''
-                ? new LexofficeMaterialProvider($config['api_key'], (string) $config['base_url'], $config['request_interval'])
-                : null;
+            return app(LexofficeClientFactory::class)->isConfigured($organizationId) ? new LexofficeMaterialProvider($organizationId) : null;
         });
 
         // Belegfluss-Quelle (Feature 105; Vollscan B9): der Kern kennt die
@@ -138,12 +115,7 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
         $this->app->make(RetainerChannelResolver::class)->register(
             LexofficePlugin::ID,
             'Lexoffice',
-            function (): LexofficeRetainerPublisher {
-                // Zugangsdaten gelten je Organisation; der Monatslauf wechselt sie.
-                $this->app->forgetInstance(LexofficeInvoiceService::class);
-
-                return $this->app->make(LexofficeRetainerPublisher::class);
-            },
+            fn (): LexofficeRetainerPublisher => $this->app->make(LexofficeRetainerPublisher::class),
             fn (): LexofficeRetainerVouchers => $this->app->make(LexofficeRetainerVouchers::class),
         );
 

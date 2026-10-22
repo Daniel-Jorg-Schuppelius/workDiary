@@ -25,19 +25,15 @@ final class LexofficePhoneContactSource implements ExternalPhoneContactSource {
     }
 
     public function isAvailable(Organization $organization): bool {
-        $config = LexofficeConfig::resolve($organization->id);
-
-        return $config['enabled'] && trim((string) $config['api_key']) !== '';
+        return LexofficeConfig::resolve($organization->id)['enabled'] && app(LexofficeClientFactory::class)->isConfigured($organization->id);
     }
 
     public function contacts(Organization $organization): iterable {
-        $config = LexofficeConfig::resolve($organization->id);
-        $apiKey = trim((string) $config['api_key']);
-        if (! $config['enabled'] || $apiKey === '') {
+        if (! $this->isAvailable($organization)) {
             return [];
         }
 
-        $endpoint = new ContactsEndpoint(app(LexofficeClientFactory::class)->sdk($apiKey, $config['base_url'], $config['request_interval']));
+        $endpoint = new ContactsEndpoint(app(LexofficeClientFactory::class)->for($organization->id));
 
         $contacts = [];
         $page = 0;

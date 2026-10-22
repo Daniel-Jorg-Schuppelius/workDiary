@@ -89,11 +89,10 @@ class MolliePlugin extends AbstractPlugin implements OnlinePaymentProvider {
     }
 
     private function client(Organization $organization): MolliePaymentClient {
-        $config = MollieConfig::resolve((int) $organization->id);
-        if ($config['api_key'] === '') {
+        if (! MollieConfig::isConfigured((int) $organization->id)) {
             throw new RuntimeException('Mollie ist nicht eingerichtet.');
         }
 
-        return new MolliePaymentClient($config);
+        return new MolliePaymentClient(MollieConfig::resolve((int) $organization->id));
     }
 }

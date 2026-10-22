@@ -12,6 +12,7 @@ namespace App\Plugins\Lexoffice\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Platform\PluginSetting;
+use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use App\Plugins\Lexoffice\Services\LexofficeWebhookService;
 use Illuminate\Console\Command;
@@ -43,7 +44,7 @@ class LexofficeWebhooksCommand extends Command {
         $failures = 0;
         foreach ($organizations as $org) {
             $config = LexofficeConfig::resolve($org->id);
-            if (! $config['enabled'] || ! is_string($config['api_key']) || $config['api_key'] === '') {
+            if (! $config['enabled'] || ! app(LexofficeClientFactory::class)->isConfigured($org->id)) {
                 continue;
             }
 
@@ -52,7 +53,7 @@ class LexofficeWebhooksCommand extends Command {
                 : $this->generateSecret((int) $org->id);
 
             $callbackUrl = route('api.webhooks.lexoffice', ['organization' => $org->id, 'token' => $secret]);
-            $service = new LexofficeWebhookService($config['api_key'], $config['base_url'], $config['request_interval']);
+            $service = new LexofficeWebhookService($org->id);
 
             $this->info("Lexoffice-Webhooks für Organisation #{$org->id} ({$org->name})...");
             try {

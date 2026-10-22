@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Lexoffice\Api;
 
+use App\Plugins\Lexoffice\Exceptions\LexofficeNotConfiguredException;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use App\Plugins\PluginHealthService;
 use App\Plugins\Support\PluginHttpFactory;
@@ -29,21 +30,34 @@ class LexofficeClientFactory {
     public const MAX_RETRIES = 5;
 
     /**
-     * Client des Lexoffice-SDK: Transport und SSRF-Schranke der
-     * {@see PluginHttpFactory}, Anfrageabstand der Organisation, Wiederholungsbudget.
+     * SDK-Client mit Schlüssel, Basis-URL und Anfrageabstand der Organisation;
+     * `null` heißt gebundene Organisation bzw. Einzelplatz-Konfiguration
+     * ({@see LexofficeConfig::resolve()}).
+     *
+     * @throws LexofficeNotConfiguredException
      */
-    public function sdk(string $apiKey, string $baseUrl, ?float $requestInterval = null): Client {
+    public function for(?int $organizationId): Client {
+        $config = LexofficeConfig::resolve($organizationId);
+        $apiKey = (string) ($config['api_key'] ?? '');
+        if ($apiKey === '') {
+            throw new LexofficeNotConfiguredException();
+        }
+
+        $baseUrl = $config['base_url'];
         $client = app(PluginHttpFactory::class)->sdkClient(
             LexofficePlugin::ID,
             $baseUrl,
             static fn (?GuzzleClient $transport): Client => new Client($apiKey, $baseUrl, null, false, $transport),
-            // Ohne Angabe nähme sdkClient() den Abstand der gebundenen Organisation — Konsole und Queue binden keine.
-            $requestInterval ?? LexofficeConfig::requestInterval(),
+            $config['request_interval'],
         );
         if (! PluginHealthService::inHealthCheck()) {
             $client->setMaxRetries(self::MAX_RETRIES);
         }
 
         return $client;
+    }
+
+    public function isConfigured(?int $organizationId): bool {
+        return (string) (LexofficeConfig::resolve($organizationId)['api_key'] ?? '') !== '';
     }
 }

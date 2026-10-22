@@ -43,12 +43,16 @@ trait InteractsWithPlugins {
      * @param  array<string, mixed>  $settings
      */
     protected function enablePluginFor(Organization $organization, string $pluginId, array $settings = []): PluginSetting {
-        return PluginSetting::query()->create([
+        // Gibt es die Zeile schon (etwa Zugangsdaten aus setUp()), gelten danach genau diese Einstellungen.
+        $setting = PluginSetting::query()->withoutGlobalScopes()->firstOrNew([
             'organization_id' => $organization->id,
             'plugin_id' => $pluginId,
-            'enabled' => true,
-            'settings' => $settings,
         ]);
+        $setting->enabled = true;
+        $setting->settings = $settings;
+        $setting->save();
+
+        return $setting;
     }
 
     /**

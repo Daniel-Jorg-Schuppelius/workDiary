@@ -14,6 +14,7 @@ namespace App\Plugins\Lexoffice\Services;
 
 use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Platform\Organization;
+use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use App\Services\Invoicing\Contracts\IncomingPartyLookup;
 use App\Services\Invoicing\Dto\IncomingPartyCandidate;
@@ -33,19 +34,12 @@ final class LexofficeIncomingPartyLookup implements IncomingPartyLookup {
     public function isEnabled(Organization $organization): bool {
         $config = LexofficeConfig::resolve((int) $organization->id);
 
-        return $config['enabled'] && is_string($config['api_key']) && $config['api_key'] !== '';
+        return $config['enabled'] && app(LexofficeClientFactory::class)->isConfigured((int) $organization->id);
     }
 
     public function lookup(IncomingEInvoice $incoming): array {
         $organizationId = (int) $incoming->organization_id;
-        $config = LexofficeConfig::resolve($organizationId);
-        $service = new LexofficeService(
-            apiKey: $config['api_key'],
-            mapper: new LexofficeMapper,
-            defaults: $config['defaults'],
-            baseUrl: $config['base_url'],
-            requestInterval: $config['request_interval'],
-        );
+        $service = new LexofficeService($organizationId);
         $fields = app(IncomingInvoiceParties::class)->fieldsOf($incoming);
         // Unter der API-Sperre der Organisation wie Sync-Läufe (Befund 2026-10-17); wartet der Dialog zu lang, gibt es keine Treffer statt eines Limits.
         $rows = Cache::lock(LexofficeConfig::apiLockKey($organizationId), 60)

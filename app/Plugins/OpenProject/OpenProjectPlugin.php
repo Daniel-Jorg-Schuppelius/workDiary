@@ -13,8 +13,9 @@ namespace App\Plugins\OpenProject;
 use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TimeImporter};
-use App\Plugins\OpenProject\Api\OpenProjectApiClient;
+use App\Plugins\OpenProject\Api\{OpenProjectClientFactory};
 use App\Plugins\OpenProject\Services\OpenProjectImportService;
+use App\Plugins\Support\PluginOrgContext;
 use Carbon\CarbonImmutable;
 use Throwable;
 
@@ -112,8 +113,7 @@ class OpenProjectPlugin extends AbstractPlugin implements TimeImporter {
 
     /** Health-Check: pingt /api/v3/users/me mit dem konfigurierten Token. */
     public function healthCheck(): PluginHealth {
-        $config = OpenProjectConfig::resolve();
-        $client = new OpenProjectApiClient($config['api_token'], $config['base_url'], $config['allow_private_network']);
+        $client = app(OpenProjectClientFactory::class)->for(PluginOrgContext::currentId());
 
         if (! $client->isConfigured()) {
             return PluginHealth::degraded(__('Keine OpenProject-URL oder kein API-Token hinterlegt.'));

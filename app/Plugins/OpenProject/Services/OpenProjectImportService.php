@@ -16,7 +16,7 @@ use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\Organization;
 use App\Models\Project\{Project, Task};
 use App\Models\Time\TimeEntry;
-use App\Plugins\OpenProject\Api\OpenProjectApiClient;
+use App\Plugins\OpenProject\Api\{OpenProjectApiClient, OpenProjectClientFactory};
 use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
 use App\Plugins\OpenProject\Sources\OpenProjectEntry;
 use App\Plugins\Support\{PersistsTimeImportInbox, ReconcilesRemoteDeletions, RemoteSyncWindow, RemoteTimeFingerprint, TimeWritebackObserver};
@@ -57,7 +57,7 @@ class OpenProjectImportService {
      * @return array{created: int, skipped: int, unmatched: int}
      */
     public function importFromApi(Organization $organization, array $config, CarbonImmutable $from, CarbonImmutable $to): array {
-        $client = $this->client($config);
+        $client = app(OpenProjectClientFactory::class)->for((int) $organization->id);
         if (! $client->isConfigured()) {
             return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'updated' => 0, 'conflicts' => 0, 'removed' => 0];
         }
@@ -404,10 +404,5 @@ class OpenProjectImportService {
             userExternalId: $snap['user_external_id'] ?? null,
             userName: $snap['user_name'] ?? null,
         );
-    }
-
-    /** @param array<string, mixed> $config */
-    private function client(array $config): OpenProjectApiClient {
-        return new OpenProjectApiClient($config['api_token'] ?? null, $config['base_url'] ?? null, (bool) ($config['allow_private_network'] ?? false));
     }
 }

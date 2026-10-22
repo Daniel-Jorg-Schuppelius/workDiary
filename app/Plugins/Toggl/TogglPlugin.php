@@ -13,7 +13,8 @@ namespace App\Plugins\Toggl;
 use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TimeImporter};
-use App\Plugins\Toggl\Api\TogglApiClient;
+use App\Plugins\Support\PluginOrgContext;
+use App\Plugins\Toggl\Api\{TogglClientFactory};
 use App\Plugins\Toggl\Services\TogglImportService;
 use Carbon\CarbonImmutable;
 
@@ -93,8 +94,7 @@ class TogglPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Inbox
 
     /** Health-Check: pingt /me mit dem konfigurierten Token (ohne Token: degraded, Fehler: failing). */
     public function healthCheck(): PluginHealth {
-        $config = TogglConfig::resolve();
-        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id'], $config['request_interval']);
+        $client = app(TogglClientFactory::class)->for(PluginOrgContext::currentId());
 
         return PluginHealth::pingHealth(
             ping: fn (): bool => $client->ping(),

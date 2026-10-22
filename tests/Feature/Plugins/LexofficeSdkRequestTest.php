@@ -17,13 +17,13 @@ use App\Models\Integration\ExternalReference;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
 use App\Plugins\Lexoffice\LexofficePlugin;
-use App\Plugins\Lexoffice\Services\{LexofficeContactLookup, LexofficeDraftInvoiceService, LexofficeInvoiceMapper, LexofficeInvoiceService};
+use App\Plugins\Lexoffice\Services\{LexofficeContactLookup, LexofficeDraftInvoiceService, LexofficeInvoiceService};
 use Carbon\CarbonImmutable;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Lexoffice\API\Client;
 use RuntimeException;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
@@ -35,12 +35,14 @@ use Tests\TestCase;
 final class LexofficeSdkRequestTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     private const CONTACT_ID = '7c6b5a49-3827-4e16-9f05-e4d3c2b1a098';
 
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
+        $this->pluginSecret('lexoffice', ['api_key' => 'test-key']);
     }
 
     /** @return list<string> */
@@ -52,7 +54,7 @@ final class LexofficeSdkRequestTest extends TestCase {
     }
 
     private function draftService(): LexofficeDraftInvoiceService {
-        return new LexofficeDraftInvoiceService('lex-key', 'https://api.lexware.io/v1', 0.0);
+        return new LexofficeDraftInvoiceService($this->organization->id);
     }
 
     /** InvoicesEndpoint::create() ohne finalize: POST /invoices, Body Feld für Feld wie der bisherige Payload. */
@@ -144,7 +146,7 @@ final class LexofficeSdkRequestTest extends TestCase {
             'https://api.lexware.io/v1/credit-notes/cn-1' => FakePluginHttp::response(['id' => 'cn-1', 'voucherNumber' => 'GS0001', 'voucherStatus' => 'open', 'totalPrice' => ['currency' => 'EUR', 'totalNetAmount' => 100.0]]),
             'https://api.lexware.io/v1/invoices/inv-404' => FakePluginHttp::response(['message' => 'not found'], 404),
         ]);
-        $service = new LexofficeInvoiceService(new LexofficeInvoiceMapper, 'lex-key', [], 'https://api.lexware.io/v1', 0.0);
+        $service = new LexofficeInvoiceService($this->organization->id);
 
         $fetched = $service->fetchInvoice('cn-1', LexofficeInvoiceService::RESOURCE_CREDIT_NOTES);
         $this->assertSame(['cn-1', 'GS0001', 'open'], [$fetched['id'], $fetched['voucherNumber'], $fetched['voucherStatus']]);
@@ -167,6 +169,6 @@ final class LexofficeSdkRequestTest extends TestCase {
     }
 
     private function sdkClient(): Client {
-        return app(LexofficeClientFactory::class)->sdk('lex-key', 'https://api.lexware.io/v1', 0.0);
+        return app(LexofficeClientFactory::class)->for($this->organization->id);
     }
 }

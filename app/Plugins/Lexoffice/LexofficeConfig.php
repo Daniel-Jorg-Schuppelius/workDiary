@@ -20,6 +20,12 @@ use App\Plugins\Support\PluginSettingsResolver;
  * während die UI-Konfiguration pro Org Vorrang hat.
  */
 class LexofficeConfig {
+    /**
+     * Mindestabstand zwischen zwei Anfragen desselben Clients in Sekunden.
+     * Lexoffice erlaubt 2 Anfragen je Sekunde und API-Schlüssel; 0,5 s hält
+     * einen einzelnen Lauf sicher darunter. Die Sync-Läufe serialisieren sich
+     * zusätzlich je Organisation über {@see apiLockKey()}.
+     */
     public const DEFAULT_REQUEST_INTERVAL = 0.5;
 
     /**
@@ -50,17 +56,6 @@ class LexofficeConfig {
             'incoming_default_category' => $r->string('incoming_default_category'),
             'outgoing_default_category' => $r->string('outgoing_default_category'),
         ];
-    }
-
-    /**
-     * Mindestabstand zwischen zwei Lexoffice-Anfragen desselben Clients in
-     * Sekunden. Lexoffice erlaubt 2 Anfragen je Sekunde und API-Schlüssel;
-     * 0,5 s hält einen einzelnen Lauf sicher darunter. Die Sync-Kommandos
-     * serialisieren sich zusätzlich je Organisation über eine Sperre, damit
-     * parallel gestartete Läufe das Limit nicht gemeinsam reißen.
-     */
-    public static function requestInterval(?int $organizationId = null): float {
-        return self::clampInterval(PluginSettingsResolver::for(LexofficePlugin::ID, $organizationId)->float('request_interval', self::DEFAULT_REQUEST_INTERVAL));
     }
 
     /** Geplante Läufe warten so lange aufeinander (Sekunden). */

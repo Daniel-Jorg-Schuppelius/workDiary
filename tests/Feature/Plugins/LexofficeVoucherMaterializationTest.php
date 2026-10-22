@@ -20,6 +20,7 @@ use GuzzleHttp\Psr7\Response;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Psr\Http\Message\RequestInterface;
+use Tests\Concerns\WithPluginSecrets;
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
@@ -31,6 +32,7 @@ use Tests\TestCase;
  */
 final class LexofficeVoucherMaterializationTest extends TestCase {
     use RefreshDatabase;
+    use WithPluginSecrets;
 
     private Organization $org;
 
@@ -39,6 +41,7 @@ final class LexofficeVoucherMaterializationTest extends TestCase {
         Storage::fake('local');
         $this->org = Organization::factory()->create();
         app()->instance('currentOrganization', $this->org);
+        $this->pluginSecret('lexoffice', ['api_key' => 'test-key']);
     }
 
     /** @param array<string, mixed> $attributes */
@@ -60,7 +63,7 @@ final class LexofficeVoucherMaterializationTest extends TestCase {
     private function service(Response ...$responses): LexofficeVoucherFileService {
         $this->http = FakePluginHttp::fake(['https://api.lexware.io/*' => $responses]);
 
-        return new LexofficeVoucherFileService('key', 'https://api.lexware.io/v1');
+        return new LexofficeVoucherFileService($this->org->id);
     }
 
     /** @return list<string> */
@@ -159,7 +162,7 @@ final class LexofficeVoucherMaterializationTest extends TestCase {
             'https://api.lexware.io/v1/credit-notes/' . $draft->external_id . '/file' => FakePluginHttp::response(['message' => 'draft'], 409),
             'https://api.lexware.io/v1/vouchers/' . $draft->external_id => FakePluginHttp::response(['files' => []]),
         ]);
-        $service = new LexofficeVoucherFileService('key', 'https://api.lexware.io/v1');
+        $service = new LexofficeVoucherFileService($this->org->id);
 
         $file = $service->download($invoice);
         $this->assertSame(['body' => '%PDF-1', 'content_type' => 'application/pdf', 'extension' => 'pdf'], $file);
@@ -197,7 +200,7 @@ final class LexofficeVoucherMaterializationTest extends TestCase {
 
     public function test_empty_seen_list_does_not_archive_the_mirror(): void {
         $voucher = $this->voucher(['contact_external_id' => 'kontakt-1']);
-        $sync = new LexofficeVoucherSync('key', 'https://api.lexoffice.test/v1');
+        $sync = new LexofficeVoucherSync($this->org->id);
 
         $this->assertSame(0, $sync->archiveMissing($this->org, [], ['kontakt-1']));
         $this->assertFalse((bool) $voucher->fresh()?->archived);
@@ -211,7 +214,7 @@ final class LexofficeVoucherMaterializationTest extends TestCase {
     public function test_only_vouchers_of_the_queried_contacts_are_archived(): void {
         $other = $this->voucher(['contact_external_id' => 'kontakt-2']);
         $collective = $this->voucher(['contact_external_id' => null]);
-        $sync = new LexofficeVoucherSync('key', 'https://api.lexoffice.test/v1');
+        $sync = new LexofficeVoucherSync($this->org->id);
 
         $this->assertSame(0, $sync->archiveMissing($this->org, ['gesehen-1'], ['kontakt-1']));
         $this->assertFalse((bool) $other->fresh()?->archived);
@@ -225,7 +228,7 @@ final class LexofficeVoucherMaterializationTest extends TestCase {
             'status' => \App\Enums\Migration\AccountingMigrationStatus::Completed->value,
         ]);
 
-        $result = (new LexofficeVoucherSync('key', 'https://api.lexoffice.test/v1'))->sync($this->org);
+        $result = (new LexofficeVoucherSync($this->org->id))->sync($this->org);
 
         $this->assertTrue((bool) ($result['frozen'] ?? false));
         $this->assertSame(0, $result['created']);
@@ -239,6 +242,7 @@ final class LexofficeVoucherMaterializationTest extends TestCase {
      */
     public function test_materialize_command_skips_organizations_without_configuration(): void {
         $voucher = $this->voucher();
+        \App\Models\Platform\PluginSetting::query()->withoutGlobalScopes()->where('organization_id', $this->org->id)->delete();
 
         $this->artisan('lexoffice:materialize-voucher-files')
             ->expectsOutputToContain('nicht konfiguriert')

@@ -76,7 +76,7 @@ class LexofficeTarget implements FacturationTarget {
     }
 
     public function transfer(BillingTransfer $transfer): TargetResult {
-        $config = $this->config($transfer);
+        $client = app(LexofficeClientFactory::class)->for($transfer->organization_id);
 
         $existing = $this->existingReference($transfer, LexofficePlugin::ID, self::EXT_TYPE_INVOICE);
         if ($existing !== null) {
@@ -84,9 +84,8 @@ class LexofficeTarget implements FacturationTarget {
         }
 
         $transfer->loadMissing(['items', 'customer']);
-        $client = app(LexofficeClientFactory::class)->sdk((string) $config['api_key'], $config['base_url'], $config['request_interval']);
         $marker = self::MARKER_PREFIX . substr((string) $transfer->payload_hash, 0, self::MARKER_HASH_LENGTH);
-        $contactId = $this->resolveContactId($transfer->customer, $client, $config);
+        $contactId = $this->resolveContactId($transfer->customer, $client);
 
         // Der Marker-Scan kostet je Entwurf eine Anfrage — nur nach einem Fehlversuch nötig.
         $firstFailure = $transfer->journal()->where('event', 'failed')->min('created_at');
@@ -97,7 +96,7 @@ class LexofficeTarget implements FacturationTarget {
             }
         }
 
-        $payload = $this->invoicePayload($transfer, $config, $contactId, $marker);
+        $payload = $this->invoicePayload($transfer, LexofficeConfig::resolve($transfer->organization_id)['defaults'], $contactId, $marker);
 
         try {
             // Rechnungsentwurf — bewusst KEIN ?finalize=true (Hoheit bei Lexoffice).
@@ -194,12 +193,11 @@ class LexofficeTarget implements FacturationTarget {
      * update()/delete()). Korrekturen laufen deshalb über „Korrektur
      * vorbereiten" am Nachweis: Entwurf drüben löschen, hier neu übertragen.
      *
-     * @param  array{api_key: ?string, base_url: string, defaults: array<string, mixed>}  $config
+     * @param  array<string, mixed>  $defaults
      * @return array<string, mixed>
      */
-    private function invoicePayload(BillingTransfer $transfer, array $config, string $contactId, string $marker): array {
+    private function invoicePayload(BillingTransfer $transfer, array $defaults, string $contactId, string $marker): array {
         $customer = $transfer->customer;
-        $defaults = (array) $config['defaults'];
         $currency = $customer->currency->value;
 
         $lineItems = $this->lineItems($transfer, $currency, $defaults);
@@ -236,18 +234,6 @@ class LexofficeTarget implements FacturationTarget {
             : $markerLine;
 
         return $payload;
-    }
-
-    /**
-     * @return array{api_key: ?string, base_url: string, defaults: array<string, mixed>, request_interval: float}
-     */
-    private function config(BillingTransfer $transfer): array {
-        $config = LexofficeConfig::resolve($transfer->organization_id);
-        if (empty($config['api_key'])) {
-            throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_not_configured'));
-        }
-
-        return $config;
     }
 
     // ── Positionen ──────────────────────────────────────────────────────
@@ -312,25 +298,14 @@ class LexofficeTarget implements FacturationTarget {
      * Kontakt-Auflösung in drei Stufen: Nachweis bzw. Kontaktsuche
      * ({@see LexofficeContactLookup}) → pushContact (bestehender Mechanismus,
      * legt Kontakt + ExternalReference an).
-     *
-     * @param  array{api_key: ?string, base_url: string, defaults: array<string, mixed>, request_interval: float}  $config
      */
-    private function resolveContactId(Customer $customer, Client $client, array $config): string {
+    private function resolveContactId(Customer $customer, Client $client): string {
         $known = $this->contacts->find($customer, $client);
         if ($known !== null) {
             return $known;
         }
 
-        // Bestehender pushContact-Mechanismus (mit der für die Org aufgelösten
-        // Konfiguration — analog LexofficePlugin::healthCheck()).
-        $plugin = new LexofficePlugin(new LexofficeService(
-            apiKey: $config['api_key'],
-            mapper: new LexofficeMapper,
-            defaults: (array) $config['defaults'],
-            baseUrl: (string) $config['base_url'],
-            requestInterval: $config['request_interval'],
-        ));
-
-        return $plugin->pushContact($customer);
+        // Bestehender pushContact-Mechanismus; er überträgt mit den Zugangsdaten der Organisation des Kunden.
+        return (new LexofficePlugin)->pushContact($customer);
     }
 }

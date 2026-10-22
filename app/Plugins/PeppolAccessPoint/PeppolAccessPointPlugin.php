@@ -58,12 +58,11 @@ class PeppolAccessPointPlugin extends AbstractPlugin implements PeppolTransportP
     }
 
     public function peppolAccessPoint(?int $organizationId = null): ?AccessPointClientInterface {
-        $config = PeppolAccessPointConfig::resolve($organizationId);
-        if ($config['base_url'] === '' || $config['api_key'] === '') {
+        if (! PeppolAccessPointConfig::isConfigured($organizationId)) {
             return null;
         }
 
-        return new RestAccessPointClient($config);
+        return new RestAccessPointClient(PeppolAccessPointConfig::resolve($organizationId));
     }
 
     public function peppolSenderId(?int $organizationId = null): ?string {
@@ -130,7 +129,7 @@ class PeppolAccessPointPlugin extends AbstractPlugin implements PeppolTransportP
         }
 
         $config = PeppolAccessPointConfig::resolve((int) $organization->id);
-        if ($config['base_url'] === '' || $config['api_key'] === '') {
+        if (! PeppolAccessPointConfig::isConfigured((int) $organization->id)) {
             return PluginHealth::degraded(__('peppol-access-point::peppol.health.not_configured'), code: 'not_configured');
         }
 

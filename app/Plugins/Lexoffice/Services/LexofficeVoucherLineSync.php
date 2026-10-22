@@ -19,7 +19,6 @@ use App\Models\Platform\Organization;
 use App\Models\Reselling\ResalePeriodLink;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
-use App\Plugins\Lexoffice\LexofficeConfig;
 use App\Plugins\Lexoffice\Models\{LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\{DB, Log};
@@ -58,26 +57,10 @@ final class LexofficeVoucherLineSync {
 
     private ?Client $client = null;
 
-    private float $requestInterval;
-
-    /**
-     * @param  float|null  $requestInterval  Anfrageabstand in Sekunden; null = Einstellung der gebundenen Organisation
-     */
+    /** @param  int|null  $organizationId  null = gebundene Organisation bzw. Einzelplatz-Konfiguration */
     public function __construct(
-        private readonly string $apiKey,
-        private readonly string $baseUrl = 'https://api.lexware.io/v1',
-        ?float $requestInterval = null,
-    ) {
-        $this->requestInterval = $requestInterval ?? LexofficeConfig::requestInterval();
-    }
-
-    /** Tests: kein Anfrageabstand, keine Retry-Wartezeit. */
-    public function withoutThrottle(): self {
-        $this->requestInterval = 0.0;
-        $this->client = null;
-
-        return $this;
-    }
+        private readonly ?int $organizationId,
+    ) {}
 
     /**
      * Rechnungen ohne Positionen nachladen — neueste zuerst, höchstens $limit.
@@ -362,6 +345,6 @@ final class LexofficeVoucherLineSync {
     }
 
     private function client(): Client {
-        return $this->client ??= app(LexofficeClientFactory::class)->sdk($this->apiKey, $this->baseUrl, $this->requestInterval);
+        return $this->client ??= app(LexofficeClientFactory::class)->for($this->organizationId);
     }
 }

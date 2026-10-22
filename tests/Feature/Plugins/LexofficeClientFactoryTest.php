@@ -12,10 +12,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Plugins;
 
+use APIToolkit\Contracts\Abstracts\API\ClientAbstract;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\User;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
+use App\Plugins\Lexoffice\Exceptions\LexofficeNotConfiguredException;
 use App\Plugins\Lexoffice\Jobs\SyncOwnerVouchersJob;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
@@ -65,10 +67,19 @@ final class LexofficeClientFactoryTest extends TestCase {
             /** @var list<float> */
             public array $intervals = [];
 
+            /** @var list<?float> */
+            public array $sdkIntervals = [];
+
             public function client(string $pluginId, string $baseUrl, float $requestInterval = 0.0, ?bool $allowPrivateNetwork = null): PluginApiClient {
                 $this->intervals[] = $requestInterval;
 
                 return parent::client($pluginId, $baseUrl, $requestInterval, $allowPrivateNetwork);
+            }
+
+            public function sdkClient(string $pluginId, string $baseUrl, callable $make, ?float $requestInterval = null): ClientAbstract {
+                $this->sdkIntervals[] = $requestInterval;
+
+                return parent::sdkClient($pluginId, $baseUrl, $make, $requestInterval);
             }
         };
         app()->instance(PluginHttpFactory::class, $fake);
@@ -89,13 +100,13 @@ final class LexofficeClientFactoryTest extends TestCase {
         ]);
         $fake = $this->recordingHttp();
         $factory = new class extends LexofficeClientFactory {
-            /** @var list<?float> */
-            public array $sdkIntervals = [];
+            /** @var list<?int> */
+            public array $organizations = [];
 
-            public function sdk(string $apiKey, string $baseUrl, ?float $requestInterval = null): Client {
-                $this->sdkIntervals[] = $requestInterval;
+            public function for(?int $organizationId): Client {
+                $this->organizations[] = $organizationId;
 
-                return parent::sdk($apiKey, $baseUrl, $requestInterval);
+                return parent::for($organizationId);
             }
         };
         app()->instance(LexofficeClientFactory::class, $factory);
@@ -104,10 +115,11 @@ final class LexofficeClientFactoryTest extends TestCase {
 
         (new SyncOwnerVouchersJob($this->organization->id, 'customer', $customer->id))->withFakeQueueInteractions()->handle();
 
-        // Belegliste und Zahlungen laufen nur noch über den SDK-Client, mit dem Abstand der Organisation.
+        // Belegliste und Zahlungen laufen über den SDK-Client der Organisation des Jobs, mit ihrem Abstand.
         $this->assertSame([], $fake->intervals, 'kein roher API-Client');
-        $this->assertNotSame([], $factory->sdkIntervals);
-        $this->assertSame([1.25], array_values(array_unique($factory->sdkIntervals)));
+        $this->assertNotSame([], $factory->organizations);
+        $this->assertSame([$this->organization->id], array_values(array_unique($factory->organizations)));
+        $this->assertSame([1.25], array_values(array_unique($fake->sdkIntervals)));
     }
 
     /** Der SDK-Client bekommt Abstand, Budget und Weiterleitungsprüfung wie der API-Client; der Test-Transport bleibt ungedrosselt. */
@@ -116,20 +128,39 @@ final class LexofficeClientFactoryTest extends TestCase {
         app()->instance(PluginHttpFactory::class, new PluginHttpFactory);
         $factory = app(LexofficeClientFactory::class);
 
-        $explicit = $factory->sdk('lex-key', 'https://api.lexware.io/v1', 1.25);
-        $this->assertSame(1.25, $explicit->getRequestInterval());
-        $this->assertSame(LexofficeClientFactory::MAX_RETRIES, $explicit->getMaxRetries());
-        $transport = (fn () => $this->client)->call($explicit);
+        $client = $factory->for($this->organization->id);
+        $this->assertSame(1.25, $client->getRequestInterval(), 'Abstand aus der Einstellung der Organisation');
+        $this->assertSame(LexofficeClientFactory::MAX_RETRIES, $client->getMaxRetries());
+        $transport = (fn () => $this->client)->call($client);
         $this->assertInstanceOf(\Closure::class, $transport->getConfig('allow_redirects')['on_redirect'] ?? null, 'Weiterleitungen laufen durch die SSRF-Schranke');
 
-        $this->assertSame(1.25, $factory->sdk('lex-key', 'https://api.lexware.io/v1')->getRequestInterval(), 'ohne Angabe der Abstand der gebundenen Organisation');
-        $this->assertSame(Client::MIN_INTERVAL, $factory->sdk('lex-key', 'https://api.lexware.io/v1', 0.2)->getRequestInterval(), 'nie unter der Untergrenze des SDK');
-        $this->assertSame(0.0, $factory->sdk('lex-key', 'https://api.lexware.io/v1', 0.0)->getRequestInterval(), '0 schaltet die Drossel ab');
+        $this->setInterval('0.2');
+        $this->assertSame(Client::MIN_INTERVAL, $factory->for($this->organization->id)->getRequestInterval(), 'nie unter der Untergrenze des SDK');
+        $this->setInterval('0');
+        $this->assertSame(0.0, $factory->for($this->organization->id)->getRequestInterval(), '0 schaltet die Drossel ab');
 
+        $this->setInterval('1.25');
         FakePluginHttp::fake();
-        $faked = $factory->sdk('lex-key', 'https://api.lexware.io/v1', 1.25);
+        $faked = $factory->for($this->organization->id);
         $this->assertSame(0.0, $faked->getRequestInterval());
         $this->assertSame(LexofficeClientFactory::MAX_RETRIES, $faked->getMaxRetries());
+    }
+
+    /** Ohne Schlüssel der Organisation baut die Fabrik keinen Client. */
+    public function test_an_organization_without_key_gets_no_client(): void {
+        $other = \App\Models\Platform\Organization::factory()->create();
+
+        $this->assertFalse(app(LexofficeClientFactory::class)->isConfigured($other->id));
+        $this->expectException(LexofficeNotConfiguredException::class);
+        app(LexofficeClientFactory::class)->for($other->id);
+    }
+
+    private function setInterval(string $seconds): void {
+        $setting = \App\Models\Platform\PluginSetting::query()->withoutGlobalScopes()
+            ->where('organization_id', $this->organization->id)->where('plugin_id', LexofficePlugin::ID)->firstOrFail();
+        // settings ist verschlüsselt gespeichert — immer über das Modell schreiben.
+        $setting->settings = ['api_key' => 'lex-key', 'request_interval' => $seconds];
+        $setting->save();
     }
 
     public function test_a_job_goes_back_to_the_queue_while_another_run_holds_the_api_lock(): void {

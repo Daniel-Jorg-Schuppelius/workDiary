@@ -15,7 +15,7 @@ namespace App\Plugins\Easybill\Services;
 use App\Enums\Billing\{DocumentDirection, DocumentKind};
 use App\Enums\Finance\AccountingVoucherState;
 use App\Plugins\Easybill\Api\EasybillClientFactory;
-use App\Plugins\Easybill\{EasybillConfig, EasybillPlugin};
+use App\Plugins\Easybill\{EasybillPlugin};
 use App\Services\Finance\Accounting\Vouchers\{MirroredVoucher, VoucherMirror, VoucherPuller};
 use Illuminate\Support\Carbon;
 
@@ -59,9 +59,7 @@ class EasybillVoucherPullService implements VoucherPuller {
     }
 
     public function isConfigured(int $organizationId): bool {
-        $config = EasybillConfig::resolve($organizationId);
-
-        return ! empty($config['api_key']);
+        return app(EasybillClientFactory::class)->isConfigured($organizationId);
     }
 
     /** @return array{read: int, created: int, updated: int, skipped: int} */

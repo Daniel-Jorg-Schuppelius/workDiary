@@ -17,7 +17,7 @@ use App\Models\Platform\{PluginSetting, User};
 use App\Models\Travel\{Expense, ExpenseCategory};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
-use App\Plugins\Lexoffice\Services\{LexofficeExpenseLinkProvider, LexofficeMapper, LexofficeService};
+use App\Plugins\Lexoffice\Services\{LexofficeExpenseLinkProvider};
 use App\Plugins\PluginManager;
 use App\Services\Billing\NullExpenseLinkProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -54,7 +54,6 @@ final class ExpenseVoucherPushTest extends TestCase {
             'enabled' => true,
             'settings' => ['api_key' => 'test-key'],
         ]);
-        app()->instance(LexofficeService::class, new LexofficeService('test-key', new LexofficeMapper));
 
         $this->category = ExpenseCategory::query()->create([
             'organization_id' => $this->organization->id,

@@ -407,6 +407,16 @@ nimmt ungeordnet die erste Zeile. Vergeben mit
 `PermissionsSeeder::RETIRED` (der Seeder löscht es samt Zuordnungen) — nie nur
 den Enum-Fall streichen.
 
+## Plugin-Zugangsdaten nur über die Client-Fabrik (2026-10-22)
+
+Zugangsdaten eines Plugins stehen nur in `<Name>Config`, `Api/` (Client und
+`<Name>ClientFactory::for(?int $organizationId)` mit `isConfigured()`) und den
+Admin-Controllern, die sie eingeben oder testen. Dienste, Jobs, Befehle und
+Plugin-Klasse holen den Client aus der Fabrik für die Organisation des
+Datensatzes — kein `$config['api_key']`, kein Client aus Rohwerten, keine
+Singletons mit Schlüssel, kein `forgetInstance()` (Gate
+`PluginCredentialsRuleTest`; Lexoffice-Dienste nehmen nur `?int $organizationId`).
+
 ## Verweise
 
 Die gesamte Entwicklungs-/Architekturdoku liegt im Schwester-Repo

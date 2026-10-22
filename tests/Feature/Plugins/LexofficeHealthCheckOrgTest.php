@@ -13,7 +13,6 @@ namespace Tests\Feature\Plugins;
 use App\Enums\Plugin\PluginHealthStatus;
 use App\Models\Platform\{Organization, PluginSetting, PluginState};
 use App\Plugins\Lexoffice\LexofficePlugin;
-use App\Plugins\Lexoffice\Services\{LexofficeMapper, LexofficeService};
 use App\Plugins\PluginHealth;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\FakePluginHttp;
@@ -33,9 +32,11 @@ class LexofficeHealthCheckOrgTest extends TestCase {
         app()->forgetInstance('currentOrganization');
     }
 
-    /** Injizierter Service ist bewusst unkonfiguriert → ein OK kann nur aus der DB-Org stammen. */
+    /** Ohne ENV-Schlüssel kann ein OK nur aus der Einstellung der gebundenen Organisation stammen. */
     private function plugin(): LexofficePlugin {
-        return new LexofficePlugin(new LexofficeService(null, new LexofficeMapper));
+        config(['plugins.lexoffice.api_key' => null]);
+
+        return new LexofficePlugin;
     }
 
     private function orgWithKey(string $key): Organization {

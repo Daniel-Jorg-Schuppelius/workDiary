@@ -16,7 +16,7 @@ use App\Models\Platform\Organization;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
 use App\Plugins\Support\{MatchingTimeImportService, MirrorsCreatedEntries, RemoteTimeWriter, TimeWritebackDispatcher};
-use App\Plugins\Toggl\Api\TogglApiClient;
+use App\Plugins\Toggl\Api\{TogglApiClient, TogglClientFactory};
 use App\Plugins\Toggl\Exceptions\TogglApiException;
 use App\Plugins\Toggl\Support\TogglQuotaGuard;
 use App\Plugins\Toggl\{TogglConfig, TogglPlugin};
@@ -95,7 +95,7 @@ class TogglOutboxDispatcher extends TimeWritebackDispatcher implements MirrorsCr
             return null;
         }
 
-        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id'], $config['request_interval']);
+        $client = app(TogglClientFactory::class)->for($organizationId);
 
         return $client->isConfigured() ? $client : null;
     }

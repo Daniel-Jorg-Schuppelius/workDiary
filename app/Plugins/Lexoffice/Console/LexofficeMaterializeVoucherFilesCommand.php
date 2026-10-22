@@ -11,6 +11,7 @@
 namespace App\Plugins\Lexoffice\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
+use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\LexofficeConfig;
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use App\Plugins\Lexoffice\Services\LexofficeVoucherFileService;
@@ -40,13 +41,13 @@ class LexofficeMaterializeVoucherFilesCommand extends Command {
         $failures = 0;
         foreach ($organizations as $org) {
             $config = LexofficeConfig::resolve($org->id);
-            if (! is_string($config['api_key']) || $config['api_key'] === '') {
+            if (! app(LexofficeClientFactory::class)->isConfigured($org->id)) {
                 $this->warn("Organisation #{$org->id} ({$org->name}): Lexoffice nicht konfiguriert — übersprungen.");
 
                 continue;
             }
 
-            $service = new LexofficeVoucherFileService($config['api_key'], $config['base_url'], $config['request_interval']);
+            $service = new LexofficeVoucherFileService($org->id);
             $stored = 0;
             $empty = 0;
             $errors = 0;

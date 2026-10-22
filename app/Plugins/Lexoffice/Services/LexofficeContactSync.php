@@ -21,12 +21,11 @@ use App\Models\Supplier\Supplier;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy;
 use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
-use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
+use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Services\Stammdaten\{ContactNumberAdopter, ContactPersons};
 use CommonToolkit\ValueObjects\VatNumber;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Lexoffice\API\Endpoints\ContactsEndpoint;
-use RuntimeException;
 
 /**
  * Pull-Sync für Lexoffice-Kontakte. Verbindet existierende workDiary-Datensätze
@@ -57,15 +56,11 @@ class LexofficeContactSync {
     public function sync(
         Organization $organization,
         LexofficeMatchPolicy $policy,
-        ?string $apiKey,
-        string $baseUrl = 'https://api.lexware.io/v1',
         bool $createMissingLocal = false,
         string $only = 'both',
         bool $stageUnmatched = false,
     ): array {
-        if ($apiKey === null || $apiKey === '') {
-            throw new RuntimeException('Lexoffice API key is not configured (LEXOFFICE_API_KEY).');
-        }
+        $client = app(LexofficeClientFactory::class)->for((int) $organization->id);
 
         $this->counters = [
             'matched' => 0,
@@ -83,8 +78,7 @@ class LexofficeContactSync {
             'supplier_unmatched' => 0,
         ];
 
-        // Abstand der Organisation ausdrücklich — Konsole und Queue binden keinen Organisationskontext.
-        $contacts = new ContactsEndpoint(app(LexofficeClientFactory::class)->sdk($apiKey, $baseUrl, LexofficeConfig::requestInterval((int) $organization->id)));
+        $contacts = new ContactsEndpoint($client);
 
         $page = 0;
         $pageSize = 100;

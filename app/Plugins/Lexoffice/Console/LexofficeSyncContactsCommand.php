@@ -11,6 +11,7 @@
 namespace App\Plugins\Lexoffice\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
+use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use App\Plugins\Lexoffice\Services\LexofficeContactSync;
@@ -52,7 +53,7 @@ class LexofficeSyncContactsCommand extends Command {
                 continue;
             }
 
-            if (! is_string($config['api_key']) || $config['api_key'] === '') {
+            if (! app(LexofficeClientFactory::class)->isConfigured($org->id)) {
                 $this->warn("Organisation #{$org->id} ({$org->name}): Lexoffice nicht konfiguriert — übersprungen.");
 
                 continue;
@@ -70,10 +71,10 @@ class LexofficeSyncContactsCommand extends Command {
             }
 
             try {
-                Cache::lock(LexofficeConfig::apiLockKey((int) $org->id), 1800)->block(LexofficeConfig::API_LOCK_WAIT_SCHEDULED, function () use ($sync, $org, $policy, $config, $createMissing, $only, $stageUnmatched): void {
+                Cache::lock(LexofficeConfig::apiLockKey((int) $org->id), 1800)->block(LexofficeConfig::API_LOCK_WAIT_SCHEDULED, function () use ($sync, $org, $policy, $createMissing, $only, $stageUnmatched): void {
                     $this->info("Sync Lexoffice-Kontakte für Organisation #{$org->id} ({$org->name}) [policy={$policy->value}, only={$only}]...");
                     try {
-                        $result = $sync->sync($org, $policy, $config['api_key'], $config['base_url'], $createMissing, $only, $stageUnmatched);
+                        $result = $sync->sync($org, $policy, $createMissing, $only, $stageUnmatched);
                         $this->line("  Kunden    — matched: {$result['matched']}, linked: {$result['linked']}, created: {$result['created']}, conflicts: {$result['conflicts']}, updated: {$result['updated']}, unmatched: {$result['unmatched']}");
                         $this->line("  Lieferanten — matched: {$result['supplier_matched']}, linked: {$result['supplier_linked']}, created: {$result['supplier_created']}, conflicts: {$result['supplier_conflicts']}, updated: {$result['supplier_updated']}, unmatched: {$result['supplier_unmatched']}");
                         $this->line("  ambiguous (übersprungen): {$result['ambiguous']}");

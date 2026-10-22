@@ -76,8 +76,7 @@ class BuchhaltungsButlerPlugin extends AbstractPlugin {
             return $organization;
         }
 
-        $config = BhbConfig::resolve((int) $organization->id);
-        if (empty($config['api_client']) || empty($config['api_secret']) || empty($config['api_key'])) {
+        if (! app(BhbClientFactory::class)->isConfigured((int) $organization->id)) {
             return PluginHealth::degraded(__('BuchhaltungsButler ist nicht konfiguriert (API-Client/-Secret/-Key fehlen).'), 'not_configured');
         }
 

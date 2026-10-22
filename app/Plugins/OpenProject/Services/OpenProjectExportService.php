@@ -14,7 +14,7 @@ use App\Models\Integration\ExternalReference;
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\{Project, Task};
 use App\Models\Time\TimeEntry;
-use App\Plugins\OpenProject\Api\OpenProjectApiClient;
+use App\Plugins\OpenProject\Api\{OpenProjectApiClient, OpenProjectClientFactory};
 use App\Plugins\OpenProject\Exceptions\{OpenProjectApiException, OpenProjectRateLimitException};
 use App\Plugins\OpenProject\OpenProjectPlugin;
 use App\Plugins\Support\AbstractTimeEntryPushService;
@@ -48,7 +48,7 @@ class OpenProjectExportService extends AbstractTimeEntryPushService {
     protected function prepareExport(Organization $organization, array $config): ?string {
         $this->projectExternalIds = [];
 
-        $this->client = new OpenProjectApiClient($config['api_token'] ?? null, $config['base_url'] ?? null, (bool) ($config['allow_private_network'] ?? false));
+        $this->client = app(OpenProjectClientFactory::class)->for((int) $organization->id);
         if (! $this->client->isConfigured()) {
             return (string) __('OpenProject ist nicht konfiguriert.');
         }

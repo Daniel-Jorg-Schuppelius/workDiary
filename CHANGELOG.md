@@ -1724,6 +1724,19 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
 - Wiederverkauf: CSV- und Excel-Exporte schreiben das Export-Audit wie das PDF.
 - Unterschriften auf Stundenzetteln und Entsorgungsnachweisen halten die
   Grenze `TIMESHEET_SIGNATURE_MAX_KB` ein.
+- Plugins: Zugangsdaten stehen nur noch in der Konfiguration, im `Api/`-Ordner
+  und in den Admin-Controllern (Gate `PluginCredentialsRuleTest`).
+  - Lexoffice-Dienste entstehen je Organisation, ihren SDK-Client baut allein
+    `LexofficeClientFactory::for()`. Damit entfallen die Singletons mit
+    API-Schlüssel und das Verwerfen von Instanzen beim Organisationswechsel. In
+    langlebigen Prozessen konnte ein injizierter Dienst sonst den Schlüssel
+    der zuvor bearbeiteten Organisation behalten.
+  - „Nicht eingerichtet“ meldet Lexoffice einheitlich mit dem übersetzten Text.
+  - Toggl, OpenProject, Clockify und Kimai bauen ihre API-Clients über eine
+    eigene Fabrik statt an vier bis zehn Stellen; der Kimai-Healthcheck kennt
+    jetzt die Zeitzone der Organisation.
+  - easybill, sevDesk, BuchhaltungsButler, Billbee, Mollie, Peppol, seven.io
+    und sipgate prüfen „eingerichtet?“ an einer Stelle.
 - Lexoffice: Das Plugin spricht Lexware nur noch über das SDK an
   (lexoffice-php-sdk 2.0). Ungültige Belege, etwa mit einer Kontakt-ID ohne
   UUID-Form, werden vor dem Senden abgewiesen. Gespeicherte Antworten enthalten

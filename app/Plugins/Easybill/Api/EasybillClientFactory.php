@@ -25,7 +25,7 @@ use RuntimeException;
 class EasybillClientFactory {
     public function for(int $organizationId): EasybillClient {
         $config = EasybillConfig::resolve($organizationId);
-        if (empty($config['api_key'])) {
+        if (! self::hasCredentials($config)) {
             throw new RuntimeException((string) __('easybill::finance.error.easybill_not_configured'));
         }
 
@@ -35,5 +35,14 @@ class EasybillClientFactory {
             (string) $config['base_url'],
             (int) $config['rate_limit_per_minute'],
         );
+    }
+
+    public function isConfigured(int $organizationId): bool {
+        return self::hasCredentials(EasybillConfig::resolve($organizationId));
+    }
+
+    /** @param  array<string, mixed>  $config */
+    private static function hasCredentials(array $config): bool {
+        return ! (empty($config['api_key']));
     }
 }

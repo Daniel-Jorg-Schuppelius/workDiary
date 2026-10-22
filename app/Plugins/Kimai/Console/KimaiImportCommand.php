@@ -14,6 +14,7 @@ namespace App\Plugins\Kimai\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Platform\Organization;
+use App\Plugins\Kimai\Api\KimaiClientFactory;
 use App\Plugins\Kimai\{KimaiConfig, KimaiPlugin};
 use App\Plugins\Kimai\Services\KimaiImportService;
 use App\Plugins\Support\Console\ChecksPluginSwitch;
@@ -41,7 +42,7 @@ class KimaiImportCommand extends Command {
                 return;
             }
             $config = KimaiConfig::resolve((int) $org->id);
-            if ($config['api_token'] === null || $config['base_url'] === null) {
+            if (! app(KimaiClientFactory::class)->isConfigured((int) $org->id)) {
                 return;
             }
 

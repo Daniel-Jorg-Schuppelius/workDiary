@@ -11,8 +11,9 @@
 namespace App\Plugins\Lexoffice\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
+use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
-use App\Plugins\Lexoffice\Services\{LexofficeInvoiceService, LexofficeVoucherSync};
+use App\Plugins\Lexoffice\Services\LexofficeVoucherSync;
 use App\Plugins\Lexoffice\Services\Retainer\LexofficeRetainerVouchers;
 use App\Plugins\Support\Console\ChecksPluginSwitch;
 use Illuminate\Console\Command;
@@ -48,16 +49,16 @@ class LexofficeSyncVouchersCommand extends Command {
                 continue;
             }
 
-            if (! is_string($config['api_key']) || $config['api_key'] === '') {
+            if (! app(LexofficeClientFactory::class)->isConfigured($org->id)) {
                 $this->warn("Organisation #{$org->id} ({$org->name}): Lexoffice nicht konfiguriert — übersprungen.");
 
                 continue;
             }
             try {
-                Cache::lock(LexofficeConfig::apiLockKey((int) $org->id), 1800)->block(LexofficeConfig::API_LOCK_WAIT_SCHEDULED, function () use ($org, $config): void {
+                Cache::lock(LexofficeConfig::apiLockKey((int) $org->id), 1800)->block(LexofficeConfig::API_LOCK_WAIT_SCHEDULED, function () use ($org): void {
                     $this->info("Sync Lexoffice-Belege für Organisation #{$org->id} ({$org->name})...");
                     try {
-                        $result = (new LexofficeVoucherSync($config['api_key'], $config['base_url'], $config['request_interval']))->sync($org);
+                        $result = (new LexofficeVoucherSync($org->id))->sync($org);
                         $this->line("  Kontakte: {$result['contacts']}, created: {$result['created']}, updated: {$result['updated']}, archived: {$result['archived']}, Positionen: {$result['lines']}");
                         if (isset($result['lines_error'])) {
                             // Positions-Sync (Feature 152) ist nur gemeldet — der Belegsync steht.
@@ -69,13 +70,9 @@ class LexofficeSyncVouchersCommand extends Command {
 
                     // Feature 098: Retainer-Zahlstatus in den Leistungssaldo spiegeln —
                     // unabhängig vom Belegsync (Review 2026-09-10, C8: ein Fehler dort
-                    // ließ den Abgleich entfallen). Org-Kontext binden und das Service-
-                    // Singleton verwerfen — der Netto-Nachschlag am Beleg löst seinen
-                    // API-Key sonst über die zuletzt gebundene Organisation auf.
+                    // ließ den Abgleich entfallen).
                     try {
                         $retainer = $this->withOrganizationContext($org, function () use ($org): array {
-                            app()->forgetInstance(LexofficeInvoiceService::class);
-
                             return app(LexofficeRetainerVouchers::class)->reconcile($org);
                         });
                         $this->line("  Retainer: gebucht {$retainer['booked']}, storniert {$retainer['revoked']}, neu verknüpft {$retainer['linked']}");

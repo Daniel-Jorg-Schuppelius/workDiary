@@ -18,7 +18,7 @@ use App\Models\Platform\Organization;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
 use App\Plugins\Support\{AbstractTimeEntryPushService, MatchingTimeImportService, RemoteTimeFingerprint};
-use App\Plugins\Toggl\Api\TogglApiClient;
+use App\Plugins\Toggl\Api\{TogglApiClient, TogglClientFactory};
 use App\Plugins\Toggl\Exceptions\TogglApiException;
 use App\Plugins\Toggl\Support\TogglQuotaGuard;
 use App\Plugins\Toggl\TogglPlugin;
@@ -65,12 +65,7 @@ class TogglExportService extends AbstractTimeEntryPushService {
             return (string) __('Toggl-Stunden-Quota erschöpft — Übertragung pausiert bis zum Reset.');
         }
 
-        $this->client = new TogglApiClient(
-            is_string($config['api_token'] ?? null) ? $config['api_token'] : null,
-            is_string($config['base_url'] ?? null) ? $config['base_url'] : 'https://api.track.toggl.com/api/v9',
-            is_numeric($config['workspace_id'] ?? null) ? (int) $config['workspace_id'] : null,
-            is_numeric($config['request_interval'] ?? null) ? (float) $config['request_interval'] : 0.0,
-        );
+        $this->client = app(TogglClientFactory::class)->for((int) $organization->id);
         if (! $this->client->isConfigured()) {
             return (string) __('Toggl-API ist nicht konfiguriert (API-Token in den Plugin-Einstellungen hinterlegen).');
         }

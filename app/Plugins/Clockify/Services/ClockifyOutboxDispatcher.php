@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Clockify\Services;
 
 use App\Models\Integration\IntegrationOutboxEntry;
-use App\Plugins\Clockify\Api\ClockifyApiClient;
+use App\Plugins\Clockify\Api\{ClockifyClientFactory};
 use App\Plugins\Clockify\{ClockifyConfig, ClockifyPlugin};
 use App\Plugins\Clockify\Exceptions\ClockifyApiException;
 use App\Plugins\Support\{MirrorsCreatedEntries, RemoteTimeWriter, TimeWritebackDispatcher};
@@ -81,12 +81,7 @@ class ClockifyOutboxDispatcher extends TimeWritebackDispatcher implements Mirror
             return null;
         }
 
-        $client = new ClockifyApiClient(
-            $config['api_key'],
-            $config['base_url'],
-            $config['reports_base_url'],
-            $config['workspace_id'],
-        );
+        $client = app(ClockifyClientFactory::class)->for($organizationId);
 
         return $client->isConfigured() ? $client : null;
     }

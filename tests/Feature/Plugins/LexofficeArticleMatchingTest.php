@@ -15,7 +15,7 @@ use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Integration\IntegrationInboxItem;
 use App\Plugins\Lexoffice\Services\LexofficeArticleSync;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
@@ -29,10 +29,12 @@ use Tests\TestCase;
 final class LexofficeArticleMatchingTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
+        $this->pluginSecret('lexoffice', ['api_key' => 'test-key']);
     }
 
     public function test_sync_links_articles_by_sku_and_gtin_and_inboxes_ambiguous(): void {
@@ -103,7 +105,7 @@ final class LexofficeArticleMatchingTest extends TestCase {
             ]),
         ]);
 
-        $result = (new LexofficeArticleSync('test-key'))->sync($this->organization);
+        $result = (new LexofficeArticleSync($this->organization->id))->sync($this->organization);
 
         $this->assertSame(4, $result['created']);
         $this->assertSame(2, $result['linked']);
@@ -165,7 +167,7 @@ final class LexofficeArticleMatchingTest extends TestCase {
         ]);
 
         FakePluginHttp::fake(['https://api.lexware.io/v1/articles*' => $stub]);
-        (new LexofficeArticleSync('test-key'))->sync($this->organization);
+        (new LexofficeArticleSync($this->organization->id))->sync($this->organization);
         $this->assertDatabaseHas('integration_inbox_items', [
             'external_id' => 'lex-dup',
             'status' => IntegrationInboxStatus::Open->value,
@@ -176,7 +178,7 @@ final class LexofficeArticleMatchingTest extends TestCase {
         ArticleVariant::query()->where('sku', 'DUP-A')->update(['gtin' => null]);
 
         FakePluginHttp::fake(['https://api.lexware.io/v1/articles*' => $stub]);
-        $result = (new LexofficeArticleSync('test-key'))->sync($this->organization);
+        $result = (new LexofficeArticleSync($this->organization->id))->sync($this->organization);
 
         $this->assertSame(1, $result['linked']);
         $this->assertDatabaseHas('external_article_mappings', [

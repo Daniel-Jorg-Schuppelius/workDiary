@@ -11,6 +11,7 @@
 namespace App\Plugins\Toggl\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
+use App\Plugins\Toggl\Api\TogglClientFactory;
 use App\Plugins\Toggl\Services\TogglImportService;
 use App\Plugins\Toggl\TogglConfig;
 use Illuminate\Console\Command;
@@ -37,7 +38,7 @@ class TogglBackfillReferencesCommand extends Command {
 
         foreach ($organizations as $org) {
             $config = TogglConfig::resolve($org->id);
-            if (! $config['enabled'] || $config['api_token'] === null) {
+            if (! $config['enabled'] || ! app(TogglClientFactory::class)->isConfigured($org->id)) {
                 continue;
             }
 

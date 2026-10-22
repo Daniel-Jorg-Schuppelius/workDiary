@@ -16,7 +16,6 @@ use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\{PluginSetting, User};
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
-use App\Plugins\Lexoffice\Services\LexofficeService;
 use App\Plugins\PluginManager;
 use App\Plugins\SevDesk\SevDeskPlugin;
 use App\Services\Finance\Accounting\ContactPushService;
@@ -237,7 +236,6 @@ class ContactNumberIssuingTest extends TestCase {
         $this->fakeLexoffice(10099);
 
         OrganizationContext::runWithout(function (): void {
-            app()->forgetInstance(LexofficeService::class);
             app()->forgetInstance(PluginManager::class);
             app(PluginManager::class);
         });

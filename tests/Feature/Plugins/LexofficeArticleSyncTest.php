@@ -33,6 +33,7 @@ class LexofficeArticleSyncTest extends TestCase {
         parent::setUp();
         $this->setUpOrganization();
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
+        $this->pluginSecret('lexoffice', ['api_key' => 'test-key']);
     }
 
     // ── Konflikt-Strategie gilt auch für Artikel (Entscheidung 2026-10-06) ──
@@ -116,7 +117,7 @@ class LexofficeArticleSyncTest extends TestCase {
             'https://api.lexware.io/v1/articles/lex-8' => FakePluginHttp::response($this->remoteItem(version: 3), 200),
         ]);
 
-        $adopted = (new LexofficeArticleSync('test-key'))->adoptRemote($local);
+        $adopted = (new LexofficeArticleSync($this->organization->id))->adoptRemote($local);
 
         $fake->assertSentCount(1);
         $this->assertSame($local->id, $adopted->id);
@@ -135,7 +136,7 @@ class LexofficeArticleSyncTest extends TestCase {
         ]);
 
         try {
-            (new LexofficeArticleSync('test-key'))->adoptRemote($local);
+            (new LexofficeArticleSync($this->organization->id))->adoptRemote($local);
             $this->fail('Ein Fehler von Lexoffice muss durchschlagen.');
         } catch (LexofficeApiException $e) {
             $this->assertStringContainsString('404', $e->getMessage());
@@ -151,7 +152,7 @@ class LexofficeArticleSyncTest extends TestCase {
         $this->pluginSecret('lexoffice', ['api_key' => 'test-key', 'match_policy' => 'manual_review']);
         $local = $this->dirtyLocalArticle();
         $this->fakeArticleList();
-        (new LexofficeArticleSync('test-key'))->withPolicy(\App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy::ManualReview)->sync($this->organization);
+        (new LexofficeArticleSync($this->organization->id))->withPolicy(\App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy::ManualReview)->sync($this->organization);
         $conflict = PendingExternalConflict::query()->sole();
 
         $manager = $this->userWithRole(UserRole::Buchhaltung->value);
@@ -208,7 +209,7 @@ class LexofficeArticleSyncTest extends TestCase {
             ],
         ]);
 
-        $sync = new LexofficeArticleSync('test-key');
+        $sync = new LexofficeArticleSync($this->organization->id);
         $result = $sync->sync($this->organization);
 
         $this->assertSame(3, $result['created']);
@@ -252,7 +253,7 @@ class LexofficeArticleSyncTest extends TestCase {
             },
         ]);
 
-        $sync = new LexofficeArticleSync('test-key');
+        $sync = new LexofficeArticleSync($this->organization->id);
         $sync->sync($this->organization);
         $this->assertSame(2, LexofficeArticle::active()->count());
 
@@ -288,7 +289,7 @@ class LexofficeArticleSyncTest extends TestCase {
             'is_dirty' => true,
         ]);
 
-        (new \App\Plugins\Lexoffice\Services\LexofficeArticleSync('test-key'))->push($article);
+        (new \App\Plugins\Lexoffice\Services\LexofficeArticleSync($this->organization->id))->push($article);
 
         $article->refresh();
         $this->assertSame('lex-new', $article->external_id);
@@ -322,7 +323,7 @@ class LexofficeArticleSyncTest extends TestCase {
         ]);
 
         try {
-            (new LexofficeArticleSync('test-key'))->push($article);
+            (new LexofficeArticleSync($this->organization->id))->push($article);
             $this->fail('Ohne Steuersatz darf kein Artikel hinübergehen — das SDK sendete 0 %.');
         } catch (\RuntimeException $e) {
             $this->assertStringContainsString('no tax rate', $e->getMessage());
@@ -352,7 +353,7 @@ class LexofficeArticleSyncTest extends TestCase {
             'is_dirty' => true,
         ]);
 
-        (new \App\Plugins\Lexoffice\Services\LexofficeArticleSync('test-key'))->push($article);
+        (new \App\Plugins\Lexoffice\Services\LexofficeArticleSync($this->organization->id))->push($article);
 
         $article->refresh();
         $this->assertSame(3, $article->external_version);
@@ -391,7 +392,7 @@ class LexofficeArticleSyncTest extends TestCase {
             'is_dirty' => true,
         ]);
 
-        (new LexofficeArticleSync('test-key'))->push($article);
+        (new LexofficeArticleSync($this->organization->id))->push($article);
 
         $this->assertSame(['GET', 'PUT'], array_map(static fn (array $entry): string => $entry['request']->getMethod(), $fake->recorded()));
         $this->assertSame(6, json_decode((string) $fake->recorded()[1]['request']->getBody(), true)['version'] ?? null);
@@ -422,7 +423,7 @@ class LexofficeArticleSyncTest extends TestCase {
             ], 200),
         ]);
 
-        $sync = (new \App\Plugins\Lexoffice\Services\LexofficeArticleSync('test-key'))
+        $sync = (new \App\Plugins\Lexoffice\Services\LexofficeArticleSync($this->organization->id))
             ->withPolicy(\App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy::ManualReview);
 
         $result = $sync->sync($this->organization);
@@ -474,7 +475,7 @@ class LexofficeArticleSyncTest extends TestCase {
             ], 200),
         ]);
 
-        $result = (new \App\Plugins\Lexoffice\Services\LexofficeArticleSync('test-key'))
+        $result = (new \App\Plugins\Lexoffice\Services\LexofficeArticleSync($this->organization->id))
             ->withPolicy(\App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy::ManualReview)
             ->sync($this->organization);
 
@@ -507,7 +508,7 @@ class LexofficeArticleSyncTest extends TestCase {
             ], 200),
         ]);
 
-        $sync = (new \App\Plugins\Lexoffice\Services\LexofficeArticleSync('test-key'))
+        $sync = (new \App\Plugins\Lexoffice\Services\LexofficeArticleSync($this->organization->id))
             ->withPolicy(\App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy::LocalWins);
 
         $sync->sync($this->organization);

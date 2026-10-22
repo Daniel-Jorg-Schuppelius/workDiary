@@ -11,6 +11,7 @@
 namespace App\Plugins\OpenProject\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
+use App\Plugins\OpenProject\Api\OpenProjectClientFactory;
 use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
 use App\Plugins\OpenProject\Services\OpenProjectExportService;
 use App\Plugins\Support\Console\ChecksPluginSwitch;
@@ -42,7 +43,7 @@ class OpenProjectPushCommand extends Command {
             if (! $this->pluginEnabledFor(OpenProjectPlugin::ID, (int) $org->id)) {
                 continue;
             }
-            if ($config['api_token'] === null || $config['base_url'] === null) {
+            if (! app(OpenProjectClientFactory::class)->isConfigured($org->id)) {
                 $this->warn("Organisation #{$org->id} ({$org->name}): keine OpenProject-Zugangsdaten — übersprungen.");
 
                 continue;

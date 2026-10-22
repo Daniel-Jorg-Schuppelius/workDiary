@@ -13,9 +13,10 @@ namespace App\Plugins\Kimai;
 use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TimeImporter};
-use App\Plugins\Kimai\Api\KimaiApiClient;
+use App\Plugins\Kimai\Api\{KimaiClientFactory};
 use App\Plugins\Kimai\Exceptions\KimaiApiException;
 use App\Plugins\Kimai\Services\{KimaiExportService, KimaiGroupBooker, KimaiImportService};
+use App\Plugins\Support\PluginOrgContext;
 
 /**
  * Kimai-Plugin (Migrationsimport MVP-134 + API-Rückkanal).
@@ -63,8 +64,7 @@ class KimaiPlugin extends AbstractPlugin implements TimeImporter {
 
     /** Health-Check: pingt die Kimai-API; ohne API-Zugang ist CSV der reguläre Modus (= ok). */
     public function healthCheck(): PluginHealth {
-        $config = KimaiConfig::resolve();
-        $client = new KimaiApiClient($config['api_token'], $config['base_url'], allowPrivateNetwork: $config['allow_private_network']);
+        $client = app(KimaiClientFactory::class)->for(PluginOrgContext::currentId());
 
         return PluginHealth::pingHealth(
             ping: fn (): bool => $client->ping(),

@@ -11,7 +11,7 @@
 namespace App\Plugins\Kimai\Services;
 
 use App\Models\Platform\Organization;
-use App\Plugins\Kimai\Api\KimaiApiClient;
+use App\Plugins\Kimai\Api\{KimaiApiClient, KimaiClientFactory};
 use App\Plugins\Kimai\{KimaiConfig, KimaiPlugin};
 use App\Plugins\Kimai\Sources\KimaiCsvParser;
 use App\Plugins\Support\{ImportedTimeEntry, MatchingTimeImportService, RemoteSyncWindow};
@@ -59,12 +59,7 @@ class KimaiImportService extends MatchingTimeImportService implements CsvAndApiT
      * @return array{created: int, skipped: int, unmatched: int, unresolved_users?: int, updated?: int, conflicts?: int, removed?: int, error?: string}
      */
     public function importFromApi(Organization $organization, array $config, ?CarbonImmutable $from = null, ?CarbonImmutable $to = null): array {
-        $client = new KimaiApiClient(
-            is_string($config['api_token'] ?? null) ? $config['api_token'] : null,
-            is_string($config['base_url'] ?? null) ? $config['base_url'] : null,
-            Tz::ofOrganization($organization),
-            (bool) ($config['allow_private_network'] ?? false),
-        );
+        $client = app(KimaiClientFactory::class)->for((int) $organization->id);
         if (! $client->isConfigured()) {
             return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'unresolved_users' => 0, 'error' => (string) __('Kimai-API ist nicht konfiguriert (Basis-URL und API-Token in den Plugin-Einstellungen hinterlegen).')];
         }

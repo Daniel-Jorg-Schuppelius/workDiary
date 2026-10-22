@@ -17,7 +17,8 @@ use App\Models\Customer\Customer;
 use App\Models\Supplier\Supplier;
 use App\Models\Time\TimeEntry;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
-use App\Plugins\Lexoffice\Exceptions\{LexofficeApiException, LexofficeRateLimitException};
+use App\Plugins\Lexoffice\Exceptions\{LexofficeApiException, LexofficeNotConfiguredException, LexofficeRateLimitException};
+use App\Plugins\Lexoffice\LexofficeConfig;
 use App\Services\Finance\Accounting\ContactPushService;
 use App\Services\Stammdaten\ContactIdentity;
 use Carbon\CarbonImmutable;
@@ -41,17 +42,22 @@ use RuntimeException;
 class LexofficeService {
     private ?Client $client = null;
 
+    /** @var array<string, mixed>|null */
+    private ?array $defaults = null;
+
+    /** @param  int|null  $organizationId  null = gebundene Organisation bzw. Einzelplatz-Konfiguration */
     public function __construct(
-        private readonly ?string $apiKey,
-        private readonly LexofficeMapper $mapper,
-        /** @var array<string, mixed> */
-        private readonly array $defaults = [],
-        private readonly string $baseUrl = 'https://api.lexware.io/v1',
-        private readonly ?float $requestInterval = null,
+        private readonly ?int $organizationId,
+        private readonly LexofficeMapper $mapper = new LexofficeMapper,
     ) {}
 
     public function isConfigured(): bool {
-        return $this->apiKey !== null && $this->apiKey !== '';
+        return app(LexofficeClientFactory::class)->isConfigured($this->organizationId);
+    }
+
+    /** @return array<string, mixed> */
+    private function defaults(): array {
+        return $this->defaults ??= LexofficeConfig::resolve($this->organizationId)['defaults'];
     }
 
     /**
@@ -107,15 +113,7 @@ class LexofficeService {
      * 429 beim POST, den das Toolkit nicht wiederholt (Befund 2026-10-17).
      */
     private function client(): Client {
-        $this->assertConfigured();
-
-        return $this->client ??= app(LexofficeClientFactory::class)->sdk((string) $this->apiKey, $this->baseUrl, $this->requestInterval);
-    }
-
-    private function assertConfigured(): void {
-        if (! $this->isConfigured()) {
-            throw new RuntimeException('Lexoffice API key is not configured (LEXOFFICE_API_KEY).');
-        }
+        return $this->client ??= app(LexofficeClientFactory::class)->for($this->organizationId);
     }
 
     /**
@@ -129,7 +127,10 @@ class LexofficeService {
      * @return array{id: string, number: ?string}
      */
     public function pushContact(Customer|Supplier $party, ?string $linkedId = null): array {
-        $this->assertConfigured();
+        // Ohne Schlüssel blieben Suche und Abruf still leer und ein Duplikat entstünde nicht erkennbar.
+        if (! $this->isConfigured()) {
+            throw new LexofficeNotConfiguredException();
+        }
         $linked = $linkedId !== null ? $this->fetchContact($linkedId) : null;
         $existing = $linked ?? $this->findSameContact($party);
         // Führt die Buchhaltung die Stammdaten, wird ein Treffer nur verknüpft, nicht überschrieben.
@@ -138,8 +139,8 @@ class LexofficeService {
         }
 
         $payload = $party instanceof Supplier
-            ? $this->mapper->supplierToContactPayload($party, $this->defaults)
-            : $this->mapper->customerToContactPayload($party, $this->defaults);
+            ? $this->mapper->supplierToContactPayload($party, $this->defaults())
+            : $this->mapper->customerToContactPayload($party, $this->defaults());
 
         $contacts = new ContactsEndpoint($this->client());
         if ($existing !== null) {
@@ -288,7 +289,7 @@ class LexofficeService {
         CarbonImmutable $to,
         ?string $externalContactId = null,
     ): array {
-        $defaults = $this->defaults + ['external_contact_id' => $externalContactId];
+        $defaults = $this->defaults() + ['external_contact_id' => $externalContactId];
         $payload = $this->mapper->timeEntriesToVoucherPayload($customer, $entries, $from, $to, $defaults);
 
         $endpoint = new VouchersEndpoint($this->client());

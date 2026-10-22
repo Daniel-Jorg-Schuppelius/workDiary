@@ -12,6 +12,7 @@ namespace App\Plugins\Lexoffice\Jobs;
 
 use App\Models\Customer\Customer;
 use App\Models\Supplier\Supplier;
+use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Jobs\Concerns\RunsUnderApiLock;
 use App\Plugins\Lexoffice\LexofficeConfig;
 use App\Plugins\Lexoffice\Services\LexofficeVoucherSync;
@@ -56,7 +57,7 @@ class SyncOwnerVouchersJob implements ShouldBeUnique, ShouldQueue {
     public function handle(): void {
         $config = LexofficeConfig::resolve($this->organizationId);
         // Abgeschaltet steht auch der Job — sonst liefe er mit einem Schlüssel aus der Installation weiter (S-28, k2-06).
-        if ($config['enabled'] !== true || ! is_string($config['api_key']) || $config['api_key'] === '') {
+        if ($config['enabled'] !== true || ! app(LexofficeClientFactory::class)->isConfigured($this->organizationId)) {
             return;
         }
 
@@ -68,8 +69,8 @@ class SyncOwnerVouchersJob implements ShouldBeUnique, ShouldQueue {
             return;
         }
 
-        $this->underApiLock($this->organizationId, static function () use ($config, $owner): void {
-            (new LexofficeVoucherSync($config['api_key'], $config['base_url'], $config['request_interval']))->syncFor($owner);
+        $this->underApiLock($this->organizationId, static function () use ($owner): void {
+            (new LexofficeVoucherSync((int) $owner->organization_id))->syncFor($owner);
         });
     }
 }

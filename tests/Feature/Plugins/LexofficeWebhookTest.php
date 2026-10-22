@@ -18,7 +18,7 @@ use App\Plugins\Lexoffice\Services\LexofficeWebhookService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Psr\Http\Message\RequestInterface;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
@@ -30,26 +30,23 @@ use Tests\TestCase;
 class LexofficeWebhookTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     private const SECRET = 'test-webhook-token-123456';
 
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
+        $this->pluginSecret('lexoffice', ['api_key' => 'test-key']);
         Queue::fake();
     }
 
     /** @param array<string, mixed> $extra */
     private function enableLexoffice(array $extra = []): void {
-        PluginSetting::query()->create([
-            'organization_id' => $this->organization->id,
-            'plugin_id' => LexofficePlugin::ID,
-            'enabled' => true,
-            'settings' => array_merge([
-                'api_key' => 'lex-key',
-                'webhook_secret' => self::SECRET,
-            ], $extra),
-        ]);
+        $this->pluginSecret('lexoffice', array_merge([
+            'api_key' => 'lex-key',
+            'webhook_secret' => self::SECRET,
+        ], $extra));
     }
 
     /** @return array<string, string> */
@@ -145,12 +142,7 @@ class LexofficeWebhookTest extends TestCase {
     }
 
     public function test_webhooks_command_generates_secret_and_creates_subscriptions(): void {
-        PluginSetting::query()->create([
-            'organization_id' => $this->organization->id,
-            'plugin_id' => LexofficePlugin::ID,
-            'enabled' => true,
-            'settings' => ['api_key' => 'lex-key'],
-        ]);
+        $this->pluginSecret('lexoffice', ['api_key' => 'lex-key']);
 
         $fake = $this->fakeSubscriptions();
 
@@ -187,7 +179,7 @@ class LexofficeWebhookTest extends TestCase {
             ['subscriptionId' => 'sub-9', 'eventType' => 'contact.changed', 'callbackUrl' => 'https://fremd.test/hook'],
         ]);
 
-        $result = (new LexofficeWebhookService('lex-key'))->ensureSubscriptions($callback);
+        $result = (new LexofficeWebhookService($this->organization->id))->ensureSubscriptions($callback);
 
         $this->assertSame(['created' => 4, 'existing' => 1], $result);
         $posted = [];
@@ -213,7 +205,7 @@ class LexofficeWebhookTest extends TestCase {
             ['subscriptionId' => 'sub-9', 'eventType' => 'contact.changed', 'callbackUrl' => 'https://fremd.test/hook'],
         ]);
 
-        $this->assertSame(2, (new LexofficeWebhookService('lex-key'))->removeSubscriptions($callback));
+        $this->assertSame(2, (new LexofficeWebhookService($this->organization->id))->removeSubscriptions($callback));
 
         $deleted = array_values(array_map(
             static fn (array $entry): string => (string) $entry['request']->getUri(),
@@ -230,7 +222,7 @@ class LexofficeWebhookTest extends TestCase {
             ['subscriptionId' => 'sub-1', 'eventType' => 'contact.created', 'callbackUrl' => $callback],
         ]);
 
-        $result = (new LexofficeWebhookService('lex-key'))->ensureSubscriptions($callback);
+        $result = (new LexofficeWebhookService($this->organization->id))->ensureSubscriptions($callback);
 
         $this->assertSame(['created' => 4, 'existing' => 1], $result);
     }
@@ -248,7 +240,7 @@ class LexofficeWebhookTest extends TestCase {
         $this->assertSame([
             ['id' => 'sub-7', 'eventType' => 'delivery-note.status.changed', 'callbackUrl' => 'https://fremd.test/hook'],
             ['id' => 'sub-8', 'eventType' => '', 'callbackUrl' => 'https://fremd.test/new'],
-        ], (new LexofficeWebhookService('lex-key'))->subscriptions());
+        ], (new LexofficeWebhookService($this->organization->id))->subscriptions());
         $this->assertSame(['GET https://api.lexware.io/v1/event-subscriptions'], array_map(
             static fn (array $entry): string => $entry['request']->getMethod() . ' ' . $entry['request']->getUri(),
             $fake->recorded(),
@@ -259,7 +251,7 @@ class LexofficeWebhookTest extends TestCase {
         FakePluginHttp::fake(['https://api.lexware.io/v1/event-subscriptions' => FakePluginHttp::response(['message' => 'Unauthorized'], 401)]);
 
         try {
-            (new LexofficeWebhookService('lex-key'))->subscriptions();
+            (new LexofficeWebhookService($this->organization->id))->subscriptions();
             $this->fail('401 muss durchschlagen.');
         } catch (LexofficeApiException $e) {
             $this->assertSame('Lexoffice: Event-Subscriptions nicht abrufbar (HTTP 401).', $e->getMessage());

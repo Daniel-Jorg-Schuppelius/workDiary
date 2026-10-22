@@ -17,8 +17,8 @@ use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
-use App\Plugins\Clockify\Api\ClockifyApiClient;
-use App\Plugins\Clockify\{ClockifyConfig, ClockifyPlugin};
+use App\Plugins\Clockify\Api\{ClockifyApiClient, ClockifyClientFactory};
+use App\Plugins\Clockify\{ClockifyPlugin};
 use App\Plugins\Clockify\Exceptions\ClockifyApiException;
 use App\Plugins\Support\{AbstractTimeEntryPushService, ImportedTimeEntry, MatchingTimeImportService, RemoteTimeFingerprint};
 use Carbon\CarbonImmutable;
@@ -52,12 +52,7 @@ class ClockifyExportService extends AbstractTimeEntryPushService {
             return (string) __('Clockify-Übertragung ist deaktiviert (Plugin-Einstellung „Zeit-Übertragung aktivieren").');
         }
 
-        $this->client = new ClockifyApiClient(
-            is_string($config['api_key'] ?? null) ? $config['api_key'] : null,
-            is_string($config['base_url'] ?? null) && $config['base_url'] !== '' ? $config['base_url'] : ClockifyConfig::DEFAULT_BASE_URL,
-            is_string($config['reports_base_url'] ?? null) && $config['reports_base_url'] !== '' ? $config['reports_base_url'] : ClockifyConfig::DEFAULT_REPORTS_BASE_URL,
-            is_string($config['workspace_id'] ?? null) ? $config['workspace_id'] : null,
-        );
+        $this->client = app(ClockifyClientFactory::class)->for((int) $organization->id);
         if (! $this->client->isConfigured()) {
             return (string) __('Clockify-API ist nicht konfiguriert (API-Key in den Plugin-Einstellungen hinterlegen).');
         }

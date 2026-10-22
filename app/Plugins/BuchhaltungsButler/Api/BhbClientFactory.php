@@ -25,7 +25,7 @@ use RuntimeException;
 class BhbClientFactory {
     public function for(int $organizationId): BhbApiClient {
         $config = BhbConfig::resolve($organizationId);
-        if (empty($config['api_client']) || empty($config['api_secret']) || empty($config['api_key'])) {
+        if (! self::hasCredentials($config)) {
             throw new RuntimeException((string) __('BuchhaltungsButler ist für diese Organisation nicht konfiguriert (API-Client/-Secret/-Key fehlen).'));
         }
 
@@ -39,5 +39,14 @@ class BhbClientFactory {
             (string) $config['base_url'],
             60.0 / $ratePerMinute,
         );
+    }
+
+    public function isConfigured(int $organizationId): bool {
+        return self::hasCredentials(BhbConfig::resolve($organizationId));
+    }
+
+    /** @param  array<string, mixed>  $config */
+    private static function hasCredentials(array $config): bool {
+        return ! (empty($config['api_client']) || empty($config['api_secret']) || empty($config['api_key']));
     }
 }

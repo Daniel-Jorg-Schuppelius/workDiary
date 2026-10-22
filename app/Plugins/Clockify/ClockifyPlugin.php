@@ -12,10 +12,11 @@ namespace App\Plugins\Clockify;
 
 use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Clockify\Api\ClockifyApiClient;
+use App\Plugins\Clockify\Api\{ClockifyClientFactory};
 use App\Plugins\Clockify\Exceptions\ClockifyApiException;
 use App\Plugins\Clockify\Services\{ClockifyGroupBooker, ClockifyImportService};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TimeImporter};
+use App\Plugins\Support\PluginOrgContext;
 
 /**
  * Clockify-Import-Plugin (Migrationsimport, MVP-134).
@@ -63,8 +64,7 @@ class ClockifyPlugin extends AbstractPlugin implements TimeImporter {
 
     /** Health-Check: löst den API-Benutzer auf; ohne API-Key ist CSV der reguläre Modus (= ok). */
     public function healthCheck(): PluginHealth {
-        $config = ClockifyConfig::resolve();
-        $client = new ClockifyApiClient($config['api_key'], $config['base_url'], $config['reports_base_url'], $config['workspace_id']);
+        $client = app(ClockifyClientFactory::class)->for(PluginOrgContext::currentId());
 
         return PluginHealth::pingHealth(
             // currentUser() wirft bei Fehlern — der false-Zweig ist unerreichbar.

@@ -15,11 +15,10 @@ namespace App\Plugins\Lexoffice\Services;
 use APIToolkit\Entities\ID;
 use APIToolkit\Exceptions\ApiException;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
-use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
+use App\Plugins\Lexoffice\Exceptions\{LexofficeApiException, LexofficeNotConfiguredException};
 use Lexoffice\API\Client;
 use Lexoffice\API\Endpoints\EventSubscriptionsEndpoint;
 use Lexoffice\Entities\EventSubscriptions\EventSubscription;
-use RuntimeException;
 
 /**
  * Verwaltung der Lexoffice-Event-Subscriptions (Audit 2026-08, Welle 1.3):
@@ -39,14 +38,13 @@ class LexofficeWebhookService {
 
     private ?Client $client = null;
 
+    /** @param  int|null  $organizationId  null = gebundene Organisation bzw. Einzelplatz-Konfiguration */
     public function __construct(
-        private readonly ?string $apiKey,
-        private readonly string $baseUrl = 'https://api.lexware.io/v1',
-        private readonly ?float $requestInterval = null,
+        private readonly ?int $organizationId,
     ) {}
 
     private function client(): Client {
-        return $this->client ??= app(LexofficeClientFactory::class)->sdk((string) $this->apiKey, $this->baseUrl, $this->requestInterval);
+        return $this->client ??= app(LexofficeClientFactory::class)->for($this->organizationId);
     }
 
     /**
@@ -134,8 +132,8 @@ class LexofficeWebhookService {
     }
 
     private function assertConfigured(): void {
-        if ($this->apiKey === null || $this->apiKey === '') {
-            throw new RuntimeException('Lexoffice API key is not configured (LEXOFFICE_API_KEY).');
+        if (! app(LexofficeClientFactory::class)->isConfigured($this->organizationId)) {
+            throw new LexofficeNotConfiguredException();
         }
     }
 }

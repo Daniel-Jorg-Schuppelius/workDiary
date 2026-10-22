@@ -25,7 +25,7 @@ use RuntimeException;
 class SevDeskClientFactory {
     public function for(int $organizationId): SevDeskClient {
         $config = SevDeskConfig::resolve($organizationId);
-        if (empty($config['api_key'])) {
+        if (! self::hasCredentials($config)) {
             throw new RuntimeException((string) __('sevdesk::finance.error.sevdesk_not_configured'));
         }
 
@@ -35,5 +35,14 @@ class SevDeskClientFactory {
             (string) $config['base_url'],
             $organizationId,
         );
+    }
+
+    public function isConfigured(int $organizationId): bool {
+        return self::hasCredentials(SevDeskConfig::resolve($organizationId));
+    }
+
+    /** @param  array<string, mixed>  $config */
+    private static function hasCredentials(array $config): bool {
+        return ! (empty($config['api_key']));
     }
 }

@@ -12,6 +12,7 @@ namespace App\Plugins\Toggl\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
 use App\Plugins\Support\Console\ChecksPluginSwitch;
+use App\Plugins\Toggl\Api\TogglClientFactory;
 use App\Plugins\Toggl\Services\TogglExportService;
 use App\Plugins\Toggl\{TogglConfig, TogglPlugin};
 use Carbon\CarbonImmutable;
@@ -47,7 +48,7 @@ class TogglPushCommand extends Command {
             if (! $this->pluginEnabledFor(TogglPlugin::ID, (int) $org->id) || ! $config['export_enabled']) {
                 continue;
             }
-            if ($config['api_token'] === null) {
+            if (! app(TogglClientFactory::class)->isConfigured($org->id)) {
                 $this->warn("Organisation #{$org->id} ({$org->name}): kein Toggl-API-Token — übersprungen.");
 
                 continue;

@@ -19,17 +19,19 @@ use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Services\LexofficeContactSync;
 use App\Services\Stammdaten\CustomerMergeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 class LexofficeContactSyncTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
+        $this->pluginSecret('lexoffice', ['api_key' => 'test-key']);
     }
 
     /** @param list<array<string, mixed>> $items */
@@ -61,7 +63,6 @@ class LexofficeContactSyncTest extends TestCase {
         $result = (new LexofficeContactSync)->sync(
             $this->organization,
             LexofficeMatchPolicy::LocalWins,
-            'test-key',
         );
 
         $this->assertSame(1, $result['linked']);
@@ -97,7 +98,6 @@ class LexofficeContactSyncTest extends TestCase {
         $result = (new LexofficeContactSync)->sync(
             $this->organization,
             LexofficeMatchPolicy::LexofficeWins,
-            'test-key',
         );
 
         $this->assertSame(1, $result['updated']);
@@ -125,7 +125,6 @@ class LexofficeContactSyncTest extends TestCase {
         $result = (new LexofficeContactSync)->sync(
             $this->organization,
             LexofficeMatchPolicy::ManualReview,
-            'test-key',
         );
 
         $this->assertSame(1, $result['conflicts']);
@@ -167,7 +166,6 @@ class LexofficeContactSyncTest extends TestCase {
         $result = (new LexofficeContactSync)->sync(
             $this->organization,
             LexofficeMatchPolicy::LocalWins,
-            'test-key',
             createMissingLocal: true,
         );
 
@@ -217,7 +215,6 @@ class LexofficeContactSyncTest extends TestCase {
         $result = (new LexofficeContactSync)->sync(
             $this->organization,
             LexofficeMatchPolicy::LocalWins,
-            'test-key',
             createMissingLocal: true,
         );
 
@@ -256,7 +253,6 @@ class LexofficeContactSyncTest extends TestCase {
         $result = (new LexofficeContactSync)->sync(
             $this->organization,
             LexofficeMatchPolicy::LocalWins,
-            'test-key',
         );
 
         $this->assertSame(1, $result['matched']);
@@ -308,7 +304,6 @@ class LexofficeContactSyncTest extends TestCase {
         (new LexofficeContactSync)->sync(
             $this->organization,
             LexofficeMatchPolicy::LexofficeWins,
-            'test-key',
         );
 
         $customer->refresh();
@@ -347,7 +342,6 @@ class LexofficeContactSyncTest extends TestCase {
         (new LexofficeContactSync)->sync(
             $this->organization,
             LexofficeMatchPolicy::LocalWins,
-            'test-key',
         );
 
         $customer->refresh();
@@ -372,7 +366,7 @@ class LexofficeContactSyncTest extends TestCase {
             'roles' => ['customer' => ['number' => 20099]],
         ]]);
 
-        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LexofficeWins, 'test-key');
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LexofficeWins);
 
         $this->assertNull($customer->fresh()->vat_id, 'Steuernummer gehört nicht in das USt-IdNr.-Feld');
     }
@@ -406,7 +400,7 @@ class LexofficeContactSyncTest extends TestCase {
             ['id' => 'lex-c', 'company' => ['name' => 'Danach'], 'roles' => ['customer' => ['number' => 10002]]],
         ]);
 
-        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins, 'test-key');
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins);
 
         $this->assertStringStartsWith('ENTWURF-', (string) $blocked->fresh()?->number);
         $this->assertSame('10002', $next->fresh()?->number);
@@ -422,10 +416,10 @@ class LexofficeContactSyncTest extends TestCase {
         $holder = Customer::factory()->create(['organization_id' => $this->organization->id, 'number' => '10001', 'number_source' => 'local']);
         $blocked = $this->linkedDraftCustomer('Blockiert', 'lex-b');
         $this->fakeContacts([['id' => 'lex-b', 'company' => ['name' => 'Blockiert'], 'roles' => ['customer' => ['number' => 10001]]]]);
-        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins, 'test-key');
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins);
 
         $holder->update(['number' => 'K-0001']);
-        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins, 'test-key');
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins);
 
         $this->assertSame('10001', $blocked->fresh()?->number);
         $this->assertDatabaseHas('integration_inbox_items', [
@@ -438,7 +432,7 @@ class LexofficeContactSyncTest extends TestCase {
         $holder = Customer::factory()->create(['organization_id' => $this->organization->id, 'number' => '10001', 'number_source' => 'local']);
         $blocked = $this->linkedDraftCustomer('Blockiert', 'lex-b');
         $this->fakeContacts([['id' => 'lex-b', 'company' => ['name' => 'Blockiert'], 'roles' => ['customer' => ['number' => 10001]]]]);
-        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins, 'test-key');
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins);
         $item = IntegrationInboxItem::query()->where('referenceable_id', $blocked->id)->firstOrFail();
         $admin = $this->orgAdmin();
 
@@ -453,12 +447,6 @@ class LexofficeContactSyncTest extends TestCase {
     }
 
     public function test_customer_created_from_lexoffice_carries_its_number_right_away(): void {
-        \App\Models\Platform\PluginSetting::create([
-            'organization_id' => $this->organization->id,
-            'plugin_id' => LexofficePlugin::ID,
-            'enabled' => true,
-            'settings' => ['api_key' => 'test-key'],
-        ]);
         app(\App\Services\Numbering\NumberSequenceService::class)
             ->setFormat($this->organization, \App\Enums\Numbering\NumberScope::Customer, ['source' => LexofficePlugin::ID]);
         $this->fakeContacts([[
@@ -467,7 +455,7 @@ class LexofficeContactSyncTest extends TestCase {
             'roles' => ['customer' => ['number' => 10050]],
         ]]);
 
-        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins, 'test-key', createMissingLocal: true);
+        (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins, createMissingLocal: true);
 
         $this->assertDatabaseHas('customers', [
             'organization_id' => $this->organization->id,
@@ -487,7 +475,7 @@ class LexofficeContactSyncTest extends TestCase {
             'https://api.lexware.io/v1/contacts*' => [$page('lex-p1', 'Seite Eins GmbH'), $page('lex-p2', 'Seite Zwei GmbH')],
         ]);
 
-        $result = (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins, 'test-key', createMissingLocal: true);
+        $result = (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins, createMissingLocal: true);
 
         $this->assertSame(2, $result['created']);
         $this->assertSame(
@@ -500,7 +488,7 @@ class LexofficeContactSyncTest extends TestCase {
         FakePluginHttp::fake(['https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['message' => 'forbidden'], 403)]);
 
         try {
-            (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins, 'test-key');
+            (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LocalWins);
             $this->fail('403 muss als LexofficeApiException durchschlagen.');
         } catch (LexofficeApiException $e) {
             $this->assertStringContainsString('403', $e->getMessage());

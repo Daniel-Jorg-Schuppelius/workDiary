@@ -22,19 +22,18 @@ use CommonToolkit\ValueObjects\Money;
  * Aufrufer entscheidet, ob er auf Brutto zurückfällt oder die Buchung auslässt.
  */
 class LexofficeVoucherNetAmount {
-    public function __construct(private readonly LexofficeInvoiceService $invoices) {}
-
     public function for(LexofficeVoucher $voucher): ?Money {
         if ($voucher->net_amount !== null) {
             return $voucher->net_amount;
         }
 
-        if (! $this->invoices->isConfigured() || $voucher->external_id === '') {
+        $invoices = new LexofficeInvoiceService((int) $voucher->organization_id);
+        if (! $invoices->isConfigured() || $voucher->external_id === '') {
             return null;
         }
 
         try {
-            $payload = $this->invoices->fetchInvoice($voucher->external_id);
+            $payload = $invoices->fetchInvoice($voucher->external_id);
         } catch (\Throwable) {
             return null;
         }

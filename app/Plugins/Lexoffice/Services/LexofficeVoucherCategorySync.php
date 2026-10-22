@@ -17,7 +17,6 @@ use APIToolkit\Exceptions\{ApiException, NotFoundException};
 use App\Models\Platform\Organization;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
-use App\Plugins\Lexoffice\LexofficeConfig;
 use App\Plugins\Lexoffice\Models\{LexofficePostingCategory, LexofficeVoucher, LexofficeVoucherCategory};
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Builder;
@@ -36,23 +35,10 @@ use Throwable;
 final class LexofficeVoucherCategorySync {
     private ?Client $client = null;
 
-    private float $requestInterval;
-
+    /** @param  int|null  $organizationId  null = gebundene Organisation bzw. Einzelplatz-Konfiguration */
     public function __construct(
-        private readonly string $apiKey,
-        private readonly string $baseUrl = 'https://api.lexware.io/v1',
-        ?float $requestInterval = null,
-    ) {
-        $this->requestInterval = $requestInterval ?? LexofficeConfig::requestInterval();
-    }
-
-    /** Tests: kein Anfrageabstand. */
-    public function withoutThrottle(): self {
-        $this->requestInterval = 0.0;
-        $this->client = null;
-
-        return $this;
-    }
+        private readonly ?int $organizationId,
+    ) {}
 
     /** @return array{synced: int, failed: int, remaining: int} */
     public function syncMissing(Organization|int $organization, int $limit = 100): array {
@@ -157,6 +143,6 @@ final class LexofficeVoucherCategorySync {
     }
 
     private function client(): Client {
-        return $this->client ??= app(LexofficeClientFactory::class)->sdk($this->apiKey, $this->baseUrl, $this->requestInterval);
+        return $this->client ??= app(LexofficeClientFactory::class)->for($this->organizationId);
     }
 }
