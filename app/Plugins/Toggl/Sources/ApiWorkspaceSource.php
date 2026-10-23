@@ -10,18 +10,18 @@
 
 namespace App\Plugins\Toggl\Sources;
 
-use App\Plugins\Toggl\Api\TogglApiClient;
+use App\Plugins\Toggl\Api\TogglApi;
 use Carbon\CarbonImmutable;
 
 /**
- * Workspace-Quelle aus der Toggl-API. Bindet einen {@see TogglApiClient} an
- * eine konkrete Workspace-ID und ein optionales Zeitfenster für die
- * Zeiteinträge (leer = vollständige Historie). Stammdaten kommen aus der
- * Track-API v9, die Zeiteinträge aus der Reports-API v3 (alle Benutzer).
+ * Workspace-Quelle aus der Toggl-API. Bindet einen {@see TogglApi}-Client
+ * (Track oder neues Toggl) an eine konkrete Workspace-ID und ein optionales
+ * Zeitfenster für die Zeiteinträge (leer = vollständige Historie); die
+ * Zeiteinträge aller Benutzer kommen aus der Report-Abfrage des Produkts.
  */
 final class ApiWorkspaceSource implements WorkspaceSourceInterface {
     public function __construct(
-        private readonly TogglApiClient $client,
+        private readonly TogglApi $client,
         private readonly int $workspaceId,
         private readonly ?CarbonImmutable $from = null,
         private readonly ?CarbonImmutable $to = null,

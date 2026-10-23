@@ -9,7 +9,7 @@
  */
 
 /*
- | Toggl Track. Importiert Projekt-/Zeitdaten per API (v9) oder Detailed-Report-CSV.
+ | Toggl Track bzw. neues Toggl. Importiert Projekt-/Zeitdaten per API oder Detailed-Report-CSV.
  | Toggl-Clients werden auf Kunden, Toggl-Projekte auf Projekte gematcht; nicht
  | Zuordenbares landet in der Toggl-Inbox. Eingehängt vom TogglServiceProvider
  | unter `plugins.toggl`. ENV dient nur als Fallback für Tests/Konsolen-Kontexte.
@@ -20,6 +20,15 @@ return [
     'base_url' => env('TOGGL_BASE_URL', 'https://api.track.toggl.com/api/v9'),
     // Optionaler Workspace-Filter; leer = alle Workspaces des Tokens.
     'workspace_id' => env('TOGGL_WORKSPACE_ID'),
+    // Quelle (track|focus): genau ein Toggl-Produkt wird gelesen und beschrieben.
+    'source' => env('TOGGL_SOURCE', 'track'),
+    // Neues Toggl (vormals Toggl 2.0 / Focus): API-Schlüssel toggl_sk_…,
+    // Organisation und Workspace optional (leer = über den Kontodienst ermitteln).
+    'focus_api_key' => env('TOGGL_FOCUS_API_KEY'),
+    'focus_base_url' => env('TOGGL_FOCUS_BASE_URL', 'https://focus.toggl.com/api'),
+    'accounts_url' => env('TOGGL_ACCOUNTS_URL', 'https://accounts.toggl.com'),
+    'focus_organization_id' => env('TOGGL_FOCUS_ORGANIZATION_ID'),
+    'focus_workspace_id' => env('TOGGL_FOCUS_WORKSPACE_ID'),
     // Toggl-Tarif (free|starter|premium|enterprise) → Drosselung passend zur
     // Stunden-Quota; leer = nur Burst-Schutz (1 Request/s).
     'api_plan' => env('TOGGL_API_PLAN'),

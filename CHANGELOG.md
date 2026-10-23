@@ -10,6 +10,18 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Toggl-Plugin mit Quellenwahl (Phase 159, Feature 178, MVP-1349–1351):
+  Unter „Toggl-Produkt“ wählt eine Organisation Toggl Track oder das neue
+  Toggl (vormals Toggl 2.0 / Focus) als einzige Quelle für Import,
+  Rückschreiben und Übertragung — bei der Live-Synchronisation von Toggl liest
+  das Plugin so nichts doppelt. Für das neue Toggl gibt es einen eigenen Client
+  (API-Schlüssel `toggl_sk_…`, Zeiten aller Mitglieder über die
+  Report-Abfrage, Organisation und Workspace aus den Einstellungen oder über
+  das Toggl-Konto). Nach einem Wechsel hängt der Import bereits übernommene
+  Einträge an die neue Quelle (Benutzer, Start und Ende), statt sie doppelt
+  anzulegen; offene Inbox-Fälle ziehen mit. Die Löschungserkennung und das
+  Rückschreiben sehen nur Einträge der gewählten Quelle. Das Plugin heißt
+  jetzt „Toggl“.
 - Nach dem Toolkit-Release (Phase 156, MVP-1275, 1298, 1300; erechnung-toolkit
   0.20, financial-formats 1.20): MT942 (Zwischenmeldung) wird als vorläufiger
   Auszug gelesen wie CAMT.052. Bieterkommentare folgen der Freischaltung des

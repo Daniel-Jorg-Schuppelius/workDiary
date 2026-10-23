@@ -16,6 +16,7 @@ use App\Models\Platform\Organization;
 use App\Models\Time\TimeEntry;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Toggl\Api\TogglClientFactory;
+use App\Plugins\Toggl\Enums\TogglSource;
 use App\Plugins\Toggl\Exceptions\TogglArchiveException;
 use App\Plugins\Toggl\Services\{TogglExportArchiveService, TogglExportImporter, TogglExportService, TogglImportService, TogglOptionBuilder, TogglUserMappingService};
 use App\Plugins\Toggl\Sources\{ApiWorkspaceSource, TogglCsvParser, TogglWorkspaceReader};
@@ -73,6 +74,7 @@ class TogglController extends Controller {
         return view('toggl::admin.import', [
             'inboxOpenCount' => $inboxOpenCount,
             'apiConfigured' => app(TogglClientFactory::class)->isConfigured($admin->organization_id),
+            'source' => $config['source'],
             'exportEnabled' => (bool) $config['export_enabled'],
             'singleUserMode' => $singleUserMode,
             'defaultUserName' => $defaultUserName,
@@ -118,7 +120,7 @@ class TogglController extends Controller {
 
         $config = TogglConfig::resolve($admin->organization_id);
         if (! app(TogglClientFactory::class)->isConfigured($admin->organization_id)) {
-            return back()->withErrors(['api_token' => __('Kein Toggl API-Token hinterlegt.')]);
+            return back()->withErrors(['api_token' => $config['source']->missingAccessMessage()]);
         }
 
         $to = CarbonImmutable::now();
@@ -142,16 +144,17 @@ class TogglController extends Controller {
 
         $config = TogglConfig::resolve($admin->organization_id);
         if (! app(TogglClientFactory::class)->isConfigured($admin->organization_id)) {
-            return back()->withErrors(['api_token' => __('Kein Toggl API-Token hinterlegt.')]);
+            return back()->withErrors(['api_token' => $config['source']->missingAccessMessage()]);
         }
 
-        $togglId = $this->togglEntryId($item);
+        // Nur IDs der gewählten Quelle — eine Track-ID adressiert im neuen Toggl nichts.
+        $togglId = $this->togglEntryId($item, $config['source']);
         if ($togglId === null) {
             return back()->withErrors(['item' => __('Keine Toggl-Eintrags-ID am Konflikt gefunden.')]);
         }
 
         $client = app(TogglClientFactory::class)->for($admin->organization_id);
-        $result = $client->fetchEntry($togglId);
+        $result = $client->fetchEntry($togglId, $this->entryWorkspaceId($item, $config['source']->entryKey($togglId)));
         if ($result['status'] === 'error') {
             return back()->withErrors(['item' => __('Fremdstand konnte nicht geladen werden (Toggl nicht erreichbar?).')]);
         }
@@ -177,15 +180,26 @@ class TogglController extends Controller {
             : (string) __('Fremdstand aus Toggl geladen.'));
     }
 
-    /** Numerische Toggl-Eintrags-ID aus external_id bzw. dedupe_key (`toggl:<id>`). */
-    private function togglEntryId(IntegrationInboxItem $item): ?int {
+    /** Numerische Toggl-Eintrags-ID aus external_id bzw. dedupe_key (`toggl:<id>` bzw. `focus:<id>`). */
+    private function togglEntryId(IntegrationInboxItem $item, TogglSource $source): ?int {
         foreach ([(string) $item->external_id, (string) $item->dedupe_key] as $haystack) {
-            if (preg_match('/toggl:(\d+)/', $haystack, $m) === 1) {
+            if (preg_match('/(?<![a-z])' . preg_quote($source->entryKeyPrefix(), '/') . '(\d+)/', $haystack, $m) === 1) {
                 return (int) $m[1];
             }
         }
 
         return null;
+    }
+
+    /** Workspace aus der Eintrags-Referenz — das neue Toggl adressiert Einträge darüber. */
+    private function entryWorkspaceId(IntegrationInboxItem $item, string $entryKey): ?int {
+        $payload = ExternalReference::query()
+            ->forPlugin((int) $item->organization_id, TogglPlugin::ID, TogglImportService::EXT_TYPE_ENTRY)
+            ->forExternalId($entryKey)
+            ->value('payload');
+        $workspaceId = is_array($payload) ? ($payload['workspace_id'] ?? null) : null;
+
+        return is_numeric($workspaceId) ? (int) $workspaceId : null;
     }
 
     public function uploadCsv(Request $request): RedirectResponse {
@@ -424,6 +438,7 @@ class TogglController extends Controller {
 
         return view('toggl::admin.import-api', [
             'tokenSet' => $tokenSet,
+            'source' => $config['source'],
             'workspaces' => $workspaces,
             'summary' => session('toggl_api_summary'),
             'customers' => $this->options->customerSelectOptions(),
@@ -458,7 +473,7 @@ class TogglController extends Controller {
 
         $config = TogglConfig::resolve($admin->organization_id);
         if (! app(TogglClientFactory::class)->isConfigured($admin->organization_id)) {
-            return back()->withErrors(['api_token' => __('Kein Toggl API-Token hinterlegt.')]);
+            return back()->withErrors(['api_token' => $config['source']->missingAccessMessage()]);
         }
 
         $from = ! empty($validated['date_from']) ? CarbonImmutable::parse($validated['date_from'])->startOfDay() : null;
@@ -497,9 +512,14 @@ class TogglController extends Controller {
                 : (string) __('Import abgeschlossen.'));
     }
 
-    /** @param array{created: int, skipped: int, unmatched: int, unresolved_users?: int, updated?: int, conflicts?: int, removed?: int, incomplete?: bool} $result */
+    /** @param array{created: int, skipped: int, unmatched: int, unresolved_users?: int, updated?: int, conflicts?: int, removed?: int, adopted?: int, incomplete?: bool} $result */
     private function importMessage(array $result): string {
         $message = (string) __(':created gebucht, :skipped übersprungen, :unmatched in der Inbox.', $result);
+
+        $adopted = (int) ($result['adopted'] ?? 0);
+        if ($adopted > 0) {
+            $message .= ' ' . __(':n bereits importierte Einträge der gewählten Toggl-Quelle zugeordnet.', ['n' => $adopted]);
+        }
 
         $unresolvedUsers = (int) ($result['unresolved_users'] ?? 0);
         if ($unresolvedUsers > 0) {

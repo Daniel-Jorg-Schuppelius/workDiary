@@ -1,7 +1,7 @@
 ---
 title: "Import Toggl"
 topic: admin.toggl
-version: 3
+version: 4
 keywords:
     - Toggl Track
     - importer des temps
@@ -13,6 +13,10 @@ keywords:
     - correspondances
     - mappage utilisateurs
     - rapport détaillé
+    - nouveau Toggl
+    - Toggl 2.0
+    - Toggl Focus
+    - synchronisation en direct
 audience:
     - admin
 related:
@@ -21,8 +25,8 @@ related:
     - admin.openproject
 ---
 
-L'import Toggl reprend les saisies de temps de Toggl Track dans
-WorkDiary. Par défaut, l'import ne fait que lire ; en option, les
+L'import Toggl reprend les saisies de temps de Toggl Track ou du
+nouveau Toggl dans WorkDiary. Par défaut, l'import ne fait que lire ; en option, les
 corrections peuvent être réécrites et les temps saisis localement
 transférés (réglages du plugin). Deux voies existent : l'**import API** (jeton API
 et période) et l'**import de fichier** (rapport détaillé CSV ou
@@ -33,6 +37,30 @@ les rejetez ; les mappings enregistrés permettent l'affectation
 automatique des imports futurs. Attention : des imports répétés de la
 même période peuvent créer des doublons, et le rejet d'entrées est
 définitif.
+
+Toggl Track ou le nouveau Toggl :
+
+- Sous **Produit Toggl** dans les paramètres du plugin, vous choisissez
+  d'où viennent les temps : **Toggl Track** ou le **nouveau Toggl**
+  (anciennement Toggl 2.0 ou Toggl Focus). La lecture, la réécriture et le
+  transfert ne concernent que le produit choisi.
+- Pour le nouveau Toggl, vous renseignez sa clé d'API (commence par
+  `toggl_sk_`). Les ID d'organisation et d'espace de travail sont
+  facultatifs ; sans eux, le plugin détermine les espaces de travail via
+  votre compte Toggl. Toggl n'autorise qu'une clé active par utilisateur –
+  en créer une nouvelle invalide la précédente.
+- Si vous utilisez la synchronisation en direct entre Track et le nouveau
+  Toggl, choisissez malgré tout une seule source : Toggl assure lui-même
+  l'alignement entre les deux produits.
+- Après un changement, l'import suivant rattache les saisies déjà reprises
+  à la nouvelle source (même utilisateur, début et fin) au lieu de les
+  recréer ; les cas ouverts de la boîte de réception suivent. Cela vaut
+  pour la période de récupération. Les saisies plus anciennes conservent
+  leur lien actuel et leurs corrections ne sont plus envoyées vers Toggl.
+  Au besoin, importez une fois sur une période plus longue
+  (`toggl:import --days=365`).
+- La détection des suppressions ne considère que les saisies de la source
+  choisie.
 
 Attribution des utilisateurs (MVP-509) : chaque entrée Toggl est
 attribuée à l'utilisateur WorkDiary correspondant via l'e-mail
@@ -69,6 +97,10 @@ Webhook (facultatif) :
   figurer.
 - Le webhook ne déclenche que l'import que la récupération horaire exécute
   aussi. S'il fait défaut, la récupération rattrape.
+- Le nouveau Toggl ne propose pas de webhooks. Si la synchronisation en
+  direct est active, un abonnement dans Toggl Track peut tout de même
+  déclencher la récupération plus tôt ; la lecture se fait toujours depuis
+  le nouveau Toggl.
 - Vous choisissez l'utilisateur par défaut du mode mono-utilisateur dans les
   paramètres du plugin sous **Enregistrer les temps pour l’utilisateur**,
   dans la liste des utilisateurs.

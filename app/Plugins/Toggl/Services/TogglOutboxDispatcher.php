@@ -15,8 +15,8 @@ use App\Models\Integration\{ExternalReference, IntegrationOutboxEntry};
 use App\Models\Platform\Organization;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
-use App\Plugins\Support\{MatchingTimeImportService, MirrorsCreatedEntries, RemoteTimeWriter, TimeWritebackDispatcher};
-use App\Plugins\Toggl\Api\{TogglApiClient, TogglClientFactory};
+use App\Plugins\Support\{MirrorsCreatedEntries, RemoteTimeWriter, TimeWritebackDispatcher};
+use App\Plugins\Toggl\Api\TogglClientFactory;
 use App\Plugins\Toggl\Exceptions\TogglApiException;
 use App\Plugins\Toggl\Support\TogglQuotaGuard;
 use App\Plugins\Toggl\{TogglConfig, TogglPlugin};
@@ -77,7 +77,7 @@ class TogglOutboxDispatcher extends TimeWritebackDispatcher implements MirrorsCr
 
         if ($timeEntry->project_id !== null) {
             $togglProjectId = ExternalReference::query()
-                ->forPlugin((int) $timeEntry->organization_id, TogglPlugin::ID, MatchingTimeImportService::EXT_TYPE_PROJECT_ID)
+                ->forPlugin((int) $timeEntry->organization_id, TogglPlugin::ID, TogglConfig::resolve((int) $timeEntry->organization_id)['source']->projectIdType())
                 ->where('referenceable_type', (new Project)->getMorphClass())
                 ->where('referenceable_id', (int) $timeEntry->project_id)
                 ->value('external_id');
@@ -98,6 +98,26 @@ class TogglOutboxDispatcher extends TimeWritebackDispatcher implements MirrorsCr
         $client = app(TogglClientFactory::class)->for($organizationId);
 
         return $client->isConfigured() ? $client : null;
+    }
+
+    /**
+     * Nur Einträge der gewählten Quelle (Feature 178): eine Track-ID adressiert im
+     * neuen Toggl nichts oder einen fremden Eintrag. Einträge im Sync-Fenster
+     * schlüsselt der nächste Import um; ältere bleiben drüben unverändert.
+     */
+    protected function writerFor(int $organizationId, string $entryKey): ?RemoteTimeWriter {
+        $source = TogglConfig::resolve($organizationId)['source'];
+        if (! $source->ownsEntryKey($entryKey)) {
+            Log::info('Toggl-Rückschreiben übersprungen: Eintrag stammt aus der nicht gewählten Quelle.', [
+                'organization_id' => $organizationId,
+                'entry_key' => $entryKey,
+                'source' => $source->value,
+            ]);
+
+            return null;
+        }
+
+        return $this->writer($organizationId);
     }
 
     /**
@@ -131,7 +151,7 @@ class TogglOutboxDispatcher extends TimeWritebackDispatcher implements MirrorsCr
         try {
             app(TogglExportService::class)->pushSingle($organization, TogglConfig::resolve($organization->id), $timeEntry);
         } catch (ConnectException|ConnectionException $e) {
-            // Der TogglApiClient läuft über das api-toolkit und wirft nach
+            // Die Toggl-Clients laufen über das api-toolkit und werfen nach
             // ausgeschöpften Versuchen Guzzles ConnectException (Vollscan
             // 2026-08-23, B2: bisher wurde nur Laravels ConnectionException
             // gefangen — der Schutz griff nie).

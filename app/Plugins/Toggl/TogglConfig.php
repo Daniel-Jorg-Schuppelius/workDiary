@@ -11,6 +11,7 @@
 namespace App\Plugins\Toggl;
 
 use App\Plugins\Support\PluginSettingsResolver;
+use App\Plugins\Toggl\Enums\TogglSource;
 
 /**
  * Liefert die effektive Toggl-Konfiguration für den aktuellen Request /
@@ -19,6 +20,12 @@ use App\Plugins\Support\PluginSettingsResolver;
  */
 class TogglConfig {
     public const DEFAULT_BASE_URL = 'https://api.track.toggl.com/api/v9';
+
+    /** API des neuen Toggl (vormals Toggl 2.0 / Focus). */
+    public const DEFAULT_FOCUS_BASE_URL = 'https://focus.toggl.com/api';
+
+    /** Kontodienst: listet Organisationen und Workspaces eines Schlüssels. */
+    public const DEFAULT_ACCOUNTS_URL = 'https://accounts.toggl.com';
 
     /**
      * Toggls Burst-Limit (Leaky Bucket, HTTP 429) ist tarifunabhängig:
@@ -39,7 +46,7 @@ class TogglConfig {
     ];
 
     /**
-     * @return array{enabled: bool, api_token: ?string, base_url: string, workspace_id: ?int, api_plan: ?string, request_interval: float, writeback: bool, sync_window_days: int, default_billable: bool, default_user_id: ?int, single_user_mode: bool, export_enabled: bool}
+     * @return array{enabled: bool, source: TogglSource, api_token: ?string, base_url: string, workspace_id: ?int, focus_api_key: ?string, focus_base_url: string, accounts_url: string, focus_organization_id: ?int, focus_workspace_id: ?int, api_plan: ?string, request_interval: float, writeback: bool, sync_window_days: int, default_billable: bool, default_user_id: ?int, single_user_mode: bool, export_enabled: bool}
      */
     public static function resolve(?int $organizationId = null): array {
         $r = PluginSettingsResolver::for(TogglPlugin::ID, $organizationId);
@@ -48,9 +55,16 @@ class TogglConfig {
 
         return [
             'enabled' => $r->enabled(),
+            // Bestand ohne Auswahl liest weiter aus Track.
+            'source' => TogglSource::tryFrom((string) $r->string('source')) ?? TogglSource::Track,
             'api_token' => $r->string('api_token'),
             'base_url' => $r->string('base_url') ?? self::DEFAULT_BASE_URL,
             'workspace_id' => $r->intOrNull('workspace_id'),
+            'focus_api_key' => $r->string('focus_api_key', trim: true),
+            'focus_base_url' => $r->string('focus_base_url') ?? self::DEFAULT_FOCUS_BASE_URL,
+            'accounts_url' => $r->string('accounts_url') ?? self::DEFAULT_ACCOUNTS_URL,
+            'focus_organization_id' => $r->intOrNull('focus_organization_id'),
+            'focus_workspace_id' => $r->intOrNull('focus_workspace_id'),
             'api_plan' => $plan,
             // Expliziter Abstand schlägt den Tarif-Wert; Untergrenze ist das
             // Toolkit-Minimum (setRequestInterval wirft darunter).

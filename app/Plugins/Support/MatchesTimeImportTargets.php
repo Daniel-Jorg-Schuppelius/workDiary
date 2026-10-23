@@ -31,6 +31,9 @@ trait MatchesTimeImportTargets {
     /** Plugin-Id, unter der References abgelegt werden. */
     abstract protected function pluginId(): string;
 
+    /** Referenztyp der numerischen Fremd-Projekt-ID ({@see MatchingTimeImportService}). */
+    abstract protected function projectIdReferenceType(Organization $organization, ImportedTimeEntry $entry): string;
+
     public function matchCustomer(Organization $organization, ?string $clientName): ?Customer {
         $clientName = $clientName !== null ? trim($clientName) : '';
         if ($clientName === '') {
@@ -60,7 +63,7 @@ trait MatchesTimeImportTargets {
         // API-Quelle: die numerische Fremd-Projekt-ID ist der stabilste Schlüssel
         // (übersteht Umbenennungen im Quellsystem).
         if ($entry->projectId !== null) {
-            $byId = $this->resolveByReference($organization, self::EXT_TYPE_PROJECT_ID, (string) $entry->projectId);
+            $byId = $this->resolveByReference($organization, $this->projectIdReferenceType($organization, $entry), (string) $entry->projectId);
             if ($byId instanceof Project) {
                 return $byId;
             }

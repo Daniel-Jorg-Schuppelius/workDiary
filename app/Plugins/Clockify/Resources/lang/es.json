@@ -26,6 +26,7 @@
     "Regionale Instanzen abweichend, z. B. https://euc1.api.clockify.me/api.": "Instancias regionales distintas, p. ej. https://euc1.api.clockify.me/api.",
     "Reports-API-Basis-URL": "URL base de la API de Reports",
     "Schreibt Korrekturen an bereits importierten Zeiten zurück nach Clockify (Änderung und Löschung). Wurde der Eintrag dort zwischenzeitlich geändert, wird nichts überschrieben — der Fall landet in der Integrations-Inbox. Abgerechnete Zeiten werden nie zurückgeschrieben.": "Devuelve a Clockify las correcciones de los tiempos ya importados (modificación y eliminación). Si la entrada cambió allí mientras tanto, no se sobrescribe nada: el caso llega a la bandeja de integración. Los tiempos facturados nunca se devuelven.",
+    "Workspace-ID": "ID de espacio de trabajo",
     "Zeiteinträge aus einem Clockify-Detailed-Report übernehmen.": "Importar registros de tiempo desde un informe detallado de Clockify.",
     "Zeiten nach Clockify übertragen": "Transferir tiempos a Clockify",
     "Übertragung jetzt ausführen? Es werden Zeiteinträge in Clockify angelegt.": "¿Ejecutar la transferencia ahora? Se crearán registros de tiempo en Clockify.",
