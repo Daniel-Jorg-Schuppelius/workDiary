@@ -14,7 +14,7 @@ namespace App\Services\Scim;
 
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\{Organization, User};
-use CommonToolkit\Helper\Data\StringHelper;
+use CommonToolkit\Helper\Data\{PersonNameHelper, StringHelper};
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\DB;
 
@@ -272,7 +272,7 @@ class ScimUserService {
         }
         $given = (string) ($this->str($payload, 'name.givenName') ?? '');
         $family = (string) ($this->str($payload, 'name.familyName') ?? '');
-        $full = trim($given . ' ' . $family);
+        $full = PersonNameHelper::join(['first_name' => $given, 'last_name' => $family]);
 
         return $full !== '' ? $full : $fallback;
     }

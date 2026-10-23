@@ -36,10 +36,6 @@ final class HelpdeskDemoBlock implements DemoBlock {
 
     public function purge(Organization $organization): void {}
 
-    private function moduleActive(string $code): bool {
-        return $this->context->moduleActive($code);
-    }
-
     /**
      * IT-Demoszenario Helpdesk (Feature 065, P10): Portal-Queue + Incident
      * mit Konversation und Wartezustand, gelöstes Ticket mit Bewertung,
@@ -48,7 +44,7 @@ final class HelpdeskDemoBlock implements DemoBlock {
      * @param Collection<int, User> $users
      */
     private function seedHelpdesk(Organization $organization, Customer $customer, Collection $users): int {
-        if (! $this->moduleActive('module.helpdesk')) {
+        if (! $this->context->moduleActive('module.helpdesk')) {
             return 0;
         }
         if (\App\Models\ServiceTicket\ServiceQueue::query()->where('organization_id', $organization->id)->exists()) {

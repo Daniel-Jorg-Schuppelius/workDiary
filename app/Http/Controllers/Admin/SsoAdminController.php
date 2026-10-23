@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\Auth\{SsoProtocol, SsoProviderType};
 use App\Enums\User\UserRole;
+use App\Http\Controllers\Concerns\AuthorizesOrganizationManagement;
 use App\Http\Controllers\Controller;
 use App\Models\Auth\{ScimGroup, ScimToken, SsoConnection};
 use App\Models\Platform\{Organization, OrganizationSsoDomain, Team, User};
@@ -20,7 +21,6 @@ use App\Services\Scim\ScimGroupService;
 use App\Support\{SqidEncoder, UrlSafety};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\{Carbon, Str};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -32,6 +32,8 @@ use Illuminate\View\View;
  * Enterprise-gegatet (config/plans.php: `module.sso`).
  */
 class SsoAdminController extends Controller {
+    use AuthorizesOrganizationManagement;
+
     public function index(): View {
         $admin = $this->admin();
         $organization = $this->organization($admin);
@@ -534,15 +536,6 @@ class SsoAdminController extends Controller {
         ]);
 
         return back()->with('success', __('sso.flash.group_mapped'));
-    }
-
-    private function admin(): User {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->isAdmin(), 403);
-        abort_unless($user->organization_id !== null, 422, 'Kein Organisationskontext.');
-
-        return $user;
     }
 
     private function organization(User $admin): Organization {

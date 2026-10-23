@@ -15,6 +15,7 @@ namespace App\Plugins\Zammad\Services;
 use App\Plugins\Zammad\Contracts\ZammadGateway;
 use App\Plugins\Zammad\Models\ZammadConnection;
 use App\Support\UrlSafety;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Throwable;
 use ZammadAPIClient\Client;
 use ZammadAPIClient\Resource\Ticket;
@@ -54,7 +55,7 @@ class ZammadClientGateway implements ZammadGateway {
             if (! $ticket instanceof Ticket || $ticket->hasError()) {
                 continue;
             }
-            $gid = $this->intOrNull($ticket->getValue('group_id'));
+            $gid = NumberHelper::toIntOrNull($ticket->getValue('group_id'));
             if ($groupId !== null && $gid !== $groupId) {
                 continue;
             }
@@ -65,7 +66,7 @@ class ZammadClientGateway implements ZammadGateway {
                 'title' => (string) $ticket->getValue('title'),
                 'group_id' => $gid,
                 'state' => is_string($state) && $state !== '' ? $state : null,
-                'customer_id' => $this->intOrNull($ticket->getValue('customer_id')),
+                'customer_id' => NumberHelper::toIntOrNull($ticket->getValue('customer_id')),
                 // Expandierte Klarwerte (der Client sendet immer expand=true) für
                 // den Kundenvorschlag (Rang 21).
                 'customer' => $this->stringValue($ticket->getValue('customer')),
@@ -145,10 +146,6 @@ class ZammadClientGateway implements ZammadGateway {
         $code = (int) $response->getStatusCode();
 
         return $code >= 200 && $code < 300;
-    }
-
-    private function intOrNull(mixed $value): ?int {
-        return is_numeric($value) ? (int) $value : null;
     }
 
     /** Expandierter Zammad-Wert (customer-Login/organization-Name) als String. */

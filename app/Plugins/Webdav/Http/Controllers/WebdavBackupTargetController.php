@@ -20,7 +20,7 @@ use App\Plugins\Webdav\WebdavPlugin;
 use App\Services\Backup\BackupNaming;
 use App\Support\{Sqid, UrlSafety};
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Throwable;
 
@@ -42,7 +42,7 @@ class WebdavBackupTargetController extends Controller {
 
     public function connect(Request $request): RedirectResponse {
         Gate::authorize('create', BackupTargetConnection::class);
-        $admin = $this->admin();
+        $admin = $this->authUser();
         $data = $this->validated($request);
 
         $connection = $this->resolveConnection((string) $request->input('connection', ''), $admin);
@@ -150,12 +150,5 @@ class WebdavBackupTargetController extends Controller {
             'status' => BackupTargetStatus::Draft,
             'created_by_user_id' => $admin->id,
         ]);
-    }
-
-    private function admin(): User {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 403);
-
-        return $user;
     }
 }

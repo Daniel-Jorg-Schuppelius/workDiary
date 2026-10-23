@@ -16,11 +16,10 @@ use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Catalog\{CatalogAssignmentRule, CatalogEntry, CatalogRegistry};
-use App\Models\Platform\User;
 use App\Support\SqidEncoder;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 /**
@@ -58,7 +57,7 @@ class CatalogRuleController extends Controller {
 
     public function edit(CatalogAssignmentRule $rule): View {
         Gate::authorize(P::ProjectUpdate->value);
-        $this->guard($rule);
+        $this->assertSameOrganization($rule);
 
         return view('gaeb.catalog-rules._form_dialog', [
             'rule' => $rule,
@@ -71,8 +70,8 @@ class CatalogRuleController extends Controller {
 
         $data = $this->validated($request);
         CatalogAssignmentRule::query()->create($data + [
-            'organization_id' => $this->actor()->organization_id,
-            'created_by' => $this->actor()->id,
+            'organization_id' => $this->currentOrganization()->id,
+            'created_by' => $this->authUser()->id,
         ]);
 
         return redirect()->toList('catalog-rules.index')->with('success', __('Regel gespeichert.'));
@@ -80,7 +79,7 @@ class CatalogRuleController extends Controller {
 
     public function update(Request $request, CatalogAssignmentRule $rule): RedirectResponse {
         Gate::authorize(P::ProjectUpdate->value);
-        $this->guard($rule);
+        $this->assertSameOrganization($rule);
 
         $rule->update($this->validated($request));
 
@@ -89,7 +88,7 @@ class CatalogRuleController extends Controller {
 
     public function destroy(CatalogAssignmentRule $rule): RedirectResponse {
         Gate::authorize(P::ProjectUpdate->value);
-        $this->guard($rule);
+        $this->assertSameOrganization($rule);
 
         $rule->delete();
 
@@ -147,16 +146,5 @@ class CatalogRuleController extends Controller {
             ->where('active', true)
             ->orderBy('name')
             ->get();
-    }
-
-    private function guard(CatalogAssignmentRule $rule): void {
-        abort_unless($rule->organization_id === $this->currentOrganization()->id, 404);
-    }
-
-    private function actor(): User {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 403);
-
-        return $user;
     }
 }

@@ -14,7 +14,7 @@ namespace App\Http\Controllers\Sales;
 
 use App\Enums\Sales\{LeadSource, LeadStatus};
 use App\Enums\User\Permission;
-use App\Http\Controllers\Concerns\WritesContactDetails;
+use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, WritesContactDetails};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Concerns\{ContactNameFields, ContactSatelliteFields};
 use App\Models\Customer\Customer;
@@ -39,6 +39,7 @@ use RuntimeException;
 class LeadController extends Controller {
     use ContactNameFields;
     use ContactSatelliteFields;
+    use ResolvesCurrentOrganization;
     use WritesContactDetails;
 
     public function __construct(private readonly LeadService $service) {}
@@ -78,7 +79,7 @@ class LeadController extends Controller {
 
     public function show(Lead $lead): View {
         Gate::authorize(Permission::CustomerView->value);
-        $this->guard($lead);
+        $this->assertSameOrganization($lead);
 
         return view('leads.show', [
             'lead' => $lead->load(['responsible:id,name', 'customer:id,name,slug']),
@@ -101,7 +102,7 @@ class LeadController extends Controller {
         Gate::authorize(Permission::CustomerCreate->value);
 
         $data = $this->validated($request);
-        $data['organization_id'] = $this->orgId();
+        $data['organization_id'] = $this->currentOrganizationId();
         $data['created_by'] = Auth::id();
         $data['last_contact_at'] = now();
         $contact = $this->pullContactDetails($data);
@@ -115,14 +116,14 @@ class LeadController extends Controller {
 
     public function edit(Lead $lead): View {
         Gate::authorize(Permission::CustomerUpdate->value);
-        $this->guard($lead);
+        $this->assertSameOrganization($lead);
 
         return view('leads._form_dialog', ['lead' => $lead, 'users' => $this->assignableUsers()]);
     }
 
     public function update(Request $request, Lead $lead): RedirectResponse {
         Gate::authorize(Permission::CustomerUpdate->value);
-        $this->guard($lead);
+        $this->assertSameOrganization($lead);
         abort_if($lead->anonymized_at !== null, 422);
 
         $data = $this->validated($request);
@@ -136,7 +137,7 @@ class LeadController extends Controller {
     /** Statuswechsel entlang der Pipeline (inkl. Verwerfen mit Grund). */
     public function transition(Request $request, Lead $lead): RedirectResponse {
         Gate::authorize(Permission::CustomerUpdate->value);
-        $this->guard($lead);
+        $this->assertSameOrganization($lead);
 
         $data = $request->validate([
             'status' => ['required', 'string'],
@@ -161,7 +162,7 @@ class LeadController extends Controller {
      */
     public function convert(Request $request, Lead $lead, SqidEncoder $sqids): RedirectResponse {
         Gate::authorize(Permission::CustomerCreate->value);
-        $this->guard($lead);
+        $this->assertSameOrganization($lead);
 
         $existing = null;
         $customerSqid = (string) $request->input('customer', '');
@@ -172,7 +173,7 @@ class LeadController extends Controller {
         }
 
         try {
-            $customer = $this->service->convert($lead, $this->actor(), $existing);
+            $customer = $this->service->convert($lead, $this->authUser(), $existing);
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -190,10 +191,10 @@ class LeadController extends Controller {
     public function startQuote(Lead $lead): RedirectResponse {
         Gate::authorize(Permission::CustomerCreate->value);
         Gate::authorize('create', \App\Models\Sales\Quote::class);
-        $this->guard($lead);
+        $this->assertSameOrganization($lead);
 
         try {
-            $customer = $lead->customer ?? $this->service->convert($lead, $this->actor());
+            $customer = $lead->customer ?? $this->service->convert($lead, $this->authUser());
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -221,7 +222,7 @@ class LeadController extends Controller {
         $responsible = null;
         if (filled($data['responsible_user'] ?? null)) {
             $responsible = app(SqidEncoder::class)->decode(User::class, (string) $data['responsible_user']);
-            abort_if($responsible === null || ! User::query()->whereKey($responsible)->where('organization_id', $this->orgId())->exists(), 422);
+            abort_if($responsible === null || ! User::query()->whereKey($responsible)->where('organization_id', $this->currentOrganizationId())->exists(), 422);
         }
 
         unset($data['responsible_user']);
@@ -232,23 +233,6 @@ class LeadController extends Controller {
 
     /** @return \Illuminate\Database\Eloquent\Collection<int, User> */
     private function assignableUsers(): \Illuminate\Database\Eloquent\Collection {
-        return User::query()->where('organization_id', $this->orgId())->orderBy('name')->get(['id', 'name']);
-    }
-
-    private function guard(Lead $lead): void {
-        abort_unless($lead->organization_id === $this->orgId(), 404);
-    }
-
-    private function orgId(): int {
-        $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
-
-        return (int) ($org->id ?? $this->actor()->organization_id);
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
+        return User::query()->where('organization_id', $this->currentOrganizationId())->orderBy('name')->get(['id', 'name']);
     }
 }

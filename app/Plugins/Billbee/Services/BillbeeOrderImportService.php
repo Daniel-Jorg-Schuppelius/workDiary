@@ -21,7 +21,7 @@ use App\Plugins\Billbee\Models\BillbeeOrder;
 use App\Services\Integration\{IntegrationResolver, MatchProfileRegistry};
 use App\Services\Integration\Match\MatchProfile;
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\Helper\Data\{NumberHelper, PersonNameHelper, StringHelper};
 use RuntimeException;
 
 /**
@@ -90,13 +90,13 @@ class BillbeeOrderImportService {
         $row = BillbeeOrder::query()->updateOrCreate(
             ['organization_id' => $organization->id, 'billbee_order_id' => $billbeeId],
             [
-                'external_order_id' => self::stringOrNull($order['Id'] ?? null),
-                'order_number' => self::stringOrNull($order['OrderNumber'] ?? null),
+                'external_order_id' => StringHelper::trimToNull($order['Id'] ?? null),
+                'order_number' => StringHelper::trimToNull($order['OrderNumber'] ?? null),
                 // Kanalherkunft: Plattform der Verkäufer-/Käuferverbindung,
                 // sonst der Billbee-Account-Name.
-                'channel' => self::stringOrNull($seller['Platform'] ?? $buyer['Platform'] ?? $order['ApiAccountName'] ?? null),
+                'channel' => StringHelper::trimToNull($seller['Platform'] ?? $buyer['Platform'] ?? $order['ApiAccountName'] ?? null),
                 'state' => (int) ($order['State'] ?? 0),
-                'currency' => self::stringOrNull($order['Currency'] ?? null),
+                'currency' => StringHelper::trimToNull($order['Currency'] ?? null),
                 'total_gross' => NumberHelper::toUSFormat((float) ($order['TotalCost'] ?? 0), 2),
                 'buyer_external_id' => $buyerExternalId !== '' ? $buyerExternalId : null,
                 'buyer' => $buyer !== [] ? $buyer : null,
@@ -119,7 +119,7 @@ class BillbeeOrderImportService {
     private function resolveCustomer(Organization $organization, MatchProfile $profile, string $buyerExternalId, array $buyer, array &$counters): ?Customer {
         $name = trim((string) ($buyer['FullName'] ?? ''));
         if ($name === '') {
-            $name = trim(trim((string) ($buyer['FirstName'] ?? '')) . ' ' . trim((string) ($buyer['LastName'] ?? '')));
+            $name = PersonNameHelper::join(['first_name' => $buyer['FirstName'] ?? null, 'last_name' => $buyer['LastName'] ?? null]);
         }
 
         $customer = $this->resolveMarketplaceBuyer(
@@ -129,7 +129,7 @@ class BillbeeOrderImportService {
             $buyerExternalId,
             [
                 'name' => $name !== '' ? $name : null,
-                'email' => self::stringOrNull($buyer['Email'] ?? null),
+                'email' => StringHelper::trimToNull($buyer['Email'] ?? null),
             ],
             $buyer,
             'billbee',
@@ -159,12 +159,6 @@ class BillbeeOrderImportService {
         $window = max(1, (int) config('plugins.billbee.initial_window_days', 30));
 
         return CarbonImmutable::now()->subDays($window)->toIso8601String();
-    }
-
-    private static function stringOrNull(mixed $value): ?string {
-        $value = trim((string) ($value ?? ''));
-
-        return $value !== '' ? $value : null;
     }
 
     private static function dateOrNull(mixed $value): ?CarbonImmutable {

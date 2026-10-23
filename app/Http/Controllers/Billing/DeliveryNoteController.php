@@ -18,13 +18,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Billing\{DeliveryNote, DeliveryNoteItem};
 use App\Models\Inventory\StockDelivery;
 use App\Models\Manufacturing\ManufacturingOrder;
-use App\Models\Platform\User;
 use App\Models\Sales\OrderConfirmation;
 use App\Services\Billing\{DeliveryNotePdfRenderer, DeliveryNoteService};
 use App\Services\Numbering\{NumberAuthority, NumberSequenceService};
 use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
@@ -38,7 +37,7 @@ class DeliveryNoteController extends Controller {
         Gate::authorize('view', $orderConfirmation);
         Gate::authorize('viewAny', DeliveryNote::class);
         try {
-            $note = $this->notes->fromOrderConfirmation($orderConfirmation, $this->actor());
+            $note = $this->notes->fromOrderConfirmation($orderConfirmation, $this->authUser());
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -98,7 +97,7 @@ class DeliveryNoteController extends Controller {
     public function deliver(DeliveryNote $deliveryNote): RedirectResponse {
         Gate::authorize('deliver', $deliveryNote);
         try {
-            $this->notes->deliver($deliveryNote, $this->actor());
+            $this->notes->deliver($deliveryNote, $this->authUser());
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -110,7 +109,7 @@ class DeliveryNoteController extends Controller {
     public function cancel(DeliveryNote $deliveryNote): RedirectResponse {
         Gate::authorize('cancel', $deliveryNote);
         try {
-            $this->notes->cancel($deliveryNote, $this->actor());
+            $this->notes->cancel($deliveryNote, $this->authUser());
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -134,11 +133,5 @@ class DeliveryNoteController extends Controller {
         abort_unless($delivery->manufacturing_order_id === $order->id, 404);
 
         return redirect()->route('delivery-notes.pdf', $this->notes->forStockDelivery($delivery));
-    }
-
-    private function actor(): User {
-        $user = Auth::user();
-
-        return $user instanceof User ? $user : abort(401);
     }
 }

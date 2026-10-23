@@ -33,8 +33,8 @@ class SubmitReportRequest extends BaseFormRequest {
         $maxFiles = (int) config('whistleblowing.uploads.max_per_case', 10);
 
         return [
-            'reporter_mode' => ['required', Rule::in(array_column(ReporterMode::cases(), 'value'))],
-            'category' => ['required', Rule::in(array_column(CaseCategory::cases(), 'value'))],
+            'reporter_mode' => ['required', Rule::enum(ReporterMode::class)],
+            'category' => ['required', Rule::enum(CaseCategory::class)],
             'subject' => ['required', 'string', 'max:200'],
             'description' => ['required', 'string', 'max:20000'],
             'occurred_from' => ['nullable', 'date'],

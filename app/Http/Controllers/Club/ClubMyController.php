@@ -16,14 +16,13 @@ use App\Enums\Club\{ClubAttendanceSheetStatus, ClubAttendanceStatus, ClubGuardia
 use App\Http\Controllers\Controller;
 use App\Models\Calendar\Event;
 use App\Models\Club\{ClubAttendanceRecord, ClubExamCandidate, ClubExamOffer, ClubMember, ClubMemberGrade, ClubNotification};
-use App\Models\Platform\User;
 use App\Services\Club\{ClubAttendanceService, ClubEventService, ClubExamService, ClubGradeCertificatePdfRenderer, ClubGradingService, ClubMatchService, ClubPortalContext, ClubPortalSubject};
 use App\Services\UI\DateRangeContext;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request, Response};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
@@ -41,7 +40,7 @@ class ClubMyController extends Controller {
 
     public function index(DateRangeContext $range): View|RedirectResponse {
         Gate::authorize('club-my');
-        if ($this->context->current($this->actor()) === null) {
+        if ($this->context->current($this->authUser()) === null) {
             // Nur zahlungspflichtig, kein Mitglied/Vertretung → direkt zu den Beiträgen (MVP-851).
             return redirect()->route('club.my.fees');
         }
@@ -68,7 +67,7 @@ class ClubMyController extends Controller {
 
         return view('club.my.index', [
             'subject' => $subject,
-            'subjects' => $this->context->subjectsFor($this->actor()),
+            'subjects' => $this->context->subjectsFor($this->authUser()),
             'upcoming' => $upcoming,
             'recent' => $recent,
             'changes' => $changes,
@@ -77,7 +76,7 @@ class ClubMyController extends Controller {
             'creditedMinutes' => $this->attendance->creditableMinutes($member, $current['from'], $current['to']),
             'range' => $current,
             'grading' => $this->gradingOverview($member),
-            'hasFeeAccounts' => \App\Models\Club\ClubFeeAccount::query()->where('user_id', $this->actor()->id)->exists(),
+            'hasFeeAccounts' => \App\Models\Club\ClubFeeAccount::query()->where('user_id', $this->authUser()->id)->exists(),
             // Spieltage (MVP-852): Verfügbarkeit und Nominierung des Mitglieds.
             'matches' => $this->matchRows($member, $upcoming),
             // Reitbetrieb (MVP-854): eigenes Pferd je Stunde.
@@ -112,7 +111,7 @@ class ClubMyController extends Controller {
         if ($target === null) {
             return redirect()->route('club.my.index')->withErrors(['target_grade_id' => __('club.exams.error.no_target_grade')]);
         }
-        $candidate = app(ClubExamService::class)->addCandidate($offer, $subject->member, $target, $this->actor(), true);
+        $candidate = app(ClubExamService::class)->addCandidate($offer, $subject->member, $target, $this->authUser(), true);
 
         return redirect()
             ->route('club.my.index')
@@ -131,7 +130,7 @@ class ClubMyController extends Controller {
         $matches = app(ClubMatchService::class);
         abort_unless($event->clubDetails?->kind === \App\Enums\Club\ClubEventKind::Match, 404);
         abort_unless($matches->candidatesFor($event)->contains(fn(array $row): bool => $row['member']->id === $subject->member->id), 403);
-        $matches->setAvailability($event, $subject->member, \App\Enums\Club\ClubAvailabilityStatus::from((string) $data['status']), $this->actor(), $data['note'] ?? null);
+        $matches->setAvailability($event, $subject->member, \App\Enums\Club\ClubAvailabilityStatus::from((string) $data['status']), $this->authUser(), $data['note'] ?? null);
 
         return redirect()->route('club.my.index')->with('success', __('club.matches.flash.availability_saved'));
     }
@@ -175,7 +174,7 @@ class ClubMyController extends Controller {
         $data = $request->validate(['disciplines' => ['required', 'array', 'min:1', 'max:50'], 'disciplines.*' => ['string', 'max:30']]);
         $competitions = app(\App\Services\Club\ClubCompetitionService::class);
         abort_unless($this->clubEvents->isEligible($event, $subject->member), 403);
-        $entries = $competitions->enter($event, $subject->member, array_values((array) $data['disciplines']), $this->actor(), $subject->isSelf() ? \App\Enums\Club\ClubParticipationSource::Self : \App\Enums\Club\ClubParticipationSource::Guardian);
+        $entries = $competitions->enter($event, $subject->member, array_values((array) $data['disciplines']), $this->authUser(), $subject->isSelf() ? \App\Enums\Club\ClubParticipationSource::Self : \App\Enums\Club\ClubParticipationSource::Guardian);
         $review = $entries->contains(fn(\App\Models\Club\ClubCompetitionEntry $e): bool => $e->status === \App\Enums\Club\ClubEntryStatus::NeedsReview);
 
         return redirect()->route('club.my.index')->with($review ? 'warning' : 'success', __($review ? 'club.competitions.flash.entered_review' : 'club.competitions.flash.entered', ['name' => $subject->member->fullName(), 'count' => $entries->count()]));
@@ -185,7 +184,7 @@ class ClubMyController extends Controller {
         Gate::authorize('club-my');
         $payments = app(\App\Services\Club\ClubFeePaymentService::class);
         $runs = app(\App\Services\Club\ClubFeeRunService::class);
-        $accounts = \App\Models\Club\ClubFeeAccount::query()->where('user_id', $this->actor()->id)->orderBy('name')->get()
+        $accounts = \App\Models\Club\ClubFeeAccount::query()->where('user_id', $this->authUser()->id)->orderBy('name')->get()
             ->map(fn(\App\Models\Club\ClubFeeAccount $account): array => [
                 'account' => $account,
                 'open' => $runs->openAmountFor($account),
@@ -194,13 +193,13 @@ class ClubMyController extends Controller {
                 'payments' => \App\Models\Club\ClubFeePayment::query()->where('club_fee_account_id', $account->id)->with('claim:id,number')->orderByDesc('paid_on')->limit(24)->get(),
             ]);
 
-        return view('club.my.fees', ['accounts' => $accounts, 'hasSubjects' => $this->context->hasSubjects($this->actor()), 'today' => CarbonImmutable::today()]);
+        return view('club.my.fees', ['accounts' => $accounts, 'hasSubjects' => $this->context->hasSubjects($this->authUser()), 'today' => CarbonImmutable::today()]);
     }
 
     public function feePdf(\App\Models\Club\ClubFeeClaim $claim): Response {
         Gate::authorize('club-my');
         $account = $claim->account()->first();
-        abort_unless($account !== null && $account->user_id === $this->actor()->id, 403);
+        abort_unless($account !== null && $account->user_id === $this->authUser()->id, 403);
         $renderer = app(\App\Services\Club\ClubFeeNoticePdfRenderer::class);
 
         return response($renderer->output($claim), 200, [
@@ -254,7 +253,7 @@ class ClubMyController extends Controller {
         Gate::authorize('club-my');
         $data = $request->validate(['club_member_id' => ['required', 'string', 'max:64']]);
         $memberId = Sqid::decodeOrNumeric(ClubMember::class, (string) $data['club_member_id']);
-        abort_if($memberId === null || $this->context->select($this->actor(), $memberId) === null, 404);
+        abort_if($memberId === null || $this->context->select($this->authUser(), $memberId) === null, 404);
 
         return redirect()->route('club.my.index');
     }
@@ -268,7 +267,7 @@ class ClubMyController extends Controller {
         Gate::authorize('registerMember', [$details, $subject->member]);
 
         $source = $subject->isSelf() ? ClubParticipationSource::Self : ClubParticipationSource::Guardian;
-        $participation = $this->clubEvents->register($event, $subject->member, $this->actor(), $source, $subject->guardian);
+        $participation = $this->clubEvents->register($event, $subject->member, $this->authUser(), $source, $subject->guardian);
 
         return redirect()
             ->route('club.my.index')
@@ -283,7 +282,7 @@ class ClubMyController extends Controller {
         abort_if($details === null, 404);
         Gate::authorize('registerMember', [$details, $subject->member]);
 
-        $this->clubEvents->cancelRegistration($event, $subject->member, $this->actor());
+        $this->clubEvents->cancelRegistration($event, $subject->member, $this->authUser());
 
         return redirect()
             ->route('club.my.index')
@@ -319,16 +318,9 @@ class ClubMyController extends Controller {
     }
 
     private function subject(): ClubPortalSubject {
-        $subject = $this->context->current($this->actor());
+        $subject = $this->context->current($this->authUser());
         abort_if($subject === null, 403);
 
         return $subject;
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

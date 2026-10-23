@@ -16,6 +16,7 @@ use App\Enums\Search\SearchSourceType;
 use App\Models\Communication\CommunicationNote;
 use App\Services\Search\Indexing\{SearchContext, SearchDocumentData};
 use App\Services\Search\Indexing\Sources\AbstractSearchSource;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
 
 /**
@@ -40,7 +41,7 @@ final class CommunicationNoteSource extends AbstractSearchSource {
             return null;
         }
 
-        $ref = $context->forSubject($organizationId, $model->notable_type, self::intOrNull($model->notable_id));
+        $ref = $context->forSubject($organizationId, $model->notable_type, NumberHelper::toIntOrNull($model->notable_id));
 
         return new SearchDocumentData(
             organizationId: $organizationId,
@@ -55,11 +56,11 @@ final class CommunicationNoteSource extends AbstractSearchSource {
                 $model->next_action,
                 // Schlagwörter (MVP-810) finden die Notiz auch über ihr Stichwort.
                 ...self::strings($model->tags, 'name'),
-                $context->userName(self::intOrNull($model->created_by_user_id)),
+                $context->userName(NumberHelper::toIntOrNull($model->created_by_user_id)),
                 ...$ref->texts,
             ],
             occurredAt: $model->occurred_at ?? $model->created_at,
-            userId: self::intOrNull($model->created_by_user_id),
+            userId: NumberHelper::toIntOrNull($model->created_by_user_id),
             customerId: $ref->customerId,
             foreignCustomerId: $ref->foreignCustomerId,
             projectId: $ref->projectId,

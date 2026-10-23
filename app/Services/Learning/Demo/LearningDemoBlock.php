@@ -34,10 +34,6 @@ final class LearningDemoBlock implements DemoBlock {
 
     public function purge(Organization $organization): void {}
 
-    private function moduleActive(string $code): bool {
-        return $this->context->moduleActive($code);
-    }
-
     /**
      * Lernplattform-Demo (Feature 149, MVP-748): ein freigegebener Kurs mit
      * Inhalt, Prüfung und einer laufenden Einschreibung.
@@ -47,7 +43,7 @@ final class LearningDemoBlock implements DemoBlock {
      * der Abschluss landet im Arbeitsschutz-Register, nicht nur im LMS.
      */
     private function seedLearning(Organization $organization, ?User $actor): int {
-        if (! $this->moduleActive('module.lms')) {
+        if (! $this->context->moduleActive('module.lms')) {
             return 0;
         }
         if ($actor === null) {

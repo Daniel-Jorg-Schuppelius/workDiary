@@ -18,7 +18,7 @@
         <div class="mb-4 alert alert-success text-sm">{{ session('status') }}</div>
     @endif
 
-    <div class="rounded-4xl border border-base-300 bg-base-100 p-8 shadow-xs">
+    <x-auth-card>
         <form method="POST" action="{{ route('password.email') }}" class="space-y-5">
             @csrf
             <div>
@@ -32,7 +32,7 @@
                 ⇢ {{ __('Link senden') }}
             </x-button>
         </form>
-    </div>
+    </x-auth-card>
 
     <p class="mt-6 text-center text-sm text-base-content/70">
         <a href="{{ route('login') }}" class="text-primary transition hover:opacity-80">← {{ __('Zurück zur Anmeldung') }}</a>

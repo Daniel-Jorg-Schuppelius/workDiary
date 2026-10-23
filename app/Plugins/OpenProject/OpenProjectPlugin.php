@@ -17,6 +17,7 @@ use App\Plugins\OpenProject\Api\OpenProjectClientFactory;
 use App\Plugins\OpenProject\Services\OpenProjectImportService;
 use App\Plugins\Support\PluginOrgContext;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\WebLinkHelper;
 use Throwable;
 
 /**
@@ -100,7 +101,7 @@ class OpenProjectPlugin extends AbstractPlugin implements TimeImporter {
         $baseUrl = trim((string) ($settings['base_url'] ?? ''));
         if ($baseUrl === '') {
             $errors['base_url'] = __('Die Instanz-URL ist erforderlich.');
-        } elseif (! str_starts_with($baseUrl, 'http://') && ! str_starts_with($baseUrl, 'https://')) {
+        } elseif (! WebLinkHelper::isHttpUrl($baseUrl)) {
             $errors['base_url'] = __('Die Instanz-URL muss mit http:// oder https:// beginnen.');
         }
 

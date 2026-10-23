@@ -16,7 +16,6 @@ use App\Enums\Reselling\LicenseUnitStatus;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
-use App\Models\Platform\User;
 use App\Models\Reselling\{ResaleLicenseAssignment, ResaleLicenseBatch, ResaleLicenseProduct, ResaleLicenseUnit};
 use App\Models\Supplier\Supplier;
 use App\Services\Billing\Purchase\PurchaseDocuments;
@@ -26,7 +25,6 @@ use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request, Response};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\{Rule, ValidationException};
 
 /**
@@ -176,7 +174,7 @@ class LicenseStockController extends Controller {
                 'supplier_id' => $supplierId,
                 'supplier_name' => $data['supplier_name'] ?? null,
                 'note' => $data['note'] ?? null,
-            ], $document, $this->actor());
+            ], $document, $this->authUser());
         } catch (LicenseStockException $e) {
             throw ValidationException::withMessages([$e->field => $e->getMessage()]);
         }
@@ -231,7 +229,7 @@ class LicenseStockController extends Controller {
 
         return view('finance.resale.licenses.import_preview', [
             'batch' => $batch->load('product'),
-            'preview' => $this->stock->previewImport($batch, (string) $request->file('file')?->get(), $this->actor()),
+            'preview' => $this->stock->previewImport($batch, (string) $request->file('file')?->get(), $this->authUser()),
         ]);
     }
 
@@ -239,7 +237,7 @@ class LicenseStockController extends Controller {
         $data = $request->validate(['token' => ['required', 'string', 'size:32']]);
 
         try {
-            $count = $this->stock->confirmImport($batch, $data['token'], $this->actor());
+            $count = $this->stock->confirmImport($batch, $data['token'], $this->authUser());
         } catch (LicenseStockException $e) {
             return redirect()->route('finance.resale.licenses.batches.show', $batch)->with('error', $e->getMessage());
         }
@@ -274,7 +272,7 @@ class LicenseStockController extends Controller {
                 'reorder_level' => isset($data['reorder_level']) ? (int) $data['reorder_level'] : null,
                 'article_ref' => $article?->key,
                 'note' => $data['note'] ?? null,
-            ], $this->actor());
+            ], $this->authUser());
         } catch (LicenseStockException $e) {
             throw ValidationException::withMessages([$e->field => $e->getMessage()]);
         }
@@ -286,12 +284,5 @@ class LicenseStockController extends Controller {
     /** @return array{catalogArticles: list<\App\Services\Platform\Catalog\CatalogArticle>} */
     private function productOptions(): array {
         return ['catalogArticles' => $this->catalog->active((int) $this->currentOrganizationOrAbort(404)->id)];
-    }
-
-    private function actor(): User {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 403);
-
-        return $user;
     }
 }

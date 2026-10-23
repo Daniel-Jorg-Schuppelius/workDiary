@@ -14,7 +14,6 @@ namespace App\Services\Media;
 
 use CommonToolkit\Helper\FileSystem\Folder;
 use CommonToolkit\Helper\Media\MediaHelper;
-use Illuminate\Support\Str;
 
 /**
  * Lokale Spracherkennung über Whisper (MVP-1060) — eine Stelle für
@@ -32,27 +31,16 @@ class SpeechTranscriber {
      * @return string|null Inhalt der Ausgabe oder null bei Fehler/Zeitüberschreitung
      */
     public function transcribe(string $sourcePath, string $locale, string $format = 'txt', ?float $timeout = null): ?string {
-        // Der Toolkit-Helfer legt nur das Zielverzeichnis selbst an, nicht dessen Elternpfad.
-        Folder::create(storage_path('app/tmp'), 0775, true);
-        $workDir = storage_path('app/tmp/whisper-' . Str::random(12));
-
-        try {
-            return MediaHelper::transcribeWhisper(
-                $sourcePath,
-                $workDir,
-                (string) config('media.transcription.model', 'base'),
-                (string) config('media.transcription.model_dir', ''),
-                $locale,
-                'transcribe',
-                (string) config('media.transcription.device', 'cpu'),
-                $format,
-                $timeout,
-            );
-        } finally {
-            // Folder::delete wirft auf ein fehlendes Verzeichnis — das verdeckte sonst den eigentlichen Fehler.
-            if (Folder::exists($workDir)) {
-                Folder::delete($workDir, true);
-            }
-        }
+        return Folder::withTemp(fn (string $workDir): ?string => MediaHelper::transcribeWhisper(
+            $sourcePath,
+            $workDir,
+            (string) config('media.transcription.model', 'base'),
+            (string) config('media.transcription.model_dir', ''),
+            $locale,
+            'transcribe',
+            (string) config('media.transcription.device', 'cpu'),
+            $format,
+            $timeout,
+        ), 'whisper-', storage_path('app/tmp'));
     }
 }

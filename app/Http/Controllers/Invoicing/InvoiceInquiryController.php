@@ -15,12 +15,11 @@ namespace App\Http\Controllers\Invoicing;
 use App\Enums\Invoicing\InvoiceInquiryStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Invoicing\InvoiceInquiry;
-use App\Models\Platform\User;
 use App\Plugins\PluginManager;
 use App\Services\Invoicing\Inquiries\InvoiceInquiryService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /** Arbeitsliste und Bearbeitung der Rechnungsnachfragen (Feature 166, MVP-1202). */
@@ -29,7 +28,7 @@ class InvoiceInquiryController extends Controller {
 
     public function index(Request $request, PluginManager $plugins): View {
         Gate::authorize('viewAny', InvoiceInquiry::class);
-        $user = $this->currentUser();
+        $user = $this->authUser();
 
         $status = $request->string('status')->toString();
         $status = in_array($status, self::STATUS_FILTERS, true) ? $status : 'open';
@@ -73,7 +72,7 @@ class InvoiceInquiryController extends Controller {
         if (! $inquiry->isOpen()) {
             return back()->with('error', __('invoicing.inquiries.flash.already_answered'));
         }
-        $service->answer($inquiry, $this->currentUser());
+        $service->answer($inquiry, $this->authUser());
 
         return back()->with('status', __('invoicing.inquiries.flash.answered', ['number' => $inquiry->invoice_number]));
     }
@@ -83,15 +82,8 @@ class InvoiceInquiryController extends Controller {
         if ($inquiry->isOpen()) {
             return back()->with('error', __('invoicing.inquiries.flash.already_open'));
         }
-        $service->reopen($inquiry, $this->currentUser());
+        $service->reopen($inquiry, $this->authUser());
 
         return back()->with('status', __('invoicing.inquiries.flash.reopened', ['number' => $inquiry->invoice_number]));
-    }
-
-    private function currentUser(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

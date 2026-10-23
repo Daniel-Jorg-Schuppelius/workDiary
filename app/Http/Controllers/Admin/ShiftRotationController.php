@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\{Organization, User};
 use App\Models\Schedule\{ShiftRotation, ShiftRotationAssignment, ShiftType};
@@ -26,6 +27,8 @@ use Illuminate\View\View;
  * Montag) und manuelle Fortschreibung.
  */
 class ShiftRotationController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(): View {
         $this->authorizeAdmin();
 
@@ -36,7 +39,7 @@ class ShiftRotationController extends Controller {
                 ->get(),
             'shiftTypes' => ShiftType::query()->where('is_active', true)->orderBy('name')->get(),
             'members' => User::query()
-                ->where('organization_id', $this->organizationId())
+                ->where('organization_id', $this->currentOrganizationId())
                 ->orderBy('name')
                 ->get(['id', 'name']),
         ]);
@@ -57,7 +60,7 @@ class ShiftRotationController extends Controller {
         ]);
 
         $rotation = ShiftRotation::query()->create([
-            'organization_id' => $this->organizationId(),
+            'organization_id' => $this->currentOrganizationId(),
             'name' => $data['name'],
             'weeks_count' => (int) $data['weeks_count'],
             'is_active' => true,
@@ -129,11 +132,11 @@ class ShiftRotationController extends Controller {
         ]);
 
         $user = User::query()
-            ->where('organization_id', $this->organizationId())
+            ->where('organization_id', $this->currentOrganizationId())
             ->findOrFail((int) $data['user_id']);
 
         $assignment = $rotation->assignments()->create([
-            'organization_id' => $this->organizationId(),
+            'organization_id' => $this->currentOrganizationId(),
             'user_id' => $user->getKey(),
             'anchor_date' => $data['anchor_date'],
             'valid_from' => $data['valid_from'] ?? null,
@@ -176,12 +179,5 @@ class ShiftRotationController extends Controller {
         /** @var User|null $user */
         $user = Auth::user();
         abort_unless($user !== null && $user->isAdmin(), 403);
-    }
-
-    private function organizationId(): int {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return (int) $user->organization_id;
     }
 }

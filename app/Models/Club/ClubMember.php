@@ -17,6 +17,7 @@ use App\Models\Concerns\{Auditable, BelongsToOrganization, HasContactAndBankDeta
 use App\Models\Contracts\ContactDetailsHolder;
 use App\Models\Platform\User;
 use Carbon\CarbonInterface;
+use CommonToolkit\Helper\Data\PersonNameHelper;
 use Database\Factories\Club\ClubMemberFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -156,7 +157,7 @@ class ClubMember extends Model implements ContactDetailsHolder {
     public function startRights(): HasMany {
         return $this->hasMany(ClubStartRight::class);
     }    public function fullName(): string {
-        return trim($this->first_name . ' ' . $this->last_name);
+        return PersonNameHelper::join(['first_name' => $this->first_name, 'last_name' => $this->last_name]);
     }
 
     /** Anzeige-Kennung im Register (z. B. "M-12"). */

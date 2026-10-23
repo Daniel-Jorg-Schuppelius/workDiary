@@ -63,7 +63,7 @@ class AiConnectionController extends Controller {
         $data = $request->validate([
             // Unique-Index aipc_org_name_uq — ohne Regel endete ein doppelter Name in 500.
             'name' => ['required', 'string', 'max:120', Rule::unique('ai_provider_connections', 'name')->where('organization_id', $this->currentOrganizationId())],
-            'family' => ['required', 'string', 'in:' . implode(',', array_column(AiFamily::cases(), 'value'))],
+            'family' => ['required', 'string', Rule::enum(AiFamily::class)],
             // Nur anlegbare Typen (Audit 2026-08: google_translate hat keinen
             // Adapter und crashte sonst erst beim ersten Prüflauf).
             'provider' => ['required', 'string', 'in:' . implode(',', array_column(AiProviderType::selectable(), 'value'))],

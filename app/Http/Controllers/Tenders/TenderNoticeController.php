@@ -13,15 +13,15 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Tenders;
 
 use App\Enums\Tenders\TenderNoticeMatchState;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Applications\ApplicationOpportunity;
-use App\Models\Platform\User;
 use App\Models\Tenders\{TenderFilterProfile, TenderNoticeMatch};
 use App\Services\Tenders\TenderNoticeConverter;
 use App\Support\ErrorText;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use RuntimeException;
 
 /**
@@ -38,6 +38,8 @@ use RuntimeException;
  * Vergabeakte führen darf, führt auch den Radar.
  */
 class TenderNoticeController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(Request $request): View {
         Gate::authorize('viewAny', ApplicationOpportunity::class);
 
@@ -73,7 +75,7 @@ class TenderNoticeController extends Controller {
      */
     public function mute(Request $request, TenderNoticeMatch $match): RedirectResponse {
         Gate::authorize('create', ApplicationOpportunity::class);
-        $this->guard($match);
+        $this->assertSameOrganization($match);
 
         if ($match->state->canTransitionTo(TenderNoticeMatchState::Muted)) {
             $match->forceFill(['state' => TenderNoticeMatchState::Muted])->save();
@@ -118,7 +120,7 @@ class TenderNoticeController extends Controller {
 
     public function restore(TenderNoticeMatch $match): RedirectResponse {
         Gate::authorize('create', ApplicationOpportunity::class);
-        $this->guard($match);
+        $this->assertSameOrganization($match);
 
         if ($match->state->canTransitionTo(TenderNoticeMatchState::New)) {
             $match->forceFill(['state' => TenderNoticeMatchState::New])->save();
@@ -130,10 +132,10 @@ class TenderNoticeController extends Controller {
     /** Übernahme in einen Vergabevorgang — mit dem, was die Bekanntmachung hergibt. */
     public function convert(TenderNoticeMatch $match, TenderNoticeConverter $converter): RedirectResponse {
         Gate::authorize('create', ApplicationOpportunity::class);
-        $this->guard($match);
+        $this->assertSameOrganization($match);
 
         try {
-            $opportunity = $converter->convert($match, $this->actor());
+            $opportunity = $converter->convert($match, $this->authUser());
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -166,7 +168,7 @@ class TenderNoticeController extends Controller {
 
     public function editProfile(TenderFilterProfile $profile): View {
         Gate::authorize('create', ApplicationOpportunity::class);
-        $this->guardProfile($profile);
+        $this->assertSameOrganization($profile);
 
         return view('tenders.radar._form_dialog', ['profile' => $profile]);
     }
@@ -175,8 +177,8 @@ class TenderNoticeController extends Controller {
         Gate::authorize('create', ApplicationOpportunity::class);
 
         TenderFilterProfile::query()->create($this->validated($request) + [
-            'organization_id' => $this->actor()->organization_id,
-            'created_by' => $this->actor()->id,
+            'organization_id' => $this->currentOrganizationId(),
+            'created_by' => $this->authUser()->id,
         ]);
 
         return redirect()->route('tender-radar.profiles')->with('success', __('Suchprofil gespeichert.'));
@@ -184,7 +186,7 @@ class TenderNoticeController extends Controller {
 
     public function updateProfile(Request $request, TenderFilterProfile $profile): RedirectResponse {
         Gate::authorize('create', ApplicationOpportunity::class);
-        $this->guardProfile($profile);
+        $this->assertSameOrganization($profile);
 
         $profile->update($this->validated($request));
 
@@ -193,7 +195,7 @@ class TenderNoticeController extends Controller {
 
     public function destroyProfile(TenderFilterProfile $profile): RedirectResponse {
         Gate::authorize('create', ApplicationOpportunity::class);
-        $this->guardProfile($profile);
+        $this->assertSameOrganization($profile);
 
         $profile->delete();
 
@@ -268,20 +270,5 @@ class TenderNoticeController extends Controller {
             ->all();
 
         return $counts;
-    }
-
-    private function guard(TenderNoticeMatch $match): void {
-        abort_unless($match->organization_id === $this->actor()->organization_id, 404);
-    }
-
-    private function guardProfile(TenderFilterProfile $profile): void {
-        abort_unless($profile->organization_id === $this->actor()->organization_id, 404);
-    }
-
-    private function actor(): User {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 403);
-
-        return $user;
     }
 }

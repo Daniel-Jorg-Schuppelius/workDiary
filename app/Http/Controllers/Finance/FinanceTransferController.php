@@ -229,7 +229,7 @@ class FinanceTransferController extends Controller {
         Gate::authorize('confirm', $transfer);
 
         try {
-            $this->service->confirm($transfer, $this->actor());
+            $this->service->confirm($transfer, $this->authUser());
         } catch (BillingTransferException $e) {
             return back()->withErrors(['status' => $e->getMessage()]);
         }
@@ -267,12 +267,12 @@ class FinanceTransferController extends Controller {
         try {
             $result = $targets->for($transfer->target)->transfer($transfer);
         } catch (Throwable $e) {
-            $this->service->markFailed($transfer, mb_substr($e->getMessage(), 0, 1000), $this->actor());
+            $this->service->markFailed($transfer, mb_substr($e->getMessage(), 0, 1000), $this->authUser());
 
             return back()->withErrors(['transfer' => __('finance.flash.failed') . ' ' . ErrorText::for($e)]);
         }
 
-        $this->service->markTransferred($transfer, $result->externalReference, $result->filePath, $this->actor());
+        $this->service->markTransferred($transfer, $result->externalReference, $result->filePath, $this->authUser());
 
         return back()->with('success', __('finance.flash.transferred'));
     }
@@ -319,7 +319,7 @@ class FinanceTransferController extends Controller {
         ]);
 
         try {
-            $correction = $this->service->createCorrection($transfer, $data['reason'] ?? null, $this->actor());
+            $correction = $this->service->createCorrection($transfer, $data['reason'] ?? null, $this->authUser());
         } catch (BillingTransferException $e) {
             return back()->withErrors(['status' => $e->getMessage()]);
         }
@@ -334,7 +334,7 @@ class FinanceTransferController extends Controller {
         Gate::authorize('void', $transfer);
 
         try {
-            $this->service->void($transfer, $this->actor());
+            $this->service->void($transfer, $this->authUser());
         } catch (BillingTransferException $e) {
             return back()->withErrors(['status' => $e->getMessage()]);
         }
@@ -359,7 +359,7 @@ class FinanceTransferController extends Controller {
         ]);
 
         try {
-            $this->service->cancel($transfer, $data['reason'] ?? null, $this->actor());
+            $this->service->cancel($transfer, $data['reason'] ?? null, $this->authUser());
         } catch (BillingTransferException $e) {
             return back()->withErrors(['status' => $e->getMessage()]);
         }
@@ -389,12 +389,6 @@ class FinanceTransferController extends Controller {
     }
 
     // ── intern ─────────────────────────────────────────────────────────
-
-    private function actor(): ?User {
-        $user = Auth::user();
-
-        return $user instanceof User ? $user : null;
-    }
 
     /** @return list<TransferChannel> */
     private function allowedChannels(): array {

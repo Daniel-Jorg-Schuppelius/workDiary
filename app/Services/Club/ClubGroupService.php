@@ -18,6 +18,7 @@ use App\Models\Platform\{Organization, User};
 use App\Services\Concerns\AssertsStatusTransition;
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -115,7 +116,7 @@ class ClubGroupService {
                 'status' => ClubGroupMembershipStatus::Active->value,
                 'valid_from' => $day->toDateString(),
                 'valid_to' => null,
-                'note' => $this->nullableString($note),
+                'note' => StringHelper::trimToNull($note),
                 'decided_by_user_id' => $actor->id,
                 'decided_at' => now(),
             ]);
@@ -138,7 +139,7 @@ class ClubGroupService {
                 'club_member_id' => $member->id,
                 'status' => ClubGroupMembershipStatus::Requested->value,
                 'valid_from' => $day->toDateString(),
-                'note' => $this->nullableString($note),
+                'note' => StringHelper::trimToNull($note),
             ]);
             $membership->audit('club.group.membershipRequested', ['valid_from' => $day->toDateString(), 'actor_id' => $actor?->id]);
 
@@ -163,7 +164,7 @@ class ClubGroupService {
             $membership->update([
                 'status' => ClubGroupMembershipStatus::Active->value,
                 'valid_from' => $day->toDateString(),
-                'note' => $this->nullableString($note) ?? $membership->note,
+                'note' => StringHelper::trimToNull($note) ?? $membership->note,
                 'decided_by_user_id' => $actor->id,
                 'decided_at' => now(),
             ]);
@@ -178,11 +179,11 @@ class ClubGroupService {
 
         $membership->update([
             'status' => ClubGroupMembershipStatus::Rejected->value,
-            'note' => $this->nullableString($note) ?? $membership->note,
+            'note' => StringHelper::trimToNull($note) ?? $membership->note,
             'decided_by_user_id' => $actor->id,
             'decided_at' => now(),
         ]);
-        $membership->audit('club.group.membershipRejected', ['note' => $this->nullableString($note)]);
+        $membership->audit('club.group.membershipRejected', ['note' => StringHelper::trimToNull($note)]);
 
         return $membership->refresh();
     }
@@ -199,7 +200,7 @@ class ClubGroupService {
             $membership->update([
                 'status' => ClubGroupMembershipStatus::Ended->value,
                 'valid_to' => $day->toDateString(),
-                'note' => $this->nullableString($note) ?? $membership->note,
+                'note' => StringHelper::trimToNull($note) ?? $membership->note,
                 'decided_by_user_id' => $actor->id,
                 'decided_at' => now(),
             ]);
@@ -333,7 +334,7 @@ class ClubGroupService {
                 'status' => ClubProposalStatus::Confirmed->value,
                 'effective_on' => $day->toDateString(),
                 'suggested_group_id' => $target?->id,
-                'note' => $this->nullableString($note),
+                'note' => StringHelper::trimToNull($note),
                 'decided_by_user_id' => $actor->id,
                 'decided_at' => now(),
             ]);
@@ -350,11 +351,11 @@ class ClubGroupService {
 
         $proposal->update([
             'status' => ClubProposalStatus::Dismissed->value,
-            'note' => $this->nullableString($note),
+            'note' => StringHelper::trimToNull($note),
             'decided_by_user_id' => $actor->id,
             'decided_at' => now(),
         ]);
-        $proposal->audit('club.proposal.dismissed', ['note' => $this->nullableString($note)]);
+        $proposal->audit('club.proposal.dismissed', ['note' => StringHelper::trimToNull($note)]);
 
         return $proposal->refresh();
     }
@@ -427,7 +428,7 @@ class ClubGroupService {
         if (! $override) {
             throw ValidationException::withMessages(['club_member_id' => __('club.error.criteria.' . $result->value)]);
         }
-        if ($this->nullableString($note) === null) {
+        if (StringHelper::trimToNull($note) === null) {
             throw ValidationException::withMessages(['note' => __('club.error.override_note_required')]);
         }
     }
@@ -443,20 +444,20 @@ class ClubGroupService {
      * @return array<string, mixed>
      */
     private function groupAttributes(int $organizationId, array $attributes): array {
-        $minAge = $this->nullableInt($attributes['min_age'] ?? null);
-        $maxAge = $this->nullableInt($attributes['max_age'] ?? null);
+        $minAge = NumberHelper::toIntOrNull($attributes['min_age'] ?? null);
+        $maxAge = NumberHelper::toIntOrNull($attributes['max_age'] ?? null);
         if ($minAge !== null && $maxAge !== null && $maxAge < $minAge) {
             throw ValidationException::withMessages(['max_age' => __('club.error.age_range')]);
         }
 
-        $leaderId = $this->nullableInt($attributes['leader_user_id'] ?? null);
+        $leaderId = NumberHelper::toIntOrNull($attributes['leader_user_id'] ?? null);
         if ($leaderId !== null && ! User::query()->whereKey($leaderId)->where('organization_id', $organizationId)->exists()) {
             throw ValidationException::withMessages(['leader_user_id' => __('club.error.user_foreign')]);
         }
 
-        $systemId = $this->nullableInt($attributes['club_grading_system_id'] ?? null);
-        $minGradeId = $this->nullableInt($attributes['min_grade_id'] ?? null);
-        $maxGradeId = $this->nullableInt($attributes['max_grade_id'] ?? null);
+        $systemId = NumberHelper::toIntOrNull($attributes['club_grading_system_id'] ?? null);
+        $minGradeId = NumberHelper::toIntOrNull($attributes['min_grade_id'] ?? null);
+        $maxGradeId = NumberHelper::toIntOrNull($attributes['max_grade_id'] ?? null);
         if ($systemId === null) {
             $minGradeId = null;
             $maxGradeId = null;
@@ -472,7 +473,7 @@ class ClubGroupService {
             }
         }
 
-        $profileId = $this->nullableInt($attributes['club_sport_profile_id'] ?? null);
+        $profileId = NumberHelper::toIntOrNull($attributes['club_sport_profile_id'] ?? null);
         if ($profileId !== null && ! \App\Models\Club\ClubSportProfile::query()->whereKey($profileId)->where('organization_id', $organizationId)->exists()) {
             throw ValidationException::withMessages(['club_sport_profile_id' => __('club.teams.error.profile_foreign')]);
         }
@@ -481,38 +482,23 @@ class ClubGroupService {
         $mode = $mode instanceof \App\Enums\Club\ClubAdmissionMode ? $mode : \App\Enums\Club\ClubAdmissionMode::tryFrom((string) $mode);
 
         return [
-            'club_department_id' => $this->nullableInt($attributes['club_department_id'] ?? null),
+            'club_department_id' => NumberHelper::toIntOrNull($attributes['club_department_id'] ?? null),
             'name' => trim((string) $attributes['name']),
-            'description' => $this->nullableString($attributes['description'] ?? null),
+            'description' => StringHelper::trimToNull($attributes['description'] ?? null),
             'leader_user_id' => $leaderId,
-            'max_members' => $this->nullableInt($attributes['max_members'] ?? null),
+            'max_members' => NumberHelper::toIntOrNull($attributes['max_members'] ?? null),
             'admission_mode' => ($mode ?? \App\Enums\Club\ClubAdmissionMode::Leader)->value,
             'min_age' => $minAge,
             'max_age' => $maxAge,
-            'criteria_note' => $this->nullableString($attributes['criteria_note'] ?? null),
-            'discipline' => $this->nullableString($attributes['discipline'] ?? null),
+            'criteria_note' => StringHelper::trimToNull($attributes['criteria_note'] ?? null),
+            'discipline' => StringHelper::trimToNull($attributes['discipline'] ?? null),
             'club_grading_system_id' => $systemId,
             'min_grade_id' => $minGradeId,
             'max_grade_id' => $maxGradeId,
             'is_team' => (bool) ($attributes['is_team'] ?? false),
             'club_sport_profile_id' => $profileId,
-            'age_class' => $this->nullableString($attributes['age_class'] ?? null),
+            'age_class' => StringHelper::trimToNull($attributes['age_class'] ?? null),
             'is_active' => (bool) ($attributes['is_active'] ?? true),
         ];
-    }
-
-    private function nullableInt(mixed $value): ?int {
-        $string = $this->nullableString($value);
-
-        return $string === null ? null : (int) $string;
-    }
-
-    private function nullableString(mixed $value): ?string {
-        if ($value === null) {
-            return null;
-        }
-        $string = trim((string) $value);
-
-        return $string === '' ? null : $string;
     }
 }

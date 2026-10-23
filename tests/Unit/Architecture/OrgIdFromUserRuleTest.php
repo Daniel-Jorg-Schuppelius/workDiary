@@ -55,7 +55,8 @@ class OrgIdFromUserRuleTest extends TestCase {
             // UND die nachtraegliche Zuweisung (`$data['organization_id'] = …`).
             // Die zweite fehlte bis zum Sicherheitsaudit 2026-09-13 — 14 Schreibpfade
             // setzten die Organisation weiter aus dem Benutzer, das Gate lief gruen.
-            $pattern = '/(?:[\'"]organization_id[\'"]\s*=>|\[[\'"]organization_id[\'"]\]\s*=)\s*(?:\(int\)\s*)?(?:\$request->user\(\)\??->|\$user->|\$auth->|\$actor->|\$admin->|\$this->user\(\)\??->|Auth::user\(\)\??->|auth\(\)->user\(\)\??->)organization_id/';
+            // Ebenso die Nutzer-Helfer `$this->authUser()` & Co. (Phase 161, zwei Fälle).
+            $pattern = '/(?:[\'"]organization_id[\'"]\s*=>|\[[\'"]organization_id[\'"]\]\s*=)\s*(?:\(int\)\s*)?(?:\$request->user\(\)\??->|\$user->|\$auth->|\$actor->|\$admin->|\$this->(?:user|authUser|actor|portalUser|admin|authorizeBilling)\(\)\??->|Auth::user\(\)\??->|auth\(\)->user\(\)\??->)organization_id/';
 
             if (preg_match_all($pattern, $source, $matches, PREG_OFFSET_CAPTURE) === 0) {
                 continue;

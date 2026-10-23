@@ -20,7 +20,7 @@ use App\Models\ServiceTicket\{Problem, ServiceTicket};
 use App\Services\ServiceTicket\ProblemService;
 use App\Support\{ErrorText, Sqid, Tz};
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -100,7 +100,7 @@ class ProblemController extends Controller {
             'incidents.*' => ['string'],
         ]);
 
-        $user = $this->actor();
+        $user = $this->authUser();
         $tickets = $this->resolveIncidents(array_values((array) ($data['incidents'] ?? [])), $user);
 
         if ($tickets !== []) {
@@ -144,7 +144,7 @@ class ProblemController extends Controller {
         ]);
 
         $problem->update($data);
-        $problem->audit('problem.updated', ['actor' => $this->actor()->id]);
+        $problem->audit('problem.updated', ['actor' => $this->authUser()->id]);
 
         return redirect()->route('servicedesk.problems.show', $problem)
             ->with('success', __('Problem gespeichert.'));
@@ -165,7 +165,7 @@ class ProblemController extends Controller {
             $this->problems->transition(
                 $problem,
                 $data['status'],
-                $this->actor(),
+                $this->authUser(),
                 $due !== null ? \Illuminate\Support\Carbon::instance(Tz::parse((string) $due)) : null,
             );
         } catch (\RuntimeException|\InvalidArgumentException $e) {
@@ -188,7 +188,7 @@ class ProblemController extends Controller {
             'result' => ['required', 'string', 'min:3', 'max:2000'],
         ]);
 
-        $this->problems->recordEffectiveness($problem, $this->actor(), $data['result']);
+        $this->problems->recordEffectiveness($problem, $this->authUser(), $data['result']);
 
         return redirect()->route('servicedesk.problems.show', $problem)
             ->with('success', __('Wirksamkeitsprüfung dokumentiert.'));
@@ -198,7 +198,7 @@ class ProblemController extends Controller {
     public function publish(Problem $problem): RedirectResponse {
         Gate::authorize('update', $problem);
 
-        $this->problems->publishKnownError($problem, $this->actor());
+        $this->problems->publishKnownError($problem, $this->authUser());
 
         return redirect()->route('servicedesk.problems.show', $problem)
             ->with('success', __('Known-Error-Artikel veröffentlicht.'));
@@ -250,12 +250,5 @@ class ProblemController extends Controller {
         $link = app(\App\Services\ServiceTicket\ProblemService::class)->knownErrorLink($problem);
 
         return $link !== null ? \App\Models\Knowledge\KnowledgeArticle::query()->find($link->source_id) : null;
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

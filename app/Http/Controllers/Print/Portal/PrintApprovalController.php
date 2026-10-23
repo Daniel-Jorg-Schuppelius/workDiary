@@ -13,14 +13,14 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Print\Portal;
 
 use App\Enums\Notification\NotificationEvent;
+use App\Http\Controllers\Concerns\ResolvesPortalUser;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\CustomerIntake;
-use App\Models\Platform\User;
 use App\Models\Print\PrintOrder;
 use App\Services\Customer\Intake\CustomerIntakeNotifier;
 use App\Services\Print\PrintOrderService;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Storage};
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
@@ -29,6 +29,8 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  * frei oder weist sie mit Begründung zurück. Nur am eigenen Eingang.
  */
 class PrintApprovalController extends Controller {
+    use ResolvesPortalUser;
+
     public function __construct(
         private readonly PrintOrderService $orders,
         private readonly CustomerIntakeNotifier $notifier,
@@ -77,13 +79,5 @@ class PrintApprovalController extends Controller {
         abort_unless($target instanceof PrintOrder && $target->customer_approval_request !== null, 404);
 
         return $target;
-    }
-
-    private function portalUser(): User {
-        /** @var User $user */
-        $user = Auth::guard('customer')->user();
-        abort_if($user->customer_id === null, 404);
-
-        return $user;
     }
 }

@@ -21,6 +21,7 @@ use App\Services\Invoicing\Contracts\IncomingPartyLookup;
 use App\Services\Invoicing\Dto\IncomingPartyCandidate;
 use App\Services\Invoicing\EInvoice\IncomingInvoiceParties;
 use App\Services\Stammdaten\ContactPersons;
+use CommonToolkit\Helper\Data\PersonNameHelper;
 
 /**
  * Kontaktsuche in easybill (Phase 152, MVP-1226): `GET /customers` filtert
@@ -65,7 +66,7 @@ final class EasybillIncomingPartyLookup implements IncomingPartyLookup {
     /** @param  array<string, mixed>  $row */
     private function candidate(array $row): ?IncomingPartyCandidate {
         $id = (string) ($row['id'] ?? '');
-        $name = trim((string) ($row['company_name'] ?? '')) ?: trim(((string) ($row['first_name'] ?? '')) . ' ' . ((string) ($row['last_name'] ?? '')));
+        $name = trim((string) ($row['company_name'] ?? '')) ?: PersonNameHelper::join(['first_name' => $row['first_name'] ?? null, 'last_name' => $row['last_name'] ?? null]);
         if ($id === '' || $name === '') {
             return null;
         }

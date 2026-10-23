@@ -145,7 +145,7 @@ class TrainingRequirementController extends Controller {
         $data = $request->validate([
             'training_course_id' => ['required', 'integer', new ExistsInCurrentOrganization('training_courses')],
             'subject_kind' => ['required', 'string', Rule::enum(TrainingRequirementSubject::class)],
-            'subject_role' => ['required_if:subject_kind,role', 'nullable', 'string', Rule::in(array_column(UserRole::cases(), 'value'))],
+            'subject_role' => ['required_if:subject_kind,role', 'nullable', 'string', Rule::enum(UserRole::class)],
             'subject_team_id' => ['required_if:subject_kind,team', 'nullable', 'integer', new ExistsInCurrentOrganization('teams')],
             'first_due_days' => ['required', 'integer', 'between:0,3650'],
             'is_active' => ['nullable', 'boolean'],

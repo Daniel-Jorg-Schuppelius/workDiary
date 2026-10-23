@@ -17,7 +17,7 @@ use App\Models\Club\{ClubGroup, ClubMember, ClubSeason, ClubSportProfile, ClubSq
 use App\Models\Platform\{Organization, User};
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
-use CommonToolkit\Helper\Data\StringHelper;
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\{Collection, Str};
 use Illuminate\Support\Facades\DB;
@@ -168,7 +168,7 @@ class ClubTeamService {
             if ($to !== null && $to->lt($from)) {
                 throw ValidationException::withMessages(['valid_to' => __('club.teams.error.validity_range')]);
             }
-            $origin = $this->nullableString($data['guest_origin'] ?? null);
+            $origin = StringHelper::trimToNull($data['guest_origin'] ?? null);
 
             $memberId = $data['club_member_id'] ?? null;
             if ($memberId !== null && $memberId !== '') {
@@ -221,7 +221,7 @@ class ClubTeamService {
     public function updateSquadMember(ClubSquadMember $entry, array $data): ClubSquadMember {
         $attributes = $this->squadMemberAttributes($data);
         if (array_key_exists('guest_origin', $data)) {
-            $attributes['guest_origin'] = $this->nullableString($data['guest_origin']);
+            $attributes['guest_origin'] = StringHelper::trimToNull($data['guest_origin']);
         }
         $to = array_key_exists('valid_to', $data) ? $this->date($data['valid_to']) : $entry->valid_to;
         if ($to !== null && $to->lt($entry->valid_from)) {
@@ -322,7 +322,7 @@ class ClubTeamService {
     private function profileAttributes(array $data): array {
         $family = ClubSportFamily::from((string) ($data['family'] ?? ClubSportFamily::Other->value));
         $format = ClubResultFormat::from((string) ($data['result_format'] ?? ClubResultFormat::None->value));
-        $cutoff = $this->nullableString($data['age_cutoff'] ?? null);
+        $cutoff = StringHelper::trimToNull($data['age_cutoff'] ?? null);
         if ($cutoff !== null && preg_match('/^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/', $cutoff) !== 1) {
             throw ValidationException::withMessages(['age_cutoff' => __('club.teams.error.age_cutoff_format')]);
         }
@@ -331,14 +331,14 @@ class ClubTeamService {
             'name' => trim((string) $data['name']),
             'family' => $family->value,
             'positions' => $this->parsePositions($data['positions'] ?? ''),
-            'squad_size_field' => $this->nullableInt($data['squad_size_field'] ?? null),
-            'squad_size_bench' => $this->nullableInt($data['squad_size_bench'] ?? null),
+            'squad_size_field' => NumberHelper::toIntOrNull($data['squad_size_field'] ?? null),
+            'squad_size_bench' => NumberHelper::toIntOrNull($data['squad_size_bench'] ?? null),
             'result_format' => $format->value,
             'has_doubles' => (bool) ($data['has_doubles'] ?? false),
             'age_cutoff' => $cutoff,
             'disciplines' => $this->parseDisciplines($data['disciplines'] ?? ''),
             'resource_types' => $this->parseList($data['resource_types'] ?? ''),
-            'notes' => $this->nullableString($data['notes'] ?? null),
+            'notes' => StringHelper::trimToNull($data['notes'] ?? null),
             'is_active' => (bool) ($data['is_active'] ?? true),
         ];
     }
@@ -385,7 +385,7 @@ class ClubTeamService {
         $attributes = [];
         foreach (['jersey_no' => 'int', 'strength_rank' => 'int', 'position_code' => 'string', 'notes' => 'string'] as $key => $type) {
             if (array_key_exists($key, $data)) {
-                $attributes[$key] = $type === 'int' ? $this->nullableInt($data[$key]) : $this->nullableString($data[$key]);
+                $attributes[$key] = $type === 'int' ? NumberHelper::toIntOrNull($data[$key]) : StringHelper::trimToNull($data[$key]);
             }
         }
 
@@ -393,23 +393,8 @@ class ClubTeamService {
     }
 
     private function date(mixed $value): ?CarbonImmutable {
-        $string = $this->nullableString($value);
+        $string = StringHelper::trimToNull($value);
 
         return $string === null ? null : CarbonImmutable::parse($string)->startOfDay();
-    }
-
-    private function nullableInt(mixed $value): ?int {
-        $string = $this->nullableString($value);
-
-        return $string === null ? null : (int) $string;
-    }
-
-    private function nullableString(mixed $value): ?string {
-        if ($value === null) {
-            return null;
-        }
-        $string = trim((string) $value);
-
-        return $string === '' ? null : $string;
     }
 }

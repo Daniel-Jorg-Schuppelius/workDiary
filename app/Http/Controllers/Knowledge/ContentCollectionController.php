@@ -13,11 +13,10 @@ namespace App\Http\Controllers\Knowledge;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Knowledge\{ContentCollection, ContentCollectionItem};
-use App\Models\Platform\User;
 use App\Services\Collections\{CollectableTypes, ContentCollectionService};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -35,7 +34,7 @@ class ContentCollectionController extends Controller {
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', ContentCollection::class);
-        $user = $this->user();
+        $user = $this->authUser();
 
         $withArchived = $request->boolean('archived');
         $tree = $this->service->tree($user, $withArchived);
@@ -63,7 +62,7 @@ class ContentCollectionController extends Controller {
 
         return view('collections._form_dialog', [
             'collection' => null,
-            'parentOptions' => $this->service->tree($this->user()),
+            'parentOptions' => $this->service->tree($this->authUser()),
             'parentSqid' => (string) $request->query('parent', ''),
         ]);
     }
@@ -71,7 +70,7 @@ class ContentCollectionController extends Controller {
     public function store(Request $request): RedirectResponse {
         Gate::authorize('create', ContentCollection::class);
 
-        $collection = $this->service->create($this->currentOrganization(), $this->user(), $this->validated($request));
+        $collection = $this->service->create($this->currentOrganization(), $this->authUser(), $this->validated($request));
 
         return redirect()
             ->route('collections.index', ['collection' => $collection->sqid])
@@ -83,7 +82,7 @@ class ContentCollectionController extends Controller {
 
         return view('collections._form_dialog', [
             'collection' => $collection,
-            'parentOptions' => $this->service->tree($this->user()),
+            'parentOptions' => $this->service->tree($this->authUser()),
             'parentSqid' => (string) Sqid::encodeOrNull(ContentCollection::class, $collection->parent_id),
         ]);
     }
@@ -91,7 +90,7 @@ class ContentCollectionController extends Controller {
     public function update(Request $request, ContentCollection $collection): RedirectResponse {
         $this->authorizeCollection('update', $collection);
 
-        $this->service->update($collection, $this->user(), $this->validated($request));
+        $this->service->update($collection, $this->authUser(), $this->validated($request));
 
         return redirect()
             ->route('collections.index', ['collection' => $collection->sqid])
@@ -119,8 +118,8 @@ class ContentCollectionController extends Controller {
     /** Dialog „Zur Sammlung hinzufügen“ von der Detailseite eines Inhalts. */
     public function addDialog(Request $request): View {
         Gate::authorize('create', ContentCollection::class);
-        $item = $this->types->findVisibleOrFail((string) $request->query('type', ''), (string) $request->query('item', ''), $this->user());
-        $user = $this->user();
+        $item = $this->types->findVisibleOrFail((string) $request->query('type', ''), (string) $request->query('item', ''), $this->authUser());
+        $user = $this->authUser();
 
         return view('collections._add_dialog', [
             'type' => (string) $request->query('type'),
@@ -141,14 +140,14 @@ class ContentCollectionController extends Controller {
         ]);
 
         $collection = ContentCollection::query()
-            ->visibleTo($this->user())
+            ->visibleTo($this->authUser())
             ->whereNull('archived_at')
             ->find(Sqid::decodeOrNumeric(ContentCollection::class, $data['collection']));
         abort_if($collection === null, 404);
         $this->authorizeCollection('update', $collection);
 
-        $item = $this->types->findVisibleOrFail($data['type'], $data['item'], $this->user());
-        $this->service->addItem($collection, $this->user(), $item);
+        $item = $this->types->findVisibleOrFail($data['type'], $data['item'], $this->authUser());
+        $this->service->addItem($collection, $this->authUser(), $item);
 
         return redirect()->back()->with('success', __('collections.flash.item_added', ['collection' => $collection->title]));
     }
@@ -167,7 +166,7 @@ class ContentCollectionController extends Controller {
         ]);
 
         $collection = ContentCollection::query()
-            ->visibleTo($this->user())
+            ->visibleTo($this->authUser())
             ->whereNull('archived_at')
             ->find(Sqid::decodeOrNumeric(ContentCollection::class, $data['collection']));
         abort_if($collection === null, 404);
@@ -178,11 +177,11 @@ class ContentCollectionController extends Controller {
             [$type, $sqid] = explode(':', (string) $value, 2);
             $class = $this->types->classFor($type);
             $id = $class !== null ? Sqid::decode($class, $sqid) : null;
-            $visible = $id !== null ? $this->types->visible($type, $this->user(), [$id]) : [];
+            $visible = $id !== null ? $this->types->visible($type, $this->authUser(), [$id]) : [];
             if ($visible === []) {
                 continue;
             }
-            $this->service->addItem($collection, $this->user(), $visible[0]);
+            $this->service->addItem($collection, $this->authUser(), $visible[0]);
             $added++;
         }
 
@@ -222,14 +221,7 @@ class ContentCollectionController extends Controller {
 
     /** Private Sammlungen öffnet auch der Admin-Bypass nicht. */
     private function authorizeCollection(string $ability, ContentCollection $collection): void {
-        abort_unless($collection->isVisibleTo($this->user()), 404);
+        abort_unless($collection->isVisibleTo($this->authUser()), 404);
         Gate::authorize($ability, $collection);
-    }
-
-    private function user(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

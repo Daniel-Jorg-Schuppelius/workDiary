@@ -36,17 +36,13 @@ final class ApplicationsDemoBlock implements DemoBlock {
 
     public function purge(Organization $organization): void {}
 
-    private function moduleActive(string $code): bool {
-        return $this->context->moduleActive($code);
-    }
-
     /**
      * Demo Feature 068: Ausschreibung (Go → Anforderung erledigt →
      * Einreichung → gewonnen) + Personalbewerbung (Gespräch → Bewertung →
      * Zusage → Mitarbeiter-Entwurf). Robust: Fehler brechen den Seed nicht.
      */
     private function seedApplications(Organization $organization, Customer $customer, ?User $actor): int {
-        if (! $this->moduleActive('module.applications')) {
+        if (! $this->context->moduleActive('module.applications')) {
             return 0;
         }
         if ($actor === null) {

@@ -16,14 +16,13 @@ use App\Enums\Invoicing\SelfBillingStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Invoicing\{SelfBillingCredit, SelfBillingCreditLine};
-use App\Models\Platform\User;
 use App\Models\Supplier\Supplier;
 use App\Services\Invoicing\EInvoice\SelfBillingXmlGenerator;
 use App\Services\Invoicing\{SelfBillingPdfRenderer, SelfBillingService};
 use App\Support\Sqid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request, Response};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -69,7 +68,7 @@ class SelfBillingCreditController extends Controller {
         if ($supplier === null) {
             throw ValidationException::withMessages(['supplier_id' => (string) __('invoicing.self_billing.errors.supplier')]);
         }
-        $credit = $this->service->createDraft($supplier, $this->actor(), $data);
+        $credit = $this->service->createDraft($supplier, $this->authUser(), $data);
 
         return redirect()->route('invoices.self-billing.show', $credit)
             ->with('success', __('invoicing.self_billing.flash.created'))
@@ -116,7 +115,7 @@ class SelfBillingCreditController extends Controller {
 
     public function issue(SelfBillingCredit $selfBillingCredit): RedirectResponse {
         Gate::authorize(Permission::InvoiceIssue->value);
-        $credit = $this->service->issue($selfBillingCredit, $this->actor());
+        $credit = $this->service->issue($selfBillingCredit, $this->authUser());
 
         return redirect()->route('invoices.self-billing.show', $credit)->with('success', __('invoicing.self_billing.flash.issued', ['number' => $credit->number]));
     }
@@ -130,7 +129,7 @@ class SelfBillingCreditController extends Controller {
     public function cancel(Request $request, SelfBillingCredit $selfBillingCredit): RedirectResponse {
         Gate::authorize(Permission::InvoiceIssue->value);
         $data = $request->validate(['reason' => ['required', 'string', 'min:2', 'max:255']]);
-        $this->service->cancel($selfBillingCredit, $this->actor(), $data['reason']);
+        $this->service->cancel($selfBillingCredit, $this->authUser(), $data['reason']);
 
         return redirect()->route('invoices.self-billing.show', $selfBillingCredit)->with('success', __('invoicing.self_billing.flash.cancelled'));
     }
@@ -152,12 +151,5 @@ class SelfBillingCreditController extends Controller {
             'Content-Type' => 'application/xml',
             'Content-Disposition' => 'attachment; filename="' . $selfBillingCredit->number . '.xml"',
         ]);
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

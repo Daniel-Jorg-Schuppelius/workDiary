@@ -171,7 +171,7 @@ class KnowledgeArticleController extends Controller {
         return view('knowledge._form_dialog', [
             'article' => null,
             // Sammlung beim Anlegen (MVP-814, ersetzt die Freitext-Kategorie).
-            'collectionOptions' => Gate::allows('create', ContentCollection::class) ? $this->collections->tree($this->currentUser()) : [],
+            'collectionOptions' => Gate::allows('create', ContentCollection::class) ? $this->collections->tree($this->authUser()) : [],
             'linkKind' => $linkKind,
             'linkId' => $linkId,
             'prefill' => $prefill,
@@ -461,12 +461,5 @@ class KnowledgeArticleController extends Controller {
             });
 
         return $map;
-    }
-
-    private function currentUser(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

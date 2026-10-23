@@ -17,6 +17,7 @@ use App\Enums\Search\SearchSourceType;
 use App\Models\Learning\LearningCourse;
 use App\Services\Search\Indexing\{SearchContext, SearchDocumentData};
 use App\Services\Search\Indexing\Sources\AbstractSearchSource;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
 
 /**
@@ -57,11 +58,11 @@ final class LearningCourseSource extends AbstractSearchSource {
                 $model->code,
                 $model->category->name ?? null,
                 ...self::strings($model->tags, 'name'),
-                $context->userName(self::intOrNull($model->owner_user_id)),
+                $context->userName(NumberHelper::toIntOrNull($model->owner_user_id)),
             ],
             occurredAt: $model->updated_at,
             dateOnly: true,
-            userId: self::intOrNull($model->owner_user_id),
+            userId: NumberHelper::toIntOrNull($model->owner_user_id),
             sourceUpdatedAt: $model->updated_at,
         );
     }

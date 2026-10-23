@@ -88,4 +88,13 @@ class ArticleSpecTest extends TestCase {
             ->where('gtin', '4006381333931')->count(), 'Keine Dublette angelegt');
         $this->assertSame('A-1', Article::query()->where('gtin', '4006381333931')->value('number'));
     }
+
+    /** Konsolidierungs-Audit 2026-10-23 (A2): die Roh-Regex ließ jede Buchstabenfolge als Code durch. */
+    public function test_validate_rejects_unknown_currency_code(): void {
+        $spec = new ArticleSpec();
+        $fields = fn(string $currency) => array_map(static fn($i) => $i->field, $spec->validateRow($spec->normalize(['name' => 'X', 'currency' => $currency]), $this->organization));
+
+        $this->assertContains('currency', $fields('XYZ'));
+        $this->assertNotContains('currency', $fields('gbp'));
+    }
 }

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Concerns;
 
 use App\Models\Platform\Organization;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -74,6 +75,14 @@ trait ResolvesCurrentOrganization {
         $user = Auth::user();
 
         return $user?->organization;
+    }
+
+    /**
+     * Datensatz gehört zur gebundenen Organisation, sonst Abbruch mit
+     * `$status` (404 verrät nicht, dass es den Datensatz woanders gibt).
+     */
+    protected function assertSameOrganization(Model $model, int $status = 404): void {
+        abort_unless((int) $model->getAttribute('organization_id') === (int) $this->currentOrganization()->id, $status);
     }
 
     /** ID-Variante; 0, wenn kein Kontext gebunden ist (Alt-Verhalten). */

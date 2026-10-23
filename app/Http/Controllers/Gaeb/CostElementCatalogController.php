@@ -16,13 +16,12 @@ use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Costing\CostElementCatalog;
-use App\Models\Platform\User;
 use App\Services\Gaeb\CostElementCatalogService;
 use App\Support\ErrorText;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request, Response};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
 
 /**
@@ -47,7 +46,7 @@ class CostElementCatalogController extends Controller {
 
     public function show(CostElementCatalog $catalog): View {
         Gate::authorize(P::ProjectViewAny->value);
-        $this->guard($catalog);
+        $this->assertSameOrganization($catalog);
 
         return view('gaeb.cost-catalogs.show', [
             'catalog' => $catalog,
@@ -69,7 +68,7 @@ class CostElementCatalogController extends Controller {
             $catalog = $this->catalogs->import(
                 File::read((string) $request->file('file')->getRealPath()),
                 $this->currentOrganization()->id,
-                $this->actor(),
+                $this->authUser(),
                 $data['name'] ?? null,
             );
         } catch (InvalidArgumentException $e) {
@@ -92,7 +91,7 @@ class CostElementCatalogController extends Controller {
      */
     public function linkArticle(Request $request, CostElementCatalog $catalog, \App\Models\Costing\CostElement $element): RedirectResponse {
         Gate::authorize(P::ProjectImport->value);
-        $this->guard($catalog);
+        $this->assertSameOrganization($catalog);
         abort_unless($element->cost_element_catalog_id === $catalog->id, 404);
 
         $raw = $request->input('article');
@@ -115,7 +114,7 @@ class CostElementCatalogController extends Controller {
     /** Ausgabe in der Bauform, in der der Katalog hereinkam. */
     public function export(CostElementCatalog $catalog): Response {
         Gate::authorize(P::ProjectViewAny->value);
-        $this->guard($catalog);
+        $this->assertSameOrganization($catalog);
 
         return response($this->catalogs->export($catalog), 200, [
             'Content-Type' => 'application/xml',
@@ -125,21 +124,10 @@ class CostElementCatalogController extends Controller {
 
     public function destroy(CostElementCatalog $catalog): RedirectResponse {
         Gate::authorize(P::ProjectImport->value);
-        $this->guard($catalog);
+        $this->assertSameOrganization($catalog);
 
         $catalog->delete();
 
         return redirect()->toList('cost-catalogs.index')->with('success', __('Baukostenkatalog gelöscht.'));
-    }
-
-    private function guard(CostElementCatalog $catalog): void {
-        abort_unless($catalog->organization_id === $this->currentOrganization()->id, 404);
-    }
-
-    private function actor(): User {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 403);
-
-        return $user;
     }
 }

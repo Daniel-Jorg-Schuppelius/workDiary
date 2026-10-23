@@ -12,6 +12,7 @@ namespace App\Plugins\RemoteSupport;
 
 use App\Models\Platform\PluginSetting;
 use App\Plugins\Support\PluginOrgContext;
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 
 /**
  * Liefert die effektive Fernwartungs-Konfiguration für den aktuellen Request /
@@ -29,18 +30,18 @@ class RemoteSupportConfig {
         $enabled = (bool) config('plugins.remote-support.enabled', false);
         $syncWindowDays = (int) config('plugins.remote-support.sync_window_days', 2);
         $defaultBillable = (bool) config('plugins.remote-support.default_billable', true);
-        $defaultUserId = self::intOrNull(config('plugins.remote-support.default_user_id'));
+        $defaultUserId = NumberHelper::toIntOrNull(config('plugins.remote-support.default_user_id'));
 
         $anydesk = [
             'enabled' => (bool) config('plugins.remote-support.anydesk.enabled', false),
-            'license_id' => self::stringOrNull(config('plugins.remote-support.anydesk.license_id')),
-            'api_key' => self::stringOrNull(config('plugins.remote-support.anydesk.api_key')),
+            'license_id' => StringHelper::trimToNull(config('plugins.remote-support.anydesk.license_id')),
+            'api_key' => StringHelper::trimToNull(config('plugins.remote-support.anydesk.api_key')),
             'base_url' => (string) config('plugins.remote-support.anydesk.base_url', 'https://v1.api.anydesk.com:8081'),
         ];
         $teamviewer = [
             'enabled' => (bool) config('plugins.remote-support.teamviewer.enabled', false),
             'license_id' => null,
-            'api_key' => self::stringOrNull(config('plugins.remote-support.teamviewer.api_key')),
+            'api_key' => StringHelper::trimToNull(config('plugins.remote-support.teamviewer.api_key')),
             'base_url' => (string) config('plugins.remote-support.teamviewer.base_url', 'https://webapi.teamviewer.com/api/v1'),
         ];
 
@@ -63,19 +64,19 @@ class RemoteSupportConfig {
                 if (isset($s['default_billable'])) {
                     $defaultBillable = (bool) $s['default_billable'];
                 }
-                if (self::intOrNull($s['default_user_id'] ?? null) !== null) {
-                    $defaultUserId = self::intOrNull($s['default_user_id']);
+                if (NumberHelper::toIntOrNull($s['default_user_id'] ?? null) !== null) {
+                    $defaultUserId = NumberHelper::toIntOrNull($s['default_user_id']);
                 }
 
                 $anydesk['enabled'] = (bool) ($s['anydesk_enabled'] ?? $anydesk['enabled']);
-                $anydesk['license_id'] = self::stringOrNull($s['anydesk_license_id'] ?? null) ?? $anydesk['license_id'];
-                $anydesk['api_key'] = self::stringOrNull($s['anydesk_api_key'] ?? null) ?? $anydesk['api_key'];
+                $anydesk['license_id'] = StringHelper::trimToNull($s['anydesk_license_id'] ?? null) ?? $anydesk['license_id'];
+                $anydesk['api_key'] = StringHelper::trimToNull($s['anydesk_api_key'] ?? null) ?? $anydesk['api_key'];
                 if (! empty($s['anydesk_base_url'])) {
                     $anydesk['base_url'] = (string) $s['anydesk_base_url'];
                 }
 
                 $teamviewer['enabled'] = (bool) ($s['teamviewer_enabled'] ?? $teamviewer['enabled']);
-                $teamviewer['api_key'] = self::stringOrNull($s['teamviewer_api_key'] ?? null) ?? $teamviewer['api_key'];
+                $teamviewer['api_key'] = StringHelper::trimToNull($s['teamviewer_api_key'] ?? null) ?? $teamviewer['api_key'];
                 if (! empty($s['teamviewer_base_url'])) {
                     $teamviewer['base_url'] = (string) $s['teamviewer_base_url'];
                 }
@@ -90,21 +91,5 @@ class RemoteSupportConfig {
             'anydesk' => $anydesk,
             'teamviewer' => $teamviewer,
         ];
-    }
-
-    private static function stringOrNull(mixed $value): ?string {
-        if (! \is_string($value)) {
-            return null;
-        }
-
-        // Credentials kommen per Copy-Paste — unsichtbarer Whitespace würde
-        // die HMAC-Signatur still brechen.
-        $value = trim($value);
-
-        return $value !== '' ? $value : null;
-    }
-
-    private static function intOrNull(mixed $value): ?int {
-        return is_numeric($value) ? (int) $value : null;
     }
 }

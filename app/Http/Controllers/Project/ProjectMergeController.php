@@ -32,7 +32,7 @@ class ProjectMergeController extends Controller {
     use ResolvesCurrentOrganization;
 
     public function index(Request $request, ProjectDuplicateFinder $finder): View {
-        $user = $this->authorizeMerging();
+        $user = $this->authorizeBilling();
 
         $only = $this->resolveConfidenceFilter($request, [
             ProjectDuplicateFinder::CONF_EXACT,
@@ -58,7 +58,7 @@ class ProjectMergeController extends Controller {
      * „Felder wählen…"-Pfad der Auto-Vorschläge.
      */
     public function compare(Request $request): View {
-        $this->authorizeMerging();
+        $this->authorizeBilling();
 
         [$source, $target] = $this->resolveDistinctMergePair($request);
 
@@ -93,7 +93,7 @@ class ProjectMergeController extends Controller {
     }
 
     public function dismiss(Request $request): RedirectResponse {
-        $user = $this->authorizeMerging();
+        $user = $this->authorizeBilling();
 
         [$source, $target] = $this->resolveDistinctMergePair($request);
 

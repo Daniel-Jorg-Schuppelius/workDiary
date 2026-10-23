@@ -565,7 +565,7 @@ class LearningCourseController extends Controller {
     /** Prüfungsstatistik (MVP-785): Versuche, Quoten je Frage ab n ≥ 5, Zeitbedarf. */
     public function quizStatistics(LearningCourse $course, LearningUnit $unit): View {
         Gate::authorize(\App\Enums\User\Permission::LearningGrade->value);
-        abort_unless($course->isVisibleTo($this->uploader()), 404);
+        abort_unless($course->isVisibleTo($this->authUser()), 404);
         $this->guardUnitBelongsToCourse($course, $unit);
         $quiz = $unit->quiz;
         abort_if($quiz === null, 404);
@@ -657,7 +657,7 @@ class LearningCourseController extends Controller {
         $data = $this->validatedQuestion($request, $course);
         $image = $request->file('image');
 
-        $this->questions->create($course->organization_id, $data, $image instanceof UploadedFile ? $image : null, $this->uploader(), $quiz);
+        $this->questions->create($course->organization_id, $data, $image instanceof UploadedFile ? $image : null, $this->authUser(), $quiz);
 
         return redirect()
             ->route('learning.courses.units.quiz.edit', [$course, $unit])
@@ -687,7 +687,7 @@ class LearningCourseController extends Controller {
         $data = $this->validatedQuestion($request, $course);
         $image = $request->file('image');
 
-        $this->questions->update($question, $data, $image instanceof UploadedFile ? $image : null, $this->uploader());
+        $this->questions->update($question, $data, $image instanceof UploadedFile ? $image : null, $this->authUser());
 
         return redirect()
             ->route('learning.courses.units.quiz.edit', [$course, $unit])
@@ -700,7 +700,7 @@ class LearningCourseController extends Controller {
 
         $quiz = $unit->quiz;
         abort_if($quiz === null, 404);
-        $this->questions->duplicate($question, $this->uploader(), $quiz);
+        $this->questions->duplicate($question, $this->authUser(), $quiz);
 
         return redirect()
             ->route('learning.courses.units.quiz.edit', [$course, $unit])
@@ -924,13 +924,6 @@ class LearningCourseController extends Controller {
      */
     private function categories(int $organizationId) {
         return LearningQuestionCategory::query()->where('organization_id', $organizationId)->orderBy('position')->orderBy('name')->get();
-    }
-
-    private function uploader(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 
     /** KI-Gliederung (MVP-781): Dialog mit Thema und Zielgruppe. */
@@ -1550,18 +1543,11 @@ class LearningCourseController extends Controller {
             404
         );
 
-        app(LearningTranslationService::class)->approve($translation, $this->actorUser());
+        app(LearningTranslationService::class)->approve($translation, $this->authUser());
 
         return redirect()
             ->route('learning.courses.show', $course->sqid)
             ->with('success', __('learning.flash.translation_approved'));
-    }
-
-    private function actorUser(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 
     /**

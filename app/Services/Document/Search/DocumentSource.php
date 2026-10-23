@@ -19,6 +19,7 @@ use App\Services\Search\Indexing\{SearchContext, SearchDocumentData};
 use App\Services\Search\Indexing\Sources\AbstractSearchSource;
 use App\Services\Support\Content\ContentSubjectResolver;
 use App\Support\MorphMap;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
 
 /**
@@ -81,10 +82,10 @@ final class DocumentSource extends AbstractSearchSource {
                 $model->document_type->label(),
                 $fileText,
                 ...self::strings($model->tags, 'name'),
-                $context->userName(self::intOrNull($model->created_by_user_id)),
+                $context->userName(NumberHelper::toIntOrNull($model->created_by_user_id)),
             ],
             occurredAt: $model->created_at,
-            userId: self::intOrNull($model->created_by_user_id),
+            userId: NumberHelper::toIntOrNull($model->created_by_user_id),
             customerId: $subject->customer !== null ? (int) $subject->customer->id : null,
             foreignCustomerId: $subject->foreignCustomer !== null ? (int) $subject->foreignCustomer->id : null,
             projectId: $subject->project !== null ? (int) $subject->project->id : null,

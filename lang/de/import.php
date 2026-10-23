@@ -79,8 +79,8 @@ return [
         'format' => [
             'default' => 'Feld :field hat ein ungültiges Format (:reason).',
             'email' => 'Keine gültige E-Mail-Adresse.',
-            'country' => 'Ländercode muss aus 2-3 Großbuchstaben bestehen (ISO 3166-1).',
-            'currency' => 'Währungscode muss aus 3 Großbuchstaben bestehen (ISO 4217).',
+            'country' => 'Kein gültiger Ländercode nach ISO 3166-1 (zwei Buchstaben, z. B. DE).',
+            'currency' => 'Kein gültiger Währungscode nach ISO 4217 (z. B. EUR).',
             'enum' => 'Wert ist kein gültiger Status.',
             'parse' => 'Datei konnte nicht gelesen werden: :reason',
             'xlsxUnreadable' => 'Die Excel-Datei ist beschädigt oder kein gültiges XLSX-Format.',

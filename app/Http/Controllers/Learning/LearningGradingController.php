@@ -132,7 +132,7 @@ class LearningGradingController extends Controller {
     public function approveTime(LearningTimeSession $session): RedirectResponse {
         Gate::authorize(Permission::LearningManage->value);
 
-        $this->time->approve($session, $this->actor());
+        $this->time->approve($session, $this->authUser());
 
         return redirect()->route('learning.time-approvals.index')
             ->with('success', __('learning.flash.time_approved'));
@@ -145,7 +145,7 @@ class LearningGradingController extends Controller {
             'reason' => ['required', 'string', 'min:3', 'max:255'],
         ]);
 
-        $this->time->reject($session, $this->actor(), $data['reason']);
+        $this->time->reject($session, $this->authUser(), $data['reason']);
 
         return redirect()->route('learning.time-approvals.index')
             ->with('success', __('learning.flash.time_rejected'));
@@ -191,7 +191,7 @@ class LearningGradingController extends Controller {
             $scores,
             $data['points'] ?? null,
             $data['feedback'] ?? null,
-            $this->actor(),
+            $this->authUser(),
         );
 
         return redirect()
@@ -207,7 +207,7 @@ class LearningGradingController extends Controller {
             'feedback' => ['required', 'string', 'min:2', 'max:5000'],
         ]);
 
-        $this->assignments->returnForRevision($submission, $data['feedback'], $this->actor());
+        $this->assignments->returnForRevision($submission, $data['feedback'], $this->authUser());
 
         return redirect()
             ->route('learning.grading.index')
@@ -219,7 +219,7 @@ class LearningGradingController extends Controller {
         Gate::authorize(Permission::LearningGrade->value);
         $this->guardCourseVisible($submission->enrollment?->course);
 
-        $this->assignments->secondOpinion($submission, $this->actor());
+        $this->assignments->secondOpinion($submission, $this->authUser());
 
         return redirect()
             ->route('learning.grading.index')
@@ -248,18 +248,11 @@ class LearningGradingController extends Controller {
             'note' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $this->quizzes->correctAnswer($answer, (int) $data['points'], $data['note'] ?? null, $this->actor());
+        $this->quizzes->correctAnswer($answer, (int) $data['points'], $data['note'] ?? null, $this->authUser());
 
         return redirect()
             ->route('learning.grading.index')
             ->with('success', __('learning.flash.answer_graded'));
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 
     /**

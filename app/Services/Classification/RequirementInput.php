@@ -13,7 +13,7 @@ namespace App\Services\Classification;
 use App\Enums\Classification\{ClassificationDomain, ClassificationRequirementPhase, ClassificationRequirementSeverity};
 use App\Models\Classification\ClassificationRequirement;
 use App\Models\Platform\Organization;
-use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\Data\{JsonHelper, StringHelper};
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -80,7 +80,7 @@ class RequirementInput {
             'min_count' => (int) $validated['min_count'],
             'max_count' => $maxCount !== null ? (int) $maxCount : null,
             'only_if_json' => $onlyIfJson,
-            'note' => $this->nullableString($validated['note'] ?? null),
+            'note' => StringHelper::trimToNull($validated['note'] ?? null),
         ];
     }
 
@@ -131,15 +131,5 @@ class RequirementInput {
         }
 
         return $normalized;
-    }
-
-    private function nullableString(mixed $value): ?string {
-        if (! is_string($value)) {
-            return null;
-        }
-
-        $trimmed = trim($value);
-
-        return $trimmed === '' ? null : $trimmed;
     }
 }

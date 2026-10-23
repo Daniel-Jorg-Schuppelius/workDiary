@@ -25,6 +25,7 @@ use Carbon\CarbonImmutable;
 use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -85,7 +86,7 @@ class PostingInboxController extends Controller {
         abort_if($actor === null, 403);
 
         $data = $request->validate([
-            'kind' => ['required', 'string', 'in:' . implode(',', array_column(PostingSourceKind::cases(), 'value'))],
+            'kind' => ['required', 'string', Rule::enum(PostingSourceKind::class)],
             'source_id' => ['required', 'integer'],
             // Quellen mit Kontext (AfA: Anlage × Jahr) sind nur über den
             // Idempotenzschlüssel eindeutig — die ID allein reicht dort nicht.

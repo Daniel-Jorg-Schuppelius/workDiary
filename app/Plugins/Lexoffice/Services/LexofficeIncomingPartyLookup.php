@@ -19,6 +19,7 @@ use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use App\Services\Invoicing\Contracts\IncomingPartyLookup;
 use App\Services\Invoicing\Dto\IncomingPartyCandidate;
 use App\Services\Invoicing\EInvoice\IncomingInvoiceParties;
+use CommonToolkit\Helper\Data\PersonNameHelper;
 use Illuminate\Support\Facades\Cache;
 
 /** Kontaktsuche in Lexware Office für den Zuordnen-Dialog (Phase 152, MVP-1226): E-Mail und Name. */
@@ -52,7 +53,7 @@ final class LexofficeIncomingPartyLookup implements IncomingPartyLookup {
     private function candidate(array $contact): ?IncomingPartyCandidate {
         $id = (string) ($contact['id'] ?? '');
         $company = trim((string) data_get($contact, 'company.name', ''));
-        $person = trim(((string) data_get($contact, 'person.firstName', '')) . ' ' . ((string) data_get($contact, 'person.lastName', '')));
+        $person = PersonNameHelper::join(['first_name' => data_get($contact, 'person.firstName'), 'last_name' => data_get($contact, 'person.lastName')]);
         $name = $company !== '' ? $company : $person;
         if ($id === '' || $name === '') {
             return null;

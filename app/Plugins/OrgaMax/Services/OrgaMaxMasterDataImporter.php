@@ -20,6 +20,7 @@ use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Services\Integration\IntegrationResolver;
 use App\Services\Integration\Match\MatchProfile;
 use App\Services\Integration\Profiles\{ArticleMatchProfile, CustomerMatchProfile, SupplierMatchProfile};
+use CommonToolkit\Helper\Data\PersonNameHelper;
 use Orgamax\API\Client;
 use Orgamax\API\Endpoints\{ArticlesEndpoint, CustomersEndpoint, SuppliersEndpoint};
 use Orgamax\Entities\Articles\Article;
@@ -149,6 +150,6 @@ class OrgaMaxMasterDataImporter {
             return $name;
         }
 
-        return trim(((string) $firstName) . ' ' . ((string) $lastName));
+        return PersonNameHelper::join(['first_name' => $firstName, 'last_name' => $lastName]);
     }
 }

@@ -91,7 +91,7 @@ class JobApplicationController extends Controller {
         ]);
 
         $contact = $this->pullContactDetails($data);
-        ['application' => $application, 'duplicates' => $duplicates] = $this->recruiting->intake($data, $this->actor());
+        ['application' => $application, 'duplicates' => $duplicates] = $this->recruiting->intake($data, $this->authUser());
         $this->writeContactDetails($application, $contact);
 
         $notice = __('Bewerbung erfasst.');
@@ -194,7 +194,7 @@ class JobApplicationController extends Controller {
             'label' => ['nullable', 'string', 'max:180'],
         ]);
 
-        $document = $documents->create(null, $this->actor(), [
+        $document = $documents->create(null, $this->authUser(), [
             'title' => (string) ($request->input('label') ?: __('Bewerberunterlage')),
             'document_type' => DocumentType::Other->value,
         ], $request->file('file'));
@@ -220,7 +220,7 @@ class JobApplicationController extends Controller {
         ]);
 
         try {
-            $this->recruiting->decide($application, $data['decision'], $data['note'] ?? null, $this->actor(), (bool) ($data['talent_pool_consent'] ?? false));
+            $this->recruiting->decide($application, $data['decision'], $data['note'] ?? null, $this->authUser(), (bool) ($data['talent_pool_consent'] ?? false));
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -236,7 +236,7 @@ class JobApplicationController extends Controller {
         ]);
 
         try {
-            $this->recruiting->readmit($application, $this->actor(), $data['note'] ?? null);
+            $this->recruiting->readmit($application, $this->authUser(), $data['note'] ?? null);
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -284,7 +284,7 @@ class JobApplicationController extends Controller {
     public function anonymize(JobApplication $application): RedirectResponse {
         Gate::authorize('privacy', $application);
 
-        $this->recruiting->anonymize($application, $this->actor());
+        $this->recruiting->anonymize($application, $this->authUser());
 
         return back()->with('success', __('Bewerberdaten anonymisiert — die Akte bleibt als anonymer Nachweis erhalten.'));
     }
@@ -300,7 +300,7 @@ class JobApplicationController extends Controller {
         $qualifications = array_map('trim', StringHelper::lines((string) ($data['qualifications'] ?? ''), true));
 
         try {
-            $this->recruiting->createEmployeeDraft($application, $this->actor(), $qualifications);
+            $this->recruiting->createEmployeeDraft($application, $this->authUser(), $qualifications);
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -313,18 +313,11 @@ class JobApplicationController extends Controller {
         abort_unless($draft->job_application_id === $application->id, 404);
 
         try {
-            $user = $this->recruiting->inviteFromDraft($draft, $this->actor());
+            $user = $this->recruiting->inviteFromDraft($draft, $this->authUser());
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Konto für :name angelegt (Passwort-Änderung beim ersten Login erzwungen).', ['name' => $user->name]));
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

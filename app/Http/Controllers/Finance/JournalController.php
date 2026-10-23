@@ -214,10 +214,6 @@ class JournalController extends Controller {
             ->with('status', __('accounting.ledger.flash.entry_discarded'));
     }
 
-    private function assertSameOrganization(AccountingEntry $entry): void {
-        abort_unless((int) $entry->organization_id === (int) $this->currentOrganizationOrAbort()->id, 404);
-    }
-
     /** @param list<int> $ids */
     private function assertOwnAccounts(int $organizationId, array $ids): void {
         $count = AccountingAccount::query()

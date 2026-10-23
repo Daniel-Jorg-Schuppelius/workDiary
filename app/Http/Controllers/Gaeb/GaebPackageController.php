@@ -19,14 +19,13 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Applications\ApplicationOpportunity;
 use App\Models\Gaeb\GaebImport;
-use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Services\Gaeb\{BoqImportConflictException, GaebImportService, GaebPackageIntakeService};
 use App\Support\{ErrorText, SqidEncoder};
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate, Storage};
+use Illuminate\Support\Facades\{Gate, Storage};
 use RuntimeException;
 
 /**
@@ -84,7 +83,7 @@ class GaebPackageController extends Controller {
                 $contents,
                 (string) $file->getClientOriginalName(),
                 $this->currentOrganization()->id,
-                $this->actor(),
+                $this->authUser(),
                 $opportunity,
             );
         } catch (RuntimeException $e) {
@@ -101,7 +100,7 @@ class GaebPackageController extends Controller {
     /** Der Vorschlag wird zum Leistungsverzeichnis — jetzt erst wird gelesen. */
     public function accept(Request $request, GaebImport $import): RedirectResponse {
         Gate::authorize(P::ProjectImport->value);
-        $this->guard($import);
+        $this->assertSameOrganization($import);
 
         $path = $import->stored_path;
         if ($path === null || ! Storage::disk('local')->exists($path)) {
@@ -117,7 +116,7 @@ class GaebPackageController extends Controller {
                 (int) $import->organization_id,
                 [
                     'project_id' => $projectId,
-                    'created_by' => $this->actor()->id,
+                    'created_by' => $this->authUser()->id,
                 ],
             );
         } catch (BoqImportConflictException $e) {
@@ -157,7 +156,7 @@ class GaebPackageController extends Controller {
 
     public function discard(GaebImport $import): RedirectResponse {
         Gate::authorize(P::ProjectImport->value);
-        $this->guard($import);
+        $this->assertSameOrganization($import);
 
         if ($import->stored_path !== null) {
             Storage::disk('local')->delete($import->stored_path);
@@ -190,16 +189,5 @@ class GaebPackageController extends Controller {
         abort_unless(Project::query()->whereKey($id)->exists(), 422);
 
         return $id;
-    }
-
-    private function guard(GaebImport $import): void {
-        abort_unless($import->organization_id === $this->currentOrganization()->id, 404);
-    }
-
-    private function actor(): User {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 403);
-
-        return $user;
     }
 }

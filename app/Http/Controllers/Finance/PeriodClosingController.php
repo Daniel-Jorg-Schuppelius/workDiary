@@ -208,8 +208,4 @@ class PeriodClosingController extends Controller {
             'Content-Disposition' => 'attachment; filename="datev-journal-' . $data['from'] . '_' . $data['to'] . '.csv"',
         ]);
     }
-
-    private function assertSameOrganization(AccountingPeriod $period): void {
-        abort_unless((int) $period->organization_id === (int) $this->currentOrganizationOrAbort()->id, 404);
-    }
 }

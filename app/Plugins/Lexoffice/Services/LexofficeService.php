@@ -22,7 +22,7 @@ use App\Plugins\Lexoffice\LexofficeConfig;
 use App\Services\Finance\Accounting\ContactPushService;
 use App\Services\Stammdaten\ContactIdentity;
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\Data\{JsonHelper, PersonNameHelper};
 use GuzzleHttp\Exception\ConnectException;
 use Illuminate\Support\Collection;
 use Lexoffice\API\Client;
@@ -266,7 +266,7 @@ class LexofficeService {
      */
     private static function identityFields(array $contact): array {
         $company = (string) data_get($contact, 'company.name', '');
-        $person = trim(data_get($contact, 'person.firstName', '') . ' ' . data_get($contact, 'person.lastName', ''));
+        $person = PersonNameHelper::join(['first_name' => data_get($contact, 'person.firstName'), 'last_name' => data_get($contact, 'person.lastName')]);
 
         return [
             'name' => $company !== '' ? $company : $person,

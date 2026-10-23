@@ -17,6 +17,7 @@ use App\Plugins\RemoteSupport\Enums\RemotePendingSessionStatus;
 use App\Plugins\RemoteSupport\Models\RemotePendingSession;
 use App\Services\Search\Indexing\{SearchContext, SearchDocumentData};
 use App\Services\Search\Indexing\Sources\AbstractSearchSource;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
 
 /**
@@ -40,8 +41,8 @@ final class RemoteSessionSource extends AbstractSearchSource {
             return null;
         }
 
-        $asset = $context->asset($organizationId, self::intOrNull($model->asset_id));
-        $ref = $context->resolve($organizationId, null, self::intOrNull($asset?->foreign_customer_id), self::intOrNull($asset?->customer_id));
+        $asset = $context->asset($organizationId, NumberHelper::toIntOrNull($model->asset_id));
+        $ref = $context->resolve($organizationId, null, NumberHelper::toIntOrNull($asset?->foreign_customer_id), NumberHelper::toIntOrNull($asset?->customer_id));
         $note = trim((string) $model->note);
 
         return new SearchDocumentData(

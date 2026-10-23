@@ -13,17 +13,16 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Learning\Portal;
 
 use App\Enums\Learning\{LearningAudience, LearningCourseStatus, LearningProgressStatus};
+use App\Http\Controllers\Concerns\ResolvesPortalUser;
 use App\Http\Controllers\Controller;
 use App\Models\Attachments\Attachment;
 use App\Models\Learning\{LearningCourse, LearningCourseCategory, LearningEnrollment, LearningUnit};
 use App\Models\Media\MediaRendition;
-use App\Models\Platform\User;
 use App\Services\Learning\{LearningBookingService, LearningEnrollmentService};
 use App\Services\Learning\LearningMedia;
 use App\Services\Media\MediaResponder;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
@@ -38,13 +37,15 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * technisch nicht erreichbar.
  */
 class PortalLearningController extends Controller {
+    use ResolvesPortalUser;
+
     public function __construct(
         private readonly LearningEnrollmentService $enrollments,
         private readonly LearningBookingService $bookings,
     ) {}
 
     public function index(Request $request): View {
-        $user = $this->actor();
+        $user = $this->portalUser();
         // Kategoriefilter (MVP-788) — Sqid aus der Auswahl.
         $categoryId = $request->filled('category') ? Sqid::decodeOrNumeric(LearningCourseCategory::class, (string) $request->query('category')) : null;
         $courses = $this->visibleCourses();
@@ -70,7 +71,7 @@ class PortalLearningController extends Controller {
     public function enroll(LearningCourse $course): RedirectResponse {
         $this->guardVisible($course);
 
-        $enrollment = $this->enrollments->enroll($course, $this->actor(), ['source' => 'self']);
+        $enrollment = $this->enrollments->enroll($course, $this->portalUser(), ['source' => 'self']);
 
         return redirect()
             ->route('customer.learning.show', $enrollment)
@@ -84,7 +85,7 @@ class PortalLearningController extends Controller {
     public function requestBooking(LearningCourse $course): RedirectResponse {
         $this->guardVisible($course);
 
-        $user = $this->actor();
+        $user = $this->portalUser();
         $this->bookings->request($course, $user, $user->customer);
 
         return redirect()
@@ -104,7 +105,7 @@ class PortalLearningController extends Controller {
             'course' => $course,
             'units' => $course->units()->where('is_preview', true)->orderBy('position')->get(),
             'enrollment' => LearningEnrollment::query()
-                ->where('user_id', $this->actor()->id)
+                ->where('user_id', $this->portalUser()->id)
                 ->where('learning_course_id', $course->id)
                 ->first(),
         ]);
@@ -124,7 +125,7 @@ class PortalLearningController extends Controller {
                 ->where('status', LearningProgressStatus::Completed)
                 ->pluck('learning_unit_id')
                 ->all(),
-            'mediaState' => app(LearningMedia::class)->stateFor($enrollment, 'customer.learning.units.rendition', $this->actor()),
+            'mediaState' => app(LearningMedia::class)->stateFor($enrollment, 'customer.learning.units.rendition', $this->portalUser()),
         ]);
     }
 
@@ -167,7 +168,7 @@ class PortalLearningController extends Controller {
             // Middleware (Audit 2026-09, authflow-1): der Portal-Stack setzt den
             // Guard `customer` vor `SetOrganizationContext`, deshalb bindet die
             // Abfrage die Organisation des Portalnutzers selbst.
-            ->where('organization_id', $this->actor()->organization_id)
+            ->where('organization_id', $this->portalUser()->organization_id)
             ->with(['category', 'article'])
             ->withCount(['units as preview_units_count' => fn ($q) => $q->where('is_preview', true)])
             ->where('status', LearningCourseStatus::Released->value)
@@ -182,7 +183,7 @@ class PortalLearningController extends Controller {
     private function guardVisible(LearningCourse $course, bool $catalog = true): void {
         // Erst die Mandantengrenze, dann die Fachpruefung: ein Kurs einer
         // fremden Organisation ist fuer diesen Portalnutzer nicht vorhanden.
-        abort_unless((int) $course->organization_id === (int) $this->actor()->organization_id, 404);
+        abort_unless((int) $course->organization_id === (int) $this->portalUser()->organization_id, 404);
         abort_unless(
             $course->status === LearningCourseStatus::Released && $course->servesAudience(LearningAudience::Customer),
             404
@@ -192,19 +193,12 @@ class PortalLearningController extends Controller {
     }
 
     private function guardOwn(LearningEnrollment $enrollment): void {
-        abort_unless($enrollment->user_id === $this->actor()->id, 404);
+        abort_unless($enrollment->user_id === $this->portalUser()->id, 404);
         $this->guardVisible($enrollment->course ?? abort(404), catalog: false);
     }
 
     private function guardOwnUnit(LearningEnrollment $enrollment, LearningUnit $unit): void {
         $this->guardOwn($enrollment);
         abort_unless($unit->learning_course_id === $enrollment->learning_course_id, 404);
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::guard('customer')->user();
-
-        return $user;
     }
 }

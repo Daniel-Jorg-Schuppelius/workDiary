@@ -19,6 +19,7 @@ use App\Models\Platform\User;
 use App\Services\Reporting\CohortComparisonBuilder;
 use App\Support\Sqid;
 use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -156,7 +157,7 @@ class CohortComparisonReportController extends Controller {
 
         return $this->csvWithMetadata(
             $rows,
-            sprintf('kohorte_%s.csv', preg_replace('/[^a-z0-9]+/i', '_', $qualName)),
+            sprintf('kohorte_%s.csv', File::sanitizeFilename($qualName)),
             'cohort-comparison',
             array_merge(['qualification' => $qualName, 'metric' => (string) __($metricLabelKey)], $auditFilters),
             $request,

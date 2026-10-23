@@ -25,7 +25,7 @@ use App\Services\Billing\{DocumentFeedFilters, DocumentFeedQuery};
 use App\Services\Billing\Feed\DocumentFeedSourceRegistry;
 use App\Support\{SortableQuery, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
@@ -56,7 +56,7 @@ class DocumentFeedController extends Controller {
     ];
 
     public function index(Request $request): View {
-        $user = $this->currentUser();
+        $user = $this->authUser();
         $sources = $this->allowedSources($user);
         abort_unless(in_array(true, $sources, true), 403);
 
@@ -205,12 +205,5 @@ class DocumentFeedController extends Controller {
             static fn(string $value): ?DocumentDirection => DocumentDirection::tryFrom($value),
             $values,
         )));
-    }
-
-    private function currentUser(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

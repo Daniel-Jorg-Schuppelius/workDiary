@@ -42,7 +42,7 @@ class NextcloudIntakeController extends Controller {
 
     public function connect(Request $request): RedirectResponse {
         Gate::authorize('create', CloudDocumentConnection::class);
-        $admin = $this->admin();
+        $admin = $this->authUser();
         $organization = $this->organization($admin);
 
         $data = $this->validated($request);
@@ -145,13 +145,6 @@ class NextcloudIntakeController extends Controller {
             'status' => CloudIntakeConnectionStatus::Draft,
             'created_by_user_id' => $admin->id,
         ]);
-    }
-
-    private function admin(): User {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 403);
-
-        return $user;
     }
 
     private function organization(User $admin): Organization {

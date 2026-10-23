@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\CardDav\Services;
 
+use CommonToolkit\Enums\CountryCode;
 use Sabre\VObject\Component\VCard;
 use Sabre\VObject\{Parameter, Property};
 
@@ -56,7 +57,8 @@ class VCardContactMapper {
             'address_street' => $address['street'] ?? null,
             'address_zip' => $address['zip'] ?? null,
             'address_city' => $address['city'] ?? null,
-            'country' => $this->isoCountry($address['country'] ?? ''),
+            // vCard-Länder sind oft Freitext; übernommen wird nur ein ISO-Code.
+            'country' => CountryCode::tryFrom(strtoupper(trim($address['country'] ?? '')))?->value,
         ], static fn($v) => $v !== null);
 
         $raw = array_filter([
@@ -208,12 +210,5 @@ class VCardContactMapper {
             'zip' => $component(5),
             'country' => $component(6),
         ], static fn(string $v): bool => $v !== '');
-    }
-
-    /** Land nur als ISO-2-Code übernehmen (vCard-Länder sind oft Freitext). */
-    private function isoCountry(string $country): ?string {
-        $country = trim($country);
-
-        return preg_match('/^[A-Za-z]{2}$/', $country) === 1 ? strtoupper($country) : null;
     }
 }

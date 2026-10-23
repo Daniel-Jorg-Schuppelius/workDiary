@@ -45,7 +45,7 @@ class B2bPunchoutController extends Controller {
         $organization = $this->organization($request);
 
         $hookUrl = trim((string) $request->input('HOOK_URL', ''));
-        if (! preg_match('#^https://#i', $hookUrl) || ! WebLinkHelper::isUrl($hookUrl)) {
+        if (! WebLinkHelper::isSecure($hookUrl)) {
             return $this->errorView(__('b2b_catalog.public.error_hook_url'), 422);
         }
 

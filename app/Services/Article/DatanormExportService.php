@@ -378,7 +378,7 @@ class DatanormExportService {
      * @param  array<string, true>  $used
      */
     private function uniqueGroupCode(string $label, int $length, array &$used): string {
-        $base = strtoupper(strtr($label, ['ä' => 'AE', 'ö' => 'OE', 'ü' => 'UE', 'Ä' => 'AE', 'Ö' => 'OE', 'Ü' => 'UE', 'ß' => 'SS']));
+        $base = strtoupper(StringHelper::toAscii($label));
         $base = (string) preg_replace('/[^A-Z0-9]/', '', $base);
         if ($base === '') {
             $base = 'GRP';

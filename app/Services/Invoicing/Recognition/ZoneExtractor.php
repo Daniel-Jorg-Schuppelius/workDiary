@@ -431,19 +431,9 @@ final class ZoneExtractor {
      * damit Vorlage und Heuristik denselben Brutto lesen (Konsolidierungs-Audit 2026-10-21, ko-02).
      */
     private static function money(string $raw): ?string {
-        $tokens = [];
-        foreach (AmountTokenizer::tokens($raw) as $token) {
-            $tokens[] = $token;
-        }
-        foreach (array_reverse($tokens) as $token) {
-            if (preg_match('/^\s*%/u', mb_substr($raw, $token->end)) === 1) {
-                continue;
-            }
+        $token = AmountTokenizer::last($raw, skipPercent: true);
 
-            return NumberHelper::toUSFormat((float) $token->value, 2);
-        }
-
-        return null;
+        return $token !== null ? NumberHelper::toUSFormat((float) $token->value, 2) : null;
     }
 
     /** Erstes Wort mit Ziffer; ein Datum ist keine Kennung. */

@@ -14,10 +14,10 @@ namespace App\Http\Controllers\Helpdesk\Portal;
 
 use App\Enums\Customer\IntakeKind;
 use App\Enums\CustomerPortal\PortalCapability;
+use App\Http\Controllers\Concerns\ResolvesPortalUser;
 use App\Http\Controllers\Concerns\{ValidatesIntakeSubmission, ValidatesUploadedFiles};
 use App\Http\Controllers\Controller;
 use App\Models\Asset\Asset;
-use App\Models\Platform\User;
 use App\Models\Procurement\RequestItem;
 use App\Models\ServiceTicket\ServiceRequest;
 use App\Services\Attachments\FileAttacher;
@@ -28,7 +28,6 @@ use App\Services\ServiceTicket\ServiceRequestService;
 use App\Support\Sqid;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request, UploadedFile};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -45,6 +44,7 @@ use Illuminate\View\View;
  * Download, Ticket und Fulfillment erst nach angenommenem Angebot.
  */
 class CatalogController extends Controller {
+    use ResolvesPortalUser;
     use ValidatesIntakeSubmission;
     use ValidatesUploadedFiles;
 
@@ -188,13 +188,5 @@ class CatalogController extends Controller {
         }
 
         return $files;
-    }
-
-    private function portalUser(): User {
-        /** @var User $user */
-        $user = Auth::guard('customer')->user();
-        abort_if($user->customer_id === null, 403);
-
-        return $user;
     }
 }

@@ -37,7 +37,7 @@ class ArticleMergeController extends Controller {
     use ResolvesCurrentOrganization;
 
     public function index(Request $request, ArticleDuplicateFinder $finder): View {
-        $user = $this->authorizeMerging();
+        $user = $this->authorizeBilling();
 
         $only = $this->resolveConfidenceFilter($request, [
             ArticleDuplicateFinder::CONF_EXACT,
@@ -56,7 +56,7 @@ class ArticleMergeController extends Controller {
     }
 
     public function compare(Request $request): View {
-        $this->authorizeMerging();
+        $this->authorizeBilling();
 
         [$source, $target] = $this->resolveDistinctMergePair($request);
 
@@ -85,7 +85,7 @@ class ArticleMergeController extends Controller {
     }
 
     public function dismiss(Request $request): RedirectResponse {
-        $user = $this->authorizeMerging();
+        $user = $this->authorizeBilling();
 
         [$source, $target] = $this->resolveDistinctMergePair($request);
 

@@ -22,7 +22,7 @@
         <div class="mb-4 alert alert-success text-sm">{{ session('status') }}</div>
     @endif
 
-    <div class="rounded-4xl border border-base-300 bg-base-100 p-8 shadow-xs">
+    <x-auth-card>
         <form method="POST" action="{{ route('login') }}" class="space-y-5">
             @csrf
 
@@ -98,7 +98,7 @@
         <p class="mt-4 text-center text-sm text-base-content/70">
             <a href="{{ route('sso.discover') }}" class="text-primary transition hover:opacity-80">{{ __('Mit Single-Sign-on anmelden') }}</a>
         </p>
-    </div>
+    </x-auth-card>
 
     <p class="mt-6 text-center text-sm text-base-content/70">
         <a href="{{ route('home') }}" class="text-primary transition hover:opacity-80">← {{ __('Zurück zur Startseite') }}</a>

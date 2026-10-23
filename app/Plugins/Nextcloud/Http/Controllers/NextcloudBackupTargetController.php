@@ -42,7 +42,7 @@ class NextcloudBackupTargetController extends Controller {
 
     public function connect(Request $request): RedirectResponse {
         Gate::authorize('create', BackupTargetConnection::class);
-        $admin = $this->admin();
+        $admin = $this->authUser();
 
         $data = $this->validated($request);
 
@@ -143,12 +143,5 @@ class NextcloudBackupTargetController extends Controller {
             'status' => BackupTargetStatus::Draft,
             'created_by_user_id' => $admin->id,
         ]);
-    }
-
-    private function admin(): User {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 403);
-
-        return $user;
     }
 }

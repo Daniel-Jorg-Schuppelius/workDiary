@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Helpdesk;
 
 use App\Enums\User\UserRole;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
 use App\Models\Form\FormTemplate;
@@ -24,7 +25,7 @@ use App\Models\ServiceTicket\{BusinessService, ServiceRequest, SlaContract};
 use App\Rules\ExistsInCurrentOrganization;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\{Rule, ValidationException};
 use Illuminate\View\View;
 
@@ -34,6 +35,8 @@ use Illuminate\View\View;
  * nur ohne abhängige Inhalte (kein stilles Kaskadieren trotz DB-Cascade).
  */
 class ServiceCatalogController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(): View {
         Gate::authorize('viewAny', RequestItem::class);
 
@@ -82,7 +85,7 @@ class ServiceCatalogController extends Controller {
         $dependsOn = $this->validatedDependencies($request, null);
         $service = BusinessService::query()->create([
             ...$this->validatedService($request),
-            'organization_id' => $this->orgId(),
+            'organization_id' => $this->currentOrganizationId(),
         ]);
         $this->syncDependencies($service, $dependsOn);
 
@@ -146,7 +149,7 @@ class ServiceCatalogController extends Controller {
 
         ServiceOffering::query()->create([
             ...$this->validatedOffering($request),
-            'organization_id' => $this->orgId(),
+            'organization_id' => $this->currentOrganizationId(),
         ]);
 
         return redirect()->route('servicedesk.catalog.index')
@@ -206,7 +209,7 @@ class ServiceCatalogController extends Controller {
 
         RequestItem::query()->create([
             ...$this->validatedItem($request),
-            'organization_id' => $this->orgId(),
+            'organization_id' => $this->currentOrganizationId(),
         ]);
 
         return redirect()->route('servicedesk.catalog.index')
@@ -246,7 +249,7 @@ class ServiceCatalogController extends Controller {
         $data = $request->validate([
             'name' => ['required', 'string', 'min:2', 'max:150',
                 Rule::unique('business_services', 'name')
-                    ->where('organization_id', $this->orgId())
+                    ->where('organization_id', $this->currentOrganizationId())
                     ->ignore($service?->id),
             ],
             'description' => ['nullable', 'string', 'max:500'],
@@ -271,7 +274,7 @@ class ServiceCatalogController extends Controller {
             fn (string $sqid): ?int => Sqid::decode(BusinessService::class, $sqid),
             $data['depends_on'] ?? [],
         ))));
-        if ($service !== null && app(\App\Services\ServiceTicket\ServiceImpactAnalyzer::class)->wouldCreateCycle($this->orgId(), (int) $service->id, $ids)) {
+        if ($service !== null && app(\App\Services\ServiceTicket\ServiceImpactAnalyzer::class)->wouldCreateCycle($this->currentOrganizationId(), (int) $service->id, $ids)) {
             throw ValidationException::withMessages(['depends_on' => __('helpdesk.map.cycle')]);
         }
 
@@ -408,7 +411,7 @@ class ServiceCatalogController extends Controller {
                 $userId = Sqid::decode(User::class, (string) ($step['user'] ?? ''));
                 $exists = $userId !== null && User::query()
                     ->whereKey($userId)
-                    ->where('organization_id', $this->orgId())
+                    ->where('organization_id', $this->currentOrganizationId())
                     ->exists();
                 if (! $exists) {
                     throw ValidationException::withMessages([
@@ -438,7 +441,7 @@ class ServiceCatalogController extends Controller {
             'slaContracts' => SlaContract::query()->orderBy('label')->get(['id', 'label']),
             'procedureTemplates' => ProcedureTemplate::query()->orderBy('name')->get(['id', 'name']),
             'orgUsers' => User::query()
-                ->where('organization_id', $this->orgId())
+                ->where('organization_id', $this->currentOrganizationId())
                 ->orderBy('name')
                 ->get(['id', 'name']),
             'roles' => array_values(array_filter(UserRole::cases(), fn(UserRole $r) => $r !== UserRole::Kunde)),
@@ -446,14 +449,7 @@ class ServiceCatalogController extends Controller {
         ];
     }
 
-    private function orgId(): int {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return (int) $user->organization_id;
-    }
-
     private function assertSameOrg(int $organizationId): void {
-        abort_unless($organizationId === $this->orgId(), 404);
+        abort_unless($organizationId === $this->currentOrganizationId(), 404);
     }
 }

@@ -10,14 +10,15 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\AuthorizesOrganizationManagement;
 use App\Http\Controllers\Controller;
 use App\Jobs\Notification\ChatWebhookDeliveryJob;
 use App\Models\Chat\ChatWebhook;
 use App\Models\Platform\{Organization, User};
 use App\Services\Notification\ChatMessageFormatter;
 use App\Support\SqidEncoder;
+use CommonToolkit\Helper\Data\WebLinkHelper;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Throwable;
 
@@ -29,6 +30,8 @@ use Throwable;
  * die bestehende Benachrichtigungsmatrix (admin.notification-rules) gesteuert.
  */
 class ChatAdminController extends Controller {
+    use AuthorizesOrganizationManagement;
+
     private const KINDS = [ChatWebhook::KIND_TEAMS, ChatWebhook::KIND_MATTERMOST];
 
     public function index(): View {
@@ -56,7 +59,7 @@ class ChatAdminController extends Controller {
         ]);
 
         $url = trim((string) $data['webhook_url']);
-        if (! str_starts_with($url, 'https://')) {
+        if (! WebLinkHelper::isSecure($url)) {
             return back()->with('error', __('chat.flash.invalid_url'))->withInput();
         }
 
@@ -117,15 +120,6 @@ class ChatAdminController extends Controller {
         return $decoded !== null
             ? ChatWebhook::query()->whereKey($decoded)->where('organization_id', $organization->id)->first()
             : null;
-    }
-
-    private function admin(): User {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->isAdmin(), 403);
-        abort_unless($user->organization_id !== null, 422, 'Kein Organisationskontext.');
-
-        return $user;
     }
 
     private function organization(User $admin): Organization {

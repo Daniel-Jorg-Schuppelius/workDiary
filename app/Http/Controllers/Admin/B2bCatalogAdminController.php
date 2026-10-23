@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\Article\ArticleStatus;
+use App\Http\Controllers\Concerns\AuthorizesOrganizationManagement;
 use App\Http\Controllers\Controller;
 use App\Models\Article\Article;
 use App\Models\B2b\{B2bCatalogAccess, B2bCatalogItem, B2bOrder};
@@ -22,7 +23,6 @@ use App\Services\B2bCatalog\B2bOrderIntakeService;
 use App\Support\{ErrorText, MorphMap};
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -33,6 +33,8 @@ use Illuminate\View\View;
  * openTRANS-Bestellungen. Enterprise-gegatet (`module.b2b_katalog`).
  */
 class B2bCatalogAdminController extends Controller {
+    use AuthorizesOrganizationManagement;
+
     public function index(): View {
         $admin = $this->admin();
         $organization = $this->organization($admin);
@@ -259,15 +261,6 @@ class B2bCatalogAdminController extends Controller {
 
     private function guard(User $admin, B2bCatalogAccess $access): void {
         abort_unless($access->organization_id === $admin->organization_id, 404);
-    }
-
-    private function admin(): User {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->isAdmin(), 403);
-        abort_unless($user->organization_id !== null, 422, 'Kein Organisationskontext.');
-
-        return $user;
     }
 
     private function organization(User $admin): Organization {

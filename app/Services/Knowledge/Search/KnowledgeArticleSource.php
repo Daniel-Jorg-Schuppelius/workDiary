@@ -17,6 +17,7 @@ use App\Enums\Search\SearchSourceType;
 use App\Models\Knowledge\KnowledgeArticle;
 use App\Services\Search\Indexing\{SearchContext, SearchDocumentData};
 use App\Services\Search\Indexing\Sources\AbstractSearchSource;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
 
 /** Wissensartikel mit Problem und Lösung; Entwürfe tragen `restricted`. */
@@ -47,10 +48,10 @@ final class KnowledgeArticleSource extends AbstractSearchSource {
                 $model->problem,
                 $model->solution,
                 ...self::strings($model->tags, 'name'),
-                $context->userName(self::intOrNull($model->created_by_user_id)),
+                $context->userName(NumberHelper::toIntOrNull($model->created_by_user_id)),
             ],
             occurredAt: $model->published_at ?? $model->created_at,
-            userId: self::intOrNull($model->created_by_user_id),
+            userId: NumberHelper::toIntOrNull($model->created_by_user_id),
             restricted: $model->status !== ArticleStatus::Published,
             sourceUpdatedAt: $model->updated_at,
         );

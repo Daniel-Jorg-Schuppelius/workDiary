@@ -223,7 +223,7 @@ class SustainabilityController extends Controller {
                 null,
                 null,
                 $data['subject_label'],
-                $this->actor(),
+                $this->authUser(),
             );
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
@@ -291,7 +291,7 @@ class SustainabilityController extends Controller {
         Gate::authorize('manage', $assessment);
 
         try {
-            $this->assessments->finalize($assessment, $this->actor());
+            $this->assessments->finalize($assessment, $this->authUser());
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -303,7 +303,7 @@ class SustainabilityController extends Controller {
         Gate::authorize('manage', $assessment);
 
         try {
-            $next = $this->assessments->newVersion($assessment, $this->actor());
+            $next = $this->assessments->newVersion($assessment, $this->authUser());
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -451,13 +451,6 @@ class SustainabilityController extends Controller {
         $rows[] = ['Methodik', 'Hinweis', '', '', '', 'Schätzwerte gekennzeichnet; keine Konformitätszusage (VSME-Vorbereitung).'];
 
         return $this->csvWithMetadata($rows, sprintf('sustainability_%s_%s.csv', $from, $to), 'sustainability', ['from' => $from, 'to' => $to], $request);
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 
     /** Fachbericht außerhalb der Auswertungen: Den Export deckt das Fachrecht der Seite (E28). */

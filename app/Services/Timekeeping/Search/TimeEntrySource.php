@@ -16,6 +16,7 @@ use App\Enums\Search\SearchSourceType;
 use App\Models\Time\TimeEntry;
 use App\Services\Search\Indexing\{SearchContext, SearchDocumentData};
 use App\Services\Search\Indexing\Sources\AbstractSearchSource;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
 
 /**
@@ -39,7 +40,7 @@ final class TimeEntrySource extends AbstractSearchSource {
             return null;
         }
 
-        $ref = $context->resolve($organizationId, self::intOrNull($model->project_id));
+        $ref = $context->resolve($organizationId, NumberHelper::toIntOrNull($model->project_id));
         $description = trim((string) $model->description);
 
         return new SearchDocumentData(
@@ -54,16 +55,16 @@ final class TimeEntrySource extends AbstractSearchSource {
                 $model->activityCategory?->label,
                 $model->diaryEntry?->title,
                 $model->timesheet?->notes,
-                $context->userName(self::intOrNull($model->user_id)),
+                $context->userName(NumberHelper::toIntOrNull($model->user_id)),
                 ...$ref->texts,
             ],
             occurredAt: $model->started_at ?? $model->date,
             dateOnly: $model->started_at === null,
-            userId: self::intOrNull($model->user_id),
+            userId: NumberHelper::toIntOrNull($model->user_id),
             customerId: $ref->customerId,
             foreignCustomerId: $ref->foreignCustomerId,
             projectId: $ref->projectId,
-            minutes: self::intOrNull($model->minutes),
+            minutes: NumberHelper::toIntOrNull($model->minutes),
             sourceUpdatedAt: $model->updated_at,
         );
     }

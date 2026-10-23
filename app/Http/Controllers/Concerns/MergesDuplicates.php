@@ -12,11 +12,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Concerns;
 
-use App\Models\Platform\User;
 use App\Support\ErrorText;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -35,6 +33,9 @@ use Illuminate\Validation\ValidationException;
  * @template TModel of Model
  */
 trait MergesDuplicates {
+    // Zusammenführen dürfen nur Abrechnungsberechtigte: authorizeBilling().
+    use AuthorizesOrganizationManagement;
+
     /**
      * Modellklasse der zusammenzuführenden Entität (für Route-Binding).
      *
@@ -99,7 +100,7 @@ trait MergesDuplicates {
      * @param  callable(TModel, TModel, array<string, mixed>): void  $merge
      */
     protected function performMerge(Request $request, callable $merge): RedirectResponse {
-        $this->authorizeMerging();
+        $this->authorizeBilling();
 
         [$source, $target] = $this->resolveDistinctMergePair($request);
 
@@ -129,7 +130,7 @@ trait MergesDuplicates {
      * @param  callable(TModel, TModel): void  $merge
      */
     protected function performBulkMerge(Request $request, callable $merge): RedirectResponse {
-        $this->authorizeMerging();
+        $this->authorizeBilling();
 
         $data = $request->validate([
             'pairs' => ['required', 'array', 'min:1'],
@@ -171,15 +172,6 @@ trait MergesDuplicates {
                 'merged' => $merged,
                 'skipped' => $skipped,
             ]));
-    }
-
-    /** Nur Abrechnungsberechtigte dürfen Stammdaten zusammenführen. */
-    protected function authorizeMerging(): User {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->canManageBilling(), 403);
-
-        return $user;
     }
 
     /**

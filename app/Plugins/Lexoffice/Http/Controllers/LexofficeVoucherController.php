@@ -14,7 +14,6 @@ use App\Enums\Billing\DocumentOrigin;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
-use App\Models\Platform\User;
 use App\Models\Supplier\Supplier;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Jobs\SyncVouchersJob;
@@ -25,7 +24,7 @@ use App\Plugins\Lexoffice\Services\Retainer\LexofficeRetainerVouchers;
 use App\Support\ErrorText;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Auth, Cache};
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -52,7 +51,7 @@ class LexofficeVoucherController extends Controller {
     }
 
     public function sync(): \Illuminate\Http\RedirectResponse {
-        $user = $this->user();
+        $user = $this->authUser();
         abort_unless($user->can(Permission::VoucherLexofficeSync->value), 403);
 
         if (! app(LexofficeClientFactory::class)->isConfigured($user->organization_id)) {
@@ -86,7 +85,7 @@ class LexofficeVoucherController extends Controller {
     }
 
     private function syncOwner(Customer|Supplier $owner): \Illuminate\Http\RedirectResponse {
-        $user = $this->user();
+        $user = $this->authUser();
         abort_unless($user->can(Permission::VoucherLexofficeSync->value), 403);
         abort_unless((int) $owner->organization_id === (int) $user->organization_id, 403);
 
@@ -125,7 +124,7 @@ class LexofficeVoucherController extends Controller {
      * (Button am Beleg in der Kunden-/Lieferantenansicht).
      */
     public function createDunning(LexofficeVoucher $voucher, LexofficeDunningService $dunnings): \Illuminate\Http\RedirectResponse {
-        $user = $this->user();
+        $user = $this->authUser();
         abort_unless($user->can(Permission::VoucherLexofficeSync->value), 403);
         abort_unless($voucher->organization_id === $user->organization_id, 403);
 
@@ -145,7 +144,7 @@ class LexofficeVoucherController extends Controller {
      * Belegbilds. Wird per data-entry-modal-trigger nachgeladen.
      */
     public function preview(LexofficeVoucher $voucher): View {
-        $user = $this->user();
+        $user = $this->authUser();
         abort_unless($user->can(Permission::VoucherViewAny->value), 403);
         abort_unless($voucher->organization_id === $user->organization_id, 403);
 
@@ -159,7 +158,7 @@ class LexofficeVoucherController extends Controller {
      * inline (Anzeige im Browser); mit ?download=1 als Datei-Download.
      */
     public function file(Request $request, LexofficeVoucher $voucher): SymfonyResponse {
-        $user = $this->user();
+        $user = $this->authUser();
         abort_unless($user->can(Permission::VoucherViewAny->value), 403);
         abort_unless($voucher->organization_id === $user->organization_id, 403);
 
@@ -200,12 +199,5 @@ class LexofficeVoucherController extends Controller {
             'Content-Type' => $contentType,
             'Content-Disposition' => $disposition . '; filename="' . $filename . '"',
         ]);
-    }
-
-    private function user(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

@@ -16,6 +16,7 @@ use App\Enums\Search\SearchSourceType;
 use App\Models\Diary\OpenIssue;
 use App\Services\Search\Indexing\{SearchContext, SearchDocumentData};
 use App\Services\Search\Indexing\Sources\AbstractSearchSource;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Model;
 
 /** Offene Punkte inkl. Abschlussbegründung; Kontext über das Subjekt. */
@@ -31,7 +32,7 @@ final class OpenIssueSource extends AbstractSearchSource {
             return null;
         }
 
-        $ref = $context->forSubject($organizationId, $model->subject_type, self::intOrNull($model->subject_id));
+        $ref = $context->forSubject($organizationId, $model->subject_type, NumberHelper::toIntOrNull($model->subject_id));
 
         return new SearchDocumentData(
             organizationId: $organizationId,
@@ -44,13 +45,13 @@ final class OpenIssueSource extends AbstractSearchSource {
                 $model->description,
                 $model->closed_reason,
                 $model->category,
-                $context->userName(self::intOrNull($model->created_by_user_id)),
-                $context->userName(self::intOrNull($model->assignee_user_id)),
+                $context->userName(NumberHelper::toIntOrNull($model->created_by_user_id)),
+                $context->userName(NumberHelper::toIntOrNull($model->assignee_user_id)),
                 ...$ref->texts,
             ],
             occurredAt: $model->created_at,
-            userId: self::intOrNull($model->created_by_user_id),
-            assignedUserId: self::intOrNull($model->assignee_user_id),
+            userId: NumberHelper::toIntOrNull($model->created_by_user_id),
+            assignedUserId: NumberHelper::toIntOrNull($model->assignee_user_id),
             customerId: $ref->customerId,
             foreignCustomerId: $ref->foreignCustomerId,
             projectId: $ref->projectId,

@@ -13,10 +13,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Finance;
 
 use App\Enums\Billing\DocumentDirection;
+use App\Http\Controllers\Concerns\AuthorizesOrganizationManagement;
 use App\Http\Controllers\Controller;
 use App\Models\Automation\AutomationRule;
 use App\Models\Invoicing\InvoiceSenderRule;
-use App\Models\Platform\User;
 use App\Services\Invoicing\Automation\IncomingInvoiceReceivedTrigger;
 use App\Services\Invoicing\EInvoice\{IncomingInvoiceParties, IncomingInvoiceRules};
 use App\Support\ErrorText;
@@ -32,6 +32,8 @@ use RuntimeException;
  * werden sie im Zuordnen-Dialog oder auf der Automationsseite.
  */
 class IncomingInvoiceRuleController extends Controller {
+    use AuthorizesOrganizationManagement;
+
     public function __construct(private readonly IncomingInvoiceRules $rules, private readonly IncomingInvoiceParties $parties) {}
 
     public function index(): View {
@@ -91,12 +93,5 @@ class IncomingInvoiceRuleController extends Controller {
         $rule->delete();
 
         return redirect()->toList('finance.incoming-invoices.rules')->with('success', __('Regel gelöscht.'));
-    }
-
-    private function authorizeBilling(): User {
-        $user = $this->authUser();
-        abort_unless($user->canManageBilling(), 403);
-
-        return $user;
     }
 }

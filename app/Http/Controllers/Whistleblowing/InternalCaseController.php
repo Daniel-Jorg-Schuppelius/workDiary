@@ -53,7 +53,7 @@ class InternalCaseController extends Controller {
         // Kategorie und Priorität erst nach Zuweisung (Entscheid P13-26, MVP-802):
         // In kleinen Organisationen erlauben sie sonst einen Rückschluss auf die
         // meldende Person. Maßgeblich ist dieselbe Regel wie für den Fall selbst.
-        $user = $this->user();
+        $user = $this->authUser();
         $metadataVisible = $cases->getCollection()
             ->filter(fn (WhistleblowingCase $case): bool => $user->can('view', $case))
             ->map(fn (WhistleblowingCase $case): int => (int) $case->id)
@@ -65,7 +65,7 @@ class InternalCaseController extends Controller {
 
     public function show(WhistleblowingCase $case): View {
         Gate::authorize('view', $case);
-        $this->event($case)->record($case, WhistleblowingEventService::CASE_VIEWED, $this->user());
+        $this->event($case)->record($case, WhistleblowingEventService::CASE_VIEWED, $this->authUser());
 
         $case->load(['assignments.user', 'messages', 'attachments']);
 
@@ -74,7 +74,7 @@ class InternalCaseController extends Controller {
 
     public function acknowledge(WhistleblowingCase $case, WhistleblowingCaseWorkflowService $workflow): RedirectResponse {
         Gate::authorize('process', $case);
-        $workflow->acknowledge($case, $this->user());
+        $workflow->acknowledge($case, $this->authUser());
 
         return back()->with('success', __('Eingang bestätigt.'));
     }
@@ -85,7 +85,7 @@ class InternalCaseController extends Controller {
 
         // Der Stand kann sich nach dem Laden der Seite geändert haben — dann Meldung statt HTTP 500.
         try {
-            $workflow->transition($case, CaseStatus::from($data['to']), $this->user(), $data['reason'] ?? null);
+            $workflow->transition($case, CaseStatus::from($data['to']), $this->authUser(), $data['reason'] ?? null);
         } catch (InvalidCaseTransition) {
             return back()->withInput()->withErrors(['to' => __('Dieser Statuswechsel ist aus dem aktuellen Stand nicht möglich.')]);
         }
@@ -99,7 +99,7 @@ class InternalCaseController extends Controller {
 
         /** @var User $user */
         $user = User::query()->findOrFail($data['user_id']);
-        $assignments->assign($case, $user, CaseRole::from($data['role']), $this->user());
+        $assignments->assign($case, $user, CaseRole::from($data['role']), $this->authUser());
 
         return back()->with('success', __('Bearbeiter zugewiesen.'));
     }
@@ -108,7 +108,7 @@ class InternalCaseController extends Controller {
         Gate::authorize('note', $case);
         $data = $request->validated();
 
-        $messages->addInternalNote($case, $data['body'], $this->user());
+        $messages->addInternalNote($case, $data['body'], $this->authUser());
 
         return back()->with('success', __('Notiz gespeichert.'));
     }
@@ -117,7 +117,7 @@ class InternalCaseController extends Controller {
         Gate::authorize('message', $case);
         $data = $request->validated();
 
-        $messages->sendToReporter($case, $data['body'], $this->user());
+        $messages->sendToReporter($case, $data['body'], $this->authUser());
 
         return back()->with('success', __('Nachricht an die meldende Person gesendet.'));
     }
@@ -126,7 +126,7 @@ class InternalCaseController extends Controller {
         Gate::authorize('declareConflict', $case);
         $data = $request->validated();
 
-        $access->declareConflict($case, $this->user(), $data['reason'] ?? null);
+        $access->declareConflict($case, $this->authUser(), $data['reason'] ?? null);
 
         return redirect()
             ->route('whistleblowing.internal.index')
@@ -139,7 +139,7 @@ class InternalCaseController extends Controller {
 
         /** @var User $grantee */
         $grantee = User::query()->findOrFail($data['user_id']);
-        $access->grantEmergencyAccess($case, $grantee, $this->user(), $data['reason']);
+        $access->grantEmergencyAccess($case, $grantee, $this->authUser(), $data['reason']);
 
         return back()->with('success', __('Notfallfreigabe erteilt.'));
     }
@@ -150,7 +150,7 @@ class InternalCaseController extends Controller {
 
         /** @var User $user */
         $user = User::query()->findOrFail($data['user_id']);
-        $access->markSubject($case, $user, $this->user(), $data['note'] ?? null);
+        $access->markSubject($case, $user, $this->authUser(), $data['note'] ?? null);
 
         return back()->with('success', __('Betroffene Person markiert (für den Fall gesperrt).'));
     }
@@ -160,7 +160,7 @@ class InternalCaseController extends Controller {
         $data = $request->validated();
 
         try {
-            $result = $export->export($case, $data['reason'], $this->user(), (string) $data['password']);
+            $result = $export->export($case, $data['reason'], $this->authUser(), (string) $data['password']);
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -179,7 +179,7 @@ class InternalCaseController extends Controller {
         // Der Dienst lehnt außerhalb der Aufbewahrungsprüfung und unter Löschsperre ab —
         // auch wenn der Stand sich nach dem Laden der Seite geändert hat.
         try {
-            $deletion->delete($case, $this->user());
+            $deletion->delete($case, $this->authUser());
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -187,13 +187,6 @@ class InternalCaseController extends Controller {
         return redirect()
             ->route('whistleblowing.internal.index')
             ->with('success', __('Fall kontrolliert gelöscht (Crypto-Shredding).'));
-    }
-
-    private function user(): User {
-        /** @var User $user */
-        $user = auth()->user();
-
-        return $user;
     }
 
     private function event(WhistleblowingCase $case): WhistleblowingEventService {

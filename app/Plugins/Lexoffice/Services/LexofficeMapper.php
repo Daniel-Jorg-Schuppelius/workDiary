@@ -94,7 +94,7 @@ class LexofficeMapper {
             $parts = PersonNameHelper::split((string) $contact->name);
             $payload['person'] = array_filter([
                 'salutation' => self::salutation($parts['salutation'], $parts['title']),
-                'firstName' => trim($parts['first_name'] . ' ' . $parts['middle_names']) ?: null,
+                'firstName' => PersonNameHelper::join(['first_name' => $parts['first_name'], 'middle_names' => $parts['middle_names']]) ?: null,
                 'lastName' => $parts['last_name'] ?? $contact->name,
             ]);
         }
@@ -173,7 +173,7 @@ class LexofficeMapper {
             }
             $list[] = array_filter([
                 'salutation' => self::salutation($entry['salutation'], $entry['title']),
-                'firstName' => trim($entry['first_name'] . ' ' . $entry['middle_names']) ?: null,
+                'firstName' => PersonNameHelper::join(['first_name' => $entry['first_name'], 'middle_names' => $entry['middle_names']]) ?: null,
                 'lastName' => $lastName,
                 'emailAddress' => $entry['email'],
                 'phoneNumber' => $entry['phone'],

@@ -21,7 +21,7 @@ use App\Support\Learning\ScormContentHost;
 use ELearningToolkit\Cmi5\Cmi5Exception;
 use ELearningToolkit\Scorm\LaunchPath;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -45,7 +45,7 @@ final class LearningCmi5Controller extends Controller {
         /** @var UploadedFile $file */
         $file = $validated['package'];
 
-        $package = $this->cmi5->import($unit, (string) $file->getRealPath(), $file->getClientOriginalName(), $this->learner());
+        $package = $this->cmi5->import($unit, (string) $file->getRealPath(), $file->getClientOriginalName(), $this->authUser());
 
         return redirect()
             ->route('learning.courses.units.edit', ['course' => $course->sqid, 'unit' => $unit->sqid])
@@ -54,7 +54,7 @@ final class LearningCmi5Controller extends Controller {
 
     /** AU starten: Sitzung und Startdaten anlegen, dann zur AU weiterleiten (cmi5 8.1). */
     public function launch(LearningEnrollment $enrollment, LearningUnit $unit, LearningCmi5Unit $au): RedirectResponse {
-        $learner = $this->learner();
+        $learner = $this->authUser();
         $package = $this->packageFor($enrollment, $unit, $learner);
 
         abort_unless($au->learning_cmi5_package_id === $package->id, 404);
@@ -75,7 +75,7 @@ final class LearningCmi5Controller extends Controller {
     public function asset(LearningEnrollment $enrollment, LearningUnit $unit, string $path = ''): BinaryFileResponse {
         abort_if(ScormContentHost::isConfigured(), 404);
 
-        $package = $this->packageFor($enrollment, $unit, $this->learner());
+        $package = $this->packageFor($enrollment, $unit, $this->authUser());
         $file = ScormPackageFiles::absolutePath($package, $path);
         abort_if($file === null, 404);
 
@@ -118,12 +118,5 @@ final class LearningCmi5Controller extends Controller {
         abort_if($package === null, 404);
 
         return $package;
-    }
-
-    private function learner(): User {
-        /** @var User $learner */
-        $learner = Auth::user();
-
-        return $learner;
     }
 }

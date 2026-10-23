@@ -20,7 +20,6 @@ use App\Models\Ai\AiTextSuggestion;
 use App\Models\Customer\Customer;
 use App\Models\Finance\BillingTransferPosition;
 use App\Models\Invoicing\{Invoice, InvoiceItem};
-use App\Models\Platform\User;
 use App\Models\Protocol\{Protocol, ProtocolItem};
 use App\Models\Sales\{Quote, QuoteItem};
 use App\Services\Ai\AiMemoryService;
@@ -165,7 +164,7 @@ class AiSuggestionController extends Controller {
         ]);
 
         return $this->guarded(function () use ($suggestion, $data): string {
-            $this->protocolSuggestions->applyValue($suggestion, $this->actor(), $data['kind'], $data['value']);
+            $this->protocolSuggestions->applyValue($suggestion, $this->authUser(), $data['kind'], $data['value']);
 
             return __('ai.flash.classification_applied', ['value' => $data['value']]);
         });
@@ -180,7 +179,7 @@ class AiSuggestionController extends Controller {
 
         return $this->guarded(function () use ($suggestion, $data): string {
             $edited = $suggestion->subject instanceof ProtocolItem
-                ? $this->protocolSuggestions->accept($suggestion, $this->actor(), $data['text'])
+                ? $this->protocolSuggestions->accept($suggestion, $this->authUser(), $data['text'])
                 : $this->suggestions->accept($suggestion, Auth::user(), $data['text']);
 
             if ($edited) {
@@ -266,13 +265,6 @@ class AiSuggestionController extends Controller {
         abort_if($protocol === null, 404);
         Gate::authorize('update', $protocol);
         abort_unless(Gate::allows(Permission::AiUse->value), 403);
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 
     private function authorizeSuggestion(AiTextSuggestion $suggestion): void {

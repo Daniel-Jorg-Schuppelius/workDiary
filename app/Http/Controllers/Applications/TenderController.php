@@ -194,7 +194,7 @@ class TenderController extends Controller {
         ]);
 
         try {
-            $this->tenders->decideGo($opportunity, $data['decision'], $data['note'] ?? null, $this->actor());
+            $this->tenders->decideGo($opportunity, $data['decision'], $data['note'] ?? null, $this->authUser());
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -230,7 +230,7 @@ class TenderController extends Controller {
         ]);
 
         try {
-            $submission = $this->tenders->submit($opportunity, $data['channel'], $data['note'] ?? null, $this->actor());
+            $submission = $this->tenders->submit($opportunity, $data['channel'], $data['note'] ?? null, $this->authUser());
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -272,7 +272,7 @@ class TenderController extends Controller {
             'recorded_on' => $data['recorded_on'] ?? null,
             'source' => $data['source'],
             'note' => $data['note'] ?? null,
-            'created_by' => $this->actor()->id,
+            'created_by' => $this->authUser()->id,
         ]);
 
         $opportunity->audit('tender.bid_recorded', ['bidder' => $data['bidder_name']]);
@@ -297,7 +297,7 @@ class TenderController extends Controller {
         ]);
 
         try {
-            $this->tenders->decide($opportunity, $data['decision'], $data['reason'] ?? null, $this->actor());
+            $this->tenders->decide($opportunity, $data['decision'], $data['reason'] ?? null, $this->authUser());
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -318,7 +318,7 @@ class TenderController extends Controller {
         }
 
         try {
-            $project = $this->tenders->transferToProject($opportunity, $existing, $this->actor());
+            $project = $this->tenders->transferToProject($opportunity, $existing, $this->authUser());
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -382,12 +382,5 @@ class TenderController extends Controller {
         }
 
         return $data;
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

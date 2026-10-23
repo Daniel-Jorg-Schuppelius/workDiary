@@ -22,7 +22,7 @@ use App\Models\ServiceTicket\{Change, ChangeTemplate, Problem, ServiceTicket};
 use App\Services\ServiceTicket\ChangeService;
 use App\Support\{ErrorText, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -120,7 +120,7 @@ class ChangeController extends Controller {
         Gate::authorize('create', Change::class);
 
         $data = $request->validated();
-        $user = $this->actor();
+        $user = $this->authUser();
 
         // Vorlage org-gescopt laden (Global Scope + Rule als erste Linie);
         // ob sie freigegeben ist, entscheidet der Service.
@@ -174,7 +174,7 @@ class ChangeController extends Controller {
         $procedureTemplateId = Sqid::decode(ProcedureTemplate::class, $data['procedure_template_id'] ?? null);
 
         try {
-            $this->changes->implement($change, $this->actor(), $procedureTemplateId);
+            $this->changes->implement($change, $this->authUser(), $procedureTemplateId);
         } catch (\RuntimeException|\InvalidArgumentException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -203,7 +203,7 @@ class ChangeController extends Controller {
         ]);
 
         try {
-            $this->changes->complete($change, $this->actor(), $data['outcome'], $data['pir_notes'] ?? null);
+            $this->changes->complete($change, $this->authUser(), $data['outcome'], $data['pir_notes'] ?? null);
         } catch (\RuntimeException|\InvalidArgumentException $e) {
             return back()->withErrors(['pir_notes' => ErrorText::for($e)]);
         }
@@ -225,7 +225,7 @@ class ChangeController extends Controller {
             ]);
         }
 
-        $this->changes->attachAsset($change, $asset, $this->actor());
+        $this->changes->attachAsset($change, $asset, $this->authUser());
 
         return redirect()->route('servicedesk.changes.show', $change)
             ->with('success', __('Asset verknüpft.'));
@@ -234,7 +234,7 @@ class ChangeController extends Controller {
     public function destroyAsset(Change $change, Asset $asset): RedirectResponse {
         Gate::authorize('update', $change);
 
-        $this->changes->detachAsset($change, $asset, $this->actor());
+        $this->changes->detachAsset($change, $asset, $this->authUser());
 
         return redirect()->route('servicedesk.changes.show', $change)
             ->with('success', __('Asset-Verknüpfung entfernt.'));
@@ -269,7 +269,7 @@ class ChangeController extends Controller {
             'tickets' => ServiceTicket::query()->orderByDesc('reported_at')->limit(100)->get(['id', 'ticket_no', 'title']),
             'assets' => Asset::query()->orderBy('name')->limit(200)->get(['id', 'asset_no', 'name']),
             'orgUsers' => User::query()
-                ->where('organization_id', (int) $this->actor()->organization_id)
+                ->where('organization_id', (int) $this->authUser()->organization_id)
                 ->orderBy('name')
                 ->get(['id', 'name']),
             'roles' => array_values(array_filter(
@@ -296,7 +296,7 @@ class ChangeController extends Controller {
                 $userId = Sqid::decode(User::class, (string) ($step['user'] ?? ''));
                 $exists = $userId !== null && User::query()
                     ->whereKey($userId)
-                    ->where('organization_id', (int) $this->actor()->organization_id)
+                    ->where('organization_id', (int) $this->authUser()->organization_id)
                     ->exists();
                 if (! $exists) {
                     throw ValidationException::withMessages([
@@ -316,12 +316,5 @@ class ChangeController extends Controller {
         }
 
         return $chain;
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

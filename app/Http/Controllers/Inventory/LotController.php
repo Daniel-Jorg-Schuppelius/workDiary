@@ -14,7 +14,6 @@ use App\Enums\Inventory\StockLotStatus;
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Controller;
 use App\Models\Inventory\StockLot;
-use App\Models\Platform\User;
 use App\Services\Inventory\{LotService, LotSplitService, LotStockReader};
 use App\Support\{ErrorText, SqidEncoder};
 use Illuminate\Http\{RedirectResponse, Request};
@@ -62,7 +61,7 @@ class LotController extends Controller {
         }
 
         try {
-            $this->split->split($lot, (string) $data['qty'], (string) $data['new_lot_no'], $data['best_before'] ?? null, $this->actor()->id);
+            $this->split->split($lot, (string) $data['qty'], (string) $data['new_lot_no'], $data['best_before'] ?? null, $this->authUser()->id);
         } catch (RuntimeException $e) {
             return redirect()->toList('inventory.lots')->with('error', ErrorText::for($e));
         }
@@ -84,7 +83,7 @@ class LotController extends Controller {
         }
 
         try {
-            $this->split->merge($from, $into, $this->actor()->id);
+            $this->split->merge($from, $into, $this->authUser()->id);
         } catch (RuntimeException $e) {
             return redirect()->toList('inventory.lots')->with('error', ErrorText::for($e));
         }
@@ -104,7 +103,7 @@ class LotController extends Controller {
         $data = $request->validate(['reason' => ['required', 'string', 'max:500']]);
 
         try {
-            $this->lots->block($stockLot, (string) $data['reason'], $this->actor());
+            $this->lots->block($stockLot, (string) $data['reason'], $this->authUser());
         } catch (RuntimeException $e) {
             return redirect()->toList('inventory.lots')->with('error', ErrorText::for($e));
         }
@@ -124,19 +123,12 @@ class LotController extends Controller {
         $data = $request->validate(['reason' => ['required', 'string', 'max:500']]);
 
         try {
-            $this->lots->unblock($stockLot, (string) $data['reason'], $this->actor());
+            $this->lots->unblock($stockLot, (string) $data['reason'], $this->authUser());
         } catch (RuntimeException $e) {
             return redirect()->toList('inventory.lots')->with('error', ErrorText::for($e));
         }
 
         return redirect()->toList('inventory.lots')->with('success', __('inventory.lot.flash.unblocked', ['lot' => $stockLot->lot_no]));
-    }
-
-    private function actor(): User {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 403);
-
-        return $user;
     }
 
     private function resolve(string $sqid): ?StockLot {

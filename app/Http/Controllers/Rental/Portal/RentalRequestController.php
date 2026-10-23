@@ -12,15 +12,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Rental\Portal;
 
+use App\Http\Controllers\Concerns\ResolvesPortalUser;
 use App\Http\Controllers\Controller;
 use App\Models\Asset\Asset;
-use App\Models\Platform\User;
 use App\Models\Rental\RentalRequest;
 use App\Services\Rental\{RentalBillingService, RentalRequestService};
 use App\Support\{ErrorText, Sqid, Tz};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use RuntimeException;
 
@@ -31,6 +30,8 @@ use RuntimeException;
  * Preisangabe aus der Preisliste (MVP-916). Eigene Anfragen, eigener Kunde, sonst 404.
  */
 class RentalRequestController extends Controller {
+    use ResolvesPortalUser;
+
     public function __construct(
         private readonly RentalRequestService $service,
         private readonly RentalBillingService $billing,
@@ -183,13 +184,5 @@ class RentalRequestController extends Controller {
         };
 
         return [$parse($request->query('from')), $parse($request->query('to'))];
-    }
-
-    private function portalUser(): User {
-        /** @var User $user */
-        $user = Auth::guard('customer')->user();
-        abort_if($user->customer_id === null, 404);
-
-        return $user;
     }
 }

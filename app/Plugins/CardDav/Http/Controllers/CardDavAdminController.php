@@ -19,6 +19,7 @@ use App\Plugins\CardDav\Services\CardDavAddressbook;
 use App\Plugins\Support\Concerns\{ManagesPluginConnection, ResolvesPluginOrgContext};
 use App\Plugins\Support\Contracts\ManagedPluginConnection;
 use App\Support\{ErrorText, UrlSafety};
+use CommonToolkit\Helper\Data\WebLinkHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
 use Throwable;
@@ -73,7 +74,7 @@ class CardDavAdminController extends Controller {
 
         $baseUrl = rtrim(trim((string) $data['base_url']), '/');
         $allowPrivate = (bool) ($data['allow_private_network'] ?? false);
-        if (! str_starts_with($baseUrl, 'http://') && ! str_starts_with($baseUrl, 'https://')) {
+        if (! WebLinkHelper::isHttpUrl($baseUrl)) {
             return back()->with('error', __('carddav::carddav.flash.invalid_url'))->withInput();
         }
         // Konfigurationszeit-Prüfung ohne DNS (Whitebox 2026-07); die

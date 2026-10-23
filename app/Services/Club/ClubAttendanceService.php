@@ -18,6 +18,7 @@ use App\Models\Club\{ClubAttendanceConfirmation, ClubAttendanceRecord, ClubAtten
 use App\Models\Platform\User;
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -194,7 +195,7 @@ class ClubAttendanceService {
             if ($status === null) {
                 throw ValidationException::withMessages(['status' => __('club.attendance.error.status_required')]);
             }
-            $reason = $this->nullableString($reason);
+            $reason = StringHelper::trimToNull($reason);
             if ($sheet->requiresReason() && $reason === null) {
                 throw ValidationException::withMessages(['reason' => __('club.attendance.error.reason_required')]);
             }
@@ -236,7 +237,7 @@ class ClubAttendanceService {
             if ($member->organization_id !== $sheet->organization_id) {
                 throw ValidationException::withMessages(['club_member_id' => __('club.error.member_foreign')]);
             }
-            $reason = $this->nullableString($reason);
+            $reason = StringHelper::trimToNull($reason);
             if ($sheet->requiresReason() && $reason === null) {
                 throw ValidationException::withMessages(['reason' => __('club.attendance.error.reason_required')]);
             }
@@ -437,13 +438,13 @@ class ClubAttendanceService {
             return ['status' => $status->value, 'minutes' => null, 'arrived_at' => null, 'left_at' => null];
         }
 
-        $arrived = $this->timeOnEventDay($event, $this->nullableString($row['arrived_at'] ?? null));
-        $left = $this->timeOnEventDay($event, $this->nullableString($row['left_at'] ?? null));
+        $arrived = $this->timeOnEventDay($event, StringHelper::trimToNull($row['arrived_at'] ?? null));
+        $left = $this->timeOnEventDay($event, StringHelper::trimToNull($row['left_at'] ?? null));
         if ($arrived !== null && $left !== null && $left->lessThanOrEqualTo($arrived)) {
             $left = $left->addDay();
         }
 
-        $minutes = $this->nullableString($row['minutes'] ?? null);
+        $minutes = StringHelper::trimToNull($row['minutes'] ?? null);
         if ($minutes !== null) {
             $minutes = (int) $minutes;
         } elseif ($arrived !== null && $left !== null) {
@@ -520,14 +521,5 @@ class ClubAttendanceService {
         $clone->setRelation('organization', $event->organization);
 
         return $clone;
-    }
-
-    private function nullableString(mixed $value): ?string {
-        if ($value === null) {
-            return null;
-        }
-        $string = trim((string) $value);
-
-        return $string === '' ? null : $string;
     }
 }

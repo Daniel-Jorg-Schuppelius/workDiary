@@ -16,14 +16,12 @@ use App\Enums\Reselling\LicenseUnitStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reselling\Concerns\ProvidesHolderPicker;
 use App\Models\Customer\{Customer, ForeignCustomer};
-use App\Models\Platform\User;
 use App\Models\Reselling\{ResaleLicenseAssignment, ResaleLicenseProduct, ResaleLicenseUnit};
 use App\Services\Reselling\License\{LicenseStockException, LicenseStockService};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request, Response};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -60,7 +58,7 @@ class LicenseSaleController extends Controller {
             array_map(static fn (mixed $value): ?string => is_string($value) ? $value : null, (array) ($data['license_keys'] ?? [])),
             array_values((array) ($data['remove'] ?? [])),
             $data['reason'] ?? null,
-            $this->actor(),
+            $this->authUser(),
         ));
 
         return redirect()->route('finance.resale.licenses.batches.show', $unit->batch)
@@ -119,7 +117,7 @@ class LicenseSaleController extends Controller {
         [$customer, $foreign] = $this->holder($data);
 
         $assignment = $this->attempt(fn (): ResaleLicenseAssignment => $this->stock->sell(
-            $unit, $customer, $foreign, CarbonImmutable::parse($data['sold_on']), $data['invoice_reference'] ?? null, $data['token'], $this->actor(),
+            $unit, $customer, $foreign, CarbonImmutable::parse($data['sold_on']), $data['invoice_reference'] ?? null, $data['token'], $this->authUser(),
         ));
 
         return redirect()->route('finance.resale.licenses.batches.show', $unit->batch)
@@ -138,7 +136,7 @@ class LicenseSaleController extends Controller {
         ]);
         [$customer, $foreign] = $this->holder($data);
 
-        $next = $this->attempt(fn (): ResaleLicenseAssignment => $this->stock->reassign($assignment, $customer, $foreign, $data['reason'], $this->actor()));
+        $next = $this->attempt(fn (): ResaleLicenseAssignment => $this->stock->reassign($assignment, $customer, $foreign, $data['reason'], $this->authUser()));
 
         return redirect()->route('finance.resale.licenses.batches.show', $assignment->unit->batch)
             ->with('success', __('resale.license.flash.reassigned', ['license' => $assignment->unit->label(), 'customer' => $next->holderLabel()]));
@@ -154,7 +152,7 @@ class LicenseSaleController extends Controller {
 
     public function returnStore(Request $request, ResaleLicenseAssignment $assignment): RedirectResponse {
         $data = $request->validate(['reason' => ['required', 'string', 'max:255']]);
-        $this->attempt(fn () => $this->stock->returnSale($assignment, $data['reason'], $this->actor()));
+        $this->attempt(fn () => $this->stock->returnSale($assignment, $data['reason'], $this->authUser()));
 
         return redirect()->route('finance.resale.licenses.batches.show', $assignment->unit->batch)
             ->with('success', __('resale.license.flash.returned', ['license' => $assignment->unit->label()]));
@@ -170,7 +168,7 @@ class LicenseSaleController extends Controller {
 
     public function blockStore(Request $request, ResaleLicenseUnit $unit): RedirectResponse {
         $data = $request->validate(['reason' => ['required', 'string', 'max:255']]);
-        $this->attempt(fn () => $this->stock->block($unit, $data['reason'], $this->actor()));
+        $this->attempt(fn () => $this->stock->block($unit, $data['reason'], $this->authUser()));
 
         return redirect()->route('finance.resale.licenses.batches.show', $unit->batch)
             ->with('success', __('resale.license.flash.blocked', ['license' => $unit->label()]));
@@ -190,7 +188,7 @@ class LicenseSaleController extends Controller {
             'reason' => ['required', 'string', 'max:255'],
             'confirmed' => ['nullable', 'boolean'],
         ]);
-        $this->attempt(fn () => $this->stock->unblock($unit, $data['reason'], (bool) ($data['confirmed'] ?? false), $this->actor()));
+        $this->attempt(fn () => $this->stock->unblock($unit, $data['reason'], (bool) ($data['confirmed'] ?? false), $this->authUser()));
 
         return redirect()->route('finance.resale.licenses.batches.show', $unit->batch)
             ->with('success', __('resale.license.flash.unblocked', ['license' => $unit->label()]));
@@ -224,12 +222,5 @@ class LicenseSaleController extends Controller {
         }
 
         return [$customer, $foreign];
-    }
-
-    private function actor(): User {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 403);
-
-        return $user;
     }
 }

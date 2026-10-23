@@ -14,7 +14,7 @@ namespace App\Http\Controllers\Guarantee;
 
 use App\Enums\Guarantee\{GuaranteeDirection, GuaranteeStatus};
 use App\Enums\Invoicing\RetentionStatus;
-use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Concerns\{AuthorizesOrganizationManagement, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Guarantee\SaveGuaranteeRequest;
 use App\Models\Customer\Customer;
@@ -26,7 +26,6 @@ use App\Models\Supplier\Supplier;
 use App\Services\Guarantee\GuaranteeService;
 use App\Support\{ErrorText, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use RuntimeException;
 
@@ -38,6 +37,7 @@ use RuntimeException;
  * Finanzen" auf und nicht am Projekt.
  */
 class GuaranteeController extends Controller {
+    use AuthorizesOrganizationManagement;
     use ResolvesCurrentOrganization;
 
     public function __construct(private readonly GuaranteeService $guarantees) {}
@@ -178,9 +178,5 @@ class GuaranteeController extends Controller {
         }
 
         return back()->with('status', __('guarantee.secured'));
-    }
-
-    private function authorizeBilling(): void {
-        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
     }
 }

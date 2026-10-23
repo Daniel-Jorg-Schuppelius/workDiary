@@ -79,8 +79,8 @@ return [
         'format' => [
             'default' => 'Field :field has an invalid format (:reason).',
             'email' => 'Not a valid email address.',
-            'country' => 'Country code must be 2-3 uppercase letters (ISO 3166-1).',
-            'currency' => 'Currency code must be 3 uppercase letters (ISO 4217).',
+            'country' => 'Not a valid ISO 3166-1 country code (two letters, e.g. DE).',
+            'currency' => 'Not a valid ISO 4217 currency code (e.g. EUR).',
             'enum' => 'Value is not a valid status.',
             'parse' => 'File could not be parsed: :reason',
             'xlsxUnreadable' => 'The Excel file is corrupted or not a valid XLSX format.',

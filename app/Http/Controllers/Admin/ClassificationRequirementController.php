@@ -141,7 +141,7 @@ class ClassificationRequirementController extends Controller {
 
     public function edit(ClassificationRequirement $classificationRequirement): View {
         Gate::authorize('update', $classificationRequirement);
-        $this->ensureOrganizationScoped($classificationRequirement);
+        $this->assertSameOrganization($classificationRequirement, 403);
 
         return view('admin.classification-requirements._form_dialog', [
             'requirement' => $classificationRequirement,
@@ -159,7 +159,7 @@ class ClassificationRequirementController extends Controller {
 
     public function update(Request $request, ClassificationRequirement $classificationRequirement): RedirectResponse {
         Gate::authorize('update', $classificationRequirement);
-        $this->ensureOrganizationScoped($classificationRequirement);
+        $this->assertSameOrganization($classificationRequirement, 403);
 
         $validated = $this->input->validated($request, $this->currentOrganization(), $classificationRequirement);
         $classificationRequirement->update($validated);
@@ -170,15 +170,11 @@ class ClassificationRequirementController extends Controller {
 
     public function destroy(ClassificationRequirement $classificationRequirement): RedirectResponse {
         Gate::authorize('delete', $classificationRequirement);
-        $this->ensureOrganizationScoped($classificationRequirement);
+        $this->assertSameOrganization($classificationRequirement, 403);
 
         $classificationRequirement->delete();
 
         return redirect()->toList('admin.classification-requirements.index')
             ->with('success', __('Pflichtregel wurde gelöscht.'));
-    }
-
-    private function ensureOrganizationScoped(ClassificationRequirement $classificationRequirement): void {
-        abort_unless($classificationRequirement->organization_id === $this->currentOrganization()->id, 403);
     }
 }

@@ -34,7 +34,7 @@ class UploadProtocolItemPhotoRequest extends BaseFormRequest {
             'phase' => [
                 'required',
                 'string',
-                Rule::in(array_column(ProtocolItemPhotoPhase::cases(), 'value')),
+                Rule::enum(ProtocolItemPhotoPhase::class),
             ],
             'caption' => ['nullable', 'string', 'max:180'],
             'allow_geo' => ['nullable', 'boolean'],

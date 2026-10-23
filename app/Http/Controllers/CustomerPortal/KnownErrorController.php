@@ -12,10 +12,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\CustomerPortal;
 
+use App\Http\Controllers\Concerns\ResolvesPortalUser;
 use App\Http\Controllers\Controller;
-use App\Models\Platform\User;
 use App\Models\ServiceTicket\Problem;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
@@ -26,6 +25,8 @@ use Illuminate\View\View;
  * die Portal-Session (zusätzlich zur Global-Scope-Linie).
  */
 class KnownErrorController extends Controller {
+    use ResolvesPortalUser;
+
     public function index(): View {
         $user = $this->portalUser();
 
@@ -37,13 +38,5 @@ class KnownErrorController extends Controller {
                 ->orderBy('title')
                 ->paginate(25),
         ]);
-    }
-
-    private function portalUser(): User {
-        /** @var User $user */
-        $user = Auth::guard('customer')->user();
-        abort_if($user->customer_id === null, 403);
-
-        return $user;
     }
 }

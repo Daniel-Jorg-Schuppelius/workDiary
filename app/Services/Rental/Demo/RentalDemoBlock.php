@@ -34,12 +34,8 @@ final class RentalDemoBlock implements DemoBlock {
 
     public function purge(Organization $organization): void {}
 
-    private function moduleActive(string $code): bool {
-        return $this->context->moduleActive($code);
-    }
-
     private function seedRental(Organization $organization, ?User $actor): int {
-        if (! $this->moduleActive('module.rental')) {
+        if (! $this->context->moduleActive('module.rental')) {
             return 0;
         }
         if ($actor === null) {

@@ -24,7 +24,7 @@ use App\Services\Integration\{IntegrationResolver, MatchProfileRegistry};
 use App\Services\Integration\Match\MatchProfile;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\RoundingMode;
-use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use RuntimeException;
 use Throwable;
 
@@ -144,10 +144,10 @@ class EtsyReceiptImportService {
         $row = EtsyReceipt::query()->updateOrCreate(
             ['organization_id' => $organization->id, 'receipt_id' => $receiptId],
             [
-                'status' => self::stringOrNull($receipt['status'] ?? null),
+                'status' => StringHelper::trimToNull($receipt['status'] ?? null),
                 'was_paid' => (bool) ($receipt['is_paid'] ?? false),
                 'was_shipped' => (bool) ($receipt['is_shipped'] ?? false),
-                'currency' => self::stringOrNull($grandtotal['currency_code'] ?? null),
+                'currency' => StringHelper::trimToNull($grandtotal['currency_code'] ?? null),
                 'total_gross' => self::money($receipt['grandtotal'] ?? null),
                 'total_shipping' => self::money($receipt['total_shipping_cost'] ?? null),
                 'total_tax' => self::money($receipt['total_tax_cost'] ?? null),
@@ -223,8 +223,8 @@ class EtsyReceiptImportService {
             EtsyPlugin::ID,
             $buyerExternalId,
             [
-                'name' => self::stringOrNull($receipt['name'] ?? null),
-                'email' => self::stringOrNull($receipt['buyer_email'] ?? null),
+                'name' => StringHelper::trimToNull($receipt['name'] ?? null),
+                'email' => StringHelper::trimToNull($receipt['buyer_email'] ?? null),
             ],
             $this->buyer($receipt) ?? [],
             'etsy',
@@ -309,14 +309,14 @@ class EtsyReceiptImportService {
      */
     private function buyer(array $receipt): ?array {
         $buyer = array_filter([
-            'name' => self::stringOrNull($receipt['name'] ?? null),
-            'email' => self::stringOrNull($receipt['buyer_email'] ?? null),
-            'first_line' => self::stringOrNull($receipt['first_line'] ?? null),
-            'second_line' => self::stringOrNull($receipt['second_line'] ?? null),
-            'city' => self::stringOrNull($receipt['city'] ?? null),
-            'state' => self::stringOrNull($receipt['state'] ?? null),
-            'zip' => self::stringOrNull($receipt['zip'] ?? null),
-            'country_iso' => self::stringOrNull($receipt['country_iso'] ?? null),
+            'name' => StringHelper::trimToNull($receipt['name'] ?? null),
+            'email' => StringHelper::trimToNull($receipt['buyer_email'] ?? null),
+            'first_line' => StringHelper::trimToNull($receipt['first_line'] ?? null),
+            'second_line' => StringHelper::trimToNull($receipt['second_line'] ?? null),
+            'city' => StringHelper::trimToNull($receipt['city'] ?? null),
+            'state' => StringHelper::trimToNull($receipt['state'] ?? null),
+            'zip' => StringHelper::trimToNull($receipt['zip'] ?? null),
+            'country_iso' => StringHelper::trimToNull($receipt['country_iso'] ?? null),
         ], static fn(?string $value): bool => $value !== null);
 
         return $buyer !== [] ? $buyer : null;
@@ -338,8 +338,8 @@ class EtsyReceiptImportService {
             $items[] = array_filter([
                 'transaction_id' => isset($transaction['transaction_id']) ? (int) $transaction['transaction_id'] : null,
                 'listing_id' => isset($transaction['listing_id']) ? (int) $transaction['listing_id'] : null,
-                'sku' => self::stringOrNull($transaction['sku'] ?? null),
-                'title' => self::stringOrNull($transaction['title'] ?? null),
+                'sku' => StringHelper::trimToNull($transaction['sku'] ?? null),
+                'title' => StringHelper::trimToNull($transaction['title'] ?? null),
                 'quantity' => isset($transaction['quantity']) ? (int) $transaction['quantity'] : null,
                 'price' => self::money($transaction['price'] ?? null),
             ], static fn($value): bool => $value !== null);
@@ -378,12 +378,6 @@ class EtsyReceiptImportService {
         }
 
         return NumberHelper::dividePrecise((string) $amount, (string) $divisor, 2, RoundingMode::HalfUp);
-    }
-
-    private static function stringOrNull(mixed $value): ?string {
-        $value = trim((string) ($value ?? ''));
-
-        return $value !== '' ? $value : null;
     }
 
     private static function epochOrNull(mixed $value): ?CarbonImmutable {

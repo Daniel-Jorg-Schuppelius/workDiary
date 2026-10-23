@@ -143,6 +143,6 @@ class OperationsTaskController extends Controller {
 
     private function authorizeManage(OperationsTask $task): void {
         Gate::authorize(Permission::PlatformOperationsManage->value);
-        abort_unless((int) $task->organization_id === $this->currentOrganizationId(), 404);
+        $this->assertSameOrganization($task);
     }
 }

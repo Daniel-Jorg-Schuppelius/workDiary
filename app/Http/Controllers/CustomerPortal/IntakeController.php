@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\CustomerPortal;
 
 use App\Enums\Customer\IntakeKind;
+use App\Http\Controllers\Concerns\ResolvesPortalUser;
 use App\Http\Controllers\Concerns\{ValidatesIntakeSubmission, ValidatesUploadedFiles};
 use App\Http\Controllers\Controller;
 use App\Models\Asset\Asset;
@@ -24,7 +25,7 @@ use App\Services\CustomerPortal\PortalVisibility;
 use App\Support\Sqid;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\{Collection, Str};
-use Illuminate\Support\Facades\{Auth, Storage};
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -35,6 +36,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  * Organisation und Kunde; Ziel-IDs aus dem Request ersetzen diese Prüfung nie.
  */
 class IntakeController extends Controller {
+    use ResolvesPortalUser;
     use ValidatesIntakeSubmission;
     use ValidatesUploadedFiles;
 
@@ -255,13 +257,5 @@ class IntakeController extends Controller {
             && (int) $intake->customer_id === (int) $user->customer_id,
             404,
         );
-    }
-
-    private function portalUser(): User {
-        /** @var User $user */
-        $user = Auth::guard('customer')->user();
-        abort_if($user->customer_id === null, 404);
-
-        return $user;
     }
 }

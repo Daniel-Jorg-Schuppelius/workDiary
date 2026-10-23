@@ -25,7 +25,7 @@ use App\Support\Sqid;
 use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\{Rule, ValidationException};
 use Illuminate\View\View;
 
 /**
@@ -217,9 +217,9 @@ class RecurringAccountingController extends Controller {
     /** @return array<string, mixed> */
     private function validated(Request $request, Organization $organization): array {
         $data = $request->validate([
-            'kind' => ['required', 'string', 'in:' . implode(',', array_column(RecurringTemplateKind::cases(), 'value'))],
+            'kind' => ['required', 'string', Rule::enum(RecurringTemplateKind::class)],
             'name' => ['required', 'string', 'max:191'],
-            'interval' => ['required', 'string', 'in:' . implode(',', array_column(RecurringInterval::cases(), 'value'))],
+            'interval' => ['required', 'string', Rule::enum(RecurringInterval::class)],
             'due_day' => ['required', 'integer', 'between:1,28'],
             'starts_on' => ['required', 'date'],
             'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
@@ -286,9 +286,5 @@ class RecurringAccountingController extends Controller {
             'responsible_user_id' => $responsibleId,
             'note' => $data['note'] ?? null,
         ];
-    }
-
-    private function assertSameOrganization(AccountingRecurringTemplate $template): void {
-        abort_unless((int) $template->organization_id === (int) $this->currentOrganizationOrAbort()->id, 404);
     }
 }

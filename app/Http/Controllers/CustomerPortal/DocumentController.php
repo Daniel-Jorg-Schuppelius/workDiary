@@ -10,10 +10,10 @@
 
 namespace App\Http\Controllers\CustomerPortal;
 
+use App\Http\Controllers\Concerns\ResolvesPortalUser;
 use App\Http\Controllers\Controller;
 use App\Models\Document\{Document, DocumentVersion};
-use App\Models\Platform\User;
-use Illuminate\Support\Facades\{Auth, Storage};
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -25,6 +25,8 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  * fremde Dokumente sind hier prinzipiell nicht sichtbar oder ladbar.
  */
 class DocumentController extends Controller {
+    use ResolvesPortalUser;
+
     public function index(): View {
         $user = $this->portalUser();
 
@@ -68,13 +70,5 @@ class DocumentController extends Controller {
         }
 
         return response()->download($disk->path($version->path), $version->original_name);
-    }
-
-    private function portalUser(): User {
-        /** @var User $user */
-        $user = Auth::guard('customer')->user();
-        abort_if($user->customer_id === null, 403);
-
-        return $user;
     }
 }

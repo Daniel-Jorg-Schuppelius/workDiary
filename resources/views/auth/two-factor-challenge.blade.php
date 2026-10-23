@@ -25,7 +25,7 @@
 @endsection
 
 @section('content')
-    <div class="rounded-4xl border border-base-300 bg-base-100 p-8 shadow-xs">
+    <x-auth-card>
         <x-validation-errors first class="mb-4" />
         @if (session('success'))
             <div role="status" class="mb-4 alert alert-success text-sm">{{ session('success') }}</div>
@@ -82,7 +82,7 @@
                 </form>
             </div>
         @endif
-    </div>
+    </x-auth-card>
 
     <form method="POST" action="{{ route('logout') }}" class="mt-6 text-center">
         @csrf

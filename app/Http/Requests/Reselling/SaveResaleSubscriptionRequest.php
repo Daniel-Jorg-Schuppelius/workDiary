@@ -24,6 +24,7 @@ use App\Models\Reselling\ResaleSubscription;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Platform\Catalog\{ArticleCatalog, CatalogArticle};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Validation\{Rule, Validator};
 use Illuminate\Validation\Rules\Unique;
 
@@ -215,8 +216,8 @@ class SaveResaleSubscriptionRequest extends BaseFormRequest {
             'kind' => $data['kind'],
             'provider' => $data['provider'] ?? null,
             'label' => trim((string) $data['label']),
-            'external_id' => $this->nullable($data['external_id'] ?? null),
-            'external_order_id' => $this->nullable($data['external_order_id'] ?? null),
+            'external_id' => StringHelper::trimToNull($data['external_id'] ?? null),
+            'external_order_id' => StringHelper::trimToNull($data['external_order_id'] ?? null),
             'customer_id' => $holder['foreign'] === null ? $holder['customer']?->id : null,
             'foreign_customer_id' => $holder['foreign']?->id,
             'is_own_holding' => $holder['own'],
@@ -224,14 +225,14 @@ class SaveResaleSubscriptionRequest extends BaseFormRequest {
             'contract_id' => isset($data['contract_id']) && $data['contract_id'] !== '' ? (int) $data['contract_id'] : null,
             'quantity' => (int) $data['quantity'],
             'starts_on' => $data['starts_on'],
-            'ends_on' => $this->nullable($data['ends_on'] ?? null),
+            'ends_on' => StringHelper::trimToNull($data['ends_on'] ?? null),
             'term_months' => (int) $data['term_months'],
             'interval' => $data['interval'] ?? null,
             'renewal' => $data['renewal'],
-            'purchase_unit_price' => $this->nullable($data['purchase_unit_price'] ?? null),
-            'sale_unit_price' => $this->nullable($data['sale_unit_price'] ?? null),
+            'purchase_unit_price' => StringHelper::trimToNull($data['purchase_unit_price'] ?? null),
+            'sale_unit_price' => StringHelper::trimToNull($data['sale_unit_price'] ?? null),
             'status' => $data['status'],
-            'notes' => $this->nullable($data['notes'] ?? null),
+            'notes' => StringHelper::trimToNull($data['notes'] ?? null),
         ];
         if ($subscription !== null) {
             $source = $parent ?? $subscription;
@@ -250,12 +251,6 @@ class SaveResaleSubscriptionRequest extends BaseFormRequest {
         }
 
         return $attributes;
-    }
-
-    private function nullable(mixed $value): ?string {
-        $value = is_string($value) ? trim($value) : $value;
-
-        return $value === null || $value === '' ? null : (string) $value;
     }
 
     /** Katalogartikel aus dem Formularschlüssel, nur in der aktuellen Organisation. */

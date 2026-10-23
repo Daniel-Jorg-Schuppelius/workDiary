@@ -14,7 +14,7 @@
 @section('intro', __('sso.discover.hint'))
 
 @section('content')
-    <div class="rounded-4xl border border-base-300 bg-base-100 p-8 shadow-xs">
+    <x-auth-card>
         {{-- Bewusst GET: die E-Mail-Domain ist kein Geheimnis, der Flow bleibt lesezeichenfähig. --}}
         <form method="GET" action="{{ route('sso.discover') }}" class="space-y-5">
             <div>
@@ -45,7 +45,7 @@
                 ⇢ {{ __('sso.discover.submit') }}
             </x-button>
         </form>
-    </div>
+    </x-auth-card>
 
     <p class="mt-6 text-center text-sm text-base-content/70">
         <a href="{{ route('login') }}" class="text-primary transition hover:opacity-80">← {{ __('sso.discover.back_to_login') }}</a>

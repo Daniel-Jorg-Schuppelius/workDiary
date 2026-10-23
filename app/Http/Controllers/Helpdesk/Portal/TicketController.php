@@ -14,7 +14,7 @@ namespace App\Http\Controllers\Helpdesk\Portal;
 
 use App\Enums\ServiceTicket\{ServiceTicketSource, ServiceTicketStatus, TicketMessageKind};
 use App\Http\Controllers\Attachments\AttachmentController;
-use App\Http\Controllers\Concerns\ValidatesUploadedFiles;
+use App\Http\Controllers\Concerns\{ResolvesPortalUser, ValidatesUploadedFiles};
 use App\Http\Controllers\Controller;
 use App\Models\Attachments\Attachment;
 use App\Models\Platform\User;
@@ -22,7 +22,7 @@ use App\Models\ServiceTicket\{ServiceQueue, ServiceTicket, ServiceTicketMessage,
 use App\Services\ServiceTicket\{ServiceTicketService, TicketConversationService};
 use App\Services\Timeline\ServiceTicketTimelineService;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Storage};
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -35,6 +35,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  * und sind als Kunden-Uploads immer `customer_visible`.
  */
 class TicketController extends Controller {
+    use ResolvesPortalUser;
     use ValidatesUploadedFiles;
 
     /** Aus diesen Status darf der Kunde wiedereröffnen; „Geschlossen“ bleibt dem Team vorbehalten. */
@@ -260,13 +261,5 @@ class TicketController extends Controller {
 
         return redirect()->route('customer.tickets.show', $ticket)
             ->with('success', __('Danke für die Bewertung!'));
-    }
-
-    private function portalUser(): User {
-        /** @var User $user */
-        $user = Auth::guard('customer')->user();
-        abort_if($user->customer_id === null, 403);
-
-        return $user;
     }
 }

@@ -17,6 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Classification\Classification;
 use App\Services\Classification\ClassificationManager;
 use App\Support\Setting;
+use CommonToolkit\Helper\Data\StringHelper;
 use CommonToolkit\Parsers\CSVDocumentParser;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\Gate;
@@ -130,7 +131,7 @@ class ClassificationController extends Controller {
 
     public function edit(Classification $classification): View {
         Gate::authorize('update', $classification);
-        $this->ensureOrganizationScoped($classification);
+        $this->assertSameOrganization($classification, 403);
 
         return view('admin.classifications._form_dialog', [
             'classification' => $classification,
@@ -142,7 +143,7 @@ class ClassificationController extends Controller {
 
     public function update(Request $request, Classification $classification): RedirectResponse {
         Gate::authorize('update', $classification);
-        $this->ensureOrganizationScoped($classification);
+        $this->assertSameOrganization($classification, 403);
 
         $validated = $request->validate([
             'label' => ['required', 'string', 'max:180'],
@@ -280,11 +281,6 @@ class ClassificationController extends Controller {
         }
     }
 
-    private function ensureOrganizationScoped(Classification $classification): void {
-        $organization = $this->currentOrganization();
-        abort_unless($classification->organization_id === $organization->id, 403);
-    }
-
     private function resolveSourceClassification(?int $classificationId): ?Classification {
         if ($classificationId === null || $classificationId === 0) {
             return null;
@@ -312,9 +308,9 @@ class ClassificationController extends Controller {
         $payload = [
             'label' => (string) $validated['label'],
             'sort_order' => (int) ($validated['sort_order'] ?? 100),
-            'color_hex' => $this->nullableString($validated['color_hex'] ?? null),
-            'icon' => $this->nullableString($validated['icon'] ?? null),
-            'description' => $this->nullableString($validated['description'] ?? null),
+            'color_hex' => StringHelper::trimToNull($validated['color_hex'] ?? null),
+            'icon' => StringHelper::trimToNull($validated['icon'] ?? null),
+            'description' => StringHelper::trimToNull($validated['description'] ?? null),
             'active' => $request->boolean('active'),
             // Übersetzungen (MVP-912); Quellwert bleibt `label`.
             'label_i18n' => Classification::cleanTranslations($request->input('label_i18n')),
@@ -325,16 +321,6 @@ class ClassificationController extends Controller {
         }
 
         return $payload;
-    }
-
-    private function nullableString(mixed $value): ?string {
-        if (! is_string($value)) {
-            return null;
-        }
-
-        $trimmed = trim($value);
-
-        return $trimmed === '' ? null : $trimmed;
     }
 
     private function redirectWithManagerError(ClassificationValidationException $exception): RedirectResponse {

@@ -13,10 +13,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Survey;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Mail\SurveyInvitationMail;
 use App\Models\Customer\Customer;
-use App\Models\Platform\User;
 use App\Models\Survey\{Survey, SurveyAnswer, SurveyQuestion};
 use App\Services\Survey\SurveyService;
 use App\Support\{ErrorText, SqidEncoder};
@@ -32,6 +32,8 @@ use RuntimeException;
  * module.vertrieb. Die Ticket-CSAT bleibt unberührt daneben bestehen.
  */
 class SurveyController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(private readonly SurveyService $service) {}
 
     public function index(): View {
@@ -48,7 +50,7 @@ class SurveyController extends Controller {
 
     public function show(Survey $survey): View {
         Gate::authorize(Permission::CustomerViewAny->value);
-        $this->guard($survey);
+        $this->assertSameOrganization($survey);
 
         return view('surveys.show', [
             'survey' => $survey->load('questions'),
@@ -84,7 +86,7 @@ class SurveyController extends Controller {
         ]);
 
         $survey = Survey::query()->create([
-            'organization_id' => $this->orgId(),
+            'organization_id' => $this->currentOrganizationId(),
             'title' => $data['title'],
             'purpose' => $data['purpose'] ?? null,
             'active' => true,
@@ -102,7 +104,7 @@ class SurveyController extends Controller {
     /** Auslöser ändern (MVP-1293): Ticket, Auftrag, Kurs, fester Abstand. */
     public function updateTriggers(Request $request, Survey $survey): RedirectResponse {
         Gate::authorize(Permission::CustomerUpdate->value);
-        $this->guard($survey);
+        $this->assertSameOrganization($survey);
 
         $data = $request->validate([
             'trigger_on_ticket_close' => ['nullable', 'boolean'],
@@ -122,7 +124,7 @@ class SurveyController extends Controller {
 
     public function addQuestion(Request $request, Survey $survey): RedirectResponse {
         Gate::authorize(Permission::CustomerUpdate->value);
-        $this->guard($survey);
+        $this->assertSameOrganization($survey);
 
         $data = $request->validate([
             'type' => ['required', 'string', 'in:' . implode(',', SurveyQuestion::TYPES)],
@@ -151,7 +153,7 @@ class SurveyController extends Controller {
 
     public function removeQuestion(Survey $survey, SurveyQuestion $question): RedirectResponse {
         Gate::authorize(Permission::CustomerUpdate->value);
-        $this->guard($survey);
+        $this->assertSameOrganization($survey);
         abort_unless($question->survey_id === $survey->id, 404);
 
         // Fragen mit Antworten bleiben - sonst verlören die vorhandenen
@@ -165,7 +167,7 @@ class SurveyController extends Controller {
     /** Manuelle Einladung an einen Kunden. */
     public function invite(Request $request, Survey $survey, SqidEncoder $sqids): RedirectResponse {
         Gate::authorize(Permission::CustomerUpdate->value);
-        $this->guard($survey);
+        $this->assertSameOrganization($survey);
 
         $data = $request->validate(['customer' => ['required', 'string']]);
         $customerId = $sqids->decode(Customer::class, (string) $data['customer']);
@@ -190,22 +192,10 @@ class SurveyController extends Controller {
 
     public function toggleActive(Survey $survey): RedirectResponse {
         Gate::authorize(Permission::CustomerUpdate->value);
-        $this->guard($survey);
+        $this->assertSameOrganization($survey);
 
         $survey->forceFill(['active' => ! $survey->active])->save();
 
         return back()->with('success', $survey->active ? __('Fragebogen aktiviert.') : __('Fragebogen deaktiviert.'));
-    }
-
-    private function guard(Survey $survey): void {
-        abort_unless($survey->organization_id === $this->orgId(), 404);
-    }
-
-    private function orgId(): int {
-        $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
-        /** @var User $user */
-        $user = Auth::user();
-
-        return (int) ($org->id ?? $user->organization_id);
     }
 }

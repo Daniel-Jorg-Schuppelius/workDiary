@@ -17,6 +17,7 @@ use App\Models\Scopes\OrganizationScope;
 use App\Models\ServiceTicket\{ServiceTicket, ServiceTicketMessage};
 use App\Services\Search\Indexing\{SearchContext, SearchDocumentData};
 use App\Services\Search\Indexing\Sources\AbstractSearchSource;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
 
 /** Tickets samt Lösung, Workaround und Konversation (Mail-HTML als Text). */
@@ -42,9 +43,9 @@ final class ServiceTicketSource extends AbstractSearchSource {
         $asset = $model->asset;
         $ref = $context->resolve(
             $organizationId,
-            self::intOrNull($model->project_id),
-            self::intOrNull($asset?->foreign_customer_id),
-            self::intOrNull($model->customer_id ?? $asset?->customer_id),
+            NumberHelper::toIntOrNull($model->project_id),
+            NumberHelper::toIntOrNull($asset?->foreign_customer_id),
+            NumberHelper::toIntOrNull($model->customer_id ?? $asset?->customer_id),
         );
 
         $messageTexts = [];
@@ -75,13 +76,13 @@ final class ServiceTicketSource extends AbstractSearchSource {
                 ...$messageTexts,
                 $asset?->name,
                 $asset?->asset_no,
-                $context->userName(self::intOrNull($model->reported_by_user_id)),
-                $context->userName(self::intOrNull($model->assigned_to_user_id)),
+                $context->userName(NumberHelper::toIntOrNull($model->reported_by_user_id)),
+                $context->userName(NumberHelper::toIntOrNull($model->assigned_to_user_id)),
                 ...$ref->texts,
             ],
             occurredAt: $model->reported_at ?? $model->created_at,
-            userId: self::intOrNull($model->reported_by_user_id),
-            assignedUserId: self::intOrNull($model->assigned_to_user_id),
+            userId: NumberHelper::toIntOrNull($model->reported_by_user_id),
+            assignedUserId: NumberHelper::toIntOrNull($model->assigned_to_user_id),
             customerId: $ref->customerId,
             foreignCustomerId: $ref->foreignCustomerId,
             projectId: $ref->projectId,

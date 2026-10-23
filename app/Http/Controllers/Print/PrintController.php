@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Print;
 
 use App\Enums\Vacation\VacationStatus;
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\Absence\Vacation;
 use App\Models\Diary\{EmergencyAssignment, OnCallShift};
@@ -36,6 +37,7 @@ use Illuminate\View\View;
  */
 class PrintController extends Controller {
     use \App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+    use ResolvesGlobalDateRange;
 
     public function __construct(private readonly HolidayService $holidays) {}
 
@@ -84,7 +86,7 @@ class PrintController extends Controller {
     public function dutyPlanWeek(Request $request, DutyPlan $dutyPlan): View {
         Gate::authorize('view', $dutyPlan);
 
-        $anchor = $this->parseDate($request->query('date'), $dutyPlan->from_date);
+        $anchor = $this->resolveDateParam($request, 'date', static fn (): CarbonImmutable => CarbonImmutable::instance($dutyPlan->from_date));
         $from = $anchor->startOfWeek();
         $to = $from->endOfWeek();
 
@@ -129,7 +131,7 @@ class PrintController extends Controller {
     public function dutyPlanDayBriefing(Request $request, DutyPlan $dutyPlan): View {
         Gate::authorize('view', $dutyPlan);
 
-        $date = $this->parseDate($request->query('date'), $dutyPlan->from_date);
+        $date = $this->resolveDateParam($request, 'date', static fn (): CarbonImmutable => CarbonImmutable::instance($dutyPlan->from_date));
 
         $dutyPlan->load(['shifts.user:id,name,organization_id', 'shifts.shiftType']);
 
@@ -169,7 +171,7 @@ class PrintController extends Controller {
         // sonst spränge der Zettel für einen Betreiber im Org-Wechsel auf 403.
         abort_unless((int) $user->organization_id === (int) $this->currentOrganization()->id, 403);
 
-        $month = $this->parseDate($request->query('month'), CarbonImmutable::now())->startOfMonth();
+        $month = $this->resolveDateParam($request, 'month', static fn (): CarbonImmutable => CarbonImmutable::now())->startOfMonth();
         $end = $month->endOfMonth();
 
         $shifts = ScheduledShift::query()
@@ -211,8 +213,8 @@ class PrintController extends Controller {
         $actor = Auth::user();
         abort_unless($actor?->isAdmin() === true, 403);
 
-        $from = $this->parseDate($request->query('from'), CarbonImmutable::now()->startOfMonth());
-        $to = $this->parseDate($request->query('to'), $from->endOfMonth());
+        $from = $this->resolveDateParam($request, 'from', static fn (): CarbonImmutable => CarbonImmutable::now()->startOfMonth());
+        $to = $this->resolveDateParam($request, 'to', static fn (): CarbonImmutable => $from->endOfMonth());
 
         $shifts = OnCallShift::query()
             ->with('user:id,name')
@@ -251,8 +253,8 @@ class PrintController extends Controller {
         $actor = Auth::user();
         abort_unless($actor?->isAdmin() === true, 403);
 
-        $from = $this->parseDate($request->query('from'), CarbonImmutable::now()->startOfMonth());
-        $to = $this->parseDate($request->query('to'), $from->endOfMonth());
+        $from = $this->resolveDateParam($request, 'from', static fn (): CarbonImmutable => CarbonImmutable::now()->startOfMonth());
+        $to = $this->resolveDateParam($request, 'to', static fn (): CarbonImmutable => $from->endOfMonth());
         if ($to->lessThan($from)) {
             $to = $from->endOfMonth();
         }
@@ -370,20 +372,5 @@ class PrintController extends Controller {
             ->unique('id')
             ->sortBy('name')
             ->values();
-    }
-
-    private function parseDate(?string $input, CarbonImmutable|\DateTimeInterface $fallback): CarbonImmutable {
-        if (! $input) {
-            return $fallback instanceof CarbonImmutable
-                ? $fallback
-                : CarbonImmutable::instance($fallback);
-        }
-        try {
-            return CarbonImmutable::parse($input);
-        } catch (\Throwable) {
-            return $fallback instanceof CarbonImmutable
-                ? $fallback
-                : CarbonImmutable::instance($fallback);
-        }
     }
 }

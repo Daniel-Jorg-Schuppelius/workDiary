@@ -29,6 +29,7 @@ use App\Support\{MorphMap, Sqid};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -410,7 +411,7 @@ class DocumentController extends Controller {
     private function validateDocument(Request $request, bool $includeFile): array {
         $rules = [
             'title' => ['required', 'string', 'min:3', 'max:180'],
-            'document_type' => ['required', 'string', 'in:' . implode(',', array_column(DocumentType::cases(), 'value'))],
+            'document_type' => ['required', 'string', Rule::enum(DocumentType::class)],
             'status' => ['nullable', 'string', 'in:' . DocumentStatus::Draft->value . ',' . DocumentStatus::Active->value],
             'valid_from' => ['nullable', 'date'],
             'valid_until' => ['nullable', 'date', 'after_or_equal:valid_from'],

@@ -63,7 +63,7 @@ class ProblemReportInboxController extends Controller {
         Gate::authorize(Permission::ProblemReportManage->value);
 
         $validated = $request->validate([
-            'status' => ['required', Rule::in(array_column(ProblemReportStatus::cases(), 'value'))],
+            'status' => ['required', Rule::enum(ProblemReportStatus::class)],
         ]);
 
         $problemReport->update(['status' => ProblemReportStatus::from($validated['status'])]);

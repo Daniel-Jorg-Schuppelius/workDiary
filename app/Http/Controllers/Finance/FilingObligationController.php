@@ -22,6 +22,7 @@ use App\Services\Accounting\VatFilingProfileResolver;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -75,7 +76,7 @@ class FilingObligationController extends Controller {
         abort_if($actor === null, 403);
 
         $data = $request->validate([
-            'status' => ['required', 'string', 'in:' . implode(',', array_column(FilingObligationStatus::cases(), 'value'))],
+            'status' => ['required', 'string', Rule::enum(FilingObligationStatus::class)],
             'note' => ['nullable', 'string', 'max:500'],
         ]);
 

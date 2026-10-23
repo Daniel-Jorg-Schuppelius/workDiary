@@ -223,7 +223,7 @@ class InvestmentController extends Controller {
         }
 
         try {
-            $this->investments->submitBudget($case->refresh(), $data, $this->actor());
+            $this->investments->submitBudget($case->refresh(), $data, $this->authUser());
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -236,7 +236,7 @@ class InvestmentController extends Controller {
         abort_unless($budgetRequest->investment_case_id === $case->id, 404);
 
         try {
-            $result = $this->investments->approveBudget($budgetRequest, $this->actor(), $request->input('reason'));
+            $result = $this->investments->approveBudget($budgetRequest, $this->authUser(), $request->input('reason'));
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -252,7 +252,7 @@ class InvestmentController extends Controller {
         $data = $request->validated();
 
         try {
-            $this->investments->rejectBudget($budgetRequest, $this->actor(), $data['reason']);
+            $this->investments->rejectBudget($budgetRequest, $this->authUser(), $data['reason']);
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -340,7 +340,7 @@ class InvestmentController extends Controller {
         $data = $request->validated();
 
         try {
-            $this->investments->decideDeviation($deviation, $data['decision'], $data['note'] ?? null, $this->actor());
+            $this->investments->decideDeviation($deviation, $data['decision'], $data['note'] ?? null, $this->authUser());
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -354,7 +354,7 @@ class InvestmentController extends Controller {
         $data = $request->validated();
 
         try {
-            $this->investments->supplementBudget($case, $deviation, $data, $this->actor());
+            $this->investments->supplementBudget($case, $deviation, $data, $this->authUser());
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -395,12 +395,5 @@ class InvestmentController extends Controller {
             'objectives' => \App\Models\Investments\StrategicObjective::query()->where('is_active', true)->orderBy('title')->get(['id', 'title']),
             'programs' => \App\Models\Investments\InvestmentProgram::query()->where('status', '!=', \App\Enums\Investments\InvestmentProgramStatus::Closed->value)->orderByDesc('starts_year')->get(['id', 'name', 'starts_year', 'ends_year']),
         ]);
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

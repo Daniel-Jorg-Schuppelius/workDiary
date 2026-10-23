@@ -16,6 +16,7 @@ use App\Plugins\CalDav\CalDavPlugin;
 use App\Plugins\CalDav\Models\CalDavConnection;
 use App\Plugins\Support\Concerns\{ManagesPluginConnection, ResolvesPluginOrgContext};
 use App\Support\UrlSafety;
+use CommonToolkit\Helper\Data\WebLinkHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
 
@@ -63,7 +64,7 @@ class CalDavAdminController extends Controller {
 
         $baseUrl = trim((string) $data['base_url']);
         $allowPrivate = (bool) ($data['allow_private_network'] ?? false);
-        if (! str_starts_with($baseUrl, 'http://') && ! str_starts_with($baseUrl, 'https://')) {
+        if (! WebLinkHelper::isHttpUrl($baseUrl)) {
             return back()->with('error', __('caldav::caldav.flash.invalid_url'))->withInput();
         }
         // Konfigurationszeit-Prüfung ohne DNS; verbindlich prüft das Gateway vor jedem Abruf.

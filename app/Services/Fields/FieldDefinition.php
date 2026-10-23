@@ -72,13 +72,13 @@ final readonly class FieldDefinition {
             label: (string) ($row['label'] ?? ($row['key'] ?? '')),
             required: StringHelper::parseBool($row['required'] ?? false) ?? false,
             options: $options,
-            help: self::stringOrNull($row['help'] ?? null),
-            unit: self::stringOrNull($row['unit'] ?? null),
+            help: StringHelper::trimToNull($row['help'] ?? null),
+            unit: StringHelper::trimToNull($row['unit'] ?? null),
             visibleIf: $visibleIf,
             min: self::numberOrNull($row['min'] ?? null),
             max: self::numberOrNull($row['max'] ?? null),
             step: self::numberOrNull($row['step'] ?? null),
-            extension: self::stringOrNull($row['extension'] ?? null),
+            extension: StringHelper::trimToNull($row['extension'] ?? null),
             optionLabels: self::labels($row['option_labels'] ?? null),
             listed: StringHelper::parseBool($row['listed'] ?? false) ?? false,
         );
@@ -122,15 +122,6 @@ final readonly class FieldDefinition {
 
     public function hasCondition(): bool {
         return $this->visibleIf !== null;
-    }
-
-    private static function stringOrNull(mixed $value): ?string {
-        if (! is_scalar($value)) {
-            return null;
-        }
-        $string = trim((string) $value);
-
-        return $string === '' ? null : $string;
     }
 
     /** @return array<string, string>|null */

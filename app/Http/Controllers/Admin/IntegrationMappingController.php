@@ -12,12 +12,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\AuthorizesOrganizationManagement;
 use App\Http\Controllers\Controller;
 use App\Models\Integration\ExternalReference;
-use App\Models\Platform\User;
 use App\Services\Integration\MatchProfileRegistry;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
@@ -26,6 +25,8 @@ use Illuminate\View\View;
  * Lösen einzelner Verknüpfungen.
  */
 class IntegrationMappingController extends Controller {
+    use AuthorizesOrganizationManagement;
+
     public function index(Request $request, MatchProfileRegistry $registry): View {
         $user = $this->authorizeBilling();
 
@@ -57,13 +58,5 @@ class IntegrationMappingController extends Controller {
         $reference->delete();
 
         return back()->with('success', __('Verknüpfung gelöst.'));
-    }
-
-    private function authorizeBilling(): User {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->canManageBilling(), 403);
-
-        return $user;
     }
 }

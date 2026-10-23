@@ -18,7 +18,6 @@ use App\Models\Document\DocumentVersion;
 use CommonToolkit\Helper\FileSystem\{File as ToolkitFile, Folder};
 use CommonToolkit\Helper\Office\OfficeHelper;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use PDFToolkit\Readers\TesseractReader;
 use PDFToolkit\Registries\PDFReaderRegistry;
 use Throwable;
@@ -83,14 +82,10 @@ class DocumentTextExtractor {
         if (! OfficeHelper::isAvailable()) {
             throw new DocumentTextUnavailableException(DocumentTextFailure::Unsupported);
         }
-        $dir = storage_path('app/tmp/office-text-' . Str::random(12));
-        Folder::create($dir, 0775, true);
-        try {
+        return Folder::withTemp(function (string $dir) use ($path): string {
             $text = OfficeHelper::convertToFile($path, 'txt', $dir, 60.0);
 
             return $text !== null ? ToolkitFile::readAsUtf8($text) : throw new DocumentTextUnavailableException(DocumentTextFailure::Failed);
-        } finally {
-            Folder::delete($dir, true);
-        }
+        }, 'office-text-', storage_path('app/tmp'));
     }
 }

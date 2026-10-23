@@ -15,12 +15,11 @@ namespace App\Http\Controllers\Finance;
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Controller;
 use App\Models\Finance\{BankAccount, EbicsConnection, PaymentRun};
-use App\Models\Platform\User;
 use App\Services\Finance\Ebics\{EbicsConnectionService, EbicsLetterPdfRenderer, EbicsPaymentSubmission, EbicsStatementService};
 use App\Services\Finance\Ebics\Exceptions\EbicsException;
 use App\Support\UrlSafety;
 use Illuminate\Http\{RedirectResponse, Request, Response};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
@@ -52,25 +51,25 @@ class EbicsConnectionController extends Controller {
             'ebics_user' => ['required', 'string', 'regex:' . self::IDENT],
         ]);
 
-        return $this->run(fn () => $service->save($bankAccount, $data, $this->actor()), 'saved');
+        return $this->run(fn() => $service->save($bankAccount, $data, $this->authUser()), 'saved');
     }
 
     public function keys(BankAccount $bankAccount, EbicsConnectionService $service): RedirectResponse {
         Gate::authorize(P::FinanceConfig->value);
 
-        return $this->run(fn () => $service->createKeys($this->required($bankAccount), $this->actor()), 'keys_created');
+        return $this->run(fn() => $service->createKeys($this->required($bankAccount), $this->authUser()), 'keys_created');
     }
 
     public function initialize(BankAccount $bankAccount, EbicsConnectionService $service): RedirectResponse {
         Gate::authorize(P::FinanceConfig->value);
 
-        return $this->run(fn () => $service->initialize($this->required($bankAccount), $this->actor()), 'initialized');
+        return $this->run(fn() => $service->initialize($this->required($bankAccount), $this->authUser()), 'initialized');
     }
 
     public function letter(BankAccount $bankAccount, EbicsLetterPdfRenderer $renderer): Response|RedirectResponse {
         Gate::authorize(P::FinanceConfig->value);
         try {
-            $pdf = $renderer->render($this->required($bankAccount), $this->actor());
+            $pdf = $renderer->render($this->required($bankAccount), $this->authUser());
         } catch (EbicsException $e) {
             return back()->with('error', __('ebics.error.' . $e->reason));
         }
@@ -84,19 +83,19 @@ class EbicsConnectionController extends Controller {
     public function activate(BankAccount $bankAccount, EbicsConnectionService $service): RedirectResponse {
         Gate::authorize(P::FinanceConfig->value);
 
-        return $this->run(fn () => $service->activate($this->required($bankAccount), $this->actor()), 'activated');
+        return $this->run(fn() => $service->activate($this->required($bankAccount), $this->authUser()), 'activated');
     }
 
     public function suspend(BankAccount $bankAccount, EbicsConnectionService $service): RedirectResponse {
         Gate::authorize(P::FinanceConfig->value);
 
-        return $this->run(fn () => $service->suspend($this->required($bankAccount), $this->actor()), 'suspended');
+        return $this->run(fn() => $service->suspend($this->required($bankAccount), $this->authUser()), 'suspended');
     }
 
     public function fetch(BankAccount $bankAccount, EbicsStatementService $statements): RedirectResponse {
         Gate::authorize(P::FinancePaymentImport->value);
         try {
-            $counts = $statements->fetch($this->required($bankAccount), $this->actor());
+            $counts = $statements->fetch($this->required($bankAccount), $this->authUser());
         } catch (EbicsException $e) {
             return back()->with('error', $this->message($e));
         }
@@ -107,7 +106,7 @@ class EbicsConnectionController extends Controller {
     public function submit(PaymentRun $run, EbicsPaymentSubmission $submission): RedirectResponse {
         Gate::authorize(P::FinancePaymentRelease->value);
         try {
-            $orderId = $submission->submit($run, $this->actor());
+            $orderId = $submission->submit($run, $this->authUser());
         } catch (EbicsException $e) {
             return back()->with('error', $this->message($e));
         }
@@ -119,7 +118,7 @@ class EbicsConnectionController extends Controller {
     public function confirmNotSubmitted(PaymentRun $run, EbicsPaymentSubmission $submission): RedirectResponse {
         Gate::authorize(P::FinancePaymentRelease->value);
         try {
-            $submission->confirmNotSubmitted($run, $this->actor());
+            $submission->confirmNotSubmitted($run, $this->authUser());
         } catch (EbicsException $e) {
             return back()->with('error', $this->message($e));
         }
@@ -152,12 +151,5 @@ class EbicsConnectionController extends Controller {
         abort_unless($connection instanceof EbicsConnection, 404);
 
         return $connection;
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

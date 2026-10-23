@@ -14,7 +14,7 @@ namespace App\Http\Controllers\Finance;
 
 use App\Enums\Billing\DocumentDirection;
 use App\Enums\Invoicing\{IncomingEInvoiceStatus, IncomingInvoiceMatchKind, IncomingInvoiceRecognition};
-use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Concerns\{AuthorizesOrganizationManagement, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\IncomingEInvoice;
@@ -37,6 +37,7 @@ use RuntimeException;
  * Werte erfassen für Klärfälle; Sammelaktion für mehrere Eingänge.
  */
 class IncomingInvoiceAssignmentController extends Controller {
+    use AuthorizesOrganizationManagement;
     use ResolvesCurrentOrganization;
 
     private const MODES = ['existing', 'collective', 'new', 'adopt', 'not_invoice', 'unassign'];
@@ -556,12 +557,5 @@ class IncomingInvoiceAssignmentController extends Controller {
         }
 
         return redirect()->toList('finance.incoming-invoices.index')->with('success', $message);
-    }
-
-    private function authorizeBilling(): \App\Models\Platform\User {
-        $user = $this->authUser();
-        abort_unless($user->canManageBilling(), 403);
-
-        return $user;
     }
 }

@@ -59,7 +59,7 @@ class HookController extends Controller {
     )]
     public function index(Request $request): JsonResponse {
         Gate::authorize('viewAny', WebhookEndpoint::class);
-        $organizationId = $this->organizationId();
+        $organizationId = $this->currentOrganization()->id;
 
         $hooks = WebhookEndpoint::query()
             ->where('organization_id', $organizationId)
@@ -85,7 +85,7 @@ class HookController extends Controller {
     )]
     public function events(Request $request, WebhookDispatchService $dispatch): JsonResponse {
         Gate::authorize('viewAny', WebhookEndpoint::class);
-        $organizationId = $this->organizationId();
+        $organizationId = $this->currentOrganization()->id;
         $now = Carbon::now();
 
         $catalog = array_map(static fn (WebhookEvent $event): array => [
@@ -117,7 +117,7 @@ class HookController extends Controller {
     )]
     public function store(Request $request): JsonResponse {
         Gate::authorize('create', WebhookEndpoint::class);
-        $organizationId = $this->organizationId();
+        $organizationId = $this->currentOrganization()->id;
         $user = $request->user();
 
         $data = $request->validate([
@@ -174,7 +174,7 @@ class HookController extends Controller {
     )]
     public function test(Request $request, WebhookEndpoint $hook, WebhookDispatchService $dispatch): JsonResponse {
         Gate::authorize('update', $hook);
-        $this->assertOwned($hook);
+        $this->assertSameOrganization($hook);
 
         $delivery = $dispatch->sendTest($hook);
 
@@ -197,7 +197,7 @@ class HookController extends Controller {
     )]
     public function destroy(Request $request, WebhookEndpoint $hook): JsonResponse {
         Gate::authorize('delete', $hook);
-        $this->assertOwned($hook);
+        $this->assertSameOrganization($hook);
 
         $hook->delete();
 
@@ -217,13 +217,5 @@ class HookController extends Controller {
             'secret_preview' => $hook->secretPreview(),
             'created_at' => $hook->created_at?->toIso8601String(),
         ];
-    }
-
-    private function organizationId(): int {
-        return $this->currentOrganization()->id;
-    }
-
-    private function assertOwned(WebhookEndpoint $hook): void {
-        abort_unless((int) $hook->organization_id === $this->organizationId(), 404);
     }
 }

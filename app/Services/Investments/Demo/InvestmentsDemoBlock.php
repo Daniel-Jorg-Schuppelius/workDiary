@@ -34,17 +34,13 @@ final class InvestmentsDemoBlock implements DemoBlock {
 
     public function purge(Organization $organization): void {}
 
-    private function moduleActive(string $code): bool {
-        return $this->context->moduleActive($code);
-    }
-
     /**
      * Demo Feature 069: Investitionsakte mit Variantenvergleich und
      * eingereichtem Budgetantrag (Freigabe bewusst offen — Vorführung
      * der Kette). Robust: Fehler brechen den Seed nicht.
      */
     private function seedInvestments(Organization $organization, ?User $actor): int {
-        if (! $this->moduleActive('module.investments')) {
+        if (! $this->context->moduleActive('module.investments')) {
             return 0;
         }
         if ($actor === null) {

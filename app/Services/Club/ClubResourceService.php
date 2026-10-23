@@ -22,6 +22,7 @@ use App\Services\Asset\AssetUsageGuard;
 use App\Services\Event\Contracts\RoomBlockingSource;
 use App\Services\Event\RoomBookingService;
 use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\{Carbon, Collection};
 use Illuminate\Support\Facades\DB;
@@ -113,7 +114,7 @@ class ClubResourceService implements RoomBlockingSource {
                 'ends_at' => $end,
                 'setup_minutes' => $setup,
                 'teardown_minutes' => $teardown,
-                'note' => $this->nullableString($data['note'] ?? null),
+                'note' => StringHelper::trimToNull($data['note'] ?? null),
                 'created_by_user_id' => $actor->id,
             ]);
             $booking->audit('club.resource.booked', ['event_id' => $event->id, 'quantity' => $quantity, 'window' => $start->toIso8601String() . '/' . $end->toIso8601String()]);
@@ -312,7 +313,7 @@ class ClubResourceService implements RoomBlockingSource {
                 'granted_on' => CarbonImmutable::today()->toDateString(),
                 'valid_to' => $validTo?->format('Y-m-d'),
                 'granted_by_user_id' => $actor->id,
-                'note' => $this->nullableString($note),
+                'note' => StringHelper::trimToNull($note),
             ],
         );
         $clearance->audit('club.resource.clearanceGranted', ['member_id' => $member->id, 'valid_to' => $validTo?->format('Y-m-d')]);
@@ -423,7 +424,7 @@ class ClubResourceService implements RoomBlockingSource {
      * @return array<string, mixed>
      */
     private function attributes(int $organizationId, array $data, ?ClubResource $current): array {
-        $parentId = $this->nullableInt($data['parent_id'] ?? null);
+        $parentId = NumberHelper::toIntOrNull($data['parent_id'] ?? null);
         if ($parentId !== null) {
             $parent = ClubResource::query()->whereKey($parentId)->where('organization_id', $organizationId)->first();
             if ($parent === null) {
@@ -436,11 +437,11 @@ class ClubResourceService implements RoomBlockingSource {
                 throw ValidationException::withMessages(['parent_id' => __('club.resources.error.too_deep')]);
             }
         }
-        $roomId = $this->nullableInt($data['room_id'] ?? null);
+        $roomId = NumberHelper::toIntOrNull($data['room_id'] ?? null);
         if ($roomId !== null && ! Room::query()->whereKey($roomId)->where('organization_id', $organizationId)->exists()) {
             throw ValidationException::withMessages(['room_id' => __('club.resources.error.room_foreign')]);
         }
-        $assetId = $this->nullableInt($data['asset_id'] ?? null);
+        $assetId = NumberHelper::toIntOrNull($data['asset_id'] ?? null);
         if ($assetId !== null && ! \App\Models\Asset\Asset::query()->whereKey($assetId)->where('organization_id', $organizationId)->exists()) {
             throw ValidationException::withMessages(['asset_id' => __('club.resources.error.asset_foreign')]);
         }
@@ -457,12 +458,12 @@ class ClubResourceService implements RoomBlockingSource {
             'requires_clearance' => (bool) ($data['requires_clearance'] ?? false),
             'is_active' => (bool) ($data['is_active'] ?? true),
             'sort_order' => max(0, (int) ($data['sort_order'] ?? 0)),
-            'notes' => $this->nullableString($data['notes'] ?? null),
+            'notes' => StringHelper::trimToNull($data['notes'] ?? null),
         ];
     }
 
     private function member(mixed $id, int $organizationId): ?ClubMember {
-        $memberId = $this->nullableInt($id);
+        $memberId = NumberHelper::toIntOrNull($id);
         if ($memberId === null) {
             return null;
         }
@@ -475,23 +476,8 @@ class ClubResourceService implements RoomBlockingSource {
     }
 
     private function time(mixed $value): ?CarbonImmutable {
-        $string = $this->nullableString($value);
+        $string = StringHelper::trimToNull($value);
 
         return $string === null ? null : CarbonImmutable::parse($string, 'UTC');
-    }
-
-    private function nullableInt(mixed $value): ?int {
-        $string = $this->nullableString($value);
-
-        return $string === null ? null : (int) $string;
-    }
-
-    private function nullableString(mixed $value): ?string {
-        if ($value === null) {
-            return null;
-        }
-        $string = trim((string) $value);
-
-        return $string === '' ? null : $string;
     }
 }

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Metering;
 
-use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Concerns\{AuthorizesOrganizationManagement, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Metering\SaveMeterBillingAgreementRequest;
 use App\Models\Asset\Asset;
@@ -21,7 +21,6 @@ use App\Models\Metering\{MeterBillingAgreement, MeterBillingRun};
 use App\Models\Project\Project;
 use App\Services\Metering\MeterBillingService;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
@@ -32,6 +31,7 @@ use Illuminate\View\View;
  * die Arbeit, die wirklich anfällt.
  */
 class MeterBillingController extends Controller {
+    use AuthorizesOrganizationManagement;
     use ResolvesCurrentOrganization;
 
     public function __construct(private readonly MeterBillingService $billing) {}
@@ -98,9 +98,5 @@ class MeterBillingController extends Controller {
             'created' => $result['created'],
             'skipped' => $result['skipped'],
         ]));
-    }
-
-    private function authorizeBilling(): void {
-        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
     }
 }

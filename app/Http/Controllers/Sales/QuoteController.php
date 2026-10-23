@@ -272,7 +272,7 @@ class QuoteController extends Controller {
     public function approve(Quote $quote): RedirectResponse {
         Gate::authorize('approve', $quote);
         try {
-            $this->quotes->approve($quote, $this->actor());
+            $this->quotes->approve($quote, $this->authUser());
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -288,7 +288,7 @@ class QuoteController extends Controller {
     public function send(Quote $quote): RedirectResponse {
         Gate::authorize('send', $quote);
         try {
-            ['acceptance_token' => $token] = $this->quotes->send($quote, $this->actor());
+            ['acceptance_token' => $token] = $this->quotes->send($quote, $this->authUser());
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -333,7 +333,7 @@ class QuoteController extends Controller {
     public function newVersion(Quote $quote): RedirectResponse {
         Gate::authorize('decide', $quote);
         try {
-            $next = $this->quotes->newVersion($quote, $this->actor());
+            $next = $this->quotes->newVersion($quote, $this->authUser());
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -344,7 +344,7 @@ class QuoteController extends Controller {
     public function convert(Quote $quote): RedirectResponse {
         Gate::authorize('convert', $quote);
         try {
-            $invoice = $this->quotes->convertToInvoice($quote, $this->actor());
+            $invoice = $this->quotes->convertToInvoice($quote, $this->authUser());
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -442,12 +442,5 @@ class QuoteController extends Controller {
         $quote->load('items');
         $quote->recalculate();
         $quote->save();
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }
