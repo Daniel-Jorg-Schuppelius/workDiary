@@ -1,7 +1,7 @@
 ---
 title: "Search and activity research"
 topic: search.overview
-version: 3
+version: 4
 keywords:
     - full-text search
     - global search
@@ -23,8 +23,19 @@ The search answers one question above all: **What was done, when and for which
 customer?** It searches time entries (including remote-session notes and
 timesheet lines), jobs with comments, timesheet notes, tickets, protocols, open
 items, communication notes and knowledge articles — each with project, end
-customer and customer as context. Master data such as customers, projects,
-objects, expenses and documents is listed below.
+customer and customer as context. Below that come master data and records:
+customers, suppliers, leads, projects, tasks, contracts, objects, invoices,
+incoming invoices, purchase orders, expenses, articles, people, documents,
+forms and attachments — each only with the module enabled and read access.
+Plugin data joins them: vouchers from accounting programs and shop orders from
+Etsy and Billbee (for administrators); imported tasks name their plugin, such
+as "GitHub Issues".
+
+"All results in this group" shows one group on its own with up to 200 results.
+Period, person and customer apply there as well: invoices filter by invoice
+date, tasks by assignee, leads by the person responsible. If a group does not
+know the selected person or customer filter — suppliers or articles, for
+example — it is left out instead of appearing unfiltered.
 
 ## How searching works
 

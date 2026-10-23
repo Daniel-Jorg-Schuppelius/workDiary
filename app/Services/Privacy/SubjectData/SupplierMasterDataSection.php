@@ -56,6 +56,7 @@ class SupplierMasterDataSection extends AbstractSubjectSection {
             'bank_bic' => $this->field(__('BIC'), $s->bank_bic),
             'bank_name' => $this->field(__('Bank'), $s->bank_name),
             'comment' => $this->field(__('Notizen'), $s->comment),
+            ...$this->customFields($s),
         ]];
     }
 }

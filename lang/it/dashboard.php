@@ -56,7 +56,7 @@ return [
             'description' => 'Nuovi allegati sulle sue voci.',
         ],
         'team_activity' => [
-            'description' => 'Gli ultimi commenti del team.',
+            'description' => 'Chi ha modificato cosa di recente — dal feed delle attività.',
         ],
         'finance' => [
             'description' => 'Spese e trasferte del mese, per gli approvatori anche la coda in attesa.',

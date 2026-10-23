@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy\SubjectData;
 
+use App\Models\Contracts\CustomFieldSubject;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use InvalidArgumentException;
@@ -23,6 +24,24 @@ abstract class AbstractSubjectSection implements SubjectDataSection {
         if (! $subject instanceof $class) {
             throw new InvalidArgumentException(static::class . ' erwartet ' . $class . ', erhielt ' . $subject::class . '.');
         }
+    }
+
+    /**
+     * Eigene Felder des Trägers (MVP-868) — sie können personenbezogen sein und
+     * gehören deshalb in die Auskunft (Feature 182).
+     *
+     * @return array<string, array{label: string, value: string|null}>
+     */
+    protected function customFields(CustomFieldSubject $subject): array {
+        $values = $subject->customValues();
+        $fields = [];
+        foreach ($subject->customFieldSchema() as $field) {
+            if ($field->type->hasValue() && ! $values->isEmpty($field)) {
+                $fields['custom_' . $field->key] = $this->field($field->label, $values->display($field));
+            }
+        }
+
+        return $fields;
     }
 
     /** @return array{label: string, value: string|null} */

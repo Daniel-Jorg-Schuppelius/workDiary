@@ -463,6 +463,7 @@ return [
         'import.viewReports' => 'View CSV import reports',
         'report.export' => 'Export reports',
         'report.target.manage' => 'Manage report targets',
+        'report.management.digest' => 'Receive management report by email',
         'audit-log.view' => 'View audit log',
         'attendance.viewAny' => 'View attendance',
         'attendance.manage' => 'Manage attendance',

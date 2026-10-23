@@ -83,6 +83,8 @@ final class PdfGeneratorInventory {
         'app/Services/Timesheet/PdfRenderer.php' => ['timesheet'],
         'app/Services/Form/FormSubmissionPdfRenderer.php' => ['form'],
         'app/Http/Controllers/Reporting/Concerns/RendersReportPdf.php' => ['report'],
+        // Leitungsbericht für den geplanten Versand (Feature 184); der Download nutzt RendersReportPdf.
+        'app/Services/Reporting/ManagementReportPdf.php' => ['report'],
         'app/Http/Controllers/Diary/DiaryCaseFileController.php' => ['case_file'],
         'app/Http/Controllers/Travel/PerDiemTripController.php' => ['report'],
         'app/Http/Controllers/CustomerPortal/DiaryDetailController.php' => ['report'],

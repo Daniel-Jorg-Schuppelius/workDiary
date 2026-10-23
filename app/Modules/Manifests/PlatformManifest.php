@@ -112,6 +112,9 @@ final class PlatformManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Search\Contracts\SearchDomain::class => [
+                \App\Services\Users\Search\UserSearchDomain::class,
+            ],
             \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
                 \App\Services\Retention\DeadlineScans\RetentionReleaseScan::class,
             ],

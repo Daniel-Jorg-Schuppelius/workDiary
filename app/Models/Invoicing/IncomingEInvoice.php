@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Invoicing;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind};
-use App\Enums\Invoicing\{IncomingEInvoiceStatus, IncomingInvoiceMatchKind, IncomingInvoiceRecognition};
+use App\Enums\Invoicing\{IncomingEInvoiceStatus, IncomingInvoiceMatchKind, IncomingInvoiceRecognition, IncomingInvoiceTransferStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use App\Models\Customer\Customer;
 use App\Models\Document\Document;
@@ -273,6 +273,71 @@ class IncomingEInvoice extends Model {
      */
     public function scopePurchases(Builder $query): Builder {
         return $query->where($query->qualifyColumn('direction'), DocumentDirection::Incoming->value);
+    }
+
+    /**
+     * Sichtbar ist, was das Original im DMS sehen lässt (Arbeitsliste, Arbeitsvorrat).
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeVisibleTo(Builder $query, User $user): Builder {
+        return $query->whereIn('document_id', Document::query()->visibleTo($user)->select('id'));
+    }
+
+    /**
+     * Reiter „Zuordnen“ (Feature 163, MVP-1110): noch ohne Partei.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeAwaitingAssignment(Builder $query): Builder {
+        return $query->whereNull('supplier_id')->whereNull('customer_id')
+            ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value);
+    }
+
+    /**
+     * Reiter „Prüfen“: Partei gesetzt, Beleg noch offen oder mit Rückfrage.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeAwaitingReview(Builder $query): Builder {
+        return $query->where(static fn ($party) => $party->whereNotNull('supplier_id')->orWhereNotNull('customer_id'))
+            ->whereIn('status', [IncomingEInvoiceStatus::Received->value, IncomingEInvoiceStatus::Question->value]);
+    }
+
+    /**
+     * Übergaben an das Buchhaltungsziel in einem der Zustände.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<IncomingInvoiceTransferStatus>  $states
+     * @return Builder<self>
+     */
+    public function scopeInTransfer(Builder $query, array $states): Builder {
+        return $query->whereHas('transfers', static fn ($journal) => $journal->whereIn('status', array_map(static fn (IncomingInvoiceTransferStatus $s): string => $s->value, $states)));
+    }
+
+    /**
+     * Möglicher Doppel-Eingang (MVP-1145): offen, solange weder bestätigt noch einer der beiden abgelehnt ist.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeOpenDuplicates(Builder $query): Builder {
+        return $query->whereNotNull('duplicate_of_id')->whereNull('duplicate_cleared_at')
+            ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value)
+            ->whereHas('duplicateOf', static fn ($earlier) => $earlier->withoutGlobalScopes()->where('status', '!=', IncomingEInvoiceStatus::Rejected->value));
+    }
+
+    /**
+     * Abgelehnt (MVP-1212): „Keine Rechnung“.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeRejected(Builder $query): Builder {
+        return $query->where('status', IncomingEInvoiceStatus::Rejected->value);
     }
 
     /** @return BelongsTo<Supplier, $this> */

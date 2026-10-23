@@ -1,7 +1,7 @@
 ---
 title: "Gestire i progetti"
 topic: projects.manage
-version: 3
+version: 4
 keywords:
     - creare progetto
     - gestione progetti
@@ -99,3 +99,11 @@ Regole di fatturazione e stato del progetto determinano quali tempi e
 materiali vanno in consegna. Poi: impostare la registrazione dei tempi
 sul progetto e controllare la consegna alla fatturazione a fine
 periodo.
+
+## Redditività e scadenze
+
+Con il permesso per i report, la panoramica del progetto mostra ricavi, costi,
+margine di contribuzione e – se è previsto un budget – il suo consumo nel
+periodo scelto; un clic apre l'analisi di redditività con gli stessi numeri.
+Sotto compaiono i termini di garanzia e le fideiussioni del progetto. Le
+attività importate indicano il loro plugin, ad esempio «Da GitHub Issues».

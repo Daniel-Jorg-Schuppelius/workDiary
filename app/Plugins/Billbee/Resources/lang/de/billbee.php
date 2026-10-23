@@ -23,6 +23,7 @@ return [
     'filter' => [
         'all_channels' => 'Alle Kanäle',
         'apply' => 'Filtern',
+        'search' => 'Bestellung oder Käufer',
     ],
     'action' => [
         'sync' => 'Jetzt synchronisieren',
@@ -37,4 +38,12 @@ return [
         'open_assignment' => 'Zuordnung offen',
     ],
     'empty' => 'Noch keine Bestellungen gespiegelt.',
+    // Bereich der globalen Suche (Feature 181).
+    'search' => [
+        'domain' => 'Billbee-Bestellungen',
+    ],
+    // Panel am Kunden-Cockpit (MVP-1370).
+    'cockpit' => [
+        'title' => 'Billbee-Bestellungen',
+    ],
 ];

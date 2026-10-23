@@ -50,6 +50,8 @@ class DocumentController extends Controller {
         'user' => User::class,
         // Vertragsakte (Feature 157): Vertrags-PDF und Anlagen einer Kundenvereinbarung.
         'contract' => \App\Models\Contract\Contract::class,
+        // Lieferanten-Cockpit (Feature 182).
+        'supplier' => \App\Models\Supplier\Supplier::class,
     ];
 
     // Größenlimit: {@see FileAttacher::maxKb()} (wie AttachmentController, org-konfigurierbar).
@@ -518,7 +520,8 @@ class DocumentController extends Controller {
             return null;
         }
 
-        return array_search($document->documentable_type, self::DOCUMENTABLE_MAP, true) ?: null;
+        // documentable_type ist ein Morph-Alias, die Map führt Klassen (MVP-860).
+        return array_search(MorphMap::classFor($document->documentable_type), self::DOCUMENTABLE_MAP, true) ?: null;
     }
 
     /**

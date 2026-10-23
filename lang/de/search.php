@@ -190,4 +190,16 @@ return [
             'term_length' => 'Ein Begriff darf höchstens :max Zeichen lang sein.',
         ],
     ],
+    'domain' => [
+        'suppliers' => 'Lieferanten',
+        'leads' => 'Leads',
+        'invoices' => 'Rechnungen',
+        'invoice_draft' => 'Rechnungsentwurf #:id',
+        'incoming_invoices' => 'Eingangsrechnungen',
+        'contracts' => 'Verträge',
+        'articles' => 'Artikel',
+        'tasks' => 'Aufgaben',
+        'purchase_orders' => 'Bestellungen',
+        'accounting_vouchers' => 'Buchhaltungsbelege',
+    ],
 ];

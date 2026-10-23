@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Models\Time\TimeCorrectionRequest;
 use App\Services\TimeApproval\{TimeCorrectionService, TimeCorrectionWorkflowException};
+use App\Services\Users\TeamScope;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -50,8 +51,12 @@ class TimeCorrectionInboxController extends Controller {
         // ungültigem Key fallen Key UND Richtung auf die Defaults zurück.
         [$sort, $dir] = \App\Support\SortableQuery::resolve($request, self::ALLOWED_SORTS, 'scope_date');
 
+        // Team-Recht ohne Organisationsrecht zeigt nur das eigene Team (Entscheidung 2026-10-23).
+        $scope = app(TeamScope::class)->userIds($admin, P::CorrectionViewTeam, P::CorrectionViewOrganization);
+
         $query = TimeCorrectionRequest::query()
             ->where('organization_id', $admin->organization_id)
+            ->when($scope !== null, fn ($q) => $q->whereIn('user_id', $scope))
             ->with(['user', 'requestedBy', 'items'])
             ->orderBy($sort, $dir)
             ->orderByDesc('id');

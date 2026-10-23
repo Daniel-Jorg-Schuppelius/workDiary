@@ -349,6 +349,7 @@ return [
         'entrySaved' => 'Tagesabschluss gespeichert',
         'opened' => 'Tagesabschluss geöffnet',
         'reopened' => 'Tag wieder geöffnet',
+        'selfDecided' => 'Über eigenen Tag entschieden (einzige berechtigte Person)',
     ],
     'deleted' => 'Gelöscht',
     'demo' => [
@@ -660,6 +661,7 @@ return [
     ],
     'month_closure' => [
         'bundle_exported' => 'Monatsabschluss-Paket exportiert',
+        'self_decided' => 'Über eigenen Monat entschieden (einzige berechtigte Person)',
     ],
     'msgraph' => [
         'admin_consent_granted' => 'Microsoft-365-Admin-Consent erteilt',
@@ -1146,6 +1148,9 @@ return [
     'user_group' => [
         'member_added' => 'Benutzergruppe: Mitglied hinzugefügt',
         'member_removed' => 'Benutzergruppe: Mitglied entfernt',
+    ],
+    'vacation' => [
+        'self_decided' => 'Über eigenen Urlaub entschieden (einzige berechtigte Person)',
     ],
     'warranty' => [
         'created' => 'Gewährleistungsfrist erfasst',

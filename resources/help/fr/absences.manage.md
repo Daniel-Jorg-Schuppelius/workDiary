@@ -1,7 +1,7 @@
 ---
 title: "Congés & maladie"
 topic: absences.manage
-version: 3
+version: 4
 keywords:
     - absence
     - demande de congé
@@ -30,6 +30,10 @@ remplacement et le solde restant avant d'approuver, de refuser ou de
 demander une correction. Les données de santé étant particulièrement
 sensibles, ne saisissez que les informations nécessaires et respectez les
 règles d'accès et de conservation prévues.
+
+**Propre demande :** personne ne décide de ses propres congés, administration
+comprise – sauf si personne d'autre dans l'organisation ne dispose du droit
+d'approbation ; le journal d'audit consigne alors cette auto-validation.
 
 ## Arrêt maladie et maintien du salaire
 

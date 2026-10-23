@@ -1,7 +1,7 @@
 ---
 title: "Chiusura giornaliera"
 topic: time-entries.day-close
-version: 3
+version: 4
 keywords:
     - chiudere la giornata
     - fine giornata
@@ -60,3 +60,9 @@ registro di audit.
 
 Le giornate di un mese già approvato sono completamente bloccate; lì ogni
 modifica passa per l’approvazione mensile.
+
+**Giorno proprio e team:** nessuno decide sulla correzione del proprio giorno,
+a meno che nell'organizzazione nessun altro abbia questo permesso; il registro
+di audit annota allora l'autoapprovazione. Chi può vedere le chiusure
+giornaliere solo per il team vede soltanto i membri dei propri team in «Team
+oggi» e nelle viste giornaliere.

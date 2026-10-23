@@ -110,6 +110,9 @@ final class IntegrationManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
+                \App\Services\Integration\WorkQueue\IntegrationInboxWorkItemSource::class,
+            ],
             \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
             ],
         ];

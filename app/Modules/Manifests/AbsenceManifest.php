@@ -47,6 +47,15 @@ final class AbsenceManifest extends Manifest {
         ];
     }
 
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
+                \App\Services\Absence\WorkQueue\VacationApprovalWorkItemSource::class,
+            ],
+        ];
+    }
+
     /** @return list<PermissionGroup> */
     public function permissionGroups(): array {
         return [

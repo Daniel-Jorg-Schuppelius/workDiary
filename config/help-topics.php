@@ -381,6 +381,7 @@ return [
         'expenses.*' => 'travel-expenses.manage',
         'expense-approvals.*' => 'travel-expenses.manage',
         'approvals.*' => 'approvals.inbox',
+        'work-queue.*' => 'work-queue.overview',
         'per-diem-trips.*' => 'travel-expenses.manage',
         // Urlaubskonto (Phase 38, MVP-413)
         'vacation-entitlements.*' => 'absences.entitlements',
@@ -687,6 +688,7 @@ return [
         'whistleblowing.receipt' => 'whistleblowing.report',
         'whistleblowing.mailbox.*' => 'whistleblowing.report',
         'audit.*' => 'audit.log',
+        'activity.*' => 'activity.overview',
 
         // Finance & Zeitexport
         'finance.open-times.*' => 'finance.open-times',

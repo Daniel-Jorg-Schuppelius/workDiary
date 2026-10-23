@@ -23,6 +23,7 @@ return [
     'filter' => [
         'all_channels' => 'Tous les canaux',
         'apply' => 'Filtrer',
+        'search' => 'Commande ou acheteur',
     ],
     'action' => [
         'sync' => 'Synchroniser maintenant',
@@ -37,4 +38,12 @@ return [
         'open_assignment' => 'Affectation ouverte',
     ],
     'empty' => 'Aucune commande répliquée pour l\'instant.',
+    // Bereich der globalen Suche (Feature 181).
+    'search' => [
+        'domain' => 'Commandes Billbee',
+    ],
+    // Panel am Kunden-Cockpit (MVP-1370).
+    'cockpit' => [
+        'title' => 'Commandes Billbee',
+    ],
 ];

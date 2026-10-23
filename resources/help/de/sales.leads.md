@@ -1,7 +1,7 @@
 ---
 title: "Leads"
 topic: sales.leads
-version: 2
+version: 3
 keywords:
     - Interessenten
     - Akquise
@@ -55,3 +55,10 @@ werden **6 Monate nach dem letzten Kontakt** anonymisiert — über den
 Aufbewahrungs-Scan des Datenschutzmoduls (Review-Queue, keine stille
 Löschung). Die Pipeline-Kennzahl (Quelle, Status, Zeitraum) bleibt, die
 Person verschwindet.
+
+## Akte
+
+Leads tragen eigene Felder (Verwaltung › Eigene Felder), Schlagworte und
+Anhänge. Bei der Anonymisierung nach der Löschfrist gehen Anhänge, eigene
+Felder und Schlagworte mit. Dokumente des Dokumentenmanagements hängen erst am
+Kunden.

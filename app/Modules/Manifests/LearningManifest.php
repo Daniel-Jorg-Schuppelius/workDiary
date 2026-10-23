@@ -116,6 +116,9 @@ final class LearningManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
+                \App\Services\Learning\WorkQueue\LearningTimeWorkItemSource::class,
+            ],
             \App\Services\Demo\Contracts\DemoBlock::class => [
                 \App\Services\Learning\Demo\LearningDemoBlock::class,
             ],

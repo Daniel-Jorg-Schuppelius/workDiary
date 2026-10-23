@@ -54,12 +54,14 @@ class AbsencePermissionEnforcementTest extends TestCase {
         $worker = $this->userWithRole(UserRole::User->value);
         $lead = $this->userWithRole(UserRole::Teamleitung->value);
         $colleague = $this->userWithRole(UserRole::User->value);
+        // Mit einer weiteren berechtigten Person (Admin) gilt die Selbstfreigabe-Sperre.
+        $admin = $this->orgAdmin();
         $vacation = $this->pendingVacation($worker);
 
         $this->assertTrue(Gate::forUser($lead)->allows('decide', $vacation));
         $this->assertFalse(Gate::forUser($colleague)->allows('decide', $vacation));
         $this->assertFalse(Gate::forUser($lead)->allows('decide', $this->pendingVacation($lead)), 'keine Selbstfreigabe');
-        $this->assertTrue(Gate::forUser($this->orgAdmin())->allows('decide', $vacation));
+        $this->assertTrue(Gate::forUser($admin)->allows('decide', $vacation));
 
         $this->actingAs($colleague)->patch(route('vacations.approve', $vacation))->assertForbidden();
         $this->actingAs($lead)->patch(route('vacations.approve', $vacation))->assertRedirect();

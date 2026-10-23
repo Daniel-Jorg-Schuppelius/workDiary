@@ -23,6 +23,7 @@ return [
     'filter' => [
         'all_channels' => 'Tutti i canali',
         'apply' => 'Filtra',
+        'search' => 'Ordine o acquirente',
     ],
     'action' => [
         'sync' => 'Sincronizza ora',
@@ -37,4 +38,12 @@ return [
         'open_assignment' => 'Assegnazione aperta',
     ],
     'empty' => 'Nessun ordine ancora replicato.',
+    // Bereich der globalen Suche (Feature 181).
+    'search' => [
+        'domain' => 'Ordini Billbee',
+    ],
+    // Panel am Kunden-Cockpit (MVP-1370).
+    'cockpit' => [
+        'title' => 'Ordini Billbee',
+    ],
 ];

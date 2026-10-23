@@ -1,7 +1,7 @@
 ---
 title: "Connecter Billbee"
 topic: admin.billbee
-version: 1
+version: 2
 keywords:
     - multicanal
     - commandes marketplace
@@ -43,3 +43,8 @@ local restent visibles comme affectations ouvertes.
 
 **Limitation :** Billbee autorise 2 requêtes par seconde ; la
 synchronisation respecte automatiquement cette limite.
+
+**Retrouver :** le champ de recherche au-dessus du miroir des commandes trouve
+le numéro de commande, le numéro de la place de marché, le nom ou l'e-mail de
+l'acheteur. La recherche globale affiche les mêmes commandes sous « Commandes
+Billbee » — pour l'administration, tant que le plugin est actif.

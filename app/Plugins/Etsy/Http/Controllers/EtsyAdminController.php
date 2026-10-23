@@ -48,10 +48,12 @@ class EtsyAdminController extends ConnectionOAuthController {
         $connection = EtsyConnection::query()->where('organization_id', $organization->id)->first();
 
         $status = trim((string) $request->query('status', ''));
+        $search = trim((string) $request->query('q', ''));
         $receipts = EtsyReceipt::query()
             ->with('customer')
             ->where('organization_id', $organization->id)
             ->when($status !== '', fn($q) => $q->where('status', $status))
+            ->when($search !== '', fn($q) => $q->matching($search))
             ->orderByDesc('ordered_at')
             ->paginate(25)
             ->withQueryString();
@@ -81,6 +83,7 @@ class EtsyAdminController extends ConnectionOAuthController {
             'receipts' => $receipts,
             'statuses' => $statuses,
             'status' => $status,
+            'search' => $search,
             'openInbox' => $openInbox,
             'ledgerSums' => $ledgerSums,
             'webhookUrl' => $connection?->webhook_token !== null && $connection->webhook_token !== ''

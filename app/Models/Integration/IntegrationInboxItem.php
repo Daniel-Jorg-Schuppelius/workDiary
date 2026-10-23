@@ -176,6 +176,15 @@ class IntegrationInboxItem extends Model {
         return $this->morphTo(__FUNCTION__, 'resolved_to_type', 'resolved_to_id');
     }
 
+    /** Bezeichnung der Herkunft eines Falls (Plugin, CSV-Import, E-Mail-Eingang) — Inbox und Arbeitsvorrat. */
+    public static function sourceLabel(string $pluginId): string {
+        return match ($pluginId) {
+            self::PLUGIN_CSV => (string) __('CSV-Import'),
+            \App\Services\Mail\MailIntakeService::PLUGIN_ID => (string) __('E-Mail-Eingang'),
+            default => app(\App\Plugins\PluginManager::class)->find($pluginId)?->name() ?? ucfirst($pluginId),
+        };
+    }
+
     /** Offene Fälle eines Plugins; `grouped` zählt nur Fälle mit Gruppenschlüssel (Import-Gruppen). */
     public static function openCount(int $organizationId, string $pluginId, bool $grouped = false): int {
         return self::query()

@@ -2311,4 +2311,8 @@ return [
     'stammdaten' => [
         'contact_salutation' => ['mr' => 'Herr', 'ms' => 'Frau', 'diverse' => 'Divers'],
     ],
+    'work_queue' => [
+        'category' => ['approval' => 'Freigaben', 'inbox' => 'Eingänge', 'task' => 'Aufgaben', 'reminder' => 'Erinnerungen'],
+        'urgency' => ['overdue' => 'Überfällig', 'due_soon' => 'Bald fällig', 'open' => 'Offen'],
+    ],
 ];

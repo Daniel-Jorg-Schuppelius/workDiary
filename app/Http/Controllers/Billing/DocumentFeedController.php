@@ -23,7 +23,7 @@ use App\Models\Sales\Quote;
 use App\Models\Travel\Expense;
 use App\Services\Billing\{DocumentFeedFilters, DocumentFeedQuery};
 use App\Services\Billing\Feed\DocumentFeedSourceRegistry;
-use App\Support\{SortableQuery, Sqid};
+use App\Support\{CarbonFmt, SortableQuery, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -65,13 +65,16 @@ class DocumentFeedController extends Controller {
         $preset = self::TABS[$tab];
 
         $range = $this->globalDateRange();
+        // Explizites Von/Bis (Treffer der globalen Suche, Lesezeichen) vor dem Kopfzeitraum.
+        [$from, $to] = $this->resolveRange($request);
+        $rangeLabel = $request->filled('from') && $request->filled('to') ? CarbonFmt::fdate($from) . ' – ' . CarbonFmt::fdate($to) : $range['label'];
         $scopeAll = $tab === 'expenses' && $request->string('scope')->toString() === 'all' && $this->maySeeAllExpenses($user);
 
         $filters = new DocumentFeedFilters(
             organizationId: (int) $user->organization_id,
             userId: (int) $user->id,
-            from: $range['from']->startOfDay()->toImmutable(),
-            to: $range['to']->endOfDay()->toImmutable(),
+            from: $from,
+            to: $to,
             kinds: $this->kinds($preset['kinds']),
             directions: $this->directions($preset['directions'], $request),
             origin: DocumentOrigin::tryFrom($request->string('origin')->toString()),
@@ -103,7 +106,7 @@ class DocumentFeedController extends Controller {
             'tab' => $tab,
             'sort' => $sort,
             'dir' => $dir,
-            'rangeLabel' => $range['label'],
+            'rangeLabel' => $rangeLabel,
             'sources' => $sources,
             'scopeAll' => $scopeAll,
             'mayScopeAll' => $this->maySeeAllExpenses($user),

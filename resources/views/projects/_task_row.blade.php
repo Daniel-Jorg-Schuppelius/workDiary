@@ -32,6 +32,9 @@
             {{ $task->title }}
         </span>
         <div class="mt-0.5 flex flex-wrap gap-2 text-xs text-muted">
+            @if (isset($taskOrigins[$task->id]))
+                <span>{{ __('integration.origin.from', ['source' => $taskOrigins[$task->id]]) }}</span>
+            @endif
             @if ($task->milestone && ! $indent)
                 {{-- already shown in group header, skip --}}
             @endif

@@ -60,6 +60,15 @@ final class ChatManifest extends Manifest {
         ];
     }
 
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
+                \App\Services\Chat\WorkQueue\ChatReminderWorkItemSource::class,
+            ],
+        ];
+    }
+
     /** @return list<string> */
     public function routePatterns(): array {
         return [

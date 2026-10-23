@@ -14,8 +14,8 @@ namespace App\Models\Sales;
 
 use App\Enums\Sales\{LeadSource, LeadStatus};
 use App\Models\Communication\CommunicationNote;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasContactAndBankDetails, HasSqid, HasStructuredContactName};
-use App\Models\Contracts\{ContactDetailsHolder, ContactNameHolder};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasContactAndBankDetails, HasCustomFields, HasSqid, HasStructuredContactName, HasTags};
+use App\Models\Contracts\{ContactDetailsHolder, ContactNameHolder, CustomFieldSubject};
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
@@ -52,12 +52,15 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $anonymized_at
  * @property int|null $created_by
  */
-class Lead extends Model implements ContactDetailsHolder, ContactNameHolder {
+class Lead extends Model implements ContactDetailsHolder, ContactNameHolder, CustomFieldSubject {
     use Auditable;
     use BelongsToOrganization;
+    use HasAttachments;
     use HasContactAndBankDetails;
+    use HasCustomFields;
     use HasSqid;
     use HasStructuredContactName;
+    use HasTags;
 
     protected $fillable = [
         'organization_id', 'company', 'contact_name', 'contact_salutation', 'contact_title', 'contact_first_name', 'contact_middle_names', 'contact_last_name', 'email', 'phone',

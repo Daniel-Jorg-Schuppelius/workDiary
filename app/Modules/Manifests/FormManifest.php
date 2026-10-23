@@ -82,6 +82,9 @@ final class FormManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Search\Contracts\SearchDomain::class => [
+                \App\Services\Form\Search\FormSubmissionSearchDomain::class,
+            ],
             \App\Services\Sync\Contracts\SyncCommandHandler::class => [
                 \App\Services\Form\Sync\FormSubmissionSyncHandler::class,
             ],

@@ -93,6 +93,12 @@ use Tests\TestCase;
  * Finanz-Fokus-Sicht. Die Sitzung wird je Persona geleert und der Snapshot
  * neu aufgenommen; dadurch erscheinen die volle Seitenleiste und die mit E12
  * sichtbar gewordenen Einträge (Zeitkonten, Auslastung, Fuhrpark …).
+ * Angepasst 2026-10-23 (Feature 179, MVP-1362): einziges Delta ist
+ * `/arbeitsvorrat` in den drei Seitenleisten — der zentrale Arbeitsvorrat
+ * steht nach „Heute“ im Tagesgeschäft.
+ * Angepasst 2026-10-23 (Feature 183, MVP-1378): einziges Delta ist
+ * `/aktivitaet` im Header-Systemmenü der vier Admin-Personas — neben dem
+ * Audit-Log, mit demselben Recht.
  */
 class NavigationGoldenTest extends TestCase {
     use RefreshDatabase;

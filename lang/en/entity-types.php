@@ -20,6 +20,7 @@ declare(strict_types=1);
 return [
     'AccountingReportController' => 'Report export: accounting',
     'LeadReportController' => 'Report export: leads',
+    'ManagementInsightsController' => 'Report export: management view',
     'PatrolReportController' => 'Report export: patrols',
     'ContractTemplate' => 'Contract template',
     'ResaleReportController' => 'Report export: subscription reselling',

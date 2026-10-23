@@ -28,7 +28,7 @@ return [
             'patterns' => [
                 'dashboard.*', 'onboarding.*', 'auth.*', 'account.*',
                 'navigation.*', 'search.*', 'workspaces.*', 'install.*',
-                'offline.*', 'week.*', 'work.*', 'approvals.*', 'glossary*', 'help.*',
+                'offline.*', 'week.*', 'work.*', 'work-queue.*', 'approvals.*', 'glossary*', 'help.*',
                 'knowledge.*',
             ],
         ],
@@ -107,7 +107,7 @@ return [
         'sicherheit-compliance' => [
             'icon' => 'security',
             'patterns' => [
-                'isms.*', 'privacy.*', 'whistleblowing.*', 'audit.*',
+                'isms.*', 'privacy.*', 'whistleblowing.*', 'audit.*', 'activity.*',
                 'archive.*', 'crisis.*', 'safety.*', 'sustainability.*',
             ],
         ],

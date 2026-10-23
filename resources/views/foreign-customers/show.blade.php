@@ -88,12 +88,8 @@
             @endif
         </x-card>
 
-        {{-- Änderungsverlauf (Audit) — Standard-Darstellung wie Kunden/Lieferanten --}}
-        @if ($auditLogs->isNotEmpty())
-            <x-card :title="__('Änderungsverlauf')" icon="history">
-                <x-audit-log-list :logs="$auditLogs" />
-            </x-card>
-        @endif
+        {{-- Änderungsverlauf: Audit und Journal des Endkunden (Feature 183). --}}
+        <x-activity-feed :subject="$foreignCustomer" />
     </div>
 </x-page-shell>
 @endsection

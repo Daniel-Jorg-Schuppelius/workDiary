@@ -39,6 +39,7 @@ return [
     'filter' => [
         'all_statuses' => 'Tous les statuts',
         'apply' => 'Filtrer',
+        'search' => 'Commande ou acheteur',
     ],
     'action' => [
         'sync' => 'Synchroniser maintenant',
@@ -65,4 +66,12 @@ return [
     'open_inbox' => ':count affectations ouvertes',
     'last_sync' => 'Dernière synchronisation :at',
     'empty' => 'Aucune commande en miroir pour le moment.',
+    // Bereich der globalen Suche (Feature 181).
+    'search' => [
+        'domain' => 'Commandes Etsy',
+    ],
+    // Panel am Kunden-Cockpit (MVP-1370).
+    'cockpit' => [
+        'title' => 'Commandes Etsy',
+    ],
 ];

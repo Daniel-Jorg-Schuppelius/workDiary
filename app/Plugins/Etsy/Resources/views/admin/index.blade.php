@@ -70,6 +70,10 @@
     {{-- Filter --}}
     <form method="GET" action="{{ route('admin.etsy.index') }}" class="flex flex-wrap items-end gap-2">
         <label class="form-control">
+            <span class="label-text text-xs">{{ __('etsy::etsy.filter.search') }}</span>
+            <input type="search" name="q" value="{{ $search }}" class="input input-sm input-bordered w-56" maxlength="100" />
+        </label>
+        <label class="form-control">
             <span class="label-text text-xs">{{ __('etsy::etsy.field.status') }}</span>
             <select name="status" class="select select-sm select-bordered" data-autosubmit>
                 <option value="">{{ __('etsy::etsy.filter.all_statuses') }}</option>

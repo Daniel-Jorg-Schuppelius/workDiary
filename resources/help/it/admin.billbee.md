@@ -1,7 +1,7 @@
 ---
 title: "Collegare Billbee"
 topic: admin.billbee
-version: 1
+version: 2
 keywords:
     - multicanale
     - ordini marketplace
@@ -43,3 +43,8 @@ equivalente locale restano visibili come assegnazioni aperte.
 
 **Limite:** Billbee consente 2 richieste al secondo; la sincronizzazione
 rispetta automaticamente questo limite.
+
+**Trovare:** il campo di ricerca sopra lo specchio degli ordini trova numero
+d'ordine, numero del marketplace, nome o e-mail dell'acquirente. La ricerca
+globale mostra gli stessi ordini in «Ordini Billbee» — per l'amministrazione,
+finché il plugin è attivo.

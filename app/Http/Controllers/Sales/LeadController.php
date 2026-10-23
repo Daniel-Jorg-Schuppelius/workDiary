@@ -14,14 +14,15 @@ namespace App\Http\Controllers\Sales;
 
 use App\Enums\Sales\{LeadSource, LeadStatus};
 use App\Enums\User\Permission;
-use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, WritesContactDetails};
+use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, SavesCustomFields, WritesContactDetails};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Concerns\{ContactNameFields, ContactSatelliteFields};
+use App\Models\Classification\Tag;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Sales\Lead;
 use App\Services\Sales\LeadService;
-use App\Support\{ErrorText, SqidEncoder};
+use App\Support\{ErrorText, SqidEncoder, TagInput};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -40,6 +41,7 @@ class LeadController extends Controller {
     use ContactNameFields;
     use ContactSatelliteFields;
     use ResolvesCurrentOrganization;
+    use SavesCustomFields;
     use WritesContactDetails;
 
     public function __construct(private readonly LeadService $service) {}
@@ -82,7 +84,8 @@ class LeadController extends Controller {
         $this->assertSameOrganization($lead);
 
         return view('leads.show', [
-            'lead' => $lead->load(['responsible:id,name', 'customer:id,name,slug']),
+            'lead' => $lead->load(['responsible:id,name', 'customer:id,name,slug', 'tags']),
+            'attachments' => $lead->attachments()->get(),
             'quotes' => $lead->quotes()->orderByDesc('id')->get(['id', 'organization_id', 'customer_id', 'number', 'status', 'total', 'created_at', 'decided_at']),
             'history' => $this->service->history($lead),
             'canManage' => Gate::allows(Permission::CustomerUpdate->value),
@@ -95,13 +98,16 @@ class LeadController extends Controller {
     public function create(): View {
         Gate::authorize(Permission::CustomerCreate->value);
 
-        return view('leads._form_dialog', ['lead' => null, 'users' => $this->assignableUsers()]);
+        return view('leads._form_dialog', ['lead' => null, 'users' => $this->assignableUsers(), 'allTags' => Tag::query()->orderBy('name')->get()]);
     }
 
     public function store(Request $request): RedirectResponse {
         Gate::authorize(Permission::CustomerCreate->value);
 
         $data = $this->validated($request);
+        $custom = $this->validatedCustomFields($request, Lead::class);
+        [$tagIds, $newTags] = [TagInput::ids($data['tag_ids'] ?? []), TagInput::names($data['new_tags'] ?? '')];
+        unset($data['tag_ids'], $data['new_tags']);
         $data['organization_id'] = $this->currentOrganizationId();
         $data['created_by'] = Auth::id();
         $data['last_contact_at'] = now();
@@ -109,6 +115,8 @@ class LeadController extends Controller {
 
         $lead = Lead::query()->create($data);
         $this->writeContactDetails($lead, $contact);
+        $lead->syncTagsFromInput($tagIds, $newTags);
+        $lead->syncCustomFields($custom);
         $lead->audit('lead.created', ['source' => $lead->source->value]);
 
         return redirect()->route('leads.show', $lead)->with('success', __('Lead angelegt.'));
@@ -118,7 +126,7 @@ class LeadController extends Controller {
         Gate::authorize(Permission::CustomerUpdate->value);
         $this->assertSameOrganization($lead);
 
-        return view('leads._form_dialog', ['lead' => $lead, 'users' => $this->assignableUsers()]);
+        return view('leads._form_dialog', ['lead' => $lead, 'users' => $this->assignableUsers(), 'allTags' => Tag::query()->orderBy('name')->get()]);
     }
 
     public function update(Request $request, Lead $lead): RedirectResponse {
@@ -127,9 +135,14 @@ class LeadController extends Controller {
         abort_if($lead->anonymized_at !== null, 422);
 
         $data = $this->validated($request);
+        $custom = $this->validatedCustomFields($request, Lead::class);
+        [$tagIds, $newTags] = [TagInput::ids($data['tag_ids'] ?? []), TagInput::names($data['new_tags'] ?? '')];
+        unset($data['tag_ids'], $data['new_tags']);
         $contact = $this->pullContactDetails($data);
         $lead->update($data);
         $this->writeContactDetails($lead, $contact);
+        $lead->syncTagsFromInput($tagIds, $newTags);
+        $lead->syncCustomFields($custom);
 
         return redirect()->route('leads.show', $lead)->with('success', __('Lead aktualisiert.'));
     }
@@ -213,6 +226,9 @@ class LeadController extends Controller {
             'source' => ['required', 'string'],
             'interest' => ['nullable', 'string', 'max:5000'],
             'responsible_user' => ['nullable', 'string'],
+            'tag_ids' => ['nullable', 'array'],
+            'tag_ids.*' => ['string', 'max:64'],
+            'new_tags' => ['nullable', 'string', 'max:500'],
         ]);
         abort_if(LeadSource::tryFrom((string) $data['source']) === null, 422);
         // Ohne Firma UND ohne Ansprechpartner gibt es keine Akte.

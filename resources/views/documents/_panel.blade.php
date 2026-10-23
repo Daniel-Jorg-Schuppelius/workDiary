@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
   Dokumente-Panel (MVP-031) für Detailseiten.
-  Erwartet: $documentable (Model), $documentableKind ('customer'|'project'|'diary'|'asset')
+  Erwartet: $documentable (Model), $documentableKind ('customer'|'supplier'|'project'|'diary'|'asset')
   Beim Kunden zeigt das Panel die volle Kette (MVP-818) und je Zeile deren Herkunft.
 --}}
 @php

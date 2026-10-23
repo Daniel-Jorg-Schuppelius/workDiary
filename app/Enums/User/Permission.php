@@ -405,6 +405,8 @@ enum Permission: string implements HasLabel {
     case ReportExport = 'report.export';
         // Feature 002: Zielwerte/Benchmarks je Kennzahl pflegen (GF/Admin).
     case ReportTargetManage = 'report.target.manage';
+        // Feature 184: Leitungsbericht per E-Mail empfangen (Digest, nur Kennzahlen mit eigenem Recht).
+    case ReportManagementDigest = 'report.management.digest';
     case ImportViewReports = 'import.viewReports';
         // ── Cloud-Dokumenteingang (Feature 080, MVP-351) ─────────────────
     case CloudIntakeConnectionManage = 'cloudIntake.connection.manage';

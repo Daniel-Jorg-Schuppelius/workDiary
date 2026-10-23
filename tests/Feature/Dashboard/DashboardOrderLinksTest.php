@@ -48,7 +48,6 @@ final class DashboardOrderLinksTest extends TestCase {
 
         $views = [
             view('dashboard.widgets.recent-comments', ['comments' => $dashboard->recentComments($user)])->render(),
-            view('dashboard.widgets.team-activity', ['comments' => $dashboard->teamActivity()])->render(),
             view('dashboard.widgets.recent-attachments', ['attachments' => $dashboard->recentAttachments($user)])->render(),
         ];
 

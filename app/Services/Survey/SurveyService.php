@@ -295,19 +295,28 @@ class SurveyService {
             return null;
         }
 
-        $values = SurveyAnswer::query()
+        return self::nps(SurveyAnswer::query()
             ->where('survey_question_id', $question->id)
             ->whereNotNull('value_int')
             ->whereBetween('value_int', [0, 10])
-            ->pluck('value_int');
-        if ($values->isEmpty()) {
+            ->pluck('value_int')
+            ->map(static fn ($v): int => (int) $v)
+            ->all());
+    }
+
+    /**
+     * %Promotoren (9–10) − %Detraktoren (0–6) über NPS-Antworten 0–10;
+     * `null` ohne Antworten.
+     *
+     * @param  array<int>  $values
+     */
+    public static function nps(array $values): ?int {
+        if ($values === []) {
             return null;
         }
+        $promoters = count(array_filter($values, static fn (int $v): bool => $v >= 9));
+        $detractors = count(array_filter($values, static fn (int $v): bool => $v <= 6));
 
-        $total = $values->count();
-        $promoters = $values->filter(fn (int $v): bool => $v >= 9)->count();
-        $detractors = $values->filter(fn (int $v): bool => $v <= 6)->count();
-
-        return (int) round(($promoters - $detractors) / $total * 100);
+        return (int) round(($promoters - $detractors) / count($values) * 100);
     }
 }

@@ -653,6 +653,9 @@
             </x-card>
         </div>
 
+        {{-- Panels der Module (Feature 182). --}}
+        <x-cockpit-panels :subject="$asset" />
+
         @include('documents._panel', ['documentable' => $asset, 'documentableKind' => 'asset'])
 
         {{-- Vollaudit 2026-07 (M12): Kommunikationsnotizen am Objekt/Asset (Spec §5). --}}

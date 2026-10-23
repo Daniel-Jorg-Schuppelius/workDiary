@@ -185,6 +185,7 @@ class VacationController extends Controller {
             'decided_at' => now(),
             'reject_reason' => null,
         ]);
+        $this->auditSelfDecision($vacation, $auth, 'approved');
 
         $this->notifyDecided($vacation, approved: true);
 
@@ -218,10 +219,18 @@ class VacationController extends Controller {
             'decided_at' => now(),
             'reject_reason' => $data['reject_reason'] ?? null,
         ]);
+        $this->auditSelfDecision($vacation, $auth, 'rejected');
 
         $this->notifyDecided($vacation, approved: false);
 
         return redirect()->route('duties.index', ['tab' => 'urlaub'])->with('success', __('Urlaubsantrag abgelehnt.'));
+    }
+
+    /** Selbstfreigabe der einzigen berechtigten Person bleibt im Audit sichtbar (Entscheidung 2026-10-23). */
+    private function auditSelfDecision(Vacation $vacation, User $decider, string $decision): void {
+        if ((int) $vacation->user_id === (int) $decider->id) {
+            $vacation->audit('vacation.self_decided', ['decision' => $decision]);
+        }
     }
 
     public function cancel(Request $request, Vacation $vacation): RedirectResponse {

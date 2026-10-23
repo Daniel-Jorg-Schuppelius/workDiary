@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Models\Time\MonthClosure;
 use App\Services\TimeApproval\{MonthClosureService, MonthClosureWorkflowException};
+use App\Services\Users\TeamScope;
 use App\Support\{ErrorText, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -55,8 +56,12 @@ class MonthApprovalInboxController extends Controller {
         // ungültigem Key fallen Key UND Richtung auf die Defaults zurück.
         [$sort, $dir] = \App\Support\SortableQuery::resolve($request, self::ALLOWED_SORTS, 'period_year');
 
+        // Team-Recht ohne Organisationsrecht zeigt nur das eigene Team (Entscheidung 2026-10-23).
+        $scope = app(TeamScope::class)->userIds($admin, P::MonthViewTeam, P::MonthViewOrganization);
+
         $query = MonthClosure::query()
             ->where('organization_id', $admin->organization_id)
+            ->when($scope !== null, fn ($q) => $q->whereIn('user_id', $scope))
             ->with('user')
             ->orderBy($sort, $dir)
             ->orderByDesc('period_month')
@@ -76,6 +81,7 @@ class MonthApprovalInboxController extends Controller {
 
         $teamUsers = User::query()
             ->where('organization_id', $admin->organization_id)
+            ->when($scope !== null, fn ($q) => $q->whereIn('id', $scope))
             ->orderBy('name')
             ->get(['id', 'name']);
 

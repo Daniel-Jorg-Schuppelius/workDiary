@@ -1,7 +1,7 @@
 ---
 title: "Personal: vacaciones, enfermedad, cualificaciones, seguridad"
 topic: reports.personnel
-version: 6
+version: 7
 keywords:
     - absentismo
     - vacaciones restantes
@@ -182,8 +182,19 @@ registro de eventos de seguridad.
 ## Problemas y formación
 
 **Análisis** → **Proyectos y clientes** → **Problemas y formación** abre el
-**Análisis de dirección**. Muestra la situación actual, sin período, filtros ni
-exportación.
+**Análisis de dirección**.
+
+Arriba aparecen los **indicadores** de todas las áreas en el periodo elegido
+en el encabezado: finanzas (producción total y resultado de la BWA, punto más
+bajo de la previsión de liquidez), operaciones (ingresos, margen de
+contribución, ocupación), ventas (leads nuevos, conversión), servicio (tickets
+abiertos, incumplimientos de SLA) y calidad (NPS). Cada tarjeta solo aparece
+con el permiso del análisis correspondiente y lleva a él, donde figura la
+misma cifra. **PDF** descarga el informe de dirección. Quien tenga el permiso
+**Recibir el informe de dirección por correo electrónico** (dirección y
+administración) lo recibe además cada lunes en PDF, desde el inicio del mes
+hasta ayer; la ejecución se puede reprogramar o pausar en «Tareas
+programadas».
 
 La tarjeta **Problemas recurrentes** reúne las alertas tempranas de los módulos
 que utiliza su organización, agrupadas por tipo:

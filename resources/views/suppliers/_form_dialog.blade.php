@@ -91,6 +91,8 @@
             <label class="label"><span class="label-text">{{ __('Tags') }}</span></label>
             <x-tag-picker :tags="$allTags" :selected="$selectedTagIds" />
         </div>
+
+        <x-custom-fields-group :model="\App\Models\Supplier\Supplier::class" :subject="$supplier" />
 </x-modal>
 
 {{-- Zeileneditor-JS zentral in resources/js/contact-persons.js (Vollaudit 2026-07, N43). --}}

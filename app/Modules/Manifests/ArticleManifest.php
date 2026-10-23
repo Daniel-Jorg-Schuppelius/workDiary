@@ -66,6 +66,12 @@ final class ArticleManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Search\Contracts\SearchDomain::class => [
+                \App\Services\Article\Search\ArticleSearchDomain::class,
+            ],
+            \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
+                \App\Services\Article\WorkQueue\PriceChangeWorkItemSource::class,
+            ],
             \App\Services\Import\EntitySpec::class => [
                 \App\Services\Article\Import\ArticleSpec::class,
             ],

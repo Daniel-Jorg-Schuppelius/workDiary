@@ -142,6 +142,25 @@ class DocumentFeedQuery {
     }
 
     /**
+     * Neueste Zeilen ohne Seitenzählung — für die globale Suche, deren
+     * `page`-Parameter der Tätigkeitsliste gehört.
+     *
+     * @return list<\stdClass>
+     */
+    public function latest(int $limit): array {
+        /** @var list<\stdClass> $rows */
+        $rows = $this->filtered()
+            ->orderByDesc('doc_date')
+            ->orderBy('source_type')
+            ->orderByDesc('source_id')
+            ->limit($limit)
+            ->get()
+            ->all();
+
+        return $rows;
+    }
+
+    /**
      * Kennzahlen je Währung über die **gesamte** gefilterte Menge.
      *
      * Keine Umrechnung: eine Zeile je vorkommender Währung. Auslagen bleiben

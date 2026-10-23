@@ -186,10 +186,14 @@ class LeadService {
     /**
      * Anonymisiert einen Lead (Retention-Purge): PII verschwindet, die
      * Kennzahl (Quelle, Status, Zeitraum) bleibt für die Pipeline-Statistik.
-     * Auch die Notizen der Akte werden geleert — sie sind Teil der PII.
+     * Auch die Notizen, Anhänge und eigenen Felder der Akte — sie sind Teil der PII.
      */
     public function anonymize(Lead $lead): void {
         $lead->addresses()->delete();
+        // Anhänge, eigene Felder und Schlagworte (Feature 182) können personenbezogen sein.
+        $lead->attachments()->get()->each->delete();
+        $lead->customFieldValue()->delete();
+        $lead->tags()->detach();
         $lead->communicationNotes()->update(['subject' => (string) __('Anonymisiert'), 'body' => null]);
         $lead->forceFill([
             'company' => null,

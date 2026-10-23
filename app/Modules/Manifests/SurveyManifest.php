@@ -50,6 +50,12 @@ final class SurveyManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Reporting\Contracts\ManagementKpiSource::class => [
+                \App\Services\Survey\Management\NpsKpiSource::class,
+            ],
+            \App\Services\Cockpit\Contracts\CockpitPanel::class => [
+                \App\Services\Survey\Cockpit\SurveyCockpitPanel::class,
+            ],
             \App\Services\Demo\Contracts\DemoBlock::class => [
                 \App\Services\Survey\Demo\SurveyDemoBlock::class,
             ],

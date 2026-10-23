@@ -1,7 +1,7 @@
 ---
 title: "Leave & sickness"
 topic: absences.manage
-version: 3
+version: 4
 keywords:
     - absence
     - leave request
@@ -34,6 +34,10 @@ correction.
 Health data requires particular protection. Record only necessary
 information, limit attachments to required evidence and follow access
 and retention rules.
+
+**Own request:** Nobody decides on their own leave, administrators included –
+unless nobody else in the organisation holds the approval right; the audit log
+then records the self-approval.
 
 ## Sick leave and continued pay
 

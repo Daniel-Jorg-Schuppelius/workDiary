@@ -1,7 +1,7 @@
 ---
 title: "Belegfluss"
 topic: billing.feed
-version: 2
+version: 3
 keywords:
     - Belegliste
     - Rechnungen
@@ -33,7 +33,9 @@ Buchhaltung und Auslagen. Die früheren Seiten „Angebote“ und „Rechnungen�
 führen hierher – sie sind jetzt Reiter derselben Liste.
 
 **Zeitraum:** Die Liste folgt dem Datumsfilter in der Kopfzeile. Fehlt ein
-Beleg, prüfen Sie zuerst den gewählten Zeitraum.
+Beleg, prüfen Sie zuerst den gewählten Zeitraum. Ein Treffer der globalen
+Suche öffnet die Liste auf dem Belegdatum; dann gilt dieser Tag statt des
+Kopfzeitraums.
 
 **Reiter:** „Alle“, „Angebote“, „Ausgangsrechnungen“, „Eingangsrechnungen“,
 „Gutschriften“ und „Auslagen“ sind gespeicherte Filter, keine eigenen Seiten.

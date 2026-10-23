@@ -6,7 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Management-Auswertung (MVP-926). Erwartet: $groups (Collection kind → list<EarlyWarning>), $trainingNeeds --}}
+{{-- Leitungssicht (MVP-926, Feature 184). Erwartet: $kpis (Bereich → list<ManagementKpi>), $rangeLabel, $groups (Collection kind → list<EarlyWarning>), $trainingNeeds --}}
 @extends('layouts.app')
 
 @section('title', __('reporting.management.title'))
@@ -14,6 +14,23 @@
 
 @section('content')
 <x-index-page :subtitle="__('reporting.management.subtitle')">
+    <x-slot:actions>
+        <x-report-export :url="fn (string $format) => route('reports.management.pdf')" :formats="['pdf']" />
+    </x-slot:actions>
+
+    {{-- Kennzahlen aller Bereiche im Kopfzeitraum (Feature 184): je Kachel ein Link in die Fachauswertung mit derselben Zahl. --}}
+    <x-card :title="__('reporting.management.kpis', ['range' => $rangeLabel])" icon="monitoring">
+        @forelse ($kpis as $group => $groupKpis)
+            <h3 class="mb-2 mt-3 text-sm font-semibold first:mt-0">{{ __('reporting.management.group.' . $group) }}</h3>
+            <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                @foreach ($groupKpis as $kpi)
+                    <x-kpi-tile :label="$kpi->label" :value="$kpi->value" format="text" :hint="$kpi->hint" :tone="$kpi->tone" :href="$kpi->url" />
+                @endforeach
+            </div>
+        @empty
+            <x-empty-state compact icon="monitoring" :title="__('reporting.management.no_kpis')" />
+        @endforelse
+    </x-card>
     <x-card :title="__('reporting.management.problems')" icon="repeat">
         @if ($groups->isEmpty())
             <x-empty-state compact icon="check_circle" :title="__('reporting.warning.widget.none')" />

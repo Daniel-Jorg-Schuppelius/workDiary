@@ -1,7 +1,7 @@
 ---
 title: "Personale: ferie, malattia, qualifiche, sicurezza"
 topic: reports.personnel
-version: 6
+version: 7
 keywords:
     - tasso di assenza
     - ferie residue
@@ -182,9 +182,19 @@ gestiscono nel registro degli eventi di sicurezza.
 
 ## Problemi e formazione
 
-**Report** → **Progetti e clienti** → **Problemi e formazione** apre l'**Analisi
-direzionale**. Mostra la situazione attuale, senza periodo, filtri o
-esportazione.
+**Report** → **Progetti e clienti** → **Problemi e formazione** apre
+l'**Analisi direzionale**.
+
+In alto si trovano gli **indicatori** di tutte le aree per il periodo scelto
+nell'intestazione: finanze (produzione totale e risultato dalla BWA, punto
+minimo della previsione di liquidità), operatività (ricavi, margine di
+contribuzione, utilizzo), vendite (nuovi lead, conversione), assistenza
+(ticket aperti, violazioni SLA) e qualità (NPS). Ogni riquadro compare solo
+con il permesso del report corrispondente e vi conduce — lì si trova lo stesso
+numero. **PDF** scarica il report direzionale. Chi dispone del permesso
+**Ricevere il report direzionale via e-mail** (direzione e amministrazione) lo
+riceve inoltre ogni lunedì in PDF, dall'inizio del mese fino a ieri;
+l'esecuzione si può ripianificare o sospendere in «Attività pianificate».
 
 La scheda **Problemi ricorrenti** raccoglie gli allarmi precoci dei moduli
 utilizzati dalla Sua organizzazione, raggruppati per tipo:

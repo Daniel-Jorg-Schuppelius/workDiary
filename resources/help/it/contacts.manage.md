@@ -1,7 +1,7 @@
 ---
 title: "Clienti & fornitori"
 topic: contacts.manage
-version: 10
+version: 11
 keywords:
     - Anteprima come cliente
     - Password iniziale
@@ -131,3 +131,14 @@ dati di fatturazione e usare l'import CSV per grandi quantità.
 ## Fornitore: dati fiscali e autofatturazione
 
 Sul fornitore si registrano **partita IVA** e **codice fiscale**. Se la sua organizzazione fattura essa stessa le prestazioni di un fornitore, inserisca la data dell’**accordo di autofatturazione**; solo allora si possono emettere autofatture. La pagina del fornitore mostra l’accordo e le ultime autofatture.
+
+## Cockpit cliente e fornitore
+
+La scheda raccoglie ciò che gli altri moduli sanno del contatto: per i clienti
+i ticket aperti, i contratti con la prossima scadenza, gli accordi, i termini
+di garanzia, le fideiussioni, i sondaggi con NPS, i domini e gli abbonamenti e
+licenze; per i fornitori gli ordini, le attestazioni obbligatorie, i contratti
+e le scadenze. Una sezione compare solo se il modulo è attivo, se dispone del
+permesso e se esistono voci; i numeri corrispondono all'elenco relativo.
+L'amministrazione vede gli ordini del negozio da Etsy e Billbee. Come i
+clienti, i fornitori hanno campi personalizzati e documenti.

@@ -1,7 +1,7 @@
 ---
 title: "Billbee anbinden"
 topic: admin.billbee
-version: 1
+version: 2
 keywords:
     - Multichannel
     - Marktplatz-Bestellungen
@@ -44,3 +44,8 @@ ohne lokale Entsprechung bleiben als offene Zuordnung sichtbar.
 
 **Drossel:** Billbee erlaubt 2 Anfragen pro Sekunde; der Abgleich hält
 dieses Limit automatisch ein.
+
+**Finden:** Das Suchfeld über dem Bestellspiegel findet Bestellnummer,
+Marktplatz-Nummer, Käufername oder E-Mail. Dieselben Bestellungen zeigt die
+globale Suche unter „Billbee-Bestellungen“ — für die Administration, solange
+das Plugin aktiv ist.

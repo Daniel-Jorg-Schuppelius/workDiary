@@ -33,11 +33,13 @@ class BillbeeAdminController extends Controller {
 
         $channel = trim((string) $request->query('channel', ''));
         $state = $request->query('state');
+        $search = trim((string) $request->query('q', ''));
 
         $orders = BillbeeOrder::query()
             ->where('organization_id', $organization->id)
             ->when($channel !== '', fn($q) => $q->where('channel', $channel))
             ->when($state !== null && $state !== '', fn($q) => $q->where('state', (int) $state))
+            ->when($search !== '', fn($q) => $q->matching($search))
             ->orderByDesc('ordered_at')
             ->orderByDesc('id')
             ->paginate(25)
@@ -57,6 +59,7 @@ class BillbeeAdminController extends Controller {
             'channels' => $channels,
             'channel' => $channel,
             'state' => $state,
+            'search' => $search,
             'openInbox' => $openInbox,
             'lastSyncAt' => BillbeeOrder::query()->where('organization_id', $organization->id)->max('updated_at'),
         ]);

@@ -39,6 +39,7 @@ return [
     'filter' => [
         'all_statuses' => 'Todos los estados',
         'apply' => 'Filtrar',
+        'search' => 'Pedido o comprador',
     ],
     'action' => [
         'sync' => 'Sincronizar ahora',
@@ -65,4 +66,12 @@ return [
     'open_inbox' => ':count asignaciones abiertas',
     'last_sync' => 'Última sincronización :at',
     'empty' => 'Aún no hay pedidos reflejados.',
+    // Bereich der globalen Suche (Feature 181).
+    'search' => [
+        'domain' => 'Pedidos de Etsy',
+    ],
+    // Panel am Kunden-Cockpit (MVP-1370).
+    'cockpit' => [
+        'title' => 'Pedidos de Etsy',
+    ],
 ];

@@ -279,6 +279,15 @@ return [
             'expected_runtime_minutes' => 3,
         ],
 
+        // Leitungsbericht (Feature 184): PDF an alle mit „Leitungsbericht per E-Mail erhalten“.
+        'reports.management_digest' => [
+            'command' => 'reports:management-digest',
+            'cadence' => ['type' => 'weeklyOn', 'day' => 1, 'time' => '06:30'],
+            'allowed' => ['weeklyOn', 'monthlyOn'],
+            'criticality' => 'housekeeping',
+            'expected_runtime_minutes' => 10,
+        ],
+
         // Vollaudit 2026-07 (N17): zyklische Inventur (E6) — planbar und
         // automatisch statt nur manuell.
         'inventory.cycle_counts' => [

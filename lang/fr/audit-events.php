@@ -349,6 +349,7 @@ return [
         'entrySaved' => 'Clôture journalière enregistrée',
         'opened' => 'Clôture journalière ouverte',
         'reopened' => 'Jour rouvert',
+        'selfDecided' => 'Décision sur sa propre journée (seule personne habilitée)',
     ],
     'deleted' => 'Supprimé',
     'demo' => [
@@ -660,6 +661,7 @@ return [
     ],
     'month_closure' => [
         'bundle_exported' => 'Paquet de clôture mensuelle exporté',
+        'self_decided' => 'Décision sur son propre mois (seule personne habilitée)',
     ],
     'msgraph' => [
         'admin_consent_granted' => 'Consentement administrateur Microsoft 365 accordé',
@@ -1146,6 +1148,9 @@ return [
     'user_group' => [
         'member_added' => 'Groupe d\'utilisateurs : membre ajouté',
         'member_removed' => 'Groupe d\'utilisateurs : membre retiré',
+    ],
+    'vacation' => [
+        'self_decided' => 'Décision sur ses propres congés (seule personne habilitée)',
     ],
     'warranty' => [
         'created' => 'Délai de garantie enregistré',

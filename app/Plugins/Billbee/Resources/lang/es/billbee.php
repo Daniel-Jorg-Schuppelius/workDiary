@@ -23,6 +23,7 @@ return [
     'filter' => [
         'all_channels' => 'Todos los canales',
         'apply' => 'Filtrar',
+        'search' => 'Pedido o comprador',
     ],
     'action' => [
         'sync' => 'Sincronizar ahora',
@@ -37,4 +38,12 @@ return [
         'open_assignment' => 'Asignación pendiente',
     ],
     'empty' => 'Aún no hay pedidos replicados.',
+    // Bereich der globalen Suche (Feature 181).
+    'search' => [
+        'domain' => 'Pedidos de Billbee',
+    ],
+    // Panel am Kunden-Cockpit (MVP-1370).
+    'cockpit' => [
+        'title' => 'Pedidos de Billbee',
+    ],
 ];

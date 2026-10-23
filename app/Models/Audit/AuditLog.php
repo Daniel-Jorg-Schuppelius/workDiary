@@ -39,6 +39,23 @@ class AuditLog extends Model implements HashChainable {
      */
     public const REDACTED = "\u{2022}\u{2022}\u{2022}";
 
+    /**
+     * Objektarten der Filter in Audit-Übersicht und Aktivitäts-Feed (Feature 183).
+     *
+     * @var array<string, class-string<Model>>
+     */
+    public const FILTER_TYPES = [
+        'diary' => \App\Models\Diary\DiaryEntry::class,
+        'comment' => \App\Models\Communication\Comment::class,
+        'shift' => \App\Models\Diary\OnCallShift::class,
+        'assignment' => \App\Models\Diary\EmergencyAssignment::class,
+        'attachment' => \App\Models\Attachments\Attachment::class,
+        'customer' => \App\Models\Customer\Customer::class,
+        'supplier' => \App\Models\Supplier\Supplier::class,
+        'import_run' => \App\Models\Integration\ImportRun::class,
+        'number_sequence' => \App\Models\Numbering\NumberSequence::class,
+    ];
+
     protected $fillable = [
         'organization_id',
         'user_id',

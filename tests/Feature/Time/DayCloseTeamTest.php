@@ -69,12 +69,16 @@ class DayCloseTeamTest extends TestCase {
     public function test_team_page_shows_presence_and_open_days_for_team_leads_only(): void {
         $lead = $this->userWithRole(UserRole::Teamleitung->value);
         $worker = $this->orgUser(['name' => 'Carla Monteur']);
+        $outsider = $this->orgUser(['name' => 'Otto Fremdteam']);
+        $this->sameTeam($lead, $worker);
         $this->attendance($worker, '2026-06-09');
         $this->attendance($worker, '2026-06-10', null);
+        $this->attendance($outsider, '2026-06-09');
 
         $this->actingAs($lead)->get(route('day-close.team'))
             ->assertOk()
             ->assertSee('Carla Monteur')
+            ->assertDontSee('Otto Fremdteam')
             ->assertSee(__('day-close.team.open_days'))
             ->assertSee(route('day-close.show', ['date' => '2026-06-09', 'user' => $worker->sqid]));
 

@@ -1,7 +1,7 @@
 ---
 title: "Projekte verwalten"
 topic: projects.manage
-version: 3
+version: 4
 keywords:
     - Projekt anlegen
     - Projektmanagement
@@ -99,3 +99,12 @@ Abrechnungsregeln und Projektstatus bestimmen, welche Zeiten und
 Materialien in die Übergabe wandern. Als Nächstes: Zeiterfassung auf
 das Projekt einrichten und am Periodenende die Übergabe an die Faktura
 prüfen.
+
+## Wirtschaftlichkeit und Fristen
+
+Mit dem Recht für Auswertungen zeigt die Projektübersicht Umsatz, Kosten,
+Deckungsbeitrag und – wenn ein Budget gepflegt ist – dessen Verbrauch im
+gewählten Zeitraum; ein Klick öffnet die Wirtschaftlichkeitsauswertung mit
+denselben Zahlen. Gewährleistungsfristen und Bürgschaften zum Projekt
+erscheinen darunter. Übernommene Aufgaben nennen ihr Plugin, etwa „Aus GitHub
+Issues“.

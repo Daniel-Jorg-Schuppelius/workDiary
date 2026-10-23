@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Approval;
 
 use App\Enums\Approval\ApprovalDecision;
+use App\Enums\User\Permission;
 use App\Models\Approval\ApprovalStep;
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
@@ -33,6 +34,15 @@ class ApprovalFlowService {
     public const TYPE_OVERTIME = 'overtime';
 
     public const TYPE_TIME_CORRECTION = 'time_correction';
+
+    /**
+     * Typen, bei denen die einzige berechtigte Person den eigenen Antrag
+     * freigeben darf (Entscheidung 2026-10-23) — Zeitkorrektur und Überstunden
+     * bleiben ausnahmslos gesperrt.
+     */
+    private const SOLE_DECIDER_PERMISSION = [
+        self::TYPE_VACATION => Permission::VacationApprove,
+    ];
 
     /**
      * Konfigurierte Stufenzahl (1–2) für den Antragstyp. Urlaub liest den
@@ -72,7 +82,9 @@ class ApprovalFlowService {
         // Recht seinen eigenen Antrag, und die Zeitkorrektur wurde
         // anschließend auf die Anwesenheiten angewandt. Vier Augen heißt zwei
         // Personen; ein Auge heißt mindestens: nicht die eigene.
-        if ($this->isRequester($approvable, $decider)) {
+        $solePermission = self::SOLE_DECIDER_PERMISSION[$type] ?? null;
+        if ($this->isRequester($approvable, $decider)
+            && ($solePermission === null || ! app(SelfApproval::class)->soleDecider($decider, $solePermission))) {
             throw ValidationException::withMessages([
                 'decided_by' => __('Der eigene Antrag kann nicht selbst freigegeben werden.'),
             ]);

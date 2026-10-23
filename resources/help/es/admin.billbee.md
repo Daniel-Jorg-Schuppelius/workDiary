@@ -1,7 +1,7 @@
 ---
 title: "Conectar Billbee"
 topic: admin.billbee
-version: 1
+version: 2
 keywords:
     - multicanal
     - pedidos de marketplace
@@ -44,3 +44,8 @@ sin equivalente local quedan visibles como asignaciones abiertas.
 
 **Límite:** Billbee permite 2 solicitudes por segundo; la sincronización
 respeta este límite automáticamente.
+
+**Buscar:** el campo de búsqueda sobre el espejo de pedidos encuentra el
+número de pedido, el número del marketplace, el nombre o el correo del
+comprador. La búsqueda global muestra los mismos pedidos en «Pedidos de
+Billbee», para la administración y mientras el plugin esté activo.

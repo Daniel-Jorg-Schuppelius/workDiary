@@ -1,7 +1,7 @@
 ---
 title: "Personal: Urlaub, Krankheit, Qualifikation, Arbeitsschutz"
 topic: reports.personnel
-version: 6
+version: 7
 keywords:
     - Fehlzeiten
     - Resturlaub
@@ -180,8 +180,18 @@ bearbeiten Sie im Sicherheitsereignis-Register.
 ## Probleme & Schulung
 
 **Auswertungen** → **Projekte & Kunden** → **Probleme & Schulung** öffnet die
-**Management-Auswertung**. Sie zeigt den aktuellen Stand ohne Zeitraum, Filter
-oder Export.
+**Management-Auswertung**.
+
+Oben stehen die **Kennzahlen** aller Bereiche im Zeitraum der Kopfzeile:
+Finanzen (Gesamtleistung und Ergebnis aus der BWA, Tiefststand der
+Liquiditätsvorschau), Betrieb (Umsatz, Deckungsbeitrag, Auslastung), Vertrieb
+(neue Leads, Konversion), Service (offene Tickets, SLA-Verletzungen) und
+Qualität (NPS). Jede Kachel erscheint nur mit dem Recht der zugehörigen
+Auswertung und führt dorthin — dort steht dieselbe Zahl. **PDF** lädt den
+Leitungsbericht herunter. Wer das Recht **Leitungsbericht per E-Mail
+erhalten** hat (Geschäftsführung und Administration), bekommt ihn außerdem
+montags als PDF, mit dem Zeitraum vom Monatsanfang bis gestern; der Lauf lässt
+sich unter „Geplante Aufgaben“ umstellen oder pausieren.
 
 Die Karte **Wiederkehrende Probleme** sammelt die Frühwarnungen der Module, die
 Ihre Organisation nutzt, gruppiert nach Art:

@@ -18,6 +18,7 @@ use App\Models\Diary\{DayClosure, DayCorrectionRequest};
 use App\Models\Platform\User;
 use App\Services\Attendance\{AttendanceClockService, EmergencyAttendanceService};
 use App\Services\TimeApproval\{DayCloseService, DayCloseWorkflowException};
+use App\Services\Users\TeamScope;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -106,9 +107,17 @@ class DayCloseController extends Controller {
         $to = $this->resolveDateParam($request, 'to', static fn (): CarbonImmutable => CarbonImmutable::now()->subDay())->startOfDay();
         $from = $this->resolveDateParam($request, 'from', static fn (): CarbonImmutable => $to->subDays(13))->startOfDay();
 
+        // Team-Recht ohne Organisationsrecht zeigt nur das eigene Team (Entscheidung 2026-10-23).
+        $scope = app(TeamScope::class)->userIds($viewer, Permission::DayCloseViewTeam, Permission::DayCloseViewOrganization);
+        $inScope = static fn (array $row): bool => $scope === null || in_array((int) $row['user']->id, $scope, true);
+        $snapshot = $attendance->snapshot($organizationId);
+        foreach (['present', 'present_unmapped', 'off_site', 'absent', 'unaccounted'] as $list) {
+            $snapshot[$list] = array_values(array_filter($snapshot[$list], $inScope));
+        }
+
         return view('time-approval.day.team', [
-            'snapshot' => $attendance->snapshot($organizationId),
-            'openDays' => $this->service->openDays($organizationId, $from->min($to), $to),
+            'snapshot' => $snapshot,
+            'openDays' => array_values(array_filter($this->service->openDays($organizationId, $from->min($to), $to), $inScope)),
             'from' => $from,
             'to' => $to,
         ]);

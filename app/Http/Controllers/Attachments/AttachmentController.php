@@ -47,6 +47,8 @@ class AttachmentController extends Controller {
         'task' => Task::class,
         'customer' => Customer::class,
         'supplier' => Supplier::class,
+        // Lead-Cockpit (Feature 182); Recht über die LeadPolicy.
+        'lead' => \App\Models\Sales\Lead::class,
         'organization' => Organization::class,
         'user' => User::class,
         'asset' => Asset::class,

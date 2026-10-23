@@ -1,7 +1,7 @@
 ---
 title: "Leads"
 topic: sales.leads
-version: 2
+version: 3
 keywords:
     - prospects
     - prospecting
@@ -53,3 +53,10 @@ Leads are personal data **without a contract**. Non-converted leads are
 anonymised **6 months after the last contact** — via the retention scan of
 the privacy module (review queue, no silent deletion). The pipeline metric
 (source, status, period) stays, the person disappears.
+
+## Record
+
+Leads carry custom fields (Administration › Custom fields), tags and
+attachments. When the lead is anonymised after the deletion period,
+attachments, custom fields and tags are removed as well. Documents in document
+management are attached to the customer only.

@@ -1,7 +1,7 @@
 ---
 title: "Búsqueda e investigación de actividades"
 topic: search.overview
-version: 3
+version: 4
 keywords:
     - búsqueda de texto completo
     - búsqueda global
@@ -24,8 +24,20 @@ qué cliente?** Busca en registros de tiempo (también notas de asistencia remot
 y líneas de partes de horas), encargos con comentarios, notas de partes de
 horas, tickets, actas, puntos abiertos, notas de comunicación y artículos de
 conocimiento, cada uno con proyecto, cliente final y cliente como contexto.
-Debajo aparecen los datos maestros como clientes, proyectos, objetos, gastos y
-documentos.
+Debajo aparecen datos maestros y documentos: clientes, proveedores, leads,
+proyectos, tareas, contratos, objetos, facturas, facturas recibidas, pedidos,
+gastos, artículos, personas, documentos, formularios y adjuntos — cada uno solo
+con el módulo activado y permiso de lectura.
+Se suman los datos de los plugins: comprobantes de los programas contables y
+pedidos de Etsy y Billbee (para la administración); las tareas importadas
+indican su plugin, por ejemplo «GitHub Issues».
+
+«Todos los resultados de este grupo» muestra un grupo solo con hasta 200
+resultados. Periodo, persona y cliente también se aplican allí: las facturas se
+filtran por fecha de factura, las tareas por persona asignada y los leads por
+responsable. Si un grupo no conoce el filtro de persona o de cliente elegido
+—por ejemplo proveedores o artículos—, se omite en lugar de aparecer sin
+filtrar.
 
 ## Cómo funciona la búsqueda
 

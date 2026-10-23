@@ -1,7 +1,7 @@
 ---
 title: "Managing projects"
 topic: projects.manage
-version: 3
+version: 4
 keywords:
     - create project
     - project management
@@ -95,3 +95,11 @@ detail view shows at a glance what is billable and open.
 Billing rules and project status determine which times and materials
 go into the handover. Next: set up time tracking on the project and
 check the billing handover at the end of the period.
+
+## Profitability and deadlines
+
+With the right for reports, the project overview shows revenue, costs,
+contribution margin and – if a budget is maintained – its consumption in the
+selected period; a click opens the profitability report with the same figures.
+Warranty periods and guarantees for the project appear below. Imported tasks
+name their plugin, for example "From GitHub Issues".

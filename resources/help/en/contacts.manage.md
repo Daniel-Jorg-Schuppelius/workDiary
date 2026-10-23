@@ -1,7 +1,7 @@
 ---
 title: "Customers & suppliers"
 topic: contacts.manage
-version: 10
+version: 11
 keywords:
     - Preview as customer
     - Start password
@@ -128,3 +128,14 @@ billing data for invoices and use the CSV import for larger sets.
 ## Supplier: tax data and self-billing
 
 The supplier carries the **VAT ID** and **tax number**. If your organisation bills a supplier’s services itself, enter the date of the **self-billing agreement**; only then can self-billed credit notes be issued to the supplier. The supplier page shows the agreement and the latest credit notes.
+
+## Customer and supplier cockpit
+
+The record brings together what other modules know about the contact: for
+customers open tickets, contracts with their next deadline, agreements,
+warranty periods, guarantees, surveys with NPS, domains as well as
+subscriptions and licences; for suppliers purchase orders, mandatory
+credentials, contracts and deadlines. A section only appears if the module is
+enabled, you have the right to see it and there are entries; the figures match
+the respective list. Administrators see shop orders from Etsy and Billbee.
+Like customers, suppliers have custom fields and documents.

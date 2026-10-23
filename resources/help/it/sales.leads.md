@@ -1,7 +1,7 @@
 ---
 title: "Lead"
 topic: sales.leads
-version: 2
+version: 3
 keywords:
     - potenziali clienti
     - prospect
@@ -53,3 +53,10 @@ anonimizzati **6 mesi dopo l’ultimo contatto** — tramite lo scan di
 conservazione del modulo privacy (coda di revisione, nessuna cancellazione
 silenziosa). La metrica di pipeline (fonte, stato, periodo) resta, la persona
 scompare.
+
+## Scheda
+
+I lead hanno campi personalizzati (Amministrazione › Campi personalizzati),
+tag e allegati. Con l'anonimizzazione dopo il termine di cancellazione vengono
+eliminati anche allegati, campi personalizzati e tag. I documenti della
+gestione documentale si collegano solo al cliente.

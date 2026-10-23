@@ -106,6 +106,12 @@ final class SalesManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Reporting\Contracts\ManagementKpiSource::class => [
+                \App\Services\Sales\Management\LeadKpiSource::class,
+            ],
+            \App\Services\Search\Contracts\SearchDomain::class => [
+                \App\Services\Sales\Search\LeadSearchDomain::class,
+            ],
             \App\Services\Billing\Contracts\DocumentRelationSource::class => [
                 \App\Services\Sales\Relations\QuoteRelationSource::class,
             ],

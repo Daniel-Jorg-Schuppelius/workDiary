@@ -56,7 +56,7 @@ return [
             'description' => 'Neue Anhänge auf Ihren Einträgen.',
         ],
         'team_activity' => [
-            'description' => 'Die letzten Kommentare im Team.',
+            'description' => 'Wer hat zuletzt was geändert — aus dem Aktivitäts-Feed.',
         ],
         'finance' => [
             'description' => 'Spesen und Reisen des laufenden Monats, für Genehmigende zusätzlich der offene Stapel.',

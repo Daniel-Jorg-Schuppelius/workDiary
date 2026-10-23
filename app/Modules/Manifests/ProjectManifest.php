@@ -68,6 +68,13 @@ final class ProjectManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Search\Contracts\SearchDomain::class => [
+                \App\Services\Project\Search\ProjectSearchDomain::class,
+                \App\Services\Project\Search\TaskSearchDomain::class,
+            ],
+            \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
+                \App\Services\Project\WorkQueue\TaskWorkItemSource::class,
+            ],
             \App\Services\Mcp\Contracts\McpTool::class => [
                 \App\Services\Project\Mcp\ProjectsTool::class,
             ],

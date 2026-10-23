@@ -1,7 +1,7 @@
 ---
 title: "Document flow"
 topic: billing.feed
-version: 2
+version: 3
 keywords:
     - invoices
     - quotes
@@ -33,7 +33,9 @@ accounting system, and expenses. The former "Quotes" and "Invoices" pages lead
 here – they are now tabs of the same list.
 
 **Period:** The list follows the date filter in the header. If a document is
-missing, check the selected period first.
+missing, check the selected period first. A hit from the global search opens
+the list on the document date; that day then applies instead of the header
+period.
 
 **Tabs:** "All", "Quotes", "Sales invoices", "Purchase invoices", "Credit
 notes" and "Expenses" are saved filters, not separate pages. The number on a

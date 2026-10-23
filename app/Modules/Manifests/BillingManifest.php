@@ -57,6 +57,9 @@ final class BillingManifest extends Manifest {
             \App\Services\Document\Contracts\MailableDocumentProvider::class => [
                 \App\Services\Billing\Mail\DeliveryNoteMailDocument::class,
             ],
+            \App\Services\Search\Contracts\SearchDomain::class => [
+                \App\Services\Billing\Search\AccountingVoucherSearchDomain::class,
+            ],
         ];
     }
 

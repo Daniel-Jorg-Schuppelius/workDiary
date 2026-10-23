@@ -88,6 +88,13 @@ final class TravelManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Search\Contracts\SearchDomain::class => [
+                \App\Services\Expense\Search\ExpenseSearchDomain::class,
+                \App\Services\Travel\Search\PerDiemTripSearchDomain::class,
+            ],
+            \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
+                \App\Services\Expense\WorkQueue\ExpenseApprovalWorkItemSource::class,
+            ],
             \App\Automation\Actions\RuleAction::class => [
                 \App\Services\Expense\Automation\ApproveExpenseAction::class,
             ],

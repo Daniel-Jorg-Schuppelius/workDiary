@@ -429,6 +429,7 @@ return [
         'import.viewReports' => 'Visualizza i report di importazione CSV',
         'report.export' => 'Esporta i report',
         'report.target.manage' => 'Gestisci i valori obiettivo',
+        'report.management.digest' => 'Ricevere il report direzionale via e-mail',
         'audit-log.view' => 'Visualizza il registro di audit',
         'attendance.viewAny' => 'Visualizza le presenze',
         'attendance.manage' => 'Gestisci le presenze',

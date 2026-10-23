@@ -1,7 +1,7 @@
 ---
 title: "Personnel : congés, maladie, qualifications, sécurité"
 topic: reports.personnel
-version: 6
+version: 7
 keywords:
     - absentéisme
     - congés restants
@@ -187,8 +187,19 @@ dans le registre des événements de sécurité.
 ## Problèmes et formation
 
 **Rapports** → **Projets et clients** → **Problèmes et formation** ouvre
-l'**Analyse de direction**. Elle montre la situation actuelle, sans période,
-filtre ni export.
+l'**Analyse de direction**.
+
+En haut figurent les **indicateurs** de tous les domaines pour la période
+choisie dans l'en-tête : finances (production totale et résultat de la BWA,
+point bas de la prévision de liquidité), exploitation (chiffre d'affaires,
+marge sur coûts variables, taux d'occupation), ventes (nouveaux leads,
+conversion), service (tickets ouverts, violations de SLA) et qualité (NPS).
+Chaque tuile n'apparaît qu'avec le droit du rapport correspondant et y mène —
+le même chiffre y figure. **PDF** télécharge le rapport de direction. Les
+personnes disposant du droit **Recevoir le rapport de direction par e-mail**
+(direction et administration) le reçoivent aussi chaque lundi en PDF, du début
+du mois jusqu'à la veille ; « Tâches planifiées » permet de le décaler ou de
+le suspendre.
 
 La carte **Problèmes récurrents** rassemble les alertes précoces des modules
 utilisés par votre organisation, regroupées par type :

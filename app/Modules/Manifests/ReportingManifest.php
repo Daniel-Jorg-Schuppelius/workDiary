@@ -55,6 +55,10 @@ final class ReportingManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Reporting\Contracts\ManagementKpiSource::class => [
+                \App\Services\Reporting\Management\EconomicsKpiSource::class,
+                \App\Services\Reporting\Management\UtilizationKpiSource::class,
+            ],
             \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
                 \App\Services\Reporting\DeadlineScans\ReportWarningScan::class,
             ],

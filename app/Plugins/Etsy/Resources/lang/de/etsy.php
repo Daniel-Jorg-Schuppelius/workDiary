@@ -39,6 +39,7 @@ return [
     'filter' => [
         'all_statuses' => 'Alle Status',
         'apply' => 'Filtern',
+        'search' => 'Bestellung oder Käufer',
     ],
     'action' => [
         'sync' => 'Jetzt synchronisieren',
@@ -65,4 +66,12 @@ return [
     'open_inbox' => ':count offene Zuordnungen',
     'last_sync' => 'Letzter Abgleich :at',
     'empty' => 'Noch keine Bestellungen gespiegelt.',
+    // Bereich der globalen Suche (Feature 181).
+    'search' => [
+        'domain' => 'Etsy-Bestellungen',
+    ],
+    // Panel am Kunden-Cockpit (MVP-1370).
+    'cockpit' => [
+        'title' => 'Etsy-Bestellungen',
+    ],
 ];

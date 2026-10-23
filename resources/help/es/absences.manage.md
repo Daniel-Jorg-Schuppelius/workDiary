@@ -1,7 +1,7 @@
 ---
 title: "Vacaciones y enfermedad"
 topic: absences.manage
-version: 3
+version: 4
 keywords:
     - ausencia
     - solicitud de vacaciones
@@ -30,6 +30,10 @@ período completo y los responsables comprueban solapamientos,
 sustituciones y saldo restante antes de aprobar, rechazar o pedir una
 corrección. Los datos de salud son especialmente sensibles: registre
 solo lo necesario y respete las reglas de acceso y conservación.
+
+**Solicitud propia:** nadie decide sobre sus propias vacaciones, tampoco la
+administración, salvo que nadie más en la organización tenga el permiso de
+aprobación; el registro de auditoría deja constancia de esa autoaprobación.
 
 ## Baja por enfermedad y mantenimiento del salario
 

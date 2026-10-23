@@ -1,7 +1,7 @@
 ---
 title: "Connect Billbee"
 topic: admin.billbee
-version: 1
+version: 2
 keywords:
     - multichannel
     - marketplace orders
@@ -43,3 +43,8 @@ assignments.
 
 **Throttle:** Billbee allows 2 requests per second; the sync keeps this
 limit automatically.
+
+**Finding orders:** The search field above the order mirror finds order
+number, marketplace number, buyer name or email. The global search shows the
+same orders under "Billbee orders" — for administrators, while the plugin is
+active.

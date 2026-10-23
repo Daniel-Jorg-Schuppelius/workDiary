@@ -34,6 +34,28 @@
                     format="text" />
     </div>
 
+    {{-- Wirtschaftlichkeit im Kopfzeitraum (Feature 182): dieselben Zahlen wie die
+         Auswertung, ein Klick führt dorthin; nur mit deren Recht. --}}
+    @if (($economics ?? null) !== null)
+        @php
+            $eur = fn (float $v): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) . ' €';
+        @endphp
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <x-kpi-tile :label="__('Umsatz')" :value="$eur($economics['revenue'])" format="text" :hint="$rangeLabel" :href="$economicsUrl" />
+            <x-kpi-tile :label="__('Kosten')" :value="$eur($economics['cost'])" format="text" :hint="$rangeLabel" :href="$economicsUrl" />
+            <x-kpi-tile :label="__('Deckungsbeitrag')" :value="$eur($economics['contribution'])" format="text"
+                        :tone="$economics['contribution'] < 0 ? 'error' : 'success'"
+                        :hint="__('Marge :value', ['value' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($economics['margin'], 1) . ' %'])"
+                        :href="$economicsUrl" />
+            @if ($economics['planBudget'] !== null)
+                <x-kpi-tile :label="__('cockpit.project.budget')" :value="$eur($economics['actualCost'])" format="text"
+                            :tone="$economics['actualCost'] > $economics['planBudget'] ? 'error' : 'neutral'"
+                            :hint="__('cockpit.project.budget_of', ['budget' => $eur($economics['planBudget'])])"
+                            :href="$economicsUrl" />
+            @endif
+        </div>
+    @endif
+
     {{-- Milestones --}}
     @if ($milestones->isNotEmpty())
         <x-card padding="p-0">
@@ -150,6 +172,9 @@
         @endif
     </x-card>
 
+    {{-- Panels der Module (Feature 182): Gewährleistung, Bürgschaften — Recht und Modul prüft jedes Panel. --}}
+    <x-cockpit-panels :subject="$project" />
+
     @include('communication-notes._panel', ['notable' => $project, 'notableKind' => 'project'])
 
     @include('documents._panel', ['documentable' => $project, 'documentableKind' => 'project'])
@@ -184,6 +209,9 @@
     @endif
 
     @include('chat._subject_panel', ['subjectType' => 'project', 'subject' => $project])
+
+    {{-- Änderungsverlauf: Audit und Journal des Projekts (Feature 183). --}}
+    <x-activity-feed :subject="$project" />
 
     {{-- Rückverweise (MVP-811): Wissensartikel und Ideenknoten, die auf das Projekt zeigen. --}}
     <x-content-references :subject="$project" />

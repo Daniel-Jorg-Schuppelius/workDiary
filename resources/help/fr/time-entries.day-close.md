@@ -1,7 +1,7 @@
 ---
 title: "Clôture de journée"
 topic: time-entries.day-close
-version: 3
+version: 4
 keywords:
     - clôturer la journée
     - fin de journée
@@ -62,3 +62,9 @@ journée** ; la justification est consignée dans le journal d’audit.
 
 Les journées d’un mois déjà validé sont entièrement verrouillées ; toute
 modification passe alors par la validation mensuelle.
+
+**Propre journée et équipe :** personne ne décide de la correction de sa
+propre journée, sauf si personne d'autre dans l'organisation ne dispose de ce
+droit ; le journal d'audit consigne alors l'auto-validation. Qui ne peut voir
+les clôtures journalières que pour l'équipe voit uniquement les membres de ses
+propres équipes dans « Équipe aujourd’hui » et dans les vues journalières.

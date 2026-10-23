@@ -1,7 +1,7 @@
 ---
 title: "Tagesabschluss"
 topic: time-entries.day-close
-version: 3
+version: 4
 keywords:
     - Tag abschließen
     - Feierabend
@@ -60,3 +60,9 @@ Audit-Protokoll festgehalten.
 
 Tage in einem bereits freigegebenen Monat sind komplett gesperrt; dort
 läuft jede Änderung über die Monatsfreigabe.
+
+**Eigener Tag und Team:** Über die Korrektur des eigenen Tages entscheidet
+niemand selbst, außer es gibt in der Organisation sonst niemanden mit diesem
+Recht; das Audit-Protokoll vermerkt dann die Selbstfreigabe. Wer
+Tagesabschlüsse nur für das Team sehen darf, sieht unter „Team heute“ und in
+den Tagesansichten die Mitglieder der eigenen Teams.
