@@ -570,7 +570,8 @@ class DatevBookingService {
         $models = $this->sourceModels($batch);
         $fields = new DatevBookingFieldResolver((int) $batch->organization_id);
 
-        $rows = $batch->sources->map(function (DatevBookingSource $s) use ($batch, $models, $fields): array {
+        // array_map statt Collection::map: der Adapter braucht den Skontobetrag als numeric-string.
+        $rows = array_map(function (DatevBookingSource $s) use ($batch, $models, $fields): array {
             $model = $models[$s->source_type . ':' . $s->source_id] ?? null;
             $extra = $fields->forSource($model);
 
@@ -589,7 +590,7 @@ class DatevBookingService {
                 'discount_amount' => $extra['discount_amount'],
                 'discount_type' => $extra['discount_type'],
             ];
-        })->all();
+        }, $batch->sources->all());
 
         $csv = $this->adapter->generate($batch, $config, array_values($rows));
 

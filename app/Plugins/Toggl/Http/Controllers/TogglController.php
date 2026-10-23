@@ -15,7 +15,7 @@ use App\Models\Integration\{ExternalReference, ExternalReferenceAlias, Integrati
 use App\Models\Platform\Organization;
 use App\Models\Time\TimeEntry;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
-use App\Plugins\Toggl\Api\{TogglClientFactory};
+use App\Plugins\Toggl\Api\TogglClientFactory;
 use App\Plugins\Toggl\Exceptions\TogglArchiveException;
 use App\Plugins\Toggl\Services\{TogglExportArchiveService, TogglExportImporter, TogglExportService, TogglImportService, TogglOptionBuilder, TogglUserMappingService};
 use App\Plugins\Toggl\Sources\{ApiWorkspaceSource, TogglCsvParser, TogglWorkspaceReader};

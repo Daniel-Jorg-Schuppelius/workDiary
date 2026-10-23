@@ -55,3 +55,7 @@ ordering and booking require the **Post stock movements** permission;
 ## Credential light
 
 If mandatory credentials are required for the supplier (such as an exemption certificate or insurance), the order header shows their **traffic light**: green if everything is valid, yellow if something expires soon, red if credentials are missing or expired. Clicking it opens the credential overview. Whether red blocks submission is still governed by the credential settings.
+
+## Supplier reply via GAEB
+
+Besides the openTRANS confirmation, **Import supplier reply** also reads GAEB trade files. An **X97** (order confirmation for order X96) stores the confirmed quantity, price and date per line and reports deviations without changing the order. An **X94** (price offer for price inquiry X93) applies the offered unit prices to the order while it is a draft. Lines are matched by the supplier's article number; the file must refer to the order's number. The price inquiry itself (**Price inquiry (GAEB X93)**) and the field for the offer are available in the draft order.

@@ -45,6 +45,8 @@
                         </x-action-menu>
                     @endif
                     @if ($status === 'draft')
+                        {{-- Preisanfrage an den Händler; sein Angebot (X94) setzt die Preise des Entwurfs (MVP-1300). --}}
+                        <x-button tone="ghost" icon="request_quote" :href="route('purchase-orders.order-xml', ['purchaseOrder' => $order, 'format' => 'x93'])">{{ __('procurement.action.export_gaeb_inquiry') }}</x-button>
                         <x-action-form :action="route('purchase-orders.submit', $order)">
                             <x-icon-btn icon="check_circle" tone="primary" size="sm" type="submit" placement="bar" show-label>{{ __('procurement.action.submit') }}</x-icon-btn>
                         </x-action-form>
@@ -85,6 +87,20 @@
                     <input id="freight_cost" name="freight_cost" type="number" step="0.01" min="0" value="{{ $order->freight_cost !== null ? rtrim(rtrim(number_format(($order->freight_cost?->toFloat() ?? 0.0), 2, '.', ''), '0'), '.') : '' }}" class="input input-sm input-bordered w-32"></div>
                 <x-button type="submit" tone="ghost" size="sm">{{ __('procurement.action.save_conditions') }}</x-button>
             </form>
+        </x-card>
+    @endif
+
+    @if ($canManage && $status === 'draft' && $order->lines->isNotEmpty())
+        <x-card>
+            <form method="POST" action="{{ route('purchase-orders.confirmation.import', $order) }}" enctype="multipart/form-data" class="flex flex-wrap items-end gap-2">
+                @csrf
+                <div class="fieldset grow">
+                    <label for="offer_xml" class="fieldset-label">{{ __('procurement.offer.import') }}</label>
+                    <input id="offer_xml" name="confirmation_xml" type="file" accept=".x94,.xml,application/xml,text/xml" required class="file-input file-input-sm file-input-bordered">
+                </div>
+                <x-button type="submit" tone="secondary" size="sm">{{ __('procurement.offer.import_submit') }}</x-button>
+            </form>
+            <p class="text-xs text-muted mt-2">{{ __('procurement.offer.hint') }}</p>
         </x-card>
     @endif
 
@@ -179,7 +195,7 @@
                         @csrf
                         <div class="fieldset grow">
                             <label for="confirmation_xml" class="fieldset-label">{{ __('procurement.confirmation.import') }}@if ($order->supplier_confirmed_at !== null) <span class="text-xs text-muted">({{ __('procurement.confirmation.received', ['date' => $order->supplier_confirmed_at->orgTz()->isoFormat('L'), 'ref' => $order->supplier_order_ref ?? '—']) }})</span>@endif</label>
-                            <input id="confirmation_xml" name="confirmation_xml" type="file" accept=".xml,application/xml,text/xml" required class="file-input file-input-sm file-input-bordered">
+                            <input id="confirmation_xml" name="confirmation_xml" type="file" accept=".xml,.x94,.x97,application/xml,text/xml" required class="file-input file-input-sm file-input-bordered">
                         </div>
                         <x-button type="submit" tone="secondary" size="sm">{{ __('procurement.confirmation.import_submit') }}</x-button>
                     </form>

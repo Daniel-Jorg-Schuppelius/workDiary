@@ -24,6 +24,7 @@ return [
         'export_orderx' => 'Export Order-X',
         'export_opentrans' => 'Export openTRANS',
         'export_gaeb' => 'GAEB (X96)',
+        'export_gaeb_inquiry' => 'Preisanfrage (GAEB X93)',
         'export_ugl' => 'Export UGL',
         'export_pdf' => 'PDF herunterladen',
         'suggestions' => 'Bestellvorschläge',
@@ -31,10 +32,6 @@ return [
         'incoming' => 'Erwartete Eingänge',
     ],
 
-    'credentials' => [
-        'badge' => 'Nachweise: :status',
-        'hint' => 'Pflichtnachweise des Lieferanten (Freistellungsbescheinigung, Versicherung usw.)',
-    ],
     'pdf' => [
         'title' => 'Bestellung',
         'date' => 'Bestelldatum',
@@ -591,6 +588,8 @@ return [
     ],
     // Pflichtnachweise Subunternehmer (Feature 117, MVP-606).
     'credentials' => [
+        'badge' => 'Nachweise: :status',
+        'hint' => 'Pflichtnachweise des Lieferanten (Freistellungsbescheinigung, Versicherung usw.)',
         'release_warning' => 'Achtung: Bei :supplier fehlen Pflichtnachweise (:list). Die Zahlung ist freigegeben — den Nachweis nachfordern.',
         'title' => 'Pflichtnachweise',
         'subtitle' => 'Nachweise der Subunternehmer mit Gültigkeit und Ampel je Lieferant',
@@ -617,14 +616,22 @@ return [
         ],
     ],
     // Auftragsbestätigung des Lieferanten (MVP-964).
+    'offer' => [
+        'error_not_draft' => 'Ein Preisangebot lässt sich nur in einen Bestellentwurf übernehmen.',
+        'import' => 'Preisangebot des Händlers einlesen (GAEB X94)',
+        'import_submit' => 'Angebot einlesen',
+        'hint' => 'Die angebotenen Einzelpreise werden in den Entwurf übernommen; zugeordnet wird über die Artikelnummer des Lieferanten. Die Preisanfrage dazu (GAEB X93) steht oben in der Leiste.',
+        'applied' => 'Preisangebot übernommen: :count Einzelpreise gesetzt.',
+    ],
     'confirmation' => [
-        'import' => 'Auftragsbestätigung (openTRANS) einlesen',
+        'import' => 'Antwort des Lieferanten einlesen (openTRANS, GAEB X97/X94)',
         'import_submit' => 'Bestätigung einlesen',
         'received' => 'bestätigt am :date, Auftrag :ref',
         'column' => 'Bestätigt',
         'error' => [
             'other_order' => 'Die Bestätigung gehört zu Bestellung :number.',
             'no_lines' => 'Keine Position der Bestätigung passt zu einer Bestellzeile.',
+            'gaeb_phase' => 'Die GAEB-Datei ist eine :phase und keine Antwort des Lieferanten; erwartet wird eine X97 (Auftragsbestätigung) oder X94 (Preisangebot).',
         ],
         'flash' => [
             'imported' => 'Auftragsbestätigung eingelesen: :count Positionen.',

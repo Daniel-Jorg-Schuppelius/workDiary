@@ -509,7 +509,7 @@ class BillingTransferService {
      *
      * @param  array{from?: string|CarbonInterface|null, to?: string|CarbonInterface|null}  $period
      * @param  list<int>|null  $sourceIds
-     * @return Collection<int, array{type: string, id: int, date: string|null, quantity: float, amount: float, unit: non-empty-string|null, unit_price: float|null, tax_rate: float|null, cost_position: non-empty-string|null}>
+     * @return Collection<int, array{type: string, id: int, date: string|null, quantity: float, amount: float, unit: string|null, unit_price: float|null, tax_rate: float|null, cost_position: string|null}>
      */
     private function collectMaterialSources(Customer $customer, array $period, ?array $sourceIds): Collection {
         $query = MaterialUsage::query()

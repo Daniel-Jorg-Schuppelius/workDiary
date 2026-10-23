@@ -330,7 +330,7 @@ class RequirementController extends Controller {
      * Norm-Filter-Optionen aus den vorhandenen Requirements der Org:
      * value = "norm|edition", label = normLabel().
      *
-     * @return Collection<int, array{value: non-falsy-string, label: string}>
+     * @return Collection<int, array{value: string, label: string}>
      */
     private function normOptions(): Collection {
         return IsmsRequirement::query()
@@ -347,7 +347,7 @@ class RequirementController extends Controller {
     }
 
     /**
-     * @param  Collection<int, array{value: non-falsy-string, label: string}>  $normOptions
+     * @param  Collection<int, array{value: string, label: string}>  $normOptions
      */
     private function validNormFilter(string $value, Collection $normOptions): string {
         return $normOptions->contains(fn(array $option): bool => $option['value'] === $value) ? $value : 'all';

@@ -115,14 +115,20 @@ class GaebImportService {
                 'up_components' => $this->mapUpComponents($parsed),
                 'totals' => $this->mapTotals($parsed->getTotals()),
                 'preamble' => $parsed->getPreamble() !== [] ? $parsed->getPreamble() : null,
+                'is_bid_comment_permitted' => $parsed->isBidCommentPermitted(),
                 'phase' => GaebPhase::fromCode($parsed->getPhaseCode()),
                 'status' => BoqItemStatus::Imported,
                 'created_by' => $options['created_by'] ?? null,
             ]);
 
             if ($target !== null) {
-                // Die Vorbemerkungen gehören zur Datei wie die Positionen (MVP-1303).
-                $boq->update(['preamble' => $parsed->getPreamble() !== [] ? $parsed->getPreamble() : null]);
+                // Die Vorbemerkungen gehören zur Datei wie die Positionen (MVP-1303). Die
+                // Freischaltung der Bieterkommentare steht nur in der Aufforderung; ein
+                // Angebot (X84) sagt dazu nichts und lässt sie stehen (MVP-1298).
+                $boq->update([
+                    'preamble' => $parsed->getPreamble() !== [] ? $parsed->getPreamble() : null,
+                    'is_bid_comment_permitted' => $parsed->isBidCommentPermitted() ?? $boq->is_bid_comment_permitted,
+                ]);
                 // Reimport ohne Ausführungsbezug: alte Struktur ersetzen.
                 $boq->items()->delete();
                 $boq->sections()->delete();
@@ -133,6 +139,14 @@ class GaebImportService {
             $this->persistCatalogs($boq, $organizationId, $parsed);
             $this->persistCostTypes($boq, $organizationId, $parsed);
             $this->persistChangeOrders($boq, $organizationId, $parsed);
+
+            // Kommentare ohne Freischaltung werden nicht übernommen (MVP-1298) — der Befund steht im Protokoll.
+            $dropped = $boq->is_bid_comment_permitted === false
+                ? count(array_filter($parsed->getItems(), static fn (GaebItem $item): bool => $item->getBidderComment() !== null))
+                : 0;
+            if ($dropped > 0) {
+                $report['warnings'][] = (string) __('gaeb.preflight.bid_comment_not_permitted', ['count' => $dropped]);
+            }
 
             $import = GaebImport::query()->create([
                 'organization_id' => $organizationId,
@@ -378,7 +392,7 @@ class GaebImportService {
                 'hourly_item' => $item->isHourlyItem(),
                 'discount_percent' => $item->getDiscountPercent(),
                 'vat_rate' => $item->getVatRate(),
-                'bidder_comment' => $item->getBidderComment(),
+                'bidder_comment' => $boq->is_bid_comment_permitted === false ? null : $item->getBidderComment(),
                 'alternative_bid_status' => $item->getAlternativeBidStatus(),
                 'external_id' => $item->getExternalId(),
                 'position' => $item->getPosition(),

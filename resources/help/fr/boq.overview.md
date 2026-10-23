@@ -65,6 +65,10 @@ contenu — le même état produit de manière reproductible le même hachage.
 
 ## Remarques préliminaires et contrôle avant remise
 
-Si le fichier GAEB contient des **remarques préliminaires** (textes contractuels avant les postes), la vue du bordereau les affiche dans une section dépliable, un texte par bloc et tel que livré. Une réimportation les remplace par celles du fichier. Pour l’instant, l’import les lit depuis GAEB 90 ; celles de DA XML suivront avec la prochaine version du composant GAEB.
+Si le fichier GAEB contient des **remarques préliminaires** (textes contractuels avant les postes), la vue du bordereau les affiche dans une section dépliable, un texte par bloc et tel que livré. Une réimportation les remplace par celles du fichier. Elles sont lues depuis GAEB 90 et depuis DA XML (textes complémentaires du bloc d’attribution).
 
 Le **contrôle avant remise** signale en outre les postes dont le prix est dans une autre devise que le bordereau et une TVA qui ne correspond pas au taux appliqué au total net ou qui, ajoutée à celui-ci, ne donne pas le total brut (au centime près).
+
+## Commentaires du soumissionnaire
+
+Dans la demande d’offre, le maître d’ouvrage décide si les soumissionnaires peuvent commenter les postes. La vue du bordereau indique ce que dit le fichier. Si les commentaires ne sont pas autorisés, l’import n’en reprend aucun (le journal d’import en indique le nombre) et l’offre n’en contient pas. Réimporter l’offre ne modifie pas ce que fixe la demande.

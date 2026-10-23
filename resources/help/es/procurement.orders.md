@@ -55,3 +55,7 @@ irreversible.
 ## Semáforo de justificantes
 
 Si el proveedor debe aportar justificantes obligatorios (por ejemplo, certificado de exención o seguro), la cabecera del pedido muestra su **semáforo**: verde si todo es válido, amarillo si algo vence pronto, rojo si faltan o han caducado. Al hacer clic se abre el resumen de justificantes. Si el rojo bloquea el envío lo sigue determinando el ajuste de los justificantes.
+
+## Respuesta del proveedor por GAEB
+
+Además de la confirmación openTRANS, **Importar respuesta del proveedor** también lee archivos comerciales GAEB. Un **X97** (confirmación del pedido X96) guarda cantidad, precio y fecha confirmados por línea e informa de desviaciones sin cambiar el pedido. Un **X94** (oferta de precios a la solicitud X93) aplica los precios unitarios ofertados al pedido mientras sea borrador. Las líneas se asignan por el número de artículo del proveedor; el archivo debe corresponder al número del pedido. La propia solicitud de precios (**Solicitud de precios (GAEB X93)**) y el campo para la oferta están en el pedido en borrador.

@@ -83,7 +83,7 @@ return [
     'import' => [
         'dialog_title' => 'Importa file bancario',
         'dialog_hint' => 'CAMT.053 (XML) o MT940. L’importazione crea i movimenti solo nell’area di verifica e non modifica alcuno stato di fattura o spesa.',
-        'format_hint' => 'Formati supportati: CAMT.053, MT940, OFX, QIF, QXF e PAIN.001/008 (ordini di pagamento come movimenti annunciati). Il riconoscimento avviene in base al contenuto, non all’estensione del file.',
+        'format_hint' => 'Formati supportati: CAMT.053, MT940, OFX, QIF, QXF e, come provvisori, CAMT.052/054, MT942 e PAIN.001/008 (anteprima fino all’estratto definitivo). Il riconoscimento avviene in base al contenuto, non all’estensione del file.',
         'file' => 'File',
         'account_optional' => 'Conto bancario (facoltativo, altrimenti assegnazione automatica tramite IBAN)',
         'flash' => [
@@ -95,7 +95,7 @@ return [
             'duplicate_file' => 'Questo file è già stato importato (duplicato).',
             'unavailable' => 'L’importazione bancaria è un modulo aggiuntivo opzionale e a pagamento, non attivato in questa installazione. L’attivazione è possibile su richiesta a :contact.',
             'unavailable_badge' => 'Modulo aggiuntivo non attivato',
-            'unsupported_format' => 'Il formato :format non è supportato per l\'importazione degli estratti conto (previsti: CAMT.053, MT940, OFX, QIF, QXF, PAIN.001/008).',
+            'unsupported_format' => 'Il formato :format non è supportato per l\'importazione degli estratti conto (previsti: CAMT.053, CAMT.052/054, MT940, MT942, OFX, QIF, QXF, PAIN.001/008).',
         ],
     ],
     'reconcile' => [
@@ -106,7 +106,7 @@ return [
             'unmatched' => 'Assegnazione annullata.',
         ],
         'error' => [
-            'provisional' => 'I movimenti provvisori (CAMT.052/054, PAIN) non vengono riconciliati. Attenda l\'estratto conto definitivo.',
+            'provisional' => 'I movimenti provvisori (CAMT.052/054, MT942, PAIN) non vengono riconciliati. Attenda l\'estratto conto definitivo.',
             'no_allocations' => 'Nessuna assegnazione indicata.',
             'target_not_found' => 'Destinazione dell’assegnazione non trovata.',
         ],

@@ -129,6 +129,10 @@ return [
     'calculation' => [
         'unpriced_hint' => ':count voce non porta alcun prezzo e resta quindi fuori dalla differenza complessiva.|:count voci non portano alcun prezzo e restano quindi fuori dalla differenza complessiva.',
     ],
+    'bid_comment' => [
+        'permitted' => 'Commenti dell’offerente ammessi',
+        'not_permitted' => 'Commenti dell’offerente non ammessi',
+    ],
     'preamble' => [
         'title' => 'Premesse',
     ],
@@ -154,6 +158,7 @@ return [
         'currency_mismatch' => 'Voce :ref: prezzo in :currency, ma il computo usa :expected.',
         'vat_mismatch' => 'L\'IVA (:stated) non corrisponde al :rate % del totale netto (:computed).',
         'gross_mismatch' => 'Il totale lordo (:stated) non è pari a netto più IVA (:computed).',
+        'bid_comment_not_permitted' => ':count commento/i dell’offerente non importato/i: il committente non ha abilitato i commenti in questo computo.',
         'complement_empty' => 'Posizione :ref: l\'integrazione di testo dell\'offerente :mark non è compilata.',
         'contractor_missing' => 'Questa fase richiede l\'indirizzo dell\'offerente (nome, via, CAP e città nei dati anagrafici della fatturazione elettronica).',
     ],

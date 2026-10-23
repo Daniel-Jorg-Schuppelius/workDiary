@@ -158,10 +158,11 @@ class PurchaseOrderController extends Controller {
         } elseif ($format === 'opentrans' || $format === 'opentrans-order') {
             $xml = $export->toOpenTrans($purchaseOrder);
             $prefix = 'openTRANS';
-        } elseif ($format === 'gaeb' || $format === 'x96') {
+        } elseif ($format === 'gaeb' || $format === 'x96' || $format === 'x93') {
             // GAEB-Handelsdatei: eigene Endung, damit die Warenwirtschaft der
-            // Gegenseite sie erkennt.
-            $result = $export->toGaeb($purchaseOrder);
+            // Gegenseite sie erkennt. X93 fragt Preise an; das Angebot (X94)
+            // kommt über den Antwort-Import zurück (MVP-1300).
+            $result = $export->toGaeb($purchaseOrder, $format === 'x93' ? \ERechnungToolkit\Enums\GaebPhase::PriceInquiry : \ERechnungToolkit\Enums\GaebPhase::Order);
 
             return response($result['content'], 200, [
                 'Content-Type' => 'application/xml; charset=UTF-8',
@@ -263,7 +264,7 @@ class PurchaseOrderController extends Controller {
         return back()->with('success', __('procurement.advice.flash.imported'));
     }
 
-    /** Auftragsbestätigung des Lieferanten als openTRANS ORDERRESPONSE (MVP-964). */
+    /** Antwort des Lieferanten: openTRANS ORDERRESPONSE (MVP-964), GAEB X97 oder X94 (MVP-1300). */
     public function importConfirmation(Request $request, PurchaseOrder $purchaseOrder, \App\Services\Procurement\OrderResponseImportService $import): RedirectResponse {
         $this->canManage();
         $request->validate(['confirmation_xml' => ['required', 'file', 'mimetypes:application/xml,text/xml', 'max:2048']]);
@@ -271,6 +272,9 @@ class PurchaseOrderController extends Controller {
             $result = $import->import(File::read((string) $request->file('confirmation_xml')?->getRealPath()), $purchaseOrder);
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
+        }
+        if ($result['kind'] === \App\Services\Procurement\Dto\OrderResponseData::OFFER) {
+            return back()->with('success', __('procurement.offer.applied', ['count' => $result['confirmed']]));
         }
         $redirect = back()->with('success', __('procurement.confirmation.flash.imported', ['count' => $result['confirmed']]));
 

@@ -14,7 +14,7 @@ use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
 use App\Models\Time\TimeEntry;
-use App\Plugins\Toggl\Api\{TogglClientFactory};
+use App\Plugins\Toggl\Api\TogglClientFactory;
 use App\Plugins\Toggl\Services\TogglImportService;
 use App\Plugins\Toggl\Sources\TogglCsvParser;
 use App\Plugins\Toggl\{TogglConfig, TogglPlugin};

@@ -18,9 +18,14 @@ use App\Models\Platform\User;
 use App\Models\Supplier\Supplier;
 use App\Services\Gaeb\GaebOrderExportService;
 use App\Services\Procurement\PurchaseOrderService;
+use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Money;
+use ERechnungToolkit\Entities\Gaeb\{GaebBoq, GaebOrder, GaebOrderItem};
 use ERechnungToolkit\Enums\GaebPhase;
+use ERechnungToolkit\Generators\GaebDaXmlGenerator;
 use ERechnungToolkit\Validators\GaebSchemaValidator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -93,6 +98,9 @@ final class PurchaseOrderGaebExportTest extends TestCase {
         $this->assertStringContainsString('<DP>96</DP>', $result['content']);
         $this->assertStringContainsString('<TaxNo>205/5711/0041</TaxNo>', $result['content']);
         $this->assertStringEndsWith('.x96', $result['filename']);
+        // Bestellnummer als PartNo; die Bestätigungsnummer vergibt der Händler.
+        $this->assertStringContainsString('<PartNo>', $result['content']);
+        $this->assertStringNotContainsString('<OrderConfNo>', $result['content']);
     }
 
     /**
@@ -139,5 +147,65 @@ final class PurchaseOrderGaebExportTest extends TestCase {
 
         $this->assertNotSame([], $result['losses']);
         $this->assertStringContainsString('Artikelnummer', implode(' ', $result['losses']));
+    }
+
+    /** Antwort des Händlers als GAEB-Handelsbeleg (MVP-1300). */
+    private function reply(GaebPhase $phase, GaebOrder $order): UploadedFile {
+        // Echte Uploads erkennt der Server am Inhalt (text/xml); die Fake-Datei nur an der Endung.
+        return UploadedFile::fake()->createWithContent('antwort.x' . $phase->value, (new GaebDaXmlGenerator)->generate(new GaebBoq, $phase, 'EUR', '2026-10-01', order: $order))->mimeType('text/xml');
+    }
+
+    public function test_order_confirmation_x97_is_read_like_an_order_response(): void {
+        $order = $this->orderWithLine();
+        $order->lines->first()?->update(['supplier_sku' => 'ZE-100']);
+        $confirmation = new GaebOrder(
+            deliveryDate: '2026-10-08',
+            items: [new GaebOrderItem('ZE-100', 'Zement', '10', 'Stk', Money::of('99.00', CurrencyCode::Euro), supplierArticleNo: 'ZE-100')],
+            orderConfirmationNo: 'AB-77',
+            orderNo: (string) $order->number,
+        );
+
+        $this->actingAs($this->admin)->post(route('purchase-orders.confirmation.import', $order), ['confirmation_xml' => $this->reply(GaebPhase::OrderConfirmation, $confirmation)])
+            ->assertSessionHas('success')->assertSessionHas('warning');
+
+        $order->refresh();
+        $this->assertSame('AB-77', $order->supplier_order_ref);
+        $line = $order->lines()->sole();
+        $this->assertSame('10.0000', (string) $line->confirmed_qty);
+        $this->assertSame('99.0000', (string) $line->confirmed_unit_price);
+        $this->assertSame('2026-10-08', $line->confirmed_delivery_on?->toDateString());
+    }
+
+    public function test_price_offer_x94_sets_the_prices_of_the_draft(): void {
+        $order = $this->orderWithLine();
+        $order->lines->first()?->update(['supplier_sku' => 'ZE-100']);
+        $offer = new GaebOrder(
+            deliveryDate: '2026-10-08',
+            items: [new GaebOrderItem('ZE-100', 'Zement', '12', 'Stk', Money::of('87.50', CurrencyCode::Euro), supplierArticleNo: 'ZE-100')],
+            inquiryNo: (string) $order->number,
+            offerNo: 'ANG-5',
+        );
+
+        $this->actingAs($this->admin)->post(route('purchase-orders.confirmation.import', $order), ['confirmation_xml' => $this->reply(GaebPhase::PriceOffer, $offer)])
+            ->assertSessionHas('success', __('procurement.offer.applied', ['count' => 1]));
+        $this->assertTrue(Money::of('87.50', CurrencyCode::Euro)->compareTo($order->lines()->sole()->unit_price ?? Money::zero(CurrencyCode::Euro)) === 0);
+
+        // Die eigene Bestellung (X96) ist keine Antwort des Händlers.
+        $this->actingAs($this->admin)->post(route('purchase-orders.confirmation.import', $order), ['confirmation_xml' => UploadedFile::fake()->createWithContent('eigen.x96', app(GaebOrderExportService::class)->export($order->fresh(['lines', 'supplier', 'organization']))['content'])->mimeType('text/xml')])
+            ->assertSessionHas('error', __('procurement.confirmation.error.gaeb_phase', ['phase' => 'X96']));
+    }
+
+    /** Der Entwurf bietet die Preisanfrage (X93) und den Upload des Angebots (X94) an (MVP-1300). */
+    public function test_draft_offers_price_inquiry_and_offer_upload(): void {
+        $order = $this->orderWithLine();
+
+        $this->actingAs($this->admin)->get(route('purchase-orders.show', $order))->assertOk()
+            ->assertSee(route('purchase-orders.order-xml', ['purchaseOrder' => $order, 'format' => 'x93']), false)
+            ->assertSee('id="offer_xml"', false)
+            ->assertSeeText('Preisangebot des Händlers einlesen (GAEB X94)');
+
+        $inquiry = $this->actingAs($this->admin)->get(route('purchase-orders.order-xml', ['purchaseOrder' => $order, 'format' => 'x93']))->assertOk();
+        $this->assertStringContainsString('<DP>93</DP>', (string) $inquiry->getContent());
+        $this->assertStringEndsWith('.x93"', (string) $inquiry->headers->get('Content-Disposition'));
     }
 }

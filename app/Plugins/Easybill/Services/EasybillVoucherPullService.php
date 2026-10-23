@@ -15,7 +15,7 @@ namespace App\Plugins\Easybill\Services;
 use App\Enums\Billing\{DocumentDirection, DocumentKind};
 use App\Enums\Finance\AccountingVoucherState;
 use App\Plugins\Easybill\Api\EasybillClientFactory;
-use App\Plugins\Easybill\{EasybillPlugin};
+use App\Plugins\Easybill\EasybillPlugin;
 use App\Services\Finance\Accounting\Vouchers\{MirroredVoucher, VoucherMirror, VoucherPuller};
 use Illuminate\Support\Carbon;
 

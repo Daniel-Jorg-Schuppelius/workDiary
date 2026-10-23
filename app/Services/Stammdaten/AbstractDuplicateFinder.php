@@ -161,12 +161,12 @@ abstract class AbstractDuplicateFinder {
     protected function dismissedKeys(Organization $organization): array {
         [$lowCol, $highCol] = $this->dismissalKeyColumns();
 
-        return $this->dismissalModel()::query()
+        $keys = $this->dismissalModel()::query()
             ->where('organization_id', $organization->id)
             ->get([$lowCol, $highCol])
-            ->mapWithKeys(fn(Model $d): array => [
-                $d->getAttribute($lowCol) . '-' . $d->getAttribute($highCol) => true,
-            ])
+            ->map(fn(Model $d): string => $d->getAttribute($lowCol) . '-' . $d->getAttribute($highCol))
             ->all();
+
+        return array_fill_keys($keys, true);
     }
 }

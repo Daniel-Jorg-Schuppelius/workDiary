@@ -15,7 +15,7 @@ use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
 use App\Models\Project\Project;
 use App\Plugins\Support\{ImportedTimeEntry, MatchingTimeImportService, RemoteSyncWindow};
-use App\Plugins\Toggl\Api\{TogglClientFactory};
+use App\Plugins\Toggl\Api\TogglClientFactory;
 use App\Plugins\Toggl\Sources\{TogglCsvParser, TogglEntry};
 use App\Plugins\Toggl\{TogglConfig, TogglPlugin};
 use App\Support\Tz;

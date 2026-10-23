@@ -62,7 +62,7 @@ class ReadinessService {
      * Aggregiert alle Dashboard-Blöcke für einen Geltungsbereich.
      *
      * @return array{
-     *     soa: Collection<int, array{norm: string, total: int<0, max>, applicable: int<0, max>, covered: int<0, max>, quote: int}>,
+     *     soa: Collection<int, array{norm: string, total: int, applicable: int, covered: int, quote: int}>,
      *     high_risks: array{count: int, top: Collection<int, IsmsRisk>},
      *     reviews: array{overdue_count: int, overdue: Collection<int, IsmsRisk>, unassessed_count: int, unassessed: Collection<int, IsmsRisk>},
      *     actions: array{overdue_count: int, overdue: Collection<int, IsmsCorrectiveAction>},
@@ -121,7 +121,7 @@ class ReadinessService {
      * SoA-Fortschritt je Norm: Statements gesamt, davon anwendbar und die
      * Quote der anwendbaren mit Umsetzungsstatus implemented/partial.
      *
-     * @return Collection<int, array{norm: string, total: int<0, max>, applicable: int<0, max>, covered: int<0, max>, quote: int}>
+     * @return Collection<int, array{norm: string, total: int, applicable: int, covered: int, quote: int}>
      */
     private function soaProgress(IsmsScope $scope): Collection {
         return IsmsApplicabilityStatement::query()

@@ -126,6 +126,7 @@ final class GaebManifest extends Manifest {
     public function bindings(): array {
         return [
             \App\Services\Procurement\Contracts\PurchaseOrderGaebExporter::class => \App\Services\Gaeb\GaebOrderExportService::class,
+            \App\Services\Procurement\Contracts\PurchaseOrderGaebResponseReader::class => \App\Services\Gaeb\GaebOrderResponseReader::class,
             \App\Services\Invoicing\Contracts\InvoiceGaebExporter::class => \App\Services\Gaeb\GaebInvoiceExportService::class,
             \App\Services\Takeoff\Contracts\TakeoffProgressRecorder::class => \App\Services\Gaeb\BoqProgressService::class,
         ];

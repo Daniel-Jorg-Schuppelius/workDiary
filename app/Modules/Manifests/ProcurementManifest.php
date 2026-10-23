@@ -96,6 +96,7 @@ final class ProcurementManifest extends Manifest {
     public function contracts(): array {
         return [
             \App\Services\Procurement\Contracts\PurchaseOrderGaebExporter::class => \App\Services\Procurement\Contracts\NullPurchaseOrderGaebExporter::class,
+            \App\Services\Procurement\Contracts\PurchaseOrderGaebResponseReader::class => \App\Services\Procurement\Contracts\NullPurchaseOrderGaebResponseReader::class,
         ];
     }
 }

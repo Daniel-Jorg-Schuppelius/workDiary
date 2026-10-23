@@ -56,3 +56,7 @@ irréversible.
 ## Feu des justificatifs
 
 Si des justificatifs obligatoires sont exigés du fournisseur (par exemple attestation d’exonération ou assurance), l’en-tête de la commande affiche leur **feu** : vert si tout est valable, jaune si une échéance approche, rouge s’ils manquent ou ont expiré. Un clic ouvre la vue d’ensemble des justificatifs. Le blocage de la transmission en cas de rouge reste régi par le paramètre des justificatifs.
+
+## Réponse du fournisseur via GAEB
+
+Outre la confirmation openTRANS, **Importer la réponse du fournisseur** lit aussi les fichiers commerciaux GAEB. Un **X97** (confirmation de la commande X96) enregistre la quantité, le prix et la date confirmés par ligne et signale les écarts sans modifier la commande. Un **X94** (offre de prix à la demande X93) reprend les prix unitaires proposés dans la commande tant qu’elle est en brouillon. Les lignes sont rapprochées par la référence article du fournisseur ; le fichier doit correspondre au numéro de la commande. La demande de prix elle-même (**Demande de prix (GAEB X93)**) et le champ pour l’offre se trouvent dans la commande en brouillon.

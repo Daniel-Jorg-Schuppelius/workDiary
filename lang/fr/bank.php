@@ -83,7 +83,7 @@ return [
     'import' => [
         'dialog_title' => 'Importer un fichier bancaire',
         'dialog_hint' => 'CAMT.053 (XML) ou MT940. L’import crée uniquement les opérations dans la zone de contrôle et ne modifie aucun statut de facture ou de frais.',
-        'format_hint' => 'Formats pris en charge : CAMT.053, MT940, OFX, QIF, QXF ainsi que PAIN.001/008 (ordres de paiement en tant qu’opérations annoncées). La détection se fait selon le contenu, pas selon l’extension du fichier.',
+        'format_hint' => 'Formats pris en charge : CAMT.053, MT940, OFX, QIF, QXF ainsi que, à titre provisoire, CAMT.052/054, MT942 et PAIN.001/008 (aperçu jusqu’au relevé définitif). La détection se fait selon le contenu, pas selon l’extension du fichier.',
         'file' => 'Fichier',
         'account_optional' => 'Compte bancaire (facultatif, sinon rapprochement automatique via IBAN)',
         'flash' => [
@@ -95,7 +95,7 @@ return [
             'duplicate_file' => 'Ce fichier a déjà été importé (doublon).',
             'unavailable' => 'L’import bancaire est un module complémentaire optionnel et payant, non activé dans cette installation. Son activation est possible sur demande à :contact.',
             'unavailable_badge' => 'Module complémentaire non activé',
-            'unsupported_format' => 'Le format :format n\'est pas pris en charge pour l\'import de relevés bancaires (attendu : CAMT.053, MT940, OFX, QIF, QXF, PAIN.001/008).',
+            'unsupported_format' => 'Le format :format n\'est pas pris en charge pour l\'import de relevés bancaires (attendu : CAMT.053, CAMT.052/054, MT940, MT942, OFX, QIF, QXF, PAIN.001/008).',
         ],
     ],
     'reconcile' => [
@@ -106,7 +106,7 @@ return [
             'unmatched' => 'Affectation annulée.',
         ],
         'error' => [
-            'provisional' => 'Les opérations provisoires (CAMT.052/054, PAIN) ne sont pas rapprochées. Attendez le relevé définitif.',
+            'provisional' => 'Les opérations provisoires (CAMT.052/054, MT942, PAIN) ne sont pas rapprochées. Attendez le relevé définitif.',
             'no_allocations' => 'Aucune affectation n’a été indiquée.',
             'target_not_found' => 'La cible d’affectation est introuvable.',
         ],

@@ -67,6 +67,10 @@ el mismo hash.
 
 ## Observaciones preliminares y comprobación antes de la entrega
 
-Si el archivo GAEB contiene **observaciones preliminares** (textos contractuales antes de las partidas), la vista del presupuesto las muestra en una sección desplegable, un texto por bloque y sin cambios. Una reimportación las sustituye con el archivo. Por ahora la importación las lee de GAEB 90; las de DA XML llegan con la próxima versión del componente GAEB.
+Si el archivo GAEB contiene **observaciones preliminares** (textos contractuales antes de las partidas), la vista del presupuesto las muestra en una sección desplegable, un texto por bloque y sin cambios. Una reimportación las sustituye con el archivo. Se leen de GAEB 90 y de DA XML (textos adicionales del bloque de adjudicación).
 
 La **comprobación antes de la entrega** avisa además de partidas con precio en otra moneda que el presupuesto y de un IVA que no corresponde al tipo sobre el total neto o que, sumado a este, no da el total bruto (al céntimo).
+
+## Comentarios del licitador
+
+En la solicitud de oferta, el cliente decide si los licitadores pueden comentar las partidas. La vista del presupuesto muestra lo que indica el archivo. Si no se permiten comentarios, la importación no los toma (el registro de importación indica cuántos) y la oferta no contiene ninguno. Reimportar la oferta no cambia lo fijado en la solicitud.

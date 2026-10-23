@@ -10,6 +10,15 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Nach dem Toolkit-Release (Phase 156, MVP-1275, 1298, 1300; erechnung-toolkit
+  0.20, financial-formats 1.20): MT942 (Zwischenmeldung) wird als vorläufiger
+  Auszug gelesen wie CAMT.052. Bieterkommentare folgen der Freischaltung des
+  Auftraggebers (`BidCommPerm`): ohne sie übernimmt der Import keine
+  Kommentare und das Angebot enthält keine. Vorbemerkungen kommen jetzt auch
+  aus DA XML. Die Antwort des Händlers auf dem GAEB-Handelsweg wird gelesen:
+  X97 (Auftragsbestätigung) wie die openTRANS-Bestätigung, X94
+  (Preisangebot) setzt die Einzelpreise eines Bestellentwurfs; dafür bietet
+  der Entwurf die Preisanfrage (GAEB X93) und den Upload des Angebots an.
 - GAEB und Vergabe (Phase 156, MVP-1297, 1299, 1303): Die Prüfung vor der
   Abgabe meldet Preise in fremder Währung und eine Umsatzsteuer oder
   Bruttosumme, die nicht zur Nettosumme passt. Fristen offener
@@ -1824,6 +1833,12 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
 
 ### Fixed
 
+- Bestellung: die Nachweis-Ampel zeigte den rohen Textschlüssel, weil eine
+  zweite gleichnamige Textgruppe die erste überschrieb.
+- Umrandete Warnabzeichen waren auf hellem Grund kaum lesbar (Gelb auf
+  Weiß); die Schrift ist jetzt dunkler, im dunklen Schema heller.
+- GAEB-Bestellung (X96): die Bestellnummer stand in `OrderConfNo` statt in
+  `PartNo`; die Bestätigungsnummer vergibt der Händler mit der X97.
 - Prozedurlauf: „Als zweite Person gegenzeichnen“ war nie erreichbar, weil
   ein Vier-Augen-Schritt ohne Gegenzeichnung als gesperrt galt und die
   Ansicht dann keine Aktionen anbot.

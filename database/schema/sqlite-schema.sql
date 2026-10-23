@@ -4559,6 +4559,7 @@ CREATE TABLE IF NOT EXISTS "bill_of_quantities"(
   "source_format" varchar,
   "is_framework" tinyint(1) not null default '0',
   "preamble" text,
+  "is_bid_comment_permitted" tinyint(1),
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("project_id") references "projects"("id") on delete set null,
   foreign key("diary_entry_id") references "diary_entries"("id") on delete set null,
@@ -24975,3 +24976,4 @@ INSERT INTO migrations VALUES(1007,'2027_03_31_130200_add_warranty_period_to_ret
 INSERT INTO migrations VALUES(1008,'2027_03_31_130300_add_is_template_to_customer_circulars_table',1);
 INSERT INTO migrations VALUES(1009,'2027_03_31_140000_add_provisional_and_chain_to_bank_statements_table',1);
 INSERT INTO migrations VALUES(1010,'2027_03_31_150000_add_preamble_to_bill_of_quantities_table',2);
+INSERT INTO migrations VALUES(1011,'2027_03_31_160000_add_bid_comment_permission_to_bill_of_quantities_table',3);

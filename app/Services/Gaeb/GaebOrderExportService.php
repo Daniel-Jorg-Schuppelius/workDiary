@@ -80,8 +80,9 @@ final class GaebOrderExportService implements PurchaseOrderGaebExporter {
             // Die eigene Anschrift kommt aus den E-Rechnungs-Stammdaten -
             // eine zweite Absenderpflege wäre eine Fehlerquelle.
             customer: $this->ownParty($order),
-            orderConfirmationNo: $phase === GaebPhase::Order ? $order->number : null,
             inquiryNo: $phase === GaebPhase::PriceInquiry ? $order->number : null,
+            // Die Bestellnummer steht in `PartNo`; `OrderConfNo` vergibt der Händler mit seiner Bestätigung (X97).
+            orderNo: $phase === GaebPhase::Order ? $order->number : null,
         );
     }
 

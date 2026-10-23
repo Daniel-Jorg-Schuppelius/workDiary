@@ -14,7 +14,6 @@ namespace App\Services\Inventory;
 
 use App\Models\Article\ArticleVariant;
 use App\Models\Inventory\{StockLevelSetting, Warehouse};
-use Illuminate\Support\Collection;
 
 /**
  * Mindest-/Meldebestand je Variante und Lagerort (Feature 048, MVP-068) und
@@ -41,32 +40,33 @@ class StockLevelService {
      * Variante/Lagerort-Kombinationen, deren verfügbare Menge den Meldebestand
      * unterschreitet (Beschaffungsbedarf).
      *
-     * @return Collection<int, array{setting: StockLevelSetting, available: numeric-string, shortfall: numeric-string}>
+     * Liste statt Collection: die Mengen gehen als numeric-string in die
+     * bc-Rechnung der Bestellvorschläge, und Collection-Pipelines geben diesen
+     * Typ nicht weiter.
+     *
+     * @return list<array{setting: StockLevelSetting, available: numeric-string, shortfall: numeric-string}>
      */
-    public function belowReorder(Warehouse $warehouse): Collection {
+    public function belowReorder(Warehouse $warehouse): array {
         $balances = $this->ledger->balancesByVariant($warehouse);
+        $rows = [];
 
-        return StockLevelSetting::query()
-            ->where('warehouse_id', $warehouse->id)
-            ->with('variant')
-            ->get()
-            ->map(function (StockLevelSetting $setting) use ($balances): ?array {
-                $variant = $setting->variant;
-                if ($variant === null) {
-                    return null;
-                }
-                $available = InventoryLedger::availableFromBalances($balances[(int) $variant->id] ?? []);
-                if (bccomp($available, $setting->reorder_point, 4) >= 0) {
-                    return null;
-                }
+        $settings = StockLevelSetting::query()->where('warehouse_id', $warehouse->id)->with('variant')->get();
+        foreach ($settings as $setting) {
+            $variant = $setting->variant;
+            if ($variant === null) {
+                continue;
+            }
+            $available = InventoryLedger::availableFromBalances($balances[(int) $variant->id] ?? []);
+            if (bccomp($available, $setting->reorder_point, 4) >= 0) {
+                continue;
+            }
+            $rows[] = [
+                'setting' => $setting,
+                'available' => $available,
+                'shortfall' => bcsub($setting->reorder_point, $available, 4),
+            ];
+        }
 
-                return [
-                    'setting' => $setting,
-                    'available' => $available,
-                    'shortfall' => bcsub($setting->reorder_point, $available, 4),
-                ];
-            })
-            ->filter()
-            ->values();
+        return $rows;
     }
 }

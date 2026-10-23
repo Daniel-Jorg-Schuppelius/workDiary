@@ -19,7 +19,7 @@ use App\Enums\Contracts\HasLabel;
  * (Bauturbo A15) ergänzt den allgemeinen Finanzformat-Import: OFX (1.x SGML/
  * 2.x XML), QIF, QXF sowie PAIN.001 (Überweisungs-) und PAIN.008
  * (Lastschrift-Aufträge als angekündigte Zahlungen). MVP-1274: CAMT.052
- * (Tagesauszug) und CAMT.054 (Umsatzmeldung).
+ * (Tagesauszug) und CAMT.054 (Umsatzmeldung), MVP-1275: MT942 (Zwischenmeldung).
  */
 enum BankStatementFormat: string implements HasLabel {
     use HasOptions;
@@ -28,6 +28,7 @@ enum BankStatementFormat: string implements HasLabel {
     case Camt052 = 'camt052';
     case Camt054 = 'camt054';
     case Mt940 = 'mt940';
+    case Mt942 = 'mt942';
     case Ofx = 'ofx';
     case Qif = 'qif';
     case Qxf = 'qxf';
@@ -42,7 +43,7 @@ enum BankStatementFormat: string implements HasLabel {
     public function tone(): string {
         return match ($this) {
             self::Camt053 => 'info',
-            self::Camt052, self::Camt054 => 'ghost',
+            self::Camt052, self::Camt054, self::Mt942 => 'ghost',
             self::Mt940 => 'neutral',
             self::Ofx, self::Qif, self::Qxf => 'accent',
             self::Pain001, self::Pain008 => 'warning',
@@ -55,7 +56,7 @@ enum BankStatementFormat: string implements HasLabel {
      */
     public function isProvisional(): bool {
         return match ($this) {
-            self::Camt052, self::Camt054, self::Pain001, self::Pain008 => true,
+            self::Camt052, self::Camt054, self::Mt942, self::Pain001, self::Pain008 => true,
             default => false,
         };
     }

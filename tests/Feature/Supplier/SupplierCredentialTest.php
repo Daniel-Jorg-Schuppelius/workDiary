@@ -282,7 +282,8 @@ class SupplierCredentialTest extends TestCase {
             'status' => \App\Enums\Procurement\PurchaseOrderStatus::Draft->value,
             'currency' => 'EUR',
         ]);
-        $badge = fn (CredentialStatus $status): string => __('procurement.credentials.badge', ['status' => $status->label()]);
+        // Wörtlich statt über __(): Mit demselben Schlüssel bestünde der Test auch bei fehlendem Text.
+        $badge = fn (CredentialStatus $status): string => 'Nachweise: ' . $status->label();
 
         $this->actingAs($this->admin)->get(route('purchase-orders.show', $order))->assertOk()->assertSee($badge(CredentialStatus::Missing));
         $this->credential(now()->addYear()->toDateString());

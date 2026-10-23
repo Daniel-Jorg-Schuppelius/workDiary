@@ -16,7 +16,7 @@ use App\Enums\Patrol\PatrolRunStatus;
 use App\Models\Classification\EntryType;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Location\LocationDeviceToken;
-use App\Models\Patrol\{PatrolRoute};
+use App\Models\Patrol\PatrolRoute;
 use App\Models\Platform\User;
 use App\Services\Patrol\PatrolService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

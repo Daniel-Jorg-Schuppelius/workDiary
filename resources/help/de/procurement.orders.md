@@ -55,3 +55,7 @@ buchen**; das **Stornieren** einer Bestellung ist nicht umkehrbar.
 ## Nachweis-Ampel
 
 Verlangt der Lieferant Pflichtnachweise (etwa Freistellungsbescheinigung oder Versicherung), zeigt die Bestellung im Kopf ihre **Ampel**: grün, wenn alles gültig ist, gelb bei bald ablaufenden, rot bei fehlenden oder abgelaufenen Nachweisen. Der Klick führt zur Nachweisübersicht. Ob ein roter Stand die Übermittlung sperrt, regelt weiter die Einstellung der Nachweise.
+
+## Antwort des Händlers über GAEB
+
+Neben der openTRANS-Bestätigung liest **Antwort des Lieferanten einlesen** auch GAEB-Handelsdateien. Eine **X97** (Auftragsbestätigung auf die Bestellung X96) legt bestätigte Menge, Preis und Termin je Zeile ab und meldet Abweichungen, ohne die Bestellung zu ändern. Ein **X94** (Preisangebot auf die Preisanfrage X93) übernimmt die angebotenen Einzelpreise in die Bestellung, solange sie Entwurf ist. Zugeordnet wird über die Artikelnummer des Lieferanten; die Datei muss zur Nummer der Bestellung passen. Die Preisanfrage selbst (**Preisanfrage (GAEB X93)**) und das Feld für das Angebot stehen im Bestellentwurf.

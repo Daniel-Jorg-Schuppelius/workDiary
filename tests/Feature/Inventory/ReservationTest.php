@@ -119,8 +119,8 @@ final class ReservationTest extends TestCase {
 
         $below = $this->levels->belowReorder($this->warehouse);
         $this->assertCount(1, $below);
-        $this->assertSame('5.0000', $below->first()['available']);
-        $this->assertSame('3.0000', $below->first()['shortfall']);
+        $this->assertSame('5.0000', $below[0]['available']);
+        $this->assertSame('3.0000', $below[0]['shortfall']);
 
         $this->ledger->receipt($this->variant, $this->warehouse, '5'); // available 10 ≥ reorder 8
         $this->assertCount(0, $this->levels->belowReorder($this->warehouse));

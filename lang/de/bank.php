@@ -83,7 +83,7 @@ return [
     'import' => [
         'dialog_title' => 'Bankdatei importieren',
         'dialog_hint' => 'CAMT.053 (XML) oder MT940. Der Import legt die Umsätze nur im Prüfbereich an und ändert keine Rechnungs- oder Spesenstatus.',
-        'format_hint' => 'Unterstützte Formate: CAMT.053, MT940, OFX, QIF, QXF sowie PAIN.001/008 (Zahlungsaufträge als angekündigte Umsätze). Die Erkennung erfolgt anhand des Inhalts, nicht der Dateiendung.',
+        'format_hint' => 'Unterstützte Formate: CAMT.053, MT940, OFX, QIF, QXF sowie vorläufig CAMT.052/054, MT942 und PAIN.001/008 (Vorschau bis zum verbindlichen Auszug). Die Erkennung erfolgt anhand des Inhalts, nicht der Dateiendung.',
         'file' => 'Datei',
         'account_optional' => 'Bankkonto (optional, sonst Auto-Zuordnung über IBAN)',
         'flash' => [
@@ -95,7 +95,7 @@ return [
             'duplicate_file' => 'Diese Datei wurde bereits importiert (Dublette).',
             'unavailable' => 'Der Bankimport ist ein optionales, kostenpflichtiges Zusatzmodul und in dieser Installation nicht aktiviert. Eine Freischaltung ist auf Anfrage unter :contact möglich.',
             'unavailable_badge' => 'Zusatzmodul nicht aktiviert',
-            'unsupported_format' => 'Das Format :format wird für den Kontoauszugsimport nicht unterstützt (erwartet: CAMT.053, MT940, OFX, QIF, QXF, PAIN.001/008).',
+            'unsupported_format' => 'Das Format :format wird für den Kontoauszugsimport nicht unterstützt (erwartet: CAMT.053, CAMT.052/054, MT940, MT942, OFX, QIF, QXF, PAIN.001/008).',
         ],
     ],
     'reconcile' => [
@@ -106,7 +106,7 @@ return [
             'unmatched' => 'Zuordnung zurückgenommen.',
         ],
         'error' => [
-            'provisional' => 'Vorläufige Umsätze (CAMT.052/054, PAIN) werden nicht abgeglichen. Warten Sie auf den verbindlichen Kontoauszug.',
+            'provisional' => 'Vorläufige Umsätze (CAMT.052/054, MT942, PAIN) werden nicht abgeglichen. Warten Sie auf den verbindlichen Kontoauszug.',
             'no_allocations' => 'Es wurde keine Zuordnung angegeben.',
             'target_not_found' => 'Das Zuordnungsziel wurde nicht gefunden.',
         ],

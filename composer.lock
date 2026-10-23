@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4f86fb76ff9d573f7e9d443381913b7f",
+    "content-hash": "7ed71583eb9c5927f2a33308c81e8f99",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -878,16 +878,16 @@
         },
         {
             "name": "daniel-jorg-schuppelius/php-erechnung-toolkit",
-            "version": "v0.19.0",
+            "version": "v0.20.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit.git",
-                "reference": "fabbacc869a8eed6010d93909ce21eb380945a6f"
+                "reference": "7b4c63b7ce85adf2059336454f79c132217a00c6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/zipball/fabbacc869a8eed6010d93909ce21eb380945a6f",
-                "reference": "fabbacc869a8eed6010d93909ce21eb380945a6f",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/zipball/7b4c63b7ce85adf2059336454f79c132217a00c6",
+                "reference": "7b4c63b7ce85adf2059336454f79c132217a00c6",
                 "shasum": ""
             },
             "require": {
@@ -950,7 +950,7 @@
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/issues",
                 "source": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit"
             },
-            "time": "2026-10-21T18:30:20+00:00"
+            "time": "2026-10-22T20:48:15+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/php-pdf-toolkit",
