@@ -1,7 +1,7 @@
 ---
 title: "Urlaub & Krankheit"
 topic: absences.manage
-version: 3
+version: 4
 keywords:
     - Abwesenheit
     - Urlaubsantrag
@@ -36,6 +36,10 @@ oder fordern eine Korrektur an.
 Gesundheitsdaten sind besonders schutzbedürftig. Erfassen Sie nur notwendige
 Angaben, beschränken Sie Anhänge auf erforderliche Nachweise und beachten Sie die
 vorgegebenen Zugriffs- und Aufbewahrungsregeln.
+
+**Eigener Antrag:** Über den eigenen Urlaub entscheidet niemand selbst, auch
+keine Administration – außer es gibt in der Organisation sonst niemanden mit
+dem Genehmigungsrecht; das Audit-Protokoll vermerkt diese Selbstfreigabe.
 
 ## Krankmeldung und Lohnfortzahlung
 

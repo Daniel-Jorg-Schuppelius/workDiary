@@ -1,7 +1,7 @@
 ---
 title: "Recherche et recherche d'activités"
 topic: search.overview
-version: 3
+version: 4
 keywords:
     - recherche plein texte
     - recherche globale
@@ -24,8 +24,21 @@ quel client ?** Elle parcourt les saisies de temps (y compris les notes de
 télémaintenance et les lignes de feuilles de temps), les missions avec
 commentaires, les notes de feuilles de temps, les tickets, procès-verbaux,
 points ouverts, notes de communication et articles de connaissances — chacun
-avec projet, client final et client comme contexte. Les données de base comme
-clients, projets, objets, frais et documents figurent en dessous.
+avec projet, client final et client comme contexte. En dessous figurent les données de base
+et les pièces : clients, fournisseurs, leads, projets, tâches, contrats, objets,
+factures, factures entrantes, commandes, frais, articles, personnes, documents,
+formulaires et pièces jointes — chacun uniquement avec le module activé et le
+droit de lecture.
+S'y ajoutent les données des plugins : pièces des logiciels de comptabilité,
+commandes Etsy et Billbee (pour l'administration) ; les tâches reprises
+indiquent leur plugin, par exemple « GitHub Issues ».
+
+« Tous les résultats de ce groupe » affiche un groupe seul avec jusqu'à 200
+résultats. Période, personne et client s'y appliquent aussi : les factures
+filtrent par date de facture, les tâches par personne assignée, les leads par
+responsable. Si un groupe ne connaît pas le filtre de personne ou de client
+choisi — fournisseurs ou articles, par exemple —, il est omis au lieu
+d'apparaître sans filtre.
 
 ## Comment la recherche fonctionne
 

@@ -18,6 +18,7 @@ use App\Http\Requests\Project\SaveProjectRequest;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Team, User};
 use App\Models\Project\{Project, RecurrenceRule, Task};
+use App\Services\Reporting\EconomicsReportBuilder;
 use App\Support\SortableQuery;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
@@ -222,6 +223,11 @@ class ProjectController extends Controller {
             ->orderBy('due_date')
             ->first();
 
+        // Wirtschaftlichkeit im Kopfzeitraum (Feature 182) — dieselben Zahlen und dasselbe Recht wie die Auswertung.
+        $economics = $viewer->isAdmin() || $viewer->can(Permission::ReportView->value)
+            ? (app(EconomicsReportBuilder::class)->byProject($rangeFrom, $rangeTo, [(int) $project->id])[0] ?? null)
+            : null;
+
         $recurrenceRules = RecurrenceRule::query()
             ->where('project_id', $project->id)
             ->orderBy('name')
@@ -257,6 +263,8 @@ class ProjectController extends Controller {
             'totalMinutes' => (int) $totalMinutes,
             'rangeMinutes' => (int) $rangeMinutes,
             'rangeLabel' => $rangeLabel,
+            'economics' => $economics,
+            'economicsUrl' => route('reports.economics', ['project' => $project->sqid, 'from' => $rangeFrom->toDateString(), 'to' => $rangeTo->toDateString()]),
             'myMinutes' => (int) $myMinutes,
             'seesAllTimes' => $seesAllTimes,
             'nextMilestone' => $nextMilestone,

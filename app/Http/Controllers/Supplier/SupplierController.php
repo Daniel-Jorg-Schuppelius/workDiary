@@ -15,14 +15,13 @@ use App\Exceptions\PartyDeletionBlockedException;
 use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Supplier\SaveSupplierRequest;
-use App\Models\Audit\AuditLog;
 use App\Models\Classification\Tag;
-use App\Models\Supplier\{Supplier, SupplierQuestionnaireRequest};
-use App\Services\Billing\PartyDocumentSources;
+use App\Models\Supplier\Supplier;
 use App\Services\Numbering\NumberAuthority;
-use App\Services\Stammdaten\{ContactMasterDataPusher, IdentifierIssueDetector, PartyDeletionGuard};
+use App\Services\Stammdaten\{ContactMasterDataPusher, PartyDeletionGuard};
+use App\Services\Supplier\SupplierDetailAssembler;
 use App\Support\{CarbonFmt, CsvExport, Setting};
-use App\Support\{MorphMap, OrganizationContext};
+use App\Support\OrganizationContext;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -30,6 +29,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SupplierController extends Controller {
     use \App\Http\Controllers\Concerns\IssuesContactNumbers;
+    use \App\Http\Controllers\Concerns\SavesCustomFields;
     use \App\Http\Controllers\Concerns\WritesContactDetails;
     use ArchivesModels;
     use ParsesIndexQuery;
@@ -76,58 +76,11 @@ class SupplierController extends Controller {
             ]);
         }
 
-        // KPI-Kacheln analog zur Kunden-Detailseite — Beschaffungszahlen nur
-        // mit aktivem Lager-Modul (purchase-orders.* sind darauf gegated).
-        $procurementStats = null;
-        if (app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.lager')) {
-            $procurementStats = [
-                'articles' => \App\Models\Article\ArticleSupply::query()->where('supplier_id', $supplier->id)->count(),
-                'orders' => \App\Models\Procurement\PurchaseOrder::query()->where('supplier_id', $supplier->id)->count(),
-                'open_orders' => \App\Models\Procurement\PurchaseOrder::query()
-                    ->where('supplier_id', $supplier->id)
-                    ->whereIn('status', [
-                        \App\Enums\Procurement\PurchaseOrderStatus::Draft,
-                        \App\Enums\Procurement\PurchaseOrderStatus::Ordered,
-                        \App\Enums\Procurement\PurchaseOrderStatus::PartiallyReceived,
-                    ])->count(),
-            ];
-        }
+        $granularity = $this->bucketGranularity($voucherRange['from'], $voucherRange['to']);
 
-        // Ausgabenverlauf (12 Monate) — Finanzsicht, nur report.view/Admin.
-        $spendSeries = null;
-        $voucherCountSeries = null;
-        $authUser = Auth::user();
-        if (
-            $authUser instanceof \App\Models\Platform\User
-            && ($authUser->isAdmin() || $authUser->can(\App\Enums\User\Permission::ReportView->value))
-        ) {
-            $spendBuilder = app(\App\Services\Reporting\SupplierAnalysisReportBuilder::class);
-            $spendSeries = $spendBuilder->supplierMonthlySpendSeries((int) $supplier->id, $voucherRange['from'], $voucherRange['to'], $this->globalUnit());
-            $voucherCountSeries = $spendBuilder->supplierMonthlyVoucherCountSeries((int) $supplier->id, $voucherRange['from'], $voucherRange['to'], $this->globalUnit());
-        }
-
-        return view('suppliers.show', [
-            'identifierIssues' => app(IdentifierIssueDetector::class)->forContact($supplier),
-            'supplier' => $supplier,
-            'procurementStats' => $procurementStats,
-            'spendSeries' => $spendSeries,
-            'voucherCountSeries' => $voucherCountSeries,
-            'periodPhrase' => $this->periodPhrase($this->bucketGranularity($voucherRange['from'], $voucherRange['to'])),
-            'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($voucherRange['from'], $voucherRange['to'])),
-            // Selbstauskunft (MVP-937).
-            'questionnaireRequests' => SupplierQuestionnaireRequest::query()->where('supplier_id', $supplier->id)->with('questionnaire')->orderByDesc('id')->limit(10)->get(),
-            'selfBillingCredits' => \App\Models\Invoicing\SelfBillingCredit::query()->where('supplier_id', $supplier->id)->orderByDesc('id')->limit(10)->get(),
-            'voucherRange' => $voucherRange,
-            'externalDocuments' => app(PartyDocumentSources::class)->forParty($supplier, $voucherRange['from'], $voucherRange['to']),
-            'attachments' => $supplier->attachments()->get(),
-            'tags' => $supplier->tags()->get(),
-            'auditLogs' => AuditLog::query()
-                ->where('auditable_type', MorphMap::stableKey($supplier::class))
-                ->where('auditable_id', $supplier->getKey())
-                ->with('user')
-                ->orderByDesc('created_at')
-                ->limit(20)
-                ->get(),
+        return view('suppliers.show', app(SupplierDetailAssembler::class)->assemble($supplier, $this->authUser(), $voucherRange, $this->globalUnit()) + [
+            'periodPhrase' => $this->periodPhrase($granularity),
+            'periodAxis' => $this->periodAxisLabel($granularity),
         ]);
     }
 
@@ -146,14 +99,16 @@ class SupplierController extends Controller {
         Gate::authorize('create', Supplier::class);
 
         $data = $request->validated();
+        $custom = $this->validatedCustomFields($request, Supplier::class);
         $tagIds = $data['tag_ids'] ?? [];
         $newTagsRaw = (string) ($data['new_tags'] ?? '');
-        unset($data['tag_ids'], $data['new_tags']);
+        unset($data['tag_ids'], $data['new_tags'], $data['custom']);
         $contactDetails = $this->pullContactDetails($data);
 
         $supplier = Supplier::create($data + ['created_by' => Auth::id()]);
         $this->writeContactDetails($supplier, $contactDetails);
         $supplier->syncTagsFromInput($tagIds, \App\Support\TagInput::names($newTagsRaw));
+        $supplier->syncCustomFields($custom);
 
         return redirect()->route('suppliers.show', $supplier)
             ->with($this->issueContactNumber($supplier) + ['success' => __('Lieferant angelegt.')]);
@@ -174,9 +129,10 @@ class SupplierController extends Controller {
         Gate::authorize('update', $supplier);
 
         $data = $request->validated();
+        $custom = $this->validatedCustomFields($request, Supplier::class);
         $tagIds = $data['tag_ids'] ?? [];
         $newTagsRaw = (string) ($data['new_tags'] ?? '');
-        unset($data['tag_ids'], $data['new_tags']);
+        unset($data['tag_ids'], $data['new_tags'], $data['custom']);
         $contactDetails = $this->pullContactDetails($data);
 
         // fill() vor save(): getDirty() kennt die Änderungen erst danach.
@@ -189,6 +145,7 @@ class SupplierController extends Controller {
         // Abgleich den alten Wert wieder.
         $pushed = app(ContactMasterDataPusher::class)->pushIfLinked($supplier, $changed);
         $supplier->syncTagsFromInput($tagIds, \App\Support\TagInput::names($newTagsRaw));
+        $supplier->syncCustomFields($custom);
 
         return redirect()->route('suppliers.show', $supplier)
             ->with('success', $pushed !== []

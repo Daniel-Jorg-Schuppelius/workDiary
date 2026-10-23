@@ -416,12 +416,8 @@
     <x-attachments-section :attachments="$attachments" upload-type="customer"
                            :upload-id="$customer->sqid" :can-upload="auth()->user()->can('update', $customer)" />
 
-    {{-- Änderungsverlauf (Audit) — abgegrenzt vom Aktivitäts-„Verlauf" unten --}}
-    @if ($auditLogs->isNotEmpty())
-    <x-card :title="__('Änderungsverlauf')" icon="history">
-        <x-audit-log-list :logs="$auditLogs" />
-    </x-card>
-    @endif
+    {{-- Änderungsverlauf: Audit und Journal des Kunden (Feature 183) — abgegrenzt vom fachlichen „Verlauf" unten. --}}
+    <x-activity-feed :subject="$customer" />
 
     {{-- Plugin-Panels (MVP-1038), z. B. Kontakt- und Zeitübergabe an das Buchhaltungsprogramm. --}}
     {!! app(\App\Plugins\PluginManager::class)->renderSlot('customer-show.panels', $customer) !!}
@@ -433,13 +429,9 @@
         'placeholder' => true,
     ])
 
-    @include('customers._domains_panel', ['customer' => $customer, 'customerDomains' => $customerDomains])
-
-    {{-- Vereinbarungen AVV/NDA (Feature 157, MVP-822) — nur mit module.contracts und contract.viewAny. --}}
-    @include('customers._agreements_panel', ['customer' => $customer, 'agreements' => $agreements])
-
-    {{-- Abos & Lizenzen (Feature 152, MVP-758) — nur mit reselling.view. --}}
-    @include('customers._resale_panel', ['customer' => $customer, 'customerSubscriptions' => $customerSubscriptions, 'customerLicenses' => $customerLicenses])
+    {{-- Panels der Module (Feature 182): Tickets, Verträge und Fristen, Vereinbarungen,
+         Gewährleistung, Bürgschaften, Umfragen, Domains, Abos — Recht und Modul prüft jedes Panel. --}}
+    <x-cockpit-panels :subject="$customer" />
 
     {{-- Portalzugänge (MVP-510) — nur mit customerPortal.access.manage. --}}
     @include('customers._portal_access_panel', [

@@ -6,24 +6,11 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
-  Kachel „Letzte Team-Aktivität" (nur Admins) — Daten: TeamActivityWidget.
+  Kachel „Letzte Team-Aktivität" (Feature 183, Recht des Audit-Protokolls) — Daten: TeamActivityWidget.
 --}}
 <x-card :title="__('Letzte Team-Aktivität')" icon="groups">
-    @if ($comments->isEmpty())
-        <x-empty-state compact icon="groups"
-                       :title="__('Keine Aktivität')" :message="__('Noch keine Aktivität.')" />
-    @else
-        <ul class="space-y-2 text-sm">
-            @foreach ($comments as $comment)
-                <li class="rounded-box border border-base-300 bg-base-200 px-3 py-2">
-                    <div class="text-xs text-muted">{{ optional($comment->user)->name ?? '—' }} · {{ $comment->created_at->diffForHumans() }}</div>
-                    @if ($comment->commentable)
-                        <a href="{{ route('diary.show', $comment->commentable) }}#comments" class="link block">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($comment->body, 120) }}</a>
-                    @else
-                        <span class="block">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($comment->body, 120) }}</span>
-                    @endif
-                </li>
-            @endforeach
-        </ul>
+    @include('timeline._items', ['items' => $items])
+    @if ($items !== [])
+        <a class="link link-hover mt-2 block text-sm" href="{{ route('activity.index') }}">{{ __('activity.title') }} →</a>
     @endif
 </x-card>

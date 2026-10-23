@@ -1,7 +1,7 @@
 ---
 title: "Suche und Tätigkeitsrecherche"
 topic: search.overview
-version: 3
+version: 4
 keywords:
     - Volltextsuche
     - globale Suche
@@ -23,8 +23,20 @@ Die Suche beantwortet vor allem eine Frage: **Was wurde wann bei welchem Kunden
 gemacht?** Sie durchsucht Zeiteinträge (auch Fernwartungs-Notizen und
 Stundenzettel-Positionen), Aufträge mit Kommentaren, Stundenzettel-Notizen,
 Tickets, Protokolle, offene Punkte, Kommunikationsnotizen und Wissensartikel —
-jeweils mit Projekt, Endkunde und Kunde als Kontext. Darunter stehen die
-Stammdaten wie Kunden, Projekte, Objekte, Spesen und Dokumente.
+jeweils mit Projekt, Endkunde und Kunde als Kontext. Darunter stehen
+Stammdaten und Belege: Kunden, Lieferanten, Leads, Projekte, Aufgaben,
+Verträge, Objekte, Rechnungen, Eingangsrechnungen, Bestellungen, Spesen,
+Artikel, Personen, Dokumente, Formulare und Anhänge — jeweils nur mit
+freigeschaltetem Modul und Leserecht.
+Dazu kommen Daten aus Plugins: Belege der Buchhaltungsprogramme,
+Shop-Bestellungen aus Etsy und Billbee (für die Administration); übernommene
+Aufgaben nennen ihr Plugin, etwa „GitHub Issues“.
+
+„Alle Treffer dieser Gruppe" zeigt eine Gruppe allein mit bis zu 200 Treffern.
+Zeitraum, Person und Kunde gelten auch dort: Rechnungen filtern nach
+Rechnungsdatum, Aufgaben nach Bearbeiter, Leads nach Verantwortlichem. Kennt
+ein Bereich den gewählten Personen- oder Kundenfilter nicht — etwa Lieferanten
+oder Artikel —, entfällt er, statt ungefiltert zu erscheinen.
 
 ## So wird gesucht
 

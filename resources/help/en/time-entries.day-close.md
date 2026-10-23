@@ -1,7 +1,7 @@
 ---
 title: "Daily close"
 topic: time-entries.day-close
-version: 3
+version: 4
 keywords:
     - close the day
     - end of day
@@ -58,3 +58,8 @@ stored in the audit log.
 
 Days in an already approved month are fully locked; any change there
 goes through the monthly approval.
+
+**Own day and team:** Nobody decides on the correction of their own day unless
+nobody else in the organisation holds this right; the audit log then records
+the self-approval. Whoever may see day closings for the team only sees the
+members of their own teams under "Team today" and in the day views.

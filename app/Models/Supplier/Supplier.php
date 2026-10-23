@@ -11,9 +11,9 @@
 namespace App\Models\Supplier;
 
 use App\Enums\Numbering\NumberScope;
-use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasCommunicationNotes, HasContactAndBankDetails, HasPartyDisplayLabel, HasPhoneSearchKeys, HasSequentialNumber, HasSqid, HasStructuredContactName, HasTags, Searchable};
+use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasCommunicationNotes, HasContactAndBankDetails, HasCustomFields, HasPartyDisplayLabel, HasPhoneSearchKeys, HasSequentialNumber, HasSqid, HasStructuredContactName, HasTags, Searchable};
 use App\Models\Contacts\ContactAddress;
-use App\Models\Contracts\{ContactDetailsHolder, ContactNameHolder};
+use App\Models\Contracts\{ContactDetailsHolder, ContactNameHolder, CustomFieldSubject};
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\User;
 use App\Models\Procurement\PurchaseOrder;
@@ -69,7 +69,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $archived_at
  * @property int|null $created_by
  */
-class Supplier extends Model implements ContactDetailsHolder, ContactNameHolder {
+class Supplier extends Model implements ContactDetailsHolder, ContactNameHolder, CustomFieldSubject {
     use Archivable;
     use Auditable;
     use BelongsToOrganization;
@@ -78,6 +78,7 @@ class Supplier extends Model implements ContactDetailsHolder, ContactNameHolder 
     use HasCommunicationNotes;
 
     use HasContactAndBankDetails;
+    use HasCustomFields;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
     use HasPartyDisplayLabel;

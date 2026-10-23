@@ -1,7 +1,7 @@
 ---
 title: "Ricerca e ricerca delle attività"
 topic: search.overview
-version: 3
+version: 4
 keywords:
     - ricerca full-text
     - ricerca globale
@@ -24,8 +24,19 @@ per quale cliente?** Cerca nelle registrazioni ore (anche note di teleassistenza
 e righe dei fogli ore), negli incarichi con commenti, nelle note dei fogli ore,
 nei ticket, verbali, punti aperti, note di comunicazione e articoli della
 knowledge base — ciascuno con progetto, cliente finale e cliente come contesto.
-Sotto compaiono le anagrafiche come clienti, progetti, oggetti, spese e
-documenti.
+Sotto compaiono anagrafiche e documenti: clienti, fornitori, lead, progetti,
+attività, contratti, oggetti, fatture, fatture passive, ordini, spese, articoli,
+persone, documenti, moduli e allegati — ciascuno solo con il modulo attivo e il
+permesso di lettura.
+Si aggiungono i dati dei plugin: documenti dei programmi contabili e ordini
+Etsy e Billbee (per l'amministrazione); le attività importate indicano il loro
+plugin, ad esempio «GitHub Issues».
+
+«Tutti i risultati di questo gruppo» mostra un gruppo da solo con fino a 200
+risultati. Periodo, persona e cliente valgono anche lì: le fatture filtrano per
+data fattura, le attività per assegnatario, i lead per responsabile. Se un
+gruppo non conosce il filtro di persona o cliente scelto — ad esempio fornitori
+o articoli —, viene omesso invece di comparire senza filtro.
 
 ## Come funziona la ricerca
 

@@ -86,6 +86,12 @@ final class ProcurementManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Cockpit\Contracts\CockpitPanel::class => [
+                \App\Services\Procurement\Cockpit\PurchaseOrderCockpitPanel::class,
+            ],
+            \App\Services\Search\Contracts\SearchDomain::class => [
+                \App\Services\Procurement\Search\PurchaseOrderSearchDomain::class,
+            ],
             \App\Services\Document\Contracts\MailableDocumentProvider::class => [
                 \App\Services\Procurement\Mail\PurchaseOrderMailDocument::class,
             ],

@@ -39,7 +39,7 @@ class IntegrationInboxController extends Controller {
     /** Obergrenze je Ziel-Typ in der „Zuordnen"-Auswahl (darüber: Suchfeld). */
     private const ASSIGN_TARGET_LIMIT = 1000;
 
-    public function index(Request $request, MatchProfileRegistry $registry, InboxGroupBookerRegistry $bookers, \App\Plugins\PluginManager $pluginManager): View {
+    public function index(Request $request, MatchProfileRegistry $registry, InboxGroupBookerRegistry $bookers): View {
         $user = $this->authorizeBilling();
         $organization = $this->organizationOf($user);
 
@@ -127,11 +127,7 @@ class IntegrationInboxController extends Controller {
         // Mail-Intake) bekommen feste Labels.
         $pluginNames = [];
         foreach (array_unique(array_merge($plugins, $groups->pluck('plugin_id')->all())) as $pid) {
-            $pluginNames[$pid] = match ($pid) {
-                IntegrationInboxItem::PLUGIN_CSV => (string) __('CSV-Import'),
-                \App\Services\Mail\MailIntakeService::PLUGIN_ID => (string) __('E-Mail-Eingang'),
-                default => $pluginManager->find($pid)?->name() ?? ucfirst($pid),
-            };
+            $pluginNames[$pid] = IntegrationInboxItem::sourceLabel($pid);
         }
 
         return view('admin.integration.inbox', [

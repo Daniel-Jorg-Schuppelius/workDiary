@@ -32,6 +32,10 @@
     {{-- Filter --}}
     <form method="GET" action="{{ route('admin.billbee.index') }}" class="flex flex-wrap items-end gap-2">
         <label class="form-control">
+            <span class="label-text text-xs">{{ __('billbee::billbee.filter.search') }}</span>
+            <input type="search" name="q" value="{{ $search }}" class="input input-sm input-bordered w-56" maxlength="100" />
+        </label>
+        <label class="form-control">
             <span class="label-text text-xs">{{ __('billbee::billbee.field.channel') }}</span>
             <select name="channel" class="select select-sm select-bordered" data-autosubmit>
                 <option value="">{{ __('billbee::billbee.filter.all_channels') }}</option>

@@ -308,11 +308,19 @@ class DayCloseTest extends TestCase {
         $viewer = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $viewer->givePermissionTo(P::DayCloseViewTeam->value);
         $viewer->unsetRelation('permissions');
+        $outsider = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $this->sameTeam($viewer, $other);
 
         $this->actingAs($viewer)->get(route('day-close.show', [
             'date' => '2026-06-10',
             'user' => Sqid::encode(User::class, $other->id),
         ]))->assertOk()->assertSee(__('day-close.subtitle.other', ['name' => $other->name]));
+
+        // Team-Recht heißt Team, nicht Organisation (Entscheidung 2026-10-23).
+        $this->actingAs($viewer)->get(route('day-close.show', [
+            'date' => '2026-06-10',
+            'user' => Sqid::encode(User::class, $outsider->id),
+        ]))->assertForbidden();
     }
 
     public function test_view_organization_permission_allows_foreign_days(): void {
@@ -369,6 +377,7 @@ class DayCloseTest extends TestCase {
             P::DayCloseApproveCorrection->value,
         ]);
         $approver->unsetRelation('permissions');
+        $this->sameTeam($approver, $this->user);
 
         return $approver;
     }

@@ -17,7 +17,8 @@ use App\Enums\Integration\MarketplaceInboxStatus;
 use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Customer\Customer;
 use CommonToolkit\Enums\CurrencyCode;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -97,5 +98,17 @@ class EtsyReceipt extends Model {
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);
+    }
+
+    /**
+     * Bestellnummer oder Käufer — Liste und globale Suche (Feature 181).
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function matching(Builder $query, string $term): void {
+        $query->where(fn (Builder $q) => $q->whereLikeEscaped('receipt_id', $term)
+            ->orWhereLikeEscaped('buyer->name', $term, ignoreCase: true)
+            ->orWhereLikeEscaped('buyer->email', $term, ignoreCase: true));
     }
 }

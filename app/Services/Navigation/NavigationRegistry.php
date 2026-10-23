@@ -338,6 +338,8 @@ class NavigationRegistry {
                     'items' => $this->compactItems([
                         // „Heute" ist seit MVP-015 auch der Tagesabschluss (day-close.* für Fremdtage/Admin via ?user=).
                         ['route' => 'today.show', 'label' => __('Heute'), 'icon' => 'today', 'modal' => false, 'matches' => ['today.show', 'day-close.*']],
+                        // Zentraler Arbeitsvorrat (Feature 179): offene Vorgänge aller Module an einer Stelle.
+                        ['route' => 'work-queue.index', 'label' => __('work-queue.title'), 'icon' => 'task_alt', 'modal' => false, 'matches' => ['work-queue.*']],
                         ['route' => $indexRoute, 'label' => __('Arbeitsliste'), 'icon' => 'list_alt', 'modal' => false, 'matches' => [$indexRoute, 'diary.*']],
                         ['route' => 'week.index', 'label' => __('Wochenansicht'), 'icon' => 'calendar_view_week', 'modal' => false, 'matches' => ['week.index']],
                         // Kalender (Bereitschaft, Notdienst, Auftragsbuch): hing seit dem Kimai-Umbau an keinem Menü.
@@ -1728,10 +1730,7 @@ class NavigationRegistry {
         return (int) Cache::remember(
             'nav-badge:incoming-assign:' . (int) $organizationId,
             self::BADGE_TTL,
-            static fn (): int => \App\Models\Invoicing\IncomingEInvoice::query()
-                ->whereNull('supplier_id')->whereNull('customer_id')
-                ->where('status', '!=', \App\Enums\Invoicing\IncomingEInvoiceStatus::Rejected->value)
-                ->count(),
+            static fn (): int => \App\Models\Invoicing\IncomingEInvoice::query()->awaitingAssignment()->count(),
         );
     }
 
@@ -2043,6 +2042,8 @@ class NavigationRegistry {
             if (! $isLegacyMode) {
                 if (Gate::allows('viewAny', \App\Models\Audit\AuditLog::class)) {
                     $adminNavItems[] = ['route' => 'audit.index', 'label' => __('Audit-Log'), 'icon' => 'fact_check', 'modal' => false];
+                    // Aktivitäts-Feed (Feature 183): dieselbe Kette, lesbar — gleiches Recht.
+                    $adminNavItems[] = ['route' => 'activity.index', 'label' => __('activity.title'), 'icon' => 'history', 'modal' => false];
                 }
                 if (Gate::allows('platform.license.view')) {
                     $adminNavItems[] = ['route' => 'admin.license.index', 'label' => __('Lizenz'), 'icon' => 'key', 'modal' => false];

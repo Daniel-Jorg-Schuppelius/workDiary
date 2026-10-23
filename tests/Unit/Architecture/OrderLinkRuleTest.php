@@ -36,7 +36,6 @@ class OrderLinkRuleTest extends TestCase {
         'resources/views/dashboard/widgets/open-issues.blade.php' => 'Link hinter Gate::allows(\'view\').',
         'resources/views/dashboard/widgets/recent-comments.blade.php' => 'DashboardService liefert nur Kommentare an eigenen Aufträgen.',
         'resources/views/dashboard/widgets/recent-attachments.blade.php' => 'DashboardService liefert nur Anhänge eigener Aufträge.',
-        'resources/views/dashboard/widgets/team-activity.blade.php' => 'Kachel nur für Admins.',
         'resources/views/reports/data-quality.blade.php' => 'Team-Bericht, nur mit report.view.',
     ];
 

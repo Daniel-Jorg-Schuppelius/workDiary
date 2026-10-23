@@ -4837,6 +4837,10 @@ Route::middleware('auth')->group(function () {
         Route::get('genehmigungen/{approval}/entscheiden', [\App\Http\Controllers\Approval\ApprovalInboxController::class, 'decideForm'])->name('approvals.decide-form');
         Route::post('genehmigungen/{approval}/entscheiden', [\App\Http\Controllers\Approval\ApprovalInboxController::class, 'decide'])->name('approvals.decide');
         Route::redirect('servicedesk/approvals', '/genehmigungen');
+        // Zentraler Arbeitsvorrat (Feature 179): bündelt die Quellen der Module, bearbeitet wird dort.
+        Route::get('arbeitsvorrat', \App\Http\Controllers\WorkQueue\WorkQueueController::class)->name('work-queue.index');
+        // Aktivitäts-Feed (Feature 183): lesbare Sicht auf die Audit-Kette, Recht des Audit-Protokolls.
+        Route::get('aktivitaet', \App\Http\Controllers\Timeline\ActivityFeedController::class)->name('activity.index');
         // Problem-Management (Feature 065, MVP-156) — servicedesk.* → module.service_desk!
         Route::get('servicedesk/problems', [\App\Http\Controllers\Helpdesk\ProblemController::class, 'index'])->name('servicedesk.problems.index');
         Route::get('servicedesk/problems/create', [\App\Http\Controllers\Helpdesk\ProblemController::class, 'create'])->name('servicedesk.problems.create');
@@ -5108,6 +5112,7 @@ Route::middleware('auth')->group(function () {
         Route::get('reports/customers', [CustomerAnalysisReportController::class, 'index'])->name('reports.customers');
         // Entscheidungsanalysen (Phase 53, MVP-465/466/467/468).
         Route::get('reports/management', [\App\Http\Controllers\Reporting\ManagementInsightsController::class, 'index'])->name('reports.management'); // MVP-926
+        Route::get('reports/management/pdf', [\App\Http\Controllers\Reporting\ManagementInsightsController::class, 'pdf'])->name('reports.management.pdf'); // Feature 184
         Route::get('reports/customer-value', [\App\Http\Controllers\Reporting\CustomerValueReportController::class, 'index'])
             ->name('reports.customer-value');
         // Zeitaufteilung nach Dimension (Feature 103, MVP-514 P3).

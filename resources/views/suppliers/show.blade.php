@@ -181,6 +181,14 @@
     {{-- Plugin-Panels (MVP-1039), z. B. Verknüpfung mit dem Buchhaltungsprogramm. --}}
     {!! app(\App\Plugins\PluginManager::class)->renderSlot('supplier-show.panels', $supplier) !!}
 
+    <x-custom-fields-card :subject="$supplier" />
+
+    @include('documents._panel', ['documentable' => $supplier, 'documentableKind' => 'supplier'])
+
+    {{-- Panels der Module (Feature 182): Bestellungen, Verträge und Fristen, Pflichtnachweise,
+         Gewährleistung, Bürgschaften — Recht und Modul prüft jedes Panel. --}}
+    <x-cockpit-panels :subject="$supplier" />
+
     {{-- Anhänge --}}
     <x-attachments-section :attachments="$attachments" upload-type="supplier"
                            :upload-id="$supplier->sqid" :can-upload="auth()->user()->can('update', $supplier)" />
@@ -196,11 +204,7 @@
     {{-- Kommunikation (MVP-1023): Absprachen, Anrufe, Zusagen zum Lieferanten. --}}
     @include('communication-notes._panel', ['notable' => $supplier, 'notableKind' => 'supplier'])
 
-    {{-- Änderungsverlauf (Audit) — Benennung konsistent zu Kunde/Fremdkunde --}}
-    @if ($auditLogs->isNotEmpty())
-    <x-card :title="__('Änderungsverlauf')" icon="history">
-        <x-audit-log-list :logs="$auditLogs" />
-    </x-card>
-    @endif
+    {{-- Änderungsverlauf: Audit und Journal des Lieferanten (Feature 183). --}}
+    <x-activity-feed :subject="$supplier" />
 </x-page-shell>
 @endsection

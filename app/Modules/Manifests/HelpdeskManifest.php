@@ -87,6 +87,15 @@ final class HelpdeskManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Reporting\Contracts\ManagementKpiSource::class => [
+                \App\Services\ServiceTicket\Management\SlaKpiSource::class,
+            ],
+            \App\Services\Cockpit\Contracts\CockpitPanel::class => [
+                \App\Services\ServiceTicket\Cockpit\ServiceTicketCockpitPanel::class,
+            ],
+            \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
+                \App\Services\ServiceTicket\WorkQueue\ServiceTicketWorkItemSource::class,
+            ],
             \App\Services\Reporting\Contracts\EarlyWarningSource::class => [
                 \App\Services\ServiceTicket\EarlyWarnings\RecurringTicketWarningSource::class,
             ],

@@ -13,10 +13,8 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery, WritesContactDetails};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Customer\SaveForeignCustomerRequest;
-use App\Models\Audit\AuditLog;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Project\Project;
-use App\Support\MorphMap;
 use App\Support\{Setting, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, Gate};
@@ -72,13 +70,6 @@ class ForeignCustomerController extends Controller {
         return view('foreign-customers.show', [
             'foreignCustomer' => $foreignCustomer,
             'projects' => $projects,
-            'auditLogs' => AuditLog::query()
-                ->where('auditable_type', MorphMap::stableKey($foreignCustomer::class))
-                ->where('auditable_id', $foreignCustomer->getKey())
-                ->with('user')
-                ->orderByDesc('created_at')
-                ->limit(20)
-                ->get(),
         ]);
     }
 

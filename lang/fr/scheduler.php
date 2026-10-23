@@ -152,6 +152,7 @@ return [
         'google-drive' => ['subscriptions' => 'Renouveler les canaux push Google Drive'],
         'integration' => ['purge_inbox' => 'Purger la boîte de réception d\'intégration'],
         'finance' => ['open_times_digest' => 'Digest des temps ouverts pour la comptabilité', 'ebics_statements' => 'Récupérer les relevés quotidiens par EBICS'],
+        'reports' => ['management_digest' => 'Envoyer le rapport de direction par e-mail'],
         'inventory' => ['cycle_counts' => 'Lancer l\'inventaire tournant', 'expiring_lots' => 'Surveillance DLUO (lots expirants)'],
         "accounting" => ["issue_contact_numbers" => "Récupérer les numéros de client et de fournisseur auprès du logiciel de comptabilité", "recurring" => "Attentes de pièces et brouillons d'écriture récurrents", "filings" => "Synchroniser les échéances fiscales et rappeler", "liquidity_snapshot" => "Enregistrer la prévision de trésorerie hebdomadaire"],
         'platform' => ['usage_snapshot' => 'Enregistrer l’utilisation par client'],

@@ -118,4 +118,10 @@ return [
         'active' => 'Conectada',
         'disconnected' => 'Desconectada',
     ],
+
+    // Herkunftskennzeichen übernommener Datensätze (Feature 181).
+    'origin' => [
+        'from' => 'Desde :source',
+        'open' => 'Abrir en :source',
+    ],
 ];

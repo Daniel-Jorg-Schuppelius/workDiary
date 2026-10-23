@@ -14,7 +14,9 @@ use App\Enums\TimeApproval\DayClosureStatus;
 use App\Enums\User\Permission as P;
 use App\Models\Diary\DayClosure;
 use App\Models\Platform\User;
-use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
+use App\Policies\Concerns\ChecksOwnership;
+use App\Services\Approval\SelfApproval;
+use App\Services\Users\TeamScope;
 
 /**
  * Berechtigungen für Tagesabschlüsse (MVP-015, ../WorkDiary-Architecture/konzepte/tagesabschluss.md §7).
@@ -25,7 +27,11 @@ use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
  */
 class DayClosurePolicy {
     use ChecksOwnership;
-    use HasAdminBypass;
+
+    /** Admin-Durchgriff — außer bei der Korrekturfreigabe, dort gilt die Selbstfreigabe-Regel auch für Admins. */
+    public function before(User $user, string $ability): ?bool {
+        return $ability !== 'approveCorrection' && $user->isAdmin() ? true : null;
+    }
 
     public function viewAny(User $user): bool {
         return $user->can(P::DayCloseViewOwn->value)
@@ -41,8 +47,8 @@ class DayClosurePolicy {
             return $user->can(P::DayCloseViewOwn->value);
         }
 
-        return $user->can(P::DayCloseViewOrganization->value)
-            || $user->can(P::DayCloseViewTeam->value);
+        return ($user->can(P::DayCloseViewOrganization->value) || $user->can(P::DayCloseViewTeam->value))
+            && $this->inScope($user, $closure);
     }
 
     /** day.save — Audit-Speichern des eigenen, offenen Tages. */
@@ -66,17 +72,35 @@ class DayClosurePolicy {
             && $closure->status === DayClosureStatus::Closed;
     }
 
-    /** Korrektur-Entscheidung (§5): Admin/Teamleitung, nie der Antragsteller-Status egal. */
+    /**
+     * Korrektur-Entscheidung (§5): Admin/Teamleitung, nie über den eigenen Tag
+     * (S-35) — außer niemand sonst darf entscheiden; Team-Recht nur fürs Team.
+     */
     public function approveCorrection(User $user, DayClosure $closure): bool {
+        if ($closure->status !== DayClosureStatus::Correction) {
+            return false;
+        }
+        if ($this->owns($user, $closure) && ! app(SelfApproval::class)->soleDecider($user, P::DayCloseApproveCorrection)) {
+            return false;
+        }
+        if ($user->isAdmin()) {
+            return true;
+        }
+
         return $this->sharesOrganization($user, $closure)
             && $user->can(P::DayCloseApproveCorrection->value)
-            && $closure->status === DayClosureStatus::Correction;
+            && $this->inScope($user, $closure);
     }
 
     /** Admin-Reopen ohne Antrag (§2.6, Pflicht-Begründung im Service). */
     public function reopen(User $user, DayClosure $closure): bool {
         return $this->sharesOrganization($user, $closure)
             && $user->can(P::DayCloseReopen->value)
+            && $this->inScope($user, $closure)
             && $closure->status === DayClosureStatus::Closed;
+    }
+
+    private function inScope(User $user, DayClosure $closure): bool {
+        return app(TeamScope::class)->covers($user, (int) $closure->user_id, P::DayCloseViewTeam, P::DayCloseViewOrganization);
     }
 }

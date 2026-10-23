@@ -1,7 +1,7 @@
 ---
 title: "Cierre del día"
 topic: time-entries.day-close
-version: 3
+version: 4
 keywords:
     - cerrar el día
     - fin de jornada
@@ -58,3 +58,9 @@ motivo se guarda en el registro de auditoría.
 
 Los días de un mes ya aprobado están completamente bloqueados; allí
 cualquier cambio pasa por la aprobación mensual.
+
+**Día propio y equipo:** nadie decide sobre la corrección de su propio día,
+salvo que nadie más en la organización tenga ese permiso; el registro de
+auditoría deja constancia de la autoaprobación. Quien solo puede ver los
+cierres diarios del equipo ve únicamente a los miembros de sus propios equipos
+en «Equipo hoy» y en las vistas diarias.

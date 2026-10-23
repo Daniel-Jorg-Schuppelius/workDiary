@@ -45,6 +45,7 @@ class LeadMasterDataSection extends AbstractSubjectSection {
             'status' => $this->field(__('Status'), $l->status->label()),
             'last_contact_at' => $this->field(__('Letzter Kontakt'), $l->last_contact_at),
             'anonymized_at' => $this->field(__('Anonymisiert am'), $l->anonymized_at),
+            ...$this->customFields($l),
         ]];
     }
 }

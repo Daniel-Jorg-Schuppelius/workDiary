@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace App\Plugins\Github;
 
+use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\{Plugin, PluginCapability, TaskSyncer};
+use App\Plugins\Contracts\{LinksExternalRecords, Plugin, PluginCapability, TaskSyncer};
 use App\Plugins\Github\Api\GithubClientFactory;
 use App\Plugins\Github\Exceptions\GithubApiException;
 use App\Plugins\Github\Services\GithubIssueImporter;
@@ -37,7 +38,7 @@ use Throwable;
  *   an — GitHub liefert Webhooks nicht automatisch nach (kein Auto-Redelivery),
  *   das Polling schließt die Lücke.
  */
-class GithubPlugin extends AbstractPlugin implements TaskSyncer {
+class GithubPlugin extends AbstractPlugin implements LinksExternalRecords, TaskSyncer {
     public const ID = 'github';
 
     public const SERVICE_PROVIDER = GithubServiceProvider::class;
@@ -55,6 +56,12 @@ class GithubPlugin extends AbstractPlugin implements TaskSyncer {
 
     public function description(): string {
         return __('Importiert GitHub-Issues eines Repositories als Aufgaben (idempotent je Issue, Pull Requests werden gefiltert): Zeiterfassung und Abrechnung in WorkDiary, GitHub bleibt führend. Polling mit since-Aufholpunkt, Webhook-Anstoß optional.');
+    }
+
+    public function externalRecordUrl(ExternalReference $reference): ?string {
+        $url = $reference->payload['html_url'] ?? null;
+
+        return is_string($url) ? $url : null;
     }
 
     public function isEnabled(): bool {

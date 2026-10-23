@@ -23,6 +23,7 @@ return [
     'filter' => [
         'all_channels' => 'All channels',
         'apply' => 'Filter',
+        'search' => 'Order or buyer',
     ],
     'action' => [
         'sync' => 'Sync now',
@@ -37,4 +38,12 @@ return [
         'open_assignment' => 'Assignment open',
     ],
     'empty' => 'No orders mirrored yet.',
+    // Bereich der globalen Suche (Feature 181).
+    'search' => [
+        'domain' => 'Billbee orders',
+    ],
+    // Panel am Kunden-Cockpit (MVP-1370).
+    'cockpit' => [
+        'title' => 'Billbee orders',
+    ],
 ];

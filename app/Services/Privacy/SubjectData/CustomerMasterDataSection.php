@@ -55,6 +55,7 @@ class CustomerMasterDataSection extends AbstractSubjectSection {
             'bank_bic' => $this->field(__('BIC'), $c->bank_bic),
             'bank_name' => $this->field(__('Bank'), $c->bank_name),
             'comment' => $this->field(__('Notizen'), $c->comment),
+            ...$this->customFields($c),
         ]];
 
         // Ansprechpartner (JSON-Spalte): Vollausgabe als Liste, nicht Teil der CSV-Zeile.

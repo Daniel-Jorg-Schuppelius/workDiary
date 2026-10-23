@@ -13,30 +13,59 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Reporting;
 
 use App\Enums\User\Permission;
-use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\Platform\User;
 use App\Services\Reporting\Contracts\TrainingNeedSource;
 use App\Services\Reporting\Dto\EarlyWarning;
-use App\Services\Reporting\EarlyWarningService;
-use Illuminate\Support\Facades\Auth;
+use App\Services\Reporting\{EarlyWarningService, ManagementOverviewService, ManagementReportPdf};
+use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
- * Management-Auswertung (MVP-926): wiederkehrende Probleme aus allen
- * Frühwarnquellen, gruppiert nach Art, und Schulungsbedarf der Organisation.
+ * Leitungssicht (MVP-926, Feature 184): Kennzahlen aller Bereiche im
+ * Kopfzeitraum, wiederkehrende Probleme und Schulungsbedarf; als PDF auch per
+ * geplantem Versand (`reports:management-digest`).
  */
 class ManagementInsightsController extends Controller {
+    use RendersReportPdf;
     use ResolvesCurrentOrganization;
+    use ResolvesGlobalDateRange;
+    use WritesReportCsv;
 
-    public function index(EarlyWarningService $warnings, TrainingNeedSource $training): View {
-        $user = Auth::user();
-        abort_unless($user instanceof User && ($user->isAdmin() || $user->can(Permission::ReportView->value)), 403);
+    public function index(EarlyWarningService $warnings, TrainingNeedSource $training, ManagementOverviewService $overview): View {
+        $user = $this->viewer();
         $organization = $this->currentOrganization();
+        $range = $this->globalDateRange();
 
         return view('reports.management-insights', [
+            'kpis' => $overview->build($user, $organization, $range['from'], $range['to']),
+            'rangeLabel' => $range['label'],
             'groups' => collect($warnings->collect($organization))->groupBy(fn (EarlyWarning $w): string => $w->kind)->sortKeys(),
             'trainingNeeds' => $training->trainingNeeds($organization),
         ]);
+    }
+
+    public function pdf(Request $request, ManagementReportPdf $report): SymfonyResponse {
+        $user = $this->viewer();
+        $range = $this->globalDateRange();
+
+        return $this->pdfDownload(
+            ManagementReportPdf::VIEW,
+            $report->data($user, $this->currentOrganization(), $range['from'], $range['to']),
+            sprintf('leitungsbericht_%s_%s.pdf', $range['from']->toDateString(), $range['to']->toDateString()),
+            request: $request,
+            reportCode: 'management',
+            filters: ['from' => $range['from']->toDateString(), 'to' => $range['to']->toDateString()],
+        );
+    }
+
+    private function viewer(): User {
+        $user = $this->authUser();
+        abort_unless($user->isAdmin() || $user->can(Permission::ReportView->value), 403);
+
+        return $user;
     }
 }

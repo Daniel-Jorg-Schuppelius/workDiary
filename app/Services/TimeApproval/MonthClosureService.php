@@ -182,6 +182,10 @@ class MonthClosureService {
             ])->save();
 
             $this->logEvent($closure, 'month.approved', $actorId, $note);
+            if ($actorId !== null && $actorId === (int) $closure->user_id) {
+                // Selbstfreigabe der einzigen berechtigten Person (Entscheidung 2026-10-23).
+                $closure->audit('month_closure.self_decided', ['decision' => 'approved']);
+            }
 
             return $closure->refresh();
         });
@@ -211,6 +215,10 @@ class MonthClosureService {
             ])->save();
 
             $this->logEvent($closure, 'month.rejected', $actorId, $reason);
+            if ($actorId !== null && $actorId === (int) $closure->user_id) {
+                // Selbstfreigabe der einzigen berechtigten Person (Entscheidung 2026-10-23).
+                $closure->audit('month_closure.self_decided', ['decision' => 'rejected']);
+            }
 
             return $closure->refresh();
         });

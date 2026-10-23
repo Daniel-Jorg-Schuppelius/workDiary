@@ -1,7 +1,7 @@
 ---
 title: "Conectar Etsy"
 topic: admin.etsy
-version: 1
+version: 2
 keywords:
     - tienda Etsy
     - pedidos de Etsy
@@ -56,6 +56,11 @@ una vez.
 reconectar. Etsy no ofrece entorno de pruebas: las pruebas se hacen contra
 la tienda real según la API testing policy de Etsy (las tarifas se cobran
 de verdad).
+
+**Buscar:** el campo de búsqueda sobre el espejo de pedidos encuentra el
+número de pedido, el nombre o el correo del comprador. La búsqueda global
+muestra los mismos pedidos en «Pedidos de Etsy», para la administración y
+mientras el plugin esté activo.
 
 *The term "Etsy" is a trademark of Etsy, Inc. This application uses the
 Etsy API but is not endorsed or certified by Etsy, Inc.*

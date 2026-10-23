@@ -1,7 +1,7 @@
 ---
 title: "Etsy anbinden"
 topic: admin.etsy
-version: 1
+version: 2
 keywords:
     - Etsy-Shop
     - Etsy Bestellungen
@@ -57,6 +57,10 @@ einmal gemeldet.
 Nutzung ab; der Gesundheitscheck warnt rechtzeitig, danach hilft nur
 Neuverbinden. Etsy stellt keine Test-Umgebung bereit — Tests laufen gegen
 den Live-Shop nach Etsys API-Testing-Policy (Gebühren fallen real an).
+
+**Finden:** Das Suchfeld über dem Bestellspiegel findet Bestellnummer,
+Käufername oder E-Mail. Dieselben Bestellungen zeigt die globale Suche unter
+„Etsy-Bestellungen“ — für die Administration, solange das Plugin aktiv ist.
 
 *The term "Etsy" is a trademark of Etsy, Inc. This application uses the
 Etsy API but is not endorsed or certified by Etsy, Inc.*

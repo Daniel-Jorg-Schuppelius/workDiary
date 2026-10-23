@@ -44,4 +44,14 @@
     </x-form-group>
 
     <x-contact-name-fields :model="$lead" />
+
+    @php
+        $selectedTagIds = old('tag_ids', $lead?->tags?->map(fn ($t) => $t->sqid)->all() ?? []);
+    @endphp
+    <div>
+        <label class="label"><span class="label-text">{{ __('Tags') }}</span></label>
+        <x-tag-picker :tags="$allTags ?? collect()" :selected="$selectedTagIds" />
+    </div>
+
+    <x-custom-fields-group :model="\App\Models\Sales\Lead::class" :subject="$lead" />
 </x-modal>

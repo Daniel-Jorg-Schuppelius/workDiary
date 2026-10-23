@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace App\Plugins\Gitlab;
 
+use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\{Plugin, PluginCapability, TaskSyncer};
+use App\Plugins\Contracts\{LinksExternalRecords, Plugin, PluginCapability, TaskSyncer};
 use App\Plugins\Gitlab\Api\GitlabClientFactory;
 use App\Plugins\Gitlab\Exceptions\GitlabApiException;
 use App\Plugins\Gitlab\Services\GitlabIssueImporter;
@@ -39,7 +40,7 @@ use Throwable;
  *   `X-Gitlab-Token`) stößt nur an — GitLab deaktiviert Hooks nach
  *   wiederholten Fehlern selbst, das Polling schließt jede Lücke.
  */
-class GitlabPlugin extends AbstractPlugin implements TaskSyncer {
+class GitlabPlugin extends AbstractPlugin implements LinksExternalRecords, TaskSyncer {
     public const ID = 'gitlab';
 
     public const SERVICE_PROVIDER = GitlabServiceProvider::class;
@@ -57,6 +58,12 @@ class GitlabPlugin extends AbstractPlugin implements TaskSyncer {
 
     public function description(): string {
         return __('Importiert GitLab-Issues eines Projekts als Aufgaben (idempotent über iid + Projekt-ID, self-hosted Instanzen unterstützt): Zeiterfassung und Abrechnung in WorkDiary, GitLab bleibt führend. Polling mit updated_after-Aufholpunkt, Webhook-Anstoß optional.');
+    }
+
+    public function externalRecordUrl(ExternalReference $reference): ?string {
+        $url = $reference->payload['web_url'] ?? null;
+
+        return is_string($url) ? $url : null;
     }
 
     public function isEnabled(): bool {

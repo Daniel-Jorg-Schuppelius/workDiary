@@ -75,6 +75,10 @@ final class DiaryManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
+                \App\Services\Diary\WorkQueue\OpenIssueWorkItemSource::class,
+                \App\Services\Diary\WorkQueue\AssignedEntryWorkItemSource::class,
+            ],
             \App\Services\Mcp\Contracts\McpTool::class => [
                 \App\Services\Diary\Mcp\OrdersTool::class,
                 \App\Services\Diary\Mcp\ScheduleTool::class,

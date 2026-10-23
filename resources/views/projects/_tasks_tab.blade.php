@@ -19,6 +19,13 @@
     $statusFilter    = (string) request()->input('status', request()->input('task_status', ''));
     $milestoneFilter = (string) request()->input('milestone', request()->input('task_milestone', ''));
 
+    // Übernommene Aufgaben nennen ihr Plugin (Feature 181) — eine Abfrage für den Reiter.
+    $taskOrigins = app(\App\Services\Integration\RecordOrigins::class)->labels(
+        Task::class,
+        $topTasks->flatMap(fn (Task $t) => [$t->id, ...$t->subTasks->pluck('id')])->map(fn ($id): int => (int) $id)->all(),
+        (int) $project->organization_id,
+    );
+
     // Basis-Query (Tab bleibt aktiv, alte Parameter werden entfernt).
     $baseQuery = static fn (array $overrides) => request()->fullUrlWithQuery(array_merge(
         ['tab' => 'tasks', 'task_status' => null, 'task_milestone' => null],

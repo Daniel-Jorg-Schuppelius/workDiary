@@ -1,7 +1,7 @@
 ---
 title: "Gestionar proyectos"
 topic: projects.manage
-version: 3
+version: 4
 keywords:
     - crear proyecto
     - gestión de proyectos
@@ -99,3 +99,11 @@ Reglas de facturación y estado del proyecto determinan qué tiempos y
 materiales pasan a la entrega. Después: configurar el registro de
 tiempos del proyecto y revisar la entrega a facturación al cierre del
 periodo.
+
+## Rentabilidad y plazos
+
+Con el permiso de informes, el resumen del proyecto muestra ingresos, costes,
+margen de contribución y, si hay un presupuesto, su consumo en el periodo
+elegido; un clic abre el análisis de rentabilidad con las mismas cifras.
+Debajo aparecen los plazos de garantía y los avales del proyecto. Las tareas
+importadas indican su plugin, por ejemplo «Desde GitHub Issues».

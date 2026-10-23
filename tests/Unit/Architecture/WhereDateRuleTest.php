@@ -167,7 +167,6 @@ class WhereDateRuleTest extends TestCase {
         'app/Services/Reporting/WorkBalanceCalculator.php' => 2,
         'app/Services/Schedule/ShiftRotationRoller.php' => 4,
         'app/Services/Schedule/StaffingSuggester.php' => 1,
-        'app/Services/Search/GlobalSearchService.php' => 2,
         'app/Services/Surcharge/TimeRuleEngine.php' => 2,
         'app/Services/Sustainability/EmissionCalculationService.php' => 4,
         'app/Services/TimeApproval/DayCloseService.php' => 3,

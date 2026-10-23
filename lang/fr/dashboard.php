@@ -56,7 +56,7 @@ return [
             'description' => 'Nouvelles pièces jointes sur vos entrées.',
         ],
         'team_activity' => [
-            'description' => 'Les derniers commentaires de l\'équipe.',
+            'description' => 'Qui a modifié quoi récemment — depuis le fil d\'activité.',
         ],
         'finance' => [
             'description' => 'Notes de frais et déplacements du mois, plus la pile en attente pour les valideurs.',

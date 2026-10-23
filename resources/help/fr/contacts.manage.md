@@ -1,7 +1,7 @@
 ---
 title: "Clients & fournisseurs"
 topic: contacts.manage
-version: 10
+version: 11
 keywords:
     - Aperçu en tant que client
     - Mot de passe initial
@@ -136,3 +136,16 @@ CSV pour les gros volumes.
 ## Fournisseur : données fiscales et autofacturation
 
 Le fournisseur porte le **numéro de TVA** et le **numéro fiscal**. Si votre organisation facture elle-même les prestations d’un fournisseur, saisissez la date de l’**accord d’autofacturation** ; ce n’est qu’ensuite que des autofactures peuvent être émises. La page du fournisseur affiche l’accord et les dernières autofactures.
+
+## Cockpit client et fournisseur
+
+La fiche réunit ce que les autres modules savent du contact : pour les clients
+les tickets ouverts, les contrats avec leur prochaine échéance, les accords,
+les délais de garantie, les cautions, les enquêtes avec NPS, les domaines
+ainsi que les abonnements et licences ; pour les fournisseurs les commandes,
+les justificatifs obligatoires, les contrats et les échéances. Une section
+n'apparaît que si le module est activé, que vous disposez du droit
+correspondant et qu'il existe des entrées ; les chiffres correspondent à la
+liste concernée. L'administration voit les commandes boutique d'Etsy et de
+Billbee. Comme les clients, les fournisseurs disposent de champs personnalisés
+et de documents.

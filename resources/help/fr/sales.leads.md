@@ -1,7 +1,7 @@
 ---
 title: "Leads"
 topic: sales.leads
-version: 2
+version: 3
 keywords:
     - prospects
     - prospection
@@ -53,3 +53,11 @@ convertis sont anonymisés **6 mois après le dernier contact** — via le scan 
 conservation du module de protection des données (file de revue, pas de
 suppression silencieuse). L’indicateur de pipeline (source, statut, période)
 reste, la personne disparaît.
+
+## Fiche
+
+Les leads portent des champs personnalisés (Administration › Champs
+personnalisés), des étiquettes et des pièces jointes. Lors de l'anonymisation
+après le délai de suppression, pièces jointes, champs personnalisés et
+étiquettes sont supprimés aussi. Les documents de la gestion documentaire ne
+sont rattachés qu'au client.

@@ -1,7 +1,7 @@
 ---
 title: "Gérer les projets"
 topic: projects.manage
-version: 3
+version: 4
 keywords:
     - créer un projet
     - gestion de projet
@@ -102,3 +102,12 @@ Règles de facturation et statut du projet déterminent quels temps et
 matériels partent dans la remise. Ensuite : configurer la saisie des
 temps sur le projet et vérifier la remise à la facturation en fin de
 période.
+
+## Rentabilité et échéances
+
+Avec le droit d'accès aux rapports, l'aperçu du projet affiche chiffre
+d'affaires, coûts, marge sur coûts variables et – si un budget est défini – sa
+consommation sur la période choisie ; un clic ouvre l'analyse de rentabilité
+avec les mêmes chiffres. Les délais de garantie et cautions du projet
+apparaissent en dessous. Les tâches reprises indiquent leur plugin, par
+exemple « Depuis GitHub Issues ».

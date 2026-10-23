@@ -1,7 +1,7 @@
 ---
 title: "Connecter Etsy"
 topic: admin.etsy
-version: 1
+version: 2
 keywords:
     - boutique Etsy
     - commandes Etsy
@@ -57,6 +57,11 @@ dernière utilisation ; le contrôle de santé prévient à temps, ensuite seule
 une reconnexion aide. Etsy ne fournit pas d'environnement de test — les
 tests se font sur la boutique réelle selon l'API testing policy d'Etsy
 (les frais sont facturés réellement).
+
+**Retrouver :** le champ de recherche au-dessus du miroir des commandes trouve
+le numéro de commande, le nom ou l'e-mail de l'acheteur. La recherche globale
+affiche les mêmes commandes sous « Commandes Etsy » — pour l'administration,
+tant que le plugin est actif.
 
 *The term "Etsy" is a trademark of Etsy, Inc. This application uses the
 Etsy API but is not endorsed or certified by Etsy, Inc.*

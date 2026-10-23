@@ -178,6 +178,11 @@ class AppServiceProvider extends ServiceProvider {
         // einmal geladen (scoped, nie static — Octane/Worker).
         $this->app->scoped(\App\Services\Invoicing\TextCorrectionService::class);
 
+        // Selbstfreigabe und Team-Sicht (Entscheidung 2026-10-23): Policies
+        // fragen je Zeile — Ergebnis je Request/Job einmal.
+        $this->app->scoped(\App\Services\Approval\SelfApproval::class);
+        $this->app->scoped(\App\Services\Users\TeamScope::class);
+
         // Tätigkeitsrecherche (Feature 153): Kontext-, Wort- und Synonym-Memos
         // leben pro Request/Job; der Indexer bündelt Änderungen bis zum Commit.
         $this->app->singleton(\App\Services\Search\Indexing\SearchSourceRegistry::class);
@@ -420,10 +425,11 @@ class AppServiceProvider extends ServiceProvider {
         // LIKE-Suche mit escapten Wildcards (`%`/`_` in Nutzereingaben wirken
         // sonst als Wildcards). Explizites ESCAPE-Zeichen '!' statt Backslash,
         // da Backslash in MySQL- und SQLite-String-Literalen unterschiedlich
-        // behandelt wird.
-        \Illuminate\Database\Query\Builder::macro('whereLikeEscaped', function (string $column, string $term, string $side = 'both', string $boolean = 'and') {
+        // behandelt wird. `$ignoreCase` für JSON-Pfade (`buyer->name`): MariaDB
+        // liefert sie binär sortiert, LIKE wäre dort groß/klein-sensitiv.
+        \Illuminate\Database\Query\Builder::macro('whereLikeEscaped', function (string $column, string $term, string $side = 'both', string $boolean = 'and', bool $ignoreCase = false) {
             /** @var \Illuminate\Database\Query\Builder $this */
-            $escaped = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $term);
+            $escaped = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $ignoreCase ? mb_strtolower($term) : $term);
             $pattern = match ($side) {
                 'prefix' => $escaped . '%',
                 'suffix' => '%' . $escaped,
@@ -433,12 +439,14 @@ class AppServiceProvider extends ServiceProvider {
             // $column über die Grammar gequotet (injection-sicher), Suchbegriff
             // als Bindung. PHPStan kann die literal-string-Eigenschaft nach dem
             // Laufzeit-Quoting nicht beweisen.
+            $wrapped = $this->grammar->wrap($column);
+
             // @phpstan-ignore argument.type
-            return $this->whereRaw($this->grammar->wrap($column) . " like ? escape '!'", [$pattern], $boolean);
+            return $this->whereRaw(($ignoreCase ? 'LOWER(' . $wrapped . ')' : $wrapped) . " like ? escape '!'", [$pattern], $boolean);
         });
-        \Illuminate\Database\Query\Builder::macro('orWhereLikeEscaped', function (string $column, string $term, string $side = 'both') {
+        \Illuminate\Database\Query\Builder::macro('orWhereLikeEscaped', function (string $column, string $term, string $side = 'both', bool $ignoreCase = false) {
             /** @var \Illuminate\Database\Query\Builder $this */
-            return $this->whereLikeEscaped($column, $term, $side, 'or');
+            return $this->whereLikeEscaped($column, $term, $side, 'or', $ignoreCase);
         });
 
         // organization_id-FK für NEUE Migrationen (konsolidierungs-audit-2026-07,
@@ -1193,6 +1201,7 @@ class AppServiceProvider extends ServiceProvider {
 
         foreach ([
             // Überblick
+            \App\Dashboard\Widgets\WorkQueueWidget::class,
             \App\Dashboard\Widgets\OnboardingWidget::class,
             \App\Dashboard\Widgets\PersonalOnboardingWidget::class,
             \App\Dashboard\Widgets\PersonalKpisWidget::class,

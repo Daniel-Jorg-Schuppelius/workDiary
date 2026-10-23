@@ -24,6 +24,9 @@
             <div class="flex min-w-0 items-center gap-2">
                 <span class="truncate font-medium">{{ $lead->displayName() }}</span>
                 <x-status-badge :tone="$lead->status->tone()" size="sm">{{ $lead->status->label() }}</x-status-badge>
+                @foreach ($lead->tags as $tag)
+                    <x-tag-badge :tag="$tag" />
+                @endforeach
             </div>
             <x-slot:actions>
                 @if ($canManage && ! $lead->status->isFinal() && ! $lead->anonymized_at)
@@ -69,6 +72,15 @@
             {{-- Qualifizierung über die vorhandenen Kommunikationsnotizen —
                  kein eigenes Follow-up-System (Feature-Leitplanke). --}}
             @include('communication-notes._panel', ['notable' => $lead, 'notableKind' => 'lead'])
+
+            {{-- Panels der Module (Feature 182). --}}
+            <x-cockpit-panels :subject="$lead" />
+
+            <x-custom-fields-card :subject="$lead" />
+
+            {{-- Anhänge folgen dem Lead und gehen bei der Anonymisierung mit (Feature 182). --}}
+            <x-attachments-section :attachments="$attachments" upload-type="lead"
+                                   :upload-id="$lead->sqid" :can-upload="auth()->user()->can('update', $lead)" />
         </div>
 
         <div class="space-y-4">

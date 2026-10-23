@@ -463,6 +463,7 @@ return [
         'import.viewReports' => 'CSV-Import-Berichte einsehen',
         'report.export' => 'Auswertungen exportieren',
         'report.target.manage' => 'Zielwerte verwalten',
+        'report.management.digest' => 'Leitungsbericht per E-Mail erhalten',
         'audit-log.view' => 'Audit-Log einsehen',
         'attendance.viewAny' => 'Anwesenheiten einsehen',
         'attendance.manage' => 'Anwesenheit verwalten',

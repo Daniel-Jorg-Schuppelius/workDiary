@@ -1,7 +1,7 @@
 ---
 title: "Connect Etsy"
 topic: admin.etsy
-version: 1
+version: 2
 keywords:
     - Etsy shop
     - Etsy orders
@@ -54,6 +54,10 @@ Each order is reported at most once.
 the health check warns in time, after that only reconnecting helps. Etsy
 provides no test environment — tests run against the live shop under Etsy's
 API testing policy (fees are charged for real).
+
+**Finding orders:** The search field above the order mirror finds order
+number, buyer name or email. The global search shows the same orders under
+"Etsy orders" — for administrators, while the plugin is active.
 
 *The term "Etsy" is a trademark of Etsy, Inc. This application uses the
 Etsy API but is not endorsed or certified by Etsy, Inc.*

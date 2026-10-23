@@ -1,7 +1,7 @@
 ---
 title: "Compte de temps de travail & validation mensuelle"
 topic: time-accounts.flex
-version: 1
+version: 2
 keywords:
     - compte d'heures
     - heures supplémentaires
@@ -29,3 +29,9 @@ corrections approuvées ; la direction d'équipe ou la paie contrôle les
 validation ou export, les modifications directes sont restreintes : les
 erreurs tardives passent par des demandes de correction afin que le
 solde et la piste d'audit restent reproductibles.
+
+**Propre mois et équipe :** personne ne décide de son propre mois,
+administration comprise – sauf si personne d'autre dans l'organisation ne
+dispose du droit de validation ; le journal d'audit consigne alors cette
+auto-validation. Qui ne peut voir les mois et demandes de correction que pour
+l'équipe voit uniquement les membres de ses propres équipes.

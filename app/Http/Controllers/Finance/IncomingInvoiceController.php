@@ -72,36 +72,18 @@ class IncomingInvoiceController extends Controller {
         $status = IncomingEInvoiceStatus::tryFrom($request->string('status')->toString());
         $term = trim($request->string('q')->toString());
 
-        $base = static fn (): \Illuminate\Database\Eloquent\Builder => IncomingEInvoice::query()
-            ->whereIn('document_id', Document::query()->visibleTo($user)->select('id'));
-        $toAssign = static fn (\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder => $query
-            ->whereNull('supplier_id')->whereNull('customer_id')
-            ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value);
-        $toReview = static fn (\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder => $query
-            ->where(static fn ($party) => $party->whereNotNull('supplier_id')->orWhereNotNull('customer_id'))
-            ->whereIn('status', [IncomingEInvoiceStatus::Received->value, IncomingEInvoiceStatus::Question->value]);
-        $inTransfer = static fn (\Illuminate\Database\Eloquent\Builder $query, array $states): \Illuminate\Database\Eloquent\Builder => $query
-            ->whereHas('transfers', static fn ($journal) => $journal->whereIn('status', array_map(static fn (IncomingInvoiceTransferStatus $s): string => $s->value, $states)));
-        // Möglicher Doppel-Eingang (MVP-1145): offen, solange weder bestätigt noch einer der beiden abgelehnt ist.
-        $duplicates = static fn (\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder => $query
-            ->whereNotNull('duplicate_of_id')->whereNull('duplicate_cleared_at')
-            ->where('status', '!=', IncomingEInvoiceStatus::Rejected->value)
-            ->whereHas('duplicateOf', static fn ($earlier) => $earlier->withoutGlobalScopes()->where('status', '!=', IncomingEInvoiceStatus::Rejected->value));
-        // Abgelehnt (MVP-1212): „Keine Rechnung“ — von hier aus endgültig löschbar.
-        $rejected = static fn (\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder => $query
-            ->where('status', IncomingEInvoiceStatus::Rejected->value);
         $open = [IncomingInvoiceTransferStatus::Pending, IncomingInvoiceTransferStatus::Waiting];
         $failed = [IncomingInvoiceTransferStatus::Failed];
         [$from, $to] = $this->globalDateRangeBounds();
 
         $query = match ($tab) {
-            'assign' => $toAssign($base()),
-            'review' => $toReview($base()),
-            'transfer' => $inTransfer($base(), $open),
-            'failed' => $inTransfer($base(), $failed),
-            'duplicates' => $duplicates($base()),
-            'rejected' => $rejected($base()),
-            default => $base()->whereBetween('received_at', [$from, $to]),
+            'assign' => IncomingEInvoice::query()->visibleTo($user)->awaitingAssignment(),
+            'review' => IncomingEInvoice::query()->visibleTo($user)->awaitingReview(),
+            'transfer' => IncomingEInvoice::query()->visibleTo($user)->inTransfer($open),
+            'failed' => IncomingEInvoice::query()->visibleTo($user)->inTransfer($failed),
+            'duplicates' => IncomingEInvoice::query()->visibleTo($user)->openDuplicates(),
+            'rejected' => IncomingEInvoice::query()->visibleTo($user)->rejected(),
+            default => IncomingEInvoice::query()->visibleTo($user)->whereBetween('received_at', [$from, $to]),
         };
         $query->with(['document', 'supplier:id,name,is_collective', 'customer:id,name,is_collective', 'duplicateOf:id,status'])
             ->when(in_array($tab, ['transfer', 'failed'], true), static fn ($q) => $q->with('transfers'))
@@ -117,12 +99,12 @@ class IncomingInvoiceController extends Controller {
             'tab' => $tab,
             'sort' => $sort,
             'dir' => $dir,
-            'assignCount' => $toAssign($base())->count(),
-            'reviewCount' => $toReview($base())->count(),
-            'transferCount' => $inTransfer($base(), $open)->count(),
-            'failedCount' => $inTransfer($base(), $failed)->count(),
-            'duplicateCount' => $duplicates($base())->count(),
-            'rejectedCount' => $rejected($base())->count(),
+            'assignCount' => IncomingEInvoice::query()->visibleTo($user)->awaitingAssignment()->count(),
+            'reviewCount' => IncomingEInvoice::query()->visibleTo($user)->awaitingReview()->count(),
+            'transferCount' => IncomingEInvoice::query()->visibleTo($user)->inTransfer($open)->count(),
+            'failedCount' => IncomingEInvoice::query()->visibleTo($user)->inTransfer($failed)->count(),
+            'duplicateCount' => IncomingEInvoice::query()->visibleTo($user)->openDuplicates()->count(),
+            'rejectedCount' => IncomingEInvoice::query()->visibleTo($user)->rejected()->count(),
             'canUpload' => Gate::allows('create', Document::class),
             'canManage' => $user->canManageBilling(),
             // Sammelaktion (MVP-1224) auch für zugeordnete, noch nicht übergebene Eingänge: umhängen, aufheben.

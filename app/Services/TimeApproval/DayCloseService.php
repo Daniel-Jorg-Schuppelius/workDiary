@@ -362,6 +362,10 @@ class DayCloseService {
                 'request_id' => $request->id,
                 'note' => $note,
             ]);
+            if ($actorId !== null && $actorId === (int) $closure->user_id) {
+                // Selbstfreigabe der einzigen berechtigten Person (Entscheidung 2026-10-23).
+                $closure->audit('dayClose.selfDecided', ['day' => $closure->day->toDateString(), 'decision' => 'approved']);
+            }
 
             return $request->refresh();
         });
@@ -391,6 +395,10 @@ class DayCloseService {
                 'request_id' => $request->id,
                 'note' => $note,
             ]);
+            if ($actorId !== null && $actorId === (int) $closure->user_id) {
+                // Selbstfreigabe der einzigen berechtigten Person (Entscheidung 2026-10-23).
+                $closure->audit('dayClose.selfDecided', ['day' => $closure->day->toDateString(), 'decision' => 'rejected']);
+            }
 
             return $request->refresh();
         });

@@ -1,7 +1,7 @@
 ---
 title: "Working-time account & month approval"
 topic: time-accounts.flex
-version: 1
+version: 2
 keywords:
     - flextime account
     - overtime balance
@@ -31,3 +31,8 @@ approve the month or reject it with a reason.
 
 Direct changes are restricted after approval or export. Later errors use
 correction requests so balances and the audit trail remain reproducible.
+
+**Own month and team:** Nobody decides on their own month, administrators
+included – unless nobody else in the organisation holds the approval right;
+the audit log then records the self-approval. Whoever may see months and
+correction requests for the team only sees the members of their own teams.

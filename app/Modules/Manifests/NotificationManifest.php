@@ -49,6 +49,15 @@ final class NotificationManifest extends Manifest {
         ];
     }
 
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
+                \App\Services\Reminders\WorkQueue\DraftReminderWorkItemSource::class,
+            ],
+        ];
+    }
+
     /** @return list<string> */
     public function plugins(): array {
         return [

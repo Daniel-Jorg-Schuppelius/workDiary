@@ -56,7 +56,7 @@ class SearchController extends Controller {
         ]);
         $criteria = ActivitySearchCriteria::fromRequest($request, $user);
 
-        $domains = $search->domains();
+        $domains = $search->domains($user);
         $domain = (string) $request->query('domain', '');
         $domain = $domain !== '' && $domain !== GlobalSearchService::ACTIVITIES && array_key_exists($domain, $domains) ? $domain : null;
 

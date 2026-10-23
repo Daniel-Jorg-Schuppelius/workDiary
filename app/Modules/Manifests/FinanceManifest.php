@@ -182,6 +182,9 @@ final class FinanceManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Reporting\Contracts\ManagementKpiSource::class => [
+                \App\Services\Accounting\Management\AccountingKpiSource::class,
+            ],
             \App\Services\Billing\Contracts\DocumentRelationSource::class => [
                 \App\Services\Finance\Relations\TransferRelationSource::class,
                 \App\Services\Finance\Relations\AccountingVoucherRelationSource::class,

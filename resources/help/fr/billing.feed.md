@@ -1,7 +1,7 @@
 ---
 title: "Flux de documents"
 topic: billing.feed
-version: 2
+version: 3
 keywords:
     - factures
     - devis
@@ -33,7 +33,9 @@ comptabilité connectée et notes de frais. Les anciennes pages « Devis » et
 « Factures » mènent ici – ce sont désormais des onglets de la même liste.
 
 **Période :** la liste suit le filtre de dates de l'en-tête. Si un document
-manque, vérifiez d'abord la période choisie.
+manque, vérifiez d'abord la période choisie. Un résultat de la recherche
+globale ouvre la liste à la date du document ; ce jour remplace alors la
+période de l'en-tête.
 
 **Onglets :** « Tous », « Devis », « Factures de vente », « Factures
 d'achat », « Avoirs » et « Notes de frais » sont des filtres enregistrés, pas

@@ -40,6 +40,9 @@
         <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
     @endif
     <input type="hidden" name="is_global" value="1">
+    @if ($task)
+        <x-origin-badge :subject="$task" class="mb-2" />
+    @endif
 
     <x-form-group :legend="__('Aufgabe')" icon="task_alt" tone="primary">
         <x-input-field name="title"

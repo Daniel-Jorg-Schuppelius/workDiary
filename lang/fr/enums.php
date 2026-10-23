@@ -2306,4 +2306,8 @@ return [
     'stammdaten' => [
         'contact_salutation' => ['mr' => 'Monsieur', 'ms' => 'Madame', 'diverse' => 'Divers'],
     ],
+    'work_queue' => [
+        'category' => ['approval' => 'Validations', 'inbox' => 'Boîtes de réception', 'task' => 'Tâches', 'reminder' => 'Rappels'],
+        'urgency' => ['overdue' => 'En retard', 'due_soon' => 'Bientôt dû', 'open' => 'Ouvert'],
+    ],
 ];

@@ -1,7 +1,7 @@
 ---
 title: "Personnel: vacation, sickness, qualifications, safety"
 topic: reports.personnel
-version: 6
+version: 7
 keywords:
     - absence rates
     - remaining vacation
@@ -175,8 +175,18 @@ event register.
 ## Problems & training
 
 **Reports** → **Projects & customers** → **Problems & training** opens
-**Management insights**. It shows the current state without period, filters or
-export.
+**Management insights**.
+
+At the top are the **key figures** of all areas for the period selected in the
+header: finance (total output and result from the BWA, lowest point of the
+liquidity forecast), operations (revenue, contribution margin, utilisation),
+sales (new leads, conversion), service (open tickets, SLA violations) and
+quality (NPS). Each tile only appears with the right for the corresponding
+report and leads there — it shows the same figure. **PDF** downloads the
+management report. Anyone with the right **Receive management report by
+email** (management and administrators) also receives it every Monday as a
+PDF, covering the start of the month up to yesterday; the run can be
+rescheduled or paused under "Scheduled tasks".
 
 The card **Recurring problems** collects the early warnings of the modules your
 organization uses, grouped by type:

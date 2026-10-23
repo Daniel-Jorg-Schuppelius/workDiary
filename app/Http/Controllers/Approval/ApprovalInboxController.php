@@ -16,15 +16,12 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Approval\Approval;
 use App\Models\Platform\User;
-use App\Modules\ModuleRegistry;
-use App\Services\Approval\ApprovalResponsibility;
+use App\Services\Approval\{ApprovalInbox, ApprovalResponsibility};
 use App\Services\Approval\Contracts\ApprovalInboxSubject;
-use App\Services\Approval\Dto\ApprovalInboxEntry;
-use App\Support\{ErrorText, MorphMap, Sqid};
+use App\Support\{ErrorText, Sqid};
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Pagination\{LengthAwarePaginator, Paginator};
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -38,24 +35,21 @@ use Illuminate\View\View;
  * auf dem Weg des Gegenstands. Es zählt nur die geltende (höchste) Runde.
  */
 class ApprovalInboxController extends Controller {
-    /** @var array<class-string, ApprovalInboxSubject>|null */
-    private ?array $subjects = null;
-
     public function __construct(
         private readonly ApprovalResponsibility $responsibility,
-        private readonly ModuleRegistry $modules,
+        private readonly ApprovalInbox $inbox,
     ) {}
 
     public function index(): View {
         Gate::authorize(Permission::ServiceRequestApprove->value);
 
         $user = $this->authUser();
-        $mine = $this->openStepsFor($user);
+        $mine = $this->inbox->openStepsFor($user);
 
         $page = LengthAwarePaginator::resolveCurrentPage();
         $perPage = 25;
         $items = new EloquentCollection($mine->forPage($page, $perPage)->values()->all());
-        $this->preload($items);
+        $this->inbox->preload($items);
 
         $approvals = new LengthAwarePaginator(
             $items,
@@ -67,7 +61,7 @@ class ApprovalInboxController extends Controller {
 
         return view('helpdesk.approvals.index', [
             'approvals' => $approvals,
-            'entries' => $items->mapWithKeys(fn(Approval $a): array => [$a->id => $this->entryFor($a, $user)])->all(),
+            'entries' => $items->mapWithKeys(fn(Approval $a): array => [$a->id => $this->inbox->entryFor($a, $user)])->all(),
             'kinds' => $items->mapWithKeys(fn(Approval $a): array => [$a->id => $this->responsibility->kindOf($a)])->all(),
             'mappedRoles' => $items->mapWithKeys(fn(Approval $a): array => [$a->id => $this->responsibility->mappedRole($a)])->all(),
         ]);
@@ -77,12 +71,12 @@ class ApprovalInboxController extends Controller {
         Gate::authorize(Permission::ServiceRequestApprove->value);
 
         $user = $this->authUser();
-        abort_unless($this->subjectFor($approval) !== null && $this->responsibility->isResponsible($approval, $user), 403);
-        $this->preload(new EloquentCollection([$approval]));
+        abort_unless($this->inbox->subjectFor($approval) !== null && $this->responsibility->isResponsible($approval, $user), 403);
+        $this->inbox->preload(new EloquentCollection([$approval]));
 
         return view('helpdesk.approvals._decide_dialog', [
             'approval' => $approval,
-            'entry' => $this->entryFor($approval, $user),
+            'entry' => $this->inbox->entryFor($approval, $user),
             'orgUsers' => User::query()
                 ->where('organization_id', (int) $user->organization_id)
                 ->whereKeyNot($user->id)
@@ -95,10 +89,10 @@ class ApprovalInboxController extends Controller {
         Gate::authorize(Permission::ServiceRequestApprove->value);
 
         $user = $this->authUser();
-        $subject = $this->subjectFor($approval);
+        $subject = $this->inbox->subjectFor($approval);
         abort_unless($subject !== null && $this->responsibility->isResponsible($approval, $user), 403);
 
-        if (! $this->isLowestOpenStep($approval)) {
+        if (! $this->inbox->isLowestOpenStep($approval)) {
             return back()->with('error', __('Erst müssen die vorgelagerten Schritte entschieden werden.'));
         }
 
@@ -135,93 +129,5 @@ class ApprovalInboxController extends Controller {
                 'question' => __('Rückfrage vermerkt — der Schritt bleibt offen.'),
                 default => __('Schritt delegiert.'),
             });
-    }
-
-    /**
-     * Offene Schritte (decision null ODER question) angemeldeter Gegenstände,
-     * je approvable nur der niedrigste offene Step, gefiltert auf die
-     * Zuständigkeit des Actors und auf Gegenstände, die noch entscheiden lassen.
-     *
-     * @return Collection<int, Approval>
-     */
-    private function openStepsFor(User $user): Collection {
-        $subjects = $this->subjects();
-        $steps = Approval::query()
-            ->currentRound()
-            ->whereIn('approvable_type', array_map(MorphMap::alias(...), array_keys($subjects)))
-            ->where(fn($q) => $q->whereNull('decision')->orWhere('decision', 'question'))
-            // Nach einer Ablehnung ist die Kette beendet — ihre offenen Stufen stehen nicht mehr zur Entscheidung.
-            ->whereNotExists(fn($q) => $q->from('approvals as rejected')
-                ->whereColumn('rejected.approvable_type', 'approvals.approvable_type')
-                ->whereColumn('rejected.approvable_id', 'approvals.approvable_id')
-                ->whereColumn('rejected.round', 'approvals.round')
-                ->where('rejected.decision', 'rejected'))
-            ->orderBy('step')
-            ->orderBy('id')
-            ->get()
-            ->groupBy(fn(Approval $a): string => $a->approvable_type . ':' . $a->approvable_id)
-            ->flatMap(function (Collection $steps): Collection {
-                $lowest = (int) $steps->min('step');
-
-                return $steps->filter(fn(Approval $a): bool => (int) $a->step === $lowest);
-            })
-            ->filter(fn(Approval $a): bool => $this->responsibility->isResponsible($a, $user))
-            ->values();
-
-        $steps = new EloquentCollection($steps->all());
-        $steps->load('approvable');
-
-        return $steps->toBase()
-            ->filter(fn(Approval $a): bool => $a->approvable !== null && (bool) $this->subjectFor($a)?->awaitsDecision($a->approvable))
-            ->values();
-    }
-
-    /** question-Schritte zählen nicht als erledigt — nur echte Entscheide. */
-    private function isLowestOpenStep(Approval $approval): bool {
-        return ! Approval::query()
-            ->where('approvable_type', $approval->approvable_type)
-            ->where('approvable_id', $approval->approvable_id)
-            ->where('round', $approval->round)
-            ->where(fn($q) => $q->whereNull('decision')->orWhere('decision', 'question'))
-            ->where('step', '<', $approval->step)
-            ->exists();
-    }
-
-    /** @param EloquentCollection<int, Approval> $approvals */
-    private function preload(EloquentCollection $approvals): void {
-        $approvals->loadMissing('approvable');
-        $approvals->loadMorph('approvable', array_map(
-            static fn(ApprovalInboxSubject $subject): array => $subject->eagerLoad(),
-            $this->subjects(),
-        ));
-    }
-
-    private function entryFor(Approval $approval, User $viewer): ApprovalInboxEntry {
-        $approvable = $approval->approvable;
-        $subject = $this->subjectFor($approval);
-
-        return $approvable === null || $subject === null
-            ? new ApprovalInboxEntry('—')
-            : $subject->present($approvable, $viewer);
-    }
-
-    private function subjectFor(Approval $approval): ?ApprovalInboxSubject {
-        $class = MorphMap::classFor($approval->approvable_type);
-
-        return $class === null ? null : ($this->subjects()[$class] ?? null);
-    }
-
-    /** @return array<class-string, ApprovalInboxSubject> Modellklasse → angemeldeter Gegenstand */
-    private function subjects(): array {
-        if ($this->subjects === null) {
-            $this->subjects = [];
-            foreach ($this->modules->extensions(ApprovalInboxSubject::class) as $class) {
-                /** @var ApprovalInboxSubject $subject */
-                $subject = app($class);
-                $this->subjects[$subject->approvableClass()] = $subject;
-            }
-        }
-
-        return $this->subjects;
     }
 }

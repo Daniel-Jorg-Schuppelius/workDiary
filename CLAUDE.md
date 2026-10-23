@@ -178,7 +178,19 @@ Welle 4 leer; ein neuer Verstoß wird gelöst, nicht eingetragen.
   `IncomingInvoiceTransferTarget` (Buchhaltungsziel des Rechnungseingangs; Tor, Journal
   `incoming_einvoice_transfers` und Wiederholung führt der Kern),
   `CalendarEventSource` (Termine eines Moduls im Kalender, etwa Ausschreibungsfristen;
-  Rechte und Modulfreischaltung prüft die Quelle). Neue Scans, Specs, Quellen,
+  Rechte und Modulfreischaltung prüft die Quelle), `WorkItemSource` (offene Vorgänge
+  im Arbeitsvorrat, Feature 179; die Quelle prüft Modul und Rechte, verlinkt auf ihre
+  Fläche, eigene Anträge nie), `SearchDomain` (Treffergruppe der globalen Suche,
+  Feature 180; der Bereich prüft Modul und Leserecht, ein unbekannter Personen- oder
+  Kundenfilter ergibt keine Treffer). Plugin-Fachobjekte brauchen einen Suchanschluss
+  und `ExternalReference` als Herkunft (`<x-origin-badge>`, Gate
+  `PluginOverviewCoverageRuleTest`, Feature 181), `CockpitPanel` (Panel eines Moduls am
+  Cockpit von Kunde, Lieferant, Projekt, Lead oder Asset über `<x-cockpit-panels :subject>`,
+  Feature 182; Recht, Modul und leere Liste prüft das Panel, gemeinsame Liste
+  `cockpit._list`), `ManagementKpiSource` (Kennzahl der Leitungssicht und des
+  Leitungsberichts, Feature 184; rechnet mit dem Builder der Fachauswertung und liefert
+  nichts ohne deren Recht). Änderungsverlauf je Objekt über `<x-activity-feed :subject>`
+  (Audit + Journal, nur lesend, Feature 183). Neue Scans, Specs, Quellen,
   Demo-Blöcke, Löschbereiche usw. **nie** in eine feste Liste, sondern ins
   Manifest des Moduls. Plugins haben kein Manifest und tragen sich beim Booten
   über `ModuleRegistry::contribute(Interface, Klasse)` ein (MVP-1045) — nie
@@ -280,7 +292,7 @@ verzweigen (Gate `FieldSchemaRuleTest`).
 
 ## Eigene Felder je Organisation (MVP-868)
 
-Kunde, Auftrag, Asset, Artikel und Projekt tragen `HasCustomFields`
+Kunde, Lieferant, Lead, Auftrag, Asset, Artikel und Projekt tragen `HasCustomFields`
 (Vertrag `App\Models\Contracts\CustomFieldSubject`); das Schema je Träger
 liegt in `custom_field_definitions` (Org × Morph-Alias, `FieldSchemaCast`,
 Version, aktiv), die Werte in `custom_field_values` (ein Satz je Datensatz,
@@ -293,7 +305,9 @@ Version, aktiv), die Werte in `custom_field_values` (ein Satz je Datensatz,
   `SavesCustomFields` (`validatedCustomFields()` vor dem Speichern,
   `syncCustomFields()` danach), Formular `<x-custom-fields-group :model :subject>`,
   Detailseite `<x-custom-fields-card :subject>`; Exporte hängen
-  `exportColumns()/exportRow()` an, Suchquellen `customFieldTexts()`.
+  `exportColumns()/exportRow()` an, Suchquellen `customFieldTexts()`, der
+  Auskunftsabschnitt der Partei `customFields()` (Art. 15); Anonymisierung löscht
+  den Wertesatz.
 - Feldlisten bearbeitet `x-field-schema-editor` (auch Formularvorlagen);
   Upload-/Signaturtypen gibt es hier nicht. Deaktivieren statt löschen,
   Recht `organization.customFields.manage`.

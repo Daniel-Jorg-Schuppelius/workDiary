@@ -1,7 +1,7 @@
 ---
 title: "Flusso documenti"
 topic: billing.feed
-version: 2
+version: 3
 keywords:
     - fatture
     - preventivi
@@ -33,7 +33,9 @@ replicati da una contabilità collegata e note spese. Le precedenti pagine
 «Preventivi» e «Fatture» portano qui: ora sono schede dello stesso elenco.
 
 **Periodo:** l'elenco segue il filtro data nell'intestazione. Se manca un
-documento, verifichi anzitutto il periodo selezionato.
+documento, verifichi anzitutto il periodo selezionato. Un risultato della
+ricerca globale apre l'elenco alla data del documento; quel giorno sostituisce
+allora il periodo dell'intestazione.
 
 **Schede:** «Tutti», «Preventivi», «Fatture di vendita», «Fatture di
 acquisto», «Note di credito» e «Note spese» sono filtri salvati, non pagine

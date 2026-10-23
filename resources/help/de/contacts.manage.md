@@ -1,7 +1,7 @@
 ---
 title: "Kunden & Lieferanten"
 topic: contacts.manage
-version: 10
+version: 11
 keywords:
     - Vorschau als Kunde
     - Startpasswort
@@ -134,3 +134,14 @@ CSV-Import statt der Einzelanlage nutzen.
 ## Lieferant: Steuerdaten und Gutschriftsverfahren
 
 Am Lieferanten werden **USt-IdNr.** und **Steuernummer** gepflegt. Rechnet Ihre Organisation die Leistungen eines Lieferanten selbst ab, tragen Sie das Datum der **Vereinbarung über das Gutschriftsverfahren** ein; erst dann lassen sich Gutschriften an ihn ausstellen. Die Lieferantenseite zeigt die Vereinbarung und die letzten Gutschriften.
+
+## Kunden- und Lieferanten-Cockpit
+
+Die Akte bündelt, was andere Module zum Kontakt wissen: beim Kunden offene
+Tickets, Verträge mit der nächsten Frist, Vereinbarungen,
+Gewährleistungsfristen, Bürgschaften, Umfragen mit NPS, Domains sowie Abos und
+Lizenzen; beim Lieferanten Bestellungen, Pflichtnachweise, Verträge und
+Fristen. Ein Abschnitt erscheint nur, wenn das Modul freigeschaltet ist, Sie
+das Recht dazu haben und es Einträge gibt; die Zahlen entsprechen der
+jeweiligen Liste. Shop-Bestellungen aus Etsy und Billbee sieht die
+Administration. Lieferanten haben wie Kunden eigene Felder und Dokumente.

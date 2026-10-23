@@ -56,7 +56,7 @@ return [
             'description' => 'Nuevos adjuntos en sus entradas.',
         ],
         'team_activity' => [
-            'description' => 'Los últimos comentarios del equipo.',
+            'description' => 'Quién cambió qué recientemente, según el registro de actividad.',
         ],
         'finance' => [
             'description' => 'Gastos y viajes del mes; para quien aprueba, además la cola pendiente.',

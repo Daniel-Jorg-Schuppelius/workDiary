@@ -82,6 +82,15 @@ final class ResellingManifest extends Manifest {
     }
 
     /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Cockpit\Contracts\CockpitPanel::class => [
+                \App\Services\Reselling\Cockpit\ResaleCockpitPanel::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, list<class-string>> */
     public function listeners(): array {
         return [
             \App\Events\Article\ArticlesMerged::class => [

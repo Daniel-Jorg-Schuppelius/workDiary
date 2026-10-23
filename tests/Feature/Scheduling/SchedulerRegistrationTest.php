@@ -56,6 +56,8 @@ class SchedulerRegistrationTest extends TestCase {
         'demo:prune' => ['40 3 * * *', true, true],
         // Neu mit MVP-461: wöchentlicher Offene-Zeiten-Digest an die Buchhaltung.
         'finance:open-times-digest' => ['40 6 * * 1', true, true],
+        // Leitungsbericht (Feature 184): montags 06:30.
+        'reports:management-digest' => ['30 6 * * 1', true, true],
         // Neu mit MVP-1110: täglicher Hinweis auf zuzuordnende Rechnungseingänge.
         'incoming-invoices:digest' => ['20 8 * * *', true, true],
         // Neu mit MVP-1111: Übergaben des Rechnungseingangs wiederholen.

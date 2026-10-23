@@ -1,7 +1,7 @@
 ---
 title: "Leads"
 topic: sales.leads
-version: 2
+version: 3
 keywords:
     - prospectos
     - clientes potenciales
@@ -53,3 +53,10 @@ anonimizan **6 meses después del último contacto** — mediante el escaneo de
 conservación del módulo de protección de datos (cola de revisión, sin borrado
 silencioso). La métrica del pipeline (fuente, estado, periodo) queda, la
 persona desaparece.
+
+## Ficha
+
+Los leads tienen campos propios (Administración › Campos propios), etiquetas y
+adjuntos. Al anonimizar el lead tras el plazo de supresión se eliminan también
+los adjuntos, los campos propios y las etiquetas. Los documentos de la gestión
+documental se vinculan solo al cliente.

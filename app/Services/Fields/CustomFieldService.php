@@ -20,6 +20,8 @@ use App\Models\Diary\DiaryEntry;
 use App\Models\Fields\{CustomFieldDefinition, CustomFieldValue};
 use App\Models\Platform\Organization;
 use App\Models\Project\Project;
+use App\Models\Sales\Lead;
+use App\Models\Supplier\Supplier;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
@@ -35,7 +37,7 @@ class CustomFieldService {
     public const MAX_LIST_COLUMNS = 3;
 
     /** @var list<class-string<Model>> Träger, die eigene Felder erlauben */
-    public const SUBJECTS = [Customer::class, DiaryEntry::class, Asset::class, Article::class, Project::class];
+    public const SUBJECTS = [Customer::class, Supplier::class, Lead::class, DiaryEntry::class, Asset::class, Article::class, Project::class];
 
     /** @var array<string, FieldSchema> Schema je „org:alias" für die Dauer eines Requests */
     private array $schemas = [];

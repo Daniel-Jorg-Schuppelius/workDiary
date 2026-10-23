@@ -86,6 +86,14 @@ final class InvoicingManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Search\Contracts\SearchDomain::class => [
+                \App\Services\Invoicing\Search\InvoiceSearchDomain::class,
+                \App\Services\Invoicing\Search\IncomingInvoiceSearchDomain::class,
+            ],
+            \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
+                \App\Services\Invoicing\WorkQueue\InvoiceInquiryWorkItemSource::class,
+                \App\Services\Invoicing\WorkQueue\IncomingInvoiceWorkItemSource::class,
+            ],
             // Posteingangsregeln (Phase 150, MVP-1209/1210) und Aufräumen abgelehnter Eingänge (MVP-1213).
             \App\Automation\Triggers\RuleTrigger::class => [
                 \App\Services\Invoicing\Automation\IncomingInvoiceReceivedTrigger::class,

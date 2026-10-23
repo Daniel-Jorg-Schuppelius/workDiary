@@ -15,6 +15,7 @@ use App\Enums\User\Permission as P;
 use App\Models\Platform\User;
 use App\Models\Time\TimeCorrectionRequest;
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
+use App\Services\Users\TeamScope;
 
 /**
  * Berechtigungen für Zeit-Korrekturanträge (MVP-017, ../WorkDiary-Architecture/konzepte/zeit-korrekturen.md §7).
@@ -37,8 +38,8 @@ class TimeCorrectionRequestPolicy {
             return true;
         }
 
-        return $user->can(P::CorrectionViewOrganization->value)
-            || $user->can(P::CorrectionViewTeam->value);
+        return ($user->can(P::CorrectionViewOrganization->value) || $user->can(P::CorrectionViewTeam->value))
+            && $this->inScope($user, $request);
     }
 
     public function create(User $user): bool {
@@ -67,12 +68,14 @@ class TimeCorrectionRequestPolicy {
             // Sperre sitzt im ApprovalFlowService.
             && ! $this->owns($user, $request, 'requested_by_user_id')
             && ! $this->owns($user, $request)
+            && $this->inScope($user, $request)
             && $request->status === TimeCorrectionStatus::Submitted;
     }
 
     public function reject(User $user, TimeCorrectionRequest $request): bool {
         return $this->sharesOrganization($user, $request)
             && $user->can(P::CorrectionReject->value)
+            && $this->inScope($user, $request)
             && $request->status === TimeCorrectionStatus::Submitted;
     }
 
@@ -80,5 +83,10 @@ class TimeCorrectionRequestPolicy {
         return $this->sharesOrganization($user, $request)
             && $user->can(P::CorrectionApplySystem->value)
             && $request->status === TimeCorrectionStatus::Approved;
+    }
+
+    /** Team-Recht ohne Organisationsrecht: nur Anträge des eigenen Teams (Entscheidung 2026-10-23). */
+    private function inScope(User $user, TimeCorrectionRequest $request): bool {
+        return app(TeamScope::class)->covers($user, (int) $request->user_id, P::CorrectionViewTeam, P::CorrectionViewOrganization);
     }
 }

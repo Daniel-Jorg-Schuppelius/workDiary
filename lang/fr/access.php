@@ -429,6 +429,7 @@ return [
         'import.viewReports' => 'Voir les rapports d\'import CSV',
         'report.export' => 'Exporter les rapports',
         'report.target.manage' => 'Gérer les valeurs cibles',
+        'report.management.digest' => 'Recevoir le rapport de direction par e-mail',
         'audit-log.view' => 'Voir le journal d\'audit',
         'attendance.viewAny' => 'Voir les présences',
         'attendance.manage' => 'Gérer les présences',

@@ -233,6 +233,8 @@ class PermissionsSeeder extends Seeder {
                     // Feature 002: Zielwert-Pflege ist GF-/Admin-Sache; die
                     // .view-Heuristik trifft `report.target.manage` nicht.
                     PermissionEnum::ReportTargetManage->value,
+                    // Feature 184: Leitungsbericht per E-Mail — Empfang ist Leitungssache.
+                    PermissionEnum::ReportManagementDigest->value,
                     PermissionEnum::AuditLogView->value,
                     PermissionEnum::AccessAuditView->value,
                     PermissionEnum::FlexBalanceView->value,

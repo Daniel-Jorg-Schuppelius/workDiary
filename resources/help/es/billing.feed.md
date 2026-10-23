@@ -1,7 +1,7 @@
 ---
 title: "Flujo de documentos"
 topic: billing.feed
-version: 2
+version: 3
 keywords:
     - facturas
     - presupuestos
@@ -34,7 +34,9 @@ desde una contabilidad conectada y gastos. Las antiguas páginas
 lista.
 
 **Periodo:** la lista sigue el filtro de fechas del encabezado. Si falta un
-documento, compruebe primero el periodo seleccionado.
+documento, compruebe primero el periodo seleccionado. Un resultado de la
+búsqueda global abre la lista en la fecha del documento; ese día sustituye
+entonces al periodo del encabezado.
 
 **Pestañas:** «Todos», «Presupuestos», «Facturas de venta», «Facturas de
 compra», «Abonos» y «Gastos» son filtros guardados, no páginas

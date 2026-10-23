@@ -190,4 +190,16 @@ return [
             'term_length' => 'A term may be at most :max characters long.',
         ],
     ],
+    'domain' => [
+        'suppliers' => 'Suppliers',
+        'leads' => 'Leads',
+        'invoices' => 'Invoices',
+        'invoice_draft' => 'Invoice draft #:id',
+        'incoming_invoices' => 'Incoming invoices',
+        'contracts' => 'Contracts',
+        'articles' => 'Articles',
+        'tasks' => 'Tasks',
+        'purchase_orders' => 'Purchase orders',
+        'accounting_vouchers' => 'Accounting vouchers',
+    ],
 ];

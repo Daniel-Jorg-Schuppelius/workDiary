@@ -11,30 +11,26 @@
 namespace App\Services\Customer;
 
 use App\Enums\User\Permission;
-use App\Models\Audit\AuditLog;
 use App\Models\Classification\ActivityCategory;
 use App\Models\Customer\Customer;
-use App\Models\Domain\{DomainProjection, DomainResellerAccount};
 use App\Models\Invoicing\Invoice;
 use App\Models\Material\MaterialCostAllocation;
 use App\Models\Platform\User;
-use App\Models\Reselling\ResaleSubscription;
 use App\Models\Time\TimeEntry;
 use App\Services\Billing\Contracts\ExternalRevenue;
 use App\Services\Billing\{CustomerAccountStatementService, PartyDocumentSources, RetainerChannelResolver};
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Stammdaten\IdentifierIssueDetector;
 use App\Services\Timeline\DiaryEntryTimelineService;
-use App\Support\MorphMap;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{DB, Gate};
 
 /**
- * Aggregiert alle Daten der Kundenakte (KPIs, Belege/Rechnungen, Monats-Trends,
- * Timeline, Domains, Abrechnungskonto, Portalzugänge) inkl. Sichtbarkeits-
- * prüfung je Betrachter. Aus CustomerController::show() extrahiert
+ * Aggregiert die Daten der Kundenakte (KPIs, Belege/Rechnungen, Monats-Trends,
+ * Timeline, Abrechnungskonto, Portalzugänge) inkl. Sichtbarkeitsprüfung je
+ * Betrachter; Panels anderer Module kommen über `CockpitPanel` (Feature 182). Aus CustomerController::show() extrahiert
  * (Vollscan 2026-08-23, B21) — die Autorisierung des Aufrufs selbst bleibt im
  * Controller; der globale Header-Zeitraum kommt als Parameter herein
  * (Services haben kein Request-Concern).
@@ -139,53 +135,6 @@ class CustomerDetailAssembler {
             $timelineLimit,
         );
 
-        // Kundenakte-Reiter „Domains" (Feature 083, MVP-394; Vollaudit 2026-07,
-        // M34): direkt zugeordnete Domains + Domains der zugeordneten
-        // Reseller-Accounts (Subuser); nur mit domain.viewAny sichtbar.
-        $customerDomains = collect();
-        if (Gate::forUser($user)->allows(Permission::DomainViewAny->value)) {
-            $resellerAccountIds = DomainResellerAccount::query()
-                ->where('customer_id', $customer->id)
-                ->pluck('id');
-            $customerDomains = DomainProjection::query()
-                ->with('foreignCustomer:id,name')
-                ->where(function ($q) use ($customer, $resellerAccountIds): void {
-                    $q->where('customer_id', $customer->id);
-                    if ($resellerAccountIds->isNotEmpty()) {
-                        $q->orWhereIn('reseller_account_id', $resellerAccountIds->all());
-                    }
-                })
-                ->orderBy('external_domain')
-                ->limit(200)
-                ->get();
-        }
-
-        // Kundenakte-Reiter „Abos" (Feature 152, MVP-758): Abos des Kunden und
-        // seiner Fremdkunden (Endkunden) mit der Zahl fälliger Perioden (offen,
-        // Beginn erreicht, fremder Halter) — nur mit Modul und Recht.
-        $customerSubscriptions = collect();
-        $customerLicenses = collect();
-        $resaleModuleActive = $this->featureFlags->isEnabled('module.reselling');
-        if ($resaleModuleActive && Gate::forUser($user)->allows(Permission::ResellingView->value)) {
-            $today = \App\Models\Reselling\ResalePeriod::today();
-            $customerSubscriptions = ResaleSubscription::query()
-                ->with(['foreignCustomer:id,name'])
-                ->withCount(['periods as open_periods_count' => static fn($q) => $q->due($today)])
-                ->forCustomer($customer)
-                ->planning()
-                ->orderBy('label')
-                ->limit(200)
-                ->get();
-            // Lizenzbestand (MVP-1024): verkaufte Einzellizenzen des Kunden und seiner Fremdkunden — ohne Schlüssel.
-            $customerLicenses = \App\Models\Reselling\ResaleLicenseAssignment::query()
-                ->whereNull('ended_at')
-                ->where('customer_id', $customer->id)
-                ->with(['unit.batch.product', 'foreignCustomer:id,name'])
-                ->orderByDesc('sold_on')
-                ->limit(200)
-                ->get();
-        }
-
         // Kunden-Sonderkonditionen & Abrechnungskonto (Feature 098): Panel nur
         // mit update-Recht; im saldenführenden Modus (Konto/Retainer) offene
         // Monate frisch durchrechnen. Retainer zeigt zusätzlich die Pauschalbelege
@@ -252,10 +201,6 @@ class CustomerDetailAssembler {
         return [
             'identifierIssues' => $this->identifierIssues->forContact($customer),
             'customer' => $customer,
-            'customerDomains' => $customerDomains,
-            'customerSubscriptions' => $customerSubscriptions,
-            'customerLicenses' => $customerLicenses,
-            'resaleModuleActive' => $resaleModuleActive,
             'portalUsers' => $portalUsers,
             'portalLastLogins' => $portalLastLogins,
             'billingAgreement' => $billingAgreement,
@@ -292,25 +237,8 @@ class CustomerDetailAssembler {
             'externalDocuments' => $this->partyDocuments->forParty($customer, $rangeFrom, $rangeTo),
             'voucherRange' => $globalRange,
             'peppolLookup' => $peppolLookup,
-            // Kundenvereinbarungen (Feature 157): AVV/NDA-Verträge dieses Kunden
-            // mit ihrer neuesten Fassung — ohne Modul/Recht bleibt das Panel weg.
-            'agreements' => $this->featureFlags->isEnabled('module.contracts') && $user->can('viewAny', \App\Models\Contract\Contract::class)
-                ? \App\Models\Contract\Contract::query()
-                    ->where('customer_id', $customer->id)
-                    ->whereIn('kind', array_map(static fn (\App\Enums\Contract\ContractKind $k): string => $k->value, \App\Enums\Contract\ContractKind::signingKinds()))
-                    ->with('latestSigningRevision')
-                    ->orderByDesc('id')
-                    ->get()
-                : null,
             'attachments' => $customer->attachments()->get(),
             'tags' => $customer->tags()->get(),
-            'auditLogs' => AuditLog::query()
-                ->where('auditable_type', MorphMap::stableKey($customer::class))
-                ->where('auditable_id', $customer->getKey())
-                ->with('user')
-                ->orderByDesc('created_at')
-                ->limit(20)
-                ->get(),
         ];
     }
 }

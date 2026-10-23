@@ -39,5 +39,7 @@ class BillbeeServiceProvider extends PluginServiceProviderBase {
             BillbeePlugin::ID,
             static fn(Organization $organization): BillbeeInventoryProvider => new BillbeeInventoryProvider($organization, app(InventoryLedger::class)),
         );
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Search\Contracts\SearchDomain::class, \App\Plugins\Billbee\Search\BillbeeOrderSearchDomain::class);
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Cockpit\Contracts\CockpitPanel::class, \App\Plugins\Billbee\Services\BillbeeCustomerOrdersPanel::class);
     }
 }

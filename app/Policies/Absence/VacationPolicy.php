@@ -14,11 +14,16 @@ use App\Enums\User\Permission;
 use App\Enums\Vacation\VacationStatus;
 use App\Models\Absence\Vacation;
 use App\Models\Platform\User;
-use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
+use App\Policies\Concerns\ChecksOwnership;
+use App\Services\Approval\SelfApproval;
 
 class VacationPolicy {
     use ChecksOwnership;
-    use HasAdminBypass;
+
+    /** Admin-Durchgriff — außer bei der Entscheidung, dort gilt die Selbstfreigabe-Regel auch für Admins. */
+    public function before(User $user, string $ability): ?bool {
+        return $ability !== 'decide' && $user->isAdmin() ? true : null;
+    }
 
     public function viewAny(User $user): bool {
         return true;
@@ -45,10 +50,16 @@ class VacationPolicy {
 
     /** Genehmigen / Ablehnen: vacation.approve oder die Stellvertretung eines abwesenden Admins (MVP-523). */
     public function decide(User $user, Vacation $vacation): bool {
+        // Keine Selbstfreigabe (S-35), auch nicht als Admin oder Stellvertretung —
+        // außer niemand sonst in der Organisation darf entscheiden.
+        if ($this->owns($user, $vacation) && ! app(SelfApproval::class)->soleDecider($user, Permission::VacationApprove)) {
+            return false;
+        }
+        if ($user->isAdmin()) {
+            return true;
+        }
+
         return $this->sharesOrganization($user, $vacation)
-            // Keine Selbstfreigabe (S-35): auch eine Stellvertretung
-            // entscheidet nicht über den eigenen Urlaub.
-            && ! $this->owns($user, $vacation)
             && (
                 $user->can(Permission::VacationApprove->value)
                 || app(\App\Services\Users\DeputyResolver::class)->actsAsDeputyForAbsentAdmin($user)

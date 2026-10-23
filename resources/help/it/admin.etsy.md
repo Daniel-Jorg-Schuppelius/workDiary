@@ -1,7 +1,7 @@
 ---
 title: "Collegare Etsy"
 topic: admin.etsy
-version: 1
+version: 2
 keywords:
     - negozio Etsy
     - ordini Etsy
@@ -56,6 +56,10 @@ l'ultimo utilizzo; il controllo di salute avvisa in tempo, dopo aiuta solo
 ricollegarsi. Etsy non offre un ambiente di test — i test avvengono sul
 negozio reale secondo l'API testing policy di Etsy (le tariffe sono
 addebitate davvero).
+
+**Trovare:** il campo di ricerca sopra lo specchio degli ordini trova numero
+d'ordine, nome o e-mail dell'acquirente. La ricerca globale mostra gli stessi
+ordini in «Ordini Etsy» — per l'amministrazione, finché il plugin è attivo.
 
 *The term "Etsy" is a trademark of Etsy, Inc. This application uses the
 Etsy API but is not endorsed or certified by Etsy, Inc.*

@@ -12,21 +12,11 @@ declare(strict_types=1);
 
 namespace App\Services\Search;
 
-use App\Enums\User\Permission;
-use App\Models\Asset\Asset;
-use App\Models\Attachments\Attachment;
-use App\Models\Customer\Customer;
-use App\Models\Diary\DiaryEntry;
-use App\Models\Document\Document;
-use App\Models\Form\FormSubmission;
 use App\Models\Platform\User;
-use App\Models\Project\Project;
-use App\Models\Travel\{Expense, PerDiemTrip};
-use App\Services\Licensing\FeatureFlagResolver;
+use App\Modules\ModuleRegistry;
+use App\Services\Search\Contracts\SearchDomain;
+use App\Services\Search\Dto\SearchDomainFilters;
 use App\Support\{CarbonFmt, OrganizationContext};
-use App\Support\MorphMap;
-use CommonToolkit\Helper\Data\StringHelper;
-use Illuminate\Support\Facades\{Gate, URL};
 
 /**
  * Gemeinsame Treffer-Queries der globalen Suche (MVP-014, Feature 023):
@@ -37,7 +27,8 @@ use Illuminate\Support\Facades\{Gate, URL};
  * Seit Feature 153 kommen Aufträge, Kommunikation, Wissen und Kommentare
  * (plus Zeiten, Stundenzettel, Tickets, Protokolle, offene Punkte) aus dem
  * Tätigkeitsindex ({@see ActivitySearchService}) als Gruppe „Tätigkeiten";
- * hier bleiben die Stammdaten und Objekte.
+ * Stammdaten und Objekte melden die Module als {@see SearchDomain} an
+ * (Feature 180) — jeder Bereich prüft Modul und Leserecht selbst.
  *
  * Filter (M8): Domäne (Gruppen-Key), Zeitraum (domänenspezifische
  * Datumsspalte), Person und Kunde. Gruppen ohne Personen-/Kundenbezug liefern
@@ -55,28 +46,22 @@ class GlobalSearchService {
     public const ACTIVITIES = 'activities';
 
     public function __construct(
-        private readonly FeatureFlagResolver $featureFlags,
         private readonly ActivitySearchService $activities,
+        private readonly ModuleRegistry $modules,
     ) {}
 
     /**
-     * Verfügbare Domänen (Key => Label) für Filter-UI.
+     * Für den Nutzer verfügbare Domänen (Key => Label) für die Filter-UI.
      *
      * @return array<string, string>
      */
-    public function domains(): array {
-        return [
-            self::ACTIVITIES => (string) __('search.group.activities'),
-            'customers' => (string) __('Kunden'),
-            'projects' => (string) __('Projekte'),
-            'assets' => (string) __('Objekte & Assets'),
-            'expenses' => (string) __('Spesen'),
-            'per_diem_trips' => (string) __('Reisekosten'),
-            'users' => (string) __('user.employees'),
-            'documents' => (string) __('document.title.index'),
-            'forms' => (string) __('form.title.submissions'),
-            'attachments' => (string) __('Anhänge'),
-        ];
+    public function domains(User $user): array {
+        $domains = [self::ACTIVITIES => (string) __('search.group.activities')];
+        foreach ($this->availableDomains($user) as $domain) {
+            $domains[$domain->key()] = $domain->label();
+        }
+
+        return $domains;
     }
 
     /**
@@ -89,28 +74,18 @@ class GlobalSearchService {
      */
     public function groups(User $user, string $term, array $filters = [], int $limit = 5, bool $withActivities = true): array {
         $orgId = OrganizationContext::currentId() ?? $user->organization_id;
-        $domain = $filters['domain'] ?? null;
+        $domainFilter = $filters['domain'] ?? null;
         $from = $filters['from'] ?? null;
         $to = $filters['to'] ?? null;
         $person = $filters['person'] ?? null;
         $customer = $filters['customer'] ?? null;
-
-        $wants = static fn(string $key): bool => $domain === null || $domain === $key;
-        $range = static function ($query, string $column) use ($from, $to): void {
-            if ($from !== null) {
-                $query->whereDate($column, '>=', $from);
-            }
-            if ($to !== null) {
-                $query->whereDate($column, '<=', $to);
-            }
-        };
 
         $groups = [];
 
         // Tätigkeiten (Feature 153): Zeiten, Aufträge inkl. Kommentare,
         // Stundenzettel, Tickets, Protokolle, offene Punkte, Kommunikation,
         // Wissen — Rechte je Quelle im ActivitySearchVisibility.
-        if ($withActivities && $wants(self::ACTIVITIES)) {
+        if ($withActivities && ($domainFilter === null || $domainFilter === self::ACTIVITIES)) {
             $groups[] = $this->makeGroup(
                 self::ACTIVITIES,
                 (string) __('search.group.activities'),
@@ -119,262 +94,34 @@ class GlobalSearchService {
             );
         }
 
-        if ($wants('customers') && $person === null && $customer === null) {
-            $query = Customer::query()
-                ->where('organization_id', $orgId)
-                ->where(fn($q) => $q->whereLikeEscaped('name', $term)
-                    ->orWhereLikeEscaped('number', $term)
-                    ->orWhereLikeEscaped('email', $term));
-            $range($query, 'created_at');
-            $groups[] = $this->makeGroup(
-                'customers',
-                (string) __('Kunden'),
-                'badge',
-                $query->orderBy('name')->limit($limit)->get()
-                    ->map(fn(Customer $c) => [
-                        'id' => $c->id,
-                        'title' => (string) $c->name,
-                        'subtitle' => trim(($c->number ? '#' . $c->number : '') . ($c->email ? ' · ' . $c->email : '')) ?: null,
-                        'url' => route('customers.show', $c),
-                    ])
-                    ->all()
-            );
-        }
-
-        if ($wants('projects') && $person === null) {
-            $query = Project::query()
-                ->where('organization_id', $orgId)
-                ->where(fn($q) => $q->whereLikeEscaped('name', $term))
-                ->when($customer !== null, fn($q) => $q->where('customer_id', $customer))
-                ->with('customer:id,name');
-            $range($query, 'created_at');
-            $groups[] = $this->makeGroup(
-                'projects',
-                (string) __('Projekte'),
-                'folder_special',
-                $query->orderBy('name')->limit($limit)->get()
-                    ->map(fn(Project $p) => [
-                        'id' => $p->id,
-                        'title' => (string) $p->name,
-                        'subtitle' => $p->customer?->name,
-                        'url' => route('projects.show', $p),
-                    ])
-                    ->all()
-            );
-        }
-
-        // Objekte & Assets (Vollreview W5.2): nur mit asset.view (AssetPolicy::
-        // viewAny, Admin-Bypass); gefunden über Name sowie Asset-/Inventar-/
-        // Seriennummer. Kein Personenbezug → Personen-Filter liefert bewusst
-        // keine Treffer; Kunden-Filter über customer_id.
-        if ($wants('assets') && $person === null && Gate::forUser($user)->allows('viewAny', Asset::class)) {
-            $assetQuery = Asset::query()
-                ->where('organization_id', $orgId)
-                ->where(fn($q) => $q->whereLikeEscaped('name', $term)
-                    ->orWhereLikeEscaped('asset_no', $term)
-                    ->orWhereLikeEscaped('inventory_no', $term)
-                    ->orWhereLikeEscaped('serial_no', $term))
-                ->when($customer !== null, fn($q) => $q->where('customer_id', $customer))
-                ->with('customer:id,name');
-            $range($assetQuery, 'created_at');
-            $groups[] = $this->makeGroup(
-                'assets',
-                (string) __('Objekte & Assets'),
-                'precision_manufacturing',
-                $assetQuery->orderBy('name')->limit($limit)->get()
-                    ->map(fn(Asset $a) => [
-                        'id' => $a->id,
-                        'title' => (string) $a->name,
-                        'subtitle' => trim('#' . $a->asset_no
-                            . ' · ' . $a->status->label()
-                            . ($a->inventory_no ? ' · ' . $a->inventory_no : ($a->serial_no ? ' · ' . $a->serial_no : ''))
-                            . ($a->customer ? ' · ' . $a->customer->name : '')),
-                        'url' => route('assets.show', $a),
-                    ])
-                    ->all()
-            );
-        }
-
-        if ($wants('expenses')) {
-            $expenseQuery = Expense::query()
-                ->where('organization_id', $orgId)
-                ->where(fn($q) => $q->whereLikeEscaped('vendor', $term)
-                    ->orWhereLikeEscaped('description', $term)
-                    ->orWhereLikeEscaped('reimbursement_reference', $term))
-                ->when($person !== null, fn($q) => $q->where('user_id', $person))
-                ->when($customer !== null, fn($q) => $q->where('customer_id', $customer));
-            // ExpensePolicy::viewAny ist bewusst `true` (Seitenzugriff) — die
-            // DATEN-Sichtbarkeit ist wie im Web-Index eigene Belege, alle nur
-            // für Admins (Freigabe via Admin-Bypass). Vorher lief die Suche
-            // hier zu offen (Vollaudit-Nacharbeit M8).
-            if (! $user->isAdmin()) {
-                $expenseQuery->where('user_id', $user->id);
+        // Ohne Organisation keine Stammdaten — fail-closed.
+        if ($orgId !== null) {
+            $domainFilters = new SearchDomainFilters($from, $to, $person, $customer);
+            foreach ($this->availableDomains($user) as $domain) {
+                if ($domainFilter !== null && $domainFilter !== $domain->key()) {
+                    continue;
+                }
+                $groups[] = $this->makeGroup($domain->key(), $domain->label(), $domain->icon(), $domain->search($user, (int) $orgId, $term, $domainFilters, $limit));
             }
-            $range($expenseQuery, 'date');
-            $groups[] = $this->makeGroup(
-                'expenses',
-                (string) __('Spesen'),
-                'receipt_long',
-                $expenseQuery->orderByDesc('date')->limit($limit)->get()
-                    ->map(fn(Expense $e) => [
-                        'id' => $e->id,
-                        'title' => $e->vendor ?: ($e->description ?: (string) __('Spese #:id', ['id' => $e->id])),
-                        'subtitle' => CarbonFmt::fdate($e->date)
-                            . ' · ' . ($e->amount_gross?->format() ?? '0,00 €'),
-                        // Es gibt keine Detailseite (expenses.show fehlte → 500 bei jedem Spesen-Treffer).
-                        'url' => route('expenses.index', ['from' => $e->date->toDateString(), 'to' => $e->date->toDateString()]),
-                    ])
-                    ->all()
-            );
-        }
-
-        if ($wants('per_diem_trips') && $customer === null) {
-            $tripQuery = PerDiemTrip::query()
-                ->where('organization_id', $orgId)
-                ->where(fn($q) => $q->whereLikeEscaped('location', $term)
-                    ->orWhereLikeEscaped('purpose', $term)
-                    ->orWhereLikeEscaped('country', $term))
-                ->when($person !== null, fn($q) => $q->where('user_id', $person));
-            // Analog zu Spesen: eigene Reisen, alle nur für Admins (s. o.).
-            if (! $user->isAdmin()) {
-                $tripQuery->where('user_id', $user->id);
-            }
-            $range($tripQuery, 'started_at');
-            $groups[] = $this->makeGroup(
-                'per_diem_trips',
-                (string) __('Reisekosten'),
-                'flight',
-                $tripQuery->orderByDesc('started_at')->limit($limit)->get()
-                    ->map(fn(PerDiemTrip $t) => [
-                        'id' => $t->id,
-                        'title' => trim(($t->location ?: '—') . ($t->country ? ' (' . $t->country . ')' : '')),
-                        'subtitle' => CarbonFmt::fdate(CarbonFmt::orgTz($t->started_at))
-                            . ($t->purpose ? ' · ' . StringHelper::truncate($t->purpose, 60, '…') : ''),
-                        'url' => route('per-diem-trips.show', $t),
-                    ])
-                    ->all()
-            );
-        }
-
-        // Nur Admin/Org-Manager dürfen Mitarbeiter durchsuchen.
-        if ($wants('users') && $customer === null && ($user->isAdmin() || Gate::forUser($user)->allows('manage-members'))) {
-            $query = User::query()
-                ->where('organization_id', $orgId)
-                ->where(fn($q) => $q->whereLikeEscaped('name', $term)->orWhereLikeEscaped('email', $term))
-                ->when($person !== null, fn($q) => $q->whereKey($person));
-            $range($query, 'created_at');
-            $groups[] = $this->makeGroup(
-                'users',
-                (string) __('user.employees'),
-                'group',
-                $query->orderBy('name')->limit($limit)->get()
-                    ->map(fn(User $u) => [
-                        'id' => $u->id,
-                        'title' => (string) $u->name,
-                        'subtitle' => $u->email,
-                        'url' => Gate::forUser($user)->allows('manage-members') ? route('org.members.index') : '#',
-                    ])
-                    ->all()
-            );
-        }
-
-        // Dokumente (MVP-031): document.viewAny UND aktives Modul (Plan/Lizenz).
-        // Keine Detailseite — Link auf die vorgefilterte Liste (?q=Titel).
-        if (
-            $wants('documents') && $person === null && $customer === null
-            && $this->featureFlags->isEnabled('module.documents') && Gate::forUser($user)->allows('viewAny', Document::class)
-        ) {
-            $query = Document::query()->visibleTo($user)->whereLikeEscaped('title', $term);
-            $range($query, 'updated_at');
-            $groups[] = $this->makeGroup(
-                'documents',
-                (string) __('document.title.index'),
-                'folder_open',
-                $query->latest('updated_at')->limit($limit)->get()
-                    ->map(fn(Document $d) => [
-                        'id' => $d->id,
-                        'title' => (string) $d->title,
-                        'subtitle' => $d->document_type->label() . ' · ' . $d->effectiveStatus()->label(),
-                        'url' => route('documents.index', ['q' => $d->title]),
-                    ])
-                    ->all()
-            );
-        }
-
-        // Formulare (Feature 032): Vorlagen-Sicht sieht alle Submissions, alle
-        // anderen ausschließlich die EIGENEN (wie FormSubmissionController).
-        if (
-            $wants('forms') && $customer === null
-            && $this->featureFlags->isEnabled('module.forms') && Gate::forUser($user)->allows('viewAny', FormSubmission::class)
-        ) {
-            $submissionQuery = FormSubmission::query()
-                ->with(['template', 'submitter'])
-                ->whereHas('template', fn($q) => $q->whereLikeEscaped('name', $term))
-                ->when($person !== null, fn($q) => $q->where('submitted_by_user_id', $person));
-            if (! ($user->isAdmin() || $user->can(Permission::FormTemplateViewAny->value))) {
-                $submissionQuery->where('submitted_by_user_id', $user->id);
-            }
-            $range($submissionQuery, 'submitted_at');
-            $groups[] = $this->makeGroup(
-                'forms',
-                (string) __('form.title.submissions'),
-                'edit_note',
-                $submissionQuery->orderByDesc('submitted_at')->limit($limit)->get()
-                    ->map(fn(FormSubmission $s) => [
-                        'id' => $s->id,
-                        'title' => $s->template->name ?? __('form.title.submissions') . ' #' . $s->id,
-                        'subtitle' => CarbonFmt::fdate(CarbonFmt::orgTz($s->submitted_at))
-                            . ($s->submitter ? ' · ' . $s->submitter->name : ''),
-                        'url' => route('form-submissions.show', $s),
-                    ])
-                    ->all()
-            );
-        }
-
-        // Anhang-Metadaten (MVP-014-Domäne, Vollaudit M8): Dateiname; sichtbar
-        // sind Anhänge sichtbarer Aufträge sowie eigene Uploads. Download läuft
-        // ohnehin über die AttachmentPolicy. Volltext/OCR bleibt Folge-MVP.
-        if ($wants('attachments') && $customer === null) {
-            $attachmentQuery = Attachment::query()
-                ->where('organization_id', $orgId)
-                ->whereLikeEscaped('original_name', $term)
-                ->whereNull('meta_type')
-                ->when($person !== null, fn($q) => $q->where('user_id', $person))
-                ->where(function ($q) use ($user): void {
-                    $q->where('user_id', $user->id)
-                        ->orWhere(function ($p) use ($user): void {
-                            $p->where('attachable_type', MorphMap::alias(DiaryEntry::class))
-                                ->whereExists(function ($sub) use ($user): void {
-                                    $sub->selectRaw('1')
-                                        ->from('diary_entries')
-                                        ->whereColumn('diary_entries.id', 'attachments.attachable_id');
-                                    if (! ($user->isAdmin() || $user->can(Permission::DiaryViewAny->value))) {
-                                        $sub->where(fn($w) => $w->where('diary_entries.user_id', $user->id)
-                                            ->orWhere('diary_entries.assigned_user_id', $user->id));
-                                    }
-                                });
-                        });
-                });
-            $range($attachmentQuery, 'created_at');
-            $groups[] = $this->makeGroup(
-                'attachments',
-                (string) __('Anhänge'),
-                'attach_file',
-                $attachmentQuery->orderByDesc('created_at')->limit($limit)->get()
-                    ->map(fn(Attachment $a) => [
-                        'id' => $a->id,
-                        'title' => (string) $a->original_name,
-                        'subtitle' => ($a->created_at !== null ? CarbonFmt::fdate(CarbonFmt::orgTz($a->created_at)) : '')
-                            . ($a->mime ? ' · ' . $a->mime : ''),
-                        // Der Download prüft die Signatur — ein nackter Link endet im 403.
-                        'url' => URL::signedRoute('attachments.download', $a),
-                    ])
-                    ->all()
-            );
         }
 
         // Leere Gruppen entfernen.
         return array_values(array_filter($groups, static fn(array $g): bool => count($g['items']) > 0));
+    }
+
+    /** @return list<SearchDomain> nach {@see SearchDomain::order()} */
+    private function availableDomains(User $user): array {
+        $domains = [];
+        foreach ($this->modules->extensions(SearchDomain::class) as $class) {
+            /** @var SearchDomain $domain */
+            $domain = app($class);
+            if ($domain->available($user)) {
+                $domains[] = $domain;
+            }
+        }
+        usort($domains, static fn (SearchDomain $a, SearchDomain $b): int => $a->order() <=> $b->order());
+
+        return $domains;
     }
 
     /**

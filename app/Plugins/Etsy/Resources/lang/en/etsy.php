@@ -39,6 +39,7 @@ return [
     'filter' => [
         'all_statuses' => 'All statuses',
         'apply' => 'Filter',
+        'search' => 'Order or buyer',
     ],
     'action' => [
         'sync' => 'Sync now',
@@ -65,4 +66,12 @@ return [
     'open_inbox' => ':count open assignments',
     'last_sync' => 'Last sync :at',
     'empty' => 'No orders mirrored yet.',
+    // Bereich der globalen Suche (Feature 181).
+    'search' => [
+        'domain' => 'Etsy orders',
+    ],
+    // Panel am Kunden-Cockpit (MVP-1370).
+    'cockpit' => [
+        'title' => 'Etsy orders',
+    ],
 ];

@@ -190,4 +190,16 @@ return [
             'term_length' => 'Un terme ne doit pas dépasser :max caractères.',
         ],
     ],
+    'domain' => [
+        'suppliers' => 'Fournisseurs',
+        'leads' => 'Prospects',
+        'invoices' => 'Factures',
+        'invoice_draft' => 'Brouillon de facture n° :id',
+        'incoming_invoices' => 'Factures entrantes',
+        'contracts' => 'Contrats',
+        'articles' => 'Articles',
+        'tasks' => 'Tâches',
+        'purchase_orders' => 'Commandes fournisseurs',
+        'accounting_vouchers' => 'Pièces comptables',
+    ],
 ];

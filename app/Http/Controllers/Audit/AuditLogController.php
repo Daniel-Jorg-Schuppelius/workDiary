@@ -12,14 +12,7 @@ namespace App\Http\Controllers\Audit;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Models\Attachments\Attachment;
 use App\Models\Audit\AuditLog;
-use App\Models\Communication\Comment;
-use App\Models\Customer\Customer;
-use App\Models\Diary\{DiaryEntry, EmergencyAssignment, OnCallShift};
-use App\Models\Integration\ImportRun;
-use App\Models\Numbering\NumberSequence;
-use App\Models\Supplier\Supplier;
 use App\Services\UI\DateRangeContext;
 use App\Support\{LookupCache, SortableQuery};
 use App\Support\MorphMap;
@@ -29,18 +22,6 @@ use Illuminate\View\View;
 
 class AuditLogController extends Controller {
     use ResolvesGlobalDateRange;
-
-    private const TYPE_MAP = [
-        'diary' => DiaryEntry::class,
-        'comment' => Comment::class,
-        'shift' => OnCallShift::class,
-        'assignment' => EmergencyAssignment::class,
-        'attachment' => Attachment::class,
-        'customer' => Customer::class,
-        'supplier' => Supplier::class,
-        'import_run' => ImportRun::class,
-        'number_sequence' => NumberSequence::class,
-    ];
 
     public function index(Request $request): View|RedirectResponse {
         Gate::authorize('viewAny', AuditLog::class);
@@ -72,7 +53,7 @@ class AuditLogController extends Controller {
         }
 
         if ($typeKey = $request->string('type')->toString()) {
-            $class = self::TYPE_MAP[$typeKey] ?? null;
+            $class = AuditLog::FILTER_TYPES[$typeKey] ?? null;
             if ($class) {
                 $query->where('auditable_type', MorphMap::stableKey($class));
             }
@@ -100,7 +81,7 @@ class AuditLogController extends Controller {
             'logs' => $logs,
             'users' => LookupCache::userDropdown(),
             'events' => ['created', 'updated', 'deleted', 'archived', 'restored', 'import.confirmed', 'import.started', 'import.finished', 'import.partial', 'import.preflightFailed'],
-            'types' => self::TYPE_MAP,
+            'types' => AuditLog::FILTER_TYPES,
             'filters' => $filters,
             'sort' => $sort,
             'dir' => $dir,

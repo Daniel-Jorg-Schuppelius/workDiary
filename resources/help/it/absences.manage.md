@@ -1,7 +1,7 @@
 ---
 title: "Ferie e malattia"
 topic: absences.manage
-version: 3
+version: 4
 keywords:
     - assenza
     - richiesta ferie
@@ -30,6 +30,11 @@ sostituzioni e ferie residue e approvano, rifiutano o richiedono una
 correzione. I dati sanitari sono particolarmente sensibili: registri
 solo le informazioni necessarie e rispetti le regole di accesso e
 conservazione.
+
+**Richiesta propria:** nessuno decide sulle proprie ferie, nemmeno
+l'amministrazione, a meno che nell'organizzazione nessun altro abbia il
+permesso di approvazione; il registro di audit annota allora
+l'autoapprovazione.
 
 ## Malattia e continuazione della retribuzione
 

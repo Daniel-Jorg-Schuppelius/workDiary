@@ -10,7 +10,7 @@
 
 namespace Tests\Concerns;
 
-use App\Models\Platform\{Organization, User};
+use App\Models\Platform\{Organization, Team, User};
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -51,6 +51,16 @@ trait WithOrganization {
      *
      * @param  array<string, mixed>  $attributes
      */
+    /** Gemeinsames Team — Team-Rechte (`*.view.team`) zeigen nur Mitglieder der eigenen Teams. */
+    protected function sameTeam(User ...$users): Team {
+        $team = Team::factory()->create(['organization_id' => $this->organization->id]);
+        foreach ($users as $user) {
+            $user->teams()->attach($team->id);
+        }
+
+        return $team;
+    }
+
     protected function orgAdmin(array $attributes = []): User {
         /** @var User */
         return User::factory()->admin()->create(array_merge(['organization_id' => $this->organization->id], $attributes));

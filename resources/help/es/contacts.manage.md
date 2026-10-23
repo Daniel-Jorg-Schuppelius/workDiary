@@ -1,7 +1,7 @@
 ---
 title: "Clientes & proveedores"
 topic: contacts.manage
-version: 10
+version: 11
 keywords:
     - Vista previa como cliente
     - Contraseña inicial
@@ -132,3 +132,15 @@ para volúmenes grandes.
 ## Proveedor: datos fiscales y autofacturación
 
 En el proveedor se registran el **NIF-IVA** y el **número fiscal**. Si su organización factura ella misma los servicios de un proveedor, indique la fecha del **acuerdo de autofacturación**; solo entonces pueden emitirse autofacturas. La página del proveedor muestra el acuerdo y las últimas autofacturas.
+
+## Cockpit de cliente y proveedor
+
+La ficha reúne lo que otros módulos saben del contacto: en clientes los
+tickets abiertos, los contratos con su próximo plazo, los acuerdos, los plazos
+de garantía, los avales, las encuestas con NPS, los dominios y las
+suscripciones y licencias; en proveedores los pedidos, los justificantes
+obligatorios, los contratos y los plazos. Una sección solo aparece si el
+módulo está activado, usted tiene el permiso y existen entradas; las cifras
+coinciden con la lista correspondiente. La administración ve los pedidos de
+tienda de Etsy y Billbee. Igual que los clientes, los proveedores tienen
+campos propios y documentos.

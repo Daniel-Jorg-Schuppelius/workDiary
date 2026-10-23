@@ -39,6 +39,7 @@ return [
     'filter' => [
         'all_statuses' => 'Tutti gli stati',
         'apply' => 'Filtra',
+        'search' => 'Ordine o acquirente',
     ],
     'action' => [
         'sync' => 'Sincronizza ora',
@@ -65,4 +66,12 @@ return [
     'open_inbox' => ':count assegnazioni aperte',
     'last_sync' => 'Ultima sincronizzazione :at',
     'empty' => 'Nessun ordine ancora specchiato.',
+    // Bereich der globalen Suche (Feature 181).
+    'search' => [
+        'domain' => 'Ordini Etsy',
+    ],
+    // Panel am Kunden-Cockpit (MVP-1370).
+    'cockpit' => [
+        'title' => 'Ordini Etsy',
+    ],
 ];

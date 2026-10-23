@@ -50,4 +50,13 @@ final class ApprovalManifest extends Manifest {
             'approvals',
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
+                \App\Services\Approval\WorkQueue\ApprovalWorkItemSource::class,
+            ],
+        ];
+    }
 }

@@ -56,7 +56,7 @@ return [
             'description' => 'New attachments on your entries.',
         ],
         'team_activity' => [
-            'description' => 'The latest comments across the team.',
+            'description' => 'Who changed what recently — from the activity feed.',
         ],
         'finance' => [
             'description' => 'This month\'s expenses and trips, plus the pending stack for approvers.',

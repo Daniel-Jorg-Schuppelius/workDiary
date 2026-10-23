@@ -349,6 +349,7 @@ return [
         'entrySaved' => 'Daily close saved',
         'opened' => 'Daily close opened',
         'reopened' => 'Day reopened',
+        'selfDecided' => 'Decided on own day (only authorised person)',
     ],
     'deleted' => 'Deleted',
     'demo' => [
@@ -660,6 +661,7 @@ return [
     ],
     'month_closure' => [
         'bundle_exported' => 'Month closure bundle exported',
+        'self_decided' => 'Decided on own month (only authorised person)',
     ],
     'msgraph' => [
         'admin_consent_granted' => 'Microsoft 365 admin consent granted',
@@ -1146,6 +1148,9 @@ return [
     'user_group' => [
         'member_added' => 'User group: member added',
         'member_removed' => 'User group: member removed',
+    ],
+    'vacation' => [
+        'self_decided' => 'Decided on own leave (only authorised person)',
     ],
     'warranty' => [
         'created' => 'Warranty period recorded',

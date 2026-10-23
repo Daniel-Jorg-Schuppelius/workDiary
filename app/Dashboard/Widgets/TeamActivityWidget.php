@@ -14,13 +14,22 @@ namespace App\Dashboard\Widgets;
 
 use App\Dashboard\Widget;
 use App\Enums\Dashboard\{WidgetGroup, WidgetWidth};
+use App\Models\Audit\AuditLog;
 use App\Models\Platform\User;
-use App\Services\Dashboard\DashboardService;
+use App\Services\Timeline\ActivityFeedService;
+use App\Support\OrganizationContext;
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Gate;
 
-/** Letzte Kommentare im Team; nur für Admins (wie der alte Tab-Block). */
+/**
+ * Letzte Aktivität im Team (Feature 183): die jüngsten Einträge des
+ * Aktivitäts-Feeds — mit dem Recht des Audit-Protokolls wie die Seite.
+ */
 class TeamActivityWidget extends Widget {
-    public function __construct(private readonly DashboardService $service) {}
+    private const DAYS = 14;
+
+    public function __construct(private readonly ActivityFeedService $feed) {}
 
     public function key(): string {
         return 'team-activity';
@@ -51,12 +60,14 @@ class TeamActivityWidget extends Widget {
     }
 
     public function availableFor(User $user): bool {
-        return $user->isAdmin();
+        return Gate::forUser($user)->allows('viewAny', AuditLog::class);
     }
 
     public function render(User $user): View|string {
+        $now = CarbonImmutable::now();
+
         return view('dashboard.widgets.team-activity', [
-            'comments' => $this->service->teamActivity(),
+            'items' => $this->feed->global((int) (OrganizationContext::currentId() ?? $user->organization_id), $now->subDays(self::DAYS), $now, limit: 8)['items'],
         ]);
     }
 }
