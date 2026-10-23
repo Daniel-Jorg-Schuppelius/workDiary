@@ -132,7 +132,7 @@ class IntegrationInboxTest extends TestCase {
             ->get(route('admin.integration.inbox'))
             ->assertOk()
             // Technischer Key wird übersetzt statt roh angezeigt …
-            ->assertSee(__('Zeit-Änderung nicht nach :plugin übertragen', ['plugin' => 'Toggl Track']))
+            ->assertSee(__('Zeit-Änderung nicht nach :plugin übertragen', ['plugin' => 'Toggl']))
             ->assertDontSee('toggl.time_entry.update')
             // … und der betroffene Zeiteintrag ist erkennbar.
             ->assertSee('31.07.2026')
@@ -172,8 +172,8 @@ class IntegrationInboxTest extends TestCase {
         $this->actingAs($this->admin)
             ->get(route('admin.integration.inbox'))
             ->assertOk()
-            ->assertSee(__('Neuer Zeiteintrag nicht nach :plugin übertragen', ['plugin' => 'Toggl Track']))
-            ->assertSee(__('Übertragung nach :plugin fehlgeschlagen', ['plugin' => 'Toggl Track']))
+            ->assertSee(__('Neuer Zeiteintrag nicht nach :plugin übertragen', ['plugin' => 'Toggl']))
+            ->assertSee(__('Übertragung nach :plugin fehlgeschlagen', ['plugin' => 'Toggl']))
             ->assertSeeInOrder(['class="badge badge-sm badge-outline">', __('entity-types.TimeEntry'), '</span>'], false)
             ->assertSee(__('Zeitüberschreitung bei der Zustellung'))
             ->assertDontSee('toggl.entry.create')
@@ -284,7 +284,7 @@ class IntegrationInboxTest extends TestCase {
         $this->actingAs($this->admin)
             ->get(route('admin.integration.inbox'))
             ->assertOk()
-            ->assertSee(__('Zeit-Löschung nicht nach :plugin übertragen', ['plugin' => 'Toggl Track']))
+            ->assertSee(__('Zeit-Löschung nicht nach :plugin übertragen', ['plugin' => 'Toggl']))
             ->assertSee(__('Zeiteintrag #:id existiert nicht mehr', ['id' => 424242]));
     }
 
@@ -469,7 +469,7 @@ class IntegrationInboxTest extends TestCase {
             'display_title' => 'Toggl-Konflikt', 'remote_snapshot' => ['remote_missing' => true]]);
 
         $html = $this->actingAs($this->admin)->get(route('admin.integration.inbox'))->assertOk()
-            ->assertSee(__('In :system nicht (mehr) vorhanden', ['system' => 'Toggl Track']))
+            ->assertSee(__('In :system nicht (mehr) vorhanden', ['system' => 'Toggl']))
             ->getContent();
 
         // Ablage-Spiegel: eigene Lösung statt „Remote übernehmen / Lokal behalten“ (MVP-1041).

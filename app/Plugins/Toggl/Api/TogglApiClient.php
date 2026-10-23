@@ -11,7 +11,8 @@
 namespace App\Plugins\Toggl\Api;
 
 use APIToolkit\API\Authentication\BasicAuthentication;
-use App\Plugins\Support\{PluginApiClient, PluginHttpFactory, RemoteTimeWriter, StartStopFingerprint};
+use App\Plugins\Support\{PluginApiClient, PluginHttpFactory, StartStopFingerprint};
+use App\Plugins\Toggl\Enums\TogglSource;
 use App\Plugins\Toggl\Exceptions\TogglApiException;
 use App\Plugins\Toggl\Sources\TogglEntry;
 use Carbon\CarbonImmutable;
@@ -28,7 +29,7 @@ use Carbon\CarbonImmutable;
  * `workspace*`-Methoden die Stammdaten je Workspace; {@see workspaceEntries()}
  * holt alle Zeiteinträge (aller Benutzer) über die Reports-API v3.
  */
-class TogglApiClient implements RemoteTimeWriter {
+class TogglApiClient implements TogglApi {
     use StartStopFingerprint;
 
     /** Maximale Historie (Jahre) beim „alles"-Import, falls kein Floor bestimmbar ist. */
@@ -52,6 +53,10 @@ class TogglApiClient implements RemoteTimeWriter {
         /** Mindestabstand (Sekunden) zwischen API-Aufrufen; 0 = ungedrosselt (Tests). Produktiv aus {@see TogglConfig} (Tarif/Override). */
         private readonly float $requestInterval = 0.0,
     ) {}
+
+    public function source(): TogglSource {
+        return TogglSource::Track;
+    }
 
     /** Waren alle Eintrags-Abrufe dieser Instanz vollständig? */
     public function isFetchComplete(): bool {
@@ -114,9 +119,11 @@ class TogglApiClient implements RemoteTimeWriter {
      * `error` bei Transport-/Auth-Problemen — der Aufrufer unterscheidet
      * „gibt es nicht mehr" bewusst von „nicht erreichbar".
      *
+     * Der Workspace ist hier ohne Belang: `/me/time_entries` adressiert über die ID.
+     *
      * @return array{status: 'ok'|'missing'|'error', entry: array<string, mixed>|null}
      */
-    public function fetchEntry(int $id): array {
+    public function fetchEntry(int $id, ?int $workspaceId = null): array {
         if (! $this->isConfigured()) {
             return ['status' => 'error', 'entry' => null];
         }

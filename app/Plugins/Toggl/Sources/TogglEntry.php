@@ -10,15 +10,15 @@
 
 namespace App\Plugins\Toggl\Sources;
 
-use App\Plugins\Toggl\Api\TogglApiClient;
+use App\Plugins\Toggl\Api\{TogglApiClient, TogglFocusApiClient};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\CryptoHelper;
 
 /**
  * Normalisierte Repräsentation eines einzelnen Toggl-Zeiteintrags, unabhängig
- * von der Quelle (API oder CSV-Export). {@see TogglApiClient} und
- * {@see TogglCsvParser} mappen ihre Rohdaten auf dieses DTO; der
+ * von der Quelle (API oder CSV-Export). {@see TogglApiClient},
+ * {@see TogglFocusApiClient} und {@see TogglCsvParser} mappen ihre Rohdaten auf dieses DTO; der
  * {@see \App\Plugins\Toggl\Services\TogglImportService} verarbeitet ausschließlich diese Struktur.
  */
 final class TogglEntry {
@@ -29,7 +29,7 @@ final class TogglEntry {
     public function __construct(
         /** Quelle: {@see self::SOURCE_API} | {@see self::SOURCE_CSV}. */
         public readonly string $source,
-        /** Stabiler Idempotenz-Schlüssel ("toggl:<id>" bzw. "csv:<hash>"). */
+        /** Stabiler Idempotenz-Schlüssel ("toggl:<id>" Track, "focus:<id>" neues Toggl, "csv:<hash>"). */
         public readonly string $entryKey,
         /** Toggl-Client-Name (→ Kunde). Leer/null = ohne Client. */
         public readonly ?string $clientName,

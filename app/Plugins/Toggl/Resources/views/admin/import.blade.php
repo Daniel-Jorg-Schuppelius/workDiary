@@ -11,7 +11,7 @@
 @section('nav-title', __('Toggl-Import'))
 
 @section('content')
-<x-index-page :title="__('Toggl Track importieren')" :subtitle="__('Zeiteinträge per API abrufen oder einen Detailed-Report-CSV-Export hochladen. Zuordenbare Einträge werden direkt im Kundenprojekt gebucht, der Rest landet in der zentralen Zuordnungs-Inbox.')">
+<x-index-page :title="__('Toggl importieren')" :subtitle="__('Zeiteinträge per API abrufen oder einen Detailed-Report-CSV-Export hochladen. Zuordenbare Einträge werden direkt im Kundenprojekt gebucht, der Rest landet in der zentralen Zuordnungs-Inbox.')">
     <x-slot:actions>
         <x-button :href="route('admin.toggl.import-api')" tone="ghost" size="sm">{{ __('Workspaces aus API importieren') }}</x-button>
         <x-button :href="route('admin.toggl.import-export')" tone="ghost" size="sm">{{ __('Workspace-Export importieren') }}</x-button>
@@ -28,7 +28,7 @@
                 @csrf
                 <div>
                     <div class="text-sm font-semibold">{{ __('Per API synchronisieren') }}</div>
-                    <div class="text-xs text-muted">{{ __('Nutzt das hinterlegte API-Token und Zeitfenster.') }}</div>
+                    <div class="text-xs text-muted">{{ __('Liest aus :source mit dem hinterlegten Zugang und Zeitfenster.', ['source' => $source->label()]) }}</div>
                 </div>
                 <x-button type="submit">{{ __('Jetzt synchronisieren') }}</x-button>
             </form>
@@ -51,7 +51,7 @@
         <x-card>
             <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('Zeiten nach Toggl übertragen') }}</h2>
             <p class="mb-3 text-sm text-muted">
-                {{ __('Überträgt in workDiary erfasste Zeiten gemappter Projekte nach Toggl (z. B. Fernwartungssitzungen). Angelegt wird für den Token-Inhaber; bereits übertragene oder aus Toggl importierte Einträge werden übersprungen, die Einträge bleiben lokal abrechenbar.') }}
+                {{ __('Überträgt in workDiary erfasste Zeiten gemappter Projekte nach :source (z. B. Fernwartungssitzungen). Angelegt wird für den Zugangs-Inhaber; bereits übertragene oder aus Toggl importierte Einträge werden übersprungen, die Einträge bleiben lokal abrechenbar.', ['source' => $source->label()]) }}
             </p>
             <form method="POST" action="{{ route('admin.toggl.export-api') }}" class="flex flex-wrap items-end gap-2">
                 @csrf
@@ -65,7 +65,11 @@
 
     <x-card>
         <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('Webhook (optional)') }}</h2>
-        <p class="mb-2 text-sm text-muted">{{ __('Damit neue Einträge schneller ankommen, in Toggl eine Webhook-Subscription für den Workspace auf diese Adresse anlegen und das dabei vergebene Geheimnis in den Plugin-Einstellungen unter „Webhook-Secret“ hinterlegen. Die Workspace-ID muss dort ebenfalls gesetzt sein. Der stündliche Abruf bleibt die verlässliche Quelle.') }}</p>
+        @if ($source === \App\Plugins\Toggl\Enums\TogglSource::Focus)
+            <p class="mb-2 text-sm text-muted">{{ __('Das neue Toggl bietet keine Webhooks. Bei aktiver Live-Synchronisation kann ein Webhook in Toggl Track den Abruf trotzdem früher anstoßen: Subscription im Track-Workspace auf diese Adresse anlegen, Track-Workspace-ID und Webhook-Secret in den Plugin-Einstellungen hinterlegen. Gelesen wird weiterhin aus dem neuen Toggl; der stündliche Abruf bleibt die verlässliche Quelle.') }}</p>
+        @else
+            <p class="mb-2 text-sm text-muted">{{ __('Damit neue Einträge schneller ankommen, in Toggl eine Webhook-Subscription für den Workspace auf diese Adresse anlegen und das dabei vergebene Geheimnis in den Plugin-Einstellungen unter „Webhook-Secret“ hinterlegen. Die Workspace-ID muss dort ebenfalls gesetzt sein. Der stündliche Abruf bleibt die verlässliche Quelle.') }}</p>
+        @endif
         <code class="select-all break-all text-sm">{{ route('api.webhooks.toggl') }}</code>
     </x-card>
 

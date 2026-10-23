@@ -46,7 +46,7 @@ class TogglImportCommand extends Command {
                 continue;
             }
             if (! app(TogglClientFactory::class)->isConfigured($org->id)) {
-                $this->warn("Organisation #{$org->id} ({$org->name}): kein Toggl API-Token — übersprungen.");
+                $this->warn("Organisation #{$org->id} ({$org->name}): {$config['source']->missingAccessMessage()} Übersprungen.");
 
                 continue;
             }
@@ -60,7 +60,7 @@ class TogglImportCommand extends Command {
                 $result = $service->importFromApi($org, $config, $from, $to);
                 $removed = $result['removed'];
                 $unresolved = $result['unresolved_users'];
-                $this->line("  created: {$result['created']}, skipped: {$result['skipped']}, unmatched: {$result['unmatched']}, unresolved_users: {$unresolved}, updated: {$result['updated']}, conflicts: {$result['conflicts']}, removed: {$removed}");
+                $this->line("  {$config['source']->label()} — created: {$result['created']}, skipped: {$result['skipped']}, unmatched: {$result['unmatched']}, unresolved_users: {$unresolved}, updated: {$result['updated']}, conflicts: {$result['conflicts']}, removed: {$removed}, adopted: {$result['adopted']}");
                 if ($removed > 0) {
                     $this->warn("  {$removed} lokale Einträge entfernt (drüben gelöscht).");
                 }

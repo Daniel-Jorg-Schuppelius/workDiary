@@ -60,6 +60,14 @@ abstract class TimeWritebackDispatcher implements IntegrationOutboxDispatcher {
     abstract public function writebackEnabled(int $organizationId): bool;
 
     /**
+     * Schreibzugang für einen bestimmten Eintrag. Plugins mit mehreren
+     * Quellsystemen (Toggl) verweigern ihn für Schlüssel der nicht gewählten Quelle.
+     */
+    protected function writerFor(int $organizationId, string $entryKey): ?RemoteTimeWriter {
+        return $this->writer($organizationId);
+    }
+
+    /**
      * Gemeinsamer Create-Pfad für {@see MirrorsCreatedEntries}-Dispatcher
      * (Audit 2026-08, Welle 1.2): lädt Eintrag + Organisation und pusht über
      * {@see AbstractTimeEntryPushService::pushSingle()} mit denselben
@@ -125,7 +133,7 @@ abstract class TimeWritebackDispatcher implements IntegrationOutboxDispatcher {
             return true;
         }
 
-        $writer = $this->writer($outbox->organization_id);
+        $writer = $this->writerFor($outbox->organization_id, (string) $reference->external_id);
         if ($writer === null) {
             return true; // Zugang weg → nichts zurückzuschreiben
         }
@@ -161,7 +169,7 @@ abstract class TimeWritebackDispatcher implements IntegrationOutboxDispatcher {
     private function dispatchDelete(IntegrationOutboxEntry $outbox): bool {
         $payload = $outbox->payload;
         $externalId = RemoteEntryKey::externalId((string) ($payload['external_id'] ?? ''));
-        $writer = $this->writer($outbox->organization_id);
+        $writer = $this->writerFor($outbox->organization_id, (string) ($payload['external_id'] ?? ''));
         if ($writer === null || $externalId === null) {
             return true;
         }

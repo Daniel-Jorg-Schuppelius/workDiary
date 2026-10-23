@@ -15,6 +15,7 @@ use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TimeImporter};
 use App\Plugins\Support\PluginOrgContext;
 use App\Plugins\Toggl\Api\TogglClientFactory;
+use App\Plugins\Toggl\Enums\TogglSource;
 use App\Plugins\Toggl\Services\TogglImportService;
 use Carbon\CarbonImmutable;
 
@@ -35,7 +36,7 @@ class TogglPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Inbox
     public const SERVICE_PROVIDER = TogglServiceProvider::class;
 
     public function name(): string {
-        return 'Toggl Track';
+        return 'Toggl';
     }
 
     public function version(): string {
@@ -43,7 +44,7 @@ class TogglPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Inbox
     }
 
     public function description(): string {
-        return __('Importiert Projekt- und Zeitdaten aus Toggl Track (API oder CSV-Export) und ordnet sie Kunden/Projekten zu.');
+        return __('Importiert Projekt- und Zeitdaten aus Toggl Track oder dem neuen Toggl (API oder CSV-Export) und ordnet sie Kunden/Projekten zu.');
     }
 
     public function capabilities(): array {
@@ -71,9 +72,16 @@ class TogglPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Inbox
 
     public function settingsSchema(): array {
         return [
-            ['key' => 'api_token', 'label' => __('Toggl API-Token'), 'type' => 'password', 'required' => true, 'help' => __('Profil → Einstellungen → API-Token in Toggl Track.')],
-            ['key' => 'base_url', 'label' => __('API-Basis-URL'), 'type' => 'text', 'default' => TogglConfig::DEFAULT_BASE_URL],
-            ['key' => 'workspace_id', 'label' => __('Workspace-ID'), 'type' => 'text', 'help' => __('Optional. Leer = alle Workspaces des Tokens.')],
+            ['key' => 'source', 'label' => __('Toggl-Produkt'), 'type' => 'select', 'default' => TogglSource::Track->value, 'options' => [
+                TogglSource::Track->value => TogglSource::Track->label(),
+                TogglSource::Focus->value => TogglSource::Focus->label(),
+            ], 'help' => __('Aus welchem Toggl-Produkt Zeiten gelesen und in welches sie zurückgeschrieben werden. Bei aktiver Live-Synchronisation zwischen Track und dem neuen Toggl genau eine Quelle wählen — den Abgleich zwischen beiden übernimmt Toggl. Nach einem Wechsel ordnet der nächste Import vorhandene Einträge der neuen Quelle zu, statt sie doppelt anzulegen.')],
+            ['key' => 'api_token', 'label' => __('Toggl Track: API-Token'), 'type' => 'password', 'help' => __('Profil → Einstellungen → API-Token in Toggl Track.')],
+            ['key' => 'base_url', 'label' => __('Toggl Track: API-Basis-URL'), 'type' => 'text', 'default' => TogglConfig::DEFAULT_BASE_URL],
+            ['key' => 'workspace_id', 'label' => __('Toggl Track: Workspace-ID'), 'type' => 'text', 'help' => __('Optional. Leer = alle Workspaces des Tokens.')],
+            ['key' => 'focus_api_key', 'label' => __('Neues Toggl: API-Schlüssel'), 'type' => 'password', 'help' => __('Einstellungen → API-Schlüssel im neuen Toggl (beginnt mit toggl_sk_). Pro Benutzer ist nur ein Schlüssel aktiv; ein neu erzeugter macht den bisherigen ungültig.')],
+            ['key' => 'focus_organization_id', 'label' => __('Neues Toggl: Organisations-ID'), 'type' => 'text', 'help' => __('Optional. Leer = über das Toggl-Konto ermitteln. Gelingt das nicht, Organisations- und Workspace-ID eintragen.')],
+            ['key' => 'focus_workspace_id', 'label' => __('Neues Toggl: Workspace-ID'), 'type' => 'text', 'help' => __('Optional. Leer = alle Workspaces des neuen Toggl, auf die der Schlüssel Zugriff hat.')],
             ['key' => 'api_plan', 'label' => __('Toggl-Tarif'), 'type' => 'select', 'default' => '', 'options' => [
                 '' => __('Unbekannt — nur Burst-Schutz (1 Request/s)'),
                 'free' => __('Free (30 Requests/Stunde)'),
@@ -92,15 +100,16 @@ class TogglPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Inbox
         ];
     }
 
-    /** Health-Check: pingt /me mit dem konfigurierten Token (ohne Token: degraded, Fehler: failing). */
+    /** Health-Check: pingt die gewählte Quelle mit ihrem Zugang (ohne Zugang: degraded, Fehler: failing). */
     public function healthCheck(): PluginHealth {
-        $client = app(TogglClientFactory::class)->for(PluginOrgContext::currentId());
+        $organizationId = PluginOrgContext::currentId();
+        $client = app(TogglClientFactory::class)->for($organizationId);
 
         return PluginHealth::pingHealth(
             ping: fn (): bool => $client->ping(),
             unreachableMessage: __('Toggl-API nicht erreichbar oder Token ungültig.'),
             configured: $client->isConfigured(),
-            notConfiguredMessage: __('Kein Toggl API-Token hinterlegt.'),
+            notConfiguredMessage: TogglConfig::resolve($organizationId)['source']->missingAccessMessage(),
             notConfiguredStatus: PluginHealth::STATUS_DEGRADED,
             errorStatus: PluginHealth::STATUS_FAILING,
             okMessage: 'toggl: ok',

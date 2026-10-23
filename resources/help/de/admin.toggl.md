@@ -1,7 +1,7 @@
 ---
 title: "Toggl-Import"
 topic: admin.toggl
-version: 3
+version: 4
 keywords:
     - Toggl Track
     - Zeiten importieren
@@ -14,6 +14,10 @@ keywords:
     - Wechsel von Toggl
     - Benutzerzuordnung
     - Korrekturen zurückschreiben
+    - neues Toggl
+    - Toggl 2.0
+    - Toggl Focus
+    - Live-Synchronisation
 audience:
     - admin
 related:
@@ -22,10 +26,32 @@ related:
     - admin.openproject
 ---
 
-Der Toggl-Import übernimmt Zeiteinträge aus Toggl Track in
-WorkDiary. Standardmäßig liest der Import nur; optional lassen sich
+Der Toggl-Import übernimmt Zeiteinträge aus Toggl Track oder dem
+neuen Toggl in WorkDiary. Standardmäßig liest der Import nur; optional lassen sich
 Korrekturen zurückschreiben („Korrekturen zurückschreiben") und lokal
 erfasste Zeiten übertragen („Zeit-Übertragung aktivieren").
+
+Toggl Track oder das neue Toggl:
+
+- Unter **Toggl-Produkt** in den Plugin-Einstellungen wählen Sie, woher die
+  Zeiten kommen: **Toggl Track** oder das **neue Toggl** (vormals Toggl 2.0
+  bzw. Toggl Focus). Gelesen, zurückgeschrieben und übertragen wird nur im
+  gewählten Produkt.
+- Für das neue Toggl hinterlegen Sie dessen API-Schlüssel (beginnt mit
+  `toggl_sk_`). Organisations- und Workspace-ID sind optional; ohne sie
+  ermittelt das Plugin die Workspaces über Ihr Toggl-Konto. Toggl erlaubt je
+  Benutzer nur einen aktiven Schlüssel – ein neu erzeugter macht den
+  bisherigen ungültig.
+- Nutzen Sie die Live-Synchronisation zwischen Track und dem neuen Toggl,
+  wählen Sie trotzdem nur eine Quelle: Den Abgleich zwischen beiden Produkten
+  übernimmt Toggl selbst.
+- Nach einem Wechsel ordnet der nächste Import bereits übernommene Einträge
+  der neuen Quelle zu (gleicher Benutzer, Start und Ende), statt sie neu
+  anzulegen; offene Fälle der Zuordnungs-Inbox ziehen mit. Das gilt für den
+  Zeitraum des Abrufs. Ältere Einträge behalten ihre bisherige Verknüpfung,
+  Korrekturen an ihnen gehen nicht mehr nach Toggl. Bei Bedarf einmal mit
+  größerem Zeitraum importieren (`toggl:import --days=365`).
+- Die Löschungserkennung betrachtet nur Einträge der gewählten Quelle.
 
 Zwei Importwege:
 
@@ -92,6 +118,9 @@ Webhook (optional):
   **Workspace-ID** stehen.
 - Der Webhook stößt nur denselben Import an, den der stündliche Abruf
   ausführt. Fällt er aus, holt der Abruf nach.
+- Das neue Toggl bietet keine Webhooks. Bei aktiver Live-Synchronisation
+  kann eine Subscription in Toggl Track den Abruf trotzdem früher anstoßen;
+  gelesen wird weiterhin aus dem neuen Toggl.
 - Den Standard-Benutzer des Einbenutzer-Modus wählen Sie in den
   Plugin-Einstellungen unter **Zeiten buchen für Benutzer** aus der Liste
   der Benutzer.

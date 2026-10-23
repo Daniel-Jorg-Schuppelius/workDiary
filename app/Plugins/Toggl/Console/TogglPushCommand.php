@@ -49,7 +49,7 @@ class TogglPushCommand extends Command {
                 continue;
             }
             if (! app(TogglClientFactory::class)->isConfigured($org->id)) {
-                $this->warn("Organisation #{$org->id} ({$org->name}): kein Toggl-API-Token — übersprungen.");
+                $this->warn("Organisation #{$org->id} ({$org->name}): {$config['source']->missingAccessMessage()} Übersprungen.");
 
                 continue;
             }

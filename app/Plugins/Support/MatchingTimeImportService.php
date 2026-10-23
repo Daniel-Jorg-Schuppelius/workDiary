@@ -80,6 +80,27 @@ abstract class MatchingTimeImportService {
     abstract protected function fallbackDescription(): string;
 
     /**
+     * Referenztyp der numerischen Fremd-Client-ID des Eintrags. Plugins mit
+     * mehreren Quellsystemen (Toggl: Track und neues Toggl, getrennte ID-Räume)
+     * leiten ihn aus dem Schlüssel des Eintrags ab.
+     */
+    protected function clientIdReferenceType(Organization $organization, ImportedTimeEntry $entry): string {
+        return self::EXT_TYPE_CLIENT_ID;
+    }
+
+    protected function projectIdReferenceType(Organization $organization, ImportedTimeEntry $entry): string {
+        return self::EXT_TYPE_PROJECT_ID;
+    }
+
+    /**
+     * Präfix der Eintragsschlüssel, die der Lauf vollständig sieht — nur sie darf
+     * die Löschungserkennung als drüben gelöscht werten. `null` = alle.
+     */
+    protected function remoteKeyPrefix(Organization $organization): ?string {
+        return null;
+    }
+
+    /**
      * @param  array<int, ImportedTimeEntry>  $entries
      * @param  array<string, mixed>  $config
      * @param  RemoteSyncWindow|null  $window  Nur bei vollständigem Lauf — Grundlage der Löschungserkennung
@@ -177,6 +198,7 @@ abstract class MatchingTimeImportService {
                 $organization,
                 array_values(array_map(static fn (ImportedTimeEntry $entry): string => $entry->entryKey, $entries)),
                 $window,
+                keyPrefix: $this->remoteKeyPrefix($organization),
             ),
         ];
     }
@@ -352,11 +374,11 @@ abstract class MatchingTimeImportService {
         // des Projekts hat Vorrang, sonst würde jede Auto-Buchung eine
         // Fremdkunden-Referenz wieder auf die Firma zurückdrehen.
         if ($entry->projectId !== null) {
-            $this->rememberReference($organization, self::EXT_TYPE_PROJECT_ID, (string) $entry->projectId, $project);
+            $this->rememberReference($organization, $this->projectIdReferenceType($organization, $entry), (string) $entry->projectId, $project);
         }
         $clientTarget = $project->foreignCustomer ?? $project->customer;
         if ($entry->clientId !== null && $clientTarget !== null) {
-            $this->rememberReference($organization, self::EXT_TYPE_CLIENT_ID, (string) $entry->clientId, $clientTarget);
+            $this->rememberReference($organization, $this->clientIdReferenceType($organization, $entry), (string) $entry->clientId, $clientTarget);
         }
 
         // Offene Zuordnungsfälle dieses Eintrags schließen (z. B. Benutzer-Fall,

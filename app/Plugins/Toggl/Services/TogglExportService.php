@@ -18,7 +18,8 @@ use App\Models\Platform\Organization;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
 use App\Plugins\Support\{AbstractTimeEntryPushService, MatchingTimeImportService, RemoteTimeFingerprint};
-use App\Plugins\Toggl\Api\{TogglApiClient, TogglClientFactory};
+use App\Plugins\Toggl\Api\{TogglApi, TogglClientFactory};
+use App\Plugins\Toggl\Enums\TogglSource;
 use App\Plugins\Toggl\Exceptions\TogglApiException;
 use App\Plugins\Toggl\Support\TogglQuotaGuard;
 use App\Plugins\Toggl\TogglPlugin;
@@ -35,14 +36,16 @@ use Illuminate\Support\Facades\Cache;
  * (`exported` bleibt false) und über die zusätzlich geschriebene
  * `entry`-Reference writeback-fähig. Der Duplikat-Schutz gegen das
  * Import-Echo des stündlichen Syncs: nach dem POST wird neben der
- * `pushed_entry`-Reference eine `entry`-Reference mit `toggl:<id>` und dem
- * Fingerabdruck aus dem POST-Response geschrieben — der nächste Import
- * erkennt den Eintrag als bekannt und unverändert. Kandidaten sind Work-
- * Einträge mit echten Start-/Endzeiten gemappter Projekte OHNE bestehende
- * Toggl-Referenz. Angelegt wird immer für den Token-Inhaber (v9-Limitierung).
+ * `pushed_entry`-Reference eine `entry`-Reference mit dem Schlüssel der
+ * gewählten Quelle (`toggl:<id>` bzw. `focus:<id>`) und dem Fingerabdruck aus
+ * dem POST-Response geschrieben — der nächste Import erkennt den Eintrag als
+ * bekannt und unverändert. Kandidaten sind Work-Einträge mit echten
+ * Start-/Endzeiten gemappter Projekte OHNE bestehende Toggl-Referenz (gleich
+ * welcher Quelle — sonst legte ein Quellenwechsel alles noch einmal an).
+ * Angelegt wird immer für den Zugangs-Inhaber.
  */
 class TogglExportService extends AbstractTimeEntryPushService {
-    private ?TogglApiClient $client = null;
+    private ?TogglApi $client = null;
 
     /** @var array<int, int> workDiary-Projekt-ID → Toggl-Projekt-ID */
     private array $projectMap = [];
@@ -67,10 +70,10 @@ class TogglExportService extends AbstractTimeEntryPushService {
 
         $this->client = app(TogglClientFactory::class)->for((int) $organization->id);
         if (! $this->client->isConfigured()) {
-            return (string) __('Toggl-API ist nicht konfiguriert (API-Token in den Plugin-Einstellungen hinterlegen).');
+            return $this->client->source()->missingAccessMessage();
         }
 
-        $this->projectMap = $this->togglProjectIdByProjectId($organization);
+        $this->projectMap = $this->togglProjectIdByProjectId($organization, $this->client->source());
         if ($this->projectMap === []) {
             return (string) __('Kein Projekt ist einem Toggl-Projekt zugeordnet (zuerst Sync ausführen bzw. Inbox-Gruppen buchen).');
         }
@@ -116,7 +119,7 @@ class TogglExportService extends AbstractTimeEntryPushService {
     }
 
     protected function createRemoteEntry(Organization $organization, TimeEntry $entry): string {
-        assert($this->client instanceof TogglApiClient);
+        assert($this->client instanceof TogglApi);
 
         $togglProjectId = $this->projectMap[(int) $entry->project_id];
         $workspaceId = (int) $this->workspaceFor((int) $entry->project_id);
@@ -136,7 +139,7 @@ class TogglExportService extends AbstractTimeEntryPushService {
             throw new TogglApiException('Toggl-Antwort ohne Eintrags-ID');
         }
 
-        $this->recordEntryReference($organization, $entry, $record, $workspaceId, $togglProjectId, $id);
+        $this->recordEntryReference($organization, $entry, $record, $workspaceId, $togglProjectId, $this->client->source()->entryKey($id));
 
         return (string) $id;
     }
@@ -162,14 +165,14 @@ class TogglExportService extends AbstractTimeEntryPushService {
     }
 
     /**
-     * `entry`-Reference im Format des Imports (`toggl:<id>` + Fingerabdruck aus
+     * `entry`-Reference im Format des Imports (Quellschlüssel + Fingerabdruck aus
      * dem POST-Response): der nächste stündliche Sync erkennt den gepushten
      * Eintrag als bekannt/unverändert (kein Duplikat, kein Konflikt), und der
      * Writeback kann spätere lokale Korrekturen adressieren.
      *
      * @param  array<string, mixed>  $record
      */
-    private function recordEntryReference(Organization $organization, TimeEntry $entry, array $record, int $workspaceId, int $togglProjectId, int $togglId): void {
+    private function recordEntryReference(Organization $organization, TimeEntry $entry, array $record, int $workspaceId, int $togglProjectId, string $entryKey): void {
         $start = is_string($record['start'] ?? null) ? $record['start'] : null;
         $stop = is_string($record['stop'] ?? null) ? $record['stop'] : null;
         $fingerprint = '';
@@ -192,7 +195,7 @@ class TogglExportService extends AbstractTimeEntryPushService {
                 'referenceable_id' => $entry->getKey(),
             ],
             [
-                'external_id' => 'toggl:' . $togglId,
+                'external_id' => $entryKey,
                 'payload' => [
                     'source' => 'push',
                     'project_id' => $togglProjectId,
@@ -207,14 +210,14 @@ class TogglExportService extends AbstractTimeEntryPushService {
     }
 
     /**
-     * Mapping workDiary-Projekt-ID → Toggl-Projekt-ID aus den
-     * `project_id`-References des Imports.
+     * Mapping workDiary-Projekt-ID → Toggl-Projekt-ID aus den Projekt-ID-
+     * References des Imports — nur die der gewählten Quelle.
      *
      * @return array<int, int>
      */
-    private function togglProjectIdByProjectId(Organization $organization): array {
+    private function togglProjectIdByProjectId(Organization $organization, TogglSource $source): array {
         return ExternalReference::query()
-            ->forPlugin($organization, TogglPlugin::ID, MatchingTimeImportService::EXT_TYPE_PROJECT_ID)
+            ->forPlugin($organization, TogglPlugin::ID, $source->projectIdType())
             ->where('referenceable_type', (new Project)->getMorphClass())
             ->pluck('external_id', 'referenceable_id')
             ->mapWithKeys(fn ($externalId, $projectId): array => [(int) $projectId => (int) $externalId])
@@ -228,7 +231,7 @@ class TogglExportService extends AbstractTimeEntryPushService {
      * @param  array<string, mixed>  $config
      */
     private function resolveWorkspaces(int $organizationId, array $config): void {
-        assert($this->client instanceof TogglApiClient);
+        assert($this->client instanceof TogglApi);
 
         if (is_numeric($config['workspace_id'] ?? null)) {
             $this->fallbackWorkspaceId = (int) $config['workspace_id'];
@@ -239,8 +242,8 @@ class TogglExportService extends AbstractTimeEntryPushService {
         // Die API-Auflösung kostet 1+n Calls — kurz je Org cachen, damit nicht
         // jeder einzelne Outbox-Push sie erneut bezahlt (Toggl-Stunden-Quota).
         /** @var array{fallback: int|null, map: array<int, int>} $resolved */
-        $resolved = Cache::remember('toggl:workspaces:' . $organizationId, 600, function (): array {
-            assert($this->client instanceof TogglApiClient);
+        $resolved = Cache::remember('toggl:workspaces:' . $this->client->source()->value . ':' . $organizationId, 600, function (): array {
+            assert($this->client instanceof TogglApi);
 
             $workspaces = $this->client->workspaces();
             if (count($workspaces) === 1) {

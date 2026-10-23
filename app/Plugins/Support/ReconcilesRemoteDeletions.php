@@ -32,8 +32,9 @@ use App\Support\Query\DateRange;
 trait ReconcilesRemoteDeletions {
     /**
      * @param  list<string>  $seenKeys  Idempotenz-Schlüssel aller gelieferten Einträge
+     * @param  string|null  $keyPrefix  Nur Schlüssel mit diesem Präfix stammen aus der gelesenen Quelle
      */
-    protected function reconcileRemoteDeletions(Organization $organization, array $seenKeys, ?RemoteSyncWindow $window, string $externalType = 'entry'): int {
+    protected function reconcileRemoteDeletions(Organization $organization, array $seenKeys, ?RemoteSyncWindow $window, string $externalType = 'entry', ?string $keyPrefix = null): int {
         if ($window === null || $seenKeys === []) {
             return 0;
         }
@@ -53,6 +54,10 @@ trait ReconcilesRemoteDeletions {
             // CSV-Importe adressieren kein Fremdobjekt — ihr Fehlen in einem
             // API-Lauf heißt nicht, dass drüben etwas gelöscht wurde.
             if (RemoteEntryKey::externalId((string) $reference->external_id) === null) {
+                continue;
+            }
+            // Einträge einer anderen Quelle (Toggl nach dem Quellenwechsel) hat dieser Lauf gar nicht gelesen.
+            if ($keyPrefix !== null && ! str_starts_with((string) $reference->external_id, $keyPrefix)) {
                 continue;
             }
 

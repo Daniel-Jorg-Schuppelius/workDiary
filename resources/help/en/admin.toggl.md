@@ -1,7 +1,7 @@
 ---
 title: "Toggl Import"
 topic: admin.toggl
-version: 3
+version: 4
 keywords:
     - Toggl Track
     - import time entries
@@ -13,6 +13,10 @@ keywords:
     - migrate from Toggl
     - user mapping
     - write back corrections
+    - new Toggl
+    - Toggl 2.0
+    - Toggl Focus
+    - live sync
 audience:
     - admin
 related:
@@ -21,10 +25,30 @@ related:
     - admin.openproject
 ---
 
-The Toggl import brings time entries from Toggl Track into
-WorkDiary. By default the import only reads; optionally corrections
+The Toggl import brings time entries from Toggl Track or the
+new Toggl into WorkDiary. By default the import only reads; optionally corrections
 can be written back (“Write back corrections”) and locally recorded
 times can be transferred (“Enable time transfer”).
+
+Toggl Track or the new Toggl:
+
+- Under **Toggl product** in the plugin settings you choose where times
+  come from: **Toggl Track** or the **new Toggl** (formerly Toggl 2.0 or
+  Toggl Focus). Reading, writing back and transferring happen only in the
+  selected product.
+- For the new Toggl you store its API key (starts with `toggl_sk_`). The
+  organization and workspace ID are optional; without them the plugin
+  finds the workspaces through your Toggl account. Toggl allows only one
+  active key per user – creating a new one invalidates the previous key.
+- If you use live sync between Track and the new Toggl, still choose only
+  one source: Toggl itself keeps the two products in sync.
+- After a switch, the next import assigns entries already imported to the
+  new source (same user, start and end) instead of creating them again;
+  open cases in the assignment inbox move along. This applies to the
+  fetch period. Older entries keep their previous link, and corrections to
+  them are no longer sent to Toggl. If needed, import once with a longer
+  period (`toggl:import --days=365`).
+- Deletion detection only considers entries of the selected source.
 
 Two import paths:
 
@@ -86,5 +110,8 @@ Webhook (optional):
   must be set there as well.
 - The webhook only triggers the same import that the hourly fetch runs. If
   it fails, the fetch catches up.
+- The new Toggl offers no webhooks. With live sync active, a subscription
+  in Toggl Track can still trigger the fetch earlier; data is still read
+  from the new Toggl.
 - You choose the default user of single-user mode in the plugin settings
   under **Book times for user** from the list of users.

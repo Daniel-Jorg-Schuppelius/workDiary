@@ -1,7 +1,7 @@
 ---
 title: "Importazione Toggl"
 topic: admin.toggl
-version: 3
+version: 4
 keywords:
     - Toggl Track
     - importare tempi
@@ -13,6 +13,10 @@ keywords:
     - mappature
     - abbinamento utenti
     - report dettagliato
+    - nuovo Toggl
+    - Toggl 2.0
+    - Toggl Focus
+    - sincronizzazione in tempo reale
 audience:
     - admin
 related:
@@ -22,7 +26,7 @@ related:
 ---
 
 L'importazione Toggl trasferisce le registrazioni di tempo da Toggl
-Track a WorkDiary. Per impostazione predefinita legge soltanto; in
+Track o dal nuovo Toggl a WorkDiary. Per impostazione predefinita legge soltanto; in
 opzione si possono riscrivere le correzioni e trasferire i tempi
 registrati localmente (impostazioni del plugin). Due vie:
 **import API** con token e intervallo di date, oppure **import da
@@ -33,6 +37,30 @@ ne crea di nuovi o li scarta; le assegnazioni salvate valgono per gli
 import futuri e si possono modificare o eliminare. Import ripetuti
 dello stesso periodo possono generare duplicati se i dati di origine
 sono cambiati; lo scarto delle voci è definitivo.
+
+Toggl Track o il nuovo Toggl:
+
+- Alla voce **Prodotto Toggl** nelle impostazioni del plugin sceglie da
+  dove provengono i tempi: **Toggl Track** o il **nuovo Toggl** (già Toggl
+  2.0 o Toggl Focus). Lettura, riscrittura e trasferimento riguardano solo
+  il prodotto scelto.
+- Per il nuovo Toggl inserisca la sua chiave API (inizia con
+  `toggl_sk_`). L'ID organizzazione e l'ID spazio di lavoro sono
+  facoltativi; senza di essi il plugin individua gli spazi di lavoro
+  tramite il Suo account Toggl. Toggl consente una sola chiave attiva per
+  utente: crearne una nuova invalida la precedente.
+- Se usa la sincronizzazione in tempo reale tra Track e il nuovo Toggl,
+  scelga comunque una sola fonte: l'allineamento tra i due prodotti lo
+  gestisce Toggl stesso.
+- Dopo un cambio, l'importazione successiva assegna le voci già importate
+  alla nuova fonte (stesso utente, inizio e fine) invece di crearle di
+  nuovo; i casi aperti della posta di assegnazione seguono. Ciò vale per
+  il periodo del recupero. Le voci più vecchie mantengono il collegamento
+  attuale e le loro correzioni non vengono più inviate a Toggl. Se
+  necessario, importi una volta con un periodo più lungo
+  (`toggl:import --days=365`).
+- Il rilevamento delle cancellazioni considera solo le voci della fonte
+  scelta.
 
 Assegnazione utenti (MVP-509): ogni voce Toggl viene assegnata
 all'utente WorkDiary corrispondente tramite l'e-mail utente del
@@ -67,6 +95,9 @@ Webhook (facoltativo):
   l'**ID spazio di lavoro**.
 - Il webhook avvia solo la stessa importazione eseguita dal recupero
   orario. Se manca, il recupero rimedia.
+- Il nuovo Toggl non offre webhook. Con la sincronizzazione in tempo reale
+  attiva, una sottoscrizione in Toggl Track può comunque anticipare il
+  recupero; i dati continuano a essere letti dal nuovo Toggl.
 - L'utente predefinito della modalità utente singolo si sceglie nelle
   impostazioni del plugin alla voce **Registra i tempi per l’utente**,
   dall'elenco degli utenti.

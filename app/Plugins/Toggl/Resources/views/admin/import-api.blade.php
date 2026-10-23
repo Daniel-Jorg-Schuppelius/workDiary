@@ -11,14 +11,14 @@
 @section('nav-title', __('Toggl-Workspace-Import (API)'))
 
 @section('content')
-<x-index-page :title="__('Workspaces direkt aus der Toggl-API importieren')" :subtitle="__('Importiert die Workspaces des hinterlegten API-Tokens ohne Datei-Export. Stammdaten kommen aus der Track-API (v9), die Zeiteinträge aller Benutzer aus der Reports-API (v3). Je gefundenem Workspace legen Sie fest, was passieren soll.')" back-route="admin.toggl.index" :back-label="__('Zurück zum Import')">
+<x-index-page :title="__('Workspaces direkt aus der Toggl-API importieren')" :subtitle="__('Importiert die Workspaces der gewählten Toggl-Quelle (:source) ohne Datei-Export: Stammdaten und die Zeiteinträge aller Benutzer kommen direkt aus deren API. Je gefundenem Workspace legen Sie fest, was passieren soll.', ['source' => $source->label()])" back-route="admin.toggl.index" :back-label="__('Zurück zum Import')">
     <x-card>
         <x-validation-errors first class="mb-3" />
 
         @unless ($tokenSet)
-            <div role="alert" class="alert alert-warning text-sm">{{ __('Kein Toggl API-Token hinterlegt. Bitte zuerst in den Plugin-Einstellungen hinterlegen.') }}</div>
+            <div role="alert" class="alert alert-warning text-sm">{{ $source->missingAccessMessage() }} {{ __('Bitte zuerst in den Plugin-Einstellungen hinterlegen.') }}</div>
         @elseif (empty($workspaces))
-            <div role="alert" class="alert alert-warning text-sm">{{ __('Keine Workspaces für dieses Token gefunden (oder die API ist nicht erreichbar).') }}</div>
+            <div role="alert" class="alert alert-warning text-sm">{{ __('Keine Workspaces für diesen Zugang gefunden (oder die API ist nicht erreichbar).') }}</div>
         @endunless
     </x-card>
 
