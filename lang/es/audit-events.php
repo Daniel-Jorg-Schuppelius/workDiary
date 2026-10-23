@@ -817,6 +817,7 @@ return [
         'cancelled' => 'Confirmación de pedido anulada',
     ],
     'purchase_order' => [
+        'offerApplied' => 'Oferta de precios del proveedor aplicada',
         'confirmed' => 'Confirmación de pedido importada',
         'mailed' => 'Pedido de compra enviado por correo electrónico',
     ],

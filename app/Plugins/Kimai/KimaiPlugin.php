@@ -13,7 +13,7 @@ namespace App\Plugins\Kimai;
 use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TimeImporter};
-use App\Plugins\Kimai\Api\{KimaiClientFactory};
+use App\Plugins\Kimai\Api\KimaiClientFactory;
 use App\Plugins\Kimai\Exceptions\KimaiApiException;
 use App\Plugins\Kimai\Services\{KimaiExportService, KimaiGroupBooker, KimaiImportService};
 use App\Plugins\Support\PluginOrgContext;

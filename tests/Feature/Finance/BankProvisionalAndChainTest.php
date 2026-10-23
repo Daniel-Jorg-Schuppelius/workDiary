@@ -85,6 +85,26 @@ final class BankProvisionalAndChainTest extends TestCase {
         $this->get(route('finance.reconciliation.index'))->assertOk()->assertSee(__('bank.statement.superseded'));
     }
 
+    /** MT942 (Zwischenmeldung, MVP-1275): erkannt über den Toolkit-Parser, vorläufig bis zum Auszug. */
+    public function test_interim_mt942_is_provisional_until_the_statement_replaces_it(): void {
+        $this->assertSame(BankStatementFormat::Mt942, \App\Services\Finance\Banking\BankStatementParser::detectFormat((string) file_get_contents(base_path('tests/Fixtures/finance/mt942_sample.sta'))));
+        $this->assertSame(BankStatementFormat::Mt940, \App\Services\Finance\Banking\BankStatementParser::detectFormat((string) file_get_contents(base_path('tests/Fixtures/finance/mt940_sample.sta'))));
+
+        $interim = $this->import('mt942_sample.sta');
+
+        $this->assertSame(BankStatementFormat::Mt942, $interim->source_format);
+        $this->assertTrue($interim->is_provisional);
+        $this->assertSame(2, $interim->tx_count);
+        $this->assertSame('2026-05-15', $interim->period_from?->toDateString());
+        $credit = $interim->transactions()->where('direction', 'credit')->firstOrFail();
+        $this->assertSame('750.00', (string) $credit->amount);
+        $this->assertSame('INSTANT-001', $credit->end_to_end_id);
+        $this->assertSame(0, BankTransaction::query()->booked()->count());
+
+        $this->import('camt053_sample.xml');
+        $this->assertNotNull($interim->fresh()->superseded_at);
+    }
+
     public function test_pain_orders_are_announced_and_provisional(): void {
         $statement = $this->import('pain001_sample.xml');
 

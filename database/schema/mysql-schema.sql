@@ -3317,6 +3317,7 @@ CREATE TABLE `bill_of_quantities` (
   `up_components` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`up_components`)),
   `totals` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`totals`)),
   `preamble` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`preamble`)),
+  `is_bid_comment_permitted` tinyint(1) DEFAULT NULL,
   `phase` varchar(8) DEFAULT NULL,
   `currency` varchar(3) NOT NULL DEFAULT 'EUR',
   `status` varchar(24) NOT NULL DEFAULT 'imported',
@@ -27118,3 +27119,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1007,'2027_03_31_1
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1008,'2027_03_31_130300_add_is_template_to_customer_circulars_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1009,'2027_03_31_140000_add_provisional_and_chain_to_bank_statements_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1010,'2027_03_31_150000_add_preamble_to_bill_of_quantities_table',2);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1011,'2027_03_31_160000_add_bid_comment_permission_to_bill_of_quantities_table',3);

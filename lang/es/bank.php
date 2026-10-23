@@ -83,7 +83,7 @@ return [
     'import' => [
         'dialog_title' => 'Importar archivo bancario',
         'dialog_hint' => 'CAMT.053 (XML) o MT940. La importación solo crea los movimientos en el área de revisión y no cambia ningún estado de factura o gasto.',
-        'format_hint' => 'Formatos admitidos: CAMT.053, MT940, OFX, QIF, QXF y PAIN.001/008 (órdenes de pago como movimientos anunciados). La detección se basa en el contenido, no en la extensión del archivo.',
+        'format_hint' => 'Formatos admitidos: CAMT.053, MT940, OFX, QIF, QXF y, como provisionales, CAMT.052/054, MT942 y PAIN.001/008 (vista previa hasta el extracto definitivo). La detección se basa en el contenido, no en la extensión del archivo.',
         'file' => 'Archivo',
         'account_optional' => 'Cuenta bancaria (opcional, de lo contrario asignación automática por IBAN)',
         'flash' => [
@@ -95,7 +95,7 @@ return [
             'duplicate_file' => 'Este archivo ya se ha importado (duplicado).',
             'unavailable' => 'La importación bancaria es un módulo adicional opcional y de pago, no activado en esta instalación. Su activación es posible bajo petición en :contact.',
             'unavailable_badge' => 'Módulo adicional no activado',
-            'unsupported_format' => 'El formato :format no es compatible con la importación de extractos bancarios (se espera: CAMT.053, MT940, OFX, QIF, QXF, PAIN.001/008).',
+            'unsupported_format' => 'El formato :format no es compatible con la importación de extractos bancarios (se espera: CAMT.053, CAMT.052/054, MT940, MT942, OFX, QIF, QXF, PAIN.001/008).',
         ],
     ],
     'reconcile' => [
@@ -106,7 +106,7 @@ return [
             'unmatched' => 'Asignación deshecha.',
         ],
         'error' => [
-            'provisional' => 'Los movimientos provisionales (CAMT.052/054, PAIN) no se concilian. Espere al extracto definitivo.',
+            'provisional' => 'Los movimientos provisionales (CAMT.052/054, MT942, PAIN) no se concilian. Espere al extracto definitivo.',
             'no_allocations' => 'No se indicó ninguna asignación.',
             'target_not_found' => 'No se encontró el destino de la asignación.',
         ],

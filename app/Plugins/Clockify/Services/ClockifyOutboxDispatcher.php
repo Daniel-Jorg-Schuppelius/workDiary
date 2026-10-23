@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Clockify\Services;
 
 use App\Models\Integration\IntegrationOutboxEntry;
-use App\Plugins\Clockify\Api\{ClockifyClientFactory};
+use App\Plugins\Clockify\Api\ClockifyClientFactory;
 use App\Plugins\Clockify\{ClockifyConfig, ClockifyPlugin};
 use App\Plugins\Clockify\Exceptions\ClockifyApiException;
 use App\Plugins\Support\{MirrorsCreatedEntries, RemoteTimeWriter, TimeWritebackDispatcher};

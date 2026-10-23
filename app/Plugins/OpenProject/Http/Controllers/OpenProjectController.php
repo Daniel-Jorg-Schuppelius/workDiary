@@ -14,7 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\{Project, Task};
-use App\Plugins\OpenProject\Api\{OpenProjectClientFactory};
+use App\Plugins\OpenProject\Api\OpenProjectClientFactory;
 use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
 use App\Plugins\OpenProject\Services\{OpenProjectExportService, OpenProjectImportService, OpenProjectStructureSync};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;

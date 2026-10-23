@@ -219,6 +219,42 @@ final class BoqLifecycleTest extends TestCase {
     }
 
     /**
+     * MVP-1298: Bieterkommentare nur mit Freischaltung des Auftraggebers
+     * (`PrjInfo/BidCommPerm`); MVP-1303: Vorbemerkungen aus dem Vergabeblock.
+     */
+    public function test_bid_comments_follow_the_clients_permission_and_preamble_is_read(): void {
+        $fixture = (string) file_get_contents(base_path('tests/Fixtures/gaeb/sample_x83_traits.xml'));
+        $file = static fn (string $permission): string => str_replace(
+            ['  </PrjInfo>', '<BoQ ID="BOQ-TRAITS">', '<Item RNoPart="0010" ID="I-STD">'],
+            [
+                "    <BidCommPerm>{$permission}</BidCommPerm>\n  </PrjInfo>",
+                '<AddText><OutlineAddText><p><span>Vorbemerkungen</span></p></OutlineAddText><DetailAddText><p><span>Vorbemerkungen</span></p><p><span>Zahlung binnen 30 Tagen.</span></p></DetailAddText></AddText><BoQ ID="BOQ-TRAITS">',
+                '<Item RNoPart="0010" ID="I-STD"><BidComm><p><span>Alternativ mit Bagger 20 t</span></p></BidComm>',
+            ],
+            $fixture,
+        );
+
+        $closed = app(GaebImportService::class)->import($file('No'), 'geschlossen.x83', $this->organization->id);
+        $boq = BillOfQuantity::query()->findOrFail($closed->bill_of_quantity_id);
+        $this->assertFalse($boq->is_bid_comment_permitted);
+        $this->assertSame(["Vorbemerkungen\nZahlung binnen 30 Tagen."], $boq->preamble);
+        $this->assertNull($boq->items()->where('reference_no', '001.0010')->firstOrFail()->bidder_comment);
+        $this->assertContains(__('gaeb.preflight.bid_comment_not_permitted', ['count' => 1]), $closed->preflight['warnings']);
+        $this->assertStringContainsString('<BidCommPerm>No</BidCommPerm>', app(BoqExportService::class)->export($boq, GaebPhase::RequestForBid)['xml']);
+
+        $open = app(GaebImportService::class)->import($file('Yes'), 'offen.x83', $this->organization->id);
+        $boq = BillOfQuantity::query()->findOrFail($open->bill_of_quantity_id);
+        $this->assertTrue($boq->is_bid_comment_permitted);
+        $this->assertSame('Alternativ mit Bagger 20 t', $boq->items()->where('reference_no', '001.0010')->firstOrFail()->bidder_comment);
+        $this->assertStringContainsString('<BidCommPerm>Yes</BidCommPerm>', app(BoqExportService::class)->export($boq, GaebPhase::RequestForBid)['xml']);
+        $this->assertStringContainsString('<BidComm>', app(BoqExportService::class)->export($boq, GaebPhase::Bid)['xml']);
+
+        // Nachträglich gesperrt: der gespeicherte Kommentar geht nicht mehr in die Datei.
+        $boq->update(['is_bid_comment_permitted' => false]);
+        $this->assertStringNotContainsString('<BidComm>', app(BoqExportService::class)->export($boq->fresh(), GaebPhase::Bid)['xml']);
+    }
+
+    /**
      * Feature 108, MVP-617: Die vom Auftraggeber vorgegebenen EP-Anteile und die
      * kalkulierten Beträge gehören in die Angebotsdatei zurück.
      */

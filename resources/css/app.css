@@ -2295,3 +2295,11 @@
         display: inline-block;
     }
 }
+
+/* Umrandete Warnabzeichen (Browserprüfung 2026-10-23): Die Warnfarbe als
+   Schrift auf hellem Grund erreicht nur rund 1,5:1 Kontrast. Wie im Menü
+   (--wd-menu-fg) mischt die Schrift die Textfarbe bei — dunkler im hellen,
+   heller im dunklen Schema. Außerhalb der Layer, damit es daisyUI schlägt. */
+.badge-outline.badge-warning {
+    color: color-mix(in oklab, var(--color-warning) 45%, var(--color-base-content));
+}

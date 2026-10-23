@@ -66,6 +66,8 @@ class BoqDocumentFactory {
             catalogs: $this->catalogs($boq),
             changeOrders: $this->changeOrders($boq),
             costTypes: $this->costTypes($boq),
+            preamble: $boq->preamble ?? [],
+            bidCommentPermitted: $boq->is_bid_comment_permitted,
         );
     }
 
@@ -137,7 +139,8 @@ class BoqDocumentFactory {
             hourlyItem: $item->hourly_item,
             discountPercent: $item->discount_percent,
             vatRate: $item->vat_rate,
-            bidderComment: $item->bidder_comment,
+            // Ohne Freischaltung des Auftraggebers kein Bieterkommentar in der Datei (MVP-1298).
+            bidderComment: $boq->is_bid_comment_permitted === false ? null : $item->bidder_comment,
             alternativeBidStatus: $item->alternative_bid_status,
             externalId: $item->external_id,
             position: $item->position,

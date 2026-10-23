@@ -83,7 +83,7 @@ return [
     'import' => [
         'dialog_title' => 'Import bank file',
         'dialog_hint' => 'CAMT.053 (XML) or MT940. The import only creates transactions in the review area and does not change any invoice or expense status.',
-        'format_hint' => 'Supported formats: CAMT.053, MT940, OFX, QIF, QXF and PAIN.001/008 (payment orders as announced transactions). Detection is content-based, not by file extension.',
+        'format_hint' => 'Supported formats: CAMT.053, MT940, OFX, QIF, QXF and, as provisional, CAMT.052/054, MT942 and PAIN.001/008 (preview until the binding statement). Detection is content-based, not by file extension.',
         'file' => 'File',
         'account_optional' => 'Bank account (optional, otherwise auto-matched via IBAN)',
         'flash' => [
@@ -95,7 +95,7 @@ return [
             'duplicate_file' => 'This file has already been imported (duplicate).',
             'unavailable' => 'Bank import is an optional, paid add-on module and is not enabled in this installation. It can be unlocked on request at :contact.',
             'unavailable_badge' => 'Add-on module not enabled',
-            'unsupported_format' => 'The format :format is not supported for bank statement import (expected: CAMT.053, MT940, OFX, QIF, QXF, PAIN.001/008).',
+            'unsupported_format' => 'The format :format is not supported for bank statement import (expected: CAMT.053, CAMT.052/054, MT940, MT942, OFX, QIF, QXF, PAIN.001/008).',
         ],
     ],
     'reconcile' => [
@@ -106,7 +106,7 @@ return [
             'unmatched' => 'Allocation undone.',
         ],
         'error' => [
-            'provisional' => 'Provisional transactions (CAMT.052/054, PAIN) are not reconciled. Wait for the binding account statement.',
+            'provisional' => 'Provisional transactions (CAMT.052/054, MT942, PAIN) are not reconciled. Wait for the binding account statement.',
             'no_allocations' => 'No allocation was provided.',
             'target_not_found' => 'The allocation target was not found.',
         ],

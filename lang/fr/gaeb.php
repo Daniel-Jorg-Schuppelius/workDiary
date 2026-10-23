@@ -129,6 +129,10 @@ return [
     'calculation' => [
         'unpriced_hint' => ':count poste ne porte aucun prix et n’entre donc pas dans l’écart global.|:count postes ne portent aucun prix et n’entrent donc pas dans l’écart global.',
     ],
+    'bid_comment' => [
+        'permitted' => 'Commentaires du soumissionnaire autorisés',
+        'not_permitted' => 'Commentaires du soumissionnaire non autorisés',
+    ],
     'preamble' => [
         'title' => 'Remarques préliminaires',
     ],
@@ -154,6 +158,7 @@ return [
         'currency_mismatch' => 'Poste :ref : prix en :currency, alors que le bordereau est en :expected.',
         'vat_mismatch' => 'La TVA (:stated) ne correspond pas à :rate % du total net (:computed).',
         'gross_mismatch' => 'Le total brut (:stated) n\'est pas égal au net plus TVA (:computed).',
+        'bid_comment_not_permitted' => ':count commentaire(s) du soumissionnaire non repris : le maître d’ouvrage n’a pas autorisé les commentaires dans ce bordereau.',
         'complement_empty' => 'Poste :ref : le complément de texte du soumissionnaire :mark n\'est pas rempli.',
         'contractor_missing' => 'Cette phase exige l\'adresse du soumissionnaire (nom, rue, code postal et ville dans les données de facturation électronique).',
     ],

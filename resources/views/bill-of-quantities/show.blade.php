@@ -60,6 +60,14 @@
         </div>
     </x-card>
 
+    {{-- Freischaltung der Bieterkommentare aus der Aufforderung (MVP-1298). --}}
+    @if ($bill->is_bid_comment_permitted !== null)
+        <div class="mt-4">
+            <x-status-badge :tone="$bill->is_bid_comment_permitted ? 'info' : 'neutral'" outline
+                            :label="$bill->is_bid_comment_permitted ? __('gaeb.bid_comment.permitted') : __('gaeb.bid_comment.not_permitted')" />
+        </div>
+    @endif
+
     {{-- Vorbemerkungen (MVP-1303): Vertragstexte vor den Positionen, wie geliefert. --}}
     @if (! empty($bill->preamble))
         <x-card class="mt-4">

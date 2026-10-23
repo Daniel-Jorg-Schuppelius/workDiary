@@ -129,6 +129,10 @@ return [
     'calculation' => [
         'unpriced_hint' => ':count Position trägt keinen Preis und geht deshalb nicht in die Gesamtdifferenz ein.|:count Positionen tragen keinen Preis und gehen deshalb nicht in die Gesamtdifferenz ein.',
     ],
+    'bid_comment' => [
+        'permitted' => 'Bieterkommentare zugelassen',
+        'not_permitted' => 'Bieterkommentare nicht zugelassen',
+    ],
     'preamble' => [
         'title' => 'Vorbemerkungen',
     ],
@@ -154,6 +158,7 @@ return [
         'currency_mismatch' => 'Position :ref: Preis in :currency, das Leistungsverzeichnis rechnet in :expected.',
         'vat_mismatch' => 'Die Umsatzsteuer (:stated) passt nicht zu :rate % auf die Nettosumme (:computed).',
         'gross_mismatch' => 'Die Bruttosumme (:stated) ist nicht Netto plus Umsatzsteuer (:computed).',
+        'bid_comment_not_permitted' => ':count Bieterkommentar(e) nicht übernommen: Der Auftraggeber hat Kommentare in diesem LV nicht freigeschaltet.',
         'complement_empty' => 'Position :ref: Bieter-Textergänzung :mark ist nicht ausgefüllt.',
         'contractor_missing' => 'Für diese Phase fehlt die Anschrift des Bieters (Name, Straße, PLZ und Ort in den E-Rechnungs-Stammdaten).',
     ],

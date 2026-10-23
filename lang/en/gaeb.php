@@ -129,6 +129,10 @@ return [
     'calculation' => [
         'unpriced_hint' => ':count item carries no price and is therefore left out of the overall difference.|:count items carry no price and are therefore left out of the overall difference.',
     ],
+    'bid_comment' => [
+        'permitted' => 'Bidder comments permitted',
+        'not_permitted' => 'Bidder comments not permitted',
+    ],
     'preamble' => [
         'title' => 'Preliminary notes',
     ],
@@ -154,6 +158,7 @@ return [
         'currency_mismatch' => 'Item :ref: price in :currency, but the bill of quantities uses :expected.',
         'vat_mismatch' => 'The VAT (:stated) does not match :rate % of the net total (:computed).',
         'gross_mismatch' => 'The gross total (:stated) is not net plus VAT (:computed).',
+        'bid_comment_not_permitted' => ':count bidder comment(s) not imported: the client has not permitted comments in this bill of quantities.',
         'complement_empty' => 'Item :ref: bidder text complement :mark has not been filled in.',
         'contractor_missing' => 'This phase requires the bidder address (name, street, postal code and city in the e-invoicing master data).',
     ],

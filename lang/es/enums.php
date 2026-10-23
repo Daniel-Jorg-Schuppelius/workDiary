@@ -1548,6 +1548,7 @@ return [
         'bank-statement-format' => [
             'camt053' => 'CAMT.053',
             'mt940' => 'MT940',
+            'mt942' => 'MT942',
             'ofx' => 'OFX',
             'qif' => 'QIF',
             'qxf' => 'QXF',

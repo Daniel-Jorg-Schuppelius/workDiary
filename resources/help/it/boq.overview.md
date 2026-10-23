@@ -69,6 +69,10 @@ riproducibile lo stesso hash.
 
 ## Premesse e controllo prima della consegna
 
-Se il file GAEB contiene **premesse** (testi contrattuali prima delle voci), la vista del computo le mostra in una sezione espandibile, un testo per blocco e invariato come fornito. Una reimportazione le sostituisce con quelle del file. Per ora l’importazione le legge da GAEB 90; quelle da DA XML arriveranno con la prossima versione del componente GAEB.
+Se il file GAEB contiene **premesse** (testi contrattuali prima delle voci), la vista del computo le mostra in una sezione espandibile, un testo per blocco e invariato come fornito. Una reimportazione le sostituisce con quelle del file. Vengono lette da GAEB 90 e da DA XML (testi aggiuntivi del blocco di aggiudicazione).
 
 Il **controllo prima della consegna** segnala inoltre le voci con prezzo in una valuta diversa da quella del computo e un’IVA che non corrisponde all’aliquota sul totale netto o che, sommata a esso, non dà il totale lordo (al centesimo).
+
+## Commenti dell’offerente
+
+Nella richiesta di offerta il committente stabilisce se gli offerenti possono commentare le voci. La vista del computo mostra cosa indica il file. Se i commenti non sono ammessi, l’importazione non ne riprende nessuno (il protocollo d’importazione ne indica il numero) e l’offerta non ne contiene. Reimportare l’offerta non modifica quanto stabilito nella richiesta.

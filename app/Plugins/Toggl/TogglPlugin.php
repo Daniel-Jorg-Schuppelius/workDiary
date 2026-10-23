@@ -14,7 +14,7 @@ use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TimeImporter};
 use App\Plugins\Support\PluginOrgContext;
-use App\Plugins\Toggl\Api\{TogglClientFactory};
+use App\Plugins\Toggl\Api\TogglClientFactory;
 use App\Plugins\Toggl\Services\TogglImportService;
 use Carbon\CarbonImmutable;
 

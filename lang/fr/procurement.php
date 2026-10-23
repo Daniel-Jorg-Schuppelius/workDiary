@@ -24,6 +24,7 @@ return [
         'export_orderx' => 'Exporter Order-X',
         'export_opentrans' => 'Exporter openTRANS',
         'export_gaeb' => 'GAEB (X96)',
+        'export_gaeb_inquiry' => 'Demande de prix (GAEB X93)',
         'export_ugl' => 'Exporter UGL',
         'export_pdf' => 'Télécharger le PDF',
         'suggestions' => 'Suggestions de commande',
@@ -31,10 +32,6 @@ return [
         'incoming' => 'Réceptions attendues',
     ],
 
-    'credentials' => [
-        'badge' => 'Justificatifs : :status',
-        'hint' => 'Justificatifs obligatoires du fournisseur (attestation d’exonération, assurance, etc.)',
-    ],
     'pdf' => [
         'title' => 'Commande',
         'date' => 'Date de commande',
@@ -591,6 +588,8 @@ return [
     ],
     // Pflichtnachweise Subunternehmer (Feature 117, MVP-606).
     'credentials' => [
+        'badge' => 'Justificatifs : :status',
+        'hint' => 'Justificatifs obligatoires du fournisseur (attestation d’exonération, assurance, etc.)',
         'release_warning' => 'Attention : il manque des justificatifs obligatoires pour :supplier (:list). Le paiement est validé — réclamer la preuve.',
         'title' => 'Justificatifs obligatoires',
         'subtitle' => 'Justificatifs des sous-traitants avec validité et feu tricolore par fournisseur',
@@ -617,14 +616,22 @@ return [
         ],
     ],
     // Auftragsbestätigung des Lieferanten (MVP-964).
+    'offer' => [
+        'error_not_draft' => 'Une offre de prix ne peut être reprise que dans une commande en brouillon.',
+        'import' => 'Importer l’offre de prix du fournisseur (GAEB X94)',
+        'import_submit' => 'Importer l’offre',
+        'hint' => 'Les prix unitaires proposés sont repris dans le brouillon ; les lignes sont rapprochées par la référence article du fournisseur. La demande de prix correspondante (GAEB X93) se trouve dans la barre ci-dessus.',
+        'applied' => 'Offre de prix reprise : :count prix unitaires définis.',
+    ],
     'confirmation' => [
-        'import' => 'Importer la confirmation de commande (openTRANS)',
+        'import' => 'Importer la réponse du fournisseur (openTRANS, GAEB X97/X94)',
         'import_submit' => 'Importer la confirmation',
         'received' => 'confirmée le :date, commande :ref',
         'column' => 'Confirmé',
         'error' => [
             'other_order' => 'La confirmation concerne la commande :number.',
             'no_lines' => 'Aucune ligne de la confirmation ne correspond à une ligne de commande.',
+            'gaeb_phase' => 'Le fichier GAEB est un :phase et non une réponse du fournisseur ; un X97 (confirmation de commande) ou un X94 (offre de prix) est attendu.',
         ],
         'flash' => [
             'imported' => 'Confirmation importée : :count lignes.',

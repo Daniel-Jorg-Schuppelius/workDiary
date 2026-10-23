@@ -49,7 +49,7 @@ class StockController extends Controller {
 
         $rows = null;
         $reservations = collect();
-        $belowReorder = collect();
+        $belowReorder = [];
         $bins = collect();
         $lotOptions = [];
         if ($selected instanceof Warehouse) {

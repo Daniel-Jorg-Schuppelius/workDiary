@@ -817,6 +817,7 @@ return [
         'cancelled' => 'Order confirmation cancelled',
     ],
     'purchase_order' => [
+        'offerApplied' => 'Supplier\'s price offer applied',
         'confirmed' => 'Order confirmation imported',
         'mailed' => 'Purchase order sent by email',
     ],

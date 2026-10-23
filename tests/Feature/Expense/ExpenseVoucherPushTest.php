@@ -17,7 +17,7 @@ use App\Models\Platform\{PluginSetting, User};
 use App\Models\Travel\{Expense, ExpenseCategory};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
-use App\Plugins\Lexoffice\Services\{LexofficeExpenseLinkProvider};
+use App\Plugins\Lexoffice\Services\LexofficeExpenseLinkProvider;
 use App\Plugins\PluginManager;
 use App\Services\Billing\NullExpenseLinkProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;

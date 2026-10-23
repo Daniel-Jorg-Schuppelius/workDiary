@@ -817,6 +817,7 @@ return [
         'cancelled' => 'Confirmation de commande annulée',
     ],
     'purchase_order' => [
+        'offerApplied' => 'Offre de prix du fournisseur reprise',
         'confirmed' => 'Confirmation de commande importée',
         'mailed' => 'Bon de commande envoyé par e-mail',
     ],

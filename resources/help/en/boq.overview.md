@@ -61,6 +61,10 @@ the same hash.
 
 ## Preliminary notes and check before submission
 
-If the GAEB file contains **preliminary notes** (contract texts ahead of the items), the bill of quantities view shows them in an expandable section, one text per block and unchanged as delivered. A reimport replaces them with the file. So far the import reads them from GAEB 90; DA XML follows with the next release of the GAEB component.
+If the GAEB file contains **preliminary notes** (contract texts ahead of the items), the bill of quantities view shows them in an expandable section, one text per block and unchanged as delivered. A reimport replaces them with the file. They are read from GAEB 90 and from DA XML (additional texts in the award block).
 
 The **check before submission** also reports items priced in a currency other than the bill of quantities and a VAT amount that does not match the rate on the net total or, together with it, misses the gross total (to the cent).
+
+## Bidder comments
+
+In the request for bid, the client decides whether bidders may comment on items. The bill of quantities view shows what the file says. If comments are not permitted, the import does not take any over (the import log states how many) and the bid contains none. Reimporting the bid does not change the setting from the request.

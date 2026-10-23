@@ -13,7 +13,7 @@ namespace Tests\Feature\Plugins;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Exceptions\LexofficeRateLimitException;
 use App\Plugins\Lexoffice\LexofficePlugin;
-use App\Plugins\Lexoffice\Services\{LexofficeService};
+use App\Plugins\Lexoffice\Services\LexofficeService;
 use App\Plugins\PluginHealth;
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;

@@ -18,7 +18,7 @@ use App\Models\Platform\Organization;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
 use App\Plugins\Clockify\Api\{ClockifyApiClient, ClockifyClientFactory};
-use App\Plugins\Clockify\{ClockifyPlugin};
+use App\Plugins\Clockify\ClockifyPlugin;
 use App\Plugins\Clockify\Exceptions\ClockifyApiException;
 use App\Plugins\Support\{AbstractTimeEntryPushService, ImportedTimeEntry, MatchingTimeImportService, RemoteTimeFingerprint};
 use Carbon\CarbonImmutable;

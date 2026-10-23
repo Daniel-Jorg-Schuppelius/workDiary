@@ -24,6 +24,7 @@ return [
         'export_orderx' => 'Esporta Order-X',
         'export_opentrans' => 'Esporta openTRANS',
         'export_gaeb' => 'GAEB (X96)',
+        'export_gaeb_inquiry' => 'Richiesta di prezzo (GAEB X93)',
         'export_ugl' => 'Esporta UGL',
         'export_pdf' => 'Scarica PDF',
         'suggestions' => 'Proposte di ordine',
@@ -31,10 +32,6 @@ return [
         'incoming' => 'Entrate previste',
     ],
 
-    'credentials' => [
-        'badge' => 'Documenti: :status',
-        'hint' => 'Documenti obbligatori del fornitore (certificato di esenzione, assicurazione ecc.)',
-    ],
     'pdf' => [
         'title' => 'Ordine',
         'date' => 'Data ordine',
@@ -591,6 +588,8 @@ return [
     ],
     // Pflichtnachweise Subunternehmer (Feature 117, MVP-606).
     'credentials' => [
+        'badge' => 'Documenti: :status',
+        'hint' => 'Documenti obbligatori del fornitore (certificato di esenzione, assicurazione ecc.)',
         'release_warning' => 'Attenzione: per :supplier mancano attestazioni obbligatorie (:list). Il pagamento è approvato — sollecitare il documento.',
         'title' => 'Documenti obbligatori',
         'subtitle' => 'Documenti dei subappaltatori con validità e semaforo per fornitore',
@@ -617,14 +616,22 @@ return [
         ],
     ],
     // Auftragsbestätigung des Lieferanten (MVP-964).
+    'offer' => [
+        'error_not_draft' => 'Un’offerta di prezzo può essere applicata solo a un ordine in bozza.',
+        'import' => 'Importare l’offerta di prezzo del fornitore (GAEB X94)',
+        'import_submit' => 'Importare offerta',
+        'hint' => 'I prezzi unitari offerti vengono applicati alla bozza; le righe sono abbinate tramite il codice articolo del fornitore. La relativa richiesta di prezzo (GAEB X93) si trova nella barra in alto.',
+        'applied' => 'Offerta di prezzo applicata: :count prezzi unitari impostati.',
+    ],
     'confirmation' => [
-        'import' => 'Importare la conferma d’ordine (openTRANS)',
+        'import' => 'Importare la risposta del fornitore (openTRANS, GAEB X97/X94)',
         'import_submit' => 'Importa conferma',
         'received' => 'confermato il :date, ordine :ref',
         'column' => 'Confermato',
         'error' => [
             'other_order' => 'La conferma riguarda l’ordine :number.',
             'no_lines' => 'Nessuna riga della conferma corrisponde a una riga dell’ordine.',
+            'gaeb_phase' => 'Il file GAEB è un :phase e non una risposta del fornitore; è previsto un X97 (conferma d’ordine) o un X94 (offerta di prezzo).',
         ],
         'flash' => [
             'imported' => 'Conferma importata: :count righe.',

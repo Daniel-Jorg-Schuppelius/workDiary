@@ -817,6 +817,7 @@ return [
         'cancelled' => 'Auftragsbestätigung storniert',
     ],
     'purchase_order' => [
+        'offerApplied' => 'Preisangebot des Händlers übernommen',
         'confirmed' => 'Auftragsbestätigung eingelesen',
         'mailed' => 'Bestellung per E-Mail versendet',
     ],

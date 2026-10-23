@@ -13,7 +13,7 @@ namespace App\Plugins\OpenProject;
 use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TimeImporter};
-use App\Plugins\OpenProject\Api\{OpenProjectClientFactory};
+use App\Plugins\OpenProject\Api\OpenProjectClientFactory;
 use App\Plugins\OpenProject\Services\OpenProjectImportService;
 use App\Plugins\Support\PluginOrgContext;
 use Carbon\CarbonImmutable;

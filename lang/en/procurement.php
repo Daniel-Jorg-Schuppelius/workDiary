@@ -24,6 +24,7 @@ return [
         'export_orderx' => 'Export Order-X',
         'export_opentrans' => 'Export openTRANS',
         'export_gaeb' => 'GAEB (X96)',
+        'export_gaeb_inquiry' => 'Price inquiry (GAEB X93)',
         'export_ugl' => 'Export UGL',
         'export_pdf' => 'Download PDF',
         'suggestions' => 'Reorder suggestions',
@@ -31,10 +32,6 @@ return [
         'incoming' => 'Expected receipts',
     ],
 
-    'credentials' => [
-        'badge' => 'Credentials: :status',
-        'hint' => 'Mandatory supplier credentials (exemption certificate, insurance etc.)',
-    ],
     'pdf' => [
         'title' => 'Purchase order',
         'date' => 'Order date',
@@ -591,6 +588,8 @@ return [
     ],
     // Pflichtnachweise Subunternehmer (Feature 117, MVP-606).
     'credentials' => [
+        'badge' => 'Credentials: :status',
+        'hint' => 'Mandatory supplier credentials (exemption certificate, insurance etc.)',
         'release_warning' => 'Attention: :supplier is missing mandatory credentials (:list). The payment is released — request the evidence.',
         'title' => 'Mandatory records',
         'subtitle' => 'Subcontractor records with validity and a traffic light per supplier',
@@ -617,14 +616,22 @@ return [
         ],
     ],
     // Auftragsbestätigung des Lieferanten (MVP-964).
+    'offer' => [
+        'error_not_draft' => 'A price offer can only be applied to a draft order.',
+        'import' => 'Import the supplier\'s price offer (GAEB X94)',
+        'import_submit' => 'Import offer',
+        'hint' => 'The offered unit prices are applied to the draft; lines are matched by the supplier’s article number. The matching price inquiry (GAEB X93) is in the toolbar above.',
+        'applied' => 'Price offer applied: :count unit prices set.',
+    ],
     'confirmation' => [
-        'import' => 'Import order confirmation (openTRANS)',
+        'import' => 'Import supplier reply (openTRANS, GAEB X97/X94)',
         'import_submit' => 'Import confirmation',
         'received' => 'confirmed on :date, order :ref',
         'column' => 'Confirmed',
         'error' => [
             'other_order' => 'The confirmation belongs to order :number.',
             'no_lines' => 'No confirmation line matches an order line.',
+            'gaeb_phase' => 'The GAEB file is a :phase, not a reply from the supplier; an X97 (order confirmation) or X94 (price offer) is expected.',
         ],
         'flash' => [
             'imported' => 'Order confirmation imported: :count lines.',

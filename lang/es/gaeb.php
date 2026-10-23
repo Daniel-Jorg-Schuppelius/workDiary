@@ -129,6 +129,10 @@ return [
     'calculation' => [
         'unpriced_hint' => ':count partida no lleva precio y por eso queda fuera de la diferencia total.|:count partidas no llevan precio y por eso quedan fuera de la diferencia total.',
     ],
+    'bid_comment' => [
+        'permitted' => 'Comentarios del licitador permitidos',
+        'not_permitted' => 'Comentarios del licitador no permitidos',
+    ],
     'preamble' => [
         'title' => 'Observaciones preliminares',
     ],
@@ -154,6 +158,7 @@ return [
         'currency_mismatch' => 'Partida :ref: precio en :currency, pero el presupuesto usa :expected.',
         'vat_mismatch' => 'El IVA (:stated) no corresponde al :rate % del total neto (:computed).',
         'gross_mismatch' => 'El total bruto (:stated) no es neto más IVA (:computed).',
+        'bid_comment_not_permitted' => ':count comentario(s) del licitador no importado(s): el cliente no ha habilitado comentarios en este presupuesto.',
         'complement_empty' => 'Posición :ref: el complemento de texto del licitador :mark no está cumplimentado.',
         'contractor_missing' => 'Esta fase requiere la dirección del licitador (nombre, calle, código postal y ciudad en los datos maestros de facturación electrónica).',
     ],

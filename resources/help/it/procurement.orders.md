@@ -54,3 +54,7 @@ magazzino**; **Annulla** su un ordine non è reversibile.
 ## Semaforo dei documenti
 
 Se al fornitore sono richiesti documenti obbligatori (ad esempio certificato di esenzione o assicurazione), l’intestazione dell’ordine mostra il loro **semaforo**: verde se tutto è valido, giallo se qualcosa scade a breve, rosso se mancano o sono scaduti. Il clic apre la panoramica dei documenti. Se il rosso blocca l’invio resta stabilito dall’impostazione dei documenti.
+
+## Risposta del fornitore via GAEB
+
+Oltre alla conferma openTRANS, **Importare la risposta del fornitore** legge anche i file commerciali GAEB. Un **X97** (conferma dell’ordine X96) registra quantità, prezzo e data confermati per riga e segnala gli scostamenti senza modificare l’ordine. Un **X94** (offerta di prezzo alla richiesta X93) applica i prezzi unitari offerti all’ordine finché è in bozza. Le righe vengono abbinate tramite il codice articolo del fornitore; il file deve riferirsi al numero dell’ordine. La richiesta di prezzo stessa (**Richiesta di prezzo (GAEB X93)**) e il campo per l’offerta si trovano nell’ordine in bozza.

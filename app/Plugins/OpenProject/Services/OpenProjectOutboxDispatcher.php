@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\OpenProject\Services;
 
 use App\Models\Integration\IntegrationOutboxEntry;
-use App\Plugins\OpenProject\Api\{OpenProjectClientFactory};
+use App\Plugins\OpenProject\Api\OpenProjectClientFactory;
 use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
 use App\Plugins\Support\{MirrorsCreatedEntries, RemoteTimeWriter, TimeWritebackDispatcher};
 

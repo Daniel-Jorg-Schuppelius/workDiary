@@ -198,7 +198,7 @@
             </x-card>
 
             {{-- Beschaffungsbedarf (unter Meldebestand) --}}
-            @if ($belowReorder->isNotEmpty())
+            @if ($belowReorder !== [])
                 <x-card>
                     <h2 class="font-semibold mb-3 text-warning">{{ __('inventory.overview.below_reorder') }}</h2>
                     <x-table bare>

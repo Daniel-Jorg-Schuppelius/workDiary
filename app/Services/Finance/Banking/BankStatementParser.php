@@ -25,6 +25,7 @@ use CommonToolkit\FinancialFormats\Entities\QIF\Transaction as QifTransaction;
 use CommonToolkit\FinancialFormats\Entities\QXF\Transaction as QxfTransaction;
 use CommonToolkit\FinancialFormats\Entities\Swift\Mt9xx\Purpose as Mt940Purpose;
 use CommonToolkit\FinancialFormats\Entities\Swift\Mt9xx\Type940\{Document as Mt940Document, Transaction as Mt940Transaction};
+use CommonToolkit\FinancialFormats\Entities\Swift\Mt9xx\Type942\{Document as Mt942Document, Transaction as Mt942Transaction};
 use CommonToolkit\FinancialFormats\Enums\BankFormat;
 use CommonToolkit\FinancialFormats\Enums\ISO20022\Camt\CamtType;
 use CommonToolkit\FinancialFormats\Enums\ISO20022\Pain\PainType;
@@ -33,7 +34,7 @@ use CommonToolkit\FinancialFormats\Parsers\ISO20022\{CamtParser, PainParser};
 use CommonToolkit\FinancialFormats\Parsers\OFX\OfxDocumentParser;
 use CommonToolkit\FinancialFormats\Parsers\QIF\QifDocumentParser;
 use CommonToolkit\FinancialFormats\Parsers\QXF\QxfDocumentParser;
-use CommonToolkit\FinancialFormats\Parsers\Swift\Mt940DocumentParser;
+use CommonToolkit\FinancialFormats\Parsers\Swift\{Mt940DocumentParser, Mt942DocumentParser};
 use DateTimeInterface;
 use Throwable;
 
@@ -79,8 +80,25 @@ final class BankStatementParser {
             BankFormat::QXF => BankStatementFormat::Qxf,
             BankFormat::QIF => BankStatementFormat::Qif,
             BankFormat::CAMT, BankFormat::PAIN => self::isoFormat($content),
-            BankFormat::MT940, null => BankStatementFormat::Mt940,
+            BankFormat::MT940 => BankStatementFormat::Mt940,
+            null => self::isMt942($content) ? BankStatementFormat::Mt942 : BankStatementFormat::Mt940,
         };
+    }
+
+    /**
+     * MT942 (Zwischenmeldung, MVP-1275) trägt keinen Anfangssaldo, der Detektor
+     * des Toolkits erkennt es deshalb nicht. Erkannt wird es am Lesen durch den
+     * Toolkit-Parser; scheitert das, bleibt der bisherige MT940-Rückfall.
+     */
+    private static function isMt942(string $content): bool {
+        try {
+            foreach (Mt942DocumentParser::parseMultiple($content) as $document) {
+                return $document instanceof Mt942Document;
+            }
+        } catch (Throwable) {
+        }
+
+        return false;
     }
 
     /**
@@ -118,6 +136,7 @@ final class BankStatementParser {
                 BankStatementFormat::Camt053 => $this->parseCamt($content),
                 BankStatementFormat::Camt052, BankStatementFormat::Camt054 => $this->parseCamtNotification($content, $format),
                 BankStatementFormat::Mt940 => $this->parseMt940($content),
+                BankStatementFormat::Mt942 => $this->parseMt942($content),
                 BankStatementFormat::Ofx => $this->parseOfx($content),
                 BankStatementFormat::Qif => $this->parseQif($content),
                 BankStatementFormat::Qxf => $this->parseQxf($content),
@@ -266,29 +285,7 @@ final class BankStatementParser {
 
             foreach ($document->getTransactions() as $tx) {
                 /** @var Mt940Transaction $tx */
-                $purposeObject = $tx->getPurposeObject();
-                $purposeRaw = $tx->getPurposeRaw();
-                $endToEnd = $purposeObject?->getEndToEndReference();
-                $mandate = $purposeObject?->getMandateReference();
-                $counterpartyName = $this->mt940Counterparty($tx, $purposeObject);
-                $refs = ReferenceExtractor::extract($purposeRaw, $endToEnd);
-
-                $transactions[] = new NormalizedTransaction(
-                    lineIndex: $line++,
-                    bookingDate: $this->dateString($tx->getBookingDate()),
-                    valutaDate: $this->nullableDateString($tx->getValutaDate()),
-                    amount: round($tx->getAmount()->toFloat(), 2),
-                    direction: TransactionDirection::fromCreditDebit($tx->getCreditDebit()),
-                    currency: $tx->getCurrency()->value,
-                    endToEndId: $endToEnd,
-                    mandateRef: $mandate,
-                    counterpartyName: $counterpartyName,
-                    counterpartyIban: $purposeObject?->getBeneficiaryAccount(),
-                    purpose: $purposeRaw,
-                    extractedRefs: $refs,
-                    isReversal: $tx->isReversal(),
-                    returnReason: $purposeObject?->getReturnReason(),
-                );
+                $transactions[] = $this->mt9xxTransaction($line++, $tx);
             }
 
             $statements[] = new NormalizedStatement(
@@ -307,6 +304,62 @@ final class BankStatementParser {
         }
 
         return $statements;
+    }
+
+    /**
+     * MT942 (Zwischenmeldung, MVP-1275): vorläufige Umsätze ohne Salden wie
+     * CAMT.052; den Zeitraum setzt der Import aus den Buchungstagen.
+     *
+     * @return list<NormalizedStatement>
+     */
+    private function parseMt942(string $content): array {
+        $statements = [];
+
+        foreach (Mt942DocumentParser::parseMultiple($content) as $document) {
+            /** @var Mt942Document $document */
+            $transactions = [];
+            $line = 0;
+            foreach ($document->getTransactions() as $tx) {
+                /** @var Mt942Transaction $tx */
+                $transactions[] = $this->mt9xxTransaction($line++, $tx);
+            }
+
+            $statements[] = new NormalizedStatement(
+                format: BankStatementFormat::Mt942,
+                accountIban: $document->getAccountId() !== '' ? $document->getAccountId() : null,
+                openingBalance: null,
+                closingBalance: null,
+                periodFrom: null,
+                periodTo: null,
+                transactions: $transactions,
+            );
+        }
+
+        return $this->requireStatements($statements);
+    }
+
+    /** Buchung aus :61:/:86: — MT940 und MT942 teilen die Feldauswertung im Toolkit. */
+    private function mt9xxTransaction(int $line, Mt940Transaction|Mt942Transaction $tx): NormalizedTransaction {
+        $purposeObject = $tx->getPurposeObject();
+        $purposeRaw = $tx->getPurposeRaw();
+        $endToEnd = $purposeObject?->getEndToEndReference();
+
+        return new NormalizedTransaction(
+            lineIndex: $line,
+            bookingDate: $this->dateString($tx->getBookingDate()),
+            valutaDate: $this->nullableDateString($tx->getValutaDate()),
+            amount: round($tx->getAmount()->toFloat(), 2),
+            direction: TransactionDirection::fromCreditDebit($tx->getCreditDebit()),
+            currency: $tx->getCurrency()->value,
+            endToEndId: $endToEnd,
+            mandateRef: $purposeObject?->getMandateReference(),
+            counterpartyName: $this->mt940Counterparty($tx, $purposeObject),
+            counterpartyIban: $purposeObject?->getBeneficiaryAccount(),
+            purpose: $purposeRaw,
+            extractedRefs: ReferenceExtractor::extract($purposeRaw, $endToEnd),
+            isReversal: $tx->isReversal(),
+            returnReason: $purposeObject?->getReturnReason(),
+        );
     }
 
     /**
@@ -635,7 +688,7 @@ final class BankStatementParser {
      * Gegenparteiname aus dem MT940-Verwendungszweck. Bei Gutschriften ist die
      * Gegenpartei der Zahler (Auftraggeber), bei Lastschriften der Empfänger.
      */
-    private function mt940Counterparty(Mt940Transaction $tx, ?Mt940Purpose $purpose): ?string {
+    private function mt940Counterparty(Mt940Transaction|Mt942Transaction $tx, ?Mt940Purpose $purpose): ?string {
         if ($purpose === null) {
             return null;
         }
