@@ -14,11 +14,10 @@ namespace App\Http\Controllers\Applications;
 
 use App\Http\Controllers\Controller;
 use App\Models\Applications\{ApplicationContractNegotiation, ApplicationOpportunity, JobApplication};
-use App\Models\Platform\User;
 use App\Services\Applications\ContractNegotiationService;
 use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 
 /**
  * Vertragsverhandlungen (Feature 068, MVP-195–197): Aktionen laufen im
@@ -57,7 +56,7 @@ class ContractNegotiationController extends Controller {
                 $data['kind'],
                 $data['summary'] ?? null,
                 array_filter($data['conditions'] ?? [], fn($value): bool => trim((string) $value) !== ''),
-                $this->actor(),
+                $this->authUser(),
             );
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
@@ -77,7 +76,7 @@ class ContractNegotiationController extends Controller {
         ]);
 
         try {
-            $this->negotiations->addReviewItem($negotiation, $data['label'], $data['severity'], $data['note'] ?? null, $this->actor());
+            $this->negotiations->addReviewItem($negotiation, $data['label'], $data['severity'], $data['note'] ?? null, $this->authUser());
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -100,7 +99,7 @@ class ContractNegotiationController extends Controller {
         $itemId = \App\Support\Sqid::decodeOrAbort(\App\Models\Applications\ApplicationContractReview::class, $item);
 
         try {
-            $this->negotiations->resolveReviewItem($negotiation, $itemId, $data['resolution'], $data['note'] ?? null, $this->actor());
+            $this->negotiations->resolveReviewItem($negotiation, $itemId, $data['resolution'], $data['note'] ?? null, $this->authUser());
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -112,7 +111,7 @@ class ContractNegotiationController extends Controller {
         Gate::authorize('decide', $negotiation);
 
         try {
-            $result = $this->negotiations->approve($negotiation, $this->actor(), $request->input('reason'));
+            $result = $this->negotiations->approve($negotiation, $this->authUser(), $request->input('reason'));
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -130,7 +129,7 @@ class ContractNegotiationController extends Controller {
         ]);
 
         try {
-            $this->negotiations->conclude($negotiation, $data['decision'], $data['note'] ?? null, $this->actor());
+            $this->negotiations->conclude($negotiation, $data['decision'], $data['note'] ?? null, $this->authUser());
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -145,18 +144,11 @@ class ContractNegotiationController extends Controller {
         ]);
 
         try {
-            $this->negotiations->open($parent, $data['title'], $data['due_on'] ?? null, $this->actor());
+            $this->negotiations->open($parent, $data['title'], $data['due_on'] ?? null, $this->authUser());
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Vertragsverhandlung eröffnet.'));
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

@@ -216,8 +216,7 @@ class GdpduExportService {
         $filename = 'gobd-z3-' . $from->format('Ymd') . '-' . $to->format('Ymd') . '.zip';
         $relative = 'gobd/' . $organization->id . '/' . $export->id . '-' . $filename;
 
-        $work = storage_path('app/gobd-tmp/' . bin2hex(random_bytes(8)));
-        Folder::create($work, 0700, true);
+        $work = Folder::createTemp('z3-', 0700, storage_path('app/gobd-tmp'));
 
         try {
             // index.xml zuerst: die Tabellenbeschreibung ist hash-relevant und

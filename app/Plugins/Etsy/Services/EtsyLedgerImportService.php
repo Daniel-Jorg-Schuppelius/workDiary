@@ -17,6 +17,7 @@ use App\Plugins\Etsy\Api\EtsyClientFactory;
 use App\Plugins\Etsy\EtsyConfig;
 use App\Plugins\Etsy\Models\{EtsyConnection, EtsyLedgerEntry};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\StringHelper;
 
 /**
  * Etsy-Ledger-Import (Feature 101, MVP-498): Fenster-Sweep über die
@@ -88,16 +89,16 @@ class EtsyLedgerImportService {
             return;
         }
 
-        $referenceType = self::stringOrNull($entry['reference_type'] ?? null);
-        $referenceId = self::stringOrNull($entry['reference_id'] ?? null);
+        $referenceType = StringHelper::trimToNull($entry['reference_type'] ?? null);
+        $referenceId = StringHelper::trimToNull($entry['reference_id'] ?? null);
 
         $row = EtsyLedgerEntry::query()->updateOrCreate(
             ['organization_id' => $organization->id, 'ledger_entry_id' => $entryId],
             [
-                'ledger_type' => self::stringOrNull($entry['ledger_type'] ?? null),
+                'ledger_type' => StringHelper::trimToNull($entry['ledger_type'] ?? null),
                 'amount' => is_numeric($entry['amount'] ?? null) ? (int) $entry['amount'] : 0,
                 'balance' => is_numeric($entry['balance'] ?? null) ? (int) $entry['balance'] : 0,
-                'currency' => self::stringOrNull($entry['currency'] ?? null),
+                'currency' => StringHelper::trimToNull($entry['currency'] ?? null),
                 'description' => mb_substr((string) ($entry['description'] ?? ''), 0, 255) ?: null,
                 'reference_type' => $referenceType,
                 'reference_id' => $referenceId,
@@ -161,11 +162,5 @@ class EtsyLedgerImportService {
         $window = max(1, (int) config('plugins.etsy.initial_window_days', 30));
 
         return CarbonImmutable::now()->subDays($window)->getTimestamp();
-    }
-
-    private static function stringOrNull(mixed $value): ?string {
-        $value = trim((string) ($value ?? ''));
-
-        return $value !== '' ? $value : null;
     }
 }

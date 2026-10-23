@@ -14,10 +14,10 @@ namespace App\Http\Controllers\Patrol;
 
 use App\Enums\Patrol\PatrolRunStatus;
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Facility\Site;
 use App\Models\Patrol\{PatrolCheckpoint, PatrolRoute, PatrolRun};
-use App\Models\Platform\User;
 use App\Services\Patrol\PatrolService;
 use App\Support\{ErrorText, SqidEncoder};
 use Illuminate\Http\{RedirectResponse, Request};
@@ -34,6 +34,8 @@ use RuntimeException;
  * Planer.
  */
 class PatrolController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(private readonly PatrolService $service) {}
 
     public function index(): View {
@@ -56,7 +58,7 @@ class PatrolController extends Controller {
 
     public function show(PatrolRoute $patrolRoute): View {
         Gate::authorize(Permission::DispatchViewAny->value);
-        $this->guard($patrolRoute);
+        $this->assertSameOrganization($patrolRoute);
 
         return view('patrols.show', [
             'route' => $patrolRoute->load(['site:id,name', 'checkpoints']),
@@ -88,7 +90,7 @@ class PatrolController extends Controller {
         }
 
         $route = PatrolRoute::query()->create([
-            'organization_id' => $this->orgId(),
+            'organization_id' => $this->currentOrganizationId(),
             'name' => $data['name'],
             'site_id' => $siteId,
             'active' => true,
@@ -101,7 +103,7 @@ class PatrolController extends Controller {
 
     public function addCheckpoint(Request $request, PatrolRoute $patrolRoute): RedirectResponse {
         Gate::authorize(Permission::DispatchManage->value);
-        $this->guard($patrolRoute);
+        $this->assertSameOrganization($patrolRoute);
 
         $data = $request->validate([
             'label' => ['required', 'string', 'max:160'],
@@ -125,7 +127,7 @@ class PatrolController extends Controller {
     /** Verlorener Tag: neuer Token, gleicher Punkt. */
     public function reissueToken(PatrolRoute $patrolRoute, PatrolCheckpoint $checkpoint): RedirectResponse {
         Gate::authorize(Permission::DispatchManage->value);
-        $this->guard($patrolRoute);
+        $this->assertSameOrganization($patrolRoute);
         abort_unless($checkpoint->patrol_route_id === $patrolRoute->id, 404);
 
         $issued = $this->service->reissueToken($checkpoint);
@@ -136,10 +138,10 @@ class PatrolController extends Controller {
 
     public function start(PatrolRoute $patrolRoute): RedirectResponse {
         Gate::authorize(Permission::DispatchViewAny->value);
-        $this->guard($patrolRoute);
+        $this->assertSameOrganization($patrolRoute);
 
         try {
-            $run = $this->service->start($patrolRoute, $this->actor());
+            $run = $this->service->start($patrolRoute, $this->authUser());
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -149,7 +151,7 @@ class PatrolController extends Controller {
 
     public function showRun(Request $request, PatrolRun $patrolRun): View|\Illuminate\Http\Response {
         Gate::authorize(Permission::DispatchViewAny->value);
-        abort_unless($patrolRun->organization_id === $this->orgId(), 404);
+        abort_unless($patrolRun->organization_id === $this->currentOrganizationId(), 404);
 
         $patrolRun->load(['route.checkpoints', 'scans', 'starter:id,name', 'abortedBy:id,name']);
         $scansByCheckpoint = $patrolRun->scans->keyBy('patrol_checkpoint_id');
@@ -184,7 +186,7 @@ class PatrolController extends Controller {
 
     public function scan(Request $request, PatrolRun $patrolRun): RedirectResponse {
         Gate::authorize(Permission::DispatchViewAny->value);
-        abort_unless($patrolRun->organization_id === $this->orgId(), 404);
+        abort_unless($patrolRun->organization_id === $this->currentOrganizationId(), 404);
 
         $data = $request->validate(['token' => ['required', 'string', 'max:64']]);
 
@@ -199,10 +201,10 @@ class PatrolController extends Controller {
 
     public function complete(Request $request, PatrolRun $patrolRun): RedirectResponse {
         Gate::authorize(Permission::DispatchViewAny->value);
-        abort_unless($patrolRun->organization_id === $this->orgId(), 404);
+        abort_unless($patrolRun->organization_id === $this->currentOrganizationId(), 404);
 
         try {
-            $this->service->complete($patrolRun, $this->actor(), (string) $request->input('deviation_note', '') ?: null);
+            $this->service->complete($patrolRun, $this->authUser(), (string) $request->input('deviation_note', '') ?: null);
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -213,7 +215,7 @@ class PatrolController extends Controller {
 
     public function abortCreate(PatrolRun $patrolRun): View {
         Gate::authorize(Permission::DispatchViewAny->value);
-        abort_unless($patrolRun->organization_id === $this->orgId(), 404);
+        abort_unless($patrolRun->organization_id === $this->currentOrganizationId(), 404);
         abort_unless($patrolRun->status->canTransitionTo(PatrolRunStatus::Aborted), 404);
 
         return view('patrols._abort_dialog', ['run' => $patrolRun->load('route:id,name')]);
@@ -222,36 +224,17 @@ class PatrolController extends Controller {
     /** Wer abschließen darf, darf auch abbrechen — dieselbe Regel wie in complete(). */
     public function abortStore(Request $request, PatrolRun $patrolRun): RedirectResponse {
         Gate::authorize(Permission::DispatchViewAny->value);
-        abort_unless($patrolRun->organization_id === $this->orgId(), 404);
+        abort_unless($patrolRun->organization_id === $this->currentOrganizationId(), 404);
 
         $data = $request->validate(['reason' => ['required', 'string', 'max:1000']]);
 
         try {
-            $this->service->abort($patrolRun, $this->actor(), (string) $data['reason']);
+            $this->service->abort($patrolRun, $this->authUser(), (string) $data['reason']);
         } catch (RuntimeException $e) {
             return redirect()->route('patrols.runs.show', $patrolRun)->with('error', ErrorText::for($e));
         }
 
         return redirect()->route('patrols.show', PatrolRoute::query()->findOrFail($patrolRun->patrol_route_id))
             ->with('success', __('Rundgang abgebrochen.'));
-    }
-
-    private function guard(PatrolRoute $route): void {
-        abort_unless($route->organization_id === $this->orgId(), 404);
-    }
-
-    private function orgId(): int {
-        $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
-        /** @var User $user */
-        $user = Auth::user();
-
-        return (int) ($org->id ?? $user->organization_id);
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

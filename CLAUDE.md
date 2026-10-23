@@ -419,6 +419,19 @@ Datensatzes — kein `$config['api_key']`, kein Client aus Rohwerten, keine
 Singletons mit Schlüssel, kein `forgetInstance()` (Gate
 `PluginCredentialsRuleTest`; Lexoffice-Dienste nehmen nur `?int $organizationId`).
 
+## Controller-Bausteine statt Helfer-Kopien (Phase 161)
+
+Angemeldeter Nutzer: `$this->authUser()` (Basis-Controller); Portal-Nutzer:
+`ResolvesPortalUser::portalUser()`; Org-Admin bzw. Abrechnungsrecht:
+`AuthorizesOrganizationManagement::admin()`/`authorizeBilling()`; Organisation und
+Datensatz-Zugehörigkeit: `ResolvesCurrentOrganization` (`currentOrganization*()`,
+`assertSameOrganization($model, $status = 404)`). Keine private Kopie davon im
+Controller (Gate `ControllerHelperCopyRuleTest`); `organization_id` beim Schreiben
+nie aus dem Nutzer (`OrgIdFromUserRuleTest`, auch `$this->authUser()->`).
+Leerwerte und Ganzzahlen aus Eingaben: `StringHelper::trimToNull`,
+`NumberHelper::toIntOrNull`; Enum-Felder `Rule::enum(X::class)` (Gate
+`EnumValidationRuleTest`).
+
 ## Verweise
 
 Die gesamte Entwicklungs-/Architekturdoku liegt im Schwester-Repo

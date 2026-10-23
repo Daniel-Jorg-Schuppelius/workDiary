@@ -16,7 +16,7 @@
 @section('intro', __('Legen Sie Ihre Organisation und Ihren Administrator-Account an.'))
 
 @section('content')
-    <div class="rounded-4xl border border-base-300 bg-base-100 p-8 shadow-xs">
+    <x-auth-card>
         <form method="POST" action="{{ route('register') }}" class="space-y-5">
             @csrf
 
@@ -112,7 +112,7 @@
                 ⇢ {{ __('Organisation anlegen') }}
             </x-button>
         </form>
-    </div>
+    </x-auth-card>
 
     <p class="mt-6 text-center text-sm text-base-content/70">
         {{ __('Bereits registriert?') }}

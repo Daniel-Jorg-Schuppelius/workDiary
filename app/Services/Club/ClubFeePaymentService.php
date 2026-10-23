@@ -23,6 +23,7 @@ use App\Services\Billing\Sepa\PaymentRunService;
 use App\Services\Concerns\AssertsStatusTransition;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\StringHelper;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -90,8 +91,8 @@ class ClubFeePaymentService {
                 }
                 $part = Money::min($remaining, $claim->openAmount());
                 $payments->push($this->createPayment($account, $claim, $part, $paidOn, $method, ClubFeePaymentSource::Manual, [
-                    'reference' => $this->nullableString($data['reference'] ?? null),
-                    'note' => $this->nullableString($data['note'] ?? null),
+                    'reference' => StringHelper::trimToNull($data['reference'] ?? null),
+                    'note' => StringHelper::trimToNull($data['note'] ?? null),
                     'created_by_user_id' => $actor?->id,
                 ]));
                 $remaining = $remaining->minus($part);
@@ -99,8 +100,8 @@ class ClubFeePaymentService {
             if ($remaining->isPositive()) {
                 // Überzahlung: als Guthaben des Kontos, nicht als zweite Anrechnung.
                 $payments->push($this->createPayment($account, null, $remaining, $paidOn, $method, ClubFeePaymentSource::Manual, [
-                    'reference' => $this->nullableString($data['reference'] ?? null),
-                    'note' => $this->nullableString($data['note'] ?? null),
+                    'reference' => StringHelper::trimToNull($data['reference'] ?? null),
+                    'note' => StringHelper::trimToNull($data['note'] ?? null),
                     'created_by_user_id' => $actor?->id,
                 ]));
             }
@@ -169,7 +170,7 @@ class ClubFeePaymentService {
             }
             $account = $payment->account()->firstOrFail();
             $claim = $payment->club_fee_claim_id !== null ? $payment->claim()->firstOrFail() : null;
-            $reason = $this->nullableString($reason) ?? (string) __('club.fees.label.chargeback');
+            $reason = StringHelper::trimToNull($reason) ?? (string) __('club.fees.label.chargeback');
             $compensation = $this->createPayment($account, $claim, $payment->amount->negated(), CarbonImmutable::today(), $payment->method, ClubFeePaymentSource::Chargeback, [
                 'reference' => $payment->reference,
                 'note' => $reason,
@@ -181,7 +182,7 @@ class ClubFeePaymentService {
             if ($claim !== null) {
                 $claim->update(['collection_blocked_at' => now(), 'collection_block_reason' => mb_substr((string) __('club.fees.label.chargeback') . ': ' . $reason, 0, 255), 'payment_run_item_id' => null]);
                 $claim->audit('club.fee.chargeback', ['payment_id' => $payment->id, 'amount' => $payment->amount->getAmount(), 'reason' => $reason]);
-                $fee = $this->nullableString($bankFee);
+                $fee = StringHelper::trimToNull($bankFee);
                 if ($fee !== null && $actor !== null && Money::of($this->amount($fee), $claim->currency)->isPositive()) {
                     $this->runs->createCorrection($claim, $actor, $this->amount($fee), (string) __('club.fees.label.bank_fee'), $reason);
                 }
@@ -222,7 +223,7 @@ class ClubFeePaymentService {
             $payment = null;
             if ($toClaim->isPositive()) {
                 $payment = $this->createPayment($account, $claim, $toClaim, CarbonImmutable::instance($transaction->booking_date), ClubFeePaymentMethod::Transfer, ClubFeePaymentSource::Bank, [
-                    'reference' => $this->nullableString($transaction->purpose),
+                    'reference' => StringHelper::trimToNull($transaction->purpose),
                     'bank_transaction_id' => $transaction->id,
                     'payment_allocation_id' => $allocation->id,
                 ]);
@@ -230,7 +231,7 @@ class ClubFeePaymentService {
             $rest = $amount->minus($toClaim);
             if ($rest->isPositive()) {
                 $credit = $this->createPayment($account, null, $rest, CarbonImmutable::instance($transaction->booking_date), ClubFeePaymentMethod::Transfer, ClubFeePaymentSource::Bank, [
-                    'reference' => $this->nullableString($transaction->purpose),
+                    'reference' => StringHelper::trimToNull($transaction->purpose),
                     'bank_transaction_id' => $transaction->id,
                     'payment_allocation_id' => $allocation->id,
                 ]);
@@ -300,8 +301,8 @@ class ClubFeePaymentService {
                 throw ValidationException::withMessages(['level' => __('club.fees.error.max_level')]);
             }
             $level = $claim->dunning_level + 1;
-            $payUntil = $this->nullableString($options['pay_until'] ?? null);
-            $fee = $this->nullableString($options['fee'] ?? null);
+            $payUntil = StringHelper::trimToNull($options['pay_until'] ?? null);
+            $fee = StringHelper::trimToNull($options['fee'] ?? null);
             $feeMoney = $fee !== null ? Money::of($this->amount($fee), $claim->currency) : null;
             $feeClaim = null;
             if ($feeMoney !== null && $feeMoney->isPositive()) {
@@ -316,7 +317,7 @@ class ClubFeePaymentService {
                 'fee' => $feeMoney !== null && $feeMoney->isPositive() ? $feeMoney : null,
                 'currency' => $claim->currency->value,
                 'fee_claim_id' => $feeClaim?->id,
-                'note' => $this->nullableString($options['note'] ?? null),
+                'note' => StringHelper::trimToNull($options['note'] ?? null),
                 'created_by_user_id' => $actor->id,
             ]);
             $claim->update(['dunning_level' => $level, 'dunned_at' => now()]);
@@ -607,21 +608,12 @@ class ClubFeePaymentService {
     }
 
     private function amount(mixed $value): string {
-        $raw = $this->nullableString($value);
+        $raw = StringHelper::trimToNull($value);
         $normalized = $raw !== null ? \CommonToolkit\Helper\Data\NumberHelper::normalizeDecimalStringOrNull($raw) : null;
         if ($normalized === null) {
             throw ValidationException::withMessages(['amount' => __('club.fees.error.amount_invalid')]);
         }
 
         return \CommonToolkit\ValueObjects\Decimal::of($normalized, 2)->getValue();
-    }
-
-    private function nullableString(mixed $value): ?string {
-        if ($value === null) {
-            return null;
-        }
-        $string = trim((string) $value);
-
-        return $string === '' ? null : $string;
     }
 }

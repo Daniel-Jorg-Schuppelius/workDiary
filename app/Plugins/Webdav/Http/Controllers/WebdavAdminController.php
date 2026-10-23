@@ -17,6 +17,7 @@ use App\Plugins\Support\Concerns\{ManagesPluginConnection, ResolvesPluginOrgCont
 use App\Plugins\Webdav\Models\WebdavConnection;
 use App\Plugins\Webdav\WebdavPlugin;
 use App\Support\UrlSafety;
+use CommonToolkit\Helper\Data\WebLinkHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
@@ -69,7 +70,7 @@ class WebdavAdminController extends Controller {
 
         $baseUrl = trim((string) $data['base_url']);
         $allowPrivate = (bool) ($data['allow_private_network'] ?? false);
-        if (! str_starts_with($baseUrl, 'http://') && ! str_starts_with($baseUrl, 'https://')) {
+        if (! WebLinkHelper::isHttpUrl($baseUrl)) {
             return back()->with('error', __('webdav::webdav.flash.invalid_url'))->withInput();
         }
         // Konfigurationszeit-Prüfung ohne DNS; verbindlich prüft das Gateway vor jedem Abruf.

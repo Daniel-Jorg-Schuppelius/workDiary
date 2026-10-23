@@ -9,6 +9,7 @@ use App\Models\Platform\Organization;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use App\Services\Contacts\{ExternalPhoneContact, ExternalPhoneContactSource};
+use CommonToolkit\Helper\Data\PersonNameHelper;
 use Lexoffice\API\Endpoints\ContactsEndpoint;
 use RuntimeException;
 
@@ -66,7 +67,7 @@ final class LexofficePhoneContactSource implements ExternalPhoneContactSource {
         }
 
         $company = trim((string) data_get($remote, 'company.name', ''));
-        $person = trim((string) data_get($remote, 'person.firstName', '') . ' ' . (string) data_get($remote, 'person.lastName', ''));
+        $person = PersonNameHelper::join(['first_name' => data_get($remote, 'person.firstName'), 'last_name' => data_get($remote, 'person.lastName')]);
         $phones = [];
         foreach (['business', 'mobile', 'private'] as $kind) {
             foreach ((array) data_get($remote, 'phoneNumbers.' . $kind, []) as $phone) {

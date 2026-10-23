@@ -91,52 +91,42 @@
     <div class="mt-6"><x-custom-fields-card :subject="$diary" /></div>
 
     <div class="mt-6 grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
-        <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
-            <p class="mb-1 text-xs text-muted">{{ __('Von') }}</p>
-            <p class="text-base-content">{{ $diary->start_at?->fdatetime() ?? '—' }}</p>
-        </div>
-        <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
-            <p class="mb-1 text-xs text-muted">{{ __('Bis') }}</p>
-            <p class="text-base-content">{{ $diary->end_at?->fdatetime() ?? '—' }}</p>
-        </div>
+        <x-info-tile :label="__('Von')">{{ $diary->start_at?->fdatetime() ?? '—' }}</x-info-tile>
+        <x-info-tile :label="__('Bis')">{{ $diary->end_at?->fdatetime() ?? '—' }}</x-info-tile>
         {{-- Vom Auftrag in die Auswertung (MVP-807, Entscheid P2-06): nur wer die
              Analyse sehen darf (Tarif und Recht), bekommt den Link. Inline-Form wie im
              Rest der Datei — ein PHP-Block daneben bringt den Blade-Compiler aus dem Tritt. --}}
         @php($mayOpenReport = static fn (string $route): bool => app(\App\Services\Licensing\FeatureFlagResolver::class)->routeEnabled($route) && app(\App\Services\Navigation\NavGate::class)->mayAccess($route) && \App\Http\Controllers\Reporting\CustomerAnalysisReportController::mayViewTeamReports(auth()->user()))
         @if ($diary->customer)
-            <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
-                <p class="mb-1 text-xs text-muted">{{ __('Kunde') }}</p>
-                <p class="text-base-content">{{ $diary->customer->name }}@if ($diary->customer->company) — {{ $diary->customer->company }}@endif</p>
-                @if ($mayOpenReport('reports.customers'))
-                    <a href="{{ route('reports.customers', ['customer' => $diary->customer->sqid]) }}" class="link link-hover mt-1 inline-flex items-center gap-1 text-xs">
-                        <x-icon name="bar_chart" /> {{ __('Kundenanalyse') }}
-                    </a>
-                @endif
-            </div>
+            <x-info-tile :label="__('Kunde')">
+                {{ $diary->customer->name }}@if ($diary->customer->company) — {{ $diary->customer->company }}@endif
+                <x-slot:after>
+                    @if ($mayOpenReport('reports.customers'))
+                        <a href="{{ route('reports.customers', ['customer' => $diary->customer->sqid]) }}" class="link link-hover mt-1 inline-flex items-center gap-1 text-xs">
+                            <x-icon name="bar_chart" /> {{ __('Kundenanalyse') }}
+                        </a>
+                    @endif
+                </x-slot:after>
+            </x-info-tile>
         @endif
         {{-- Gegenstand des Auftrags (Feature 009; Vollaudit 2026-07, M5). --}}
         @if ($diary->asset)
-            <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
-                <p class="mb-1 text-xs text-muted">{{ __('Objekt/Asset') }}</p>
-                <p class="text-base-content"><a href="{{ route('assets.show', $diary->asset) }}" class="link link-hover">{{ $diary->asset->name }}</a></p>
-                @if ($mayOpenReport('reports.assets'))
-                    {{-- Die Produktanalyse kennt keinen Einzel-Asset-Filter: sie zeigt das
-                         Asset neben gleichartigen (Kategorie, Hersteller). --}}
-                    <a href="{{ route('reports.assets', array_filter(['category_code' => $diary->asset->category_code, 'manufacturer' => $diary->asset->manufacturer])) }}" class="link link-hover mt-1 inline-flex items-center gap-1 text-xs">
-                        <x-icon name="inventory_2" /> {{ __('Produktanalyse') }}
-                    </a>
-                @endif
-            </div>
+            <x-info-tile :label="__('Objekt/Asset')">
+                <a href="{{ route('assets.show', $diary->asset) }}" class="link link-hover">{{ $diary->asset->name }}</a>
+                <x-slot:after>
+                    @if ($mayOpenReport('reports.assets'))
+                        {{-- Die Produktanalyse kennt keinen Einzel-Asset-Filter: sie zeigt das
+                             Asset neben gleichartigen (Kategorie, Hersteller). --}}
+                        <a href="{{ route('reports.assets', array_filter(['category_code' => $diary->asset->category_code, 'manufacturer' => $diary->asset->manufacturer])) }}" class="link link-hover mt-1 inline-flex items-center gap-1 text-xs">
+                            <x-icon name="inventory_2" /> {{ __('Produktanalyse') }}
+                        </a>
+                    @endif
+                </x-slot:after>
+            </x-info-tile>
             @include('assets.components._suggestion_card', ['asset' => $diary->asset])
         @endif
-        <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
-            <p class="mb-1 text-xs text-muted">{{ __('Erstellt') }}</p>
-            <p class="text-base-content">{{ $diary->created_at->fdatetime() }}</p>
-        </div>
-        <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
-            <p class="mb-1 text-xs text-muted">{{ __('Geändert') }}</p>
-            <p class="text-base-content">{{ $diary->updated_at->diffForHumans() }}</p>
-        </div>
+        <x-info-tile :label="__('Erstellt')">{{ $diary->created_at->fdatetime() }}</x-info-tile>
+        <x-info-tile :label="__('Geändert')">{{ $diary->updated_at->diffForHumans() }}</x-info-tile>
     </div>
 </article>
 

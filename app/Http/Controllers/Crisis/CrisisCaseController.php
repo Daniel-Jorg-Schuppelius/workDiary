@@ -201,14 +201,14 @@ class CrisisCaseController extends Controller {
 
     public function alert(CrisisCase $case): RedirectResponse {
         Gate::authorize('update', $case);
-        $count = $this->alerts->alert($case, $this->actor());
+        $count = $this->alerts->alert($case, $this->authUser());
 
         return back()->with('status', __(':count Stabsmitglieder alarmiert (Ruhezeiten überstimmt).', ['count' => $count]));
     }
 
     public function escalateAlert(CrisisCase $case): RedirectResponse {
         Gate::authorize('update', $case);
-        $count = $this->alerts->escalate($case, $this->actor());
+        $count = $this->alerts->escalate($case, $this->authUser());
 
         return back()->with('status', __(':count unquittierte Alarme eskaliert (inkl. Stellvertretung).', ['count' => $count]));
     }
@@ -218,7 +218,7 @@ class CrisisCaseController extends Controller {
         abort_unless($assignment->crisis_case_id === $case->id, 404);
 
         try {
-            $this->alerts->acknowledge($assignment, $this->actor());
+            $this->alerts->acknowledge($assignment, $this->authUser());
         } catch (\RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -413,12 +413,5 @@ class CrisisCaseController extends Controller {
         $case->audit('crisis.reviewed', []);
 
         return back()->with('status', __('Nachbereitung dokumentiert.'));
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

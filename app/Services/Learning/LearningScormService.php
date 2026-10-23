@@ -14,7 +14,7 @@ namespace App\Services\Learning;
 
 use App\Models\Learning\{LearningEnrollment, LearningScormPackage, LearningScormState, LearningUnit};
 use App\Models\Platform\User;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, StringHelper};
 use CommonToolkit\Helper\FileSystem\Folder;
 use ELearningToolkit\Package\{PackageException, PackageExtractor};
 use ELearningToolkit\Scorm\{CompletionRule, Manifest, ScormVersion};
@@ -147,8 +147,8 @@ class LearningScormService {
     public function commit(LearningScormPackage $package, LearningEnrollment $enrollment, array $values): LearningScormState {
         $state = $this->stateFor($package, $enrollment);
 
-        $lesson = $this->stringOrNull($values['lesson_status'] ?? null);
-        $success = $this->stringOrNull($values['success_status'] ?? null);
+        $lesson = StringHelper::trimToNull($values['lesson_status'] ?? null);
+        $success = StringHelper::trimToNull($values['success_status'] ?? null);
         $scaled = $values['score_scaled'] ?? null;
 
         $state->fill([
@@ -157,10 +157,10 @@ class LearningScormService {
             'score_scaled' => is_numeric($scaled) ? (string) $scaled : $state->score_scaled,
             // suspend_data und location gehören dem Inhalt — unverändert übernehmen.
             'suspend_data' => array_key_exists('suspend_data', $values)
-                ? $this->stringOrNull($values['suspend_data'])
+                ? StringHelper::trimToNull($values['suspend_data'])
                 : $state->suspend_data,
             'location' => array_key_exists('location', $values)
-                ? $this->stringOrNull($values['location'])
+                ? StringHelper::trimToNull($values['location'])
                 : $state->location,
             'session_seconds' => $state->session_seconds + max(0, (int) ($values['session_seconds'] ?? 0)),
             'last_commit_at' => Carbon::now(),
@@ -189,15 +189,5 @@ class LearningScormService {
             $state->lesson_status,
             $state->success_status,
         );
-    }
-
-    private function stringOrNull(mixed $value): ?string {
-        if ($value === null) {
-            return null;
-        }
-
-        $string = trim((string) $value);
-
-        return $string !== '' ? $string : null;
     }
 }

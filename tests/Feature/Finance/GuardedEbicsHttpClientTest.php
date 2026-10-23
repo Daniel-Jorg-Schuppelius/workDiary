@@ -28,13 +28,20 @@ final class GuardedEbicsHttpClientTest extends TestCase {
 
         try {
             $xml = '<?xml version="1.0"?><!DOCTYPE r [<!ENTITY a SYSTEM "file://' . $probe . '">]><r><ReportText>&a;</ReportText></r>';
-            $document = (new GuardedEbicsHttpClient)->parse($xml);
 
-            $this->assertStringNotContainsString('sonde-inhalt-4711', (string) $document->saveXML());
-            $this->assertStringNotContainsString('sonde-inhalt-4711', (string) $document->documentElement?->textContent);
+            // Seit Phase 161 über XmlHelper::safeLoadInto: eine Antwort mit DOCTYPE wird gar nicht erst geladen.
+            $this->expectException(\RuntimeException::class);
+            (new GuardedEbicsHttpClient)->parse($xml);
         } finally {
             @unlink((string) $probe);
         }
+    }
+
+    public function test_a_plain_bank_response_is_loaded_into_the_library_response(): void {
+        $document = (new GuardedEbicsHttpClient)->parse('<?xml version="1.0"?><ebicsResponse><ReportText>OK</ReportText></ebicsResponse>');
+
+        $this->assertInstanceOf(\EbicsApi\Ebics\Models\Http\Response::class, $document);
+        $this->assertSame('OK', $document->documentElement?->textContent);
     }
 
     public function test_non_public_bank_addresses_are_refused_before_any_connection(): void {

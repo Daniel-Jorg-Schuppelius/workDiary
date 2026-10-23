@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Procurement\OpenMasterdata;
 
-use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\Helper\Data\{NumberHelper, WebLinkHelper};
 
 /**
  * Übersetzt ein Open-Masterdata-Produkt in den Katalogdatensatz des
@@ -190,7 +190,7 @@ class OpenMasterdataProductMapper {
     private function url(mixed $value): ?string {
         $url = is_string($value) ? trim($value) : '';
 
-        return str_starts_with($url, 'https://') || str_starts_with($url, 'http://') ? $url : null;
+        return WebLinkHelper::isHttpUrl($url) ? $url : null;
     }
 
     private function int(mixed $value): ?int {

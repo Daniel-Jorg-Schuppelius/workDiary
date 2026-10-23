@@ -16,6 +16,7 @@ use App\Enums\Search\SearchSourceType;
 use App\Models\Diary\DiaryEntry;
 use App\Services\Search\Indexing\{SearchContext, SearchDocumentData};
 use App\Services\Search\Indexing\Sources\AbstractSearchSource;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
 
 /** Aufträge samt Rückmeldung, Notizen und Kommentaren. */
@@ -35,8 +36,8 @@ final class DiaryEntrySource extends AbstractSearchSource {
             return null;
         }
 
-        $ref = $context->resolve($organizationId, self::intOrNull($model->project_id), null, self::intOrNull($model->customer_id));
-        $asset = $context->asset($organizationId, self::intOrNull($model->asset_id));
+        $ref = $context->resolve($organizationId, NumberHelper::toIntOrNull($model->project_id), null, NumberHelper::toIntOrNull($model->customer_id));
+        $asset = $context->asset($organizationId, NumberHelper::toIntOrNull($model->asset_id));
         $title = trim((string) $model->title);
 
         return new SearchDocumentData(
@@ -56,13 +57,13 @@ final class DiaryEntrySource extends AbstractSearchSource {
                 $model->entryType?->label,
                 $asset?->name,
                 $asset?->asset_no,
-                $context->userName(self::intOrNull($model->user_id)),
-                $context->userName(self::intOrNull($model->assigned_user_id)),
+                $context->userName(NumberHelper::toIntOrNull($model->user_id)),
+                $context->userName(NumberHelper::toIntOrNull($model->assigned_user_id)),
                 ...$ref->texts,
             ],
             occurredAt: $model->start_at ?? $model->created_at,
-            userId: self::intOrNull($model->user_id),
-            assignedUserId: self::intOrNull($model->assigned_user_id),
+            userId: NumberHelper::toIntOrNull($model->user_id),
+            assignedUserId: NumberHelper::toIntOrNull($model->assigned_user_id),
             customerId: $ref->customerId,
             foreignCustomerId: $ref->foreignCustomerId,
             projectId: $ref->projectId,

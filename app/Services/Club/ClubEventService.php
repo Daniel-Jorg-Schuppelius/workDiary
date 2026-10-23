@@ -23,6 +23,7 @@ use App\Services\Participation\EventSeatService;
 use App\Support\Query\DateRange;
 use App\Support\Tz;
 use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -64,7 +65,7 @@ class ClubEventService {
                     'is_all_day' => false,
                     'is_mandatory' => false,
                     'recurrence_rule' => $rule,
-                    'series_until' => $rule !== null ? $this->nullableString($data['series_until'] ?? null) : null,
+                    'series_until' => $rule !== null ? StringHelper::trimToNull($data['series_until'] ?? null) : null,
                     'created_by' => $actor->id,
                 ],
                 $this->roomRows($data),
@@ -303,7 +304,7 @@ class ClubEventService {
                 'promoted_at' => null,
                 'cancelled_at' => null,
                 'cancelled_by_user_id' => null,
-                'note' => $this->nullableString($note),
+                'note' => StringHelper::trimToNull($note),
             ];
 
             if ($existing !== null) {
@@ -350,7 +351,7 @@ class ClubEventService {
                 'status' => ClubParticipationStatus::Cancelled->value,
                 'cancelled_at' => now(),
                 'cancelled_by_user_id' => $actor->id,
-                'note' => $this->nullableString($note) ?? $participation->note,
+                'note' => StringHelper::trimToNull($note) ?? $participation->note,
             ]);
             $participation->audit('club.event.registrationCancelled', ['force' => $force]);
 
@@ -531,10 +532,10 @@ class ClubEventService {
         $kind = ClubEventKind::from((string) $data['kind']);
         $attributes = [
             'title' => trim((string) $data['title']),
-            'description' => $this->nullableString($data['description'] ?? null),
+            'description' => StringHelper::trimToNull($data['description'] ?? null),
             'event_type' => $kind->eventType()->value,
-            'responsible_user_id' => $this->nullableInt($data['leader_user_id'] ?? null),
-            'max_participants' => $this->nullableInt($data['max_participants'] ?? null),
+            'responsible_user_id' => NumberHelper::toIntOrNull($data['leader_user_id'] ?? null),
+            'max_participants' => NumberHelper::toIntOrNull($data['max_participants'] ?? null),
         ];
         foreach (['started_at', 'ended_at', 'timezone'] as $key) {
             if (array_key_exists($key, $data)) {
@@ -553,11 +554,11 @@ class ClubEventService {
         return [
             'kind' => ClubEventKind::from((string) $data['kind'])->value,
             'visibility' => ClubEventVisibility::from((string) ($data['visibility'] ?? ClubEventVisibility::Groups->value))->value,
-            'club_department_id' => $this->nullableInt($data['club_department_id'] ?? null),
-            'discipline' => $this->nullableString($data['discipline'] ?? null),
-            'registration_lead_hours' => $this->nullableInt($data['registration_lead_hours'] ?? null),
-            'cancellation_lead_hours' => $this->nullableInt($data['cancellation_lead_hours'] ?? null),
-            'fee_amount' => ($fee = $this->nullableString($data['fee_amount'] ?? null)) !== null ? Decimal::of($fee, 2)->getValue() : null,
+            'club_department_id' => NumberHelper::toIntOrNull($data['club_department_id'] ?? null),
+            'discipline' => StringHelper::trimToNull($data['discipline'] ?? null),
+            'registration_lead_hours' => NumberHelper::toIntOrNull($data['registration_lead_hours'] ?? null),
+            'cancellation_lead_hours' => NumberHelper::toIntOrNull($data['cancellation_lead_hours'] ?? null),
+            'fee_amount' => ($fee = StringHelper::trimToNull($data['fee_amount'] ?? null)) !== null ? Decimal::of($fee, 2)->getValue() : null,
         ];
     }
 
@@ -568,7 +569,7 @@ class ClubEventService {
     private function groupIds(array $data): array {
         $ids = [];
         foreach ((array) ($data['club_group_ids'] ?? []) as $id) {
-            if ($this->nullableString($id) !== null) {
+            if (StringHelper::trimToNull($id) !== null) {
                 $ids[] = (int) $id;
             }
         }
@@ -581,7 +582,7 @@ class ClubEventService {
      * @return array<int, array{room_id: int}>
      */
     private function roomRows(array $data): array {
-        $roomId = $this->nullableInt($data['room_id'] ?? null);
+        $roomId = NumberHelper::toIntOrNull($data['room_id'] ?? null);
 
         return $roomId === null ? [] : [['room_id' => $roomId]];
     }
@@ -592,32 +593,17 @@ class ClubEventService {
      * @param  array<string, mixed>  $data
      */
     private function buildRule(array $data): ?string {
-        $rule = match ($this->nullableString($data['recurrence'] ?? null)) {
+        $rule = match (StringHelper::trimToNull($data['recurrence'] ?? null)) {
             'weekly' => 'FREQ=WEEKLY;INTERVAL=1',
             'biweekly' => 'FREQ=WEEKLY;INTERVAL=2',
             'monthly' => 'FREQ=MONTHLY;INTERVAL=1',
             default => null,
         };
-        $until = $this->nullableString($data['series_until'] ?? null);
+        $until = StringHelper::trimToNull($data['series_until'] ?? null);
         if ($rule !== null && $until !== null) {
             $rule .= ';UNTIL=' . CarbonImmutable::parse($until)->endOfDay()->utc()->format('Ymd\THis\Z');
         }
 
         return $rule;
-    }
-
-    private function nullableInt(mixed $value): ?int {
-        $string = $this->nullableString($value);
-
-        return $string === null ? null : (int) $string;
-    }
-
-    private function nullableString(mixed $value): ?string {
-        if ($value === null) {
-            return null;
-        }
-        $string = trim((string) $value);
-
-        return $string === '' ? null : $string;
     }
 }

@@ -14,7 +14,7 @@
 @section('intro', __('Wählen Sie ein neues, sicheres Passwort.'))
 
 @section('content')
-    <div class="rounded-4xl border border-base-300 bg-base-100 p-8 shadow-xs">
+    <x-auth-card>
         <form method="POST" action="{{ route('password.update') }}" class="space-y-5">
             @csrf
             <input type="hidden" name="token" value="{{ $token }}">
@@ -43,5 +43,5 @@
                 ⇢ {{ __('Passwort speichern') }}
             </x-button>
         </form>
-    </div>
+    </x-auth-card>
 @endsection

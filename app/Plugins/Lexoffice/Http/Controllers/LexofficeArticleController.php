@@ -12,7 +12,6 @@ namespace App\Plugins\Lexoffice\Http\Controllers;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Models\Platform\User;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy;
 use App\Plugins\Lexoffice\LexofficeConfig;
@@ -22,7 +21,7 @@ use App\Support\{ErrorText, SortableQuery};
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Cache};
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 use Throwable;
 
@@ -36,7 +35,7 @@ class LexofficeArticleController extends Controller {
     private const ALLOWED_SORTS = ['name', 'article_number', 'type', 'unit_name', 'net_unit_price', 'vat_rate', 'archived_at'];
 
     public function index(Request $request): View {
-        $user = $this->user();
+        $user = $this->authUser();
         abort_unless($user->can(Permission::ArticleViewAny->value), 403);
 
         $search = trim((string) $request->input('q', ''));
@@ -81,7 +80,7 @@ class LexofficeArticleController extends Controller {
      * Stammdaten eines Artikels. Wird per data-entry-modal-trigger nachgeladen.
      */
     public function details(LexofficeArticle $article): View {
-        $user = $this->user();
+        $user = $this->authUser();
         abort_unless($user->can(Permission::ArticleViewAny->value), 403);
         abort_unless($article->organization_id === $user->organization_id, 403);
 
@@ -91,7 +90,7 @@ class LexofficeArticleController extends Controller {
     }
 
     public function sync(): RedirectResponse {
-        $user = $this->user();
+        $user = $this->authUser();
         abort_unless($user->can(Permission::ArticleLexofficeSync->value), 403);
 
         $config = LexofficeConfig::resolve($user->organization_id);
@@ -128,12 +127,5 @@ class LexofficeArticleController extends Controller {
         } catch (Throwable $e) {
             return back()->with('error', __('Sync fehlgeschlagen: :msg', ['msg' => ErrorText::for($e)]));
         }
-    }
-
-    private function user(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

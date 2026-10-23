@@ -13,12 +13,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\Integration\DataDomain;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\Platform\Organization;
 use App\Plugins\PluginManager;
 use App\Services\Integration\DataOwnershipResolver;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -27,10 +28,12 @@ use Illuminate\View\View;
  * Schreibversuche anderer Plugins als Inbox-Konflikt statt als Write.
  */
 class DataOwnershipController extends Controller {
-    public function index(PluginManager $plugins, DataOwnershipResolver $resolver): View {
-        Gate::authorize('update', $this->organization());
+    use ResolvesCurrentOrganization;
 
-        $organization = $this->organization();
+    public function index(PluginManager $plugins, DataOwnershipResolver $resolver): View {
+        Gate::authorize('update', $this->currentOrganizationOrAbort(404));
+
+        $organization = $this->currentOrganizationOrAbort(404);
 
         return view('admin.data-ownership.index', [
             'organization' => $organization,
@@ -44,14 +47,14 @@ class DataOwnershipController extends Controller {
     }
 
     public function update(Request $request, DataOwnershipResolver $resolver): RedirectResponse {
-        Gate::authorize('update', $this->organization());
+        Gate::authorize('update', $this->currentOrganizationOrAbort(404));
 
         $data = $request->validate([
-            'domain' => ['required', 'in:' . implode(',', array_column(DataDomain::cases(), 'value'))],
+            'domain' => ['required', Rule::enum(DataDomain::class)],
             'owner' => ['required', 'string', 'max:64'],
         ]);
 
-        $organization = $this->organization();
+        $organization = $this->currentOrganizationOrAbort(404);
         $domain = DataDomain::from($data['domain']);
         $resolver->setOwner($organization, $domain, $data['owner']);
 
@@ -62,12 +65,5 @@ class DataOwnershipController extends Controller {
 
         return redirect()->route('admin.data-ownership.index')
             ->with('success', __('Datenführerschaft aktualisiert.'));
-    }
-
-    private function organization(): Organization {
-        $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
-        abort_unless($org instanceof Organization, 404);
-
-        return $org;
     }
 }

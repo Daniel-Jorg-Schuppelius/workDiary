@@ -17,6 +17,7 @@ use App\Models\Club\{ClubGrade, ClubGradeRequirement, ClubGradingSystem, ClubGra
 use App\Models\Platform\{Organization, User};
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -75,7 +76,7 @@ class ClubGradingService {
             'club_grading_system_id' => $system->id,
             'name' => trim((string) $attributes['name']),
             'rank' => $rank,
-            'color' => $this->nullableString($attributes['color'] ?? null),
+            'color' => StringHelper::trimToNull($attributes['color'] ?? null),
             'is_active' => (bool) ($attributes['is_active'] ?? true),
         ]);
         $grade->audit('club.grading.gradeCreated', ['rank' => $rank]);
@@ -88,7 +89,7 @@ class ClubGradingService {
         $grade->update([
             'name' => trim((string) $attributes['name']),
             'rank' => isset($attributes['rank']) && $attributes['rank'] !== '' ? (int) $attributes['rank'] : $grade->rank,
-            'color' => $this->nullableString($attributes['color'] ?? null),
+            'color' => StringHelper::trimToNull($attributes['color'] ?? null),
             'is_active' => (bool) ($attributes['is_active'] ?? true),
         ]);
         $grade->audit('club.grading.gradeUpdated');
@@ -121,10 +122,10 @@ class ClubGradingService {
                 'club_grading_system_id' => $system->id,
                 'version_no' => (int) $system->versions()->max('version_no') + 1,
                 'status' => ClubGradingVersionStatus::Draft->value,
-                'valid_from' => $this->nullableString($attributes['valid_from'] ?? null),
-                'unit_minutes' => $this->nullableInt($attributes['unit_minutes'] ?? ($source?->unit_minutes)),
+                'valid_from' => StringHelper::trimToNull($attributes['valid_from'] ?? null),
+                'unit_minutes' => NumberHelper::toIntOrNull($attributes['unit_minutes'] ?? ($source?->unit_minutes)),
                 'accepts_external_credits' => (bool) ($attributes['accepts_external_credits'] ?? ($source !== null ? $source->accepts_external_credits : false)),
-                'notes' => $this->nullableString($attributes['notes'] ?? null),
+                'notes' => StringHelper::trimToNull($attributes['notes'] ?? null),
             ]);
             if ($source !== null) {
                 foreach ($source->requirements as $requirement) {
@@ -143,10 +144,10 @@ class ClubGradingService {
     /** @param array<string, mixed> $attributes */
     public function updateVersion(ClubGradingVersion $version, array $attributes): ClubGradingVersion {
         $version->update([
-            'valid_from' => $this->nullableString($attributes['valid_from'] ?? null),
-            'unit_minutes' => $this->nullableInt($attributes['unit_minutes'] ?? null),
+            'valid_from' => StringHelper::trimToNull($attributes['valid_from'] ?? null),
+            'unit_minutes' => NumberHelper::toIntOrNull($attributes['unit_minutes'] ?? null),
             'accepts_external_credits' => (bool) ($attributes['accepts_external_credits'] ?? false),
-            'notes' => $this->nullableString($attributes['notes'] ?? null),
+            'notes' => StringHelper::trimToNull($attributes['notes'] ?? null),
         ]);
         $version->audit('club.grading.versionUpdated');
 
@@ -179,7 +180,7 @@ class ClubGradingService {
         if ($grade->club_grading_system_id !== $version->club_grading_system_id) {
             throw ValidationException::withMessages(['club_grade_id' => __('club.grading.error.grade_foreign')]);
         }
-        $previousId = $this->nullableInt($attributes['previous_grade_id'] ?? null);
+        $previousId = NumberHelper::toIntOrNull($attributes['previous_grade_id'] ?? null);
         if ($previousId !== null) {
             $previous = ClubGrade::query()->whereKey($previousId)->where('club_grading_system_id', $version->club_grading_system_id)->first();
             if ($previous === null || $previous->rank >= $grade->rank) {
@@ -187,7 +188,7 @@ class ClubGradingService {
             }
         }
         $basis = ClubCountingBasis::tryFrom((string) ($attributes['counting_basis'] ?? '')) ?? ClubCountingBasis::SincePreviousGrade;
-        $windowMonths = $this->nullableInt($attributes['window_months'] ?? null);
+        $windowMonths = NumberHelper::toIntOrNull($attributes['window_months'] ?? null);
         if ($basis === ClubCountingBasis::WindowMonths && ($windowMonths === null || $windowMonths < 1)) {
             throw ValidationException::withMessages(['window_months' => __('club.grading.error.window_required')]);
         }
@@ -199,16 +200,16 @@ class ClubGradingService {
             [
                 'organization_id' => $version->organization_id,
                 'previous_grade_id' => $previousId,
-                'min_minutes' => $this->nullableInt($attributes['min_minutes'] ?? null),
-                'min_sessions' => $this->nullableInt($attributes['min_sessions'] ?? null),
-                'min_minutes_per_session' => $this->nullableInt($attributes['min_minutes_per_session'] ?? null),
+                'min_minutes' => NumberHelper::toIntOrNull($attributes['min_minutes'] ?? null),
+                'min_sessions' => NumberHelper::toIntOrNull($attributes['min_sessions'] ?? null),
+                'min_minutes_per_session' => NumberHelper::toIntOrNull($attributes['min_minutes_per_session'] ?? null),
                 'counting_basis' => $basis->value,
                 'window_months' => $basis === ClubCountingBasis::WindowMonths ? $windowMonths : null,
-                'wait_months' => $this->nullableInt($attributes['wait_months'] ?? null),
-                'min_age' => $this->nullableInt($attributes['min_age'] ?? null),
+                'wait_months' => NumberHelper::toIntOrNull($attributes['wait_months'] ?? null),
+                'min_age' => NumberHelper::toIntOrNull($attributes['min_age'] ?? null),
                 'counted_event_kinds' => $kinds !== [] ? $kinds : null,
                 'counted_group_ids' => $groupIds !== [] ? $groupIds : null,
-                'required_proof_label' => $this->nullableString($attributes['required_proof_label'] ?? null),
+                'required_proof_label' => StringHelper::trimToNull($attributes['required_proof_label'] ?? null),
                 'requires_approval' => (bool) ($attributes['requires_approval'] ?? false),
                 'allows_exception' => (bool) ($attributes['allows_exception'] ?? false),
             ],
@@ -291,7 +292,7 @@ class ClubGradingService {
                 'obtained_on' => $day->toDateString(),
                 'source' => $source->value,
                 'club_exam_candidate_id' => $candidateId,
-                'evidence' => $this->nullableString($evidence),
+                'evidence' => StringHelper::trimToNull($evidence),
                 'confirmed_by_user_id' => $actor->id,
             ]);
             $awarded->audit($source === ClubGradeSource::Recognized ? 'club.grading.gradeRecognized' : 'club.grading.gradeAwarded', ['grade' => $grade->name, 'obtained_on' => $day->toDateString()]);
@@ -348,7 +349,7 @@ class ClubGradingService {
         return [
             'name' => trim((string) $attributes['name']),
             'discipline' => trim((string) $attributes['discipline']),
-            'description' => $this->nullableString($attributes['description'] ?? null),
+            'description' => StringHelper::trimToNull($attributes['description'] ?? null),
             'is_active' => (bool) ($attributes['is_active'] ?? true),
         ];
     }
@@ -359,7 +360,7 @@ class ClubGradingService {
      */
     private function proofAttributes(array $attributes): array {
         $kind = ClubProofKind::tryFrom((string) ($attributes['kind'] ?? '')) ?? ClubProofKind::Course;
-        $obtained = $this->nullableString($attributes['obtained_on'] ?? null);
+        $obtained = StringHelper::trimToNull($attributes['obtained_on'] ?? null);
         if ($obtained === null) {
             throw ValidationException::withMessages(['obtained_on' => __('club.grading.error.obtained_required')]);
         }
@@ -367,26 +368,13 @@ class ClubGradingService {
         return [
             'kind' => $kind->value,
             'label' => trim((string) $attributes['label']),
-            'discipline' => $this->nullableString($attributes['discipline'] ?? null),
-            'minutes' => $kind === ClubProofKind::ExternalTraining ? $this->nullableInt($attributes['minutes'] ?? null) : null,
-            'sessions' => $kind === ClubProofKind::ExternalTraining ? $this->nullableInt($attributes['sessions'] ?? null) : null,
+            'discipline' => StringHelper::trimToNull($attributes['discipline'] ?? null),
+            'minutes' => $kind === ClubProofKind::ExternalTraining ? NumberHelper::toIntOrNull($attributes['minutes'] ?? null) : null,
+            'sessions' => $kind === ClubProofKind::ExternalTraining ? NumberHelper::toIntOrNull($attributes['sessions'] ?? null) : null,
             'obtained_on' => $obtained,
-            'valid_until' => $this->nullableString($attributes['valid_until'] ?? null),
-            'origin' => $this->nullableString($attributes['origin'] ?? null),
-            'note' => $this->nullableString($attributes['note'] ?? null),
+            'valid_until' => StringHelper::trimToNull($attributes['valid_until'] ?? null),
+            'origin' => StringHelper::trimToNull($attributes['origin'] ?? null),
+            'note' => StringHelper::trimToNull($attributes['note'] ?? null),
         ];
-    }
-
-    private function nullableInt(mixed $value): ?int {
-        return $value === null || $value === '' ? null : (int) $value;
-    }
-
-    private function nullableString(mixed $value): ?string {
-        if ($value === null) {
-            return null;
-        }
-        $string = trim((string) $value);
-
-        return $string === '' ? null : $string;
     }
 }

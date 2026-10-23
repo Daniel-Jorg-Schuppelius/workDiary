@@ -27,6 +27,7 @@ use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -150,7 +151,7 @@ class AccountingSetupController extends Controller {
         abort_if($actor === null, 403);
 
         $data = $request->validate([
-            'interval' => ['required', 'string', 'in:' . implode(',', array_column(VatFilingInterval::cases(), 'value'))],
+            'interval' => ['required', 'string', Rule::enum(VatFilingInterval::class)],
             'valid_from' => ['required', 'date'],
             'reason' => ['nullable', 'string', 'max:500'],
         ]);
@@ -277,7 +278,7 @@ class AccountingSetupController extends Controller {
         abort_if($actor === null, 403);
 
         $data = $request->validate([
-            'method' => ['required', 'string', 'in:' . implode(',', array_column(TaxationMethod::cases(), 'value'))],
+            'method' => ['required', 'string', Rule::enum(TaxationMethod::class)],
             'valid_from' => ['required', 'date'],
             'reason' => ['nullable', 'string', 'max:500'],
         ]);
@@ -299,7 +300,7 @@ class AccountingSetupController extends Controller {
         $organization = $this->currentOrganizationOrAbort();
 
         $data = $request->validate([
-            'profit_determination' => ['required', 'string', 'in:' . implode(',', array_column(ProfitDetermination::cases(), 'value'))],
+            'profit_determination' => ['required', 'string', Rule::enum(ProfitDetermination::class)],
             'base_currency' => ['required', 'string', 'size:3'],
             'fiscal_year_start_month' => ['required', 'integer', 'between:1,12'],
             'starts_on' => ['nullable', 'date'],
@@ -378,7 +379,7 @@ class AccountingSetupController extends Controller {
         abort_if($actor === null, 403);
 
         $data = $request->validate([
-            'sovereignty' => ['required', 'string', 'in:' . implode(',', array_column(AccountingSovereignty::cases(), 'value'))],
+            'sovereignty' => ['required', 'string', Rule::enum(AccountingSovereignty::class)],
             'external_provider' => ['nullable', 'string', 'max:64'],
             'valid_from' => ['required', 'date'],
             'reason' => ['nullable', 'string', 'max:500'],

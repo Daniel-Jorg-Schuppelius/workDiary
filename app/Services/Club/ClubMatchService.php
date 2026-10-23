@@ -23,6 +23,7 @@ use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Enums\DateTimeFormat;
 use CommonToolkit\Helper\Data\{CryptoHelper, DateHelper, StringHelper};
 use CommonToolkit\Helper\Data\CSV\StringHelper as CsvStringHelper;
+use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\Parsers\{CSVDocumentParser, ICalendarParser};
 use DateTimeZone;
 use Illuminate\Database\Eloquent\Builder;
@@ -152,7 +153,7 @@ class ClubMatchService {
             [
                 'organization_id' => $event->organization_id,
                 'status' => $status->value,
-                'note' => $this->nullableString($note),
+                'note' => StringHelper::trimToNull($note),
                 'responded_at' => CarbonImmutable::now(),
                 'responded_by_user_id' => $actor?->id,
             ],
@@ -219,7 +220,7 @@ class ClubMatchService {
             $pairings = [];
             $order = 0;
             foreach ($rows as $row) {
-                $slotValue = $this->nullableString($row['slot'] ?? null);
+                $slotValue = StringHelper::trimToNull($row['slot'] ?? null);
                 if ($slotValue === null) {
                     continue;
                 }
@@ -234,18 +235,18 @@ class ClubMatchService {
                 if ($slot === ClubLineupSlot::Double && ($profile === null || ! $profile->has_doubles)) {
                     throw ValidationException::withMessages(['lineup' => __('club.matches.error.doubles_not_allowed')]);
                 }
-                $position = $this->nullableString($row['position_code'] ?? null);
+                $position = StringHelper::trimToNull($row['position_code'] ?? null);
                 if ($position !== null && $positionCodes !== [] && ! in_array($position, $positionCodes, true)) {
                     throw ValidationException::withMessages(['lineup' => __('club.matches.error.unknown_position', ['code' => $position])]);
                 }
-                $jersey = $this->nullableInt($row['jersey_no'] ?? null);
+                $jersey = NumberHelper::toIntOrNull($row['jersey_no'] ?? null);
                 if ($jersey !== null && $slot->slotKey() === 'team') {
                     if (isset($jerseys[$jersey])) {
                         throw ValidationException::withMessages(['lineup' => __('club.matches.error.jersey_taken', ['no' => $jersey])]);
                     }
                     $jerseys[$jersey] = true;
                 }
-                $pairing = $slot->isPairing() ? $this->nullableInt($row['pairing_no'] ?? null) : null;
+                $pairing = $slot->isPairing() ? NumberHelper::toIntOrNull($row['pairing_no'] ?? null) : null;
                 if ($slot === ClubLineupSlot::Double) {
                     // Doppel ohne Nummer zählt als Paarung 1.
                     $pairing ??= 1;
@@ -269,7 +270,7 @@ class ClubMatchService {
                     'slot_key' => $slot->slotKey(),
                     'position_code' => $position,
                     'jersey_no' => $jersey,
-                    'order_no' => $this->nullableInt($row['order_no'] ?? null) ?? ++$order,
+                    'order_no' => NumberHelper::toIntOrNull($row['order_no'] ?? null) ?? ++$order,
                     'pairing_no' => $pairing,
                 ];
             }
@@ -356,7 +357,7 @@ class ClubMatchService {
             if ($conflicts !== [] && ! $override) {
                 throw ValidationException::withMessages(['lineup' => array_map(fn(array $c): string => $this->conflictText($c), $conflicts)]);
             }
-            if ($conflicts !== [] && $this->nullableString($note) === null) {
+            if ($conflicts !== [] && StringHelper::trimToNull($note) === null) {
                 throw ValidationException::withMessages(['note' => __('club.matches.error.override_note_required')]);
             }
             $this->assertStatusTransition($details->lineup_status, ClubLineupStatus::Released);
@@ -397,9 +398,9 @@ class ClubMatchService {
      */
     public function assignRole(Event $event, ClubEventRoleKind $role, array $data, User $actor): ClubEventRole {
         return DB::transaction(function () use ($event, $role, $data, $actor): ClubEventRole {
-            $memberId = $this->nullableInt($data['club_member_id'] ?? null);
-            $userId = $this->nullableInt($data['user_id'] ?? null);
-            $name = $this->nullableString($data['name'] ?? null);
+            $memberId = NumberHelper::toIntOrNull($data['club_member_id'] ?? null);
+            $userId = NumberHelper::toIntOrNull($data['user_id'] ?? null);
+            $name = StringHelper::trimToNull($data['name'] ?? null);
             if ($memberId === null && $userId === null && $name === null) {
                 throw ValidationException::withMessages(['name' => __('club.matches.error.role_holder_required')]);
             }
@@ -422,7 +423,7 @@ class ClubMatchService {
                 'club_member_id' => $member?->id,
                 'user_id' => $member === null ? $userId : null,
                 'name' => $member === null && $userId === null ? $name : null,
-                'note' => $this->nullableString($data['note'] ?? null),
+                'note' => StringHelper::trimToNull($data['note'] ?? null),
             ]);
             if ($member !== null && $event->status !== EventStatus::Cancelled) {
                 $this->events->register($event, $member, $actor, ClubParticipationSource::Leader, null, true, $role->label());
@@ -456,7 +457,7 @@ class ClubMatchService {
         $details->update([
             'result' => $result,
             'result_summary' => $summary,
-            'result_note' => $this->nullableString($input['result_note'] ?? null),
+            'result_note' => StringHelper::trimToNull($input['result_note'] ?? null),
             'result_recorded_at' => CarbonImmutable::now(),
             'result_recorded_by_user_id' => $actor->id,
         ]);
@@ -682,9 +683,9 @@ class ClubMatchService {
                 'starts_at' => $start,
                 'ends_at' => $end !== null && $end->gt($start) ? $end : null,
                 'opponent_name' => $opponent,
-                'competition' => $competitionIdx !== null ? $this->nullableString($header->getValueByIndex($line, $competitionIdx)) : null,
+                'competition' => $competitionIdx !== null ? StringHelper::trimToNull($header->getValueByIndex($line, $competitionIdx)) : null,
                 'is_home' => $isHome,
-                'venue' => $venueIdx !== null ? $this->nullableString($header->getValueByIndex($line, $venueIdx)) : null,
+                'venue' => $venueIdx !== null ? StringHelper::trimToNull($header->getValueByIndex($line, $venueIdx)) : null,
                 'raw' => $raw,
             ];
         }
@@ -743,7 +744,7 @@ class ClubMatchService {
                 'opponent_name' => $opponent,
                 'competition' => null,
                 'is_home' => $isHome,
-                'venue' => $this->nullableString($vevent->getLocation() ?? ''),
+                'venue' => StringHelper::trimToNull($vevent->getLocation() ?? ''),
                 'raw' => ['uid' => $vevent->getUid(), 'summary' => $summary, 'description' => $vevent->getDescription()],
             ];
         }
@@ -763,7 +764,7 @@ class ClubMatchService {
     }
 
     private function resolveSeason(int $organizationId, mixed $seasonId, CarbonInterface $start): ?ClubSeason {
-        $id = $this->nullableInt($seasonId);
+        $id = NumberHelper::toIntOrNull($seasonId);
         if ($id !== null) {
             /** @var ClubSeason $season */
             $season = ClubSeason::query()->whereKey($id)->firstOrFail();
@@ -779,7 +780,7 @@ class ClubMatchService {
 
     /** @param  array<string, mixed>  $data */
     private function title(ClubGroup $team, array $data): string {
-        $title = $this->nullableString($data['title'] ?? null);
+        $title = StringHelper::trimToNull($data['title'] ?? null);
         if ($title !== null) {
             return mb_substr($title, 0, 200);
         }
@@ -800,14 +801,14 @@ class ClubMatchService {
         }
         foreach (['competition', 'venue'] as $key) {
             if (array_key_exists($key, $data)) {
-                $attributes[$key] = $this->nullableString($data[$key]);
+                $attributes[$key] = StringHelper::trimToNull($data[$key]);
             }
         }
         if (array_key_exists('is_home', $data)) {
             $attributes['is_home'] = (bool) $data['is_home'];
         }
         if (array_key_exists('meet_at', $data)) {
-            $meet = $this->nullableString($data['meet_at']);
+            $meet = StringHelper::trimToNull($data['meet_at']);
             $attributes['meet_at'] = $meet === null ? null : CarbonImmutable::parse($meet, 'UTC');
         }
 
@@ -824,7 +825,7 @@ class ClubMatchService {
     }
 
     private function score(mixed $value): ?int {
-        $string = $this->nullableString($value);
+        $string = StringHelper::trimToNull($value);
         if ($string === null) {
             return null;
         }
@@ -833,20 +834,5 @@ class ClubMatchService {
         }
 
         return (int) $string;
-    }
-
-    private function nullableInt(mixed $value): ?int {
-        $string = $this->nullableString($value);
-
-        return $string === null ? null : (int) $string;
-    }
-
-    private function nullableString(mixed $value): ?string {
-        if ($value === null) {
-            return null;
-        }
-        $string = trim((string) $value);
-
-        return $string === '' ? null : $string;
     }
 }

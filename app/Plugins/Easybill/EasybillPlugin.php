@@ -23,6 +23,7 @@ use App\Plugins\Easybill\Exceptions\EasybillApiException;
 use App\Services\Finance\Accounting\ContactPushService;
 use App\Services\Numbering\NumberSequenceService;
 use App\Services\Stammdaten\{ContactIdentity, ContactNumberAdopter, ContactPersons};
+use CommonToolkit\Helper\Data\PersonNameHelper;
 use RuntimeException;
 use Throwable;
 
@@ -114,7 +115,7 @@ class EasybillPlugin extends AbstractPlugin implements ContactNumberIssuer, Cont
                 default => null,
             },
             'title' => $contact['title'] ?? null,
-            'first_name' => trim(($contact['first_name'] ?? '') . ' ' . ($contact['middle_names'] ?? '')) ?: null,
+            'first_name' => PersonNameHelper::join(['first_name' => $contact['first_name'] ?? null, 'middle_names' => $contact['middle_names'] ?? null]) ?: null,
             'last_name' => $contact['last_name'] ?? null,
             'street' => (string) ($customer->address_street ?? '') ?: null,
             'zip_code' => (string) ($customer->address_zip ?? '') ?: null,

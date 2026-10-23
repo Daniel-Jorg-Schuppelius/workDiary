@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services\Import\Specs;
 
+use App\Enums\Import\ImportErrorCode;
 use App\Models\Supplier\Supplier;
 use App\Services\Import\ImportOutcome;
 use App\Services\Supplier\Import\SupplierSpec;
@@ -69,5 +70,17 @@ class SupplierSpecTest extends TestCase {
             ->where('organization_id', $this->organization->id)
             ->where('vat_id', 'DE111222333')->count(), 'Keine Dublette angelegt');
         $this->assertSame('L-1', Supplier::query()->where('vat_id', 'DE111222333')->value('number'));
+    }
+
+    /** Konsolidierungs-Audit 2026-10-23 (A2): die Roh-Regex ließ jede Buchstabenfolge als Code durch. */
+    public function test_validate_row_accepts_only_iso_country_and_currency_codes(): void {
+        $spec = new SupplierSpec();
+        $formatFields = fn(array $row) => array_values(array_map(
+            static fn($i) => $i->field,
+            array_filter($spec->validateRow($spec->normalize(['name' => 'Großhandel'] + $row), $this->organization), static fn($i) => $i->code === ImportErrorCode::Format),
+        ));
+
+        $this->assertSame(['country', 'currency'], $formatFields(['country' => 'QQ', 'currency' => 'ABC']));
+        $this->assertSame([], $formatFields(['country' => 'nl', 'currency' => 'usd']));
     }
 }

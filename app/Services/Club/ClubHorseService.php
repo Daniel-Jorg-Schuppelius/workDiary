@@ -20,6 +20,7 @@ use App\Models\Platform\{Organization, User};
 use App\Services\Notification\NotificationDispatcher;
 use App\Support\Tz;
 use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use Illuminate\Database\Eloquent\{Builder, Collection as EloquentCollection};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -121,7 +122,7 @@ class ClubHorseService {
             if ($horse === null && ! $ownHorse) {
                 throw ValidationException::withMessages(['club_horse_id' => __('club.horses.error.horse_or_own')]);
             }
-            $note = $this->nullableString($note);
+            $note = StringHelper::trimToNull($note);
             if ($override && $note === null) {
                 throw ValidationException::withMessages(['override_note' => __('club.horses.error.override_note_required')]);
             }
@@ -227,7 +228,7 @@ class ClubHorseService {
         /** @var ClubHorseUse $use */
         $use = ClubHorseUse::query()->updateOrCreate(
             ['event_id' => $event->id, 'club_horse_id' => $horse->id, 'club_member_id' => $rider?->id],
-            ['organization_id' => $event->organization_id, 'minutes' => $minutes, 'note' => $this->nullableString($note), 'recorded_by_user_id' => $actor->id, 'recorded_at' => now()],
+            ['organization_id' => $event->organization_id, 'minutes' => $minutes, 'note' => StringHelper::trimToNull($note), 'recorded_by_user_id' => $actor->id, 'recorded_at' => now()],
         );
         $use->audit('club.horse.useRecorded', ['minutes' => $minutes, 'member_id' => $rider?->id]);
 
@@ -369,7 +370,7 @@ class ClubHorseService {
      */
     private function attributes(int $organizationId, array $data): array {
         $kind = ClubHorseKind::from((string) ($data['kind'] ?? ClubHorseKind::School->value));
-        $ownerId = $this->nullableInt($data['owner_member_id'] ?? null);
+        $ownerId = NumberHelper::toIntOrNull($data['owner_member_id'] ?? null);
         if ($kind === ClubHorseKind::Private && $ownerId === null) {
             throw ValidationException::withMessages(['owner_member_id' => __('club.horses.error.owner_required')]);
         }
@@ -381,26 +382,11 @@ class ClubHorseService {
             'name' => mb_substr(trim((string) $data['name']), 0, 120),
             'kind' => $kind->value,
             'owner_member_id' => $kind === ClubHorseKind::Private ? $ownerId : null,
-            'contact' => $this->nullableString($data['contact'] ?? null),
-            'max_uses_per_day' => $this->nullableInt($data['max_uses_per_day'] ?? null),
-            'suitable_for' => $this->nullableString($data['suitable_for'] ?? null),
+            'contact' => StringHelper::trimToNull($data['contact'] ?? null),
+            'max_uses_per_day' => NumberHelper::toIntOrNull($data['max_uses_per_day'] ?? null),
+            'suitable_for' => StringHelper::trimToNull($data['suitable_for'] ?? null),
             'is_active' => (bool) ($data['is_active'] ?? true),
-            'notes' => $this->nullableString($data['notes'] ?? null),
+            'notes' => StringHelper::trimToNull($data['notes'] ?? null),
         ];
-    }
-
-    private function nullableInt(mixed $value): ?int {
-        $string = $this->nullableString($value);
-
-        return $string === null ? null : (int) $string;
-    }
-
-    private function nullableString(mixed $value): ?string {
-        if ($value === null) {
-            return null;
-        }
-        $string = trim((string) $value);
-
-        return $string === '' ? null : $string;
     }
 }

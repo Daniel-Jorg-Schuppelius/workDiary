@@ -51,7 +51,7 @@ class SaveSepaMandateRequest extends FormRequest {
                 'required', 'string', 'max:35', 'regex:/^[A-Za-z0-9\+\?\/\-:\(\)\.,\x27 ]+$/',
                 Rule::unique('sepa_mandates', 'reference')->where('organization_id', $this->currentOrganizationId()),
             ],
-            'kind' => ['required', Rule::in(array_column(MandateKind::cases(), 'value'))],
+            'kind' => ['required', Rule::enum(MandateKind::class)],
             'signed_on' => ['required', 'date', 'before_or_equal:today'],
             'iban' => ['required', 'string', 'max:40', new \App\Rules\Iban()],
             'bic' => ['nullable', 'string', 'max:20', new \App\Rules\Bic()],

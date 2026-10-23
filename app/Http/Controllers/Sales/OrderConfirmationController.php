@@ -15,14 +15,13 @@ namespace App\Http\Controllers\Sales;
 use App\Enums\Numbering\NumberScope;
 use App\Enums\Sales\OrderConfirmationStatus;
 use App\Http\Controllers\Controller;
-use App\Models\Platform\User;
 use App\Models\Sales\{OrderConfirmation, Quote};
 use App\Services\Invoicing\OrderConfirmationPdfRenderer;
 use App\Services\Numbering\{NumberAuthority, NumberSequenceService};
 use App\Services\Sales\OrderConfirmationService;
 use App\Support\ErrorText;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,7 +34,7 @@ class OrderConfirmationController extends Controller {
     public function store(Quote $quote): RedirectResponse {
         Gate::authorize('convert', $quote);
         try {
-            $confirmation = $this->confirmations->fromQuote($quote, $this->actor());
+            $confirmation = $this->confirmations->fromQuote($quote, $this->authUser());
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -60,7 +59,7 @@ class OrderConfirmationController extends Controller {
     public function confirm(OrderConfirmation $orderConfirmation): RedirectResponse {
         Gate::authorize('confirm', $orderConfirmation);
         try {
-            $this->confirmations->confirm($orderConfirmation, $this->actor());
+            $this->confirmations->confirm($orderConfirmation, $this->authUser());
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -71,7 +70,7 @@ class OrderConfirmationController extends Controller {
 
     public function cancel(OrderConfirmation $orderConfirmation): RedirectResponse {
         Gate::authorize('cancel', $orderConfirmation);
-        $this->confirmations->cancel($orderConfirmation, $this->actor());
+        $this->confirmations->cancel($orderConfirmation, $this->authUser());
 
         return redirect()->route('order-confirmations.show', $orderConfirmation)
             ->with('status', __('quotes.order_confirmation.flash.cancelled'));
@@ -85,11 +84,5 @@ class OrderConfirmationController extends Controller {
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => sprintf('attachment; filename="auftragsbestaetigung-%s.pdf"', preg_replace('/[^A-Za-z0-9._-]/', '_', $orderConfirmation->number)),
         ]);
-    }
-
-    private function actor(): User {
-        $user = Auth::user();
-
-        return $user instanceof User ? $user : abort(401);
     }
 }

@@ -14,14 +14,13 @@ namespace App\Http\Controllers\Contract\Portal;
 
 use App\Enums\Contract\{ContractKind, SigningRevisionStatus};
 use App\Http\Controllers\Article\ArticleExportController;
+use App\Http\Controllers\Concerns\ResolvesPortalUser;
 use App\Http\Controllers\Controller;
 use App\Models\Contract\ContractSigningRevision;
-use App\Models\Platform\User;
 use App\Services\Contract\ContractSigningService;
 use App\Support\Sqid;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\{HeaderUtils, Response};
 
 /**
@@ -31,6 +30,8 @@ use Symfony\Component\HttpFoundation\{HeaderUtils, Response};
  * Scope-Grenze über Organisation + Kunde des Portalkontos.
  */
 class AgreementController extends Controller {
+    use ResolvesPortalUser;
+
     public function __construct(private readonly ContractSigningService $signing) {}
 
     public function index(): View {
@@ -96,13 +97,5 @@ class AgreementController extends Controller {
                 ->where('organization_id', (int) $user->organization_id)
                 ->where('customer_id', (int) $user->customer_id)
                 ->whereIn('kind', array_map(static fn (ContractKind $k): string => $k->value, ContractKind::signingKinds())));
-    }
-
-    private function portalUser(): User {
-        /** @var User $user */
-        $user = Auth::guard('customer')->user();
-        abort_if($user->customer_id === null, 403);
-
-        return $user;
     }
 }

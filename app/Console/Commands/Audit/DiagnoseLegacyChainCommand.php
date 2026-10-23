@@ -14,6 +14,7 @@ namespace App\Console\Commands\Audit;
 
 use App\Models\Concerns\HashChainable;
 use App\Services\Audit\AuditChainVerifier;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -169,6 +170,6 @@ class DiagnoseLegacyChainCommand extends Command {
     }
 
     private function short(?string $hash): string {
-        return $hash === null ? '(Kettenanfang)' : substr($hash, 0, 12) . '…';
+        return $hash === null ? '(Kettenanfang)' : StringHelper::truncate($hash, 13, '…');
     }
 }

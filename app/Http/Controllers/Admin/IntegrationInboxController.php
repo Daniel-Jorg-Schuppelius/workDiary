@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\Integration\IntegrationInboxStatus;
+use App\Http\Controllers\Concerns\AuthorizesOrganizationManagement;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Integration\IntegrationInboxItem;
@@ -24,7 +25,7 @@ use App\Support\{ErrorText, MorphMap};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, DB, Schema};
+use Illuminate\Support\Facades\{DB, Schema};
 use Illuminate\View\View;
 
 /**
@@ -33,6 +34,8 @@ use Illuminate\View\View;
  * Entscheidungen aus. Siehe ../WorkDiary-Architecture/features/053.
  */
 class IntegrationInboxController extends Controller {
+    use AuthorizesOrganizationManagement;
+
     /** Obergrenze je Ziel-Typ in der „Zuordnen"-Auswahl (darüber: Suchfeld). */
     private const ASSIGN_TARGET_LIMIT = 1000;
 
@@ -399,14 +402,6 @@ class IntegrationInboxController extends Controller {
         usort($out, fn(array $a, array $b): int => strcasecmp($a['label'], $b['label']));
 
         return $out;
-    }
-
-    private function authorizeBilling(): User {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->canManageBilling(), 403);
-
-        return $user;
     }
 
     private function organizationOf(User $user): Organization {

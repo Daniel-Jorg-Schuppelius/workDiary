@@ -18,7 +18,6 @@ use App\Models\Attachments\Attachment;
 use App\Models\Communication\CommunicationNote;
 use App\Models\Learning\{LearningAssignment, LearningCertificate, LearningEnrollment, LearningQuestion, LearningQuiz, LearningQuizAttempt, LearningSubmission, LearningUnit};
 use App\Models\Media\MediaRendition;
-use App\Models\Platform\User;
 use App\Services\Ai\Exceptions\AiException;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Communication\CommunicationNoteService;
@@ -26,7 +25,7 @@ use App\Services\Learning\{LearningAiSuggestionService, LearningAssignmentServic
 use App\Services\Learning\LearningMedia;
 use App\Services\Media\{MediaResponder, VideoTranscodingService};
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request, Response, UploadedFile};
-use Illuminate\Support\Facades\{Auth, Storage};
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -52,7 +51,7 @@ class MyLearningController extends Controller {
     public function index(): View {
         $enrollments = LearningEnrollment::query()
             ->with(['course', 'progress'])
-            ->where('user_id', $this->actor()->id)
+            ->where('user_id', $this->authUser()->id)
             ->orderByRaw('CASE WHEN due_at IS NULL THEN 1 ELSE 0 END')
             ->orderBy('due_at')
             ->get();
@@ -60,7 +59,7 @@ class MyLearningController extends Controller {
         // Punkte und Abzeichen (MVP-781): nur bei Org-Schalter, Bestenliste
         // zusätzlich nur mit persönlichem Opt-in.
         $gamification = app(LearningGamificationService::class);
-        $organization = $this->actor()->organization;
+        $organization = $this->authUser()->organization;
         $gamificationOn = $gamification->isEnabled($organization);
 
         return view('learning.my.index', [
@@ -68,13 +67,13 @@ class MyLearningController extends Controller {
             // Meine Notizen (MVP-789): private Lernnotizen quer über alle Kurse.
             'notes' => $this->ownNotes()->with('notable.course:id,title')->limit(20)->get(),
             'gamification' => $gamificationOn ? [
-                'points' => $gamification->pointsFor($this->actor()),
-                'completed' => $gamification->completedCoursesFor($this->actor()),
-                'badges' => $gamification->badgesFor($this->actor()),
+                'points' => $gamification->pointsFor($this->authUser()),
+                'completed' => $gamification->completedCoursesFor($this->authUser()),
+                'badges' => $gamification->badgesFor($this->authUser()),
                 'leaderboard' => $gamification->isLeaderboardEnabled($organization),
-                'optedIn' => $gamification->hasOptedIn($this->actor()),
+                'optedIn' => $gamification->hasOptedIn($this->authUser()),
                 // Lernserie (MVP-1264) nur mit eigenem Schalter der Organisation.
-                'streak' => $gamification->isStreakEnabled($organization) ? $gamification->streakFor($this->actor()) : null,
+                'streak' => $gamification->isStreakEnabled($organization) ? $gamification->streakFor($this->authUser()) : null,
             ] : null,
         ]);
     }
@@ -107,21 +106,21 @@ class MyLearningController extends Controller {
     /** Bestenliste (MVP-781): nur Personen mit Opt-in, nur bei Org-Schalter. */
     public function leaderboard(): View {
         $gamification = app(LearningGamificationService::class);
-        $organization = $this->actor()->organization;
+        $organization = $this->authUser()->organization;
         abort_unless($gamification->isLeaderboardEnabled($organization), 404);
 
         return view('learning.my.leaderboard', [
             'board' => $gamification->leaderboard($organization, 25),
-            'optedIn' => $gamification->hasOptedIn($this->actor()),
-            'ownPoints' => $gamification->pointsFor($this->actor()),
+            'optedIn' => $gamification->hasOptedIn($this->authUser()),
+            'ownPoints' => $gamification->pointsFor($this->authUser()),
         ]);
     }
 
     public function toggleLeaderboard(Request $request): RedirectResponse {
         $gamification = app(LearningGamificationService::class);
-        abort_unless($gamification->isLeaderboardEnabled($this->actor()->organization), 404);
+        abort_unless($gamification->isLeaderboardEnabled($this->authUser()->organization), 404);
 
-        $user = $this->actor();
+        $user = $this->authUser();
         $preferences = (array) ($user->preferences ?? []);
         $optIn = (bool) $request->boolean('opt_in');
         $preferences['learning'] = array_merge((array) ($preferences['learning'] ?? []), ['leaderboard_opt_in' => $optIn]);
@@ -189,11 +188,11 @@ class MyLearningController extends Controller {
             'timeTotals' => $this->time->secondsByClassification($enrollment),
             'translated' => $translated,
             // Videozustand und Ableitungen je Einheit (Feature 150).
-            'mediaState' => app(LearningMedia::class)->stateFor($enrollment, 'learning.my.units.rendition', $this->actor()),
+            'mediaState' => app(LearningMedia::class)->stateFor($enrollment, 'learning.my.units.rendition', $this->authUser()),
             // Private Lernnotizen dieser Einschreibung (MVP-789).
             'notes' => $this->ownNotes()->where('notable_id', $enrollment->id)->get(),
             'askRecipients' => app(LearningQuestionService::class)->recipients($enrollment),
-            'focusMode' => (bool) ($this->actor()->preferences['learning']['focus_mode'] ?? false),
+            'focusMode' => (bool) ($this->authUser()->preferences['learning']['focus_mode'] ?? false),
         ]);
     }
 
@@ -217,7 +216,7 @@ class MyLearningController extends Controller {
             abort_if($unit === null, 404);
         }
 
-        app(CommunicationNoteService::class)->create($enrollment, $this->actor(), [
+        app(CommunicationNoteService::class)->create($enrollment, $this->authUser(), [
             'type' => \App\Enums\Communication\CommunicationNoteType::Internal->value,
             'direction' => \App\Enums\Communication\CommunicationDirection::Internal->value,
             'occurred_at' => now()->toDateTimeString(),
@@ -236,11 +235,11 @@ class MyLearningController extends Controller {
         abort_unless(
             $note->notable_type === $enrollment->getMorphClass()
             && (int) $note->notable_id === (int) $enrollment->id
-            && (int) $note->created_by_user_id === (int) $this->actor()->id,
+            && (int) $note->created_by_user_id === (int) $this->authUser()->id,
             404,
         );
 
-        app(CommunicationNoteService::class)->delete($note, $this->actor());
+        app(CommunicationNoteService::class)->delete($note, $this->authUser());
 
         return redirect()
             ->to(route('learning.my.show', $enrollment) . '#learning-notes')
@@ -251,7 +250,7 @@ class MyLearningController extends Controller {
     public function toggleFocus(LearningEnrollment $enrollment): RedirectResponse {
         $this->authorizeOwn($enrollment);
 
-        $user = $this->actor();
+        $user = $this->authUser();
         $preferences = (array) ($user->preferences ?? []);
         $current = (bool) ($preferences['learning']['focus_mode'] ?? false);
         data_set($preferences, 'learning.focus_mode', ! $current);
@@ -278,7 +277,7 @@ class MyLearningController extends Controller {
             'question' => ['required', 'string', 'min:5', 'max:4000'],
         ]);
 
-        $result = app(LearningQuestionService::class)->ask($enrollment, $this->actor(), (string) $data['question']);
+        $result = app(LearningQuestionService::class)->ask($enrollment, $this->authUser(), (string) $data['question']);
         $ticket = $result['ticket'];
 
         return redirect()
@@ -292,7 +291,7 @@ class MyLearningController extends Controller {
     private function ownNotes() {
         return CommunicationNote::query()
             ->where('notable_type', (new LearningEnrollment)->getMorphClass())
-            ->where('created_by_user_id', $this->actor()->id)
+            ->where('created_by_user_id', $this->authUser()->id)
             ->where('visibility', \App\Enums\Communication\CommunicationVisibility::Private->value)
             ->orderByDesc('occurred_at');
     }
@@ -303,7 +302,7 @@ class MyLearningController extends Controller {
             'quality' => ['required', 'string', Rule::in(array_keys(VideoTranscodingService::VARIANTS))],
         ]);
 
-        $this->actor()->setPreference(LearningMedia::VIDEO_QUALITY_PREFERENCE, $data['quality']);
+        $this->authUser()->setPreference(LearningMedia::VIDEO_QUALITY_PREFERENCE, $data['quality']);
 
         return response()->json(['quality' => $data['quality']]);
     }
@@ -453,7 +452,7 @@ class MyLearningController extends Controller {
         foreach ($files as $questionId => $file) {
             $answer = $attempt->answers()->where('learning_question_id', $questionId)->first();
             if ($answer !== null) {
-                app(FileAttacher::class)->store($answer, $file, $this->actor()->id, ['organization_id' => $enrollment->organization_id], 'learning-essays');
+                app(FileAttacher::class)->store($answer, $file, $this->authUser()->id, ['organization_id' => $enrollment->organization_id], 'learning-essays');
             }
         }
 
@@ -526,7 +525,7 @@ class MyLearningController extends Controller {
                 app(FileAttacher::class)->store(
                     $submission,
                     $file,
-                    $this->actor()->id,
+                    $this->authUser()->id,
                     ['organization_id' => $enrollment->organization_id],
                     'learning-submissions',
                 );
@@ -778,15 +777,8 @@ class MyLearningController extends Controller {
         ]);
     }
 
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
-    }
-
     /** Eigene Einschreibung — fremde sind nicht sichtbar, auch nicht für Admins. */
     private function authorizeOwn(LearningEnrollment $enrollment): void {
-        abort_unless($enrollment->user_id === $this->actor()->id, 404);
+        abort_unless($enrollment->user_id === $this->authUser()->id, 404);
     }
 }

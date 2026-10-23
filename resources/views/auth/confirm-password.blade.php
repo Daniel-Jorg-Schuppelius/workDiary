@@ -23,7 +23,7 @@
 @endsection
 
 @section('content')
-    <div class="rounded-4xl border border-base-300 bg-base-100 p-8 shadow-xs">
+    <x-auth-card>
         <x-validation-errors first class="mb-4" />
 
         @if ($ssoSlug !== null)
@@ -44,5 +44,5 @@
                 </x-button>
             </form>
         @endif
-    </div>
+    </x-auth-card>
 @endsection

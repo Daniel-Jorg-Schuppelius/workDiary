@@ -297,7 +297,7 @@ class ImportController extends Controller {
     }
 
     public function show(Request $request, ImportRun $import): View {
-        $this->ensureOwned($import);
+        $this->assertSameOrganization($import, 403);
         $this->authorizeReport($import->entity);
 
         $errors = $import->errors()
@@ -351,7 +351,7 @@ class ImportController extends Controller {
      * dieser Importart; die Datei des Laufs wird damit neu geprüft.
      */
     public function columns(Request $request, ImportRun $import, ImportColumnMappingService $mappings, ImportMappingSuggestionService $suggestions): RedirectResponse {
-        $this->ensureOwned($import);
+        $this->assertSameOrganization($import, 403);
         $this->authorizeImport($import->entity);
         abort_unless(in_array($import->state, [ImportRunState::AwaitingApproval, ImportRunState::Failed], true), 409);
 
@@ -417,7 +417,7 @@ class ImportController extends Controller {
      * Entität (import_value_mappings), Wiederholimporte lösen automatisch auf.
      */
     public function mapping(Request $request, ImportRun $import): RedirectResponse {
-        $this->ensureOwned($import);
+        $this->assertSameOrganization($import, 403);
         $this->authorizeImport($import->entity);
 
         $data = $request->validate([
@@ -513,7 +513,7 @@ class ImportController extends Controller {
     }
 
     public function confirm(Request $request, ImportRun $import): RedirectResponse {
-        $this->ensureOwned($import);
+        $this->assertSameOrganization($import, 403);
         $this->authorizeImport($import->entity);
         abort_unless($import->state === ImportRunState::AwaitingApproval, 409);
         // Rang 58: erst bestätigen, wenn alle offenen Quellwerte zugeordnet sind.
@@ -543,7 +543,7 @@ class ImportController extends Controller {
     }
 
     public function destroy(Request $request, ImportRun $import): RedirectResponse {
-        $this->ensureOwned($import);
+        $this->assertSameOrganization($import, 403);
         $this->authorizeImport($import->entity);
         abort_unless($import->state === ImportRunState::AwaitingApproval || $import->state === ImportRunState::Failed, 409);
 
@@ -557,7 +557,7 @@ class ImportController extends Controller {
     }
 
     public function downloadErrors(Request $request, ImportRun $import): Response {
-        $this->ensureOwned($import);
+        $this->assertSameOrganization($import, 403);
         $this->authorizeReport($import->entity);
 
         $rows = [];
@@ -601,10 +601,6 @@ class ImportController extends Controller {
         }
 
         return array_slice($out, 0, 50);
-    }
-
-    private function ensureOwned(ImportRun $run): void {
-        abort_unless($run->organization_id === $this->currentOrganization()->id, 403);
     }
 
     /** Zutritt zur Import-Übersicht: irgendein Import-Recht (oder Admin). */

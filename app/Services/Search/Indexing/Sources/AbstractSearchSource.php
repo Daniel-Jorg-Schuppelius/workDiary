@@ -44,10 +44,6 @@ abstract class AbstractSearchSource implements SearchSource {
         return $id === null ? null : (int) $id;
     }
 
-    protected static function intOrNull(mixed $value): ?int {
-        return $value === null ? null : (int) $value;
-    }
-
     /** Erste nicht-leere Zeile als Anzeige-Titel. */
     protected static function firstLine(?string $text): string {
         foreach (preg_split('/\R/u', trim((string) $text)) ?: [] as $line) {

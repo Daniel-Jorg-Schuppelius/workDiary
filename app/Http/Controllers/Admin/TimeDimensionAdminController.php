@@ -10,11 +10,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\AuthorizesOrganizationManagement;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\{Organization, User};
 use App\Models\Time\{TimeDimensionType, TimeDimensionValue};
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -25,6 +25,8 @@ use Illuminate\View\View;
  * Admin-gebunden wie die Terminal-Verwaltung.
  */
 class TimeDimensionAdminController extends Controller {
+    use AuthorizesOrganizationManagement;
+
     /** Dimensionstypen je Seite; die Werte eines Typs stehen vollständig darunter. */
     public const PER_PAGE = 10;
 
@@ -104,15 +106,6 @@ class TimeDimensionAdminController extends Controller {
         $value->delete();
 
         return redirect()->toList('admin.time-dimensions.index')->with('success', __('allocation.dimensions.flash.value_deleted'));
-    }
-
-    private function admin(): User {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->isAdmin(), 403);
-        abort_unless($user->organization_id !== null, 422, 'Kein Organisationskontext.');
-
-        return $user;
     }
 
     private function organization(User $admin): Organization {

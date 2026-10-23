@@ -12,10 +12,9 @@ namespace App\Http\Controllers\Knowledge;
 
 use App\Http\Controllers\Controller;
 use App\Models\Knowledge\{ContentCollection, ContentReference};
-use App\Models\Platform\User;
 use App\Services\Collections\{CollectableTypes, ContentReferenceService};
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -33,13 +32,13 @@ class ContentReferenceController extends Controller {
     public function create(Request $request): View {
         Gate::authorize('create', ContentCollection::class);
         $type = (string) $request->query('type', '');
-        $source = $this->types->findVisibleOrFail($type, (string) $request->query('item', ''), $this->user());
+        $source = $this->types->findVisibleOrFail($type, (string) $request->query('item', ''), $this->authUser());
 
         return view('collections._reference_dialog', [
             'type' => $type,
             'itemSqid' => (string) $request->query('item'),
             'itemTitle' => $this->types->title($source),
-            'groups' => $this->service->pickerOptions($source, $this->user()),
+            'groups' => $this->service->pickerOptions($source, $this->authUser()),
         ]);
     }
 
@@ -53,10 +52,10 @@ class ContentReferenceController extends Controller {
         ]);
 
         [$targetType, $targetSqid] = explode(':', (string) $data['target'], 2);
-        $source = $this->types->findVisibleOrFail((string) $data['type'], (string) $data['item'], $this->user());
-        $target = $this->types->findVisibleOrFail($targetType, $targetSqid, $this->user());
+        $source = $this->types->findVisibleOrFail((string) $data['type'], (string) $data['item'], $this->authUser());
+        $target = $this->types->findVisibleOrFail($targetType, $targetSqid, $this->authUser());
 
-        $this->service->add($source, $target, $this->user());
+        $this->service->add($source, $target, $this->authUser());
 
         return redirect()->back()->with('success', __('collections.references.flash.added', ['title' => $this->types->title($target)]));
     }
@@ -64,15 +63,8 @@ class ContentReferenceController extends Controller {
     public function destroy(ContentReference $reference): RedirectResponse {
         Gate::authorize('create', ContentCollection::class);
 
-        $this->service->remove($reference, $this->user());
+        $this->service->remove($reference, $this->authUser());
 
         return redirect()->back()->with('success', __('collections.references.flash.removed'));
-    }
-
-    private function user(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

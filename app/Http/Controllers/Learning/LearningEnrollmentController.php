@@ -24,7 +24,7 @@ use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\{Carbon, Str};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\{Rule, ValidationException};
 use Illuminate\View\View;
 
@@ -139,7 +139,7 @@ class LearningEnrollmentController extends Controller {
 
         $attributes = [
             'source' => LearningEnrollmentSource::Manual->value,
-            'assigned_by_user_id' => $this->actor()->id,
+            'assigned_by_user_id' => $this->authUser()->id,
             'due_at' => $data['due_at'] ?? null,
             'reason' => $data['reason'] ?? null,
         ];
@@ -152,7 +152,7 @@ class LearningEnrollmentController extends Controller {
 
         $mailed = false;
         if ($learner instanceof ExternalParticipant && (bool) ($data['send_link'] ?? false)) {
-            $mailed = $this->access->deliver($enrollment, $this->actor());
+            $mailed = $this->access->deliver($enrollment, $this->authUser());
         }
 
         return redirect()
@@ -186,7 +186,7 @@ class LearningEnrollmentController extends Controller {
             $enrollment,
             $data['due_at'] ?? null,
             $data['access_until'] ?? null,
-            $this->actor(),
+            $this->authUser(),
             $data['reason'],
         );
 
@@ -203,7 +203,7 @@ class LearningEnrollmentController extends Controller {
             'reason' => ['required', 'string', 'min:2', 'max:255'],
         ]);
 
-        $this->enrollments->cancel($enrollment, $this->actor(), $data['reason']);
+        $this->enrollments->cancel($enrollment, $this->authUser(), $data['reason']);
 
         return redirect()
             ->route('learning.courses.enrollments.index', $course)
@@ -242,7 +242,7 @@ class LearningEnrollmentController extends Controller {
             throw ValidationException::withMessages(['quiz_id' => (string) __('learning.errors.quiz_foreign')]);
         }
 
-        app(\App\Services\Learning\LearningQuizService::class)->grantWaiver($enrollment, $quiz, $this->actor(), $data['reason']);
+        app(\App\Services\Learning\LearningQuizService::class)->grantWaiver($enrollment, $quiz, $this->authUser(), $data['reason']);
 
         return redirect()
             ->route('learning.courses.enrollments.index', $course)
@@ -266,7 +266,7 @@ class LearningEnrollmentController extends Controller {
             'reason' => ['required', 'string', 'min:2', 'max:255'],
         ]);
         $percent = isset($data['time_extension_percent']) ? (int) $data['time_extension_percent'] : null;
-        app(LearningQuizService::class)->setTimeExtension($enrollment, $percent, $this->actor(), $data['reason']);
+        app(LearningQuizService::class)->setTimeExtension($enrollment, $percent, $this->authUser(), $data['reason']);
 
         return redirect()
             ->route('learning.courses.enrollments.index', $course)
@@ -297,7 +297,7 @@ class LearningEnrollmentController extends Controller {
         $current = $course->currentVersion();
         abort_if($current === null, 404);
 
-        $moved = $versions->moveAllToCurrent($course, $this->actor(), $data['reason']);
+        $moved = $versions->moveAllToCurrent($course, $this->authUser(), $data['reason']);
 
         return redirect()
             ->route('learning.courses.enrollments.index', $course)
@@ -309,7 +309,7 @@ class LearningEnrollmentController extends Controller {
         Gate::authorize('updateMeta', $course);
         $this->guardBelongsToCourse($course, $enrollment);
 
-        $mailed = $this->access->deliver($enrollment, $this->actor());
+        $mailed = $this->access->deliver($enrollment, $this->authUser());
 
         return redirect()
             ->route('learning.courses.enrollments.index', $course)
@@ -361,7 +361,7 @@ class LearningEnrollmentController extends Controller {
                     'expires_at' => ! empty($data['access_until'])
                         ? Carbon::parse((string) $data['access_until'])->endOfDay()
                         : now()->addYear(),
-                    'invited_by_user_id' => $this->actor()->id,
+                    'invited_by_user_id' => $this->authUser()->id,
                     'created_at' => now(),
                 ]);
         }
@@ -369,12 +369,5 @@ class LearningEnrollmentController extends Controller {
 
     private function guardBelongsToCourse(LearningCourse $course, LearningEnrollment $enrollment): void {
         abort_unless($enrollment->learning_course_id === $course->id, 404);
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

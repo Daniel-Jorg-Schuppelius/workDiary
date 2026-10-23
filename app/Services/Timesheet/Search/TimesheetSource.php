@@ -16,6 +16,7 @@ use App\Enums\Search\SearchSourceType;
 use App\Models\Time\Timesheet;
 use App\Services\Search\Indexing\{SearchContext, SearchDocumentData};
 use App\Services\Search\Indexing\Sources\AbstractSearchSource;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
 
 /**
@@ -39,7 +40,7 @@ final class TimesheetSource extends AbstractSearchSource {
             return null;
         }
 
-        $ref = $context->resolve($organizationId, self::intOrNull($model->project_id));
+        $ref = $context->resolve($organizationId, NumberHelper::toIntOrNull($model->project_id));
 
         return new SearchDocumentData(
             organizationId: $organizationId,
@@ -51,12 +52,12 @@ final class TimesheetSource extends AbstractSearchSource {
             texts: [
                 $model->customer_name,
                 $model->customer_role,
-                $context->userName(self::intOrNull($model->user_id)),
+                $context->userName(NumberHelper::toIntOrNull($model->user_id)),
                 ...$ref->texts,
             ],
             occurredAt: $model->work_date,
             dateOnly: true,
-            userId: self::intOrNull($model->user_id),
+            userId: NumberHelper::toIntOrNull($model->user_id),
             customerId: $ref->customerId,
             foreignCustomerId: $ref->foreignCustomerId,
             projectId: $ref->projectId,

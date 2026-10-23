@@ -17,6 +17,7 @@ use App\Exceptions\IdeaMapConflictException;
 use App\Models\Ideas\{IdeaMap, IdeaNode, IdeaNodeLink, IdeaNodeSummary};
 use App\Models\Platform\User;
 use App\Support\SqidEncoder;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -172,8 +173,8 @@ class IdeaMapSyncService {
                 continue;
             }
             $parent = $refToId[(string) ($summary['parent'] ?? '')] ?? null;
-            $start = $this->intOrNull($summary['start'] ?? null);
-            $end = $this->intOrNull($summary['end'] ?? null);
+            $start = NumberHelper::toIntOrNull($summary['start'] ?? null);
+            $end = NumberHelper::toIntOrNull($summary['end'] ?? null);
             if ($parent === null || $start === null || $end === null || $start < 0 || $end < $start) {
                 continue;
             }
@@ -295,8 +296,8 @@ class IdeaMapSyncService {
             'note' => isset($incoming['note']) && $incoming['note'] !== '' ? (string) $incoming['note'] : null,
             'color' => (IdeaNodeColor::tryFrom((string) ($incoming['color'] ?? '')) ?? IdeaNodeColor::Default)->value,
             'node_status' => is_string($status) && $status !== '' ? mb_substr($status, 0, 24) : null,
-            'pos_x' => $this->intOrNull($incoming['pos_x'] ?? null),
-            'pos_y' => $this->intOrNull($incoming['pos_y'] ?? null),
+            'pos_x' => NumberHelper::toIntOrNull($incoming['pos_x'] ?? null),
+            'pos_y' => NumberHelper::toIntOrNull($incoming['pos_y'] ?? null),
             'parent_id' => $parentId,
             'sort_order' => $sortOrder,
         ];
@@ -336,9 +337,5 @@ class IdeaMapSyncService {
             'lock_version' => (int) $node->lock_version + 1,
         ])->save();
         $ctx['updated']++;
-    }
-
-    private function intOrNull(mixed $value): ?int {
-        return is_numeric($value) ? (int) $value : null;
     }
 }

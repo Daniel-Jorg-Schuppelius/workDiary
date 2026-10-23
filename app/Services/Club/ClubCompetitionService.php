@@ -20,7 +20,7 @@ use App\Services\Concerns\AssertsStatusTransition;
 use App\Support\Query\DateRange;
 use App\Support\Tz;
 use Carbon\{CarbonImmutable, CarbonInterface};
-use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -163,7 +163,7 @@ class ClubCompetitionService {
 
     /** @param  array<string, mixed>  $data  club_sport_profile_id, reference, valid_from, valid_to, note */
     public function grantStartRight(ClubMember $member, array $data, User $actor): ClubStartRight {
-        $profileId = $this->nullableInt($data['club_sport_profile_id'] ?? null);
+        $profileId = NumberHelper::toIntOrNull($data['club_sport_profile_id'] ?? null);
         if ($profileId !== null && ! ClubSportProfile::query()->whereKey($profileId)->where('organization_id', $member->organization_id)->exists()) {
             throw ValidationException::withMessages(['club_sport_profile_id' => __('club.teams.error.profile_foreign')]);
         }
@@ -176,10 +176,10 @@ class ClubCompetitionService {
             'organization_id' => $member->organization_id,
             'club_member_id' => $member->id,
             'club_sport_profile_id' => $profileId,
-            'reference' => $this->nullableString($data['reference'] ?? null),
+            'reference' => StringHelper::trimToNull($data['reference'] ?? null),
             'valid_from' => $from->toDateString(),
             'valid_to' => $to?->toDateString(),
-            'note' => $this->nullableString($data['note'] ?? null),
+            'note' => StringHelper::trimToNull($data['note'] ?? null),
             'granted_by_user_id' => $actor->id,
         ]);
         $right->audit('club.competition.startRightGranted', ['profile_id' => $profileId, 'valid_to' => $to?->toDateString()]);
@@ -217,7 +217,7 @@ class ClubCompetitionService {
         if ($value === null) {
             throw ValidationException::withMessages(['value' => __('club.competitions.error.value_invalid')]);
         }
-        $eventId = $this->nullableInt($data['event_id'] ?? null);
+        $eventId = NumberHelper::toIntOrNull($data['event_id'] ?? null);
         $performance = ClubPerformance::query()->create([
             'organization_id' => $member->organization_id,
             'club_member_id' => $member->id,
@@ -228,8 +228,8 @@ class ClubCompetitionService {
             'value' => $value,
             'unit' => $discipline['unit'],
             'lower_is_better' => $discipline['lower_is_better'],
-            'placement' => $this->nullableInt($data['placement'] ?? null),
-            'note' => $this->nullableString($data['note'] ?? null),
+            'placement' => NumberHelper::toIntOrNull($data['placement'] ?? null),
+            'note' => StringHelper::trimToNull($data['note'] ?? null),
             'recorded_by_user_id' => $actor->id,
         ]);
         $performance->audit('club.competition.performanceRecorded', ['discipline' => $code, 'value' => $value]);
@@ -263,8 +263,8 @@ class ClubCompetitionService {
         $before = ['value' => $performance->value, 'placement' => $performance->placement];
         $performance->update([
             'value' => $value,
-            'placement' => $this->nullableInt($data['placement'] ?? null),
-            'note' => $this->nullableString($data['note'] ?? null),
+            'placement' => NumberHelper::toIntOrNull($data['placement'] ?? null),
+            'note' => StringHelper::trimToNull($data['note'] ?? null),
             'confirmed_at' => null,
             'confirmed_by_user_id' => null,
         ]);
@@ -439,7 +439,7 @@ class ClubCompetitionService {
     }
 
     private function profileOf(Organization $organization, mixed $id): ClubSportProfile {
-        $profileId = $this->nullableInt($id);
+        $profileId = NumberHelper::toIntOrNull($id);
         $profile = $profileId !== null ? ClubSportProfile::query()->whereKey($profileId)->where('organization_id', $organization->id)->first() : null;
         if ($profile === null) {
             throw ValidationException::withMessages(['club_sport_profile_id' => __('club.teams.error.profile_foreign')]);
@@ -473,15 +473,15 @@ class ClubCompetitionService {
         if ($codes === []) {
             throw ValidationException::withMessages(['disciplines' => __('club.competitions.error.discipline_required')]);
         }
-        $fee = $this->nullableString($data['entry_fee'] ?? null);
+        $fee = StringHelper::trimToNull($data['entry_fee'] ?? null);
 
         return [
             'disciplines' => $codes,
-            'venue' => $this->nullableString($data['venue'] ?? null),
-            'organizer' => $this->nullableString($data['organizer'] ?? null),
+            'venue' => StringHelper::trimToNull($data['venue'] ?? null),
+            'organizer' => StringHelper::trimToNull($data['organizer'] ?? null),
             'entry_fee' => $fee === null ? null : NumberHelper::normalizeDecimalStringOrNull($fee),
             'requires_start_right' => (bool) ($data['requires_start_right'] ?? true),
-            'notes' => $this->nullableString($data['notes'] ?? null),
+            'notes' => StringHelper::trimToNull($data['notes'] ?? null),
         ];
     }
 
@@ -490,9 +490,9 @@ class ClubCompetitionService {
      * @return array<string, mixed>
      */
     private function requirementAttributes(int $organizationId, array $data): array {
-        $groupId = $this->nullableInt($data['club_group_id'] ?? null);
-        $departmentId = $this->nullableInt($data['club_department_id'] ?? null);
-        $kind = $this->nullableString($data['event_kind'] ?? null);
+        $groupId = NumberHelper::toIntOrNull($data['club_group_id'] ?? null);
+        $departmentId = NumberHelper::toIntOrNull($data['club_department_id'] ?? null);
+        $kind = StringHelper::trimToNull($data['event_kind'] ?? null);
 
         return [
             'name' => mb_substr(trim((string) $data['name']), 0, 120),
@@ -502,28 +502,13 @@ class ClubCompetitionService {
             'period_months' => max(1, (int) ($data['period_months'] ?? 12)),
             'event_kind' => $kind !== null ? ClubEventKind::from($kind)->value : null,
             'is_active' => (bool) ($data['is_active'] ?? true),
-            'notes' => $this->nullableString($data['notes'] ?? null),
+            'notes' => StringHelper::trimToNull($data['notes'] ?? null),
         ];
     }
 
     private function date(mixed $value): ?CarbonImmutable {
-        $string = $this->nullableString($value);
+        $string = StringHelper::trimToNull($value);
 
         return $string === null ? null : CarbonImmutable::parse($string)->startOfDay();
-    }
-
-    private function nullableInt(mixed $value): ?int {
-        $string = $this->nullableString($value);
-
-        return $string === null ? null : (int) $string;
-    }
-
-    private function nullableString(mixed $value): ?string {
-        if ($value === null) {
-            return null;
-        }
-        $string = trim((string) $value);
-
-        return $string === '' ? null : $string;
     }
 }

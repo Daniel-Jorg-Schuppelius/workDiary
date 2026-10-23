@@ -18,6 +18,7 @@ use App\Models\Club\{ClubAttendanceRecord, ClubExamCandidate, ClubExamOffer, Clu
 use App\Models\Platform\{Organization, User};
 use App\Services\Concerns\AssertsStatusTransition;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -57,7 +58,7 @@ class ClubExamService {
                 'club_grading_system_id' => $system->id,
                 'club_grading_version_id' => $version->id,
                 'examiner_user_ids' => $this->examinerIds($organization, $data),
-                'notes' => $this->nullableString($data['notes'] ?? null),
+                'notes' => StringHelper::trimToNull($data['notes'] ?? null),
             ]);
             $offer->targetGrades()->sync($this->gradeIds($system, $data));
             $offer->audit('club.exam.offerCreated', ['version_no' => $version->version_no]);
@@ -77,7 +78,7 @@ class ClubExamService {
             $this->events->update($event, $actor, ['kind' => ClubEventKind::Exam->value, 'discipline' => $system->discipline] + $data);
             $offer->update([
                 'examiner_user_ids' => $this->examinerIds($organization, $data),
-                'notes' => $this->nullableString($data['notes'] ?? null),
+                'notes' => StringHelper::trimToNull($data['notes'] ?? null),
             ]);
             $offer->targetGrades()->sync($this->gradeIds($system, $data));
             $offer->audit('club.exam.offerUpdated');
@@ -181,7 +182,7 @@ class ClubExamService {
         return DB::transaction(function () use ($candidate, $actor, $source, $exceptionReason): ClubExamCandidate {
             $this->assertStatusTransition($candidate->status, ClubExamCandidateStatus::Admitted);
             $report = $this->check($candidate);
-            $exceptionReason = $this->nullableString($exceptionReason);
+            $exceptionReason = StringHelper::trimToNull($exceptionReason);
             if (! $report->met) {
                 $requirement = $this->requirementFor($candidate->offer()->firstOrFail(), $candidate->target_grade_id);
                 if ($exceptionReason === null) {
@@ -258,7 +259,7 @@ class ClubExamService {
                 'status' => $result->value,
                 'result_recorded_at' => now(),
                 'result_by_user_id' => $actor->id,
-                'result_note' => $this->nullableString($note),
+                'result_note' => StringHelper::trimToNull($note),
                 'awarded_member_grade_id' => $awardedId,
                 'review_required_at' => null,
             ]);
@@ -344,9 +345,9 @@ class ClubExamService {
                 $event = $offer->event;
                 /** @var ClubMember $member */
                 $member = $candidate->member()->firstOrFail();
-                $this->events->cancelRegistration($event, $member, $actor, true, $this->nullableString($note));
+                $this->events->cancelRegistration($event, $member, $actor, true, StringHelper::trimToNull($note));
             }
-            $candidate->update(['status' => $status->value, 'result_note' => $this->nullableString($note)]);
+            $candidate->update(['status' => $status->value, 'result_note' => StringHelper::trimToNull($note)]);
             $candidate->audit($auditKey, ['note' => $note, 'actor_id' => $actor->id]);
 
             return $candidate->refresh();
@@ -390,14 +391,5 @@ class ClubExamService {
         }
 
         return array_values(array_map('intval', User::query()->whereIn('id', $ids)->where('organization_id', $organization->id)->pluck('id')->all()));
-    }
-
-    private function nullableString(mixed $value): ?string {
-        if ($value === null) {
-            return null;
-        }
-        $string = trim((string) $value);
-
-        return $string === '' ? null : $string;
     }
 }

@@ -92,8 +92,4 @@ class OpenItemController extends Controller {
             ? __('accounting.open_items.flash.awaiting_approval')
             : __('accounting.open_items.flash.settled'));
     }
-
-    private function assertSameOrganization(AccountingOpenItem $item): void {
-        abort_unless((int) $item->organization_id === (int) $this->currentOrganizationOrAbort()->id, 404);
-    }
 }

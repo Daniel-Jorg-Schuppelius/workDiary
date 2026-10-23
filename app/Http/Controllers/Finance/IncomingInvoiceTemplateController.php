@@ -14,6 +14,7 @@ namespace App\Http\Controllers\Finance;
 
 use App\Enums\Document\DocumentType;
 use App\Enums\Invoicing\{IncomingEInvoiceStatus, IncomingInvoiceRecognition};
+use App\Http\Controllers\Concerns\AuthorizesOrganizationManagement;
 use App\Http\Controllers\Controller;
 use App\Models\Document\Document;
 use App\Models\Invoicing\{IncomingEInvoice, IncomingInvoiceTemplate};
@@ -40,6 +41,8 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  * „Belegvorlagen“ mit Bearbeiten, Zusammenführen und Löschen (MVP-1253).
  */
 class IncomingInvoiceTemplateController extends Controller {
+    use AuthorizesOrganizationManagement;
+
     /** Höchstens so viele offene Eingänge prüft ein Probelauf — jeder kostet einen Wortboxen-Lauf. */
     private const TRIAL_LIMIT = 30;
 
@@ -329,13 +332,6 @@ class IncomingInvoiceTemplateController extends Controller {
     }
 
     // ── Helfer ───────────────────────────────────────────────────────────
-
-    private function authorizeBilling(): User {
-        $user = $this->authUser();
-        abort_unless($user->canManageBilling(), 403);
-
-        return $user;
-    }
 
     /** @return array{0: IncomingEInvoice, 1: User} */
     private function resolve(Document $document): array {

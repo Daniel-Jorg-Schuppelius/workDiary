@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Audit\AuditLog;
 use App\Models\Customer\Customer;
@@ -32,6 +33,8 @@ use Illuminate\View\View;
  * auditierte Vorgänge. Sensible Felder werden maskiert dargestellt.
  */
 class AuditDiffController extends Controller {
+    use ResolvesCurrentOrganization;
+
     /** Anzeige-Maskierung zusätzlich zur Schreib-Maskierung des Auditable-Traits. */
     private const MASKED_PATTERNS = ['password', 'secret', 'token', 'tax_identification', 'social_security', 'recovery'];
 
@@ -189,7 +192,7 @@ class AuditDiffController extends Controller {
      * @return array<string, array{class: class-string, label: string, records: callable}>
      */
     private function types(): array {
-        $orgId = $this->organizationId();
+        $orgId = $this->currentOrganizationId();
 
         return [
             'member' => [
@@ -241,12 +244,5 @@ class AuditDiffController extends Controller {
         /** @var User|null $user */
         $user = Auth::user();
         abort_unless($user !== null && $user->isAdmin(), 403);
-    }
-
-    private function organizationId(): int {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return (int) $user->organization_id;
     }
 }

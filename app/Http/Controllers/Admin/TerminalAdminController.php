@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\Attendance\CheckpointKind;
+use App\Http\Controllers\Concerns\AuthorizesOrganizationManagement;
 use App\Http\Controllers\Controller;
 use App\Models\Facility\Site;
 use App\Models\Fleet\Vehicle;
@@ -25,7 +26,6 @@ use BaconQrCode\Writer;
 use CommonToolkit\Helper\Data\DataUrlHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\{Rule, ValidationException};
 use Illuminate\View\View;
 
@@ -37,6 +37,8 @@ use Illuminate\View\View;
  * Gesundheitsstatus (Terminalausfall).
  */
 class TerminalAdminController extends Controller {
+    use AuthorizesOrganizationManagement;
+
     public function index(): View {
         $admin = $this->admin();
         $organization = $this->organization($admin);
@@ -388,15 +390,6 @@ class TerminalAdminController extends Controller {
         return $decoded !== null && Site::query()->whereKey($decoded)->where('organization_id', $organization->id)->exists()
             ? $decoded
             : null;
-    }
-
-    private function admin(): User {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->isAdmin(), 403);
-        abort_unless($user->organization_id !== null, 422, 'Kein Organisationskontext.');
-
-        return $user;
     }
 
     private function organization(User $admin): Organization {

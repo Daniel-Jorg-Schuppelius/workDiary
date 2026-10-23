@@ -10,10 +10,9 @@
 
 namespace App\Http\Controllers\CustomerPortal;
 
+use App\Http\Controllers\Concerns\ResolvesPortalUser;
 use App\Http\Controllers\Controller;
 use App\Models\Asset\Asset;
-use App\Models\Platform\User;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
@@ -24,6 +23,8 @@ use Illuminate\View\View;
  * Interne Defekt-Details bleiben bewusst draußen.
  */
 class AssetController extends Controller {
+    use ResolvesPortalUser;
+
     public function index(): View {
         $user = $this->portalUser();
 
@@ -55,13 +56,5 @@ class AssetController extends Controller {
             'asset' => $asset,
             'timeline' => $timeline,
         ]);
-    }
-
-    private function portalUser(): User {
-        /** @var User $user */
-        $user = Auth::guard('customer')->user();
-        abort_if($user->customer_id === null, 403);
-
-        return $user;
     }
 }

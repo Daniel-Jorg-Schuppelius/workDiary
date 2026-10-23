@@ -14,6 +14,7 @@ namespace App\Services\Finance\Ebics;
 
 use App\Plugins\Support\PluginHttpFactory;
 use App\Support\UrlSafety;
+use CommonToolkit\Helper\Data\XmlHelper;
 use EbicsApi\Ebics\Contracts\HttpClientInterface;
 use EbicsApi\Ebics\Exceptions\TimeoutEbicsException;
 use EbicsApi\Ebics\Models\Http\{Request, Response};
@@ -60,20 +61,14 @@ final class GuardedEbicsHttpClient implements HttpClientInterface {
         return $this->parse((string) $response->body());
     }
 
-    /** Antwort lesen — ohne `LIBXML_NOENT`, damit eine DOCTYPE-Entität nie aufgelöst wird. */
+    /** Antwort XXE-gehärtet lesen: ohne Netz, eine Antwort mit DOCTYPE wird abgewiesen. */
     public function parse(string $contents): Response {
         if ($contents === '') {
             throw new RuntimeException('Response is empty.');
         }
 
         $document = new Response;
-        $previous = libxml_use_internal_errors(true);
-        libxml_clear_errors();
-        $loaded = $document->loadXML($contents, LIBXML_NONET);
-        libxml_clear_errors();
-        libxml_use_internal_errors($previous);
-
-        if ($loaded === false) {
+        if (! XmlHelper::safeLoadInto($document, $contents)) {
             throw new RuntimeException('Failed to load XML response.');
         }
 

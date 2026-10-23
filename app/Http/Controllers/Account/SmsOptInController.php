@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Account;
 
 use App\Http\Controllers\Controller;
-use App\Models\Platform\{Organization, User};
+use App\Models\Platform\Organization;
 use App\Services\Notification\Sms\{SmsOptInService, SmsProviderResolver};
 use App\Support\{ErrorText, PhoneSearchKey};
 use Illuminate\Contracts\View\View;
@@ -36,7 +36,7 @@ class SmsOptInController extends Controller {
 
     /** Selbstverwaltungsseite (aus dem Profil-Dialog verlinkt). */
     public function index(): View {
-        $user = $this->user();
+        $user = $this->authUser();
         $organization = $user->organization;
 
         return view('account.sms-opt-in', [
@@ -49,7 +49,7 @@ class SmsOptInController extends Controller {
     /** Schickt einen Bestätigungscode an die eigene Mobilnummer. */
     public function start(): RedirectResponse {
         try {
-            $this->optIn->startVerification($this->user());
+            $this->optIn->startVerification($this->authUser());
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -63,7 +63,7 @@ class SmsOptInController extends Controller {
             'code' => ['required', 'string', 'max:10'],
         ]);
 
-        if (! $this->optIn->confirm($this->user(), (string) $data['code'])) {
+        if (! $this->optIn->confirm($this->authUser(), (string) $data['code'])) {
             return back()->with('error', __('sms.code_invalid'));
         }
 
@@ -72,15 +72,8 @@ class SmsOptInController extends Controller {
 
     /** Widerruf — ohne Bedingung und ohne Rückfrage an Dritte. */
     public function destroy(): RedirectResponse {
-        $this->optIn->revoke($this->user());
+        $this->optIn->revoke($this->authUser());
 
         return back()->with('success', __('sms.opt_in_revoked'));
-    }
-
-    private function user(): User {
-        $user = auth()->user();
-        abort_unless($user instanceof User, 403);
-
-        return $user;
     }
 }

@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Pagination\{LengthAwarePaginator, Paginator};
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -49,7 +49,7 @@ class ApprovalInboxController extends Controller {
     public function index(): View {
         Gate::authorize(Permission::ServiceRequestApprove->value);
 
-        $user = $this->approver();
+        $user = $this->authUser();
         $mine = $this->openStepsFor($user);
 
         $page = LengthAwarePaginator::resolveCurrentPage();
@@ -76,7 +76,7 @@ class ApprovalInboxController extends Controller {
     public function decideForm(Approval $approval): View {
         Gate::authorize(Permission::ServiceRequestApprove->value);
 
-        $user = $this->approver();
+        $user = $this->authUser();
         abort_unless($this->subjectFor($approval) !== null && $this->responsibility->isResponsible($approval, $user), 403);
         $this->preload(new EloquentCollection([$approval]));
 
@@ -94,7 +94,7 @@ class ApprovalInboxController extends Controller {
     public function decide(Request $request, Approval $approval): RedirectResponse {
         Gate::authorize(Permission::ServiceRequestApprove->value);
 
-        $user = $this->approver();
+        $user = $this->authUser();
         $subject = $this->subjectFor($approval);
         abort_unless($subject !== null && $this->responsibility->isResponsible($approval, $user), 403);
 
@@ -223,12 +223,5 @@ class ApprovalInboxController extends Controller {
         }
 
         return $this->subjects;
-    }
-
-    private function approver(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

@@ -22,6 +22,7 @@ use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -120,8 +121,8 @@ class PostingRuleController extends Controller {
     /** @return array<string, mixed> */
     private function validated(Request $request, \App\Models\Platform\Organization $organization): array {
         $data = $request->validate([
-            'source_kind' => ['required', 'string', 'in:' . implode(',', array_column(PostingSourceKind::cases(), 'value'))],
-            'role' => ['required', 'string', 'in:' . implode(',', array_column(PostingAccountRole::cases(), 'value'))],
+            'source_kind' => ['required', 'string', Rule::enum(PostingSourceKind::class)],
+            'role' => ['required', 'string', Rule::enum(PostingAccountRole::class)],
             'account' => ['required', 'string'],
             'tax_code' => ['nullable', 'string'],
             'match_key' => ['nullable', 'string', 'max:64'],

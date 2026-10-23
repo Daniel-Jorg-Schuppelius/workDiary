@@ -15,7 +15,7 @@ use App\Plugins\OpenProject\Exceptions\{OpenProjectApiException, OpenProjectRate
 use App\Plugins\OpenProject\Sources\{OpenProjectDuration, OpenProjectEntry, OpenProjectProject, OpenProjectUser, OpenProjectWorkPackage};
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory, RemoteTimeFingerprint, RemoteTimeWriter};
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\Data\{JsonHelper, PersonNameHelper};
 use Illuminate\Http\Client\Response;
 
 /**
@@ -123,7 +123,7 @@ class OpenProjectApiClient implements RemoteTimeWriter {
             if ($id === null) {
                 continue;
             }
-            $name = trim((string) ($el['name'] ?? trim(($el['firstName'] ?? '') . ' ' . ($el['lastName'] ?? ''))));
+            $name = trim((string) ($el['name'] ?? PersonNameHelper::join(['first_name' => $el['firstName'] ?? null, 'last_name' => $el['lastName'] ?? null])));
             $email = isset($el['email']) && trim((string) $el['email']) !== '' ? trim((string) $el['email']) : null;
             $out[] = new OpenProjectUser($id, $name !== '' ? $name : $id, $email);
         }

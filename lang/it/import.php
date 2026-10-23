@@ -74,8 +74,8 @@ return [
         'format' => [
             'default' => 'Il campo :field ha un formato non valido (:reason).',
             'email' => 'Indirizzo e-mail non valido.',
-            'country' => 'Il codice paese deve avere 2-3 lettere maiuscole (ISO 3166-1).',
-            'currency' => 'Il codice valuta deve avere 3 lettere maiuscole (ISO 4217).',
+            'country' => 'Codice paese ISO 3166-1 non valido (due lettere, es. DE).',
+            'currency' => 'Codice valuta ISO 4217 non valido (es. EUR).',
             'enum' => 'Il valore non è uno stato valido.',
             'parse' => 'Impossibile analizzare il file: :reason',
             'xlsxUnreadable' => 'Il file Excel è danneggiato o non è un formato XLSX valido.',

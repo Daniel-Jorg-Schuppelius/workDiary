@@ -105,13 +105,13 @@ class OrgaMaxPlugin extends AbstractPlugin implements ContactSyncer {
             return null;
         }
         $person = ! filled($billing->getCompanyName()) && (filled($billing->getFirstName()) || filled($billing->getLastName()));
-        $current = $person ? trim($billing->getFirstName() . ' ' . $billing->getLastName()) : trim((string) $billing->getCompanyName());
+        $current = $person ? PersonNameHelper::join(['first_name' => $billing->getFirstName(), 'last_name' => $billing->getLastName()]) : trim((string) $billing->getCompanyName());
         if ($current === trim($name)) {
             return null;
         }
         if ($person) {
             $parts = PersonNameHelper::split($name);
-            $billing->setFirstName(trim($parts['first_name'] . ' ' . $parts['middle_names']) ?: null);
+            $billing->setFirstName(PersonNameHelper::join(['first_name' => $parts['first_name'], 'middle_names' => $parts['middle_names']]) ?: null);
             $billing->setLastName($parts['last_name']);
         } else {
             $billing->setCompanyName($name);
@@ -141,7 +141,7 @@ class OrgaMaxPlugin extends AbstractPlugin implements ContactSyncer {
         if ($existingId === '' && $number !== '') {
             foreach (($endpoint->search(['number' => $number, 'limit' => 10])?->getValues() ?? []) as $row) {
                 if ((string) $row->getNumber() === $number && (string) $row->getId() !== '') {
-                    $name = (string) ($row->getCompanyName() ?: $row->getName() ?: trim($row->getFirstName() . ' ' . $row->getLastName()));
+                    $name = (string) ($row->getCompanyName() ?: $row->getName() ?: PersonNameHelper::join(['first_name' => $row->getFirstName(), 'last_name' => $row->getLastName()]));
                     if (! app(ContactIdentity::class)->same($customer, ['name' => $name, 'vat_id' => $row->getVatNumber()])) {
                         throw ContactNumberTakenException::remote($number, $this->name(), $name);
                     }
@@ -199,7 +199,7 @@ class OrgaMaxPlugin extends AbstractPlugin implements ContactSyncer {
                 default => null,
             });
             $person->setTitle($contact['title']);
-            $person->setFirstName(trim($contact['first_name'] . ' ' . $contact['middle_names']) ?: null);
+            $person->setFirstName(PersonNameHelper::join(['first_name' => $contact['first_name'], 'middle_names' => $contact['middle_names']]) ?: null);
             $person->setLastName($contact['last_name']);
             $person->setEmail($contact['email']);
             $person->setPhone1($contact['phone']);

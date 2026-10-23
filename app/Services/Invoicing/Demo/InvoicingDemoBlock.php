@@ -56,10 +56,6 @@ final class InvoicingDemoBlock implements DemoBlock {
         return \CommonToolkit\Helper\Data\CryptoHelper::hash($organization->id . ':' . $key);
     }
 
-    private function moduleActive(string $code): bool {
-        return $this->context->moduleActive($code);
-    }
-
     /**
      * §-19-Demo-Ablauf (Feature 066): dokumentiert die Belegkette einer
      * Kleinunternehmer-Org — Angebot mit Annahme, Überführung in eine
@@ -69,7 +65,7 @@ final class InvoicingDemoBlock implements DemoBlock {
      * für die Belegerzeugung aktiviert und danach zurückgesetzt.
      */
     private function seedSmallBusinessInvoicing(Organization $organization, Customer $customer, ?User $actor): int {
-        if (! $this->moduleActive('module.vertrieb')) {
+        if (! $this->context->moduleActive('module.vertrieb')) {
             return 0;
         }
         if ($actor === null) {
@@ -131,7 +127,7 @@ final class InvoicingDemoBlock implements DemoBlock {
      * Montagepauschale (700 € netto) — als Entwurf mit Artikel-/Freitextposten.
      */
     private function seedFreeInvoice(Organization $organization, Customer $customer, ?User $actor): int {
-        if (! $this->moduleActive('module.vertrieb') || $actor === null) {
+        if (! $this->context->moduleActive('module.vertrieb') || $actor === null) {
             return 0;
         }
         try {
@@ -168,7 +164,7 @@ final class InvoicingDemoBlock implements DemoBlock {
      * zugeordneter Eingang aus dem Postfach und ein Klärfall ohne erkannte Daten.
      */
     private function seedIncomingInvoices(Organization $organization, ?User $actor): int {
-        if (! $this->moduleActive('module.vertrieb') || $actor === null) {
+        if (! $this->context->moduleActive('module.vertrieb') || $actor === null) {
             return 0;
         }
         try {
@@ -233,7 +229,7 @@ final class InvoicingDemoBlock implements DemoBlock {
         $count = 0;
 
         // 3) Aktiver Abrechnungsplan (MVP-415) — monatliche Wartungspauschale.
-        if ($this->moduleActive('module.vertrieb')) {
+        if ($this->context->moduleActive('module.vertrieb')) {
             try {
                 $schedule = \App\Models\Invoicing\InvoiceSchedule::query()->firstOrCreate([
                     'organization_id' => $organization->id,
@@ -265,7 +261,7 @@ final class InvoicingDemoBlock implements DemoBlock {
         }
 
         // 4) Rechnungsentwurf mit Positionsrabatt und Skonto (MVP-416).
-        if ($this->moduleActive('module.vertrieb')) {
+        if ($this->context->moduleActive('module.vertrieb')) {
             try {
                 $invoice = Invoice::create([
                     'organization_id' => $organization->id,

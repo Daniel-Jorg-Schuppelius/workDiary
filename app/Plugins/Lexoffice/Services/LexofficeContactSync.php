@@ -23,6 +23,7 @@ use App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy;
 use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Services\Stammdaten\{ContactNumberAdopter, ContactPersons};
+use CommonToolkit\Helper\Data\PersonNameHelper;
 use CommonToolkit\ValueObjects\VatNumber;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Lexoffice\API\Endpoints\ContactsEndpoint;
@@ -282,7 +283,7 @@ class LexofficeContactSync {
         $vatId = $this->extractVatId($remote);
         $email = $this->extractEmail($remote);
         $company = (string) data_get($remote, 'company.name', '');
-        $personName = trim(((string) data_get($remote, 'person.firstName', '')) . ' ' . ((string) data_get($remote, 'person.lastName', '')));
+        $personName = PersonNameHelper::join(['first_name' => data_get($remote, 'person.firstName'), 'last_name' => data_get($remote, 'person.lastName')]);
         $zip = (string) data_get($remote, 'addresses.billing.0.zip', '');
 
         // Ein Sammelkontakt (MVP-1109) ist nie das Gegenstück eines Lexoffice-Kontakts.
@@ -349,7 +350,7 @@ class LexofficeContactSync {
         $isCompany = ! empty(data_get($remote, 'company.name'));
         $name = $isCompany
             ? (string) data_get($remote, 'company.name')
-            : trim(((string) data_get($remote, 'person.firstName', '')) . ' ' . ((string) data_get($remote, 'person.lastName', '')));
+            : PersonNameHelper::join(['first_name' => data_get($remote, 'person.firstName'), 'last_name' => data_get($remote, 'person.lastName')]);
 
         if ($name === '') {
             return null;
@@ -717,7 +718,7 @@ class LexofficeContactSync {
         $isCompany = ! empty(data_get($remote, 'company.name'));
         $name = $isCompany
             ? (string) data_get($remote, 'company.name')
-            : trim(((string) data_get($remote, 'person.firstName', '')) . ' ' . ((string) data_get($remote, 'person.lastName', '')));
+            : PersonNameHelper::join(['first_name' => data_get($remote, 'person.firstName'), 'last_name' => data_get($remote, 'person.lastName')]);
 
         $out = array_filter([
             'name' => $name !== '' ? $name : null,

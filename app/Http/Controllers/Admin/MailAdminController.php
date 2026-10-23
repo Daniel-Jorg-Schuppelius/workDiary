@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\Integration\IntegrationInboxStatus;
 use App\Enums\Invoicing\InvoiceInquiryMatchKind;
+use App\Http\Controllers\Concerns\AuthorizesOrganizationManagement;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
@@ -30,7 +31,7 @@ use App\Services\ServiceTicket\Mail\MailToServiceTicket;
 use App\Support\{ErrorText, SqidEncoder};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\{Artisan, Auth, DB};
+use Illuminate\Support\Facades\{Artisan, DB};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Throwable;
@@ -43,6 +44,8 @@ use Throwable;
  * ein leeres Passwortfeld lässt das bestehende Passwort unangetastet.
  */
 class MailAdminController extends Controller {
+    use AuthorizesOrganizationManagement;
+
     public function index(): View {
         $admin = $this->admin();
         $organization = $this->organization($admin);
@@ -572,15 +575,6 @@ class MailAdminController extends Controller {
         $candidate = $item->referenceable;
 
         return $candidate instanceof Customer ? $candidate : null;
-    }
-
-    private function admin(): User {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->isAdmin(), 403);
-        abort_unless($user->organization_id !== null, 422, 'Kein Organisationskontext.');
-
-        return $user;
     }
 
     private function organization(User $admin): Organization {

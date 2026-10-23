@@ -26,7 +26,7 @@ class AssignWhistleblowingCaseRequest extends BaseFormRequest {
     public function rules(): array {
         return [
             'user_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
-            'role' => ['required', Rule::in(array_column(CaseRole::cases(), 'value'))],
+            'role' => ['required', Rule::enum(CaseRole::class)],
         ];
     }
 }

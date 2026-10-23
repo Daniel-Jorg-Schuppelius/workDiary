@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Time;
 
 use App\Enums\TimeApproval\DayClosureStatus;
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\Diary\{DayClosure, DayCorrectionRequest};
 use App\Models\Platform\User;
@@ -34,6 +35,8 @@ use Illuminate\View\View;
  * Korrekturanträge entscheiden (§5 — minimale Inbox-Alternative).
  */
 class DayCloseController extends Controller {
+    use ResolvesGlobalDateRange;
+
     public function __construct(
         private readonly DayCloseService $service,
         private readonly AttendanceClockService $clock,
@@ -100,8 +103,8 @@ class DayCloseController extends Controller {
         $viewer = Auth::user();
         $organizationId = (int) $viewer->organization_id;
 
-        $to = $this->parseDate($request->string('to')->toString()) ?? CarbonImmutable::now()->subDay()->startOfDay();
-        $from = $this->parseDate($request->string('from')->toString()) ?? $to->subDays(13);
+        $to = $this->resolveDateParam($request, 'to', static fn (): CarbonImmutable => CarbonImmutable::now()->subDay())->startOfDay();
+        $from = $this->resolveDateParam($request, 'from', static fn (): CarbonImmutable => $to->subDays(13))->startOfDay();
 
         return view('time-approval.day.team', [
             'snapshot' => $attendance->snapshot($organizationId),
@@ -232,15 +235,6 @@ class DayCloseController extends Controller {
     }
 
     // ── intern ─────────────────────────────────────────────────────────
-
-    private function parseDate(string $raw): ?CarbonImmutable {
-        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $raw) !== 1) {
-            return null;
-        }
-        $parsed = CarbonImmutable::createFromFormat('Y-m-d', $raw);
-
-        return $parsed instanceof CarbonImmutable ? $parsed->startOfDay() : null;
-    }
 
     private function resolveDay(Request $request): CarbonImmutable {
         $raw = (string) $request->input('date', '');

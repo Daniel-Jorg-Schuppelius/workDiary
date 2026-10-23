@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Recipes;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\{Organization, User};
 use App\Models\Procedure\ProcedureTemplate;
@@ -29,6 +30,8 @@ use Illuminate\View\View;
  * über `module.lager` gegatet (config/plans.php).
  */
 class RecipeMenuController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(private readonly RecipeService $recipes) {}
 
     public function index(): View {
@@ -144,10 +147,7 @@ class RecipeMenuController extends Controller {
     }
 
     private function partyOrganization(): Organization {
-        /** @var User $user */
-        $user = Auth::user();
-        $organization = $user->organization;
-        abort_unless($organization instanceof Organization, 404);
+        $organization = $this->currentOrganizationOrAbort(404);
         abort_unless($organization->hasBranchProfile(RecipeService::PROFILE_CODE), 404);
 
         return $organization;

@@ -188,12 +188,10 @@ class InvoiceSpec extends AbstractEntitySpec {
         $this->validateDateField($issues, $row, 'due_on');
         $this->validateDateField($issues, $row, 'paid_on');
 
-        if (! empty($row['currency']) && ! preg_match('/^[A-Z]{3}$/', (string) $row['currency'])) {
-            $issues[] = $this->formatIssue('currency', (string) __('import.error.format.currency'));
-        }
-
         $currency = $this->currencyOf($row);
-        if ($currency !== null) {
+        if ($currency === null) {
+            $issues[] = $this->formatIssue('currency', (string) __('import.error.format.currency'));
+        } else {
             $amounts = $this->amounts($row, $currency);
             if ($amounts === null) {
                 $issues[] = new ValidationIssue(

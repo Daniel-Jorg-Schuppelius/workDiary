@@ -16,10 +16,9 @@ use App\Enums\Learning\LearningBookingStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Learning\LearningBooking;
-use App\Models\Platform\User;
 use App\Services\Learning\LearningBookingService;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
@@ -55,7 +54,7 @@ class LearningBookingController extends Controller {
         Gate::authorize(Permission::LearningManage->value);
 
         $note = $request->string('note')->trim()->value();
-        $this->bookings->confirm($booking, $this->actor(), $note !== '' ? $note : null);
+        $this->bookings->confirm($booking, $this->authUser(), $note !== '' ? $note : null);
 
         return redirect()
             ->toList('learning.bookings.index')
@@ -69,7 +68,7 @@ class LearningBookingController extends Controller {
             'reason' => ['required', 'string', 'min:2', 'max:500'],
         ]);
 
-        $this->bookings->reject($booking, $data['reason'], $this->actor());
+        $this->bookings->reject($booking, $data['reason'], $this->authUser());
 
         return redirect()
             ->toList('learning.bookings.index')
@@ -85,12 +84,5 @@ class LearningBookingController extends Controller {
         return redirect()
             ->toList('learning.bookings.index')
             ->with('success', __('learning.flash.booking_billed'));
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

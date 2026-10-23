@@ -223,4 +223,17 @@ class CustomerSpecTest extends TestCase {
         $this->assertSame('K-20', $target->number);
         $this->assertSame('Alt GmbH neu', $target->name);
     }
+
+    /** Konsolidierungs-Audit 2026-10-23 (A2): die Roh-Regex ließ jede Buchstabenfolge als Code durch. */
+    public function test_validate_row_accepts_only_iso_country_and_currency_codes(): void {
+        $spec = new CustomerSpec();
+        $formatFields = fn(array $row) => array_values(array_map(
+            static fn($i) => $i->field,
+            array_filter($spec->validateRow($spec->normalize(['name' => 'ACME'] + $row), $this->organization), static fn($i) => $i->code === ImportErrorCode::Format),
+        ));
+
+        $this->assertSame(['country', 'currency'], $formatFields(['country' => 'XX', 'currency' => 'XYZ']));
+        $this->assertSame(['country'], $formatFields(['country' => 'DEU', 'currency' => 'chf']));
+        $this->assertSame([], $formatFields(['country' => 'at', 'currency' => 'chf']));
+    }
 }

@@ -30,7 +30,7 @@ class FlexEligibilityController extends Controller {
 
     public function index(Request $request, User $user): View {
         Gate::authorize('viewAny', [FlexEligibility::class, $user]);
-        $this->ensureSameOrg($user);
+        $this->assertSameOrganization($user, 403);
 
         $query = FlexEligibility::query()->where('user_id', $user->id);
         [$sort, $dir] = SortableQuery::resolve($request, ['valid_from', 'valid_to', 'note'], 'valid_from', 'desc');
@@ -56,7 +56,7 @@ class FlexEligibilityController extends Controller {
 
     public function store(User $user, Request $request): RedirectResponse {
         Gate::authorize('create', [FlexEligibility::class, $user]);
-        $this->ensureSameOrg($user);
+        $this->assertSameOrganization($user, 403);
 
         $data = $request->validate([
             'valid_from' => ['required', 'date'],
@@ -85,7 +85,7 @@ class FlexEligibilityController extends Controller {
 
     public function update(User $user, FlexEligibility $eligibility, Request $request): RedirectResponse {
         Gate::authorize('delete', $eligibility); // Update braucht dieselbe Berechtigung wie Delete
-        $this->ensureSameOrg($user);
+        $this->assertSameOrganization($user, 403);
         abort_unless($eligibility->user_id === $user->id, 404);
 
         $data = $request->validate([
@@ -101,16 +101,12 @@ class FlexEligibilityController extends Controller {
 
     public function destroy(User $user, FlexEligibility $eligibility): RedirectResponse {
         Gate::authorize('delete', $eligibility);
-        $this->ensureSameOrg($user);
+        $this->assertSameOrganization($user, 403);
         abort_unless($eligibility->user_id === $user->id, 404);
 
         $eligibility->delete();
 
         return redirect()->toList('users.flex-eligibility.index', [$user])
             ->with('success', __('flex.eligibility.flash.deleted'));
-    }
-
-    private function ensureSameOrg(User $member): void {
-        abort_unless($member->organization_id === $this->currentOrganization()->id, 403);
     }
 }

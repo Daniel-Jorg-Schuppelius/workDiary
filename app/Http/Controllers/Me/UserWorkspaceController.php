@@ -15,7 +15,7 @@ namespace App\Http\Controllers\Me;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Platform\SaveUserWorkspaceRequest;
-use App\Models\Platform\{User, UserWorkspace};
+use App\Models\Platform\UserWorkspace;
 use App\Services\Navigation\{NavFocusService, NavigationRegistry};
 use App\Support\SortableQuery;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -47,7 +47,7 @@ class UserWorkspaceController extends Controller {
 
     public function index(Request $request): View {
         // reorder(): forUser() sortiert schon nach Reihenfolge und Name.
-        $query = UserWorkspace::query()->forUser($this->user())->reorder();
+        $query = UserWorkspace::query()->forUser($this->authUser())->reorder();
         [$sort, $dir] = SortableQuery::apply($query, $request, ['position' => 'sort', 'name' => 'name'], 'position', 'asc');
 
         return view('me.workspaces.index', [
@@ -55,7 +55,7 @@ class UserWorkspaceController extends Controller {
             'sort' => $sort,
             'dir' => $dir,
             'activeKey' => $this->focus->resolveActive(
-                $this->user(),
+                $this->authUser(),
                 $this->currentOrganization(),
                 session(NavFocusService::SESSION_KEY),
             ),
@@ -67,7 +67,7 @@ class UserWorkspaceController extends Controller {
     }
 
     public function store(SaveUserWorkspaceRequest $request): RedirectResponse {
-        $user = $this->user();
+        $user = $this->authUser();
 
         UserWorkspace::create([
             'organization_id' => $this->currentOrganization()->id,
@@ -108,8 +108,8 @@ class UserWorkspaceController extends Controller {
         if (session(NavFocusService::SESSION_KEY) === $key) {
             $request->session()->forget(NavFocusService::SESSION_KEY);
         }
-        if ($this->user()->getPreference(NavFocusService::PREFERENCE_KEY) === $key) {
-            $this->user()->setPreference(NavFocusService::PREFERENCE_KEY, 'all');
+        if ($this->authUser()->getPreference(NavFocusService::PREFERENCE_KEY) === $key) {
+            $this->authUser()->setPreference(NavFocusService::PREFERENCE_KEY, 'all');
         }
 
         return redirect()->toList('me.workspaces.index')->with('status', __('scope.workspace.flash.deleted'));
@@ -192,12 +192,5 @@ class UserWorkspaceController extends Controller {
         abort_if((int) $workspace->user_id !== (int) Auth::id(), Response::HTTP_NOT_FOUND);
 
         return $workspace;
-    }
-
-    private function user(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

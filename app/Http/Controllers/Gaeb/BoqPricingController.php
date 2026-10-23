@@ -34,7 +34,7 @@ class BoqPricingController extends Controller {
 
     public function edit(BillOfQuantity $billOfQuantity): View {
         Gate::authorize(P::ProjectUpdate->value);
-        $this->assertOwn($billOfQuantity);
+        $this->assertSameOrganization($billOfQuantity);
 
         return view('bill-of-quantities.pricing', [
             'bill' => $billOfQuantity,
@@ -46,7 +46,7 @@ class BoqPricingController extends Controller {
 
     public function update(Request $request, BillOfQuantity $billOfQuantity): RedirectResponse {
         Gate::authorize(P::ProjectUpdate->value);
-        $this->assertOwn($billOfQuantity);
+        $this->assertSameOrganization($billOfQuantity);
         $data = $request->validate([
             'rows' => ['required', 'array'],
             'rows.*.unit_price' => ['nullable', 'numeric', 'min:0', 'max:99999999'],
@@ -74,16 +74,12 @@ class BoqPricingController extends Controller {
 
     public function efb(BillOfQuantity $billOfQuantity, string $form, EfbPriceSheetPdfRenderer $renderer): Response {
         Gate::authorize(P::ProjectViewAny->value);
-        $this->assertOwn($billOfQuantity);
+        $this->assertSameOrganization($billOfQuantity);
         abort_unless(in_array($form, EfbPriceSheetPdfRenderer::FORMS, true), 404);
 
         return response($renderer->render($billOfQuantity, $form), 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="' . $renderer->filename($billOfQuantity, $form) . '"',
         ]);
-    }
-
-    private function assertOwn(BillOfQuantity $bill): void {
-        abort_unless($bill->organization_id === $this->currentOrganization()->id, 404);
     }
 }

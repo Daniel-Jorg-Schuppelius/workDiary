@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Billing\Feed;
 
+use CommonToolkit\Enums\CurrencyCode;
 use LogicException;
 
 /**
@@ -68,8 +69,6 @@ final class FeedProjection {
     }
 
     public static function defaultCurrency(): string {
-        $code = (string) config('invoicing.default_currency', 'EUR');
-
-        return preg_match('/^[A-Z]{3}$/', $code) === 1 ? $code : 'EUR';
+        return CurrencyCode::tryFrom((string) config('invoicing.default_currency', 'EUR'))->value ?? 'EUR';
     }
 }

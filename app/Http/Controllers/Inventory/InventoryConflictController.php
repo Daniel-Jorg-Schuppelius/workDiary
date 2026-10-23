@@ -12,9 +12,9 @@ namespace App\Http\Controllers\Inventory;
 
 use App\Enums\Integration\ExternalConflictStatus;
 use App\Enums\User\Permission as P;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Integration\PendingExternalConflict;
-use App\Models\Platform\User;
 use App\Plugins\PluginManager;
 use App\Services\Inventory\InventoryConflictResolver;
 use App\Support\{ErrorText, Trans};
@@ -43,10 +43,12 @@ use RuntimeException;
  * Bestandskonflikte. Auflösen mit inventory.post (Bestand) bzw. article.manage (Artikel).
  */
 class InventoryConflictController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(private readonly InventoryConflictResolver $resolver, private readonly PluginManager $plugins) {}
 
     public function index(Request $request): View {
-        $user = $this->user();
+        $user = $this->authUser();
         $types = PendingExternalConflict::typesVisibleTo($user);
         abort_if($types === [], 403);
 
@@ -55,7 +57,7 @@ class InventoryConflictController extends Controller {
         $type = in_array($type, $types, true) ? $type : '';
 
         $query = PendingExternalConflict::query()
-            ->where('organization_id', $user->organization_id)
+            ->where('organization_id', $this->currentOrganizationId())
             ->whereIn('conflict_type', $type !== '' ? [$type] : $types)
             ->orderByDesc('id');
 
@@ -134,10 +136,9 @@ class InventoryConflictController extends Controller {
 
     /** Auflösen je Art: Bestand braucht das Buchungsrecht, Artikel das Artikelrecht. */
     private function authorizeResolve(PendingExternalConflict $conflict): void {
-        $user = $this->user();
         $permission = $conflict->conflict_type === PendingExternalConflict::TYPE_ARTICLE ? P::ArticleManage : P::InventoryPost;
         Gate::authorize($permission->value);
-        abort_unless($conflict->organization_id === $user->organization_id, 403);
+        $this->assertSameOrganization($conflict, 403);
     }
 
     /**
@@ -166,12 +167,5 @@ class InventoryConflictController extends Controller {
         }
 
         return is_scalar($value) && trim((string) $value) !== '' ? trim((string) $value) : '—';
-    }
-
-    private function user(): User {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 403);
-
-        return $user;
     }
 }

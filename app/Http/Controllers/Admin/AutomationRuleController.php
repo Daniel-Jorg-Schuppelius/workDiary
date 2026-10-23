@@ -79,7 +79,7 @@ class AutomationRuleController extends Controller {
 
     public function show(AutomationRule $automationRule): View {
         $this->ensureAdmin();
-        $this->ensureOwnsRule($automationRule);
+        $this->assertSameOrganization($automationRule);
 
         $runs = AutomationRuleRun::query()
             ->where('rule_id', $automationRule->id)
@@ -95,7 +95,7 @@ class AutomationRuleController extends Controller {
 
     public function toggle(AutomationRule $automationRule): RedirectResponse {
         $this->ensureAdmin();
-        $this->ensureOwnsRule($automationRule);
+        $this->assertSameOrganization($automationRule);
 
         $automationRule->is_active = ! $automationRule->is_active;
         $automationRule->save();
@@ -155,7 +155,7 @@ class AutomationRuleController extends Controller {
 
     public function destroy(AutomationRule $automationRule): RedirectResponse {
         $this->ensureAdmin();
-        $this->ensureOwnsRule($automationRule);
+        $this->assertSameOrganization($automationRule);
 
         $automationRule->delete();
 
@@ -167,11 +167,6 @@ class AutomationRuleController extends Controller {
     private function ensureAdmin(): void {
         $user = Auth::user();
         abort_unless($user instanceof User && $user->isAdmin(), 403);
-    }
-
-    private function ensureOwnsRule(AutomationRule $rule): void {
-        $orgId = (int) $this->currentOrganization()->id;
-        abort_unless($rule->organization_id === $orgId, 404);
     }
 
     private function decodeJson(string $raw): mixed {

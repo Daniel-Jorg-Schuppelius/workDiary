@@ -15,12 +15,11 @@ namespace App\Http\Controllers\Rental;
 use App\Exceptions\RentalConflictException;
 use App\Http\Controllers\Controller;
 use App\Models\Asset\Asset;
-use App\Models\Platform\User;
 use App\Models\Rental\{RentalCase, RentalProfile, RentalRequest};
 use App\Services\Rental\RentalRequestService;
 use App\Support\{ErrorText, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use RuntimeException;
 
@@ -70,7 +69,7 @@ class RentalRequestController extends Controller {
         }
 
         try {
-            $accepted = $this->service->accept($rentalRequest, $this->actor(), $asset);
+            $accepted = $this->service->accept($rentalRequest, $this->authUser(), $asset);
         } catch (RentalConflictException|RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -86,18 +85,11 @@ class RentalRequestController extends Controller {
         $data = $request->validate(['reason' => ['required', 'string', 'min:3', 'max:500']]);
 
         try {
-            $this->service->decline($rentalRequest, $this->actor(), (string) $data['reason']);
+            $this->service->decline($rentalRequest, $this->authUser(), (string) $data['reason']);
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Anfrage abgelehnt — der Kunde wurde informiert.'));
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

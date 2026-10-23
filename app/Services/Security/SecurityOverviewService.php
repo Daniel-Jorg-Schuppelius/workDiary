@@ -16,6 +16,7 @@ use App\Models\Platform\{Organization, PluginSetting, User};
 use App\Models\Time\TimeExport;
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -398,7 +399,7 @@ class SecurityOverviewService {
 
         $trimmed = trim($userAgent);
 
-        return mb_strlen($trimmed) > 80 ? mb_substr($trimmed, 0, 80) . '…' : $trimmed;
+        return StringHelper::truncate($trimmed, 80, '…');
     }
 
     private function toDate(mixed $value): ?CarbonImmutable {

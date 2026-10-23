@@ -64,7 +64,7 @@ final class WorkInstructionParser {
             $description = $details[$index];
             if (mb_strlen($label) > self::LABEL_MAX) {
                 array_unshift($description, $label);
-                $label = mb_substr($label, 0, self::LABEL_MAX - 1) . '…';
+                $label = StringHelper::truncate($label, self::LABEL_MAX, '…');
             }
             $steps[] = [
                 'label' => $label,

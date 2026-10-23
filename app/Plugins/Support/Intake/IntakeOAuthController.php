@@ -71,7 +71,7 @@ abstract class IntakeOAuthController extends Controller {
     /** Startet den OAuth-Flow (optional `?connection=<sqid>` für Re-Auth). */
     public function startOAuth(Request $request): RedirectResponse {
         Gate::authorize('create', CloudDocumentConnection::class);
-        $admin = $this->admin();
+        $admin = $this->authUser();
         $organization = $this->organization($admin);
 
         if (! $this->isConfigured()) {
@@ -98,7 +98,7 @@ abstract class IntakeOAuthController extends Controller {
     /** Callback: state einmalig einlösen, Code+PKCE tauschen, Konto bestätigen. */
     public function oauthCallback(Request $request): Response {
         Gate::authorize('create', CloudDocumentConnection::class);
-        $admin = $this->admin();
+        $admin = $this->authUser();
         $organization = $this->organization($admin);
 
         $code = (string) $request->query('code', '');
@@ -181,13 +181,6 @@ abstract class IntakeOAuthController extends Controller {
 
     private function backToOverview(): RedirectResponse {
         return redirect()->route('admin.cloud-intake.index');
-    }
-
-    private function admin(): User {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 403);
-
-        return $user;
     }
 
     private function organization(User $admin): Organization {

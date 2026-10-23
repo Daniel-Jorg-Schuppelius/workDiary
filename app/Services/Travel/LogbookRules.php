@@ -38,8 +38,8 @@ final class LogbookRules {
         }
 
         $errors = [];
-        $start = $this->intOrNull($attributes['odometer_start_km'] ?? null);
-        $end = $this->intOrNull($attributes['odometer_end_km'] ?? null);
+        $start = NumberHelper::toIntOrNull($attributes['odometer_start_km'] ?? null);
+        $end = NumberHelper::toIntOrNull($attributes['odometer_end_km'] ?? null);
 
         if ($start === null) {
             $errors['odometer_start_km'] = (string) __('Im Fahrtenbuch-Modus ist der Tachostand bei Fahrtbeginn Pflicht.');
@@ -130,13 +130,5 @@ final class LogbookRules {
             ->value('odometer_end_km');
 
         return $value === null ? null : (int) $value;
-    }
-
-    private function intOrNull(mixed $value): ?int {
-        if ($value === null || $value === '') {
-            return null;
-        }
-
-        return (int) $value;
     }
 }

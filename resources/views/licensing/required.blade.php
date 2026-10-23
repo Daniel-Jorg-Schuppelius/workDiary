@@ -41,7 +41,7 @@
                     </p>
                 </div>
 
-                <div class="rounded-4xl border border-base-300 bg-base-100 p-8 shadow-xs">
+                <x-auth-card>
                     <x-detail-grid layout="cells" small-labels class="mb-6 rounded-2xl border border-base-300 bg-base-200/60 px-4 py-3">
                         <x-detail-grid.row :label="__('Domain')" class="mt-1 font-mono text-sm text-base-content">{{ $host }}</x-detail-grid.row>
                         <x-detail-grid.row :label="__('Status')" class="mt-1 text-sm text-base-content">
@@ -97,7 +97,7 @@
                             ⇢ {{ __('Lizenz aktivieren') }}
                         </x-button>
                     </form>
-                </div>
+                </x-auth-card>
 
                 <p class="mt-6 text-center text-sm text-base-content/70">
                     {{ __('Noch keinen Schlüssel?') }}

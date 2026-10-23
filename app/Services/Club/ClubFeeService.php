@@ -20,7 +20,7 @@ use App\Models\Platform\{Organization, User};
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Enums\CurrencyCode;
-use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -155,9 +155,9 @@ class ClubFeeService {
      */
     public function createAccount(Organization $organization, array $attributes, ?User $actor = null): ClubFeeAccount {
         return DB::transaction(function () use ($organization, $attributes, $actor): ClubFeeAccount {
-            $customerId = $this->nullableInt($attributes['customer_id'] ?? null);
+            $customerId = NumberHelper::toIntOrNull($attributes['customer_id'] ?? null);
             $name = trim((string) ($attributes['name'] ?? ''));
-            $email = $this->nullableString($attributes['email'] ?? null);
+            $email = StringHelper::trimToNull($attributes['email'] ?? null);
             if ($customerId !== null) {
                 $customer = Customer::query()->whereKey($customerId)->where('organization_id', $organization->id)->first();
                 if ($customer === null) {
@@ -185,7 +185,7 @@ class ClubFeeService {
                 'customer_id' => $customer->id,
                 'name' => $name,
                 'email' => $email,
-                'notes' => $this->nullableString($attributes['notes'] ?? null),
+                'notes' => StringHelper::trimToNull($attributes['notes'] ?? null),
             ]);
             $account->audit('club.fee.accountCreated', ['customer_id' => $customer->id]);
 
@@ -197,8 +197,8 @@ class ClubFeeService {
     public function updateAccount(ClubFeeAccount $account, array $attributes): ClubFeeAccount {
         $account->update([
             'name' => trim((string) $attributes['name']),
-            'email' => $this->nullableString($attributes['email'] ?? null),
-            'notes' => $this->nullableString($attributes['notes'] ?? null),
+            'email' => StringHelper::trimToNull($attributes['email'] ?? null),
+            'notes' => StringHelper::trimToNull($attributes['notes'] ?? null),
         ]);
         $account->audit('club.fee.accountUpdated');
 
@@ -233,7 +233,7 @@ class ClubFeeService {
             if ($overlap) {
                 throw ValidationException::withMessages(['valid_from' => __('club.fees.error.assignment_overlap')]);
             }
-            $discount = $this->nullableString($attributes['discount_percent'] ?? null);
+            $discount = StringHelper::trimToNull($attributes['discount_percent'] ?? null);
             if ($discount !== null && $tariff->isFamily()) {
                 throw ValidationException::withMessages(['discount_percent' => __('club.fees.error.discount_family')]);
             }
@@ -245,7 +245,7 @@ class ClubFeeService {
                 'valid_from' => $from->toDateString(),
                 'valid_to' => $to?->toDateString(),
                 'discount_percent' => $discount,
-                'discount_reason' => $discount !== null ? $this->nullableString($attributes['discount_reason'] ?? null) : null,
+                'discount_reason' => $discount !== null ? StringHelper::trimToNull($attributes['discount_reason'] ?? null) : null,
             ];
             if ($discount !== null && $values['discount_reason'] === null) {
                 throw ValidationException::withMessages(['discount_reason' => __('club.fees.error.discount_reason_required')]);
@@ -355,11 +355,11 @@ class ClubFeeService {
             throw ValidationException::withMessages(['ends_on' => __('club.error.before_joined')]);
         }
         $kind = ClubFeeExemptionKind::tryFrom((string) ($attributes['kind'] ?? '')) ?? ClubFeeExemptionKind::Exemption;
-        $percent = $kind === ClubFeeExemptionKind::Reduction ? $this->nullableString($attributes['percent'] ?? null) : null;
+        $percent = $kind === ClubFeeExemptionKind::Reduction ? StringHelper::trimToNull($attributes['percent'] ?? null) : null;
         if ($kind === ClubFeeExemptionKind::Reduction && $percent === null) {
             throw ValidationException::withMessages(['percent' => __('club.fees.error.percent_required')]);
         }
-        $reason = $this->nullableString($attributes['reason'] ?? null);
+        $reason = StringHelper::trimToNull($attributes['reason'] ?? null);
         if ($reason === null) {
             throw ValidationException::withMessages(['reason' => __('club.fees.error.reason_required')]);
         }
@@ -404,8 +404,8 @@ class ClubFeeService {
      * @return array<string, mixed>
      */
     private function tariffAttributes(array $attributes): array {
-        $minAge = $this->nullableInt($attributes['min_age'] ?? null);
-        $maxAge = $this->nullableInt($attributes['max_age'] ?? null);
+        $minAge = NumberHelper::toIntOrNull($attributes['min_age'] ?? null);
+        $maxAge = NumberHelper::toIntOrNull($attributes['max_age'] ?? null);
         if ($minAge !== null && $maxAge !== null && $maxAge < $minAge) {
             throw ValidationException::withMessages(['max_age' => __('club.error.age_range')]);
         }
@@ -413,7 +413,7 @@ class ClubFeeService {
         return [
             'name' => trim((string) $attributes['name']),
             'kind' => (ClubFeeTariffKind::tryFrom((string) ($attributes['kind'] ?? '')) ?? ClubFeeTariffKind::Individual)->value,
-            'description' => $this->nullableString($attributes['description'] ?? null),
+            'description' => StringHelper::trimToNull($attributes['description'] ?? null),
             'min_age' => $minAge,
             'max_age' => $maxAge,
             'is_active' => (bool) ($attributes['is_active'] ?? true),
@@ -432,7 +432,7 @@ class ClubFeeService {
 
     /** Betrag als Decimal-String (deutsches oder US-Format), nie negativ. */
     private function nullableAmount(mixed $value): ?string {
-        $raw = $this->nullableString($value);
+        $raw = StringHelper::trimToNull($value);
         if ($raw === null) {
             return null;
         }
@@ -445,21 +445,8 @@ class ClubFeeService {
     }
 
     private function date(mixed $value): ?CarbonImmutable {
-        $string = $this->nullableString($value);
+        $string = StringHelper::trimToNull($value);
 
         return $string === null ? null : CarbonImmutable::parse($string)->startOfDay();
-    }
-
-    private function nullableInt(mixed $value): ?int {
-        return $value === null || $value === '' ? null : (int) $value;
-    }
-
-    private function nullableString(mixed $value): ?string {
-        if ($value === null) {
-            return null;
-        }
-        $string = trim((string) $value);
-
-        return $string === '' ? null : $string;
     }
 }

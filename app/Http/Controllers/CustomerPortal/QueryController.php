@@ -11,17 +11,16 @@
 namespace App\Http\Controllers\CustomerPortal;
 
 use App\Enums\Customer\CustomerQueryStatus;
-use App\Http\Controllers\Concerns\ValidatesUploadedFiles;
+use App\Http\Controllers\Concerns\{ResolvesPortalUser, ValidatesUploadedFiles};
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Helpdesk\Portal\TicketController;
 use App\Models\Attachments\Attachment;
 use App\Models\Customer\CustomerQuery;
-use App\Models\Platform\User;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Customer\CustomerQueryService;
 use App\Services\CustomerPortal\PortalQuerySubjects;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Storage};
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -34,6 +33,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  * nicht editierbar; eine Rücknahme ist eine Statusänderung.
  */
 class QueryController extends Controller {
+    use ResolvesPortalUser;
     use ValidatesUploadedFiles;
 
     /** Obergrenze je Rückfrage — identisch zum Portal-Ticket. */
@@ -173,13 +173,5 @@ class QueryController extends Controller {
 
         return redirect()->route('customer.queries.index')
             ->with('status', __('Die Rückfrage wurde zurückgezogen.'));
-    }
-
-    private function portalUser(): User {
-        /** @var User $user */
-        $user = Auth::guard('customer')->user();
-        abort_if($user->customer_id === null, 404);
-
-        return $user;
     }
 }

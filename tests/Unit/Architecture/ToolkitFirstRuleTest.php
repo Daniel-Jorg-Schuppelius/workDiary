@@ -155,6 +155,18 @@ class ToolkitFirstRuleTest extends TestCase {
             'XmlHelper::escape($value)',
             [],
         ],
+        // Konsolidierungs-Audit 2026-10-23 (A1): Vor- und Nachname von Hand verkettet.
+        'name-concat' => [
+            '/trim\([^;]*(?:first_?name|firstName|getFirstName\(\)|\$given)[^;]*\.\s*\' \'\s*\.[^;]*(?:last_?name|lastName|getLastName\(\)|middle_names|\$family)/i',
+            "PersonNameHelper::join(['first_name' => …, 'last_name' => …]) — benannte Teile, keine Liste",
+            [],
+        ],
+        // Konsolidierungs-Audit 2026-10-23 (A2): die Regex ließ jede Buchstabenfolge als Code durch.
+        'iso-code-regex' => [
+            '~/\^\[A-Z(?:a-z)?\]\{[23](?:,3)?\}\$/~',
+            'CountryCode::tryFrom / CurrencyCode::tryFrom bzw. Rule::enum(…::class)',
+            [],
+        ],
     ];
 
     /**
@@ -265,6 +277,8 @@ class ToolkitFirstRuleTest extends TestCase {
             'newline-explode' => ['explode("\\n", $text)'],
             'raw-hmac' => ["hash_hmac('sha256', \$d, \$k)", "\\hash_hmac('sha256', \$d, \$k, true)"],
             'xml-escape' => ['htmlspecialchars($v, ENT_XML1)', 'htmlspecialchars($v, ENT_XML1 | ENT_QUOTES)'],
+            'name-concat' => ["trim(\$this->first_name . ' ' . \$this->last_name)", "trim(((string) data_get(\$r, 'person.firstName', '')) . ' ' . ((string) data_get(\$r, 'person.lastName', '')))", "trim(\$p['first_name'] . ' ' . \$p['middle_names'])", "trim(\$given . ' ' . \$family)"],
+            'iso-code-regex' => ["preg_match('/^[A-Z]{3}\$/', \$c)", "preg_match('/^[A-Z]{2,3}\$/', \$c)", "preg_match('/^[A-Za-z]{2}\$/', \$c)", "'regex:/^[A-Z]{2}\$/'"],
         ];
         $misses = [
             'json-encode' => ['JsonHelper::encode($x)', '$this->json_encode($x)', 'function json_encode(', 'Foo\\json_encode($x)'],
@@ -275,6 +289,8 @@ class ToolkitFirstRuleTest extends TestCase {
             'newline-explode' => ["explode(',', \$x)", 'StringHelper::lines($x)'],
             'raw-hmac' => ['CryptoHelper::hmac($d, $k)', 'function hash_hmac('],
             'xml-escape' => ['htmlspecialchars($v)', 'e($v)'],
+            'name-concat' => ["\$m->last_name . ' ' . \$m->first_name", "trim(\$first . \$last) === ''", "PersonNameHelper::join(['first_name' => \$f])"],
+            'iso-code-regex' => ["'regex:/^[A-Z]{2}[0-9A-Z]{0,3}\$/'", 'CurrencyCode::tryFrom($c)'],
         ];
 
         foreach ($hits as $rule => $samples) {

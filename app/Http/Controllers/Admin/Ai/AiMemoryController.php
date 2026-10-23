@@ -21,6 +21,7 @@ use App\Services\Ai\AiCapabilityRegistry;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -89,7 +90,7 @@ class AiMemoryController extends Controller {
         }
 
         $data = $request->validate([
-            'entry_type' => ['required', 'string', 'in:' . implode(',', array_column(AiMemoryEntryType::cases(), 'value'))],
+            'entry_type' => ['required', 'string', Rule::enum(AiMemoryEntryType::class)],
             'scope' => ['required', 'string', 'in:organization,customer,capability'],
             'customer_id' => ['nullable', 'integer'],
             'capability' => ['nullable', 'string', 'max:80'],

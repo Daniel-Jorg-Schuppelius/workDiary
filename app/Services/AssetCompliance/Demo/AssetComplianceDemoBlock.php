@@ -34,12 +34,8 @@ final class AssetComplianceDemoBlock implements DemoBlock {
 
     public function purge(Organization $organization): void {}
 
-    private function moduleActive(string $code): bool {
-        return $this->context->moduleActive($code);
-    }
-
     private function seedAssetCompliance(Organization $organization, ?User $actor): int {
-        if (! $this->moduleActive('module.asset_compliance')) {
+        if (! $this->context->moduleActive('module.asset_compliance')) {
             return 0;
         }
         if ($actor === null) {

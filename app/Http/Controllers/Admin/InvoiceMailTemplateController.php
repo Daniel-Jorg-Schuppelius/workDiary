@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
-use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Concerns\{AuthorizesOrganizationManagement, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
 use App\Models\Invoicing\InvoiceMailTemplate;
 use App\Support\SortableQuery;
@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\{Auth, DB};
 use Illuminate\Validation\Rule;
 
 class InvoiceMailTemplateController extends Controller {
+    use AuthorizesOrganizationManagement;
     use ResolvesCurrentOrganization;
 
     public function index(Request $request): View {
@@ -164,9 +165,5 @@ class InvoiceMailTemplateController extends Controller {
         }
 
         return $result;
-    }
-
-    private function authorizeBilling(): void {
-        abort_unless(Auth::user()?->canManageBilling() === true, 403);
     }
 }

@@ -18,6 +18,7 @@ use App\Services\Import\{ImportOutcome, InboxFirstSpec, ValidationIssue};
 use App\Services\Import\Specs\AbstractEntitySpec;
 use App\Services\Import\Specs\Concerns\DedupsAndStages;
 use App\Services\Integration\Profiles\SupplierMatchProfile;
+use CommonToolkit\Enums\{CountryCode, CurrencyCode};
 use CommonToolkit\Helper\Data\EmailHelper;
 use Throwable;
 
@@ -156,10 +157,10 @@ class SupplierSpec extends AbstractEntitySpec implements InboxFirstSpec {
             }
         }
 
-        if (! empty($row['country']) && ! preg_match('/^[A-Z]{2,3}$/', (string) $row['country'])) {
+        if (! empty($row['country']) && CountryCode::tryFrom((string) $row['country']) === null) {
             $issues[] = $this->formatIssue('country', (string) __('import.error.format.country'));
         }
-        if (! empty($row['currency']) && ! preg_match('/^[A-Z]{3}$/', (string) $row['currency'])) {
+        if (! empty($row['currency']) && CurrencyCode::tryFrom((string) $row['currency']) === null) {
             $issues[] = $this->formatIssue('currency', (string) __('import.error.format.currency'));
         }
 

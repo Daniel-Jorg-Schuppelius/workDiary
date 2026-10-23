@@ -11,9 +11,9 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Enums\Finance\{ChartOfAccounts, DatevBatchStatus, DatevTransmissionStatus};
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Finance\DatevBookingBatch;
-use App\Models\Platform\{Organization, User};
 use App\Models\Travel\ExpenseCategory;
 use App\Services\Billing\FinancialFormatsSupport;
 use App\Services\Finance\Datev\DatevBookingConfig;
@@ -21,7 +21,7 @@ use App\Services\Finance\{DatevBatchReportPdfRenderer, DatevBookingException, Da
 use App\Settings\SettingsTree;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request, Response};
-use Illuminate\Support\Facades\{Auth, Gate, Storage};
+use Illuminate\Support\Facades\{Gate, Storage};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -35,6 +35,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * Modul-Gating module.finance über die finance.*-Routen.
  */
 class DatevBookingController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(
         private readonly DatevBookingService $service,
     ) {}
@@ -49,7 +51,7 @@ class DatevBookingController extends Controller {
             ->paginate(25);
 
         // Kennzahl: buchungsreife, noch nicht exportierte Belege im laufenden Monat.
-        $org = $this->organization();
+        $org = $this->currentOrganizationOrUserOrganization();
         $period = ['from' => now()->startOfMonth()->toDateString(), 'to' => now()->endOfMonth()->toDateString()];
         $openCount = $org !== null
             ? $this->service->collectBookingReady($org, $period)->count()
@@ -96,7 +98,7 @@ class DatevBookingController extends Controller {
             'include_reversals' => ['nullable', 'boolean'],
         ]);
 
-        $org = $this->organization();
+        $org = $this->currentOrganizationOrUserOrganization();
         if ($org === null) {
             return back()->withErrors(['from' => __('finance.datev.error.no_organization')])->withInput();
         }
@@ -111,7 +113,7 @@ class DatevBookingController extends Controller {
         );
 
         try {
-            $batch = $this->service->createDraft($org, $period, $sources, $config, $this->actor());
+            $batch = $this->service->createDraft($org, $period, $sources, $config, $this->authUser());
         } catch (DatevBookingException $e) {
             return back()->withErrors(['from' => $e->getMessage()])->withInput();
         }
@@ -127,7 +129,7 @@ class DatevBookingController extends Controller {
 
         $batch->load(['creator:id,name', 'sources', 'journal' => fn($q) => $q->orderBy('id')]);
 
-        $org = $this->organization();
+        $org = $this->currentOrganizationOrUserOrganization();
         $config = DatevBookingConfig::forOrganization($org);
 
         // Preflight aus den persistierten Quell-Snapshots ableiten.
@@ -164,7 +166,7 @@ class DatevBookingController extends Controller {
                 static fn (string $v): ?int => \App\Support\Sqid::decodeOrNumeric(\App\Models\Finance\DatevBookingSource::class, $v),
                 $data['sources'],
             )));
-            $this->service->removeSources($batch, $sourceIds, $this->actor());
+            $this->service->removeSources($batch, $sourceIds, $this->authUser());
         } catch (DatevBookingException $e) {
             return back()->withErrors(['status' => $e->getMessage()]);
         }
@@ -177,7 +179,7 @@ class DatevBookingController extends Controller {
         Gate::authorize('reshape', $batch);
 
         try {
-            $this->service->discardDraft($batch, $this->actor());
+            $this->service->discardDraft($batch, $this->authUser());
         } catch (DatevBookingException $e) {
             return back()->withErrors(['status' => $e->getMessage()]);
         }
@@ -195,14 +197,14 @@ class DatevBookingController extends Controller {
             return back()->withErrors(['status' => FinancialFormatsSupport::unavailableMessage('finance.datev.error.unavailable')]);
         }
 
-        $config = DatevBookingConfig::forOrganization($this->organization());
+        $config = DatevBookingConfig::forOrganization($this->currentOrganizationOrUserOrganization());
         $preflight = $this->preflightFromSources($batch, $config);
         if ($preflight['errors'] !== []) {
             return back()->withErrors(['status' => __('finance.datev.error.preflight_failed')]);
         }
 
         try {
-            $this->service->finalize($batch, $config, $this->actor());
+            $this->service->finalize($batch, $config, $this->authUser());
         } catch (DatevBookingException $e) {
             return back()->withErrors(['status' => $e->getMessage()]);
         }
@@ -231,7 +233,7 @@ class DatevBookingController extends Controller {
             'note' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $this->service->recordTransmission($batch, DatevTransmissionStatus::from($data['status']), $data['note'] ?? null, $this->actor());
+        $this->service->recordTransmission($batch, DatevTransmissionStatus::from($data['status']), $data['note'] ?? null, $this->authUser());
 
         return back()->with('success', __('finance.datev.flash.transmission'));
     }
@@ -271,7 +273,7 @@ class DatevBookingController extends Controller {
     public function editConfig(): View {
         Gate::authorize('configure', DatevBookingBatch::class);
 
-        $org = $this->organization();
+        $org = $this->currentOrganizationOrUserOrganization();
         $settings = is_array($org?->settings) ? $org->settings : [];
         $stored = is_array($settings['datev'] ?? null) ? $settings['datev'] : [];
 
@@ -311,7 +313,7 @@ class DatevBookingController extends Controller {
             'datev.expense_accounts.*.tax_key' => ['nullable', 'string', 'max:4'],
         ]);
 
-        $org = $this->organization();
+        $org = $this->currentOrganizationOrUserOrganization();
         if ($org === null) {
             return back()->withErrors(['datev' => __('finance.datev.error.no_organization')]);
         }
@@ -411,27 +413,6 @@ class DatevBookingController extends Controller {
         ];
     }
 
-    private function organization(): ?Organization {
-        if (app()->bound('currentOrganization')) {
-            /** @var Organization|null $org */
-            $org = app('currentOrganization');
-            if ($org instanceof Organization) {
-                return $org;
-            }
-        }
-
-        $user = Auth::user();
-        $orgId = $user->organization_id ?? null;
-
-        return $orgId !== null ? Organization::query()->find($orgId) : null;
-    }
-
-    private function actor(): ?User {
-        $user = Auth::user();
-
-        return $user instanceof User ? $user : null;
-    }
-
     /**
      * EXTF-Stammdatenexport Kategorie 16 (Nachtrag 045a): Debitoren aus dem
      * Kundenstamm als DATEV-CSV (CP1252) — Konto folgt der
@@ -440,7 +421,7 @@ class DatevBookingController extends Controller {
     public function exportDebtors(): \Symfony\Component\HttpFoundation\Response {
         Gate::authorize('create', DatevBookingBatch::class);
 
-        $org = $this->organization();
+        $org = $this->currentOrganizationOrUserOrganization();
         abort_unless($org !== null, 404);
 
         $config = DatevBookingConfig::forOrganization($org);
@@ -469,7 +450,7 @@ class DatevBookingController extends Controller {
     public function exportGlAccounts(): \Symfony\Component\HttpFoundation\Response {
         Gate::authorize('create', DatevBookingBatch::class);
 
-        $org = $this->organization();
+        $org = $this->currentOrganizationOrUserOrganization();
         abort_unless($org !== null, 404);
 
         $config = DatevBookingConfig::forOrganization($org);

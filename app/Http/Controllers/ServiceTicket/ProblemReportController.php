@@ -86,7 +86,7 @@ class ProblemReportController extends Controller {
             'description' => ['required', 'string', 'max:5000'],
             'expected_behavior' => ['nullable', 'string', 'max:2000'],
             'actual_behavior' => ['nullable', 'string', 'max:2000'],
-            'severity' => ['required', Rule::in(array_column(ProblemReportSeverity::cases(), 'value'))],
+            'severity' => ['required', Rule::enum(ProblemReportSeverity::class)],
             'contact_ok' => ['nullable', 'boolean'],
             'include_diagnostics' => ['nullable', 'boolean'],
             'context_route' => ['nullable', 'string', 'max:150'],

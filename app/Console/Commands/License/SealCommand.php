@@ -12,6 +12,7 @@ namespace App\Console\Commands\License;
 
 use App\Services\Licensing\LicenseSeal;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\StringHelper;
 use CommonToolkit\Helper\FileSystem\{File as ToolkitFile, Folder as ToolkitFolder};
 use Illuminate\Console\Command;
 
@@ -82,7 +83,7 @@ class SealCommand extends Command {
         LicenseSeal::flushCache();
 
         $this->info('Seal geschrieben: ' . $sealPath);
-        $this->line('  Public Key: ' . substr($publicKey, 0, 16) . '…');
+        $this->line('  Public Key: ' . StringHelper::truncate($publicKey, 17, '…'));
         $this->line('  Hashes: ' . count($hashes) . ' Datei(en)');
         $this->line('  Sealed at: ' . $sealedAt);
 

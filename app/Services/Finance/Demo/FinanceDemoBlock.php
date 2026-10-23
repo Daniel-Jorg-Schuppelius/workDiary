@@ -37,10 +37,6 @@ final class FinanceDemoBlock implements DemoBlock {
 
     public function purge(Organization $organization): void {}
 
-    private function moduleActive(string $code): bool {
-        return $this->context->moduleActive($code);
-    }
-
     /**
      * Barkasse mit zwei Buchungen und Tagesabschluss (MVP-414, Phase 38).
      *
@@ -55,7 +51,7 @@ final class FinanceDemoBlock implements DemoBlock {
         $count = 0;
 
         // 2) Barkasse mit zwei Buchungen und Tagesabschluss (MVP-414).
-        if ($this->moduleActive('module.kasse')) {
+        if ($this->context->moduleActive('module.kasse')) {
             try {
                 $register = \App\Models\Finance\CashRegister::query()->firstOrCreate([
                     'organization_id' => $organization->id,
@@ -97,7 +93,7 @@ final class FinanceDemoBlock implements DemoBlock {
     }
 
     private function seedLocalAccounting(Organization $organization, ?User $actor): int {
-        if (! $this->moduleActive('module.finance')) {
+        if (! $this->context->moduleActive('module.finance')) {
             return 0;
         }
         if ($actor === null) {

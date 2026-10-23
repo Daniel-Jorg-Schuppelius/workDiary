@@ -36,10 +36,6 @@ final class AgileDemoBlock implements DemoBlock {
 
     public function purge(Organization $organization): void {}
 
-    private function moduleActive(string $code): bool {
-        return $this->context->moduleActive($code);
-    }
-
     /**
      * Agile Vorführ-Boards (Feature 064, P7): Projekt 1 als Scrum-Board mit
      * abgeschlossenem und aktivem Sprint samt mehrwöchiger Event-Historie
@@ -51,7 +47,7 @@ final class AgileDemoBlock implements DemoBlock {
      * @param Collection<int, User> $users
      */
     private function seedAgileBoards(Collection $projects, Collection $users): int {
-        if (! $this->moduleActive('module.agile_projects')) {
+        if (! $this->context->moduleActive('module.agile_projects')) {
             return 0;
         }
         $scrumProject = $projects->get(0);

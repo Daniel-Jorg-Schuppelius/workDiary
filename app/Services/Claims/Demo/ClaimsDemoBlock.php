@@ -34,17 +34,13 @@ final class ClaimsDemoBlock implements DemoBlock {
 
     public function purge(Organization $organization): void {}
 
-    private function moduleActive(string $code): bool {
-        return $this->context->moduleActive($code);
-    }
-
     /**
      * Reklamations-Demo (Feature 072, MVP-256): ein bewerteter und
      * entschiedener Fall inkl. Nachweis — ohne Lager-/Faktura-Folgen,
      * damit der Demo-Bestand konsistent bleibt.
      */
     private function seedClaims(Organization $organization, ?User $actor): int {
-        if (! $this->moduleActive('module.claims')) {
+        if (! $this->context->moduleActive('module.claims')) {
             return 0;
         }
         if ($actor === null) {

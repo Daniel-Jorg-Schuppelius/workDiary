@@ -17,13 +17,12 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Learning\{LearningQuestion, LearningQuestionCategory, LearningQuiz};
-use App\Models\Platform\User;
 use App\Rules\MaxLineLength;
 use App\Services\Learning\{LearningQuestionCatalogService, LearningQuestionEditorService};
 use App\Support\Sqid;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\{Rule, ValidationException};
 use Illuminate\View\View;
 
@@ -91,7 +90,7 @@ class LearningQuestionCatalogController extends Controller {
         $data = $this->validated($request);
         $image = $request->file('image');
 
-        $this->editor->create($this->currentOrganization()->id, $data, $image instanceof UploadedFile ? $image : null, $this->actor());
+        $this->editor->create($this->currentOrganization()->id, $data, $image instanceof UploadedFile ? $image : null, $this->authUser());
 
         return redirect()->toList('learning.questions.index')->with('success', __('learning.flash.question_added'));
     }
@@ -111,7 +110,7 @@ class LearningQuestionCatalogController extends Controller {
         $data = $this->validated($request);
         $image = $request->file('image');
 
-        $this->editor->update($question, $data, $image instanceof UploadedFile ? $image : null, $this->actor());
+        $this->editor->update($question, $data, $image instanceof UploadedFile ? $image : null, $this->authUser());
 
         return redirect()->toList('learning.questions.index')->with('success', __('learning.flash.question_updated'));
     }
@@ -119,7 +118,7 @@ class LearningQuestionCatalogController extends Controller {
     public function duplicate(LearningQuestion $question): RedirectResponse {
         Gate::authorize(Permission::LearningAuthor->value);
 
-        $this->editor->duplicate($question, $this->actor());
+        $this->editor->duplicate($question, $this->authUser());
 
         return redirect()->toList('learning.questions.index')->with('success', __('learning.flash.question_duplicated'));
     }
@@ -204,12 +203,5 @@ class LearningQuestionCatalogController extends Controller {
             ->orderBy('position')
             ->orderBy('name')
             ->get();
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

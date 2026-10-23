@@ -13,11 +13,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Helpdesk;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\Platform\User;
 use App\Models\ServiceTicket\{Change, ChangeTemplate};
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
@@ -29,6 +29,8 @@ use Illuminate\View\View;
  * template_snapshot unberührt.
  */
 class ChangeTemplateController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(): View {
         Gate::authorize(Permission::ServiceDeskChangeManage->value);
 
@@ -55,9 +57,9 @@ class ChangeTemplateController extends Controller {
 
         $template = ChangeTemplate::query()->create([
             ...$this->validatedTemplate($request),
-            'organization_id' => (int) $this->actor()->organization_id,
+            'organization_id' => $this->currentOrganizationId(),
         ]);
-        $template->audit('change_template.created', ['actor' => $this->actor()->id]);
+        $template->audit('change_template.created', ['actor' => $this->authUser()->id]);
 
         return redirect()->route('servicedesk.change-templates.index')
             ->with('success', __('Vorlage angelegt.'));
@@ -65,7 +67,7 @@ class ChangeTemplateController extends Controller {
 
     public function edit(ChangeTemplate $template): View {
         Gate::authorize(Permission::ServiceDeskChangeManage->value);
-        $this->assertSameOrg($template);
+        $this->assertSameOrganization($template);
 
         return view('helpdesk.change-templates._form_dialog', [
             'template' => $template,
@@ -75,7 +77,7 @@ class ChangeTemplateController extends Controller {
 
     public function update(Request $request, ChangeTemplate $template): RedirectResponse {
         Gate::authorize(Permission::ServiceDeskChangeManage->value);
-        $this->assertSameOrg($template);
+        $this->assertSameOrganization($template);
 
         // Version-Bump + Freigabe-Rückzug (Vier-Augen-Sinn der Freigabe);
         // laufende Changes bleiben über ihre Snapshots unberührt.
@@ -84,7 +86,7 @@ class ChangeTemplateController extends Controller {
             'version' => (int) $template->version + 1,
             'approved' => false,
         ]);
-        $template->audit('change_template.updated', ['version' => $template->version, 'actor' => $this->actor()->id]);
+        $template->audit('change_template.updated', ['version' => $template->version, 'actor' => $this->authUser()->id]);
 
         return redirect()->route('servicedesk.change-templates.index')
             ->with('success', __('Vorlage gespeichert — bitte erneut freigeben.'));
@@ -93,11 +95,11 @@ class ChangeTemplateController extends Controller {
     /** Freigabe: erst damit taugt die Vorlage für Standard-Changes. */
     public function approve(ChangeTemplate $template): RedirectResponse {
         Gate::authorize(Permission::ServiceDeskChangeManage->value);
-        $this->assertSameOrg($template);
+        $this->assertSameOrganization($template);
 
         if (! $template->approved) {
             $template->update(['approved' => true]);
-            $template->audit('change_template.approved', ['version' => $template->version, 'actor' => $this->actor()->id]);
+            $template->audit('change_template.approved', ['version' => $template->version, 'actor' => $this->authUser()->id]);
         }
 
         return redirect()->route('servicedesk.change-templates.index')
@@ -106,7 +108,7 @@ class ChangeTemplateController extends Controller {
 
     public function destroy(ChangeTemplate $template): RedirectResponse {
         Gate::authorize(Permission::ServiceDeskChangeManage->value);
-        $this->assertSameOrg($template);
+        $this->assertSameOrganization($template);
 
         if (Change::query()->where('change_template_id', $template->id)->exists()) {
             return back()->with('error', __('Zur Vorlage existieren Changes — bitte stattdessen nicht freigeben.'));
@@ -126,16 +128,5 @@ class ChangeTemplateController extends Controller {
             'test_plan' => ['nullable', 'string', 'max:20000'],
             'rollback_plan' => ['nullable', 'string', 'max:20000'],
         ]);
-    }
-
-    private function assertSameOrg(ChangeTemplate $template): void {
-        abort_unless((int) $template->organization_id === (int) $this->actor()->organization_id, 404);
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

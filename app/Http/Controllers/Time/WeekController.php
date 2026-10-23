@@ -31,7 +31,7 @@ class WeekController extends Controller {
     public function __invoke(Request $request, WeekViewService $service, HolidayService $holidays): View|RedirectResponse {
         // Backward-Compat: ?date=YYYY-MM-DD setzt den globalen Range auf die Woche und leitet auf die saubere URL um.
         if ($request->filled('date')) {
-            $date = $this->parseDate((string) $request->query('date'));
+            $date = $this->resolveDateParam($request, 'date', static fn (): CarbonImmutable => CarbonImmutable::today());
             $weekStart = $date->startOfWeek(Weekday::MONDAY->value);
             $weekEnd = $weekStart->endOfWeek(Weekday::SUNDAY->value);
             app(DateRangeContext::class)->set(
@@ -166,13 +166,5 @@ class WeekController extends Controller {
         return $weeks !== []
             ? $weeks
             : [CarbonImmutable::today()->startOfWeek(Weekday::MONDAY->value)->startOfDay()];
-    }
-
-    private function parseDate(string $value): CarbonImmutable {
-        try {
-            return CarbonImmutable::parse($value);
-        } catch (\Exception) {
-            return CarbonImmutable::today();
-        }
     }
 }

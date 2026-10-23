@@ -21,6 +21,7 @@ use App\Services\Accounting\{ChartOfAccountsService, ChartOfAccountsTemplateServ
 use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -212,15 +213,15 @@ class ChartOfAccountsController extends Controller {
         $data = $request->validate([
             'number' => ['required', 'string', 'max:16'],
             'name' => ['required', 'string', 'max:191'],
-            'type' => ['required', 'string', 'in:' . implode(',', array_column(AccountType::cases(), 'value'))],
-            'normal_balance' => ['required', 'string', 'in:' . implode(',', array_column(BalanceSide::cases(), 'value'))],
+            'type' => ['required', 'string', Rule::enum(AccountType::class)],
+            'normal_balance' => ['required', 'string', Rule::enum(BalanceSide::class)],
             'is_open_item' => ['nullable', 'boolean'],
             'is_bank' => ['nullable', 'boolean'],
             'is_cash' => ['nullable', 'boolean'],
             'is_clearing' => ['nullable', 'boolean'],
             'is_cost_center_required' => ['nullable', 'boolean'],
-            'euer_category' => ['nullable', 'string', 'in:' . implode(',', array_column(EuerCategory::cases(), 'value'))],
-            'bwa_group' => ['nullable', 'string', 'in:' . implode(',', array_column(BwaGroup::cases(), 'value'))],
+            'euer_category' => ['nullable', 'string', Rule::enum(EuerCategory::class)],
+            'bwa_group' => ['nullable', 'string', Rule::enum(BwaGroup::class)],
             'deductible_percent' => ['nullable', 'numeric', 'decimal:0,8', 'min:0', 'max:100'],
             'datev_account' => ['nullable', 'string', 'max:16'],
             'description' => ['nullable', 'string', 'max:500'],

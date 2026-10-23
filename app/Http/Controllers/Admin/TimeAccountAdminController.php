@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\TimeAccount\{CarryoverPolicy, TimeAccountSource, TimeAccountUnit};
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\{Organization, User};
 use App\Models\Schedule\ShiftType;
@@ -28,6 +29,8 @@ use Illuminate\View\View;
  * Kontenstamm, Bebuchungsregeln, manuelle Sonderbuchungen, Sofort-Lauf.
  */
 class TimeAccountAdminController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(): View {
         $this->authorizeAdmin();
 
@@ -38,7 +41,7 @@ class TimeAccountAdminController extends Controller {
                 ->get(),
             'shiftTypes' => ShiftType::query()->where('is_active', true)->orderBy('name')->get(),
             'members' => User::query()
-                ->where('organization_id', $this->organizationId())
+                ->where('organization_id', $this->currentOrganizationId())
                 ->orderBy('name')
                 ->get(['id', 'name']),
             'sources' => TimeAccountSource::cases(),
@@ -71,7 +74,7 @@ class TimeAccountAdminController extends Controller {
         }
 
         $account = TimeAccount::query()->create([
-            'organization_id' => $this->organizationId(),
+            'organization_id' => $this->currentOrganizationId(),
             'code' => $data['code'],
             'name' => $data['name'],
             'unit' => $data['unit'],
@@ -152,7 +155,7 @@ class TimeAccountAdminController extends Controller {
         /** @var User $actor */
         $actor = Auth::user();
         $target = User::query()
-            ->where('organization_id', $this->organizationId())
+            ->where('organization_id', $this->currentOrganizationId())
             ->findOrFail((int) $data['user_id']);
 
         $service->manualEntry(
@@ -191,12 +194,5 @@ class TimeAccountAdminController extends Controller {
         /** @var User|null $user */
         $user = Auth::user();
         abort_unless($user !== null && $user->isAdmin(), 403);
-    }
-
-    private function organizationId(): int {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return (int) $user->organization_id;
     }
 }

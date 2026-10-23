@@ -32,7 +32,7 @@
         <div class="mb-4 alert alert-warning text-sm">{{ session('warning') }}</div>
     @endif
 
-    <div class="rounded-4xl border border-base-300 bg-base-100 p-8 shadow-xs">
+    <x-auth-card>
         <form method="POST" action="{{ route('account.password.update') }}" class="space-y-5">
             @csrf
 
@@ -62,5 +62,5 @@
                 ⇢ {{ __('Speichern') }}
             </x-button>
         </form>
-    </div>
+    </x-auth-card>
 @endsection

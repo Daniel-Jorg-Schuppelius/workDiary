@@ -10,12 +10,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\AuthorizesOrganizationManagement;
 use App\Http\Controllers\Controller;
 use App\Models\Cti\CtiConnection;
 use App\Models\Platform\{Organization, User};
 use App\Support\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
@@ -25,6 +25,8 @@ use Illuminate\View\View;
  * Verarbeitet werden nur Anruf-Metadaten, nie Gesprächsinhalte.
  */
 class CtiAdminController extends Controller {
+    use AuthorizesOrganizationManagement;
+
     private const PROVIDERS = ['sipgate', 'placetel', 'starface', 'generic'];
 
     public function index(): View {
@@ -120,15 +122,6 @@ class CtiAdminController extends Controller {
         }
 
         return back()->with('success', __('cti.flash.disconnected'));
-    }
-
-    private function admin(): User {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->isAdmin(), 403);
-        abort_unless($user->organization_id !== null, 422, 'Kein Organisationskontext.');
-
-        return $user;
     }
 
     private function organization(User $admin): Organization {

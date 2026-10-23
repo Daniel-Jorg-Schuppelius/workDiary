@@ -26,7 +26,7 @@ class WorkScheduleController extends Controller {
 
     public function edit(User $user, WorkScheduleResolver $resolver): View {
         Gate::authorize('create', WorkSchedule::class); // Admin via before-Hook
-        $this->ensureSameOrg($user);
+        $this->assertSameOrganization($user, 403);
 
         $schedule = $user->workSchedule() ?? new WorkSchedule(WorkScheduleResolver::defaultsFor($user) + [
             'user_id' => $user->id,
@@ -38,7 +38,7 @@ class WorkScheduleController extends Controller {
 
     public function update(User $user, SaveWorkScheduleRequest $request): RedirectResponse {
         Gate::authorize('create', WorkSchedule::class);
-        $this->ensureSameOrg($user);
+        $this->assertSameOrganization($user, 403);
 
         $data = $request->validated();
         // Tagesgleichheit als Bereich: SQLite speichert den date-Cast als
@@ -77,21 +77,4 @@ class WorkScheduleController extends Controller {
             'defaults' => $defaults,
         ]);
     }
-
-    /**
-     * Gehört der Mitarbeiter zur eigenen Organisation?
-     *
-     * `User` trägt bewusst keinen OrganizationScope, und die Route bindet ihn
-     * über die Sqid — die ist Verschleierung, kein Zugriffsschutz. Ohne diese
-     * Prüfung konnte jeder mit `work-schedule.manage` das Arbeitszeit-Modell
-     * eines fremden Mitarbeiters lesen und **setzen**: `update()` legte den
-     * Datensatz mit dessen `organization_id` an, also direkt in der fremden
-     * Organisation, wo er Gleitzeit-, Überstunden- und Lohnrechnung steuert
-     * (Sicherheitsscan 2026-08-23, S-06). Muster wie
-     * {@see FlexEligibilityController::ensureSameOrg()}.
-     */
-    private function ensureSameOrg(User $member): void {
-        abort_unless((int) $member->organization_id === (int) $this->currentOrganization()->id, 403);
-    }
-
 }

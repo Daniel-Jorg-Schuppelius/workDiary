@@ -19,6 +19,7 @@ use App\Models\ServiceTicket\ServiceTicket;
 use App\Services\ServiceTicket\ServiceTicketService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ServiceTicketController extends Controller {
@@ -209,9 +210,9 @@ class ServiceTicketController extends Controller {
         Gate::authorize('transition', $ticket);
 
         $data = $request->validate([
-            'status' => ['required', 'string', 'in:' . implode(',', array_column(ServiceTicketStatus::cases(), 'value'))],
+            'status' => ['required', 'string', Rule::enum(ServiceTicketStatus::class)],
             // Vollaudit 2026-07 (M30): Abschlusscode + Lösungszusammenfassung beim Schließen.
-            'close_code' => ['nullable', 'string', 'in:' . implode(',', array_column(\App\Enums\ServiceTicket\TicketCloseCode::cases(), 'value'))],
+            'close_code' => ['nullable', 'string', Rule::enum(\App\Enums\ServiceTicket\TicketCloseCode::class)],
             'resolution_summary' => ['nullable', 'string', 'max:5000'],
         ]);
 

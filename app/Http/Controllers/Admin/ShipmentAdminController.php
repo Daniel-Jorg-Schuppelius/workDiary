@@ -10,13 +10,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\AuthorizesOrganizationManagement;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\{Organization, User};
 use App\Models\Shipping\CarrierConnection;
 use App\Services\Shipping\ShippingProviderRegistry;
 use App\Support\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
@@ -29,6 +29,8 @@ use Illuminate\View\View;
  * sind wählbar.
  */
 class ShipmentAdminController extends Controller {
+    use AuthorizesOrganizationManagement;
+
     /** Zugangsdaten-Schlüssel im verschlüsselten credentials-Array. */
     private const CREDENTIAL_KEYS = ['username', 'password', 'api_key', 'returns_receiver_id'];
 
@@ -141,15 +143,6 @@ class ShipmentAdminController extends Controller {
         return $decoded !== null
             ? CarrierConnection::query()->whereKey($decoded)->where('organization_id', $organization->id)->first()
             : null;
-    }
-
-    private function admin(): User {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->isAdmin(), 403);
-        abort_unless($user->organization_id !== null, 422, 'Kein Organisationskontext.');
-
-        return $user;
     }
 
     private function organization(User $admin): Organization {

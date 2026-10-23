@@ -65,7 +65,7 @@ abstract class BackupTargetOAuthController extends Controller {
     /** Startet den OAuth-Flow (optional `?connection=<sqid>` für Re-Auth). */
     public function startOAuth(Request $request): RedirectResponse {
         Gate::authorize('create', BackupTargetConnection::class);
-        $admin = $this->admin();
+        $admin = $this->authUser();
 
         if (!$this->isConfigured()) {
             return $this->backToOverview()->with('error', __('backup_targets.flash.not_configured'));
@@ -90,7 +90,7 @@ abstract class BackupTargetOAuthController extends Controller {
     /** Callback: state einmalig einlösen, Code+PKCE tauschen, Ziel einrichten. */
     public function oauthCallback(Request $request): Response {
         Gate::authorize('create', BackupTargetConnection::class);
-        $admin = $this->admin();
+        $admin = $this->authUser();
 
         $state = (string) $request->query('state', '');
         $code = (string) $request->query('code', '');
@@ -200,12 +200,5 @@ abstract class BackupTargetOAuthController extends Controller {
 
     private function handshake(): OAuthStateHandshake {
         return new OAuthStateHandshake('backup-target-' . $this->provider()->value . '-oauth-state');
-    }
-
-    private function admin(): User {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 403);
-
-        return $user;
     }
 }

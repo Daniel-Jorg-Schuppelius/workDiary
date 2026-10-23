@@ -20,6 +20,7 @@ use App\Plugins\Zammad\Services\ZammadTicketImporter;
 use App\Plugins\Zammad\ZammadPlugin;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Support\{ErrorText, SqidEncoder, UrlSafety};
+use CommonToolkit\Helper\Data\WebLinkHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
 use InvalidArgumentException;
@@ -102,7 +103,7 @@ class ZammadAdminController extends Controller {
 
         $baseUrl = trim((string) $data['base_url']);
         $allowPrivate = (bool) ($data['allow_private_network'] ?? false);
-        if (! str_starts_with($baseUrl, 'http://') && ! str_starts_with($baseUrl, 'https://')) {
+        if (! WebLinkHelper::isHttpUrl($baseUrl)) {
             return back()->with('error', __('zammad::zammad.flash.invalid_url'))->withInput();
         }
         // Konfigurationszeit-Prüfung ohne DNS; verbindlich prüft das Gateway vor jedem Abruf.

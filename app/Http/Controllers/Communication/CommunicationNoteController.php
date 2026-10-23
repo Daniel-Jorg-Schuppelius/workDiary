@@ -29,7 +29,7 @@ use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Log};
-use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\{Rule, ValidationException};
 use Illuminate\View\View;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
@@ -460,8 +460,8 @@ class CommunicationNoteController extends Controller {
         }
 
         $rules = [
-            'type' => ['required', 'string', 'in:' . implode(',', array_column(CommunicationNoteType::cases(), 'value'))],
-            'direction' => ['required', 'string', 'in:' . implode(',', array_column(CommunicationDirection::cases(), 'value'))],
+            'type' => ['required', 'string', Rule::enum(CommunicationNoteType::class)],
+            'direction' => ['required', 'string', Rule::enum(CommunicationDirection::class)],
             'occurred_at' => ['required', 'date', new \App\Rules\TimestampRange()],
             'subject' => ['required', 'string', 'min:3', 'max:180'],
             'body' => ['required', 'string', 'max:8000'],
@@ -469,13 +469,13 @@ class CommunicationNoteController extends Controller {
             'next_action' => ['nullable', 'string', 'max:180'],
             'next_action_due_at' => ['nullable', 'date', 'required_with:next_action_user_id', new \App\Rules\TimestampRange()],
             'next_action_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
-            'visibility' => ['nullable', 'string', 'in:' . implode(',', array_column(CommunicationVisibility::cases(), 'value'))],
+            'visibility' => ['nullable', 'string', Rule::enum(CommunicationVisibility::class)],
             'confidential' => ['nullable', 'boolean'],
             'tags' => ['nullable', 'string', 'max:500'],
             'participants' => ['nullable', 'array', 'max:25'],
             'participants.*.name' => ['nullable', 'string', 'max:120'],
             'participants.*.role' => ['nullable', 'string', 'max:40'],
-            'participants.*.party' => ['nullable', 'string', 'in:' . implode(',', array_column(ParticipantParty::cases(), 'value'))],
+            'participants.*.party' => ['nullable', 'string', Rule::enum(ParticipantParty::class)],
             'participants.*.user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
         ];
 
@@ -486,7 +486,7 @@ class CommunicationNoteController extends Controller {
 
         if ($quickCapture) {
             // Richtung ergänzt storeFromQuickCapture() je nach Art; eine Sichtbarkeit nimmt die Schnellerfassung nicht an.
-            $rules['direction'] = ['nullable', 'string', 'in:' . implode(',', array_column(CommunicationDirection::cases(), 'value'))];
+            $rules['direction'] = ['nullable', 'string', Rule::enum(CommunicationDirection::class)];
             $rules['storage'] = ['required', 'string', 'in:' . self::STORAGE_INTERNAL . ',' . self::STORAGE_CUSTOMER];
             $rules['customer_id'] = ['nullable', 'required_if:storage,' . self::STORAGE_CUSTOMER, 'integer', new \App\Rules\ExistsInCurrentOrganization('customers')];
             unset($rules['visibility']);

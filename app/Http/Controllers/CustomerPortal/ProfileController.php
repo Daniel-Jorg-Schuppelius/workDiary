@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\CustomerPortal;
 
+use App\Http\Controllers\Concerns\ResolvesPortalUser;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Services\CustomerPortal\PortalEmailChangeService;
@@ -27,6 +28,8 @@ use Illuminate\View\View;
  * Die Portal-Antwort bleibt neutral (keine Konten-Enumeration).
  */
 class ProfileController extends Controller {
+    use ResolvesPortalUser;
+
     public function __construct(private readonly PortalEmailChangeService $emailChange) {}
 
     public function show(): View {
@@ -88,13 +91,5 @@ class ProfileController extends Controller {
         }
 
         return redirect()->route('customer.profile.show')->with('success', __('customer_portal.appearance.saved'));
-    }
-
-    private function portalUser(): User {
-        /** @var User $user */
-        $user = Auth::guard('customer')->user();
-        abort_if($user->customer_id === null, 404);
-
-        return $user;
     }
 }

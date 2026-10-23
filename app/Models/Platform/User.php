@@ -25,7 +25,7 @@ use App\Models\Hr\Qualification;
 use App\Models\Supplier\Supplier;
 use App\Models\Time\{FlexEligibility, TimeEntry, Timesheet};
 use App\Support\Crypto\BlindIndex;
-use CommonToolkit\Helper\Data\PhoneNumberHelper;
+use CommonToolkit\Helper\Data\{PersonNameHelper, PhoneNumberHelper};
 use Database\Factories\Platform\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Builder;
@@ -456,12 +456,7 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
      * `name` zurück, wenn keine Bestandteile erfasst sind.
      */
     public function fullName(): string {
-        $parts = array_filter(
-            [$this->first_name, $this->middle_names, $this->last_name],
-            static fn(?string $v): bool => $v !== null && trim($v) !== ''
-        );
-
-        return $parts === [] ? $this->name : implode(' ', $parts);
+        return PersonNameHelper::join(['first_name' => $this->first_name, 'middle_names' => $this->middle_names, 'last_name' => $this->last_name]) ?: $this->name;
     }
 
     /**

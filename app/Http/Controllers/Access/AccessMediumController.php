@@ -14,6 +14,7 @@ namespace App\Http\Controllers\Access;
 
 use App\Enums\Access\{AccessMediumStatus, AccessMediumType};
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Access\AccessMedium;
 use App\Models\Facility\Site;
@@ -33,6 +34,8 @@ use RuntimeException;
  * module.fuhrpark (wie assets.*).
  */
 class AccessMediumController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(private readonly AccessMediumService $service) {}
 
     public function index(Request $request): View {
@@ -71,13 +74,13 @@ class AccessMediumController extends Controller {
 
     public function show(AccessMedium $accessMedium): View {
         Gate::authorize(Permission::AssetView->value);
-        $this->guard($accessMedium);
+        $this->assertSameOrganization($accessMedium);
 
         return view('access-media.show', [
             'medium' => $accessMedium->load(['site:id,name', 'holderUser:id,name', 'blockTask']),
             'handovers' => $accessMedium->handovers()->with('holderUser:id,name')->orderByDesc('occurred_at')->get(),
             'canManage' => Gate::allows(Permission::AssetUpdate->value),
-            'users' => User::query()->where('organization_id', $this->orgId())->orderBy('name')->get(['id', 'name']),
+            'users' => User::query()->where('organization_id', $this->currentOrganizationId())->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -114,7 +117,7 @@ class AccessMediumController extends Controller {
         abort_if(AccessMedium::query()->where('number_hash', $hash)->exists(), 422);
 
         $medium = AccessMedium::query()->create([
-            'organization_id' => $this->orgId(),
+            'organization_id' => $this->currentOrganizationId(),
             'type' => $data['type'],
             'number_hash' => $hash,
             'number_suffix' => mb_substr($number, -4),
@@ -135,7 +138,7 @@ class AccessMediumController extends Controller {
 
     public function issue(Request $request, AccessMedium $accessMedium, SqidEncoder $sqids): RedirectResponse {
         Gate::authorize(Permission::AssetUpdate->value);
-        $this->guard($accessMedium);
+        $this->assertSameOrganization($accessMedium);
 
         $data = $request->validate([
             'holder_user' => ['nullable', 'string'],
@@ -148,7 +151,7 @@ class AccessMediumController extends Controller {
         $holderUserId = null;
         if (filled($data['holder_user'] ?? null)) {
             $holderUserId = $sqids->decode(User::class, (string) $data['holder_user']);
-            abort_if($holderUserId === null || ! User::query()->whereKey($holderUserId)->where('organization_id', $this->orgId())->exists(), 422);
+            abort_if($holderUserId === null || ! User::query()->whereKey($holderUserId)->where('organization_id', $this->currentOrganizationId())->exists(), 422);
         }
 
         try {
@@ -158,7 +161,7 @@ class AccessMediumController extends Controller {
                 'holder_company' => $data['holder_company'] ?? null,
                 'expected_return_at' => $data['expected_return_at'] ?? null,
                 'signature_token' => $data['signature_token'] ?? null,
-            ], $this->actor());
+            ], $this->authUser());
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -168,10 +171,10 @@ class AccessMediumController extends Controller {
 
     public function takeBack(Request $request, AccessMedium $accessMedium): RedirectResponse {
         Gate::authorize(Permission::AssetUpdate->value);
-        $this->guard($accessMedium);
+        $this->assertSameOrganization($accessMedium);
 
         try {
-            $this->service->takeBack($accessMedium, $this->actor(), (string) $request->input('condition', '') ?: null);
+            $this->service->takeBack($accessMedium, $this->authUser(), (string) $request->input('condition', '') ?: null);
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -181,10 +184,10 @@ class AccessMediumController extends Controller {
 
     public function reportLost(Request $request, AccessMedium $accessMedium): RedirectResponse {
         Gate::authorize(Permission::AssetUpdate->value);
-        $this->guard($accessMedium);
+        $this->assertSameOrganization($accessMedium);
 
         try {
-            $task = $this->service->reportLost($accessMedium, $this->actor(), (string) $request->input('note', '') ?: null);
+            $task = $this->service->reportLost($accessMedium, $this->authUser(), (string) $request->input('note', '') ?: null);
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -197,10 +200,10 @@ class AccessMediumController extends Controller {
 
     public function confirmBlocked(AccessMedium $accessMedium): RedirectResponse {
         Gate::authorize(Permission::AssetUpdate->value);
-        $this->guard($accessMedium);
+        $this->assertSameOrganization($accessMedium);
 
         try {
-            $this->service->confirmBlocked($accessMedium, $this->actor());
+            $this->service->confirmBlocked($accessMedium, $this->authUser());
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -210,31 +213,14 @@ class AccessMediumController extends Controller {
 
     public function retire(AccessMedium $accessMedium): RedirectResponse {
         Gate::authorize(Permission::AssetUpdate->value);
-        $this->guard($accessMedium);
+        $this->assertSameOrganization($accessMedium);
 
         try {
-            $this->service->retire($accessMedium, $this->actor());
+            $this->service->retire($accessMedium, $this->authUser());
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
 
         return back()->with('success', __('Medium ausgemustert.'));
-    }
-
-    private function guard(AccessMedium $medium): void {
-        abort_unless($medium->organization_id === $this->orgId(), 404);
-    }
-
-    private function orgId(): int {
-        $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
-
-        return (int) ($org->id ?? $this->actor()->organization_id);
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

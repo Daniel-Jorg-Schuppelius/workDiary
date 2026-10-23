@@ -11,16 +11,17 @@
 namespace App\Http\Controllers\CustomerPortal;
 
 use App\Enums\Auth\TwoFactorType;
+use App\Http\Controllers\Concerns\ResolvesPortalUser;
 use App\Http\Controllers\Controller;
 use App\Models\Auth\TwoFactorCredential;
-use App\Models\Platform\User;
 use App\Services\Auth\{EmailOtpService, TwoFactorService, WebAuthnService};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
 
 /** 2FA-Selbstverwaltung im Customer-Portal (guard 'customer'), Mehr-Methoden. */
 class TwoFactorController extends Controller {
+    use ResolvesPortalUser;
+
     public function __construct(
         private readonly TwoFactorService $twoFactor,
         private readonly EmailOtpService $emailOtp,
@@ -28,7 +29,7 @@ class TwoFactorController extends Controller {
     ) {}
 
     public function webauthnOptions(Request $request): JsonResponse {
-        $user = $this->user();
+        $user = $this->portalUser();
         $json = $this->webauthn->optionsToJson($this->webauthn->creationOptions($user, $request->getSchemeAndHttpHost()));
         $request->session()->put('webauthn.register', $json);
 
@@ -36,7 +37,7 @@ class TwoFactorController extends Controller {
     }
 
     public function webauthnRegister(Request $request): JsonResponse {
-        $user = $this->user();
+        $user = $this->portalUser();
         $optionsJson = $request->session()->pull('webauthn.register');
         if (! is_string($optionsJson)) {
             return response()->json(['message' => __('Sitzung abgelaufen. Bitte erneut versuchen.')], 422);
@@ -55,15 +56,8 @@ class TwoFactorController extends Controller {
         return response()->json(['ok' => true]);
     }
 
-    private function user(): User {
-        /** @var User $user */
-        $user = Auth::guard('customer')->user();
-
-        return $user;
-    }
-
     public function show(Request $request): View {
-        $user = $this->user();
+        $user = $this->portalUser();
         $pendingTotp = filled($user->two_factor_secret) && $user->two_factor_confirmed_at === null;
         $pendingEmail = $user->twoFactorCredentials()
             ->where('type', TwoFactorType::Email->value)->whereNull('confirmed_at')->first();
@@ -82,7 +76,7 @@ class TwoFactorController extends Controller {
     }
 
     public function enable(): RedirectResponse {
-        $user = $this->user();
+        $user = $this->portalUser();
 
         // Sicherheitsaudit 2026-09-13: Die Weboberfläche verweigert das
         // Neuanlegen, wenn bereits ein bestätigter Faktor besteht (S-17); im
@@ -102,7 +96,7 @@ class TwoFactorController extends Controller {
     }
 
     public function confirm(Request $request): RedirectResponse {
-        $user = $this->user();
+        $user = $this->portalUser();
         $data = $request->validate(['code' => ['required', 'string']]);
 
         if ($user->two_factor_confirmed_at !== null) {
@@ -120,7 +114,7 @@ class TwoFactorController extends Controller {
     }
 
     public function enableEmail(): RedirectResponse {
-        $user = $this->user();
+        $user = $this->portalUser();
         $user->twoFactorCredentials()->firstOrCreate(
             ['type' => TwoFactorType::Email->value],
             ['label' => $user->email, 'confirmed_at' => null],
@@ -136,7 +130,7 @@ class TwoFactorController extends Controller {
     }
 
     public function resendEmailCode(): RedirectResponse {
-        $user = $this->user();
+        $user = $this->portalUser();
         if (! $this->emailOtp->canSend($user)) {
             return back()->withErrors(['email_code' => __('Zu viele Anfragen. Bitte später erneut versuchen.')]);
         }
@@ -148,7 +142,7 @@ class TwoFactorController extends Controller {
     }
 
     public function confirmEmail(Request $request): RedirectResponse {
-        $user = $this->user();
+        $user = $this->portalUser();
         $data = $request->validate(['email_code' => ['required', 'string']]);
 
         $credential = $user->twoFactorCredentials()->where('type', TwoFactorType::Email->value)->first();
@@ -167,7 +161,7 @@ class TwoFactorController extends Controller {
     }
 
     public function regenerateRecoveryCodes(Request $request): RedirectResponse {
-        $user = $this->user();
+        $user = $this->portalUser();
         $data = $request->validate(['code' => ['required', 'string']]);
 
         if (! $user->hasTwoFactorEnabled() || ! $this->twoFactor->verify((string) $user->two_factor_secret, $data['code'])) {
@@ -180,7 +174,7 @@ class TwoFactorController extends Controller {
     }
 
     public function removeCredential(TwoFactorCredential $credential): RedirectResponse {
-        $user = $this->user();
+        $user = $this->portalUser();
         abort_unless((int) $credential->user_id === (int) $user->getKey(), 404);
 
         $remaining = $user->twoFactorCredentials()->whereNotNull('confirmed_at')->where('id', '!=', $credential->id)->count()
@@ -195,7 +189,7 @@ class TwoFactorController extends Controller {
     }
 
     public function disable(Request $request): RedirectResponse {
-        $user = $this->user();
+        $user = $this->portalUser();
         $data = $request->validate(['code' => ['required', 'string']]);
 
         $secretOk = filled($user->two_factor_secret) && $this->twoFactor->verify((string) $user->two_factor_secret, $data['code']);

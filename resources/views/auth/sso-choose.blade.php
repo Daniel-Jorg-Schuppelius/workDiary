@@ -15,7 +15,7 @@
 @section('intro', __('sso.choose.hint', ['org' => $organization->name]))
 
 @section('content')
-    <div class="rounded-4xl border border-base-300 bg-base-100 p-8 shadow-xs">
+    <x-auth-card>
         <ul class="space-y-3">
             @foreach ($connections as $connection)
                 <li>
@@ -28,7 +28,7 @@
                 </li>
             @endforeach
         </ul>
-    </div>
+    </x-auth-card>
 
     <p class="mt-6 text-center text-sm text-base-content/70">
         <a href="{{ route('login') }}" class="text-primary transition hover:opacity-80">← {{ __('sso.discover.back_to_login') }}</a>

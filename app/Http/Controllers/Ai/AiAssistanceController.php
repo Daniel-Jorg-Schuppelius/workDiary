@@ -115,7 +115,7 @@ class AiAssistanceController extends Controller {
         $this->authorizeAiUse();
 
         return $this->guarded(function () use ($diary): string {
-            $this->narratives->narrate($diary, $this->actor());
+            $this->narratives->narrate($diary, $this->authUser());
 
             return __('ai.flash.narrative_created');
         });
@@ -150,7 +150,7 @@ class AiAssistanceController extends Controller {
         $this->authorizeAiUse();
 
         return $this->guarded(function (): string {
-            $this->support->explain($this->organization(), Auth::user());
+            $this->support->explain($this->currentOrganization(), Auth::user());
 
             return __('ai.flash.insight_created');
         });
@@ -163,11 +163,11 @@ class AiAssistanceController extends Controller {
      */
     public function searchAnswer(Request $request): RedirectResponse {
         $this->authorizeAiUse();
-        $user = $this->actor();
+        $user = $this->authUser();
         $criteria = ActivitySearchCriteria::fromRequest($request, $user);
 
         return $this->guarded(function () use ($user, $criteria): string {
-            $this->searchAnswers->answer($user, $this->organization(), $criteria);
+            $this->searchAnswers->answer($user, $this->currentOrganization(), $criteria);
 
             return __('ai.flash.insight_created');
         });
@@ -211,7 +211,7 @@ class AiAssistanceController extends Controller {
         return $this->guarded(function () use ($suggestion, $data): string {
             $subject = $suggestion->subject;
             if ($subject instanceof DiaryEntry) {
-                $this->narratives->accept($suggestion, $this->actor(), $data['text']);
+                $this->narratives->accept($suggestion, $this->authUser(), $data['text']);
             } elseif ($subject instanceof Quote || $subject instanceof QuoteItem) {
                 $this->documentTexts->accept($suggestion, Auth::user(), $data['text']);
             } else {
@@ -233,9 +233,9 @@ class AiAssistanceController extends Controller {
         return $this->guarded(function () use ($suggestion, $data): string {
             $subject = $suggestion->subject;
             if ($subject instanceof CommunicationNote) {
-                $this->notes->applyValue($suggestion, $this->actor(), $data['field']);
+                $this->notes->applyValue($suggestion, $this->authUser(), $data['field']);
             } elseif ($subject instanceof Document) {
-                $this->documents->applyValue($suggestion, $this->actor(), $data['field']);
+                $this->documents->applyValue($suggestion, $this->authUser(), $data['field']);
             } else {
                 throw new AiException((string) __('ai.error.suggestion_not_acceptable'));
             }
@@ -297,7 +297,7 @@ class AiAssistanceController extends Controller {
 
     private function authorizeImport(ImportRun $run): void {
         $user = Auth::user();
-        abort_unless($run->organization_id === (int) $this->organization()->id, 403);
+        abort_unless($run->organization_id === (int) $this->currentOrganization()->id, 403);
         abort_unless(
             $user instanceof User && ($user->isAdmin() || $user->hasEffectivePermission($run->entity->permission())),
             403
@@ -354,19 +354,8 @@ class AiAssistanceController extends Controller {
     }
 
     private function authorizeSupport(Organization $organization): void {
-        abort_unless((int) $organization->id === (int) $this->organization()->id, 404);
+        abort_unless((int) $organization->id === (int) $this->currentOrganization()->id, 404);
         Gate::authorize(Permission::PlatformSupportExport->value);
         $this->authorizeAiUse();
-    }
-
-    private function organization(): Organization {
-        return $this->currentOrganization();
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

@@ -15,12 +15,11 @@ namespace App\Http\Controllers\Learning;
 use App\Enums\Learning\LearningUnitKind;
 use App\Http\Controllers\Controller;
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningScormPackage, LearningUnit};
-use App\Models\Platform\User;
 use App\Services\Learning\{LearningScormService, ScormContentToken, ScormPackageFiles};
 use App\Support\Learning\ScormContentHost;
 use ELearningToolkit\Scorm\LaunchPath;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -54,7 +53,7 @@ class LearningScormController extends Controller {
         /** @var \Illuminate\Http\UploadedFile $file */
         $file = $validated['package'];
 
-        $package = $this->scorm->import($unit, $file->getRealPath(), $this->actor());
+        $package = $this->scorm->import($unit, $file->getRealPath(), $this->authUser());
 
         return redirect()
             ->route('learning.courses.units.edit', ['course' => $course->sqid, 'unit' => $unit->sqid])
@@ -153,13 +152,6 @@ class LearningScormController extends Controller {
     }
 
     private function authorizeOwn(LearningEnrollment $enrollment): void {
-        abort_unless($enrollment->user_id === $this->actor()->id, 404);
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
+        abort_unless($enrollment->user_id === $this->authUser()->id, 404);
     }
 }

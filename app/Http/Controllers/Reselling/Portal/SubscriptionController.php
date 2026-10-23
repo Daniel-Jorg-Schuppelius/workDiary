@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Reselling\Portal;
 
 use App\Enums\Reselling\PeriodStatus;
+use App\Http\Controllers\Concerns\ResolvesPortalUser;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
@@ -21,7 +22,6 @@ use App\Services\Reselling\Register\PeriodPlanner;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
 
 /**
  * Portal-Sicht „meine Abos" (Feature 152, Prozesse 6): der Kunde sieht den
@@ -32,6 +32,8 @@ use Illuminate\Support\Facades\Auth;
  * Harte Grenze: Organisation des Portalkontos + `ResaleSubscription::forCustomer`.
  */
 class SubscriptionController extends Controller {
+    use ResolvesPortalUser;
+
     public function __construct(private readonly PeriodPlanner $planner) {}
 
     public function index(): View {
@@ -121,14 +123,6 @@ class SubscriptionController extends Controller {
         }
 
         return $labels;
-    }
-
-    private function portalUser(): User {
-        /** @var User $user */
-        $user = Auth::guard('customer')->user();
-        abort_if($user->customer_id === null, 403);
-
-        return $user;
     }
 
     private function portalCustomer(User $user): Customer {

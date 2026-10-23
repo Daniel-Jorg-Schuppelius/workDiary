@@ -131,7 +131,7 @@ class LearningCompetencyController extends Controller {
 
         $data = $request->validate([
             'competency_id' => ['required', 'integer', new ExistsInCurrentOrganization('competencies')],
-            'role' => ['required', 'string', Rule::in(array_column(UserRole::cases(), 'value'))],
+            'role' => ['required', 'string', Rule::enum(UserRole::class)],
             'required_level' => ['required', 'integer', 'between:1,10'],
         ]);
 

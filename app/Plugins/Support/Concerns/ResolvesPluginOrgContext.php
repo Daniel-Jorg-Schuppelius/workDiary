@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\Concerns;
 
+use App\Http\Controllers\Concerns\AuthorizesOrganizationManagement;
 use App\Models\Platform\{Organization, User};
-use Illuminate\Support\Facades\Auth;
 
 /**
  * Gemeinsames admin()/organization()-Helferpaar der Plugin-Admin-Controller
@@ -21,14 +21,7 @@ use Illuminate\Support\Facades\Auth;
  * erzwingen (422) — Semantik unverändert aus den 14 wortgleichen Kopien.
  */
 trait ResolvesPluginOrgContext {
-    private function admin(): User {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->isAdmin(), 403);
-        abort_unless($user->organization_id !== null, 422, 'Kein Organisationskontext.');
-
-        return $user;
-    }
+    use AuthorizesOrganizationManagement;
 
     private function organization(User $admin): Organization {
         $org = $admin->organization;

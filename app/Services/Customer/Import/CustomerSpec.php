@@ -18,7 +18,9 @@ use App\Services\Import\{ImportOutcome, InboxFirstSpec, ValidationIssue};
 use App\Services\Import\Specs\AbstractEntitySpec;
 use App\Services\Import\Specs\Concerns\DedupsAndStages;
 use App\Services\Integration\Profiles\CustomerMatchProfile;
+use CommonToolkit\Enums\{CountryCode, CurrencyCode};
 use CommonToolkit\Helper\Data\{EmailHelper, StringHelper};
+use CommonToolkit\Helper\Data\WebLinkHelper;
 use Throwable;
 
 /**
@@ -162,14 +164,14 @@ class CustomerSpec extends AbstractEntitySpec implements \App\Services\Import\Ha
         // die Formulare prüfen mit der `url`-Regel, der Import tat es nicht —
         // ein `javascript:…` ließ sich so in den Stammdatensatz schreiben und
         // landete anschließend im href der Detailseite.
-        if (! empty($row['homepage']) && preg_match('#^https?://#i', (string) $row['homepage']) !== 1) {
+        if (! empty($row['homepage']) && ! WebLinkHelper::isHttpUrl((string) $row['homepage'])) {
             $issues[] = $this->formatIssue('homepage', (string) __('import.error.format.url'));
         }
 
-        if (! empty($row['country']) && ! preg_match('/^[A-Z]{2,3}$/', (string) $row['country'])) {
+        if (! empty($row['country']) && CountryCode::tryFrom((string) $row['country']) === null) {
             $issues[] = $this->formatIssue('country', (string) __('import.error.format.country'));
         }
-        if (! empty($row['currency']) && ! preg_match('/^[A-Z]{3}$/', (string) $row['currency'])) {
+        if (! empty($row['currency']) && CurrencyCode::tryFrom((string) $row['currency']) === null) {
             $issues[] = $this->formatIssue('currency', (string) __('import.error.format.currency'));
         }
 

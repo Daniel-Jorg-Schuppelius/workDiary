@@ -19,6 +19,7 @@ use App\Services\Concerns\AssignsSequentialNo;
 use App\Services\Stammdaten\ContactDetailsWriter;
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -36,7 +37,7 @@ class ClubMemberService {
      */
     public function create(Organization $organization, ?User $actor, array $attributes): ClubMember {
         return DB::transaction(function () use ($organization, $actor, $attributes): ClubMember {
-            $memberNo = $this->nullableString($attributes['member_no'] ?? null) !== null
+            $memberNo = StringHelper::trimToNull($attributes['member_no'] ?? null) !== null
                 ? (int) $attributes['member_no']
                 : $this->nextNo(ClubMember::class, 'member_no', 'organization_id', (int) $organization->id);
             $this->assertMemberNoFree((int) $organization->id, $memberNo, null);
@@ -50,12 +51,12 @@ class ClubMemberService {
                 'first_name' => trim((string) $attributes['first_name']),
                 'last_name' => trim((string) $attributes['last_name']),
                 'email' => $this->email($attributes['email'] ?? null),
-                'phone' => $this->nullableString($attributes['phone'] ?? null),
+                'phone' => StringHelper::trimToNull($attributes['phone'] ?? null),
                 'birth_date' => $this->date($attributes['birth_date'] ?? null)?->toDateString(),
                 'kind' => $kind->value,
                 'joined_on' => $joinedOn->toDateString(),
                 'user_id' => $this->resolveUserId((int) $organization->id, $attributes['user_id'] ?? null, null),
-                'notes' => $this->nullableString($attributes['notes'] ?? null),
+                'notes' => StringHelper::trimToNull($attributes['notes'] ?? null),
                 'created_by_user_id' => $actor?->id,
             ]);
             $this->writeAddress($member, $attributes);
@@ -82,7 +83,7 @@ class ClubMemberService {
             $organizationId = $member->organization_id;
             $data = [];
 
-            if ($this->nullableString($attributes['member_no'] ?? null) !== null && (int) $attributes['member_no'] !== $member->member_no) {
+            if (StringHelper::trimToNull($attributes['member_no'] ?? null) !== null && (int) $attributes['member_no'] !== $member->member_no) {
                 $this->assertMemberNoFree($organizationId, (int) $attributes['member_no'], $member);
                 $data['member_no'] = (int) $attributes['member_no'];
             }
@@ -94,7 +95,7 @@ class ClubMemberService {
             }
             foreach (['phone', 'notes'] as $optional) {
                 if (array_key_exists($optional, $attributes)) {
-                    $data[$optional] = $this->nullableString($attributes[$optional]);
+                    $data[$optional] = StringHelper::trimToNull($attributes[$optional]);
                 }
             }
             if (array_key_exists('email', $attributes)) {
@@ -148,14 +149,14 @@ class ClubMemberService {
                 'kind' => $kind->value,
                 'starts_on' => $day->toDateString(),
                 'ends_on' => null,
-                'note' => $this->nullableString($note),
+                'note' => StringHelper::trimToNull($note),
             ]);
 
             $member->update(['kind' => $this->kindOn($member, CarbonImmutable::today())->value]);
             $member->audit('club.member.kindChanged', [
                 'kind' => $kind->value,
                 'effective_on' => $day->toDateString(),
-                'note' => $this->nullableString($note),
+                'note' => StringHelper::trimToNull($note),
                 'actor_id' => $actor->id,
             ]);
 
@@ -183,7 +184,7 @@ class ClubMemberService {
             $member->periods()->where('starts_on', '>=', DateRange::dayAfter($day))->delete();
             $member->periods()->whereNull('ends_on')->update(['ends_on' => $day->toDateString()]);
 
-            $endNote = $this->nullableString($note) ?? (string) __('club.note.member_left');
+            $endNote = StringHelper::trimToNull($note) ?? (string) __('club.note.member_left');
             $member->groupMemberships()
                 ->where('status', ClubGroupMembershipStatus::Active->value)
                 ->where(function ($query) use ($day): void {
@@ -211,7 +212,7 @@ class ClubMemberService {
 
             $member->audit('club.member.left', [
                 'left_on' => $day->toDateString(),
-                'note' => $this->nullableString($note),
+                'note' => StringHelper::trimToNull($note),
                 'actor_id' => $actor->id,
             ]);
 
@@ -265,12 +266,12 @@ class ClubMemberService {
             'club_member_id' => $member->id,
             'name' => trim((string) $attributes['name']),
             'email' => $this->email($attributes['email'] ?? null),
-            'phone' => $this->nullableString($attributes['phone'] ?? null),
+            'phone' => StringHelper::trimToNull($attributes['phone'] ?? null),
             'user_id' => $this->resolveGuardianUserId($member->organization_id, $attributes['user_id'] ?? null),
             'permissions' => $this->permissions($attributes['permissions'] ?? []),
             'valid_from' => $this->date($attributes['valid_from'] ?? null)?->toDateString(),
             'valid_to' => $this->date($attributes['valid_to'] ?? null)?->toDateString(),
-            'note' => $this->nullableString($attributes['note'] ?? null),
+            'note' => StringHelper::trimToNull($attributes['note'] ?? null),
         ]);
         $this->writeAddress($guardian, $attributes);
         $guardian->audit('club.guardian.granted', ['permissions' => $guardian->permissions, 'actor_id' => $actor->id]);
@@ -289,12 +290,12 @@ class ClubMemberService {
         $guardian->update([
             'name' => trim((string) ($attributes['name'] ?? $guardian->name)),
             'email' => array_key_exists('email', $attributes) ? $this->email($attributes['email']) : $guardian->email,
-            'phone' => array_key_exists('phone', $attributes) ? $this->nullableString($attributes['phone']) : $guardian->phone,
+            'phone' => array_key_exists('phone', $attributes) ? StringHelper::trimToNull($attributes['phone']) : $guardian->phone,
             'user_id' => array_key_exists('user_id', $attributes) ? $this->resolveGuardianUserId($guardian->organization_id, $attributes['user_id']) : $guardian->user_id,
             'permissions' => array_key_exists('permissions', $attributes) ? $this->permissions($attributes['permissions']) : $guardian->permissions,
             'valid_from' => array_key_exists('valid_from', $attributes) ? $this->date($attributes['valid_from'])?->toDateString() : $guardian->valid_from,
             'valid_to' => array_key_exists('valid_to', $attributes) ? $this->date($attributes['valid_to'])?->toDateString() : $guardian->valid_to,
-            'note' => array_key_exists('note', $attributes) ? $this->nullableString($attributes['note']) : $guardian->note,
+            'note' => array_key_exists('note', $attributes) ? StringHelper::trimToNull($attributes['note']) : $guardian->note,
         ]);
         $this->writeAddress($guardian, $attributes);
 
@@ -309,9 +310,9 @@ class ClubMemberService {
         $guardian->update([
             'revoked_at' => now(),
             'revoked_by_user_id' => $actor->id,
-            'note' => $this->nullableString($note) ?? $guardian->note,
+            'note' => StringHelper::trimToNull($note) ?? $guardian->note,
         ]);
-        $guardian->audit('club.guardian.revoked', ['actor_id' => $actor->id, 'note' => $this->nullableString($note)]);
+        $guardian->audit('club.guardian.revoked', ['actor_id' => $actor->id, 'note' => StringHelper::trimToNull($note)]);
 
         return $guardian->refresh();
     }
@@ -342,7 +343,7 @@ class ClubMemberService {
 
     /** Verknüpftes Konto: gleiche Organisation und noch nicht an ein anderes Mitglied gebunden. */
     private function resolveUserId(int $organizationId, mixed $value, ?ClubMember $ignore): ?int {
-        if ($this->nullableString($value) === null) {
+        if (StringHelper::trimToNull($value) === null) {
             return null;
         }
 
@@ -365,7 +366,7 @@ class ClubMemberService {
     }
 
     private function resolveGuardianUserId(int $organizationId, mixed $value): ?int {
-        if ($this->nullableString($value) === null) {
+        if (StringHelper::trimToNull($value) === null) {
             return null;
         }
 
@@ -396,7 +397,7 @@ class ClubMemberService {
         if ($value instanceof ClubMembershipKind) {
             return $value;
         }
-        $string = $this->nullableString($value);
+        $string = StringHelper::trimToNull($value);
 
         return $string === null ? null : ClubMembershipKind::tryFrom($string);
     }
@@ -405,13 +406,13 @@ class ClubMemberService {
         if ($value instanceof CarbonInterface) {
             return CarbonImmutable::instance($value)->startOfDay();
         }
-        $string = $this->nullableString($value);
+        $string = StringHelper::trimToNull($value);
 
         return $string === null ? null : CarbonImmutable::parse($string)->startOfDay();
     }
 
     private function email(mixed $value): ?string {
-        $string = $this->nullableString($value);
+        $string = StringHelper::trimToNull($value);
 
         return $string === null ? null : mb_strtolower($string);
     }
@@ -427,14 +428,5 @@ class ClubMemberService {
         if ($address !== []) {
             app(ContactDetailsWriter::class)->writeInline($party, $address);
         }
-    }
-
-    private function nullableString(mixed $value): ?string {
-        if ($value === null) {
-            return null;
-        }
-        $string = trim((string) $value);
-
-        return $string === '' ? null : $string;
     }
 }

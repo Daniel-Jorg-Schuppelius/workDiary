@@ -138,7 +138,7 @@ class SupplierCatalogController extends Controller {
 
     public function edit(SupplierCatalogSource $supplierCatalog): View {
         $this->canManage();
-        $this->assertSourceOrg($supplierCatalog);
+        $this->assertSameOrganization($supplierCatalog);
 
         return view('supplier-catalogs._form_dialog', [
             'isDialog' => true,
@@ -149,7 +149,7 @@ class SupplierCatalogController extends Controller {
 
     public function update(SaveSupplierCatalogSourceRequest $request, SupplierCatalogSource $supplierCatalog): RedirectResponse {
         $this->canManage();
-        $this->assertSourceOrg($supplierCatalog);
+        $this->assertSameOrganization($supplierCatalog);
         $data = $request->validated();
 
         $supplierCatalog->fill([
@@ -191,7 +191,7 @@ class SupplierCatalogController extends Controller {
 
     public function destroy(SupplierCatalogSource $supplierCatalog): RedirectResponse {
         $this->canManage();
-        $this->assertSourceOrg($supplierCatalog);
+        $this->assertSameOrganization($supplierCatalog);
         $supplierCatalog->delete();
 
         return redirect()->route('supplier-catalogs.index')->with('success', __('procurement.catalog.flash.deleted'));
@@ -199,7 +199,7 @@ class SupplierCatalogController extends Controller {
 
     public function toggleActive(SupplierCatalogSource $supplierCatalog): RedirectResponse {
         $this->canManage();
-        $this->assertSourceOrg($supplierCatalog);
+        $this->assertSameOrganization($supplierCatalog);
         $supplierCatalog->forceFill(['active' => ! $supplierCatalog->active])->save();
 
         return back()->with('success', __('procurement.catalog.flash.toggled'));
@@ -262,7 +262,7 @@ class SupplierCatalogController extends Controller {
     /** Importiert eine hochgeladene Katalogdatei (CSV/XLSX mit Mapping, DATANORM oder BMEcat). */
     public function import(Request $request, SupplierCatalogSource $supplierCatalog): RedirectResponse {
         $this->canManage();
-        $this->assertSourceOrg($supplierCatalog);
+        $this->assertSameOrganization($supplierCatalog);
 
         $request->validate([
             'catalog_csv' => ['required', 'file', 'max:16384'],
@@ -284,7 +284,7 @@ class SupplierCatalogController extends Controller {
     /** Ruft die Katalogdatei einer Remote-Quelle ab und importiert sie (MVP-091, „Später"). */
     public function fetchRemote(SupplierCatalogSource $supplierCatalog, CatalogFetchService $fetch): RedirectResponse {
         $this->canManage();
-        $this->assertSourceOrg($supplierCatalog);
+        $this->assertSameOrganization($supplierCatalog);
 
         try {
             $content = $fetch->fetch($supplierCatalog);
@@ -321,7 +321,7 @@ class SupplierCatalogController extends Controller {
     /** Modal-Formular zur Verknüpfung eines Katalogartikels mit einem internen Artikel (MVP-093). */
     public function linkForm(SupplierCatalogItem $catalogItem): View {
         $this->canManage();
-        $this->assertOrg($catalogItem);
+        $this->assertSameOrganization($catalogItem);
 
         return view('supplier-catalogs._link_dialog', [
             'item' => $catalogItem->load('source'),
@@ -331,7 +331,7 @@ class SupplierCatalogController extends Controller {
 
     public function link(Request $request, SupplierCatalogItem $catalogItem, CatalogLinkService $links): RedirectResponse {
         $this->canManage();
-        $this->assertOrg($catalogItem);
+        $this->assertSameOrganization($catalogItem);
         $data = $request->validate([
             'article' => ['required', 'string'],
             'variant' => ['nullable', 'string'],
@@ -360,7 +360,7 @@ class SupplierCatalogController extends Controller {
 
     public function unlink(SupplierCatalogItem $catalogItem, CatalogLinkService $links): RedirectResponse {
         $this->canManage();
-        $this->assertOrg($catalogItem);
+        $this->assertSameOrganization($catalogItem);
         $links->unlink($catalogItem);
 
         return back()->with('success', __('procurement.catalog.flash.unlinked'));
@@ -369,7 +369,7 @@ class SupplierCatalogController extends Controller {
     /** Auto-Vorschlag eines internen Artikels anhand der EAN/GTIN (MVP-093). */
     public function propose(SupplierCatalogItem $catalogItem, CatalogLinkService $links): RedirectResponse {
         $this->canManage();
-        $this->assertOrg($catalogItem);
+        $this->assertSameOrganization($catalogItem);
         $article = $links->propose($catalogItem);
 
         if ($article === null) {
@@ -382,7 +382,7 @@ class SupplierCatalogController extends Controller {
     /** Modal: Zusammenfassung vor der Massen-Übernahme in den Artikelstamm (MVP-541). */
     public function adoptForm(SupplierCatalogSource $supplierCatalog, CatalogArticleAdopter $adopter): View {
         $this->canManage();
-        $this->assertSourceOrg($supplierCatalog);
+        $this->assertSameOrganization($supplierCatalog);
 
         return view('supplier-catalogs._adopt_dialog', [
             'isDialog' => true,
@@ -394,7 +394,7 @@ class SupplierCatalogController extends Controller {
     /** Massen-Übernahme: alle unverknüpften Tarif-Gruppen der Quelle (MVP-541). */
     public function adopt(SupplierCatalogSource $supplierCatalog, CatalogArticleAdopter $adopter): RedirectResponse {
         $this->canManage();
-        $this->assertSourceOrg($supplierCatalog);
+        $this->assertSameOrganization($supplierCatalog);
 
         return $this->adoptResponse($adopter->adoptSource($supplierCatalog));
     }
@@ -402,7 +402,7 @@ class SupplierCatalogController extends Controller {
     /** Einzel-Übernahme: die komplette Tarif-Gruppe des Items (MVP-541). */
     public function adoptItem(SupplierCatalogItem $catalogItem, CatalogArticleAdopter $adopter): RedirectResponse {
         $this->canManage();
-        $this->assertOrg($catalogItem);
+        $this->assertSameOrganization($catalogItem);
 
         /** @var SupplierCatalogSource $source */
         $source = $catalogItem->source()->firstOrFail();
@@ -434,7 +434,7 @@ class SupplierCatalogController extends Controller {
     /** Übernimmt den vorgeschlagenen Verkaufspreis in den verknüpften Artikel (MVP-095, Freigabe). */
     public function applyPrice(SupplierCatalogItem $catalogItem, PriceSuggestionService $pricing): RedirectResponse {
         $this->canManage();
-        $this->assertOrg($catalogItem);
+        $this->assertSameOrganization($catalogItem);
 
         // Vier-Augen-Modus (MVP-095): statt direkter Übernahme entsteht ein
         // Freigabe-Antrag, den eine zweite Person genehmigen muss.
@@ -470,7 +470,7 @@ class SupplierCatalogController extends Controller {
      */
     public function punchout(Request $request, SupplierCatalogSource $supplierCatalog, PunchoutHandoff $handoff): \Illuminate\Contracts\View\View|RedirectResponse {
         $this->canManage();
-        $this->assertSourceOrg($supplierCatalog);
+        $this->assertSameOrganization($supplierCatalog);
 
         if (! $supplierCatalog->hasPunchout()) {
             return redirect()->route('supplier-catalogs.show', $supplierCatalog)->with('error', __('procurement.oci.flash.no_punchout'));
@@ -528,7 +528,7 @@ class SupplierCatalogController extends Controller {
      */
     public function shopDeepLink(SupplierCatalogItem $catalogItem): \Illuminate\Contracts\View\View {
         $this->canManage();
-        $this->assertOrg($catalogItem);
+        $this->assertSameOrganization($catalogItem);
         $source = SupplierCatalogSource::query()->find($catalogItem->supplier_catalog_source_id);
         abort_unless($source instanceof SupplierCatalogSource && $source->hasPunchout() && $source->punchout_protocol === PunchoutProtocol::Ids, 404);
 
@@ -602,7 +602,7 @@ class SupplierCatalogController extends Controller {
     /** Abgefragten Artikel in den Katalog übernehmen bzw. nachführen (MVP-1072). */
     public function omdAdopt(Request $request, SupplierCatalogSource $supplierCatalog, OpenMasterdataService $service): RedirectResponse {
         $this->canManage();
-        $this->assertSourceOrg($supplierCatalog);
+        $this->assertSameOrganization($supplierCatalog);
         $data = $request->validate([
             'omd_by' => ['required', Rule::in([OpenMasterdataService::BY_SUPPLIER_PID, OpenMasterdataService::BY_GTIN, OpenMasterdataService::BY_MANUFACTURER])],
             'omd_value' => ['required', 'string', 'max:100'],
@@ -623,7 +623,7 @@ class SupplierCatalogController extends Controller {
     /** Preise und Verfügbarkeit der geführten Artikel beim Großhändler nachfragen (MVP-1072). */
     public function omdRefresh(SupplierCatalogSource $supplierCatalog, OpenMasterdataService $service): RedirectResponse {
         $this->canManage();
-        $this->assertSourceOrg($supplierCatalog);
+        $this->assertSameOrganization($supplierCatalog);
 
         try {
             $summary = $service->refreshPrices($supplierCatalog, 100);
@@ -634,10 +634,6 @@ class SupplierCatalogController extends Controller {
         return back()->with($summary['failed'] > 0 ? 'warning' : 'success', __('procurement.omd.flash.refreshed', $summary));
     }
 
-    private function assertOrg(SupplierCatalogItem $item): void {
-        abort_unless($item->organization_id === $this->currentOrganization()->id, 404);
-    }
-
     /**
      * Liest eine hochgeladene shopinfo.xml und leitet Mapping-Vorschlag,
      * Encoding/Delimiter sowie den Katalog-Download-Hinweis ab (MVP-092). Die
@@ -646,7 +642,7 @@ class SupplierCatalogController extends Controller {
      */
     public function discoverShopinfo(Request $request, SupplierCatalogSource $supplierCatalog, ShopinfoParser $parser): RedirectResponse {
         $this->canManage();
-        $this->assertSourceOrg($supplierCatalog);
+        $this->assertSameOrganization($supplierCatalog);
         $request->validate(['shopinfo' => ['required', 'file', 'max:4096']]);
 
         $content = File::read((string) $request->file('shopinfo')?->getRealPath());
@@ -674,10 +670,6 @@ class SupplierCatalogController extends Controller {
             ->with('success', __('procurement.catalog.shopinfo.flash.discovered', ['count' => count($discovery['mapping'])]))
             ->with('shopinfo_mapping', $discovery['mapping'])
             ->with('shopinfo_url', $discovery['catalog_url']);
-    }
-
-    private function assertSourceOrg(SupplierCatalogSource $source): void {
-        abort_unless($source->organization_id === $this->currentOrganization()->id, 404);
     }
 
     /**

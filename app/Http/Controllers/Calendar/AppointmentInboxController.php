@@ -14,10 +14,10 @@ namespace App\Http\Controllers\Calendar;
 
 use App\Enums\Calendar\AppointmentRequestStatus;
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Calendar\AppointmentRequest;
 use App\Models\Facility\Site;
-use App\Models\Platform\User;
 use App\Models\Sales\BookableService;
 use App\Services\Appointments\AppointmentRequestService;
 use App\Support\{ErrorText, Tz};
@@ -33,6 +33,8 @@ use RuntimeException;
  * entscheidet über Termine), Modul module.planung.
  */
 class AppointmentInboxController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(Request $request): View {
         Gate::authorize(Permission::DispatchViewAny->value);
 
@@ -76,10 +78,10 @@ class AppointmentInboxController extends Controller {
 
     public function confirm(AppointmentRequest $appointmentRequest, AppointmentRequestService $service): RedirectResponse {
         Gate::authorize(Permission::DispatchManage->value);
-        $this->guard($appointmentRequest);
+        $this->assertSameOrganization($appointmentRequest);
 
         try {
-            $entry = $service->confirm($appointmentRequest, $this->actor());
+            $entry = $service->confirm($appointmentRequest, $this->authUser());
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -91,12 +93,12 @@ class AppointmentInboxController extends Controller {
 
     public function decline(Request $request, AppointmentRequest $appointmentRequest, AppointmentRequestService $service): RedirectResponse {
         Gate::authorize(Permission::DispatchManage->value);
-        $this->guard($appointmentRequest);
+        $this->assertSameOrganization($appointmentRequest);
 
         $data = $request->validate(['reason' => ['required', 'string', 'max:500']]);
 
         try {
-            $service->decline($appointmentRequest, $this->actor(), (string) $data['reason']);
+            $service->decline($appointmentRequest, $this->authUser(), (string) $data['reason']);
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -107,7 +109,7 @@ class AppointmentInboxController extends Controller {
     /** Ersatztermin vorschlagen (MVP-1287); die Uhrzeit gilt in der Zeitzone der Organisation. */
     public function propose(Request $request, AppointmentRequest $appointmentRequest, AppointmentRequestService $service): RedirectResponse {
         Gate::authorize(Permission::DispatchManage->value);
-        $this->guard($appointmentRequest);
+        $this->assertSameOrganization($appointmentRequest);
 
         $data = $request->validate([
             'start' => ['required', 'date', new \App\Rules\TimestampRange()],
@@ -115,7 +117,7 @@ class AppointmentInboxController extends Controller {
         ]);
 
         try {
-            $service->proposeAlternative($appointmentRequest, $this->actor(), $this->localStart((string) $data['start']), $data['note'] ?? null);
+            $service->proposeAlternative($appointmentRequest, $this->authUser(), $this->localStart((string) $data['start']), $data['note'] ?? null);
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -126,12 +128,12 @@ class AppointmentInboxController extends Controller {
     /** Bestätigten Termin verschieben (MVP-1287). */
     public function reschedule(Request $request, AppointmentRequest $appointmentRequest, AppointmentRequestService $service): RedirectResponse {
         Gate::authorize(Permission::DispatchManage->value);
-        $this->guard($appointmentRequest);
+        $this->assertSameOrganization($appointmentRequest);
 
         $data = $request->validate(['start' => ['required', 'date', new \App\Rules\TimestampRange()]]);
 
         try {
-            $service->reschedule($appointmentRequest, $this->actor(), $this->localStart((string) $data['start']));
+            $service->reschedule($appointmentRequest, $this->authUser(), $this->localStart((string) $data['start']));
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -172,7 +174,7 @@ class AppointmentInboxController extends Controller {
         }
 
         $service = BookableService::query()->create([
-            'organization_id' => $this->orgId(),
+            'organization_id' => $this->currentOrganizationId(),
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
             'duration_minutes' => (int) $data['duration_minutes'],
@@ -192,29 +194,10 @@ class AppointmentInboxController extends Controller {
 
     public function toggleService(BookableService $bookableService): RedirectResponse {
         Gate::authorize(Permission::DispatchManage->value);
-        abort_unless($bookableService->organization_id === $this->orgId(), 404);
+        abort_unless($bookableService->organization_id === $this->currentOrganizationId(), 404);
 
         $bookableService->forceFill(['active' => ! $bookableService->active])->save();
 
         return back()->with('success', $bookableService->active ? __('Leistungsart aktiviert.') : __('Leistungsart deaktiviert.'));
-    }
-
-    private function guard(AppointmentRequest $request): void {
-        abort_unless($request->organization_id === $this->orgId(), 404);
-    }
-
-    private function orgId(): int {
-        $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
-        /** @var User $user */
-        $user = Auth::user();
-
-        return (int) ($org->id ?? $user->organization_id);
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

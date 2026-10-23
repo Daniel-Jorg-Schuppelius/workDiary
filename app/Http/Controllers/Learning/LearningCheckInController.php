@@ -15,10 +15,8 @@ namespace App\Http\Controllers\Learning;
 use App\Enums\Learning\LearningUnitKind;
 use App\Http\Controllers\Controller;
 use App\Models\Learning\{LearningEnrollment, LearningUnit};
-use App\Models\Platform\User;
 use App\Services\Learning\LearningEventService;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -74,7 +72,7 @@ class LearningCheckInController extends Controller {
         }
 
         try {
-            $this->events->checkIn($enrollment, $unit, $this->actor());
+            $this->events->checkIn($enrollment, $unit, $this->authUser());
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors());
         }
@@ -98,19 +96,12 @@ class LearningCheckInController extends Controller {
         abort_if($event === null, 404);
 
         $enrollment = LearningEnrollment::query()
-            ->where('user_id', $this->actor()->id)
+            ->where('user_id', $this->authUser()->id)
             ->where('learning_course_id', $unit->learning_course_id)
             ->first();
 
         abort_if($enrollment === null, 404);
 
         return [$enrollment, $event];
-    }
-
-    private function actor(): User {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

@@ -180,4 +180,15 @@ class InvoiceSpecTest extends TestCase {
         $this->assertSame(ImportErrorCode::FkMissing, $issue?->code);
         $this->assertSame(0, Invoice::query()->count());
     }
+
+    /** Konsolidierungs-Audit 2026-10-23 (A2): ein unbekannter Code bestand die Regex und wurde still als EUR importiert. */
+    public function test_unknown_currency_code_is_rejected_instead_of_imported_as_euro(): void {
+        $spec = new InvoiceSpec();
+
+        $issues = $spec->validateRow($spec->normalize($this->row(['currency' => 'XYZ'])), $this->organization);
+        $formatFields = array_map(static fn($i) => $i->field, array_filter($issues, static fn($i) => $i->code === ImportErrorCode::Format));
+        $this->assertContains('currency', $formatFields);
+
+        $this->assertSame([], $spec->validateRow($spec->normalize($this->row(['currency' => 'chf'])), $this->organization));
+    }
 }
