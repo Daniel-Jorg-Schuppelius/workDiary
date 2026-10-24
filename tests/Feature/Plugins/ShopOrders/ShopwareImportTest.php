@@ -44,6 +44,9 @@ class ShopwareImportTest extends TestCase {
 
     private ?int $reportedTotal = null;
 
+    /** @var list<string> im Shop gelöschte Bestell-IDs (fehlen in `search-ids`) */
+    private array $gone = [];
+
     /** Bestellungen, die ab Seite 2 nicht mehr mitzählen (gelöscht während des Blätterns). */
     private int $vanished = 0;
 
@@ -99,6 +102,13 @@ class ShopwareImportTest extends TestCase {
         return FakePluginHttp::fake([
             self::BASE . '/api/oauth/token' => FakePluginHttp::response(['token_type' => 'Bearer', 'expires_in' => 600, 'access_token' => 'sw-token']),
             self::BASE . '/api/_info/version' => FakePluginHttp::response(['version' => '6.6.4.0']),
+            self::BASE . '/api/search-ids/order' => function (RequestInterface $request) {
+                $criteria = JsonHelper::decode((string) $request->getBody());
+                $wanted = (array) ($criteria['filter'][0]['value'] ?? []);
+                $ids = array_values(array_filter(array_column($this->orders, 'id'), fn (string $id): bool => in_array($id, $wanted, true) && ! in_array($id, $this->gone, true)));
+
+                return FakePluginHttp::response(['total' => count($ids), 'data' => $ids]);
+            },
             self::BASE . '/api/search/order' => function (RequestInterface $request) {
                 if ($this->failFirst !== []) {
                     return array_shift($this->failFirst);
@@ -175,7 +185,38 @@ class ShopwareImportTest extends TestCase {
 
         $this->assertSame(ShopOrderStatus::Refunded, ShopwareOrder::query()->where('order_number', 'SW-2')->sole()->status, 'Bestellstatus „erledigt“, Zahlung erstattet.');
         $this->assertSame('completed', ShopwareOrder::query()->where('order_number', 'SW-2')->sole()->remote_status_code);
+        $this->assertSame('119.00', ShopwareOrder::query()->where('order_number', 'SW-2')->sole()->refunded_amount?->getAmount(), 'Von Hand erstattet ohne Datensatz: voller Betrag.');
         $this->assertSame(ShopOrderStatus::Processing, ShopwareOrder::query()->where('order_number', 'SW-1')->sole()->status, 'Teilerstattung lässt den Bestellstatus.');
+    }
+
+    public function test_refunded_amount_comes_from_completed_refunds_and_deleted_orders_are_marked(): void {
+        $refund = static fn (string $state, float $amount): array => ['stateMachineState' => ['technicalName' => $state], 'amount' => ['unitPrice' => $amount, 'quantity' => 1, 'totalPrice' => $amount]];
+        $this->orders[0]['transactions'] = [[
+            'createdAt' => '2026-10-19T09:00:00.000+00:00',
+            'stateMachineState' => ['technicalName' => 'refunded_partially'],
+            'captures' => [['refunds' => [$refund('completed', 20.0), $refund('open', 5.0), $refund('completed', 9.5)]]],
+        ]];
+        $this->orders[2]['transactions'] = [['createdAt' => '2026-10-19T09:00:00.000+00:00', 'stateMachineState' => ['technicalName' => 'refunded_partially'], 'captures' => []]];
+        $this->connect();
+        $this->serve();
+        app(ShopwareOrderImportService::class)->run($this->organization);
+
+        $this->assertSame('29.50', ShopwareOrder::query()->where('order_number', 'SW-1')->sole()->refunded_amount?->getAmount(), 'Nur abgeschlossene Erstattungen.');
+        $this->assertSame('0.00', ShopwareOrder::query()->where('order_number', 'SW-2')->sole()->refunded_amount?->getAmount());
+        $this->assertNull(ShopwareOrder::query()->where('order_number', 'SW-3')->sole()->refunded_amount, 'Teilweise erstattet ohne Datensatz: Betrag unbekannt.');
+
+        $this->gone = [$this->orders[1]['id']];
+        $http = $this->serve();
+        $this->assertSame(1, app(ShopwareOrderImportService::class)->run($this->organization, true)['deleted']);
+        $this->assertNotNull(ShopwareOrder::query()->where('order_number', 'SW-2')->sole()->remote_deleted_at);
+        $http->assertSent(static function (RequestInterface $r): bool {
+            if (! str_ends_with($r->getUri()->getPath(), '/search-ids/order')) {
+                return false;
+            }
+            $criteria = JsonHelper::decode((string) $r->getBody());
+
+            return ($criteria['filter'][0]['type'] ?? null) === 'equalsAny' && count($criteria['filter'][0]['value'] ?? []) === 3;
+        });
     }
 
     public function test_a_shrinking_total_while_paging_is_incomplete(): void {

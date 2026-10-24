@@ -56,7 +56,9 @@ return [
             'open' => 'En cours',
             'paid' => 'Clôturé',
             'cancelled' => 'Annulé',
+            'deleted' => 'Supprimé dans la source',
         ],
+        'foreign_amount' => 'Montant dans une seconde devise',
         'scope' => [
             'mine' => 'Les miennes',
             'all' => 'Toutes',

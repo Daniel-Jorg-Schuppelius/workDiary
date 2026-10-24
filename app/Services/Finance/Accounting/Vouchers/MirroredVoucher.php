@@ -47,6 +47,9 @@ final readonly class MirroredVoucher {
         public ?string $netAmount = null,
         public ?string $openAmount = null,
         public string $currency = 'EUR',
+        /** Betrag in einer zweiten Währung, etwa der Firmen-Gegenwert einer Ausgabe in Fremdwährung. */
+        public ?string $foreignAmount = null,
+        public ?string $foreignCurrency = null,
         public bool $archived = false,
         public bool $isCancellation = false,
         public ?string $cancelsExternalId = null,

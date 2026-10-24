@@ -32,8 +32,7 @@ Plugin aktiv ist.
 
 1. Legen Sie in Shopware unter **Einstellungen** → **System** → **Integrationen**
    eine Integration an. Sie braucht Leserecht auf
-   Bestellungen, Bestellkunden, Kunden, Positionen, Zahlungen, Währungen und
-   Status – oder die Option **Administrator**.
+   Bestellungen, Bestellkunden, Kunden, Positionen, Zahlungen samt Captures und Erstattungen, Währungen und Status – oder die Option **Administrator**.
 2. Öffnen Sie auf der Seite im Menü ⋯ **Zugangsdaten** und tragen Sie die
    **Shop-Adresse** (ohne /api), die **Zugangs-ID** und den
    **Sicherheitsschlüssel** der Integration ein. Läuft der Shop im eigenen Netz,
@@ -62,6 +61,13 @@ ist. Bereits übernommene Bestellungen führt er immer nach.
   Währung. Erstattungen führt Shopware am Zahlungsstatus: Steht die
   jüngste Zahlung auf erstattet, gilt die Bestellung als **erstattet**; eine
   Teilerstattung ändert den Status nicht.
+- Den erstatteten Betrag nennt WorkDiary unter dem Betrag, soweit Shopware
+  abgeschlossene Erstattungen führt. Ein von Hand gesetztes „erstattet“ ohne
+  Erstattung gilt als volle Erstattung, ein „teilweise erstattet“ ohne
+  Erstattung bleibt ohne Betrag.
+- Einmal täglich prüft der Abgleich, ob die übernommenen Bestellungen im Shop
+  noch vorhanden sind. Gelöschte stehen dann auf **Im Shop gelöscht** und
+  bleiben in WorkDiary erhalten; taucht eine wieder auf, entfällt die Markierung.
 - Käufer mit Name, E-Mail und Firma, die Positionen als Text.
 - Die Bestellnummer führt in die Bestellverwaltung des Shops.
 

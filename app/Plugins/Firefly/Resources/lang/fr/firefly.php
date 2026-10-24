@@ -57,6 +57,7 @@ return [
             'amount' => 'Montant',
         ],
         'empty' => 'Pas encore de mouvements',
+        'foreign_amount' => 'Montant dans une seconde devise',
     ],
     'search' => [
         'domain' => 'Mouvements Firefly III',

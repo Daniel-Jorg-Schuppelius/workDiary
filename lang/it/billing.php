@@ -56,7 +56,9 @@ return [
             'open' => 'Aperto',
             'paid' => 'Chiuso',
             'cancelled' => 'Annullato',
+            'deleted' => 'Eliminato nell’origine',
         ],
+        'foreign_amount' => 'Importo in una seconda valuta',
         'scope' => [
             'mine' => 'Le mie',
             'all' => 'Tutte',

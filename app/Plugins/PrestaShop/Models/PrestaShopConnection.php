@@ -30,6 +30,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $source_name
  * @property string|null $source_url
  * @property string|null $account_name
+ * @property string|null $detected_timezone
  * @property OAuthConnectionStatus $status
  * @property Carbon|null $import_confirmed_at
  * @property CarbonImmutable|null $checkpoint_at

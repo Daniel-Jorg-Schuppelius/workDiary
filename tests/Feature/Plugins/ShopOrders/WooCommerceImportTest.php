@@ -81,6 +81,7 @@ class WooCommerceImportTest extends TestCase {
             'customer_id' => $customerId,
             'billing' => ['first_name' => 'Erika', 'last_name' => 'Muster ' . $id, 'company' => '', 'email' => $email],
             'line_items' => [['name' => 'Ware ' . $id, 'sku' => 'SKU-' . $id, 'quantity' => 1, 'total' => $total]],
+            'refunds' => [],
         ];
     }
 
@@ -104,7 +105,11 @@ class WooCommerceImportTest extends TestCase {
                 if ($this->failPage === $page) {
                     return FakePluginHttp::response(['message' => 'boom'], 500);
                 }
-                $rows = array_values(array_filter($this->orders, static fn (array $o): bool => ! is_string($query['modified_after'] ?? null) || strcmp($o['date_modified_gmt'], $query['modified_after']) > 0));
+                // Status `any`: ohne Papierkorb; `include` grenzt auf die genannten IDs ein.
+                $include = is_string($query['include'] ?? null) ? explode(',', $query['include']) : null;
+                $rows = array_values(array_filter($this->orders, static fn (array $o): bool => $o['status'] !== 'trash'
+                    && ($include === null || in_array((string) $o['id'], $include, true))
+                    && ($include !== null || ! is_string($query['modified_after'] ?? null) || strcmp($o['date_modified_gmt'], $query['modified_after']) > 0)));
                 usort($rows, static fn (array $a, array $b): int => $a['id'] <=> $b['id']);
                 $size = (int) ($query['per_page'] ?? 10);
 
@@ -238,6 +243,39 @@ class WooCommerceImportTest extends TestCase {
         FakePluginHttp::fake(['*' => FakePluginHttp::response(['code' => 'woocommerce_rest_cannot_view'], 401)]);
         $this->expectException(\App\Plugins\Support\PluginApiException::class);
         $this->sync();
+    }
+
+    public function test_refunds_are_summed_and_the_full_run_marks_orders_gone_from_the_shop(): void {
+        $this->orders[101]['refunds'] = [['id' => 1, 'reason' => 'Retoure', 'total' => '-10.00'], ['id' => 2, 'reason' => '', 'total' => '-9.50']];
+        $this->connect();
+        $http = $this->serve();
+        $this->sync();
+
+        $this->assertSame('19.50', WooCommerceOrder::query()->where('remote_order_id', '101')->sole()->refunded_amount?->getAmount());
+        $this->assertSame('0.00', WooCommerceOrder::query()->where('remote_order_id', '102')->sole()->refunded_amount?->getAmount());
+
+        $this->orders[102]['status'] = 'trash';
+        $this->serve();
+        $this->sync();
+        $this->assertNull(WooCommerceOrder::query()->where('remote_order_id', '102')->sole()->remote_deleted_at, 'Nur der tägliche Volllauf gleicht ab.');
+
+        $http = $this->serve();
+        $this->assertSame(1, $this->sync(full: true)['deleted']);
+        $this->assertNotNull(WooCommerceOrder::query()->where('remote_order_id', '102')->sole()->remote_deleted_at);
+        $this->assertNull(WooCommerceOrder::query()->where('remote_order_id', '101')->sole()->remote_deleted_at);
+        $http->assertSent(static function (RequestInterface $r): bool {
+            parse_str($r->getUri()->getQuery(), $q);
+
+            return ($q['include'] ?? null) === '101,102';
+        });
+        $this->actingAs($this->admin)->get(route('admin.woocommerce.index'))->assertOk()
+            ->assertSee(__('integration.shop_orders.orders.deleted'))
+            ->assertSee(__('integration.shop_orders.orders.refunded', ['amount' => WooCommerceOrder::query()->where('remote_order_id', '101')->sole()->refunded_amount?->format()]));
+
+        $this->orders[102]['status'] = 'completed';
+        $this->serve();
+        $this->sync(full: true);
+        $this->assertNull(WooCommerceOrder::query()->where('remote_order_id', '102')->sole()->remote_deleted_at, 'Aus dem Papierkorb zurück: Markierung entfällt.');
     }
 
     public function test_a_shrinking_total_while_paging_is_incomplete(): void {

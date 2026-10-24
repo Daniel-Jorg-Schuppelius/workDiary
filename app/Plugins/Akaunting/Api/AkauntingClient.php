@@ -28,6 +28,9 @@ use App\Plugins\Support\TaskSync\IncompleteRemoteReadException;
 class AkauntingClient {
     use GuardsPluginApiResponses;
 
+    /** Seiten, die der Löschabgleich je Art höchstens liest. */
+    private const MAX_ID_PAGES = 500;
+
     private ?PluginApiClient $api = null;
 
     public function __construct(
@@ -47,11 +50,51 @@ class AkauntingClient {
      * @return array{rows: list<array<string, mixed>>, last_page: int}
      */
     public function documents(string $type, int $page, ?string $changedSince = null): array {
-        $search = 'type:' . $type . ($changedSince !== null
+        $result = $this->page($type, $changedSince !== null
             ? ' updated_at>="' . $changedSince . '" sort:updated_at,id'
-            : ' sort:-issued_at,-id');
+            : ' sort:-issued_at,-id', $page);
+
+        return ['rows' => $result['rows'], 'last_page' => $result['last_page']];
+    }
+
+    /**
+     * Alle Beleg-IDs einer Art nach ID — Grundlage des Löschabgleichs. Ändert
+     * sich die Gesamtzahl beim Blättern oder fehlt etwas, wirft der Aufruf.
+     *
+     * @return list<string>
+     */
+    public function documentIds(string $type): array {
+        $ids = [];
+        $total = null;
+        for ($page = 1; $page <= self::MAX_ID_PAGES; $page++) {
+            $result = $this->page($type, ' sort:id', $page);
+            if ($result['total'] === null || ($total !== null && $result['total'] !== $total)) {
+                throw new IncompleteRemoteReadException('listing_changed');
+            }
+            $total = $result['total'];
+            foreach ($result['rows'] as $row) {
+                if (is_scalar($row['id'] ?? null)) {
+                    $ids[] = (string) $row['id'];
+                }
+            }
+            if ($result['rows'] === [] || $page >= $result['last_page']) {
+                if (count($ids) !== $total) {
+                    throw new IncompleteRemoteReadException('listing_changed');
+                }
+
+                return $ids;
+            }
+        }
+
+        throw new IncompleteRemoteReadException('page_limit');
+    }
+
+    /**
+     * @return array{rows: list<array<string, mixed>>, last_page: int, total: ?int}
+     */
+    private function page(string $type, string $searchSuffix, int $page): array {
         $body = $this->guard($this->api()->getResponse($this->baseUrl . '/api/documents', [
-            'search' => $search,
+            'search' => 'type:' . $type . $searchSuffix,
             'limit' => $this->pageSize,
             'page' => $page,
         ]), '/api/documents');
@@ -65,8 +108,13 @@ class AkauntingClient {
             }
         }
         $last = data_get($body, 'meta.last_page');
+        $total = data_get($body, 'meta.total');
 
-        return ['rows' => array_values(array_filter($rows, 'is_array')), 'last_page' => is_numeric($last) ? (int) $last : $page];
+        return [
+            'rows' => array_values(array_filter($rows, 'is_array')),
+            'last_page' => is_numeric($last) ? (int) $last : $page,
+            'total' => is_numeric($total) ? (int) $total : null,
+        ];
     }
 
     /** Leseprobe (Healthcheck). */

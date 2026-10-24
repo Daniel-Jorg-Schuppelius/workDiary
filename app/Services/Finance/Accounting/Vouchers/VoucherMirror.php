@@ -74,10 +74,13 @@ class VoucherMirror {
             'net_amount' => $voucher->netAmount,
             'open_amount' => $voucher->openAmount,
             'currency' => $voucher->currency !== '' ? $voucher->currency : 'EUR',
+            'foreign_amount' => $voucher->foreignCurrency !== null ? $voucher->foreignAmount : null,
+            'foreign_currency' => $voucher->foreignAmount !== null ? $voucher->foreignCurrency : null,
             'archived' => $voucher->archived,
             'payload' => $voucher->payload,
             'synced_at' => Carbon::now(),
             'source_changed_at' => $voucher->sourceChangedAt,
+            'source_deleted_at' => null,
         ]);
         $row->save();
 
@@ -131,6 +134,25 @@ class VoucherMirror {
             ->max('source_changed_at');
 
         return is_string($value) && $value !== '' ? Carbon::parse($value) : null;
+    }
+
+    /**
+     * Markiert gespiegelte Belege einer Art, die die vollständig gelesene
+     * Liste des Fremdsystems nicht mehr enthält, und nimmt die Markierung bei
+     * wieder auftauchenden zurück. Gelöscht wird im Spiegel nichts.
+     *
+     * @param  list<string>  $seenExternalIds
+     * @return int neu markierte Belege
+     */
+    public function markSourceDeletions(int $organizationId, string $pluginId, string $voucherType, array $seenExternalIds): int {
+        $scope = AccountingVoucher::query()->withoutGlobalScopes()
+            ->where('organization_id', $organizationId)
+            ->where('plugin_id', $pluginId)
+            ->where('voucher_type', $voucherType);
+        $marked = (clone $scope)->whereNull('source_deleted_at')->whereNotIn('external_id', $seenExternalIds)->update(['source_deleted_at' => Carbon::now()]);
+        (clone $scope)->whereNotNull('source_deleted_at')->whereIn('external_id', $seenExternalIds)->update(['source_deleted_at' => null]);
+
+        return $marked;
     }
 
     /** @return array{read: int, created: int, updated: int, skipped: int} */

@@ -32,8 +32,7 @@ cuanto el plugin esté activo.
 
 1. En Shopware, cree una integración en **Ajustes** → **Sistema** →
    **Integraciones**. Necesita permiso de
-   lectura sobre pedidos, clientes del pedido, clientes, líneas, transacciones de
-   pago, monedas y estados, o la opción **Administrador**.
+   lectura sobre pedidos, clientes del pedido, clientes, líneas, transacciones de pago con capturas y reembolsos, monedas y estados, o la opción **Administrador**.
 2. En la página, abra **Credenciales** en el menú ⋯ e introduzca la **dirección
    de la tienda** (sin /api), el **ID de clave de acceso** y la **clave de acceso
    secreta** de la integración. Si la tienda funciona en su propia red, active
@@ -62,6 +61,13 @@ incorporados se actualizan siempre.
   Shopware registra los reembolsos en el estado del pago: si el último pago
   está reembolsado, el pedido cuenta como **reembolsado**; un reembolso parcial
   no cambia el estado.
+- WorkDiary muestra el importe reembolsado bajo el importe, en la medida en que
+  Shopware registra reembolsos completados. Un «reembolsado» puesto a mano sin
+  reembolso cuenta como reembolso total; un «reembolsado parcialmente» sin
+  reembolso queda sin importe.
+- Una vez al día la sincronización comprueba si los pedidos incorporados siguen
+  existiendo en la tienda. Los eliminados aparecen como **Eliminado en la
+  tienda** y se conservan en WorkDiary; si uno reaparece, la marca desaparece.
 - Comprador con nombre, e-mail y empresa, las líneas como texto.
 - El número de pedido lleva a la gestión de pedidos de la tienda.
 

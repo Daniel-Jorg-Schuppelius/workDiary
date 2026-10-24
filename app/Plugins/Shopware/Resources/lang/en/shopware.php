@@ -16,7 +16,7 @@ return [
         'base_url' => 'Shop address',
         'base_url_help' => 'Address of the shop, e.g. https://shop.example.com (without /api or /admin).',
         'client_id' => 'Access key ID',
-        'client_id_help' => 'In Shopware, create an integration under Settings → System → Integrations. It needs read permission on orders, order customers, customers, line items, payment transactions, currencies and states – or the “Administrator” option.',
+        'client_id_help' => 'In Shopware, create an integration under Settings → System → Integrations. It needs read permission on orders, order customers, customers, line items, payment transactions with captures and refunds, currencies and states – or the “Administrator” option.',
         'client_secret' => 'Secret access key',
     ],
     'search' => [

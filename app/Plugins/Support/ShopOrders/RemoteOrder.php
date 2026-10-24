@@ -23,6 +23,7 @@ use CommonToolkit\ValueObjects\Money;
  * Dezimalzeichenkette, Positionen nur als Text — WorkDiary bucht daraus
  * nichts, es zeigt und ordnet zu. `buyerKey` ist die stabile Käuferkennung
  * (Kundenkonto des Shops oder `guest:<e-mail>`), nie der Name.
+ * `refundedAmount` ist null, wenn der Shop die Erstattungen nicht nennt.
  */
 final readonly class RemoteOrder {
     /**
@@ -43,6 +44,7 @@ final readonly class RemoteOrder {
         public ?string $buyerEmail,
         public ?string $buyerCompany,
         public array $items,
+        public ?string $refundedAmount = null,
     ) {}
 
     /** Betrag aus der Shop-Antwort als Dezimalzeichenkette; Zahlen über das Toolkit, nicht-numerische Werte ergeben null. */

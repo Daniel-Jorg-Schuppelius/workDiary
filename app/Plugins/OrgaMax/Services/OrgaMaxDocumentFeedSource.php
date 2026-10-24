@@ -92,6 +92,8 @@ class OrgaMaxDocumentFeedSource implements DocumentFeedSource, PresentsFeedRows,
                     THEN COALESCE(orgamax_invoices.outstanding_amount, orgamax_invoices.total_gross, 0) ELSE 0 END AS open_amount",
                 'orgamax_invoices.currency AS currency',
                 'NULL AS project_id',
+                'NULL AS foreign_amount',
+                'NULL AS foreign_currency',
             ]))
             ->where('orgamax_invoices.organization_id', $f->organizationId)
             ->where('orgamax_invoices.invoice_type', '!=', 'recurringInvoiceTemplate')

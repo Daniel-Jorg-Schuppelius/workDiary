@@ -385,6 +385,9 @@ class DocumentFeedQuery {
                 '0 AS amount_gross',
                 '0 AS open_amount',
                 "'" . FeedProjection::defaultCurrency() . "' AS currency",
+                'NULL AS project_id',
+                'NULL AS foreign_amount',
+                'NULL AS foreign_currency',
             ]))
             ->whereRaw('1 = 0');
     }

@@ -96,6 +96,7 @@ final class AccountingVoucherPurchaseSource implements ExternalPurchaseSource {
 
         return AccountingVoucher::query()
             ->whereNotNull('accounting_vouchers.voucher_date')
+            ->whereNull('accounting_vouchers.source_deleted_at')
             ->where(static fn (Builder $q) => $q
                 ->where('accounting_vouchers.direction', DocumentDirection::Incoming->value)
                 ->orWhere(static fn (Builder $w) => $w->whereNull('accounting_vouchers.direction')->where('accounting_vouchers.voucher_type', 'D')))

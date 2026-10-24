@@ -59,8 +59,8 @@ abstract class ShopCustomerOrdersPanel implements CockpitPanel {
                 'title' => $order->displayNumber(),
                 'url' => route('admin.' . $this->pluginId() . '.index', ['q' => $order->getAttribute('order_number') ?? $order->getAttribute('remote_order_id')]),
                 'subtitle' => $order->getAttribute('gross_amount')?->format(),
-                'badge' => $order->getAttribute('status')?->label(),
-                'tone' => $order->getAttribute('status')?->tone() ?? 'ghost',
+                'badge' => $order->getAttribute('remote_deleted_at') !== null ? __('integration.shop_orders.orders.deleted') : $order->getAttribute('status')?->label(),
+                'tone' => $order->getAttribute('remote_deleted_at') !== null ? 'ghost' : ($order->getAttribute('status')?->tone() ?? 'ghost'),
                 'date' => $order->getAttribute('ordered_at') !== null ? CarbonFmt::fdate($order->getAttribute('ordered_at')) : null,
             ], $query->orderByDesc('ordered_at')->orderByDesc('id')->limit(self::LIMIT)->get()->all()),
         ]);

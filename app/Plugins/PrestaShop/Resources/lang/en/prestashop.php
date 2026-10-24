@@ -16,9 +16,9 @@ return [
         'base_url' => 'Shop address',
         'base_url_help' => 'Address of the shop, e.g. https://shop.example.com (without /api).',
         'api_key' => 'Webservice key',
-        'api_key_help' => 'In PrestaShop, enable the webservice under Advanced Parameters → Webservice and create a key with read permission (GET) on orders, customers, currencies and order_states.',
+        'api_key_help' => 'In PrestaShop, enable the webservice under Advanced Parameters → Webservice and create a key with read permission (GET) on orders, customers, currencies and order_states; for refunds also order_slip, for the time zone configurations.',
         'shop_timezone' => 'Shop time zone',
-        'shop_timezone_help' => 'PrestaShop delivers times without a time zone. Leave empty if the shop runs in your organization’s time zone; otherwise e.g. Europe/Vienna.',
+        'shop_timezone_help' => 'PrestaShop delivers times without a time zone. Leave empty to use the shop time zone read when checking the connection (permission configurations), otherwise that of your organization; or enter e.g. Europe/Vienna.',
     ],
     'search' => [
         'domain' => 'PrestaShop orders',

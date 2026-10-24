@@ -57,6 +57,7 @@ return [
             'amount' => 'Amount',
         ],
         'empty' => 'No movements yet',
+        'foreign_amount' => 'Amount in second currency',
     ],
     'search' => [
         'domain' => 'Firefly III movements',

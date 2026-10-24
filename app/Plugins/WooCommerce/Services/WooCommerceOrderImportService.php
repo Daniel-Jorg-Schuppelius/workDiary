@@ -72,6 +72,10 @@ class WooCommerceOrderImportService extends AbstractShopOrderImportService {
         return app(WooCommerceClientFactory::class)->for((int) $organization->id)->orders($since);
     }
 
+    protected function existingRemoteIds(Organization $organization, array $ids): array {
+        return app(WooCommerceClientFactory::class)->for((int) $organization->id)->existingOrderIds($ids);
+    }
+
     protected function normalize(array $raw, Organization $organization): RemoteOrder {
         $id = is_scalar($raw['id'] ?? null) ? (string) $raw['id'] : '';
         if (! ctype_digit($id)) {
@@ -100,7 +104,25 @@ class WooCommerceOrderImportService extends AbstractShopOrderImportService {
             buyerEmail: $email,
             buyerCompany: StringHelper::trimToNull($billing['company'] ?? null),
             items: self::items($raw['line_items'] ?? null),
+            refundedAmount: self::refunded($raw['refunds'] ?? null, $currency ?? CurrencyCode::Euro),
         );
+    }
+
+    /** Summe der Erstattungen; WooCommerce nennt sie als negative Beträge. */
+    private static function refunded(mixed $refunds, CurrencyCode $currency): ?string {
+        if (! is_array($refunds)) {
+            return null;
+        }
+        $sum = Money::zero($currency);
+        foreach ($refunds as $refund) {
+            $amount = is_array($refund) ? RemoteOrder::amount($refund['total'] ?? null) : null;
+            if ($amount === null) {
+                return null;
+            }
+            $sum = $sum->plus(Money::of($amount, $currency)->abs());
+        }
+
+        return $sum->getAmount();
     }
 
     private static function utc(mixed $value): ?CarbonImmutable {

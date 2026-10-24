@@ -16,7 +16,7 @@ return [
         'base_url' => 'Shop-Adresse',
         'base_url_help' => 'Adresse des Shops, z. B. https://shop.example.com (ohne /api oder /admin).',
         'client_id' => 'Zugangs-ID',
-        'client_id_help' => 'In Shopware unter Einstellungen → System → Integrationen eine Integration anlegen. Sie braucht Leserecht auf Bestellungen, Bestellkunden, Kunden, Positionen, Zahlungen, Währungen und Status – oder die Option „Administrator“.',
+        'client_id_help' => 'In Shopware unter Einstellungen → System → Integrationen eine Integration anlegen. Sie braucht Leserecht auf Bestellungen, Bestellkunden, Kunden, Positionen, Zahlungen samt Captures und Erstattungen, Währungen und Status – oder die Option „Administrator“.',
         'client_secret' => 'Sicherheitsschlüssel',
     ],
     'search' => [

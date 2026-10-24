@@ -30,7 +30,8 @@ writes nothing to the shop. You find the page in the system menu (gear
 
 1. In PrestaShop, enable the webservice under **Advanced Parameters** →
    **Webservice** and create a key. It needs read permission (GET) on orders,
-   customers, currencies and order_states.
+   customers, currencies and order_states, for refunds also on order_slip and for
+   the time zone on configurations.
 2. On the page, open **Credentials** in the ⋯ menu and enter the **shop
    address** (without /api) and the **webservice key**. PrestaShop delivers times
    without a time zone: if the shop does not run in your organization’s time
@@ -61,6 +62,13 @@ updated.
 - The delivery slip alone (default status “Processing in progress”) does not
   count as shipped. With several shops, WorkDiary reads the orders of all shops
   and looks up the currencies of other shops one by one.
+- Refunds come from the credit slips (order_slip) and appear below the amount.
+  If the key may not read order_slip, the refunded amount stays empty.
+- If the key may read configurations, **Check connection** takes over the shop’s
+  time zone; an entered **Shop time zone** takes precedence.
+- Once a day the sync checks whether the imported orders still exist in the
+  shop. Deleted ones then show **Deleted in the shop** and remain in WorkDiary;
+  if one reappears, the marker is removed.
 - Buyer with name, e-mail and company, the line items as text.
 - There is no link into the shop administration: its folder is secret per
   shop, and its links only work with a sign-in.

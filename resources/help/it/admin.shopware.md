@@ -32,8 +32,7 @@ il plugin è attivo.
 
 1. In Shopware crei un’integrazione in **Impostazioni** → **Sistema** →
    **Integrazioni**. Serve il permesso di
-   lettura su ordini, clienti dell’ordine, clienti, righe, transazioni di
-   pagamento, valute e stati, oppure l’opzione **Amministratore**.
+   lettura su ordini, clienti dell’ordine, clienti, righe, transazioni di pagamento con catture e rimborsi, valute e stati, oppure l’opzione **Amministratore**.
 2. Sulla pagina apra **Credenziali** nel menu ⋯ e inserisca l’**indirizzo del
    negozio** (senza /api), l’**ID chiave di accesso** e la **chiave di accesso
    segreta** dell’integrazione. Se il negozio funziona nella propria rete, attivi
@@ -62,6 +61,13 @@ vengono sempre aggiornati.
   registra i rimborsi nello stato del pagamento: se l’ultimo pagamento è
   rimborsato, l’ordine risulta **rimborsato**; un rimborso parziale non cambia lo
   stato.
+- WorkDiary mostra l’importo rimborsato sotto l’importo, nella misura in cui
+  Shopware registra rimborsi completati. Un «rimborsato» impostato a mano senza
+  rimborso vale come rimborso totale; un «parzialmente rimborsato» senza rimborso
+  resta senza importo.
+- Una volta al giorno la sincronizzazione verifica se gli ordini acquisiti
+  esistono ancora nel negozio. Quelli eliminati risultano **Eliminato nel
+  negozio** e restano in WorkDiary; se uno ricompare, il contrassegno scompare.
 - Acquirente con nome, e-mail e azienda, le righe come testo.
 - Il numero d’ordine porta alla gestione degli ordini del negozio.
 

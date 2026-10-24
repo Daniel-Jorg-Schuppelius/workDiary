@@ -98,6 +98,39 @@ class WooCommerceClient {
         throw new IncompleteRemoteReadException('page_limit');
     }
 
+    /**
+     * Welche der IDs der Shop noch führt; Bestellungen im Papierkorb oder
+     * endgültig gelöschte fehlen in der Antwort (Status `any` ohne `trash`).
+     *
+     * @param  list<string>  $ids
+     * @return list<string>
+     */
+    public function existingOrderIds(array $ids): array {
+        if ($ids === [] || count($ids) > 100) {
+            return $ids === [] ? [] : throw new IncompleteRemoteReadException('page_limit');
+        }
+        $response = $this->api()->getResponse($this->url('/orders'), [
+            'include' => implode(',', $ids),
+            'per_page' => count($ids),
+            'orderby' => 'id',
+            'order' => 'asc',
+        ]);
+        $orders = $this->guard($response, '/orders');
+        $total = $response->header('X-WP-Total');
+        if (! array_is_list($orders) || (is_numeric($total) && (int) $total > count($orders))) {
+            throw new IncompleteRemoteReadException('invalid_response');
+        }
+        $present = [];
+        foreach ($orders as $order) {
+            $id = is_array($order) && is_scalar($order['id'] ?? null) ? (string) $order['id'] : null;
+            if ($id !== null && in_array($id, $ids, true)) {
+                $present[] = $id;
+            }
+        }
+
+        return $present;
+    }
+
     /** Leseprobe mit Leserecht auf Bestellungen (Healthcheck, Verbindung prüfen). */
     public function probe(): void {
         $this->guard($this->api()->getResponse($this->url('/orders'), ['per_page' => 1]), '/orders');

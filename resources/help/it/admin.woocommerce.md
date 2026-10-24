@@ -57,8 +57,11 @@ vengono sempre aggiornati.
 
 - Numero d’ordine, data, **stato** dallo stato fisso di WooCommerce (aperto, in
   lavorazione, completato, annullato, rimborsato) e importo con valuta.
-- In WooCommerce un rimborso parziale non cambia né lo stato né il totale
-  dell’ordine; WorkDiary mostra il totale dell’ordine.
+- I rimborsi compaiono sotto l’importo («di cui rimborsato»); il totale
+  dell’ordine resta quello del negozio.
+- Una volta al giorno la sincronizzazione verifica se gli ordini acquisiti
+  esistono ancora nel negozio. Quelli eliminati risultano **Eliminato nel
+  negozio** e restano in WorkDiary; se uno ricompare, il contrassegno scompare.
 - Acquirente con nome, e-mail e azienda, le righe come testo.
 - Il numero d’ordine porta alla gestione degli ordini del negozio.
 

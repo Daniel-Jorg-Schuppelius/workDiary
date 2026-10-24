@@ -169,6 +169,8 @@ final class AccountingVoucherRevenueSource implements ExternalRevenueSource {
 
         return AccountingVoucher::query()
             ->whereNotNull('accounting_vouchers.voucher_date')
+            // Im Fremdsystem gelöscht zählt wie storniert: nur auf ausdrücklichen Wunsch.
+            ->when(! $withCancelled, static fn (Builder $q) => $q->whereNull('accounting_vouchers.source_deleted_at'))
             ->where(static fn (Builder $q) => $q
                 ->where('accounting_vouchers.direction', DocumentDirection::Outgoing->value)
                 ->orWhere(static fn (Builder $w) => $w->whereNull('accounting_vouchers.direction')->where('accounting_vouchers.voucher_type', 'C')))

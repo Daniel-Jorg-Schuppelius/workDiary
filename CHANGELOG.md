@@ -10,6 +10,22 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Shop- und Belegspiegel nach Entscheidung des Inhabers (Nachtrag Phase 158):
+  - **Erstattungen:** Shop-Bestellungen zeigen „davon erstattet“, die
+    Bestellsumme bleibt wie im Shop. Die Beträge kommen aus `refunds[]`
+    (WooCommerce), den abgeschlossenen Erstattungen an den Captures
+    (Shopware) und den Gutschriften (PrestaShop, Recht `order_slip`
+    optional).
+  - **Löschungen:** Bestellungen, die der Shop nicht mehr führt (auch
+    Papierkorb), und Akaunting-Belege, die Akaunting nicht mehr führt,
+    erkennt ein täglicher Abgleich. Sie stehen auf „in Quelle gelöscht“ und
+    zählen im Belegfluss, im Umsatz und im Einkauf nicht mehr.
+  - **PrestaShop:** „Verbindung prüfen“ liest die Zeitzone des Shops
+    (`PS_TIMEZONE`, Recht `configurations` optional); eine eingetragene
+    Zeitzone geht vor.
+  - **Fremdbeträge:** Der Gegenwert einer Invoice-Ninja-Ausgabe in
+    Fremdwährung und der zweite Betrag einer Firefly-Buchung stehen im
+    Belegfluss bzw. in der Firefly-Liste unter dem Betrag.
 - Open-Source-Plugins, Welle 4 (Phase 158, Feature 177, MVP-1346–1348):
   **Seafile** als Quelle im Cloud-Dokumenteingang und als verschlüsseltes
   Backupziel.
@@ -1922,6 +1938,9 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
 
 ### Fixed
 
+- Belegfluss: Ein Filter, den keine Belegquelle bedient (etwa Herkunft
+  „lokal“ bei nur gespiegelten Belegen), brach mit einem Fehler ab, weil die
+  leere Ersatzmenge eine Spalte zu wenig hatte.
 - **Phase-158-Anbindungen nach API-Doku und Quelltext** (Abgleich vor den
   Testinstanzen, 41 Befunde):
   - Aufgabenimporte: Ein 403 lässt nur die betroffene Zuordnung scheitern.

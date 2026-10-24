@@ -41,6 +41,8 @@ out.
 - **Deposit:** if the description, notes, reference or SEPA end-to-end ID contain exactly one invoice
   number of your organization, the row shows that invoice.
 - **Withdrawal:** the same with the number of an incoming invoice.
+- If a transaction has an amount in a second currency, it is shown below the
+  amount.
 - A split transaction appears as one row per split.
 - If several documents match, the movement is **Ambiguous**; without a hit it is
   **Not assigned**. Amount and date alone never assign.

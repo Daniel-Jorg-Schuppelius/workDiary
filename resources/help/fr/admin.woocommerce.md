@@ -57,8 +57,12 @@ déjà reprises sont toujours mises à jour.
 
 - Numéro de commande, date, **statut** issu du statut fixe de WooCommerce
   (ouverte, en cours, terminée, annulée, remboursée) et montant avec devise.
-- Dans WooCommerce, un remboursement partiel ne change ni le statut ni le total
-  de la commande ; WorkDiary affiche le total de la commande.
+- Les remboursements figurent sous le montant (« dont remboursé ») ; le total
+  de la commande reste celui de la boutique.
+- Une fois par jour, la synchronisation vérifie si les commandes reprises
+  existent encore dans la boutique. Les commandes supprimées sont alors marquées
+  **Supprimée dans la boutique** et restent dans WorkDiary ; si l’une réapparaît,
+  la marque disparaît.
 - Acheteur avec nom, e-mail et société, les lignes en texte.
 - Le numéro de commande mène à la gestion des commandes de la boutique.
 

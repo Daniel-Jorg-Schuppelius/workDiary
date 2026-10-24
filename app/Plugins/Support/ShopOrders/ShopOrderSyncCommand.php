@@ -52,9 +52,9 @@ abstract class ShopOrderSyncCommand extends Command {
                     return;
                 }
                 $this->info(sprintf(
-                    'Organisation #%d: imported %d, updated %d, unchanged %d, skipped %d, linked %d, staged %d, failed %d',
+                    'Organisation #%d: imported %d, updated %d, unchanged %d, skipped %d, linked %d, staged %d, failed %d, deleted %d',
                     $organization->id, $counters['imported'], $counters['updated'], $counters['unchanged'],
-                    $counters['skipped'], $counters['linked'], $counters['staged'], $counters['failed'],
+                    $counters['skipped'], $counters['linked'], $counters['staged'], $counters['failed'], $counters['deleted'],
                 ));
             },
             onError: function (Organization $organization, Throwable $e): void {

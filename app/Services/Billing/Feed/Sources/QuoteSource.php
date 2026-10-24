@@ -61,6 +61,8 @@ class QuoteSource implements DocumentFeedSource {
                 '0 AS open_amount',
                 "'" . FeedProjection::defaultCurrency() . "' AS currency",
                 'quotes.project_id AS project_id',
+                'NULL AS foreign_amount',
+                'NULL AS foreign_currency',
             ]))
             ->where('quotes.organization_id', $f->organizationId)
             ->whereBetween(DB::raw('DATE(quotes.created_at)'), DateRange::days($f->from, $f->to));

@@ -16,8 +16,9 @@ use App\Plugins\PrestaShop\Api\PrestaShopClientFactory;
 use App\Plugins\PrestaShop\Models\{PrestaShopConnection, PrestaShopOrder};
 use App\Plugins\PrestaShop\PrestaShopConfig;
 use App\Plugins\PrestaShop\Services\PrestaShopOrderImportService;
+use App\Plugins\Support\PluginApiException;
 use App\Plugins\Support\ShopOrders\ShopOrderAdminController;
-use App\Plugins\Support\TaskSync\SelfHostedInstance;
+use App\Plugins\Support\TaskSync\{IncompleteRemoteReadException, SelfHostedInstance};
 
 /**
  * PrestaShop-Seite (MVP-1327/1329).
@@ -51,5 +52,15 @@ class PrestaShopAdminController extends ShopOrderAdminController {
             'source_url' => $baseUrl,
             'account_name' => null,
         ];
+    }
+
+    protected function verifiedDetails(int $organizationId): array {
+        try {
+            return ['detected_timezone' => app(PrestaShopClientFactory::class)->for($organizationId)->shopTimezone()];
+        } catch (PluginApiException|IncompleteRemoteReadException $e) {
+            report($e);
+
+            return [];
+        }
     }
 }

@@ -35,6 +35,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonImmutable $booked_on
  * @property Money $booked_amount
  * @property CurrencyCode|null $currency
+ * @property Money|null $foreign_amount
+ * @property CurrencyCode|null $foreign_currency
  * @property string|null $description
  * @property string|null $counterparty_name
  * @property string|null $account_name
@@ -51,7 +53,7 @@ class FireflyTransaction extends Model {
     protected $table = 'firefly_transactions';
 
     protected $fillable = [
-        'organization_id', 'remote_journal_id', 'remote_group_id', 'kind', 'booked_on', 'booked_amount', 'currency',
+        'organization_id', 'remote_journal_id', 'remote_group_id', 'kind', 'booked_on', 'booked_amount', 'currency', 'foreign_amount', 'foreign_currency',
         'description', 'counterparty_name', 'account_name', 'references', 'match_status', 'invoice_id', 'incoming_einvoice_id',
     ];
 
@@ -60,6 +62,8 @@ class FireflyTransaction extends Model {
         'booked_on' => 'immutable_date',
         'booked_amount' => MoneyCast::class . ':currency,2',
         'currency' => CurrencyCode::class,
+        'foreign_amount' => MoneyCast::class . ':foreign_currency,2',
+        'foreign_currency' => CurrencyCode::class,
         'references' => 'array',
         'match_status' => FireflyMatchStatus::class,
     ];

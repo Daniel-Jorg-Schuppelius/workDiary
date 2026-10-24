@@ -33,11 +33,13 @@ use Illuminate\Database\Eloquent\Model;
  * @property CurrencyCode|null $currency
  * @property Money|null $gross_amount
  * @property Money|null $net_amount
+ * @property Money|null $refunded_amount
  * @property string|null $buyer_external_id
  * @property array{name: ?string, email: ?string, company: ?string}|null $buyer
  * @property list<array{name: string, sku: ?string, quantity: string, total: ?string}>|null $items
  * @property CarbonImmutable|null $ordered_at
  * @property CarbonImmutable|null $remote_modified_at
+ * @property CarbonImmutable|null $remote_deleted_at
  * @property int|null $customer_id
  * @property MarketplaceInboxStatus $inbox_status
  * @property-read Customer|null $customer

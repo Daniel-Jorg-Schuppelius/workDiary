@@ -18,9 +18,11 @@ use App\Models\Finance\AccountingVoucher;
 use App\Plugins\Akaunting\{AkauntingConfig, AkauntingPlugin};
 use App\Plugins\Akaunting\Api\AkauntingClientFactory;
 use App\Services\Finance\Accounting\Vouchers\{MirroredVoucher, VoucherMirror, VoucherPuller};
+use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\StringHelper;
 use CommonToolkit\ValueObjects\Money;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Akaunting in den Belegspiegel (Feature 176, MVP-1332): Rechnungen als
@@ -30,7 +32,8 @@ use CommonToolkit\ValueObjects\Money;
  * Änderungsfolge. Die Marke ist Ortszeit der Instanz (so vergleicht der
  * Suchfilter) und wird nur hier gelesen; zwei Stunden Überlappung decken die
  * Rückstellung der Uhr ab. Der Spiegel bleibt über die Fremd-ID
- * (`invoice:<id>`) dublettenfrei.
+ * (`invoice:<id>`) dublettenfrei. Einmal täglich gleicht der Abruf die
+ * vollständige ID-Liste je Art ab und markiert, was Akaunting nicht mehr führt.
  */
 class AkauntingVoucherPullService implements VoucherPuller {
     /** Belegart → Richtung und Pfad in der Akaunting-Oberfläche. */
@@ -76,6 +79,16 @@ class AkauntingVoucherPullService implements VoucherPuller {
                     break;
                 }
             }
+        }
+
+        // Einmal täglich: Was Akaunting nicht mehr führt, markiert der Spiegel als gelöscht.
+        $key = 'akaunting-deletions:' . $organizationId . ':' . CarbonImmutable::today()->toDateString();
+        if (! Cache::has($key)) {
+            foreach (array_keys(self::TYPES) as $type) {
+                $seen = array_map(static fn (string $id): string => $type . ':' . $id, $client->documentIds($type));
+                $this->mirror->markSourceDeletions($organizationId, $this->pluginId(), $type, $seen);
+            }
+            Cache::put($key, true, CarbonImmutable::tomorrow()->addHour());
         }
 
         return $counters;

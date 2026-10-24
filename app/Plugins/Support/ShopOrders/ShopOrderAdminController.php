@@ -54,6 +54,17 @@ abstract class ShopOrderAdminController extends Controller {
      */
     abstract protected function verifyConnection(int $organizationId): array;
 
+    /**
+     * Weitere Merkmale, die die Prüfung an der Verbindung festhält (etwa die
+     * Zeitzone des Shops). Fehlt ein Recht, fehlt das Merkmal — die Prüfung
+     * scheitert daran nicht.
+     *
+     * @return array<string, mixed>
+     */
+    protected function verifiedDetails(int $organizationId): array {
+        return [];
+    }
+
     public function index(Request $request): View {
         $organization = $this->organization($this->admin());
         $service = $this->importService();
@@ -120,7 +131,7 @@ abstract class ShopOrderAdminController extends Controller {
             $connection->forceFill(['import_confirmed_at' => null, 'confirmed_by' => null, 'checkpoint_at' => null]);
         }
 
-        $connection->forceFill($identity + [
+        $connection->forceFill($identity + $this->verifiedDetails((int) $organization->id) + [
             'status' => OAuthConnectionStatus::Active,
             'last_error' => null,
             'last_error_at' => null,

@@ -57,8 +57,11 @@ ist. Bereits übernommene Bestellungen führt er immer nach.
 
 - Bestellnummer, Datum, **Status** aus dem festen WooCommerce-Status (offen,
   in Bearbeitung, abgeschlossen, storniert, erstattet) und Betrag mit Währung.
-- Teilerstattungen ändern in WooCommerce weder Status noch Bestellsumme;
-  WorkDiary zeigt die Bestellsumme.
+- Erstattungen stehen unter dem Betrag („davon erstattet“); die Bestellsumme
+  bleibt wie im Shop.
+- Einmal täglich prüft der Abgleich, ob die übernommenen Bestellungen im Shop
+  noch vorhanden sind. Gelöschte stehen dann auf **Im Shop gelöscht** und
+  bleiben in WorkDiary erhalten; taucht eine wieder auf, entfällt die Markierung.
 - Käufer mit Name, E-Mail und Firma, die Positionen als Text.
 - Die Bestellnummer führt in die Bestellverwaltung des Shops.
 
