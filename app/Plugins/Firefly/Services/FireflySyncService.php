@@ -154,6 +154,7 @@ class FireflySyncService {
             'booked_on' => $date->toDateString(),
             'currency' => CurrencyCode::tryFrom(strtoupper((string) ($split['currency_code'] ?? ''))),
             'booked_amount' => $amount,
+            ...self::foreign($split),
             'description' => $description !== null ? mb_substr($description, 0, 1000) : null,
             'counterparty_name' => StringHelper::trimToNull($split[$kind === FireflyTransactionKind::Deposit ? 'source_name' : 'destination_name'] ?? null),
             'account_name' => StringHelper::trimToNull($split[$kind === FireflyTransactionKind::Deposit ? 'destination_name' : 'source_name'] ?? null),
@@ -170,6 +171,22 @@ class FireflySyncService {
         }
 
         return $journalId;
+    }
+
+    /**
+     * Betrag in der zweiten Währung einer Buchung; Firefly liefert ihn positiv
+     * oder leer.
+     *
+     * @param  array<mixed>  $split
+     * @return array{foreign_currency: ?CurrencyCode, foreign_amount: ?string}
+     */
+    private static function foreign(array $split): array {
+        $currency = CurrencyCode::tryFrom(strtoupper((string) ($split['foreign_currency_code'] ?? '')));
+        $amount = is_numeric($split['foreign_amount'] ?? null) ? NumberHelper::toUSFormat((string) $split['foreign_amount'], 2) : null;
+
+        return $currency !== null && $amount !== null
+            ? ['foreign_currency' => $currency, 'foreign_amount' => $amount]
+            : ['foreign_currency' => null, 'foreign_amount' => null];
     }
 
     /**

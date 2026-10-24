@@ -474,7 +474,8 @@ Verbindung.
 
 **Shop-Importe (Phase 158):** WooCommerce, Shopware, PrestaShop und
 Nachfolger bauen auf `App\Plugins\Support\ShopOrders` auf und liefern nur
-Client, `fetch()`, `normalize()` → `RemoteOrder` und `orderUrl()`.
+Client, `fetch()`, `normalize()` → `RemoteOrder`, `existingRemoteIds()` (täglicher
+Löschabgleich, markiert `remote_deleted_at`) und `orderUrl()`.
 
 - `fetch()` liest in stabiler Reihenfolge nach ID, nie nach Änderungszeit.
   Sonst verschiebt eine Änderung während des Laufs die Seiten.

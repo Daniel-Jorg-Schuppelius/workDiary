@@ -111,6 +111,8 @@ class LexofficeDocumentFeedSource implements DocumentFeedSource, MarksLinkedExpe
                     THEN COALESCE(lexoffice_vouchers.open_amount, lexoffice_vouchers.total_amount, 0) ELSE 0 END AS open_amount",
                 'lexoffice_vouchers.currency AS currency',
                 'NULL AS project_id',
+                'NULL AS foreign_amount',
+                'NULL AS foreign_currency',
             ]))
             ->where('lexoffice_vouchers.organization_id', $f->organizationId)
             ->whereNotNull('lexoffice_vouchers.voucher_date')

@@ -1,7 +1,7 @@
 ---
 title: "Document flow"
 topic: billing.feed
-version: 3
+version: 4
 keywords:
     - invoices
     - quotes
@@ -67,6 +67,11 @@ the quote, the purchase invoice or the expense receipt. Mirrored documents
 without a page of their own have no link. For open documents the "Due" column
 shows the days overdue and the reminder level reached. You send a reminder for
 your own overdue invoices straight from the row with "Send reminder".
+
+**Mirrored documents:** If the connected system no longer holds a document, it
+shows **Deleted in source**. It then counts in no key figure and appears only
+with "Include archived". For documents in a foreign currency, the equivalent in
+the second currency is shown below the amount.
 
 **New documents:** At the top right you create a quote or an invoice, or
 convert an invoice file into an e-invoice. "To bill and to follow up" opens

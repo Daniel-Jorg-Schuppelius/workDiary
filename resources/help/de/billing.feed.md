@@ -1,7 +1,7 @@
 ---
 title: "Belegfluss"
 topic: billing.feed
-version: 3
+version: 4
 keywords:
     - Belegliste
     - Rechnungen
@@ -70,6 +70,11 @@ Rechnung, zum Angebot, zur Eingangsrechnung oder zum Auslagenbeleg. Gespiegelte
 Belege ohne eigene Seite haben keinen Link. Die Spalte „Fällig“ nennt bei
 offenen Belegen die Tage im Verzug und die erreichte Mahnstufe. Überfällige
 eigene Rechnungen mahnen Sie über „Mahnen“ direkt aus der Zeile.
+
+**Gespiegelte Belege:** Führt das angebundene System einen Beleg nicht mehr,
+steht er auf **In Quelle gelöscht**. Er zählt dann in keiner Kennzahl und
+erscheint nur mit „Archivierte einbeziehen“. Bei Belegen in Fremdwährung steht
+unter dem Betrag der Gegenwert in der zweiten Währung.
 
 **Neue Belege:** Oben rechts legen Sie ein Angebot oder eine Rechnung an oder
 wandeln eine Rechnungsdatei in eine E-Rechnung um. „Abzurechnen und

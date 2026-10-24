@@ -16,8 +16,10 @@ use APIToolkit\API\Authentication\BasicAuthentication;
 use App\Plugins\PrestaShop\Exceptions\PrestaShopApiException;
 use App\Plugins\PrestaShop\PrestaShopPlugin;
 use App\Plugins\Support\{GuardsPluginApiResponses, PluginApiClient, PluginHttpFactory};
+use App\Plugins\Support\ShopOrders\RemoteOrder;
 use App\Plugins\Support\TaskSync\IncompleteRemoteReadException;
 use Generator;
+use Illuminate\Http\Client\Response;
 
 /**
  * Lesender Zugriff auf den PrestaShop-Webservice (JSON). Der Schlüssel geht
@@ -29,6 +31,9 @@ use Generator;
  */
 class PrestaShopClient {
     use GuardsPluginApiResponses;
+
+    /** Höchstzahl Gutschriften je Abfrage; mehr deutet auf ein abgeschnittenes Ergebnis. */
+    private const SLIP_LIMIT = 1000;
 
     private ?PluginApiClient $api = null;
 
@@ -157,6 +162,86 @@ class PrestaShopClient {
         return $this->states;
     }
 
+    /**
+     * Welche der IDs der Shop noch führt.
+     *
+     * @param  list<string>  $ids
+     * @return list<string>
+     */
+    public function existingOrderIds(array $ids): array {
+        if ($ids === []) {
+            return [];
+        }
+        $present = [];
+        foreach ($this->list('orders', ['display' => '[id]', 'filter[id]' => '[' . implode('|', $ids) . ']', 'limit' => '0,' . count($ids)]) as $row) {
+            if (is_scalar($row['id'] ?? null) && in_array((string) $row['id'], $ids, true)) {
+                $present[] = (string) $row['id'];
+            }
+        }
+
+        return $present;
+    }
+
+    /**
+     * Gutschriften je Bestellung als Bruttobeträge (Produkte + Versand, wie
+     * die Verwaltung sie zeigt); null, wenn der Schlüssel `order_slip` nicht
+     * lesen darf.
+     *
+     * @param  list<int>  $orderIds
+     * @return array<int, list<string>>|null
+     */
+    public function refundsByOrder(array $orderIds): ?array {
+        if ($orderIds === []) {
+            return [];
+        }
+        $response = $this->api()->getResponse($this->baseUrl . '/api/order_slip', [
+            'display' => '[id,id_order,total_products_tax_incl,total_shipping_tax_incl]',
+            'filter[id_order]' => '[' . implode('|', $orderIds) . ']',
+            'limit' => '0,' . self::SLIP_LIMIT,
+            'output_format' => 'JSON',
+        ]);
+        if (self::notPermitted($response)) {
+            return null;
+        }
+        $slips = $this->rows($this->guard($response, '/api/order_slip'), 'order_slips');
+        if (count($slips) >= self::SLIP_LIMIT) {
+            throw new IncompleteRemoteReadException('page_limit');
+        }
+        $refunds = [];
+        foreach ($slips as $slip) {
+            $products = RemoteOrder::amount($slip['total_products_tax_incl'] ?? null);
+            $shipping = RemoteOrder::amount($slip['total_shipping_tax_incl'] ?? null);
+            if (! is_numeric($slip['id_order'] ?? null) || $products === null || $shipping === null) {
+                throw new IncompleteRemoteReadException('invalid_response');
+            }
+            $refunds[(int) $slip['id_order']][] = $products;
+            $refunds[(int) $slip['id_order']][] = $shipping;
+        }
+
+        return $refunds;
+    }
+
+    /**
+     * Zeitzone des Shops (`PS_TIMEZONE`); null, wenn der Schlüssel
+     * `configurations` nicht lesen darf oder der Wert keine Zeitzone ist. Bei
+     * mehreren Shops gilt der globale Eintrag.
+     */
+    public function shopTimezone(): ?string {
+        $response = $this->api()->getResponse($this->baseUrl . '/api/configurations', [
+            'display' => '[name,value,id_shop,id_shop_group]',
+            'filter[name]' => '[PS_TIMEZONE]',
+            'output_format' => 'JSON',
+        ]);
+        if (self::notPermitted($response)) {
+            return null;
+        }
+        $rows = $this->rows($this->guard($response, '/api/configurations'), 'configurations');
+        usort($rows, static fn (array $a, array $b): int => (int) ! empty($a['id_shop']) <=> (int) ! empty($b['id_shop']));
+        $value = $rows[0]['value'] ?? null;
+
+        return is_string($value) && in_array($value, timezone_identifiers_list(), true) ? $value : null;
+    }
+
     /** Leseprobe mit Leserecht auf Bestellungen (Healthcheck, Verbindung prüfen). */
     public function probe(): void {
         $this->list('orders', ['display' => '[id]', 'limit' => '0,1']);
@@ -167,16 +252,34 @@ class PrestaShopClient {
      * @return list<array<string, mixed>>
      */
     private function list(string $resource, array $query): array {
-        $body = $this->guard($this->api()->getResponse($this->baseUrl . '/api/' . $resource, $query + ['output_format' => 'JSON']), '/api/' . $resource);
+        return $this->rows($this->guard($this->api()->getResponse($this->baseUrl . '/api/' . $resource, $query + ['output_format' => 'JSON']), '/api/' . $resource), $resource);
+    }
+
+    /**
+     * Zeilen einer Liste unter ihrem Sammelnamen (`orders`, `order_slips`).
+     *
+     * @param  array<mixed>  $body
+     * @return list<array<string, mixed>>
+     */
+    private function rows(array $body, string $node): array {
         if ($body === []) {
             return [];
         }
-        $rows = $body[$resource] ?? null;
+        $rows = $body[$node] ?? null;
         if (! is_array($rows) || ! array_is_list($rows)) {
             throw new IncompleteRemoteReadException('invalid_response');
         }
 
         return array_values(array_filter($rows, 'is_array'));
+    }
+
+    /**
+     * Ressource für diesen Schlüssel nicht freigegeben (Code 26) oder ohne GET
+     * (Code 25) — anders als ein ungültiger Schlüssel (Codes 16–21).
+     */
+    private static function notPermitted(Response $response): bool {
+        return in_array($response->status(), [401, 405], true)
+            && in_array((int) data_get($response->json(), 'errors.0.code'), [25, 26], true);
     }
 
     private function api(): PluginApiClient {

@@ -81,8 +81,10 @@ class AccountingVoucherSource implements DocumentFeedSource {
             'D' => DocumentDirection::Incoming->value,
         ], DocumentDirection::Neutral->value);
         $direction = "COALESCE(accounting_vouchers.direction, $legacyDirection)";
-        $sign = "CASE $direction WHEN '" . DocumentDirection::Outgoing->value . "' THEN 1"
-            . " WHEN '" . DocumentDirection::Incoming->value . "' THEN -1 ELSE 0 END";
+        // Im Fremdsystem gelöscht: ohne Vorzeichen, also in keiner Summe.
+        $sign = 'CASE WHEN accounting_vouchers.source_deleted_at IS NOT NULL THEN 0'
+            . " WHEN $direction = '" . DocumentDirection::Outgoing->value . "' THEN 1"
+            . " WHEN $direction = '" . DocumentDirection::Incoming->value . "' THEN -1 ELSE 0 END";
         $kind = "COALESCE(accounting_vouchers.document_kind, '" . DocumentKind::Other->value . "')";
         // sevDesk-Statuscodes sind Zahlen; PHP macht daraus int-Schlüssel,
         // die caseMap() nicht annimmt. Deshalb explizit als String-Paare.
@@ -106,8 +108,9 @@ class AccountingVoucherSource implements DocumentFeedSource {
                 "COALESCE(accounting_vouchers.voucher_number, '') AS number",
                 'accounting_vouchers.voucher_date AS doc_date',
                 'accounting_vouchers.due_date AS due_on',
-                "$state AS state",
-                'CASE WHEN accounting_vouchers.archived THEN 1 ELSE 0 END AS is_archived',
+                // Im Fremdsystem gelöscht: eigener Zustand, archiviert, nichts mehr offen.
+                "CASE WHEN accounting_vouchers.source_deleted_at IS NOT NULL THEN 'deleted' ELSE $state END AS state",
+                'CASE WHEN accounting_vouchers.archived OR accounting_vouchers.source_deleted_at IS NOT NULL THEN 1 ELSE 0 END AS is_archived',
                 "CASE WHEN accounting_vouchers.customer_id IS NOT NULL THEN 'customer'
                     WHEN accounting_vouchers.supplier_id IS NOT NULL THEN 'supplier' ELSE NULL END AS contact_type",
                 'COALESCE(accounting_vouchers.customer_id, accounting_vouchers.supplier_id) AS contact_id',
@@ -117,10 +120,12 @@ class AccountingVoucherSource implements DocumentFeedSource {
                 ) AS contact_name',
                 '0 AS dunning_level',
                 'COALESCE(accounting_vouchers.total_amount, 0) AS amount_gross',
-                "CASE WHEN $state = 'open'
+                "CASE WHEN $state = 'open' AND accounting_vouchers.source_deleted_at IS NULL
                     THEN COALESCE(accounting_vouchers.open_amount, accounting_vouchers.total_amount, 0) ELSE 0 END AS open_amount",
                 'accounting_vouchers.currency AS currency',
                 'NULL AS project_id',
+                'accounting_vouchers.foreign_amount AS foreign_amount',
+                'accounting_vouchers.foreign_currency AS foreign_currency',
             ]))
             ->where('accounting_vouchers.organization_id', $f->organizationId)
             ->whereIn('accounting_vouchers.plugin_id', array_keys($origins))

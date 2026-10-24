@@ -58,8 +58,11 @@ incorporados se actualizan siempre.
 - Número de pedido, fecha, **estado** a partir del estado fijo de WooCommerce
   (abierto, en proceso, completado, cancelado, reembolsado) e importe con
   moneda.
-- En WooCommerce, un reembolso parcial no cambia ni el estado ni el total del
-  pedido; WorkDiary muestra el total del pedido.
+- Los reembolsos figuran bajo el importe («de ello reembolsado»); el total del
+  pedido se mantiene como en la tienda.
+- Una vez al día la sincronización comprueba si los pedidos incorporados siguen
+  existiendo en la tienda. Los eliminados aparecen como **Eliminado en la
+  tienda** y se conservan en WorkDiary; si uno reaparece, la marca desaparece.
 - Comprador con nombre, e-mail y empresa, las líneas como texto.
 - El número de pedido lleva a la gestión de pedidos de la tienda.
 

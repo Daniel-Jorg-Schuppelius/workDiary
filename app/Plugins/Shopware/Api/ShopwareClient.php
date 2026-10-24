@@ -81,7 +81,10 @@ class ShopwareClient {
                     'orderCustomer' => ['associations' => ['customer' => (object) []]],
                     'transactions' => [
                         'sort' => [['field' => 'createdAt', 'order' => 'ASC']],
-                        'associations' => ['stateMachineState' => (object) []],
+                        'associations' => [
+                            'stateMachineState' => (object) [],
+                            'captures' => ['associations' => ['refunds' => ['associations' => ['stateMachineState' => (object) []]]]],
+                        ],
                     ],
                 ],
             ], ['retry_non_idempotent' => true]), '/search/order');
@@ -111,6 +114,29 @@ class ShopwareClient {
         }
 
         throw new IncompleteRemoteReadException('page_limit');
+    }
+
+    /**
+     * Welche der IDs der Shop noch führt (`search-ids` mit `equalsAny`).
+     *
+     * @param  list<string>  $ids
+     * @return list<string>
+     */
+    public function existingOrderIds(array $ids): array {
+        if ($ids === []) {
+            return [];
+        }
+        $body = $this->guard($this->api()->postJson($this->url('/search-ids/order'), [
+            'limit' => count($ids),
+            'total-count-mode' => 1,
+            'filter' => [['type' => 'equalsAny', 'field' => 'id', 'value' => $ids]],
+        ], ['retry_non_idempotent' => true]), '/search-ids/order');
+        $found = $body['data'] ?? null;
+        if (! is_array($found) || ! array_is_list($found) || ! is_int($body['total'] ?? null) || $body['total'] !== count($found)) {
+            throw new IncompleteRemoteReadException('invalid_response');
+        }
+
+        return array_values(array_intersect($ids, array_filter($found, 'is_string')));
     }
 
     /** Leseprobe mit Leserecht auf Bestellungen (Healthcheck, Verbindung prüfen). */

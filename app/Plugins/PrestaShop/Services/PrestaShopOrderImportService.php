@@ -23,13 +23,15 @@ use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\{PersonNameHelper, StringHelper};
+use CommonToolkit\ValueObjects\Money;
 use DateTimeZone;
 use Illuminate\Database\Eloquent\Model;
 
 /**
  * PrestaShop-Adapter des Shop-Imports (MVP-1327): Bestellungen über
- * `date_upd` in Shop-Zeit (Einstellung, sonst die Zeitzone der Organisation),
- * Kunden je Seite gesammelt. Der Status kommt aus den festen Merkmalen des
+ * `date_upd` in Shop-Zeit (Einstellung, sonst die beim Prüfen gelesene
+ * `PS_TIMEZONE`, sonst die Zeitzone der Organisation), Kunden und Gutschriften
+ * je Seite gesammelt. Der Status kommt aus den festen Merkmalen des
  * Bestellstatus — Vorlage `order_canceled`/`refund`/`payment_error`, sonst
  * versendet, bezahlt — nie aus dem frei benannten Statusnamen.
  * Einen Link in die Verwaltung gibt es nicht: ihr Ordner ist je Shop geheim und
@@ -67,14 +69,18 @@ class PrestaShopOrderImportService extends AbstractShopOrderImportService {
     protected function fetch(Organization $organization, CarbonImmutable $since): iterable {
         $factory = app(PrestaShopClientFactory::class);
         $client = $factory->for((int) $organization->id);
-        $timezone = $factory->shopTimezone((int) $organization->id) ?? Tz::ofOrganization($organization);
+        $timezone = $factory->shopTimezone((int) $organization->id)
+            ?? $this->connection((int) $organization->id)->detected_timezone
+            ?? Tz::ofOrganization($organization);
         $states = $client->orderStates();
 
         foreach ($client->orderPages(self::localFloor($since, $timezone)) as $page) {
             $customerIds = array_values(array_unique(array_filter(array_map(static fn (array $order): int => is_numeric($order['id_customer'] ?? null) ? (int) $order['id_customer'] : 0, $page))));
             $customers = $client->customers($customerIds);
+            $refunds = $client->refundsByOrder(array_values(array_filter(array_map(static fn (array $order): int => is_numeric($order['id'] ?? null) ? (int) $order['id'] : 0, $page))));
             foreach ($page as $order) {
                 yield $order + [
+                    '_refunds' => $refunds === null ? null : ($refunds[(int) ($order['id'] ?? 0)] ?? []),
                     '_customer' => $customers[(int) ($order['id_customer'] ?? 0)] ?? null,
                     '_currency' => $client->currency(is_numeric($order['id_currency'] ?? null) ? (int) $order['id_currency'] : 0),
                     '_state' => $states[(int) ($order['current_state'] ?? 0)] ?? null,
@@ -82,6 +88,10 @@ class PrestaShopOrderImportService extends AbstractShopOrderImportService {
                 ];
             }
         }
+    }
+
+    protected function existingRemoteIds(Organization $organization, array $ids): array {
+        return app(PrestaShopClientFactory::class)->for((int) $organization->id)->existingOrderIds($ids);
     }
 
     protected function normalize(array $raw, Organization $organization): RemoteOrder {
@@ -95,13 +105,15 @@ class PrestaShopOrderImportService extends AbstractShopOrderImportService {
         $guest = (string) ($customer['is_guest'] ?? '0') === '1';
         $customerId = is_numeric($customer['id'] ?? null) ? (int) $customer['id'] : 0;
         $stateId = is_numeric($raw['current_state'] ?? null) ? (int) $raw['current_state'] : 0;
+        $currency = CurrencyCode::tryFrom((string) ($raw['_currency'] ?? ''));
+        $refunds = $raw['_refunds'] ?? null;
 
         return new RemoteOrder(
             id: $id,
             number: StringHelper::trimToNull($raw['reference'] ?? null),
             status: self::status(is_array($raw['_state'] ?? null) ? $raw['_state'] : null),
             remoteStatus: $stateId > 0 ? 'state:' . $stateId : null,
-            currency: CurrencyCode::tryFrom((string) ($raw['_currency'] ?? '')),
+            currency: $currency,
             grossAmount: RemoteOrder::amount($raw['total_paid_tax_incl'] ?? null),
             netAmount: RemoteOrder::amount($raw['total_paid_tax_excl'] ?? null),
             orderedAt: self::date($raw['date_add'] ?? null, $timezone),
@@ -111,6 +123,8 @@ class PrestaShopOrderImportService extends AbstractShopOrderImportService {
             buyerEmail: $email,
             buyerCompany: StringHelper::trimToNull($customer['company'] ?? null),
             items: self::items(data_get($raw, 'associations.order_rows')),
+            // Ohne Leserecht auf `order_slip` bleibt der erstattete Betrag unbekannt.
+            refundedAmount: is_array($refunds) ? Money::sum(array_map(static fn (string $amount): Money => Money::of($amount, $currency ?? CurrencyCode::Euro), array_filter($refunds, 'is_string')), $currency ?? CurrencyCode::Euro)->getAmount() : null,
         );
     }
 

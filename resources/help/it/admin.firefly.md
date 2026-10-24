@@ -42,6 +42,8 @@ esclusi.
 - **Entrata:** se causale, note, riferimento o identificativo SEPA end-to-end contengono esattamente un numero di
   fattura della Sua organizzazione, la riga mostra quella fattura.
 - **Uscita:** lo stesso con il numero di una fattura in entrata.
+- Se una transazione ha un importo in una seconda valuta, compare sotto
+  l’importo.
 - Una transazione suddivisa (split) compare come una riga per ogni parte.
 - Se corrispondono più documenti, il movimento è **Ambiguo**; senza corrispondenza
   è **Senza assegnazione**. Importo e data da soli non assegnano mai.

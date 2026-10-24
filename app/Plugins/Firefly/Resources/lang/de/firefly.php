@@ -57,6 +57,7 @@ return [
             'amount' => 'Betrag',
         ],
         'empty' => 'Noch keine Bewegungen',
+        'foreign_amount' => 'Betrag in zweiter Währung',
     ],
     'search' => [
         'domain' => 'Firefly-III-Bewegungen',

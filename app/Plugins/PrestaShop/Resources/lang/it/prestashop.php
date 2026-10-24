@@ -16,9 +16,9 @@ return [
         'base_url' => 'Indirizzo del negozio',
         'base_url_help' => 'Indirizzo del negozio, ad es. https://shop.example.com (senza /api).',
         'api_key' => 'Chiave del webservice',
-        'api_key_help' => 'In PrestaShop attivi il webservice in Parametri avanzati → Webservice e crei una chiave con permesso di lettura (GET) su orders, customers, currencies e order_states.',
+        'api_key_help' => 'In PrestaShop attivi il webservice in Parametri avanzati → Webservice e crei una chiave con permesso di lettura (GET) su orders, customers, currencies e order_states; per i rimborsi anche order_slip, per il fuso orario configurations.',
         'shop_timezone' => 'Fuso orario del negozio',
-        'shop_timezone_help' => 'PrestaShop fornisce gli orari senza fuso orario. Lasci vuoto se il negozio funziona nel fuso orario della Sua organizzazione; altrimenti ad es. Europe/Vienna.',
+        'shop_timezone_help' => 'PrestaShop fornisce gli orari senza fuso orario. Lasci vuoto per usare il fuso letto durante la verifica della connessione (permesso configurations), altrimenti quello della Sua organizzazione; oppure inserisca ad es. Europe/Vienna.',
     ],
     'search' => [
         'domain' => 'Ordini PrestaShop',

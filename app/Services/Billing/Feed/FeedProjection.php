@@ -28,6 +28,7 @@ final class FeedProjection {
         'sign', 'number', 'doc_date', 'due_on', 'state', 'is_archived',
         'contact_type', 'contact_id', 'contact_name', 'dunning_level',
         'amount_gross', 'open_amount', 'currency', 'project_id',
+        'foreign_amount', 'foreign_currency',
     ];
 
     /**

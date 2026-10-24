@@ -16,7 +16,7 @@ return [
         'base_url' => 'Adresse de la boutique',
         'base_url_help' => 'Adresse de la boutique, p. ex. https://shop.example.com (sans /api ni /admin).',
         'client_id' => 'ID de clé d’accès',
-        'client_id_help' => 'Dans Shopware, créez une intégration sous Paramètres → Système → Intégrations. Elle a besoin du droit de lecture sur les commandes, les clients de commande, les clients, les lignes, les transactions de paiement, les devises et les états – ou de l’option « Administrateur ».',
+        'client_id_help' => 'Dans Shopware, créez une intégration sous Paramètres → Système → Intégrations. Elle a besoin du droit de lecture sur les commandes, les clients de commande, les clients, les lignes, les transactions de paiement avec leurs captures et remboursements, les devises et les états – ou de l’option « Administrateur ».',
         'client_secret' => 'Clé d’accès secrète',
     ],
     'search' => [

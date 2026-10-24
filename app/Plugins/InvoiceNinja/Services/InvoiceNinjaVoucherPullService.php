@@ -149,6 +149,7 @@ class InvoiceNinjaVoucherPullService implements VoucherPuller {
         $currencyCode = CurrencyCode::tryFrom($currency) ?? CurrencyCode::Euro;
         $isExpense = $meta['type'] === 'expense';
         [$total, $net] = $isExpense ? self::expenseAmounts($row, $currencyCode) : self::documentAmounts($row, $currencyCode);
+        $foreign = $isExpense ? self::expenseForeign($row, $context['currencies']) : [null, null];
 
         return new MirroredVoucher(
             externalId: $id !== null ? $meta['type'] . ':' . $id : '',
@@ -165,6 +166,8 @@ class InvoiceNinjaVoucherPullService implements VoucherPuller {
             netAmount: $net,
             openAmount: $isExpense ? null : VoucherMirror::decimal($row['balance'] ?? null),
             currency: $currency,
+            foreignAmount: $foreign[0],
+            foreignCurrency: $foreign[1],
             archived: is_numeric($row['archived_at'] ?? null) && (int) $row['archived_at'] > 0,
             contactExternalId: ($contactId = StringHelper::trimToNull($row[$isExpense ? 'vendor_id' : 'client_id'] ?? null)) !== null ? ($isExpense ? 'vendor:' : 'client:') . $contactId : null,
             supplierName: $isExpense ? StringHelper::trimToNull($contact['name'] ?? null) : null,
@@ -199,6 +202,25 @@ class InvoiceNinjaVoucherPullService implements VoucherPuller {
         }
 
         return $context['company']['currency_id'];
+    }
+
+    /**
+     * Gegenwert einer Ausgabe in Fremdwährung: Invoice Ninja rechnet sie in die
+     * Firmenwährung (`invoice_currency_id`) um und führt das Ergebnis als
+     * `foreign_amount`.
+     *
+     * @param  array<string, mixed>  $row
+     * @param  array<string, string>  $currencies
+     * @return array{0: ?string, 1: ?string}
+     */
+    private static function expenseForeign(array $row, array $currencies): array {
+        $target = StringHelper::trimToNull($row['invoice_currency_id'] ?? null);
+        $amount = VoucherMirror::decimal($row['foreign_amount'] ?? null);
+        if ($target === null || $target === StringHelper::trimToNull($row['currency_id'] ?? null) || $amount === null || (float) $amount === 0.0 || ! isset($currencies[$target])) {
+            return [null, null];
+        }
+
+        return [$amount, $currencies[$target]];
     }
 
     /**

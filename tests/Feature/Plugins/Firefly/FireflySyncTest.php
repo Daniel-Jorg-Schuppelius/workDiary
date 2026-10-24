@@ -144,6 +144,8 @@ class FireflySyncTest extends TestCase {
         $sepa = $this->group(8, 108, 'deposit', '10.00', 'Überweisung', 'Kundin AG', 'Geschäftskonto');
         $sepa['attributes']['transactions'][0]['sepa_ct_id'] = 'RE-2026-0042';
         $this->groups[] = $sepa;
+        $this->groups[0]['attributes']['transactions'][0]['foreign_amount'] = '130.20';
+        $this->groups[0]['attributes']['transactions'][0]['foreign_currency_code'] = 'USD';
         $this->connect();
         $http = $this->serve();
 
@@ -157,6 +159,8 @@ class FireflySyncTest extends TestCase {
         $this->assertSame(Invoice::query()->where('number', 'RE-2026-0042')->value('id'), $deposit->invoice_id);
         $this->assertSame('Kundin AG', $deposit->counterparty_name);
         $this->assertSame('119.00', $deposit->booked_amount->getAmount());
+        $this->assertSame(['130.20', 'USD'], [$deposit->foreign_amount?->getAmount(), $deposit->foreign_currency?->value]);
+        $this->assertNull(FireflyTransaction::query()->where('remote_journal_id', '102')->sole()->foreign_amount);
         $this->assertSame(FireflyMatchStatus::Matched, FireflyTransaction::query()->where('remote_journal_id', '108')->sole()->match_status, 'Belegnummer aus der SEPA-End-to-End-ID.');
         $withdrawal = FireflyTransaction::query()->where('remote_journal_id', '102')->sole();
         $this->assertSame(IncomingEInvoice::query()->value('id'), $withdrawal->incoming_einvoice_id);
@@ -214,6 +218,8 @@ class FireflySyncTest extends TestCase {
     }
 
     public function test_page_command_and_search(): void {
+        $this->groups[0]['attributes']['transactions'][0]['foreign_amount'] = '130.20';
+        $this->groups[0]['attributes']['transactions'][0]['foreign_currency_code'] = 'USD';
         $this->connect();
         $this->serve();
 
@@ -221,7 +227,8 @@ class FireflySyncTest extends TestCase {
 
         $this->actingAs($this->admin)->get(route('admin.firefly.index', ['match' => 'matched']))->assertOk()
             ->assertSee('RE-2026-0042')
-            ->assertSee('LF-881');
+            ->assertSee('LF-881')
+            ->assertSee(\CommonToolkit\ValueObjects\Money::of('130.20', \CommonToolkit\Enums\CurrencyCode::from('USD'))->format(), false);
         $domain = app(\App\Plugins\Firefly\Search\FireflyTransactionSearchDomain::class);
         $this->assertCount(1, $domain->search($this->admin, (int) $this->organization->id, 'Kundin', new \App\Services\Search\Dto\SearchDomainFilters(), 10));
     }

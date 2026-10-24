@@ -42,6 +42,14 @@ class PrestaShopImportTest extends TestCase {
     /** @var list<array<string, mixed>> */
     private array $orders = [];
 
+    /** Ressourcen, die der Schlüssel nicht lesen darf (PrestaShop-Fehlercode 26). */
+    private array $forbidden = [];
+
+    /** @var list<int> im Shop gelöschte Bestellungen */
+    private array $gone = [];
+
+    private string $shopTimezone = 'Europe/Vienna';
+
     private User $admin;
 
     protected function setUp(): void {
@@ -93,11 +101,27 @@ class PrestaShopImportTest extends TestCase {
             self::BASE . '/api/orders*' => function (RequestInterface $request) {
                 parse_str($request->getUri()->getQuery(), $query);
                 [$offset, $count] = array_map('intval', explode(',', is_string($query['limit'] ?? null) ? $query['limit'] : '0,100'));
-                $after = (int) trim((string) data_get($query, 'filter.id', '>[0]'), '>[]');
-                $rows = array_slice(array_values(array_filter($this->orders, static fn (array $order): bool => $order['id'] > $after)), $offset, $count);
+                $filter = (string) data_get($query, 'filter.id', '>[0]');
+                // `>[n]` blättert nach ID, `[a|b]` fragt einzelne IDs ab (Löschabgleich).
+                $match = str_starts_with($filter, '>')
+                    ? static fn (array $order): bool => $order['id'] > (int) trim($filter, '>[]')
+                    : fn (array $order): bool => in_array((string) $order['id'], explode('|', trim($filter, '[]')), true) && ! in_array($order['id'], $this->gone, true);
+                $rows = array_slice(array_values(array_filter($this->orders, $match)), $offset, $count);
 
                 return FakePluginHttp::response($rows === [] ? [] : ['orders' => $rows]);
             },
+            self::BASE . '/api/order_slip*' => fn (RequestInterface $request) => in_array('order_slip', $this->forbidden, true)
+                ? FakePluginHttp::response(['errors' => [['code' => 26, 'message' => 'Resource of type "order_slip" is not allowed with this authentication key']]], 401)
+                : FakePluginHttp::response(['order_slips' => [
+                    ['id' => 1, 'id_order' => '11', 'total_products_tax_incl' => '10.000000', 'total_shipping_tax_incl' => '4.900000'],
+                    ['id' => 2, 'id_order' => '11', 'total_products_tax_incl' => '5.000000', 'total_shipping_tax_incl' => '0.000000'],
+                ]]),
+            self::BASE . '/api/configurations*' => fn (RequestInterface $request) => in_array('configurations', $this->forbidden, true)
+                ? FakePluginHttp::response(['errors' => [['code' => 26, 'message' => 'Resource of type "configurations" is not allowed with this authentication key']]], 401)
+                : FakePluginHttp::response(['configurations' => [
+                    ['name' => 'PS_TIMEZONE', 'value' => 'Asia/Tokyo', 'id_shop' => '2', 'id_shop_group' => '1'],
+                    ['name' => 'PS_TIMEZONE', 'value' => $this->shopTimezone, 'id_shop' => '', 'id_shop_group' => ''],
+                ]]),
             self::BASE . '/api/customers*' => FakePluginHttp::response(['customers' => [
                 ['id' => 7, 'firstname' => 'Anna', 'lastname' => 'Alt', 'email' => 'anna@example.test', 'company' => 'Alt GmbH', 'is_guest' => '0'],
                 ['id' => 8, 'firstname' => 'Gerd', 'lastname' => 'Gast', 'email' => 'Gerd@Example.test', 'company' => '', 'is_guest' => '1'],
@@ -128,6 +152,8 @@ class PrestaShopImportTest extends TestCase {
         $this->assertSame('state:2', $paid->remote_status_code);
         $this->assertSame('ABCDEF', $paid->order_number);
         $this->assertSame('59.50', $paid->gross_amount?->getAmount());
+        $this->assertSame('19.90', $paid->refunded_amount?->getAmount(), 'Zwei Gutschriften, je Produkte und Versand brutto.');
+        $this->assertSame('0.00', PrestaShopOrder::query()->where('remote_order_id', '12')->sole()->refunded_amount?->getAmount());
         $this->assertSame('EUR', $paid->currency?->value);
         $this->assertSame('customer:7', $paid->buyer_external_id);
         $this->assertSame('Alt GmbH', $paid->buyerLabel());
@@ -199,5 +225,52 @@ class PrestaShopImportTest extends TestCase {
 
             return str_ends_with($r->getUri()->getPath(), '/api/orders') && data_get($q, 'filter.date_upd') === '[2026-10-25 02:00:00,2999-12-31 23:59:59]';
         });
+    }
+
+    public function test_without_slip_permission_refunds_stay_unknown_and_the_run_completes(): void {
+        $this->forbidden = ['order_slip'];
+        $connection = $this->connect();
+        $this->serve();
+
+        app(PrestaShopOrderImportService::class)->run($this->organization);
+
+        $this->assertNull(PrestaShopOrder::query()->where('remote_order_id', '11')->sole()->refunded_amount);
+        $this->assertTrue($connection->refresh()->is_last_run_complete, 'Fehlendes Recht auf eine Zusatzressource ist kein ungültiger Schlüssel.');
+    }
+
+    public function test_full_run_marks_orders_missing_in_the_shop(): void {
+        $this->connect();
+        $this->serve();
+        app(PrestaShopOrderImportService::class)->run($this->organization);
+
+        $this->gone = [13];
+        $http = $this->serve();
+        $this->assertSame(1, app(PrestaShopOrderImportService::class)->run($this->organization, true)['deleted']);
+        $this->assertNotNull(PrestaShopOrder::query()->where('remote_order_id', '13')->sole()->remote_deleted_at);
+        $this->assertNull(PrestaShopOrder::query()->where('remote_order_id', '11')->sole()->remote_deleted_at);
+        $http->assertSent(static function (RequestInterface $r): bool {
+            parse_str($r->getUri()->getQuery(), $q);
+
+            return str_ends_with($r->getUri()->getPath(), '/api/orders') && data_get($q, 'filter.id') === '[11|12|13|14|15]';
+        });
+    }
+
+    public function test_verify_reads_the_shop_time_zone_and_the_setting_takes_precedence(): void {
+        $this->pluginSecret(PrestaShopPlugin::ID, ['shop_timezone' => '']);
+        $this->shopTimezone = 'America/New_York';
+        $this->serve();
+        $this->actingAs($this->admin)->post(route('admin.prestashop.verify'))->assertSessionHas('success');
+        $connection = PrestaShopConnection::query()->sole();
+        $this->assertSame('America/New_York', $connection->detected_timezone, 'Der globale Eintrag gilt, nicht der eines Einzelshops.');
+
+        $connection->forceFill(['import_confirmed_at' => now()])->save();
+        app(PrestaShopOrderImportService::class)->run($this->organization);
+        $this->assertSame('2026-10-19 14:00:00', PrestaShopOrder::query()->where('remote_order_id', '11')->sole()->ordered_at?->utc()->format('Y-m-d H:i:s'), 'Shop-Zeit New York → UTC.');
+
+        // Ohne Recht auf `configurations` bleibt die Prüfung erfolgreich, die Zeitzone fehlt nur.
+        $this->forbidden = ['configurations'];
+        $this->serve();
+        $this->post(route('admin.prestashop.verify'))->assertSessionHas('success');
+        $this->assertNull($connection->refresh()->detected_timezone);
     }
 }

@@ -31,8 +31,7 @@ writes nothing to the shop. You find the page in the system menu (gear
 
 1. In Shopware, create an integration under **Settings** → **System** →
    **Integrations**. It needs read
-   permission on orders, order customers, customers, line items, payment
-   transactions, currencies and states – or the **Administrator** option.
+   permission on orders, order customers, customers, line items, payment transactions with captures and refunds, currencies and states – or the **Administrator** option.
 2. On the page, open **Credentials** in the ⋯ menu and enter the **shop
    address** (without /api), the **access key ID** and the **secret access key**
    of the integration. If the shop runs in your own network, also set **Allow
@@ -59,6 +58,12 @@ updated.
   (open, processing, completed, cancelled) and amount with currency. Shopware records refunds in the payment state: if the latest
   payment is refunded, the order counts as **refunded**; a partial refund does
   not change the status.
+- WorkDiary shows the refunded amount below the amount as far as Shopware
+  records completed refunds. A manually set “refunded” without a refund counts as
+  a full refund; “partially refunded” without a refund stays without an amount.
+- Once a day the sync checks whether the imported orders still exist in the
+  shop. Deleted ones then show **Deleted in the shop** and remain in WorkDiary;
+  if one reappears, the marker is removed.
 - Buyer with name, e-mail and company, the line items as text.
 - The order number leads to the order administration of the shop.
 

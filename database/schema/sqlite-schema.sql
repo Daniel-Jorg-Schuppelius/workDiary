@@ -22898,6 +22898,9 @@ CREATE TABLE IF NOT EXISTS "accounting_vouchers"(
   "source_changed_at" datetime,
   "sales_user_id" integer,
   "sales_agent_id" integer,
+  "source_deleted_at" datetime,
+  "foreign_amount" numeric,
+  "foreign_currency" varchar,
   foreign key("supplier_id") references suppliers("id") on delete set null on update no action,
   foreign key("customer_id") references customers("id") on delete set null on update no action,
   foreign key("organization_id") references organizations("id") on delete cascade on update no action,
@@ -24258,6 +24261,8 @@ CREATE TABLE IF NOT EXISTS "woocommerce_orders"(
   "inbox_status" varchar not null default 'open',
   "created_at" datetime,
   "updated_at" datetime,
+  "refunded_amount" numeric,
+  "remote_deleted_at" datetime,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("customer_id") references "customers"("id") on delete set null
 );
@@ -24325,6 +24330,8 @@ CREATE TABLE IF NOT EXISTS "shopware_orders"(
   "inbox_status" varchar not null default 'open',
   "created_at" datetime,
   "updated_at" datetime,
+  "refunded_amount" numeric,
+  "remote_deleted_at" datetime,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("customer_id") references "customers"("id") on delete set null
 );
@@ -24365,6 +24372,7 @@ CREATE TABLE IF NOT EXISTS "prestashop_connections"(
   "disconnected_at" datetime,
   "created_at" datetime,
   "updated_at" datetime,
+  "detected_timezone" varchar,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("confirmed_by") references "users"("id") on delete set null,
   foreign key("connected_by") references "users"("id") on delete set null,
@@ -24392,6 +24400,8 @@ CREATE TABLE IF NOT EXISTS "prestashop_orders"(
   "inbox_status" varchar not null default 'open',
   "created_at" datetime,
   "updated_at" datetime,
+  "refunded_amount" numeric,
+  "remote_deleted_at" datetime,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("customer_id") references "customers"("id") on delete set null
 );
@@ -24453,6 +24463,8 @@ CREATE TABLE IF NOT EXISTS "firefly_transactions"(
   "incoming_einvoice_id" integer,
   "created_at" datetime,
   "updated_at" datetime,
+  "foreign_amount" numeric,
+  "foreign_currency" varchar,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("invoice_id") references "invoices"("id") on delete set null,
   foreign key("incoming_einvoice_id") references "incoming_einvoices"("id") on delete set null
@@ -25887,3 +25899,8 @@ INSERT INTO migrations VALUES(1023,'2027_03_31_171100_create_taiga_tables',8);
 INSERT INTO migrations VALUES(1024,'2027_03_31_171200_create_leantime_tables',8);
 INSERT INTO migrations VALUES(1025,'2027_03_31_171300_create_freescout_tables',8);
 INSERT INTO migrations VALUES(1026,'2027_03_31_171400_create_glpi_tables',8);
+INSERT INTO migrations VALUES(1027,'2027_03_31_171500_add_refunds_and_deletions_to_woocommerce_orders',9);
+INSERT INTO migrations VALUES(1028,'2027_03_31_171600_add_refunds_and_deletions_to_shopware_orders',9);
+INSERT INTO migrations VALUES(1029,'2027_03_31_171700_add_refunds_deletions_and_timezone_to_prestashop',9);
+INSERT INTO migrations VALUES(1030,'2027_03_31_171800_add_foreign_amount_to_firefly_transactions',9);
+INSERT INTO migrations VALUES(1031,'2027_03_31_171900_add_source_deletion_and_foreign_amount_to_accounting_vouchers',9);

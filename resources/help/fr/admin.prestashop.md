@@ -31,11 +31,12 @@ la page dans le menu système (la roue dentée **Système**) sous **Plugins** �
 
 1. Dans PrestaShop, activez le webservice sous **Paramètres avancés** →
    **Webservice** et créez une clé. Elle a besoin du droit de lecture (GET) sur
-   orders, customers, currencies et order_states.
+   orders, customers, currencies et order_states, pour les remboursements aussi
+   sur order_slip et pour le fuseau horaire sur configurations.
 2. Sur la page, ouvrez **Identifiants** dans le menu ⋯ et saisissez l’**adresse
    de la boutique** (sans /api) et la **clé du webservice**. PrestaShop fournit
    les heures sans fuseau horaire : si la boutique ne fonctionne pas dans le
-   fuseau de votre organisation, saisissez le **fuseau horaire de la boutique**
+   fuseau de votre organisation, saisissez le **Fuseau horaire de la boutique**
    (p. ex. Europe/Vienna). Si la boutique tourne dans votre propre réseau,
    activez aussi **Autoriser les adresses privées** – cela n’a d’effet que si
    l’exploitant l’autorise.
@@ -63,6 +64,16 @@ déjà reprises sont toujours mises à jour.
 - Le bon de livraison seul (statut standard « Préparation en cours ») ne compte
   pas comme expédié. Avec plusieurs boutiques, WorkDiary lit les commandes de
   toutes les boutiques et relit une à une les devises des autres boutiques.
+- Les remboursements proviennent des avoirs (order_slip) et figurent sous le
+  montant. Si la clé ne peut pas lire order_slip, le montant remboursé reste
+  vide.
+- Si la clé peut lire configurations, **Vérifier la connexion** reprend le
+  fuseau horaire de la boutique ; un **Fuseau horaire de la boutique** saisi est
+  prioritaire.
+- Une fois par jour, la synchronisation vérifie si les commandes reprises
+  existent encore dans la boutique. Les commandes supprimées sont alors marquées
+  **Supprimée dans la boutique** et restent dans WorkDiary ; si l’une réapparaît,
+  la marque disparaît.
 - Acheteur avec nom, e-mail et société, les lignes en texte.
 - Il n’y a pas de lien vers l’administration de la boutique : son dossier est
   secret pour chaque boutique et ses liens ne valent qu’avec une connexion.

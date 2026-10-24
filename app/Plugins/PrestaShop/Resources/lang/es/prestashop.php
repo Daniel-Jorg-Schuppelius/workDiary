@@ -16,9 +16,9 @@ return [
         'base_url' => 'Dirección de la tienda',
         'base_url_help' => 'Dirección de la tienda, p. ej. https://shop.example.com (sin /api).',
         'api_key' => 'Clave del webservice',
-        'api_key_help' => 'En PrestaShop, active el webservice en Parámetros avanzados → Webservice y cree una clave con permiso de lectura (GET) sobre orders, customers, currencies y order_states.',
+        'api_key_help' => 'En PrestaShop, active el webservice en Parámetros avanzados → Webservice y cree una clave con permiso de lectura (GET) sobre orders, customers, currencies y order_states; para reembolsos también order_slip, para la zona horaria configurations.',
         'shop_timezone' => 'Zona horaria de la tienda',
-        'shop_timezone_help' => 'PrestaShop entrega las horas sin zona horaria. Déjelo vacío si la tienda funciona en la zona horaria de su organización; si no, p. ej. Europe/Vienna.',
+        'shop_timezone_help' => 'PrestaShop entrega las horas sin zona horaria. Déjelo vacío para usar la zona leída al comprobar la conexión (permiso configurations); si no, la de su organización; o introduzca p. ej. Europe/Vienna.',
     ],
     'search' => [
         'domain' => 'Pedidos de PrestaShop',

@@ -31,11 +31,12 @@ cuanto el plugin esté activo.
 
 1. En PrestaShop, active el webservice en **Parámetros avanzados** →
    **Webservice** y cree una clave. Necesita permiso de lectura (GET) sobre
-   orders, customers, currencies y order_states.
+   orders, customers, currencies y order_states, para reembolsos también sobre
+   order_slip y para la zona horaria sobre configurations.
 2. En la página, abra **Credenciales** en el menú ⋯ e introduzca la **dirección
    de la tienda** (sin /api) y la **clave del webservice**. PrestaShop entrega las
    horas sin zona horaria: si la tienda no funciona en la zona horaria de su
-   organización, introduzca la **zona horaria de la tienda** (p. ej.
+   organización, introduzca la **Zona horaria de la tienda** (p. ej.
    Europe/Vienna). Si la tienda funciona en su propia red, active además
    **Permitir direcciones privadas**; solo surte efecto si el operador lo
    permite.
@@ -63,6 +64,14 @@ incorporados se actualizan siempre.
 - El albarán por sí solo (estado estándar «Preparación en curso») no cuenta
   como enviado. Con varias tiendas, WorkDiary lee los pedidos de todas y consulta
   una a una las monedas de las demás tiendas.
+- Los reembolsos proceden de los abonos (order_slip) y figuran bajo el importe.
+  Si la clave no puede leer order_slip, el importe reembolsado queda vacío.
+- Si la clave puede leer configurations, **Comprobar conexión** adopta la zona
+  horaria de la tienda; una **Zona horaria de la tienda** introducida tiene
+  prioridad.
+- Una vez al día la sincronización comprueba si los pedidos incorporados siguen
+  existiendo en la tienda. Los eliminados aparecen como **Eliminado en la
+  tienda** y se conservan en WorkDiary; si uno reaparece, la marca desaparece.
 - Comprador con nombre, e-mail y empresa, las líneas como texto.
 - No hay enlace a la administración de la tienda: su carpeta es secreta en
   cada tienda y sus enlaces solo valen con inicio de sesión.
@@ -98,7 +107,7 @@ con el cliente se conservan.
   desactivado.
 - La comprobación falla con 403 o una ejecución queda **incompleta**: la clave no
   tiene permiso de lectura sobre uno de los cuatro recursos.
-- Las horas se desvían varias horas: falta la **zona horaria de la tienda** o es
+- Las horas se desvían varias horas: falta la **Zona horaria de la tienda** o es
   errónea.
 - La comprobación falla con 401 aunque la clave es correcta: el servidor web no
   transmite la cabecera Authorization (Apache: CGIPassAuth) o la reescritura de

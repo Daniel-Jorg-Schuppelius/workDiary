@@ -1,7 +1,7 @@
 ---
 title: "Flujo de documentos"
 topic: billing.feed
-version: 3
+version: 4
 keywords:
     - facturas
     - presupuestos
@@ -70,6 +70,11 @@ comprobantes reflejados sin página propia no tienen enlace. En los documentos
 pendientes, la columna «Vence» indica los días de retraso y el nivel de
 reclamación alcanzado. Sus propias facturas vencidas se reclaman
 directamente desde la fila con «Reclamar».
+
+**Documentos reflejados:** si el sistema conectado ya no contiene un documento,
+aparece como **Eliminado en el origen**. Entonces no cuenta en ningún indicador
+y solo aparece con «Incluir archivados». En documentos en moneda extranjera, bajo
+el importe figura el equivalente en la segunda moneda.
 
 **Nuevos documentos:** arriba a la derecha crea un presupuesto o una factura,
 o convierte un archivo de factura en factura electrónica. «Por facturar y por

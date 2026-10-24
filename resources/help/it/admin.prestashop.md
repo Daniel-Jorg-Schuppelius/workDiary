@@ -31,11 +31,12 @@ il plugin è attivo.
 
 1. In PrestaShop attivi il webservice in **Parametri avanzati** → **Webservice**
    e crei una chiave. Serve il permesso di lettura (GET) su orders, customers,
-   currencies e order_states.
+   currencies e order_states, per i rimborsi anche su order_slip e per il fuso
+   orario su configurations.
 2. Sulla pagina apra **Credenziali** nel menu ⋯ e inserisca l’**indirizzo del
    negozio** (senza /api) e la **chiave del webservice**. PrestaShop fornisce gli
    orari senza fuso orario: se il negozio non funziona nel fuso orario della Sua
-   organizzazione, inserisca il **fuso orario del negozio** (ad es.
+   organizzazione, inserisca il **Fuso orario del negozio** (ad es.
    Europe/Vienna). Se il negozio funziona nella propria rete, attivi anche
    **Consentire indirizzi privati**; ha effetto solo se il gestore lo consente.
 3. Clicchi su **Verificare la connessione**. WorkDiary legge un ordine di prova e
@@ -63,6 +64,15 @@ vengono sempre aggiornati.
 - La sola bolla di consegna (stato standard «Preparazione in corso») non conta
   come spedito. Con più negozi WorkDiary legge gli ordini di tutti i negozi e
   recupera una per una le valute degli altri negozi.
+- I rimborsi provengono dalle note di credito (order_slip) e compaiono sotto
+  l’importo. Se la chiave non può leggere order_slip, l’importo rimborsato resta
+  vuoto.
+- Se la chiave può leggere configurations, **Verificare la connessione** adotta
+  il fuso orario del negozio; un **Fuso orario del negozio** inserito ha la
+  precedenza.
+- Una volta al giorno la sincronizzazione verifica se gli ordini acquisiti
+  esistono ancora nel negozio. Quelli eliminati risultano **Eliminato nel
+  negozio** e restano in WorkDiary; se uno ricompare, il contrassegno scompare.
 - Acquirente con nome, e-mail e azienda, le righe come testo.
 - Non c’è un collegamento all’amministrazione del negozio: la sua cartella è
   segreta per ogni negozio e i suoi link valgono solo con un accesso.
@@ -95,7 +105,7 @@ commerciale; importi e collegamento al cliente restano.
 - La verifica fallisce con 401: la chiave è errata o il webservice è disattivato.
 - La verifica fallisce con 403 o un’esecuzione resta **incompleta**: alla chiave
   manca il permesso di lettura su una delle quattro risorse.
-- Gli orari sono sfasati di ore: il **fuso orario del negozio** manca o è errato.
+- Gli orari sono sfasati di ore: il **Fuso orario del negozio** manca o è errato.
 - La verifica fallisce con 401 anche se la chiave è corretta: il server web non
   inoltra l’intestazione Authorization (Apache: CGIPassAuth) oppure la riscrittura
   degli URL per /api è disattivata.

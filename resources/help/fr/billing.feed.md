@@ -1,7 +1,7 @@
 ---
 title: "Flux de documents"
 topic: billing.feed
-version: 3
+version: 4
 keywords:
     - factures
     - devis
@@ -72,6 +72,12 @@ sans page propre n'ont pas de lien. Pour les documents en cours, la colonne
 « Échéance » indique les jours de retard et le niveau de relance atteint.
 Vous relancez vos propres factures en retard directement depuis la ligne avec
 « Relancer ».
+
+**Documents reflétés :** si le système connecté ne conserve plus un document,
+celui-ci est marqué **Supprimé dans la source**. Il n'entre alors dans aucun
+indicateur et n'apparaît qu'avec « Inclure les archivés ». Pour les documents en
+devise étrangère, la contre-valeur dans la seconde devise figure sous le
+montant.
 
 **Nouveaux documents :** en haut à droite, vous créez un devis ou une facture
 ou convertissez un fichier de facture en facture électronique. « À facturer

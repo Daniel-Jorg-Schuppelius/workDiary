@@ -43,6 +43,8 @@ außen vor.
 - **Eingang:** Steht im Verwendungszweck, in den Notizen, in der Referenz oder in der SEPA-End-to-End-ID
   genau eine Rechnungsnummer Ihrer Organisation, zeigt die Zeile diese Rechnung.
 - **Ausgang:** dasselbe mit der Nummer einer Eingangsrechnung.
+- Hat eine Buchung einen Betrag in einer zweiten Währung, steht er unter dem
+  Betrag.
 - Eine Sammelbuchung (Split) erscheint je Teilbuchung als eigene Zeile.
 - Passen mehrere Belege, steht die Bewegung auf **Mehrdeutig**; ohne Treffer auf
   **Ohne Zuordnung**. Betrag und Datum allein ordnen nie zu.

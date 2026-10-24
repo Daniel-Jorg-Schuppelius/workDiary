@@ -34,6 +34,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $voucher_date
  * @property Carbon|null $due_date
  * @property Carbon|null $paid_date
+ * @property Carbon|null $source_deleted_at
+ * @property string|null $foreign_amount
+ * @property string|null $foreign_currency
  * @property array<string, mixed>|null $payload
  */
 class AccountingVoucher extends Model {
@@ -49,8 +52,8 @@ class AccountingVoucher extends Model {
         'voucher_state', 'direction', 'document_kind', 'is_cancellation',
         'cancels_external_id',
         'voucher_number', 'voucher_date', 'due_date', 'paid_date',
-        'total_amount', 'net_amount', 'open_amount', 'currency',
-        'archived', 'payload', 'synced_at', 'source_changed_at',
+        'total_amount', 'net_amount', 'open_amount', 'currency', 'foreign_amount', 'foreign_currency',
+        'archived', 'payload', 'synced_at', 'source_changed_at', 'source_deleted_at',
     ];
 
     /** @var array<string, string> */
@@ -62,9 +65,11 @@ class AccountingVoucher extends Model {
         'total_amount' => 'decimal:2',
         'net_amount' => 'decimal:2',
         'open_amount' => 'decimal:2',
+        'foreign_amount' => 'decimal:2',
         'archived' => 'boolean',
         'is_cancellation' => 'boolean',
         'source_changed_at' => 'datetime',
+        'source_deleted_at' => 'datetime',
         'payload' => 'array',
         'synced_at' => 'datetime',
     ];

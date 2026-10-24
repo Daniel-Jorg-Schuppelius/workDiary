@@ -104,6 +104,8 @@ class ExpenseSource implements DocumentFeedSource {
                 '0 AS open_amount',
                 'expenses.currency AS currency',
                 'expenses.project_id AS project_id',
+                'NULL AS foreign_amount',
+                'NULL AS foreign_currency',
             ]))
             ->where('expenses.organization_id', $f->organizationId)
             ->whereBetween('expenses.date', DateRange::days($f->from, $f->to));

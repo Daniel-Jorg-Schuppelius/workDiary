@@ -42,6 +42,8 @@ fuera.
 - **Entrada:** si el concepto, las notas, la referencia o el identificador SEPA de extremo a extremo contienen exactamente un
   número de factura de su organización, la fila muestra esa factura.
 - **Salida:** lo mismo con el número de una factura recibida.
+- Si una transacción tiene un importe en una segunda moneda, figura bajo el
+  importe.
 - Una transacción dividida (split) aparece como una fila por cada parte.
 - Si coinciden varios documentos, el movimiento queda **Ambiguo**; sin
   coincidencia, **Sin asignar**. El importe y la fecha por sí solos nunca asignan.

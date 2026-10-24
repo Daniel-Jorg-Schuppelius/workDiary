@@ -59,6 +59,8 @@ class OrderConfirmationSource implements DocumentFeedSource {
                 '0 AS open_amount',
                 'order_confirmations.currency AS currency',
                 'order_confirmations.project_id AS project_id',
+                'NULL AS foreign_amount',
+                'NULL AS foreign_currency',
             ]))
             ->where('order_confirmations.organization_id', $f->organizationId)
             ->whereBetween(DB::raw($date), DateRange::days($f->from, $f->to));

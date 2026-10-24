@@ -31,7 +31,8 @@ Plugin aktiv ist.
 
 1. Aktivieren Sie in PrestaShop unter **Erweiterte Parameter** → **Webservice**
    den Webservice und legen Sie einen Schlüssel an. Er braucht Leserecht (GET)
-   auf orders, customers, currencies und order_states.
+   auf orders, customers, currencies und order_states, für Erstattungen
+   zusätzlich auf order_slip und für die Zeitzone auf configurations.
 2. Öffnen Sie auf der Seite im Menü ⋯ **Zugangsdaten** und tragen Sie die
    **Shop-Adresse** (ohne /api) und den **Webservice-Schlüssel** ein. PrestaShop
    liefert Zeiten ohne Zeitzone: Läuft der Shop nicht in der Zeitzone Ihrer
@@ -62,6 +63,14 @@ ist. Bereits übernommene Bestellungen führt er immer nach.
 - Der Lieferschein allein (Standardstatus „In Vorbereitung“) gilt nicht als
   versendet. Bei mehreren Shops liest WorkDiary die Bestellungen aller Shops und
   die Währungen anderer Shops einzeln nach.
+- Erstattungen kommen aus den Gutschriften (order_slip) und stehen unter dem
+  Betrag. Darf der Schlüssel order_slip nicht lesen, bleibt der erstattete
+  Betrag leer.
+- Darf der Schlüssel configurations lesen, übernimmt **Verbindung prüfen** die
+  Zeitzone des Shops; eine eingetragene **Zeitzone des Shops** geht vor.
+- Einmal täglich prüft der Abgleich, ob die übernommenen Bestellungen im Shop
+  noch vorhanden sind. Gelöschte stehen dann auf **Im Shop gelöscht** und
+  bleiben in WorkDiary erhalten; taucht eine wieder auf, entfällt die Markierung.
 - Käufer mit Name, E-Mail und Firma, die Positionen als Text.
 - Einen Link in die Shop-Verwaltung gibt es nicht: Ihr Ordner ist je Shop
   geheim, und ihre Links gelten nur mit einer Anmeldung.

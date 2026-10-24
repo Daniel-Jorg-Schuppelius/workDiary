@@ -57,6 +57,7 @@ return [
             'amount' => 'Importe',
         ],
         'empty' => 'Todavía no hay movimientos',
+        'foreign_amount' => 'Importe en una segunda moneda',
     ],
     'search' => [
         'domain' => 'Movimientos de Firefly III',

@@ -16,7 +16,7 @@ return [
         'base_url' => 'Indirizzo del negozio',
         'base_url_help' => 'Indirizzo del negozio, ad es. https://shop.example.com (senza /api o /admin).',
         'client_id' => 'ID chiave di accesso',
-        'client_id_help' => 'In Shopware crei un’integrazione in Impostazioni → Sistema → Integrazioni. Serve il permesso di lettura su ordini, clienti dell’ordine, clienti, righe, transazioni di pagamento, valute e stati, oppure l’opzione «Amministratore».',
+        'client_id_help' => 'In Shopware crei un’integrazione in Impostazioni → Sistema → Integrazioni. Serve il permesso di lettura su ordini, clienti dell’ordine, clienti, righe, transazioni di pagamento con catture e rimborsi, valute e stati, oppure l’opzione «Amministratore».',
         'client_secret' => 'Chiave di accesso segreta',
     ],
     'search' => [

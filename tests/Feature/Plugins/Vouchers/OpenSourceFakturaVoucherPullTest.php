@@ -79,6 +79,8 @@ class OpenSourceFakturaVoucherPullTest extends TestCase {
                 ['id' => 'Exkl0001', 'number' => 'A-8', 'amount' => 100, 'tax_rate1' => 19, 'uses_inclusive_taxes' => false, 'calculate_tax_by_amount' => false, 'currency_id' => '3', 'updated_at' => 1792000310],
                 // Steuer enthalten: `amount` ist brutto.
                 ['id' => 'Inkl0001', 'number' => 'A-9', 'amount' => 119, 'tax_rate1' => 19, 'uses_inclusive_taxes' => true, 'calculate_tax_by_amount' => false, 'currency_id' => '3', 'updated_at' => 1792000320],
+                // Ausgabe in USD; Invoice Ninja führt den Gegenwert in der Firmenwährung.
+                ['id' => 'Frmd0001', 'number' => 'A-11', 'amount' => 100, 'currency_id' => '1', 'invoice_currency_id' => '3', 'foreign_amount' => 92.5, 'exchange_rate' => 0.925, 'updated_at' => 1792000340],
                 // Steuer als Betrag, aufgeschlagen.
                 ['id' => 'Betr0001', 'number' => 'A-10', 'amount' => 50, 'tax_amount1' => 9.5, 'uses_inclusive_taxes' => false, 'calculate_tax_by_amount' => true, 'currency_id' => '3', 'updated_at' => 1792000330],
             ], $this->expensePages)),
@@ -91,7 +93,7 @@ class OpenSourceFakturaVoucherPullTest extends TestCase {
 
         $counters = app(InvoiceNinjaVoucherPullService::class)->pull((int) $this->organization->id);
 
-        $this->assertSame(9, $counters['created']);
+        $this->assertSame(10, $counters['created']);
         $invoice = AccountingVoucher::query()->where('plugin_id', InvoiceNinjaPlugin::ID)->where('external_id', 'invoice:Wpmbk5ezJn')->sole();
         $this->assertSame(AccountingVoucherState::Open, $invoice->voucher_state, 'Teilbezahlt bleibt offen.');
         $this->assertSame(DocumentDirection::Outgoing->value, $invoice->direction);
@@ -106,6 +108,9 @@ class OpenSourceFakturaVoucherPullTest extends TestCase {
         $this->assertSame('USD', $credit->currency);
         $this->assertSame('USD', AccountingVoucher::query()->where('external_id', 'invoice:Grp00001')->sole()->currency, 'Währung der Kundengruppe.');
         $this->assertSame('CHF', AccountingVoucher::query()->where('external_id', 'invoice:Firm0001')->sole()->currency, 'Firmenwährung statt fest EUR.');
+        $foreign = AccountingVoucher::query()->where('external_id', 'expense:Frmd0001')->sole();
+        $this->assertSame(['USD', '92.50', 'EUR'], [$foreign->currency, (string) $foreign->foreign_amount, $foreign->foreign_currency]);
+        $this->assertNull(AccountingVoucher::query()->where('external_id', 'expense:xYz9')->sole()->foreign_amount, 'Ohne Umrechnung kein zweiter Betrag.');
         foreach (['expense:Exkl0001' => ['119.00', '100.00'], 'expense:Inkl0001' => ['119.00', '100.00'], 'expense:Betr0001' => ['59.50', '50.00']] as $externalId => [$gross, $net]) {
             $voucher = AccountingVoucher::query()->where('external_id', $externalId)->sole();
             $this->assertSame([$gross, $net], [(string) $voucher->total_amount, (string) $voucher->net_amount], $externalId);
@@ -132,7 +137,7 @@ class OpenSourceFakturaVoucherPullTest extends TestCase {
 
             return str_ends_with($r->getUri()->getPath(), '/invoices') && ($q['updated_at'] ?? null) === '1792000100';
         }, 'Jede Liste setzt an ihrer eigenen Marke an, nicht an der jüngsten Ausgabe.');
-        $this->assertSame(9, AccountingVoucher::query()->where('plugin_id', InvoiceNinjaPlugin::ID)->count());
+        $this->assertSame(10, AccountingVoucher::query()->where('plugin_id', InvoiceNinjaPlugin::ID)->count());
     }
 
     public function test_invoice_ninja_expenses_are_mirrored_only_after_a_complete_read(): void {
@@ -174,7 +179,7 @@ class OpenSourceFakturaVoucherPullTest extends TestCase {
                         'transactions' => ['data' => [['type' => 'income', 'amount' => 100.0, 'currency_code' => 'EUR']]]]]
                     : [['id' => 5, 'type' => 'bill', 'document_number' => 'B-5', 'status' => 'paid', 'issued_at' => '2026-10-02T00:00:00+00:00', 'updated_at' => '2026-10-02T09:00:00+02:00', 'amount' => 12.5, 'currency_code' => 'EUR', 'contact_id' => 11, 'contact_name' => 'Strom GmbH']];
 
-                return FakePluginHttp::response(['data' => $rows, 'meta' => ['current_page' => 1, 'last_page' => 1]]);
+                return FakePluginHttp::response(['data' => $rows, 'meta' => ['current_page' => 1, 'last_page' => 1, 'total' => count($rows)]]);
             },
         ]);
 
@@ -218,6 +223,37 @@ class OpenSourceFakturaVoucherPullTest extends TestCase {
 
             return ($q['search'] ?? null) === 'type:bill updated_at>="2026-10-02 07:00:00" sort:updated_at,id';
         });
+    }
+
+    public function test_akaunting_marks_documents_it_no_longer_holds_once_a_day(): void {
+        $invoices = [5, 6];
+        $serve = function () use (&$invoices): void {
+            FakePluginHttp::fake([
+                self::AKAUNTING . '/api/documents*' => function (RequestInterface $request) use (&$invoices) {
+                    parse_str($request->getUri()->getQuery(), $q);
+                    $type = str_starts_with((string) ($q['search'] ?? ''), 'type:invoice ') ? 'invoice' : 'bill';
+                    $rows = $type === 'invoice'
+                        ? array_map(static fn (int $id): array => ['id' => $id, 'type' => 'invoice', 'document_number' => 'INV-' . $id, 'status' => 'sent', 'issued_at' => '2026-10-01T00:00:00+00:00', 'updated_at' => '2026-10-01T00:00:00+00:00', 'amount' => 10.0, 'currency_code' => 'EUR'], $invoices)
+                        : [];
+
+                    return FakePluginHttp::response(['data' => $rows, 'meta' => ['current_page' => 1, 'last_page' => 1, 'total' => count($rows)]]);
+                },
+            ]);
+        };
+        $serve();
+        app(AkauntingVoucherPullService::class)->pull((int) $this->organization->id);
+        $this->assertSame(2, AccountingVoucher::query()->where('plugin_id', AkauntingPlugin::ID)->whereNull('source_deleted_at')->count());
+
+        $invoices = [5];
+        $serve();
+        app(AkauntingVoucherPullService::class)->pull((int) $this->organization->id);
+        $this->assertNull(AccountingVoucher::query()->where('external_id', 'invoice:6')->sole()->source_deleted_at, 'Der Abgleich läuft einmal am Tag.');
+
+        $this->travel(1)->days();
+        $serve();
+        app(AkauntingVoucherPullService::class)->pull((int) $this->organization->id);
+        $this->assertNotNull(AccountingVoucher::query()->where('external_id', 'invoice:6')->sole()->source_deleted_at);
+        $this->assertNull(AccountingVoucher::query()->where('external_id', 'invoice:5')->sole()->source_deleted_at);
     }
 
     public function test_akaunting_rejects_rows_of_another_type(): void {

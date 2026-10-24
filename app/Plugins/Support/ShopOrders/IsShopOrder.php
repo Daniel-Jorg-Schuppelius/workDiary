@@ -28,18 +28,20 @@ trait IsShopOrder {
     public function initializeIsShopOrder(): void {
         $this->mergeFillable([
             'organization_id', 'remote_order_id', 'order_number', 'status', 'remote_status_code', 'currency',
-            'gross_amount', 'net_amount', 'buyer_external_id', 'buyer', 'items', 'ordered_at',
-            'remote_modified_at', 'customer_id', 'inbox_status',
+            'gross_amount', 'net_amount', 'refunded_amount', 'buyer_external_id', 'buyer', 'items', 'ordered_at',
+            'remote_modified_at', 'remote_deleted_at', 'customer_id', 'inbox_status',
         ]);
         $this->mergeCasts([
             'status' => ShopOrderStatus::class,
             'currency' => CurrencyCode::class,
             'gross_amount' => MoneyCast::class . ':currency,2',
             'net_amount' => MoneyCast::class . ':currency,2',
+            'refunded_amount' => MoneyCast::class . ':currency,2',
             'buyer' => 'array',
             'items' => 'array',
             'ordered_at' => 'immutable_datetime',
             'remote_modified_at' => 'immutable_datetime',
+            'remote_deleted_at' => 'immutable_datetime',
             'inbox_status' => MarketplaceInboxStatus::class,
         ]);
     }

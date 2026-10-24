@@ -56,8 +56,11 @@ updated.
 
 - Order number, date, **status** from the fixed WooCommerce status (open,
   processing, completed, cancelled, refunded) and amount with currency.
-- Partial refunds change neither status nor order total in WooCommerce;
-  WorkDiary shows the order total.
+- Refunds appear below the amount (“of which refunded”); the order total stays
+  as in the shop.
+- Once a day the sync checks whether the imported orders still exist in the
+  shop. Deleted ones then show **Deleted in the shop** and remain in WorkDiary;
+  if one reappears, the marker is removed.
 - Buyer with name, e-mail and company, the line items as text.
 - The order number leads to the order administration of the shop.
 

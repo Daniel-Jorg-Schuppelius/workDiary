@@ -82,7 +82,7 @@
                 <x-detail-grid.row :label="__('integration.shop_orders.connection.last_sync')">
                     {{ $connection->last_synced_at?->fdatetime() ?? '—' }}
                     @if (is_array($connection->last_sync_counters))
-                        <div class="text-xs text-muted">{{ __('integration.shop_orders.connection.counters', array_map('intval', $connection->last_sync_counters + ['imported' => 0, 'updated' => 0, 'linked' => 0, 'staged' => 0, 'failed' => 0])) }}</div>
+                        <div class="text-xs text-muted">{{ __('integration.shop_orders.connection.counters', array_map('intval', $connection->last_sync_counters + ['imported' => 0, 'updated' => 0, 'linked' => 0, 'staged' => 0, 'failed' => 0, 'deleted' => 0])) }}</div>
                     @endif
                     @if ($connection->is_last_run_complete === false)
                         <x-status-badge tone="warning" size="xs">{{ __('integration.shop_orders.connection.incomplete') }}</x-status-badge>
@@ -140,8 +140,18 @@
                         <x-status-badge tone="warning" size="xs">{{ __('integration.shop_orders.orders.unassigned') }}</x-status-badge>
                     @endif
                 </td>
-                <td><x-status-badge :tone="$order->status->tone()" size="xs">{{ $order->status->label() }}</x-status-badge></td>
-                <td class="text-right font-mono text-sm whitespace-nowrap">{{ $order->gross_amount?->format() ?? '—' }}</td>
+                <td class="whitespace-nowrap">
+                    <x-status-badge :tone="$order->status->tone()" size="xs">{{ $order->status->label() }}</x-status-badge>
+                    @if ($order->remote_deleted_at)
+                        <x-status-badge tone="ghost" size="xs" :title="$order->remote_deleted_at->fdatetime()">{{ __('integration.shop_orders.orders.deleted') }}</x-status-badge>
+                    @endif
+                </td>
+                <td class="text-right font-mono text-sm whitespace-nowrap">
+                    {{ $order->gross_amount?->format() ?? '—' }}
+                    @if ($order->refunded_amount?->isPositive())
+                        <div class="text-xs text-muted">{{ __('integration.shop_orders.orders.refunded', ['amount' => $order->refunded_amount->format()]) }}</div>
+                    @endif
+                </td>
             </tr>
         @empty
             <x-table.empty :colspan="6" icon="storefront" :title="__('integration.shop_orders.orders.empty')" :message="__('integration.shop_orders.orders.empty_hint')" compact />

@@ -33,7 +33,7 @@ la page dans le menu système (la roue dentée **Système**) sous **Plugins** �
 1. Dans Shopware, créez une intégration sous **Paramètres** → **Système** →
    **Intégrations**. Elle a besoin du droit
    de lecture sur les commandes, les clients de commande, les clients, les
-   lignes, les transactions de paiement, les devises et les états – ou de
+   lignes, les transactions de paiement avec leurs captures et remboursements, les devises et les états – ou de
    l’option **Administrateur**.
 2. Sur la page, ouvrez **Identifiants** dans le menu ⋯ et saisissez l’**adresse
    de la boutique** (sans /api), l’**ID de clé d’accès** et la **clé d’accès
@@ -63,6 +63,14 @@ déjà reprises sont toujours mises à jour.
   Shopware gère les remboursements dans l’état du paiement : si le
   dernier paiement est remboursé, la commande compte comme **remboursée** ; un
   remboursement partiel ne change pas le statut.
+- WorkDiary affiche le montant remboursé sous le montant, dans la mesure où
+  Shopware enregistre des remboursements terminés. Un « remboursé » posé à la main
+  sans remboursement compte comme remboursement total ; un « partiellement
+  remboursé » sans remboursement reste sans montant.
+- Une fois par jour, la synchronisation vérifie si les commandes reprises
+  existent encore dans la boutique. Les commandes supprimées sont alors marquées
+  **Supprimée dans la boutique** et restent dans WorkDiary ; si l’une réapparaît,
+  la marque disparaît.
 - Acheteur avec nom, e-mail et société, les lignes en texte.
 - Le numéro de commande mène à la gestion des commandes de la boutique.
 

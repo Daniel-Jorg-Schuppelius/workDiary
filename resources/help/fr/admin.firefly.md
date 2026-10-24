@@ -43,6 +43,8 @@ sont ignorés.
 - **Entrée :** si le libellé, les notes, la référence ou l’identifiant SEPA de bout en bout contiennent exactement un
   numéro de facture de votre organisation, la ligne affiche cette facture.
 - **Sortie :** idem avec le numéro d’une facture entrante.
+- Si une opération a un montant dans une seconde devise, il figure sous le
+  montant.
 - Une opération ventilée (split) apparaît en une ligne par partie.
 - Si plusieurs pièces correspondent, le mouvement est **Ambigu** ; sans
   correspondance, il est **Sans rattachement**. Le montant et la date seuls ne

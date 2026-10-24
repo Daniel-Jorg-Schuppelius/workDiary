@@ -22,6 +22,7 @@ use App\Plugins\Support\TaskSync\IncompleteRemoteReadException;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\{PersonNameHelper, StringHelper};
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -29,7 +30,8 @@ use Illuminate\Database\Eloquent\Model;
  * Admin-Suche. Der Status kommt aus dem technischen Namen des Bestellstatus
  * (`open`, `in_progress`, `completed`, `cancelled`), nie aus der Anzeige.
  * „Erstattet“ kennt nur der Zahlungsstatus: Steht die jüngste Transaktion auf
- * `refunded`, gilt die Bestellung als erstattet.
+ * `refunded`, gilt die Bestellung als erstattet. Den Betrag liefern die
+ * abgeschlossenen Erstattungen an den Captures der Transaktionen.
  * Kundenkonten tragen die Käuferkennung `customer:<id>`; Gastkonten legt
  * Shopware je Bestellung neu an, sie zählen deshalb über `guest:<e-mail>`.
  *
@@ -70,6 +72,10 @@ class ShopwareOrderImportService extends AbstractShopOrderImportService {
         return app(ShopwareClientFactory::class)->for((int) $organization->id)->orders($since);
     }
 
+    protected function existingRemoteIds(Organization $organization, array $ids): array {
+        return app(ShopwareClientFactory::class)->for((int) $organization->id)->existingOrderIds($ids);
+    }
+
     protected function normalize(array $raw, Organization $organization): RemoteOrder {
         $id = is_string($raw['id'] ?? null) ? $raw['id'] : '';
         if (preg_match('/^[0-9a-f]{32}$/', $id) !== 1) {
@@ -78,7 +84,10 @@ class ShopwareOrderImportService extends AbstractShopOrderImportService {
         $state = data_get($raw, 'stateMachineState.technicalName');
         $state = is_string($state) ? $state : '';
         $transactions = is_array($raw['transactions'] ?? null) ? $raw['transactions'] : [];
-        $refunded = $transactions !== [] && data_get(end($transactions), 'stateMachineState.technicalName') === 'refunded';
+        $payment = $transactions !== [] ? data_get(end($transactions), 'stateMachineState.technicalName') : null;
+        $refunded = $payment === 'refunded';
+        $currency = CurrencyCode::tryFrom(strtoupper((string) data_get($raw, 'currency.isoCode', '')));
+        $gross = RemoteOrder::amount($raw['amountTotal'] ?? null);
         $buyer = is_array($raw['orderCustomer'] ?? null) ? $raw['orderCustomer'] : [];
         $email = StringHelper::trimToNull($buyer['email'] ?? null);
         $customerId = StringHelper::trimToNull($buyer['customerId'] ?? null);
@@ -89,8 +98,8 @@ class ShopwareOrderImportService extends AbstractShopOrderImportService {
             number: StringHelper::trimToNull($raw['orderNumber'] ?? null),
             status: $refunded ? ShopOrderStatus::Refunded : self::STATUSES[$state] ?? ShopOrderStatus::Processing,
             remoteStatus: $state !== '' ? $state : null,
-            currency: CurrencyCode::tryFrom(strtoupper((string) data_get($raw, 'currency.isoCode', ''))),
-            grossAmount: RemoteOrder::amount($raw['amountTotal'] ?? null),
+            currency: $currency,
+            grossAmount: $gross,
             netAmount: RemoteOrder::amount($raw['amountNet'] ?? null),
             orderedAt: self::date($raw['orderDateTime'] ?? null),
             modifiedAt: self::date($raw['updatedAt'] ?? null) ?? self::date($raw['createdAt'] ?? null),
@@ -99,7 +108,36 @@ class ShopwareOrderImportService extends AbstractShopOrderImportService {
             buyerEmail: $email,
             buyerCompany: StringHelper::trimToNull($buyer['company'] ?? null),
             items: self::items($raw['lineItems'] ?? null),
+            refundedAmount: self::refundedAmount($transactions, is_string($payment) ? $payment : '', $gross, $currency ?? CurrencyCode::Euro),
         );
+    }
+
+    /**
+     * Summe der abgeschlossenen Erstattungen. Ohne Erstattungsdatensatz steht
+     * ein von Hand gesetztes „erstattet“ für den vollen Betrag; „teilweise
+     * erstattet“ ohne Datensatz bleibt unbekannt.
+     *
+     * @param  array<mixed>  $transactions
+     */
+    private static function refundedAmount(array $transactions, string $payment, ?string $gross, CurrencyCode $currency): ?string {
+        $refunds = [];
+        foreach ($transactions as $transaction) {
+            foreach ((array) data_get($transaction, 'captures', []) as $capture) {
+                foreach ((array) data_get($capture, 'refunds', []) as $refund) {
+                    $amount = RemoteOrder::amount(data_get($refund, 'amount.totalPrice'));
+                    if (data_get($refund, 'stateMachineState.technicalName') === 'completed' && $amount !== null) {
+                        $refunds[] = Money::of($amount, $currency);
+                    }
+                }
+            }
+        }
+
+        return match (true) {
+            $refunds !== [] => Money::sum($refunds, $currency)->getAmount(),
+            $payment === 'refunded' => $gross,
+            $payment === 'refunded_partially' => null,
+            default => Money::zero($currency)->getAmount(),
+        };
     }
 
     private static function date(mixed $value): ?CarbonImmutable {

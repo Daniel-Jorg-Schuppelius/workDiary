@@ -16,9 +16,9 @@ return [
         'base_url' => 'Shop-Adresse',
         'base_url_help' => 'Adresse des Shops, z. B. https://shop.example.com (ohne /api).',
         'api_key' => 'Webservice-Schlüssel',
-        'api_key_help' => 'In PrestaShop unter Erweiterte Parameter → Webservice den Webservice aktivieren und einen Schlüssel mit Leserecht (GET) auf orders, customers, currencies und order_states anlegen.',
+        'api_key_help' => 'In PrestaShop unter Erweiterte Parameter → Webservice den Webservice aktivieren und einen Schlüssel mit Leserecht (GET) auf orders, customers, currencies und order_states anlegen; für Erstattungen zusätzlich order_slip, für die Zeitzone configurations.',
         'shop_timezone' => 'Zeitzone des Shops',
-        'shop_timezone_help' => 'PrestaShop liefert Zeiten ohne Zeitzone. Leer lassen, wenn der Shop in der Zeitzone Ihrer Organisation läuft; sonst z. B. Europe/Vienna.',
+        'shop_timezone_help' => 'PrestaShop liefert Zeiten ohne Zeitzone. Bleibt das Feld leer, gilt die beim Prüfen der Verbindung gelesene Zeitzone des Shops (Recht configurations), ohne sie die Ihrer Organisation. Sonst z. B. Europe/Vienna.',
     ],
     'search' => [
         'domain' => 'PrestaShop-Bestellungen',

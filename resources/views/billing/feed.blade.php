@@ -98,7 +98,7 @@
     $stateTone = static fn (string $state): string => match ($state) {
         'paid' => 'success',
         'open' => 'warning',
-        'cancelled' => 'ghost',
+        'cancelled', 'deleted' => 'ghost',
         default => 'neutral',
     };
 @endphp
@@ -350,6 +350,9 @@
                         {{ $money($signed) }}
                     @endif
                     {{ $row->currency }}
+                    @if ($row->foreign_amount !== null && $row->foreign_currency !== null)
+                        <div class="text-xs text-muted" title="{{ __('billing.feed.foreign_amount') }}">{{ $money((float) $row->foreign_amount) }} {{ $row->foreign_currency }}</div>
+                    @endif
                 </td>
                 <td class="text-right tabular-nums whitespace-nowrap">
                     {{ (float) $row->open_amount > 0.0 ? $money((float) $row->open_amount) : '—' }}

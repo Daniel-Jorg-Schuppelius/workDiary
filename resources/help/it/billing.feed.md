@@ -1,7 +1,7 @@
 ---
 title: "Flusso documenti"
 topic: billing.feed
-version: 3
+version: 4
 keywords:
     - fatture
     - preventivi
@@ -71,6 +71,11 @@ replicati senza pagina propria non hanno collegamento. Per i documenti aperti
 la colonna «Scadenza» indica i giorni di ritardo e il livello di sollecito
 raggiunto. Le sue fatture scadute si sollecitano direttamente dalla riga con
 «Sollecita».
+
+**Documenti rispecchiati:** se il sistema collegato non contiene più un
+documento, questo risulta **Eliminato nell'origine**. Non conta allora in alcun
+indicatore e compare solo con «Includi archiviati». Per i documenti in valuta
+estera, sotto l'importo compare il controvalore nella seconda valuta.
 
 **Nuovi documenti:** in alto a destra crea un preventivo o una fattura oppure
 converte un file fattura in fattura elettronica. «Da fatturare e da

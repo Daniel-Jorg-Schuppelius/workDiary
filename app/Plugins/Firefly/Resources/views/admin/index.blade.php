@@ -113,7 +113,12 @@
                         <div><a href="{{ route('finance.incoming-invoices.show', \App\Support\Sqid::encode(\App\Models\Document\Document::class, (int) $transaction->incomingEinvoice->document_id)) }}" class="link link-hover text-xs">{{ $transaction->incomingEinvoice->invoice_number }}</a></div>
                     @endif
                 </td>
-                <td class="text-right font-mono text-sm whitespace-nowrap">{{ $transaction->booked_amount->format() }}</td>
+                <td class="text-right font-mono text-sm whitespace-nowrap">
+                    {{ $transaction->booked_amount->format() }}
+                    @if ($transaction->foreign_amount !== null)
+                        <div class="text-xs text-muted" title="{{ __('firefly::firefly.list.foreign_amount') }}">{{ $transaction->foreign_amount->format() }}</div>
+                    @endif
+                </td>
             </tr>
         @empty
             <x-table.empty :colspan="6" icon="account_balance" :title="__('firefly::firefly.list.empty')" compact />

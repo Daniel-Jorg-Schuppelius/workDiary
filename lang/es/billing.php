@@ -56,7 +56,9 @@ return [
             'open' => 'Pendiente',
             'paid' => 'Cerrado',
             'cancelled' => 'Anulado',
+            'deleted' => 'Eliminado en el origen',
         ],
+        'foreign_amount' => 'Importe en una segunda moneda',
         'scope' => [
             'mine' => 'Míos',
             'all' => 'Todos',
