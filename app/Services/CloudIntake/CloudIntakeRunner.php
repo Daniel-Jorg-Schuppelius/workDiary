@@ -14,7 +14,7 @@ use App\Enums\CloudIntake\CloudIntakeItemStatus;
 use App\Models\Audit\AuditLog;
 use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentItem};
 use App\Models\Platform\User;
-use App\Plugins\Contracts\DocumentIntakeSource;
+use App\Plugins\Contracts\{DocumentIntakeOrigins, DocumentIntakeSource};
 use App\Plugins\PluginManager;
 use App\Plugins\Support\Intake\IntakeItem;
 use App\Services\Platform\IntakeActor;
@@ -249,6 +249,13 @@ class CloudIntakeRunner {
 
             // 8. Übergabenachweis + Zähler.
             $this->record($connection, $match['route']->id, $item, $sha256, $routed['status'], $routed['reason'], $routed['imported'], $actor);
+            if ($routed['status'] === CloudIntakeItemStatus::Imported && $routed['imported'] !== null && $adapter instanceof DocumentIntakeOrigins) {
+                try {
+                    $adapter->intakeImported($connection, $item, $routed['imported']);
+                } catch (Throwable $e) {
+                    report($e); // Die Übernahme gilt auch ohne Herkunftsvermerk.
+                }
+            }
             match ($routed['status']) {
                 CloudIntakeItemStatus::Imported => $result['imported']++,
                 CloudIntakeItemStatus::Inbox => $result['inbox']++,

@@ -1,7 +1,7 @@
 ---
 title: "Integrationen verwalten"
 topic: admin.integrations
-version: 4
+version: 5
 keywords:
     - Schnittstellen
     - Anbindungen
@@ -124,7 +124,8 @@ Die Auswahl wächst; die folgende Aufstellung nennt die verfügbaren
 Anbindungen nach Zweck, damit Sie nicht raten müssen, wo etwas hingehört:
 
 - **Buchhaltung und Faktura:** lexoffice, orgaMAX, sevDesk, easybill,
-  BuchhaltungsButler, InvoicePlane sowie der Peppol-Zugangspunkt für den
+  BuchhaltungsButler, InvoicePlane, Invoice Ninja, Akaunting, Firefly III sowie der
+  Peppol-Zugangspunkt für den
   Versand elektronischer Rechnungen.
 - **DATEV-Online:** Buchungsstapel per EXTF-Import und Belegbilder direkt
   an DATEV Unternehmen online; die Anmeldung erfolgt mit DATEV.
@@ -137,12 +138,14 @@ Anbindungen nach Zweck, damit Sie nicht raten müssen, wo etwas hingehört:
   seven.io für SMS an kritische Empfänger.
 - **Versand:** DHL, FedEx und UPS für Etiketten und Sendungsverfolgung.
 - **Dateien und Sicherungen:** Nextcloud, WebDAV, Dropbox, Google Drive,
-  SharePoint und S3 als Ablage- oder Sicherungsziel.
+  SharePoint und S3 als Ablage- oder Sicherungsziel, Paperless-ngx als Belegquelle,
+  Seafile als Belegquelle und Sicherungsziel.
 - **Kalender, Kontakte und Post:** Microsoft Graph, Google Kalender, CalDAV,
   CardDAV sowie Calendly für gebuchte Termine.
-- **Projekte und Zeiten:** Todoist, OpenProject, GitHub, GitLab, Toggl,
-  Clockify, Kimai, Zammad.
-- **Handel und Warenwirtschaft:** JTL-Wawi, Billbee, Etsy.
+- **Projekte und Zeiten:** Todoist, Jira, Asana, OpenProject, GitHub, GitLab,
+  Gitea/Forgejo, Redmine, Vikunja, Kanboard, Plane, Taiga, Leantime, Toggl,
+  Clockify, Kimai, Zammad, FreeScout, GLPI.
+- **Handel und Warenwirtschaft:** JTL-Wawi, Billbee, Etsy, WooCommerce, Shopware, PrestaShop.
 
 Eine Anbindung, die hier fehlt, gibt es nicht — fragen Sie im Zweifel nach, statt
 Zugangsdaten an einer Stelle zu hinterlegen, die dafür nicht gedacht ist.

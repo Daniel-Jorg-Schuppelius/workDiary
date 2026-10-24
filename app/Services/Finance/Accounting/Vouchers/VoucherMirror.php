@@ -118,12 +118,16 @@ class VoucherMirror {
     /**
      * Jüngster bekannter Änderungsstand im Fremdsystem — der Startpunkt des
      * nächsten Laufs. `null` = noch nie gespiegelt (Erstlauf über `$pages`).
+     * Liest ein Puller mehrere Listen, braucht jede ihre eigene Marke
+     * (`$voucherType`): sonst setzt eine kurze Liste die Marke einer am
+     * Seitenlimit abgebrochenen vorwärts.
      */
-    public function lastSourceChange(int $organizationId, string $pluginId): ?Carbon {
+    public function lastSourceChange(int $organizationId, string $pluginId, ?string $voucherType = null): ?Carbon {
         $value = AccountingVoucher::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organizationId)
             ->where('plugin_id', $pluginId)
+            ->when($voucherType !== null, fn ($query) => $query->where('voucher_type', $voucherType))
             ->max('source_changed_at');
 
         return is_string($value) && $value !== '' ? Carbon::parse($value) : null;

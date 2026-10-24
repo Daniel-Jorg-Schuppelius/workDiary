@@ -32,6 +32,7 @@
             @endunless
             <x-slot:badges>
                 <x-status-badge size="sm" :tone="$document->effectiveStatus()->tone()">{{ $document->effectiveStatus()->label() }}</x-status-badge>
+                <x-origin-badge :subject="$document" />
             </x-slot:badges>
             <x-slot:actions>
                 <x-collection-add-button :item="$document" />

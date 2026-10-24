@@ -1,7 +1,7 @@
 ---
 title: "Destinos de copia de seguridad en la nube"
 topic: backup-targets.overview
-version: 1
+version: 2
 keywords:
     - copia externa
     - respaldo de datos
@@ -15,14 +15,20 @@ keywords:
     - clave maestra
     - retención de copias
     - recuperación ante desastres
+    - Nextcloud
+    - WebDAV
+    - S3
+    - Seafile
 audience: []
 related:
     - admin.integrations
 ---
 
-WorkDiary respalda toda la instalación cifrada en Dropbox, OneDrive o Google Drive (la copia externa de la estrategia 3-2-1). El texto en claro nunca sale de la instalación — solo se suben partes cifradas con un manifiesto de confirmación firmado.
+WorkDiary respalda toda la instalación cifrada en Dropbox, OneDrive, Google Drive, Nextcloud, un servidor WebDAV, un almacenamiento compatible con S3 o Seafile (la copia externa de la estrategia 3-2-1). El texto en claro nunca sale de la instalación — solo se suben partes cifradas con un manifiesto de confirmación firmado.
 
-**Conexiones:** Solo el operador de la plataforma gestiona los destinos de copia; cada proveedor recibe su propia cuenta OAuth (separada de la entrada de documentos, con permisos de escritura dedicados). Si falta un permiso necesario, el destino queda visiblemente bloqueado.
+**Conexiones:** Solo el operador de la plataforma gestiona los destinos de copia; Dropbox, OneDrive y Google Drive reciben cada uno su propia cuenta OAuth (separada de la entrada de documentos, con permisos de escritura dedicados); Nextcloud, WebDAV, S3 y Seafile, sus propias credenciales. Al conectar, WorkDiary escribe, lee y borra una vez un archivo de prueba; solo entonces el destino queda activo. Si falta un permiso necesario, el destino queda visiblemente bloqueado.
+
+**Seafile:** URL del servidor (solo HTTPS), el token de cuenta de un usuario de Seafile propio y el nombre o ID de una biblioteca existente sin cifrar. WorkDiary solo escribe en su propia carpeta dentro de ella y comprueba el tamaño de cada archivo subido. El token de cuenta lo proporciona la API de Seafile: POST a /api2/auth-token/ con nombre de usuario y contraseña; con inicio de sesión en dos pasos, además con la cabecera X-Seafile-OTP y el código actual.
 
 **Claves:** BACKUP_MASTER_KEY (ENV, ¡guardar sin conexión!) es la única vía regular de descifrado; un par de claves de recuperación opcional descifra en caso de emergencia. Sin clave de recuperación la página advierte permanentemente — perder la clave maestra inutiliza todas las copias.
 

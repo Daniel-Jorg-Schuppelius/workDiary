@@ -18,6 +18,7 @@ return [
         'dunning_level' => 'Mahnstufe :level',
         'action' => [
             'dun' => 'Mahnen',
+            'open_original' => 'Im Original öffnen',
         ],
         'tab' => [
             'all' => 'Alle',

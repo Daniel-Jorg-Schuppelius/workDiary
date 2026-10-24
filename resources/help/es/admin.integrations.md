@@ -1,7 +1,7 @@
 ---
 title: "Gestionar integraciones"
 topic: admin.integrations
-version: 4
+version: 5
 keywords:
     - interfaces
     - conectores
@@ -125,7 +125,8 @@ La oferta crece; la siguiente lista nombra las integraciones disponibles por
 finalidad, para que no tenga que adivinar dónde encaja cada cosa:
 
 - **Contabilidad y facturación:** lexoffice, orgaMAX, sevDesk, easybill,
-  BuchhaltungsButler, InvoicePlane y el punto de acceso Peppol para enviar
+  BuchhaltungsButler, InvoicePlane, Invoice Ninja, Akaunting, Firefly III y el
+  punto de acceso Peppol para enviar
   facturas electrónicas.
 - **DATEV Online:** lotes contables por importación EXTF e imágenes de
   justificantes directamente a DATEV Unternehmen online; el inicio de
@@ -139,12 +140,14 @@ finalidad, para que no tenga que adivinar dónde encaja cada cosa:
   SMS a destinatarios críticos.
 - **Envíos:** DHL, FedEx y UPS para etiquetas y seguimiento.
 - **Archivos y copias de seguridad:** Nextcloud, WebDAV, Dropbox, Google Drive,
-  SharePoint y S3 como destino de almacenamiento o respaldo.
+  SharePoint y S3 como destino de almacenamiento o respaldo, Paperless-ngx como
+  fuente de justificantes, Seafile como fuente de justificantes y destino de respaldo.
 - **Calendario, contactos y correo:** Microsoft Graph, Google Calendar, CalDAV,
   CardDAV y Calendly para citas reservadas.
-- **Proyectos y tiempos:** Todoist, OpenProject, GitHub, GitLab, Toggl,
-  Clockify, Kimai, Zammad.
-- **Comercio y ERP:** JTL-Wawi, Billbee, Etsy.
+- **Proyectos y tiempos:** Todoist, Jira, Asana, OpenProject, GitHub, GitLab,
+  Gitea/Forgejo, Redmine, Vikunja, Kanboard, Plane, Taiga, Leantime, Toggl,
+  Clockify, Kimai, Zammad, FreeScout, GLPI.
+- **Comercio y ERP:** JTL-Wawi, Billbee, Etsy, WooCommerce, Shopware, PrestaShop.
 
 Una integración que falte en esta lista no existe: ante la duda, pregunta en
 lugar de guardar credenciales donde no corresponde.

@@ -210,6 +210,8 @@ return [
             'microsoft' => 'Microsoft OneDrive/SharePoint',
             'google' => 'Google Drive',
             'nextcloud' => 'Nextcloud',
+            'paperless' => 'Paperless-ngx',
+            'seafile' => 'Seafile',
         ],
         'connection_status' => [
             'draft' => 'Borrador',
@@ -1278,6 +1280,8 @@ return [
             'easybill' => 'easybill',
             'invoiceplane' => 'InvoicePlane',
             'jtl_wawi' => 'JTL-Wawi',
+            'invoiceninja' => 'Invoice Ninja',
+            'akaunting' => 'Akaunting',
         ],
         'agreement-mode' => [
             'account' => 'Cuenta de cliente (sin factura)',
@@ -1628,6 +1632,7 @@ return [
             'nextcloud' => 'Nextcloud',
             'webdav' => 'WebDAV (servidor propio)',
             's3' => 'Almacenamiento compatible con S3',
+            'seafile' => 'Seafile',
         ],
         'target_status' => [
             'draft' => 'Borrador',
@@ -2210,6 +2215,8 @@ return [
         'data_domain' => ['tasks' => 'Tareas', 'tickets' => 'Tickets', 'inventory' => 'Existencias', 'calendar' => 'Calendario', 'documents' => 'Documentos', 'customers' => 'Clientes'],
         'import_match_policy' => ['auto_link_exact_only' => 'Asignar solo coincidencias exactas (resto a la bandeja)', 'auto_link_and_create' => 'Asignar, si no crear', 'manual_review' => 'Revisar todo manualmente'],
         'integration_inbox_status' => ['open' => 'Abierto', 'resolved_linked' => 'Asignado', 'resolved_created' => 'Creado', 'resolved_local' => 'Mantener local', 'resolved_remote' => 'Remoto aplicado', 'dismissed' => 'Descartado'],
+        'shop_order_status' => ['open' => 'Abierto', 'processing' => 'En proceso', 'completed' => 'Completado', 'cancelled' => 'Cancelado', 'refunded' => 'Reembolsado'],
+        'task_import_link_status' => ['pending' => 'Vista previa pendiente', 'active' => 'Activa', 'paused' => 'En pausa'],
     ],
     'key_handover' => [
         'key_handover_direction' => ['out' => 'Gasto', 'in' => 'Devolución'],

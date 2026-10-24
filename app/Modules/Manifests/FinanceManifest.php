@@ -166,6 +166,9 @@ final class FinanceManifest extends Manifest {
             'easybill',
             'orgamax',
             'buchhaltungsbutler',
+            'invoiceninja',
+            'akaunting',
+            'firefly',
         ];
     }
 

@@ -49,7 +49,7 @@ class PluginOverviewCoverageRuleTest extends TestCase {
         'Lexoffice/LexofficeVoucherLine' => 'Belegpositionen; gesucht wird der Beleg',
     ];
 
-    private const COVERING_CONTRACTS = '/\b(?:implements\s[^{]*\b(?:SearchDomain|SearchSource|DocumentFeedSource)\b|extends\s+AbstractSearchSource\b)/';
+    private const COVERING_CONTRACTS = '/\b(?:implements\s[^{]*\b(?:SearchDomain|SearchSource|DocumentFeedSource)\b|extends\s+(?:AbstractSearchSource|ShopOrderSearchDomain)\b)/';
 
     public function test_every_plugin_model_is_searchable_or_named_as_technical(): void {
         $violations = [];

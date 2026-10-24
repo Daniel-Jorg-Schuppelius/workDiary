@@ -23965,6 +23965,901 @@ CREATE INDEX "guarantees_org_status_exp_idx" on "guarantees"(
   "status",
   "expires_on"
 );
+CREATE TABLE IF NOT EXISTS "jira_connections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_id" varchar,
+  "source_name" varchar,
+  "source_url" varchar,
+  "available_sources" text,
+  "account_id" varchar,
+  "account_name" varchar,
+  "access_token" text,
+  "refresh_token" text,
+  "token_expires_at" datetime,
+  "scopes" varchar,
+  "status" varchar not null default 'active',
+  "last_synced_at" datetime,
+  "last_sync_counters" text,
+  "last_error" varchar,
+  "last_error_at" datetime,
+  "consecutive_failures" integer not null default '0',
+  "disabled_at" datetime,
+  "connected_by" integer,
+  "connected_at" datetime,
+  "disconnected_by" integer,
+  "disconnected_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("connected_by") references "users"("id") on delete set null,
+  foreign key("disconnected_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "jirac_org_unique" on "jira_connections"(
+  "organization_id"
+);
+CREATE TABLE IF NOT EXISTS "jira_project_links"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_project_id" varchar not null,
+  "source_project_key" varchar,
+  "source_project_name" varchar,
+  "project_id" integer not null,
+  "status" varchar not null default 'pending',
+  "paused_reason" varchar,
+  "import_confirmed_at" datetime,
+  "confirmed_by" integer,
+  "checkpoint_at" datetime,
+  "last_full_sync_at" datetime,
+  "last_run_at" datetime,
+  "is_last_run_complete" tinyint(1),
+  "last_run_counters" text,
+  "last_error" varchar,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("project_id") references "projects"("id") on delete cascade,
+  foreign key("confirmed_by") references "users"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "jirapl_org_source_unique" on "jira_project_links"(
+  "organization_id",
+  "source_project_id"
+);
+CREATE TABLE IF NOT EXISTS "asana_connections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_id" varchar,
+  "source_name" varchar,
+  "source_url" varchar,
+  "available_sources" text,
+  "account_id" varchar,
+  "account_name" varchar,
+  "access_token" text,
+  "refresh_token" text,
+  "token_expires_at" datetime,
+  "scopes" varchar,
+  "status" varchar not null default 'active',
+  "last_synced_at" datetime,
+  "last_sync_counters" text,
+  "last_error" varchar,
+  "last_error_at" datetime,
+  "consecutive_failures" integer not null default '0',
+  "disabled_at" datetime,
+  "connected_by" integer,
+  "connected_at" datetime,
+  "disconnected_by" integer,
+  "disconnected_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("connected_by") references "users"("id") on delete set null,
+  foreign key("disconnected_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "asanac_org_unique" on "asana_connections"(
+  "organization_id"
+);
+CREATE TABLE IF NOT EXISTS "asana_project_links"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_project_id" varchar not null,
+  "source_project_key" varchar,
+  "source_project_name" varchar,
+  "project_id" integer not null,
+  "status" varchar not null default 'pending',
+  "paused_reason" varchar,
+  "import_confirmed_at" datetime,
+  "confirmed_by" integer,
+  "checkpoint_at" datetime,
+  "last_full_sync_at" datetime,
+  "last_run_at" datetime,
+  "is_last_run_complete" tinyint(1),
+  "last_run_counters" text,
+  "last_error" varchar,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("project_id") references "projects"("id") on delete cascade,
+  foreign key("confirmed_by") references "users"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "asanapl_org_source_unique" on "asana_project_links"(
+  "organization_id",
+  "source_project_id"
+);
+CREATE TABLE IF NOT EXISTS "gitea_connections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_id" varchar,
+  "source_name" varchar,
+  "source_url" varchar,
+  "account_id" varchar,
+  "account_name" varchar,
+  "status" varchar not null default 'active',
+  "last_synced_at" datetime,
+  "last_sync_counters" text,
+  "last_error" varchar,
+  "last_error_at" datetime,
+  "consecutive_failures" integer not null default '0',
+  "disabled_at" datetime,
+  "connected_by" integer,
+  "connected_at" datetime,
+  "disconnected_by" integer,
+  "disconnected_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("connected_by") references "users"("id") on delete set null,
+  foreign key("disconnected_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "giteac_org_unique" on "gitea_connections"(
+  "organization_id"
+);
+CREATE TABLE IF NOT EXISTS "gitea_project_links"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_project_id" varchar not null,
+  "source_project_key" varchar,
+  "source_project_name" varchar,
+  "project_id" integer not null,
+  "status" varchar not null default 'pending',
+  "paused_reason" varchar,
+  "import_confirmed_at" datetime,
+  "confirmed_by" integer,
+  "checkpoint_at" datetime,
+  "last_full_sync_at" datetime,
+  "last_run_at" datetime,
+  "is_last_run_complete" tinyint(1),
+  "last_run_counters" text,
+  "last_error" varchar,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("project_id") references "projects"("id") on delete cascade,
+  foreign key("confirmed_by") references "users"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "giteapl_org_source_unique" on "gitea_project_links"(
+  "organization_id",
+  "source_project_id"
+);
+CREATE TABLE IF NOT EXISTS "redmine_connections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_id" varchar,
+  "source_name" varchar,
+  "source_url" varchar,
+  "account_id" varchar,
+  "account_name" varchar,
+  "status" varchar not null default 'active',
+  "last_synced_at" datetime,
+  "last_sync_counters" text,
+  "last_error" varchar,
+  "last_error_at" datetime,
+  "consecutive_failures" integer not null default '0',
+  "disabled_at" datetime,
+  "connected_by" integer,
+  "connected_at" datetime,
+  "disconnected_by" integer,
+  "disconnected_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("connected_by") references "users"("id") on delete set null,
+  foreign key("disconnected_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "redminec_org_unique" on "redmine_connections"(
+  "organization_id"
+);
+CREATE TABLE IF NOT EXISTS "redmine_project_links"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_project_id" varchar not null,
+  "source_project_key" varchar,
+  "source_project_name" varchar,
+  "project_id" integer not null,
+  "status" varchar not null default 'pending',
+  "paused_reason" varchar,
+  "import_confirmed_at" datetime,
+  "confirmed_by" integer,
+  "checkpoint_at" datetime,
+  "last_full_sync_at" datetime,
+  "last_run_at" datetime,
+  "is_last_run_complete" tinyint(1),
+  "last_run_counters" text,
+  "last_error" varchar,
+  "is_time_import_enabled" tinyint(1) not null default '0',
+  "last_time_import_at" datetime,
+  "last_time_counters" text,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("project_id") references "projects"("id") on delete cascade,
+  foreign key("confirmed_by") references "users"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "redminepl_org_source_unique" on "redmine_project_links"(
+  "organization_id",
+  "source_project_id"
+);
+CREATE TABLE IF NOT EXISTS "woocommerce_connections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_id" varchar,
+  "source_name" varchar,
+  "source_url" varchar,
+  "account_name" varchar,
+  "status" varchar not null default 'active',
+  "import_confirmed_at" datetime,
+  "confirmed_by" integer,
+  "checkpoint_at" datetime,
+  "last_full_sync_at" datetime,
+  "last_synced_at" datetime,
+  "last_sync_counters" text,
+  "is_last_run_complete" tinyint(1),
+  "last_error" varchar,
+  "last_error_at" datetime,
+  "consecutive_failures" integer not null default '0',
+  "disabled_at" datetime,
+  "connected_by" integer,
+  "connected_at" datetime,
+  "disconnected_by" integer,
+  "disconnected_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("confirmed_by") references "users"("id") on delete set null,
+  foreign key("connected_by") references "users"("id") on delete set null,
+  foreign key("disconnected_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "wooc_org_unique" on "woocommerce_connections"(
+  "organization_id"
+);
+CREATE TABLE IF NOT EXISTS "woocommerce_orders"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "remote_order_id" varchar not null,
+  "order_number" varchar,
+  "status" varchar not null,
+  "remote_status_code" varchar,
+  "currency" varchar,
+  "gross_amount" numeric,
+  "net_amount" numeric,
+  "buyer_external_id" varchar,
+  "buyer" text,
+  "items" text,
+  "ordered_at" datetime,
+  "remote_modified_at" datetime,
+  "customer_id" integer,
+  "inbox_status" varchar not null default 'open',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("customer_id") references "customers"("id") on delete set null
+);
+CREATE UNIQUE INDEX "wooo_org_remote_unique" on "woocommerce_orders"(
+  "organization_id",
+  "remote_order_id"
+);
+CREATE INDEX "wooo_org_ordered_idx" on "woocommerce_orders"(
+  "organization_id",
+  "ordered_at"
+);
+CREATE INDEX "wooo_org_buyer_idx" on "woocommerce_orders"(
+  "organization_id",
+  "buyer_external_id"
+);
+CREATE TABLE IF NOT EXISTS "shopware_connections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_id" varchar,
+  "source_name" varchar,
+  "source_url" varchar,
+  "account_name" varchar,
+  "status" varchar not null default 'active',
+  "import_confirmed_at" datetime,
+  "confirmed_by" integer,
+  "checkpoint_at" datetime,
+  "last_full_sync_at" datetime,
+  "last_synced_at" datetime,
+  "last_sync_counters" text,
+  "is_last_run_complete" tinyint(1),
+  "last_error" varchar,
+  "last_error_at" datetime,
+  "consecutive_failures" integer not null default '0',
+  "disabled_at" datetime,
+  "connected_by" integer,
+  "connected_at" datetime,
+  "disconnected_by" integer,
+  "disconnected_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("confirmed_by") references "users"("id") on delete set null,
+  foreign key("connected_by") references "users"("id") on delete set null,
+  foreign key("disconnected_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "shwc_org_unique" on "shopware_connections"(
+  "organization_id"
+);
+CREATE TABLE IF NOT EXISTS "shopware_orders"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "remote_order_id" varchar not null,
+  "order_number" varchar,
+  "status" varchar not null,
+  "remote_status_code" varchar,
+  "currency" varchar,
+  "gross_amount" numeric,
+  "net_amount" numeric,
+  "buyer_external_id" varchar,
+  "buyer" text,
+  "items" text,
+  "ordered_at" datetime,
+  "remote_modified_at" datetime,
+  "customer_id" integer,
+  "inbox_status" varchar not null default 'open',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("customer_id") references "customers"("id") on delete set null
+);
+CREATE UNIQUE INDEX "shwo_org_remote_unique" on "shopware_orders"(
+  "organization_id",
+  "remote_order_id"
+);
+CREATE INDEX "shwo_org_ordered_idx" on "shopware_orders"(
+  "organization_id",
+  "ordered_at"
+);
+CREATE INDEX "shwo_org_buyer_idx" on "shopware_orders"(
+  "organization_id",
+  "buyer_external_id"
+);
+CREATE TABLE IF NOT EXISTS "prestashop_connections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_id" varchar,
+  "source_name" varchar,
+  "source_url" varchar,
+  "account_name" varchar,
+  "status" varchar not null default 'active',
+  "import_confirmed_at" datetime,
+  "confirmed_by" integer,
+  "checkpoint_at" datetime,
+  "last_full_sync_at" datetime,
+  "last_synced_at" datetime,
+  "last_sync_counters" text,
+  "is_last_run_complete" tinyint(1),
+  "last_error" varchar,
+  "last_error_at" datetime,
+  "consecutive_failures" integer not null default '0',
+  "disabled_at" datetime,
+  "connected_by" integer,
+  "connected_at" datetime,
+  "disconnected_by" integer,
+  "disconnected_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("confirmed_by") references "users"("id") on delete set null,
+  foreign key("connected_by") references "users"("id") on delete set null,
+  foreign key("disconnected_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "pshc_org_unique" on "prestashop_connections"(
+  "organization_id"
+);
+CREATE TABLE IF NOT EXISTS "prestashop_orders"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "remote_order_id" varchar not null,
+  "order_number" varchar,
+  "status" varchar not null,
+  "remote_status_code" varchar,
+  "currency" varchar,
+  "gross_amount" numeric,
+  "net_amount" numeric,
+  "buyer_external_id" varchar,
+  "buyer" text,
+  "items" text,
+  "ordered_at" datetime,
+  "remote_modified_at" datetime,
+  "customer_id" integer,
+  "inbox_status" varchar not null default 'open',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("customer_id") references "customers"("id") on delete set null
+);
+CREATE UNIQUE INDEX "psho_org_remote_unique" on "prestashop_orders"(
+  "organization_id",
+  "remote_order_id"
+);
+CREATE INDEX "psho_org_ordered_idx" on "prestashop_orders"(
+  "organization_id",
+  "ordered_at"
+);
+CREATE INDEX "psho_org_buyer_idx" on "prestashop_orders"(
+  "organization_id",
+  "buyer_external_id"
+);
+CREATE TABLE IF NOT EXISTS "firefly_connections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_id" varchar,
+  "source_name" varchar,
+  "source_url" varchar,
+  "account_name" varchar,
+  "status" varchar not null default 'active',
+  "last_synced_at" datetime,
+  "last_sync_counters" text,
+  "is_last_run_complete" tinyint(1),
+  "last_error" varchar,
+  "last_error_at" datetime,
+  "consecutive_failures" integer not null default '0',
+  "disabled_at" datetime,
+  "connected_by" integer,
+  "connected_at" datetime,
+  "disconnected_by" integer,
+  "disconnected_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("connected_by") references "users"("id") on delete set null,
+  foreign key("disconnected_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "ffc_org_unique" on "firefly_connections"(
+  "organization_id"
+);
+CREATE TABLE IF NOT EXISTS "firefly_transactions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "remote_journal_id" varchar not null,
+  "remote_group_id" varchar,
+  "kind" varchar not null,
+  "booked_on" date not null,
+  "booked_amount" numeric not null,
+  "currency" varchar,
+  "description" varchar,
+  "counterparty_name" varchar,
+  "account_name" varchar,
+  "references" text,
+  "match_status" varchar not null default 'unmatched',
+  "invoice_id" integer,
+  "incoming_einvoice_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("invoice_id") references "invoices"("id") on delete set null,
+  foreign key("incoming_einvoice_id") references "incoming_einvoices"("id") on delete set null
+);
+CREATE UNIQUE INDEX "fft_org_journal_unique" on "firefly_transactions"(
+  "organization_id",
+  "remote_journal_id"
+);
+CREATE INDEX "fft_org_booked_idx" on "firefly_transactions"(
+  "organization_id",
+  "booked_on"
+);
+CREATE TABLE IF NOT EXISTS "vikunja_connections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_id" varchar,
+  "source_name" varchar,
+  "source_url" varchar,
+  "account_id" varchar,
+  "account_name" varchar,
+  "status" varchar not null default 'active',
+  "last_synced_at" datetime,
+  "last_sync_counters" text,
+  "last_error" varchar,
+  "last_error_at" datetime,
+  "consecutive_failures" integer not null default '0',
+  "disabled_at" datetime,
+  "connected_by" integer,
+  "connected_at" datetime,
+  "disconnected_by" integer,
+  "disconnected_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("connected_by") references "users"("id") on delete set null,
+  foreign key("disconnected_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "vikc_org_unique" on "vikunja_connections"(
+  "organization_id"
+);
+CREATE TABLE IF NOT EXISTS "vikunja_project_links"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_project_id" varchar not null,
+  "source_project_key" varchar,
+  "source_project_name" varchar,
+  "project_id" integer not null,
+  "status" varchar not null default 'pending',
+  "paused_reason" varchar,
+  "import_confirmed_at" datetime,
+  "confirmed_by" integer,
+  "checkpoint_at" datetime,
+  "last_full_sync_at" datetime,
+  "last_run_at" datetime,
+  "is_last_run_complete" tinyint(1),
+  "last_run_counters" text,
+  "last_error" varchar,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("project_id") references "projects"("id") on delete cascade,
+  foreign key("confirmed_by") references "users"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "vikpl_org_source_unique" on "vikunja_project_links"(
+  "organization_id",
+  "source_project_id"
+);
+CREATE TABLE IF NOT EXISTS "kanboard_connections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_id" varchar,
+  "source_name" varchar,
+  "source_url" varchar,
+  "account_id" varchar,
+  "account_name" varchar,
+  "status" varchar not null default 'active',
+  "last_synced_at" datetime,
+  "last_sync_counters" text,
+  "last_error" varchar,
+  "last_error_at" datetime,
+  "consecutive_failures" integer not null default '0',
+  "disabled_at" datetime,
+  "connected_by" integer,
+  "connected_at" datetime,
+  "disconnected_by" integer,
+  "disconnected_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("connected_by") references "users"("id") on delete set null,
+  foreign key("disconnected_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "kbc_org_unique" on "kanboard_connections"(
+  "organization_id"
+);
+CREATE TABLE IF NOT EXISTS "kanboard_project_links"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_project_id" varchar not null,
+  "source_project_key" varchar,
+  "source_project_name" varchar,
+  "project_id" integer not null,
+  "status" varchar not null default 'pending',
+  "paused_reason" varchar,
+  "import_confirmed_at" datetime,
+  "confirmed_by" integer,
+  "checkpoint_at" datetime,
+  "last_full_sync_at" datetime,
+  "last_run_at" datetime,
+  "is_last_run_complete" tinyint(1),
+  "last_run_counters" text,
+  "last_error" varchar,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("project_id") references "projects"("id") on delete cascade,
+  foreign key("confirmed_by") references "users"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "kbpl_org_source_unique" on "kanboard_project_links"(
+  "organization_id",
+  "source_project_id"
+);
+CREATE TABLE IF NOT EXISTS "plane_connections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_id" varchar,
+  "source_name" varchar,
+  "source_url" varchar,
+  "account_id" varchar,
+  "account_name" varchar,
+  "status" varchar not null default 'active',
+  "last_synced_at" datetime,
+  "last_sync_counters" text,
+  "last_error" varchar,
+  "last_error_at" datetime,
+  "consecutive_failures" integer not null default '0',
+  "disabled_at" datetime,
+  "connected_by" integer,
+  "connected_at" datetime,
+  "disconnected_by" integer,
+  "disconnected_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("connected_by") references "users"("id") on delete set null,
+  foreign key("disconnected_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "plc_org_unique" on "plane_connections"("organization_id");
+CREATE TABLE IF NOT EXISTS "plane_project_links"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_project_id" varchar not null,
+  "source_project_key" varchar,
+  "source_project_name" varchar,
+  "project_id" integer not null,
+  "status" varchar not null default 'pending',
+  "paused_reason" varchar,
+  "import_confirmed_at" datetime,
+  "confirmed_by" integer,
+  "checkpoint_at" datetime,
+  "last_full_sync_at" datetime,
+  "last_run_at" datetime,
+  "is_last_run_complete" tinyint(1),
+  "last_run_counters" text,
+  "last_error" varchar,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("project_id") references "projects"("id") on delete cascade,
+  foreign key("confirmed_by") references "users"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "plpl_org_source_unique" on "plane_project_links"(
+  "organization_id",
+  "source_project_id"
+);
+CREATE TABLE IF NOT EXISTS "taiga_connections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_id" varchar,
+  "source_name" varchar,
+  "source_url" varchar,
+  "account_id" varchar,
+  "account_name" varchar,
+  "status" varchar not null default 'active',
+  "last_synced_at" datetime,
+  "last_sync_counters" text,
+  "last_error" varchar,
+  "last_error_at" datetime,
+  "consecutive_failures" integer not null default '0',
+  "disabled_at" datetime,
+  "connected_by" integer,
+  "connected_at" datetime,
+  "disconnected_by" integer,
+  "disconnected_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("connected_by") references "users"("id") on delete set null,
+  foreign key("disconnected_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "tgc_org_unique" on "taiga_connections"("organization_id");
+CREATE TABLE IF NOT EXISTS "taiga_project_links"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_project_id" varchar not null,
+  "source_project_key" varchar,
+  "source_project_name" varchar,
+  "project_id" integer not null,
+  "status" varchar not null default 'pending',
+  "paused_reason" varchar,
+  "import_confirmed_at" datetime,
+  "confirmed_by" integer,
+  "checkpoint_at" datetime,
+  "last_full_sync_at" datetime,
+  "last_run_at" datetime,
+  "is_last_run_complete" tinyint(1),
+  "last_run_counters" text,
+  "last_error" varchar,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("project_id") references "projects"("id") on delete cascade,
+  foreign key("confirmed_by") references "users"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "tgpl_org_source_unique" on "taiga_project_links"(
+  "organization_id",
+  "source_project_id"
+);
+CREATE TABLE IF NOT EXISTS "leantime_connections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_id" varchar,
+  "source_name" varchar,
+  "source_url" varchar,
+  "account_id" varchar,
+  "account_name" varchar,
+  "status" varchar not null default 'active',
+  "last_synced_at" datetime,
+  "last_sync_counters" text,
+  "last_error" varchar,
+  "last_error_at" datetime,
+  "consecutive_failures" integer not null default '0',
+  "disabled_at" datetime,
+  "connected_by" integer,
+  "connected_at" datetime,
+  "disconnected_by" integer,
+  "disconnected_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("connected_by") references "users"("id") on delete set null,
+  foreign key("disconnected_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "ltc_org_unique" on "leantime_connections"(
+  "organization_id"
+);
+CREATE TABLE IF NOT EXISTS "leantime_project_links"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_project_id" varchar not null,
+  "source_project_key" varchar,
+  "source_project_name" varchar,
+  "project_id" integer not null,
+  "status" varchar not null default 'pending',
+  "paused_reason" varchar,
+  "import_confirmed_at" datetime,
+  "confirmed_by" integer,
+  "checkpoint_at" datetime,
+  "last_full_sync_at" datetime,
+  "last_run_at" datetime,
+  "is_last_run_complete" tinyint(1),
+  "last_run_counters" text,
+  "last_error" varchar,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("project_id") references "projects"("id") on delete cascade,
+  foreign key("confirmed_by") references "users"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "ltpl_org_source_unique" on "leantime_project_links"(
+  "organization_id",
+  "source_project_id"
+);
+CREATE TABLE IF NOT EXISTS "freescout_connections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_id" varchar,
+  "source_name" varchar,
+  "source_url" varchar,
+  "account_id" varchar,
+  "account_name" varchar,
+  "status" varchar not null default 'active',
+  "last_synced_at" datetime,
+  "last_sync_counters" text,
+  "last_error" varchar,
+  "last_error_at" datetime,
+  "consecutive_failures" integer not null default '0',
+  "disabled_at" datetime,
+  "connected_by" integer,
+  "connected_at" datetime,
+  "disconnected_by" integer,
+  "disconnected_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("connected_by") references "users"("id") on delete set null,
+  foreign key("disconnected_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "fsc_org_unique" on "freescout_connections"(
+  "organization_id"
+);
+CREATE TABLE IF NOT EXISTS "freescout_project_links"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_project_id" varchar not null,
+  "source_project_key" varchar,
+  "source_project_name" varchar,
+  "project_id" integer not null,
+  "status" varchar not null default 'pending',
+  "paused_reason" varchar,
+  "import_confirmed_at" datetime,
+  "confirmed_by" integer,
+  "checkpoint_at" datetime,
+  "last_full_sync_at" datetime,
+  "last_run_at" datetime,
+  "is_last_run_complete" tinyint(1),
+  "last_run_counters" text,
+  "last_error" varchar,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("project_id") references "projects"("id") on delete cascade,
+  foreign key("confirmed_by") references "users"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "fspl_org_source_unique" on "freescout_project_links"(
+  "organization_id",
+  "source_project_id"
+);
+CREATE TABLE IF NOT EXISTS "glpi_connections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_id" varchar,
+  "source_name" varchar,
+  "source_url" varchar,
+  "account_id" varchar,
+  "account_name" varchar,
+  "status" varchar not null default 'active',
+  "last_synced_at" datetime,
+  "last_sync_counters" text,
+  "last_error" varchar,
+  "last_error_at" datetime,
+  "consecutive_failures" integer not null default '0',
+  "disabled_at" datetime,
+  "connected_by" integer,
+  "connected_at" datetime,
+  "disconnected_by" integer,
+  "disconnected_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("connected_by") references "users"("id") on delete set null,
+  foreign key("disconnected_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "glpic_org_unique" on "glpi_connections"(
+  "organization_id"
+);
+CREATE TABLE IF NOT EXISTS "glpi_project_links"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_project_id" varchar not null,
+  "source_project_key" varchar,
+  "source_project_name" varchar,
+  "project_id" integer not null,
+  "status" varchar not null default 'pending',
+  "paused_reason" varchar,
+  "import_confirmed_at" datetime,
+  "confirmed_by" integer,
+  "checkpoint_at" datetime,
+  "last_full_sync_at" datetime,
+  "last_run_at" datetime,
+  "is_last_run_complete" tinyint(1),
+  "last_run_counters" text,
+  "last_error" varchar,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("project_id") references "projects"("id") on delete cascade,
+  foreign key("confirmed_by") references "users"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "glpipl_org_source_unique" on "glpi_project_links"(
+  "organization_id",
+  "source_project_id"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -24977,3 +25872,18 @@ INSERT INTO migrations VALUES(1008,'2027_03_31_130300_add_is_template_to_custome
 INSERT INTO migrations VALUES(1009,'2027_03_31_140000_add_provisional_and_chain_to_bank_statements_table',1);
 INSERT INTO migrations VALUES(1010,'2027_03_31_150000_add_preamble_to_bill_of_quantities_table',2);
 INSERT INTO migrations VALUES(1011,'2027_03_31_160000_add_bid_comment_permission_to_bill_of_quantities_table',3);
+INSERT INTO migrations VALUES(1012,'2027_03_31_170000_create_jira_tables',4);
+INSERT INTO migrations VALUES(1013,'2027_03_31_170100_create_asana_tables',4);
+INSERT INTO migrations VALUES(1014,'2027_03_31_170200_create_gitea_tables',5);
+INSERT INTO migrations VALUES(1015,'2027_03_31_170300_create_redmine_tables',5);
+INSERT INTO migrations VALUES(1016,'2027_03_31_170400_create_woocommerce_tables',6);
+INSERT INTO migrations VALUES(1017,'2027_03_31_170500_create_shopware_tables',6);
+INSERT INTO migrations VALUES(1018,'2027_03_31_170600_create_prestashop_tables',6);
+INSERT INTO migrations VALUES(1019,'2027_03_31_170700_create_firefly_tables',7);
+INSERT INTO migrations VALUES(1020,'2027_03_31_170800_create_vikunja_tables',8);
+INSERT INTO migrations VALUES(1021,'2027_03_31_170900_create_kanboard_tables',8);
+INSERT INTO migrations VALUES(1022,'2027_03_31_171000_create_plane_tables',8);
+INSERT INTO migrations VALUES(1023,'2027_03_31_171100_create_taiga_tables',8);
+INSERT INTO migrations VALUES(1024,'2027_03_31_171200_create_leantime_tables',8);
+INSERT INTO migrations VALUES(1025,'2027_03_31_171300_create_freescout_tables',8);
+INSERT INTO migrations VALUES(1026,'2027_03_31_171400_create_glpi_tables',8);

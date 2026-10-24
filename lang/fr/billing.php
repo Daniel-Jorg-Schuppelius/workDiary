@@ -18,6 +18,7 @@ return [
         'dunning_level' => 'Niveau de relance :level',
         'action' => [
             'dun' => 'Relancer',
+            'open_original' => 'Ouvrir l’original',
         ],
         'tab' => [
             'all' => 'Tous',

@@ -210,6 +210,8 @@ return [
             'microsoft' => 'Microsoft OneDrive/SharePoint',
             'google' => 'Google Drive',
             'nextcloud' => 'Nextcloud',
+            'paperless' => 'Paperless-ngx',
+            'seafile' => 'Seafile',
         ],
         'connection_status' => [
             'draft' => 'Bozza',
@@ -1278,6 +1280,8 @@ return [
             'easybill' => 'easybill',
             'invoiceplane' => 'InvoicePlane',
             'jtl_wawi' => 'JTL-Wawi',
+            'invoiceninja' => 'Invoice Ninja',
+            'akaunting' => 'Akaunting',
         ],
         'agreement-mode' => [
             'account' => 'Conto cliente (senza fattura)',
@@ -1628,6 +1632,7 @@ return [
             'nextcloud' => 'Nextcloud',
             'webdav' => 'WebDAV (server proprio)',
             's3' => 'Archiviazione compatibile S3',
+            'seafile' => 'Seafile',
         ],
         'target_status' => [
             'draft' => 'Bozza',
@@ -2210,6 +2215,8 @@ return [
         'data_domain' => ['tasks' => 'Attività', 'tickets' => 'Ticket', 'inventory' => 'Giacenza di magazzino', 'calendar' => 'Calendario', 'documents' => 'Documenti', 'customers' => 'Clienti'],
         'import_match_policy' => ['auto_link_exact_only' => 'Associa solo le corrispondenze esatte (resto in inbox)', 'auto_link_and_create' => 'Associa, altrimenti crea', 'manual_review' => 'Verifica tutto manualmente'],
         'integration_inbox_status' => ['open' => 'Aperto', 'resolved_linked' => 'Associato', 'resolved_created' => 'Creato', 'resolved_local' => 'Mantieni locale', 'resolved_remote' => 'Remoto applicato', 'dismissed' => 'Scartato'],
+        'shop_order_status' => ['open' => 'Aperto', 'processing' => 'In lavorazione', 'completed' => 'Completato', 'cancelled' => 'Annullato', 'refunded' => 'Rimborsato'],
+        'task_import_link_status' => ['pending' => 'Anteprima in sospeso', 'active' => 'Attiva', 'paused' => 'In pausa'],
     ],
     'key_handover' => [
         'key_handover_direction' => ['out' => 'Spesa', 'in' => 'Restituzione'],

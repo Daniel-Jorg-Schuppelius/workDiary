@@ -81,6 +81,8 @@ final class HelpdeskManifest extends Manifest {
     public function plugins(): array {
         return [
             'zammad',
+            'freescout',
+            'glpi',
         ];
     }
 
