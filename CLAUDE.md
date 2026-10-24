@@ -433,6 +433,69 @@ Datensatzes — kein `$config['api_key']`, kein Client aus Rohwerten, keine
 Singletons mit Schlüssel, kein `forgetInstance()` (Gate
 `PluginCredentialsRuleTest`; Lexoffice-Dienste nehmen nur `?int $organizationId`).
 
+## Aufgabenimporte: ein Baustein für Jira, Asana und Nachfolger (Phase 157)
+
+Reine Aufgabenimporte erben `App\Plugins\Support\TaskSync\AbstractTaskImportService`
+(Lauf unter Sperre je Organisation und Anbieter, Datenführerschaft vor jedem
+Schreiben, Vorschau, ausdrückliches Verknüpfen, Konfliktrunden, Aufholpunkt nur
+nach vollständigem Lesen) und liefern nur `fetch()`, `fetchOne()` und
+`normalize()` → `RemoteTask`. Verbindung und Zuordnung über
+`IsTaskImportConnection`/`IsTaskImportLink` (gleiche Spalten), Seite über
+`TaskImportAdminController` mit den Views `plugins.task-import.*`, Befehl über
+`TaskImportSyncCommand`. Anbieter mit rotierenden Refresh-Tokens nutzen
+`SerializedBearerAuthentication` (Refresh unter Sperre, Trennen nimmt dieselbe
+Sperre); Paginierung über `RemotePages::all()`, das ein Seitenlimit als
+unvollständig meldet statt still abzuschneiden.
+
+**Selbst gehostete Systeme (Phase 158)** — Gitea/Forgejo, Redmine und
+Nachfolger erben `TokenTaskImportAdminController` (Zuordnungen über
+`ManagesTaskImportLinks`). Basis-URL, Token und `allow_private_network`
+stehen in den Plugin-Einstellungen. Die Verbindung gibt `storesTokens()`
+false zurück: ohne Token-Spalten keine Token-Casts, sonst scheitert
+`security:rekey-encrypted`. Instanz und Fremd-IDs laufen über
+`SelfHostedInstance` (`<instanz>:<id>`), Links nur mit `owns()`.
+`normalize()` übersetzt nur Felder und gibt sie an `mapFields()`; Status nur
+aus einem festen Feld der Quelle. Ohne belegten serverseitigen
+Änderungsfilter liest der Adapter alles und filtert mit `changedSince()`.
+Trennen Cloud-API und Oberfläche den Host (Plane, Taiga), ist `source_url` die
+Oberfläche. JSON-RPC-APIs (Kanboard, Leantime) rufen über `CallsJsonRpc`.
+
+**Cloud-Dokumenteingang:** Eine Quelle (Paperless-ngx, Seafile)
+erfüllt `DocumentIntakeSource` und ist ein Fall von `CloudIntakeProvider`;
+eine zweite Pipeline gibt es nicht. Revision ist der Inhaltsstand, nie
+Metadaten. Ändert die Quelle ihren Änderungsstempel bei Massenbearbeitung
+nicht (Paperless), kommt die Mitgliedschaft je Zyklus aus der vollständigen
+ID-Liste. Die Herkunft am übernommenen Datensatz hält
+`DocumentIntakeOrigins` fest. Ohne Änderungs-Cursor scannt der Adapter Ordner mit
+Budget; liefert die Quelle Ordner-IDs als Inhalts-Hash (Seafile `oid`),
+entfällt der Scan bei unverändertem Stammordner. Ist das Plugin zugleich
+Backupziel, führt das Ziel eigene Zugangsdaten an seiner plattformweiten
+Verbindung.
+
+**Shop-Importe (Phase 158):** WooCommerce, Shopware, PrestaShop und
+Nachfolger bauen auf `App\Plugins\Support\ShopOrders` auf und liefern nur
+Client, `fetch()`, `normalize()` → `RemoteOrder` und `orderUrl()`.
+
+- `fetch()` liest in stabiler Reihenfolge nach ID, nie nach Änderungszeit.
+  Sonst verschiebt eine Änderung während des Laufs die Seiten.
+- Käufer über `ResolvesMarketplaceBuyer`, Kennung `customer:<id>` bzw.
+  `guest:<e-mail>`. Kunden werden nie angelegt.
+- Der freie Shop-Status steht in `remote_status_code`, nie in einer
+  `*_status`-Spalte ohne Enum.
+- Schrumpft die Gesamtzahl beim Blättern, ist das Lesen unvollständig; ohne
+  Gesamtzahl nach ID blättern (Keyset). Lesende POST-Aufrufe (Suche, JSON-RPC)
+  tragen `retry_non_idempotent`, sonst wiederholt das Toolkit sie bei 429/503
+  nicht. Regeln: Leitfaden, Block „Lesen ohne stille Lücken“.
+
+**Belegspiegel:** Faktura-/Buchhaltungssysteme spiegeln über einen
+`VoucherPuller` in `accounting_vouchers`. `isConfigured()` prüft den
+Plugin-Schalter selbst. Mehrere Listen führen je eine Startmarke
+(`VoucherMirror::lastSourceChange(…, $voucherType)`). Den Link zum Original
+liefert eine Unterklasse von `MirroredVoucherLinks`, die das Plugin als
+Belegfluss-Quelle anmeldet; der
+Kern greift dafür nicht ins Finanzmodul (Modulgrenze). Leseproben gegen
+Fremd-APIs laufen über `App\Plugins\Support\ApiHealthProbe`.
+
 ## Controller-Bausteine statt Helfer-Kopien (Phase 161)
 
 Angemeldeter Nutzer: `$this->authUser()` (Basis-Controller); Portal-Nutzer:

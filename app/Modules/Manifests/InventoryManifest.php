@@ -115,6 +115,9 @@ final class InventoryManifest extends Manifest {
             'jtl_wawi',
             'billbee',
             'etsy',
+            'woocommerce',
+            'shopware',
+            'prestashop',
         ];
     }
 

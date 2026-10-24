@@ -98,6 +98,25 @@ abstract class AbstractTaskSyncService {
         return true;
     }
 
+    /**
+     * Untertitel eines Inbox-Falls ohne 3-Wege-Abgleich; die Importe (Jira,
+     * Asana) nennen hier den Grund als Sprachschlüssel, die Inbox übersetzt ihn.
+     *
+     * @param  TLink  $link
+     */
+    protected function caseSubtitle(TaskSyncLink $link, string $case): string {
+        return $this->displaySubtitle($link);
+    }
+
+    /**
+     * Remote-Snapshot des Falls „remote verschwunden“.
+     *
+     * @return array<string, mixed>
+     */
+    protected function remoteDeletedSnapshot(): array {
+        return [];
+    }
+
     /** Gehört die lokale Aufgabe zu dieser Zuordnung (Lösch-Markierung)? */
     /** @param TLink $link */
     protected function taskBelongsToLink(TaskSyncLink $link, Task $task): bool {
@@ -225,7 +244,7 @@ abstract class AbstractTaskSyncService {
      * Remote-Sicht aufrufen — ein Delta ist keine Abwesenheitsaussage.
      *
      * @param  TLink  $link
-     * @param  Collection<int, array<string, mixed>>  $remoteTasks
+     * @param  Collection<int, covariant array<string, mixed>>  $remoteTasks
      * @param  array{created: int, updated: int, unchanged: int, conflicts: int, inbox: int, failed: int}  $counters
      */
     protected function flagRemoteDeletions(TaskSyncLink $link, Collection $remoteTasks, array &$counters): void {
@@ -282,9 +301,9 @@ abstract class AbstractTaskSyncService {
             'referenceable_type' => $task->getMorphClass(),
             'referenceable_id' => $task->getKey(),
             'local_snapshot' => $this->baseFrom($task),
-            'remote_snapshot' => [],
+            'remote_snapshot' => $this->remoteDeletedSnapshot(),
             'display_title' => (string) $task->title,
-            'display_subtitle' => $this->displaySubtitle($link),
+            'display_subtitle' => $this->caseSubtitle($link, 'remote_deleted'),
             'occurred_at' => now(),
         ]);
 
@@ -313,7 +332,7 @@ abstract class AbstractTaskSyncService {
             'status' => IntegrationInboxStatus::Open,
             'remote_snapshot' => $remote,
             'display_title' => $this->remoteDisplayTitle($remote),
-            'display_subtitle' => $this->displaySubtitle($link),
+            'display_subtitle' => $this->caseSubtitle($link, $case),
             'occurred_at' => now(),
         ]);
 

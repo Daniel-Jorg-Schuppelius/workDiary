@@ -18,6 +18,7 @@ return [
         'dunning_level' => 'Dunning level :level',
         'action' => [
             'dun' => 'Send reminder',
+            'open_original' => 'Open original',
         ],
         'tab' => [
             'all' => 'All',

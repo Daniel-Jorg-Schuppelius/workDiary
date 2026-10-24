@@ -24,6 +24,8 @@ enum CloudIntakeProvider: string implements HasLabel {
     case Microsoft = 'microsoft';
     case Google = 'google';
     case Nextcloud = 'nextcloud';
+    case Paperless = 'paperless';
+    case Seafile = 'seafile';
 
     public function label(): string {
         return (string) __('enums.cloud_intake.provider.' . $this->value);
@@ -36,6 +38,8 @@ enum CloudIntakeProvider: string implements HasLabel {
             self::Microsoft => 'msgraph',
             self::Google => 'google-drive',
             self::Nextcloud => 'nextcloud',
+            self::Paperless => 'paperless',
+            self::Seafile => 'seafile',
         };
     }
 }

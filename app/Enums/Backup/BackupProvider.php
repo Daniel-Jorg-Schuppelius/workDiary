@@ -32,6 +32,8 @@ enum BackupProvider: string implements HasLabel {
     // S3-kompatibler Objektspeicher (Feature 123, MVP-726): AWS S3, MinIO,
     // Wasabi, Hetzner, Scaleway — alles, was die S3-API spricht.
     case S3 = 's3';
+    // Seafile mit Konto-Token in eine gewählte Bibliothek (Feature 177, MVP-1348).
+    case Seafile = 'seafile';
 
     public function label(): string {
         return (string) __('enums.backup.provider.' . $this->value);
@@ -46,6 +48,7 @@ enum BackupProvider: string implements HasLabel {
             self::Nextcloud => 'nextcloud',
             self::Webdav => 'webdav',
             self::S3 => 's3',
+            self::Seafile => 'seafile',
         };
     }
 }

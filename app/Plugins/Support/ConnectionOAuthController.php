@@ -15,6 +15,7 @@ use App\Models\Platform\User;
 use App\Plugins\Support\Concerns\{HandlesOAuthPopup, ResolvesPluginOrgContext};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Carbon;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -121,7 +122,7 @@ abstract class ConnectionOAuthController extends Controller {
             return back()->with('error', $this->flashMessage('not_configured'));
         }
 
-        $extra = $this->oauthPopupRequested($request) ? ['popup' => true] : [];
+        $extra = ($this->oauthPopupRequested($request) ? ['popup' => true] : []) + ['started_at' => now()->getTimestamp()];
         ['state' => $state, 'verifier' => $verifier] = $this->handshake()
             ->start((int) $organization->id, (int) $admin->id, withPkce: $this->usesPkce(), extra: $extra);
 
@@ -148,6 +149,14 @@ abstract class ConnectionOAuthController extends Controller {
 
         $isPopup = $this->oauthPayloadIsPopup($payload);
 
+        // Trennen entwertet eine vorher begonnene Autorisierung.
+        $model = $this->connectionModel();
+        $disconnectedAt = $model::query()->where('organization_id', $organization->id)->value('disconnected_at');
+        if ($disconnectedAt !== null && isset($payload['started_at'])
+            && Carbon::parse($disconnectedAt)->getTimestamp() > (int) $payload['started_at']) {
+            return $this->respondToOAuth($isPopup, false, $this->backToOverview()->with('error', $this->flashMessage('state_invalid')));
+        }
+
         if ($code === '') {
             return $this->respondToOAuth($isPopup, false, $this->backToOverview()->with('error', $this->flashMessage('oauth_denied')));
         }
@@ -160,7 +169,6 @@ abstract class ConnectionOAuthController extends Controller {
             return $this->respondToOAuth($isPopup, false, $this->backToOverview()->with('error', $this->flashMessage('oauth_failed', ['class' => class_basename($e)])));
         }
 
-        $model = $this->connectionModel();
         $connection = $model::query()->firstOrNew(['organization_id' => $organization->id]);
         $connection->forceFill([
             'access_token' => $token->getAccessToken(),

@@ -21,6 +21,11 @@
         <x-page-toolbar back-route="finance.incoming-invoices.index" :back-label="__('Zur Liste')">
             <x-slot:title>{{ $document->title }}</x-slot:title>
             <x-slot:subtitle>{{ $document->description }}</x-slot:subtitle>
+            @if ($incoming !== null)
+                <x-slot:badges>
+                    <x-origin-badge :subject="$incoming" />
+                </x-slot:badges>
+            @endif
             <x-slot:actions>
                 {{-- Zuordnen und Werte erfassen (MVP-1110). --}}
                 @if ($incoming !== null && $incoming->transferred_at === null && $incoming->status !== \App\Enums\Invoicing\IncomingEInvoiceStatus::Rejected && (auth()->user()?->canManageBilling() ?? false))

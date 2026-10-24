@@ -54,6 +54,7 @@ class PluginHelpMentionRuleTest extends TestCase {
         'Fritzbox' => ['fritz'],
         'GoogleCalendar' => ['google calendar', 'google kalender', 'google agenda'],
         'GoogleDrive' => ['google drive'],
+        'InvoiceNinja' => ['invoice ninja'],
         'JtlWawi' => ['jtl'],
         'Msgraph' => ['microsoft graph', 'msgraph'],
         'PeppolAccessPoint' => ['peppol'],

@@ -32,6 +32,29 @@ class ForeignKeyCoverageTest extends TestCase {
 
     /** @var list<string> table.column ohne FK — Stand 2026-08-23 (Welle 3, F12: appointment_requests/procedure_deviations zuerst) */
     private const BASELINE = [
+        // Phase 157/158: Kennungen in Fremdsystemen (Konto, Quellprojekt, Zeiteintrag), keine lokalen Zeilen.
+        'asana_connections.account_id',
+        'asana_project_links.source_project_id',
+        'jira_connections.account_id',
+        'jira_project_links.source_project_id',
+        'gitea_connections.account_id',
+        'gitea_project_links.source_project_id',
+        'redmine_connections.account_id',
+        'redmine_project_links.source_project_id',
+        'vikunja_connections.account_id',
+        'vikunja_project_links.source_project_id',
+        'kanboard_connections.account_id',
+        'kanboard_project_links.source_project_id',
+        'plane_connections.account_id',
+        'plane_project_links.source_project_id',
+        'taiga_connections.account_id',
+        'taiga_project_links.source_project_id',
+        'leantime_connections.account_id',
+        'leantime_project_links.source_project_id',
+        'freescout_connections.account_id',
+        'freescout_project_links.source_project_id',
+        'glpi_connections.account_id',
+        'glpi_project_links.source_project_id',
         // Feature 153 (2027_02_20_101900): `search_documents` ist ein abgeleiteter,
         // jederzeit neu aufbaubarer Suchindex. Die Kontextspalten tragen bewusst
         // keinen FK: Mit nullOnDelete würde die DB beim Löschen eines Kunden/

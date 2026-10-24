@@ -91,7 +91,8 @@
         }
         $link = $feedUser !== null ? $feedSources->presenterFor($row)?->rowLink($row, $feedUser) : null;
 
-        return $link !== null ? [$link->url, $link->modal] : null;
+        // Links ins Fremdsystem (gespiegelte Belege) öffnen in einem neuen Tab.
+        return $link !== null ? [$link->url, $link->modal, ! str_starts_with($link->url, url('/'))] : null;
     };
 
     $stateTone = static fn (string $state): string => match ($state) {
@@ -302,7 +303,7 @@
             <tr @class(['bg-error/5' => $isOverdue])>
                 <td class="font-medium tabular-nums">
                     @if ($link)
-                        <a class="link link-hover" href="{{ $link[0] }}" @if ($link[1]) data-entry-modal-trigger @endif>
+                        <a class="link link-hover" href="{{ $link[0] }}" @if ($link[1]) data-entry-modal-trigger @endif @if ($link[2] ?? false) target="_blank" rel="noopener noreferrer" @endif>
                             {{ $row->number !== '' ? $row->number : '—' }}
                         </a>
                     @else

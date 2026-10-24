@@ -18,6 +18,7 @@ return [
         'dunning_level' => 'Nivel de reclamación :level',
         'action' => [
             'dun' => 'Reclamar',
+            'open_original' => 'Abrir el original',
         ],
         'tab' => [
             'all' => 'Todos',

@@ -1768,6 +1768,78 @@ CREATE TABLE `articles` (
   CONSTRAINT `articles_sdg_fk` FOREIGN KEY (`sales_discount_group_id`) REFERENCES `sales_discount_groups` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `asana_connections`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `asana_connections` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_id` varchar(64) DEFAULT NULL,
+  `source_name` varchar(255) DEFAULT NULL,
+  `source_url` varchar(255) DEFAULT NULL,
+  `available_sources` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`available_sources`)),
+  `account_id` varchar(128) DEFAULT NULL,
+  `account_name` varchar(255) DEFAULT NULL,
+  `access_token` text DEFAULT NULL,
+  `refresh_token` text DEFAULT NULL,
+  `token_expires_at` timestamp NULL DEFAULT NULL,
+  `scopes` varchar(512) DEFAULT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'active',
+  `last_synced_at` timestamp NULL DEFAULT NULL,
+  `last_sync_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_sync_counters`)),
+  `last_error` varchar(300) DEFAULT NULL,
+  `last_error_at` timestamp NULL DEFAULT NULL,
+  `consecutive_failures` int(10) unsigned NOT NULL DEFAULT 0,
+  `disabled_at` timestamp NULL DEFAULT NULL,
+  `connected_by` bigint(20) unsigned DEFAULT NULL,
+  `connected_at` timestamp NULL DEFAULT NULL,
+  `disconnected_by` bigint(20) unsigned DEFAULT NULL,
+  `disconnected_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `asanac_org_unique` (`organization_id`),
+  KEY `asanac_conn_by_fk` (`connected_by`),
+  KEY `asanac_disc_by_fk` (`disconnected_by`),
+  CONSTRAINT `asanac_conn_by_fk` FOREIGN KEY (`connected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `asanac_disc_by_fk` FOREIGN KEY (`disconnected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `asanac_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `asana_project_links`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `asana_project_links` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_project_id` varchar(64) NOT NULL,
+  `source_project_key` varchar(64) DEFAULT NULL,
+  `source_project_name` varchar(255) DEFAULT NULL,
+  `project_id` bigint(20) unsigned NOT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'pending',
+  `paused_reason` varchar(16) DEFAULT NULL,
+  `import_confirmed_at` timestamp NULL DEFAULT NULL,
+  `confirmed_by` bigint(20) unsigned DEFAULT NULL,
+  `checkpoint_at` timestamp NULL DEFAULT NULL,
+  `last_full_sync_at` timestamp NULL DEFAULT NULL,
+  `last_run_at` timestamp NULL DEFAULT NULL,
+  `is_last_run_complete` tinyint(1) DEFAULT NULL,
+  `last_run_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_run_counters`)),
+  `last_error` varchar(300) DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `asanapl_org_source_unique` (`organization_id`,`source_project_id`),
+  KEY `asanapl_project_fk` (`project_id`),
+  KEY `asanapl_conf_by_fk` (`confirmed_by`),
+  KEY `asanapl_created_by_fk` (`created_by`),
+  CONSTRAINT `asanapl_conf_by_fk` FOREIGN KEY (`confirmed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `asanapl_created_by_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `asanapl_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `asanapl_project_fk` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `asset_assignments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -10911,6 +10983,70 @@ CREATE TABLE `feature_usage_counters` (
   CONSTRAINT `feature_usage_counters_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `firefly_connections`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `firefly_connections` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_id` varchar(64) DEFAULT NULL,
+  `source_name` varchar(255) DEFAULT NULL,
+  `source_url` varchar(255) DEFAULT NULL,
+  `account_name` varchar(255) DEFAULT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'active',
+  `last_synced_at` timestamp NULL DEFAULT NULL,
+  `last_sync_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_sync_counters`)),
+  `is_last_run_complete` tinyint(1) DEFAULT NULL,
+  `last_error` varchar(300) DEFAULT NULL,
+  `last_error_at` timestamp NULL DEFAULT NULL,
+  `consecutive_failures` int(10) unsigned NOT NULL DEFAULT 0,
+  `disabled_at` timestamp NULL DEFAULT NULL,
+  `connected_by` bigint(20) unsigned DEFAULT NULL,
+  `connected_at` timestamp NULL DEFAULT NULL,
+  `disconnected_by` bigint(20) unsigned DEFAULT NULL,
+  `disconnected_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ffc_org_unique` (`organization_id`),
+  KEY `ffc_conn_by_fk` (`connected_by`),
+  KEY `ffc_disc_by_fk` (`disconnected_by`),
+  CONSTRAINT `ffc_conn_by_fk` FOREIGN KEY (`connected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `ffc_disc_by_fk` FOREIGN KEY (`disconnected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `ffc_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `firefly_transactions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `firefly_transactions` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `remote_journal_id` varchar(64) NOT NULL,
+  `remote_group_id` varchar(64) DEFAULT NULL,
+  `kind` varchar(16) NOT NULL,
+  `booked_on` date NOT NULL,
+  `booked_amount` decimal(15,2) NOT NULL,
+  `currency` varchar(3) DEFAULT NULL,
+  `description` varchar(1000) DEFAULT NULL,
+  `counterparty_name` varchar(255) DEFAULT NULL,
+  `account_name` varchar(255) DEFAULT NULL,
+  `references` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`references`)),
+  `match_status` varchar(16) NOT NULL DEFAULT 'unmatched',
+  `invoice_id` bigint(20) unsigned DEFAULT NULL,
+  `incoming_einvoice_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `fft_org_journal_unique` (`organization_id`,`remote_journal_id`),
+  KEY `fft_invoice_fk` (`invoice_id`),
+  KEY `fft_incoming_fk` (`incoming_einvoice_id`),
+  KEY `fft_org_booked_idx` (`organization_id`,`booked_on`),
+  CONSTRAINT `fft_incoming_fk` FOREIGN KEY (`incoming_einvoice_id`) REFERENCES `incoming_einvoices` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fft_invoice_fk` FOREIGN KEY (`invoice_id`) REFERENCES `invoices` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fft_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fixed_asset_classes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -11172,6 +11308,73 @@ CREATE TABLE `form_templates` (
   CONSTRAINT `form_templates_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `freescout_connections`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `freescout_connections` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_id` varchar(64) DEFAULT NULL,
+  `source_name` varchar(255) DEFAULT NULL,
+  `source_url` varchar(255) DEFAULT NULL,
+  `account_id` varchar(128) DEFAULT NULL,
+  `account_name` varchar(255) DEFAULT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'active',
+  `last_synced_at` timestamp NULL DEFAULT NULL,
+  `last_sync_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_sync_counters`)),
+  `last_error` varchar(300) DEFAULT NULL,
+  `last_error_at` timestamp NULL DEFAULT NULL,
+  `consecutive_failures` int(10) unsigned NOT NULL DEFAULT 0,
+  `disabled_at` timestamp NULL DEFAULT NULL,
+  `connected_by` bigint(20) unsigned DEFAULT NULL,
+  `connected_at` timestamp NULL DEFAULT NULL,
+  `disconnected_by` bigint(20) unsigned DEFAULT NULL,
+  `disconnected_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `fsc_org_unique` (`organization_id`),
+  KEY `fsc_conn_by_fk` (`connected_by`),
+  KEY `fsc_disc_by_fk` (`disconnected_by`),
+  CONSTRAINT `fsc_conn_by_fk` FOREIGN KEY (`connected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fsc_disc_by_fk` FOREIGN KEY (`disconnected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fsc_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `freescout_project_links`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `freescout_project_links` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_project_id` varchar(64) NOT NULL,
+  `source_project_key` varchar(255) DEFAULT NULL,
+  `source_project_name` varchar(255) DEFAULT NULL,
+  `project_id` bigint(20) unsigned NOT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'pending',
+  `paused_reason` varchar(16) DEFAULT NULL,
+  `import_confirmed_at` timestamp NULL DEFAULT NULL,
+  `confirmed_by` bigint(20) unsigned DEFAULT NULL,
+  `checkpoint_at` timestamp NULL DEFAULT NULL,
+  `last_full_sync_at` timestamp NULL DEFAULT NULL,
+  `last_run_at` timestamp NULL DEFAULT NULL,
+  `is_last_run_complete` tinyint(1) DEFAULT NULL,
+  `last_run_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_run_counters`)),
+  `last_error` varchar(300) DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `fspl_org_source_unique` (`organization_id`,`source_project_id`),
+  KEY `fspl_project_fk` (`project_id`),
+  KEY `fspl_conf_by_fk` (`confirmed_by`),
+  KEY `fspl_created_by_fk` (`created_by`),
+  CONSTRAINT `fspl_conf_by_fk` FOREIGN KEY (`confirmed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fspl_created_by_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fspl_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fspl_project_fk` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fritzbox_dismissed_calls`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -11236,6 +11439,140 @@ CREATE TABLE `geocode_cache` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `geocode_cache_query_hash_unique` (`query_hash`),
   KEY `geocode_cache_expires_at_index` (`expires_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `gitea_connections`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `gitea_connections` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_id` varchar(64) DEFAULT NULL,
+  `source_name` varchar(255) DEFAULT NULL,
+  `source_url` varchar(255) DEFAULT NULL,
+  `account_id` varchar(128) DEFAULT NULL,
+  `account_name` varchar(255) DEFAULT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'active',
+  `last_synced_at` timestamp NULL DEFAULT NULL,
+  `last_sync_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_sync_counters`)),
+  `last_error` varchar(300) DEFAULT NULL,
+  `last_error_at` timestamp NULL DEFAULT NULL,
+  `consecutive_failures` int(10) unsigned NOT NULL DEFAULT 0,
+  `disabled_at` timestamp NULL DEFAULT NULL,
+  `connected_by` bigint(20) unsigned DEFAULT NULL,
+  `connected_at` timestamp NULL DEFAULT NULL,
+  `disconnected_by` bigint(20) unsigned DEFAULT NULL,
+  `disconnected_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `giteac_org_unique` (`organization_id`),
+  KEY `giteac_conn_by_fk` (`connected_by`),
+  KEY `giteac_disc_by_fk` (`disconnected_by`),
+  CONSTRAINT `giteac_conn_by_fk` FOREIGN KEY (`connected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `giteac_disc_by_fk` FOREIGN KEY (`disconnected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `giteac_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `gitea_project_links`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `gitea_project_links` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_project_id` varchar(64) NOT NULL,
+  `source_project_key` varchar(255) DEFAULT NULL,
+  `source_project_name` varchar(255) DEFAULT NULL,
+  `project_id` bigint(20) unsigned NOT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'pending',
+  `paused_reason` varchar(16) DEFAULT NULL,
+  `import_confirmed_at` timestamp NULL DEFAULT NULL,
+  `confirmed_by` bigint(20) unsigned DEFAULT NULL,
+  `checkpoint_at` timestamp NULL DEFAULT NULL,
+  `last_full_sync_at` timestamp NULL DEFAULT NULL,
+  `last_run_at` timestamp NULL DEFAULT NULL,
+  `is_last_run_complete` tinyint(1) DEFAULT NULL,
+  `last_run_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_run_counters`)),
+  `last_error` varchar(300) DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `giteapl_org_source_unique` (`organization_id`,`source_project_id`),
+  KEY `giteapl_project_fk` (`project_id`),
+  KEY `giteapl_conf_by_fk` (`confirmed_by`),
+  KEY `giteapl_created_by_fk` (`created_by`),
+  CONSTRAINT `giteapl_conf_by_fk` FOREIGN KEY (`confirmed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `giteapl_created_by_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `giteapl_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `giteapl_project_fk` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `glpi_connections`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `glpi_connections` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_id` varchar(64) DEFAULT NULL,
+  `source_name` varchar(255) DEFAULT NULL,
+  `source_url` varchar(255) DEFAULT NULL,
+  `account_id` varchar(128) DEFAULT NULL,
+  `account_name` varchar(255) DEFAULT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'active',
+  `last_synced_at` timestamp NULL DEFAULT NULL,
+  `last_sync_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_sync_counters`)),
+  `last_error` varchar(300) DEFAULT NULL,
+  `last_error_at` timestamp NULL DEFAULT NULL,
+  `consecutive_failures` int(10) unsigned NOT NULL DEFAULT 0,
+  `disabled_at` timestamp NULL DEFAULT NULL,
+  `connected_by` bigint(20) unsigned DEFAULT NULL,
+  `connected_at` timestamp NULL DEFAULT NULL,
+  `disconnected_by` bigint(20) unsigned DEFAULT NULL,
+  `disconnected_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `glpic_org_unique` (`organization_id`),
+  KEY `glpic_conn_by_fk` (`connected_by`),
+  KEY `glpic_disc_by_fk` (`disconnected_by`),
+  CONSTRAINT `glpic_conn_by_fk` FOREIGN KEY (`connected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `glpic_disc_by_fk` FOREIGN KEY (`disconnected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `glpic_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `glpi_project_links`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `glpi_project_links` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_project_id` varchar(64) NOT NULL,
+  `source_project_key` varchar(255) DEFAULT NULL,
+  `source_project_name` varchar(255) DEFAULT NULL,
+  `project_id` bigint(20) unsigned NOT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'pending',
+  `paused_reason` varchar(16) DEFAULT NULL,
+  `import_confirmed_at` timestamp NULL DEFAULT NULL,
+  `confirmed_by` bigint(20) unsigned DEFAULT NULL,
+  `checkpoint_at` timestamp NULL DEFAULT NULL,
+  `last_full_sync_at` timestamp NULL DEFAULT NULL,
+  `last_run_at` timestamp NULL DEFAULT NULL,
+  `is_last_run_complete` tinyint(1) DEFAULT NULL,
+  `last_run_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_run_counters`)),
+  `last_error` varchar(300) DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `glpipl_org_source_unique` (`organization_id`,`source_project_id`),
+  KEY `glpipl_project_fk` (`project_id`),
+  KEY `glpipl_conf_by_fk` (`confirmed_by`),
+  KEY `glpipl_created_by_fk` (`created_by`),
+  CONSTRAINT `glpipl_conf_by_fk` FOREIGN KEY (`confirmed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `glpipl_created_by_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `glpipl_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `glpipl_project_fk` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `gobd_exports`;
@@ -13454,6 +13791,78 @@ CREATE TABLE `isms_vulnerabilities` (
   CONSTRAINT `isms_vulnerabilities_owner_user_id_foreign` FOREIGN KEY (`owner_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `jira_connections`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `jira_connections` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_id` varchar(64) DEFAULT NULL,
+  `source_name` varchar(255) DEFAULT NULL,
+  `source_url` varchar(255) DEFAULT NULL,
+  `available_sources` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`available_sources`)),
+  `account_id` varchar(128) DEFAULT NULL,
+  `account_name` varchar(255) DEFAULT NULL,
+  `access_token` text DEFAULT NULL,
+  `refresh_token` text DEFAULT NULL,
+  `token_expires_at` timestamp NULL DEFAULT NULL,
+  `scopes` varchar(512) DEFAULT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'active',
+  `last_synced_at` timestamp NULL DEFAULT NULL,
+  `last_sync_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_sync_counters`)),
+  `last_error` varchar(300) DEFAULT NULL,
+  `last_error_at` timestamp NULL DEFAULT NULL,
+  `consecutive_failures` int(10) unsigned NOT NULL DEFAULT 0,
+  `disabled_at` timestamp NULL DEFAULT NULL,
+  `connected_by` bigint(20) unsigned DEFAULT NULL,
+  `connected_at` timestamp NULL DEFAULT NULL,
+  `disconnected_by` bigint(20) unsigned DEFAULT NULL,
+  `disconnected_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `jirac_org_unique` (`organization_id`),
+  KEY `jirac_conn_by_fk` (`connected_by`),
+  KEY `jirac_disc_by_fk` (`disconnected_by`),
+  CONSTRAINT `jirac_conn_by_fk` FOREIGN KEY (`connected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `jirac_disc_by_fk` FOREIGN KEY (`disconnected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `jirac_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `jira_project_links`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `jira_project_links` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_project_id` varchar(64) NOT NULL,
+  `source_project_key` varchar(64) DEFAULT NULL,
+  `source_project_name` varchar(255) DEFAULT NULL,
+  `project_id` bigint(20) unsigned NOT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'pending',
+  `paused_reason` varchar(16) DEFAULT NULL,
+  `import_confirmed_at` timestamp NULL DEFAULT NULL,
+  `confirmed_by` bigint(20) unsigned DEFAULT NULL,
+  `checkpoint_at` timestamp NULL DEFAULT NULL,
+  `last_full_sync_at` timestamp NULL DEFAULT NULL,
+  `last_run_at` timestamp NULL DEFAULT NULL,
+  `is_last_run_complete` tinyint(1) DEFAULT NULL,
+  `last_run_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_run_counters`)),
+  `last_error` varchar(300) DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `jirapl_org_source_unique` (`organization_id`,`source_project_id`),
+  KEY `jirapl_project_fk` (`project_id`),
+  KEY `jirapl_conf_by_fk` (`confirmed_by`),
+  KEY `jirapl_created_by_fk` (`created_by`),
+  CONSTRAINT `jirapl_conf_by_fk` FOREIGN KEY (`confirmed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `jirapl_created_by_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `jirapl_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `jirapl_project_fk` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `job_application_documents`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -13821,6 +14230,73 @@ CREATE TABLE `jtl_warehouse_mappings` (
   CONSTRAINT `jtlwm_wh_fk` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `kanboard_connections`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `kanboard_connections` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_id` varchar(64) DEFAULT NULL,
+  `source_name` varchar(255) DEFAULT NULL,
+  `source_url` varchar(255) DEFAULT NULL,
+  `account_id` varchar(128) DEFAULT NULL,
+  `account_name` varchar(255) DEFAULT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'active',
+  `last_synced_at` timestamp NULL DEFAULT NULL,
+  `last_sync_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_sync_counters`)),
+  `last_error` varchar(300) DEFAULT NULL,
+  `last_error_at` timestamp NULL DEFAULT NULL,
+  `consecutive_failures` int(10) unsigned NOT NULL DEFAULT 0,
+  `disabled_at` timestamp NULL DEFAULT NULL,
+  `connected_by` bigint(20) unsigned DEFAULT NULL,
+  `connected_at` timestamp NULL DEFAULT NULL,
+  `disconnected_by` bigint(20) unsigned DEFAULT NULL,
+  `disconnected_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `kbc_org_unique` (`organization_id`),
+  KEY `kbc_conn_by_fk` (`connected_by`),
+  KEY `kbc_disc_by_fk` (`disconnected_by`),
+  CONSTRAINT `kbc_conn_by_fk` FOREIGN KEY (`connected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `kbc_disc_by_fk` FOREIGN KEY (`disconnected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `kbc_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `kanboard_project_links`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `kanboard_project_links` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_project_id` varchar(64) NOT NULL,
+  `source_project_key` varchar(255) DEFAULT NULL,
+  `source_project_name` varchar(255) DEFAULT NULL,
+  `project_id` bigint(20) unsigned NOT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'pending',
+  `paused_reason` varchar(16) DEFAULT NULL,
+  `import_confirmed_at` timestamp NULL DEFAULT NULL,
+  `confirmed_by` bigint(20) unsigned DEFAULT NULL,
+  `checkpoint_at` timestamp NULL DEFAULT NULL,
+  `last_full_sync_at` timestamp NULL DEFAULT NULL,
+  `last_run_at` timestamp NULL DEFAULT NULL,
+  `is_last_run_complete` tinyint(1) DEFAULT NULL,
+  `last_run_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_run_counters`)),
+  `last_error` varchar(300) DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `kbpl_org_source_unique` (`organization_id`,`source_project_id`),
+  KEY `kbpl_project_fk` (`project_id`),
+  KEY `kbpl_conf_by_fk` (`confirmed_by`),
+  KEY `kbpl_created_by_fk` (`created_by`),
+  CONSTRAINT `kbpl_conf_by_fk` FOREIGN KEY (`confirmed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `kbpl_created_by_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `kbpl_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `kbpl_project_fk` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `key_handovers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -13952,6 +14428,73 @@ CREATE TABLE `leads` (
   CONSTRAINT `leads_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
   CONSTRAINT `leads_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `leads_responsible_user_id_foreign` FOREIGN KEY (`responsible_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `leantime_connections`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `leantime_connections` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_id` varchar(64) DEFAULT NULL,
+  `source_name` varchar(255) DEFAULT NULL,
+  `source_url` varchar(255) DEFAULT NULL,
+  `account_id` varchar(128) DEFAULT NULL,
+  `account_name` varchar(255) DEFAULT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'active',
+  `last_synced_at` timestamp NULL DEFAULT NULL,
+  `last_sync_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_sync_counters`)),
+  `last_error` varchar(300) DEFAULT NULL,
+  `last_error_at` timestamp NULL DEFAULT NULL,
+  `consecutive_failures` int(10) unsigned NOT NULL DEFAULT 0,
+  `disabled_at` timestamp NULL DEFAULT NULL,
+  `connected_by` bigint(20) unsigned DEFAULT NULL,
+  `connected_at` timestamp NULL DEFAULT NULL,
+  `disconnected_by` bigint(20) unsigned DEFAULT NULL,
+  `disconnected_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ltc_org_unique` (`organization_id`),
+  KEY `ltc_conn_by_fk` (`connected_by`),
+  KEY `ltc_disc_by_fk` (`disconnected_by`),
+  CONSTRAINT `ltc_conn_by_fk` FOREIGN KEY (`connected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `ltc_disc_by_fk` FOREIGN KEY (`disconnected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `ltc_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `leantime_project_links`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `leantime_project_links` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_project_id` varchar(64) NOT NULL,
+  `source_project_key` varchar(255) DEFAULT NULL,
+  `source_project_name` varchar(255) DEFAULT NULL,
+  `project_id` bigint(20) unsigned NOT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'pending',
+  `paused_reason` varchar(16) DEFAULT NULL,
+  `import_confirmed_at` timestamp NULL DEFAULT NULL,
+  `confirmed_by` bigint(20) unsigned DEFAULT NULL,
+  `checkpoint_at` timestamp NULL DEFAULT NULL,
+  `last_full_sync_at` timestamp NULL DEFAULT NULL,
+  `last_run_at` timestamp NULL DEFAULT NULL,
+  `is_last_run_complete` tinyint(1) DEFAULT NULL,
+  `last_run_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_run_counters`)),
+  `last_error` varchar(300) DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ltpl_org_source_unique` (`organization_id`,`source_project_id`),
+  KEY `ltpl_project_fk` (`project_id`),
+  KEY `ltpl_conf_by_fk` (`confirmed_by`),
+  KEY `ltpl_created_by_fk` (`created_by`),
+  CONSTRAINT `ltpl_conf_by_fk` FOREIGN KEY (`confirmed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `ltpl_created_by_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `ltpl_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `ltpl_project_fk` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `learning_access_tokens`;
@@ -17909,6 +18452,73 @@ CREATE TABLE `plan_module_grace` (
   CONSTRAINT `plan_module_grace_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `plane_connections`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `plane_connections` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_id` varchar(64) DEFAULT NULL,
+  `source_name` varchar(255) DEFAULT NULL,
+  `source_url` varchar(255) DEFAULT NULL,
+  `account_id` varchar(128) DEFAULT NULL,
+  `account_name` varchar(255) DEFAULT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'active',
+  `last_synced_at` timestamp NULL DEFAULT NULL,
+  `last_sync_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_sync_counters`)),
+  `last_error` varchar(300) DEFAULT NULL,
+  `last_error_at` timestamp NULL DEFAULT NULL,
+  `consecutive_failures` int(10) unsigned NOT NULL DEFAULT 0,
+  `disabled_at` timestamp NULL DEFAULT NULL,
+  `connected_by` bigint(20) unsigned DEFAULT NULL,
+  `connected_at` timestamp NULL DEFAULT NULL,
+  `disconnected_by` bigint(20) unsigned DEFAULT NULL,
+  `disconnected_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `plc_org_unique` (`organization_id`),
+  KEY `plc_conn_by_fk` (`connected_by`),
+  KEY `plc_disc_by_fk` (`disconnected_by`),
+  CONSTRAINT `plc_conn_by_fk` FOREIGN KEY (`connected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `plc_disc_by_fk` FOREIGN KEY (`disconnected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `plc_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `plane_project_links`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `plane_project_links` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_project_id` varchar(64) NOT NULL,
+  `source_project_key` varchar(255) DEFAULT NULL,
+  `source_project_name` varchar(255) DEFAULT NULL,
+  `project_id` bigint(20) unsigned NOT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'pending',
+  `paused_reason` varchar(16) DEFAULT NULL,
+  `import_confirmed_at` timestamp NULL DEFAULT NULL,
+  `confirmed_by` bigint(20) unsigned DEFAULT NULL,
+  `checkpoint_at` timestamp NULL DEFAULT NULL,
+  `last_full_sync_at` timestamp NULL DEFAULT NULL,
+  `last_run_at` timestamp NULL DEFAULT NULL,
+  `is_last_run_complete` tinyint(1) DEFAULT NULL,
+  `last_run_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_run_counters`)),
+  `last_error` varchar(300) DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `plpl_org_source_unique` (`organization_id`,`source_project_id`),
+  KEY `plpl_project_fk` (`project_id`),
+  KEY `plpl_conf_by_fk` (`confirmed_by`),
+  KEY `plpl_created_by_fk` (`created_by`),
+  CONSTRAINT `plpl_conf_by_fk` FOREIGN KEY (`confirmed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `plpl_created_by_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `plpl_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `plpl_project_fk` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `plugin_errors`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -17986,6 +18596,76 @@ CREATE TABLE `plugin_states` (
   UNIQUE KEY `plugin_states_plugin_id_organization_id_unique` (`plugin_id`,`organization_id`),
   KEY `plugin_states_organization_id_foreign` (`organization_id`),
   CONSTRAINT `plugin_states_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `prestashop_connections`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `prestashop_connections` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_id` varchar(64) DEFAULT NULL,
+  `source_name` varchar(255) DEFAULT NULL,
+  `source_url` varchar(255) DEFAULT NULL,
+  `account_name` varchar(255) DEFAULT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'active',
+  `import_confirmed_at` timestamp NULL DEFAULT NULL,
+  `confirmed_by` bigint(20) unsigned DEFAULT NULL,
+  `checkpoint_at` timestamp NULL DEFAULT NULL,
+  `last_full_sync_at` timestamp NULL DEFAULT NULL,
+  `last_synced_at` timestamp NULL DEFAULT NULL,
+  `last_sync_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_sync_counters`)),
+  `is_last_run_complete` tinyint(1) DEFAULT NULL,
+  `last_error` varchar(300) DEFAULT NULL,
+  `last_error_at` timestamp NULL DEFAULT NULL,
+  `consecutive_failures` int(10) unsigned NOT NULL DEFAULT 0,
+  `disabled_at` timestamp NULL DEFAULT NULL,
+  `connected_by` bigint(20) unsigned DEFAULT NULL,
+  `connected_at` timestamp NULL DEFAULT NULL,
+  `disconnected_by` bigint(20) unsigned DEFAULT NULL,
+  `disconnected_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `pshc_org_unique` (`organization_id`),
+  KEY `pshc_conf_by_fk` (`confirmed_by`),
+  KEY `pshc_conn_by_fk` (`connected_by`),
+  KEY `pshc_disc_by_fk` (`disconnected_by`),
+  CONSTRAINT `pshc_conf_by_fk` FOREIGN KEY (`confirmed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `pshc_conn_by_fk` FOREIGN KEY (`connected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `pshc_disc_by_fk` FOREIGN KEY (`disconnected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `pshc_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `prestashop_orders`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `prestashop_orders` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `remote_order_id` varchar(64) NOT NULL,
+  `order_number` varchar(64) DEFAULT NULL,
+  `status` varchar(16) NOT NULL,
+  `remote_status_code` varchar(64) DEFAULT NULL,
+  `currency` varchar(3) DEFAULT NULL,
+  `gross_amount` decimal(15,2) DEFAULT NULL,
+  `net_amount` decimal(15,2) DEFAULT NULL,
+  `buyer_external_id` varchar(255) DEFAULT NULL,
+  `buyer` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`buyer`)),
+  `items` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`items`)),
+  `ordered_at` timestamp NULL DEFAULT NULL,
+  `remote_modified_at` timestamp NULL DEFAULT NULL,
+  `customer_id` bigint(20) unsigned DEFAULT NULL,
+  `inbox_status` varchar(16) NOT NULL DEFAULT 'open',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `psho_org_remote_unique` (`organization_id`,`remote_order_id`),
+  KEY `psho_customer_fk` (`customer_id`),
+  KEY `psho_org_ordered_idx` (`organization_id`,`ordered_at`),
+  KEY `psho_org_buyer_idx` (`organization_id`,`buyer_external_id`),
+  CONSTRAINT `psho_customer_fk` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `psho_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `price_change_requests`;
@@ -19995,6 +20675,76 @@ CREATE TABLE `recurrence_rules` (
   CONSTRAINT `recurrence_rules_entry_type_id_foreign` FOREIGN KEY (`entry_type_id`) REFERENCES `entry_types` (`id`) ON DELETE SET NULL,
   CONSTRAINT `recurrence_rules_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `recurrence_rules_project_id_foreign` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `redmine_connections`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `redmine_connections` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_id` varchar(64) DEFAULT NULL,
+  `source_name` varchar(255) DEFAULT NULL,
+  `source_url` varchar(255) DEFAULT NULL,
+  `account_id` varchar(128) DEFAULT NULL,
+  `account_name` varchar(255) DEFAULT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'active',
+  `last_synced_at` timestamp NULL DEFAULT NULL,
+  `last_sync_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_sync_counters`)),
+  `last_error` varchar(300) DEFAULT NULL,
+  `last_error_at` timestamp NULL DEFAULT NULL,
+  `consecutive_failures` int(10) unsigned NOT NULL DEFAULT 0,
+  `disabled_at` timestamp NULL DEFAULT NULL,
+  `connected_by` bigint(20) unsigned DEFAULT NULL,
+  `connected_at` timestamp NULL DEFAULT NULL,
+  `disconnected_by` bigint(20) unsigned DEFAULT NULL,
+  `disconnected_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `redminec_org_unique` (`organization_id`),
+  KEY `redminec_conn_by_fk` (`connected_by`),
+  KEY `redminec_disc_by_fk` (`disconnected_by`),
+  CONSTRAINT `redminec_conn_by_fk` FOREIGN KEY (`connected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `redminec_disc_by_fk` FOREIGN KEY (`disconnected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `redminec_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `redmine_project_links`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `redmine_project_links` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_project_id` varchar(64) NOT NULL,
+  `source_project_key` varchar(255) DEFAULT NULL,
+  `source_project_name` varchar(255) DEFAULT NULL,
+  `project_id` bigint(20) unsigned NOT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'pending',
+  `paused_reason` varchar(16) DEFAULT NULL,
+  `import_confirmed_at` timestamp NULL DEFAULT NULL,
+  `confirmed_by` bigint(20) unsigned DEFAULT NULL,
+  `checkpoint_at` timestamp NULL DEFAULT NULL,
+  `last_full_sync_at` timestamp NULL DEFAULT NULL,
+  `last_run_at` timestamp NULL DEFAULT NULL,
+  `is_last_run_complete` tinyint(1) DEFAULT NULL,
+  `last_run_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_run_counters`)),
+  `last_error` varchar(300) DEFAULT NULL,
+  `is_time_import_enabled` tinyint(1) NOT NULL DEFAULT 0,
+  `last_time_import_at` timestamp NULL DEFAULT NULL,
+  `last_time_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_time_counters`)),
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `redminepl_org_source_unique` (`organization_id`,`source_project_id`),
+  KEY `redminepl_project_fk` (`project_id`),
+  KEY `redminepl_conf_by_fk` (`confirmed_by`),
+  KEY `redminepl_created_by_fk` (`created_by`),
+  CONSTRAINT `redminepl_conf_by_fk` FOREIGN KEY (`confirmed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `redminepl_created_by_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `redminepl_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `redminepl_project_fk` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `remote_pending_sessions`;
@@ -22106,6 +22856,76 @@ CREATE TABLE `shipments` (
   CONSTRAINT `shipments_claim_rma_return_fk` FOREIGN KEY (`claim_rma_return_id`) REFERENCES `claim_rma_returns` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `shopware_connections`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `shopware_connections` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_id` varchar(64) DEFAULT NULL,
+  `source_name` varchar(255) DEFAULT NULL,
+  `source_url` varchar(255) DEFAULT NULL,
+  `account_name` varchar(255) DEFAULT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'active',
+  `import_confirmed_at` timestamp NULL DEFAULT NULL,
+  `confirmed_by` bigint(20) unsigned DEFAULT NULL,
+  `checkpoint_at` timestamp NULL DEFAULT NULL,
+  `last_full_sync_at` timestamp NULL DEFAULT NULL,
+  `last_synced_at` timestamp NULL DEFAULT NULL,
+  `last_sync_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_sync_counters`)),
+  `is_last_run_complete` tinyint(1) DEFAULT NULL,
+  `last_error` varchar(300) DEFAULT NULL,
+  `last_error_at` timestamp NULL DEFAULT NULL,
+  `consecutive_failures` int(10) unsigned NOT NULL DEFAULT 0,
+  `disabled_at` timestamp NULL DEFAULT NULL,
+  `connected_by` bigint(20) unsigned DEFAULT NULL,
+  `connected_at` timestamp NULL DEFAULT NULL,
+  `disconnected_by` bigint(20) unsigned DEFAULT NULL,
+  `disconnected_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `shwc_org_unique` (`organization_id`),
+  KEY `shwc_conf_by_fk` (`confirmed_by`),
+  KEY `shwc_conn_by_fk` (`connected_by`),
+  KEY `shwc_disc_by_fk` (`disconnected_by`),
+  CONSTRAINT `shwc_conf_by_fk` FOREIGN KEY (`confirmed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `shwc_conn_by_fk` FOREIGN KEY (`connected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `shwc_disc_by_fk` FOREIGN KEY (`disconnected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `shwc_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `shopware_orders`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `shopware_orders` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `remote_order_id` varchar(64) NOT NULL,
+  `order_number` varchar(64) DEFAULT NULL,
+  `status` varchar(16) NOT NULL,
+  `remote_status_code` varchar(64) DEFAULT NULL,
+  `currency` varchar(3) DEFAULT NULL,
+  `gross_amount` decimal(15,2) DEFAULT NULL,
+  `net_amount` decimal(15,2) DEFAULT NULL,
+  `buyer_external_id` varchar(255) DEFAULT NULL,
+  `buyer` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`buyer`)),
+  `items` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`items`)),
+  `ordered_at` timestamp NULL DEFAULT NULL,
+  `remote_modified_at` timestamp NULL DEFAULT NULL,
+  `customer_id` bigint(20) unsigned DEFAULT NULL,
+  `inbox_status` varchar(16) NOT NULL DEFAULT 'open',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `shwo_org_remote_unique` (`organization_id`,`remote_order_id`),
+  KEY `shwo_customer_fk` (`customer_id`),
+  KEY `shwo_org_ordered_idx` (`organization_id`,`ordered_at`),
+  KEY `shwo_org_buyer_idx` (`organization_id`,`buyer_external_id`),
+  CONSTRAINT `shwo_customer_fk` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `shwo_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `sick_leaves`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -23673,6 +24493,73 @@ CREATE TABLE `tags` (
   KEY `idx_tags_org` (`organization_id`),
   CONSTRAINT `tags_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `tags_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `taiga_connections`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `taiga_connections` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_id` varchar(64) DEFAULT NULL,
+  `source_name` varchar(255) DEFAULT NULL,
+  `source_url` varchar(255) DEFAULT NULL,
+  `account_id` varchar(128) DEFAULT NULL,
+  `account_name` varchar(255) DEFAULT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'active',
+  `last_synced_at` timestamp NULL DEFAULT NULL,
+  `last_sync_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_sync_counters`)),
+  `last_error` varchar(300) DEFAULT NULL,
+  `last_error_at` timestamp NULL DEFAULT NULL,
+  `consecutive_failures` int(10) unsigned NOT NULL DEFAULT 0,
+  `disabled_at` timestamp NULL DEFAULT NULL,
+  `connected_by` bigint(20) unsigned DEFAULT NULL,
+  `connected_at` timestamp NULL DEFAULT NULL,
+  `disconnected_by` bigint(20) unsigned DEFAULT NULL,
+  `disconnected_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `tgc_org_unique` (`organization_id`),
+  KEY `tgc_conn_by_fk` (`connected_by`),
+  KEY `tgc_disc_by_fk` (`disconnected_by`),
+  CONSTRAINT `tgc_conn_by_fk` FOREIGN KEY (`connected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `tgc_disc_by_fk` FOREIGN KEY (`disconnected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `tgc_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `taiga_project_links`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `taiga_project_links` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_project_id` varchar(64) NOT NULL,
+  `source_project_key` varchar(255) DEFAULT NULL,
+  `source_project_name` varchar(255) DEFAULT NULL,
+  `project_id` bigint(20) unsigned NOT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'pending',
+  `paused_reason` varchar(16) DEFAULT NULL,
+  `import_confirmed_at` timestamp NULL DEFAULT NULL,
+  `confirmed_by` bigint(20) unsigned DEFAULT NULL,
+  `checkpoint_at` timestamp NULL DEFAULT NULL,
+  `last_full_sync_at` timestamp NULL DEFAULT NULL,
+  `last_run_at` timestamp NULL DEFAULT NULL,
+  `is_last_run_complete` tinyint(1) DEFAULT NULL,
+  `last_run_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_run_counters`)),
+  `last_error` varchar(300) DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `tgpl_org_source_unique` (`organization_id`,`source_project_id`),
+  KEY `tgpl_project_fk` (`project_id`),
+  KEY `tgpl_conf_by_fk` (`confirmed_by`),
+  KEY `tgpl_created_by_fk` (`created_by`),
+  CONSTRAINT `tgpl_conf_by_fk` FOREIGN KEY (`confirmed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `tgpl_created_by_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `tgpl_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `tgpl_project_fk` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `takeoff_lines`;
@@ -25502,6 +26389,73 @@ CREATE TABLE `vehicles` (
   CONSTRAINT `vehicles_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `vikunja_connections`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `vikunja_connections` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_id` varchar(64) DEFAULT NULL,
+  `source_name` varchar(255) DEFAULT NULL,
+  `source_url` varchar(255) DEFAULT NULL,
+  `account_id` varchar(128) DEFAULT NULL,
+  `account_name` varchar(255) DEFAULT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'active',
+  `last_synced_at` timestamp NULL DEFAULT NULL,
+  `last_sync_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_sync_counters`)),
+  `last_error` varchar(300) DEFAULT NULL,
+  `last_error_at` timestamp NULL DEFAULT NULL,
+  `consecutive_failures` int(10) unsigned NOT NULL DEFAULT 0,
+  `disabled_at` timestamp NULL DEFAULT NULL,
+  `connected_by` bigint(20) unsigned DEFAULT NULL,
+  `connected_at` timestamp NULL DEFAULT NULL,
+  `disconnected_by` bigint(20) unsigned DEFAULT NULL,
+  `disconnected_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `vikc_org_unique` (`organization_id`),
+  KEY `vikc_conn_by_fk` (`connected_by`),
+  KEY `vikc_disc_by_fk` (`disconnected_by`),
+  CONSTRAINT `vikc_conn_by_fk` FOREIGN KEY (`connected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `vikc_disc_by_fk` FOREIGN KEY (`disconnected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `vikc_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `vikunja_project_links`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `vikunja_project_links` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_project_id` varchar(64) NOT NULL,
+  `source_project_key` varchar(255) DEFAULT NULL,
+  `source_project_name` varchar(255) DEFAULT NULL,
+  `project_id` bigint(20) unsigned NOT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'pending',
+  `paused_reason` varchar(16) DEFAULT NULL,
+  `import_confirmed_at` timestamp NULL DEFAULT NULL,
+  `confirmed_by` bigint(20) unsigned DEFAULT NULL,
+  `checkpoint_at` timestamp NULL DEFAULT NULL,
+  `last_full_sync_at` timestamp NULL DEFAULT NULL,
+  `last_run_at` timestamp NULL DEFAULT NULL,
+  `is_last_run_complete` tinyint(1) DEFAULT NULL,
+  `last_run_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_run_counters`)),
+  `last_error` varchar(300) DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `vikpl_org_source_unique` (`organization_id`,`source_project_id`),
+  KEY `vikpl_project_fk` (`project_id`),
+  KEY `vikpl_conf_by_fk` (`confirmed_by`),
+  KEY `vikpl_created_by_fk` (`created_by`),
+  CONSTRAINT `vikpl_conf_by_fk` FOREIGN KEY (`confirmed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `vikpl_created_by_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `vikpl_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `vikpl_project_fk` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `wage_groups`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -26017,6 +26971,76 @@ CREATE TABLE `whistleblowing_portals` (
   UNIQUE KEY `whistleblowing_portals_organization_id_unique` (`organization_id`),
   UNIQUE KEY `whistleblowing_portals_public_slug_unique` (`public_slug`),
   CONSTRAINT `whistleblowing_portals_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `woocommerce_connections`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `woocommerce_connections` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_id` varchar(64) DEFAULT NULL,
+  `source_name` varchar(255) DEFAULT NULL,
+  `source_url` varchar(255) DEFAULT NULL,
+  `account_name` varchar(255) DEFAULT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'active',
+  `import_confirmed_at` timestamp NULL DEFAULT NULL,
+  `confirmed_by` bigint(20) unsigned DEFAULT NULL,
+  `checkpoint_at` timestamp NULL DEFAULT NULL,
+  `last_full_sync_at` timestamp NULL DEFAULT NULL,
+  `last_synced_at` timestamp NULL DEFAULT NULL,
+  `last_sync_counters` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`last_sync_counters`)),
+  `is_last_run_complete` tinyint(1) DEFAULT NULL,
+  `last_error` varchar(300) DEFAULT NULL,
+  `last_error_at` timestamp NULL DEFAULT NULL,
+  `consecutive_failures` int(10) unsigned NOT NULL DEFAULT 0,
+  `disabled_at` timestamp NULL DEFAULT NULL,
+  `connected_by` bigint(20) unsigned DEFAULT NULL,
+  `connected_at` timestamp NULL DEFAULT NULL,
+  `disconnected_by` bigint(20) unsigned DEFAULT NULL,
+  `disconnected_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `wooc_org_unique` (`organization_id`),
+  KEY `wooc_conf_by_fk` (`confirmed_by`),
+  KEY `wooc_conn_by_fk` (`connected_by`),
+  KEY `wooc_disc_by_fk` (`disconnected_by`),
+  CONSTRAINT `wooc_conf_by_fk` FOREIGN KEY (`confirmed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `wooc_conn_by_fk` FOREIGN KEY (`connected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `wooc_disc_by_fk` FOREIGN KEY (`disconnected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `wooc_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `woocommerce_orders`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `woocommerce_orders` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `remote_order_id` varchar(64) NOT NULL,
+  `order_number` varchar(64) DEFAULT NULL,
+  `status` varchar(16) NOT NULL,
+  `remote_status_code` varchar(64) DEFAULT NULL,
+  `currency` varchar(3) DEFAULT NULL,
+  `gross_amount` decimal(15,2) DEFAULT NULL,
+  `net_amount` decimal(15,2) DEFAULT NULL,
+  `buyer_external_id` varchar(255) DEFAULT NULL,
+  `buyer` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`buyer`)),
+  `items` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`items`)),
+  `ordered_at` timestamp NULL DEFAULT NULL,
+  `remote_modified_at` timestamp NULL DEFAULT NULL,
+  `customer_id` bigint(20) unsigned DEFAULT NULL,
+  `inbox_status` varchar(16) NOT NULL DEFAULT 'open',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `wooo_org_remote_unique` (`organization_id`,`remote_order_id`),
+  KEY `wooo_customer_fk` (`customer_id`),
+  KEY `wooo_org_ordered_idx` (`organization_id`,`ordered_at`),
+  KEY `wooo_org_buyer_idx` (`organization_id`,`buyer_external_id`),
+  CONSTRAINT `wooo_customer_fk` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `wooo_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `work_centers`;
@@ -27120,3 +28144,18 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1008,'2027_03_31_1
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1009,'2027_03_31_140000_add_provisional_and_chain_to_bank_statements_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1010,'2027_03_31_150000_add_preamble_to_bill_of_quantities_table',2);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1011,'2027_03_31_160000_add_bid_comment_permission_to_bill_of_quantities_table',3);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1012,'2027_03_31_170000_create_jira_tables',4);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1013,'2027_03_31_170100_create_asana_tables',4);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1014,'2027_03_31_170200_create_gitea_tables',5);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1015,'2027_03_31_170300_create_redmine_tables',5);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1019,'2027_03_31_170400_create_woocommerce_tables',6);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1020,'2027_03_31_170500_create_shopware_tables',6);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1021,'2027_03_31_170600_create_prestashop_tables',6);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1022,'2027_03_31_170700_create_firefly_tables',7);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1023,'2027_03_31_170800_create_vikunja_tables',8);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1024,'2027_03_31_170900_create_kanboard_tables',8);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1025,'2027_03_31_171000_create_plane_tables',8);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1026,'2027_03_31_171100_create_taiga_tables',8);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1027,'2027_03_31_171200_create_leantime_tables',8);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1028,'2027_03_31_171300_create_freescout_tables',8);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1029,'2027_03_31_171400_create_glpi_tables',8);

@@ -36,6 +36,9 @@ enum DocumentOrigin: string implements HasLabel {
     case Easybill = 'easybill';
     case InvoicePlane = 'invoiceplane';
     case JtlWawi = 'jtl_wawi';
+    // Phase 158 (Feature 176): Open-Source-Faktura.
+    case InvoiceNinja = 'invoiceninja';
+    case Akaunting = 'akaunting';
 
     public function label(): string {
         return (string) __('enums.billing.origin.' . $this->value);

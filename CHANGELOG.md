@@ -10,6 +10,83 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Open-Source-Plugins, Welle 4 (Phase 158, Feature 177, MVP-1346–1348):
+  **Seafile** als Quelle im Cloud-Dokumenteingang und als verschlüsseltes
+  Backupziel.
+  - Eingang: Dateien einer gewählten Bibliothek laufen nur lesend über die
+    vorhandenen Ordnerregeln in Rechnungseingang oder Dokumentablage.
+    Umbenannte oder verschobene Dateien gelten nicht als neuer Beleg. Ist
+    seit dem letzten Lauf nichts geändert, liest WorkDiary keinen Ordner.
+  - Backupziel: eigene Verbindung mit Konto-Token in eine bestehende,
+    unverschlüsselte Bibliothek. Beim Verbinden wird eine Probedatei
+    geschrieben, gelesen und gelöscht.
+  - Die Hilfe zu den Backupzielen nennt jetzt alle sieben Ziele.
+- Open-Source-Plugins, Welle 3 (Phase 158, Features 173 und 174,
+  MVP-1336–1345):
+  - **Vikunja, Kanboard, Plane, Taiga und Leantime:** Aufgaben ausgewählter
+    Projekte kommen als Aufgaben in WorkDiary-Projekte, nur lesend.
+  - **FreeScout und GLPI:** Konversationen ausgewählter Postfächer bzw.
+    Tickets ausgewählter Entitäten kommen ebenso als Aufgaben an. Bei
+    FreeScout ist die erste Nachricht die Beschreibung.
+  - Der Status stammt je System aus einem festen Feld (erledigt,
+    Statusgruppe, Statusart oder Statusnummer), nie aus frei benannten
+    Spalten. Zugang, Vorschau, Bestätigung, Verknüpfen und Klärfälle laufen
+    wie bei Gitea und Redmine.
+  - Eine gemeinsame Hilfeseite erklärt alle sieben Importe mit ihren
+    Unterschieden.
+
+- Open-Source-Plugins, Welle 2 (Phase 158, Features 175 und 176,
+  MVP-1325–1335):
+  - **Shop-Plugins WooCommerce, Shopware 6 und PrestaShop:** Bestellungen
+    werden gelesen, mit Nummer, Status, Betrag und Käufer gespiegelt und
+    vorhandenen Kunden zugeordnet. Unklare Käufer landen als Klärfall in der
+    Integrations-Inbox; neue Kunden legt der Import nie an.
+  - Vor dem ersten Abgleich zeigt eine Vorschau die Bestellungen des
+    Zeitfensters. Importiert wird erst nach „Import bestätigen“. Neue
+    Stornos werden nur auf Wunsch übernommen.
+  - Die Bestellungen erscheinen in der globalen Suche und am Kunden. Name,
+    E-Mail und Firma der Käufer entfernt die Aufbewahrungsregel für
+    Marktplatz-Käufer.
+  - **Invoice Ninja und Akaunting:** Rechnungen, Gutschriften,
+    Lieferantenrechnungen und Ausgaben erscheinen nur lesend im Belegfluss.
+    Die Belegnummer führt zum Original.
+  - **Firefly III:** Ein- und Ausgänge werden gespiegelt und über eine
+    eindeutige Belegnummer im Verwendungszweck Rechnungen bzw.
+    Eingangsrechnungen zugeordnet. Gebucht wird daraus nichts.
+- Open-Source-Plugins, Welle 1 (Phase 158, Features 170–172,
+  MVP-1314–1324):
+  - **Gitea/Forgejo:** Issues ausgewählter Repositories einer selbst
+    gehosteten Instanz kommen als Aufgaben in WorkDiary-Projekte, nur
+    lesend.
+  - **Redmine:** dasselbe für Redmine-Projekte (ohne Unterprojekte).
+    Zusätzlich lassen sich je Zuordnung die Zeiteinträge eines rollierenden
+    Zeitfensters übernehmen, als Datum plus Dauer. Gebucht wird nur auf
+    Redmine-Benutzer, die einem WorkDiary-Benutzer ausdrücklich zugeordnet
+    sind; alle anderen warten als Klärfall.
+  - Basis-URL und Token beider Plugins stehen in den Plugin-Einstellungen
+    (interne Adressen nur mit Freigabe). „Verbindung prüfen“ hält die Instanz
+    fest. Vorschau, Bestätigung, Verknüpfen und Klärfälle laufen wie bei
+    Jira und Asana.
+  - **Paperless-ngx:** neue Quelle im Cloud-Dokumenteingang. Die Quelle sind
+    alle Dokumente oder die eines Tags, Korrespondenten oder Dokumenttyps.
+    Der Pfad `Dokumenttyp/Korrespondent/Dateiname` speist die vorhandenen
+    Ordnerregeln für Rechnungseingang und Dokumentablage. Übernommen wird
+    die Originaldatei, sodass eingebettete E-Rechnungsdaten erhalten bleiben.
+    Nachträglich getaggte Dokumente werden ebenfalls erkannt, und Dokument
+    bzw. Eingangsrechnung verlinken als Herkunft zurück zum
+    Paperless-Original.
+- Jira- und Asana-Plugins (Phase 157, Feature 169, MVP-1304–1312): Vorgänge
+  ausgewählter Jira-Cloud-Projekte bzw. Aufgaben ausgewählter Asana-Projekte
+  kommen als Aufgaben in WorkDiary-Projekte, nur lesend. Anmeldung über die
+  App des Herausgebers (Jira 3LO, Asana mit PKCE), danach Site bzw.
+  Workspace ausdrücklich wählen. Je Projektzuordnung zeigt eine Vorschau, was
+  der erste Abgleich anlegen würde; angelegt wird erst nach „Import
+  bestätigen“, bestehende Aufgaben lassen sich ausdrücklich verknüpfen.
+  Abgleich alle 15 Minuten, täglich vollständig; Konflikte, fremde
+  Datenführerschaft, mehrdeutige Ziele und nicht mehr sichtbare Aufgaben
+  landen als Klärfall in der Integrations-Inbox, nichts wird verschoben oder
+  gelöscht. Trennen widerruft bzw. löscht die Anmeldung und pausiert die
+  Zuordnungen; Wiederverbinden mit derselben Quelle setzt fort.
 - Toggl-Plugin mit Quellenwahl (Phase 159, Feature 178, MVP-1349–1351):
   Unter „Toggl-Produkt“ wählt eine Organisation Toggl Track oder das neue
   Toggl (vormals Toggl 2.0 / Focus) als einzige Quelle für Import,
@@ -1845,6 +1922,45 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
 
 ### Fixed
 
+- **Phase-158-Anbindungen nach API-Doku und Quelltext** (Abgleich vor den
+  Testinstanzen, 41 Befunde):
+  - Aufgabenimporte: Ein 403 lässt nur die betroffene Zuordnung scheitern.
+    Vikunja liest über `GET /tasks` mit Filter. Plane nimmt nur Projekte mit
+    Mitgliedschaft und hält 60 Anfragen je Minute ein. Taiga erkennt ein
+    fehlendes Leserecht und den Abschluss über Tasks. FreeScout liest nur
+    veröffentlichte Konversationen. Bei GLPI wird die Sitzung beendet, die
+    Texte kommen unmaskiert, und der Status „Genehmigung“ zählt als offen.
+    Gitea/Forgejo verlangt das Seitenende. Redmine prüft den Schlüssel vor
+    jedem Lauf (ein ungültiger las sonst anonym) und lässt Unterprojekte auch
+    bei Zeiten weg.
+  - Seafile wählt nur eindeutige, beschreibbare Bibliotheken. Paperless liest
+    die Containerauswahl seitenweise und bestätigt Abgänge vor dem
+    Tombstone.
+  - Shops:
+    - WooCommerce holt den Shopnamen ohne Anmeldung (WordPress wies den
+      Schlüssel dort mit 401 ab) und erkennt Bestellungen, die beim Blättern
+      in den Papierkorb wandern.
+    - Shopware übernimmt Erstattungen aus dem Zahlungsstatus und wiederholt
+      die Suche nach 503.
+    - PrestaShop wertet „in Vorbereitung“ nicht mehr als abgeschlossen,
+      blättert nach ID, liest Währungen anderer Shops nach und verliert
+      nach der Zeitumstellung keine Änderungen mehr.
+  - Belegspiegel:
+    - Jede Liste führt ihre eigene Startmarke.
+    - Invoice Ninja liest Ausgaben vollständig, nimmt die Währung von Kunde,
+      Gruppe oder Firma statt fest EUR, rechnet aufgeschlagene Steuer auf
+      Ausgaben und verlinkt mit Firma.
+    - Akaunting nutzt den Änderungsfilter, prüft die Belegart jeder Zeile
+      und liefert Netto, Restbetrag und Kundennummer.
+  - Firefly III zählt Buchungen statt Gruppen: Split-Buchungen machten jeden
+    Lauf unvollständig. Bereinigt wird nur im gelesenen Fenster, und die
+    End-to-End-ID gilt als Belegnummer.
+  - Lesende POST-Aufrufe (JSON-RPC, Shopware-Suche, GLPI, Taiga-Anmeldung)
+    werden bei 429/503 wiederholt.
+  - Hilfe und Einstellungen ×5 nennen Mindestversionen, Rechte und Grenzen.
+- Aufgabenimporte: „Bestehende Aufgabe verknüpfen“ nimmt jetzt Fremd-IDs mit
+  Bindestrich an (UUIDs wie bei Plane). Die Fehlermeldung nennt das Feld nicht
+  mehr „Geräte-ID (Fernwartung)“.
 - Bestellung: die Nachweis-Ampel zeigte den rohen Textschlüssel, weil eine
   zweite gleichnamige Textgruppe die erste überschrieb.
 - Umrandete Warnabzeichen waren auf hellem Grund kaum lesbar (Gelb auf

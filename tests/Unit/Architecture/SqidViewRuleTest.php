@@ -43,6 +43,7 @@ class SqidViewRuleTest extends TestCase {
         'resources/views/notifications/index.blade.php' => 'Notification-IDs sind UUIDs, keine Sqid-Kandidaten.',
         'resources/views/admin/data-ownership/index.blade.php' => 'Plugin-Kennung (Zeichenkette), keine Datenbank-ID.',
         'resources/views/knowledge-hub/_import_dialog.blade.php' => 'Kennung des OneNote-Notizbuchs aus Microsoft Graph, keine Datenbank-ID.',
+        'resources/views/plugins/task-import/' => 'Kennungen aus Jira bzw. Asana (Site, Projekt, Vorgang/Aufgabe), keine Datenbank-IDs; lokale Datensätze gehen als Sqid.',
         // Konsolidierungs-Audit 2026-10 (k4-24): das Gate sieht auch `$x->…_id` und `$zeile['id']`; diese zwei sind keine freie Datenbank-ID.
         'resources/views/contracts/_form_dialog.blade.php' => 'template_id der Vorbelegung ist bereits die Sqid (ContractTemplateService::preset()).',
         'app/Plugins/Zammad/Resources/views/admin/index.blade.php' => 'Webhook-Adresse, die in Zammad eingetragen wird: die Route nimmt bewusst die numerische ID (HMAC-geschützt, bereits verteilte Adressen bleiben gültig).',

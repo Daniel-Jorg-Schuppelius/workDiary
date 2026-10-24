@@ -1,7 +1,7 @@
 ---
 title: "Managing integrations"
 topic: admin.integrations
-version: 4
+version: 5
 keywords:
     - interfaces
     - connectors
@@ -118,7 +118,8 @@ The range keeps growing; the list below names the available integrations by
 purpose, so you do not have to guess where something belongs:
 
 - **Accounting and invoicing:** lexoffice, orgaMAX, sevDesk, easybill,
-  BuchhaltungsButler, InvoicePlane, and the Peppol access point for sending
+  BuchhaltungsButler, InvoicePlane, Invoice Ninja, Akaunting, Firefly III, and the
+  Peppol access point for sending
   electronic invoices.
 - **DATEV Online:** booking batches via EXTF import and document images
   directly to DATEV Unternehmen online; you sign in with DATEV.
@@ -131,12 +132,14 @@ purpose, so you do not have to guess where something belongs:
   to critical recipients.
 - **Shipping:** DHL, FedEx and UPS for labels and tracking.
 - **Files and backups:** Nextcloud, WebDAV, Dropbox, Google Drive, SharePoint
-  and S3 as storage or backup targets.
+  and S3 as storage or backup targets, Paperless-ngx as a document source,
+  Seafile as document source and backup target.
 - **Calendar, contacts and mail:** Microsoft Graph, Google Calendar, CalDAV,
   CardDAV, and Calendly for booked appointments.
-- **Projects and time:** Todoist, OpenProject, GitHub, GitLab, Toggl, Clockify,
-  Kimai, Zammad.
-- **Commerce and ERP:** JTL-Wawi, Billbee, Etsy.
+- **Projects and time:** Todoist, Jira, Asana, OpenProject, GitHub, GitLab,
+  Gitea/Forgejo, Redmine, Vikunja, Kanboard, Plane, Taiga, Leantime, Toggl,
+  Clockify, Kimai, Zammad, FreeScout, GLPI.
+- **Commerce and ERP:** JTL-Wawi, Billbee, Etsy, WooCommerce, Shopware, PrestaShop.
 
 An integration missing from this list does not exist — when in doubt, ask
 rather than storing credentials somewhere not intended for them.

@@ -210,6 +210,8 @@ return [
             'microsoft' => 'Microsoft OneDrive/SharePoint',
             'google' => 'Google Drive',
             'nextcloud' => 'Nextcloud',
+            'paperless' => 'Paperless-ngx',
+            'seafile' => 'Seafile',
         ],
         'connection_status' => [
             'draft' => 'Draft',
@@ -1278,6 +1280,8 @@ return [
             'easybill' => 'easybill',
             'invoiceplane' => 'InvoicePlane',
             'jtl_wawi' => 'JTL-Wawi',
+            'invoiceninja' => 'Invoice Ninja',
+            'akaunting' => 'Akaunting',
         ],
         'agreement-mode' => [
             'account' => 'Customer account (no invoices)',
@@ -1628,6 +1632,7 @@ return [
             'nextcloud' => 'Nextcloud',
             'webdav' => 'WebDAV (own server)',
             's3' => 'S3-compatible storage',
+            'seafile' => 'Seafile',
         ],
         'target_status' => [
             'draft' => 'Draft',
@@ -2210,6 +2215,8 @@ return [
         'data_domain' => ['tasks' => 'Tasks', 'tickets' => 'Tickets', 'inventory' => 'Stock level', 'calendar' => 'Calendar', 'documents' => 'Documents', 'customers' => 'Customers'],
         'import_match_policy' => ['auto_link_exact_only' => 'Link only exact matches (rest to inbox)', 'auto_link_and_create' => 'Link, otherwise create', 'manual_review' => 'Review everything manually'],
         'integration_inbox_status' => ['open' => 'Open', 'resolved_linked' => 'Linked', 'resolved_created' => 'Created', 'resolved_local' => 'Keep local', 'resolved_remote' => 'Remote applied', 'dismissed' => 'Discarded'],
+        'shop_order_status' => ['open' => 'Open', 'processing' => 'Processing', 'completed' => 'Completed', 'cancelled' => 'Cancelled', 'refunded' => 'Refunded'],
+        'task_import_link_status' => ['pending' => 'Preview pending', 'active' => 'Active', 'paused' => 'Paused'],
     ],
     'key_handover' => [
         'key_handover_direction' => ['out' => 'Expense', 'in' => 'Return'],

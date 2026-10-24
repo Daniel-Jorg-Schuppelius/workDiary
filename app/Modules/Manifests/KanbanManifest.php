@@ -68,6 +68,15 @@ final class KanbanManifest extends Manifest {
     /** @return list<string> */
     public function plugins(): array {
         return [
+            'asana',
+            'jira',
+            'gitea',
+            'redmine',
+            'vikunja',
+            'kanboard',
+            'plane',
+            'taiga',
+            'leantime',
             'todoist',
         ];
     }

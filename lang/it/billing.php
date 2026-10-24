@@ -18,6 +18,7 @@ return [
         'dunning_level' => 'Livello sollecito :level',
         'action' => [
             'dun' => 'Sollecita',
+            'open_original' => 'Aprire l’originale',
         ],
         'tab' => [
             'all' => 'Tutti',

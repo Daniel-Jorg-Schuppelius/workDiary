@@ -56,6 +56,7 @@ final class BackupManifest extends Manifest {
             's3',
             'sharepoint',
             'webdav',
+            'seafile',
         ];
     }
 }
