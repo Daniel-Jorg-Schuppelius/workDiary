@@ -231,6 +231,30 @@ class Document extends Model {
     }
 
     /**
+     * Fremdzugriff auf vertrauliche Dokumente auditieren (Vollaudit 2026-07,
+     * N10): ein Verwalter öffnet das Dokument eines anderen Erfassers, lädt es
+     * herunter oder sieht es in einer Vorschau.
+     */
+    public function auditConfidentialAccess(User $viewer): void {
+        if (! $this->confidential || (int) $this->created_by_user_id === (int) $viewer->id) {
+            return;
+        }
+        // Eigenauskunft der Personalakte (Feature 141) ist kein Fremdzugriff.
+        if ($this->isPersonnelFile() && (int) $this->documentable_id === (int) $viewer->id) {
+            return;
+        }
+
+        \App\Models\Audit\AuditLog::query()->create([
+            'organization_id' => $this->organization_id,
+            'user_id' => $viewer->id,
+            'event' => 'document.confidentialAccessed',
+            'auditable_type' => MorphMap::stableKey(self::class),
+            'auditable_id' => $this->id,
+            'changes' => ['title' => $this->title],
+        ]);
+    }
+
+    /**
      * Akte eines Mitglieds (Feature 141).
      *
      * @param  Builder<self>  $query

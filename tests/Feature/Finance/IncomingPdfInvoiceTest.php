@@ -140,4 +140,146 @@ class IncomingPdfInvoiceTest extends TestCase {
         // Gemeldeter Typ zählt nur, wenn der Inhalt nichts hergibt.
         $this->assertNull($service->extractXml('kein Beleg', 'text/plain'));
     }
+
+    /** Das Original steht neben den erkannten Werten, auf der Detailseite und im Korrektur-Dialog. */
+    public function test_pdf_original_is_previewed_next_to_the_recognised_values(): void {
+        $this->actingAs($this->admin)->post(route('finance.incoming-invoices.store'), [
+            'file' => UploadedFile::fake()->createWithContent('rechnung.pdf', $this->pdf(<<<'HTML'
+                <h1>Rechnung</h1>
+                <p>Rechnungsnummer: MP-4712</p>
+                <p>Rechnungsdatum: 14.09.2026</p>
+                <p>Gesamtbetrag 238,00 EUR</p>
+                HTML)),
+        ])->assertRedirect();
+        $incoming = IncomingEInvoice::query()->sole();
+        $this->assertSame(IncomingInvoiceRecognition::Extracted, $incoming->recognition);
+        $previewUrl = route('finance.incoming-invoices.preview', $incoming->document);
+
+        $this->get(route('finance.incoming-invoices.show', $incoming->document))->assertOk()
+            ->assertSee('<iframe src="' . $previewUrl . '#view=FitH&amp;navpanes=0"', false)
+            ->assertSee(__('Werte korrigieren'))
+            ->assertSee(__('Korrigieren'));
+        $this->get($previewUrl)->assertOk()
+            ->assertHeader('Content-Type', 'application/pdf')
+            ->assertHeader('Content-Disposition', 'inline; filename="rechnung.pdf"')
+            ->assertHeader('Content-Security-Policy', \App\Http\Middleware\SecurityHeaders::DOCUMENT_CSP);
+        $this->get(route('finance.incoming-invoices.values.form', $incoming))->assertOk()
+            ->assertSee(__('Werte korrigieren'))
+            ->assertSee('wd-dialog--wide', false)
+            ->assertSee('<iframe src="' . $previewUrl . '#view=FitH&amp;navpanes=0"', false);
+    }
+
+    /** Ein Klärfall zeigte erfasste Werte nicht an, weil seine Erkennung „keine“ bleibt. */
+    public function test_captured_values_of_a_clarification_case_show_on_the_detail_page(): void {
+        app(IncomingEInvoiceService::class)->storeMessage(
+            $this->admin,
+            [new \App\Services\Mail\MailAttachment('beleg.pdf', 'application/pdf', $this->pdf('<h1>Rechnung</h1><p>Gesamtbetrag 119,00 EUR</p>'))],
+            new \App\Services\Invoicing\EInvoice\IncomingOrigin('lieferant@example.test', '<klaerfall@example.test>'),
+        );
+        $incoming = IncomingEInvoice::query()->sole();
+        $this->assertSame(IncomingInvoiceRecognition::None, $incoming->recognition);
+        $this->actingAs($this->admin)->get(route('finance.incoming-invoices.values.form', $incoming))->assertOk()->assertSee(__('Werte erfassen'));
+
+        $this->post(route('finance.incoming-invoices.values', $incoming), [
+            'invoice_number' => 'KF-2026-0099',
+            'issue_date' => '2026-09-14',
+            'currency' => 'EUR',
+            'amount_net' => '100.00',
+            'amount_tax' => '19.00',
+            'amount_gross' => '119.00',
+        ])->assertRedirect();
+
+        $this->get(route('finance.incoming-invoices.show', $incoming->document))->assertOk()
+            ->assertSee(__('Rechnungsdaten (von Hand erfasst)'))
+            ->assertSee('KF-2026-0099')
+            ->assertSee('100,00')
+            ->assertDontSee(__('Keine Rechnungsdaten erkannt (Klärfall).'))
+            ->assertDontSee(__('Das Original konnte nicht (mehr) als E-Rechnung geparst werden.'));
+        $this->get(route('finance.incoming-invoices.values.form', $incoming))->assertOk()->assertSee(__('Werte korrigieren'));
+    }
+
+    public function test_preview_of_a_confidential_original_is_audited_and_foreign_access_denied(): void {
+        $this->actingAs($this->admin)->post(route('finance.incoming-invoices.store'), [
+            'file' => UploadedFile::fake()->createWithContent('rechnung.pdf', $this->pdf('<h1>Rechnung</h1><p>Rechnungsnummer: MP-4713</p><p>Gesamtbetrag 119,00 EUR</p>')),
+        ])->assertRedirect();
+        $document = IncomingEInvoice::query()->sole()->document;
+        $author = User::factory()->create(['organization_id' => $this->organization->id]);
+        $document->forceFill(['confidential' => true, 'created_by_user_id' => $author->id])->save();
+
+        $this->get(route('finance.incoming-invoices.preview', $document))->assertOk();
+        $this->assertSame(1, \App\Models\Audit\AuditLog::query()
+            ->where('event', 'document.confidentialAccessed')->where('auditable_id', $document->id)->where('user_id', $this->admin->id)->count());
+
+        $foreign = User::factory()->admin()->create(['organization_id' => \App\Models\Platform\Organization::factory()->create()->id]);
+        $this->assertContains($this->actingAs($foreign)->get(route('finance.incoming-invoices.preview', $document))->status(), [403, 404]);
+    }
+
+    public function test_preview_type_follows_the_content_of_the_original(): void {
+        $png = (string) base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', true);
+
+        $this->assertSame('application/pdf', IncomingEInvoiceService::previewMime($this->pdf('<p>Rechnung</p>')));
+        $this->assertSame('image/png', IncomingEInvoiceService::previewMime($png));
+        $this->assertSame('application/pdf', IncomingEInvoiceService::previewMime($this->tiff(8, 8)), 'TIFF zeigen Browser nicht an, es kommt als PDF.');
+        $this->assertNull(IncomingEInvoiceService::previewMime('<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"/>'), 'XML läuft über die Sichtdarstellung.');
+        $this->assertNull(IncomingEInvoiceService::previewMime(''));
+        $this->assertSame($png, IncomingEInvoiceService::previewBody($png));
+    }
+
+    public function test_tiff_scan_is_previewed_as_pdf_without_touching_the_original(): void {
+        $tiff = $this->tiff(200, 200);
+        app(IncomingEInvoiceService::class)->storeMessage(
+            $this->admin,
+            [new \App\Services\Mail\MailAttachment('scan.tif', 'image/tiff', $tiff)],
+            new \App\Services\Invoicing\EInvoice\IncomingOrigin('lieferant@example.test', '<tiff@example.test>'),
+        );
+        $incoming = IncomingEInvoice::query()->sole();
+        $previewUrl = route('finance.incoming-invoices.preview', $incoming->document);
+
+        $this->actingAs($this->admin)->get(route('finance.incoming-invoices.show', $incoming->document))->assertOk()
+            ->assertSee('<iframe src="' . $previewUrl . '#view=FitH&amp;navpanes=0"', false);
+        $response = $this->get($previewUrl)->assertOk()
+            ->assertHeader('Content-Type', 'application/pdf')
+            ->assertHeader('Content-Disposition', 'inline; filename="scan.pdf"');
+        $this->assertStringStartsWith('%PDF-', (string) $response->getContent());
+        $this->assertSame($tiff, \Illuminate\Support\Facades\Storage::disk('local')->get((string) $incoming->document?->currentVersion?->path), 'Das abgelegte Original bleibt unverändert.');
+    }
+
+    public function test_unconvertible_tiff_shows_a_hint_instead_of_an_error_page(): void {
+        $broken = "II*\0" . str_repeat("\0", 30_000);
+        $this->assertNull(IncomingEInvoiceService::previewBody($broken));
+        app(IncomingEInvoiceService::class)->storeMessage(
+            $this->admin,
+            [new \App\Services\Mail\MailAttachment('kaputt.tif', 'image/tiff', $broken)],
+            new \App\Services\Invoicing\EInvoice\IncomingOrigin('lieferant@example.test', '<kaputt@example.test>'),
+        );
+        $incoming = IncomingEInvoice::query()->sole();
+
+        $response = $this->actingAs($this->admin)->get(route('finance.incoming-invoices.preview', $incoming->document))->assertOk()
+            ->assertHeader('Content-Type', 'text/html; charset=UTF-8')
+            ->assertSee(__('Keine Vorschau möglich'));
+        $this->assertStringStartsWith('sandbox;', (string) $response->headers->get('Content-Security-Policy'));
+    }
+
+    /** Unkomprimiertes Graustufen-TIFF (Baseline, Little Endian) mit dunklem Rahmen. */
+    private function tiff(int $width, int $height): string {
+        $short = static fn (int $tag, int $value): string => pack('vvVv', $tag, 3, 1, $value) . "\0\0";
+        $long = static fn (int $tag, int $value): string => pack('vvVV', $tag, 4, 1, $value);
+        $rational = static fn (int $tag, int $offset): string => pack('vvVV', $tag, 5, 1, $offset);
+        $entries = 12;
+        $rationals = 8 + 2 + $entries * 12 + 4;
+        $data = $rationals + 16;
+        $ifd = pack('v', $entries)
+            . $short(256, $width) . $short(257, $height) . $short(258, 8) . $short(259, 1) . $short(262, 1)
+            . $long(273, $data) . $short(277, 1) . $long(278, $height) . $long(279, $width * $height)
+            . $rational(282, $rationals) . $rational(283, $rationals + 8) . $short(296, 2)
+            . pack('V', 0);
+        $pixels = '';
+        for ($y = 0; $y < $height; $y++) {
+            for ($x = 0; $x < $width; $x++) {
+                $pixels .= chr($x < 4 || $y < 4 || $x >= $width - 4 || $y >= $height - 4 ? 0 : 255);
+            }
+        }
+
+        return 'II' . pack('vV', 42, 8) . $ifd . pack('VVVV', 72, 1, 72, 1) . $pixels;
+    }
 }

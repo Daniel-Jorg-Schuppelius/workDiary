@@ -1,7 +1,7 @@
 ---
 title: "Incoming invoices"
 topic: finance.incoming-invoices
-version: 4
+version: 5
 keywords:
     - supplier invoice
     - purchase invoice
@@ -25,6 +25,8 @@ keywords:
     - duplicate receipt
     - duplicate invoice
     - invoice folder
+    - invoice preview
+    - correct recognition
 audience: []
 modules:
     - module.vertrieb
@@ -124,9 +126,20 @@ candidates. Your organisation’s own identifiers never count as a match. With
 
 You can also correct the direction there. With “Remember sender” the system
 assigns future emails from this sender to the same party, as long as the
-document itself does not name another party. For unrecognised and recognised
-documents, enter number, date and amounts with “Enter values”. Assign several
-documents of the same party together in the list.
+document itself does not name another party. For unrecognised documents,
+enter number, date and amounts with “Enter values”; change recognised or
+already entered values with “Correct values”, also directly in the “Invoice
+data” card. Assign several documents of the same party together in the list.
+
+**Original next to the values:** The detail page shows the original next to
+the invoice data, so recognition errors stand out at once: PDFs and photos
+(JPEG, PNG, GIF, WebP) as received, TIFF scans as PDF, an XRechnung or the XML
+of an e-invoice as a readable invoice. The original stays in place while you
+scroll; “Open in a new tab” shows it in full size. The “Correct values” dialog
+also shows it next to the fields. If a TIFF scan cannot be converted, a note
+appears; then open the original via “Original (XML/PDF)”. Viewing a
+confidential document is logged like a download. The values of an e-invoice
+cannot be changed; its XML is the original.
 
 With “Also treat the other open documents the same way” you handle all open
 documents of the same counterparty in one step, when assigning as well as when

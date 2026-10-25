@@ -359,4 +359,21 @@ final class IncomingEInvoiceTest extends TestCase {
 
         $this->assertSame(0, Document::query()->where('document_type', DocumentType::Invoice->value)->count());
     }
+
+    /** Eine XRechnung erscheint als lesbare Rechnung, nie als Markup des Absenders. */
+    public function test_xml_invoice_preview_is_a_sandboxed_rendering(): void {
+        $this->actingAs($this->admin)->post(route('finance.incoming-invoices.store'), [
+            'file' => UploadedFile::fake()->createWithContent('rechnung.xml', $this->sampleXml()),
+        ])->assertRedirect();
+        $document = Document::query()->where('document_type', DocumentType::Invoice->value)->sole();
+        $previewUrl = route('finance.incoming-invoices.preview', $document);
+
+        $this->get(route('finance.incoming-invoices.show', $document))->assertOk()->assertSee('<iframe src="' . $previewUrl . '"', false);
+        $response = $this->get($previewUrl)->assertOk()
+            ->assertHeader('Content-Type', 'text/html; charset=UTF-8')
+            ->assertSee('ER-2026-0042')
+            ->assertSee('Wartungspauschale')
+            ->assertDontSee('<?xml', false);
+        $this->assertStringStartsWith('sandbox;', (string) $response->headers->get('Content-Security-Policy'));
+    }
 }

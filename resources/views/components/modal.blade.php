@@ -133,7 +133,8 @@
     <div class="modal-box wd-modal-box {{ $sizeClass }} p-0">
 @endif
 
-<div {{ $attributes->merge(['class' => 'wd-dialog']) }}
+{{-- Eingebettet setzt der Host (#entry-modal) die Breite; wd-dialog--wide meldet ihm die breite Variante. --}}
+<div {{ $attributes->merge(['class' => $embedded && $size === 'wide' ? 'wd-dialog wd-dialog--wide' : 'wd-dialog']) }}
      role="dialog" aria-modal="true"
      @if ($titleId) aria-labelledby="{{ $titleId }}" @endif>
     @if ($hasForm)

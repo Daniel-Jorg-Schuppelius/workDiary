@@ -15,7 +15,6 @@ namespace App\Http\Controllers\Invoicing;
 use App\Enums\Document\DocumentType;
 use App\Enums\Invoicing\{InvoiceDeliveryFormat, InvoiceStatus};
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Document\DocumentController;
 use App\Models\Customer\Customer;
 use App\Models\Document\Document;
 use App\Models\Invoicing\Invoice;
@@ -23,7 +22,6 @@ use App\Models\Platform\User;
 use App\Services\Billing\BillingModeResolver;
 use App\Services\Document\DocumentService;
 use App\Services\Invoicing\{InvoiceGenerator, InvoicePdfImportService, TaxResolver};
-use App\Support\MorphMap;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\{CryptoHelper, NumberHelper, VatNumberHelper};
 use CommonToolkit\Helper\FileSystem\File;
@@ -347,20 +345,7 @@ class InvoicePdfImportController extends Controller {
         $disk = \Illuminate\Support\Facades\Storage::disk($version->disk);
         abort_unless($disk->exists($version->path), 404);
 
-        // Vertrauliches Dokument: Zugriff wie beim Download auditiert
-        // (gleiches Event/gleiche Ersteller-Ausnahme wie DocumentController).
-        /** @var User|null $viewer */
-        $viewer = Auth::user();
-        if ($viewer !== null && $document->confidential && (int) $document->created_by_user_id !== (int) $viewer->id) {
-            \App\Models\Audit\AuditLog::query()->create([
-                'organization_id' => $document->organization_id,
-                'user_id' => $viewer->id,
-                'event' => 'document.confidentialAccessed',
-                'auditable_type' => MorphMap::stableKey(Document::class),
-                'auditable_id' => $document->id,
-                'changes' => ['title' => $document->title],
-            ]);
-        }
+        $document->auditConfidentialAccess($this->authUser());
 
         $headers = [
             'Content-Disposition' => 'inline; filename="' . addcslashes($version->original_name, '"\\') . '"',

@@ -1557,7 +1557,8 @@
         width: min(var(--wd-dialog-w-standard), calc(100vw - 2rem)) !important;
     }
 
-    .modal-box.wd-modal-box--wide {
+    .modal-box.wd-modal-box--wide,
+    .modal-box.wd-modal-box:has(> #entry-modal-body .wd-dialog--wide) {
         width: min(var(--wd-dialog-w-wide), calc(100vw - 2rem)) !important;
     }
 

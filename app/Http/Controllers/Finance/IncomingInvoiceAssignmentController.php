@@ -26,7 +26,7 @@ use App\Services\Stammdaten\CollectiveContacts;
 use App\Support\{ErrorText, Sqid};
 use CommonToolkit\Enums\CountryCode;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{DB, Storage};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use RuntimeException;
@@ -166,8 +166,15 @@ class IncomingInvoiceAssignmentController extends Controller {
     public function valuesForm(IncomingEInvoice $incoming): View {
         $this->authorizeBilling();
         abort_if($incoming->recognition === IncomingInvoiceRecognition::Structured, 404);
+        // Werte am Original ablesen, ohne den Dialog zu verlassen.
+        $document = $incoming->document;
+        $version = $document?->currentVersion;
+        $readable = $version !== null && $this->authUser()->can('view', $document) && Storage::disk('local')->exists((string) $version->path);
 
-        return view('finance.incoming-invoices._values_dialog', ['incoming' => $incoming]);
+        return view('finance.incoming-invoices._values_dialog', [
+            'incoming' => $incoming,
+            'previewMime' => $readable ? IncomingEInvoiceService::previewMime((string) Storage::disk('local')->get((string) $version->path)) : null,
+        ]);
     }
 
     /**

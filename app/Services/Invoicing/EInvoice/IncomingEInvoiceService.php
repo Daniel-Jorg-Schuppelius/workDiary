@@ -14,7 +14,8 @@ namespace App\Services\Invoicing\EInvoice;
 
 use CommonToolkit\Helper\Data\{CryptoHelper, StringHelper, XmlHelper};
 use CommonToolkit\Helper\Data\NumberHelper;
-use CommonToolkit\Helper\FileSystem\File;
+use CommonToolkit\Helper\FileSystem\{File, Folder};
+use CommonToolkit\Helper\FileSystem\FileTypes\TifFile;
 use ERechnungToolkit\Entities\Document as EInvoiceDocument;
 use ERechnungToolkit\Enums\ERechnungProfile;
 use ERechnungToolkit\Parsers\{ERechnungParser, ZugferdPdfParser};
@@ -78,6 +79,46 @@ class IncomingEInvoiceService {
         } catch (Throwable) {
             return null;
         }
+    }
+
+    /**
+     * Inhaltstyp der Vorschau des Originals: PDF und Bilder, die Browser
+     * selbst anzeigen, wie abgelegt; ein TIFF-Scan kommt als PDF
+     * ({@see previewBody()}). null = XML oder unbekannt.
+     */
+    public static function previewMime(string $contents): ?string {
+        $mime = $contents === '' ? false : File::mimeTypeFromContent($contents);
+
+        return match (true) {
+            $mime === 'image/tiff' => 'application/pdf',
+            in_array($mime, ['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'image/webp'], true) => $mime,
+            default => null,
+        };
+    }
+
+    /**
+     * Inhalt der Vorschau zu {@see previewMime()}: unverändert, ein TIFF-Scan
+     * als PDF; null, wenn die Umwandlung scheitert (etwa ohne libtiff-tools).
+     * Umgewandelt wird eine Kopie — convertToPdf() repariert eine ungültige
+     * Quelle an Ort und Stelle, das abgelegte Original bliebe nicht unberührt.
+     */
+    public static function previewBody(string $contents): ?string {
+        if (File::mimeTypeFromContent($contents) !== 'image/tiff') {
+            return $contents;
+        }
+
+        return Folder::withTemp(static function (string $directory) use ($contents): ?string {
+            $tiff = $directory . DIRECTORY_SEPARATOR . 'original.tif';
+            $pdf = $directory . DIRECTORY_SEPARATOR . 'original.pdf';
+            File::write($tiff, $contents);
+            try {
+                TifFile::convertToPdf($tiff, $pdf, deleteSourceFile: false);
+            } catch (Throwable) {
+                return null;
+            }
+
+            return File::read($pdf);
+        }, 'tiff-preview-');
     }
 
     /**

@@ -1,7 +1,7 @@
 ---
 title: "Fatture ricevute"
 topic: finance.incoming-invoices
-version: 4
+version: 5
 keywords:
     - fattura fornitore
     - fattura d'acquisto
@@ -25,6 +25,8 @@ keywords:
     - doppione
     - fattura duplicata
     - cartella fatture
+    - anteprima fattura
+    - correggere il riconoscimento
 audience: []
 modules:
     - module.vertrieb
@@ -133,8 +135,21 @@ propri della Sua organizzazione non contano mai come corrispondenza. Con
 Lì può anche correggere la direzione. Con «Ricordare il mittente» il sistema
 assegna le future e-mail di questo mittente alla stessa parte, purché il
 documento stesso non indichi un’altra parte. Per i documenti non riconosciuti
-e riconosciuti inserisca numero, data e importi con «Inserire i valori».
-Assegni insieme nell’elenco più documenti della stessa parte.
+inserisca numero, data e importi con «Inserire i valori»; modifichi i valori
+riconosciuti o già inseriti con «Correggere i valori», anche direttamente
+nella scheda «Dati della fattura». Assegni insieme nell’elenco più documenti
+della stessa parte.
+
+**Originale accanto ai valori:** la pagina di dettaglio mostra l’originale
+accanto ai dati della fattura, così gli errori di riconoscimento si notano
+subito: PDF e foto (JPEG, PNG, GIF, WebP) come ricevuti, scansioni TIFF come
+PDF, una XRechnung o l’XML di una fattura elettronica come fattura leggibile.
+Durante lo scorrimento l’originale resta fermo; «Apri in una nuova scheda» lo
+mostra in grande. Anche la finestra «Correggere i valori» lo mostra accanto ai
+campi. Se una scansione TIFF non può essere convertita, compare un avviso;
+apra allora l’originale tramite «Originale (XML/PDF)». La visualizzazione di
+un documento riservato viene registrata come un download. I valori di una
+fattura elettronica non sono modificabili; il suo XML è l’originale.
 
 Con «Trattare allo stesso modo anche gli altri documenti aperti» sbriga tutti i
 documenti aperti della stessa controparte in un passaggio, sia nell’assegnazione

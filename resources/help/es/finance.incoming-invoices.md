@@ -1,7 +1,7 @@
 ---
 title: "Facturas recibidas"
 topic: finance.incoming-invoices
-version: 4
+version: 5
 keywords:
     - factura de proveedor
     - factura de compra
@@ -25,6 +25,8 @@ keywords:
     - entrada duplicada
     - factura duplicada
     - carpeta de facturas
+    - vista previa de la factura
+    - corregir el reconocimiento
 audience: []
 modules:
     - module.vertrieb
@@ -131,9 +133,22 @@ organización nunca cuentan como coincidencia. Con «Asignar» usted elige:
 
 Ahí también puede corregir la dirección. Con «Recordar remitente», el sistema
 asigna los correos futuros de ese remitente a la misma parte, siempre que el
-propio documento no indique otra parte. En documentos no reconocidos y
-reconocidos, introduzca número, fecha e importes con «Introducir valores».
-Asigne juntos en la lista varios documentos de la misma parte.
+propio documento no indique otra parte. En documentos no reconocidos,
+introduzca número, fecha e importes con «Introducir valores»; modifique los
+valores reconocidos o ya introducidos con «Corregir valores», también
+directamente en la tarjeta «Datos de la factura». Asigne juntos en la lista
+varios documentos de la misma parte.
+
+**Original junto a los valores:** la página de detalle muestra el original
+junto a los datos de la factura, para que los errores de reconocimiento salten
+a la vista: PDF y fotos (JPEG, PNG, GIF, WebP) tal como llegaron, escaneos
+TIFF como PDF, una XRechnung o el XML de una factura electrónica como factura
+legible. Al desplazarse, el original permanece fijo; «Abrir en una pestaña
+nueva» lo muestra en grande. El diálogo «Corregir valores» también lo muestra
+junto a los campos. Si un escaneo TIFF no se puede convertir, aparece un
+aviso; abra entonces el original mediante «Original (XML/PDF)». La consulta de
+un documento confidencial se registra como una descarga. Los valores de una
+factura electrónica no se pueden modificar; su XML es el original.
 
 Con «Tratar igual también los otros documentos abiertos» resuelve todos los
 documentos abiertos de la misma contraparte en un paso, tanto al asignar como
