@@ -198,11 +198,109 @@ class IncomingPdfInvoiceTest extends TestCase {
         $this->get(route('finance.incoming-invoices.values.form', $incoming))->assertOk()->assertSee(__('Werte korrigieren'));
     }
 
+    public function test_values_over_several_tax_rates_are_summed_and_checked(): void {
+        app(IncomingEInvoiceService::class)->storeMessage(
+            $this->admin,
+            [new \App\Services\Mail\MailAttachment('beleg.pdf', 'application/pdf', $this->pdf('<h1>Rechnung</h1><p>Gesamtbetrag 172,50 EUR</p>'))],
+            new \App\Services\Invoicing\EInvoice\IncomingOrigin('lieferant@example.test', '<mehrsatz@example.test>'),
+        );
+        $incoming = IncomingEInvoice::query()->sole();
+        $values = ['invoice_number' => 'MS-1', 'issue_date' => '2026-09-14', 'currency' => 'EUR', 'amount_gross' => '172.50'];
+        $this->actingAs($this->admin);
+
+        // Zwei Sätze brauchen je Satz, Netto und Steuer, jeden Satz nur einmal, und zusammen das Brutto.
+        $this->post(route('finance.incoming-invoices.values', $incoming), [...$values, 'tax_breakdown' => [
+            ['percent' => '19', 'net' => '100.00', 'tax' => '19.00'], ['percent' => '7', 'net' => '50.00', 'tax' => ''],
+        ]])->assertSessionHasErrors('tax_breakdown.1.tax');
+        $this->post(route('finance.incoming-invoices.values', $incoming), [...$values, 'tax_breakdown' => [
+            ['percent' => '19', 'net' => '100.00', 'tax' => '19.00'], ['percent' => '19', 'net' => '50.00', 'tax' => '3.50'],
+        ]])->assertSessionHasErrors('tax_breakdown.0.percent');
+        $this->post(route('finance.incoming-invoices.values', $incoming), [...$values, 'amount_gross' => '170.00', 'tax_breakdown' => [
+            ['percent' => '19', 'net' => '100.00', 'tax' => '19.00'], ['percent' => '7', 'net' => '50.00', 'tax' => '3.50'],
+        ]])->assertSessionHasErrors(['amount_gross' => __('Netto und Steuer ergeben :sum, nicht das Brutto.', ['sum' => '172,50'])]);
+        $this->assertNull($incoming->refresh()->invoice_number);
+
+        // Leere Zeilen des Dialogs fallen weg.
+        $this->post(route('finance.incoming-invoices.values', $incoming), [...$values, 'tax_breakdown' => [
+            ['percent' => '19', 'net' => '100.00', 'tax' => '19.00'], ['percent' => '', 'net' => '', 'tax' => ''], ['percent' => '7', 'net' => '50', 'tax' => '3.5'],
+        ]])->assertSessionHasNoErrors()->assertRedirect();
+
+        $incoming->refresh();
+        $this->assertSame('150.00', $incoming->amount_net?->getAmount());
+        $this->assertSame('22.50', $incoming->amount_tax?->getAmount());
+        $this->assertSame([
+            ['percent' => '19.00', 'net' => '100.00', 'tax' => '19.00'],
+            ['percent' => '7.00', 'net' => '50.00', 'tax' => '3.50'],
+        ], $incoming->taxBreakdown());
+        $this->get(route('finance.incoming-invoices.show', $incoming->document))->assertOk()
+            ->assertSeeText(__('Steuersätze'))
+            ->assertSeeText('7,00 %: 50,00 + 3,50 EUR');
+        $this->get(route('finance.incoming-invoices.values.form', $incoming))->assertOk()
+            ->assertSee(e(json_encode($incoming->taxBreakdown(), JSON_THROW_ON_ERROR)), false);
+    }
+
+    public function test_a_single_rate_without_amounts_is_calculated_from_the_gross_amount(): void {
+        app(IncomingEInvoiceService::class)->storeMessage(
+            $this->admin,
+            [new \App\Services\Mail\MailAttachment('beleg.pdf', 'application/pdf', $this->pdf('<h1>Quittung</h1><p>Gesamtbetrag 23,80 EUR inkl. 19 % USt</p>'))],
+            new \App\Services\Invoicing\EInvoice\IncomingOrigin('kasse@example.test', '<kleinbetrag@example.test>'),
+        );
+        $incoming = IncomingEInvoice::query()->sole();
+
+        $this->actingAs($this->admin)->post(route('finance.incoming-invoices.values', $incoming), [
+            'invoice_number' => 'Q-7', 'issue_date' => '2026-09-14', 'currency' => 'EUR', 'amount_gross' => '23.80',
+            'tax_breakdown' => [['percent' => '19', 'net' => '', 'tax' => '']],
+        ])->assertSessionHasNoErrors();
+
+        $incoming->refresh();
+        $this->assertSame('20.00', $incoming->amount_net?->getAmount());
+        $this->assertSame('3.80', $incoming->amount_tax?->getAmount());
+        $this->assertSame([['percent' => '19.00', 'net' => '20.00', 'tax' => '3.80']], $incoming->taxBreakdown());
+
+        // Ohne Aufschlüsselung wird der Satz zur Vorbelegung aus Netto und Steuer abgeleitet.
+        $summary = (array) $incoming->summary;
+        unset($summary['manual']['tax_breakdown']);
+        $incoming->forceFill(['summary' => $summary])->save();
+        $this->assertSame([['percent' => '19', 'net' => '20.00', 'tax' => '3.80']], \App\Services\Invoicing\EInvoice\IncomingInvoiceTaxBreakdown::prefill($incoming->refresh(), []));
+    }
+
+    public function test_recognised_tax_rates_are_kept_until_values_are_captured(): void {
+        $rates = '<p>Nettobetrag 1.200,00 EUR</p><p>zzgl. 19 % MwSt. 190,00 EUR</p><p>zzgl. 7 % MwSt. 14,00 EUR</p><p>Gesamtbetrag 1.404,00 EUR</p>';
+        $expected = [['percent' => '19.00', 'net' => '1000.00', 'tax' => '190.00'], ['percent' => '7.00', 'net' => '200.00', 'tax' => '14.00']];
+        // Zwei Mails: in einer Mail würde der unerkannte Beleg Begleitdatei der erkannten Rechnung.
+        foreach (['rechnung' => '<h1>Rechnung</h1><p>Rechnungsnummer: MS-2026-1</p><p>Rechnungsdatum: 01.10.2026</p>', 'ohne-nummer' => '<h1>Beleg</h1>'] as $name => $head) {
+            app(IncomingEInvoiceService::class)->storeMessage(
+                $this->admin,
+                [new \App\Services\Mail\MailAttachment($name . '.pdf', 'application/pdf', $this->pdf($head . $rates))],
+                new \App\Services\Invoicing\EInvoice\IncomingOrigin('lieferant@example.test', '<mehrsatz-' . $name . '@example.test>'),
+            );
+        }
+        $incoming = IncomingEInvoice::query()->where('recognition', IncomingInvoiceRecognition::Extracted)->sole();
+        $this->assertSame('204.00', $incoming->amount_tax?->getAmount());
+        $this->assertSame($expected, $incoming->taxBreakdown());
+        $this->actingAs($this->admin)->get(route('finance.incoming-invoices.show', $incoming->document))->assertOk()
+            ->assertSeeText('7,00 %: 200,00 + 14,00 EUR');
+        $this->assertSame($expected, \App\Services\Invoicing\EInvoice\IncomingInvoiceTaxBreakdown::prefill($incoming, []));
+
+        // Der Klärfall ohne Nummer belegt den Dialog aus der Diagnose vor.
+        $clarification = IncomingEInvoice::query()->where('recognition', IncomingInvoiceRecognition::None)->sole();
+        $this->assertSame([], $clarification->taxBreakdown());
+        $this->assertSame($expected, \App\Services\Invoicing\EInvoice\IncomingInvoiceTaxBreakdown::prefill($clarification, (array) data_get($clarification->summary, 'extraction.found', [])));
+
+        // Eine Erfassung nur mit Summen ersetzt die erkannte Aufschlüsselung.
+        $this->post(route('finance.incoming-invoices.values', $incoming), [
+            'invoice_number' => 'MS-2026-1', 'issue_date' => '2026-10-01', 'currency' => 'EUR',
+            'amount_net' => '1200.00', 'amount_tax' => '204.00', 'amount_gross' => '1404.00',
+        ])->assertSessionHasNoErrors();
+        $this->assertSame([], $incoming->refresh()->taxBreakdown());
+    }
+
     public function test_preview_of_a_confidential_original_is_audited_and_foreign_access_denied(): void {
         $this->actingAs($this->admin)->post(route('finance.incoming-invoices.store'), [
             'file' => UploadedFile::fake()->createWithContent('rechnung.pdf', $this->pdf('<h1>Rechnung</h1><p>Rechnungsnummer: MP-4713</p><p>Gesamtbetrag 119,00 EUR</p>')),
         ])->assertRedirect();
         $document = IncomingEInvoice::query()->sole()->document;
+        $this->assertNotNull($document);
         $author = User::factory()->create(['organization_id' => $this->organization->id]);
         $document->forceFill(['confidential' => true, 'created_by_user_id' => $author->id])->save();
 

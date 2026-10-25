@@ -1360,6 +1360,8 @@ class IncomingEInvoiceService {
             'net' => $result['net'] ?? null,
             'tax' => $result['tax'] ?? null,
             'gross' => $result['gross'],
+            // Mehrere Steuersätze aus der Erkennung, gleiche Form wie bei der E-Rechnung (ohne Kategorie).
+            'tax_breakdown' => array_values((array) ($result['tax_breakdown'] ?? [])),
             'profile' => (string) __('PDF/Bild (erkannt)'),
             'profile_legacy' => false,
             'lines' => count((array) ($result['lines'] ?? [])),
@@ -1416,6 +1418,7 @@ class IncomingEInvoiceService {
             'warnings' => array_values(array_filter((array) ($result['warnings'] ?? []), 'is_string')),
             'source_format' => $format,
             'found' => $found,
+            'tax_breakdown' => array_values((array) ($result['tax_breakdown'] ?? [])),
             'sources' => (array) ($result['sources'] ?? []),
             'hints' => array_filter(['issue_date' => $result['issued_on_hint'] ?? null, 'number' => $result['number_hint'] ?? null]),
             'kind_hint' => $result['kind_hint'] ?? null,

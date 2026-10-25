@@ -21,13 +21,15 @@ use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Supplier\Supplier;
 use App\Rules\Iban;
 use App\Services\Finance\Accounting\ContactPushService;
-use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, IncomingInvoiceKindHints, IncomingInvoiceMatcher, IncomingInvoiceParties, IncomingInvoiceRules, IncomingInvoiceTransferService};
+use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, IncomingInvoiceKindHints, IncomingInvoiceMatcher, IncomingInvoiceParties, IncomingInvoiceRules, IncomingInvoiceTaxBreakdown, IncomingInvoiceTransferService};
 use App\Services\Stammdaten\CollectiveContacts;
 use App\Support\{ErrorText, Sqid};
 use CommonToolkit\Enums\CountryCode;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\{DB, Storage};
-use Illuminate\Validation\Rule;
+use Illuminate\Validation\{Rule, ValidationException};
 use Illuminate\View\View;
 use RuntimeException;
 
@@ -187,6 +189,10 @@ class IncomingInvoiceAssignmentController extends Controller {
         if ($incoming->transferred_at !== null) {
             return back()->with('error', __('Der Eingang ist bereits an die Buchhaltung übergeben — die Zuordnung ist dort zu ändern.'));
         }
+        // Steuersätze je Zeile (Satz, Netto, Steuer); leere Zeilen des Dialogs fallen vor der Prüfung weg.
+        $taxRows = IncomingInvoiceTaxBreakdown::filled((array) $request->input('tax_breakdown', []));
+        $request->merge(['tax_breakdown' => $taxRows]);
+        $several = count($taxRows) > 1;
         $data = $request->validate([
             'invoice_number' => ['required', 'string', 'max:64'],
             'issue_date' => ['required', 'date'],
@@ -197,7 +203,22 @@ class IncomingInvoiceAssignmentController extends Controller {
             'amount_gross' => ['required', 'numeric'],
             'party_name' => ['nullable', 'string', 'max:191'],
             'party_vat_id' => ['nullable', 'string', 'max:32'],
+            'tax_breakdown' => ['array', 'max:10'],
+            'tax_breakdown.*.percent' => [Rule::requiredIf($several), 'nullable', 'numeric', 'min:0', 'max:100', 'distinct'],
+            'tax_breakdown.*.net' => [Rule::requiredIf($several), 'nullable', 'numeric'],
+            'tax_breakdown.*.tax' => [Rule::requiredIf($several), 'nullable', 'numeric'],
         ]);
+        $gross = NumberHelper::normalizeDecimalString((string) $data['amount_gross']);
+        ['rows' => $rows, 'net' => $net, 'tax' => $tax] = $taxRows !== []
+            ? IncomingInvoiceTaxBreakdown::resolve($data['tax_breakdown'], $gross)
+            : ['rows' => [], 'net' => isset($data['amount_net']) ? (string) $data['amount_net'] : null, 'tax' => isset($data['amount_tax']) ? (string) $data['amount_tax'] : null];
+        $sum = IncomingInvoiceTaxBreakdown::grossMismatch($net, $tax, $gross);
+        if ($sum !== null) {
+            throw ValidationException::withMessages(['amount_gross' => (string) __('Netto und Steuer ergeben :sum, nicht das Brutto.', [
+                'sum' => NumberHelper::toGermanFormat((float) $sum, 2, withThousandsSeparator: true),
+            ])]);
+        }
+        $data = [...Arr::except($data, 'tax_breakdown'), 'amount_net' => $net, 'amount_tax' => $tax, 'tax_breakdown' => $rows];
         $isPurchase = $incoming->direction !== DocumentDirection::Outgoing;
         $summary = (array) $incoming->summary;
         $summary['manual'] = [...$data, 'user_id' => $actor->id, 'at' => now()->toIso8601String()];
@@ -207,8 +228,8 @@ class IncomingInvoiceAssignmentController extends Controller {
             'issue_date' => $data['issue_date'],
             'due_date' => $data['due_date'] ?? null,
             'currency' => strtoupper((string) $data['currency']),
-            'amount_net' => isset($data['amount_net']) ? (string) $data['amount_net'] : null,
-            'amount_tax' => isset($data['amount_tax']) ? (string) $data['amount_tax'] : null,
+            'amount_net' => $net,
+            'amount_tax' => $tax,
             'amount_gross' => (string) $data['amount_gross'],
             $isPurchase ? 'seller_name' : 'buyer_name' => $data['party_name'] ?? null,
             $isPurchase ? 'seller_vat_id' : 'buyer_vat_id' => $data['party_vat_id'] ?? null,

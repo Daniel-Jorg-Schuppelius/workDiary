@@ -1,8 +1,9 @@
 ---
 title: "Factures reçues"
 topic: finance.incoming-invoices
-version: 5
+version: 6
 keywords:
+    - plusieurs taux de TVA
     - facture fournisseur
     - facture d'achat
     - factures entrantes
@@ -143,6 +144,14 @@ documents non reconnus, saisissez numéro, date et montants avec « Saisir les
 valeurs » ; modifiez les valeurs reconnues ou déjà saisies avec « Corriger les
 valeurs », aussi directement dans la carte « Données de facture ». Attribuez
 ensemble dans la liste plusieurs documents d’une même partie.
+
+**Plusieurs taux de TVA :** si le montant se compose de plusieurs taux,
+saisissez dans le dialogue une ligne par taux avec HT et TVA (« Ajouter un taux
+de TVA »). Le dialogue affiche le total et signale s’il ne correspond pas au
+TTC ; le HT et la TVA de la facture sont les totaux des lignes. Si le document
+n’indique qu’un taux et aucun montant (facture de faible montant « TVA 19 %
+incluse »), le taux et le TTC suffisent : HT et TVA en sont déduits. Si le système reconnaît dans le document plusieurs
+lignes de TVA qui donnent ensemble le TTC, les lignes sont préremplies.
 
 **Original à côté des valeurs :** la page de détail affiche l’original à côté
 des données de facture, pour que les erreurs de reconnaissance sautent aux
@@ -311,7 +320,8 @@ les opérations intracommunautaires ou les pays tiers.
   même numéro existe déjà pour le même contact, il est seulement lié.
 - Les montants ne sont envoyés qu’avec une catégorie comptable — sur le
   fournisseur ou le client, ou par défaut dans les paramètres du plugin —, en
-  euros et avec les taux de TVA 0, 5, 7, 16 ou 19 %. Sinon, le justificatif
+  euros et avec les taux de TVA 0, 5, 7, 16 ou 19 %, une position par taux —
+  issue de la facture électronique ou des taux saisis. Sinon, le justificatif
   part sans montants et la comptabilité les complète dans Lexware.
 - DATEV Unternehmen online reçoit l’original comme image de justificatif.
 - Si le numéro de facture manque, le transfert recherche dans Lexware par

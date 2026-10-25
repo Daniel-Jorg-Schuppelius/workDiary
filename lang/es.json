@@ -11086,5 +11086,10 @@
     "Was können wir besser machen?": "¿Qué podemos mejorar?",
     "Wie wahrscheinlich ist es, dass Sie uns weiterempfehlen?": "¿Qué probabilidad hay de que nos recomiende?",
     "Wie zufrieden waren Sie mit der Erreichbarkeit?": "¿Qué tan satisfecho quedó con nuestra disponibilidad?",
-    "Texterkennung (OCR)": "Reconocimiento de texto (OCR)"
+    "Texterkennung (OCR)": "Reconocimiento de texto (OCR)",
+    "Je Steuersatz eine Zeile. Nur ein Satz ohne Beträge: Netto und Steuer werden aus dem Brutto herausgerechnet.": "Una línea por tipo impositivo. Un solo tipo sin importes: el neto y el impuesto se calculan a partir del bruto.",
+    "Steuersatz hinzufügen": "Añadir tipo impositivo",
+    "Steuersatz entfernen": "Quitar tipo impositivo",
+    "Netto und Steuer ergeben :sum, nicht das Brutto.": "Neto e impuesto suman :sum, no el bruto.",
+    "Steuersätze": "Tipos impositivos"
 }

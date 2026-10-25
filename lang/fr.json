@@ -11086,5 +11086,10 @@
     "Was können wir besser machen?": "Que pouvons-nous améliorer ?",
     "Wie wahrscheinlich ist es, dass Sie uns weiterempfehlen?": "Quelle est la probabilité que vous nous recommandiez ?",
     "Wie zufrieden waren Sie mit der Erreichbarkeit?": "Dans quelle mesure êtes-vous satisfait de notre joignabilité ?",
-    "Texterkennung (OCR)": "Reconnaissance de texte (OCR)"
+    "Texterkennung (OCR)": "Reconnaissance de texte (OCR)",
+    "Je Steuersatz eine Zeile. Nur ein Satz ohne Beträge: Netto und Steuer werden aus dem Brutto herausgerechnet.": "Une ligne par taux de TVA. Un seul taux sans montants : le HT et la TVA sont déduits du TTC.",
+    "Steuersatz hinzufügen": "Ajouter un taux de TVA",
+    "Steuersatz entfernen": "Supprimer le taux de TVA",
+    "Netto und Steuer ergeben :sum, nicht das Brutto.": "Le HT et la TVA donnent :sum, pas le TTC.",
+    "Steuersätze": "Taux de TVA"
 }

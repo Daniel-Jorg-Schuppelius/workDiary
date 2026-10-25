@@ -134,4 +134,9 @@ return [
         'failed' => 'NFC no disponible.',
         'written' => 'Etiqueta escrita.',
     ],
+    // Steuersätze im Werte-Dialog des Rechnungseingangs.
+    'tax_breakdown' => [
+        'sum' => 'Total: neto :net · impuesto :tax · bruto :gross',
+        'mismatch' => 'Neto e impuesto suman :sum, el bruto es :gross.',
+    ],
 ];

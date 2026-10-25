@@ -71,19 +71,19 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    {{-- Original links, beim Scrollen stehend; unter xl folgt es den Daten. --}}
-    <div @class(['grid items-start gap-4', 'xl:grid-cols-2' => $previewMime !== null])>
+    {{-- Ab xl füllt das Original links die Höhe des Seitenkörpers und die Daten rechts scrollen für sich;
+         unter xl folgt es den Daten. --}}
+    <div @class(['grid items-start gap-4', 'xl:min-h-0 xl:flex-1 xl:grid-cols-2 xl:grid-rows-[minmax(0,1fr)] xl:items-stretch' => $previewMime !== null])>
         @if ($previewMime !== null)
-            <x-card :title="__('Original')" icon="description" padding="p-0" class="overflow-hidden max-xl:order-last xl:sticky xl:top-0">
+            <x-card :title="__('Original')" icon="description" padding="p-0" class="overflow-hidden max-xl:order-last xl:flex xl:flex-col">
                 <x-slot:actions>
                     <x-icon-btn icon="open_in_new" size="sm" :href="route('finance.incoming-invoices.preview', $document)"
                                 target="_blank" rel="noopener" :label="__('In neuem Tab öffnen')" />
                 </x-slot:actions>
-                {{-- Ab xl kürzer als der sichtbare Seitenbereich, sonst schiebt das Rasterende den Kopf hinaus. --}}
-                @include('finance.incoming-invoices._preview', ['height' => 'h-[70vh] xl:h-[calc(100dvh-24rem)] xl:min-h-80'])
+                @include('finance.incoming-invoices._preview', ['height' => 'h-[70vh] xl:h-auto xl:min-h-0 xl:flex-1'])
             </x-card>
         @endif
-        <div class="flex min-w-0 flex-col gap-4">
+        <div @class(['flex min-w-0 flex-col gap-4', 'xl:min-h-0 xl:overflow-y-auto' => $previewMime !== null])>
             @if ($unparsed && $incoming !== null && ($incoming->recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted || $manual !== []))
                 {{-- PDF bzw. Bild (MVP-1066): erkannte Werte sind Vorschläge; erfasste Werte stehen auch beim Klärfall hier. --}}
                 <x-card :title="$manual !== [] ? __('Rechnungsdaten (von Hand erfasst)') : __('Rechnungsdaten (erkannt)')">
@@ -103,6 +103,13 @@
                         @foreach ([[__('Netto'), $incoming->amount_net], [__('Steuer'), $incoming->amount_tax], [__('Brutto'), $incoming->amount_gross]] as [$amountLabel, $amount])
                             <x-detail-grid.row :label="$amountLabel">@if ($amount !== null){{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($amount->toFloat(), 2, withThousandsSeparator: true) }} {{ $incoming->currency?->value }}@else—@endif</x-detail-grid.row>
                         @endforeach
+                        @if ($incoming->taxBreakdown() !== [])
+                            <x-detail-grid.row :label="__('Steuersätze')">
+                                @foreach ($incoming->taxBreakdown() as $rate)
+                                    <div class="tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $rate['percent'], 2) }} %: {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $rate['net'], 2, withThousandsSeparator: true) }} + {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $rate['tax'], 2, withThousandsSeparator: true) }} {{ $incoming->currency?->value }}</div>
+                                @endforeach
+                            </x-detail-grid.row>
+                        @endif
                     </x-detail-grid>
                     @if (isset($manual['at']))
                         <p class="mt-2 text-xs text-muted">{{ __('Von Hand erfasst am :date.', ['date' => \Illuminate\Support\Carbon::parse((string) $manual['at'])->orgTz()->isoFormat('L LT')]) }}</p>
@@ -375,7 +382,7 @@
                     <x-detail-grid>
                         <x-detail-grid.row :label="__('Status')">{{ $incoming->status->label() }}</x-detail-grid.row>
                         <x-detail-grid.row :label="__('Empfangen')">{{ $incoming->received_at->orgTz()->isoFormat('L LT') }} · {{ $incoming->source }}</x-detail-grid.row>
-                        <x-detail-grid.row :label="__('SHA-256')"><span class="font-mono text-xs">{{ $incoming->sha256 }}</span></x-detail-grid.row>
+                        <x-detail-grid.row :label="__('SHA-256')"><span class="break-all font-mono text-xs">{{ $incoming->sha256 }}</span></x-detail-grid.row>
                         @if ($incoming->decision_note)
                             <x-detail-grid.row :label="__('Anmerkung')">{{ $incoming->decision_note }}</x-detail-grid.row>
                         @endif
@@ -391,7 +398,7 @@
                             <option value="rejected">{{ __('Ablehnen') }}</option>
                             <option value="payment_released">{{ __('Zahlung freigeben') }}</option>
                         </select>
-                        <input name="note" maxlength="500" class="input input-sm input-bordered flex-1"
+                        <input name="note" maxlength="500" class="input input-sm input-bordered min-w-48 flex-1"
                                aria-label="{{ __('Anmerkung (bei Ablehnung Pflicht)') }}"
                                placeholder="{{ __('Anmerkung (bei Ablehnung Pflicht)') }}">
                         <x-icon-btn icon="gavel" tone="primary" size="sm" type="submit" show-label>{{ __('Entscheiden') }}</x-icon-btn>

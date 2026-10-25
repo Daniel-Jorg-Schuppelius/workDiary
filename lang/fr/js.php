@@ -134,4 +134,9 @@ return [
         'failed' => 'NFC impossible.',
         'written' => 'Tag écrit.',
     ],
+    // Steuersätze im Werte-Dialog des Rechnungseingangs.
+    'tax_breakdown' => [
+        'sum' => 'Total : HT :net · TVA :tax · TTC :gross',
+        'mismatch' => 'Le HT et la TVA donnent :sum, le TTC est de :gross.',
+    ],
 ];

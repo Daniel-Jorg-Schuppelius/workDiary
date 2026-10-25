@@ -87,6 +87,14 @@ class InvoicePdfImportService {
         if ($organization !== null) {
             $this->augmentWithAiFallback($result, $text, $organization);
         }
+        // Hat die Vorlage Netto oder Steuer ersetzt, gilt die Aufschlüsselung nur, solange sie noch aufgeht.
+        $rows = (array) ($result['tax_breakdown'] ?? []);
+        if ($rows !== [] && (
+            abs(array_sum(array_map(static fn (array $row): float => (float) $row['tax'], $rows)) - (float) ($result['tax'] ?? 0)) > 0.02
+            || abs(array_sum(array_map(static fn (array $row): float => (float) $row['net'], $rows)) - (float) ($result['net'] ?? 0)) > 0.02
+        )) {
+            $result['tax_breakdown'] = [];
+        }
 
         return $result;
     }
@@ -760,8 +768,9 @@ class InvoicePdfImportService {
      *   currency: string, net: ?string, tax: ?string, gross: ?string,
      *   tax_rate: ?string, buyer_reference: ?string,
      *   confidence: int, warnings: list<string>,
-     *   sources: array<string, string>, issued_on_hint: ?string,
-     *   kind_hint: ?string, reminder_numbers: list<string>
+     *   sources: array<string, string>, issued_on_hint: ?string, number_hint: ?string,
+     *   kind_hint: ?string, reminder_numbers: list<string>,
+     *   tax_breakdown: list<array<array-key, mixed>>
      * }
      */
     public function analyzeText(string $text, ?string $alignedText = null): array {
@@ -803,6 +812,7 @@ class InvoicePdfImportService {
         $result['issued_on_hint'] = $result['issued_on'] === null ? $this->labeledDate($text, ['Liefer(?:ungs)?datum', 'Leistungsdatum', 'Delivery\s*date']) : null;
         $result['kind_hint'] = $kindHint;
         $result['reminder_numbers'] = $reminderNumbers;
+        $this->applyTaxLines($result, array_values(array_unique(array_filter([$alignedText, $text], static fn (?string $variant): bool => $variant !== null && trim($variant) !== ''))));
 
         return $this->finalize($result);
     }
@@ -848,8 +858,9 @@ class InvoicePdfImportService {
      *   currency: string, net: ?string, tax: ?string, gross: ?string,
      *   tax_rate: ?string, buyer_reference: ?string,
      *   confidence: int, warnings: list<string>,
-     *   sources: array<string, string>, issued_on_hint: ?string,
-     *   kind_hint: ?string, reminder_numbers: list<string>
+     *   sources: array<string, string>, issued_on_hint: ?string, number_hint: ?string,
+     *   kind_hint: ?string, reminder_numbers: list<string>,
+     *   tax_breakdown: list<array<array-key, mixed>>
      * }
      */
     private function finalize(array $result): array {
@@ -903,7 +914,195 @@ class InvoicePdfImportService {
             'number_hint' => $text('number_hint'),
             'kind_hint' => $text('kind_hint'),
             'reminder_numbers' => array_values(array_filter((array) ($result['reminder_numbers'] ?? []), 'is_string')),
+            'tax_breakdown' => array_values(array_filter((array) ($result['tax_breakdown'] ?? []), is_array(...))),
         ];
+    }
+
+    private const TAX_LABEL = '(?:Umsatzsteuer|Mehrwertsteuer|MwSt|USt(?!\s*-?\s*Id)|VAT)';
+
+    /**
+     * Rechnungen mit mehreren Steuersätzen: Steuerzeilen je Satz sammeln und,
+     * wenn Netto + Steuer das Brutto ergeben, die Steuer als Summe samt
+     * Aufschlüsselung übernehmen. Sonst bleibt der erste Steuerbetrag.
+     *
+     * @param  array<string, mixed>  $result
+     * @param  list<string>  $variants  zeilentreuer Text vor Lesetext
+     */
+    private function applyTaxLines(array &$result, array $variants): void {
+        $result['tax_breakdown'] = [];
+        $net = is_numeric($result['net'] ?? null) ? (float) $result['net'] : null;
+        $gross = is_numeric($result['gross'] ?? null) ? (float) $result['gross'] : null;
+        if ($gross === null) {
+            return;
+        }
+        foreach ($variants as $variant) {
+            $rows = $this->consistentTaxRows($this->taxRows($variant), $net, $gross);
+            if ($rows === null) {
+                continue;
+            }
+            $result['tax_breakdown'] = $rows;
+            $result['tax'] = $this->decimal(array_sum(array_map(static fn (array $row): float => (float) $row['tax'], $rows)));
+            $result['net'] ??= $this->decimal(array_sum(array_map(static fn (array $row): float => (float) $row['net'], $rows)));
+            $result['sources']['tax'] = 'tax_lines';
+            // Ein Mischsatz aus Gesamtsteuer und Netto gibt es nicht; Vorgabe für Positionen ist der Satz mit dem größten Netto.
+            if (! in_array($result['tax_rate'] ?? null, array_column($rows, 'percent'), true)) {
+                usort($rows, static fn (array $a, array $b): int => (float) $b['net'] <=> (float) $a['net']);
+                $result['tax_rate'] = $rows[0]['percent'];
+            }
+
+            return;
+        }
+    }
+
+    /**
+     * Zeilen mit genau einem Prozentsatz: mit Steuerbeschriftung („zzgl. 7 % MwSt. 14,00“, „MwSt 19 % auf
+     * 1.000,00 190,00“) oder ohne, dann nur mit Netto, Steuer und Brutto, die zum Satz passen (Steuertabelle).
+     * Summenzeilen („Gesamt inkl. 19 % MwSt.“) zählen nicht.
+     *
+     * @return list<array{rate: float, net: ?float, tax: float, labelled: bool}>
+     */
+    private function taxRows(string $text): array {
+        $rows = [];
+        foreach (StringHelper::lines($text, skipEmpty: true) as $line) {
+            if (preg_match_all('/(\d{1,2}(?:[,.]\d{1,2})?)\s*%/u', $line, $percents, PREG_OFFSET_CAPTURE) !== 1) {
+                continue;
+            }
+            $rate = NumberHelper::normalizeDecimalStringOrNull($percents[1][0][0], CountryCode::Germany);
+            if ($rate === null) {
+                continue;
+            }
+            $head = substr($line, 0, $percents[0][0][1]);
+            $tail = substr($line, $percents[0][0][1] + strlen($percents[0][0][0]));
+            $labelled = preg_match('/' . self::TAX_LABEL . '/iu', $line) === 1;
+            if (preg_match('/\b(?:inkl|incl|inklusive|ohne|exkl|excl|netto|brutto|gesamt|total)\b/iu', $head) === 1) {
+                continue;
+            }
+            $plain = [];
+            $base = null;
+            $cursor = 0;
+            foreach (AmountTokenizer::tokens($tail, skipPercent: true) as $token) {
+                $between = mb_substr($tail, $cursor, $token->start - $cursor);
+                $cursor = $token->end;
+                if (preg_match('/(?:^|[\s(])(?:aus|von|auf|on|of|from)\s*$/iu', $between) === 1) {
+                    $base ??= $token->value;
+                } else {
+                    $plain[] = $token->value;
+                }
+            }
+            [$net, $tax, $complete] = self::splitTaxLine((float) $rate, $plain, $base);
+            if ($tax !== null && ($labelled || $complete)) {
+                $rows[] = ['rate' => (float) $rate, 'net' => $net, 'tax' => $tax, 'labelled' => $labelled];
+            }
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Netto und Steuer einer Steuerzeile: Netto, Steuer, Brutto hintereinander; sonst ein Paar, dessen Steuer
+     * zum Satz passt; sonst ein einzelner Betrag als Steuer, die Bemessungsgrundlage („auf/aus …“) per Rechnung
+     * als Netto oder Brutto erkannt.
+     *
+     * @param  list<float>  $plain
+     * @return array{0: ?float, 1: ?float, 2: bool} Netto, Steuer, vollständige Zeile
+     */
+    private static function splitTaxLine(float $rate, array $plain, ?float $base): array {
+        $fits = static fn (float $net, float $tax): bool => abs($net * $rate / 100 - $tax) <= 0.05;
+        for ($i = 0; $i + 2 < count($plain); $i++) {
+            if (abs($plain[$i] + $plain[$i + 1] - $plain[$i + 2]) <= 0.01 && $fits($plain[$i], $plain[$i + 1])) {
+                return [$plain[$i], $plain[$i + 1], true];
+            }
+        }
+        if (count($plain) === 2) {
+            [$a, $b] = $plain;
+
+            return match (true) {
+                $fits($a, $b) => [$a, $b, false],
+                $fits($b - $a, $a) => [$b - $a, $a, false],
+                $fits($a - $b, $b) => [$a - $b, $b, false],
+                default => [null, null, false],
+            };
+        }
+        if (count($plain) !== 1) {
+            return [null, null, false];
+        }
+        $tax = $plain[0];
+
+        return match (true) {
+            $base !== null && $fits($base, $tax) => [$base, $tax, false],
+            $base !== null && $fits($base - $tax, $tax) => [$base - $tax, $tax, false],
+            default => [null, $tax, false],
+        };
+    }
+
+    /**
+     * Aufschlüsselung ab zwei Sätzen, nur wenn sie aufgeht: Netto je Satz fehlt → aus der Steuer zurückgerechnet,
+     * ein Satz 0 % bzw. die Rundung trägt den Rest zum Netto; Netto + Steuer muss das Brutto treffen.
+     * Wiederholte Steuerzeilen (Fußzeile je Seite) zählen einmal.
+     *
+     * @param  list<array{rate: float, net: ?float, tax: float, labelled: bool}>  $rows
+     * @return list<array{percent: string, net: string, tax: string}>|null
+     */
+    private function consistentTaxRows(array $rows, ?float $net, float $gross): ?array {
+        $seen = [];
+        // Je Satz ein Index in die parallelen Listen.
+        $index = [];
+        $rates = [];
+        $taxes = [];
+        $nets = [];
+        $complete = [];
+        foreach ($rows as $row) {
+            $key = sprintf('%.2f|%s|%.2f', $row['rate'], $row['net'] === null ? '-' : sprintf('%.2f', $row['net']), $row['tax']);
+            if ($row['labelled'] && isset($seen[$key])) {
+                continue;
+            }
+            $seen[$key] = true;
+            $rate = 'r' . sprintf('%.2f', $row['rate']);
+            if (! isset($index[$rate])) {
+                $index[$rate] = count($rates);
+                $rates[] = $row['rate'];
+                $taxes[] = 0.0;
+                $nets[] = 0.0;
+                $complete[] = true;
+            }
+            $i = $index[$rate];
+            $taxes[$i] += $row['tax'];
+            $nets[$i] += $row['net'] ?? 0.0;
+            $complete[$i] = $complete[$i] && $row['net'] !== null;
+        }
+        if (count($rates) < 2) {
+            return null;
+        }
+        $missing = array_keys(array_filter($complete, static fn (bool $done): bool => ! $done));
+        $zero = array_values(array_filter($missing, static fn (int $i): bool => $rates[$i] <= 0.0));
+        if (count($zero) > 1 || ($zero !== [] && $net === null)) {
+            return null;
+        }
+        foreach ($missing as $i) {
+            if ($rates[$i] > 0.0) {
+                $nets[$i] = round($taxes[$i] * 100 / $rates[$i], 2);
+            }
+        }
+        $tax = array_sum($taxes);
+        $net ??= array_sum($nets);
+        $rest = round($net - array_sum($nets), 2);
+        if ($zero !== []) {
+            $nets[$zero[0]] = $rest;
+        } elseif ($missing !== [] && abs($rest) <= 0.05 * count($missing)) {
+            // Rundungsrest aus dem Zurückrechnen trägt der größte zurückgerechnete Satz.
+            usort($missing, static fn (int $a, int $b): int => $nets[$b] <=> $nets[$a]);
+            $nets[$missing[0]] += $rest;
+        }
+        if (abs(array_sum($nets) - $net) > 0.02 || abs($net + $tax - $gross) > 0.02) {
+            return null;
+        }
+        arsort($rates);
+
+        return array_map(fn (int $i): array => [
+            'percent' => $this->decimal($rates[$i]),
+            'net' => $this->decimal($nets[$i]),
+            'tax' => $this->decimal($taxes[$i]),
+        ], array_keys($rates));
     }
 
     /** Kennung einer Rechnung: mindestens eine Ziffer, Buchstaben, Ziffern und ._/- (MVP-1251). */

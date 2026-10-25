@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Lexoffice;
 
-use App\Enums\Invoicing\{IncomingInvoiceMatchKind, IncomingInvoiceTransferStatus, InvoiceStatus};
+use App\Enums\Invoicing\{IncomingInvoiceMatchKind, IncomingInvoiceRecognition, IncomingInvoiceTransferStatus, InvoiceStatus};
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\{IncomingEInvoice, IncomingEInvoiceTransfer, Invoice};
@@ -98,6 +98,33 @@ final class LexofficeIncomingInvoiceTransferTest extends TestCase {
         $mirror = LexofficeVoucher::query()->sole();
         $this->assertSame($supplier->id, $mirror->supplier_id);
         $this->assertSame('unchecked', $mirror->voucher_status);
+    }
+
+    public function test_captured_tax_rates_of_a_pdf_invoice_become_one_item_each(): void {
+        $this->connect(transfer: false);
+        $this->linkedSupplier();
+        $incoming = $this->receive('ER-11');
+        $summary = (array) $incoming->summary;
+        $summary['manual'] = ['tax_breakdown' => [
+            ['percent' => '19.00', 'net' => '100.00', 'tax' => '19.00'],
+            ['percent' => '7.00', 'net' => '50.00', 'tax' => '3.50'],
+        ]];
+        $incoming->forceFill([
+            'recognition' => IncomingInvoiceRecognition::Extracted, 'summary' => $summary,
+            'amount_net' => '150.00', 'amount_tax' => '22.50', 'amount_gross' => '172.50',
+        ])->save();
+        $this->connect();
+        $fake = $this->fakeLexware();
+
+        app(IncomingInvoiceTransferService::class)->transfer($incoming->refresh(), $this->admin);
+
+        $body = $this->voucherBody($fake);
+        $this->assertEquals(172.5, $body['totalGrossAmount']);
+        $this->assertEquals(22.5, $body['totalTaxAmount']);
+        $this->assertEquals([
+            ['amount' => 119, 'taxAmount' => 19, 'taxRatePercent' => 19, 'categoryId' => self::CATEGORY_DEFAULT],
+            ['amount' => 53.5, 'taxAmount' => 3.5, 'taxRatePercent' => 7, 'categoryId' => self::CATEGORY_DEFAULT],
+        ], $body['voucherItems']);
     }
 
     public function test_an_existing_voucher_of_the_same_contact_is_only_linked(): void {
