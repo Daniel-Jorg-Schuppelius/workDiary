@@ -15,8 +15,7 @@ use APIToolkit\API\Pagination\{CursorPage, CursorPaginator};
 use App\Plugins\Msgraph\Models\MsgraphConnection;
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Support\Calendar\{RemoteCalendarEvent, RemoteCalendarGateway, RemoteCalendarItem};
-use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginHttpFactory};
-use GuzzleHttp\Exception\ConnectException;
+use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginApiException, PluginHttpFactory};
 use RuntimeException;
 use Throwable;
 
@@ -115,7 +114,7 @@ class MsgraphCalendarClient implements GraphSubscriptionClient, RemoteCalendarGa
         $response = $this->api->getResponse($this->base . '/me/calendars', ['$select' => 'id,name']);
         if (! $response->successful()) {
             // Nur Statuscode + Pfad — nie Payload/Token in Fehlermeldungen.
-            throw new RuntimeException(sprintf('Microsoft Graph /me/calendars antwortete mit HTTP %d.', $response->status()));
+            throw new PluginApiException(sprintf('Microsoft Graph /me/calendars antwortete mit HTTP %d.', $response->status()), $response->status(), '/me/calendars');
         }
 
         $calendars = [];
@@ -128,18 +127,8 @@ class MsgraphCalendarClient implements GraphSubscriptionClient, RemoteCalendarGa
         return $calendars;
     }
 
-    public function ping(): bool {
-        try {
-            $this->listCalendars();
-
-            return true;
-        } catch (ConnectException $e) {
-            // Netzwerk-/DNS-Fehler durchreichen: der Healthcheck stuft sie als
-            // transient ein statt wie eine API-Ablehnung (false) zu behandeln.
-            throw $e;
-        } catch (Throwable) {
-            return false;
-        }
+    public function probe(): void {
+        $this->listCalendars();
     }
 
     /**

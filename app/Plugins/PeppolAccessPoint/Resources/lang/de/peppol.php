@@ -12,7 +12,6 @@ return [
     'health' => [
         'not_configured' => 'Keine Zugangsdaten zum Access-Point-Provider hinterlegt.',
         'sender_invalid' => 'Die eigene Peppol-Teilnehmer-ID fehlt oder hat nicht die Form <ICD>:<Kennung>.',
-        'unreachable' => 'Der Access-Point-Provider antwortet nicht oder lehnt den Zugangsschlüssel ab.',
         'ok' => 'Verbunden mit :url.',
     ],
     'plugin' => [

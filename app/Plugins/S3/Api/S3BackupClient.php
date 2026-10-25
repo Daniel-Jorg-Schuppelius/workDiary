@@ -14,6 +14,7 @@ namespace App\Plugins\S3\Api;
 
 use App\Models\Backup\BackupTargetConnection;
 use App\Plugins\Support\Backup\{BackupAccount, BackupRemoteObject};
+use App\Plugins\Support\PluginApiException;
 use Aws\S3\Exception\S3Exception;
 use Aws\S3\{MultipartUploader, S3Client};
 use CommonToolkit\Helper\FileSystem\File;
@@ -266,7 +267,7 @@ class S3BackupClient {
     }
 
     /**
-     * Übersetzt SDK-Fehler in RuntimeException — ohne Zugangsdaten.
+     * Übersetzt SDK-Fehler in eine PluginApiException mit HTTP-Status — ohne Zugangsdaten.
      *
      * Die Meldung eines S3Exception enthält die vollständige Anfrage samt
      * Signaturkopf; sie gehört nicht ins Protokoll und nicht in eine
@@ -281,7 +282,7 @@ class S3BackupClient {
         try {
             return $call();
         } catch (S3Exception $e) {
-            throw new RuntimeException($message . ' (' . $e->getAwsErrorCode() . ')', 0, $e);
+            throw new PluginApiException($message . ' (' . $e->getAwsErrorCode() . ')', (int) $e->getStatusCode(), previous: $e);
         }
     }
 }

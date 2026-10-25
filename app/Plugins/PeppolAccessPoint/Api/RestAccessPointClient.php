@@ -50,10 +50,17 @@ final class RestAccessPointClient implements AccessPointClientInterface {
         }
 
         try {
-            return $this->api()->getResponse($this->url($this->str('health_path')))->successful();
+            $this->probe();
+
+            return true;
         } catch (Throwable) {
             return false;
         }
+    }
+
+    /** Health-Probe gegen den Zugangspunkt; wirft bei Fehlern (Einordnung: ApiHealthProbe). */
+    public function probe(): void {
+        $this->api()->getResponse($this->url($this->str('health_path')))->throw();
     }
 
     public function send(string $sbdhEnvelopeXml): TransportReceipt {

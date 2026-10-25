@@ -23,8 +23,6 @@ return [
         'no_connection' => 'Keine SharePoint-Verbindung hergestellt.',
         'inactive' => 'SharePoint-Verbindung ist getrennt, pausiert oder ohne Ziel-Bibliothek.',
         'ok' => 'Verbunden — Ziel-Bibliothek erreichbar.',
-        'failing' => 'Microsoft Graph nicht erreichbar oder Zugriff verweigert.',
-        'error' => 'Microsoft-Graph-Fehler (:class).',
     ],
 
     'action' => [

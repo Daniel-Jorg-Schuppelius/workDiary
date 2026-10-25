@@ -18,15 +18,13 @@ use App\Plugins\Contracts\{BackupTarget, CalendarPublisher, DocumentIntakeSource
 use App\Plugins\Msgraph\Api\{MsgraphBackupClient, MsgraphCalendarClient, MsgraphIntakeClient};
 use App\Plugins\Msgraph\Enums\MsgraphConnectionStatus;
 use App\Plugins\Msgraph\Models\MsgraphConnection;
+use App\Plugins\Support\{ApiHealthProbe, PluginOrgContext};
 use App\Plugins\Support\Backup\BackupAccount;
 use App\Plugins\Support\Calendar\{OrganizationEventSource, RemoteCalendarEvent, RemoteCalendarPublishService};
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
-use App\Plugins\Support\PluginOrgContext;
 use App\Support\Ui\UiAction;
 use Closure;
-use GuzzleHttp\Exception\ConnectException;
 use Psr\Http\Message\StreamInterface;
-use Throwable;
 
 /**
  * Microsoft-365-Kalender-Anbindung (MVP-328, Bauturbo A8) — Nur-Publish-Pilot
@@ -445,21 +443,13 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
             return PluginHealth::degraded($sideNotice ?? __('msgraph::msgraph.health.inactive'));
         }
 
-        try {
-            if (! (new MsgraphCalendarClient($connection))->ping()) {
-                return PluginHealth::failing(__('msgraph::msgraph.health.failing'), 'unreachable');
-            }
-        } catch (ConnectException) {
-            // Netzwerk-/DNS-Ausfall ist transient → degraded statt failing,
-            // zählt also nicht Richtung Auto-Disable (analog Lexoffice).
-            return PluginHealth::degraded(__('msgraph::msgraph.health.unreachable'), 'network');
-        } catch (Throwable $e) {
-            return PluginHealth::failing(__('msgraph::msgraph.health.error', ['class' => class_basename($e)]));
-        }
+        $health = ApiHealthProbe::probe($this->name(), function () use ($connection): string {
+            (new MsgraphCalendarClient($connection))->probe();
 
-        return $sideNotice !== null
-            ? PluginHealth::degraded($sideNotice)
-            : PluginHealth::ok(__('msgraph::msgraph.health.ok'));
+            return (string) __('msgraph::msgraph.health.ok');
+        });
+
+        return $health->isOk() && $sideNotice !== null ? PluginHealth::degraded($sideNotice) : $health;
     }
 
     /**

@@ -65,9 +65,6 @@ return [
         'inactive' => 'La connessione Microsoft 365 è disconnessa o disattivata.',
         'side_connections' => 'Le connessioni secondarie Microsoft 365 richiedono attenzione (:intake ricezione documenti, :backup backup, :mail mail — ripetere l’accesso o verificare gli scope).',
         'ok' => 'Connesso — elenco calendari disponibile.',
-        'failing' => 'Microsoft Graph non raggiungibile o accesso negato.',
-        'unreachable' => 'Microsoft Graph momentaneamente non raggiungibile (errore di rete/timeout).',
-        'error' => 'Errore Microsoft Graph (:class).',
     ],
 
     'action' => [

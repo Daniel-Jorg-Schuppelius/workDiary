@@ -15,6 +15,7 @@ namespace App\Plugins\PeppolAccessPoint;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{PeppolTransportProvider, PluginCapability, SettingsField};
 use App\Plugins\PeppolAccessPoint\Api\RestAccessPointClient;
+use App\Plugins\Support\ApiHealthProbe;
 use App\Services\Peppol\PeppolParticipantService;
 use ERechnungToolkit\Contracts\AccessPointClientInterface;
 use ERechnungToolkit\Enums\SmlZone;
@@ -139,11 +140,10 @@ class PeppolAccessPointPlugin extends AbstractPlugin implements PeppolTransportP
 
         $client = new RestAccessPointClient($config);
 
-        return PluginHealth::pingHealth(
-            ping: static fn (): bool => $client->isAvailable(),
-            unreachableMessage: (string) __('peppol-access-point::peppol.health.unreachable'),
-            okMessage: (string) __('peppol-access-point::peppol.health.ok', ['url' => $config['base_url']]),
-            errorStatus: PluginHealth::STATUS_FAILING,
-        );
+        return ApiHealthProbe::probe($this->name(), static function () use ($client, $config): string {
+            $client->probe();
+
+            return (string) __('peppol-access-point::peppol.health.ok', ['url' => $config['base_url']]);
+        });
     }
 }

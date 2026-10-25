@@ -44,6 +44,9 @@ interface RemoteCalendarGateway {
      */
     public function listCalendars(): array;
 
-    /** Billige Health-Probe: Kalenderliste abrufbar? */
-    public function ping(): bool;
+    /**
+     * Billige Health-Probe: Kalenderliste abrufbar? Wirft bei Fehlern, die Einordnung macht
+     * {@see \App\Plugins\Support\ApiHealthProbe}.
+     */
+    public function probe(): void;
 }

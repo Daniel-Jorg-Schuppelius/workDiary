@@ -226,10 +226,12 @@ return [
     // Leseprobe gegen eine Fremd-API (ApiHealthProbe): Aufgabenimporte, Shops, Belegquellen.
     'api_health' => [
         'ok' => ':provider erreichbar.',
-        'auth' => ':provider lehnt die Anmeldung ab — Zugangsdaten prüfen bzw. neu verbinden.',
+        'auth' => ':provider lehnt die Anmeldung ab (HTTP :status) — Zugangsdaten prüfen bzw. neu verbinden.',
         'rate_limited' => ':provider drosselt die Abrufe (429).',
-        'api_error' => ':provider antwortet mit Fehlerstatus :status.',
-        'unreachable' => ':provider ist nicht erreichbar.',
+        'api_error' => ':provider antwortet unerwartet (HTTP :status) — Adresse und Einstellungen prüfen.',
+        'server_error' => ':provider meldet eine Störung (HTTP :status).',
+        'network' => ':provider ist momentan nicht erreichbar (Netzwerk oder Zeitüberschreitung).',
+        'error' => 'Prüfung von :provider fehlgeschlagen (:class).',
     ],
     'task_import' => [
         'description_incomplete' => '[Beschreibung unvollständig übernommen — Original in der Quelle]',

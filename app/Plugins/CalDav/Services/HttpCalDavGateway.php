@@ -16,7 +16,7 @@ use APIToolkit\API\Authentication\BasicAuthentication;
 use APIToolkit\API\WebDav\{MultiStatus, Propfind};
 use App\Plugins\CalDav\Contracts\CalDavGateway;
 use App\Plugins\CalDav\Models\CalDavConnection;
-use App\Plugins\Support\PluginApiClient;
+use App\Plugins\Support\{PluginApiClient, PluginApiException};
 use App\Support\UrlSafety;
 use CommonToolkit\Helper\Data\{WebLinkHelper, XmlHelper};
 use DateTimeInterface;
@@ -78,18 +78,15 @@ class HttpCalDavGateway implements CalDavGateway {
         return $response->successful() || $response->status() === 404;
     }
 
-    public function ping(): bool {
-        try {
-            // PROPFIND Depth:0 auf die Collection: 207 Multi-Status = erreichbar + Auth gültig.
-            $response = $this->http->requestResponse('PROPFIND', rtrim($this->connection->base_url, '/') . '/' . trim($this->connection->calendar_path, '/'), [
-                'headers' => ['Depth' => '0', 'Content-Type' => 'application/xml; charset=utf-8'],
-                'body' => Propfind::body(['d:resourcetype']),
-            ]);
-        } catch (Throwable) {
-            return false;
+    public function probe(): void {
+        // PROPFIND Depth:0 auf die Collection: 207 Multi-Status = erreichbar + Auth gültig.
+        $response = $this->http->requestResponse('PROPFIND', rtrim($this->connection->base_url, '/') . '/' . trim($this->connection->calendar_path, '/'), [
+            'headers' => ['Depth' => '0', 'Content-Type' => 'application/xml; charset=utf-8'],
+            'body' => Propfind::body(['d:resourcetype']),
+        ]);
+        if ($response->status() !== 207) {
+            throw new PluginApiException(sprintf('CalDAV PROPFIND antwortete mit HTTP %d.', $response->status()), $response->status(), 'PROPFIND');
         }
-
-        return $response->status() === 207;
     }
 
     public function syncEvents(string $prevSyncToken, array $localEtags, DateTimeInterface $windowStart, DateTimeInterface $windowEnd): CalDavSyncPage {

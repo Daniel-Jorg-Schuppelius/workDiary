@@ -18,6 +18,7 @@ use App\Models\Platform\User;
 use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\{PluginDiscovery, PluginHealth};
 use App\Plugins\Support\Mirror\{DocumentMirrorService, MirrorOutboxDispatcher, RemoteFileGateway};
+use App\Plugins\Support\PluginApiException;
 use App\Plugins\Webdav\Contracts\WebdavGatewayFactory;
 use App\Plugins\Webdav\Models\WebdavConnection;
 use App\Plugins\Webdav\Services\WebdavMirrorTarget;
@@ -27,6 +28,7 @@ use Illuminate\Support\Facades\{Queue, Storage};
 use Tests\Concerns\WithOrganization;
 use Tests\Support\RecordingWebdavGateway;
 use Tests\TestCase;
+use Throwable;
 
 /**
  * Feature 058, MVP-127: Plugin-Verdrahtung. Auto-Discovery, per-Org-Health über
@@ -46,8 +48,8 @@ final class WebdavPluginTest extends TestCase {
         Queue::fake();
     }
 
-    private function bindGateway(bool $pingOk = true): void {
-        $gateway = new RecordingWebdavGateway(pingOk: $pingOk);
+    private function bindGateway(?Throwable $probeFailure = null): void {
+        $gateway = new RecordingWebdavGateway(probeFailure: $probeFailure);
 
         $this->app->instance(WebdavGatewayFactory::class, new class($gateway) implements WebdavGatewayFactory {
             public function __construct(private RemoteFileGateway $gateway) {}
@@ -156,13 +158,16 @@ final class WebdavPluginTest extends TestCase {
         $this->assertSame(0, IntegrationOutboxEntry::query()->count());
     }
 
-    public function test_health_reflects_ping(): void {
-        $this->bindGateway(pingOk: true);
+    public function test_health_reflects_probe(): void {
+        $this->bindGateway();
         $this->connection();
         $this->assertTrue((new WebdavPlugin())->healthCheck()->isOk());
 
-        $this->bindGateway(pingOk: false);
-        $this->assertTrue((new WebdavPlugin())->healthCheck()->isFailing());
+        // Ein Server ohne Multi-Status ist keine WebDAV-Ablage: dauerhaft, also failing.
+        $this->bindGateway(probeFailure: new PluginApiException('WebDAV PROPFIND antwortete mit HTTP 200.', 200));
+        $health = (new WebdavPlugin())->healthCheck();
+        $this->assertTrue($health->isFailing());
+        $this->assertSame('api_error', $health->code);
     }
 
     public function test_health_degraded_without_connection(): void {

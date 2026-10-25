@@ -23,8 +23,8 @@ interface RemoteProvider {
     /** True, wenn API-Key/-Konfiguration vorhanden ist. */
     public function isConfigured(): bool;
 
-    /** Kurzer Health-Ping gegen die Anbieter-API (true = erreichbar). */
-    public function ping(): bool;
+    /** Kurze Health-Probe gegen die Anbieter-API; wirft bei Fehlern (Einordnung: ApiHealthProbe). */
+    public function probe(): void;
 
     /**
      * Verbindungs-Reports im Zeitfenster [$from, $to].

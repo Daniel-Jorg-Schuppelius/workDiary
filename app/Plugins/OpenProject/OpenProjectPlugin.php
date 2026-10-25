@@ -15,10 +15,9 @@ use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TimeImporter};
 use App\Plugins\OpenProject\Api\OpenProjectClientFactory;
 use App\Plugins\OpenProject\Services\OpenProjectImportService;
-use App\Plugins\Support\PluginOrgContext;
+use App\Plugins\Support\{ApiHealthProbe, PluginOrgContext};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\WebLinkHelper;
-use Throwable;
 
 /**
  * OpenProject-Anbindung (API v3).
@@ -120,12 +119,6 @@ class OpenProjectPlugin extends AbstractPlugin implements TimeImporter {
             return PluginHealth::degraded(__('Keine OpenProject-URL oder kein API-Token hinterlegt.'));
         }
 
-        try {
-            return $client->ping()
-                ? PluginHealth::ok('openproject: ok')
-                : PluginHealth::failing(__('OpenProject-API nicht erreichbar oder Token ungültig.'));
-        } catch (Throwable $e) {
-            return PluginHealth::failing($e->getMessage());
-        }
+        return ApiHealthProbe::probe($this->name(), fn () => $client->probe());
     }
 }

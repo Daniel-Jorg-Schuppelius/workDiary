@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Plugins\OrgaMax;
 
 use APIToolkit\Entities\ID;
-use APIToolkit\Exceptions\ApiException;
 use App\Enums\Stammdaten\ContactSalutation;
 use App\Exceptions\ContactNumberTakenException;
 use App\Models\Customer\Customer;
@@ -23,6 +22,7 @@ use App\Plugins\Contracts\{ContactSyncer, Plugin, PluginCapability};
 use App\Plugins\OrgaMax\Api\OrgaMaxClientFactory;
 use App\Plugins\OrgaMax\Enums\OrgaMaxConnectionStatus;
 use App\Plugins\OrgaMax\Models\OrgaMaxConnection;
+use App\Plugins\Support\ApiHealthProbe;
 use App\Services\Finance\Accounting\ContactPushService;
 use App\Services\Numbering\NumberSequenceService;
 use App\Services\Stammdaten\{ContactIdentity, ContactNumberAdopter, ContactPersons};
@@ -31,7 +31,6 @@ use Orgamax\API\Endpoints\CustomersEndpoint;
 use Orgamax\API\Endpoints\Settings\AccountSettingEndpoint;
 use Orgamax\Entities\Customers\{ContactPerson as OrgaMaxContactPerson, ContactPersons as OrgaMaxContactPersons, Customer as OrgaMaxCustomer, CustomerDefaultAddress};
 use RuntimeException;
-use Throwable;
 
 /**
  * orgaMAX-Buchhaltung-Plugin (Feature 077, MVP-305–315).
@@ -241,20 +240,10 @@ class OrgaMaxPlugin extends AbstractPlugin implements ContactSyncer {
             return PluginHealth::degraded(__('Verbindung unvollständig oder getrennt.'), 'inactive');
         }
 
-        try {
-            $started = microtime(true);
-            (new AccountSettingEndpoint(app(OrgaMaxClientFactory::class)->for($connection)))->get();
-
-            return PluginHealth::ok(__('orgaMAX-API erreichbar.'))
-                ->withLatency((int) ((microtime(true) - $started) * 1000));
-        } catch (ApiException $e) {
-            if (in_array($e->getCode(), [401, 403], true)) {
-                return PluginHealth::failing(__('Token abgelaufen oder Scopes entzogen — Verbindung erneuern.'), 'auth');
-            }
-
-            return PluginHealth::degraded(__('orgaMAX-API antwortet mit Fehlerstatus :status.', ['status' => $e->getCode()]), 'api_error');
-        } catch (Throwable) {
-            return PluginHealth::failing(__('orgaMAX-API nicht erreichbar.'), 'unreachable');
-        }
+        return ApiHealthProbe::probe(
+            $this->name(),
+            static fn () => (new AccountSettingEndpoint(app(OrgaMaxClientFactory::class)->for($connection)))->get(),
+            ['auth' => (string) __('Token abgelaufen oder Scopes entzogen — Verbindung erneuern.')],
+        );
     }
 }

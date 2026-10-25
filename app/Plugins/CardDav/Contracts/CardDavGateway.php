@@ -21,8 +21,8 @@ use App\Plugins\CardDav\Services\{CardDavAddressbook, CardDavSyncPage};
  * ohne HTTP binden können — dasselbe Muster wie {@see \App\Plugins\CalDav\Contracts\CalDavGateway}.
  */
 interface CardDavGateway {
-    /** Erreichbarkeit + Zugangsdaten prüfen (Healthcheck). */
-    public function ping(): bool;
+    /** Erreichbarkeit + Zugangsdaten prüfen (Healthcheck); wirft bei Fehlern (Einordnung: ApiHealthProbe). */
+    public function probe(): void;
 
     /**
      * RFC-6764-Discovery: .well-known/carddav → current-user-principal →

@@ -13,10 +13,9 @@ namespace App\Plugins\Clockify;
 use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Clockify\Api\ClockifyClientFactory;
-use App\Plugins\Clockify\Exceptions\ClockifyApiException;
 use App\Plugins\Clockify\Services\{ClockifyGroupBooker, ClockifyImportService};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TimeImporter};
-use App\Plugins\Support\PluginOrgContext;
+use App\Plugins\Support\{ApiHealthProbe, PluginOrgContext};
 
 /**
  * Clockify-Import-Plugin (Migrationsimport, MVP-134).
@@ -66,19 +65,11 @@ class ClockifyPlugin extends AbstractPlugin implements TimeImporter {
     public function healthCheck(): PluginHealth {
         $client = app(ClockifyClientFactory::class)->for(PluginOrgContext::currentId());
 
-        return PluginHealth::pingHealth(
-            // currentUser() wirft bei Fehlern — der false-Zweig ist unerreichbar.
-            ping: function () use ($client): bool {
-                $client->currentUser();
+        if (! $client->isConfigured()) {
+            return PluginHealth::ok(__('CSV-Modus — kein API-Key hinterlegt.'));
+        }
 
-                return true;
-            },
-            unreachableMessage: '',
-            configured: $client->isConfigured(),
-            notConfiguredMessage: __('CSV-Modus — kein API-Key hinterlegt.'),
-            apiExceptionClass: ClockifyApiException::class,
-            throwableMessage: fn (\Throwable $e): string => __('Clockify-API nicht erreichbar: :message', ['message' => $e->getMessage()]),
-        );
+        return ApiHealthProbe::probe($this->name(), fn () => $client->currentUser());
     }
 
     public function adminPanel(): ?array {

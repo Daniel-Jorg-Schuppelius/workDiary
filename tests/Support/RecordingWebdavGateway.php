@@ -11,6 +11,7 @@
 namespace Tests\Support;
 
 use App\Plugins\Support\Mirror\RemoteFileGateway;
+use Throwable;
 
 /**
  * Test-Double für {@see RemoteFileGateway} (Feature 058, MVP-127; Interface
@@ -29,7 +30,7 @@ class RecordingWebdavGateway implements RemoteFileGateway {
         public bool $putOk = true,
         public bool $collectionOk = true,
         public ?string $signature = 'etag-1',
-        public bool $pingOk = true,
+        public ?Throwable $probeFailure = null,
         public ?string $downloadBody = 'REMOTE-CONTENT',
     ) {}
 
@@ -53,7 +54,9 @@ class RecordingWebdavGateway implements RemoteFileGateway {
         return $this->signature;
     }
 
-    public function ping(): bool {
-        return $this->pingOk;
+    public function probe(): void {
+        if ($this->probeFailure !== null) {
+            throw $this->probeFailure;
+        }
     }
 }

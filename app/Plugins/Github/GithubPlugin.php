@@ -17,8 +17,8 @@ use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{LinksExternalRecords, Plugin, PluginCapability, TaskSyncer};
 use App\Plugins\Github\Api\GithubClientFactory;
-use App\Plugins\Github\Exceptions\GithubApiException;
 use App\Plugins\Github\Services\GithubIssueImporter;
+use App\Plugins\Support\ApiHealthProbe;
 use Throwable;
 
 /**
@@ -127,18 +127,10 @@ class GithubPlugin extends AbstractPlugin implements LinksExternalRecords, TaskS
             return PluginHealth::degraded(__('GitHub ist nicht konfiguriert (Repository oder API-Token fehlt).'), 'not_configured');
         }
 
-        try {
+        return ApiHealthProbe::probe($this->name(), static function () use ($organization): string {
             $user = app(GithubClientFactory::class)->for((int) $organization->id)->user();
 
-            return PluginHealth::ok(__('Verbunden mit GitHub als :login.', ['login' => (string) ($user['login'] ?? '?')]));
-        } catch (GithubApiException $e) {
-            if ($e->isAuthError()) {
-                return PluginHealth::failing(__('GitHub lehnt den API-Token ab (:status) — Fine-grained PAT prüfen.', ['status' => $e->status]), 'auth');
-            }
-
-            return PluginHealth::degraded(__('GitHub-API antwortet mit Fehlerstatus :status.', ['status' => $e->status]), 'api_error');
-        } catch (Throwable) {
-            return PluginHealth::failing(__('GitHub-API nicht erreichbar.'), 'unreachable');
-        }
+            return (string) __('Verbunden mit GitHub als :login.', ['login' => (string) ($user['login'] ?? '?')]);
+        }, ['auth' => (string) __('GitHub lehnt den API-Token ab (:status) — Fine-grained PAT prüfen.')]);
     }
 }

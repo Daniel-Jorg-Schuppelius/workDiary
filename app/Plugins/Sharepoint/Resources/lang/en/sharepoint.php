@@ -23,8 +23,6 @@ return [
         'no_connection' => 'No SharePoint connection established.',
         'inactive' => 'SharePoint connection is disconnected, paused or has no target library.',
         'ok' => 'Connected — target library reachable.',
-        'failing' => 'Microsoft Graph unreachable or access denied.',
-        'error' => 'Microsoft Graph error (:class).',
     ],
 
     'action' => [

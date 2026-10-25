@@ -226,10 +226,12 @@ return [
     // Leseprobe gegen eine Fremd-API (ApiHealthProbe): Aufgabenimporte, Shops, Belegquellen.
     'api_health' => [
         'ok' => ':provider accesible.',
-        'auth' => ':provider rechaza el inicio de sesión — compruebe las credenciales o vuelva a conectar.',
+        'auth' => ':provider rechaza el inicio de sesión (HTTP :status) — compruebe las credenciales o vuelva a conectar.',
         'rate_limited' => ':provider limita las solicitudes (429).',
-        'api_error' => ':provider responde con el estado de error :status.',
-        'unreachable' => ':provider no es accesible.',
+        'api_error' => ':provider responde de forma inesperada (HTTP :status) — compruebe la dirección y la configuración.',
+        'server_error' => ':provider notifica una avería (HTTP :status).',
+        'network' => ':provider no es accesible en este momento (red o tiempo de espera agotado).',
+        'error' => 'La comprobación de :provider ha fallado (:class).',
     ],
     'task_import' => [
         'description_incomplete' => '[Descripción importada de forma incompleta — consulte el original en la fuente]',

@@ -17,8 +17,8 @@ use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{LinksExternalRecords, Plugin, PluginCapability, TaskSyncer};
 use App\Plugins\Gitlab\Api\GitlabClientFactory;
-use App\Plugins\Gitlab\Exceptions\GitlabApiException;
 use App\Plugins\Gitlab\Services\GitlabIssueImporter;
+use App\Plugins\Support\ApiHealthProbe;
 use Throwable;
 
 /**
@@ -130,18 +130,10 @@ class GitlabPlugin extends AbstractPlugin implements LinksExternalRecords, TaskS
             return PluginHealth::degraded(__('GitLab ist nicht konfiguriert (Projekt-ID oder API-Token fehlt).'), 'not_configured');
         }
 
-        try {
+        return ApiHealthProbe::probe($this->name(), static function () use ($organization): string {
             $user = app(GitlabClientFactory::class)->for((int) $organization->id)->user();
 
-            return PluginHealth::ok(__('Verbunden mit GitLab als :login.', ['login' => (string) ($user['username'] ?? '?')]));
-        } catch (GitlabApiException $e) {
-            if ($e->isAuthError()) {
-                return PluginHealth::failing(__('GitLab lehnt den API-Token ab (:status) — Token prüfen.', ['status' => $e->status]), 'auth');
-            }
-
-            return PluginHealth::degraded(__('GitLab-API antwortet mit Fehlerstatus :status.', ['status' => $e->status]), 'api_error');
-        } catch (Throwable) {
-            return PluginHealth::failing(__('GitLab-API nicht erreichbar.'), 'unreachable');
-        }
+            return (string) __('Verbunden mit GitLab als :login.', ['login' => (string) ($user['username'] ?? '?')]);
+        });
     }
 }

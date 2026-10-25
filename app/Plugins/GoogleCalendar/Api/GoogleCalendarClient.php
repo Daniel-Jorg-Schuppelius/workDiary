@@ -15,7 +15,7 @@ use APIToolkit\API\Pagination\{CursorPage, CursorPaginator};
 use App\Plugins\GoogleCalendar\{GoogleCalendarConfig, GoogleCalendarPlugin};
 use App\Plugins\GoogleCalendar\Models\GoogleCalendarConnection;
 use App\Plugins\Support\Calendar\{RemoteCalendarEvent, RemoteCalendarGateway, RemoteCalendarItem};
-use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginHttpFactory};
+use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginApiException, PluginHttpFactory};
 use App\Services\CloudIntake\StaleCheckpointException;
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\CryptoHelper;
@@ -105,7 +105,7 @@ class GoogleCalendarClient implements RemoteCalendarGateway {
         $response = $this->api->getResponse($this->base . '/users/me/calendarList', ['fields' => 'items(id,summary)']);
         if (! $response->successful()) {
             // Nur Statuscode + Pfad — nie Payload/Token in Fehlermeldungen.
-            throw new RuntimeException(sprintf('Google Calendar /users/me/calendarList antwortete mit HTTP %d.', $response->status()));
+            throw new PluginApiException(sprintf('Google Calendar /users/me/calendarList antwortete mit HTTP %d.', $response->status()), $response->status(), '/users/me/calendarList');
         }
 
         $calendars = [];
@@ -118,14 +118,8 @@ class GoogleCalendarClient implements RemoteCalendarGateway {
         return $calendars;
     }
 
-    public function ping(): bool {
-        try {
-            $this->listCalendars();
-
-            return true;
-        } catch (Throwable) {
-            return false;
-        }
+    public function probe(): void {
+        $this->listCalendars();
     }
 
     /**

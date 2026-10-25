@@ -14,10 +14,9 @@ namespace App\Plugins\Etsy;
 
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Etsy\Api\EtsyClientFactory;
-use App\Plugins\Etsy\Exceptions\EtsyApiException;
 use App\Plugins\Etsy\Models\EtsyConnection;
+use App\Plugins\Support\ApiHealthProbe;
 use Carbon\CarbonImmutable;
-use Throwable;
 
 /**
  * Etsy-Marktplatz-Plugin (Feature 101, MVP-494–498, Phase 66): Direktanbindung
@@ -106,24 +105,10 @@ class EtsyPlugin extends AbstractPlugin {
             return PluginHealth::degraded(__('Das Etsy-Refresh-Token ist fast abgelaufen (90-Tage-Frist) — bitte neu verbinden.'), 'reconnect_required');
         }
 
-        try {
-            $started = microtime(true);
-            // Billigste Probe: das Shop-Objekt (1 Request).
-            app(EtsyClientFactory::class)->for($connection)->shop((int) $connection->shop_id);
-
-            return PluginHealth::ok(__('Etsy-API erreichbar.'))
-                ->withLatency((int) ((microtime(true) - $started) * 1000));
-        } catch (EtsyApiException $e) {
-            if ($e->isAuthError()) {
-                return PluginHealth::failing(__('Etsy lehnt die Zugangsdaten ab (401/403) — Keystring/Shared Secret prüfen oder neu verbinden.'), 'auth');
-            }
-            if ($e->isRateLimited()) {
-                return PluginHealth::degraded(__('Etsy drosselt (429) — 10 Requests/Sekunde bzw. Tageslimit erreicht.'), 'rate_limited');
-            }
-
-            return PluginHealth::degraded(__('Etsy-API antwortet mit Fehlerstatus :status.', ['status' => $e->status]), 'api_error');
-        } catch (Throwable) {
-            return PluginHealth::failing(__('Etsy-API nicht erreichbar.'), 'unreachable');
-        }
+        // Billigste Probe: das Shop-Objekt (1 Request).
+        return ApiHealthProbe::probe($this->name(), static fn () => app(EtsyClientFactory::class)->for($connection)->shop((int) $connection->shop_id), [
+            'auth' => (string) __('Etsy lehnt die Zugangsdaten ab (401/403) — Keystring/Shared Secret prüfen oder neu verbinden.'),
+            'rate_limited' => (string) __('Etsy drosselt (429) — 10 Requests/Sekunde bzw. Tageslimit erreicht.'),
+        ]);
     }
 }

@@ -29,10 +29,10 @@ interface ZammadGateway {
     public function listTickets(?int $groupId = null, int $page = 1, int $perPage = 100): array;
 
     /**
-     * Leichter, authentifizierter Ping (Health-Check): true, wenn die
-     * konfigurierte Zammad-Instanz mit dem Token erreichbar antwortet.
+     * Leichte, authentifizierte Probe (Health-Check) gegen die konfigurierte
+     * Zammad-Instanz; wirft bei Fehlern (Einordnung: ApiHealthProbe).
      */
-    public function ping(): bool;
+    public function probe(): void;
 
     /**
      * Schlanke Status-Rückmeldung (Feature 060, 2. Stufe): setzt den

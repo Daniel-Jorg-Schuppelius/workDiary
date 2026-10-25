@@ -10,8 +10,8 @@
 
 namespace Tests\Feature\Plugins;
 
+use APIToolkit\Exceptions\TooManyRequestsException;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
-use App\Plugins\Lexoffice\Exceptions\LexofficeRateLimitException;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Services\LexofficeService;
 use App\Plugins\PluginHealth;
@@ -47,17 +47,17 @@ class LexofficeRateLimitTest extends TestCase {
         $fake->assertSentCount(LexofficeClientFactory::MAX_RETRIES);
     }
 
-    public function test_ping_throws_rate_limit_exception_after_exhausting_retries(): void {
+    public function test_probe_throws_rate_limit_exception_after_exhausting_retries(): void {
         FakePluginHttp::fake([
             'https://api.lexware.io/v1/profile' => FakePluginHttp::response('rate limited', 429),
         ]);
 
-        $this->expectException(LexofficeRateLimitException::class);
+        $this->expectException(TooManyRequestsException::class);
 
-        $this->service()->ping();
+        $this->service()->probe();
     }
 
-    public function test_ping_recovers_when_rate_limit_clears_on_retry(): void {
+    public function test_probe_recovers_when_rate_limit_clears_on_retry(): void {
         $fake = FakePluginHttp::fake([
             'https://api.lexware.io/v1/profile' => [
                 FakePluginHttp::response('rate limited', 429),
@@ -65,8 +65,8 @@ class LexofficeRateLimitTest extends TestCase {
             ],
         ]);
 
-        $this->assertTrue($this->service()->ping());
-        // ProfileEndpoint::get(): GET /profile mit dem kurzen Ping-Timeout von 5 s.
+        $this->service()->probe();
+        // ProfileEndpoint::get(): GET /profile mit dem kurzen Probe-Timeout von 5 s.
         $fake->assertSentCount(2);
         foreach ($fake->recorded() as $entry) {
             $this->assertSame('GET https://api.lexware.io/v1/profile', $entry['request']->getMethod() . ' ' . $entry['request']->getUri());
@@ -74,11 +74,13 @@ class LexofficeRateLimitTest extends TestCase {
         }
     }
 
-    public function test_profile_status_returns_the_status_of_a_client_error(): void {
+    public function test_healthcheck_fails_on_rejected_key(): void {
         FakePluginHttp::fake(['https://api.lexware.io/v1/profile' => FakePluginHttp::response(['message' => 'Unauthorized'], 401)]);
 
-        $this->assertSame(401, $this->service()->profileStatus());
-        $this->assertFalse($this->service()->ping());
+        $health = (new LexofficePlugin)->healthCheck();
+
+        $this->assertSame(PluginHealth::STATUS_FAILING, $health->status);
+        $this->assertSame('auth', $health->code);
     }
 
     public function test_healthcheck_returns_degraded_on_server_error(): void {
@@ -94,14 +96,15 @@ class LexofficeRateLimitTest extends TestCase {
     }
 
     public function test_healthcheck_returns_failing_with_status_on_client_error(): void {
-        // 403 (z. B. fehlender Scope/Tarif) → failing, Status in der Meldung.
+        // Übrige 4xx sind dauerhaft (falsche Adresse, entfernter Endpunkt) → failing, Status in der Meldung.
         FakePluginHttp::fake([
-            'https://api.lexware.io/v1/profile' => FakePluginHttp::response('forbidden', 403),
+            'https://api.lexware.io/v1/profile' => FakePluginHttp::response('not found', 404),
         ]);
 
         $health = (new LexofficePlugin)->healthCheck();
 
         $this->assertSame(PluginHealth::STATUS_FAILING, $health->status);
-        $this->assertStringContainsString('403', $health->message);
+        $this->assertSame('api_error', $health->code);
+        $this->assertStringContainsString('404', $health->message);
     }
 }

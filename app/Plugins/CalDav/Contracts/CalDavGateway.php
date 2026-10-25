@@ -28,8 +28,8 @@ interface CalDavGateway {
     /** Löscht das Kalenderobjekt; ein bereits fehlendes Objekt (404) gilt als Erfolg. */
     public function deleteObject(string $objectName): bool;
 
-    /** Liveness/Auth-Check: true, wenn die Ziel-Collection mit den Zugangsdaten erreichbar ist. */
-    public function ping(): bool;
+    /** Liveness/Auth-Check der Ziel-Collection mit den Zugangsdaten; wirft bei Fehlern (Einordnung: ApiHealthProbe). */
+    public function probe(): void;
 
     /**
      * Delta-Lesung der Kalender-Collection (Feature 121, MVP-610b): erst

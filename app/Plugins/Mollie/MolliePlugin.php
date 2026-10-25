@@ -16,6 +16,7 @@ use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{OnlinePaymentProvider, PluginCapability, SettingsField};
 use App\Plugins\Mollie\Api\MolliePaymentClient;
+use App\Plugins\Support\ApiHealthProbe;
 use App\Plugins\Support\Payments\{OnlinePaymentCheckout, OnlinePaymentRequest, OnlinePaymentSnapshot};
 use Illuminate\Http\Request;
 use RuntimeException;
@@ -80,12 +81,11 @@ class MolliePlugin extends AbstractPlugin implements OnlinePaymentProvider {
             return PluginHealth::degraded(__('Kein API-Schlüssel hinterlegt.'), code: 'not_configured');
         }
 
-        return PluginHealth::pingHealth(
-            ping: fn (): bool => $this->client($organization)->checkCredentials(),
-            unreachableMessage: (string) __('Mollie lehnt den API-Schlüssel ab.'),
-            okMessage: (string) __('Verbunden — Mollie erreichbar.'),
-            errorStatus: PluginHealth::STATUS_FAILING,
-        );
+        return ApiHealthProbe::probe($this->name(), function () use ($organization): string {
+            $this->client($organization)->probe();
+
+            return (string) __('Verbunden — Mollie erreichbar.');
+        }, ['auth' => (string) __('Mollie lehnt den API-Schlüssel ab.')]);
     }
 
     private function client(Organization $organization): MolliePaymentClient {

@@ -19,8 +19,6 @@ return [
         'inactive' => 'Inaktiv',
         'no_connection' => 'Keine CardDAV-Anbindung hinterlegt.',
         'inactive_or_incomplete' => 'CardDAV-Anbindung ist deaktiviert oder unvollständig.',
-        'unreachable' => 'CardDAV-Server nicht erreichbar oder Zugangsdaten ungültig.',
-        'error' => 'CardDAV-Fehler (:class).',
         'last_error' => 'Letzter Fehler: :error',
         'locked' => 'Nach :count Fehlversuchen in Folge ist der Abgleich gesperrt. Prüfen Sie Adresse und Zugangsdaten und speichern Sie die Anbindung erneut — das hebt die Sperre auf.',
     ],

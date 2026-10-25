@@ -23,8 +23,6 @@ return [
         'no_connection' => 'Nessuna connessione SharePoint stabilita.',
         'inactive' => 'La connessione SharePoint è disconnessa, in pausa o senza raccolta di destinazione.',
         'ok' => 'Connesso — raccolta di destinazione raggiungibile.',
-        'failing' => 'Microsoft Graph non raggiungibile o accesso negato.',
-        'error' => 'Errore Microsoft Graph (:class).',
     ],
 
     'action' => [

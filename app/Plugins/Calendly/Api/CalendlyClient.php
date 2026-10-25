@@ -58,8 +58,8 @@ class CalendlyClient {
         return is_array($resource) ? $resource : null;
     }
 
-    public function ping(): bool {
-        return $this->currentUser() !== null;
+    public function probe(): void {
+        $this->api->getResponse($this->base . '/users/me')->throw();
     }
 
     /**

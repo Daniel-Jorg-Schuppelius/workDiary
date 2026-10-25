@@ -17,7 +17,6 @@ use App\Plugins\Msgraph\Models\MsgraphContactConnection;
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginHttpFactory};
 use RuntimeException;
-use Throwable;
 
 /**
  * Microsoft-Graph-Kontakte-Gateway (Feature 102, Schnitt D) auf dem
@@ -125,12 +124,4 @@ class MsgraphContactsClient {
         return $contacts;
     }
 
-    /** Liveness/Auth-Check: Kontaktliste erreichbar. */
-    public function ping(): bool {
-        try {
-            return $this->api->getResponse($this->base . '/me/contacts', ['$top' => '1', '$select' => 'id'])->successful();
-        } catch (Throwable) {
-            return false;
-        }
-    }
 }

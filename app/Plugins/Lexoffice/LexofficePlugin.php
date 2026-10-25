@@ -25,16 +25,15 @@ use App\Plugins\{AbstractPlugin, PluginHealth, PluginManager};
 use App\Plugins\Contracts\{ContactNumberIssuer, ContactSyncer, ContributesWhileInactive, NavigationContributor, PaymentSyncer, Plugin, PluginCapability, SlotRenderer, TimeExporter};
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Enums\LexwareFeature;
-use App\Plugins\Lexoffice\Exceptions\{LexofficeApiBusyException, LexofficeRateLimitException};
+use App\Plugins\Lexoffice\Exceptions\LexofficeApiBusyException;
 use App\Plugins\Lexoffice\Models\LexofficePostingCategory;
 use App\Plugins\Lexoffice\Services\{LexofficeIncomingInvoiceTarget, LexofficeService, LexofficeVoucherSync, LexofficeWebhookService};
 use App\Plugins\Lexoffice\Tariff\LexwareTariffService;
-use App\Plugins\Support\PluginOrgContext;
+use App\Plugins\Support\{ApiHealthProbe, PluginOrgContext};
 use App\Services\Stammdaten\ContactNumberAdopter;
 use App\Support\Query\DateRange;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
-use GuzzleHttp\Exception\ConnectException;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Cache;
 use Throwable;
@@ -115,29 +114,8 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
         if (! $service->isConfigured()) {
             return PluginHealth::degraded(__('Lexoffice ist nicht konfiguriert.'));
         }
-        try {
-            $status = $service->profileStatus();
 
-            if ($status !== null && $status >= 200 && $status < 300) {
-                return PluginHealth::ok(__('Lexoffice-API erreichbar.'));
-            }
-            if ($status === 401) {
-                return PluginHealth::failing(__('Lexoffice lehnt den API-Schlüssel ab (401). Bitte prüfe, ob der hinterlegte Schlüssel gültig ist.'));
-            }
-            if ($status !== null && $status >= 500) {
-                // Serverseitige 5xx sind transient → degraded (kein Auto-Disable).
-                return PluginHealth::degraded(__('Lexoffice ist momentan nicht erreichbar (HTTP :status).', ['status' => $status]));
-            }
-
-            return PluginHealth::failing(__('Lexoffice-API antwortet nicht erwartungsgemäß (HTTP :status).', ['status' => $status ?? '—']));
-        } catch (LexofficeRateLimitException $e) {
-            return PluginHealth::degraded($e->getMessage());
-        } catch (ConnectException $e) {
-            // Verbindungsfehler propagieren seit der php-api-toolkit-Migration als Guzzle-ConnectException (nach Retries).
-            return PluginHealth::degraded(__('Lexoffice ist momentan nicht erreichbar (Netzwerk-/Timeout-Fehler).'));
-        } catch (Throwable $e) {
-            return PluginHealth::failing($e->getMessage());
-        }
+        return ApiHealthProbe::probe($this->name(), static fn () => $service->probe());
     }
 
     public function description(): string {

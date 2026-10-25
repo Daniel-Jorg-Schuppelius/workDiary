@@ -65,9 +65,6 @@ return [
         'inactive' => 'Microsoft 365 connection is disconnected or disabled.',
         'side_connections' => 'Microsoft 365 side connections need attention (:intake document intake, :backup backup, :mail mail — re-authenticate or check scopes).',
         'ok' => 'Connected — calendar list available.',
-        'failing' => 'Microsoft Graph unreachable or access denied.',
-        'unreachable' => 'Microsoft Graph is currently unreachable (network/timeout error).',
-        'error' => 'Microsoft Graph error (:class).',
     ],
 
     'action' => [

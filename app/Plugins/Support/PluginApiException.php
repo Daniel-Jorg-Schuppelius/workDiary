@@ -26,8 +26,9 @@ class PluginApiException extends RuntimeException {
         public readonly int $status = 0,
         public readonly ?string $endpoint = null,
         public readonly ?string $errorCode = null,
+        ?\Throwable $previous = null,
     ) {
-        parent::__construct($message);
+        parent::__construct($message, 0, $previous);
     }
 
     public function isAuthError(): bool {

@@ -35,7 +35,8 @@ interface TogglApi extends RemoteTimeWriter {
      */
     public function isFetchComplete(): bool;
 
-    public function ping(): bool;
+    /** Health-Probe; wirft bei Fehlern (Einordnung: ApiHealthProbe). */
+    public function probe(): void;
 
     /**
      * Eigene Einträge des Zugangs-Inhabers im Fenster (ergänzt die Workspace-Abfrage).

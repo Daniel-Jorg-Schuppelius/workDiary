@@ -12,7 +12,6 @@ return [
     'health' => [
         'not_configured' => 'Nessuna credenziale del fornitore di access point memorizzata.',
         'sender_invalid' => 'L’identificativo partecipante Peppol proprio manca o non ha la forma <ICD>:<identificativo>.',
-        'unreachable' => 'Il fornitore di access point non risponde o rifiuta la chiave di accesso.',
         'ok' => 'Collegato a :url.',
     ],
     'plugin' => [

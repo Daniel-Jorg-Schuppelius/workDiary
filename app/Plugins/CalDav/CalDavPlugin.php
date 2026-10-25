@@ -16,6 +16,7 @@ use App\Plugins\CalDav\Contracts\{CalDavGatewayFactory, CalendarSource};
 use App\Plugins\CalDav\Models\CalDavConnection;
 use App\Plugins\CalDav\Services\{CalDavRemoteCalendarGateway, CalendarPublishItem, EventCalendarSource, ScheduleCalendarSource};
 use App\Plugins\Contracts\{CalendarPublisher, PluginCapability};
+use App\Plugins\Support\ApiHealthProbe;
 use App\Plugins\Support\Calendar\{RemoteCalendarEvent, RemoteCalendarPublishService};
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\CryptoHelper;
@@ -209,12 +210,10 @@ class CalDavPlugin extends AbstractPlugin implements CalendarPublisher {
             return PluginHealth::degraded(__('CalDAV-Anbindung ist deaktiviert oder unvollständig.'));
         }
 
-        try {
-            return app(CalDavGatewayFactory::class)->for($connection)->ping()
-                ? PluginHealth::ok(__('Verbunden mit :url.', ['url' => $connection->base_url]))
-                : PluginHealth::failing(__('CalDAV-Server nicht erreichbar oder Zugangsdaten ungültig.'), 'unreachable');
-        } catch (Throwable $e) {
-            return PluginHealth::failing(__('CalDAV-Fehler (:class).', ['class' => class_basename($e)]));
-        }
+        return ApiHealthProbe::probe('CalDAV', function () use ($connection): string {
+            app(CalDavGatewayFactory::class)->for($connection)->probe();
+
+            return (string) __('Verbunden mit :url.', ['url' => $connection->base_url]);
+        });
     }
 }

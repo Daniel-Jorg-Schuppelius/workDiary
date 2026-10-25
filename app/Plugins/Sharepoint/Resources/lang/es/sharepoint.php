@@ -23,8 +23,6 @@ return [
         'no_connection' => 'No se ha establecido ninguna conexión con SharePoint.',
         'inactive' => 'La conexión con SharePoint está desconectada, en pausa o sin biblioteca de destino.',
         'ok' => 'Conectado — biblioteca de destino accesible.',
-        'failing' => 'Microsoft Graph no accesible o acceso denegado.',
-        'error' => 'Error de Microsoft Graph (:class).',
     ],
 
     'action' => [

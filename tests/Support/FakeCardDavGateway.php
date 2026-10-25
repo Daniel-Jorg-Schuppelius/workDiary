@@ -13,6 +13,7 @@ namespace Tests\Support;
 use App\Plugins\CardDav\Contracts\CardDavGateway;
 use App\Plugins\CardDav\Services\{CardDavAddressbook, CardDavSyncPage};
 use RuntimeException;
+use Throwable;
 
 /**
  * Test-Double für {@see CardDavGateway} (Bauturbo A9): liefert vorkonfigurierte
@@ -39,12 +40,14 @@ class FakeCardDavGateway implements CardDavGateway {
     public function __construct(
         public array $pages = [],
         public array $addressbooks = [],
-        public bool $pingOk = true,
+        public ?Throwable $probeFailure = null,
         public bool $failSync = false,
     ) {}
 
-    public function ping(): bool {
-        return $this->pingOk;
+    public function probe(): void {
+        if ($this->probeFailure !== null) {
+            throw $this->probeFailure;
+        }
     }
 
     public function discoverAddressbooks(): array {

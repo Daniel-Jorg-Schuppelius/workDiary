@@ -193,9 +193,9 @@ final class PrivateNetworkOptInTest extends TestCase {
 
         $config = OpenProjectConfig::resolve($this->organization->id);
         $this->assertTrue($config['allow_private_network']);
-        $this->assertTrue((new OpenProjectApiClient($config['api_token'], $config['base_url'], $config['allow_private_network']))->ping());
+        (new OpenProjectApiClient($config['api_token'], $config['base_url'], $config['allow_private_network']))->probe();
 
         $this->expectException(RuntimeException::class);
-        (new OpenProjectApiClient($config['api_token'], $config['base_url']))->ping();
+        (new OpenProjectApiClient($config['api_token'], $config['base_url']))->probe();
     }
 }

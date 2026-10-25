@@ -37,8 +37,8 @@ trait PluginDefaults {
     /**
      * Healthcheck-Default: bewusst „degraded" statt „ok" (Review 2026-08, A15) —
      * ein pauschales Grün ohne jede Prüfung wäre eine falsche Gesundmeldung.
-     * Plugins mit Remote-Anbindung überschreiben die Methode (z. B. via
-     * {@see PluginHealth::pingHealth()}); rein lokale Plugins dürfen explizit
+     * Plugins mit Remote-Anbindung überschreiben die Methode und ordnen den
+     * Fernabruf über {@see \App\Plugins\Support\ApiHealthProbe::probe()} ein; rein lokale Plugins dürfen explizit
      * `PluginHealth::ok('kein externer Endpunkt')` zurückgeben.
      */
     public function healthCheck(): PluginHealth {

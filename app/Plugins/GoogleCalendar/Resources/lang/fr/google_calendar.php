@@ -23,8 +23,6 @@ return [
         'no_connection' => 'Aucune connexion Google Agenda établie.',
         'inactive' => 'La connexion Google Agenda est déconnectée ou désactivée.',
         'ok' => 'Connecté — liste des agendas disponible.',
-        'failing' => 'API Google Calendar injoignable ou accès refusé.',
-        'error' => 'Erreur Google Calendar (:class).',
     ],
 
     'action' => [

@@ -92,11 +92,10 @@ class AnyDeskClientTest extends TestCase {
         });
     }
 
-    public function test_ping_signs_auth_resource(): void {
+    public function test_probe_signs_auth_resource(): void {
         $fake = FakePluginHttp::fake();
 
-        $client = new AnyDeskClient(self::LICENSE, self::API_PASSWORD);
-        $this->assertTrue($client->ping());
+        (new AnyDeskClient(self::LICENSE, self::API_PASSWORD))->probe();
 
         $fake->assertSent(function (RequestInterface $r): bool {
             return $r->getUri()->getPath() === '/auth'

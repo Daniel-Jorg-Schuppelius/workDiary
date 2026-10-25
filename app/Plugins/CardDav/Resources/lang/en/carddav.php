@@ -19,8 +19,6 @@ return [
         'inactive' => 'Inactive',
         'no_connection' => 'No CardDAV connection configured.',
         'inactive_or_incomplete' => 'CardDAV connection is disabled or incomplete.',
-        'unreachable' => 'CardDAV server unreachable or credentials invalid.',
-        'error' => 'CardDAV error (:class).',
         'last_error' => 'Last error: :error',
         'locked' => 'After :count consecutive failed attempts, synchronisation is locked. Check the address and credentials and save the connection again — this lifts the lock.',
     ],

@@ -106,8 +106,8 @@ class StripeCheckoutClient {
         );
     }
 
-    public function checkCredentials(): bool {
-        return $this->api()->getResponse($this->config['api_base'] . '/v1/balance')->successful();
+    public function probe(): void {
+        $this->api()->getResponse($this->config['api_base'] . '/v1/balance')->throw();
     }
 
     private function api(): PluginApiClient {

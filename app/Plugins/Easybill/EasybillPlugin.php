@@ -19,13 +19,12 @@ use App\Models\Integration\ExternalReference;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{ContactNumberIssuer, ContactSyncer, Plugin, PluginCapability};
 use App\Plugins\Easybill\Api\{EasybillClient, EasybillClientFactory};
-use App\Plugins\Easybill\Exceptions\EasybillApiException;
+use App\Plugins\Support\ApiHealthProbe;
 use App\Services\Finance\Accounting\ContactPushService;
 use App\Services\Numbering\NumberSequenceService;
 use App\Services\Stammdaten\{ContactIdentity, ContactNumberAdopter, ContactPersons};
 use CommonToolkit\Helper\Data\PersonNameHelper;
 use RuntimeException;
-use Throwable;
 
 /**
  * easybill-Plugin (MVP-431, Phase 40): weiteres API-Faktura-Ziel neben
@@ -197,26 +196,9 @@ class EasybillPlugin extends AbstractPlugin implements ContactNumberIssuer, Cont
             return PluginHealth::degraded(__('easybill ist nicht konfiguriert (API-Key fehlt).'), 'not_configured');
         }
 
-        try {
-            $started = microtime(true);
-            // Billigste dokumentierte Probe: eine Belegliste mit limit=1.
-            app(EasybillClientFactory::class)
-                ->for((int) $organization->id)
-                ->documents(['limit' => 1]);
-
-            return PluginHealth::ok(__('easybill-API erreichbar.'))
-                ->withLatency((int) ((microtime(true) - $started) * 1000));
-        } catch (EasybillApiException $e) {
-            if ($e->isAuthError()) {
-                return PluginHealth::failing(__('easybill lehnt den API-Key ab (401) — Key prüfen.'), 'auth');
-            }
-            if ($e->status === 429) {
-                return PluginHealth::degraded(__('easybill drosselt (429) — Request-Limit im Setting prüfen.'), 'rate_limited');
-            }
-
-            return PluginHealth::degraded(__('easybill-API antwortet mit Fehlerstatus :status.', ['status' => $e->status]), 'api_error');
-        } catch (Throwable) {
-            return PluginHealth::failing(__('easybill-API nicht erreichbar.'), 'unreachable');
-        }
+        // Billigste dokumentierte Probe: eine Belegliste mit limit=1.
+        return ApiHealthProbe::probe($this->name(), static fn () => app(EasybillClientFactory::class)->for((int) $organization->id)->documents(['limit' => 1]), [
+            'rate_limited' => (string) __('easybill drosselt (429) — Request-Limit im Setting prüfen.'),
+        ]);
     }
 }

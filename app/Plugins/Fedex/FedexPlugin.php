@@ -19,7 +19,6 @@ use App\Plugins\Support\ChecksCarrierHealth;
 use App\Services\Shipping\{CarrierTokenCache, ShipmentLabel, ShipmentRequest, ShipperAddress, TrackingEvent, TrackingResult};
 use Illuminate\Support\Carbon;
 use RuntimeException;
-use Throwable;
 
 /**
  * Versand-/Logistik-Anbindung FedEx (Feature 059, MVP-128 / Bauturbo A5).
@@ -168,22 +167,17 @@ class FedexPlugin extends AbstractPlugin implements ShippingProvider {
 
     // --- Carrier-Health (Hooks für ChecksCarrierHealth) -------------------
 
-    protected function carrierPing(CarrierConnection $connection): bool {
-        return $this->client($connection)->ping();
+    protected function carrierProbe(CarrierConnection $connection): void {
+        $this->client($connection)->probe();
     }
 
-    /** @return array{missing: string, disabled: string, connected: string, unreachable: string} */
+    /** @return array{missing: string, disabled: string, connected: string} */
     protected function carrierHealthMessages(): array {
         return [
             'missing' => __('Keine FedEx-Anbindung hinterlegt.'),
             'disabled' => __('FedEx-Anbindung ist deaktiviert.'),
             'connected' => __('Verbunden mit der FedEx-API.'),
-            'unreachable' => __('FedEx-API nicht erreichbar oder Zugangsdaten ungültig.'),
         ];
-    }
-
-    protected function carrierErrorMessage(Throwable $e): string {
-        return __('FedEx-API-Fehler (:class).', ['class' => class_basename($e)]);
     }
 
     // --- Mapping ----------------------------------------------------------

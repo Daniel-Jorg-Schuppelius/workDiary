@@ -133,20 +133,9 @@ class SharepointDriveClient implements RemoteFileGateway {
         return $eTag !== '' ? $eTag : null;
     }
 
-    /** Liveness/Auth-Check: gewählte Bibliothek (bzw. Site) erreichbar. */
-    public function ping(): bool {
-        try {
-            if (trim((string) $this->connection->drive_id) !== '') {
-                return $this->api->getResponse($this->driveUrl(), ['$select' => 'id'])->successful();
-            }
-            if (trim((string) $this->connection->site_id) !== '') {
-                return $this->api->getResponse($this->base . '/sites/' . rawurlencode((string) $this->connection->site_id), ['$select' => 'id'])->successful();
-            }
-        } catch (Throwable) {
-            return false;
-        }
-
-        return false;
+    /** Liveness/Auth-Check: gewählte Bibliothek erreichbar (die Verbindung ist erst mit Bibliothek aktiv). */
+    public function probe(): void {
+        $this->api->getResponse($this->driveUrl(), ['$select' => 'id'])->throw();
     }
 
     /**

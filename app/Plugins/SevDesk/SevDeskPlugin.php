@@ -19,13 +19,12 @@ use App\Models\Integration\ExternalReference;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{ContactNumberIssuer, ContactNumberPreview, ContactSyncer, Plugin, PluginCapability};
 use App\Plugins\SevDesk\Api\{SevDeskClient, SevDeskClientFactory};
-use App\Plugins\SevDesk\Exceptions\SevDeskApiException;
+use App\Plugins\Support\ApiHealthProbe;
 use App\Services\Finance\Accounting\ContactPushService;
 use App\Services\Numbering\NumberSequenceService;
 use App\Services\Stammdaten\{ContactIdentity, ContactNumberAdopter};
 use Illuminate\Support\Facades\Cache;
 use RuntimeException;
-use Throwable;
 
 /**
  * sevDesk-Plugin (MVP-125, Bauturbo A4): drittes API-Faktura-Ziel neben
@@ -214,24 +213,10 @@ class SevDeskPlugin extends AbstractPlugin implements ContactNumberIssuer, Conta
             return PluginHealth::degraded(__('sevDesk ist nicht konfiguriert (API-Token fehlt).'), 'not_configured');
         }
 
-        try {
-            $started = microtime(true);
-            // Probe = dokumentierter Versions-Endpunkt; erneuert zugleich den
-            // je Mandant gecachten bookkeepingSystemVersion-Wert.
-            $version = app(SevDeskClientFactory::class)
-                ->for((int) $organization->id)
-                ->bookkeepingVersion(fresh: true);
-
-            return PluginHealth::ok(__('sevDesk-API erreichbar (Buchhaltung :version).', ['version' => $version]))
-                ->withLatency((int) ((microtime(true) - $started) * 1000));
-        } catch (SevDeskApiException $e) {
-            if ($e->isAuthError()) {
-                return PluginHealth::failing(__('sevDesk lehnt den API-Token ab (401) — Token prüfen.'), 'auth');
-            }
-
-            return PluginHealth::degraded(__('sevDesk-API antwortet mit Fehlerstatus :status.', ['status' => $e->status]), 'api_error');
-        } catch (Throwable) {
-            return PluginHealth::failing(__('sevDesk-API nicht erreichbar.'), 'unreachable');
-        }
+        // Probe = dokumentierter Versions-Endpunkt; erneuert zugleich den
+        // je Mandant gecachten bookkeepingSystemVersion-Wert.
+        return ApiHealthProbe::probe($this->name(), static fn (): string => (string) __('sevDesk-API erreichbar (Buchhaltung :version).', [
+            'version' => app(SevDeskClientFactory::class)->for((int) $organization->id)->bookkeepingVersion(fresh: true),
+        ]));
     }
 }

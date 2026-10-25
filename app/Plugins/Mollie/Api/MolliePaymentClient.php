@@ -90,8 +90,8 @@ class MolliePaymentClient {
         );
     }
 
-    public function checkCredentials(): bool {
-        return $this->api()->getResponse($this->config['api_base'] . '/v2/methods')->successful();
+    public function probe(): void {
+        $this->api()->getResponse($this->config['api_base'] . '/v2/methods')->throw();
     }
 
     /** @return array{currency: string, value: string} */

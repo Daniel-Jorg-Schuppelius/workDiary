@@ -19,10 +19,12 @@ use App\Plugins\CalDav\Contracts\{CalDavGateway, CalDavGatewayFactory};
 use App\Plugins\CalDav\Models\CalDavConnection;
 use App\Plugins\Contracts\{CalendarPublisher, PluginCapability};
 use App\Plugins\{PluginDiscovery, PluginHealth};
+use App\Plugins\Support\PluginApiException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\RecordingCalDavGateway;
 use Tests\TestCase;
+use Throwable;
 
 /**
  * Feature 058, MVP-126: Plugin-Verdrahtung. Auto-Discovery, angekündigte
@@ -39,8 +41,8 @@ final class CalDavPluginTest extends TestCase {
         $this->setUpOrganization();
     }
 
-    private function bindGateway(bool $pingOk = true): RecordingCalDavGateway {
-        $gateway = new RecordingCalDavGateway(pingOk: $pingOk);
+    private function bindGateway(?Throwable $probeFailure = null): RecordingCalDavGateway {
+        $gateway = new RecordingCalDavGateway(probeFailure: $probeFailure);
 
         $this->app->instance(CalDavGatewayFactory::class, new class($gateway) implements CalDavGatewayFactory {
             public function __construct(private CalDavGateway $gateway) {}
@@ -96,7 +98,7 @@ final class CalDavPluginTest extends TestCase {
 
     /** UI-Fuzz 2026-09-21: die Adminseite pingte beim Aufruf synchron — ein hängender Server blockierte sie. */
     public function test_admin_page_shows_the_stored_health_without_pinging(): void {
-        $this->bindGateway(pingOk: false);
+        $this->bindGateway(probeFailure: new PluginApiException('down', 503));
         $this->connection();
         PluginState::query()->create([
             'plugin_id' => CalDavPlugin::ID,
@@ -188,13 +190,19 @@ final class CalDavPluginTest extends TestCase {
         $this->assertSame([], $gateway->puts);
     }
 
-    public function test_health_reflects_ping(): void {
-        $this->bindGateway(pingOk: true);
+    public function test_health_reflects_probe(): void {
+        $this->bindGateway();
         $this->connection();
         $this->assertTrue((new CalDavPlugin())->healthCheck()->isOk());
 
-        $this->bindGateway(pingOk: false);
-        $this->assertTrue((new CalDavPlugin())->healthCheck()->isFailing());
+        $this->bindGateway(probeFailure: new PluginApiException('CalDAV PROPFIND antwortete mit HTTP 401.', 401));
+        $health = (new CalDavPlugin())->healthCheck();
+        $this->assertTrue($health->isFailing());
+        $this->assertSame('auth', $health->code);
+
+        // Vorübergehende Störung zählt nicht zur Abschaltung.
+        $this->bindGateway(probeFailure: new PluginApiException('CalDAV PROPFIND antwortete mit HTTP 503.', 503));
+        $this->assertSame(PluginHealth::STATUS_DEGRADED, (new CalDavPlugin())->healthCheck()->status);
     }
 
     public function test_health_degraded_without_connection(): void {

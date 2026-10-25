@@ -88,8 +88,8 @@ class SumUpCheckoutClient {
         );
     }
 
-    public function checkCredentials(): bool {
-        return $this->api()->getResponse($this->config['api_base'] . '/v0.1/me')->successful();
+    public function probe(): void {
+        $this->api()->getResponse($this->config['api_base'] . '/v0.1/me')->throw();
     }
 
     private function api(): PluginApiClient {

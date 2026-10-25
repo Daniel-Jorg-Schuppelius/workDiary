@@ -14,8 +14,11 @@ namespace App\Plugins\CardDav\Services;
 
 use App\Plugins\CardDav\Contracts\CardDavGateway;
 use App\Plugins\CardDav\Models\CardDavConnection;
+use App\Plugins\Support\PluginApiException;
+use Exception;
 use MStilkerich\CardDavClient\{Account, AddressbookCollection, Config};
 use MStilkerich\CardDavClient\Services\{Discovery, Sync};
+use Psr\Http\Client\NetworkExceptionInterface;
 use Throwable;
 
 /**
@@ -39,23 +42,29 @@ class LibCardDavGateway implements CardDavGateway {
         Config::init();
     }
 
-    public function ping(): bool {
+    public function probe(): void {
         try {
             $addressbookUrl = (string) $this->connection->addressbook_url;
-            if ($addressbookUrl !== '') {
-                // Das gespeicherte Adressbuch kam einmal aus der Server-Antwort:
-                // vor jedem Kontakt erneut gegen die Verbindung prüfen (ssrf-6).
-                CardDavUrlGuard::assertSameOriginAsBase($addressbookUrl, (string) $this->connection->base_url, $this->connection->allowsPrivateNetwork());
-                // Displayname-PROPFIND auf das gewählte Adressbuch: prüft
-                // Erreichbarkeit UND Zugangsdaten in einem Rutsch.
-                (new AddressbookCollection($addressbookUrl, $this->account()))->getName();
+            if ($addressbookUrl === '') {
+                if ($this->discoverAddressbooks() === []) {
+                    throw new PluginApiException('CardDAV: kein Adressbuch gefunden.', 0, 'discovery');
+                }
 
-                return true;
+                return;
+            }
+            // Das gespeicherte Adressbuch kam einmal aus der Server-Antwort:
+            // vor jedem Kontakt erneut gegen die Verbindung prüfen (ssrf-6).
+            CardDavUrlGuard::assertSameOriginAsBase($addressbookUrl, (string) $this->connection->base_url, $this->connection->allowsPrivateNetwork());
+            // Displayname-PROPFIND auf das gewählte Adressbuch: prüft
+            // Erreichbarkeit UND Zugangsdaten in einem Rutsch.
+            (new AddressbookCollection($addressbookUrl, $this->account()))->getName();
+        } catch (Exception $e) {
+            // Die Bibliothek meldet HTTP-Fehler nur im Text („… HTTP request was not successful (401 Unauthorized): …“).
+            if (! $e instanceof NetworkExceptionInterface && preg_match('/HTTP request was not successful \((\d{3}) /', $e->getMessage(), $match) === 1) {
+                throw new PluginApiException(sprintf('CardDAV antwortete mit HTTP %s.', $match[1]), (int) $match[1], 'PROPFIND');
             }
 
-            return $this->discoverAddressbooks() !== [];
-        } catch (Throwable) {
-            return false;
+            throw $e;
         }
     }
 
