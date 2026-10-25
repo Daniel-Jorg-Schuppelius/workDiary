@@ -18,7 +18,6 @@ use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginHttpFactory};
 use App\Services\CloudIntake\StaleCheckpointException;
 use RuntimeException;
-use Throwable;
 
 /**
  * Microsoft-To-Do-Gateway (Feature 102, Schnitt E) auf dem
@@ -192,12 +191,4 @@ class MsgraphTodoClient implements GraphSubscriptionClient {
         return true;
     }
 
-    /** Liveness/Auth-Check: Listen erreichbar. */
-    public function ping(): bool {
-        try {
-            return $this->api->getResponse($this->base . '/me/todo/lists', ['$top' => '1', '$select' => 'id'])->successful();
-        } catch (Throwable) {
-            return false;
-        }
-    }
 }

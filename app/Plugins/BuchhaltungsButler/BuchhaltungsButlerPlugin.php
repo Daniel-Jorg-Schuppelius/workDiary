@@ -16,7 +16,7 @@ use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\BuchhaltungsButler\Api\BhbClientFactory;
 use App\Plugins\BuchhaltungsButler\Exceptions\BhbApiException;
 use App\Plugins\Contracts\Plugin;
-use Throwable;
+use App\Plugins\Support\ApiHealthProbe;
 
 /**
  * BuchhaltungsButler-Plugin (MVP-432, Phase 40): Beleg-Push-Ziel — workDiary
@@ -80,26 +80,19 @@ class BuchhaltungsButlerPlugin extends AbstractPlugin {
             return PluginHealth::degraded(__('BuchhaltungsButler ist nicht konfiguriert (API-Client/-Secret/-Key fehlen).'), 'not_configured');
         }
 
-        try {
-            $started = microtime(true);
-            app(BhbClientFactory::class)->for((int) $organization->id)->probe();
+        return ApiHealthProbe::probe($this->name(), static function () use ($organization): ?PluginHealth {
+            try {
+                app(BhbClientFactory::class)->for((int) $organization->id)->probe();
+            } catch (BhbApiException $e) {
+                // 402/403 heißt hier „API-Add-on nicht gebucht“, nicht „falsche Zugangsdaten“.
+                if (in_array($e->status, [402, 403], true)) {
+                    return PluginHealth::failing(__('Die BuchhaltungsButler-API ist für diesen Account nicht freigeschaltet (kostenpflichtiges Add-on) — im BHB-Tarif buchen.'), 'api_addon_missing');
+                }
 
-            return PluginHealth::ok(__('BuchhaltungsButler-API erreichbar.'))
-                ->withLatency((int) ((microtime(true) - $started) * 1000));
-        } catch (BhbApiException $e) {
-            // Erklärter Blocked-State VOR der generischen Auth-Prüfung:
-            // 402/403 heißt hier „API-Add-on nicht gebucht", nicht „falsche
-            // Zugangsdaten" (isAuthError() fasst 401 UND 403).
-            if (in_array($e->status, [402, 403], true)) {
-                return PluginHealth::failing(__('Die BuchhaltungsButler-API ist für diesen Account nicht freigeschaltet (kostenpflichtiges Add-on) — im BHB-Tarif buchen.'), 'api_addon_missing');
-            }
-            if ($e->isAuthError()) {
-                return PluginHealth::failing(__('BuchhaltungsButler lehnt die Zugangsdaten ab (401) — API-Client/-Secret prüfen.'), 'auth');
+                throw $e;
             }
 
-            return PluginHealth::degraded(__('BuchhaltungsButler-API antwortet mit Fehlerstatus :status.', ['status' => $e->status]), 'api_error');
-        } catch (Throwable) {
-            return PluginHealth::failing(__('BuchhaltungsButler-API nicht erreichbar.'), 'unreachable');
-        }
+            return null;
+        }, ['auth' => (string) __('BuchhaltungsButler lehnt die Zugangsdaten ab (401) — API-Client/-Secret prüfen.')]);
     }
 }

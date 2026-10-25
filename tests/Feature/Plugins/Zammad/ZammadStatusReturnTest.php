@@ -66,9 +66,7 @@ final class ZammadStatusReturnTest extends TestCase {
                 return [];
             }
 
-            public function ping(): bool {
-                return true;
-            }
+            public function probe(): void {}
 
             public function updateTicketState(int $ticketId, ?string $state, ?string $note): bool {
                 $this->ticketId = $ticketId;

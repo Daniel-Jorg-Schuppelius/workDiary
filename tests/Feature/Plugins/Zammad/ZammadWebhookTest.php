@@ -42,9 +42,7 @@ final class ZammadWebhookTest extends TestCase {
                 return [['id' => 1, 'number' => '22001', 'title' => 'Drucker', 'group_id' => null, 'state' => 'open', 'customer_id' => null]];
             }
 
-            public function ping(): bool {
-                return true;
-            }
+            public function probe(): void {}
 
             public function updateTicketState(int $ticketId, ?string $state, ?string $note): bool {
                 return true;

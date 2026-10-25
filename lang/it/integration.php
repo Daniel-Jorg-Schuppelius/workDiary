@@ -226,10 +226,12 @@ return [
     // Leseprobe gegen eine Fremd-API (ApiHealthProbe): Aufgabenimporte, Shops, Belegquellen.
     'api_health' => [
         'ok' => ':provider raggiungibile.',
-        'auth' => ':provider rifiuta l’accesso — verifichi le credenziali o ricolleghi l’account.',
+        'auth' => ':provider rifiuta l’accesso (HTTP :status) — verifichi le credenziali o ricolleghi l’account.',
         'rate_limited' => ':provider limita le richieste (429).',
-        'api_error' => ':provider risponde con lo stato di errore :status.',
-        'unreachable' => ':provider non è raggiungibile.',
+        'api_error' => ':provider risponde in modo inatteso (HTTP :status) — verifichi l’indirizzo e le impostazioni.',
+        'server_error' => ':provider segnala un guasto (HTTP :status).',
+        'network' => ':provider non è raggiungibile al momento (rete o tempo scaduto).',
+        'error' => 'La verifica di :provider non è riuscita (:class).',
     ],
     'task_import' => [
         'description_incomplete' => '[Descrizione importata in modo incompleto — vedere l’originale nella fonte]',

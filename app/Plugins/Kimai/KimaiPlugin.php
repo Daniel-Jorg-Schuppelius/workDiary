@@ -14,9 +14,8 @@ use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TimeImporter};
 use App\Plugins\Kimai\Api\KimaiClientFactory;
-use App\Plugins\Kimai\Exceptions\KimaiApiException;
 use App\Plugins\Kimai\Services\{KimaiExportService, KimaiGroupBooker, KimaiImportService};
-use App\Plugins\Support\PluginOrgContext;
+use App\Plugins\Support\{ApiHealthProbe, PluginOrgContext};
 
 /**
  * Kimai-Plugin (Migrationsimport MVP-134 + API-Rückkanal).
@@ -66,14 +65,11 @@ class KimaiPlugin extends AbstractPlugin implements TimeImporter {
     public function healthCheck(): PluginHealth {
         $client = app(KimaiClientFactory::class)->for(PluginOrgContext::currentId());
 
-        return PluginHealth::pingHealth(
-            ping: fn (): bool => $client->ping(),
-            unreachableMessage: __('Kimai-API antwortet nicht (Ping fehlgeschlagen).'),
-            configured: $client->isConfigured(),
-            notConfiguredMessage: __('CSV-Modus — kein API-Zugang hinterlegt.'),
-            apiExceptionClass: KimaiApiException::class,
-            throwableMessage: fn (\Throwable $e): string => __('Kimai-API nicht erreichbar: :message', ['message' => $e->getMessage()]),
-        );
+        if (! $client->isConfigured()) {
+            return PluginHealth::ok(__('CSV-Modus — kein API-Zugang hinterlegt.'));
+        }
+
+        return ApiHealthProbe::probe($this->name(), fn () => $client->probe());
     }
 
     public function adminPanel(): ?array {

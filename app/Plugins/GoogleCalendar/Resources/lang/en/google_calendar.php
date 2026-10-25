@@ -23,8 +23,6 @@ return [
         'no_connection' => 'No Google Calendar connection established.',
         'inactive' => 'Google Calendar connection is disconnected or disabled.',
         'ok' => 'Connected — calendar list available.',
-        'failing' => 'Google Calendar API unreachable or access denied.',
-        'error' => 'Google Calendar error (:class).',
     ],
 
     'action' => [

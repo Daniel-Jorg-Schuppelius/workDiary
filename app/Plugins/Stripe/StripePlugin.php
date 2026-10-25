@@ -16,6 +16,7 @@ use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{OnlinePaymentProvider, PluginCapability, SettingsField};
 use App\Plugins\Stripe\Api\StripeCheckoutClient;
+use App\Plugins\Support\ApiHealthProbe;
 use App\Plugins\Support\Payments\{OnlinePaymentCheckout, OnlinePaymentRequest, OnlinePaymentSnapshot};
 use Illuminate\Http\Request;
 use RuntimeException;
@@ -85,12 +86,11 @@ class StripePlugin extends AbstractPlugin implements OnlinePaymentProvider {
             return PluginHealth::degraded(__('Kein geheimer Schlüssel hinterlegt.'), code: 'not_configured');
         }
 
-        return PluginHealth::pingHealth(
-            ping: fn (): bool => $this->client($organization)->checkCredentials(),
-            unreachableMessage: (string) __('Stripe lehnt den Schlüssel ab.'),
-            okMessage: (string) __('Verbunden — Stripe erreichbar.'),
-            errorStatus: PluginHealth::STATUS_FAILING,
-        );
+        return ApiHealthProbe::probe($this->name(), function () use ($organization): string {
+            $this->client($organization)->probe();
+
+            return (string) __('Verbunden — Stripe erreichbar.');
+        }, ['auth' => (string) __('Stripe lehnt den Schlüssel ab.')]);
     }
 
     private function client(Organization $organization): StripeCheckoutClient {

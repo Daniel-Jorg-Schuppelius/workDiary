@@ -16,6 +16,7 @@ use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{OnlinePaymentProvider, PluginCapability, SettingsField};
 use App\Plugins\SumUp\Api\SumUpCheckoutClient;
+use App\Plugins\Support\ApiHealthProbe;
 use App\Plugins\Support\Payments\{OnlinePaymentCheckout, OnlinePaymentRequest, OnlinePaymentSnapshot};
 use Illuminate\Http\Request;
 use RuntimeException;
@@ -85,12 +86,11 @@ class SumUpPlugin extends AbstractPlugin implements OnlinePaymentProvider {
             return PluginHealth::degraded(__('API-Schlüssel oder Händlercode fehlt.'), code: 'not_configured');
         }
 
-        return PluginHealth::pingHealth(
-            ping: fn (): bool => $this->client($organization)->checkCredentials(),
-            unreachableMessage: (string) __('SumUp lehnt den API-Schlüssel ab.'),
-            okMessage: (string) __('Verbunden — SumUp erreichbar.'),
-            errorStatus: PluginHealth::STATUS_FAILING,
-        );
+        return ApiHealthProbe::probe($this->name(), function () use ($organization): string {
+            $this->client($organization)->probe();
+
+            return (string) __('Verbunden — SumUp erreichbar.');
+        }, ['auth' => (string) __('SumUp lehnt den API-Schlüssel ab.')]);
     }
 
     private function client(Organization $organization): SumUpCheckoutClient {

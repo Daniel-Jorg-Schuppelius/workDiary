@@ -51,7 +51,7 @@ final class CalDavRemoteCalendarGateway implements RemoteCalendarGateway {
         return [];
     }
 
-    public function ping(): bool {
-        return $this->gateway->ping();
+    public function probe(): void {
+        $this->gateway->probe();
     }
 }

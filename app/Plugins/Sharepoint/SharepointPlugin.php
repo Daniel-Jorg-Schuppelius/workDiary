@@ -15,8 +15,7 @@ use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\Plugin;
 use App\Plugins\Sharepoint\Api\SharepointDriveClient;
 use App\Plugins\Sharepoint\Models\SharepointConnection;
-use App\Plugins\Support\{OAuthConnectionStatus, PluginOrgContext};
-use Throwable;
+use App\Plugins\Support\{ApiHealthProbe, OAuthConnectionStatus, PluginOrgContext};
 
 /**
  * SharePoint-Dokumentablage über Microsoft Graph (MVP-330, Bauturbo A10) —
@@ -100,12 +99,10 @@ class SharepointPlugin extends AbstractPlugin implements \App\Plugins\Contracts\
             return PluginHealth::degraded(__('sharepoint::sharepoint.health.inactive'));
         }
 
-        try {
-            return (new SharepointDriveClient($connection))->ping()
-                ? PluginHealth::ok(__('sharepoint::sharepoint.health.ok'))
-                : PluginHealth::failing(__('sharepoint::sharepoint.health.failing'), 'unreachable');
-        } catch (Throwable $e) {
-            return PluginHealth::failing(__('sharepoint::sharepoint.health.error', ['class' => class_basename($e)]));
-        }
+        return ApiHealthProbe::probe($this->name(), function () use ($connection): string {
+            (new SharepointDriveClient($connection))->probe();
+
+            return (string) __('sharepoint::sharepoint.health.ok');
+        });
     }
 }

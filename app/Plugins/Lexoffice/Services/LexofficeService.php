@@ -12,18 +12,17 @@ namespace App\Plugins\Lexoffice\Services;
 
 use APIToolkit\Contracts\Interfaces\NamedEntityInterface;
 use APIToolkit\Entities\ID;
-use APIToolkit\Exceptions\{ApiException, TooManyRequestsException};
+use APIToolkit\Exceptions\ApiException;
 use App\Models\Customer\Customer;
 use App\Models\Supplier\Supplier;
 use App\Models\Time\TimeEntry;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
-use App\Plugins\Lexoffice\Exceptions\{LexofficeApiException, LexofficeNotConfiguredException, LexofficeRateLimitException};
+use App\Plugins\Lexoffice\Exceptions\{LexofficeApiException, LexofficeNotConfiguredException};
 use App\Plugins\Lexoffice\LexofficeConfig;
 use App\Services\Finance\Accounting\ContactPushService;
 use App\Services\Stammdaten\ContactIdentity;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\{JsonHelper, PersonNameHelper};
-use GuzzleHttp\Exception\ConnectException;
 use Illuminate\Support\Collection;
 use Lexoffice\API\Client;
 use Lexoffice\API\Endpoints\{ContactsEndpoint, ProfileEndpoint, VouchersEndpoint};
@@ -61,50 +60,19 @@ class LexofficeService {
     }
 
     /**
-     * Kurzer Health-Ping gegen den `/profile`-Endpunkt der Lexoffice-API.
-     * Liefert `true` bei HTTP 2xx, `false` bei echtem Fehler (z. B. 401).
-     *
-     * Transiente Zustände werden NICHT als `false` gemeldet, sondern als
-     * Exception nach oben gereicht, damit der Caller (PluginHealth) sie als
-     * `degraded` einstufen kann und das Plugin nicht auto-deaktiviert wird:
-     *   - 429 (Rate-Limit) → {@see LexofficeRateLimitException}
-     *   - Netz-/Timeout-Fehler → {@see ConnectException}
-     *
-     * @throws LexofficeRateLimitException|ConnectException
+     * Health-Probe gegen `/profile` mit kurzem Timeout; wirft bei Fehlern, die Einordnung macht
+     * {@see \App\Plugins\Support\ApiHealthProbe} (429 und Netzfehler gelten dort als vorübergehend).
      */
-    public function ping(): bool {
-        $status = $this->profileStatus();
-
-        return $status !== null && $status >= 200 && $status < 300;
-    }
-
-    /**
-     * HTTP-Status des /profile-Endpunkts (für den Healthcheck, damit dieser
-     * 401/403/5xx differenziert melden kann). `null`, wenn das Plugin nicht
-     * konfiguriert ist. Ein 429 (Rate-Limit) führt — wie bei {@see ping()} —
-     * weiterhin zur {@see LexofficeRateLimitException}.
-     *
-     * @throws LexofficeRateLimitException|ConnectException
-     */
-    public function profileStatus(): ?int {
-        if (! $this->isConfigured()) {
-            return null;
-        }
+    public function probe(): void {
         $client = $this->client();
         $timeout = $client->getTimeout();
         $client->setTimeout(5.0);
 
         try {
             (new ProfileEndpoint($client))->get();
-        } catch (TooManyRequestsException) {
-            throw new LexofficeRateLimitException();
-        } catch (ApiException $e) {
-            return $e->getCode();
         } finally {
             $client->setTimeout($timeout);
         }
-
-        return 200;
     }
 
     /**

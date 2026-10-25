@@ -16,8 +16,7 @@ use App\Plugins\Calendly\Api\CalendlyClient;
 use App\Plugins\Calendly\Models\CalendlyConnection;
 use App\Plugins\Calendly\Services\CalendlyBackfillService;
 use App\Plugins\Contracts\{AppointmentSyncer, Plugin, PluginCapability};
-use App\Plugins\Support\PluginOrgContext;
-use Throwable;
+use App\Plugins\Support\{ApiHealthProbe, PluginOrgContext};
 
 /**
  * Calendly-Terminbuchung-Plugin (Feature 095).
@@ -97,12 +96,6 @@ class CalendlyPlugin extends AbstractPlugin implements AppointmentSyncer {
             return PluginHealth::degraded(__('Keine aktive Calendly-Verbindung.'));
         }
 
-        try {
-            return (new CalendlyClient($connection))->ping()
-                ? PluginHealth::ok('calendly: ok')
-                : PluginHealth::failing(__('Calendly-API nicht erreichbar oder Token ungültig.'));
-        } catch (Throwable $e) {
-            return PluginHealth::failing($e->getMessage());
-        }
+        return ApiHealthProbe::probe($this->name(), fn () => (new CalendlyClient($connection))->probe());
     }
 }

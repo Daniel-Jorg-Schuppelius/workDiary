@@ -5,7 +5,5 @@
     "Keine Zammad-Anbindung hinterlegt.": "No Zammad connection configured.",
     "Queue gehört zu einer anderen Organisation.": "The queue belongs to a different organisation.",
     "Zammad": "Zammad",
-    "Zammad-API nicht erreichbar oder Token ungültig.": "Zammad API unreachable or token invalid.",
-    "Zammad-API-Fehler (:class).": "Zammad API error (:class).",
     "Zammad-Anbindung ist deaktiviert oder unvollständig.": "Zammad integration is disabled or incomplete."
 }

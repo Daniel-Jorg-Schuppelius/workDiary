@@ -19,7 +19,6 @@ use App\Plugins\Support\ChecksCarrierHealth;
 use App\Services\Shipping\{ShipmentLabel, ShipmentRecipient, ShipmentRequest, TrackingEvent, TrackingResult};
 use Illuminate\Support\Carbon;
 use RuntimeException;
-use Throwable;
 
 /**
  * Versand-/Logistik-Anbindung DHL Paket (Feature 059, MVP-128).
@@ -183,22 +182,17 @@ class DhlPlugin extends AbstractPlugin implements ShippingProvider {
 
     // --- Carrier-Health (Hooks für ChecksCarrierHealth) -------------------
 
-    protected function carrierPing(CarrierConnection $connection): bool {
-        return (new DhlApiClient($connection))->ping();
+    protected function carrierProbe(CarrierConnection $connection): void {
+        (new DhlApiClient($connection))->probe();
     }
 
-    /** @return array{missing: string, disabled: string, connected: string, unreachable: string} */
+    /** @return array{missing: string, disabled: string, connected: string} */
     protected function carrierHealthMessages(): array {
         return [
             'missing' => __('Keine DHL-Anbindung hinterlegt.'),
             'disabled' => __('DHL-Anbindung ist deaktiviert.'),
             'connected' => __('Verbunden mit der DHL-API.'),
-            'unreachable' => __('DHL-API nicht erreichbar oder Zugangsdaten ungültig.'),
         ];
-    }
-
-    protected function carrierErrorMessage(Throwable $e): string {
-        return __('DHL-API-Fehler (:class).', ['class' => class_basename($e)]);
     }
 
     // --- Mapping ----------------------------------------------------------

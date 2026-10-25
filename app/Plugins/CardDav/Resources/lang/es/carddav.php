@@ -19,8 +19,6 @@ return [
         'inactive' => 'Inactivo',
         'no_connection' => 'No hay ninguna conexión CardDAV configurada.',
         'inactive_or_incomplete' => 'La conexión CardDAV está desactivada o incompleta.',
-        'unreachable' => 'Servidor CardDAV inaccesible o credenciales no válidas.',
-        'error' => 'Error de CardDAV (:class).',
         'last_error' => 'Último error: :error',
         'locked' => 'Tras :count intentos fallidos consecutivos, la sincronización está bloqueada. Compruebe la dirección y las credenciales y vuelva a guardar la conexión; así se levanta el bloqueo.',
     ],

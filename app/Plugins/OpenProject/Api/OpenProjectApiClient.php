@@ -46,12 +46,8 @@ class OpenProjectApiClient implements RemoteTimeWriter {
     }
 
     /** Health-Ping: /users/me liefert bei gültigem Token 200. */
-    public function ping(): bool {
-        if (! $this->isConfigured()) {
-            return false;
-        }
-
-        return $this->api()->getResponse($this->baseUrl . '/users/me', [], ['timeout' => 8])->successful();
+    public function probe(): void {
+        $this->api()->getResponse($this->baseUrl . '/users/me', [], ['timeout' => 8])->throw();
     }
 
     /**

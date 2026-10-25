@@ -50,9 +50,7 @@ final class ZammadTicketImporterTest extends TestCase {
                 return $this->ignoresPaging ? array_slice($this->tickets, 0, $perPage) : array_slice($this->tickets, ($page - 1) * $perPage, $perPage);
             }
 
-            public function ping(): bool {
-                return true;
-            }
+            public function probe(): void {}
 
             public function updateTicketState(int $ticketId, ?string $state, ?string $note): bool {
                 return true;

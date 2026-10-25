@@ -10,7 +10,6 @@
     "Calendly ist nicht konfiguriert: keine eigene App in den Plugin-Einstellungen und keine CALENDLY_CLIENT_ID/SECRET der Installation.": "Calendly is not configured: no own app in the plugin settings and no CALENDLY_CLIENT_ID/SECRET for the installation.",
     "Calendly ist nicht konfiguriert: weder eine eigene App in den Plugin-Einstellungen noch die Instanz-App.": "Calendly is not configured: neither an own app in the plugin settings nor the instance app.",
     "Calendly verbunden.": "Calendly connected.",
-    "Calendly-API nicht erreichbar oder Token ungültig.": "Calendly API unreachable or token invalid.",
     "Calendly-Absage": "Calendly cancellation",
     "Calendly-Absage nach Auftragsbeginn": "Calendly cancellation after order start",
     "Calendly-Termin": "Calendly appointment",

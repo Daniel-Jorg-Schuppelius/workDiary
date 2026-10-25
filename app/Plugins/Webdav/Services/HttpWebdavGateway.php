@@ -14,7 +14,7 @@ namespace App\Plugins\Webdav\Services;
 
 use APIToolkit\API\WebDav\Propfind;
 use App\Plugins\Support\Mirror\RemoteFileGateway;
-use App\Plugins\Support\PluginApiClient;
+use App\Plugins\Support\{PluginApiClient, PluginApiException};
 use App\Plugins\Webdav\Models\WebdavConnection;
 use App\Support\UrlSafety;
 use Throwable;
@@ -127,19 +127,16 @@ class HttpWebdavGateway implements RemoteFileGateway {
         return $signature !== '|' ? $signature : null;
     }
 
-    public function ping(): bool {
-        try {
-            // PROPFIND Depth:0 auf die Collection: 207 Multi-Status = erreichbar + Auth gültig.
-            $response = $this->http->requestResponse('PROPFIND', rtrim($this->connection->base_url, '/'), [
-                'auth' => $this->auth(),
-                'headers' => ['Depth' => '0', 'Content-Type' => 'application/xml; charset=utf-8'],
-                'body' => Propfind::body(['d:resourcetype']),
-            ]);
-        } catch (Throwable) {
-            return false;
+    public function probe(): void {
+        // PROPFIND Depth:0 auf die Collection: 207 Multi-Status = erreichbar + Auth gültig.
+        $response = $this->http->requestResponse('PROPFIND', rtrim($this->connection->base_url, '/'), [
+            'auth' => $this->auth(),
+            'headers' => ['Depth' => '0', 'Content-Type' => 'application/xml; charset=utf-8'],
+            'body' => Propfind::body(['d:resourcetype']),
+        ]);
+        if ($response->status() !== 207) {
+            throw new PluginApiException(sprintf('WebDAV PROPFIND antwortete mit HTTP %d.', $response->status()), $response->status(), 'PROPFIND');
         }
-
-        return $response->status() === 207;
     }
 
     /** @return array{0: string, 1: string} */

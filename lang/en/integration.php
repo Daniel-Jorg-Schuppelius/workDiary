@@ -226,10 +226,12 @@ return [
     // Leseprobe gegen eine Fremd-API (ApiHealthProbe): Aufgabenimporte, Shops, Belegquellen.
     'api_health' => [
         'ok' => ':provider reachable.',
-        'auth' => ':provider rejects the sign-in — check the credentials or reconnect.',
+        'auth' => ':provider rejects the sign-in (HTTP :status) — check the credentials or reconnect.',
         'rate_limited' => ':provider is throttling requests (429).',
-        'api_error' => ':provider responds with error status :status.',
-        'unreachable' => ':provider is not reachable.',
+        'api_error' => ':provider responds unexpectedly (HTTP :status) — check the address and settings.',
+        'server_error' => ':provider reports a fault (HTTP :status).',
+        'network' => ':provider is currently not reachable (network or timeout).',
+        'error' => 'Check of :provider failed (:class).',
     ],
     'task_import' => [
         'description_incomplete' => '[Description imported incompletely — see the original in the source]',

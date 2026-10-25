@@ -40,6 +40,9 @@ interface RemoteFileGateway {
      */
     public function remoteSignature(string $path): ?string;
 
-    /** Liveness/Auth-Check: true, wenn die Ablage mit den Zugangsdaten erreichbar ist. */
-    public function ping(): bool;
+    /**
+     * Liveness/Auth-Check der Ablage mit den Zugangsdaten. Wirft bei Fehlern, die Einordnung macht
+     * {@see \App\Plugins\Support\ApiHealthProbe}.
+     */
+    public function probe(): void;
 }

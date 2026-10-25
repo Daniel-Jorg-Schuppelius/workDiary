@@ -14,6 +14,7 @@ use App\Models\Audit\AuditLog;
 use App\Models\ServiceTicket\ServiceQueue;
 use App\Plugins\Contracts\{PluginCapability, TaskSyncer};
 use App\Plugins\{PluginDiscovery, PluginHealth};
+use App\Plugins\Support\PluginApiException;
 use App\Plugins\Zammad\Contracts\{ZammadGateway, ZammadGatewayFactory};
 use App\Plugins\Zammad\Models\ZammadConnection;
 use App\Plugins\Zammad\ZammadPlugin;
@@ -22,6 +23,7 @@ use App\Support\SqidEncoder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use Throwable;
 
 /**
  * Feature 060, MVP-129: Plugin-Verdrahtung. Auto-Discovery, angekündigte
@@ -40,17 +42,19 @@ final class ZammadPluginTest extends TestCase {
     /**
      * @param  list<array{id: int, number: string, title: string, group_id: int|null, state: string|null, customer_id: int|null}>  $tickets
      */
-    private function fakeFactory(array $tickets = [], bool $ping = true): void {
-        $gateway = new class($tickets, $ping) implements ZammadGateway {
+    private function fakeFactory(array $tickets = [], ?Throwable $probeFailure = null): void {
+        $gateway = new class($tickets, $probeFailure) implements ZammadGateway {
             /** @param list<array{id: int, number: string, title: string, group_id: int|null, state: string|null, customer_id: int|null}> $tickets */
-            public function __construct(private array $tickets, private bool $pingResult) {}
+            public function __construct(private array $tickets, private ?Throwable $probeFailure) {}
 
             public function listTickets(?int $groupId = null, int $page = 1, int $perPage = 100): array {
                 return $this->tickets;
             }
 
-            public function ping(): bool {
-                return $this->pingResult;
+            public function probe(): void {
+                if ($this->probeFailure !== null) {
+                    throw $this->probeFailure;
+                }
             }
 
             public function updateTicketState(int $ticketId, ?string $state, ?string $note): bool {
@@ -231,18 +235,20 @@ final class ZammadPluginTest extends TestCase {
         $this->assertSame(0, $result['created']);
     }
 
-    public function test_health_ok_when_ping_succeeds(): void {
-        $this->fakeFactory(ping: true);
+    public function test_health_ok_when_probe_succeeds(): void {
+        $this->fakeFactory();
         $this->connection();
 
         $this->assertTrue((new ZammadPlugin())->healthCheck()->isOk());
     }
 
-    public function test_health_failing_when_ping_fails(): void {
-        $this->fakeFactory(ping: false);
+    public function test_health_failing_when_token_is_rejected(): void {
+        $this->fakeFactory(probeFailure: new PluginApiException('Zammad /tickets antwortete mit HTTP 401.', 401));
         $this->connection();
 
-        $this->assertTrue((new ZammadPlugin())->healthCheck()->isFailing());
+        $health = (new ZammadPlugin())->healthCheck();
+        $this->assertTrue($health->isFailing());
+        $this->assertSame('auth', $health->code);
     }
 
     public function test_health_degraded_without_connection(): void {

@@ -19,7 +19,6 @@ use App\Services\CloudIntake\StaleCheckpointException;
 use DateTimeInterface;
 use Illuminate\Support\Carbon;
 use RuntimeException;
-use Throwable;
 
 /**
  * Microsoft-Graph-Mail-Gateway (Feature 102) auf dem `php-api-toolkit`-
@@ -141,15 +140,6 @@ class MsgraphMailClient implements GraphSubscriptionClient {
         $response = $this->api->postJson($this->base . '/me/messages/' . rawurlencode($messageId) . '/send');
         if (! $response->successful()) {
             throw new RuntimeException('Graph Draft-Send fehlgeschlagen (HTTP ' . $response->status() . ').');
-        }
-    }
-
-    /** Liveness/Auth-Check: Konto erreichbar. */
-    public function ping(): bool {
-        try {
-            return $this->api->getResponse($this->base . '/me', ['$select' => 'id'])->successful();
-        } catch (Throwable) {
-            return false;
         }
     }
 

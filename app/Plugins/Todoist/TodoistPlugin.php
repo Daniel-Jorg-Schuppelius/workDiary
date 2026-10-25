@@ -13,11 +13,10 @@ namespace App\Plugins\Todoist;
 use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TaskSyncer};
-use App\Plugins\Support\PluginOrgContext;
+use App\Plugins\Support\{ApiHealthProbe, PluginOrgContext};
 use App\Plugins\Todoist\Api\TodoistApiClient;
 use App\Plugins\Todoist\Enums\TodoistConnectionStatus;
 use App\Plugins\Todoist\Models\TodoistConnection;
-use Throwable;
 
 /**
  * Todoist-Aufgabensynchronisation (Feature 055, MVP-111–116).
@@ -117,13 +116,11 @@ class TodoistPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Slo
             return PluginHealth::failing(__('Verbindung pausiert — bitte neu verbinden.'));
         }
 
-        try {
+        return ApiHealthProbe::probe($this->name(), static function () use ($connection): string {
             $user = (new TodoistApiClient($connection))->getUser();
 
-            return PluginHealth::ok(__('Verbunden als :email.', ['email' => (string) ($user['email'] ?? $connection->todoist_user_email ?? '—')]));
-        } catch (Throwable $e) {
-            return PluginHealth::failing(__('Todoist-API nicht erreichbar (:class).', ['class' => class_basename($e)]));
-        }
+            return (string) __('Verbunden als :email.', ['email' => (string) ($user['email'] ?? $connection->todoist_user_email ?? '—')]);
+        });
     }
 
     public function renderActions(string $slot, mixed $context = null): ?string {

@@ -14,7 +14,7 @@ use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\CardDav\Contracts\CardDavGatewayFactory;
 use App\Plugins\CardDav\Models\CardDavConnection;
 use App\Plugins\Contracts\Plugin;
-use Throwable;
+use App\Plugins\Support\ApiHealthProbe;
 
 /**
  * CardDAV-Lesegateway als Matching-Quelle (Bauturbo A9, MVP-329).
@@ -79,12 +79,10 @@ class CardDavPlugin extends AbstractPlugin {
             return PluginHealth::degraded(__('carddav::carddav.health.inactive_or_incomplete'));
         }
 
-        try {
-            return app(CardDavGatewayFactory::class)->for($connection)->ping()
-                ? PluginHealth::ok(__('Verbunden mit :url.', ['url' => $connection->base_url]))
-                : PluginHealth::failing(__('carddav::carddav.health.unreachable'), 'unreachable');
-        } catch (Throwable $e) {
-            return PluginHealth::failing(__('carddav::carddav.health.error', ['class' => class_basename($e)]));
-        }
+        return ApiHealthProbe::probe('CardDAV', function () use ($connection): string {
+            app(CardDavGatewayFactory::class)->for($connection)->probe();
+
+            return (string) __('Verbunden mit :url.', ['url' => $connection->base_url]);
+        });
     }
 }

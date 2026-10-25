@@ -12,7 +12,6 @@ return [
     'health' => [
         'not_configured' => 'Aucun identifiant du prestataire de point d’accès enregistré.',
         'sender_invalid' => 'L’identifiant de participant Peppol propre est absent ou n’a pas la forme <ICD>:<identifiant>.',
-        'unreachable' => 'Le prestataire de point d’accès ne répond pas ou refuse la clé d’accès.',
         'ok' => 'Connecté à :url.',
     ],
     'plugin' => [

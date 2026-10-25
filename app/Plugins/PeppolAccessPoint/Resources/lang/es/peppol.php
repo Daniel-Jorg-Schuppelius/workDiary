@@ -12,7 +12,6 @@ return [
     'health' => [
         'not_configured' => 'No hay credenciales del proveedor de punto de acceso guardadas.',
         'sender_invalid' => 'Falta el identificador de participante Peppol propio o no tiene la forma <ICD>:<identificador>.',
-        'unreachable' => 'El proveedor de punto de acceso no responde o rechaza la clave de acceso.',
         'ok' => 'Conectado con :url.',
     ],
     'plugin' => [

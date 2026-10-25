@@ -76,12 +76,8 @@ class TogglFocusApiClient implements TogglApi {
         return $this->apiKey !== null && $this->apiKey !== '';
     }
 
-    public function ping(): bool {
-        if (! $this->isConfigured()) {
-            return false;
-        }
-
-        return $this->api()->getResponse($this->baseUrl . '/users/me/settings', [], ['timeout' => 5])->successful();
+    public function probe(): void {
+        $this->api()->getResponse($this->baseUrl . '/users/me/settings', [], ['timeout' => 5])->throw();
     }
 
     /** Die Report-Abfrage enthält die eigenen Einträge bereits; ein zweiter Abruf kostete nur Kontingent. */

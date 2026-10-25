@@ -92,11 +92,10 @@ abstract class AbstractCarrierOAuthApiClient {
     /**
      * Verbindungs-/Health-Check: ein frischer Token-Austausch mit den
      * hinterlegten Zugangsdaten (validiert Client-ID/Secret gegen den Carrier).
+     * fetchToken() wirft bei Ablehnung eine typisierte ApiException.
      */
-    public function ping(): bool {
+    public function probe(): void {
         $this->store->clear();
         $this->store->save($this->grant->fetchToken());
-
-        return true; // fetchToken() wirft bei Ablehnung (typisierte ApiException)
     }
 }

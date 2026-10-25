@@ -16,6 +16,7 @@ use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{PluginCapability, SettingsField, SmsProvider};
 use App\Plugins\Sipgate\Api\SipgateSmsClient;
+use App\Plugins\Support\ApiHealthProbe;
 use App\Plugins\Support\Sms\SmsSendResult;
 use Throwable;
 
@@ -92,11 +93,10 @@ class SipgatePlugin extends AbstractPlugin implements SmsProvider {
             return PluginHealth::degraded(__('Kein Personal Access Token hinterlegt.'), code: 'not_configured');
         }
 
-        return PluginHealth::pingHealth(
-            ping: fn (): bool => (new SipgateSmsClient($config))->checkCredentials(),
-            unreachableMessage: (string) __('sipgate lehnt den Token ab.'),
-            okMessage: (string) __('Verbunden — Gateway erreichbar.'),
-            errorStatus: PluginHealth::STATUS_FAILING,
-        );
+        return ApiHealthProbe::probe($this->name(), function () use ($config): string {
+            (new SipgateSmsClient($config))->probe();
+
+            return (string) __('Verbunden — Gateway erreichbar.');
+        }, ['auth' => (string) __('sipgate lehnt den Token ab.')]);
     }
 }

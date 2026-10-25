@@ -12,7 +12,6 @@ return [
     'health' => [
         'not_configured' => 'No access point provider credentials stored.',
         'sender_invalid' => 'The own Peppol participant ID is missing or not in the form <ICD>:<identifier>.',
-        'unreachable' => 'The access point provider does not respond or rejects the access key.',
         'ok' => 'Connected to :url.',
     ],
     'plugin' => [

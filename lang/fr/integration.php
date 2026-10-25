@@ -226,10 +226,12 @@ return [
     // Leseprobe gegen eine Fremd-API (ApiHealthProbe): Aufgabenimporte, Shops, Belegquellen.
     'api_health' => [
         'ok' => ':provider joignable.',
-        'auth' => ':provider refuse la connexion — vérifiez les identifiants ou reconnectez-vous.',
+        'auth' => ':provider refuse la connexion (HTTP :status) — vérifiez les identifiants ou reconnectez-vous.',
         'rate_limited' => ':provider limite les requêtes (429).',
-        'api_error' => ':provider répond avec le statut d’erreur :status.',
-        'unreachable' => ':provider n’est pas joignable.',
+        'api_error' => ':provider répond de manière inattendue (HTTP :status) — vérifiez l’adresse et les paramètres.',
+        'server_error' => ':provider signale une panne (HTTP :status).',
+        'network' => ':provider n’est pas joignable pour le moment (réseau ou délai dépassé).',
+        'error' => 'La vérification de :provider a échoué (:class).',
     ],
     'task_import' => [
         'description_incomplete' => '[Description importée partiellement — voir l’original dans la source]',

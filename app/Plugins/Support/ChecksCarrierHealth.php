@@ -20,28 +20,26 @@ use Throwable;
 /**
  * Gemeinsames healthy()/healthCheck()-Paar der Carrier-Plugins (W3d) —
  * ersetzt drei wortgleiche Kopien in DHL/FedEx/UPS. Die nutzende Klasse
- * liefert den Carrier-Schlüssel über ihre `CARRIER`-Konstante, den Ping über
- * {@see carrierPing()} und die Meldungen über {@see carrierHealthMessages()} /
- * {@see carrierErrorMessage()} — die Lang-Keys existieren nur je Carrier
- * wörtlich, daher keine :carrier-Parametrisierung (Verhaltensneutralität).
+ * liefert den Carrier-Schlüssel über ihre `CARRIER`-Konstante, die Probe über
+ * {@see carrierProbe()} und die Meldungen über {@see carrierHealthMessages()};
+ * die Einordnung eines Fehlschlags macht {@see ApiHealthProbe}.
  */
 trait ChecksCarrierHealth {
-    /** Führt den Carrier-Ping mit der Anbindung aus (wirft bei Transportfehlern). */
-    abstract protected function carrierPing(CarrierConnection $connection): bool;
+    /** Prüft Erreichbarkeit und Zugangsdaten der Anbindung; wirft bei Fehlern. */
+    abstract protected function carrierProbe(CarrierConnection $connection): void;
 
     /**
      * Wörtliche (je Carrier eigenständig übersetzte) Health-Meldungen.
      *
-     * @return array{missing: string, disabled: string, connected: string, unreachable: string}
+     * @return array{missing: string, disabled: string, connected: string}
      */
     abstract protected function carrierHealthMessages(): array;
 
-    /** Meldung für unerwartete Ausnahmen im Health-Check (mit Exception-Kurzname). */
-    abstract protected function carrierErrorMessage(Throwable $e): string;
-
     public function healthy(CarrierConnection $connection): bool {
         try {
-            return $this->carrierPing($connection);
+            $this->carrierProbe($connection);
+
+            return true;
         } catch (Throwable) {
             return false;
         }
@@ -70,12 +68,10 @@ trait ChecksCarrierHealth {
             return PluginHealth::degraded($messages['disabled']);
         }
 
-        try {
-            return $this->healthy($connection)
-                ? PluginHealth::ok($messages['connected'])
-                : PluginHealth::failing($messages['unreachable'], 'unreachable');
-        } catch (Throwable $e) {
-            return PluginHealth::failing($this->carrierErrorMessage($e));
-        }
+        return ApiHealthProbe::probe($this->name(), function () use ($connection, $messages): string {
+            $this->carrierProbe($connection);
+
+            return $messages['connected'];
+        });
     }
 }

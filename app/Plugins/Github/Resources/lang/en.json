@@ -2,8 +2,6 @@
     "Fine-grained Personal Access Token mit Lesezugriff auf die Issues des Repositories.": "Fine-grained personal access token with read access to the repository's issues.",
     "GitHub ist nicht konfiguriert (Repository oder API-Token fehlt).": "GitHub is not configured (repository or API token missing).",
     "GitHub lehnt den API-Token ab (:status) — Fine-grained PAT prüfen.": "GitHub rejects the API token (:status) — please check the fine-grained PAT.",
-    "GitHub-API antwortet mit Fehlerstatus :status.": "GitHub API responds with error status :status.",
-    "GitHub-API nicht erreichbar.": "GitHub API unreachable.",
     "GitHub-Benutzer oder -Organisation, z. B. „acme\".": "GitHub user or organisation, e.g. \"acme\".",
     "Importiert GitHub-Issues eines Repositories als Aufgaben (idempotent je Issue, Pull Requests werden gefiltert): Zeiterfassung und Abrechnung in WorkDiary, GitHub bleibt führend. Polling mit since-Aufholpunkt, Webhook-Anstoß optional.": "Imports GitHub issues of a repository as tasks (idempotent per issue, pull requests are filtered): time tracking and billing in WorkDiary, GitHub stays in the lead. Polling with a since checkpoint, webhook trigger optional.",
     "Nur die Issues dieses Repositories werden importiert.": "Only the issues of this repository are imported.",

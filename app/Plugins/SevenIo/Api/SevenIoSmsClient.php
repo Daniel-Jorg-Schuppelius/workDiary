@@ -62,8 +62,8 @@ class SevenIoSmsClient {
     }
 
     /** Guthabenabfrage — der billigste echte Aufruf für den Healthcheck. */
-    public function checkCredentials(): bool {
-        return $this->api()->getResponse($this->config['api_base'] . '/balance')->successful();
+    public function probe(): void {
+        $this->api()->getResponse($this->config['api_base'] . '/balance')->throw();
     }
 
     /**

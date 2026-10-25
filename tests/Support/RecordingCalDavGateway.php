@@ -13,6 +13,7 @@ namespace Tests\Support;
 use App\Plugins\CalDav\Contracts\CalDavGateway;
 use App\Plugins\CalDav\Services\CalDavSyncPage;
 use DateTimeInterface;
+use Throwable;
 
 /**
  * Test-Double für {@see CalDavGateway} (Feature 058): protokolliert PUT-/
@@ -37,7 +38,7 @@ class RecordingCalDavGateway implements CalDavGateway {
     public function __construct(
         public bool $putOk = true,
         public bool $deleteOk = true,
-        public bool $pingOk = true,
+        public ?Throwable $probeFailure = null,
         public ?CalDavSyncPage $syncPage = null,
     ) {}
 
@@ -53,8 +54,10 @@ class RecordingCalDavGateway implements CalDavGateway {
         return $this->deleteOk;
     }
 
-    public function ping(): bool {
-        return $this->pingOk;
+    public function probe(): void {
+        if ($this->probeFailure !== null) {
+            throw $this->probeFailure;
+        }
     }
 
     /**

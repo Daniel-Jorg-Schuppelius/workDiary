@@ -12,12 +12,14 @@ declare(strict_types=1);
 
 namespace App\Plugins\Zammad\Services;
 
+use App\Plugins\Support\PluginApiException;
 use App\Plugins\Zammad\Contracts\ZammadGateway;
 use App\Plugins\Zammad\Models\ZammadConnection;
 use App\Support\UrlSafety;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Throwable;
 use ZammadAPIClient\Client;
+use ZammadAPIClient\Client\Response;
 use ZammadAPIClient\Resource\Ticket;
 
 /**
@@ -82,18 +84,17 @@ class ZammadClientGateway implements ZammadGateway {
      * heißt „erreichbar + Token gültig"; das Self-Objekt mit Fehler oder eine
      * Exception (Netz/Auth) heißt „nicht erreichbar".
      */
-    public function ping(): bool {
-        try {
-            $result = (new Ticket($this->client))->all(1, 1);
-        } catch (Throwable) {
-            return false;
-        }
+    public function probe(): void {
+        $result = (new Ticket($this->client))->all(1, 1);
+        if ($result instanceof Ticket && $result->hasError()) {
+            // Das SDK hält den Fehler am Ergebnis fest, den Status nur an der letzten Antwort
+            // (deklariert als `@return objects`, daher erst prüfen).
+            /** @var mixed $response */
+            $response = $this->client->getLastResponse();
+            $status = $response instanceof Response ? (int) $response->getStatusCode() : 0;
 
-        if ($result instanceof Ticket) {
-            return ! $result->hasError();
+            throw new PluginApiException(sprintf('Zammad /tickets antwortete mit HTTP %d.', $status), $status, '/tickets');
         }
-
-        return is_array($result);
     }
 
     public function updateTicketState(int $ticketId, ?string $state, ?string $note): bool {

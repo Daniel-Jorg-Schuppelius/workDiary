@@ -44,14 +44,8 @@ class AnyDeskClient implements RemoteProvider {
             && $this->apiPassword !== null && $this->apiPassword !== '';
     }
 
-    public function ping(): bool {
-        if (! $this->isConfigured()) {
-            return false;
-        }
-
-        return $this->api()
-            ->getResponse($this->baseUrl . '/auth', [], ['timeout' => 5])
-            ->successful();
+    public function probe(): void {
+        $this->api()->getResponse($this->baseUrl . '/auth', [], ['timeout' => 5])->throw();
     }
 
     public function fetchSessions(CarbonImmutable $from, CarbonImmutable $to): array {

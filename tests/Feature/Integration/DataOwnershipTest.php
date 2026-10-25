@@ -71,9 +71,7 @@ final class DataOwnershipTest extends TestCase {
                 return [['id' => 1, 'number' => '22001', 'title' => 'Ticket 1', 'group_id' => 5, 'state' => 'open', 'customer_id' => 3]];
             }
 
-            public function ping(): bool {
-                return true;
-            }
+            public function probe(): void {}
 
             public function updateTicketState(int $ticketId, ?string $state, ?string $note): bool {
                 return true;

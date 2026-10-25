@@ -5,7 +5,6 @@
     "Clockify → Profil → Advanced → API. Free-Plan erlaubt nur 30 Requests/h — für Free-Konten den CSV-Weg nutzen.": "Clockify → Profil → Advanced → API. Le plan Free n'autorise que 30 requêtes/h — pour les comptes Free, utiliser la voie CSV.",
     "Clockify → Reports → Detailed → Export → CSV. Clients/Projekte werden über Namen bzw. gemerkte Zuordnungen gematcht; nicht Zuordenbares landet in der Zuordnungs-Inbox. Für Free-Konten (30 API-Requests/h) ist CSV der empfohlene Weg.": "Clockify → Reports → Detailed → Export → CSV. Les clients/projets sont mis en correspondance par nom ou via les associations mémorisées ; ce qui ne peut pas être associé atterrit dans la boîte de réception des associations. Pour les comptes Free (30 requêtes API/h), le CSV est la voie recommandée.",
     "Clockify-API ist nicht konfiguriert (API-Key in den Plugin-Einstellungen hinterlegen).": "L'API Clockify n'est pas configurée (enregistrer la clé API dans les paramètres du plugin).",
-    "Clockify-API nicht erreichbar: :message": "API Clockify injoignable : :message",
     "Clockify-API-Import: :created angelegt, :skipped übersprungen, :unmatched offen (Inbox).": "Import API Clockify : :created créés, :skipped ignorés, :unmatched en attente (boîte de réception).",
     "Clockify-Antwort ohne Eintrags-ID": "Réponse Clockify sans ID d’entrée",
     "Clockify-Import": "Import Clockify",

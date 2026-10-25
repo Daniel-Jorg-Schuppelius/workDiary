@@ -12,7 +12,7 @@ namespace App\Plugins\Dhl\Api;
 
 use APIToolkit\API\Authentication\BasicAuthentication;
 use App\Models\Shipping\CarrierConnection;
-use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
+use App\Plugins\Support\{PluginApiClient, PluginApiException, PluginHttpFactory};
 use Illuminate\Http\Client\Response;
 use RuntimeException;
 
@@ -96,12 +96,13 @@ class DhlApiClient {
 
     /**
      * Verbindungs-/Health-Check: eine Tracking-Abfrage mit den hinterlegten
-     * Zugangsdaten. Alles außer 401/403 (und Verbindungsfehlern) gilt als
-     * „erreichbar & autorisiert" — eine unbekannte Nummer liefert 404/200.
+     * Zugangsdaten. Eine unbekannte Nummer liefert 404/200/400 und gilt als
+     * „erreichbar & autorisiert“; nur Ablehnung, Drosselung und Störung werfen.
      */
-    public function ping(): bool {
-        $response = $this->trackShipment('00000000000000000000');
-
-        return $response->status() !== 401 && $response->status() !== 403;
+    public function probe(): void {
+        $status = $this->trackShipment('00000000000000000000')->status();
+        if (in_array($status, [401, 403, 429], true) || $status >= 500) {
+            throw new PluginApiException(sprintf('DHL-Tracking antwortete mit HTTP %d.', $status), $status, 'track');
+        }
     }
 }

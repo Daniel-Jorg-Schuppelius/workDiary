@@ -14,6 +14,7 @@ use App\Plugins\CardDav\CardDavPlugin;
 use App\Plugins\CardDav\Contracts\{CardDavGateway, CardDavGatewayFactory};
 use App\Plugins\CardDav\Models\CardDavConnection;
 use App\Plugins\{PluginDiscovery, PluginHealth};
+use App\Plugins\Support\PluginApiException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\FakeCardDavGateway;
@@ -80,13 +81,20 @@ final class CardDavPluginTest extends TestCase {
         $this->assertSame(PluginHealth::STATUS_DEGRADED, (new CardDavPlugin())->healthCheck()->status);
     }
 
-    public function test_health_reflects_ping(): void {
+    public function test_health_reflects_probe(): void {
         $this->connection();
 
-        $this->bindGateway(new FakeCardDavGateway(pingOk: true));
+        $this->bindGateway(new FakeCardDavGateway());
         $this->assertTrue((new CardDavPlugin())->healthCheck()->isOk());
 
-        $this->bindGateway(new FakeCardDavGateway(pingOk: false));
-        $this->assertTrue((new CardDavPlugin())->healthCheck()->isFailing());
+        $this->bindGateway(new FakeCardDavGateway(probeFailure: new PluginApiException('CardDAV antwortete mit HTTP 401.', 401)));
+        $health = (new CardDavPlugin())->healthCheck();
+        $this->assertTrue($health->isFailing());
+        $this->assertSame('auth', $health->code);
+
+        $this->bindGateway(new FakeCardDavGateway(probeFailure: new PluginApiException('CardDAV: kein Adressbuch gefunden.', 0)));
+        $health = (new CardDavPlugin())->healthCheck();
+        $this->assertTrue($health->isFailing());
+        $this->assertSame('CardDAV: kein Adressbuch gefunden.', $health->message);
     }
 }

@@ -20,11 +20,12 @@ use App\Plugins\Contracts\{NavigationContributor, Plugin, PluginCapability, Prov
 use App\Plugins\RemoteSupport\Api\{AnyDeskClient, TeamViewerClient};
 use App\Plugins\RemoteSupport\Enums\RemotePendingSessionStatus;
 use App\Plugins\RemoteSupport\Models\RemotePendingSession;
+use App\Plugins\RemoteSupport\Providers\RemoteProvider;
 use App\Plugins\RemoteSupport\Services\{RemoteDeviceRegistry, RemotePendingAssignmentService, RemoteSessionImporter};
+use App\Plugins\Support\ApiHealthProbe;
 use App\Services\Navigation\NavigationRegistry;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\{Cache, Route};
-use Throwable;
 
 /**
  * Fernwartungs-Plugin (AnyDesk + TeamViewer).
@@ -126,21 +127,24 @@ class RemoteSupportPlugin extends AbstractPlugin implements NavigationContributo
             return PluginHealth::degraded(__('Kein Fernwartungs-Anbieter konfiguriert.'));
         }
 
-        $messages = [];
-        $anyOk = false;
-        foreach ($providers as $provider) {
-            try {
-                $ok = $provider->ping();
-                $anyOk = $anyOk || $ok;
-                $messages[] = sprintf('%s: %s', $provider->id(), $ok ? 'ok' : 'fail');
-            } catch (Throwable $e) {
-                $messages[] = sprintf('%s: %s', $provider->id(), $e->getMessage());
-            }
-        }
+        $results = array_map(
+            static fn (RemoteProvider $provider): PluginHealth => ApiHealthProbe::probe(
+                RemoteSessionImporter::PROVIDER_TAG_LABELS[$provider->id()] ?? ucfirst($provider->id()),
+                fn () => $provider->probe(),
+            ),
+            array_values($providers),
+        );
+        $text = implode(' · ', array_map(static fn (PluginHealth $health): string => $health->message, $results));
+        $ok = count(array_filter($results, static fn (PluginHealth $health): bool => $health->isOk()));
 
-        $text = implode(' · ', $messages);
-
-        return $anyOk ? PluginHealth::ok($text) : PluginHealth::failing($text);
+        // Ein ausgefallener Anbieter schränkt ein, solange ein anderer läuft; erst ohne laufenden zählt der schwerste Befund.
+        return match (true) {
+            $ok === count($results) => PluginHealth::ok($text),
+            $ok > 0 => PluginHealth::degraded($text),
+            default => array_any($results, static fn (PluginHealth $health): bool => $health->isFailing())
+                ? PluginHealth::failing($text)
+                : PluginHealth::degraded($text),
+        };
     }
 
     /**

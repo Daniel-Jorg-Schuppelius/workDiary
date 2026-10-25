@@ -17,6 +17,7 @@ use App\Plugins\Msgraph\Enums\MsgraphConnectionStatus;
 use App\Plugins\Msgraph\Models\MsgraphConnection;
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\{PluginDiscovery, PluginHealth};
+use App\Plugins\Support\PluginApiException;
 use App\Support\MorphMap;
 use GuzzleHttp\{Client as GuzzleClient, HandlerStack};
 use GuzzleHttp\Exception\ConnectException;
@@ -233,7 +234,17 @@ final class MsgraphConnectionTest extends TestCase {
         FakePluginHttp::fake([
             'https://graph.microsoft.com/v1.0/me/calendars*' => FakePluginHttp::response(['error' => ['code' => 'InvalidAuthenticationToken']], 401),
         ]);
-        $this->assertTrue((new MsgraphPlugin())->healthCheck()->isFailing());
+        $health = (new MsgraphPlugin())->healthCheck();
+        $this->assertTrue($health->isFailing());
+        $this->assertSame('auth', $health->code);
+
+        // Befund 2026-10-24: eine Graph-Störung ist vorübergehend und zählt nicht zur Abschaltung.
+        FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/calendars*' => FakePluginHttp::response(['error' => ['code' => 'serviceNotAvailable']], 503),
+        ]);
+        $health = (new MsgraphPlugin())->healthCheck();
+        $this->assertSame(PluginHealth::STATUS_DEGRADED, $health->status);
+        $this->assertSame('server_error', $health->code);
     }
 
     public function test_health_degrades_on_network_error_instead_of_failing(): void {
@@ -331,7 +342,12 @@ final class MsgraphConnectionTest extends TestCase {
             'https://graph.microsoft.com/v1.0/me/calendars*' => FakePluginHttp::response([], 401),
         ]);
 
-        $this->assertFalse((new MsgraphCalendarClient($connection))->ping());
+        try {
+            (new MsgraphCalendarClient($connection))->probe();
+            $this->fail('Die Probe muss die Ablehnung melden.');
+        } catch (PluginApiException $e) {
+            $this->assertSame(401, $e->status);
+        }
         // 401 → Refresh → ein Retry → weiterhin 401 → Abbruch (kein dritter Request).
         $fake->assertSentCount(2);
     }

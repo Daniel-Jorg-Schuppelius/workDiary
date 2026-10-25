@@ -68,14 +68,8 @@ class TogglApiClient implements TogglApi {
     }
 
     /** Health-Ping: /me liefert bei gültigem Token 200. */
-    public function ping(): bool {
-        if (! $this->isConfigured()) {
-            return false;
-        }
-
-        return $this->api()
-            ->getResponse($this->baseUrl . '/me', [], ['timeout' => 5])
-            ->successful();
+    public function probe(): void {
+        $this->api()->getResponse($this->baseUrl . '/me', [], ['timeout' => 5])->throw();
     }
 
     /**

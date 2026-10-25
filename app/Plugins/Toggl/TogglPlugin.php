@@ -13,7 +13,7 @@ namespace App\Plugins\Toggl;
 use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TimeImporter};
-use App\Plugins\Support\PluginOrgContext;
+use App\Plugins\Support\{ApiHealthProbe, PluginOrgContext};
 use App\Plugins\Toggl\Api\TogglClientFactory;
 use App\Plugins\Toggl\Enums\TogglSource;
 use App\Plugins\Toggl\Services\TogglImportService;
@@ -105,15 +105,11 @@ class TogglPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Inbox
         $organizationId = PluginOrgContext::currentId();
         $client = app(TogglClientFactory::class)->for($organizationId);
 
-        return PluginHealth::pingHealth(
-            ping: fn (): bool => $client->ping(),
-            unreachableMessage: __('Toggl-API nicht erreichbar oder Token ungültig.'),
-            configured: $client->isConfigured(),
-            notConfiguredMessage: TogglConfig::resolve($organizationId)['source']->missingAccessMessage(),
-            notConfiguredStatus: PluginHealth::STATUS_DEGRADED,
-            errorStatus: PluginHealth::STATUS_FAILING,
-            okMessage: 'toggl: ok',
-        );
+        if (! $client->isConfigured()) {
+            return PluginHealth::degraded(TogglConfig::resolve($organizationId)['source']->missingAccessMessage());
+        }
+
+        return ApiHealthProbe::probe($this->name(), fn () => $client->probe());
     }
 
     /** Outbox-Fehlschläge speichern keinen Fremdstand — auf Klick den aktuellen Toggl-Stand nachladen. */

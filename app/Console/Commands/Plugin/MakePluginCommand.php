@@ -97,15 +97,13 @@ class {$studly}Plugin extends AbstractPlugin {
     public function healthCheck(): PluginHealth {
         // Bis ein echter Verbindungscheck existiert, meldet das Plugin bewusst
         // "degraded" (nie still grün — Konvention wie PluginDefaults::healthCheck()).
-        // Echten Check per pingHealth() verdrahten:
+        // Echten Check über ApiHealthProbe verdrahten (probe() wirft bei Fehlern):
         //
-        // return PluginHealth::pingHealth(
-        //     ping: fn(): bool => \$this->client()->ping(),
-        //     unreachableMessage: __('{$studly} nicht erreichbar.'),
-        //     configured: \$this->isEnabled(),
-        //     notConfiguredMessage: __('{$studly} ist nicht konfiguriert.'),
-        //     notConfiguredStatus: PluginHealth::STATUS_DEGRADED,
-        // );
+        // if (! \$this->isEnabled()) {
+        //     return PluginHealth::degraded(__('{$studly} ist nicht konfiguriert.'), code: 'not_configured');
+        // }
+        //
+        // return \App\Plugins\Support\ApiHealthProbe::probe(\$this->name(), fn () => \$this->client()->probe());
         return PluginHealth::degraded(__('Kein Healthcheck implementiert — Zustand unbestimmt.'), code: 'not_implemented');
     }
 }

@@ -23,8 +23,6 @@ return [
         'no_connection' => 'Keine Google-Kalender-Verbindung hergestellt.',
         'inactive' => 'Google-Kalender-Verbindung ist getrennt oder deaktiviert.',
         'ok' => 'Verbunden — Kalenderliste abrufbar.',
-        'failing' => 'Google Calendar API nicht erreichbar oder Zugriff verweigert.',
-        'error' => 'Google-Calendar-Fehler (:class).',
     ],
 
     'action' => [

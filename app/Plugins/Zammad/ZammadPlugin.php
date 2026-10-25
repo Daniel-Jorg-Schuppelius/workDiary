@@ -13,6 +13,7 @@ namespace App\Plugins\Zammad;
 use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TaskSyncer};
+use App\Plugins\Support\ApiHealthProbe;
 use App\Plugins\Zammad\Contracts\ZammadGatewayFactory;
 use App\Plugins\Zammad\Models\ZammadConnection;
 use App\Plugins\Zammad\Services\ZammadTicketImporter;
@@ -127,12 +128,10 @@ class ZammadPlugin extends AbstractPlugin implements TaskSyncer {
             return PluginHealth::degraded(__('Zammad-Anbindung ist deaktiviert oder unvollständig.'));
         }
 
-        try {
-            return app(ZammadGatewayFactory::class)->for($connection)->ping()
-                ? PluginHealth::ok(__('Verbunden mit :url.', ['url' => $connection->base_url]))
-                : PluginHealth::failing(__('Zammad-API nicht erreichbar oder Token ungültig.'), 'unreachable');
-        } catch (Throwable $e) {
-            return PluginHealth::failing(__('Zammad-API-Fehler (:class).', ['class' => class_basename($e)]));
-        }
+        return ApiHealthProbe::probe($this->name(), function () use ($connection): string {
+            app(ZammadGatewayFactory::class)->for($connection)->probe();
+
+            return (string) __('Verbunden mit :url.', ['url' => $connection->base_url]);
+        });
     }
 }

@@ -51,8 +51,8 @@ class KimaiApiClient implements RemoteTimeWriter {
     }
 
     /** Erreichbarkeits-/Auth-Check über den Ping-Endpunkt. */
-    public function ping(): bool {
-        return $this->api()->getResponse($this->url('/api/ping'))->successful();
+    public function probe(): void {
+        $this->api()->getResponse($this->url('/api/ping'))->throw();
     }
 
     /**

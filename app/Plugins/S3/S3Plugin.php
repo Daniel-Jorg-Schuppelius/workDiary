@@ -17,10 +17,10 @@ use App\Models\Backup\BackupTargetConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{BackupTarget, PluginCapability};
 use App\Plugins\S3\Api\S3BackupClient;
+use App\Plugins\Support\ApiHealthProbe;
 use App\Plugins\Support\Backup\{BackupAccount, BackupRemoteObject};
 use App\Support\Ui\UiAction;
 use Psr\Http\Message\StreamInterface;
-use Throwable;
 
 /**
  * S3-kompatibler Objektspeicher als Backupziel (Feature 123, MVP-726).
@@ -122,17 +122,11 @@ class S3Plugin extends AbstractPlugin implements \App\Plugins\Contracts\BackupTa
                 continue;
             }
 
-            try {
+            $health = ApiHealthProbe::probe((string) $connection->name, function () use ($connection): void {
                 $this->backupClient($connection)->ensureFolder((string) $connection->root_folder_ref);
-            } catch (Throwable $e) {
-                // Nie die Meldung selbst: sie trägt Endpoint und Signaturkopf.
-                return PluginHealth::failing(
-                    __('S3-Ziel ":name" nicht erreichbar (:class).', [
-                        'name' => (string) $connection->name,
-                        'class' => class_basename($e),
-                    ]),
-                    'unreachable',
-                );
+            });
+            if (! $health->isOk()) {
+                return $health;
             }
         }
 

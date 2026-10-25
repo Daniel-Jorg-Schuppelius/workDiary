@@ -15,10 +15,9 @@ use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{CalendarPublisher, PluginCapability};
 use App\Plugins\GoogleCalendar\Api\GoogleCalendarClient;
 use App\Plugins\GoogleCalendar\Models\GoogleCalendarConnection;
+use App\Plugins\Support\{ApiHealthProbe, OAuthConnectionStatus, PluginOrgContext};
 use App\Plugins\Support\Calendar\{OrganizationEventSource, RemoteCalendarEvent, RemoteCalendarPublishService};
-use App\Plugins\Support\{OAuthConnectionStatus, PluginOrgContext};
 use Closure;
-use Throwable;
 
 /**
  * Google-Kalender-Anbindung (MVP-328, Bauturbo A8) — Nur-Publish-Pilot
@@ -136,12 +135,10 @@ class GoogleCalendarPlugin extends AbstractPlugin implements CalendarPublisher {
             return PluginHealth::degraded(__('google_calendar::google_calendar.health.inactive'));
         }
 
-        try {
-            return (new GoogleCalendarClient($connection))->ping()
-                ? PluginHealth::ok(__('google_calendar::google_calendar.health.ok'))
-                : PluginHealth::failing(__('google_calendar::google_calendar.health.failing'), 'unreachable');
-        } catch (Throwable $e) {
-            return PluginHealth::failing(__('google_calendar::google_calendar.health.error', ['class' => class_basename($e)]));
-        }
+        return ApiHealthProbe::probe($this->name(), function () use ($connection): string {
+            (new GoogleCalendarClient($connection))->probe();
+
+            return (string) __('google_calendar::google_calendar.health.ok');
+        });
     }
 }

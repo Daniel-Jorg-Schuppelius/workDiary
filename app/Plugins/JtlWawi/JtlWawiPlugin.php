@@ -16,9 +16,8 @@ use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\Plugin;
 use App\Plugins\JtlWawi\Api\JtlGatewayFactory;
 use App\Plugins\JtlWawi\Enums\JtlConnectionStatus;
-use App\Plugins\JtlWawi\Exceptions\JtlApiException;
 use App\Plugins\JtlWawi\Models\JtlConnection;
-use Throwable;
+use App\Plugins\Support\ApiHealthProbe;
 
 /**
  * JTL-Wawi-Warenwirtschaft-Plugin (Feature 078, MVP-316–325).
@@ -97,28 +96,17 @@ class JtlWawiPlugin extends AbstractPlugin {
             return PluginHealth::degraded(__('Verbindung unvollständig oder getrennt.'), 'inactive');
         }
 
-        try {
+        return ApiHealthProbe::probe($this->name(), static function () use ($connection): string {
             $info = app(JtlGatewayFactory::class)->for($connection)->info();
             $version = (string) ($info['version'] ?? '');
             if ($version !== '' && $version !== $connection->detected_version) {
                 $connection->forceFill(['detected_version' => $version])->save();
             }
 
-            return PluginHealth::ok(__('Verbunden (:mode, Wawi :version).', [
+            return (string) __('Verbunden (:mode, Wawi :version).', [
                 'mode' => $connection->isOnPremise() ? 'OnPremise' : 'Cloud',
                 'version' => $version !== '' ? $version : __('unbekannt'),
-            ]));
-        } catch (JtlApiException $e) {
-            if ($e->isAuthError()) {
-                return PluginHealth::failing(__('API lehnt die Anmeldung ab — Verbindung/Scopes erneuern.'), 'auth');
-            }
-            if ($e->status === 429) {
-                return PluginHealth::degraded(__('API drosselt Anfragen (Rate-Limit).'), 'rate_limited');
-            }
-
-            return PluginHealth::failing(__('API-Fehler (HTTP :status).', ['status' => $e->status]), 'api_error');
-        } catch (Throwable $e) {
-            return PluginHealth::failing(__('API nicht erreichbar (:class).', ['class' => class_basename($e)]), 'unreachable');
-        }
+            ]);
+        }, ['auth' => (string) __('API lehnt die Anmeldung ab — Verbindung/Scopes erneuern.')]);
     }
 }

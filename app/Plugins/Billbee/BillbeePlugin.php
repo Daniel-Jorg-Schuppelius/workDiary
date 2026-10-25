@@ -14,9 +14,8 @@ namespace App\Plugins\Billbee;
 
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Billbee\Api\BillbeeClientFactory;
-use App\Plugins\Billbee\Exceptions\BillbeeApiException;
 use App\Plugins\Contracts\Plugin;
-use Throwable;
+use App\Plugins\Support\ApiHealthProbe;
 
 /**
  * Billbee-Plugin (MVP-433/434, Phase 40): EIN Konnektor für den Marktplatz-
@@ -85,24 +84,10 @@ class BillbeePlugin extends AbstractPlugin {
             return PluginHealth::degraded(__('Billbee ist nicht konfiguriert (API-Key/Benutzer/API-Passwort fehlen).'), 'not_configured');
         }
 
-        try {
-            $started = microtime(true);
-            // Billigste Probe: eine Bestellseite mit pageSize=1.
-            app(BillbeeClientFactory::class)->for((int) $organization->id)->orders(null, 1, 1);
-
-            return PluginHealth::ok(__('Billbee-API erreichbar.'))
-                ->withLatency((int) ((microtime(true) - $started) * 1000));
-        } catch (BillbeeApiException $e) {
-            if ($e->isAuthError()) {
-                return PluginHealth::failing(__('Billbee lehnt die Zugangsdaten ab (401/403) — API-Key und API-Passwort prüfen.'), 'auth');
-            }
-            if ($e->status === 429) {
-                return PluginHealth::degraded(__('Billbee drosselt (429) — 2 Requests/Sekunde nicht überschreiten.'), 'rate_limited');
-            }
-
-            return PluginHealth::degraded(__('Billbee-API antwortet mit Fehlerstatus :status.', ['status' => $e->status]), 'api_error');
-        } catch (Throwable) {
-            return PluginHealth::failing(__('Billbee-API nicht erreichbar.'), 'unreachable');
-        }
+        // Billigste Probe: eine Bestellseite mit pageSize=1.
+        return ApiHealthProbe::probe($this->name(), static fn () => app(BillbeeClientFactory::class)->for((int) $organization->id)->orders(null, 1, 1), [
+            'auth' => (string) __('Billbee lehnt die Zugangsdaten ab (401/403) — API-Key und API-Passwort prüfen.'),
+            'rate_limited' => (string) __('Billbee drosselt (429) — 2 Requests/Sekunde nicht überschreiten.'),
+        ]);
     }
 }

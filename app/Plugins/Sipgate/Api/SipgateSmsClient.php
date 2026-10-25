@@ -54,8 +54,8 @@ class SipgateSmsClient {
     }
 
     /** Kontoabfrage — der billigste echte Aufruf für den Healthcheck. */
-    public function checkCredentials(): bool {
-        return $this->api()->getResponse($this->config['api_base'] . '/account')->successful();
+    public function probe(): void {
+        $this->api()->getResponse($this->config['api_base'] . '/account')->throw();
     }
 
     private function api(): PluginApiClient {

@@ -1149,4 +1149,14 @@ class RemoteSupportSyncTest extends TestCase {
             ->assertOk()
             ->assertSee(__('Keine Treffer für die Suche.'));
     }
+
+    public function test_health_names_the_rejecting_provider(): void {
+        $this->enableTeamViewer();
+        FakePluginHttp::fake(['https://webapi.teamviewer.com/api/v1/ping*' => FakePluginHttp::response([], 401)]);
+
+        $health = (new RemoteSupportPlugin)->healthCheck();
+
+        $this->assertTrue($health->isFailing());
+        $this->assertStringContainsString('TeamViewer', $health->message);
+    }
 }
