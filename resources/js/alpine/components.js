@@ -1863,6 +1863,81 @@ export function registerAlpineComponents(Alpine) {
         },
     }));
 
+    // Steuersätze einer Rechnung im Werte-Dialog des Rechnungseingangs: je Zeile
+    // Satz, Netto, Steuer. Zeigt die Summen und meldet, wenn sie nicht zum
+    // Brutto-Feld des Formulars passen; geprüft wird auf dem Server.
+    /** @typedef {{percent: string, net: string, tax: string}} TaxBreakdownRow */
+    Alpine.data("taxBreakdown", () => ({
+        /** @type {TaxBreakdownRow[]} */
+        items: [],
+        gross: "",
+        init() {
+            this.items = JSON.parse(this.$el.dataset.items || "[]");
+            if (this.items.length === 0) {
+                this.add();
+            }
+            const form = this.$el.closest("form");
+            const gross = /** @type {HTMLInputElement | null} */ (form?.querySelector('[name="amount_gross"]') ?? null);
+            if (gross) {
+                this.gross = gross.value;
+                gross.addEventListener("input", () => {
+                    this.gross = gross.value;
+                });
+            }
+        },
+        add() {
+            this.items.push({ percent: "", net: "", tax: "" });
+        },
+        /** @param {number} i */
+        remove(i) {
+            this.items.splice(i, 1);
+        },
+        canRemove() {
+            return this.items.length > 1;
+        },
+        /** @param {number} i @param {string} field */
+        fieldName(i, field) {
+            return "tax_breakdown[" + i + "][" + field + "]";
+        },
+        // Steuer aus Netto × Satz vorschlagen, solange die Zeile keine eigene trägt.
+        /** @param {TaxBreakdownRow} it */
+        suggestTax(it) {
+            const net = this.number(it.net);
+            const percent = this.number(it.percent);
+            if (it.tax === "" && net !== null && percent !== null) {
+                it.tax = (Math.round(net * percent) / 100).toFixed(2);
+            }
+        },
+        /** @param {string} value @returns {number | null} */
+        number(value) {
+            const text = String(value ?? "").trim().replace(",", ".");
+            const n = Number(text);
+            return text === "" || Number.isNaN(n) ? null : n;
+        },
+        /** @param {"net" | "tax"} field */
+        total(field) {
+            return this.items.reduce((sum, it) => sum + (this.number(it[field]) ?? 0), 0);
+        },
+        /** @param {number} n */
+        format(n) {
+            return new Intl.NumberFormat(document.documentElement.lang || "de", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+        },
+        sumLabel() {
+            const net = this.total("net");
+            const tax = this.total("tax");
+            return __("js.tax_breakdown.sum", { net: this.format(net), tax: this.format(tax), gross: this.format(net + tax) });
+        },
+        mismatch() {
+            const gross = this.number(this.gross);
+            const complete = this.items.every((it) => this.number(it.net) !== null && this.number(it.tax) !== null);
+            return gross !== null && complete && Math.abs(this.total("net") + this.total("tax") - gross) > 0.01;
+        },
+        mismatchLabel() {
+            const gross = this.number(this.gross) ?? 0;
+            return __("js.tax_breakdown.mismatch", { sum: this.format(this.total("net") + this.total("tax")), gross: this.format(gross) });
+        },
+    }));
+
     // Zeitkorrektur-Antrag: Positionen wie „repeater“, das Ziel wählt man aus den
     // Buchungen/Anwesenheiten des Bezugstags statt über eine interne ID. Lädt neu,
     // wenn Bezugsdatum oder Mitarbeiter:in im Dialog wechseln.

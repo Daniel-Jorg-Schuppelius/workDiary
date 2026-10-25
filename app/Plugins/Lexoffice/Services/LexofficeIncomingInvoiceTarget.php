@@ -15,7 +15,6 @@ namespace App\Plugins\Lexoffice\Services;
 use APIToolkit\Entities\ID;
 use APIToolkit\Exceptions\NotAcceptableException;
 use App\Enums\Billing\{DocumentDirection, DocumentKind};
-use App\Enums\Invoicing\IncomingInvoiceRecognition;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\{IncomingEInvoice, IncomingEInvoiceTransfer};
@@ -325,18 +324,17 @@ final class LexofficeIncomingInvoiceTarget implements IncomingInvoiceTransferTar
 
     /**
      * Bruttobetrag je Steuersatz (positiv, auch bei Gutschriften). Aus der
-     * Steueraufschlüsselung der E-Rechnung, sonst aus geprüften Kopfwerten
-     * mit genau einem Satz. Null, wenn ein Satz nicht passt.
+     * Steueraufschlüsselung der E-Rechnung bzw. der Erfassung, sonst aus
+     * geprüften Kopfwerten mit genau einem Satz. Null, wenn ein Satz nicht passt.
      *
      * @return array<int, float>|null
      */
     private function grossByRate(IncomingEInvoice $incoming): ?array {
-        $summary = (array) $incoming->summary;
-        $breakdown = (array) ($summary['tax_breakdown'] ?? []);
+        $breakdown = $incoming->taxBreakdown();
         $grossByRate = [];
-        if ($incoming->recognition === IncomingInvoiceRecognition::Structured && $breakdown !== []) {
+        if ($breakdown !== []) {
             foreach ($breakdown as $subtotal) {
-                $rate = self::knownRate(is_array($subtotal) ? ($subtotal['percent'] ?? null) : null);
+                $rate = self::knownRate($subtotal['percent'] ?? null);
                 if ($rate === null) {
                     return null;
                 }

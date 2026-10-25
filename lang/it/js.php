@@ -134,4 +134,9 @@ return [
         'failed' => 'NFC non disponibile.',
         'written' => 'Tag scritto.',
     ],
+    // Steuersätze im Werte-Dialog des Rechnungseingangs.
+    'tax_breakdown' => [
+        'sum' => 'Totale: netto :net · imposta :tax · lordo :gross',
+        'mismatch' => 'Netto e imposta danno :sum, il lordo è :gross.',
+    ],
 ];

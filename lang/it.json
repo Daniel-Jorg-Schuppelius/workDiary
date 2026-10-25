@@ -11086,5 +11086,10 @@
     "Was können wir besser machen?": "Cosa possiamo migliorare?",
     "Wie wahrscheinlich ist es, dass Sie uns weiterempfehlen?": "Quanto è probabile che ci raccomandi?",
     "Wie zufrieden waren Sie mit der Erreichbarkeit?": "Quanto è soddisfatto della nostra reperibilità?",
-    "Texterkennung (OCR)": "Riconoscimento del testo (OCR)"
+    "Texterkennung (OCR)": "Riconoscimento del testo (OCR)",
+    "Je Steuersatz eine Zeile. Nur ein Satz ohne Beträge: Netto und Steuer werden aus dem Brutto herausgerechnet.": "Una riga per aliquota. Una sola aliquota senza importi: netto e imposta vengono ricavati dal lordo.",
+    "Steuersatz hinzufügen": "Aggiungi aliquota",
+    "Steuersatz entfernen": "Rimuovi aliquota",
+    "Netto und Steuer ergeben :sum, nicht das Brutto.": "Netto e imposta danno :sum, non il lordo.",
+    "Steuersätze": "Aliquote"
 }

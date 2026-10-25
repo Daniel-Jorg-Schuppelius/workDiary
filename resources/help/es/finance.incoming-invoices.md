@@ -1,8 +1,9 @@
 ---
 title: "Facturas recibidas"
 topic: finance.incoming-invoices
-version: 5
+version: 6
 keywords:
+    - varios tipos impositivos
     - factura de proveedor
     - factura de compra
     - facturas entrantes
@@ -138,6 +139,15 @@ introduzca número, fecha e importes con «Introducir valores»; modifique los
 valores reconocidos o ya introducidos con «Corregir valores», también
 directamente en la tarjeta «Datos de la factura». Asigne juntos en la lista
 varios documentos de la misma parte.
+
+**Varios tipos impositivos:** si el importe se compone de varios tipos,
+introduzca en el diálogo una línea por tipo con neto e impuesto («Añadir tipo
+impositivo»). El diálogo muestra el total y avisa si no coincide con el bruto;
+el neto y el impuesto de la factura son los totales de las líneas. Si el
+documento solo indica un tipo y ningún importe (factura simplificada «IVA del
+19 % incluido»), basta con el tipo y el bruto: neto e impuesto se calculan a
+partir de él. Si el sistema reconoce en el documento varias líneas de impuesto
+que suman el bruto, las líneas aparecen rellenadas.
 
 **Original junto a los valores:** la página de detalle muestra el original
 junto a los datos de la factura, para que los errores de reconocimiento salten
@@ -299,7 +309,8 @@ del sujeto pasivo, operaciones intracomunitarias o países terceros.
   comprobante con el mismo número para el mismo contacto, solo se vincula.
 - Los importes solo se envían con una categoría contable —en el proveedor o
   cliente, o como predeterminada en la configuración del plugin—, en euros y
-  con los tipos impositivos 0, 5, 7, 16 o 19 %. Si no, el comprobante se
+  con los tipos impositivos 0, 5, 7, 16 o 19 %, una partida por tipo — de la
+  factura electrónica o de los tipos introducidos. Si no, el comprobante se
   envía sin importes y contabilidad los completa en Lexware.
 - DATEV Unternehmen online recibe el original como imagen del comprobante.
 - Si falta el número de factura, el traspaso busca en Lexware por contacto,

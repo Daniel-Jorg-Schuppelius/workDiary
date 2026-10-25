@@ -1,8 +1,9 @@
 ---
 title: "Rechnungseingang"
 topic: finance.incoming-invoices
-version: 5
+version: 6
 keywords:
+    - Mehrere Steuersätze
     - Eingangsrechnung
     - Lieferantenrechnung
     - Kreditorenrechnung
@@ -129,6 +130,15 @@ Beleg selbst keine andere Partei nennt. Bei Klärfällen tragen Sie über
 Werte ändern Sie über „Werte korrigieren“, auch direkt in der Karte
 „Rechnungsdaten“. Mehrere Eingänge derselben Partei ordnen Sie in der Liste
 gemeinsam zu.
+
+**Mehrere Steuersätze:** Setzt sich der Betrag aus mehreren Steuersätzen
+zusammen, tragen Sie im Dialog je Satz eine Zeile mit Netto und Steuer ein
+(„Steuersatz hinzufügen“). Der Dialog zeigt die Summe und meldet, wenn sie
+nicht zum Brutto passt; Netto und Steuer der Rechnung sind die Summen der
+Zeilen. Nennt der Beleg nur einen Satz und keine Beträge
+(Kleinbetragsrechnung „inkl. 19 % USt“), genügen Satz und Brutto: Netto und
+Steuer werden herausgerechnet. Erkennt das System im Beleg mehrere Steuerzeilen,
+die zusammen das Brutto ergeben, sind die Zeilen vorbelegt.
 
 **Original neben den Werten:** Die Detailseite zeigt das Original neben den
 Rechnungsdaten, damit Erkennungsfehler sofort auffallen: PDF und Fotos (JPEG,
@@ -286,8 +296,9 @@ innergemeinschaftlichen Fällen oder Drittland.
   mit derselben Nummer beim selben Kontakt, wird er nur verknüpft.
 - Beträge gehen nur mit einer Buchungskategorie mit — am Lieferanten bzw.
   Kunden oder als Vorgabe in den Plugin-Einstellungen —, in Euro und mit den
-  Steuersätzen 0, 5, 7, 16 oder 19 %. Sonst geht der Beleg ohne Beträge
-  hinaus, und die Buchhaltung ergänzt sie in Lexware.
+  Steuersätzen 0, 5, 7, 16 oder 19 %, je Satz eine Position — aus der
+  E-Rechnung bzw. den erfassten Steuersätzen. Sonst geht der Beleg ohne
+  Beträge hinaus, und die Buchhaltung ergänzt sie in Lexware.
 - DATEV Unternehmen online erhält das Original als Belegbild.
 - Fehlt die Rechnungsnummer, sucht die Übergabe in Lexware nach Kontakt,
   Belegdatum und Betrag. Ein Treffer wird nicht automatisch verknüpft: Sie

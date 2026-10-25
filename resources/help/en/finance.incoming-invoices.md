@@ -1,8 +1,9 @@
 ---
 title: "Incoming invoices"
 topic: finance.incoming-invoices
-version: 5
+version: 6
 keywords:
+    - several tax rates
     - supplier invoice
     - purchase invoice
     - inbound invoices
@@ -130,6 +131,14 @@ document itself does not name another party. For unrecognised documents,
 enter number, date and amounts with “Enter values”; change recognised or
 already entered values with “Correct values”, also directly in the “Invoice
 data” card. Assign several documents of the same party together in the list.
+
+**Several tax rates:** If the amount is made up of several tax rates, enter
+one line per rate with net and tax in the dialog (“Add tax rate”). The dialog
+shows the total and reports when it does not match the gross amount; the
+invoice’s net and tax are the totals of the lines. If the document only states
+one rate and no amounts (small-amount invoice “incl. 19 % VAT”), rate and gross
+amount are enough: net and tax are calculated from it. If the system recognises several tax lines in
+the document that add up to the gross amount, the lines are pre-filled.
 
 **Original next to the values:** The detail page shows the original next to
 the invoice data, so recognition errors stand out at once: PDFs and photos
@@ -280,8 +289,9 @@ charge, intra-community cases or third countries.
   number already exists there for the same contact, it is only linked.
 - Amounts are only sent with a posting category — on the supplier or
   customer, or as a default in the plugin settings —, in euros and with the
-  tax rates 0, 5, 7, 16 or 19 %. Otherwise the voucher is sent without
-  amounts and accounting adds them in Lexware.
+  tax rates 0, 5, 7, 16 or 19 %, one item per rate — from the e-invoice or
+  the entered tax rates. Otherwise the voucher is sent without amounts and
+  accounting adds them in Lexware.
 - DATEV Unternehmen online receives the original as a document image.
 - If the invoice number is missing, the handover searches Lexware by contact,
   voucher date and amount. A match is not linked automatically: you choose

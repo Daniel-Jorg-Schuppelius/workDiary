@@ -264,6 +264,22 @@ class IncomingEInvoice extends Model {
     }
 
     /**
+     * Steueraufschlüsselung je Satz: nach einer Erfassung im Werte-Dialog
+     * deren Zeilen (`summary.manual`, auch keine), sonst die der E-Rechnung
+     * bzw. der Erkennung. Eine Neuanalyse überschreibt die Erfassung nicht.
+     *
+     * @return list<array<string, mixed>> Zeilen mit `percent`, `net`, `tax` (E-Rechnung zusätzlich `category`)
+     */
+    public function taxBreakdown(): array {
+        $summary = (array) $this->summary;
+        $rows = isset($summary['manual'])
+            ? data_get($summary, 'manual.tax_breakdown', [])
+            : ($summary['tax_breakdown'] ?? []);
+
+        return array_values(array_filter(is_array($rows) ? $rows : [], is_array(...)));
+    }
+
+    /**
      * Nur Eingangsbelege. Ausgangsbelege aus dem Postfach (Rechnungskopien,
      * Gutschriftverfahren) sind keine Verbindlichkeit und gehören nie in
      * Zahlung, Einbehalt, Liquidität oder Buchungsadapter.

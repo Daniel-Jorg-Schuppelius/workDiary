@@ -1,8 +1,9 @@
 ---
 title: "Fatture ricevute"
 topic: finance.incoming-invoices
-version: 5
+version: 6
 keywords:
+    - più aliquote
     - fattura fornitore
     - fattura d'acquisto
     - fatture in entrata
@@ -139,6 +140,14 @@ inserisca numero, data e importi con «Inserire i valori»; modifichi i valori
 riconosciuti o già inseriti con «Correggere i valori», anche direttamente
 nella scheda «Dati della fattura». Assegni insieme nell’elenco più documenti
 della stessa parte.
+
+**Più aliquote:** se l’importo si compone di più aliquote, inserisca nel
+dialogo una riga per aliquota con netto e imposta («Aggiungi aliquota»). Il
+dialogo mostra il totale e segnala se non corrisponde al lordo; netto e imposta
+della fattura sono i totali delle righe. Se il documento indica solo
+un’aliquota e nessun importo (fattura di piccolo importo «IVA 19 % inclusa»),
+bastano aliquota e lordo: netto e imposta vengono ricavati da questo. Se il sistema riconosce nel documento più righe
+d’imposta che insieme danno il lordo, le righe sono precompilate.
 
 **Originale accanto ai valori:** la pagina di dettaglio mostra l’originale
 accanto ai dati della fattura, così gli errori di riconoscimento si notano
@@ -302,7 +311,8 @@ contabile, le operazioni intracomunitarie o i paesi terzi.
   collegato.
 - Gli importi vengono inviati solo con una categoria contabile — sul
   fornitore o sul cliente, oppure come predefinita nelle impostazioni del
-  plugin —, in euro e con le aliquote 0, 5, 7, 16 o 19 %. Altrimenti il
+  plugin —, in euro e con le aliquote 0, 5, 7, 16 o 19 %, una posizione per
+  aliquota — dalla fattura elettronica o dalle aliquote inserite. Altrimenti il
   giustificativo parte senza importi e la contabilità li completa in Lexware.
 - DATEV Unternehmen online riceve l’originale come immagine del
   giustificativo.

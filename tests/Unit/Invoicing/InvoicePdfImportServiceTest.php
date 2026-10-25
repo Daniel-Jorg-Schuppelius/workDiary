@@ -40,6 +40,47 @@ final class InvoicePdfImportServiceTest extends TestCase {
         self::assertSame([], $result['warnings']);
     }
 
+    /** Mehrere Steuersätze (2026-10-26): Steuer als Summe mit Aufschlüsselung, nur wenn Netto + Steuer das Brutto ergeben. */
+    public function test_it_sums_the_tax_of_several_rates_into_a_breakdown(): void {
+        $service = new InvoicePdfImportService;
+        $twoRates = [['percent' => '19.00', 'net' => '1000.00', 'tax' => '190.00'], ['percent' => '7.00', 'net' => '200.00', 'tax' => '14.00']];
+
+        // „zzgl. x % MwSt.“: Netto je Satz aus der Steuer zurückgerechnet; der Satz mit dem größten Netto ist die Vorgabe.
+        $plus = $service->analyzeText("Rechnungsnummer: RE-1\nRechnungsdatum: 01.10.2026\nNettobetrag 1.200,00 EUR\nzzgl. 19 % MwSt. 190,00 EUR\nzzgl. 7 % MwSt. 14,00 EUR\nGesamtbetrag 1.404,00 EUR");
+        self::assertSame('204.00', $plus['tax']);
+        self::assertSame($twoRates, $plus['tax_breakdown']);
+        self::assertSame('19.00', $plus['tax_rate']);
+        self::assertSame('tax_lines', $plus['sources']['tax']);
+        self::assertSame([], $plus['warnings']);
+
+        // Bemessungsgrundlage „auf“ ist das Netto je Satz; ohne Nettozeile ergibt es ihre Summe.
+        $base = $service->analyzeText("Rechnungsnummer: RE-2\nMwSt 19 % auf 1.000,00 EUR 190,00 EUR\nMwSt 7 % auf 200,00 EUR 14,00 EUR\nGesamtbetrag 1.404,00 EUR");
+        self::assertSame($twoRates, $base['tax_breakdown']);
+        self::assertSame('1200.00', $base['net']);
+
+        // Steuertabelle ohne Beschriftung je Zeile: Netto, Steuer, Brutto müssen zum Satz passen.
+        $table = $service->analyzeText("Rechnungsnummer: RE-3\nSteuersatz Netto Steuer Brutto\n19 % 100,00 19,00 119,00\n7 % 50,00 3,50 53,50\nGesamtbetrag 172,50 EUR");
+        self::assertSame([['percent' => '19.00', 'net' => '100.00', 'tax' => '19.00'], ['percent' => '7.00', 'net' => '50.00', 'tax' => '3.50']], $table['tax_breakdown']);
+        self::assertSame('22.50', $table['tax']);
+
+        // Kassenbon mit enthaltener Steuer; 0 % trägt den Rest zum Netto; eine Fußzeile je Seite zählt einmal.
+        self::assertSame('2.60', $service->analyzeText("Beleg-Nr. 4711\nGesamtbetrag 22,60 EUR\nenthaltene MwSt 19 % 1,90\nenthaltene MwSt 7 % 0,70")['tax']);
+        self::assertSame(
+            [['percent' => '19.00', 'net' => '100.00', 'tax' => '19.00'], ['percent' => '0.00', 'net' => '200.00', 'tax' => '0.00']],
+            $service->analyzeText("Rechnungsnummer: RE-7\nNettobetrag 300,00 EUR\nMwSt 19 % 19,00 EUR\nMwSt 0 % 0,00 EUR\nGesamtbetrag 319,00 EUR")['tax_breakdown'],
+        );
+        self::assertSame('22.50', $service->analyzeText("Rechnungsnummer: RE-8\nNettobetrag 150,00\nMwSt 19 % 19,00\nMwSt 7 % 3,50\nSeite 2\nNettobetrag 150,00\nMwSt 19 % 19,00\nMwSt 7 % 3,50\nGesamtbetrag 172,50")['tax']);
+
+        // Gehen die Summen nicht auf, bleibt der erste Steuerbetrag mit Warnung; ein einzelner Satz bleibt ohne Aufschlüsselung.
+        $mismatch = $service->analyzeText("Rechnungsnummer: RE-9\nNettobetrag 1.200,00 EUR\nzzgl. 19 % MwSt. 190,00 EUR\nzzgl. 7 % MwSt. 14,00 EUR\nGesamtbetrag 1.500,00 EUR");
+        self::assertSame('190.00', $mismatch['tax']);
+        self::assertSame([], $mismatch['tax_breakdown']);
+        self::assertContains('totals_mismatch', $mismatch['warnings']);
+        self::assertSame([], $service->analyzeText("Rechnungsnummer: RE-2026-0042\nNettobetrag 1.000,00 EUR\nUmsatzsteuer 19 % 190,00 EUR\nGesamtbetrag 1.190,00 EUR")['tax_breakdown']);
+        // Summenzeilen mit Satz („Gesamt inkl. 19 % MwSt.“) und Rabatte sind keine Steuerzeilen.
+        self::assertSame([], $service->analyzeText("Rechnungsnummer: RE-10\nRabatt 10 % 100,00 10,00\nNettobetrag 90,00\nMwSt 19 % 17,10\nGesamtbetrag inkl. 19 % MwSt. 107,10")['tax_breakdown']);
+    }
+
     /** Befund 2026-10-18: Lieferanten schreiben „Rechnung Nr.“, „Rechnungs-Nr.:“, „Re.-Nr.“, „Gesamtsumme“, „Endbetrag“ — die Klärfälle entstanden an der Beschriftung. */
     public function test_it_recognises_common_label_variants_for_number_and_gross(): void {
         $service = new InvoicePdfImportService;

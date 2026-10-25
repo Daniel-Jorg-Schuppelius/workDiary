@@ -60,7 +60,7 @@ final class IncomingRetentionTest extends TestCase {
         $retention = IncomingInvoiceRetention::query()->sole();
         $this->assertSame('500.00', (string) $retention->amount);
 
-        $proposal = app(PaymentProposalService::class)->proposalFor($invoice->fresh());
+        $proposal = app(PaymentProposalService::class)->proposalFor($invoice->refresh());
         $this->assertSame(9500.0, $proposal['amount']);
         $this->assertSame(500.0, $proposal['retained']);
 
@@ -76,15 +76,15 @@ final class IncomingRetentionTest extends TestCase {
         } catch (\RuntimeException $e) {
             $this->assertSame(__('sepa.error.invalid_amount'), $e->getMessage());
         }
-        $this->assertSame(__('sepa.retention.deduction'), app(PaymentRunService::class)->adjustItem($item->fresh(), 9500.00, null)->deduction_reason);
+        $this->assertSame(__('sepa.retention.deduction'), app(PaymentRunService::class)->adjustItem($item->refresh(), 9500.00, null)->deduction_reason);
 
         // Eine Rechnung im Zahllauf nimmt keinen neuen Einbehalt mehr an.
         $this->expectExceptionMessage(__('sepa.retention.error.in_run'));
         try {
-            app(IncomingRetentionService::class)->add($invoice->fresh(), RetentionKind::Performance, null, '100', null, null, $this->admin);
+            app(IncomingRetentionService::class)->add($invoice->refresh(), RetentionKind::Performance, null, '100', null, null, $this->admin);
         } finally {
             $this->actingAs($this->admin)->post(route('finance.incoming-invoices.retentions.release', $retention))->assertSessionHas('success');
-            $this->assertSame(RetentionStatus::Released, $retention->fresh()->status);
+            $this->assertSame(RetentionStatus::Released, $retention->refresh()->status);
             $this->assertSame(1, app(IncomingRetentionService::class)->payable()->count());
 
             $this->actingAs($this->admin)->get(route('finance.payment-runs.proposals'))->assertOk()->assertSeeText(__('sepa.retention.payable_title'));
@@ -93,12 +93,12 @@ final class IncomingRetentionTest extends TestCase {
             $retentionItem = PaymentRunItem::query()->whereNotNull('incoming_invoice_retention_id')->sole();
             $this->assertSame('500.00', (string) $retentionItem->amount);
             $this->assertNull($retentionItem->incoming_einvoice_id);
-            $this->assertNotNull($retention->fresh()->paid_in_run_id);
+            $this->assertNotNull($retention->refresh()->paid_in_run_id);
 
             // Entfernen gibt nur den Einbehalt frei, nicht die Rechnung.
             app(PaymentRunService::class)->removeItem($retentionItem);
-            $this->assertNull($retention->fresh()->paid_in_run_id);
-            $this->assertSame($run->id, $invoice->fresh()->paid_in_run_id);
+            $this->assertNull($retention->refresh()->paid_in_run_id);
+            $this->assertSame($run->id, $invoice->refresh()->paid_in_run_id);
         }
     }
 

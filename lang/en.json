@@ -11086,5 +11086,10 @@
     "Was können wir besser machen?": "What can we do better?",
     "Wie wahrscheinlich ist es, dass Sie uns weiterempfehlen?": "How likely is it that you would recommend us?",
     "Wie zufrieden waren Sie mit der Erreichbarkeit?": "How satisfied were you with our availability?",
-    "Texterkennung (OCR)": "Text recognition (OCR)"
+    "Texterkennung (OCR)": "Text recognition (OCR)",
+    "Je Steuersatz eine Zeile. Nur ein Satz ohne Beträge: Netto und Steuer werden aus dem Brutto herausgerechnet.": "One line per tax rate. A single rate without amounts: net and tax are calculated from the gross amount.",
+    "Steuersatz hinzufügen": "Add tax rate",
+    "Steuersatz entfernen": "Remove tax rate",
+    "Netto und Steuer ergeben :sum, nicht das Brutto.": "Net and tax add up to :sum, not the gross amount.",
+    "Steuersätze": "Tax rates"
 }

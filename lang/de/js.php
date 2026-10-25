@@ -139,4 +139,9 @@ return [
         'failed' => 'NFC nicht möglich.',
         'written' => 'Tag beschrieben.',
     ],
+    // Steuersätze im Werte-Dialog des Rechnungseingangs.
+    'tax_breakdown' => [
+        'sum' => 'Summe: Netto :net · Steuer :tax · Brutto :gross',
+        'mismatch' => 'Netto und Steuer ergeben :sum, das Brutto ist :gross.',
+    ],
 ];
