@@ -142,10 +142,12 @@ return [
     // Einbehalte an Eingangsrechnungen (MVP-953).
     'retention' => [
         'title' => 'Retenues',
-        'empty' => 'Aucune retenue. Une retenue réduit le paiement jusqu’à sa libération.',
+        'empty' => 'Aucune retenue',
+        'hint' => 'Une retenue réduit le paiement jusqu’à sa libération.',
         'add' => 'Ajouter une retenue',
         'release' => 'Libérer',
         'confirm_release' => 'Libérer la retenue ? Elle sera ensuite proposée au paiement.',
+        'confirm_remove' => 'Supprimer la retenue ?',
         'due' => 'échue',
         'in_run' => 'dans un lot de paiement',
         'select' => 'Payer la retenue',
@@ -161,6 +163,8 @@ return [
             'released_on' => 'Libérée le',
             'note' => 'Note',
         ],
+        'percent_hint' => 'Du montant brut :amount.',
+        'amount_hint' => 'Montant fixe au lieu d’un pourcentage.',
         'error' => [
             'in_run' => 'La facture est déjà dans un lot de paiement.',
             'outgoing' => 'Les documents sortants de la boîte des factures n’ont pas de retenue.',

@@ -10,40 +10,55 @@
 @php
     $num = static fn ($v): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $v, 2, withThousandsSeparator: true);
     $canManage = auth()->user()?->canManageBilling() ?? false;
+    // Ausgangsbelege tragen keinen Einbehalt, im Zahllauf ist die Zahlung festgelegt.
+    $canAdd = $canManage && $incoming->paid_in_run_id === null && $incoming->direction !== \App\Enums\Billing\DocumentDirection::Outgoing;
 @endphp
-<x-card :title="__('sepa.retention.title')" padding="p-0">
+@if ($incoming->retentions->isNotEmpty() || $incoming->direction !== \App\Enums\Billing\DocumentDirection::Outgoing)
+<x-card :title="__('sepa.retention.title')" icon="savings" :count="$incoming->retentions->isNotEmpty() ? $incoming->retentions->count() : null" padding="p-0">
+    @if ($canAdd)
+        <x-slot:actions>
+            <x-icon-btn icon="add" tone="outline" size="sm" data-entry-modal-trigger
+                        :href="route('finance.incoming-invoices.retentions.form', $incoming)"
+                        show-label>{{ __('sepa.retention.add') }}</x-icon-btn>
+        </x-slot:actions>
+    @endif
     @if ($incoming->retentions->isNotEmpty())
-        <x-table bare>
-            <x-slot:head>
-                <tr>
-                    <th>{{ __('sepa.retention.field.kind') }}</th>
-                    <th class="text-right">{{ __('sepa.column.amount') }}</th>
-                    <th>{{ __('sepa.retention.field.due_on') }}</th>
-                    <th>{{ __('Status') }}</th>
-                    <th class="text-right">{{ __('Aktionen') }}</th>
-                </tr>
-            </x-slot:head>
+        <ul class="divide-y divide-base-300">
             @foreach ($incoming->retentions as $retention)
-                <tr>
-                    <td>{{ $retention->kind->label() }}@if ($retention->percent !== null) <span class="text-xs text-muted">({{ $num($retention->percent) }} %)</span>@endif</td>
-                    <td class="text-right tabular-nums">{{ $num($retention->amount) }} {{ $retention->currency }}</td>
-                    <td>
-                        {{ $retention->due_on?->fdate() ?? '—' }}
-                        @if ($retention->isOverdue())<span class="wd-badge badge-warning">{{ __('sepa.retention.due') }}</span>@endif
-                    </td>
-                    <td>
-                        <span class="wd-badge badge-{{ $retention->status->tone() }}">{{ $retention->status->label() }}</span>
-                        @if ($retention->paid_in_run_id !== null)<span class="text-xs text-muted">{{ __('sepa.retention.in_run') }}</span>@endif
-                    </td>
-                    <td class="text-right">
+                <li class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 text-sm">
+                    <div class="min-w-0">
+                        <div class="font-medium">
+                            {{ $retention->kind->label() }}
+                            @if ($retention->percent !== null)<span class="text-xs font-normal text-muted">({{ $num($retention->percent) }} %)</span>@endif
+                        </div>
+                        @php
+                            $meta = array_filter([
+                                $retention->due_on !== null ? __('sepa.retention.field.due_on') . ' ' . $retention->due_on->fdate() : null,
+                                $retention->released_on !== null ? __('sepa.retention.field.released_on') . ' ' . $retention->released_on->fdate() : null,
+                                $retention->paid_in_run_id !== null ? __('sepa.retention.in_run') : null,
+                            ]);
+                        @endphp
+                        @if ($meta !== [])
+                            <div class="flex flex-wrap items-center gap-x-2 text-xs text-muted">
+                                <span class="tabular-nums">{{ implode(' · ', $meta) }}</span>
+                                @if ($retention->isOverdue())<x-status-badge tone="warning" size="xs">{{ __('sepa.retention.due') }}</x-status-badge>@endif
+                            </div>
+                        @endif
+                        @if ($retention->note)
+                            <div class="truncate text-xs text-muted">{{ $retention->note }}</div>
+                        @endif
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="whitespace-nowrap font-medium tabular-nums">{{ $num($retention->amount) }} {{ $retention->currency }}</span>
+                        <x-status-badge :tone="$retention->status->tone()">{{ $retention->status->label() }}</x-status-badge>
                         @if ($canManage && $retention->status === \App\Enums\Invoicing\RetentionStatus::Open)
-                            <div class="flex justify-end gap-1">
+                            <div class="flex gap-1">
                                 <form method="POST" action="{{ route('finance.incoming-invoices.retentions.release', $retention) }}" data-confirm-dialog data-confirm-message="{{ __('sepa.retention.confirm_release') }}">
                                     @csrf
                                     <x-icon-btn icon="lock_open" size="xs" type="submit" :title="__('sepa.retention.release')" />
                                 </form>
                                 @if ($incoming->paid_in_run_id === null)
-                                    <form method="POST" action="{{ route('finance.incoming-invoices.retentions.destroy', $retention) }}">
+                                    <form method="POST" action="{{ route('finance.incoming-invoices.retentions.destroy', $retention) }}" data-confirm-dialog data-confirm-tone="error" data-confirm-message="{{ __('sepa.retention.confirm_remove') }}">
                                         @csrf
                                         @method('DELETE')
                                         <x-icon-btn icon="delete" size="xs" type="submit" :title="__('Entfernen')" />
@@ -51,26 +66,12 @@
                                 @endif
                             </div>
                         @endif
-                    </td>
-                </tr>
+                    </div>
+                </li>
             @endforeach
-        </x-table>
+        </ul>
     @else
-        <x-empty-state icon="savings" :message="__('sepa.retention.empty')" compact class="m-4" />
-    @endif
-    @if ($canManage && $incoming->paid_in_run_id === null)
-        <form method="POST" action="{{ route('finance.incoming-invoices.retentions.store', $incoming) }}" class="flex flex-wrap items-end gap-2 border-t border-base-300 px-4 py-3" data-entry-form>
-            @csrf
-            <x-select-field name="kind" :label="__('sepa.retention.field.kind')" required>
-                @foreach (\App\Enums\Invoicing\RetentionKind::cases() as $kind)
-                    <option value="{{ $kind->value }}">{{ $kind->label() }}</option>
-                @endforeach
-            </x-select-field>
-            <x-input-field name="percent" type="number" step="0.01" min="0.01" max="100" :label="__('sepa.retention.field.percent')" />
-            <x-input-field name="amount" type="number" step="0.01" min="0.01" :label="__('sepa.retention.field.amount')" />
-            <x-input-field name="due_on" type="date" :label="__('sepa.retention.field.due_on')" />
-            <x-input-field name="note" :label="__('sepa.retention.field.note')" />
-            <x-button type="submit" tone="plain">{{ __('sepa.retention.add') }}</x-button>
-        </form>
+        <x-empty-state icon="savings" :title="__('sepa.retention.empty')" :message="__('sepa.retention.hint')" compact class="m-4" />
     @endif
 </x-card>
+@endif

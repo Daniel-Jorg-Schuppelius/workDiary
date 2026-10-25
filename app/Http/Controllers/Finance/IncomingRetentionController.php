@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Finance;
 
+use App\Enums\Billing\DocumentDirection;
 use App\Enums\Invoicing\RetentionKind;
+use App\Http\Controllers\Concerns\AuthorizesOrganizationManagement;
 use App\Http\Controllers\Controller;
 use App\Models\Finance\IncomingInvoiceRetention;
 use App\Models\Invoicing\IncomingEInvoice;
@@ -21,14 +23,23 @@ use App\Support\ErrorText;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 use RuntimeException;
 
 /** Einbehalte an Eingangsrechnungen (MVP-953); Recht wie die Rechnungsfreigabe. */
 class IncomingRetentionController extends Controller {
+    use AuthorizesOrganizationManagement;
+
+    public function form(IncomingEInvoice $incoming): View {
+        $this->authorizeBilling();
+        abort_if($incoming->paid_in_run_id !== null || $incoming->direction === DocumentDirection::Outgoing, 404);
+
+        return view('finance.incoming-invoices._retention_dialog', ['incoming' => $incoming]);
+    }
+
     public function store(Request $request, IncomingEInvoice $incoming, IncomingRetentionService $retentions): RedirectResponse {
-        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+        $actor = $this->authorizeBilling();
         $data = $request->validate([
             'kind' => ['required', Rule::enum(RetentionKind::class)],
             'percent' => ['nullable', 'numeric', 'min:0.01', 'max:100', 'required_without:amount'],
@@ -44,7 +55,7 @@ class IncomingRetentionController extends Controller {
                 isset($data['amount']) ? NumberHelper::normalizeDecimalString((string) $data['amount']) : null,
                 isset($data['due_on']) ? CarbonImmutable::parse($data['due_on']) : null,
                 $data['note'] ?? null,
-                $this->authUser(),
+                $actor,
             );
         } catch (RuntimeException $e) {
             return back()->withErrors(['amount' => ErrorText::for($e)])->withInput();
@@ -54,9 +65,9 @@ class IncomingRetentionController extends Controller {
     }
 
     public function release(IncomingInvoiceRetention $retention, IncomingRetentionService $retentions): RedirectResponse {
-        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+        $actor = $this->authorizeBilling();
         try {
-            $retentions->release($retention, $this->authUser());
+            $retentions->release($retention, $actor);
         } catch (RuntimeException $e) {
             return back()->withErrors(['status' => ErrorText::for($e)]);
         }
@@ -65,7 +76,7 @@ class IncomingRetentionController extends Controller {
     }
 
     public function destroy(IncomingInvoiceRetention $retention, IncomingRetentionService $retentions): RedirectResponse {
-        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+        $this->authorizeBilling();
         try {
             $retentions->remove($retention);
         } catch (RuntimeException $e) {

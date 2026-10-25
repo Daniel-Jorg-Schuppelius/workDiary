@@ -120,6 +120,29 @@ final class IncomingRetentionTest extends TestCase {
         $this->assertSame(0, PaymentRun::query()->count());
     }
 
+    public function test_retention_is_added_in_a_dialog_from_the_card(): void {
+        $invoice = $this->invoice();
+        $form = route('finance.incoming-invoices.retentions.form', $invoice);
+
+        $this->actingAs($this->admin)->get(route('finance.incoming-invoices.show', $invoice->document))->assertOk()
+            ->assertSee($form, false)
+            ->assertSeeText(__('sepa.retention.empty'))
+            ->assertDontSee('name="percent"', false);
+        $this->actingAs($this->admin)->get($form)->assertOk()
+            ->assertSee(route('finance.incoming-invoices.retentions.store', $invoice), false)
+            ->assertSee('data-entry-form', false)
+            ->assertSeeText(__('sepa.retention.percent_hint', ['amount' => '10.000,00 EUR']));
+
+        $this->actingAs(User::factory()->user()->create(['organization_id' => $this->org->id]))->get($form)->assertForbidden();
+
+        // Ausgangsbelege tragen keinen Einbehalt: weder Karte noch Dialog.
+        $invoice->forceFill(['direction' => \App\Enums\Billing\DocumentDirection::Outgoing])->save();
+        $this->actingAs($this->admin)->get($form)->assertNotFound();
+        $this->actingAs($this->admin)->get(route('finance.incoming-invoices.show', $invoice->document))->assertOk()
+            ->assertDontSee($form, false)
+            ->assertDontSeeText(__('sepa.retention.hint'));
+    }
+
     public function test_overdue_retention_is_reported(): void {
         User::factory()->buchhaltung()->create(['organization_id' => $this->org->id]);
         $invoice = $this->invoice();

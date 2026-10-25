@@ -142,10 +142,12 @@ return [
     // Einbehalte an Eingangsrechnungen (MVP-953).
     'retention' => [
         'title' => 'Einbehalte',
-        'empty' => 'Keine Einbehalte. Ein Einbehalt mindert die Zahlung, bis er freigegeben ist.',
+        'empty' => 'Keine Einbehalte',
+        'hint' => 'Ein Einbehalt mindert die Zahlung, bis er freigegeben ist.',
         'add' => 'Einbehalt anlegen',
         'release' => 'Freigeben',
         'confirm_release' => 'Einbehalt freigeben? Er wird danach im Zahlungsvorschlag zur Auszahlung angeboten.',
+        'confirm_remove' => 'Einbehalt entfernen?',
         'due' => 'fällig',
         'in_run' => 'im Zahllauf',
         'select' => 'Einbehalt auszahlen',
@@ -161,6 +163,8 @@ return [
             'released_on' => 'Freigegeben am',
             'note' => 'Notiz',
         ],
+        'percent_hint' => 'Vom Bruttobetrag :amount.',
+        'amount_hint' => 'Fester Betrag statt Prozentsatz.',
         'error' => [
             'in_run' => 'Die Rechnung steckt bereits in einem Zahllauf.',
             'outgoing' => 'Ausgangsbelege aus dem Rechnungspostfach haben keinen Einbehalt.',

@@ -3258,6 +3258,7 @@ Route::middleware('auth')->group(function () {
             Route::post('{incoming}/uebergabe/{target}/verknuepfen', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'linkTransferCandidate'])->name('transfer.link');
             Route::post('{incoming}/uebergabe/{target}/neu-anlegen', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'dismissTransferCandidate'])->name('transfer.create-new');
             // Einbehalte (MVP-953).
+            Route::get('{incoming}/einbehalte/neu', [\App\Http\Controllers\Finance\IncomingRetentionController::class, 'form'])->name('retentions.form');
             Route::post('{incoming}/einbehalte', [\App\Http\Controllers\Finance\IncomingRetentionController::class, 'store'])->name('retentions.store');
             Route::post('einbehalte/{retention}/freigeben', [\App\Http\Controllers\Finance\IncomingRetentionController::class, 'release'])->name('retentions.release');
             Route::delete('einbehalte/{retention}', [\App\Http\Controllers\Finance\IncomingRetentionController::class, 'destroy'])->name('retentions.destroy');
