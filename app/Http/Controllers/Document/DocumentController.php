@@ -151,7 +151,7 @@ class DocumentController extends Controller {
     public function show(Document $document): View {
         Gate::authorize('view', $document);
 
-        $this->auditConfidentialAccess($document);
+        $document->auditConfidentialAccess($this->authUser());
 
         $document->load([
             'versions.uploader:id,name',
@@ -351,7 +351,7 @@ class DocumentController extends Controller {
     public function download(Document $document, ?DocumentVersion $version = null): BinaryFileResponse {
         Gate::authorize('view', $document);
 
-        $this->auditConfidentialAccess($document);
+        $document->auditConfidentialAccess($this->authUser());
 
         if ($version === null) {
             /** @var DocumentVersion|null $version */
@@ -432,32 +432,6 @@ class DocumentController extends Controller {
         }
 
         return $request->validate($rules);
-    }
-
-    /**
-     * Fremdzugriff auf vertrauliche Dokumente auditieren (Vollaudit 2026-07,
-     * N10): greift, wenn ein Verwalter (document.confidential.manage/Admin)
-     * ein vertrauliches Dokument eines anderen Erfassers öffnet/herunterlädt.
-     */
-    private function auditConfidentialAccess(Document $document): void {
-        /** @var User|null $user */
-        $user = Auth::user();
-        if ($user === null || ! $document->confidential || (int) $document->created_by_user_id === (int) $user->id) {
-            return;
-        }
-        // Eigenauskunft der Personalakte (Feature 141) ist kein Fremdzugriff.
-        if ($document->isPersonnelFile() && (int) $document->documentable_id === (int) $user->id) {
-            return;
-        }
-
-        \App\Models\Audit\AuditLog::query()->create([
-            'organization_id' => $document->organization_id,
-            'user_id' => $user->id,
-            'event' => 'document.confidentialAccessed',
-            'auditable_type' => MorphMap::stableKey(Document::class),
-            'auditable_id' => $document->id,
-            'changes' => ['title' => $document->title],
-        ]);
     }
 
     /**

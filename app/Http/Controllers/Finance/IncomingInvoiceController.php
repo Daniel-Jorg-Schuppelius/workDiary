@@ -28,6 +28,7 @@ use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, IncomingInvoiceTra
 use App\Support\{CarbonFmt, SortableQuery, Sqid};
 use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\Helper\FileSystem\File;
+use ERechnungToolkit\Generators\InvoiceHtmlGenerator;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use Illuminate\View\View;
@@ -249,6 +250,45 @@ class IncomingInvoiceController extends Controller {
     }
 
     /**
+     * Original neben den erkannten Werten: PDF und Bild wie abgelegt, ein
+     * TIFF-Scan als PDF, eine XML-Rechnung als Sichtdarstellung des Toolkits.
+     * Fremdes XML läuft nie als Markup, die Darstellung steht in einer
+     * Sandbox ohne Skripte.
+     */
+    public function preview(Document $document): \Symfony\Component\HttpFoundation\Response {
+        Gate::authorize('view', $document);
+        abort_unless($document->document_type === DocumentType::Invoice, 404);
+
+        $version = $document->currentVersion;
+        abort_if($version === null || ! Storage::disk('local')->exists((string) $version->path), 404);
+        $contents = (string) Storage::disk('local')->get((string) $version->path);
+        $mime = IncomingEInvoiceService::previewMime($contents);
+        $parsed = $mime === null ? $this->eInvoices->parse($contents, (string) $version->mime, Storage::disk('local')->path((string) $version->path)) : null;
+        abort_if($mime === null && $parsed === null, 404);
+
+        $document->auditConfidentialAccess($this->authUser());
+
+        $sandbox = ['Content-Type' => 'text/html; charset=UTF-8', 'Content-Security-Policy' => "sandbox; default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'self'"];
+        if ($parsed !== null) {
+            return response((new InvoiceHtmlGenerator)->generate($parsed), 200, $sandbox);
+        }
+        $body = IncomingEInvoiceService::previewBody($contents);
+        if ($body === null) {
+            // Die Seite kennt das Scheitern der Umwandlung nicht; das iframe zeigt den Hinweis statt einer Fehlerseite.
+            return response()->view('finance.incoming-invoices._preview_unavailable', [], 200, $sandbox);
+        }
+        $name = (string) $version->original_name;
+        if ($body !== $contents) {
+            $name = pathinfo($name, PATHINFO_FILENAME) . '.pdf';
+        }
+
+        return response($body, 200, [
+            'Content-Type' => $mime,
+            'Content-Disposition' => 'inline; filename="' . addcslashes($name, '"\\') . '"',
+        ]);
+    }
+
+    /**
      * Übergabe an die Buchhaltung. Mit eingeschalteten Zielen (MVP-1111)
      * startet sie sofort für alle Ziele, auch nach ausgeschöpften
      * Wiederholungen; das Tor entscheidet. Ohne Ziel bleibt es beim
@@ -407,12 +447,11 @@ class IncomingInvoiceController extends Controller {
 
         $version = $document->currentVersion;
         $parsed = null;
+        $previewMime = null;
         if ($version !== null && Storage::disk('local')->exists((string) $version->path)) {
-            $parsed = $this->eInvoices->parse(
-                (string) Storage::disk('local')->get((string) $version->path),
-                (string) $version->mime,
-                Storage::disk('local')->path((string) $version->path),
-            );
+            $contents = (string) Storage::disk('local')->get((string) $version->path);
+            $parsed = $this->eInvoices->parse($contents, (string) $version->mime, Storage::disk('local')->path((string) $version->path));
+            $previewMime = IncomingEInvoiceService::previewMime($contents);
         }
 
         $organization = $incoming?->organization;
@@ -425,6 +464,8 @@ class IncomingInvoiceController extends Controller {
             'transferBlockers' => $incoming !== null && $targets !== [] ? app(IncomingInvoiceTransferGate::class)->blockers($incoming) : [],
             'document' => $document->load('currentVersion'),
             'parsed' => $parsed,
+            // Inhaltstyp der Vorschau-Route; eine XML-Rechnung kommt als Sichtdarstellung.
+            'previewMime' => $previewMime ?? ($parsed !== null ? 'text/html' : null),
             'summary' => $parsed !== null ? $this->eInvoices->summary($parsed) : null,
             'kindHintLabel' => $incoming === null ? null : app(\App\Services\Invoicing\EInvoice\IncomingInvoiceKindHints::class)->label($incoming->kindHint()),
             'canTemplate' => $incoming !== null && $incoming->recognition !== IncomingInvoiceRecognition::Structured && str_contains(mb_strtolower((string) $version?->mime), 'pdf') && (auth()->user()?->canManageBilling() ?? false),

@@ -1,7 +1,7 @@
 ---
 title: "Rechnungseingang"
 topic: finance.incoming-invoices
-version: 4
+version: 5
 keywords:
     - Eingangsrechnung
     - Lieferantenrechnung
@@ -25,6 +25,8 @@ keywords:
     - Doppel-Eingang
     - doppelte Rechnung
     - Rechnungsordner
+    - Rechnungsvorschau
+    - Erkennung korrigieren
 audience: []
 modules:
     - module.vertrieb
@@ -122,9 +124,22 @@ Kandidaten. Die eigenen Kennungen Ihrer Organisation zählen nie als Treffer.
 
 Dabei lässt sich auch die Richtung korrigieren. Mit „Absender merken“ ordnet
 das System künftige Mails dieses Absenders derselben Partei zu, solange der
-Beleg selbst keine andere Partei nennt. Bei Klärfällen und erkannten Belegen
-tragen Sie über „Werte erfassen“ Nummer, Datum und Beträge ein. Mehrere
-Eingänge derselben Partei ordnen Sie in der Liste gemeinsam zu.
+Beleg selbst keine andere Partei nennt. Bei Klärfällen tragen Sie über
+„Werte erfassen“ Nummer, Datum und Beträge ein; erkannte oder schon erfasste
+Werte ändern Sie über „Werte korrigieren“, auch direkt in der Karte
+„Rechnungsdaten“. Mehrere Eingänge derselben Partei ordnen Sie in der Liste
+gemeinsam zu.
+
+**Original neben den Werten:** Die Detailseite zeigt das Original neben den
+Rechnungsdaten, damit Erkennungsfehler sofort auffallen: PDF und Fotos (JPEG,
+PNG, GIF, WebP) wie eingegangen, TIFF-Scans als PDF, eine XRechnung bzw. das
+XML einer E-Rechnung als lesbare Rechnung. Beim Scrollen bleibt das Original
+stehen; „In neuem Tab öffnen“ zeigt es groß. Auch der Dialog „Werte
+korrigieren“ zeigt es neben den Feldern. Lässt sich ein TIFF-Scan nicht
+umwandeln, erscheint ein Hinweis; das Original öffnen Sie dann über „Original
+(XML/PDF)“. Das Ansehen eines vertraulichen Dokuments wird wie der Download
+protokolliert. Die Werte einer E-Rechnung lassen sich nicht ändern, ihr XML
+ist das Original.
 
 Mit „Auch die anderen offenen Eingänge genauso behandeln“ erledigen Sie alle
 offenen Belege derselben Gegenpartei in einem Schritt, beim Zuordnen wie beim

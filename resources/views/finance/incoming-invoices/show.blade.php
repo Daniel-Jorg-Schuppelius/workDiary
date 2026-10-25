@@ -8,7 +8,8 @@
 --}}
 
 {{-- Detailansicht einer Eingangs-E-Rechnung (Nachtrag 045b): Kernfelder +
-     Positionen — bei jedem Aufruf frisch aus dem abgelegten Original geparst. --}}
+     Positionen — bei jedem Aufruf frisch aus dem abgelegten Original geparst;
+     daneben das Original selbst, um Erkennungsfehler zu sehen. --}}
 
 @extends('layouts.app')
 
@@ -16,6 +17,9 @@
 @section('nav-title', __('Eingangs-E-Rechnung'))
 
 @section('content')
+@php($unparsed = $parsed === null || $summary === null)
+@php($manual = (array) data_get($incoming?->summary, 'manual', []))
+@php($canCapture = $incoming !== null && $incoming->recognition !== \App\Enums\Invoicing\IncomingInvoiceRecognition::Structured && $incoming->transferred_at === null && $incoming->status !== \App\Enums\Invoicing\IncomingEInvoiceStatus::Rejected && (auth()->user()?->canManageBilling() ?? false))
 <x-page-shell>
     <x-slot:toolbar>
         <x-page-toolbar back-route="finance.incoming-invoices.index" :back-label="__('Zur Liste')">
@@ -32,10 +36,10 @@
                     <x-icon-btn icon="rule" tone="primary" size="sm" data-entry-modal-trigger
                                 :href="route('finance.incoming-invoices.assign.form', $incoming)"
                                 show-label>{{ __('Zuordnen') }}</x-icon-btn>
-                    @if ($incoming->recognition !== \App\Enums\Invoicing\IncomingInvoiceRecognition::Structured)
+                    @if ($canCapture)
                         <x-icon-btn icon="edit_note" tone="outline" size="sm" data-entry-modal-trigger
                                     :href="route('finance.incoming-invoices.values.form', $incoming)"
-                                    show-label>{{ __('Werte erfassen') }}</x-icon-btn>
+                                    show-label>{{ $incoming->recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted || $manual !== [] ? __('Werte korrigieren') : __('Werte erfassen') }}</x-icon-btn>
                     @endif
                     @if ($canTemplate)
                         <x-icon-btn icon="crop_free" tone="outline" size="sm"
@@ -67,316 +71,347 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if (($parsed === null || $summary === null) && $incoming !== null && $incoming->recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted)
-        {{-- PDF bzw. Bild (MVP-1066): erkannte Werte sind Vorschläge. --}}
-        <x-card :title="__('Rechnungsdaten (erkannt)')">
-            <x-detail-grid>
-                <x-detail-grid.row :label="__('Rechnungsnummer')">{{ $incoming->invoice_number ?? '—' }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('Rechnungsdatum')">{{ $incoming->issue_date?->isoFormat('L') ?? '—' }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('Fällig am')">{{ $incoming->due_date?->isoFormat('L') ?? '—' }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('Verkäufer')">{{ $incoming->seller_name ?? '—' }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('USt-IdNr.')">{{ $incoming->seller_vat_id ?? '—' }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('Brutto')">@if ($incoming->amount_gross !== null){{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($incoming->amount_gross->toFloat(), 2, withThousandsSeparator: true) }} {{ $incoming->currency?->value }}@else—@endif</x-detail-grid.row>
-            </x-detail-grid>
-            <p class="mt-2 text-xs text-muted">{{ __('Aus PDF bzw. Bild erkannt — alle Werte am Original prüfen.') }}</p>
-        </x-card>
-    @elseif (($parsed === null || $summary === null) && $incoming !== null && $incoming->recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::None)
-        <x-empty-state icon="help" tone="warning" framed
-                       :title="__('Keine Rechnungsdaten erkannt (Klärfall).')"
-                       :message="__('Das Original liegt unverändert vor. Prüfen Sie die Datei und erfassen Sie die Werte.')" />
-        @php($extraction = (array) data_get($incoming->summary, 'extraction', []))
-        @php($found = (array) ($extraction['found'] ?? []))
-        @if (($extraction['reader'] ?? null) !== null || $found !== [])
-            {{-- Diagnose der Erkennung (Befund 2026-10-18): was gelesen wurde und was trotzdem gefunden wurde. --}}
-            @php($foundLabels = ['number' => __('Rechnungsnummer'), 'issued_on' => __('Rechnungsdatum'), 'due_on' => __('Fällig am'), 'net' => __('Netto'), 'tax' => __('Steuer'), 'gross' => __('Brutto')])
-            <x-card :title="__('Erkennungsdiagnose')">
-                <x-detail-grid>
-                    <x-detail-grid.row :label="__('Gelesen mit')">{{ $extraction['reader'] ?? '—' }}@if ($extraction['ocr_used'] ?? false) ({{ __('OCR') }})@endif</x-detail-grid.row>
-                    <x-detail-grid.row :label="__('Textlänge')">{{ __(':count Zeichen', ['count' => (int) ($extraction['text_length'] ?? 0)]) }}</x-detail-grid.row>
-                    {{-- Belegart-Hinweis und Mahnungsbezug (MVP-1216), Datum aus dem Lieferdatum nur als Vorschlag (MVP-1215). --}}
-                    @if ($kindHintLabel !== null)
-                        <x-detail-grid.row :label="__('Sieht aus wie')">{{ $kindHintLabel }}</x-detail-grid.row>
-                    @endif
-                    @if ($reminderTargets->isNotEmpty())
-                        <x-detail-grid.row :label="__('Bezieht sich auf')">
-                            @foreach ($reminderTargets as $target)
-                                @if ($target->document !== null)
-                                    <a class="link link-hover" href="{{ route('finance.incoming-invoices.show', $target->document) }}">{{ $target->invoice_number }}</a>
-                                @else
-                                    {{ $target->invoice_number }}
-                                @endif
-                                {{ $loop->last ? '' : ', ' }}
-                            @endforeach
-                        </x-detail-grid.row>
-                    @elseif (($extraction['reminder_for'] ?? []) !== [])
-                        <x-detail-grid.row :label="__('Bezieht sich auf')">{{ implode(', ', array_map(strval(...), (array) $extraction['reminder_for'])) }}</x-detail-grid.row>
-                    @endif
-                    @if (($extraction['hints']['issue_date'] ?? null) !== null && ! isset($found['issued_on']))
-                        <x-detail-grid.row :label="__('Rechnungsdatum')">{{ \Illuminate\Support\Carbon::parse((string) $extraction['hints']['issue_date'])->isoFormat('L') }} <span class="text-xs text-muted">({{ __('Vorschlag aus dem Lieferdatum, bitte am Original prüfen.') }})</span></x-detail-grid.row>
-                    @endif
-                    @foreach ($found as $key => $value)
-                        <x-detail-grid.row :label="$foundLabels[$key] ?? $key">
-                            @if (in_array($key, ['net', 'tax', 'gross'], true))
-                                {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $value, 2, withThousandsSeparator: true) }}
-                            @elseif (in_array($key, ['issued_on', 'due_on'], true))
-                                {{ \Illuminate\Support\Carbon::parse((string) $value)->isoFormat('L') }}
-                            @else
-                                {{ $value }}
-                            @endif
-                        </x-detail-grid.row>
-                    @endforeach
-                </x-detail-grid>
-                @if ($found !== [])
-                    <p class="mt-2 text-xs text-muted">{{ __('Teilweise gefundene Werte sind im Dialog „Werte erfassen“ vorbelegt — am Original prüfen.') }}</p>
-                @endif
+    {{-- Original links, beim Scrollen stehend; unter xl folgt es den Daten. --}}
+    <div @class(['grid items-start gap-4', 'xl:grid-cols-2' => $previewMime !== null])>
+        @if ($previewMime !== null)
+            <x-card :title="__('Original')" icon="description" padding="p-0" class="overflow-hidden max-xl:order-last xl:sticky xl:top-0">
+                <x-slot:actions>
+                    <x-icon-btn icon="open_in_new" size="sm" :href="route('finance.incoming-invoices.preview', $document)"
+                                target="_blank" rel="noopener" :label="__('In neuem Tab öffnen')" />
+                </x-slot:actions>
+                {{-- Ab xl kürzer als der sichtbare Seitenbereich, sonst schiebt das Rasterende den Kopf hinaus. --}}
+                @include('finance.incoming-invoices._preview', ['height' => 'h-[70vh] xl:h-[calc(100dvh-24rem)] xl:min-h-80'])
             </x-card>
         @endif
-    @elseif ($parsed === null || $summary === null)
-        <x-empty-state icon="report" tone="warning" framed
-                       :title="__('Das Original konnte nicht (mehr) als E-Rechnung geparst werden.')"
-                       :message="__('Die Datei bleibt als Dokument verfügbar (Original herunterladen).')" />
-    @else
-        <x-card :title="__('Rechnungsdaten')">
-            <x-detail-grid>
-                <x-detail-grid.row :label="__('Rechnungsnummer')">{{ $summary['number'] }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('Profil')">{{ $summary['profile'] }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('Rechnungsdatum')">{{ $summary['issue_date'] ?? '—' }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('Fällig am')">{{ $summary['due_date'] ?? '—' }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('Verkäufer')">{{ $summary['seller'] ?? '—' }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('USt-IdNr.')">{{ $summary['seller_vat'] ?? '—' }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('Netto')">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($summary['net'] ?? 0), 2, withThousandsSeparator: true) }} {{ $summary['currency'] }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('Steuer')">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($summary['tax'] ?? 0), 2, withThousandsSeparator: true) }} {{ $summary['currency'] }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('Brutto')">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($summary['gross'] ?? 0), 2, withThousandsSeparator: true) }} {{ $summary['currency'] }}</x-detail-grid.row>
-            </x-detail-grid>
-        </x-card>
-
-        <x-card :title="__('Positionen')">
-            @if ($parsed->getLines() === [])
-                <x-empty-state icon="receipt_long" :title="__('Keine Positionen im Dokument.')" compact />
-            @else
-                <x-table bare>
-                    <x-slot:head>
-                        <tr>
-                            <th>#</th>
-                            <th>{{ __('Bezeichnung') }}</th>
-                            <th class="text-right">{{ __('Menge') }}</th>
-                            <th class="text-right">{{ __('Einzelpreis') }}</th>
-                            <th class="text-right">{{ __('USt %') }}</th>
-                            <th class="text-right">{{ __('Netto') }}</th>
-                        </tr>
-                    </x-slot:head>
-                    @foreach ($parsed->getLines() as $line)
-                        <tr>
-                            <td class="tabular-nums">{{ $line->getId() }}</td>
-                            <td>
-                                {{ $line->getItemName() }}
-                                @if ($line->getItemDescription())
-                                    <p class="text-xs text-muted">{{ $line->getItemDescription() }}</p>
-                                @endif
-                            </td>
-                            <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($line->getQuantity(), 2, withThousandsSeparator: true) }}</td>
-                            <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($line->getUnitPrice()->toFloat(), 2, withThousandsSeparator: true) }}</td>
-                            <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($line->getTaxPercent() ?? 0), 1, withThousandsSeparator: true) }}</td>
-                            <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($line->getNetAmount()->toFloat(), 2, withThousandsSeparator: true) }}</td>
-                        </tr>
-                    @endforeach
-                </x-table>
-            @endif
-        </x-card>
-    @endif
-
-    {{-- Herkunft, Richtung und Hinweise (MVP-1107). --}}
-    @if ($incoming !== null)
-        <x-card :title="__('Eingang')">
-            <x-detail-grid>
-                <x-detail-grid.row :label="__('Richtung')">{{ $incoming->direction->label() }} · {{ $incoming->kind->label() }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('Erkennung')">{{ $incoming->recognition->label() }}</x-detail-grid.row>
-                @php($counterparty = $incoming->counterparty())
-                <x-detail-grid.row :label="$incoming->direction === \App\Enums\Billing\DocumentDirection::Outgoing ? __('Kunde') : __('Lieferant')">
-                    @if ($counterparty !== null)
-                        {{ $counterparty->name }}
-                        <span class="text-xs text-muted">({{ $incoming->match_kind?->label() }}@if ($incoming->matchedUser) · {{ $incoming->matchedUser->name }}@endif)</span>
-                    @else
-                        <span class="text-warning">{{ __('Noch nicht zugeordnet') }}</span>
+        <div class="flex min-w-0 flex-col gap-4">
+            @if ($unparsed && $incoming !== null && ($incoming->recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted || $manual !== []))
+                {{-- PDF bzw. Bild (MVP-1066): erkannte Werte sind Vorschläge; erfasste Werte stehen auch beim Klärfall hier. --}}
+                <x-card :title="$manual !== [] ? __('Rechnungsdaten (von Hand erfasst)') : __('Rechnungsdaten (erkannt)')">
+                    @if ($canCapture)
+                        <x-slot:actions>
+                            <x-icon-btn icon="edit_note" tone="outline" size="sm" data-entry-modal-trigger
+                                        :href="route('finance.incoming-invoices.values.form', $incoming)"
+                                        show-label>{{ __('Korrigieren') }}</x-icon-btn>
+                        </x-slot:actions>
                     @endif
-                </x-detail-grid.row>
-                @if ($incoming->sender_email)
-                    <x-detail-grid.row :label="__('Absender')">{{ $incoming->sender_email }}</x-detail-grid.row>
-                @endif
-                @if ($incoming->buyer_name || $incoming->buyer_vat_id)
-                    <x-detail-grid.row :label="__('Käufer')">{{ $incoming->buyer_name ?? '—' }}@if ($incoming->buyer_vat_id) · {{ $incoming->buyer_vat_id }}@endif</x-detail-grid.row>
-                @endif
-            </x-detail-grid>
-            @if ($incoming->supplier !== null && app(\App\Services\Billing\Sepa\PaymentProposalService::class)->ibanDiffersFromMaster($incoming, $incoming->supplier))
-                <div role="alert" class="alert alert-warning mt-2 text-sm">
-                    <x-icon name="warning" />
-                    {{ __('Die IBAN der Rechnung weicht von den hinterlegten Bankverbindungen des Lieferanten ab. Vor der Zahlung bestätigen.') }}
-                </div>
+                    <x-detail-grid>
+                        <x-detail-grid.row :label="__('Rechnungsnummer')">{{ $incoming->invoice_number ?? '—' }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('Rechnungsdatum')">{{ $incoming->issue_date?->isoFormat('L') ?? '—' }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('Fällig am')">{{ $incoming->due_date?->isoFormat('L') ?? '—' }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('Verkäufer')">{{ $incoming->seller_name ?? '—' }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('USt-IdNr.')">{{ $incoming->seller_vat_id ?? '—' }}</x-detail-grid.row>
+                        @foreach ([[__('Netto'), $incoming->amount_net], [__('Steuer'), $incoming->amount_tax], [__('Brutto'), $incoming->amount_gross]] as [$amountLabel, $amount])
+                            <x-detail-grid.row :label="$amountLabel">@if ($amount !== null){{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($amount->toFloat(), 2, withThousandsSeparator: true) }} {{ $incoming->currency?->value }}@else—@endif</x-detail-grid.row>
+                        @endforeach
+                    </x-detail-grid>
+                    @if (isset($manual['at']))
+                        <p class="mt-2 text-xs text-muted">{{ __('Von Hand erfasst am :date.', ['date' => \Illuminate\Support\Carbon::parse((string) $manual['at'])->orgTz()->isoFormat('L LT')]) }}</p>
+                    @else
+                        <p class="mt-2 text-xs text-muted">{{ __('Aus PDF bzw. Bild erkannt — alle Werte am Original prüfen.') }}</p>
+                    @endif
+                </x-card>
             @endif
-            @foreach ((array) ($incoming->summary['notices'] ?? []) as $notice)
-                <div role="status" class="alert alert-info mt-2 text-sm">
-                    <x-icon name="info" />
-                    {{ $notice }}
-                </div>
-            @endforeach
-        </x-card>
-        @if ($incoming->attachments->isNotEmpty())
-            <x-attachments-section :attachments="$incoming->attachments" details />
-        @endif
-    @endif
-
-    {{-- Eingangs-Validierung (MVP-166): getrennt von Original/Feldern. --}}
-    @if ($incoming !== null && ($incoming->summary['validation'] ?? null) !== null)
-        @php($validation = $incoming->summary['validation'])
-        <x-card :title="__('Validierung (beim Empfang)')">
-            @if ($validation['schema_checked'])
-                @if ($validation['schema_errors'] === [])
-                    <p class="text-sm text-success">{{ __('UBL-Schema: valide.') }}</p>
-                @else
-                    <ul class="space-y-1 text-sm">
-                        @foreach ($validation['schema_errors'] as $error)
-                            <li class="text-error">✖ {{ $error }}</li>
-                        @endforeach
-                    </ul>
+            @if ($unparsed && $incoming !== null && $incoming->recognition === \App\Enums\Invoicing\IncomingInvoiceRecognition::None)
+                @if ($manual === [])
+                    <x-empty-state icon="help" tone="warning" framed
+                                   :title="__('Keine Rechnungsdaten erkannt (Klärfall).')"
+                                   :message="__('Das Original liegt unverändert vor. Prüfen Sie die Datei und erfassen Sie die Werte.')" />
                 @endif
-            @else
-                {{-- raw-markup-ok: Ergebnisaussage der Schemaprüfung mit Verweis, kein Leerzustand --}}
-                <p class="text-sm text-muted">{{ __('Kein UBL-Schema anwendbar (z. B. CII) — Regelprüfung siehe KoSIT.') }}</p>
-            @endif
-            @if (! ($validation['kosit_applicable'] ?? true))
-                <p class="mt-1 text-sm text-muted">{{ __('KoSIT-Prüfung nicht anwendbar: Altformat ZUGFeRD 1.0 ohne EN-16931-Prüfszenario.') }}</p>
-            @elseif (! $validation['kosit_available'])
-                <p class="mt-1 text-sm text-warning">{{ __('KoSIT-Validator nicht verfügbar — Regelprüfung wurde nicht durchgeführt.') }}</p>
-            @elseif ($validation['kosit_valid'])
-                <p class="mt-1 text-sm text-success">{{ __('KoSIT-Prüfung bestanden.') }}@if (! empty($validation['kosit_scenario'])) <span class="text-muted">{{ __('Prüfszenario: :scenario', ['scenario' => $validation['kosit_scenario']]) }}</span>@endif</p>
-            @elseif ($validation['kosit_errors'] === [])
-                {{-- Kein Szenario = Report ohne Einzelregeln; eine leere Liste sagte bisher gar nichts. --}}
-                <p class="mt-1 text-sm text-error">{{ __('KoSIT-Prüfung nicht bestanden, ohne Einzelmeldungen: Der Validator fand kein passendes Prüfszenario für dieses Format.') }}</p>
-            @else
-                <ul class="mt-1 space-y-1 text-sm">
-                    @foreach ($validation['kosit_errors'] as $error)
-                        <li class="text-error">✖ {{ $error }}</li>
-                    @endforeach
-                </ul>
-            @endif
-        </x-card>
-    @endif
-
-    {{-- Zuordnungs-Vorschläge + Abweichungen (MVP-167): nur Hinweise — keine Auto-Übernahme. --}}
-    @if ($incoming !== null && (($incoming->summary['deviations'] ?? []) !== [] || array_filter((array) ($incoming->summary['suggestions'] ?? [])) !== []))
-        <x-card :title="__('Zuordnung und Abweichungen (beim Empfang)')">
-            @foreach ((array) ($incoming->summary['deviations'] ?? []) as $deviation)
-                <div role="alert" class="alert alert-warning text-sm">
-                    <x-icon name="warning" />
-                    {{ $deviation }}
-                </div>
-            @endforeach
-            @php($suggestions = (array) ($incoming->summary['suggestions'] ?? []))
-            <x-detail-grid>
-                @if (($suggestions['suppliers'] ?? []) !== [])
-                    <x-detail-grid.row :label="__('Lieferanten-Vorschlag')">
-                        @foreach ($suggestions['suppliers'] as $candidate)
-                            <div>{{ $candidate['label'] }} <span class="text-xs text-muted">({{ implode(', ', $candidate['reasons']) }})</span></div>
-                        @endforeach
-                    </x-detail-grid.row>
-                @endif
-                @if (($suggestions['customers'] ?? []) !== [])
-                    <x-detail-grid.row :label="__('Kunden-Vorschlag')">
-                        @foreach ($suggestions['customers'] as $candidate)
-                            <div>{{ $candidate['label'] }} <span class="text-xs text-muted">({{ implode(', ', $candidate['reasons']) }})</span></div>
-                        @endforeach
-                    </x-detail-grid.row>
-                @endif
-                @if (($suggestions['purchase_orders'] ?? []) !== [])
-                    <x-detail-grid.row :label="__('Bestell-Vorschlag')">
-                        @foreach ($suggestions['purchase_orders'] as $candidate)
-                            <div>{{ $candidate['label'] }} <span class="text-xs text-muted">({{ implode(', ', $candidate['reasons']) }})</span></div>
-                        @endforeach
-                    </x-detail-grid.row>
-                @endif
-                @if (($suggestions['projects'] ?? []) !== [])
-                    <x-detail-grid.row :label="__('Projekt-Vorschlag')">
-                        @foreach ($suggestions['projects'] as $candidate)
-                            <div>{{ $candidate['label'] }} <span class="text-xs text-muted">({{ implode(', ', $candidate['reasons']) }})</span></div>
-                        @endforeach
-                    </x-detail-grid.row>
-                @endif
-            </x-detail-grid>
-            <p class="mt-2 text-xs text-muted">{{ __('Vorschläge sind unverbindlich — es werden nie automatisch Stammdaten angelegt oder geändert.') }}</p>
-        </x-card>
-    @endif
-
-    {{-- Möglicher Doppel-Eingang (MVP-1145): sperrt die Übergabe bis zur Bestätigung. --}}
-    @if ($incoming !== null && $incoming->duplicate_of_id !== null && $incoming->duplicateOf !== null)
-        @php($earlier = $incoming->duplicateOf)
-        <x-card :title="__('Möglicher Doppel-Eingang')">
-            @if ($incoming->isPossibleDuplicate())
-                <div role="alert" class="alert alert-warning text-sm">
-                    <x-icon name="content_copy" />
-                    <span>
-                        {{ __('Die Rechnung :number desselben Ausstellers liegt schon im Rechnungseingang (empfangen am :date). Bis zur Klärung wird nicht an die Buchhaltung übergeben.', ['number' => $earlier->invoice_number ?? '—', 'date' => $earlier->received_at->orgTz()->isoFormat('L')]) }}
-                        @if ($earlier->document !== null)
-                            <a class="link" href="{{ route('finance.incoming-invoices.show', $earlier->document) }}">{{ __('Früheren Eingang öffnen') }}</a>
+                @php($extraction = (array) data_get($incoming->summary, 'extraction', []))
+                @php($found = (array) ($extraction['found'] ?? []))
+                @if (($extraction['reader'] ?? null) !== null || $found !== [])
+                    {{-- Diagnose der Erkennung (Befund 2026-10-18): was gelesen wurde und was trotzdem gefunden wurde. --}}
+                    @php($foundLabels = ['number' => __('Rechnungsnummer'), 'issued_on' => __('Rechnungsdatum'), 'due_on' => __('Fällig am'), 'net' => __('Netto'), 'tax' => __('Steuer'), 'gross' => __('Brutto')])
+                    <x-card :title="__('Erkennungsdiagnose')">
+                        <x-detail-grid>
+                            <x-detail-grid.row :label="__('Gelesen mit')">{{ $extraction['reader'] ?? '—' }}@if ($extraction['ocr_used'] ?? false) ({{ __('OCR') }})@endif</x-detail-grid.row>
+                            <x-detail-grid.row :label="__('Textlänge')">{{ __(':count Zeichen', ['count' => (int) ($extraction['text_length'] ?? 0)]) }}</x-detail-grid.row>
+                            {{-- Belegart-Hinweis und Mahnungsbezug (MVP-1216), Datum aus dem Lieferdatum nur als Vorschlag (MVP-1215). --}}
+                            @if ($kindHintLabel !== null)
+                                <x-detail-grid.row :label="__('Sieht aus wie')">{{ $kindHintLabel }}</x-detail-grid.row>
+                            @endif
+                            @if ($reminderTargets->isNotEmpty())
+                                <x-detail-grid.row :label="__('Bezieht sich auf')">
+                                    @foreach ($reminderTargets as $target)
+                                        @if ($target->document !== null)
+                                            <a class="link link-hover" href="{{ route('finance.incoming-invoices.show', $target->document) }}">{{ $target->invoice_number }}</a>
+                                        @else
+                                            {{ $target->invoice_number }}
+                                        @endif
+                                        {{ $loop->last ? '' : ', ' }}
+                                    @endforeach
+                                </x-detail-grid.row>
+                            @elseif (($extraction['reminder_for'] ?? []) !== [])
+                                <x-detail-grid.row :label="__('Bezieht sich auf')">{{ implode(', ', array_map(strval(...), (array) $extraction['reminder_for'])) }}</x-detail-grid.row>
+                            @endif
+                            @if (($extraction['hints']['issue_date'] ?? null) !== null && ! isset($found['issued_on']))
+                                <x-detail-grid.row :label="__('Rechnungsdatum')">{{ \Illuminate\Support\Carbon::parse((string) $extraction['hints']['issue_date'])->isoFormat('L') }} <span class="text-xs text-muted">({{ __('Vorschlag aus dem Lieferdatum, bitte am Original prüfen.') }})</span></x-detail-grid.row>
+                            @endif
+                            @foreach ($found as $key => $value)
+                                <x-detail-grid.row :label="$foundLabels[$key] ?? $key">
+                                    @if (in_array($key, ['net', 'tax', 'gross'], true))
+                                        {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $value, 2, withThousandsSeparator: true) }}
+                                    @elseif (in_array($key, ['issued_on', 'due_on'], true))
+                                        {{ \Illuminate\Support\Carbon::parse((string) $value)->isoFormat('L') }}
+                                    @else
+                                        {{ $value }}
+                                    @endif
+                                </x-detail-grid.row>
+                            @endforeach
+                        </x-detail-grid>
+                        @if ($found !== [])
+                            <p class="mt-2 text-xs text-muted">{{ __('Teilweise gefundene Werte sind im Dialog „Werte erfassen“ vorbelegt — am Original prüfen.') }}</p>
                         @endif
-                    </span>
-                </div>
-                <div class="mt-2 flex flex-wrap items-center gap-2">
-                    <x-action-form :action="route('finance.incoming-invoices.duplicate.clear', $incoming)"
-                                   :confirm="__('Bestätigen, dass dies kein Doppel-Eingang ist? Danach wird der Eingang wie jeder andere übergeben.')"
-                                   confirm-icon="check" confirm-tone="primary" :confirm-label="__('Kein Doppel')">
-                        <x-icon-btn icon="check" tone="primary" size="sm" type="submit" show-label>{{ __('Kein Doppel') }}</x-icon-btn>
-                    </x-action-form>
-                    <span class="text-xs text-muted">{{ __('Ist es ein Doppel, lehnen Sie den Eingang unten ab.') }}</span>
-                </div>
-            @elseif ($incoming->duplicate_cleared_at !== null)
-                <p class="text-sm text-muted">{{ __('Als kein Doppel bestätigt am :date.', ['date' => $incoming->duplicate_cleared_at->orgTz()->isoFormat('L LT')]) }}</p>
-            @else
-                <p class="text-sm text-muted">{{ __('Der frühere Eingang mit derselben Nummer ist abgelehnt.') }}</p>
-            @endif
-        </x-card>
-    @endif
+                    </x-card>
+                @endif
+            @elseif ($unparsed && $incoming?->recognition !== \App\Enums\Invoicing\IncomingInvoiceRecognition::Extracted)
+                <x-empty-state icon="report" tone="warning" framed
+                               :title="__('Das Original konnte nicht (mehr) als E-Rechnung geparst werden.')"
+                               :message="__('Die Datei bleibt als Dokument verfügbar (Original herunterladen).')" />
+            @elseif (! $unparsed)
+                <x-card :title="__('Rechnungsdaten')">
+                    <x-detail-grid>
+                        <x-detail-grid.row :label="__('Rechnungsnummer')">{{ $summary['number'] }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('Profil')">{{ $summary['profile'] }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('Rechnungsdatum')">{{ $summary['issue_date'] ?? '—' }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('Fällig am')">{{ $summary['due_date'] ?? '—' }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('Verkäufer')">{{ $summary['seller'] ?? '—' }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('USt-IdNr.')">{{ $summary['seller_vat'] ?? '—' }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('Netto')">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($summary['net'] ?? 0), 2, withThousandsSeparator: true) }} {{ $summary['currency'] }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('Steuer')">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($summary['tax'] ?? 0), 2, withThousandsSeparator: true) }} {{ $summary['currency'] }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('Brutto')">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($summary['gross'] ?? 0), 2, withThousandsSeparator: true) }} {{ $summary['currency'] }}</x-detail-grid.row>
+                    </x-detail-grid>
+                </x-card>
 
-    {{-- Prüfbereich (MVP-165/167): Hash-Nachweis + Freigabe-Workflow. --}}
-    @if ($incoming !== null)
-        <x-card :title="__('Prüfung und Freigabe')">
-            <x-detail-grid>
-                <x-detail-grid.row :label="__('Status')">{{ $incoming->status->label() }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('Empfangen')">{{ $incoming->received_at->orgTz()->isoFormat('L LT') }} · {{ $incoming->source }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('SHA-256')"><span class="font-mono text-xs">{{ $incoming->sha256 }}</span></x-detail-grid.row>
-                @if ($incoming->decision_note)
-                    <x-detail-grid.row :label="__('Anmerkung')">{{ $incoming->decision_note }}</x-detail-grid.row>
-                @endif
-                @if ($incoming->transferred_at)
-                    <x-detail-grid.row :label="__('Buchhaltungs-Übergabe')">{{ $incoming->transferred_at->orgTz()->isoFormat('L LT') }}</x-detail-grid.row>
-                @endif
-            </x-detail-grid>
-            <form method="POST" action="{{ route('finance.incoming-invoices.decide', $incoming) }}" class="mt-2 flex flex-wrap items-end gap-2">
-                @csrf
-                <select name="decision" class="select select-sm select-bordered" aria-label="{{ __('Entscheidung') }}">
-                    <option value="approved">{{ __('Fachlich freigeben') }}</option>
-                    <option value="question">{{ __('Rückfrage') }}</option>
-                    <option value="rejected">{{ __('Ablehnen') }}</option>
-                    <option value="payment_released">{{ __('Zahlung freigeben') }}</option>
-                </select>
-                <input name="note" maxlength="500" class="input input-sm input-bordered flex-1"
-                       aria-label="{{ __('Anmerkung (bei Ablehnung Pflicht)') }}"
-                       placeholder="{{ __('Anmerkung (bei Ablehnung Pflicht)') }}">
-                <x-icon-btn icon="gavel" tone="primary" size="sm" type="submit" show-label>{{ __('Entscheiden') }}</x-icon-btn>
-            </form>
-            @if ($transferTargets === [] && $incoming->transferred_at === null && in_array($incoming->status, [\App\Enums\Invoicing\IncomingEInvoiceStatus::Approved, \App\Enums\Invoicing\IncomingEInvoiceStatus::PaymentReleased], true))
-                <x-action-form :action="route('finance.incoming-invoices.transfer', $incoming)" class="mt-2"
-                      :confirm="__('Eingang an die führende Buchhaltung übergeben? Die Übergabe wird als Nachweis vermerkt.')"
-                      confirm-icon="outbox"
-                      confirm-tone="primary"
-                      :confirm-label="__('Übergeben')">
-                    <x-icon-btn icon="outbox" tone="primary" size="sm" type="submit" show-label>{{ __('An Buchhaltung übergeben') }}</x-icon-btn>
-                </x-action-form>
+                <x-card :title="__('Positionen')">
+                    @if ($parsed->getLines() === [])
+                        <x-empty-state icon="receipt_long" :title="__('Keine Positionen im Dokument.')" compact />
+                    @else
+                        <x-table bare>
+                            <x-slot:head>
+                                <tr>
+                                    <th>#</th>
+                                    <th>{{ __('Bezeichnung') }}</th>
+                                    <th class="text-right">{{ __('Menge') }}</th>
+                                    <th class="text-right">{{ __('Einzelpreis') }}</th>
+                                    <th class="text-right">{{ __('USt %') }}</th>
+                                    <th class="text-right">{{ __('Netto') }}</th>
+                                </tr>
+                            </x-slot:head>
+                            @foreach ($parsed->getLines() as $line)
+                                <tr>
+                                    <td class="tabular-nums">{{ $line->getId() }}</td>
+                                    <td>
+                                        {{ $line->getItemName() }}
+                                        @if ($line->getItemDescription())
+                                            <p class="text-xs text-muted">{{ $line->getItemDescription() }}</p>
+                                        @endif
+                                    </td>
+                                    <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($line->getQuantity(), 2, withThousandsSeparator: true) }}</td>
+                                    <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($line->getUnitPrice()->toFloat(), 2, withThousandsSeparator: true) }}</td>
+                                    <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($line->getTaxPercent() ?? 0), 1, withThousandsSeparator: true) }}</td>
+                                    <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($line->getNetAmount()->toFloat(), 2, withThousandsSeparator: true) }}</td>
+                                </tr>
+                            @endforeach
+                        </x-table>
+                    @endif
+                </x-card>
             @endif
-        </x-card>
-        @if ($transferTargets !== [])
-            @include('finance.incoming-invoices._transfers')
-        @endif
-        @include('finance.incoming-invoices._retentions', ['incoming' => $incoming])
-    @endif
+
+            {{-- Herkunft, Richtung und Hinweise (MVP-1107). --}}
+            @if ($incoming !== null)
+                <x-card :title="__('Eingang')">
+                    <x-detail-grid>
+                        <x-detail-grid.row :label="__('Richtung')">{{ $incoming->direction->label() }} · {{ $incoming->kind->label() }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('Erkennung')">{{ $incoming->recognition->label() }}</x-detail-grid.row>
+                        @php($counterparty = $incoming->counterparty())
+                        <x-detail-grid.row :label="$incoming->direction === \App\Enums\Billing\DocumentDirection::Outgoing ? __('Kunde') : __('Lieferant')">
+                            @if ($counterparty !== null)
+                                {{ $counterparty->name }}
+                                <span class="text-xs text-muted">({{ $incoming->match_kind?->label() }}@if ($incoming->matchedUser) · {{ $incoming->matchedUser->name }}@endif)</span>
+                            @else
+                                <span class="text-warning">{{ __('Noch nicht zugeordnet') }}</span>
+                            @endif
+                        </x-detail-grid.row>
+                        @if ($incoming->sender_email)
+                            <x-detail-grid.row :label="__('Absender')">{{ $incoming->sender_email }}</x-detail-grid.row>
+                        @endif
+                        @if ($incoming->buyer_name || $incoming->buyer_vat_id)
+                            <x-detail-grid.row :label="__('Käufer')">{{ $incoming->buyer_name ?? '—' }}@if ($incoming->buyer_vat_id) · {{ $incoming->buyer_vat_id }}@endif</x-detail-grid.row>
+                        @endif
+                    </x-detail-grid>
+                    @if ($incoming->supplier !== null && app(\App\Services\Billing\Sepa\PaymentProposalService::class)->ibanDiffersFromMaster($incoming, $incoming->supplier))
+                        <div role="alert" class="alert alert-warning mt-2 text-sm">
+                            <x-icon name="warning" />
+                            {{ __('Die IBAN der Rechnung weicht von den hinterlegten Bankverbindungen des Lieferanten ab. Vor der Zahlung bestätigen.') }}
+                        </div>
+                    @endif
+                    @foreach ((array) ($incoming->summary['notices'] ?? []) as $notice)
+                        <div role="status" class="alert alert-info mt-2 text-sm">
+                            <x-icon name="info" />
+                            {{ $notice }}
+                        </div>
+                    @endforeach
+                </x-card>
+                @if ($incoming->attachments->isNotEmpty())
+                    <x-attachments-section :attachments="$incoming->attachments" details />
+                @endif
+            @endif
+
+            {{-- Eingangs-Validierung (MVP-166): getrennt von Original/Feldern. --}}
+            @if ($incoming !== null && ($incoming->summary['validation'] ?? null) !== null)
+                @php($validation = $incoming->summary['validation'])
+                <x-card :title="__('Validierung (beim Empfang)')">
+                    @if ($validation['schema_checked'])
+                        @if ($validation['schema_errors'] === [])
+                            <p class="text-sm text-success">{{ __('UBL-Schema: valide.') }}</p>
+                        @else
+                            <ul class="space-y-1 text-sm">
+                                @foreach ($validation['schema_errors'] as $error)
+                                    <li class="text-error">✖ {{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    @else
+                        {{-- raw-markup-ok: Ergebnisaussage der Schemaprüfung mit Verweis, kein Leerzustand --}}
+                        <p class="text-sm text-muted">{{ __('Kein UBL-Schema anwendbar (z. B. CII) — Regelprüfung siehe KoSIT.') }}</p>
+                    @endif
+                    @if (! ($validation['kosit_applicable'] ?? true))
+                        <p class="mt-1 text-sm text-muted">{{ __('KoSIT-Prüfung nicht anwendbar: Altformat ZUGFeRD 1.0 ohne EN-16931-Prüfszenario.') }}</p>
+                    @elseif (! $validation['kosit_available'])
+                        <p class="mt-1 text-sm text-warning">{{ __('KoSIT-Validator nicht verfügbar — Regelprüfung wurde nicht durchgeführt.') }}</p>
+                    @elseif ($validation['kosit_valid'])
+                        <p class="mt-1 text-sm text-success">{{ __('KoSIT-Prüfung bestanden.') }}@if (! empty($validation['kosit_scenario'])) <span class="text-muted">{{ __('Prüfszenario: :scenario', ['scenario' => $validation['kosit_scenario']]) }}</span>@endif</p>
+                    @elseif ($validation['kosit_errors'] === [])
+                        {{-- Kein Szenario = Report ohne Einzelregeln; eine leere Liste sagte bisher gar nichts. --}}
+                        <p class="mt-1 text-sm text-error">{{ __('KoSIT-Prüfung nicht bestanden, ohne Einzelmeldungen: Der Validator fand kein passendes Prüfszenario für dieses Format.') }}</p>
+                    @else
+                        <ul class="mt-1 space-y-1 text-sm">
+                            @foreach ($validation['kosit_errors'] as $error)
+                                <li class="text-error">✖ {{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </x-card>
+            @endif
+
+            {{-- Zuordnungs-Vorschläge + Abweichungen (MVP-167): nur Hinweise — keine Auto-Übernahme. --}}
+            @if ($incoming !== null && (($incoming->summary['deviations'] ?? []) !== [] || array_filter((array) ($incoming->summary['suggestions'] ?? [])) !== []))
+                <x-card :title="__('Zuordnung und Abweichungen (beim Empfang)')">
+                    @foreach ((array) ($incoming->summary['deviations'] ?? []) as $deviation)
+                        <div role="alert" class="alert alert-warning text-sm">
+                            <x-icon name="warning" />
+                            {{ $deviation }}
+                        </div>
+                    @endforeach
+                    @php($suggestions = (array) ($incoming->summary['suggestions'] ?? []))
+                    <x-detail-grid>
+                        @if (($suggestions['suppliers'] ?? []) !== [])
+                            <x-detail-grid.row :label="__('Lieferanten-Vorschlag')">
+                                @foreach ($suggestions['suppliers'] as $candidate)
+                                    <div>{{ $candidate['label'] }} <span class="text-xs text-muted">({{ implode(', ', $candidate['reasons']) }})</span></div>
+                                @endforeach
+                            </x-detail-grid.row>
+                        @endif
+                        @if (($suggestions['customers'] ?? []) !== [])
+                            <x-detail-grid.row :label="__('Kunden-Vorschlag')">
+                                @foreach ($suggestions['customers'] as $candidate)
+                                    <div>{{ $candidate['label'] }} <span class="text-xs text-muted">({{ implode(', ', $candidate['reasons']) }})</span></div>
+                                @endforeach
+                            </x-detail-grid.row>
+                        @endif
+                        @if (($suggestions['purchase_orders'] ?? []) !== [])
+                            <x-detail-grid.row :label="__('Bestell-Vorschlag')">
+                                @foreach ($suggestions['purchase_orders'] as $candidate)
+                                    <div>{{ $candidate['label'] }} <span class="text-xs text-muted">({{ implode(', ', $candidate['reasons']) }})</span></div>
+                                @endforeach
+                            </x-detail-grid.row>
+                        @endif
+                        @if (($suggestions['projects'] ?? []) !== [])
+                            <x-detail-grid.row :label="__('Projekt-Vorschlag')">
+                                @foreach ($suggestions['projects'] as $candidate)
+                                    <div>{{ $candidate['label'] }} <span class="text-xs text-muted">({{ implode(', ', $candidate['reasons']) }})</span></div>
+                                @endforeach
+                            </x-detail-grid.row>
+                        @endif
+                    </x-detail-grid>
+                    <p class="mt-2 text-xs text-muted">{{ __('Vorschläge sind unverbindlich — es werden nie automatisch Stammdaten angelegt oder geändert.') }}</p>
+                </x-card>
+            @endif
+
+            {{-- Möglicher Doppel-Eingang (MVP-1145): sperrt die Übergabe bis zur Bestätigung. --}}
+            @if ($incoming !== null && $incoming->duplicate_of_id !== null && $incoming->duplicateOf !== null)
+                @php($earlier = $incoming->duplicateOf)
+                <x-card :title="__('Möglicher Doppel-Eingang')">
+                    @if ($incoming->isPossibleDuplicate())
+                        <div role="alert" class="alert alert-warning text-sm">
+                            <x-icon name="content_copy" />
+                            <span>
+                                {{ __('Die Rechnung :number desselben Ausstellers liegt schon im Rechnungseingang (empfangen am :date). Bis zur Klärung wird nicht an die Buchhaltung übergeben.', ['number' => $earlier->invoice_number ?? '—', 'date' => $earlier->received_at->orgTz()->isoFormat('L')]) }}
+                                @if ($earlier->document !== null)
+                                    <a class="link" href="{{ route('finance.incoming-invoices.show', $earlier->document) }}">{{ __('Früheren Eingang öffnen') }}</a>
+                                @endif
+                            </span>
+                        </div>
+                        <div class="mt-2 flex flex-wrap items-center gap-2">
+                            <x-action-form :action="route('finance.incoming-invoices.duplicate.clear', $incoming)"
+                                           :confirm="__('Bestätigen, dass dies kein Doppel-Eingang ist? Danach wird der Eingang wie jeder andere übergeben.')"
+                                           confirm-icon="check" confirm-tone="primary" :confirm-label="__('Kein Doppel')">
+                                <x-icon-btn icon="check" tone="primary" size="sm" type="submit" show-label>{{ __('Kein Doppel') }}</x-icon-btn>
+                            </x-action-form>
+                            <span class="text-xs text-muted">{{ __('Ist es ein Doppel, lehnen Sie den Eingang unten ab.') }}</span>
+                        </div>
+                    @elseif ($incoming->duplicate_cleared_at !== null)
+                        <p class="text-sm text-muted">{{ __('Als kein Doppel bestätigt am :date.', ['date' => $incoming->duplicate_cleared_at->orgTz()->isoFormat('L LT')]) }}</p>
+                    @else
+                        <p class="text-sm text-muted">{{ __('Der frühere Eingang mit derselben Nummer ist abgelehnt.') }}</p>
+                    @endif
+                </x-card>
+            @endif
+
+            {{-- Prüfbereich (MVP-165/167): Hash-Nachweis + Freigabe-Workflow. --}}
+            @if ($incoming !== null)
+                <x-card :title="__('Prüfung und Freigabe')">
+                    <x-detail-grid>
+                        <x-detail-grid.row :label="__('Status')">{{ $incoming->status->label() }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('Empfangen')">{{ $incoming->received_at->orgTz()->isoFormat('L LT') }} · {{ $incoming->source }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('SHA-256')"><span class="font-mono text-xs">{{ $incoming->sha256 }}</span></x-detail-grid.row>
+                        @if ($incoming->decision_note)
+                            <x-detail-grid.row :label="__('Anmerkung')">{{ $incoming->decision_note }}</x-detail-grid.row>
+                        @endif
+                        @if ($incoming->transferred_at)
+                            <x-detail-grid.row :label="__('Buchhaltungs-Übergabe')">{{ $incoming->transferred_at->orgTz()->isoFormat('L LT') }}</x-detail-grid.row>
+                        @endif
+                    </x-detail-grid>
+                    <form method="POST" action="{{ route('finance.incoming-invoices.decide', $incoming) }}" class="mt-2 flex flex-wrap items-end gap-2">
+                        @csrf
+                        <select name="decision" class="select select-sm select-bordered" aria-label="{{ __('Entscheidung') }}">
+                            <option value="approved">{{ __('Fachlich freigeben') }}</option>
+                            <option value="question">{{ __('Rückfrage') }}</option>
+                            <option value="rejected">{{ __('Ablehnen') }}</option>
+                            <option value="payment_released">{{ __('Zahlung freigeben') }}</option>
+                        </select>
+                        <input name="note" maxlength="500" class="input input-sm input-bordered flex-1"
+                               aria-label="{{ __('Anmerkung (bei Ablehnung Pflicht)') }}"
+                               placeholder="{{ __('Anmerkung (bei Ablehnung Pflicht)') }}">
+                        <x-icon-btn icon="gavel" tone="primary" size="sm" type="submit" show-label>{{ __('Entscheiden') }}</x-icon-btn>
+                    </form>
+                    @if ($transferTargets === [] && $incoming->transferred_at === null && in_array($incoming->status, [\App\Enums\Invoicing\IncomingEInvoiceStatus::Approved, \App\Enums\Invoicing\IncomingEInvoiceStatus::PaymentReleased], true))
+                        <x-action-form :action="route('finance.incoming-invoices.transfer', $incoming)" class="mt-2"
+                              :confirm="__('Eingang an die führende Buchhaltung übergeben? Die Übergabe wird als Nachweis vermerkt.')"
+                              confirm-icon="outbox"
+                              confirm-tone="primary"
+                              :confirm-label="__('Übergeben')">
+                            <x-icon-btn icon="outbox" tone="primary" size="sm" type="submit" show-label>{{ __('An Buchhaltung übergeben') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
+                </x-card>
+                @if ($transferTargets !== [])
+                    @include('finance.incoming-invoices._transfers')
+                @endif
+                @include('finance.incoming-invoices._retentions', ['incoming' => $incoming])
+            @endif
+        </div>
+    </div>
 </x-page-shell>
 @endsection

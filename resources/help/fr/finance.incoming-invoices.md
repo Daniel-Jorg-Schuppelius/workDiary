@@ -1,7 +1,7 @@
 ---
 title: "Factures reçues"
 topic: finance.incoming-invoices
-version: 4
+version: 5
 keywords:
     - facture fournisseur
     - facture d'achat
@@ -25,6 +25,8 @@ keywords:
     - doublon
     - facture en double
     - dossier des factures
+    - aperçu de la facture
+    - corriger la reconnaissance
 audience: []
 modules:
     - module.vertrieb
@@ -137,9 +139,22 @@ attribuer et la vérification indique les candidats. Les identifiants propres
 Vous pouvez aussi y corriger la direction. Avec « Mémoriser l’expéditeur »,
 le système attribue les futurs e-mails de cet expéditeur à la même partie,
 tant que le document lui-même ne nomme pas une autre partie. Pour les
-documents non reconnus et reconnus, saisissez numéro, date et montants avec
-« Saisir les valeurs ». Attribuez ensemble dans la liste plusieurs documents
-d’une même partie.
+documents non reconnus, saisissez numéro, date et montants avec « Saisir les
+valeurs » ; modifiez les valeurs reconnues ou déjà saisies avec « Corriger les
+valeurs », aussi directement dans la carte « Données de facture ». Attribuez
+ensemble dans la liste plusieurs documents d’une même partie.
+
+**Original à côté des valeurs :** la page de détail affiche l’original à côté
+des données de facture, pour que les erreurs de reconnaissance sautent aux
+yeux : PDF et photos (JPEG, PNG, GIF, WebP) tels que reçus, scans TIFF en PDF,
+une XRechnung ou le XML d’une facture électronique sous forme de facture
+lisible. L’original reste en place pendant le défilement ; « Ouvrir dans un
+nouvel onglet » l’affiche en grand. La boîte de dialogue « Corriger les
+valeurs » l’affiche aussi à côté des champs. Si un scan TIFF ne peut pas être
+converti, une remarque s’affiche ; ouvrez alors l’original via « Original
+(XML/PDF) ». La consultation d’un document confidentiel est journalisée comme
+un téléchargement. Les valeurs d’une facture électronique ne peuvent pas être
+modifiées ; son XML est l’original.
 
 Avec « Traiter de la même façon les autres documents ouverts », vous réglez
 tous les documents ouverts de la même contrepartie en une étape, à

@@ -3268,6 +3268,8 @@ Route::middleware('auth')->group(function () {
             Route::post('{document}/vorlage/probelauf', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'trial'])->name('template.trial')->middleware('throttle:recognition-trial');
             Route::post('{document}/vorlage', [\App\Http\Controllers\Finance\IncomingInvoiceTemplateController::class, 'store'])->name('template.store');
             Route::get('{document}/xml', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'xml'])->name('xml');
+            // Original neben den Werten (Detailseite, Werte-Dialog): PDF/Bild inline, XML als Sichtdarstellung.
+            Route::get('{document}/vorschau', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'preview'])->name('preview');
             Route::get('{document}', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'show'])->name('show');
         });
         // SEPA-Zahlungsausgang (Feature 120, MVP-609): Zahllauf zusammenstellen,
