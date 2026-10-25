@@ -142,10 +142,12 @@ return [
     // Einbehalte an Eingangsrechnungen (MVP-953).
     'retention' => [
         'title' => 'Retentions',
-        'empty' => 'No retentions. A retention reduces the payment until it is released.',
+        'empty' => 'No retentions',
+        'hint' => 'A retention reduces the payment until it is released.',
         'add' => 'Add retention',
         'release' => 'Release',
         'confirm_release' => 'Release the retention? It will then be offered for payment in the payment proposal.',
+        'confirm_remove' => 'Remove retention?',
         'due' => 'due',
         'in_run' => 'in payment run',
         'select' => 'Pay out retention',
@@ -161,6 +163,8 @@ return [
             'released_on' => 'Released on',
             'note' => 'Note',
         ],
+        'percent_hint' => 'Of the gross amount :amount.',
+        'amount_hint' => 'Fixed amount instead of a percentage.',
         'error' => [
             'in_run' => 'The invoice is already in a payment run.',
             'outgoing' => 'Outgoing documents from the invoice mailbox have no retention.',

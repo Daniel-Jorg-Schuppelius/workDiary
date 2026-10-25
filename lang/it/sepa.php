@@ -142,10 +142,12 @@ return [
     // Einbehalte an Eingangsrechnungen (MVP-953).
     'retention' => [
         'title' => 'Trattenute',
-        'empty' => 'Nessuna trattenuta. Una trattenuta riduce il pagamento finché non viene svincolata.',
+        'empty' => 'Nessuna trattenuta',
+        'hint' => 'Una trattenuta riduce il pagamento finché non viene svincolata.',
         'add' => 'Aggiungi trattenuta',
         'release' => 'Svincola',
         'confirm_release' => 'Svincolare la trattenuta? Verrà poi proposta per il pagamento.',
+        'confirm_remove' => 'Rimuovere la trattenuta?',
         'due' => 'scaduta',
         'in_run' => 'nel lotto di pagamento',
         'select' => 'Pagare la trattenuta',
@@ -161,6 +163,8 @@ return [
             'released_on' => 'Svincolata il',
             'note' => 'Nota',
         ],
+        'percent_hint' => 'Dell’importo lordo :amount.',
+        'amount_hint' => 'Importo fisso anziché una percentuale.',
         'error' => [
             'in_run' => 'La fattura è già in un lotto di pagamento.',
             'outgoing' => 'I documenti in uscita dalla casella delle fatture non hanno trattenute.',

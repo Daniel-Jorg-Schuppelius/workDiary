@@ -142,10 +142,12 @@ return [
     // Einbehalte an Eingangsrechnungen (MVP-953).
     'retention' => [
         'title' => 'Retenciones',
-        'empty' => 'Sin retenciones. Una retención reduce el pago hasta que se libera.',
+        'empty' => 'Sin retenciones',
+        'hint' => 'Una retención reduce el pago hasta que se libera.',
         'add' => 'Añadir retención',
         'release' => 'Liberar',
         'confirm_release' => '¿Liberar la retención? Después se ofrecerá para su pago en la propuesta de pagos.',
+        'confirm_remove' => '¿Eliminar la retención?',
         'due' => 'vencida',
         'in_run' => 'en remesa de pago',
         'select' => 'Pagar retención',
@@ -161,6 +163,8 @@ return [
             'released_on' => 'Liberada el',
             'note' => 'Nota',
         ],
+        'percent_hint' => 'Del importe bruto :amount.',
+        'amount_hint' => 'Importe fijo en lugar de un porcentaje.',
         'error' => [
             'in_run' => 'La factura ya está en una remesa de pago.',
             'outgoing' => 'Los documentos de salida del buzón de facturas no tienen retención.',
