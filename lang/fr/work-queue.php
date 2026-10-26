@@ -35,6 +35,7 @@ return [
         'message' => 'Aucun élément ne vous attend pour le moment.',
     ],
     'source' => [
+        'resale_plan' => 'Abonnements et licences : modèles récurrents',
         'approval' => 'Circuits de validation',
         'vacation_approval' => 'Demandes de congé',
         'expense_approval' => 'Notes de frais',

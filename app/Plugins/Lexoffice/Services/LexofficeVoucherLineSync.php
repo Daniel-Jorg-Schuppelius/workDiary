@@ -186,6 +186,8 @@ final class LexofficeVoucherLineSync {
                 // Netto und Belegbezug (MVP-1114): Berichte und Provisionen ohne eigenen Detailabruf.
                 'net_amount' => is_numeric($totalNet) ? (float) $totalNet : $voucher->net_amount,
                 'related_voucher_ids' => $related !== [] ? $related : null,
+                // Verweis auf die Serienvorlage (Feature 185, MVP-1410) — ohne Zusatzabruf aus demselben Detail.
+                'recurring_template_id' => $parsed['recurring_template_id'] !== '' ? mb_substr($parsed['recurring_template_id'], 0, 64) : null,
                 'lines_synced_at' => now(),
             ] + self::CLEARED_FAILURE)->save();
         });

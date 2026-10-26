@@ -101,8 +101,10 @@ class ResaleAuditTest extends TestCase {
 
         $result = (new LinkProposer)->propose($this->organization);
         $this->assertSame(2, $result['links']);
-        $this->assertSame(2, ResalePeriodLink::query()->where('origin', LinkOrigin::Proposed->value)->count());
-        $this->assertSame($before, AuditLog::query()->count(), 'Vorschlagslauf schreibt keine Audit-Zeilen (weder Bezug noch Periodenstatus)');
+        $this->assertSame(2, ResalePeriodLink::query()->whereIn('origin', [LinkOrigin::Proposed->value, LinkOrigin::Auto->value])->count());
+        // Vorschläge bleiben stumm; nur eine automatische Bestätigung (Feature 185) ist eine Entscheidung und steht im Audit.
+        $this->assertSame($before + $result['auto_confirmed'], AuditLog::query()->count(), 'Vorschlagslauf schreibt keine Audit-Zeilen außer der automatischen Bestätigung');
+        $this->assertSame($result['auto_confirmed'], AuditLog::query()->where('event', LinkProposer::AUDIT_AUTO_CONFIRMED)->count());
         $this->assertSame(0, $this->logs(ResalePeriodLink::class)->count());
     }
 

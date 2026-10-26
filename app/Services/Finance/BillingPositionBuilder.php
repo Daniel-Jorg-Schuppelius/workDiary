@@ -18,7 +18,9 @@ use App\Models\Finance\{BillingTransfer, BillingTransferPosition};
 use App\Models\Material\MaterialUsage;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
+use App\Modules\ModuleRegistry;
 use App\Services\Billing\DocumentTotalsCalculator;
+use App\Services\Finance\Contracts\TransferSource;
 use App\Services\Invoicing\{BillableTimeAggregator, BlockPrice, BlockPriceResolver, ServiceDefaultResolver, TextCorrectionService};
 use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\StringHelper;
@@ -62,9 +64,23 @@ class BillingPositionBuilder {
      * @return Collection<int, BillingTransferPosition>
      */
     public function build(BillingTransfer $transfer): Collection {
-        return $transfer->channel === TransferChannel::Time
-            ? $this->buildTimePositions($transfer)
-            : $this->buildMaterialPositions($transfer);
+        return match ($transfer->channel) {
+            TransferChannel::Time => $this->buildTimePositions($transfer),
+            TransferChannel::Material => $this->buildMaterialPositions($transfer),
+            default => $this->sourceFor($transfer->channel)->positions($transfer),
+        };
+    }
+
+    /** Übergabequelle eines Modulkanals (Feature 185, MVP-1422); ohne Quelle keine Positionen. */
+    private function sourceFor(TransferChannel $channel): TransferSource {
+        foreach (app(ModuleRegistry::class)->extensions(TransferSource::class) as $class) {
+            $source = app($class);
+            if ($source instanceof TransferSource && $source->channel() === $channel) {
+                return $source;
+            }
+        }
+
+        throw new \RuntimeException('No transfer source for channel: ' . $channel->value);
     }
 
     /**

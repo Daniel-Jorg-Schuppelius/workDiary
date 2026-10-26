@@ -1,8 +1,10 @@
 ---
 title: "Suscripciones y licencias"
 topic: finance.resale
-version: 2
+version: 5
 keywords:
+    - Vista previa de importación
+    - Acciones masivas
     - facturación de suscripciones
     - servicios recurrentes
     - reventa de servicios
@@ -262,3 +264,123 @@ apuntan al vacío (vínculo sin texto de posición, periodo considerado sin
 cubrir). El comando `lexoffice:repair-resale-links` vuelve a enganchar esos
 vínculos mediante número de factura y posición de licencia; lo que no es
 unívoco solo se lista (--dry-run muestra de antemano qué pasaría).
+
+**Cuenta de licencias:** La pestaña *Cuentas de licencias* muestra por cuenta
+de proveedor (número de cliente en el proveedor, incluidos los predecesores
+de un cambio de proveedor) cuántas licencias por producto están activas,
+quién las tiene y qué año de licencia está facturado, como cuadrícula
+producto × titular × año con número de factura o «falta». Si varias empresas
+tienen licencias de la misma cuenta, mantenga el **reparto** por producto
+(«Märkische Bunker 5 × Exchange desde 18.10.2025»): los demás titulares
+llenan primero el contrato con mayor cantidad, luego por inicio; el titular
+del contrato se queda con el resto. Las cesiones por contrato se derivan de
+ahí, siguen cada cambio y pasan al sucesor al cambiar de proveedor; las
+cesiones manuales siguen siendo posibles como excepción. La planificación
+también recalcula contratos sustituidos y finalizados de los últimos tres
+años para que un reparto posterior aún cambie su objetivo. Las
+**incidencias en vínculos** muestran posiciones que cubren más meses de
+licencia de los que tienen (sobreasignadas) y vínculos cuyo periodo de
+servicio no coincide con el periodo, con «Mover a …» al periodo adecuado de
+la misma suscripción o «Desvincular»; el diálogo de vínculo y la asignación
+rápida avisan antes con ⚠.
+
+**Plantillas periódicas (plan):** Si un programa de contabilidad emite las
+facturas, las facturas recurrentes se crean allí como plantillas periódicas. El
+registro las refleja (Lexoffice: a diario y tras la sincronización de
+comprobantes, solo lectura) y muestra en la cuenta de licencias por plantilla su
+estado, ritmo, próxima ejecución y las posiciones de licencia con las
+suscripciones que facturan. La asignación suscripción ↔ posición la propone la
+ejecución (mismo destinatario, artículo, cantidad; con varios clientes finales
+solo si se nombran): usted confirma, asigna a mano o quita. Los periodos de una
+suscripción con plantilla activa quedan fuera de la propuesta de factura. Las
+**comprobaciones existencias ↔ plan** avisan antes de la factura: suscripción
+sin plantilla, plantilla sin suscripción («Crear suscripción desde la plantilla»
+toma artículo, cantidad, ritmo y precio), cantidad distinta, plantilla que sigue
+tras el fin de la suscripción, plantilla pausada o finalizada con suscripción
+activa, próxima ejecución a más de siete días del inicio del periodo, última
+ejecución fallida: en el mosaico, el resumen semanal y la cola de trabajo. Cada
+factura reflejada lleva la referencia a su plantilla.
+
+**Resumen y pestañas:** La entrada «Suscripciones y licencias» ya no muestra
+la lista de suscripciones sino una **lista de tareas**: periodos vencidos
+sin factura (con importe abierto), propuestas sin confirmar, incidencias en
+vínculos de factura, incidencias en plantillas recurrentes, repartos por
+encima del inventario, suscripciones sin titular, renovaciones o finales en
+30 días y exportaciones de proveedor desactualizadas — cada fila con número
+y salto a la pantalla donde se decide. Al lado, el **estado**: la última
+ejecución de propuestas (con «Calcular propuestas») y por proveedor la
+última importación con su antigüedad. Las pestañas siguen el flujo: Resumen
+· Cuentas de licencia · Conciliación · Periodos · Bandeja │ Suscripciones ·
+Inventario de licencias · Compras │ Informes · Precios; la clasificación de
+productos y la facturación están en el menú ⋯. La lista de suscripciones se
+abre con «Suscripciones».
+
+**Propuestas seguras e inseguras:** La ejecución de propuestas (cada hora y
+tras cada importación) confirma por sí misma las coincidencias seguras — un
+comprobante cuya fecha de factura está como máximo 14 días antes y 45 días
+después del inicio del periodo y que cubre el periodo por completo con el
+número de licencias correcto; la confirmación figura en el registro como
+«confirmada automáticamente». Todo lo demás sigue siendo propuesta y lleva
+«insegura» con el motivo en la ayuda emergente. Por eso la página de
+periodos muestra por defecto «Propuestas sin confirmar»; el filtro «Solo
+problemas» y los mosaicos de estado se mantienen.
+
+**Acciones masivas:** En la página de periodos seleccione filas con las
+casillas y confirme todas las propuestas de una vez, renuncie con un motivo
+para todas («Renunciar / disputar …») o cree un borrador por destinatario de
+factura de la selección. Los periodos decididos y futuros se omiten y se
+cuentan; cada periodo recibe la misma entrada de registro que en la acción
+individual. No hay preselección.
+
+**Clasificación de productos con filtro:** La clasificación muestra por
+defecto solo productos de suscripción y artículos con suscripciones o líneas
+de plantilla; «Todos los artículos», «Sin clasificación» y la búsqueda por
+nombre o número acotan. Si un programa de contabilidad emite las facturas,
+cada artículo muestra en cuántas plantillas recurrentes activas aparece.
+
+**Importación con vista previa:** Tras subir los archivos, el registro
+muestra primero lo que cambiaría la importación — por archivo nuevo,
+modificado (cantidad, precio, estado, inicio, fin con el valor anterior),
+sin cambios y las suscripciones planificables del proveedor que el archivo
+ya no incluye (la importación no las finaliza). Se aplica solo tras
+«Aplicar»; «Descartar» elimina los archivos. Si el proveedor cambia un
+precio, la importación actualiza el precio de compra de la suscripción
+mientras coincida con el último precio del proveedor — un precio introducido
+a mano se mantiene — y escribe una línea de catálogo con fecha del archivo
+(fecha en el nombre como «2026-10-26_Export.xlsx», si no el día de la
+importación). Si la última importación de un proveedor tiene más de 30
+días, el resumen lo indica y el resumen semanal lo recuerda.
+
+**Compras desde la bandeja de facturas:** En la pestaña Compras, con
+«Asignar proveedores» vincule un suministrador del maestro al proveedor (el
+nombre ofrece una sugerencia; nunca se asigna automáticamente). En cuanto
+una factura recibida de ese suministrador queda asignada en la bandeja, el
+registro la incorpora como compra: Quality Hosting por posición mediante el
+lector de facturas (contrato y duración por posición), proveedores de
+dominios por nombre de dominio sobre la suscripción del dominio (solo si el
+diario contable del registrador no aporta ya los costes), el resto a
+prorrata sobre los periodos del mes de factura. Cada línea lleva la factura
+recibida como origen; una segunda ejecución la reconoce por su hash. Las
+posiciones sin suscripción quedan como «sin suscripción» — el filtro «Solo
+sin suscripción» las muestra, «Asignar suscripción» las vincula a la
+suscripción correcta y al periodo de la fecha del documento.
+`resale:import-incoming --since=` recupera facturas asignadas con carácter
+retroactivo. La cuenta de licencia muestra por producto la compra prevista y
+real y el margen de los últimos doce meses; el resumen semanal informa de
+suscripciones cuyo precio contractual difiere del último precio de catálogo
+o de proveedor importado.
+
+**Vínculo de factura en licencias por unidad:** Al vender una licencia
+del inventario elige la línea de factura del programa de contabilidad que
+factura esa licencia; la lista muestra las líneas del cliente elegido en
+torno a la fecha de venta, las coincidentes (mismo artículo o nombre de
+producto) van primero y se proponen. Sin línea, la referencia de factura
+sigue siendo texto libre. La lista de licencias, la página del lote y la
+ficha del cliente muestran para la línea vinculada el número de comprobante
+con salto al programa de contabilidad y a la imagen del comprobante. Una
+venta que tras 30 días no lleva ni línea ni referencia aparece como caso de
+comprobación «Licencias por unidad sin factura» en el resumen, en la
+conciliación del destinatario y mediante el filtro «Sin factura» del
+inventario de licencias; añada el vínculo con «Corregir venta». En el portal
+de clientes, los clientes ven sus licencias vendidas con el número de
+factura, nunca la clave.

@@ -343,7 +343,8 @@ TXT;
         $role = static fn (): ?ResaleArticleRole => ResaleArticleClassification::query()->where('article_ref', 'art:' . $cloud->id)->first()?->role;
         $this->assertFalse($isLicense(), 'ohne Einstufung: Name verrät kein Produkt');
 
-        $this->actingAs($admin)->get(route('finance.resale.products'))
+        // Standardfilter zeigt nur Abo-Produkte (Feature 185): ein nicht erkannter Artikel erscheint unter „Alle Artikel".
+        $this->actingAs($admin)->get(route('finance.resale.products', ['scope' => 'all']))
             ->assertOk()
             ->assertSee(__('article.catalog.source_local'))
             ->assertSee('Cloud-Arbeitsplatz Premium')
@@ -351,13 +352,13 @@ TXT;
             ->assertDontSee('Altes Produkt');
 
         $this->actingAs($admin)->post(route('finance.resale.products.store'), ['article' => 'art:' . $cloud->sqid, 'role' => 'license'])
-            ->assertRedirect(route('finance.resale.products'))
+            ->assertRedirect(route('finance.resale.products', ['scope' => 'all'])) // Rücksprung behält den Listenzustand
             ->assertSessionHas('success');
         $this->assertSame(ResaleArticleRole::License, $role());
         $this->assertTrue($isLicense(), 'Betreiber-Einstufung gewinnt');
 
         $this->actingAs($admin)->post(route('finance.resale.products.store'), ['article' => 'art:' . $cloud->sqid, 'role' => 'auto'])
-            ->assertRedirect(route('finance.resale.products'));
+            ->assertRedirect(route('finance.resale.products', ['scope' => 'all']));
         $this->assertNull($role(), '„auto" löscht die Übersteuerung');
 
         // Unbekannte Quelle: Validierungsfehler, nichts gespeichert.

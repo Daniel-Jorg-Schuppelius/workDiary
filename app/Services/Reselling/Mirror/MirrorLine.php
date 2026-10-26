@@ -77,6 +77,10 @@ final readonly class MirrorLine {
         public ?string $permalink,
         /** Belegbild-Vorschau (Modal); null ohne Vorschau oder ohne Recht. */
         public ?string $previewUrl,
+        /** Kennung des Belegs im Quellsystem (Lexoffice-UUID, lokale Rechnungsnummer) — trifft den Entwurfsstempel `draft_reference`. */
+        public ?string $voucherExternalId = null,
+        /** Schlüssel der Serienvorlage, aus der der Beleg entstand (`<quelle>:<id>`), sonst null (Feature 185). */
+        public ?string $planKey = null,
     ) {}
 
     /** Eindeutig über alle Quellen — Schlüssel für Verbrauchs- und Bezugstabellen. */

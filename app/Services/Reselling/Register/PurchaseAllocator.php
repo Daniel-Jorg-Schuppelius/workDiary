@@ -135,9 +135,11 @@ final class PurchaseAllocator {
      * Weicht die Positionssumme von der Belegsumme ab (Seite nicht gelesen),
      * wird importiert und in `issues` gewarnt — nie still.
      *
+     * @param  PurchaseDocument|null  $document  Herkunft (Eingangsrechnung, Feature 185) als Morph an jeder Zeile
+     * @param  bool  $keepUnmatched  Positionen ohne Abo als Einkauf ohne Abo behalten (Prüffall im Einkauf-Reiter) statt nur zu melden
      * @return array{lines: int, matched: int, unmatched: list<string>, duplicates: int, net: float, issues: list<string>}
      */
-    public function importProviderInvoice(Organization $organization, ProviderInvoice $invoice, SubscriptionProvider $provider, ?User $user = null, ?string $fileName = null, CurrencyCode $currency = CurrencyCode::Euro): array {
+    public function importProviderInvoice(Organization $organization, ProviderInvoice $invoice, SubscriptionProvider $provider, ?User $user = null, ?string $fileName = null, CurrencyCode $currency = CurrencyCode::Euro, ?PurchaseDocument $document = null, bool $keepUnmatched = false): array {
         $result = ['lines' => count($invoice->lines), 'matched' => 0, 'unmatched' => [], 'duplicates' => 0, 'net' => 0.0, 'issues' => array_map('strval', $invoice->issues)];
         $consistency = $invoice->consistencyIssue();
         if ($consistency !== null) {
@@ -148,7 +150,7 @@ final class PurchaseAllocator {
         $byContract = $subscriptions->filter(static fn(ResaleSubscription $s): bool => $s->external_id !== null)->keyBy(static fn(ResaleSubscription $s): string => mb_strtoupper((string) $s->external_id));
         $entryDate = $invoice->date ?? ResalePeriod::today();
 
-        DB::transaction(function () use ($organization, $invoice, $provider, $user, $fileName, $currency, $all, $subscriptions, $byContract, $entryDate, &$result): void {
+        DB::transaction(function () use ($organization, $invoice, $provider, $user, $fileName, $currency, $document, $keepUnmatched, $all, $subscriptions, $byContract, $entryDate, &$result): void {
             foreach ($invoice->lines as $line) {
                 $subscription = null;
                 if ($line->contract !== null) {
@@ -174,8 +176,9 @@ final class PurchaseAllocator {
                 }
                 if ($subscription === null) {
                     $result['unmatched'][] = sprintf('#%d %s (%s)', $line->position, $line->description, $line->contract ?? $line->companyName ?? '?');
-
-                    continue;
+                    if (! $keepUnmatched) {
+                        continue;
+                    }
                 }
                 $lineKey = '|' . ($line->contract ?? $line->companyKey ?? '');
                 $hash = (string) CryptoHelper::hash('provider|' . $provider->value . '|' . $invoice->number . '|' . $line->position . $lineKey);
@@ -192,18 +195,20 @@ final class PurchaseAllocator {
                     continue;
                 }
                 $anchor = $line->periodStart ?? $entryDate;
-                $period = ResalePeriod::query()->withoutGlobalScopes()
+                $period = $subscription === null ? null : (ResalePeriod::query()->withoutGlobalScopes()
                     ->where('subscription_id', $subscription->id)
                     ->where('starts_on', '<', DateRange::dayAfter($anchor))
                     ->where('ends_on', '>=', DateRange::day($anchor))
                     ->first()
-                    ?? ResalePeriod::query()->withoutGlobalScopes()->where('subscription_id', $subscription->id)->orderByDesc('starts_on')->first();
+                    ?? ResalePeriod::query()->withoutGlobalScopes()->where('subscription_id', $subscription->id)->orderByDesc('starts_on')->first());
                 ResalePurchaseEntry::query()->create([
                     'organization_id' => $organization->id,
-                    'subscription_id' => $subscription->id,
+                    'subscription_id' => $subscription?->id,
                     'period_id' => $period?->id,
                     'provider' => $provider,
                     'source' => ResalePurchaseEntry::SOURCE_PROVIDER_INVOICE,
+                    'document_type' => $document?->morphClass,
+                    'document_id' => $document?->morphId,
                     'document_number' => $invoice->number,
                     'entry_date' => $entryDate->toDateString(),
                     'description' => mb_substr(trim($line->description . ($line->periodStart !== null ? ' · ' . $line->periodStart->format('d.m.Y') . ' – ' . ($line->periodEnd?->format('d.m.Y') ?? '') : '') . ($fileName !== null ? ' · ' . $fileName : '')), 0, 255),
@@ -212,6 +217,9 @@ final class PurchaseAllocator {
                     'raw_hash' => $hash,
                     'created_by_user_id' => $user?->id,
                 ]);
+                if ($subscription === null) {
+                    continue; // ohne Abo behalten, aber nicht als Treffer zählen
+                }
                 $result['matched']++;
                 $result['net'] += $line->total;
             }

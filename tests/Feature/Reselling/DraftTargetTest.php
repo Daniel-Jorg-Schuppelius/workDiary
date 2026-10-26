@@ -12,16 +12,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Reselling;
 
-use App\Enums\Finance\BillingMode;
+use App\Enums\Finance\{BillingMode, TransferChannel, TransferStatus, TransferTarget};
 use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Reselling\PeriodStatus;
 use App\Models\Customer\Customer;
+use App\Models\Finance\BillingTransfer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Models\Reselling\{ResalePeriodLink, ResaleSubscription};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
-use App\Plugins\Lexoffice\Services\LexofficeInvoiceDraftTarget;
 use App\Services\Reselling\Draft\{InvoiceDraftTargets, LocalInvoiceDraftTarget};
 use App\Services\Reselling\Register\{PeriodPlanner, ResaleInvoiceDraftService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -30,9 +30,10 @@ use Tests\Support\{FakePluginHttp, InteractsWithPlugins};
 use Tests\TestCase;
 
 /**
- * Entwurfsziele des Reselling-Registers (Feature 152, Review 2026-09-11):
- * Registry mit lokalem Ziel und Plugin-Ziel, Weiche über die
- * Rechnungshoheit, externe Hoheit ohne Ziel als übersetzter 422-Text,
+ * Entwurfsziele des Reselling-Registers (Feature 152, Review 2026-09-11;
+ * Feature 185, MVP-1423): lokal der Rechnungsentwurf, bei externer Hoheit
+ * eine Übergabe (Feature 045) an das Faktura-Ziel des Programms — angelegt,
+ * bestätigt, übertragen; externe Hoheit ohne Ziel als übersetzter 422-Text,
  * Leistungszeitraum je lokaler Position, „Entwurf wurde Rechnung" über den
  * Belegspiegel (lokal: Nummer ausgestellt, Lexoffice: Beleg gespiegelt).
  */
@@ -59,22 +60,18 @@ class DraftTargetTest extends TestCase {
         return $subscription;
     }
 
-    public function test_registry_holds_the_local_target_and_the_plugin_target(): void {
+    public function test_registry_holds_only_the_local_target_and_external_billing_resolves_a_transfer_target(): void {
         $targets = app(InvoiceDraftTargets::class);
         $this->assertInstanceOf(LocalInvoiceDraftTarget::class, $targets->local());
-        $this->assertInstanceOf(LexofficeInvoiceDraftTarget::class, $targets->get(LexofficeInvoiceDraftTarget::KEY), 'Plugin registriert sein Ziel beim Boot');
-
-        $local = Customer::factory()->create(['organization_id' => $this->organization->id, 'billing_mode' => BillingMode::Workdiary]);
-        $lexoffice = Customer::factory()->create(['organization_id' => $this->organization->id, 'billing_mode' => BillingMode::Lexoffice]);
-        $datev = Customer::factory()->create(['organization_id' => $this->organization->id, 'billing_mode' => BillingMode::Datev]);
-        $this->assertTrue($targets->local()?->supports($local) ?? false);
-        $this->assertNull($targets->externalFor($local), 'lokale Hoheit hat kein externes Ziel');
-        $this->assertSame(LexofficeInvoiceDraftTarget::KEY, $targets->externalFor($lexoffice)?->key());
-        $this->assertNull($targets->externalFor($datev), 'ohne Plugin-Ziel für DATEV');
+        $this->assertCount(1, $targets->all(), 'kein Plugin-Entwurfsziel mehr — extern läuft über die Übergabe (MVP-1423)');
 
         $service = app(ResaleInvoiceDraftService::class);
-        $this->assertSame(LocalInvoiceDraftTarget::KEY, $service->targetFor($local)->key());
-        $this->assertSame(LexofficeInvoiceDraftTarget::KEY, $service->targetFor($lexoffice)->key());
+        $lexoffice = Customer::factory()->create(['organization_id' => $this->organization->id, 'billing_mode' => BillingMode::Lexoffice]);
+        $datev = Customer::factory()->create(['organization_id' => $this->organization->id, 'billing_mode' => BillingMode::Datev]);
+        $this->assertSame(TransferTarget::Lexoffice, $service->transferTargetFor($lexoffice));
+        $this->assertSame(TransferTarget::File, $service->transferTargetFor($datev), 'DATEV: Datei-Paket wie in den Finanzen');
+        $this->assertSame(TransferChannel::Resale, app(\App\Services\Reselling\Register\ResalePeriodTransferSource::class)->channel());
+        $this->assertSame(\App\Enums\User\Permission::ResellingInvoice, TransferChannel::Resale->permission());
     }
 
     public function test_local_billing_drafts_locally_with_service_period_and_the_mirror_reports_the_issued_invoice(): void {
@@ -116,7 +113,7 @@ class DraftTargetTest extends TestCase {
         $this->assertTrue($period->fresh()?->load('links')->draftIsInvoiced() ?? false, 'Rechnungsnummer ausgestellt = Entwurf wurde Rechnung');
     }
 
-    public function test_lexoffice_billing_drafts_via_the_plugin_target_and_the_mirrored_voucher_closes_the_stamp(): void {
+    public function test_lexoffice_billing_transfers_via_the_facturation_target_and_the_mirrored_voucher_closes_the_stamp(): void {
         $admin = $this->orgAdmin();
         $this->enablePluginFor($this->organization, LexofficePlugin::ID, ['api_key' => 'lex-key', 'request_interval' => '0']);
         $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'LDS Systems GmbH', 'billing_mode' => BillingMode::Lexoffice]);
@@ -126,19 +123,26 @@ class DraftTargetTest extends TestCase {
         ]);
         $subscription = $this->subscription($partner);
         FakePluginHttp::fake([
-            'https://api.lexware.io/v1/invoices' => static fn() => FakePluginHttp::response(['id' => 'draft-77', 'resourceUri' => 'https://api.lexware.io/v1/invoices/draft-77'], 201),
+            'https://api.lexware.io/v1/invoices*' => static fn() => FakePluginHttp::response(['id' => 'draft-77', 'resourceUri' => 'https://api.lexware.io/v1/invoices/draft-77'], 201),
         ]);
 
         $result = app(ResaleInvoiceDraftService::class)->draft($this->organization, $partner, $admin);
 
-        $this->assertSame(LexofficeInvoiceDraftTarget::KEY, $result['target']);
+        // Übergabe (Feature 045) statt Plugin-Entwurf: angelegt, bestätigt, übertragen; Positionen eingefroren.
+        $this->assertSame(TransferTarget::Lexoffice->value, $result['target']);
         $this->assertFalse($result['local']);
-        $this->assertSame('draft-77', $result['draft_id']);
-        $this->assertNull($result['url']);
+        $this->assertSame('draft-77', $result['draft_id'], 'Stempel = Belegkennung in Lexoffice');
+        $transfer = BillingTransfer::query()->where('customer_id', $partner->id)->firstOrFail();
+        $this->assertSame(route('finance.transfers.show', $transfer), $result['url']);
+        $this->assertSame(TransferChannel::Resale, $transfer->channel);
+        $this->assertSame(TransferStatus::Transferred, $transfer->status);
+        $this->assertSame(2, $transfer->positions()->count(), 'eine Position je Periode');
+        $this->assertSame(2, $result['lines']);
+        $this->assertSame('draft-77', $transfer->externalReference?->external_id);
         $this->assertSame(0, Invoice::query()->count(), 'kein lokaler Entwurf');
-        $this->assertSame(0, ResalePeriodLink::query()->count(), 'Lexoffice-Entwürfe werden nicht gespiegelt — kein Bezug');
+        $this->assertSame(0, ResalePeriodLink::query()->count(), 'Übergaben werden nicht gespiegelt — kein Bezug');
         $period = $subscription->periods()->orderBy('starts_on')->firstOrFail();
-        $this->assertSame(PeriodStatus::Open, $period->status, 'Entwurf entscheidet nichts');
+        $this->assertSame(PeriodStatus::Open, $period->status, 'Übergabe entscheidet nichts');
         $this->assertSame('draft-77', $period->draft_reference);
         $this->assertStringContainsString('draft-77', (string) $period->note);
 
@@ -152,39 +156,85 @@ class DraftTargetTest extends TestCase {
         $this->assertFalse($period->fresh()?->load('links')->draftIsInvoiced() ?? true, 'gespiegelter Entwurf ist keine Rechnung');
         $voucher->forceFill(['voucher_status' => 'open', 'voucher_number' => 'RE/2026/0900'])->save();
         $this->assertTrue($period->fresh()?->load('links')->draftIsInvoiced() ?? false, 'abgeschlossener Beleg mit der Entwurfs-ID');
+
+        // Storno der Übergabe nimmt den Stempel zurück; die Perioden sind wieder entwurfsfähig.
+        app(\App\Services\Finance\BillingTransferService::class)->cancel($transfer, 'Test', $admin);
+        $this->assertNull($period->fresh()?->draft_reference);
     }
 
-    public function test_external_billing_without_a_registered_target_is_a_translated_error(): void {
+    public function test_lexoffice_draft_lines_carry_the_article_id_when_the_subscription_has_a_catalog_article(): void {
+        // Feature 185 (MVP-1408): mit Artikel als `service` + Artikel-ID, damit die fertige Rechnung als Lizenzposition zurückkommt.
+        $admin = $this->orgAdmin();
+        $this->enablePluginFor($this->organization, LexofficePlugin::ID, ['api_key' => 'lex-key', 'request_interval' => '0']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH', 'billing_mode' => BillingMode::Lexoffice]);
+        ExternalReference::create([
+            'organization_id' => $this->organization->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+            'external_id' => '1b2c3d4e-5f60-4718-8a9b-0c1d2e3f4a5b', 'referenceable_type' => $customer->getMorphClass(), 'referenceable_id' => $customer->getKey(),
+        ]);
+        $article = \App\Plugins\Lexoffice\Models\LexofficeArticle::create([
+            'organization_id' => $this->organization->id, 'external_id' => '9d6e1f32-5b8a-4c7d-9e0f-1a2b3c4d5e6f', 'name' => 'Microsoft 365 Business Premium', 'article_number' => 'BP',
+            'type' => 'SERVICE', 'unit_name' => 'Monat', 'net_unit_price' => '20.60', 'currency' => 'EUR', 'vat_rate' => '19', 'synced_at' => now(),
+        ]);
+        $this->subscription($customer, ['article_ref' => 'lex:' . $article->id]);
+        $payloads = [];
+        FakePluginHttp::fake([
+            'https://api.lexware.io/v1/invoices*' => static function (\Psr\Http\Message\RequestInterface $request) use (&$payloads) {
+                $payloads[] = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
+
+                return FakePluginHttp::response(['id' => 'draft-78', 'resourceUri' => 'https://api.lexware.io/v1/invoices/draft-78'], 201);
+            },
+        ]);
+
+        app(ResaleInvoiceDraftService::class)->draft($this->organization, $customer, $admin);
+
+        $this->assertCount(1, $payloads);
+        $items = $payloads[0]['lineItems'] ?? [];
+        $this->assertNotEmpty($items);
+        $this->assertSame('service', $items[0]['type']);
+        $this->assertSame('9d6e1f32-5b8a-4c7d-9e0f-1a2b3c4d5e6f', $items[0]['id']);
+        $this->assertSame('Monat', $items[0]['unitName']);
+    }
+
+    public function test_datev_billing_transfers_as_a_file_package_and_stamps_the_periods(): void {
+        \Illuminate\Support\Facades\Storage::fake(\App\Services\Finance\Targets\FileTarget::DISK);
         $admin = $this->orgAdmin();
         $datev = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'DATEV-Kunde', 'billing_mode' => BillingMode::Datev]);
         $subscription = $this->subscription($datev);
-        $expected = (string) __('resale.draft.no_target', ['mode' => BillingMode::Datev->label()]);
 
-        try {
-            app(ResaleInvoiceDraftService::class)->draft($this->organization, $datev, $admin);
-            $this->fail('ohne Ziel kein Entwurf');
-        } catch (\RuntimeException $e) {
-            $this->assertSame($expected, $e->getMessage());
-        }
+        $result = app(ResaleInvoiceDraftService::class)->draft($this->organization, $datev, $admin);
+
+        $transfer = BillingTransfer::query()->where('customer_id', $datev->id)->firstOrFail();
+        $this->assertSame(TransferTarget::File->value, $result['target']);
+        $this->assertSame('transfer:' . $transfer->id, $result['draft_id'], 'ohne Fremdreferenz stempelt die Übergabe selbst');
+        $this->assertSame(TransferStatus::Transferred, $transfer->status);
+        $this->assertNotNull($transfer->file_path);
+        \Illuminate\Support\Facades\Storage::disk(\App\Services\Finance\Targets\FileTarget::DISK)->assertExists((string) $transfer->file_path);
+        $this->assertStringContainsString('Microsoft 365 Business Premium', (string) \Illuminate\Support\Facades\Storage::disk(\App\Services\Finance\Targets\FileTarget::DISK)->get((string) $transfer->file_path));
         $this->assertSame(0, Invoice::query()->count());
-        $this->assertSame(0, $subscription->periods()->whereNotNull('draft_reference')->count(), 'nichts gestempelt');
+        $this->assertSame(2, $subscription->periods()->where('draft_reference', 'transfer:' . $transfer->id)->count(), 'beide Perioden gestempelt');
 
-        // Im Dialog: 422 mit demselben Text (Review 2026-09-10, C1).
-        $this->actingAs($admin)->postJson(route('finance.resale.periods.draft.store'), ['customer_id' => $datev->sqid])
-            ->assertStatus(422)
-            ->assertJsonPath('errors.customer_id.0', $expected);
+        // Im Dialog: Erfolg mit dem Ziel der Übergabe.
+        $this->actingAs($admin)->from(route('finance.resale.periods.index'))->post(route('finance.resale.periods.draft.store'), ['customer_id' => $datev->sqid])
+            ->assertRedirect(route('finance.resale.periods.index'))
+            ->assertSessionHasErrors(['customer_id']); // alles schon im Entwurf: Hinweis auf die ausstehende Übergabe
     }
 
-    public function test_lexoffice_target_reports_an_inactive_plugin_before_building_lines(): void {
+    public function test_an_inactive_plugin_leaves_a_failed_transfer_and_an_unstamped_period(): void {
         $admin = $this->orgAdmin();
-        // Plugin nicht aktiviert, Empfänger ohne Perioden: die Vorbedingung des Ziels kommt vor „nichts offen".
+        // Plugin nicht aktiviert: das Ziel scheitert, der Nachweis bleibt „fehlgeschlagen" (erneut übertragbar), kein Stempel.
         $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'billing_mode' => BillingMode::Lexoffice]);
+        $subscription = $this->subscription($partner);
 
         try {
             app(ResaleInvoiceDraftService::class)->draft($this->organization, $partner, $admin);
             $this->fail('Plugin inaktiv');
         } catch (\RuntimeException $e) {
-            $this->assertSame((string) __('lexoffice::resale.draft.error.lexoffice'), $e->getMessage());
+            $prefix = (string) __('resale.draft.transfer_failed', ['target' => TransferTarget::Lexoffice->label(), 'error' => '']);
+            $this->assertStringStartsWith(rtrim($prefix), $e->getMessage());
         }
+        $transfer = BillingTransfer::query()->where('customer_id', $partner->id)->firstOrFail();
+        $this->assertSame(TransferStatus::Failed, $transfer->status);
+        $this->assertNotNull($transfer->failure_reason);
+        $this->assertSame(0, $subscription->periods()->whereNotNull('draft_reference')->count(), 'nichts gestempelt');
     }
 }

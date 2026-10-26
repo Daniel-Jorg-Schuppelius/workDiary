@@ -40,7 +40,7 @@
         @endif
     </td>
     <td class="tabular-nums text-sm whitespace-nowrap">{{ $assignment?->sold_on->fdate() ?? '—' }}</td>
-    <td class="text-sm">{{ $assignment?->invoice_reference ?? '—' }}</td>
+    <td class="text-sm">@include('finance.resale.licenses._invoice_cell', ['assignment' => $assignment])</td>
     <td class="text-right">
         <div class="flex justify-end gap-1">
             @can(\App\Enums\User\Permission::ResellingKeysView->value)

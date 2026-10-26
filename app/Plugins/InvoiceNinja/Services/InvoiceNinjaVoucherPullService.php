@@ -18,9 +18,9 @@ use App\Models\Finance\AccountingVoucher;
 use App\Plugins\InvoiceNinja\Api\{InvoiceNinjaClient, InvoiceNinjaClientFactory};
 use App\Plugins\InvoiceNinja\{InvoiceNinjaConfig, InvoiceNinjaPlugin};
 use App\Plugins\Support\TaskSync\IncompleteRemoteReadException;
-use App\Services\Finance\Accounting\Vouchers\{MirroredVoucher, VoucherMirror, VoucherPuller};
+use App\Services\Finance\Accounting\Vouchers\{MirroredVoucher, MirroredVoucherLine, VoucherMirror, VoucherPuller};
 use CommonToolkit\Enums\CurrencyCode;
-use CommonToolkit\Helper\Data\StringHelper;
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Carbon;
 
@@ -43,7 +43,12 @@ class InvoiceNinjaVoucherPullService implements VoucherPuller {
         'invoices' => ['type' => 'invoice', 'kind' => DocumentKind::Invoice, 'direction' => DocumentDirection::Outgoing, 'include' => 'client', 'sortable' => true],
         'credits' => ['type' => 'credit', 'kind' => DocumentKind::CreditNote, 'direction' => DocumentDirection::Outgoing, 'include' => 'client', 'sortable' => true],
         'expenses' => ['type' => 'expense', 'kind' => DocumentKind::Expense, 'direction' => DocumentDirection::Incoming, 'include' => 'vendor', 'sortable' => false],
+        // Serienrechnungen (Feature 185, MVP-1426): Plan, kein Umsatz — `GET /api/v1/recurring_invoices`.
+        'recurring_invoices' => ['type' => 'recurring', 'kind' => DocumentKind::RecurringTemplate, 'direction' => DocumentDirection::Neutral, 'include' => 'client', 'sortable' => true],
     ];
+
+    /** `frequency_id` laut `App\Models\RecurringInvoice` (FREQUENCY_*) → Rhythmus des Plans. */
+    private const FREQUENCIES = ['2' => 'WEEKLY', '3' => 'BIWEEKLY', '5' => 'MONTHLY', '7' => 'QUARTERLY', '9' => 'BIANNUALLY', '10' => 'ANNUALLY'];
 
     /** Seiten, die ein Folgelauf für Ausgaben höchstens liest, bevor er als unvollständig abbricht (je `$pages`). */
     private const UNSORTED_PAGES_FACTOR = 50;
@@ -75,7 +80,7 @@ class InvoiceNinjaVoucherPullService implements VoucherPuller {
         }
         $client = $this->clients->for($organizationId);
         $this->groupCurrencies = [];
-        $context = ['client' => $client, 'currencies' => $client->currencies(), 'company' => $client->company()];
+        $context = ['client' => $client, 'currencies' => $client->currencies(), 'company' => $client->company(), 'organization_id' => $organizationId];
 
         foreach (self::ENTITIES as $entity => $meta) {
             $since = $this->mirror->lastSourceChange($organizationId, $this->pluginId(), $meta['type']);
@@ -90,7 +95,12 @@ class InvoiceNinjaVoucherPullService implements VoucherPuller {
             $rows = $this->readEntity($client, $entity, $query, $maxPages, $meta['sortable'] || $since === null);
             foreach ($rows as $row) {
                 $counters['read']++;
-                $this->mirror->store($organizationId, $this->pluginId(), $this->map($row, $meta, $context), $counters);
+                $voucher = $this->map($row, $meta, $context);
+                $this->mirror->store($organizationId, $this->pluginId(), $voucher, $counters);
+                if ($meta['type'] !== 'expense') {
+                    // Positionen stehen im Beleg (Feature 185, MVP-1425: `line_items` laut InvoiceTransformer).
+                    $this->mirror->storeLines($organizationId, $this->pluginId(), $voucher->externalId, self::lines($row, $voucher->currency));
+                }
             }
         }
 
@@ -140,7 +150,7 @@ class InvoiceNinjaVoucherPullService implements VoucherPuller {
     /**
      * @param  array<string, mixed>  $row
      * @param  array{type: string, kind: DocumentKind, direction: DocumentDirection, include: string, sortable: bool}  $meta
-     * @param  array{client: InvoiceNinjaClient, currencies: array<string, string>, company: array{id: ?string, currency_id: ?string}}  $context
+     * @param  array{client: InvoiceNinjaClient, currencies: array<string, string>, company: array{id: ?string, currency_id: ?string}, organization_id: int}  $context
      */
     private function map(array $row, array $meta, array $context): MirroredVoucher {
         $id = StringHelper::trimToNull($row['id'] ?? null);
@@ -148,7 +158,11 @@ class InvoiceNinjaVoucherPullService implements VoucherPuller {
         $currency = $context['currencies'][$this->currencyId($row, $contact, $context) ?? ''] ?? 'EUR';
         $currencyCode = CurrencyCode::tryFrom($currency) ?? CurrencyCode::Euro;
         $isExpense = $meta['type'] === 'expense';
+        $isRecurring = $meta['type'] === 'recurring';
         [$total, $net] = $isExpense ? self::expenseAmounts($row, $currencyCode) : self::documentAmounts($row, $currencyCode);
+        if ($isRecurring) {
+            [$total, $net] = [null, null]; // Plan, kein Umsatz
+        }
         $foreign = $isExpense ? self::expenseForeign($row, $context['currencies']) : [null, null];
 
         return new MirroredVoucher(
@@ -157,14 +171,14 @@ class InvoiceNinjaVoucherPullService implements VoucherPuller {
             kind: $meta['kind'],
             rawType: $meta['type'],
             rawStatus: StringHelper::trimToNull($row['status_id'] ?? null),
-            state: $this->state($meta['type'], $row),
+            state: $isRecurring ? AccountingVoucherState::Draft : $this->state($meta['type'], $row),
             number: StringHelper::trimToNull($row['number'] ?? null),
             date: VoucherMirror::date($row['date'] ?? null),
             dueDate: $isExpense ? null : VoucherMirror::date($row['due_date'] ?? null),
             paidDate: $isExpense ? VoucherMirror::date($row['payment_date'] ?? null) : null,
             totalAmount: $total,
             netAmount: $net,
-            openAmount: $isExpense ? null : VoucherMirror::decimal($row['balance'] ?? null),
+            openAmount: $isExpense || $isRecurring ? null : VoucherMirror::decimal($row['balance'] ?? null),
             currency: $currency,
             foreignAmount: $foreign[0],
             foreignCurrency: $foreign[1],
@@ -173,8 +187,78 @@ class InvoiceNinjaVoucherPullService implements VoucherPuller {
             supplierName: $isExpense ? StringHelper::trimToNull($contact['name'] ?? null) : null,
             customerNumber: $isExpense ? null : StringHelper::trimToNull($contact['number'] ?? null),
             sourceChangedAt: is_numeric($row['updated_at'] ?? null) && (int) $row['updated_at'] > 0 ? Carbon::createFromTimestamp((int) $row['updated_at'])->toDateTimeString() : null,
-            payload: array_diff_key($row, ['client' => true, 'vendor' => true, 'invitations' => true]) + ['company_id' => $context['company']['id']],
+            payload: array_diff_key($row, ['client' => true, 'vendor' => true, 'invitations' => true]) + ['company_id' => $context['company']['id']]
+                + ($isRecurring ? ['plan' => $this->plan($row, $context)] : []),
         );
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     * @return list<MirroredVoucherLine>
+     */
+    private static function lines(array $row, string $currency): array {
+        $lines = [];
+        $index = 0;
+        foreach ((array) ($row['line_items'] ?? []) as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+            $index++;
+            $quantity = is_numeric($item['quantity'] ?? null) ? (float) $item['quantity'] : 1.0;
+            $cost = VoucherMirror::decimal($item['cost'] ?? null, 4) ?? '0.0000';
+            $total = VoucherMirror::decimal($item['line_total'] ?? null) ?? NumberHelper::toUSFormat($quantity * (float) $cost, 2);
+            $lines[] = new MirroredVoucherLine(
+                position: $index,
+                name: mb_substr(StringHelper::trimToNull($item['product_key'] ?? null) ?? StringHelper::trimToNull($item['notes'] ?? null) ?? '#' . $index, 0, 255),
+                quantity: $quantity,
+                unitNet: $cost,
+                totalNet: $total,
+                currency: $currency,
+                externalArticleId: StringHelper::trimToNull($item['product_key'] ?? null),
+                description: StringHelper::trimToNull($item['notes'] ?? null),
+                unitName: null,
+                taxRate: is_numeric($item['tax_rate1'] ?? null) ? (string) $item['tax_rate1'] : null,
+            );
+        }
+
+        return $lines;
+    }
+
+    /**
+     * Normalisierter Plan einer Serienrechnung (Feature 185, MVP-1426): Status
+     * und Rhythmus laut `App\Models\RecurringInvoice` (STATUS_*, FREQUENCY_*),
+     * Link wie {@see voucherUrl()} in die Oberfläche.
+     *
+     * @param  array<string, mixed>  $row
+     * @param  array{client: InvoiceNinjaClient, currencies: array<string, string>, company: array{id: ?string, currency_id: ?string}, organization_id: int}  $context
+     * @return array<string, mixed>
+     */
+    private function plan(array $row, array $context): array {
+        $remaining = is_numeric($row['remaining_cycles'] ?? null) ? (int) $row['remaining_cycles'] : -1;
+        $status = match ((string) ($row['status_id'] ?? '')) {
+            '2' => $remaining === 0 ? 'ENDED' : 'ACTIVE',
+            '4' => 'ENDED',
+            default => 'PAUSED', // 1 Entwurf, 3 pausiert, -1 wartend
+        };
+        $id = StringHelper::trimToNull($row['id'] ?? null);
+        $company = $context['company']['id'];
+        $baseUrl = $this->clients->baseUrl($context['organization_id']);
+        $app = $baseUrl === InvoiceNinjaConfig::HOSTED_URL ? 'https://app.invoicing.co' : $baseUrl;
+
+        return [
+            'status' => $status,
+            'interval' => self::FREQUENCIES[(string) ($row['frequency_id'] ?? '')] ?? '',
+            'starts_on' => VoucherMirror::date($row['date'] ?? null),
+            'ends_on' => null,
+            'next_execution_on' => VoucherMirror::date($row['next_send_date'] ?? null),
+            'last_execution_on' => VoucherMirror::date($row['last_sent_date'] ?? null),
+            'finalize' => true, // Invoice Ninja erzeugt aus der Serie fertige Rechnungen
+            'last_failed' => false,
+            'last_error' => null,
+            'permalink' => $id !== null && preg_match('/^[A-Za-z0-9]+$/', $id) === 1
+                ? $app . '/#/recurring_invoices/' . $id . '/edit' . (is_string($company) && preg_match('/^[A-Za-z0-9]+$/', $company) === 1 ? '?company=' . $company : '')
+                : null,
+        ];
     }
 
     /**
@@ -184,7 +268,7 @@ class InvoiceNinjaVoucherPullService implements VoucherPuller {
      *
      * @param  array<string, mixed>  $row
      * @param  array<string, mixed>  $contact
-     * @param  array{client: InvoiceNinjaClient, currencies: array<string, string>, company: array{id: ?string, currency_id: ?string}}  $context
+     * @param  array{client: InvoiceNinjaClient, currencies: array<string, string>, company: array{id: ?string, currency_id: ?string}, organization_id: int}  $context
      */
     private function currencyId(array $row, array $contact, array $context): ?string {
         $own = StringHelper::trimToNull($row['currency_id'] ?? null) ?? StringHelper::trimToNull(data_get($contact, 'settings.currency_id'));

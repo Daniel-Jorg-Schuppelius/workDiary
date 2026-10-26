@@ -15,7 +15,7 @@ namespace App\Plugins\InvoicePlane\Services;
 use App\Enums\Billing\{DocumentDirection, DocumentKind};
 use App\Enums\Finance\AccountingVoucherState;
 use App\Plugins\InvoicePlane\Schema\VoucherReaderFactory;
-use App\Services\Finance\Accounting\Vouchers\{MirroredVoucher, VoucherMirror, VoucherPuller};
+use App\Services\Finance\Accounting\Vouchers\{MirroredVoucher, MirroredVoucherLine, VoucherMirror, VoucherPuller};
 
 /**
  * Beleg-Rückabruf aus InvoicePlane (Feature 086/122, MVP-731 — Vollscan G18).
@@ -88,9 +88,22 @@ class InvoicePlaneVoucherPullService implements VoucherPuller {
                 break;
             }
 
+            $ids = [];
             foreach ($rows as $row) {
                 $counters['read']++;
                 $this->mirror->store($organizationId, $this->pluginId(), $this->map($row), $counters);
+                if (is_numeric($row['invoice_id'] ?? null)) {
+                    $ids[] = (int) $row['invoice_id'];
+                }
+            }
+            // Positionen aus `ip_invoice_items` (Feature 185, MVP-1425), je Seite ein Lesezugriff.
+            /** @var array<int, list<array<string, mixed>>> $byInvoice */
+            $byInvoice = [];
+            foreach ($ids === [] ? [] : $reader->invoiceItems($ids) as $item) {
+                $byInvoice[(int) ($item['invoice_id'] ?? 0)][] = $item;
+            }
+            foreach ($ids as $invoiceId) {
+                $this->mirror->storeLines($organizationId, $this->pluginId(), (string) $invoiceId, self::lines($byInvoice[$invoiceId] ?? []));
             }
 
             if (count($rows) < $limit) {
@@ -99,6 +112,32 @@ class InvoicePlaneVoucherPullService implements VoucherPuller {
         }
 
         return $counters;
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $items
+     * @return list<MirroredVoucherLine>
+     */
+    private static function lines(array $items): array {
+        usort($items, static fn(array $a, array $b): int => ((int) ($a['item_order'] ?? 0) <=> (int) ($b['item_order'] ?? 0)) ?: ((int) ($a['item_id'] ?? 0) <=> (int) ($b['item_id'] ?? 0)));
+        $lines = [];
+        $index = 0;
+        foreach ($items as $item) {
+            $index++;
+            $quantity = is_numeric($item['item_quantity'] ?? null) ? (float) $item['item_quantity'] : 1.0;
+            $price = VoucherMirror::decimal($item['item_price'] ?? null, 4) ?? '0.0000';
+            $lines[] = new MirroredVoucherLine(
+                position: $index,
+                name: mb_substr(trim((string) ($item['item_name'] ?? '')) ?: '#' . $index, 0, 255),
+                quantity: $quantity,
+                unitNet: $price,
+                totalNet: VoucherMirror::decimal($quantity * (float) $price) ?? '0.00',
+                currency: 'EUR',
+                description: trim((string) ($item['item_description'] ?? '')) ?: null,
+            );
+        }
+
+        return $lines;
     }
 
     /** @param array<string, mixed> $row */

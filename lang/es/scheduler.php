@@ -145,6 +145,7 @@ return [
             'materialize_recurrences' => 'Materializar eventos recurrentes',
         ],
         'domain' => [
+            'refresh_details' => 'Actualización de detalles de dominios (fecha de registro, precio) con presupuesto',
             'sync' => 'Sincronización de dominios',
             'events' => 'Recuperar eventos de dominio',
         ],
@@ -162,6 +163,7 @@ return [
         'invoicing' => ['recurring' => 'Generar borradores de facturas recurrentes', 'base_rate_sync' => 'Sincronizar el tipo básico del Bundesbank', 'online_payments_refresh' => 'Conciliar los pagos en línea con el proveedor de pagos', 'incoming_digest' => 'Avisar de facturas recibidas pendientes de asignar', 'incoming_transfer' => 'Reintentar las transferencias de facturas recibidas'],
         'jtl' => ['sync' => 'Sincronización JTL Wawi'],
         'resale' => [
+            'propose' => 'Suscripciones de reventa: proponer vínculos de factura, confirmar coincidencias seguras',
             'sync_domains' => 'Suscripciones de reventa: adoptar dominios de la gestión de dominios',
             'sync_purchases' => 'Suscripciones de reventa: adoptar asientos de dominios como compras',
             'sync_periods' => 'Suscripciones de reventa: generar los periodos de facturación',
@@ -170,6 +172,7 @@ return [
             'prune_imports' => 'Suscripciones de reventa: eliminar los archivos de importación tras el periodo de retención',
         ],
         'lexoffice' => [
+            'sync_recurring_templates' => 'Lexoffice: reflejar plantillas periódicas (fuente de plan de las suscripciones)',
             'sync_articles' => 'Sincronizar artículos de Lexoffice',
             'sync_contacts' => 'Sincronizar contactos de Lexoffice',
             'sync_vouchers' => 'Sincronizar comprobantes de Lexoffice',

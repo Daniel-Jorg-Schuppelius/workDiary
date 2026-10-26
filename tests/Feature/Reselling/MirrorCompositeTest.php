@@ -95,7 +95,7 @@ class MirrorCompositeTest extends TestCase {
 
     public function test_both_sources_are_registered_and_cover_their_recipients_in_one_run(): void {
         $mirror = app(InvoiceMirror::class);
-        $this->assertSame(['local', 'lexoffice'], array_map(static fn($s): string => $s->key(), $mirror->sources()), 'Kern registriert lokal, das Plugin Lexoffice');
+        $this->assertSame(['local', 'accounting', 'lexoffice'], array_map(static fn($s): string => $s->key(), $mirror->sources()), 'Kern registriert lokal und den allgemeinen Belegspiegel (Feature 185), das Plugin Lexoffice');
         $this->assertInstanceOf(LexofficeInvoiceMirrorSource::class, $mirror->sourceFor((new LexofficeVoucherLine)->getMorphClass()));
         $this->assertInstanceOf(LocalInvoiceMirrorSource::class, $mirror->sourceFor((new InvoiceItem)->getMorphClass()));
         $this->assertTrue($mirror->coversRecipient($this->organization, $this->local));
@@ -121,12 +121,13 @@ class MirrorCompositeTest extends TestCase {
             $this->assertSame(12.0, $entry['months']);
         }
 
-        // Abgleich-Übersicht führt beide Empfänger mit je einer Position, ohne Vorschlag beide berechnet.
+        // Abgleich-Übersicht führt beide Empfänger mit je einer Position; beide sichere Treffer sind automatisch bestätigt (Feature 185), also keine offenen Vorschläge.
         $rows = (new RecipientReconciler)->overview($this->organization);
         $byName = array_column($rows, null, 'name');
         $this->assertSame(1, $byName['Klimpel Bäder GmbH']['lines']);
         $this->assertSame(1, $byName['LDS Systems GmbH']['lines']);
-        $this->assertSame([1, 1], [$byName['Klimpel Bäder GmbH']['proposed'], $byName['LDS Systems GmbH']['proposed']]);
+        $this->assertSame([0, 0], [$byName['Klimpel Bäder GmbH']['proposed'], $byName['LDS Systems GmbH']['proposed']]);
+        $this->assertSame(2, ResalePeriodLink::query()->where('origin', \App\Enums\Reselling\LinkOrigin::Auto->value)->count());
         $this->assertSame([0.0, 0.0], [$byName['Klimpel Bäder GmbH']['free'], $byName['LDS Systems GmbH']['free']]);
 
         $admin = $this->orgAdmin();

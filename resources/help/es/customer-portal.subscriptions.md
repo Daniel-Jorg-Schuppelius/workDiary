@@ -1,7 +1,7 @@
 ---
 title: "Mis suscripciones"
 topic: customer-portal.subscriptions
-version: 2
+version: 3
 keywords:
     - suscripción
     - licencias
@@ -58,6 +58,10 @@ La sección **Periodos de facturación** enumera los distintos periodos de la su
 - **en revisión** – el periodo todavía se está aclarando.
 
 Los periodos se derivan del inicio, la vigencia y el intervalo de la suscripción.
+
+## Licencias vendidas
+
+Si su contratista le ha vendido licencias individuales de su inventario, la tarjeta **Licencias vendidas** muestra por licencia el producto, el número de licencia dentro del lote, el titular (su empresa o un cliente final), la fecha de venta y el número de la factura con la que se facturó; si aún no hay factura, se indica **todavía ninguna**. El portal nunca muestra claves de licencia; las recibe personalmente de su contratista.
 
 ## Límites
 

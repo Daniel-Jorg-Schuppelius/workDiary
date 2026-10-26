@@ -16,14 +16,17 @@ use App\Enums\Reselling\SubscriptionProvider;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Reselling\{ResalePurchaseImportRequest, ResalePurchaseStoreRequest};
-use App\Models\Reselling\{ResalePeriod, ResalePurchaseEntry};
+use App\Models\Reselling\{ResalePeriod, ResaleProviderSupplier, ResalePurchaseEntry, ResaleSubscription};
+use App\Models\Supplier\Supplier;
 use App\Services\Billing\Purchase\{PurchaseDocument, PurchaseDocuments};
-use App\Services\Reselling\Register\{ProviderInvoiceImport, PurchaseAllocator};
+use App\Services\Reselling\Register\{ProviderInvoiceImport, ProviderSuppliers, PurchaseAllocator};
 use App\Support\Query\DateRange;
+use App\Support\Sqid;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Validation\{Rule, ValidationException};
 
 /**
  * Einkaufsbelege (Feature 152, MVP-762; Review 2026-09-11, Einkauf):
@@ -53,6 +56,7 @@ class ResalePurchaseController extends Controller {
             'source' => (string) $request->query('source', ''),
             'from' => trim((string) $request->query('from', '')),
             'to' => trim((string) $request->query('to', '')),
+            'unmatched' => $request->boolean('unmatched'),
         ];
         $query = ResalePurchaseEntry::query()
             ->with(['subscription:id,label,customer_id,foreign_customer_id,is_own_holding', 'subscription.customer:id,name', 'subscription.foreignCustomer:id,name', 'period:id,starts_on,ends_on'])
@@ -70,6 +74,9 @@ class ResalePurchaseController extends Controller {
         }
         if (in_array($filters['source'], self::SOURCES, true)) {
             $query->where('source', $filters['source']);
+        }
+        if ($filters['unmatched']) {
+            $query->whereNull('subscription_id');
         }
         // Zeitraum nur, wenn gesetzt — Vorgabe ist alles (halboffen: bis < Folgetag).
         if ($filters['from'] !== '' || $filters['to'] !== '') {
@@ -95,7 +102,80 @@ class ResalePurchaseController extends Controller {
             'filters' => $filters,
             'providers' => SubscriptionProvider::cases(),
             'sources' => self::SOURCES,
+            'unmatchedCount' => ResalePurchaseEntry::query()->whereNull('subscription_id')->count(),
         ]);
+    }
+
+    /** Dialog Lieferant → Anbieter (Feature 185, MVP-1419): Bestand mit Lösen, neue Zuordnung mit Namensvorschlag. */
+    public function suppliersCreate(ProviderSuppliers $suppliers): View {
+        $organization = $this->currentOrganizationOrAbort(404);
+        $mappings = $suppliers->all($organization);
+        $mapped = $mappings->pluck('supplier_id')->all();
+        $candidates = Supplier::query()->orderBy('name')->get(['id', 'name'])
+            ->reject(static fn(Supplier $s): bool => in_array($s->id, $mapped, true))
+            ->map(static fn(Supplier $s): array => ['supplier' => $s, 'suggested' => $suppliers->suggest((string) $s->name)])
+            ->values();
+
+        return view('finance.resale._supplier_dialog', [
+            'mappings' => $mappings,
+            'candidates' => $candidates,
+            'providers' => array_values(array_filter(SubscriptionProvider::cases(), static fn(SubscriptionProvider $p): bool => $p !== SubscriptionProvider::Manual)),
+        ]);
+    }
+
+    public function suppliersStore(Request $request, ProviderSuppliers $suppliers): RedirectResponse {
+        $organization = $this->currentOrganizationOrAbort(404);
+        $data = $request->validate([
+            'supplier_id' => ['required', 'string', 'max:32'],
+            'provider' => ['required', Rule::enum(SubscriptionProvider::class), Rule::notIn([SubscriptionProvider::Manual->value])],
+        ]);
+        $supplierId = Sqid::decode(Supplier::class, (string) $data['supplier_id']);
+        $supplier = $supplierId !== null ? Supplier::query()->find($supplierId) : null;
+        if ($supplier === null) {
+            throw ValidationException::withMessages(['supplier_id' => (string) __('resale.purchase.supplier.error.unknown')]);
+        }
+        $provider = SubscriptionProvider::from((string) $data['provider']);
+        ResaleProviderSupplier::query()->updateOrCreate(
+            ['organization_id' => $organization->id, 'supplier_id' => $supplier->id],
+            ['provider' => $provider],
+        );
+        $suppliers->forget();
+
+        return redirect()->toList('finance.resale.purchases.index')->with('success', __('resale.purchase.supplier.flash.saved', ['supplier' => $supplier->name, 'provider' => $provider->label()]));
+    }
+
+    public function suppliersDestroy(ResaleProviderSupplier $mapping, ProviderSuppliers $suppliers): RedirectResponse {
+        $mapping->delete();
+        $suppliers->forget();
+
+        return redirect()->toList('finance.resale.purchases.index')->with('success', __('resale.purchase.supplier.flash.deleted'));
+    }
+
+    /** Einkauf ohne Abo (Feature 185, MVP-1420): dem passenden Abo zuordnen, Periode am Belegdatum. */
+    public function assignCreate(ResalePurchaseEntry $entry): View {
+        abort_if($entry->subscription_id !== null, 404);
+        $subscriptions = ResaleSubscription::query()->where('provider', $entry->provider->value)->planning()
+            ->with(['customer:id,name', 'foreignCustomer:id,name,customer_id'])
+            ->orderBy('label')->get();
+
+        return view('finance.resale._entry_assign_dialog', ['entry' => $entry, 'subscriptions' => $subscriptions]);
+    }
+
+    public function assignStore(Request $request, ResalePurchaseEntry $entry): RedirectResponse {
+        abort_if($entry->subscription_id !== null, 404);
+        $data = $request->validate(['subscription_id' => ['required', 'string', 'max:32']]);
+        $subscriptionId = Sqid::decode(ResaleSubscription::class, (string) $data['subscription_id']);
+        $subscription = $subscriptionId !== null ? ResaleSubscription::query()->find($subscriptionId) : null;
+        if ($subscription === null) {
+            throw ValidationException::withMessages(['subscription_id' => (string) __('resale.purchase.unmatched.error.unknown')]);
+        }
+        $period = $subscription->periods()
+            ->where('starts_on', '<', DateRange::dayAfter($entry->entry_date))
+            ->where('ends_on', '>=', DateRange::day($entry->entry_date))
+            ->first() ?? $subscription->periods()->orderByDesc('starts_on')->first();
+        $entry->forceFill(['subscription_id' => $subscription->id, 'period_id' => $period?->id])->save();
+
+        return redirect()->toList('finance.resale.purchases.index')->with('success', __('resale.purchase.unmatched.flash', ['number' => $entry->document_number ?? '#' . $entry->id, 'label' => $subscription->label]));
     }
 
     /** Dialog „Eingangsbeleg zuteilen": Belege aller Quellen, per `q` vorgefiltert (Nummer, Lieferant). */

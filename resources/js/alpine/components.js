@@ -242,23 +242,61 @@ export function registerAlpineComponents(Alpine) {
     // Kundenwechsel setzt die Fremdkunden-Auswahl zurück.
     // Startwerte kommen als data-Attribute (CSP-Build: keine Ausdrücke im
     // x-data), die Karte Kunde → Fremdkunden als data-map (JSON).
+    // Lizenzverkauf (Feature 185, MVP-1427): data-lines trägt die
+    // Rechnungspositionen des Spiegels; sichtbar sind die des gewählten Kunden
+    // (ohne Empfänger: alle), beim Kundenwechsel wird die passende Position
+    // vorgeschlagen, die bis 30 Tage um das Verkaufsdatum liegt.
+    /** @typedef {{key: string, customer: string, label: string, date: string, match: boolean}} InvoiceLineOption */
     Alpine.data("resaleHolderPicker", () => ({
         /** @type {ForeignByCustomer} */
         map: {},
+        /** @type {InvoiceLineOption[]} */
+        lines: [],
         holder: "none",
         customer: "",
         foreign: "",
+        line: "",
         init() {
             const data = this.$root.dataset;
             this.map = JSON.parse(data.map || "{}");
+            this.lines = JSON.parse(data.lines || "[]");
             this.holder = data.holder || "none";
             this.customer = data.customer || "";
             this.foreign = data.foreign || "";
+            this.line = data.line || "";
+            if (this.line === "" && this.customer !== "") {
+                this.line = this.suggestLine(); // Berichtigen: Kunde steht schon fest
+            }
             this.$watch("customer", (value, previous) => {
                 if (previous !== undefined && value !== previous) {
                     this.foreign = "";
+                    this.line = this.suggestLine();
                 }
             });
+        },
+        /** @returns {InvoiceLineOption[]} */
+        lineOptions() {
+            return this.lines.filter((l) => l.customer === "" || l.customer === this.customer);
+        },
+        /** @param {InvoiceLineOption} l */
+        lineText(l) {
+            return (l.date ? l.date + " · " : "") + l.label;
+        },
+        /** Passende Position (Artikel) des Kunden, höchstens 30 Tage vom Verkaufsdatum entfernt — sonst leer. */
+        suggestLine() {
+            const form = this.$root.closest("form");
+            const soldOn = (form instanceof HTMLFormElement ? /** @type {HTMLInputElement | null} */ (form.querySelector('input[name="sold_on"]'))?.value : undefined) || this.$root.dataset.soldOn;
+            const anchor = soldOn ? Date.parse(soldOn) : Number.NaN;
+            const hit = this.lineOptions().find((l) => {
+                if (!l.match || l.customer === "") {
+                    return false;
+                }
+                if (Number.isNaN(anchor) || !l.date) {
+                    return true;
+                }
+                return Math.abs(Date.parse(l.date) - anchor) <= 30 * 86400000;
+            });
+            return hit ? hit.key : "";
         },
         needsCustomer() {
             return this.holder === "customer" || this.holder === "partner" || this.holder === "foreign";

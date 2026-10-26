@@ -1,7 +1,7 @@
 ---
 title: "My subscriptions"
 topic: customer-portal.subscriptions
-version: 2
+version: 3
 keywords:
     - subscription
     - licences
@@ -58,6 +58,10 @@ The section **Billing periods** lists the individual periods of the subscription
 - **under review** – the period is still being clarified.
 
 The periods are derived from the start, term and interval of the subscription.
+
+## Sold licenses
+
+If your contractor has sold you individual licenses from their stock, the **Sold licenses** card shows per license the product, the license number within the batch, the holder (your company or an end customer), the sale date and the number of the invoice it was billed with; if there is no invoice yet it says **none yet**. The portal never shows license keys; you receive them personally from your contractor.
 
 ## Limits
 

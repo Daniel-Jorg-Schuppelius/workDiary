@@ -8,7 +8,7 @@
 
   Einkaufsbelege (Feature 152, MVP-762; Review 2026-09-11): Anbieterrechnungen
   positionsgenau (PDF-Import), Eingangsbelege aller Quellen (Lexoffice-Spiegel,
-  Ausgaben, Eingangs-E-Rechnungen) pro rata, Domain-Buchungen automatisch â je
+  Ausgaben, Eingangs-E-Rechnungen) pro rata, Domain-Buchungen automatisch — je
   Zeile die Zuteilung auf Abo und Periode; der Beleg kommt mit Quelle,
   Permalink und Vorschau aus der Belegregistry. Filter nach
   Anbieter, Quelle, Zeitraum und Suche; Import-Hinweise als Liste.
@@ -29,6 +29,7 @@
             @if ($canManage)
                 <x-icon-btn icon="picture_as_pdf" tone="primary" size="sm" data-entry-modal-trigger :href="route('finance.resale.purchases.import.create')" show-label>{{ __('resale.purchase.import.action') }}</x-icon-btn>
                 <x-icon-btn icon="receipt" tone="ghost" size="sm" data-entry-modal-trigger :href="route('finance.resale.purchases.create')" show-label>{{ __('resale.purchase.action.allocate') }}</x-icon-btn>
+                <x-icon-btn icon="local_shipping" tone="ghost" size="sm" data-entry-modal-trigger :href="route('finance.resale.purchases.suppliers.create')" show-label>{{ __('resale.purchase.supplier.action') }}</x-icon-btn>
             @endif
         </x-slot:actions>
 
@@ -51,7 +52,7 @@
         @if ($byDocument->isNotEmpty())
             <div class="flex flex-wrap gap-2 mb-3 text-xs">
                 @foreach ($byDocument as $doc)
-                    <x-status-badge tone="plain" size="md" outline>{{ $doc->document_number }} Â· {{ $doc->entry_date->fdate() }} Â· {{ \CommonToolkit\ValueObjects\Money::ofFloat((float) $doc->net, $doc->currency, 2)->format() }} Â· {{ $doc->n }}</x-status-badge>
+                    <x-status-badge tone="plain" size="md" outline>{{ $doc->document_number }} · {{ $doc->entry_date->fdate() }} · {{ \CommonToolkit\ValueObjects\Money::ofFloat((float) $doc->net, $doc->currency, 2)->format() }} · {{ $doc->n }}</x-status-badge>
                 @endforeach
             </div>
         @endif
@@ -73,6 +74,7 @@
             </select>
             <x-date-range class="w-72 shrink-0" :label="false" from-name="from" to-name="to" from-id="purchases-from" to-id="purchases-to"
                           :from="$filters['from']" :to="$filters['to']" />
+            <x-filter-toggle name="unmatched" :label="__('resale.purchase.unmatched.filter') . ($unmatchedCount > 0 ? ' (' . $unmatchedCount . ')' : '')" :checked="$filters['unmatched']" tone="warning" />
         </x-filter-bar>
 
         <x-table scroll="flex" :zebra="true" table-sort="client">
@@ -113,15 +115,18 @@
                         @if ($entry->subscription !== null)
                             <a href="{{ route('finance.resale.show', $entry->subscription->sqid) }}" class="link link-hover">{{ $entry->subscription->label }}</a>
                         @else
-                            <span class="text-muted">â</span>
+                            <x-status-badge size="xs" tone="warning" :label="__('resale.purchase.unmatched.badge')" />
                         @endif
                     </td>
-                    <td class="text-sm">{{ $entry->subscription?->holderLabel() ?? 'â' }}</td>
-                    <td class="whitespace-nowrap tabular-nums text-sm">{{ $entry->period?->label() ?? 'â' }}</td>
+                    <td class="text-sm">{{ $entry->subscription?->holderLabel() ?? '—' }}</td>
+                    <td class="whitespace-nowrap tabular-nums text-sm">{{ $entry->period?->label() ?? '—' }}</td>
                     <td class="text-xs text-muted max-w-xs truncate" title="{{ $entry->description }}">{{ $entry->description }}</td>
                     <td class="text-right tabular-nums whitespace-nowrap {{ $entry->net_amount->isNegative() ? 'text-success' : '' }}">{{ $entry->net_amount->format() }}</td>
                     <td><x-status-badge size="xs" tone="neutral" :label="$entry->sourceLabel()" /></td>
                     <td class="text-right">
+                        @if ($canManage && $entry->subscription_id === null)
+                            <x-icon-btn icon="link" size="xs" tone="ghost" data-entry-modal-trigger :href="route('finance.resale.purchases.assign.create', $entry->sqid)" :title="__('resale.purchase.unmatched.assign')" />
+                        @endif
                         @if ($canManage)
                             <form method="POST" action="{{ route('finance.resale.purchases.destroy', $entry->sqid) }}" class="inline-flex justify-end"
                                   data-confirm-dialog data-confirm-message="{{ __('resale.purchase.confirm.remove') }}" data-confirm-tone="error" data-confirm-icon="delete" data-confirm-label="{{ __('resale.purchase.action.remove') }}">

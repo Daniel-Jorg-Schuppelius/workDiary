@@ -14,7 +14,7 @@ namespace App\Services\Reselling\Mirror;
 
 use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
-use App\Models\Reselling\{ResalePeriod, ResalePeriodLink};
+use App\Models\Reselling\{ResaleLicenseAssignment, ResalePeriod, ResalePeriodLink};
 use App\Services\Reselling\Register\LinkProposer;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
@@ -63,10 +63,10 @@ final class InvoiceMirror {
      * @param  list<int>|null  $recipientCustomerIds
      * @return Collection<int, MirrorLine>
      */
-    public function linesFor(Organization $organization, ?array $recipientCustomerIds, ?CarbonImmutable $from = null, ?CarbonImmutable $to = null): Collection {
+    public function linesFor(Organization $organization, ?array $recipientCustomerIds, ?CarbonImmutable $from = null, ?CarbonImmutable $to = null, bool $licenceOnly = true): Collection {
         $lines = collect();
         foreach ($this->sources as $source) {
-            $lines = $lines->merge($source->linesFor($organization, $recipientCustomerIds, $from, $to));
+            $lines = $lines->merge($source->linesFor($organization, $recipientCustomerIds, $from, $to, $licenceOnly));
         }
 
         return $lines->values();
@@ -187,19 +187,20 @@ final class InvoiceMirror {
 
     /**
      * Positionen zu Bezügen, gebündelt je Quelle (eine Abfrage je Morph-Typ)
-     * und an die Bezüge gehängt ({@see ResalePeriodLink::mirrorLine()}).
+     * und an die Bezüge gehängt ({@see ResalePeriodLink::mirrorLine()}); auch
+     * für Lizenzverkäufe mit Rechnungsbezug ({@see ResaleLicenseAssignment::mirrorLine()}).
      *
-     * @param  iterable<ResalePeriodLink>  $links
+     * @param  iterable<ResalePeriodLink|ResaleLicenseAssignment>  $links
      * @return array<string, MirrorLine> Identität → Position
      */
     public function preload(Organization $organization, iterable $links): array {
         /** @var array<string, list<int>> $ids */
         $ids = [];
-        /** @var list<ResalePeriodLink> $all */
+        /** @var list<ResalePeriodLink|ResaleLicenseAssignment> $all */
         $all = [];
         foreach ($links as $link) {
             $all[] = $link;
-            if (isset($this->byMorph[$link->linkable_type])) {
+            if ($link->linkable_type !== null && $link->linkable_id !== null && isset($this->byMorph[$link->linkable_type])) {
                 $ids[$link->linkable_type][] = (int) $link->linkable_id;
             }
         }

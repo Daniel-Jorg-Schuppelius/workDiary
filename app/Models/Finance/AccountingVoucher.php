@@ -18,7 +18,7 @@ use App\Models\Customer\Customer;
 use App\Models\Supplier\Supplier;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
 
 /**
@@ -35,6 +35,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $due_date
  * @property Carbon|null $paid_date
  * @property Carbon|null $source_deleted_at
+ * @property Carbon|null $lines_synced_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, AccountingVoucherLine> $lines
  * @property string|null $foreign_amount
  * @property string|null $foreign_currency
  * @property array<string, mixed>|null $payload
@@ -53,7 +55,7 @@ class AccountingVoucher extends Model {
         'cancels_external_id',
         'voucher_number', 'voucher_date', 'due_date', 'paid_date',
         'total_amount', 'net_amount', 'open_amount', 'currency', 'foreign_amount', 'foreign_currency',
-        'archived', 'payload', 'synced_at', 'source_changed_at', 'source_deleted_at',
+        'archived', 'payload', 'synced_at', 'lines_synced_at', 'source_changed_at', 'source_deleted_at',
     ];
 
     /** @var array<string, string> */
@@ -72,11 +74,18 @@ class AccountingVoucher extends Model {
         'source_deleted_at' => 'datetime',
         'payload' => 'array',
         'synced_at' => 'datetime',
+        'lines_synced_at' => 'datetime',
     ];
 
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);
+    }
+
+    /** @return BelongsTo<Supplier, $this> */
+    /** @return HasMany<AccountingVoucherLine, $this> Positionen (Feature 185, MVP-1424) */
+    public function lines(): HasMany {
+        return $this->hasMany(AccountingVoucherLine::class, 'voucher_id')->orderBy('position');
     }
 
     /** @return BelongsTo<Supplier, $this> */

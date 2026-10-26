@@ -49,6 +49,11 @@
     @endif
     <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
         <x-input-field name="label" :label="__('resale.field.label')" :value="$value('label')" required span="4" />
+        @if (! $editing && ! empty($prefill['plan_key']))
+            {{-- Aus einer Serienvorlage angelegt (Feature 185): die Zuordnung wird beim Speichern festgehalten. --}}
+            <input type="hidden" name="plan_key" value="{{ $prefill['plan_key'] }}">
+            <input type="hidden" name="plan_position" value="{{ (int) ($prefill['plan_position'] ?? 0) }}">
+        @endif
         <x-select-field name="kind" :label="__('resale.field.kind')" span="2">
             @foreach ($kinds as $kind)
                 <option value="{{ $kind->value }}" @selected($enumValue('kind', 'license') === $kind->value)>{{ $kind->label() }}</option>

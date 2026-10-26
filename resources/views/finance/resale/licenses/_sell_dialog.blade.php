@@ -8,8 +8,20 @@
 
   Einzelne Lizenz verkaufen (MVP-1024): genau eine verfügbare Lizenz mit
   ihrem Schlüsselsatz an einen Kunden. Der Token macht ein doppeltes Absenden
-  harmlos.
+  harmlos. Rechnungsbezug (Feature 185, MVP-1427): Positionen des Spiegels
+  um das Verkaufsdatum, gefiltert nach dem gewählten Kunden; passende
+  (Artikel bzw. Produktname) stehen vorn und werden vorgeschlagen.
 --}}
+@php
+    $customerSqids = $customers->pluck('sqid', 'id');
+    $lineOptions = array_map(static fn (array $c): array => [
+        'key' => $c['key'],
+        'customer' => $c['customer_id'] !== null ? (string) ($customerSqids[$c['customer_id']] ?? '') : '',
+        'label' => $c['label'],
+        'date' => $c['date'],
+        'match' => $c['match'],
+    ], $invoiceLines);
+@endphp
 <x-modal
     :title="__('resale.license.action.sell')"
     :eyebrow="$product?->name ?? __('resale.license.title')"
@@ -36,15 +48,16 @@
                 @endforeach
             </x-select-field>
             <x-input-field name="sold_on" type="date" :label="__('resale.license.field.sold_on')" :value="old('sold_on', now()->toDateString())" required />
-            <x-input-field name="invoice_reference" :label="__('resale.license.field.invoice_reference')" :value="old('invoice_reference')" maxlength="80" :hint="__('resale.license.hint.invoice_reference')" />
         </x-form-group>
         <x-form-group :legend="__('resale.license.field.holder')" icon="person" cols="1">
             <div class="grid grid-cols-1 gap-3 md:grid-cols-2"
                  x-data="resaleHolderPicker"
                  data-map="{{ json_encode($foreignByCustomer, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE) }}"
+                 data-lines="{{ json_encode($lineOptions, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE) }}"
                  data-holder="customer"
                  data-customer="{{ old('customer_id') }}"
-                 data-foreign="{{ old('foreign_customer_id') }}">
+                 data-foreign="{{ old('foreign_customer_id') }}"
+                 data-line="{{ old('line') }}">
                 <x-select-field name="customer_id" :label="__('resale.license.field.customer')" x-model="customer" required>
                     <option value="">—</option>
                     @foreach ($customers as $customer)
@@ -58,6 +71,17 @@
                             <option :value="fc.sqid" x-text="fc.name" :selected="fc.sqid === foreign"></option>
                         </template>
                     </x-select-field>
+                </div>
+                <div class="md:col-span-2" x-show="customer !== ''">
+                    <x-select-field name="line" :label="__('resale.license.field.invoice_line')" x-model="line" :hint="__('resale.license.hint.invoice_line')">
+                        <option value="">{{ __('resale.license.hint.invoice_line_none') }}</option>
+                        <template x-for="l in lineOptions()" :key="l.key">
+                            <option :value="l.key" x-text="lineText(l)" :selected="l.key === line"></option>
+                        </template>
+                    </x-select-field>
+                </div>
+                <div class="md:col-span-2" x-show="line === ''">
+                    <x-input-field name="invoice_reference" :label="__('resale.license.field.invoice_reference')" :value="old('invoice_reference')" maxlength="80" :hint="__('resale.license.hint.invoice_reference')" />
                 </div>
             </div>
         </x-form-group>

@@ -14,9 +14,9 @@ namespace App\Plugins\Easybill\Services;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind};
 use App\Enums\Finance\AccountingVoucherState;
-use App\Plugins\Easybill\Api\EasybillClientFactory;
+use App\Plugins\Easybill\Api\{EasybillClient, EasybillClientFactory};
 use App\Plugins\Easybill\EasybillPlugin;
-use App\Services\Finance\Accounting\Vouchers\{MirroredVoucher, VoucherMirror, VoucherPuller};
+use App\Services\Finance\Accounting\Vouchers\{MirroredVoucher, MirroredVoucherLine, VoucherMirror, VoucherPuller};
 use Illuminate\Support\Carbon;
 
 /**
@@ -92,14 +92,128 @@ class EasybillVoucherPullService implements VoucherPuller {
                 }
                 $counters['read']++;
                 $this->mirror->store($organizationId, $this->pluginId(), $this->map($row), $counters);
+                // Positionen stehen in der Liste (Feature 185, MVP-1425: `Document.items` → `DocumentPosition`).
+                $this->mirror->storeLines($organizationId, $this->pluginId(), trim((string) ($row['id'] ?? '')), self::lines($row));
             }
 
             if (count($rows) < $limit) {
                 break;
             }
         }
+        $this->pullRecurring($client, $organizationId, $limit, $counters);
 
         return $counters;
+    }
+
+    /**
+     * Serienvorlagen (Feature 185, MVP-1426): easybill führt sie als Dokumente
+     * vom Typ `RECURRING` mit `recurring_options` (`next_date`, `frequency`,
+     * `interval`, `status`, `target_type`, `as_draft`). Gespiegelt als Beleg der
+     * Art `recurring_template` ohne Beträge — Plan, kein Umsatz.
+     *
+     * @param  array{read: int, created: int, updated: int, skipped: int}  $counters
+     */
+    private function pullRecurring(EasybillClient $client, int $organizationId, int $limit, array &$counters): void {
+        for ($page = 1; $page <= 5; $page++) {
+            $rows = $client->documents(['type' => 'RECURRING', 'limit' => $limit, 'page' => $page]);
+            if ($rows === []) {
+                break;
+            }
+            foreach ($rows as $row) {
+                if (! is_array($row) || strtoupper((string) data_get($row, 'recurring_options.target_type', 'INVOICE')) !== 'INVOICE') {
+                    continue;
+                }
+                $counters['read']++;
+                $this->mirror->store($organizationId, $this->pluginId(), $this->mapRecurring($row), $counters);
+                $this->mirror->storeLines($organizationId, $this->pluginId(), trim((string) ($row['id'] ?? '')), self::lines($row));
+            }
+            if (count($rows) < $limit) {
+                break;
+            }
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     * @return list<MirroredVoucherLine>
+     */
+    private static function lines(array $row): array {
+        $lines = [];
+        $index = 0;
+        foreach ((array) ($row['items'] ?? []) as $item) {
+            if (! is_array($item) || strtoupper((string) ($item['type'] ?? 'POSITION')) === 'TEXT') {
+                continue;
+            }
+            $index++;
+            $position = is_numeric($item['position'] ?? null) ? (int) $item['position'] : $index;
+            $description = trim((string) ($item['description'] ?? ''));
+            $lines[] = new MirroredVoucherLine(
+                position: $position > 0 ? $position : $index,
+                name: mb_substr(\CommonToolkit\Helper\Data\StringHelper::lines($description, true)[0] ?? ($item['number'] ?? ''), 0, 255),
+                quantity: is_numeric($item['quantity'] ?? null) ? (float) $item['quantity'] : 1.0,
+                unitNet: VoucherMirror::fromCents($item['single_price_net'] ?? null) ?? '0.00',
+                totalNet: VoucherMirror::fromCents($item['total_price_net'] ?? null) ?? '0.00',
+                currency: trim((string) ($row['currency'] ?? 'EUR')) ?: 'EUR',
+                externalArticleId: trim((string) ($item['number'] ?? '')) ?: null,
+                description: $description !== '' ? $description : null,
+                unitName: trim((string) ($item['unit'] ?? '')) ?: null,
+                taxRate: is_numeric($item['vat_percent'] ?? null) ? (string) $item['vat_percent'] : null,
+            );
+        }
+
+        return $lines;
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     */
+    private function mapRecurring(array $row): MirroredVoucher {
+        $options = is_array($row['recurring_options'] ?? null) ? $row['recurring_options'] : [];
+        $frequency = strtoupper((string) ($options['frequency'] ?? ''));
+        $every = max(1, (int) ($options['interval'] ?? 1));
+        $interval = match (true) {
+            $frequency === 'YEARLY' && $every === 1 => 'ANNUALLY',
+            $frequency === 'MONTHLY' && $every === 1 => 'MONTHLY',
+            $frequency === 'MONTHLY' && $every === 3 => 'QUARTERLY',
+            $frequency === 'MONTHLY' && $every === 6 => 'BIANNUALLY',
+            $frequency === 'MONTHLY' && $every === 12 => 'ANNUALLY',
+            $frequency === 'WEEKLY' && $every === 1 => 'WEEKLY',
+            $frequency === 'WEEKLY' && $every === 2 => 'BIWEEKLY',
+            default => '',
+        };
+        $status = match (strtoupper((string) ($options['status'] ?? ''))) {
+            'RUNNING' => 'ACTIVE',
+            'STOP' => 'ENDED',
+            default => 'PAUSED', // PAUSE, WAITING
+        };
+        $end = trim((string) ($options['end_date_or_count'] ?? ''));
+
+        return new MirroredVoucher(
+            externalId: trim((string) ($row['id'] ?? '')),
+            direction: DocumentDirection::Neutral,
+            kind: DocumentKind::RecurringTemplate,
+            rawType: 'RECURRING',
+            rawStatus: strtoupper((string) ($options['status'] ?? '')) ?: null,
+            state: AccountingVoucherState::Draft,
+            number: trim((string) ($row['title'] ?? $row['number'] ?? '')) ?: null,
+            date: VoucherMirror::date($row['document_date'] ?? null),
+            currency: trim((string) ($row['currency'] ?? 'EUR')) ?: 'EUR',
+            archived: (bool) ($row['is_archive'] ?? false),
+            contactExternalId: ($row['customer_id'] ?? null) !== null ? (string) $row['customer_id'] : null,
+            sourceChangedAt: VoucherMirror::timestamp($row['edited_at'] ?? ($row['created_at'] ?? null)),
+            payload: $row + ['plan' => [
+                'status' => $status,
+                'interval' => $interval,
+                'starts_on' => VoucherMirror::date($row['document_date'] ?? null),
+                'ends_on' => preg_match('/^\d{4}-\d{2}-\d{2}/', $end) === 1 ? substr($end, 0, 10) : null,
+                'next_execution_on' => VoucherMirror::date($options['next_date'] ?? null),
+                'last_execution_on' => null,
+                'finalize' => ! (bool) ($options['as_draft'] ?? false),
+                'last_failed' => false,
+                'last_error' => null,
+                'permalink' => null,
+            ]],
+        );
     }
 
     /** @param array<string, mixed> $row */

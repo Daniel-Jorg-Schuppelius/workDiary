@@ -274,9 +274,19 @@ class AppServiceProvider extends ServiceProvider {
         // Belegspiegel des Reselling-Registers (Feature 152, Review 2026-09-10):
         // Singleton mit der lokalen Rechnungsquelle; die Lexoffice-Quelle
         // registriert das Plugin beim Booten — der Kern kennt keinen Anbieter.
+        // Plan-Quellen (Feature 185, MVP-1409): Serienvorlagen der Buchhaltungsprogramme; Plugins registrieren beim Boot.
+        $this->app->singleton(\App\Services\Reselling\Plan\RecurringPlans::class, static function (): \App\Services\Reselling\Plan\RecurringPlans {
+            $plans = new \App\Services\Reselling\Plan\RecurringPlans;
+            // Serienvorlagen aus dem allgemeinen Belegspiegel (Feature 185, MVP-1426): easybill, Invoice Ninja, sevDesk.
+            $plans->register(new \App\Services\Reselling\Plan\AccountingRecurringPlanSource);
+
+            return $plans;
+        });
         $this->app->singleton(\App\Services\Reselling\Mirror\InvoiceMirror::class, static function (): \App\Services\Reselling\Mirror\InvoiceMirror {
             $mirror = new \App\Services\Reselling\Mirror\InvoiceMirror;
             $mirror->register(new \App\Services\Reselling\Mirror\LocalInvoiceMirrorSource);
+            // Positionen des allgemeinen Belegspiegels (Feature 185, MVP-1424): eine Quelle für alle Puller mit Positionen.
+            $mirror->register(app(\App\Services\Reselling\Mirror\AccountingVoucherMirrorSource::class));
 
             return $mirror;
         });

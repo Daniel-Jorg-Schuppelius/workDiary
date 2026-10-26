@@ -21,7 +21,8 @@ use Illuminate\Notifications\Messages\MailMessage;
  * bei Befund raus — fällige Perioden, unbestätigte Vorschläge, Abos ohne
  * Halter, Verlängerungen in Kürze, Abos ohne Rechnung seit langem, noch nicht
  * abgeschlossene Rechnungsentwürfe der letzten Woche (Serienlauf), Abos mit
- * geändertem Katalog-Einkaufspreis (neue Preisliste). Empfänger sind die
+ * geändertem Katalog-Einkaufspreis (neue Preisliste), Befunde zu
+ * Serienvorlagen, Anbieterstände älter als 30 Tage. Empfänger sind die
  * Nutzer mit `reselling.manage`.
  */
 class ResalePeriodsDigestNotification extends DirectNotification {
@@ -41,13 +42,16 @@ class ResalePeriodsDigestNotification extends DirectNotification {
         public readonly int $draftCount = 0,
         public readonly int $draftDays = 7,
         public readonly int $catalogChanges = 0,
+        public readonly int $planIssues = 0,
+        public readonly int $staleImports = 0,
+        public readonly int $staleImportDays = 30,
     ) {
         parent::__construct(['mail', 'database']);
     }
 
     /** Summe der Befunde — der Betreff. */
     public function total(): int {
-        return $this->dueCount + $this->proposedCount + $this->unassignedCount + $this->renewalCount + $this->staleCount + $this->draftCount + $this->catalogChanges;
+        return $this->dueCount + $this->proposedCount + $this->unassignedCount + $this->renewalCount + $this->staleCount + $this->draftCount + $this->catalogChanges + $this->planIssues + $this->staleImports;
     }
 
     public function toMail(object $notifiable): MailMessage {
@@ -55,6 +59,8 @@ class ResalePeriodsDigestNotification extends DirectNotification {
             ->subject(__(self::TITLE_KEY, $this->titleParams()))
             ->greeting(__('Hallo :name,', ['name' => $notifiable->name ?? '']))
             ->line(__(self::MESSAGE_KEY, $this->messageParams()))
+            ->lineIf($this->planIssues > 0, __('resale.plan.digest_line', ['count' => $this->planIssues]))
+            ->lineIf($this->staleImports > 0, __('resale.import.digest_stale', ['count' => $this->staleImports, 'days' => $this->staleImportDays]))
             ->action(__('Abo-Perioden öffnen'), route('finance.resale.periods.index'));
     }
 
@@ -77,6 +83,8 @@ class ResalePeriodsDigestNotification extends DirectNotification {
             'stale_count' => $this->staleCount,
             'draft_count' => $this->draftCount,
             'catalog_changes' => $this->catalogChanges,
+            'plan_issue_count' => $this->planIssues,
+            'stale_import_count' => $this->staleImports,
             'icon' => 'subscriptions',
             'url' => route('finance.resale.periods.index'),
         ];

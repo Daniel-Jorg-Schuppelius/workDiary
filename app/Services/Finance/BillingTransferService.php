@@ -17,7 +17,9 @@ use App\Models\Integration\ExternalReference;
 use App\Models\Material\MaterialUsage;
 use App\Models\Platform\User;
 use App\Models\Time\TimeEntry;
+use App\Modules\ModuleRegistry;
 use App\Services\Concerns\ResolvesActorId;
+use App\Services\Finance\Contracts\TransferSource;
 use App\Support\MorphMap;
 use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
@@ -68,9 +70,11 @@ class BillingTransferService {
         ?array $sourceIds = null,
         ?User $actor = null,
     ): BillingTransfer {
-        $sources = $channel === TransferChannel::Time
-            ? $this->collectTimeSources($customer, $period, $sourceIds)
-            : $this->collectMaterialSources($customer, $period, $sourceIds);
+        $sources = match ($channel) {
+            TransferChannel::Time => $this->collectTimeSources($customer, $period, $sourceIds),
+            TransferChannel::Material => $this->collectMaterialSources($customer, $period, $sourceIds),
+            default => $this->sourceFor($channel)->collect($customer, $period, $sourceIds),
+        };
 
         if ($sources->isEmpty()) {
             throw new BillingTransferException(
@@ -283,8 +287,6 @@ class BillingTransferService {
         $actorId = $this->resolveActorId($actor);
 
         return DB::transaction(function () use ($transfer, $externalReference, $filePath, $actorId): BillingTransfer {
-            $this->setSourceFlags($transfer, true);
-
             $transfer->fill([
                 'status' => TransferStatus::Transferred,
                 'transferred_at' => now(),
@@ -292,6 +294,8 @@ class BillingTransferService {
                 'file_path' => $filePath,
                 'failure_reason' => null,
             ])->save();
+            // Nach dem Speichern: Modulquellen stempeln mit der Fremdreferenz (Feature 185).
+            $this->setSourceFlags($transfer, true);
 
             $this->recordEvent($transfer, 'transferred', $actorId, [
                 'status' => TransferStatus::Transferred->value,
@@ -579,6 +583,9 @@ class BillingTransferService {
     private function setSourceFlags(BillingTransfer $transfer, bool $consumed): int {
         $items = $transfer->items()->get();
         $held = $consumed ? [] : $this->sourcesHeldElsewhere($transfer, $items);
+        if (! in_array($transfer->channel, [TransferChannel::Time, TransferChannel::Material], true)) {
+            return $this->sourceFor($transfer->channel)->setConsumed($transfer, $consumed, $held);
+        }
         $changed = 0;
 
         foreach ($items as $item) {
@@ -671,6 +678,22 @@ class BillingTransferService {
                 ['transfer_id' => $transfer->id, 'held' => $held],
             );
         }
+    }
+
+    /**
+     * Übergabequelle eines Modulkanals (Feature 185, MVP-1422) aus den Manifesten.
+     *
+     * @throws BillingTransferException kein Modul bedient den Kanal
+     */
+    private function sourceFor(TransferChannel $channel): TransferSource {
+        foreach (app(ModuleRegistry::class)->extensions(TransferSource::class) as $class) {
+            $source = app($class);
+            if ($source instanceof TransferSource && $source->channel() === $channel) {
+                return $source;
+            }
+        }
+
+        throw new BillingTransferException('noSources', (string) __('finance.error.no_sources'), ['channel' => $channel->value]);
     }
 
     /** Validierter Statuswechsel + Persistenz + Hash-Ketten-Event. */

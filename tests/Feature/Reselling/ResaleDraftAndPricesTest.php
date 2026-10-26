@@ -175,7 +175,7 @@ class ResaleDraftAndPricesTest extends TestCase {
 
         $captured = null;
         FakePluginHttp::fake([
-            'https://api.lexware.io/v1/invoices' => static function (RequestInterface $request) use (&$captured) {
+            'https://api.lexware.io/v1/invoices*' => static function (RequestInterface $request) use (&$captured) {
                 $captured = json_decode((string) $request->getBody(), true);
 
                 return FakePluginHttp::response(['id' => 'draft-42', 'resourceUri' => 'https://api.lexware.io/v1/invoices/draft-42'], 201);
@@ -187,7 +187,8 @@ class ResaleDraftAndPricesTest extends TestCase {
             ->assertRedirect(route('finance.resale.periods.index'))
             ->assertSessionHas('success');
 
-        $this->assertNotNull($captured, 'Entwurf wurde an Lexoffice gesendet');
+        $this->assertNotNull($captured, 'Entwurf wurde über die Übergabe (Feature 185, MVP-1423) an Lexoffice gesendet');
+        $this->assertSame(1, \App\Models\Finance\BillingTransfer::query()->where('channel', \App\Enums\Finance\TransferChannel::Resale->value)->count());
         $this->assertSame('7c6b5a49-3827-4e16-9f05-e4d3c2b1a098', $captured['address']['contactId']);
         $this->assertArrayNotHasKey('finalize', $captured);
         $this->assertCount(2, $captured['lineItems'], 'eine Position je Periode');
@@ -211,7 +212,7 @@ class ResaleDraftAndPricesTest extends TestCase {
         // Zweiter Klick: kein zweiter Entwurf, sondern der Hinweis auf den ausstehenden.
         $calls = 0;
         FakePluginHttp::fake([
-            'https://api.lexware.io/v1/invoices' => static function () use (&$calls) {
+            'https://api.lexware.io/v1/invoices*' => static function () use (&$calls) {
                 $calls++;
 
                 return FakePluginHttp::response(['id' => 'draft-43', 'resourceUri' => 'https://api.lexware.io/v1/invoices/draft-43'], 201);
@@ -245,11 +246,11 @@ class ResaleDraftAndPricesTest extends TestCase {
         $this->assertSame(PeriodStatus::Billed, $period->status);
         $this->assertNull($period->draft_reference, 'Bezug auf die Rechnung mit der Entwurfs-ID löscht den Stempel');
 
-        // Ohne Lexoffice-Kontakt: verständliche Fehlermeldung als 422 statt Absturz.
+        // Empfänger ohne offene Perioden: verständliche Fehlermeldung als 422 statt Absturz.
         $other = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Ohne Kontakt', 'billing_mode' => \App\Enums\Finance\BillingMode::Lexoffice]);
         $this->actingAs($admin)->postJson(route('finance.resale.periods.draft.store'), ['customer_id' => $other->sqid])
             ->assertStatus(422)
-            ->assertJsonPath('errors.customer_id.0', __('lexoffice::resale.link.no_contacts'));
+            ->assertJsonPath('errors.customer_id.0', __('resale.draft.error.nothing_open'));
         // Unbekannter oder fremder Empfänger: Sqid-Decode + Org-Prüfung im FormRequest.
         $this->actingAs($admin)->postJson(route('finance.resale.periods.draft.store'), ['customer_id' => 'nope'])
             ->assertStatus(422)

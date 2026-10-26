@@ -145,6 +145,7 @@ return [
             'materialize_recurrences' => 'Matérialiser les événements récurrents',
         ],
         'domain' => [
+            'refresh_details' => 'Rafraîchissement des détails de domaine (date d\'enregistrement, prix) avec budget',
             'sync' => 'Synchronisation des domaines',
             'events' => 'Récupérer les événements de domaine',
         ],
@@ -162,6 +163,7 @@ return [
         'invoicing' => ['recurring' => 'Générer les brouillons de factures récurrentes', 'base_rate_sync' => 'Synchroniser le taux de base de la Bundesbank', 'online_payments_refresh' => 'Rapprocher les paiements en ligne avec le prestataire de paiement', 'incoming_digest' => 'Signaler les factures reçues à attribuer', 'incoming_transfer' => 'Relancer les transmissions des factures reçues'],
         'jtl' => ['sync' => 'Synchronisation JTL Wawi'],
         'resale' => [
+            'propose' => 'Abonnements de revente : proposer les liens de facture, confirmer les correspondances sûres',
             'sync_domains' => 'Abonnements de revente : reprendre les domaines de la gestion des domaines',
             'sync_purchases' => 'Abonnements de revente : reprendre les écritures de domaines comme achats',
             'sync_periods' => 'Abonnements de revente : générer les périodes de facturation',
@@ -170,6 +172,7 @@ return [
             'prune_imports' => 'Abonnements de revente : supprimer les fichiers d’import après la durée de conservation',
         ],
         'lexoffice' => [
+            'sync_recurring_templates' => 'Lexoffice : refléter les modèles récurrents (source de plan des abonnements)',
             'sync_articles' => 'Synchroniser les articles Lexoffice',
             'sync_contacts' => 'Synchroniser les contacts Lexoffice',
             'sync_vouchers' => 'Synchroniser les pièces Lexoffice',

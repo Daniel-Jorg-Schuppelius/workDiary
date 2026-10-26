@@ -18,7 +18,7 @@ use App\Enums\User\Permission;
 use App\Models\Platform\{Organization, User};
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
 use App\Notifications\Finance\ResalePeriodsDigestNotification;
-use App\Services\Reselling\Register\{ResalePriceCheck, ResaleRenewalReport, ResaleUnbilledReport};
+use App\Services\Reselling\Register\{ResaleOverview, ResalePriceCheck, ResaleRenewalReport, ResaleUnbilledReport};
 use App\Support\Query\DateRange;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Console\Command;
@@ -88,6 +88,10 @@ class ResaleDigestCommand extends Command {
                 ->count('draft_reference');
             // Neue Preisliste: aktive Abos, deren Vertragspreis vom heute gültigen, in der letzten Woche angelegten Katalogpreis abweicht.
             $catalogChanges = $prices->recentCatalogChanges($today, self::CATALOG_DAYS);
+            // Feature 185 (MVP-1412): Befunde Bestand ↔ Serienvorlagen.
+            $planIssues = count(app(\App\Services\Reselling\Plan\PlanAudit::class)->findings($org));
+            // Feature 185 (MVP-1418): Anbieter, deren letzter Export älter als 30 Tage ist.
+            $staleImports = count(app(ResaleOverview::class)->staleProviders($org, $today));
 
             $notification = new ResalePeriodsDigestNotification(
                 $open->count(),
@@ -101,6 +105,9 @@ class ResaleDigestCommand extends Command {
                 $draftCount,
                 self::DRAFT_DAYS,
                 $catalogChanges,
+                $planIssues,
+                $staleImports,
+                ResaleOverview::IMPORT_STALE_DAYS,
             );
             if ($notification->total() === 0) {
                 return;
@@ -112,7 +119,7 @@ class ResaleDigestCommand extends Command {
             }
 
             $this->line(sprintf(
-                'Organisation #%d (%s): fällig %d, Vorschläge %d, ohne Halter %d, Verlängerungen %d, ohne Rechnung %d, Entwürfe %d, Katalogpreis geändert %d → %d Empfänger benachrichtigt.',
+                'Organisation #%d (%s): fällig %d, Vorschläge %d, ohne Halter %d, Verlängerungen %d, ohne Rechnung %d, Entwürfe %d, Katalogpreis geändert %d, Serienvorlagen-Befunde %d, veraltete Anbieterstände %d → %d Empfänger benachrichtigt.',
                 $org->id,
                 $org->name,
                 $notification->dueCount,
@@ -122,6 +129,8 @@ class ResaleDigestCommand extends Command {
                 $notification->staleCount,
                 $notification->draftCount,
                 $notification->catalogChanges,
+                $notification->planIssues,
+                $notification->staleImports,
                 $recipients->count(),
             ));
         });

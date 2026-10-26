@@ -12,17 +12,15 @@ namespace App\Plugins\Lexoffice;
 
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
 use App\Plugins\Lexoffice\Console\{LexofficeMaterializeVoucherFilesCommand, LexofficeRepairResaleLinksCommand, LexofficeSyncArticlesCommand, LexofficeSyncContactsCommand, LexofficeSyncVoucherCategoriesCommand, LexofficeSyncVoucherLinesCommand, LexofficeSyncVouchersCommand, LexofficeWebhooksCommand};
-use App\Plugins\Lexoffice\Services\{LexofficeArticleCatalogSource, LexofficeContactSync, LexofficeDocumentFeedSource, LexofficeExpenseLinkProvider, LexofficeInvoiceDraftTarget, LexofficeInvoiceMirrorSource, LexofficeMaterialProvider, LexofficePartyDocumentSource, LexofficePhoneContactSource, LexofficePurchaseDocumentSource, LexofficeRevenueSource, LexofficeSpendSource, LexofficeTarget};
+use App\Plugins\Lexoffice\Services\{LexofficeArticleCatalogSource, LexofficeContactSync, LexofficeDocumentFeedSource, LexofficeExpenseLinkProvider, LexofficeInvoiceMirrorSource, LexofficeMaterialProvider, LexofficePartyDocumentSource, LexofficePhoneContactSource, LexofficePurchaseDocumentSource, LexofficeRevenueSource, LexofficeSpendSource, LexofficeTarget};
 use App\Plugins\Lexoffice\Services\Retainer\{LexofficeRetainerPublisher, LexofficeRetainerVouchers};
 use App\Plugins\Support\{PluginOrgContext, PluginServiceProviderBase};
-use App\Services\Billing\{BillingModeResolver, ExpenseLinkProviderResolver, ExternalPurchaseSources, ExternalRevenueSources, PartyDocumentSources, RetainerChannelResolver};
+use App\Services\Billing\{ ExpenseLinkProviderResolver, ExternalPurchaseSources, ExternalRevenueSources, PartyDocumentSources, RetainerChannelResolver};
 use App\Services\Billing\Feed\DocumentFeedSourceRegistry;
 use App\Services\Billing\Purchase\PurchaseDocuments;
 use App\Services\Finance\Targets\FacturationTargetRegistry;
-use App\Services\Invoicing\TaxResolver;
 use App\Services\Material\MaterialProviderRegistry;
 use App\Services\Platform\Catalog\ArticleCatalog;
-use App\Services\Reselling\Draft\InvoiceDraftTargets;
 use App\Services\Reselling\Mirror\InvoiceMirror;
 
 /**
@@ -60,6 +58,8 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
         \Illuminate\Support\Facades\RateLimiter::for('lexoffice-webhook', fn (\Illuminate\Http\Request $request) => \Illuminate\Cache\RateLimiting\Limit::perMinute(120)->by('lwh:' . $request->ip()));
         // Faktura-Übergabe (MVP-1032): der Kern kennt das Ziel nur über die Registry.
         $this->app->make(FacturationTargetRegistry::class)->register(LexofficeTarget::class);
+        // Serienvorlagen als Plan-Quelle des Reselling-Registers (Feature 185, MVP-1409).
+        $this->app->make(\App\Services\Reselling\Plan\RecurringPlans::class)->register(new \App\Plugins\Lexoffice\Services\LexofficeRecurringPlanSource);
 
         // Umsatz aus dem Beleg-Spiegel für Auswertungen (MVP-1034/1035).
         $this->app->make(ExternalRevenueSources::class)->register(new LexofficeRevenueSource);
@@ -124,16 +124,12 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
         $this->app->make(PurchaseDocuments::class)
             ->register(new LexofficePurchaseDocumentSource);
 
-        // Entwurfsziel des Reselling-Registers (Review 2026-09-11): der Kern
-        // schiebt Rechnungsvorschläge bei Lexoffice-Hoheit nur über dieses Ziel.
-        $this->app->make(InvoiceDraftTargets::class)
-            ->register(new LexofficeInvoiceDraftTarget($this->app->make(TaxResolver::class), $this->app->make(BillingModeResolver::class)));
-
         $this->commands([
             LexofficeSyncArticlesCommand::class,
             LexofficeSyncContactsCommand::class,
             LexofficeSyncVouchersCommand::class,
             LexofficeSyncVoucherLinesCommand::class,
+            \App\Plugins\Lexoffice\Console\LexofficeSyncRecurringTemplatesCommand::class,
             LexofficeSyncVoucherCategoriesCommand::class,
             LexofficeRepairResaleLinksCommand::class,
             LexofficeMaterializeVoucherFilesCommand::class,

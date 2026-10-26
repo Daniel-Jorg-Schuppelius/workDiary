@@ -14,7 +14,7 @@
         <x-button href="{{ route('finance.resale.periods.index') }}" tone="ghost" size="xs">{{ __('resale.periods.title') }} →</x-button>
     </x-slot:actions>
 
-    @if ($open === 0 && $proposed === 0 && $unassigned === 0)
+    @if ($open === 0 && $proposed === 0 && $unassigned === 0 && $planIssues === 0)
         <x-empty-state compact icon="check_circle" :title="__('resale.widget.all_clear')" :message="__('resale.widget.all_clear_hint')" />
     @else
         <div class="grid gap-3 sm:grid-cols-3">
@@ -35,6 +35,13 @@
                     <p class="text-xs text-muted">{{ __('resale.inbox.title') }}</p>
                 </x-card>
             @endcan
+            @if ($planIssues > 0)
+                <x-card as="a" padding="px-4 py-3" class="hover:bg-base-200" href="{{ route('finance.resale.accounts.index') }}">
+                    <p class="text-xs uppercase tracking-wider text-muted">{{ __('resale.plan.widget') }}</p>
+                    <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold tabular-nums text-warning">{{ $planIssues }}</p>
+                    <p class="text-xs text-muted">{{ __('resale.account.title') }}</p>
+                </x-card>
+            @endif
         </div>
     @endif
 </x-card>

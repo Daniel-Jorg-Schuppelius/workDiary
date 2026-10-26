@@ -148,10 +148,15 @@ class GenericImportTest extends TestCase {
         $template = $this->actingAs($admin)->get(route('finance.resale.import.template'))->assertOk();
         $this->assertStringContainsString('Kennung;Firma;Produkt', $template->streamedContent());
 
-        $this->actingAs($admin)->post(route('finance.resale.import.store'), [
+        // Hochladen zeigt die Vorschau (Feature 185); übernommen wird erst mit dem Token der Vorschau.
+        $preview = $this->actingAs($admin)->post(route('finance.resale.import.store'), [
             'generic' => UploadedFile::fake()->createWithContent('liste.csv', "\xEF\xBB\xBF" . self::CSV),
             'generic_provider' => 'manual',
-        ])->assertRedirect(route('finance.resale.inbox'))->assertSessionHas('success');
+        ])->assertOk()->assertSee(__('resale.import.preview.title'));
+        $this->assertSame(0, ResaleSubscription::query()->count());
+        preg_match('/name="token" value="([0-9a-f-]{36})"/', (string) $preview->getContent(), $m);
+        $this->actingAs($admin)->post(route('finance.resale.import.commit'), ['token' => $m[1] ?? ''])
+            ->assertRedirect(route('finance.resale.inbox'))->assertSessionHas('success');
         $this->assertSame(2, ResaleSubscription::query()->count());
         $this->assertSame(1, ResaleImport::query()->where('kind', ResaleImport::KIND_GENERIC)->count());
     }

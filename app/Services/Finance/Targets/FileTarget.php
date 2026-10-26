@@ -54,9 +54,11 @@ class FileTarget implements FacturationTarget {
     public function transfer(BillingTransfer $transfer): TargetResult {
         $transfer->loadMissing(['items', 'customer']);
 
-        $lines = $transfer->channel === TransferChannel::Time
-            ? $this->timeLines($transfer)
-            : $this->materialLines($transfer);
+        $lines = match ($transfer->channel) {
+            TransferChannel::Time => $this->timeLines($transfer),
+            TransferChannel::Material => $this->materialLines($transfer),
+            default => $this->positionLines($transfer),
+        };
 
         $content = self::BOM . implode("\r\n", array_merge($this->headComments($transfer), $lines)) . "\r\n";
 
@@ -174,6 +176,53 @@ class FileTarget implements FacturationTarget {
         $rows[] = StringHelper::encodeLine([
             (string) __('finance.csv.total'), '', '', '',
             self::num($totalHours), '',
+            self::num($totalAmount), '',
+        ], ';');
+
+        return $rows;
+    }
+
+    /**
+     * Modulkanäle (Feature 185, Abo-Perioden): Leistungszeitraum, Position,
+     * Menge, Einheit, Einzelpreis netto, Betrag, Beschreibung — eine Zeile je
+     * eingefrorener Position + Summenzeile.
+     *
+     * @return list<string>
+     */
+    private function positionLines(BillingTransfer $transfer): array {
+        $rows = [StringHelper::encodeLine([
+            (string) __('finance.csv.date'),
+            (string) __('finance.csv.service_to'),
+            (string) __('finance.csv.product'),
+            (string) __('finance.csv.quantity'),
+            (string) __('finance.csv.unit'),
+            (string) __('finance.csv.unit_price'),
+            (string) __('finance.csv.amount'),
+            (string) __('finance.csv.comment'),
+        ], ';')];
+        $totalQuantity = 0.0;
+        $totalAmount = 0.0;
+        foreach ($this->positions->positionsFor($transfer) as $position) {
+            $quantity = $position->quantityFloat();
+            if ($quantity <= 0) {
+                continue;
+            }
+            $rows[] = StringHelper::encodeLine(CsvExport::guardRow([
+                $position->service_from?->toDateString() ?? '',
+                $position->service_to?->toDateString() ?? '',
+                (string) $position->name,
+                self::num($quantity),
+                (string) $position->unit_name,
+                self::num($position->unitPriceFloat()),
+                self::num($position->amountFloat()),
+                TextHelper::normalizeWhitespace((string) $position->description),
+            ]), ';');
+            $totalQuantity += $quantity;
+            $totalAmount += $position->amountFloat();
+        }
+        $rows[] = StringHelper::encodeLine([
+            (string) __('finance.csv.total'), '', '',
+            self::num($totalQuantity), '', '',
             self::num($totalAmount), '',
         ], ';');
 

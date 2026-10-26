@@ -1270,6 +1270,7 @@ return [
             'cancellation' => 'Cancellation',
             'expense' => 'Expense',
             'other' => 'Other document',
+            'recurring_template' => 'Recurring template',
             'reminder' => 'Reminder',
         ],
         'origin' => [
@@ -1508,6 +1509,7 @@ return [
         'transfer-channel' => [
             'time' => 'Services/time',
             'material' => 'Products/material',
+            'resale' => 'Subscriptions',
         ],
         'transfer-target' => [
             'lexoffice' => 'Lexoffice',

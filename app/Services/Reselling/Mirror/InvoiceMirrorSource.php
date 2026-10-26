@@ -38,12 +38,13 @@ interface InvoiceMirrorSource {
     public function morphClass(): string;
 
     /**
-     * Lizenzpositionen gültiger Ausgangsrechnungen (weder Entwurf noch storniert).
+     * Lizenzpositionen gültiger Ausgangsrechnungen (weder Entwurf noch storniert);
+     * `$licenceOnly = false` liefert alle Positionen (Rechnungsbezug einer Stücklizenz, Feature 185, MVP-1427).
      *
      * @param  list<int>|null  $recipientCustomerIds
      * @return Collection<int, MirrorLine>
      */
-    public function linesFor(Organization $organization, ?array $recipientCustomerIds, ?CarbonImmutable $from = null, ?CarbonImmutable $to = null): Collection;
+    public function linesFor(Organization $organization, ?array $recipientCustomerIds, ?CarbonImmutable $from = null, ?CarbonImmutable $to = null, bool $licenceOnly = true): Collection;
 
     /**
      * Lizenzpositionen stornierter Rechnungen (Erklärung einer Lücke, Storno-Neutralisierung).

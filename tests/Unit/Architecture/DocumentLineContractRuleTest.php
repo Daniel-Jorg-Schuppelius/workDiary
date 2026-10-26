@@ -33,6 +33,7 @@ class DocumentLineContractRuleTest extends TestCase {
     /** @var array<string, string> Dateien, die Menge × Preis selbst multiplizieren dürfen */
     private const MULTIPLICATION_ALLOWED = [
         'app/Services/Billing/DocumentTotalsCalculator.php' => 'Die Rechenstelle selbst.',
+        'app/Plugins/InvoicePlane/Services/InvoicePlaneVoucherPullService.php' => 'Spiegelposition aus InvoicePlane (Feature 185): die Positionssumme liegt dort nur in ip_invoice_item_amounts; Fremdwert des Belegspiegels, keine Belegrechnung der App.',
     ];
 
     private const MULTIPLICATION = '~(?ix)

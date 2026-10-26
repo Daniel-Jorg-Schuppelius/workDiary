@@ -35,6 +35,7 @@ return [
         'message' => 'Al momento nessun elemento La attende.',
     ],
     'source' => [
+        'resale_plan' => 'Abbonamenti e licenze: modelli ricorrenti',
         'approval' => 'Catene di approvazione',
         'vacation_approval' => 'Richieste di ferie',
         'expense_approval' => 'Note spese',

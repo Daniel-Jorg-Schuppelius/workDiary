@@ -108,6 +108,8 @@ final class IntegrationManifest extends Manifest {
             'lexoffice_articles',
             'lexoffice_invoice_handovers',
             'lexoffice_posting_categories',
+            'lexoffice_recurring_template_lines',
+            'lexoffice_recurring_templates',
             'lexoffice_voucher_categories',
             'lexoffice_voucher_lines',
             'lexoffice_vouchers',

@@ -16,10 +16,10 @@ use App\Enums\Reselling\{BillingFrequency, ImportStatus, RenewalMode, Subscripti
 use App\Models\Platform\{Organization, User};
 use App\Models\Reselling\{CompanyMapping, ResaleImport, ResalePeriod, ResalePriceEntry, ResaleSubscription};
 use App\Services\Platform\Catalog\CatalogArticle;
-use App\Services\Reselling\Marketplace\{GenericSubscriptionReader, MarketplaceEntitlement, MarketplacePurchasesReader, ProductNameMatcher, PurchasesImport, PurchasesImportMerger, QualityHostingContractsReader, QualityHostingPriceListReader, UnitPriceCatalog};
+use App\Services\Reselling\Marketplace\{GenericSubscriptionReader, MarketplaceEntitlement, MarketplacePurchasesReader, PriceListEntry, ProductNameMatcher, PurchasesImport, PurchasesImportMerger, QualityHostingContractsReader, QualityHostingPriceListReader, UnitPriceCatalog};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
+use CommonToolkit\Helper\Data\{CryptoHelper, DateHelper, JsonHelper};
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Facades\{DB, Log};
 use Throwable;
@@ -34,6 +34,15 @@ use Throwable;
  * Einkaufskatalog; Gültigkeiten schließen sich je Produkt lückenlos an.
  */
 final class MarketplaceImporter {
+    public const CHANGE_NEW = 'new';
+
+    public const CHANGE_CHANGED = 'changed';
+
+    public const CHANGE_UNCHANGED = 'unchanged';
+
+    /** Vergleichsfelder der Vorschau in Anzeigereihenfolge; `other` = nur Hash-Felder (Bezeichnung, Intervall, Laufzeit). */
+    public const CHANGE_FIELDS = ['quantity', 'price', 'status', 'starts_on', 'ends_on', 'other'];
+
     public function __construct(
         private readonly MarketplacePurchasesReader $telekomReader,
         private readonly QualityHostingContractsReader $qualityHostingReader,
@@ -44,7 +53,167 @@ final class MarketplaceImporter {
         private readonly PeriodPlanner $planner,
         private readonly ResaleArticleCandidates $candidates,
         private readonly ProductNameMatcher $matcher = new ProductNameMatcher(),
+        private readonly ?AllocationDeriver $allocations = null,
+        private readonly ?LinkProposer $proposer = null,
     ) {}
+
+    /**
+     * Vorschau ohne Schreiben (Feature 185, MVP-1418): liest die Dateien wie der
+     * Import und stellt jede Position dem Bestand gegenüber — neu, geändert
+     * (Menge, Preis, Status, Beginn, Ende) oder unverändert; dazu je Anbieter
+     * die planbaren Abos, die die Datei nicht mehr nennt. Halter werden hier
+     * nicht aufgelöst (das legt Endkunden an), nur der vorhandene gezeigt.
+     *
+     * @param  array<string, array{name: string, path: string, stored?: string|null}>  $files  Schlüssel: ResaleImport::KIND_*
+     * @return array{kinds: array<string, array{kind: string, label: string, file: string, export_date: string|null, error: string|null, issues: list<string>, counts: array{new: int, changed: int, unchanged: int, missing: int}, rows: list<array<string, mixed>>, missing: list<array<string, mixed>>}>, pricelist: array{file: string, rows: int, error: string|null}|null, total: array{new: int, changed: int, unchanged: int, missing: int}}
+     */
+    public function preview(Organization $organization, array $files, ?CarbonImmutable $reference = null, SubscriptionProvider $genericProvider = SubscriptionProvider::Other): array {
+        $reference ??= ResalePeriod::today();
+        /** @var array<string, array{file: string, export_date: string|null, error: string|null}> $meta */
+        $meta = [];
+        /** @var array<string, list<string>> $issues */
+        $issues = [];
+        /** @var array<string, array<string, int>> $counts Art → Änderung → Zähler */
+        $counts = [];
+        /** @var array<string, list<array<string, mixed>>> $rows */
+        $rows = [];
+        /** @var array<string, list<array<string, mixed>>> $missing */
+        $missing = [];
+        $imports = [];
+        foreach ([ResaleImport::KIND_PURCHASES, ResaleImport::KIND_CONTRACTS, ResaleImport::KIND_GENERIC] as $kind) {
+            if (! isset($files[$kind])) {
+                continue;
+            }
+            $meta[$kind] = ['file' => $files[$kind]['name'], 'export_date' => self::exportDateOf($files[$kind]['name'])?->toDateString(), 'error' => null];
+            $issues[$kind] = [];
+            $counts[$kind] = [];
+            $rows[$kind] = [];
+            $missing[$kind] = [];
+            try {
+                $parsed = match ($kind) {
+                    ResaleImport::KIND_PURCHASES => $this->telekomReader->read($files[$kind]['path'], $files[$kind]['name']),
+                    ResaleImport::KIND_CONTRACTS => $this->qualityHostingReader->read($files[$kind]['path'], $files[$kind]['name']),
+                    default => $this->genericReader->read($files[$kind]['path'], $genericProvider, $files[$kind]['name']),
+                };
+                $imports[$kind] = $parsed;
+                $issues[$kind] = array_map('strval', $parsed->issues);
+            } catch (Throwable $e) {
+                $meta[$kind]['error'] = $e->getMessage();
+            }
+        }
+
+        if ($imports !== []) {
+            $merged = $this->merger->merge(...array_values($imports));
+            $catalog = UnitPriceCatalog::fromEntitlements($merged->entitlements);
+            $successorOf = $this->successorsOf($merged);
+            /** @var array<string, array<string, true>> $seen Anbieter → Kennungen der Datei */
+            $seen = [];
+            /** @var array<string, array<string, true>> $providersByKind */
+            $providersByKind = [];
+            foreach ($merged->entitlements as $entitlement) {
+                $kind = self::kindOf($entitlement);
+                if (! isset($counts[$kind])) {
+                    continue;
+                }
+                $provider = $this->provider($entitlement);
+                if ($provider === SubscriptionProvider::DomainReselling) {
+                    $issues[$kind][] = (string) __('resale.import_issues.domain_provider', ['line' => $entitlement->sourceLine, 'company' => $entitlement->company->name, 'product' => $entitlement->edition]);
+
+                    continue;
+                }
+                $plan = $this->plan($entitlement, $catalog, $successorOf, $reference);
+                $seen[$provider->value][$plan['external_id']] = true;
+                $providersByKind[$kind][$provider->value] = true;
+                $existing = ResaleSubscription::query()->withoutGlobalScopes()
+                    ->where('organization_id', $organization->id)
+                    ->where('provider', $provider->value)
+                    ->where('external_id', $plan['external_id'])
+                    ->first();
+                $changes = $existing === null ? [] : self::changesOf($existing, $plan);
+                $change = $existing === null ? self::CHANGE_NEW : ($changes === [] ? self::CHANGE_UNCHANGED : self::CHANGE_CHANGED);
+                $counts[$kind][$change] = ($counts[$kind][$change] ?? 0) + 1;
+                $rows[$kind][] = [
+                    'line' => $entitlement->sourceLine,
+                    'external_id' => $plan['external_id'],
+                    'company' => $entitlement->company->name,
+                    'product' => $entitlement->edition,
+                    'quantity' => $plan['quantity'],
+                    'starts_on' => $plan['attributes']['starts_on'],
+                    'ends_on' => $plan['attributes']['ends_on'],
+                    'status' => $plan['status'],
+                    'unit_fee' => $plan['unit_fee']->withScale(4),
+                    'change' => $change,
+                    'changes' => $changes,
+                    'previous' => $existing === null ? null : [
+                        'quantity' => (int) $existing->quantity,
+                        'starts_on' => $existing->starts_on->toDateString(),
+                        'ends_on' => $existing->ends_on?->toDateString(),
+                        'status' => $existing->status,
+                        'unit_fee' => $existing->provider_unit_price ?? $existing->purchase_unit_price,
+                    ],
+                    'price_follows' => $existing !== null && in_array('price', $changes, true) && self::purchaseFollowsProvider($existing),
+                    'holder' => $existing?->hasHolder() === true ? $existing->holderLabel() : null,
+                ];
+            }
+            foreach ($providersByKind as $kind => $providers) {
+                foreach (array_keys($providers) as $providerValue) {
+                    $gone = ResaleSubscription::query()->withoutGlobalScopes()
+                        ->where('organization_id', $organization->id)
+                        ->where('provider', $providerValue)
+                        ->whereNotNull('external_id')
+                        ->planning()
+                        ->whereNotIn('external_id', array_keys($seen[$providerValue] ?? []))
+                        ->orderBy('label')
+                        ->get();
+                    foreach ($gone as $subscription) {
+                        $missing[$kind][] = [
+                            'subscription' => $subscription,
+                            'label' => $subscription->label,
+                            'external_id' => (string) $subscription->external_id,
+                            'holder' => $subscription->hasHolder() ? $subscription->holderLabel() : null,
+                            'status' => $subscription->status,
+                            'ends_on' => $subscription->ends_on?->toDateString(),
+                        ];
+                    }
+                }
+            }
+        }
+
+        $pricelist = null;
+        if (isset($files[ResaleImport::KIND_PRICELIST])) {
+            $pricelist = ['file' => $files[ResaleImport::KIND_PRICELIST]['name'], 'rows' => 0, 'error' => null];
+            try {
+                $pricelist['rows'] = count($this->priceListReader->read($files[ResaleImport::KIND_PRICELIST]['path'], $files[ResaleImport::KIND_PRICELIST]['name'])->entries);
+            } catch (Throwable $e) {
+                $pricelist['error'] = $e->getMessage();
+            }
+        }
+
+        $kinds = [];
+        $total = ['new' => 0, 'changed' => 0, 'unchanged' => 0, 'missing' => 0];
+        foreach ($meta as $kind => $info) {
+            $kindCounts = [
+                'new' => $counts[$kind][self::CHANGE_NEW] ?? 0,
+                'changed' => $counts[$kind][self::CHANGE_CHANGED] ?? 0,
+                'unchanged' => $counts[$kind][self::CHANGE_UNCHANGED] ?? 0,
+                'missing' => count($missing[$kind]),
+            ];
+            $kinds[$kind] = [
+                'kind' => $kind,
+                'label' => (string) __('resale.import.kind.' . $kind),
+                'file' => $info['file'],
+                'export_date' => $info['export_date'],
+                'error' => $info['error'],
+                'issues' => $issues[$kind],
+                'counts' => $kindCounts,
+                'rows' => $rows[$kind],
+                'missing' => $missing[$kind],
+            ];
+            $total = ['new' => $total['new'] + $kindCounts['new'], 'changed' => $total['changed'] + $kindCounts['changed'], 'unchanged' => $total['unchanged'] + $kindCounts['unchanged'], 'missing' => $total['missing'] + $kindCounts['missing']];
+        }
+
+        return ['kinds' => $kinds, 'pricelist' => $pricelist, 'total' => $total];
+    }
 
     /**
      * @param  array<string, array{name: string, path: string, stored?: string|null}>  $files  Schlüssel: ResaleImport::KIND_*
@@ -122,21 +291,16 @@ final class MarketplaceImporter {
         $catalog = UnitPriceCatalog::fromEntitlements($import->entitlements);
         $stored = CompanyMapping::targetsFor($organization);
         $articles = $this->candidates->for((int) $organization->id);
-        $successorOf = [];
-        foreach ($import->links as $link) {
-            $successorOf[$this->externalKey($link->predecessor)] = $this->externalKey($link->successor);
-        }
+        $successorOf = $this->successorsOf($import);
+        /** @var array<string, array{provider: SubscriptionProvider, record: ResaleImport|null, entries: list<PriceListEntry>}> $priceChanges Anbieterpreis geändert → Katalogzeile */
+        $priceChanges = [];
 
         /** @var array<string, array<string, int>> $counters */
         $counters = [];
         /** @var array<string, ResaleSubscription> $byKey */
         $byKey = [];
         foreach ($import->entitlements as $entitlement) {
-            $kind = match ($entitlement->source) {
-                MarketplaceEntitlement::SOURCE_TELEKOM => ResaleImport::KIND_PURCHASES,
-                MarketplaceEntitlement::SOURCE_QUALITYHOSTING => ResaleImport::KIND_CONTRACTS,
-                default => ResaleImport::KIND_GENERIC,
-            };
+            $kind = self::kindOf($entitlement);
             $counters[$kind] ??= ['rows_created' => 0, 'rows_updated' => 0, 'rows_unchanged' => 0, 'rows_unassigned' => 0];
             $provider = $this->provider($entitlement);
             if ($provider === SubscriptionProvider::DomainReselling) {
@@ -145,28 +309,12 @@ final class MarketplaceImporter {
 
                 continue;
             }
-            $externalId = $entitlement->entitlementId;
-            $quantity = $entitlement->quantity ?? $catalog->quantityOf($entitlement);
-            $unitFee = $entitlement->unitFee ?? $catalog->unitPriceOf($entitlement);
-            $hasSuccessor = isset($successorOf[$this->externalKey($entitlement)]);
-            $status = $this->status($entitlement, $hasSuccessor, $reference);
-
-            // Einkaufspreis und Status stehen nicht im Hash: der Preis wird nur
-            // gesetzt, solange keiner gepflegt ist; der Status hängt am Stichtag.
-            $attributes = [
-                'kind' => SubscriptionKind::License,
-                'label' => $entitlement->edition,
-                'company_name' => $entitlement->company->name,
-                'external_order_id' => $entitlement->orderId !== '' ? $entitlement->orderId : null,
-                'quantity' => $quantity,
-                'starts_on' => $entitlement->startsOn->toDateString(),
-                'ends_on' => $entitlement->endsOn?->toDateString(),
-                'term_months' => $entitlement->termMonths(),
-                'interval' => $entitlement->frequency,
-                'renewal' => $entitlement->endsOn === null ? RenewalMode::Auto : RenewalMode::Cancel,
-                'currency' => $unitFee->getCurrency()->value,
-            ];
-            $hash = (string) CryptoHelper::hash(JsonHelper::encode($attributes));
+            $plan = $this->plan($entitlement, $catalog, $successorOf, $reference);
+            $externalId = $plan['external_id'];
+            $attributes = $plan['attributes'];
+            $hash = $plan['hash'];
+            $status = $plan['status'];
+            $unitFee = $plan['unit_fee'];
 
             $subscription = ResaleSubscription::query()->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
@@ -174,7 +322,7 @@ final class MarketplaceImporter {
                 ->where('external_id', $externalId)
                 ->first();
 
-            DB::transaction(function () use (&$subscription, &$counters, $kind, $organization, $provider, $externalId, $attributes, $hash, $status, $unitFee, $entitlement, $stored, $articles, $records, $reference): void {
+            DB::transaction(function () use (&$subscription, &$counters, &$priceChanges, $kind, $organization, $provider, $externalId, $attributes, $hash, $status, $unitFee, $entitlement, $stored, $articles, $records, $reference): void {
                 $isNew = $subscription === null;
                 $subscription ??= new ResaleSubscription(['organization_id' => $organization->id, 'provider' => $provider, 'external_id' => $externalId]);
                 $unchanged = ! $isNew && $subscription->raw_hash === $hash && $subscription->status === $status;
@@ -183,9 +331,30 @@ final class MarketplaceImporter {
                     $subscription->raw_hash = $hash;
                     $subscription->status = $status;
                 }
-                if ($subscription->purchase_unit_price === null) {
-                    $subscription->purchase_unit_price = $unitFee->withScale(4);
+                // Einkaufspreis laut Anbieter (Feature 185, MVP-1418): der Abo-Preis folgt, solange er dem
+                // letzten Anbieterpreis entspricht (nicht von Hand gepflegt); eine Preisänderung ist eine
+                // Katalogzeile ab Exportdatum. Beides steht nicht im Hash.
+                $providerPrice = $unitFee->withScale(4);
+                $priceChanged = ! $isNew && $subscription->provider_unit_price !== null && ! $subscription->provider_unit_price->withScale(4)->equals($providerPrice);
+                if ($subscription->purchase_unit_price === null || ($priceChanged && self::purchaseFollowsProvider($subscription))) {
+                    $subscription->purchase_unit_price = $providerPrice;
                 }
+                if ($priceChanged) {
+                    $unchanged = false;
+                    $priceChanges[$provider->value] ??= ['provider' => $provider, 'record' => $records[$kind] ?? null, 'entries' => []];
+                    $priceChanges[$provider->value]['entries'][] = new PriceListEntry(
+                        product: $entitlement->edition,
+                        termMonths: $entitlement->termMonths(),
+                        interval: $entitlement->frequency,
+                        pricePerMonth: $providerPrice->dividedBy(max(1, self::intervalMonths($entitlement->frequency))),
+                        uvpPerMonth: null,
+                        pricePerInterval: $providerPrice,
+                        uvpPerInterval: null,
+                        offerKey: '',
+                        sourceLine: $entitlement->sourceLine,
+                    );
+                }
+                $subscription->provider_unit_price = $providerPrice;
                 $subscription->import_id = $records[$kind]->id ?? $subscription->import_id;
                 $subscription->last_seen_at = CarbonImmutable::now();
 
@@ -224,6 +393,14 @@ final class MarketplaceImporter {
             $byKey[$this->externalKey($entitlement)] = $subscription;
         }
 
+        // Preisänderungen des Anbieters als Katalogzeilen ab Exportdatum (aus dem Dateinamen), sonst Stichtag.
+        foreach ($priceChanges as $change) {
+            if ($change['record'] !== null) {
+                $validFrom = self::exportDateOf($change['record']->file_name) ?? $reference;
+                $this->upsertPriceList($organization, $change['record'], $change['entries'], $validFrom, $change['provider']);
+            }
+        }
+
         // Ablösung: Nachfolger verknüpfen, sobald beide Seiten gespeichert sind.
         foreach ($successorOf as $predecessorKey => $successorKey) {
             $predecessor = $byKey[$predecessorKey] ?? null;
@@ -240,7 +417,22 @@ final class MarketplaceImporter {
                     $predecessor->forceFill(['customer_id' => $successor->customer_id, 'foreign_customer_id' => $successor->foreign_customer_id, 'is_own_holding' => $successor->is_own_holding])->save();
                 }
                 $this->carryAssignments($predecessor, $successor, $reference);
+                $this->allocations?->carry($predecessor, $successor);
             });
+        }
+        // Aufteilungen der Lizenzkonten auf den neuen Bestand anwenden (neue Verträge, geänderte Mengen).
+        if ($this->allocations !== null && $byKey !== []) {
+            foreach (app(LicenseAccounts::class)->groups($organization) as $group) {
+                $this->allocations->apply($organization, $group, $reference);
+            }
+        }
+        // Neue Verträge und Perioden sofort gegen den Spiegel abgleichen (Feature 185, MVP-1406); ein laufender Lauf blockiert den Import nicht.
+        if ($this->proposer !== null && $byKey !== []) {
+            try {
+                $this->proposer->propose($organization, $reference);
+            } catch (\RuntimeException $e) {
+                Log::info('MarketplaceImporter: Vorschlagslauf übersprungen — ' . $e->getMessage(), ['organization_id' => $organization->id]);
+            }
         }
 
         $result = [];
@@ -349,13 +541,13 @@ final class MarketplaceImporter {
      * @param  CarbonImmutable  $listValidFrom  Gültigkeit der Liste — Zeilen mit eigenem „Gültig ab" gehen vor
      * @return array{rows_total: int, rows_created: int, rows_updated: int, rows_unchanged: int}
      */
-    private function upsertPriceList(Organization $organization, ResaleImport $record, array $entries, CarbonImmutable $listValidFrom): array {
+    private function upsertPriceList(Organization $organization, ResaleImport $record, array $entries, CarbonImmutable $listValidFrom, SubscriptionProvider $provider = SubscriptionProvider::QualityHosting): array {
         $counters = ['rows_total' => count($entries), 'rows_created' => 0, 'rows_updated' => 0, 'rows_unchanged' => 0];
         foreach ($entries as $entry) {
             $validFrom = $entry->validFrom ?? $listValidFrom;
             $existing = ResalePriceEntry::query()->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
-                ->where('provider', SubscriptionProvider::QualityHosting->value)
+                ->where('provider', $provider->value)
                 ->where('product', $entry->product)
                 ->where('term_months', $entry->termMonths)
                 ->where('interval', $entry->interval->value)
@@ -371,7 +563,7 @@ final class MarketplaceImporter {
             if ($existing === null) {
                 ResalePriceEntry::query()->create($values + [
                     'organization_id' => $organization->id,
-                    'provider' => SubscriptionProvider::QualityHosting,
+                    'provider' => $provider,
                     'product' => $entry->product,
                     'term_months' => $entry->termMonths,
                     'interval' => $entry->interval,
@@ -397,7 +589,7 @@ final class MarketplaceImporter {
             $validFrom = $entry->validFrom ?? $listValidFrom;
             $siblings = ResalePriceEntry::query()->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
-                ->where('provider', SubscriptionProvider::QualityHosting->value)
+                ->where('provider', $provider->value)
                 ->where('product', $entry->product)
                 ->where('term_months', $entry->termMonths)
                 ->where('interval', $entry->interval->value);
@@ -413,6 +605,119 @@ final class MarketplaceImporter {
         }
 
         return $counters;
+    }
+
+    /**
+     * Was aus einer Position wird — gemeinsam für Import und Vorschau. Einkaufspreis
+     * und Status stehen nicht im Hash: der Status hängt am Stichtag.
+     *
+     * @param  array<string, string>  $successorOf
+     * @return array{external_id: string, attributes: array<string, mixed>, hash: string, status: SubscriptionStatus, unit_fee: Money, quantity: int}
+     */
+    private function plan(MarketplaceEntitlement $entitlement, UnitPriceCatalog $catalog, array $successorOf, CarbonImmutable $reference): array {
+        $quantity = $entitlement->quantity ?? $catalog->quantityOf($entitlement);
+        $unitFee = $entitlement->unitFee ?? $catalog->unitPriceOf($entitlement);
+        $attributes = [
+            'kind' => SubscriptionKind::License,
+            'label' => $entitlement->edition,
+            'company_name' => $entitlement->company->name,
+            'external_order_id' => $entitlement->orderId !== '' ? $entitlement->orderId : null,
+            // Kundennummer beim Anbieter (Lizenzkonto, Feature 185); Telekom: Owner-Company-ID.
+            'provider_account' => mb_substr($entitlement->company->key, 0, 64),
+            'quantity' => $quantity,
+            'starts_on' => $entitlement->startsOn->toDateString(),
+            'ends_on' => $entitlement->endsOn?->toDateString(),
+            'term_months' => $entitlement->termMonths(),
+            'interval' => $entitlement->frequency,
+            'renewal' => $entitlement->endsOn === null ? RenewalMode::Auto : RenewalMode::Cancel,
+            'currency' => $unitFee->getCurrency()->value,
+        ];
+
+        return [
+            'external_id' => $entitlement->entitlementId,
+            'attributes' => $attributes,
+            'hash' => (string) CryptoHelper::hash(JsonHelper::encode($attributes)),
+            'status' => $this->status($entitlement, isset($successorOf[$this->externalKey($entitlement)]), $reference),
+            'unit_fee' => $unitFee,
+            'quantity' => (int) $quantity,
+        ];
+    }
+
+    /**
+     * Geänderte Felder gegenüber dem Bestand (Vorschau): Menge, Preis, Status, Beginn, Ende; `other` nur Hash-Felder.
+     *
+     * @param  array{external_id: string, attributes: array<string, mixed>, hash: string, status: SubscriptionStatus, unit_fee: Money, quantity: int}  $plan
+     * @return list<string>
+     */
+    private static function changesOf(ResaleSubscription $existing, array $plan): array {
+        $changes = [];
+        if ((int) $existing->quantity !== $plan['quantity']) {
+            $changes[] = 'quantity';
+        }
+        $known = $existing->provider_unit_price ?? $existing->purchase_unit_price;
+        if ($known === null || ! $known->withScale(4)->equals($plan['unit_fee']->withScale(4))) {
+            $changes[] = 'price';
+        }
+        if ($existing->status !== $plan['status']) {
+            $changes[] = 'status';
+        }
+        if ($existing->starts_on->toDateString() !== $plan['attributes']['starts_on']) {
+            $changes[] = 'starts_on';
+        }
+        if ($existing->ends_on?->toDateString() !== $plan['attributes']['ends_on']) {
+            $changes[] = 'ends_on';
+        }
+        if ($changes === [] && $existing->raw_hash !== $plan['hash']) {
+            $changes[] = 'other';
+        }
+
+        return $changes;
+    }
+
+    /** Folgt der Einkaufspreis dem Anbieter (nicht von Hand gepflegt)? Ohne bekannten Anbieterpreis nur, wenn keiner gesetzt ist. */
+    public static function purchaseFollowsProvider(ResaleSubscription $subscription): bool {
+        if ($subscription->purchase_unit_price === null) {
+            return true;
+        }
+
+        return $subscription->provider_unit_price !== null && $subscription->purchase_unit_price->withScale(4)->equals($subscription->provider_unit_price->withScale(4));
+    }
+
+    /** Stand der Datei aus dem Dateinamen (`2026-10-26_Export.xlsx`, `Export 26.10.2026.csv`), sonst null. */
+    public static function exportDateOf(string $fileName): ?CarbonImmutable {
+        foreach (['/(\d{4}-\d{2}-\d{2})/', '/(\d{2}\.\d{2}\.\d{4})/'] as $pattern) {
+            if (preg_match($pattern, $fileName, $m) !== 1) {
+                continue;
+            }
+            $iso = DateHelper::normalizeToIso($m[1]);
+            if ($iso !== null) {
+                return CarbonImmutable::parse($iso)->startOfDay();
+            }
+        }
+
+        return null;
+    }
+
+    private static function intervalMonths(BillingFrequency $frequency): int {
+        return $frequency === BillingFrequency::Yearly ? 12 : 1;
+    }
+
+    private static function kindOf(MarketplaceEntitlement $entitlement): string {
+        return match ($entitlement->source) {
+            MarketplaceEntitlement::SOURCE_TELEKOM => ResaleImport::KIND_PURCHASES,
+            MarketplaceEntitlement::SOURCE_QUALITYHOSTING => ResaleImport::KIND_CONTRACTS,
+            default => ResaleImport::KIND_GENERIC,
+        };
+    }
+
+    /** @return array<string, string> Vorgänger-Schlüssel → Nachfolger-Schlüssel */
+    private function successorsOf(PurchasesImport $import): array {
+        $successorOf = [];
+        foreach ($import->links as $link) {
+            $successorOf[$this->externalKey($link->predecessor)] = $this->externalKey($link->successor);
+        }
+
+        return $successorOf;
     }
 
     private function provider(MarketplaceEntitlement $entitlement): SubscriptionProvider {

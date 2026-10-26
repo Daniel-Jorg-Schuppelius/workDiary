@@ -21,7 +21,7 @@
             </span>
             <div class="flex items-center gap-1">
                 <x-icon-btn icon="list" tone="ghost" size="sm"
-                            :href="route('finance.resale.index', ['customer' => $customer->sqid])"
+                            :href="route('finance.resale.subscriptions', ['customer' => $customer->sqid])"
                             show-label>{{ __('resale.customer_panel.all') }}</x-icon-btn>
                 <x-icon-btn icon="compare_arrows" tone="ghost" size="sm"
                             :href="route('finance.resale.reconcile.show', $customer)"
@@ -98,7 +98,7 @@
                         </td>
                         <td class="text-sm">{{ $license->foreignCustomer?->name ?? __('resale.holder.customer') }}</td>
                         <td class="tabular-nums text-sm">{{ $license->sold_on->fdate() }}</td>
-                        <td class="text-sm">{{ $license->invoice_reference ?? '—' }}</td>
+                        <td class="text-sm">@include('finance.resale.licenses._invoice_cell', ['assignment' => $license])</td>
                         <td class="text-right">
                             @can(\App\Enums\User\Permission::ResellingKeysView->value)
                                 <x-icon-btn icon="key" size="xs" tone="ghost" data-entry-modal-trigger

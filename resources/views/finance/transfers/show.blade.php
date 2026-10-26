@@ -426,6 +426,13 @@
                             {{ trim((string) $item->source->description) ?: __('Material') }}
                             <span class="block text-xs text-muted">{{ $item->source->timesheet?->project?->name ?? '' }}</span>
                         </td>
+                    @elseif ($item->source instanceof \App\Models\Reselling\ResalePeriod)
+                        {{-- Abo-Periode (Feature 185, MVP-1422): Abo, Halter und Zeitraum --}}
+                        <td>{{ $item->source->starts_on->fdate() }}</td>
+                        <td>
+                            <a href="{{ route('finance.resale.show', $item->source->subscription->sqid) }}" class="link link-hover">{{ $item->source->subscription->label }}</a>
+                            <span class="block text-xs text-muted">{{ $item->source->subscription->holderLabel() }} · {{ $item->source->label() }}</span>
+                        </td>
                     @else
                         <td>—</td>
                         <td class="text-muted">{{ __('finance.field.source_deleted') }}</td>

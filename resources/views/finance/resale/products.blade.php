@@ -24,26 +24,16 @@
     <x-index-page overflow="clip" :title="__('resale.products.title')" :subtitle="__('resale.products.subtitle')">
 
         @include('finance.resale._tabs')
-        {{-- Serienrechnung bei lokaler Rechnungshoheit (Feature 152): Org-Schalter + Vorlauf; der Lauf ist resale:draft-local. --}}
-        <x-form-group :legend="__('resale.auto_draft.title')" icon="event_repeat" tone="info" cols="1" compact class="mb-3"
-                      :description="__('resale.auto_draft.description')">
-            @if ($canManage)
-                <form method="POST" action="{{ route('finance.resale.auto-draft.store') }}" class="flex flex-wrap items-end gap-3">
-                    @csrf
-                    <x-checkbox-field name="auto_local_drafts" tone="info"
-                                     :label="__('resale.auto_draft.enabled')"
-                                     :checked="(string) old('auto_local_drafts', $autoDrafts ? '1' : '0') === '1'" />
-                    <x-input-field name="lead_days" type="number" min="0" max="90" step="1" inputmode="numeric"
-                                   :label="__('resale.auto_draft.lead_days')"
-                                   :value="old('lead_days', $autoDraftLeadDays)"
-                                   :hint="__('resale.auto_draft.lead_days_hint')" />
-                    <x-icon-btn icon="save" size="sm" tone="primary" type="submit" show-label>{{ __('resale.auto_draft.save') }}</x-icon-btn>
-                </form>
-            @else
-                <p class="text-sm">{{ $autoDrafts ? __('resale.auto_draft.state_on', ['days' => $autoDraftLeadDays]) : __('resale.auto_draft.state_off') }}</p>
-            @endif
-        </x-form-group>
         <p class="text-xs text-muted mb-2">{{ __('resale.products.hint') }}</p>
+        <x-filter-bar :action="route('finance.resale.products')" :reset="route('finance.resale.products')">
+            <input type="search" name="q" value="{{ $filters['q'] }}" class="input input-sm input-bordered w-56"
+                   placeholder="{{ __('resale.products.filter.search') }}" aria-label="{{ __('resale.products.filter.search') }}">
+            <select name="scope" class="select select-sm select-bordered w-64" aria-label="{{ __('resale.products.filter.scope') }}">
+                @foreach ($scopes as $scope)
+                    <option value="{{ $scope }}" @selected($filters['scope'] === $scope)>{{ __('resale.products.filter.' . $scope) }}</option>
+                @endforeach
+            </select>
+        </x-filter-bar>
         {{-- Einstufung je Katalogartikel (MVP-1025): alle Quellen in einer Liste — Artikelstamm, Lexoffice, … --}}
         <x-table scroll="flex" :zebra="true" table-sort="client">
             <x-slot:head>
@@ -54,6 +44,9 @@
                     <x-table.th>{{ __('resale.products.unit') }}</x-table.th>
                     <x-table.th class="text-right">{{ __('resale.products.price') }}</x-table.th>
                     <x-table.th class="text-right" sort type="number">{{ __('resale.products.subscriptions') }}</x-table.th>
+                    @if ($plansAvailable)
+                        <x-table.th class="text-right" sort type="number">{{ __('resale.products.in_plans') }}</x-table.th>
+                    @endif
                     <x-table.th>{{ __('resale.products.detected') }}</x-table.th>
                     <x-table.th>{{ __('resale.products.override') }}</x-table.th>
                 </tr>
@@ -67,6 +60,9 @@
                     <td class="text-sm">{{ $article->unitName ?? '—' }}</td>
                     <td class="text-right tabular-nums whitespace-nowrap">{{ $article->netPrice?->withScale(2)->format() ?? '—' }}</td>
                     <td class="text-right tabular-nums">{{ $row['subscriptions'] }}</td>
+                    @if ($plansAvailable)
+                        <td class="text-right tabular-nums">{{ $row['plans'] > 0 ? $row['plans'] : '—' }}</td>
+                    @endif
                     <td><x-status-badge size="xs" :tone="$row['detected']->tone()" :label="$row['detected']->label()" /></td>
                     <td>
                         @if ($canManage)
@@ -87,7 +83,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty :colspan="8" icon="inventory_2" :title="__('resale.products.empty')" compact />
+                <x-table.empty :colspan="$plansAvailable ? 9 : 8" icon="inventory_2" :title="__('resale.products.empty')" compact />
             @endforelse
         </x-table>
     </x-index-page>

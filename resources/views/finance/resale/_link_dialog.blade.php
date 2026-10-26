@@ -38,6 +38,7 @@
             <option value="{{ $line->key }}" @selected((string) old('line_id') === $line->key) @disabled($row['used'])>
                 {{ $line->voucherNumber }} · {{ $line->voucherDate?->fdate() }}@if ($line->servicePeriodLabel() !== null) · {{ __('resale.reconcile.service_period') }} {{ $line->servicePeriodLabel() }}@endif · {{ __('resale.link_ui.position', ['position' => $line->position]) }} · {{ \Illuminate\Support\Str::limit($line->label(), 40) }} · {{ \App\Services\Reselling\Register\LicenseMonths::label($row['licences'] * $row['per_licence'], $row['per_licence']) }} × {{ $line->unitNet->withScale(2)->format() }}
                 @if ($row['used']) · {{ __('resale.link.line_used') }} @elseif ($row['partly']) · {{ __('resale.invoices.remaining', ['amount' => \App\Services\Reselling\Register\LicenseMonths::label($row['free'], $row['per_licence'])]) }} @endif
+                @if (! \App\Services\Reselling\Register\LinkAudit::fits($line, $period)) · ⚠ {{ __('resale.link_ui.mismatch_hint') }} @endif
             </option>
         @endforeach
     </x-select-field>

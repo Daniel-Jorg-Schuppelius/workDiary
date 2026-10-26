@@ -1,8 +1,10 @@
 ---
 title: "Subscriptions & Licences"
 topic: finance.resale
-version: 2
+version: 5
 keywords:
+    - Import preview
+    - Bulk actions
     - subscription billing
     - recurring services
     - license resale
@@ -243,3 +245,113 @@ new line IDs, confirmed links point to nothing (link without line text,
 period counts as uncovered). The command `lexoffice:repair-resale-links`
 re-attaches such links via invoice number and licence line; what is not
 unambiguous is only listed (--dry-run shows beforehand what would happen).
+
+**License account:** The *License accounts* tab shows per provider account
+(customer number at the provider, including predecessors of a provider
+change) how many licences per product are running, who holds them and which
+licence year is invoiced — as a grid product × holder × year with invoice
+number or "missing". If several companies hold licences of the same account,
+maintain the **allocation** per product ("Märkische Bunker 5 × Exchange from
+18.10.2025"): other holders fill the contract with the largest quantity
+first, then by start; the contract holder keeps the rest. Per-contract
+transfers are derived from this, follow every change and move to the
+successor on a provider change; manual transfers remain possible as an
+exception. The schedule also replans superseded and ended contracts of the
+last three years so a later allocation still changes their target.
+**Findings on links** show lines covering more licence months than they have
+(overbooked) and links whose service period does not meet the period — with
+"Move to …" onto the matching period of the same subscription or "Unlink";
+the link dialog and the quick assignment warn beforehand with ⚠.
+
+**Recurring templates (plan):** If an accounting program issues the invoices,
+recurring invoices are created there as recurring templates. The register
+mirrors them (Lexoffice: daily and after the voucher sync, read-only) and shows
+per template in the license account its status, rhythm, next run and the
+licence lines with the subscriptions they invoice. The subscription ↔ template
+line assignment is proposed by the run (same recipient, article, quantity; with
+several end customers only when named) — you confirm, assign manually or
+remove. Periods of a subscription with a running template are left out of the
+invoice proposal. **Checks stock ↔ plan** report before the invoice: subscription
+without template, template without subscription ("Create subscription from
+template" takes over article, quantity, rhythm and price), differing quantity,
+template running past the subscription end, template paused or ended while the
+subscription runs, next run more than seven days off the period start, last run
+failed — in the tile, the weekly digest and the work queue. Every mirrored
+invoice carries the reference to its template.
+
+**Overview and tabs:** The entry page “Subscriptions & Licences” no longer
+shows the subscription list but a **task list**: due periods without
+invoice (with open amount), unconfirmed proposals, findings on invoice links,
+findings on recurring templates, allocations above the holdings,
+subscriptions without holder, renewals or ends within 30 days and outdated
+provider exports — each row with a count and a jump to the page where the
+decision is made. Next to it the **state**: the last proposal run (with
+“Calculate proposals”) and per provider the last import with its age. The
+tabs follow the workflow: Overview · Licence accounts · Reconciliation ·
+Periods · Inbox │ Subscriptions · Licence stock · Purchasing │ Reports ·
+Prices; product classification and billing live in the ⋯ menu. The
+subscription list is reached via “Subscriptions”.
+
+**Sure and unsure proposals:** The proposal run (hourly and after every
+import) confirms sure matches itself — one voucher whose invoice date lies
+at most 14 days before to 45 days after the period start and which fully
+covers the period with the matching licence count; the confirmation appears
+in the log as “confirmed automatically”. Everything else stays a proposal
+and carries “unsure” with the reason in the tooltip. The periods page
+therefore shows “Unconfirmed proposals” by default; the “Problems only”
+filter and the status tiles remain.
+
+**Bulk actions:** On the periods page you select rows via the checkboxes
+and confirm all proposals at once, waive with one reason for all (“Waive /
+dispute …”) or have a draft created per invoice recipient of the selection.
+Decided and upcoming periods are skipped and counted; every period gets the
+same log entry as with the single action. There is no preselection.
+
+**Product classification with filter:** The classification shows by default
+only subscription products and articles with subscriptions or template
+lines; “All articles”, “Without classification” and the search by name or
+number narrow it down. If an accounting program issues the invoices, each
+article shows in how many active recurring templates it appears.
+
+**Import with preview:** After uploading, the register first shows what the
+import would change — per file new, changed (quantity, price, status, start,
+end with the previous value), unchanged and the plannable subscriptions of
+the provider that the file no longer lists (the import does not end them).
+It is applied only after “Apply”; “Discard” deletes the files. If the
+provider changes a price, the import follows with the subscription’s
+purchase price as long as it equals the last provider price — a manually
+maintained price stays — and writes a catalogue line as of the file date
+(date in the file name such as “2026-10-26_Export.xlsx”, otherwise the import
+day). If a provider’s last import is older than 30 days, the overview shows
+it and the weekly digest reminds you.
+
+**Purchases from the invoice inbox:** In the purchasing tab, use “Map
+suppliers” to map a supplier of the master data to the provider (the name
+gives a suggestion; nothing is mapped automatically). As soon as an incoming
+invoice of this supplier is assigned in the invoice inbox, the register
+takes it over as a purchase: Quality Hosting line by line through the
+invoice reader (contract and term per line), domain providers per domain
+name onto the domain subscription (only if the registrar’s accounting
+journal does not already deliver the costs), all others pro rata onto the
+periods of the invoice month. Every line carries the incoming invoice as
+origin; a second run recognises it by hash. Lines that match no
+subscription remain “without subscription” — the filter “Without
+subscription only” shows them, “Assign subscription” attaches them to the
+right subscription and the period at the document date. `resale:import-incoming
+--since=` catches up assigned invoices retroactively. The licence account
+shows expected and actual purchase and the margin of the last twelve months
+per product; the weekly digest reports subscriptions whose contract price
+differs from the last imported catalogue or provider price.
+
+**Invoice link on unit licenses:** When selling a license from stock you
+pick the invoice line from the accounting program that bills this license;
+the list shows the lines of the chosen customer around the sale date, with
+matching ones (same article or product name) first and suggested. Without a
+line the invoice reference stays free text. License list, batch page and
+customer file show the voucher number of the linked line with a jump to the
+accounting program and the voucher image. A sale that carries neither line nor
+reference after 30 days appears as the check case “Unit licenses without
+invoice” in the overview, in the recipient’s reconciliation and via the
+“Without invoice” filter in the license stock; add the link via “Correct
+sale”. In the customer portal customers see their sold licenses with the
+invoice number, never the key.

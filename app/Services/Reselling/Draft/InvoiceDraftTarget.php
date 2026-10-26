@@ -24,7 +24,7 @@ use Carbon\CarbonImmutable;
  * Perioden stempelt und verknüpft der Kern anhand des {@see DraftResult};
  * ein Ziel kennt keine Bezüge. Registrierung über {@see InvoiceDraftTargets}.
  *
- * @phpstan-type DraftLine array{name: string, description: string, quantity: float, unit_name: string, unit_net: float}
+ * @phpstan-type DraftLine array{name: string, description: string, quantity: float, unit_name: string, unit_net: float, article_ref: string|null}
  * @phpstan-type DraftEntry array{period: ResalePeriod, line: DraftLine}
  */
 interface InvoiceDraftTarget {

@@ -46,6 +46,7 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $lines_sync_failed_at
  * @property int $lines_sync_attempts
  * @property list<string>|null $related_voucher_ids
+ * @property string|null $recurring_template_id Lexoffice-ID der Serienvorlage, aus der die Rechnung entstand (Feature 185)
  * @property-read \Illuminate\Database\Eloquent\Collection<int, LexofficeVoucherLine> $lines
  * @property \CommonToolkit\ValueObjects\Money|null $total_amount
  * @property \CommonToolkit\ValueObjects\Money|null $open_amount
@@ -85,6 +86,7 @@ class LexofficeVoucher extends Model {
         'lines_sync_failed_at',
         'lines_sync_attempts',
         'related_voucher_ids',
+        'recurring_template_id',
         'total_amount',
         'open_amount',
         'net_amount',

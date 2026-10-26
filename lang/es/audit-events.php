@@ -1366,6 +1366,16 @@ return [
         'reopened' => 'Decisión sobre el periodo retirada',
         'linked' => 'Línea de factura asignada manualmente',
         'link_removed' => 'Referencia de factura eliminada',
+        'link_moved' => 'Vínculo de factura movido a otro periodo',
+        'auto_confirmed' => 'Vínculo de factura confirmado automáticamente (coincidencia segura)',
+    ],
+    'resale_account_allocation' => [
+        'saved' => 'Reparto de cuenta de licencias guardado',
+        'removed' => 'Reparto de cuenta de licencias eliminado',
+    ],
+    'resale_plan_link' => [
+        'saved' => 'Plantilla periódica vinculada a una suscripción',
+        'removed' => 'Vínculo con la plantilla periódica eliminado',
     ],
     'resale_subscription' => [
         'rehomed' => 'Titular de la suscripción cambiado',

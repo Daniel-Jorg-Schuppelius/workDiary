@@ -1270,6 +1270,7 @@ return [
             'cancellation' => 'Annullamento',
             'expense' => 'Nota spese',
             'other' => 'Altro documento',
+            'recurring_template' => 'Modello ricorrente',
             'reminder' => 'Sollecito',
         ],
         'origin' => [
@@ -1508,6 +1509,7 @@ return [
         'transfer-channel' => [
             'time' => 'Prestazioni/tempo',
             'material' => 'Prodotti/materiale',
+            'resale' => 'Abbonamenti',
         ],
         'transfer-target' => [
             'lexoffice' => 'Lexoffice',

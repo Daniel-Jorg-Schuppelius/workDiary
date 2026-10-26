@@ -128,6 +128,8 @@ return [
         'amount' => 'Montant',
         'comment' => 'Commentaire',
         'product' => 'Produit',
+        'unit_price' => 'Prix unitaire net',
+        'service_to' => 'Fin de prestation',
         'quantity' => 'Quantité',
         'unit' => 'Unité',
         'unit_price_net' => 'Prix unitaire net',

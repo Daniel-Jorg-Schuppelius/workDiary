@@ -13,11 +13,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Reselling;
 
 use App\Enums\Reselling\LicenseUnitStatus;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reselling\Concerns\ProvidesHolderPicker;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Reselling\{ResaleLicenseAssignment, ResaleLicenseProduct, ResaleLicenseUnit};
-use App\Services\Reselling\License\{LicenseStockException, LicenseStockService};
+use App\Services\Reselling\License\{LicenseInvoiceLinks, LicenseStockException, LicenseStockService};
+use App\Services\Reselling\Mirror\InvoiceMirror;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
@@ -32,8 +34,13 @@ use Illuminate\Validation\ValidationException;
  */
 class LicenseSaleController extends Controller {
     use ProvidesHolderPicker;
+    use ResolvesCurrentOrganization;
 
-    public function __construct(private readonly LicenseStockService $stock) {}
+    public function __construct(
+        private readonly LicenseStockService $stock,
+        private readonly InvoiceMirror $mirror,
+        private readonly LicenseInvoiceLinks $invoiceLinks,
+    ) {}
 
     public function keysEdit(ResaleLicenseUnit $unit): View {
         $unit->load(['batch.product', 'keys', 'activeAssignment']);
@@ -95,11 +102,15 @@ class LicenseSaleController extends Controller {
             default => $available->first(),
         };
 
+        $organization = $this->currentOrganizationOrAbort(404);
+
         return view('finance.resale.licenses._sell_dialog', [
             'product' => $product,
             'available' => $available,
             'suggested' => $suggested,
             'token' => Str::random(32),
+            // Rechnungspositionen des Spiegels (Feature 185, MVP-1427) — die Auswahl je Kunde trifft der Dialog.
+            'invoiceLines' => $this->invoiceLinks->candidates($organization, $product, CarbonImmutable::today()),
         ] + $this->holderPicker());
     }
 
@@ -110,14 +121,20 @@ class LicenseSaleController extends Controller {
             'foreign_customer_id' => ['nullable', 'string', 'max:32'],
             'sold_on' => ['required', 'date_format:Y-m-d'],
             'invoice_reference' => ['nullable', 'string', 'max:80'],
+            'line' => ['nullable', 'string', 'max:64'],
             'token' => ['required', 'string', 'size:32'],
         ]);
         $unit = ResaleLicenseUnit::query()->find(Sqid::decodeOrNumeric(ResaleLicenseUnit::class, $data['unit_id']) ?? 0)
             ?? throw ValidationException::withMessages(['unit_id' => __('resale.license.error.not_available')]);
         [$customer, $foreign] = $this->holder($data);
+        $line = null;
+        if (($data['line'] ?? '') !== '') {
+            $line = $this->mirror->lineByKey($this->currentOrganizationOrAbort(404), (string) $data['line'])
+                ?? throw ValidationException::withMessages(['line' => __('resale.license.error.line_missing')]);
+        }
 
         $assignment = $this->attempt(fn (): ResaleLicenseAssignment => $this->stock->sell(
-            $unit, $customer, $foreign, CarbonImmutable::parse($data['sold_on']), $data['invoice_reference'] ?? null, $data['token'], $this->authUser(),
+            $unit, $customer, $foreign, CarbonImmutable::parse($data['sold_on']), $data['invoice_reference'] ?? null, $data['token'], $this->authUser(), $line,
         ));
 
         return redirect()->route('finance.resale.licenses.batches.show', $unit->batch)
@@ -125,7 +142,13 @@ class LicenseSaleController extends Controller {
     }
 
     public function reassignCreate(ResaleLicenseAssignment $assignment): View {
-        return view('finance.resale.licenses._reassign_dialog', ['assignment' => $assignment->load(['unit.batch', 'customer', 'foreignCustomer'])] + $this->holderPicker());
+        $assignment->load(['unit.batch.product', 'customer', 'foreignCustomer']);
+
+        return view('finance.resale.licenses._reassign_dialog', [
+            'assignment' => $assignment,
+            'invoiceLines' => $this->invoiceLinks->candidates($this->currentOrganizationOrAbort(404), $assignment->unit->batch->product, $assignment->sold_on),
+            'currentLine' => $assignment->mirrorLine()?->key,
+        ] + $this->holderPicker());
     }
 
     public function reassignStore(Request $request, ResaleLicenseAssignment $assignment): RedirectResponse {
@@ -133,10 +156,17 @@ class LicenseSaleController extends Controller {
             'customer_id' => ['required', 'string', 'max:32'],
             'foreign_customer_id' => ['nullable', 'string', 'max:32'],
             'reason' => ['required', 'string', 'max:255'],
+            'invoice_reference' => ['nullable', 'string', 'max:80'],
+            'line' => ['nullable', 'string', 'max:64'],
         ]);
         [$customer, $foreign] = $this->holder($data);
+        $line = null;
+        if (($data['line'] ?? '') !== '') {
+            $line = $this->mirror->lineByKey($this->currentOrganizationOrAbort(404), (string) $data['line'])
+                ?? throw ValidationException::withMessages(['line' => __('resale.license.error.line_missing')]);
+        }
 
-        $next = $this->attempt(fn (): ResaleLicenseAssignment => $this->stock->reassign($assignment, $customer, $foreign, $data['reason'], $this->authUser()));
+        $next = $this->attempt(fn (): ResaleLicenseAssignment => $this->stock->reassign($assignment, $customer, $foreign, $data['reason'], $this->authUser(), $line, $data['invoice_reference'] ?? null));
 
         return redirect()->route('finance.resale.licenses.batches.show', $assignment->unit->batch)
             ->with('success', __('resale.license.flash.reassigned', ['license' => $assignment->unit->label(), 'customer' => $next->holderLabel()]));

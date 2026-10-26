@@ -6,16 +6,21 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Bereichsreiter Reselling (MVP-969). Zähler nur, wo die Übersicht sie mitgibt ($summary). --}}
+{{-- Bereichsreiter Reselling (MVP-969, Reihenfolge nach Ablauf Feature 185): Arbeiten │ Bestand │ Auswerten.
+     Zähler nur, wo die Seite sie mitgibt ($summary); Einstellungen (Produkt-Einstufung, Abrechnung) im ⋯-Menü.
+     Kurze Beschriftungen (resale.tab.*): zehn Reiter mit Seitentiteln wurden bei 1600 px abgeschnitten (Sonde 2026-10-26). --}}
 <x-tab-nav class="flex-none" :items="[
-    ['route' => 'finance.resale.index', 'routeIs' => 'finance.resale.index', 'icon' => 'dashboard', 'label' => __('Übersicht')],
-    ['route' => 'finance.resale.report.index', 'routeIs' => 'finance.resale.report.*', 'icon' => 'insights', 'label' => __('resale.report.title')],
-    ['route' => 'finance.resale.prices', 'routeIs' => 'finance.resale.prices', 'icon' => 'price_check', 'label' => __('resale.prices.title')],
-    ['route' => 'finance.resale.products', 'routeIs' => 'finance.resale.products', 'icon' => 'inventory_2', 'label' => __('resale.products.title')],
-    ['route' => 'finance.resale.licenses.index', 'routeIs' => 'finance.resale.licenses.*', 'icon' => 'key', 'label' => __('resale.license.title')],
-    ['route' => 'finance.resale.purchases.index', 'routeIs' => 'finance.resale.purchases.index', 'icon' => 'shopping_cart', 'label' => __('resale.purchase.title')],
-    ['route' => 'finance.resale.reconcile.index', 'routeIs' => 'finance.resale.reconcile.index', 'icon' => 'compare_arrows', 'label' => __('resale.reconcile.title')],
-    ['route' => 'finance.resale.periods.index', 'routeIs' => 'finance.resale.periods.index', 'icon' => 'fact_check', 'label' => __('resale.periods.title'), 'count' => ($summary['open_periods'] ?? 0) ?: null],
-    ['route' => 'finance.resale.inbox', 'routeIs' => 'finance.resale.inbox', 'icon' => 'inbox', 'label' => __('resale.inbox.title'), 'count' => ($summary['unassigned'] ?? 0) ?: null,
+    ['route' => 'finance.resale.index', 'routeIs' => 'finance.resale.index', 'icon' => 'dashboard', 'label' => __('resale.tab.overview')],
+    ['route' => 'finance.resale.accounts.index', 'routeIs' => 'finance.resale.accounts.*', 'icon' => 'account_balance_wallet', 'label' => __('resale.tab.accounts')],
+    ['route' => 'finance.resale.reconcile.index', 'routeIs' => 'finance.resale.reconcile.*', 'icon' => 'compare_arrows', 'label' => __('resale.tab.reconcile')],
+    ['route' => 'finance.resale.periods.index', 'routeIs' => 'finance.resale.periods.index', 'icon' => 'fact_check', 'label' => __('resale.tab.periods'), 'count' => ($summary['open_periods'] ?? $summary['open'] ?? 0) ?: null],
+    ['route' => 'finance.resale.inbox', 'routeIs' => 'finance.resale.inbox', 'icon' => 'inbox', 'label' => __('resale.tab.inbox'), 'count' => ($summary['unassigned'] ?? 0) ?: null,
      'when' => auth()->user()?->can(\App\Enums\User\Permission::ResellingManage->value) ?? false],
+    ['divider' => true],
+    ['route' => 'finance.resale.subscriptions', 'routeIs' => ['finance.resale.subscriptions', 'finance.resale.show'], 'icon' => 'subscriptions', 'label' => __('resale.tab.subscriptions')],
+    ['route' => 'finance.resale.licenses.index', 'routeIs' => 'finance.resale.licenses.*', 'icon' => 'key', 'label' => __('resale.tab.licenses')],
+    ['route' => 'finance.resale.purchases.index', 'routeIs' => 'finance.resale.purchases.index', 'icon' => 'shopping_cart', 'label' => __('resale.tab.purchases')],
+    ['divider' => true],
+    ['route' => 'finance.resale.report.index', 'routeIs' => 'finance.resale.report.*', 'icon' => 'insights', 'label' => __('resale.tab.reports')],
+    ['route' => 'finance.resale.prices', 'routeIs' => 'finance.resale.prices', 'icon' => 'price_check', 'label' => __('resale.tab.prices')],
 ]" />

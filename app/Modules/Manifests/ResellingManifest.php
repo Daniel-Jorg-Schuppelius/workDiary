@@ -47,6 +47,7 @@ final class ResellingManifest extends Manifest {
     /** @return list<string> */
     public function tables(): array {
         return [
+            'resale_account_allocations',
             'resale_article_classifications',
             'resale_imports',
             'resale_license_assignments',
@@ -56,7 +57,9 @@ final class ResellingManifest extends Manifest {
             'resale_license_units',
             'resale_period_links',
             'resale_periods',
+            'resale_plan_links',
             'resale_price_catalog',
+            'resale_provider_suppliers',
             'resale_purchase_entries',
             'resale_subscriptions',
             'reselling_company_mappings',
@@ -87,7 +90,19 @@ final class ResellingManifest extends Manifest {
             \App\Services\Cockpit\Contracts\CockpitPanel::class => [
                 \App\Services\Reselling\Cockpit\ResaleCockpitPanel::class,
             ],
+            \App\Services\WorkQueue\Contracts\WorkItemSource::class => [
+                \App\Services\Reselling\Plan\PlanWorkItemSource::class,
+            ],
+            // Abo-Perioden als Übergabekanal der Finanzen (Feature 185, MVP-1422).
+            \App\Services\Finance\Contracts\TransferSource::class => [
+                \App\Services\Reselling\Register\ResalePeriodTransferSource::class,
+            ],
         ];
+    }
+
+    /** @return list<string> Übergabe und Faktura-Ziele (Feature 045) für den Rechnungsvorschlag bei externer Hoheit. */
+    public function requires(): array {
+        return ['finance'];
     }
 
     /** @return array<class-string, list<class-string>> */
@@ -95,6 +110,10 @@ final class ResellingManifest extends Manifest {
         return [
             \App\Events\Article\ArticlesMerged::class => [
                 \App\Listeners\Reselling\RepointMergedArticleRefs::class,
+            ],
+            // Feature 185 (MVP-1420): Eingangsrechnung eines Anbieter-Lieferanten wird Einkauf.
+            \App\Events\Invoicing\IncomingInvoiceAssigned::class => [
+                \App\Listeners\Reselling\ImportAssignedProviderInvoice::class,
             ],
         ];
     }

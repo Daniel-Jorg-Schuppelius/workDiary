@@ -33,6 +33,8 @@ enum DocumentKind: string implements HasLabel {
     case Expense = 'expense';
     /** Mahnung oder Zahlungserinnerung zu einem Beleg (MVP-1216) — kein eigener Umsatz. */
     case Reminder = 'reminder';
+    /** Serienvorlage eines Buchhaltungsprogramms (Feature 185, MVP-1426) — Plan, kein Umsatz. */
+    case RecurringTemplate = 'recurring_template';
     case Other = 'other';
 
     public function label(): string {
@@ -46,7 +48,7 @@ enum DocumentKind: string implements HasLabel {
     public function sign(): int {
         return match ($this) {
             self::CreditNote, self::Cancellation, self::DownPaymentDeduction => -1,
-            self::Quote, self::OrderConfirmation, self::DeliveryNote, self::Reminder => 0,
+            self::Quote, self::OrderConfirmation, self::DeliveryNote, self::Reminder, self::RecurringTemplate => 0,
             default => 1,
         };
     }

@@ -435,5 +435,36 @@
                 </x-table>
             </x-card>
         @endif
+
+        {{-- Stücklizenzen ohne Rechnungsbezug (Feature 185, MVP-1428): verkauft, aber nach der Frist ohne Position im Spiegel und ohne Referenz. --}}
+        @if ($unbilledLicenses->isNotEmpty())
+            <x-card :title="__('resale.reconcile.licenses.title')" icon="key_off" :count="$unbilledLicenses->count()" padding="p-0" class="mt-4">
+                <p class="px-4 py-2 text-xs text-muted border-b border-base-300">{{ __('resale.reconcile.licenses.hint', ['days' => \App\Services\Reselling\License\LicenseInvoiceLinks::UNBILLED_DAYS]) }}</p>
+                <x-table bare>
+                    <x-slot:head>
+                        <tr>
+                            <x-table.th>{{ __('resale.license.field.product') }}</x-table.th>
+                            <x-table.th>{{ __('resale.license.field.license') }}</x-table.th>
+                            <x-table.th>{{ __('resale.license.field.holder') }}</x-table.th>
+                            <x-table.th>{{ __('resale.license.field.sold_on') }}</x-table.th>
+                            <x-table.th class="text-right"></x-table.th>
+                        </tr>
+                    </x-slot:head>
+                    @foreach ($unbilledLicenses as $license)
+                        <tr class="hover">
+                            <td class="text-sm">{{ $license->unit->batch->product->name }}</td>
+                            <td class="whitespace-nowrap text-sm"><a href="{{ route('finance.resale.licenses.batches.show', $license->unit->batch) }}" class="link link-hover">{{ $license->unit->label() }}</a></td>
+                            <td class="text-sm">{{ $license->holderLabel() }}</td>
+                            <td class="tabular-nums text-sm whitespace-nowrap">{{ $license->sold_on->fdate() }}</td>
+                            <td class="text-right">
+                                @can(\App\Enums\User\Permission::ResellingManage->value)
+                                    <x-icon-btn icon="swap_horiz" size="xs" tone="ghost" data-entry-modal-trigger :href="route('finance.resale.licenses.assignments.reassign.create', $license)" :title="__('resale.license.action.reassign')" />
+                                @endcan
+                            </td>
+                        </tr>
+                    @endforeach
+                </x-table>
+            </x-card>
+        @endif
     </x-index-page>
 @endsection

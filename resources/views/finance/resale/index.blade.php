@@ -6,17 +6,18 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
-  Reselling-Register (Feature 152, MVP-758): alle Abos mit Halter, Laufzeit,
-  Preisen und der Zahl offener Perioden. Ohne Statusfilter nur planbare Abos
-  (aktiv, gekündigt); beendete und abgelöste über den Filter.
+  Abo-Liste des Reselling-Registers (Feature 152, MVP-758): alle Abos mit
+  Halter, Laufzeit, Preisen und der Zahl offener Perioden. Ohne Statusfilter
+  nur planbare Abos (aktiv, gekündigt); beendete und abgelöste über den
+  Filter. Der Überblick (Aufgabenliste) liegt seit Feature 185 auf dem Index.
 --}}
 @extends('layouts.app')
-@section('title', __('resale.title.index'))
+@section('title', __('resale.title.subscriptions'))
 @section('nav-title', __('resale.title.menu'))
 @include('partials.page-fill')
 
 @section('content')
-    <x-index-page overflow="clip" :subtitle="__('resale.subtitle')">
+    <x-index-page overflow="clip" :title="__('resale.title.subscriptions')" :subtitle="__('resale.subtitle')">
         <x-slot:actions>
             @can(\App\Enums\User\Permission::ResellingManage->value)
                 <x-icon-btn icon="upload" tone="ghost" size="sm" data-entry-modal-trigger
@@ -25,6 +26,11 @@
                 <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger placement="bar"
                             :href="route('finance.resale.create', array_filter(['customer' => $filterCustomer?->sqid]))"
                             show-label>{{ __('resale.action.new') }}</x-icon-btn>
+                {{-- Einstellungen (Feature 185): Abrechnung als Dialog statt Kasten in der Produkt-Einstufung. --}}
+                <x-action-menu icon="settings" :label="__('resale.settings.menu')">
+                    <x-icon-btn icon="event_repeat" tone="ghost" size="sm" data-entry-modal-trigger :href="route('finance.resale.settings.billing')" show-label>{{ __('resale.auto_draft.dialog_title') }}</x-icon-btn>
+                    <x-icon-btn icon="inventory_2" tone="ghost" size="sm" :href="route('finance.resale.products')" show-label>{{ __('resale.products.title') }}</x-icon-btn>
+                </x-action-menu>
             @endcan
         </x-slot:actions>
 
@@ -36,7 +42,7 @@
             <x-kpi-tile :label="__('resale.summary.unassigned')" :value="$summary['unassigned']" :tone="$summary['unassigned'] > 0 ? 'warning' : 'neutral'" />
         </div>
 
-        <x-filter-bar :action="route('finance.resale.index')" :reset="route('finance.resale.index')">
+        <x-filter-bar :action="route('finance.resale.subscriptions')" :reset="route('finance.resale.subscriptions')">
             <input type="search" name="q" value="{{ $filters['q'] }}" class="input input-sm input-bordered w-48"
                    placeholder="{{ __('resale.filter.search') }}" aria-label="{{ __('resale.filter.search') }}">
             <select name="kind" class="select select-sm select-bordered w-40" aria-label="{{ __('resale.field.kind') }}">

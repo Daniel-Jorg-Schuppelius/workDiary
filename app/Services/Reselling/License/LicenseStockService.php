@@ -17,6 +17,7 @@ use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Platform\{Organization, User};
 use App\Models\Reselling\{ResaleLicenseAssignment, ResaleLicenseBatch, ResaleLicenseKey, ResaleLicenseProduct, ResaleLicenseUnit};
 use App\Services\Billing\Purchase\PurchaseDocument;
+use App\Services\Reselling\Mirror\MirrorLine;
 use App\Support\Crypto\BlindIndex;
 use App\Support\Toolkit\CsvFacade;
 use Carbon\CarbonImmutable;
@@ -257,11 +258,14 @@ class LicenseStockService {
      * Genau eine verfügbare Lizenz an einen Kunden. Ein wiederholtes Absenden
      * mit demselben Token liefert den bestehenden Verkauf zurück.
      */
-    public function sell(ResaleLicenseUnit $unit, Customer $customer, ?ForeignCustomer $foreign, CarbonImmutable $soldOn, ?string $invoiceReference, ?string $token, User $actor): ResaleLicenseAssignment {
+    public function sell(ResaleLicenseUnit $unit, Customer $customer, ?ForeignCustomer $foreign, CarbonImmutable $soldOn, ?string $invoiceReference, ?string $token, User $actor, ?MirrorLine $line = null): ResaleLicenseAssignment {
         $this->assertHolder($unit, $customer, $foreign);
+        if ($line !== null && $line->recipientCustomerId !== null && $line->recipientCustomerId !== $customer->id) {
+            throw new LicenseStockException('line_recipient', 'line');
+        }
 
         try {
-            return DB::transaction(function () use ($unit, $customer, $foreign, $soldOn, $invoiceReference, $token, $actor): ResaleLicenseAssignment {
+            return DB::transaction(function () use ($unit, $customer, $foreign, $soldOn, $invoiceReference, $token, $actor, $line): ResaleLicenseAssignment {
                 $previous = $this->byToken($unit, $token);
                 if ($previous !== null) {
                     return $previous;
@@ -271,8 +275,8 @@ class LicenseStockService {
                     throw new LicenseStockException('not_available');
                 }
 
-                $assignment = $this->assign($unit, $customer, $foreign, $soldOn, $invoiceReference, $token, $actor);
-                $unit->audit('resale_license.sold', ['customer_id' => $customer->id, 'foreign_customer_id' => $foreign?->id, 'sold_on' => $soldOn->toDateString()]);
+                $assignment = $this->assign($unit, $customer, $foreign, $soldOn, $invoiceReference ?? $line?->voucherNumber, $token, $actor, $line);
+                $unit->audit('resale_license.sold', ['customer_id' => $customer->id, 'foreign_customer_id' => $foreign?->id, 'sold_on' => $soldOn->toDateString(), 'voucher' => $line?->voucherNumber]);
 
                 return $assignment;
             });
@@ -283,25 +287,32 @@ class LicenseStockService {
     }
 
     /** Falscher Kunde: die Lizenz wechselt nahtlos den Kunden, beide bleiben in der Historie. */
-    public function reassign(ResaleLicenseAssignment $assignment, Customer $customer, ?ForeignCustomer $foreign, string $reason, User $actor): ResaleLicenseAssignment {
+    /** Berichtigen: anderer Halter und/oder Rechnungsbezug (Feature 185, MVP-1427) — gleicher Halter nur mit neuem Bezug. */
+    public function reassign(ResaleLicenseAssignment $assignment, Customer $customer, ?ForeignCustomer $foreign, string $reason, User $actor, ?MirrorLine $line = null, ?string $invoiceReference = null): ResaleLicenseAssignment {
         $this->assertReason($reason);
         $this->assertHolder($assignment->unit, $customer, $foreign);
+        if ($line !== null && $line->recipientCustomerId !== null && $line->recipientCustomerId !== $customer->id) {
+            throw new LicenseStockException('line_recipient', 'line');
+        }
+        $invoiceReference = $invoiceReference !== null && trim($invoiceReference) !== '' ? trim($invoiceReference) : null;
 
-        return DB::transaction(function () use ($assignment, $customer, $foreign, $reason, $actor): ResaleLicenseAssignment {
+        return DB::transaction(function () use ($assignment, $customer, $foreign, $reason, $actor, $line, $invoiceReference): ResaleLicenseAssignment {
             $unit = $this->lockUnit($assignment->unit);
             $current = $unit->activeAssignment;
             if ($current === null || $current->id !== $assignment->id) {
                 throw new LicenseStockException('assignment_ended');
             }
-            if ($current->customer_id === $customer->id && $current->foreign_customer_id === $foreign?->id) {
+            $sameHolder = $current->customer_id === $customer->id && $current->foreign_customer_id === $foreign?->id;
+            $newInvoice = $line !== null || ($invoiceReference !== null && $invoiceReference !== $current->invoice_reference);
+            if ($sameHolder && ! $newInvoice) {
                 throw new LicenseStockException('same_holder', 'customer_id');
             }
 
             $this->end($current, LicenseAssignmentEnd::Corrected, $reason, $actor);
-            $next = $this->assign($unit, $customer, $foreign, $current->sold_on, $current->invoice_reference, null, $actor);
+            $next = $this->assign($unit, $customer, $foreign, $current->sold_on, $invoiceReference ?? ($line !== null ? $line->voucherNumber : null) ?? $current->invoice_reference, null, $actor, $line, $line === null ? $current : null);
             $unit->audit('resale_license.reassigned', [
-                'from' => ['customer_id' => $current->customer_id, 'foreign_customer_id' => $current->foreign_customer_id],
-                'to' => ['customer_id' => $customer->id, 'foreign_customer_id' => $foreign?->id],
+                'from' => ['customer_id' => $current->customer_id, 'foreign_customer_id' => $current->foreign_customer_id, 'invoice' => $current->invoice_reference],
+                'to' => ['customer_id' => $customer->id, 'foreign_customer_id' => $foreign?->id, 'invoice' => $next->invoice_reference, 'voucher' => $line?->voucherNumber],
                 'reason' => $reason,
             ]);
 
@@ -666,7 +677,8 @@ class LicenseStockService {
             ->first();
     }
 
-    private function assign(ResaleLicenseUnit $unit, Customer $customer, ?ForeignCustomer $foreign, CarbonImmutable $soldOn, ?string $invoiceReference, ?string $token, User $actor): ResaleLicenseAssignment {
+    /** `$line`: Rechnungsposition des Spiegels (Feature 185, MVP-1427); `$carryFrom`: Bezug des korrigierten Verkaufs übernehmen. */
+    private function assign(ResaleLicenseUnit $unit, Customer $customer, ?ForeignCustomer $foreign, CarbonImmutable $soldOn, ?string $invoiceReference, ?string $token, User $actor, ?MirrorLine $line = null, ?ResaleLicenseAssignment $carryFrom = null): ResaleLicenseAssignment {
         $assignment = ResaleLicenseAssignment::query()->create([
             'organization_id' => $unit->organization_id,
             'unit_id' => $unit->id,
@@ -675,6 +687,8 @@ class LicenseStockService {
             'foreign_customer_id' => $foreign?->id,
             'sold_on' => $soldOn->toDateString(),
             'invoice_reference' => $invoiceReference !== null && trim($invoiceReference) !== '' ? trim($invoiceReference) : null,
+            'linkable_type' => $line !== null ? $line->morphClass : $carryFrom?->linkable_type,
+            'linkable_id' => $line !== null ? $line->morphId : $carryFrom?->linkable_id,
             'request_token' => $token !== null && $token !== '' ? $token : null,
             'created_by' => $actor->id,
             'updated_by' => $actor->id,

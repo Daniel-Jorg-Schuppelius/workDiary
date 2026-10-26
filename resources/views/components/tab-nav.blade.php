@@ -16,6 +16,7 @@
       routeIs  Pattern oder Pattern-Array für die Aktiv-Erkennung (request()->routeIs)
       active   expliziter Aktiv-Bool (überschreibt routeIs)
       icon     Material-Symbol · count Badge-Zahl · when false blendet den Tab aus
+      divider  true → schmaler Trennstrich zwischen Tab-Gruppen (kein Tab)
 --}}
 @props(['items' => []])
 @php
@@ -26,6 +27,10 @@
 <div role="tablist" {{ $attributes->merge(['class' => 'tabs tabs-box' . ($tabNavHasWidth ? '' : ' w-full')]) }}>
     @foreach ($items as $item)
         @continue(($item['when'] ?? true) === false)
+        @if (! empty($item['divider']))
+            <span class="w-px self-stretch bg-base-300 mx-1" aria-hidden="true"></span>
+            @continue
+        @endif
         @php
             $tabActive = $item['active']
                 ?? (isset($item['routeIs']) && request()->routeIs(...(array) $item['routeIs']));

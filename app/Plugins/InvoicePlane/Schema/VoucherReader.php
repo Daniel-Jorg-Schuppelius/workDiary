@@ -40,4 +40,14 @@ interface VoucherReader {
      * @return list<array<string, mixed>>
      */
     public function invoicesSince(?string $sinceDate, int $offset, int $limit): array;
+
+    /**
+     * Positionen der Rechnungen aus `ip_invoice_items` (Feature 185, MVP-1425):
+     * `invoice_id`, `item_id`, `item_order`, `item_name`, `item_description`,
+     * `item_quantity`, `item_price` (Spalten laut `000_1.0.0.sql`).
+     *
+     * @param  list<int>  $invoiceIds
+     * @return list<array<string, mixed>>
+     */
+    public function invoiceItems(array $invoiceIds): array;
 }

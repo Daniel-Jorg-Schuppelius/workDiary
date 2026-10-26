@@ -1,7 +1,7 @@
 ---
 title: "I miei abbonamenti"
 topic: customer-portal.subscriptions
-version: 2
+version: 3
 keywords:
     - abbonamento
     - licenze
@@ -58,6 +58,10 @@ La sezione **Periodi di fatturazione** elenca i singoli periodi dell'abbonamento
 - **in verifica** – il periodo è ancora in fase di chiarimento.
 
 I periodi derivano da inizio, durata e intervallo dell'abbonamento.
+
+## Licenze vendute
+
+Se il Suo fornitore Le ha venduto licenze singole dal proprio magazzino, la scheda **Licenze vendute** mostra per ogni licenza il prodotto, il numero della licenza nel lotto, il titolare (la Sua azienda o un cliente finale), la data di vendita e il numero della fattura con cui è stata fatturata; se non c’è ancora una fattura compare **ancora nessuna**. Il portale non mostra mai le chiavi di licenza; le riceve personalmente dal Suo fornitore.
 
 ## Limiti
 

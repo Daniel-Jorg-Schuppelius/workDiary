@@ -128,6 +128,8 @@ return [
         'amount' => 'Importo',
         'comment' => 'Commento',
         'product' => 'Prodotto',
+        'unit_price' => 'Prezzo unitario netto',
+        'service_to' => 'Fine prestazione',
         'quantity' => 'Quantità',
         'unit' => 'Unità',
         'unit_price_net' => 'Prezzo unitario netto',

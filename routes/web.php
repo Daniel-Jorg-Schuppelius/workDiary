@@ -3082,12 +3082,19 @@ Route::middleware('auth')->group(function () {
             Route::middleware('can:reselling.manage')->group(function (): void {
                 Route::get('import', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'importCreate'])->name('import.create');
                 Route::get('import/vorlage.csv', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'importTemplate'])->name('import.template');
+                // Import mit Vorschau (Feature 185, MVP-1418): Hochladen zeigt neu/geändert/entfallen, Übernahme erst nach Bestätigung.
                 Route::post('import', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'importStore'])->name('import.store');
+                Route::post('import/uebernehmen', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'importCommit'])->name('import.commit');
+                Route::post('import/verwerfen', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'importDiscard'])->name('import.discard');
                 Route::get('inbox', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'inbox'])->name('inbox');
                 Route::get('inbox/zuordnen', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'assignCreate'])->name('inbox.assign');
                 Route::post('inbox/zuordnen', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'assignStore'])->name('inbox.store');
                 // Perioden und Rechnungsbezüge (MVP-761)
                 Route::post('perioden/vorschlaege', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'propose'])->name('periods.propose');
+                // Sammelaktionen (Feature 185, MVP-1415) — feste Pfade vor {period}.
+                Route::post('perioden/sammel/bestaetigen', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'bulkConfirm'])->name('periods.bulk.confirm');
+                Route::get('perioden/sammel/verzichten', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'bulkWaiveCreate'])->name('periods.bulk.waive.create');
+                Route::post('perioden/sammel/verzichten', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'bulkWaive'])->name('periods.bulk.waive');
                 Route::post('perioden/{period}/bestaetigen', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'confirm'])->name('periods.confirm');
                 Route::get('perioden/{period}/verzichten', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'waiveCreate'])->name('periods.waive.create');
                 Route::post('perioden/{period}/verzichten', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'waive'])->name('periods.waive');
@@ -3095,6 +3102,8 @@ Route::middleware('auth')->group(function () {
                 Route::get('perioden/{period}/bezug', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'linkCreate'])->name('periods.link.create');
                 Route::post('perioden/{period}/bezug', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'linkStore'])->name('periods.link.store');
                 Route::delete('bezuege/{link}', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'linkDestroy'])->name('links.destroy');
+                // Prüffall „zeitlich unpassend" (Feature 185): Bezug auf eine andere Periode desselben Abos verschieben.
+                Route::post('bezuege/{link}/verschieben', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'linkMove'])->name('links.move');
                 Route::post('{subscription}/bezug', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'quickLink'])->name('links.quick');
             });
             Route::get('perioden', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'index'])->name('periods.index')->middleware('can:reselling.view');
@@ -3119,13 +3128,37 @@ Route::middleware('auth')->group(function () {
             Route::post('produkte', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'productsStore'])->name('products.store')->middleware('can:reselling.manage');
             // Serienrechnung bei lokaler Rechnungshoheit: Org-Schalter + Vorlauf (Lauf = resale:draft-local).
             Route::post('produkte/serienrechnung', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'autoDraftSettingsStore'])->name('auto-draft.store')->middleware('can:reselling.manage');
+            Route::get('einstellungen/abrechnung', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'billingSettings'])->name('settings.billing')->middleware('can:reselling.manage');
             Route::get('einkauf', [\App\Http\Controllers\Reselling\ResalePurchaseController::class, 'index'])->name('purchases.index')->middleware('can:reselling.view');
             Route::middleware('can:reselling.manage')->group(function (): void {
                 Route::get('einkauf/neu', [\App\Http\Controllers\Reselling\ResalePurchaseController::class, 'create'])->name('purchases.create');
                 Route::post('einkauf', [\App\Http\Controllers\Reselling\ResalePurchaseController::class, 'store'])->name('purchases.store');
                 Route::get('einkauf/import', [\App\Http\Controllers\Reselling\ResalePurchaseController::class, 'importCreate'])->name('purchases.import.create');
                 Route::post('einkauf/import', [\App\Http\Controllers\Reselling\ResalePurchaseController::class, 'importStore'])->name('purchases.import.store');
+                // Feature 185 (MVP-1419/1420): Lieferant → Anbieter, Einkauf ohne Abo zuordnen — feste Pfade vor {entry}.
+                Route::get('einkauf/lieferanten', [\App\Http\Controllers\Reselling\ResalePurchaseController::class, 'suppliersCreate'])->name('purchases.suppliers.create');
+                Route::post('einkauf/lieferanten', [\App\Http\Controllers\Reselling\ResalePurchaseController::class, 'suppliersStore'])->name('purchases.suppliers.store');
+                Route::delete('einkauf/lieferanten/{mapping}', [\App\Http\Controllers\Reselling\ResalePurchaseController::class, 'suppliersDestroy'])->name('purchases.suppliers.destroy');
+                Route::get('einkauf/{entry}/zuordnen', [\App\Http\Controllers\Reselling\ResalePurchaseController::class, 'assignCreate'])->name('purchases.assign.create');
+                Route::put('einkauf/{entry}/zuordnen', [\App\Http\Controllers\Reselling\ResalePurchaseController::class, 'assignStore'])->name('purchases.assign.store');
                 Route::delete('einkauf/{entry}', [\App\Http\Controllers\Reselling\ResalePurchaseController::class, 'destroy'])->name('purchases.destroy');
+            });
+            // Lizenzkonten (Feature 185, MVP-1400/1401) — vor {subscription}, sonst fängt show den Pfad.
+            Route::prefix('konten')->name('accounts.')->group(function (): void {
+                Route::middleware('can:reselling.view')->group(function (): void {
+                    Route::get('/', [\App\Http\Controllers\Reselling\LicenseAccountController::class, 'index'])->name('index');
+                });
+                Route::middleware('can:reselling.manage')->group(function (): void {
+                    Route::get('aufteilung/{allocation}/bearbeiten', [\App\Http\Controllers\Reselling\LicenseAccountController::class, 'allocationEdit'])->name('allocations.edit');
+                    Route::put('aufteilung/{allocation}', [\App\Http\Controllers\Reselling\LicenseAccountController::class, 'allocationUpdate'])->name('allocations.update');
+                    Route::delete('aufteilung/{allocation}', [\App\Http\Controllers\Reselling\LicenseAccountController::class, 'allocationDestroy'])->name('allocations.destroy');
+                    // Serienvorlagen (Feature 185, MVP-1411): Zuordnung Vorlagenposition ↔ Abo.
+                    Route::delete('vorlage/{link}', [\App\Http\Controllers\Reselling\LicenseAccountController::class, 'planLinkDestroy'])->name('plan.destroy');
+                    Route::post('{account}/vorlage', [\App\Http\Controllers\Reselling\LicenseAccountController::class, 'planLinkStore'])->name('plan.store');
+                    Route::get('{account}/aufteilung/neu', [\App\Http\Controllers\Reselling\LicenseAccountController::class, 'allocationCreate'])->name('allocations.create');
+                    Route::post('{account}/aufteilung', [\App\Http\Controllers\Reselling\LicenseAccountController::class, 'allocationStore'])->name('allocations.store');
+                });
+                Route::get('{account}', [\App\Http\Controllers\Reselling\LicenseAccountController::class, 'show'])->name('show')->middleware('can:reselling.view');
             });
             // Lizenzbestand aus Einkaufspaketen (MVP-1024) — vor {subscription}, sonst fängt show den Pfad.
             Route::prefix('lizenzbestand')->name('licenses.')->group(function (): void {
@@ -3164,8 +3197,11 @@ Route::middleware('auth')->group(function () {
             // Rechnungsentwurf aus Perioden (Buchhaltungsprogramm/lokal): eigenes Recht der Buchhaltung (Review 2026-09-10, A9).
             Route::get('perioden/entwurf', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'draftCreate'])->name('periods.draft.create')->middleware('can:reselling.invoice');
             Route::post('perioden/entwurf', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'draftStore'])->name('periods.draft.store')->middleware('can:reselling.invoice');
+            Route::post('perioden/sammel/entwurf', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'bulkDraft'])->name('periods.bulk.draft')->middleware('can:reselling.invoice');
             Route::middleware('can:reselling.view')->group(function (): void {
-                Route::get('/', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'index'])->name('index');
+                // Überblick als Aufgabenliste (Feature 185, MVP-1414); die Abo-Liste hat ihre eigene Route.
+                Route::get('/', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'overview'])->name('index');
+                Route::get('liste', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'index'])->name('subscriptions');
                 Route::get('{subscription}', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'show'])->name('show');
             });
             Route::middleware('can:reselling.manage')->group(function (): void {

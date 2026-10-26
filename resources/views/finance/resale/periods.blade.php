@@ -8,7 +8,8 @@
 
   Abrechnungsperioden (Feature 152, MVP-761): was berechnet ist und was
   nicht — fällige Perioden aller Abos mit Bezügen, Vorschlägen und
-  Entscheidungen. Standardfilter: Probleme (offen, teilweise, strittig).
+  Entscheidungen. Standardfilter: unbestätigte Vorschläge (Feature 185);
+  Sammelaktionen über die Auswahlspalte (bestätigen, verzichten, Entwurf).
 --}}
 @extends('layouts.app')
 @section('title', __('resale.periods.title'))
@@ -83,7 +84,8 @@
         <x-filter-bar :action="route('finance.resale.periods.index')" :reset="route('finance.resale.periods.index')">
             <input type="search" name="q" value="{{ $filters['q'] }}" class="input input-sm input-bordered w-48"
                    placeholder="{{ __('resale.filter.search') }}" aria-label="{{ __('resale.filter.search') }}">
-            <select name="status" class="select select-sm select-bordered w-44" aria-label="{{ __('resale.field.status') }}">
+            <select name="status" class="select select-sm select-bordered w-56" aria-label="{{ __('resale.field.status') }}">
+                <option value="proposed" @selected($filters['status'] === 'proposed')>{{ __('resale.periods.filter_proposed') }}</option>
                 <option value="problems" @selected($filters['status'] === 'problems')>{{ __('resale.periods.filter_problems') }}</option>
                 <option value="all" @selected($filters['status'] === 'all')>{{ __('resale.periods.filter_all') }}</option>
                 @foreach ($statuses as $status)
@@ -96,9 +98,29 @@
             @endif
         </x-filter-bar>
 
+        {{-- Sammelaktionen (MVP-1415): Wurzel ist ein div, damit die Zeilen ihre eigenen Formulare behalten;
+             die Toolbar-Form bekommt die gewählten ids[] vom Skript (data-bulk-ids-form). --}}
+        <div data-bulk-form class="contents">
+        @if ($canManage)
+            <form method="POST" action="{{ route('finance.resale.periods.bulk.confirm') }}" data-bulk-ids-form class="contents">
+                @csrf
+                <x-bulk-toolbar :label="__('resale.bulk.selected')">
+                    <x-slot:actions>
+                        <x-button type="submit" tone="success" size="sm" icon="task_alt" formaction="{{ route('finance.resale.periods.bulk.confirm') }}">{{ __('resale.bulk.confirm') }}</x-button>
+                        <x-button :href="route('finance.resale.periods.bulk.waive.create')" tone="ghost" size="sm" icon="do_not_disturb_on" data-entry-modal-trigger data-bulk-dialog-link>{{ __('resale.bulk.waive') }}</x-button>
+                        @can(\App\Enums\User\Permission::ResellingInvoice->value)
+                            <x-button type="submit" tone="ghost" size="sm" icon="receipt_long" formaction="{{ route('finance.resale.periods.bulk.draft') }}">{{ __('resale.bulk.draft') }}</x-button>
+                        @endcan
+                    </x-slot:actions>
+                </x-bulk-toolbar>
+            </form>
+        @endif
         <x-table scroll="flex" :zebra="true" table-sort="client">
             <x-slot:head>
                 <tr>
+                    @if ($canManage)
+                        <th class="w-8"><input type="checkbox" class="checkbox checkbox-sm" data-bulk-select-all aria-label="{{ __('Alle auswählen') }}"></th>
+                    @endif
                     <x-table.th sort type="string">{{ __('resale.field.label') }}</x-table.th>
                     <x-table.th sort type="string">{{ __('resale.field.holder') }}</x-table.th>
                     <x-table.th sort type="date">{{ __('resale.field.period') }}</x-table.th>
@@ -111,11 +133,12 @@
                 </tr>
             </x-slot:head>
             @forelse ($periods as $period)
-                @include('finance.resale._period_row', ['period' => $period, 'subscription' => $period->subscription, 'showSubscription' => true, 'canManage' => $canManage, 'today' => $today])
+                @include('finance.resale._period_row', ['period' => $period, 'subscription' => $period->subscription, 'showSubscription' => true, 'canManage' => $canManage, 'today' => $today, 'bulk' => $canManage])
             @empty
-                <x-table.empty :colspan="9" icon="task_alt" :title="__('resale.periods.empty')" compact />
+                <x-table.empty :colspan="$canManage ? 10 : 9" icon="task_alt" :title="__('resale.periods.empty')" compact />
             @endforelse
         </x-table>
+        </div>
         <x-pagination :paginator="$periods" standing />
     </x-index-page>
 @endsection

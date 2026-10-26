@@ -23,6 +23,8 @@ enum LinkOrigin: string implements HasLabel {
     case Proposed = 'proposed';
     case Confirmed = 'confirmed';
     case Manual = 'manual';
+    /** Vom Vorschlagslauf als sicher bestätigt (Feature 185, MVP-1406) — entschieden, aber ohne Nutzer; „Zurücknehmen" löst ihn wie einen Vorschlag. */
+    case Auto = 'auto';
 
     public function label(): string {
         return (string) __('resale.link.origin.' . $this->value);
@@ -33,6 +35,7 @@ enum LinkOrigin: string implements HasLabel {
             self::Proposed => 'info',
             self::Confirmed => 'success',
             self::Manual => 'primary',
+            self::Auto => 'success',
         };
     }
 

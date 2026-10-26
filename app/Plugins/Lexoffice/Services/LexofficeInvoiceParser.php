@@ -34,7 +34,7 @@ final class LexofficeInvoiceParser {
 
     /**
      * @param  array<string, mixed>  $invoice
-     * @return array{currency: CurrencyCode, voucher_text: string, recipient: string, service_from: ?string, service_to: ?string, lines: list<ParsedLine>, issues: list<string>}
+     * @return array{currency: CurrencyCode, voucher_text: string, recipient: string, service_from: ?string, service_to: ?string, lines: list<ParsedLine>, issues: list<string>, recurring_template_id: string}
      */
     public static function parse(array $invoice): array {
         $currency = CurrencyCode::tryFrom((string) ($invoice['totalPrice']['currency'] ?? 'EUR')) ?? CurrencyCode::Euro;
@@ -93,7 +93,7 @@ final class LexofficeInvoiceParser {
             ];
         }
 
-        return ['currency' => $currency, 'voucher_text' => $voucherText, 'recipient' => $recipient, 'service_from' => $serviceFrom, 'service_to' => $serviceTo, 'lines' => $lines, 'issues' => $issues];
+        return ['currency' => $currency, 'voucher_text' => $voucherText, 'recipient' => $recipient, 'service_from' => $serviceFrom, 'service_to' => $serviceTo, 'lines' => $lines, 'issues' => $issues, 'recurring_template_id' => trim((string) ($invoice['recurringTemplateId'] ?? ''))];
     }
 
     /**

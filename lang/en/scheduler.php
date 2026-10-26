@@ -145,6 +145,7 @@ return [
             'materialize_recurrences' => 'Materialize recurring events',
         ],
         'domain' => [
+            'refresh_details' => 'Domain detail refresh (registration date, price) with budget',
             'sync' => 'Domain inventory sync',
             'events' => 'Fetch domain events',
         ],
@@ -162,6 +163,7 @@ return [
         'invoicing' => ['recurring' => 'Generate recurring invoice drafts', 'base_rate_sync' => 'Sync base interest rate from the Bundesbank', 'online_payments_refresh' => 'Reconcile online payments with the payment provider', 'incoming_digest' => 'Notify about incoming invoices awaiting assignment', 'incoming_transfer' => 'Retry incoming invoice transfers'],
         'jtl' => ['sync' => 'JTL Wawi sync'],
         'resale' => [
+            'propose' => 'Resale subscriptions: propose invoice links, confirm sure matches',
             'sync_domains' => 'Resale subscriptions: adopt domains from domain management',
             'sync_purchases' => 'Resale subscriptions: adopt domain accounting entries as purchases',
             'sync_periods' => 'Resale subscriptions: roll billing periods forward',
@@ -170,6 +172,7 @@ return [
             'prune_imports' => 'Resale subscriptions: delete stored import files after the retention period',
         ],
         'lexoffice' => [
+            'sync_recurring_templates' => 'Lexoffice: mirror recurring templates (plan source of subscriptions)',
             'sync_articles' => 'Sync Lexoffice articles',
             'sync_contacts' => 'Sync Lexoffice contacts',
             'sync_vouchers' => 'Sync Lexoffice vouchers',

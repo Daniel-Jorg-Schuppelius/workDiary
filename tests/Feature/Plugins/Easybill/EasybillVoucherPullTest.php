@@ -76,6 +76,17 @@ class EasybillVoucherPullTest extends TestCase {
         $result = app(EasybillVoucherPullService::class)->pull((int) $this->organization->id);
 
         $this->assertSame(['read' => 3, 'created' => 3, 'updated' => 0, 'skipped' => 0], $result);
+        // Positionen aus `items` (Feature 185, MVP-1425): Textzeilen zählen nicht, Beträge in Cent → Dezimal.
+        $invoice = AccountingVoucher::query()->where('external_id', '4711')->firstOrFail();
+        $this->assertNotNull($invoice->lines_synced_at);
+        $lines = $invoice->lines()->get();
+        $this->assertCount(2, $lines);
+        $this->assertSame([1, 2], $lines->pluck('position')->all());
+        $this->assertSame('Microsoft 365 Business Premium', $lines[0]->name);
+        $this->assertSame('247.2000', $lines[0]->unit_net);
+        $this->assertSame('494.40', $lines[0]->total_net);
+        $this->assertSame('MS-BP', $lines[0]->external_article_id);
+        $this->assertSame('Stück', $lines[0]->unit_name);
 
         // Nur buchhalterisch relevante Belegarten werden abgefragt.
         $fake->assertSent(fn (RequestInterface $r): bool => str_contains(
@@ -115,6 +126,8 @@ class EasybillVoucherPullTest extends TestCase {
             self::DOCS => [
                 FakePluginHttp::response($this->fixture('documents.page1.json')),
                 FakePluginHttp::response(['page' => 2, 'pages' => 1, 'limit' => 2, 'total' => 2, 'items' => []]),
+                // Serienvorlagen (type=RECURRING, Feature 185) — keine vorhanden.
+                FakePluginHttp::response(['page' => 1, 'pages' => 1, 'limit' => 2, 'total' => 0, 'items' => []]),
             ],
         ]);
 

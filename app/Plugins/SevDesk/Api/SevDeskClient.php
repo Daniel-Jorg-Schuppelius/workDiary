@@ -314,6 +314,23 @@ class SevDeskClient {
     }
 
     /** @return array<string, mixed> GET /Invoice/{id} — Statusrücklauf. */
+    /**
+     * `GET /Invoice/{invoiceId}/getPositions` (Feature 185, MVP-1425) — alle
+     * Positionen einer Rechnung, Artikel eingebettet (`embed=part`).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function invoicePositions(string $invoiceId): array {
+        $body = (array) $this->guard(
+            $this->api()->requestResponse('get', $this->baseUrl . '/Invoice/' . rawurlencode($invoiceId) . '/getPositions', ['query' => ['embed' => 'part,unity']]),
+            '/Invoice/{id}/getPositions',
+        );
+        $objects = $body['objects'] ?? [];
+
+        return is_array($objects) ? array_values(array_filter($objects, 'is_array')) : [];
+    }
+
+    /** @return array<string, mixed> */
     public function invoice(string $invoiceId): array {
         $body = (array) $this->guard($this->api()->requestResponse('get', $this->baseUrl . '/Invoice/' . rawurlencode($invoiceId)), '/Invoice/{id}');
 

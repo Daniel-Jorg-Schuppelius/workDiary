@@ -16,7 +16,7 @@ use App\Enums\Billing\{DocumentDirection, DocumentKind};
 use App\Enums\Finance\AccountingVoucherState;
 use App\Events\Invoicing\{ExternalInvoiceCancelled, ExternalInvoicePaymentReceived, ExternalInvoicePaymentReverted};
 use App\Models\Customer\Customer;
-use App\Models\Finance\AccountingVoucher;
+use App\Models\Finance\{AccountingVoucher, AccountingVoucherLine};
 use App\Models\Integration\ExternalReference;
 use App\Models\Supplier\Supplier;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -88,6 +88,57 @@ class VoucherMirror {
         if ($before !== null) {
             $this->announcePaymentChange($row, $before[0], $before[1]);
         }
+    }
+
+    /**
+     * Positionen eines gespiegelten Belegs in place (Feature 185, MVP-1424):
+     * je `(voucher_id, position)` eine Zeile, verschwundene Positionen gehen
+     * weg, `lines_synced_at` steht danach auch bei leerer Liste.
+     *
+     * @param  list<MirroredVoucherLine>  $lines
+     * @return int gespeicherte Positionen; 0 ohne gespiegelten Beleg
+     */
+    public function storeLines(int $organizationId, string $pluginId, string $externalId, array $lines): int {
+        $voucher = AccountingVoucher::query()->withoutGlobalScopes()
+            ->where('organization_id', $organizationId)
+            ->where('plugin_id', $pluginId)
+            ->where('external_id', $externalId)
+            ->first();
+        if ($voucher === null) {
+            return 0;
+        }
+        $existing = AccountingVoucherLine::query()->withoutGlobalScopes()->where('voucher_id', $voucher->id)->get()->keyBy('position');
+        $seen = [];
+        foreach ($lines as $line) {
+            $attributes = [
+                'external_article_id' => $line->externalArticleId !== null ? mb_substr($line->externalArticleId, 0, 128) : null,
+                // Katalogschlüssel, sonst `<plugin>:<Fremd-ID>` — Schlüssel für Einstufung und Rechnungsbezug (Feature 185).
+                'article_ref' => $line->articleRef !== null ? mb_substr($line->articleRef, 0, 64) : ($line->externalArticleId !== null ? mb_substr($pluginId . ':' . $line->externalArticleId, 0, 64) : null),
+                'name' => mb_substr($line->name, 0, 255),
+                'description' => $line->description,
+                'quantity' => $line->quantity,
+                'unit_name' => $line->unitName !== null ? mb_substr($line->unitName, 0, 32) : null,
+                'unit_net' => $line->unitNet,
+                'total_net' => $line->totalNet,
+                'tax_rate' => $line->taxRate,
+                'currency' => $line->currency !== '' ? $line->currency : 'EUR',
+            ];
+            $seen[] = $line->position;
+            $current = $existing->get($line->position);
+            if ($current === null) {
+                AccountingVoucherLine::query()->create($attributes + ['organization_id' => $organizationId, 'voucher_id' => $voucher->id, 'position' => $line->position]);
+            } else {
+                $current->fill($attributes)->save();
+            }
+        }
+        foreach ($existing as $position => $stale) {
+            if (! in_array((int) $position, $seen, true)) {
+                $stale->delete();
+            }
+        }
+        $voucher->forceFill(['lines_synced_at' => Carbon::now()])->save();
+
+        return count($lines);
     }
 
     /**
@@ -172,8 +223,9 @@ class VoucherMirror {
     }
 
     /** Dezimalwert eines Fremdsystems (Zahl oder Zahlstring) als Dezimalstring. */
-    public static function decimal(mixed $value): ?string {
-        return is_numeric($value) ? NumberHelper::toUSFormat((float) $value, 2) : null;
+    /** Betrag eines Fremdsystems als Dezimalzeichenkette; Einzelpreise mit vier Stellen (`$decimals = 4`). */
+    public static function decimal(mixed $value, int $decimals = 2): ?string {
+        return is_numeric($value) ? NumberHelper::toUSFormat((float) $value, $decimals) : null;
     }
 
     /** Datumswert eines Fremdsystems als `Y-m-d`; leer/unlesbar → null. */
