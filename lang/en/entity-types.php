@@ -453,6 +453,7 @@ return [
     'RecipeProfile' => 'Recipe profile',
     'RecurrenceRule' => 'Recurrence rule',
     'RentalRateRule' => 'Rental price rule',
+    'RentalTenancy' => 'Tenancy',
     'RentalCase' => 'Rental case',
     'RentalRequest' => 'Rental request',
     'RentalCharge' => 'Rental charge',

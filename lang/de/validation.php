@@ -174,6 +174,17 @@ return [
     ],
 
     'attributes' => [
+        'rental_mode' => 'Vermietungsart',
+        'max_guests' => 'Maximale Gästezahl',
+        'minimum_nights' => 'Mindestaufenthalt (Nächte)',
+        'check_in_time' => 'Anreise ab',
+        'check_out_time' => 'Abreise bis',
+        'rent_amount' => 'Kaltmiete pro Monat',
+        'ancillary_amount' => 'Nebenkosten pro Monat',
+        'profile_id' => 'Wohnung',
+        'arrival' => 'Anreise',
+        'departure' => 'Abreise',
+        'guests' => 'Gäste',
         'lead_id' => 'Lead',
         'run' => 'Rundgang',
         'scanned_at' => 'Scanzeit',

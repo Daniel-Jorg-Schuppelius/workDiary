@@ -1140,6 +1140,47 @@ class DemoBlueprintProvider {
                 'background_title' => 'Demo-Hausmeistereinsatz',
                 'procedure_code' => 'HM_KONTROLLGANG',
             ],
+            DemoIndustry::Vermieter => [
+                'customers' => [
+                    ['name' => 'Familie Muster', 'city' => 'Leipzig'],
+                    ['name' => 'Beispiel Mieter', 'city' => 'Halle'],
+                    ['name' => 'Muster Feriengäste', 'city' => 'Dessau'],
+                ],
+                'projects' => [
+                    0 => ['Wohnungsübergabe Lindenhof', 'Endreinigung Lindenhof'],
+                    1 => ['Einzug Beispielstraße'],
+                    2 => ['Ferienaufenthalt Ostsee', 'Schlüsselübergabe Ostsee'],
+                ],
+                'asset' => [
+                    'name' => 'Ferienwohnung Lindenhof',
+                    'manufacturer' => 'Muster Wohnungsbau',
+                    'model' => 'Lindenhof 1',
+                    'class' => AssetClass::Other,
+                    'location' => 'Objekt Lindenhof',
+                ],
+                'materials' => [
+                    ['sku' => 'VM-LED-E27', 'name' => 'LED-Leuchtmittel E27', 'unit' => 'Stk', 'price' => '4.5000'],
+                    ['sku' => 'VM-REINIGUNG', 'name' => 'Reinigungsmittel', 'unit' => 'Sack', 'price' => '9.9000'],
+                    ['sku' => 'VM-SCHLOSS', 'name' => 'Profilzylinder 30/30', 'unit' => 'Stk', 'price' => '29.0000'],
+                ],
+                'main_case' => [
+                    'title' => 'Wohnungsübergabe Lindenhof — Beispielauftrag',
+                    'content' => 'Wohnungsübergabe mit Zustandsprüfung, Zählerständen und Schlüsselübergabe. Plan: 480 min.',
+                    'time_desc' => 'Demo-Zeiterfassung Wohnungsübergabe',
+                    'open_issue_title' => 'Schließzylinder Wohnungstür ersetzen',
+                    'open_issue_desc' => 'Schließzylinder vor dem nächsten Einzug austauschen.',
+                    'protocol_title' => 'Wohnungsübergabeprotokoll Lindenhof',
+                    'protocol_items' => [
+                        ['label' => 'Wohnungszustand geprüft', 'result' => ProtocolItemResult::Ok],
+                        ['label' => 'Zählerstände aufgenommen', 'result' => ProtocolItemResult::Ok],
+                        ['label' => 'Schließzylinder ersetzt', 'result' => ProtocolItemResult::Open],
+                    ],
+                    'comm_subject' => 'Terminabsprache zur Wohnungsübergabe',
+                    'comm_body' => 'Anreisezeit und Schlüsselübergabe mit den Gästen vereinbart.',
+                ],
+                'background_title' => 'Demo-Wohnungsbetreuung',
+                'procedure_code' => 'VM_WOHNUNGSUEBERGABE',
+            ],
         };
     }
 }

@@ -953,6 +953,7 @@ class NavigationRegistry {
                     ['route' => 'rental.calendar', 'label' => __('Verfügbarkeitskalender'), 'icon' => 'calendar_month', 'modal' => false, 'matches' => ['rental.calendar']],
                     ['route' => 'rental.requests.index', 'label' => __('Verleih-Anfragen'), 'icon' => 'mark_email_unread', 'modal' => false, 'matches' => ['rental.requests.*']],
                     ['route' => 'rental.profiles.index', 'label' => __('Gerätepool'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['rental.profiles.*']],
+                    ['route' => 'rental.housing.index', 'label' => __('housing.title'), 'icon' => 'apartment', 'modal' => false, 'matches' => ['rental.housing.*']],
                     ['route' => 'rental.rates.index', 'label' => __('Preislisten'), 'icon' => 'price_change', 'modal' => false, 'matches' => ['rental.rates.*']],
                     ['route' => 'rental.reports.index', 'label' => __('Verleihbericht'), 'icon' => 'query_stats', 'modal' => false, 'matches' => ['rental.reports.*']],
                 ],

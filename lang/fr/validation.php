@@ -174,6 +174,17 @@ return [
     ],
 
     'attributes' => [
+        'rental_mode' => 'Type de location',
+        'max_guests' => 'Nombre maximal de personnes',
+        'minimum_nights' => 'Séjour minimum (nuits)',
+        'check_in_time' => 'Arrivée à partir de',
+        'check_out_time' => 'Départ avant',
+        'rent_amount' => 'Loyer mensuel hors charges',
+        'ancillary_amount' => 'Charges mensuelles',
+        'profile_id' => 'Logement',
+        'arrival' => 'Arrivée',
+        'departure' => 'Départ',
+        'guests' => 'Personnes',
         'lead_id' => 'Lead',
         'run' => 'Ronde',
         'scanned_at' => 'Heure de scan',

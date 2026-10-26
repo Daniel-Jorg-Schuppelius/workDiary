@@ -21021,11 +21021,21 @@ CREATE TABLE `rental_profiles` (
   `notes` text DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
+  `rental_mode` varchar(20) DEFAULT NULL,
+  `public_description` text DEFAULT NULL,
+  `max_guests` smallint(5) unsigned NOT NULL DEFAULT 2,
+  `minimum_nights` smallint(5) unsigned NOT NULL DEFAULT 1,
+  `check_in_time` varchar(5) NOT NULL DEFAULT '15:00',
+  `check_out_time` varchar(5) NOT NULL DEFAULT '10:00',
+  `rent_amount` decimal(12,2) DEFAULT NULL,
+  `ancillary_amount` decimal(12,2) DEFAULT NULL,
+  `currency` varchar(3) NOT NULL DEFAULT 'EUR',
   PRIMARY KEY (`id`),
   UNIQUE KEY `rental_profiles_org_asset_unique` (`organization_id`,`asset_id`),
   KEY `rental_profiles_asset_id_foreign` (`asset_id`),
   KEY `rental_profiles_default_rate_card_id_foreign` (`default_rate_card_id`),
   KEY `rental_profiles_org_group_idx` (`organization_id`,`group_code`),
+  KEY `rental_profiles_rental_mode_index` (`rental_mode`),
   CONSTRAINT `rental_profiles_asset_id_foreign` FOREIGN KEY (`asset_id`) REFERENCES `assets` (`id`) ON DELETE CASCADE,
   CONSTRAINT `rental_profiles_default_rate_card_id_foreign` FOREIGN KEY (`default_rate_card_id`) REFERENCES `rental_rate_cards` (`id`) ON DELETE SET NULL,
   CONSTRAINT `rental_profiles_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
@@ -21140,6 +21150,7 @@ CREATE TABLE `rental_requests` (
   `rental_case_id` bigint(20) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
+  `guests` smallint(5) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `rental_requests_org_status_idx` (`organization_id`,`status`),
   KEY `rental_requests_customer_status_idx` (`customer_id`,`status`),
@@ -21223,6 +21234,36 @@ CREATE TABLE `rental_return_reports` (
   CONSTRAINT `rental_return_reports_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `rental_return_reports_rental_case_id_foreign` FOREIGN KEY (`rental_case_id`) REFERENCES `rental_cases` (`id`) ON DELETE CASCADE,
   CONSTRAINT `rental_return_reports_reported_by_foreign` FOREIGN KEY (`reported_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `rental_tenancies`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `rental_tenancies` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `asset_id` bigint(20) unsigned NOT NULL,
+  `customer_id` bigint(20) unsigned NOT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'requested',
+  `starts_on` date NOT NULL,
+  `ends_on` date DEFAULT NULL,
+  `rent_amount` decimal(12,2) DEFAULT NULL,
+  `ancillary_amount` decimal(12,2) DEFAULT NULL,
+  `deposit_amount` decimal(12,2) DEFAULT NULL,
+  `currency` varchar(3) NOT NULL DEFAULT 'EUR',
+  `note` text DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `rental_tenancies_asset_id_foreign` (`asset_id`),
+  KEY `rental_tenancies_customer_id_foreign` (`customer_id`),
+  KEY `rental_tenancies_created_by_foreign` (`created_by`),
+  KEY `rental_tenancies_organization_id_asset_id_status_index` (`organization_id`,`asset_id`,`status`),
+  CONSTRAINT `rental_tenancies_asset_id_foreign` FOREIGN KEY (`asset_id`) REFERENCES `assets` (`id`),
+  CONSTRAINT `rental_tenancies_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `rental_tenancies_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`),
+  CONSTRAINT `rental_tenancies_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `report_targets`;
@@ -28176,3 +28217,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1031,'2027_03_31_1
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1032,'2027_03_31_171700_add_refunds_deletions_and_timezone_to_prestashop',9);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1033,'2027_03_31_171800_add_foreign_amount_to_firefly_transactions',9);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1034,'2027_03_31_171900_add_source_deletion_and_foreign_amount_to_accounting_vouchers',9);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1035,'2027_04_01_100000_add_housing_rentals',10);

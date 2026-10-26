@@ -453,6 +453,7 @@ return [
     'RecipeProfile' => 'Rezepturprofil',
     'RecurrenceRule' => 'Wiederholungsregel',
     'RentalRateRule' => 'Mietpreisregel',
+    'RentalTenancy' => 'Mietverhältnis',
     'RentalCase' => 'Mietvorgang',
     'RentalRequest' => 'Verleih-Anfrage',
     'RentalCharge' => 'Mietgebühr',

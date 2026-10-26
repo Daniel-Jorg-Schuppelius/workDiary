@@ -2559,6 +2559,17 @@ Route::middleware('auth')->group(function () {
 
         // ── Geräte-/Maschinenverleih (Feature 073, module.rental) ───────
         Route::prefix('verleih')->name('rental.')->group(function (): void {
+            Route::controller(\App\Http\Controllers\Rental\HousingController::class)->prefix('wohnungen')->name('housing.')->group(function (): void {
+                Route::get('/', 'index')->name('index');
+                Route::get('neu', 'create')->name('create');
+                Route::post('/', 'store')->name('store');
+                Route::get('mietverhaeltnisse/neu', 'tenancyCreate')->name('tenancies.create');
+                Route::post('mietverhaeltnisse', 'tenancyStore')->name('tenancies.store');
+                Route::get('mietverhaeltnisse/{tenancy}/bearbeiten', 'tenancyEdit')->name('tenancies.edit');
+                Route::put('mietverhaeltnisse/{tenancy}', 'tenancyUpdate')->name('tenancies.update');
+                Route::get('{profile}/bearbeiten', 'edit')->name('edit');
+                Route::put('{profile}', 'update')->name('update');
+            });
             Route::get('/', [\App\Http\Controllers\Rental\RentalCaseController::class, 'index'])->name('index');
             Route::get('neu', [\App\Http\Controllers\Rental\RentalCaseController::class, 'create'])->name('create');
             Route::post('/', [\App\Http\Controllers\Rental\RentalCaseController::class, 'store'])->name('store');

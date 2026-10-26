@@ -63,6 +63,7 @@ final class RentalManifest extends Manifest {
             'rental_requests',
             'rental_reservations',
             'rental_return_reports',
+            'rental_tenancies',
         ];
     }
 
@@ -91,6 +92,7 @@ final class RentalManifest extends Manifest {
                 'rental.rates.index',
                 'rental.reports.index',
                 'rental.requests.index',
+                'rental.housing.index',
             ],
             'groups' => [],
         ];

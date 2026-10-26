@@ -1571,4 +1571,10 @@ return [
         'authorized' => 'Asistente de IA (MCP) autorizado',
         'write' => 'Creado o modificado mediante asistente de IA (MCP)',
     ],
+    'housing' => [
+        'requested' => 'Alquiler de larga duración solicitado',
+        'activated' => 'Arrendamiento confirmado',
+        'updated' => 'Arrendamiento actualizado',
+        'withdrawn' => 'Solicitud de alquiler retirada',
+    ],
 ];

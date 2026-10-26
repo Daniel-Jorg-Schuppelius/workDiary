@@ -1,8 +1,11 @@
 ---
 title: "Location de matériel"
 topic: rental.overview
-version: 2
+version: 3
 keywords:
+    - bailleur
+    - location de vacances
+    - bail
     - louer du matériel
     - location d'outils
     - location d'engins
@@ -50,3 +53,11 @@ vérifie pendant une location si l'appareil se trouve sur le lieu
 d'intervention : au site de la location avec le rayon défini dans les
 paramètres, sinon dans les géorepérages du client. S'il le quitte, la
 personne responsable et la direction d'équipe sont informées.
+
+## Logements et locations de vacances
+
+Le profil **Bailleurs** recommande le module de location. La vue des logements utilise la période globale et affiche aussi les logements libres. Les baux enregistrent le locataire, le début, la fin facultative, le loyer, les charges et la caution. Un bail confirmé bloque le logement jusqu’au dernier jour inclus, sans limite si la fin est vide. Indiquez la fin au départ ; annuler supprime toute l’occupation.
+
+Accepter une demande de vacances crée une réservation ferme. Le tarif journalier sert de prix par nuit ; le nettoyage final est facultatif. Capacité, séjour minimum et horaires sont contrôlés. Publiez le logement et autorisez les demandes de location pour le client. Les loyers et cautions restent des données administratives du MVP, sans facturation automatique.
+
+Le profil fournit aussi trois procédures (**Remise du logement**, **État des lieux de sortie**, **Changement de locataires**), le **procès-verbal de remise du logement** avec relevés de compteurs et clés, des modèles de contrat pour le bail d’habitation avec ou sans loyer indexé et pour les conditions de location d’un meublé de tourisme, avec des échéances comme le décompte annuel des charges, ainsi que des champs personnalisés du logement (surface, pièces, étage, animaux, diagnostic énergétique). Vous confirmez, refusez ou annulez une location demandée ; une location confirmée peut être annulée. Les locations annulées ou refusées restent inchangées.

@@ -2265,6 +2265,8 @@ return [
         'review_result' => ['effective' => 'Eficaz', 'deviation' => 'Desviación', 'ineffective' => 'Sin efecto'],
     ],
     'rental' => [
+        'rental_mode' => ['long_term' => 'Alquiler de larga duración', 'holiday' => 'Alquiler vacacional', 'both' => 'Alquiler de larga duración y vacacional'],
+        'rental_tenancy_status' => ['requested' => 'Solicitado', 'active' => 'Confirmado', 'cancelled' => 'Cancelado', 'declined' => 'Rechazado'],
         'rental_case_status' => ['draft' => 'Borrador', 'reserved' => 'Reservado', 'handed_over' => 'Entregado', 'overdue' => 'Vencido', 'returned' => 'Devuelto', 'closed' => 'Completado', 'cancelled' => 'Cancelado'],
         'rental_charge_kind' => ['daily_rate' => 'Tarifa diaria', 'hourly_rate' => 'Tarifa horaria', 'flat_rate' => 'Tarifa plana', 'weekend_surcharge' => 'Recargo de fin de semana', 'holiday_surcharge' => 'Recargo por día festivo', 'cleaning' => 'Limpieza', 'consumable' => 'Material de consumo', 'delivery' => 'Entrega/transporte', 'damage' => 'Daño', 'loss' => 'Pérdida', 'discount' => 'Reducción/rebaja', 'other' => 'Varios'],
         'rental_charge_status' => ['draft' => 'Borrador', 'released' => 'Aprobado', 'invoiced' => 'Facturado', 'transferred' => 'Transferido externamente', 'cancelled' => 'Cancelado'],

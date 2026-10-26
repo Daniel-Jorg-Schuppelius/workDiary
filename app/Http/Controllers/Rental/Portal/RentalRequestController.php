@@ -44,7 +44,9 @@ class RentalRequestController extends Controller {
 
         [$from, $to] = $this->rangeFromQuery($request);
 
-        $profiles = $this->service->bookableProfiles($customer);
+        $profiles = $this->service->bookableProfiles($customer)
+            ->filter(fn (\App\Models\Rental\RentalProfile $profile): bool => ! $profile->isHousing())
+            ->values();
         $availability = [];
         $prices = [];
         if ($from !== null && $to !== null && $to->greaterThan($from)) {

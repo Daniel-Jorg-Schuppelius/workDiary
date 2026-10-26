@@ -63,6 +63,7 @@ final class DemoIndustriesTest extends TestCase {
             'veranstaltungstechnik' => [DemoIndustry::Veranstaltungstechnik, 'veranstaltungstechnik', 'aufbau', 'VT_SOUNDCHECK', '#ton', 'Konferenz', 'Line-Array'],
             // Musterbranche 20 (MVP-848).
             'verein' => [DemoIndustry::Verein, 'verein', 'veranstaltung', 'VE_SPORTFEST', '#sportfest', 'Sportfest', 'Vereinsbus'],
+            'vermieter' => [DemoIndustry::Vermieter, 'vermieter', 'wohnungsuebergabe', 'VM_WOHNUNGSUEBERGABE', '#vermietung', 'Wohnungsübergabe', 'Ferienwohnung'],
             // Musterbranchen 21–27 (MVP-1062): Gewerke.
             'maler' => [DemoIndustry::Maler, 'maler', 'innenanstrich', 'MA_ANSTRICH', '#innen', 'Renovierung', 'Fassadengerüst'],
             'dachdecker' => [DemoIndustry::Dachdecker, 'dachdecker', 'sturmschaden', 'DD_DACHPRUEFUNG', '#sturm', 'Sturmschaden', 'Schrägaufzug'],
@@ -85,7 +86,7 @@ final class DemoIndustriesTest extends TestCase {
             $this->assertNotSame('', $industry->label());
             $this->assertStringContainsString('Muster', $industry->companyName());
         }
-        $this->assertCount(27, DemoIndustry::all());
+        $this->assertCount(28, DemoIndustry::all());
     }
 
     /**
@@ -168,7 +169,7 @@ final class DemoIndustriesTest extends TestCase {
         // Demo-Durchlauf läuft auf der Vorlage der Branche und ist abgeschlossen.
         $run = ProcedureRun::query()->withoutGlobalScopes()->where('organization_id', $org->id)->firstOrFail();
         $this->assertSame(ProcedureRunStatus::Completed, $run->status);
-        $this->assertSame($template?->id, $run->templateVersion?->template?->id);
+        $this->assertSame($template->id, $run->templateVersion?->template?->id);
 
         // Branchen-Inhalte sichtbar.
         $title = $this->mainCaseTitle($org);
@@ -244,15 +245,18 @@ final class DemoIndustriesTest extends TestCase {
     }
 
     public function test_seed_command_lists_and_accepts_new_industries(): void {
-        $this->artisan('demo:seed', ['--list' => true])
-            ->expectsOutputToContain('sicherheitsdienst')
+        /** @var \Illuminate\Testing\PendingCommand $list */
+        $list = $this->artisan('demo:seed', ['--list' => true]);
+        $list->expectsOutputToContain('sicherheitsdienst')
             ->expectsOutputToContain('partyservice')
-            ->assertSuccessful();
+            ->assertSuccessful()->run();
 
         $org = Organization::factory()->create(['is_demo' => false]);
         User::factory()->admin()->create(['organization_id' => $org->id]);
 
-        $this->artisan('demo:seed', ['org' => $org->id, '--industry' => 'bau-ausbau'])->assertSuccessful();
+        /** @var \Illuminate\Testing\PendingCommand $seed */
+        $seed = $this->artisan('demo:seed', ['org' => $org->id, '--industry' => 'bau-ausbau']);
+        $seed->assertSuccessful()->run();
 
         $this->assertSame('bau-ausbau', $org->refresh()->settings['demo_industry'] ?? null);
         $this->assertTrue(Customer::query()->withoutGlobalScopes()

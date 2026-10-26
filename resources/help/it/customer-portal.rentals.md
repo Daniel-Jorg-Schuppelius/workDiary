@@ -1,8 +1,10 @@
 ---
 title: "Portale clienti – Noleggio"
 topic: customer-portal.rentals
-version: 2
+version: 3
 keywords:
+    - affittare un appartamento
+    - prenotare una casa vacanze
     - noleggiare attrezzatura
     - noleggio attrezzature
     - richiesta di noleggio
@@ -117,3 +119,7 @@ L'ultima versione firmata viene registrata nell'operazione di noleggio.
 - Nel portale non può prolungare il noleggio, sostituire o restituire
   apparecchi; per questo si rivolga al Suo fornitore.
 - I prezzi indicati sono stime nette dal listino, non una fattura.
+
+## Affittarere appartamenti
+
+Con il profilo **Locatori**, gli appartamenti pubblicati appaiono in **Affittare un appartamento**. Per soggiorni turistici indichi arrivo, partenza e ospiti. Rispetti orari e soggiorno minimo. La prenotazione è confermata dopo accettazione o con prenotazione diretta abilitata. Per locazioni lunghe indichi inizio e fine facoltativa; senza fine la durata è indeterminata. Sono visibili solo le Sue locazioni e richieste; può ritirare quelle aperte. Contatti il locatore per modificare locazioni confermate.

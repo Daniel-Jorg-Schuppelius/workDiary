@@ -1571,4 +1571,10 @@ return [
         'authorized' => 'AI assistant (MCP) authorized',
         'write' => 'Created or changed via AI assistant (MCP)',
     ],
+    'housing' => [
+        'requested' => 'Long-term rental requested',
+        'activated' => 'Tenancy confirmed',
+        'updated' => 'Tenancy updated',
+        'withdrawn' => 'Tenancy request withdrawn',
+    ],
 ];

@@ -208,6 +208,17 @@ return [
     */
 
     'attributes' => [
+        'rental_mode' => 'Rental type',
+        'max_guests' => 'Maximum guests',
+        'minimum_nights' => 'Minimum stay (nights)',
+        'check_in_time' => 'Check-in from',
+        'check_out_time' => 'Check-out by',
+        'rent_amount' => 'Monthly base rent',
+        'ancillary_amount' => 'Monthly ancillary costs',
+        'profile_id' => 'Apartment',
+        'arrival' => 'Arrival',
+        'departure' => 'Departure',
+        'guests' => 'Guests',
         'lead_id' => 'Lead',
         'run' => 'Patrol',
         'scanned_at' => 'Scan time',

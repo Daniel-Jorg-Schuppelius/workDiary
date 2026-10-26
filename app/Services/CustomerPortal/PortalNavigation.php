@@ -60,6 +60,8 @@ final class PortalNavigation {
         $this->add($items, $customer, 'returns', 'service', PortalCapability::Returns, (string) __('claims.portal_return.nav'), 'assignment_return', 'customer.returns.create', ['customer.returns.*']);
         $this->add($items, $customer, 'rentals', 'service', PortalCapability::Rentals, (string) __('Verleih'), 'handyman', 'customer.rentals.index', ['customer.rentals.index', 'customer.rentals.show', 'customer.rentals.confirm']);
         $this->add($items, $customer, 'rental_requests', 'service', PortalCapability::RentalRequests, (string) __('Verleih-Anfrage'), 'event_available', 'customer.rentals.requests.index', ['customer.rentals.requests.*']);
+        $this->add($items, $customer, 'housing', 'service', PortalCapability::RentalRequests, (string) __('housing.portal_title'), 'apartment', 'customer.housing.index', ['customer.housing.*'],
+            $customer->organization?->hasBranchProfile('vermieter') === true);
         $this->add($items, $customer, 'subscriptions', 'finance', PortalCapability::Subscriptions, (string) __('resale_portal.menu'), 'workspace_premium', 'customer.subscriptions.index', ['customer.subscriptions.*']);
         $this->add($items, $customer, 'agreements', 'documents', PortalCapability::Agreements, (string) __('contract-signing.portal.menu'), 'history_edu', 'customer.agreements.index', ['customer.agreements.*']);
         $this->add($items, $customer, 'intakes', 'orders', PortalCapability::Intakes, (string) __('customer_intake.portal.nav'), 'move_to_inbox', 'customer.intakes.index', ['customer.intakes.*']);
@@ -83,7 +85,7 @@ final class PortalNavigation {
             'key' => $key,
             'group' => $group,
             'label' => $label,
-            'description' => (string) __('customer_portal.nav.' . $key),
+            'description' => (string) __($key === 'housing' ? 'housing.portal_subtitle' : 'customer_portal.nav.' . $key),
             'icon' => $icon,
             'route' => $route,
             'routeIs' => $routeIs,

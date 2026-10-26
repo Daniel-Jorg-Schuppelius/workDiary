@@ -1,0 +1,77 @@
+<?php
+/*
+ * Created on   : Mon Oct 26 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : housing.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+declare(strict_types=1);
+
+return [
+    'title' => 'Viviendas y ocupación',
+    'branch_label' => 'Arrendadores / viviendas y alquiler vacacional',
+    'subtitle' => 'Gestione viviendas, alquileres vacacionales, arrendamientos y ocupación en el período seleccionado.',
+    'portal_title' => 'Alquilar vivienda',
+    'portal_subtitle' => 'Solicite una estancia o un alquiler de larga duración. La vivienda se reserva tras la confirmación.',
+    'unit' => 'Vivienda',
+    'create' => 'Añadir vivienda',
+    'edit' => 'Editar vivienda',
+    'mode' => 'Tipo de alquiler',
+    'occupancy' => 'Ocupación en el período',
+    'free' => 'Disponible',
+    'unavailable_status' => 'Ocupado o bloqueado',
+    'portal' => 'Portal de clientes',
+    'published' => 'Publicado',
+    'hidden' => 'No publicado',
+    'range_hint' => 'Ocupación del :from al :to. Cambie el período en la cabecera global.',
+    'address' => 'Dirección / ubicación',
+    'public_description' => 'Descripción en el portal de clientes',
+    'rentable' => 'Disponible para alquiler',
+    'publish' => 'Ofrecer en el portal de clientes',
+    'rent_amount' => 'Alquiler base mensual',
+    'ancillary_amount' => 'Gastos adicionales mensuales',
+    'deposit' => 'Fianza',
+    'max_guests' => 'Número máximo de huéspedes',
+    'minimum_nights' => 'Estancia mínima (noches)',
+    'check_in' => 'Llegada desde',
+    'check_out' => 'Salida hasta',
+    'cleaning_buffer' => 'Margen de limpieza tras salida (horas)',
+    'price_hint' => 'La tarifa estándar contiene el precio por noche como tarifa diaria y la limpieza final, si procede.',
+    'tenancy' => 'Arrendamiento',
+    'tenancies' => 'Arrendamientos y solicitudes',
+    'tenancy_create' => 'Añadir arrendamiento',
+    'tenancy_edit' => 'Editar arrendamiento',
+    'tenant' => 'Inquilino',
+    'starts_on' => 'Inicio del alquiler',
+    'ends_on' => 'Último día (vacío = indefinido)',
+    'open_ended' => 'Indefinido',
+    'tenancy_hint' => 'Un arrendamiento activo bloquea la vivienda hasta el último día incluido. Indique la fecha final al salir; cancelar elimina toda la ocupación.',
+    'saved' => 'Vivienda guardada.',
+    'tenancy_saved' => 'Arrendamiento guardado.',
+    'request_saved' => 'Solicitud guardada. Consulte su estado en el resumen.',
+    'unavailable' => 'Esta vivienda no está disponible para el tipo de alquiler seleccionado.',
+    'occupied' => 'La vivienda está alquilada a largo plazo en el período seleccionado.',
+    'capacity_error' => 'Respete la capacidad, estancia mínima y horarios de llegada y salida.',
+    'empty' => 'Aún no hay viviendas.',
+    'empty_hint' => 'Use «Añadir vivienda» para crear la primera vivienda.',
+    'portal_empty' => 'No hay viviendas publicadas actualmente en el portal.',
+    'no_tenancies' => 'No hay arrendamientos ni solicitudes.',
+    'no_requests' => 'Aún no hay solicitudes de reserva vacacional.',
+    'holiday_requests' => 'Revisar reservas vacacionales',
+    'my_tenancies' => 'Mis arrendamientos y solicitudes',
+    'my_holiday_requests' => 'Mis reservas vacacionales',
+    'arrival' => 'Llegada',
+    'departure' => 'Salida',
+    'guests' => 'Huéspedes',
+    'message' => 'Mensaje al arrendador',
+    'capacity' => 'Hasta :guests huéspedes · mínimo :nights noches',
+    'times' => 'Llegada desde :in · salida hasta :out',
+    'rent_display' => ':rent de alquiler + :costs de gastos al mes',
+    'rent_hint' => 'Valor predeterminado para nuevos arrendamientos. No genera ninguna factura de alquiler.',
+    'closed' => 'Los arrendamientos cancelados o rechazados ya no se pueden modificar.',
+    'not_withdrawable' => 'Esta solicitud ya se ha decidido y no se puede retirar.',
+    'request_withdrawn' => 'Solicitud retirada.',
+];

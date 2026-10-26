@@ -1,0 +1,77 @@
+<?php
+/*
+ * Created on   : Mon Oct 26 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : housing.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+declare(strict_types=1);
+
+return [
+    'title' => 'Appartamenti e occupazione',
+    'branch_label' => 'Locatori / appartamenti e case vacanze',
+    'subtitle' => 'Gestisca appartamenti, case vacanze, locazioni e occupazione nel periodo selezionato.',
+    'portal_title' => 'Affittare un appartamento',
+    'portal_subtitle' => 'Richieda un soggiorno o una locazione a lungo termine. La prenotazione avviene dopo la conferma.',
+    'unit' => 'Appartamento',
+    'create' => 'Aggiungi appartamento',
+    'edit' => 'Modifica appartamento',
+    'mode' => 'Tipo di locazione',
+    'occupancy' => 'Occupazione nel periodo',
+    'free' => 'Disponibile',
+    'unavailable_status' => 'Occupato o bloccato',
+    'portal' => 'Portale clienti',
+    'published' => 'Pubblichito',
+    'hidden' => 'Non pubblicato',
+    'range_hint' => 'Occupazione dal :from al :to. Modifica il periodo nell’intestazione globale.',
+    'address' => 'Indirizzo / posizione',
+    'public_description' => 'Descrizione nel portale clienti',
+    'rentable' => 'Disponibile per la locazione',
+    'publish' => 'Offrire nel portale clienti',
+    'rent_amount' => 'Canone mensile base',
+    'ancillary_amount' => 'Spese accessorie mensili',
+    'deposit' => 'Deposito cauzionale',
+    'max_guests' => 'Numero massimo di ospiti',
+    'minimum_nights' => 'Soggiorno minimo (notti)',
+    'check_in' => 'Arrivo dalle',
+    'check_out' => 'Partenza entro',
+    'cleaning_buffer' => 'Intervallo pulizia dopo partenza (ore)',
+    'price_hint' => 'Il listino standard contiene il prezzo per notte come tariffa giornaliera e la pulizia finale eventuale.',
+    'tenancy' => 'Locazione',
+    'tenancies' => 'Locazioni e richieste',
+    'tenancy_create' => 'Aggiungi locazione',
+    'tenancy_edit' => 'Modifica locazione',
+    'tenant' => 'Inquilino',
+    'starts_on' => 'Inizio locazione',
+    'ends_on' => 'Ultimo giorno (vuoto = indeterminato)',
+    'open_ended' => 'Indeterminato',
+    'tenancy_hint' => 'Una locazione attiva blocca l’appartamento fino all’ultimo giorno incluso. Imposti la fine all’uscita; annullare rimuove l’intera occupazione.',
+    'saved' => 'Appartamento salvato.',
+    'tenancy_saved' => 'Locazione salvata.',
+    'request_saved' => 'Richiesta salvata. Consulti lo stato nel riepilogo.',
+    'unavailable' => 'Questo appartamento non è disponibile per il tipo di locazione scelto.',
+    'occupied' => 'L’appartamento è locato a lungo termine nel periodo selezionato.',
+    'capacity_error' => 'Rispetti la capacità, il soggiorno minimo e gli orari di arrivo e partenza.',
+    'empty' => 'Nessun appartamento creato.',
+    'empty_hint' => 'Utilizzi « Aggiungi appartamento » per creare il primo appartamento.',
+    'portal_empty' => 'Nessun appartamento attualmente pubblicato nel portale.',
+    'no_tenancies' => 'Nessuna locazione o richiesta.',
+    'no_requests' => 'Nessuna prenotazione turistica richiesta.',
+    'holiday_requests' => 'Verifica prenotazioni turistiche',
+    'my_tenancies' => 'Le mie locazioni e richieste',
+    'my_holiday_requests' => 'Le mie prenotazioni turistiche',
+    'arrival' => 'Arrivo',
+    'departure' => 'Partenza',
+    'guests' => 'Ospiti',
+    'message' => 'Messaggio al locatore',
+    'capacity' => 'Fino a :guests ospiti · minimo :nights notti',
+    'times' => 'Arrivo dalle :in · partenza entro :out',
+    'rent_display' => ':rent di canone + :costs di spese al mese',
+    'rent_hint' => 'Valore predefinito per le nuove locazioni. Non genera alcuna fattura di canone.',
+    'closed' => 'Le locazioni annullate o rifiutate non possono più essere modificate.',
+    'not_withdrawable' => 'Questa richiesta è già stata decisa e non può più essere ritirata.',
+    'request_withdrawn' => 'Richiesta ritirata.',
+];

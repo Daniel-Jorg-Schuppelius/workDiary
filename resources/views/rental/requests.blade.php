@@ -49,7 +49,9 @@
                     {{ $request->customer?->name ?? '—' }}
                     <span class="block text-xs text-muted">{{ $request->portalUser?->name }}</span>
                 </td>
-                <td>{{ $request->subjectLabel() }}</td>
+                <td>{{ $request->subjectLabel() }}
+                    @if ($request->guests !== null)<span class="block text-sm text-muted">{{ __('housing.guests') }}: {{ $request->guests }}</span>@endif
+                </td>
                 <td class="max-w-xs whitespace-pre-line text-sm">{{ $request->note ?? '—' }}</td>
                 <td>
                     <x-status-badge size="md" outline :tone="$request->status->tone()">{{ $request->is_direct ? __('rental.portal.direct_status') : $request->status->label() }}</x-status-badge>

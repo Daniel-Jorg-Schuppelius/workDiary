@@ -2270,6 +2270,8 @@ return [
         'review_result' => ['effective' => 'Wirksam', 'deviation' => 'Abweichung', 'ineffective' => 'Unwirksam'],
     ],
     'rental' => [
+        'rental_mode' => ['long_term' => 'Dauervermietung', 'holiday' => 'Ferienvermietung', 'both' => 'Dauer- und Ferienvermietung'],
+        'rental_tenancy_status' => ['requested' => 'Angefragt', 'active' => 'Bestätigt', 'cancelled' => 'Storniert', 'declined' => 'Abgelehnt'],
         'rental_case_status' => ['draft' => 'Entwurf', 'reserved' => 'Reserviert', 'handed_over' => 'Übergeben', 'overdue' => 'Überfällig', 'returned' => 'Zurückgegeben', 'closed' => 'Abgeschlossen', 'cancelled' => 'Storniert'],
         'rental_charge_kind' => ['daily_rate' => 'Tagessatz', 'hourly_rate' => 'Stundensatz', 'flat_rate' => 'Pauschale', 'weekend_surcharge' => 'Wochenendzuschlag', 'holiday_surcharge' => 'Feiertagszuschlag', 'cleaning' => 'Reinigung', 'consumable' => 'Verbrauchsmaterial', 'delivery' => 'Lieferung/Transport', 'damage' => 'Schaden', 'loss' => 'Verlust', 'discount' => 'Minderung/Nachlass', 'other' => 'Sonstiges'],
         'rental_charge_status' => ['draft' => 'Entwurf', 'released' => 'Freigegeben', 'invoiced' => 'Abgerechnet', 'transferred' => 'Extern übergeben', 'cancelled' => 'Storniert'],

@@ -1,0 +1,77 @@
+<?php
+/*
+ * Created on   : Mon Oct 26 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : housing.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+declare(strict_types=1);
+
+return [
+    'title' => 'Wohnungen & Belegung',
+    'branch_label' => 'Vermieter / Wohnungen und Ferienwohnungen',
+    'subtitle' => 'Wohnungen, Ferienwohnungen, Mietverhältnisse und Belegungen im global gewählten Zeitraum verwalten.',
+    'portal_title' => 'Wohnung mieten',
+    'portal_subtitle' => 'Ferienaufenthalt oder langfristige Anmietung anfragen. Eine Anfrage belegt die Wohnung erst nach Bestätigung.',
+    'unit' => 'Wohnung',
+    'create' => 'Wohnung anlegen',
+    'edit' => 'Wohnung bearbeiten',
+    'mode' => 'Vermietungsart',
+    'occupancy' => 'Belegung im Zeitraum',
+    'free' => 'Frei',
+    'unavailable_status' => 'Belegt oder gesperrt',
+    'portal' => 'Kundenportal',
+    'published' => 'Freigegeben',
+    'hidden' => 'Nicht freigegeben',
+    'range_hint' => 'Belegungen vom :from bis :to. Den Zeitraum ändern Sie im globalen Header.',
+    'address' => 'Adresse / Lage',
+    'public_description' => 'Beschreibung im Kundenportal',
+    'rentable' => 'Für Vermietung freigegeben',
+    'publish' => 'Im Kundenportal anbieten',
+    'rent_amount' => 'Kaltmiete pro Monat',
+    'ancillary_amount' => 'Nebenkosten pro Monat',
+    'deposit' => 'Kaution',
+    'max_guests' => 'Maximale Gästezahl',
+    'minimum_nights' => 'Mindestaufenthalt (Nächte)',
+    'check_in' => 'Anreise ab',
+    'check_out' => 'Abreise bis',
+    'cleaning_buffer' => 'Reinigungspuffer nach Abreise (Stunden)',
+    'price_hint' => 'Die Standard-Preisliste enthält den Preis pro Nacht als Tagessatz sowie gegebenenfalls die Endreinigung.',
+    'tenancy' => 'Mietverhältnis',
+    'tenancies' => 'Mietverhältnisse & Anfragen',
+    'tenancy_create' => 'Mietverhältnis anlegen',
+    'tenancy_edit' => 'Mietverhältnis bearbeiten',
+    'tenant' => 'Mieter',
+    'starts_on' => 'Mietbeginn',
+    'ends_on' => 'Letzter Miettag (leer = unbefristet)',
+    'open_ended' => 'Unbefristet',
+    'tenancy_hint' => 'Ein aktives Mietverhältnis blockiert die Wohnung einschließlich des letzten Miettags. Bei Auszug das Mietende setzen; Stornieren hebt die gesamte Belegung auf.',
+    'saved' => 'Wohnung gespeichert.',
+    'tenancy_saved' => 'Mietverhältnis gespeichert.',
+    'request_saved' => 'Anfrage gespeichert. Den aktuellen Status sehen Sie in Ihrer Übersicht.',
+    'unavailable' => 'Diese Wohnung ist für die gewählte Vermietungsart nicht verfügbar.',
+    'occupied' => 'Die Wohnung ist im gewählten Zeitraum dauerhaft vermietet.',
+    'capacity_error' => 'Bitte Gästezahl, Mindestaufenthalt sowie Anreise- und Abreisezeiten der Wohnung beachten.',
+    'empty' => 'Noch keine Wohnungen angelegt.',
+    'empty_hint' => 'Legen Sie über „Wohnung anlegen“ die erste Wohnung oder Ferienwohnung an.',
+    'portal_empty' => 'Derzeit sind keine Wohnungen im Kundenportal freigegeben.',
+    'no_tenancies' => 'Keine Mietverhältnisse oder Anfragen vorhanden.',
+    'no_requests' => 'Noch keine Ferienbuchungen angefragt.',
+    'holiday_requests' => 'Ferienbuchungen prüfen',
+    'my_tenancies' => 'Meine Mietverhältnisse & Anfragen',
+    'my_holiday_requests' => 'Meine Ferienbuchungen',
+    'arrival' => 'Anreise',
+    'departure' => 'Abreise',
+    'guests' => 'Gäste',
+    'message' => 'Nachricht an den Vermieter',
+    'capacity' => 'Bis zu :guests Gäste · mindestens :nights Nächte',
+    'times' => 'Anreise ab :in Uhr · Abreise bis :out Uhr',
+    'rent_display' => ':rent Kaltmiete + :costs Nebenkosten pro Monat',
+    'rent_hint' => 'Vorgabe für neue Mietverhältnisse. Eine Mietabrechnung entsteht daraus nicht.',
+    'closed' => 'Stornierte oder abgelehnte Mietverhältnisse lassen sich nicht mehr ändern.',
+    'not_withdrawable' => 'Diese Anfrage ist bereits entschieden und lässt sich nicht mehr zurücknehmen.',
+    'request_withdrawn' => 'Anfrage zurückgenommen.',
+];

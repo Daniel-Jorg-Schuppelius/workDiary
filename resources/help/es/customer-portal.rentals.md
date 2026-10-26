@@ -1,8 +1,10 @@
 ---
 title: "Portal del cliente – Alquiler"
 topic: customer-portal.rentals
-version: 2
+version: 3
 keywords:
+    - alquilar una vivienda
+    - reservar apartamento vacacional
     - alquilar equipos
     - alquiler de equipos
     - solicitud de alquiler
@@ -116,3 +118,7 @@ Si hay que firmar condiciones de alquiler, las encontrará en **Acuerdos**. La
   equipos; para ello diríjase a su proveedor.
 - Los precios indicados son estimaciones netas de la lista de precios, no una
   factura.
+
+## Alquilar viviendas
+
+Con el perfil **Arrendadores**, las viviendas publicadas aparecen en **Alquilar vivienda**. Para vacaciones indique llegada, salida y huéspedes. Respete horarios y estancia mínima. La reserva es firme tras confirmación o reserva directa habilitada. Para larga duración indique inicio y fin opcional; sin fin es indefinido. Solo ve sus propios arrendamientos y solicitudes y puede retirar solicitudes abiertas. Contacte al arrendador para cambiar arrendamientos confirmados.
