@@ -14,7 +14,7 @@ namespace App\Console\Commands\Reselling;
 
 use App\Models\Platform\Organization;
 use App\Models\Reselling\ResaleSubscription;
-use App\Services\Reselling\Register\{PeriodPlanner, ResaleContractObligationSync};
+use App\Services\Reselling\Register\{LinkProposer, PeriodPlanner, ResaleContractObligationSync};
 use Illuminate\Console\Command;
 
 /**
@@ -27,8 +27,10 @@ class SyncResalePeriodsCommand extends Command {
 
     protected $description = 'Abrechnungsperioden der Reselling-Abos bis zum Planungshorizont anlegen';
 
-    public function handle(PeriodPlanner $planner, ResaleContractObligationSync $obligations): int {
-        $query = ResaleSubscription::query()->withoutGlobalScopes()->planning();
+    public function handle(PeriodPlanner $planner, ResaleContractObligationSync $obligations, LinkProposer $proposer): int {
+        // Auch abgelöste und beendete Verträge der letzten 36 Monate (Feature 185, MVP-1402): eine
+        // spätere Abtretung ändert ihr Soll, sonst bleibt der alte Vertrag ewig „teilweise".
+        $query = ResaleSubscription::query()->withoutGlobalScopes()->replannable();
         if ($this->option('org') !== null) {
             $query->where('organization_id', (int) $this->option('org'));
         }
@@ -59,6 +61,14 @@ class SyncResalePeriodsCommand extends Command {
             }
         }
         $this->info(sprintf('Vertragsobligationen: %d neu, %d aktualisiert, %d geschlossen.', $calendar['created'], $calendar['updated'], $calendar['closed']));
+        // Dritter Schritt (Feature 185, MVP-1406): neue Perioden sofort gegen den Spiegel abgleichen.
+        foreach ($organizations->get() as $organization) {
+            try {
+                $proposer->propose($organization);
+            } catch (\RuntimeException $e) {
+                $this->warn(sprintf('Organisation #%d: %s', $organization->id, $e->getMessage()));
+            }
+        }
 
         return self::SUCCESS;
     }

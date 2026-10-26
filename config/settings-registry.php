@@ -253,6 +253,7 @@ return [
     // Rechnungsempfänger einen lokalen Entwurf aus den fälligen Perioden an
     // (Default aus); lead_days = Perioden schon so viele Tage vor Beginn entwerfen.
     'resale.auto_local_drafts' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false, 'affects' => ['resale.draft_local']],
+    'resale.last_proposal_run_at' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|string'],
     'resale.auto_local_drafts_lead_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:0|max:90', 'fallback' => 0, 'affects' => ['resale.draft_local']],
 
     // =====================================================================

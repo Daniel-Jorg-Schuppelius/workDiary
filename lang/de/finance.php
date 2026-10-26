@@ -130,6 +130,8 @@ return [
         'amount' => 'Betrag',
         'comment' => 'Kommentar',
         'product' => 'Produkt',
+        'unit_price' => 'Einzelpreis netto',
+        'service_to' => 'Leistungsende',
         'quantity' => 'Menge',
         'unit' => 'Einheit',
         'unit_price_net' => 'Einzelpreis netto',

@@ -12,8 +12,6 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Draft;
 
-use App\Models\Customer\Customer;
-
 /**
  * Registry der Entwurfsziele (Feature 152, Review 2026-09-11). Singleton
  * (AppServiceProvider): das lokale Ziel steht immer drin, externe Ziele
@@ -40,14 +38,4 @@ final class InvoiceDraftTargets {
         return $this->targets[LocalInvoiceDraftTarget::KEY] ?? null;
     }
 
-    /** Erstes externes Ziel, das den Empfänger bedient; null ohne passendes Plugin. */
-    public function externalFor(Customer $recipient): ?InvoiceDraftTarget {
-        foreach ($this->targets as $key => $target) {
-            if ($key !== LocalInvoiceDraftTarget::KEY && $target->supports($recipient)) {
-                return $target;
-            }
-        }
-
-        return null;
-    }
 }

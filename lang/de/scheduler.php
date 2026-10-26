@@ -145,6 +145,7 @@ return [
             'materialize_recurrences' => 'Wiederkehrende Events anlegen',
         ],
         'domain' => [
+            'refresh_details' => 'Domain-Detailabgleich (Registrierungsdatum, Preis) mit Budget',
             'sync' => 'Domain-Bestandsabgleich',
             'events' => 'Domain-Ereignisse abrufen',
         ],
@@ -162,6 +163,7 @@ return [
         'invoicing' => ['recurring' => 'Wiederkehrende Rechnungsentwürfe erzeugen', 'base_rate_sync' => 'Basiszinssatz von der Bundesbank abgleichen', 'online_payments_refresh' => 'Online-Zahlungen mit dem Zahlungsanbieter abgleichen', 'incoming_digest' => 'Hinweis auf zuzuordnende Rechnungseingänge', 'incoming_transfer' => 'Übergaben des Rechnungseingangs wiederholen'],
         'jtl' => ['sync' => 'JTL-Wawi-Abgleich'],
         'resale' => [
+            'propose' => 'Reselling-Abos: Rechnungsbezüge vorschlagen, sichere Treffer bestätigen',
             'sync_domains' => 'Reselling-Abos: Domains aus der Domainverwaltung übernehmen',
             'sync_purchases' => 'Reselling-Abos: Domain-Buchungen als Einkaufsbelege übernehmen',
             'sync_periods' => 'Reselling-Abos: Abrechnungsperioden vorrollen',
@@ -170,6 +172,7 @@ return [
             'prune_imports' => 'Reselling-Abos: abgelegte Importdateien nach Ablauf der Aufbewahrung löschen',
         ],
         'lexoffice' => [
+            'sync_recurring_templates' => 'Lexoffice: Serienvorlagen spiegeln (Plan-Quelle der Abos)',
             'sync_articles' => 'Lexoffice-Artikel synchronisieren',
             'sync_contacts' => 'Lexoffice-Kontakte synchronisieren',
             'sync_vouchers' => 'Lexoffice-Belege synchronisieren',

@@ -353,6 +353,9 @@
     max-width: 100%;
     flex-wrap: nowrap;
     overflow-x: auto;
+    /* Ein Scroll-Container darf im Flex-Spaltenlayout der Seitenhülle auf 0 schrumpfen:
+       Unterreiter (Berichte) kollabierten so zu einem Streifen in Scrollbalkenhöhe (Feature 185). */
+    flex-shrink: 0;
     /* dezenter Touch-Scroll ohne sichtbare Leiste, solange nichts überläuft */
     scrollbar-width: thin;
 }

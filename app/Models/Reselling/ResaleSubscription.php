@@ -41,6 +41,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property SubscriptionProvider $provider
  * @property string|null $external_id
  * @property string|null $external_order_id
+ * @property string|null $provider_account Kundennummer beim Anbieter (Lizenzkonto, Feature 185)
  * @property int|null $customer_id
  * @property int|null $foreign_customer_id
  * @property bool $is_own_holding
@@ -56,6 +57,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property BillingFrequency $interval
  * @property RenewalMode $renewal
  * @property Money|null $purchase_unit_price
+ * @property Money|null $provider_unit_price Einkauf laut letztem Anbieter-Export (Feature 185)
  * @property Money|null $sale_unit_price
  * @property CurrencyCode $currency
  * @property SubscriptionStatus $status
@@ -100,6 +102,7 @@ class ResaleSubscription extends Model {
         'provider',
         'external_id',
         'external_order_id',
+        'provider_account',
         'customer_id',
         'foreign_customer_id',
         'is_own_holding',
@@ -113,6 +116,7 @@ class ResaleSubscription extends Model {
         'interval',
         'renewal',
         'purchase_unit_price',
+        'provider_unit_price',
         'sale_unit_price',
         'currency',
         'status',
@@ -140,6 +144,7 @@ class ResaleSubscription extends Model {
         'renewal' => RenewalMode::class,
         'currency' => CurrencyCode::class,
         'purchase_unit_price' => MoneyCast::class . ':currency,4',
+        'provider_unit_price' => MoneyCast::class . ':currency,4',
         'sale_unit_price' => MoneyCast::class . ':currency,4',
         'status' => SubscriptionStatus::class,
         'last_seen_at' => 'immutable_datetime',
@@ -393,6 +398,65 @@ class ResaleSubscription extends Model {
      */
     public function scopePlanning(Builder $query): Builder {
         return $query->whereIn('status', [SubscriptionStatus::Active->value, SubscriptionStatus::Cancelled->value]);
+    }
+
+    /**
+     * Abos, deren Perioden der Zeitplan nachführt (Feature 185, MVP-1402):
+     * planbare Abos und dazu abgelöste oder beendete, deren Laufzeit in den
+     * letzten 36 Monaten endete — eine spätere Abtretung ändert auch deren
+     * Soll, sonst bleibt der alte Vertrag ewig „teilweise".
+     *
+     * @param  Builder<ResaleSubscription>  $query
+     * @return Builder<ResaleSubscription>
+     */
+    public function scopeReplannable(Builder $query, ?CarbonImmutable $reference = null): Builder {
+        $cutoff = ($reference ?? ResalePeriod::today())->subMonthsNoOverflow(36)->toDateString();
+
+        return $query->where(function (Builder $q) use ($cutoff): void {
+            $q->whereIn('status', [SubscriptionStatus::Active->value, SubscriptionStatus::Cancelled->value])
+                ->orWhere(function (Builder $past) use ($cutoff): void {
+                    $past->whereIn('status', [SubscriptionStatus::Superseded->value, SubscriptionStatus::Ended->value])
+                        ->where(static fn(Builder $w) => $w->whereNull('ends_on')->orWhere('ends_on', '>=', $cutoff));
+                });
+        });
+    }
+
+    /** Aus einer Aufteilung des Lizenzkontos abgeleitete Abtretung ({@see ResaleAccountAllocation::DERIVED_PREFIX}). */
+    public function isDerivedAssignment(): bool {
+        return $this->parent_id !== null && str_starts_with((string) $this->sync_status, ResaleAccountAllocation::DERIVED_PREFIX);
+    }
+
+    /** Aufteilung, aus der diese Abtretung abgeleitet ist (null bei manuellen Abtretungen). */
+    public function derivedFromAllocationId(): ?int {
+        if (! $this->isDerivedAssignment()) {
+            return null;
+        }
+
+        return (int) substr((string) $this->sync_status, strlen(ResaleAccountAllocation::DERIVED_PREFIX)) ?: null;
+    }
+
+    /**
+     * Schlüssel des Lizenzkontos dieses Abos beim Anbieter: Kundennummer,
+     * ersatzweise der normalisierte Firmenname. Welches Konto ein Abo im
+     * Register trägt, entscheidet {@see \App\Services\Reselling\Register\LicenseAccounts}
+     * (Vorgänger laufen unter dem Konto ihres Nachfolgers).
+     */
+    public function accountKey(): ?string {
+        $account = $this->provider_account ?? ($this->company_name !== null ? \App\Services\Reselling\Marketplace\MarketplaceCompany::matchKey($this->company_name) : null);
+        if ($account === null || $account === '') {
+            return null;
+        }
+
+        return self::accountKeyOf($this->provider, $account);
+    }
+
+    public static function accountKeyOf(SubscriptionProvider $provider, string $account): string {
+        return $provider->value . ':' . $account;
+    }
+
+    /** Halter als Vergleichsschlüssel wie {@see ResaleAccountAllocation::holderKey()}. */
+    public function holderKey(): string {
+        return ResaleAccountAllocation::holderKeyOf($this->customer_id, $this->foreign_customer_id, (bool) $this->is_own_holding);
     }
 
     /**

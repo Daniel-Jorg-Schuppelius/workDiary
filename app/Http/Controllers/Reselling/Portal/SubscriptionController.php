@@ -17,7 +17,7 @@ use App\Http\Controllers\Concerns\ResolvesPortalUser;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
-use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
+use App\Models\Reselling\{ResaleLicenseAssignment, ResalePeriod, ResaleSubscription};
 use App\Services\Reselling\Register\PeriodPlanner;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
@@ -53,10 +53,21 @@ class SubscriptionController extends Controller {
             $nextPeriods[$subscription->id] = $this->nextPeriodStart($subscription, $today);
         }
 
+        // Verkaufte Stücklizenzen (Feature 185, MVP-1428): Produkt, Lizenz, Halter, Datum, Rechnung — nie der Schlüssel.
+        $licenses = ResaleLicenseAssignment::query()
+            ->where('organization_id', (int) $user->organization_id)
+            ->where('customer_id', $customer->id)
+            ->whereNull('ended_at')
+            ->with(['unit.batch.product', 'foreignCustomer:id,name'])
+            ->orderByDesc('sold_on')->orderByDesc('id')
+            ->limit(200)
+            ->get();
+
         return view('customer.subscriptions.index', [
             'subscriptions' => $subscriptions,
             'nextPeriods' => $nextPeriods,
             'today' => $today,
+            'licenses' => $licenses,
         ]);
     }
 

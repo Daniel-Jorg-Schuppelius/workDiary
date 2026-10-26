@@ -17,6 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Reselling\{AssignResaleLineRequest, RehomeResaleSubscriptionRequest};
 use App\Models\Customer\Customer;
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
+use App\Services\Reselling\License\LicenseInvoiceLinks;
 use App\Services\Reselling\Mirror\InvoiceMirror;
 use App\Services\Reselling\Register\{LinkProposer, PeriodLinker, RecipientReconciler};
 use App\Support\ErrorText;
@@ -33,7 +34,12 @@ use RuntimeException;
 class ResaleReconcileController extends Controller {
     use ResolvesCurrentOrganization;
 
-    public function __construct(private readonly RecipientReconciler $reconciler, private readonly PeriodLinker $linker, private readonly InvoiceMirror $mirror) {}
+    public function __construct(
+        private readonly RecipientReconciler $reconciler,
+        private readonly PeriodLinker $linker,
+        private readonly InvoiceMirror $mirror,
+        private readonly LicenseInvoiceLinks $licenseLinks,
+    ) {}
 
     public function index(Request $request): View {
         $organization = $this->currentOrganizationOrAbort(404);
@@ -77,11 +83,15 @@ class ResaleReconcileController extends Controller {
             $targetsByProduct[$row['product']][] = $row;
         }
 
+        // Stücklizenzen des Empfängers ohne Rechnungsbezug (Feature 185, MVP-1428).
+        $unbilledLicenses = $this->licenseLinks->unbilled($organization, $today, (int) $customer->id);
+
         return view('finance.resale.reconcile_show', [
             'customer' => $customer,
             'today' => $today,
             'allPeriods' => $allPeriods,
             'targetsByProduct' => $targetsByProduct,
+            'unbilledLicenses' => $unbilledLicenses,
         ] + $result);
     }
 

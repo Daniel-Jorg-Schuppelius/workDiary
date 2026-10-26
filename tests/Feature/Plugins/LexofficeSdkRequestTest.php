@@ -15,10 +15,8 @@ namespace Tests\Feature\Plugins;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
-use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
 use App\Plugins\Lexoffice\LexofficePlugin;
-use App\Plugins\Lexoffice\Services\{LexofficeContactLookup, LexofficeDraftInvoiceService, LexofficeInvoiceService};
-use Carbon\CarbonImmutable;
+use App\Plugins\Lexoffice\Services\{LexofficeContactLookup, LexofficeInvoiceService};
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Lexoffice\API\Client;
@@ -53,75 +51,6 @@ final class LexofficeSdkRequestTest extends TestCase {
         );
     }
 
-    private function draftService(): LexofficeDraftInvoiceService {
-        return new LexofficeDraftInvoiceService($this->organization->id);
-    }
-
-    /** InvoicesEndpoint::create() ohne finalize: POST /invoices, Body Feld für Feld wie der bisherige Payload. */
-    public function test_draft_invoice_is_posted_through_the_invoices_endpoint(): void {
-        $fake = FakePluginHttp::fake([
-            'https://api.lexware.io/v1/invoices' => FakePluginHttp::response(['id' => 'draft-1', 'resourceUri' => 'https://api.lexware.io/v1/invoices/draft-1', 'version' => 1], 201),
-        ]);
-
-        $id = $this->draftService()->createDraft(
-            self::CONTACT_ID,
-            [['name' => 'Microsoft 365 Business Basic', 'description' => 'Steuerbüro Kaik, 09.04.2025 – 08.04.2026', 'quantity' => 12.0, 'unit_name' => 'Monat', 'unit_net' => 5.6]],
-            'Rechnung',
-            'Einleitung',
-            '',
-            19.0,
-            'EUR',
-            'net',
-            CarbonImmutable::parse('2026-10-22'),
-        );
-
-        $this->assertSame('draft-1', $id);
-        $this->assertSame(['POST https://api.lexware.io/v1/invoices'], self::sent($fake));
-        $this->assertEquals([
-            'voucherDate' => '2026-10-22T00:00:00.000+01:00',
-            'address' => ['contactId' => self::CONTACT_ID],
-            'lineItems' => [[
-                'type' => 'custom',
-                'name' => 'Microsoft 365 Business Basic',
-                'description' => 'Steuerbüro Kaik, 09.04.2025 – 08.04.2026',
-                'quantity' => 12,
-                'unitName' => 'Monat',
-                'unitPrice' => ['currency' => 'EUR', 'netAmount' => 5.6, 'taxRatePercentage' => 19],
-            ]],
-            'totalPrice' => ['currency' => 'EUR'],
-            'taxConditions' => ['taxType' => 'net'],
-            'shippingConditions' => ['shippingDate' => '2026-10-22T00:00:00.000+01:00', 'shippingType' => 'service'],
-            'title' => 'Rechnung',
-            'introduction' => 'Einleitung',
-        ], json_decode((string) $fake->recorded()[0]['request']->getBody(), true));
-    }
-
-    public function test_draft_invoice_errors_keep_the_lexoffice_message(): void {
-        FakePluginHttp::fake(['https://api.lexware.io/v1/invoices' => FakePluginHttp::response(['message' => 'forbidden'], 403)]);
-
-        try {
-            $this->draftService()->createDraft(self::CONTACT_ID, [['name' => 'A', 'description' => '', 'quantity' => 1.0, 'unit_name' => 'Stk', 'unit_net' => 1.0]], 'R', '', '', 19.0);
-            $this->fail('403 muss durchschlagen.');
-        } catch (LexofficeApiException $e) {
-            $this->assertStringContainsString('(403)', $e->getMessage());
-            $this->assertStringContainsString('Rechnungen anlegen', $e->getMessage());
-        }
-    }
-
-    /** isValid() der Rechnungs-Entität: eine Kontakt-ID ohne UUID-Form geht gar nicht erst hinaus. */
-    public function test_draft_invoice_with_an_invalid_contact_is_not_sent(): void {
-        $fake = FakePluginHttp::fake();
-
-        try {
-            $this->draftService()->createDraft('kein-uuid', [['name' => 'A', 'description' => '', 'quantity' => 1.0, 'unit_name' => 'Stk', 'unit_net' => 1.0]], 'R', '', '', 19.0);
-            $this->fail('Ungültige Belegadresse darf nicht gesendet werden.');
-        } catch (RuntimeException $e) {
-            $this->assertSame('Rechnungsentwurf ungültig: Invoice data is not valid', $e->getMessage());
-        }
-        $fake->assertNothingSent();
-    }
-
-    /** ContactsEndpoint::search(): eine gescheiterte Suche heißt „kein Kontakt“, nicht Fehler. */
     public function test_contact_lookup_treats_a_failed_search_as_no_contact(): void {
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'email' => 'kunde+lager@example.com']);
         $fake = FakePluginHttp::fake([

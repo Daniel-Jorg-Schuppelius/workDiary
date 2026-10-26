@@ -20,7 +20,8 @@ use App\Models\Reselling\{ResaleLicenseAssignment, ResaleLicenseBatch, ResaleLic
 use App\Models\Supplier\Supplier;
 use App\Services\Billing\Purchase\PurchaseDocuments;
 use App\Services\Platform\Catalog\ArticleCatalog;
-use App\Services\Reselling\License\{LicenseStockException, LicenseStockService};
+use App\Services\Reselling\License\{LicenseInvoiceLinks, LicenseStockException, LicenseStockService};
+use App\Services\Reselling\Mirror\InvoiceMirror;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
@@ -41,6 +42,8 @@ class LicenseStockController extends Controller {
     public function __construct(
         private readonly LicenseStockService $stock,
         private readonly ArticleCatalog $catalog,
+        private readonly InvoiceMirror $mirror,
+        private readonly LicenseInvoiceLinks $invoiceLinks,
     ) {}
 
     public function index(Request $request): View {
@@ -51,6 +54,7 @@ class LicenseStockController extends Controller {
             'status' => LicenseUnitStatus::tryFrom($request->string('status')->toString())->value ?? '',
             'customer' => $request->string('customer')->toString(),
             'reorder' => $request->boolean('reorder'),
+            'unbilled' => $request->boolean('unbilled'),
         ];
         $productId = Sqid::decodeOrNumeric(ResaleLicenseProduct::class, $filters['product']);
         $customerId = Sqid::decodeOrNumeric(Customer::class, $filters['customer']);
@@ -78,6 +82,8 @@ class LicenseStockController extends Controller {
             ->when($productId !== null, static fn ($u) => $u->whereHas('batch', static fn ($b) => $b->where('product_id', $productId)))
             ->when($status, static fn ($u, LicenseUnitStatus $s) => $u->withStatus($s))
             ->when($customerId !== null, static fn ($u) => $u->whereHas('activeAssignment', static fn ($a) => $a->where('customer_id', $customerId)))
+            // Verkauft ohne Rechnungsbezug, älter als die Frist (Feature 185, MVP-1427).
+            ->when($filters['unbilled'], fn ($u) => $u->whereIn('id', $this->invoiceLinks->unbilledQuery($organization)->select('active_unit_id')))
             ->when($q !== '', static fn ($u) => $u->where(static fn ($w) => $w
                 ->whereHas('batch', static fn ($b) => $b->whereLikeEscaped('reference', $q)
                     ->orWhereHas('product', static fn ($p) => $p->whereLikeEscaped('name', $q)))
@@ -87,6 +93,7 @@ class LicenseStockController extends Controller {
             ->orderBy('position')
             ->paginate(25)
             ->withQueryString();
+        $this->mirror->preload($organization, $units->getCollection()->map(static fn (ResaleLicenseUnit $u) => $u->activeAssignment)->filter());
 
         return view('finance.resale.licenses.index', [
             'products' => $products,
@@ -186,17 +193,20 @@ class LicenseStockController extends Controller {
     public function batchShow(ResaleLicenseBatch $batch): View {
         $organization = $this->currentOrganizationOrAbort(404);
         $batch->load(['product', 'supplier']);
+        $units = $batch->units()->withStockState()->orderBy('position')->paginate(50);
+        $history = ResaleLicenseAssignment::query()
+            ->whereIn('unit_id', $batch->units()->getQuery()->select('id'))
+            ->with(['unit', 'customer', 'foreignCustomer'])
+            ->orderByDesc('id')
+            ->limit(200)
+            ->get();
+        $this->mirror->preload($organization, $units->getCollection()->map(static fn (ResaleLicenseUnit $u) => $u->activeAssignment)->filter()->merge($history));
 
         return view('finance.resale.licenses.batch', [
             'batch' => $batch,
             'counts' => $this->stock->batchCounts($organization, [$batch->id])->get($batch->id, ['purchased' => 0, 'available' => 0, 'sold' => 0, 'incomplete' => 0, 'blocked' => 0]),
-            'units' => $batch->units()->withStockState()->orderBy('position')->paginate(50),
-            'history' => ResaleLicenseAssignment::query()
-                ->whereIn('unit_id', $batch->units()->getQuery()->select('id'))
-                ->with(['unit', 'customer', 'foreignCustomer'])
-                ->orderByDesc('id')
-                ->limit(200)
-                ->get(),
+            'units' => $units,
+            'history' => $history,
         ]);
     }
 

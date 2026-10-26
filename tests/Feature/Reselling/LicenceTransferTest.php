@@ -115,9 +115,10 @@ class LicenceTransferTest extends TestCase {
         // Vertrags bekommen die Lizenzen zurück, entschiedene (berechnete) behalten ihre Menge.
         $this->actingAs($admin)->delete(route('finance.resale.destroy', $contract->sqid))->assertRedirect(route('finance.resale.show', $contract->sqid))->assertSessionHas('error');
         \App\Models\Reselling\ResalePeriodLink::query()->delete();
-        $assignment->periods()->update(['status' => PeriodStatus::Open->value]);
-        $contract->periods()->update(['status' => PeriodStatus::Open->value]);
-        $this->actingAs($admin)->delete(route('finance.resale.destroy', $assignment->sqid))->assertRedirect(route('finance.resale.index'));
+        // Sichere Treffer sind entschieden (Feature 185): die Entscheidung mit zurücksetzen, sonst bleibt die Menge eingefroren.
+        $assignment->periods()->update(['status' => PeriodStatus::Open->value, 'decided_at' => null, 'decided_by_user_id' => null]);
+        $contract->periods()->update(['status' => PeriodStatus::Open->value, 'decided_at' => null, 'decided_by_user_id' => null]);
+        $this->actingAs($admin)->delete(route('finance.resale.destroy', $assignment->sqid))->assertRedirect(route('finance.resale.subscriptions'));
         $this->assertSame([9, 9], $contract->fresh()?->periods()->pluck('quantity')->all());
     }
 

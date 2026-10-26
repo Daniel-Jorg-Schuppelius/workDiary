@@ -64,11 +64,16 @@ class OpenSourceFakturaVoucherPullTest extends TestCase {
             self::NINJA . '/api/v1/companies/current' => FakePluginHttp::response(['data' => ['id' => 'VolejRejNm', 'settings' => ['currency_id' => '17']]]),
             self::NINJA . '/api/v1/group_settings/grp1' => FakePluginHttp::response(['data' => ['id' => 'grp1', 'settings' => ['currency_id' => '1']]]),
             self::NINJA . '/api/v1/invoices*' => FakePluginHttp::response($page([
-                ['id' => 'Wpmbk5ezJn', 'number' => 'R-0001', 'status_id' => '3', 'amount' => 119, 'balance' => 50, 'total_taxes' => 19, 'date' => '2026-10-01', 'due_date' => '2026-10-15', 'client_id' => 'ab12', 'is_deleted' => false, 'archived_at' => 0, 'updated_at' => 1792000000, 'client' => ['name' => 'Kundin', 'number' => 'K-100', 'settings' => ['currency_id' => '3']]],
+                ['id' => 'Wpmbk5ezJn', 'number' => 'R-0001', 'status_id' => '3', 'amount' => 119, 'balance' => 50, 'total_taxes' => 19, 'date' => '2026-10-01', 'due_date' => '2026-10-15', 'client_id' => 'ab12', 'line_items' => [['product_key' => 'MS-BP', 'notes' => 'Microsoft 365 Business Premium', 'quantity' => 1, 'cost' => 100, 'line_total' => 100, 'tax_rate1' => 19]], 'is_deleted' => false, 'archived_at' => 0, 'updated_at' => 1792000000, 'client' => ['name' => 'Kundin', 'number' => 'K-100', 'settings' => ['currency_id' => '3']]],
                 ['id' => 'Opnel5aKBz', 'number' => 'R-0002', 'status_id' => '2', 'amount' => 10, 'balance' => 10, 'total_taxes' => 0, 'date' => '2026-10-02', 'client_id' => 'ab12', 'is_deleted' => true, 'updated_at' => 1792000100, 'client' => ['settings' => ['currency_id' => '3']]],
                 // Ohne eigene Währung: erst die Kundengruppe, dann die Firma.
                 ['id' => 'Grp00001', 'number' => 'R-0003', 'status_id' => '2', 'amount' => 10, 'balance' => 10, 'total_taxes' => 0, 'date' => '2026-10-02', 'client_id' => 'cd34', 'updated_at' => 1792000050, 'client' => ['group_settings_id' => 'grp1', 'settings' => ['currency_id' => '']]],
                 ['id' => 'Firm0001', 'number' => 'R-0004', 'status_id' => '2', 'amount' => 10, 'balance' => 10, 'total_taxes' => 0, 'date' => '2026-10-02', 'client_id' => 'ef56', 'updated_at' => 1792000060, 'client' => ['group_settings_id' => '', 'settings' => new \stdClass()]],
+            ])),
+            // Serienrechnungen (Feature 185, MVP-1426): status_id 2 = aktiv, frequency_id 10 = jährlich (RecurringInvoice::FREQUENCY_ANNUALLY).
+            self::NINJA . '/api/v1/recurring_invoices*' => FakePluginHttp::response($page([
+                ['id' => 'Rec00001', 'number' => 'R-SERIE-1', 'status_id' => '2', 'frequency_id' => '10', 'remaining_cycles' => -1, 'date' => '2025-09-03', 'next_send_date' => '2026-09-03', 'last_sent_date' => '2025-09-03', 'client_id' => 'ab12', 'updated_at' => 1792000400, 'client' => ['id' => 'ab12', 'settings' => ['currency_id' => '3']],
+                    'line_items' => [['product_key' => 'MS-BP', 'notes' => 'Microsoft 365 Business Premium', 'quantity' => 2, 'cost' => 247.2, 'line_total' => 494.4, 'tax_rate1' => 19]]],
             ])),
             self::NINJA . '/api/v1/credits*' => FakePluginHttp::response($page([
                 ['id' => 'Wpmbk5ezJn', 'number' => 'G-0001', 'status_id' => '4', 'amount' => 20, 'balance' => 0, 'total_taxes' => 0, 'date' => '2026-10-03', 'client_id' => 'ab12', 'updated_at' => 1792000200, 'client' => ['settings' => ['currency_id' => '1']]],
@@ -93,7 +98,15 @@ class OpenSourceFakturaVoucherPullTest extends TestCase {
 
         $counters = app(InvoiceNinjaVoucherPullService::class)->pull((int) $this->organization->id);
 
-        $this->assertSame(10, $counters['created']);
+        $this->assertSame(11, $counters['created'], '10 Belege und eine Serienrechnung');
+        // Positionen (Feature 185, MVP-1425) und Serienrechnung als Plan (MVP-1426).
+        $this->assertSame(1, AccountingVoucher::query()->where('external_id', 'invoice:Wpmbk5ezJn')->sole()->lines()->count());
+        $recurring = AccountingVoucher::query()->where('external_id', 'recurring:Rec00001')->sole();
+        $this->assertSame(DocumentKind::RecurringTemplate->value, $recurring->document_kind);
+        $this->assertNull($recurring->total_amount, 'Plan, kein Umsatz');
+        $this->assertSame(['ACTIVE', 'ANNUALLY', '2026-09-03', 'https://ninja.example.test/#/recurring_invoices/Rec00001/edit?company=VolejRejNm'], [data_get($recurring->payload, 'plan.status'), data_get($recurring->payload, 'plan.interval'), data_get($recurring->payload, 'plan.next_execution_on'), data_get($recurring->payload, 'plan.permalink')]);
+        $line = $recurring->lines()->sole();
+        $this->assertSame(['MS-BP', '2.000', '247.2000', '494.40', '19.00'], [$line->external_article_id, $line->quantity, $line->unit_net, $line->total_net, $line->tax_rate]);
         $invoice = AccountingVoucher::query()->where('plugin_id', InvoiceNinjaPlugin::ID)->where('external_id', 'invoice:Wpmbk5ezJn')->sole();
         $this->assertSame(AccountingVoucherState::Open, $invoice->voucher_state, 'Teilbezahlt bleibt offen.');
         $this->assertSame(DocumentDirection::Outgoing->value, $invoice->direction);
@@ -137,7 +150,7 @@ class OpenSourceFakturaVoucherPullTest extends TestCase {
 
             return str_ends_with($r->getUri()->getPath(), '/invoices') && ($q['updated_at'] ?? null) === '1792000100';
         }, 'Jede Liste setzt an ihrer eigenen Marke an, nicht an der jüngsten Ausgabe.');
-        $this->assertSame(10, AccountingVoucher::query()->where('plugin_id', InvoiceNinjaPlugin::ID)->count());
+        $this->assertSame(11, AccountingVoucher::query()->where('plugin_id', InvoiceNinjaPlugin::ID)->count());
     }
 
     public function test_invoice_ninja_expenses_are_mirrored_only_after_a_complete_read(): void {
@@ -176,6 +189,7 @@ class OpenSourceFakturaVoucherPullTest extends TestCase {
                     ? [['id' => 5, 'type' => 'invoice', 'document_number' => 'INV-5', 'status' => 'partial', 'issued_at' => '2026-10-01T00:00:00+00:00', 'due_at' => '2026-10-31T00:00:00+00:00', 'updated_at' => '2026-10-05T10:00:00+02:00', 'amount' => 238.0, 'currency_code' => 'EUR', 'contact_id' => 9, 'contact_name' => 'Kundin',
                         'contact' => ['id' => 9, 'reference' => 'K-9'],
                         'totals' => ['data' => [['code' => 'sub_total', 'amount' => 200.0], ['code' => 'tax', 'amount' => 38.0], ['code' => 'total', 'amount' => 238.0]]],
+                        'items' => ['data' => [['id' => 77, 'item_id' => 5, 'name' => 'Microsoft 365 Business Premium', 'description' => 'Jahreslizenz', 'price' => 100.0, 'total' => 200.0]]],
                         'transactions' => ['data' => [['type' => 'income', 'amount' => 100.0, 'currency_code' => 'EUR']]]]]
                     : [['id' => 5, 'type' => 'bill', 'document_number' => 'B-5', 'status' => 'paid', 'issued_at' => '2026-10-02T00:00:00+00:00', 'updated_at' => '2026-10-02T09:00:00+02:00', 'amount' => 12.5, 'currency_code' => 'EUR', 'contact_id' => 11, 'contact_name' => 'Strom GmbH']];
 
@@ -192,6 +206,9 @@ class OpenSourceFakturaVoucherPullTest extends TestCase {
         $this->assertSame('200.00', (string) $invoice->net_amount, 'Summe ohne Steuerzeilen.');
         $this->assertSame('138.00', (string) $invoice->open_amount, 'Summe abzüglich Zahlungen.');
         $this->assertSame($customer->id, $invoice->customer_id, 'Referenz des Kontakts = Kundennummer.');
+        // Positionen (Feature 185, MVP-1425): ohne Menge im JSON → Menge = Summe / Preis.
+        $line = $invoice->lines()->sole();
+        $this->assertSame(['Microsoft 365 Business Premium', '2.000', '100.0000', '200.00', '5'], [$line->name, $line->quantity, $line->unit_net, $line->total_net, $line->external_article_id]);
         $bill = AccountingVoucher::query()->where('external_id', 'bill:5')->sole();
         $this->assertSame(DocumentDirection::Incoming->value, $bill->direction);
         $this->assertSame(AccountingVoucherState::Paid, $bill->voucher_state);

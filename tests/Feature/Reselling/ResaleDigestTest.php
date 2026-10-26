@@ -125,6 +125,25 @@ class ResaleDigestTest extends TestCase {
         Notification::assertSentTo($this->manager, ResalePeriodsDigestNotification::class, static fn(ResalePeriodsDigestNotification $n): bool => $n->dueCount === 0 && $n->renewalCount === 1 && $n->total() === 1);
     }
 
+    public function test_stale_provider_export_counts_and_is_mentioned(): void {
+        Notification::fake();
+        // Letzter Quality-Hosting-Import vor 46 Tagen (Feature 185, MVP-1418); ohne Import zählt ein Anbieter nicht.
+        \App\Models\Reselling\ResaleImport::query()->create([
+            'organization_id' => $this->organization->id, 'provider' => 'qualityhosting', 'kind' => \App\Models\Reselling\ResaleImport::KIND_CONTRACTS,
+            'file_name' => '2026-07-20_Export.xlsx', 'status' => 'done', 'rows_total' => 3,
+        ])->forceFill(['created_at' => '2026-07-20 08:00:00'])->save();
+        $this->artisan('resale:digest')->assertSuccessful()->expectsOutputToContain('veraltete Anbieterstände 1');
+
+        Notification::assertSentTo($this->manager, ResalePeriodsDigestNotification::class, function (ResalePeriodsDigestNotification $n): bool {
+            $this->assertSame(1, $n->staleImports);
+            $this->assertSame(1, $n->total());
+            $this->assertSame(1, $n->toArray($this->manager)['stale_import_count']);
+            $this->assertStringContainsString((string) \App\Services\Reselling\Register\ResaleOverview::IMPORT_STALE_DAYS, (string) $n->toMail($this->manager)->render());
+
+            return true;
+        });
+    }
+
     public function test_digest_is_registered_in_the_scheduler(): void {
         $jobs = (array) config('scheduler.jobs');
         $this->assertArrayHasKey('resale.digest', $jobs);

@@ -23,7 +23,7 @@
 
 @section('content')
     <x-index-page :title="$subscription->label" :subtitle="$subscription->kind->label() . ' · ' . $subscription->provider->label()"
-                  back-route="finance.resale.index" :back-label="__('resale.action.back')">
+                  back-route="finance.resale.subscriptions" :back-label="__('resale.action.back')">
         <x-slot:actions>
             @if ($canManage)
                 <x-icon-btn icon="edit" tone="primary" size="sm" data-entry-modal-trigger
@@ -74,6 +74,17 @@
                         @endif
                     </x-detail-grid.row>
                     <x-detail-grid.row :label="__('resale.field.status')"><x-status-badge size="xs" :tone="$subscription->status->tone()" :label="$subscription->status->label()" /></x-detail-grid.row>
+                    @foreach ($planLinks as $entry)
+                        {{-- Serienvorlage des Buchhaltungsprogramms, die dieses Abo berechnet (Feature 185). --}}
+                        <x-detail-grid.row :label="__('resale.plan.title')">
+                            @if ($entry['template'] !== null)
+                                {{ __('resale.plan.planned_by', ['title' => $entry['template']->label(), 'date' => $entry['template']->nextExecutionOn?->fdate() ?? '—']) }}
+                            @else
+                                <span class="font-mono text-xs">{{ $entry['link']->plan_key }}</span>
+                            @endif
+                            <x-status-badge size="xs" :tone="$entry['link']->origin->tone()" :label="$entry['link']->origin->label()" class="ml-1" />
+                        </x-detail-grid.row>
+                    @endforeach
                     @if ($subscription->contract !== null)
                         <x-detail-grid.row :label="__('resale.contract.field')">
                             @if ($contractLink !== null)
@@ -257,7 +268,7 @@
                                                 <input type="hidden" name="line_id" value="{{ $line->key }}">
                                                 <select name="period_id" class="select select-xs select-bordered w-44" aria-label="{{ __('resale.field.period') }}">
                                                     @foreach ($openPeriods as $period)
-                                                        <option value="{{ $period->sqid }}" @selected($period->starts_on->lessThanOrEqualTo($voucher->voucherDate ?? $today) && $period->ends_on->greaterThanOrEqualTo($voucher->voucherDate ?? $today))>{{ $period->label() }}</option>
+                                                        <option value="{{ $period->sqid }}" @selected($period->starts_on->lessThanOrEqualTo($voucher->voucherDate ?? $today) && $period->ends_on->greaterThanOrEqualTo($voucher->voucherDate ?? $today))>{{ $period->label() }}@if (! \App\Services\Reselling\Register\LinkAudit::fits($line, $period)) ⚠@endif</option>
                                                     @endforeach
                                                 </select>
                                                 <input type="hidden" name="per_licence" value="{{ number_format($row['per_licence'], 2, '.', '') }}">

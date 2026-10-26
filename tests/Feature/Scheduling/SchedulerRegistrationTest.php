@@ -196,6 +196,10 @@ class SchedulerRegistrationTest extends TestCase {
         // Neu mit Feature 152 (MVP-758): Reselling-Register, Perioden vorrollen.
         'resale:sync-periods' => ['5 6 * * *', true, true],
         'resale:sync-domains' => ['10 5 * * *', true, true],
+        // Neu mit Feature 185 (Phase 162): Vorschlagslauf stündlich, Domain-Details und Lexoffice-Serienvorlagen täglich.
+        'resale:propose' => ['20 * * * *', true, true],
+        'domain:refresh-details' => ['5 5 * * *', true, true],
+        'lexoffice:sync-recurring-templates' => ['40 5 * * *', true, true],
         'resale:sync-purchases' => ['20 5 * * *', true, true],
         // Serienrechnung bei lokaler Rechnungshoheit (Feature 152, 2026-09-11).
         'resale:draft-local' => ['20 6 * * *', true, true],

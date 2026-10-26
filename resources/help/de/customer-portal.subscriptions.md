@@ -1,7 +1,7 @@
 ---
 title: "Meine Abos"
 topic: customer-portal.subscriptions
-version: 2
+version: 3
 keywords:
     - Abonnement
     - Lizenzen
@@ -59,6 +59,10 @@ Der Abschnitt **Abrechnungsperioden** listet die einzelnen Zeiträume des Abos m
 - **in Klärung** – der Zeitraum wird noch geklärt.
 
 Die Perioden ergeben sich aus Beginn, Laufzeit und Intervall des Abos.
+
+## Verkaufte Lizenzen
+
+Hat Ihr Auftragnehmer Ihnen einzelne Lizenzen aus seinem Bestand verkauft, zeigt die Karte **Verkaufte Lizenzen** je Lizenz das Produkt, die Lizenznummer im Paket, den Halter (Ihr Unternehmen oder ein Endkunde), das Verkaufsdatum und die Nummer der Rechnung, mit der sie berechnet wurde; steht noch keine Rechnung, heißt es **noch keine**. Lizenzschlüssel zeigt das Portal nie; die erhalten Sie persönlich von Ihrem Auftragnehmer.
 
 ## Grenzen
 

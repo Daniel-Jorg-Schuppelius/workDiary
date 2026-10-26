@@ -226,16 +226,21 @@ class ResaleLocalDraftRunTest extends TestCase {
         }
     }
 
-    public function test_switch_is_saved_from_the_products_page_with_reselling_manage(): void {
+    public function test_switch_is_saved_from_the_billing_dialog_with_reselling_manage(): void {
         $admin = $this->orgAdmin();
 
+        // Feature 185 (MVP-1405): Dialog „Abrechnung" statt Kasten in der Produkt-Einstufung.
         $this->actingAs($admin)->get(route('finance.resale.products'))
             ->assertOk()
-            ->assertSee(__('resale.auto_draft.title'))
+            ->assertDontSee('name="auto_local_drafts"', false);
+        $this->actingAs($admin)->get(route('finance.resale.settings.billing'))
+            ->assertOk()
+            ->assertSee(__('resale.auto_draft.enabled'))
             ->assertSee('name="auto_local_drafts"', false);
+        $this->actingAs($admin)->get(route('finance.resale.index'))->assertOk()->assertSee(route('finance.resale.settings.billing'));
 
         $this->actingAs($admin)->post(route('finance.resale.auto-draft.store'), ['auto_local_drafts' => '1', 'lead_days' => '7'])
-            ->assertRedirect(route('finance.resale.products'))
+            ->assertRedirect(route('finance.resale.index'))
             ->assertSessionHas('success');
         $organization = $this->organization->fresh();
         $this->assertNotNull($organization);
@@ -249,7 +254,15 @@ class ResaleLocalDraftRunTest extends TestCase {
         $this->assertTrue($run->enabledFor($this->organization->fresh() ?? $organization));
 
         $this->actingAs($admin)->post(route('finance.resale.auto-draft.store'), ['auto_local_drafts' => '0', 'lead_days' => '0'])
-            ->assertRedirect(route('finance.resale.products'));
+            ->assertRedirect(route('finance.resale.index'));
+
+        // Externe Hoheit: nur der Hinweis, kein Schalter.
+        $this->organization->forceFill(['settings' => array_merge((array) $this->organization->settings, ['billing_mode' => 'lexoffice'])])->save();
+        $this->actingAs($admin->refresh()->unsetRelation('organization'))->get(route('finance.resale.settings.billing'))
+            ->assertOk()
+            ->assertSee(__('resale.auto_draft.external_hint', ['program' => 'Lexoffice']))
+            ->assertDontSee('name="auto_local_drafts"', false);
+        $this->organization->forceFill(['settings' => array_merge((array) $this->organization->settings, ['billing_mode' => 'workdiary'])])->save();
         $organization = $this->organization->fresh();
         $this->assertNotNull($organization);
         $this->assertFalse($run->enabledFor($organization));

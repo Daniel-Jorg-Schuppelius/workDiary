@@ -1,8 +1,10 @@
 ---
 title: "Abbonamenti e licenze"
 topic: finance.resale
-version: 2
+version: 5
 keywords:
+    - Anteprima importazione
+    - Azioni di massa
     - fatturazione abbonamenti
     - servizi ricorrenti
     - rivendita servizi
@@ -256,3 +258,122 @@ non coperto). Il comando `lexoffice:repair-resale-links` riaggancia tali
 collegamenti tramite numero fattura e riga di licenza; ciò che non è
 univoco viene solo elencato (--dry-run mostra in anticipo cosa
 accadrebbe).
+
+**Conto licenze:** La scheda *Conti licenze* mostra per conto fornitore
+(numero cliente presso il fornitore, predecessori di un cambio fornitore
+inclusi) quante licenze per prodotto sono attive, chi le detiene e quale anno
+di licenza è fatturato, come griglia prodotto × intestatario × anno con numero
+di fattura o «manca». Se più aziende detengono licenze dello stesso conto,
+curate la **ripartizione** per prodotto («Märkische Bunker 5 × Exchange dal
+18.10.2025»): gli altri intestatari riempiono prima il contratto con la
+quantità maggiore, poi per inizio; l'intestatario del contratto tiene il
+resto. Le cessioni per contratto ne derivano, seguono ogni modifica e passano
+al successore in caso di cambio fornitore; le cessioni manuali restano
+possibili come eccezione. La pianificazione ricalcola anche i contratti
+sostituiti e terminati degli ultimi tre anni, così una ripartizione successiva
+ne cambia ancora l'obiettivo. I **casi da verificare sui collegamenti**
+mostrano righe che coprono più mesi di licenza di quanti ne abbiano
+(sovrassegnate) e collegamenti il cui periodo di prestazione non coincide con
+il periodo, con «Sposta su …» sul periodo giusto dello stesso abbonamento o
+«Scollega»; la finestra di collegamento e l'assegnazione rapida avvisano prima
+con ⚠.
+
+**Modelli ricorrenti (piano):** Se un programma di contabilità emette le
+fatture, le fatture ricorrenti nascono lì come modelli ricorrenti. Il registro
+li specchia (Lexoffice: ogni giorno e dopo la sincronizzazione dei documenti,
+in sola lettura) e mostra nel conto licenze per modello stato, ritmo, prossima
+esecuzione e le righe di licenza con gli abbonamenti che fatturano.
+L'assegnazione abbonamento ↔ riga del modello è proposta dall'elaborazione
+(stesso destinatario, articolo, quantità; con più clienti finali solo se
+nominati): confermate, assegnate a mano o rimuovete. I periodi di un
+abbonamento con modello attivo restano fuori dalla proposta di fattura. I
+**controlli dotazione ↔ piano** segnalano prima della fattura: abbonamento senza
+modello, modello senza abbonamento («Crea abbonamento dal modello» riprende
+articolo, quantità, ritmo e prezzo), quantità diversa, modello che continua
+oltre la fine dell'abbonamento, modello in pausa o terminato con abbonamento
+attivo, prossima esecuzione a più di sette giorni dall'inizio periodo, ultima
+esecuzione fallita: nel riquadro, nel riepilogo settimanale e nella coda di
+lavoro. Ogni fattura specchiata porta il riferimento al suo modello.
+
+**Panoramica e schede:** La pagina iniziale «Abbonamenti e licenze» non
+mostra più l’elenco degli abbonamenti ma un **elenco di attività**: periodi
+scaduti senza fattura (con importo aperto), proposte non confermate, rilievi
+sui collegamenti fattura, rilievi sui modelli ricorrenti, ripartizioni oltre
+la dotazione, abbonamenti senza titolare, rinnovi o scadenze entro 30 giorni
+ed esportazioni del fornitore obsolete — ogni riga con un numero e il salto
+alla pagina in cui si decide. Accanto lo **stato**: l’ultima esecuzione delle
+proposte (con «Calcola proposte») e per fornitore l’ultima importazione con
+la sua età. Le schede seguono il flusso: Panoramica · Conti licenze ·
+Riconciliazione · Periodi · Posta in arrivo │ Abbonamenti · Scorte licenze ·
+Acquisti │ Report · Prezzi; classificazione prodotti e fatturazione stanno
+nel menu ⋯. L’elenco degli abbonamenti si apre da «Abbonamenti».
+
+**Proposte sicure e incerte:** L’esecuzione delle proposte (ogni ora e dopo
+ogni importazione) conferma da sola le corrispondenze sicure — un documento
+la cui data fattura è al massimo 14 giorni prima o 45 giorni dopo l’inizio
+del periodo e che copre il periodo per intero con il numero di licenze
+corretto; la conferma compare nel registro come «confermata
+automaticamente». Tutto il resto resta proposta e porta «incerta» con il
+motivo nel suggerimento. Perciò la pagina dei periodi mostra per
+impostazione predefinita «Proposte non confermate»; il filtro «Solo
+problemi» e i riquadri di stato restano.
+
+**Azioni di massa:** Nella pagina dei periodi selezionate le righe con le
+caselle e confermate tutte le proposte in una volta, rinunciate con un
+motivo per tutte («Rinuncia / contesta …») o fate creare una bozza per
+destinatario fattura della selezione. I periodi decisi e futuri vengono
+saltati e contati; ogni periodo riceve la stessa voce di registro
+dell’azione singola. Non c’è preselezione.
+
+**Classificazione prodotti con filtro:** La classificazione mostra per
+impostazione predefinita solo i prodotti in abbonamento e gli articoli con
+abbonamenti o righe di modello; «Tutti gli articoli», «Senza
+classificazione» e la ricerca per nome o numero restringono. Se un programma
+di contabilità emette le fatture, ogni articolo indica in quanti modelli
+ricorrenti attivi compare.
+
+**Importazione con anteprima:** Dopo il caricamento il registro mostra
+prima cosa cambierebbe l’importazione — per file nuovo, modificato
+(quantità, prezzo, stato, inizio, fine con il valore precedente), invariato
+e gli abbonamenti pianificabili del fornitore che il file non cita più
+(l’importazione non li termina). Si applica solo dopo «Applica»; «Annulla»
+elimina i file. Se il fornitore cambia un prezzo, l’importazione aggiorna
+il prezzo d’acquisto dell’abbonamento finché coincide con l’ultimo prezzo
+del fornitore — un prezzo inserito a mano resta — e scrive una riga di
+catalogo dalla data del file (data nel nome come «2026-10-26_Export.xlsx»,
+altrimenti il giorno dell’importazione). Se l’ultima importazione di un
+fornitore ha più di 30 giorni, la panoramica lo segnala e il riepilogo
+settimanale lo ricorda.
+
+**Acquisti dalla posta fatture:** Nella scheda Acquisti, con «Associa
+fornitori» collegate un fornitore dell’anagrafica al provider (il nome offre
+un suggerimento; nulla viene associato automaticamente). Appena una fattura
+in entrata di quel fornitore è assegnata nella posta fatture, il registro la
+acquisisce come acquisto: Quality Hosting per riga tramite il lettore di
+fatture (contratto e durata per riga), provider di domini per nome di
+dominio sull’abbonamento del dominio (solo se il giornale contabile del
+registrar non fornisce già i costi), tutti gli altri pro rata sui periodi del
+mese della fattura. Ogni riga porta la fattura in entrata come origine; una
+seconda esecuzione la riconosce dall’hash. Le righe senza abbonamento
+restano «senza abbonamento» — il filtro «Solo senza abbonamento» le mostra,
+«Assegna abbonamento» le collega all’abbonamento giusto e al periodo della
+data del documento. `resale:import-incoming --since=` recupera
+retroattivamente le fatture assegnate. Il conto licenze mostra per prodotto
+acquisto previsto ed effettivo e il margine degli ultimi dodici mesi; il
+riepilogo settimanale segnala gli abbonamenti il cui prezzo contrattuale si
+discosta dall’ultimo prezzo di catalogo o del provider importato.
+
+**Collegamento alla fattura per le licenze singole:** Quando vende una
+licenza dal magazzino sceglie la riga di fattura del programma di
+contabilità che fattura questa licenza; l’elenco mostra le righe del cliente
+scelto intorno alla data di vendita, quelle corrispondenti (stesso articolo
+o nome del prodotto) vengono prima e sono proposte. Senza riga il
+riferimento della fattura resta testo libero. Elenco licenze, pagina del
+lotto e scheda cliente mostrano per la riga collegata il numero del
+documento con il salto al programma di contabilità e all’immagine del
+documento. Una vendita che dopo 30 giorni non porta né riga né riferimento
+compare come caso da verificare «Licenze singole senza fattura» nella
+panoramica, nella riconciliazione del destinatario e tramite il filtro
+«Senza fattura» del magazzino licenze; aggiunga il collegamento con
+«Correggi vendita». Nel portale clienti i clienti vedono le licenze vendute
+con il numero di fattura, mai la chiave.

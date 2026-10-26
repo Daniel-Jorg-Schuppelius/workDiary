@@ -1270,6 +1270,7 @@ return [
             'cancellation' => 'Anulación',
             'expense' => 'Gasto',
             'other' => 'Otro documento',
+            'recurring_template' => 'Plantilla recurrente',
             'reminder' => 'Recordatorio de pago',
         ],
         'origin' => [
@@ -1508,6 +1509,7 @@ return [
         'transfer-channel' => [
             'time' => 'Servicios/tiempo',
             'material' => 'Productos/material',
+            'resale' => 'Suscripciones',
         ],
         'transfer-target' => [
             'lexoffice' => 'Lexoffice',

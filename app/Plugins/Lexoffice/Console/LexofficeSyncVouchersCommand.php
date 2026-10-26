@@ -79,6 +79,15 @@ class LexofficeSyncVouchersCommand extends Command {
                     } catch (\Throwable $e) {
                         $this->error("  Retainer-Abgleich: {$e->getMessage()}");
                     }
+
+                    // Feature 185 (MVP-1409): Serienvorlagen nachziehen und Zuordnungen vorschlagen — unabhängig vom Belegsync.
+                    try {
+                        $templates = (new \App\Plugins\Lexoffice\Services\LexofficeRecurringTemplateSync($org->id))->sync($org);
+                        app(\App\Services\Reselling\Plan\PlanLinkProposer::class)->propose($org);
+                        $this->line("  Serienvorlagen: {$templates['read']} gelesen, {$templates['created']} neu, {$templates['updated']} aktualisiert, {$templates['ended']} beendet");
+                    } catch (\Throwable $e) {
+                        $this->error("  Serienvorlagen: {$e->getMessage()}");
+                    }
                 });
             } catch (LockTimeoutException) {
                 $this->warn("Organisation #{$org->id} ({$org->name}): anderer Lexoffice-Lauf blockiert seit 10 Minuten — übersprungen.");

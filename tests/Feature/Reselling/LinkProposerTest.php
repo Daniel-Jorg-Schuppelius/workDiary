@@ -109,7 +109,7 @@ class LinkProposerTest extends TestCase {
         $this->voucher('c-kl', 'RE/2026/1022', '2026-08-22', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium', 'quantity' => 12, 'net' => '20.60']]);
 
         $result = (new LinkProposer)->propose($this->organization);
-        $this->assertSame(['periods' => 2, 'linked' => 2, 'partial' => 0, 'links' => 2, 'lines_without_subscription' => 0], $result);
+        $this->assertSame(['periods' => 2, 'linked' => 2, 'partial' => 0, 'links' => 2, 'lines_without_subscription' => 0, 'auto_confirmed' => 1], $result);
 
         $subscription->refresh();
         [$p2025, $p2026] = $subscription->periods;
@@ -372,10 +372,12 @@ class LinkProposerTest extends TestCase {
         // Review 2026-09-10 (B2): Vorschläge werden org-weit gelöscht, bewertet werden nur Abos mit Halter.
         $customer = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
         $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2025-08-05']);
-        $this->voucher('c-kl', 'RE/2025/0820', '2025-08-06', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium', 'quantity' => 12, 'net' => '20.60']]);
+        // Rechnung zwei Monate nach Beginn: ein Vorschlag, kein sicherer Treffer (Feature 185) — sonst wäre die Periode entschieden.
+        $this->voucher('c-kl', 'RE/2025/0820', '2025-10-06', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium', 'quantity' => 12, 'net' => '20.60']]);
         (new LinkProposer)->propose($this->organization);
         $period = $subscription->periods()->firstOrFail();
         $this->assertSame(PeriodStatus::Billed, $period->status);
+        $this->assertNull($period->decided_at);
 
         // Halter weg (Posteingang): der nächste Lauf räumt den Vorschlag ab — und den Status.
         $subscription->forceFill(['customer_id' => null])->save();
@@ -468,7 +470,7 @@ class LinkProposerTest extends TestCase {
         $this->voucher('c-hlsk', 'RE/2025/0272', '2025-08-20', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium', 'quantity' => 12, 'net' => '20.60']]);
         (new LinkProposer)->propose($this->organization);
         $this->assertSame(PeriodStatus::Billed, $period->fresh()?->status);
-        $this->assertSame('RE/2025/0272', $period->links()->where('origin', LinkOrigin::Proposed->value)->first()?->voucher_number);
+        $this->assertSame('RE/2025/0272', $period->links()->whereIn('origin', [LinkOrigin::Proposed->value, LinkOrigin::Auto->value])->first()?->voucher_number);
         $this->assertSame(1, substr_count((string) $link->fresh()?->note, (string) __('resale.link.note_voided', ['months' => '1 × 12 ' . __('resale.link.months_short')])));
     }
 
@@ -513,7 +515,7 @@ class LinkProposerTest extends TestCase {
         $statuses = static fn(): array => ResalePeriod::query()->orderBy('subscription_id')->orderBy('starts_on')->get()->map(static fn(ResalePeriod $p): array => [$p->status->value, $p->decided_at?->toDateTimeString()])->all();
 
         $first = (new LinkProposer)->propose($this->organization);
-        $this->assertSame(['periods' => 5, 'linked' => 4, 'partial' => 1, 'links' => 5, 'lines_without_subscription' => 0], $first);
+        $this->assertSame(['periods' => 5, 'linked' => 4, 'partial' => 1, 'links' => 5, 'lines_without_subscription' => 0, 'auto_confirmed' => 2], $first);
         $firstLinks = $snapshot();
         $firstStatuses = $statuses();
         $firstIds = ResalePeriodLink::query()->pluck('id')->all();
@@ -522,13 +524,14 @@ class LinkProposerTest extends TestCase {
         $this->assertSame(['24.00', '24.00', '12.00'], array_column(array_values(array_filter($firstLinks, static fn(array $r): bool => $r['subscription'] === $premium->id)), 'months'));
         $this->assertSame([PeriodStatus::Billed, PeriodStatus::Billed, PeriodStatus::Partial], $premium->periods()->get()->map(static fn(ResalePeriod $p) => $p->status)->all(), '2026: 12 von 24 Lizenzmonaten');
 
+        // Feature 185: zwei sichere Treffer sind entschieden und werden im zweiten Lauf nicht mehr bewertet — der Rest bleibt identisch.
         $second = (new LinkProposer)->propose($this->organization);
-        $this->assertSame($first, $second, 'Zähler des zweiten Laufs identisch');
+        $this->assertSame(['periods' => 3, 'linked' => 2, 'partial' => 1, 'links' => 3, 'lines_without_subscription' => 0, 'auto_confirmed' => 0], $second, 'zweiter Lauf ohne die entschiedenen Perioden');
         $this->assertSame($firstLinks, $snapshot(), 'Perioden, Monate, Mengen, Beträge identisch');
-        $this->assertSame($firstStatuses, $statuses(), 'Status und (keine) Entscheidung identisch');
-        $this->assertSame([], array_intersect($firstIds, ResalePeriodLink::query()->pluck('id')->all()), 'Vorschläge werden ersetzt, nicht wiederverwendet');
+        $this->assertSame($firstStatuses, $statuses(), 'Status und Entscheidung identisch');
+        $this->assertCount(2, array_intersect($firstIds, ResalePeriodLink::query()->pluck('id')->all()), 'Vorschläge werden ersetzt, automatisch bestätigte Bezüge bleiben');
         $this->assertSame(5, ResalePeriodLink::query()->count());
-        $this->assertNull(ResalePeriod::query()->whereNotNull('decided_at')->first(), 'kein Lauf entscheidet etwas');
+        $this->assertSame(2, ResalePeriod::query()->whereNotNull('decided_at')->whereNull('decided_by_user_id')->count(), 'nur die sicheren Treffer sind entschieden, ohne Nutzer');
 
         // Dritter Lauf mit einem anderen Stichtag im selben Bestand: ebenfalls gleich.
         (new LinkProposer)->propose($this->organization, \Carbon\CarbonImmutable::parse('2026-09-04'));
@@ -604,7 +607,7 @@ class LinkProposerTest extends TestCase {
             'quantity' => 12, 'unit_name' => 'Monat', 'unit_net' => '4.30', 'total_net' => '51.60', 'tax_rate' => 0, 'currency' => 'USD',
         ]);
         $result = (new LinkProposer)->propose($this->organization);
-        $this->assertSame(2, $result['links']);
+        $this->assertSame(1, $result['links'], 'die CHF-Periode ist seit dem ersten Lauf entschieden (sicherer Treffer), nur die EUR-Periode ist neu');
         $mixed = $eur->periods()->first()?->links()->firstOrFail();
         $this->assertSame(\CommonToolkit\Enums\CurrencyCode::USDollar, $mixed?->currency);
         $this->assertSame('51.60', $mixed?->amount?->getAmount());

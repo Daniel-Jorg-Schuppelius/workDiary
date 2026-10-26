@@ -17,12 +17,15 @@ use App\Enums\User\Permission;
 /**
  * Übergabekanal eines Übergabenachweises (Feature 045, „Getrennte
  * Übergabekanäle"): Zeit und Produkte/Materialien werden NIE gemischt.
+ * `Resale` (Feature 185, MVP-1422): Abo-Perioden des Reselling-Registers
+ * über die Übergabequelle des Moduls.
  */
 enum TransferChannel: string implements HasLabel {
     use HasOptions;
 
     case Time = 'time';
     case Material = 'material';
+    case Resale = 'resale';
 
     public function label(): string {
         return (string) __('enums.finance.transfer-channel.' . $this->value);
@@ -33,6 +36,7 @@ enum TransferChannel: string implements HasLabel {
         return match ($this) {
             self::Time => 'info',
             self::Material => 'success',
+            self::Resale => 'primary',
         };
     }
 
@@ -41,6 +45,7 @@ enum TransferChannel: string implements HasLabel {
         return match ($this) {
             self::Time => Permission::FinanceTransferTime,
             self::Material => Permission::FinanceTransferMaterial,
+            self::Resale => Permission::ResellingInvoice,
         };
     }
 }

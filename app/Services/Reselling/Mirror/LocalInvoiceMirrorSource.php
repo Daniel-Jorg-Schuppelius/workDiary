@@ -70,12 +70,16 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
         return (new InvoiceItem)->getMorphClass();
     }
 
-    public function linesFor(Organization $organization, ?array $recipientCustomerIds, ?CarbonImmutable $from = null, ?CarbonImmutable $to = null): Collection {
+    public function linesFor(Organization $organization, ?array $recipientCustomerIds, ?CarbonImmutable $from = null, ?CarbonImmutable $to = null, bool $licenceOnly = true): Collection {
         if ($recipientCustomerIds === []) {
             return collect();
         }
+        $invoices = $this->invoiceQuery($organization, $recipientCustomerIds, $from, $to, self::KIND_INVOICE);
+        if (! $licenceOnly) {
+            return $this->map($this->allItems($organization, $invoices)->orderBy('invoice_id')->orderBy('position')->get(), $this->products($organization))->values();
+        }
 
-        return $this->licenceLines($organization, $this->invoiceQuery($organization, $recipientCustomerIds, $from, $to, self::KIND_INVOICE));
+        return $this->licenceLines($organization, $invoices);
     }
 
     public function voidedLines(Organization $organization, ?array $recipientCustomerIds): Collection {
@@ -256,10 +260,7 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
             return null;
         }
         $labels = $products['labels'];
-        $query = InvoiceItem::query()->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('line_kind', \App\Enums\Billing\DocumentLineKind::Item->value)
-            ->whereIn('invoice_id', $invoices->select('id'));
+        $query = $this->allItems($organization, $invoices);
         if ($products['excluded'] !== []) {
             $query->where(static fn(Builder $w) => $w->whereNull('article_id')->orWhereNotIn('article_id', array_keys($products['excluded'])));
         }
@@ -279,6 +280,20 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
                         }));
                 }
             })
+            ->with(['invoice.customer:id,name', 'article:id,name']);
+    }
+
+    /**
+     * Alle Artikelpositionen der Rechnungen — ohne Vorfilter (Rechnungsbezug einer Stücklizenz).
+     *
+     * @param  Builder<Invoice>  $invoices
+     * @return Builder<InvoiceItem>
+     */
+    private function allItems(Organization $organization, Builder $invoices): Builder {
+        return InvoiceItem::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('line_kind', \App\Enums\Billing\DocumentLineKind::Item->value)
+            ->whereIn('invoice_id', $invoices->select('id'))
             ->with(['invoice.customer:id,name', 'article:id,name']);
     }
 
@@ -354,6 +369,7 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
             organizationId: (int) ($item->organization_id ?? $invoice->organization_id),
             key: Sqid::encode(InvoiceItem::class, $item->id),
             voucherKey: (string) $invoice->id,
+            voucherExternalId: (string) $invoice->number,
             voucherNumber: $invoice->number,
             voucherDate: self::date($invoice->issued_on),
             voucherStatus: self::status($invoice),

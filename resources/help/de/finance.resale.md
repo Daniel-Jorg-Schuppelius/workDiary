@@ -1,8 +1,10 @@
 ---
 title: "Abos & Lizenzen"
 topic: finance.resale
-version: 2
+version: 5
 keywords:
+    - Import-Vorschau
+    - Sammelaktionen
     - Abonnement
     - Subscription
     - wiederkehrende Leistungen
@@ -247,3 +249,114 @@ neuen Positions-IDs neu aufgebaut, zeigen bestätigte Bezüge ins Leere
 `lexoffice:repair-resale-links` hängt solche Bezüge über Rechnungsnummer und
 Lizenzposition wieder an; was nicht eindeutig ist, wird nur gelistet
 (--dry-run zeigt vorab, was passieren würde).
+
+**Lizenzkonto:** Der Reiter *Lizenzkonten* zeigt je Anbieterkonto (Kundennummer
+beim Anbieter, Vorgänger eines Anbieterwechsels eingeschlossen), wie viele
+Lizenzen je Produkt laufen, wer sie hält und welches Lizenzjahr berechnet ist
+— als Raster Produkt × Halter × Jahr mit Rechnungsnummer oder „fehlt“. Halten
+mehrere Firmen Lizenzen desselben Kontos, pflegen Sie die **Aufteilung** je
+Produkt („Märkische Bunker 5 × Exchange ab 18.10.2025“): fremde Halter füllen
+zuerst den Vertrag mit der größten Menge, dann nach Beginn, der Vertragshalter
+behält den Rest. Die Abtretungen je Vertrag entstehen daraus, folgen jeder
+Änderung und wandern beim Anbieterwechsel auf den Nachfolger; manuelle
+Abtretungen bleiben als Ausnahme möglich. Der Zeitplan plant auch abgelöste
+und beendete Verträge der letzten drei Jahre nach, damit eine spätere
+Aufteilung ihr Soll noch ändert. **Prüffälle an Bezügen** zeigen Positionen,
+die mehr Lizenzmonate decken, als sie haben (überbucht), und Bezüge, deren
+Leistungszeitraum die Periode nicht trifft — mit „Auf … verschieben“ auf die
+passende Periode desselben Abos oder „Bezug lösen“; der Bezugsdialog und die
+Schnellzuordnung warnen vorab mit ⚠.
+
+**Serienvorlagen (Plan):** Führt ein Buchhaltungsprogramm die Rechnungen,
+entstehen wiederkehrende Rechnungen dort als Serienvorlagen. Das Register
+spiegelt sie (Lexoffice: täglich und nach dem Belegsync, nur lesend) und zeigt
+im Lizenzkonto je Vorlage Status, Rhythmus, nächste Ausführung und die
+Lizenzpositionen mit den Abos, die sie berechnen. Die Zuordnung Abo ↔
+Vorlagenposition schlägt der Lauf vor (gleicher Empfänger, Artikel, Menge;
+bei mehreren Endkunden nur mit Nennung) — Sie bestätigen, ordnen von Hand zu
+oder lösen. Perioden eines Abos mit laufender Vorlage lässt der
+Rechnungsvorschlag aus. **Prüfregeln Bestand ↔ Plan** melden vor der Rechnung:
+Abo ohne Vorlage, Vorlage ohne Abo („Abo aus Vorlage anlegen“ übernimmt
+Artikel, Menge, Rhythmus und Preis), abweichende Menge, Vorlage läuft nach dem
+Abo-Ende weiter, Vorlage pausiert oder beendet bei laufendem Abo, nächste
+Ausführung mehr als sieben Tage neben dem Periodenbeginn, letzte Ausführung
+fehlgeschlagen — in der Kachel, im Wochen-Digest und im Arbeitsvorrat. Jede
+gespiegelte Rechnung trägt den Verweis auf ihre Vorlage.
+
+**Überblick und Reiter:** Der Einstieg „Abos & Lizenzen“ zeigt keine
+Abo-Liste mehr, sondern eine **Aufgabenliste**: fällige Perioden ohne
+Rechnung (mit offenem Betrag), unbestätigte Vorschläge, Prüffälle an
+Bezügen, Befunde zu Serienvorlagen, Aufteilungen über dem Bestand, Abos ohne
+Halter, Verlängerungen oder Enden in 30 Tagen und veraltete Anbieterstände —
+jede Zeile mit Zähler und Sprung auf die Fläche, auf der entschieden wird.
+Daneben steht der **Stand**: der letzte Vorschlagslauf (mit „Vorschläge
+berechnen“) und je Anbieter der letzte Import mit Alter. Die Reiter folgen
+dem Ablauf: Überblick · Lizenzkonten · Abgleich · Perioden · Inbox │ Abos ·
+Lizenzbestand · Einkauf │ Berichte · Preise; Produkt-Einstufung und
+Abrechnung liegen im ⋯-Menü. Die Abo-Liste erreichen Sie über „Abos“.
+
+**Sichere und unsichere Vorschläge:** Der Vorschlagslauf (stündlich und
+nach jedem Import) bestätigt sichere Treffer selbst — ein Beleg, dessen
+Rechnungsdatum höchstens 14 Tage vor bis 45 Tage nach dem Periodenbeginn
+liegt und der die Periode mit passender Lizenzzahl voll deckt; die
+Bestätigung steht im Protokoll als „automatisch bestätigt“. Alles andere
+bleibt Vorschlag und trägt „unsicher“ mit dem Grund im Tooltip. Die
+Periodenseite zeigt darum standardmäßig „Unbestätigte Vorschläge“; die
+Filter „Nur Probleme“ und die Statuskacheln bleiben.
+
+**Sammelaktionen:** Auf der Periodenseite wählen Sie Zeilen über die
+Kästchen und bestätigen alle Vorschläge auf einmal, verzichten mit einem
+Grund für alle („Verzichten / strittig …“) oder lassen je
+Rechnungsempfänger der Auswahl einen Entwurf anlegen. Entschiedene und
+bevorstehende Perioden überspringt die Aktion und nennt die Zahl; jede
+Periode bekommt denselben Protokolleintrag wie bei der Einzelaktion. Es
+gibt keine Vorauswahl.
+
+**Produkt-Einstufung mit Filter:** Die Einstufung zeigt standardmäßig nur
+Abo-Produkte und Artikel mit Abos oder Vorlagenpositionen; „Alle Artikel“
+und „Ohne Einstufung“ sowie die Suche nach Name oder Nummer grenzen ein.
+Führt ein Buchhaltungsprogramm die Rechnungen, steht je Artikel, in wie
+vielen aktiven Serienvorlagen er vorkommt.
+
+**Import mit Vorschau:** Nach dem Hochladen zeigt das Register zuerst, was
+der Import ändern würde — je Datei neu, geändert (Menge, Preis, Status,
+Beginn, Ende mit dem alten Wert), unverändert und die planbaren Abos des
+Anbieters, die die Datei nicht mehr nennt (der Import beendet sie nicht).
+Übernommen wird erst nach „Übernehmen“; „Verwerfen“ löscht die Dateien.
+Ändert der Anbieter einen Preis, zieht der Import den Einkaufspreis des Abos
+nach, solange er dem letzten Anbieterpreis entspricht — ein von Hand
+gepflegter Preis bleibt — und schreibt eine Katalogzeile ab dem Stand der
+Datei (Datum im Dateinamen wie „2026-10-26_Export.xlsx“, sonst der
+Importtag). Liegt der letzte Import eines Anbieters länger als 30 Tage
+zurück, zeigt der Überblick das an und der Wochen-Digest erinnert.
+
+**Einkauf aus dem Rechnungseingang:** Ordnen Sie im Einkauf-Reiter unter
+„Lieferanten zuordnen“ einem Lieferanten des Stamms den Anbieter zu (der
+Name liefert einen Vorschlag, zugeordnet wird nie automatisch). Sobald eine
+Eingangsrechnung dieses Lieferanten im Rechnungseingang zugeordnet ist,
+übernimmt das Register sie als Einkauf: Quality Hosting positionsgenau über
+den Rechnungsleser (Vertrag und Laufzeit je Position), Domainanbieter je
+Domainname auf das Domain-Abo (nur, wenn das Buchungsjournal des Registrars
+die Kosten nicht schon liefert), alle anderen pro rata auf die Perioden des
+Rechnungsmonats. Jede Zeile trägt die Eingangsrechnung als Herkunft; ein
+zweiter Lauf erkennt sie am Hash. Positionen, die zu keinem Abo passen,
+bleiben als „ohne Abo“ stehen — der Filter „Nur ohne Abo“ zeigt sie, „Abo
+zuordnen“ hängt sie an das richtige Abo und die Periode am Belegdatum.
+Rückwirkend holt `resale:import-incoming --since=` zugeordnete Rechnungen
+nach. Das Lizenzkonto zeigt je Produkt Soll- und Ist-Einkauf sowie die
+Marge der letzten zwölf Monate; der Wochen-Digest meldet Abos, deren
+Vertragspreis vom zuletzt importierten Katalog- oder Anbieterpreis abweicht.
+
+**Rechnungsbezug an Stücklizenzen:** Beim Verkauf einer Lizenz aus dem
+Lizenzbestand wählen Sie die Rechnungsposition aus dem Buchhaltungsprogramm,
+die diese Lizenz berechnet; die Liste zeigt die Positionen des gewählten
+Kunden rund um das Verkaufsdatum, passende (gleicher Artikel oder
+Produktname) stehen vorn und werden vorgeschlagen. Ohne Position bleibt die
+Rechnungsreferenz Freitext. Lizenzliste, Paketseite und Kundenakte zeigen zur
+verknüpften Position die Belegnummer mit Sprung ins Buchhaltungsprogramm und
+Belegbild. Ein Verkauf, der nach 30 Tagen weder Position noch Referenz trägt,
+erscheint als Prüffall „Stücklizenzen ohne Rechnung“ im Überblick, im
+Abgleich des Empfängers und über den Filter „Ohne Rechnung“ im
+Lizenzbestand; nachtragen können Sie den Bezug über „Verkauf berichtigen“.
+Im Kundenportal sehen Kunden ihre verkauften Lizenzen mit Rechnungsnummer,
+nie den Schlüssel.

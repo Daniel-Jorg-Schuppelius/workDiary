@@ -55,6 +55,15 @@ return [
         'empty' => 'No periods planned yet.',
     ],
     'empty' => 'No subscriptions on record.',
+    'licenses' => [
+        'title' => 'Sold licenses',
+        'hint' => 'Individually purchased licenses with their invoice. You receive the license keys personally from your contractor.',
+        'product' => 'Product',
+        'license' => 'License',
+        'sold_on' => 'Sold on',
+        'invoice' => 'Invoice',
+        'no_invoice' => 'none yet',
+    ],
     'back' => 'Back to overview',
     'show' => 'Details',
     // Kachel auf der Portal-Startseite (Review 2026-09-11).

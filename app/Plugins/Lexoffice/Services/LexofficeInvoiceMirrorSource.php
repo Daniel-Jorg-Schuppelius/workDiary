@@ -53,10 +53,10 @@ final class LexofficeInvoiceMirrorSource implements InvoiceMirrorSource {
         return (new LexofficeVoucherLine)->getMorphClass();
     }
 
-    public function linesFor(Organization $organization, ?array $recipientCustomerIds, ?CarbonImmutable $from = null, ?CarbonImmutable $to = null): Collection {
+    public function linesFor(Organization $organization, ?array $recipientCustomerIds, ?CarbonImmutable $from = null, ?CarbonImmutable $to = null, bool $licenceOnly = true): Collection {
         $map = LexofficeContactMap::forOrganization($organization);
 
-        return $this->map($organization, $this->reader()->for($organization, $this->contacts($map, $recipientCustomerIds), $from, $to), $map);
+        return $this->map($organization, $this->reader()->for($organization, $this->contacts($map, $recipientCustomerIds), $from, $to, $licenceOnly), $map);
     }
 
     public function voidedLines(Organization $organization, ?array $recipientCustomerIds): Collection {
@@ -114,7 +114,7 @@ final class LexofficeInvoiceMirrorSource implements InvoiceMirrorSource {
         $query = $this->reader()->unlinkedQuery($organization);
         $total = (clone $query)->count();
         $rows = $query
-            ->with(['voucher:id,external_id,contact_external_id,customer_id,voucher_type,voucher_number,voucher_date,voucher_status,service_starts_on,service_ends_on,voucher_text,recipient_name', 'article:id,name,unit_name'])
+            ->with(['voucher:id,external_id,contact_external_id,customer_id,voucher_type,voucher_number,voucher_date,voucher_status,service_starts_on,service_ends_on,voucher_text,recipient_name,recurring_template_id', 'article:id,name,unit_name'])
             ->orderByDesc(LexofficeVoucher::query()->withoutGlobalScopes()->select('voucher_date')->whereColumn('lexoffice_vouchers.id', 'lexoffice_voucher_lines.voucher_id'))
             ->orderByDesc('id')
             ->limit($limit)
@@ -179,6 +179,8 @@ final class LexofficeInvoiceMirrorSource implements InvoiceMirrorSource {
             organizationId: (int) $line->organization_id,
             key: Sqid::encode(LexofficeVoucherLine::class, $line->id),
             voucherKey: (string) $voucher->id,
+            voucherExternalId: (string) $voucher->external_id,
+            planKey: $voucher->recurring_template_id !== null ? \App\Services\Reselling\Plan\PlanTemplate::keyOf(LexofficeRecurringPlanSource::KEY, (string) $voucher->recurring_template_id) : null,
             voucherNumber: $voucher->voucher_number,
             voucherDate: self::date($voucher->voucher_date),
             voucherStatus: self::status($voucher),

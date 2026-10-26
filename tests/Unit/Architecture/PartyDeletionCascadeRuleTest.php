@@ -103,11 +103,16 @@ final class PartyDeletionCascadeRuleTest extends TestCase {
             if (preg_match_all("/Schema::(?:create|table)\\('([a-z0-9_]+)'.*?\\}\\);/s", $code, $blocks, PREG_SET_ORDER) === 0) {
                 continue;
             }
+            // Je Anweisung wie der Dump je Constraint: ein `nullOnDelete()` auf die Partei neben
+            // einer Kaskade auf die Organisation ist keine Kaskade auf die Partei.
             foreach ($blocks as $block) {
-                foreach (['customers', 'suppliers'] as $party) {
-                    $references = preg_match("/constrained\\('{$party}'\\)|->on\\('{$party}'\\)|foreignIdFor\\([^)]*" . ($party === 'customers' ? 'Customer' : 'Supplier') . '::class/', $block[0]) === 1;
-                    if ($references && preg_match('/cascadeOnDelete\(\)|onDelete\(\'cascade\'\)/', $block[0]) === 1) {
-                        $result[$party][] = $block[1];
+                preg_match_all('/\$\w+->[^;]*;/s', $block[0], $statements);
+                foreach ($statements[0] as $statement) {
+                    foreach (['customers', 'suppliers'] as $party) {
+                        $references = preg_match("/constrained\\('{$party}'\\)|->on\\('{$party}'\\)|foreignIdFor\\([^)]*" . ($party === 'customers' ? 'Customer' : 'Supplier') . '::class/', $statement) === 1;
+                        if ($references && preg_match('/cascadeOnDelete\(\)|onDelete\(\'cascade\'\)/', $statement) === 1) {
+                            $result[$party][] = $block[1];
+                        }
                     }
                 }
             }

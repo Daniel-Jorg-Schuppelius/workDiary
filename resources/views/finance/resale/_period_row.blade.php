@@ -8,9 +8,13 @@
 
   Eine Periodenzeile (Feature 152, MVP-761): Deckung in Lizenzmonaten,
   Bezüge mit Herkunft, Aktionen bestätigen / Bezug / verzichten / öffnen.
-  Erwartet: $period, $subscription, $showSubscription, $canManage, $today.
+  Erwartet: $period, $subscription, $showSubscription, $canManage, $today;
+  optional $bulk (Auswahlspalte für Sammelaktionen, Feature 185). Vorschläge
+  tragen ihre Vertrauensstufe: unsicher = außerhalb des Fensters um den
+  Periodenbeginn (LinkProposer::isSure).
 --}}
 @php
+    $bulk = $bulk ?? false;
     $required = $period->requiredMonths();
     $covered = $period->coveredMonths();
     $term = $period->termMonths();
@@ -18,6 +22,13 @@
     $compact = \App\View\Components\Resale\LicenceMonths::class;
 @endphp
 <tr @class(['hover', 'opacity-60' => $upcoming])>
+    @if ($bulk)
+        <td class="w-8">
+            @if ($canManage && ! $upcoming)
+                <input type="checkbox" class="checkbox checkbox-sm" data-bulk-checkbox name="ids[]" value="{{ $period->sqid }}" aria-label="{{ __('Auswählen') }}">
+            @endif
+        </td>
+    @endif
     @if ($showSubscription)
         <td>
             <a href="{{ route('finance.resale.show', $subscription->sqid) }}" class="link link-hover font-medium">{{ $subscription->label }}</a>
@@ -46,10 +57,19 @@
     </td>
     <td class="text-sm">
         @forelse ($period->links as $link)
+            @php
+                $mirrorLine = $link->mirrorLine();
+                $sure = $link->origin === \App\Enums\Reselling\LinkOrigin::Proposed
+                    ? ($mirrorLine !== null && \App\Services\Reselling\Register\LinkProposer::isSure($period, $subscription, $mirrorLine))
+                    : null;
+                $previewUrl = $mirrorLine?->previewUrl; // Belegbild über die Spiegelquelle (Recht prüft die Quelle)
+            @endphp
             <span class="inline-flex items-center gap-1 mr-1 mb-0.5">
-                <x-status-badge size="xs" :tone="$link->origin->tone()" :label="($link->voucher_number ?: '—') . ' · ' . \App\Services\Reselling\Register\LicenseMonths::label((float) $link->months, (float) $term)" :title="$link->origin->label() . ($link->note ? ' · ' . $link->note : '')" />
-                {{-- Belegbild über die Spiegelquelle der Position (Recht prüft die Quelle). --}}
-                @php $previewUrl = $link->mirrorLine()?->previewUrl; @endphp
+                <x-status-badge size="xs" :tone="$sure === false ? 'warning' : $link->origin->tone()" :label="($link->voucher_number ?: '—') . ' · ' . \App\Services\Reselling\Register\LicenseMonths::label((float) $link->months, (float) $term)"
+                                :title="$link->origin->label() . ($sure === null ? '' : ' · ' . __('resale.link.confidence.' . ($sure ? 'sure' : 'unsure'))) . ($link->note ? ' · ' . $link->note : '')" />
+                @if ($sure === false)
+                    <x-status-badge size="xs" tone="warning" outline :label="__('resale.link.confidence.unsure')" :title="__('resale.link.confidence.unsure_hint')" />
+                @endif
                 @if ($previewUrl !== null)
                     <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="$previewUrl" :title="__('resale.invoices.preview')" />
                 @endif
@@ -74,7 +94,7 @@
     <td>
         <x-status-badge size="xs" :tone="$period->status->tone()" :label="$period->status->label()" />
         @if ($period->decided_at !== null)
-            <span class="block text-xs text-muted">{{ $period->decidedBy?->name }} · {{ $period->decided_at->fdate() }}</span>
+            <span class="block text-xs text-muted">{{ $period->decidedBy?->name ?? __('resale.link.origin.auto') }} · {{ $period->decided_at->fdate() }}</span>
         @endif
     </td>
     <td class="text-right">

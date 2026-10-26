@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Reselling;
 
 use App\Enums\Contract\ContractPartnerType;
-use App\Enums\Reselling\{BillingFrequency, CompanyMappingMode, ImportStatus};
+use App\Enums\Reselling\{BillingFrequency, CompanyMappingMode, ImportStatus, LinkOrigin};
 use App\Enums\Reselling\{PeriodStatus, RenewalMode, SubscriptionKind, SubscriptionProvider, SubscriptionStatus};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
@@ -22,15 +22,17 @@ use App\Http\Requests\Reselling\{AssignResaleHolderRequest, ImportResaleFilesReq
 use App\Models\Contract\Contract;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Platform\Organization;
-use App\Models\Reselling\{CompanyMapping, ResaleImport, ResalePeriod, ResaleSubscription};
+use App\Models\Reselling\{CompanyMapping, ResaleImport, ResalePeriod, ResalePlanLink, ResaleSubscription};
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Platform\Catalog\ArticleCatalog;
 use App\Services\Reselling\Marketplace\MarketplaceCompany;
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine, MirrorVoucher};
-use App\Services\Reselling\Register\{HolderResolver, LicenseMonths, LinkProposer, MarketplaceImporter, PeriodLinker, PeriodPlanner};
+use App\Services\Reselling\Plan\{PlanLine, RecurringPlans};
+use App\Services\Reselling\Register\{HolderResolver, LicenseMonths, LinkProposer, MarketplaceImporter, PeriodLinker, PeriodPlanner, ResaleOverview};
 use App\Support\{CsvExport, Sqid};
 use Carbon\CarbonImmutable;
 use Carbon\Exceptions\InvalidFormatException;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\{Builder, Collection};
 use Illuminate\Http\{RedirectResponse, Request};
@@ -49,6 +51,17 @@ class ResaleSubscriptionController extends Controller {
     private const PER_PAGE = 50;
 
     public function __construct(private readonly InvoiceMirror $mirror, private readonly PeriodLinker $linker) {}
+
+    /** Überblick als Aufgabenliste (Feature 185, MVP-1414); die Abo-Liste liegt unter `subscriptions`. */
+    public function overview(ResaleOverview $overview): View {
+        $organization = $this->currentOrganizationOrAbort(404);
+        $data = $overview->build($organization);
+
+        return view('finance.resale.overview', [
+            'overview' => $data,
+            'summary' => ['open_periods' => $data['summary']['open'], 'unassigned' => $data['summary']['unassigned']],
+        ]);
+    }
 
     public function index(Request $request): View {
         $today = ResalePeriod::today();
@@ -125,8 +138,14 @@ class ResaleSubscriptionController extends Controller {
             ->filter(static fn(ResalePeriod $p): bool => (! $p->status->isDecided() || $p->status === PeriodStatus::Partial) && ! $p->starts_on->greaterThan($today))
             ->values();
 
+        $plans = app(RecurringPlans::class);
+        $planLinks = ResalePlanLink::query()->where('subscription_id', $subscription->id)->get()
+            ->map(static fn(ResalePlanLink $link): array => ['link' => $link, 'template' => $plans->templateByKey($organization, $link->plan_key)])
+            ->all();
+
         return view('finance.resale.show', [
             'subscription' => $subscription,
+            'planLinks' => $planLinks,
             'today' => $today,
             'assignedNow' => $subscription->assignments->isNotEmpty() ? $subscription->assignedQuantityOn($today) : 0,
             'openPeriods' => $openPeriods,
@@ -233,7 +252,49 @@ class ResaleSubscriptionController extends Controller {
             ];
         }
 
+        // „Abo aus Vorlage anlegen" (Feature 185, MVP-1413): die Vorlagenposition liefert Artikel, Menge, Rhythmus und Preis.
+        $planKey = trim((string) $request->query('plan', ''));
+        $template = $planKey !== '' && $organization !== null ? app(RecurringPlans::class)->templateByKey($organization, $planKey) : null;
+        $planLine = $template?->line((int) $request->query('position', 0));
+        if ($template !== null && $planLine !== null) {
+            $months = $template->intervalMonths();
+            $licences = max(1, (int) round($planLine->licences($months)));
+            $monthlyUnit = LicenseMonths::isMonthUnit($planLine->unitName);
+            $prefill += [
+                'holder' => $template->recipientCustomerId !== null ? 'customer' : 'none',
+                'customer_id' => $template->recipientCustomerId,
+                'label' => $planLine->label(),
+                'kind' => self::kindFor($planLine)->value,
+                'article' => app(ArticleCatalog::class)->find((int) $organization->id, $planLine->articleKey)?->formKey,
+                'quantity' => $licences,
+                'starts_on' => $template->nextExecutionOn !== null && $months > 0 ? $template->nextExecutionOn->subMonthsNoOverflow($months)->toDateString() : ResalePeriod::today()->toDateString(),
+                'interval' => $months === 1 ? BillingFrequency::Monthly->value : BillingFrequency::Yearly->value,
+                'term_months' => $months > 0 ? $months : 12,
+                'provider' => SubscriptionProvider::Manual->value,
+                // Preis je Lizenz und Intervall: Monatspreis × Intervallmonate, Jahres-/Stückpreis unverändert.
+                'sale_unit_price' => $planLine->unitNet->times($monthlyUnit && $months > 0 ? $months : 1)->withScale(2)->getAmount(),
+                'plan_key' => $template->key,
+                'plan_position' => $planLine->position,
+            ];
+        }
+
         return $this->dialog(null, $prefill);
+    }
+
+    /** Abo-Art aus der Vorlagenposition: Domain, Hosting, Backup am Namen, sonst Lizenz bzw. Sonstiges. */
+    private static function kindFor(PlanLine $line): SubscriptionKind {
+        $text = mb_strtolower($line->text() . ' ' . (string) $line->articleName);
+        if (str_contains($text, 'domain') || str_contains($text, 'tld')) {
+            return SubscriptionKind::Domain;
+        }
+        if (str_contains($text, 'hosting') || str_contains($text, 'webspace') || str_contains($text, 'server')) {
+            return SubscriptionKind::Hosting;
+        }
+        if (str_contains($text, 'backup')) {
+            return SubscriptionKind::Backup;
+        }
+
+        return $line->articleIsLicence ? SubscriptionKind::License : SubscriptionKind::Other;
     }
 
     public function store(SaveResaleSubscriptionRequest $request, PeriodPlanner $planner): RedirectResponse {
@@ -242,6 +303,20 @@ class ResaleSubscriptionController extends Controller {
             'created_by_user_id' => $request->user()?->id,
         ]);
         $planner->sync($subscription);
+        // Aus einer Vorlagenposition angelegt: die Zuordnung gleich festhalten (Feature 185, MVP-1413).
+        $planKey = trim((string) $request->input('plan_key', ''));
+        if ($planKey !== '') {
+            ResalePlanLink::query()->create([
+                'organization_id' => $subscription->organization_id,
+                'subscription_id' => $subscription->id,
+                'plan_key' => mb_substr($planKey, 0, 120),
+                'line_position' => max(0, (int) $request->input('plan_position', 0)),
+                'quantity' => $subscription->quantity,
+                'origin' => LinkOrigin::Manual,
+                'confirmed_at' => now(),
+                'created_by' => $request->user()?->id,
+            ]);
+        }
 
         return redirect()->route('finance.resale.show', $subscription->sqid)->with('success', __('resale.flash.created'));
     }
@@ -281,7 +356,7 @@ class ResaleSubscriptionController extends Controller {
             $planner->sync($parent);
         }
 
-        return redirect()->toList('finance.resale.index')->with('success', __('resale.flash.deleted'));
+        return redirect()->toList('finance.resale.subscriptions')->with('success', __('resale.flash.deleted'));
     }
 
     /**
@@ -369,23 +444,53 @@ class ResaleSubscriptionController extends Controller {
         );
     }
 
-    public function importStore(ImportResaleFilesRequest $request, MarketplaceImporter $importer): RedirectResponse {
+    /**
+     * Hochladen zeigt zuerst die Vorschau (Feature 185, MVP-1418): neu, geändert
+     * (Menge, Preis, Status, Beginn, Ende), nicht mehr enthalten. Die Dateien
+     * liegen bis zur Übernahme unter `resale/<org>/<token>/` samt `meta.json`.
+     */
+    public function importStore(ImportResaleFilesRequest $request, MarketplaceImporter $importer): View {
         $uploads = $request->uploads(); // mindestens eine Datei — sonst 422 aus dem FormRequest
         $organization = $this->currentOrganizationOrAbort(404);
+        $token = (string) Str::uuid();
+        $directory = self::importDirectory($organization, $token);
+        $meta = ['generic_provider' => $request->genericProvider()->value, 'files' => []];
         $files = [];
-        $directory = 'resale/' . $organization->id . '/' . Str::uuid();
         foreach ($uploads as $kind => $upload) {
             $stored = (string) Storage::disk(ResaleImport::DISK)->putFileAs($directory, $upload, $kind . '.' . strtolower((string) $upload->getClientOriginalExtension()));
-            $files[$kind] = ['name' => Str::limit((string) $upload->getClientOriginalName(), 180, ''), 'path' => Storage::disk(ResaleImport::DISK)->path($stored), 'stored' => $stored];
+            $name = Str::limit((string) $upload->getClientOriginalName(), 180, '');
+            $meta['files'][$kind] = ['name' => $name, 'stored' => $stored];
+            $files[$kind] = ['name' => $name, 'path' => Storage::disk(ResaleImport::DISK)->path($stored), 'stored' => $stored];
         }
+        Storage::disk(ResaleImport::DISK)->put($directory . '/meta.json', JsonHelper::encode($meta));
+
+        return view('finance.resale.import_preview', [
+            'preview' => $importer->preview($organization, $files, null, $request->genericProvider()),
+            'token' => $token,
+        ]);
+    }
+
+    /** Übernahme nach der Vorschau: liest die abgelegten Dateien und führt den eigentlichen Import. */
+    public function importCommit(Request $request, MarketplaceImporter $importer): RedirectResponse {
+        $organization = $this->currentOrganizationOrAbort(404);
+        $meta = $this->importMeta($organization, $request);
+        if ($meta === null) {
+            return redirect()->route('finance.resale.index')->with('error', __('resale.import.preview.flash.expired'));
+        }
+        $files = [];
+        foreach ($meta['files'] as $kind => $file) {
+            $files[$kind] = ['name' => $file['name'], 'path' => Storage::disk(ResaleImport::DISK)->path($file['stored']), 'stored' => $file['stored']];
+        }
+        $genericProvider = SubscriptionProvider::tryFrom($meta['generic_provider']) ?? SubscriptionProvider::Other;
 
         try {
-            $records = $importer->import($organization, $request->user(), $files, null, $request->genericProvider());
+            $records = $importer->import($organization, $request->user(), $files, null, $genericProvider);
         } catch (\Throwable $e) {
             Log::error('resale.import failed', ['organization_id' => $organization->id, 'exception' => $e]);
 
             return redirect()->toList('finance.resale.index')->with('error', __('resale.general.failed'));
         }
+        Storage::disk(ResaleImport::DISK)->delete(self::importDirectory($organization, (string) $request->input('token')) . '/meta.json');
         $summary = [];
         $unassigned = 0;
         $skipped = 0;
@@ -405,6 +510,49 @@ class ResaleSubscriptionController extends Controller {
 
         // Übersprungene Zeilen sind kein Fehlschlag: der Lauf ist durch, die Inbox zeigt die Befunde je Zeile.
         return redirect()->route($unassigned > 0 || $skipped > 0 ? 'finance.resale.inbox' : 'finance.resale.index')->with($failed ? 'error' : 'success', $message);
+    }
+
+    /** Vorschau verwerfen: die abgelegten Dateien gehen weg, nichts wurde übernommen. */
+    public function importDiscard(Request $request): RedirectResponse {
+        $organization = $this->currentOrganizationOrAbort(404);
+        if ($this->importMeta($organization, $request) !== null) {
+            Storage::disk(ResaleImport::DISK)->deleteDirectory(self::importDirectory($organization, (string) $request->input('token')));
+        }
+
+        return redirect()->route('finance.resale.index')->with('info', __('resale.import.preview.flash.discarded'));
+    }
+
+    private static function importDirectory(Organization $organization, string $token): string {
+        return 'resale/' . $organization->id . '/' . $token;
+    }
+
+    /**
+     * Ablage der Vorschau zum Token — nur innerhalb der eigenen Organisation, nur ein gültiges UUID.
+     *
+     * @return array{generic_provider: string, files: array<string, array{name: string, stored: string}>}|null
+     */
+    private function importMeta(Organization $organization, Request $request): ?array {
+        $token = (string) $request->input('token', '');
+        if (! Str::isUuid($token)) {
+            return null;
+        }
+        $path = self::importDirectory($organization, $token) . '/meta.json';
+        if (! Storage::disk(ResaleImport::DISK)->exists($path)) {
+            return null;
+        }
+        $meta = JsonHelper::decode((string) Storage::disk(ResaleImport::DISK)->get($path), true);
+        if (! is_array($meta) || ! is_array($meta['files'] ?? null) || $meta['files'] === []) {
+            return null;
+        }
+        $files = [];
+        foreach ($meta['files'] as $kind => $file) {
+            if (! is_array($file) || ! is_string($file['stored'] ?? null) || ! Storage::disk(ResaleImport::DISK)->exists($file['stored'])) {
+                return null;
+            }
+            $files[(string) $kind] = ['name' => (string) ($file['name'] ?? ''), 'stored' => $file['stored']];
+        }
+
+        return ['generic_provider' => (string) ($meta['generic_provider'] ?? ''), 'files' => $files];
     }
 
     /**

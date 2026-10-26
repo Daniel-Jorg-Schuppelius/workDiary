@@ -55,6 +55,15 @@ return [
         'empty' => 'Noch keine Perioden geplant.',
     ],
     'empty' => 'Keine Abos hinterlegt.',
+    'licenses' => [
+        'title' => 'Verkaufte Lizenzen',
+        'hint' => 'Einzeln gekaufte Lizenzen mit Rechnung. Die Lizenzschlüssel erhalten Sie persönlich von Ihrem Auftragnehmer.',
+        'product' => 'Produkt',
+        'license' => 'Lizenz',
+        'sold_on' => 'Verkauft am',
+        'invoice' => 'Rechnung',
+        'no_invoice' => 'noch keine',
+    ],
     'back' => 'Zur Übersicht',
     'show' => 'Details',
     // Kachel auf der Portal-Startseite (Review 2026-09-11).

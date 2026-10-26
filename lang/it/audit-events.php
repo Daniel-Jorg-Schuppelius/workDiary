@@ -1366,6 +1366,16 @@ return [
         'reopened' => 'Decisione sul periodo ritirata',
         'linked' => 'Riga fattura assegnata manualmente',
         'link_removed' => 'Riferimento fattura rimosso',
+        'link_moved' => 'Collegamento fattura spostato su un altro periodo',
+        'auto_confirmed' => 'Collegamento fattura confermato automaticamente (corrispondenza sicura)',
+    ],
+    'resale_account_allocation' => [
+        'saved' => 'Ripartizione del conto licenze salvata',
+        'removed' => 'Ripartizione del conto licenze eliminata',
+    ],
+    'resale_plan_link' => [
+        'saved' => 'Modello ricorrente collegato a un abbonamento',
+        'removed' => 'Collegamento al modello ricorrente rimosso',
     ],
     'resale_subscription' => [
         'rehomed' => 'Titolare dell’abbonamento cambiato',

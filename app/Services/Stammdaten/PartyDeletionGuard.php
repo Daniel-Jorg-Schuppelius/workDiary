@@ -46,7 +46,7 @@ final class PartyDeletionGuard {
             'invoice_schedules', 'invoice_sender_rules', 'sales_discount_group_overrides', 'sites',
         ],
         'suppliers' => [
-            'article_supplies', 'invoice_sender_rules', 'pricing_margin_rules', 'supplier_catalog_items',
+            'article_supplies', 'invoice_sender_rules', 'pricing_margin_rules', 'resale_provider_suppliers', 'supplier_catalog_items',
             'supplier_catalog_sources',
         ],
     ];

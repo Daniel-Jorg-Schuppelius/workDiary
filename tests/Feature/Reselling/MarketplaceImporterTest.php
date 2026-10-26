@@ -207,26 +207,139 @@ class MarketplaceImporterTest extends TestCase {
             ->assertSee(route('finance.resale.inbox.assign', ['company' => 'Muster Bau GmbH']), false);
     }
 
-    public function test_import_dialog_stores_files_and_reports_counts(): void {
+    public function test_import_dialog_shows_the_preview_and_commits_only_after_confirmation(): void {
         $admin = $this->orgAdmin();
         $this->actingAs($admin)->get(route('finance.resale.import.create'))->assertOk()->assertSee(__('resale.import.title'));
         $qh = QualityHostingContractsReaderTest::writeFixture();
         $this->tempFiles[] = $qh;
 
-        $response = $this->actingAs($admin)->post(route('finance.resale.import.store'), [
+        // Hochladen: Vorschau statt Import (Feature 185, MVP-1418) — nichts geschrieben, Dateien abgelegt.
+        $preview = $this->actingAs($admin)->post(route('finance.resale.import.store'), [
             'telekom' => UploadedFile::fake()->createWithContent('purchases.csv', (string) file_get_contents(self::FIXTURE)),
-            'qualityhosting' => new UploadedFile($qh, 'Export.xlsx', null, null, true),
+            'qualityhosting' => new UploadedFile($qh, '2026-09-04_Export.xlsx', null, null, true),
         ]);
+        $preview->assertOk()
+            ->assertSee(__('resale.import.preview.title'))
+            ->assertSee('ent-0001')
+            ->assertSee('CNLCON00167')
+            ->assertSee(__('resale.import.preview.export_date', ['date' => '04.09.2026']))
+            ->assertSee(route('finance.resale.import.commit'), false);
+        $this->assertSame(0, ResaleImport::query()->count());
+        $this->assertSame(0, ResaleSubscription::query()->count());
+        preg_match('/name="token" value="([0-9a-f-]{36})"/', (string) $preview->getContent(), $m);
+        $token = $m[1] ?? '';
+        $this->assertNotSame('', $token);
+        Storage::disk(ResaleImport::DISK)->assertExists('resale/' . $this->organization->id . '/' . $token . '/meta.json');
+
+        // Übernahme nach Bestätigung.
+        $response = $this->actingAs($admin)->post(route('finance.resale.import.commit'), ['token' => $token]);
         $response->assertRedirect(route('finance.resale.inbox'))->assertSessionHas('success');
         $this->assertSame(2, ResaleImport::query()->count());
         $this->assertSame(8, ResaleSubscription::query()->count());
         Storage::disk(ResaleImport::DISK)->assertExists((string) ResaleImport::query()->first()?->file_path);
+        Storage::disk(ResaleImport::DISK)->assertMissing('resale/' . $this->organization->id . '/' . $token . '/meta.json');
+
+        // Dasselbe Token noch einmal: abgelaufen, kein zweiter Lauf.
+        $this->actingAs($admin)->post(route('finance.resale.import.commit'), ['token' => $token])
+            ->assertRedirect(route('finance.resale.index'))->assertSessionHas('error', __('resale.import.preview.flash.expired'));
+        $this->assertSame(2, ResaleImport::query()->count());
+
+        // Verwerfen löscht die Ablage.
+        $second = $this->actingAs($admin)->post(route('finance.resale.import.store'), [
+            'telekom' => UploadedFile::fake()->createWithContent('purchases.csv', (string) file_get_contents(self::FIXTURE)),
+        ])->assertOk();
+        preg_match('/name="token" value="([0-9a-f-]{36})"/', (string) $second->getContent(), $m);
+        $this->actingAs($admin)->post(route('finance.resale.import.discard'), ['token' => $m[1]])
+            ->assertRedirect(route('finance.resale.index'))->assertSessionHas('info');
+        Storage::disk(ResaleImport::DISK)->assertMissing('resale/' . $this->organization->id . '/' . $m[1] . '/meta.json');
+        $this->assertSame(2, ResaleImport::query()->count());
 
         // Keine Datei: Feldfehler als 422 im Dialog statt Flash-Redirect (Review 2026-09-11), kein Lauf.
         $this->actingAs($admin)->postJson(route('finance.resale.import.store'), [])
             ->assertStatus(422)
             ->assertJsonPath('errors.telekom.0', __('resale.import.flash.no_files'));
         $this->assertSame(2, ResaleImport::query()->count());
+    }
+
+    public function test_preview_classifies_new_changed_unchanged_and_missing_rows(): void {
+        $importer = app(MarketplaceImporter::class);
+        $files = $this->files();
+        $first = $importer->preview($this->organization, $files);
+        $this->assertSame(['new' => 8, 'changed' => 0, 'unchanged' => 0, 'missing' => 0], $first['total']);
+        $this->assertSame(5, $first['kinds'][ResaleImport::KIND_PURCHASES]['counts']['new']);
+        $this->assertCount(1, $first['kinds'][ResaleImport::KIND_PURCHASES]['issues'], 'wöchentliche Zeile ist ein Befund');
+        $this->assertSame(0, ResaleSubscription::query()->count(), 'Vorschau schreibt nichts');
+
+        $importer->import($this->organization, null, $files);
+
+        // Laufzeitende von ent-0002 geändert, ent-0005 fehlt in der Datei.
+        $changed = sys_get_temp_dir() . '/purchases-preview-' . uniqid() . '.csv';
+        $csv = str_replace(',07.10.26,EUR,07.10.24,', ',07.10.27,EUR,07.10.24,', (string) file_get_contents(self::FIXTURE));
+        $csv = implode("\n", array_values(array_filter(explode("\n", $csv), static fn(string $line): bool => ! str_contains($line, 'ent-0005'))));
+        file_put_contents($changed, $csv);
+        $this->tempFiles[] = $changed;
+        $files[ResaleImport::KIND_PURCHASES] = ['name' => 'purchases.csv', 'path' => $changed];
+
+        $second = $importer->preview($this->organization, $files);
+        $telekom = $second['kinds'][ResaleImport::KIND_PURCHASES];
+        $this->assertSame(['new' => 0, 'changed' => 1, 'unchanged' => 3, 'missing' => 1], $telekom['counts']);
+        $row = collect($telekom['rows'])->firstWhere('external_id', 'ent-0002');
+        $this->assertSame(MarketplaceImporter::CHANGE_CHANGED, $row['change']);
+        $this->assertSame(['ends_on'], $row['changes']);
+        $this->assertSame('2026-10-07', $row['previous']['ends_on']);
+        $this->assertSame('2027-10-07', $row['ends_on']);
+        $this->assertSame('ent-0005', $telekom['missing'][0]['external_id']);
+        $this->assertSame(['new' => 0, 'changed' => 0, 'unchanged' => 3, 'missing' => 0], $second['kinds'][ResaleImport::KIND_CONTRACTS]['counts']);
+        $this->assertSame(8, ResaleSubscription::query()->count(), 'Vorschau ändert den Bestand nicht');
+    }
+
+    /** Generische Liste mit Datum im Namen: Einkaufspreis folgt dem Anbieter, bis er von Hand gepflegt ist; je Änderung eine Katalogzeile ab Exportdatum. */
+    public function test_provider_price_change_follows_unless_maintained_by_hand(): void {
+        $importer = app(MarketplaceImporter::class);
+        $csv = static function (string $price): string {
+            $path = sys_get_temp_dir() . '/generic-price-' . uniqid() . '.csv';
+            file_put_contents($path, "\xEF\xBB\xBFKennung;Firma;Produkt;Menge;Beginn;Ende;Intervall;Laufzeit (Monate);Einkaufspreis;Verkaufspreis;Anbieter;Bestellnummer\nGEN-1;Muster Bau GmbH;Microsoft 365 Business Premium;3;05.08.2025;;jährlich;12;{$price};247,20;;\n");
+
+            return $path;
+        };
+        $this->tempFiles[] = $first = $csv('187,92');
+        $importer->import($this->organization, null, [ResaleImport::KIND_GENERIC => ['name' => '2026-09-01_liste.csv', 'path' => $first]], null, SubscriptionProvider::Manual);
+        $subscription = ResaleSubscription::query()->where('external_id', 'GEN-1')->firstOrFail();
+        $this->assertSame('187.9200', $subscription->purchase_unit_price?->getAmount());
+        $this->assertSame('187.9200', $subscription->provider_unit_price?->getAmount());
+        $this->assertSame(0, ResalePriceEntry::query()->count(), 'erster Stand ist keine Preisänderung');
+
+        // Anbieter erhöht: Abo-Preis folgt, Katalogzeile ab Exportdatum aus dem Dateinamen.
+        $this->tempFiles[] = $second = $csv('200,00');
+        $records = $importer->import($this->organization, null, [ResaleImport::KIND_GENERIC => ['name' => '2026-09-01_liste.csv', 'path' => $second]], null, SubscriptionProvider::Manual);
+        $this->assertSame(1, $records[0]->rows_updated, 'Preisänderung zählt als geändert');
+        $subscription->refresh();
+        $this->assertSame('200.0000', $subscription->purchase_unit_price?->getAmount());
+        $this->assertSame('200.0000', $subscription->provider_unit_price?->getAmount());
+        $entry = ResalePriceEntry::query()->where('provider', SubscriptionProvider::Manual->value)->where('product', 'Microsoft 365 Business Premium')->firstOrFail();
+        $this->assertSame('2026-09-01', $entry->valid_from->toDateString());
+        $this->assertSame(12, $entry->term_months);
+        $this->assertSame('200.0000', $entry->purchase_unit_price->getAmount());
+        $this->assertNull($entry->list_unit_price);
+
+        // Von Hand gepflegt: der Abo-Preis bleibt, der Anbieterpreis und der Katalog folgen trotzdem.
+        $subscription->forceFill(['purchase_unit_price' => '150.0000'])->save();
+        $this->tempFiles[] = $third = $csv('210,00');
+        $preview = $importer->preview($this->organization, [ResaleImport::KIND_GENERIC => ['name' => 'liste 15.09.2026.csv', 'path' => $third]], null, SubscriptionProvider::Manual);
+        $row = $preview['kinds'][ResaleImport::KIND_GENERIC]['rows'][0];
+        $this->assertSame(['price'], $row['changes']);
+        $this->assertFalse($row['price_follows']);
+        $this->assertSame('2026-09-15', $preview['kinds'][ResaleImport::KIND_GENERIC]['export_date']);
+        $importer->import($this->organization, null, [ResaleImport::KIND_GENERIC => ['name' => 'liste 15.09.2026.csv', 'path' => $third]], null, SubscriptionProvider::Manual);
+        $subscription->refresh();
+        $this->assertSame('150.0000', $subscription->purchase_unit_price?->getAmount(), 'manueller Preis bleibt');
+        $this->assertSame('210.0000', $subscription->provider_unit_price?->getAmount());
+        $this->assertSame(2, ResalePriceEntry::query()->count());
+        $this->assertSame('2026-09-14', $entry->fresh()?->valid_to?->toDateString(), 'ältere Zeile endet am Vortag der neuen');
+
+        $this->assertNull(MarketplaceImporter::exportDateOf('Export (1).xlsx'));
+        $this->assertSame('2026-10-26', MarketplaceImporter::exportDateOf('2026-10-26_Export (1).xlsx')?->toDateString());
+        $this->assertNull(MarketplaceImporter::exportDateOf('2026-13-45_Export.xlsx'), 'kein gültiges Datum');
     }
 
     public function test_console_import_command(): void {

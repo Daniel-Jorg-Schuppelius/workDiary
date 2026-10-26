@@ -55,6 +55,15 @@ return [
         'empty' => 'Aucune période planifiée pour le moment.',
     ],
     'empty' => 'Aucun abonnement enregistré.',
+    'licenses' => [
+        'title' => 'Licences vendues',
+        'hint' => 'Licences achetées à l’unité avec leur facture. Les clés de licence vous sont remises personnellement par votre prestataire.',
+        'product' => 'Produit',
+        'license' => 'Licence',
+        'sold_on' => 'Vendue le',
+        'invoice' => 'Facture',
+        'no_invoice' => 'pas encore',
+    ],
     'back' => 'Retour à l’aperçu',
     'show' => 'Détails',
     // Kachel auf der Portal-Startseite (Review 2026-09-11).

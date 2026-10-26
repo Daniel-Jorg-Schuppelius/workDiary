@@ -20,6 +20,7 @@ use App\Http\Requests\Reselling\{ResaleAutoDraftSettingsRequest, ResaleReportDra
 use App\Models\Customer\Customer;
 use App\Models\Reselling\{ResaleArticleClassification, ResalePeriod, ResaleSubscription};
 use App\Services\Platform\Catalog\{ArticleCatalog, CatalogArticle};
+use App\Services\Reselling\Plan\RecurringPlans;
 use App\Services\Reselling\Register\{LicenseArticleClassifier, ResaleInvoiceDraftService, ResaleLocalDraftRun, ResaleMarginReport, ResalePriceCheck, ResaleRenewalReport, ResaleUnbilledReport};
 use App\Settings\SettingScope;
 use App\Support\{CsvExport, Setting, XlsxExport};
@@ -161,11 +162,34 @@ class ResaleReportController extends Controller {
      * Abo-Produkte sind — erkannt über den Namen, vom Betreiber übersteuerbar
      * (nie Abo-Position / immer).
      */
-    public function products(LicenseArticleClassifier $classifier, ResaleLocalDraftRun $autoDrafts, ArticleCatalog $catalog): View {
+    public const PRODUCT_SCOPES = ['subscriptions', 'all', 'unclassified'];
+
+    /** Einstufung mit Filter (Feature 185, MVP-1417): Standard sind Abo-Produkte und Artikel mit Abos; dazu „in Vorlagen" aus der Plan-Quelle. */
+    public function products(Request $request, LicenseArticleClassifier $classifier, ArticleCatalog $catalog, RecurringPlans $plans): View {
         $organization = $this->currentOrganizationOrAbort(404);
         $organizationId = (int) $organization->id;
+        $filters = [
+            'scope' => in_array((string) $request->query('scope', ''), self::PRODUCT_SCOPES, true) ? (string) $request->query('scope') : 'subscriptions',
+            'q' => trim((string) $request->query('q', '')),
+        ];
         $counts = ResaleSubscription::query()->whereNotNull('article_ref')->selectRaw('article_ref, COUNT(*) AS n')->groupBy('article_ref')->pluck('n', 'article_ref')->all();
         $roles = $classifier->roles($organizationId);
+        /** @var array<string, int> $planCounts Artikelschlüssel → Positionen in aktiven Serienvorlagen */
+        $planCounts = [];
+        $plansAvailable = $plans->availableFor($organization);
+        if ($plansAvailable) {
+            foreach ($plans->templatesFor($organization) as $template) {
+                if (! $template->isActive()) {
+                    continue;
+                }
+                foreach ($template->lines as $line) {
+                    if ($line->articleKey !== null) {
+                        $planCounts[$line->articleKey] = ($planCounts[$line->articleKey] ?? 0) + 1;
+                    }
+                }
+            }
+        }
+        $q = mb_strtolower($filters['q']);
         $rows = collect($catalog->active($organizationId))
             ->map(static fn (CatalogArticle $article): array => [
                 'article' => $article,
@@ -173,13 +197,38 @@ class ResaleReportController extends Controller {
                 'detected' => $classifier->detected($article->name),
                 'effective' => $classifier->isLicense($organizationId, $article->key, $article->name),
                 'subscriptions' => (int) ($counts[$article->key] ?? 0),
+                'plans' => (int) ($planCounts[$article->key] ?? 0),
             ])
+            ->filter(static fn (array $row): bool => match ($filters['scope']) {
+                'subscriptions' => $row['effective'] || $row['subscriptions'] > 0 || $row['plans'] > 0,
+                'unclassified' => $row['role'] === null,
+                default => true,
+            })
+            ->filter(static fn (array $row): bool => $q === '' || str_contains(mb_strtolower($row['article']->name), $q) || str_contains(mb_strtolower((string) $row['article']->number), $q))
             ->sortBy(static fn (array $row): string => ($row['effective'] ? '0' : '1') . mb_strtolower($row['article']->name))->values();
 
         return view('finance.resale.products', [
             'rows' => $rows,
             'roles' => ResaleArticleRole::cases(),
-            // Serienrechnung (lokale Rechnungshoheit): Org-Schalter + Vorlauf, Lauf = resale:draft-local.
+            'filters' => $filters,
+            'scopes' => self::PRODUCT_SCOPES,
+            'plansAvailable' => $plansAvailable,
+        ]);
+    }
+
+    /**
+     * Dialog „Abrechnung" (Feature 185, MVP-1405): bei lokaler Rechnungshoheit
+     * Schalter und Vorlauf der Serienrechnung, bei externer Hoheit nur der
+     * Hinweis, welches Programm die Rechnungen führt — der Lauf überspringt
+     * solche Empfänger ohnehin.
+     */
+    public function billingSettings(ResaleLocalDraftRun $autoDrafts, \App\Services\Billing\BillingModeResolver $modes): View {
+        $organization = $this->currentOrganizationOrAbort(404);
+        $mode = $modes->forOrganization($organization);
+
+        return view('finance.resale._billing_dialog', [
+            'mode' => $mode,
+            'external' => $mode->isExternal(),
             'autoDrafts' => $autoDrafts->enabledFor($organization),
             'autoDraftLeadDays' => $autoDrafts->leadDaysFor($organization),
         ]);
@@ -196,7 +245,7 @@ class ResaleReportController extends Controller {
         Setting::set(ResaleLocalDraftRun::SETTING_ENABLED, $request->enabled(), SettingScope::Organization, $organization, $userId);
         Setting::set(ResaleLocalDraftRun::SETTING_LEAD_DAYS, $request->leadDays(), SettingScope::Organization, $organization, $userId);
 
-        return redirect()->route('finance.resale.products')->with('success', __($request->enabled() ? 'resale.auto_draft.flash.enabled' : 'resale.auto_draft.flash.disabled', ['days' => $request->leadDays()]));
+        return redirect()->toList('finance.resale.index')->with('success', __($request->enabled() ? 'resale.auto_draft.flash.enabled' : 'resale.auto_draft.flash.disabled', ['days' => $request->leadDays()]));
     }
 
     public function productsStore(ResaleReportProductRequest $request): RedirectResponse {
@@ -211,7 +260,7 @@ class ResaleReportController extends Controller {
             $existing->fill(['role' => $role, 'updated_by' => $request->user()?->id])->save();
         }
 
-        return redirect()->route('finance.resale.products')->with('success', __('resale.products.flash.saved', ['article' => $article->name, 'role' => $role?->label() ?? __('resale.products.role.auto')]));
+        return redirect()->toList('finance.resale.products')->with('success', __('resale.products.flash.saved', ['article' => $article->name, 'role' => $role?->label() ?? __('resale.products.role.auto')]));
     }
 
     /**
@@ -283,8 +332,9 @@ class ResaleReportController extends Controller {
 
         $key = $result['local'] ? 'resale.draft_flash.created_local' : 'resale.draft_flash.created';
         $net = Money::ofFloat($result['net'], $recipient->currency, 2)->format();
+        $target = \App\Enums\Finance\TransferTarget::tryFrom($result['target'])?->label() ?? $result['target'];
 
-        return redirect()->toList('finance.resale.periods.index')->with('success', __($key, ['customer' => $recipient->name, 'lines' => $result['lines'], 'net' => $net, 'id' => $result['draft_id']]));
+        return redirect()->toList('finance.resale.periods.index')->with('success', __($key, ['customer' => $recipient->name, 'lines' => $result['lines'], 'net' => $net, 'id' => $result['draft_id'], 'target' => $target]));
     }
 
     /**

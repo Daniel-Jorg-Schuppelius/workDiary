@@ -1,8 +1,10 @@
 ---
 title: "Abonnements & licences"
 topic: finance.resale
-version: 2
+version: 5
 keywords:
+    - Aperçu d’import
+    - Actions groupées
     - facturation des abonnements
     - services récurrents
     - revente de services
@@ -265,3 +267,126 @@ considérée comme non couverte). La commande `lexoffice:repair-resale-links`
 rattache ces liens via numéro de facture et ligne de licence ; ce qui n’est
 pas univoque est seulement listé (--dry-run montre à l’avance ce qui se
 passerait).
+
+**Compte de licences :** L'onglet *Comptes de licences* montre par compte
+fournisseur (numéro client chez le fournisseur, prédécesseurs d'un changement
+de fournisseur inclus) combien de licences par produit sont en cours, qui
+les détient et quelle année de licence est facturée — en grille produit ×
+détenteur × année avec numéro de facture ou « manque ». Si plusieurs sociétés
+détiennent des licences du même compte, tenez la **répartition** par produit
+(« Märkische Bunker 5 × Exchange à partir du 18.10.2025 ») : les autres
+détenteurs remplissent d'abord le contrat à la plus grande quantité, puis par
+début ; le titulaire du contrat garde le reste. Les cessions par contrat en
+découlent, suivent chaque modification et passent au successeur lors d'un
+changement de fournisseur ; les cessions manuelles restent possibles à titre
+d'exception. La planification reprend aussi les contrats remplacés et
+terminés des trois dernières années pour qu'une répartition ultérieure change
+encore leur cible. Les **points à vérifier sur les liens** montrent les lignes
+couvrant plus de mois de licence qu'elles n'en ont (surréservées) et les liens
+dont la période de prestation ne correspond pas à la période — avec
+« Déplacer vers … » sur la bonne période du même abonnement ou « Détacher » ;
+le dialogue de lien et l'affectation rapide préviennent avant avec ⚠.
+
+**Modèles récurrents (plan) :** Si un programme de comptabilité émet les
+factures, les factures récurrentes y naissent comme modèles récurrents. Le
+registre les reflète (Lexoffice : chaque jour et après la synchronisation des
+pièces, en lecture seule) et montre dans le compte de licences, par modèle,
+statut, rythme, prochaine exécution et les lignes de licence avec les
+abonnements qu'elles facturent. L'affectation abonnement ↔ ligne de modèle est
+proposée par le traitement (même destinataire, article, quantité ; avec
+plusieurs clients finaux seulement s'ils sont nommés) : vous confirmez,
+affectez à la main ou retirez. Les périodes d'un abonnement avec modèle actif
+sont exclues de la proposition de facture. Les **contrôles stock ↔ plan**
+signalent avant la facture : abonnement sans modèle, modèle sans abonnement
+(« Créer un abonnement depuis le modèle » reprend article, quantité, rythme et
+prix), quantité différente, modèle qui continue après la fin de l'abonnement,
+modèle en pause ou terminé alors que l'abonnement court, prochaine exécution à
+plus de sept jours du début de période, dernière exécution échouée — dans la
+tuile, le résumé hebdomadaire et la file de travail. Chaque facture reflétée
+porte la référence à son modèle.
+
+**Vue d’ensemble et onglets :** L’entrée « Abonnements & licences » n’affiche
+plus la liste des abonnements mais une **liste de tâches** : périodes
+échues sans facture (avec montant ouvert), propositions non confirmées,
+constats sur les liens de facture, constats sur les modèles récurrents,
+répartitions au-delà du stock, abonnements sans titulaire, renouvellements
+ou fins sous 30 jours et exports fournisseur obsolètes — chaque ligne avec un
+nombre et un saut vers la page où l’on décide. À côté, l’**état** : le
+dernier calcul de propositions (avec « Calculer les propositions ») et, par
+fournisseur, le dernier import avec son âge. Les onglets suivent le
+déroulement : Vue d’ensemble · Comptes de licences · Rapprochement ·
+Périodes · Boîte de réception │ Abonnements · Stock de licences · Achats │
+Rapports · Prix ; la classification des produits et la facturation sont
+dans le menu ⋯. La liste des abonnements s’ouvre via « Abonnements ».
+
+**Propositions sûres et incertaines :** Le calcul de propositions (chaque
+heure et après chaque import) confirme lui-même les correspondances sûres —
+une pièce dont la date de facture se situe au plus 14 jours avant à 45 jours
+après le début de période et qui couvre entièrement la période avec le bon
+nombre de licences ; la confirmation figure dans le journal comme
+« confirmée automatiquement ». Tout le reste reste une proposition et porte
+« incertaine » avec la raison dans l’info-bulle. La page des périodes
+affiche donc par défaut « Propositions non confirmées » ; le filtre
+« Problèmes seulement » et les tuiles de statut restent.
+
+**Actions groupées :** Sur la page des périodes, sélectionnez des lignes
+via les cases et confirmez toutes les propositions d’un coup, renoncez avec
+un motif pour toutes (« Renoncer / contester … ») ou faites créer un
+brouillon par destinataire de facture de la sélection. Les périodes
+décidées et à venir sont ignorées et comptées ; chaque période reçoit la
+même entrée de journal que pour l’action individuelle. Il n’y a pas de
+présélection.
+
+**Classification des produits avec filtre :** La classification n’affiche
+par défaut que les produits d’abonnement et les articles avec abonnements ou
+lignes de modèle ; « Tous les articles », « Sans classification » et la
+recherche par nom ou numéro affinent. Si un logiciel de comptabilité émet
+les factures, chaque article indique dans combien de modèles récurrents
+actifs il apparaît.
+
+**Import avec aperçu :** Après le téléversement, le registre montre d’abord
+ce que l’import changerait — par fichier nouveau, modifié (quantité, prix,
+statut, début, fin avec l’ancienne valeur), inchangé et les abonnements
+planifiables du fournisseur que le fichier ne cite plus (l’import ne les
+termine pas). L’application n’a lieu qu’après « Appliquer » ;
+« Abandonner » supprime les fichiers. Si le fournisseur change un prix,
+l’import met à jour le prix d’achat de l’abonnement tant qu’il correspond au
+dernier prix fournisseur — un prix saisi à la main est conservé — et écrit
+une ligne de catalogue à la date du fichier (date dans le nom du fichier
+comme « 2026-10-26_Export.xlsx », sinon le jour de l’import). Si le dernier
+import d’un fournisseur date de plus de 30 jours, la vue d’ensemble le
+signale et le résumé hebdomadaire le rappelle.
+
+**Achats depuis la boîte de factures :** Dans l’onglet Achats, « Associer
+des fournisseurs » relie un fournisseur de la base au prestataire (le nom
+donne une suggestion ; rien n’est associé automatiquement). Dès qu’une
+facture entrante de ce fournisseur est affectée dans la boîte de factures,
+le registre la reprend comme achat : Quality Hosting ligne par ligne via le
+lecteur de factures (contrat et durée par ligne), prestataires de domaines
+par nom de domaine sur l’abonnement du domaine (seulement si le journal
+comptable du registrar ne fournit pas déjà les coûts), tous les autres au
+prorata sur les périodes du mois de facture. Chaque ligne porte la facture
+entrante comme origine ; une seconde exécution la reconnaît par son hachage.
+Les lignes sans abonnement restent « sans abonnement » — le filtre « Sans
+abonnement seulement » les affiche, « Affecter un abonnement » les rattache
+au bon abonnement et à la période de la date de la pièce.
+`resale:import-incoming --since=` rattrape rétroactivement les factures
+affectées. Le compte de licences montre par produit l’achat prévu et réel
+ainsi que la marge des douze derniers mois ; le résumé hebdomadaire signale
+les abonnements dont le prix contractuel diffère du dernier prix de
+catalogue ou de prestataire importé.
+
+**Lien de facture sur les licences à l’unité :** Lors de la vente d’une
+licence du stock, vous choisissez la ligne de facture du logiciel comptable
+qui facture cette licence ; la liste montre les lignes du client choisi
+autour de la date de vente, les lignes correspondantes (même article ou nom
+de produit) viennent en premier et sont proposées. Sans ligne, la référence
+de facture reste du texte libre. La liste des licences, la page du lot et le
+dossier client affichent pour la ligne liée le numéro de pièce avec un saut
+vers le logiciel comptable et l’image de la pièce. Une vente qui, après
+30 jours, ne porte ni ligne ni référence apparaît comme cas à vérifier
+« Licences à l’unité sans facture » dans la vue d’ensemble, dans le
+rapprochement du destinataire et via le filtre « Sans facture » du stock de
+licences ; ajoutez le lien via « Corriger la vente ». Dans le portail client,
+les clients voient leurs licences vendues avec le numéro de facture, jamais
+la clé.

@@ -470,7 +470,8 @@ class RecipientReconcilerTest extends TestCase {
         (new LinkProposer)->propose($this->organization);
         $rows = (new RecipientReconciler)->overview($this->organization);
         $byName = array_column($rows, null, 'name');
-        $this->assertSame(1, $byName['Fallback GmbH']['proposed']);
+        $this->assertSame(0, $byName['Fallback GmbH']['proposed'], 'sicherer Treffer: automatisch bestätigt, kein offener Vorschlag (Feature 185)');
+        $this->assertSame(1, ResalePeriodLink::query()->where('origin', LinkOrigin::Auto->value)->count());
         $this->assertSame(0, $byName['Fallback GmbH']['open']);
         $this->assertSame(0.0, $byName['Fallback GmbH']['free']);
         $this->assertSame(1, $byName['Fallback GmbH']['lines']);

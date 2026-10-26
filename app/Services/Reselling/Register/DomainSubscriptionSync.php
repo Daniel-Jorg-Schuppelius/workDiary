@@ -35,6 +35,31 @@ final class DomainSubscriptionSync {
     /** Präfix in `resale_subscriptions.sync_status`: zuletzt aus der Projektion gespiegelter Halter. */
     public const MIRRORED_HOLDER_PREFIX = 'p:';
 
+    /**
+     * Beginn des Domain-Abos (Feature 185, MVP-1407): das Registrierungsdatum;
+     * fehlt es (der Listen-Sync liefert es nicht, nur der Detailabgleich),
+     * bleibt ein schon gespeicherter Beginn stehen, sonst wird er aus dem
+     * Ablaufdatum rückgerechnet — Jahrestag des Ablaufs, ein Jahr vor dem
+     * laufenden Lizenzjahr (das Vorjahr zeigt, ob es berechnet wurde).
+     */
+    public static function startOf(DomainProjection $projection, ?ResaleSubscription $existing, CarbonImmutable $reference): ?CarbonImmutable {
+        if ($projection->registration_at !== null) {
+            return CarbonImmutable::instance($projection->registration_at)->startOfDay();
+        }
+        if ($existing !== null) {
+            return $existing->starts_on;
+        }
+        if ($projection->expiration_at === null) {
+            return null;
+        }
+        $start = CarbonImmutable::instance($projection->expiration_at)->startOfDay();
+        while ($start->greaterThan($reference)) {
+            $start = $start->subYearNoOverflow();
+        }
+
+        return $start->subYearNoOverflow();
+    }
+
     public function __construct(
         private readonly PeriodPlanner $planner,
         private readonly ResaleArticleCandidates $candidates,
@@ -59,9 +84,14 @@ final class DomainSubscriptionSync {
             $result['domains']++;
             $externalId = mb_strtolower($projection->external_domain);
             $seen[] = $externalId;
-            $startsOn = $projection->registration_at !== null ? CarbonImmutable::instance($projection->registration_at)->startOfDay() : null;
+            $existing = ResaleSubscription::query()->withoutGlobalScopes()
+                ->where('organization_id', $organizationId)
+                ->where('provider', SubscriptionProvider::DomainReselling->value)
+                ->where('external_id', $externalId)
+                ->first();
+            $startsOn = self::startOf($projection, $existing, $reference);
             if ($startsOn === null) {
-                continue; // ohne Registrierungsdatum keine Perioden
+                continue; // weder Registrierungs- noch Ablaufdatum: keine Perioden
             }
             $status = $this->status($projection, $reference);
             $expiresOn = $projection->expiration_at !== null ? CarbonImmutable::instance($projection->expiration_at)->startOfDay()->toDateString() : null;
@@ -82,11 +112,7 @@ final class DomainSubscriptionSync {
             ];
             $hash = (string) CryptoHelper::hash(JsonHelper::encode($attributes));
 
-            $subscription = ResaleSubscription::query()->withoutGlobalScopes()
-                ->where('organization_id', $organizationId)
-                ->where('provider', SubscriptionProvider::DomainReselling->value)
-                ->where('external_id', $externalId)
-                ->first();
+            $subscription = $existing;
             $isNew = $subscription === null;
             $subscription ??= new ResaleSubscription(['organization_id' => $organizationId, 'provider' => SubscriptionProvider::DomainReselling, 'external_id' => $externalId]);
             $unchanged = ! $isNew && $subscription->raw_hash === $hash;

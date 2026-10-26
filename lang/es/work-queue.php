@@ -35,6 +35,7 @@ return [
         'message' => 'En este momento no hay ningún elemento esperándole.',
     ],
     'source' => [
+        'resale_plan' => 'Suscripciones y licencias: plantillas periódicas',
         'approval' => 'Cadenas de aprobación',
         'vacation_approval' => 'Solicitudes de vacaciones',
         'expense_approval' => 'Gastos',

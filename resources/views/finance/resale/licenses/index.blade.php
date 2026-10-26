@@ -64,6 +64,7 @@
                 @endforeach
             </select>
             <x-filter-toggle name="reorder" :label="__('resale.license.filter.reorder')" :checked="$filters['reorder']" tone="error" />
+            <x-filter-toggle name="unbilled" :label="__('resale.license.filter.unbilled')" :checked="$filters['unbilled']" tone="warning" />
         </x-filter-bar>
 
         {{-- Aktueller Bestand je Produkt und Paket (nicht vom Zeitraum abhängig). --}}

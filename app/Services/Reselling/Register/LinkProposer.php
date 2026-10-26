@@ -19,7 +19,9 @@ use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Services\Platform\Catalog\ArticleCatalog;
 use App\Services\Reselling\Marketplace\{MarketplaceCompany, NameTokenMatcher, ProductNameMatcher};
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
+use App\Settings\SettingScope;
 use App\Support\Query\DateRange;
+use App\Support\Setting;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Support\Collection;
@@ -57,6 +59,16 @@ final class LinkProposer {
      */
     public const SHARED_NEAREST_DAYS = 45;
 
+    /** Sicherer Treffer (Feature 185, MVP-1406): Bezugsdatum höchstens so viele Tage vor bzw. nach dem Periodenbeginn. */
+    public const SURE_BEFORE_DAYS = 14;
+
+    public const SURE_AFTER_DAYS = 45;
+
+    /** Org-Einstellung: Zeitpunkt des letzten Laufs (Übersicht „zuletzt abgeglichen"). */
+    public const SETTING_LAST_RUN = 'resale.last_proposal_run_at';
+
+    public const AUDIT_AUTO_CONFIRMED = 'resale_period.auto_confirmed';
+
     private const PASS_NEAREST = 'nearest';
 
     private const PASS_RESERVED = 'reserved';
@@ -68,6 +80,9 @@ final class LinkProposer {
 
     /** @var array<int, array<string, ResalePeriodLink>> Periode → Position → Vorschlag dieses Laufs (zweiter Pass erhöht statt zu doppeln). */
     private array $proposed = [];
+
+    /** @var list<array{0: ResalePeriod, 1: array<string, mixed>}> Audit der automatischen Bestätigungen, geschrieben nach dem Block ohne Modell-Events */
+    private array $autoConfirmedAudits = [];
 
     /** @var array<int, string> Abo-ID → Produktschlüssel des laufenden Laufs */
     private array $productKeys = [];
@@ -115,13 +130,13 @@ final class LinkProposer {
     }
 
     /**
-     * @return array{periods: int, linked: int, partial: int, links: int, lines_without_subscription: int}
+     * @return array{periods: int, linked: int, partial: int, links: int, lines_without_subscription: int, auto_confirmed: int}
      *
      * @throws RuntimeException wenn für die Organisation schon ein Lauf läuft
      */
     public function propose(Organization $organization, ?CarbonImmutable $reference = null): array {
         $reference ??= ResalePeriod::today();
-        $result = ['periods' => 0, 'linked' => 0, 'partial' => 0, 'links' => 0, 'lines_without_subscription' => 0];
+        $result = ['periods' => 0, 'linked' => 0, 'partial' => 0, 'links' => 0, 'lines_without_subscription' => 0, 'auto_confirmed' => 0];
         $lock = Cache::lock('resale:propose:' . $organization->id, self::LOCK_SECONDS);
         if (! $lock->get()) {
             throw new RuntimeException((string) __('resale.propose.locked'));
@@ -132,8 +147,12 @@ final class LinkProposer {
             // sind keine Entscheidung und gehören nicht ins Audit-Protokoll (Review
             // 2026-09-10, A2) — Bestätigen, Verzichten und manuelle Bezüge schreiben
             // ihre Events selbst. organization_id wird hier immer explizit gesetzt.
-            Model::withoutEvents(function () use ($organization, $reference, &$result): void {
-                DB::transaction(function () use ($organization, $reference, &$result): void {
+            // Transaktion außen, Events innen: das Audit der automatischen Bestätigung
+            // entsteht nach dem Block mit Modell-Events, sonst bekäme die Audit-Zeile
+            // keinen Ketten-Hash (HashChained hängt am creating-Event).
+            $this->autoConfirmedAudits = [];
+            DB::transaction(function () use ($organization, $reference, &$result): void {
+                Model::withoutEvents(function () use ($organization, $reference, &$result): void {
                     // Alte Vorschläge weg — bestätigte und manuelle Bezüge bleiben und zählen als
                     // Verbrauch; Bezüge auf Entwurfspositionen (lokaler Rechnungsentwurf) bleiben,
                     // die Quelle grenzt sie aus. Die betroffenen Perioden merken: wer nicht mehr
@@ -157,12 +176,25 @@ final class LinkProposer {
                     $evaluated = $subscriptions->isEmpty() ? [] : $this->evaluate($organization, $subscriptions, $reference, $result);
                     $this->resettle($organization, array_values(array_diff($affected, $evaluated)));
                 });
+                foreach ($this->autoConfirmedAudits as [$period, $payload]) {
+                    $period->audit(self::AUDIT_AUTO_CONFIRMED, $payload);
+                }
             });
+            // Laufstempel ist Systemzustand, keine Einstellung des Nutzers: ohne Modell-Events,
+            // sonst stünde stündlich eine „settings geändert“-Zeile im Audit der Organisation.
+            Organization::withoutEvents(static fn() => Setting::set(self::SETTING_LAST_RUN, CarbonImmutable::now()->toIso8601String(), SettingScope::Organization, $organization, null));
         } finally {
             $lock->release();
         }
 
         return $result;
+    }
+
+    /** Zeitpunkt des letzten Laufs der Organisation (null: noch nie). */
+    public static function lastRunAt(Organization $organization): ?CarbonImmutable {
+        $value = app(\App\Settings\SettingsRegistry::class)->effective(self::SETTING_LAST_RUN, $organization)->value;
+
+        return is_string($value) && $value !== '' ? CarbonImmutable::parse($value) : null;
     }
 
     /**
@@ -254,7 +286,7 @@ final class LinkProposer {
      * Der eigentliche Lauf über die Perioden der Abos mit Halter.
      *
      * @param  Collection<int, ResaleSubscription>  $subscriptions
-     * @param  array{periods: int, linked: int, partial: int, links: int, lines_without_subscription: int}  $result
+     * @param  array{periods: int, linked: int, partial: int, links: int, lines_without_subscription: int, auto_confirmed: int}  $result
      * @return list<int> IDs der bewerteten Perioden
      */
     private function evaluate(Organization $organization, Collection $subscriptions, CarbonImmutable $reference, array &$result): array {
@@ -292,8 +324,11 @@ final class LinkProposer {
         $remaining = [];
         /** @var array<string, string> $articleNames Katalogschlüssel → Name: Abos ohne Artikel bekommen denselben Produktschlüssel wie die Positionen */
         $articleNames = [];
+        /** @var array<string, MirrorLine> $linesByIdentity */
+        $linesByIdentity = [];
         foreach ($lines as $line) {
             $remaining[$line->identity()] = LicenseMonths::ofLine($line);
+            $linesByIdentity[$line->identity()] = $line;
             if ($line->articleKey !== null && $line->articleName !== null) {
                 $articleNames[$line->articleKey] = $line->articleName;
             }
@@ -371,6 +406,9 @@ final class LinkProposer {
             if ($period->status !== $status) {
                 $period->forceFill(['status' => $status])->save();
             }
+            if ($status === PeriodStatus::Billed && $this->autoConfirm($state, $linesByIdentity)) {
+                $result['auto_confirmed']++;
+            }
         }
 
         foreach ($lines as $line) {
@@ -389,7 +427,7 @@ final class LinkProposer {
      * @param  array<int, int|null>  $recipientBySubscription
      * @param  array<int, array<string, int>>  $productOwners
      * @param  array<string, int|null>  $nearest
-     * @param  array{periods: int, linked: int, partial: int, links: int, lines_without_subscription: int}  $result
+     * @param  array{periods: int, linked: int, partial: int, links: int, lines_without_subscription: int, auto_confirmed: int}  $result
      * @return array{period: ResalePeriod, subscription: ResaleSubscription, needed: float, covered: float}
      */
     private function allocate(int $index, array $state, Collection $lines, array &$remaining, array $recipientBySubscription, array $productOwners, array $nearest, string $pass, array &$result): array {
@@ -438,9 +476,11 @@ final class LinkProposer {
             // („12 Monat", „1 Jahr") vor Mehrjahres-Positionen („48 Monat" = vier Jahre eines
             // anderen Vertrags) — die kommen erst dran, wenn nichts Passendes mehr frei ist.
             $fit = abs(LicenseMonths::split($line)['months'] - $termMonths);
-            $candidates[] = ['line' => $line, 'mentions' => $mentions ? 0 : 1, 'continuity' => $continuity, 'fit' => $fit, 'distance' => $distance];
+            // Der Beleg, der aus dem Rechnungsvorschlag dieser Periode entstand, kommt vor allem anderen (Feature 185, MVP-1408).
+            $draft = self::matchesDraft($period, $line) ? 0 : 1;
+            $candidates[] = ['line' => $line, 'draft' => $draft, 'mentions' => $mentions ? 0 : 1, 'continuity' => $continuity, 'fit' => $fit, 'distance' => $distance];
         }
-        usort($candidates, static fn(array $a, array $b): int => $a['mentions'] <=> $b['mentions'] ?: $a['continuity'] <=> $b['continuity'] ?: $a['fit'] <=> $b['fit'] ?: $a['distance'] <=> $b['distance'] ?: strcmp($a['line']->sourceKey, $b['line']->sourceKey) ?: $a['line']->morphId <=> $b['line']->morphId);
+        usort($candidates, static fn(array $a, array $b): int => $a['draft'] <=> $b['draft'] ?: $a['mentions'] <=> $b['mentions'] ?: $a['continuity'] <=> $b['continuity'] ?: $a['fit'] <=> $b['fit'] ?: $a['distance'] <=> $b['distance'] ?: strcmp($a['line']->sourceKey, $b['line']->sourceKey) ?: $a['line']->morphId <=> $b['line']->morphId);
 
         foreach ($candidates as $candidate) {
             if ($state['needed'] <= 0.001) {
@@ -492,6 +532,76 @@ final class LinkProposer {
         }
 
         return $state;
+    }
+
+    /** Entstand der Beleg aus dem Rechnungsvorschlag dieser Periode (Stempel `draft_reference`)? */
+    public static function matchesDraft(ResalePeriod $period, MirrorLine $line): bool {
+        return $period->draft_reference !== null && $period->draft_reference !== '' && $line->voucherExternalId !== null && $line->voucherExternalId === $period->draft_reference;
+    }
+
+    /**
+     * Sicherer Treffer (Feature 185, MVP-1406): gleicher Artikelschlüssel
+     * (keine Namensheuristik), Bezugsdatum dicht am Periodenbeginn — oder der
+     * Beleg stammt aus dem Rechnungsvorschlag der Periode.
+     */
+    public static function isSure(ResalePeriod $period, ResaleSubscription $subscription, MirrorLine $line): bool {
+        if (self::matchesDraft($period, $line)) {
+            return true;
+        }
+        if ($line->articleKey === null || $subscription->article_ref !== $line->articleKey) {
+            return false;
+        }
+        $date = LicenseMonths::referenceDate($line);
+        if ($date === null) {
+            return false;
+        }
+
+        return ! $date->lessThan($period->starts_on->subDays(self::SURE_BEFORE_DAYS)) && ! $date->greaterThan($period->starts_on->addDays(self::SURE_AFTER_DAYS));
+    }
+
+    /**
+     * Vollständig von EINEM Beleg dieses Laufs gedeckte Periode mit lauter
+     * sicheren Positionen, deren Lizenzen die Periodenmenge treffen: die
+     * Vorschläge werden „automatisch bestätigt", die Periode entschieden
+     * (ohne Nutzer) — nachvollziehbar im Audit, zurücknehmbar wie jede
+     * Entscheidung. Deckung von früher (entschiedene Bezüge) macht den Fall
+     * unsicher.
+     *
+     * @param  array{period: ResalePeriod, subscription: ResaleSubscription, needed: float, covered: float}  $state
+     * @param  array<string, MirrorLine>  $linesByIdentity
+     */
+    private function autoConfirm(array $state, array $linesByIdentity): bool {
+        $period = $state['period'];
+        $proposals = $this->proposed[$period->id] ?? [];
+        if ($proposals === []) {
+            return false;
+        }
+        $runMonths = 0.0;
+        $licences = 0.0;
+        $vouchers = [];
+        foreach ($proposals as $identity => $link) {
+            $line = $linesByIdentity[$identity] ?? null;
+            if ($line === null || ! self::isSure($period, $state['subscription'], $line)) {
+                return false;
+            }
+            $runMonths += (float) $link->months;
+            $licences += LicenseMonths::split($line)['licences'];
+            $vouchers[$line->voucherKey] = $line->voucherNumber;
+        }
+        if ($state['covered'] - $runMonths > 0.001 || count($vouchers) !== 1 || abs($licences - $period->quantity) > 0.001) {
+            return false;
+        }
+        foreach ($proposals as $link) {
+            $link->forceFill(['origin' => LinkOrigin::Auto, 'confirmed_at' => now()])->save();
+        }
+        $attributes = ['decided_at' => now(), 'decided_by_user_id' => null];
+        if ($period->draftIsInvoiced()) {
+            $attributes += ['draft_reference' => null, 'draft_created_at' => null]; // der Entwurf wurde Rechnung
+        }
+        $period->forceFill($attributes)->save();
+        $this->autoConfirmedAudits[] = [$period, ['vouchers' => array_values(array_filter($vouchers)), 'months' => round($runMonths, 2)]];
+
+        return true;
     }
 
     /**

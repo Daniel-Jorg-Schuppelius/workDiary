@@ -56,8 +56,8 @@ final class LexofficeRecipientInvoiceLines {
      * @param  CarbonImmutable|null  $to  Belegdatum bis einschließlich diesem Tag
      * @return Collection<int, LexofficeVoucherLine>
      */
-    public function for(Organization $organization, ?array $contactIds, ?CarbonImmutable $from = null, ?CarbonImmutable $to = null): Collection {
-        return $this->lines($organization, $contactIds, $from, $to, self::KIND_INVOICE);
+    public function for(Organization $organization, ?array $contactIds, ?CarbonImmutable $from = null, ?CarbonImmutable $to = null, bool $licenceOnly = true): Collection {
+        return $this->lines($organization, $contactIds, $from, $to, self::KIND_INVOICE, $licenceOnly);
     }
 
     /**
@@ -176,20 +176,20 @@ final class LexofficeRecipientInvoiceLines {
      * @param  self::KIND_*  $kind
      * @return Collection<int, LexofficeVoucherLine>
      */
-    private function lines(Organization $organization, ?array $contactIds, ?CarbonImmutable $from, ?CarbonImmutable $to, string $kind): Collection {
+    private function lines(Organization $organization, ?array $contactIds, ?CarbonImmutable $from, ?CarbonImmutable $to, string $kind, bool $licenceOnly = true): Collection {
         if ($contactIds === []) {
             return collect();
         }
-        $articleIds = $this->licenseArticleIds($organization);
+        $articleIds = $licenceOnly ? $this->licenseArticleIds($organization) : null;
         if ($articleIds === []) {
             return collect();
         }
 
         return LexofficeVoucherLine::query()->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
-            ->whereIn('lexoffice_article_id', $articleIds)
+            ->when($articleIds !== null, static fn(Builder $q) => $q->whereIn('lexoffice_article_id', $articleIds))
             ->whereIn('voucher_id', $this->voucherQuery($organization, $contactIds, $from, $to, $kind)->select('id'))
-            ->with(['voucher:id,external_id,contact_external_id,customer_id,voucher_type,voucher_number,voucher_date,voucher_status,service_starts_on,service_ends_on,voucher_text,recipient_name', 'article:id,name,unit_name'])
+            ->with(['voucher:id,external_id,contact_external_id,customer_id,voucher_type,voucher_number,voucher_date,voucher_status,service_starts_on,service_ends_on,voucher_text,recipient_name,recurring_template_id', 'article:id,name,unit_name'])
             ->orderBy('id')
             ->get();
     }

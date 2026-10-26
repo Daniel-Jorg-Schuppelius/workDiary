@@ -56,6 +56,13 @@ final class InvoicePlaneVoucherPullTest extends TestCase {
 
                 return array_slice($rows, $offset, $limit);
             }
+
+            /** @param list<int> $invoiceIds */
+            public function invoiceItems(array $invoiceIds): array {
+                return $invoiceIds === [] ? [] : [
+                    ['invoice_id' => $invoiceIds[0], 'item_id' => 1, 'item_order' => 1, 'item_name' => 'Microsoft 365 Business Premium', 'item_description' => 'Jahreslizenz', 'item_quantity' => 2, 'item_price' => 100.0],
+                ];
+            }
         };
 
         $factory = new class($reader) implements VoucherReaderFactory {
@@ -80,6 +87,10 @@ final class InvoicePlaneVoucherPullTest extends TestCase {
         $result = app(InvoicePlaneVoucherPullService::class)->pull((int) $this->organization->id);
 
         $this->assertSame(['read' => 2, 'created' => 2, 'updated' => 0, 'skipped' => 0], $result);
+        // Positionen aus `ip_invoice_items` (Feature 185, MVP-1425) — der Test-Leser liefert eine Zeile für die erste Rechnung.
+        $lines = \App\Models\Finance\AccountingVoucherLine::query()->get();
+        $this->assertCount(1, $lines);
+        $this->assertSame(['Microsoft 365 Business Premium', '2.000', '100.0000', '200.00'], [$lines[0]->name, $lines[0]->quantity, $lines[0]->unit_net, $lines[0]->total_net]);
 
         $invoice = AccountingVoucher::query()->where('external_id', '12')->firstOrFail();
         $this->assertSame('invoiceplane', $invoice->plugin_id);

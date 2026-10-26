@@ -35,6 +35,7 @@ return [
         'message' => 'No item is waiting for you at the moment.',
     ],
     'source' => [
+        'resale_plan' => 'Subscriptions & licences: recurring templates',
         'approval' => 'Approval chains',
         'vacation_approval' => 'Leave requests',
         'expense_approval' => 'Expenses',

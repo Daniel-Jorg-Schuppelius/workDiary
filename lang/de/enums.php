@@ -1273,6 +1273,7 @@ return [
             'cancellation' => 'Storno',
             'expense' => 'Auslage',
             'other' => 'Sonstiger Beleg',
+            'recurring_template' => 'Serienvorlage',
             'reminder' => 'Mahnung',
         ],
         'origin' => [
@@ -1511,6 +1512,7 @@ return [
         'transfer-channel' => [
             'time' => 'Leistungen/Zeit',
             'material' => 'Produkte/Material',
+            'resale' => 'Abos',
         ],
         'transfer-target' => [
             'lexoffice' => 'Lexoffice',

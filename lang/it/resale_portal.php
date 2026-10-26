@@ -55,6 +55,15 @@ return [
         'empty' => 'Nessun periodo ancora pianificato.',
     ],
     'empty' => 'Nessun abbonamento registrato.',
+    'licenses' => [
+        'title' => 'Licenze vendute',
+        'hint' => 'Licenze acquistate singolarmente con la relativa fattura. Le chiavi di licenza le riceve personalmente dal suo fornitore.',
+        'product' => 'Prodotto',
+        'license' => 'Licenza',
+        'sold_on' => 'Venduta il',
+        'invoice' => 'Fattura',
+        'no_invoice' => 'ancora nessuna',
+    ],
     'back' => 'Torna alla panoramica',
     'show' => 'Dettagli',
     // Kachel auf der Portal-Startseite (Review 2026-09-11).

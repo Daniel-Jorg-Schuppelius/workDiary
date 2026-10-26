@@ -280,7 +280,7 @@ class ResaleHttpReviewTest extends TestCase {
         // Suffix aus dem höchsten `#n` (B10): #1 gelöscht → die nächste ist #3, nicht #2.
         $this->assertSame(['ent-9#1', 'ent-9#2'], $contract->assignments()->reorder('id')->pluck('external_id')->all());
         $first = $contract->assignments()->where('external_id', 'ent-9#1')->firstOrFail();
-        $this->actingAs($admin)->delete(route('finance.resale.destroy', $first->sqid))->assertRedirect(route('finance.resale.index'));
+        $this->actingAs($admin)->delete(route('finance.resale.destroy', $first->sqid))->assertRedirect(route('finance.resale.subscriptions'));
         $this->actingAs($admin)->post(route('finance.resale.transfer.store', $contract->sqid), [
             'mode' => 'customer', 'customer_id' => $maerkische->sqid, 'quantity' => 1, 'starts_on' => '2025-07-01', 'ends_on' => '2025-12-31',
         ])->assertRedirect(route('finance.resale.show', $contract->sqid));
@@ -358,7 +358,7 @@ class ResaleHttpReviewTest extends TestCase {
         $this->assertSame(PeriodStatus::Open, ResaleSubscription::query()->where('label', 'Hausinternes Exchange')->firstOrFail()->periods()->firstOrFail()->status);
 
         // Liste: Kopfzahl zählt nur fremde Halter; der Eigenbestand fällt aus „nur offene" heraus (B14).
-        $page = $this->actingAs($admin)->get(route('finance.resale.index', ['open' => 1]))->assertOk();
+        $page = $this->actingAs($admin)->get(route('finance.resale.subscriptions', ['open' => 1]))->assertOk();
         $page->assertSee('Kundenabo Exchange')->assertDontSee('Hausinternes Exchange');
         $this->assertSame(2, ResaleSubscription::query()->planning()->count());
         $this->assertSame(2, \App\Models\Reselling\ResalePeriod::query()->due()->count(), 'nur die zwei Perioden des Kundenabos (2025, 2026)');

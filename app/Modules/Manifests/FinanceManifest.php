@@ -77,6 +77,7 @@ final class FinanceManifest extends Manifest {
             'accounting_transfers',
             'accounting_vat_extensions',
             'accounting_vat_filing_periods',
+            'accounting_voucher_lines',
             'accounting_vouchers',
             'bank_accounts',
             'bank_statements',

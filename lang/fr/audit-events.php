@@ -1366,6 +1366,16 @@ return [
         'reopened' => 'Décision sur la période annulée',
         'linked' => 'Ligne de facture affectée manuellement',
         'link_removed' => 'Référence de facture supprimée',
+        'link_moved' => 'Lien de facture déplacé vers une autre période',
+        'auto_confirmed' => 'Lien de facture confirmé automatiquement (correspondance sûre)',
+    ],
+    'resale_account_allocation' => [
+        'saved' => 'Répartition du compte de licences enregistrée',
+        'removed' => 'Répartition du compte de licences supprimée',
+    ],
+    'resale_plan_link' => [
+        'saved' => 'Modèle récurrent lié à un abonnement',
+        'removed' => 'Lien avec le modèle récurrent supprimé',
     ],
     'resale_subscription' => [
         'rehomed' => 'Titulaire de l’abonnement modifié',

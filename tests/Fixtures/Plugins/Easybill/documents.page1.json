@@ -21,7 +21,35 @@
       "is_archive": false,
       "cancel_id": null,
       "edited_at": "2026-08-03 09:14:22",
-      "created_at": "2026-08-03 09:12:01"
+      "created_at": "2026-08-03 09:12:01",
+      "items": [
+        {
+          "type": "POSITION",
+          "position": 1,
+          "number": "MS-BP",
+          "description": "Microsoft 365 Business Premium\nJahreslizenz 03.08.2026 – 02.08.2027",
+          "quantity": 2,
+          "unit": "Stück",
+          "single_price_net": 24720,
+          "total_price_net": 49440,
+          "vat_percent": 19
+        },
+        {
+          "type": "TEXT",
+          "description": "Vielen Dank für Ihren Auftrag."
+        },
+        {
+          "type": "POSITION",
+          "position": 2,
+          "number": "SUP",
+          "description": "Business Support",
+          "quantity": 1,
+          "unit": "Monat",
+          "single_price_net": 50560,
+          "total_price_net": 50560,
+          "vat_percent": 19
+        }
+      ]
     },
     {
       "id": 4712,

@@ -93,7 +93,7 @@ class MirrorLocalSourceTest extends TestCase {
         ]);
 
         $result = (new LinkProposer)->propose($this->organization);
-        $this->assertSame(['periods' => 2, 'linked' => 1, 'partial' => 0, 'links' => 1, 'lines_without_subscription' => 0], $result);
+        $this->assertSame(['periods' => 2, 'linked' => 1, 'partial' => 0, 'links' => 1, 'lines_without_subscription' => 0, 'auto_confirmed' => 1], $result);
         [$p2025, $p2026] = $subscription->periods()->with('links')->get();
         $this->assertSame(PeriodStatus::Billed, $p2025->status);
         $this->assertSame(PeriodStatus::Open, $p2026->status, 'zweites Jahr noch ohne Rechnung');
@@ -102,9 +102,9 @@ class MirrorLocalSourceTest extends TestCase {
         $this->assertSame('RE-2025-0820', $link?->voucher_number);
         $this->assertSame('12.00', $link?->months);
         $this->assertSame('247.20', $link?->amount?->getAmount(), '12 × 20,60');
-        $this->assertSame(LinkOrigin::Proposed, $link?->origin);
+        $this->assertSame(LinkOrigin::Auto, $link?->origin, 'gleicher Artikel, ein Beleg am Periodenbeginn: sicherer Treffer (Feature 185)');
 
-        // Zweiter Lauf ersetzt, verdoppelt nicht.
+        // Zweiter Lauf verdoppelt nicht.
         (new LinkProposer)->propose($this->organization);
         $this->assertSame(1, ResalePeriodLink::query()->count());
     }

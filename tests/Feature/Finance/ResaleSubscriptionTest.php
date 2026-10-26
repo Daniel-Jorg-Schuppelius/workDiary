@@ -59,9 +59,15 @@ class ResaleSubscriptionTest extends TestCase {
 
     public function test_index_requires_view_permission_and_manage_for_dialog(): void {
         $this->actingAs($this->orgUser())->get(route('finance.resale.index'))->assertForbidden();
+        // Index = Überblick als Aufgabenliste (Feature 185); die Abo-Liste liegt unter `subscriptions`.
         $this->actingAs($this->userWithRole('buchhaltung'))->get(route('finance.resale.index'))
             ->assertOk()
             ->assertSee(__('resale.title.index'))
+            ->assertSee(__('resale.overview.all_clear'))
+            ->assertSee(route('finance.resale.subscriptions'), false);
+        $this->actingAs($this->userWithRole('buchhaltung'))->get(route('finance.resale.subscriptions'))
+            ->assertOk()
+            ->assertSee(__('resale.title.subscriptions'))
             ->assertSee(__('resale.empty.subscriptions'));
         $this->actingAs($this->orgAdmin())->get(route('finance.resale.create'))->assertOk()->assertSee(__('resale.dialog.title_new'));
     }
@@ -117,7 +123,7 @@ class ResaleSubscriptionTest extends TestCase {
             ->assertOk()
             ->assertSee('Klimpel Bäder GmbH')
             ->assertSee('05.08.2025 – 04.08.2026');
-        $this->actingAs($admin)->get(route('finance.resale.index', ['open' => 1]))->assertOk()->assertSee('Microsoft 365 Business Premium');
+        $this->actingAs($admin)->get(route('finance.resale.subscriptions', ['open' => 1]))->assertOk()->assertSee('Microsoft 365 Business Premium');
     }
 
     public function test_foreign_customer_holder_bills_the_partner(): void {
@@ -139,7 +145,7 @@ class ResaleSubscriptionTest extends TestCase {
 
         // Kundenakte des Partners zeigt das Abo des Endkunden.
         $this->actingAs($admin)->get(route('customers.show', $partner))->assertOk()->assertSee('Steuerbüro Kaik')->assertSee(__('resale.title.menu'));
-        $this->actingAs($admin)->get(route('finance.resale.index', ['customer' => $partner->sqid]))->assertOk()->assertSee('Steuerbüro Kaik');
+        $this->actingAs($admin)->get(route('finance.resale.subscriptions', ['customer' => $partner->sqid]))->assertOk()->assertSee('Steuerbüro Kaik');
     }
 
     public function test_customer_plus_end_customer_in_the_dialog_makes_the_end_customer_the_holder(): void {
@@ -194,7 +200,7 @@ class ResaleSubscriptionTest extends TestCase {
         $this->assertSame(1, ResaleSubscription::query()->count());
 
         $subscription->periods()->update(['status' => PeriodStatus::Open->value]);
-        $this->actingAs($admin)->delete(route('finance.resale.destroy', $subscription->sqid))->assertRedirect(route('finance.resale.index'));
+        $this->actingAs($admin)->delete(route('finance.resale.destroy', $subscription->sqid))->assertRedirect(route('finance.resale.subscriptions'));
         $this->assertSame(0, ResaleSubscription::query()->count());
         $this->assertSame(0, ResalePeriod::query()->count());
     }
@@ -231,7 +237,7 @@ class ResaleSubscriptionTest extends TestCase {
         ]);
 
         $admin = $this->orgAdmin();
-        $this->actingAs($admin)->get(route('finance.resale.index'))->assertOk()->assertDontSee('fremde-domain.de');
+        $this->actingAs($admin)->get(route('finance.resale.subscriptions'))->assertOk()->assertDontSee('fremde-domain.de');
         $this->actingAs($admin)->get(route('finance.resale.show', $foreign->sqid))->assertNotFound();
         // Fremder Kunde als Halter: org-gescopte Existenzregel lehnt ab.
         $otherCustomer = Customer::factory()->create(['organization_id' => $other->id]);

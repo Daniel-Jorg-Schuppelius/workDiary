@@ -1,7 +1,7 @@
 ---
 title: "Mes abonnements"
 topic: customer-portal.subscriptions
-version: 2
+version: 3
 keywords:
     - abonnement
     - licences
@@ -58,6 +58,10 @@ La section **Périodes de facturation** liste les différentes périodes de l'ab
 - **en cours d’examen** – la période est encore en cours de clarification.
 
 Les périodes découlent du début, de la durée et de la périodicité de l'abonnement.
+
+## Licences vendues
+
+Si votre prestataire vous a vendu des licences individuelles de son stock, la carte **Licences vendues** affiche par licence le produit, le numéro de licence dans le lot, le titulaire (votre entreprise ou un client final), la date de vente et le numéro de la facture correspondante ; s’il n’y a pas encore de facture, la mention est **pas encore**. Le portail n’affiche jamais les clés de licence ; vous les recevez personnellement de votre prestataire.
 
 ## Limites
 

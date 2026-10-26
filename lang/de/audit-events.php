@@ -1366,6 +1366,16 @@ return [
         'reopened' => 'Entscheidung zur Periode zurückgenommen',
         'linked' => 'Rechnungsposition manuell zugeordnet',
         'link_removed' => 'Rechnungsbezug gelöst',
+        'link_moved' => 'Rechnungsbezug auf andere Periode verschoben',
+        'auto_confirmed' => 'Rechnungsbezug automatisch bestätigt (sicherer Treffer des Vorschlagslaufs)',
+    ],
+    'resale_account_allocation' => [
+        'saved' => 'Aufteilung eines Lizenzkontos gespeichert',
+        'removed' => 'Aufteilung eines Lizenzkontos gelöscht',
+    ],
+    'resale_plan_link' => [
+        'saved' => 'Serienvorlage einem Abo zugeordnet',
+        'removed' => 'Zuordnung zur Serienvorlage gelöst',
     ],
     'resale_subscription' => [
         'rehomed' => 'Halter des Abos gewechselt',

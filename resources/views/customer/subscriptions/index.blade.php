@@ -20,6 +20,8 @@
     <x-page-toolbar :title="__('resale_portal.title')" :subtitle="__('resale_portal.subtitle')" />
 
     <x-card>
+    {{-- Schmale Fenster: die Tabelle scrollt in der Karte, nicht die Seite (Portal-Main hat keinen Scrollbereich). --}}
+    <div class="overflow-x-auto">
     <x-table bare :caption="__('resale_portal.title')">
         <x-slot:head>
             <tr>
@@ -68,7 +70,42 @@
             <x-table.empty :colspan="8" icon="workspace_premium" :title="__('resale_portal.empty')" compact />
         @endforelse
     </x-table>
+    </div>
     </x-card>
     <x-pagination :paginator="$subscriptions" standing />
+
+    {{-- Verkaufte Stücklizenzen (Feature 185, MVP-1428) — ohne Schlüssel, die gibt der Auftragnehmer persönlich weiter. --}}
+    @if ($licenses->isNotEmpty())
+        <x-card :title="__('resale_portal.licenses.title')" icon="key" :count="$licenses->count()" padding="p-0">
+            <p class="px-4 py-2 text-xs text-muted border-b border-base-300">{{ __('resale_portal.licenses.hint') }}</p>
+            <div class="overflow-x-auto">
+            <x-table bare :caption="__('resale_portal.licenses.title')">
+                <x-slot:head>
+                    <tr>
+                        <x-table.th>{{ __('resale_portal.licenses.product') }}</x-table.th>
+                        <x-table.th>{{ __('resale_portal.licenses.license') }}</x-table.th>
+                        <x-table.th>{{ __('resale_portal.field.holder') }}</x-table.th>
+                        <x-table.th>{{ __('resale_portal.licenses.sold_on') }}</x-table.th>
+                        <x-table.th>{{ __('resale_portal.licenses.invoice') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($licenses as $license)
+                    <tr class="hover">
+                        <td class="text-sm">{{ $license->unit->batch->product->name }}</td>
+                        <td class="whitespace-nowrap text-sm">{{ $license->unit->label() }}</td>
+                        <td class="text-sm">
+                            {{ $license->foreignCustomer?->name ?? __('resale.holder.customer') }}
+                            @if ($license->foreignCustomer !== null)
+                                <x-status-badge size="xs">{{ __('resale_portal.holder.end_customer') }}</x-status-badge>
+                            @endif
+                        </td>
+                        <td class="tabular-nums text-sm whitespace-nowrap">{{ $license->sold_on->fdate() }}</td>
+                        <td class="text-sm">{{ $license->mirrorLine()?->voucherNumber ?? $license->invoice_reference ?? __('resale_portal.licenses.no_invoice') }}</td>
+                    </tr>
+                @endforeach
+            </x-table>
+            </div>
+        </x-card>
+    @endif
 </div>
 @endsection

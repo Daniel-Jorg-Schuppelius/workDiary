@@ -64,4 +64,18 @@ enum BillingMode: string implements HasLabel {
     public function isExternal(): bool {
         return $this !== self::Workdiary;
     }
+
+    /**
+     * Erstes Übergabeziel der Hoheit (Feature 045): das Programm selbst, für
+     * DATEV und workDiary das Datei-Paket.
+     */
+    public function transferTarget(): TransferTarget {
+        return match ($this) {
+            self::Lexoffice => TransferTarget::Lexoffice,
+            self::OrgaMax => TransferTarget::OrgaMax,
+            self::SevDesk => TransferTarget::SevDesk,
+            self::Easybill => TransferTarget::Easybill,
+            self::Datev, self::Workdiary => TransferTarget::File,
+        };
+    }
 }

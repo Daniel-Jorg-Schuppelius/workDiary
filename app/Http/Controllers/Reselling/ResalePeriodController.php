@@ -15,16 +15,18 @@ namespace App\Http\Controllers\Reselling;
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Reselling\{LinkResalePeriodRequest, QuickLinkResalePeriodRequest, WaiveResalePeriodRequest};
+use App\Http\Requests\Reselling\{BulkWaiveResalePeriodsRequest, LinkResalePeriodRequest, QuickLinkResalePeriodRequest, WaiveResalePeriodRequest};
 use App\Models\Customer\Customer;
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
-use App\Services\Reselling\Register\{LicenseMonths, LinkProposer, PeriodLinker};
+use App\Services\Reselling\Register\{LicenseMonths, LinkProposer, PeriodLinker, ResaleInvoiceDraftService};
 use App\Support\{ErrorText, Sqid};
 use App\Support\Query\DateRange;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\{Builder, Collection};
 use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
 
@@ -46,8 +48,9 @@ class ResalePeriodController extends Controller {
     public function index(Request $request): View {
         $organization = $this->currentOrganizationOrAbort(404);
         $today = ResalePeriod::today();
+        // Standard „unbestätigte Vorschläge" (Feature 185, MVP-1416): sichere Treffer bestätigt der Lauf selbst, hier steht, was Prüfung braucht.
         $filters = [
-            'status' => (string) $request->query('status', 'problems'),
+            'status' => (string) $request->query('status', 'proposed'),
             'customer' => (string) $request->query('customer', ''),
             'q' => trim((string) $request->query('q', '')),
         ];
@@ -59,6 +62,9 @@ class ResalePeriodController extends Controller {
             // Probleme = offen/teilweise/strittig ODER nur vorgeschlagen (noch nicht bestätigt).
             $query->where(static fn(Builder $w) => $w->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value, PeriodStatus::Disputed->value])
                 ->orWhere(static fn(Builder $p) => $p->where('status', PeriodStatus::Billed->value)->whereNull('decided_at')->whereHas('links')));
+        } elseif ($filters['status'] === 'proposed') {
+            $query->whereIn('status', [PeriodStatus::Billed->value, PeriodStatus::Partial->value])->whereNull('decided_at')
+                ->whereHas('links', static fn(Builder $l) => $l->where('origin', LinkOrigin::Proposed->value));
         } elseif (PeriodStatus::tryFrom($filters['status']) !== null) {
             $query->where('status', $filters['status']);
         }
@@ -110,12 +116,120 @@ class ResalePeriodController extends Controller {
     }
 
     public function confirm(Request $request, ResalePeriod $period): RedirectResponse {
-        $period->links()->where('origin', LinkOrigin::Proposed->value)->update(['origin' => LinkOrigin::Confirmed->value, 'confirmed_at' => now()]);
-        $period->unsetRelation('links');
-        $this->linker->settle($period, $request->user()?->id, (string) $request->input('note', ''));
-        $period->audit('resale_period.confirmed', ['status' => $period->status->value, 'vouchers' => $period->links->pluck('voucher_number')->all()]);
+        $this->confirmPeriod($period, $request->user()?->id, (string) $request->input('note', ''));
 
         return back()->with('success', __('resale.link.flash.confirmed'));
+    }
+
+    /** Vorschläge einer Periode bestätigen — Einzel- und Sammelaktion schreiben dasselbe Audit. */
+    private function confirmPeriod(ResalePeriod $period, ?int $userId, string $note): void {
+        $period->links()->where('origin', LinkOrigin::Proposed->value)->update(['origin' => LinkOrigin::Confirmed->value, 'confirmed_at' => now()]);
+        $period->unsetRelation('links');
+        $this->linker->settle($period, $userId, $note);
+        $period->audit('resale_period.confirmed', ['status' => $period->status->value, 'vouchers' => $period->links->pluck('voucher_number')->all()]);
+    }
+
+    /**
+     * Sammelaktion (Feature 185, MVP-1415): Vorschläge der gewählten Perioden bestätigen.
+     * Übersprungen wird, was keinen offenen Vorschlag hat oder noch bevorsteht.
+     */
+    public function bulkConfirm(Request $request): RedirectResponse {
+        $periods = $this->selectedPeriods($request);
+        $done = 0;
+        foreach ($periods as $period) {
+            if (! $period->isProposedOnly() || $period->starts_on->greaterThan(ResalePeriod::today())) {
+                continue;
+            }
+            $this->confirmPeriod($period, $request->user()?->id, '');
+            $done++;
+        }
+        $skipped = $periods->count() - $done;
+
+        return redirect()->toList('finance.resale.periods.index')
+            ->with($done === 0 ? 'warning' : ($skipped > 0 ? 'warning' : 'success'), __('resale.bulk.flash.confirmed', ['done' => $done, 'skipped' => $skipped]));
+    }
+
+    public function bulkWaiveCreate(Request $request): View {
+        $periods = $this->selectedPeriods($request)->load('subscription');
+
+        return view('finance.resale._bulk_waive_dialog', ['periods' => $periods]);
+    }
+
+    /** Verzichten oder strittig stellen mit einem Grund für alle — je Periode dasselbe Audit wie einzeln. */
+    public function bulkWaive(BulkWaiveResalePeriodsRequest $request): RedirectResponse {
+        $periods = ResalePeriod::query()->whereKey($request->periodIds())->get();
+        $event = $request->status() === PeriodStatus::Waived ? 'resale_period.waived' : 'resale_period.disputed';
+        $done = 0;
+        foreach ($periods as $period) {
+            // Entschieden = Nutzerentscheidung (decided_at); ein unbestätigter Vorschlag ist keine. Teilweise bleibt entscheidbar.
+            if (($period->decided_at !== null && $period->status !== PeriodStatus::Partial) || $period->starts_on->greaterThan(ResalePeriod::today())) {
+                continue;
+            }
+            // Vorschläge sind keine Entscheidung: sie gehen mit dem Verzicht weg (wie beim Zurücknehmen).
+            $period->links()->where('origin', LinkOrigin::Proposed->value)->delete();
+            $period->forceFill([
+                'status' => $request->status(),
+                'waived_reason' => $request->reason(),
+                'decided_by_user_id' => $request->user()?->id,
+                'decided_at' => now(),
+            ])->save();
+            $period->audit($event, ['reason' => $request->reason()]);
+            $done++;
+        }
+        $skipped = $periods->count() - $done;
+
+        return redirect()->toList('finance.resale.periods.index')
+            ->with($done === 0 ? 'warning' : 'success', __('resale.bulk.flash.waived', ['done' => $done, 'skipped' => $skipped]));
+    }
+
+    /** Rechnungsentwurf je Rechnungsempfänger der gewählten Perioden (alle offenen Perioden des Empfängers, wie der Dialog). */
+    public function bulkDraft(Request $request, ResaleInvoiceDraftService $drafts): RedirectResponse {
+        $organization = $this->currentOrganizationOrAbort(404);
+        $periods = $this->selectedPeriods($request)->load('subscription.customer', 'subscription.foreignCustomer.customer');
+        $recipients = [];
+        foreach ($periods as $period) {
+            $recipient = $period->subscription->billedTo();
+            if ($recipient !== null) {
+                $recipients[$recipient->id] = $recipient;
+            }
+        }
+        if ($recipients === []) {
+            return redirect()->toList('finance.resale.periods.index')->with('warning', __('resale.bulk.flash.nothing'));
+        }
+        $lines = [];
+        $failed = 0;
+        foreach ($recipients as $recipient) {
+            try {
+                $result = $drafts->draft($organization, $recipient, $request->user());
+                $lines[] = __($result['local'] ? 'resale.draft_flash.created_local' : 'resale.draft_flash.created', [
+                    'customer' => $recipient->name, 'lines' => $result['lines'], 'net' => Money::ofFloat($result['net'], $recipient->currency, 2)->format(), 'id' => $result['draft_id'],
+                    'target' => \App\Enums\Finance\TransferTarget::tryFrom((string) $result['target'])?->label() ?? $result['target'],
+                ]);
+            } catch (\Throwable $e) {
+                $failed++;
+                $lines[] = __('resale.bulk.flash.draft_failed', ['customer' => $recipient->name, 'error' => $e::class === RuntimeException::class ? ErrorText::for($e) : (string) __('resale.draft_flash.failed')]);
+                if ($e::class !== RuntimeException::class) {
+                    Log::warning('resale: Sammel-Rechnungsentwurf fehlgeschlagen', ['customer_id' => $recipient->id, 'exception' => $e::class, 'message' => $e->getMessage()]);
+                }
+            }
+        }
+
+        return redirect()->toList('finance.resale.periods.index')->with($failed > 0 ? 'warning' : 'success', implode(' · ', $lines));
+    }
+
+    /**
+     * Gewählte Perioden der Organisation aus `ids[]` (Sqids, höchstens 200).
+     *
+     * @return Collection<int, ResalePeriod>
+     */
+    private function selectedPeriods(Request $request): Collection {
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'max:' . BulkWaiveResalePeriodsRequest::MAX_IDS],
+            'ids.*' => ['string', 'max:64'],
+        ]);
+        $ids = array_values(array_filter(array_map(static fn(string $sqid): ?int => Sqid::decode(ResalePeriod::class, $sqid), $data['ids'])));
+
+        return ResalePeriod::query()->whereKey($ids)->with('links')->orderBy('starts_on')->get();
     }
 
     public function waiveCreate(ResalePeriod $period): View {
@@ -138,7 +252,7 @@ class ResalePeriodController extends Controller {
     public function reopen(ResalePeriod $period): RedirectResponse {
         $previous = ['status' => $period->status->value, 'reason' => $period->waived_reason];
         $period->forceFill(['status' => PeriodStatus::Open, 'waived_reason' => null, 'decided_by_user_id' => null, 'decided_at' => null])->save();
-        $period->links()->where('origin', LinkOrigin::Proposed->value)->delete();
+        $period->links()->whereIn('origin', [LinkOrigin::Proposed->value, LinkOrigin::Auto->value])->delete();
         $period->unsetRelation('links');
         $this->linker->settle($period, null, null, false);
         $period->audit('resale_period.reopened', $previous + ['status_now' => $period->status->value]);
@@ -216,6 +330,31 @@ class ResalePeriodController extends Controller {
         } catch (\InvalidArgumentException $e) {
             throw ValidationException::withMessages(['months' => ErrorText::for($e)]);
         }
+    }
+
+    /**
+     * Prüffall „zeitlich unpassend" (Feature 185, MVP-1403): Bezug auf eine
+     * andere Periode DESSELBEN Abos verschieben — als Lösen plus neuer Bezug
+     * mit denselben Monaten, damit die Überbuchungsprüfung greift.
+     */
+    public function linkMove(Request $request, ResalePeriodLink $link): RedirectResponse {
+        $target = ResalePeriod::query()->find(\App\Support\Sqid::decode(ResalePeriod::class, (string) $request->input('period_id', '')) ?? 0);
+        if ($target === null || $target->subscription_id !== $link->subscription_id || $target->id === $link->period_id) {
+            throw ValidationException::withMessages(['period_id' => (string) __('resale.link.error.line_missing')]);
+        }
+        $line = $link->mirrorLine();
+        if ($line === null) {
+            throw ValidationException::withMessages(['period_id' => (string) __('resale.link.error.line_missing')]);
+        }
+        $source = $link->period;
+        $months = (float) $link->months;
+        $link->delete();
+        $source->unsetRelation('links');
+        $this->linker->settle($source, null, null, false);
+        $moved = $this->attach($target, $line, abs($months), $link->note, $request->user()?->id);
+        $target->audit('resale_period.link_moved', ['voucher_number' => $moved->voucher_number, 'months' => $moved->months, 'from' => $source->label(), 'status_now' => $target->status->value]);
+
+        return back()->with('success', __('resale.account.finding.move_flash', ['period' => $target->label()]));
     }
 
     public function linkDestroy(ResalePeriodLink $link): RedirectResponse {

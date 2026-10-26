@@ -405,13 +405,7 @@ class FinanceTransferController extends Controller {
      * @return list<TransferTarget>
      */
     public static function allowedTargetsFor(BillingMode $mode): array {
-        return match ($mode) {
-            BillingMode::Lexoffice => [TransferTarget::Lexoffice, TransferTarget::File],
-            BillingMode::OrgaMax => [TransferTarget::OrgaMax, TransferTarget::File],
-            BillingMode::SevDesk => [TransferTarget::SevDesk, TransferTarget::File],
-            BillingMode::Easybill => [TransferTarget::Easybill, TransferTarget::File],
-            BillingMode::Datev, BillingMode::Workdiary => [TransferTarget::File],
-        };
+        return array_values(array_unique([$mode->transferTarget(), TransferTarget::File], SORT_REGULAR));
     }
 
     /**

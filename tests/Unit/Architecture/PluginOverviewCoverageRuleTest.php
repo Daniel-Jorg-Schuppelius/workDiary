@@ -47,6 +47,8 @@ class PluginOverviewCoverageRuleTest extends TestCase {
         'Lexoffice/LexofficePostingCategory' => 'Nachschlageliste der Buchungskategorien',
         'Lexoffice/LexofficeVoucherCategory' => 'Nachschlageliste der Belegkategorien',
         'Lexoffice/LexofficeVoucherLine' => 'Belegpositionen; gesucht wird der Beleg',
+        'Lexoffice/LexofficeRecurringTemplate' => 'Serienvorlagen-Spiegel als Plan-Quelle des Reselling-Registers; sichtbar am Lizenzkonto des Empfängers',
+        'Lexoffice/LexofficeRecurringTemplateLine' => 'Positionen der Serienvorlage; sichtbar am Lizenzkonto',
     ];
 
     private const COVERING_CONTRACTS = '/\b(?:implements\s[^{]*\b(?:SearchDomain|SearchSource|DocumentFeedSource)\b|extends\s+(?:AbstractSearchSource|ShopOrderSearchDomain)\b)/';

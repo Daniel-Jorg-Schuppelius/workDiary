@@ -1366,6 +1366,16 @@ return [
         'reopened' => 'Decision on the period withdrawn',
         'linked' => 'Invoice line assigned manually',
         'link_removed' => 'Invoice reference removed',
+        'link_moved' => 'Invoice link moved to another period',
+        'auto_confirmed' => 'Invoice link auto-confirmed (sure match of the proposal run)',
+    ],
+    'resale_account_allocation' => [
+        'saved' => 'License account allocation saved',
+        'removed' => 'License account allocation deleted',
+    ],
+    'resale_plan_link' => [
+        'saved' => 'Recurring template linked to a subscription',
+        'removed' => 'Recurring template link removed',
     ],
     'resale_subscription' => [
         'rehomed' => 'Subscription holder changed',

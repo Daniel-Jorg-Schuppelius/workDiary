@@ -250,6 +250,14 @@ return [
             'criticality' => 'core',
             'expected_runtime_minutes' => 5,
         ],
+        // Detailabgleich mit Budget (Feature 185, MVP-1407): Registrierungsdatum und Preis je Domain, vor resale:sync-domains.
+        'domain.refresh_details' => [
+            'command' => 'domain:refresh-details',
+            'cadence' => ['type' => 'dailyAt', 'time' => '05:05'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 5,
+        ],
         'domain.events' => [
             'command' => 'domain:events',
             'cadence' => ['type' => 'everyThirtyMinutes'],
@@ -1279,6 +1287,14 @@ return [
             'criticality' => 'core',
             'expected_runtime_minutes' => 2,
         ],
+        // Vorschlagslauf (Feature 185, MVP-1406): stündlich um :20, nach dem Lexoffice-Belegspiegel (:00); sichere Treffer werden bestätigt.
+        'resale.propose' => [
+            'command' => 'resale:propose',
+            'cadence' => ['type' => 'cron', 'expression' => '20 * * * *'],
+            'allowed' => ['cron', 'hourly', 'everyThirtyMinutes', 'dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 5,
+        ],
         // Serienrechnung bei lokaler Rechnungshoheit (Feature 152, 2026-09-11):
         // nach dem Vorrollen lokale Rechnungsentwürfe je Empfänger; der
         // Org-Schalter resale.auto_local_drafts entscheidet im Befehl.
@@ -1315,6 +1331,15 @@ return [
             'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
             'criticality' => 'integration',
             'expected_runtime_minutes' => 15,
+        ],
+        // Serienvorlagen als Plan-Quelle (Feature 185, MVP-1409): täglich, dazu nach dem stündlichen Belegsync.
+        'lexoffice.sync_recurring_templates' => [
+            'command' => 'lexoffice:sync-recurring-templates',
+            'plugin' => 'lexoffice',
+            'cadence' => ['type' => 'dailyAt', 'time' => '05:40'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 5,
         ],
         'lexoffice.sync_vouchers' => [
             'command' => 'lexoffice:sync-vouchers',

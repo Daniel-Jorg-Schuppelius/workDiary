@@ -14,10 +14,11 @@ namespace App\Services\Reselling\Cockpit;
 
 use App\Enums\User\Permission;
 use App\Models\Customer\Customer;
-use App\Models\Platform\User;
+use App\Models\Platform\{Organization, User};
 use App\Models\Reselling\{ResaleLicenseAssignment, ResalePeriod, ResaleSubscription};
 use App\Services\Cockpit\Contracts\CockpitPanel;
 use App\Services\Licensing\FeatureFlagResolver;
+use App\Services\Reselling\Mirror\InvoiceMirror;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
@@ -27,7 +28,7 @@ use Illuminate\Support\Facades\Gate;
  * MVP-1024) mit der Zahl fälliger Perioden — ohne Lizenzschlüssel.
  */
 final class ResaleCockpitPanel implements CockpitPanel {
-    public function __construct(private readonly FeatureFlagResolver $features) {}
+    public function __construct(private readonly FeatureFlagResolver $features, private readonly InvoiceMirror $mirror) {}
 
     public function order(): int {
         return 70;
@@ -42,6 +43,17 @@ final class ResaleCockpitPanel implements CockpitPanel {
             return null;
         }
         $today = ResalePeriod::today();
+        $licenses = ResaleLicenseAssignment::query()
+            ->whereNull('ended_at')
+            ->where('customer_id', $subject->id)
+            ->with(['unit.batch.product', 'foreignCustomer:id,name'])
+            ->orderByDesc('sold_on')
+            ->limit(200)
+            ->get();
+        $organization = $subject->getRelationValue('organization');
+        if ($organization instanceof Organization) {
+            $this->mirror->preload($organization, $licenses);
+        }
 
         return view('customers._resale_panel', [
             'customer' => $subject,
@@ -54,13 +66,7 @@ final class ResaleCockpitPanel implements CockpitPanel {
                 ->orderBy('label')
                 ->limit(200)
                 ->get(),
-            'customerLicenses' => ResaleLicenseAssignment::query()
-                ->whereNull('ended_at')
-                ->where('customer_id', $subject->id)
-                ->with(['unit.batch.product', 'foreignCustomer:id,name'])
-                ->orderByDesc('sold_on')
-                ->limit(200)
-                ->get(),
+            'customerLicenses' => $licenses,
         ]);
     }
 }

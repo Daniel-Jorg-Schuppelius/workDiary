@@ -17,7 +17,7 @@ use App\Enums\Finance\AccountingVoucherState;
 use App\Models\Finance\AccountingVoucher;
 use App\Plugins\Akaunting\{AkauntingConfig, AkauntingPlugin};
 use App\Plugins\Akaunting\Api\AkauntingClientFactory;
-use App\Services\Finance\Accounting\Vouchers\{MirroredVoucher, VoucherMirror, VoucherPuller};
+use App\Services\Finance\Accounting\Vouchers\{MirroredVoucher, MirroredVoucherLine, VoucherMirror, VoucherPuller};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\StringHelper;
@@ -73,7 +73,12 @@ class AkauntingVoucherPullService implements VoucherPuller {
                 $result = $client->documents($type, $page, $since);
                 foreach ($result['rows'] as $row) {
                     $counters['read']++;
-                    $this->mirror->store($organizationId, $this->pluginId(), $this->map($type, $meta['direction'], $row), $counters);
+                    $voucher = $this->map($type, $meta['direction'], $row);
+                    $this->mirror->store($organizationId, $this->pluginId(), $voucher, $counters);
+                    if ($type === 'invoice') {
+                        // Positionen stehen im Dokument (Feature 185, MVP-1425: `items` der Document-Resource, ohne Menge → aus Summe/Preis).
+                        $this->mirror->storeLines($organizationId, $this->pluginId(), $voucher->externalId, self::lines($row, $voucher->currency));
+                    }
                 }
                 if ($result['rows'] === [] || $page >= $result['last_page']) {
                     break;
@@ -92,6 +97,44 @@ class AkauntingVoucherPullService implements VoucherPuller {
         }
 
         return $counters;
+    }
+
+    /**
+     * Positionen laut `DocumentItem`-Resource: `name`, `description`, `price`,
+     * `total`, `item_id` — keine Menge im JSON, deshalb Menge = Summe / Preis.
+     *
+     * @param  array<string, mixed>  $row
+     * @return list<MirroredVoucherLine>
+     */
+    private static function lines(array $row, string $currency): array {
+        $items = data_get($row, 'items.data');
+        if (! is_array($items)) {
+            $items = is_array($row['items'] ?? null) && array_is_list($row['items']) ? $row['items'] : [];
+        }
+        $lines = [];
+        $index = 0;
+        foreach ($items as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+            $index++;
+            $price = VoucherMirror::decimal($item['price'] ?? null, 4) ?? '0.00';
+            $total = VoucherMirror::decimal($item['total'] ?? null) ?? $price;
+            $quantity = (float) $price > 0.0 ? round((float) $total / (float) $price, 3) : 1.0;
+            $itemId = is_scalar($item['item_id'] ?? null) ? trim((string) $item['item_id']) : '';
+            $lines[] = new MirroredVoucherLine(
+                position: $index,
+                name: mb_substr(StringHelper::trimToNull($item['name'] ?? null) ?? '#' . $index, 0, 255),
+                quantity: $quantity > 0.0 ? $quantity : 1.0,
+                unitNet: $price,
+                totalNet: $total,
+                currency: $currency,
+                externalArticleId: $itemId !== '' && $itemId !== '0' ? $itemId : null,
+                description: StringHelper::trimToNull($item['description'] ?? null),
+            );
+        }
+
+        return $lines;
     }
 
     /** Link zum Original in der Oberfläche (Belegfluss, {@see AkauntingVoucherLinks}). */

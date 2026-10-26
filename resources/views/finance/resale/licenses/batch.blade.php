@@ -97,7 +97,7 @@
                         <td class="whitespace-nowrap">#{{ $entry->unit->position }}</td>
                         <td class="text-sm">{{ $entry->holderLabel() }}</td>
                         <td class="tabular-nums text-sm">{{ $entry->sold_on->fdate() }}</td>
-                        <td class="text-sm">{{ $entry->invoice_reference ?? '—' }}</td>
+                        <td class="text-sm">@include('finance.resale.licenses._invoice_cell', ['assignment' => $entry])</td>
                         <td class="text-sm">
                             @if ($entry->end_kind !== null)
                                 <x-status-badge size="xs" :tone="$entry->end_kind === \App\Enums\Reselling\LicenseAssignmentEnd::Returned ? 'warning' : 'info'" :label="$entry->end_kind->label()" />
