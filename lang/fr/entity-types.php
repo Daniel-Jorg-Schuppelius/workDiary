@@ -453,6 +453,7 @@ return [
     'RecipeProfile' => 'Profil de recette',
     'RecurrenceRule' => 'Règle de récurrence',
     'RentalRateRule' => 'Règle de prix de location',
+    'RentalTenancy' => 'Bail',
     'RentalCase' => 'Dossier de location',
     'RentalRequest' => 'Demande de location',
     'RentalCharge' => 'Frais de location',

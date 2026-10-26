@@ -102,6 +102,7 @@ class IndexListLayoutRuleTest extends TestCase {
 
     /** @var array<string, string> L2: Listen, die bewusst mit der Seite fließen — Pfad => Grund */
     private const PAGE_FLOW_ALLOW = [
+        'resources/views/rental/housing/index.blade.php' => 'Belegungsübersicht mit Wohnungsbestand und Mietverhältnissen: beide Tabellen scrollen als gemeinsame Seite, damit keine die andere verdrängt.',
         'app/Plugins/DatevOnline/Resources/views/admin/index.blade.php' => 'Verbindungsseite aus vier Karten: Mandantenwahl, Belegbilder, Buchungsstapel (geblättert) und zuletzt übertragene Belege.',
         'app/Plugins/Etsy/Resources/views/admin/index.blade.php' => 'Verbindungskarte über dem Bestellspiegel, darunter die Ledger-Summen je Buchungsart — zwei Tabellen.',
         'app/Plugins/JtlWawi/Resources/views/admin/index.blade.php' => 'Einrichtungsseite aus Verbindungsstatus, Registrierung, Verbindungsformular, Lagerzuordnung und Bestandsführung.',
@@ -151,6 +152,7 @@ class IndexListLayoutRuleTest extends TestCase {
         'resources/views/customer/insights/index.blade.php' => 'Auswertung im Kundenportal (Phase 154): Kennzahlen, Diagramme und deren Tabellen je Jahr — keine wachsende Liste.',
         'resources/views/customer/intakes/index.blade.php' => self::PORTAL_LAYOUT,
         'resources/views/customer/invoices/index.blade.php' => self::PORTAL_LAYOUT,
+        'resources/views/customer/housing/index.blade.php' => self::PORTAL_LAYOUT,
         'resources/views/customer/rental/index.blade.php' => self::PORTAL_LAYOUT,
         'resources/views/customer/subscriptions/index.blade.php' => self::PORTAL_LAYOUT,
         'resources/views/customer/tickets/index.blade.php' => self::PORTAL_LAYOUT,

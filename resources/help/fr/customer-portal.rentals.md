@@ -1,8 +1,10 @@
 ---
 title: "Portail client – Location"
 topic: customer-portal.rentals
-version: 2
+version: 3
 keywords:
+    - louer un logement
+    - réserver une location de vacances
     - louer du matériel
     - location de matériel
     - demande de location
@@ -120,3 +122,7 @@ location.
   appareils dans le portail ; adressez-vous pour cela à votre prestataire.
 - Les prix affichés sont des estimations hors taxes tirées de la liste de
   prix, pas une facture.
+
+## Louer un logement
+
+Avec le profil **Bailleurs**, les logements publiés apparaissent dans **Louer un logement**. Pour les vacances, indiquez arrivée, départ et nombre de personnes. Respectez les horaires et le séjour minimum. La réservation devient ferme après confirmation ou réservation directe activée. Pour la longue durée, indiquez le début et une fin facultative ; sans fin, la durée est indéterminée. Vous voyez uniquement vos propres baux et demandes et pouvez retirer les demandes ouvertes. Contactez le bailleur pour modifier un bail confirmé.

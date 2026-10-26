@@ -1,8 +1,11 @@
 ---
 title: "Noleggio attrezzature"
 topic: rental.overview
-version: 2
+version: 3
 keywords:
+    - locatore
+    - casa vacanze
+    - locazione
     - noleggio macchine
     - noleggio utensili
     - parco noleggio
@@ -49,3 +52,11 @@ WorkDiary verifica durante un noleggio se l'attrezzatura si trova nel luogo
 d'impiego: presso la sede del noleggio con il raggio impostato nelle
 impostazioni, altrimenti nei geofence del cliente. Se lo lascia, vengono
 avvisati la persona responsabile e la direzione del team.
+
+## Appartamenti e case vacanze
+
+Il profilo **Locatori** consiglia il modulo locazioni. La vista degli appartamenti usa il periodo globale e mostra anche quelli liberi. Le locazioni registrano inquilino, inizio, fine facoltativa, canone, spese e cauzione. Una locazione confermata blocca fino all’ultimo giorno incluso, senza limite se la fine è vuota. Imposti la fine all’uscita; annullare rimuove l’intera occupazione.
+
+Accettare una richiesta turistica crea una prenotazione confermata. La tariffa giornaliera rappresenta il prezzo per notte, con pulizia finale facoltativa. Capacità, soggiorno minimo e orari sono verificati. Pubblichi l’appartamento e abiliti le richieste per il cliente. Canoni e cauzioni sono dati amministrativi del MVP, senza fatturazione automatica.
+
+Il profilo include inoltre tre procedure (**Consegna appartamento**, **Verifica di riconsegna**, **Cambio ospiti**), il **verbale di consegna dell’appartamento** con letture dei contatori e chiavi, modelli di contratto per la locazione abitativa con e senza canone indicizzato e per le condizioni di affitto di una casa vacanze, con scadenze come il rendiconto annuale delle spese, e campi personalizzati dell’appartamento (superficie, vani, piano, animali, attestato energetico). Una locazione richiesta si conferma, rifiuta o annulla; una confermata si può annullare. Le locazioni annullate o rifiutate restano invariate.

@@ -70,8 +70,8 @@ class RentalRequestService {
     }
 
     /** Portal-Anfrage anlegen (Status requested — nie mehr). */
-    public function requestFromPortal(Customer $customer, User $portalUser, ?Asset $asset, ?string $groupCode, Carbon $from, Carbon $to, ?string $note = null): RentalRequest {
-        $this->assertPortalRequest($customer, $asset, $groupCode, $from, $to);
+    public function requestFromPortal(Customer $customer, User $portalUser, ?Asset $asset, ?string $groupCode, Carbon $from, Carbon $to, ?string $note = null, ?int $guests = null): RentalRequest {
+        $this->assertPortalRequest($customer, $asset, $groupCode, $from, $to, $guests);
 
         $request = RentalRequest::query()->create([
             'organization_id' => $customer->organization_id,
@@ -83,6 +83,7 @@ class RentalRequestService {
             'ends_at' => $to,
             'note' => $note !== null && trim($note) !== '' ? trim($note) : null,
             'status' => RentalRequestStatus::Requested->value,
+            'guests' => $guests,
         ]);
         $request->audit('rental.requested', ['asset_id' => $asset?->id, 'group_code' => $request->group_code, 'by_portal_user_id' => (int) $portalUser->id]);
 
@@ -104,15 +105,15 @@ class RentalRequestService {
      *
      * @throws RuntimeException|RentalConflictException
      */
-    public function bookFromPortal(Customer $customer, User $portalUser, Asset $asset, Carbon $from, Carbon $to, ?string $note = null): RentalRequest {
+    public function bookFromPortal(Customer $customer, User $portalUser, Asset $asset, Carbon $from, Carbon $to, ?string $note = null, ?int $guests = null): RentalRequest {
         $organization = Organization::query()->withoutGlobalScopes()->findOrFail($customer->organization_id);
         if (! $this->directBookingEnabled($organization)) {
             throw new RuntimeException((string) __('rental.portal.direct_disabled'));
         }
-        $this->assertPortalRequest($customer, $asset, null, $from, $to);
+        $this->assertPortalRequest($customer, $asset, null, $from, $to, $guests);
         $note = $note !== null && trim($note) !== '' ? trim($note) : null;
 
-        $request = DB::transaction(function () use ($organization, $customer, $portalUser, $asset, $from, $to, $note): RentalRequest {
+        $request = DB::transaction(function () use ($organization, $customer, $portalUser, $asset, $from, $to, $note, $guests): RentalRequest {
             $profile = RentalProfile::query()->withoutGlobalScopes()->where('asset_id', $asset->id)->first();
             $case = $this->cases->open($organization, $portalUser, [
                 'customer_id' => $customer->id,
@@ -135,6 +136,7 @@ class RentalRequestService {
                 'note' => $note,
                 'status' => RentalRequestStatus::Accepted->value,
                 'is_direct' => true,
+                'guests' => $guests,
                 'decided_at' => Carbon::now(),
                 'rental_reservation_id' => RentalReservation::query()->withoutGlobalScopes()->where('rental_case_id', $case->id)->value('id'),
                 'rental_case_id' => $case->id,
@@ -149,7 +151,7 @@ class RentalRequestService {
     }
 
     /** Gemeinsame Prüfung für Anfrage und Direktbuchung (Default-Deny über das freigegebene Sortiment). */
-    private function assertPortalRequest(Customer $customer, ?Asset $asset, ?string $groupCode, Carbon $from, Carbon $to): void {
+    private function assertPortalRequest(Customer $customer, ?Asset $asset, ?string $groupCode, Carbon $from, Carbon $to, ?int $guests = null): void {
         if ($asset === null && ($groupCode === null || $groupCode === '')) {
             throw new RuntimeException((string) __('Bitte ein Gerät oder eine Gerätegruppe wählen.'));
         }
@@ -163,6 +165,17 @@ class RentalRequestService {
         $bookable = $this->bookableProfiles($customer);
         if ($asset !== null && ! $bookable->contains(fn (RentalProfile $p): bool => (int) $p->asset_id === (int) $asset->id)) {
             throw new RuntimeException((string) __('Dieses Gerät ist im Portal nicht anfragbar.'));
+        }
+        $profile = $asset !== null ? $bookable->first(fn (RentalProfile $p): bool => (int) $p->asset_id === (int) $asset->id) : null;
+        if ($profile?->isHousing() === true) {
+            $zone = \App\Support\Tz::ofOrganization($customer->organization ?? abort(404));
+            $localFrom = $from->copy()->setTimezone($zone);
+            $localTo = $to->copy()->setTimezone($zone);
+            $nights = (int) $localFrom->copy()->startOfDay()->diffInDays($localTo->copy()->startOfDay());
+            if ($profile->rental_mode?->allowsHoliday() !== true || $nights < $profile->minimum_nights || $guests === null || $guests < 1 || $guests > $profile->max_guests
+                || $localFrom->format('H:i') !== $profile->check_in_time || $localTo->format('H:i') !== $profile->check_out_time) {
+                throw new RuntimeException((string) __('housing.capacity_error'));
+            }
         }
         if ($asset === null && ! $bookable->contains(fn (RentalProfile $p): bool => $p->group_code === $groupCode)) {
             throw new RuntimeException((string) __('Diese Gerätegruppe ist im Portal nicht anfragbar.'));
@@ -204,6 +217,12 @@ class RentalRequestService {
         }
 
         return DB::transaction(function () use ($request, $decider, $asset): RentalRequest {
+            // Anfrage und Wohnung sperren: Annahme erzeugt genau eine bestätigte Belegung.
+            Asset::query()->whereKey($asset->id)->lockForUpdate()->firstOrFail();
+            $request = RentalRequest::query()->whereKey($request->id)->lockForUpdate()->firstOrFail();
+            if (! $request->isOpen()) {
+                throw new RuntimeException((string) __('Diese Anfrage ist bereits entschieden.'));
+            }
             $organization = Organization::query()->withoutGlobalScopes()->findOrFail($request->organization_id);
 
             $case = $this->cases->open($organization, $decider, [
@@ -211,12 +230,17 @@ class RentalRequestService {
                 'starts_at' => $request->starts_at,
                 'ends_at' => $request->ends_at,
                 'responsible_user_id' => $decider->id,
+                'rental_rate_card_id' => $asset->rentalProfile?->default_rate_card_id,
                 'notes' => $request->note !== null
                     ? (string) __('Portal-Anfrage: :note', ['note' => $request->note])
                     : (string) __('Aus Portal-Anfrage angelegt.'),
             ], [$asset->id]);
 
-            $reservation = $this->availability->createWindow(
+            if ($asset->rentalProfile?->isHousing() === true) {
+                $this->cases->reserve($case, $decider);
+                $reservation = $case->reservations()->active()->firstOrFail();
+            } else {
+                $reservation = $this->availability->createWindow(
                 $asset,
                 RentalReservationKind::Soft,
                 $request->starts_at,
@@ -224,7 +248,8 @@ class RentalRequestService {
                 (string) __('Vormerkung aus Portal-Anfrage :number', ['number' => $case->number]),
                 $decider->id,
                 $case->id,
-            );
+                );
+            }
 
             $request->forceFill([
                 'status' => RentalRequestStatus::Accepted->value,
@@ -243,35 +268,43 @@ class RentalRequestService {
     }
 
     public function decline(RentalRequest $request, User $decider, string $reason): RentalRequest {
-        if (! $request->isOpen()) {
-            throw new RuntimeException((string) __('Diese Anfrage ist bereits entschieden.'));
-        }
+        return DB::transaction(function () use ($request, $decider, $reason): RentalRequest {
+            RentalRequest::query()->whereKey($request->id)->lockForUpdate()->firstOrFail();
+            $request->refresh();
+            if (! $request->isOpen()) {
+                throw new RuntimeException((string) __('Diese Anfrage ist bereits entschieden.'));
+            }
 
-        $request->forceFill([
-            'status' => RentalRequestStatus::Declined->value,
-            'decided_by' => $decider->id,
-            'decided_at' => Carbon::now(),
-            'decline_reason' => trim($reason),
-        ])->save();
-        $request->audit('rental.requestDeclined', ['reason' => trim($reason)]);
-        $this->notifyDecision($request);
+            $request->forceFill([
+                'status' => RentalRequestStatus::Declined->value,
+                'decided_by' => $decider->id,
+                'decided_at' => Carbon::now(),
+                'decline_reason' => trim($reason),
+            ])->save();
+            $request->audit('rental.requestDeclined', ['reason' => trim($reason)]);
+            $this->notifyDecision($request);
 
-        return $request;
+            return $request;
+        });
     }
 
     /** Rücknahme durch den Kunden — nur die eigene, noch offene Anfrage. */
     public function withdrawFromPortal(RentalRequest $request, User $portalUser): RentalRequest {
-        if ((int) $request->customer_id !== (int) $portalUser->customer_id) {
-            throw new RuntimeException((string) __('Diese Anfrage gehört nicht zu Ihrem Zugang.'));
-        }
-        if (! $request->isOpen()) {
-            throw new RuntimeException((string) __('Diese Anfrage lässt sich nicht mehr zurücknehmen.'));
-        }
+        return DB::transaction(function () use ($request, $portalUser): RentalRequest {
+            RentalRequest::query()->whereKey($request->id)->lockForUpdate()->firstOrFail();
+            $request->refresh();
+            if ((int) $request->customer_id !== (int) $portalUser->customer_id) {
+                throw new RuntimeException((string) __('Diese Anfrage gehört nicht zu Ihrem Zugang.'));
+            }
+            if (! $request->isOpen()) {
+                throw new RuntimeException((string) __('Diese Anfrage lässt sich nicht mehr zurücknehmen.'));
+            }
 
-        $request->forceFill(['status' => RentalRequestStatus::Withdrawn->value])->save();
-        $request->audit('rental.requestWithdrawn', ['by_portal_user_id' => (int) $portalUser->id]);
+            $request->forceFill(['status' => RentalRequestStatus::Withdrawn->value])->save();
+            $request->audit('rental.requestWithdrawn', ['by_portal_user_id' => (int) $portalUser->id]);
 
-        return $request;
+            return $request;
+        });
     }
 
     private function notifyRequested(RentalRequest $request, Customer $customer): void {

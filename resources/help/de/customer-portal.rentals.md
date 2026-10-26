@@ -1,8 +1,10 @@
 ---
 title: "Kundenportal – Verleih"
 topic: customer-portal.rentals
-version: 2
+version: 3
 keywords:
+    - Wohnung mieten
+    - Ferienwohnung buchen
     - Miete
     - Gerätemiete
     - Geräte mieten
@@ -121,3 +123,9 @@ Verleihvorgang festgehalten.
   nicht; wenden Sie sich dafür an Ihren Auftragnehmer.
 - Die angezeigten Preise sind Nettorichtwerte aus der Preisliste, keine
   Rechnung.
+
+## Wohnungen mieten
+
+Beim Branchenprofil **Vermieter** finden Sie freigegebene Wohnungen unter **Wohnung mieten**. Für Ferienaufenthalte wählen Sie Anreise, Abreise und Gästezahl. Anreise- und Abreisezeiten sowie Mindestaufenthalt stehen an der Wohnung. Eine Anfrage belegt noch keinen Zeitraum; erst die Bestätigung oder eine ausdrücklich freigeschaltete Direktbuchung reserviert verbindlich.
+
+Für Dauervermietung geben Sie den gewünschten Mietbeginn und optional den letzten Miettag ein. Ohne Enddatum ist die Anfrage unbefristet. Unter **Meine Mietverhältnisse & Anfragen** sehen Sie nur Ihre eigenen Einträge. Offene Anfragen können Sie zurücknehmen. Bestätigte Mietverhältnisse ändern Sie über Ihren Vermieter.

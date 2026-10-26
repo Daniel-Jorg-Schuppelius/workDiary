@@ -802,6 +802,7 @@ return [
         'customer.claims.*' => 'customer-portal.claims',
         'customer.returns.*' => 'customer-portal.claims',
         'customer.rentals.*' => 'customer-portal.rentals',
+        'customer.housing.*' => 'customer-portal.rentals',
         'customer.queries.*' => 'customer-portal.queries',
         'customer.intakes.*' => 'customer-portal.intakes',
         'customer.assets.*' => 'customer-portal.assets',

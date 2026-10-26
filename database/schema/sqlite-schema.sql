@@ -10006,6 +10006,15 @@ CREATE TABLE IF NOT EXISTS "rental_profiles"(
   "created_at" datetime,
   "updated_at" datetime,
   "portal_bookable" tinyint(1) not null default '0',
+  "rental_mode" varchar,
+  "public_description" text,
+  "max_guests" integer not null default '2',
+  "minimum_nights" integer not null default '1',
+  "check_in_time" varchar not null default '15:00',
+  "check_out_time" varchar not null default '10:00',
+  "rent_amount" numeric,
+  "ancillary_amount" numeric,
+  "currency" varchar not null default 'EUR',
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("asset_id") references "assets"("id") on delete cascade,
   foreign key("default_rate_card_id") references "rental_rate_cards"("id") on delete set null
@@ -15776,6 +15785,7 @@ CREATE TABLE IF NOT EXISTS "rental_requests"(
   "created_at" datetime,
   "updated_at" datetime,
   "is_direct" tinyint(1) not null default '0',
+  "guests" integer,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("customer_id") references "customers"("id") on delete cascade,
   foreign key("portal_user_id") references "users"("id") on delete set null,
@@ -24872,6 +24882,35 @@ CREATE UNIQUE INDEX "glpipl_org_source_unique" on "glpi_project_links"(
   "organization_id",
   "source_project_id"
 );
+CREATE INDEX "rental_profiles_rental_mode_index" on "rental_profiles"(
+  "rental_mode"
+);
+CREATE TABLE IF NOT EXISTS "rental_tenancies"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "asset_id" integer not null,
+  "customer_id" integer not null,
+  "status" varchar not null default 'requested',
+  "starts_on" date not null,
+  "ends_on" date,
+  "rent_amount" numeric,
+  "ancillary_amount" numeric,
+  "deposit_amount" numeric,
+  "currency" varchar not null default 'EUR',
+  "note" text,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("asset_id") references "assets"("id") on delete restrict,
+  foreign key("customer_id") references "customers"("id") on delete restrict,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "rental_tenancies_organization_id_asset_id_status_index" on "rental_tenancies"(
+  "organization_id",
+  "asset_id",
+  "status"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -25904,3 +25943,4 @@ INSERT INTO migrations VALUES(1028,'2027_03_31_171600_add_refunds_and_deletions_
 INSERT INTO migrations VALUES(1029,'2027_03_31_171700_add_refunds_deletions_and_timezone_to_prestashop',9);
 INSERT INTO migrations VALUES(1030,'2027_03_31_171800_add_foreign_amount_to_firefly_transactions',9);
 INSERT INTO migrations VALUES(1031,'2027_03_31_171900_add_source_deletion_and_foreign_amount_to_accounting_vouchers',9);
+INSERT INTO migrations VALUES(1032,'2027_04_01_100000_add_housing_rentals',10);

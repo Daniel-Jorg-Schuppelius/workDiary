@@ -19,6 +19,7 @@ use App\Models\Platform\User;
 use App\Models\Rental\{RentalCase, RentalCharge, RentalDeposit, RentalProfile, RentalRateCard};
 use App\Services\Billing\{BillingModeResolver, DocumentTotalsCalculator};
 use App\Services\Invoicing\{InvoiceGenerator, TaxResolver};
+use App\Support\Tz;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Carbon;
@@ -50,7 +51,13 @@ class RentalBillingService {
 
         $snapshot = (array) ($case->terms_snapshot ?? []);
 
-        return $this->chargesFor((array) ($snapshot['items'] ?? []), $case->starts_at, $case->actual_return_at ?? $case->ends_at, $groupCodes, array_values(array_filter((array) ($snapshot['rules'] ?? []), 'is_array')), isset($snapshot['utilization']) ? (int) $snapshot['utilization'] : null);
+        $until = $case->actual_return_at ?? $case->ends_at;
+        $zone = (string) ($snapshot['billing_timezone'] ?? Tz::current());
+        $nights = ($snapshot['billing_unit'] ?? null) === 'night'
+            ? (int) $case->starts_at->copy()->setTimezone($zone)->startOfDay()->diffInDays($until->copy()->setTimezone($zone)->startOfDay())
+            : null;
+
+        return $this->chargesFor((array) ($snapshot['items'] ?? []), $case->starts_at, $until, $groupCodes, array_values(array_filter((array) ($snapshot['rules'] ?? []), 'is_array')), isset($snapshot['utilization']) ? (int) $snapshot['utilization'] : null, $nights);
     }
 
     /**
@@ -63,7 +70,11 @@ class RentalBillingService {
             return null;
         }
         $snapshot = $card->toSnapshot();
-        $charges = $this->chargesFor($snapshot['items'], $from, $to, array_filter([$profile->group_code]), $snapshot['rules'], $this->rules->utilization((int) $profile->organization_id, $profile->group_code, $from, $to));
+        $zone = $profile->organization !== null ? Tz::ofOrganization($profile->organization) : Tz::current();
+        $nights = $profile->isHousing()
+            ? (int) $from->copy()->setTimezone($zone)->startOfDay()->diffInDays($to->copy()->setTimezone($zone)->startOfDay())
+            : null;
+        $charges = $this->chargesFor($snapshot['items'], $from, $to, array_filter([$profile->group_code]), $snapshot['rules'], $this->rules->utilization((int) $profile->organization_id, $profile->group_code, $from, $to), $nights);
         if ($charges === []) {
             return null;
         }
@@ -84,12 +95,12 @@ class RentalBillingService {
      * @param  list<array<string, mixed>>  $rules  Mietpreisregeln aus dem Snapshot (MVP-950)
      * @return list<array<string, mixed>>
      */
-    private function chargesFor(array $items, Carbon $from, Carbon $until, array $groupCodes, array $rules = [], ?int $utilization = null): array {
+    private function chargesFor(array $items, Carbon $from, Carbon $until, array $groupCodes, array $rules = [], ?int $utilization = null, ?int $nights = null): array {
         if ($items === []) {
             return [];
         }
 
-        $days = max(1, (int) ceil($from->diffInHours($until) / 24));
+        $days = max(1, $nights ?? (int) ceil($from->diffInHours($until) / 24));
 
         $suggestions = [];
         foreach ($items as $item) {

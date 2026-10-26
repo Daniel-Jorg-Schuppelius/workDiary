@@ -1,0 +1,77 @@
+<?php
+/*
+ * Created on   : Mon Oct 26 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : housing.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+declare(strict_types=1);
+
+return [
+    'title' => 'Logements et occupation',
+    'branch_label' => 'Bailleurs / logements et locations de vacances',
+    'subtitle' => 'Gérer logements, locations de vacances, baux et occupation sur la période sélectionnée.',
+    'portal_title' => 'Louer un logement',
+    'portal_subtitle' => 'Demandez un séjour ou une location longue durée. Le logement est réservé après confirmation.',
+    'unit' => 'Logement',
+    'create' => 'Ajouter un logement',
+    'edit' => 'Modifier le logement',
+    'mode' => 'Type de location',
+    'occupancy' => 'Occupation sur la période',
+    'free' => 'Disponible',
+    'unavailable_status' => 'Occupé ou bloqué',
+    'portal' => 'Portail client',
+    'published' => 'Publié',
+    'hidden' => 'Non publié',
+    'range_hint' => 'Occupation du :from au :to. Modifiez la période dans l’en-tête global.',
+    'address' => 'Adresse / emplacement',
+    'public_description' => 'Description sur le portail client',
+    'rentable' => 'Disponible à la location',
+    'publish' => 'Proposer sur le portail client',
+    'rent_amount' => 'Loyer mensuel hors charges',
+    'ancillary_amount' => 'Charges mensuelles',
+    'deposit' => 'Dépôt de garantie',
+    'max_guests' => 'Nombre maximal de personnes',
+    'minimum_nights' => 'Séjour minimum (nuits)',
+    'check_in' => 'Arrivée à partir de',
+    'check_out' => 'Départ avant',
+    'cleaning_buffer' => 'Délai de nettoyage après départ (heures)',
+    'price_hint' => 'Le tarif standard comprend le prix par nuit comme tarif journalier et le nettoyage final éventuel.',
+    'tenancy' => 'Bail',
+    'tenancies' => 'Baux et demandes',
+    'tenancy_create' => 'Ajouter un bail',
+    'tenancy_edit' => 'Modifier le bail',
+    'tenant' => 'Locataire',
+    'starts_on' => 'Début du bail',
+    'ends_on' => 'Dernier jour (vide = indéterminé)',
+    'open_ended' => 'Durée indéterminée',
+    'tenancy_hint' => 'Un bail actif bloque le logement jusqu’au dernier jour inclus. Indiquez la date de fin au départ ; annuler supprime toute l’occupation.',
+    'saved' => 'Logement enregistré.',
+    'tenancy_saved' => 'Bail enregistré.',
+    'request_saved' => 'Demande enregistrée. Consultez le statut dans votre aperçu.',
+    'unavailable' => 'Ce logement est indisponible pour ce type de location.',
+    'occupied' => 'Le logement est loué à long terme sur cette période.',
+    'capacity_error' => 'Respectez la capacité, le séjour minimum et les heures d’arrivée et de départ.',
+    'empty' => 'Aucun logement créé.',
+    'empty_hint' => 'Ajoutez votre premier logement avec « Ajouter un logement ».',
+    'portal_empty' => 'Aucun logement publié actuellement sur le portail.',
+    'no_tenancies' => 'Aucun bail ni demande.',
+    'no_requests' => 'Aucune réservation de vacances demandée.',
+    'holiday_requests' => 'Examiner les réservations',
+    'my_tenancies' => 'Mes baux et demandes',
+    'my_holiday_requests' => 'Mes réservations de vacances',
+    'arrival' => 'Arrivée',
+    'departure' => 'Départ',
+    'guests' => 'Personnes',
+    'message' => 'Message au bailleur',
+    'capacity' => 'Jusqu’à :guests personnes · minimum :nights nuits',
+    'times' => 'Arrivée à partir de :in · départ avant :out',
+    'rent_display' => ':rent de loyer + :costs de charges par mois',
+    'rent_hint' => 'Valeur par défaut pour les nouvelles locations. Aucune facture de loyer n’en découle.',
+    'closed' => 'Les locations annulées ou refusées ne peuvent plus être modifiées.',
+    'not_withdrawable' => 'Cette demande a déjà été traitée et ne peut plus être retirée.',
+    'request_withdrawn' => 'Demande retirée.',
+];

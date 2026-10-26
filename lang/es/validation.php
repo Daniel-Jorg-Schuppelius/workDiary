@@ -174,6 +174,17 @@ return [
     ],
 
     'attributes' => [
+        'rental_mode' => 'Tipo de alquiler',
+        'max_guests' => 'Número máximo de huéspedes',
+        'minimum_nights' => 'Estancia mínima (noches)',
+        'check_in_time' => 'Llegada desde',
+        'check_out_time' => 'Salida hasta',
+        'rent_amount' => 'Alquiler base mensual',
+        'ancillary_amount' => 'Gastos adicionales mensuales',
+        'profile_id' => 'Vivienda',
+        'arrival' => 'Llegada',
+        'departure' => 'Salida',
+        'guests' => 'Huéspedes',
         'lead_id' => 'Lead',
         'run' => 'Ronda',
         'scanned_at' => 'Hora de escaneo',

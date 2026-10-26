@@ -178,6 +178,9 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
         // Deny), zweiphasig — der Kunde fragt an, die Leitung entscheidet.
         // Eigener Pfad, damit /rentals/{rental} (Sqid-Binding) nicht greift.
         Route::middleware('portal.capability:rental_requests')->group(function (): void {
+            Route::get('/wohnungen', [\App\Http\Controllers\Rental\Portal\HousingPortalController::class, 'index'])->name('housing.index');
+            Route::post('/wohnungen', [\App\Http\Controllers\Rental\Portal\HousingPortalController::class, 'store'])->middleware('throttle:12,1')->name('housing.store');
+            Route::post('/wohnungen/{tenancy}/zuruecknehmen', [\App\Http\Controllers\Rental\Portal\HousingPortalController::class, 'withdraw'])->name('housing.withdraw');
             Route::get('/rental-requests', [\App\Http\Controllers\Rental\Portal\RentalRequestController::class, 'index'])->name('rentals.requests.index');
             Route::post('/rental-requests', [\App\Http\Controllers\Rental\Portal\RentalRequestController::class, 'store'])
                 ->middleware('throttle:12,1')->name('rentals.requests.store');

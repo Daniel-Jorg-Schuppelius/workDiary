@@ -453,6 +453,7 @@ return [
     'RecipeProfile' => 'Profilo di ricetta',
     'RecurrenceRule' => 'Regola di ricorrenza',
     'RentalRateRule' => 'Regola di prezzo di noleggio',
+    'RentalTenancy' => 'Locazione',
     'RentalCase' => 'Pratica di noleggio',
     'RentalRequest' => 'Richiesta di noleggio',
     'RentalCharge' => 'Addebito di noleggio',

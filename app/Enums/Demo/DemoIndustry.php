@@ -61,6 +61,7 @@ enum DemoIndustry: string implements HasLabel {
     case FliesenBodenleger = 'fliesen-bodenleger';
     case PhotovoltaikEnergieberatung = 'photovoltaik-energieberatung';
     case Hausmeister = 'hausmeister';
+    case Vermieter = 'vermieter';
 
     /** Branchenprofil-Code für den BranchProfileInstaller (database/data/branchprofiles/*.php). */
     public function branchProfileCode(): string {
@@ -92,6 +93,7 @@ enum DemoIndustry: string implements HasLabel {
             self::FliesenBodenleger => 'fliesen-bodenleger',
             self::PhotovoltaikEnergieberatung => 'photovoltaik-energieberatung',
             self::Hausmeister => 'hausmeister',
+            self::Vermieter => 'vermieter',
         };
     }
 
@@ -125,6 +127,7 @@ enum DemoIndustry: string implements HasLabel {
             self::FliesenBodenleger => 'Fliesen- & Bodenleger',
             self::PhotovoltaikEnergieberatung => 'Photovoltaik & Energieberatung',
             self::Hausmeister => 'Hausmeisterdienst',
+            self::Vermieter => 'Vermieter / Wohnungen und Ferienwohnungen',
         };
     }
 
@@ -158,6 +161,7 @@ enum DemoIndustry: string implements HasLabel {
             self::FliesenBodenleger => 'Muster Fliesen & Boden GmbH',
             self::PhotovoltaikEnergieberatung => 'Muster Solar & Energie GmbH',
             self::Hausmeister => 'Muster Hausmeisterservice GmbH',
+            self::Vermieter => 'Muster Wohnungsvermietung GmbH',
         };
     }
 

@@ -85,6 +85,10 @@ class RentalCaseService {
 
         if ($card instanceof RentalRateCard) {
             $snapshot = $card->toSnapshot();
+            if ($case->caseAssets->isNotEmpty() && $case->caseAssets->every(fn ($item): bool => $item->asset?->rentalProfile?->isHousing() === true)) {
+                $snapshot['billing_unit'] = 'night';
+                $snapshot['billing_timezone'] = $case->organization !== null ? \App\Support\Tz::ofOrganization($case->organization) : \App\Support\Tz::current();
+            }
 
             if ($manualOverrides !== null && $manualOverrides !== []) {
                 $snapshot['overrides'] = $manualOverrides;

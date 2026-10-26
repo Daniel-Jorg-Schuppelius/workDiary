@@ -15,10 +15,12 @@ namespace App\Services\Rental;
 use App\Enums\Rental\{RentalReservationKind, RentalReservationStatus};
 use App\Exceptions\{AssetNotUsableException, RentalConflictException};
 use App\Models\Asset\Asset;
-use App\Models\Rental\{RentalProfile, RentalReservation};
+use App\Models\Rental\{RentalProfile, RentalReservation, RentalTenancy};
 use App\Services\Asset\AssetUsageGuard;
-use App\Support\CarbonFmt;
+use App\Support\{CarbonFmt, Tz};
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Verfügbarkeits- und Konfliktprüfung (MVP-260): Reservierungen inklusive
@@ -34,7 +36,7 @@ class RentalAvailabilityService {
     /**
      * Erste kollidierende Belegung im Zeitraum (inkl. beidseitiger Puffer).
      */
-    public function findConflict(Asset $asset, Carbon $from, Carbon $to, ?int $ignoreCaseId = null): ?RentalReservation {
+    public function findConflict(Asset $asset, Carbon $from, ?Carbon $to, ?int $ignoreCaseId = null): ?RentalReservation {
         $candidates = RentalReservation::query()
             ->where('asset_id', $asset->id)
             ->active()
@@ -47,7 +49,7 @@ class RentalAvailabilityService {
 
         return $candidates->first(
             fn (RentalReservation $reservation): bool => $reservation->kind->isBlocking()
-                && $reservation->overlapsWindow($from, $to),
+                && ($to !== null ? $reservation->overlapsWindow($from, $to) : $reservation->blockedUntil()->greaterThan($from)),
         );
     }
 
@@ -73,7 +75,7 @@ class RentalAvailabilityService {
     /**
      * @throws RentalConflictException|AssetNotUsableException
      */
-    public function assertAvailable(Asset $asset, Carbon $from, Carbon $to, ?int $ignoreCaseId = null): void {
+    public function assertAvailable(Asset $asset, Carbon $from, ?Carbon $to, ?int $ignoreCaseId = null, ?int $ignoreTenancyId = null): void {
         $profile = RentalProfile::query()->where('asset_id', $asset->id)->first();
 
         if ($profile === null || ! $profile->is_rentable) {
@@ -82,6 +84,22 @@ class RentalAvailabilityService {
 
         // Gemeinsames Sperrmodell (D12): Sperren + blockierende Defekte
         $this->guard->ensureUsable($asset, self::USAGE_CONTEXT);
+
+        if ($profile->isHousing()) {
+            $from = $from->copy()->subHours($profile->buffer_before_hours);
+            $to = $to?->copy()->addHours($profile->buffer_after_hours);
+        }
+
+        $zone = $asset->organization !== null ? Tz::ofOrganization($asset->organization) : Tz::current();
+        if (RentalTenancy::query()->where('asset_id', $asset->id)
+            ->overlapping(
+                CarbonImmutable::instance($from)->setTimezone($zone),
+                $to !== null ? CarbonImmutable::instance($to)->subMicrosecond()->setTimezone($zone) : null,
+            )
+            ->when($ignoreTenancyId !== null, fn ($query) => $query->whereKeyNot($ignoreTenancyId))
+            ->exists()) {
+            throw new AssetNotUsableException((string) __('housing.occupied'));
+        }
 
         // Prüfstatus: prüfpflichtige Leihobjekte mit überfälliger Prüfung
         // dürfen nicht still verliehen werden (MVP-259, Feature 075 folgt).
@@ -121,27 +139,33 @@ class RentalAvailabilityService {
             throw new \InvalidArgumentException((string) __('Harte Reservierungen entstehen nur über die Verleihakte.'));
         }
 
-        if ($kind->isBlocking()) {
-            $conflict = $this->findConflict($asset, $from, $to, $rentalCaseId);
-            if ($conflict !== null) {
-                throw new RentalConflictException(
-                    (string) __('Der Zeitraum kollidiert mit einer bestehenden Belegung (:kind).', ['kind' => $conflict->kind->label()]),
-                    $conflict,
-                );
+        return DB::transaction(function () use ($asset, $kind, $from, $to, $note, $createdBy, $rentalCaseId): RentalReservation {
+            Asset::query()->whereKey($asset->id)->lockForUpdate()->firstOrFail();
+            if ($kind->isBlocking() && $asset->rentalProfile?->isHousing() === true) {
+                $this->assertAvailable($asset, $from, $to, $rentalCaseId);
             }
-        }
+            if ($kind->isBlocking()) {
+                $conflict = $this->findConflict($asset, $from, $to, $rentalCaseId);
+                if ($conflict !== null) {
+                    throw new RentalConflictException(
+                        (string) __('Der Zeitraum kollidiert mit einer bestehenden Belegung (:kind).', ['kind' => $conflict->kind->label()]),
+                        $conflict,
+                    );
+                }
+            }
 
-        return RentalReservation::query()->create([
-            'organization_id' => $asset->organization_id,
-            'rental_case_id' => $rentalCaseId,
-            'asset_id' => $asset->id,
-            'kind' => $kind->value,
-            'status' => RentalReservationStatus::Active,
-            'starts_at' => $from,
-            'ends_at' => $to,
-            'note' => $note,
-            'created_by' => $createdBy,
-        ]);
+            return RentalReservation::query()->create([
+                'organization_id' => $asset->organization_id,
+                'rental_case_id' => $rentalCaseId,
+                'asset_id' => $asset->id,
+                'kind' => $kind->value,
+                'status' => RentalReservationStatus::Active,
+                'starts_at' => $from,
+                'ends_at' => $to,
+                'note' => $note,
+                'created_by' => $createdBy,
+            ]);
+        });
     }
 
     public function isAvailable(Asset $asset, Carbon $from, Carbon $to, ?int $ignoreCaseId = null): bool {

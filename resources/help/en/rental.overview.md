@@ -1,8 +1,11 @@
 ---
 title: "Equipment rental"
 topic: rental.overview
-version: 2
+version: 3
 keywords:
+    - landlord
+    - holiday apartment
+    - tenancy
     - hire
     - tool hire
     - plant hire
@@ -51,3 +54,13 @@ example from a telematics export), WorkDiary checks during a rental whether
 the equipment is on site: at the rental's site with the radius set in the
 settings, otherwise within the customer's geofences. If it leaves, the
 responsible person and the team leads are notified.
+
+## Apartments and holiday homes
+
+The **Landlords** profile recommends the rental module. **Apartments & occupancy** manages long-term rentals, holiday rentals or both using the global header period. Vacant units remain visible.
+
+Tenancies store the tenant, start, optional last rental day, monthly base rent, ancillary costs and deposit. Confirmed tenancies block the apartment through the last rental day, indefinitely without an end date. Set the end date at move-out; cancellation removes the entire occupancy.
+
+Accepting an apartment holiday request immediately creates a firm reservation. Rate cards provide nightly prices as daily rates and optional final cleaning. Guest capacity, minimum stay and check-in times are checked. Publish the unit and grant the customer the rental requests capability for portal access. Monthly rents and deposits are administrative records in the MVP; rent and ancillary cost billing is not automatic.
+
+The profile also brings three procedures (**Apartment handover**, **Move-out inspection**, **Holiday apartment changeover**), the **apartment handover protocol** with meter readings and keys, contract templates for residential leases with and without index-linked rent and for holiday apartment rental terms with deadlines such as the annual service charge statement, and custom fields for the apartment (living area, rooms, floor, pets, energy certificate). You confirm, decline or cancel a requested tenancy; a confirmed one can be cancelled. Cancelled and declined tenancies stay unchanged.

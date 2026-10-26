@@ -43,6 +43,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $decline_reason
  * @property int|null $rental_reservation_id
  * @property int|null $rental_case_id
+ * @property int|null $guests Gäste einer Ferienanfrage (Branchenprofil Vermieter)
  */
 class RentalRequest extends Model {
     use Auditable;
@@ -53,6 +54,7 @@ class RentalRequest extends Model {
         'organization_id', 'customer_id', 'portal_user_id', 'asset_id', 'group_code',
         'starts_at', 'ends_at', 'note', 'status', 'is_direct', 'decided_by', 'decided_at',
         'decline_reason', 'rental_reservation_id', 'rental_case_id',
+        'guests',
     ];
 
     /** @var array<string, string> */
@@ -62,6 +64,7 @@ class RentalRequest extends Model {
         'starts_at' => 'datetime',
         'ends_at' => 'datetime',
         'decided_at' => 'datetime',
+        'guests' => 'integer',
     ];
 
     /** @param Builder<self> $query */

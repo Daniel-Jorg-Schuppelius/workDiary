@@ -99,6 +99,9 @@ use Tests\TestCase;
  * Angepasst 2026-10-23 (Feature 183, MVP-1378): einziges Delta ist
  * `/aktivitaet` im Header-Systemmenü der vier Admin-Personas — neben dem
  * Audit-Log, mit demselben Recht.
+ * Angepasst 2026-10-26 (Branchenprofil Vermieter): einziges Delta ist
+ * `/verleih/wohnungen` in `enterprise_admin/sidebar` — „Wohnungen & Belegung“
+ * im Verleih, am Modul Verleih.
  */
 class NavigationGoldenTest extends TestCase {
     use RefreshDatabase;

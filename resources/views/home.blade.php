@@ -104,6 +104,7 @@
         ['icon' => 'grid_view',              'label' => __('Fliesen- & Bodenleger')],
         ['icon' => 'solar_power',            'label' => __('Photovoltaik & Energieberatung')],
         ['icon' => 'home_repair_service',    'label' => __('Hausmeisterdienst')],
+        ['icon' => 'holiday_village',        'label' => __('housing.branch_label')],
     ];
 
     // Produktnamen der angebundenen Systeme – bewusst unübersetzt.

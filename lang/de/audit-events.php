@@ -1571,4 +1571,10 @@ return [
         'authorized' => 'KI-Assistent (MCP) autorisiert',
         'write' => 'Über KI-Assistent (MCP) angelegt bzw. geändert',
     ],
+    'housing' => [
+        'requested' => 'Dauervermietung angefragt',
+        'activated' => 'Mietverhältnis bestätigt',
+        'updated' => 'Mietverhältnis geändert',
+        'withdrawn' => 'Mietanfrage zurückgenommen',
+    ],
 ];

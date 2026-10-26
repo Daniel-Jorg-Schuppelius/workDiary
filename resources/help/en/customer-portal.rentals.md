@@ -1,8 +1,10 @@
 ---
 title: "Customer Portal – Rental"
 topic: customer-portal.rentals
-version: 2
+version: 3
 keywords:
+    - rent an apartment
+    - book a holiday apartment
     - rental
     - equipment hire
     - rent equipment
@@ -113,3 +115,7 @@ transaction.
 - You cannot extend the rental period, swap or return devices in the portal;
   please contact your contractor for that.
 - The prices shown are net estimates from the price list, not an invoice.
+
+## Renting apartments
+
+With the **Landlords** profile, published apartments appear under **Rent an apartment**. Choose arrival, departure and guest count for holiday stays. Observe check-in times and minimum stay. Requests reserve only after confirmation, or immediately with explicitly enabled direct booking. For long-term rentals choose a start and optional last rental day; no end date means indefinite. You see only your own tenancies and requests and can withdraw pending requests. Contact your landlord to change confirmed tenancies.

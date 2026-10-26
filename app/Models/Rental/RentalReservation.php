@@ -68,9 +68,11 @@ class RentalReservation extends Model {
      *
      * @param Builder<self> $query
      */
-    public function scopeOverlapping(Builder $query, Carbon $from, Carbon $to, int $maxBufferHours = 168): void {
-        $query->where('starts_at', '<', $to->copy()->addHours($maxBufferHours))
-            ->where('ends_at', '>', $from->copy()->subHours($maxBufferHours));
+    public function scopeOverlapping(Builder $query, Carbon $from, ?Carbon $to, int $maxBufferHours = 720): void {
+        if ($to !== null) {
+            $query->where('starts_at', '<', $to->copy()->addHours($maxBufferHours));
+        }
+        $query->where('ends_at', '>', $from->copy()->subHours($maxBufferHours));
     }
 
     public function blockedFrom(): Carbon {

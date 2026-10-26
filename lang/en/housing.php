@@ -1,0 +1,77 @@
+<?php
+/*
+ * Created on   : Mon Oct 26 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : housing.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+declare(strict_types=1);
+
+return [
+    'title' => 'Apartments & occupancy',
+    'branch_label' => 'Landlords / apartments and holiday homes',
+    'subtitle' => 'Manage apartments, holiday homes, tenancies and occupancy in the selected period.',
+    'portal_title' => 'Rent an apartment',
+    'portal_subtitle' => 'Request a holiday stay or long-term rental. Requests reserve the apartment only after confirmation.',
+    'unit' => 'Apartment',
+    'create' => 'Add apartment',
+    'edit' => 'Edit apartment',
+    'mode' => 'Rental type',
+    'occupancy' => 'Occupancy in period',
+    'free' => 'Available',
+    'unavailable_status' => 'Occupied or blocked',
+    'portal' => 'Customer portal',
+    'published' => 'Published',
+    'hidden' => 'Not published',
+    'range_hint' => 'Occupancy from :from to :to. Change the period in the global header.',
+    'address' => 'Address / location',
+    'public_description' => 'Customer portal description',
+    'rentable' => 'Available for rental',
+    'publish' => 'Offer in customer portal',
+    'rent_amount' => 'Monthly base rent',
+    'ancillary_amount' => 'Monthly ancillary costs',
+    'deposit' => 'Deposit',
+    'max_guests' => 'Maximum guests',
+    'minimum_nights' => 'Minimum stay (nights)',
+    'check_in' => 'Check-in from',
+    'check_out' => 'Check-out by',
+    'cleaning_buffer' => 'Cleaning buffer after departure (hours)',
+    'price_hint' => 'The default rate card stores the nightly price as a daily rate and any final cleaning fee.',
+    'tenancy' => 'Tenancy',
+    'tenancies' => 'Tenancies & requests',
+    'tenancy_create' => 'Add tenancy',
+    'tenancy_edit' => 'Edit tenancy',
+    'tenant' => 'Tenant',
+    'starts_on' => 'Tenancy starts',
+    'ends_on' => 'Last rental day (empty = indefinite)',
+    'open_ended' => 'Indefinite',
+    'tenancy_hint' => 'An active tenancy blocks the apartment through its last rental day. Set an end date at move-out; cancellation removes the entire occupancy.',
+    'saved' => 'Apartment saved.',
+    'tenancy_saved' => 'Tenancy saved.',
+    'request_saved' => 'Request saved. See your overview for its current status.',
+    'unavailable' => 'This apartment is unavailable for the selected rental type.',
+    'occupied' => 'The apartment has a long-term tenancy during the selected period.',
+    'capacity_error' => 'Please observe guest capacity, minimum stay and apartment check-in and check-out times.',
+    'empty' => 'No apartments yet.',
+    'empty_hint' => 'Use “Add apartment” to create your first apartment or holiday home.',
+    'portal_empty' => 'No apartments are currently published in the customer portal.',
+    'no_tenancies' => 'No tenancies or requests.',
+    'no_requests' => 'No holiday bookings requested yet.',
+    'holiday_requests' => 'Review holiday bookings',
+    'my_tenancies' => 'My tenancies & requests',
+    'my_holiday_requests' => 'My holiday bookings',
+    'arrival' => 'Arrival',
+    'departure' => 'Departure',
+    'guests' => 'Guests',
+    'message' => 'Message to landlord',
+    'capacity' => 'Up to :guests guests · minimum :nights nights',
+    'times' => 'Check-in from :in · check-out by :out',
+    'rent_display' => ':rent base rent + :costs ancillary costs per month',
+    'rent_hint' => 'Default for new tenancies. No rent invoice is created from it.',
+    'closed' => 'Cancelled or declined tenancies can no longer be changed.',
+    'not_withdrawable' => 'This request has already been decided and can no longer be withdrawn.',
+    'request_withdrawn' => 'Request withdrawn.',
+];

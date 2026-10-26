@@ -713,4 +713,23 @@ return [
         $text('Hergang'),
         $photo('Fotos', true),
     ]],
+
+    // ── Vermieter ────────────────────────────────────────────────────
+    'VM_WOHNUNGSUEBERGABE' => ['name' => 'Wohnungsübergabeprotokoll', 'kind' => 'handover', 'items' => [
+        $choice('Anlass', ['move_in' => 'Einzug', 'move_out' => 'Auszug'], true),
+        $group('Zustand der Räume', [
+            $choice('Wohn- und Schlafräume', $ok, true),
+            $choice('Küche', $ok, true),
+            $choice('Bad und WC', $ok, true),
+            $choice('Fenster, Türen und Böden', $ok, true),
+        ]),
+        $number('Zählerstand Strom', 'kWh'),
+        $number('Zählerstand Wasser', 'm³'),
+        $number('Zählerstand Heizung', 'Einheit laut Zähler'),
+        $number('Schlüssel', 'Stk', true),
+        $defect('Festgestellte Mängel'),
+        $photo('Fotos'),
+        $sign('Unterschrift Mieter'),
+        ['label' => 'Unterschrift Vermieter', 'item_type' => 'signoff_internal'],
+    ]],
 ];

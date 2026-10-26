@@ -738,6 +738,7 @@ return [
         'rental_requests' => \App\Models\Rental\RentalRequest::class,
         'rental_reservations' => \App\Models\Rental\RentalReservation::class,
         'rental_return_reports' => \App\Models\Rental\RentalReturnReport::class,
+        'rental_tenancies' => \App\Models\Rental\RentalTenancy::class,
         'report_targets' => \App\Models\Reporting\ReportTarget::class,
         'request_items' => \App\Models\Procurement\RequestItem::class,
         'resale_article_classifications' => \App\Models\Reselling\ResaleArticleClassification::class,

@@ -61,6 +61,7 @@ class BranchProfileProcedureTemplateTest extends TestCase {
         'veranstalter' => 0,
         'veranstaltungstechnik' => 0,
         'verein' => 0,
+        'vermieter' => 0,
     ];
 
     public function test_placeholder_procedure_templates_never_grow(): void {
@@ -82,6 +83,8 @@ class BranchProfileProcedureTemplateTest extends TestCase {
                 }
             }
 
+            // Breit typisiert: Heute stehen alle Budgets auf 0, die Senkungsregel gilt aber für jedes Budget.
+            /** @var int|null $budget */
             $budget = self::PLACEHOLDER_BUDGET[$code] ?? null;
             if ($budget === null) {
                 $violations[] = "{$code}: neues Profil ohne Eintrag in PLACEHOLDER_BUDGET";
@@ -126,7 +129,7 @@ class BranchProfileProcedureTemplateTest extends TestCase {
 
     /** @return list<string> */
     private function profileCodes(): array {
-        $codes = array_map(static fn (string $file): string => basename($file, '.php'), (array) glob(database_path('data/branchprofiles/*.php')));
+        $codes = array_map(static fn (string $file): string => basename($file, '.php'), glob(database_path('data/branchprofiles/*.php')) ?: []);
         sort($codes);
 
         return $codes;
