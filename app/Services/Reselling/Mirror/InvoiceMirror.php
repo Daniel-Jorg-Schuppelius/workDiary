@@ -117,6 +117,18 @@ final class InvoiceMirror {
         return collect(array_slice($vouchers, 0, $limit));
     }
 
+    /**
+     * Positionen einer Quelle nach Morph-Typ und IDs (ignorierte Positionen, Phase 163).
+     *
+     * @param  list<int>  $ids
+     * @return Collection<int, MirrorLine> Schlüssel: Zeilen-ID
+     */
+    public function linesByMorph(Organization $organization, string $morphClass, array $ids): Collection {
+        $source = $this->sourceFor($morphClass);
+
+        return $source === null || $ids === [] ? collect() : $source->linesByIds($organization, $ids);
+    }
+
     /** Beleg einer Quelle über ihren Schlüssel (Belegansicht hinter einem Bezug, Nachbesserung 2026-10-27). */
     public function voucherByKey(Organization $organization, string $sourceKey, string $voucherKey): ?MirrorVoucher {
         return $this->source($sourceKey)?->voucherByKey($organization, $voucherKey);

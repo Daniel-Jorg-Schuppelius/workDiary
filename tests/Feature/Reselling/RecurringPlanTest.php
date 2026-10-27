@@ -20,7 +20,7 @@ use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\{LexofficeArticle, LexofficeRecurringTemplate, LexofficeVoucher, LexofficeVoucherLine};
 use App\Plugins\Lexoffice\Services\{LexofficeRecurringTemplateSync, LexofficeVoucherLineSync};
 use App\Services\Reselling\Plan\{PlanAudit, PlanLinkProposer, PlanWorkItemSource, RecurringPlans};
-use App\Services\Reselling\Register\{LicenseAccounts, PeriodPlanner, ResaleInvoiceDraftService};
+use App\Services\Reselling\Register\{LicenseAccounts, PeriodPlanner, ResaleInvoiceDraftService, ResaleOverview};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Concerns\WithOrganization;
@@ -351,6 +351,28 @@ class RecurringPlanTest extends TestCase {
         $kaikIds = array_values(array_map('intval', $groups['qualityhosting:CNL00022']->subscriptions->pluck('id')->all()));
         $this->assertArrayNotHasKey(PlanAudit::PLAN_WITHOUT_SUBSCRIPTION, $kinds($audit->findings($this->organization, $kaikIds)));
         $this->assertSame(1, $kinds($audit->findings($this->organization))[PlanAudit::PLAN_WITHOUT_SUBSCRIPTION] ?? 0, 'tpl-m organisationsweit');
+    }
+
+    /** Plan deckt (Phase 163, MVP-1431): steht die Ausführung der zugeordneten Vorlage für die Periode noch bevor, ist sie geplant, nicht offen. */
+    public function test_period_with_pending_template_execution_is_planned_not_open(): void {
+        $subscription = $this->subscription('CNLCON00111', 'Exchange Online Plan 1', 5, '2026-09-01', 'lex:' . $this->exchange->id); // 55 Tage fällig
+        $this->fakeApi([$this->templateEntry('tpl-1', 'ACTIVE', '2026-11-01')], $this->exchangeLines(5));
+        (new LexofficeRecurringTemplateSync($this->organization->id))->sync($this->organization);
+        app(PlanLinkProposer::class)->propose($this->organization);
+
+        $overview = app(ResaleOverview::class)->build($this->organization);
+        $this->assertSame(1, $overview['summary']['planned']);
+        $this->assertSame(0, $overview['summary']['open']);
+        $this->assertSame([$subscription->id], array_keys(app(RecurringPlans::class)->nextExecutions($this->organization)));
+        $this->actingAs($this->orgAdmin())->get(route('finance.resale.periods.index'))->assertOk()
+            ->assertSee(__('resale.periods.planned', ['date' => '01.11.2026']));
+
+        // Ausführung schon vorbei (nächste erst nach dem Periodenende): normale Karenz, also offen.
+        $this->fakeApi([$this->templateEntry('tpl-1', 'ACTIVE', '2027-09-01')], $this->exchangeLines(5));
+        (new LexofficeRecurringTemplateSync($this->organization->id))->sync($this->organization);
+        $overview = app(ResaleOverview::class)->build($this->organization);
+        $this->assertSame(0, $overview['summary']['planned']);
+        $this->assertSame(1, $overview['summary']['open']);
     }
 
     public function test_scheduled_command_mirrors_templates_and_proposes_links(): void {

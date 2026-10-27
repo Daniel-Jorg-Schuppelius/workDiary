@@ -668,6 +668,7 @@ return [
     'ResaleArticleClassification' => 'Clasificación de suscripción de un artículo',
     'ResalePeriod' => 'Periodo de facturación de reventa',
     'ResalePeriodLink' => 'Referencia de factura de reventa',
+    'ResaleIgnoredLine' => 'Posición de licencia ignorada (reventa)',
     'ResalePurchaseEntry' => 'Asiento de compra de reventa',
     'ResaleProviderSupplier' => 'Asignación de proveedor (reselling)',
     'CompanyMapping' => 'Asignación de empresa (reventa)',

@@ -1,7 +1,7 @@
 ---
 title: "Abbonamenti e licenze"
 topic: finance.resale
-version: 7
+version: 8
 keywords:
     - Anteprima importazione
     - Azioni di massa
@@ -304,18 +304,22 @@ attivo, prossima esecuzione a più di sette giorni dall'inizio periodo, ultima
 esecuzione fallita: nel riquadro, nel riepilogo settimanale e nella coda di
 lavoro. Ogni fattura specchiata porta il riferimento al suo modello.
 
-**Panoramica e schede:** La pagina iniziale «Abbonamenti e licenze» non
-mostra più l’elenco degli abbonamenti ma un **elenco di attività**: periodi
-scaduti senza fattura (con importo aperto), proposte non confermate, rilievi
-sui collegamenti fattura, rilievi sui modelli ricorrenti, ripartizioni oltre
-la dotazione, abbonamenti senza titolare, rinnovi o scadenze entro 30 giorni
-ed esportazioni del fornitore obsolete — ogni riga con un numero e il salto
-alla pagina in cui si decide. Accanto lo **stato**: l’ultima esecuzione delle
-proposte (con «Calcola proposte») e per fornitore l’ultima importazione con
-la sua età. Le schede seguono il flusso: Panoramica · Conti licenze ·
-Riconciliazione · Periodi · Posta in arrivo │ Abbonamenti · Scorte licenze ·
-Acquisti │ Report · Prezzi; classificazione prodotti e fatturazione stanno
-nel menu ⋯. L’elenco degli abbonamenti si apre da «Abbonamenti».
+**Panoramica e schede:** La pagina iniziale «Abbonamenti e licenze» è un
+**elenco di attività in quattro gruppi**: Fatturare (prestazione scaduta
+senza fattura, solo dopo 21 giorni di tolleranza e mai finché un modello
+ricorrente attivo ha ancora davanti a sé l’esecuzione per il periodo; più
+rilievi sui collegamenti fattura, ripartizioni oltre la dotazione, licenze a
+pezzo senza fattura), Assegnare (abbonamenti senza titolare, righe di
+licenza senza abbonamento), Verificare il piano (rilievi sui modelli
+ricorrenti, cioè ciò che la prossima fattura sbaglierebbe) e Stato fornitore
+(importazioni obsolete, rinnovi entro 30 giorni). Ogni riga mostra numero e
+importo e porta alla pagina in cui si decide. Accanto lo **stato**:
+l’ultima esecuzione delle proposte, le proposte non confermate come
+campione, i periodi pianificati tramite modello o ancora in tolleranza, per
+fornitore l’ultima importazione con la sua età. Quattro schede: Panoramica ·
+Abbonamenti · Fatturazione · Report; conti licenze, riconciliazione, posta
+in arrivo, scorte licenze, acquisti e prezzi stanno in «Altre aree» e dietro
+le attività. Classificazione prodotti e fatturazione stanno nel menu ⋯.
 
 **Proposte sicure e incerte:** L’esecuzione delle proposte (ogni ora e dopo
 ogni importazione) conferma da sola le corrispondenze sicure — un documento
@@ -323,9 +327,10 @@ la cui data fattura è al massimo 14 giorni prima o 45 giorni dopo l’inizio
 del periodo e che copre il periodo per intero con il numero di licenze
 corretto; la conferma compare nel registro come «confermata
 automaticamente». Tutto il resto resta proposta e porta «incerta» con il
-motivo nel suggerimento. Perciò la pagina dei periodi mostra per
-impostazione predefinita «Proposte non confermate»; il filtro «Solo
-problemi» e i riquadri di stato restano. Un clic sul numero del
+motivo nel suggerimento. Le proposte valgono senza conferma:
+la pagina dei periodi mostra per impostazione predefinita «Solo problemi»
+(aperto, parziale, contestato); le proposte non confermate si consultano
+come campione tramite il filtro e lo stato della panoramica. Un clic sul numero del
 documento apre il documento: righe, periodo di prestazione, testo fattura,
 consumo per riga e il confronto con il periodo (data nella finestra,
 prestazione, articolo); così vedete prima di confermare se la fattura

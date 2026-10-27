@@ -87,10 +87,10 @@ class ResaleVoucherDialogTest extends TestCase {
             ->assertSee('Exchange Online (Plan 1)')->assertSee('Business Support')
             ->assertSee(__('resale.voucher.compare.title'))
             ->assertSee(__('resale.voucher.compare.sure'))
-            ->assertSee(__('resale.voucher.compare.date_ok', ['days' => 0]))
+            ->assertSee(__('resale.voucher.compare.date_ok', ['kind' => __('resale.voucher.compare.kind_service'), 'date' => '04.07.2026', 'distance' => __('resale.voucher.compare.distance_same')]))
             ->assertSee(__('resale.voucher.compare.service_ok'))
             ->assertSee(__('resale.voucher.compare.article_ok'))
-            ->assertSee(__('resale.voucher.compare.line', ['line' => LicenseMonths::label(12.0, 12.0), 'raw' => '12 Monat', 'needed' => LicenseMonths::label(12.0, 12.0), 'covers' => LicenseMonths::label(12.0, 12.0)]))
+            ->assertSee(__('resale.voucher.compare.line', ['line' => __('resale.link.licences_x_months', ['licences' => '1', 'months' => '12']), 'raw' => '12 Monat', 'service' => '04.07.2026 – 03.07.2027', 'needed' => LicenseMonths::label(12.0, 12.0), 'covers' => LicenseMonths::label(12.0, 12.0)]))
             ->assertSee(__('resale.link.licence_months_only', ['months' => '12']))
             ->assertSee($period->label())
             ->assertSee(__('resale.voucher.none_consumed'), false);

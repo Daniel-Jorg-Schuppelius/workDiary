@@ -95,18 +95,21 @@ class ResalePeriodBulkTest extends TestCase {
         return $period;
     }
 
-    public function test_periods_page_defaults_to_unconfirmed_proposals_with_bulk_toolbar_and_unsure_badge(): void {
+    public function test_periods_page_defaults_to_problems_and_keeps_proposals_as_a_spot_check(): void {
         $period = $this->unsureProposal();
         $open = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'starts_on' => '2025-09-01']);
 
+        // Standard „Nur Probleme" (Phase 163): Vorschläge gelten ohne Bestätigung und sind kein Problem.
         $page = $this->actingAs($this->admin)->get(route('finance.resale.periods.index'))->assertOk();
         $page->assertSee('data-bulk-form', false)
-            ->assertSee(route('finance.resale.periods.bulk.confirm'), false)
             ->assertSee(route('finance.resale.periods.bulk.waive.create'), false)
+            ->assertSee('Exchange Online (Plan 1)')
+            ->assertDontSee('name="ids[]" value="' . $period->sqid . '"', false);
+        $spot = $this->actingAs($this->admin)->get(route('finance.resale.periods.index', ['status' => 'proposed']))->assertOk();
+        $spot->assertSee(route('finance.resale.periods.bulk.confirm'), false)
             ->assertSee(__('resale.link.confidence.unsure'))
             ->assertSee('name="ids[]" value="' . $period->sqid . '"', false)
-            ->assertDontSee('Exchange Online (Plan 1)'); // offen ohne Vorschlag: nicht im Standardfilter
-        $this->actingAs($this->admin)->get(route('finance.resale.periods.index', ['status' => 'problems']))->assertOk()->assertSee('Exchange Online (Plan 1)');
+            ->assertDontSee('Exchange Online (Plan 1)');
         $this->assertSame(2, $open->periods()->due()->count(), 'jährlich ab 09/2025: 2025 und 2026 fällig');
     }
 

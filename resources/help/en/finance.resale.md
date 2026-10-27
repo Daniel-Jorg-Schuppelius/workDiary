@@ -1,7 +1,7 @@
 ---
 title: "Subscriptions & Licences"
 topic: finance.resale
-version: 7
+version: 8
 keywords:
     - Import preview
     - Bulk actions
@@ -289,27 +289,31 @@ subscription runs, next run more than seven days off the period start, last run
 failed — in the tile, the weekly digest and the work queue. Every mirrored
 invoice carries the reference to its template.
 
-**Overview and tabs:** The entry page “Subscriptions & Licences” no longer
-shows the subscription list but a **task list**: due periods without
-invoice (with open amount), unconfirmed proposals, findings on invoice links,
-findings on recurring templates, allocations above the holdings,
-subscriptions without holder, renewals or ends within 30 days and outdated
-provider exports — each row with a count and a jump to the page where the
-decision is made. Next to it the **state**: the last proposal run (with
-“Calculate proposals”) and per provider the last import with its age. The
-tabs follow the workflow: Overview · Licence accounts · Reconciliation ·
-Periods · Inbox │ Subscriptions · Licence stock · Purchasing │ Reports ·
-Prices; product classification and billing live in the ⋯ menu. The
-subscription list is reached via “Subscriptions”.
+**Overview and tabs:** The entry page “Subscriptions & Licences” is a
+**task list in four groups** — Invoice (due service without invoice, only
+after 21 days of grace and never while an active recurring template still
+has its run for the period ahead; plus findings on invoice links,
+allocations above the holdings, unit licences without invoice), Assign
+(subscriptions without holder, licence lines without subscription), Check
+plan (findings on recurring templates, i.e. what the next invoice gets
+wrong) and Provider state (outdated imports, renewals within 30 days). Each
+row shows count and amount and jumps to the page where the decision is
+made. Next to it the **state**: the last proposal run, unconfirmed proposals
+as a spot check, periods planned via recurring template or still within
+grace, per provider the last import with its age. Four tabs: Overview ·
+Subscriptions · Billing · Reports; licence accounts, reconciliation, inbox,
+licence stock, purchasing and prices live under “More areas” and behind the
+tasks. Product classification and billing settings live in the ⋯ menu.
 
 **Sure and unsure proposals:** The proposal run (hourly and after every
 import) confirms sure matches itself — one voucher whose invoice date lies
 at most 14 days before to 45 days after the period start and which fully
 covers the period with the matching licence count; the confirmation appears
 in the log as “confirmed automatically”. Everything else stays a proposal
-and carries “unsure” with the reason in the tooltip. The periods page
-therefore shows “Unconfirmed proposals” by default; the “Problems only”
-filter and the status tiles remain. Clicking the voucher number
+and carries “unsure” with the reason in the tooltip. Proposals are valid without
+confirmation: the periods page shows “Problems only” (open, partial,
+disputed) by default; unconfirmed proposals are reached as a spot check via
+the filter and the state in the overview. Clicking the voucher number
 opens the voucher: lines, service period, invoice text, consumption per line
 and the comparison with the period (date within the window, service,
 article) — so you can see before confirming whether the invoice belongs to

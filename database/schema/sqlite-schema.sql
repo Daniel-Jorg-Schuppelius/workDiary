@@ -25090,6 +25090,23 @@ CREATE INDEX "resale_lic_assign_linkable_idx" on "resale_license_assignments"(
   "linkable_type",
   "linkable_id"
 );
+CREATE TABLE IF NOT EXISTS "resale_ignored_lines"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "linkable_type" varchar not null,
+  "linkable_id" integer not null,
+  "note" varchar,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "resale_ignored_lines_uq" on "resale_ignored_lines"(
+  "organization_id",
+  "linkable_type",
+  "linkable_id"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -26130,3 +26147,4 @@ INSERT INTO migrations VALUES(1036,'2027_04_01_140000_add_provider_unit_price_to
 INSERT INTO migrations VALUES(1037,'2027_04_01_150000_create_resale_provider_suppliers_table',11);
 INSERT INTO migrations VALUES(1038,'2027_04_01_160000_create_accounting_voucher_lines_table',11);
 INSERT INTO migrations VALUES(1039,'2027_04_01_170000_add_invoice_link_to_resale_license_assignments',11);
+INSERT INTO migrations VALUES(1040,'2027_04_01_180000_create_resale_ignored_lines_table',12);

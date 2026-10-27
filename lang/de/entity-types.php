@@ -668,6 +668,7 @@ return [
     'ResaleArticleClassification' => 'Abo-Einstufung eines Artikels',
     'ResalePeriod' => 'Reselling-Abrechnungsperiode',
     'ResalePeriodLink' => 'Reselling-Rechnungsbezug',
+    'ResaleIgnoredLine' => 'Ignorierte Lizenzposition (Reselling)',
     'ResalePurchaseEntry' => 'Reselling-Einkaufsbeleg',
     'ResaleProviderSupplier' => 'Reselling-Anbieterzuordnung (Lieferant)',
     'CompanyMapping' => 'Reselling-Firmenzuordnung',

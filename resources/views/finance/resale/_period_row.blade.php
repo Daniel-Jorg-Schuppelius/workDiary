@@ -15,6 +15,7 @@
 --}}
 @php
     $bulk = $bulk ?? false;
+    $plannedNext = $plannedNext ?? [];
     $required = $period->requiredMonths();
     $covered = $period->coveredMonths();
     $term = $period->termMonths();
@@ -44,6 +45,14 @@
         {{ $period->label() }}
         @if ($upcoming)
             <x-status-badge size="xs" class="ml-1">{{ __('resale.periods.upcoming') }}</x-status-badge>
+        @endif
+        @php
+            // Serienvorlage läuft noch für diese Periode (Phase 163, MVP-1431): kein Alarm, nur ein Hinweis.
+            $plannedOn = isset($plannedNext[$subscription->id]) && in_array($period->status, [\App\Enums\Reselling\PeriodStatus::Open, \App\Enums\Reselling\PeriodStatus::Partial], true)
+                && \App\Services\Reselling\Register\ResaleOverview::isPlanned($period, $plannedNext[$subscription->id]) ? $plannedNext[$subscription->id] : null;
+        @endphp
+        @if ($plannedOn !== null)
+            <x-status-badge size="xs" tone="info" outline class="ml-1" :label="__('resale.periods.planned', ['date' => $plannedOn->fdate()])" />
         @endif
     </td>
     <td class="text-right tabular-nums">{{ $period->quantity }}</td>

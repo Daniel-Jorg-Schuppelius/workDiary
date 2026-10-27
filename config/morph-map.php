@@ -746,6 +746,7 @@ return [
         'request_items' => \App\Models\Procurement\RequestItem::class,
         'resale_account_allocations' => \App\Models\Reselling\ResaleAccountAllocation::class,
         'resale_article_classifications' => \App\Models\Reselling\ResaleArticleClassification::class,
+        'resale_ignored_lines' => \App\Models\Reselling\ResaleIgnoredLine::class,
         'resale_imports' => \App\Models\Reselling\ResaleImport::class,
         'resale_license_assignments' => \App\Models\Reselling\ResaleLicenseAssignment::class,
         'resale_license_batches' => \App\Models\Reselling\ResaleLicenseBatch::class,

@@ -41,15 +41,16 @@
 
         @include('finance.resale._tabs')
 
+        {{-- Vier Kennzahlen (Phase 163, MVP-1433): fällig nach Karenz mit Betrag, Prüffälle, ohne Halter — Vorschläge sind keine Aufgabe mehr. --}}
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
             <x-kpi-tile :label="__('resale.summary.active')" :value="$overview['summary']['active']" :href="route('finance.resale.subscriptions')" />
-            <x-kpi-tile :label="__('resale.summary.open_periods')" :value="$overview['summary']['open']" :tone="$overview['summary']['open'] > 0 ? 'error' : 'success'"
-                        :hint="$overview['summary']['open_amount'] !== '' ? $overview['summary']['open_amount'] : null"
+            <x-kpi-tile :label="__('resale.overview.kpi.open')" :value="$overview['summary']['open']" :tone="$overview['summary']['open'] > 0 ? 'error' : 'success'"
+                        :hint="($overview['summary']['open_amount'] !== '' ? $overview['summary']['open_amount'] . ' · ' : '') . __('resale.overview.kpi.open_hint', ['days' => \App\Services\Reselling\Register\ResaleOverview::GRACE_DAYS])"
                         :href="route('finance.resale.periods.index', ['status' => 'problems'])" />
-            <x-kpi-tile :label="__('resale.overview.task.proposed')" :value="$overview['summary']['proposed']" :tone="$overview['summary']['proposed'] > 0 ? 'info' : 'neutral'"
-                        :href="route('finance.resale.periods.index', ['status' => 'proposed'])" />
             <x-kpi-tile :label="__('resale.account.summary.conflicts')" :value="$overview['summary']['findings']" :tone="$overview['summary']['findings'] > 0 ? 'warning' : 'neutral'"
                         :href="route('finance.resale.accounts.index')" />
+            <x-kpi-tile :label="__('resale.summary.unassigned')" :value="$overview['summary']['unassigned']" :tone="$overview['summary']['unassigned'] > 0 ? 'warning' : 'neutral'"
+                        :href="route('finance.resale.subscriptions', ['unassigned' => 1])" />
         </div>
 
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 min-h-0 flex-1 overflow-y-auto">
@@ -65,7 +66,11 @@
                                 <x-table.th class="text-right"></x-table.th>
                             </tr>
                         </x-slot:head>
-                        @foreach ($tasks as $task)
+                        @php $grouped = []; foreach ($tasks as $t) { $grouped[$t['group']][] = $t; } @endphp
+                        @foreach ($overview['groups'] as $group)
+                            @continue(empty($grouped[$group]))
+                            <tr class="bg-base-200/40"><td colspan="3" class="py-1.5 text-xs uppercase tracking-wider text-muted">{{ __('resale.overview.group.' . $group) }}</td></tr>
+                        @foreach ($grouped[$group] as $task)
                             <tr class="hover">
                                 <td class="text-right align-top"><x-status-badge :tone="$task['tone']" size="sm">{{ $task['count'] }}</x-status-badge></td>
                                 <td>
@@ -85,6 +90,7 @@
                                 </td>
                             </tr>
                         @endforeach
+                        @endforeach
                     </x-table>
                 @endif
             </x-card>
@@ -101,6 +107,12 @@
                             <x-icon-btn icon="auto_awesome" tone="ghost" size="sm" type="submit" show-label>{{ __('resale.link.action.propose') }}</x-icon-btn>
                         </form>
                     @endif
+                </div>
+                {{-- Was keine Aufgabe ist, aber den Stand erklärt (Phase 163): Vorschläge als Stichprobe, geplante und noch nicht fällige Perioden. --}}
+                <div class="px-4 py-2 border-b border-base-300 text-xs space-y-0.5">
+                    <div class="flex justify-between gap-2"><a href="{{ route('finance.resale.periods.index', ['status' => 'proposed']) }}" class="link link-hover">{{ __('resale.overview.state.proposed') }}</a><span class="tabular-nums">{{ $overview['summary']['proposed'] }}</span></div>
+                    <div class="flex justify-between gap-2"><span>{{ __('resale.overview.state.planned') }}</span><span class="tabular-nums">{{ $overview['summary']['planned'] }}</span></div>
+                    <div class="flex justify-between gap-2"><span>{{ __('resale.overview.state.grace', ['days' => \App\Services\Reselling\Register\ResaleOverview::GRACE_DAYS]) }}</span><span class="tabular-nums">{{ $overview['summary']['grace'] }}</span></div>
                 </div>
                 <div class="px-4 py-2 text-xs uppercase tracking-wider text-muted">{{ __('resale.overview.state.imports') }}</div>
                 @forelse ($overview['imports'] as $state)

@@ -1,7 +1,7 @@
 ---
 title: "Abonnements & licences"
 topic: finance.resale
-version: 7
+version: 8
 keywords:
     - Aperçu d’import
     - Actions groupées
@@ -316,19 +316,23 @@ plus de sept jours du début de période, dernière exécution échouée — dan
 tuile, le résumé hebdomadaire et la file de travail. Chaque facture reflétée
 porte la référence à son modèle.
 
-**Vue d’ensemble et onglets :** L’entrée « Abonnements & licences » n’affiche
-plus la liste des abonnements mais une **liste de tâches** : périodes
-échues sans facture (avec montant ouvert), propositions non confirmées,
-constats sur les liens de facture, constats sur les modèles récurrents,
-répartitions au-delà du stock, abonnements sans titulaire, renouvellements
-ou fins sous 30 jours et exports fournisseur obsolètes — chaque ligne avec un
-nombre et un saut vers la page où l’on décide. À côté, l’**état** : le
-dernier calcul de propositions (avec « Calculer les propositions ») et, par
-fournisseur, le dernier import avec son âge. Les onglets suivent le
-déroulement : Vue d’ensemble · Comptes de licences · Rapprochement ·
-Périodes · Boîte de réception │ Abonnements · Stock de licences · Achats │
-Rapports · Prix ; la classification des produits et la facturation sont
-dans le menu ⋯. La liste des abonnements s’ouvre via « Abonnements ».
+**Vue d’ensemble et onglets :** L’entrée « Abonnements & licences » est une
+**liste de tâches en quatre groupes** — Facturer (prestation échue sans
+facture, seulement après 21 jours de délai et jamais tant qu’un modèle
+récurrent actif a encore son exécution pour la période devant lui ; plus les
+constats sur les liens de facture, les répartitions au-delà du stock, les
+licences à l’unité sans facture), Affecter (abonnements sans titulaire,
+lignes de licence sans abonnement), Vérifier le plan (constats sur les
+modèles récurrents, donc ce que la prochaine facture ferait de travers) et
+État fournisseur (imports obsolètes, renouvellements sous 30 jours). Chaque
+ligne montre nombre et montant et saute vers la page où l’on décide. À
+côté, l’**état** : le dernier calcul de propositions, les propositions non
+confirmées comme sondage, les périodes planifiées via modèle récurrent ou
+encore dans le délai, par fournisseur le dernier import avec son âge. Quatre
+onglets : Vue d’ensemble · Abonnements · Facturation · Rapports ; comptes de
+licences, rapprochement, boîte de réception, stock de licences, achats et
+prix sont sous « Autres espaces » et derrière les tâches. La classification
+des produits et la facturation sont dans le menu ⋯.
 
 **Propositions sûres et incertaines :** Le calcul de propositions (chaque
 heure et après chaque import) confirme lui-même les correspondances sûres —
@@ -336,9 +340,10 @@ une pièce dont la date de facture se situe au plus 14 jours avant à 45 jours
 après le début de période et qui couvre entièrement la période avec le bon
 nombre de licences ; la confirmation figure dans le journal comme
 « confirmée automatiquement ». Tout le reste reste une proposition et porte
-« incertaine » avec la raison dans l’info-bulle. La page des périodes
-affiche donc par défaut « Propositions non confirmées » ; le filtre
-« Problèmes seulement » et les tuiles de statut restent. Un clic sur le
+« incertaine » avec la raison dans l’info-bulle. Les propositions valent sans
+confirmation : la page des périodes affiche par défaut « Problèmes
+seulement » (ouvert, partiel, contesté) ; les propositions non confirmées
+se consultent comme sondage via le filtre et l’état de la vue d’ensemble. Un clic sur le
 numéro de pièce ouvre la pièce : lignes, période de prestation, texte de
 facture, consommation par ligne et comparaison avec la période (date dans la
 fenêtre, prestation, article) — vous voyez ainsi avant de confirmer si la

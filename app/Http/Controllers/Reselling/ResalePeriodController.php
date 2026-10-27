@@ -17,11 +17,13 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Reselling\{BulkWaiveResalePeriodsRequest, LinkResalePeriodRequest, QuickLinkResalePeriodRequest, WaiveResalePeriodRequest};
 use App\Models\Customer\Customer;
-use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
+use App\Models\Reselling\{ResaleIgnoredLine, ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
+use App\Services\Reselling\Plan\RecurringPlans;
 use App\Services\Reselling\Register\{LicenseMonths, LinkProposer, PeriodLinker, ResaleInvoiceDraftService};
 use App\Support\{ErrorText, Sqid};
 use App\Support\Query\DateRange;
+use CommonToolkit\Helper\Data\StringHelper;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\{Builder, Collection};
@@ -48,9 +50,9 @@ class ResalePeriodController extends Controller {
     public function index(Request $request): View {
         $organization = $this->currentOrganizationOrAbort(404);
         $today = ResalePeriod::today();
-        // Standard „unbestätigte Vorschläge" (Feature 185, MVP-1416): sichere Treffer bestätigt der Lauf selbst, hier steht, was Prüfung braucht.
+        // Standard „Nur Probleme" (Phase 163, MVP-1429): Vorschläge gelten ohne Bestätigung, hier steht, wo Geld fehlt.
         $filters = [
-            'status' => (string) $request->query('status', 'proposed'),
+            'status' => (string) $request->query('status', 'problems'),
             'customer' => (string) $request->query('customer', ''),
             'q' => trim((string) $request->query('q', '')),
         ];
@@ -59,9 +61,8 @@ class ResalePeriodController extends Controller {
             ->where('starts_on', '<', DateRange::dayAfter($today))
             ->whereHas('subscription', static fn(Builder $s) => $s->where('is_own_holding', false));
         if ($filters['status'] === 'problems') {
-            // Probleme = offen/teilweise/strittig ODER nur vorgeschlagen (noch nicht bestätigt).
-            $query->where(static fn(Builder $w) => $w->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value, PeriodStatus::Disputed->value])
-                ->orWhere(static fn(Builder $p) => $p->where('status', PeriodStatus::Billed->value)->whereNull('decided_at')->whereHas('links')));
+            // Probleme = offen, teilweise, strittig — unbestätigte Vorschläge sind keine (Filter „proposed" als Stichprobe).
+            $query->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value, PeriodStatus::Disputed->value]);
         } elseif ($filters['status'] === 'proposed') {
             $query->whereIn('status', [PeriodStatus::Billed->value, PeriodStatus::Partial->value])->whereNull('decided_at')
                 ->whereHas('links', static fn(Builder $l) => $l->where('origin', LinkOrigin::Proposed->value));
@@ -90,6 +91,14 @@ class ResalePeriodController extends Controller {
         // Lizenzpositionen ohne Bezug zu einer Periode (alle Quellen) — Hinweis auf
         // fehlende Abos oder falsche Halter; gezählt einmal, geladen begrenzt (C12).
         $unlinked = $this->mirror->unlinkedLines($organization, self::UNLINKED_LIMIT);
+        // Bewusst ignorierte Positionen (Phase 163, MVP-1432) mit ihrer Spiegelzeile — zurückholbar.
+        $ignored = ResaleIgnoredLine::query()->with('creator:id,name')->latest()->limit(self::UNLINKED_LIMIT)->get();
+        $ignoredLines = [];
+        foreach ($ignored->groupBy('linkable_type') as $morph => $rows) {
+            foreach ($this->mirror->linesByMorph($organization, (string) $morph, array_values(array_map('intval', $rows->pluck('linkable_id')->all()))) as $id => $line) {
+                $ignoredLines[$morph . ':' . $id] = $line;
+            }
+        }
 
         return view('finance.resale.periods', [
             'periods' => $periods,
@@ -100,7 +109,33 @@ class ResalePeriodController extends Controller {
             'today' => $today,
             'unlinkedTotal' => $unlinked['total'],
             'unlinked' => $unlinked['lines'],
+            'ignored' => $ignored,
+            'ignoredLines' => $ignoredLines,
+            // Serienvorlage läuft noch für diese Periode (Phase 163, MVP-1431): Hinweis statt Alarm.
+            'plannedNext' => app(RecurringPlans::class)->nextExecutions($organization),
         ]);
+    }
+
+    /** Position ohne Abo bewusst ausblenden (Phase 163, MVP-1432): Historie, Partner-Sammelrechnung, Fremdprodukt. */
+    public function ignoreLine(Request $request): RedirectResponse {
+        $organization = $this->currentOrganizationOrAbort(404);
+        $data = $request->validate(['key' => ['required', 'string', 'max:64'], 'note' => ['nullable', 'string', 'max:255']]);
+        $line = $this->mirror->lineByKey($organization, $data['key']);
+        if ($line === null) {
+            throw ValidationException::withMessages(['key' => (string) __('resale.unlinked.error.missing')]);
+        }
+        ResaleIgnoredLine::query()->firstOrCreate(
+            ['organization_id' => $organization->id, 'linkable_type' => $line->morphClass, 'linkable_id' => $line->morphId],
+            ['note' => StringHelper::trimToNull($data['note'] ?? null), 'created_by' => $request->user()?->id],
+        );
+
+        return back()->with('success', __('resale.unlinked.flash.ignored', ['voucher' => $line->voucherNumber ?? '—']));
+    }
+
+    public function restoreLine(ResaleIgnoredLine $ignored): RedirectResponse {
+        $ignored->delete();
+
+        return back()->with('success', __('resale.unlinked.flash.restored'));
     }
 
     public function propose(LinkProposer $proposer): RedirectResponse {
@@ -265,6 +300,11 @@ class ResalePeriodController extends Controller {
                 'article' => $line->articleKey !== null && $period->subscription->article_ref === $line->articleKey,
                 'sure' => LinkProposer::isSure($period, $period->subscription, $line),
                 'line_months' => LicenseMonths::ofLine($line),
+                // Lizenzen × Monate der Position aus dem Leistungszeitraum — „24 Monat" ist meist EINE Lizenz über zwei Jahre.
+                'split' => LicenseMonths::split($line),
+                'certain' => LicenseMonths::isLicenceCountCertain($line),
+                'reference' => $reference,
+                'reference_kind' => $reference !== null && $line->serviceFrom !== null ? 'service' : 'invoice',
                 'needed' => $period->requiredMonths(),
                 'term' => $period->termMonths(),
                 'covers' => $covers > 0.001 ? (float) $covers : null,

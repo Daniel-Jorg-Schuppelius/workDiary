@@ -52,9 +52,13 @@
                 <x-status-badge size="xs" :tone="$comparison['sure'] ? 'success' : 'warning'" :label="__('resale.voucher.compare.' . ($comparison['sure'] ? 'sure' : 'check'))" />
             </div>
             <ul class="space-y-0.5">
-                @php [$icon, $tone] = $check($comparison['days'] === null ? null : $comparison['in_window']); @endphp
+                @php
+                    [$icon, $tone] = $check($comparison['days'] === null ? null : $comparison['in_window']);
+                    $days = $comparison['days'];
+                    $distance = $days === null ? '' : ($days < 0 ? __('resale.voucher.compare.distance_before', ['days' => abs($days)]) : ($days > 0 ? __('resale.voucher.compare.distance_after', ['days' => $days]) : __('resale.voucher.compare.distance_same')));
+                @endphp
                 <li class="flex items-center gap-2"><x-icon :name="$icon" size="1rem" :class="$tone" />
-                    <span>{{ $comparison['days'] === null ? __('resale.voucher.compare.date_none') : __('resale.voucher.compare.' . ($comparison['in_window'] ? 'date_ok' : 'date_off'), ['days' => $comparison['days']]) }}</span></li>
+                    <span>{{ $days === null ? __('resale.voucher.compare.date_none') : __('resale.voucher.compare.' . ($comparison['in_window'] ? 'date_ok' : 'date_off'), ['kind' => __('resale.voucher.compare.kind_' . $comparison['reference_kind']), 'date' => $comparison['reference']->fdate(), 'distance' => $distance]) }}</span></li>
                 @php [$icon, $tone] = $check($comparison['service']); @endphp
                 <li class="flex items-center gap-2"><x-icon :name="$icon" size="1rem" :class="$tone" />
                     <span>{{ __('resale.voucher.compare.' . ($comparison['service'] === null ? 'service_none' : ($comparison['service'] ? 'service_ok' : 'service_off'))) }}</span></li>
@@ -63,9 +67,14 @@
                     <span>{{ __('resale.voucher.compare.' . ($comparison['article'] ? 'article_ok' : 'article_off')) }}</span></li>
                 @php
                     $months = \App\Services\Reselling\Register\LicenseMonths::class;
+                    $compact = \App\View\Components\Resale\LicenceMonths::class;
                     $lineParams = [
-                        'line' => $months::label($comparison['line_months'], (float) $comparison['term']),
-                        'raw' => \App\View\Components\Resale\LicenceMonths::compact($line->quantity) . ($line->unitName ? ' ' . $line->unitName : ''),
+                        // Lizenzen × Monate der Position (Leistungszeitraum), nicht die austauschbaren Lizenzmonate: „1 × 24 Mon." statt „2 × 12 Mon.".
+                        'line' => $comparison['certain']
+                            ? __('resale.link.licences_x_months', ['licences' => $compact::compact($comparison['split']['licences']), 'months' => $compact::compact($comparison['split']['months'])])
+                            : __('resale.link.licence_months_only', ['months' => $compact::compact($comparison['line_months'])]),
+                        'raw' => $compact::compact($line->quantity) . ($line->unitName ? ' ' . $line->unitName : ''),
+                        'service' => $line->servicePeriodLabel() ?? '—',
                         'needed' => $months::label($comparison['needed'], (float) $comparison['term']),
                         'covers' => $comparison['covers'] !== null ? $months::label($comparison['covers'], (float) $comparison['term']) : '',
                     ];

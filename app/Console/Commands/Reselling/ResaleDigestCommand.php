@@ -13,16 +13,12 @@ declare(strict_types=1);
 namespace App\Console\Commands\Reselling;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
 use App\Enums\User\Permission;
 use App\Models\Platform\{Organization, User};
-use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
+use App\Models\Reselling\ResalePeriod;
 use App\Notifications\Finance\ResalePeriodsDigestNotification;
 use App\Services\Reselling\Register\{ResaleOverview, ResalePriceCheck, ResaleRenewalReport, ResaleUnbilledReport};
-use App\Support\Query\DateRange;
-use CommonToolkit\ValueObjects\Money;
 use Illuminate\Console\Command;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -51,33 +47,14 @@ class ResaleDigestCommand extends Command {
 
     protected $description = 'Benachrichtigt die Abo-Verantwortlichen über fällige Perioden, offene Vorschläge, Halterlücken und Verlängerungen (Feature 152)';
 
-    public function handle(ResaleRenewalReport $renewals, ResaleUnbilledReport $unbilled, ResalePriceCheck $prices): int {
-        $this->forEachOrganization(function (Organization $org) use ($renewals, $unbilled, $prices): void {
+    public function handle(ResaleRenewalReport $renewals, ResaleUnbilledReport $unbilled, ResalePriceCheck $prices, ResaleOverview $overview): int {
+        $this->forEachOrganization(function (Organization $org) use ($renewals, $unbilled, $prices, $overview): void {
             $today = ResalePeriod::today();
 
-            // Fällig = Beginn erreicht, fremder Halter — eigener Bestand wird nie berechnet (wie die Kachel).
-            $due = ResalePeriod::query()
-                ->where('starts_on', '<', DateRange::dayAfter($today))
-                ->whereHas('subscription', static fn(Builder $s) => $s->where('is_own_holding', false));
-            $open = (clone $due)->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value])->with('links')->get();
-
-            /** @var array<string, Money> $amounts Offener Betrag je Währung (Teilperioden anteilig) */
-            $amounts = [];
-            foreach ($open as $period) {
-                $amount = $period->openAmount();
-                if ($amount === null) {
-                    continue;
-                }
-                $code = $amount->getCurrency()->value;
-                $amounts[$code] = isset($amounts[$code]) ? $amounts[$code]->plus($amount) : $amount;
-            }
-
-            $proposed = (clone $due)
-                ->whereIn('status', [PeriodStatus::Billed->value, PeriodStatus::Partial->value])
-                ->whereNull('decided_at')
-                ->whereHas('links', static fn(Builder $l) => $l->where('origin', LinkOrigin::Proposed->value))
-                ->count();
-            $unassigned = ResaleSubscription::query()->planning()->unassigned()->count();
+            // Dieselben Zahlen wie der Überblick (Phase 163): Karenz, laufende Serienvorlage, Vorschläge nur als Stichprobe.
+            $summary = $overview->build($org, $today)['summary'];
+            $proposed = $summary['proposed'];
+            $unassigned = $summary['unassigned'];
             $renewalCount = $renewals->build($today, $today->addDays(self::RENEWAL_DAYS), $today)['buckets'][self::RENEWAL_DAYS] ?? 0;
             $staleCount = count($unbilled->build(ResaleUnbilledReport::DEFAULT_DAYS, $today));
             // Ausstehende Entwürfe der letzten 7 Tage (Serienlauf oder Klick): Stempel steht noch, Entwurf wurde noch nicht Rechnung.
@@ -91,11 +68,11 @@ class ResaleDigestCommand extends Command {
             // Feature 185 (MVP-1412): Befunde Bestand ↔ Serienvorlagen.
             $planIssues = count(app(\App\Services\Reselling\Plan\PlanAudit::class)->findings($org));
             // Feature 185 (MVP-1418): Anbieter, deren letzter Export älter als 30 Tage ist.
-            $staleImports = count(app(ResaleOverview::class)->staleProviders($org, $today));
+            $staleImports = count($overview->staleProviders($org, $today));
 
             $notification = new ResalePeriodsDigestNotification(
-                $open->count(),
-                implode(' · ', array_map(static fn(Money $m): string => $m->withScale(2)->format(), array_values($amounts))),
+                $summary['open'],
+                $summary['open_amount'],
                 $proposed,
                 $unassigned,
                 $renewalCount,

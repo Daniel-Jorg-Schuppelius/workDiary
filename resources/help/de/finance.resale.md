@@ -1,7 +1,7 @@
 ---
 title: "Abos & Lizenzen"
 topic: finance.resale
-version: 7
+version: 8
 keywords:
     - Import-Vorschau
     - Sammelaktionen
@@ -293,26 +293,31 @@ Ausführung mehr als sieben Tage neben dem Periodenbeginn, letzte Ausführung
 fehlgeschlagen — in der Kachel, im Wochen-Digest und im Arbeitsvorrat. Jede
 gespiegelte Rechnung trägt den Verweis auf ihre Vorlage.
 
-**Überblick und Reiter:** Der Einstieg „Abos & Lizenzen“ zeigt keine
-Abo-Liste mehr, sondern eine **Aufgabenliste**: fällige Perioden ohne
-Rechnung (mit offenem Betrag), unbestätigte Vorschläge, Prüffälle an
-Bezügen, Befunde zu Serienvorlagen, Aufteilungen über dem Bestand, Abos ohne
-Halter, Verlängerungen oder Enden in 30 Tagen und veraltete Anbieterstände —
-jede Zeile mit Zähler und Sprung auf die Fläche, auf der entschieden wird.
-Daneben steht der **Stand**: der letzte Vorschlagslauf (mit „Vorschläge
-berechnen“) und je Anbieter der letzte Import mit Alter. Die Reiter folgen
-dem Ablauf: Überblick · Lizenzkonten · Abgleich · Perioden · Inbox │ Abos ·
-Lizenzbestand · Einkauf │ Berichte · Preise; Produkt-Einstufung und
-Abrechnung liegen im ⋯-Menü. Die Abo-Liste erreichen Sie über „Abos“.
+**Überblick und Reiter:** Der Einstieg „Abos & Lizenzen“ ist eine
+**Aufgabenliste in vier Gruppen** — Berechnen (fällige Leistung ohne
+Rechnung, erst nach 21 Tagen Karenz und nie, solange eine aktive
+Serienvorlage ihre Ausführung für die Periode noch vor sich hat; dazu
+Prüffälle an Bezügen, Aufteilungen über dem Bestand, Stücklizenzen ohne
+Rechnung), Zuordnen (Abos ohne Halter, Lizenzpositionen ohne Abo), Plan
+prüfen (Befunde zu Serienvorlagen, also was die nächste Rechnung falsch
+macht) und Anbieterstand (veraltete Importe, Verlängerungen in 30 Tagen).
+Jede Zeile nennt Zähler und Betrag und springt auf die Fläche, auf der
+entschieden wird. Daneben der **Stand**: der letzte Vorschlagslauf,
+unbestätigte Vorschläge als Stichprobe, über Serienvorlage geplante und noch
+in der Karenz liegende Perioden, je Anbieter der letzte Import mit Alter. Vier
+Reiter: Überblick · Abos · Abrechnung · Berichte; Lizenzkonten, Abgleich,
+Inbox, Lizenzbestand, Einkauf und Preise liegen unter „Weitere Bereiche“ und
+hinter den Aufgaben. Produkt-Einstufung und Abrechnung liegen im ⋯-Menü.
 
 **Sichere und unsichere Vorschläge:** Der Vorschlagslauf (stündlich und
 nach jedem Import) bestätigt sichere Treffer selbst — ein Beleg, dessen
 Rechnungsdatum höchstens 14 Tage vor bis 45 Tage nach dem Periodenbeginn
 liegt und der die Periode mit passender Lizenzzahl voll deckt; die
 Bestätigung steht im Protokoll als „automatisch bestätigt“. Alles andere
-bleibt Vorschlag und trägt „unsicher“ mit dem Grund im Tooltip. Die
-Periodenseite zeigt darum standardmäßig „Unbestätigte Vorschläge“; die
-Filter „Nur Probleme“ und die Statuskacheln bleiben. Ein Klick auf die
+bleibt Vorschlag und trägt „unsicher“ mit dem Grund im Tooltip. Vorschläge gelten ohne
+Bestätigung: Die Periodenseite zeigt standardmäßig „Nur Probleme“ (offen,
+teilweise, strittig), unbestätigte Vorschläge erreichen Sie als Stichprobe
+über den Filter und den Stand im Überblick. Ein Klick auf die
 Belegnummer öffnet den Beleg: Positionen, Leistungszeitraum, Rechnungstext,
 Verbrauch je Position und der Vergleich zur Periode (Datum im Fenster,
 Leistung, Artikel) — so sehen Sie vor der Bestätigung, ob die Rechnung zum
