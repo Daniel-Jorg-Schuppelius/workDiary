@@ -537,8 +537,6 @@ return [
     // Reiterbeschriftungen (kurz — die Seitentitel stehen in den Gruppen).
     'tab' => [
         'overview' => 'Resumen',
-        'billing' => 'Facturación',
-        'more' => 'Más áreas',
         'accounts' => 'Cuentas de licencias',
         'reconcile' => 'Conciliación',
         'periods' => 'Periodos',

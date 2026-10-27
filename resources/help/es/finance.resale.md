@@ -1,7 +1,7 @@
 ---
 title: "Suscripciones y licencias"
 topic: finance.resale
-version: 8
+version: 9
 keywords:
     - Vista previa de importación
     - Acciones masivas
@@ -323,10 +323,10 @@ días). Cada fila muestra número e importe y salta a la pantalla donde se
 decide. Al lado, el **estado**: la última ejecución de propuestas, las
 propuestas sin confirmar como muestreo, los periodos planificados por
 plantilla o aún en carencia, por proveedor la última importación con su
-antigüedad. Cuatro pestañas: Resumen · Suscripciones · Facturación ·
-Informes; cuentas de licencia, conciliación, bandeja, inventario de
-licencias, compras y precios están en «Más áreas» y detrás de las tareas.
-La clasificación de productos y la facturación están en el menú ⋯.
+antigüedad. Las pestañas siguen el flujo: Resumen · Cuentas de
+licencia · Conciliación · Periodos · Bandeja │ Suscripciones · Inventario de
+licencias · Compras │ Informes · Precios; la clasificación de productos y la
+facturación están en el menú ⋯.
 
 **Propuestas seguras e inseguras:** La ejecución de propuestas (cada hora y
 tras cada importación) confirma por sí misma las coincidencias seguras — un

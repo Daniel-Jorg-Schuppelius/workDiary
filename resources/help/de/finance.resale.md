@@ -1,7 +1,7 @@
 ---
 title: "Abos & Lizenzen"
 topic: finance.resale
-version: 8
+version: 9
 keywords:
     - Import-Vorschau
     - Sammelaktionen
@@ -304,10 +304,10 @@ macht) und Anbieterstand (veraltete Importe, Verlängerungen in 30 Tagen).
 Jede Zeile nennt Zähler und Betrag und springt auf die Fläche, auf der
 entschieden wird. Daneben der **Stand**: der letzte Vorschlagslauf,
 unbestätigte Vorschläge als Stichprobe, über Serienvorlage geplante und noch
-in der Karenz liegende Perioden, je Anbieter der letzte Import mit Alter. Vier
-Reiter: Überblick · Abos · Abrechnung · Berichte; Lizenzkonten, Abgleich,
-Inbox, Lizenzbestand, Einkauf und Preise liegen unter „Weitere Bereiche“ und
-hinter den Aufgaben. Produkt-Einstufung und Abrechnung liegen im ⋯-Menü.
+in der Karenz liegende Perioden, je Anbieter der letzte Import mit Alter. Die
+Reiter folgen dem Ablauf: Überblick · Lizenzkonten · Abgleich · Perioden ·
+Inbox │ Abos · Lizenzbestand · Einkauf │ Berichte · Preise; Produkt-Einstufung
+und Abrechnung liegen im ⋯-Menü.
 
 **Sichere und unsichere Vorschläge:** Der Vorschlagslauf (stündlich und
 nach jedem Import) bestätigt sichere Treffer selbst — ein Beleg, dessen

@@ -87,8 +87,8 @@ class ResaleOverviewTest extends TestCase {
 
     /**
      * Ausnahmen statt Bestätigungen (Phase 163): eine fällige Periode wird erst
-     * nach der Karenz zur Aufgabe; Aufgaben stehen in vier Gruppen; vier Reiter
-     * plus „Weitere Bereiche".
+     * nach der Karenz zur Aufgabe; Aufgaben stehen in vier Gruppen; die
+     * Reiterleiste bleibt vollständig (Inhaber 2026-10-27).
      */
     public function test_grace_period_groups_and_four_tabs(): void {
         $admin = $this->orgAdmin();
@@ -109,7 +109,7 @@ class ResaleOverviewTest extends TestCase {
         $page->assertSee(__('resale.overview.group.berechnen'))
             ->assertSee(__('resale.overview.kpi.open'))
             ->assertSee(__('resale.overview.state.grace', ['days' => ResaleOverview::GRACE_DAYS]))
-            ->assertSee(__('resale.tab.billing'))->assertSee(__('resale.tab.more'))
+            ->assertSee(__('resale.tab.periods'))->assertSee(__('resale.tab.accounts'))
             ->assertSee(route('finance.resale.accounts.index'), false)
             ->assertSee(route('finance.resale.reconcile.index'), false)
             ->assertSee(route('finance.resale.prices'), false)

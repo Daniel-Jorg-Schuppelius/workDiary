@@ -537,8 +537,6 @@ return [
     // Reiterbeschriftungen (kurz — die Seitentitel stehen in den Gruppen).
     'tab' => [
         'overview' => 'Panoramica',
-        'billing' => 'Fatturazione',
-        'more' => 'Altre aree',
         'accounts' => 'Conti licenze',
         'reconcile' => 'Riconciliazione',
         'periods' => 'Periodi',

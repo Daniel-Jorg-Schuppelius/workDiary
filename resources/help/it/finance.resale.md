@@ -1,7 +1,7 @@
 ---
 title: "Abbonamenti e licenze"
 topic: finance.resale
-version: 8
+version: 9
 keywords:
     - Anteprima importazione
     - Azioni di massa
@@ -316,10 +316,10 @@ ricorrenti, cioè ciò che la prossima fattura sbaglierebbe) e Stato fornitore
 importo e porta alla pagina in cui si decide. Accanto lo **stato**:
 l’ultima esecuzione delle proposte, le proposte non confermate come
 campione, i periodi pianificati tramite modello o ancora in tolleranza, per
-fornitore l’ultima importazione con la sua età. Quattro schede: Panoramica ·
-Abbonamenti · Fatturazione · Report; conti licenze, riconciliazione, posta
-in arrivo, scorte licenze, acquisti e prezzi stanno in «Altre aree» e dietro
-le attività. Classificazione prodotti e fatturazione stanno nel menu ⋯.
+fornitore l’ultima importazione con la sua età. Le schede seguono il
+flusso: Panoramica · Conti licenze · Riconciliazione · Periodi · Posta in
+arrivo │ Abbonamenti · Scorte licenze · Acquisti │ Report · Prezzi;
+classificazione prodotti e fatturazione stanno nel menu ⋯.
 
 **Proposte sicure e incerte:** L’esecuzione delle proposte (ogni ora e dopo
 ogni importazione) conferma da sola le corrispondenze sicure — un documento
