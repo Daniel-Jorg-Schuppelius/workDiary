@@ -1,7 +1,7 @@
 ---
 title: "Suscripciones y licencias"
 topic: finance.resale
-version: 6
+version: 7
 keywords:
     - Vista previa de importación
     - Acciones masivas
@@ -35,6 +35,11 @@ factura directamente. Un **cliente final** pertenece a un socio; la factura va
 al socio, que la traslada. El **parque propio** (licencias internas, dominios
 propios) nunca se factura. Las suscripciones sin titular esperan asignación y
 cuentan en «Sin titular».
+En la lista de suscripciones, filtre «Solo sin titular», seleccione varias
+suscripciones y asígnelas con «Asignar titular» en un paso a un cliente, un
+cliente final o al parque propio; una sola suscripción va por el icono de su
+fila. Los dominios reciben el titular también en la gestión de dominios, y la
+bandeja lleva allí las suscripciones sin nombre de empresa.
 
 **Plazo y periodos:** a partir del inicio, el intervalo de facturación (anual
 o mensual) y el fin, el registro planifica los periodos de facturación
@@ -327,7 +332,11 @@ número de licencias correcto; la confirmación figura en el registro como
 «confirmada automáticamente». Todo lo demás sigue siendo propuesta y lleva
 «insegura» con el motivo en la ayuda emergente. Por eso la página de
 periodos muestra por defecto «Propuestas sin confirmar»; el filtro «Solo
-problemas» y los mosaicos de estado se mantienen.
+problemas» y los mosaicos de estado se mantienen. Un clic en el número
+de comprobante abre el comprobante: posiciones, periodo de prestación, texto
+de la factura, consumo por posición y la comparación con el periodo (fecha
+dentro de la ventana, prestación, artículo); así ve antes de confirmar si la
+factura pertenece al periodo.
 
 **Acciones masivas:** En la página de periodos seleccione filas con las
 casillas y confirme todas las propuestas de una vez, renuncie con un motivo

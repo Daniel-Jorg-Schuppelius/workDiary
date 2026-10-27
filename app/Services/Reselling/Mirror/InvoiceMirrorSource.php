@@ -71,6 +71,9 @@ interface InvoiceMirrorSource {
      */
     public function vouchersFor(Organization $organization, array $recipientCustomerIds, CarbonImmutable $from, int $limit = 150): Collection;
 
+    /** Ein Beleg samt allen Positionen über seinen Quellschlüssel ({@see MirrorLine::$voucherKey}) — für die Belegansicht hinter einem Bezug. */
+    public function voucherByKey(Organization $organization, string $voucherKey): ?MirrorVoucher;
+
     /**
      * Rechnungen der Empfänger, deren Positionen noch nicht gespiegelt sind (lokal immer 0).
      *

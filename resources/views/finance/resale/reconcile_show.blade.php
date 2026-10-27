@@ -172,7 +172,7 @@
                                 <li class="flex flex-wrap items-center justify-between gap-2 text-sm">
                                     <span class="flex flex-wrap items-center gap-2">
                                         <x-status-badge size="xs" tone="warning" :label="__('resale.reconcile.periods.foreign', ['recipient' => $recipient])" />
-                                        <span class="font-mono text-xs">{{ $voucher->voucherNumber }}</span>
+                                        <a href="{{ route('finance.resale.vouchers.show', ['source' => $voucher->sourceKey, 'voucher' => $voucher->voucherKey]) }}" data-entry-modal-trigger class="link link-hover font-mono text-xs" title="{{ __('resale.voucher.open') }}">{{ $voucher->voucherNumber }}</a>
                                         <span class="text-xs text-muted tabular-nums">{{ $voucher->voucherDate?->fdate() }}@if ($voucher->servicePeriodLabel() !== null) · {{ __('resale.reconcile.service_period') }} {{ $voucher->servicePeriodLabel() }}@endif · {{ trans_choice('resale.reconcile.distance', $candidate['distance'], ['days' => $candidate['distance']]) }}</span>
                                         <span><x-resale.licence-months :value="$line->quantity" />{{ $line->unitName ? ' ' . $line->unitName : '' }} × {{ $line->unitNet->withScale(2)->format() }}</span>
                                         <span class="text-xs text-muted tabular-nums">= <x-resale.licence-months :value="$candidate['row']['months']" :per-licence="$candidate['row']['per_licence']" /></span>
@@ -205,7 +205,7 @@
                                 @endphp
                                 <li class="flex flex-wrap items-center justify-between gap-2 text-sm">
                                     <span class="flex flex-wrap items-center gap-2">
-                                        <span class="font-mono text-xs">{{ $voucher->voucherNumber }}</span>
+                                        <a href="{{ route('finance.resale.vouchers.show', ['source' => $voucher->sourceKey, 'voucher' => $voucher->voucherKey]) }}" data-entry-modal-trigger class="link link-hover font-mono text-xs" title="{{ __('resale.voucher.open') }}">{{ $voucher->voucherNumber }}</a>
                                         <span class="text-xs text-muted tabular-nums">{{ $voucher->voucherDate?->fdate() }}@if ($voucher->servicePeriodLabel() !== null) · {{ __('resale.reconcile.service_period') }} {{ $voucher->servicePeriodLabel() }}@endif · {{ trans_choice('resale.reconcile.distance', $candidate['distance'], ['days' => $candidate['distance']]) }}</span>
                                         <span><x-resale.licence-months :value="$line->quantity" />{{ $line->unitName ? ' ' . $line->unitName : '' }} × {{ $line->unitNet->withScale(2)->format() }}</span>
                                         <span class="text-xs text-muted tabular-nums">= <x-resale.licence-months :value="$candidate['row']['months']" :per-licence="$candidate['row']['per_licence']" /></span>
@@ -233,7 +233,7 @@
                             @foreach (array_slice($row['taken'], 0, 4) as $candidate)
                                 @php $line = $candidate['row']['line']; @endphp
                                 <li class="flex flex-wrap items-center gap-2 text-xs text-muted">
-                                    <span class="font-mono">{{ $line->voucherNumber }}</span>
+                                    <a href="{{ route('finance.resale.vouchers.show', ['source' => $line->sourceKey, 'voucher' => $line->voucherKey, 'line' => $line->morphId]) }}" data-entry-modal-trigger class="link link-hover font-mono" title="{{ __('resale.voucher.open') }}">{{ $line->voucherNumber }}</a>
                                     <span class="tabular-nums">{{ $line->voucherDate?->fdate() }}</span>
                                     <span><x-resale.licence-months :value="$line->quantity" />{{ $line->unitName ? ' ' . $line->unitName : '' }}</span>
                                     <span>{{ __('resale.reconcile.periods.taken', ['periods' => implode(' · ', array_unique($candidate['row']['periods']))]) }}</span>
@@ -243,7 +243,7 @@
                                 @php $line = $candidate['row']['line']; @endphp
                                 <li class="flex flex-wrap items-center gap-2 text-xs text-muted">
                                     <x-status-badge size="xs" tone="error" :label="__('resale.reconcile.periods.voided')" />
-                                    <span class="font-mono">{{ $line->voucherNumber }}</span>
+                                    <a href="{{ route('finance.resale.vouchers.show', ['source' => $line->sourceKey, 'voucher' => $line->voucherKey, 'line' => $line->morphId]) }}" data-entry-modal-trigger class="link link-hover font-mono" title="{{ __('resale.voucher.open') }}">{{ $line->voucherNumber }}</a>
                                     <span class="tabular-nums">{{ $line->voucherDate?->fdate() }}</span>
                                     <span><x-resale.licence-months :value="$line->quantity" />{{ $line->unitName ? ' ' . $line->unitName : '' }} · <x-resale.licence-months :value="$candidate['row']['months']" :per-licence="$candidate['row']['per_licence']" /></span>
                                     @if ($line->previewUrl !== null)
@@ -309,7 +309,7 @@
                     @endphp
                     <tr @class(['opacity-60' => $lineRow['free'] <= 0.001])>
                         <td class="whitespace-nowrap">
-                            <span class="font-mono text-xs">{{ $voucher->voucherNumber }}</span>
+                            <a href="{{ route('finance.resale.vouchers.show', ['source' => $voucher->sourceKey, 'voucher' => $voucher->voucherKey]) }}" data-entry-modal-trigger class="link link-hover font-mono text-xs" title="{{ __('resale.voucher.open') }}">{{ $voucher->voucherNumber }}</a>
                             <span class="text-xs text-muted tabular-nums">{{ $voucher->voucherDate?->fdate() }}</span>
                             @if ($voucher->servicePeriodLabel() !== null)
                                 <span class="block text-xs text-muted tabular-nums">{{ __('resale.reconcile.service_period') }} {{ $voucher->servicePeriodLabel() }}</span>
@@ -395,7 +395,7 @@
                         @endphp
                         <tr @class(['opacity-60' => $creditFree <= 0.001])>
                             <td class="whitespace-nowrap">
-                                <span class="font-mono text-xs">{{ $voucher->voucherNumber }}</span>
+                                <a href="{{ route('finance.resale.vouchers.show', ['source' => $voucher->sourceKey, 'voucher' => $voucher->voucherKey]) }}" data-entry-modal-trigger class="link link-hover font-mono text-xs" title="{{ __('resale.voucher.open') }}">{{ $voucher->voucherNumber }}</a>
                                 <span class="text-xs text-muted tabular-nums">{{ $voucher->voucherDate?->fdate() }} · {{ __('resale.link_ui.position', ['position' => $line->position]) }}</span>
                                 @if ($voucher->servicePeriodLabel() !== null)
                                     <span class="block text-xs text-muted tabular-nums">{{ __('resale.reconcile.service_period') }} {{ $voucher->servicePeriodLabel() }}</span>

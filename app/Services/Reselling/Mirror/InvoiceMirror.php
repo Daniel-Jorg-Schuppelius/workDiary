@@ -117,6 +117,11 @@ final class InvoiceMirror {
         return collect(array_slice($vouchers, 0, $limit));
     }
 
+    /** Beleg einer Quelle über ihren Schlüssel (Belegansicht hinter einem Bezug, Nachbesserung 2026-10-27). */
+    public function voucherByKey(Organization $organization, string $sourceKey, string $voucherKey): ?MirrorVoucher {
+        return $this->source($sourceKey)?->voucherByKey($organization, $voucherKey);
+    }
+
     /**
      * @param  list<int>  $recipientCustomerIds
      */

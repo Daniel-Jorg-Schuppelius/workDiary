@@ -107,36 +107,51 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
             ->with(['customer:id,name', 'items.article:id,name'])
             ->orderByDesc('issued_on')->orderByDesc('id')->limit($limit)->get();
 
-        return $invoices->map(function (Invoice $invoice) use ($products): MirrorVoucher {
-            $lines = [];
-            $serviceTo = null;
-            foreach ($invoice->pricedItems() as $item) {
-                $item->setRelation('invoice', $invoice); // Währung der Positionsbeträge kommt vom Beleg (MoneyCast)
-                $lines[] = $this->toLine($item, $invoice, $products);
-                $to = self::date($item->service_to);
-                if ($to !== null && ($serviceTo === null || $to->greaterThan($serviceTo))) {
-                    $serviceTo = $to;
-                }
-            }
+        return $invoices->map(fn(Invoice $invoice): MirrorVoucher => $this->toVoucher($invoice, $products))->values();
+    }
 
-            return new MirrorVoucher(
-                sourceKey: self::KEY,
-                voucherKey: (string) $invoice->id,
-                voucherNumber: $invoice->number,
-                voucherDate: self::date($invoice->issued_on),
-                voucherStatus: self::status($invoice),
-                isCreditNote: $invoice->isCreditNote(),
-                recipientCustomerId: (int) $invoice->customer_id,
-                recipientName: $invoice->customer->name ?? null,
-                voucherText: null,
-                voucherTextHint: null,
-                serviceFrom: self::date($invoice->serviceDateFrom()),
-                serviceTo: $serviceTo,
-                permalink: self::permalink($invoice),
-                previewUrl: null,
-                lines: $lines,
-            );
-        })->values();
+    public function voucherByKey(Organization $organization, string $voucherKey): ?MirrorVoucher {
+        if (! is_numeric($voucherKey)) {
+            return null;
+        }
+        $invoice = Invoice::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->with(['customer:id,name', 'items.article:id,name'])
+            ->find((int) $voucherKey);
+
+        return $invoice === null ? null : $this->toVoucher($invoice, $this->products($organization));
+    }
+
+    /** @param  array{articles: array<int, true>, labels: list<string>, excluded: array<int, true>}  $products */
+    private function toVoucher(Invoice $invoice, array $products): MirrorVoucher {
+        $lines = [];
+        $serviceTo = null;
+        foreach ($invoice->pricedItems() as $item) {
+            $item->setRelation('invoice', $invoice); // Währung der Positionsbeträge kommt vom Beleg (MoneyCast)
+            $lines[] = $this->toLine($item, $invoice, $products);
+            $to = self::date($item->service_to);
+            if ($to !== null && ($serviceTo === null || $to->greaterThan($serviceTo))) {
+                $serviceTo = $to;
+            }
+        }
+
+        return new MirrorVoucher(
+            sourceKey: self::KEY,
+            voucherKey: (string) $invoice->id,
+            voucherNumber: $invoice->number,
+            voucherDate: self::date($invoice->issued_on),
+            voucherStatus: self::status($invoice),
+            isCreditNote: $invoice->isCreditNote(),
+            recipientCustomerId: (int) $invoice->customer_id,
+            recipientName: $invoice->customer->name ?? null,
+            voucherText: null,
+            voucherTextHint: null,
+            serviceFrom: self::date($invoice->serviceDateFrom()),
+            serviceTo: $serviceTo,
+            permalink: self::permalink($invoice),
+            previewUrl: null,
+            lines: $lines,
+        );
     }
 
     public function pendingCount(Organization $organization, array $recipientCustomerIds, ?CarbonImmutable $from = null): int {

@@ -1,7 +1,7 @@
 ---
 title: "Abbonamenti e licenze"
 topic: finance.resale
-version: 6
+version: 7
 keywords:
     - Anteprima importazione
     - Azioni di massa
@@ -35,6 +35,11 @@ viene fatturato direttamente. Un **cliente finale** appartiene a un partner;
 la fattura va al partner, che la gira. Il **parco proprio** (licenze
 interne, domini propri) non viene mai fatturato. Gli abbonamenti senza
 titolare attendono l’assegnazione e contano in «Senza titolare».
+Nell’elenco degli abbonamenti filtrate «Solo senza titolare», selezionate più
+abbonamenti e assegnateli con «Assegna titolare» in un passo a un cliente, un
+cliente finale o al parco proprio; un singolo abbonamento passa dall’icona
+nella sua riga. I domini ricevono il titolare anche nella gestione domini, e
+la casella porta lì gli abbonamenti senza nome azienda.
 
 **Durata e periodi:** da inizio, intervallo di fatturazione (annuale o
 mensile) e fine il registro pianifica i periodi di fatturazione attesi — fino
@@ -320,7 +325,11 @@ corretto; la conferma compare nel registro come «confermata
 automaticamente». Tutto il resto resta proposta e porta «incerta» con il
 motivo nel suggerimento. Perciò la pagina dei periodi mostra per
 impostazione predefinita «Proposte non confermate»; il filtro «Solo
-problemi» e i riquadri di stato restano.
+problemi» e i riquadri di stato restano. Un clic sul numero del
+documento apre il documento: righe, periodo di prestazione, testo fattura,
+consumo per riga e il confronto con il periodo (data nella finestra,
+prestazione, articolo); così vedete prima di confermare se la fattura
+appartiene al periodo.
 
 **Azioni di massa:** Nella pagina dei periodi selezionate le righe con le
 caselle e confermate tutte le proposte in una volta, rinunciate con un

@@ -1,7 +1,7 @@
 ---
 title: "Abonnements & licences"
 topic: finance.resale
-version: 6
+version: 7
 keywords:
     - Aperçu d’import
     - Actions groupées
@@ -35,6 +35,12 @@ facturé directement. Un **client final** appartient à un partenaire ; la
 facture va au partenaire, qui la répercute. Le **parc propre** (licences
 internes, domaines propres) n’est jamais facturé. Les abonnements sans
 titulaire attendent une affectation et comptent dans « Sans titulaire ».
+Dans la liste des abonnements, filtrez « Seulement sans titulaire »,
+sélectionnez plusieurs abonnements et affectez-les avec « Affecter un
+titulaire » en une étape à un client, un client final ou au parc propre ; un
+abonnement seul passe par l’icône de sa ligne. Les domaines reçoivent aussi le
+titulaire dans la gestion des domaines, et la boîte de réception y conduit les
+abonnements sans nom de société.
 
 **Durée et périodes :** à partir du début, de l’intervalle de facturation
 (annuel ou mensuel) et de la fin, le registre planifie les périodes de
@@ -332,7 +338,11 @@ nombre de licences ; la confirmation figure dans le journal comme
 « confirmée automatiquement ». Tout le reste reste une proposition et porte
 « incertaine » avec la raison dans l’info-bulle. La page des périodes
 affiche donc par défaut « Propositions non confirmées » ; le filtre
-« Problèmes seulement » et les tuiles de statut restent.
+« Problèmes seulement » et les tuiles de statut restent. Un clic sur le
+numéro de pièce ouvre la pièce : lignes, période de prestation, texte de
+facture, consommation par ligne et comparaison avec la période (date dans la
+fenêtre, prestation, article) — vous voyez ainsi avant de confirmer si la
+facture appartient à la période.
 
 **Actions groupées :** Sur la page des périodes, sélectionnez des lignes
 via les cases et confirmez toutes les propositions d’un coup, renoncez avec

@@ -65,8 +65,15 @@
                 $previewUrl = $mirrorLine?->previewUrl; // Belegbild über die Spiegelquelle (Recht prüft die Quelle)
             @endphp
             <span class="inline-flex items-center gap-1 mr-1 mb-0.5">
+                {{-- Die Belegnummer öffnet den Beleg mit Positionen und dem Vergleich zur Periode (Nachbesserung 2026-10-27). --}}
+                @if ($mirrorLine !== null)
+                    <a href="{{ route('finance.resale.vouchers.show', ['source' => $mirrorLine->sourceKey, 'voucher' => $mirrorLine->voucherKey, 'period' => $period->sqid, 'line' => $mirrorLine->morphId]) }}" data-entry-modal-trigger class="contents cursor-pointer" title="{{ __('resale.voucher.open') }}">
+                @endif
                 <x-status-badge size="xs" :tone="$sure === false ? 'warning' : $link->origin->tone()" :label="($link->voucher_number ?: '—') . ' · ' . \App\Services\Reselling\Register\LicenseMonths::label((float) $link->months, (float) $term)"
                                 :title="$link->origin->label() . ($sure === null ? '' : ' · ' . __('resale.link.confidence.' . ($sure ? 'sure' : 'unsure'))) . ($link->note ? ' · ' . $link->note : '')" />
+                @if ($mirrorLine !== null)
+                    </a>
+                @endif
                 @if ($sure === false)
                     <x-status-badge size="xs" tone="warning" outline :label="__('resale.link.confidence.unsure')" :title="__('resale.link.confidence.unsure_hint')" />
                 @endif

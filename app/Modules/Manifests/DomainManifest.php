@@ -109,4 +109,11 @@ final class DomainManifest extends Manifest {
             ],
         ];
     }
+
+    /** @return array<class-string, class-string> */
+    public function bindings(): array {
+        return [
+            \App\Services\Reselling\Contracts\DomainHolderWriter::class => \App\Services\Domain\ResaleDomainHolderWriter::class,
+        ];
+    }
 }

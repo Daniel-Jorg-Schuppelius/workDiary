@@ -1379,6 +1379,7 @@ return [
     ],
     'resale_subscription' => [
         'rehomed' => 'Subscription holder changed',
+        'holder_assigned' => 'Subscription holder assigned',
     ],
     'lexware' => [
         'tariffChanged' => 'Lexware plan profile changed',

@@ -1379,6 +1379,7 @@ return [
     ],
     'resale_subscription' => [
         'rehomed' => 'Titolare dell’abbonamento cambiato',
+        'holder_assigned' => 'Titolare dell’abbonamento assegnato',
     ],
     'lexware' => [
         'tariffChanged' => 'Profilo tariffario Lexware modificato',

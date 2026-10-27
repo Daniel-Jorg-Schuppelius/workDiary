@@ -39,7 +39,8 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
             <x-kpi-tile :label="__('resale.summary.active')" :value="$summary['active']" />
             <x-kpi-tile :label="__('resale.summary.open_periods')" :value="$summary['open_periods']" :tone="$summary['open_periods'] > 0 ? 'warning' : 'success'" />
-            <x-kpi-tile :label="__('resale.summary.unassigned')" :value="$summary['unassigned']" :tone="$summary['unassigned'] > 0 ? 'warning' : 'neutral'" />
+            <x-kpi-tile :label="__('resale.summary.unassigned')" :value="$summary['unassigned']" :tone="$summary['unassigned'] > 0 ? 'warning' : 'neutral'"
+                        :href="route('finance.resale.subscriptions', ['unassigned' => 1])" :active="$filters['unassigned']" />
         </div>
 
         <x-filter-bar :action="route('finance.resale.subscriptions')" :reset="route('finance.resale.subscriptions')">
@@ -68,11 +69,28 @@
                 <x-status-badge tone="plain" outline>{{ $filterCustomer->name }}</x-status-badge>
             @endif
             <x-filter-toggle name="open" :label="__('resale.filter.open_only')" :checked="$filters['open']" tone="warning" />
+            <x-filter-toggle name="unassigned" :label="__('resale.filter.unassigned_only')" :checked="$filters['unassigned']" tone="warning" />
         </x-filter-bar>
 
+        {{-- Sammelzuordnung des Halters (Nachbesserung 2026-10-27): Auswahl → ein Dialog für alle; die Toolbar-Form
+             bekommt die gewählten ids[] vom Skript, der Dialog-Link trägt sie als Query (bulk-selection.js). --}}
+        <div data-bulk-form class="contents">
+        @if ($canManage)
+            <form method="POST" action="{{ route('finance.resale.subscriptions.bulk.assign') }}" data-bulk-ids-form class="contents">
+                @csrf
+                <x-bulk-toolbar :label="__('resale.bulk.selected_subscriptions')">
+                    <x-slot:actions>
+                        <x-button :href="route('finance.resale.subscriptions.bulk.assign.create')" tone="primary" size="sm" icon="person_add" data-entry-modal-trigger data-bulk-dialog-link>{{ __('resale.bulk.assign') }}</x-button>
+                    </x-slot:actions>
+                </x-bulk-toolbar>
+            </form>
+        @endif
         <x-table scroll="flex" :zebra="true" table-sort="client">
             <x-slot:head>
                 <tr>
+                    @if ($canManage)
+                        <th class="w-8"><input type="checkbox" class="checkbox checkbox-sm" data-bulk-select-all aria-label="{{ __('Alle auswählen') }}"></th>
+                    @endif
                     <x-table.th sort type="string">{{ __('resale.field.label') }}</x-table.th>
                     <x-table.th sort type="string">{{ __('resale.field.holder') }}</x-table.th>
                     <x-table.th>{{ __('resale.field.kind') }}</x-table.th>
@@ -88,6 +106,9 @@
             </x-slot:head>
             @forelse ($subscriptions as $subscription)
                 <tr class="hover">
+                    @if ($canManage)
+                        <td><input type="checkbox" class="checkbox checkbox-sm" data-bulk-checkbox name="ids[]" value="{{ $subscription->sqid }}" aria-label="{{ $subscription->label }}"></td>
+                    @endif
                     <td>
                         <a href="{{ route('finance.resale.show', $subscription->sqid) }}" class="link link-hover font-medium">{{ $subscription->label }}</a>
                         @if ($subscription->productLabel() !== null)
@@ -97,6 +118,10 @@
                     <td>
                         @if (! $subscription->hasHolder())
                             <x-status-badge size="xs" tone="warning" :label="__('resale.holder.unassigned')" />
+                            {{-- Firma laut Anbieter als Anhaltspunkt für die Zuordnung (Nachbesserung 2026-10-27). --}}
+                            @if (trim((string) $subscription->company_name) !== '')
+                                <span class="block text-xs text-muted">{{ $subscription->company_name }}</span>
+                            @endif
                         @else
                             {{ $subscription->holderLabel() }}
                             @if ($subscription->foreignCustomer !== null)
@@ -124,16 +149,20 @@
                     <td class="text-right">
                         <div class="flex justify-end gap-1">
                             <x-icon-btn icon="visibility" size="xs" tone="ghost" :href="route('finance.resale.show', $subscription->sqid)" :title="__('resale.action.show')" />
-                            @can(\App\Enums\User\Permission::ResellingManage->value)
+                            @if ($canManage)
+                                @if (! $subscription->hasHolder())
+                                    <x-icon-btn icon="person_add" size="xs" tone="primary" data-entry-modal-trigger :href="route('finance.resale.subscriptions.bulk.assign.create', ['ids' => [$subscription->sqid]])" :title="__('resale.inbox.assign')" />
+                                @endif
                                 <x-icon-btn icon="edit" size="xs" tone="ghost" data-entry-modal-trigger :href="route('finance.resale.edit', $subscription->sqid)" :title="__('resale.action.edit')" />
-                            @endcan
+                            @endif
                         </div>
                     </td>
                 </tr>
             @empty
-                <x-table.empty :colspan="11" icon="subscriptions" :title="__('resale.empty.subscriptions')" compact />
+                <x-table.empty :colspan="$canManage ? 12 : 11" icon="subscriptions" :title="__('resale.empty.subscriptions')" compact />
             @endforelse
         </x-table>
+        </div>
         <x-pagination :paginator="$subscriptions" standing />
     </x-index-page>
 @endsection

@@ -1379,6 +1379,7 @@ return [
     ],
     'resale_subscription' => [
         'rehomed' => 'Halter des Abos gewechselt',
+        'holder_assigned' => 'Halter des Abos zugeordnet',
     ],
     'lexware' => [
         'tariffChanged' => 'Lexware-Tarifprofil geändert',

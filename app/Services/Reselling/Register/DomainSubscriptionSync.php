@@ -287,7 +287,7 @@ final class DomainSubscriptionSync {
     }
 
     /** Kurzschlüssel eines Halters (`c<id>`, `f<id>`, `own`, `none`) — passt in `sync_status` (16 Zeichen). */
-    private static function holderKey(?int $customerId, ?int $foreignCustomerId, bool $own): string {
+    public static function holderKey(?int $customerId, ?int $foreignCustomerId, bool $own): string {
         if ($foreignCustomerId !== null) {
             return 'f' . $foreignCustomerId;
         }

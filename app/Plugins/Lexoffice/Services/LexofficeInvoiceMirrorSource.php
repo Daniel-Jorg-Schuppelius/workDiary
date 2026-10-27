@@ -77,31 +77,50 @@ final class LexofficeInvoiceMirrorSource implements InvoiceMirrorSource {
         $names = $this->customerNames($organization, $vouchers->flatMap(static fn(LexofficeVoucher $v): Collection => $v->lines), $map);
         $canPreview = self::canPreview();
 
-        return $vouchers->map(function (LexofficeVoucher $voucher) use ($map, $names, $canPreview): MirrorVoucher {
-            $lines = [];
-            foreach ($voucher->lines as $line) {
-                $lines[] = $this->toLine($line, $map, $names, $canPreview);
-            }
-            $customerId = $this->customerIdOf($voucher, $map);
+        return $vouchers->map(fn(LexofficeVoucher $voucher): MirrorVoucher => $this->toVoucher($voucher, $map, $names, $canPreview))->values();
+    }
 
-            return new MirrorVoucher(
-                sourceKey: self::KEY,
-                voucherKey: (string) $voucher->id,
-                voucherNumber: $voucher->voucher_number,
-                voucherDate: self::date($voucher->voucher_date),
-                voucherStatus: self::status($voucher),
-                isCreditNote: (string) $voucher->voucher_type === 'creditnote',
-                recipientCustomerId: $customerId,
-                recipientName: self::recipientName($voucher, $customerId, $names),
-                voucherText: $voucher->voucher_text,
-                voucherTextHint: $voucher->voucherTextHint(),
-                serviceFrom: self::date($voucher->service_starts_on),
-                serviceTo: self::date($voucher->service_ends_on),
-                permalink: $voucher->lexofficePermalink(),
-                previewUrl: $canPreview ? self::previewUrl($voucher->id) : null,
-                lines: $lines,
-            );
-        })->values();
+    public function voucherByKey(Organization $organization, string $voucherKey): ?MirrorVoucher {
+        if (! is_numeric($voucherKey)) {
+            return null;
+        }
+        $voucher = LexofficeVoucher::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->with('lines.article:id,name,unit_name')
+            ->find((int) $voucherKey);
+        if ($voucher === null) {
+            return null;
+        }
+        $map = LexofficeContactMap::forOrganization($organization);
+
+        return $this->toVoucher($voucher, $map, $this->customerNames($organization, $voucher->lines, $map), self::canPreview());
+    }
+
+    /** @param  array<int, string>  $names */
+    private function toVoucher(LexofficeVoucher $voucher, LexofficeContactMap $map, array $names, bool $canPreview): MirrorVoucher {
+        $lines = [];
+        foreach ($voucher->lines as $line) {
+            $lines[] = $this->toLine($line, $map, $names, $canPreview);
+        }
+        $customerId = $this->customerIdOf($voucher, $map);
+
+        return new MirrorVoucher(
+            sourceKey: self::KEY,
+            voucherKey: (string) $voucher->id,
+            voucherNumber: $voucher->voucher_number,
+            voucherDate: self::date($voucher->voucher_date),
+            voucherStatus: self::status($voucher),
+            isCreditNote: (string) $voucher->voucher_type === 'creditnote',
+            recipientCustomerId: $customerId,
+            recipientName: self::recipientName($voucher, $customerId, $names),
+            voucherText: $voucher->voucher_text,
+            voucherTextHint: $voucher->voucherTextHint(),
+            serviceFrom: self::date($voucher->service_starts_on),
+            serviceTo: self::date($voucher->service_ends_on),
+            permalink: $voucher->lexofficePermalink(),
+            previewUrl: $canPreview ? self::previewUrl($voucher->id) : null,
+            lines: $lines,
+        );
     }
 
     public function pendingCount(Organization $organization, array $recipientCustomerIds, ?CarbonImmutable $from = null): int {

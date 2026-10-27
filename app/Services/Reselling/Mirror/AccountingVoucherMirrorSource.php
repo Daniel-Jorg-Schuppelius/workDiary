@@ -90,30 +90,49 @@ final class AccountingVoucherMirrorSource implements InvoiceMirrorSource {
         $classifier = app(LicenseArticleClassifier::class);
         $names = $this->customerNames($organization, array_values(array_map('intval', $vouchers->pluck('customer_id')->filter()->unique()->all())));
 
-        return $vouchers->map(function (AccountingVoucher $voucher) use ($classifier, $names): MirrorVoucher {
-            $lines = [];
-            foreach ($voucher->lines as $line) {
-                $lines[] = $this->toLine($line, $voucher, $classifier, $names);
-            }
+        return $vouchers->map(fn(AccountingVoucher $voucher): MirrorVoucher => $this->toVoucher($voucher, $classifier, $names))->values();
+    }
 
-            return new MirrorVoucher(
-                sourceKey: self::KEY,
-                voucherKey: (string) $voucher->id,
-                voucherNumber: $voucher->voucher_number,
-                voucherDate: self::date($voucher->voucher_date),
-                voucherStatus: self::status($voucher),
-                isCreditNote: self::isCreditNote($voucher),
-                recipientCustomerId: $voucher->customer_id !== null ? (int) $voucher->customer_id : null,
-                recipientName: $voucher->customer_id !== null ? ($names[(int) $voucher->customer_id] ?? null) : null,
-                voucherText: null,
-                voucherTextHint: null,
-                serviceFrom: null,
-                serviceTo: null,
-                permalink: null,
-                previewUrl: null,
-                lines: $lines,
-            );
-        })->values();
+    public function voucherByKey(Organization $organization, string $voucherKey): ?MirrorVoucher {
+        if (! is_numeric($voucherKey)) {
+            return null;
+        }
+        $voucher = AccountingVoucher::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->with('lines')
+            ->find((int) $voucherKey);
+        if ($voucher === null) {
+            return null;
+        }
+        $names = $voucher->customer_id !== null ? $this->customerNames($organization, [(int) $voucher->customer_id]) : [];
+
+        return $this->toVoucher($voucher, app(LicenseArticleClassifier::class), $names);
+    }
+
+    /** @param  array<int, string>  $names */
+    private function toVoucher(AccountingVoucher $voucher, LicenseArticleClassifier $classifier, array $names): MirrorVoucher {
+        $lines = [];
+        foreach ($voucher->lines as $line) {
+            $lines[] = $this->toLine($line, $voucher, $classifier, $names);
+        }
+
+        return new MirrorVoucher(
+            sourceKey: self::KEY,
+            voucherKey: (string) $voucher->id,
+            voucherNumber: $voucher->voucher_number,
+            voucherDate: self::date($voucher->voucher_date),
+            voucherStatus: self::status($voucher),
+            isCreditNote: self::isCreditNote($voucher),
+            recipientCustomerId: $voucher->customer_id !== null ? (int) $voucher->customer_id : null,
+            recipientName: $voucher->customer_id !== null ? ($names[(int) $voucher->customer_id] ?? null) : null,
+            voucherText: null,
+            voucherTextHint: null,
+            serviceFrom: null,
+            serviceTo: null,
+            permalink: null,
+            previewUrl: null,
+            lines: $lines,
+        );
     }
 
     public function pendingCount(Organization $organization, array $recipientCustomerIds, ?CarbonImmutable $from = null): int {

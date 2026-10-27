@@ -37,9 +37,13 @@
                     <tr class="hover">
                         <td class="font-medium">{{ $group['company'] !== '' ? $group['company'] : __('resale.inbox.no_company') }}</td>
                         <td class="text-sm">
-                            @foreach ($group['subscriptions'] as $subscription)
+                            {{-- Ohne Firmenname (Domains) können es Dutzende sein: die ersten acht, der Rest in der Liste. --}}
+                            @foreach (array_slice($group['subscriptions'], 0, 8) as $subscription)
                                 <a href="{{ route('finance.resale.show', $subscription->sqid) }}" class="link link-hover block">{{ $subscription->label }} × {{ $subscription->quantity }}</a>
                             @endforeach
+                            @if (count($group['subscriptions']) > 8)
+                                <a href="{{ route('finance.resale.subscriptions', ['unassigned' => 1]) }}" class="link link-hover block text-xs text-muted">{{ __('resale.inbox.more', ['count' => count($group['subscriptions']) - 8]) }}</a>
+                            @endif
                         </td>
                         <td class="text-sm">{{ implode(', ', $group['providers']) }}</td>
                         <td class="text-sm">
@@ -58,6 +62,11 @@
                                 <x-icon-btn icon="person_add" size="xs" tone="primary" data-entry-modal-trigger
                                             :href="route('finance.resale.inbox.assign', ['company' => $group['company']])"
                                             :title="__('resale.inbox.assign')" show-label>{{ __('resale.inbox.assign') }}</x-icon-btn>
+                            @else
+                                {{-- Ohne Firmenname gibt es nichts zu merken: Sammelzuordnung in der Liste (Filter „Nur ohne Halter“). --}}
+                                <x-icon-btn icon="checklist" size="xs" tone="primary"
+                                            :href="route('finance.resale.subscriptions', ['unassigned' => 1])"
+                                            :title="__('resale.inbox.in_list')" show-label>{{ __('resale.inbox.in_list') }}</x-icon-btn>
                             @endif
                         </td>
                     </tr>
