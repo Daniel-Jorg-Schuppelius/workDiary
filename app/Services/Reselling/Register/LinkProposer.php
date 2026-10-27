@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Register;
 
-use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
+use App\Enums\Reselling\{LinkOrigin, PeriodStatus, SubscriptionKind};
 use App\Models\Customer\ForeignCustomer;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
@@ -349,6 +349,25 @@ final class LinkProposer {
         $to = $reference->addDay();
         $recipientIds = array_values(array_unique(array_filter($recipientBySubscription, static fn(?int $id): bool => $id !== null)));
         $lines = $this->mirror->linesFor($organization, $recipientIds, $from, $to);
+        // Domain-Abos: ihre Rechnungen laufen über Artikel ohne Lizenz-Einstufung
+        // („Top-Level-Domain“), der Domainname steht im Positionstext — dazu die
+        // Positionen der Empfänger ohne Lizenzfilter, die eine ihrer Domains nennen.
+        $domainRecipients = [];
+        $domains = [];
+        foreach ($subscriptions as $subscription) {
+            $recipient = $recipientBySubscription[$subscription->id] ?? null;
+            if ($subscription->kind === SubscriptionKind::Domain && $recipient !== null) {
+                $domainRecipients[$recipient] = $recipient;
+                $domains[] = $subscription->label;
+            }
+        }
+        if ($domains !== []) {
+            $known = $lines->map(static fn(MirrorLine $line): string => $line->identity())->flip();
+            $lines = $lines->concat(
+                $this->mirror->linesMentioningDomains($organization, array_values($domainRecipients), $domains, $from, $to)
+                    ->reject(static fn(MirrorLine $line): bool => $known->has($line->identity()))
+            )->values();
+        }
         /** @var array<string, float> $remaining Position → restliche Lizenzmonate */
         $remaining = [];
         /** @var array<string, string> $articleNames Katalogschlüssel → Name: Abos ohne Artikel bekommen denselben Produktschlüssel wie die Positionen */
@@ -787,6 +806,10 @@ final class LinkProposer {
      * Abo-Namen bzw. Artikelnamen passen.
      */
     public static function matchesProductOf(ResaleSubscription $subscription, MirrorLine $line, ProductNameMatcher $matcher): bool {
+        // Domain-Abo: die Position muss die Domain nennen; Lizenz-Einstufung und Artikel spielen keine Rolle.
+        if ($subscription->kind === SubscriptionKind::Domain) {
+            return $line->mentionsDomain($subscription->label);
+        }
         $own = ArticleCatalog::parse($subscription->article_ref);
         $theirs = ArticleCatalog::parse($line->articleKey);
         if ($own !== null && $theirs !== null && $own[0] === $theirs[0]) {

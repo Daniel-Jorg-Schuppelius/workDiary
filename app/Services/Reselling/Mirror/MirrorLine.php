@@ -104,6 +104,21 @@ final readonly class MirrorLine {
         return trim($this->name . ' ' . (string) $this->description);
     }
 
+    /**
+     * Nennt die Position diese Domain? Domainrechnungen tragen den Namen nur
+     * im Text („.de-Domain inkl. Verwaltung (thieme-logistik.de)“), der
+     * Artikel heißt „Top-Level-Domain“ — Wortgrenze, damit „thieme-logistik.de“
+     * weder „sub.thieme-logistik.de“ noch „thieme-logistik.dev“ trifft.
+     */
+    public function mentionsDomain(string $domain): bool {
+        $domain = mb_strtolower(trim($domain));
+        if ($domain === '') {
+            return false;
+        }
+
+        return (bool) preg_match('/(?<![a-z0-9.-])' . preg_quote($domain, '/') . '(?![a-z0-9-])/u', mb_strtolower((string) $this->articleName . ' ' . $this->text()));
+    }
+
     /** Leistungsmonate aus dem Zeitraum (gerundet; Einzeldatum = null). */
     public function serviceMonths(): ?int {
         if ($this->serviceFrom === null || $this->serviceTo === null) {

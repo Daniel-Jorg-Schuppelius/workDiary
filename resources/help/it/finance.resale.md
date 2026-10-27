@@ -1,7 +1,7 @@
 ---
 title: "Abbonamenti e licenze"
 topic: finance.resale
-version: 9
+version: 10
 keywords:
     - Anteprima importazione
     - Azioni di massa
@@ -126,13 +126,15 @@ dettagli espandibili nell’elenco.
 **Periodi:** la pagina dei periodi mostra i periodi scaduti di tutti gli
 abbonamenti con riquadri di stato (aperto, fatturato, parziale, rinunciato,
 contestato). «Calcola proposte» confronta i periodi aperti con le righe di
-licenza delle fatture rispecchiate e crea proposte; Lei le conferma, collega
-a mano una riga (solo fatture dello stesso destinatario, solo mesi di
-licenza liberi) oppure rinuncia con un motivo («cortesia»). I periodi decisi
-non vengono più toccati dalla pianificazione; «riapri» li riapre. Se una
-fattura collegata viene poi stornata in Lexoffice, l’esecuzione successiva
-azzera i mesi del collegamento, annota lo storno e riapre il periodo, così
-la fattura sostitutiva può essere collegata.
+licenza delle fatture rispecchiate e crea proposte; Lei le conferma, collega a
+mano una riga (solo fatture dello stesso destinatario, solo mesi di licenza
+liberi) oppure rinuncia con un motivo («cortesia»). I periodi decisi non
+vengono più toccati dalla pianificazione; «riapri» li riapre. Se una fattura
+collegata viene poi stornata in Lexoffice, l’esecuzione successiva azzera i
+mesi del collegamento, annota lo storno e riapre il periodo, così la fattura
+sostitutiva può essere collegata. Gli abbonamenti di dominio sono coperti
+dalle righe che nominano il dominio (ad esempio «dominio .de incl. gestione
+(thieme-logistik.de)»), indipendentemente dalla classificazione dell’articolo.
 
 **Bozza di fattura:** da tutti i periodi aperti di un destinatario fattura
 nasce con un clic una bozza — con fatturazione Lexoffice come bozza in

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Mirror;
 
+use App\Enums\Reselling\SubscriptionKind;
 use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResaleLicenseAssignment, ResalePeriod, ResalePeriodLink};
@@ -175,9 +176,44 @@ final class InvoiceMirror {
      * @return Collection<int, MirrorLine>
      */
     public function candidatesFor(Organization $organization, int $recipientCustomerId, ResalePeriod $period): Collection {
-        return $this->linesFor($organization, [$recipientCustomerId], $period->starts_on->subDays(LinkProposer::WINDOW_BEFORE))
+        $from = $period->starts_on->subDays(LinkProposer::WINDOW_BEFORE);
+        $subscription = $period->subscription;
+        $lines = $subscription->kind === SubscriptionKind::Domain
+            ? $this->linesMentioningDomains($organization, [$recipientCustomerId], [$subscription->label], $from)
+            : $this->linesFor($organization, [$recipientCustomerId], $from);
+
+        return $lines
             ->filter(static fn(MirrorLine $line): bool => LinkProposer::inWindow($period, $line))
             ->sortBy([static fn(MirrorLine $a, MirrorLine $b): int => ($b->voucherDate <=> $a->voucherDate) ?: ($a->position <=> $b->position)])
+            ->values();
+    }
+
+    /**
+     * Positionen, die eine der Domains nennen — ohne Lizenzfilter, denn
+     * Domainrechnungen laufen über Artikel wie „Top-Level-Domain“, die keine
+     * Lizenz sind; der Domainname steht nur im Positionstext (Befund
+     * 2026-10-27: thieme-logistik.de seit 2016 berechnet, Register sah nichts).
+     *
+     * @param  list<int>  $recipientCustomerIds
+     * @param  list<string>  $domains
+     * @return Collection<int, MirrorLine>
+     */
+    public function linesMentioningDomains(Organization $organization, array $recipientCustomerIds, array $domains, ?CarbonImmutable $from = null, ?CarbonImmutable $to = null): Collection {
+        $domains = array_values(array_unique(array_filter(array_map(static fn(string $d): string => mb_strtolower(trim($d)), $domains))));
+        if ($recipientCustomerIds === [] || $domains === []) {
+            return collect();
+        }
+
+        return $this->linesFor($organization, $recipientCustomerIds, $from, $to, licenceOnly: false)
+            ->filter(static function (MirrorLine $line) use ($domains): bool {
+                foreach ($domains as $domain) {
+                    if ($line->mentionsDomain($domain)) {
+                        return true;
+                    }
+                }
+
+                return false;
+            })
             ->values();
     }
 

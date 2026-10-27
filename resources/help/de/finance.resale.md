@@ -1,7 +1,7 @@
 ---
 title: "Abos & Lizenzen"
 topic: finance.resale
-version: 9
+version: 10
 keywords:
     - Import-Vorschau
     - Sammelaktionen
@@ -132,7 +132,10 @@ freie Lizenzmonate) oder verzichten mit Grund („Kulanz"). Entschiedene
 Perioden fasst die Planung nicht mehr an; „Zurücknehmen" öffnet sie wieder.
 Wird eine zugeordnete Rechnung später in Lexoffice storniert, setzt der
 nächste Lauf den Bezug auf null Monate, vermerkt den Storno und öffnet die
-Periode wieder, damit die Ersatzrechnung zugeordnet werden kann.
+Periode wieder, damit die Ersatzrechnung zugeordnet werden kann. Domain-Abos
+deckt der Lauf über Positionen, die den Domainnamen nennen (etwa „.de-Domain
+inkl. Verwaltung (thieme-logistik.de)“), unabhängig von der Produkt-Einstufung
+des Artikels.
 
 **Rechnungsentwurf:** Aus allen offenen Perioden eines Rechnungsempfängers
 entsteht per Klick ein Entwurf — bei Lexoffice-Rechnungshoheit als Entwurf

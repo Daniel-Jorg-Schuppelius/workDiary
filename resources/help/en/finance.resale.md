@@ -1,7 +1,7 @@
 ---
 title: "Subscriptions & Licences"
 topic: finance.resale
-version: 9
+version: 10
 keywords:
     - Import preview
     - Bulk actions
@@ -126,12 +126,14 @@ in the message, the details expandable in the list.
 **Periods:** The period page shows the due periods of all subscriptions with
 status tiles (open, billed, partial, waived, disputed). "Compute proposals"
 matches the open periods against the licence lines of the mirrored invoices
-and creates proposals; you confirm them, link a line by hand (only invoices
-of the same recipient, only free licence months) or waive with a reason
+and creates proposals; you confirm them, link a line by hand (only invoices of
+the same recipient, only free licence months) or waive with a reason
 ("goodwill"). Decided periods are no longer touched by planning; "reopen"
 opens them again. If a linked invoice is later voided in Lexoffice, the next
 run sets the link to zero months, notes the cancellation and reopens the
-period so the replacement invoice can be linked.
+period so the replacement invoice can be linked. Domain subscriptions are
+covered by lines that name the domain (such as ".de domain incl. management
+(thieme-logistik.de)"), regardless of the article’s product classification.
 
 **Invoice draft:** From all open periods of an invoice recipient a draft is
 created with one click — with Lexoffice invoicing as a draft in Lexoffice

@@ -1,7 +1,7 @@
 ---
 title: "Abonnements & licences"
 topic: finance.resale
-version: 9
+version: 10
 keywords:
     - Aperçu d’import
     - Actions groupées
@@ -132,14 +132,16 @@ dépliable dans la liste.
 **Périodes :** la page des périodes montre les périodes échues de tous les
 abonnements avec des tuiles de statut (ouverte, facturée, partielle,
 abandonnée, contestée). « Calculer les propositions » rapproche les périodes
-ouvertes des lignes de licences des factures miroir et crée des
-propositions ; vous les confirmez, rattachez une ligne à la main (uniquement
-des factures du même destinataire, uniquement des mois de licence libres)
-ou renoncez avec un motif (« geste commercial »). Les périodes décidées ne
-sont plus touchées par la planification ; « rouvrir » les rouvre. Si une
-facture rattachée est annulée plus tard dans Lexoffice, le prochain calcul
-met le lien à zéro mois, note l’annulation et rouvre la période pour que la
-facture de remplacement puisse être rattachée.
+ouvertes des lignes de licences des factures miroir et crée des propositions ;
+vous les confirmez, rattachez une ligne à la main (uniquement des factures du
+même destinataire, uniquement des mois de licence libres) ou renoncez avec un
+motif (« geste commercial »). Les périodes décidées ne sont plus touchées par
+la planification ; « rouvrir » les rouvre. Si une facture rattachée est
+annulée plus tard dans Lexoffice, le prochain calcul met le lien à zéro mois,
+note l’annulation et rouvre la période pour que la facture de remplacement
+puisse être rattachée. Les abonnements de domaine sont couverts par les lignes
+qui nomment le domaine (par exemple « domaine .de avec gestion
+(thieme-logistik.de) »), quelle que soit la classification de l’article.
 
 **Brouillon de facture :** à partir de toutes les périodes ouvertes d’un
 destinataire de facture, un clic crée un brouillon — avec la facturation

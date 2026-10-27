@@ -361,6 +361,35 @@ class LinkProposerTest extends TestCase {
         $this->assertSame(0, ResalePeriodLink::query()->whereIn('subscription_id', [$august->id, $october->id])->count(), 'die früheren Abos bleiben unberührt');
     }
 
+    public function test_domain_subscription_is_covered_by_lines_that_name_the_domain(): void {
+        // thieme-logistik.de (Prod 2026-10-27): Artikel „Top-Level-Domain“ ist keine Lizenz, der Domainname
+        // steht nur im Positionstext — das Register sah 13 offene Jahre, Lexoffice hatte seit 2016 berechnet.
+        $customer = $this->customerWithContact('Thieme Transporte', 'c-thieme');
+        $tld = $this->article('art-tld', 'Top-Level-Domain', '8.55');
+        $domain = $this->subscription(['kind' => 'domain', 'provider' => 'domainreselling', 'external_id' => 'thieme-logistik.de', 'label' => 'thieme-logistik.de', 'customer_id' => $customer->id, 'starts_on' => '2014-03-27']);
+        $other = $this->subscription(['kind' => 'domain', 'provider' => 'domainreselling', 'external_id' => 'thieme-transporte.de', 'label' => 'thieme-transporte.de', 'customer_id' => $customer->id, 'starts_on' => '2014-03-27']);
+        $exchange = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2024-01-01']);
+        $this->voucher('c-thieme', 'RE/2017/0019', '2017-12-02', [['article' => $tld, 'name' => '[SGIT-IT-DOBB-00001DE] - DE-Domain', 'description' => 'Domain Jahresgebühr - DE => thieme-logistik.de => 27.03.2016 - 27.03.2018', 'quantity' => 2, 'unit' => 'Jahr', 'net' => '4.50']], '', '2016-03-27', '2018-03-27');
+        $this->voucher('c-thieme', 'RE/2023/0572', '2023-12-01', [['article' => $tld, 'name' => 'Top-Level-Domain', 'description' => '.de-Domain inkl. Verwaltung (thieme-logistik.de)', 'quantity' => 6, 'unit' => 'Jahr', 'net' => '8.55']], '', '2018-03-27', '2024-03-26');
+        foreach (['RE/2024/0624' => '2024', 'RE/2025/0826' => '2025', 'RE/2026/1036' => '2026'] as $number => $year) {
+            $this->voucher('c-thieme', $number, $year . '-03-27', [['article' => $tld, 'name' => 'Top-Level-Domain', 'description' => '.de-Domain inkl. Verwaltung (thieme-logistik.de)', 'quantity' => 1, 'unit' => 'Jahr', 'net' => '8.55']], '', $year . '-03-27', ($year + 1) . '-03-26');
+        }
+
+        $result = (new LinkProposer)->propose($this->organization);
+
+        $periods = $domain->periods()->orderBy('starts_on')->get();
+        $this->assertCount(13, $periods, '2014 bis 2026');
+        $this->assertSame([PeriodStatus::Open, PeriodStatus::Open], [$periods[0]->status, $periods[1]->status], '2014 und 2015 liegen vor der ersten gespiegelten Rechnung');
+        $this->assertSame(array_fill(0, 11, PeriodStatus::Billed), $periods->slice(2)->pluck('status')->values()->all(), '2016 bis 2026 sind berechnet');
+        $this->assertSame(['RE/2017/0019', 'RE/2017/0019', 'RE/2023/0572', 'RE/2023/0572', 'RE/2023/0572', 'RE/2023/0572', 'RE/2023/0572', 'RE/2023/0572', 'RE/2024/0624', 'RE/2025/0826', 'RE/2026/1036'], $periods->slice(2)->map(static fn(ResalePeriod $p) => $p->links()->first()?->voucher_number)->values()->all());
+        foreach ($periods->slice(2) as $period) {
+            $this->assertSame('12.00', $period->links()->first()?->months, 'ein Jahr je Periode, auch aus „6 Jahr“');
+        }
+        $this->assertSame(11, $result['linked']);
+        $this->assertSame(0, ResalePeriodLink::query()->whereIn('subscription_id', [$other->id, $exchange->id])->count(), 'die andere Domain und das Lizenz-Abo bekommen nichts von den Domainpositionen');
+        $this->assertSame(0, $result['lines_without_subscription'], 'Domainpositionen zählen nicht als Lizenzpositionen ohne Abo');
+    }
+
     public function test_retroactive_four_year_line_fills_the_oldest_periods_of_its_contract(): void {
         // Marina-Vulkan-Muster: vier Jahre eines 1er-Vertrags im August 2025 als „48 Monat" nachberechnet,
         // daneben ein zweiter Vertrag ab Mai 2025 mit einer 12er-Position auf derselben Rechnung.
