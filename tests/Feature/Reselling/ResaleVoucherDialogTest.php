@@ -17,7 +17,7 @@ use App\Models\Integration\ExternalReference;
 use App\Models\Reselling\ResaleSubscription;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\{LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
-use App\Services\Reselling\Register\{PeriodLinker, PeriodPlanner};
+use App\Services\Reselling\Register\{LicenseMonths, PeriodLinker, PeriodPlanner};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -90,6 +90,8 @@ class ResaleVoucherDialogTest extends TestCase {
             ->assertSee(__('resale.voucher.compare.date_ok', ['days' => 0]))
             ->assertSee(__('resale.voucher.compare.service_ok'))
             ->assertSee(__('resale.voucher.compare.article_ok'))
+            ->assertSee(__('resale.voucher.compare.line', ['line' => LicenseMonths::label(12.0, 12.0), 'raw' => '12 Monat', 'needed' => LicenseMonths::label(12.0, 12.0), 'covers' => LicenseMonths::label(12.0, 12.0)]))
+            ->assertSee(__('resale.link.licence_months_only', ['months' => '12']))
             ->assertSee($period->label())
             ->assertSee(__('resale.voucher.none_consumed'), false);
 

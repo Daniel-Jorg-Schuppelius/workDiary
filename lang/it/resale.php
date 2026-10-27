@@ -524,7 +524,8 @@ return [
             'service_none' => 'Nessun periodo di prestazione sul documento: conta la data fattura',
             'article_ok' => 'L’articolo corrisponde all’abbonamento',
             'article_off' => 'L’articolo differisce dall’abbonamento o non è assegnato',
-            'line' => 'Riga: :quantity :unit — periodo: :period licenze × :months mesi',
+            'line' => 'Riga :line (:raw) — il periodo richiede :needed — questo collegamento copre :covers',
+            'line_unlinked' => 'Riga :line (:raw) — il periodo richiede :needed — nessun collegamento di questa riga a questo periodo',
         ],
     ],
     // Reiterbeschriftungen (kurz — die Seitentitel stehen in den Gruppen).

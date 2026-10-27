@@ -524,7 +524,8 @@ return [
             'service_none' => 'Kein Leistungszeitraum auf dem Beleg — das Rechnungsdatum zählt',
             'article_ok' => 'Artikel entspricht dem Abo',
             'article_off' => 'Artikel weicht vom Abo ab oder ist nicht zugeordnet',
-            'line' => 'Position: :quantity :unit — Periode: :period Lizenzen × :months Mon.',
+            'line' => 'Position :line (:raw) — Periode braucht :needed — dieser Bezug deckt :covers',
+            'line_unlinked' => 'Position :line (:raw) — Periode braucht :needed — noch kein Bezug dieser Position an diese Periode',
         ],
     ],
     // Reiterbeschriftungen (kurz — die Seitentitel stehen in den Gruppen).

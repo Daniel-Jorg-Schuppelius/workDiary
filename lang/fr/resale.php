@@ -524,7 +524,8 @@ return [
             'service_none' => 'Pas de période de prestation sur la pièce — la date de facture compte',
             'article_ok' => 'L’article correspond à l’abonnement',
             'article_off' => 'L’article diffère de l’abonnement ou n’est pas affecté',
-            'line' => 'Ligne : :quantity :unit — période : :period licences × :months mois',
+            'line' => 'Ligne :line (:raw) — la période requiert :needed — ce lien couvre :covers',
+            'line_unlinked' => 'Ligne :line (:raw) — la période requiert :needed — pas encore de lien de cette ligne vers cette période',
         ],
     ],
     // Reiterbeschriftungen (kurz — die Seitentitel stehen in den Gruppen).
