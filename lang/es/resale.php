@@ -1122,6 +1122,8 @@ return [
         'subtitle' => 'Por cuenta de proveedor: licencias por producto, titulares con cantidades y los años de licencia con factura o hueco.',
         'empty' => 'Aún no hay cuentas de licencias; las suscripciones llegan por importación o diálogo.',
         'due_empty' => 'Todos los periodos vencidos están facturados.',
+        'products_more' => '+ :count más',
+        'products_domains' => '{1} dominio|[2,*] dominios',
         'summary' => [
             'accounts' => 'Cuentas de licencias',
             'open' => 'Periodos vencidos sin factura',

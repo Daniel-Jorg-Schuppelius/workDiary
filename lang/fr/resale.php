@@ -1122,6 +1122,8 @@ return [
         'subtitle' => 'Par compte fournisseur : licences par produit, détenteurs avec quantités et années de licence avec facture ou manque.',
         'empty' => 'Pas encore de comptes de licences : les abonnements arrivent par import ou dialogue.',
         'due_empty' => 'Toutes les périodes échues sont facturées.',
+        'products_more' => '+ :count autres',
+        'products_domains' => '{1} domaine|[2,*] domaines',
         'summary' => [
             'accounts' => 'Comptes de licences',
             'open' => 'Périodes échues sans facture',

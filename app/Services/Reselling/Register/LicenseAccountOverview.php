@@ -27,12 +27,15 @@ use Illuminate\Support\Collection;
  * Verträgen samt Vorgängern und Prüffällen an den Bezügen.
  *
  * @phpstan-type HolderShare array{label: string, quantity: int}
- * @phpstan-type ProductRow array{key: string, label: string, quantity: int, holders: array<string, HolderShare>, allocated: int, conflict: int}
+ * @phpstan-type ProductRow array{key: string, label: string, quantity: int, holders: array<string, HolderShare>, allocated: int, conflict: int, domain: bool}
  * @phpstan-type GridCell array{period: ResalePeriod, vouchers: list<string>}
  * @phpstan-type GridRow array{subscription: ResaleSubscription, product: string, holder: string, cells: array<int, list<GridCell>>}
- * @phpstan-type OverviewRow array{group: LicenseAccountGroup, name: string, customer: \App\Models\Customer\Customer|null, partner: \App\Models\Customer\Customer|null, contracts: int, licences: int, products: list<HolderShare>, holders: array<string, HolderShare>, open: int, conflicts: int}
+ * @phpstan-type OverviewRow array{group: LicenseAccountGroup, name: string, customer: \App\Models\Customer\Customer|null, partner: \App\Models\Customer\Customer|null, contracts: int, licences: int, products: list<HolderShare>, products_more: int, domains: int, holders: array<string, HolderShare>, open: int, conflicts: int}
  */
 final class LicenseAccountOverview {
+    /** Produktzeilen je Konto in der Übersicht; der Rest steht als „+ n weitere“, Domains nur als Summe (Pilot 2026-10-27: 68 Domainzeilen in einer Zeile). */
+    public const OVERVIEW_PRODUCT_LINES = 5;
+
     public function __construct(
         private readonly LicenseAccounts $accounts,
         private readonly LinkAudit $audit,
@@ -60,11 +63,18 @@ final class LicenseAccountOverview {
             $products = $this->productRows($group, $allocations->get($group->key, collect()), $reference);
             $holders = [];
             $licences = 0;
+            $listed = [];
+            $domains = 0;
             foreach ($products as $product) {
                 $licences += $product['quantity'];
                 foreach ($product['holders'] as $key => $share) {
                     $holders[$key] ??= ['label' => $share['label'], 'quantity' => 0];
                     $holders[$key]['quantity'] += $share['quantity'];
+                }
+                if ($product['domain']) {
+                    $domains += $product['quantity'];
+                } else {
+                    $listed[] = ['label' => $product['label'], 'quantity' => $product['quantity']];
                 }
             }
             $open = 0;
@@ -80,7 +90,9 @@ final class LicenseAccountOverview {
                 'partner' => $group->partner(),
                 'contracts' => $group->headContracts()->count(),
                 'licences' => $licences,
-                'products' => array_map(static fn(array $p): array => ['label' => $p['label'], 'quantity' => $p['quantity']], $products),
+                'products' => array_slice($listed, 0, self::OVERVIEW_PRODUCT_LINES),
+                'products_more' => max(0, count($listed) - self::OVERVIEW_PRODUCT_LINES),
+                'domains' => $domains,
                 'holders' => $holders,
                 'open' => $open,
                 'conflicts' => (int) array_sum(array_map(static fn(array $p): int => $p['conflict'] > 0 ? 1 : 0, $products)),
@@ -259,7 +271,7 @@ final class LicenseAccountOverview {
                 continue;
             }
             $key = $contract->productKey();
-            $products[$key] ??= ['key' => $key, 'label' => $contract->productName(), 'quantity' => 0, 'holders' => [], 'allocated' => 0, 'conflict' => 0];
+            $products[$key] ??= ['key' => $key, 'label' => $contract->productName(), 'quantity' => 0, 'holders' => [], 'allocated' => 0, 'conflict' => 0, 'domain' => $contract->isDomain()];
             $products[$key]['quantity'] += (int) $contract->quantity;
             $this->addShare($products[$key]['holders'], $contract->holderKey(), $contract->holderLabel(), $contract->billableQuantityOn($reference));
             foreach ($contract->assignments as $assignment) {
@@ -273,7 +285,7 @@ final class LicenseAccountOverview {
                 continue;
             }
             $productKey = (string) $allocation->product_key;
-            $products[$productKey] ??= ['key' => $productKey, 'label' => (string) $allocation->product_label, 'quantity' => 0, 'holders' => [], 'allocated' => 0, 'conflict' => 0];
+            $products[$productKey] ??= ['key' => $productKey, 'label' => (string) $allocation->product_label, 'quantity' => 0, 'holders' => [], 'allocated' => 0, 'conflict' => 0, 'domain' => false];
             $products[$productKey]['allocated'] += (int) $allocation->quantity;
         }
         foreach ($products as &$product) {

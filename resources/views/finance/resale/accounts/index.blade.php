@@ -50,11 +50,18 @@
                     <td class="text-sm">{{ $group->provider->label() }}</td>
                     <td class="text-right tabular-nums">{{ $row['contracts'] }}</td>
                     <td class="text-sm">
-                        @forelse ($row['products'] as $product)
+                        {{-- Höchstens fünf Produktzeilen, Domains nur als Summe — die volle Liste steht auf der Kontoseite. --}}
+                        @foreach ($row['products'] as $product)
                             <span class="block whitespace-nowrap"><span class="tabular-nums font-medium">{{ $product['quantity'] }} ×</span> {{ $product['label'] }}</span>
-                        @empty
+                        @endforeach
+                        @if ($row['products_more'] > 0)
+                            <a href="{{ route('finance.resale.accounts.show', $group->routeKey()) }}" class="block text-xs link link-hover text-muted">{{ __('resale.account.products_more', ['count' => $row['products_more']]) }}</a>
+                        @endif
+                        @if ($row['domains'] > 0)
+                            <span class="block whitespace-nowrap"><span class="tabular-nums font-medium">{{ $row['domains'] }} ×</span> {{ trans_choice('resale.account.products_domains', $row['domains']) }}</span>
+                        @elseif ($row['products'] === [])
                             <span class="text-muted">—</span>
-                        @endforelse
+                        @endif
                     </td>
                     <td class="text-sm">
                         @foreach ($row['holders'] as $holder)

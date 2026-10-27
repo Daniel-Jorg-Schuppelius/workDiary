@@ -1122,6 +1122,8 @@ return [
         'subtitle' => 'Je Anbieterkonto: Lizenzen je Produkt, Halter mit Mengen und die Lizenzjahre mit Rechnung oder Lücke.',
         'empty' => 'Noch keine Lizenzkonten — Abos kommen über Import oder Dialog.',
         'due_empty' => 'Alle fälligen Perioden sind berechnet.',
+        'products_more' => '+ :count weitere',
+        'products_domains' => '{1} Domain|[2,*] Domains',
         'summary' => [
             'accounts' => 'Lizenzkonten',
             'open' => 'Fällige Perioden ohne Rechnung',

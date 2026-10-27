@@ -1122,6 +1122,8 @@ return [
         'subtitle' => 'Per conto fornitore: licenze per prodotto, intestatari con quantità e anni di licenza con fattura o lacuna.',
         'empty' => 'Ancora nessun conto licenze: gli abbonamenti arrivano da importazione o finestra.',
         'due_empty' => 'Tutti i periodi scaduti sono fatturati.',
+        'products_more' => '+ :count altri',
+        'products_domains' => '{1} dominio|[2,*] domini',
         'summary' => [
             'accounts' => 'Conti licenze',
             'open' => 'Periodi scaduti senza fattura',
