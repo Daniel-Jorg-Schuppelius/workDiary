@@ -1,7 +1,7 @@
 ---
 title: "Suscripciones y licencias"
 topic: finance.resale
-version: 5
+version: 6
 keywords:
     - Vista previa de importación
     - Acciones masivas
@@ -265,7 +265,10 @@ cubrir). El comando `lexoffice:repair-resale-links` vuelve a enganchar esos
 vínculos mediante número de factura y posición de licencia; lo que no es
 unívoco solo se lista (--dry-run muestra de antemano qué pasaría).
 
-**Cuenta de licencias:** La pestaña *Cuentas de licencias* muestra por cuenta
+**Cuenta de licencias:** Una cuenta lleva el nombre de su titular; si la
+factura va a un socio, este se muestra al lado («vía LDS Systems»), y las
+plantillas periódicas del socio aparecen solo en la cuenta del cliente final
+al que están asignadas. La pestaña *Cuentas de licencias* muestra por cuenta
 de proveedor (número de cliente en el proveedor, incluidos los predecesores
 de un cambio de proveedor) cuántas licencias por producto están activas,
 quién las tiene y qué año de licencia está facturado, como cuadrícula
@@ -290,8 +293,9 @@ registro las refleja (Lexoffice: a diario y tras la sincronización de
 comprobantes, solo lectura) y muestra en la cuenta de licencias por plantilla su
 estado, ritmo, próxima ejecución y las posiciones de licencia con las
 suscripciones que facturan. La asignación suscripción ↔ posición la propone la
-ejecución (mismo destinatario, artículo, cantidad; con varios clientes finales
-solo si se nombran): usted confirma, asigna a mano o quita. Los periodos de una
+ejecución — primero por la factura que la plantilla creó por última vez y que
+está asignada a un periodo, si no por mismo destinatario, artículo y cantidad
+(con varios clientes finales de un socio solo si se nombran): usted confirma, asigna a mano o quita. Los periodos de una
 suscripción con plantilla activa quedan fuera de la propuesta de factura. Las
 **comprobaciones existencias ↔ plan** avisan antes de la factura: suscripción
 sin plantilla, plantilla sin suscripción («Crear suscripción desde la plantilla»

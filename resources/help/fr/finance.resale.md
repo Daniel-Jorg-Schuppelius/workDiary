@@ -1,7 +1,7 @@
 ---
 title: "Abonnements & licences"
 topic: finance.resale
-version: 5
+version: 6
 keywords:
     - Aperçu d’import
     - Actions groupées
@@ -268,7 +268,10 @@ rattache ces liens via numéro de facture et ligne de licence ; ce qui n’est
 pas univoque est seulement listé (--dry-run montre à l’avance ce qui se
 passerait).
 
-**Compte de licences :** L'onglet *Comptes de licences* montre par compte
+**Compte de licences :** Un compte porte le nom de son détenteur ; si la
+facture va à un partenaire, celui-ci est indiqué à côté (« via LDS Systems »),
+et les modèles récurrents du partenaire n'apparaissent que dans le compte du
+client final auquel ils sont affectés. L'onglet *Comptes de licences* montre par compte
 fournisseur (numéro client chez le fournisseur, prédécesseurs d'un changement
 de fournisseur inclus) combien de licences par produit sont en cours, qui
 les détient et quelle année de licence est facturée — en grille produit ×
@@ -293,8 +296,10 @@ registre les reflète (Lexoffice : chaque jour et après la synchronisation des
 pièces, en lecture seule) et montre dans le compte de licences, par modèle,
 statut, rythme, prochaine exécution et les lignes de licence avec les
 abonnements qu'elles facturent. L'affectation abonnement ↔ ligne de modèle est
-proposée par le traitement (même destinataire, article, quantité ; avec
-plusieurs clients finaux seulement s'ils sont nommés) : vous confirmez,
+proposée par le traitement — d'abord via la facture que le modèle a créée en
+dernier et qui est affectée à une période, sinon via même destinataire,
+article et quantité (avec plusieurs clients finaux d'un partenaire seulement
+s'ils sont nommés) : vous confirmez,
 affectez à la main ou retirez. Les périodes d'un abonnement avec modèle actif
 sont exclues de la proposition de facture. Les **contrôles stock ↔ plan**
 signalent avant la facture : abonnement sans modèle, modèle sans abonnement

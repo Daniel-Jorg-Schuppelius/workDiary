@@ -1,7 +1,7 @@
 ---
 title: "Abos & Lizenzen"
 topic: finance.resale
-version: 5
+version: 6
 keywords:
     - Import-Vorschau
     - Sammelaktionen
@@ -250,7 +250,10 @@ neuen Positions-IDs neu aufgebaut, zeigen bestätigte Bezüge ins Leere
 Lizenzposition wieder an; was nicht eindeutig ist, wird nur gelistet
 (--dry-run zeigt vorab, was passieren würde).
 
-**Lizenzkonto:** Der Reiter *Lizenzkonten* zeigt je Anbieterkonto (Kundennummer
+**Lizenzkonto:** Ein Konto heißt nach seinem Halter; geht die Rechnung an
+einen Partner, steht er dabei („über LDS Systems“), und Serienvorlagen des
+Partners erscheinen nur in dem Endkunden-Konto, dem sie zugeordnet sind. Der
+Reiter *Lizenzkonten* zeigt je Anbieterkonto (Kundennummer
 beim Anbieter, Vorgänger eines Anbieterwechsels eingeschlossen), wie viele
 Lizenzen je Produkt laufen, wer sie hält und welches Lizenzjahr berechnet ist
 — als Raster Produkt × Halter × Jahr mit Rechnungsnummer oder „fehlt“. Halten
@@ -272,8 +275,10 @@ entstehen wiederkehrende Rechnungen dort als Serienvorlagen. Das Register
 spiegelt sie (Lexoffice: täglich und nach dem Belegsync, nur lesend) und zeigt
 im Lizenzkonto je Vorlage Status, Rhythmus, nächste Ausführung und die
 Lizenzpositionen mit den Abos, die sie berechnen. Die Zuordnung Abo ↔
-Vorlagenposition schlägt der Lauf vor (gleicher Empfänger, Artikel, Menge;
-bei mehreren Endkunden nur mit Nennung) — Sie bestätigen, ordnen von Hand zu
+Vorlagenposition schlägt der Lauf vor — zuerst über die Rechnung, die die
+Vorlage zuletzt erzeugt hat und die einer Periode zugeordnet ist, sonst über
+gleichen Empfänger, Artikel und Menge (bei mehreren Endkunden eines Partners
+nur mit Nennung) — Sie bestätigen, ordnen von Hand zu
 oder lösen. Perioden eines Abos mit laufender Vorlage lässt der
 Rechnungsvorschlag aus. **Prüfregeln Bestand ↔ Plan** melden vor der Rechnung:
 Abo ohne Vorlage, Vorlage ohne Abo („Abo aus Vorlage anlegen“ übernimmt

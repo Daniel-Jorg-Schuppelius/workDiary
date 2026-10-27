@@ -1,7 +1,7 @@
 ---
 title: "Subscriptions & Licences"
 topic: finance.resale
-version: 5
+version: 6
 keywords:
     - Import preview
     - Bulk actions
@@ -246,7 +246,10 @@ period counts as uncovered). The command `lexoffice:repair-resale-links`
 re-attaches such links via invoice number and licence line; what is not
 unambiguous is only listed (--dry-run shows beforehand what would happen).
 
-**License account:** The *License accounts* tab shows per provider account
+**License account:** An account is named after its holder; if the invoice
+goes to a partner, the partner is shown next to it (“via LDS Systems”), and
+the partner's recurring templates appear only in the end-customer account
+they are assigned to. The *License accounts* tab shows per provider account
 (customer number at the provider, including predecessors of a provider
 change) how many licences per product are running, who holds them and which
 licence year is invoiced — as a grid product × holder × year with invoice
@@ -268,8 +271,10 @@ recurring invoices are created there as recurring templates. The register
 mirrors them (Lexoffice: daily and after the voucher sync, read-only) and shows
 per template in the license account its status, rhythm, next run and the
 licence lines with the subscriptions they invoice. The subscription ↔ template
-line assignment is proposed by the run (same recipient, article, quantity; with
-several end customers only when named) — you confirm, assign manually or
+line assignment is proposed by the run — first via the invoice the template
+last created that is assigned to a period, otherwise via same recipient,
+article and quantity (with several end customers of a partner only when
+named) — you confirm, assign manually or
 remove. Periods of a subscription with a running template are left out of the
 invoice proposal. **Checks stock ↔ plan** report before the invoice: subscription
 without template, template without subscription ("Create subscription from

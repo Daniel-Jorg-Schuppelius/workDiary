@@ -42,6 +42,9 @@
                 <tr class="hover">
                     <td>
                         <a href="{{ route('finance.resale.accounts.show', $group->routeKey()) }}" class="link link-hover font-medium">{{ $row['name'] }}</a>
+                        @if ($row['partner'] !== null)
+                            <span class="block text-xs text-muted">{{ __('resale.holder.via', ['partner' => $row['partner']->name]) }}</span>
+                        @endif
                         <span class="block font-mono text-xs text-muted">{{ $group->account }}</span>
                     </td>
                     <td class="text-sm">{{ $group->provider->label() }}</td>

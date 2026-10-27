@@ -93,8 +93,8 @@ class HolderResolverTest extends TestCase {
         $this->foreign($partner, 'Klimpel Bäder GmbH');
         $resolver = new HolderResolver;
 
-        // Ohne Zuordnung: der Fremdkunde gewinnt vor dem gleichnamigen Kunden.
-        $this->assertSame(HolderResolver::SOURCE_FOREIGN, $resolver->resolve($this->organization, $this->company('Klimpel Bäder GmbH'))['source'] ?? null);
+        // Ohne Zuordnung: Kunde und gleichnamiger Fremdkunde sind nicht eindeutig — Inbox (Pilot 2026-10-27).
+        $this->assertNull($resolver->resolve($this->organization, $this->company('Klimpel Bäder GmbH')));
 
         // customer:<Sqid> — gespeichert schlägt Fremdkunde und Namensgleichheit.
         $stored = ['100001' => 'customer:' . $other->sqid];
@@ -178,6 +178,24 @@ class HolderResolverTest extends TestCase {
         $this->assertSame($exact->id, $resolver->resolve($this->organization, $this->company('Steuerbüro Kaik'))['foreign_customer_id'] ?? null);
     }
 
+    public function test_same_name_as_customer_and_as_end_customer_is_ambiguous(): void {
+        // Pilot 2026-10-27: „Thieme Transporte" ist Kunde UND Endkunde unter LDS — der Import darf nicht raten.
+        $lds = $this->customer('LDS Systems GmbH');
+        $direct = $this->customer('Thieme Transporte');
+        $viaPartner = $this->foreign($lds, 'Thieme Transporte');
+        $resolver = new HolderResolver;
+
+        $this->assertNull($resolver->resolve($this->organization, $this->company('Thieme Transporte')));
+        $suggestions = $resolver->suggestions($this->organization, 'Thieme Transporte');
+        $this->assertSame([$direct->id], $suggestions['customers']->pluck('id')->all());
+        $this->assertSame([$viaPartner->id], $suggestions['foreign']->pluck('id')->all());
+
+        // Archivierter Endkunde: wieder eindeutig, der Kunde gewinnt.
+        $viaPartner->forceFill(['archived_at' => now()])->save();
+        $resolver->reset();
+        $this->assertSame($direct->id, $resolver->resolve($this->organization, $this->company('Thieme Transporte'))['customer_id'] ?? null);
+    }
+
     public function test_run_cache_sees_new_master_data_only_after_reset(): void {
         $resolver = new HolderResolver;
         $company = $this->company('Neu Angelegt GmbH');
@@ -195,7 +213,10 @@ class HolderResolverTest extends TestCase {
         $foreign = $this->foreign($partner, 'Neu Angelegt GmbH');
         $this->assertSame(HolderResolver::SOURCE_CUSTOMER, $resolver->resolve($this->organization, $company)['source'] ?? null, 'Fremdkunden-Cache aus dem letzten Lauf');
         $resolver->reset();
-        $this->assertSame($foreign->id, $resolver->resolve($this->organization, $company)['foreign_customer_id'] ?? null, 'nach reset() gewinnt der Fremdkunde');
+        $this->assertNull($resolver->resolve($this->organization, $company), 'nach reset() sieht er beide: Kunde und Fremdkunde gleichen Namens → Inbox');
+        $customer->forceFill(['name' => 'Umbenannt GmbH', 'company' => 'Umbenannt GmbH'])->save();
+        $resolver->reset();
+        $this->assertSame($foreign->id, $resolver->resolve($this->organization, $company)['foreign_customer_id'] ?? null, 'ohne gleichnamigen Kunden trifft der Fremdkunde');
 
         $mapped = $resolver->resolve($this->organization, $this->company('Haus 24 GmbH', '100009'), ['100009' => 'partner:' . $partner->sqid]);
         $this->assertSame($mapped['foreign_customer_id'] ?? null, $resolver->resolve($this->organization, $this->company('Haus 24 GmbH', '100010'))['foreign_customer_id'] ?? null, 'selbst angelegter Fremdkunde ohne reset() sichtbar');

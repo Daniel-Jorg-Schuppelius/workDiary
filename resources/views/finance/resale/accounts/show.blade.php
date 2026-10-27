@@ -16,11 +16,13 @@
 
 @php
     $customer = $group->customer();
+    $partner = $group->partner();
     $compact = \App\View\Components\Resale\LicenceMonths::class;
+    $subtitle = $group->provider->label() . ' · ' . $group->account . ($partner !== null ? ' · ' . __('resale.holder.via', ['partner' => $partner->name]) : '');
 @endphp
 
 @section('content')
-    <x-index-page :title="__('resale.account.show_title', ['name' => $group->name()])" :subtitle="$group->provider->label() . ' · ' . $group->account"
+    <x-index-page :title="__('resale.account.show_title', ['name' => $group->name()])" :subtitle="$subtitle"
                   back-route="finance.resale.accounts.index" :back-label="__('resale.account.title')">
         <x-slot:actions>
             @if ($canManage && $products !== [])
@@ -304,6 +306,7 @@
                                                 <a href="{{ route('finance.resale.show', $link->subscription->sqid) }}" class="link link-hover">{{ $link->subscription->holderLabel() }}</a>
                                                 <span class="text-xs text-muted">· {{ $link->subscription->identityLabel() }} · ×{{ $link->quantity }}</span>
                                                 <x-status-badge size="xs" :tone="$link->origin->tone()" :label="$link->origin->label()" />
+                                                @if ($link->note)<span class="text-xs text-muted" title="{{ __('resale.plan.from_invoice', ['voucher' => $link->note]) }}">· {{ $link->note }}</span>@endif
                                                 @if ($canManage)
                                                     @if ($link->origin === \App\Enums\Reselling\LinkOrigin::Proposed)
                                                         <form method="POST" action="{{ route('finance.resale.accounts.plan.store', $group->routeKey()) }}" class="inline">

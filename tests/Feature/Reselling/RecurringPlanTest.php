@@ -13,14 +13,14 @@ declare(strict_types=1);
 namespace Tests\Feature\Reselling;
 
 use App\Enums\Reselling\LinkOrigin;
-use App\Models\Customer\Customer;
+use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Integration\ExternalReference;
-use App\Models\Reselling\{ResalePlanLink, ResaleSubscription};
+use App\Models\Reselling\{ResalePeriodLink, ResalePlanLink, ResaleSubscription};
 use App\Plugins\Lexoffice\LexofficePlugin;
-use App\Plugins\Lexoffice\Models\{LexofficeArticle, LexofficeRecurringTemplate, LexofficeVoucher};
+use App\Plugins\Lexoffice\Models\{LexofficeArticle, LexofficeRecurringTemplate, LexofficeVoucher, LexofficeVoucherLine};
 use App\Plugins\Lexoffice\Services\{LexofficeRecurringTemplateSync, LexofficeVoucherLineSync};
 use App\Services\Reselling\Plan\{PlanAudit, PlanLinkProposer, PlanWorkItemSource, RecurringPlans};
-use App\Services\Reselling\Register\{PeriodPlanner, ResaleInvoiceDraftService};
+use App\Services\Reselling\Register\{LicenseAccounts, PeriodPlanner, ResaleInvoiceDraftService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Concerns\WithOrganization;
@@ -247,6 +247,110 @@ class RecurringPlanTest extends TestCase {
         $this->assertSame('tpl-1', $voucher->fresh()?->recurring_template_id);
         $line = app(\App\Services\Reselling\Mirror\InvoiceMirror::class)->linesFor($this->organization, [$this->schub->id])->first();
         $this->assertSame('lexoffice:tpl-1', $line?->planKey);
+    }
+
+    /**
+     * Partner mit mehreren Endkunden (Pilot 2026-10-27, LDS Systems): Name und
+     * Artikel reichen nicht, die Rechnung aus der Vorlage führt zum Abo; das
+     * Konto heißt nach dem Halter und zeigt nur Vorlagen mit Bezug zu ihm; ein
+     * beendetes Altabo „über Partner" zieht die Partner-Vorlagen nicht in ein
+     * fremdes Konto.
+     */
+    public function test_partner_templates_are_linked_through_their_invoices_and_stay_out_of_other_accounts(): void {
+        $admin = $this->orgAdmin();
+        $lds = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'LDS Systems GmbH']);
+        ExternalReference::create([
+            'organization_id' => $this->organization->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+            'external_id' => 'c-lds', 'referenceable_type' => $lds->getMorphClass(), 'referenceable_id' => $lds->getKey(),
+        ]);
+        $klimpel = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $lds->id, 'name' => 'Klimpel Bäder', 'company' => 'Klimpel Bäder GmbH']);
+        $meyer = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $lds->id, 'name' => 'Meyer und Simson', 'company' => 'Meyer und Simson GmbH']);
+        $kaik = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Steuerberater C. Kaik']);
+        $kaikViaLds = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $lds->id, 'name' => 'Steuerbüro Kaik', 'company' => 'Steuerbüro Kaik']);
+        $endCustomer = function (string $externalId, string $account, ForeignCustomer $holder): ResaleSubscription {
+            $subscription = ResaleSubscription::query()->create([
+                'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'qualityhosting', 'external_id' => $externalId, 'provider_account' => $account,
+                'company_name' => $holder->company, 'label' => 'Exchange Online Plan 1', 'foreign_customer_id' => $holder->id, 'article_ref' => 'lex:' . $this->exchange->id,
+                'quantity' => 1, 'starts_on' => '2025-10-18', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto', 'status' => 'active', 'currency' => 'EUR', 'sale_unit_price' => '47.40',
+            ]);
+            (new PeriodPlanner)->sync($subscription);
+
+            return $subscription;
+        };
+        $klimpelSubscription = $endCustomer('CNLCON00160', 'CNL00020', $klimpel);
+        $meyerSubscription = $endCustomer('CNLCON00170', 'CNL00021', $meyer);
+        // Kaik: aktiv direkt, dazu ein beendetes Altabo als Endkunde von LDS im selben Konto.
+        ResaleSubscription::query()->create([
+            'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'qualityhosting', 'external_id' => 'CNLCON00121', 'provider_account' => 'CNL00022',
+            'company_name' => 'Steuerbüro Kaik', 'label' => 'Exchange Online Plan 1', 'customer_id' => $kaik->id, 'article_ref' => 'lex:' . $this->exchange->id,
+            'quantity' => 1, 'starts_on' => '2025-09-17', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto', 'status' => 'active', 'currency' => 'EUR', 'sale_unit_price' => '47.40',
+        ]);
+        ResaleSubscription::query()->create([
+            'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'external_id' => 'alt-kaik', 'provider_account' => 'CNL00022',
+            'company_name' => 'Steuerbüro Kaik', 'label' => 'Exchange Online Plan 1', 'foreign_customer_id' => $kaikViaLds->id, 'article_ref' => 'lex:' . $this->exchange->id,
+            'quantity' => 1, 'starts_on' => '2021-09-17', 'ends_on' => '2022-09-17', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'cancel', 'status' => 'ended', 'currency' => 'EUR', 'sale_unit_price' => '47.40',
+        ]);
+
+        // Zwei Vorlagen an LDS mit derselben Position — ohne Endkundennamen.
+        $ldsAddress = ['contactId' => 'c-lds', 'name' => 'LDS Systems GmbH'];
+        $this->fakeApi([
+            ['title' => 'Rechnung Klimpel-Vorlage', 'address' => $ldsAddress] + $this->templateEntry('tpl-k'),
+            ['title' => 'Rechnung Meyer-Vorlage', 'address' => $ldsAddress] + $this->templateEntry('tpl-m'),
+        ], $this->exchangeLines(1));
+        (new LexofficeRecurringTemplateSync($this->organization->id))->sync($this->organization);
+        $templateLine = LexofficeRecurringTemplate::query()->where('external_id', 'tpl-k')->firstOrFail()->lines()->firstOrFail();
+
+        // Die letzte Rechnung aus tpl-k ist der Klimpel-Periode zugeordnet.
+        $voucher = LexofficeVoucher::create([
+            'organization_id' => $this->organization->id, 'external_id' => 'v-1140', 'contact_external_id' => 'c-lds', 'voucher_type' => 'invoice', 'recurring_template_id' => 'tpl-k',
+            'voucher_status' => 'paid', 'voucher_number' => 'RE/2026/1140', 'voucher_date' => '2026-10-18', 'total_amount' => 56.41, 'currency' => 'EUR', 'archived' => false, 'lines_synced_at' => now(),
+        ]);
+        $voucherLine = LexofficeVoucherLine::create([
+            'organization_id' => $this->organization->id, 'voucher_id' => $voucher->id, 'position' => $templateLine->position, 'type' => 'service',
+            'external_article_id' => self::ARTICLE, 'lexoffice_article_id' => $this->exchange->id, 'name' => 'Exchange Online (Plan 1)',
+            'quantity' => 12, 'unit_name' => 'Monat', 'unit_net' => '3.95', 'total_net' => '47.40', 'tax_rate' => 19, 'currency' => 'EUR',
+        ]);
+        $period = $klimpelSubscription->periods()->where('starts_on', '2026-10-18')->firstOrFail();
+        ResalePeriodLink::query()->create([
+            'organization_id' => $this->organization->id, 'period_id' => $period->id, 'subscription_id' => $klimpelSubscription->id, 'linkable_type' => $voucherLine->getMorphClass(), 'linkable_id' => $voucherLine->id,
+            'voucher_number' => 'RE/2026/1140', 'voucher_date' => '2026-10-18', 'quantity' => 1, 'months' => 12, 'currency' => 'EUR', 'origin' => 'auto', 'confirmed_at' => now(),
+        ]);
+
+        $proposal = app(PlanLinkProposer::class)->propose($this->organization);
+
+        $link = ResalePlanLink::query()->where('plan_key', 'lexoffice:tpl-k')->sole();
+        $this->assertSame($klimpelSubscription->id, (int) $link->subscription_id, 'Rechnungsbezug schlägt die Mehrdeutigkeit zweier Endkunden');
+        $this->assertSame('RE/2026/1140', $link->note);
+        $this->assertSame(0, ResalePlanLink::query()->where('plan_key', 'lexoffice:tpl-m')->count(), 'ohne Rechnung und ohne Namen kein Vorschlag');
+        $this->assertSame(1, $proposal['unmatched']);
+        $this->assertSame(0, ResalePlanLink::query()->where('subscription_id', $meyerSubscription->id)->count());
+
+        // Konten: Name ist der Halter, der Partner steht dabei; nur Vorlagen mit Bezug erscheinen.
+        $groups = app(LicenseAccounts::class)->groups($this->organization);
+        $klimpelGroup = $groups['qualityhosting:CNL00020'];
+        $this->assertSame('Klimpel Bäder', $klimpelGroup->name());
+        $this->assertSame($lds->id, $klimpelGroup->partner()?->id);
+        $this->assertSame($lds->id, $klimpelGroup->customer()?->id, 'Rechnungsempfänger bleibt der Partner');
+        $this->assertSame('Steuerberater C. Kaik', $groups['qualityhosting:CNL00022']->name());
+        $this->assertNull($groups['qualityhosting:CNL00022']->partner());
+
+        $index = $this->actingAs($admin)->get(route('finance.resale.accounts.index'))->assertOk();
+        $index->assertSee('Klimpel Bäder')->assertSee(__('resale.holder.via', ['partner' => 'LDS Systems GmbH']))->assertSee('Meyer und Simson');
+        $klimpelPage = $this->actingAs($admin)->get(route('finance.resale.accounts.show', 'qualityhosting:CNL00020'))->assertOk();
+        $klimpelPage->assertSee('Rechnung Klimpel-Vorlage')->assertSee('RE/2026/1140')->assertDontSee('Rechnung Meyer-Vorlage');
+        $meyerPage = $this->actingAs($admin)->get(route('finance.resale.accounts.show', 'qualityhosting:CNL00021'))->assertOk();
+        $meyerPage->assertDontSee('Rechnung Klimpel-Vorlage')->assertDontSee('Rechnung Meyer-Vorlage')->assertSee(__('resale.plan.finding.subscription_without_plan_short'));
+        $kaikPage = $this->actingAs($admin)->get(route('finance.resale.accounts.show', 'qualityhosting:CNL00022'))->assertOk();
+        $kaikPage->assertDontSee('Rechnung Meyer-Vorlage')->assertDontSee('Rechnung Klimpel-Vorlage')->assertDontSee(__('resale.plan.finding.plan_without_subscription_short'));
+
+        // Prüfregeln: je Konto keine Partner-Vorlage „ohne Abo"; organisationsweit bleibt tpl-m als Befund.
+        $audit = app(PlanAudit::class);
+        $kinds = static fn(array $findings): array => array_count_values(array_column($findings, 'kind'));
+        $this->assertArrayNotHasKey(PlanAudit::PLAN_WITHOUT_SUBSCRIPTION, $kinds($audit->findings($this->organization, [$meyerSubscription->id])));
+        $this->assertSame(1, $kinds($audit->findings($this->organization, [$meyerSubscription->id]))[PlanAudit::SUBSCRIPTION_WITHOUT_PLAN] ?? 0);
+        $kaikIds = array_values(array_map('intval', $groups['qualityhosting:CNL00022']->subscriptions->pluck('id')->all()));
+        $this->assertArrayNotHasKey(PlanAudit::PLAN_WITHOUT_SUBSCRIPTION, $kinds($audit->findings($this->organization, $kaikIds)));
+        $this->assertSame(1, $kinds($audit->findings($this->organization))[PlanAudit::PLAN_WITHOUT_SUBSCRIPTION] ?? 0, 'tpl-m organisationsweit');
     }
 
     public function test_scheduled_command_mirrors_templates_and_proposes_links(): void {
