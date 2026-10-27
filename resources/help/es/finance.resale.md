@@ -1,7 +1,7 @@
 ---
 title: "Suscripciones y licencias"
 topic: finance.resale
-version: 7
+version: 8
 keywords:
     - Vista previa de importación
     - Acciones masivas
@@ -310,19 +310,23 @@ activa, próxima ejecución a más de siete días del inicio del periodo, últim
 ejecución fallida: en el mosaico, el resumen semanal y la cola de trabajo. Cada
 factura reflejada lleva la referencia a su plantilla.
 
-**Resumen y pestañas:** La entrada «Suscripciones y licencias» ya no muestra
-la lista de suscripciones sino una **lista de tareas**: periodos vencidos
-sin factura (con importe abierto), propuestas sin confirmar, incidencias en
-vínculos de factura, incidencias en plantillas recurrentes, repartos por
-encima del inventario, suscripciones sin titular, renovaciones o finales en
-30 días y exportaciones de proveedor desactualizadas — cada fila con número
-y salto a la pantalla donde se decide. Al lado, el **estado**: la última
-ejecución de propuestas (con «Calcular propuestas») y por proveedor la
-última importación con su antigüedad. Las pestañas siguen el flujo: Resumen
-· Cuentas de licencia · Conciliación · Periodos · Bandeja │ Suscripciones ·
-Inventario de licencias · Compras │ Informes · Precios; la clasificación de
-productos y la facturación están en el menú ⋯. La lista de suscripciones se
-abre con «Suscripciones».
+**Resumen y pestañas:** La entrada «Suscripciones y licencias» es una
+**lista de tareas en cuatro grupos**: Facturar (prestación vencida sin
+factura, solo tras 21 días de carencia y nunca mientras una plantilla
+periódica activa tenga aún pendiente su ejecución para el periodo; además
+incidencias en vínculos de factura, repartos por encima del inventario,
+licencias por unidad sin factura), Asignar (suscripciones sin titular,
+posiciones de licencia sin suscripción), Revisar plan (incidencias en
+plantillas recurrentes, es decir, lo que la próxima factura haría mal) y
+Estado del proveedor (importaciones desactualizadas, renovaciones en 30
+días). Cada fila muestra número e importe y salta a la pantalla donde se
+decide. Al lado, el **estado**: la última ejecución de propuestas, las
+propuestas sin confirmar como muestreo, los periodos planificados por
+plantilla o aún en carencia, por proveedor la última importación con su
+antigüedad. Cuatro pestañas: Resumen · Suscripciones · Facturación ·
+Informes; cuentas de licencia, conciliación, bandeja, inventario de
+licencias, compras y precios están en «Más áreas» y detrás de las tareas.
+La clasificación de productos y la facturación están en el menú ⋯.
 
 **Propuestas seguras e inseguras:** La ejecución de propuestas (cada hora y
 tras cada importación) confirma por sí misma las coincidencias seguras — un
@@ -330,9 +334,10 @@ comprobante cuya fecha de factura está como máximo 14 días antes y 45 días
 después del inicio del periodo y que cubre el periodo por completo con el
 número de licencias correcto; la confirmación figura en el registro como
 «confirmada automáticamente». Todo lo demás sigue siendo propuesta y lleva
-«insegura» con el motivo en la ayuda emergente. Por eso la página de
-periodos muestra por defecto «Propuestas sin confirmar»; el filtro «Solo
-problemas» y los mosaicos de estado se mantienen. Un clic en el número
+«insegura» con el motivo en la ayuda emergente. Las propuestas valen sin
+confirmación: la página de periodos muestra por defecto «Solo problemas»
+(abierto, parcial, en disputa); las propuestas sin confirmar se consultan
+como muestreo mediante el filtro y el estado del resumen. Un clic en el número
 de comprobante abre el comprobante: posiciones, periodo de prestación, texto
 de la factura, consumo por posición y la comparación con el periodo (fecha
 dentro de la ventana, prestación, artículo); así ve antes de confirmar si la

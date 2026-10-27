@@ -235,7 +235,8 @@ class LinkProposerTest extends TestCase {
         $this->assertTrue($p2025->isProposedOnly());
 
         $voucherSqid = \App\Support\Sqid::encode(\App\Plugins\Lexoffice\Models\LexofficeVoucher::class, LexofficeVoucher::query()->where('voucher_number', 'RE/2025/0820')->value('id'));
-        $this->actingAs($admin)->get(route('finance.resale.periods.index'))->assertOk()->assertSee('RE/2025/0820')->assertSee(__('resale.link.proposed_hint'))
+        // Vorschläge gelten (Phase 163): auf der Periodenseite nur noch über den Filter „Unbestätigte Vorschläge" (Stichprobe).
+        $this->actingAs($admin)->get(route('finance.resale.periods.index', ['status' => 'proposed']))->assertOk()->assertSee('RE/2025/0820')->assertSee(__('resale.link.proposed_hint'))
             ->assertSee(route('lexoffice.vouchers.preview', $voucherSqid), false);
 
         // Bestätigen

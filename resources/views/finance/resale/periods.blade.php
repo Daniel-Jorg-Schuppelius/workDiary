@@ -47,7 +47,7 @@
 
         @if ($unlinked->isNotEmpty())
             {{-- Lizenzpositionen ohne Abo: fehlende Abos oder falsche Halter finden (die neuesten 100, Gesamtzahl im Titel). --}}
-            <details class="collapse collapse-arrow border border-base-300 bg-base-100 mb-4">
+            <details id="unlinked" class="collapse collapse-arrow border border-base-300 bg-base-100 mb-4" {{ request()->boolean('unlinked') ? 'open' : '' }}>
                 <summary class="collapse-title text-sm font-medium">{{ trans_choice('resale.unlinked.title', $unlinkedTotal, ['count' => $unlinkedTotal]) }}</summary>
                 <div class="collapse-content p-0">
                     <p class="px-4 pb-2 text-xs text-muted">{{ __('resale.unlinked.hint') }}@if ($unlinkedTotal > $unlinked->count()) {{ __('resale.link_ui.unlinked_truncated', ['shown' => $unlinked->count()]) }}@endif</p>
@@ -59,6 +59,7 @@
                                 <x-table.th>{{ __('resale.field.article') }}</x-table.th>
                                 <x-table.th class="text-right">{{ __('resale.field.quantity') }}</x-table.th>
                                 <x-table.th>{{ __('resale.unlinked.text') }}</x-table.th>
+                                <x-table.th class="text-right"></x-table.th>
                             </tr>
                         </x-slot:head>
                         @foreach ($unlinked as $line)
@@ -74,6 +75,45 @@
                                 <td class="text-sm">{{ $line->label() }}</td>
                                 <td class="text-right tabular-nums whitespace-nowrap"><x-resale.licence-months :value="$line->quantity" />{{ $line->unitName ? ' ' . $line->unitName : '' }}</td>
                                 <td class="text-xs max-w-xs truncate" title="{{ $line->voucherText }}">{{ $line->voucherTextHint ?? \Illuminate\Support\Str::limit((string) $line->voucherText, 70) }}</td>
+                                <td class="text-right">
+                                    @if ($canManage)
+                                        {{-- Abo anlegen (vorbelegt aus der Position) oder dauerhaft ausblenden (Phase 163, MVP-1432). --}}
+                                        <div class="flex items-center justify-end gap-1">
+                                            <x-icon-btn icon="add" size="xs" tone="primary" data-entry-modal-trigger :href="route('finance.resale.create', ['line' => $line->key])" :title="__('resale.unlinked.create')" />
+                                            <form method="POST" action="{{ route('finance.resale.periods.unlinked.ignore') }}" class="inline" data-confirm-dialog data-confirm-message="{{ __('resale.unlinked.ignore_confirm') }}" data-confirm-label="{{ __('resale.unlinked.ignore') }}">
+                                                @csrf
+                                                <input type="hidden" name="key" value="{{ $line->key }}">
+                                                <x-icon-btn icon="visibility_off" size="xs" tone="ghost" type="submit" :title="__('resale.unlinked.ignore')" />
+                                            </form>
+                                        </div>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </x-table>
+                </div>
+            </details>
+        @endif
+        @if ($ignored->isNotEmpty())
+            <details class="collapse collapse-arrow border border-base-300 bg-base-100 mb-4">
+                <summary class="collapse-title text-sm font-medium text-muted">{{ trans_choice('resale.unlinked.ignored_title', $ignored->count(), ['count' => $ignored->count()]) }}</summary>
+                <div class="collapse-content p-0">
+                    <x-table bare>
+                        @foreach ($ignored as $row)
+                            @php $line = $ignoredLines[$row->linkable_type . ':' . $row->linkable_id] ?? null; @endphp
+                            <tr>
+                                <td class="whitespace-nowrap"><span class="font-mono text-xs">{{ $line?->voucherNumber ?? '—' }}</span> <span class="text-xs text-muted tabular-nums">{{ $line?->voucherDate?->fdate() }}</span></td>
+                                <td class="text-sm">{{ $line?->label() ?? __('resale.unlinked.error.missing') }}</td>
+                                <td class="text-xs text-muted">{{ $row->note }}@if ($row->creator !== null) · {{ $row->creator->name }}@endif · {{ $row->created_at?->fdate() }}</td>
+                                <td class="text-right">
+                                    @if ($canManage)
+                                        <form method="POST" action="{{ route('finance.resale.periods.unlinked.restore', $row->sqid) }}" class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <x-icon-btn icon="visibility" size="xs" tone="ghost" type="submit" :title="__('resale.unlinked.restore')" />
+                                        </form>
+                                    @endif
+                                </td>
                             </tr>
                         @endforeach
                     </x-table>
@@ -85,8 +125,8 @@
             <input type="search" name="q" value="{{ $filters['q'] }}" class="input input-sm input-bordered w-48"
                    placeholder="{{ __('resale.filter.search') }}" aria-label="{{ __('resale.filter.search') }}">
             <select name="status" class="select select-sm select-bordered w-56" aria-label="{{ __('resale.field.status') }}">
-                <option value="proposed" @selected($filters['status'] === 'proposed')>{{ __('resale.periods.filter_proposed') }}</option>
                 <option value="problems" @selected($filters['status'] === 'problems')>{{ __('resale.periods.filter_problems') }}</option>
+                <option value="proposed" @selected($filters['status'] === 'proposed')>{{ __('resale.periods.filter_proposed') }}</option>
                 <option value="all" @selected($filters['status'] === 'all')>{{ __('resale.periods.filter_all') }}</option>
                 @foreach ($statuses as $status)
                     <option value="{{ $status->value }}" @selected($filters['status'] === $status->value)>{{ $status->label() }}</option>
@@ -133,7 +173,7 @@
                 </tr>
             </x-slot:head>
             @forelse ($periods as $period)
-                @include('finance.resale._period_row', ['period' => $period, 'subscription' => $period->subscription, 'showSubscription' => true, 'canManage' => $canManage, 'today' => $today, 'bulk' => $canManage])
+                @include('finance.resale._period_row', ['period' => $period, 'subscription' => $period->subscription, 'showSubscription' => true, 'canManage' => $canManage, 'today' => $today, 'bulk' => $canManage, 'plannedNext' => $plannedNext])
             @empty
                 <x-table.empty :colspan="$canManage ? 10 : 9" icon="task_alt" :title="__('resale.periods.empty')" compact />
             @endforelse

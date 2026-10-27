@@ -158,6 +158,7 @@ final class AccountingVoucherMirrorSource implements InvoiceMirrorSource {
                     ->where('resale_period_links.linkable_type', $alias)
                     ->where('resale_period_links.organization_id', $organization->id);
             })
+            ->whereNotIn('accounting_voucher_lines.id', \App\Models\Reselling\ResaleIgnoredLine::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->where('linkable_type', $alias)->select('linkable_id'))
             ->orderByDesc('accounting_voucher_lines.id')
             ->limit(self::UNLINKED_SCAN)
             ->get();

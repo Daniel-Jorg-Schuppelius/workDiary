@@ -85,6 +85,38 @@ class ResaleOverviewTest extends TestCase {
         $this->actingAs($this->userWithRole('buchhaltung'))->get(route('finance.resale.index'))->assertOk();
     }
 
+    /**
+     * Ausnahmen statt Bestätigungen (Phase 163): eine fällige Periode wird erst
+     * nach der Karenz zur Aufgabe; Aufgaben stehen in vier Gruppen; vier Reiter
+     * plus „Weitere Bereiche".
+     */
+    public function test_grace_period_groups_and_four_tabs(): void {
+        $admin = $this->orgAdmin();
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH']);
+        $this->subscription(['customer_id' => $customer->id, 'starts_on' => '2026-08-25']); // 10 Tage fällig: in Karenz
+        $this->subscription(['customer_id' => $customer->id, 'starts_on' => '2026-08-01', 'label' => 'Exchange Online (Plan 1)']); // 34 Tage: Aufgabe
+
+        $overview = app(ResaleOverview::class)->build($this->organization);
+        $byKey = array_column($overview['tasks'], null, 'key');
+        $this->assertSame(1, $byKey['open']['count'], 'nur die Periode nach der Karenz');
+        $this->assertSame('berechnen', $byKey['open']['group']);
+        $this->assertSame(1, $overview['summary']['grace']);
+        $this->assertSame(0, $overview['summary']['planned']);
+        $this->assertSame(ResaleOverview::GROUPS, $overview['groups']);
+        $this->assertStringContainsString((string) ResaleOverview::GRACE_DAYS, (string) $byKey['open']['detail']);
+
+        $page = $this->actingAs($admin)->get(route('finance.resale.index'))->assertOk();
+        $page->assertSee(__('resale.overview.group.berechnen'))
+            ->assertSee(__('resale.overview.kpi.open'))
+            ->assertSee(__('resale.overview.state.grace', ['days' => ResaleOverview::GRACE_DAYS]))
+            ->assertSee(__('resale.tab.billing'))->assertSee(__('resale.tab.more'))
+            ->assertSee(route('finance.resale.accounts.index'), false)
+            ->assertSee(route('finance.resale.reconcile.index'), false)
+            ->assertSee(route('finance.resale.prices'), false)
+            ->assertSee(__('resale.overview.state.proposed')); // Stichprobe im Stand, keine Aufgabe
+        $this->assertArrayNotHasKey('proposed', $byKey);
+    }
+
     public function test_subscription_list_lives_on_its_own_route_with_filters(): void {
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH']);
         $this->subscription(['customer_id' => $customer->id, 'label' => 'Kundenabo Exchange']);

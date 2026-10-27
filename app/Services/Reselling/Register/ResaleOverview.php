@@ -16,6 +16,7 @@ use App\Enums\Reselling\{ImportStatus, LinkOrigin, PeriodStatus, SubscriptionPro
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResaleImport, ResalePeriod, ResaleSubscription};
 use App\Services\Reselling\License\LicenseInvoiceLinks;
+use App\Services\Reselling\Mirror\InvoiceMirror;
 use App\Services\Reselling\Plan\{PlanAudit, RecurringPlans};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
@@ -29,7 +30,7 @@ use Illuminate\Database\Eloquent\Builder;
  * dazu der Stand je Anbieter (letzter Import) und der letzte Vorschlagslauf.
  * Nur Zähler und Verweise; entschieden wird auf den Fachseiten.
  *
- * @phpstan-type Task array{key: string, tone: string, icon: string, title: string, detail: string|null, count: int, url: string, dialog: bool, manage: bool}
+ * @phpstan-type Task array{group: string, key: string, tone: string, icon: string, title: string, detail: string|null, count: int, url: string, dialog: bool, manage: bool}
  * @phpstan-type ImportState array{provider: SubscriptionProvider, last: ResaleImport|null, age: int|null, stale: bool}
  */
 final class ResaleOverview {
@@ -38,22 +39,52 @@ final class ResaleOverview {
 
     public const RENEWAL_DAYS = 30;
 
+    /** Karenz (Phase 163, MVP-1430): eine fällige Periode wird erst nach so vielen Tagen zur Aufgabe. */
+    public const GRACE_DAYS = 21;
+
+    /** Toleranz vor dem Periodenbeginn, in der die nächste Ausführung der Serienvorlage noch „für diese Periode“ zählt. */
+    public const PLAN_TOLERANCE_DAYS = 7;
+
+    /** Aufgabengruppen des Überblicks in Anzeigereihenfolge (Phase 163, MVP-1433). */
+    public const GROUPS = ['berechnen', 'zuordnen', 'plan', 'anbieter'];
+
     public function __construct(
         private readonly LicenseAccountOverview $accounts,
         private readonly PlanAudit $planAudit,
         private readonly RecurringPlans $plans,
         private readonly ResaleRenewalReport $renewals,
         private readonly LicenseInvoiceLinks $licenseLinks,
+        private readonly InvoiceMirror $mirror,
     ) {}
 
     /**
-     * @return array{summary: array{active: int, open: int, open_amount: string, proposed: int, unassigned: int, findings: int}, tasks: list<Task>, imports: list<ImportState>, last_run: CarbonImmutable|null}
+     * @return array{summary: array{active: int, open: int, open_amount: string, grace: int, planned: int, proposed: int, unassigned: int, unlinked: int, findings: int}, groups: list<string>, tasks: list<Task>, imports: list<ImportState>, last_run: CarbonImmutable|null}
      */
     public function build(Organization $organization, ?CarbonImmutable $reference = null): array {
         $reference ??= ResalePeriod::today();
         $due = ResalePeriod::query()->where('starts_on', '<', DateRange::dayAfter($reference))
             ->whereHas('subscription', static fn(Builder $s) => $s->where('is_own_holding', false));
-        $open = (clone $due)->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value])->with('links')->get();
+        $openAll = (clone $due)->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value])->with('links')->orderBy('starts_on')->get();
+        // Ausnahmen statt Bestätigungen (Phase 163): Aufgabe erst nach der Karenz und nicht, solange eine
+        // aktive Serienvorlage ihre Ausführung für diese Periode noch vor sich hat.
+        $nextExecutions = $this->plans->nextExecutions($organization);
+        $graceLimit = $reference->subDays(self::GRACE_DAYS);
+        $open = collect();
+        $grace = 0;
+        $planned = 0;
+        foreach ($openAll as $period) {
+            if (self::isPlanned($period, $nextExecutions[(int) $period->subscription_id] ?? null)) {
+                $planned++;
+
+                continue;
+            }
+            if ($period->starts_on->greaterThan($graceLimit)) {
+                $grace++;
+
+                continue;
+            }
+            $open->push($period);
+        }
         /** @var array<string, Money> $amounts */
         $amounts = [];
         foreach ($open as $period) {
@@ -65,12 +96,14 @@ final class ResaleOverview {
             $amounts[$code] = isset($amounts[$code]) ? $amounts[$code]->plus($amount) : $amount;
         }
         $openAmount = implode(' · ', array_map(static fn(Money $m): string => $m->withScale(2)->format(), array_values($amounts)));
+        // Vorschläge gelten (Phase 163, MVP-1429): unbestätigte sind Stichprobe, keine Aufgabe.
         $proposed = (clone $due)
             ->whereIn('status', [PeriodStatus::Billed->value, PeriodStatus::Partial->value])
             ->whereNull('decided_at')
             ->whereHas('links', static fn(Builder $l) => $l->where('origin', LinkOrigin::Proposed->value))
             ->count();
         $unassigned = ResaleSubscription::query()->planning()->unassigned()->count();
+        $unlinked = $this->mirror->unlinkedLines($organization, 1)['total'];
 
         $accountRows = $this->accounts->overview($organization, $reference);
         $allocationConflicts = (int) array_sum(array_column($accountRows, 'conflicts'));
@@ -81,29 +114,44 @@ final class ResaleOverview {
         $stale = array_values(array_filter($imports, static fn(array $i): bool => $i['stale']));
 
         $tasks = [];
-        $this->task($tasks, 'open', 'error', 'event_busy', $open->count(), $openAmount !== '' ? (string) __('resale.overview.task.open_detail', ['amount' => $openAmount]) : null, route('finance.resale.periods.index', ['status' => 'problems']));
-        $this->task($tasks, 'proposed', 'info', 'rule', $proposed, null, route('finance.resale.periods.index', ['status' => 'proposed']));
-        $this->task($tasks, 'link_findings', 'warning', 'link_off', (int) array_sum($linkFindings), $this->kindDetail($linkFindings, 'resale.account.finding.'), route('finance.resale.accounts.index'));
-        $this->task($tasks, 'plan_findings', 'warning', 'event_repeat', (int) array_sum($planFindings), $this->kindDetail($planFindings, 'resale.plan.finding.', '_short'), route('finance.resale.accounts.index'));
-        $this->task($tasks, 'allocation_conflicts', 'warning', 'call_split', $allocationConflicts, null, route('finance.resale.accounts.index'));
-        $this->task($tasks, 'unassigned', 'warning', 'inbox', $unassigned, null, route('finance.resale.inbox'), manage: true);
-        $this->task($tasks, 'unbilled_licenses', 'warning', 'key_off', $this->licenseLinks->unbilledCount($organization, $reference), (string) __('resale.overview.task.unbilled_licenses_detail', ['days' => LicenseInvoiceLinks::UNBILLED_DAYS]), route('finance.resale.licenses.index', ['status' => 'sold', 'unbilled' => 1]));
-        $this->task($tasks, 'renewals', 'neutral', 'autorenew', $renewals, (string) __('resale.overview.task.renewals_detail', ['days' => self::RENEWAL_DAYS]), route('finance.resale.report.renewals'));
-        $this->task($tasks, 'stale_imports', 'neutral', 'upload', count($stale), $stale === [] ? null : implode(' · ', array_map(static fn(array $i): string => $i['provider']->label() . ' (' . __('resale.overview.state.age', ['days' => $i['age']]) . ')', $stale)), route('finance.resale.import.create'), dialog: true, manage: true);
+        // Berechnen — was Geld kostet
+        $this->task($tasks, 'berechnen', 'open', 'error', 'event_busy', $open->count(), (string) __($openAmount !== '' ? 'resale.overview.task.open_detail' : 'resale.overview.task.open_detail_grace', ['amount' => $openAmount, 'days' => self::GRACE_DAYS]), route('finance.resale.periods.index', ['status' => 'problems']));
+        $this->task($tasks, 'berechnen', 'link_findings', 'warning', 'link_off', (int) array_sum($linkFindings), $this->kindDetail($linkFindings, 'resale.account.finding.'), route('finance.resale.accounts.index'));
+        $this->task($tasks, 'berechnen', 'allocation_conflicts', 'warning', 'call_split', $allocationConflicts, null, route('finance.resale.accounts.index'));
+        $this->task($tasks, 'berechnen', 'unbilled_licenses', 'warning', 'key_off', $this->licenseLinks->unbilledCount($organization, $reference), (string) __('resale.overview.task.unbilled_licenses_detail', ['days' => LicenseInvoiceLinks::UNBILLED_DAYS]), route('finance.resale.licenses.index', ['status' => 'sold', 'unbilled' => 1]));
+        // Zuordnen — was das Register noch nicht erklären kann
+        $this->task($tasks, 'zuordnen', 'unassigned', 'warning', 'inbox', $unassigned, null, route('finance.resale.inbox'), manage: true);
+        $this->task($tasks, 'zuordnen', 'unlinked', 'warning', 'playlist_add', $unlinked, (string) __('resale.overview.task.unlinked_detail'), route('finance.resale.periods.index', ['unlinked' => 1]), manage: true);
+        // Plan prüfen — was die nächste Rechnung falsch macht
+        $this->task($tasks, 'plan', 'plan_findings', 'warning', 'event_repeat', (int) array_sum($planFindings), $this->kindDetail($planFindings, 'resale.plan.finding.', '_short'), route('finance.resale.accounts.index'));
+        // Anbieterstand und Termine
+        $this->task($tasks, 'anbieter', 'stale_imports', 'neutral', 'upload', count($stale), $stale === [] ? null : implode(' · ', array_map(static fn(array $i): string => $i['provider']->label() . ' (' . __('resale.overview.state.age', ['days' => $i['age']]) . ')', $stale)), route('finance.resale.import.create'), dialog: true, manage: true);
+        $this->task($tasks, 'anbieter', 'renewals', 'neutral', 'autorenew', $renewals, (string) __('resale.overview.task.renewals_detail', ['days' => self::RENEWAL_DAYS]), route('finance.resale.report.renewals'));
 
         return [
             'summary' => [
                 'active' => ResaleSubscription::query()->planning()->count(),
                 'open' => $open->count(),
                 'open_amount' => $openAmount,
+                'grace' => $grace,
+                'planned' => $planned,
                 'proposed' => $proposed,
                 'unassigned' => $unassigned,
+                'unlinked' => $unlinked,
                 'findings' => (int) array_sum($linkFindings) + (int) array_sum($planFindings) + $allocationConflicts,
             ],
+            'groups' => self::GROUPS,
             'tasks' => $tasks,
             'imports' => $imports,
             'last_run' => LinkProposer::lastRunAt($organization),
         ];
+    }
+
+    /** Periode, deren Serienvorlage ihre Ausführung für sie noch vor sich hat (Toleranz vor dem Beginn): geplant, nicht offen. */
+    public static function isPlanned(ResalePeriod $period, ?CarbonImmutable $nextExecution): bool {
+        return $nextExecution !== null
+            && ! $nextExecution->lessThan($period->starts_on->subDays(self::PLAN_TOLERANCE_DAYS))
+            && ! $nextExecution->greaterThan($period->ends_on);
     }
 
     /**
@@ -180,11 +228,12 @@ final class ResaleOverview {
     /**
      * @param  list<Task>  $tasks
      */
-    private function task(array &$tasks, string $key, string $tone, string $icon, int $count, ?string $detail, string $url, bool $dialog = false, bool $manage = false): void {
+    private function task(array &$tasks, string $group, string $key, string $tone, string $icon, int $count, ?string $detail, string $url, bool $dialog = false, bool $manage = false): void {
         if ($count <= 0) {
             return;
         }
         $tasks[] = [
+            'group' => $group,
             'key' => $key,
             'tone' => $tone,
             'icon' => $icon,

@@ -21473,6 +21473,25 @@ CREATE TABLE `resale_article_classifications` (
   CONSTRAINT `resale_article_classifications_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `resale_ignored_lines`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `resale_ignored_lines` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `linkable_type` varchar(64) NOT NULL,
+  `linkable_id` bigint(20) unsigned NOT NULL,
+  `note` varchar(255) DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `resale_ignored_lines_uq` (`organization_id`,`linkable_type`,`linkable_id`),
+  KEY `resale_ignored_lines_created_by_foreign` (`created_by`),
+  CONSTRAINT `resale_ignored_lines_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `resale_ignored_lines_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `resale_imports`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -28404,3 +28423,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1036,'2027_04_01_1
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1037,'2027_04_01_150000_create_resale_provider_suppliers_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1038,'2027_04_01_160000_create_accounting_voucher_lines_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1039,'2027_04_01_170000_add_invoice_link_to_resale_license_assignments',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1040,'2027_04_01_180000_create_resale_ignored_lines_table',1);

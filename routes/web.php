@@ -3098,6 +3098,9 @@ Route::middleware('auth')->group(function () {
                 Route::post('perioden/sammel/bestaetigen', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'bulkConfirm'])->name('periods.bulk.confirm');
                 Route::get('perioden/sammel/verzichten', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'bulkWaiveCreate'])->name('periods.bulk.waive.create');
                 Route::post('perioden/sammel/verzichten', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'bulkWaive'])->name('periods.bulk.waive');
+                // Positionen ohne Abo bewusst ausblenden (Phase 163, MVP-1432) — feste Pfade vor {period}.
+                Route::post('perioden/positionen/ignorieren', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'ignoreLine'])->name('periods.unlinked.ignore');
+                Route::delete('perioden/positionen/{ignored}', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'restoreLine'])->name('periods.unlinked.restore');
                 Route::post('perioden/{period}/bestaetigen', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'confirm'])->name('periods.confirm');
                 Route::get('perioden/{period}/verzichten', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'waiveCreate'])->name('periods.waive.create');
                 Route::post('perioden/{period}/verzichten', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'waive'])->name('periods.waive');

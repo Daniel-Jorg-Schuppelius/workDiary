@@ -164,7 +164,8 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
         if ($query === null) {
             return ['total' => 0, 'lines' => collect()];
         }
-        $query->whereNotIn('id', ResalePeriodLink::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->where('linkable_type', $this->morphClass())->select('linkable_id'));
+        $query->whereNotIn('id', ResalePeriodLink::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->where('linkable_type', $this->morphClass())->select('linkable_id'))
+            ->whereNotIn('id', \App\Models\Reselling\ResaleIgnoredLine::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->where('linkable_type', $this->morphClass())->select('linkable_id'));
         $rows = (clone $query)
             ->orderByDesc(Invoice::query()->withoutGlobalScopes()->select('issued_on')->whereColumn('invoices.id', 'invoice_items.invoice_id'))
             ->orderByDesc('id')

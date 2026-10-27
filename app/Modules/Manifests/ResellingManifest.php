@@ -49,6 +49,7 @@ final class ResellingManifest extends Manifest {
         return [
             'resale_account_allocations',
             'resale_article_classifications',
+            'resale_ignored_lines',
             'resale_imports',
             'resale_license_assignments',
             'resale_license_batches',

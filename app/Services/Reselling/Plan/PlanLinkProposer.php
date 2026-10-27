@@ -136,13 +136,16 @@ final class PlanLinkProposer {
                         if ($take <= 0) {
                             continue;
                         }
+                        // Rechnungsbezug belegt die Zuordnung: sie gilt (Phase 163, MVP-1434); Namens- und Artikeltreffer bleiben Vorschlag.
+                        $fromInvoice = isset($vouchers[$subscription->id]);
                         ResalePlanLink::query()->create([
                             'organization_id' => $organization->id,
                             'subscription_id' => $subscription->id,
                             'plan_key' => $template->key,
                             'line_position' => $line->position,
                             'quantity' => $take,
-                            'origin' => LinkOrigin::Proposed,
+                            'origin' => $fromInvoice ? LinkOrigin::Auto : LinkOrigin::Proposed,
+                            'confirmed_at' => $fromInvoice ? now() : null,
                             'note' => $vouchers[$subscription->id] ?? null,
                         ]);
                         $linkedBySubscription[$subscription->id] = ($linkedBySubscription[$subscription->id] ?? 0.0) + $take;

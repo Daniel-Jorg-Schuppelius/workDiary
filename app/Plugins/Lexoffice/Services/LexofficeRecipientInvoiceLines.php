@@ -168,6 +168,8 @@ final class LexofficeRecipientInvoiceLines {
             ->where('organization_id', $organization->id)
             ->whereIn('lexoffice_article_id', $articleIds === [] ? [0] : $articleIds)
             ->whereDoesntHave('periodLinks')
+            // Bewusst ignorierte Positionen (Phase 163) bleiben draußen.
+            ->whereNotIn('id', \App\Models\Reselling\ResaleIgnoredLine::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->where('linkable_type', \App\Support\MorphMap::alias(LexofficeVoucherLine::class))->select('linkable_id'))
             ->whereIn('voucher_id', $this->voucherQuery($organization, null, null)->select('id'));
     }
 

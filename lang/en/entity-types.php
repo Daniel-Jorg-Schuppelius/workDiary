@@ -668,6 +668,7 @@ return [
     'ResaleArticleClassification' => 'Article subscription classification',
     'ResalePeriod' => 'Resale billing period',
     'ResalePeriodLink' => 'Resale invoice reference',
+    'ResaleIgnoredLine' => 'Ignored licence line (reselling)',
     'ResalePurchaseEntry' => 'Resale purchase entry',
     'ResaleProviderSupplier' => 'Reselling provider mapping (supplier)',
     'CompanyMapping' => 'Resale company mapping',

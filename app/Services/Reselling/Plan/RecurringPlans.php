@@ -119,4 +119,36 @@ final class RecurringPlans {
 
         return array_values(array_map('intval', $ids));
     }
+
+    /**
+     * Nächste Ausführung je Abo über seine zugeordneten aktiven Vorlagen (die
+     * späteste) — eine Periode, deren Ausführung noch bevorsteht, ist geplant,
+     * nicht offen (Phase 163, MVP-1431).
+     *
+     * @return array<int, \Carbon\CarbonImmutable>
+     */
+    public function nextExecutions(Organization $organization): array {
+        if (! $this->availableFor($organization)) {
+            return [];
+        }
+        $next = [];
+        foreach ($this->templatesFor($organization) as $template) {
+            if ($template->isActive() && $template->nextExecutionOn !== null) {
+                $next[$template->key] = $template->nextExecutionOn;
+            }
+        }
+        if ($next === []) {
+            return [];
+        }
+        $result = [];
+        foreach (ResalePlanLink::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereIn('plan_key', array_keys($next))->get(['subscription_id', 'plan_key']) as $link) {
+            $date = $next[$link->plan_key];
+            $id = (int) $link->subscription_id;
+            if (! isset($result[$id]) || $date->greaterThan($result[$id])) {
+                $result[$id] = $date;
+            }
+        }
+
+        return $result;
+    }
 }
