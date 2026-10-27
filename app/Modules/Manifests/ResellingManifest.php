@@ -122,6 +122,8 @@ final class ResellingManifest extends Manifest {
     public function contracts(): array {
         return [
             \App\Services\Reselling\Contracts\ContractObligationSink::class => \App\Services\Reselling\Contracts\NullContractObligationSink::class,
+            // Sammelzuordnung schreibt Domain-Halter in die Domainverwaltung (2026-10-27); ohne Domain-Modul neutral.
+            \App\Services\Reselling\Contracts\DomainHolderWriter::class => \App\Services\Reselling\Contracts\NullDomainHolderWriter::class,
         ];
     }
 }

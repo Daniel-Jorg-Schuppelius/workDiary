@@ -1,7 +1,7 @@
 ---
 title: "Subscriptions & Licences"
 topic: finance.resale
-version: 6
+version: 7
 keywords:
     - Import preview
     - Bulk actions
@@ -36,6 +36,11 @@ invoiced directly. An **end customer** belongs to a partner; the invoice goes
 to the partner, who passes it on. **Own holding** (internal licences, own
 domains) is never invoiced. Subscriptions without a holder wait for
 assignment and count in the “Without holder” figure.
+In the subscription list, filter “Only without holder”, select several
+subscriptions and assign them with “Assign holder” in one step to a customer,
+an end customer or your own holding; a single subscription goes via the icon
+in its row. Domains receive the holder in the domain management as well, and
+the inbox leads subscriptions without a company name there.
 
 **Term and periods:** From start, billing interval (yearly or monthly) and
 end the register plans the expected billing periods — up to 90 days ahead so
@@ -304,7 +309,11 @@ covers the period with the matching licence count; the confirmation appears
 in the log as “confirmed automatically”. Everything else stays a proposal
 and carries “unsure” with the reason in the tooltip. The periods page
 therefore shows “Unconfirmed proposals” by default; the “Problems only”
-filter and the status tiles remain.
+filter and the status tiles remain. Clicking the voucher number
+opens the voucher: lines, service period, invoice text, consumption per line
+and the comparison with the period (date within the window, service,
+article) — so you can see before confirming whether the invoice belongs to
+the period.
 
 **Bulk actions:** On the periods page you select rows via the checkboxes
 and confirm all proposals at once, waive with one reason for all (“Waive /

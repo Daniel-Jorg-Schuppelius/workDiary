@@ -232,6 +232,46 @@ class ResalePeriodController extends Controller {
         return ResalePeriod::query()->whereKey($ids)->with('links')->orderBy('starts_on')->get();
     }
 
+    /**
+     * Beleg hinter einem Rechnungsbezug (Nachbesserung 2026-10-27): Kopf, Text,
+     * Leistungszeitraum, alle Positionen mit ihrem Verbrauch — neben einer
+     * Periode dazu der Vergleich, ob Datum, Leistung und Artikel zu ihr passen.
+     */
+    public function voucherShow(Request $request, string $source, string $voucher, InvoiceMirror $mirror, PeriodLinker $linker): View {
+        $organization = $this->currentOrganizationOrAbort(404);
+        $mirrorVoucher = $mirror->voucherByKey($organization, $source, $voucher);
+        if ($mirrorVoucher === null) {
+            abort(404);
+        }
+        $periodId = Sqid::decode(ResalePeriod::class, (string) $request->query('period', ''));
+        $period = $periodId !== null ? ResalePeriod::query()->with('subscription.customer', 'subscription.foreignCustomer')->find($periodId) : null;
+        $highlight = (int) $request->query('line', 0);
+        $lines = collect($mirrorVoucher->lines);
+        $line = $lines->first(static fn(MirrorLine $l): bool => $l->morphId === $highlight)
+            ?? $lines->first(static fn(MirrorLine $l): bool => $l->articleIsLicence)
+            ?? $lines->first();
+        $comparison = null;
+        if ($period !== null && $line !== null) {
+            $reference = LicenseMonths::referenceDate($line);
+            $comparison = [
+                'line' => $line,
+                'days' => $reference !== null ? (int) $period->starts_on->diffInDays($reference, false) : null,
+                'in_window' => LinkProposer::inWindow($period, $line),
+                'service' => $line->serviceFrom !== null || $line->serviceTo !== null ? LicenseMonths::serviceCovers($line, $period->starts_on) : null,
+                'article' => $line->articleKey !== null && $period->subscription->article_ref === $line->articleKey,
+                'sure' => LinkProposer::isSure($period, $period->subscription, $line),
+            ];
+        }
+
+        return view('finance.resale._voucher_dialog', [
+            'voucher' => $mirrorVoucher,
+            'period' => $period,
+            'highlight' => $highlight,
+            'consumed' => $linker->consumed($mirrorVoucher->lines),
+            'comparison' => $comparison,
+        ]);
+    }
+
     public function waiveCreate(ResalePeriod $period): View {
         return view('finance.resale._waive_dialog', ['period' => $period->load('subscription')]);
     }

@@ -1,7 +1,7 @@
 ---
 title: "Abos & Lizenzen"
 topic: finance.resale
-version: 6
+version: 7
 keywords:
     - Import-Vorschau
     - Sammelaktionen
@@ -36,6 +36,11 @@ Rechnung selbst. Ein **Fremdkunde** ist der Endkunde eines Partners; die
 Rechnung geht an den Partner, der sie weiterreicht. **Eigener Bestand**
 (interne Lizenzen, eigene Domains) wird nie berechnet. Abos ohne Halter
 warten auf die Zuordnung und zählen in der Kennzahl „Ohne Halter".
+In der Abo-Liste filtern Sie „Nur ohne Halter“, wählen mehrere Abos aus und
+ordnen sie mit „Halter zuordnen“ in einem Schritt einem Kunden, einem
+Endkunden oder dem eigenen Bestand zu; ein einzelnes Abo geht über das Symbol
+in der Zeile. Domains bekommen den Halter dabei auch in der Domainverwaltung,
+und die Inbox führt Abos ohne Firmenname dorthin.
 
 **Laufzeit und Perioden:** Aus Beginn, Abrechnungsintervall (jährlich oder
 monatlich) und Ende plant das Register die erwarteten Abrechnungsperioden —
@@ -307,7 +312,11 @@ liegt und der die Periode mit passender Lizenzzahl voll deckt; die
 Bestätigung steht im Protokoll als „automatisch bestätigt“. Alles andere
 bleibt Vorschlag und trägt „unsicher“ mit dem Grund im Tooltip. Die
 Periodenseite zeigt darum standardmäßig „Unbestätigte Vorschläge“; die
-Filter „Nur Probleme“ und die Statuskacheln bleiben.
+Filter „Nur Probleme“ und die Statuskacheln bleiben. Ein Klick auf die
+Belegnummer öffnet den Beleg: Positionen, Leistungszeitraum, Rechnungstext,
+Verbrauch je Position und der Vergleich zur Periode (Datum im Fenster,
+Leistung, Artikel) — so sehen Sie vor der Bestätigung, ob die Rechnung zum
+Zeitraum gehört.
 
 **Sammelaktionen:** Auf der Periodenseite wählen Sie Zeilen über die
 Kästchen und bestätigen alle Vorschläge auf einmal, verzichten mit einem

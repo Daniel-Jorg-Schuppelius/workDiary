@@ -15,20 +15,22 @@ namespace App\Http\Controllers\Reselling;
 use App\Enums\Contract\ContractPartnerType;
 use App\Enums\Reselling\{BillingFrequency, CompanyMappingMode, ImportStatus, LinkOrigin};
 use App\Enums\Reselling\{PeriodStatus, RenewalMode, SubscriptionKind, SubscriptionProvider, SubscriptionStatus};
+use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reselling\Concerns\ProvidesHolderPicker;
-use App\Http\Requests\Reselling\{AssignResaleHolderRequest, ImportResaleFilesRequest, SaveResaleSubscriptionRequest, TransferResaleSubscriptionRequest};
+use App\Http\Requests\Reselling\{AssignResaleHolderRequest, BulkAssignResaleHolderRequest, ImportResaleFilesRequest, SaveResaleSubscriptionRequest, TransferResaleSubscriptionRequest};
 use App\Models\Contract\Contract;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{CompanyMapping, ResaleImport, ResalePeriod, ResalePlanLink, ResaleSubscription};
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Platform\Catalog\ArticleCatalog;
+use App\Services\Reselling\Contracts\DomainHolderWriter;
 use App\Services\Reselling\Marketplace\MarketplaceCompany;
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine, MirrorVoucher};
 use App\Services\Reselling\Plan\{PlanLine, RecurringPlans};
-use App\Services\Reselling\Register\{HolderResolver, LicenseMonths, LinkProposer, MarketplaceImporter, PeriodLinker, PeriodPlanner, ResaleOverview};
+use App\Services\Reselling\Register\{DomainSubscriptionSync, HolderResolver, LicenseMonths, LinkProposer, MarketplaceImporter, PeriodLinker, PeriodPlanner, ResaleOverview};
 use App\Support\{CsvExport, Sqid};
 use Carbon\CarbonImmutable;
 use Carbon\Exceptions\InvalidFormatException;
@@ -72,6 +74,7 @@ class ResaleSubscriptionController extends Controller {
             'status' => (string) $request->query('status', ''),
             'customer' => (string) $request->query('customer', ''),
             'open' => $request->boolean('open'),
+            'unassigned' => $request->boolean('unassigned'),
         ];
 
         // Fällig = offen, Beginn erreicht, fremder Halter — eigener Bestand wird nie berechnet (B14).
@@ -107,6 +110,9 @@ class ResaleSubscriptionController extends Controller {
         if ($filters['open']) {
             $query->whereIn('id', ResalePeriod::query()->due($today)->select('subscription_id'));
         }
+        if ($filters['unassigned']) {
+            $query->unassigned();
+        }
 
         $subscriptions = $query->orderBy('label')->orderBy('starts_on')->paginate(self::PER_PAGE)->withQueryString();
         ResaleSubscription::withCatalogArticles($subscriptions->getCollection());
@@ -125,6 +131,7 @@ class ResaleSubscriptionController extends Controller {
             'kinds' => SubscriptionKind::cases(),
             'providers' => SubscriptionProvider::cases(),
             'statuses' => SubscriptionStatus::cases(),
+            'canManage' => Gate::allows(Permission::ResellingManage->value),
         ]);
     }
 
@@ -639,6 +646,120 @@ class ResaleSubscriptionController extends Controller {
         }
 
         return redirect()->route('finance.resale.inbox')->with('success', __('resale.inbox.flash.assigned', ['count' => $affected]));
+    }
+
+    /**
+     * Sammelzuordnung des Halters aus der Liste (Feature 152, Nachbesserung
+     * 2026-10-27): ein Halter für alle gewählten Abos, auch für eines — der
+     * Inbox-Dialog kennt nur Firmen laut Anbieter, Domains haben keine.
+     */
+    public function bulkAssignCreate(Request $request, DomainHolderWriter $domains): View {
+        $subscriptions = $this->selectedSubscriptions($request)->load(['customer:id,name', 'foreignCustomer:id,name,customer_id', 'domainProjection']);
+        $single = $subscriptions->count() === 1 ? $subscriptions->first() : null;
+
+        return view('finance.resale._bulk_assign_dialog', [
+            'subscriptions' => $subscriptions,
+            'withCompany' => $subscriptions->filter(static fn(ResaleSubscription $s): bool => trim((string) $s->company_name) !== '')->count(),
+            // Eine einzelne Domain: die Vorschläge der Domainverwaltung (bestätigte Referenz, Homepage, E-Mail-Domain, Firmenname).
+            'suggestions' => $single?->domainProjection !== null ? $domains->suggestions($single->domainProjection) : [],
+        ] + $this->holderPicker());
+    }
+
+    public function bulkAssignStore(BulkAssignResaleHolderRequest $request, HolderResolver $resolver, DomainHolderWriter $domains): RedirectResponse {
+        $organization = $this->currentOrganizationOrAbort(404);
+        $mode = $request->mode();
+        $holder = $request->holder();
+        $subscriptions = ResaleSubscription::query()->whereKey($request->subscriptionIds())->with('domainProjection')->get();
+        $done = 0;
+        $skipped = 0;
+        /** @var array<string, true> $companies Firmen laut Anbieter, deren Entscheidung gemerkt wird */
+        $companies = [];
+
+        DB::transaction(function () use ($request, $resolver, $domains, $organization, $mode, $holder, $subscriptions, &$done, &$skipped, &$companies): void {
+            foreach ($subscriptions as $subscription) {
+                if ($subscription->isDerivedAssignment()) {
+                    $skipped++; // der Halter einer abgeleiteten Abtretung kommt aus der Aufteilung des Lizenzkontos
+
+                    continue;
+                }
+                $company = trim((string) $subscription->company_name);
+                $customer = $holder['customer'];
+                $foreign = $holder['foreign'];
+                if ($mode === 'partner') {
+                    if ($company === '' || $customer === null) {
+                        $skipped++; // ohne Firmenname lässt sich kein Endkunde anlegen
+
+                        continue;
+                    }
+                    $foreign = $resolver->foreignCustomerUnder($organization, $customer, $company);
+                }
+                $previous = ['customer_id' => $subscription->customer_id, 'foreign_customer_id' => $subscription->foreign_customer_id, 'is_own_holding' => (bool) $subscription->is_own_holding];
+                $attributes = [
+                    'customer_id' => $mode === 'customer' ? $customer?->id : null,
+                    'foreign_customer_id' => $mode === 'customer' || $mode === 'own' ? null : $foreign?->id,
+                    'is_own_holding' => $mode === 'own',
+                ];
+                $projection = $subscription->domainProjection;
+                if ($projection !== null) {
+                    // Domain: der Halter lebt in der Domainverwaltung — dorthin schreiben; das Register spiegelt ihn (`p:`-Marke).
+                    // Ohne Domain-Modul (Null-Bindung) bleibt es bei der Entscheidung im Register.
+                    $partner = $foreign?->customer;
+                    $written = match (true) {
+                        $mode === 'own' => $domains->markOwn($projection),
+                        $foreign !== null && $partner !== null => $domains->assign($projection, $partner, $request->user(), $foreign),
+                        $customer !== null => $domains->assign($projection, $customer, $request->user()),
+                        default => false,
+                    };
+                    if ($written) {
+                        $attributes = [
+                            'customer_id' => $projection->customer_id,
+                            'foreign_customer_id' => $projection->foreign_customer_id,
+                            'is_own_holding' => (bool) $projection->is_own_holding,
+                            'sync_status' => DomainSubscriptionSync::MIRRORED_HOLDER_PREFIX . DomainSubscriptionSync::holderKey($projection->customer_id, $projection->foreign_customer_id, (bool) $projection->is_own_holding),
+                        ];
+                    }
+                }
+                $subscription->forceFill($attributes)->save();
+                $subscription->audit('resale_subscription.holder_assigned', [
+                    'from' => $previous,
+                    'to' => ['customer_id' => $subscription->customer_id, 'foreign_customer_id' => $subscription->foreign_customer_id, 'is_own_holding' => (bool) $subscription->is_own_holding],
+                    'mode' => $mode,
+                ]);
+                if ($company !== '' && $request->remember()) {
+                    $companies[$company] = true;
+                }
+                $done++;
+            }
+            // Gemerkt wie im Inbox-Dialog: der nächste Import trifft dieselbe Entscheidung für die Firma.
+            $mappingMode = match ($mode) {
+                'customer' => CompanyMappingMode::Customer,
+                'partner', 'foreign' => CompanyMappingMode::Partner,
+                default => CompanyMappingMode::Own,
+            };
+            $mappingCustomerId = $mode === 'foreign' ? $holder['foreign']?->customer_id : $holder['customer']?->id;
+            if ($mappingMode === CompanyMappingMode::Own || $mappingCustomerId !== null) {
+                foreach (array_keys($companies) as $company) {
+                    CompanyMapping::query()->updateOrCreate(
+                        ['organization_id' => $organization->id, 'normalized_name' => MarketplaceCompany::normalizeName($company)],
+                        ['company_name' => $company, 'mode' => $mappingMode, 'customer_id' => $mappingMode === CompanyMappingMode::Own ? null : $mappingCustomerId, 'contact_external_id' => null, 'created_by_user_id' => $request->user()?->id],
+                    );
+                }
+            }
+        });
+
+        return redirect()->toList('finance.resale.subscriptions')
+            ->with($done > 0 && $skipped === 0 ? 'success' : 'warning', __('resale.bulk.flash.assigned', ['done' => $done, 'skipped' => $skipped]));
+    }
+
+    /** @return Collection<int, ResaleSubscription> */
+    private function selectedSubscriptions(Request $request): Collection {
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'max:' . BulkAssignResaleHolderRequest::MAX_IDS],
+            'ids.*' => ['string', 'max:64'],
+        ]);
+        $ids = array_values(array_filter(array_map(static fn(string $sqid): ?int => Sqid::decode(ResaleSubscription::class, $sqid), $data['ids'])));
+
+        return ResaleSubscription::query()->whereKey($ids)->orderBy('label')->get();
     }
 
     /**

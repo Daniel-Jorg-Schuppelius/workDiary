@@ -3089,6 +3089,9 @@ Route::middleware('auth')->group(function () {
                 Route::get('inbox', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'inbox'])->name('inbox');
                 Route::get('inbox/zuordnen', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'assignCreate'])->name('inbox.assign');
                 Route::post('inbox/zuordnen', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'assignStore'])->name('inbox.store');
+                // Sammelzuordnung des Halters aus der Liste (Nachbesserung 2026-10-27) — fester Pfad, {subscription} ist einsegmentig.
+                Route::get('liste/sammel/zuordnen', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'bulkAssignCreate'])->name('subscriptions.bulk.assign.create');
+                Route::post('liste/sammel/zuordnen', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'bulkAssignStore'])->name('subscriptions.bulk.assign');
                 // Perioden und Rechnungsbezüge (MVP-761)
                 Route::post('perioden/vorschlaege', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'propose'])->name('periods.propose');
                 // Sammelaktionen (Feature 185, MVP-1415) — feste Pfade vor {period}.
@@ -3202,6 +3205,8 @@ Route::middleware('auth')->group(function () {
                 // Überblick als Aufgabenliste (Feature 185, MVP-1414); die Abo-Liste hat ihre eigene Route.
                 Route::get('/', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'overview'])->name('index');
                 Route::get('liste', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'index'])->name('subscriptions');
+                // Beleg hinter einem Rechnungsbezug (Nachbesserung 2026-10-27) — drei Segmente, {subscription} ist einsegmentig.
+                Route::get('beleg/{source}/{voucher}', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'voucherShow'])->name('vouchers.show');
                 Route::get('{subscription}', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'show'])->name('show');
             });
             Route::middleware('can:reselling.manage')->group(function (): void {
