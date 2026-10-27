@@ -336,6 +336,31 @@ class LinkProposerTest extends TestCase {
         $this->assertSame([1, 1, 1, 1], $bySubscription->values()->all());
     }
 
+    public function test_line_with_service_period_is_only_offered_to_periods_starting_inside_it(): void {
+        // Mayershofer-Muster (RE/2023/0568): eine Position „24 Monat" mit Leistung ab 26.10. ging an zwei
+        // Abos, deren Perioden im August und Anfang Oktober begannen — das Datumsfenster um das
+        // Rechnungsdatum ließ es zu. Mit Leistungszeitraum zählt nur er (Toleranz 14 Tage davor).
+        $customer = $this->customerWithContact('Mayershofer GmbH', 'c-mayer');
+        $august = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2022-08-12', 'ends_on' => '2024-08-12', 'status' => 'cancelled']);
+        $october = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2022-10-05', 'ends_on' => '2024-10-05', 'status' => 'cancelled']);
+        $this->voucher('c-mayer', 'RE/2023/0568', '2022-11-02', [['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'quantity' => 24, 'net' => '3.95']], '', '2022-10-26', '2024-10-25');
+
+        $result = (new LinkProposer)->propose($this->organization);
+        $this->assertSame(0, $result['linked'], 'kein Abo beginnt im Leistungszeitraum');
+        $this->assertSame(1, $result['lines_without_subscription'], 'die Position bleibt „ohne Abo"');
+        foreach ([$august, $october] as $subscription) {
+            $this->assertSame([PeriodStatus::Open, PeriodStatus::Open], $subscription->periods()->get()->pluck('status')->all());
+        }
+
+        // Das fehlende Abo ab 26.10. („Abo aus Position anlegen") nimmt die Position für beide Jahre.
+        $fitting = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2022-10-26', 'ends_on' => '2024-10-26', 'status' => 'cancelled']);
+        $result = (new LinkProposer)->propose($this->organization);
+        $this->assertSame(2, $result['linked']);
+        $this->assertSame(0, $result['lines_without_subscription']);
+        $this->assertSame(['12.00', '12.00'], $fitting->periods()->get()->map(static fn($p) => $p->links()->first()?->months)->all());
+        $this->assertSame(0, ResalePeriodLink::query()->whereIn('subscription_id', [$august->id, $october->id])->count(), 'die früheren Abos bleiben unberührt');
+    }
+
     public function test_retroactive_four_year_line_fills_the_oldest_periods_of_its_contract(): void {
         // Marina-Vulkan-Muster: vier Jahre eines 1er-Vertrags im August 2025 als „48 Monat" nachberechnet,
         // daneben ein zweiter Vertrag ab Mai 2025 mit einer 12er-Position auf derselben Rechnung.

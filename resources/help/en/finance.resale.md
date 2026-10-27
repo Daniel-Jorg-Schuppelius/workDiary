@@ -1,7 +1,7 @@
 ---
 title: "Subscriptions & Licences"
 topic: finance.resale
-version: 8
+version: 9
 keywords:
     - Import preview
     - Bulk actions
@@ -300,10 +300,10 @@ wrong) and Provider state (outdated imports, renewals within 30 days). Each
 row shows count and amount and jumps to the page where the decision is
 made. Next to it the **state**: the last proposal run, unconfirmed proposals
 as a spot check, periods planned via recurring template or still within
-grace, per provider the last import with its age. Four tabs: Overview ·
-Subscriptions · Billing · Reports; licence accounts, reconciliation, inbox,
-licence stock, purchasing and prices live under “More areas” and behind the
-tasks. Product classification and billing settings live in the ⋯ menu.
+grace, per provider the last import with its age. The tabs follow the
+workflow: Overview · Licence accounts · Reconciliation · Periods · Inbox │
+Subscriptions · Licence stock · Purchasing │ Reports · Prices; product
+classification and billing settings live in the ⋯ menu.
 
 **Sure and unsure proposals:** The proposal run (hourly and after every
 import) confirms sure matches itself — one voucher whose invoice date lies

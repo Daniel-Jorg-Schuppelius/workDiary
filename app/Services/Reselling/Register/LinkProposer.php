@@ -64,6 +64,9 @@ final class LinkProposer {
 
     public const SURE_AFTER_DAYS = 45;
 
+    /** Abstand Periodenbeginn ↔ Zyklusbeginn der Position, den Anbieter- gegen Rechnungsdatum erklären. */
+    public const SERVICE_TOLERANCE_DAYS = 14;
+
     /** Org-Einstellung: Zeitpunkt des letzten Laufs (Übersicht „zuletzt abgeglichen"). */
     public const SETTING_LAST_RUN = 'resale.last_proposal_run_at';
 
@@ -109,6 +112,32 @@ final class LinkProposer {
         $extra = (int) round(LicenseMonths::split($line)['months']) - $termMonths;
 
         return $periodStart->addDays(self::WINDOW_AFTER)->addMonthsNoOverflow(max(0, $extra));
+    }
+
+    /**
+     * Mit Leistungszeitraum zählt nur er (Phase 163, Pilot Mayershofer): der
+     * Periodenbeginn liegt (±14 Tage) auf einem Zyklusbeginn der Position —
+     * Leistungsbeginn plus k × Periodenlänge, nicht nach dem Leistungsende.
+     * Sonst deckte eine 24-Monats-Position „ab 26.10." Perioden, die im August
+     * begannen, nur weil das Datumsfenster weit genug war; „irgendwo im
+     * Leistungszeitraum" reichte nicht, weil dann das zweite Jahr der falschen
+     * Abos drankam. Ohne Leistungszeitraum gilt das Fenster um das
+     * Rechnungsdatum ({@see inWindow()}).
+     */
+    public static function serviceFits(ResalePeriod $period, MirrorLine $line): bool {
+        if ($line->serviceFrom === null || $line->serviceTo === null) {
+            return true;
+        }
+        $start = $period->starts_on;
+        $term = max(1, $period->termMonths());
+        $limit = $start->addDays(self::SERVICE_TOLERANCE_DAYS);
+        for ($cycle = $line->serviceFrom; ! $cycle->greaterThan($line->serviceTo) && ! $cycle->greaterThan($limit); $cycle = $cycle->addMonthsNoOverflow($term)) {
+            if (abs($cycle->diffInDays($start)) <= self::SERVICE_TOLERANCE_DAYS) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -449,7 +478,7 @@ final class LinkProposer {
                 continue;
             }
             $date = LicenseMonths::referenceDate($line);
-            if ($date === null || ! self::inWindow($period, $line)) {
+            if ($date === null || ! self::inWindow($period, $line) || ! self::serviceFits($period, $line)) {
                 continue;
             }
             if (! $this->matchesProduct($subscription, $line)) {

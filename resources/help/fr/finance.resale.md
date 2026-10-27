@@ -1,7 +1,7 @@
 ---
 title: "Abonnements & licences"
 topic: finance.resale
-version: 8
+version: 9
 keywords:
     - Aperçu d’import
     - Actions groupées
@@ -328,11 +328,11 @@ modèles récurrents, donc ce que la prochaine facture ferait de travers) et
 ligne montre nombre et montant et saute vers la page où l’on décide. À
 côté, l’**état** : le dernier calcul de propositions, les propositions non
 confirmées comme sondage, les périodes planifiées via modèle récurrent ou
-encore dans le délai, par fournisseur le dernier import avec son âge. Quatre
-onglets : Vue d’ensemble · Abonnements · Facturation · Rapports ; comptes de
-licences, rapprochement, boîte de réception, stock de licences, achats et
-prix sont sous « Autres espaces » et derrière les tâches. La classification
-des produits et la facturation sont dans le menu ⋯.
+encore dans le délai, par fournisseur le dernier import avec son âge. Les onglets
+suivent le déroulement : Vue d’ensemble · Comptes de licences · Rapprochement ·
+Périodes · Boîte de réception │ Abonnements · Stock de licences · Achats │
+Rapports · Prix ; la classification des produits et la facturation sont dans
+le menu ⋯.
 
 **Propositions sûres et incertaines :** Le calcul de propositions (chaque
 heure et après chaque import) confirme lui-même les correspondances sûres —
