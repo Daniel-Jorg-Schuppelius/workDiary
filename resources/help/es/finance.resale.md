@@ -1,7 +1,7 @@
 ---
 title: "Suscripciones y licencias"
 topic: finance.resale
-version: 9
+version: 10
 keywords:
     - Vista previa de importación
     - Acciones masivas
@@ -126,17 +126,19 @@ enseguida la misma empresa. Las filas que la importación no pudo procesar
 hallazgos en la importación: el número en el mensaje, los detalles
 desplegables en la lista.
 
-**Periodos:** la página de periodos muestra los periodos vencidos de todas
-las suscripciones con mosaicos de estado (abierto, facturado, parcial,
-renunciado, en disputa). «Calcular propuestas» compara los periodos
-abiertos con las posiciones de licencia de las facturas reflejadas y crea
-propuestas; usted las confirma, vincula a mano una posición (solo facturas
-del mismo destinatario, solo meses de licencia libres) o renuncia con un
-motivo («cortesía»). La planificación ya no toca los periodos decididos;
-«reabrir» los abre de nuevo. Si una factura vinculada se anula después en
-Lexoffice, la siguiente ejecución pone el vínculo a cero meses, anota la
-anulación y reabre el periodo para que pueda vincularse la factura de
-sustitución.
+**Periodos:** la página de periodos muestra los periodos vencidos de todas las
+suscripciones con mosaicos de estado (abierto, facturado, parcial, renunciado,
+en disputa). «Calcular propuestas» compara los periodos abiertos con las
+posiciones de licencia de las facturas reflejadas y crea propuestas; usted las
+confirma, vincula a mano una posición (solo facturas del mismo destinatario,
+solo meses de licencia libres) o renuncia con un motivo («cortesía»). La
+planificación ya no toca los periodos decididos; «reabrir» los abre de nuevo.
+Si una factura vinculada se anula después en Lexoffice, la siguiente ejecución
+pone el vínculo a cero meses, anota la anulación y reabre el periodo para que
+pueda vincularse la factura de sustitución. Las suscripciones de dominio se
+cubren con posiciones que nombran el dominio (por ejemplo «dominio .de incl.
+gestión (thieme-logistik.de)»), independientemente de la clasificación del
+artículo.
 
 **Borrador de factura:** de todos los periodos abiertos de un destinatario
 de factura surge con un clic un borrador — con facturación Lexoffice como
