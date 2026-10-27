@@ -1122,6 +1122,8 @@ return [
         'subtitle' => 'Per provider account: licences per product, holders with quantities and the licence years with invoice or gap.',
         'empty' => 'No license accounts yet — subscriptions arrive via import or dialog.',
         'due_empty' => 'All due periods are invoiced.',
+        'products_more' => '+ :count more',
+        'products_domains' => '{1} domain|[2,*] domains',
         'summary' => [
             'accounts' => 'License accounts',
             'open' => 'Due periods without invoice',

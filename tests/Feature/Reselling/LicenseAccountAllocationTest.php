@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Reselling;
 
-use App\Enums\Reselling\{PeriodStatus, SubscriptionStatus};
+use App\Enums\Reselling\{PeriodStatus, SubscriptionKind, SubscriptionProvider, SubscriptionStatus};
 use App\Models\Customer\Customer;
 use App\Models\Reselling\{ResaleAccountAllocation, ResaleSubscription};
 use App\Services\Reselling\Register\{AllocationDeriver, LicenseAccounts, PeriodPlanner};
@@ -108,6 +108,29 @@ class LicenseAccountAllocationTest extends TestCase {
         $this->actingAs($admin)->delete(route('finance.resale.accounts.allocations.destroy', $allocation->sqid))->assertRedirect();
         $this->assertSame(0, ResaleSubscription::query()->whereNotNull('parent_id')->count());
         $this->assertSame([9, 9], $nine->refresh()->periods()->pluck('quantity')->all());
+    }
+
+    public function test_overview_lists_at_most_five_products_and_sums_domains(): void {
+        // Pilot 2026-10-27: „Eigener Bestand“ bei DomainReselling zeigte 68 Domainzeilen in einer Kontozeile.
+        $admin = $this->orgAdmin();
+        foreach (range('A', 'G') as $letter) {
+            $this->contract('ent-' . $letter, 1, '2026-01-01', ['label' => 'Produkt ' . $letter, 'article_ref' => 'art:' . $letter]);
+        }
+        foreach (['bike-the-planet.de', 'cloadhub.com', 'e-cld.net'] as $i => $domain) {
+            $this->contract('dom-' . $i, 1, '2026-01-01', [
+                'kind' => SubscriptionKind::Domain->value, 'provider' => SubscriptionProvider::DomainReselling->value, 'provider_account' => 'holder:own',
+                'label' => $domain, 'customer_id' => null, 'is_own_holding' => true, 'company_name' => null,
+            ]);
+        }
+
+        $page = $this->actingAs($admin)->get(route('finance.resale.accounts.index'))->assertOk();
+        foreach (range('A', 'E') as $letter) {
+            $page->assertSee('Produkt ' . $letter);
+        }
+        $page->assertDontSee('Produkt F')->assertDontSee('Produkt G')
+            ->assertSee(__('resale.account.products_more', ['count' => 2]))
+            ->assertSee('3 ×')->assertSee(trans_choice('resale.account.products_domains', 3))
+            ->assertDontSee('bike-the-planet.de')->assertDontSee('cloadhub.com');
     }
 
     public function test_allocation_respects_manual_assignments_and_other_holders(): void {
