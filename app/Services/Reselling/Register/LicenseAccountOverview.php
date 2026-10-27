@@ -30,7 +30,7 @@ use Illuminate\Support\Collection;
  * @phpstan-type ProductRow array{key: string, label: string, quantity: int, holders: array<string, HolderShare>, allocated: int, conflict: int}
  * @phpstan-type GridCell array{period: ResalePeriod, vouchers: list<string>}
  * @phpstan-type GridRow array{subscription: ResaleSubscription, product: string, holder: string, cells: array<int, list<GridCell>>}
- * @phpstan-type OverviewRow array{group: LicenseAccountGroup, name: string, customer: \App\Models\Customer\Customer|null, contracts: int, licences: int, products: list<HolderShare>, holders: array<string, HolderShare>, open: int, conflicts: int}
+ * @phpstan-type OverviewRow array{group: LicenseAccountGroup, name: string, customer: \App\Models\Customer\Customer|null, partner: \App\Models\Customer\Customer|null, contracts: int, licences: int, products: list<HolderShare>, holders: array<string, HolderShare>, open: int, conflicts: int}
  */
 final class LicenseAccountOverview {
     public function __construct(
@@ -77,6 +77,7 @@ final class LicenseAccountOverview {
                 'group' => $group,
                 'name' => $group->name(),
                 'customer' => $group->customer(),
+                'partner' => $group->partner(),
                 'contracts' => $group->headContracts()->count(),
                 'licences' => $licences,
                 'products' => array_map(static fn(array $p): array => ['label' => $p['label'], 'quantity' => $p['quantity']], $products),
@@ -154,7 +155,11 @@ final class LicenseAccountOverview {
             return ['available' => false, 'templates' => [], 'findings' => []];
         }
         $subscriptionIds = array_values(array_map('intval', $group->subscriptions->pluck('id')->all()));
-        $recipientIds = $group->subscriptions->map(static fn(ResaleSubscription $s): ?int => $s->billedTo()?->id)->filter()->unique()->values()->all();
+        // Vorlagen eines Partners (Halter ist Endkunde) nur über Zuordnungen: sonst stünden alle Vorlagen des
+        // Partners in jedem Endkunden-Konto, und ein beendetes Altabo zöge sie in ein fremdes Konto (Pilot 2026-10-27).
+        $recipientIds = $group->subscriptions
+            ->filter(static fn(ResaleSubscription $s): bool => $s->foreign_customer_id === null && ! $s->is_own_holding && $s->status->isPlanning())
+            ->map(static fn(ResaleSubscription $s): ?int => $s->billedTo()?->id)->filter()->unique()->values()->all();
         $links = ResalePlanLink::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereIn('subscription_id', $subscriptionIds)->with('subscription.customer', 'subscription.foreignCustomer')->get();
         $linkedKeys = $links->pluck('plan_key')->unique()->all();
         /** @var array<string, list<ResalePlanLink>> $linksByLine */

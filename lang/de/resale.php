@@ -1159,6 +1159,7 @@ return [
         'failed' => 'letzte Ausführung fehlgeschlagen',
         'finalize' => 'stellt die Rechnung fertig und versendet sie',
         'draft_only' => 'erzeugt Entwürfe',
+        'from_invoice' => 'Zuordnung aus der Rechnung :voucher, die diese Vorlage erzeugt hat.',
         'planned_by' => 'Berechnet über die Serienvorlage „:title“ (nächste Ausführung :date).',
         'digest_line' => ':count Befunde zwischen Abos und Serienvorlagen (Abo ohne Vorlage, Vorlage ohne Abo, Menge weicht ab).',
         'status' => [

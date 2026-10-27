@@ -76,10 +76,15 @@ final class LicenseAccountGroup {
         return $customers[(int) array_key_first($counts)];
     }
 
+    /**
+     * Name des Kontos: der Halter, nicht der Rechnungsempfänger — bei einem
+     * Partner mit vielen Endkunden hießen sonst alle Konten gleich
+     * (Pilot 2026-10-27: zwölf Konten „LDS Systems GmbH").
+     */
     public function name(): string {
-        $customer = $this->customer();
-        if ($customer !== null) {
-            return $customer->name;
+        $main = $this->mainHolderContract();
+        if ($main !== null) {
+            return $main->holderLabel();
         }
         $first = $this->contracts()->first();
 
@@ -88,6 +93,31 @@ final class LicenseAccountGroup {
         }
 
         return $first->company_name ?? $first->holderLabel();
+    }
+
+    /** Partner, über den das Konto abgerechnet wird — nur wenn der Haupthalter Endkunde eines Partners ist. */
+    public function partner(): ?Customer {
+        return $this->mainHolderContract()?->foreignCustomer?->customer;
+    }
+
+    /** Vertrag des häufigsten Halters (bei Gleichstand der neueste Vertrag). */
+    private function mainHolderContract(): ?ResaleSubscription {
+        $counts = [];
+        $samples = [];
+        foreach ($this->contracts() as $contract) {
+            if ($contract->is_own_holding || ! $contract->hasHolder()) {
+                continue;
+            }
+            $key = $contract->holderKey();
+            $counts[$key] = ($counts[$key] ?? 0) + 1;
+            $samples[$key] ??= $contract;
+        }
+        if ($counts === []) {
+            return null;
+        }
+        arsort($counts);
+
+        return $samples[(string) array_key_first($counts)];
     }
 
     /** Routenparameter — `route()` kodiert selbst, ein vorkodierter Schlüssel käme doppelt kodiert an. */

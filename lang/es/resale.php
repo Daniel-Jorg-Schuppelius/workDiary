@@ -1159,6 +1159,7 @@ return [
         'failed' => 'última ejecución fallida',
         'finalize' => 'finaliza y envía la factura',
         'draft_only' => 'crea borradores',
+        'from_invoice' => 'Asignación a partir de la factura :voucher, creada por esta plantilla.',
         'planned_by' => 'Facturado mediante la plantilla periódica «:title» (próxima ejecución :date).',
         'digest_line' => ':count incidencias entre suscripciones y plantillas periódicas (suscripción sin plantilla, plantilla sin suscripción, cantidad distinta).',
         'status' => [

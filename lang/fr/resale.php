@@ -1159,6 +1159,7 @@ return [
         'failed' => 'dernière exécution échouée',
         'finalize' => 'finalise et envoie la facture',
         'draft_only' => 'crée des brouillons',
+        'from_invoice' => 'Affectation d’après la facture :voucher, créée par ce modèle.',
         'planned_by' => 'Facturé via le modèle récurrent « :title » (prochaine exécution :date).',
         'digest_line' => ':count constats entre abonnements et modèles récurrents (abonnement sans modèle, modèle sans abonnement, quantité différente).',
         'status' => [

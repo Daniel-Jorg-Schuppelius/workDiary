@@ -1159,6 +1159,7 @@ return [
         'failed' => 'ultima esecuzione fallita',
         'finalize' => 'finalizza e invia la fattura',
         'draft_only' => 'crea bozze',
+        'from_invoice' => 'Assegnazione dalla fattura :voucher, creata da questo modello.',
         'planned_by' => 'Fatturato tramite il modello ricorrente «:title» (prossima esecuzione :date).',
         'digest_line' => ':count casi tra abbonamenti e modelli ricorrenti (abbonamento senza modello, modello senza abbonamento, quantità diversa).',
         'status' => [

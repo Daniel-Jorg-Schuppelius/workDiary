@@ -76,7 +76,11 @@ final class PlanAudit {
             ->filter(static fn(ResaleSubscription $s): bool => $s->hasHolder() && ! $s->is_own_holding && $s->status !== SubscriptionStatus::Superseded)
             ->when($subscriptionIds !== null, static fn(Collection $c) => $c->whereIn('id', $subscriptionIds ?? []))
             ->values();
-        $recipientIds = $subscriptions->map(static fn(ResaleSubscription $s): ?int => $s->billedTo()?->id)->filter()->unique()->values()->all();
+        // Je Konto zählen Vorlagen ohne Abo nur für Empfänger, die selbst Halter sind — Partner-Vorlagen
+        // gehören zu keinem bestimmten Endkunden-Konto (wie {@see \App\Services\Reselling\Register\LicenseAccountOverview}).
+        $recipientIds = $subscriptions
+            ->filter(static fn(ResaleSubscription $s): bool => $s->foreign_customer_id === null && $s->status->isPlanning())
+            ->map(static fn(ResaleSubscription $s): ?int => $s->billedTo()?->id)->filter()->unique()->values()->all();
         $links = ResalePlanLink::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->get();
         /** @var array<int, list<ResalePlanLink>> $linksBySubscription */
         $linksBySubscription = [];

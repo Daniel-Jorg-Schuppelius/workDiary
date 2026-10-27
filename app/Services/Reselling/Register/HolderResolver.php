@@ -58,11 +58,16 @@ final class HolderResolver {
         }
 
         $foreign = $this->matchForeignCustomer($organization, $company->name);
+        $customer = $this->matchCustomer($organization, $company);
+        if ($foreign !== null && $customer !== null) {
+            // Kunde und Endkunde eines Partners heißen gleich: nicht eindeutig — Inbox statt raten
+            // (Pilot 2026-10-27: „Thieme Transporte" direkt und als Endkunde unter LDS).
+            return null;
+        }
         if ($foreign !== null) {
             return ['customer_id' => null, 'foreign_customer_id' => $foreign->id, 'is_own_holding' => false, 'source' => self::SOURCE_FOREIGN];
         }
 
-        $customer = $this->matchCustomer($organization, $company);
         if ($customer !== null) {
             return ['customer_id' => $customer->id, 'foreign_customer_id' => null, 'is_own_holding' => false, 'source' => self::SOURCE_CUSTOMER];
         }

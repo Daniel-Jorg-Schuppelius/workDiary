@@ -14,8 +14,9 @@ namespace App\Services\Reselling\Plan;
 
 use App\Enums\Reselling\LinkOrigin;
 use App\Models\Platform\Organization;
-use App\Models\Reselling\{ResalePlanLink, ResaleSubscription};
+use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResalePlanLink, ResaleSubscription};
 use App\Services\Reselling\Marketplace\{MarketplaceCompany, ProductNameMatcher};
+use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
 use App\Services\Reselling\Register\LicenseAccounts;
 use Illuminate\Support\Facades\DB;
 
@@ -29,9 +30,13 @@ use Illuminate\Support\Facades\DB;
  * (größtes zuerst), was keinen Platz findet, bleibt „Vorlage ohne Abo".
  */
 final class PlanLinkProposer {
+    /** Rechnungen, in denen eine Vorlage schon berechnet hat, zählen bis zu dieser Rückschau (zwei Jahreszyklen, auch nach einer fehlgeschlagenen Ausführung). */
+    private const INVOICE_LOOKBACK_MONTHS = 25;
+
     public function __construct(
         private readonly RecurringPlans $plans,
         private readonly LicenseAccounts $accounts,
+        private readonly InvoiceMirror $mirror,
         private readonly ProductNameMatcher $matcher = new ProductNameMatcher(),
     ) {}
 
@@ -53,7 +58,10 @@ final class PlanLinkProposer {
             ->filter(static fn(ResaleSubscription $s): bool => $s->hasHolder() && ! $s->is_own_holding && $s->status->isPlanning())
             ->values();
 
-        DB::transaction(function () use ($organization, $templates, $subscriptions, &$result): void {
+        $fromInvoices = $this->subscriptionsFromInvoices($organization);
+        $byId = $subscriptions->keyBy('id');
+
+        DB::transaction(function () use ($organization, $templates, $subscriptions, $byId, $fromInvoices, &$result): void {
             ResalePlanLink::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->where('origin', LinkOrigin::Proposed->value)->delete();
             $decided = ResalePlanLink::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->get();
             /** @var array<int, float> $linkedBySubscription Abo → schon zugeordnete Lizenzen (entschieden) */
@@ -98,6 +106,27 @@ final class PlanLinkProposer {
                         })
                         ->sortBy([['quantity', 'desc'], ['starts_on', 'asc'], ['id', 'asc']])
                         ->values();
+                    // Rechnungsbezug zuerst: das Abo, dem die letzte Rechnung dieser Vorlagenposition zugeordnet ist,
+                    // schlägt Name und Artikel — bei Partnern mit vielen Endkunden der einzige verlässliche Weg.
+                    /** @var array<int, string|null> $vouchers Abo → Belegnummer, aus der der Bezug stammt */
+                    $vouchers = [];
+                    $preferred = [];
+                    foreach ($fromInvoices[$lineKey] ?? [] as $hit) {
+                        if ($hit['article_key'] !== null && $line->articleKey !== null && $hit['article_key'] !== $line->articleKey) {
+                            continue; // Vorlage inzwischen geändert: die alte Rechnung sagt nichts mehr
+                        }
+                        $known = $byId->get($hit['subscription_id']);
+                        if ($known === null || isset($preferred[$known->id]) || ! $this->matchesProduct($known, $line)) {
+                            continue;
+                        }
+                        $preferred[$known->id] = $known;
+                        $vouchers[$known->id] = $hit['voucher'];
+                    }
+                    if ($preferred !== []) {
+                        $candidates = collect(array_values($preferred))
+                            ->merge($candidates->reject(static fn(ResaleSubscription $s): bool => isset($preferred[$s->id])))
+                            ->values();
+                    }
                     foreach ($candidates as $subscription) {
                         if ($remaining <= 0.001) {
                             break;
@@ -114,6 +143,7 @@ final class PlanLinkProposer {
                             'line_position' => $line->position,
                             'quantity' => $take,
                             'origin' => LinkOrigin::Proposed,
+                            'note' => $vouchers[$subscription->id] ?? null,
                         ]);
                         $linkedBySubscription[$subscription->id] = ($linkedBySubscription[$subscription->id] ?? 0.0) + $take;
                         $remaining -= $take;
@@ -125,6 +155,51 @@ final class PlanLinkProposer {
                 }
             }
         });
+
+        return $result;
+    }
+
+    /**
+     * Abo je Vorlagenposition aus den Rechnungen, die die Vorlage schon erzeugt
+     * hat: die Spiegelzeile trägt den Vorlagenschlüssel, ihr Periodenbezug führt
+     * zum Abo. Jüngste Rechnung zuerst; Stornos und Gutschriften zählen nicht.
+     *
+     * @return array<string, list<array{subscription_id: int, article_key: string|null, voucher: string|null}>> Positionsschlüssel → Abos
+     */
+    private function subscriptionsFromInvoices(Organization $organization): array {
+        $since = ResalePeriod::today()->subMonths(self::INVOICE_LOOKBACK_MONTHS);
+        $lines = $this->mirror->linesFor($organization, null, $since)
+            ->filter(static fn(MirrorLine $l): bool => $l->planKey !== null && ! $l->isCreditNote && $l->voucherStatus !== MirrorLine::STATUS_VOIDED)
+            ->sortByDesc(static fn(MirrorLine $l): string => ($l->voucherDate?->toDateString() ?? '0000-00-00') . '#' . str_pad((string) $l->morphId, 12, '0', STR_PAD_LEFT))
+            ->values();
+        if ($lines->isEmpty()) {
+            return [];
+        }
+        /** @var array<string, list<int>> $byMorph */
+        $byMorph = [];
+        foreach ($lines as $line) {
+            $byMorph[$line->morphClass][] = $line->morphId;
+        }
+        /** @var array<string, int> $subscriptionByLine Zeilenidentität → Abo */
+        $subscriptionByLine = [];
+        foreach ($byMorph as $morphClass => $ids) {
+            $links = ResalePeriodLink::query()->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->where('linkable_type', $morphClass)
+                ->whereIn('linkable_id', array_values(array_unique($ids)))
+                ->get(['linkable_id', 'subscription_id']);
+            foreach ($links as $link) {
+                $subscriptionByLine[MirrorLine::identityOf($morphClass, (int) $link->linkable_id)] ??= (int) $link->subscription_id;
+            }
+        }
+        $result = [];
+        foreach ($lines as $line) {
+            $subscriptionId = $subscriptionByLine[$line->identity()] ?? null;
+            if ($subscriptionId === null) {
+                continue;
+            }
+            $result[ResalePlanLink::lineKeyOf((string) $line->planKey, $line->position)][] = ['subscription_id' => $subscriptionId, 'article_key' => $line->articleKey, 'voucher' => $line->voucherNumber];
+        }
 
         return $result;
     }

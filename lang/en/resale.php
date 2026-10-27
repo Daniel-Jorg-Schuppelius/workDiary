@@ -1159,6 +1159,7 @@ return [
         'failed' => 'last run failed',
         'finalize' => 'finalises and sends the invoice',
         'draft_only' => 'creates drafts',
+        'from_invoice' => 'Assigned from invoice :voucher, which this template created.',
         'planned_by' => 'Invoiced via recurring template ":title" (next run :date).',
         'digest_line' => ':count findings between subscriptions and recurring templates (subscription without template, template without subscription, quantity differs).',
         'status' => [

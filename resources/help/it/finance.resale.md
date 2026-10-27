@@ -1,7 +1,7 @@
 ---
 title: "Abbonamenti e licenze"
 topic: finance.resale
-version: 5
+version: 6
 keywords:
     - Anteprima importazione
     - Azioni di massa
@@ -259,7 +259,10 @@ collegamenti tramite numero fattura e riga di licenza; ciò che non è
 univoco viene solo elencato (--dry-run mostra in anticipo cosa
 accadrebbe).
 
-**Conto licenze:** La scheda *Conti licenze* mostra per conto fornitore
+**Conto licenze:** Un conto porta il nome del suo intestatario; se la fattura
+va a un partner, questo è indicato accanto («tramite LDS Systems»), e i
+modelli ricorrenti del partner compaiono solo nel conto del cliente finale a
+cui sono assegnati. La scheda *Conti licenze* mostra per conto fornitore
 (numero cliente presso il fornitore, predecessori di un cambio fornitore
 inclusi) quante licenze per prodotto sono attive, chi le detiene e quale anno
 di licenza è fatturato, come griglia prodotto × intestatario × anno con numero
@@ -283,9 +286,10 @@ fatture, le fatture ricorrenti nascono lì come modelli ricorrenti. Il registro
 li specchia (Lexoffice: ogni giorno e dopo la sincronizzazione dei documenti,
 in sola lettura) e mostra nel conto licenze per modello stato, ritmo, prossima
 esecuzione e le righe di licenza con gli abbonamenti che fatturano.
-L'assegnazione abbonamento ↔ riga del modello è proposta dall'elaborazione
-(stesso destinatario, articolo, quantità; con più clienti finali solo se
-nominati): confermate, assegnate a mano o rimuovete. I periodi di un
+L'assegnazione abbonamento ↔ riga del modello è proposta dall'elaborazione —
+prima tramite la fattura che il modello ha creato per ultima ed è assegnata a
+un periodo, altrimenti tramite stesso destinatario, articolo e quantità (con
+più clienti finali di un partner solo se nominati): confermate, assegnate a mano o rimuovete. I periodi di un
 abbonamento con modello attivo restano fuori dalla proposta di fattura. I
 **controlli dotazione ↔ piano** segnalano prima della fattura: abbonamento senza
 modello, modello senza abbonamento («Crea abbonamento dal modello» riprende
