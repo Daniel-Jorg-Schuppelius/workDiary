@@ -61,8 +61,17 @@
                 @php [$icon, $tone] = $check($comparison['article']); @endphp
                 <li class="flex items-center gap-2"><x-icon :name="$icon" size="1rem" :class="$tone" />
                     <span>{{ __('resale.voucher.compare.' . ($comparison['article'] ? 'article_ok' : 'article_off')) }}</span></li>
+                @php
+                    $months = \App\Services\Reselling\Register\LicenseMonths::class;
+                    $lineParams = [
+                        'line' => $months::label($comparison['line_months'], (float) $comparison['term']),
+                        'raw' => \App\View\Components\Resale\LicenceMonths::compact($line->quantity) . ($line->unitName ? ' ' . $line->unitName : ''),
+                        'needed' => $months::label($comparison['needed'], (float) $comparison['term']),
+                        'covers' => $comparison['covers'] !== null ? $months::label($comparison['covers'], (float) $comparison['term']) : '',
+                    ];
+                @endphp
                 <li class="flex items-center gap-2"><x-icon name="numbers" size="1rem" class="text-muted" />
-                    <span>{{ __('resale.voucher.compare.line', ['quantity' => \App\View\Components\Resale\LicenceMonths::compact($line->quantity), 'unit' => $line->unitName ?? '', 'period' => $period->quantity, 'months' => $period->termMonths()]) }}</span></li>
+                    <span>{{ __('resale.voucher.compare.' . ($comparison['covers'] !== null ? 'line' : 'line_unlinked'), $lineParams) }}</span></li>
             </ul>
         </div>
     @endif
@@ -105,9 +114,9 @@
                 <td class="text-right tabular-nums whitespace-nowrap">{{ $line->unitNet->withScale(2)->format() }}</td>
                 <td class="text-right tabular-nums whitespace-nowrap">{{ $line->totalNet->format() }}</td>
                 <td class="text-xs">
-                    @if ($use !== null && $use['periods'] !== [])
-                        @foreach ($use['periods'] as $target)
-                            <span class="block">{{ $target }}</span>
+                    @if ($use !== null && $use['targets'] !== [])
+                        @foreach ($use['targets'] as $target)
+                            <span class="block"><span class="font-medium tabular-nums">{{ __('resale.link.licence_months_only', ['months' => \App\View\Components\Resale\LicenceMonths::compact($target['months'])]) }}</span> · {{ $target['label'] }}</span>
                         @endforeach
                     @else
                         <span class="text-muted">{{ __('resale.voucher.none_consumed') }}</span>

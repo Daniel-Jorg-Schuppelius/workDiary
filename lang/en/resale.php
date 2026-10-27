@@ -524,7 +524,8 @@ return [
             'service_none' => 'No service period on the voucher — the invoice date counts',
             'article_ok' => 'Article matches the subscription',
             'article_off' => 'Article differs from the subscription or is not assigned',
-            'line' => 'Line: :quantity :unit — period: :period licences × :months mo.',
+            'line' => 'Line :line (:raw) — period needs :needed — this link covers :covers',
+            'line_unlinked' => 'Line :line (:raw) — period needs :needed — no link of this line to this period yet',
         ],
     ],
     // Reiterbeschriftungen (kurz — die Seitentitel stehen in den Gruppen).

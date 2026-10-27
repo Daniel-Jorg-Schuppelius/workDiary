@@ -42,7 +42,7 @@ final class PeriodLinker {
      *
      * @param  string  $morphClass  Morph-Typ der Quelle (`resale_period_links.linkable_type`)
      * @param  list<int>  $lineIds
-     * @return array<int, array{months: float, periods: list<string>}>
+     * @return array<int, array{months: float, periods: list<string>, targets: list<array{label: string, months: float}>}>
      */
     public function consumedMonths(string $morphClass, array $lineIds, ?ResalePeriod $except = null, bool $forUpdate = false): array {
         if ($lineIds === []) {
@@ -61,9 +61,11 @@ final class PeriodLinker {
         $consumed = [];
         foreach ($query->get() as $link) {
             $id = (int) $link->linkable_id;
-            $consumed[$id] ??= ['months' => 0.0, 'periods' => []];
+            $consumed[$id] ??= ['months' => 0.0, 'periods' => [], 'targets' => []];
             $consumed[$id]['months'] += (float) $link->months;
             $consumed[$id]['periods'][] = self::targetLabel($link);
+            // Je Ziel die Lizenzmonate aus dieser Position — eine 24-Monats-Position kann zwei Perioden je 12 decken.
+            $consumed[$id]['targets'][] = ['label' => self::targetLabel($link), 'months' => (float) $link->months];
         }
 
         return $consumed;
@@ -73,7 +75,7 @@ final class PeriodLinker {
      * Verbrauch je Spiegelposition, quellübergreifend (Schlüssel: {@see MirrorLine::identity()}).
      *
      * @param  iterable<MirrorLine>  $lines
-     * @return array<string, array{months: float, periods: list<string>}>
+     * @return array<string, array{months: float, periods: list<string>, targets: list<array{label: string, months: float}>}>
      */
     public function consumed(iterable $lines, ?ResalePeriod $except = null): array {
         /** @var array<string, list<int>> $byMorph */

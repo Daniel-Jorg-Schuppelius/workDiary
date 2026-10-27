@@ -244,7 +244,7 @@ class ResalePeriodController extends Controller {
             abort(404);
         }
         $periodId = Sqid::decode(ResalePeriod::class, (string) $request->query('period', ''));
-        $period = $periodId !== null ? ResalePeriod::query()->with('subscription.customer', 'subscription.foreignCustomer')->find($periodId) : null;
+        $period = $periodId !== null ? ResalePeriod::query()->with('subscription.customer', 'subscription.foreignCustomer', 'links')->find($periodId) : null;
         $highlight = (int) $request->query('line', 0);
         $lines = collect($mirrorVoucher->lines);
         $line = $lines->first(static fn(MirrorLine $l): bool => $l->morphId === $highlight)
@@ -253,6 +253,10 @@ class ResalePeriodController extends Controller {
         $comparison = null;
         if ($period !== null && $line !== null) {
             $reference = LicenseMonths::referenceDate($line);
+            // Was DIESER Bezug an der Periode deckt: eine 24-Monats-Position kann je 12 an zwei Perioden gehen.
+            $covers = $period->links
+                ->filter(static fn(ResalePeriodLink $l): bool => $l->linkable_type === $line->morphClass && (int) $l->linkable_id === $line->morphId)
+                ->sum(static fn(ResalePeriodLink $l): float => (float) $l->months);
             $comparison = [
                 'line' => $line,
                 'days' => $reference !== null ? (int) $period->starts_on->diffInDays($reference, false) : null,
@@ -260,6 +264,10 @@ class ResalePeriodController extends Controller {
                 'service' => $line->serviceFrom !== null || $line->serviceTo !== null ? LicenseMonths::serviceCovers($line, $period->starts_on) : null,
                 'article' => $line->articleKey !== null && $period->subscription->article_ref === $line->articleKey,
                 'sure' => LinkProposer::isSure($period, $period->subscription, $line),
+                'line_months' => LicenseMonths::ofLine($line),
+                'needed' => $period->requiredMonths(),
+                'term' => $period->termMonths(),
+                'covers' => $covers > 0.001 ? (float) $covers : null,
             ];
         }
 

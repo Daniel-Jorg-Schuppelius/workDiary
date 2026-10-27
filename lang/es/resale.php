@@ -524,7 +524,8 @@ return [
             'service_none' => 'Sin periodo de prestación en el comprobante; cuenta la fecha de factura',
             'article_ok' => 'El artículo coincide con la suscripción',
             'article_off' => 'El artículo difiere de la suscripción o no está asignado',
-            'line' => 'Posición: :quantity :unit — periodo: :period licencias × :months meses',
+            'line' => 'Posición :line (:raw) — el periodo necesita :needed — este vínculo cubre :covers',
+            'line_unlinked' => 'Posición :line (:raw) — el periodo necesita :needed — aún sin vínculo de esta posición a este periodo',
         ],
     ],
     // Reiterbeschriftungen (kurz — die Seitentitel stehen in den Gruppen).
