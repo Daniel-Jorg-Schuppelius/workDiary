@@ -29,6 +29,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $event_class
  * @property string|null $event_action
  * @property string|null $object
+ * @property string|null $info
  * @property DomainEventStatus $status
  * @property string $raw_hash
  * @property Carbon|null $occurred_at
@@ -48,6 +49,7 @@ class DomainEvent extends Model {
         'event_class',
         'event_action',
         'object',
+        'info',
         'status',
         'raw_hash',
         'occurred_at',

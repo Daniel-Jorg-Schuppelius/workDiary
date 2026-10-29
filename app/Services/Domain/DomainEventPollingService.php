@@ -71,6 +71,7 @@ class DomainEventPollingService {
                 'event_class' => self::providerField($row, ['eventclass', 'class']),
                 'event_action' => self::providerField($row, ['eventsubclass', 'subclass', 'eventaction', 'action']),
                 'object' => self::providerField($row, ['objectid', 'object', 'eventobject']),
+                'info' => self::providerField($row, ['info', 'eventinfo', 'data']),
                 'raw_hash' => CryptoHelper::hash(JsonHelper::encode($row)),
                 'occurred_at' => $occurredAt !== null ? Carbon::parse($occurredAt, 'UTC') : null,
             ]);

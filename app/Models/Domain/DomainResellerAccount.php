@@ -37,6 +37,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $balance_at
  * @property int|null $customer_id
  * @property string|null $provider_customer_number
+ * @property string|null $email
+ * @property float|string|null $credit_snapshot
+ * @property float|string|null $vat_rate
+ * @property string|null $note
+ * @property \Illuminate\Support\Carbon|null $provider_created_at
+ * @property \Illuminate\Support\Carbon|null $last_login_at
  * @property string|null $raw_hash
  * @property Carbon|null $synced_at
  */
@@ -61,12 +67,22 @@ class DomainResellerAccount extends Model {
         'balance_at',
         'customer_id',
         'provider_customer_number',
+        'email',
+        'credit_snapshot',
+        'vat_rate',
+        'note',
+        'provider_created_at',
+        'last_login_at',
         'raw_hash',
         'synced_at',
     ];
 
     /** @var array<string, string> */
     protected $casts = [
+        'credit_snapshot' => 'decimal:2',
+        'vat_rate' => 'decimal:3',
+        'provider_created_at' => 'datetime',
+        'last_login_at' => 'datetime',
         'depth' => 'integer',
         'active' => 'boolean',
         'currency' => CurrencyCode::class,

@@ -11469,6 +11469,12 @@ CREATE TABLE IF NOT EXISTS "domain_reseller_accounts"(
   "created_at" datetime,
   "updated_at" datetime,
   "provider_customer_number" varchar,
+  "email" varchar,
+  "credit_snapshot" numeric,
+  "vat_rate" numeric,
+  "note" varchar,
+  "provider_created_at" datetime,
+  "last_login_at" datetime,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("connection_id") references "domain_provider_connections"("id") on delete cascade,
   foreign key("customer_id") references "customers"("id") on delete set null
@@ -11650,6 +11656,7 @@ CREATE TABLE IF NOT EXISTS "domain_events"(
   "acknowledged_at" datetime,
   "created_at" datetime,
   "updated_at" datetime,
+  "info" varchar,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("connection_id") references "domain_provider_connections"("id") on delete cascade
 );
@@ -12775,6 +12782,11 @@ CREATE TABLE IF NOT EXISTS "domain_projections"(
   "foreign_customer_id" integer,
   "is_own_holding" tinyint(1) not null default '0',
   "owner_handle" varchar,
+  "paid_until_at" date,
+  "next_action_at" date,
+  "provider_updated_at" datetime,
+  "renewal_period" integer,
+  "details" text,
   foreign key("customer_id") references customers("id") on delete set null on update no action,
   foreign key("reseller_account_id") references domain_reseller_accounts("id") on delete set null on update no action,
   foreign key("connection_id") references domain_provider_connections("id") on delete cascade on update no action,
@@ -26155,3 +26167,4 @@ INSERT INTO migrations VALUES(1040,'2027_04_01_180000_create_resale_ignored_line
 INSERT INTO migrations VALUES(1041,'2027_04_01_190000_add_provider_customer_number_and_invoice_period_to_domain_tables',13);
 INSERT INTO migrations VALUES(1042,'2027_04_01_200000_add_observed_properties_to_domain_provider_connections',14);
 INSERT INTO migrations VALUES(1043,'2027_04_01_210000_add_invoice_number_to_domain_accounting_entries',15);
+INSERT INTO migrations VALUES(1044,'2027_04_01_220000_add_provider_details_to_domain_tables',16);
