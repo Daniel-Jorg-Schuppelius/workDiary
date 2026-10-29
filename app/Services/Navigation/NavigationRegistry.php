@@ -627,13 +627,8 @@ class NavigationRegistry {
                         ...(($user?->can(Permission::CommissionViewAny->value) || $user?->can(Permission::CommissionManage->value))
                             ? [['route' => 'commissions.index', 'label' => __('commission.title'), 'icon' => 'percent', 'modal' => false, 'matches' => ['commissions.*', 'commission-rules.*', 'commission-runs.*']]]
                             : []),
-                        // Lizenz-Reselling-Abgleich (Feature 151, MVP-757): Marketplace-
-                        // Abos gegen die eigenen Rechnungen — Abrechnungsarbeit, deshalb hier.
-                        // Reselling-Register (Feature 152, MVP-758): Abos, Halter, Perioden —
-                        // der dauerhafte Bestand, der den Abgleich ablöst.
-                        ...(($user?->can(Permission::ResellingView->value) ?? false)
-                            ? [['route' => 'finance.resale.index', 'label' => __('resale.title.menu'), 'icon' => 'subscriptions', 'modal' => false, 'matches' => ['finance.resale.*']]]
-                            : []),
+                        // Das Reselling-Register (Feature 152) hing hier bei der Abrechnung; seit 2026-10-29
+                        // steht es im Bereich „Onlinedienste“ (Entscheidung des Inhabers).
                         // Beiträge aktiver Buchhaltungs-Plugins (MVP-1037), z. B. Artikel und Übergabe.
                         ...$this->pluginNavItems('sales-billing'),
                         ['route' => 'investments.index', 'label' => __('Investitionen'), 'icon' => 'trending_up', 'modal' => false, 'matches' => ['investments.*']],
@@ -695,6 +690,26 @@ class NavigationRegistry {
                 ],
             ],
         ];
+        // Onlinedienste (Entscheidung des Inhabers 2026-10-29): Abos & Lizenzen (Reselling-Register,
+        // Feature 152) und die Domainverwaltung (Feature 083) sind ein Arbeitsbereich — Dienste, die
+        // Kunden laufend beziehen. Vorher: Register bei der Abrechnung, Domains als eigener Bereich.
+        $onlineItems = [];
+        if ($user?->can(Permission::ResellingView->value) ?? false) {
+            $onlineItems[] = ['route' => 'finance.resale.index', 'label' => __('resale.title.menu'), 'icon' => 'subscriptions', 'modal' => false, 'matches' => ['finance.resale.*']];
+        }
+        if (Gate::allows('viewAny', \App\Models\Domain\DomainProjection::class)) {
+            $onlineItems[] = ['route' => 'domains.index', 'label' => __('domain.title.index'), 'icon' => 'dns', 'modal' => false, 'matches' => ['domains.index', 'domains.show']];
+            $onlineItems[] = ['route' => 'domain-reseller.index', 'label' => __('domain.title.reseller'), 'icon' => 'account_tree', 'modal' => false, 'matches' => ['domain-reseller.*']];
+            $onlineItems[] = ['route' => 'domains.reports', 'label' => __('domain.title.reports'), 'icon' => 'analytics', 'modal' => false, 'matches' => ['domains.reports']];
+        }
+        if ($onlineItems !== []) {
+            $sidebarSections[] = [
+                'key' => 'online-services',
+                'label' => __('Onlinedienste'),
+                'collapsible' => true,
+                'items' => $onlineItems,
+            ];
+        }
         // Meldestelle: nur für eigens Berechtigte (NICHT automatisch Admins), s. WhistleblowingCasePolicy.
         if (Gate::allows('viewAny', \App\Models\Whistleblowing\WhistleblowingCase::class)) {
             $sidebarSections[] = [
@@ -928,18 +943,6 @@ class NavigationRegistry {
                 'collapsible' => true,
                 'items' => [
                     ['route' => 'print-orders.index', 'label' => __('print.orders.title'), 'icon' => 'print', 'modal' => false, 'matches' => ['print-orders.*']],
-                ],
-            ];
-        }
-        if (Gate::allows('viewAny', \App\Models\Domain\DomainProjection::class)) {
-            $sidebarSections[] = [
-                'key' => 'domains',
-                'label' => __('domain.title.index'),
-                'collapsible' => true,
-                'items' => [
-                    ['route' => 'domains.index', 'label' => __('domain.title.index'), 'icon' => 'dns', 'modal' => false, 'matches' => ['domains.index', 'domains.show']],
-                    ['route' => 'domain-reseller.index', 'label' => __('domain.title.reseller'), 'icon' => 'account_tree', 'modal' => false, 'matches' => ['domain-reseller.*']],
-                    ['route' => 'domains.reports', 'label' => __('domain.title.reports'), 'icon' => 'analytics', 'modal' => false, 'matches' => ['domains.reports']],
                 ],
             ];
         }

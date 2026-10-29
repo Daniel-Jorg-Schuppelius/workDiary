@@ -53,6 +53,8 @@ return [
             'icon' => 'handshake',
             'keys' => [
                 'group:sales-crm',
+                // Onlinedienste (Abos & Lizenzen, Domains) sind Kundenleistungen mit Laufzeit — dieselbe Arbeit wie Vertrieb und Abrechnung (Entscheidung 2026-10-29).
+                'section:online-services',
                 'group:sales-billing',
                 'section:work',
                 'section:claims',
@@ -112,9 +114,6 @@ return [
                 'section:asset-compliance',
                 // Entsorgung faellt am Objekt an, nicht im Lager.
                 'section:disposal',
-                // Domains sind Betriebsmittel mit Laufzeit und Frist
-                // (Feature 083) — dieselbe Pflege wie Objekte.
-                'section:domains',
                 'section:archive',
             ],
             'manage' => ['holidays.index', 'shift-types.index', 'materials.index'],
@@ -125,6 +124,8 @@ return [
             'icon' => 'account_balance',
             'keys' => [
                 'group:sales-billing',
+                // Onlinedienste (Abos & Lizenzen, Domains) sind Kundenleistungen mit Laufzeit — dieselbe Arbeit wie Vertrieb und Abrechnung (Entscheidung 2026-10-29).
+                'section:online-services',
                 'group:sales-payments',
                 'group:sales-accounting',
                 'section:travel-expenses',
