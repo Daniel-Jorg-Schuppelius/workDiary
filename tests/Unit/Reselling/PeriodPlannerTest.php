@@ -131,6 +131,29 @@ class PeriodPlannerTest extends TestCase {
         $this->assertSame(3, ResalePeriod::query()->where('subscription_id', $subscription->id)->value('quantity'), 'berechnete Periode behält ihre Menge');
     }
 
+    public function test_sync_adopts_yearly_periods_shifted_by_days_instead_of_duplicating_them(): void {
+        $planner = new PeriodPlanner;
+        $subscription = $this->subscription();
+        $reference = CarbonImmutable::parse('2026-09-04');
+        $planner->sync($subscription, $reference);
+        $subscription->periods()->whereDate('starts_on', '2024-08-05')->update(['status' => PeriodStatus::Billed->value, 'decided_at' => now()]);
+
+        // Rhythmus rückt um zwei Tage vor (Domain: Registrierungs- → Ablauf-Jahrestag).
+        $subscription->forceFill(['starts_on' => '2024-08-03'])->save();
+        $result = $planner->sync($subscription->fresh(), $reference);
+
+        $this->assertSame(['created' => 0, 'updated' => 2, 'removed' => 0, 'kept' => 1], $result);
+        $this->assertSame(['2024-08-05', '2025-08-03', '2026-08-03'], $subscription->periods()->orderBy('starts_on')->pluck('starts_on')->map(static fn ($d) => $d->toDateString())->all(), 'entschiedene Periode behält ihr Datum, offene rücken auf den Slot');
+
+        // Monatsrhythmus: nur das exakte Datum zählt.
+        $monthly = $this->subscription(['interval' => BillingFrequency::Monthly, 'starts_on' => '2026-06-01']);
+        $planner->sync($monthly, $reference);
+        $monthly->forceFill(['starts_on' => '2026-06-03'])->save();
+        $shifted = $planner->sync($monthly->fresh(), $reference);
+        $this->assertSame(0, $shifted['updated']);
+        $this->assertSame($shifted['created'], $shifted['removed']);
+    }
+
     public function test_sync_lets_proposed_only_periods_follow_the_subscription_but_keeps_decided_ones(): void {
         // Review 2026-09-10 (B4): „berechnet" allein durch Vorschläge ist keine Entscheidung — Menge, Ende und
         // Preis folgen dem Abo, der Status ergibt sich neu aus der Deckung. Bestätigt (decided_at), verzichtet

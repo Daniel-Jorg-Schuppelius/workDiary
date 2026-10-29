@@ -41,6 +41,15 @@ use Illuminate\Support\Facades\DB;
 final class PeriodPlanner {
     public const HORIZON_DAYS = 90;
 
+    /**
+     * Nähe, in der eine bestehende Jahresperiode als dieselbe wie ein neuer Slot gilt,
+     * wenn der Rhythmus des Abos um Tage wandert (Domain-Abo: Beginn vom Registrierungs-
+     * auf den Ablauf-Jahrestag, DENIC-Drift, Befund 2026-10-29) — sonst stünde neben jeder
+     * entschiedenen Periode eine zweite, offene. Jahresslots liegen 365 Tage auseinander,
+     * die Nähe ist eindeutig; Monatsrhythmen bleiben beim exakten Datum.
+     */
+    public const ADOPT_TOLERANCE_DAYS = 45;
+
     private const MAX_PERIODS = 600;
 
     /**
@@ -197,6 +206,8 @@ final class PeriodPlanner {
             foreach ($subscription->periods()->with('links')->get() as $period) {
                 $existing[$period->starts_on->toDateString()] = $period;
             }
+            $plannedKeys = array_fill_keys(array_map(static fn (array $slot): string => $slot['starts_on']->toDateString(), $planned), true);
+            $tolerance = $subscription->interval === BillingFrequency::Yearly ? self::ADOPT_TOLERANCE_DAYS : 0;
             // Soll auf Cent runden (`expected()`): die Periode speichert zwei
             // Nachkommastellen, der Stückpreis vier — sonst gilt jede Neuplanung als Änderung.
             $subscription->loadMissing('assignments');
@@ -212,7 +223,10 @@ final class PeriodPlanner {
                 $seen[$key] = true;
                 $expectedSale = $this->expected($subscription->sale_unit_price, $quantity, $slot);
                 $expectedPurchase = $this->expected($subscription->purchase_unit_price, $quantity, $slot);
-                $period = $existing[$key] ?? null;
+                $period = $existing[$key] ?? ($tolerance > 0 ? self::nearby($existing, $plannedKeys, $seen, $slot['starts_on'], $tolerance) : null);
+                if ($period !== null && ! isset($existing[$key])) {
+                    $seen[$period->starts_on->toDateString()] = true; // übernommen: unter dem alten Datum nicht abräumen
+                }
                 if ($period === null) {
                     ResalePeriod::query()->create([
                         'organization_id' => $subscription->organization_id,
@@ -250,6 +264,7 @@ final class PeriodPlanner {
                 // Offen oder nur vorgeschlagen: Menge, Ende und Preis folgen dem Abo, der
                 // Status ergibt sich neu aus der Deckung (mehr Lizenzen → teilweise).
                 $period->fill([
+                    'starts_on' => $slot['starts_on'],
                     'ends_on' => $slot['ends_on'],
                     'quantity' => $quantity,
                     'expected_purchase' => $expectedPurchase,
@@ -283,6 +298,32 @@ final class PeriodPlanner {
         $subscription->unsetRelation('periods');
 
         return $result;
+    }
+
+    /**
+     * Bestehende Periode in der Nähe eines Slots: keinem Slot datumsgleich, noch keinem
+     * zugeordnet, innerhalb der Toleranz — die nächste gewinnt.
+     *
+     * @param  array<string, ResalePeriod>  $existing
+     * @param  array<string, true>  $plannedKeys
+     * @param  array<string, true>  $seen
+     */
+    private static function nearby(array $existing, array $plannedKeys, array $seen, CarbonImmutable $start, int $tolerance): ?ResalePeriod {
+        $best = null;
+        $bestDays = null;
+        foreach ($existing as $key => $period) {
+            if (isset($plannedKeys[$key]) || isset($seen[$key])) {
+                continue;
+            }
+            $days = (int) abs($period->starts_on->diffInDays($start));
+            if ($days > $tolerance || ($bestDays !== null && $days >= $bestDays)) {
+                continue;
+            }
+            $best = $period;
+            $bestDays = $days;
+        }
+
+        return $best;
     }
 
     /**
