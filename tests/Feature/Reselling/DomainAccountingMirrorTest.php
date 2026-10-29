@@ -124,6 +124,20 @@ class DomainAccountingMirrorTest extends TestCase {
         $this->assertTrue($source->linesFor($this->organization, [$this->lds->id])->isEmpty(), 'keine Lizenzpositionen');
     }
 
+    public function test_bookings_with_a_provider_invoice_id_form_their_own_voucher(): void {
+        $domain = $this->domain('antjebewegt.de');
+        $this->entry('2026-10-27 03:00:00', 'RENEW_DOMAIN_ANNUAL', 'antjebewegt.de', '-5.36', ['domain_projection_id' => $domain->id, 'invoice_number' => '10021-10-2026', 'invoice_period' => null]);
+        $this->entry('2026-10-05 03:00:00', 'RENEW_DOMAIN_ANNUAL', 'antjebewegt.de', '-5.36', ['domain_projection_id' => $domain->id, 'invoice_period' => null, 'raw_hash' => str_repeat('b', 64)]);
+
+        $source = new DomainAccountingMirrorSource;
+        $vouchers = $source->vouchersFor($this->organization, [$this->lds->id], CarbonImmutable::parse('2026-01-01'));
+        $this->assertEqualsCanonicalizing(['10021-10-2026', '10021-10-2026'], $vouchers->map(static fn($v) => $v->voucherNumber)->all(), 'Rechnung des Anbieters und Monatsbeleg heißen gleich, bleiben aber getrennte Belege');
+        $this->assertEqualsCanonicalizing([$this->reseller->id . ':inv:10021-10-2026', $this->reseller->id . ':2026-10'], $vouchers->map(static fn($v) => $v->voucherKey)->all());
+        $byInvoice = $source->voucherByKey($this->organization, $this->reseller->id . ':inv:10021-10-2026');
+        $this->assertCount(1, $byInvoice?->lines ?? []);
+        $this->assertSame(1.0, $byInvoice?->lines[0]->quantity, 'ohne Laufzeit zählt die Menge: ein Jahr');
+    }
+
     public function test_provider_customer_number_is_saved_from_the_reseller_page(): void {
         $admin = $this->orgAdmin();
         $this->actingAs($admin)->get(route('domain-reseller.show', $this->reseller))->assertOk()->assertSee(__('domain.reseller.provider_customer_number'));

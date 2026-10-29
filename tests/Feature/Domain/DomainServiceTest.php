@@ -47,14 +47,23 @@ class DomainServiceTest extends TestCase {
 
     public function test_sync_projects_resellers_domains_and_contacts(): void {
         FakeDomainResellingTransport::fake([
-            'QueryUserList' => FakeDomainResellingTransport::properties([['user' => 'sub1', 'parentuser' => 'reseller1', 'depth' => '1', 'currency' => 'EUR']]),
+            // Live-Namen (domain:contract 2026-10-29): „parent user“, useruserclass, useractive, useraccountcurrency, useraccountcurrent.
+            'QueryUserList' => FakeDomainResellingTransport::properties([
+                ['user' => 'reseller1', 'parent user' => 'upstream', 'useruserclass' => 'RESELLER', 'useractive' => '1', 'useraccountcurrency' => 'EUR', 'useraccountcurrent' => '250.50'],
+                ['user' => 'sub1', 'parent user' => 'reseller1', 'useruserclass' => 'SUBRESELLER', 'useractive' => '1', 'useraccountcurrency' => 'EUR', 'useraccountcurrent' => '12.00'],
+            ]),
             'QueryDomainList' => FakeDomainResellingTransport::properties([['domain' => 'kunde.de', 'user' => 'sub1', 'status' => 'ACTIVE', 'renewalmode' => 'AUTORENEW', 'expirationdate' => '2027-01-01']]),
-            'QueryContactList' => FakeDomainResellingTransport::properties([['contact' => 'P-ABC123', 'organization' => 'Kunde GmbH'], ['CONTACT' => 'P-DEF456', 'CONTACT_ORGANIZATION' => 'Doku GmbH', 'CONTACT_COUNTRY' => 'DE']]),
+            'QueryContactList' => function (array $params): string {
+                \PHPUnit\Framework\Assert::assertSame('1', $params['wide'] ?? null, 'ohne wide liefert der Gateway nur Handles');
+
+                return FakeDomainResellingTransport::properties([['contact' => 'P-ABC123', 'organization' => 'Kunde GmbH'], ['CONTACT' => 'P-DEF456', 'CONTACT_ORGANIZATION' => 'Doku GmbH', 'CONTACT_COUNTRY' => 'DE']]);
+            },
         ]);
 
         app(DomainSyncService::class)->syncAll($this->connection());
 
-        $this->assertDatabaseHas('domain_reseller_accounts', ['external_user' => 'sub1', 'parent_user' => 'reseller1']);
+        $this->assertDatabaseHas('domain_reseller_accounts', ['external_user' => 'sub1', 'parent_user' => 'reseller1', 'depth' => 1, 'user_class' => 'SUBRESELLER', 'currency' => 'EUR', 'balance_snapshot' => '12.00']);
+        $this->assertDatabaseHas('domain_reseller_accounts', ['external_user' => 'reseller1', 'depth' => 0, 'balance_snapshot' => '250.50']);
         $domain = DomainProjection::query()->where('external_domain', 'kunde.de')->firstOrFail();
         $this->assertSame(DomainSyncStatus::Current, $domain->sync_status);
         $this->assertNotNull($domain->reseller_account_id);
@@ -174,7 +183,9 @@ class DomainServiceTest extends TestCase {
         FakeDomainResellingTransport::fake([
             // Namen laut Doku (EVENT, EVENTCLASS, EVENTSUBCLASS, EVENT_DATE, OBJECT_ID) — bis 2026-10-29 las der
             // Abruf `eventid`/`id` und speicherte nie ein Ereignis.
-            'QueryEventList' => FakeDomainResellingTransport::properties([['event' => '4711', 'eventclass' => 'DOMAIN', 'eventsubclass' => 'TRANSFER_SUCCESSFUL', 'event_date' => '2026-10-28 10:00:00', 'object_id' => 'x.de']]),
+            // Live-Vertrag: die Liste trägt nur die Kennung; Klasse, Unterklasse, Objekt, Datum liefert StatusEvent.
+            'QueryEventList' => FakeDomainResellingTransport::properties([['event' => '4711']]),
+            'StatusEvent' => FakeDomainResellingTransport::properties([['class' => 'DOMAIN', 'subclass' => 'TRANSFER_SUCCESSFUL', 'object id' => 'x.de', 'date' => '2026-10-28 10:00:00', 'info' => 'Transfer completed']]),
             'DeleteEvent' => "code=200\ndescription=ok\n", // kein EOF
         ]);
         $connection = $this->connection();
@@ -183,7 +194,8 @@ class DomainServiceTest extends TestCase {
         $this->assertSame(1, $result['stored']);
         $this->assertSame(0, $result['acknowledged']);
         $this->assertDatabaseHas('domain_events', ['external_event_id' => '4711', 'status' => 'stored', 'event_class' => 'DOMAIN', 'event_action' => 'TRANSFER_SUCCESSFUL', 'object' => 'x.de']);
-        $this->assertSame(['event', 'event_date', 'eventclass', 'eventsubclass', 'object_id'], $connection->refresh()->observed_properties['queryeventlist'] ?? null, 'der Adapter merkt sich den gelieferten Vertrag');
+        $this->assertSame(['event'], $connection->refresh()->observed_properties['queryeventlist'] ?? null, 'der Adapter merkt sich den gelieferten Vertrag');
+        $this->assertSame(['class', 'date', 'info', 'object id', 'subclass'], $connection->observed_properties['statusevent'] ?? null);
     }
 
     public function test_availability_reads_the_documented_domaincheck_codes(): void {
@@ -206,7 +218,7 @@ class DomainServiceTest extends TestCase {
         $this->assertSame(0, Artisan::call('domain:contract', ['--connection' => $connection->id]));
         $output = Artisan::output();
         $this->assertStringContainsString('queryaccountinglist', $output);
-        $this->assertStringContainsString('Laufzeit, Subreseller', $output, $output);
+        $this->assertStringContainsString('Menge, Rechnung', $output, $output);
     }
 
     public function test_accounting_is_read_only_and_invoices_blocked(): void {
@@ -215,14 +227,15 @@ class DomainServiceTest extends TestCase {
         FakeDomainResellingTransport::fake([
             'QueryAccountingList' => FakeDomainResellingTransport::properties([
                 // Live-Gateway schreibt die Namen ohne Unterstriche (RRPproxy-Stil), die Doku mit — beide müssen treffen.
-                ['ACCOUNTINGDATE' => '2026-10-27 07:30:00', 'ACCOUNTINGTYPE' => 'RENEW', 'ACCOUNTINGDESCRIPTION' => 'antjebewegt.de', 'ACCOUNTINGAMOUNT' => '1', 'ACCOUNTINGPRICE' => '-5.36', 'ACCOUNTINGVAT' => '19', 'ACCOUNTINGVATPRICE' => '-1.02', 'ACCOUNTINGCURRENCY' => 'EUR', 'INVOICEPERIOD' => '1Y', 'SUBRESELLER' => 'lds-systems', 'TOTAL' => '2', 'COUNT' => '2', 'SUM' => '-5.54'],
+                // Live (domain:contract 2026-10-29): „accounting date“, „accounting invoice id“ …, kein SUBRESELLER — der Subuser kommt über die Domain.
+                ['accounting date' => '2026-10-27 07:30:00', 'accounting type' => 'RENEW_DOMAIN_ANNUAL', 'accounting description' => 'antjebewegt.de', 'accounting amount' => '1', 'accounting price' => '-5.36', 'accounting vat' => '19', 'accounting vat price' => '-1.02', 'accountingcurrency' => 'EUR', 'accounting invoice id' => '10021-10-2026', 'accounting reference' => 'RENEW antjebewegt.de', 'TOTAL' => '2', 'COUNT' => '2', 'SUM' => '-5.54'],
                 ['accounting_date' => '2026-10-28 03:03:00', 'accounting_type' => 'MONTHLY_FEE', 'accounting_description' => 'monthly fee (4 zones)', 'accounting_amount' => '4', 'accounting_price' => '-0.18', 'accounting_currency' => 'EUR'],
             ]),
         ]);
         $connection = $this->connection();
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'LDS Systems GmbH']);
         $reseller = DomainResellerAccount::factory()->create(['organization_id' => $this->organization->id, 'connection_id' => $connection->id, 'external_user' => 'lds-systems', 'customer_id' => $customer->id]);
-        $domain = DomainProjection::factory()->create(['organization_id' => $this->organization->id, 'connection_id' => $connection->id, 'external_domain' => 'antjebewegt.de', 'domain_hash' => DomainProjection::hashFor('antjebewegt.de')]);
+        $domain = DomainProjection::factory()->create(['organization_id' => $this->organization->id, 'connection_id' => $connection->id, 'external_domain' => 'antjebewegt.de', 'domain_hash' => DomainProjection::hashFor('antjebewegt.de'), 'reseller_account_id' => $reseller->id]);
         // Leere Zeile aus der Zeit der falschen Schlüssel.
         DomainAccountingEntry::query()->create(['organization_id' => $this->organization->id, 'connection_id' => $connection->id, 'external_user' => '', 'raw_hash' => str_repeat('0', 64)]);
 
@@ -230,12 +243,14 @@ class DomainServiceTest extends TestCase {
         app(DomainAccountingService::class)->sync($connection);
         // Zwei Buchungen, keine Dubletten, leere Altzeile entfernt.
         $this->assertDatabaseCount('domain_accounting_entries', 2);
-        $renew = DomainAccountingEntry::query()->where('type', 'RENEW')->firstOrFail();
+        $renew = DomainAccountingEntry::query()->where('type', 'RENEW_DOMAIN_ANNUAL')->firstOrFail();
+        $this->assertSame('10021-10-2026', $renew->invoice_number);
+        $this->assertSame('RENEW antjebewegt.de', $renew->reference);
         $this->assertSame('2026-10-27', $renew->entry_date?->format('Y-m-d'));
         $this->assertSame('antjebewegt.de', $renew->description);
-        $this->assertSame('1Y', $renew->invoice_period);
+        $this->assertNull($renew->invoice_period, 'eine Laufzeit liefert der Gateway nicht');
         $this->assertSame('-5.36', $renew->net_amount);
-        $this->assertSame('lds-systems', $renew->external_user);
+        $this->assertSame('lds-systems', $renew->external_user, 'Subuser über die Domain, die Buchung nennt keinen');
         $this->assertSame($reseller->id, $renew->reseller_account_id);
         $this->assertSame($domain->id, $renew->domain_projection_id);
         $this->assertSame($customer->id, $renew->customer_id, 'Kunde des Subusers, weil die Domain keinen hat');
@@ -291,10 +306,13 @@ class DomainServiceTest extends TestCase {
                     'code=200',
                     'property[DOMAIN][0]=lds-endkunde.de',
                     'property[USER][0]=lds-systems',
-                    'property[DOMAINREGISTRAR][0]=DENIC',
+                    'property[DOMAINREPOSITORY][0]=DENIC',
                     'property[DOMAINSTATUS][0]=ACTIVE',
                     'property[DOMAINRENEWALMODE][0]=AUTORENEW',
                     'property[DOMAINREGISTRATIONEXPIRATIONDATE][0]=2027-03-01 00:00:00',
+                    'property[DOMAINFAILUREDATE][0]=2027-03-25 00:00:00',
+                    'property[DOMAINNEXTACTION][0]=pay',
+                    'property[DOMAINCREATEDDATE][0]=2014-03-27 00:00:00',
                     'EOF',
                 ]) . "\n";
             },
@@ -305,9 +323,12 @@ class DomainServiceTest extends TestCase {
         $domain = DomainProjection::query()->where('domain_hash', DomainProjection::hashFor('lds-endkunde.de'))->firstOrFail();
         $this->assertSame($reseller->id, $domain->reseller_account_id);
         $this->assertSame('lds-systems', $domain->external_user);
-        $this->assertSame('DENIC', $domain->registrar);
+        $this->assertSame('DENIC', $domain->registrar, 'Registry aus DOMAINREPOSITORY — einen Registrar nennt die Liste nicht');
         $this->assertSame('ACTIVE', $domain->status);
         $this->assertSame('2027-03-01', $domain->expiration_at?->toDateString());
+        $this->assertSame('2027-03-25', $domain->failure_at?->toDateString(), 'Lebenszyklusdaten kommen auch aus der Liste');
+        $this->assertSame('pay', $domain->next_action);
+        $this->assertSame('2014-03-27', $domain->registration_at?->toDateString());
     }
 
     public function test_refresh_domain_relinks_reseller_from_status_user(): void {

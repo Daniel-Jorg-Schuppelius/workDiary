@@ -63,12 +63,14 @@ class DomainSyncService {
                     'external_user' => $user,
                 ],
                 [
+                    // Live-Vertrag (domain:contract 2026-10-29): „parent user“, useruserclass, useractive,
+                    // useraccountcurrency, useraccountcurrent (Saldo); eine Tiefe liefert die Liste nicht.
                     'parent_user' => $this->field($row, ['parentuser', 'parent', 'userparent']),
                     'depth' => (int) ($this->field($row, ['depth', 'userdepth', 'level']) ?? 0),
-                    'user_class' => $this->field($row, ['userclass', 'class']),
-                    'active' => $this->boolField($row, ['active', 'useractive', 'status', 'userstatus'], true),
-                    'currency' => $this->currency($this->field($row, ['currency', 'usercurrency', 'accountcurrency'])),
-                    'balance_snapshot' => NumberHelper::normalizeDecimalStringOrNull($this->field($row, ['balance', 'accountbalance', 'userbalance', 'amount']) ?? ''),
+                    'user_class' => $this->field($row, ['useruserclass', 'userclass', 'class']),
+                    'active' => $this->boolField($row, ['useractive', 'active', 'status', 'userstatus'], true),
+                    'currency' => $this->currency($this->field($row, ['useraccountcurrency', 'currency', 'usercurrency', 'accountcurrency'])),
+                    'balance_snapshot' => NumberHelper::normalizeDecimalStringOrNull($this->field($row, ['useraccountcurrent', 'balance', 'accountbalance', 'userbalance', 'amount']) ?? ''),
                     'balance_at' => Carbon::now(),
                     'raw_hash' => CryptoHelper::hash(JsonHelper::encode($row)),
                     'synced_at' => Carbon::now(),
@@ -76,8 +78,27 @@ class DomainSyncService {
             );
             $count++;
         }
+        $this->assignDepths($connection);
 
         return $count;
+    }
+
+    /** Tiefe aus der Parent-Kette: Konten ohne bekannten Parent sind die Wurzel (0), darunter je Stufe +1. */
+    private function assignDepths(DomainProviderConnection $connection): void {
+        $accounts = DomainResellerAccount::query()->where('connection_id', $connection->id)->get()->keyBy('external_user');
+        foreach ($accounts as $account) {
+            $depth = 0;
+            $parent = $account->parent_user;
+            $seen = [];
+            while ($parent !== null && isset($accounts[$parent]) && ! isset($seen[$parent])) {
+                $seen[$parent] = true;
+                $depth++;
+                $parent = $accounts[$parent]->parent_user;
+            }
+            if ((int) $account->depth !== $depth) {
+                $account->forceFill(['depth' => $depth])->saveQuietly();
+            }
+        }
     }
 
     /**
@@ -134,7 +155,8 @@ class DomainSyncService {
     /** Registry-Kontakte als providergeführte, minimierte Projektionen. */
     public function syncContacts(DomainProviderConnection $connection, ?DomainProviderAdapter $adapter = null): int {
         $adapter ??= $this->resolver->for($connection);
-        $response = $adapter->execute('QueryContactList', [], DomainCapabilityArea::Contacts);
+        // wide=1: ohne Verbose-Modus liefert der Gateway nur die Handles (domain:contract 2026-10-29).
+        $response = $adapter->execute('QueryContactList', ['wide' => 1], DomainCapabilityArea::Contacts);
 
         $count = 0;
         foreach ($response->rows() as $row) {
@@ -197,7 +219,8 @@ class DomainSyncService {
             'external_domain' => $domain,
             'external_user' => $user ?? '',
             'reseller_account_id' => $reseller?->id,
-            'registrar' => $this->field($row, ['registrar', 'domainregistrar']),
+            // Live-Vertrag (domain:contract 2026-10-29): die Liste nennt keinen Registrar, aber die Registry (DOMAINREPOSITORY).
+            'registrar' => $this->field($row, ['registrar', 'domainregistrar', 'domainrepository']),
             'status' => $this->field($row, ['status', 'domainstatus']),
             'sync_status' => DomainSyncStatus::Current->value,
             'renewal_mode' => DomainRenewalMode::fromProvider($this->field($row, ['renewalmode', 'domainrenewalmode']))?->value,
@@ -205,13 +228,18 @@ class DomainSyncService {
             'raw_hash' => CryptoHelper::hash(JsonHelper::encode($row)),
             'synced_at' => Carbon::now(),
         ];
-        // Diese Daten liefert NUR StatusDomain — die Liste würde per Detail-
-        // abgleich gefüllte Werte sonst bei jedem Sync wieder auf null setzen.
-        foreach (['accounting_at' => ['paiddate', 'accountingdate'], 'failure_at' => ['failuredate'], 'finalization_at' => ['finalizationdate']] as $column => $keys) {
+        // Nur setzen, wenn geliefert — ein Listen-Sync darf per StatusDomain gefüllte Werte nicht
+        // auf null zurücksetzen. Der Live-Gateway liefert diese Daten auch in der Liste
+        // (DOMAINACCOUNTINGDATE, DOMAINFAILUREDATE, DOMAINFINALIZATIONDATE, DOMAINCREATEDDATE; domain:contract 2026-10-29).
+        foreach (['accounting_at' => ['paiddate', 'accountingdate', 'domainaccountingdate', 'domainpaiduntildate'], 'failure_at' => ['failuredate', 'domainfailuredate'], 'finalization_at' => ['finalizationdate', 'domainfinalizationdate'], 'registration_at' => ['registrationdate', 'createddate', 'domaincreateddate']] as $column => $keys) {
             $value = $this->date($this->field($row, $keys));
             if ($value !== null) {
                 $values[$column] = $value;
             }
+        }
+        $nextAction = $this->field($row, ['nextaction', 'domainnextaction']);
+        if ($nextAction !== null) {
+            $values['next_action'] = $nextAction;
         }
 
         // Registrant-/Owner-Contact-Handle nur setzen, wenn der Provider ihn

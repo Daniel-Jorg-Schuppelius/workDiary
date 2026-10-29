@@ -9848,6 +9848,7 @@ CREATE TABLE `domain_accounting_entries` (
   `type` varchar(64) DEFAULT NULL,
   `description` varchar(512) DEFAULT NULL,
   `invoice_period` varchar(64) DEFAULT NULL,
+  `invoice_number` varchar(64) DEFAULT NULL,
   `reference` varchar(190) DEFAULT NULL,
   `quantity` decimal(12,3) DEFAULT NULL,
   `net_amount` decimal(15,2) DEFAULT NULL,
@@ -28429,3 +28430,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1039,'2027_04_01_1
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1040,'2027_04_01_180000_create_resale_ignored_lines_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1041,'2027_04_01_190000_add_provider_customer_number_and_invoice_period_to_domain_tables',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1042,'2027_04_01_200000_add_observed_properties_to_domain_provider_connections',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1043,'2027_04_01_210000_add_invoice_number_to_domain_accounting_entries',1);

@@ -66,6 +66,18 @@ class DomainAccountingService {
         'pricing' => ['accountingpricing', 'pricing'],
     ];
 
+    /**
+     * Zusätzliche Felder des Live-Gateways (domain:contract 2026-10-29: „accounting invoice id“,
+     * „accounting reference“) — bewusst nicht im Dedup-Hash, damit bestehende Zeilen ihre Kennung
+     * behalten und nur ergänzt werden.
+     *
+     * @var array<string, list<string>>
+     */
+    private const EXTRA_FIELDS = [
+        'invoice_number' => ['accountinginvoiceid', 'invoiceid', 'invoice'],
+        'reference' => ['accountingreference', 'reference'],
+    ];
+
     public function __construct(private readonly DomainProviderResolver $resolver) {}
 
     /** Spiegelt das Buchungsjournal (Haupt-/Subuser) seitenweise als Projektion. */
@@ -89,7 +101,11 @@ class DomainAccountingService {
                 if ($fields['date'] === null) {
                     continue;
                 }
-                $this->store($connection, $fields);
+                $extra = [];
+                foreach (self::EXTRA_FIELDS as $name => $keys) {
+                    $extra[$name] = self::providerField($row, $keys);
+                }
+                $this->store($connection, $fields, $extra);
                 $stored++;
             }
             $count += $stored;
@@ -102,8 +118,11 @@ class DomainAccountingService {
         return $count;
     }
 
-    /** @param  array<string, string|null>  $fields  logische Felder laut {@see self::FIELDS} */
-    private function store(DomainProviderConnection $connection, array $fields): void {
+    /**
+     * @param  array<string, string|null>  $fields  logische Felder laut {@see self::FIELDS}
+     * @param  array<string, string|null>  $extra  Felder laut {@see self::EXTRA_FIELDS}
+     */
+    private function store(DomainProviderConnection $connection, array $fields, array $extra = []): void {
         $user = (string) ($fields['subreseller'] ?? '');
         $reseller = $user !== '' ? DomainResellerAccount::query()
             ->where('connection_id', $connection->id)
@@ -116,6 +135,12 @@ class DomainAccountingService {
             ->where('organization_id', $connection->organization_id)
             ->where('domain_hash', DomainProjection::hashFor($domainName))
             ->first() : null;
+        // Der Live-Gateway nennt keinen Subreseller — das Hauptjournal enthält aber die Buchungen der
+        // Subuser-Domains (Prod 2026-10-29: 388 für lds-systems). Der Subuser kommt dann über die Domain.
+        if ($reseller === null && $domain?->reseller_account_id !== null) {
+            $reseller = DomainResellerAccount::query()->find($domain->reseller_account_id);
+            $user = $reseller->external_user ?? $user;
+        }
 
         DomainAccountingEntry::query()->updateOrCreate(
             [
@@ -132,6 +157,8 @@ class DomainAccountingService {
                 'type' => $fields['type'],
                 'description' => $description !== '' ? $description : $domainName,
                 'invoice_period' => $fields['period'],
+                'invoice_number' => $extra['invoice_number'] ?? null,
+                'reference' => $extra['reference'] ?? null,
                 'quantity' => NumberHelper::normalizeDecimalStringOrNull($fields['amount'] ?? ''),
                 'net_amount' => NumberHelper::normalizeDecimalStringOrNull($fields['price'] ?? ''),
                 'vat_rate' => NumberHelper::normalizeDecimalStringOrNull($fields['vat'] ?? ''),

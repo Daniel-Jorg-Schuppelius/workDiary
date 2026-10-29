@@ -11619,6 +11619,7 @@ CREATE TABLE IF NOT EXISTS "domain_accounting_entries"(
   "created_at" datetime,
   "updated_at" datetime,
   "invoice_period" varchar,
+  "invoice_number" varchar,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("connection_id") references "domain_provider_connections"("id") on delete cascade,
   foreign key("reseller_account_id") references "domain_reseller_accounts"("id") on delete set null,
@@ -26153,3 +26154,4 @@ INSERT INTO migrations VALUES(1039,'2027_04_01_170000_add_invoice_link_to_resale
 INSERT INTO migrations VALUES(1040,'2027_04_01_180000_create_resale_ignored_lines_table',12);
 INSERT INTO migrations VALUES(1041,'2027_04_01_190000_add_provider_customer_number_and_invoice_period_to_domain_tables',13);
 INSERT INTO migrations VALUES(1042,'2027_04_01_200000_add_observed_properties_to_domain_provider_connections',14);
+INSERT INTO migrations VALUES(1043,'2027_04_01_210000_add_invoice_number_to_domain_accounting_entries',15);

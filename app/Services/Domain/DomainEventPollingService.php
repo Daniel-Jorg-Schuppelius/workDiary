@@ -54,6 +54,16 @@ class DomainEventPollingService {
             ]);
             $isNew = ! $event->exists;
 
+            // Live-Vertrag (domain:contract 2026-10-29): die Liste trägt nur die Kennung, Klasse,
+            // Unterklasse, Objekt und Datum liefert StatusEvent je Ereignis.
+            if (self::providerField($row, ['eventclass', 'class']) === null) {
+                try {
+                    $row = array_merge($row, $this->flatten($adapter->execute('StatusEvent', ['event' => $eventId], DomainCapabilityArea::Events)));
+                } catch (DomainProviderException) {
+                    // Ohne Details speichern wir die Kennung; quittiert wird erst mit Details.
+                    continue;
+                }
+            }
             $occurredAt = self::providerField($row, ['eventdate', 'date']);
             $event->fill([
                 'event_class' => self::providerField($row, ['eventclass', 'class']),
@@ -101,5 +111,22 @@ class DomainEventPollingService {
         }
 
         return ['stored' => $stored, 'acknowledged' => $acknowledged];
+    }
+
+    /**
+     * Erste Werte aller Eigenschaften einer Einzelantwort als Zeile.
+     *
+     * @return array<string, string>
+     */
+    private function flatten(\App\Plugins\Support\Domain\DomainResponse $response): array {
+        $row = [];
+        foreach ($response->propertyNames() as $name) {
+            $value = $response->first($name);
+            if ($value !== null) {
+                $row[$name] = $value;
+            }
+        }
+
+        return $row;
     }
 }

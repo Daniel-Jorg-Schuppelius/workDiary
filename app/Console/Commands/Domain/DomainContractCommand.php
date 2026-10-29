@@ -35,10 +35,11 @@ class DomainContractCommand extends Command {
     public const EXPECTED = [
         'querydomainlist' => ['Domain' => ['domain', 'object'], 'Subuser' => ['user', 'domainuser', 'subuser'], 'Status' => ['status', 'domainstatus'], 'Verlängerungsmodus' => ['renewalmode', 'domainrenewalmode'], 'Ablauf' => ['expirationdate', 'registrationexpirationdate', 'domainregistrationexpirationdate']],
         'statusdomain' => ['Status' => ['status'], 'Verlängerungsmodus' => ['renewalmode'], 'Ablauf' => ['expirationdate', 'registrationexpirationdate'], 'Failure-Datum' => ['failuredate'], 'Preis' => ['renewalprice', 'price'], 'Inhaberkontakt' => ['ownercontact', 'ownercontact0']],
-        'queryuserlist' => ['Subuser' => ['user', 'username', 'subuser'], 'Übergeordnet' => ['parentuser', 'parent', 'userparent'], 'Saldo' => ['balance', 'accountbalance', 'userbalance'], 'Währung' => ['currency', 'usercurrency', 'accountcurrency']],
+        'queryuserlist' => ['Subuser' => ['user', 'username', 'subuser'], 'Übergeordnet' => ['parentuser', 'parent', 'userparent'], 'Klasse' => ['useruserclass', 'userclass', 'class'], 'Saldo' => ['useraccountcurrent', 'balance', 'accountbalance', 'userbalance'], 'Währung' => ['useraccountcurrency', 'currency', 'usercurrency', 'accountcurrency']],
         'querycontactlist' => ['Kontakt' => ['contact', 'handle', 'id'], 'Organisation' => ['contactorganization', 'organization', 'org'], 'Land' => ['contactcountry', 'country']],
-        'queryeventlist' => ['Ereignis' => ['event', 'eventid', 'id'], 'Klasse' => ['eventclass', 'class'], 'Unterklasse' => ['eventsubclass', 'subclass', 'eventaction', 'action'], 'Objekt' => ['objectid', 'object', 'eventobject'], 'Datum' => ['eventdate', 'date']],
-        'queryaccountinglist' => ['Datum' => ['accountingdate', 'date'], 'Typ' => ['accountingtype', 'type'], 'Beschreibung' => ['accountingdescription', 'description'], 'Betrag' => ['accountingprice', 'price', 'netamount'], 'Laufzeit' => ['invoiceperiod', 'period'], 'Subreseller' => ['subreseller', 'subuser', 'user']],
+        'queryeventlist' => ['Ereignis' => ['event', 'eventid', 'id']],
+        'statusevent' => ['Klasse' => ['eventclass', 'class'], 'Unterklasse' => ['eventsubclass', 'subclass', 'eventaction', 'action'], 'Objekt' => ['objectid', 'object', 'eventobject'], 'Datum' => ['eventdate', 'date']],
+        'queryaccountinglist' => ['Datum' => ['accountingdate', 'date'], 'Typ' => ['accountingtype', 'type'], 'Beschreibung' => ['accountingdescription', 'description'], 'Menge' => ['accountingamount', 'amount', 'quantity'], 'Betrag' => ['accountingprice', 'price', 'netamount'], 'Rechnung' => ['accountinginvoiceid', 'invoiceid', 'invoice']],
         'checkdomains' => ['Verfügbarkeit' => ['domaincheck', 'status', 'availability']],
         'statusdnszone' => ['Einträge' => ['rr'], 'SOA' => ['soa', 'soaserial']],
     ];
