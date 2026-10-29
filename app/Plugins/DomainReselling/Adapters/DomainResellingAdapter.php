@@ -26,7 +26,7 @@ class DomainResellingAdapter implements DomainProviderAdapter {
 
     public function __construct(
         private readonly DomainResellingClient $client,
-        DomainProviderConnection $connection,
+        private readonly DomainProviderConnection $connection,
     ) {
         $this->matrix = DomainCapabilityMatrix::fromStored($connection->capabilities);
     }
@@ -37,7 +37,10 @@ class DomainResellingAdapter implements DomainProviderAdapter {
             throw new DomainCapabilityBlockedException($area);
         }
 
-        return $this->client->call($command, $params, self::isMutating($command));
+        $response = $this->client->call($command, $params, self::isMutating($command));
+        $this->connection->recordObservedProperties($command, $response->propertyNames());
+
+        return $response;
     }
 
     public function capabilities(): DomainCapabilityMatrix {

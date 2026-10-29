@@ -10114,6 +10114,7 @@ CREATE TABLE `domain_provider_connections` (
   `password` text DEFAULT NULL,
   `default_user` varchar(190) DEFAULT NULL,
   `capabilities` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`capabilities`)),
+  `observed_properties` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`observed_properties`)),
   `status` varchar(20) NOT NULL DEFAULT 'draft',
   `pilot_confirmed_at` timestamp NULL DEFAULT NULL,
   `last_sync_at` timestamp NULL DEFAULT NULL,
@@ -28427,3 +28428,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1038,'2027_04_01_1
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1039,'2027_04_01_170000_add_invoice_link_to_resale_license_assignments',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1040,'2027_04_01_180000_create_resale_ignored_lines_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1041,'2027_04_01_190000_add_provider_customer_number_and_invoice_period_to_domain_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1042,'2027_04_01_200000_add_observed_properties_to_domain_provider_connections',1);

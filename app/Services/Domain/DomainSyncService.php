@@ -14,9 +14,10 @@ use App\Enums\Domain\{DomainCapabilityArea, DomainRenewalMode, DomainSyncStatus}
 use App\Models\Domain\{DomainContactProjection, DomainProjection, DomainProviderConnection, DomainResellerAccount};
 use App\Plugins\Contracts\Domain\DomainProviderAdapter;
 use App\Plugins\Support\Domain\DomainResponse;
+use App\Services\Domain\Concerns\ReadsProviderFields;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
-use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Carbon;
 
 /**
@@ -27,6 +28,8 @@ use Illuminate\Support\Carbon;
  * die Projektion übernommen.
  */
 class DomainSyncService {
+    use ReadsProviderFields;
+
     public function __construct(private readonly DomainProviderResolver $resolver) {}
 
     /** Voller Abgleich: Reseller, Domains (SELF + Subuser) und Kontakte. */
@@ -60,12 +63,12 @@ class DomainSyncService {
                     'external_user' => $user,
                 ],
                 [
-                    'parent_user' => $this->field($row, ['parentuser', 'parent']),
-                    'depth' => (int) ($this->field($row, ['depth', 'level']) ?? 0),
+                    'parent_user' => $this->field($row, ['parentuser', 'parent', 'userparent']),
+                    'depth' => (int) ($this->field($row, ['depth', 'userdepth', 'level']) ?? 0),
                     'user_class' => $this->field($row, ['userclass', 'class']),
-                    'active' => $this->boolField($row, ['active', 'status'], true),
-                    'currency' => $this->currency($this->field($row, ['currency'])),
-                    'balance_snapshot' => NumberHelper::normalizeDecimalStringOrNull($this->field($row, ['balance', 'accountbalance']) ?? ''),
+                    'active' => $this->boolField($row, ['active', 'useractive', 'status', 'userstatus'], true),
+                    'currency' => $this->currency($this->field($row, ['currency', 'usercurrency', 'accountcurrency'])),
+                    'balance_snapshot' => NumberHelper::normalizeDecimalStringOrNull($this->field($row, ['balance', 'accountbalance', 'userbalance', 'amount']) ?? ''),
                     'balance_at' => Carbon::now(),
                     'raw_hash' => CryptoHelper::hash(JsonHelper::encode($row)),
                     'synced_at' => Carbon::now(),
@@ -147,12 +150,12 @@ class DomainSyncService {
                     'external_handle' => $handle,
                 ],
                 [
-                    'external_user' => $this->field($row, ['user', 'owner']),
+                    'external_user' => $this->field($row, ['user', 'contactuser', 'owner']),
                     // Minimierter Snapshot ohne rohe PII-Häufung.
                     'snapshot' => [
-                        'organization' => $this->field($row, ['organization', 'org']),
-                        'country' => $this->field($row, ['country']),
-                        'type' => $this->field($row, ['type']),
+                        'organization' => $this->field($row, ['contactorganization', 'organization', 'org']),
+                        'country' => $this->field($row, ['contactcountry', 'country']),
+                        'type' => $this->field($row, ['contacttype', 'type']),
                     ],
                     'raw_hash' => CryptoHelper::hash(JsonHelper::encode($row)),
                     'synced_at' => Carbon::now(),
@@ -296,25 +299,20 @@ class DomainSyncService {
      * @param  array<string, string>  $row
      * @param  list<string>  $keys
      */
+    /**
+     * @param  array<string, string|null>  $row
+     * @param  list<string>  $keys
+     */
     private function field(array $row, array $keys): ?string {
-        foreach ($keys as $key) {
-            $value = $row[strtolower($key)] ?? null;
-            if ($value !== null && $value !== '') {
-                return $value;
-            }
-        }
-
-        return null;
+        return self::providerField($row, $keys);
     }
 
     /**
-     * @param  array<string, string>  $row
+     * @param  array<string, string|null>  $row
      * @param  list<string>  $keys
      */
     private function boolField(array $row, array $keys, bool $default): bool {
-        $value = $this->field($row, $keys);
-
-        return $value === null ? $default : (StringHelper::parseBool($value) ?? false);
+        return self::providerBool($row, $keys, $default);
     }
 
     private function date(?string $value): ?Carbon {

@@ -14,6 +14,7 @@ namespace App\Services\Domain;
 
 use App\Enums\Domain\DomainCapabilityArea;
 use App\Models\Domain\{DomainAccountingEntry, DomainProjection, DomainProviderConnection, DomainResellerAccount};
+use App\Services\Domain\Concerns\ReadsProviderFields;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper, NumberHelper};
 use Illuminate\Support\Carbon;
@@ -28,10 +29,13 @@ use Illuminate\Support\Carbon;
  * ACCOUNTING_DESCRIPTION (bei Domainbuchungen der Domainname), ACCOUNTING_AMOUNT
  * (Menge), ACCOUNTING_PRICE (Netto, Belastung negativ), ACCOUNTING_VAT,
  * ACCOUNTING_VAT_PRICE, ACCOUNTING_CURRENCY, INVOICE_PERIOD (Laufzeit),
- * SUBRESELLER (verursachender Subuser). Befund 2026-10-29: bis dahin las der
- * Sync Schlüssel, die die API nie liefert — 1134 Zeilen ohne Inhalt.
+ * SUBRESELLER (verursachender Subuser); der Live-Gateway schreibt dieselben Namen
+ * ohne Unterstriche. Befund 2026-10-29: bis dahin las der Sync Schlüssel, die die
+ * API nie liefert — 1134 Zeilen ohne Inhalt.
  */
 class DomainAccountingService {
+    use ReadsProviderFields;
+
     /** Erste Abfrage ab diesem Datum (Monatsrechnungen des Portals seit 2015). */
     public const FIRST_DATE = '2015-01-01';
 
@@ -40,8 +44,27 @@ class DomainAccountingService {
 
     public const PAGE_SIZE = 1000;
 
-    /** Buchungsspalten, über die der Dedup-Hash läuft — die Summenfelder der Antwort (TOTAL, SUM …) ändern sich je Abruf. */
-    private const HASHED = ['accounting_date', 'accounting_type', 'accounting_description', 'accounting_amount', 'accounting_price', 'accounting_vat', 'accounting_vat_price', 'accounting_currency', 'invoice_period', 'subreseller', 'accounting_pricing'];
+    /**
+     * Logische Felder → Kandidatenschlüssel (Wissensdatenbank mit Unterstrich, Live-Gateway ohne;
+     * {@see ReadsProviderFields}). Über diese Felder läuft auch der Dedup-Hash — die Summenfelder
+     * der Antwort (TOTAL, SUM …) ändern sich je Abruf.
+     *
+     * @var array<string, list<string>>
+     */
+    private const FIELDS = [
+        'date' => ['accountingdate', 'date'],
+        'type' => ['accountingtype', 'type'],
+        'description' => ['accountingdescription', 'description'],
+        'object' => ['accountingobject', 'object', 'domain'],
+        'amount' => ['accountingamount', 'amount', 'quantity'],
+        'price' => ['accountingprice', 'price', 'netamount'],
+        'vat' => ['accountingvat', 'vatrate', 'vat'],
+        'vat_price' => ['accountingvatprice', 'vatprice', 'taxamount'],
+        'currency' => ['accountingcurrency', 'currency'],
+        'period' => ['invoiceperiod', 'period'],
+        'subreseller' => ['subreseller', 'subuser', 'user'],
+        'pricing' => ['accountingpricing', 'pricing'],
+    ];
 
     public function __construct(private readonly DomainProviderResolver $resolver) {}
 
@@ -58,11 +81,15 @@ class DomainAccountingService {
             ], DomainCapabilityArea::Accounting);
             $stored = 0;
             foreach ($response->rows() as $row) {
+                $fields = [];
+                foreach (self::FIELDS as $name => $keys) {
+                    $fields[$name] = self::providerField($row, $keys);
+                }
                 // Zeile 0 trägt zusätzlich die Summenfelder; ohne Buchungsdatum ist es keine Buchung.
-                if (! isset($row['accounting_date'])) {
+                if ($fields['date'] === null) {
                     continue;
                 }
-                $this->store($connection, $row);
+                $this->store($connection, $fields);
                 $stored++;
             }
             $count += $stored;
@@ -75,46 +102,41 @@ class DomainAccountingService {
         return $count;
     }
 
-    /** @param  array<string, string>  $row */
-    private function store(DomainProviderConnection $connection, array $row): void {
-        $user = trim((string) ($row['subreseller'] ?? ''));
+    /** @param  array<string, string|null>  $fields  logische Felder laut {@see self::FIELDS} */
+    private function store(DomainProviderConnection $connection, array $fields): void {
+        $user = (string) ($fields['subreseller'] ?? '');
         $reseller = $user !== '' ? DomainResellerAccount::query()
             ->where('connection_id', $connection->id)
             ->where('external_user', $user)
             ->first() : null;
-        $description = trim((string) ($row['accounting_description'] ?? ''));
+        $description = (string) ($fields['description'] ?? '');
+        $domainName = self::looksLikeDomain((string) ($fields['object'] ?? '')) ? (string) $fields['object'] : (self::looksLikeDomain($description) ? $description : null);
         // Domain org-weit auflösen (eine Zeile je Domainname, unabhängig von der meldenden Verbindung).
-        $domain = self::looksLikeDomain($description) ? DomainProjection::query()
+        $domain = $domainName !== null ? DomainProjection::query()
             ->where('organization_id', $connection->organization_id)
-            ->where('domain_hash', DomainProjection::hashFor($description))
+            ->where('domain_hash', DomainProjection::hashFor($domainName))
             ->first() : null;
-        $hashed = [];
-        foreach (self::HASHED as $key) {
-            if (isset($row[$key])) {
-                $hashed[$key] = $row[$key];
-            }
-        }
 
         DomainAccountingEntry::query()->updateOrCreate(
             [
                 'organization_id' => $connection->organization_id,
                 'connection_id' => $connection->id,
-                'raw_hash' => CryptoHelper::hash(JsonHelper::encode($hashed)),
+                'raw_hash' => CryptoHelper::hash(JsonHelper::encode(array_filter($fields, static fn(?string $v): bool => $v !== null))),
             ],
             [
                 'external_user' => $user,
                 'reseller_account_id' => $reseller?->id,
                 'domain_projection_id' => $domain?->id,
                 'customer_id' => $domain !== null && $domain->customer_id !== null ? $domain->customer_id : $reseller?->customer_id,
-                'entry_date' => Carbon::parse($row['accounting_date'], 'UTC'),
-                'type' => $row['accounting_type'] ?? null,
-                'description' => $description !== '' ? $description : null,
-                'invoice_period' => $row['invoice_period'] ?? null,
-                'quantity' => NumberHelper::normalizeDecimalStringOrNull($row['accounting_amount'] ?? ''),
-                'net_amount' => NumberHelper::normalizeDecimalStringOrNull($row['accounting_price'] ?? ''),
-                'vat_rate' => NumberHelper::normalizeDecimalStringOrNull($row['accounting_vat'] ?? ''),
-                'tax_amount' => NumberHelper::normalizeDecimalStringOrNull($row['accounting_vat_price'] ?? ''),
-                'currency' => isset($row['accounting_currency']) ? CurrencyCode::tryFrom(strtoupper($row['accounting_currency']))?->value : null,
+                'entry_date' => Carbon::parse((string) $fields['date'], 'UTC'),
+                'type' => $fields['type'],
+                'description' => $description !== '' ? $description : $domainName,
+                'invoice_period' => $fields['period'],
+                'quantity' => NumberHelper::normalizeDecimalStringOrNull($fields['amount'] ?? ''),
+                'net_amount' => NumberHelper::normalizeDecimalStringOrNull($fields['price'] ?? ''),
+                'vat_rate' => NumberHelper::normalizeDecimalStringOrNull($fields['vat'] ?? ''),
+                'tax_amount' => NumberHelper::normalizeDecimalStringOrNull($fields['vat_price'] ?? ''),
+                'currency' => $fields['currency'] !== null ? CurrencyCode::tryFrom(strtoupper($fields['currency']))?->value : null,
                 'synced_at' => Carbon::now(),
             ],
         );

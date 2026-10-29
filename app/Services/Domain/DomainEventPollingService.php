@@ -13,6 +13,7 @@ namespace App\Services\Domain;
 use App\Enums\Domain\{DomainCapabilityArea, DomainEventStatus};
 use App\Models\Domain\{DomainEvent, DomainProviderConnection};
 use App\Plugins\Support\Domain\DomainProviderException;
+use App\Services\Domain\Concerns\ReadsProviderFields;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\Carbon;
 
@@ -24,6 +25,8 @@ use Illuminate\Support\Carbon;
  * die Event-ID) — kein Datenverlust, kein blinder Wiederholungslauf.
  */
 class DomainEventPollingService {
+    use ReadsProviderFields;
+
     public function __construct(private readonly DomainProviderResolver $resolver) {}
 
     /**
@@ -37,8 +40,10 @@ class DomainEventPollingService {
         $acknowledged = 0;
 
         foreach ($response->rows() as $row) {
-            $eventId = $row['eventid'] ?? $row['id'] ?? null;
-            if ($eventId === null || $eventId === '') {
+            // Doku: EVENT, EVENTCLASS, EVENTSUBCLASS, EVENT_DATE, OBJECT_ID — bis 2026-10-29 las der
+            // Abruf `eventid`/`id` und speicherte deshalb nie ein Ereignis.
+            $eventId = self::providerField($row, ['event', 'eventid', 'id']);
+            if ($eventId === null) {
                 continue;
             }
 
@@ -49,12 +54,13 @@ class DomainEventPollingService {
             ]);
             $isNew = ! $event->exists;
 
+            $occurredAt = self::providerField($row, ['eventdate', 'date']);
             $event->fill([
-                'event_class' => $row['class'] ?? $row['eventclass'] ?? null,
-                'event_action' => $row['action'] ?? $row['eventaction'] ?? null,
-                'object' => $row['object'] ?? null,
+                'event_class' => self::providerField($row, ['eventclass', 'class']),
+                'event_action' => self::providerField($row, ['eventsubclass', 'subclass', 'eventaction', 'action']),
+                'object' => self::providerField($row, ['objectid', 'object', 'eventobject']),
                 'raw_hash' => CryptoHelper::hash(JsonHelper::encode($row)),
-                'occurred_at' => isset($row['eventdate']) ? Carbon::parse($row['eventdate'], 'UTC') : null,
+                'occurred_at' => $occurredAt !== null ? Carbon::parse($occurredAt, 'UTC') : null,
             ]);
             if ($isNew) {
                 $event->status = DomainEventStatus::Stored;

@@ -34,6 +34,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $password
  * @property string|null $default_user
  * @property array<string, bool>|null $capabilities
+ * @property array<string, list<string>>|null $observed_properties
  * @property DomainConnectionStatus $status
  * @property Carbon|null $pilot_confirmed_at
  * @property Carbon|null $last_sync_at
@@ -61,6 +62,7 @@ class DomainProviderConnection extends Model {
         'password',
         'default_user',
         'capabilities',
+        'observed_properties',
         'status',
         'pilot_confirmed_at',
         'last_sync_at',
@@ -78,11 +80,33 @@ class DomainProviderConnection extends Model {
         'status' => DomainConnectionStatus::class,
         'password' => 'encrypted',
         'capabilities' => 'array',
+        'observed_properties' => 'array',
         'pilot_confirmed_at' => 'datetime',
         'last_sync_at' => 'datetime',
         'last_error_at' => 'datetime',
         'disabled_at' => 'datetime',
     ];
+
+    /**
+     * Merkt sich je Befehl die gelieferten Eigenschaftsnamen (Abgleich 2026-10-29):
+     * der belegte Vertrag des Anbieters, nachlesbar über `domain:contract`.
+     * Schreibt nur bei Änderung — der Sync ruft hunderte Befehle je Lauf.
+     *
+     * @param  list<string>  $names
+     */
+    public function recordObservedProperties(string $command, array $names): void {
+        if ($names === [] || ! $this->exists) {
+            return;
+        }
+        $key = strtolower($command);
+        $observed = $this->observed_properties ?? [];
+        if (($observed[$key] ?? null) === $names) {
+            return;
+        }
+        $observed[$key] = $names;
+        ksort($observed);
+        $this->forceFill(['observed_properties' => $observed])->saveQuietly();
+    }
 
     /** Betriebsbereit nur mit aktivem Status und ohne Auto-Disable. */
     public function isRunnable(): bool {

@@ -12,13 +12,14 @@ namespace Tests\Feature\Domain;
 
 use App\Enums\Domain\{DomainConnectionStatus, DomainProviderCommandStatus, DomainSyncStatus};
 use App\Models\Customer\Customer;
-use App\Models\Domain\{DomainAccountingEntry, DomainProjection, DomainProviderConnection, DomainResellerAccount};
+use App\Models\Domain\{DomainAccountingEntry, DomainContactProjection, DomainProjection, DomainProviderConnection, DomainResellerAccount};
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\User;
 use App\Plugins\Support\Domain\DomainRateBudgetException;
 use App\Services\Domain\{DomainAccountingService, DomainActionException, DomainAvailabilityService, DomainCommandService, DomainConnectionService, DomainCustomerMappingService, DomainDangerousActionService, DomainDnsService, DomainEventPollingService, DomainInvoiceService, DomainReportService, DomainSyncService};
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\FakeDomainResellingTransport;
 use Tests\TestCase;
@@ -48,7 +49,7 @@ class DomainServiceTest extends TestCase {
         FakeDomainResellingTransport::fake([
             'QueryUserList' => FakeDomainResellingTransport::properties([['user' => 'sub1', 'parentuser' => 'reseller1', 'depth' => '1', 'currency' => 'EUR']]),
             'QueryDomainList' => FakeDomainResellingTransport::properties([['domain' => 'kunde.de', 'user' => 'sub1', 'status' => 'ACTIVE', 'renewalmode' => 'AUTORENEW', 'expirationdate' => '2027-01-01']]),
-            'QueryContactList' => FakeDomainResellingTransport::properties([['contact' => 'P-ABC123', 'organization' => 'Kunde GmbH']]),
+            'QueryContactList' => FakeDomainResellingTransport::properties([['contact' => 'P-ABC123', 'organization' => 'Kunde GmbH'], ['CONTACT' => 'P-DEF456', 'CONTACT_ORGANIZATION' => 'Doku GmbH', 'CONTACT_COUNTRY' => 'DE']]),
         ]);
 
         app(DomainSyncService::class)->syncAll($this->connection());
@@ -58,6 +59,7 @@ class DomainServiceTest extends TestCase {
         $this->assertSame(DomainSyncStatus::Current, $domain->sync_status);
         $this->assertNotNull($domain->reseller_account_id);
         $this->assertDatabaseHas('domain_contact_projections', ['external_handle' => 'P-ABC123']);
+        $this->assertSame('Doku GmbH', DomainContactProjection::query()->where('external_handle', 'P-DEF456')->firstOrFail()->snapshot['organization'] ?? null, 'Doku-Schreibweise CONTACT_ORGANIZATION trifft ebenfalls');
     }
 
     public function test_customer_mapping_suggests_by_homepage_and_assigns_without_provider_move(): void {
@@ -170,7 +172,9 @@ class DomainServiceTest extends TestCase {
     public function test_event_polling_stores_before_acknowledge(): void {
         // DeleteEvent OHNE EOF → Acknowledge scheitert, Event bleibt gespeichert.
         FakeDomainResellingTransport::fake([
-            'QueryEventList' => FakeDomainResellingTransport::properties([['eventid' => 'E-1', 'class' => 'DOMAIN', 'action' => 'EXPIRE', 'object' => 'x.de']]),
+            // Namen laut Doku (EVENT, EVENTCLASS, EVENTSUBCLASS, EVENT_DATE, OBJECT_ID) — bis 2026-10-29 las der
+            // Abruf `eventid`/`id` und speicherte nie ein Ereignis.
+            'QueryEventList' => FakeDomainResellingTransport::properties([['event' => '4711', 'eventclass' => 'DOMAIN', 'eventsubclass' => 'TRANSFER_SUCCESSFUL', 'event_date' => '2026-10-28 10:00:00', 'object_id' => 'x.de']]),
             'DeleteEvent' => "code=200\ndescription=ok\n", // kein EOF
         ]);
         $connection = $this->connection();
@@ -178,7 +182,31 @@ class DomainServiceTest extends TestCase {
         $result = app(DomainEventPollingService::class)->poll($connection);
         $this->assertSame(1, $result['stored']);
         $this->assertSame(0, $result['acknowledged']);
-        $this->assertDatabaseHas('domain_events', ['external_event_id' => 'E-1', 'status' => 'stored']);
+        $this->assertDatabaseHas('domain_events', ['external_event_id' => '4711', 'status' => 'stored', 'event_class' => 'DOMAIN', 'event_action' => 'TRANSFER_SUCCESSFUL', 'object' => 'x.de']);
+        $this->assertSame(['event', 'event_date', 'eventclass', 'eventsubclass', 'object_id'], $connection->refresh()->observed_properties['queryeventlist'] ?? null, 'der Adapter merkt sich den gelieferten Vertrag');
+    }
+
+    public function test_availability_reads_the_documented_domaincheck_codes(): void {
+        // Doku: DOMAINCHECK = „210 Available“ / „211 Not available“; bis 2026-10-29 verglich der Dienst nur `status`.
+        FakeDomainResellingTransport::fake(['CheckDomains' => FakeDomainResellingTransport::properties([
+            ['DOMAINCHECK' => '210 Available'],
+            ['DOMAINCHECK' => '211 Not available'],
+        ])]);
+        $connection = $this->connection();
+        $result = app(DomainAvailabilityService::class)->check($connection, ['frei.de', 'vergeben.de']);
+        $this->assertSame([true, false], array_map(static fn(array $r): bool => $r['available'], $result));
+    }
+
+    public function test_contract_command_lists_observed_properties_and_missing_keys(): void {
+        $connection = $this->connection();
+        $connection->recordObservedProperties('QueryAccountingList', ['accountingdate', 'accountingtype', 'accountingdescription', 'accountingprice', 'total']);
+        $connection->recordObservedProperties('QueryAccountingList', ['accountingdate', 'accountingtype', 'accountingdescription', 'accountingprice', 'total']);
+        $this->assertSame(['queryaccountinglist'], array_keys($connection->refresh()->observed_properties ?? []));
+
+        $this->assertSame(0, Artisan::call('domain:contract', ['--connection' => $connection->id]));
+        $output = Artisan::output();
+        $this->assertStringContainsString('queryaccountinglist', $output);
+        $this->assertStringContainsString('Laufzeit, Subreseller', $output, $output);
     }
 
     public function test_accounting_is_read_only_and_invoices_blocked(): void {
@@ -186,7 +214,8 @@ class DomainServiceTest extends TestCase {
         // Zeile 0 trägt zusätzlich die Summenfelder der Antwort.
         FakeDomainResellingTransport::fake([
             'QueryAccountingList' => FakeDomainResellingTransport::properties([
-                ['accounting_date' => '2026-10-27 07:30:00', 'accounting_type' => 'RENEW', 'accounting_description' => 'antjebewegt.de', 'accounting_amount' => '1', 'accounting_price' => '-5.36', 'accounting_vat' => '19', 'accounting_vat_price' => '-1.02', 'accounting_currency' => 'EUR', 'invoice_period' => '1Y', 'subreseller' => 'lds-systems', 'total' => '2', 'count' => '2', 'sum' => '-5.54'],
+                // Live-Gateway schreibt die Namen ohne Unterstriche (RRPproxy-Stil), die Doku mit — beide müssen treffen.
+                ['ACCOUNTINGDATE' => '2026-10-27 07:30:00', 'ACCOUNTINGTYPE' => 'RENEW', 'ACCOUNTINGDESCRIPTION' => 'antjebewegt.de', 'ACCOUNTINGAMOUNT' => '1', 'ACCOUNTINGPRICE' => '-5.36', 'ACCOUNTINGVAT' => '19', 'ACCOUNTINGVATPRICE' => '-1.02', 'ACCOUNTINGCURRENCY' => 'EUR', 'INVOICEPERIOD' => '1Y', 'SUBRESELLER' => 'lds-systems', 'TOTAL' => '2', 'COUNT' => '2', 'SUM' => '-5.54'],
                 ['accounting_date' => '2026-10-28 03:03:00', 'accounting_type' => 'MONTHLY_FEE', 'accounting_description' => 'monthly fee (4 zones)', 'accounting_amount' => '4', 'accounting_price' => '-0.18', 'accounting_currency' => 'EUR'],
             ]),
         ]);

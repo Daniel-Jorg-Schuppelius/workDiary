@@ -98,6 +98,18 @@ final class DomainResponse {
         return $rows;
     }
 
+    /**
+     * Gelieferte Eigenschaftsnamen (klein, sortiert) — der belegte Vertrag eines Befehls.
+     *
+     * @return list<string>
+     */
+    public function propertyNames(): array {
+        $names = array_map('strval', array_keys($this->properties));
+        sort($names);
+
+        return $names;
+    }
+
     /** Deterministischer Revisions-Hash über den Rohtext. */
     public function rawHash(): string {
         return CryptoHelper::hash($this->raw);
