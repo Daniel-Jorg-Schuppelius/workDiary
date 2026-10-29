@@ -194,6 +194,17 @@ return [
         'provider_customer_number_hint' => 'Monatsrechnungen des Anbieters an diesen Subuser heißen „Kundennummer-MM-JJJJ“ (etwa 10021-08-2026). Mit der Nummer heißen die Belege aus dem Buchungsjournal im Reselling-Register genauso wie die in die Buchhaltung importierten.',
     ],
     'accounting' => [
+        // Buchungstypen des Anbieters (Live-Vertrag 2026-10-29); unbekannte Typen zeigen den Rohwert. „type“ ist die Spaltenüberschrift.
+        'types' => [
+            'RENEW_DOMAIN_ANNUAL' => 'Verlängerung',
+            'ADD_DOMAIN' => 'Registrierung',
+            'TRANSFER_DOMAIN' => 'Transfer',
+            'UNRENEW_DOMAIN_ANNUAL' => 'Verlängerung zurückgebucht',
+            'DNSZONE_INTERNAL' => 'Interne DNS-Zonen',
+            'DNSZONE_EXTERNAL' => 'Externe DNS-Zonen',
+            'PAYMENT' => 'Einzahlung',
+            'SERVICE_FEE' => 'Servicegebühr',
+        ],
         'subtitle' => 'Read-only Buchungsjournal — keine steuerliche Rechnung.',
         'date' => 'Datum',
         'type' => 'Typ',

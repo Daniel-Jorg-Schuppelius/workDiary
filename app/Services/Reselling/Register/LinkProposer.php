@@ -630,7 +630,12 @@ final class LinkProposer {
         if (self::matchesDraft($period, $line)) {
             return true;
         }
-        if ($line->articleKey === null || $subscription->article_ref !== $line->articleKey) {
+        // Domain-Abo: statt des Artikelschlüssels zählt, dass die Position die Domain nennt.
+        if ($subscription->kind === SubscriptionKind::Domain) {
+            if (! $line->mentionsDomain($subscription->label)) {
+                return false;
+            }
+        } elseif ($line->articleKey === null || $subscription->article_ref !== $line->articleKey) {
             return false;
         }
         $date = LicenseMonths::referenceDate($line);

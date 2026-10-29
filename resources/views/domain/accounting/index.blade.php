@@ -40,7 +40,7 @@
         @forelse ($entries as $entry)
             <tr class="hover">
                 <td class="tabular-nums">{{ $entry->entry_date?->fdate() ?? '—' }}</td>
-                <td>{{ $entry->type ?? '—' }}</td>
+                <td>{{ $entry->type !== null && \Illuminate\Support\Facades\Lang::has('domain.accounting.types.' . $entry->type) ? __('domain.accounting.types.' . $entry->type) : ($entry->type ?? '—') }}</td>
                 <td>{{ $entry->description ?? '—' }}</td>
                 <td>{{ $entry->customer?->name ?? '—' }}</td>
                 <td class="text-right tabular-nums">{{ $entry->net_amount !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $entry->net_amount, 2, withThousandsSeparator: true) : '—' }}</td>

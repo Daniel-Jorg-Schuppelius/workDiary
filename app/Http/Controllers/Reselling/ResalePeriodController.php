@@ -18,6 +18,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Reselling\{BulkWaiveResalePeriodsRequest, LinkResalePeriodRequest, QuickLinkResalePeriodRequest, WaiveResalePeriodRequest};
 use App\Models\Customer\Customer;
 use App\Models\Reselling\{ResaleIgnoredLine, ResalePeriod, ResalePeriodLink, ResaleSubscription};
+use App\Services\Reselling\Marketplace\ProductNameMatcher;
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
 use App\Services\Reselling\Plan\RecurringPlans;
 use App\Services\Reselling\Register\{LicenseMonths, LinkProposer, PeriodLinker, ResaleInvoiceDraftService};
@@ -297,7 +298,8 @@ class ResalePeriodController extends Controller {
                 'days' => $reference !== null ? (int) $period->starts_on->diffInDays($reference, false) : null,
                 'in_window' => LinkProposer::inWindow($period, $line),
                 'service' => $line->serviceFrom !== null || $line->serviceTo !== null ? LicenseMonths::serviceCovers($line, $period->starts_on) : null,
-                'article' => $line->articleKey !== null && $period->subscription->article_ref === $line->articleKey,
+                // Artikelschlüssel, Namensabgleich oder (Domain-Abo) der Domainname — dieselbe Regel wie im Vorschlagslauf.
+                'article' => LinkProposer::matchesProductOf($period->subscription, $line, new ProductNameMatcher),
                 'sure' => LinkProposer::isSure($period, $period->subscription, $line),
                 'line_months' => LicenseMonths::ofLine($line),
                 // Lizenzen × Monate der Position aus dem Leistungszeitraum — „24 Monat" ist meist EINE Lizenz über zwei Jahre.

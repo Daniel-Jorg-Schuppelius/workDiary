@@ -841,6 +841,7 @@ return [
         'source_lexoffice' => 'Lexoffice',
         'source_local' => 'Facture locale',
         'source_accounting' => 'Logiciel de comptabilité (miroir des pièces)',
+        'source_domain-accounting' => 'Fournisseur de domaines (journal comptable)',
         'open_source' => 'Ouvrir le document (:source)',
         'no_source' => 'Aucune source ne fournit de factures pour ce destinataire — ni contact Lexoffice lié ni facturation locale.',
     ],

@@ -194,6 +194,17 @@ return [
         'provider_customer_number_hint' => 'Las facturas mensuales del proveedor a este subusuario se numeran «número de cliente-MM-AAAA» (p. ej. 10021-08-2026). Con el número, los comprobantes construidos a partir del diario contable en el registro de reventa llevan los mismos números que los importados en la contabilidad.',
     ],
     'accounting' => [
+        // Buchungstypen des Anbieters (Live-Vertrag 2026-10-29); unbekannte Typen zeigen den Rohwert. „type“ ist die Spaltenüberschrift.
+        'types' => [
+            'RENEW_DOMAIN_ANNUAL' => 'Renovación',
+            'ADD_DOMAIN' => 'Registro',
+            'TRANSFER_DOMAIN' => 'Transferencia',
+            'UNRENEW_DOMAIN_ANNUAL' => 'Renovación revertida',
+            'DNSZONE_INTERNAL' => 'Zonas DNS internas',
+            'DNSZONE_EXTERNAL' => 'Zonas DNS externas',
+            'PAYMENT' => 'Ingreso',
+            'SERVICE_FEE' => 'Tarifa de servicio',
+        ],
         'subtitle' => 'Diario de asientos de solo lectura, no una factura fiscal.',
         'date' => 'Fecha',
         'type' => 'Tipo',

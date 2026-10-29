@@ -841,6 +841,7 @@ return [
         'source_lexoffice' => 'Lexoffice',
         'source_local' => 'Local invoice',
         'source_accounting' => 'Accounting program (voucher mirror)',
+        'source_domain-accounting' => 'Domain provider (accounting journal)',
         'open_source' => 'Open document (:source)',
         'no_source' => 'No source provides invoices for this recipient — neither a linked Lexoffice contact nor local invoicing.',
     ],

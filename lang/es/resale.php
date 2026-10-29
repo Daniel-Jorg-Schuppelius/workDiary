@@ -841,6 +841,7 @@ return [
         'source_lexoffice' => 'Lexoffice',
         'source_local' => 'Factura local',
         'source_accounting' => 'Programa de contabilidad (espejo de comprobantes)',
+        'source_domain-accounting' => 'Proveedor de dominios (diario contable)',
         'open_source' => 'Abrir el documento (:source)',
         'no_source' => 'Ninguna fuente aporta facturas para este destinatario — ni un contacto de Lexoffice vinculado ni facturación local.',
     ],
