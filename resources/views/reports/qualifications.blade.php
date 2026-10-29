@@ -67,7 +67,7 @@
             <x-table bare table-sort="client">
                 <x-slot:head>
                     <tr>
-                        <x-table.th sort type="string" class="sticky left-0 bg-base-100">{{ __('Mitarbeiter') }}</x-table.th>
+                        <x-table.th sort type="string" class="wd-pin-col">{{ __('Mitarbeiter') }}</x-table.th>
                         @foreach ($qualifications as $q)
                             <th class="text-center align-bottom" title="{{ $q->name }}">
                                 <span class="block text-xs font-semibold">{{ $q->abbreviation ?? $q->name }}</span>
@@ -77,7 +77,7 @@
                 </x-slot:head>
                 @foreach ($users as $u)
                     <tr>
-                        <td class="sticky left-0 bg-base-100 font-semibold">{{ $u->name }}</td>
+                        <td class="wd-pin-col font-semibold">{{ $u->name }}</td>
                         @foreach ($qualifications as $q)
                             @php $cell = $matrix[(int) $u->id][(int) $q->id] ?? null; @endphp
                             <td class="text-center text-xs tabular-nums {{ $cellClass($cell) }}">{{ $cellText($cell) }}</td>

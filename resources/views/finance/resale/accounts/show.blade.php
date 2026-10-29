@@ -130,20 +130,22 @@
                 <x-table bare>
                     <x-slot:head>
                         <tr>
-                            <x-table.th>{{ __('resale.account.grid.row') }}</x-table.th>
+                            {{-- Erste Spalte haftet beim Querscrollen (wd-pin-col, wie Einsatz-/Qualifikationsmatrix); Jahresspalten mit schmalem Innenabstand. --}}
+                            <x-table.th class="wd-pin-col">{{ __('resale.account.grid.row') }}</x-table.th>
                             @foreach ($years as $year)
-                                <x-table.th class="text-center">{{ $year }}</x-table.th>
+                                <x-table.th class="text-center px-1.5">{{ $year }}</x-table.th>
                             @endforeach
                         </tr>
                     </x-slot:head>
                     @forelse ($rows as $row)
                         @php $subscription = $row['subscription']; @endphp
                         <tr @class(['hover', 'opacity-70' => $subscription->status === \App\Enums\Reselling\SubscriptionStatus::Superseded])>
-                            <td class="text-sm whitespace-nowrap">
-                                <a href="{{ route('finance.resale.show', $subscription->sqid) }}" class="link link-hover font-medium">{{ $row['product'] }}</a>
+                            <td class="text-sm wd-pin-col min-w-[14rem]">
+                                <a href="{{ route('finance.resale.show', $subscription->sqid) }}" class="link link-hover font-medium whitespace-nowrap">{{ $row['product'] }}</a>
                                 <span class="block text-xs text-muted">
                                     {{ $row['holder'] }} · ×{{ $subscription->quantity }} · {{ $subscription->provider->label() }}
-                                    @if ($subscription->external_id) · <span class="font-mono">{{ $subscription->external_id }}</span>@endif
+                                    {{-- Domain-Abos: Fremdkennung = Domain = Produktname, nicht doppelt zeigen. --}}
+                                    @if ($subscription->external_id && $subscription->external_id !== $row['product']) · <span class="font-mono">{{ $subscription->external_id }}</span>@endif
                                 </span>
                                 @if ($subscription->isAssignment())
                                     <x-status-badge size="xs" tone="info" outline>{{ $subscription->isDerivedAssignment() ? __('resale.account.allocation.derived') : __('resale.transfer.section') }}</x-status-badge>
@@ -153,14 +155,17 @@
                                 @endif
                             </td>
                             @foreach ($years as $year)
-                                <td class="text-center align-top text-xs">
+                                {{-- nowrap: daisyUI-Badges haben feste Höhe, umbrechender Text liefe über den Hintergrund (Pilot 2026-10-29); je Beleg ein Badge, gestapelt. --}}
+                                <td class="text-center align-top text-xs whitespace-nowrap px-1.5">
                                     @foreach ($row['cells'][$year] ?? [] as $cell)
                                         @php $period = $cell['period']; $upcoming = $period->starts_on->greaterThan($today); @endphp
-                                        <div class="mb-1" title="{{ $period->label() }} · {{ $period->status->label() }}">
+                                        <div class="mb-1 flex flex-col items-center gap-0.5" title="{{ $period->label() }} · {{ $period->status->label() }}">
                                             @if ($subscription->is_own_holding)
                                                 <x-status-badge size="xs" :label="$period->starts_on->format('d.m.')" />
                                             @elseif ($cell['vouchers'] !== [])
-                                                <x-status-badge size="xs" :tone="$period->status->tone()" :label="implode(', ', $cell['vouchers'])" />
+                                                @foreach ($cell['vouchers'] as $voucher)
+                                                    <x-status-badge size="xs" :tone="$period->status->tone()" :label="$voucher" />
+                                                @endforeach
                                             @elseif ($upcoming)
                                                 <x-status-badge size="xs" outline :label="__('resale.account.grid.upcoming', ['date' => $period->starts_on->format('d.m.')])" />
                                             @elseif (in_array($period->status, [\App\Enums\Reselling\PeriodStatus::Open, \App\Enums\Reselling\PeriodStatus::Partial], true))
@@ -168,7 +173,7 @@
                                             @else
                                                 <x-status-badge size="xs" :tone="$period->status->tone()" :label="$period->status->label()" />
                                             @endif
-                                            <span class="block text-muted tabular-nums">{{ $period->starts_on->format('d.m.') }} · ×{{ $period->quantity }}</span>
+                                            <span class="text-muted tabular-nums">{{ $period->starts_on->format('d.m.') }} · ×{{ $period->quantity }}</span>
                                         </div>
                                     @endforeach
                                 </td>

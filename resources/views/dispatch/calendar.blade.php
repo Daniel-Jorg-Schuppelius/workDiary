@@ -35,7 +35,7 @@
         <x-table bare>
             <x-slot:head>
                     <tr>
-                        <th class="sticky left-0 z-10 bg-base-100">{{ __('Mitarbeiter:in') }}</th>
+                        <th class="wd-pin-col">{{ __('Mitarbeiter:in') }}</th>
                         @foreach ($days as $day)
                             <th class="min-w-32 text-center tabular-nums">{{ \Illuminate\Support\Carbon::parse($day)->isoFormat('dd DD.MM.') }}</th>
                         @endforeach
@@ -43,7 +43,7 @@
             </x-slot:head>
                     @forelse ($rows as $row)
                         <tr>
-                            <td class="sticky left-0 z-10 bg-base-100 font-medium">{{ $row['name'] }}</td>
+                            <td class="wd-pin-col font-medium">{{ $row['name'] }}</td>
                             @foreach ($days as $day)
                                 <td class="align-top">
                                     <div class="flex flex-col gap-1">
