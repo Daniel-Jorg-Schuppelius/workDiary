@@ -169,7 +169,7 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td class="font-semibold whitespace-nowrap sticky left-0 z-10 bg-base-100">{{ __('Notdienst') }}</td>
+                                    <td class="font-semibold whitespace-nowrap wd-pin-col">{{ __('Notdienst') }}</td>
                                     @foreach ($notdienstByDay as $item)
                                         <td class="text-center {{ $item['isToday'] ? 'bg-primary/10 font-semibold' : ($item['isHoliday'] ? 'bg-error/5' : '') }}"
                                             @if ($item['user'] && $item['von'] && $item['bis']) title="{{ $item['von']->fdatetime() }} – {{ $item['bis']->fdatetime() }}" @endif>
@@ -178,7 +178,7 @@
                                     @endforeach
                                 </tr>
                                 <tr>
-                                    <td class="font-semibold whitespace-nowrap sticky left-0 z-10 bg-base-100">{{ __('Bereitschaft') }}</td>
+                                    <td class="font-semibold whitespace-nowrap wd-pin-col">{{ __('Bereitschaft') }}</td>
                                     @foreach ($bereitschaftByDay as $item)
                                         <td class="text-center {{ $item['isToday'] ? 'bg-primary/10 font-semibold' : ($item['isHoliday'] ? 'bg-error/5' : '') }}"
                                             @if ($item['user'] && $item['von'] && $item['bis']) title="{{ $item['von']->fdatetime() }} – {{ $item['bis']->fdatetime() }}" @endif>

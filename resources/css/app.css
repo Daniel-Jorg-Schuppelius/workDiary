@@ -470,6 +470,34 @@
 }
 
 /* ------------------------------------------------------------------ */
+/* Haftende erste Spalte in Matrixtabellen (Lizenzjahre, Einsatz- und  */
+/* Qualifikationsmatrix): bleibt beim Querscrollen stehen und trägt    */
+/* den Zeilengrund (Zebra, Hover) mit. daisyUIs `table-pin-cols`       */
+/* fixiert jedes <th> der Zeile — auch die Spaltenköpfe —, deshalb     */
+/* eine eigene Zellklasse. Ecke (Kopf + Spalte) über beidem.           */
+/* ------------------------------------------------------------------ */
+.table .wd-pin-col {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background-color: var(--color-base-100);
+}
+.table-zebra tbody tr:nth-child(2n) .wd-pin-col {
+    background-color: var(--color-base-200);
+}
+@media (hover: hover) {
+    .table tbody tr.row-hover:hover .wd-pin-col {
+        background-color: var(--color-base-200);
+    }
+    .table-zebra tbody tr.row-hover:hover .wd-pin-col {
+        background-color: var(--color-base-300);
+    }
+}
+.table.table-pin-rows thead .wd-pin-col {
+    z-index: 3;
+}
+
+/* ------------------------------------------------------------------ */
 /* Opt-out aus Chromiums experimentellem base-select (daisyUI 5 setzt   */
 /* `appearance: base-select`): Bei einfachem <select>-Markup clippt     */
 /* Chromium den gewählten Eintrag dort NICHT — lange Labels malen über  */

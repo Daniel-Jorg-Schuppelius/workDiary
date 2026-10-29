@@ -40,7 +40,7 @@
             <x-table bare>
                 <x-slot:head>
                         <tr>
-                            <th class="sticky left-0 z-10 bg-base-100">{{ __('Mitarbeiter:in') }}</th>
+                            <th class="wd-pin-col">{{ __('Mitarbeiter:in') }}</th>
                             @foreach ($required as $qualification)
                                 <th class="text-center">{{ $qualification->abbreviation ?? $qualification->name }}</th>
                             @endforeach
@@ -48,7 +48,7 @@
                 </x-slot:head>
                         @foreach ($rows as $row)
                             <tr @class(['bg-base-200/40' => (int) $diary->assigned_user_id === (int) $row['user']->id])>
-                                <td class="sticky left-0 z-10 bg-base-100 font-medium">
+                                <td class="wd-pin-col font-medium">
                                     {{ $row['user']->name }}
                                     @if ((int) $diary->assigned_user_id === (int) $row['user']->id)
                                         <x-status-badge size="xs" tone="info">{{ __('zugewiesen') }}</x-status-badge>
