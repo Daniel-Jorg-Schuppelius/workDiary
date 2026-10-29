@@ -74,15 +74,12 @@ final class DomainAccountingMirrorSource implements InvoiceMirrorSource {
     }
 
     public function voucherByKey(Organization $organization, string $voucherKey): ?MirrorVoucher {
-        // „<Subuser>:<JJJJ-MM>“ (Monatsbeleg) oder „<Subuser>:inv:<Rechnungs-ID>“ (Rechnung des Anbieters).
-        if (preg_match('/^(\d+):inv:(.+)$/', $voucherKey, $m) === 1) {
-            $entries = $this->baseQuery($organization)->where('reseller_account_id', (int) $m[1])->where('invoice_number', $m[2])->orderBy('entry_date')->orderBy('domain_accounting_entries.id')->get();
-        } elseif (preg_match('/^(\d+):(\d{4})-(\d{2})$/', $voucherKey, $m) === 1) {
-            $month = CarbonImmutable::parse($m[2] . '-' . $m[3] . '-01', 'UTC')->startOfDay();
-            $entries = $this->entryQuery($organization, null, $month, $month->endOfMonth())->where('reseller_account_id', (int) $m[1])->get();
-        } else {
+        // „<Subuser>:<JJJJ-MM>“ — der Monatsbeleg des Portals an den Subuser.
+        if (preg_match('/^(\d+):(\d{4})-(\d{2})$/', $voucherKey, $m) !== 1) {
             return null;
         }
+        $month = CarbonImmutable::parse($m[2] . '-' . $m[3] . '-01', 'UTC')->startOfDay();
+        $entries = $this->entryQuery($organization, null, $month, $month->endOfMonth())->where('reseller_account_id', (int) $m[1])->get();
 
         return $this->vouchers($this->map($organization, $entries))->first(static fn(MirrorVoucher $v): bool => $v->voucherKey === $voucherKey);
     }
@@ -181,9 +178,9 @@ final class DomainAccountingMirrorSource implements InvoiceMirrorSource {
                 continue;
             }
             $start = CarbonImmutable::instance($entry->entry_date)->startOfDay();
-            // Rechnung des Anbieters, wenn die Buchung eine nennt — sonst der Monatsbeleg.
-            $invoiceId = trim((string) $entry->invoice_number);
-            $voucherKey = $invoiceId !== '' ? $reseller->id . ':inv:' . $invoiceId : $reseller->id . ':' . $start->format('Y-m');
+            // Immer der Monatsbeleg: „accounting invoice id“ ist die Registrar-Rechnung an den Inhaber
+            // (AR20260930…, Prod 2026-10-29), nicht die Rechnung des Portals an den Subuser.
+            $voucherKey = $reseller->id . ':' . $start->format('Y-m');
             $positions[$voucherKey] = ($positions[$voucherKey] ?? 0) + 1;
             $lines[] = $this->toLine($entry, $reseller, $start, $voucherKey, $positions[$voucherKey], $names[(int) $reseller->customer_id] ?? null);
         }
@@ -198,10 +195,9 @@ final class DomainAccountingMirrorSource implements InvoiceMirrorSource {
         $net = Money::of((string) $entry->net_amount, $currency, 4);
         $isCreditNote = ! $net->isNegative();
         $total = $net->isNegative() ? $net->negated() : $net;
-        // Rechnungsnummer des Portals aus der Buchung („accounting invoice id“, Live-Vertrag 2026-10-29),
-        // sonst Kundennummer des Subusers plus Monat.
-        $invoiceId = trim((string) $entry->invoice_number);
-        $number = $invoiceId !== '' ? $invoiceId : ($reseller->provider_customer_number ?? $reseller->external_user) . '-' . $start->format('m-Y');
+        // Nummer der Monatsrechnung des Portals an den Subuser: Kundennummer plus Monat.
+        $number = ($reseller->provider_customer_number ?? $reseller->external_user) . '-' . $start->format('m-Y');
+        $registrarInvoice = trim((string) $entry->invoice_number);
 
         return new MirrorLine(
             sourceKey: self::KEY,
@@ -221,7 +217,7 @@ final class DomainAccountingMirrorSource implements InvoiceMirrorSource {
             articleName: $entry->type,
             articleIsLicence: false,
             name: (string) $entry->description,
-            description: trim((string) $entry->type . ' ' . (string) $entry->invoice_period) !== '' ? trim((string) $entry->type . ' ' . (string) $entry->invoice_period) : null,
+            description: trim((string) $entry->type . ' ' . (string) $entry->invoice_period . ($registrarInvoice !== '' ? ' · ' . $registrarInvoice : '')) ?: null,
             quantity: (float) $years,
             unitName: 'Jahr',
             unitNet: $total->withScale(4)->dividedBy($years),

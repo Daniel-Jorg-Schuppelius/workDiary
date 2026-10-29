@@ -16,6 +16,7 @@ use App\Plugins\Support\Domain\DomainProviderException;
 use App\Services\Domain\Concerns\ReadsProviderFields;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Ereignis-Polling (Feature 083, MVP-391). `QueryEventList` liefert die
@@ -59,9 +60,10 @@ class DomainEventPollingService {
             if (self::providerField($row, ['eventclass', 'class']) === null) {
                 try {
                     $row = array_merge($row, $this->flatten($adapter->execute('StatusEvent', ['event' => $eventId], DomainCapabilityArea::Events)));
-                } catch (DomainProviderException) {
-                    // Ohne Details speichern wir die Kennung; quittiert wird erst mit Details.
-                    continue;
+                } catch (DomainProviderException $e) {
+                    // Ohne Details bleibt die Kennung — und wird quittiert, sonst staut sich dasselbe
+                    // Hundert bei jedem Abruf und kein neues Ereignis kommt mehr durch.
+                    Log::warning('domain events: StatusEvent fehlgeschlagen', ['event' => $eventId, 'exception' => $e::class]);
                 }
             }
             $occurredAt = self::providerField($row, ['eventdate', 'date']);

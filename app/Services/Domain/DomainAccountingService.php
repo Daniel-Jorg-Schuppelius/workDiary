@@ -103,7 +103,9 @@ class DomainAccountingService {
                 }
                 $extra = [];
                 foreach (self::EXTRA_FIELDS as $name => $keys) {
-                    $extra[$name] = self::providerField($row, $keys);
+                    $value = self::providerField($row, $keys);
+                    // Der Gateway schreibt „-“, wenn die Buchung noch auf keiner Rechnung steht (Prod 2026-10-29).
+                    $extra[$name] = $value === null || $value === '-' ? null : $value;
                 }
                 $this->store($connection, $fields, $extra);
                 $stored++;
@@ -114,8 +116,33 @@ class DomainAccountingService {
 
         // Zeilen aus der Zeit der falschen Schlüssel (weder Datum noch Text) tragen nichts.
         DomainAccountingEntry::query()->where('connection_id', $connection->id)->whereNull('entry_date')->whereNull('description')->delete();
+        $this->healResellers($connection);
 
         return $count;
+    }
+
+    /**
+     * Subuser und Kunde für Buchungen nachtragen, die vor dem 29.10. ohne Subuser gespeichert wurden —
+     * der Folgeabgleich liest nur die letzten Wochen, die Domain kennt ihren Subuser aber schon.
+     */
+    private function healResellers(DomainProviderConnection $connection): void {
+        $rows = DomainAccountingEntry::query()
+            ->where('connection_id', $connection->id)
+            ->whereNull('reseller_account_id')
+            ->whereNotNull('domain_projection_id')
+            ->with('domainProjection.resellerAccount')
+            ->get();
+        foreach ($rows as $entry) {
+            $reseller = $entry->domainProjection?->resellerAccount;
+            if ($reseller === null) {
+                continue;
+            }
+            $entry->forceFill([
+                'reseller_account_id' => $reseller->id,
+                'external_user' => $entry->external_user !== '' ? $entry->external_user : $reseller->external_user,
+                'customer_id' => $entry->customer_id ?? $entry->domainProjection->customer_id ?? $reseller->customer_id,
+            ])->saveQuietly();
+        }
     }
 
     /**

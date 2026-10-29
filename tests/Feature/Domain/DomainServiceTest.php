@@ -184,16 +184,20 @@ class DomainServiceTest extends TestCase {
             // Namen laut Doku (EVENT, EVENTCLASS, EVENTSUBCLASS, EVENT_DATE, OBJECT_ID) — bis 2026-10-29 las der
             // Abruf `eventid`/`id` und speicherte nie ein Ereignis.
             // Live-Vertrag: die Liste trägt nur die Kennung; Klasse, Unterklasse, Objekt, Datum liefert StatusEvent.
-            'QueryEventList' => FakeDomainResellingTransport::properties([['event' => '4711']]),
-            'StatusEvent' => FakeDomainResellingTransport::properties([['class' => 'DOMAIN', 'subclass' => 'TRANSFER_SUCCESSFUL', 'object id' => 'x.de', 'date' => '2026-10-28 10:00:00', 'info' => 'Transfer completed']]),
+            'QueryEventList' => FakeDomainResellingTransport::properties([['event' => '4711'], ['event' => '4712']]),
+            // 4712: StatusEvent ohne EOF → unvollständig; die Kennung wird trotzdem gespeichert, sonst staut sich der Abruf.
+            'StatusEvent' => static fn(array $params): string => ($params['event'] ?? '') === '4711'
+                ? FakeDomainResellingTransport::properties([['class' => 'DOMAIN', 'subclass' => 'TRANSFER_SUCCESSFUL', 'object id' => 'x.de', 'date' => '2026-10-28 10:00:00', 'info' => 'Transfer completed']])
+                : "code=200\ndescription=ok\n",
             'DeleteEvent' => "code=200\ndescription=ok\n", // kein EOF
         ]);
         $connection = $this->connection();
 
         $result = app(DomainEventPollingService::class)->poll($connection);
-        $this->assertSame(1, $result['stored']);
+        $this->assertSame(2, $result['stored']);
         $this->assertSame(0, $result['acknowledged']);
         $this->assertDatabaseHas('domain_events', ['external_event_id' => '4711', 'status' => 'stored', 'event_class' => 'DOMAIN', 'event_action' => 'TRANSFER_SUCCESSFUL', 'object' => 'x.de']);
+        $this->assertDatabaseHas('domain_events', ['external_event_id' => '4712', 'status' => 'stored', 'event_class' => null]);
         $this->assertSame(['event'], $connection->refresh()->observed_properties['queryeventlist'] ?? null, 'der Adapter merkt sich den gelieferten Vertrag');
         $this->assertSame(['class', 'date', 'info', 'object id', 'subclass'], $connection->observed_properties['statusevent'] ?? null);
     }
@@ -229,7 +233,7 @@ class DomainServiceTest extends TestCase {
                 // Live-Gateway schreibt die Namen ohne Unterstriche (RRPproxy-Stil), die Doku mit — beide müssen treffen.
                 // Live (domain:contract 2026-10-29): „accounting date“, „accounting invoice id“ …, kein SUBRESELLER — der Subuser kommt über die Domain.
                 ['accounting date' => '2026-10-27 07:30:00', 'accounting type' => 'RENEW_DOMAIN_ANNUAL', 'accounting description' => 'antjebewegt.de', 'accounting amount' => '1', 'accounting price' => '-5.36', 'accounting vat' => '19', 'accounting vat price' => '-1.02', 'accountingcurrency' => 'EUR', 'accounting invoice id' => '10021-10-2026', 'accounting reference' => 'RENEW antjebewegt.de', 'TOTAL' => '2', 'COUNT' => '2', 'SUM' => '-5.54'],
-                ['accounting_date' => '2026-10-28 03:03:00', 'accounting_type' => 'MONTHLY_FEE', 'accounting_description' => 'monthly fee (4 zones)', 'accounting_amount' => '4', 'accounting_price' => '-0.18', 'accounting_currency' => 'EUR'],
+                ['accounting_date' => '2026-10-28 03:03:00', 'accounting_type' => 'MONTHLY_FEE', 'accounting_description' => 'monthly fee (4 zones)', 'accounting_amount' => '4', 'accounting_price' => '-0.18', 'accounting_currency' => 'EUR', 'accounting invoice id' => '-'],
             ]),
         ]);
         $connection = $this->connection();
@@ -256,6 +260,12 @@ class DomainServiceTest extends TestCase {
         $this->assertSame($customer->id, $renew->customer_id, 'Kunde des Subusers, weil die Domain keinen hat');
         $fee = DomainAccountingEntry::query()->where('type', 'MONTHLY_FEE')->firstOrFail();
         $this->assertNull($fee->domain_projection_id);
+        $this->assertNull($fee->invoice_number, '„-“ heißt: noch auf keiner Rechnung');
+        // Altzeile mit Domain, aber ohne Subuser (vor dem 29.10. gespeichert) wird über die Domain geheilt.
+        $old = DomainAccountingEntry::query()->create(['organization_id' => $this->organization->id, 'connection_id' => $connection->id, 'external_user' => '', 'domain_projection_id' => $domain->id, 'entry_date' => '2024-10-27', 'type' => 'RENEW_DOMAIN_ANNUAL', 'description' => 'antjebewegt.de', 'net_amount' => '-4.50', 'raw_hash' => str_repeat('1', 64)]);
+        app(DomainAccountingService::class)->sync($connection);
+        $this->assertSame($reseller->id, $old->refresh()->reseller_account_id);
+        $this->assertSame('lds-systems', $old->external_user);
         $this->assertSame(0, DomainAccountingEntry::query()->whereNotNull('reference')->where('reference', 'INVOICE')->count());
 
         // Rechnungs-Capability ist per Default gesperrt → leer + Blocked-Reason.
