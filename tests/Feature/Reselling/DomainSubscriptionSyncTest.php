@@ -94,6 +94,48 @@ class DomainSubscriptionSyncTest extends TestCase {
         $this->artisan('resale:sync-domains', ['--org' => $this->organization->id])->expectsOutputToContain('4 Domains')->assertSuccessful();
     }
 
+    public function test_start_is_the_expiration_anniversary_from_the_registration_on(): void {
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        // DENIC-Drift: Ablauf-Jahrestag zwei Tage vor dem Registrierungstag — erstes Lizenzjahr bleibt.
+        $this->projection($connection, 'drift.de', ['customer_id' => $customer->id, 'registration_at' => '2016-01-25', 'expiration_at' => '2027-01-23']);
+        // .de-Transfer: das Portal setzt den ersten Ablauf einen Monat nach dem Transfer (antjebewegt.de, Prod 2026-10-29).
+        $this->projection($connection, 'transfer-monat.de', ['customer_id' => $customer->id, 'registration_at' => '2025-11-03', 'expiration_at' => '2026-12-03']);
+        // gTLD-Transfer im April, Registry-Zyklus 25.11.: die Jahre vor dem Transfer gehören dem alten Anbieter.
+        $this->projection($connection, 'transfer.one', ['customer_id' => $customer->id, 'registration_at' => '2026-04-08', 'expiration_at' => '2027-11-25']);
+        $this->projection($connection, 'ohne-ablauf.de', ['customer_id' => $customer->id, 'registration_at' => '2024-05-05', 'expiration_at' => null]);
+
+        app(DomainSubscriptionSync::class)->sync($this->organization);
+
+        $starts = static fn (string $domain): array => ResaleSubscription::query()->where('external_id', $domain)->firstOrFail()->periods()->orderBy('starts_on')->pluck('starts_on')->map(static fn ($d) => $d->toDateString())->all();
+        $this->assertSame('2016-01-23', ResaleSubscription::query()->where('external_id', 'drift.de')->value('starts_on')?->toDateString());
+        $this->assertSame(['2025-12-03', '2026-12-03'], $starts('transfer-monat.de'), 'kein Lizenzjahr 2024 vor dem Transfer');
+        $this->assertSame(['2026-11-25'], $starts('transfer.one'), 'erster Jahrestag nach dem Transfer, nicht der Transfertag');
+        $this->assertSame('2024-05-05', ResaleSubscription::query()->where('external_id', 'ohne-ablauf.de')->value('starts_on')?->toDateString());
+    }
+
+    public function test_moving_start_keeps_decided_periods_without_duplicates(): void {
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        // Bestand auf dem Registrierungstag (Perioden 25.01.), eine Periode entschieden …
+        $projection = $this->projection($connection, 'ebk.de', ['customer_id' => $customer->id, 'registration_at' => '2016-01-25', 'expiration_at' => '2027-01-25']);
+        app(DomainSubscriptionSync::class)->sync($this->organization);
+        $subscription = ResaleSubscription::query()->where('external_id', 'ebk.de')->firstOrFail();
+        $this->assertSame(11, $subscription->periods()->count());
+        $subscription->periods()->whereDate('starts_on', '2025-01-25')->update(['status' => 'billed', 'decided_at' => now()]);
+
+        // … dann liefert das Portal den gedrifteten Ablauf: Beginn rückt auf den 23.01., keine zweite Periode je Jahr.
+        $projection->forceFill(['expiration_at' => '2027-01-23'])->save();
+        app(DomainSubscriptionSync::class)->sync($this->organization);
+        $subscription->refresh();
+        $this->assertSame('2016-01-23', $subscription->starts_on->toDateString());
+        $dates = $subscription->periods()->orderBy('starts_on')->pluck('starts_on')->map(static fn ($d) => $d->toDateString())->all();
+        $this->assertCount(11, $dates);
+        $this->assertContains('2025-01-25', $dates, 'entschiedene Periode behält ihr Datum');
+        $this->assertContains('2026-01-23', $dates);
+        $this->assertNotContains('2025-01-23', $dates, 'kein Duplikat neben der entschiedenen Periode');
+    }
+
     public function test_empty_projection_list_does_not_end_the_domain_subscriptions(): void {
         // Review 2026-09-10 (B6): Plugin aus, Sync-Fehler oder leere Tabelle sind kein Beleg für „verschwunden".
         $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);

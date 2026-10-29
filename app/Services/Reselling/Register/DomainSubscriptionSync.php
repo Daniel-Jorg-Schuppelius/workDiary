@@ -36,15 +36,39 @@ final class DomainSubscriptionSync {
     public const MIRRORED_HOLDER_PREFIX = 'p:';
 
     /**
-     * Beginn des Domain-Abos (Feature 185, MVP-1407): das Registrierungsdatum;
-     * fehlt es (der Listen-Sync liefert es nicht, nur der Detailabgleich),
-     * bleibt ein schon gespeicherter Beginn stehen, sonst wird er aus dem
-     * Ablaufdatum rückgerechnet — Jahrestag des Ablaufs, ein Jahr vor dem
-     * laufenden Lizenzjahr (das Vorjahr zeigt, ob es berechnet wurde).
+     * Spielraum zwischen Registrierung und Ablauf-Jahrestag: DENIC-Drift von ein
+     * bis drei Tagen und Transfers, bei denen das Portal den ersten Ablauf einen
+     * Monat nach dem Transfer setzt (Prod 2026-10-29: antjebewegt.de 03.11. → 03.12.).
+     */
+    public const START_TOLERANCE_DAYS = 45;
+
+    /**
+     * Beginn des Domain-Abos (Feature 185, MVP-1407): das Lizenzjahr läuft von
+     * Ablauf-Jahrestag zu Ablauf-Jahrestag — dort bucht das Portal die Verlängerung —,
+     * der Beginn ist der erste Jahrestag ab der Registrierung. Bei einem Transfer ist
+     * die Registrierung der Transfertag und die Jahre davor gehören dem alten Anbieter
+     * (Befund 2026-10-29: kaik.eu seit 28.02.2018 im Portal, verlängert jeden Oktober;
+     * brillenschmiede.one Transfer im April, Zyklus 25.11.). Ohne Ablauf gilt die
+     * Registrierung; fehlt auch sie (der Listen-Sync liefert sie nicht, nur der
+     * Detailabgleich), bleibt ein gespeicherter Beginn stehen, sonst wird aus dem
+     * Ablauf rückgerechnet — ein Jahr vor dem laufenden Lizenzjahr.
      */
     public static function startOf(DomainProjection $projection, ?ResaleSubscription $existing, CarbonImmutable $reference): ?CarbonImmutable {
         if ($projection->registration_at !== null) {
-            return CarbonImmutable::instance($projection->registration_at)->startOfDay();
+            $registration = CarbonImmutable::instance($projection->registration_at)->startOfDay();
+            if ($projection->expiration_at === null) {
+                return $registration;
+            }
+            $floor = $registration->subDays(self::START_TOLERANCE_DAYS);
+            $start = CarbonImmutable::instance($projection->expiration_at)->startOfDay();
+            if ($start->lessThan($floor)) {
+                return $registration; // Ablauf vor der Registrierung: unplausibel, Registrierung zählt
+            }
+            while ($start->subYearNoOverflow()->greaterThanOrEqualTo($floor)) {
+                $start = $start->subYearNoOverflow();
+            }
+
+            return $start;
         }
         if ($existing !== null) {
             return $existing->starts_on;
