@@ -1,7 +1,7 @@
 ---
 title: "Domain management"
 topic: domains.overview
-version: 1
+version: 2
 keywords:
     - register domain
     - renew domain
@@ -69,4 +69,7 @@ invoice. The reports bundle expiry corridor, renewal cost forecast, customer
 assignment, risk modes and invoice coverage.
 
 **Resellers/subusers:** The reseller view shows the subuser hierarchy with
-portfolio, balances and level, and allows customer assignment per subuser.
+portfolio, balances and level, and allows customer assignment per subuser. For
+each subuser you can enter the customer number at the provider; the monthly
+vouchers built from the accounting journal in the reselling register then
+carry the portal’s invoice numbers (“customer number-MM-YYYY”).

@@ -287,6 +287,8 @@ class AppServiceProvider extends ServiceProvider {
             $mirror->register(new \App\Services\Reselling\Mirror\LocalInvoiceMirrorSource);
             // Positionen des allgemeinen Belegspiegels (Feature 185, MVP-1424): eine Quelle für alle Puller mit Positionen.
             $mirror->register(app(\App\Services\Reselling\Mirror\AccountingVoucherMirrorSource::class));
+            // Buchungsjournal des Domainanbieters: Monatsrechnungen des Portals an Subreseller (Feature 152, Befund 2026-10-29).
+            $mirror->register(new \App\Services\Reselling\Mirror\DomainAccountingMirrorSource);
 
             return $mirror;
         });

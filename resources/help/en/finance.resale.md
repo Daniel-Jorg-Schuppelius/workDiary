@@ -1,7 +1,7 @@
 ---
 title: "Subscriptions & Licences"
 topic: finance.resale
-version: 10
+version: 11
 keywords:
     - Import preview
     - Bulk actions
@@ -134,6 +134,10 @@ run sets the link to zero months, notes the cancellation and reopens the
 period so the replacement invoice can be linked. Domain subscriptions are
 covered by lines that name the domain (such as ".de domain incl. management
 (thieme-logistik.de)"), regardless of the article’s product classification.
+Domains a subreseller settles through the provider portal are covered by the
+domain plugin’s accounting journal: one voucher per subuser and month,
+numbered “customer number-MM-YYYY” (enter the customer number on the subuser’s
+page); the recipient is the subuser’s customer.
 
 **Invoice draft:** From all open periods of an invoice recipient a draft is
 created with one click — with Lexoffice invoicing as a draft in Lexoffice

@@ -34,6 +34,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $entry_date
  * @property string|null $type
  * @property string|null $description
+ * @property string|null $invoice_period
  * @property string|null $reference
  * @property float|string|null $quantity
  * @property float|string|null $net_amount
@@ -60,6 +61,7 @@ class DomainAccountingEntry extends Model {
         'entry_date',
         'type',
         'description',
+        'invoice_period',
         'reference',
         'quantity',
         'net_amount',

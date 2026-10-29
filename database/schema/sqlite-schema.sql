@@ -11467,6 +11467,7 @@ CREATE TABLE IF NOT EXISTS "domain_reseller_accounts"(
   "synced_at" datetime,
   "created_at" datetime,
   "updated_at" datetime,
+  "provider_customer_number" varchar,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("connection_id") references "domain_provider_connections"("id") on delete cascade,
   foreign key("customer_id") references "customers"("id") on delete set null
@@ -11616,6 +11617,7 @@ CREATE TABLE IF NOT EXISTS "domain_accounting_entries"(
   "synced_at" datetime,
   "created_at" datetime,
   "updated_at" datetime,
+  "invoice_period" varchar,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("connection_id") references "domain_provider_connections"("id") on delete cascade,
   foreign key("reseller_account_id") references "domain_reseller_accounts"("id") on delete set null,
@@ -26148,3 +26150,4 @@ INSERT INTO migrations VALUES(1037,'2027_04_01_150000_create_resale_provider_sup
 INSERT INTO migrations VALUES(1038,'2027_04_01_160000_create_accounting_voucher_lines_table',11);
 INSERT INTO migrations VALUES(1039,'2027_04_01_170000_add_invoice_link_to_resale_license_assignments',11);
 INSERT INTO migrations VALUES(1040,'2027_04_01_180000_create_resale_ignored_lines_table',12);
+INSERT INTO migrations VALUES(1041,'2027_04_01_190000_add_provider_customer_number_and_invoice_period_to_domain_tables',13);

@@ -1,7 +1,7 @@
 ---
 title: "Suscripciones y licencias"
 topic: finance.resale
-version: 10
+version: 11
 keywords:
     - Vista previa de importación
     - Acciones masivas
@@ -138,7 +138,11 @@ pone el vínculo a cero meses, anota la anulación y reabre el periodo para que
 pueda vincularse la factura de sustitución. Las suscripciones de dominio se
 cubren con posiciones que nombran el dominio (por ejemplo «dominio .de incl.
 gestión (thieme-logistik.de)»), independientemente de la clasificación del
-artículo.
+artículo. Los dominios que un subrevendedor liquida a través del portal del
+proveedor se cubren con el diario contable del módulo de dominios: un
+comprobante por subusuario y mes, numerado «número de cliente-MM-AAAA»
+(introduzca el número de cliente en la página del subusuario); el destinatario
+es el cliente del subusuario.
 
 **Borrador de factura:** de todos los periodos abiertos de un destinatario
 de factura surge con un clic un borrador — con facturación Lexoffice como

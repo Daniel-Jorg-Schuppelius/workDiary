@@ -1,7 +1,7 @@
 ---
 title: "Gestion des domaines"
 topic: domains.overview
-version: 1
+version: 2
 keywords:
     - enregistrer un domaine
     - renouveler un domaine
@@ -76,6 +76,9 @@ seule, pas une facture fiscale. Les rapports réunissent le corridor
 d'expiration, la prévision des coûts de renouvellement, l'affectation
 client, les modes à risque et la couverture des factures.
 
-**Revendeurs/sous-utilisateurs :** La vue des revendeurs montre la
-hiérarchie des sous-utilisateurs avec portefeuille, soldes et niveau, et
-permet l'affectation client par sous-utilisateur.
+**Revendeurs/sous-utilisateurs :** La vue des revendeurs montre la hiérarchie
+des sous-utilisateurs avec portefeuille, soldes et niveau, et permet
+l'affectation client par sous-utilisateur. Pour chaque sous-utilisateur, vous
+pouvez saisir le numéro client chez le fournisseur ; les pièces mensuelles
+construites à partir du journal comptable dans le registre de revente portent
+alors les numéros de facture du portail (« numéro client-MM-AAAA »).

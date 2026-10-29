@@ -95,7 +95,7 @@ class MirrorCompositeTest extends TestCase {
 
     public function test_both_sources_are_registered_and_cover_their_recipients_in_one_run(): void {
         $mirror = app(InvoiceMirror::class);
-        $this->assertSame(['local', 'accounting', 'lexoffice'], array_map(static fn($s): string => $s->key(), $mirror->sources()), 'Kern registriert lokal und den allgemeinen Belegspiegel (Feature 185), das Plugin Lexoffice');
+        $this->assertSame(['local', 'accounting', 'domain-accounting', 'lexoffice'], array_map(static fn($s): string => $s->key(), $mirror->sources()), 'Kern registriert lokal und den allgemeinen Belegspiegel (Feature 185), das Plugin Lexoffice');
         $this->assertInstanceOf(LexofficeInvoiceMirrorSource::class, $mirror->sourceFor((new LexofficeVoucherLine)->getMorphClass()));
         $this->assertInstanceOf(LocalInvoiceMirrorSource::class, $mirror->sourceFor((new InvoiceItem)->getMorphClass()));
         $this->assertTrue($mirror->coversRecipient($this->organization, $this->local));

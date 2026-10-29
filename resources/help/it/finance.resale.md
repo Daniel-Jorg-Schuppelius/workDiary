@@ -1,7 +1,7 @@
 ---
 title: "Abbonamenti e licenze"
 topic: finance.resale
-version: 10
+version: 11
 keywords:
     - Anteprima importazione
     - Azioni di massa
@@ -135,6 +135,10 @@ mesi del collegamento, annota lo storno e riapre il periodo, così la fattura
 sostitutiva può essere collegata. Gli abbonamenti di dominio sono coperti
 dalle righe che nominano il dominio (ad esempio «dominio .de incl. gestione
 (thieme-logistik.de)»), indipendentemente dalla classificazione dell’articolo.
+I domini che un subrivenditore regola tramite il portale del fornitore sono
+coperti dal giornale contabile del modulo domini: un documento per sottoutente
+e mese, numerato «numero cliente-MM-AAAA» (inserisca il numero cliente nella
+pagina del sottoutente); il destinatario è il cliente del sottoutente.
 
 **Bozza di fattura:** da tutti i periodi aperti di un destinatario fattura
 nasce con un clic una bozza — con fatturazione Lexoffice come bozza in

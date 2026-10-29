@@ -182,13 +182,36 @@ class DomainServiceTest extends TestCase {
     }
 
     public function test_accounting_is_read_only_and_invoices_blocked(): void {
+        // Spalten laut CentralNic-Doku (Befund 2026-10-29: die alten Schlüssel lieferte die API nie);
+        // Zeile 0 trägt zusätzlich die Summenfelder der Antwort.
         FakeDomainResellingTransport::fake([
-            'QueryAccountingList' => FakeDomainResellingTransport::properties([['user' => 'reseller1', 'type' => 'RENEW', 'amount' => '9.90', 'currency' => 'EUR', 'date' => '2026-07-01']]),
+            'QueryAccountingList' => FakeDomainResellingTransport::properties([
+                ['accounting_date' => '2026-10-27 07:30:00', 'accounting_type' => 'RENEW', 'accounting_description' => 'antjebewegt.de', 'accounting_amount' => '1', 'accounting_price' => '-5.36', 'accounting_vat' => '19', 'accounting_vat_price' => '-1.02', 'accounting_currency' => 'EUR', 'invoice_period' => '1Y', 'subreseller' => 'lds-systems', 'total' => '2', 'count' => '2', 'sum' => '-5.54'],
+                ['accounting_date' => '2026-10-28 03:03:00', 'accounting_type' => 'MONTHLY_FEE', 'accounting_description' => 'monthly fee (4 zones)', 'accounting_amount' => '4', 'accounting_price' => '-0.18', 'accounting_currency' => 'EUR'],
+            ]),
         ]);
         $connection = $this->connection();
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'LDS Systems GmbH']);
+        $reseller = DomainResellerAccount::factory()->create(['organization_id' => $this->organization->id, 'connection_id' => $connection->id, 'external_user' => 'lds-systems', 'customer_id' => $customer->id]);
+        $domain = DomainProjection::factory()->create(['organization_id' => $this->organization->id, 'connection_id' => $connection->id, 'external_domain' => 'antjebewegt.de', 'domain_hash' => DomainProjection::hashFor('antjebewegt.de')]);
+        // Leere Zeile aus der Zeit der falschen Schlüssel.
+        DomainAccountingEntry::query()->create(['organization_id' => $this->organization->id, 'connection_id' => $connection->id, 'external_user' => '', 'raw_hash' => str_repeat('0', 64)]);
 
         app(DomainAccountingService::class)->sync($connection);
-        $this->assertDatabaseCount('domain_accounting_entries', 1);
+        app(DomainAccountingService::class)->sync($connection);
+        // Zwei Buchungen, keine Dubletten, leere Altzeile entfernt.
+        $this->assertDatabaseCount('domain_accounting_entries', 2);
+        $renew = DomainAccountingEntry::query()->where('type', 'RENEW')->firstOrFail();
+        $this->assertSame('2026-10-27', $renew->entry_date?->format('Y-m-d'));
+        $this->assertSame('antjebewegt.de', $renew->description);
+        $this->assertSame('1Y', $renew->invoice_period);
+        $this->assertSame('-5.36', $renew->net_amount);
+        $this->assertSame('lds-systems', $renew->external_user);
+        $this->assertSame($reseller->id, $renew->reseller_account_id);
+        $this->assertSame($domain->id, $renew->domain_projection_id);
+        $this->assertSame($customer->id, $renew->customer_id, 'Kunde des Subusers, weil die Domain keinen hat');
+        $fee = DomainAccountingEntry::query()->where('type', 'MONTHLY_FEE')->firstOrFail();
+        $this->assertNull($fee->domain_projection_id);
         $this->assertSame(0, DomainAccountingEntry::query()->whereNotNull('reference')->where('reference', 'INVOICE')->count());
 
         // Rechnungs-Capability ist per Default gesperrt → leer + Blocked-Reason.

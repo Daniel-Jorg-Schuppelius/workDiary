@@ -190,6 +190,8 @@ return [
         'depth' => 'Nivel',
         'portfolio' => 'Cartera',
         'managed_under' => 'gestionado bajo :user',
+        'provider_customer_number' => 'Número de cliente en el proveedor',
+        'provider_customer_number_hint' => 'Las facturas mensuales del proveedor a este subusuario se numeran «número de cliente-MM-AAAA» (p. ej. 10021-08-2026). Con el número, los comprobantes construidos a partir del diario contable en el registro de reventa llevan los mismos números que los importados en la contabilidad.',
     ],
     'accounting' => [
         'subtitle' => 'Diario de asientos de solo lectura, no una factura fiscal.',
@@ -225,6 +227,7 @@ return [
         'mapping_cleared' => 'Asignación de cliente eliminada.',
         'foreign_customer_mismatch' => 'El cliente final no pertenece al cliente seleccionado.',
         'mapping_saved' => 'Asignación de cliente guardada.',
+        'provider_number_saved' => 'Número de cliente en el proveedor guardado.',
         'reseller_customer_required' => 'Primero asigne un cliente al subusuario.',
         'reseller_domains_assigned' => ':count dominio(s) asignado(s) de forma fija al cliente.',
         'registered' => 'Dominio registrado.',

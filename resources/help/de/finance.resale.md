@@ -1,7 +1,7 @@
 ---
 title: "Abos & Lizenzen"
 topic: finance.resale
-version: 10
+version: 11
 keywords:
     - Import-Vorschau
     - Sammelaktionen
@@ -135,7 +135,10 @@ nächste Lauf den Bezug auf null Monate, vermerkt den Storno und öffnet die
 Periode wieder, damit die Ersatzrechnung zugeordnet werden kann. Domain-Abos
 deckt der Lauf über Positionen, die den Domainnamen nennen (etwa „.de-Domain
 inkl. Verwaltung (thieme-logistik.de)“), unabhängig von der Produkt-Einstufung
-des Artikels.
+des Artikels. Domains, die ein Subreseller über das Anbieterportal abrechnet,
+deckt das Buchungsjournal des Domain-Plugins: je Subuser und Monat ein Beleg
+„Kundennummer-MM-JJJJ“ (die Kundennummer tragen Sie auf der Seite des Subusers
+ein), Empfänger ist dessen Kunde.
 
 **Rechnungsentwurf:** Aus allen offenen Perioden eines Rechnungsempfängers
 entsteht per Klick ein Entwurf — bei Lexoffice-Rechnungshoheit als Entwurf

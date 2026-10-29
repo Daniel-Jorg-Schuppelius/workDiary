@@ -36,6 +36,7 @@ use Illuminate\Support\Carbon;
  * @property float|string|null $balance_snapshot
  * @property Carbon|null $balance_at
  * @property int|null $customer_id
+ * @property string|null $provider_customer_number
  * @property string|null $raw_hash
  * @property Carbon|null $synced_at
  */
@@ -59,6 +60,7 @@ class DomainResellerAccount extends Model {
         'balance_snapshot',
         'balance_at',
         'customer_id',
+        'provider_customer_number',
         'raw_hash',
         'synced_at',
     ];

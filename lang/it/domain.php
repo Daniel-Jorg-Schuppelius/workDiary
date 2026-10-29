@@ -190,6 +190,8 @@ return [
         'depth' => 'Livello',
         'portfolio' => 'Portafoglio',
         'managed_under' => 'gestito sotto :user',
+        'provider_customer_number' => 'Numero cliente presso il fornitore',
+        'provider_customer_number_hint' => 'Le fatture mensili del fornitore a questo sottoutente sono numerate «numero cliente-MM-AAAA» (ad es. 10021-08-2026). Con il numero, i documenti costruiti dal giornale contabile nel registro di rivendita portano gli stessi numeri di quelli importati in contabilità.',
     ],
     'accounting' => [
         'subtitle' => 'Giornale delle registrazioni in sola lettura — non una fattura fiscale.',
@@ -225,6 +227,7 @@ return [
         'mapping_cleared' => 'Assegnazione cliente rimossa.',
         'foreign_customer_mismatch' => 'Il cliente finale non appartiene al cliente selezionato.',
         'mapping_saved' => 'Assegnazione cliente salvata.',
+        'provider_number_saved' => 'Numero cliente presso il fornitore salvato.',
         'reseller_customer_required' => 'Assegni prima un cliente al subutente.',
         'reseller_domains_assigned' => ':count dominio/i assegnato/i in modo fisso al cliente.',
         'registered' => 'Dominio registrato.',
