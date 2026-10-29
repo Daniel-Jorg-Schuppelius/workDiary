@@ -841,6 +841,7 @@ return [
         'source_lexoffice' => 'Lexoffice',
         'source_local' => 'Lokale Rechnung',
         'source_accounting' => 'Buchhaltungsprogramm (Belegspiegel)',
+        'source_domain-accounting' => 'Domainanbieter (Buchungsjournal)',
         'open_source' => 'Beleg öffnen (:source)',
         'no_source' => 'Für diesen Rechnungsempfänger liefert keine Quelle Rechnungen — weder ein verknüpfter Lexoffice-Kontakt noch lokale Rechnungshoheit.',
     ],

@@ -22,6 +22,7 @@ use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Lang;
 
 /**
  * Buchungsjournal des Domainanbieters als Belegquelle (Feature 152, Befund
@@ -198,6 +199,9 @@ final class DomainAccountingMirrorSource implements InvoiceMirrorSource {
         // Nummer der Monatsrechnung des Portals an den Subuser: Kundennummer plus Monat.
         $number = ($reseller->provider_customer_number ?? $reseller->external_user) . '-' . $start->format('m-Y');
         $registrarInvoice = trim((string) $entry->invoice_number);
+        $type = (string) $entry->type;
+        $typeLabel = $type !== '' && Lang::has('domain.accounting.types.' . $type) ? (string) __('domain.accounting.types.' . $type) : $type;
+        $description = trim($typeLabel . ' ' . (string) $entry->invoice_period . ($registrarInvoice !== '' ? ' · ' . $registrarInvoice : ''));
 
         return new MirrorLine(
             sourceKey: self::KEY,
@@ -214,10 +218,11 @@ final class DomainAccountingMirrorSource implements InvoiceMirrorSource {
             recipientKey: 'customer:' . (int) $reseller->customer_id,
             recipientName: $recipientName,
             articleKey: null,
-            articleName: $entry->type,
+            // Kein Artikel: die Position heißt wie die Domain, der Buchungstyp steht darunter.
+            articleName: null,
             articleIsLicence: false,
             name: (string) $entry->description,
-            description: trim((string) $entry->type . ' ' . (string) $entry->invoice_period . ($registrarInvoice !== '' ? ' · ' . $registrarInvoice : '')) ?: null,
+            description: $description !== '' ? $description : null,
             quantity: (float) $years,
             unitName: 'Jahr',
             unitNet: $total->withScale(4)->dividedBy($years),

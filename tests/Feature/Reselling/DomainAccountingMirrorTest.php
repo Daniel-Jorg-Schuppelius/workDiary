@@ -80,12 +80,12 @@ class DomainAccountingMirrorTest extends TestCase {
     public function test_monthly_portal_invoices_from_the_journal_cover_the_domain_periods(): void {
         $domain = $this->domain('antjebewegt.de');
         $subscription = $this->subscription('antjebewegt.de', '2024-10-27');
-        $this->entry('2025-10-27 03:00:00', 'RENEW', 'antjebewegt.de', '-5.36', ['domain_projection_id' => $domain->id]);
-        $this->entry('2026-10-27 03:00:00', 'RENEW', 'antjebewegt.de', '-5.36', ['domain_projection_id' => $domain->id]);
+        $this->entry('2025-10-27 03:00:00', 'RENEW_DOMAIN_ANNUAL', 'antjebewegt.de', '-5.36', ['domain_projection_id' => $domain->id]);
+        $this->entry('2026-10-27 03:00:00', 'RENEW_DOMAIN_ANNUAL', 'antjebewegt.de', '-5.36', ['domain_projection_id' => $domain->id]);
         // Gebühr ohne Domain und Buchung eines Subusers ohne Kunden zählen nicht.
         $this->entry('2026-10-28 03:03:00', 'MONTHLY_FEE', 'monthly fee (4 zones)', '-0.18', ['domain_projection_id' => null]);
         $other = DomainResellerAccount::factory()->create(['organization_id' => $this->organization->id, 'connection_id' => $this->connection->id, 'external_user' => 'klimmg', 'customer_id' => null]);
-        $this->entry('2026-10-27 04:00:00', 'RENEW', 'antjebewegt.de', '-5.36', ['domain_projection_id' => $domain->id, 'reseller_account_id' => $other->id, 'external_user' => 'klimmg', 'customer_id' => null]);
+        $this->entry('2026-10-27 04:00:00', 'RENEW_DOMAIN_ANNUAL', 'antjebewegt.de', '-5.36', ['domain_projection_id' => $domain->id, 'reseller_account_id' => $other->id, 'external_user' => 'klimmg', 'customer_id' => null]);
 
         $result = (new LinkProposer)->propose($this->organization);
 
@@ -95,6 +95,18 @@ class DomainAccountingMirrorTest extends TestCase {
         $this->assertSame('12.00', $periods->get(1)?->links()->first()?->months);
         $this->assertSame(2, $result['linked']);
         $this->assertSame(0, $result['lines_without_subscription']);
+        $this->assertSame(2, $result['auto_confirmed'], 'Domainname passt, Buchung dicht am Periodenbeginn — sichere Treffer');
+
+        // Beleg-Dialog aus der Periode: Domain als Position, Typ übersetzt, Quelle benannt, Artikelvergleich grün.
+        $link = $periods->get(2)?->links()->first();
+        $this->assertNotNull($link);
+        $page = $this->actingAs($this->orgAdmin())->get(route('finance.resale.vouchers.show', ['source' => 'domain-accounting', 'voucher' => $this->reseller->id . ':2026-10', 'period' => $periods->get(2)?->sqid, 'line' => $link->linkable_id]))->assertOk();
+        $page->assertSee('antjebewegt.de')
+            ->assertSee(__('domain.accounting.types.RENEW_DOMAIN_ANNUAL'))
+            ->assertDontSee('RENEW_DOMAIN_ANNUAL')
+            ->assertSee(__('resale.mirror.source_domain-accounting'))
+            ->assertSee(__('resale.voucher.compare.article_ok'))
+            ->assertSee('10021-10-2026');
     }
 
     public function test_source_groups_entries_to_monthly_vouchers_and_resolves_keys(): void {

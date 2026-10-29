@@ -194,6 +194,17 @@ return [
         'provider_customer_number_hint' => 'The provider’s monthly invoices to this subuser are numbered “customer number-MM-YYYY” (e.g. 10021-08-2026). With the number, the vouchers built from the accounting journal in the reselling register carry the same numbers as the ones imported into bookkeeping.',
     ],
     'accounting' => [
+        // Buchungstypen des Anbieters (Live-Vertrag 2026-10-29); unbekannte Typen zeigen den Rohwert. „type“ ist die Spaltenüberschrift.
+        'types' => [
+            'RENEW_DOMAIN_ANNUAL' => 'Renewal',
+            'ADD_DOMAIN' => 'Registration',
+            'TRANSFER_DOMAIN' => 'Transfer',
+            'UNRENEW_DOMAIN_ANNUAL' => 'Renewal reversed',
+            'DNSZONE_INTERNAL' => 'Internal DNS zones',
+            'DNSZONE_EXTERNAL' => 'External DNS zones',
+            'PAYMENT' => 'Deposit',
+            'SERVICE_FEE' => 'Service fee',
+        ],
         'subtitle' => 'Read-only posting journal — not a tax invoice.',
         'date' => 'Date',
         'type' => 'Type',

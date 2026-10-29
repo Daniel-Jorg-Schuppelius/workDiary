@@ -194,6 +194,17 @@ return [
         'provider_customer_number_hint' => 'Le fatture mensili del fornitore a questo sottoutente sono numerate «numero cliente-MM-AAAA» (ad es. 10021-08-2026). Con il numero, i documenti costruiti dal giornale contabile nel registro di rivendita portano gli stessi numeri di quelli importati in contabilità.',
     ],
     'accounting' => [
+        // Buchungstypen des Anbieters (Live-Vertrag 2026-10-29); unbekannte Typen zeigen den Rohwert. „type“ ist die Spaltenüberschrift.
+        'types' => [
+            'RENEW_DOMAIN_ANNUAL' => 'Rinnovo',
+            'ADD_DOMAIN' => 'Registrazione',
+            'TRANSFER_DOMAIN' => 'Trasferimento',
+            'UNRENEW_DOMAIN_ANNUAL' => 'Rinnovo stornato',
+            'DNSZONE_INTERNAL' => 'Zone DNS interne',
+            'DNSZONE_EXTERNAL' => 'Zone DNS esterne',
+            'PAYMENT' => 'Versamento',
+            'SERVICE_FEE' => 'Commissione di servizio',
+        ],
         'subtitle' => 'Giornale delle registrazioni in sola lettura — non una fattura fiscale.',
         'date' => 'Data',
         'type' => 'Tipo',
