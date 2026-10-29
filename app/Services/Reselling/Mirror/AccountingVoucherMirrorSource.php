@@ -19,7 +19,7 @@ use App\Models\Finance\{AccountingVoucher, AccountingVoucherLine};
 use App\Models\Platform\Organization;
 use App\Services\Billing\BillingModeResolver;
 use App\Services\Finance\Accounting\Vouchers\VoucherPullerRegistry;
-use App\Services\Reselling\Register\LicenseArticleClassifier;
+use App\Services\Reselling\Register\{LicenseArticleClassifier, LicenseMonths};
 use App\Support\{MorphMap, Sqid};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
@@ -300,6 +300,8 @@ final class AccountingVoucherMirrorSource implements InvoiceMirrorSource {
         $total = Money::of((string) $line->total_net, $currency);
         $customerId = $voucher->customer_id !== null ? (int) $voucher->customer_id : null;
 
+        $period = LicenseMonths::periodInText($line->description);
+
         return new MirrorLine(
             sourceKey: self::KEY,
             morphClass: $line->getMorphClass(),
@@ -325,8 +327,8 @@ final class AccountingVoucherMirrorSource implements InvoiceMirrorSource {
             unitNet: Money::of((string) $line->unit_net, $currency, 4),
             totalNet: $isCreditNote && ! $total->isNegative() ? $total->negated() : $total,
             currency: $currency,
-            serviceFrom: null,
-            serviceTo: null,
+            serviceFrom: $period['from'] ?? null,
+            serviceTo: $period['to'] ?? null,
             voucherText: null,
             voucherTextHint: null,
             position: (int) $line->position,

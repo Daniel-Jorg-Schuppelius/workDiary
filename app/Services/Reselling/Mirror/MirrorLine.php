@@ -115,8 +115,22 @@ final readonly class MirrorLine {
         if ($domain === '') {
             return false;
         }
+        $forms = [$domain];
+        // IDN: der Anbieter führt „xn--onlinehndler-lieferschwelle-hkc.de“, die Rechnung schreibt „onlinehändler-lieferschwelle.de“.
+        if (str_contains($domain, 'xn--') && function_exists('idn_to_utf8')) {
+            $unicode = idn_to_utf8($domain, IDNA_NONTRANSITIONAL_TO_UNICODE, INTL_IDNA_VARIANT_UTS46);
+            if (is_string($unicode) && $unicode !== '' && $unicode !== $domain) {
+                $forms[] = mb_strtolower($unicode);
+            }
+        }
+        $haystack = mb_strtolower((string) $this->articleName . ' ' . $this->text());
+        foreach ($forms as $form) {
+            if (preg_match('/(?<![\p{L}\p{N}.-])' . preg_quote($form, '/') . '(?![\p{L}\p{N}-])/u', $haystack) === 1) {
+                return true;
+            }
+        }
 
-        return (bool) preg_match('/(?<![a-z0-9.-])' . preg_quote($domain, '/') . '(?![a-z0-9-])/u', mb_strtolower((string) $this->articleName . ' ' . $this->text()));
+        return false;
     }
 
     /** Leistungsmonate aus dem Zeitraum (gerundet; Einzeldatum = null). */

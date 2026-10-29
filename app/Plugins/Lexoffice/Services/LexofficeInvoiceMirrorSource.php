@@ -18,7 +18,7 @@ use App\Models\Platform\Organization;
 use App\Plugins\Lexoffice\Models\{LexofficeVoucher, LexofficeVoucherLine};
 use App\Services\Platform\Catalog\ArticleCatalog;
 use App\Services\Reselling\Mirror\{InvoiceMirrorSource, MirrorLine, MirrorVoucher};
-use App\Services\Reselling\Register\LicenseArticleClassifier;
+use App\Services\Reselling\Register\{LicenseArticleClassifier, LicenseMonths};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
@@ -190,6 +190,8 @@ final class LexofficeInvoiceMirrorSource implements InvoiceMirrorSource {
         $customerId = $this->customerIdOf($voucher, $map);
         $article = $line->lexoffice_article_id !== null ? $line->article : null;
         $articleKey = $line->lexoffice_article_id !== null ? ArticleCatalog::key(LexofficeArticleCatalogSource::PREFIX, (int) $line->lexoffice_article_id) : null;
+        // Sammelrechnung: der Belegzeitraum umspannt alle Positionen, der eigene steht im Text.
+        $period = LicenseMonths::periodInText($line->description);
 
         return new MirrorLine(
             sourceKey: self::KEY,
@@ -217,8 +219,8 @@ final class LexofficeInvoiceMirrorSource implements InvoiceMirrorSource {
             unitNet: $line->unit_net,
             totalNet: $line->total_net,
             currency: $line->currency,
-            serviceFrom: self::date($voucher->service_starts_on),
-            serviceTo: self::date($voucher->service_ends_on),
+            serviceFrom: $period['from'] ?? self::date($voucher->service_starts_on),
+            serviceTo: $period['to'] ?? self::date($voucher->service_ends_on),
             voucherText: $voucher->voucher_text,
             voucherTextHint: $voucher->voucherTextHint(),
             position: (int) $line->position,
