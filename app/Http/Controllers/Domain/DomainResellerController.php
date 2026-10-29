@@ -14,6 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
 use App\Models\Domain\{DomainAccountingEntry, DomainResellerAccount};
 use App\Services\Domain\{DomainCustomerMappingService, DomainInvoiceService};
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -79,6 +80,20 @@ class DomainResellerController extends Controller {
         $mapping->assignReseller($reseller, $customer);
 
         return back()->with('success', __('domain.flash.mapping_saved'));
+    }
+
+    /**
+     * Kundennummer des Subusers beim Anbieter: das Portal stellt ihm Monatsrechnungen
+     * „<Kundennummer>-MM-JJJJ“; mit der Nummer heißen die Belege aus dem Buchungsjournal
+     * im Reselling-Register genauso wie die in die Buchhaltung importierten (Feature 152).
+     */
+    public function saveProviderNumber(Request $request, DomainResellerAccount $reseller): RedirectResponse {
+        Gate::authorize('assignCustomer', $reseller);
+
+        $data = $request->validate(['provider_customer_number' => ['nullable', 'string', 'max:32', 'regex:/^[A-Za-z0-9-]+$/']]);
+        $reseller->forceFill(['provider_customer_number' => StringHelper::trimToNull((string) ($data['provider_customer_number'] ?? ''))])->save();
+
+        return back()->with('success', __('domain.flash.provider_number_saved'));
     }
 
     /**

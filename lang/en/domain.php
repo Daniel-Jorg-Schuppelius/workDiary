@@ -190,6 +190,8 @@ return [
         'depth' => 'Level',
         'portfolio' => 'Portfolio',
         'managed_under' => 'managed under :user',
+        'provider_customer_number' => 'Customer number at the provider',
+        'provider_customer_number_hint' => 'The provider’s monthly invoices to this subuser are numbered “customer number-MM-YYYY” (e.g. 10021-08-2026). With the number, the vouchers built from the accounting journal in the reselling register carry the same numbers as the ones imported into bookkeeping.',
     ],
     'accounting' => [
         'subtitle' => 'Read-only posting journal — not a tax invoice.',
@@ -225,6 +227,7 @@ return [
         'mapping_cleared' => 'Customer mapping removed.',
         'foreign_customer_mismatch' => 'The end customer does not belong to the selected customer.',
         'mapping_saved' => 'Customer mapping saved.',
+        'provider_number_saved' => 'Customer number at the provider saved.',
         'reseller_customer_required' => 'Please assign a customer to the subuser first.',
         'reseller_domains_assigned' => ':count domain(s) firmly assigned to the customer.',
         'registered' => 'Domain registered.',

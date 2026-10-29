@@ -1,7 +1,7 @@
 ---
 title: "Gestión de dominios"
 topic: domains.overview
-version: 1
+version: 2
 keywords:
     - registrar dominio
     - renovar dominio
@@ -73,6 +73,9 @@ una factura fiscal. Los informes reúnen el corredor de vencimiento, la
 previsión de costes de renovación, la asignación de cliente, los modos de
 riesgo y la cobertura de facturas.
 
-**Revendedores/subusuarios:** La vista de revendedores muestra la jerarquía
-de subusuarios con cartera, saldos y nivel, y permite la asignación de
-cliente por subusuario.
+**Revendedores/subusuarios:** La vista de revendedores muestra la jerarquía de
+subusuarios con cartera, saldos y nivel, y permite la asignación de cliente
+por subusuario. Para cada subusuario puede introducir el número de cliente en
+el proveedor; los comprobantes mensuales construidos a partir del diario
+contable en el registro de reventa llevan entonces los números de factura del
+portal («número de cliente-MM-AAAA»).

@@ -44,6 +44,13 @@
                 <x-icon-btn icon="save" size="sm" type="submit" :title="__('domain.action.save')" />
             </x-action-form>
             <p class="mt-1 text-xs text-muted">{{ __('domain.mapping.reseller_hint') }}</p>
+            {{-- Kundennummer beim Anbieter: Monatsrechnungen des Portals heißen „<Nummer>-MM-JJJJ“ (Feature 152). --}}
+            <x-action-form :action="route('domain-reseller.provider-number', $reseller)" class="mt-3 flex gap-2">
+                <input type="text" name="provider_customer_number" value="{{ old('provider_customer_number', $reseller->provider_customer_number) }}" maxlength="32"
+                       class="input input-sm input-bordered w-full font-mono" placeholder="{{ __('domain.reseller.provider_customer_number') }}" aria-label="{{ __('domain.reseller.provider_customer_number') }}">
+                <x-icon-btn icon="save" size="sm" type="submit" :title="__('domain.action.save')" />
+            </x-action-form>
+            <p class="mt-1 text-xs text-muted">{{ __('domain.reseller.provider_customer_number_hint') }}</p>
             @if ($reseller->customer_id !== null && $reseller->domains->isNotEmpty())
                 <x-action-form :action="route('domain-reseller.assign-domains', $reseller)" class="mt-2"
                                :confirm="__('domain.mapping.assign_all_confirm', ['customer' => $reseller->customer?->name])">

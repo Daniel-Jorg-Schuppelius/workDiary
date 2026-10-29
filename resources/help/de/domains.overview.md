@@ -1,7 +1,7 @@
 ---
 title: "Domainverwaltung"
 topic: domains.overview
-version: 1
+version: 2
 keywords:
     - Domain registrieren
     - Domain verlängern
@@ -71,4 +71,7 @@ keine steuerliche Rechnung. Die Berichte bündeln Ablaufkorridor,
 Renewal-Kostenprognose, Kundenzuordnung, Risiko-Modi und Rechnungsabdeckung.
 
 **Reseller/Subuser:** Die Reseller-Sicht zeigt die Subuser-Hierarchie mit
-Portfolio, Salden und Ebene und erlaubt die Kundenzuordnung je Subuser.
+Portfolio, Salden und Ebene und erlaubt die Kundenzuordnung je Subuser. Je
+Subuser lässt sich die Kundennummer beim Anbieter eintragen; damit heißen die
+Monatsbelege aus dem Buchungsjournal im Reselling-Register wie die Rechnungen
+des Portals („Kundennummer-MM-JJJJ“).

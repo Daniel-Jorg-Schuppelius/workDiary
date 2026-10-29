@@ -208,6 +208,8 @@ return [
     */
 
     'attributes' => [
+
+        'provider_customer_number' => 'customer number at the provider',
         'rental_mode' => 'Rental type',
         'max_guests' => 'Maximum guests',
         'minimum_nights' => 'Minimum stay (nights)',

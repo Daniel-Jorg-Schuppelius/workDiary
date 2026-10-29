@@ -174,6 +174,8 @@ return [
     ],
 
     'attributes' => [
+
+        'provider_customer_number' => 'número de cliente en el proveedor',
         'rental_mode' => 'Tipo de alquiler',
         'max_guests' => 'Número máximo de huéspedes',
         'minimum_nights' => 'Estancia mínima (noches)',

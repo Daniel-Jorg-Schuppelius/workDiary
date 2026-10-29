@@ -1,7 +1,7 @@
 ---
 title: "Abonnements & licences"
 topic: finance.resale
-version: 10
+version: 11
 keywords:
     - Aperçu d’import
     - Actions groupées
@@ -141,7 +141,12 @@ annulée plus tard dans Lexoffice, le prochain calcul met le lien à zéro mois,
 note l’annulation et rouvre la période pour que la facture de remplacement
 puisse être rattachée. Les abonnements de domaine sont couverts par les lignes
 qui nomment le domaine (par exemple « domaine .de avec gestion
-(thieme-logistik.de) »), quelle que soit la classification de l’article.
+(thieme-logistik.de) »), quelle que soit la classification de l’article. Les
+domaines qu’un sous-revendeur règle via le portail du fournisseur sont
+couverts par le journal comptable du module domaines : une pièce par
+sous-utilisateur et par mois, numérotée « numéro client-MM-AAAA » (saisissez
+le numéro client sur la page du sous-utilisateur) ; le destinataire est le
+client du sous-utilisateur.
 
 **Brouillon de facture :** à partir de toutes les périodes ouvertes d’un
 destinataire de facture, un clic crée un brouillon — avec la facturation

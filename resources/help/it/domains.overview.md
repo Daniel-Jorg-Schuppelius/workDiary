@@ -1,7 +1,7 @@
 ---
 title: "Gestione dei domini"
 topic: domains.overview
-version: 1
+version: 2
 keywords:
     - registrare un dominio
     - rinnovo dominio
@@ -75,5 +75,8 @@ scadenza, la previsione dei costi di rinnovo, l'assegnazione cliente, le
 modalità a rischio e la copertura delle fatture.
 
 **Rivenditori/subutenti:** La vista dei rivenditori mostra la gerarchia dei
-subutenti con portafoglio, saldi e livello, e consente l'assegnazione
-cliente per subutente.
+subutenti con portafoglio, saldi e livello, e consente l'assegnazione cliente
+per subutente. Per ogni sottoutente può inserire il numero cliente presso il
+fornitore; i documenti mensili costruiti dal giornale contabile nel registro
+di rivendita portano allora i numeri di fattura del portale («numero
+cliente-MM-AAAA»).

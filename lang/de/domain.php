@@ -190,6 +190,8 @@ return [
         'depth' => 'Ebene',
         'portfolio' => 'Portfolio',
         'managed_under' => 'geführt unter :user',
+        'provider_customer_number' => 'Kundennummer beim Anbieter',
+        'provider_customer_number_hint' => 'Monatsrechnungen des Anbieters an diesen Subuser heißen „Kundennummer-MM-JJJJ“ (etwa 10021-08-2026). Mit der Nummer heißen die Belege aus dem Buchungsjournal im Reselling-Register genauso wie die in die Buchhaltung importierten.',
     ],
     'accounting' => [
         'subtitle' => 'Read-only Buchungsjournal — keine steuerliche Rechnung.',
@@ -225,6 +227,7 @@ return [
         'mapping_cleared' => 'Kundenzuordnung entfernt.',
         'foreign_customer_mismatch' => 'Der Endkunde gehört nicht zum ausgewählten Kunden.',
         'mapping_saved' => 'Kundenzuordnung gespeichert.',
+        'provider_number_saved' => 'Kundennummer beim Anbieter gespeichert.',
         'reseller_customer_required' => 'Bitte dem Subuser zuerst einen Kunden zuordnen.',
         'reseller_domains_assigned' => ':count Domain(s) dem Kunden fest zugeordnet.',
         'registered' => 'Domain registriert.',

@@ -9847,6 +9847,7 @@ CREATE TABLE `domain_accounting_entries` (
   `entry_date` date DEFAULT NULL,
   `type` varchar(64) DEFAULT NULL,
   `description` varchar(512) DEFAULT NULL,
+  `invoice_period` varchar(64) DEFAULT NULL,
   `reference` varchar(190) DEFAULT NULL,
   `quantity` decimal(12,3) DEFAULT NULL,
   `net_amount` decimal(15,2) DEFAULT NULL,
@@ -10147,6 +10148,7 @@ CREATE TABLE `domain_reseller_accounts` (
   `balance_snapshot` decimal(15,2) DEFAULT NULL,
   `balance_at` timestamp NULL DEFAULT NULL,
   `customer_id` bigint(20) unsigned DEFAULT NULL,
+  `provider_customer_number` varchar(32) DEFAULT NULL,
   `raw_hash` varchar(64) DEFAULT NULL,
   `synced_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -28424,3 +28426,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1037,'2027_04_01_1
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1038,'2027_04_01_160000_create_accounting_voucher_lines_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1039,'2027_04_01_170000_add_invoice_link_to_resale_license_assignments',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1040,'2027_04_01_180000_create_resale_ignored_lines_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1041,'2027_04_01_190000_add_provider_customer_number_and_invoice_period_to_domain_tables',1);

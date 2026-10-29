@@ -190,6 +190,8 @@ return [
         'depth' => 'Niveau',
         'portfolio' => 'Portefeuille',
         'managed_under' => 'géré sous :user',
+        'provider_customer_number' => 'Numéro client chez le fournisseur',
+        'provider_customer_number_hint' => 'Les factures mensuelles du fournisseur à ce sous-utilisateur sont numérotées « numéro client-MM-AAAA » (par ex. 10021-08-2026). Avec ce numéro, les pièces construites à partir du journal comptable dans le registre de revente portent les mêmes numéros que celles importées dans la comptabilité.',
     ],
     'accounting' => [
         'subtitle' => 'Journal des écritures en lecture seule — pas une facture fiscale.',
@@ -225,6 +227,7 @@ return [
         'mapping_cleared' => 'Affectation client supprimée.',
         'foreign_customer_mismatch' => 'Le client final n\'appartient pas au client sélectionné.',
         'mapping_saved' => 'Affectation client enregistrée.',
+        'provider_number_saved' => 'Numéro client chez le fournisseur enregistré.',
         'reseller_customer_required' => 'Veuillez d’abord affecter un client au sous-utilisateur.',
         'reseller_domains_assigned' => ':count domaine(s) affecté(s) fermement au client.',
         'registered' => 'Domaine enregistré.',
