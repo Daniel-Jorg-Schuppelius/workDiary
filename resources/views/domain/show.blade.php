@@ -40,6 +40,20 @@
                 <x-detail-grid.row :label="__('domain.field.expiration')" class="tabular-nums" :value="$domain->expiration_at?->fdate() ?? '—'" />
                 <x-detail-grid.row :label="__('domain.field.renewal_mode')" :value="$domain->renewal_mode?->label() ?? '—'" />
                 <x-detail-grid.row :label="__('domain.field.transferlock')" :value="$domain->transferlock ? __('domain.yes') : __('domain.no')" />
+                {{-- Live-Vertrag 2026-10-29: Registrierung, Bezahlt-bis, nächste Aktion, Laufzeit, Nameserver, Kontakte, DNSSEC, Whois-Privacy. --}}
+                <x-detail-grid.row :label="__('domain.field.registration')" class="tabular-nums" :value="$domain->registration_at?->fdate() ?? '—'" />
+                <x-detail-grid.row :label="__('domain.field.paid_until')" class="tabular-nums" :value="$domain->paid_until_at?->fdate() ?? '—'" />
+                <x-detail-grid.row :label="__('domain.field.next_action')" :value="$domain->next_action !== null ? $domain->next_action . ($domain->next_action_at !== null ? ' · ' . $domain->next_action_at->fdate() : '') : '—'" />
+                <x-detail-grid.row :label="__('domain.field.renewal_period')" :value="$domain->renewal_period !== null ? trans_choice('domain.field.years', $domain->renewal_period, ['count' => $domain->renewal_period]) : '—'" />
+                @php $details = $domain->details ?? []; @endphp
+                <x-detail-grid.row :label="__('domain.field.nameservers')" class="font-mono text-xs" :value="! empty($details['nameservers']) ? implode(', ', (array) $details['nameservers']) : '—'" />
+                <x-detail-grid.row :label="__('domain.field.owner_contact')" class="font-mono text-xs" :value="$domain->owner_handle ?? '—'" />
+                <x-detail-grid.row :label="__('domain.field.admin_contact')" class="font-mono text-xs" :value="$details['admin_contact'] ?? '—'" />
+                <x-detail-grid.row :label="__('domain.field.tech_contact')" class="font-mono text-xs" :value="$details['tech_contact'] ?? '—'" />
+                <x-detail-grid.row :label="__('domain.field.billing_contact')" class="font-mono text-xs" :value="$details['billing_contact'] ?? '—'" />
+                <x-detail-grid.row :label="__('domain.field.dnssec')" :value="isset($details['dnssec']) ? (\CommonToolkit\Helper\Data\StringHelper::parseBool((string) $details['dnssec']) === true ? __('domain.yes') : __('domain.no')) : '—'" />
+                <x-detail-grid.row :label="__('domain.field.whois_privacy')" :value="isset($details['whois_privacy']) ? (\CommonToolkit\Helper\Data\StringHelper::parseBool((string) $details['whois_privacy']) === true ? __('domain.yes') : __('domain.no')) : '—'" />
+                <x-detail-grid.row :label="__('domain.field.provider_updated')" class="tabular-nums" :value="$domain->provider_updated_at?->fdate() ?? '—'" />
                 <x-detail-grid.row :label="__('domain.field.renewal_price')"
                                    :value="$domain->renewal_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $domain->renewal_price, 2, withThousandsSeparator: true) . ' ' . ($domain->renewal_currency?->value ?? '') : '—'" />
                 <x-detail-grid.row :label="__('domain.field.sync')">

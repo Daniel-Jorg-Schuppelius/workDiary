@@ -46,6 +46,11 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $expiration_at
  * @property Carbon|null $accounting_at
  * @property Carbon|null $failure_at
+ * @property Carbon|null $paid_until_at
+ * @property Carbon|null $next_action_at
+ * @property Carbon|null $provider_updated_at
+ * @property int|null $renewal_period
+ * @property array<string, mixed>|null $details
  * @property Carbon|null $finalization_at
  * @property float|string|null $renewal_price
  * @property CurrencyCode|null $renewal_currency
@@ -85,6 +90,11 @@ class DomainProjection extends Model {
         'accounting_at',
         'failure_at',
         'finalization_at',
+        'paid_until_at',
+        'next_action_at',
+        'provider_updated_at',
+        'renewal_period',
+        'details',
         'renewal_price',
         'renewal_currency',
         'revision',
@@ -104,6 +114,11 @@ class DomainProjection extends Model {
         'accounting_at' => 'date',
         'failure_at' => 'date',
         'finalization_at' => 'date',
+        'paid_until_at' => 'date',
+        'next_action_at' => 'date',
+        'provider_updated_at' => 'datetime',
+        'renewal_period' => 'integer',
+        'details' => 'array',
         'renewal_price' => 'decimal:2',
         'synced_at' => 'datetime',
     ];

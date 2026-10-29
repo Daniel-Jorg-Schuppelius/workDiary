@@ -20,6 +20,7 @@
         <x-slot:head>
             <tr>
                 <x-table.th>{{ __('domain.reseller.user') }}</x-table.th>
+                <x-table.th>{{ __('domain.reseller.customer_number') }}</x-table.th>
                 <x-table.th>{{ __('domain.reseller.parent') }}</x-table.th>
                 <x-table.th>{{ __('domain.field.customer') }}</x-table.th>
                 <x-table.th align="right">{{ __('domain.reseller.domains') }}</x-table.th>
@@ -39,6 +40,7 @@
                         @if ($account->user_class)<x-status-badge tone="ghost" size="sm">{{ $account->user_class }}</x-status-badge>@endif
                     </div>
                 </td>
+                <td class="font-mono text-xs">{{ $account->provider_customer_number ?? '—' }}</td>
                 <td class="font-mono text-xs text-muted">{{ $account->parent_user ?? '—' }}</td>
                 <td>{{ $account->customer?->name ?? '—' }}</td>
                 <td class="text-right tabular-nums">{{ $account->domains_count }}</td>
@@ -52,7 +54,7 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty :colspan="6" :title="__('domain.empty.reseller')" compact />
+            <x-table.empty :colspan="7" :title="__('domain.empty.reseller')" compact />
         @endforelse
     </x-table>
 

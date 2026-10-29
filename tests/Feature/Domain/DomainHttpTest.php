@@ -84,9 +84,13 @@ class DomainHttpTest extends TestCase {
             'domain_hash' => DomainProjection::hashFor('meine.de'),
         ]);
 
+        $domain->forceFill(['details' => ['nameservers' => ['ns1.example.net', 'ns2.example.net'], 'admin_contact' => 'P-ADMIN1'], 'paid_until_at' => '2027-03-01', 'renewal_period' => 1])->save();
         $this->actingAs($this->admin)->get(route('domains.index'))->assertOk()->assertSee('meine.de');
         $this->actingAs($this->admin)->get(route('domains.show', $domain))->assertOk()
             ->assertSee('meine.de')
+            ->assertSee('ns1.example.net, ns2.example.net')
+            ->assertSee('P-ADMIN1')
+            ->assertSee(__('domain.field.paid_until'))
             // Rechnungs-Reiter erklärt die API-Grenze (Blocked-State).
             ->assertSee('keine', false);
     }

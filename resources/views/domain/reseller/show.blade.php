@@ -29,6 +29,14 @@
             <x-detail-grid.row :label="__('domain.field.customer')" :value="$reseller->customer?->name ?? '—'" />
             <x-detail-grid.row :label="__('domain.reseller.balance')" class="tabular-nums"
                                :value="$reseller->balance_snapshot !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $reseller->balance_snapshot, 2, withThousandsSeparator: true) . ' ' . ($reseller->currency?->value ?? '') : '—'" />
+            <x-detail-grid.row :label="__('domain.reseller.customer_number')" class="font-mono" :value="$reseller->provider_customer_number ?? '—'" />
+            <x-detail-grid.row :label="__('domain.reseller.user_class')" :value="$reseller->user_class ?? '—'" />
+            <x-detail-grid.row :label="__('domain.reseller.credit')" class="tabular-nums"
+                               :value="$reseller->credit_snapshot !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $reseller->credit_snapshot, 2, withThousandsSeparator: true) . ' ' . ($reseller->currency?->value ?? '') : '—'" />
+            <x-detail-grid.row :label="__('domain.reseller.vat')" class="tabular-nums" :value="$reseller->vat_rate !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $reseller->vat_rate, 1) . ' %' : '—'" />
+            <x-detail-grid.row :label="__('domain.reseller.email')" :value="$reseller->email ?? '—'" />
+            <x-detail-grid.row :label="__('domain.reseller.last_login')" class="tabular-nums" :value="$reseller->last_login_at?->fdate() ?? '—'" />
+            <x-detail-grid.row :label="__('domain.reseller.note')" :value="$reseller->note ?? '—'" />
         </x-detail-grid>
         {{-- Kundenzuordnung des Subusers: gruppiert dessen Domains in der
              Kundenakte („geführt unter Subuser …"), ohne direkte

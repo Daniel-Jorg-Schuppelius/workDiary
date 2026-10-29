@@ -56,7 +56,7 @@ class DomainSyncService {
                 continue;
             }
 
-            DomainResellerAccount::query()->updateOrCreate(
+            $account = DomainResellerAccount::query()->updateOrCreate(
                 [
                     'organization_id' => $connection->organization_id,
                     'connection_id' => $connection->id,
@@ -71,11 +71,23 @@ class DomainSyncService {
                     'active' => $this->boolField($row, ['useractive', 'active', 'status', 'userstatus'], true),
                     'currency' => $this->currency($this->field($row, ['useraccountcurrency', 'currency', 'usercurrency', 'accountcurrency'])),
                     'balance_snapshot' => NumberHelper::normalizeDecimalStringOrNull($this->field($row, ['useraccountcurrent', 'balance', 'accountbalance', 'userbalance', 'amount']) ?? ''),
+                    'credit_snapshot' => NumberHelper::normalizeDecimalStringOrNull($this->field($row, ['useraccountcredit', 'credit']) ?? ''),
+                    'vat_rate' => NumberHelper::normalizeDecimalStringOrNull($this->field($row, ['useraccountvat', 'vatrate']) ?? ''),
+                    'email' => $this->field($row, ['useremail', 'email']),
+                    'note' => $this->field($row, ['usercomment', 'comment']),
+                    'provider_created_at' => $this->date($this->field($row, ['usercreateddate', 'createddate'])),
+                    'last_login_at' => $this->date($this->field($row, ['lastlogin', 'userlastlogin'])),
                     'balance_at' => Carbon::now(),
                     'raw_hash' => CryptoHelper::hash(JsonHelper::encode($row)),
                     'synced_at' => Carbon::now(),
                 ],
             );
+            // Kundennummer des Subusers beim Anbieter = USERID (Portal-Kundenliste 2026-10-29: 10021 lds-systems,
+            // 10055 klimmg); die Monatsrechnungen heißen „<Kundennummer>-MM-JJJJ“. Ein Wert des Inhabers bleibt.
+            $customerNumber = $this->field($row, ['userid', 'customernumber', 'customerid']);
+            if ($account->provider_customer_number === null && $customerNumber !== null && preg_match('/^[A-Za-z0-9-]{1,32}$/', $customerNumber) === 1) {
+                $account->forceFill(['provider_customer_number' => $customerNumber])->saveQuietly();
+            }
             $count++;
         }
         $this->assignDepths($connection);
@@ -172,13 +184,9 @@ class DomainSyncService {
                     'external_handle' => $handle,
                 ],
                 [
-                    'external_user' => $this->field($row, ['user', 'contactuser', 'owner']),
-                    // Minimierter Snapshot ohne rohe PII-Häufung.
-                    'snapshot' => [
-                        'organization' => $this->field($row, ['contactorganization', 'organization', 'org']),
-                        'country' => $this->field($row, ['contactcountry', 'country']),
-                        'type' => $this->field($row, ['contacttype', 'type']),
-                    ],
+                    'external_user' => $this->field($row, ['user', 'contactuser', 'owner', 'parentuser']),
+                    // Inhaberdaten für die Domainverwaltung (Live-Vertrag 2026-10-29) — nie CONTACTAUTH.
+                    'snapshot' => $this->contactSnapshot($row),
                     'raw_hash' => CryptoHelper::hash(JsonHelper::encode($row)),
                     'synced_at' => Carbon::now(),
                 ],
@@ -231,15 +239,12 @@ class DomainSyncService {
         // Nur setzen, wenn geliefert — ein Listen-Sync darf per StatusDomain gefüllte Werte nicht
         // auf null zurücksetzen. Der Live-Gateway liefert diese Daten auch in der Liste
         // (DOMAINACCOUNTINGDATE, DOMAINFAILUREDATE, DOMAINFINALIZATIONDATE, DOMAINCREATEDDATE; domain:contract 2026-10-29).
-        foreach (['accounting_at' => ['paiddate', 'accountingdate', 'domainaccountingdate', 'domainpaiduntildate'], 'failure_at' => ['failuredate', 'domainfailuredate'], 'finalization_at' => ['finalizationdate', 'domainfinalizationdate'], 'registration_at' => ['registrationdate', 'createddate', 'domaincreateddate']] as $column => $keys) {
-            $value = $this->date($this->field($row, $keys));
-            if ($value !== null) {
-                $values[$column] = $value;
-            }
+        foreach (self::optionalColumns($row) as $column => $value) {
+            $values[$column] = $value;
         }
-        $nextAction = $this->field($row, ['nextaction', 'domainnextaction']);
-        if ($nextAction !== null) {
-            $values['next_action'] = $nextAction;
+        $details = $this->providerDetails($row);
+        if ($details !== []) {
+            $values['details'] = $details;
         }
 
         // Registrant-/Owner-Contact-Handle nur setzen, wenn der Provider ihn
@@ -288,6 +293,11 @@ class DomainSyncService {
             'raw_hash' => $response->rawHash(),
             'synced_at' => Carbon::now(),
         ]);
+        $projection->fill(self::optionalColumns($row));
+        $details = array_merge($projection->details ?? [], $this->providerDetails($row, $response));
+        if ($details !== []) {
+            $projection->fill(['details' => $details]);
+        }
 
         // StatusDomain liefert USER — Einzelabgleich heilt damit auch eine
         // fehlende/veraltete Reseller-Verknüpfung (Selbstheilung ohne Vollsync).
@@ -310,6 +320,120 @@ class DomainSyncService {
         $rows = $response->rows();
 
         return $rows[0] ?? [];
+    }
+
+    /**
+     * Registrant-Daten als Snapshot — nur bekannte Schlüssel, der Auth-Code (CONTACTAUTH) bleibt draußen.
+     *
+     * @param  array<string, string>  $row
+     * @return array<string, string>
+     */
+    private function contactSnapshot(array $row): array {
+        $snapshot = [];
+        foreach ([
+            'title' => ['contacttitle', 'title'], 'first_name' => ['contactfirstname', 'firstname'], 'middle_name' => ['contactmiddlename', 'middlename'],
+            'last_name' => ['contactlastname', 'lastname'], 'name' => ['contactname', 'name'], 'organization' => ['contactorganization', 'organization', 'org'],
+            'street' => ['contactstreet', 'street'], 'zip' => ['contactzip', 'zip'], 'city' => ['contactcity', 'city'], 'state' => ['contactstate', 'state'],
+            'country' => ['contactcountry', 'country'], 'phone' => ['contactphone', 'phone'], 'fax' => ['contactfax', 'fax'], 'email' => ['contactemail', 'email'],
+            'type' => ['contacttype', 'type'], 'status' => ['contactstatus', 'status'], 'verified' => ['verified'], 'email_verified' => ['emailverified'],
+            'address_validated' => ['addressvalidated'], 'verification_date' => ['verificationdate'], 'repository' => ['contactrepository', 'repository'],
+            'contact_id' => ['contactid', 'roid'], 'created_at' => ['contactcreateddate', 'createddate'], 'updated_at' => ['contactupdateddate', 'updateddate'],
+        ] as $key => $candidates) {
+            $value = $this->field($row, $candidates);
+            if ($value !== null) {
+                $snapshot[$key] = $value;
+            }
+        }
+
+        return $snapshot;
+    }
+
+    /**
+     * Spalten, die nur gesetzt werden, wenn der Anbieter sie liefert — die Liste darf per
+     * StatusDomain gefüllte Werte nicht auf null setzen. Live-Vertrag 2026-10-29: Liste und
+     * Detail nennen dieselben Daten, die Liste mit DOMAIN-Präfix.
+     *
+     * @param  array<string, string>  $row
+     * @return array<string, mixed>
+     */
+    private static function optionalColumns(array $row): array {
+        $values = [];
+        foreach ([
+            'accounting_at' => ['paiddate', 'accountingdate', 'domainaccountingdate'],
+            'paid_until_at' => ['paiduntildate', 'domainpaiduntildate'],
+            'failure_at' => ['failuredate', 'domainfailuredate'],
+            'finalization_at' => ['finalizationdate', 'domainfinalizationdate'],
+            'registration_at' => ['registrationdate', 'createddate', 'domaincreateddate'],
+            'next_action_at' => ['nextactiondate', 'domainnextactiondate'],
+            'provider_updated_at' => ['updateddate', 'domainupdateddate'],
+        ] as $column => $keys) {
+            $raw = self::providerField($row, $keys);
+            if ($raw === null) {
+                continue;
+            }
+            try {
+                $values[$column] = Carbon::parse($raw, 'UTC');
+            } catch (\Throwable) {
+                // unlesbares Datum → Spalte unverändert
+            }
+        }
+        $nextAction = self::providerField($row, ['nextaction', 'domainnextaction']);
+        if ($nextAction !== null) {
+            $values['next_action'] = $nextAction;
+        }
+        $period = self::providerField($row, ['renewalperiod', 'domainrenewalperiod']);
+        if ($period !== null && is_numeric($period)) {
+            $values['renewal_period'] = (int) $period;
+        }
+
+        return $values;
+    }
+
+    /**
+     * Technische Angaben des Anbieters als JSON — nur bekannte Schlüssel, nie Auth-Codes
+     * (DOMAINAUTH) oder andere Geheimnisse. Mehrwertige NAMESERVER kommen aus der Antwort.
+     *
+     * @param  array<string, string>  $row
+     * @return array<string, mixed>
+     */
+    private function providerDetails(array $row, ?DomainResponse $response = null): array {
+        $details = [];
+        $nameservers = $response !== null ? array_values(array_filter(array_map('trim', $response->property('nameserver')))) : [];
+        foreach (['nameserver0', 'nameserver1', 'nameserver2', 'nameserver3', 'nameserver4', 'nameserver5'] as $key) {
+            $value = $this->field($row, [$key]);
+            if ($value !== null) {
+                $nameservers[] = $value;
+            }
+        }
+        if ($nameservers === [] && ($single = $this->field($row, ['nameserver'])) !== null) {
+            $nameservers[] = $single;
+        }
+        if ($nameservers !== []) {
+            $details['nameservers'] = array_values(array_unique($nameservers));
+        }
+        foreach ([
+            'admin_contact' => ['admincontact', 'domainadmincontact', 'admincontact0'],
+            'tech_contact' => ['techcontact', 'domaintechcontact', 'techcontact0'],
+            'billing_contact' => ['billingcontact', 'domainbillingcontact', 'billingcontact0'],
+            'dnssec' => ['dnssec'],
+            'idn' => ['idndomain', 'domainidn'],
+            'whois_privacy' => ['wps', 'xwhoisprivacy', 'whoisprivacy'],
+            'subclass' => ['domainsubclass', 'subclass'],
+            'transfer_mode' => ['transfermode', 'domaintransfermode'],
+            'rgp_status' => ['rgpstatus'],
+            'repository' => ['domainrepository', 'repository'],
+            'created_by' => ['createdby', 'domaincreatedby'],
+            'updated_by' => ['updatedby', 'domainupdatedby'],
+            'comment' => ['comment', 'domaincomment', 'xdomaincomment'],
+            'ireg_created' => ['iregcreated'],
+        ] as $key => $candidates) {
+            $value = $this->field($row, $candidates);
+            if ($value !== null) {
+                $details[$key] = $value;
+            }
+        }
+
+        return $details;
     }
 
     /**

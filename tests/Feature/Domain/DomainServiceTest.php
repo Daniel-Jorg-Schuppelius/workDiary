@@ -49,26 +49,36 @@ class DomainServiceTest extends TestCase {
         FakeDomainResellingTransport::fake([
             // Live-Namen (domain:contract 2026-10-29): „parent user“, useruserclass, useractive, useraccountcurrency, useraccountcurrent.
             'QueryUserList' => FakeDomainResellingTransport::properties([
-                ['user' => 'reseller1', 'parent user' => 'upstream', 'useruserclass' => 'RESELLER', 'useractive' => '1', 'useraccountcurrency' => 'EUR', 'useraccountcurrent' => '250.50'],
-                ['user' => 'sub1', 'parent user' => 'reseller1', 'useruserclass' => 'SUBRESELLER', 'useractive' => '1', 'useraccountcurrency' => 'EUR', 'useraccountcurrent' => '12.00'],
+                ['user' => 'reseller1', 'parent user' => 'upstream', 'useruserclass' => 'RESELLER', 'useractive' => '1', 'useraccountcurrency' => 'EUR', 'useraccountcurrent' => '250.50', 'userid' => '10021'],
+                ['user' => 'sub1', 'parent user' => 'reseller1', 'useruserclass' => 'SUBRESELLER', 'useractive' => '1', 'useraccountcurrency' => 'EUR', 'useraccountcurrent' => '12.00', 'userid' => '10055', 'useraccountcredit' => '70.00', 'useraccountvat' => '19.000', 'useremail' => 'mail@sub1.example', 'usercomment' => 'Pilot', 'usercreateddate' => '2023-02-01 10:00:00', 'last login' => '2026-10-28 08:15:00', 'userpassword' => 'geheim'],
             ]),
             'QueryDomainList' => FakeDomainResellingTransport::properties([['domain' => 'kunde.de', 'user' => 'sub1', 'status' => 'ACTIVE', 'renewalmode' => 'AUTORENEW', 'expirationdate' => '2027-01-01']]),
             'QueryContactList' => function (array $params): string {
                 \PHPUnit\Framework\Assert::assertSame('1', $params['wide'] ?? null, 'ohne wide liefert der Gateway nur Handles');
 
-                return FakeDomainResellingTransport::properties([['contact' => 'P-ABC123', 'organization' => 'Kunde GmbH'], ['CONTACT' => 'P-DEF456', 'CONTACT_ORGANIZATION' => 'Doku GmbH', 'CONTACT_COUNTRY' => 'DE']]);
+                return FakeDomainResellingTransport::properties([['contact' => 'P-ABC123', 'organization' => 'Kunde GmbH'], ['CONTACT' => 'P-DEF456', 'CONTACT_ORGANIZATION' => 'Doku GmbH', 'CONTACT_COUNTRY' => 'DE', 'contactfirstname' => 'Doris', 'contactlastname' => 'Doku', 'contactemail' => 'doris@doku.example', 'contactcity' => 'Berlin', 'verified' => '1', 'contactauth' => 'XYZ-SECRET', 'parentuser' => 'reseller1']]);
             },
         ]);
 
-        app(DomainSyncService::class)->syncAll($this->connection());
+        $connection = $this->connection();
+        // Vom Inhaber gesetzte Kundennummer bleibt, fehlende kommt aus USERID (Portal-Kundenliste).
+        DomainResellerAccount::factory()->create(['organization_id' => $this->organization->id, 'connection_id' => $connection->id, 'external_user' => 'reseller1', 'provider_customer_number' => '99999']);
+        app(DomainSyncService::class)->syncAll($connection);
 
-        $this->assertDatabaseHas('domain_reseller_accounts', ['external_user' => 'sub1', 'parent_user' => 'reseller1', 'depth' => 1, 'user_class' => 'SUBRESELLER', 'currency' => 'EUR', 'balance_snapshot' => '12.00']);
-        $this->assertDatabaseHas('domain_reseller_accounts', ['external_user' => 'reseller1', 'depth' => 0, 'balance_snapshot' => '250.50']);
+        $this->assertDatabaseHas('domain_reseller_accounts', ['external_user' => 'sub1', 'parent_user' => 'reseller1', 'depth' => 1, 'user_class' => 'SUBRESELLER', 'currency' => 'EUR', 'balance_snapshot' => '12.00', 'provider_customer_number' => '10055', 'credit_snapshot' => '70.00', 'vat_rate' => '19.000', 'email' => 'mail@sub1.example', 'note' => 'Pilot']);
+        $sub = DomainResellerAccount::query()->where('external_user', 'sub1')->firstOrFail();
+        $this->assertSame('2026-10-28', $sub->last_login_at?->toDateString());
+        $this->assertSame('2023-02-01', $sub->provider_created_at?->toDateString());
+        $this->assertStringNotContainsString('geheim', json_encode($sub->getAttributes(), JSON_THROW_ON_ERROR), 'das Subuser-Passwort wird nie gespeichert');
+        $this->assertDatabaseHas('domain_reseller_accounts', ['external_user' => 'reseller1', 'depth' => 0, 'balance_snapshot' => '250.50', 'provider_customer_number' => '99999']);
         $domain = DomainProjection::query()->where('external_domain', 'kunde.de')->firstOrFail();
         $this->assertSame(DomainSyncStatus::Current, $domain->sync_status);
         $this->assertNotNull($domain->reseller_account_id);
         $this->assertDatabaseHas('domain_contact_projections', ['external_handle' => 'P-ABC123']);
-        $this->assertSame('Doku GmbH', DomainContactProjection::query()->where('external_handle', 'P-DEF456')->firstOrFail()->snapshot['organization'] ?? null, 'Doku-Schreibweise CONTACT_ORGANIZATION trifft ebenfalls');
+        $doku = DomainContactProjection::query()->where('external_handle', 'P-DEF456')->firstOrFail();
+        $this->assertSame('Doku GmbH', $doku->snapshot['organization'] ?? null, 'Doku-Schreibweise CONTACT_ORGANIZATION trifft ebenfalls');
+        $this->assertSame(['Doris', 'Doku', 'doris@doku.example', 'Berlin', '1', 'reseller1'], [$doku->snapshot['first_name'] ?? null, $doku->snapshot['last_name'] ?? null, $doku->snapshot['email'] ?? null, $doku->snapshot['city'] ?? null, $doku->snapshot['verified'] ?? null, $doku->external_user]);
+        $this->assertStringNotContainsString('XYZ-SECRET', json_encode($doku->snapshot, JSON_THROW_ON_ERROR), 'der Auth-Code des Kontakts wird nie gespeichert');
     }
 
     public function test_customer_mapping_suggests_by_homepage_and_assigns_without_provider_move(): void {
@@ -196,7 +206,7 @@ class DomainServiceTest extends TestCase {
         $result = app(DomainEventPollingService::class)->poll($connection);
         $this->assertSame(2, $result['stored']);
         $this->assertSame(0, $result['acknowledged']);
-        $this->assertDatabaseHas('domain_events', ['external_event_id' => '4711', 'status' => 'stored', 'event_class' => 'DOMAIN', 'event_action' => 'TRANSFER_SUCCESSFUL', 'object' => 'x.de']);
+        $this->assertDatabaseHas('domain_events', ['external_event_id' => '4711', 'status' => 'stored', 'event_class' => 'DOMAIN', 'event_action' => 'TRANSFER_SUCCESSFUL', 'object' => 'x.de', 'info' => 'Transfer completed']);
         $this->assertDatabaseHas('domain_events', ['external_event_id' => '4712', 'status' => 'stored', 'event_class' => null]);
         $this->assertSame(['event'], $connection->refresh()->observed_properties['queryeventlist'] ?? null, 'der Adapter merkt sich den gelieferten Vertrag');
         $this->assertSame(['class', 'date', 'info', 'object id', 'subclass'], $connection->observed_properties['statusevent'] ?? null);
@@ -215,14 +225,16 @@ class DomainServiceTest extends TestCase {
 
     public function test_contract_command_lists_observed_properties_and_missing_keys(): void {
         $connection = $this->connection();
-        $connection->recordObservedProperties('QueryAccountingList', ['accountingdate', 'accountingtype', 'accountingdescription', 'accountingprice', 'total']);
-        $connection->recordObservedProperties('QueryAccountingList', ['accountingdate', 'accountingtype', 'accountingdescription', 'accountingprice', 'total']);
+        $connection->recordObservedProperties('QueryAccountingList', ['accountingdate', 'accountingtype', 'accountingdescription', 'accountingprice', 'total', 'accounting newfield']);
+        $connection->recordObservedProperties('QueryAccountingList', ['accountingdate', 'accountingtype', 'accountingdescription', 'accountingprice', 'total', 'accounting newfield']);
         $this->assertSame(['queryaccountinglist'], array_keys($connection->refresh()->observed_properties ?? []));
 
         $this->assertSame(0, Artisan::call('domain:contract', ['--connection' => $connection->id]));
         $output = Artisan::output();
         $this->assertStringContainsString('queryaccountinglist', $output);
         $this->assertStringContainsString('Menge, Rechnung', $output, $output);
+        $this->assertStringContainsString('accounting newfield', $output, 'ein geliefertes Feld ohne Verwendung wird als „Nicht verwendet“ gemeldet');
+        $this->assertSame(['accounting newfield'], \App\Console\Commands\Domain\DomainContractCommand::unused('queryaccountinglist', ['accountingdate', 'total', 'accounting newfield']));
     }
 
     public function test_accounting_is_read_only_and_invoices_blocked(): void {
@@ -322,7 +334,16 @@ class DomainServiceTest extends TestCase {
                     'property[DOMAINREGISTRATIONEXPIRATIONDATE][0]=2027-03-01 00:00:00',
                     'property[DOMAINFAILUREDATE][0]=2027-03-25 00:00:00',
                     'property[DOMAINNEXTACTION][0]=pay',
+                    'property[DOMAINNEXTACTIONDATE][0]=2027-03-01 00:00:00',
+                    'property[DOMAINPAIDUNTILDATE][0]=2027-03-01 00:00:00',
                     'property[DOMAINCREATEDDATE][0]=2014-03-27 00:00:00',
+                    'property[RENEWALPERIOD][0]=1',
+                    'property[NAMESERVER0][0]=ns1.example.net',
+                    'property[NAMESERVER1][0]=ns2.example.net',
+                    'property[DOMAINADMINCONTACT][0]=P-ADMIN1',
+                    'property[DNSSEC][0]=0',
+                    'property[WPS][0]=1',
+                    'property[DOMAINAUTH][0]=TOP-SECRET-AUTH',
                     'EOF',
                 ]) . "\n";
             },
@@ -338,7 +359,14 @@ class DomainServiceTest extends TestCase {
         $this->assertSame('2027-03-01', $domain->expiration_at?->toDateString());
         $this->assertSame('2027-03-25', $domain->failure_at?->toDateString(), 'Lebenszyklusdaten kommen auch aus der Liste');
         $this->assertSame('pay', $domain->next_action);
+        $this->assertSame('2027-03-01', $domain->next_action_at?->toDateString());
+        $this->assertSame('2027-03-01', $domain->paid_until_at?->toDateString());
         $this->assertSame('2014-03-27', $domain->registration_at?->toDateString());
+        $this->assertSame(1, $domain->renewal_period);
+        $this->assertSame(['ns1.example.net', 'ns2.example.net'], $domain->details['nameservers'] ?? null, 'Nameserver aus der Liste');
+        $this->assertSame('P-ADMIN1', $domain->details['admin_contact'] ?? null);
+        $this->assertSame('1', $domain->details['whois_privacy'] ?? null);
+        $this->assertStringNotContainsString('TOP-SECRET-AUTH', json_encode($domain->getAttributes(), JSON_THROW_ON_ERROR), 'der Auth-Code der Domain wird nie gespeichert');
     }
 
     public function test_refresh_domain_relinks_reseller_from_status_user(): void {
