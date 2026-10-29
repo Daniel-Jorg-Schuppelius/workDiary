@@ -90,6 +90,9 @@ final class LinkProposer {
     /** @var array<int, string> Abo-ID → Produktschlüssel des laufenden Laufs */
     private array $productKeys = [];
 
+    /** @var array<int, int> Abo → Zahl der Abos desselben Empfängers und Produkts (Geschwister, Mayershofer-Regel) */
+    private array $siblings = [];
+
     /** @var array<string, list<int>> Position → Indizes der Perioden, deren Laufzeit das Bezugsdatum enthält. */
     private array $containing = [];
 
@@ -121,8 +124,11 @@ final class LinkProposer {
      * Sonst deckte eine 24-Monats-Position „ab 26.10." Perioden, die im August
      * begannen, nur weil das Datumsfenster weit genug war; „irgendwo im
      * Leistungszeitraum" reichte nicht, weil dann das zweite Jahr der falschen
-     * Abos drankam. Ohne Leistungszeitraum gilt das Fenster um das
-     * Rechnungsdatum ({@see inWindow()}).
+     * Abos drankam. Der Lauf wendet die Regel nur bei Geschwister-Abos an
+     * (gleicher Empfänger, gleiches Produkt) — bei einem einzelnen Abo gibt es
+     * nichts zu unterscheiden, und Sammelrechnungen tragen oft nur die Spanne
+     * aller Positionen (Befund 2026-10-29); für alle gilt {@see serviceOverlaps()}.
+     * Ohne Leistungszeitraum gilt das Fenster um das Rechnungsdatum ({@see inWindow()}).
      */
     public static function serviceFits(ResalePeriod $period, MirrorLine $line): bool {
         if ($line->serviceFrom === null || $line->serviceTo === null) {
@@ -145,6 +151,20 @@ final class LinkProposer {
      * sonst Rechnungsdatum) zwischen −90 Tagen und dem Fensterende — oder der
      * Leistungszeitraum deckt den Periodenbeginn (Mehrjahres-Position).
      */
+    /**
+     * Überschneidet der Leistungszeitraum der Position die Periode? Ohne
+     * Zeitraum ja. Eine Position „2 Jahr“ ab 27.03.2016 deckt keine Periode,
+     * die 2014 begann — das Datumsfenster (730 Tage plus Mehrjahresanteil vor
+     * dem Bezugsdatum) ist für Nachberechnungen ohne Zeitraum gedacht.
+     */
+    public static function serviceOverlaps(ResalePeriod $period, MirrorLine $line): bool {
+        if ($line->serviceFrom === null || $line->serviceTo === null) {
+            return true;
+        }
+
+        return ! $line->serviceTo->lessThan($period->starts_on) && ! $line->serviceFrom->greaterThan($period->ends_on);
+    }
+
     public static function inWindow(ResalePeriod $period, MirrorLine $line): bool {
         $date = LicenseMonths::referenceDate($line);
         if ($date === null) {
@@ -384,13 +404,20 @@ final class LinkProposer {
         // Produktschlüssel einmal je Abo — sonst zählt die Sharing-Regel „art:…" und
         // „name:…" desselben Produkts als zwei Produkte und die Nennungspflicht entfällt.
         $this->productKeys = [];
+        $siblingsByProduct = [];
         foreach ($subscriptions as $subscription) {
             $this->productKeys[$subscription->id] = $subscription->productKey($articleNames);
             $holder = $subscription->foreign_customer_id !== null ? 'f' . $subscription->foreign_customer_id : 'c' . $subscription->customer_id;
             $recipient = $recipientBySubscription[$subscription->id];
             if ($recipient !== null) {
                 $holdersByProduct[$recipient][$this->productKeys[$subscription->id]][$holder] = true;
+                $siblingsByProduct[$recipient][$this->productKeys[$subscription->id]] = ($siblingsByProduct[$recipient][$this->productKeys[$subscription->id]] ?? 0) + 1;
             }
+        }
+        $this->siblings = [];
+        foreach ($subscriptions as $subscription) {
+            $recipient = $recipientBySubscription[$subscription->id];
+            $this->siblings[$subscription->id] = $recipient === null ? 1 : ($siblingsByProduct[$recipient][$this->productKeys[$subscription->id]] ?? 1);
         }
         // Mehrere Abos desselben Halters teilen sich die Positionen; erst
         // verschiedene Halter (Endkunden eines Partners) brauchen die Nennung.
@@ -497,7 +524,14 @@ final class LinkProposer {
                 continue;
             }
             $date = LicenseMonths::referenceDate($line);
-            if ($date === null || ! self::inWindow($period, $line) || ! self::serviceFits($period, $line)) {
+            if ($date === null || ! self::inWindow($period, $line) || ! self::serviceOverlaps($period, $line)) {
+                continue;
+            }
+            // Zyklusregel nur, wo sie etwas entscheidet: mehrere Abos desselben Produkts beim
+            // Empfänger. Ein einzelnes Abo nimmt auch Sammelrechnungen, deren Zeitraum nur
+            // umspannt, und Rechnungen mit verschobenem Jahrestag (cfl-world.de: „8 Jahr“ ab
+            // 08.09.2016 für ein Abo ab 27.01.2017).
+            if (($this->siblings[$subscription->id] ?? 1) > 1 && ! self::serviceFits($period, $line)) {
                 continue;
             }
             if (! $this->matchesProduct($subscription, $line)) {

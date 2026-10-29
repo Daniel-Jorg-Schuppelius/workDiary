@@ -390,6 +390,36 @@ class LinkProposerTest extends TestCase {
         $this->assertSame(0, $result['lines_without_subscription'], 'Domainpositionen zählen nicht als Lizenzpositionen ohne Abo');
     }
 
+    public function test_collective_domain_invoice_uses_the_period_in_the_line_text_and_idn_names(): void {
+        // Steuerberater Kaik (Prod 2026-10-29): RE/2017/0017 trägt neun Domains mit je eigenem Zeitraum im Text,
+        // der Belegzeitraum umspannt alle; RE/2023/0575 berechnet cfl-world.de „8 Jahr“ ab 08.09.2016, obwohl das
+        // Abo (Registrierung) am 27.01.2017 beginnt; die IDN-Domain heißt in Lexoffice „onlinehändler-…“.
+        $customer = $this->customerWithContact('Steuerberater C. Kaik', 'c-kaik');
+        $tld = $this->article('art-tld', 'Top-Level-Domain', '8.55');
+        $world = $this->subscription(['kind' => 'domain', 'provider' => 'domainreselling', 'external_id' => 'cfl-world.de', 'label' => 'cfl-world.de', 'customer_id' => $customer->id, 'starts_on' => '2017-01-27']);
+        $ascii = $this->subscription(['kind' => 'domain', 'provider' => 'domainreselling', 'external_id' => 'onlinehaendler-lieferschwelle.de', 'label' => 'onlinehaendler-lieferschwelle.de', 'customer_id' => $customer->id, 'starts_on' => '2017-09-26']);
+        $idn = $this->subscription(['kind' => 'domain', 'provider' => 'domainreselling', 'external_id' => 'xn--onlinehndler-lieferschwelle-hkc.de', 'label' => 'xn--onlinehndler-lieferschwelle-hkc.de', 'customer_id' => $customer->id, 'starts_on' => '2017-09-26']);
+        $this->voucher('c-kaik', 'RE/2017/0017', '2017-12-02', [
+            ['article' => $tld, 'name' => '[SGIT-IT-DOBB-00001DE] - DE-Domain', 'description' => 'Domain Jahresgebühr - DE => cfl-world.de => 27.01.2017 - 27.01.2018', 'quantity' => 1, 'unit' => 'Jahr', 'net' => '4.50'],
+            ['article' => $tld, 'name' => '[SGIT-IT-DOBB-00001DE] - DE-Domain', 'description' => 'Domain Jahresgebühr - DE => onlinehaendler-lieferschwelle.de => 26.09.2017 - 26.09.2018', 'quantity' => 1, 'unit' => 'Jahr', 'net' => '4.50'],
+            ['article' => $tld, 'name' => '[SGIT-IT-DOBB-00001DE] - DE-Domain', 'description' => 'Domain Jahresgebühr - DE => onlinehändler-lieferschwelle.de => 26.09.2017 - 26.09.2018', 'quantity' => 1, 'unit' => 'Jahr', 'net' => '4.50'],
+            ['article' => null, 'name' => 'DNS-Zoneneintragung', 'quantity' => 3, 'unit' => 'Jahr', 'net' => '0.00'],
+        ], '', '2017-01-27', '2018-10-07');
+        $this->voucher('c-kaik', 'RE/2023/0575', '2023-12-03', [['article' => $tld, 'name' => 'Top-Level-Domain', 'description' => '.de-Domain inkl. Verwaltung (cfl-world.de)', 'quantity' => 8, 'unit' => 'Jahr', 'net' => '8.55']], '', '2016-09-08', '2024-09-07');
+
+        $result = (new LinkProposer)->propose($this->organization);
+
+        $worldPeriods = $world->periods()->orderBy('starts_on')->get();
+        $this->assertCount(10, $worldPeriods, '2017 bis 2026');
+        $this->assertSame(['RE/2017/0017', 'RE/2023/0575', 'RE/2023/0575', 'RE/2023/0575', 'RE/2023/0575', 'RE/2023/0575', 'RE/2023/0575', 'RE/2023/0575', null, null], $worldPeriods->map(static fn(ResalePeriod $p) => $p->links()->first()?->voucher_number)->all(), 'Zeitraum aus dem Positionstext deckt 2017, die 8-Jahres-Position mit verschobenem Jahrestag 2018 bis 2024');
+        $this->assertSame(PeriodStatus::Billed, $ascii->periods()->orderBy('starts_on')->first()?->status, 'onlinehaendler-lieferschwelle.de 2017 aus der Sammelrechnung');
+        $this->assertSame(1, $ascii->periods()->where('status', PeriodStatus::Billed->value)->count(), 'danach nie wieder berechnet — die Lücke bleibt sichtbar');
+        $this->assertSame(PeriodStatus::Billed, $idn->periods()->orderBy('starts_on')->first()?->status, 'die IDN-Domain über ihren Unicode-Namen im Text');
+        $this->assertSame(1, $idn->periods()->where('status', PeriodStatus::Billed->value)->count());
+        $this->assertSame(10, $result['linked']);
+        $this->assertSame(0, $result['lines_without_subscription']);
+    }
+
     public function test_retroactive_four_year_line_fills_the_oldest_periods_of_its_contract(): void {
         // Marina-Vulkan-Muster: vier Jahre eines 1er-Vertrags im August 2025 als „48 Monat" nachberechnet,
         // daneben ein zweiter Vertrag ab Mai 2025 mit einer 12er-Position auf derselben Rechnung.

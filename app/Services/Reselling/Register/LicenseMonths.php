@@ -14,6 +14,7 @@ namespace App\Services\Reselling\Register;
 
 use App\Services\Reselling\Mirror\MirrorLine;
 use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\Enums\CountryCode;
 use CommonToolkit\Helper\Data\{DateHelper, NumberHelper};
 
 /**
@@ -30,6 +31,27 @@ final class LicenseMonths {
     private const MONTH_UNITS = ['monat', 'monate', 'month', 'months'];
     private const YEAR_UNITS = ['jahr', 'jahre', 'year', 'years'];
     private const MONTHLY_PRICE_LIMIT = 30.0;
+
+    /**
+     * Leistungszeitraum der Position aus ihrem Text („… => stb-kaik.de =>
+     * 06.10.2017 - 06.10.2018“): Sammelrechnungen tragen auf Belegebene nur die
+     * Spanne aller Positionen, der Zeitraum je Position steht im Text
+     * (Befund 2026-10-29, RE/2017/0017 mit neun Domains).
+     *
+     * @return array{from: CarbonImmutable, to: CarbonImmutable}|null
+     */
+    public static function periodInText(?string $text): ?array {
+        if ($text === null || preg_match('/(\d{1,2}\.\d{1,2}\.\d{4})\s*[-–]\s*(\d{1,2}\.\d{1,2}\.\d{4})/u', $text, $m) !== 1) {
+            return null;
+        }
+        $from = DateHelper::parseDateTime($m[1], CountryCode::Germany);
+        $to = DateHelper::parseDateTime($m[2], CountryCode::Germany);
+        if ($from === null || $to === null || $from > $to) {
+            return null;
+        }
+
+        return ['from' => CarbonImmutable::instance($from)->startOfDay(), 'to' => CarbonImmutable::instance($to)->startOfDay()];
+    }
 
     public static function ofLine(MirrorLine $line): float {
         $split = self::split($line);
