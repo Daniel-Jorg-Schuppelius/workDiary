@@ -13,6 +13,7 @@ namespace App\Services\Domain;
 use App\Enums\Domain\DomainCapabilityArea;
 use App\Models\Domain\DomainProviderConnection;
 use App\Plugins\Support\Domain\DomainRateBudgetException;
+use App\Services\Domain\Concerns\ReadsProviderFields;
 use CommonToolkit\Helper\Data\{CryptoHelper, StringHelper};
 use Illuminate\Support\Facades\Cache;
 
@@ -23,6 +24,8 @@ use Illuminate\Support\Facades\Cache;
  * EAP-/Trademark-Ergebnisse werden mit Preis/Währung getrennt ausgewiesen.
  */
 class DomainAvailabilityService {
+    use ReadsProviderFields;
+
     public function __construct(private readonly DomainProviderResolver $resolver) {}
 
     /**
@@ -63,13 +66,14 @@ class DomainAvailabilityService {
                 if ($domain === null) {
                     continue;
                 }
+                $price = self::providerField($row, ['xfeeamount', 'price', 'aftermarketprice']);
                 $entry = [
                     'domain' => $domain,
                     'available' => $this->isAvailable($row),
-                    'premium' => $this->flag($row, ['premium', 'aftermarket']),
-                    'price' => isset($row['price']) && is_numeric($row['price']) ? (float) $row['price'] : null,
-                    'currency' => $row['currency'] ?? null,
-                    'class' => $row['class'] ?? ($row['reason'] ?? null),
+                    'premium' => $this->flag($row, ['premium', 'aftermarket']) || self::providerField($row, ['xfeeclass', 'aftermarketinfo']) !== null,
+                    'price' => $price !== null && is_numeric($price) ? (float) $price : null,
+                    'currency' => self::providerField($row, ['xfeecurrency', 'currency', 'aftermarketcurrency']),
+                    'class' => self::providerField($row, ['xfeeclass', 'class', 'reason']),
                 ];
                 Cache::put($this->cacheKey($connection, $domain), $entry, $ttl);
                 $results[$domain] = $this->entryShape($entry, false);
@@ -107,9 +111,16 @@ class DomainAvailabilityService {
 
     /** @param  array<string, string>  $row */
     private function isAvailable(array $row): bool {
-        $status = strtolower($row['status'] ?? $row['availability'] ?? '');
+        // Doku: DOMAINCHECK = „(CODE) (DESCRIPTION)“, 210 = frei, 211 = vergeben.
+        $status = strtolower((string) self::providerField($row, ['domaincheck', 'status', 'availability']));
+        if (str_starts_with($status, '210')) {
+            return true;
+        }
+        if (str_starts_with($status, '211') || str_contains($status, 'not available')) {
+            return false;
+        }
 
-        return in_array($status, ['available', 'free', '210', '1', 'true'], true);
+        return in_array($status, ['available', 'free', '1', 'true'], true);
     }
 
     /**
