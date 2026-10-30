@@ -470,8 +470,8 @@ class IncomingEInvoiceService {
     /**
      * Zwei Belege einer Mail meinen dieselbe Rechnung, wenn ihre Nummernschlüssel
      * gleich sind oder der kürzere (mindestens vier Zeichen, mit Ziffer) im
-     * längeren steckt — Shops schreiben auch „Name, 2219519, USt-IdNr." in die
-     * cbc:ID der UBL, während die PDF nur 2219519 nennt (MVP-1247).
+     * längeren steckt — Shops schreiben auch „Name, 7000001, USt-IdNr." in die
+     * cbc:ID der UBL, während die PDF nur 7000001 nennt (MVP-1247).
      */
     private static function sameInvoice(?string $a, ?string $b): bool {
         if ($a === null || $b === null) {

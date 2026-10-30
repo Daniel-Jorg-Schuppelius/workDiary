@@ -90,7 +90,7 @@ final class LinkProposer {
     /** @var array<int, string> Abo-ID → Produktschlüssel des laufenden Laufs */
     private array $productKeys = [];
 
-    /** @var array<int, int> Abo → Zahl der Abos desselben Empfängers und Produkts (Geschwister, Mayershofer-Regel) */
+    /** @var array<int, int> Abo → Zahl der Abos desselben Empfängers und Produkts (Geschwister, Mahlwerk-Regel) */
     private array $siblings = [];
 
     /** @var array<string, list<int>> Position → Indizes der Perioden, deren Laufzeit das Bezugsdatum enthält. */
@@ -118,7 +118,7 @@ final class LinkProposer {
     }
 
     /**
-     * Mit Leistungszeitraum zählt nur er (Phase 163, Pilot Mayershofer): der
+     * Mit Leistungszeitraum zählt nur er (Phase 163, Pilot Mahlwerk): der
      * Periodenbeginn liegt (±14 Tage) auf einem Zyklusbeginn der Position —
      * Leistungsbeginn plus k × Periodenlänge, nicht nach dem Leistungsende.
      * Sonst deckte eine 24-Monats-Position „ab 26.10." Perioden, die im August
@@ -529,7 +529,7 @@ final class LinkProposer {
             }
             // Zyklusregel nur, wo sie etwas entscheidet: mehrere Abos desselben Produkts beim
             // Empfänger. Ein einzelnes Abo nimmt auch Sammelrechnungen, deren Zeitraum nur
-            // umspannt, und Rechnungen mit verschobenem Jahrestag (cfl-world.de: „8 Jahr“ ab
+            // umspannt, und Rechnungen mit verschobenem Jahrestag (reisewelt-beispiel.de: „8 Jahr“ ab
             // 08.09.2016 für ein Abo ab 27.01.2017).
             if (($this->siblings[$subscription->id] ?? 1) > 1 && ! self::serviceFits($period, $line)) {
                 continue;
@@ -777,9 +777,9 @@ final class LinkProposer {
 
     /**
      * Suchschlüssel eines Endkunden für die Nennung im Belegtext: Kern-Tokens
-     * des Namens, der Name ohne Leerzeichen („Haus 24" ↔ „Haus24") und der
+     * des Namens, der Name ohne Leerzeichen („Hof 24" ↔ „Hof24") und der
      * Matchcode des Fremdkunden. Der Reseller schreibt den Endkunden meist
-     * verkürzt in den Schlusstext („Vielen Dank … M365 Haus24").
+     * verkürzt in den Schlusstext („Vielen Dank … M365 Hof24").
      *
      * @return array{tokens: list<string>, squashed: list<string>}
      */
@@ -791,7 +791,7 @@ final class LinkProposer {
                 $squashed[] = $key;
             }
         }
-        // Auch der Name ohne Rechtsform („Haus 24 GmbH" → „haus24").
+        // Auch der Name ohne Rechtsform („Hof 24 GmbH" → „hof24").
         $core = self::squash(implode(' ', NameTokenMatcher::withoutLegalForm($foreign->name)));
         if (mb_strlen($core) >= 4) {
             $squashed[] = $core;

@@ -79,7 +79,7 @@ final class LicenseAccountGroup {
     /**
      * Name des Kontos: der Halter, nicht der Rechnungsempfänger — bei einem
      * Partner mit vielen Endkunden hießen sonst alle Konten gleich
-     * (Pilot 2026-10-27: zwölf Konten „LDS Systems GmbH").
+     * (Pilot 2026-10-27: zwölf Konten „Nordlicht Systems GmbH").
      */
     public function name(): string {
         $main = $this->mainHolderContract();

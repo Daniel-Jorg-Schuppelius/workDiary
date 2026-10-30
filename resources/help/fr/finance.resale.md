@@ -141,7 +141,7 @@ annulée plus tard dans Lexoffice, le prochain calcul met le lien à zéro mois,
 note l’annulation et rouvre la période pour que la facture de remplacement
 puisse être rattachée. Les abonnements de domaine sont couverts par les lignes
 qui nomment le domaine (par exemple « domaine .de avec gestion
-(thieme-logistik.de) »), quelle que soit la classification de l’article. Les
+(lastkraft-logistik.de) »), quelle que soit la classification de l’article. Les
 domaines qu’un sous-revendeur règle via le portail du fournisseur sont
 couverts par le journal comptable du module domaines : une pièce par
 sous-utilisateur et par mois, numérotée « numéro client-MM-AAAA » (saisissez
@@ -282,7 +282,7 @@ pas univoque est seulement listé (--dry-run montre à l’avance ce qui se
 passerait).
 
 **Compte de licences :** Un compte porte le nom de son détenteur ; si la
-facture va à un partenaire, celui-ci est indiqué à côté (« via LDS Systems »),
+facture va à un partenaire, celui-ci est indiqué à côté (« via Nordlicht Systems »),
 et les modèles récurrents du partenaire n'apparaissent que dans le compte du
 client final auquel ils sont affectés. L'onglet *Comptes de licences* montre par compte
 fournisseur (numéro client chez le fournisseur, prédécesseurs d'un changement
@@ -290,7 +290,7 @@ de fournisseur inclus) combien de licences par produit sont en cours, qui
 les détient et quelle année de licence est facturée — en grille produit ×
 détenteur × année avec numéro de facture ou « manque ». Si plusieurs sociétés
 détiennent des licences du même compte, tenez la **répartition** par produit
-(« Märkische Bunker 5 × Exchange à partir du 18.10.2025 ») : les autres
+(« Nordufer Tank 5 × Exchange à partir du 18.10.2025 ») : les autres
 détenteurs remplissent d'abord le contrat à la plus grande quantité, puis par
 début ; le titulaire du contrat garde le reste. Les cessions par contrat en
 découlent, suivent chaque modification et passent au successeur lors d'un

@@ -134,7 +134,7 @@ collegata viene poi stornata in Lexoffice, l’esecuzione successiva azzera i
 mesi del collegamento, annota lo storno e riapre il periodo, così la fattura
 sostitutiva può essere collegata. Gli abbonamenti di dominio sono coperti
 dalle righe che nominano il dominio (ad esempio «dominio .de incl. gestione
-(thieme-logistik.de)»), indipendentemente dalla classificazione dell’articolo.
+(lastkraft-logistik.de)»), indipendentemente dalla classificazione dell’articolo.
 I domini che un subrivenditore regola tramite il portale del fornitore sono
 coperti dal giornale contabile del modulo domini: un documento per sottoutente
 e mese, numerato «numero cliente-MM-AAAA» (inserisca il numero cliente nella
@@ -271,14 +271,14 @@ univoco viene solo elencato (--dry-run mostra in anticipo cosa
 accadrebbe).
 
 **Conto licenze:** Un conto porta il nome del suo intestatario; se la fattura
-va a un partner, questo è indicato accanto («tramite LDS Systems»), e i
+va a un partner, questo è indicato accanto («tramite Nordlicht Systems»), e i
 modelli ricorrenti del partner compaiono solo nel conto del cliente finale a
 cui sono assegnati. La scheda *Conti licenze* mostra per conto fornitore
 (numero cliente presso il fornitore, predecessori di un cambio fornitore
 inclusi) quante licenze per prodotto sono attive, chi le detiene e quale anno
 di licenza è fatturato, come griglia prodotto × intestatario × anno con numero
 di fattura o «manca». Se più aziende detengono licenze dello stesso conto,
-curate la **ripartizione** per prodotto («Märkische Bunker 5 × Exchange dal
+curate la **ripartizione** per prodotto («Nordufer Tank 5 × Exchange dal
 18.10.2025»): gli altri intestatari riempiono prima il contratto con la
 quantità maggiore, poi per inizio; l'intestatario del contratto tiene il
 resto. Le cessioni per contratto ne derivano, seguono ogni modifica e passano

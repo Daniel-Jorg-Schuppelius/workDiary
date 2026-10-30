@@ -56,29 +56,29 @@ class HolderResolverTest extends TestCase {
     }
 
     public function test_suggestions_list_similar_customers_and_end_customers_only(): void {
-        $klimpel = $this->customer('Klimpel Bäder GmbH');
-        $byCompany = $this->customer('Herr Peter Urban', ['company' => 'Urban Fliesen GmbH']);
+        $badhaus = $this->customer('Badhaus Bäder GmbH');
+        $byCompany = $this->customer('Herr Peter Wendt', ['company' => 'Wendt Fliesen GmbH']);
         $this->customer('Auerswald GmbH & Co. KG');
-        $partner = $this->customer('LDS Systems GmbH');
-        $kaik = $this->foreign($partner, 'Steuerbüro Kaik');
-        $this->foreign($partner, 'Kaik Immobilien', ['archived_at' => now()]);
+        $partner = $this->customer('Nordlicht Systems GmbH');
+        $zahlenwerk = $this->foreign($partner, 'Steuerbüro Zahlenwerk');
+        $this->foreign($partner, 'Zahlenwerk Immobilien', ['archived_at' => now()]);
         $otherOrg = Organization::factory()->create();
-        Customer::factory()->create(['organization_id' => $otherOrg->id, 'name' => 'Klimpel Bäder GmbH', 'company' => 'Klimpel Bäder GmbH']);
+        Customer::factory()->create(['organization_id' => $otherOrg->id, 'name' => 'Badhaus Bäder GmbH', 'company' => 'Badhaus Bäder GmbH']);
 
         $resolver = new HolderResolver;
         // Exakt normalisiert („Baeder" = „Bäder") und tokenbasiert (Rechtsform zählt nicht, Reihenfolge egal).
-        $result = $resolver->suggestions($this->organization, 'KLIMPEL BAEDER');
-        $this->assertSame([$klimpel->id], $result['customers']->pluck('id')->all(), 'nur der eigene Mandant');
+        $result = $resolver->suggestions($this->organization, 'BADHAUS BAEDER');
+        $this->assertSame([$badhaus->id], $result['customers']->pluck('id')->all(), 'nur der eigene Mandant');
         $this->assertTrue($result['foreign']->isEmpty());
 
-        $result = $resolver->suggestions($this->organization, 'Fliesen Urban');
+        $result = $resolver->suggestions($this->organization, 'Fliesen Wendt');
         $this->assertSame([$byCompany->id], $result['customers']->pluck('id')->all(), 'Treffer über die Firma, nicht den Namen');
-        $this->assertSame('Herr Peter Urban', $result['customers'][0]->name);
+        $this->assertSame('Herr Peter Wendt', $result['customers'][0]->name);
 
-        $result = $resolver->suggestions($this->organization, 'Kaik');
+        $result = $resolver->suggestions($this->organization, 'Zahlenwerk');
         $this->assertTrue($result['customers']->isEmpty());
-        $this->assertSame([$kaik->id], $result['foreign']->pluck('id')->all(), 'archivierte Fremdkunden werden nicht vorgeschlagen');
-        $this->assertSame('LDS Systems GmbH', $result['foreign'][0]->customer?->name, 'Partner ist geladen (Anzeige in der Inbox)');
+        $this->assertSame([$zahlenwerk->id], $result['foreign']->pluck('id')->all(), 'archivierte Fremdkunden werden nicht vorgeschlagen');
+        $this->assertSame('Nordlicht Systems GmbH', $result['foreign'][0]->customer?->name, 'Partner ist geladen (Anzeige in der Inbox)');
 
         // Kurze Kürzel treffen nichts (kein Kern-Token ≥ 4 Zeichen), Unbekanntes ebenso wenig.
         $this->assertTrue($resolver->suggestions($this->organization, 'GSR')['customers']->isEmpty());
@@ -87,37 +87,37 @@ class HolderResolverTest extends TestCase {
     }
 
     public function test_stored_mapping_wins_over_matching_and_covers_own_customer_and_partner(): void {
-        $klimpel = $this->customer('Klimpel Bäder GmbH');
+        $badhaus = $this->customer('Badhaus Bäder GmbH');
         $other = $this->customer('Ganz Andere GmbH');
-        $partner = $this->customer('LDS Systems GmbH');
-        $this->foreign($partner, 'Klimpel Bäder GmbH');
+        $partner = $this->customer('Nordlicht Systems GmbH');
+        $this->foreign($partner, 'Badhaus Bäder GmbH');
         $resolver = new HolderResolver;
 
         // Ohne Zuordnung: Kunde und gleichnamiger Fremdkunde sind nicht eindeutig — Inbox (Pilot 2026-10-27).
-        $this->assertNull($resolver->resolve($this->organization, $this->company('Klimpel Bäder GmbH')));
+        $this->assertNull($resolver->resolve($this->organization, $this->company('Badhaus Bäder GmbH')));
 
         // customer:<Sqid> — gespeichert schlägt Fremdkunde und Namensgleichheit.
         $stored = ['100001' => 'customer:' . $other->sqid];
-        $resolved = $resolver->resolve($this->organization, $this->company('Klimpel Bäder GmbH'), $stored);
+        $resolved = $resolver->resolve($this->organization, $this->company('Badhaus Bäder GmbH'), $stored);
         $this->assertSame(['customer_id' => $other->id, 'foreign_customer_id' => null, 'is_own_holding' => false, 'source' => HolderResolver::SOURCE_STORED], $resolved);
 
         // Unter dem normalisierten Namen gespeichert (kein Schlüssel) — greift ebenso.
-        $stored = ['klimpel baeder gmbh' => 'customer:' . $klimpel->sqid];
-        $this->assertSame($klimpel->id, $resolver->resolve($this->organization, $this->company('Klimpel Bäder GmbH', 'CNL00007'), $stored)['customer_id'] ?? null);
+        $stored = ['badhaus baeder gmbh' => 'customer:' . $badhaus->sqid];
+        $this->assertSame($badhaus->id, $resolver->resolve($this->organization, $this->company('Badhaus Bäder GmbH', 'CNL00007'), $stored)['customer_id'] ?? null);
 
         // own — kein Halter, aber entschieden.
         $resolved = $resolver->resolve($this->organization, $this->company('Eigene Lizenzen'), ['eigene lizenzen' => CompanyMapping::TARGET_OWN]);
         $this->assertSame(['customer_id' => null, 'foreign_customer_id' => null, 'is_own_holding' => true, 'source' => HolderResolver::SOURCE_STORED], $resolved);
 
         // partner:<Sqid> — Fremdkunde unter dem Partner, neu angelegt und beim zweiten Mal (tokenähnlich) wiedergefunden.
-        $this->assertSame(0, ForeignCustomer::query()->where('name', 'Steuerbüro Kaik')->count());
-        $resolved = $resolver->resolve($this->organization, $this->company('Steuerbüro Kaik', '100009'), ['100009' => 'partner:' . $partner->sqid]);
-        $created = ForeignCustomer::query()->where('customer_id', $partner->id)->where('name', 'Steuerbüro Kaik')->firstOrFail();
+        $this->assertSame(0, ForeignCustomer::query()->where('name', 'Steuerbüro Zahlenwerk')->count());
+        $resolved = $resolver->resolve($this->organization, $this->company('Steuerbüro Zahlenwerk', '100009'), ['100009' => 'partner:' . $partner->sqid]);
+        $created = ForeignCustomer::query()->where('customer_id', $partner->id)->where('name', 'Steuerbüro Zahlenwerk')->firstOrFail();
         $this->assertSame(['customer_id' => null, 'foreign_customer_id' => $created->id, 'is_own_holding' => false, 'source' => HolderResolver::SOURCE_STORED], $resolved);
-        $this->assertSame('Steuerbüro Kaik', $created->company);
-        $again = $resolver->resolve($this->organization, $this->company('Kaik Steuerbüro GmbH', '100009'), ['100009' => 'partner:' . $partner->sqid]);
+        $this->assertSame('Steuerbüro Zahlenwerk', $created->company);
+        $again = $resolver->resolve($this->organization, $this->company('Zahlenwerk Steuerbüro GmbH', '100009'), ['100009' => 'partner:' . $partner->sqid]);
         $this->assertSame($created->id, $again['foreign_customer_id'] ?? null, 'kein zweiter Fremdkunde für die Schreibvariante');
-        $this->assertSame(2, ForeignCustomer::query()->where('customer_id', $partner->id)->count(), 'Klimpel (Fixture) + Kaik');
+        $this->assertSame(2, ForeignCustomer::query()->where('customer_id', $partner->id)->count(), 'Badhaus (Fixture) + Zahlenwerk');
 
         // Ziele, die im Register nichts bedeuten, fallen auf die Erkennung zurück: Lexoffice-Kontakt-UUID,
         // unbekannte Sqid, Kunde eines anderen Mandanten.
@@ -155,45 +155,45 @@ class HolderResolverTest extends TestCase {
     }
 
     public function test_end_customer_matching_needs_one_partner_and_prefers_exact_names(): void {
-        $lds = $this->customer('LDS Systems GmbH');
+        $nordlicht = $this->customer('Nordlicht Systems GmbH');
         $other = $this->customer('Zweiter Partner GmbH');
-        $exact = $this->foreign($lds, 'Steuerbüro Kaik');
-        $this->foreign($lds, 'Kaik Immobilien GmbH');
+        $exact = $this->foreign($nordlicht, 'Steuerbüro Zahlenwerk');
+        $this->foreign($nordlicht, 'Zahlenwerk Immobilien GmbH');
         $resolver = new HolderResolver;
 
         // Exakter Name schlägt Token-Treffer desselben Partners.
-        $this->assertSame($exact->id, $resolver->resolve($this->organization, $this->company('Steuerbüro Kaik'))['foreign_customer_id'] ?? null);
+        $this->assertSame($exact->id, $resolver->resolve($this->organization, $this->company('Steuerbüro Zahlenwerk'))['foreign_customer_id'] ?? null);
         // Nur Token-Treffer, mehrere beim selben Partner: der erste.
-        $resolved = $resolver->resolve($this->organization, $this->company('Kaik'));
+        $resolved = $resolver->resolve($this->organization, $this->company('Zahlenwerk'));
         $this->assertSame(HolderResolver::SOURCE_FOREIGN, $resolved['source'] ?? null);
         $this->assertSame($exact->id, $resolved['foreign_customer_id'] ?? null);
 
         // Gleicher Name bei zwei Partnern: nicht eindeutig → kein Halter (Inbox).
-        $this->foreign($other, 'Steuerbüro Kaik');
+        $this->foreign($other, 'Steuerbüro Zahlenwerk');
         $resolver->reset();
-        $this->assertNull($resolver->resolve($this->organization, $this->company('Steuerbüro Kaik')));
+        $this->assertNull($resolver->resolve($this->organization, $this->company('Steuerbüro Zahlenwerk')));
         // Archivierte Fremdkunden zählen nicht — damit ist es wieder eindeutig.
         ForeignCustomer::query()->where('customer_id', $other->id)->update(['archived_at' => now()]);
         $resolver->reset();
-        $this->assertSame($exact->id, $resolver->resolve($this->organization, $this->company('Steuerbüro Kaik'))['foreign_customer_id'] ?? null);
+        $this->assertSame($exact->id, $resolver->resolve($this->organization, $this->company('Steuerbüro Zahlenwerk'))['foreign_customer_id'] ?? null);
     }
 
     public function test_same_name_as_customer_and_as_end_customer_is_ambiguous(): void {
-        // Pilot 2026-10-27: „Thieme Transporte" ist Kunde UND Endkunde unter LDS — der Import darf nicht raten.
-        $lds = $this->customer('LDS Systems GmbH');
-        $direct = $this->customer('Thieme Transporte');
-        $viaPartner = $this->foreign($lds, 'Thieme Transporte');
+        // Pilot 2026-10-27: „Lastkraft Transporte" ist Kunde UND Endkunde unter Nordlicht — der Import darf nicht raten.
+        $nordlicht = $this->customer('Nordlicht Systems GmbH');
+        $direct = $this->customer('Lastkraft Transporte');
+        $viaPartner = $this->foreign($nordlicht, 'Lastkraft Transporte');
         $resolver = new HolderResolver;
 
-        $this->assertNull($resolver->resolve($this->organization, $this->company('Thieme Transporte')));
-        $suggestions = $resolver->suggestions($this->organization, 'Thieme Transporte');
+        $this->assertNull($resolver->resolve($this->organization, $this->company('Lastkraft Transporte')));
+        $suggestions = $resolver->suggestions($this->organization, 'Lastkraft Transporte');
         $this->assertSame([$direct->id], $suggestions['customers']->pluck('id')->all());
         $this->assertSame([$viaPartner->id], $suggestions['foreign']->pluck('id')->all());
 
         // Archivierter Endkunde: wieder eindeutig, der Kunde gewinnt.
         $viaPartner->forceFill(['archived_at' => now()])->save();
         $resolver->reset();
-        $this->assertSame($direct->id, $resolver->resolve($this->organization, $this->company('Thieme Transporte'))['customer_id'] ?? null);
+        $this->assertSame($direct->id, $resolver->resolve($this->organization, $this->company('Lastkraft Transporte'))['customer_id'] ?? null);
     }
 
     public function test_run_cache_sees_new_master_data_only_after_reset(): void {
@@ -209,7 +209,7 @@ class HolderResolverTest extends TestCase {
         $this->assertSame($customer->id, $resolver->resolve($this->organization, $company)['customer_id'] ?? null);
 
         // Fremdkunden ebenso — außer der Resolver legt ihn selbst an (partner:-Ziel), dann ist er sofort sichtbar.
-        $partner = $this->customer('LDS Systems GmbH');
+        $partner = $this->customer('Nordlicht Systems GmbH');
         $foreign = $this->foreign($partner, 'Neu Angelegt GmbH');
         $this->assertSame(HolderResolver::SOURCE_CUSTOMER, $resolver->resolve($this->organization, $company)['source'] ?? null, 'Fremdkunden-Cache aus dem letzten Lauf');
         $resolver->reset();
@@ -218,8 +218,8 @@ class HolderResolverTest extends TestCase {
         $resolver->reset();
         $this->assertSame($foreign->id, $resolver->resolve($this->organization, $company)['foreign_customer_id'] ?? null, 'ohne gleichnamigen Kunden trifft der Fremdkunde');
 
-        $mapped = $resolver->resolve($this->organization, $this->company('Haus 24 GmbH', '100009'), ['100009' => 'partner:' . $partner->sqid]);
-        $this->assertSame($mapped['foreign_customer_id'] ?? null, $resolver->resolve($this->organization, $this->company('Haus 24 GmbH', '100010'))['foreign_customer_id'] ?? null, 'selbst angelegter Fremdkunde ohne reset() sichtbar');
+        $mapped = $resolver->resolve($this->organization, $this->company('Hof 24 GmbH', '100009'), ['100009' => 'partner:' . $partner->sqid]);
+        $this->assertSame($mapped['foreign_customer_id'] ?? null, $resolver->resolve($this->organization, $this->company('Hof 24 GmbH', '100010'))['foreign_customer_id'] ?? null, 'selbst angelegter Fremdkunde ohne reset() sichtbar');
 
         // Eine gespeicherte Zuordnung aus der Tabelle ist der übliche Weg, „$stored" zu füllen.
         CompanyMapping::create(['organization_id' => $this->organization->id, 'company_key' => '100011', 'company_name' => 'Gemerkt UG', 'mode' => CompanyMappingMode::Customer, 'customer_id' => $customer->id]);

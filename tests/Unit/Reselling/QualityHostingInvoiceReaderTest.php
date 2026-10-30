@@ -27,14 +27,14 @@ Invoice
 Invoice No. 31970912 Customer No. 95229
 Date of Invoice September 3, 2026
 Pos. Qty Description Unit price Total
-End customer: CNL00007 (Klimpel Bäder GmbH)
+End customer: CNL00007 (Badhaus Bäder GmbH)
 Contract: CNLCON00156
 1 1 Microsoft 365 Business Premium 187,92 187,92
 Base fee per unit
 Service: CNLOUI
 Contract: CNLCON00156
 Term: 03.09.26 - 02.09.27
-End customer: CNL00010 (Schub- und Schleppreederei U. Golka GmbH &
+End customer: CNL00010 (Hafen- und Schleppbetrieb M. Seewind GmbH &
 Co.KG) Contract: CNLCON00109
 2 2 Exchange Online Plan 1 34,32 68,64
 Base fee per unit
@@ -47,7 +47,7 @@ TXT;
 Rechnung
 Rechnungsnr. 31970913 Kundennr. 95229
 Rechnungsdatum 3. September 2026
-Endkunde: CNL00007 (Klimpel Bäder GmbH)
+Endkunde: CNL00007 (Badhaus Bäder GmbH)
 Vertrag: CNLCON00156
 1 1 Microsoft 365 Business Premium 187,92 187,92
 Grundgebühr pro Einheit
@@ -60,9 +60,9 @@ Storno zu Rechnung Seite 1
 Gutschriftsnr. 7006872 Kundennr. 95229
 Gutschriftsdatum 2. Juni 2026
 Pos. Menge Beschreibung Rabatt % Einzelpreis Gesamtpreis
-0 1 Umzugsbonus Endkunde Klimpel Bäder GmbH (CNL00007) 100,00 100,00
-0 1 Umzugsbonus Endkunde Klimpel Bäder GmbH (CNL00007) 50,00 50,00
-0 1 Umzugsbonus Endkunde Schub- und Schleppreederei U. Golka GmbH 100,00 100,00
+0 1 Umzugsbonus Endkunde Badhaus Bäder GmbH (CNL00007) 100,00 100,00
+0 1 Umzugsbonus Endkunde Badhaus Bäder GmbH (CNL00007) 50,00 50,00
+0 1 Umzugsbonus Endkunde Hafen- und Schleppbetrieb M. Seewind GmbH 100,00 100,00
 & Co.KG (CNL00010)
 Total EUR ohne MwSt. 250,00
 TXT;
@@ -71,7 +71,7 @@ TXT;
 Rechnung
 Rechnungsnr. 31970914 Kundennr. 95229
 Rechnungsdatum 3. September 2026
-Endkunde: CNL00007 (Klimpel Bäder GmbH) Vertrag: CNLCON00156
+Endkunde: CNL00007 (Badhaus Bäder GmbH) Vertrag: CNLCON00156
 1 1 Microsoft 365 Business Premium 187,92 187,92
 Grundgebühr pro Einheit
 03.09.26 - 02.09.27
@@ -92,11 +92,11 @@ TXT;
         [$a, $b] = $invoice->lines;
         $this->assertSame('CNLCON00156', $a->contract);
         $this->assertSame('CNL00007', $a->companyKey);
-        $this->assertSame('Klimpel Bäder GmbH', $a->companyName);
+        $this->assertSame('Badhaus Bäder GmbH', $a->companyName);
         $this->assertSame('2026-09-03', $a->periodStart?->toDateString(), '„Term:"-Präfix');
         $this->assertSame('2027-09-02', $a->periodEnd?->toDateString());
         $this->assertSame('CNLCON00109', $b->contract, 'Vertrag aus der umgebrochenen End-customer-Kopfzeile');
-        $this->assertSame('Schub- und Schleppreederei U. Golka GmbH & Co.KG', $b->companyName);
+        $this->assertSame('Hafen- und Schleppbetrieb M. Seewind GmbH & Co.KG', $b->companyName);
         $this->assertSame('2026-08-15', $b->periodStart?->toDateString());
         $this->assertSame(68.64, $b->total);
     }

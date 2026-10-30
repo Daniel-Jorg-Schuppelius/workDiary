@@ -45,10 +45,10 @@ class ResaleVoucherDialogTest extends TestCase {
             'organization_id' => $this->organization->id, 'external_id' => 'art-exo', 'name' => 'Exchange Online (Plan 1)', 'article_number' => 'ART-EXO',
             'type' => 'SERVICE', 'unit_name' => 'Monat', 'net_unit_price' => '3.95', 'currency' => 'EUR', 'vat_rate' => '19', 'synced_at' => now(),
         ]);
-        $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Thieme Transporte']);
+        $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Lastkraft Transporte']);
         ExternalReference::create([
             'organization_id' => $this->organization->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
-            'external_id' => 'c-thieme', 'referenceable_type' => $this->customer->getMorphClass(), 'referenceable_id' => $this->customer->getKey(),
+            'external_id' => 'c-lastkraft', 'referenceable_type' => $this->customer->getMorphClass(), 'referenceable_id' => $this->customer->getKey(),
         ]);
     }
 
@@ -62,9 +62,9 @@ class ResaleVoucherDialogTest extends TestCase {
         (new PeriodPlanner)->sync($subscription);
         $period = $subscription->periods()->where('starts_on', '2026-07-04')->firstOrFail();
         $voucher = LexofficeVoucher::create([
-            'organization_id' => $this->organization->id, 'external_id' => 'v-1081', 'contact_external_id' => 'c-thieme', 'voucher_type' => 'invoice',
+            'organization_id' => $this->organization->id, 'external_id' => 'v-1081', 'contact_external_id' => 'c-lastkraft', 'voucher_type' => 'invoice',
             'voucher_status' => 'paid', 'voucher_number' => 'RE/2026/1081', 'voucher_date' => '2026-07-04', 'total_amount' => 56.41, 'currency' => 'EUR', 'archived' => false, 'lines_synced_at' => now(),
-            'voucher_text' => 'Microsoft Dienste Thieme Transporte', 'service_starts_on' => '2026-07-04', 'service_ends_on' => '2027-07-03',
+            'voucher_text' => 'Microsoft Dienste Lastkraft Transporte', 'service_starts_on' => '2026-07-04', 'service_ends_on' => '2027-07-03',
         ]);
         $line = LexofficeVoucherLine::create([
             'organization_id' => $this->organization->id, 'voucher_id' => $voucher->id, 'position' => 1, 'type' => 'service',
@@ -83,7 +83,7 @@ class ResaleVoucherDialogTest extends TestCase {
 
         $dialog = $this->actingAs($admin)->get($url)->assertOk();
         $dialog->assertSee(__('resale.voucher.title', ['number' => 'RE/2026/1081']))
-            ->assertSee('Microsoft Dienste Thieme Transporte')
+            ->assertSee('Microsoft Dienste Lastkraft Transporte')
             ->assertSee('Exchange Online (Plan 1)')->assertSee('Business Support')
             ->assertSee(__('resale.voucher.compare.title'))
             ->assertSee(__('resale.voucher.compare.sure'))

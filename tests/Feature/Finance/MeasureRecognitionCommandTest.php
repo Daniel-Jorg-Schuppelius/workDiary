@@ -39,7 +39,7 @@ final class MeasureRecognitionCommandTest extends TestCase {
         $this->incomingWithText("Rechnung\nRechnungsnummer: RE-1\nRechnungsdatum: 14.08.2026\nGesamtbetrag 119,00 EUR", [
             'summary' => ['manual' => ['invoice_number' => 're-1', 'issue_date' => '2026-08-14', 'amount_gross' => '119.00']],
         ]);
-        $this->incomingWithText("2. Mahnung\nReNr. Datum Betrag\nRZLRE2501475 17.06.2025 13,51\nZu zahlen: 16,51", ['recognition' => IncomingInvoiceRecognition::None]);
+        $this->incomingWithText("2. Mahnung\nReNr. Datum Betrag\nRZXRE2501475 17.06.2025 13,51\nZu zahlen: 16,51", ['recognition' => IncomingInvoiceRecognition::None]);
         $this->incomingWithText(null, ['recognition' => IncomingInvoiceRecognition::None]);
         $before = IncomingEInvoice::query()->get()->map(static fn (IncomingEInvoice $i): string => (string) $i->updated_at)->all();
 

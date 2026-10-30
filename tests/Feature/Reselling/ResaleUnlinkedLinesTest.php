@@ -45,7 +45,7 @@ class ResaleUnlinkedLinesTest extends TestCase {
             'organization_id' => $this->organization->id, 'external_id' => 'art-exo', 'name' => 'Exchange Online (Plan 1)', 'article_number' => 'ART-EXO',
             'type' => 'SERVICE', 'unit_name' => 'Monat', 'net_unit_price' => '3.95', 'currency' => 'EUR', 'vat_rate' => '19', 'synced_at' => now(),
         ]);
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Ute Mayershofer']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Ute Mahlwerk']);
         ExternalReference::create([
             'organization_id' => $this->organization->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
             'external_id' => 'c-ute', 'referenceable_type' => $customer->getMorphClass(), 'referenceable_id' => $customer->getKey(),

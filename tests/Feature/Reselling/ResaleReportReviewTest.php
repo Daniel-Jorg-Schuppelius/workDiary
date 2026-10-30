@@ -48,7 +48,7 @@ Rechnung
 Rechnungsnr. 31970911 Kundennr. 95229
 Rechnungsdatum 3. September 2026
 Pos. Menge Beschreibung Einzelpreis Gesamtpreis
-Endkunde: CNL00007 (Klimpel Bäder GmbH)
+Endkunde: CNL00007 (Badhaus Bäder GmbH)
 Vertrag: CNLCON00156
 1 1 Microsoft 365 Business Premium 187,92 187,92
 Grundgebühr pro Einheit
@@ -112,21 +112,21 @@ TXT;
 
     public function test_invoice_proposal_is_exported_as_xlsx_with_currency_column(): void {
         $admin = $this->orgAdmin();
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH']);
         $this->subscription(['customer_id' => $customer->id, 'quantity' => 2, 'starts_on' => '2025-09-20']); // 2026-09-20 noch nicht fällig
 
         $rows = $this->sheetRows($this->actingAs($admin)->get(route('finance.resale.report.export.xlsx')));
         $this->assertSame(__('resale.field.billed_to'), $rows[0][0]);
         $this->assertContains(__('resale.margin.currency'), $rows[0]);
         $this->assertCount(2, $rows, 'Kopf + eine offene Periode (2025)');
-        $this->assertSame('Klimpel Bäder GmbH', $rows[1][0]);
+        $this->assertSame('Badhaus Bäder GmbH', $rows[1][0]);
         $this->assertSame('EUR', $rows[1][10]);
         $this->assertSame('494,40', (string) $rows[1][9], 'offener Betrag 2 × 247,20 als Dezimalstring');
 
         // CSV bleibt, gleiche Zeilen.
         $csv = $this->actingAs($admin)->get(route('finance.resale.report.export'));
         $csv->assertOk()->assertHeader('content-type', 'text/csv; charset=UTF-8');
-        $this->assertStringContainsString('Klimpel Bäder GmbH', $csv->streamedContent());
+        $this->assertStringContainsString('Badhaus Bäder GmbH', $csv->streamedContent());
 
         // Phase 137, MVP-1101: auch CSV und Excel hinterlassen den Export im Audit.
         $formats = \App\Models\Audit\AuditLog::query()->where('event', 'report.exported')->get()
@@ -176,7 +176,7 @@ TXT;
 
     public function test_renewals_report_buckets_30_60_90_and_exports(): void {
         $admin = $this->orgAdmin();
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH']);
         $soon = $this->subscription(['customer_id' => $customer->id, 'label' => 'Bald', 'starts_on' => '2025-09-20']);          // verlängert 20.09.2026 (+16)
         $this->subscription(['customer_id' => $customer->id, 'label' => 'Mittel', 'starts_on' => '2025-11-01']);                  // verlängert 01.11.2026 (+58)
         $this->subscription(['customer_id' => $customer->id, 'label' => 'Gekündigt', 'starts_on' => '2025-12-01', 'renewal' => 'cancel', 'ends_on' => '2026-11-30']); // endet (+87)
@@ -201,7 +201,7 @@ TXT;
 
     public function test_unbilled_report_lists_subscriptions_with_old_open_periods(): void {
         $admin = $this->orgAdmin();
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH']);
         $old = $this->subscription(['customer_id' => $customer->id, 'label' => 'Alt offen', 'starts_on' => '2025-09-03', 'quantity' => 2]); // 2025-09-03 offen (366 Tage)
         $this->subscription(['customer_id' => $customer->id, 'label' => 'Frisch offen', 'starts_on' => '2026-08-20']);                     // 15 Tage
         $this->subscription(['is_own_holding' => true, 'label' => 'Eigenbestand alt', 'starts_on' => '2025-01-01']);
@@ -262,7 +262,7 @@ TXT;
 
     public function test_pdf_import_reports_line_issues_and_total_mismatch_without_aborting(): void {
         $admin = $this->orgAdmin();
-        $this->subscription(['is_own_holding' => true, 'external_id' => 'CNLCON00156', 'company_name' => 'Klimpel Bäder GmbH', 'starts_on' => '2025-09-03']);
+        $this->subscription(['is_own_holding' => true, 'external_id' => 'CNLCON00156', 'company_name' => 'Badhaus Bäder GmbH', 'starts_on' => '2025-09-03']);
 
         $this->actingAs($admin)->get(route('finance.resale.purchases.import.create'))->assertOk()->assertSee('purchase-files');
 
@@ -294,7 +294,7 @@ TXT;
 
     public function test_view_only_user_reads_reports_but_cannot_change_anything(): void {
         $viewer = $this->viewer();
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH']);
         $subscription = $this->subscription(['customer_id' => $customer->id, 'quantity' => 2]);
         $period = $subscription->periods()->orderBy('starts_on')->firstOrFail();
         $voucher = LexofficeVoucher::create([

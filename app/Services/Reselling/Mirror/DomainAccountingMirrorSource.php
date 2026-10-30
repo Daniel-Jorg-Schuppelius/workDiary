@@ -180,7 +180,7 @@ final class DomainAccountingMirrorSource implements InvoiceMirrorSource {
             }
             $start = CarbonImmutable::instance($entry->entry_date)->startOfDay();
             // Immer der Monatsbeleg: „accounting invoice id“ ist die Registrar-Rechnung an den Inhaber
-            // (AR20260930…, Prod 2026-10-29), nicht die Rechnung des Portals an den Subuser.
+            // (AR<Datum>…, Prod 2026-10-29), nicht die Rechnung des Portals an den Subuser.
             $voucherKey = $reseller->id . ':' . $start->format('Y-m');
             $positions[$voucherKey] = ($positions[$voucherKey] ?? 0) + 1;
             $lines[] = $this->toLine($entry, $reseller, $start, $voucherKey, $positions[$voucherKey], $names[(int) $reseller->customer_id] ?? null);

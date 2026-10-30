@@ -183,22 +183,22 @@ class ProjectMergeTest extends TestCase {
 
     public function test_finder_ignores_cross_foreign_customer_duplicates(): void {
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
-        $lds = \App\Models\Customer\ForeignCustomer::factory()->create([
+        $nordlicht = \App\Models\Customer\ForeignCustomer::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
-            'name' => 'LDS Endkunde A',
+            'name' => 'Nordlicht Endkunde A',
         ]);
-        $thieme = \App\Models\Customer\ForeignCustomer::factory()->create([
+        $lastkraft = \App\Models\Customer\ForeignCustomer::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
-            'name' => 'LDS Endkunde B',
+            'name' => 'Nordlicht Endkunde B',
         ]);
         // Gleichnamig, gleicher Kunde — aber verschiedene Endkunden → KEIN Paar.
-        Project::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $customer->id, 'foreign_customer_id' => $lds->id, 'name' => 'Wartungen']);
-        Project::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $customer->id, 'foreign_customer_id' => $thieme->id, 'name' => 'Wartungen']);
+        Project::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $customer->id, 'foreign_customer_id' => $nordlicht->id, 'name' => 'Wartungen']);
+        Project::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $customer->id, 'foreign_customer_id' => $lastkraft->id, 'name' => 'Wartungen']);
         // Gleicher Endkunde → Paar.
-        Project::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $customer->id, 'foreign_customer_id' => $lds->id, 'name' => 'Besprechungen']);
-        Project::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $customer->id, 'foreign_customer_id' => $lds->id, 'name' => 'Besprechungen']);
+        Project::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $customer->id, 'foreign_customer_id' => $nordlicht->id, 'name' => 'Besprechungen']);
+        Project::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $customer->id, 'foreign_customer_id' => $nordlicht->id, 'name' => 'Besprechungen']);
 
         $candidates = app(ProjectDuplicateFinder::class)->candidates($this->organization);
 

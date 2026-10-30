@@ -134,7 +134,7 @@ Wird eine zugeordnete Rechnung später in Lexoffice storniert, setzt der
 nächste Lauf den Bezug auf null Monate, vermerkt den Storno und öffnet die
 Periode wieder, damit die Ersatzrechnung zugeordnet werden kann. Domain-Abos
 deckt der Lauf über Positionen, die den Domainnamen nennen (etwa „.de-Domain
-inkl. Verwaltung (thieme-logistik.de)“), unabhängig von der Produkt-Einstufung
+inkl. Verwaltung (lastkraft-logistik.de)“), unabhängig von der Produkt-Einstufung
 des Artikels. Domains, die ein Subreseller über das Anbieterportal abrechnet,
 deckt das Buchungsjournal des Domain-Plugins: je Subuser und Monat ein Beleg
 „Kundennummer-MM-JJJJ“ (die Kundennummer tragen Sie auf der Seite des Subusers
@@ -262,14 +262,14 @@ Lizenzposition wieder an; was nicht eindeutig ist, wird nur gelistet
 (--dry-run zeigt vorab, was passieren würde).
 
 **Lizenzkonto:** Ein Konto heißt nach seinem Halter; geht die Rechnung an
-einen Partner, steht er dabei („über LDS Systems“), und Serienvorlagen des
+einen Partner, steht er dabei („über Nordlicht Systems“), und Serienvorlagen des
 Partners erscheinen nur in dem Endkunden-Konto, dem sie zugeordnet sind. Der
 Reiter *Lizenzkonten* zeigt je Anbieterkonto (Kundennummer
 beim Anbieter, Vorgänger eines Anbieterwechsels eingeschlossen), wie viele
 Lizenzen je Produkt laufen, wer sie hält und welches Lizenzjahr berechnet ist
 — als Raster Produkt × Halter × Jahr mit Rechnungsnummer oder „fehlt“. Halten
 mehrere Firmen Lizenzen desselben Kontos, pflegen Sie die **Aufteilung** je
-Produkt („Märkische Bunker 5 × Exchange ab 18.10.2025“): fremde Halter füllen
+Produkt („Nordufer Tank 5 × Exchange ab 18.10.2025“): fremde Halter füllen
 zuerst den Vertrag mit der größten Menge, dann nach Beginn, der Vertragshalter
 behält den Rest. Die Abtretungen je Vertrag entstehen daraus, folgen jeder
 Änderung und wandern beim Anbieterwechsel auf den Nachfolger; manuelle

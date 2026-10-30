@@ -64,7 +64,7 @@ class LexofficeInvoiceParserTest extends TestCase {
         ]);
         $this->assertSame(['2025-08-05', null], [$single['service_from'], $single['service_to']]);
 
-        $fallback = LexofficeInvoiceParser::parse(['title' => 'Rechnung', 'introduction' => 'Microsoft 365 für Klimpel Bäder, 15.12.2025 – 14.12.2026', 'remark' => 'Danke', 'lineItems' => []]);
+        $fallback = LexofficeInvoiceParser::parse(['title' => 'Rechnung', 'introduction' => 'Microsoft 365 für Badhaus Bäder, 15.12.2025 – 14.12.2026', 'remark' => 'Danke', 'lineItems' => []]);
         $this->assertSame(['2025-12-15', '2026-12-14'], [$fallback['service_from'], $fallback['service_to']]);
     }
 

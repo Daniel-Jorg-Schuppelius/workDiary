@@ -57,7 +57,7 @@ final class IncomingInvoiceTemplateTest extends TestCase {
             'default' => [
                 ...$header,
                 new WordBox(1, 0.60, 0.12, 0.12, 0.02, 'Rechnungs-Nr:'),
-                new WordBox(1, 0.74, 0.12, 0.14, 0.02, 'RZLRE2501475'),
+                new WordBox(1, 0.74, 0.12, 0.14, 0.02, 'RZXRE2501475'),
                 new WordBox(1, 0.60, 0.15, 0.08, 0.02, 'Berlin,'),
                 new WordBox(1, 0.69, 0.15, 0.09, 0.02, '17.06.2025'),
                 new WordBox(1, 0.60, 0.70, 0.10, 0.02, 'Zu'),
@@ -68,7 +68,7 @@ final class IncomingInvoiceTemplateTest extends TestCase {
             'shifted' => [
                 ...$header,
                 new WordBox(1, 0.60, 0.12, 0.12, 0.02, 'Rechnungs-Nr:'),
-                new WordBox(1, 0.74, 0.12, 0.14, 0.02, 'RZLRE2501999'),
+                new WordBox(1, 0.74, 0.12, 0.14, 0.02, 'RZXRE2501999'),
                 new WordBox(1, 0.60, 0.70, 0.10, 0.02, 'Übertrag'),
                 new WordBox(1, 0.80, 0.70, 0.06, 0.02, '70,00'),
                 new WordBox(2, 0.60, 0.25, 0.10, 0.02, 'Zu'),
@@ -109,11 +109,11 @@ final class IncomingInvoiceTemplateTest extends TestCase {
     }
 
     public function test_corrections_learn_an_anchored_zone_and_the_second_hit_confirms_it(): void {
-        $supplier = Supplier::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Rechenzentrum Christoph Ludwigs']);
+        $supplier = Supplier::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Rechenzentrum Beispielstadt']);
         $first = $this->incoming(['supplier_id' => $supplier->id, 'invoice_number' => null, 'amount_gross' => null, 'recognition' => IncomingInvoiceRecognition::None]);
 
         $this->post(route('finance.incoming-invoices.values', $first), [
-            'invoice_number' => 'rzlre 2501475', 'issue_date' => '2025-06-17', 'currency' => 'EUR', 'amount_gross' => '13.51',
+            'invoice_number' => 'rzxre 2501475', 'issue_date' => '2025-06-17', 'currency' => 'EUR', 'amount_gross' => '13.51',
         ])->assertRedirect()->assertSessionHas('success', static fn (string $m): bool => str_contains($m, 'hat gelernt') && str_contains($m, 'Rechnungsnummer'));
 
         $template = IncomingInvoiceTemplate::query()->sole();
@@ -132,14 +132,14 @@ final class IncomingInvoiceTemplateTest extends TestCase {
 
         // Zweite Korrektur mit gleichem Anker bestätigt die Zone; eine unbestätigte Zone füllt nur Lücken.
         $second = $this->incoming(['supplier_id' => $supplier->id]);
-        app(TemplateLearner::class)->learnFromValues($second, ['invoice_number' => 'RZLRE2501475'], $this->admin);
+        app(TemplateLearner::class)->learnFromValues($second, ['invoice_number' => 'RZXRE2501475'], $this->admin);
         $zone = collect(IncomingInvoiceTemplate::query()->sole()->zoneList())->firstWhere('field', 'invoice_number');
         $this->assertIsArray($zone);
         $this->assertTrue($zone['confirmed']);
 
         $result = ['number' => 'FALSCH', 'issued_on' => null, 'gross' => null, 'seller_vat' => null, 'kind_hint' => null, 'sources' => ['number' => 'text']];
         app(TemplateRecognizer::class)->apply($result, '/tmp/egal.pdf', Organization::query()->findOrFail($this->organization->id));
-        $this->assertSame('RZLRE2501475', $result['number'], 'bestätigte Zone schlägt die Heuristik');
+        $this->assertSame('RZXRE2501475', $result['number'], 'bestätigte Zone schlägt die Heuristik');
         $this->assertSame('13.51', $result['gross'], 'unbestätigte Zone füllt die Lücke');
         $this->assertSame('zone', $result['sources']['gross']);
         $this->assertSame($template->id, $result['template']['id']);
@@ -148,12 +148,12 @@ final class IncomingInvoiceTemplateTest extends TestCase {
     }
 
     public function test_the_editor_previews_splits_anchor_and_value_saves_a_manual_template_and_applies_it_to_open_documents(): void {
-        $incoming = $this->incoming(['invoice_number' => null, 'amount_gross' => null, 'recognition' => IncomingInvoiceRecognition::None, 'seller_name' => 'Rechenzentrum Christoph Ludwigs']);
+        $incoming = $this->incoming(['invoice_number' => null, 'amount_gross' => null, 'recognition' => IncomingInvoiceRecognition::None, 'seller_name' => 'Rechenzentrum Beispielstadt']);
         $sibling = $this->incoming(['invoice_number' => null, 'amount_gross' => null, 'recognition' => IncomingInvoiceRecognition::None]);
 
         $this->get(route('finance.incoming-invoices.show', $incoming->document))->assertOk()->assertSee(route('finance.incoming-invoices.template.edit', $incoming->document), false);
         $this->get(route('finance.incoming-invoices.template.edit', $incoming->document))->assertOk()
-            ->assertSee('data-zone-editor', false)->assertSee('RZLRE2501475')->assertSee(__('Keine Seitenbilder'))->assertSee(__('Probelauf'));
+            ->assertSee('data-zone-editor', false)->assertSee('RZXRE2501475')->assertSee(__('Keine Seitenbilder'))->assertSee(__('Probelauf'));
 
         $drawn = ['field' => 'amount_gross', 'page' => 1, 'x' => 0.55, 'y' => 0.69, 'w' => 0.35, 'h' => 0.04];
         $this->postJson(route('finance.incoming-invoices.template.preview', $incoming->document), $drawn)
@@ -179,12 +179,12 @@ final class IncomingInvoiceTemplateTest extends TestCase {
         $this->assertSame(IncomingInvoiceTemplate::SOURCE_MANUAL, $template->source);
         $this->assertContains('rechenzentrum', $template->fingerprint['tokens']);
         $incoming->refresh();
-        $this->assertSame('RZLRE2501475', $incoming->invoice_number);
+        $this->assertSame('RZXRE2501475', $incoming->invoice_number);
         $this->assertSame('2025-06-17', $incoming->issue_date?->toDateString());
         $this->assertSame('13.51', $incoming->amount_gross?->getAmount());
         $this->assertSame(IncomingInvoiceRecognition::Extracted, $incoming->recognition);
         $this->assertSame($template->id, $incoming->template_id);
-        $this->assertSame('RZLRE2501475', $sibling->refresh()->invoice_number);
+        $this->assertSame('RZXRE2501475', $sibling->refresh()->invoice_number);
         $this->assertSame(2, $template->refresh()->hits);
 
         $this->get(route('finance.incoming-invoices.rules'))->assertOk()->assertSee(route('finance.incoming-invoices.templates.index'), false);
@@ -206,7 +206,7 @@ final class IncomingInvoiceTemplateTest extends TestCase {
 
         $this->assertSame(['invoice_number', 'amount_gross'], app(TemplateRecognizer::class)->applyToIncoming($shifted, $template, $this->admin));
         $shifted->refresh();
-        $this->assertSame('RZLRE2501999', $shifted->invoice_number);
+        $this->assertSame('RZXRE2501999', $shifted->invoice_number);
         $this->assertSame('99.00', $shifted->amount_gross?->getAmount(), 'Der Anker findet die Summe auf Seite 2.');
         $this->assertSame(IncomingInvoiceRecognition::Extracted, $shifted->recognition);
 
@@ -223,7 +223,7 @@ final class IncomingInvoiceTemplateTest extends TestCase {
     }
 
     public function test_templates_fill_only_invoices_and_bind_their_supplier(): void {
-        $supplier = Supplier::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Rechenzentrum Christoph Ludwigs', 'vat_id' => 'DE123456789']);
+        $supplier = Supplier::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Rechenzentrum Beispielstadt', 'vat_id' => 'DE123456789']);
         $template = $this->template([
             ['field' => 'amount_gross', 'page' => 1, 'x' => 0.79, 'y' => 0.696, 'w' => 0.08, 'h' => 0.028, 'anchor' => 'Zu zahlen:', 'anchor_box' => ['x' => 0.60, 'y' => 0.70, 'w' => 0.17, 'h' => 0.02], 'scope' => 'any'],
         ], 'RZL', $supplier->id);
@@ -242,7 +242,7 @@ final class IncomingInvoiceTemplateTest extends TestCase {
         $this->assertSame(['amount_gross', 'supplier'], app(TemplateRecognizer::class)->applyToIncoming($invoice, $template, $this->admin));
         $invoice->refresh();
         $this->assertSame($supplier->id, $invoice->supplier_id);
-        $this->assertSame('Rechenzentrum Christoph Ludwigs', $invoice->seller_name);
+        $this->assertSame('Rechenzentrum Beispielstadt', $invoice->seller_name);
         $this->assertSame('DE123456789', $invoice->seller_vat_id);
         $this->assertSame(1, $template->refresh()->hits);
 
@@ -261,7 +261,7 @@ final class IncomingInvoiceTemplateTest extends TestCase {
     }
 
     public function test_the_template_page_edits_merges_trials_and_deletes_templates(): void {
-        $supplier = Supplier::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Rechenzentrum Christoph Ludwigs']);
+        $supplier = Supplier::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Rechenzentrum Beispielstadt']);
         $target = $this->template([
             ['field' => 'invoice_number', 'page' => 1, 'x' => 0.73, 'y' => 0.11, 'w' => 0.17, 'h' => 0.04, 'scope' => 'page'],
             ['field' => 'amount_gross', 'page' => 1, 'x' => 0.79, 'y' => 0.696, 'w' => 0.08, 'h' => 0.028, 'anchor' => 'Zu zahlen:', 'anchor_box' => ['x' => 0.60, 'y' => 0.70, 'w' => 0.17, 'h' => 0.02], 'scope' => 'any'],
@@ -407,7 +407,7 @@ final class IncomingInvoiceTemplateTest extends TestCase {
     /** Sicherheitsaudit 2026-10-21, li-2/li-3: Übergebenes, Abgelehntes und von Hand Erfasstes bleibt; der Lieferant kommt über den Matcher. */
     public function test_templates_respect_handed_over_rejected_and_manual_documents_and_assign_through_the_matcher(): void {
         \Illuminate\Support\Facades\Event::fake([\App\Events\Invoicing\IncomingInvoiceAssigned::class]);
-        $supplier = Supplier::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Rechenzentrum Christoph Ludwigs', 'vat_id' => 'DE123456789']);
+        $supplier = Supplier::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Rechenzentrum Beispielstadt', 'vat_id' => 'DE123456789']);
         $template = $this->template([
             ['field' => 'amount_gross', 'page' => 1, 'x' => 0.79, 'y' => 0.696, 'w' => 0.08, 'h' => 0.028, 'anchor' => 'Zu zahlen:', 'anchor_box' => ['x' => 0.60, 'y' => 0.70, 'w' => 0.17, 'h' => 0.02], 'scope' => 'any'],
         ], 'RZL', $supplier->id);

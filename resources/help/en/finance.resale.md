@@ -133,7 +133,7 @@ opens them again. If a linked invoice is later voided in Lexoffice, the next
 run sets the link to zero months, notes the cancellation and reopens the
 period so the replacement invoice can be linked. Domain subscriptions are
 covered by lines that name the domain (such as ".de domain incl. management
-(thieme-logistik.de)"), regardless of the article’s product classification.
+(lastkraft-logistik.de)"), regardless of the article’s product classification.
 Domains a subreseller settles through the provider portal are covered by the
 domain plugin’s accounting journal: one voucher per subuser and month,
 numbered “customer number-MM-YYYY” (enter the customer number on the subuser’s
@@ -258,14 +258,14 @@ re-attaches such links via invoice number and licence line; what is not
 unambiguous is only listed (--dry-run shows beforehand what would happen).
 
 **License account:** An account is named after its holder; if the invoice
-goes to a partner, the partner is shown next to it (“via LDS Systems”), and
+goes to a partner, the partner is shown next to it (“via Nordlicht Systems”), and
 the partner's recurring templates appear only in the end-customer account
 they are assigned to. The *License accounts* tab shows per provider account
 (customer number at the provider, including predecessors of a provider
 change) how many licences per product are running, who holds them and which
 licence year is invoiced — as a grid product × holder × year with invoice
 number or "missing". If several companies hold licences of the same account,
-maintain the **allocation** per product ("Märkische Bunker 5 × Exchange from
+maintain the **allocation** per product ("Nordufer Tank 5 × Exchange from
 18.10.2025"): other holders fill the contract with the largest quantity
 first, then by start; the contract holder keeps the rest. Per-contract
 transfers are derived from this, follow every change and move to the

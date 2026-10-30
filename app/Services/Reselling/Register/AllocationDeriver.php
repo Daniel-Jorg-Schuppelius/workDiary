@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\DB;
  * Leitet aus der Aufteilung eines Lizenzkontos (Feature 185, MVP-1401) die
  * Abtretungen je Vertrag ab: fremde Halter füllen zuerst den Vertrag mit der
  * größten Menge, dann nach Beginn — für Schub und Schlepp ergibt das
- * „Märkische 5 aus CNLCON00111" (Jahrestag 18.10. = Rechnungstag). Manuelle
+ * „Nordufer 5 aus CNLCON00111" (Jahrestag 18.10. = Rechnungstag). Manuelle
  * Abtretungen bleiben unangetastet und zählen gegen die Kapazität; abgeleitete
  * tragen `sync_status = alloc:<id>` und folgen jeder Änderung der Aufteilung.
  */

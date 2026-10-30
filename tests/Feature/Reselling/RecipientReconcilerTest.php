@@ -103,7 +103,7 @@ class RecipientReconcilerTest extends TestCase {
     }
 
     public function test_balance_separates_unassigned_from_never_invoiced_and_without_subscription(): void {
-        $customer = $this->customerWithContact('EcoTec Service GmbH', 'c-eco');
+        $customer = $this->customerWithContact('Ökotherm Service GmbH', 'c-eco');
         // Ein 1er-Vertrag, sauber berechnet — und ein 5er-Vertrag über zwei Jahre, für den es nie eine Rechnung gab.
         $single = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2024-04-10', 'ends_on' => '2026-04-10', 'status' => 'ended']);
         $five = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2024-04-24', 'ends_on' => '2026-04-24', 'quantity' => 5, 'status' => 'ended']);
@@ -129,7 +129,7 @@ class RecipientReconcilerTest extends TestCase {
         $this->assertSame($five->id, $first['subscription']->id);
         $this->assertSame([], $first['candidates']);
         $this->assertSame(['RE/2024/0630', 'RE/2025/0830'], array_map(static fn(array $c): string => (string) $c['row']['line']->voucherNumber, $first['taken']), 'im Fenster der Periode, nächste zuerst');
-        $this->assertStringContainsString('EcoTec Service GmbH · ×1 · Telekom Cloud Marketplace ab 10.04.2024 · 10.04.2024 – 09.04.2025', $first['taken'][0]['row']['periods'][0]);
+        $this->assertStringContainsString('Ökotherm Service GmbH · ×1 · Telekom Cloud Marketplace ab 10.04.2024 · 10.04.2024 – 09.04.2025', $first['taken'][0]['row']['periods'][0]);
 
         $admin = $this->orgAdmin();
         $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $customer))
@@ -138,15 +138,15 @@ class RecipientReconcilerTest extends TestCase {
             ->assertSee('10 × 12 Mon. nie abgerechnet')
             ->assertSee('1 × 12 Mon. ohne Periode')
             ->assertSee('RE/2024/0630')
-            ->assertSee('vergeben an EcoTec Service GmbH · ×1 · Telekom Cloud Marketplace ab 10.04.2024 · 10.04.2024 – 09.04.2025');
+            ->assertSee('vergeben an Ökotherm Service GmbH · ×1 · Telekom Cloud Marketplace ab 10.04.2024 · 10.04.2024 – 09.04.2025');
     }
 
     public function test_overview_lists_recipients_with_problems_first_and_contacts_without_customer(): void {
         $admin = $this->orgAdmin();
-        $clean = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
+        $clean = $this->customerWithContact('Badhaus Bäder GmbH', 'c-kl');
         $subClean = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $clean->id, 'article_ref' => 'lex:' . $this->standard->id, 'starts_on' => '2025-10-01']);
         $this->voucher('c-kl', 'RE/2025/0900', '2025-10-01', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']]);
-        $gap = $this->customerWithContact('Ute Mayershofer', 'c-um');
+        $gap = $this->customerWithContact('Ute Mahlwerk', 'c-um');
         $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $gap->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01']);
         // Rechnung an einen Lexoffice-Kontakt, den kein Kunde kennt.
         $this->voucher('c-unknown', 'RE/2025/0950', '2025-10-05', [['article' => $this->exchange, 'quantity' => 12, 'net' => '3.95']]);
@@ -155,29 +155,29 @@ class RecipientReconcilerTest extends TestCase {
         $this->actingAs($admin)->post(route('finance.resale.periods.confirm', $subClean->periods()->firstOrFail()->sqid))->assertRedirect();
 
         $rows = (new RecipientReconciler)->overview($this->organization);
-        $this->assertSame(['Ute Mayershofer', 'Unbekannte GmbH', 'Klimpel Bäder GmbH'], array_column($rows, 'name'));
+        $this->assertSame(['Ute Mahlwerk', 'Unbekannte GmbH', 'Badhaus Bäder GmbH'], array_column($rows, 'name'));
         $this->assertSame(12.0, $rows[0]['missing']);
         $this->assertNull($rows[1]['customer']);
         $this->assertSame(12.0, $rows[1]['surplus']);
         $this->assertSame(0, $rows[2]['open'] + $rows[2]['partial']);
 
         $this->actingAs($admin)->get(route('finance.resale.reconcile.index'))
-            ->assertOk()->assertSee('Ute Mayershofer')->assertSee('Unbekannte GmbH')->assertDontSee('Klimpel Bäder GmbH');
+            ->assertOk()->assertSee('Ute Mahlwerk')->assertSee('Unbekannte GmbH')->assertDontSee('Badhaus Bäder GmbH');
         $this->actingAs($admin)->get(route('finance.resale.reconcile.index', ['show' => 'all']))
-            ->assertOk()->assertSee('Klimpel Bäder GmbH');
+            ->assertOk()->assertSee('Badhaus Bäder GmbH');
     }
 
     public function test_assign_links_a_line_to_any_period_of_the_recipient_but_not_of_another_customer(): void {
         $admin = $this->orgAdmin();
-        $partner = $this->customerWithContact('LDS Systems GmbH', 'c-lds');
-        $kaik = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik']);
-        $haus = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Haus 24 GmbH']);
-        $subKaik = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'foreign_customer_id' => $kaik->id, 'article_ref' => 'lex:' . $this->standard->id, 'starts_on' => '2025-09-12']);
+        $partner = $this->customerWithContact('Nordlicht Systems GmbH', 'c-nordlicht');
+        $zahlenwerk = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Zahlenwerk']);
+        $haus = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Hof 24 GmbH']);
+        $subZahlenwerk = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'foreign_customer_id' => $zahlenwerk->id, 'article_ref' => 'lex:' . $this->standard->id, 'starts_on' => '2025-09-12']);
         $subHaus = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'foreign_customer_id' => $haus->id, 'article_ref' => 'lex:' . $this->standard->id, 'starts_on' => '2025-09-12']);
         $other = $this->customerWithContact('Fremde GmbH', 'c-x');
         $subOther = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $other->id, 'article_ref' => 'lex:' . $this->standard->id, 'starts_on' => '2025-09-12']);
         // Zwei gleiche Positionen ohne Endkundennennung: der Vorschlagslauf kann sie nicht trennen.
-        $voucher = $this->voucher('c-lds', 'RE/2025/1000', '2025-09-15', [
+        $voucher = $this->voucher('c-nordlicht', 'RE/2025/1000', '2025-09-15', [
             ['article' => $this->standard, 'quantity' => 12, 'net' => '12.13'],
             ['article' => $this->standard, 'quantity' => 1, 'unit' => 'Jahr', 'net' => '145.56'],
         ]);
@@ -185,21 +185,21 @@ class RecipientReconcilerTest extends TestCase {
         $this->assertSame(12.0, LicenseMonths::ofLine($this->mirrorLine($lineB)), '„1 Jahr" = 12 Lizenzmonate');
 
         $page = $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $partner))->assertOk();
-        $page->assertSee('Steuerbüro Kaik')->assertSee('Haus 24 GmbH')->assertSee('RE/2025/1000');
+        $page->assertSee('Steuerbüro Zahlenwerk')->assertSee('Hof 24 GmbH')->assertSee('RE/2025/1000');
 
-        $periodKaik = $subKaik->periods()->firstOrFail();
+        $periodZahlenwerk = $subZahlenwerk->periods()->firstOrFail();
         $periodHaus = $subHaus->periods()->firstOrFail();
         $this->actingAs($admin)->post(route('finance.resale.reconcile.assign', $partner), [
-            'period_id' => $periodKaik->sqid, 'line_id' => Sqid::encode(LexofficeVoucherLine::class, $lineA->id), 'months' => '12',
+            'period_id' => $periodZahlenwerk->sqid, 'line_id' => Sqid::encode(LexofficeVoucherLine::class, $lineA->id), 'months' => '12',
         ])->assertRedirect(route('finance.resale.reconcile.show', $partner));
         // Formular denkt in Lizenzen: 1 Lizenz × 12 Monate je Lizenz = 12 Lizenzmonate.
         $this->actingAs($admin)->post(route('finance.resale.reconcile.assign', $partner), [
             'period_id' => $periodHaus->sqid, 'line_id' => Sqid::encode(LexofficeVoucherLine::class, $lineB->id), 'licences' => '1', 'per_licence' => '12.00', 'note' => 'laut Telefonat',
         ])->assertRedirect(route('finance.resale.reconcile.show', $partner));
 
-        $periodKaik->refresh();
+        $periodZahlenwerk->refresh();
         $periodHaus->refresh();
-        $this->assertSame(PeriodStatus::Billed, $periodKaik->status);
+        $this->assertSame(PeriodStatus::Billed, $periodZahlenwerk->status);
         $this->assertSame(PeriodStatus::Billed, $periodHaus->status);
         $this->assertNotNull($periodHaus->decided_at, 'manuelle Zuordnung ist eine Entscheidung');
         $link = ResalePeriodLink::query()->where('period_id', $periodHaus->id)->firstOrFail();
@@ -209,7 +209,7 @@ class RecipientReconcilerTest extends TestCase {
         $this->assertSame('laut Telefonat', $link->note);
 
         // Mehr als die Position hergibt: eine 12er-Position kann nicht noch einmal 12 an eine weitere Periode geben.
-        $second = ResaleSubscription::query()->create(array_merge($subKaik->only(['organization_id', 'kind', 'provider', 'label', 'foreign_customer_id', 'article_ref', 'term_months', 'interval', 'renewal', 'status', 'currency']), ['quantity' => 1, 'starts_on' => '2026-09-12', 'external_id' => 'x2']));
+        $second = ResaleSubscription::query()->create(array_merge($subZahlenwerk->only(['organization_id', 'kind', 'provider', 'label', 'foreign_customer_id', 'article_ref', 'term_months', 'interval', 'renewal', 'status', 'currency']), ['quantity' => 1, 'starts_on' => '2026-09-12', 'external_id' => 'x2']));
         (new \App\Services\Reselling\Register\PeriodPlanner)->sync($second);
         // Review 2026-09-10 (C1): Feldfehler statt stillem Flash — der Dialog zeigt sie als 422.
         $this->actingAs($admin)->from(route('finance.resale.reconcile.show', $partner))->post(route('finance.resale.reconcile.assign', $partner), [
@@ -238,12 +238,12 @@ class RecipientReconcilerTest extends TestCase {
 
     public function test_sister_company_invoice_voided_invoice_and_inbox_mentions_are_shown(): void {
         $admin = $this->orgAdmin();
-        $customer = $this->customerWithContact('EcoTec Service GmbH', 'c-eco');
-        $sister = $this->customerWithContact('EcoTec - HLSK GmbH', 'c-hlsk');
-        $this->customerWithContact('Delta Allround Service GmbH', 'c-delta');
-        // Der Anbieter führt den Vertrag auf EcoTec Service, berechnet wurde er an die Schwesterfirma;
+        $customer = $this->customerWithContact('Ökotherm Service GmbH', 'c-eco');
+        $sister = $this->customerWithContact('Ökotherm - HLSK GmbH', 'c-hlsk');
+        $this->customerWithContact('Omega Rundum Service GmbH', 'c-delta');
+        // Der Anbieter führt den Vertrag auf Ökotherm Service, berechnet wurde er an die Schwesterfirma;
         // die zweite Rechnung wurde storniert und nie neu gestellt.
-        $five = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'company_name' => 'EcoTec Service GmbH', 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2024-04-24', 'ends_on' => '2026-04-24', 'quantity' => 5, 'status' => 'ended']);
+        $five = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'company_name' => 'Ökotherm Service GmbH', 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2024-04-24', 'ends_on' => '2026-04-24', 'quantity' => 5, 'status' => 'ended']);
         $this->voucher('c-hlsk', 'RE/2024/0171', '2024-05-11', [['article' => $this->exchange, 'quantity' => 5, 'unit' => 'Jahr', 'net' => '47.40']]);
         $this->voucher('c-hlsk', 'RE/2025/0271', '2025-05-11', [['article' => $this->exchange, 'quantity' => 5, 'unit' => 'Jahr', 'net' => '47.40']], null, 'voided');
         // Unverwandter Empfänger mit derselben Menge, aber nicht dicht am Periodenbeginn: kein Kandidat.
@@ -251,24 +251,24 @@ class RecipientReconcilerTest extends TestCase {
         // Partnerfall: Abo ohne Halter, dessen Firma im Rechnungstext an diesen Empfänger steht.
         ResaleSubscription::query()->create([
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'quantity' => 4, 'label' => 'Microsoft 365 Apps for business',
-            'company_name' => 'Robert Kasch', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto', 'status' => 'active', 'currency' => 'EUR', 'starts_on' => '2025-02-13',
+            'company_name' => 'Robert Beispiel', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto', 'status' => 'active', 'currency' => 'EUR', 'starts_on' => '2025-02-13',
         ]);
-        $this->voucher('c-eco', 'RE/2025/0800', '2025-02-13', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']], null, 'paid', 'Microsoftdienste Robert Kasch');
+        $this->voucher('c-eco', 'RE/2025/0800', '2025-02-13', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']], null, 'paid', 'Microsoftdienste Robert Beispiel');
 
         $result = (new RecipientReconciler)->forCustomer($this->organization, $customer);
         [$first, $second] = $result['periods'];
         $this->assertSame([], $first['candidates']);
         $this->assertSame(['RE/2024/0171'], array_map(static fn(array $c): string => (string) $c['row']['line']->voucherNumber, $first['foreign']), 'Schwesterfirma über gemeinsames Namens-Token, Delta nicht');
-        $this->assertSame('EcoTec - HLSK GmbH', $first['foreign'][0]['row']['recipient']);
+        $this->assertSame('Ökotherm - HLSK GmbH', $first['foreign'][0]['row']['recipient']);
         $this->assertSame([], $first['voided'], 'Storno vom Folgejahr gehört nicht zur ersten Periode');
         $this->assertSame(['RE/2025/0271'], array_map(static fn(array $c): string => (string) $c['row']['line']->voucherNumber, $second['voided']));
         $this->assertSame([], $second['foreign']);
-        $this->assertSame('Robert Kasch', $result['inbox'][0]['company']);
+        $this->assertSame('Robert Beispiel', $result['inbox'][0]['company']);
         $this->assertSame(1, $result['inbox'][0]['mentions']);
         $this->assertCount(1, $result['inbox'][0]['subscriptions']);
 
         $page = $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $customer))->assertOk();
-        $page->assertSee('Rechnung an EcoTec - HLSK GmbH')->assertSee('5 × 12 Mon.')->assertSee('RE/2025/0271')->assertSee('storniert')->assertSee('Robert Kasch')->assertDontSee('RE/2024/0201');
+        $page->assertSee('Rechnung an Ökotherm - HLSK GmbH')->assertSee('5 × 12 Mon.')->assertSee('RE/2025/0271')->assertSee('storniert')->assertSee('Robert Beispiel')->assertDontSee('RE/2024/0201');
         $this->assertSame($sister->id, $first['foreign'][0]['row']['recipient_id']);
 
         // Zwei Firmen, nicht eine: der Halter wird auf den tatsächlichen Rechnungsempfänger gesetzt,
@@ -292,7 +292,7 @@ class RecipientReconcilerTest extends TestCase {
     }
 
     public function test_service_period_beats_invoice_date_for_assignment(): void {
-        $customer = $this->customerWithContact('Marina Vulkan Werft', 'c-mv');
+        $customer = $this->customerWithContact('Marina Seestern Werft', 'c-mv');
         $subscription = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2024-12-31', 'quantity' => 2]);
         [$p2024, $p2025] = $subscription->periods()->get()->all();
         // Rechnung erst im März 2026 gestellt, Leistungszeitraum aber das Jahr ab 31.12.2024: gehört zur ERSTEN Periode.
@@ -317,7 +317,7 @@ class RecipientReconcilerTest extends TestCase {
 
     public function test_lines_after_the_last_period_mark_a_gap_and_prefill_a_new_subscription(): void {
         $admin = $this->orgAdmin();
-        $customer = $this->customerWithContact('Ute Mayershofer', 'c-um');
+        $customer = $this->customerWithContact('Ute Mahlwerk', 'c-um');
         // Anbieter-Export kennt nur den gekündigten Vertrag bis 2024 — die Rechnungen laufen weiter.
         $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2023-08-07', 'ends_on' => '2024-08-12', 'quantity' => 3, 'status' => 'ended']);
         $this->voucher('c-um', 'RE/2023/0568', '2023-08-10', [['article' => $this->exchange, 'quantity' => 36, 'net' => '3.95']]);
@@ -347,12 +347,12 @@ class RecipientReconcilerTest extends TestCase {
     }
 
     public function test_former_account_holder_is_found_by_the_sum_of_its_lines(): void {
-        // Ute Mayershofer: Delta Allround war Lizenznehmer und wurde je Jahr mit 3 × 12 berechnet,
+        // Ute Mahlwerk: Omega Rundum war Lizenznehmer und wurde je Jahr mit 3 × 12 berechnet,
         // Ute übernahm das Konto später — die Namen haben nichts gemeinsam.
         $admin = $this->orgAdmin();
-        $ute = $this->customerWithContact('Ute Mayershofer', 'c-um');
-        $delta = $this->customerWithContact('Delta Allround Service GmbH', 'c-delta');
-        $this->customerWithContact('Märkische Bunker- und Service GmbH & Co. KG', 'c-mb');
+        $ute = $this->customerWithContact('Ute Mahlwerk', 'c-um');
+        $delta = $this->customerWithContact('Omega Rundum Service GmbH', 'c-delta');
+        $this->customerWithContact('Nordufer Tank- und Service GmbH & Co. KG', 'c-mb');
         $subscription = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $ute->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2024-08-12', 'ends_on' => '2026-08-12', 'quantity' => 3, 'status' => 'ended']);
         foreach (['RE/2024/0201' => '2024-10-16', 'RE/2025/0303' => '2025-08-12'] as $number => $date) {
             $this->voucher('c-delta', $number, $date, [
@@ -370,13 +370,13 @@ class RecipientReconcilerTest extends TestCase {
 
         $result = (new RecipientReconciler)->forCustomer($this->organization, $ute);
         [$first, $second] = $result['periods'];
-        $this->assertSame(['Delta Allround Service GmbH'], array_values(array_unique(array_map(static fn(array $c): string => (string) $c['row']['recipient'], $first['foreign']))));
+        $this->assertSame(['Omega Rundum Service GmbH'], array_values(array_unique(array_map(static fn(array $c): string => (string) $c['row']['recipient'], $first['foreign']))));
         $this->assertCount(3, $first['foreign'], 'alle drei Positionen der Sammelrechnung');
         $this->assertCount(3, $second['foreign']);
         $this->assertSame($delta->id, $first['foreign'][0]['row']['recipient_id']);
 
         $page = $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $ute))->assertOk();
-        $page->assertSee('Rechnung an Delta Allround Service GmbH')->assertSee(__('resale.reconcile.action.rehome', ['customer' => 'Delta Allround Service GmbH']))->assertDontSee('RE/2025/0100');
+        $page->assertSee('Rechnung an Omega Rundum Service GmbH')->assertSee(__('resale.reconcile.action.rehome', ['customer' => 'Omega Rundum Service GmbH']))->assertDontSee('RE/2025/0100');
 
         // Ganzer Vertrag gehörte Delta: Halter wechseln, Vorschlagslauf deckt beide Jahre.
         $this->actingAs($admin)->post(route('finance.resale.reconcile.rehome', $ute), ['period_id' => $first['period']->sqid, 'target_id' => $delta->sqid])
@@ -387,7 +387,7 @@ class RecipientReconcilerTest extends TestCase {
     public function test_recipient_invoice_lines_and_contact_map_are_the_shared_reading_side(): void {
         // Review 2026-09-10 (E): Kontakte → gültige Rechnungen im Fenster → Klassifikator → Verbrauch je Position.
         // Ein Lexoffice-Kontakt je Kunde (Unique `extref_unique` auf Plugin/Typ/Referenz).
-        $customer = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
+        $customer = $this->customerWithContact('Badhaus Bäder GmbH', 'c-kl');
         $other = $this->customerWithContact('Fremde GmbH', 'c-x');
         $subscription = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->standard->id, 'starts_on' => '2025-10-01']);
         $period = $subscription->periods()->firstOrFail();

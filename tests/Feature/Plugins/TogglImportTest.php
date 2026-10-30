@@ -1159,19 +1159,19 @@ class TogglImportTest extends TestCase {
         // Gleicher (leerer) Client/Projekt-Schlüssel, aber verschiedene
         // Workspaces → zwei getrennte Gruppen mit Workspace-Anzeige.
         $this->seedInboxEntry('', '', 'csv:w1', '2026-05-26 09:00:00', '2026-05-26 10:00:00', true, null, 111, 'Eigene Firma');
-        $this->seedInboxEntry('', '', 'csv:w2', '2026-05-26 11:00:00', '2026-05-26 12:00:00', true, null, 222, 'LDS Systems');
+        $this->seedInboxEntry('', '', 'csv:w2', '2026-05-26 11:00:00', '2026-05-26 12:00:00', true, null, 222, 'Nordlicht Systems');
 
         $groups = $this->service()->openInboxGroups($this->organization);
         $this->assertCount(2, $groups);
         $this->assertEqualsCanonicalizing(
-            ['Eigene Firma', 'LDS Systems'],
+            ['Eigene Firma', 'Nordlicht Systems'],
             $groups->pluck('workspace_name')->all(),
         );
     }
 
     public function test_open_inbox_groups_include_entry_preview(): void {
-        $this->seedInboxEntry('LDS Systems GmbH', 'Firma', 'csv:p1', '2026-05-26 09:00:00', '2026-05-26 09:24:00', true, 'Serverwartung');
-        $this->seedInboxEntry('LDS Systems GmbH', 'Firma', 'csv:p2', '2026-05-27 10:00:00', '2026-05-27 11:00:00');
+        $this->seedInboxEntry('Nordlicht Systems GmbH', 'Firma', 'csv:p1', '2026-05-26 09:00:00', '2026-05-26 09:24:00', true, 'Serverwartung');
+        $this->seedInboxEntry('Nordlicht Systems GmbH', 'Firma', 'csv:p2', '2026-05-27 10:00:00', '2026-05-27 11:00:00');
 
         $groups = $this->service()->openInboxGroups($this->organization);
         $this->assertCount(1, $groups);
@@ -1191,24 +1191,24 @@ class TogglImportTest extends TestCase {
             'name' => 'Firma X',
         ]);
 
-        // Toggl-Client „LDS" ist Endkunde der Firma X — Projekt entsteht bei der
+        // Toggl-Client „Nordlicht" ist Endkunde der Firma X — Projekt entsteht bei der
         // Firma und verweist auf den Fremdkunden.
-        $this->seedInboxEntry('LDS', 'Portal', 'csv:fc1', '2026-05-26 09:00:00', '2026-05-26 10:00:00');
+        $this->seedInboxEntry('Nordlicht', 'Portal', 'csv:fc1', '2026-05-26 09:00:00', '2026-05-26 10:00:00');
 
         $this->actingAs($this->admin)
             ->post(route('admin.integration.inbox.group.book'), [
                 'plugin' => TogglPlugin::ID,
-                'group_key' => $this->groupKey('LDS', 'Portal'),
+                'group_key' => $this->groupKey('Nordlicht', 'Portal'),
                 'customer_mode' => 'existing',
                 'customer' => $customer->sqid,
                 'foreign_mode' => 'new',
-                'new_foreign_customer_name' => 'LDS',
+                'new_foreign_customer_name' => 'Nordlicht',
                 'project_mode' => 'new',
                 'new_project_name' => 'Portal',
             ])
             ->assertRedirect();
 
-        $foreign = ForeignCustomer::query()->where('name', 'LDS')->where('customer_id', $customer->id)->first();
+        $foreign = ForeignCustomer::query()->where('name', 'Nordlicht')->where('customer_id', $customer->id)->first();
         $this->assertNotNull($foreign);
 
         $project = Project::query()->where('name', 'Portal')->first();
@@ -1221,7 +1221,7 @@ class TogglImportTest extends TestCase {
         $this->assertDatabaseHas('external_references', [
             'plugin_id' => TogglPlugin::ID,
             'external_type' => TogglImportService::EXT_TYPE_CLIENT,
-            'external_id' => 'LDS',
+            'external_id' => 'Nordlicht',
             'referenceable_type' => $foreign->getMorphClass(),
             'referenceable_id' => $foreign->id,
         ]);
@@ -1285,20 +1285,20 @@ class TogglImportTest extends TestCase {
         $this->enableToggl();
         $customer = Customer::factory()->create([
             'organization_id' => $this->organization->id,
-            'name' => 'LDS Systems GmbH',
+            'name' => 'Nordlicht Systems GmbH',
         ]);
 
         // Client = Firma selbst (Prefill unverändert übernommen) → kein Endkunde.
-        $this->seedInboxEntry('LDS Systems GmbH', 'Firma', 'csv:self', '2026-05-26 09:00:00', '2026-05-26 09:24:00');
+        $this->seedInboxEntry('Nordlicht Systems GmbH', 'Firma', 'csv:self', '2026-05-26 09:00:00', '2026-05-26 09:24:00');
 
         $this->actingAs($this->admin)
             ->post(route('admin.integration.inbox.group.book'), [
                 'plugin' => TogglPlugin::ID,
-                'group_key' => $this->groupKey('LDS Systems GmbH', 'Firma'),
+                'group_key' => $this->groupKey('Nordlicht Systems GmbH', 'Firma'),
                 'customer_mode' => 'existing',
                 'customer' => $customer->sqid,
                 'foreign_mode' => 'new',
-                'new_foreign_customer_name' => 'LDS Systems GmbH',
+                'new_foreign_customer_name' => 'Nordlicht Systems GmbH',
                 'project_mode' => 'new',
                 'new_project_name' => 'Firma',
             ])
@@ -1320,15 +1320,15 @@ class TogglImportTest extends TestCase {
         $foreign = ForeignCustomer::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
-            'name' => 'LDS',
+            'name' => 'Nordlicht',
         ]);
 
-        $this->seedInboxEntry('LDS', 'App', 'csv:fc2', '2026-05-26 11:00:00', '2026-05-26 12:00:00');
+        $this->seedInboxEntry('Nordlicht', 'App', 'csv:fc2', '2026-05-26 11:00:00', '2026-05-26 12:00:00');
 
         $this->actingAs($this->admin)
             ->post(route('admin.integration.inbox.group.book'), [
                 'plugin' => TogglPlugin::ID,
-                'group_key' => $this->groupKey('LDS', 'App'),
+                'group_key' => $this->groupKey('Nordlicht', 'App'),
                 'customer_mode' => 'existing',
                 'customer' => $customer->sqid,
                 'foreign_mode' => 'existing',
@@ -1349,34 +1349,34 @@ class TogglImportTest extends TestCase {
             'organization_id' => $this->organization->id,
             'name' => 'Firma X',
         ]);
-        $lds = ForeignCustomer::factory()->create([
+        $nordlicht = ForeignCustomer::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
-            'name' => 'LDS',
+            'name' => 'Nordlicht',
         ]);
-        $thieme = ForeignCustomer::factory()->create([
+        $lastkraft = ForeignCustomer::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
-            'name' => 'Thieme',
+            'name' => 'Lastkraft',
         ]);
         $project = Project::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
-            'foreign_customer_id' => $thieme->id,
+            'foreign_customer_id' => $lastkraft->id,
             'name' => 'Support',
             'is_default' => false,
         ]);
 
-        $this->seedInboxEntry('LDS', 'Support', 'csv:fc3', '2026-05-26 09:00:00', '2026-05-26 09:30:00');
+        $this->seedInboxEntry('Nordlicht', 'Support', 'csv:fc3', '2026-05-26 09:00:00', '2026-05-26 09:30:00');
 
         $this->actingAs($this->admin)
             ->post(route('admin.integration.inbox.group.book'), [
                 'plugin' => TogglPlugin::ID,
-                'group_key' => $this->groupKey('LDS', 'Support'),
+                'group_key' => $this->groupKey('Nordlicht', 'Support'),
                 'customer_mode' => 'existing',
                 'customer' => $customer->sqid,
                 'foreign_mode' => 'existing',
-                'foreign_customer' => $lds->sqid,
+                'foreign_customer' => $nordlicht->sqid,
                 'project_mode' => 'existing',
                 'project' => $project->sqid,
             ])
@@ -1389,15 +1389,15 @@ class TogglImportTest extends TestCase {
             'organization_id' => $this->organization->id,
             'name' => 'Firma X',
         ]);
-        $lds = ForeignCustomer::factory()->create([
+        $nordlicht = ForeignCustomer::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
-            'name' => 'LDS',
+            'name' => 'Nordlicht',
         ]);
         $foreignProject = Project::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
-            'foreign_customer_id' => $lds->id,
+            'foreign_customer_id' => $nordlicht->id,
             'name' => 'Clients',
             'is_default' => false,
         ]);
@@ -1431,15 +1431,15 @@ class TogglImportTest extends TestCase {
         $foreignOfB = ForeignCustomer::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customerB->id,
-            'name' => 'LDS',
+            'name' => 'Nordlicht',
         ]);
 
-        $this->seedInboxEntry('LDS', 'Portal', 'csv:fc4', '2026-05-26 09:00:00', '2026-05-26 09:30:00');
+        $this->seedInboxEntry('Nordlicht', 'Portal', 'csv:fc4', '2026-05-26 09:00:00', '2026-05-26 09:30:00');
 
         $this->actingAs($this->admin)
             ->post(route('admin.integration.inbox.group.book'), [
                 'plugin' => TogglPlugin::ID,
-                'group_key' => $this->groupKey('LDS', 'Portal'),
+                'group_key' => $this->groupKey('Nordlicht', 'Portal'),
                 'customer_mode' => 'existing',
                 'customer' => $customerA->sqid,
                 'foreign_mode' => 'existing',
@@ -1455,46 +1455,46 @@ class TogglImportTest extends TestCase {
             'organization_id' => $this->organization->id,
             'name' => 'Firma X',
         ]);
-        $lds = ForeignCustomer::factory()->create([
+        $nordlicht = ForeignCustomer::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
-            'name' => 'LDS',
+            'name' => 'Nordlicht',
         ]);
-        $thieme = ForeignCustomer::factory()->create([
+        $lastkraft = ForeignCustomer::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
-            'name' => 'Thieme',
+            'name' => 'Lastkraft',
         ]);
         // Gleichnamige Projekte verschiedener Endkunden derselben Firma.
-        $thiemeProject = Project::factory()->create([
+        $lastkraftProject = Project::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
-            'foreign_customer_id' => $thieme->id,
+            'foreign_customer_id' => $lastkraft->id,
             'name' => 'Support',
             'is_default' => false,
         ]);
-        $ldsProject = Project::factory()->create([
+        $nordlichtProject = Project::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
-            'foreign_customer_id' => $lds->id,
+            'foreign_customer_id' => $nordlicht->id,
             'name' => 'Support',
             'is_default' => false,
         ]);
 
-        // Gemerkte Client-Referenz: „LDS" → Fremdkunde LDS.
+        // Gemerkte Client-Referenz: „Nordlicht" → Fremdkunde Nordlicht.
         ExternalReference::query()->create([
             'organization_id' => $this->organization->id,
             'plugin_id' => TogglPlugin::ID,
             'external_type' => TogglImportService::EXT_TYPE_CLIENT,
-            'referenceable_type' => $lds->getMorphClass(),
-            'referenceable_id' => $lds->id,
-            'external_id' => 'LDS',
+            'referenceable_type' => $nordlicht->getMorphClass(),
+            'referenceable_id' => $nordlicht->id,
+            'external_id' => 'Nordlicht',
             'synced_at' => now(),
         ]);
 
         $entry = new ImportedTimeEntry(
             entryKey: 'match:fc',
-            clientName: 'LDS',
+            clientName: 'Nordlicht',
             projectName: 'Support',
             activity: null,
             description: null,
@@ -1504,11 +1504,11 @@ class TogglImportTest extends TestCase {
 
         $matched = $this->service()->matchProject($this->organization, $entry);
         $this->assertNotNull($matched);
-        $this->assertSame($ldsProject->id, $matched->id);
-        $this->assertNotSame($thiemeProject->id, $matched->id);
+        $this->assertSame($nordlichtProject->id, $matched->id);
+        $this->assertNotSame($lastkraftProject->id, $matched->id);
 
         // matchCustomer löst den Fremdkunden zur Firma auf.
-        $resolved = $this->service()->matchCustomer($this->organization, 'LDS');
+        $resolved = $this->service()->matchCustomer($this->organization, 'Nordlicht');
         $this->assertNotNull($resolved);
         $this->assertSame($customer->id, $resolved->id);
     }
@@ -1521,12 +1521,12 @@ class TogglImportTest extends TestCase {
         $foreign = ForeignCustomer::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
-            'name' => 'Thieme Verlag',
+            'name' => 'Lastkraft Verlag',
             'company' => null,
         ]);
 
         // Fuzzy: leicht abweichende Schreibweise trifft den Fremdkunden.
-        $suggested = $this->service()->suggestForeignCustomer($this->organization, 'Thieme-Verlag');
+        $suggested = $this->service()->suggestForeignCustomer($this->organization, 'Lastkraft-Verlag');
         $this->assertNotNull($suggested);
         $this->assertSame($foreign->id, $suggested->id);
 
@@ -1619,7 +1619,7 @@ class TogglImportTest extends TestCase {
         $foreign = ForeignCustomer::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
-            'name' => 'LDS',
+            'name' => 'Nordlicht',
         ]);
 
         $ref = ExternalReference::query()->create([
@@ -1628,7 +1628,7 @@ class TogglImportTest extends TestCase {
             'external_type' => TogglImportService::EXT_TYPE_CLIENT,
             'referenceable_type' => $customer->getMorphClass(),
             'referenceable_id' => $customer->id,
-            'external_id' => 'LDS',
+            'external_id' => 'Nordlicht',
             'synced_at' => now(),
         ]);
 

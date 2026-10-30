@@ -48,7 +48,7 @@ class ResaleDraftAndPricesTest extends TestCase {
             'organization_id' => $this->organization->id, 'external_id' => 'art-bp', 'name' => 'Microsoft 365 Business Premium', 'article_number' => 'BP',
             'type' => 'SERVICE', 'unit_name' => 'Monat', 'net_unit_price' => '20.60', 'currency' => 'EUR', 'vat_rate' => '19', 'synced_at' => now(),
         ]);
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH']);
         foreach ([['247.20', '187.92'], ['126.00', '244.76']] as [$sale, $purchase]) {
             ResaleSubscription::query()->create([
                 'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'qualityhosting', 'label' => 'Microsoft 365 Business Premium', 'article_ref' => 'lex:' . $article->id,
@@ -92,7 +92,7 @@ class ResaleDraftAndPricesTest extends TestCase {
 
     public function test_local_billing_creates_a_local_invoice_draft_with_proposed_links(): void {
         $admin = $this->orgAdmin();
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH', 'billing_mode' => \App\Enums\Finance\BillingMode::Workdiary]);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH', 'billing_mode' => \App\Enums\Finance\BillingMode::Workdiary]);
         $article = LexofficeArticle::create([
             'organization_id' => $this->organization->id, 'external_id' => 'art-bp', 'name' => 'Microsoft 365 Business Premium', 'article_number' => 'BP',
             'type' => 'SERVICE', 'unit_name' => 'Monat', 'net_unit_price' => '20.60', 'currency' => 'EUR', 'vat_rate' => '19', 'synced_at' => now(),
@@ -147,19 +147,19 @@ class ResaleDraftAndPricesTest extends TestCase {
     public function test_draft_is_created_in_lexoffice_from_open_periods(): void {
         $admin = $this->orgAdmin();
         $this->enablePluginFor($this->organization, LexofficePlugin::ID, ['api_key' => 'lex-key', 'request_interval' => '0']);
-        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'LDS Systems GmbH', 'billing_mode' => \App\Enums\Finance\BillingMode::Lexoffice]);
+        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Nordlicht Systems GmbH', 'billing_mode' => \App\Enums\Finance\BillingMode::Lexoffice]);
         ExternalReference::create([
             'organization_id' => $this->organization->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
             'external_id' => '7c6b5a49-3827-4e16-9f05-e4d3c2b1a098', 'referenceable_type' => $partner->getMorphClass(), 'referenceable_id' => $partner->getKey(),
         ]);
-        $kaik = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik']);
+        $zahlenwerk = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Zahlenwerk']);
         $article = LexofficeArticle::create([
             'organization_id' => $this->organization->id, 'external_id' => 'art-bb', 'name' => 'Microsoft 365 Business Basic', 'article_number' => 'BB',
             'type' => 'SERVICE', 'unit_name' => 'Monat', 'net_unit_price' => '5.60', 'currency' => 'EUR', 'vat_rate' => '19', 'synced_at' => now(),
         ]);
         $subscription = ResaleSubscription::query()->create([
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'qualityhosting', 'label' => 'Microsoft 365 Business Basic', 'article_ref' => 'lex:' . $article->id,
-            'foreign_customer_id' => $kaik->id, 'quantity' => 1, 'starts_on' => '2025-04-09', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto',
+            'foreign_customer_id' => $zahlenwerk->id, 'quantity' => 1, 'starts_on' => '2025-04-09', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto',
             'sale_unit_price' => '67.20', 'currency' => 'EUR', 'status' => 'active',
         ]);
         (new PeriodPlanner)->sync($subscription);
@@ -182,7 +182,7 @@ class ResaleDraftAndPricesTest extends TestCase {
             },
         ]);
 
-        $this->actingAs($admin)->get(route('finance.resale.periods.draft.create'))->assertOk()->assertSee('LDS Systems GmbH');
+        $this->actingAs($admin)->get(route('finance.resale.periods.draft.create'))->assertOk()->assertSee('Nordlicht Systems GmbH');
         $this->actingAs($admin)->post(route('finance.resale.periods.draft.store'), ['customer_id' => $partner->sqid])
             ->assertRedirect(route('finance.resale.periods.index'))
             ->assertSessionHas('success');
@@ -193,7 +193,7 @@ class ResaleDraftAndPricesTest extends TestCase {
         $this->assertArrayNotHasKey('finalize', $captured);
         $this->assertCount(2, $captured['lineItems'], 'eine Position je Periode');
         $this->assertSame('Microsoft 365 Business Basic', $captured['lineItems'][0]['name']);
-        $this->assertStringContainsString('Steuerbüro Kaik', $captured['lineItems'][0]['description']);
+        $this->assertStringContainsString('Steuerbüro Zahlenwerk', $captured['lineItems'][0]['description']);
         $this->assertStringContainsString('09.04.2025 – 08.04.2026', $captured['lineItems'][0]['description']);
         $this->assertEquals(12, $captured['lineItems'][0]['quantity']);
         $this->assertSame('Monat', $captured['lineItems'][0]['unitName']);
@@ -262,7 +262,7 @@ class ResaleDraftAndPricesTest extends TestCase {
         // ungestempelt; ohne eine einzige Position ist es die Ausnahme „nichts offen" (kein Entwurf, kein Stempel);
         // die Bemerkung der Periode wird um den Stempel ergänzt, nie ersetzt.
         $admin = $this->orgAdmin();
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH', 'billing_mode' => \App\Enums\Finance\BillingMode::Workdiary]);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH', 'billing_mode' => \App\Enums\Finance\BillingMode::Workdiary]);
         $unpriced = ResaleSubscription::query()->create([
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'qualityhosting', 'label' => 'Exchange Online (Plan 1)',
             'customer_id' => $customer->id, 'quantity' => 1, 'starts_on' => '2025-08-05', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto', 'currency' => 'EUR', 'status' => 'active',

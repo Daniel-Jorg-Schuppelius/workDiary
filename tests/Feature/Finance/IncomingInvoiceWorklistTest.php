@@ -79,7 +79,7 @@ final class IncomingInvoiceWorklistTest extends TestCase {
 
     public function test_rejecting_as_no_invoice_can_create_an_inbox_rule_and_file_the_other_open_documents(): void {
         $first = $this->incoming(['seller_name' => 'CKonverter.de']);
-        $second = $this->incoming(['seller_name' => ' ckonverter.de']);
+        $second = $this->incoming(['seller_name' => ' beispiel-konverter.de']);
         $rejected = $this->incoming(['seller_name' => 'CKonverter.de', 'status' => IncomingEInvoiceStatus::Rejected]);
         $other = $this->incoming(['seller_name' => 'Pinsel GmbH']);
 
@@ -97,7 +97,7 @@ final class IncomingInvoiceWorklistTest extends TestCase {
 
         $rule = AutomationRule::query()->sole();
         $this->assertSame(IncomingInvoiceReceivedTrigger::KEY, $rule->trigger_event);
-        $this->assertSame('ckonverter.de', data_get($rule->conditions, 'all.0.value'));
+        $this->assertSame('beispiel-konverter.de', data_get($rule->conditions, 'all.0.value'));
         $this->assertSame(RejectIncomingInvoiceAction::TYPE, data_get($rule->actions, '0.type'));
 
         // Neue Eingänge und die Nacherkennung laufen durch dieselbe Regel.
@@ -107,7 +107,7 @@ final class IncomingInvoiceWorklistTest extends TestCase {
         $this->assertSame('Testnachricht', $late->decision_note);
         $this->assertNull($late->decided_by);
 
-        $this->get(route('finance.incoming-invoices.rules'))->assertOk()->assertSee('ckonverter.de')->assertSee('Testnachricht');
+        $this->get(route('finance.incoming-invoices.rules'))->assertOk()->assertSee('beispiel-konverter.de')->assertSee('Testnachricht');
         $this->post(route('finance.incoming-invoices.rules.automation.toggle', $rule))->assertRedirect()->assertSessionHas('success');
         $this->assertFalse($rule->refresh()->is_active);
         $this->delete(route('finance.incoming-invoices.rules.automation.destroy', $rule))->assertRedirect()->assertSessionHas('success');
@@ -341,20 +341,20 @@ final class IncomingInvoiceWorklistTest extends TestCase {
     }
 
     public function test_a_reminder_hint_proposes_no_invoice_and_links_the_reminded_documents(): void {
-        $invoice = $this->incoming(['invoice_number' => 'RZLRE2501475', 'seller_name' => 'Rechenzentrum Christoph Ludwigs']);
+        $invoice = $this->incoming(['invoice_number' => 'RZXRE2501475', 'seller_name' => 'Rechenzentrum Beispielstadt']);
         $reminder = $this->incoming([
             'invoice_number' => null, 'seller_name' => null, 'recognition' => IncomingInvoiceRecognition::None, 'amount_gross' => null,
-            'summary' => ['kind_hint' => 'reminder', 'reminder_for' => ['RZLRE2501475'], 'extraction' => ['reason' => 'no_number', 'reader' => 'pdftotext', 'found' => ['gross' => '16.51'], 'hints' => ['issue_date' => '2025-07-07'], 'kind_hint' => 'reminder', 'reminder_for' => ['RZLRE2501475']]],
+            'summary' => ['kind_hint' => 'reminder', 'reminder_for' => ['RZXRE2501475'], 'extraction' => ['reason' => 'no_number', 'reader' => 'pdftotext', 'found' => ['gross' => '16.51'], 'hints' => ['issue_date' => '2025-07-07'], 'kind_hint' => 'reminder', 'reminder_for' => ['RZXRE2501475']]],
         ]);
 
         $this->get(route('finance.incoming-invoices.index'))->assertOk()->assertSee(__('enums.billing.kind.reminder'));
         $this->get(route('finance.incoming-invoices.assign.form', $reminder))->assertOk()
-            ->assertSee(__('Sieht aus wie'))->assertSee('Mahnung zu RZLRE2501475')
+            ->assertSee(__('Sieht aus wie'))->assertSee('Mahnung zu RZXRE2501475')
             ->assertSee(route('finance.incoming-invoices.show', $invoice->document), false)
             ->assertSee('value="not_invoice" class="join-item btn btn-sm" aria-label="' . __('Keine Rechnung') . '" checked', false);
         $this->get(route('finance.incoming-invoices.values.form', $reminder))->assertOk()
             ->assertSee('value="2025-07-07"', false)->assertSee(__('Vorschlag aus dem Lieferdatum, bitte am Original prüfen.'));
         $this->get(route('finance.incoming-invoices.show', $reminder->document))->assertOk()
-            ->assertSee(__('Bezieht sich auf'))->assertSee('RZLRE2501475');
+            ->assertSee(__('Bezieht sich auf'))->assertSee('RZXRE2501475');
     }
 }

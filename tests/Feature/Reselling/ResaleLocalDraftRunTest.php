@@ -85,12 +85,12 @@ class ResaleLocalDraftRunTest extends TestCase {
             'type' => 'SERVICE', 'unit_name' => 'Monat', 'net_unit_price' => '20.60', 'currency' => 'EUR', 'vat_rate' => '19', 'synced_at' => now(),
         ]);
         // Kunde direkt (zwei fällige Perioden) …
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH', 'billing_mode' => BillingMode::Workdiary]);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH', 'billing_mode' => BillingMode::Workdiary]);
         $direct = $this->subscription(['customer_id' => $customer->id, 'article_ref' => 'lex:' . $article->id]);
         // … Partner mit Endkunde (Rechnung an den Partner) …
-        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'LDS Systems GmbH', 'billing_mode' => BillingMode::Workdiary]);
-        $kaik = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik']);
-        $viaPartner = $this->subscription(['foreign_customer_id' => $kaik->id, 'label' => 'Microsoft 365 Business Basic', 'quantity' => 1, 'sale_unit_price' => '67.20']);
+        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Nordlicht Systems GmbH', 'billing_mode' => BillingMode::Workdiary]);
+        $zahlenwerk = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Zahlenwerk']);
+        $viaPartner = $this->subscription(['foreign_customer_id' => $zahlenwerk->id, 'label' => 'Microsoft 365 Business Basic', 'quantity' => 1, 'sale_unit_price' => '67.20']);
         // … eigener Bestand und Abo ohne Verkaufspreis bleiben außen vor.
         $own = $this->subscription(['is_own_holding' => true, 'company_name' => 'Eigene GmbH']);
         $unpriced = $this->subscription(['customer_id' => $customer->id, 'label' => 'Exchange Online (Plan 1)', 'sale_unit_price' => null]);
@@ -116,7 +116,7 @@ class ResaleLocalDraftRunTest extends TestCase {
         $this->assertCount(2, $forPartner->items);
         // Zeitraum nur in den Spalten (eigene Zeile auf Beleg und Seite), Beschreibung = Name · Endkunde (Review 2026-09-11, Kleinigkeiten UI).
         $this->assertSame('Microsoft 365 Business Premium', (string) $forCustomer->items->first()?->description, 'Artikelname ohne Zeitraum');
-        $this->assertSame('Microsoft 365 Business Basic · ' . __('resale.draft.end_customer', ['name' => 'Steuerbüro Kaik']), (string) $forPartner->items->first()?->description, 'Endkunde in der Beschreibung');
+        $this->assertSame('Microsoft 365 Business Basic · ' . __('resale.draft.end_customer', ['name' => 'Steuerbüro Zahlenwerk']), (string) $forPartner->items->first()?->description, 'Endkunde in der Beschreibung');
         $this->assertSame('2025-08-05', $forPartner->items->first()?->service_from?->toDateString());
 
         foreach ([$direct, $viaPartner] as $subscription) {

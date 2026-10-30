@@ -276,7 +276,7 @@ final class InvoicePdfImportServiceTest extends TestCase {
             }
         }
 
-        $placeDate = $service->analyzeText("Rechnungs-Nr: AR20250831AD012409   Starnberg, 31.08.2025\nGesamtbetrag 127,56 €");
+        $placeDate = $service->analyzeText("Rechnungs-Nr: AR20250831AD000815   Starnberg, 31.08.2025\nGesamtbetrag 127,56 €");
         self::assertSame('2025-08-31', $placeDate['issued_on']);
         $bareDate = $service->analyzeText("Rechnungsnummer 4711\nDatum: 07.07.2025\nGesamtbetrag 16,51");
         self::assertSame('2025-07-07', $bareDate['issued_on']);
@@ -289,9 +289,9 @@ final class InvoicePdfImportServiceTest extends TestCase {
     public function test_it_hints_the_document_kind_for_reminders_and_other_non_invoices(): void {
         $service = new InvoicePdfImportService;
 
-        $reminder = $service->analyzeText("Kundennummer: 1804771\nDatum: 07.07.2025\n2. Mahnung\nReNr. Datum Fällig Belegart Betrag Mahnbetrag\nRZLRE2501475 17.06.2025 17.06.2025 Rechnung 13,51 13,51 2\nMahngebühren: 3,00\nZu zahlen: 16,51");
+        $reminder = $service->analyzeText("Kundennummer: 1804771\nDatum: 07.07.2025\n2. Mahnung\nReNr. Datum Fällig Belegart Betrag Mahnbetrag\nRZXRE2501475 17.06.2025 17.06.2025 Rechnung 13,51 13,51 2\nMahngebühren: 3,00\nZu zahlen: 16,51");
         self::assertSame('reminder', $reminder['kind_hint']);
-        self::assertSame(['RZLRE2501475'], $reminder['reminder_numbers']);
+        self::assertSame(['RZXRE2501475'], $reminder['reminder_numbers']);
         self::assertNull($reminder['number'], 'Die Nummer der angemahnten Rechnung ist nicht die Nummer der Mahnung.');
 
         $label = $service->analyzeText("DHL Online Frankierung\nPaket bis 20 kg\nSendungsnummer: 91.000.326471 3\nEntgelt Bezahlt\nAbsender: Daniel Muster");

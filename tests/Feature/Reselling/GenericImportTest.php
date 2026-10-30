@@ -37,8 +37,8 @@ class GenericImportTest extends TestCase {
 
     private const CSV = <<<'CSV'
     Kennung;Firma;Produkt;Menge;Beginn;Ende;Intervall;Laufzeit (Monate);Einkaufspreis;Verkaufspreis;Anbieter;Bestellnummer
-    HST-4711;Schub- und Schleppreederei U. Golka GmbH & CO. KG;Hosted Exchange Postfach;4;01.03.2025;;jährlich;12;39,84;47,40;;B-1
-    ;Märkische Bunker- und Service GmbH & Co. KG;Microsoft 365 Business Standard;2;15.03.2025;14.03.2027;monatlich;;10,70 €;12,13 €;Telekom Cloud Marketplace;
+    HST-4711;Hafen- und Schleppbetrieb M. Seewind GmbH & CO. KG;Hosted Exchange Postfach;4;01.03.2025;;jährlich;12;39,84;47,40;;B-1
+    ;Nordufer Tank- und Service GmbH & Co. KG;Microsoft 365 Business Standard;2;15.03.2025;14.03.2027;monatlich;;10,70 €;12,13 €;Telekom Cloud Marketplace;
     ;Beispiel GmbH;Backup;1;kein datum;;;;;;;
     CSV;
 
@@ -65,7 +65,7 @@ class GenericImportTest extends TestCase {
         }
         $this->assertCount(2, $import->entitlements);
         $this->assertCount(1, $import->issues, 'Zeile ohne lesbaren Beginn wird gemeldet');
-        [$schub, $maerkische] = $import->entitlements;
+        [$schub, $nordufer] = $import->entitlements;
         $this->assertSame('HST-4711', $schub->entitlementId);
         $this->assertSame(4, $schub->quantity);
         $this->assertSame('39.8400', $schub->unitFee?->withScale(4)->getAmount());
@@ -73,22 +73,22 @@ class GenericImportTest extends TestCase {
         $this->assertSame(BillingFrequency::Yearly, $schub->frequency);
         $this->assertSame('manual', $schub->provider, 'ohne Spaltenwert gilt der Dialog-Anbieter');
         $this->assertNull($schub->endsOn);
-        $this->assertStringStartsWith('gen:', $maerkische->entitlementId, 'Kennung aus Firma, Produkt und Beginn');
-        $this->assertSame('telekom_marketplace', $maerkische->provider);
-        $this->assertSame(BillingFrequency::Monthly, $maerkische->frequency);
-        $this->assertSame('2027-03-14', $maerkische->endsOn?->toDateString());
-        $this->assertSame('10.7000', $maerkische->unitFee?->withScale(4)->getAmount(), '„10,70 €" gelesen');
+        $this->assertStringStartsWith('gen:', $nordufer->entitlementId, 'Kennung aus Firma, Produkt und Beginn');
+        $this->assertSame('telekom_marketplace', $nordufer->provider);
+        $this->assertSame(BillingFrequency::Monthly, $nordufer->frequency);
+        $this->assertSame('2027-03-14', $nordufer->endsOn?->toDateString());
+        $this->assertSame('10.7000', $nordufer->unitFee?->withScale(4)->getAmount(), '„10,70 €" gelesen');
     }
 
     public function test_import_creates_subscriptions_resolves_holders_and_is_idempotent(): void {
-        Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Schub- und Schleppreederei U. Golka GmbH & CO. KG']);
+        Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Hafen- und Schleppbetrieb M. Seewind GmbH & CO. KG']);
         $path = $this->csv();
         try {
             $records = app(MarketplaceImporter::class)->import($this->organization, null, [ResaleImport::KIND_GENERIC => ['name' => 'liste.csv', 'path' => $path]], null, SubscriptionProvider::Manual);
             $this->assertCount(1, $records);
             $this->assertSame(ResaleImport::KIND_GENERIC, $records[0]->kind);
             $this->assertSame(2, $records[0]->rows_created);
-            $this->assertSame(1, $records[0]->rows_unassigned, 'Märkische ist kein Kunde → Inbox');
+            $this->assertSame(1, $records[0]->rows_unassigned, 'Nordufer ist kein Kunde → Inbox');
 
             $schub = ResaleSubscription::query()->where('external_id', 'HST-4711')->firstOrFail();
             $this->assertSame(SubscriptionProvider::Manual, $schub->provider);
@@ -99,9 +99,9 @@ class GenericImportTest extends TestCase {
             $this->assertNotNull($schub->customer_id, 'Halter über den Firmennamen');
             $this->assertCount(2, $schub->periods, 'März 2025 und März 2026');
 
-            $maerkische = ResaleSubscription::query()->where('provider', SubscriptionProvider::TelekomMarketplace->value)->firstOrFail();
-            $this->assertNull($maerkische->customer_id);
-            $this->assertSame(SubscriptionStatus::Cancelled, $maerkische->status, 'Ende 2027 bekannt');
+            $nordufer = ResaleSubscription::query()->where('provider', SubscriptionProvider::TelekomMarketplace->value)->firstOrFail();
+            $this->assertNull($nordufer->customer_id);
+            $this->assertSame(SubscriptionStatus::Cancelled, $nordufer->status, 'Ende 2027 bekannt');
 
             // Zweiter Lauf: nichts Neues, nichts doppelt.
             $again = app(MarketplaceImporter::class)->import($this->organization, null, [ResaleImport::KIND_GENERIC => ['name' => 'liste.csv', 'path' => $path]], null, SubscriptionProvider::Manual);

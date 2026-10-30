@@ -45,7 +45,7 @@ class PeriodLinkerTest extends TestCase {
             'organization_id' => $this->organization->id, 'external_id' => 'art-bp', 'name' => 'Microsoft 365 Business Premium', 'article_number' => 'ART-BP',
             'type' => 'SERVICE', 'unit_name' => 'Monat', 'net_unit_price' => '20.60', 'currency' => 'EUR', 'vat_rate' => '19', 'synced_at' => now(),
         ]);
-        $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH']);
+        $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH']);
         $this->subscription = ResaleSubscription::query()->create([
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'qualityhosting', 'label' => 'Microsoft 365 Business Premium',
             'customer_id' => $this->customer->id, 'article_ref' => 'lex:' . $this->premium->id, 'quantity' => 1, 'starts_on' => '2024-08-05',
@@ -146,7 +146,7 @@ class PeriodLinkerTest extends TestCase {
         $this->assertSame(10.0, $consumed[$line->id]['months']);
         $this->assertCount(2, $consumed[$line->id]['periods']);
         // Ziel = „Halter · ×Menge · Anbieter ab Datum · Zeitraum" — der Halter, weil Partner mehrere Endkunden haben.
-        $this->assertSame('Klimpel Bäder GmbH · ' . $this->subscription->identityLabel() . ' · 05.08.2024 – 04.08.2025', $consumed[$line->id]['periods'][0]);
+        $this->assertSame('Badhaus Bäder GmbH · ' . $this->subscription->identityLabel() . ' · 05.08.2024 – 04.08.2025', $consumed[$line->id]['periods'][0]);
         $this->assertStringContainsString('05.08.2025 – 04.08.2026', $consumed[$line->id]['periods'][1]);
         $this->assertSame($consumed[$line->id]['periods'][0], PeriodLinker::targetLabel(ResalePeriodLink::query()->where('period_id', $p2024->id)->firstOrFail()));
 

@@ -64,8 +64,8 @@ final class PartyContactFakeLookup implements IncomingPartyLookup {
 
         return [new IncomingPartyCandidate('fakecontact', 'Fakebuch', 'c-9', 'Stimmgerecht oHG', 'K-10007', 'DE286103889', 'info@stimmgerecht.test',
             persons: [
-                ContactPersons::fromExternal('Herr', 'Ralph', 'Hartig', email: 'r@stimmgerecht.test') ?? [],
-                ContactPersons::fromExternal('Frau', 'Birgit', 'Hartig', primary: true) ?? [],
+                ContactPersons::fromExternal('Herr', 'Ralph', 'Mustermann', email: 'r@stimmgerecht.test') ?? [],
+                ContactPersons::fromExternal('Frau', 'Birgit', 'Mustermann', primary: true) ?? [],
             ])];
     }
 }
@@ -94,8 +94,8 @@ final class IncomingPartyContactTest extends TestCase {
         PluginSetting::create(['organization_id' => $this->organization->id, 'plugin_id' => LexofficePlugin::ID, 'enabled' => true, 'settings' => ['api_key' => 'k']]);
         FakePluginHttp::fake(['https://api.lexware.io/v1/contacts*' => FakePluginHttp::response(['content' => [
             ['id' => 'lex-1', 'company' => ['name' => 'Stimmgerecht oHG', 'contactPersons' => [
-                ['salutation' => 'Herr', 'firstName' => 'Ralph', 'lastName' => 'Hartig', 'emailAddress' => 'r@stimmgerecht.test'],
-                ['salutation' => 'Frau Dr.', 'firstName' => 'Birgit Maria', 'lastName' => 'Hartig', 'primary' => true],
+                ['salutation' => 'Herr', 'firstName' => 'Ralph', 'lastName' => 'Mustermann', 'emailAddress' => 'r@stimmgerecht.test'],
+                ['salutation' => 'Frau Dr.', 'firstName' => 'Birgit Maria', 'lastName' => 'Mustermann', 'primary' => true],
             ]]],
             ['id' => 'lex-2', 'person' => ['salutation' => 'Herr', 'firstName' => 'Max', 'lastName' => 'Mustermann']],
         ], 'totalPages' => 1])]);
@@ -104,7 +104,7 @@ final class IncomingPartyContactTest extends TestCase {
 
         $this->assertCount(2, $candidates);
         $this->assertNull($candidates[0]->contact);
-        $this->assertSame(['Ralph', 'Birgit', 'Maria', 'Hartig', 'Dr.', true], [
+        $this->assertSame(['Ralph', 'Birgit', 'Maria', 'Mustermann', 'Dr.', true], [
             $candidates[0]->persons[0]['first_name'], $candidates[0]->persons[1]['first_name'], $candidates[0]->persons[1]['middle_names'],
             $candidates[0]->persons[1]['last_name'], $candidates[0]->persons[1]['title'], $candidates[0]->persons[1]['primary'],
         ]);
@@ -131,8 +131,8 @@ final class IncomingPartyContactTest extends TestCase {
         $fake = FakePluginHttp::fake(['https://my.sevdesk.de/api/v1/Contact?*' => static function (RequestInterface $request) {
             if (str_contains(urldecode($request->getUri()->getQuery()), 'parent[id]=77')) {
                 return FakePluginHttp::response(['objects' => [
-                    ['id' => 78, 'surename' => 'Ralph', 'familyname' => 'Hartig', 'gender' => 'm', 'parent' => ['id' => 77, 'objectName' => 'Contact']],
-                    ['id' => 79, 'surename' => 'Birgit', 'familyname' => 'Hartig', 'gender' => 'w', 'academicTitle' => 'Dr.', 'parent' => ['id' => 77, 'objectName' => 'Contact']],
+                    ['id' => 78, 'surename' => 'Ralph', 'familyname' => 'Mustermann', 'gender' => 'm', 'parent' => ['id' => 77, 'objectName' => 'Contact']],
+                    ['id' => 79, 'surename' => 'Birgit', 'familyname' => 'Mustermann', 'gender' => 'w', 'academicTitle' => 'Dr.', 'parent' => ['id' => 77, 'objectName' => 'Contact']],
                 ]]);
             }
 
@@ -146,7 +146,7 @@ final class IncomingPartyContactTest extends TestCase {
 
         $this->assertCount(2, $candidates);
         $this->assertNull($candidates[0]->contact);
-        $this->assertSame([['mr', 'Ralph', 'Hartig', null], ['ms', 'Birgit', 'Hartig', 'Dr.']], array_map(
+        $this->assertSame([['mr', 'Ralph', 'Mustermann', null], ['ms', 'Birgit', 'Mustermann', 'Dr.']], array_map(
             static fn (array $p): array => [$p['salutation'], $p['first_name'], $p['last_name'], $p['title']],
             $candidates[0]->persons,
         ));
@@ -161,8 +161,8 @@ final class IncomingPartyContactTest extends TestCase {
         ]);
         FakePluginHttp::fake(['https://api.orgamax.de/openapi/customer?*' => self::listResponse([
             ['id' => 'om-1', 'name' => 'Stimmgerecht oHG', 'companyName' => 'Stimmgerecht oHG', 'contactPersons' => [
-                ['salutation' => 'Herr', 'firstName' => 'Ralph', 'lastName' => 'Hartig', 'email' => 'r@stimmgerecht.test', 'isMainContact' => false],
-                ['salutation' => 'Frau', 'title' => 'Dr.', 'firstName' => 'Birgit', 'lastName' => 'Hartig', 'phone1' => '+49 172 1', 'isMainContact' => true],
+                ['salutation' => 'Herr', 'firstName' => 'Ralph', 'lastName' => 'Mustermann', 'email' => 'r@stimmgerecht.test', 'isMainContact' => false],
+                ['salutation' => 'Frau', 'title' => 'Dr.', 'firstName' => 'Birgit', 'lastName' => 'Mustermann', 'phone1' => '+49 172 1', 'isMainContact' => true],
             ]],
             ['id' => 'om-2', 'name' => 'Max Mustermann', 'salutation' => 'Herr', 'firstName' => 'Max', 'lastName' => 'Mustermann'],
         ])]);
@@ -170,7 +170,7 @@ final class IncomingPartyContactTest extends TestCase {
         $candidates = app(OrgaMaxIncomingPartyLookup::class)->lookup($this->incoming(['buyer_name' => 'Stimmgerecht oHG', 'direction' => DocumentDirection::Outgoing]));
 
         $this->assertCount(2, $candidates);
-        $this->assertSame(['ms', 'Dr.', 'Birgit', 'Hartig', '+49 172 1'], [
+        $this->assertSame(['ms', 'Dr.', 'Birgit', 'Mustermann', '+49 172 1'], [
             $candidates[0]->contact['salutation'] ?? null, $candidates[0]->contact['title'] ?? null, $candidates[0]->contact['first_name'] ?? null,
             $candidates[0]->contact['last_name'] ?? null, $candidates[0]->contact['phone'] ?? null,
         ]);
@@ -205,7 +205,7 @@ final class IncomingPartyContactTest extends TestCase {
         $supplier = app(IncomingInvoiceParties::class)->adopt($incoming, 'fakecontact:c-9', $this->admin);
 
         $this->assertInstanceOf(Supplier::class, $supplier);
-        $this->assertSame([ContactSalutation::Ms, 'Birgit', 'Hartig', 'Birgit Hartig'], [$supplier->contact_salutation, $supplier->contact_first_name, $supplier->contact_last_name, $supplier->contact_name]);
+        $this->assertSame([ContactSalutation::Ms, 'Birgit', 'Mustermann', 'Birgit Mustermann'], [$supplier->contact_salutation, $supplier->contact_first_name, $supplier->contact_last_name, $supplier->contact_name]);
         $this->assertSame(['Ralph', 'Birgit'], array_column($supplier->contact_persons ?? [], 'first_name'));
 
         // Ohne Liste füllt die Person des Kandidaten den Hauptansprechpartner; ohne beides bleibt er leer.

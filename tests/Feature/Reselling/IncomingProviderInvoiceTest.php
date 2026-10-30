@@ -50,7 +50,7 @@ class IncomingProviderInvoiceTest extends TestCase {
     private function subscription(array $attributes = []): ResaleSubscription {
         $subscription = ResaleSubscription::query()->create(array_merge([
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'qualityhosting', 'label' => 'Microsoft 365 Business Premium',
-            'external_id' => 'CNLCON00156', 'company_name' => 'Klimpel Bäder GmbH', 'quantity' => 1, 'starts_on' => '2025-09-03', 'term_months' => 12, 'interval' => 'yearly',
+            'external_id' => 'CNLCON00156', 'company_name' => 'Badhaus Bäder GmbH', 'quantity' => 1, 'starts_on' => '2025-09-03', 'term_months' => 12, 'interval' => 'yearly',
             'renewal' => 'auto', 'status' => 'active', 'currency' => 'EUR', 'purchase_unit_price' => '187.92', 'sale_unit_price' => '247.20',
         ], $attributes));
         (new PeriodPlanner)->sync($subscription);
@@ -131,7 +131,7 @@ class IncomingProviderInvoiceTest extends TestCase {
             app(\App\Services\Billing\Purchase\IncomingEInvoicePurchaseDocumentSource::class), app(\App\Services\Invoicing\EInvoice\IncomingEInvoiceService::class),
         ]);
         $this->bindImport(new ProviderInvoice('31970999', CarbonImmutable::parse('2026-09-03'), false, '95229', [
-            new ProviderInvoiceLine(1, 1.0, 'Microsoft 365 Business Premium', 187.92, 187.92, 'CNLCON00156', 'CNL00007', 'Klimpel Bäder GmbH', CarbonImmutable::parse('2026-09-03'), CarbonImmutable::parse('2027-09-02')),
+            new ProviderInvoiceLine(1, 1.0, 'Microsoft 365 Business Premium', 187.92, 187.92, 'CNLCON00156', 'CNL00007', 'Badhaus Bäder GmbH', CarbonImmutable::parse('2026-09-03'), CarbonImmutable::parse('2027-09-02')),
             new ProviderInvoiceLine(2, 1.0, 'Exchange Online Plan 1', 22.50, 22.50, 'CNLCON99999', 'CNL00099', 'Unbekannte GmbH', CarbonImmutable::parse('2026-09-03'), CarbonImmutable::parse('2027-09-02')),
         ], 210.42));
 
@@ -197,7 +197,7 @@ class IncomingProviderInvoiceTest extends TestCase {
     }
 
     public function test_licence_account_shows_expected_and_actual_purchase_and_margin(): void {
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH']);
         $subscription = $this->subscription(['customer_id' => $customer->id, 'provider_account' => 'CNL00007', 'quantity' => 2, 'purchase_unit_price' => '187.92', 'sale_unit_price' => '247.20']);
         $period = $subscription->periods()->where('starts_on', '2025-09-03')->firstOrFail();
         ResalePurchaseEntry::query()->create([

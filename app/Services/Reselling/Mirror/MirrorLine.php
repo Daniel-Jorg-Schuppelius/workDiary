@@ -106,9 +106,9 @@ final readonly class MirrorLine {
 
     /**
      * Nennt die Position diese Domain? Domainrechnungen tragen den Namen nur
-     * im Text („.de-Domain inkl. Verwaltung (thieme-logistik.de)“), der
-     * Artikel heißt „Top-Level-Domain“ — Wortgrenze, damit „thieme-logistik.de“
-     * weder „sub.thieme-logistik.de“ noch „thieme-logistik.dev“ trifft.
+     * im Text („.de-Domain inkl. Verwaltung (lastkraft-logistik.de)“), der
+     * Artikel heißt „Top-Level-Domain“ — Wortgrenze, damit „lastkraft-logistik.de“
+     * weder „sub.lastkraft-logistik.de“ noch „lastkraft-logistik.dev“ trifft.
      */
     public function mentionsDomain(string $domain): bool {
         $domain = mb_strtolower(trim($domain));
@@ -116,7 +116,7 @@ final readonly class MirrorLine {
             return false;
         }
         $forms = [$domain];
-        // IDN: der Anbieter führt „xn--onlinehndler-lieferschwelle-hkc.de“, die Rechnung schreibt „onlinehändler-lieferschwelle.de“.
+        // IDN: der Anbieter führt „xn--onlinehndler-beispiel-c2b.de“, die Rechnung schreibt „onlinehändler-beispiel.de“.
         if (str_contains($domain, 'xn--') && function_exists('idn_to_utf8')) {
             $unicode = idn_to_utf8($domain, IDNA_NONTRANSITIONAL_TO_UNICODE, INTL_IDNA_VARIANT_UTS46);
             if (is_string($unicode) && $unicode !== '' && $unicode !== $domain) {

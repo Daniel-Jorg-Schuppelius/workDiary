@@ -80,7 +80,7 @@ class CollapsibleFormGroupTest extends TestCase {
 
     public function test_edit_form_opens_groups_with_values_and_keeps_them_in_the_dom(): void {
         $customer = Customer::factory()->create(['organization_id' => $this->org->id, 'bank_iban' => 'DE02120300000000202051', 'comment' => 'Stammkunde',
-            'contact_persons' => [['first_name' => 'Ralph', 'last_name' => 'Hartig'], ['first_name' => 'Birgit', 'last_name' => 'Hartig']]]);
+            'contact_persons' => [['first_name' => 'Ralph', 'last_name' => 'Mustermann'], ['first_name' => 'Birgit', 'last_name' => 'Mustermann']]]);
 
         $html = $this->actingAs($this->admin)->get(route('customers.edit', [$customer, 'dialog' => 1]))->assertOk()->getContent();
         $groups = $this->formGroups($html);

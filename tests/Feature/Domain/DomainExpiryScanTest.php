@@ -49,7 +49,7 @@ class DomainExpiryScanTest extends TestCase {
         $admin = $this->orgAdmin();
         $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
         $healthy = $this->projection($connection, 'l0ves.de', ['expiration_at' => '2027-02-05', 'failure_at' => '2027-03-07', 'finalization_at' => '2027-03-21']);
-        $failed = $this->projection($connection, 'cfl-world.de', ['expiration_at' => '2026-09-01', 'failure_at' => '2026-10-26', 'finalization_at' => '2026-11-10']);
+        $failed = $this->projection($connection, 'reisewelt-beispiel.de', ['expiration_at' => '2026-09-01', 'failure_at' => '2026-10-26', 'finalization_at' => '2026-11-10']);
         $expiring = $this->projection($connection, 'e-cld.de', ['expiration_at' => '2026-11-05', 'failure_at' => '2026-12-20']);
 
         $sent = app(DomainExpiryScan::class)->run(app(NotificationDispatcher::class), new DeadlineScanOptions(7, 30));
@@ -60,7 +60,7 @@ class DomainExpiryScanTest extends TestCase {
         $this->assertNotContains($healthy->id, $logged);
 
         $titles = $admin->notifications()->get()->map(static fn($n): string => (string) ($n->data['title'] ?? ''))->all();
-        $this->assertContains(__('notification.message.domain_renewal_failed_title', ['domain' => 'cfl-world.de']), $titles);
+        $this->assertContains(__('notification.message.domain_renewal_failed_title', ['domain' => 'reisewelt-beispiel.de']), $titles);
         $this->assertContains(__('notification.message.domain_expiring_title', ['domain' => 'e-cld.de']), $titles);
         $this->assertNotContains(__('notification.message.domain_expiring_title', ['domain' => 'l0ves.de']), $titles);
     }

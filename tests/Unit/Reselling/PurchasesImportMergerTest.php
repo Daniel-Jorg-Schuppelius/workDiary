@@ -20,7 +20,7 @@ class PurchasesImportMergerTest extends TestCase {
     use BuildsEntitlements;
 
     public function test_companies_are_unified_by_name_with_quality_hosting_key_and_partner_number(): void {
-        $telekom = $this->entitlement('Microsoft 365 Business Standard', '138.94', '2024-07-16', '2026-07-16', BillingFrequency::Yearly, 'Kindheit');
+        $telekom = $this->entitlement('Microsoft 365 Business Standard', '138.94', '2024-07-16', '2026-07-16', BillingFrequency::Yearly, 'Jugendhilfe');
         $qh = $this->entitlement('Microsoft 365 Business Standard', '120.36', '2025-07-16', null, BillingFrequency::Yearly, 'Kindheit ', MarketplaceEntitlement::SOURCE_QUALITYHOSTING, 1)
             ->withCompany(new MarketplaceCompany('CNL00025', 'Kindheit ', null, null, '10099'));
 

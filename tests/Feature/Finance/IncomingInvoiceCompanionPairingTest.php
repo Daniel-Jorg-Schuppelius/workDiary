@@ -54,40 +54,40 @@ class IncomingInvoiceCompanionPairingTest extends TestCase {
         $this->assertSame(1, $result['stored']);
         $incoming = IncomingEInvoice::query()->sole();
         $this->assertSame(IncomingInvoiceRecognition::Structured, $incoming->recognition);
-        $this->assertSame('Muster Käufer, 2219519, DE123456789', $incoming->invoice_number);
-        $this->assertSame('NL827220376B01', $incoming->seller_vat_id);
+        $this->assertSame('Muster Käufer, 7000001, DE123456789', $incoming->invoice_number);
+        $this->assertSame('NL123456782B01', $incoming->seller_vat_id);
         $this->assertSame('ABNANL2AXXX', $incoming->creditor_bic);
         $this->assertSame('258.60', $incoming->amount_gross?->getAmount());
-        $this->assertSame(['invoice_2219519.pdf'], $incoming->attachments->pluck('original_name')->all());
+        $this->assertSame(['invoice_7000001.pdf'], $incoming->attachments->pluck('original_name')->all());
         $this->assertSame(['seller_vat', 'creditor_bic'], data_get($incoming->summary, 'companion_fill.fields'));
-        $this->assertSame('invoice_2219519.pdf', data_get($incoming->summary, 'companion_fill.file'));
+        $this->assertSame('invoice_7000001.pdf', data_get($incoming->summary, 'companion_fill.file'));
         $this->assertContains(
-            __('Aus der Begleitdatei :file ergänzt: :fields', ['file' => 'invoice_2219519.pdf', 'fields' => 'USt-IdNr., BIC']),
+            __('Aus der Begleitdatei :file ergänzt: :fields', ['file' => 'invoice_7000001.pdf', 'fields' => 'USt-IdNr., BIC']),
             (array) data_get($incoming->summary, 'notices'),
         );
         // Der Schemafehler des Absenders bleibt sichtbar.
         $this->assertNotEmpty(data_get($incoming->summary, 'validation.schema_errors'));
 
         $this->actingAs($this->admin)->get(route('finance.incoming-invoices.show', $incoming->document))
-            ->assertOk()->assertSee('invoice_2219519.pdf')->assertSee('USt-IdNr., BIC');
+            ->assertOk()->assertSee('invoice_7000001.pdf')->assertSee('USt-IdNr., BIC');
     }
 
     public function test_attachment_order_does_not_matter(): void {
         $this->store([$this->shopUbl(), $this->shopPdf()]);
 
         $incoming = IncomingEInvoice::query()->sole();
-        $this->assertSame('NL827220376B01', $incoming->seller_vat_id);
-        $this->assertSame(['invoice_2219519.pdf'], $incoming->attachments->pluck('original_name')->all());
+        $this->assertSame('NL123456782B01', $incoming->seller_vat_id);
+        $this->assertSame(['invoice_7000001.pdf'], $incoming->attachments->pluck('original_name')->all());
     }
 
     public function test_a_known_supplier_is_matched_through_the_companions_vat_id(): void {
-        $supplier = Supplier::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Hollandbikeshop.com', 'company' => 'Hollandbikeshop.com', 'vat_id' => 'NL827220376B01']);
+        $supplier = Supplier::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Fietsenhuis-Voorbeeld.com', 'company' => 'Fietsenhuis-Voorbeeld.com', 'vat_id' => 'NL123456782B01']);
 
         $this->store([$this->shopPdf(), $this->shopUbl()]);
 
         $incoming = IncomingEInvoice::query()->sole();
         $this->assertSame($supplier->id, $incoming->supplier_id);
-        $this->assertStringContainsString('Hollandbikeshop.com', (string) $incoming->seller_name);
+        $this->assertStringContainsString('Fietsenhuis-Voorbeeld.com', (string) $incoming->seller_name);
         $this->assertContains('seller', (array) data_get($incoming->summary, 'companion_fill.fields'));
     }
 
@@ -106,7 +106,7 @@ class IncomingInvoiceCompanionPairingTest extends TestCase {
         return app(IncomingEInvoiceService::class)->storeMessage(
             $this->admin,
             $attachments,
-            new IncomingOrigin('shop@example.test', '<order-2219519@example.test>', 'Rechnung 2219519'),
+            new IncomingOrigin('shop@example.test', '<order-7000001@example.test>', 'Rechnung 7000001'),
         );
     }
 
@@ -116,7 +116,7 @@ class IncomingInvoiceCompanionPairingTest extends TestCase {
         $dompdf->loadHtml(<<<'HTML'
             <!doctype html><html lang="de"><body>
             <p>Verkauft an: Muster Käufer, Musterweg 1, 12345 Berlin, Germany</p>
-            <p>Bestellnummer/ Rechnungsnummer: 2219519 Bestelldatum: 18-05-2026 BTW-nr: DE123456789</p>
+            <p>Bestellnummer/ Rechnungsnummer: 7000001 Bestelldatum: 18-05-2026 BTW-nr: DE123456789</p>
             <table>
                 <tr><th>Artikel</th><th>Stückzahl</th><th>Preis (inkl.)</th><th>MwSt.</th><th>Total (inkl.)</th></tr>
                 <tr><td>Nabe Interface</td><td>1</td><td>€ 233,02</td><td>0.00%</td><td>€ 233,02</td></tr>
@@ -125,19 +125,19 @@ class IncomingInvoiceCompanionPairingTest extends TestCase {
             <p>Zwischensumme: € 258,60</p>
             <p>Zahlungsart: PayPal</p>
             <p>Total: € 258,60</p>
-            <p>Hollandbikeshop.com, Molenweer 22, 2291NR Wateringen</p>
-            <p>Btw-nr. : NL827220376B01 KVK nr. : 59481382</p>
+            <p>Fietsenhuis-Voorbeeld.com, Voorbeeldweg 1, 1234AB Voorbeeldstad</p>
+            <p>Btw-nr. : NL123456782B01 KVK nr. : 12345678</p>
             <p>IBAN nr: NL53ABNA0542298961</p>
             <p>Swift nr: ABNANL2A</p>
             </body></html>
             HTML);
         $dompdf->render();
 
-        return new MailAttachment('invoice_2219519.pdf', 'application/pdf', (string) $dompdf->output());
+        return new MailAttachment('invoice_7000001.pdf', 'application/pdf', (string) $dompdf->output());
     }
 
     /** UBL des Shops: kein AccountingSupplierParty, Zahlungsdienst als Käufer, cbc:ID als Freitext, BIC verschachtelt. */
-    private function shopUbl(string $id = 'Muster Käufer, 2219519, DE123456789'): MailAttachment {
+    private function shopUbl(string $id = 'Muster Käufer, 7000001, DE123456789'): MailAttachment {
         $xml = <<<XML
             <?xml version="1.0" encoding="UTF-8"?>
             <Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
@@ -175,7 +175,7 @@ class IncomingInvoiceCompanionPairingTest extends TestCase {
                     <cbc:PayableAmount currencyID="EUR">258.6</cbc:PayableAmount>
                 </cac:LegalMonetaryTotal>
                 <cac:InvoiceLine>
-                    <cbc:ID>2219519</cbc:ID>
+                    <cbc:ID>7000001</cbc:ID>
                     <cbc:InvoicedQuantity unitCode="ZZ">1</cbc:InvoicedQuantity>
                     <cbc:LineExtensionAmount currencyID="EUR">258.6</cbc:LineExtensionAmount>
                     <cac:TaxTotal><cbc:TaxAmount currencyID="EUR">0</cbc:TaxAmount></cac:TaxTotal>
@@ -188,6 +188,6 @@ class IncomingInvoiceCompanionPairingTest extends TestCase {
             </Invoice>
             XML;
 
-        return new MailAttachment('ubl_invoice_2219519.xml', 'text/xml', $xml);
+        return new MailAttachment('ubl_invoice_7000001.xml', 'text/xml', $xml);
     }
 }

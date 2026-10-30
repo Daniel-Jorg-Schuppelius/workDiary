@@ -157,7 +157,7 @@ class LexofficeVoucher extends Model {
      * Belegtext ohne die Standardfloskeln (Titel, „stellen wir Ihnen wie folgt
      * in Rechnung", „Vielen Dank für die gute Zusammenarbeit") — übrig bleibt,
      * was der Reseller je Beleg ergänzt hat, beim Endkunden z. B.
-     * „Microsoft Dienste - Klimpel Bäder" oder „(M365 Haus24)".
+     * „Microsoft Dienste - Badhaus Bäder" oder „(M365 Hof24)".
      */
     public function voucherTextHint(): ?string {
         $text = trim((string) $this->voucher_text);

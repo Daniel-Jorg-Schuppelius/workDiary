@@ -61,7 +61,7 @@ final class HolderResolver {
         $customer = $this->matchCustomer($organization, $company);
         if ($foreign !== null && $customer !== null) {
             // Kunde und Endkunde eines Partners heißen gleich: nicht eindeutig — Inbox statt raten
-            // (Pilot 2026-10-27: „Thieme Transporte" direkt und als Endkunde unter LDS).
+            // (Pilot 2026-10-27: „Lastkraft Transporte" direkt und als Endkunde unter Nordlicht).
             return null;
         }
         if ($foreign !== null) {

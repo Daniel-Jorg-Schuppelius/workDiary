@@ -114,7 +114,7 @@ class ResaleHttpReviewTest extends TestCase {
 
     public function test_view_only_user_reads_subpages_but_cannot_change_anything(): void {
         $viewer = $this->viewer();
-        $customer = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
+        $customer = $this->customerWithContact('Badhaus Bäder GmbH', 'c-kl');
         $subscription = $this->subscription(['customer_id' => $customer->id]);
         $period = $subscription->periods()->firstOrFail();
         $line = $this->voucherLine('c-kl', 'RE/2025/0001');
@@ -201,11 +201,11 @@ class ResaleHttpReviewTest extends TestCase {
 
     public function test_edit_dialog_locks_fields_and_update_respects_assignments(): void {
         $admin = $this->orgAdmin();
-        $schub = $this->customerWithContact('Schub- und Schleppreederei', 'c-schub');
-        $maerkische = $this->customerWithContact('Märkische Bunker', 'c-mb');
+        $schub = $this->customerWithContact('Hafen- und Schleppbetrieb', 'c-schub');
+        $nordufer = $this->customerWithContact('Nordufer Tank', 'c-mb');
         $contract = $this->subscription(['customer_id' => $schub->id, 'external_id' => 'ent-9', 'quantity' => 9]);
         $this->actingAs($admin)->post(route('finance.resale.transfer.store', $contract->sqid), [
-            'mode' => 'customer', 'customer_id' => $maerkische->sqid, 'quantity' => 5, 'starts_on' => '2025-01-01',
+            'mode' => 'customer', 'customer_id' => $nordufer->sqid, 'quantity' => 5, 'starts_on' => '2025-01-01',
         ])->assertRedirect(route('finance.resale.show', $contract->sqid));
         $assignment = ResaleSubscription::query()->where('parent_id', $contract->id)->firstOrFail();
 
@@ -217,7 +217,7 @@ class ResaleHttpReviewTest extends TestCase {
             ->assertDontSee('value="' . SubscriptionProvider::DomainReselling->value . '"', false);
 
         // Kind-Menge über dem Rest des Vertrags (9 − 0 andere = 9; 5 sind frei für dieses Kind): 10 → 422.
-        $this->actingAs($admin)->putJson(route('finance.resale.update', $assignment->sqid), $this->payload($assignment, ['holder' => 'customer', 'customer_id' => $maerkische->sqid, 'quantity' => 10]))
+        $this->actingAs($admin)->putJson(route('finance.resale.update', $assignment->sqid), $this->payload($assignment, ['holder' => 'customer', 'customer_id' => $nordufer->sqid, 'quantity' => 10]))
             ->assertStatus(422)->assertJsonValidationErrors(['quantity']);
         // Vertrag unter die Abtretung (5) senken: 4 → 422; 6 geht.
         $this->actingAs($admin)->putJson(route('finance.resale.update', $contract->sqid), $this->payload($contract, ['quantity' => 4]))
@@ -228,7 +228,7 @@ class ResaleHttpReviewTest extends TestCase {
 
         // Gesperrte Felder der Abtretung kommen vom Vertrag, auch wenn der Client anderes schickt.
         $this->actingAs($admin)->put(route('finance.resale.update', $assignment->sqid), $this->payload($assignment, [
-            'holder' => 'customer', 'customer_id' => $maerkische->sqid, 'quantity' => 4, 'provider' => 'manual', 'interval' => 'monthly', 'article' => '',
+            'holder' => 'customer', 'customer_id' => $nordufer->sqid, 'quantity' => 4, 'provider' => 'manual', 'interval' => 'monthly', 'article' => '',
         ]))->assertRedirect(route('finance.resale.show', $assignment->sqid));
         $assignment->refresh();
         $this->assertSame(4, $assignment->quantity);
@@ -258,8 +258,8 @@ class ResaleHttpReviewTest extends TestCase {
 
     public function test_transfer_dialog_tolerates_bad_dates_and_checks_the_whole_term(): void {
         $admin = $this->orgAdmin();
-        $schub = $this->customerWithContact('Schub- und Schleppreederei', 'c-schub');
-        $maerkische = $this->customerWithContact('Märkische Bunker', 'c-mb');
+        $schub = $this->customerWithContact('Hafen- und Schleppbetrieb', 'c-schub');
+        $nordufer = $this->customerWithContact('Nordufer Tank', 'c-mb');
         $contract = $this->subscription(['customer_id' => $schub->id, 'external_id' => 'ent-9', 'quantity' => 9]);
 
         // Ungültige Query-Daten: kein 500, Vorbelegung fällt auf den Vertrag zurück.
@@ -269,33 +269,33 @@ class ResaleHttpReviewTest extends TestCase {
         // Abtretung 01.07.2025 – 31.12.2025 über 5; danach eine ab 01.01.2025 offen über 5: am Starttag frei (9),
         // aber ab Juli nur 4 — die Prüfung gilt für die ganze Laufzeit (B8).
         $this->actingAs($admin)->post(route('finance.resale.transfer.store', $contract->sqid), [
-            'mode' => 'customer', 'customer_id' => $maerkische->sqid, 'quantity' => 5, 'starts_on' => '2025-07-01', 'ends_on' => '2025-12-31',
+            'mode' => 'customer', 'customer_id' => $nordufer->sqid, 'quantity' => 5, 'starts_on' => '2025-07-01', 'ends_on' => '2025-12-31',
         ])->assertRedirect(route('finance.resale.show', $contract->sqid));
         $this->actingAs($admin)->from(route('finance.resale.show', $contract->sqid))->post(route('finance.resale.transfer.store', $contract->sqid), [
-            'mode' => 'customer', 'customer_id' => $maerkische->sqid, 'quantity' => 5, 'starts_on' => '2025-01-01',
+            'mode' => 'customer', 'customer_id' => $nordufer->sqid, 'quantity' => 5, 'starts_on' => '2025-01-01',
         ])->assertSessionHasErrors('quantity');
         $this->actingAs($admin)->post(route('finance.resale.transfer.store', $contract->sqid), [
-            'mode' => 'customer', 'customer_id' => $maerkische->sqid, 'quantity' => 4, 'starts_on' => '2025-01-01',
+            'mode' => 'customer', 'customer_id' => $nordufer->sqid, 'quantity' => 4, 'starts_on' => '2025-01-01',
         ])->assertRedirect(route('finance.resale.show', $contract->sqid));
         // Suffix aus dem höchsten `#n` (B10): #1 gelöscht → die nächste ist #3, nicht #2.
         $this->assertSame(['ent-9#1', 'ent-9#2'], $contract->assignments()->reorder('id')->pluck('external_id')->all());
         $first = $contract->assignments()->where('external_id', 'ent-9#1')->firstOrFail();
         $this->actingAs($admin)->delete(route('finance.resale.destroy', $first->sqid))->assertRedirect(route('finance.resale.subscriptions'));
         $this->actingAs($admin)->post(route('finance.resale.transfer.store', $contract->sqid), [
-            'mode' => 'customer', 'customer_id' => $maerkische->sqid, 'quantity' => 1, 'starts_on' => '2025-07-01', 'ends_on' => '2025-12-31',
+            'mode' => 'customer', 'customer_id' => $nordufer->sqid, 'quantity' => 1, 'starts_on' => '2025-07-01', 'ends_on' => '2025-12-31',
         ])->assertRedirect(route('finance.resale.show', $contract->sqid));
         $this->assertSame(['ent-9#2', 'ent-9#3'], $contract->assignments()->reorder('id')->pluck('external_id')->all());
 
         // Fremdkunde eines anderen Kunden als Halter: abgelehnt.
         $foreign = \App\Models\Customer\ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $schub->id, 'name' => 'Endkunde von Schub']);
         $this->actingAs($admin)->postJson(route('finance.resale.transfer.store', $contract->sqid), [
-            'mode' => 'foreign', 'customer_id' => $maerkische->sqid, 'foreign_customer_id' => $foreign->sqid, 'quantity' => 1, 'starts_on' => '2025-01-01',
+            'mode' => 'foreign', 'customer_id' => $nordufer->sqid, 'foreign_customer_id' => $foreign->sqid, 'quantity' => 1, 'starts_on' => '2025-01-01',
         ])->assertStatus(422)->assertJsonValidationErrors(['foreign_customer_id']);
     }
 
     public function test_delete_is_blocked_by_purchase_entries_and_propose_lock_is_a_warning(): void {
         $admin = $this->orgAdmin();
-        $customer = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
+        $customer = $this->customerWithContact('Badhaus Bäder GmbH', 'c-kl');
         $subscription = $this->subscription(['customer_id' => $customer->id]);
         $period = $subscription->periods()->firstOrFail();
         ResalePurchaseEntry::query()->create([
@@ -352,7 +352,7 @@ class ResaleHttpReviewTest extends TestCase {
 
     public function test_own_holding_never_counts_as_open_and_widget_respects_the_module(): void {
         $admin = $this->orgAdmin();
-        $customer = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
+        $customer = $this->customerWithContact('Badhaus Bäder GmbH', 'c-kl');
         $this->subscription(['customer_id' => $customer->id, 'label' => 'Kundenabo Exchange']);
         $this->subscription(['is_own_holding' => true, 'label' => 'Hausinternes Exchange']);
         $this->assertSame(PeriodStatus::Open, ResaleSubscription::query()->where('label', 'Hausinternes Exchange')->firstOrFail()->periods()->firstOrFail()->status);

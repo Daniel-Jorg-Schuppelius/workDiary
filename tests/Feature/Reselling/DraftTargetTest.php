@@ -76,7 +76,7 @@ class DraftTargetTest extends TestCase {
 
     public function test_local_billing_drafts_locally_with_service_period_and_the_mirror_reports_the_issued_invoice(): void {
         $admin = $this->orgAdmin();
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH', 'billing_mode' => BillingMode::Workdiary]);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH', 'billing_mode' => BillingMode::Workdiary]);
         $subscription = $this->subscription($customer);
 
         $result = app(ResaleInvoiceDraftService::class)->draft($this->organization, $customer, $admin);
@@ -116,7 +116,7 @@ class DraftTargetTest extends TestCase {
     public function test_lexoffice_billing_transfers_via_the_facturation_target_and_the_mirrored_voucher_closes_the_stamp(): void {
         $admin = $this->orgAdmin();
         $this->enablePluginFor($this->organization, LexofficePlugin::ID, ['api_key' => 'lex-key', 'request_interval' => '0']);
-        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'LDS Systems GmbH', 'billing_mode' => BillingMode::Lexoffice]);
+        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Nordlicht Systems GmbH', 'billing_mode' => BillingMode::Lexoffice]);
         ExternalReference::create([
             'organization_id' => $this->organization->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
             'external_id' => '7c6b5a49-3827-4e16-9f05-e4d3c2b1a098', 'referenceable_type' => $partner->getMorphClass(), 'referenceable_id' => $partner->getKey(),
@@ -166,7 +166,7 @@ class DraftTargetTest extends TestCase {
         // Feature 185 (MVP-1408): mit Artikel als `service` + Artikel-ID, damit die fertige Rechnung als Lizenzposition zurückkommt.
         $admin = $this->orgAdmin();
         $this->enablePluginFor($this->organization, LexofficePlugin::ID, ['api_key' => 'lex-key', 'request_interval' => '0']);
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH', 'billing_mode' => BillingMode::Lexoffice]);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH', 'billing_mode' => BillingMode::Lexoffice]);
         ExternalReference::create([
             'organization_id' => $this->organization->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
             'external_id' => '1b2c3d4e-5f60-4718-8a9b-0c1d2e3f4a5b', 'referenceable_type' => $customer->getMorphClass(), 'referenceable_id' => $customer->getKey(),

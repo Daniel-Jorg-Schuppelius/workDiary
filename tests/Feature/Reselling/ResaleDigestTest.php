@@ -71,7 +71,7 @@ class ResaleDigestTest extends TestCase {
 
     public function test_findings_reach_managers_only_with_all_figures(): void {
         Notification::fake();
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH']);
 
         // (a) Zwei fällige Perioden (2025, 2026) mit Verkaufspreis → offener Betrag; die 2025er ist älter als 60 Tage → (e).
         $due = $this->subscription(['customer_id' => $customer->id, 'sale_unit_price' => '247.20']);

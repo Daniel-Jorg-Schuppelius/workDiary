@@ -50,7 +50,7 @@ class LexofficeVoucherLineSyncTest extends TestCase {
         return LexofficeVoucher::create([
             'organization_id' => $this->organization->id,
             'external_id' => $externalId,
-            'contact_external_id' => 'c-lds',
+            'contact_external_id' => 'c-nordlicht',
             'customer_id' => $customerId,
             'voucher_type' => $type,
             'voucher_status' => 'paid',
@@ -75,7 +75,7 @@ class LexofficeVoucherLineSyncTest extends TestCase {
     /** @return array<string, mixed> */
     private function invoicePayload(): array {
         return [
-            'id' => 'inv-1', 'title' => 'Rechnung', 'introduction' => 'Lizenzen für Steuerbüro Kaik', 'remark' => 'Danke', 'address' => ['name' => 'LDS Systems GmbH'],
+            'id' => 'inv-1', 'title' => 'Rechnung', 'introduction' => 'Lizenzen für Steuerbüro Zahlenwerk', 'remark' => 'Danke', 'address' => ['name' => 'Nordlicht Systems GmbH'],
             'taxConditions' => ['taxType' => 'net'], 'totalPrice' => ['currency' => 'EUR'],
             'shippingConditions' => ['shippingDate' => '2025-08-05T00:00:00.000+02:00', 'shippingEndDate' => '2026-08-04T00:00:00.000+02:00', 'shippingType' => 'serviceperiod'],
             'lineItems' => [
@@ -157,7 +157,7 @@ class LexofficeVoucherLineSyncTest extends TestCase {
         ]);
         $invoice = $this->voucher('inv-1', 'RE/2025/0001', '2025-08-06');
         $gone = $this->voucher('inv-gone', 'RE/2025/0002', '2025-08-07');
-        $booking = $this->voucher('bk-1', '10021-01-2025', '2025-01-05', 'salesinvoice');
+        $booking = $this->voucher('bk-1', '90021-01-2025', '2025-01-05', 'salesinvoice');
         $fake = $this->fakeInvoices();
 
         $sync = (new LexofficeVoucherLineSync($this->organization->id));
@@ -166,8 +166,8 @@ class LexofficeVoucherLineSyncTest extends TestCase {
 
         $invoice->refresh();
         $this->assertNotNull($invoice->lines_synced_at);
-        $this->assertSame('Rechnung Lizenzen für Steuerbüro Kaik Danke', $invoice->voucher_text);
-        $this->assertSame('LDS Systems GmbH', $invoice->recipient_name);
+        $this->assertSame('Rechnung Lizenzen für Steuerbüro Zahlenwerk Danke', $invoice->voucher_text);
+        $this->assertSame('Nordlicht Systems GmbH', $invoice->recipient_name);
         $this->assertSame('05.08.2025 – 04.08.2026', $invoice->servicePeriodLabel());
         $this->assertSame(12, $invoice->serviceMonths());
         $lines = LexofficeVoucherLine::query()->where('voucher_id', $invoice->id)->orderBy('position')->get();
@@ -346,7 +346,7 @@ class LexofficeVoucherLineSyncTest extends TestCase {
 
     public function test_drafts_are_skipped_and_changed_vouchers_reload_their_lines(): void {
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
-        $this->linkContact('c-lds', $customer);
+        $this->linkContact('c-nordlicht', $customer);
         $item = ['id' => 'inv-1', 'voucherType' => 'invoice', 'voucherStatus' => 'draft', 'voucherNumber' => 'RE/2025/0001', 'voucherDate' => '2025-08-06', 'totalAmount' => 294.17, 'currency' => 'EUR', 'updatedDate' => '2025-08-06T10:00:00.000+02:00'];
         $finalized = ['voucherStatus' => 'open', 'updatedDate' => '2025-08-07T09:00:00.000+02:00'] + $item;
         FakePluginHttp::fake([
@@ -381,7 +381,7 @@ class LexofficeVoucherLineSyncTest extends TestCase {
     public function test_sync_vouchers_command_runs_retainer_step_even_if_voucher_sync_fails(): void {
         $this->enablePluginFor($this->organization, LexofficePlugin::ID, ['api_key' => 'lex-key', 'request_interval' => '0']);
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
-        $this->linkContact('c-lds', $customer);
+        $this->linkContact('c-nordlicht', $customer);
         FakePluginHttp::fake(['https://api.lexware.io/v1/voucherlist*' => FakePluginHttp::response(['message' => 'down'], 503)]);
 
         $this->artisan('lexoffice:sync-vouchers', ['--organization' => (string) $this->organization->id])

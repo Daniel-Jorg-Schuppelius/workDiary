@@ -23,14 +23,14 @@ class NameTokenMatcherTest extends TestCase {
     public static function pairs(): array {
         return [
             'legal form ignored' => ['Auerswald GmbH & Co. KG', 'Auerswald', true],
-            'word order ignored' => ['Fliesen Urban', 'Urban Fliesen', true],
-            'ampersand vs und' => ['Meyer&Simson Elektroinstallationen GmbH', 'Meyer und Simson', true],
-            'association suffix' => ['Kindheit', 'Kindheit e.V.', true],
-            'surname inside long name' => ['Frank Hüpperling und Stephan Vieweger Architekten Partnerschaftsgesellschaft mbB', 'Hüpperling', true],
-            'hyphenated' => ['Party Service Otte GmbH', 'Party-Service-Otte GmbH', true],
-            'different firm same industry' => ['VTM Versorgungstechnik GmbH', 'Zain Versorgungstechnik', false],
-            'short token only' => ['GSR Berlin GmbH', 'GSR Gebäude-Service GmbH', false],
-            'unrelated' => ['Weber Marking Systems', 'TROTEC Leipzig/Weber M.S.', false],
+            'word order ignored' => ['Fliesen Wendt', 'Wendt Fliesen', true],
+            'ampersand vs und' => ['Berg&Tal Elektroinstallationen GmbH', 'Berg und Tal', true],
+            'association suffix' => ['Jugendhilfe', 'Jugendhilfe e.V.', true],
+            'surname inside long name' => ['Frank Ahorn und Stephan Birke Architekten Partnerschaftsgesellschaft mbB', 'Ahorn', true],
+            'hyphenated' => ['Party Service Wiese GmbH', 'Party-Service-Wiese GmbH', true],
+            'different firm same industry' => ['HTB Versorgungstechnik GmbH', 'Quell Versorgungstechnik', false],
+            'short token only' => ['HGS Berlin GmbH', 'HGS Gebäude-Service GmbH', false],
+            'unrelated' => ['Falke Marking Systems', 'LASERTEC Leipzig/Falke M.S.', false],
             'generic only' => ['Service GmbH', 'Haus Service', false],
         ];
     }
@@ -43,6 +43,6 @@ class NameTokenMatcherTest extends TestCase {
 
     public function test_significant_tokens_drop_legal_forms_and_fillers(): void {
         $this->assertSame(['auerswald'], NameTokenMatcher::significantTokens('Auerswald GmbH & Co. KG'));
-        $this->assertSame(['meyer', 'simson', 'elektroinstallationen'], NameTokenMatcher::significantTokens('Meyer&Simson Elektroinstallationen GmbH'));
+        $this->assertSame(['meyer', 'simson', 'elektroinstallationen'], NameTokenMatcher::significantTokens('Berg&Tal Elektroinstallationen GmbH'));
     }
 }

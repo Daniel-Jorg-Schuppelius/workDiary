@@ -132,7 +132,7 @@ class IncomingInvoiceRules {
             ->all();
     }
 
-    /** Bedingungen in Worten, z. B. „Verkäufer ist ckonverter.de und Betreff enthält Test“. */
+    /** Bedingungen in Worten, z. B. „Verkäufer ist beispiel-konverter.de und Betreff enthält Test“. */
     public function describeConditions(AutomationRule $rule): string {
         $conditions = (array) ($rule->conditions ?: []);
         $groups = [];

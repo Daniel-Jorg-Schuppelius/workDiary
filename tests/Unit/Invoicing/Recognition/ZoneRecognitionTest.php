@@ -54,7 +54,7 @@ final class ZoneRecognitionTest extends TestCase {
     public function test_zone_text_is_read_in_reading_order_and_parsed_by_field_type(): void {
         $boxes = [
             new WordBox(1, 0.70, 0.10, 0.12, 0.02, 'Rechnungs-Nr:'),
-            new WordBox(1, 0.84, 0.10, 0.12, 0.02, 'AR20250831AD012409'),
+            new WordBox(1, 0.84, 0.10, 0.12, 0.02, 'AR20250831AD000815'),
             new WordBox(1, 0.70, 0.13, 0.08, 0.02, 'Starnberg,'),
             new WordBox(1, 0.80, 0.13, 0.08, 0.02, '31.08.2025'),
             new WordBox(1, 0.70, 0.80, 0.08, 0.02, '1.190,00'),
@@ -63,8 +63,8 @@ final class ZoneRecognitionTest extends TestCase {
         ];
         $extractor = new ZoneExtractor;
 
-        self::assertSame('Rechnungs-Nr: AR20250831AD012409', $extractor->rawText(['page' => 1, 'x' => 0.65, 'y' => 0.09, 'w' => 0.35, 'h' => 0.04], $boxes));
-        self::assertSame('AR20250831AD012409', $extractor->extract(['field' => 'invoice_number', 'page' => 1, 'x' => 0.83, 'y' => 0.09, 'w' => 0.17, 'h' => 0.04], $boxes));
+        self::assertSame('Rechnungs-Nr: AR20250831AD000815', $extractor->rawText(['page' => 1, 'x' => 0.65, 'y' => 0.09, 'w' => 0.35, 'h' => 0.04], $boxes));
+        self::assertSame('AR20250831AD000815', $extractor->extract(['field' => 'invoice_number', 'page' => 1, 'x' => 0.83, 'y' => 0.09, 'w' => 0.17, 'h' => 0.04], $boxes));
         self::assertSame('2025-08-31', $extractor->extract(['field' => 'issue_date', 'page' => 1, 'x' => 0.65, 'y' => 0.12, 'w' => 0.35, 'h' => 0.04], $boxes));
         self::assertSame('1190.00', $extractor->extract(['field' => 'amount_gross', 'page' => 1, 'x' => 0.65, 'y' => 0.79, 'w' => 0.2, 'h' => 0.04], $boxes));
         self::assertNull($extractor->extract(['field' => 'amount_gross', 'page' => 2, 'x' => 0.65, 'y' => 0.09, 'w' => 0.35, 'h' => 0.04], $boxes), 'Text ohne Betrag ergibt keinen Wert');

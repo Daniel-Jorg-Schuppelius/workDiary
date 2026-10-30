@@ -53,12 +53,12 @@ final class CustomerPortalSubscriptionsTest extends TestCase {
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->travelTo('2026-09-10');
 
-        $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Schub- und Schleppreederei']);
+        $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Hafen- und Schleppbetrieb']);
         $this->allowPortal($this->customer);
         $this->portalUser = User::factory()
             ->kunde((int) $this->customer->id, (int) $this->organization->id)
             ->create(['organization_id' => $this->organization->id]);
-        $this->endCustomer = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $this->customer->id, 'name' => 'Märkische Bunker']);
+        $this->endCustomer = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $this->customer->id, 'name' => 'Nordufer Tank']);
         $other = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Geheimkunde GmbH']);
 
         $this->own = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $this->customer->id, 'quantity' => 5, 'starts_on' => '2026-01-01']);
@@ -95,7 +95,7 @@ final class CustomerPortalSubscriptionsTest extends TestCase {
         $page->assertSee(route('customer.subscriptions.index'), false)
             ->assertSee('Microsoft 365 Business Premium')
             ->assertSee('Exchange Online (Plan 1)')
-            ->assertSee('Märkische Bunker')
+            ->assertSee('Nordufer Tank')
             ->assertSee(__('resale_portal.holder.end_customer'))
             ->assertSee('Kürzlich beendetes Postfach')
             ->assertSee('Gekündigte Domain')
@@ -118,7 +118,7 @@ final class CustomerPortalSubscriptionsTest extends TestCase {
 
         $page = $this->actingAs($this->portalUser, 'customer')->get(route('customer.subscriptions.show', $this->viaEndCustomer))->assertOk();
         $page->assertSee('Exchange Online (Plan 1)')
-            ->assertSee('Märkische Bunker')
+            ->assertSee('Nordufer Tank')
             ->assertSee('18.10.2025 – 17.10.2026')
             ->assertSee('18.10.2026 – 17.10.2027')
             ->assertSee(__('resale_portal.period_status.billed'))
