@@ -1531,6 +1531,7 @@ return [
         'layout' => 'Diseño',
         'lead_auditor_user_id' => 'Auditor líder',
         'lead_days' => 'Antelación (días)',
+        'domain_price_class' => 'Clase de precios para dominios facturados directamente',
         'lead_time_hours' => 'Antelación (h)',
         'lead_user_id' => 'Jefe de equipo',
         'leader_user_id' => 'Responsable',

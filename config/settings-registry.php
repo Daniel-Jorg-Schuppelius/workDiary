@@ -255,6 +255,8 @@ return [
     'resale.auto_local_drafts' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false, 'affects' => ['resale.draft_local']],
     'resale.last_proposal_run_at' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|string'],
     'resale.auto_local_drafts_lead_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:0|max:90', 'fallback' => 0, 'affects' => ['resale.draft_local']],
+    // Preisstaffel (Benutzerklasse des Domainportals), deren Preise für direkt berechnete Domains gelten (Feature 185, 2026-10-30); Subuser-Domains nehmen die Klasse des Subusers.
+    'resale.domain_direct_price_class' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|string|max:64', 'fallback' => null],
 
     // =====================================================================
     // Org-Formular-Keys (067-P3b): jede hier org-scoped registrierte

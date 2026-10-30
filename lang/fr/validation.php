@@ -1531,6 +1531,7 @@ return [
         'layout' => 'Mise en page',
         'lead_auditor_user_id' => 'Auditeur principal',
         'lead_days' => 'Anticipation (jours)',
+        'domain_price_class' => 'Classe de prix pour les domaines facturés directement',
         'lead_time_hours' => 'Délai de prévenance (h)',
         'lead_user_id' => 'Chef d’équipe',
         'leader_user_id' => 'Responsable',

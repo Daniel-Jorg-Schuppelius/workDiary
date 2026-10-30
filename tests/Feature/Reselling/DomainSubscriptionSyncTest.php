@@ -14,10 +14,12 @@ namespace Tests\Feature\Reselling;
 
 use App\Enums\Reselling\{SubscriptionKind, SubscriptionProvider, SubscriptionStatus};
 use App\Models\Customer\{Customer, ForeignCustomer};
-use App\Models\Domain\{DomainProjection, DomainProviderConnection};
+use App\Models\Domain\{DomainProjection, DomainProviderConnection, DomainResellerAccount};
 use App\Models\Reselling\{ResalePriceEntry, ResaleSubscription};
 use App\Plugins\Lexoffice\Models\LexofficeArticle;
 use App\Services\Reselling\Register\DomainSubscriptionSync;
+use App\Settings\SettingScope;
+use App\Support\Setting;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -181,7 +183,7 @@ class DomainSubscriptionSyncTest extends TestCase {
     }
 
     public function test_sale_price_and_article_come_from_the_tld_catalog_and_the_lexoffice_article(): void {
-        // Review 2026-09-10 (A6): Verkaufspreis je TLD aus dem Katalog (UVP), Artikelbezug „Domain .de"; manuelle Pflege bleibt.
+        // Review 2026-09-10 (A6): Verkaufspreis je TLD aus dem Katalog (UVP), Artikelbezug „Domain .de"; seit 2026-10-30 folgt der Preis dem Katalog, gepflegt bleibt nur, was keine Katalogzeile hat.
         $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
         ResalePriceEntry::query()->create([
@@ -241,7 +243,7 @@ class DomainSubscriptionSyncTest extends TestCase {
         $this->assertNull($net->sale_unit_price);
 
         $manual = ResaleSubscription::query()->where('external_id', 'manuell.de')->firstOrFail();
-        $this->assertSame('99.0000', $manual->sale_unit_price?->getAmount(), 'manueller Verkaufspreis bleibt');
+        $this->assertSame('15.0000', $manual->sale_unit_price?->getAmount(), 'der Preis folgt dem Katalog (Entscheidung 2026-10-30), auch über einen gepflegten Wert');
 
         // Zweiter Lauf: unverändert, Preise bleiben.
         $again = app(DomainSubscriptionSync::class)->sync($this->organization);
@@ -336,5 +338,37 @@ class DomainSubscriptionSyncTest extends TestCase {
         $this->assertSame($partner->id, $subscription->billedTo()?->id);
         $this->assertSame(SubscriptionStatus::Active, $subscription->status);
         $this->assertSame(4, $subscription->periods()->count(), 'Perioden bleiben, kein Neuanlegen durch den Halterwechsel');
+    }
+
+    public function test_domain_price_follows_the_price_class_of_the_subuser_or_the_direct_class(): void {
+        // Entscheidung 2026-10-30: Benutzerklassen des Portals sind Preisstaffeln — Subuser-Domains nehmen die Klasse
+        // des Subusers, Domains im eigenen Konto die für direkte Kunden benannte, sonst die Zeile ohne Staffel.
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $owner = DomainResellerAccount::factory()->create(['organization_id' => $this->organization->id, 'connection_id' => $connection->id, 'external_user' => 'konto', 'depth' => 0, 'user_class' => 'GOLD', 'customer_id' => null]);
+        $sub = DomainResellerAccount::factory()->create(['organization_id' => $this->organization->id, 'connection_id' => $connection->id, 'external_user' => 'sub-standard', 'depth' => 1, 'user_class' => 'STANDARD', 'customer_id' => $customer->id]);
+        foreach ([['STANDARD', '8.10'], ['RESELLER', '6.30'], ['', '15.00']] as [$class, $list]) {
+            ResalePriceEntry::query()->create([
+                'organization_id' => $this->organization->id, 'provider' => SubscriptionProvider::DomainReselling, 'product' => '.de', 'price_class' => $class, 'term_months' => 12, 'interval' => 'yearly',
+                'valid_from' => '2026-01-01', 'purchase_unit_price' => '4.50', 'list_unit_price' => $list, 'currency' => 'EUR',
+            ]);
+        }
+        $this->projection($connection, 'sub-domain.de', ['customer_id' => $customer->id, 'reseller_account_id' => $sub->id, 'renewal_price' => null]);
+        $this->projection($connection, 'direkt.de', ['customer_id' => $customer->id, 'reseller_account_id' => $owner->id]);
+
+        app(DomainSubscriptionSync::class)->sync($this->organization);
+
+        $subDomain = ResaleSubscription::query()->where('external_id', 'sub-domain.de')->firstOrFail();
+        $this->assertSame('8.1000', $subDomain->sale_unit_price?->getAmount(), 'Klasse des Subusers');
+        $this->assertSame('4.5000', $subDomain->purchase_unit_price?->getAmount(), 'Einkauf aus dem Katalog, wenn die Projektion keinen Preis nennt');
+        $direct = ResaleSubscription::query()->where('external_id', 'direkt.de')->firstOrFail();
+        $this->assertSame('15.0000', $direct->sale_unit_price?->getAmount(), 'ohne benannte Staffel die Zeile ohne Staffel');
+
+        Setting::set(DomainSubscriptionSync::SETTING_DIRECT_PRICE_CLASS, 'reseller', SettingScope::Organization, $this->organization, null);
+        $this->assertSame('RESELLER', DomainSubscriptionSync::directPriceClass($this->organization), 'Klasse groß geschrieben');
+        app(DomainSubscriptionSync::class)->sync($this->organization);
+        $this->assertSame('6.3000', $direct->fresh()?->sale_unit_price?->getAmount(), 'benannte Staffel für direkte Kunden, der Preis folgt dem Katalog');
+        $this->assertSame('8.1000', $subDomain->fresh()?->sale_unit_price?->getAmount());
+        $this->assertSame(['RESELLER', 'STANDARD'], DomainSubscriptionSync::knownPriceClasses($this->organization));
     }
 }

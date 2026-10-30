@@ -258,6 +258,14 @@ return [
             'criticality' => 'integration',
             'expected_runtime_minutes' => 5,
         ],
+        // Preisstaffeln (Feature 185, 2026-10-30): Benutzerklassen des Portals in den Preiskatalog, vor resale:sync-domains.
+        'domain.sync_prices' => [
+            'command' => 'domain:sync-prices',
+            'cadence' => ['type' => 'dailyAt', 'time' => '04:50'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 3,
+        ],
         'domain.events' => [
             'command' => 'domain:events',
             'cadence' => ['type' => 'everyThirtyMinutes'],

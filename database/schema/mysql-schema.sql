@@ -21790,6 +21790,7 @@ CREATE TABLE `resale_price_catalog` (
   `import_id` bigint(20) unsigned DEFAULT NULL,
   `provider` varchar(32) NOT NULL,
   `product` varchar(190) NOT NULL,
+  `price_class` varchar(64) NOT NULL DEFAULT '',
   `term_months` smallint(5) unsigned NOT NULL DEFAULT 12,
   `interval` varchar(8) NOT NULL DEFAULT 'yearly',
   `valid_from` date NOT NULL,
@@ -21800,7 +21801,7 @@ CREATE TABLE `resale_price_catalog` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `resale_prices_uq` (`organization_id`,`provider`,`product`,`term_months`,`interval`,`valid_from`),
+  UNIQUE KEY `resale_prices_class_uq` (`organization_id`,`provider`,`product`,`price_class`,`term_months`,`interval`,`valid_from`),
   KEY `resale_price_catalog_import_id_foreign` (`import_id`),
   CONSTRAINT `resale_price_catalog_import_id_foreign` FOREIGN KEY (`import_id`) REFERENCES `resale_imports` (`id`) ON DELETE SET NULL,
   CONSTRAINT `resale_price_catalog_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
@@ -28444,3 +28445,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1041,'2027_04_01_1
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1042,'2027_04_01_200000_add_observed_properties_to_domain_provider_connections',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1043,'2027_04_01_210000_add_invoice_number_to_domain_accounting_entries',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1044,'2027_04_01_220000_add_provider_details_to_domain_tables',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1045,'2027_04_01_230000_add_price_class_to_resale_price_catalog',2);

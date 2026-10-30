@@ -21,7 +21,7 @@ use App\Models\Customer\Customer;
 use App\Models\Reselling\{ResaleArticleClassification, ResalePeriod, ResaleSubscription};
 use App\Services\Platform\Catalog\{ArticleCatalog, CatalogArticle};
 use App\Services\Reselling\Plan\RecurringPlans;
-use App\Services\Reselling\Register\{LicenseArticleClassifier, ResaleInvoiceDraftService, ResaleLocalDraftRun, ResaleMarginReport, ResalePriceCheck, ResaleRenewalReport, ResaleUnbilledReport};
+use App\Services\Reselling\Register\{DomainSubscriptionSync, LicenseArticleClassifier, ResaleInvoiceDraftService, ResaleLocalDraftRun, ResaleMarginReport, ResalePriceCheck, ResaleRenewalReport, ResaleUnbilledReport};
 use App\Settings\SettingScope;
 use App\Support\{CsvExport, Setting, XlsxExport};
 use App\Support\ErrorText;
@@ -231,6 +231,8 @@ class ResaleReportController extends Controller {
             'external' => $mode->isExternal(),
             'autoDrafts' => $autoDrafts->enabledFor($organization),
             'autoDraftLeadDays' => $autoDrafts->leadDaysFor($organization),
+            'domainPriceClass' => DomainSubscriptionSync::directPriceClass($organization),
+            'domainPriceClasses' => DomainSubscriptionSync::knownPriceClasses($organization),
         ]);
     }
 
@@ -244,6 +246,7 @@ class ResaleReportController extends Controller {
         $userId = $request->user()?->id;
         Setting::set(ResaleLocalDraftRun::SETTING_ENABLED, $request->enabled(), SettingScope::Organization, $organization, $userId);
         Setting::set(ResaleLocalDraftRun::SETTING_LEAD_DAYS, $request->leadDays(), SettingScope::Organization, $organization, $userId);
+        Setting::set(DomainSubscriptionSync::SETTING_DIRECT_PRICE_CLASS, $request->domainPriceClass(), SettingScope::Organization, $organization, $userId);
 
         return redirect()->toList('finance.resale.index')->with('success', __($request->enabled() ? 'resale.auto_draft.flash.enabled' : 'resale.auto_draft.flash.disabled', ['days' => $request->leadDays()]));
     }

@@ -73,7 +73,7 @@ class DomainContractCommand extends Command {
      */
     public const IGNORED = [
         'count', 'first', 'last', 'limit', 'total', 'column', 'sum', 'sumprice', 'sumvatprice', 'openingbalance', 'openingbalanceprice', 'openingbalancevatprice', 'eventscount', 'eventstotal',
-        'userpassword', 'domainauth', 'contactauth', 'auth', 'userindex', 'userupdateddate', 'contactupdatedby', 'contactcreatedby',
+        'userpassword', 'twofactorsecret', 'domainauth', 'contactauth', 'auth', 'userindex', 'userupdateddate', 'contactupdatedby', 'contactcreatedby',
     ];
 
     public function handle(): int {

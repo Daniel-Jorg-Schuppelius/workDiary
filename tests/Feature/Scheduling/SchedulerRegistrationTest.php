@@ -49,6 +49,7 @@ class SchedulerRegistrationTest extends TestCase {
         // zyklische Inventur — liefen vorher nie automatisch.
         'mail:poll' => ['*/5 * * * *', true, true],
         'domain:sync' => ['40 4 * * *', true, true],
+        'domain:sync-prices' => ['50 4 * * *', true, true],
         'domain:events' => ['*/30 * * * *', true, true],
         'inventory:cycle-counts' => ['50 5 * * 1', true, true],
         'inventory:expiring-lots' => ['10 6 * * *', true, true],

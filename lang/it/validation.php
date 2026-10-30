@@ -1531,6 +1531,7 @@ return [
         'layout' => 'Layout',
         'lead_auditor_user_id' => 'Lead auditor',
         'lead_days' => 'Anticipo (giorni)',
+        'domain_price_class' => 'Classe di prezzo per i domini fatturati direttamente',
         'lead_time_hours' => 'Preavviso (h)',
         'lead_user_id' => 'Capo team',
         'leader_user_id' => 'Responsabile',

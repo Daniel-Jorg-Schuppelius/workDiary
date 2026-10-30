@@ -21,7 +21,7 @@ use App\Models\Invoicing\Invoice;
 use App\Models\Reselling\{ResalePeriodLink, ResaleSubscription};
 use App\Notifications\Finance\ResalePeriodsDigestNotification;
 use App\Plugins\Lexoffice\Models\LexofficeArticle;
-use App\Services\Reselling\Register\{PeriodPlanner, ResaleLocalDraftRun};
+use App\Services\Reselling\Register\{DomainSubscriptionSync, PeriodPlanner, ResaleLocalDraftRun};
 use App\Settings\SettingScope;
 use App\Support\{MorphMap, Setting};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -239,7 +239,7 @@ class ResaleLocalDraftRunTest extends TestCase {
             ->assertSee('name="auto_local_drafts"', false);
         $this->actingAs($admin)->get(route('finance.resale.index'))->assertOk()->assertSee(route('finance.resale.settings.billing'));
 
-        $this->actingAs($admin)->post(route('finance.resale.auto-draft.store'), ['auto_local_drafts' => '1', 'lead_days' => '7'])
+        $this->actingAs($admin)->post(route('finance.resale.auto-draft.store'), ['auto_local_drafts' => '1', 'lead_days' => '7', 'domain_price_class' => 'kunden'])
             ->assertRedirect(route('finance.resale.index'))
             ->assertSessionHas('success');
         $organization = $this->organization->fresh();
@@ -247,6 +247,9 @@ class ResaleLocalDraftRunTest extends TestCase {
         $run = app(ResaleLocalDraftRun::class);
         $this->assertTrue($run->enabledFor($organization));
         $this->assertSame(7, $run->leadDaysFor($organization));
+        $this->assertSame('KUNDEN', DomainSubscriptionSync::directPriceClass($organization), 'Preisstaffel für direkte Kunden, groß geschrieben (Feature 185, 2026-10-30)');
+        $this->actingAs($admin)->post(route('finance.resale.auto-draft.store'), ['auto_local_drafts' => '1', 'lead_days' => '7', 'domain_price_class' => 'kein name!'])
+            ->assertSessionHasErrors(['domain_price_class']);
 
         // Aus + außerhalb der Grenzen → Validierungsfehler, nichts gespeichert.
         $this->actingAs($admin)->post(route('finance.resale.auto-draft.store'), ['auto_local_drafts' => '0', 'lead_days' => '400'])
@@ -261,7 +264,8 @@ class ResaleLocalDraftRunTest extends TestCase {
         $this->actingAs($admin->refresh()->unsetRelation('organization'))->get(route('finance.resale.settings.billing'))
             ->assertOk()
             ->assertSee(__('resale.auto_draft.external_hint', ['program' => 'Lexoffice']))
-            ->assertDontSee('name="auto_local_drafts"', false);
+            ->assertDontSee('name="auto_local_drafts"', false)
+            ->assertSee('name="domain_price_class"', false);
         $this->organization->forceFill(['settings' => array_merge((array) $this->organization->settings, ['billing_mode' => 'workdiary'])])->save();
         $organization = $this->organization->fresh();
         $this->assertNotNull($organization);

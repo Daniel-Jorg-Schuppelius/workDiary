@@ -18,6 +18,7 @@ use App\Models\Domain\DomainProjection;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResalePeriod, ResalePriceEntry, ResaleSubscription};
 use App\Services\Platform\Catalog\CatalogArticle;
+use App\Settings\SettingsRegistry;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper, StringHelper};
 
@@ -34,6 +35,39 @@ use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper, StringHelper};
 final class DomainSubscriptionSync {
     /** Präfix in `resale_subscriptions.sync_status`: zuletzt aus der Projektion gespiegelter Halter. */
     public const MIRRORED_HOLDER_PREFIX = 'p:';
+
+    /**
+     * Preisstaffel (Benutzerklasse des Domainportals) für Domains im eigenen Konto, die der Inhaber selbst
+     * berechnet (Entscheidung 2026-10-30: eigene Klasse im Portal, hier nur benannt); Subuser-Domains nehmen die
+     * Klasse ihres Subusers.
+     */
+    public const SETTING_DIRECT_PRICE_CLASS = 'resale.domain_direct_price_class';
+
+    public static function directPriceClass(Organization $organization): ?string {
+        $value = app(SettingsRegistry::class)->effective(self::SETTING_DIRECT_PRICE_CLASS, $organization)->value;
+        $value = is_string($value) ? strtoupper(trim($value)) : '';
+
+        return $value === '' ? null : $value;
+    }
+
+    /**
+     * Preisstaffeln, die der Katalog für den Domainanbieter führt (Auswahlhilfe).
+     *
+     * @return list<string>
+     */
+    public static function knownPriceClasses(Organization $organization): array {
+        $classes = ResalePriceEntry::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('provider', SubscriptionProvider::DomainReselling->value)
+            ->where('price_class', '!=', '')
+            ->whereNull('valid_to')
+            ->distinct()
+            ->orderBy('price_class')
+            ->pluck('price_class')
+            ->all();
+
+        return array_values(array_map(static fn ($class): string => (string) $class, $classes));
+    }
 
     /**
      * Spielraum zwischen Registrierung und erstem Jahrestag des Laufzeitendes: DENIC-Drift
@@ -123,13 +157,20 @@ final class DomainSubscriptionSync {
         $reference ??= ResalePeriod::today();
         $result = ['domains' => 0, 'created' => 0, 'updated' => 0, 'unchanged' => 0, 'ended' => 0, 'skipped_gone' => false];
         $seen = [];
-        $catalog = $this->catalog($organizationId, $reference);
+        $organizationModel = $organization instanceof Organization ? $organization : Organization::query()->withoutGlobalScopes()->find($organizationId);
+        $directClass = $organizationModel !== null ? self::directPriceClass($organizationModel) : null;
         $articles = $this->candidates->for((int) $organizationId);
 
         $projections = DomainProjection::query()->withoutGlobalScopes()
             ->where('organization_id', $organizationId)
+            ->with('resellerAccount:id,user_class,depth')
             ->orderBy('external_domain')
             ->get();
+        $classes = ['', $directClass];
+        foreach ($projections as $projection) {
+            $classes[] = self::priceClassFor($projection, $directClass);
+        }
+        $catalog = $this->catalog($organizationId, $reference, array_values(array_unique(array_filter($classes, static fn (?string $c): bool => $c !== null))));
         foreach ($projections as $projection) {
             $result['domains']++;
             $externalId = mb_strtolower($projection->external_domain);
@@ -188,7 +229,7 @@ final class DomainSubscriptionSync {
                 $subscription->is_own_holding = (bool) $projection->is_own_holding;
                 $subscription->sync_status = self::MIRRORED_HOLDER_PREFIX . $projectionHolder;
             }
-            $this->applyPricing($subscription, $externalId, $catalog, $articles);
+            $this->applyPricing($subscription, $externalId, $catalog, $articles, self::priceClassFor($projection, $directClass));
             $subscription->last_seen_at = CarbonImmutable::now();
             $subscription->save();
             $this->planner->sync($subscription, $reference);
@@ -231,14 +272,16 @@ final class DomainSubscriptionSync {
     }
 
     /**
-     * Verkaufspreis und Artikel je TLD — nur, solange im Register nichts
-     * gepflegt ist. Katalogpreis = UVP der Zeile (sonst ihr Katalogpreis),
-     * danach der Preis des Katalogartikels (Monatspreis × 12).
+     * Verkaufspreis und Artikel je TLD. Der Preis folgt dem Katalog (Entscheidung 2026-10-30):
+     * zuerst die Zeile der Preisstaffel des Abos (Klasse des Subusers bzw. die für direkte
+     * Kunden benannte), sonst eine Zeile ohne Staffel (Importliste), dort UVP vor Katalogpreis;
+     * ohne Katalogzeile bleibt ein gepflegter Preis stehen, sonst gilt der Katalogartikel
+     * (Monatspreis × 12). Fehlt dem Abo der Einkauf, kommt er aus der Katalogzeile.
      *
-     * @param  array<string, ResalePriceEntry>  $catalog  TLD → gültige Katalogzeile
+     * @param  array<string, array<string, ResalePriceEntry>>  $catalog  Staffel → TLD-Schlüssel → gültige Katalogzeile
      * @param  list<CatalogArticle>  $articles  {@see ResaleArticleCandidates}
      */
-    private function applyPricing(ResaleSubscription $subscription, string $domain, array $catalog, array $articles): void {
+    private function applyPricing(ResaleSubscription $subscription, string $domain, array $catalog, array $articles, ?string $priceClass): void {
         $tlds = self::tldCandidates($domain);
         if ($tlds === []) {
             return;
@@ -249,16 +292,17 @@ final class DomainSubscriptionSync {
                 $subscription->article_ref = $article->key;
             }
         }
-        if ($subscription->sale_unit_price !== null) {
+        $entry = self::catalogEntry($catalog, $priceClass, $tlds) ?? self::catalogEntry($catalog, '', $tlds);
+        if ($entry !== null) {
+            $subscription->sale_unit_price = ($entry->list_unit_price ?? $entry->purchase_unit_price)->withScale(4);
+            if ($subscription->purchase_unit_price === null) {
+                $subscription->purchase_unit_price = $entry->purchase_unit_price->withScale(4);
+            }
+
             return;
         }
-        foreach ($tlds as $tld) {
-            $entry = $catalog[$tld] ?? null;
-            if ($entry !== null) {
-                $subscription->sale_unit_price = ($entry->list_unit_price ?? $entry->purchase_unit_price)->withScale(4);
-
-                return;
-            }
+        if ($subscription->sale_unit_price !== null) {
+            return;
         }
         $article = $subscription->catalogArticle();
         $price = $article?->netPrice;
@@ -268,20 +312,54 @@ final class DomainSubscriptionSync {
     }
 
     /**
-     * Katalogzeilen des Domain-Anbieters am Stichtag, Produkt = TLD (`.de`, `.co.uk`).
-     *
-     * @return array<string, ResalePriceEntry>
+     * Preisstaffel eines Abos: Klasse des Subusers, im eigenen Konto die für direkte Kunden benannte.
      */
-    private function catalog(int $organizationId, CarbonImmutable $reference): array {
+    public static function priceClassFor(DomainProjection $projection, ?string $directClass): ?string {
+        $reseller = $projection->resellerAccount;
+        if ($reseller !== null && (int) $reseller->depth > 0) {
+            $class = strtoupper(trim((string) $reseller->user_class));
+
+            return $class === '' ? $directClass : $class;
+        }
+
+        return $directClass;
+    }
+
+    /**
+     * Katalogzeile der Staffel zum längsten passenden TLD-Suffix (`.co.uk` vor `.uk`).
+     *
+     * @param  array<string, array<string, ResalePriceEntry>>  $catalog
+     * @param  list<string>  $tlds
+     */
+    private static function catalogEntry(array $catalog, ?string $priceClass, array $tlds): ?ResalePriceEntry {
+        $byTld = $catalog[$priceClass ?? ''] ?? [];
+        foreach ($tlds as $tld) {
+            $entry = $byTld[ResalePriceEntry::domainProductKey($tld)] ?? null;
+            if ($entry !== null) {
+                return $entry;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Katalogzeilen des Domain-Anbieters am Stichtag je Staffel, Produkt = TLD (`.de`, `.co.uk`, `.couk`).
+     *
+     * @param  list<string>  $classes  Staffeln ('' = ohne Staffel)
+     * @return array<string, array<string, ResalePriceEntry>>
+     */
+    private function catalog(int $organizationId, CarbonImmutable $reference, array $classes): array {
         $catalog = [];
         $entries = ResalePriceEntry::query()->withoutGlobalScopes()
             ->where('organization_id', $organizationId)
             ->where('provider', SubscriptionProvider::DomainReselling->value)
+            ->whereIn('price_class', $classes)
             ->validOn($reference)
             ->orderByDesc('valid_from')
             ->get();
         foreach ($entries as $entry) {
-            $catalog[self::normalizeTld($entry->product)] ??= $entry;
+            $catalog[(string) $entry->price_class][ResalePriceEntry::domainProductKey((string) $entry->product)] ??= $entry;
         }
 
         return $catalog;
@@ -330,10 +408,6 @@ final class DomainSubscriptionSync {
         }
 
         return $candidates;
-    }
-
-    private static function normalizeTld(string $product): string {
-        return '.' . ltrim(mb_strtolower(trim($product)), '.');
     }
 
     /** Kurzschlüssel eines Halters (`c<id>`, `f<id>`, `own`, `none`) — passt in `sync_status` (16 Zeichen). */

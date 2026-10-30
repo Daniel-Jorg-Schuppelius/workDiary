@@ -16,7 +16,7 @@ use App\Enums\Domain\DomainConnectionStatus;
 use App\Models\Domain\{DomainProviderConnection, DomainResellerAccount};
 use App\Plugins\Contracts\Domain\DomainProviderAdapter;
 use App\Plugins\Support\Domain\DomainResponse;
-use App\Services\Domain\DomainProviderResolver;
+use App\Services\Domain\{DomainProviderResolver, ProviderRelations};
 use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Console\Command;
 use Throwable;
@@ -32,7 +32,11 @@ use Throwable;
  * CentralNic-Befehle `QueryZoneList`/`QueryZonePriceList` kennt der Gateway nicht
  * („500 Invalid command name“, Prod 2026-10-30). Der Befehl liest roh, zeigt Code,
  * Felder und die Domainpreise je Zone und zeichnet die Eigenschaften für
- * `domain:contract` auf. Nur lesend.
+ * `domain:contract` auf. Nur lesend. Live: `StatusUser` schreibt
+ * `relationtype`/`relationvalue`, `StatusUserclass` `relation type`/`relation value`,
+ * `QueryUserClassList` `user class`; Klassenpreise = eigener Einkauf × `FACTOR`
+ * (STANDARD 1,80, RESELLER 1,40); `StatusUser` liefert auch `twofactorsecret` —
+ * Namen werden aufgezeichnet, Werte nie gespeichert. Den Katalog füllt `domain:sync-prices`.
  */
 class DomainPricesCommand extends Command {
     protected $signature = 'domain:prices
@@ -68,7 +72,7 @@ class DomainPricesCommand extends Command {
             if ($classes === []) {
                 $list = $this->probe($adapter, 'QueryUserClassList', [], 'Benutzerklassen');
                 $failed = $list === null || $failed;
-                $classes = $list === null ? [] : array_values(array_unique(array_filter(array_map('strval', self::values($list, 'userclass')))));
+                $classes = $list === null ? [] : array_values(array_unique(array_filter(ProviderRelations::values($list, 'userclass'))));
             }
             foreach ($classes as $class) {
                 $failed = $this->probe($adapter, 'StatusUserclass', ['userclass' => $class], 'Klasse ' . $class) === null || $failed;
@@ -102,15 +106,15 @@ class DomainPricesCommand extends Command {
             return $response->isSuccess() ? $response : null;
         }
         $this->line('    Eigenschaften: ' . implode(', ', $names));
-        $class = self::values($response, 'userclass')[0] ?? null;
+        $class = $command === 'StatusUser' ? (ProviderRelations::values($response, 'userclass')[0] ?? null) : null;
         if ($class !== null) {
             $this->line('    Klasse: ' . $class);
         }
-        $relations = self::relations($response);
+        $relations = ProviderRelations::fromResponse($response);
         if ($relations !== []) {
             $this->showRelations($relations);
         } elseif ($command === 'QueryUserClassList') {
-            $this->line('    Klassen: ' . implode(', ', array_map('strval', self::values($response, 'userclass'))));
+            $this->line('    Klassen: ' . implode(', ', ProviderRelations::values($response, 'userclass')));
         }
 
         return $response->isSuccess() ? $response : null;
@@ -124,21 +128,12 @@ class DomainPricesCommand extends Command {
     private function showRelations(array $relations): void {
         $zoneFilter = StringHelper::trimToNull((string) $this->option('zone'));
         $zoneFilter = $zoneFilter !== null ? strtoupper(ltrim($zoneFilter, '.')) : null;
-        $prices = [];
-        $otherTypes = 0;
-        foreach ($relations as $relation) {
-            if (preg_match('/^PRICE_CLASS_DOMAIN_(?<zone>.+?)_(?<kind>[A-Z]+\d*)$/i', $relation['type'], $m) !== 1) {
-                $otherTypes++;
-
-                continue;
-            }
-            $zone = strtoupper($m['zone']);
-            if ($zoneFilter !== null && $zone !== $zoneFilter) {
-                continue;
-            }
-            $prices[$zone][strtoupper($m['kind'])] = $relation['value'];
+        $prices = ProviderRelations::domainPrices($relations);
+        $priceCount = array_sum(array_map('count', $prices));
+        if ($zoneFilter !== null) {
+            $prices = array_intersect_key($prices, [$zoneFilter => true]);
         }
-        $this->line(sprintf('    %d Relationen, davon %d ohne Domainpreis%s', count($relations), $otherTypes, $zoneFilter !== null ? sprintf(', Zone %s', $zoneFilter) : ''));
+        $this->line(sprintf('    %d Relationen, davon %d ohne Domainpreis%s', count($relations), count($relations) - $priceCount, $zoneFilter !== null ? sprintf(', Zone %s', $zoneFilter) : ''));
         if ((bool) $this->option('raw')) {
             $this->table(['Relation', 'Wert'], array_map(static fn (array $r): array => [$r['type'], $r['value']], $relations));
 
@@ -149,7 +144,6 @@ class DomainPricesCommand extends Command {
 
             return;
         }
-        ksort($prices);
         $rows = [];
         foreach ($prices as $zone => $kinds) {
             $rest = [];
@@ -161,48 +155,6 @@ class DomainPricesCommand extends Command {
             $rows[] = [strtolower($zone), $kinds['SETUP'] ?? '', $kinds['ANNUAL'] ?? '', $kinds['TRANSFER'] ?? '', $kinds['CURRENCY'] ?? '', implode(', ', $rest)];
         }
         $this->table(['Zone', 'Setup', 'Jahr', 'Transfer', 'Währung', 'Weitere'], $rows);
-    }
-
-    /**
-     * Relationen als Paare (relation type / relation value), der Gateway schreibt Namen mit oder ohne Leerzeichen.
-     *
-     * @return list<array{type: string, value: string}>
-     */
-    public static function relations(DomainResponse $response): array {
-        $types = [];
-        $values = [];
-        foreach ($response->properties as $name => $byIndex) {
-            $compact = str_replace([' ', '_', '-'], '', strtolower((string) $name));
-            if ($compact === 'relationtype') {
-                $types = $byIndex;
-            } elseif ($compact === 'relationvalue') {
-                $values = $byIndex;
-            }
-        }
-        ksort($types);
-        $relations = [];
-        foreach ($types as $index => $type) {
-            $relations[] = ['type' => trim((string) $type), 'value' => trim((string) ($values[$index] ?? ''))];
-        }
-
-        return $relations;
-    }
-
-    /**
-     * Werte einer Eigenschaft, Name tolerant (ohne Leerzeichen, Unterstriche, Groß-/Kleinschreibung).
-     *
-     * @return list<string>
-     */
-    private static function values(DomainResponse $response, string $wanted): array {
-        foreach ($response->properties as $name => $byIndex) {
-            if (str_replace([' ', '_', '-'], '', strtolower((string) $name)) === $wanted) {
-                ksort($byIndex);
-
-                return array_values(array_map(static fn ($value): string => trim((string) $value), $byIndex));
-            }
-        }
-
-        return [];
     }
 
     /**

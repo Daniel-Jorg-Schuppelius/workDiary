@@ -26,7 +26,15 @@ class ResaleAutoDraftSettingsRequest extends BaseFormRequest {
         return [
             'auto_local_drafts' => ['nullable', 'in:0,1'],
             'lead_days' => ['nullable', 'integer', 'min:0', 'max:90'],
+            'domain_price_class' => ['nullable', 'string', 'max:64', 'regex:/^[A-Za-z0-9_-]+$/'],
         ];
+    }
+
+    /** Benutzerklasse des Domainportals für direkt berechnete Domains, groß geschrieben; leer = keine. */
+    public function domainPriceClass(): ?string {
+        $class = trim((string) ($this->validated('domain_price_class') ?? ''));
+
+        return $class === '' ? null : strtoupper($class);
     }
 
     public function enabled(): bool {

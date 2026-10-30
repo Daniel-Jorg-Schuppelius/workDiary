@@ -146,6 +146,7 @@ return [
         ],
         'domain' => [
             'refresh_details' => 'Domain-Detailabgleich (Registrierungsdatum, Preis) mit Budget',
+            'sync_prices' => 'Domain-Preisstaffeln spiegeln (Einkauf und Benutzerklassen je Zone)',
             'sync' => 'Domain-Bestandsabgleich',
             'events' => 'Domain-Ereignisse abrufen',
         ],

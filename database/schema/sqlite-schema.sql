@@ -17187,16 +17187,9 @@ CREATE TABLE IF NOT EXISTS "resale_price_catalog"(
   "currency" varchar not null default 'EUR',
   "created_at" datetime,
   "updated_at" datetime,
+  "price_class" varchar not null default '',
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("import_id") references "resale_imports"("id") on delete set null
-);
-CREATE UNIQUE INDEX "resale_prices_uq" on "resale_price_catalog"(
-  "organization_id",
-  "provider",
-  "product",
-  "term_months",
-  "interval",
-  "valid_from"
 );
 CREATE TABLE IF NOT EXISTS "lexoffice_voucher_lines"(
   "id" integer primary key autoincrement not null,
@@ -25123,6 +25116,15 @@ CREATE UNIQUE INDEX "resale_ignored_lines_uq" on "resale_ignored_lines"(
   "linkable_type",
   "linkable_id"
 );
+CREATE UNIQUE INDEX "resale_prices_class_uq" on "resale_price_catalog"(
+  "organization_id",
+  "provider",
+  "product",
+  "price_class",
+  "term_months",
+  "interval",
+  "valid_from"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -26168,3 +26170,4 @@ INSERT INTO migrations VALUES(1041,'2027_04_01_190000_add_provider_customer_numb
 INSERT INTO migrations VALUES(1042,'2027_04_01_200000_add_observed_properties_to_domain_provider_connections',14);
 INSERT INTO migrations VALUES(1043,'2027_04_01_210000_add_invoice_number_to_domain_accounting_entries',15);
 INSERT INTO migrations VALUES(1044,'2027_04_01_220000_add_provider_details_to_domain_tables',16);
+INSERT INTO migrations VALUES(1045,'2027_04_01_230000_add_price_class_to_resale_price_catalog',17);
