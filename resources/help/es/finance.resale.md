@@ -137,7 +137,7 @@ Si una factura vinculada se anula después en Lexoffice, la siguiente ejecución
 pone el vínculo a cero meses, anota la anulación y reabre el periodo para que
 pueda vincularse la factura de sustitución. Las suscripciones de dominio se
 cubren con posiciones que nombran el dominio (por ejemplo «dominio .de incl.
-gestión (thieme-logistik.de)»), independientemente de la clasificación del
+gestión (lastkraft-logistik.de)»), independientemente de la clasificación del
 artículo. Los dominios que un subrevendedor liquida a través del portal del
 proveedor se cubren con el diario contable del módulo de dominios: un
 comprobante por subusuario y mes, numerado «número de cliente-MM-AAAA»
@@ -277,7 +277,7 @@ vínculos mediante número de factura y posición de licencia; lo que no es
 unívoco solo se lista (--dry-run muestra de antemano qué pasaría).
 
 **Cuenta de licencias:** Una cuenta lleva el nombre de su titular; si la
-factura va a un socio, este se muestra al lado («vía LDS Systems»), y las
+factura va a un socio, este se muestra al lado («vía Nordlicht Systems»), y las
 plantillas periódicas del socio aparecen solo en la cuenta del cliente final
 al que están asignadas. La pestaña *Cuentas de licencias* muestra por cuenta
 de proveedor (número de cliente en el proveedor, incluidos los predecesores
@@ -285,7 +285,7 @@ de un cambio de proveedor) cuántas licencias por producto están activas,
 quién las tiene y qué año de licencia está facturado, como cuadrícula
 producto × titular × año con número de factura o «falta». Si varias empresas
 tienen licencias de la misma cuenta, mantenga el **reparto** por producto
-(«Märkische Bunker 5 × Exchange desde 18.10.2025»): los demás titulares
+(«Nordufer Tank 5 × Exchange desde 18.10.2025»): los demás titulares
 llenan primero el contrato con mayor cantidad, luego por inicio; el titular
 del contrato se queda con el resto. Las cesiones por contrato se derivan de
 ahí, siguen cada cambio y pasan al sucesor al cambiar de proveedor; las

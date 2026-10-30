@@ -82,8 +82,8 @@ final class MailNoteTextRefreshTest extends TestCase {
     }
 
     public function test_the_command_rewrites_flat_texts_from_the_mailbox_and_leaves_the_rest(): void {
-        $flat = 'Hallo Simone, sorry, war durchgerutscht. Gruß Ralph Ralph Hartig, Dipl.-Kfm.Geschäftsführender Gesellschafter';
-        $structured = "Hallo Simone,\n\nsorry, war durchgerutscht.\n\nGruß Ralph\n\nRalph Hartig, Dipl.-Kfm.\nGeschäftsführender Gesellschafter";
+        $flat = 'Hallo Simone, sorry, war durchgerutscht. Gruß Ralph Ralph Mustermann, Dipl.-Kfm.Geschäftsführender Gesellschafter';
+        $structured = "Hallo Simone,\n\nsorry, war durchgerutscht.\n\nGruß Ralph\n\nRalph Mustermann, Dipl.-Kfm.\nGeschäftsführender Gesellschafter";
         $note = $this->mailNote('<kunde-1@acme.test>', $flat);
         $gone = $this->mailNote('<weg@acme.test>', 'Text ohne Mail im Postfach');
         $manual = CommunicationNote::factory()->create(['organization_id' => $this->organization->id, 'notable_type' => MorphMap::alias(Customer::class), 'notable_id' => $this->customer->id, 'body' => 'Telefonat &amp; Notiz']);

@@ -44,7 +44,7 @@ class LinkAuditTest extends TestCase {
             'organization_id' => $this->organization->id, 'external_id' => 'art-exo', 'name' => 'Exchange Online (Plan 1)', 'article_number' => 'ART-EXO',
             'type' => 'SERVICE', 'unit_name' => 'Monat', 'net_unit_price' => '3.95', 'currency' => 'EUR', 'vat_rate' => '19', 'synced_at' => now(),
         ]);
-        $this->schub = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Schub- und Schleppreederei']);
+        $this->schub = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Hafen- und Schleppbetrieb']);
         ExternalReference::create([
             'organization_id' => $this->organization->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
             'external_id' => 'c-schub', 'referenceable_type' => $this->schub->getMorphClass(), 'referenceable_id' => $this->schub->getKey(),

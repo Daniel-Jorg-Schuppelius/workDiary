@@ -59,7 +59,7 @@ final class LicenseInvoiceLinkTest extends TestCase {
         $this->manager = $this->orgUser();
         $this->manager->givePermissionTo([Permission::ResellingView->value, Permission::ResellingManage->value]);
         app(PermissionRegistrar::class)->forgetCachedPermissions();
-        $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH', 'billing_mode' => BillingMode::SevDesk]);
+        $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH', 'billing_mode' => BillingMode::SevDesk]);
         $this->product = $this->stock->saveProduct($this->organization, null, ['name' => 'LANCOM Advanced VPN', 'key_labels' => ['Seriennummer'], 'article_ref' => 'sevdesk:LC-AVPN'], $this->manager);
         $this->batch = $this->stock->createBatch($this->product, ['reference' => 'P-2026-01', 'purchased_on' => '2026-09-01', 'quantity' => 3], null, $this->manager);
         foreach ([1, 2, 3] as $position) {

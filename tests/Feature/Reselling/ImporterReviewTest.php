@@ -98,15 +98,15 @@ class ImporterReviewTest extends TestCase {
         Log::listen(static function (MessageLogged $event) use (&$logged): void {
             $logged[] = $event->message;
         });
-        $schub = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Schub- und Schleppreederei']);
-        $maerkische = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Märkische Bunker']);
+        $schub = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Hafen- und Schleppbetrieb']);
+        $nordufer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Nordufer Tank']);
         $third = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Dritte GmbH']);
         $contract = $this->subscription(['provider' => 'telekom_marketplace', 'external_id' => 'ent-9', 'customer_id' => $schub->id, 'starts_on' => '2024-10-18', 'ends_on' => '2025-10-18', 'renewal' => 'cancel', 'status' => 'cancelled']);
-        $this->subscription(['provider' => 'telekom_marketplace', 'parent_id' => $contract->id, 'external_id' => 'ent-9#1', 'customer_id' => $maerkische->id, 'quantity' => 5, 'starts_on' => '2024-10-18']);
+        $this->subscription(['provider' => 'telekom_marketplace', 'parent_id' => $contract->id, 'external_id' => 'ent-9#1', 'customer_id' => $nordufer->id, 'quantity' => 5, 'starts_on' => '2024-10-18']);
         $this->subscription(['provider' => 'telekom_marketplace', 'parent_id' => $contract->id, 'external_id' => 'ent-9#2', 'customer_id' => $third->id, 'quantity' => 2, 'starts_on' => '2025-01-01']);
         $successor = $this->subscription(['provider' => 'qualityhosting', 'external_id' => 'CNLCON1', 'customer_id' => $schub->id, 'starts_on' => '2025-10-18']);
-        // Am Nachfolger gibt es schon eine (manuelle) Abtretung an Märkische mit Suffix #3 — #1/#2 wurden gelöscht.
-        $existing = $this->subscription(['provider' => 'qualityhosting', 'parent_id' => $successor->id, 'external_id' => 'CNLCON1#3', 'customer_id' => $maerkische->id, 'quantity' => 1, 'starts_on' => '2025-10-18']);
+        // Am Nachfolger gibt es schon eine (manuelle) Abtretung an Nordufer mit Suffix #3 — #1/#2 wurden gelöscht.
+        $existing = $this->subscription(['provider' => 'qualityhosting', 'parent_id' => $successor->id, 'external_id' => 'CNLCON1#3', 'customer_id' => $nordufer->id, 'quantity' => 1, 'starts_on' => '2025-10-18']);
 
         $importer = app(MarketplaceImporter::class);
         $method = new \ReflectionMethod($importer, 'carryAssignments');

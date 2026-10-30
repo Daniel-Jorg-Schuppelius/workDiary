@@ -71,7 +71,7 @@ final class CommunicationNoteReplyTest extends TestCase {
             'external_id' => '<kunde-1@acme.test>',
             'payload' => $payload + [
                 'message_id' => '<kunde-1@acme.test>',
-                'from' => ['email' => 'ralph@acme.test', 'name' => 'Ralph Hartig'],
+                'from' => ['email' => 'ralph@acme.test', 'name' => 'Ralph Mustermann'],
                 'subject' => 'AW: Mahnung RE-2025-0865',
                 'received_at' => '2026-10-18T13:43:00+00:00',
                 'mailbox' => 'Büro / INBOX',

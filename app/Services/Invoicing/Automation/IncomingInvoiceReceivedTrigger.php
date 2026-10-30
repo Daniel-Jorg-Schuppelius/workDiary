@@ -36,7 +36,7 @@ final class IncomingInvoiceReceivedTrigger implements RuleTrigger {
 
     /** @return array<string, mixed> */
     public function exampleConditions(): array {
-        return ['all' => [['field' => 'seller_name_key', 'op' => '=', 'value' => 'ckonverter.de']]];
+        return ['all' => [['field' => 'seller_name_key', 'op' => '=', 'value' => 'beispiel-konverter.de']]];
     }
 
     /** @return array<string, mixed> */

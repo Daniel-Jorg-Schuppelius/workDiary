@@ -391,7 +391,7 @@ class InvoiceTest extends TestCase {
         $foreign = \App\Models\Customer\ForeignCustomer::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
-            'name' => 'Thieme',
+            'name' => 'Lastkraft',
         ]);
         $this->project->update(['foreign_customer_id' => $foreign->id]);
 
@@ -415,7 +415,7 @@ class InvoiceTest extends TestCase {
         ])->assertRedirect();
 
         $invoice = Invoice::firstOrFail()->load('items');
-        $this->assertStringContainsString('Endkunde Thieme', (string) $invoice->items()->firstOrFail()->description);
+        $this->assertStringContainsString('Endkunde Lastkraft', (string) $invoice->items()->firstOrFail()->description);
     }
 
     public function test_index_accepts_numeric_customer_filter_fallback(): void {

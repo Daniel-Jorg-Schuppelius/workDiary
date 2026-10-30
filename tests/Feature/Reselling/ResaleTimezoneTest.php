@@ -41,7 +41,7 @@ class ResaleTimezoneTest extends TestCase {
         parent::setUp();
         // Organisation aus der Factory trägt Europe/Berlin; ohne angemeldeten Nutzer ist das die Anzeige-Zeitzone.
         $this->setUpOrganization();
-        $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH']);
+        $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH']);
         ExternalReference::create([
             'organization_id' => $this->organization->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
             'external_id' => 'c-kl', 'referenceable_type' => $this->customer->getMorphClass(), 'referenceable_id' => $this->customer->getKey(),

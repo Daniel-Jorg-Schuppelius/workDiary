@@ -60,7 +60,7 @@ trait ResolvesInboxTargets {
             abort_if($name === '', 422, __('Der Name des Fremdkunden darf nicht leer sein.'));
 
             // Client = Firma selbst → kein eigener Endkunde (gleiche Regel wie
-            // der Workspace-Import, verhindert „LDS unter LDS" aus dem Prefill).
+            // der Workspace-Import, verhindert „Nordlicht unter Nordlicht" aus dem Prefill).
             if (mb_strtolower($name) === mb_strtolower((string) $customer->name)) {
                 return null;
             }

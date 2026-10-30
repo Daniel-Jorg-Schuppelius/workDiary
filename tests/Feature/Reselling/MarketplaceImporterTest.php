@@ -81,7 +81,7 @@ class MarketplaceImporterTest extends TestCase {
 
     public function test_import_upserts_subscriptions_links_successions_and_resolves_holders(): void {
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Muster Bau GmbH']);
-        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'LDS Systems GmbH']);
+        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Nordlicht Systems GmbH']);
         $foreign = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Beispiel Logistik']);
         LexofficeArticle::create([
             'organization_id' => $this->organization->id,
@@ -156,7 +156,7 @@ class MarketplaceImporterTest extends TestCase {
     }
 
     public function test_stored_partner_mapping_creates_the_end_customer_on_import(): void {
-        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'LDS Systems GmbH']);
+        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Nordlicht Systems GmbH']);
         CompanyMapping::create([
             'organization_id' => $this->organization->id,
             'company_key' => '100003',
@@ -175,7 +175,7 @@ class MarketplaceImporterTest extends TestCase {
     public function test_inbox_assignment_updates_all_subscriptions_and_is_remembered(): void {
         $admin = $this->orgAdmin();
         app(MarketplaceImporter::class)->import($this->organization, $admin, $this->files());
-        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'LDS Systems GmbH']);
+        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Nordlicht Systems GmbH']);
 
         $this->actingAs($admin)->get(route('finance.resale.inbox'))
             ->assertOk()

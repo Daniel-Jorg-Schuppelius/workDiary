@@ -137,8 +137,8 @@ final class RecipientReconciler {
             }
         }
         // Verwandte Empfänger: Name teilt ein Kern-Token mit dem Empfänger, den
-        // Firmennamen seiner Abos oder seinen Endkunden („EcoTec Service" ↔
-        // „EcoTec - HLSK"). Ihre stornierten Rechnungen werden mitgezeigt.
+        // Firmennamen seiner Abos oder seinen Endkunden („Ökotherm Service" ↔
+        // „Ökotherm - HLSK"). Ihre stornierten Rechnungen werden mitgezeigt.
         $baseTokens = self::tokens($customer->name);
         $relatedKeys = $baseTokens;
         foreach ($subscriptions as $subscription) {
@@ -424,7 +424,7 @@ final class RecipientReconciler {
             // teilen ein Kern-Token mit dem Namen des anderen Empfängers.
             $periodTokens = $baseTokens + self::holderTokens($row['subscription']);
             // Unverwandter Empfänger, dessen freie Positionen in der Laufzeit der Periode
-            // zusammen genau die Periode ergeben (Delta Allround: 3 × 12 für Utes 3er-Vertrag):
+            // zusammen genau die Periode ergeben (Omega Rundum: 3 × 12 für den 3er-Vertrag der Inhaberin):
             // ein früherer Kontoinhaber. Nur bei mehr als einer Lizenz — „12 Monat" passt überall.
             /** @var array<string, float> $sumsByContact */
             $sumsByContact = [];

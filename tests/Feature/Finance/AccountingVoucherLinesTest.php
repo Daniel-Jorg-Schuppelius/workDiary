@@ -41,7 +41,7 @@ class AccountingVoucherLinesTest extends TestCase {
         parent::setUp();
         $this->setUpOrganization();
         $this->travelTo('2026-09-04');
-        $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH', 'billing_mode' => BillingMode::SevDesk]);
+        $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH', 'billing_mode' => BillingMode::SevDesk]);
     }
 
     private function voucher(string $externalId, string $number, string $date, DocumentKind $kind = DocumentKind::Invoice, AccountingVoucherState $state = AccountingVoucherState::Open): AccountingVoucher {
@@ -129,7 +129,7 @@ class AccountingVoucherLinesTest extends TestCase {
     }
 
     public function test_recurring_templates_in_the_mirror_are_a_plan_source(): void {
-        $template = $this->voucher('recurring:7', 'Serie Klimpel', '2025-09-03', DocumentKind::RecurringTemplate, AccountingVoucherState::Draft);
+        $template = $this->voucher('recurring:7', 'Serie Badhaus', '2025-09-03', DocumentKind::RecurringTemplate, AccountingVoucherState::Draft);
         app(VoucherMirror::class)->storeLines($this->organization->id, 'sevdesk', 'recurring:7', [new MirroredVoucherLine(1, 'Microsoft 365 Business Premium', 2.0, '247.2000', '494.40', 'EUR', 'MS-BP')]);
 
         $plans = app(RecurringPlans::class);
@@ -139,7 +139,7 @@ class AccountingVoucherLinesTest extends TestCase {
         $plan = $templates->first();
         $this->assertSame(AccountingRecurringPlanSource::KEY, $plan?->sourceKey);
         $this->assertSame('accounting:sevdesk:recurring:7', $plan?->key);
-        $this->assertSame('Serie Klimpel', $plan?->title);
+        $this->assertSame('Serie Badhaus', $plan?->title);
         $this->assertSame($this->customer->id, $plan?->recipientCustomerId);
         $this->assertTrue($plan?->isActive() ?? false);
         $this->assertSame(12, $plan?->intervalMonths());

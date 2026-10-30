@@ -47,7 +47,7 @@ class ProposalAutoConfirmTest extends TestCase {
         $this->travelTo('2026-10-26');
         $this->exchange = $this->article('art-exo', 'Exchange Online (Plan 1)', '3.95');
         $this->standard = $this->article('art-std', 'Microsoft 365 Business Standard', '11.70');
-        $this->schub = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Schub- und Schleppreederei']);
+        $this->schub = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Hafen- und Schleppbetrieb']);
         ExternalReference::create([
             'organization_id' => $this->organization->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
             'external_id' => 'c-schub', 'referenceable_type' => $this->schub->getMorphClass(), 'referenceable_id' => $this->schub->getKey(),

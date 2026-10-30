@@ -130,15 +130,15 @@ class ContactNameTransferTest extends TestCase {
         $this->fakeContacts([[
             'id' => 'lex-2',
             'company' => ['name' => 'Stimmgerecht oHG', 'contactPersons' => [
-                ['salutation' => 'Herr', 'firstName' => 'Ralph', 'lastName' => 'Hartig', 'emailAddress' => 'r@stimmgerecht.test'],
-                ['salutation' => 'Frau', 'firstName' => 'Birgit', 'lastName' => 'Hartig', 'emailAddress' => 'b@stimmgerecht.test', 'primary' => true],
+                ['salutation' => 'Herr', 'firstName' => 'Ralph', 'lastName' => 'Mustermann', 'emailAddress' => 'r@stimmgerecht.test'],
+                ['salutation' => 'Frau', 'firstName' => 'Birgit', 'lastName' => 'Mustermann', 'emailAddress' => 'b@stimmgerecht.test', 'primary' => true],
             ]],
         ]]);
 
         (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LexofficeWins);
 
         $customer->refresh();
-        $this->assertSame([ContactSalutation::Ms, 'Birgit', 'Hartig', 'Birgit Hartig'], [$customer->contact_salutation, $customer->contact_first_name, $customer->contact_last_name, $customer->contact_name]);
+        $this->assertSame([ContactSalutation::Ms, 'Birgit', 'Mustermann', 'Birgit Mustermann'], [$customer->contact_salutation, $customer->contact_first_name, $customer->contact_last_name, $customer->contact_name]);
         $this->assertCount(2, $customer->contact_persons ?? []);
     }
 
@@ -148,8 +148,8 @@ class ContactNameTransferTest extends TestCase {
         $this->link($empty, 'lex-3');
         $this->link($maintained, 'lex-4');
         $persons = [
-            ['salutation' => 'Herr', 'firstName' => 'Ralph', 'lastName' => 'Hartig'],
-            ['salutation' => 'Frau', 'firstName' => 'Birgit', 'lastName' => 'Hartig'],
+            ['salutation' => 'Herr', 'firstName' => 'Ralph', 'lastName' => 'Mustermann'],
+            ['salutation' => 'Frau', 'firstName' => 'Birgit', 'lastName' => 'Mustermann'],
         ];
         $this->fakeContacts([
             ['id' => 'lex-3', 'company' => ['name' => 'Leer GmbH', 'contactPersons' => $persons]],
@@ -158,7 +158,7 @@ class ContactNameTransferTest extends TestCase {
 
         (new LexofficeContactSync)->sync($this->organization, LexofficeMatchPolicy::LexofficeWins);
 
-        $this->assertSame(['Ralph', 'Hartig'], [$empty->refresh()->contact_first_name, $empty->contact_last_name]);
+        $this->assertSame(['Ralph', 'Mustermann'], [$empty->refresh()->contact_first_name, $empty->contact_last_name]);
         $this->assertSame(['Anna', 'Müller'], [$maintained->refresh()->contact_first_name, $maintained->contact_last_name]);
         $this->assertCount(2, $maintained->contact_persons ?? []);
     }

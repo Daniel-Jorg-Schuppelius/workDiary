@@ -46,7 +46,7 @@ class ResaleOverviewTest extends TestCase {
     }
 
     public function test_overview_lists_tasks_with_counts_and_provider_state(): void {
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH']);
         $this->subscription(['customer_id' => $customer->id]); // zwei fällige offene Perioden (2025, 2026)
         $this->subscription(['company_name' => 'Unbekannt UG', 'starts_on' => '2026-10-01']); // ohne Halter, nicht fällig
         ResaleImport::query()->create([
@@ -92,7 +92,7 @@ class ResaleOverviewTest extends TestCase {
      */
     public function test_grace_period_groups_and_four_tabs(): void {
         $admin = $this->orgAdmin();
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH']);
         $this->subscription(['customer_id' => $customer->id, 'starts_on' => '2026-08-25']); // 10 Tage fällig: in Karenz
         $this->subscription(['customer_id' => $customer->id, 'starts_on' => '2026-08-01', 'label' => 'Exchange Online (Plan 1)']); // 34 Tage: Aufgabe
 
@@ -118,7 +118,7 @@ class ResaleOverviewTest extends TestCase {
     }
 
     public function test_subscription_list_lives_on_its_own_route_with_filters(): void {
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH']);
         $this->subscription(['customer_id' => $customer->id, 'label' => 'Kundenabo Exchange']);
         $this->subscription(['is_own_holding' => true, 'label' => 'Hausinternes Exchange']);
 

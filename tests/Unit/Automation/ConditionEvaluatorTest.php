@@ -63,8 +63,8 @@ class ConditionEvaluatorTest extends TestCase {
         $this->assertFalse($this->eval->matches(['field' => 'mail', 'op' => 'ends_with', 'value' => '@lohn24.de'], ['mail' => 'beleg@lohn24.de.example']));
         $this->assertTrue($this->eval->matches(['field' => 'subject', 'op' => 'not_contains', 'value' => 'Test'], ['subject' => 'Rechnung 4711']));
         $this->assertFalse($this->eval->matches(['field' => 'subject', 'op' => 'not_contains', 'value' => 'Test'], ['subject' => 'Testmail']));
-        $this->assertTrue($this->eval->matches(['field' => 'number', 'op' => 'matches', 'value' => '^rzlre\d{7}$'], ['number' => 'RZLRE2500139']));
-        $this->assertFalse($this->eval->matches(['field' => 'number', 'op' => 'matches', 'value' => '^rzlre\d{7}$'], ['number' => 'RE-1']));
+        $this->assertTrue($this->eval->matches(['field' => 'number', 'op' => 'matches', 'value' => '^rzxre\d{7}$'], ['number' => 'RZXRE2500139']));
+        $this->assertFalse($this->eval->matches(['field' => 'number', 'op' => 'matches', 'value' => '^rzxre\d{7}$'], ['number' => 'RE-1']));
         // Ein ungültiges Muster trifft nie, statt den Lauf zu stören.
         $this->assertFalse($this->eval->matches(['field' => 'number', 'op' => 'matches', 'value' => '['], ['number' => '[']));
     }

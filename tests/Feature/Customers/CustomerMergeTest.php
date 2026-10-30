@@ -77,11 +77,11 @@ class CustomerMergeTest extends TestCase {
     }
 
     public function test_merge_repoints_relations_and_deletes_source(): void {
-        $target = $this->customer(['name' => 'LDS Systems GmbH', 'email' => 'lds@example.test']);
-        $source = $this->customer(['name' => 'LDS Systems', 'vat_id' => 'DE811111111']);
+        $target = $this->customer(['name' => 'Nordlicht Systems GmbH', 'email' => 'nordlicht@example.test']);
+        $source = $this->customer(['name' => 'Nordlicht Systems', 'vat_id' => 'DE811111111']);
 
         $project = $this->project($source, 'Wartung Süd', 'wartung-sued');
-        $ref = $this->ref($source, 'toggl', 'client', 'LDS Systems');
+        $ref = $this->ref($source, 'toggl', 'client', 'Nordlicht Systems');
 
         app(CustomerMergeService::class)->merge($source, $target);
 
@@ -158,8 +158,8 @@ class CustomerMergeTest extends TestCase {
 
     public function test_finder_detects_exact_match_by_vat_id(): void {
         // Ziel hat eine Nummer im Buchhaltungsprogramm → bleibt bestehen.
-        $withLex = $this->linkAccounting($this->customer(['name' => 'Thieme Transporte', 'vat_id' => 'DE822222222']), 'C-1');
-        $togglOnly = $this->customer(['name' => 'Thieme Transporte GmbH', 'vat_id' => 'DE822222222']);
+        $withLex = $this->linkAccounting($this->customer(['name' => 'Lastkraft Transporte', 'vat_id' => 'DE822222222']), 'C-1');
+        $togglOnly = $this->customer(['name' => 'Lastkraft Transporte GmbH', 'vat_id' => 'DE822222222']);
 
         $candidates = app(CustomerDuplicateFinder::class)->candidates($this->organization, CustomerDuplicateFinder::CONF_EXACT);
 

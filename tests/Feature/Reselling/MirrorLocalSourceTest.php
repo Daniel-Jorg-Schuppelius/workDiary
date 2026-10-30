@@ -46,7 +46,7 @@ class MirrorLocalSourceTest extends TestCase {
         $this->setUpOrganization();
         $this->travelTo('2026-09-10');
         $this->premium = Article::factory()->create(['organization_id' => $this->organization->id, 'number' => 'M365-BP', 'name' => 'Microsoft 365 Business Premium', 'sellable' => true]);
-        $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH', 'billing_mode' => BillingMode::Workdiary]);
+        $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH', 'billing_mode' => BillingMode::Workdiary]);
     }
 
     /**

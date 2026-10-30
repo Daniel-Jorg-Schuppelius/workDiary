@@ -163,7 +163,7 @@ class DomainAccountingService {
             ->where('domain_hash', DomainProjection::hashFor($domainName))
             ->first() : null;
         // Der Live-Gateway nennt keinen Subreseller — das Hauptjournal enthält aber die Buchungen der
-        // Subuser-Domains (Prod 2026-10-29: 388 für lds-systems). Der Subuser kommt dann über die Domain.
+        // Subuser-Domains (Prod 2026-10-29: 388 für nordlicht-systems). Der Subuser kommt dann über die Domain.
         if ($reseller === null && $domain?->reseller_account_id !== null) {
             $reseller = DomainResellerAccount::query()->find($domain->reseller_account_id);
             $user = $reseller->external_user ?? $user;

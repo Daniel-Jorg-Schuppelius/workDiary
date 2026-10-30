@@ -59,8 +59,8 @@ class OrgaMaxContactPersonImportTest extends TestCase {
         FakePluginHttp::fake([
             'https://api.orgamax.de/openapi/customer*' => self::listResponse([[
                 'id' => 'om-9', 'name' => 'Stimmgerecht oHG', 'companyName' => 'Stimmgerecht oHG', 'email' => 'info@stimmgerecht.test', 'contactPersons' => [
-                    ['salutation' => 'Herr', 'firstName' => 'Ralph', 'lastName' => 'Hartig', 'isMainContact' => false],
-                    ['salutation' => 'Frau', 'firstName' => 'Birgit', 'lastName' => 'Hartig', 'isMainContact' => true],
+                    ['salutation' => 'Herr', 'firstName' => 'Ralph', 'lastName' => 'Mustermann', 'isMainContact' => false],
+                    ['salutation' => 'Frau', 'firstName' => 'Birgit', 'lastName' => 'Mustermann', 'isMainContact' => true],
                 ],
             ]]),
             'https://api.orgamax.de/openapi/invoice*' => self::listResponse([]),
@@ -69,13 +69,13 @@ class OrgaMaxContactPersonImportTest extends TestCase {
         app(OrgaMaxSyncService::class)->run($this->connection);
 
         $item = IntegrationInboxItem::query()->where('plugin_id', OrgaMaxPlugin::ID)->where('status', IntegrationInboxStatus::Open)->sole();
-        $this->assertSame(['ms', 'Birgit', 'Hartig'], [$item->mapped_snapshot['contact_salutation'] ?? null, $item->mapped_snapshot['contact_first_name'] ?? null, $item->mapped_snapshot['contact_last_name'] ?? null]);
+        $this->assertSame(['ms', 'Birgit', 'Mustermann'], [$item->mapped_snapshot['contact_salutation'] ?? null, $item->mapped_snapshot['contact_first_name'] ?? null, $item->mapped_snapshot['contact_last_name'] ?? null]);
         $this->assertSame(['Ralph', 'Birgit'], array_column($item->mapped_snapshot['contact_persons'] ?? [], 'first_name'));
 
         $customer = app(InboxActionService::class)->createFromItem($item);
 
         $this->assertInstanceOf(Customer::class, $customer);
-        $this->assertSame([ContactSalutation::Ms, 'Birgit Hartig'], [$customer->contact_salutation, $customer->contact_name]);
+        $this->assertSame([ContactSalutation::Ms, 'Birgit Mustermann'], [$customer->contact_salutation, $customer->contact_name]);
         $this->assertCount(2, $customer->contact_persons ?? []);
     }
 

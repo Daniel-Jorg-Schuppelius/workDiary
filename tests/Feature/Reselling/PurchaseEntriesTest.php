@@ -43,21 +43,21 @@ Rechnung
 Rechnungsnr. 31970911 Kundennr. 95229
 Rechnungsdatum 3. September 2026
 Pos. Menge Beschreibung Einzelpreis Gesamtpreis
-Endkunde: CNL00007 (Klimpel Bäder GmbH)
+Endkunde: CNL00007 (Badhaus Bäder GmbH)
 Vertrag: CNLCON00156
 1 1 Microsoft 365 Business Premium 187,92 187,92
 Grundgebühr pro Einheit
 Dienst: CNLOUI
 Vertrag: CNLCON00156
 03.09.26 - 02.09.27
-Endkunde: CNL00010 (Schub- und Schleppreederei U. Golka GmbH &
+Endkunde: CNL00010 (Hafen- und Schleppbetrieb M. Seewind GmbH &
 Co.KG) Vertrag: CNLCON00109
 2 2 Exchange Online Plan 1 34,32 68,64
 Grundgebühr pro Einheit
 Dienst: CNLOUK
 Vertrag: CNLCON00109
 15.08.26 - 14.08.27
-Endkunde: CNL00002 ( Ambulanter Pflegedienst Regina Zukanovic
+Endkunde: CNL00002 ( Ambulanter Pflegedienst Beispielhausen
 GmbH) Vertrag: CNLCON00062
 3 1 Microsoft 365 Apps for Business 79,49096 79,49
 Grundgebühr pro Einheit
@@ -71,8 +71,8 @@ Storno zu Rechnung Seite 1
 Gutschriftsnr. 7006872 Kundennr. 95229
 Gutschriftsdatum 2. Juni 2026
 Pos. Menge Beschreibung Rabatt % Einzelpreis Gesamtpreis
-0 1 Umzugsbonus Endkunde Klimpel Bäder GmbH (CNL00007) 100,00 100,00
-0 1 Umzugsbonus Endkunde Schub- und Schleppreederei U. Golka GmbH 100,00 100,00
+0 1 Umzugsbonus Endkunde Badhaus Bäder GmbH (CNL00007) 100,00 100,00
+0 1 Umzugsbonus Endkunde Hafen- und Schleppbetrieb M. Seewind GmbH 100,00 100,00
 & Co.KG (CNL00010)
 Total EUR ohne MwSt. 200,00
 TXT;
@@ -106,12 +106,12 @@ TXT;
         $this->assertSame(336.05, $invoice->netTotal);
         [$a, $b, $c] = $invoice->lines;
         $this->assertSame('CNLCON00156', $a->contract);
-        $this->assertSame('Klimpel Bäder GmbH', $a->companyName);
+        $this->assertSame('Badhaus Bäder GmbH', $a->companyName);
         $this->assertSame('2026-09-03', $a->periodStart?->toDateString());
         $this->assertSame('CNLCON00109', $b->contract);
-        $this->assertSame('Schub- und Schleppreederei U. Golka GmbH & Co.KG', $b->companyName, 'umgebrochener Name');
+        $this->assertSame('Hafen- und Schleppbetrieb M. Seewind GmbH & Co.KG', $b->companyName, 'umgebrochener Name');
         $this->assertSame(68.64, $b->total);
-        $this->assertSame('Ambulanter Pflegedienst Regina Zukanovic GmbH', $c->companyName);
+        $this->assertSame('Ambulanter Pflegedienst Beispielhausen GmbH', $c->companyName);
         $this->assertSame(79.49, $c->total, 'fünfstelliger Einzelpreis, zweistelliger Gesamtpreis');
 
         $credit = $reader->parse(self::CREDIT_TEXT);
@@ -120,15 +120,15 @@ TXT;
         $this->assertCount(2, $credit->lines);
         $this->assertSame(-100.0, $credit->lines[0]->total);
         $this->assertSame('CNL00007', $credit->lines[0]->companyKey);
-        $this->assertSame('Klimpel Bäder GmbH', $credit->lines[0]->companyName);
+        $this->assertSame('Badhaus Bäder GmbH', $credit->lines[0]->companyName);
         $this->assertSame('Umzugsbonus', $credit->lines[0]->description);
         $this->assertSame('CNL00010', $credit->lines[1]->companyKey, 'umgebrochene Gutschriftzeile');
         $this->assertNull($credit->lines[0]->contract);
     }
 
     public function test_provider_invoice_lands_exactly_on_contract_periods_and_credits_hit_the_company(): void {
-        $klimpel = $this->subscription('CNLCON00156', 'Microsoft 365 Business Premium', 'Klimpel Bäder GmbH', '2025-09-03');
-        $schub = $this->subscription('CNLCON00109', 'Exchange Online Plan 1', 'Schub- und Schleppreederei U. Golka GmbH & Co.KG', '2025-08-15', 2);
+        $badhaus = $this->subscription('CNLCON00156', 'Microsoft 365 Business Premium', 'Badhaus Bäder GmbH', '2025-09-03');
+        $schub = $this->subscription('CNLCON00109', 'Exchange Online Plan 1', 'Hafen- und Schleppbetrieb M. Seewind GmbH & Co.KG', '2025-08-15', 2);
         $reader = new QualityHostingInvoiceReader;
         $allocator = app(PurchaseAllocator::class);
 
@@ -138,7 +138,7 @@ TXT;
         $this->assertCount(1, $result['unmatched'], 'CNLCON00062 gibt es nicht');
         $this->assertSame(256.56, $result['net']);
 
-        $entry = ResalePurchaseEntry::query()->where('subscription_id', $klimpel->id)->firstOrFail();
+        $entry = ResalePurchaseEntry::query()->where('subscription_id', $badhaus->id)->firstOrFail();
         $this->assertSame('31970911', $entry->document_number);
         $this->assertSame('187.92', $entry->net_amount->getAmount());
         $this->assertSame('2026-09-03', $entry->period?->starts_on->toDateString(), 'Periode laut Laufzeit der Position');
@@ -159,22 +159,22 @@ TXT;
 
     public function test_provider_invoice_reports_total_mismatch_takes_the_currency_and_finds_credits_across_providers(): void {
         // Review 2026-09-10 (B17-Anschluss, Währung, Lauf-Cache): Summenabweichung als Hinweis, Import läuft weiter.
-        $klimpel = $this->subscription('CNLCON00156', 'Microsoft 365 Business Premium', 'Klimpel Bäder GmbH', '2025-09-03');
-        $telekomOnly = $this->subscription('ent-77', 'Exchange Online Plan 1', 'Ambulanter Pflegedienst Regina Zukanovic GmbH', '2025-05-06', 1, 'telekom_marketplace');
+        $badhaus = $this->subscription('CNLCON00156', 'Microsoft 365 Business Premium', 'Badhaus Bäder GmbH', '2025-09-03');
+        $telekomOnly = $this->subscription('ent-77', 'Exchange Online Plan 1', 'Ambulanter Pflegedienst Beispielhausen GmbH', '2025-05-06', 1, 'telekom_marketplace');
         $allocator = app(PurchaseAllocator::class);
         $invoice = new ProviderInvoice('31970999', CarbonImmutable::parse('2026-09-03'), false, '95229', [
-            new ProviderInvoiceLine(1, 1.0, 'Microsoft 365 Business Premium', 187.92, 187.92, 'CNLCON00156', 'CNL00007', 'Klimpel Bäder GmbH', CarbonImmutable::parse('2026-09-03'), CarbonImmutable::parse('2027-09-02')),
+            new ProviderInvoiceLine(1, 1.0, 'Microsoft 365 Business Premium', 187.92, 187.92, 'CNLCON00156', 'CNL00007', 'Badhaus Bäder GmbH', CarbonImmutable::parse('2026-09-03'), CarbonImmutable::parse('2027-09-02')),
         ], 336.05, ['Seite 2 nicht lesbar']);
 
         $result = $allocator->importProviderInvoice($this->organization, $invoice, SubscriptionProvider::QualityHosting, null, '31970999.pdf', CurrencyCode::SwissFranc);
         $this->assertSame(1, $result['matched']);
         $this->assertCount(2, $result['issues'], 'Reader-Befund + Summenabweichung 187,92 ≠ 336,05');
-        $entry = ResalePurchaseEntry::query()->where('subscription_id', $klimpel->id)->firstOrFail();
+        $entry = ResalePurchaseEntry::query()->where('subscription_id', $badhaus->id)->firstOrFail();
         $this->assertSame(CurrencyCode::SwissFranc, $entry->currency, 'Währung aus dem Parameter, nicht hart EUR');
 
         // Gutschrift für eine Firma ohne QH-Abo: jüngstes Abo der Firma egal welchen Anbieters (Lauf-Cache, kein Volltabellen-Read je Zeile).
         $credit = new ProviderInvoice('7006999', CarbonImmutable::parse('2026-06-02'), true, '95229', [
-            new ProviderInvoiceLine(1, 1.0, 'Umzugsbonus', -100.0, -100.0, null, 'CNL00002', 'Ambulanter Pflegedienst Regina Zukanovic GmbH'),
+            new ProviderInvoiceLine(1, 1.0, 'Umzugsbonus', -100.0, -100.0, null, 'CNL00002', 'Ambulanter Pflegedienst Beispielhausen GmbH'),
         ], -100.0);
         $creditResult = $allocator->importProviderInvoice($this->organization, $credit, SubscriptionProvider::QualityHosting);
         $this->assertSame(1, $creditResult['matched']);
@@ -229,13 +229,13 @@ TXT;
         $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
         $projection = DomainProjection::factory()->create([
-            'organization_id' => $this->organization->id, 'connection_id' => $connection->id, 'external_domain' => 'klimpel.de', 'domain_hash' => DomainProjection::hashFor('klimpel.de'),
+            'organization_id' => $this->organization->id, 'connection_id' => $connection->id, 'external_domain' => 'badhaus.de', 'domain_hash' => DomainProjection::hashFor('badhaus.de'),
             'customer_id' => $customer->id, 'registration_at' => '2024-03-15', 'expiration_at' => '2027-03-15', 'renewal_price' => '8.87',
         ]);
         app(DomainSubscriptionSync::class)->sync($this->organization);
         DomainAccountingEntry::query()->create([
             'organization_id' => $this->organization->id, 'connection_id' => $connection->id, 'external_user' => 'reseller', 'accounting_id' => 'acc-1', 'domain_projection_id' => $projection->id,
-            'entry_date' => '2026-03-16', 'type' => 'RENEWAL', 'description' => 'klimpel.de', 'reference' => 'INV-1', 'quantity' => 1, 'net_amount' => 8.87, 'currency' => 'EUR', 'raw_hash' => 'h1',
+            'entry_date' => '2026-03-16', 'type' => 'RENEWAL', 'description' => 'badhaus.de', 'reference' => 'INV-1', 'quantity' => 1, 'net_amount' => 8.87, 'currency' => 'EUR', 'raw_hash' => 'h1',
         ]);
         $this->artisan('resale:sync-purchases', ['--org' => $this->organization->id])->expectsOutputToContain('1 Einkaufsbelege neu')->assertSuccessful();
         $domainEntry = ResalePurchaseEntry::query()->where('source', ResalePurchaseEntry::SOURCE_DOMAIN)->firstOrFail();
@@ -286,7 +286,7 @@ TXT;
         $this->assertSame(0, ResalePurchaseEntry::query()->count());
 
         // Anderer Anbieter im selben Monat zählt nicht (Perioden des Quality-Hosting-Abos sind keine Telekom-Gewichte).
-        $this->subscription('CNLCON00156', 'Microsoft 365 Business Premium', 'Klimpel Bäder GmbH', '2026-01-01');
+        $this->subscription('CNLCON00156', 'Microsoft 365 Business Premium', 'Badhaus Bäder GmbH', '2026-01-01');
         $result = $allocator->allocateVoucher($this->organization, $this->documentFor($voucher), SubscriptionProvider::TelekomMarketplace, $net, CarbonImmutable::parse('2026-03-01'));
         $this->assertSame(0, $result['entries']);
         $this->assertSame(400.0, $result['unallocated']);
@@ -338,15 +338,15 @@ TXT;
         $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
         $projection = DomainProjection::factory()->create([
-            'organization_id' => $this->organization->id, 'connection_id' => $connection->id, 'external_domain' => 'klimpel.de', 'domain_hash' => DomainProjection::hashFor('klimpel.de'),
+            'organization_id' => $this->organization->id, 'connection_id' => $connection->id, 'external_domain' => 'badhaus.de', 'domain_hash' => DomainProjection::hashFor('badhaus.de'),
             'customer_id' => $customer->id, 'registration_at' => '2024-03-15', 'expiration_at' => '2027-03-15', 'renewal_price' => '8.87',
         ]);
         app(DomainSubscriptionSync::class)->sync($this->organization);
-        $subscription = ResaleSubscription::query()->where('external_id', 'klimpel.de')->firstOrFail();
+        $subscription = ResaleSubscription::query()->where('external_id', 'badhaus.de')->firstOrFail();
         $this->assertSame(['2024-03-15', '2025-03-15', '2026-03-15'], $subscription->periods()->get()->map(static fn($p) => $p->starts_on->toDateString())->all());
         $entry = static fn(string $id, string $date, string $hash): DomainAccountingEntry => DomainAccountingEntry::query()->create([
             'organization_id' => $connection->organization_id, 'connection_id' => $connection->id, 'external_user' => 'reseller', 'accounting_id' => $id, 'domain_projection_id' => $projection->id,
-            'entry_date' => $date, 'type' => 'CREATE', 'description' => 'klimpel.de', 'reference' => 'INV-' . $id, 'quantity' => 1, 'net_amount' => 4.50, 'currency' => 'EUR', 'raw_hash' => $hash,
+            'entry_date' => $date, 'type' => 'CREATE', 'description' => 'badhaus.de', 'reference' => 'INV-' . $id, 'quantity' => 1, 'net_amount' => 4.50, 'currency' => 'EUR', 'raw_hash' => $hash,
         ]);
         $entry('acc-before', '2023-12-01', 'h-before'); // vor der Registrierung
         $entry('acc-after', '2028-06-01', 'h-after'); // nach dem Planungshorizont
@@ -360,7 +360,7 @@ TXT;
         $this->assertSame('2025-03-15', $rows[1]->period?->starts_on->toDateString());
         $this->assertNull($rows[2]->period_id, 'jenseits der geplanten Perioden');
         $this->assertSame('4.50', $rows[0]->net_amount->getAmount());
-        $this->assertSame('CREATE klimpel.de', $rows[0]->description);
+        $this->assertSame('CREATE badhaus.de', $rows[0]->description);
 
         // Idempotent: derselbe Lauf importiert nichts doppelt — auch die periodenlosen nicht.
         $this->assertSame(['entries' => 0, 'skipped' => 3], app(PurchaseAllocator::class)->syncDomainAccounting($this->organization));
@@ -372,15 +372,15 @@ TXT;
     public function test_legacy_credit_note_hash_with_position_zero_still_counts_as_duplicate(): void {
         // Review 2026-09-10 (B18): vor dem Review trugen Gutschrift-Positionen alle die Nummer 0 im Hash. Ein so
         // gespeicherter Eintrag mit demselben Betrag bleibt beim Re-Import eine Dublette — sonst käme die Zeile doppelt.
-        $klimpel = $this->subscription('CNLCON00156', 'Microsoft 365 Business Premium', 'Klimpel Bäder GmbH', '2025-09-03');
-        $schub = $this->subscription('CNLCON00109', 'Exchange Online Plan 1', 'Schub- und Schleppreederei U. Golka GmbH & Co.KG', '2025-08-15', 2);
+        $badhaus = $this->subscription('CNLCON00156', 'Microsoft 365 Business Premium', 'Badhaus Bäder GmbH', '2025-09-03');
+        $schub = $this->subscription('CNLCON00109', 'Exchange Online Plan 1', 'Hafen- und Schleppbetrieb M. Seewind GmbH & Co.KG', '2025-08-15', 2);
         $credit = (new QualityHostingInvoiceReader)->parse(self::CREDIT_TEXT);
         $this->assertSame([1, 2], array_map(static fn(ProviderInvoiceLine $l): int => $l->position, $credit->lines), 'Reader vergibt heute laufende Nummern („0" im Text)');
         $legacy = static fn(string $companyKey): string => (string) \CommonToolkit\Helper\Data\CryptoHelper::hash('provider|qualityhosting|7006872|0|' . $companyKey);
 
-        // Alt-Eintrag für Klimpel mit Legacy-Hash und gleichem Betrag; für Schub mit Legacy-Hash, aber anderem Betrag.
+        // Alt-Eintrag für Badhaus mit Legacy-Hash und gleichem Betrag; für Schub mit Legacy-Hash, aber anderem Betrag.
         ResalePurchaseEntry::query()->create([
-            'organization_id' => $this->organization->id, 'subscription_id' => $klimpel->id, 'period_id' => $klimpel->periods()->firstOrFail()->id, 'provider' => SubscriptionProvider::QualityHosting,
+            'organization_id' => $this->organization->id, 'subscription_id' => $badhaus->id, 'period_id' => $badhaus->periods()->firstOrFail()->id, 'provider' => SubscriptionProvider::QualityHosting,
             'source' => ResalePurchaseEntry::SOURCE_PROVIDER_INVOICE, 'document_number' => '7006872', 'entry_date' => '2026-06-02', 'description' => 'Umzugsbonus',
             'net_amount' => '-100.00', 'currency' => 'EUR', 'raw_hash' => $legacy('CNL00007'),
         ]);
@@ -391,10 +391,10 @@ TXT;
         ]);
 
         $result = app(PurchaseAllocator::class)->importProviderInvoice($this->organization, $credit, SubscriptionProvider::QualityHosting);
-        $this->assertSame(1, $result['duplicates'], 'Klimpel: Legacy-Hash + gleicher Betrag = Dublette');
+        $this->assertSame(1, $result['duplicates'], 'Badhaus: Legacy-Hash + gleicher Betrag = Dublette');
         $this->assertSame(1, $result['matched'], 'Schub: Legacy-Hash, aber anderer Betrag → neue Zeile');
         $this->assertSame(-100.0, $result['net']);
-        $this->assertSame(1, ResalePurchaseEntry::query()->where('subscription_id', $klimpel->id)->count());
+        $this->assertSame(1, ResalePurchaseEntry::query()->where('subscription_id', $badhaus->id)->count());
         $this->assertSame(2, ResalePurchaseEntry::query()->where('subscription_id', $schub->id)->count());
 
         // Der neue Eintrag trägt den aktuellen Hash (Position statt 0); ein weiterer Import erkennt beide.

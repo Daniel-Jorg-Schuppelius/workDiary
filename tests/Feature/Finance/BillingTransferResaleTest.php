@@ -43,7 +43,7 @@ class BillingTransferResaleTest extends TestCase {
         $this->setUpOrganization();
         $this->travelTo('2026-09-04');
         $this->accountant = $this->orgAdmin();
-        $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH', 'billing_mode' => BillingMode::Workdiary]);
+        $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH', 'billing_mode' => BillingMode::Workdiary]);
     }
 
     /** @param array<string, mixed> $attributes */

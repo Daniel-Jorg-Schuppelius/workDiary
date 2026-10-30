@@ -57,11 +57,11 @@ class MirrorCompositeTest extends TestCase {
             'organization_id' => $this->organization->id, 'external_id' => 'art-bp', 'name' => 'Microsoft 365 Business Premium', 'article_number' => 'BP',
             'type' => 'SERVICE', 'unit_name' => 'Monat', 'net_unit_price' => '20.60', 'currency' => 'EUR', 'vat_rate' => '19', 'synced_at' => now(),
         ]);
-        $this->local = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH', 'billing_mode' => BillingMode::Workdiary]);
-        $this->lexoffice = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'LDS Systems GmbH', 'billing_mode' => BillingMode::Lexoffice]);
+        $this->local = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH', 'billing_mode' => BillingMode::Workdiary]);
+        $this->lexoffice = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Nordlicht Systems GmbH', 'billing_mode' => BillingMode::Lexoffice]);
         ExternalReference::create([
             'organization_id' => $this->organization->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
-            'external_id' => 'c-lds', 'referenceable_type' => $this->lexoffice->getMorphClass(), 'referenceable_id' => $this->lexoffice->getKey(),
+            'external_id' => 'c-nordlicht', 'referenceable_type' => $this->lexoffice->getMorphClass(), 'referenceable_id' => $this->lexoffice->getKey(),
         ]);
 
         $base = [
@@ -83,7 +83,7 @@ class MirrorCompositeTest extends TestCase {
             'quantity' => '12', 'unit' => 'Monat', 'unit_price' => '20.60', 'service_date' => '2025-08-05',
         ]);
         $voucher = LexofficeVoucher::create([
-            'organization_id' => $this->organization->id, 'external_id' => 'v-1', 'contact_external_id' => 'c-lds', 'voucher_type' => 'invoice',
+            'organization_id' => $this->organization->id, 'external_id' => 'v-1', 'contact_external_id' => 'c-nordlicht', 'voucher_type' => 'invoice',
             'voucher_status' => 'paid', 'voucher_number' => 'RE/2025/0821', 'voucher_date' => '2025-08-07', 'total_amount' => 100, 'currency' => 'EUR', 'archived' => false, 'lines_synced_at' => now(),
         ]);
         LexofficeVoucherLine::create([
@@ -124,15 +124,15 @@ class MirrorCompositeTest extends TestCase {
         // Abgleich-Übersicht führt beide Empfänger mit je einer Position; beide sichere Treffer sind automatisch bestätigt (Feature 185), also keine offenen Vorschläge.
         $rows = (new RecipientReconciler)->overview($this->organization);
         $byName = array_column($rows, null, 'name');
-        $this->assertSame(1, $byName['Klimpel Bäder GmbH']['lines']);
-        $this->assertSame(1, $byName['LDS Systems GmbH']['lines']);
-        $this->assertSame([0, 0], [$byName['Klimpel Bäder GmbH']['proposed'], $byName['LDS Systems GmbH']['proposed']]);
+        $this->assertSame(1, $byName['Badhaus Bäder GmbH']['lines']);
+        $this->assertSame(1, $byName['Nordlicht Systems GmbH']['lines']);
+        $this->assertSame([0, 0], [$byName['Badhaus Bäder GmbH']['proposed'], $byName['Nordlicht Systems GmbH']['proposed']]);
         $this->assertSame(2, ResalePeriodLink::query()->where('origin', \App\Enums\Reselling\LinkOrigin::Auto->value)->count());
-        $this->assertSame([0.0, 0.0], [$byName['Klimpel Bäder GmbH']['free'], $byName['LDS Systems GmbH']['free']]);
+        $this->assertSame([0.0, 0.0], [$byName['Badhaus Bäder GmbH']['free'], $byName['Nordlicht Systems GmbH']['free']]);
 
         $admin = $this->orgAdmin();
         $this->actingAs($admin)->get(route('finance.resale.periods.index', ['status' => 'all']))->assertOk()->assertSee('RE-2025-0820')->assertSee('RE/2025/0821');
-        $this->actingAs($admin)->get(route('finance.resale.reconcile.index', ['show' => 'all']))->assertOk()->assertSee('Klimpel Bäder GmbH')->assertSee('LDS Systems GmbH');
+        $this->actingAs($admin)->get(route('finance.resale.reconcile.index', ['show' => 'all']))->assertOk()->assertSee('Badhaus Bäder GmbH')->assertSee('Nordlicht Systems GmbH');
     }
 
     public function test_registry_without_the_lexoffice_source_sees_only_local_invoices(): void {

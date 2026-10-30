@@ -33,22 +33,22 @@ class ContactPersonsTest extends TestCase {
 
     public function test_the_primary_entry_fills_an_empty_main_contact_and_a_maintained_one_stays(): void {
         $customer = new Customer(['contact_persons' => [
-            ['salutation' => 'mr', 'first_name' => 'Ralph', 'last_name' => 'Hartig', 'primary' => false],
-            ['salutation' => 'ms', 'first_name' => 'Birgit', 'last_name' => 'Hartig', 'primary' => true],
+            ['salutation' => 'mr', 'first_name' => 'Ralph', 'last_name' => 'Mustermann', 'primary' => false],
+            ['salutation' => 'ms', 'first_name' => 'Birgit', 'last_name' => 'Mustermann', 'primary' => true],
         ]]);
 
         $this->assertTrue(ContactPersons::adoptPrimary($customer));
-        $this->assertSame([ContactSalutation::Ms, 'Birgit', 'Hartig'], [$customer->contact_salutation, $customer->contact_first_name, $customer->contact_last_name]);
+        $this->assertSame([ContactSalutation::Ms, 'Birgit', 'Mustermann'], [$customer->contact_salutation, $customer->contact_first_name, $customer->contact_last_name]);
 
-        $maintained = new Supplier(['contact_first_name' => 'Anna', 'contact_last_name' => 'Müller', 'contact_persons' => [['first_name' => 'Ralph', 'last_name' => 'Hartig']]]);
+        $maintained = new Supplier(['contact_first_name' => 'Anna', 'contact_last_name' => 'Müller', 'contact_persons' => [['first_name' => 'Ralph', 'last_name' => 'Mustermann']]]);
         $this->assertFalse(ContactPersons::adoptPrimary($maintained, ['first_name' => 'Jemand', 'last_name' => 'Anderes']));
         $this->assertSame('Anna', $maintained->contact_first_name);
     }
 
     public function test_without_a_primary_flag_the_first_entry_or_the_given_person_is_taken(): void {
         $customer = new Customer(['contact_persons' => [
-            ['first_name' => 'Ralph', 'last_name' => 'Hartig'],
-            ['first_name' => 'Birgit', 'last_name' => 'Hartig'],
+            ['first_name' => 'Ralph', 'last_name' => 'Mustermann'],
+            ['first_name' => 'Birgit', 'last_name' => 'Mustermann'],
         ]]);
         $this->assertTrue(ContactPersons::adoptPrimary($customer));
         $this->assertSame('Ralph', $customer->contact_first_name);

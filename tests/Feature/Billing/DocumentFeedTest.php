@@ -60,7 +60,7 @@ final class DocumentFeedTest extends TestCase {
 
         $this->customer = Customer::factory()->create([
             'organization_id' => $this->organization->id,
-            'name' => 'Marina Vulkan Werft',
+            'name' => 'Marina Seestern Werft',
         ]);
         $this->supplier = Supplier::factory()->create([
             'organization_id' => $this->organization->id,
@@ -390,7 +390,7 @@ final class DocumentFeedTest extends TestCase {
         $this->assertSame(DocumentDirection::Outgoing->value, $row->direction);
         $this->assertSame(DocumentKind::Invoice->value, $row->kind);
         $this->assertSame('open', $row->state);
-        $this->assertSame('Marina Vulkan Werft', $row->contact_name, 'Verknüpfter Kunde gewinnt gegen den Fremdnamen.');
+        $this->assertSame('Marina Seestern Werft', $row->contact_name, 'Verknüpfter Kunde gewinnt gegen den Fremdnamen.');
 
         $totals = (new DocumentFeedQuery($this->filters()))->totals();
         $this->assertEqualsWithDelta(119.0, $totals[0]['revenue'], 0.001, 'Nur der gültige Beleg zählt.');

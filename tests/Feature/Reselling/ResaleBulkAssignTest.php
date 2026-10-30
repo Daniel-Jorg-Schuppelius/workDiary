@@ -60,8 +60,8 @@ class ResaleBulkAssignTest extends TestCase {
 
     public function test_list_filters_unassigned_and_offers_bulk_and_row_assignment(): void {
         $admin = $this->orgAdmin();
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH']);
-        $this->imported('Klimpel Bäder GmbH', ['customer_id' => $customer->id, 'label' => 'Exchange Online Plan 1']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH']);
+        $this->imported('Badhaus Bäder GmbH', ['customer_id' => $customer->id, 'label' => 'Exchange Online Plan 1']);
         $open = $this->imported('Muster Bau GmbH');
         $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
         $this->projection($connection, 'dein-pc-fachmann.de');
@@ -94,13 +94,13 @@ class ResaleBulkAssignTest extends TestCase {
         $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
         $this->projection($connection, 'dein-pc-fachmann.de');
         $this->projection($connection, 'dein-server-fachmann.de');
-        $this->projection($connection, 'dreock-optik.de');
+        $this->projection($connection, 'fernblick-optik.de');
         app(DomainSubscriptionSync::class)->sync($this->organization);
         $own = ResaleSubscription::query()->where('external_id', 'dein-pc-fachmann.de')->firstOrFail();
         $ownToo = ResaleSubscription::query()->where('external_id', 'dein-server-fachmann.de')->firstOrFail();
-        $dreock = ResaleSubscription::query()->where('external_id', 'dreock-optik.de')->firstOrFail();
-        $lds = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'LDS Systems GmbH']);
-        $end = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $lds->id, 'name' => 'Dreock Augenoptik']);
+        $fernblick = ResaleSubscription::query()->where('external_id', 'fernblick-optik.de')->firstOrFail();
+        $nordlicht = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Nordlicht Systems GmbH']);
+        $end = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $nordlicht->id, 'name' => 'Fernblick Augenoptik']);
         $this->assertSame(3, ResaleSubscription::query()->unassigned()->count());
 
         // Zwei Domains auf einmal in den eigenen Bestand.
@@ -112,28 +112,28 @@ class ResaleBulkAssignTest extends TestCase {
         $this->assertSame('p:own', $own->refresh()->sync_status);
 
         // Eine Domain an den Endkunden eines Partners — wie der Domain-Sync: Partner als Rechnungsempfänger.
-        $this->actingAs($admin)->post(route('finance.resale.subscriptions.bulk.assign'), ['ids' => [$dreock->sqid], 'mode' => 'foreign', 'foreign_customer_id' => $end->sqid])
+        $this->actingAs($admin)->post(route('finance.resale.subscriptions.bulk.assign'), ['ids' => [$fernblick->sqid], 'mode' => 'foreign', 'foreign_customer_id' => $end->sqid])
             ->assertRedirect()->assertSessionHas('success');
-        $dreock->refresh();
-        $this->assertSame($end->id, $dreock->foreign_customer_id);
-        $this->assertSame($lds->id, $dreock->customer_id);
-        $this->assertSame($lds->id, $dreock->billedTo()?->id);
-        $projection = DomainProjection::query()->where('external_domain', 'dreock-optik.de')->firstOrFail();
+        $fernblick->refresh();
+        $this->assertSame($end->id, $fernblick->foreign_customer_id);
+        $this->assertSame($nordlicht->id, $fernblick->customer_id);
+        $this->assertSame($nordlicht->id, $fernblick->billedTo()?->id);
+        $projection = DomainProjection::query()->where('external_domain', 'fernblick-optik.de')->firstOrFail();
         $this->assertSame($end->id, $projection->foreign_customer_id);
-        $this->assertSame($lds->id, $projection->customer_id);
-        $this->assertDatabaseHas('audit_logs', ['event' => 'resale_subscription.holder_assigned', 'auditable_id' => $dreock->id]);
+        $this->assertSame($nordlicht->id, $projection->customer_id);
+        $this->assertDatabaseHas('audit_logs', ['event' => 'resale_subscription.holder_assigned', 'auditable_id' => $fernblick->id]);
 
         // Der nächste Domain-Sync sieht den gespiegelten Halter und lässt alles stehen.
         app(DomainSubscriptionSync::class)->sync($this->organization);
         $this->assertTrue((bool) $own->refresh()->is_own_holding);
-        $this->assertSame($end->id, $dreock->refresh()->foreign_customer_id);
+        $this->assertSame($end->id, $fernblick->refresh()->foreign_customer_id);
         $this->assertSame(0, ResaleSubscription::query()->unassigned()->count());
     }
 
     public function test_bulk_assign_remembers_the_company_and_skips_derived_assignments(): void {
         $admin = $this->orgAdmin();
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Muster Bau GmbH']);
-        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'LDS Systems GmbH']);
+        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Nordlicht Systems GmbH']);
         $first = $this->imported('Muster Bau GmbH');
         $second = $this->imported('Muster Bau GmbH', ['label' => 'Exchange Online Plan 1']);
         $derived = $this->imported('Muster Bau GmbH', ['parent_id' => $first->id, 'sync_status' => ResaleAccountAllocation::DERIVED_PREFIX . '1']);

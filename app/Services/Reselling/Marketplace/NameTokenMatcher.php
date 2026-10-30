@@ -15,8 +15,8 @@ namespace App\Services\Reselling\Marketplace;
 /**
  * Firmennamen tokenbasiert vergleichen: Rechtsform und Füllwörter zählen
  * nicht, die Reihenfolge auch nicht. „Auerswald" trifft „Auerswald GmbH & Co.
- * KG", „Urban Fliesen" trifft „Fliesen Urban", „Meyer und Simson" trifft
- * „Meyer&Simson Elektroinstallationen GmbH" — alle Kern-Tokens des kürzeren
+ * KG", „Wendt Fliesen" trifft „Fliesen Wendt", „Berg und Tal" trifft
+ * „Berg&Tal Elektroinstallationen GmbH" — alle Kern-Tokens des kürzeren
  * Namens stecken im längeren, und mindestens einer davon ist länger als drei
  * Zeichen (sonst träfe „GSR" jede Firma mit diesem Kürzel).
  */
@@ -49,7 +49,7 @@ final class NameTokenMatcher {
     }
 
     /**
-     * Namensbestandteile ohne Rechtsform („Haus 24 GmbH“ → haus, 24).
+     * Namensbestandteile ohne Rechtsform („Hof 24 GmbH“ → hof, 24).
      *
      * @return list<string>
      */

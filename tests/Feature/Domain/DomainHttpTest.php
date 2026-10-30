@@ -477,14 +477,14 @@ class DomainHttpTest extends TestCase {
         $reseller = DomainResellerAccount::factory()->create([
             'organization_id' => $this->organization->id,
             'connection_id' => $connection->id,
-            'external_user' => 'lds-systems',
+            'external_user' => 'nordlicht-systems',
         ]);
         DomainProjection::factory()->create([
             'organization_id' => $this->organization->id,
             'connection_id' => $connection->id,
             'reseller_account_id' => $reseller->id,
-            'external_domain' => 'lds-kunde.de',
-            'domain_hash' => DomainProjection::hashFor('lds-kunde.de'),
+            'external_domain' => 'nordlicht-kunde.de',
+            'domain_hash' => DomainProjection::hashFor('nordlicht-kunde.de'),
         ]);
 
         $this->actingAs($this->admin)
@@ -493,7 +493,7 @@ class DomainHttpTest extends TestCase {
         $this->assertSame($customer->id, $reseller->refresh()->customer_id);
 
         // Kundenakte gruppiert die Subuser-Domain ohne Einzelzuordnung.
-        $this->actingAs($this->admin)->get(route('customers.show', $customer))->assertOk()->assertSee('lds-kunde.de');
+        $this->actingAs($this->admin)->get(route('customers.show', $customer))->assertOk()->assertSee('nordlicht-kunde.de');
     }
 
     public function test_show_renders_customer_suggestions(): void {

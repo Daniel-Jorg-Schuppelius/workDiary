@@ -25,7 +25,7 @@ use Tests\TestCase;
 
 /**
  * Lizenzabtretung (Feature 152): zwei Firmen im selben Haus, ein Vertrag
- * beim Anbieter — Schub- und Schleppreederei tritt Lizenzen an Märkische
+ * beim Anbieter — Hafen- und Schleppbetrieb tritt Lizenzen an Nordufer
  * Bunker ab. Der Vertrag plant mit dem Rest, die Abtretung hat eigene
  * Perioden und eigene Rechnungen; beim Nachfolger läuft sie weiter.
  */
@@ -71,8 +71,8 @@ class LicenceTransferTest extends TestCase {
 
     public function test_transfer_splits_periods_by_holder_and_links_each_holders_invoices(): void {
         $admin = $this->orgAdmin();
-        $schub = $this->customerWithContact('Schub- und Schleppreederei U. Golka GmbH & CO. KG', 'c-schub');
-        $maerkische = $this->customerWithContact('Märkische Bunker- und Service GmbH & Co. KG', 'c-mb');
+        $schub = $this->customerWithContact('Hafen- und Schleppbetrieb M. Seewind GmbH & CO. KG', 'c-schub');
+        $nordufer = $this->customerWithContact('Nordufer Tank- und Service GmbH & Co. KG', 'c-mb');
         $contract = ResaleSubscription::query()->create([
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'external_id' => 'ent-9', 'label' => 'Exchange Online (Plan 1)',
             'customer_id' => $schub->id, 'article_ref' => 'lex:' . $this->exchange->id, 'quantity' => 9, 'starts_on' => '2024-10-18', 'ends_on' => '2026-10-18',
@@ -84,15 +84,15 @@ class LicenceTransferTest extends TestCase {
         $this->actingAs($admin)->get(route('finance.resale.transfer.create', $contract->sqid))->assertOk()->assertSee(__('resale.transfer.title', ['subscription' => $contract->label]));
         // Zu viel geht nicht.
         $this->actingAs($admin)->post(route('finance.resale.transfer.store', $contract->sqid), [
-            'mode' => 'customer', 'customer_id' => $maerkische->sqid, 'quantity' => 10, 'starts_on' => '2024-10-18',
+            'mode' => 'customer', 'customer_id' => $nordufer->sqid, 'quantity' => 10, 'starts_on' => '2024-10-18',
         ])->assertSessionHasErrors('quantity');
         $this->actingAs($admin)->post(route('finance.resale.transfer.store', $contract->sqid), [
-            'mode' => 'customer', 'customer_id' => $maerkische->sqid, 'quantity' => 5, 'starts_on' => '2024-10-18', 'sale_unit_price' => '47.40', 'note' => 'gleiches Haus',
+            'mode' => 'customer', 'customer_id' => $nordufer->sqid, 'quantity' => 5, 'starts_on' => '2024-10-18', 'sale_unit_price' => '47.40', 'note' => 'gleiches Haus',
         ])->assertRedirect(route('finance.resale.show', $contract->sqid))->assertSessionHas('success');
 
         $assignment = ResaleSubscription::query()->where('parent_id', $contract->id)->firstOrFail();
         $this->assertSame('ent-9#1', $assignment->external_id);
-        $this->assertSame($maerkische->id, $assignment->customer_id);
+        $this->assertSame($nordufer->id, $assignment->customer_id);
         $this->assertSame(5, $assignment->quantity);
         $this->assertSame([5, 5], $assignment->periods()->pluck('quantity')->all(), 'eigene Perioden der Abtretung');
         $this->assertSame([4, 4], $contract->periods()->pluck('quantity')->all(), 'Vertrag plant mit dem Rest');
@@ -108,7 +108,7 @@ class LicenceTransferTest extends TestCase {
         $this->assertSame(5, $assignment->periods()->first()?->links()->count());
 
         $page = $this->actingAs($admin)->get(route('finance.resale.show', $contract->sqid))->assertOk();
-        $page->assertSee('Märkische Bunker- und Service GmbH & Co. KG')->assertSee('×5');
+        $page->assertSee('Nordufer Tank- und Service GmbH & Co. KG')->assertSee('×5');
         $this->actingAs($admin)->get(route('finance.resale.show', $assignment->sqid))->assertOk()->assertSee(__('resale.transfer.from'));
 
         // Vertrag mit Abtretung lässt sich nicht löschen; die Abtretung schon — offene Perioden des
@@ -123,15 +123,15 @@ class LicenceTransferTest extends TestCase {
     }
 
     public function test_assignment_is_carried_over_to_the_successor_contract(): void {
-        $schub = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Schub- und Schleppreederei']);
-        $maerkische = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Märkische Bunker']);
+        $schub = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Hafen- und Schleppbetrieb']);
+        $nordufer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Nordufer Tank']);
         $contract = ResaleSubscription::query()->create([
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'external_id' => 'ent-9', 'label' => 'Exchange Online (Plan 1)',
             'customer_id' => $schub->id, 'quantity' => 9, 'starts_on' => '2024-10-18', 'ends_on' => '2025-10-18', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'cancel', 'status' => 'cancelled', 'currency' => 'EUR',
         ]);
         $assignment = ResaleSubscription::query()->create([
             'organization_id' => $this->organization->id, 'parent_id' => $contract->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'external_id' => 'ent-9#1', 'label' => 'Exchange Online (Plan 1)',
-            'customer_id' => $maerkische->id, 'quantity' => 5, 'starts_on' => '2024-10-18', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto', 'status' => 'active', 'currency' => 'EUR',
+            'customer_id' => $nordufer->id, 'quantity' => 5, 'starts_on' => '2024-10-18', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto', 'status' => 'active', 'currency' => 'EUR',
         ]);
         $successor = ResaleSubscription::query()->create([
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'qualityhosting', 'external_id' => 'CNLCON1', 'label' => 'Exchange Online Plan 1',
@@ -142,7 +142,7 @@ class LicenceTransferTest extends TestCase {
         $method->invoke($importer, $contract, $successor, \Carbon\CarbonImmutable::parse('2026-09-08'));
 
         $carried = ResaleSubscription::query()->where('parent_id', $successor->id)->firstOrFail();
-        $this->assertSame($maerkische->id, $carried->customer_id);
+        $this->assertSame($nordufer->id, $carried->customer_id);
         $this->assertSame(5, $carried->quantity);
         $this->assertSame('2025-10-18', $carried->starts_on->toDateString());
         $this->assertSame('CNLCON1#1', $carried->external_id);
@@ -156,11 +156,11 @@ class LicenceTransferTest extends TestCase {
     }
 
     public function test_holder_change_over_time_is_a_full_transfer_for_the_old_period(): void {
-        // EcoTec: Firma aufgespalten, HLSK insolvent, der Vertrag lief bei Service weiter.
+        // Ökotherm: Firma aufgespalten, HLSK insolvent, der Vertrag lief bei Service weiter.
         // 2020 an HLSK berechnet, danach gehört der Vertrag Service.
         $admin = $this->orgAdmin();
-        $service = $this->customerWithContact('EcoTec Service GmbH', 'c-eco');
-        $hlsk = $this->customerWithContact('EcoTec - HLSK GmbH', 'c-hlsk');
+        $service = $this->customerWithContact('Ökotherm Service GmbH', 'c-eco');
+        $hlsk = $this->customerWithContact('Ökotherm - HLSK GmbH', 'c-hlsk');
         $contract = ResaleSubscription::query()->create([
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'external_id' => 'ent-5', 'label' => 'Exchange Online (Plan 1)',
             'customer_id' => $service->id, 'article_ref' => 'lex:' . $this->exchange->id, 'quantity' => 5, 'starts_on' => '2024-04-24', 'ends_on' => '2026-04-24',
@@ -179,7 +179,7 @@ class LicenceTransferTest extends TestCase {
 
         // Der Abgleich bietet die HLSK-Rechnung mit „Periode an … abtreten" an — vorbelegt mit Kunde, Menge und Zeitraum.
         $page = $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $service))->assertOk();
-        $page->assertSee(__('resale.transfer.action_period', ['customer' => 'EcoTec - HLSK GmbH']));
+        $page->assertSee(__('resale.transfer.action_period', ['customer' => 'Ökotherm - HLSK GmbH']));
         $dialog = $this->actingAs($admin)->get(route('finance.resale.transfer.create', ['subscription' => $contract->sqid, 'customer' => $hlsk->sqid, 'quantity' => 5, 'starts_on' => '2024-04-24', 'ends_on' => '2025-04-23']))->assertOk();
         $dialog->assertSee('value="5"', false)->assertSee('2024-04-24')->assertSee('2025-04-23');
 
@@ -199,10 +199,10 @@ class LicenceTransferTest extends TestCase {
 
     public function test_transfer_after_confirmed_periods_reduces_their_quantity_and_settles_them(): void {
         // Prod-Fall Schub & Schlepp: Perioden waren schon mit 9 Lizenzen bestätigt (4 Schub-Positionen = teilweise),
-        // dann kam die Abtretung von 5 an Märkische — die bestätigten Perioden müssen auf 4 fallen und damit voll sein.
+        // dann kam die Abtretung von 5 an Nordufer — die bestätigten Perioden müssen auf 4 fallen und damit voll sein.
         $admin = $this->orgAdmin();
-        $schub = $this->customerWithContact('Schub- und Schleppreederei U. Golka GmbH & CO. KG', 'c-schub');
-        $maerkische = $this->customerWithContact('Märkische Bunker- und Service GmbH & Co. KG', 'c-mb');
+        $schub = $this->customerWithContact('Hafen- und Schleppbetrieb M. Seewind GmbH & CO. KG', 'c-schub');
+        $nordufer = $this->customerWithContact('Nordufer Tank- und Service GmbH & Co. KG', 'c-mb');
         $contract = ResaleSubscription::query()->create([
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'external_id' => 'ent-9', 'label' => 'Exchange Online (Plan 1)',
             'customer_id' => $schub->id, 'article_ref' => 'lex:' . $this->exchange->id, 'quantity' => 9, 'starts_on' => '2024-10-13', 'ends_on' => '2026-10-18',
@@ -218,7 +218,7 @@ class LicenceTransferTest extends TestCase {
         $this->assertNotNull($first->fresh()?->decided_at);
 
         $this->actingAs($admin)->post(route('finance.resale.transfer.store', $contract->sqid), [
-            'mode' => 'customer', 'customer_id' => $maerkische->sqid, 'quantity' => 5, 'starts_on' => '2024-10-13',
+            'mode' => 'customer', 'customer_id' => $nordufer->sqid, 'quantity' => 5, 'starts_on' => '2024-10-13',
         ])->assertRedirect(route('finance.resale.show', $contract->sqid));
 
         $first->refresh();
@@ -228,7 +228,7 @@ class LicenceTransferTest extends TestCase {
         $this->assertSame('189.60', $first->expected_sale?->getAmount(), '4 × 47,40');
         $assignment = ResaleSubscription::query()->where('parent_id', $contract->id)->firstOrFail();
         (new LinkProposer)->propose($this->organization);
-        $this->assertSame(PeriodStatus::Billed, $assignment->periods()->first()?->status, 'Märkisches fünf Positionen decken die Abtretung');
+        $this->assertSame(PeriodStatus::Billed, $assignment->periods()->first()?->status, 'Nordufers fünf Positionen decken die Abtretung');
     }
 
     public function test_transfer_inside_a_running_period_is_co_termed_with_the_contract(): void {
@@ -237,8 +237,8 @@ class LicenceTransferTest extends TestCase {
         // der Vertrag behält in der laufenden Periode alle 9 (bezahlt), ab 18.10.2025 den Rest. Dialog und Controller
         // sind unverändert — die Co-Term-Regel sitzt im PeriodPlanner.
         $admin = $this->orgAdmin();
-        $schub = $this->customerWithContact('Schub- und Schleppreederei U. Golka GmbH & CO. KG', 'c-schub');
-        $maerkische = $this->customerWithContact('Märkische Bunker- und Service GmbH & Co. KG', 'c-mb');
+        $schub = $this->customerWithContact('Hafen- und Schleppbetrieb M. Seewind GmbH & CO. KG', 'c-schub');
+        $nordufer = $this->customerWithContact('Nordufer Tank- und Service GmbH & Co. KG', 'c-mb');
         $contract = ResaleSubscription::query()->create([
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'external_id' => 'ent-9', 'label' => 'Exchange Online (Plan 1)',
             'customer_id' => $schub->id, 'article_ref' => 'lex:' . $this->exchange->id, 'quantity' => 9, 'starts_on' => '2024-10-18', 'ends_on' => '2026-10-18',
@@ -247,7 +247,7 @@ class LicenceTransferTest extends TestCase {
         (new PeriodPlanner)->sync($contract);
 
         $this->actingAs($admin)->post(route('finance.resale.transfer.store', $contract->sqid), [
-            'mode' => 'customer', 'customer_id' => $maerkische->sqid, 'quantity' => 5, 'starts_on' => '2025-04-01', 'sale_unit_price' => '47.40',
+            'mode' => 'customer', 'customer_id' => $nordufer->sqid, 'quantity' => 5, 'starts_on' => '2025-04-01', 'sale_unit_price' => '47.40',
         ])->assertRedirect(route('finance.resale.show', $contract->sqid))->assertSessionHas('success');
 
         $assignment = ResaleSubscription::query()->where('parent_id', $contract->id)->firstOrFail();
@@ -262,15 +262,15 @@ class LicenceTransferTest extends TestCase {
     public function test_assignment_helpers_compute_peak_quantity_and_next_suffix(): void {
         // Review 2026-09-10 (B8/B10): Verfügbarkeit über die ganze Laufzeit statt nur am Starttag;
         // Suffix aus dem höchsten vorhandenen `#n`, nicht aus der Anzahl.
-        $schub = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Schub- und Schleppreederei']);
-        $maerkische = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Märkische Bunker']);
+        $schub = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Hafen- und Schleppbetrieb']);
+        $nordufer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Nordufer Tank']);
         $contract = ResaleSubscription::query()->create([
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'external_id' => 'ent-9', 'label' => 'Exchange Online (Plan 1)',
             'customer_id' => $schub->id, 'quantity' => 9, 'starts_on' => '2024-10-18', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto', 'status' => 'active', 'currency' => 'EUR',
         ]);
         $assignment = static fn(string $externalId, int $quantity, string $from, ?string $to) => ResaleSubscription::query()->create([
             'organization_id' => $contract->organization_id, 'parent_id' => $contract->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'external_id' => $externalId, 'label' => 'Exchange Online (Plan 1)',
-            'customer_id' => $maerkische->id, 'quantity' => $quantity, 'starts_on' => $from, 'ends_on' => $to, 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto', 'status' => 'active', 'currency' => 'EUR',
+            'customer_id' => $nordufer->id, 'quantity' => $quantity, 'starts_on' => $from, 'ends_on' => $to, 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto', 'status' => 'active', 'currency' => 'EUR',
         ]);
         $day = static fn(string $d): \Carbon\CarbonImmutable => \Carbon\CarbonImmutable::parse($d);
 
@@ -304,7 +304,7 @@ class LicenceTransferTest extends TestCase {
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'manual', 'label' => 'Ohne Muster', 'customer_id' => $schub->id, 'quantity' => 3, 'starts_on' => '2025-01-01', 'currency' => 'EUR', 'status' => 'active',
         ]);
         ResaleSubscription::query()->create([
-            'organization_id' => $this->organization->id, 'parent_id' => $plain->id, 'kind' => 'license', 'provider' => 'manual', 'external_id' => 'frei', 'label' => 'Ohne Muster', 'customer_id' => $maerkische->id, 'quantity' => 1, 'starts_on' => '2025-01-01', 'currency' => 'EUR', 'status' => 'active',
+            'organization_id' => $this->organization->id, 'parent_id' => $plain->id, 'kind' => 'license', 'provider' => 'manual', 'external_id' => 'frei', 'label' => 'Ohne Muster', 'customer_id' => $nordufer->id, 'quantity' => 1, 'starts_on' => '2025-01-01', 'currency' => 'EUR', 'status' => 'active',
         ]);
         $this->assertSame(2, $plain->nextAssignmentSuffix(), 'kein #n: Anzahl + 1');
 

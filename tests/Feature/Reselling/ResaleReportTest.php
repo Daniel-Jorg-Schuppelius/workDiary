@@ -38,7 +38,7 @@ class ResaleReportTest extends TestCase {
 
     public function test_report_export_and_widget_reflect_periods_and_links(): void {
         $admin = $this->orgAdmin();
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH']);
         $subscription = ResaleSubscription::query()->create([
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'qualityhosting', 'label' => 'Microsoft 365 Business Premium',
             'customer_id' => $customer->id, 'quantity' => 2, 'starts_on' => '2025-08-05', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto',
@@ -64,7 +64,7 @@ class ResaleReportTest extends TestCase {
         $this->actingAs($admin)->get(route('finance.resale.report.index'))
             ->assertOk()
             ->assertSee('Microsoft 365 Business Premium')
-            ->assertSee('Klimpel Bäder GmbH')
+            ->assertSee('Badhaus Bäder GmbH')
             ->assertSee('988,80 €')   // Soll-Verkauf 2 Perioden × 2 × 247,20
             ->assertSee('494,40 €')   // berechnet
             ->assertSee('751,68 €');  // Soll-Einkauf 2 × 2 × 187,92
@@ -72,7 +72,7 @@ class ResaleReportTest extends TestCase {
         $csv = $this->actingAs($admin)->get(route('finance.resale.report.export'));
         $csv->assertOk()->assertHeader('content-type', 'text/csv; charset=UTF-8');
         $body = $csv->streamedContent();
-        $this->assertStringContainsString('Klimpel Bäder GmbH', $body);
+        $this->assertStringContainsString('Badhaus Bäder GmbH', $body);
         $this->assertStringContainsString('05.08.2026 – 04.08.2027', $body, 'nur die offene Periode 2026');
         $this->assertStringNotContainsString('05.08.2025 – 04.08.2026', $body);
         $this->assertStringContainsString('24,00', $body);

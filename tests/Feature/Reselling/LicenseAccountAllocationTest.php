@@ -23,7 +23,7 @@ use Tests\TestCase;
 
 /**
  * Lizenzkonto und Aufteilung (Feature 185, MVP-1399–1402): Schub und Schlepp
- * — ein Konto, mehrere Exchange-Verträge, Märkische Bunker hält fünf. Die
+ * — ein Konto, mehrere Exchange-Verträge, Nordufer Tank hält fünf. Die
  * Aufteilung je Konto leitet die Abtretungen je Vertrag ab (größter Vertrag
  * zuerst), der Nachfolger erbt sie, abgelöste Verträge werden nachgeplant.
  */
@@ -33,21 +33,21 @@ class LicenseAccountAllocationTest extends TestCase {
 
     private Customer $schub;
 
-    private Customer $maerkische;
+    private Customer $nordufer;
 
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
         $this->travelTo('2026-10-26');
-        $this->schub = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Schub- und Schleppreederei U. Golka GmbH & CO. KG']);
-        $this->maerkische = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Märkische Bunker- und Service GmbH & Co. KG']);
+        $this->schub = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Hafen- und Schleppbetrieb M. Seewind GmbH & CO. KG']);
+        $this->nordufer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Nordufer Tank- und Service GmbH & Co. KG']);
     }
 
     /** @param  array<string, mixed>  $attributes */
     private function contract(string $externalId, int $quantity, string $startsOn, array $attributes = []): ResaleSubscription {
         $subscription = ResaleSubscription::query()->create($attributes + [
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'qualityhosting', 'external_id' => $externalId, 'external_order_id' => $externalId,
-            'provider_account' => 'CNL00010', 'company_name' => 'Schub- und Schleppreederei U. Golka GmbH & Co.KG', 'label' => 'Exchange Online Plan 1',
+            'provider_account' => 'CNL00010', 'company_name' => 'Hafen- und Schleppbetrieb M. Seewind GmbH & Co.KG', 'label' => 'Exchange Online Plan 1',
             'customer_id' => $this->schub->id, 'quantity' => $quantity, 'starts_on' => $startsOn, 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto',
             'status' => 'active', 'currency' => 'EUR', 'purchase_unit_price' => '34.32', 'sale_unit_price' => '47.40',
         ]);
@@ -74,12 +74,12 @@ class LicenseAccountAllocationTest extends TestCase {
         $this->actingAs($admin)->get(route('finance.resale.accounts.allocations.create', $group->routeKey()))->assertOk()->assertSee(__('resale.account.allocation.add'));
 
         $this->actingAs($admin)->post(route('finance.resale.accounts.allocations.store', $group->routeKey()), [
-            'mode' => 'customer', 'customer_id' => $this->maerkische->sqid, 'product_key' => 'name:exchange online plan 1', 'quantity' => 5, 'valid_from' => '2025-10-18',
+            'mode' => 'customer', 'customer_id' => $this->nordufer->sqid, 'product_key' => 'name:exchange online plan 1', 'quantity' => 5, 'valid_from' => '2025-10-18',
         ])->assertRedirect(route('finance.resale.accounts.show', $group->routeKey()))->assertSessionHas('success')->assertSessionMissing('warning');
 
         $derived = ResaleSubscription::query()->where('parent_id', $nine->id)->firstOrFail();
         $this->assertSame(5, $derived->quantity, 'fünf aus dem Neuner-Vertrag');
-        $this->assertSame($this->maerkische->id, $derived->customer_id);
+        $this->assertSame($this->nordufer->id, $derived->customer_id);
         $this->assertSame('CNLCON00111#1', $derived->external_id);
         $this->assertTrue($derived->isDerivedAssignment());
         $this->assertSame(0, ResaleSubscription::query()->where('parent_id', $single->id)->count(), 'der Einzelvertrag bleibt beim Vertragshalter');
@@ -87,12 +87,12 @@ class LicenseAccountAllocationTest extends TestCase {
         $this->assertSame([5, 5], $derived->periods()->pluck('quantity')->all());
 
         $page = $this->actingAs($admin)->get(route('finance.resale.accounts.show', $group->routeKey()))->assertOk();
-        $page->assertSee('Märkische Bunker- und Service GmbH &amp; Co. KG', false)->assertSee(__('resale.account.allocation.derived'))->assertSee(__('resale.account.grid.missing'));
+        $page->assertSee('Nordufer Tank- und Service GmbH &amp; Co. KG', false)->assertSee(__('resale.account.allocation.derived'))->assertSee(__('resale.account.grid.missing'));
 
         // Menge ändern: die Abtretung folgt — erst der größte Vertrag, dann nach Beginn (17.10. vor 25.10.); mehr als der Bestand ergibt einen Konflikt-Hinweis.
         $allocation = ResaleAccountAllocation::query()->firstOrFail();
         $this->actingAs($admin)->put(route('finance.resale.accounts.allocations.update', $allocation->sqid), [
-            'mode' => 'customer', 'customer_id' => $this->maerkische->sqid, 'product_key' => 'name:exchange online plan 1', 'quantity' => 10, 'valid_from' => '2025-10-18',
+            'mode' => 'customer', 'customer_id' => $this->nordufer->sqid, 'product_key' => 'name:exchange online plan 1', 'quantity' => 10, 'valid_from' => '2025-10-18',
         ])->assertRedirect()->assertSessionHas('success')->assertSessionMissing('warning');
         $this->assertSame(9, $derived->fresh()?->quantity, 'der Neuner-Vertrag ganz');
         $this->assertSame(1, ResaleSubscription::query()->where('parent_id', $earlier->id)->count(), 'die zehnte Lizenz aus dem Vertrag vom 17.10.');
@@ -100,7 +100,7 @@ class LicenseAccountAllocationTest extends TestCase {
         // Der Vertrag vom 17.10. läuft einen Tag vor der Aufteilung: seine erste Periode bleibt (Menge 1), die nächste entfällt.
         $this->assertSame([1], $earlier->fresh()?->periods()->pluck('quantity')->all(), 'ganz abgetreten ab 18.10.: nur die laufende Periode bleibt');
         $this->actingAs($admin)->put(route('finance.resale.accounts.allocations.update', $allocation->sqid), [
-            'mode' => 'customer', 'customer_id' => $this->maerkische->sqid, 'product_key' => 'name:exchange online plan 1', 'quantity' => 12, 'valid_from' => '2025-10-18',
+            'mode' => 'customer', 'customer_id' => $this->nordufer->sqid, 'product_key' => 'name:exchange online plan 1', 'quantity' => 12, 'valid_from' => '2025-10-18',
         ])->assertRedirect()->assertSessionHas('warning', __('resale.account.allocation.conflict', ['missing' => 1, 'product' => 'Exchange Online Plan 1']));
         $this->assertSame(1, ResaleSubscription::query()->where('parent_id', $single->id)->count(), '12 > 11: auch der dritte Vertrag ganz, eine fehlt');
 
@@ -116,7 +116,7 @@ class LicenseAccountAllocationTest extends TestCase {
         foreach (range('A', 'G') as $letter) {
             $this->contract('ent-' . $letter, 1, '2026-01-01', ['label' => 'Produkt ' . $letter, 'article_ref' => 'art:' . $letter]);
         }
-        foreach (['bike-the-planet.de', 'cloadhub.com', 'e-cld.net'] as $i => $domain) {
+        foreach (['rad-um-die-welt.de', 'wolkenhub.com', 'e-cld.net'] as $i => $domain) {
             $this->contract('dom-' . $i, 1, '2026-01-01', [
                 'kind' => SubscriptionKind::Domain->value, 'provider' => SubscriptionProvider::DomainReselling->value, 'provider_account' => 'holder:own',
                 'label' => $domain, 'customer_id' => null, 'is_own_holding' => true, 'company_name' => null,
@@ -130,7 +130,7 @@ class LicenseAccountAllocationTest extends TestCase {
         $page->assertDontSee('Produkt F')->assertDontSee('Produkt G')
             ->assertSee(__('resale.account.products_more', ['count' => 2]))
             ->assertSee('3 ×')->assertSee(trans_choice('resale.account.products_domains', 3))
-            ->assertDontSee('bike-the-planet.de')->assertDontSee('cloadhub.com');
+            ->assertDontSee('rad-um-die-welt.de')->assertDontSee('wolkenhub.com');
     }
 
     public function test_allocation_respects_manual_assignments_and_other_holders(): void {
@@ -142,7 +142,7 @@ class LicenseAccountAllocationTest extends TestCase {
         ]);
         ResaleAccountAllocation::query()->create([
             'organization_id' => $this->organization->id, 'provider' => 'qualityhosting', 'provider_account' => 'CNL00010', 'product_key' => 'name:exchange online plan 1', 'product_label' => 'Exchange Online Plan 1',
-            'customer_id' => $this->maerkische->id, 'quantity' => 7, 'valid_from' => '2025-10-18',
+            'customer_id' => $this->nordufer->id, 'quantity' => 7, 'valid_from' => '2025-10-18',
         ]);
         $deriver = app(AllocationDeriver::class);
         $group = app(LicenseAccounts::class)->group($this->organization, 'qualityhosting:CNL00010');
@@ -151,7 +151,7 @@ class LicenseAccountAllocationTest extends TestCase {
 
         $this->assertSame(1, $result['created']);
         $this->assertSame(1, $result['conflicts'][0]['missing'] ?? null, 'manuelle 3 + abgeleitete 6 = 9, eine fehlt');
-        $derived = ResaleSubscription::query()->where('parent_id', $nine->id)->where('customer_id', $this->maerkische->id)->firstOrFail();
+        $derived = ResaleSubscription::query()->where('parent_id', $nine->id)->where('customer_id', $this->nordufer->id)->firstOrFail();
         $this->assertSame(6, $derived->quantity, 'manuelle Abtretung zählt gegen die Kapazität');
         $this->assertSame('CNLCON00111#2', $derived->external_id);
     }
@@ -160,7 +160,7 @@ class LicenseAccountAllocationTest extends TestCase {
         // Telekom-Vertrag mit Aufteilung → Quality-Hosting-Nachfolger: die Aufteilung folgt dem neuen Konto und gilt je Zeitabschnitt.
         $telekom = ResaleSubscription::query()->create([
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'external_id' => 'ent-9', 'provider_account' => '4014813',
-            'company_name' => 'Schub- und Schleppreederei U. Golka GmbH & Co.KG', 'label' => 'Exchange Online (Plan 1)', 'customer_id' => $this->schub->id, 'quantity' => 9,
+            'company_name' => 'Hafen- und Schleppbetrieb M. Seewind GmbH & Co.KG', 'label' => 'Exchange Online (Plan 1)', 'customer_id' => $this->schub->id, 'quantity' => 9,
             'starts_on' => '2022-10-13', 'ends_on' => '2025-10-18', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'cancel', 'status' => 'superseded', 'currency' => 'EUR', 'sale_unit_price' => '47.40',
         ]);
         (new PeriodPlanner)->sync($telekom);
@@ -168,7 +168,7 @@ class LicenseAccountAllocationTest extends TestCase {
         $telekom->forceFill(['successor_id' => $successor->id])->save();
         ResaleAccountAllocation::query()->create([
             'organization_id' => $this->organization->id, 'provider' => 'telekom_marketplace', 'provider_account' => '4014813', 'product_key' => 'name:exchange online plan 1', 'product_label' => 'Exchange Online (Plan 1)',
-            'customer_id' => $this->maerkische->id, 'quantity' => 5, 'valid_from' => '2022-10-13',
+            'customer_id' => $this->nordufer->id, 'quantity' => 5, 'valid_from' => '2022-10-13',
         ]);
 
         $accounts = app(LicenseAccounts::class);
@@ -205,7 +205,7 @@ class LicenseAccountAllocationTest extends TestCase {
         // Abtretung nachträglich von Hand, ohne Planerlauf — so stand #43 am 08.09. in der Produktion.
         ResaleSubscription::query()->create([
             'organization_id' => $this->organization->id, 'parent_id' => $telekom->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'external_id' => 'ent-9#1', 'label' => 'Exchange Online (Plan 1)',
-            'customer_id' => $this->maerkische->id, 'quantity' => 5, 'starts_on' => '2022-10-13', 'ends_on' => '2025-10-18', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'cancel', 'status' => 'superseded', 'currency' => 'EUR',
+            'customer_id' => $this->nordufer->id, 'quantity' => 5, 'starts_on' => '2022-10-13', 'ends_on' => '2025-10-18', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'cancel', 'status' => 'superseded', 'currency' => 'EUR',
         ]);
         $this->assertSame(9, $first->fresh()?->quantity, 'vor dem Lauf unverändert');
 

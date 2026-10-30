@@ -45,7 +45,7 @@ final class LexofficeVoucherSearchTest extends TestCase {
 
         $this->customer = Customer::factory()->create([
             'organization_id' => $this->organization->id,
-            'name' => 'BDM Haustechnik e.K.',
+            'name' => 'Rohr Haustechnik e.K.',
         ]);
 
         LexofficeVoucher::query()->create([

@@ -45,7 +45,7 @@ class ResaleContractLinkTest extends TestCase {
         $this->setUpOrganization();
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = $this->orgAdmin();
-        $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH']);
+        $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH']);
         $this->travelTo('2026-09-11');
     }
 
@@ -111,7 +111,7 @@ class ResaleContractLinkTest extends TestCase {
         $this->actingAs($this->admin)->get(route('finance.resale.create'))
             ->assertOk()
             ->assertSee(__('resale.contract.field'))
-            ->assertSee('V-2026-0007 · Microsoft 365 Rahmenvertrag — Klimpel Bäder GmbH')
+            ->assertSee('V-2026-0007 · Microsoft 365 Rahmenvertrag — Badhaus Bäder GmbH')
             ->assertDontSee('Beendeter Vertrag')
             ->assertDontSee($supplierContract->title);
 
@@ -130,7 +130,7 @@ class ResaleContractLinkTest extends TestCase {
             ->assertOk()
             ->assertSee(__('resale.contract.panel.title'))
             ->assertSee('Microsoft 365 Business Premium')
-            ->assertSee('Klimpel Bäder GmbH')
+            ->assertSee('Badhaus Bäder GmbH')
             ->assertSee(route('finance.resale.show', $subscription->sqid));
 
         // Lösen: leeres Feld nimmt den Vertrag wieder weg.
@@ -153,7 +153,7 @@ class ResaleContractLinkTest extends TestCase {
             ->assertJsonValidationErrors(['contract_id' => __('resale.contract.error.no_recipient')]);
 
         // Fremder Kunde als Halter: Rechnung an den Partner, dessen Vertrag passt.
-        $end = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $this->customer->id, 'name' => 'Steuerbüro Kaik']);
+        $end = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $this->customer->id, 'name' => 'Steuerbüro Zahlenwerk']);
         $this->actingAs($this->admin)->postJson(route('finance.resale.store'), $this->payload(['holder' => 'foreign', 'customer_id' => '', 'foreign_customer_id' => $end->sqid, 'contract_id' => $own->sqid]))
             ->assertRedirect();
         $this->assertSame($own->id, ResaleSubscription::query()->firstOrFail()->contract_id);

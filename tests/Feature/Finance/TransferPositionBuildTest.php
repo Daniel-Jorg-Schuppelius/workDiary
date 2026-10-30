@@ -320,27 +320,27 @@ class TransferPositionBuildTest extends TestCase {
     }
 
     public function test_endkunde_erscheint_in_bezeichnung_und_text(): void {
-        $this->project->update(['foreign_customer_id' => $this->foreignCustomer(null, 'Kiesewetter')->id]);
+        $this->project->update(['foreign_customer_id' => $this->foreignCustomer(null, 'Wetterstein')->id]);
         $this->entry();
         $this->setOrgDefaultRate(90.0);
 
         $position = app(BillingPositionBuilder::class)->build($this->draft())->first();
 
-        $this->assertStringStartsWith(__('Endkunde :name', ['name' => 'Kiesewetter']) . ' · ', (string) $position->name);
-        $this->assertStringContainsString(__('Endkunde :name', ['name' => 'Kiesewetter']), (string) $position->description);
+        $this->assertStringStartsWith(__('Endkunde :name', ['name' => 'Wetterstein']) . ' · ', (string) $position->name);
+        $this->assertStringContainsString(__('Endkunde :name', ['name' => 'Wetterstein']), (string) $position->description);
         $this->assertStringContainsString('Server geprüft', (string) $position->description);
     }
 
     public function test_endkunde_firma_hat_vorrang_vor_dem_namen(): void {
         // Gleiche Auflösung wie in der Direktrechnung (InvoiceGenerator::bookingLine).
-        $this->project->update(['foreign_customer_id' => $this->foreignCustomer('Sysdec', 'Gunnar Geithner')->id]);
+        $this->project->update(['foreign_customer_id' => $this->foreignCustomer('Datentakt', 'Gunnar Beispiel')->id]);
         $this->entry();
         $this->setOrgDefaultRate(90.0);
 
         $position = app(BillingPositionBuilder::class)->build($this->draft())->first();
 
-        $this->assertStringStartsWith(__('Endkunde :name', ['name' => 'Sysdec']) . ' · ', (string) $position->name);
-        $this->assertStringNotContainsString('Gunnar Geithner', (string) $position->name);
+        $this->assertStringStartsWith(__('Endkunde :name', ['name' => 'Datentakt']) . ' · ', (string) $position->name);
+        $this->assertStringNotContainsString('Gunnar Beispiel', (string) $position->name);
     }
 
     public function test_ohne_endkunde_kein_endkunde_praefix(): void {

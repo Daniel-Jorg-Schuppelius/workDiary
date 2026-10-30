@@ -99,7 +99,7 @@ class ResaleSubscriptionTest extends TestCase {
 
     public function test_store_creates_subscription_with_customer_and_plans_periods(): void {
         $admin = $this->orgAdmin();
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH']);
         $article = Article::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Microsoft 365 Business Premium', 'sellable' => true]);
 
         $this->travelTo('2026-09-04');
@@ -121,15 +121,15 @@ class ResaleSubscriptionTest extends TestCase {
 
         $this->actingAs($admin)->get(route('finance.resale.show', $subscription->sqid))
             ->assertOk()
-            ->assertSee('Klimpel Bäder GmbH')
+            ->assertSee('Badhaus Bäder GmbH')
             ->assertSee('05.08.2025 – 04.08.2026');
         $this->actingAs($admin)->get(route('finance.resale.subscriptions', ['open' => 1]))->assertOk()->assertSee('Microsoft 365 Business Premium');
     }
 
     public function test_foreign_customer_holder_bills_the_partner(): void {
         $admin = $this->orgAdmin();
-        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'LDS Systems GmbH']);
-        $end = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik']);
+        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Nordlicht Systems GmbH']);
+        $end = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Zahlenwerk']);
 
         $this->actingAs($admin)->post(route('finance.resale.store'), $this->payload([
             'holder' => 'foreign',
@@ -141,17 +141,17 @@ class ResaleSubscriptionTest extends TestCase {
         $this->assertSame($end->id, $subscription->foreign_customer_id);
         $this->assertNull($subscription->customer_id, 'genau ein Halter');
         $this->assertSame($partner->id, $subscription->billedTo()?->id);
-        $this->assertSame('Steuerbüro Kaik', $subscription->holderLabel());
+        $this->assertSame('Steuerbüro Zahlenwerk', $subscription->holderLabel());
 
         // Kundenakte des Partners zeigt das Abo des Endkunden.
-        $this->actingAs($admin)->get(route('customers.show', $partner))->assertOk()->assertSee('Steuerbüro Kaik')->assertSee(__('resale.title.menu'));
-        $this->actingAs($admin)->get(route('finance.resale.subscriptions', ['customer' => $partner->sqid]))->assertOk()->assertSee('Steuerbüro Kaik');
+        $this->actingAs($admin)->get(route('customers.show', $partner))->assertOk()->assertSee('Steuerbüro Zahlenwerk')->assertSee(__('resale.title.menu'));
+        $this->actingAs($admin)->get(route('finance.resale.subscriptions', ['customer' => $partner->sqid]))->assertOk()->assertSee('Steuerbüro Zahlenwerk');
     }
 
     public function test_customer_plus_end_customer_in_the_dialog_makes_the_end_customer_the_holder(): void {
         $admin = $this->orgAdmin();
-        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'LDS Systems GmbH']);
-        $end = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik']);
+        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Nordlicht Systems GmbH']);
+        $end = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Zahlenwerk']);
 
         // Der Dialog kennt nur „Kunde (ggf. Fremdkunde)": Kunde gewählt, Fremdkunde gewählt ⇒ Halter Fremdkunde.
         $this->actingAs($admin)->post(route('finance.resale.store'), $this->payload([
@@ -165,7 +165,7 @@ class ResaleSubscriptionTest extends TestCase {
         $this->assertSame($partner->id, $subscription->billedTo()?->id);
 
         // Der Dialog liefert die Fremdkunden je Kunde als Karte an die Halterwahl.
-        $this->actingAs($admin)->get(route('finance.resale.create'))->assertOk()->assertSee('resaleHolderPicker', false)->assertSee('Steuerbüro Kaik');
+        $this->actingAs($admin)->get(route('finance.resale.create'))->assertOk()->assertSee('resaleHolderPicker', false)->assertSee('Steuerbüro Zahlenwerk');
     }
 
     public function test_holder_choice_requires_the_matching_id_and_cancel_needs_an_end(): void {
@@ -278,7 +278,7 @@ class ResaleSubscriptionTest extends TestCase {
         // Review 2026-09-11 (Vertrag): der verknüpfte Vertrag bleibt im Dialog wählbar, auch wenn er beendet ist —
         // sonst ginge die Verknüpfung beim nächsten Speichern still verloren.
         $admin = $this->orgAdmin();
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH']);
         $contract = \App\Models\Contract\Contract::factory()->create([
             'organization_id' => $this->organization->id, 'number' => 'V-2026-0042', 'title' => 'Lizenzvertrag', 'status' => \App\Enums\Contract\ContractStatus::Ended,
             'partner_type' => \App\Enums\Contract\ContractPartnerType::Customer, 'customer_id' => $customer->id,

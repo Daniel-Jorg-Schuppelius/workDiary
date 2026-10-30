@@ -192,7 +192,7 @@ final class InvoiceMirror {
      * Positionen, die eine der Domains nennen — ohne Lizenzfilter, denn
      * Domainrechnungen laufen über Artikel wie „Top-Level-Domain“, die keine
      * Lizenz sind; der Domainname steht nur im Positionstext (Befund
-     * 2026-10-27: thieme-logistik.de seit 2016 berechnet, Register sah nichts).
+     * 2026-10-27: lastkraft-logistik.de seit 2016 berechnet, Register sah nichts).
      *
      * @param  list<int>  $recipientCustomerIds
      * @param  list<string>  $domains

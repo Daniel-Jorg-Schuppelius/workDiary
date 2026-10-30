@@ -82,8 +82,8 @@ class DomainSyncService {
                     'synced_at' => Carbon::now(),
                 ],
             );
-            // Kundennummer des Subusers beim Anbieter = USERID (Portal-Kundenliste 2026-10-29: 10021 lds-systems,
-            // 10055 klimmg); die Monatsrechnungen heißen „<Kundennummer>-MM-JJJJ“. Ein Wert des Inhabers bleibt.
+            // Kundennummer des Subusers beim Anbieter = USERID (Portal-Kundenliste 2026-10-29: 90021 nordlicht-systems,
+            // 90055 nebenhof); die Monatsrechnungen heißen „<Kundennummer>-MM-JJJJ“. Ein Wert des Inhabers bleibt.
             $customerNumber = $this->field($row, ['userid', 'customernumber', 'customerid']);
             if ($account->provider_customer_number === null && $customerNumber !== null && preg_match('/^[A-Za-z0-9-]{1,32}$/', $customerNumber) === 1) {
                 $account->forceFill(['provider_customer_number' => $customerNumber])->saveQuietly();

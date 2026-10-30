@@ -97,7 +97,7 @@ class LinkProposerTest extends TestCase {
     }
 
     public function test_proposal_links_nearest_invoice_lines_and_sets_period_status(): void {
-        $customer = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
+        $customer = $this->customerWithContact('Badhaus Bäder GmbH', 'c-kl');
         $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2025-08-05', 'sale_unit_price' => '247.20']);
         $this->assertSame(['2025-08-05', '2026-08-05'], $subscription->periods->map(static fn($p) => $p->starts_on->toDateString())->all());
 
@@ -128,7 +128,7 @@ class LinkProposerTest extends TestCase {
 
     public function test_article_classification_override_controls_what_counts_as_a_licence_line(): void {
         $admin = $this->orgAdmin();
-        $customer = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
+        $customer = $this->customerWithContact('Badhaus Bäder GmbH', 'c-kl');
         $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2025-08-05']);
         // Dienstleistung mit Microsoft im Namen: die Erkennung hielte sie für ein Produkt.
         $service = $this->article('art-pc', 'Microsoft Partner Center Verwaltung', '90.00');
@@ -163,70 +163,70 @@ class LinkProposerTest extends TestCase {
     }
 
     public function test_end_customer_in_closing_text_is_recognised_even_when_shortened(): void {
-        $partner = $this->customerWithContact('LDS Systems GmbH', 'c-lds');
-        $haus = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Haus 24 GmbH', 'matchcode' => null]);
-        $kaik = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik', 'matchcode' => 'STBK']);
+        $partner = $this->customerWithContact('Nordlicht Systems GmbH', 'c-nordlicht');
+        $haus = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Hof 24 GmbH', 'matchcode' => null]);
+        $zahlenwerk = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Zahlenwerk', 'matchcode' => 'STBK']);
         $subHaus = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'foreign_customer_id' => $haus->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2025-09-04']);
-        $subKaik = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'foreign_customer_id' => $kaik->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2025-09-04']);
+        $subZahlenwerk = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'foreign_customer_id' => $zahlenwerk->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2025-09-04']);
 
         // Gleicher Tag, gleiches Produkt — nur der Schlusstext unterscheidet die Endkunden.
-        $this->voucher('c-lds', 'RE/2025/1116', '2025-09-04', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Standard', 'quantity' => 12, 'net' => '12.13']], 'Rechnung Unsere Lieferungen/Leistungen stellen wir Ihnen wie folgt in Rechnung. Vielen Dank für die gute Zusammenarbeit. (M365 Haus24)');
-        $this->voucher('c-lds', 'RE/2025/1117', '2025-09-05', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Standard', 'quantity' => 12, 'net' => '12.13']], 'Rechnung Vielen Dank für die gute Zusammenarbeit. M365 STBK');
+        $this->voucher('c-nordlicht', 'RE/2025/1116', '2025-09-04', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Standard', 'quantity' => 12, 'net' => '12.13']], 'Rechnung Unsere Lieferungen/Leistungen stellen wir Ihnen wie folgt in Rechnung. Vielen Dank für die gute Zusammenarbeit. (M365 Hof24)');
+        $this->voucher('c-nordlicht', 'RE/2025/1117', '2025-09-05', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Standard', 'quantity' => 12, 'net' => '12.13']], 'Rechnung Vielen Dank für die gute Zusammenarbeit. M365 STBK');
 
         (new LinkProposer)->propose($this->organization);
-        $this->assertSame('RE/2025/1116', $subHaus->periods()->first()?->links()->first()?->voucher_number, '„Haus24" trifft „Haus 24 GmbH" ohne Leerzeichen');
-        $this->assertSame('RE/2025/1117', $subKaik->periods()->first()?->links()->first()?->voucher_number, 'Matchcode STBK im Schlusstext');
+        $this->assertSame('RE/2025/1116', $subHaus->periods()->first()?->links()->first()?->voucher_number, '„Hof24" trifft „Hof 24 GmbH" ohne Leerzeichen');
+        $this->assertSame('RE/2025/1117', $subZahlenwerk->periods()->first()?->links()->first()?->voucher_number, 'Matchcode STBK im Schlusstext');
 
         $voucher = LexofficeVoucher::query()->where('voucher_number', 'RE/2025/1116')->firstOrFail();
-        $this->assertSame('M365 Haus24', $voucher->voucherTextHint());
+        $this->assertSame('M365 Hof24', $voucher->voucherTextHint());
     }
 
     public function test_named_line_stays_with_its_end_customer_when_periods_start_together(): void {
-        $partner = $this->customerWithContact('LDS Systems GmbH', 'c-lds');
-        $ute = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Ute Mayershofer']);
-        $kaik = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik']);
+        $partner = $this->customerWithContact('Nordlicht Systems GmbH', 'c-nordlicht');
+        $ute = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Ute Mahlwerk']);
+        $zahlenwerk = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Zahlenwerk']);
         // Ute zuerst angelegt: ihre Periode steht bei gleichem Beginn vorn.
         $subUte = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $ute->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01', 'quantity' => 3]);
-        $subKaik = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $kaik->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01', 'quantity' => 1]);
+        $subZahlenwerk = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $zahlenwerk->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01', 'quantity' => 1]);
 
-        $this->voucher('c-lds', 'RE/2025/0945', '2025-10-26', [
-            ['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'description' => 'Endkunde Steuerbüro Kaik', 'quantity' => 12, 'net' => '3.95'],
-            ['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'description' => 'Ute Mayershofer, 2 Postfächer', 'quantity' => 24, 'net' => '3.95'],
+        $this->voucher('c-nordlicht', 'RE/2025/0945', '2025-10-26', [
+            ['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'description' => 'Endkunde Steuerbüro Zahlenwerk', 'quantity' => 12, 'net' => '3.95'],
+            ['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'description' => 'Ute Mahlwerk, 2 Postfächer', 'quantity' => 24, 'net' => '3.95'],
             ['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'description' => '', 'quantity' => 12, 'net' => '3.95'],
         ]);
 
         $result = (new LinkProposer)->propose($this->organization);
         $this->assertSame(2, $result['links']);
-        $this->assertSame(PeriodStatus::Billed, $subKaik->periods()->first()?->status, 'die Kaik-Zeile geht nie an Ute');
+        $this->assertSame(PeriodStatus::Billed, $subZahlenwerk->periods()->first()?->status, 'die Zahlenwerk-Zeile geht nie an Ute');
         $this->assertSame(PeriodStatus::Partial, $subUte->periods()->first()?->status);
         $this->assertSame(1, $result['lines_without_subscription'], 'ohne Nennung bei gleichem Abstand zweier Endkunden: mehrdeutig');
     }
 
     public function test_partner_invoice_lines_need_the_end_customer_name(): void {
-        $partner = $this->customerWithContact('LDS Systems GmbH', 'c-lds');
-        $kaik = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik']);
-        $ute = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Ute Mayershofer']);
-        $subKaik = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $kaik->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01', 'quantity' => 1]);
+        $partner = $this->customerWithContact('Nordlicht Systems GmbH', 'c-nordlicht');
+        $zahlenwerk = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Zahlenwerk']);
+        $ute = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Ute Mahlwerk']);
+        $subZahlenwerk = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $zahlenwerk->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01', 'quantity' => 1]);
         $subUte = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $ute->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01', 'quantity' => 3]);
 
-        $this->voucher('c-lds', 'RE/2025/0945', '2025-10-26', [
-            ['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'description' => 'Endkunde Steuerbüro Kaik', 'quantity' => 12, 'net' => '3.95'],
-            ['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'description' => 'Ute Mayershofer, 2 Postfächer', 'quantity' => 24, 'net' => '3.95'],
+        $this->voucher('c-nordlicht', 'RE/2025/0945', '2025-10-26', [
+            ['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'description' => 'Endkunde Steuerbüro Zahlenwerk', 'quantity' => 12, 'net' => '3.95'],
+            ['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'description' => 'Ute Mahlwerk, 2 Postfächer', 'quantity' => 24, 'net' => '3.95'],
             ['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'description' => '', 'quantity' => 12, 'net' => '3.95'],
         ]);
 
         $result = (new LinkProposer)->propose($this->organization);
         $this->assertSame(2, $result['links']);
-        $this->assertSame(1, $result['lines_without_subscription'], 'die Zeile ohne Endkunden bleibt liegen: nächste Periode (Kaik) ist schon gedeckt, im Fenster-Pass zählt ohne Nennung nichts');
+        $this->assertSame(1, $result['lines_without_subscription'], 'die Zeile ohne Endkunden bleibt liegen: nächste Periode (Zahlenwerk) ist schon gedeckt, im Fenster-Pass zählt ohne Nennung nichts');
 
-        $this->assertSame(PeriodStatus::Billed, $subKaik->periods()->first()?->status);
+        $this->assertSame(PeriodStatus::Billed, $subZahlenwerk->periods()->first()?->status);
         $this->assertSame(PeriodStatus::Partial, $subUte->periods()->first()?->status, '24 von 36 Lizenzmonaten');
         $this->assertSame('24.00', $subUte->periods()->first()?->links()->first()?->months);
     }
 
     public function test_confirm_waive_reopen_and_manual_link_via_ui(): void {
         $admin = $this->orgAdmin();
-        $customer = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
+        $customer = $this->customerWithContact('Badhaus Bäder GmbH', 'c-kl');
         $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2025-08-05']);
         $this->voucher('c-kl', 'RE/2025/0820', '2025-10-14', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium', 'quantity' => 12, 'net' => '20.60']]);
 
@@ -298,10 +298,10 @@ class LinkProposerTest extends TestCase {
     }
 
     public function test_multi_year_line_stays_with_one_subscription_across_consecutive_periods(): void {
-        // ReproBerlin-Muster: drei Verträge desselben Produkts (1 + 1 + 2 Lizenzen), zwei Jahre
+        // Druckhaus-Spree-Muster: drei Verträge desselben Produkts (1 + 1 + 2 Lizenzen), zwei Jahre
         // erst im August 2025 nachberechnet — je Lizenz eine Position „24 Monat".
         $this->travelTo('2025-12-01');
-        $customer = $this->customerWithContact('ReproBerlin GmbH', 'c-repro');
+        $customer = $this->customerWithContact('Druckhaus Spree GmbH', 'c-repro');
         $standard = $this->article('art-bs', 'Microsoft 365 Business Standard', '11.70');
         $one = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $standard->id, 'starts_on' => '2024-02-07', 'ends_on' => '2026-02-07', 'status' => 'cancelled']);
         $two = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $standard->id, 'starts_on' => '2024-02-25', 'ends_on' => '2026-02-25', 'status' => 'cancelled']);
@@ -337,10 +337,10 @@ class LinkProposerTest extends TestCase {
     }
 
     public function test_line_with_service_period_is_only_offered_to_periods_starting_inside_it(): void {
-        // Mayershofer-Muster (RE/2023/0568): eine Position „24 Monat" mit Leistung ab 26.10. ging an zwei
+        // Mahlwerk-Muster (RE/2023/0568): eine Position „24 Monat" mit Leistung ab 26.10. ging an zwei
         // Abos, deren Perioden im August und Anfang Oktober begannen — das Datumsfenster um das
         // Rechnungsdatum ließ es zu. Mit Leistungszeitraum zählt nur er (Toleranz 14 Tage davor).
-        $customer = $this->customerWithContact('Mayershofer GmbH', 'c-mayer');
+        $customer = $this->customerWithContact('Mahlwerk GmbH', 'c-mayer');
         $august = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2022-08-12', 'ends_on' => '2024-08-12', 'status' => 'cancelled']);
         $october = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2022-10-05', 'ends_on' => '2024-10-05', 'status' => 'cancelled']);
         $this->voucher('c-mayer', 'RE/2023/0568', '2022-11-02', [['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'quantity' => 24, 'net' => '3.95']], '', '2022-10-26', '2024-10-25');
@@ -362,17 +362,17 @@ class LinkProposerTest extends TestCase {
     }
 
     public function test_domain_subscription_is_covered_by_lines_that_name_the_domain(): void {
-        // thieme-logistik.de (Prod 2026-10-27): Artikel „Top-Level-Domain“ ist keine Lizenz, der Domainname
+        // lastkraft-logistik.de (Prod 2026-10-27): Artikel „Top-Level-Domain“ ist keine Lizenz, der Domainname
         // steht nur im Positionstext — das Register sah 13 offene Jahre, Lexoffice hatte seit 2016 berechnet.
-        $customer = $this->customerWithContact('Thieme Transporte', 'c-thieme');
+        $customer = $this->customerWithContact('Lastkraft Transporte', 'c-lastkraft');
         $tld = $this->article('art-tld', 'Top-Level-Domain', '8.55');
-        $domain = $this->subscription(['kind' => 'domain', 'provider' => 'domainreselling', 'external_id' => 'thieme-logistik.de', 'label' => 'thieme-logistik.de', 'customer_id' => $customer->id, 'starts_on' => '2014-03-27']);
-        $other = $this->subscription(['kind' => 'domain', 'provider' => 'domainreselling', 'external_id' => 'thieme-transporte.de', 'label' => 'thieme-transporte.de', 'customer_id' => $customer->id, 'starts_on' => '2014-03-27']);
+        $domain = $this->subscription(['kind' => 'domain', 'provider' => 'domainreselling', 'external_id' => 'lastkraft-logistik.de', 'label' => 'lastkraft-logistik.de', 'customer_id' => $customer->id, 'starts_on' => '2014-03-27']);
+        $other = $this->subscription(['kind' => 'domain', 'provider' => 'domainreselling', 'external_id' => 'lastkraft-transporte.de', 'label' => 'lastkraft-transporte.de', 'customer_id' => $customer->id, 'starts_on' => '2014-03-27']);
         $exchange = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2024-01-01']);
-        $this->voucher('c-thieme', 'RE/2017/0019', '2017-12-02', [['article' => $tld, 'name' => '[SGIT-IT-DOBB-00001DE] - DE-Domain', 'description' => 'Domain Jahresgebühr - DE => thieme-logistik.de => 27.03.2016 - 27.03.2018', 'quantity' => 2, 'unit' => 'Jahr', 'net' => '4.50']], '', '2016-03-27', '2018-03-27');
-        $this->voucher('c-thieme', 'RE/2023/0572', '2023-12-01', [['article' => $tld, 'name' => 'Top-Level-Domain', 'description' => '.de-Domain inkl. Verwaltung (thieme-logistik.de)', 'quantity' => 6, 'unit' => 'Jahr', 'net' => '8.55']], '', '2018-03-27', '2024-03-26');
+        $this->voucher('c-lastkraft', 'RE/2017/0019', '2017-12-02', [['article' => $tld, 'name' => '[SGIT-IT-DOBB-00001DE] - DE-Domain', 'description' => 'Domain Jahresgebühr - DE => lastkraft-logistik.de => 27.03.2016 - 27.03.2018', 'quantity' => 2, 'unit' => 'Jahr', 'net' => '4.50']], '', '2016-03-27', '2018-03-27');
+        $this->voucher('c-lastkraft', 'RE/2023/0572', '2023-12-01', [['article' => $tld, 'name' => 'Top-Level-Domain', 'description' => '.de-Domain inkl. Verwaltung (lastkraft-logistik.de)', 'quantity' => 6, 'unit' => 'Jahr', 'net' => '8.55']], '', '2018-03-27', '2024-03-26');
         foreach (['RE/2024/0624' => '2024', 'RE/2025/0826' => '2025', 'RE/2026/1036' => '2026'] as $number => $year) {
-            $this->voucher('c-thieme', $number, $year . '-03-27', [['article' => $tld, 'name' => 'Top-Level-Domain', 'description' => '.de-Domain inkl. Verwaltung (thieme-logistik.de)', 'quantity' => 1, 'unit' => 'Jahr', 'net' => '8.55']], '', $year . '-03-27', ($year + 1) . '-03-26');
+            $this->voucher('c-lastkraft', $number, $year . '-03-27', [['article' => $tld, 'name' => 'Top-Level-Domain', 'description' => '.de-Domain inkl. Verwaltung (lastkraft-logistik.de)', 'quantity' => 1, 'unit' => 'Jahr', 'net' => '8.55']], '', $year . '-03-27', ($year + 1) . '-03-26');
         }
 
         $result = (new LinkProposer)->propose($this->organization);
@@ -391,28 +391,28 @@ class LinkProposerTest extends TestCase {
     }
 
     public function test_collective_domain_invoice_uses_the_period_in_the_line_text_and_idn_names(): void {
-        // Steuerberater Kaik (Prod 2026-10-29): RE/2017/0017 trägt neun Domains mit je eigenem Zeitraum im Text,
-        // der Belegzeitraum umspannt alle; RE/2023/0575 berechnet cfl-world.de „8 Jahr“ ab 08.09.2016, obwohl das
+        // Steuerberater Zahlenwerk (Prod 2026-10-29): RE/2017/0017 trägt neun Domains mit je eigenem Zeitraum im Text,
+        // der Belegzeitraum umspannt alle; RE/2023/0575 berechnet reisewelt-beispiel.de „8 Jahr“ ab 08.09.2016, obwohl das
         // Abo (Registrierung) am 27.01.2017 beginnt; die IDN-Domain heißt in Lexoffice „onlinehändler-…“.
-        $customer = $this->customerWithContact('Steuerberater C. Kaik', 'c-kaik');
+        $customer = $this->customerWithContact('Steuerberater C. Zahlenwerk', 'c-zahlenwerk');
         $tld = $this->article('art-tld', 'Top-Level-Domain', '8.55');
-        $world = $this->subscription(['kind' => 'domain', 'provider' => 'domainreselling', 'external_id' => 'cfl-world.de', 'label' => 'cfl-world.de', 'customer_id' => $customer->id, 'starts_on' => '2017-01-27']);
-        $ascii = $this->subscription(['kind' => 'domain', 'provider' => 'domainreselling', 'external_id' => 'onlinehaendler-lieferschwelle.de', 'label' => 'onlinehaendler-lieferschwelle.de', 'customer_id' => $customer->id, 'starts_on' => '2017-09-26']);
-        $idn = $this->subscription(['kind' => 'domain', 'provider' => 'domainreselling', 'external_id' => 'xn--onlinehndler-lieferschwelle-hkc.de', 'label' => 'xn--onlinehndler-lieferschwelle-hkc.de', 'customer_id' => $customer->id, 'starts_on' => '2017-09-26']);
-        $this->voucher('c-kaik', 'RE/2017/0017', '2017-12-02', [
-            ['article' => $tld, 'name' => '[SGIT-IT-DOBB-00001DE] - DE-Domain', 'description' => 'Domain Jahresgebühr - DE => cfl-world.de => 27.01.2017 - 27.01.2018', 'quantity' => 1, 'unit' => 'Jahr', 'net' => '4.50'],
-            ['article' => $tld, 'name' => '[SGIT-IT-DOBB-00001DE] - DE-Domain', 'description' => 'Domain Jahresgebühr - DE => onlinehaendler-lieferschwelle.de => 26.09.2017 - 26.09.2018', 'quantity' => 1, 'unit' => 'Jahr', 'net' => '4.50'],
-            ['article' => $tld, 'name' => '[SGIT-IT-DOBB-00001DE] - DE-Domain', 'description' => 'Domain Jahresgebühr - DE => onlinehändler-lieferschwelle.de => 26.09.2017 - 26.09.2018', 'quantity' => 1, 'unit' => 'Jahr', 'net' => '4.50'],
+        $world = $this->subscription(['kind' => 'domain', 'provider' => 'domainreselling', 'external_id' => 'reisewelt-beispiel.de', 'label' => 'reisewelt-beispiel.de', 'customer_id' => $customer->id, 'starts_on' => '2017-01-27']);
+        $ascii = $this->subscription(['kind' => 'domain', 'provider' => 'domainreselling', 'external_id' => 'lieferschwelle-beispiel.de', 'label' => 'lieferschwelle-beispiel.de', 'customer_id' => $customer->id, 'starts_on' => '2017-09-26']);
+        $idn = $this->subscription(['kind' => 'domain', 'provider' => 'domainreselling', 'external_id' => 'xn--onlinehndler-beispiel-c2b.de', 'label' => 'xn--onlinehndler-beispiel-c2b.de', 'customer_id' => $customer->id, 'starts_on' => '2017-09-26']);
+        $this->voucher('c-zahlenwerk', 'RE/2017/0017', '2017-12-02', [
+            ['article' => $tld, 'name' => '[SGIT-IT-DOBB-00001DE] - DE-Domain', 'description' => 'Domain Jahresgebühr - DE => reisewelt-beispiel.de => 27.01.2017 - 27.01.2018', 'quantity' => 1, 'unit' => 'Jahr', 'net' => '4.50'],
+            ['article' => $tld, 'name' => '[SGIT-IT-DOBB-00001DE] - DE-Domain', 'description' => 'Domain Jahresgebühr - DE => lieferschwelle-beispiel.de => 26.09.2017 - 26.09.2018', 'quantity' => 1, 'unit' => 'Jahr', 'net' => '4.50'],
+            ['article' => $tld, 'name' => '[SGIT-IT-DOBB-00001DE] - DE-Domain', 'description' => 'Domain Jahresgebühr - DE => onlinehändler-beispiel.de => 26.09.2017 - 26.09.2018', 'quantity' => 1, 'unit' => 'Jahr', 'net' => '4.50'],
             ['article' => null, 'name' => 'DNS-Zoneneintragung', 'quantity' => 3, 'unit' => 'Jahr', 'net' => '0.00'],
         ], '', '2017-01-27', '2018-10-07');
-        $this->voucher('c-kaik', 'RE/2023/0575', '2023-12-03', [['article' => $tld, 'name' => 'Top-Level-Domain', 'description' => '.de-Domain inkl. Verwaltung (cfl-world.de)', 'quantity' => 8, 'unit' => 'Jahr', 'net' => '8.55']], '', '2016-09-08', '2024-09-07');
+        $this->voucher('c-zahlenwerk', 'RE/2023/0575', '2023-12-03', [['article' => $tld, 'name' => 'Top-Level-Domain', 'description' => '.de-Domain inkl. Verwaltung (reisewelt-beispiel.de)', 'quantity' => 8, 'unit' => 'Jahr', 'net' => '8.55']], '', '2016-09-08', '2024-09-07');
 
         $result = (new LinkProposer)->propose($this->organization);
 
         $worldPeriods = $world->periods()->orderBy('starts_on')->get();
         $this->assertCount(10, $worldPeriods, '2017 bis 2026');
         $this->assertSame(['RE/2017/0017', 'RE/2023/0575', 'RE/2023/0575', 'RE/2023/0575', 'RE/2023/0575', 'RE/2023/0575', 'RE/2023/0575', 'RE/2023/0575', null, null], $worldPeriods->map(static fn(ResalePeriod $p) => $p->links()->first()?->voucher_number)->all(), 'Zeitraum aus dem Positionstext deckt 2017, die 8-Jahres-Position mit verschobenem Jahrestag 2018 bis 2024');
-        $this->assertSame(PeriodStatus::Billed, $ascii->periods()->orderBy('starts_on')->first()?->status, 'onlinehaendler-lieferschwelle.de 2017 aus der Sammelrechnung');
+        $this->assertSame(PeriodStatus::Billed, $ascii->periods()->orderBy('starts_on')->first()?->status, 'lieferschwelle-beispiel.de 2017 aus der Sammelrechnung');
         $this->assertSame(1, $ascii->periods()->where('status', PeriodStatus::Billed->value)->count(), 'danach nie wieder berechnet — die Lücke bleibt sichtbar');
         $this->assertSame(PeriodStatus::Billed, $idn->periods()->orderBy('starts_on')->first()?->status, 'die IDN-Domain über ihren Unicode-Namen im Text');
         $this->assertSame(1, $idn->periods()->where('status', PeriodStatus::Billed->value)->count());
@@ -424,7 +424,7 @@ class LinkProposerTest extends TestCase {
         // Marina-Vulkan-Muster: vier Jahre eines 1er-Vertrags im August 2025 als „48 Monat" nachberechnet,
         // daneben ein zweiter Vertrag ab Mai 2025 mit einer 12er-Position auf derselben Rechnung.
         $this->travelTo('2026-09-08');
-        $customer = $this->customerWithContact('Marina Vulkan Werft', 'c-mv');
+        $customer = $this->customerWithContact('Marina Seestern Werft', 'c-mv');
         $old = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2022-04-01', 'ends_on' => '2026-04-01', 'status' => 'cancelled']);
         $new = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-05-06', 'ends_on' => '2026-05-06', 'status' => 'cancelled']);
         $this->voucher('c-mv', 'RE/2025/0902', '2025-08-22', [['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'quantity' => 48, 'net' => '3.95']]);
@@ -438,10 +438,10 @@ class LinkProposerTest extends TestCase {
     }
 
     public function test_invoice_inside_the_successors_period_is_not_taken_by_the_old_contract(): void {
-        // ReproBerlin-Muster: Telekom-Vertrag 2024/2025 noch offen, der Quality-Hosting-Nachfolger ab Februar 2026
+        // Druckhaus-Spree-Muster: Telekom-Vertrag 2024/2025 noch offen, der Quality-Hosting-Nachfolger ab Februar 2026
         // wird pünktlich berechnet — diese Rechnung gehört dem Nachfolger, nicht den alten Perioden im Fenster.
         $this->travelTo('2026-09-08');
-        $customer = $this->customerWithContact('ReproBerlin GmbH', 'c-repro');
+        $customer = $this->customerWithContact('Druckhaus Spree GmbH', 'c-repro');
         $standard = $this->article('art-bs', 'Microsoft 365 Business Standard', '11.70');
         $telekom = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $standard->id, 'starts_on' => '2024-02-25', 'ends_on' => '2026-02-25', 'status' => 'superseded']);
         $qh = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'provider' => 'qualityhosting', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $standard->id, 'starts_on' => '2026-02-25']);
@@ -455,7 +455,7 @@ class LinkProposerTest extends TestCase {
 
     public function test_periods_of_subscriptions_that_lost_their_holder_fall_back_to_open_after_the_run(): void {
         // Review 2026-09-10 (B2): Vorschläge werden org-weit gelöscht, bewertet werden nur Abos mit Halter.
-        $customer = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
+        $customer = $this->customerWithContact('Badhaus Bäder GmbH', 'c-kl');
         $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2025-08-05']);
         // Rechnung zwei Monate nach Beginn: ein Vorschlag, kein sicherer Treffer (Feature 185) — sonst wäre die Periode entschieden.
         $this->voucher('c-kl', 'RE/2025/0820', '2025-10-06', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium', 'quantity' => 12, 'net' => '20.60']]);
@@ -482,7 +482,7 @@ class LinkProposerTest extends TestCase {
     public function test_local_invoice_draft_link_counts_as_coverage_and_is_not_doubled(): void {
         // Review 2026-09-10 (B3): der Bezug auf eine lokale Rechnungsposition (InvoiceItem) ist ein
         // Vorschlag ohne Spiegelposition — er bleibt beim Lauf stehen und zählt als Deckung.
-        $customer = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
+        $customer = $this->customerWithContact('Badhaus Bäder GmbH', 'c-kl');
         $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2025-08-05']);
         $period = $subscription->periods()->firstOrFail();
         ResalePeriodLink::query()->create([
@@ -505,7 +505,7 @@ class LinkProposerTest extends TestCase {
     public function test_multi_year_invoice_before_the_date_prefilter_still_covers_the_latest_period(): void {
         // Review 2026-09-10 (B5): 36-Monats-Rechnung vom Januar 2024, die 2024er- und 2025er-Periode bestätigt,
         // die 2026er offen — der Vorfilter nach Belegdatum (ab 90 Tage vor der ältesten offenen Periode) fand sie nie.
-        $customer = $this->customerWithContact('ReproBerlin GmbH', 'c-repro');
+        $customer = $this->customerWithContact('Druckhaus Spree GmbH', 'c-repro');
         $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2024-01-01', 'ends_on' => '2027-01-01', 'status' => 'cancelled']);
         $this->assertSame(3, $subscription->periods()->count());
         $this->voucher('c-repro', 'RE/2024/0001', '2024-01-01', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium', 'quantity' => 36, 'net' => '20.60']], '', '2024-01-01', '2026-12-31');
@@ -530,7 +530,7 @@ class LinkProposerTest extends TestCase {
     public function test_voided_invoice_releases_confirmed_links_and_reopens_the_period(): void {
         // Review 2026-09-10 (A3): Storno hebt den Bezug auf — die Spur bleibt (0 Monate, Hinweis), die Periode
         // wird aus der Restdeckung bewertet und ist wieder offen für den Lauf (Ersatzrechnung).
-        $customer = $this->customerWithContact('EcoTec - HLSK GmbH', 'c-hlsk');
+        $customer = $this->customerWithContact('Ökotherm - HLSK GmbH', 'c-hlsk');
         $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2025-08-05']);
         $voucher = $this->voucher('c-hlsk', 'RE/2025/0271', '2025-08-06', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium', 'quantity' => 12, 'net' => '20.60']]);
         (new LinkProposer)->propose($this->organization);
@@ -574,7 +574,7 @@ class LinkProposerTest extends TestCase {
     public function test_second_run_without_changes_reproduces_the_same_links(): void {
         // Review 2026-09-10 (G, Idempotenz): der Lauf löscht alle Vorschläge und baut sie neu — ohne Änderung
         // am Bestand müssen Perioden, Monate, Mengen und Beträge exakt gleich herauskommen (IDs dürfen wechseln).
-        $customer = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
+        $customer = $this->customerWithContact('Badhaus Bäder GmbH', 'c-kl');
         $premium = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2024-08-05', 'quantity' => 2, 'sale_unit_price' => '247.20']);
         $exchange = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-01-01', 'sale_unit_price' => '47.40']);
         $this->assertSame(3, $premium->periods()->count());
@@ -630,25 +630,25 @@ class LinkProposerTest extends TestCase {
         // mit den Artikelnamen der Rechnungen liefert es für beide `art:<exchange>`. Die Position ohne
         // Endkundennennung darf deshalb nicht still beim zweiten Endkunden landen (wie in
         // test_partner_invoice_lines_need_the_end_customer_name, nur mit gemischten Schlüsseln).
-        $partner = $this->customerWithContact('LDS Systems GmbH', 'c-lds');
-        $kaik = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik', 'company' => 'Steuerbüro Kaik', 'matchcode' => null]);
-        $ute = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Ute Mayershofer', 'company' => 'Ute Mayershofer', 'matchcode' => null]);
-        $subKaik = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $kaik->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01', 'quantity' => 1]);
+        $partner = $this->customerWithContact('Nordlicht Systems GmbH', 'c-nordlicht');
+        $zahlenwerk = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Zahlenwerk', 'company' => 'Steuerbüro Zahlenwerk', 'matchcode' => null]);
+        $ute = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Ute Mahlwerk', 'company' => 'Ute Mahlwerk', 'matchcode' => null]);
+        $subZahlenwerk = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $zahlenwerk->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01', 'quantity' => 1]);
         $subUte = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $ute->id, 'article_ref' => null, 'starts_on' => '2025-10-01', 'quantity' => 3]);
-        $this->assertNotSame($subKaik->productKey(), $subUte->productKey(), 'ohne Artikelnamen: art:… gegen name:…');
-        $this->assertSame($subKaik->productKey(), $subUte->productKey(['lex:' . $this->exchange->id => $this->exchange->name]), 'mit Artikelnamen dasselbe Produkt');
+        $this->assertNotSame($subZahlenwerk->productKey(), $subUte->productKey(), 'ohne Artikelnamen: art:… gegen name:…');
+        $this->assertSame($subZahlenwerk->productKey(), $subUte->productKey(['lex:' . $this->exchange->id => $this->exchange->name]), 'mit Artikelnamen dasselbe Produkt');
 
-        $this->voucher('c-lds', 'RE/2025/0945', '2025-10-26', [
-            ['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'description' => 'Endkunde Steuerbüro Kaik', 'quantity' => 12, 'net' => '3.95'],
-            ['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'description' => 'Ute Mayershofer, 2 Postfächer', 'quantity' => 24, 'net' => '3.95'],
+        $this->voucher('c-nordlicht', 'RE/2025/0945', '2025-10-26', [
+            ['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'description' => 'Endkunde Steuerbüro Zahlenwerk', 'quantity' => 12, 'net' => '3.95'],
+            ['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'description' => 'Ute Mahlwerk, 2 Postfächer', 'quantity' => 24, 'net' => '3.95'],
             ['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'description' => '', 'quantity' => 12, 'net' => '3.95'],
         ]);
 
         $result = (new LinkProposer)->propose($this->organization);
         $this->assertSame(2, $result['links'], 'nur die beiden genannten Positionen');
         $this->assertSame(1, $result['lines_without_subscription'], 'die Zeile ohne Endkunden bleibt liegen — auch bei gemischten Produktschlüsseln');
-        $this->assertSame(PeriodStatus::Billed, $subKaik->periods()->first()?->status);
-        $this->assertSame('RE/2025/0945', $subKaik->periods()->first()?->links()->first()?->voucher_number);
+        $this->assertSame(PeriodStatus::Billed, $subZahlenwerk->periods()->first()?->status);
+        $this->assertSame('RE/2025/0945', $subZahlenwerk->periods()->first()?->links()->first()?->voucher_number);
         $this->assertSame(PeriodStatus::Partial, $subUte->periods()->first()?->status, '24 von 36 Lizenzmonaten; die ungenannte 12er-Zeile gehört nicht sicher Ute');
         $this->assertSame(['24.00'], $subUte->periods()->first()?->links()->pluck('months')->all());
     }
@@ -720,17 +720,17 @@ class LinkProposerTest extends TestCase {
     public function test_contacts_for_returns_the_lexoffice_contacts_of_the_billed_customer(): void {
         // Review 2026-09-10 (G): Dialog-Helfer — Kunde direkt, Partner des Fremdkunden, sonst nichts.
         // Ein Lexoffice-Kontakt je Kunde (Unique `extref_unique` auf Plugin/Typ/Referenz).
-        $partner = $this->customerWithContact('LDS Systems GmbH', 'c-lds');
-        $direct = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
+        $partner = $this->customerWithContact('Nordlicht Systems GmbH', 'c-nordlicht');
+        $direct = $this->customerWithContact('Badhaus Bäder GmbH', 'c-kl');
         $withoutContact = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Ohne Kontakt GmbH']);
-        $kaik = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik']);
+        $zahlenwerk = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Zahlenwerk']);
 
         $viaCustomer = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $direct->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2025-08-05']);
         $this->assertSame(['c-kl'], $this->contactsFor($viaCustomer));
 
-        $viaPartner = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $kaik->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01']);
-        $this->assertSame(['c-lds'], $this->contactsFor($viaPartner), 'Fremdkunde → Kontakt des Partners (Rechnungsempfänger)');
-        $this->assertSame(['c-lds'], $this->contactsForCustomer($partner));
+        $viaPartner = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $zahlenwerk->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01']);
+        $this->assertSame(['c-nordlicht'], $this->contactsFor($viaPartner), 'Fremdkunde → Kontakt des Partners (Rechnungsempfänger)');
+        $this->assertSame(['c-nordlicht'], $this->contactsForCustomer($partner));
 
         $this->assertSame([], $this->contactsFor($this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $withoutContact->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01'])), 'Kunde ohne Lexoffice-Kontakt');
         $this->assertSame([], $this->contactsFor($this->subscription(['label' => 'Exchange Online (Plan 1)', 'is_own_holding' => true, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01'])), 'eigener Bestand hat keinen Rechnungsempfänger');

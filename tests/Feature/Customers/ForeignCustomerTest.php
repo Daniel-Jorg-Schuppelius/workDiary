@@ -35,7 +35,7 @@ class ForeignCustomerTest extends TestCase {
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
     }
 
-    private function customer(string $name = 'LDS Systems GmbH'): Customer {
+    private function customer(string $name = 'Nordlicht Systems GmbH'): Customer {
         return Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => $name]);
     }
 
@@ -51,7 +51,7 @@ class ForeignCustomerTest extends TestCase {
         $this->actingAs($callcenter)
             ->post(route('foreign-customers.store'), [
                 'customer_id' => $customer->sqid,
-                'name' => 'Axel Tücks GmbH',
+                'name' => 'Alma Tanner GmbH',
             ])
             ->assertForbidden();
     }
@@ -62,12 +62,12 @@ class ForeignCustomerTest extends TestCase {
         $this->actingAs($this->admin)
             ->post(route('foreign-customers.store'), [
                 'customer_id' => $customer->sqid,
-                'name' => 'Axel Tücks GmbH',
+                'name' => 'Alma Tanner GmbH',
                 'email' => 'info@tuecks.example',
             ])
             ->assertRedirect();
 
-        $fc = ForeignCustomer::query()->where('name', 'Axel Tücks GmbH')->first();
+        $fc = ForeignCustomer::query()->where('name', 'Alma Tanner GmbH')->first();
         $this->assertNotNull($fc);
         $this->assertSame($customer->id, $fc->customer_id);
         $this->assertSame($this->admin->id, $fc->created_by);
@@ -100,7 +100,7 @@ class ForeignCustomerTest extends TestCase {
         $fc = ForeignCustomer::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $firm->id,
-            'name' => 'Axel Tücks GmbH',
+            'name' => 'Alma Tanner GmbH',
         ]);
         $project = Project::factory()->create([
             'organization_id' => $this->organization->id,
@@ -115,7 +115,7 @@ class ForeignCustomerTest extends TestCase {
             ->assertRedirect();
 
         // Neuer eigenständiger Kunde aus dem Fremdkunden.
-        $promoted = Customer::query()->where('name', 'Axel Tücks GmbH')->first();
+        $promoted = Customer::query()->where('name', 'Alma Tanner GmbH')->first();
         $this->assertNotNull($promoted);
         $this->assertNotSame($firm->id, $promoted->id);
 
