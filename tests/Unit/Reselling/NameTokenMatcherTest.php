@@ -43,6 +43,6 @@ class NameTokenMatcherTest extends TestCase {
 
     public function test_significant_tokens_drop_legal_forms_and_fillers(): void {
         $this->assertSame(['auerswald'], NameTokenMatcher::significantTokens('Auerswald GmbH & Co. KG'));
-        $this->assertSame(['meyer', 'simson', 'elektroinstallationen'], NameTokenMatcher::significantTokens('Berg&Tal Elektroinstallationen GmbH'));
+        $this->assertSame(['berg', 'tal', 'elektroinstallationen'], NameTokenMatcher::significantTokens('Berg&Tal Elektroinstallationen GmbH'));
     }
 }

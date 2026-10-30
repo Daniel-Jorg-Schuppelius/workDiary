@@ -78,15 +78,15 @@ final class IncomingInvoiceWorklistTest extends TestCase {
     }
 
     public function test_rejecting_as_no_invoice_can_create_an_inbox_rule_and_file_the_other_open_documents(): void {
-        $first = $this->incoming(['seller_name' => 'CKonverter.de']);
+        $first = $this->incoming(['seller_name' => 'Beispiel-Konverter.de']);
         $second = $this->incoming(['seller_name' => ' beispiel-konverter.de']);
-        $rejected = $this->incoming(['seller_name' => 'CKonverter.de', 'status' => IncomingEInvoiceStatus::Rejected]);
+        $rejected = $this->incoming(['seller_name' => 'Beispiel-Konverter.de', 'status' => IncomingEInvoiceStatus::Rejected]);
         $other = $this->incoming(['seller_name' => 'Pinsel GmbH']);
 
-        $this->get(route('finance.incoming-invoices.assign.form', $first))->assertOk()->assertSee('CKonverter.de');
+        $this->get(route('finance.incoming-invoices.assign.form', $first))->assertOk()->assertSee('Beispiel-Konverter.de');
         $this->post(route('finance.incoming-invoices.assign', $first), [
             'direction' => 'incoming', 'mode' => 'not_invoice', 'note' => 'Testnachricht', 'exclude_action' => 'reject', 'apply_to_open' => '1',
-        ])->assertRedirect()->assertSessionHas('success', static fn (string $message): bool => str_contains($message, '1 weiterer offener Eingang von „CKonverter.de“'));
+        ])->assertRedirect()->assertSessionHas('success', static fn (string $message): bool => str_contains($message, '1 weiterer offener Eingang von „Beispiel-Konverter.de“'));
 
         $this->assertSame(IncomingEInvoiceStatus::Rejected, $first->refresh()->status);
         $this->assertSame(IncomingEInvoiceStatus::Rejected, $second->refresh()->status);
@@ -101,7 +101,7 @@ final class IncomingInvoiceWorklistTest extends TestCase {
         $this->assertSame(RejectIncomingInvoiceAction::TYPE, data_get($rule->actions, '0.type'));
 
         // Neue Eingänge und die Nacherkennung laufen durch dieselbe Regel.
-        $late = $this->incoming(['seller_name' => 'CKONVERTER.DE']);
+        $late = $this->incoming(['seller_name' => 'BEISPIEL-KONVERTER.DE']);
         $this->assertTrue(app(IncomingEInvoiceService::class)->applyRules($late));
         $this->assertSame(IncomingEInvoiceStatus::Rejected, $late->refresh()->status);
         $this->assertSame('Testnachricht', $late->decision_note);
@@ -121,8 +121,8 @@ final class IncomingInvoiceWorklistTest extends TestCase {
     }
 
     public function test_discarding_removes_document_and_file_and_future_documents_are_discarded_by_rule(): void {
-        $first = $this->incoming(['seller_name' => 'CKonverter.de']);
-        $second = $this->incoming(['seller_name' => 'CKonverter.de']);
+        $first = $this->incoming(['seller_name' => 'Beispiel-Konverter.de']);
+        $second = $this->incoming(['seller_name' => 'Beispiel-Konverter.de']);
         $documentIds = [$first->document_id, $second->document_id];
 
         $this->post(route('finance.incoming-invoices.assign', $first), [
@@ -137,7 +137,7 @@ final class IncomingInvoiceWorklistTest extends TestCase {
         $this->assertDatabaseHas('audit_logs', ['event' => 'incoming_einvoice.discarded', 'auditable_id' => $first->id]);
         $this->assertDatabaseHas('audit_logs', ['event' => 'document.purged', 'auditable_id' => $documentIds[0]]);
 
-        $late = $this->incoming(['seller_name' => 'CKonverter.de']);
+        $late = $this->incoming(['seller_name' => 'Beispiel-Konverter.de']);
         $lateDocumentId = $late->document_id;
         $this->assertTrue(app(IncomingEInvoiceService::class)->applyRules($late));
         $this->assertFalse($late->exists);
