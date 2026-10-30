@@ -53,11 +53,11 @@ class DomainSubscriptionSyncTest extends TestCase {
 
     public function test_projections_become_domain_subscriptions_with_holders_and_periods(): void {
         $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
-        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH']);
-        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'LDS Systems GmbH']);
-        $end = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik']);
-        $this->projection($connection, 'klimpel-baeder.de', ['customer_id' => $customer->id]);
-        $this->projection($connection, 'kaik.de', ['foreign_customer_id' => $end->id, 'registration_at' => '2024-11-02']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH']);
+        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Nordlicht Systems GmbH']);
+        $end = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Zahlenwerk']);
+        $this->projection($connection, 'badhaus-baeder.de', ['customer_id' => $customer->id]);
+        $this->projection($connection, 'zahlenwerk.de', ['foreign_customer_id' => $end->id, 'registration_at' => '2024-11-02']);
         $this->projection($connection, 'eigene.de', ['is_own_holding' => true]);
         $this->projection($connection, 'ohne-halter.de');
         $this->projection($connection, 'auslaufend.de', ['customer_id' => $customer->id, 'renewal_mode' => 'AUTOEXPIRE', 'expiration_at' => '2026-12-31']);
@@ -65,16 +65,16 @@ class DomainSubscriptionSyncTest extends TestCase {
         $result = app(DomainSubscriptionSync::class)->sync($this->organization);
         $this->assertSame(['domains' => 5, 'created' => 5, 'updated' => 0, 'unchanged' => 0, 'ended' => 0, 'skipped_gone' => false], $result);
 
-        $klimpel = ResaleSubscription::query()->where('external_id', 'klimpel-baeder.de')->firstOrFail();
-        $this->assertSame(SubscriptionKind::Domain, $klimpel->kind);
-        $this->assertSame(SubscriptionProvider::DomainReselling, $klimpel->provider);
-        $this->assertSame($customer->id, $klimpel->customer_id);
-        $this->assertSame('8.8700', $klimpel->purchase_unit_price?->getAmount());
-        $this->assertSame(['2023-03-15', '2024-03-15', '2025-03-15', '2026-03-15'], $klimpel->periods->map(static fn($p) => $p->starts_on->toDateString())->all());
+        $badhaus = ResaleSubscription::query()->where('external_id', 'badhaus-baeder.de')->firstOrFail();
+        $this->assertSame(SubscriptionKind::Domain, $badhaus->kind);
+        $this->assertSame(SubscriptionProvider::DomainReselling, $badhaus->provider);
+        $this->assertSame($customer->id, $badhaus->customer_id);
+        $this->assertSame('8.8700', $badhaus->purchase_unit_price?->getAmount());
+        $this->assertSame(['2023-03-15', '2024-03-15', '2025-03-15', '2026-03-15'], $badhaus->periods->map(static fn($p) => $p->starts_on->toDateString())->all());
 
-        $kaik = ResaleSubscription::query()->where('external_id', 'kaik.de')->firstOrFail();
-        $this->assertSame($end->id, $kaik->foreign_customer_id);
-        $this->assertSame($partner->id, $kaik->billedTo()?->id);
+        $zahlenwerk = ResaleSubscription::query()->where('external_id', 'zahlenwerk.de')->firstOrFail();
+        $this->assertSame($end->id, $zahlenwerk->foreign_customer_id);
+        $this->assertSame($partner->id, $zahlenwerk->billedTo()?->id);
         $this->assertTrue(ResaleSubscription::query()->where('external_id', 'eigene.de')->value('is_own_holding'));
         $this->assertSame(1, ResaleSubscription::query()->unassigned()->count(), 'ohne-halter.de wartet in der Inbox');
         $this->assertSame(SubscriptionStatus::Cancelled, ResaleSubscription::query()->where('external_id', 'auslaufend.de')->value('status'));
@@ -99,8 +99,11 @@ class DomainSubscriptionSyncTest extends TestCase {
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
         // DENIC-Drift: Ablauf-Jahrestag zwei Tage vor dem Registrierungstag — erstes Lizenzjahr bleibt.
         $this->projection($connection, 'drift.de', ['customer_id' => $customer->id, 'registration_at' => '2016-01-25', 'expiration_at' => '2027-01-23']);
-        // .de-Transfer: das Portal setzt den ersten Ablauf einen Monat nach dem Transfer (antjebewegt.de, Prod 2026-10-29).
-        $this->projection($connection, 'transfer-monat.de', ['customer_id' => $customer->id, 'registration_at' => '2025-11-03', 'expiration_at' => '2026-12-03']);
+        // .de im ersten Jahr: der Gateway meldet Registrierung + 1 Monat als Ablauf, finalisiert aber am
+        // Registrierungs-Jahrestag — der zählt (bewegung-beispiel.de, Prod 2026-10-29: ADD_DOMAIN 03.11.2025, Verlängerung 27.10.2026).
+        $this->projection($connection, 'erstes-jahr.de', ['customer_id' => $customer->id, 'registration_at' => '2025-11-03', 'expiration_at' => '2025-12-03', 'finalization_at' => '2026-11-03']);
+        // gTLD: Finalisierung 44 Tage nach dem Ablauf ist die Gnadenfrist der Registry, der Ablauf bleibt das Laufzeitende.
+        $this->projection($connection, 'gnadenfrist.com', ['customer_id' => $customer->id, 'registration_at' => '2024-06-08', 'expiration_at' => '2027-06-08', 'finalization_at' => '2027-07-22']);
         // gTLD-Transfer im April, Registry-Zyklus 25.11.: die Jahre vor dem Transfer gehören dem alten Anbieter.
         $this->projection($connection, 'transfer.one', ['customer_id' => $customer->id, 'registration_at' => '2026-04-08', 'expiration_at' => '2027-11-25']);
         $this->projection($connection, 'ohne-ablauf.de', ['customer_id' => $customer->id, 'registration_at' => '2024-05-05', 'expiration_at' => null]);
@@ -109,7 +112,8 @@ class DomainSubscriptionSyncTest extends TestCase {
 
         $starts = static fn (string $domain): array => ResaleSubscription::query()->where('external_id', $domain)->firstOrFail()->periods()->orderBy('starts_on')->pluck('starts_on')->map(static fn ($d) => $d->toDateString())->all();
         $this->assertSame('2016-01-23', ResaleSubscription::query()->where('external_id', 'drift.de')->value('starts_on')?->toDateString());
-        $this->assertSame(['2025-12-03', '2026-12-03'], $starts('transfer-monat.de'), 'kein Lizenzjahr 2024 vor dem Transfer');
+        $this->assertSame(['2025-11-03', '2026-11-03'], $starts('erstes-jahr.de'), 'Registrierungs-Jahrestag, nicht der gemeldete Ablauf einen Monat nach der Registrierung');
+        $this->assertSame('2024-06-08', ResaleSubscription::query()->where('external_id', 'gnadenfrist.com')->value('starts_on')?->toDateString(), 'Gnadenfrist verschiebt den Zyklus nicht');
         $this->assertSame(['2026-11-25'], $starts('transfer.one'), 'erster Jahrestag nach dem Transfer, nicht der Transfertag');
         $this->assertSame('2024-05-05', ResaleSubscription::query()->where('external_id', 'ohne-ablauf.de')->value('starts_on')?->toDateString());
     }
@@ -118,9 +122,9 @@ class DomainSubscriptionSyncTest extends TestCase {
         $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
         // Bestand auf dem Registrierungstag (Perioden 25.01.), eine Periode entschieden …
-        $projection = $this->projection($connection, 'ebk.de', ['customer_id' => $customer->id, 'registration_at' => '2016-01-25', 'expiration_at' => '2027-01-25']);
+        $projection = $this->projection($connection, 'drift-muster.de', ['customer_id' => $customer->id, 'registration_at' => '2016-01-25', 'expiration_at' => '2027-01-25']);
         app(DomainSubscriptionSync::class)->sync($this->organization);
-        $subscription = ResaleSubscription::query()->where('external_id', 'ebk.de')->firstOrFail();
+        $subscription = ResaleSubscription::query()->where('external_id', 'drift-muster.de')->firstOrFail();
         $this->assertSame(11, $subscription->periods()->count());
         $subscription->periods()->whereDate('starts_on', '2025-01-25')->update(['status' => 'billed', 'decided_at' => now()]);
 
@@ -208,7 +212,7 @@ class DomainSubscriptionSyncTest extends TestCase {
             'organization_id' => $this->organization->id, 'external_id' => 'art-net-2', 'name' => '.net-Domain', 'type' => 'SERVICE', 'unit_name' => 'Jahr',
             'net_unit_price' => '21.00', 'currency' => 'EUR', 'vat_rate' => '19', 'synced_at' => now(),
         ]);
-        $this->projection($connection, 'klimpel-baeder.de', ['customer_id' => $customer->id]);
+        $this->projection($connection, 'badhaus-baeder.de', ['customer_id' => $customer->id]);
         $this->projection($connection, 'shop.example.co.uk', ['customer_id' => $customer->id]);
         $this->projection($connection, 'beispiel.com', ['customer_id' => $customer->id]);
         $this->projection($connection, 'zweideutig.net', ['customer_id' => $customer->id]);
@@ -220,7 +224,7 @@ class DomainSubscriptionSyncTest extends TestCase {
 
         app(DomainSubscriptionSync::class)->sync($this->organization);
 
-        $de = ResaleSubscription::query()->where('external_id', 'klimpel-baeder.de')->firstOrFail();
+        $de = ResaleSubscription::query()->where('external_id', 'badhaus-baeder.de')->firstOrFail();
         $this->assertSame('15.0000', $de->sale_unit_price?->getAmount(), 'UVP der Katalogzeile .de');
         $this->assertSame('lex:' . $article->id, $de->article_ref, 'Artikel „Domain .de"');
         $this->assertSame('15.00', $de->periods()->first()?->expected_sale?->getAmount(), 'Perioden tragen den Verkauf');
@@ -306,8 +310,8 @@ class DomainSubscriptionSyncTest extends TestCase {
         $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
         $first = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Erster Halter GmbH']);
         $second = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Zweiter Halter GmbH']);
-        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'LDS Systems GmbH']);
-        $end = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik']);
+        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Nordlicht Systems GmbH']);
+        $end = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Zahlenwerk']);
         $sync = app(DomainSubscriptionSync::class);
         $projection = $this->projection($connection, 'umzug.de', ['customer_id' => $first->id]);
         $sync->sync($this->organization);

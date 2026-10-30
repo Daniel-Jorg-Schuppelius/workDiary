@@ -36,33 +36,59 @@ final class DomainSubscriptionSync {
     public const MIRRORED_HOLDER_PREFIX = 'p:';
 
     /**
-     * Spielraum zwischen Registrierung und Ablauf-Jahrestag: DENIC-Drift von ein
-     * bis drei Tagen und Transfers, bei denen das Portal den ersten Ablauf einen
-     * Monat nach dem Transfer setzt (Prod 2026-10-29: antjebewegt.de 03.11. → 03.12.).
+     * Spielraum zwischen Registrierung und erstem Jahrestag des Laufzeitendes: DENIC-Drift
+     * von ein bis drei Tagen (muster-gmbh.de 25.01./23.01.) und Registry-Zyklen, die bei einem
+     * Transfer kurz vor dem Transfertag liegen.
      */
     public const START_TOLERANCE_DAYS = 45;
 
     /**
-     * Beginn des Domain-Abos (Feature 185, MVP-1407): das Lizenzjahr läuft von
-     * Ablauf-Jahrestag zu Ablauf-Jahrestag — dort bucht das Portal die Verlängerung —,
-     * der Beginn ist der erste Jahrestag ab der Registrierung. Bei einem Transfer ist
-     * die Registrierung der Transfertag und die Jahre davor gehören dem alten Anbieter
-     * (Befund 2026-10-29: kaik.eu seit 28.02.2018 im Portal, verlängert jeden Oktober;
-     * brillenschmiede.one Transfer im April, Zyklus 25.11.). Ohne Ablauf gilt die
-     * Registrierung; fehlt auch sie (der Listen-Sync liefert sie nicht, nur der
+     * Abstand, ab dem der gemeldete Ablauf kein Laufzeitende ist: der Live-Gateway meldet für
+     * .de-Domains im ersten Jahr Registrierung + 1 Monat als Ablauf, finalisiert aber am
+     * Registrierungs-Jahrestag (Prod 2026-10-29: 7 von 7, Abstand 304–335 Tage; die
+     * Gnadenfristen der gTLD-Registries liegen bei 41–44 Tagen).
+     */
+    public const STALE_EXPIRATION_GAP_DAYS = 90;
+
+    /**
+     * Laufzeitende der Domain: der Ablauf — oder die Finalisierung, wenn sie erst lange nach
+     * dem Ablauf folgt (dann ist der Ablauf kein Laufzeitende, siehe {@see STALE_EXPIRATION_GAP_DAYS}).
+     */
+    public static function termEndOf(DomainProjection $projection): ?CarbonImmutable {
+        if ($projection->expiration_at === null) {
+            return null;
+        }
+        $expiration = CarbonImmutable::instance($projection->expiration_at)->startOfDay();
+        if ($projection->finalization_at === null) {
+            return $expiration;
+        }
+        $finalization = CarbonImmutable::instance($projection->finalization_at)->startOfDay();
+
+        return $finalization->greaterThan($expiration->addDays(self::STALE_EXPIRATION_GAP_DAYS)) ? $finalization : $expiration;
+    }
+
+    /**
+     * Beginn des Domain-Abos (Feature 185, MVP-1407): das Lizenzjahr läuft von Jahrestag
+     * zu Jahrestag des Laufzeitendes ({@see termEndOf()}) — dort bucht das Portal die
+     * Verlängerung —, der Beginn ist der erste Jahrestag ab der Registrierung. Bei einem
+     * Transfer ist die Registrierung der Transfertag und die Jahre davor gehören dem alten
+     * Anbieter (Befund 2026-10-29: zahlenwerk.eu seit 28.02.2018 im Portal, verlängert jeden
+     * Oktober; optikwerk.one Transfer im April, Zyklus 25.11.). Ohne Laufzeitende gilt
+     * die Registrierung; fehlt auch sie (der Listen-Sync liefert sie nicht, nur der
      * Detailabgleich), bleibt ein gespeicherter Beginn stehen, sonst wird aus dem
-     * Ablauf rückgerechnet — ein Jahr vor dem laufenden Lizenzjahr.
+     * Laufzeitende rückgerechnet — ein Jahr vor dem laufenden Lizenzjahr.
      */
     public static function startOf(DomainProjection $projection, ?ResaleSubscription $existing, CarbonImmutable $reference): ?CarbonImmutable {
+        $end = self::termEndOf($projection);
         if ($projection->registration_at !== null) {
             $registration = CarbonImmutable::instance($projection->registration_at)->startOfDay();
-            if ($projection->expiration_at === null) {
+            if ($end === null) {
                 return $registration;
             }
             $floor = $registration->subDays(self::START_TOLERANCE_DAYS);
-            $start = CarbonImmutable::instance($projection->expiration_at)->startOfDay();
+            $start = $end;
             if ($start->lessThan($floor)) {
-                return $registration; // Ablauf vor der Registrierung: unplausibel, Registrierung zählt
+                return $registration; // Laufzeitende vor der Registrierung: unplausibel, Registrierung zählt
             }
             while ($start->subYearNoOverflow()->greaterThanOrEqualTo($floor)) {
                 $start = $start->subYearNoOverflow();
@@ -73,10 +99,10 @@ final class DomainSubscriptionSync {
         if ($existing !== null) {
             return $existing->starts_on;
         }
-        if ($projection->expiration_at === null) {
+        if ($end === null) {
             return null;
         }
-        $start = CarbonImmutable::instance($projection->expiration_at)->startOfDay();
+        $start = $end;
         while ($start->greaterThan($reference)) {
             $start = $start->subYearNoOverflow();
         }
