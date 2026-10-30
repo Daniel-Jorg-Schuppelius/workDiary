@@ -746,4 +746,30 @@ class LinkProposerTest extends TestCase {
         $this->assertSame(['c-kl'], $this->contactsForCustomer($stranger));
         $this->assertSame(['c-kl'], $this->contactsFor($viaCustomer));
     }
+
+    public function test_domain_typo_in_the_invoice_text_is_proposed_but_not_auto_confirmed(): void {
+        // Pilot 2026-10-30: „.eu-Domain inkl. Verwaltung (livescroing.eu)“ — Buchstabendreher im handgeschriebenen Text.
+        $customer = $this->customerWithContact('Christian Zahlenwerk', 'c-privat');
+        $tld = $this->article('art-tld', 'Top-Level-Domain', '8.55');
+        $eu = $this->subscription(['kind' => 'domain', 'provider' => 'domainreselling', 'external_id' => 'livescoring-beispiel.eu', 'label' => 'livescoring-beispiel.eu', 'customer_id' => $customer->id, 'starts_on' => '2023-04-04']);
+        $me = $this->subscription(['kind' => 'domain', 'provider' => 'domainreselling', 'external_id' => 'livescoring-beispiel.me', 'label' => 'livescoring-beispiel.me', 'customer_id' => $customer->id, 'starts_on' => '2023-04-04']);
+        $plain = $this->subscription(['kind' => 'domain', 'provider' => 'domainreselling', 'external_id' => 'zeitreich-beispiel.net', 'label' => 'zeitreich-beispiel.net', 'customer_id' => $customer->id, 'starts_on' => '2023-04-04']);
+        $hyphen = $this->subscription(['kind' => 'domain', 'provider' => 'domainreselling', 'external_id' => 'zeit-reich-beispiel.net', 'label' => 'zeit-reich-beispiel.net', 'customer_id' => $customer->id, 'starts_on' => '2023-04-04']);
+        $this->voucher('c-privat', 'RE/2023/0578', '2023-12-03', [
+            ['article' => $tld, 'name' => 'Top-Level-Domain', 'description' => '.eu-Domain inkl. Verwaltung (livescroing-beispiel.eu)', 'quantity' => 1, 'unit' => 'Jahr', 'net' => '24.33'],
+            ['article' => $tld, 'name' => 'Top-Level-Domain', 'description' => '.me-Domain inkl. Verwaltung (livescoring-beispiel.me)', 'quantity' => 1, 'unit' => 'Jahr', 'net' => '32.73'],
+            ['article' => $tld, 'name' => 'Top-Level-Domain', 'description' => '.net-Domain inkl. Verwaltung (zeitreich-beispiel.net)', 'quantity' => 1, 'unit' => 'Jahr', 'net' => '21.85'],
+        ], '', '2023-04-04', '2024-04-03');
+
+        (new LinkProposer)->propose($this->organization);
+
+        $first = static fn(ResaleSubscription $s) => $s->periods()->orderBy('starts_on')->first()?->links()->first();
+        $this->assertSame('RE/2023/0578', $first($eu)?->voucher_number, 'Tippfehler im Text: trotzdem vorgeschlagen');
+        $this->assertSame(LinkOrigin::Proposed, $first($eu)?->origin, 'aber nicht automatisch bestätigt');
+        $this->assertSame(__('resale.link.note_domain_typo', ['written' => 'livescroing-beispiel.eu', 'domain' => 'livescoring-beispiel.eu']), $first($eu)?->note, 'der geschriebene Name steht als Notiz am Bezug');
+        $this->assertNull($first($me)?->note, 'exakte Nennung ohne Notiz');
+        $this->assertSame(LinkOrigin::Auto, $first($me)?->origin, 'exakte Nennung wird bestätigt');
+        $this->assertSame(LinkOrigin::Auto, $first($plain)?->origin, 'exakt genannte Domain');
+        $this->assertNull($first($hyphen), 'die eine Bindestrich entfernte Schwester-Domain bekommt nichts — der Text nennt exakt eine andere bekannte Domain');
+    }
 }

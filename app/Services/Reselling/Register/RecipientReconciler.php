@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Register;
 
-use App\Enums\Reselling\PeriodStatus;
+use App\Enums\Reselling\{PeriodStatus, SubscriptionKind};
 use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
@@ -134,6 +134,25 @@ final class RecipientReconciler {
                 $lines->push($line);
             } else {
                 $others->push($line);
+            }
+        }
+        // Domain-Abos: ihre Rechnungen laufen über Artikel ohne Lizenz-Einstufung, der Domainname
+        // steht im Positionstext — dazu die Positionen aller Empfänger, die eine Domain des Kunden
+        // nennen. Fremde Empfänger darunter sind der häufigste Grund für offene Domain-Perioden
+        // (Befund 2026-10-30: Domains beim Steuerbüro, Rechnungen seit 2023 an den Inhaber privat).
+        $domains = array_values($subscriptions->filter(static fn(ResaleSubscription $s): bool => $s->kind === SubscriptionKind::Domain)
+            ->map(static fn(ResaleSubscription $s): string => $s->label)->all());
+        if ($domains !== []) {
+            $known = $lines->merge($others)->map(static fn(MirrorLine $line): string => $line->identity())->flip();
+            foreach ($this->mirror->linesMentioningDomains($organization, null, $domains) as $line) {
+                if ($known->has($line->identity())) {
+                    continue;
+                }
+                if ($line->recipientCustomerId === $customer->id) {
+                    $lines->push($line);
+                } else {
+                    $others->push($line);
+                }
             }
         }
         // Verwandte Empfänger: Name teilt ein Kern-Token mit dem Empfänger, den
@@ -282,8 +301,9 @@ final class RecipientReconciler {
      * @param  Collection<int, ResaleSubscription>  $subscriptions
      */
     private function lineProductKey(MirrorLine $line, array $productBySubscription, Collection $subscriptions): string {
+        $domains = array_values($subscriptions->filter(static fn(ResaleSubscription $s): bool => $s->kind === SubscriptionKind::Domain)->map(static fn(ResaleSubscription $s): string => $s->label)->all());
         foreach ($subscriptions as $subscription) {
-            if (isset($productBySubscription[$subscription->id]) && LinkProposer::matchesProductOf($subscription, $line, $this->matcher)) {
+            if (isset($productBySubscription[$subscription->id]) && LinkProposer::matchesProductOf($subscription, $line, $this->matcher, $domains)) {
                 return $productBySubscription[$subscription->id];
             }
         }
@@ -454,6 +474,10 @@ final class RecipientReconciler {
                     }
                     $distance = (int) abs($date->diffInDays($start));
                     $related = isset($recipientTokens[$lineRow['contact']]) && array_intersect_key($recipientTokens[$lineRow['contact']], $periodTokens) !== [];
+                    // Eine Position, die die Domain des Abos nennt, ist eindeutig — gleich, an wen die Rechnung ging.
+                    if (! $related && $row['subscription']->kind === SubscriptionKind::Domain && $lineRow['line']->mentionsDomain($row['subscription']->label)) {
+                        $related = true;
+                    }
                     $ownLine = $ownCustomerId !== null && $lineRow['line']->recipientCustomerId === $ownCustomerId;
                     // Stornos nur dicht am Periodenbeginn — ein Storno aus dem übernächsten Jahr erklärt nichts.
                     if ($bucket === 'voided' && ((! $related && ! $ownLine) || $distance > LinkProposer::WINDOW_BEFORE)) {

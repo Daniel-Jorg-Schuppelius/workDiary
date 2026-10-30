@@ -278,6 +278,7 @@ return [
         'voucher_only' => 'Documento (senza riga)',
         'needed' => 'aperto: :amount',
         'note_voided' => 'Fattura annullata — copriva :months', // Review 2026-09-10
+        'note_domain_typo' => 'Dominio scritto come «:written» invece di «:domain» nel testo della fattura (refuso), da verificare',
         'no_lines' => 'Nessuna riga di fattura specchiata nella finestra intorno all’inizio del periodo.',
         'line' => 'Riga di fattura',
         'line_hint' => 'Solo righe abbonamento del destinatario nella finestra del periodo. Se manca un articolo, lo classifichi come prodotto abbonamento sotto «Prodotti».',
