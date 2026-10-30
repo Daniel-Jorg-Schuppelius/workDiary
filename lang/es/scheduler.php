@@ -169,6 +169,7 @@ return [
             'sync_purchases' => 'Suscripciones de reventa: adoptar asientos de dominios como compras',
             'sync_periods' => 'Suscripciones de reventa: generar los periodos de facturación',
             'draft_local' => 'Suscripciones de reventa: facturación recurrente — borradores de factura locales de los periodos vencidos',
+            'draft_external' => 'Suscripciones de reventa: facturación recurrente — traspasos al programa de contabilidad de los periodos vencidos (mensual)',
             'digest' => 'Suscripciones de reventa: resumen semanal a los responsables',
             'prune_imports' => 'Suscripciones de reventa: eliminar los archivos de importación tras el periodo de retención',
         ],

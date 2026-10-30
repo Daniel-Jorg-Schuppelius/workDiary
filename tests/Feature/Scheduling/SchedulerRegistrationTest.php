@@ -204,6 +204,8 @@ class SchedulerRegistrationTest extends TestCase {
         'resale:sync-purchases' => ['20 5 * * *', true, true],
         // Serienrechnung bei lokaler Rechnungshoheit (Feature 152, 2026-09-11).
         'resale:draft-local' => ['20 6 * * *', true, true],
+        // Serienlauf nach außen (Feature 185, MVP-1438): monatlich am Ersten.
+        'resale:draft-external' => ['25 6 1 * *', true, true],
         // Review 2026-09-10 (A5): wöchentlicher Reselling-Digest.
         'resale:digest' => ['45 6 * * 1', true, true],
         // Review 2026-09-10 (A8): Aufbewahrung der Import-Dateien.

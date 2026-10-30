@@ -68,7 +68,9 @@ class ResaleSubscriptionTest extends TestCase {
         $this->actingAs($this->userWithRole('buchhaltung'))->get(route('finance.resale.subscriptions'))
             ->assertOk()
             ->assertSee(__('resale.title.subscriptions'))
-            ->assertSee(__('resale.empty.subscriptions'));
+            ->assertSee(__('resale.empty.subscriptions'))
+            // Kacheln führen zur Liste bzw. zu den offenen Perioden (Pilot 2026-10-30).
+            ->assertSee(route('finance.resale.periods.index', ['status' => 'open']), false);
         $this->actingAs($this->orgAdmin())->get(route('finance.resale.create'))->assertOk()->assertSee(__('resale.dialog.title_new'));
     }
 

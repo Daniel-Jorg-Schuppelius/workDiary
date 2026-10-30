@@ -255,6 +255,11 @@ return [
     'resale.auto_local_drafts' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false, 'affects' => ['resale.draft_local']],
     'resale.last_proposal_run_at' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|string'],
     'resale.auto_local_drafts_lead_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:0|max:90', 'fallback' => 0, 'affects' => ['resale.draft_local']],
+    // Serienlauf nach außen (Feature 185, MVP-1438): resale:draft-external legt monatlich je Empfänger mit
+    // externer Rechnungshoheit eine Übergabe an sein Programm an (Default aus); Vorlauf 30 Tage = alles, was im
+    // kommenden Monat fällig wird. Abos mit Serienvorlage im Programm bleiben außen vor.
+    'resale.auto_external_drafts' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false, 'affects' => ['resale.draft_external']],
+    'resale.auto_external_drafts_lead_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:0|max:90', 'fallback' => 30, 'affects' => ['resale.draft_external']],
     // Preisstaffel (Benutzerklasse des Domainportals), deren Preise für direkt berechnete Domains gelten (Feature 185, 2026-10-30); Subuser-Domains nehmen die Klasse des Subusers.
     'resale.domain_direct_price_class' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|string|max:64', 'fallback' => null],
 

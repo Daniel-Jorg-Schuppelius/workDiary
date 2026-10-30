@@ -285,8 +285,11 @@ final class PeriodPlanner {
                 if (isset($seen[$key])) {
                     continue;
                 }
-                if ($period->isLocked()) {
-                    $result['kept']++; // Entscheidung bleibt, auch wenn das Abo verkürzt wurde
+                // Entscheidung bleibt, auch wenn das Abo verkürzt wurde; ebenso eine Periode mit Entwurfsstempel —
+                // der Stichtag des Rechnungsvorschlags plant über den Horizont hinaus (MVP-1437), und der tägliche
+                // Lauf mit kurzem Horizont darf sie nicht wieder abräumen, solange der Entwurf aussteht.
+                if ($period->isLocked() || $period->draft_reference !== null) {
+                    $result['kept']++;
 
                     continue;
                 }

@@ -33,6 +33,7 @@
                 <x-icon-btn icon="receipt_long" tone="ghost" size="sm" data-entry-modal-trigger :href="route('finance.resale.periods.draft.create')" show-label>{{ __('resale.draft.action') }}</x-icon-btn>
             @endcan
             <x-icon-btn icon="compare_arrows" tone="ghost" size="sm" :href="route('finance.resale.reconcile.index')" show-label>{{ __('resale.reconcile.title') }}</x-icon-btn>
+            <x-icon-btn icon="event_repeat" tone="ghost" size="sm" :href="route('finance.resale.plan.proposal')" show-label>{{ __('resale.plan.proposal.title') }}</x-icon-btn>
             <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('finance.resale.report.export')" show-label>{{ __('resale.export.action') }}</x-icon-btn>
         </x-slot:actions>
 

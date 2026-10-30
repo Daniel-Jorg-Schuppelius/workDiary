@@ -13,9 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Plan;
 
 use App\Enums\Reselling\{PeriodStatus, SubscriptionStatus};
+use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResalePeriod, ResalePlanLink, ResaleSubscription};
-use App\Services\Reselling\Register\LicenseAccounts;
+use App\Services\Reselling\Register\{LicenseAccounts, ResaleDraftRun};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -57,7 +58,21 @@ final class PlanAudit {
     public function __construct(
         private readonly RecurringPlans $plans,
         private readonly LicenseAccounts $accounts,
+        private readonly ResaleDraftRun $drafts,
     ) {}
+
+    /**
+     * Entwirft der Serienlauf des Registers die Rechnungen des Empfängers? Je Empfänger einmal geprüft.
+     *
+     * @param  array<int, bool>  $cache
+     */
+    private function draftedByRegister(Organization $organization, ?Customer $recipient, array &$cache): bool {
+        if ($recipient === null) {
+            return false;
+        }
+
+        return $cache[(int) $recipient->id] ??= $this->drafts->coversRecipient($organization, $recipient);
+    }
 
     /**
      * Alle Befunde der Organisation; `$subscriptionIds` grenzt auf ein Konto ein
@@ -93,10 +108,14 @@ final class PlanAudit {
         $nextStarts = $this->nextPeriodStarts($organization, array_values(array_map('intval', $subscriptions->pluck('id')->all())), $reference);
 
         $findings = [];
+        /** @var array<int, bool> $drafted Empfänger → der Serienlauf des Registers entwirft seine Rechnungen */
+        $drafted = [];
         foreach ($subscriptions as $subscription) {
             $own = $linksBySubscription[$subscription->id] ?? [];
             if ($own === []) {
-                if ($subscription->status->isPlanning()) {
+                // Ohne Vorlage fehlt nur dann etwas, wenn auch das Register nicht entwirft (MVP-1439): bei aktivem
+                // Serienlauf für die Hoheit des Empfängers entsteht die Rechnung als Übergabe bzw. lokaler Entwurf.
+                if ($subscription->status->isPlanning() && ! $this->draftedByRegister($organization, $subscription->billedTo(), $drafted)) {
                     $findings[] = $this->finding(self::SUBSCRIPTION_WITHOUT_PLAN, $subscription, null, null);
                 }
 

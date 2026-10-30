@@ -3,7 +3,7 @@
  * Created on   : Fri Sep 11 2026
  * Author       : Daniel Jörg Schuppelius
  * Author Uri   : https://schuppelius.org
- * Filename     : ResaleLocalDraftRunTest.php
+ * Filename     : ResaleDraftRunTest.php
  * License      : AGPL-3.0-or-later
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
@@ -12,21 +12,25 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Reselling;
 
-use App\Enums\Finance\BillingMode;
+use App\Enums\Finance\{BillingMode, TransferStatus};
 use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Reselling\PeriodStatus;
 use App\Models\Audit\AuditLog;
 use App\Models\Customer\{Customer, ForeignCustomer};
+use App\Models\Finance\BillingTransfer;
+use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\Invoice;
 use App\Models\Reselling\{ResalePeriodLink, ResaleSubscription};
 use App\Notifications\Finance\ResalePeriodsDigestNotification;
+use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\LexofficeArticle;
-use App\Services\Reselling\Register\{DomainSubscriptionSync, PeriodPlanner, ResaleLocalDraftRun};
+use App\Services\Reselling\Register\{DomainSubscriptionSync, PeriodPlanner, ResaleDraftRun};
 use App\Settings\SettingScope;
 use App\Support\{MorphMap, Setting};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\{FakePluginHttp, InteractsWithPlugins};
 use Tests\TestCase;
 
 /**
@@ -35,7 +39,8 @@ use Tests\TestCase;
  * fälligen Perioden, Idempotenz über den Stempel, externe Hoheit wird
  * übersprungen, Probelauf, Vorlauf, Digest-Zahl, Zeitplan und UI-Schalter.
  */
-class ResaleLocalDraftRunTest extends TestCase {
+class ResaleDraftRunTest extends TestCase {
+    use InteractsWithPlugins;
     use RefreshDatabase;
     use WithOrganization;
 
@@ -58,8 +63,8 @@ class ResaleLocalDraftRunTest extends TestCase {
     }
 
     private function enable(bool $enabled = true, int $leadDays = 0): void {
-        Setting::set(ResaleLocalDraftRun::SETTING_ENABLED, $enabled, SettingScope::Organization, $this->organization);
-        Setting::set(ResaleLocalDraftRun::SETTING_LEAD_DAYS, $leadDays, SettingScope::Organization, $this->organization);
+        Setting::set(ResaleDraftRun::SETTING_ENABLED, $enabled, SettingScope::Organization, $this->organization);
+        Setting::set(ResaleDraftRun::SETTING_LEAD_DAYS, $leadDays, SettingScope::Organization, $this->organization);
     }
 
     public function test_switch_off_means_the_command_writes_nothing(): void {
@@ -69,7 +74,7 @@ class ResaleLocalDraftRunTest extends TestCase {
         $this->artisan('resale:draft-local')->assertSuccessful()->expectsOutputToContain('nicht aktiv');
 
         $this->assertSame(0, Invoice::query()->count());
-        $this->assertFalse(app(ResaleLocalDraftRun::class)->enabledFor($this->organization->fresh() ?? $this->organization), 'Default aus');
+        $this->assertFalse(app(ResaleDraftRun::class)->enabledFor($this->organization->fresh() ?? $this->organization), 'Default aus');
 
         // --force übergeht den Schalter für einen einmaligen Lauf.
         $this->artisan('resale:draft-local', ['--force' => true])->assertSuccessful()->expectsOutputToContain('1 Entwürfe');
@@ -95,7 +100,7 @@ class ResaleLocalDraftRunTest extends TestCase {
         $own = $this->subscription(['is_own_holding' => true, 'company_name' => 'Eigene GmbH']);
         $unpriced = $this->subscription(['customer_id' => $customer->id, 'label' => 'Exchange Online (Plan 1)', 'sale_unit_price' => null]);
 
-        $result = app(ResaleLocalDraftRun::class)->run($this->organization);
+        $result = app(ResaleDraftRun::class)->run($this->organization);
 
         $this->assertSame(['recipients' => 2, 'drafts' => 2, 'skipped' => 0, 'errors' => []], $result);
         $invoices = Invoice::query()->orderBy('customer_id')->get();
@@ -109,11 +114,14 @@ class ResaleLocalDraftRunTest extends TestCase {
         $forPartner = $invoices->firstWhere('customer_id', $partner->id);
         $this->assertNotNull($forCustomer);
         $this->assertNotNull($forPartner);
-        $this->assertCount(2, $forCustomer->items, 'eine Position je Periode des bepreisten Abos (preisloses Abo liefert keine)');
-        $this->assertSame('24.000', $forCustomer->items->first()?->quantity, 'Monatsartikel: 2 Lizenzen × 12 Monate');
-        $this->assertSame('2025-08-05', $forCustomer->items->first()?->service_from?->toDateString(), 'Leistungszeitraum je Position (Review 2026-09-11)');
-        $this->assertSame('2026-08-04', $forCustomer->items->first()?->service_to?->toDateString());
-        $this->assertCount(2, $forPartner->items);
+        // MVP-1436: zwei zusammenhängende offene Perioden sind eine Position über beide Jahre (preisloses Abo liefert keine).
+        $this->assertCount(1, $forCustomer->items, 'zusammenhängende Perioden des bepreisten Abos = eine Position');
+        $this->assertSame('48.000', $forCustomer->items->first()?->quantity, 'Monatsartikel: 2 Lizenzen × 24 Monate');
+        $this->assertSame('2025-08-05', $forCustomer->items->first()?->service_from?->toDateString(), 'Leistungszeitraum vom ersten Beginn (Review 2026-09-11)');
+        $this->assertSame('2027-08-04', $forCustomer->items->first()?->service_to?->toDateString(), '… bis zum letzten Ende');
+        $this->assertCount(1, $forPartner->items);
+        $this->assertSame('2.000', $forPartner->items->first()?->quantity, 'eine Lizenz, zwei Jahre');
+        $this->assertSame(__('resale.draft.unit_year'), $forPartner->items->first()?->unit, 'Jahresabo mit einer Lizenz: Einheit Jahr');
         // Zeitraum nur in den Spalten (eigene Zeile auf Beleg und Seite), Beschreibung = Name · Endkunde (Review 2026-09-11, Kleinigkeiten UI).
         $this->assertSame('Microsoft 365 Business Premium', (string) $forCustomer->items->first()?->description, 'Artikelname ohne Zeitraum');
         $this->assertSame('Microsoft 365 Business Basic · ' . __('resale.draft.end_customer', ['name' => 'Steuerbüro Zahlenwerk']), (string) $forPartner->items->first()?->description, 'Endkunde in der Beschreibung');
@@ -130,10 +138,10 @@ class ResaleLocalDraftRunTest extends TestCase {
         $this->assertSame(0, $own->periods()->whereNotNull('draft_reference')->count(), 'eigener Bestand wird nie berechnet');
         $this->assertSame(0, $unpriced->periods()->whereNotNull('draft_reference')->count(), 'ohne Verkaufspreis kein Stempel');
         $this->assertSame(4, ResalePeriodLink::query()->count());
-        $this->assertSame(2, AuditLog::query()->where('event', ResaleLocalDraftRun::AUDIT_EVENT)->where('auditable_type', MorphMap::stableKey(Invoice::class))->count(), 'Audit-Event je Entwurf');
+        $this->assertSame(2, AuditLog::query()->where('event', ResaleDraftRun::AUDIT_EVENT)->where('auditable_type', MorphMap::stableKey(Invoice::class))->count(), 'Audit-Event je Entwurf');
 
         // Zweiter Lauf: alles gestempelt → nichts Neues. Das preislose Abo bleibt offen, ergibt aber keinen Empfänger mit Position.
-        $again = app(ResaleLocalDraftRun::class)->run($this->organization);
+        $again = app(ResaleDraftRun::class)->run($this->organization);
         $this->assertSame(0, $again['drafts']);
         $this->assertSame([], $again['errors']);
         $this->assertSame(2, Invoice::query()->count(), 'kein zweiter Entwurf');
@@ -151,7 +159,7 @@ class ResaleLocalDraftRunTest extends TestCase {
         $local = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Lokal-Kunde', 'billing_mode' => BillingMode::Workdiary]);
         $this->subscription(['customer_id' => $local->id]);
 
-        $result = app(ResaleLocalDraftRun::class)->run($this->organization);
+        $result = app(ResaleDraftRun::class)->run($this->organization);
 
         $this->assertSame(2, $result['recipients']);
         $this->assertSame(1, $result['drafts']);
@@ -168,7 +176,7 @@ class ResaleLocalDraftRunTest extends TestCase {
         $settings['billing_mode'] = BillingMode::Lexoffice->value;
         $this->organization->forceFill(['settings' => $settings])->save();
 
-        $result = app(ResaleLocalDraftRun::class)->run($this->organization);
+        $result = app(ResaleDraftRun::class)->run($this->organization);
         $this->assertSame(0, $result['drafts']);
         $this->assertSame(0, Invoice::query()->where('customer_id', $orgExternal->id)->count());
     }
@@ -178,7 +186,7 @@ class ResaleLocalDraftRunTest extends TestCase {
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'billing_mode' => BillingMode::Workdiary]);
         $subscription = $this->subscription(['customer_id' => $customer->id]);
 
-        $result = app(ResaleLocalDraftRun::class)->run($this->organization, null, true);
+        $result = app(ResaleDraftRun::class)->run($this->organization, null, true);
 
         $this->assertSame(['recipients' => 1, 'drafts' => 1, 'skipped' => 0, 'errors' => []], $result);
         $this->assertSame(0, Invoice::query()->count(), 'Probelauf schreibt keine Rechnung');
@@ -197,7 +205,7 @@ class ResaleLocalDraftRunTest extends TestCase {
         $this->assertSame(2, $subscription->periods()->count());
 
         $this->enable(true, 0);
-        $result = app(ResaleLocalDraftRun::class)->run($this->organization);
+        $result = app(ResaleDraftRun::class)->run($this->organization);
         $this->assertSame(1, $result['drafts']);
         $invoice = Invoice::query()->firstOrFail();
         $this->assertCount(1, $invoice->items, 'ohne Vorlauf nur die fällige Periode');
@@ -205,8 +213,8 @@ class ResaleLocalDraftRunTest extends TestCase {
 
         // Mit Vorlauf 7 Tage kommt die Periode vom 09.09.2026 in einen zweiten Entwurf.
         $this->enable(true, 7);
-        $this->assertSame(7, app(ResaleLocalDraftRun::class)->leadDaysFor($this->organization));
-        $result = app(ResaleLocalDraftRun::class)->run($this->organization);
+        $this->assertSame(7, app(ResaleDraftRun::class)->leadDaysFor($this->organization));
+        $result = app(ResaleDraftRun::class)->run($this->organization);
         $this->assertSame(1, $result['drafts']);
         $this->assertSame(2, Invoice::query()->count());
         $this->assertSame(2, $subscription->periods()->whereNotNull('draft_reference')->count());
@@ -224,6 +232,91 @@ class ResaleLocalDraftRunTest extends TestCase {
         foreach (['de', 'en', 'fr', 'it', 'es'] as $locale) {
             $this->assertTrue(app('translator')->has('scheduler.job.resale.draft_local', $locale, false), "Label fehlt: $locale");
         }
+    }
+
+    public function test_external_run_transfers_to_the_accounting_program_and_skips_local_recipients(): void {
+        // MVP-1438: monatlicher Serienlauf nach außen — eine Übergabe je Lexoffice-Empfänger; lokale Empfänger überspringt er.
+        $this->enablePluginFor($this->organization, LexofficePlugin::ID, ['api_key' => 'lex-key', 'request_interval' => '0']);
+        Setting::set(ResaleDraftRun::SETTING_EXTERNAL_ENABLED, true, SettingScope::Organization, $this->organization);
+        Setting::set(ResaleDraftRun::SETTING_EXTERNAL_LEAD_DAYS, 30, SettingScope::Organization, $this->organization);
+        $lexoffice = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Musterkanzlei Beispiel', 'billing_mode' => BillingMode::Lexoffice]);
+        ExternalReference::create([
+            'organization_id' => $this->organization->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+            'external_id' => '2d3e4f50-6a7b-4c8d-9e0f-1a2b3c4d5e6f', 'referenceable_type' => $lexoffice->getMorphClass(), 'referenceable_id' => $lexoffice->getKey(),
+        ]);
+        // Domain mit einer Lizenz: fällige Periode ab 09.09.2025 und eine, die in fünf Tagen beginnt (Vorlauf 30) → eine Zeile „2 Jahr".
+        $domain = $this->subscription(['customer_id' => $lexoffice->id, 'kind' => 'domain', 'provider' => 'domainreselling', 'label' => 'beispiel-kanzlei.de', 'quantity' => 1, 'starts_on' => '2025-09-09', 'sale_unit_price' => '9.00']);
+        $local = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Lokal-Kunde', 'billing_mode' => BillingMode::Workdiary]);
+        $this->subscription(['customer_id' => $local->id]);
+        $payloads = [];
+        FakePluginHttp::fake([
+            'https://api.lexware.io/v1/invoices*' => static function (\Psr\Http\Message\RequestInterface $request) use (&$payloads) {
+                $payloads[] = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
+
+                return FakePluginHttp::response(['id' => 'draft-90', 'resourceUri' => 'https://api.lexware.io/v1/invoices/draft-90'], 201);
+            },
+        ]);
+        $run = app(ResaleDraftRun::class);
+        $this->assertTrue($run->coversRecipient($this->organization, $lexoffice), 'Serienlauf nach außen aktiv');
+        $this->assertFalse($run->coversRecipient($this->organization, $local), 'lokaler Serienlauf aus');
+
+        $dry = $run->run($this->organization, null, true, true);
+        $this->assertSame(['recipients' => 2, 'drafts' => 1, 'skipped' => 1, 'errors' => []], $dry);
+        $this->assertSame(0, BillingTransfer::query()->count(), 'Probelauf schreibt nichts');
+
+        $result = $run->run($this->organization, null, false, true);
+        $this->assertSame(['recipients' => 2, 'drafts' => 1, 'skipped' => 1, 'errors' => []], $result);
+        $transfer = BillingTransfer::query()->where('customer_id', $lexoffice->id)->firstOrFail();
+        $this->assertSame(TransferStatus::Transferred, $transfer->status);
+        $this->assertSame(1, $transfer->positions()->count(), 'beide Jahre eine Position (MVP-1436)');
+        $this->assertSame(2, $domain->periods()->where('draft_reference', 'draft-90')->count(), 'fällige und bevorstehende Periode gestempelt');
+        $this->assertCount(1, $payloads);
+        $this->assertEquals(2, $payloads[0]['lineItems'][0]['quantity']);
+        $this->assertSame(0, Invoice::query()->count(), 'kein lokaler Entwurf');
+        $this->assertSame(1, AuditLog::query()->where('event', ResaleDraftRun::AUDIT_EVENT)->where('auditable_type', MorphMap::stableKey(BillingTransfer::class))->count(), 'Audit an der Übergabe');
+
+        // Zweiter Lauf: gestempelt → nichts Neues. Der lokale Lauf überspringt den Lexoffice-Empfänger und entwirft den lokalen.
+        $again = $run->run($this->organization, null, false, true);
+        $this->assertSame(0, $again['drafts']);
+        $this->assertSame(1, BillingTransfer::query()->count());
+        $localRun = $run->run($this->organization);
+        $this->assertSame(['recipients' => 1, 'drafts' => 1, 'skipped' => 0, 'errors' => []], $localRun, 'Lexoffice-Perioden sind gestempelt, nur der lokale Empfänger bleibt');
+        $this->assertSame(1, Invoice::query()->where('customer_id', $local->id)->count());
+
+        // Befehl: ohne Schalter übersprungen, mit --force läuft er; Zeitplan monatlich am Ersten mit Labels in fünf Sprachen.
+        Setting::set(ResaleDraftRun::SETTING_EXTERNAL_ENABLED, false, SettingScope::Organization, $this->organization);
+        $this->artisan('resale:draft-external')->assertSuccessful()->expectsOutputToContain('nicht aktiv');
+        $this->artisan('resale:draft-external', ['--force' => true, '--dry-run' => true])->assertSuccessful()->expectsOutputToContain('Probelauf');
+        $jobs = (array) config('scheduler.jobs');
+        $this->assertSame('resale:draft-external', $jobs['resale.draft_external']['command']);
+        $this->assertSame(['type' => 'monthlyOn', 'day' => 1, 'time' => '06:25'], $jobs['resale.draft_external']['cadence']);
+        foreach (['de', 'en', 'fr', 'it', 'es'] as $locale) {
+            $this->assertTrue(app('translator')->has('scheduler.job.resale.draft_external', $locale, false), "Label fehlt: $locale");
+        }
+    }
+
+    public function test_external_organization_saves_the_external_switch_from_the_billing_dialog(): void {
+        $admin = $this->orgAdmin();
+        $settings = (array) $this->organization->settings;
+        $settings['billing_mode'] = BillingMode::Lexoffice->value;
+        $this->organization->forceFill(['settings' => $settings])->save();
+
+        $this->actingAs($admin)->get(route('finance.resale.settings.billing'))->assertOk()
+            ->assertSee('name="auto_external_drafts"', false)
+            ->assertDontSee('name="auto_local_drafts"', false)
+            ->assertSee(__('resale.auto_draft.external_enabled', ['program' => 'Lexoffice']));
+        $this->actingAs($admin)->post(route('finance.resale.auto-draft.store'), ['auto_external_drafts' => '1', 'external_lead_days' => '30'])
+            ->assertRedirect(route('finance.resale.index'))
+            ->assertSessionHas('success', __('resale.auto_draft.flash.external_enabled', ['days' => 30, 'program' => 'Lexoffice']));
+        $organization = $this->organization->fresh();
+        $this->assertNotNull($organization);
+        $run = app(ResaleDraftRun::class);
+        $this->assertTrue($run->enabledFor($organization, true));
+        $this->assertSame(30, $run->leadDaysFor($organization, true));
+        $this->assertFalse($run->enabledFor($organization), 'lokaler Schalter unberührt');
+        $this->actingAs($admin)->post(route('finance.resale.auto-draft.store'), ['auto_external_drafts' => '0', 'external_lead_days' => '120'])
+            ->assertSessionHasErrors(['external_lead_days']);
+        $this->assertTrue($run->enabledFor($this->organization->fresh() ?? $organization, true));
     }
 
     public function test_switch_is_saved_from_the_billing_dialog_with_reselling_manage(): void {
@@ -244,7 +337,7 @@ class ResaleLocalDraftRunTest extends TestCase {
             ->assertSessionHas('success');
         $organization = $this->organization->fresh();
         $this->assertNotNull($organization);
-        $run = app(ResaleLocalDraftRun::class);
+        $run = app(ResaleDraftRun::class);
         $this->assertTrue($run->enabledFor($organization));
         $this->assertSame(7, $run->leadDaysFor($organization));
         $this->assertSame('KUNDEN', DomainSubscriptionSync::directPriceClass($organization), 'Preisstaffel für direkte Kunden, groß geschrieben (Feature 185, 2026-10-30)');

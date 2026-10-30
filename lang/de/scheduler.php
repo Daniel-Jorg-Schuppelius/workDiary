@@ -169,6 +169,7 @@ return [
             'sync_purchases' => 'Reselling-Abos: Domain-Buchungen als Einkaufsbelege übernehmen',
             'sync_periods' => 'Reselling-Abos: Abrechnungsperioden vorrollen',
             'draft_local' => 'Reselling-Abos: Serienrechnung — lokale Rechnungsentwürfe aus fälligen Perioden',
+            'draft_external' => 'Reselling-Abos: Serienrechnung — Übergaben an das Buchhaltungsprogramm aus fälligen Perioden (monatlich)',
             'digest' => 'Reselling-Abos: Wochen-Digest an die Abo-Verantwortlichen',
             'prune_imports' => 'Reselling-Abos: abgelegte Importdateien nach Ablauf der Aufbewahrung löschen',
         ],

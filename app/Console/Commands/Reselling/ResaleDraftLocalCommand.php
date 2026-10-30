@@ -14,15 +14,16 @@ namespace App\Console\Commands\Reselling;
 
 use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Platform\Organization;
-use App\Services\Reselling\Register\ResaleLocalDraftRun;
+use App\Services\Reselling\Register\ResaleDraftRun;
 use Illuminate\Console\Command;
 
 /**
  * Serienrechnung bei lokaler Rechnungshoheit (Feature 152): je Organisation
  * mit aktivem Schalter `resale.auto_local_drafts` ein Lauf von
- * {@see ResaleLocalDraftRun}. Täglich im Zeitplan nach `resale:sync-periods`;
+ * {@see ResaleDraftRun}. Täglich im Zeitplan nach `resale:sync-periods`;
  * idempotent. `--force` übergeht den Schalter für einen einmaligen Lauf,
- * `--dry-run` zählt nur.
+ * `--dry-run` zählt nur. Die Variante für externe Hoheit ist
+ * {@see ResaleDraftExternalCommand}.
  */
 class ResaleDraftLocalCommand extends Command {
     use IteratesOrganizations;
@@ -33,18 +34,21 @@ class ResaleDraftLocalCommand extends Command {
 
     protected $description = 'Serienrechnung: lokale Rechnungsentwürfe aus fälligen Reselling-Perioden je Rechnungsempfänger (Feature 152)';
 
-    public function handle(ResaleLocalDraftRun $run): int {
+    /** Hoheit, die dieser Lauf bedient. */
+    protected bool $external = false;
+
+    public function handle(ResaleDraftRun $run): int {
         $dryRun = (bool) $this->option('dry-run');
         $force = (bool) $this->option('force');
 
         $failures = $this->forEachOrganization(function (Organization $org) use ($run, $dryRun, $force): void {
-            if (! $force && ! $run->enabledFor($org)) {
+            if (! $force && ! $run->enabledFor($org, $this->external)) {
                 $this->line(sprintf('Organisation #%d (%s): Serienlauf nicht aktiv — übersprungen.', $org->id, $org->name));
 
                 return;
             }
 
-            $result = $run->run($org, null, $dryRun);
+            $result = $run->run($org, null, $dryRun, $this->external);
             $this->info(sprintf(
                 'Organisation #%d (%s): %d Empfänger, %d Entwürfe%s, %d übersprungen, %d Fehler (Vorlauf %d Tage).',
                 $org->id,
@@ -54,7 +58,7 @@ class ResaleDraftLocalCommand extends Command {
                 $dryRun ? ' (Probelauf, nichts geschrieben)' : '',
                 $result['skipped'],
                 count($result['errors']),
-                $run->leadDaysFor($org),
+                $run->leadDaysFor($org, $this->external),
             ));
             foreach ($result['errors'] as $error) {
                 $this->warn('  ' . $error);

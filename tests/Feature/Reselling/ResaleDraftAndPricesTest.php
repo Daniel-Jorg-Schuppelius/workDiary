@@ -111,10 +111,10 @@ class ResaleDraftAndPricesTest extends TestCase {
         $invoice = \App\Models\Invoicing\Invoice::query()->where('customer_id', $customer->id)->firstOrFail();
         $this->assertSame(\App\Enums\Invoicing\InvoiceStatus::Draft, $invoice->status);
         $this->assertSame('resale', $invoice->category);
-        $this->assertCount(2, $invoice->items, 'eine Position je Periode');
-        $this->assertSame('24.000', $invoice->items->first()?->quantity, '2 Lizenzen × 12 Monate');
-        $this->assertSame('2025-08-05', $invoice->items->first()?->service_from?->toDateString(), 'Leistungszeitraum = Periode (Review 2026-09-11)');
-        $this->assertSame('2026-08-04', $invoice->items->first()?->service_to?->toDateString());
+        $this->assertCount(1, $invoice->items, 'zwei zusammenhängende Perioden = eine Position (MVP-1436)');
+        $this->assertSame('48.000', $invoice->items->first()?->quantity, '2 Lizenzen × 24 Monate');
+        $this->assertSame('2025-08-05', $invoice->items->first()?->service_from?->toDateString(), 'Leistungszeitraum vom ersten Beginn (Review 2026-09-11)');
+        $this->assertSame('2027-08-04', $invoice->items->first()?->service_to?->toDateString(), '… bis zum letzten Ende');
         $this->assertSame('98880', (string) $invoice->subtotal?->getMinorAmount(), '2 Perioden × 2 × 247,20');
         foreach ($subscription->periods()->get() as $period) {
             $this->assertSame(PeriodStatus::Billed, $period->status);
@@ -191,11 +191,11 @@ class ResaleDraftAndPricesTest extends TestCase {
         $this->assertSame(1, \App\Models\Finance\BillingTransfer::query()->where('channel', \App\Enums\Finance\TransferChannel::Resale->value)->count());
         $this->assertSame('7c6b5a49-3827-4e16-9f05-e4d3c2b1a098', $captured['address']['contactId']);
         $this->assertArrayNotHasKey('finalize', $captured);
-        $this->assertCount(2, $captured['lineItems'], 'eine Position je Periode');
+        $this->assertCount(1, $captured['lineItems'], 'zusammenhängende Perioden eines Abos sind eine Position (MVP-1436)');
         $this->assertSame('Microsoft 365 Business Basic', $captured['lineItems'][0]['name']);
         $this->assertStringContainsString('Steuerbüro Zahlenwerk', $captured['lineItems'][0]['description']);
-        $this->assertStringContainsString('09.04.2025 – 08.04.2026', $captured['lineItems'][0]['description']);
-        $this->assertEquals(12, $captured['lineItems'][0]['quantity']);
+        $this->assertStringContainsString('09.04.2025 – 08.04.2027', $captured['lineItems'][0]['description'], 'Zeitraum vom ersten Beginn bis zum letzten Ende');
+        $this->assertEquals(24, $captured['lineItems'][0]['quantity'], 'eine Lizenz über 24 Monate');
         $this->assertSame('Monat', $captured['lineItems'][0]['unitName']);
         $this->assertEqualsWithDelta(5.6, $captured['lineItems'][0]['unitPrice']['netAmount'], 0.001);
         $this->assertSame('net', $captured['taxConditions']['taxType']);

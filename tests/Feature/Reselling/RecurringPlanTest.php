@@ -20,7 +20,9 @@ use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\{LexofficeArticle, LexofficeRecurringTemplate, LexofficeVoucher, LexofficeVoucherLine};
 use App\Plugins\Lexoffice\Services\{LexofficeRecurringTemplateSync, LexofficeVoucherLineSync};
 use App\Services\Reselling\Plan\{PlanAudit, PlanLinkProposer, PlanWorkItemSource, RecurringPlans};
-use App\Services\Reselling\Register\{LicenseAccounts, PeriodPlanner, ResaleInvoiceDraftService, ResaleOverview};
+use App\Services\Reselling\Register\{LicenseAccounts, PeriodPlanner, ResaleDraftRun, ResaleInvoiceDraftService, ResaleOverview};
+use App\Settings\SettingScope;
+use App\Support\Setting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Concerns\WithOrganization;
@@ -158,6 +160,14 @@ class RecurringPlanTest extends TestCase {
         $items = iterator_to_array(app(PlanWorkItemSource::class)->items($admin, $this->organization), false);
         $this->assertCount(1, $items);
         $this->assertSame(1, $items[0]->count);
+        // MVP-1439: entwirft der Serienlauf des Registers die Rechnungen des Empfängers, fehlt keine Vorlage.
+        Setting::set(ResaleDraftRun::SETTING_ENABLED, true, SettingScope::Organization, $this->organization);
+        Setting::set(ResaleDraftRun::SETTING_EXTERNAL_ENABLED, true, SettingScope::Organization, $this->organization);
+        $covered = array_count_values(array_column(app(PlanAudit::class)->findings($this->organization), 'kind'));
+        $this->assertArrayNotHasKey(PlanAudit::SUBSCRIPTION_WITHOUT_PLAN, $covered, 'Serienlauf des Registers deckt das Abo ohne Vorlage');
+        Setting::set(ResaleDraftRun::SETTING_ENABLED, false, SettingScope::Organization, $this->organization);
+        Setting::set(ResaleDraftRun::SETTING_EXTERNAL_ENABLED, false, SettingScope::Organization, $this->organization);
+        $this->assertSame(1, array_count_values(array_column(app(PlanAudit::class)->findings($this->organization), 'kind'))[PlanAudit::SUBSCRIPTION_WITHOUT_PLAN] ?? 0);
 
         // Rechnungsvorschlag lässt die geplanten Perioden aus — Teams bleibt drin.
         $open = app(ResaleInvoiceDraftService::class)->openPeriodsFor($this->schub);

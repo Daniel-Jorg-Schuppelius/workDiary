@@ -1313,6 +1313,16 @@ return [
             'criticality' => 'core',
             'expected_runtime_minutes' => 3,
         ],
+        // Serienlauf nach außen (Feature 185, MVP-1438): monatlich je Empfänger mit externer
+        // Rechnungshoheit eine Übergabe an sein Buchhaltungsprogramm mit allem, was bis zum
+        // Vorlauf fällig wird; der Org-Schalter resale.auto_external_drafts entscheidet im Befehl.
+        'resale.draft_external' => [
+            'command' => 'resale:draft-external',
+            'cadence' => ['type' => 'monthlyOn', 'day' => 1, 'time' => '06:25'],
+            'allowed' => ['dailyAt', 'weeklyOn', 'monthlyOn'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 5,
+        ],
         // Review 2026-09-10 (A5): wöchentlicher Reselling-Digest an die Nutzer
         // mit reselling.manage — fällige Perioden, Vorschläge, Halterlücken,
         // Verlängerungen; ohne Befund wird nichts verschickt.
