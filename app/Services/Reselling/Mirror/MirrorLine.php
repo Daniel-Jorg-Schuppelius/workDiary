@@ -133,6 +133,75 @@ final readonly class MirrorLine {
         return false;
     }
 
+    /**
+     * Nennt die Position die Domain mit Tippfehler? Rechnungstexte werden von Hand geschrieben
+     * („livescroing.eu“ für livescoring.eu, Pilot 2026-10-30). Gleiche Endung, erste Bezeichnung
+     * bis zu ein (unter acht Zeichen) bzw. zwei Zeichen entfernt, der geschriebene Name ist keine
+     * andere bekannte Domain, und keine andere bekannte Domain derselben Endung liegt gleich nah —
+     * sonst false. Exakte Nennungen prüft {@see mentionsDomain()}; ein Treffer hier ist ein
+     * unsicherer Vorschlag, keine automatische Bestätigung.
+     *
+     * @param  list<string>  $knownDomains  Domains aller Abos (Eindeutigkeit)
+     */
+    public function mentionsDomainLoosely(string $domain, array $knownDomains): bool {
+        return $this->looselyMentionedDomain($domain, $knownDomains) !== null;
+    }
+
+    /**
+     * Der im Text geschriebene Name, der die Domain mit Tippfehler meint ({@see mentionsDomainLoosely()}) — für die Notiz am Bezug.
+     *
+     * @param  list<string>  $knownDomains
+     */
+    public function looselyMentionedDomain(string $domain, array $knownDomains): ?string {
+        $domain = mb_strtolower(trim($domain));
+        if ($domain === '' || ! str_contains($domain, '.')) {
+            return null;
+        }
+        [$label, $suffix] = explode('.', $domain, 2);
+        $known = [];
+        foreach ($knownDomains as $other) {
+            $known[mb_strtolower(trim($other))] = true;
+        }
+        $allowed = mb_strlen($label) >= 8 ? 2 : 1;
+        foreach ($this->domainTokens() as $token) {
+            if (isset($known[$token]) || ! str_contains($token, '.')) {
+                continue; // genau eine bekannte Domain geschrieben: kein Tippfehler
+            }
+            [$tokenLabel, $tokenSuffix] = explode('.', $token, 2);
+            if ($tokenSuffix !== $suffix) {
+                continue;
+            }
+            $distance = levenshtein($tokenLabel, $label);
+            if ($distance > $allowed) {
+                continue;
+            }
+            foreach (array_keys($known) as $other) {
+                if ($other === $domain || ! str_ends_with($other, '.' . $suffix)) {
+                    continue;
+                }
+                if (levenshtein(explode('.', $other, 2)[0], $tokenLabel) <= $distance) {
+                    continue 2; // mehrdeutig: eine andere bekannte Domain liegt gleich nah oder näher
+                }
+            }
+
+            return $token;
+        }
+
+        return null;
+    }
+
+    /**
+     * Domain-ähnliche Wörter im Positionstext, klein geschrieben.
+     *
+     * @return list<string>
+     */
+    private function domainTokens(): array {
+        $haystack = mb_strtolower((string) $this->articleName . ' ' . $this->text());
+        preg_match_all('/(?<![\p{L}\p{N}.-])((?:[\p{L}\p{N}](?:[\p{L}\p{N}-]*[\p{L}\p{N}])?\.)+[\p{L}]{2,})(?![\p{L}\p{N}-])/u', $haystack, $m);
+
+        return array_values(array_unique($m[1]));
+    }
+
     /** Leistungsmonate aus dem Zeitraum (gerundet; Einzeldatum = null). */
     public function serviceMonths(): ?int {
         if ($this->serviceFrom === null || $this->serviceTo === null) {

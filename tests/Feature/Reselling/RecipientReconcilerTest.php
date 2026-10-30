@@ -94,7 +94,7 @@ class RecipientReconcilerTest extends TestCase {
             LexofficeVoucherLine::create([
                 'organization_id' => $this->organization->id, 'voucher_id' => $voucher->id, 'position' => $position + 1, 'type' => 'service',
                 'external_article_id' => $line['article']->external_id, 'lexoffice_article_id' => $line['article']->id,
-                'name' => $line['article']->name, 'quantity' => $line['quantity'], 'unit_name' => $line['unit'] ?? 'Monat',
+                'name' => $line['article']->name, 'description' => $line['description'] ?? null, 'quantity' => $line['quantity'], 'unit_name' => $line['unit'] ?? 'Monat',
                 'unit_net' => $line['net'], 'total_net' => (string) round((float) $line['net'] * $line['quantity'], 2), 'tax_rate' => 19, 'currency' => 'EUR',
             ]);
         }
@@ -475,5 +475,39 @@ class RecipientReconcilerTest extends TestCase {
         $this->assertSame(0, $byName['Fallback GmbH']['open']);
         $this->assertSame(0.0, $byName['Fallback GmbH']['free']);
         $this->assertSame(1, $byName['Fallback GmbH']['lines']);
+    }
+
+    public function test_domain_invoices_addressed_to_another_customer_are_shown_as_foreign_and_rehome_links_them(): void {
+        // Befund 2026-10-30: die Domains hingen am Steuerbüro, die Rechnungen gingen seit 2023 an den Inhaber privat —
+        // der Vorschlagslauf ordnet nie über Kundengrenzen zu, der Abgleich muss die fremde Rechnung zeigen.
+        $admin = $this->orgAdmin();
+        $office = $this->customerWithContact('Steuerberater C. Zahlenwerk', 'c-zahlenwerk');
+        $private = $this->customerWithContact('Christian Zahlenwerk', 'c-privat');
+        $tld = $this->article('art-tld', 'Top-Level-Domain', '8.55');
+        $domain = $this->subscription(['kind' => 'domain', 'provider' => 'domainreselling', 'external_id' => 'reisewelt-beispiel.de', 'label' => 'reisewelt-beispiel.de', 'customer_id' => $office->id, 'starts_on' => '2023-01-25']);
+        $this->voucher('c-zahlenwerk', 'RE/2023/0100', '2023-02-01', [['article' => $tld, 'description' => '.de-Domain inkl. Verwaltung (reisewelt-beispiel.de)', 'quantity' => 1, 'unit' => 'Jahr', 'net' => '8.55']], null, 'paid', '', '2023-01-25', '2024-01-24');
+        $this->voucher('c-privat', 'RE/2024/0200', '2024-09-08', [['article' => $tld, 'description' => '.de-Domain inkl. Verwaltung (reisewelt-beispiel.de)', 'quantity' => 1, 'unit' => 'Jahr', 'net' => '8.55']], null, 'paid', '', '2024-09-08', '2025-09-07');
+        $this->voucher('c-privat', 'RE/2025/0300', '2025-09-08', [['article' => $tld, 'description' => '.de-Domain inkl. Verwaltung (andere-beispiel.de)', 'quantity' => 1, 'unit' => 'Jahr', 'net' => '8.55']], null, 'paid', '', '2025-09-08', '2026-09-07');
+
+        $result = (new RecipientReconciler)->forCustomer($this->organization, $office);
+
+        $rows = collect($result['periods'])->keyBy(static fn(array $row): string => $row['period']->starts_on->toDateString());
+        $this->assertSame(['RE/2023/0100'], array_map(static fn(array $c): string => (string) $c['row']['line']->voucherNumber, $rows['2023-01-25']['candidates']), 'eigene Domainrechnung ist Kandidat');
+        $this->assertSame(['RE/2024/0200'], array_map(static fn(array $c): string => (string) $c['row']['line']->voucherNumber, $rows['2024-01-25']['foreign']), 'fremd adressierte Rechnung, die die Domain nennt');
+        $this->assertSame('Christian Zahlenwerk', $rows['2024-01-25']['foreign'][0]['row']['recipient']);
+        $this->assertSame($private->id, $rows['2024-01-25']['foreign'][0]['row']['recipient_id']);
+        $this->assertSame(['RE/2024/0200'], array_map(static fn(array $c): string => (string) $c['row']['line']->voucherNumber, $rows['2025-01-25']['foreign']), 'der Leistungszeitraum deckt auch den Beginn 2025; die Rechnung der anderen Domain gehört nicht dazu');
+
+        $page = $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $office))->assertOk();
+        $page->assertSee(__('resale.reconcile.periods.foreign', ['recipient' => 'Christian Zahlenwerk']))->assertSee('RE/2024/0200')->assertDontSee('RE/2025/0300');
+
+        // Halterwechsel auf den tatsächlichen Rechnungsempfänger — danach greift der Vorschlagslauf.
+        $period = $rows['2024-01-25']['period'];
+        $this->actingAs($admin)->post(route('finance.resale.reconcile.rehome', $office), ['period_id' => $period->sqid, 'target_id' => \App\Support\Sqid::encode(Customer::class, $private->id)])->assertRedirect();
+        $this->assertSame($private->id, $domain->fresh()?->customer_id);
+        (new LinkProposer)->propose($this->organization);
+        $linked = $domain->fresh()?->periods()->orderBy('starts_on')->get()->mapWithKeys(static fn(\App\Models\Reselling\ResalePeriod $p): array => [$p->starts_on->toDateString() => $p->links()->first()?->voucher_number])->all();
+        $this->assertSame('RE/2024/0200', $linked['2025-01-25'] ?? null, 'nach dem Halterwechsel verknüpft — am nächstgelegenen Periodenbeginn zum Leistungsbeginn 08.09.2024');
+        $this->assertNull($linked['2023-01-25'] ?? null, 'die Rechnung des alten Halters bleibt ohne Bezug — kein Bezug über Kundengrenzen');
     }
 }

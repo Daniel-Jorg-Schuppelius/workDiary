@@ -93,6 +93,9 @@ final class LinkProposer {
     /** @var array<int, int> Abo → Zahl der Abos desselben Empfängers und Produkts (Geschwister, Mahlwerk-Regel) */
     private array $siblings = [];
 
+    /** @var list<string> Domains aller Domain-Abos des Laufs — Tippfehler-Toleranz beim Nennen ({@see MirrorLine::mentionsDomainLoosely()}) */
+    private array $domainLabels = [];
+
     /** @var array<string, list<int>> Position → Indizes der Perioden, deren Laufzeit das Bezugsdatum enthält. */
     private array $containing = [];
 
@@ -381,6 +384,7 @@ final class LinkProposer {
                 $domains[] = $subscription->label;
             }
         }
+        $this->domainLabels = $domains;
         if ($domains !== []) {
             $known = $lines->map(static fn(MirrorLine $line): string => $line->identity())->flip();
             $lines = $lines->concat(
@@ -590,6 +594,13 @@ final class LinkProposer {
                 'months' => round($months, 2),
                 'amount' => $line->unitNet->times($units)->withScale(2),
             ];
+            // Domain nur mit Tippfehler genannt: der geschriebene Name steht als Notiz am Bezug (Pilot 2026-10-30).
+            if ($subscription->kind === SubscriptionKind::Domain && ! $line->mentionsDomain($subscription->label)) {
+                $written = $line->looselyMentionedDomain($subscription->label, $this->domainLabels);
+                if ($written !== null) {
+                    $attributes['note'] = (string) __('resale.link.note_domain_typo', ['written' => $written, 'domain' => $subscription->label]);
+                }
+            }
             if ($existing !== null) {
                 $existing->forceFill($attributes)->save();
             } else {
@@ -844,10 +855,13 @@ final class LinkProposer {
      * Position laut Quelle eine Lizenzposition sein und ihr Text zum
      * Abo-Namen bzw. Artikelnamen passen.
      */
-    public static function matchesProductOf(ResaleSubscription $subscription, MirrorLine $line, ProductNameMatcher $matcher): bool {
-        // Domain-Abo: die Position muss die Domain nennen; Lizenz-Einstufung und Artikel spielen keine Rolle.
+    /**
+     * @param  list<string>  $knownDomains  Domains aller Abos — erlaubt Tippfehler im Text, solange der Treffer eindeutig bleibt
+     */
+    public static function matchesProductOf(ResaleSubscription $subscription, MirrorLine $line, ProductNameMatcher $matcher, array $knownDomains = []): bool {
+        // Domain-Abo: die Position muss die Domain nennen (exakt, sonst mit Tippfehler); Lizenz-Einstufung und Artikel spielen keine Rolle.
         if ($subscription->kind === SubscriptionKind::Domain) {
-            return $line->mentionsDomain($subscription->label);
+            return $line->mentionsDomain($subscription->label) || ($knownDomains !== [] && $line->mentionsDomainLoosely($subscription->label, $knownDomains));
         }
         $own = ArticleCatalog::parse($subscription->article_ref);
         $theirs = ArticleCatalog::parse($line->articleKey);
@@ -865,6 +879,6 @@ final class LinkProposer {
     }
 
     private function matchesProduct(ResaleSubscription $subscription, MirrorLine $line): bool {
-        return self::matchesProductOf($subscription, $line, $this->matcher);
+        return self::matchesProductOf($subscription, $line, $this->matcher, $this->domainLabels);
     }
 }

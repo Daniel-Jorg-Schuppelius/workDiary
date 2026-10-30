@@ -278,6 +278,7 @@ return [
         'voucher_only' => 'Voucher (no line item)',
         'needed' => 'open: :amount',
         'note_voided' => 'Invoice voided — covered :months', // Review 2026-09-10
+        'note_domain_typo' => 'Domain written as “:written” instead of “:domain” in the invoice text (typo) — please check',
         'no_lines' => 'No mirrored invoice line items in the window around the period start.',
         'line' => 'Invoice line item',
         'line_hint' => 'Only subscription lines of the recipient within the period window. If an article is missing, classify it as a subscription product under “Products”.',

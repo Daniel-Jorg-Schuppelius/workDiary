@@ -199,7 +199,7 @@ final class InvoiceMirror {
      * @param  list<string>  $domains
      * @return Collection<int, MirrorLine>
      */
-    public function linesMentioningDomains(Organization $organization, array $recipientCustomerIds, array $domains, ?CarbonImmutable $from = null, ?CarbonImmutable $to = null): Collection {
+    public function linesMentioningDomains(Organization $organization, ?array $recipientCustomerIds, array $domains, ?CarbonImmutable $from = null, ?CarbonImmutable $to = null): Collection {
         $domains = array_values(array_unique(array_filter(array_map(static fn(string $d): string => mb_strtolower(trim($d)), $domains))));
         if ($recipientCustomerIds === [] || $domains === []) {
             return collect();
@@ -208,7 +208,7 @@ final class InvoiceMirror {
         return $this->linesFor($organization, $recipientCustomerIds, $from, $to, licenceOnly: false)
             ->filter(static function (MirrorLine $line) use ($domains): bool {
                 foreach ($domains as $domain) {
-                    if ($line->mentionsDomain($domain)) {
+                    if ($line->mentionsDomain($domain) || $line->mentionsDomainLoosely($domain, $domains)) {
                         return true;
                     }
                 }

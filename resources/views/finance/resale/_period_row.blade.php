@@ -84,7 +84,7 @@
                     </a>
                 @endif
                 @if ($sure === false)
-                    <x-status-badge size="xs" tone="warning" outline :label="__('resale.link.confidence.unsure')" :title="__('resale.link.confidence.unsure_hint')" />
+                    <x-status-badge size="xs" tone="warning" outline :label="__('resale.link.confidence.unsure')" :title="$link->note ?: __('resale.link.confidence.unsure_hint')" />
                 @endif
                 @if ($previewUrl !== null)
                     <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="$previewUrl" :title="__('resale.invoices.preview')" />

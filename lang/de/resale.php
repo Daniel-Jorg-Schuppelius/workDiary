@@ -278,6 +278,7 @@ return [
         'voucher_only' => 'Beleg (ohne Position)',
         'needed' => 'offen: :amount',
         'note_voided' => 'Rechnung storniert — deckte :months', // Review 2026-09-10
+        'note_domain_typo' => 'Domain im Rechnungstext „:written“ statt „:domain“ (Tippfehler) — bitte prüfen',
         'no_lines' => 'Keine gespiegelten Rechnungspositionen im Fenster um den Periodenbeginn.',
         'line' => 'Rechnungsposition',
         'line_hint' => 'Nur Abo-Positionen des Empfängers im Zeitfenster der Periode. Fehlt ein Artikel, stufe ihn unter „Produkte“ als Abo-Produkt ein.',

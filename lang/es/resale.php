@@ -278,6 +278,7 @@ return [
         'voucher_only' => 'Documento (sin línea)',
         'needed' => 'abierto: :amount',
         'note_voided' => 'Factura anulada — cubría :months', // Review 2026-09-10
+        'note_domain_typo' => 'Dominio escrito como «:written» en lugar de «:domain» en el texto de la factura (error tipográfico); compruébelo',
         'no_lines' => 'No hay líneas de factura reflejadas en la ventana alrededor del inicio del periodo.',
         'line' => 'Línea de factura',
         'line_hint' => 'Solo líneas de suscripción del destinatario dentro de la ventana del periodo. Si falta un artículo, clasifíquelo como producto de suscripción en «Productos».',
