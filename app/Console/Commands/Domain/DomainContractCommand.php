@@ -43,9 +43,10 @@ class DomainContractCommand extends Command {
         'queryaccountinglist' => ['Datum' => ['accountingdate', 'date'], 'Typ' => ['accountingtype', 'type'], 'Beschreibung' => ['accountingdescription', 'description'], 'Menge' => ['accountingamount', 'amount', 'quantity'], 'Betrag' => ['accountingprice', 'price', 'netamount'], 'Rechnung' => ['accountinginvoiceid', 'invoiceid', 'invoice']],
         'checkdomains' => ['Verfügbarkeit' => ['domaincheck', 'status', 'availability']],
         'statusdnszone' => ['Einträge' => ['rr'], 'SOA' => ['soa', 'soaserial']],
-        // Preisstaffeln (Wissensdatenbank; Live-Namen über domain:zone-prices prüfen, 2026-10-30).
-        'queryzonelist' => ['Zone' => ['zone'], 'Jahresgebühr' => ['annual', 'annualprice'], 'Währung' => ['currency']],
-        'queryzonepricelist' => ['Zone' => ['zone'], 'Staffel' => ['pricescale', 'registrar'], 'Jahresgebühr' => ['annual', 'annualprice']],
+        // Preisrelationen (Handbuch 1.3.1.5/1.3.1.10/1.3.1.12; Probe domain:prices, 2026-10-30).
+        'statususer' => ['Benutzer' => ['user'], 'Relationstyp' => ['relationtype'], 'Relationswert' => ['relationvalue']],
+        'statususerclass' => ['Relationstyp' => ['relationtype'], 'Relationswert' => ['relationvalue']],
+        'queryuserclasslist' => ['Klasse' => ['userclass', 'class']],
     ];
 
     /**
@@ -62,8 +63,7 @@ class DomainContractCommand extends Command {
         'queryaccountinglist' => ['accountingvat', 'vatrate', 'vat', 'accountingvatprice', 'vatprice', 'taxamount', 'accountingcurrency', 'currency', 'invoiceperiod', 'period', 'subreseller', 'subuser', 'user', 'accountingpricing', 'pricing', 'accountingreference', 'reference', 'accountingobject', 'object', 'domain'],
         'checkdomains' => ['domaincheck', 'domainchecktime', 'xfeeamount', 'price', 'aftermarketprice', 'xfeecurrency', 'currency', 'aftermarketcurrency', 'xfeeclass', 'class', 'reason', 'premium', 'aftermarket', 'aftermarketinfo', 'domain'],
         'statusdnszone' => ['rr', 'soa', 'revision', 'soaserial', 'dnszone'],
-        'queryzonelist' => ['periodtype', 'setup', 'transfer', 'restore', 'trade', 'application', 'domaincount', 'active', '3rds', 'period'],
-        'queryzonepricelist' => ['registrar', 'pricescale', 'service', 'type', 'period', 'periodtype', 'setup', 'transfer', 'restore', 'trade', 'application', 'currency', 'remark'],
+        'statususer' => ['parentuser', 'accountcurrent', 'accountcredit', 'accountvat', 'accountcurrency', 'subusersdirect', 'subuserstotal', 'userclass'],
     ];
 
     /**
