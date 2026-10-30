@@ -1531,6 +1531,7 @@ return [
         'layout' => 'Layout',
         'lead_auditor_user_id' => 'Lead-Auditor',
         'lead_days' => 'Vorlauf (Tage)',
+        'domain_price_class' => 'Preisstaffel für direkt berechnete Domains',
         'lead_time_hours' => 'Vorlaufzeit (Std.)',
         'lead_user_id' => 'Teamleiter',
         'leader_user_id' => 'Leitung',

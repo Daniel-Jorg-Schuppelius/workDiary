@@ -16,6 +16,7 @@ use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\ResalePeriodLink;
 use Carbon\CarbonImmutable;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
@@ -118,4 +119,11 @@ interface InvoiceMirrorSource {
      * @param  Builder<ResalePeriodLink>  $links
      */
     public function constrainProposalLinks(Organization $organization, Builder $links): void;
+
+    /**
+     * Nettobetrag eines gebuchten Belegs nach Belegnummer — die Monatsrechnung des
+     * Domainportals an einen Subuser steht im Buchhaltungsprogramm als Umsatzbeleg
+     * ohne Positionen (Feature 185, 2026-10-30). null, wenn die Quelle ihn nicht führt.
+     */
+    public function bookedNet(Organization $organization, string $voucherNumber): ?Money;
 }

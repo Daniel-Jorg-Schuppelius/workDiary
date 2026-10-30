@@ -18,6 +18,7 @@ use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResaleLicenseAssignment, ResalePeriod, ResalePeriodLink};
 use App\Services\Reselling\Register\LinkProposer;
 use Carbon\CarbonImmutable;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
@@ -319,5 +320,17 @@ final class InvoiceMirror {
                 });
             }
         });
+    }
+
+    /** Nettobetrag eines gebuchten Belegs nach Nummer — die erste Quelle, die ihn führt. */
+    public function bookedNet(Organization $organization, string $voucherNumber): ?Money {
+        foreach ($this->sources as $source) {
+            $net = $source->bookedNet($organization, $voucherNumber);
+            if ($net !== null) {
+                return $net;
+            }
+        }
+
+        return null;
     }
 }

@@ -367,4 +367,19 @@ final class AccountingVoucherMirrorSource implements InvoiceMirrorSource {
     private static function date(mixed $value): ?CarbonImmutable {
         return $value instanceof \DateTimeInterface ? CarbonImmutable::instance($value) : null;
     }
+
+    public function bookedNet(Organization $organization, string $voucherNumber): ?Money {
+        $voucher = AccountingVoucher::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('voucher_number', $voucherNumber)
+            ->whereNull('source_deleted_at')
+            ->where('is_cancellation', false)
+            ->orderByDesc('voucher_date')
+            ->first();
+        if ($voucher === null || $voucher->net_amount === null) {
+            return null;
+        }
+
+        return Money::of((string) $voucher->net_amount, CurrencyCode::tryFrom(strtoupper((string) $voucher->currency)) ?? CurrencyCode::Euro, 2);
+    }
 }

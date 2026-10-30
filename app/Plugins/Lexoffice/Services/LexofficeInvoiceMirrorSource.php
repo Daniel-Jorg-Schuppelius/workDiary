@@ -21,6 +21,7 @@ use App\Services\Reselling\Mirror\{InvoiceMirrorSource, MirrorLine, MirrorVouche
 use App\Services\Reselling\Register\{LicenseArticleClassifier, LicenseMonths};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Gate, Route};
@@ -320,5 +321,16 @@ final class LexofficeInvoiceMirrorSource implements InvoiceMirrorSource {
 
     private static function previewUrl(int $voucherId): ?string {
         return Route::has('lexoffice.vouchers.preview') ? route('lexoffice.vouchers.preview', Sqid::encode(LexofficeVoucher::class, $voucherId)) : null;
+    }
+
+    public function bookedNet(Organization $organization, string $voucherNumber): ?Money {
+        $voucher = LexofficeVoucher::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('voucher_number', $voucherNumber)
+            ->where('voucher_status', '!=', 'voided')
+            ->orderByDesc('voucher_date')
+            ->first();
+
+        return $voucher?->net_amount;
     }
 }

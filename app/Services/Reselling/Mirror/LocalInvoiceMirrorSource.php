@@ -457,4 +457,7 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
         return Route::has('invoices.show') ? route('invoices.show', $invoice) : null;
     }
 
+    public function bookedNet(Organization $organization, string $voucherNumber): ?Money {
+        return null; // lokale Rechnungen sind eigene Ausgangsrechnungen, keine gebuchten Fremdbelege
+    }
 }

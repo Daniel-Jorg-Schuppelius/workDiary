@@ -32,6 +32,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $import_id
  * @property SubscriptionProvider $provider
  * @property string $product
+ * @property string $price_class
  * @property int $term_months
  * @property BillingFrequency $interval
  * @property CarbonImmutable $valid_from
@@ -50,6 +51,7 @@ class ResalePriceEntry extends Model {
         'import_id',
         'provider',
         'product',
+        'price_class',
         'term_months',
         'interval',
         'valid_from',
@@ -69,6 +71,16 @@ class ResalePriceEntry extends Model {
         'purchase_unit_price' => MoneyCast::class . ':currency,4',
         'list_unit_price' => MoneyCast::class . ':currency,4',
     ];
+
+    /** Katalogprodukt einer Portalzone („DE“, „COUK“ → „.de“, „.couk“). */
+    public static function domainProduct(string $zone): string {
+        return '.' . strtolower(trim($zone));
+    }
+
+    /** Vergleichsschlüssel für TLD und Katalogprodukt — ohne Punkte, klein („.co.uk“, „COUK“ → „couk“). */
+    public static function domainProductKey(string $product): string {
+        return strtolower(str_replace(['.', ' '], '', trim($product)));
+    }
 
     /** @return BelongsTo<Organization, $this> */
     public function organization(): BelongsTo {

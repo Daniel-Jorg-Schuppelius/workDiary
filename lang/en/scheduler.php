@@ -146,6 +146,7 @@ return [
         ],
         'domain' => [
             'refresh_details' => 'Domain detail refresh (registration date, price) with budget',
+            'sync_prices' => 'Mirror domain price classes (purchase and user classes per zone)',
             'sync' => 'Domain inventory sync',
             'events' => 'Fetch domain events',
         ],

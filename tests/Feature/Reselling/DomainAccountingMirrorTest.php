@@ -12,10 +12,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Reselling;
 
-use App\Enums\Reselling\PeriodStatus;
+use App\Enums\Reselling\{PeriodStatus, SubscriptionProvider};
 use App\Models\Customer\Customer;
 use App\Models\Domain\{DomainAccountingEntry, DomainProjection, DomainProviderConnection, DomainResellerAccount};
-use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
+use App\Models\Finance\AccountingVoucher;
+use App\Models\Reselling\{ResalePeriod, ResalePriceEntry, ResaleSubscription};
 use App\Services\Reselling\Mirror\{DomainAccountingMirrorSource, InvoiceMirror};
 use App\Services\Reselling\Register\{LinkProposer, PeriodPlanner};
 use Carbon\CarbonImmutable;
@@ -159,5 +160,49 @@ class DomainAccountingMirrorTest extends TestCase {
         $this->actingAs($admin)->post(route('domain-reseller.provider-number', $this->reseller), ['provider_customer_number' => 'nicht erlaubt'])->assertSessionHasErrors('provider_customer_number');
         $this->actingAs($admin)->post(route('domain-reseller.provider-number', $this->reseller), ['provider_customer_number' => ''])->assertRedirect();
         $this->assertNull($this->reseller->refresh()->provider_customer_number);
+    }
+
+    public function test_lines_carry_the_class_price_and_the_booked_monthly_invoice_adds_a_rest_position(): void {
+        // Entscheidung 2026-10-30: das Journal nennt den Einkauf (4,50), der Subuser zahlt den Preis seiner Klasse (8,10);
+        // die gebuchte Monatsrechnung (8,94) enthält darüber hinaus Posten ohne Domain → Restposition nur in Belegansichten.
+        $this->reseller->forceFill(['user_class' => 'STANDARD'])->save();
+        ResalePriceEntry::query()->create([
+            'organization_id' => $this->organization->id, 'provider' => SubscriptionProvider::DomainReselling, 'product' => '.de', 'price_class' => 'STANDARD', 'term_months' => 12, 'interval' => 'yearly',
+            'valid_from' => '2025-01-01', 'purchase_unit_price' => '4.50', 'list_unit_price' => '8.10', 'currency' => 'EUR',
+        ]);
+        ResalePriceEntry::query()->create([
+            'organization_id' => $this->organization->id, 'provider' => SubscriptionProvider::DomainReselling, 'product' => '.de', 'price_class' => 'STANDARD', 'term_months' => 12, 'interval' => 'yearly',
+            'valid_from' => '2026-11-01', 'purchase_unit_price' => '4.50', 'list_unit_price' => '9.99', 'currency' => 'EUR',
+        ]);
+        $domain = $this->domain('bewegung-beispiel.de');
+        $this->entry('2026-10-27 03:00:00', 'RENEW_DOMAIN_ANNUAL', 'bewegung-beispiel.de', '-4.50', ['domain_projection_id' => $domain->id]);
+        AccountingVoucher::factory()->create([
+            'organization_id' => $this->organization->id, 'customer_id' => $this->nordlicht->id, 'voucher_type' => 'salesinvoice', 'voucher_number' => '90021-10-2026',
+            'voucher_date' => '2026-10-31', 'net_amount' => '8.94', 'total_amount' => '10.64', 'is_cancellation' => false,
+        ]);
+
+        $source = new DomainAccountingMirrorSource;
+        $voucher = $source->vouchersFor($this->organization, [$this->nordlicht->id], CarbonImmutable::parse('2026-01-01'))->firstOrFail();
+        $this->assertCount(2, $voucher->lines, 'Domainposition plus Restposition');
+        [$line, $rest] = $voucher->lines;
+        $this->assertSame('bewegung-beispiel.de', $line->name);
+        $this->assertSame('8.10', $line->totalNet->getAmount(), 'Klassenpreis am Buchungstag, nicht der Einkauf und nicht die Zeile ab November');
+        $this->assertStringContainsString(__('resale.mirror.domain_price_class', ['class' => 'STANDARD']), (string) $line->description);
+        $this->assertSame(__('resale.mirror.domain_rest'), $rest->name);
+        $this->assertSame('0.84', $rest->totalNet->getAmount(), 'gebuchte Rechnung minus Domainpositionen');
+        $this->assertNull($rest->serviceFrom, 'die Restposition deckt keine Periode');
+        $this->assertFalse($rest->articleIsLicence);
+
+        $byKey = $source->voucherByKey($this->organization, $this->reseller->id . ':2026-10');
+        $this->assertCount(2, $byKey?->lines ?? []);
+        $this->assertCount(1, $source->linesFor($this->organization, [$this->nordlicht->id], licenceOnly: false), 'für Vorschläge und Bezüge nur die Domainpositionen');
+        $this->assertSame('8.10', $source->linesByIds($this->organization, [$line->morphId])->first()?->totalNet->getAmount());
+
+        // Ohne gebuchte Rechnung keine Restposition; ohne Klassenzeile der Journalbetrag.
+        AccountingVoucher::query()->delete();
+        $this->reseller->forceFill(['user_class' => 'RESELLER'])->save();
+        $plain = $source->voucherByKey($this->organization, $this->reseller->id . ':2026-10');
+        $this->assertCount(1, $plain?->lines ?? []);
+        $this->assertSame('4.50', $plain?->lines[0]->totalNet->getAmount());
     }
 }

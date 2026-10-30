@@ -15,10 +15,10 @@
     icon="event_repeat"
     tone="primary"
     size="md"
-    :action="$external ? null : route('finance.resale.auto-draft.store')"
+    :action="route('finance.resale.auto-draft.store')"
     method="POST"
     :form-data="['data-entry-form' => '']"
-    :submit-label="$external ? null : __('resale.auto_draft.save')"
+    :submit-label="__('resale.auto_draft.save')"
 >
     @if ($external)
         <div role="status" class="alert alert-info text-sm"><span>{{ __('resale.auto_draft.external_hint', ['program' => $mode->programName()]) }}</span></div>
@@ -32,4 +32,14 @@
                        :value="old('lead_days', $autoDraftLeadDays)"
                        :hint="__('resale.auto_draft.lead_days_hint')" />
     @endif
+    {{-- Preisstaffel für direkt berechnete Domains (Feature 185, 2026-10-30): gilt unabhängig von der Rechnungshoheit. --}}
+    <x-input-field name="domain_price_class" type="text" maxlength="64" list="resale-domain-price-classes" autocomplete="off"
+                   :label="__('resale.auto_draft.domain_price_class')"
+                   :value="old('domain_price_class', $domainPriceClass)"
+                   :hint="__('resale.auto_draft.domain_price_class_hint', ['classes' => $domainPriceClasses === [] ? '—' : implode(', ', $domainPriceClasses)])" />
+    <datalist id="resale-domain-price-classes">
+        @foreach ($domainPriceClasses as $class)
+            <option value="{{ $class }}"></option>
+        @endforeach
+    </datalist>
 </x-modal>

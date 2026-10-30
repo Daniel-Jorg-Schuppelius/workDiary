@@ -146,6 +146,7 @@ return [
         ],
         'domain' => [
             'refresh_details' => 'Aggiornamento dettagli dominio (data di registrazione, prezzo) con budget',
+            'sync_prices' => 'Rispecchiare le classi di prezzo dei domini (acquisto e classi utente per zona)',
             'sync' => 'Sincronizzazione domini',
             'events' => 'Recupero eventi dominio',
         ],

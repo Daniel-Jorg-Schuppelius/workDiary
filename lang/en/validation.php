@@ -1565,6 +1565,7 @@ return [
         'layout' => 'Layout',
         'lead_auditor_user_id' => 'Lead auditor',
         'lead_days' => 'Lead time (days)',
+        'domain_price_class' => 'Price class for directly invoiced domains',
         'lead_time_hours' => 'Lead time (h)',
         'lead_user_id' => 'Team lead',
         'leader_user_id' => 'Leader',
