@@ -25,7 +25,7 @@ use Carbon\CarbonImmutable;
  * ein Ziel kennt keine Bezüge. Registrierung über {@see InvoiceDraftTargets}.
  *
  * @phpstan-type DraftLine array{name: string, description: string, quantity: float, unit_name: string, unit_net: float, article_ref: string|null}
- * @phpstan-type DraftEntry array{period: ResalePeriod, line: DraftLine}
+ * @phpstan-type DraftEntry array{periods: non-empty-list<ResalePeriod>, line: DraftLine}
  */
 interface InvoiceDraftTarget {
     /** Zielschlüssel (`local`, `lexoffice`). */
@@ -44,8 +44,10 @@ interface InvoiceDraftTarget {
     public function ensureAvailable(Organization $organization, Customer $recipient): void;
 
     /**
-     * Entwurf mit einer Position je Periode anlegen. Fachliche Abbrüche
-     * (System inaktiv, kein Kontakt) sind übersetzte `RuntimeException`s.
+     * Entwurf mit einer Position je Eintrag anlegen — ein Eintrag bündelt
+     * zusammenhängende Perioden eines Abos (MVP-1436), der Zeitraum reicht
+     * vom ersten Beginn bis zum letzten Ende. Fachliche Abbrüche (System
+     * inaktiv, kein Kontakt) sind übersetzte `RuntimeException`s.
      *
      * @param  list<DraftEntry>  $lines
      *

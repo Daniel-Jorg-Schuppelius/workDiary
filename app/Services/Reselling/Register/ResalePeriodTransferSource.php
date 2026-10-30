@@ -44,26 +44,36 @@ final class ResalePeriodTransferSource implements TransferSource {
 
     /** @return Collection<int, SourceRow> */
     public function collect(Customer $customer, array $period, ?array $sourceIds): Collection {
+        $from = ! empty($period['from']) ? CarbonImmutable::parse($period['from'])->startOfDay() : null;
+        $to = ! empty($period['to']) ? CarbonImmutable::parse($period['to'])->startOfDay() : null;
         try {
-            $entries = $this->drafts->openEntries($customer);
+            // Das Ende des Zeitraums ist der Stichtag: Perioden, die bis dahin beginnen, sind Quellen — auch künftige (MVP-1437).
+            $entries = $this->drafts->openEntries($customer, $to);
         } catch (RuntimeException) {
             return collect(); // nichts offen oder schon im Entwurf — der Dienst meldet „keine Quellen“
         }
-        $from = ! empty($period['from']) ? CarbonImmutable::parse($period['from'])->startOfDay() : null;
-        $to = ! empty($period['to']) ? CarbonImmutable::parse($period['to'])->startOfDay() : null;
-        $reserved = $this->reservedPeriodIds(array_map(static fn(array $e): int => (int) $e['period']->id, $entries));
+        /** @var list<ResalePeriod> $periods Quellen bleiben die einzelnen Perioden; gebündelt wird erst in {@see positions()} */
+        $periods = [];
+        foreach ($entries as $entry) {
+            foreach ($entry['periods'] as $periodModel) {
+                $periods[] = $periodModel;
+            }
+        }
+        $reserved = $this->reservedPeriodIds(array_map(static fn(ResalePeriod $p): int => (int) $p->id, $periods));
         $type = MorphMap::alias(ResalePeriod::class);
         /** @var list<SourceRow> $rows */
         $rows = [];
-        foreach ($entries as $entry) {
-            $periodModel = $entry['period'];
+        foreach ($periods as $periodModel) {
             if ($sourceIds !== null && ! in_array((int) $periodModel->id, $sourceIds, true)) {
                 continue;
             }
             if (($from !== null && $periodModel->starts_on->lessThan($from)) || ($to !== null && $periodModel->starts_on->greaterThan($to)) || isset($reserved[$periodModel->id])) {
                 continue;
             }
-            $line = $entry['line'];
+            $line = $this->drafts->lineFor($periodModel);
+            if ($line === null) {
+                continue;
+            }
             $rows[] = [
                 'type' => $type,
                 'id' => (int) $periodModel->id,
@@ -89,18 +99,18 @@ final class ResalePeriodTransferSource implements TransferSource {
             ->get();
         $positions = new Collection;
         $index = 0;
-        foreach ($periods as $period) {
-            $line = $this->drafts->lineFor($period);
-            if ($line === null) {
-                continue;
-            }
+        // Zusammenhängende Perioden eines Abos sind eine Position (MVP-1436) — dieselbe Bündelung wie im Entwurf.
+        foreach ($this->drafts->entries($periods) as $entry) {
+            $line = $entry['line'];
+            $first = $entry['periods'][0];
+            $last = $entry['periods'][array_key_last($entry['periods'])];
             $positions->push(new BillingTransferPosition([
                 'organization_id' => $transfer->organization_id,
                 'billing_transfer_id' => $transfer->id,
                 'position' => ++$index,
                 'source_kind' => self::SOURCE_KIND,
-                'source_ids' => [(int) $period->id],
-                'primary_source_id' => (int) $period->id,
+                'source_ids' => array_map(static fn(ResalePeriod $p): int => (int) $p->id, $entry['periods']),
+                'primary_source_id' => (int) $first->id,
                 'name' => $line['name'],
                 'description' => $line['description'],
                 'quantity' => round($line['quantity'], 3),
@@ -111,8 +121,8 @@ final class ResalePeriodTransferSource implements TransferSource {
                 'article_ref' => $line['article_ref'],
                 'service_source' => null,
                 'price_source' => self::SOURCE_KIND,
-                'service_from' => $period->starts_on->toDateString(),
-                'service_to' => $period->ends_on->toDateString(),
+                'service_from' => $first->starts_on->toDateString(),
+                'service_to' => $last->ends_on->toDateString(),
             ]));
         }
 

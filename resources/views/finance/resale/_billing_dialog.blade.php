@@ -21,7 +21,15 @@
     :submit-label="__('resale.auto_draft.save')"
 >
     @if ($external)
+        {{-- Serienlauf nach außen (Feature 185, MVP-1438): monatlich eine Übergabe je Empfänger für Abos ohne Serienvorlage. --}}
         <div role="status" class="alert alert-info text-sm"><span>{{ __('resale.auto_draft.external_hint', ['program' => $mode->programName()]) }}</span></div>
+        <x-checkbox-field name="auto_external_drafts" tone="info"
+                         :label="__('resale.auto_draft.external_enabled', ['program' => $mode->programName()])"
+                         :checked="(string) old('auto_external_drafts', $externalDrafts ? '1' : '0') === '1'" />
+        <x-input-field name="external_lead_days" type="number" min="0" max="90" step="1" inputmode="numeric"
+                       :label="__('resale.auto_draft.lead_days')"
+                       :value="old('external_lead_days', $externalLeadDays)"
+                       :hint="__('resale.auto_draft.external_lead_days_hint')" />
     @else
         <p class="text-sm text-base-content/70">{{ __('resale.auto_draft.description') }}</p>
         <x-checkbox-field name="auto_local_drafts" tone="info"

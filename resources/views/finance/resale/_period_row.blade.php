@@ -56,7 +56,14 @@
         @endif
     </td>
     <td class="text-right tabular-nums">{{ $period->quantity }}</td>
-    <td class="text-right tabular-nums whitespace-nowrap">{{ $period->expected_sale?->format() ?? '—' }}</td>
+    <td class="text-right tabular-nums whitespace-nowrap">
+        {{ $period->expected_sale?->format() ?? '—' }}
+        @php $actualSale = $period->actualSale(); @endphp
+        {{-- Soll ist der Preis zum heutigen Stand; entschiedene Perioden zeigen darunter, was laut Bezügen berechnet wurde (Pilot 2026-10-30). --}}
+        @if ($actualSale !== null)
+            <span class="block text-xs text-muted" title="{{ __('resale.field.actual_sale_hint') }}">{{ __('resale.field.actual_sale') }} {{ $actualSale->format() }}</span>
+        @endif
+    </td>
     <td class="text-right tabular-nums whitespace-nowrap">
         {{-- Lizenzen × Monate statt Lizenzmonate: „5 / 5 Lizenzen · 12 Mon." --}}
         <span @class(['text-success font-medium' => $covered >= $required - 0.001 && $required > 0, 'text-warning' => $covered > 0.001 && $covered < $required - 0.001, 'text-error' => $covered <= 0.001 && ! $upcoming])

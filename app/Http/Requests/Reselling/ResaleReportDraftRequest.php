@@ -16,10 +16,13 @@ use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Customer\Customer;
 use App\Rules\ExistsInCurrentOrganization;
+use App\Services\Reselling\Register\ResaleInvoiceDraftService;
+use Carbon\CarbonImmutable;
 
 /**
  * Rechnungsvorschlag anlegen (Feature 152, MVP-764): Rechnungsempfänger als
- * Sqid, org-gescopt geprüft — Fehler kommen als 422 in den Dialog.
+ * Sqid, org-gescopt geprüft — Fehler kommen als 422 in den Dialog. `until`
+ * ist der Stichtag des Dialogs (MVP-1437); der Dienst begrenzt ihn.
  */
 class ResaleReportDraftRequest extends BaseFormRequest {
     use DecodesSqidInputs;
@@ -35,6 +38,7 @@ class ResaleReportDraftRequest extends BaseFormRequest {
     public function rules(): array {
         return [
             'customer_id' => ['required', 'integer', new ExistsInCurrentOrganization('customers')],
+            'until' => ['nullable', 'date_format:Y-m-d'],
         ];
     }
 
@@ -50,5 +54,10 @@ class ResaleReportDraftRequest extends BaseFormRequest {
 
     public function recipient(): Customer {
         return Customer::query()->findOrFail((int) $this->validated('customer_id'));
+    }
+
+    /** Stichtag: Perioden, die bis dahin beginnen, kommen in den Entwurf (heute ohne Angabe). */
+    public function until(): CarbonImmutable {
+        return ResaleInvoiceDraftService::referenceFrom((string) ($this->validated('until') ?? ''));
     }
 }

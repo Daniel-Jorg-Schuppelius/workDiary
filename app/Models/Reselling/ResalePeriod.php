@@ -135,6 +135,24 @@ class ResalePeriod extends Model {
         return $this->hasMany(ResalePeriodLink::class, 'period_id')->orderBy('voucher_date');
     }
 
+    /**
+     * Ist-Verkauf laut Bezügen (Netto der verknüpften Positionen, Vorschläge eingeschlossen) — null ohne Bezug.
+     * Das Soll ist der Preis zum heutigen Stand; was tatsächlich berechnet wurde, steht hier (Pilot 2026-10-30).
+     */
+    public function actualSale(): ?Money {
+        $amounts = [];
+        foreach ($this->links as $link) {
+            if ($link->amount !== null) {
+                $amounts[] = $link->amount;
+            }
+        }
+        if ($amounts === []) {
+            return null;
+        }
+
+        return Money::sum($amounts, $this->currency, 2);
+    }
+
     /** Länge der Periode in Monaten (Intervall des Abos: 12 oder 1). */
     public function termMonths(): int {
         return max(1, LicenseMonths::monthsBetween($this->starts_on, $this->ends_on));

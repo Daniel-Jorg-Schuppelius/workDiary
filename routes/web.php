@@ -3204,6 +3204,8 @@ Route::middleware('auth')->group(function () {
             // Rechnungsentwurf aus Perioden (Buchhaltungsprogramm/lokal): eigenes Recht der Buchhaltung (Review 2026-09-10, A9).
             Route::get('perioden/entwurf', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'draftCreate'])->name('periods.draft.create')->middleware('can:reselling.invoice');
             Route::post('perioden/entwurf', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'draftStore'])->name('periods.draft.store')->middleware('can:reselling.invoice');
+            // Vorlagen-Vorschlag: was je Empfänger in eine Serienvorlage des Buchhaltungsprogramms gehört (Feature 185, MVP-1440).
+            Route::get('perioden/vorlagen-vorschlag', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'planProposal'])->name('plan.proposal')->middleware('can:reselling.view');
             Route::post('perioden/sammel/entwurf', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'bulkDraft'])->name('periods.bulk.draft')->middleware('can:reselling.invoice');
             Route::middleware('can:reselling.view')->group(function (): void {
                 // Überblick als Aufgabenliste (Feature 185, MVP-1414); die Abo-Liste hat ihre eigene Route.

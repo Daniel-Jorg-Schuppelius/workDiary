@@ -18,10 +18,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Http\Requests\Reselling\{ResaleAutoDraftSettingsRequest, ResaleReportDraftRequest, ResaleReportProductRequest};
 use App\Models\Customer\Customer;
-use App\Models\Reselling\{ResaleArticleClassification, ResalePeriod, ResaleSubscription};
+use App\Models\Reselling\{ResaleArticleClassification, ResalePeriod, ResalePlanLink, ResaleSubscription};
 use App\Services\Platform\Catalog\{ArticleCatalog, CatalogArticle};
 use App\Services\Reselling\Plan\RecurringPlans;
-use App\Services\Reselling\Register\{DomainSubscriptionSync, LicenseArticleClassifier, ResaleInvoiceDraftService, ResaleLocalDraftRun, ResaleMarginReport, ResalePriceCheck, ResaleRenewalReport, ResaleUnbilledReport};
+use App\Services\Reselling\Register\{DomainSubscriptionSync, LicenseArticleClassifier, ResaleDraftRun, ResaleInvoiceDraftService, ResaleMarginReport, ResalePriceCheck, ResaleRenewalReport, ResaleUnbilledReport};
 use App\Settings\SettingScope;
 use App\Support\{CsvExport, Setting, XlsxExport};
 use App\Support\ErrorText;
@@ -218,11 +218,11 @@ class ResaleReportController extends Controller {
 
     /**
      * Dialog „Abrechnung" (Feature 185, MVP-1405): bei lokaler Rechnungshoheit
-     * Schalter und Vorlauf der Serienrechnung, bei externer Hoheit nur der
-     * Hinweis, welches Programm die Rechnungen führt — der Lauf überspringt
-     * solche Empfänger ohnehin.
+     * Schalter und Vorlauf der Serienrechnung, bei externer Hoheit der Hinweis,
+     * welches Programm die Rechnungen führt, und Schalter und Vorlauf des
+     * monatlichen Serienlaufs nach außen (MVP-1438).
      */
-    public function billingSettings(ResaleLocalDraftRun $autoDrafts, \App\Services\Billing\BillingModeResolver $modes): View {
+    public function billingSettings(ResaleDraftRun $autoDrafts, \App\Services\Billing\BillingModeResolver $modes): View {
         $organization = $this->currentOrganizationOrAbort(404);
         $mode = $modes->forOrganization($organization);
 
@@ -231,6 +231,8 @@ class ResaleReportController extends Controller {
             'external' => $mode->isExternal(),
             'autoDrafts' => $autoDrafts->enabledFor($organization),
             'autoDraftLeadDays' => $autoDrafts->leadDaysFor($organization),
+            'externalDrafts' => $autoDrafts->enabledFor($organization, true),
+            'externalLeadDays' => $autoDrafts->leadDaysFor($organization, true),
             'domainPriceClass' => DomainSubscriptionSync::directPriceClass($organization),
             'domainPriceClasses' => DomainSubscriptionSync::knownPriceClasses($organization),
         ]);
@@ -239,16 +241,26 @@ class ResaleReportController extends Controller {
     /**
      * Serienrechnung (Feature 152): Schalter und Vorlauf je Organisation über
      * die Settings-Registry (validiert, auditiert) — den Lauf macht der
-     * Zeitplan (`resale:draft-local`), nur bei lokaler Rechnungshoheit.
+     * Zeitplan: `resale:draft-local` bei lokaler Hoheit, `resale:draft-external`
+     * bei externer (MVP-1438). Gespeichert wird das Paar der Hoheit der
+     * Organisation; der Dialog zeigt nur dieses.
      */
-    public function autoDraftSettingsStore(ResaleAutoDraftSettingsRequest $request): RedirectResponse {
+    public function autoDraftSettingsStore(ResaleAutoDraftSettingsRequest $request, \App\Services\Billing\BillingModeResolver $modes): RedirectResponse {
         $organization = $this->currentOrganizationOrAbort(404);
         $userId = $request->user()?->id;
-        Setting::set(ResaleLocalDraftRun::SETTING_ENABLED, $request->enabled(), SettingScope::Organization, $organization, $userId);
-        Setting::set(ResaleLocalDraftRun::SETTING_LEAD_DAYS, $request->leadDays(), SettingScope::Organization, $organization, $userId);
+        $mode = $modes->forOrganization($organization);
+        if ($mode->isExternal()) {
+            Setting::set(ResaleDraftRun::SETTING_EXTERNAL_ENABLED, $request->externalEnabled(), SettingScope::Organization, $organization, $userId);
+            Setting::set(ResaleDraftRun::SETTING_EXTERNAL_LEAD_DAYS, $request->externalLeadDays(), SettingScope::Organization, $organization, $userId);
+            $flash = __($request->externalEnabled() ? 'resale.auto_draft.flash.external_enabled' : 'resale.auto_draft.flash.external_disabled', ['days' => $request->externalLeadDays(), 'program' => $mode->programName()]);
+        } else {
+            Setting::set(ResaleDraftRun::SETTING_ENABLED, $request->enabled(), SettingScope::Organization, $organization, $userId);
+            Setting::set(ResaleDraftRun::SETTING_LEAD_DAYS, $request->leadDays(), SettingScope::Organization, $organization, $userId);
+            $flash = __($request->enabled() ? 'resale.auto_draft.flash.enabled' : 'resale.auto_draft.flash.disabled', ['days' => $request->leadDays()]);
+        }
         Setting::set(DomainSubscriptionSync::SETTING_DIRECT_PRICE_CLASS, $request->domainPriceClass(), SettingScope::Organization, $organization, $userId);
 
-        return redirect()->toList('finance.resale.index')->with('success', __($request->enabled() ? 'resale.auto_draft.flash.enabled' : 'resale.auto_draft.flash.disabled', ['days' => $request->leadDays()]));
+        return redirect()->toList('finance.resale.index')->with('success', $flash);
     }
 
     public function productsStore(ResaleReportProductRequest $request): RedirectResponse {
@@ -267,19 +279,86 @@ class ResaleReportController extends Controller {
     }
 
     /**
+     * Vorlagen-Vorschlag (Feature 185, MVP-1440): was je Rechnungsempfänger mit
+     * externer Hoheit in eine Serienvorlage seines Programms gehört — die
+     * Lexoffice-API liest Vorlagen nur, angelegt wird dort von Hand. Je Abo
+     * ohne Zuordnung zu einer Vorlage: Artikel, Positionstext, Menge, Einheit,
+     * Einzelpreis, Intervall und erste Ausführung (nächster offener
+     * Periodenbeginn; liegt er zurück, „fällig seit"). Empfänger, deren
+     * Rechnungen der Serienlauf des Registers entwirft, sind markiert.
+     */
+    public function planProposal(ResaleDraftRun $run, \App\Services\Billing\BillingModeResolver $modes): View {
+        $organization = $this->currentOrganizationOrAbort(404);
+        $today = ResalePeriod::today();
+        $linked = array_map('intval', ResalePlanLink::query()->distinct()->pluck('subscription_id')->all());
+        $subscriptions = ResaleSubscription::query()->planning()
+            ->where('is_own_holding', false)
+            ->where(static fn(Builder $w) => $w->whereNotNull('customer_id')->orWhereNotNull('foreign_customer_id'))
+            ->when($linked !== [], static fn(Builder $q) => $q->whereNotIn('id', $linked))
+            ->with(['customer:id,name,currency,billing_mode', 'foreignCustomer:id,name,customer_id', 'foreignCustomer.customer:id,name,currency,billing_mode'])
+            ->with(['periods' => static fn($p) => $p->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value])->orderBy('starts_on')])
+            ->get();
+        ResaleSubscription::withCatalogArticles($subscriptions);
+        /** @var array<int, array{recipient: Customer, covered: bool, rows: list<array{subscription: ResaleSubscription, product: string, article: string|null, description: string, quantity: string, unit: string, unit_price: Money|null, interval: string, first: CarbonImmutable|null, overdue: bool}>}> $groups */
+        $groups = [];
+        foreach ($subscriptions as $subscription) {
+            $recipient = $subscription->billedTo();
+            if ($recipient === null || ! $modes->effectiveFor($recipient)->isExternal()) {
+                continue;
+            }
+            $groups[$recipient->id] ??= ['recipient' => $recipient, 'covered' => $run->coversRecipient($organization, $recipient), 'rows' => []];
+            $article = $subscription->catalogArticle();
+            $monthly = $article !== null && \App\Services\Reselling\Register\LicenseMonths::isMonthUnit($article->unitName);
+            $term = max(1, (int) $subscription->term_months);
+            $sale = $subscription->sale_unit_price;
+            $next = $subscription->periods->first(static fn(ResalePeriod $p): bool => ! $p->starts_on->lessThan($today)) ?? $subscription->periods->first();
+            $holder = $subscription->foreignCustomer !== null ? (string) __('resale.draft.end_customer', ['name' => $subscription->foreignCustomer->name]) . ' · ' : '';
+            $groups[$recipient->id]['rows'][] = [
+                'subscription' => $subscription,
+                'product' => $subscription->productName(),
+                'article' => $article?->label(),
+                'description' => $holder . $subscription->label,
+                'quantity' => NumberHelper::toGermanFormat($monthly ? $subscription->quantity * $term : $subscription->quantity, 0),
+                'unit' => $monthly ? 'Monat' : (string) __($term === 12 && (int) $subscription->quantity === 1 ? 'resale.draft.unit_year' : 'resale.draft.unit_piece'),
+                'unit_price' => $sale === null ? null : ($monthly ? $sale->dividedBy($term)->withScale(2) : $sale->withScale(2)),
+                'interval' => match ($term) {
+                    1 => (string) __('resale.plan.interval.MONTHLY'),
+                    3 => (string) __('resale.plan.interval.QUARTERLY'),
+                    6 => (string) __('resale.plan.interval.BIANNUALLY'),
+                    12 => (string) __('resale.plan.interval.ANNUALLY'),
+                    default => (string) __('resale.plan.proposal.every_months', ['months' => $term]),
+                },
+                'first' => $next?->starts_on,
+                'overdue' => $next !== null && $next->starts_on->lessThan($today),
+            ];
+        }
+        usort($groups, static fn(array $a, array $b): int => strcmp($a['recipient']->name, $b['recipient']->name));
+        foreach ($groups as &$group) {
+            usort($group['rows'], static fn(array $a, array $b): int => strcmp($a['product'] . $a['description'], $b['product'] . $b['description']));
+        }
+        unset($group);
+
+        return view('finance.resale.plan_proposal', ['groups' => $groups, 'today' => $today]);
+    }
+
+    /**
      * Dialog „Rechnungsentwurf": Empfänger mit offenen Perioden (ohne die
      * schon gestempelten) — und je Empfänger, was bereits in einem Entwurf
      * steht, damit niemand einen zweiten anlegt (Review 2026-09-10, A4).
      * Dieselben Regeln wie `ResaleInvoiceDraftService::openPeriodsFor()`/
      * `draftedPeriodsFor()`, hier in einer Abfrage über alle Empfänger.
      */
-    public function draftCreate(): View {
+    public function draftCreate(Request $request, ResaleInvoiceDraftService $drafts): View {
         $today = ResalePeriod::today();
+        // Stichtag (MVP-1437): Perioden, die bis dahin beginnen — heute, oder Jahre voraus für Vorauszahlungen;
+        // die Perioden dafür legt der Planer an, damit der Dialog zählt, was der Entwurf bekäme.
+        $until = ResaleInvoiceDraftService::referenceFrom((string) $request->query('until', ''), $today);
+        $drafts->planAhead($until);
         /** @var array<int, array{customer: Customer, periods: int, net: Money, drafted: int, draft_reference: string|null, draft_created_at: CarbonImmutable|null}> $recipients */
         $recipients = [];
         $periods = ResalePeriod::query()
             ->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value])
-            ->where('starts_on', '<', DateRange::dayAfter($today))
+            ->where('starts_on', '<', DateRange::dayAfter($until))
             ->whereHas('subscription', static fn(Builder $s) => $s->where('is_own_holding', false))
             ->with(['subscription.customer:id,name,currency', 'subscription.foreignCustomer:id,name,customer_id', 'subscription.foreignCustomer.customer:id,name,currency', 'links'])
             ->get();
@@ -311,7 +390,7 @@ class ResaleReportController extends Controller {
         usort($open, $byName);
         usort($drafted, $byName);
 
-        return view('finance.resale._draft_dialog', ['recipients' => $open, 'drafted' => $drafted]);
+        return view('finance.resale._draft_dialog', ['recipients' => $open, 'drafted' => $drafted, 'until' => $until, 'today' => $today]);
     }
 
     /**
@@ -324,7 +403,7 @@ class ResaleReportController extends Controller {
         $recipient = $request->recipient();
         $organization = $this->currentOrganizationOrAbort(404);
         try {
-            $result = $drafts->draft($organization, $recipient, $request->user());
+            $result = $drafts->draft($organization, $recipient, $request->user(), $request->until());
         } catch (\Throwable $e) {
             if ($e::class === RuntimeException::class) {
                 throw ValidationException::withMessages(['customer_id' => ErrorText::for($e)]);

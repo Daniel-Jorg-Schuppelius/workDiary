@@ -169,6 +169,7 @@ return [
             'sync_purchases' => 'Abonnements de revente : reprendre les écritures de domaines comme achats',
             'sync_periods' => 'Abonnements de revente : générer les périodes de facturation',
             'draft_local' => 'Abonnements de revente : facturation récurrente — brouillons de facture locaux à partir des périodes échues',
+            'draft_external' => 'Abonnements de revente : facturation récurrente — transferts vers le logiciel de comptabilité à partir des périodes échues (mensuel)',
             'digest' => 'Abonnements de revente : synthèse hebdomadaire aux responsables',
             'prune_imports' => 'Abonnements de revente : supprimer les fichiers d’import après la durée de conservation',
         ],

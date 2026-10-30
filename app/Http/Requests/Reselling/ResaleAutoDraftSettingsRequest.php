@@ -26,6 +26,8 @@ class ResaleAutoDraftSettingsRequest extends BaseFormRequest {
         return [
             'auto_local_drafts' => ['nullable', 'in:0,1'],
             'lead_days' => ['nullable', 'integer', 'min:0', 'max:90'],
+            'auto_external_drafts' => ['nullable', 'in:0,1'],
+            'external_lead_days' => ['nullable', 'integer', 'min:0', 'max:90'],
             'domain_price_class' => ['nullable', 'string', 'max:64', 'regex:/^[A-Za-z0-9_-]+$/'],
         ];
     }
@@ -43,5 +45,14 @@ class ResaleAutoDraftSettingsRequest extends BaseFormRequest {
 
     public function leadDays(): int {
         return (int) ($this->validated('lead_days') ?? 0);
+    }
+
+    public function externalEnabled(): bool {
+        return $this->boolean('auto_external_drafts');
+    }
+
+    /** Vorlauf des Serienlaufs nach außen (MVP-1438); ohne Angabe die Vorgabe der Registry (30 Tage). */
+    public function externalLeadDays(): int {
+        return (int) ($this->validated('external_lead_days') ?? 30);
     }
 }

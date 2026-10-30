@@ -169,6 +169,7 @@ return [
             'sync_purchases' => 'Resale subscriptions: adopt domain accounting entries as purchases',
             'sync_periods' => 'Resale subscriptions: roll billing periods forward',
             'draft_local' => 'Resale subscriptions: recurring invoicing — local invoice drafts from due periods',
+            'draft_external' => 'Resale subscriptions: recurring invoicing — transfers to the accounting program from due periods (monthly)',
             'digest' => 'Resale subscriptions: weekly digest to the subscription managers',
             'prune_imports' => 'Resale subscriptions: delete stored import files after the retention period',
         ],

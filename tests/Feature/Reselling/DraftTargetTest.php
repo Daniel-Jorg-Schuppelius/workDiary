@@ -195,6 +195,118 @@ class DraftTargetTest extends TestCase {
         $this->assertSame('Monat', $items[0]['unitName']);
     }
 
+    public function test_consecutive_open_years_of_one_licence_become_one_position_with_unit_year_and_partial_periods_stay_separate(): void {
+        // MVP-1436: sieben offene Jahre einer Domain waren bis 2023 eine Zeile „7 Jahr" — die Übergabe bündelt zusammenhängende,
+        // ganz offene Perioden eines Abos mit einer Lizenz; teilweise gedeckte Perioden bleiben eigene Positionen.
+        $admin = $this->orgAdmin();
+        $this->enablePluginFor($this->organization, LexofficePlugin::ID, ['api_key' => 'lex-key', 'request_interval' => '0']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Musterkanzlei Beispiel', 'billing_mode' => BillingMode::Lexoffice]);
+        ExternalReference::create([
+            'organization_id' => $this->organization->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+            'external_id' => '2d3e4f50-6a7b-4c8d-9e0f-1a2b3c4d5e6f', 'referenceable_type' => $customer->getMorphClass(), 'referenceable_id' => $customer->getKey(),
+        ]);
+        $domain = $this->subscription($customer, ['kind' => 'domain', 'provider' => 'domainreselling', 'label' => 'beispiel-kanzlei.de', 'quantity' => 1, 'starts_on' => '2023-06-01', 'sale_unit_price' => '9.00']);
+        $periods = $domain->periods()->orderBy('starts_on')->get();
+        $this->assertSame(['2023-06-01', '2024-06-01', '2025-06-01', '2026-06-01'], $periods->map(static fn($p): string => $p->starts_on->toDateString())->all());
+        // 2024 ist zur Hälfte gedeckt → eigene Position mit dem offenen Rest.
+        ResalePeriodLink::query()->create([
+            'organization_id' => $this->organization->id, 'period_id' => $periods[1]->id, 'subscription_id' => $domain->id,
+            'linkable_type' => \App\Support\MorphMap::alias(\App\Plugins\Lexoffice\Models\LexofficeVoucherLine::class), 'linkable_id' => 1, 'voucher_number' => 'RE/2024/0001', 'voucher_date' => '2024-06-01',
+            'quantity' => 0.5, 'months' => 6, 'amount' => '4.50', 'currency' => 'EUR', 'origin' => \App\Enums\Reselling\LinkOrigin::Confirmed,
+        ]);
+        $periods[1]->forceFill(['status' => \App\Enums\Reselling\PeriodStatus::Partial])->save();
+        // Zwei Lizenzen über zwei Jahre bleiben je Periode („4 Stück" läse der Spiegel als vier Lizenzen).
+        $this->subscription($customer, ['label' => 'Microsoft 365 Business Standard', 'starts_on' => '2025-01-01', 'quantity' => 2, 'sale_unit_price' => '150.00']);
+        $payloads = [];
+        FakePluginHttp::fake([
+            'https://api.lexware.io/v1/invoices*' => static function (\Psr\Http\Message\RequestInterface $request) use (&$payloads) {
+                $payloads[] = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
+
+                return FakePluginHttp::response(['id' => 'draft-80', 'resourceUri' => 'https://api.lexware.io/v1/invoices/draft-80'], 201);
+            },
+        ]);
+
+        $result = app(ResaleInvoiceDraftService::class)->draft($this->organization, $customer, $admin);
+
+        $this->assertSame(6, $result['periods'], 'vier Domainjahre und zwei Lizenzjahre');
+        $this->assertSame(5, $result['lines'], 'Domain: 2023 | 2024 (Rest) | 2025–2026 gebündelt; Lizenzen: je Periode');
+        $transfer = BillingTransfer::query()->where('customer_id', $customer->id)->firstOrFail();
+        $this->assertSame(6, $transfer->items()->count(), 'Quellen bleiben die einzelnen Perioden');
+        $positions = $transfer->positions()->orderBy('position')->get();
+        $this->assertCount(5, $positions);
+        $byName = $positions->where('name', 'beispiel-kanzlei.de')->values();
+        $this->assertSame(['1.000', '0.500', '2.000'], $byName->map(static fn($p): string => (string) $p->quantity)->all());
+        $this->assertSame([__('resale.draft.unit_year')], $byName->pluck('unit_name')->unique()->values()->all(), 'eine Lizenz mit Jahreslaufzeit: Einheit Jahr');
+        $bundle = $byName[2];
+        $this->assertSame([(int) $periods[2]->id, (int) $periods[3]->id], $bundle->source_ids, 'beide Perioden an der Position');
+        $this->assertSame('2025-06-01', $bundle->service_from?->toDateString());
+        $this->assertSame('2027-05-31', $bundle->service_to?->toDateString());
+        $this->assertStringContainsString('01.06.2025 – 31.05.2027', (string) $bundle->description);
+        $this->assertSame('18.00', (string) $bundle->amount, '2 × 9,00');
+        $this->assertSame(4, $domain->periods()->whereNotNull('draft_reference')->count(), 'alle vier Perioden gestempelt');
+        $this->assertSame([__('resale.draft.unit_piece')], $positions->where('name', 'Microsoft 365 Business Standard')->pluck('unit_name')->unique()->values()->all());
+        $this->assertCount(2, $positions->where('name', 'Microsoft 365 Business Standard'));
+        $this->assertCount(1, $payloads);
+        $this->assertCount(5, $payloads[0]['lineItems']);
+        $yearLines = array_values(array_filter($payloads[0]['lineItems'], static fn(array $l): bool => $l['name'] === 'beispiel-kanzlei.de' && (float) $l['quantity'] === 2.0));
+        $this->assertCount(1, $yearLines, 'Lexoffice bekommt die Jahreszeile');
+        $this->assertSame(__('resale.draft.unit_year'), $yearLines[0]['unitName']);
+    }
+
+    public function test_the_dialog_cutoff_plans_periods_ahead_and_the_daily_sync_keeps_stamped_ones(): void {
+        // MVP-1437: Vorauszahlung mehrerer Jahre — der Stichtag im Dialog plant die Perioden über den 90-Tage-Horizont hinaus.
+        $admin = $this->orgAdmin();
+        $this->enablePluginFor($this->organization, LexofficePlugin::ID, ['api_key' => 'lex-key', 'request_interval' => '0']);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Musterkanzlei Beispiel', 'billing_mode' => BillingMode::Lexoffice]);
+        ExternalReference::create([
+            'organization_id' => $this->organization->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+            'external_id' => '2d3e4f50-6a7b-4c8d-9e0f-1a2b3c4d5e6f', 'referenceable_type' => $customer->getMorphClass(), 'referenceable_id' => $customer->getKey(),
+        ]);
+        $domain = $this->subscription($customer, ['kind' => 'domain', 'provider' => 'domainreselling', 'label' => 'beispiel-kanzlei.de', 'quantity' => 1, 'starts_on' => '2026-06-01', 'sale_unit_price' => '9.00']);
+        $this->assertSame(1, $domain->periods()->count(), 'Planer sieht 90 Tage voraus');
+        $today = \Carbon\CarbonImmutable::parse('2026-09-04');
+
+        // Stichtag aus Eingabe: gültig und künftig zählt, Vergangenes und Unsinn fällt auf heute, höchstens fünf Jahre voraus.
+        $this->assertSame('2028-09-04', ResaleInvoiceDraftService::referenceFrom('2028-09-04', $today)->toDateString());
+        $this->assertSame('2026-09-04', ResaleInvoiceDraftService::referenceFrom('2026-01-01', $today)->toDateString());
+        $this->assertSame('2026-09-04', ResaleInvoiceDraftService::referenceFrom('2027-02-31', $today)->toDateString(), 'kein Kalendertag');
+        $this->assertSame('2026-09-04', ResaleInvoiceDraftService::referenceFrom('morgen', $today)->toDateString());
+        $this->assertSame('2031-09-04', ResaleInvoiceDraftService::referenceFrom('2040-01-01', $today)->toDateString());
+
+        // Dialog ohne Stichtag: eine fällige Periode; mit „+2 Jahre": drei (2026, 2027, 2028 beginnen bis zum 04.09.2028).
+        $this->actingAs($admin)->get(route('finance.resale.periods.draft.create'))->assertOk()
+            ->assertSee(__('resale.draft.until_today'))
+            ->assertSee(route('finance.resale.periods.draft.create', ['until' => '2028-09-04']), false)
+            ->assertSee(trans_choice('resale.periods.open_count', 1, ['count' => 1]));
+        $this->actingAs($admin)->get(route('finance.resale.periods.draft.create', ['until' => '2028-09-04']))->assertOk()
+            ->assertSee(trans_choice('resale.periods.open_count', 3, ['count' => 3]))
+            ->assertSee('name="until" value="2028-09-04"', false);
+        $this->assertSame(['2026-06-01', '2027-06-01', '2028-06-01'], $domain->periods()->orderBy('starts_on')->get()->map(static fn($p): string => $p->starts_on->toDateString())->all(), 'bis zum Stichtag geplant, nicht darüber hinaus');
+
+        $payloads = [];
+        FakePluginHttp::fake([
+            'https://api.lexware.io/v1/invoices*' => static function (\Psr\Http\Message\RequestInterface $request) use (&$payloads) {
+                $payloads[] = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
+
+                return FakePluginHttp::response(['id' => 'draft-81', 'resourceUri' => 'https://api.lexware.io/v1/invoices/draft-81'], 201);
+            },
+        ]);
+        $this->actingAs($admin)->post(route('finance.resale.periods.draft.store'), ['customer_id' => $customer->sqid, 'until' => '2028-09-04'])
+            ->assertRedirect(route('finance.resale.periods.index'))->assertSessionHas('success');
+        $this->assertCount(1, $payloads);
+        $this->assertCount(1, $payloads[0]['lineItems'], 'drei Jahre, eine Zeile');
+        $this->assertEquals(3, $payloads[0]['lineItems'][0]['quantity']);
+        $this->assertSame(__('resale.draft.unit_year'), $payloads[0]['lineItems'][0]['unitName']);
+        $this->assertStringContainsString('01.06.2026 – 31.05.2029', $payloads[0]['lineItems'][0]['description']);
+        $this->assertSame(3, $domain->periods()->where('draft_reference', 'draft-81')->count());
+
+        // Der tägliche Lauf mit kurzem Horizont räumt gestempelte Perioden nicht ab.
+        (new PeriodPlanner)->sync($domain->fresh() ?? $domain);
+        $this->assertSame(3, $domain->periods()->count(), 'gestempelte Perioden über dem Horizont bleiben');
+        $this->actingAs($admin)->postJson(route('finance.resale.periods.draft.store'), ['customer_id' => $customer->sqid, 'until' => 'bald'])
+            ->assertStatus(422)->assertJsonValidationErrors(['until']);
+    }
+
     public function test_datev_billing_transfers_as_a_file_package_and_stamps_the_periods(): void {
         \Illuminate\Support\Facades\Storage::fake(\App\Services\Finance\Targets\FileTarget::DISK);
         $admin = $this->orgAdmin();

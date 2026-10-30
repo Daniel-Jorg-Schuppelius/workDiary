@@ -108,6 +108,11 @@ class DomainAccountingMirrorTest extends TestCase {
             ->assertSee(__('resale.mirror.source_domain-accounting'))
             ->assertSee(__('resale.voucher.compare.article_ok'))
             ->assertSee('90021-10-2026');
+
+        // Abo-Seite: unter dem Soll steht das Ist laut Bezügen (Pilot 2026-10-30) — hier der Journalbetrag 5,36 je Periode.
+        $this->actingAs($this->orgAdmin())->get(route('finance.resale.show', $subscription))->assertOk()
+            ->assertSee(__('resale.field.actual_sale'))
+            ->assertSee(\CommonToolkit\ValueObjects\Money::of('5.36', \CommonToolkit\Enums\CurrencyCode::Euro, 2)->format());
     }
 
     public function test_source_groups_entries_to_monthly_vouchers_and_resolves_keys(): void {

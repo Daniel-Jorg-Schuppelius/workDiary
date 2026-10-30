@@ -37,8 +37,10 @@
         @include('finance.resale._tabs')
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-            <x-kpi-tile :label="__('resale.summary.active')" :value="$summary['active']" />
-            <x-kpi-tile :label="__('resale.summary.open_periods')" :value="$summary['open_periods']" :tone="$summary['open_periods'] > 0 ? 'warning' : 'success'" />
+            {{-- Kacheln führen zur Liste (Pilot 2026-10-30): planbare Abos = Liste ohne Filter, offene Perioden = Perioden-Reiter mit Status offen. --}}
+            <x-kpi-tile :label="__('resale.summary.active')" :value="$summary['active']" :href="route('finance.resale.subscriptions')" />
+            <x-kpi-tile :label="__('resale.summary.open_periods')" :value="$summary['open_periods']" :tone="$summary['open_periods'] > 0 ? 'warning' : 'success'"
+                        :href="route('finance.resale.periods.index', ['status' => 'open'])" />
             <x-kpi-tile :label="__('resale.summary.unassigned')" :value="$summary['unassigned']" :tone="$summary['unassigned'] > 0 ? 'warning' : 'neutral'"
                         :href="route('finance.resale.subscriptions', ['unassigned' => 1])" :active="$filters['unassigned']" />
         </div>
