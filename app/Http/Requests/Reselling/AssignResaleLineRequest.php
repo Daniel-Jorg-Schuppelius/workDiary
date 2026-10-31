@@ -42,17 +42,22 @@ class AssignResaleLineRequest extends BaseFormRequest {
     public function rules(): array {
         return [
             'period_id' => ['required', 'integer', new ExistsInCurrentOrganization('resale_periods')],
-            'line_id' => ['required', 'string', 'max:64'],
+            'line_id' => ['required_without:line_ids', 'nullable', 'string', 'max:64'],
+            // Zwillingszeilen eines Belegs in einem Schritt (Pilot 2026-10-31): die Monate verteilen sich der Reihe nach.
+            'line_ids' => ['required_without:line_id', 'nullable', 'array', 'max:50'],
+            'line_ids.*' => ['string', 'max:64'],
             'note' => ['nullable', 'string', 'max:255'],
         ] + PeriodLinker::amountRules();
     }
 
     public function withValidator(Validator $validator): void {
         $validator->after(function (Validator $validator): void {
-            if ($validator->errors()->hasAny(['period_id', 'line_id'])) {
+            if ($validator->errors()->hasAny(['period_id', 'line_id', 'line_ids'])) {
                 return;
             }
-            $this->validateLineRecipient($validator, $this->period(), $this->line(), $this->customer());
+            foreach ($this->lines() as $line) {
+                $this->validateLineRecipient($validator, $this->period(), $line, $this->customer());
+            }
         });
     }
 
@@ -72,7 +77,26 @@ class AssignResaleLineRequest extends BaseFormRequest {
     }
 
     public function line(): ?MirrorLine {
-        return $this->lineFrom($this->validationData()['line_id'] ?? null);
+        return $this->lines()[0] ?? null;
+    }
+
+    /**
+     * Alle gewählten Positionen in Formularreihenfolge (eine über `line_id`, mehrere über `line_ids[]`).
+     *
+     * @return list<MirrorLine>
+     */
+    public function lines(): array {
+        $data = $this->validationData();
+        $keys = isset($data['line_ids']) && is_array($data['line_ids']) ? array_values($data['line_ids']) : [$data['line_id'] ?? null];
+        $lines = [];
+        foreach ($keys as $key) {
+            $line = $this->lineFrom(is_string($key) ? $key : null);
+            if ($line !== null) {
+                $lines[] = $line;
+            }
+        }
+
+        return $lines;
     }
 
     public function months(): float {

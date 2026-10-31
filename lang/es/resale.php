@@ -1238,6 +1238,7 @@ return [
         'confirm' => 'Confirmar asignación',
         'unlink' => 'Quitar asignación',
         'none' => 'Ninguna plantilla periódica para los destinatarios de esta cuenta.',
+        'untitled' => 'Plantilla recurrente desde el :date',
         'no_licence_lines' => 'Ninguna posición de licencia en esta plantilla.',
         'next' => 'próxima ejecución :date',
         'failed' => 'última ejecución fallida',
@@ -1308,7 +1309,7 @@ return [
             'plan_paused' => 'La plantilla está :status; la suscripción sigue activa.',
             'plan_missing' => 'La plantilla asignada :plan ya no existe.',
             'next_execution_off' => 'La plantilla se ejecuta el :next; el siguiente periodo empieza el :period.',
-            'last_failed' => 'La última ejecución de la plantilla falló (:state): :error',
+            'last_failed' => 'Última ejecución: :state',
         ],
     ],
     // Überblick als Aufgabenliste und Sammelaktionen (Feature 185, MVP-1414/1415)

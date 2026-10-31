@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Plan;
 
+use App\Support\CarbonFmt;
 use Carbon\CarbonImmutable;
 
 /**
@@ -81,7 +82,12 @@ final readonly class PlanTemplate {
         return array_values(array_filter($this->lines, static fn(PlanLine $line): bool => $line->articleIsLicence));
     }
 
+    /** Titel der Vorlage; ohne Titel „Serienvorlage ab …“ statt des Schlüssels (Pilot 2026-10-31), ohne Beginn der Schlüssel. */
     public function label(): string {
-        return $this->title !== '' ? $this->title : $this->key;
+        if ($this->title !== '') {
+            return $this->title;
+        }
+
+        return $this->startsOn !== null ? (string) __('resale.plan.untitled', ['date' => CarbonFmt::fdate($this->startsOn)]) : $this->key;
     }
 }

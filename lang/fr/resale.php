@@ -1238,6 +1238,7 @@ return [
         'confirm' => 'Confirmer l\'affectation',
         'unlink' => 'Retirer l\'affectation',
         'none' => 'Aucun modèle récurrent pour les destinataires de ce compte.',
+        'untitled' => 'Modèle récurrent à partir du :date',
         'no_licence_lines' => 'Aucune ligne de licence dans ce modèle.',
         'next' => 'prochaine exécution :date',
         'failed' => 'dernière exécution échouée',
@@ -1308,7 +1309,7 @@ return [
             'plan_paused' => 'Le modèle est :status, l\'abonnement continue.',
             'plan_missing' => 'Le modèle affecté :plan n\'existe plus.',
             'next_execution_off' => 'Le modèle s\'exécute le :next, la prochaine période commence le :period.',
-            'last_failed' => 'La dernière exécution du modèle a échoué (:state) : :error',
+            'last_failed' => 'Dernière exécution : :state',
         ],
     ],
     // Überblick als Aufgabenliste und Sammelaktionen (Feature 185, MVP-1414/1415)

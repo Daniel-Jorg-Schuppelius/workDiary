@@ -1238,6 +1238,7 @@ return [
         'confirm' => 'Zuordnung bestätigen',
         'unlink' => 'Zuordnung lösen',
         'none' => 'Keine Serienvorlage für die Empfänger dieses Kontos.',
+        'untitled' => 'Serienvorlage ab :date',
         'no_licence_lines' => 'Keine Lizenzposition in dieser Vorlage.',
         'next' => 'nächste Ausführung :date',
         'failed' => 'letzte Ausführung fehlgeschlagen',
@@ -1308,7 +1309,7 @@ return [
             'plan_paused' => 'Die Vorlage ist :status, das Abo läuft weiter.',
             'plan_missing' => 'Die zugeordnete Vorlage :plan gibt es nicht mehr.',
             'next_execution_off' => 'Die Vorlage führt am :next aus, die nächste Periode beginnt am :period.',
-            'last_failed' => 'Die letzte Ausführung der Vorlage ist fehlgeschlagen (:state): :error',
+            'last_failed' => 'Letzte Ausführung: :state',
         ],
     ],
     // Überblick als Aufgabenliste und Sammelaktionen (Feature 185, MVP-1414/1415)
