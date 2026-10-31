@@ -379,6 +379,49 @@ class ResaleSubscription extends Model {
         return $this->belongsTo(DomainProjection::class);
     }
 
+    /**
+     * Rechnet der Domainanbieter selbst ab (Pilot 2026-10-31, MVP-1446)? Domains im
+     * Subuser-Konto: das Portal stellt dem Subuser Monatsrechnungen und zieht das Geld
+     * ein — keine Serienvorlage, kein Entwurf des Registers; die Perioden deckt das
+     * Buchungsjournal ({@see \App\Services\Reselling\Mirror\DomainAccountingMirrorSource}).
+     */
+    public function isBilledByProvider(): bool {
+        if ($this->domain_projection_id === null) {
+            return false;
+        }
+
+        return (int) ($this->domainProjection->resellerAccount->depth ?? 0) > 0;
+    }
+
+    /** Subuser des Domainanbieters, der die Rechnung stellt (null: rechnet nicht der Anbieter ab). */
+    public function providerBillingAccount(): ?string {
+        return $this->isBilledByProvider() ? $this->domainProjection?->resellerAccount?->external_user : null;
+    }
+
+    /**
+     * Eager-Load für {@see isBilledByProvider()}; ohne Mandanten-Scope, die Abos sind schon gefiltert
+     * (Konsolenläufe haben keine aktive Organisation).
+     *
+     * @return array<string, \Closure>
+     */
+    public static function providerBillingRelations(): array {
+        return [
+            'domainProjection' => static fn ($q) => $q->withoutGlobalScopes(),
+            'domainProjection.resellerAccount' => static fn ($q) => $q->withoutGlobalScopes(),
+        ];
+    }
+
+    /**
+     * Ohne Abos, die der Domainanbieter abrechnet (Entwurf, Serienlauf, Vorlagen-Vorschlag).
+     *
+     * @param  Builder<ResaleSubscription>  $query
+     * @return Builder<ResaleSubscription>
+     */
+    public function scopeNotBilledByProvider(Builder $query): Builder {
+        return $query->whereDoesntHave('domainProjection', static fn ($projection) => $projection->withoutGlobalScopes()
+            ->whereHas('resellerAccount', static fn ($account) => $account->withoutGlobalScopes()->where('depth', '>', 0)));
+    }
+
     /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo {
         return $this->belongsTo(User::class, 'created_by_user_id');

@@ -30,6 +30,7 @@ final class LicenseAccounts {
         return ResaleSubscription::query()->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->with(['customer:id,name', 'foreignCustomer:id,name,customer_id', 'foreignCustomer.customer:id,name'])
+            ->with(ResaleSubscription::providerBillingRelations())
             ->orderBy('starts_on')
             ->get();
     }

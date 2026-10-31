@@ -1248,6 +1248,7 @@ return [
         'unlink' => 'Retirer l\'affectation',
         'none' => 'Aucun modèle récurrent pour les destinataires de ce compte.',
         'untitled' => 'Modèle récurrent à partir du :date',
+        'portal_billed' => 'Facturé par le portail de domaines (sous-utilisateur :account) — pas de modèle récurrent, pas de brouillon',
         'no_licence_lines' => 'Aucune ligne de licence dans ce modèle.',
         'next' => 'prochaine exécution :date',
         'failed' => 'dernière exécution échouée',

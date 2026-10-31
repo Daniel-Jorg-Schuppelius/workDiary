@@ -272,6 +272,11 @@ terminano al giorno di riferimento; se l’elenco domini di un’esecuzione è
 vuoto, nulla viene terminato. Gli abbonamenti di dominio e i loro
 documenti di acquisto non si creano a mano — arrivano solo tramite la
 sincronizzazione.
+I domini di un account subutente sono fatturati dal portale dei domini
+stesso: invia al subutente fatture mensili che il giornale delle
+registrazioni assegna ai periodi. Questi domini non richiedono alcun modello
+ricorrente e non entrano mai in una bozza di fattura del registro; la
+cartella di lavoro e la pagina dell’abbonamento indicano il subutente.
 
 **Rinnovi e abbonamenti senza fattura:** il report «Rinnovi» mostra quali
 abbonamenti si rinnovano o terminano nel periodo (riquadri 30, 60, 90

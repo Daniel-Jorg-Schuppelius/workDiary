@@ -263,6 +263,10 @@ Domain-Reselling, Produkt z. B. „.de"), der Artikel aus dem Artikelkatalog
 Lauf. Verschwundene Domains enden am Stichtag; bleibt die Domainliste eines
 Laufs leer, wird nichts beendet. Domain-Abos und ihre Einkaufsbelege lassen
 sich nicht von Hand anlegen — sie kommen nur über den Sync.
+Domains im Subuser-Konto rechnet das Domainportal selbst ab: es stellt dem
+Subuser Monatsrechnungen, die das Buchungsjournal den Perioden zuordnet.
+Diese Domains brauchen keine Serienvorlage und kommen in keinen
+Rechnungsentwurf des Registers; Mappe und Abo-Seite nennen den Subuser.
 
 **Verlängerungen und Abos ohne Rechnung:** Der Bericht „Verlängerungen"
 zeigt, welche Abos sich im Zeitraum verlängern oder enden (Kacheln 30, 60,

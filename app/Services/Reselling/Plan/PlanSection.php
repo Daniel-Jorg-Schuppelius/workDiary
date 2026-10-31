@@ -86,7 +86,7 @@ final class PlanSection {
     public static function candidates(iterable $subscriptions): array {
         $candidates = [];
         foreach ($subscriptions as $subscription) {
-            if ($subscription->hasHolder() && ! $subscription->is_own_holding && $subscription->status->isPlanning()) {
+            if ($subscription->hasHolder() && ! $subscription->is_own_holding && $subscription->status->isPlanning() && ! $subscription->isBilledByProvider()) {
                 $candidates[] = $subscription;
             }
         }

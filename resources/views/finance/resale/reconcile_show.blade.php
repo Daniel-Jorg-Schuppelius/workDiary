@@ -128,7 +128,11 @@
                             @if ($subscription->isAssignment())<span class="block text-xs text-muted">{{ __('resale.transfer.from') }} {{ $subscription->parent?->label }} · {{ $subscription->parent?->holderLabel() }}</span>@endif
                         </td>
                         <td class="text-sm">{{ $subscription->holderLabel() }}</td>
-                        <td class="text-sm">{{ $subscription->provider->label() }}@if ($subscription->provider_account)<span class="block text-xs text-muted">{{ $subscription->provider_account }}</span>@endif</td>
+                        <td class="text-sm">
+                            {{ $subscription->provider->label() }}@if ($subscription->provider_account)<span class="block text-xs text-muted">{{ $subscription->provider_account }}</span>@endif
+                            {{-- Subuser-Konto: das Domainportal stellt die Rechnung, das Register entwirft nichts (MVP-1446). --}}
+                            @if (($portalAccount = $subscription->providerBillingAccount()) !== null)<span class="block text-xs text-info">{{ __('resale.plan.portal_billed', ['account' => $portalAccount]) }}</span>@endif
+                        </td>
                         <td class="text-right tabular-nums">{{ $subscription->quantity }}</td>
                         <td class="text-sm tabular-nums whitespace-nowrap">{{ $subscription->starts_on->fdate() }} – {{ $subscription->ends_on?->fdate() ?? __('resale.reconcile.subscriptions.open_end') }}</td>
                         <td><x-status-badge size="xs" :tone="$subscription->status->tone()" :label="$subscription->status->label()" /></td>

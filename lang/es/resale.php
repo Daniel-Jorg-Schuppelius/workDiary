@@ -1248,6 +1248,7 @@ return [
         'unlink' => 'Quitar asignación',
         'none' => 'Ninguna plantilla periódica para los destinatarios de esta cuenta.',
         'untitled' => 'Plantilla recurrente desde el :date',
+        'portal_billed' => 'Lo factura el portal de dominios (subusuario :account): sin plantilla periódica ni borrador',
         'no_licence_lines' => 'Ninguna posición de licencia en esta plantilla.',
         'next' => 'próxima ejecución :date',
         'failed' => 'última ejecución fallida',

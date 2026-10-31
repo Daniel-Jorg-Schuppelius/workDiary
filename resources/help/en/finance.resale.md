@@ -260,6 +260,11 @@ holders survive every run. Vanished domains end on the reference day; if a
 run's domain list is empty, nothing is ended. Domain subscriptions and their
 purchase entries cannot be created by hand — they only come in through the
 sync.
+Domains in a subuser account are invoiced by the domain portal itself: it
+sends the subuser monthly invoices, which the booking journal assigns to the
+periods. These domains need no recurring template and never go into an
+invoice draft of the register; the workbook and the subscription page name
+the subuser.
 
 **Renewals and subscriptions without invoice:** The "Renewals" report shows
 which subscriptions renew or end in the range (tiles 30, 60, 90 days):
