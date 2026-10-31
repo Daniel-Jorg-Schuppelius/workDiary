@@ -270,6 +270,8 @@ class RecurringPlanTest extends TestCase {
         // Lizenzkonto zeigt die Vorlage; bestätigen und lösen.
         $page = $this->actingAs($admin)->get(route('finance.resale.accounts.show', 'qualityhosting:CNL00010'))->assertOk();
         $page->assertSee(__('resale.plan.title'))->assertSee('Rechnung Exchange')->assertSee(__('resale.plan.finding.subscription_without_plan_short'));
+        // Voll zugeordnete Positionen bieten keine Auswahl mehr an (Pilot 2026-10-31); die Zuordnung steht als Block mit dem Abo als Titel.
+        $page->assertSee(__('resale.plan.fully_assigned'))->assertDontSee('<select name="subscription_id" class="select select-xs', false)->assertSee('Exchange Online Plan 1');
         $first = $links->first();
         $this->actingAs($admin)->post(route('finance.resale.accounts.plan.store', 'qualityhosting:CNL00010'), [
             'subscription_id' => $exchange->sqid, 'plan_key' => 'lexoffice:tpl-1', 'line_position' => $first->line_position, 'quantity' => 1,

@@ -1225,6 +1225,7 @@ return [
             'linked' => 'Fatturato per',
         ],
         'assign' => 'Assegna abbonamento',
+        'fully_assigned' => 'completamente assegnato',
         'create' => 'Crea abbonamento dal modello',
         'confirm' => 'Conferma assegnazione',
         'unlink' => 'Rimuovi assegnazione',

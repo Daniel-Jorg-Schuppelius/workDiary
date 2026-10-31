@@ -1225,6 +1225,7 @@ return [
             'linked' => 'Facturé pour',
         ],
         'assign' => 'Affecter un abonnement',
+        'fully_assigned' => 'entièrement attribué',
         'create' => 'Créer un abonnement depuis le modèle',
         'confirm' => 'Confirmer l\'affectation',
         'unlink' => 'Retirer l\'affectation',
