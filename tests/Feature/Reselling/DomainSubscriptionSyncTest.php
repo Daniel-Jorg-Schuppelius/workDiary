@@ -96,6 +96,18 @@ class DomainSubscriptionSyncTest extends TestCase {
         $this->artisan('resale:sync-domains', ['--org' => $this->organization->id])->expectsOutputToContain('4 Domains')->assertSuccessful();
     }
 
+    public function test_idn_domains_carry_the_readable_name_as_label_and_punycode_as_id(): void {
+        // Pilot 2026-10-31: „xn--…“ stand als Bezeichnung auf Seiten und Rechnungen; die Kennung des Anbieters bleibt Punycode.
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Badhaus Bäder GmbH']);
+        $this->projection($connection, 'xn--onlinehndler-beispiel-c2b.de', ['customer_id' => $customer->id]);
+
+        app(DomainSubscriptionSync::class)->sync($this->organization);
+        $subscription = ResaleSubscription::query()->where('external_id', 'xn--onlinehndler-beispiel-c2b.de')->firstOrFail();
+        $this->assertSame('onlinehändler-beispiel.de', $subscription->label);
+        $this->assertSame(['domains' => 1, 'created' => 0, 'updated' => 0, 'unchanged' => 1, 'ended' => 0, 'skipped_gone' => false], app(DomainSubscriptionSync::class)->sync($this->organization));
+    }
+
     public function test_start_is_the_expiration_anniversary_from_the_registration_on(): void {
         $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);

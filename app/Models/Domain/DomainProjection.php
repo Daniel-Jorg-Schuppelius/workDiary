@@ -60,6 +60,11 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $synced_at
  */
 class DomainProjection extends Model {
+    /** Lesbare Form des Domainnamens: IDN als Unicode („onlinehändler-…“ statt „xn--…“); `external_domain` bleibt die Kennung des Anbieters. */
+    public function displayName(): string {
+        return \App\Support\DomainNames::display((string) $this->external_domain);
+    }
+
     use Auditable;
     use BelongsToOrganization;
 

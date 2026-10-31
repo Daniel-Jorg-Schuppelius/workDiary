@@ -19,6 +19,7 @@ use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResalePeriod, ResalePriceEntry, ResaleSubscription};
 use App\Services\Platform\Catalog\CatalogArticle;
 use App\Settings\SettingsRegistry;
+use App\Support\DomainNames;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper, StringHelper};
 
@@ -188,7 +189,8 @@ final class DomainSubscriptionSync {
             $expiresOn = $projection->expiration_at !== null ? CarbonImmutable::instance($projection->expiration_at)->startOfDay()->toDateString() : null;
             $attributes = [
                 'kind' => SubscriptionKind::Domain,
-                'label' => $projection->external_domain,
+                // Lesbare Form als Bezeichnung (Pilot 2026-10-31): „onlinehändler-…“ statt „xn--…“ auf Seiten und Rechnungen; die Kennung bleibt Punycode.
+                'label' => DomainNames::display($projection->external_domain),
                 'company_name' => null,
                 'quantity' => 1,
                 'starts_on' => $startsOn->toDateString(),

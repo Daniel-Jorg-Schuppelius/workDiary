@@ -7,8 +7,8 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 @extends('layouts.app')
-@section('title', $domain->external_domain . ' — ' . config('app.name', 'WorkDiary'))
-@section('nav-title', $domain->external_domain)
+@section('title', $domain->displayName() . ' — ' . config('app.name', 'WorkDiary'))
+@section('nav-title', $domain->displayName())
 
 @section('content')
 @php
@@ -19,11 +19,11 @@
     $replaceable = $replaceRecords->isNotEmpty() || $replaceKept !== [];
 @endphp
 <x-page-shell>
-    <x-entity-header :title="$domain->external_domain" :back-route="route('domains.index')" :back-label="__('domain.title.index')">
+    <x-entity-header :title="$domain->displayName()" :back-route="route('domains.index')" :back-label="__('domain.title.index')">
         <x-slot:badges>
             <x-status-badge :tone="$domain->sync_status->badge()">{{ $domain->sync_status->label() }}</x-status-badge>
         </x-slot:badges>
-        <x-slot:meta>{{ $domain->connection->name }} · {{ $domain->external_user }}</x-slot:meta>
+        <x-slot:meta>{{ $domain->connection->name }} · {{ $domain->external_user }}@if ($domain->displayName() !== $domain->external_domain) · <span class="font-mono">{{ $domain->external_domain }}</span>@endif</x-slot:meta>
         <x-slot:actions>
             <x-action-form :action="route('domains.refresh', $domain)">
                 <x-icon-btn icon="sync" size="sm" type="submit" show-label>{{ __('domain.action.refresh') }}</x-icon-btn>
@@ -185,7 +185,7 @@
     {{-- Eintrag hinzufügen (MVP-798, Befund C1-06). --}}
     @if ($can['dns'])
         <x-modal id="domain-dns-add" :embedded="false" tone="primary" icon="dns"
-            :eyebrow="$domain->external_domain" :title="__('domain.action.dns_add')"
+            :eyebrow="$domain->displayName()" :title="__('domain.action.dns_add')"
             :action="route('domains.dns.modify', $domain)"
             :submit-label="__('domain.action.dns_add')">
             <x-form-group :legend="__('domain.section.dns')" icon="dns" tone="primary" cols="2">
@@ -206,12 +206,12 @@
              Dienst unverändert mit — sonst löschte der Vollersatz sie beim Anbieter. --}}
         @if ($replaceable)
             <x-modal id="domain-dns-replace" :embedded="false" size="wide" tone="warning" icon="published_with_changes"
-                :eyebrow="$domain->external_domain" :title="__('domain.action.dns_replace')"
+                :eyebrow="$domain->displayName()" :title="__('domain.action.dns_replace')"
                 :action="route('domains.dns.replace', $domain)"
                 :submit-label="__('domain.action.dns_replace')" submit-class="btn-warning"
                 :form-data="[
                     'data-confirm-dialog' => '',
-                    'data-confirm-message' => __('domain.action.dns_replace_confirm', ['domain' => $domain->external_domain]),
+                    'data-confirm-message' => __('domain.action.dns_replace_confirm', ['domain' => $domain->displayName()]),
                     'data-confirm-label' => __('domain.action.dns_replace'),
                     'data-confirm-icon' => 'warning',
                     'data-confirm-tone' => 'error',
@@ -343,7 +343,7 @@
 
                 {{-- Manuelle Verlängerung löst beim Anbieter Kosten aus — deshalb mit Rückfrage. --}}
                 <x-action-form :action="route('domains.renew', $domain)" class="flex flex-wrap items-end gap-2"
-                               :confirm="__('domain.action.renew_confirm', ['domain' => $domain->external_domain])"
+                               :confirm="__('domain.action.renew_confirm', ['domain' => $domain->displayName()])"
                                confirm-icon="event_repeat" confirm-tone="warning" :confirm-label="__('domain.action.renew')">
                     <x-input-field name="period" id="domain-renew-period" type="number" min="1" max="10" required
                                    :label="__('domain.field.period')" :value="old('period', 1)" class="input-sm" />

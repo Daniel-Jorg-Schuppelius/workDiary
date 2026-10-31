@@ -85,7 +85,13 @@ class DomainHttpTest extends TestCase {
         ]);
 
         $domain->forceFill(['details' => ['nameservers' => ['ns1.example.net', 'ns2.example.net'], 'admin_contact' => 'P-ADMIN1'], 'paid_until_at' => '2027-03-01', 'renewal_period' => 1])->save();
-        $this->actingAs($this->admin)->get(route('domains.index'))->assertOk()->assertSee('meine.de');
+        // IDN lesbar (Pilot 2026-10-31): Liste und Seite zeigen „onlinehändler-…“, die Kennung bleibt Punycode.
+        $idn = DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id, 'connection_id' => $connection->id,
+            'external_domain' => 'xn--onlinehndler-beispiel-c2b.de', 'domain_hash' => DomainProjection::hashFor('xn--onlinehndler-beispiel-c2b.de'),
+        ]);
+        $this->actingAs($this->admin)->get(route('domains.index'))->assertOk()->assertSee('meine.de')->assertSee('onlinehändler-beispiel.de');
+        $this->actingAs($this->admin)->get(route('domains.show', $idn))->assertOk()->assertSee('onlinehändler-beispiel.de')->assertSee('xn--onlinehndler-beispiel-c2b.de');
         $this->actingAs($this->admin)->get(route('domains.show', $domain))->assertOk()
             ->assertSee('meine.de')
             ->assertSee('ns1.example.net, ns2.example.net')
