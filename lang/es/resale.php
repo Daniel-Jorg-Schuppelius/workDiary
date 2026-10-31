@@ -1225,6 +1225,7 @@ return [
             'linked' => 'Facturado para',
         ],
         'assign' => 'Asignar suscripción',
+        'fully_assigned' => 'totalmente asignado',
         'create' => 'Crear suscripción desde la plantilla',
         'confirm' => 'Confirmar asignación',
         'unlink' => 'Quitar asignación',

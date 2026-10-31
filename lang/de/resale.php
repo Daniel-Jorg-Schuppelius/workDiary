@@ -1225,6 +1225,7 @@ return [
             'linked' => 'Berechnet für',
         ],
         'assign' => 'Abo zuordnen',
+        'fully_assigned' => 'vollständig zugeordnet',
         'create' => 'Abo aus Vorlage anlegen',
         'confirm' => 'Zuordnung bestätigen',
         'unlink' => 'Zuordnung lösen',

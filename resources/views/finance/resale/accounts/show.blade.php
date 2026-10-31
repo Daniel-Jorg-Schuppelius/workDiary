@@ -278,7 +278,8 @@
                 <p class="px-4 pt-3 text-xs text-muted">{{ __('resale.plan.subtitle') }}</p>
                 @forelse ($plan['templates'] as $entry)
                     @php $template = $entry['template']; @endphp
-                    <div class="border-t border-base-300">
+                    {{-- Zebra je Vorlage (Pilot 2026-10-31): jede zweite Vorlage leicht hinterlegt, damit Kopf, Positionen und Bezüge als Block zusammengehören. --}}
+                    <div @class(['border-t border-base-300', 'bg-base-200/40' => $loop->even])>
                         <div class="flex flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm">
                             <span class="flex flex-wrap items-center gap-2">
                                 <span class="font-medium">{{ $template->label() }}</span>
@@ -344,7 +345,10 @@
                                         @endforelse
                                     </td>
                                     <td class="text-right align-top">
-                                        @if ($canManage)
+                                        {{-- Zuordnen nur, solange Lizenzen der Position frei sind (Pilot 2026-10-31): eine voll zugeordnete
+                                             Position bietet keine Auswahl mehr an, sonst wirkt sie unzugeordnet. --}}
+                                        @php $openLicences = max(0, (int) round($licences) - (int) array_sum(array_map(static fn($l): int => (int) $l->quantity, $row['links']))); @endphp
+                                        @if ($canManage && $openLicences > 0)
                                             <div class="flex items-center justify-end gap-1">
                                                 <form method="POST" action="{{ route('finance.resale.accounts.plan.store', $group->routeKey()) }}" class="flex items-center gap-1">
                                                     @csrf
@@ -357,11 +361,13 @@
                                                             @endif
                                                         @endforeach
                                                     </select>
-                                                    <input type="number" name="quantity" min="1" value="{{ max(1, (int) round($licences)) }}" class="input input-xs input-bordered w-14 text-right" aria-label="{{ __('resale.account.col.licences') }}">
+                                                    <input type="number" name="quantity" min="1" value="{{ $openLicences }}" class="input input-xs input-bordered w-14 text-right" aria-label="{{ __('resale.account.col.licences') }}">
                                                     <x-icon-btn icon="add_link" size="xs" tone="primary" type="submit" :title="__('resale.plan.assign')" />
                                                 </form>
                                                 <x-icon-btn icon="add" size="xs" tone="ghost" data-entry-modal-trigger :href="route('finance.resale.create', ['plan' => $template->key, 'position' => $line->position])" :title="__('resale.plan.create')" />
                                             </div>
+                                        @elseif ($row['links'] !== [])
+                                            <span class="text-xs text-muted whitespace-nowrap"><x-icon name="check" size="0.9rem" /> {{ __('resale.plan.fully_assigned') }}</span>
                                         @endif
                                     </td>
                                 </tr>

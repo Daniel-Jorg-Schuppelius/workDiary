@@ -1225,6 +1225,7 @@ return [
             'linked' => 'Invoiced for',
         ],
         'assign' => 'Assign subscription',
+        'fully_assigned' => 'fully assigned',
         'create' => 'Create subscription from template',
         'confirm' => 'Confirm assignment',
         'unlink' => 'Remove assignment',
