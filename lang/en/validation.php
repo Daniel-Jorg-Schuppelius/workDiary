@@ -1604,6 +1604,8 @@ return [
         'limit_value' => 'Limit',
         'line' => 'Line',
         'line_id' => 'Invoice line item',
+        'line_ids' => 'Invoice line items',
+        'line_ids.*' => 'Invoice line item',
         'lineup_jersey' => 'Jersey number',
         'lineup_jersey.*' => 'Jersey number',
         'lineup_member' => 'Lined-up person',

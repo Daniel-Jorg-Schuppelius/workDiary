@@ -1570,6 +1570,8 @@ return [
         'limit_value' => 'Limit',
         'line' => 'Position',
         'line_id' => 'Rechnungsposition',
+        'line_ids' => 'Rechnungspositionen',
+        'line_ids.*' => 'Rechnungsposition',
         'lineup_jersey' => 'Trikotnummer',
         'lineup_jersey.*' => 'Trikotnummer',
         'lineup_member' => 'Aufgestellte Person',

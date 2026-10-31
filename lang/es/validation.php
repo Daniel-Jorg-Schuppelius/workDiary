@@ -1570,6 +1570,8 @@ return [
         'limit_value' => 'Límite',
         'line' => 'Línea',
         'line_id' => 'Línea de factura',
+        'line_ids' => 'Líneas de factura',
+        'line_ids.*' => 'Línea de factura',
         'lineup_jersey' => 'Dorsal',
         'lineup_jersey.*' => 'Dorsal',
         'lineup_member' => 'Persona alineada',
