@@ -15,7 +15,7 @@ namespace App\Services\Reselling\Register;
 use App\Enums\Reselling\{PeriodStatus, SubscriptionStatus};
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResaleAccountAllocation, ResalePeriod, ResalePlanLink, ResaleSubscription};
-use App\Services\Reselling\Plan\{PlanAudit, PlanLine, PlanTemplate, RecurringPlans};
+use App\Services\Reselling\Plan\{PlanAudit, PlanLine, PlanTemplate, RecurringPlans, TemplateExecution, TemplateExecutions};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\ValueObjects\Money;
@@ -41,6 +41,7 @@ final class LicenseAccountOverview {
         private readonly LinkAudit $audit,
         private readonly RecurringPlans $plans,
         private readonly PlanAudit $planAudit,
+        private readonly TemplateExecutions $executions,
     ) {}
 
     /** @return list<OverviewRow> */
@@ -104,7 +105,7 @@ final class LicenseAccountOverview {
     }
 
     /**
-     * @return array{group: LicenseAccountGroup, allocations: Collection<int, ResaleAccountAllocation>, products: list<ProductRow>, years: list<int>, rows: list<GridRow>, findings: list<array<string, mixed>>, due: list<ResalePeriod>, plan: array{available: bool, templates: list<array{template: PlanTemplate, lines: list<array{line: PlanLine, links: list<ResalePlanLink>}>}>, findings: list<array<string, mixed>>}}
+     * @return array{group: LicenseAccountGroup, allocations: Collection<int, ResaleAccountAllocation>, products: list<ProductRow>, years: list<int>, rows: list<GridRow>, findings: list<array<string, mixed>>, due: list<ResalePeriod>, plan: array{available: bool, templates: list<array{template: PlanTemplate, lines: list<array{line: PlanLine, links: list<ResalePlanLink>}>, execution: TemplateExecution|null}>, findings: list<array<string, mixed>>}}
      */
     public function detail(Organization $organization, LicenseAccountGroup $group, ?CarbonImmutable $reference = null): array {
         $reference ??= ResalePeriod::today();
@@ -160,7 +161,7 @@ final class LicenseAccountOverview {
      * Rechnungsempfänger des Kontos mit ihren Lizenzpositionen und den
      * Zuordnungen zu Abos des Kontos; dazu die Prüffälle Bestand ↔ Plan.
      *
-     * @return array{available: bool, templates: list<array{template: PlanTemplate, lines: list<array{line: PlanLine, links: list<ResalePlanLink>}>}>, findings: list<array<string, mixed>>}
+     * @return array{available: bool, templates: list<array{template: PlanTemplate, lines: list<array{line: PlanLine, links: list<ResalePlanLink>}>, execution: TemplateExecution|null}>, findings: list<array<string, mixed>>}
      */
     private function planFor(Organization $organization, LicenseAccountGroup $group): array {
         if (! $this->plans->availableFor($organization)) {
@@ -179,7 +180,10 @@ final class LicenseAccountOverview {
         foreach ($links as $link) {
             $linksByLine[$link->lineKey()][] = $link;
         }
+        /** @var list<array{template: PlanTemplate, lines: list<array{line: PlanLine, links: list<ResalePlanLink>}>, execution: TemplateExecution|null}> $templates */
         $templates = [];
+        /** @var list<PlanTemplate> $shown */
+        $shown = [];
         foreach ($this->plans->templatesFor($organization) as $template) {
             if (! in_array($template->recipientCustomerId, $recipientIds, true) && ! in_array($template->key, $linkedKeys, true)) {
                 continue;
@@ -188,8 +192,15 @@ final class LicenseAccountOverview {
             foreach ($template->licenceLines() as $line) {
                 $lines[] = ['line' => $line, 'links' => $linksByLine[ResalePlanLink::lineKeyOf($template->key, $line->position)] ?? []];
             }
-            $templates[] = ['template' => $template, 'lines' => $lines];
+            $templates[] = ['template' => $template, 'lines' => $lines, 'execution' => null];
+            $shown[] = $template;
         }
+        // Fehlgeschlagene Ausführung: ob die Rechnung dabei entstand, sagt der Spiegel (MVP-1441).
+        $executions = $this->executions->statesFor($organization, array_values(array_filter($shown, static fn(PlanTemplate $t): bool => $t->lastFailed)));
+        foreach ($templates as &$entry) {
+            $entry['execution'] = $executions[$entry['template']->key] ?? null;
+        }
+        unset($entry);
 
         return ['available' => true, 'templates' => $templates, 'findings' => $this->planAudit->findings($organization, $subscriptionIds)];
     }

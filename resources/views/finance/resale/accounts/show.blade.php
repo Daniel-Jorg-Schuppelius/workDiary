@@ -284,7 +284,13 @@
                                 <span class="font-medium">{{ $template->label() }}</span>
                                 <x-status-badge size="xs" :tone="$template->isActive() ? 'success' : 'warning'" :label="__('resale.plan.status.' . $template->status)" />
                                 @if ($template->interval !== '')<x-status-badge size="xs" outline :label="__('resale.plan.interval.' . $template->interval)" />@endif
-                                @if ($template->lastFailed)<x-status-badge size="xs" tone="error" :label="__('resale.plan.failed')" />@endif
+                                {{-- Fehlgeschlagene Ausführung (MVP-1441): Meldung des Programms als Tooltip, dazu ob die Rechnung entstand und bezahlt ist. --}}
+                                @if ($template->lastFailed)
+                                    <x-status-badge size="xs" tone="error" :label="__('resale.plan.failed')" :title="$template->lastError" />
+                                    @if (($entry['execution'] ?? null) !== null)
+                                        <span class="text-xs {{ $entry['execution']->state === \App\Services\Reselling\Plan\TemplateExecution::OPEN ? 'text-warning' : 'text-muted' }}" title="{{ $template->lastError }}">{{ $entry['execution']->label() }}</span>
+                                    @endif
+                                @endif
                                 <span class="text-xs text-muted">{{ $template->recipientName }}@if ($template->nextExecutionOn) · {{ __('resale.plan.next', ['date' => $template->nextExecutionOn->fdate()]) }}@endif · {{ $template->finalize ? __('resale.plan.finalize') : __('resale.plan.draft_only') }}</span>
                             </span>
                             @if ($template->permalink)
@@ -307,11 +313,13 @@
                                     <td class="text-right tabular-nums">{{ \App\View\Components\Resale\LicenceMonths::compact($licences) }}</td>
                                     <td class="text-sm">
                                         @forelse ($row['links'] as $link)
-                                            <span class="inline-flex items-center gap-1 mr-1 mb-0.5">
-                                                <a href="{{ route('finance.resale.show', $link->subscription->sqid) }}" class="link link-hover">{{ $link->subscription->holderLabel() }}</a>
-                                                <span class="text-xs text-muted">· {{ $link->subscription->identityLabel() }} · ×{{ $link->quantity }}</span>
+                                            {{-- Ein Block je Bezug (Pilot 2026-10-31): erste Zeile das Abo selbst (Produkt bzw. Domain) mit Herkunft und Aktionen,
+                                                 zweite Zeile Halter und Kennung — so ist auf einen Blick zu sehen, wozu die Position gehört. --}}
+                                            <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 py-0.5 border-l-2 border-base-300 pl-2 mb-1">
+                                                <a href="{{ route('finance.resale.show', $link->subscription->sqid) }}" class="link link-hover font-medium">{{ $link->subscription->label }}</a>
+                                                <span class="text-xs text-muted">×{{ $link->quantity }}</span>
                                                 <x-status-badge size="xs" :tone="$link->origin->tone()" :label="$link->origin->label()" />
-                                                @if ($link->note)<span class="text-xs text-muted" title="{{ __('resale.plan.from_invoice', ['voucher' => $link->note]) }}">· {{ $link->note }}</span>@endif
+                                                @if ($link->note)<span class="text-xs text-muted" title="{{ __('resale.plan.from_invoice', ['voucher' => $link->note]) }}">{{ $link->note }}</span>@endif
                                                 @if ($canManage)
                                                     @if ($link->origin === \App\Enums\Reselling\LinkOrigin::Proposed)
                                                         <form method="POST" action="{{ route('finance.resale.accounts.plan.store', $group->routeKey()) }}" class="inline">
@@ -329,7 +337,8 @@
                                                         <x-icon-btn icon="link_off" size="xs" tone="ghost" type="submit" :title="__('resale.plan.unlink')" />
                                                     </form>
                                                 @endif
-                                            </span>
+                                                <span class="basis-full text-xs text-muted">{{ $link->subscription->holderLabel() }} · {{ $link->subscription->identityLabel() }}</span>
+                                            </div>
                                         @empty
                                             <span class="text-warning text-xs">{{ __('resale.plan.finding.plan_without_subscription_short') }}</span>
                                         @endforelse
@@ -344,7 +353,7 @@
                                                     <select name="subscription_id" class="select select-xs select-bordered w-44" aria-label="{{ __('resale.plan.assign') }}">
                                                         @foreach ($group->contracts()->merge($group->assignments()) as $candidate)
                                                             @if ($candidate->hasHolder() && ! $candidate->is_own_holding && $candidate->status->isPlanning())
-                                                                <option value="{{ $candidate->sqid }}">{{ $candidate->holderLabel() }} · {{ $candidate->identityLabel() }}</option>
+                                                                <option value="{{ $candidate->sqid }}">{{ $candidate->label }} · {{ $candidate->holderLabel() }} · {{ $candidate->identityLabel() }}</option>
                                                             @endif
                                                         @endforeach
                                                     </select>
@@ -367,11 +376,12 @@
                 @if ($plan['findings'] !== [])
                     <ul class="border-t border-base-300 px-4 py-3 space-y-1 text-sm">
                         @foreach ($plan['findings'] as $finding)
-                            <li class="flex flex-wrap items-center gap-2">
+                            {{-- Befund: Abzeichen, dann das Abo (Produkt bzw. Domain) als Titel, darunter Halter, Kennung, Vorlage und Meldung. --}}
+                            <li class="flex flex-wrap items-start gap-2 border-l-2 border-warning/60 pl-2">
                                 <x-status-badge size="xs" tone="warning" :label="__('resale.plan.finding.' . $finding['kind'] . '_short')" />
-                                <span>
-                                    @if ($finding['subscription'] !== null)<a href="{{ route('finance.resale.show', $finding['subscription']->sqid) }}" class="link link-hover">{{ $finding['subscription']->holderLabel() }} · {{ $finding['subscription']->identityLabel() }}</a>@endif
-                                    @if ($finding['template'] !== null)<span class="text-muted">· {{ $finding['template']->label() }}@if ($finding['line'] !== null) · {{ $finding['line']->label() }}@endif</span>@endif
+                                <span class="min-w-0">
+                                    @if ($finding['subscription'] !== null)<a href="{{ route('finance.resale.show', $finding['subscription']->sqid) }}" class="link link-hover font-medium">{{ $finding['subscription']->label }}</a><span class="block text-xs text-muted">{{ $finding['subscription']->holderLabel() }} · {{ $finding['subscription']->identityLabel() }}</span>@endif
+                                    @if ($finding['template'] !== null)<span class="block text-xs text-muted">{{ __('resale.plan.col.line') }}: {{ $finding['template']->label() }}@if ($finding['line'] !== null) · {{ $finding['line']->label() }}@endif</span>@endif
                                     <span class="block text-xs text-muted">{{ __('resale.plan.finding.' . $finding['kind'], $finding['params']) }}</span>
                                 </span>
                             </li>

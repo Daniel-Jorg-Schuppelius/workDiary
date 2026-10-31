@@ -1234,6 +1234,12 @@ return [
         'failed' => 'letzte Ausführung fehlgeschlagen',
         'finalize' => 'stellt die Rechnung fertig und versendet sie',
         'draft_only' => 'erzeugt Entwürfe',
+        'execution' => [
+            'paid' => 'Rechnung :number vom :date ist bezahlt',
+            'open' => 'Rechnung :number vom :date ist offen — Versand im Buchhaltungsprogramm prüfen',
+            'missing_expected' => 'keine Rechnung zum :expected',
+            'missing' => 'keine Rechnung aus dieser Vorlage',
+        ],
         'from_invoice' => 'Zuordnung aus der Rechnung :voucher, die diese Vorlage erzeugt hat.',
         'planned_by' => 'Berechnet über die Serienvorlage „:title“ (nächste Ausführung :date).',
         'digest_line' => ':count Befunde zwischen Abos und Serienvorlagen (Abo ohne Vorlage, Vorlage ohne Abo, Menge weicht ab).',
@@ -1293,7 +1299,7 @@ return [
             'plan_paused' => 'Die Vorlage ist :status, das Abo läuft weiter.',
             'plan_missing' => 'Die zugeordnete Vorlage :plan gibt es nicht mehr.',
             'next_execution_off' => 'Die Vorlage führt am :next aus, die nächste Periode beginnt am :period.',
-            'last_failed' => 'Die letzte Ausführung der Vorlage ist fehlgeschlagen: :error',
+            'last_failed' => 'Die letzte Ausführung der Vorlage ist fehlgeschlagen (:state): :error',
         ],
     ],
     // Überblick als Aufgabenliste und Sammelaktionen (Feature 185, MVP-1414/1415)

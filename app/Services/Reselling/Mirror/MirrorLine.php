@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Mirror;
 
-use App\Services\Reselling\Register\LicenseMonths;
+use App\Services\Reselling\Register\{DomainNames, LicenseMonths};
 use App\Support\CarbonFmt;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
@@ -111,26 +111,7 @@ final readonly class MirrorLine {
      * weder „sub.lastkraft-logistik.de“ noch „lastkraft-logistik.dev“ trifft.
      */
     public function mentionsDomain(string $domain): bool {
-        $domain = mb_strtolower(trim($domain));
-        if ($domain === '') {
-            return false;
-        }
-        $forms = [$domain];
-        // IDN: der Anbieter führt „xn--onlinehndler-beispiel-c2b.de“, die Rechnung schreibt „onlinehändler-beispiel.de“.
-        if (str_contains($domain, 'xn--') && function_exists('idn_to_utf8')) {
-            $unicode = idn_to_utf8($domain, IDNA_NONTRANSITIONAL_TO_UNICODE, INTL_IDNA_VARIANT_UTS46);
-            if (is_string($unicode) && $unicode !== '' && $unicode !== $domain) {
-                $forms[] = mb_strtolower($unicode);
-            }
-        }
-        $haystack = mb_strtolower((string) $this->articleName . ' ' . $this->text());
-        foreach ($forms as $form) {
-            if (preg_match('/(?<![\p{L}\p{N}.-])' . preg_quote($form, '/') . '(?![\p{L}\p{N}-])/u', $haystack) === 1) {
-                return true;
-            }
-        }
-
-        return false;
+        return DomainNames::mentioned((string) $this->articleName . ' ' . $this->text(), $domain);
     }
 
     /**
@@ -196,10 +177,7 @@ final readonly class MirrorLine {
      * @return list<string>
      */
     private function domainTokens(): array {
-        $haystack = mb_strtolower((string) $this->articleName . ' ' . $this->text());
-        preg_match_all('/(?<![\p{L}\p{N}.-])((?:[\p{L}\p{N}](?:[\p{L}\p{N}-]*[\p{L}\p{N}])?\.)+[\p{L}]{2,})(?![\p{L}\p{N}-])/u', $haystack, $m);
-
-        return array_values(array_unique($m[1]));
+        return DomainNames::tokens((string) $this->articleName . ' ' . $this->text());
     }
 
     /** Leistungsmonate aus dem Zeitraum (gerundet; Einzeldatum = null). */

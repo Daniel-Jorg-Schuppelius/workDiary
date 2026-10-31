@@ -44,7 +44,7 @@ final class LicenseArticleClassifier {
         return match ($this->roleOf($organizationId, $articleKey)) {
             ResaleArticleRole::Excluded => false,
             ResaleArticleRole::License => true,
-            null => $this->matcher->looksLikeMicrosoftProduct((string) $name),
+            null => $this->matcher->looksLikeMicrosoftProduct((string) $name) || $this->matcher->looksLikeDomainProduct((string) $name),
         };
     }
 
@@ -70,6 +70,6 @@ final class LicenseArticleClassifier {
 
     /** Automatische Einstufung ohne Betreiber-Override (für die Anzeige). */
     public function detected(string $name): ResaleArticleRole {
-        return $this->matcher->looksLikeMicrosoftProduct($name) ? ResaleArticleRole::License : ResaleArticleRole::Excluded;
+        return $this->matcher->looksLikeMicrosoftProduct($name) || $this->matcher->looksLikeDomainProduct($name) ? ResaleArticleRole::License : ResaleArticleRole::Excluded;
     }
 }

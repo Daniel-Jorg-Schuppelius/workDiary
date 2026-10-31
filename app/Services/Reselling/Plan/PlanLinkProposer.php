@@ -12,12 +12,12 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Plan;
 
-use App\Enums\Reselling\LinkOrigin;
+use App\Enums\Reselling\{LinkOrigin, SubscriptionKind};
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResalePlanLink, ResaleSubscription};
 use App\Services\Reselling\Marketplace\{MarketplaceCompany, ProductNameMatcher};
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
-use App\Services\Reselling\Register\LicenseAccounts;
+use App\Services\Reselling\Register\{DomainNames, LicenseAccounts};
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -207,8 +207,15 @@ final class PlanLinkProposer {
         return $result;
     }
 
-    /** Produkt der Position = Produkt des Abos: gleicher Artikelschlüssel, sonst Namensvergleich bei Lizenzpositionen. */
+    /**
+     * Produkt der Position = Produkt des Abos: Domains nur bei exakter Nennung im
+     * Positionstext (MVP-1442; der Namensvergleich verwechselte ähnliche Domains
+     * eines Kunden), sonst gleicher Artikelschlüssel oder Namensvergleich.
+     */
     private function matchesProduct(ResaleSubscription $subscription, PlanLine $line): bool {
+        if ($subscription->kind === SubscriptionKind::Domain) {
+            return DomainNames::mentioned((string) $line->articleName . ' ' . $line->text(), $subscription->label);
+        }
         if ($line->articleKey !== null && $subscription->article_ref !== null) {
             return $line->articleKey === $subscription->article_ref;
         }

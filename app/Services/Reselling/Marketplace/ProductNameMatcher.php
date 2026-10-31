@@ -55,8 +55,28 @@ final class ProductNameMatcher {
         'apps for business', 'sharepoint', 'onedrive', 'azure',
     ];
 
+    /** Domain-Artikel (MVP-1442): Serienvorlagen für Domains tragen „Top-Level-Domain“ mit der Domain im Positionstext. */
+    private const DOMAIN_HINTS = ['domain', 'domains', 'top level', 'tld'];
+
     public static function normalize(string $text): string {
         return MarketplaceCompany::matchKey($text);
+    }
+
+    /** Domain-Artikel: „Top-Level-Domain“, „.de-Domain inkl. Verwaltung“, „TLD“ — ohne eigene Dienstleistung im Text. */
+    public function looksLikeDomainProduct(string $text): bool {
+        $haystack = ' ' . self::normalize($text) . ' ';
+        foreach (self::SERVICE_HINTS as $hint) {
+            if (str_contains($haystack, ' ' . $hint . ' ')) {
+                return false;
+            }
+        }
+        foreach (self::DOMAIN_HINTS as $hint) {
+            if (str_contains($haystack, ' ' . $hint . ' ')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

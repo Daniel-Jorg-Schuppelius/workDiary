@@ -1234,6 +1234,12 @@ return [
         'failed' => 'last run failed',
         'finalize' => 'finalises and sends the invoice',
         'draft_only' => 'creates drafts',
+        'execution' => [
+            'paid' => 'Invoice :number of :date is paid',
+            'open' => 'Invoice :number of :date is open — check dispatch in the accounting program',
+            'missing_expected' => 'no invoice for :expected',
+            'missing' => 'no invoice from this template',
+        ],
         'from_invoice' => 'Assigned from invoice :voucher, which this template created.',
         'planned_by' => 'Invoiced via recurring template ":title" (next run :date).',
         'digest_line' => ':count findings between subscriptions and recurring templates (subscription without template, template without subscription, quantity differs).',
@@ -1293,7 +1299,7 @@ return [
             'plan_paused' => 'The template is :status, the subscription keeps running.',
             'plan_missing' => 'The assigned template :plan no longer exists.',
             'next_execution_off' => 'The template runs on :next, the next period starts on :period.',
-            'last_failed' => 'The last run of the template failed: :error',
+            'last_failed' => 'The last run of the template failed (:state): :error',
         ],
     ],
     // Überblick als Aufgabenliste und Sammelaktionen (Feature 185, MVP-1414/1415)

@@ -1234,6 +1234,12 @@ return [
         'failed' => 'última ejecución fallida',
         'finalize' => 'finaliza y envía la factura',
         'draft_only' => 'crea borradores',
+        'execution' => [
+            'paid' => 'La factura :number del :date está pagada',
+            'open' => 'La factura :number del :date está abierta — comprobar el envío en el programa de contabilidad',
+            'missing_expected' => 'ninguna factura para el :expected',
+            'missing' => 'ninguna factura de esta plantilla',
+        ],
         'from_invoice' => 'Asignación a partir de la factura :voucher, creada por esta plantilla.',
         'planned_by' => 'Facturado mediante la plantilla periódica «:title» (próxima ejecución :date).',
         'digest_line' => ':count incidencias entre suscripciones y plantillas periódicas (suscripción sin plantilla, plantilla sin suscripción, cantidad distinta).',
@@ -1293,7 +1299,7 @@ return [
             'plan_paused' => 'La plantilla está :status; la suscripción sigue activa.',
             'plan_missing' => 'La plantilla asignada :plan ya no existe.',
             'next_execution_off' => 'La plantilla se ejecuta el :next; el siguiente periodo empieza el :period.',
-            'last_failed' => 'La última ejecución de la plantilla falló: :error',
+            'last_failed' => 'La última ejecución de la plantilla falló (:state): :error',
         ],
     ],
     // Überblick als Aufgabenliste und Sammelaktionen (Feature 185, MVP-1414/1415)

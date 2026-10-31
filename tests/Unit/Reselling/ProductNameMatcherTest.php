@@ -64,6 +64,17 @@ class ProductNameMatcherTest extends TestCase {
         $this->assertTrue($matcher->looksLikeMicrosoftProduct('Microsoft 365 Business Premium'));
     }
 
+    public function test_domain_hint_detection(): void {
+        // MVP-1442: Domain-Artikel sind Abo-Artikel — Serienvorlagen für Domains tragen „Top-Level-Domain“.
+        $matcher = new ProductNameMatcher;
+        $this->assertTrue($matcher->looksLikeDomainProduct('Top-Level-Domain'));
+        $this->assertTrue($matcher->looksLikeDomainProduct('.de-Domain inkl. Verwaltung (beispiel-kanzlei.de)'));
+        $this->assertTrue($matcher->looksLikeDomainProduct('TLD .eu'));
+        $this->assertFalse($matcher->looksLikeDomainProduct('Domain Einrichtung 1 Stunde'), 'Dienstleistung, keine Abo-Position');
+        $this->assertFalse($matcher->looksLikeDomainProduct('Microsoft 365 Business Premium'));
+        $this->assertFalse($matcher->looksLikeDomainProduct('Domainverwaltung Beratung'));
+    }
+
     public function test_normalize_is_the_company_match_key(): void {
         // Eine Regel für Firmen- und Produktnamen (Review 2026-09-10, E); die alte
         // Faltung bleibt, weil company_mappings.normalized_name damit gebildet wurde.
