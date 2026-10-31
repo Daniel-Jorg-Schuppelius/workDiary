@@ -29,7 +29,7 @@
         <span class="inline-flex flex-wrap gap-1 ms-2">
             @foreach ([0, 1, 2, 3] as $years)
                 @php($presetDate = $years === 0 ? $today : $today->addYears($years))
-                <x-button size="xs" :tone="$presetDate->isSameDay($until) ? 'primary' : 'ghost'" :href="route('finance.resale.periods.draft.create', ['until' => $presetDate->toDateString()])" data-entry-modal-trigger>{{ $years === 0 ? __('resale.draft.until_today') : trans_choice('resale.draft.until_years', $years, ['years' => $years]) }}</x-button>
+                <x-button size="xs" :tone="$presetDate->isSameDay($until) ? 'primary' : 'ghost'" :href="route('finance.resale.periods.draft.create', array_filter(['until' => $presetDate->toDateString(), 'customer' => $preselect ?? '']))" data-entry-modal-trigger>{{ $years === 0 ? __('resale.draft.until_today') : trans_choice('resale.draft.until_years', $years, ['years' => $years]) }}</x-button>
             @endforeach
         </span>
         <p class="text-xs text-muted mt-1">{{ __('resale.draft.until_hint', ['date' => $until->fdate()]) }}</p>
@@ -41,7 +41,7 @@
     <x-select-field name="customer_id" :label="__('resale.field.billed_to')" required>
         <option value="">—</option>
         @foreach ($recipients as $row)
-            <option value="{{ $row['customer']->sqid }}" @selected(old('customer_id') === $row['customer']->sqid)>
+            <option value="{{ $row['customer']->sqid }}" @selected(old('customer_id', $preselect ?? '') === $row['customer']->sqid)>
                 {{ $row['customer']->name }} · {{ trans_choice('resale.periods.open_count', $row['periods'], ['count' => $row['periods']]) }} · {{ $row['net']->format() }}
             </option>
         @endforeach

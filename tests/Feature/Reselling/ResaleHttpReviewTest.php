@@ -280,7 +280,8 @@ class ResaleHttpReviewTest extends TestCase {
         // Suffix aus dem höchsten `#n` (B10): #1 gelöscht → die nächste ist #3, nicht #2.
         $this->assertSame(['ent-9#1', 'ent-9#2'], $contract->assignments()->reorder('id')->pluck('external_id')->all());
         $first = $contract->assignments()->where('external_id', 'ent-9#1')->firstOrFail();
-        $this->actingAs($admin)->delete(route('finance.resale.destroy', $first->sqid))->assertRedirect(route('finance.resale.subscriptions'));
+        // Der Referer steht seit dem letzten from() auf der Vertragsseite: Löschen kehrt dorthin zurück (Phase 165, MVP-1443).
+        $this->actingAs($admin)->delete(route('finance.resale.destroy', $first->sqid))->assertRedirect(route('finance.resale.show', $contract->sqid));
         $this->actingAs($admin)->post(route('finance.resale.transfer.store', $contract->sqid), [
             'mode' => 'customer', 'customer_id' => $nordufer->sqid, 'quantity' => 1, 'starts_on' => '2025-07-01', 'ends_on' => '2025-12-31',
         ])->assertRedirect(route('finance.resale.show', $contract->sqid));

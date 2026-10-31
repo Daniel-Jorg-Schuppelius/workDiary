@@ -31,7 +31,7 @@ use App\Services\Reselling\Marketplace\MarketplaceCompany;
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine, MirrorVoucher};
 use App\Services\Reselling\Plan\{PlanLine, RecurringPlans};
 use App\Services\Reselling\Register\{DomainSubscriptionSync, HolderResolver, LicenseMonths, LinkProposer, MarketplaceImporter, PeriodLinker, PeriodPlanner, ResaleOverview};
-use App\Support\{CsvExport, Sqid};
+use App\Support\{CsvExport, Sqid, UrlSafety};
 use Carbon\CarbonImmutable;
 use Carbon\Exceptions\InvalidFormatException;
 use CommonToolkit\Helper\Data\JsonHelper;
@@ -341,7 +341,29 @@ class ResaleSubscriptionController extends Controller {
             $planner->sync($subscription->parent);
         }
 
-        return redirect()->route('finance.resale.show', $subscription->sqid)->with('success', __('resale.flash.updated'));
+        return $this->backToCaller($subscription)->with('success', __('resale.flash.updated'));
+    }
+
+    /**
+     * Zurück zur aufrufenden Seite — die Dialoge laufen seit der Arbeitsmappe
+     * je Rechnungsempfänger (Phase 165, MVP-1443) auch aus dem Abgleich; ohne
+     * aufrufende Seite zur Abo-Seite. Nur der Referer zählt: er zeigt auf die
+     * Seite, die den Dialog geöffnet hat (das Fragment lädt per XHR); die
+     * Sitzung merkt sich dagegen auch Fragment-Aufrufe.
+     */
+    private function backToCaller(ResaleSubscription $subscription): RedirectResponse {
+        return redirect(self::callerUrl($subscription) ?? route('finance.resale.show', $subscription->sqid));
+    }
+
+    /** Aufrufende Seite aus dem Referer — nur innerhalb der App und kein Dialog-Fragment, sonst null. */
+    private static function callerUrl(ResaleSubscription $subscription): ?string {
+        $referer = (string) request()->headers->get('referer', '');
+        if (! UrlSafety::isSameOriginOrRelative($referer, request()->getHost())) {
+            return null;
+        }
+        $fragments = [route('finance.resale.edit', $subscription->sqid), route('finance.resale.transfer.create', $subscription->sqid), route('finance.resale.show', $subscription->sqid)];
+
+        return in_array(strtok($referer, '?#'), $fragments, true) ? null : $referer;
     }
 
     public function destroy(ResaleSubscription $subscription, PeriodPlanner $planner): RedirectResponse {
@@ -355,12 +377,17 @@ class ResaleSubscriptionController extends Controller {
         if ($blocked !== null) {
             return redirect()->route('finance.resale.show', $subscription->sqid)->with('error', __($blocked));
         }
+        $caller = self::callerUrl($subscription);
         $parent = $subscription->parent;
         $subscription->delete();
         if ($parent !== null) {
             // Abtretung weg: der Vertrag bekommt seine Lizenzen zurück.
             $parent->unsetRelation('assignments');
             $planner->sync($parent);
+        }
+        // Aus der Mappe oder dem Vertrag gelöscht: dorthin zurück; von der eigenen (nun fehlenden) Seite zur Liste (MVP-1443).
+        if ($caller !== null) {
+            return redirect($caller)->with('success', __('resale.flash.deleted'));
         }
 
         return redirect()->toList('finance.resale.subscriptions')->with('success', __('resale.flash.deleted'));
@@ -439,7 +466,7 @@ class ResaleSubscriptionController extends Controller {
             return $assignment;
         });
 
-        return redirect()->route('finance.resale.show', $subscription->sqid)->with('success', __('resale.transfer.flash.created', ['quantity' => $quantity, 'holder' => $assignment->holderLabel()]));
+        return $this->backToCaller($subscription)->with('success', __('resale.transfer.flash.created', ['quantity' => $quantity, 'holder' => $assignment->holderLabel()]));
     }
 
     public function importCreate(): View {

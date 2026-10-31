@@ -18,7 +18,9 @@ use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
 use App\Services\Reselling\Marketplace\{MarketplaceCompany, NameTokenMatcher, ProductNameMatcher};
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
+use App\Services\Reselling\Plan\PlanAudit;
 use Carbon\CarbonImmutable;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Collection;
 
 /**
@@ -42,16 +44,19 @@ use Illuminate\Support\Collection;
  * @phpstan-type CreditNoteRow array{line: MirrorLine, months: float, licences: float, per_licence: float, linked: float, periods: list<string>}
  * @phpstan-type InboxHint array{company: string, subscriptions: list<ResaleSubscription>, mentions: int}
  * @phpstan-type ProductRow array{key: string, label: string, term: int, subscriptions: int, periods: int, required: float, covered: float, invoiced: float, free: float, missing: float, surplus: float, gap_since: CarbonImmutable|null}
- * @phpstan-type OverviewRow array{customer: Customer|null, name: string, subscriptions: int, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float, lines: int}
+ * @phpstan-type OverviewRow array{customer: Customer|null, name: string, subscriptions: int, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float, lines: int, open_amount: Money|null, findings: int, done: bool}
  */
 final class RecipientReconciler {
     private readonly InvoiceMirror $mirror;
 
     private readonly PeriodLinker $linker;
 
-    public function __construct(?InvoiceMirror $mirror = null, ?PeriodLinker $linker = null, private readonly ProductNameMatcher $matcher = new ProductNameMatcher()) {
+    private readonly PlanAudit $planAudit;
+
+    public function __construct(?InvoiceMirror $mirror = null, ?PeriodLinker $linker = null, private readonly ProductNameMatcher $matcher = new ProductNameMatcher(), ?PlanAudit $planAudit = null) {
         $this->mirror = $mirror ?? app(InvoiceMirror::class);
         $this->linker = $linker ?? new PeriodLinker($this->mirror);
+        $this->planAudit = $planAudit ?? app(PlanAudit::class);
     }
 
     /**
@@ -84,6 +89,16 @@ final class RecipientReconciler {
         $customerIds = array_values(array_unique(array_merge(array_keys($byCustomer), array_filter(array_keys($linesByRecipient), 'is_int'))));
         $customers = Customer::query()->whereIn('id', $customerIds)->get(['id', 'name'])->keyBy('id');
 
+        // Vorlagenbefunde je Empfänger (Phase 165, MVP-1445): zählen zum Fertig-Kriterium.
+        /** @var array<int, int> $findingsByRecipient */
+        $findingsByRecipient = [];
+        foreach ($this->planAudit->findings($organization, null, $reference) as $finding) {
+            $recipientId = $finding['subscription']?->billedTo()->id ?? $finding['template']?->recipientCustomerId;
+            if ($recipientId !== null) {
+                $findingsByRecipient[(int) $recipientId] = ($findingsByRecipient[(int) $recipientId] ?? 0) + 1;
+            }
+        }
+
         $rows = [];
         foreach (array_unique(array_merge(array_keys($byCustomer), array_keys($linesByRecipient))) as $key) {
             $customer = is_int($key) ? $customers->get($key) : null;
@@ -91,6 +106,7 @@ final class RecipientReconciler {
             $analysis = $this->analyze($byCustomer[$key] ?? collect(), $recipientLines, $linkedMonths, $reference);
             $firstLine = $recipientLines->first();
             $name = $customer !== null ? $customer->name : ($firstLine !== null ? (string) $firstLine->recipientName : '');
+            $findings = is_int($key) ? ($findingsByRecipient[$key] ?? 0) : 0;
             $rows[] = [
                 'customer' => $customer,
                 'name' => $name !== '' ? $name : '—',
@@ -102,14 +118,52 @@ final class RecipientReconciler {
                 'missing' => $analysis['missing'],
                 'surplus' => $analysis['surplus'],
                 'lines' => $recipientLines->count(),
+                'open_amount' => self::openAmount($byCustomer[$key] ?? collect(), $reference),
+                'findings' => $findings,
+                // Fertig = keine fällige Periode ohne Entscheidung und kein Vorlagenbefund (Entscheidung des Inhabers 2026-10-31).
+                'done' => $analysis['open'] + $analysis['partial'] === 0 && $findings === 0,
             ];
         }
-        // Offene Perioden zuerst (fehlender Umsatz), dann freie Positionen, dann Name.
-        usort($rows, static fn(array $a, array $b): int => (($b['open'] + $b['partial']) <=> ($a['open'] + $a['partial']))
+        // Offener Betrag zuerst (Entscheidung 2026-10-31), dann offene Perioden, Befunde, freie Positionen, Name.
+        usort($rows, static fn(array $a, array $b): int => (($b['open_amount']?->toFloat() ?? 0.0) <=> ($a['open_amount']?->toFloat() ?? 0.0))
+            ?: (($b['open'] + $b['partial']) <=> ($a['open'] + $a['partial']))
+            ?: ($b['findings'] <=> $a['findings'])
             ?: ($b['free'] <=> $a['free'])
             ?: strcmp($a['name'], $b['name']));
 
         return $rows;
+    }
+
+    /**
+     * Arbeitsliste (Phase 165, MVP-1445): Empfänger mit Kunde, die noch nicht fertig sind, in Arbeitsreihenfolge.
+     *
+     * @return list<OverviewRow>
+     */
+    public function worklist(Organization $organization, ?CarbonImmutable $reference = null): array {
+        return array_values(array_filter($this->overview($organization, $reference), static fn(array $row): bool => $row['customer'] !== null && ! $row['done']));
+    }
+
+    /**
+     * Offenes Soll der fälligen, nicht entschiedenen Perioden (offen/teilweise) — in der Währung der ersten Periode.
+     *
+     * @param  Collection<int, ResaleSubscription>  $subscriptions
+     */
+    private static function openAmount(Collection $subscriptions, CarbonImmutable $reference): ?Money {
+        $sum = null;
+        foreach ($subscriptions as $subscription) {
+            foreach ($subscription->periods as $period) {
+                if (! in_array($period->status, [PeriodStatus::Open, PeriodStatus::Partial], true) || $period->starts_on->greaterThan($reference)) {
+                    continue;
+                }
+                $amount = $period->openAmount();
+                if ($amount === null) {
+                    continue;
+                }
+                $sum = $sum === null ? $amount : ($sum->isSameCurrency($amount) ? $sum->plus($amount) : $sum);
+            }
+        }
+
+        return $sum;
     }
 
     /**

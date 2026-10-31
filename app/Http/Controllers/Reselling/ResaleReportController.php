@@ -390,7 +390,8 @@ class ResaleReportController extends Controller {
         usort($open, $byName);
         usort($drafted, $byName);
 
-        return view('finance.resale._draft_dialog', ['recipients' => $open, 'drafted' => $drafted, 'until' => $until, 'today' => $today]);
+        // Aus der Mappe eines Empfängers kommt er vorgewählt (Phase 165, MVP-1443).
+        return view('finance.resale._draft_dialog', ['recipients' => $open, 'drafted' => $drafted, 'until' => $until, 'today' => $today, 'preselect' => (string) $request->query('customer', '')]);
     }
 
     /**

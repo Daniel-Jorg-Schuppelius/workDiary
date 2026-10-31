@@ -15,7 +15,7 @@ namespace App\Services\Reselling\Register;
 use App\Enums\Reselling\{PeriodStatus, SubscriptionStatus};
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResaleAccountAllocation, ResalePeriod, ResalePlanLink, ResaleSubscription};
-use App\Services\Reselling\Plan\{PlanAudit, PlanLine, PlanTemplate, RecurringPlans, TemplateExecution, TemplateExecutions};
+use App\Services\Reselling\Plan\{PlanLine, PlanSection, PlanTemplate, TemplateExecution};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\ValueObjects\Money;
@@ -39,9 +39,7 @@ final class LicenseAccountOverview {
     public function __construct(
         private readonly LicenseAccounts $accounts,
         private readonly LinkAudit $audit,
-        private readonly RecurringPlans $plans,
-        private readonly PlanAudit $planAudit,
-        private readonly TemplateExecutions $executions,
+        private readonly PlanSection $planSection,
     ) {}
 
     /** @return list<OverviewRow> */
@@ -164,45 +162,13 @@ final class LicenseAccountOverview {
      * @return array{available: bool, templates: list<array{template: PlanTemplate, lines: list<array{line: PlanLine, links: list<ResalePlanLink>}>, execution: TemplateExecution|null}>, findings: list<array<string, mixed>>}
      */
     private function planFor(Organization $organization, LicenseAccountGroup $group): array {
-        if (! $this->plans->availableFor($organization)) {
-            return ['available' => false, 'templates' => [], 'findings' => []];
-        }
-        $subscriptionIds = array_values(array_map('intval', $group->subscriptions->pluck('id')->all()));
         // Vorlagen eines Partners (Halter ist Endkunde) nur über Zuordnungen: sonst stünden alle Vorlagen des
         // Partners in jedem Endkunden-Konto, und ein beendetes Altabo zöge sie in ein fremdes Konto (Pilot 2026-10-27).
         $recipientIds = $group->subscriptions
             ->filter(static fn(ResaleSubscription $s): bool => $s->foreign_customer_id === null && ! $s->is_own_holding && $s->status->isPlanning())
             ->map(static fn(ResaleSubscription $s): ?int => $s->billedTo()?->id)->filter()->unique()->values()->all();
-        $links = ResalePlanLink::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereIn('subscription_id', $subscriptionIds)->with('subscription.customer', 'subscription.foreignCustomer')->get();
-        $linkedKeys = $links->pluck('plan_key')->unique()->all();
-        /** @var array<string, list<ResalePlanLink>> $linksByLine */
-        $linksByLine = [];
-        foreach ($links as $link) {
-            $linksByLine[$link->lineKey()][] = $link;
-        }
-        /** @var list<array{template: PlanTemplate, lines: list<array{line: PlanLine, links: list<ResalePlanLink>}>, execution: TemplateExecution|null}> $templates */
-        $templates = [];
-        /** @var list<PlanTemplate> $shown */
-        $shown = [];
-        foreach ($this->plans->templatesFor($organization) as $template) {
-            if (! in_array($template->recipientCustomerId, $recipientIds, true) && ! in_array($template->key, $linkedKeys, true)) {
-                continue;
-            }
-            $lines = [];
-            foreach ($template->licenceLines() as $line) {
-                $lines[] = ['line' => $line, 'links' => $linksByLine[ResalePlanLink::lineKeyOf($template->key, $line->position)] ?? []];
-            }
-            $templates[] = ['template' => $template, 'lines' => $lines, 'execution' => null];
-            $shown[] = $template;
-        }
-        // Fehlgeschlagene Ausführung: ob die Rechnung dabei entstand, sagt der Spiegel (MVP-1441).
-        $executions = $this->executions->statesFor($organization, array_values(array_filter($shown, static fn(PlanTemplate $t): bool => $t->lastFailed)));
-        foreach ($templates as &$entry) {
-            $entry['execution'] = $executions[$entry['template']->key] ?? null;
-        }
-        unset($entry);
 
-        return ['available' => true, 'templates' => $templates, 'findings' => $this->planAudit->findings($organization, $subscriptionIds)];
+        return $this->planSection->build($organization, $group->subscriptions, array_values(array_map('intval', $recipientIds)));
     }
 
     /**

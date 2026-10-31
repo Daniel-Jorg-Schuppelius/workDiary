@@ -115,7 +115,8 @@ final class ResaleOverview {
 
         $tasks = [];
         // Berechnen — was Geld kostet
-        $this->task($tasks, 'berechnen', 'open', 'error', 'event_busy', $open->count(), (string) __($openAmount !== '' ? 'resale.overview.task.open_detail' : 'resale.overview.task.open_detail_grace', ['amount' => $openAmount, 'days' => self::GRACE_DAYS]), route('finance.resale.periods.index', ['status' => 'problems']));
+        // Fällige Perioden führen in die Arbeitsmappe des nächsten offenen Empfängers (Phase 165, MVP-1445), nicht in die Liste.
+        $this->task($tasks, 'berechnen', 'open', 'error', 'event_busy', $open->count(), (string) __($openAmount !== '' ? 'resale.overview.task.open_detail' : 'resale.overview.task.open_detail_grace', ['amount' => $openAmount, 'days' => self::GRACE_DAYS]), route('finance.resale.reconcile.next'));
         $this->task($tasks, 'berechnen', 'link_findings', 'warning', 'link_off', (int) array_sum($linkFindings), $this->kindDetail($linkFindings, 'resale.account.finding.'), route('finance.resale.accounts.index'));
         $this->task($tasks, 'berechnen', 'allocation_conflicts', 'warning', 'call_split', $allocationConflicts, null, route('finance.resale.accounts.index'));
         $this->task($tasks, 'berechnen', 'unbilled_licenses', 'warning', 'key_off', $this->licenseLinks->unbilledCount($organization, $reference), (string) __('resale.overview.task.unbilled_licenses_detail', ['days' => LicenseInvoiceLinks::UNBILLED_DAYS]), route('finance.resale.licenses.index', ['status' => 'sold', 'unbilled' => 1]));

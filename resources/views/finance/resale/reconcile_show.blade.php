@@ -33,13 +33,38 @@
                 </form>
             @endif
             @can(\App\Enums\User\Permission::ResellingInvoice->value)
-                <x-icon-btn icon="receipt_long" tone="ghost" size="sm" data-entry-modal-trigger :href="route('finance.resale.periods.draft.create')" show-label>{{ __('resale.draft.action') }}</x-icon-btn>
+                <x-icon-btn icon="receipt_long" tone="ghost" size="sm" data-entry-modal-trigger :href="route('finance.resale.periods.draft.create', ['customer' => $customer->sqid])" show-label>{{ __('resale.draft.action') }}</x-icon-btn>
             @endcan
             <x-icon-btn icon="person" tone="ghost" size="sm" :href="route('customers.show', $customer)" show-label>{{ __('resale.reconcile.action.customer') }}</x-icon-btn>
         </x-slot:actions>
 
         {{-- Zuordnung und Halterwechsel senden ohne Dialog: Feldfehler landen hier. --}}
         <x-validation-errors class="mb-4" />
+
+        {{-- Arbeitsliste (Phase 165, MVP-1445): Position unter den offenen Empfängern, Vorheriger/Nächster; fertig = nichts mehr zu tun. --}}
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4 text-sm">
+            <span class="flex flex-wrap items-center gap-2">
+                @if ($workspace['done'])
+                    <x-status-badge tone="success" size="sm" :label="__('resale.reconcile.worklist.done')" />
+                    <span class="text-muted">{{ __('resale.reconcile.worklist.done_hint') }}</span>
+                @else
+                    <span class="font-medium">{{ __('resale.reconcile.worklist.position', ['position' => $workspace['position'], 'total' => $workspace['total']]) }}</span>
+                    @if ($workspace['open_amount'] !== null)
+                        <span class="text-muted">· {{ __('resale.reconcile.worklist.open_amount') }} <span class="font-medium text-error">{{ $workspace['open_amount']->format() }}</span></span>
+                    @endif
+                @endif
+            </span>
+            <span class="flex items-center gap-1">
+                @if ($workspace['prev'] !== null)
+                    <x-icon-btn icon="chevron_left" size="sm" tone="ghost" :href="route('finance.resale.reconcile.show', $workspace['prev'])" show-label>{{ __('resale.reconcile.worklist.prev') }}</x-icon-btn>
+                @endif
+                @if ($workspace['next'] !== null)
+                    <x-icon-btn icon="chevron_right" size="sm" tone="primary" :href="route('finance.resale.reconcile.show', $workspace['next'])" show-label>{{ __('resale.reconcile.worklist.next') }}</x-icon-btn>
+                @else
+                    <span class="text-muted">{{ __('resale.reconcile.worklist.all_done') }}</span>
+                @endif
+            </span>
+        </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
             <x-kpi-tile :label="__('resale.reconcile.kpi.open')" :value="$open" :tone="$open > 0 ? 'error' : 'success'" />
@@ -77,6 +102,61 @@
                 </div>
             </div>
         @endif
+
+        {{-- Abos des Empfängers mit Halter-Aktionen (Phase 165, MVP-1443): bearbeiten (auch Halter und Ende), abtreten,
+             Abtretung zurücknehmen — ohne Seitenwechsel; die Dialoge kehren hierher zurück. --}}
+        <x-card :title="__('resale.reconcile.subscriptions.title')" padding="p-0" class="mb-4">
+            <p class="px-4 py-2 text-xs text-muted border-b border-base-300">{{ __('resale.reconcile.subscriptions.hint') }}</p>
+            <x-table bare>
+                <x-slot:head>
+                    <tr>
+                        <x-table.th>{{ __('resale.field.label') }}</x-table.th>
+                        <x-table.th>{{ __('resale.field.holder') }}</x-table.th>
+                        <x-table.th>{{ __('resale.field.provider') }}</x-table.th>
+                        <x-table.th class="text-right">{{ __('resale.field.quantity') }}</x-table.th>
+                        <x-table.th>{{ __('resale.field.period') }}</x-table.th>
+                        <x-table.th>{{ __('resale.field.status') }}</x-table.th>
+                        <x-table.th class="text-right">{{ __('resale.reconcile.subscriptions.col.open') }}</x-table.th>
+                        <x-table.th class="text-right"></x-table.th>
+                    </tr>
+                </x-slot:head>
+                @forelse ($subscriptions as $subscription)
+                    @php
+                        $openCount = $subscription->periods->filter(static fn ($p): bool => in_array($p->status, [\App\Enums\Reselling\PeriodStatus::Open, \App\Enums\Reselling\PeriodStatus::Partial], true) && ! $p->starts_on->greaterThan($today))->count();
+                    @endphp
+                    <tr class="hover">
+                        <td class="text-sm">
+                            <a href="{{ route('finance.resale.show', $subscription->sqid) }}" class="link link-hover font-medium">{{ $subscription->label }}</a>
+                            @if ($subscription->isAssignment())<span class="block text-xs text-muted">{{ __('resale.transfer.from') }} {{ $subscription->parent?->label }} · {{ $subscription->parent?->holderLabel() }}</span>@endif
+                        </td>
+                        <td class="text-sm">{{ $subscription->holderLabel() }}</td>
+                        <td class="text-sm">{{ $subscription->provider->label() }}@if ($subscription->provider_account)<span class="block text-xs text-muted">{{ $subscription->provider_account }}</span>@endif</td>
+                        <td class="text-right tabular-nums">{{ $subscription->quantity }}</td>
+                        <td class="text-sm tabular-nums whitespace-nowrap">{{ $subscription->starts_on->fdate() }} – {{ $subscription->ends_on?->fdate() ?? __('resale.reconcile.subscriptions.open_end') }}</td>
+                        <td><x-status-badge size="xs" :tone="$subscription->status->tone()" :label="$subscription->status->label()" /></td>
+                        <td class="text-right tabular-nums">@if ($openCount > 0)<x-status-badge size="xs" tone="error">{{ $openCount }}</x-status-badge>@else<span class="text-muted">0</span>@endif</td>
+                        <td class="text-right">
+                            @if ($canManage)
+                                <div class="flex items-center justify-end gap-1">
+                                    <x-icon-btn icon="edit" size="xs" tone="ghost" data-entry-modal-trigger :href="route('finance.resale.edit', $subscription->sqid)" :title="__('resale.action.edit')" />
+                                    @if (! $subscription->isAssignment())
+                                        <x-icon-btn icon="call_split" size="xs" tone="ghost" data-entry-modal-trigger :href="route('finance.resale.transfer.create', $subscription->sqid)" :title="__('resale.transfer.action')" />
+                                    @else
+                                        <form method="POST" action="{{ route('finance.resale.destroy', $subscription->sqid) }}" class="inline" data-confirm-dialog data-confirm-message="{{ __('resale.reconcile.subscriptions.confirm_return', ['holder' => $subscription->holderLabel()]) }}" data-confirm-tone="warning">
+                                            @csrf
+                                            @method('DELETE')
+                                            <x-icon-btn icon="undo" size="xs" tone="ghost" type="submit" :title="__('resale.reconcile.subscriptions.action.return')" />
+                                        </form>
+                                    @endif
+                                </div>
+                            @endif
+                        </td>
+                    </tr>
+                @empty
+                    <x-table.empty :colspan="8" :title="__('resale.reconcile.subscriptions.empty')" compact />
+                @endforelse
+            </x-table>
+        </x-card>
 
         {{-- Bilanz je Produkt: Soll aus Perioden gegen Ist aus Positionen. --}}
         <x-card :title="__('resale.reconcile.products.title')" padding="p-0" class="mb-4">
@@ -265,6 +345,9 @@
                 <x-empty-state icon="check_circle" :title="__('resale.reconcile.periods.empty')" compact class="m-4" />
             @endforelse
         </x-card>
+
+        {{-- Serienvorlagen des Empfängers (Phase 165, MVP-1444): Zuordnung, Ausführungsstand und Befunde hier statt im Lizenzkonto. --}}
+        @include('finance.resale._plan_section', ['plan' => $plan, 'candidates' => $planCandidates, 'storeRoute' => route('finance.resale.reconcile.plan.store', $customer), 'canManage' => $canManage])
 
         {{-- Alle Abrechnungsperioden des Empfängers (auch gedeckte) — „wie viele gibt es, was ist gedeckt". --}}
         <details class="collapse collapse-arrow border border-base-300 bg-base-100 mb-4">
