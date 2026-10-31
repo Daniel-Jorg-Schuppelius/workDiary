@@ -306,6 +306,44 @@ class ResaleSubscription extends Model {
     }
 
     /**
+     * Zeitabschnitte des Vertrags mit abgetretener und freier Menge (Dialog
+     * „Lizenzen abtreten“, Pilot 2026-10-31): Grenzen sind der Vertragsbeginn,
+     * der Beginn und der Folgetag des Endes jeder Abtretung; gleichbleibende
+     * Nachbarn werden zusammengefasst.
+     *
+     * @return list<array{from: CarbonImmutable, to: CarbonImmutable|null, assigned: int, free: int}>
+     */
+    public function assignmentSegments(): array {
+        $bounds = [$this->starts_on->startOfDay()->toDateString() => true];
+        foreach ($this->assignments as $assignment) {
+            $bounds[$assignment->starts_on->toDateString()] = true;
+            if ($assignment->ends_on !== null) {
+                $bounds[$assignment->ends_on->addDay()->toDateString()] = true;
+            }
+        }
+        $dates = array_keys($bounds);
+        sort($dates);
+        $segments = [];
+        foreach ($dates as $i => $date) {
+            $from = CarbonImmutable::parse($date);
+            if ($this->ends_on !== null && $from->greaterThan($this->ends_on)) {
+                break;
+            }
+            $to = isset($dates[$i + 1]) ? CarbonImmutable::parse($dates[$i + 1])->subDay() : $this->ends_on;
+            $assigned = $this->assignedQuantityOn($from);
+            $last = $segments === [] ? null : array_key_last($segments);
+            if ($last !== null && $segments[$last]['assigned'] === $assigned) {
+                $segments[$last]['to'] = $to;
+
+                continue;
+            }
+            $segments[] = ['from' => $from, 'to' => $to, 'assigned' => $assigned, 'free' => max(0, $this->quantity - $assigned)];
+        }
+
+        return $segments;
+    }
+
+    /**
      * Nächster Suffix für die Kennung einer Abtretung (`Vertrag#n`): höchster
      * vorhandener Suffix + 1, sonst Anzahl + 1 — eine gelöschte `#1` macht
      * die nächste nicht wieder zur `#2`, die es schon gibt.

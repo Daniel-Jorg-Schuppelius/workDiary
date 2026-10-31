@@ -383,7 +383,11 @@ class ResaleSubscriptionController extends Controller {
         return view('finance.resale._transfer_dialog', [
             'subscription' => $subscription,
             'available' => $available,
-            'quantityDefault' => $wanted > 0 ? min($wanted, max(1, $available)) : 1,
+            // Nie mehr vorbelegen, als im Zeitraum frei ist — bei null bleibt das Feld gesperrt (Pilot 2026-10-31).
+            'quantityDefault' => min($wanted > 0 ? $wanted : 1, $available),
+            'windowFrom' => $startsOn,
+            'windowTo' => $endsOn,
+            'segments' => $subscription->assignmentSegments(),
             'prefill' => [
                 'customer_id' => $customerId !== null ? Sqid::encode(Customer::class, $customerId) : '',
                 'starts_on' => $startsOn->toDateString(),

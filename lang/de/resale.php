@@ -649,6 +649,14 @@ return [
         'section' => 'Abgetretene Lizenzen',
         'from' => 'Abgetreten aus',
         'assigned_hint' => ':count Lizenz an andere Halter abgetreten|:count Lizenzen an andere Halter abgetreten',
+        'none_available' => 'Im Zeitraum :from – :to sind alle :quantity Lizenzen abgetreten. Zeitraum ändern oder eine Abtretung zurücknehmen.',
+        'segments' => [
+            'title' => 'Freie Lizenzen je Zeitraum',
+            'period' => 'Zeitraum',
+            'assigned' => 'abgetreten',
+            'free' => 'frei',
+            'open_end' => 'offen',
+        ],
         'error' => [
             'holder' => 'Bitte einen Halter wählen.',
             'quantity' => 'Nur :available Lizenzen sind noch nicht abgetreten.',

@@ -649,6 +649,14 @@ return [
         'section' => 'Licencias cedidas',
         'from' => 'Cedido desde',
         'assigned_hint' => ':count licencia cedida a otros titulares|:count licencias cedidas a otros titulares',
+        'none_available' => 'Entre el :from y el :to las :quantity licencias están todas cedidas. Cambie el periodo o revierta una cesión.',
+        'segments' => [
+            'title' => 'Licencias libres por periodo',
+            'period' => 'Periodo',
+            'assigned' => 'cedidas',
+            'free' => 'libres',
+            'open_end' => 'abierto',
+        ],
         'error' => [
             'holder' => 'Elija un titular.',
             'quantity' => 'Solo :available licencias aún no están cedidas.',
