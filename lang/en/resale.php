@@ -322,6 +322,7 @@ return [
         'error' => [
             'line_missing' => 'Invoice line item not found.',
             'exceeds' => 'The line has only :amount left.',
+            'exceeds_period' => 'The period only needs :amount more — no more can be assigned to it.',
         ],
     ],
     'widget' => [
@@ -384,6 +385,7 @@ return [
         'end_customer' => 'End customer :name',
         'unit_piece' => 'piece',
         'unit_year' => 'year',
+        'plan_remainder' => ':open of :quantity licences, :planned via recurring template',
         'until' => 'Periods up to',
         'until_today' => 'due only',
         'until_years' => '+:years year|+:years years',
@@ -651,7 +653,7 @@ return [
         'title' => 'Transfer licences: :subscription',
         'action' => 'Transfer licences',
         'submit' => 'Transfer',
-        'hint' => 'Holder :holder has :quantity licences, :available of them not yet transferred. The new holder gets its own billing periods; the contract plans with the rest.',
+        'hint' => 'Holder :holder has :quantity licences, :available of them free in the selected period — neither transferred nor already invoiced to :holder. The new holder gets its own billing periods; the contract plans with the rest.',
         'mode' => 'New holder',
         'action_period' => 'Transfer period to :customer',
         'timeline_hint' => 'A holder change over time is a transfer too: all licences for the old period go to the former holder, afterwards the contract continues with the current holder.',
@@ -659,7 +661,10 @@ return [
         'section' => 'Transferred licences',
         'from' => 'Transferred from',
         'assigned_hint' => ':count licence transferred to other holders|:count licences transferred to other holders',
-        'none_available' => 'Between :from and :to all :quantity licences are assigned. Change the period or return an assignment.',
+        'none_available' => 'Between :from and :to all :quantity licences are assigned or already invoiced to the holder. Change the period, return an assignment or remove an invoice link.',
+        'billed' => ':period: :billed of :quantity licences invoiced to :holder',
+        'self_assignment' => 'Assignment to the own holder',
+        'self_assignment_text' => 'The assignment goes to the holder of the contract: the invoice links stay on the contract period, the assignment period stays open. Return it, then the contract period applies again.',
         'segments' => [
             'title' => 'Free licences per period',
             'period' => 'Period',
@@ -669,7 +674,8 @@ return [
         ],
         'error' => [
             'holder' => 'Please choose a holder.',
-            'quantity' => 'Only :available licences are not yet transferred.',
+            'quantity' => 'Only :available licences in the period are neither transferred nor invoiced to the holder.',
+            'same_holder' => 'The new holder is the holder of the contract — an assignment to itself only takes licences away from the contract.',
         ],
         'flash' => [
             'created' => ':quantity licences transferred to :holder.',
@@ -1105,6 +1111,7 @@ return [
                 'duplicate_key' => 'This key is already assigned to another license.',
             ],
         ],
+        'line_free' => ':free free',
         'error' => [
             'roles_missing' => 'At least one key per license is required.',
             'quantity' => 'The number must be between 1 and :max.',
@@ -1124,6 +1131,7 @@ return [
             'not_blocked' => 'The license is not blocked.',
             'unblock_unconfirmed' => 'Please confirm that the license can be used again.',
             'line_recipient' => 'The selected invoice line belongs to a different invoice recipient.',
+            'line_exhausted' => 'This invoice line already carries :quantity licence(s) — choose another line.',
             'line_missing' => 'The selected invoice line is no longer in the mirror.',
             'customer_foreign' => 'The customer does not belong to your organisation.',
             'holder_mismatch' => 'The end customer does not belong to this customer.',
@@ -1298,6 +1306,8 @@ return [
         ],
         'error' => [
             'subscription' => 'This subscription does not belong to this account.',
+            'quantity' => 'The template line only has :free licences left.',
+            'line' => 'This template line does not exist (any more).',
         ],
         'flash' => [
             'saved' => 'Assignment saved.',
@@ -1312,6 +1322,7 @@ return [
             'plan_missing_short' => 'Template gone',
             'next_execution_off_short' => 'Run off the period start',
             'last_failed_short' => 'Last run failed',
+            'line_overbooked_short' => 'Template line overbooked',
             'subscription_without_plan' => 'No recurring template invoices this subscription — the invoice has to be created manually.',
             'plan_without_subscription' => 'This template line (:quantity licences) belongs to no subscription in the register — subscription missing or template outdated.',
             'quantity_mismatch' => 'The templates invoice :linked licences, the subscription has :quantity.',
@@ -1320,6 +1331,7 @@ return [
             'plan_missing' => 'The assigned template :plan no longer exists.',
             'next_execution_off' => 'The template runs on :next, the next period starts on :period.',
             'last_failed' => 'Last run: :state',
+            'line_overbooked' => ':linked licences are assigned to the line, it only bills :quantity — remove an assignment or adjust the template.',
         ],
     ],
     // Überblick als Aufgabenliste und Sammelaktionen (Feature 185, MVP-1414/1415)
@@ -1423,6 +1435,8 @@ return [
         'without_period' => 'without period',
         'line_taken' => 'used by :periods',
         'writeoff' => 'Record as bad debt',
+        'overcovered' => 'over-covered',
+        'overcovered_hint' => 'More invoice links than licences — remove a link or return an assignment to the own holder.',
     ],
     // Phase 166 (MVP-1447/1448/1451)
     'takeover' => [
@@ -1445,7 +1459,7 @@ return [
             'no_holder' => 'Without a holder or for own stock there is nothing to take over.',
             'same_holder' => 'The new holder is the previous one.',
             'after_end' => 'The effective date is after the end of the subscription (:date).',
-            'nothing_free' => 'From the effective date all licences of the contract are assigned — start the takeover at the respective assignment.',
+            'nothing_free' => 'From the effective date all licences of the contract are assigned or already invoiced to the previous holder — start the takeover at the respective assignment or change the effective date.',
         ],
     ],
 ];

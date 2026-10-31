@@ -182,7 +182,7 @@ class SaveResaleSubscriptionRequest extends BaseFormRequest {
                 return;
             }
             $parent->setRelation('assignments', $parent->assignments->reject(static fn(ResaleSubscription $a): bool => $a->id === $subscription->id)->values());
-            $available = $parent->quantity - $parent->assignedQuantityBetween($from, $to);
+            $available = $parent->transferableQuantityBetween($from, $to);
             if ($quantity > $available) {
                 $validator->errors()->add('quantity', (string) __('resale.transfer.error.quantity', ['available' => max(0, $available)]));
             }

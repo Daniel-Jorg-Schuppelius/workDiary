@@ -31,6 +31,14 @@
     @if ($available <= 0)
         <div role="alert" class="alert alert-warning text-sm"><span>{{ __('resale.transfer.none_available', ['quantity' => $subscription->quantity, 'from' => $windowFrom->fdate(), 'to' => $windowTo?->fdate() ?? __('resale.transfer.segments.open_end')]) }}</span></div>
     @endif
+    {{-- Schon über Rechnungen an den Halter berechnete Lizenzen bleiben bei ihm (Pilot 2026-10-31). --}}
+    @if ($billedPeriods !== [])
+        <ul class="text-xs text-muted space-y-0.5">
+            @foreach ($billedPeriods as $entry)
+                <li>{{ __('resale.transfer.billed', ['period' => $entry['period']->label(), 'billed' => $entry['billed'], 'quantity' => $entry['period']->quantity, 'holder' => $subscription->holderLabel()]) }}</li>
+            @endforeach
+        </ul>
+    @endif
     @if ($subscription->assignments->isNotEmpty())
         <div>
             <div class="text-xs font-semibold uppercase tracking-wider text-muted mb-1">{{ __('resale.transfer.segments.title') }}</div>

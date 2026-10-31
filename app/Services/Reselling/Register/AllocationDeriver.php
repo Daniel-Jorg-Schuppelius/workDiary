@@ -82,6 +82,10 @@ final class AllocationDeriver {
                     }
                     $wanted = max(0, $allocation->quantity - $already);
                     $capacity = $contract->quantity - $this->otherAssignedQuantity($assignmentsByContract[$contract->id], $allocation);
+                    // Lizenzen, die in einer Periode des Fensters schon über Rechnungen an den Vertragshalter
+                    // berechnet sind, bleiben bei ihm (Phase 167, MVP-1453) — wie im Abtretungs-Dialog.
+                    $contract->setRelation('assignments', $assignmentsByContract[$contract->id]->reject(static fn(ResaleSubscription $a): bool => $a->derivedFromAllocationId() === $allocation->id)->values());
+                    $capacity = min($capacity, $contract->transferableQuantityBetween($from, $until));
                     $take = min($wanted, max(0, $capacity));
                     $existing = $assignmentsByContract[$contract->id]->first(static fn(ResaleSubscription $a): bool => $a->derivedFromAllocationId() === $allocation->id);
                     if ($take <= 0) {

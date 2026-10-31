@@ -29,7 +29,7 @@ use CommonToolkit\ValueObjects\Money;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\{Builder, Collection};
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\{DB, Log};
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
 
@@ -445,11 +445,17 @@ class ResalePeriodController extends Controller {
             throw ValidationException::withMessages(['period_id' => (string) __('resale.link.error.line_missing')]);
         }
         $source = $link->period;
-        $months = (float) $link->months;
-        $link->delete();
-        $source->unsetRelation('links');
-        $this->linker->settle($source, null, null, false);
-        $moved = $this->attach($target, $line, abs($months), $link->note, $request->user()?->id);
+        // Hängt dieselbe Position schon an der Zielperiode, ersetzt der neue Bezug sie — beide zusammen zählen.
+        $months = abs((float) $link->months) + abs((float) (ResalePeriodLink::query()->where('period_id', $target->id)
+            ->where('linkable_type', $link->linkable_type)->where('linkable_id', $link->linkable_id)->value('months') ?? 0));
+        // In einer Transaktion (Phase 167, MVP-1452): scheitert der neue Bezug (Zielperiode voll), bleibt der alte.
+        $moved = DB::transaction(function () use ($link, $source, $target, $line, $months, $request): ResalePeriodLink {
+            $link->delete();
+            $source->unsetRelation('links');
+            $this->linker->settle($source, null, null, false);
+
+            return $this->attach($target, $line, abs($months), $link->note, $request->user()?->id);
+        });
         $target->audit('resale_period.link_moved', ['voucher_number' => $moved->voucher_number, 'months' => $moved->months, 'from' => $source->label(), 'status_now' => $target->status->value]);
 
         return back()->with('success', __('resale.account.finding.move_flash', ['period' => $target->label()]));

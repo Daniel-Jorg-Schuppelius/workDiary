@@ -220,7 +220,26 @@
                             <x-table.th class="text-right"></x-table.th>
                         </tr>
                     </x-slot:head>
-                    @forelse ($findings as $finding)
+                    {{-- Abtretung an den eigenen Halter (Phase 167, MVP-1458): Altfälle mit Rücknahme. --}}
+                    @foreach ($selfAssignments as $assignment)
+                        <tr class="hover">
+                            <td class="align-top"><x-status-badge size="xs" tone="error" :label="__('resale.transfer.self_assignment')" /></td>
+                            <td class="text-sm">
+                                <a href="{{ route('finance.resale.show', $assignment->sqid) }}" class="link link-hover">{{ $assignment->label }}</a> · {{ $assignment->holderLabel() }} · {{ $assignment->identityLabel() }}
+                                <span class="block text-xs text-muted">{{ __('resale.transfer.self_assignment_text') }}</span>
+                            </td>
+                            <td class="text-right align-top">
+                                @if ($canManage)
+                                    <form method="POST" action="{{ route('finance.resale.destroy', $assignment->sqid) }}" class="inline" data-confirm-dialog data-confirm-message="{{ __('resale.reconcile.subscriptions.confirm_return', ['holder' => $assignment->holderLabel()]) }}" data-confirm-tone="warning">
+                                        @csrf
+                                        @method('DELETE')
+                                        <x-icon-btn icon="undo" size="xs" tone="primary" type="submit" show-label>{{ __('resale.reconcile.subscriptions.action.return') }}</x-icon-btn>
+                                    </form>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                    @foreach ($findings as $finding)
                         @php $line = $finding['line']; @endphp
                         <tr class="hover">
                             <td class="align-top"><x-status-badge size="xs" :tone="$finding['kind'] === \App\Services\Reselling\Register\LinkAudit::OVERBOOKED ? 'error' : 'warning'" :label="__('resale.account.finding.' . $finding['kind'])" /></td>
@@ -265,9 +284,10 @@
                                 @endif
                             </td>
                         </tr>
-                    @empty
+                    @endforeach
+                    @if ($findings === [] && $selfAssignments === [])
                         <x-table.empty :colspan="3" icon="task_alt" :title="__('resale.account.finding.none')" compact />
-                    @endforelse
+                    @endif
                 </x-table>
             </x-card>
         </div>

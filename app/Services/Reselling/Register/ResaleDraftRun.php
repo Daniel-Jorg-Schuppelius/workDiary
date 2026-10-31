@@ -107,12 +107,13 @@ final class ResaleDraftRun {
                     }
 
                     try {
+                        // Automatischer Lauf: Abos, die eine Vorlage nur teilweise deckt, bleiben draußen (MVP-1455).
                         if ($dryRun) {
-                            $this->drafts->preview($recipient, $dueBy);
+                            $this->drafts->preview($recipient, $dueBy, automatic: true);
                         } else {
                             $draft = $external
-                                ? $this->drafts->draft($organization, $recipient, null, $dueBy)
-                                : $this->drafts->draftLocal($organization, $recipient, null, $dueBy);
+                                ? $this->drafts->draft($organization, $recipient, null, $dueBy, automatic: true)
+                                : $this->drafts->draftLocal($organization, $recipient, null, $dueBy, automatic: true);
                             $this->audit($organization, $recipient, $draft, $dueBy);
                         }
                         $result['drafts']++;

@@ -18,7 +18,7 @@ use App\Models\Integration\ExternalReference;
 use App\Models\Reselling\ResaleSubscription;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\{LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
-use App\Services\Reselling\Register\{LinkProposer, PeriodPlanner};
+use App\Services\Reselling\Register\{LinkProposer, PeriodLinker, PeriodPlanner};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -353,5 +353,35 @@ class LicenceTransferTest extends TestCase {
         $this->assertTrue($contract->replicate()->forceFill(['import_id' => 1])->isImported());
         $this->assertFalse($contract->isDomain());
         $this->assertTrue($contract->replicate()->forceFill(['provider' => \App\Enums\Reselling\SubscriptionProvider::DomainReselling])->isDomain());
+    }
+
+    public function test_licences_already_invoiced_to_the_holder_cannot_be_transferred_for_that_period(): void {
+        // Pilot 2026-10-31: neun Lizenzen, fünf über Rechnungen an den Halter berechnet — der Dialog bot trotzdem neun zum Abtreten an.
+        $admin = $this->orgAdmin();
+        $schub = $this->customerWithContact('Hafen- und Schleppbetrieb M. Seewind GmbH & CO. KG', 'c-schub');
+        $nordufer = $this->customerWithContact('Nordufer Tank- und Service GmbH & Co. KG', 'c-mb');
+        $contract = ResaleSubscription::query()->create([
+            'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'external_id' => 'ent-9', 'label' => 'Exchange Online (Plan 1)',
+            'customer_id' => $schub->id, 'article_ref' => 'lex:' . $this->exchange->id, 'quantity' => 9, 'starts_on' => '2021-10-18', 'ends_on' => '2022-10-18',
+            'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'cancel', 'status' => 'ended', 'currency' => 'EUR', 'sale_unit_price' => '47.40',
+        ]);
+        (new PeriodPlanner)->sync($contract);
+        $this->invoice('c-schub', 'RE/2022/0700', '2021-10-20', 5);
+        $period = $contract->periods()->firstOrFail();
+        foreach (LexofficeVoucherLine::query()->orderBy('position')->get() as $line) {
+            (new PeriodLinker)->attach($period, $line, 12.0, null, $admin->id);
+        }
+        $this->assertSame(4, $contract->fresh()?->transferableQuantityBetween($period->starts_on, $period->ends_on));
+
+        $this->actingAs($admin)->get(route('finance.resale.transfer.create', $contract->sqid))->assertOk()
+            ->assertSee('max="4"', false)
+            ->assertSee(__('resale.transfer.billed', ['period' => $period->label(), 'billed' => 5, 'quantity' => 9, 'holder' => 'Hafen- und Schleppbetrieb M. Seewind GmbH & CO. KG']));
+        $store = route('finance.resale.transfer.store', $contract->sqid);
+        $payload = ['mode' => 'customer', 'customer_id' => $nordufer->sqid, 'starts_on' => '2021-10-18', 'ends_on' => '2022-10-17'];
+        $this->actingAs($admin)->post($store, $payload + ['quantity' => 5])->assertSessionHasErrors('quantity');
+        $this->actingAs($admin)->post($store, $payload + ['quantity' => 4])->assertSessionHasNoErrors();
+        $period->refresh();
+        $this->assertSame(5, $period->quantity, 'der Vertrag behält die fünf berechneten Lizenzen');
+        $this->assertSame(PeriodStatus::Billed, $period->status);
     }
 }

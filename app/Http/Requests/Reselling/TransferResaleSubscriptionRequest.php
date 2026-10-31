@@ -69,12 +69,20 @@ class TransferResaleSubscriptionRequest extends BaseFormRequest {
                 return;
             }
             $this->validateHolder($validator, (string) ($data['mode'] ?? 'customer'), $data);
+            // Abtretung an den eigenen Halter nimmt dem Vertrag nur Lizenzen weg (Phase 167, MVP-1458).
+            $holder = $this->resolveHolder((string) ($data['mode'] ?? 'customer'), $data);
+            $foreignId = $holder['foreign']?->id;
+            $customerId = $foreignId === null ? $holder['customer']?->id : null;
+            if (! $validator->errors()->hasAny(['customer_id', 'foreign_customer_id']) && ! $subscription->is_own_holding
+                && $customerId === $subscription->customer_id && $foreignId === $subscription->foreign_customer_id) {
+                $validator->errors()->add('customer_id', (string) __('resale.transfer.error.same_holder'));
+            }
             if ($validator->errors()->hasAny(['quantity', 'starts_on', 'ends_on'])) {
                 return;
             }
             $subscription->load('assignments');
             $to = isset($data['ends_on']) && $data['ends_on'] !== '' ? CarbonImmutable::parse((string) $data['ends_on']) : $subscription->ends_on;
-            $available = $subscription->quantity - $subscription->assignedQuantityBetween(CarbonImmutable::parse((string) $data['starts_on']), $to);
+            $available = $subscription->transferableQuantityBetween(CarbonImmutable::parse((string) $data['starts_on']), $to);
             if ((int) $data['quantity'] > $available) {
                 $validator->errors()->add('quantity', (string) __('resale.transfer.error.quantity', ['available' => max(0, $available)]));
             }

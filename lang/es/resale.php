@@ -322,6 +322,7 @@ return [
         'error' => [
             'line_missing' => 'Línea de factura no encontrada.',
             'exceeds' => 'La línea solo tiene :amount disponibles.',
+            'exceeds_period' => 'El periodo solo necesita :amount más; no se le puede asignar más.',
         ],
     ],
     'widget' => [
@@ -384,6 +385,7 @@ return [
         'end_customer' => 'Cliente final :name',
         'unit_piece' => 'unidad',
         'unit_year' => 'año',
+        'plan_remainder' => ':open de :quantity licencias, :planned por plantilla periódica',
         'until' => 'Periodos hasta',
         'until_today' => 'solo vencidos',
         'until_years' => '+:years año|+:years años',
@@ -651,7 +653,7 @@ return [
         'title' => 'Ceder licencias: :subscription',
         'action' => 'Ceder licencias',
         'submit' => 'Ceder',
-        'hint' => 'El titular :holder tiene :quantity licencias, de las cuales :available aún no están cedidas. El nuevo titular recibe periodos propios; el contrato planifica con el resto.',
+        'hint' => 'El titular :holder tiene :quantity licencias, de las cuales :available están libres en el periodo elegido: ni cedidas ni ya facturadas a :holder. El nuevo titular recibe periodos propios; el contrato planifica con el resto.',
         'mode' => 'Nuevo titular',
         'action_period' => 'Ceder el periodo a :customer',
         'timeline_hint' => 'Un cambio de titular en el tiempo también es una cesión: todas las licencias del periodo antiguo al titular anterior, después el contrato continúa con el titular actual.',
@@ -659,7 +661,10 @@ return [
         'section' => 'Licencias cedidas',
         'from' => 'Cedido desde',
         'assigned_hint' => ':count licencia cedida a otros titulares|:count licencias cedidas a otros titulares',
-        'none_available' => 'Entre el :from y el :to las :quantity licencias están todas cedidas. Cambie el periodo o revierta una cesión.',
+        'none_available' => 'Entre el :from y el :to las :quantity licencias están cedidas o ya facturadas al titular. Cambie el periodo, revierta una cesión o deshaga un vínculo de factura.',
+        'billed' => ':period: :billed de :quantity licencias facturadas a :holder',
+        'self_assignment' => 'Cesión al propio titular',
+        'self_assignment_text' => 'La cesión va al titular del contrato: los vínculos de factura quedan en el periodo del contrato y el periodo de la cesión queda abierto. Revertirla; después vuelve a valer el periodo del contrato.',
         'segments' => [
             'title' => 'Licencias libres por periodo',
             'period' => 'Periodo',
@@ -669,7 +674,8 @@ return [
         ],
         'error' => [
             'holder' => 'Elija un titular.',
-            'quantity' => 'Solo :available licencias aún no están cedidas.',
+            'quantity' => 'Solo :available licencias del periodo no están cedidas ni facturadas al titular.',
+            'same_holder' => 'El nuevo titular es el titular del contrato: una cesión a sí mismo solo le quita licencias al contrato.',
         ],
         'flash' => [
             'created' => ':quantity licencias cedidas a :holder.',
@@ -1105,6 +1111,7 @@ return [
                 'duplicate_key' => 'Esta clave ya está asignada a otra licencia.',
             ],
         ],
+        'line_free' => ':free libre(s)',
         'error' => [
             'roles_missing' => 'Se necesita al menos una clave por licencia.',
             'quantity' => 'El número debe estar entre 1 y :max.',
@@ -1124,6 +1131,7 @@ return [
             'not_blocked' => 'La licencia no está bloqueada.',
             'unblock_unconfirmed' => 'Confirme que la licencia vuelve a ser utilizable.',
             'line_recipient' => 'La línea de factura elegida pertenece a otro destinatario de factura.',
+            'line_exhausted' => 'Esta línea de factura ya cubre :quantity licencia(s): elegir otra línea.',
             'line_missing' => 'La línea de factura elegida ya no está en el espejo.',
             'customer_foreign' => 'El cliente no pertenece a su organización.',
             'holder_mismatch' => 'El cliente final no pertenece a este cliente.',
@@ -1298,6 +1306,8 @@ return [
         ],
         'error' => [
             'subscription' => 'Esta suscripción no pertenece a esta cuenta.',
+            'quantity' => 'A la línea de plantilla solo le quedan :free licencias libres.',
+            'line' => 'Esta línea de plantilla no existe (ya).',
         ],
         'flash' => [
             'saved' => 'Asignación guardada.',
@@ -1312,6 +1322,7 @@ return [
             'plan_missing_short' => 'Plantilla desaparecida',
             'next_execution_off_short' => 'Ejecución fuera del inicio del periodo',
             'last_failed_short' => 'Última ejecución fallida',
+            'line_overbooked_short' => 'Línea de plantilla sobreasignada',
             'subscription_without_plan' => 'Ninguna plantilla periódica factura esta suscripción: la factura debe crearse a mano.',
             'plan_without_subscription' => 'Esta posición de plantilla (:quantity licencias) no pertenece a ninguna suscripción del registro: falta la suscripción o la plantilla está obsoleta.',
             'quantity_mismatch' => 'Las plantillas facturan :linked licencias; la suscripción tiene :quantity.',
@@ -1320,6 +1331,7 @@ return [
             'plan_missing' => 'La plantilla asignada :plan ya no existe.',
             'next_execution_off' => 'La plantilla se ejecuta el :next; el siguiente periodo empieza el :period.',
             'last_failed' => 'Última ejecución: :state',
+            'line_overbooked' => 'La línea tiene :linked licencias asignadas y solo factura :quantity: deshacer una asignación o ajustar la plantilla.',
         ],
     ],
     // Überblick als Aufgabenliste und Sammelaktionen (Feature 185, MVP-1414/1415)
@@ -1423,6 +1435,8 @@ return [
         'without_period' => 'sin periodo',
         'line_taken' => 'usada en :periods',
         'writeoff' => 'Registrar como impago',
+        'overcovered' => 'sobrecubierto',
+        'overcovered_hint' => 'Más vínculos de factura que licencias: deshacer un vínculo o revertir una cesión al propio titular.',
     ],
     // Phase 166 (MVP-1447/1448/1451)
     'takeover' => [
@@ -1445,7 +1459,7 @@ return [
             'no_holder' => 'Sin titular o en stock propio no hay nada que traspasar.',
             'same_holder' => 'El nuevo titular es el anterior.',
             'after_end' => 'La fecha efectiva es posterior al fin de la suscripción (:date).',
-            'nothing_free' => 'A partir de la fecha efectiva todas las licencias del contrato están cedidas: iniciar el traspaso en la cesión correspondiente.',
+            'nothing_free' => 'A partir de la fecha efectiva todas las licencias del contrato están cedidas o ya facturadas al titular anterior: iniciar el traspaso en la cesión correspondiente o cambiar la fecha efectiva.',
         ],
     ],
 ];

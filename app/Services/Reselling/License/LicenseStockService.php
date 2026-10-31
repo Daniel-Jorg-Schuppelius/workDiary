@@ -679,6 +679,19 @@ class LicenseStockService {
 
     /** `$line`: Rechnungsposition des Spiegels (Feature 185, MVP-1427); `$carryFrom`: Bezug des korrigierten Verkaufs übernehmen. */
     private function assign(ResaleLicenseUnit $unit, Customer $customer, ?ForeignCustomer $foreign, CarbonImmutable $soldOn, ?string $invoiceReference, ?string $token, User $actor, ?MirrorLine $line = null, ?ResaleLicenseAssignment $carryFrom = null): ResaleLicenseAssignment {
+        if ($line !== null) {
+            // Eine Rechnungsposition trägt höchstens so viele Stücklizenzen, wie sie Stück hat (Phase 167, MVP-1456).
+            $capacity = LicenseInvoiceLinks::capacityOf($line);
+            $used = ResaleLicenseAssignment::query()->withoutGlobalScopes()
+                ->where('organization_id', $unit->organization_id)
+                ->whereNull('ended_at')
+                ->where('linkable_type', $line->morphClass)->where('linkable_id', $line->morphId)
+                ->lockForUpdate()
+                ->count();
+            if ($used >= $capacity) {
+                throw new LicenseStockException('line_exhausted', 'line', ['quantity' => $capacity]);
+            }
+        }
         $assignment = ResaleLicenseAssignment::query()->create([
             'organization_id' => $unit->organization_id,
             'unit_id' => $unit->id,

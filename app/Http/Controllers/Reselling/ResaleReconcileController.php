@@ -158,7 +158,11 @@ class ResaleReconcileController extends Controller {
         if (! $subscription instanceof ResaleSubscription || $subscription->billedTo()?->id !== $customer->id) {
             throw ValidationException::withMessages(['subscription_id' => (string) __('resale.plan.error.subscription')]);
         }
-        $this->planLinks->save($organization, $subscription, (string) $data['plan_key'], (int) $data['line_position'], (int) $data['quantity'], $request->user()?->id);
+        try {
+            $this->planLinks->save($organization, $subscription, (string) $data['plan_key'], (int) $data['line_position'], (int) $data['quantity'], $request->user()?->id);
+        } catch (\InvalidArgumentException $e) {
+            throw ValidationException::withMessages(['quantity' => ErrorText::for($e)]);
+        }
 
         return redirect()->route('finance.resale.reconcile.show', $customer)->with('success', __('resale.plan.flash.saved'));
     }

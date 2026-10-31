@@ -360,7 +360,7 @@ class ResaleReportController extends Controller {
         $periods = ResalePeriod::query()
             ->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value])
             ->where('starts_on', '<', DateRange::dayAfter($until))
-            ->whereHas('subscription', static fn(Builder $s) => $s->where('is_own_holding', false))
+            ->whereHas('subscription', static fn(Builder $s) => $s->where('is_own_holding', false)->notBilledByProvider())
             ->with(['subscription.customer:id,name,currency', 'subscription.foreignCustomer:id,name,customer_id', 'subscription.foreignCustomer.customer:id,name,currency', 'links'])
             ->get();
         foreach ($periods as $period) {

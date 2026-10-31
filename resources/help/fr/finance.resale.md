@@ -134,6 +134,19 @@ sinon une cession commence à la date d’effet. Si une facture va déjà à la
 société qui reprend, le tableau propose la reprise directement sur cette
 facture.
 
+**Quantités et couverture :** le registre ne laisse jamais affecter plus
+qu’il n’y en a. Vous affectez à une période au plus ce qu’elle a encore
+d’ouvert — aussi lors du déplacement d’un lien. Seules les licences ni
+cédées ni déjà facturées au détenteur sur la période peuvent être cédées,
+réparties ou reprises ; une cession au propre détenteur est refusée et les
+cas anciens apparaissent avec « Reprendre la cession ». Une ligne de modèle
+récurrent prend au plus autant de licences qu’elle en facture (« Ligne de
+modèle surréservée » signale les cas anciens). Si un modèle ne couvre qu’une
+partie d’un abonnement, la proposition de facture contient le reste (« 4 sur
+9 licences, 5 via modèle récurrent ») ; l’exécution automatique l’omet. Une
+ligne de facture porte au plus autant de licences en stock qu’elle compte de
+pièces.
+
 **Liste générique :** outre les exports fournisseurs (Telekom, Quality
 Hosting), l’import accepte toute liste CSV ou XLSX dont les colonnes sont
 reconnaissables par leur nom — allemand ou anglais : identifiant, société,

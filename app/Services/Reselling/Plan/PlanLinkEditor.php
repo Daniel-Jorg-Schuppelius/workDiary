@@ -22,7 +22,16 @@ use App\Models\Reselling\{ResalePlanLink, ResaleSubscription};
  * sonst entsteht eine manuelle Zuordnung; Lösen nimmt sie weg. Beides mit Audit.
  */
 final class PlanLinkEditor {
+    public function __construct(private readonly RecurringPlans $plans) {}
+
+    /**
+     * @throws \InvalidArgumentException Vorlagenposition unbekannt oder mehr Lizenzen, als sie noch frei hat (Phase 167, MVP-1454)
+     */
     public function save(Organization $organization, ResaleSubscription $subscription, string $planKey, int $position, int $quantity, ?int $userId): ResalePlanLink {
+        $free = $this->freeLicences($organization, $subscription, $planKey, $position);
+        if ($quantity > $free) {
+            throw new \InvalidArgumentException((string) __('resale.plan.error.quantity', ['free' => $free]));
+        }
         $link = ResalePlanLink::query()->firstOrNew(['subscription_id' => $subscription->id, 'plan_key' => $planKey, 'line_position' => $position]);
         $link->fill([
             'organization_id' => $organization->id,
@@ -34,6 +43,27 @@ final class PlanLinkEditor {
         $link->audit('resale_plan_link.saved', ['plan' => $link->plan_key, 'position' => $link->line_position, 'quantity' => $link->quantity, 'subscription' => $subscription->label]);
 
         return $link;
+    }
+
+    /**
+     * Lizenzen der Vorlagenposition, die noch keinem anderen Abo zugeordnet sind — die bisherige
+     * Zuordnung dieses Abos zählt nicht, weil die neue sie ersetzt.
+     *
+     * @throws \InvalidArgumentException Vorlage oder Position unbekannt
+     */
+    public function freeLicences(Organization $organization, ResaleSubscription $subscription, string $planKey, int $position): int {
+        $template = $this->plans->templateByKey($organization, $planKey);
+        $line = $template?->line($position);
+        if ($template === null || $line === null) {
+            throw new \InvalidArgumentException((string) __('resale.plan.error.line'));
+        }
+        $taken = (int) ResalePlanLink::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('plan_key', $planKey)->where('line_position', $position)
+            ->where('subscription_id', '!=', $subscription->id)
+            ->sum('quantity');
+
+        return max(0, (int) round($line->licences($template->intervalMonths())) - $taken);
     }
 
     public function remove(ResalePlanLink $link): void {

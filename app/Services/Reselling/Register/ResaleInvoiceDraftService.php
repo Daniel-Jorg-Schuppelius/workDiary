@@ -48,6 +48,9 @@ use RuntimeException;
  * @phpstan-type DraftSummary array{draft_id: string, lines: int, net: float, periods: int, local: bool, target: string, url: string|null, transfer_id?: int}
  */
 final class ResaleInvoiceDraftService {
+    /** @var array<int, array<int, int>> Organisation → Abo → Lizenzen aktiver Serienvorlagen; je Auswahl neu geladen ({@see pendingPeriodsFor()}) */
+    private array $plannedByOrganization = [];
+
     /** Weiter als so viele Jahre reicht kein Stichtag — Vorauszahlungen darüber hinaus sind keine Praxis. */
     public const MAX_LEAD_YEARS = 5;
 
@@ -66,12 +69,12 @@ final class ResaleInvoiceDraftService {
      *
      * @return Collection<int, ResalePeriod>
      */
-    public function openPeriodsFor(Customer $recipient, ?CarbonImmutable $reference = null): Collection {
+    public function openPeriodsFor(Customer $recipient, ?CarbonImmutable $reference = null, bool $automatic = false): Collection {
         if ($reference !== null) {
             $this->planAhead($reference, $recipient);
         }
 
-        return $this->withCatalogArticles($this->pendingPeriodsFor($recipient, $reference)->whereNull('draft_reference')->get());
+        return $this->withCatalogArticles($this->pendingPeriodsFor($recipient, $reference, $automatic)->whereNull('draft_reference')->get());
     }
 
     /**
@@ -117,11 +120,21 @@ final class ResaleInvoiceDraftService {
     /**
      * @return \Illuminate\Database\Eloquent\Builder<ResalePeriod>
      */
-    private function pendingPeriodsFor(Customer $recipient, ?CarbonImmutable $reference): \Illuminate\Database\Eloquent\Builder {
+    private function pendingPeriodsFor(Customer $recipient, ?CarbonImmutable $reference, bool $automatic = false): \Illuminate\Database\Eloquent\Builder {
         $reference ??= ResalePeriod::today();
 
-        // Perioden, deren Abo eine laufende Serienvorlage berechnet (Feature 185, MVP-1411), gehören nicht in den Entwurf.
-        $planned = $recipient->organization !== null ? $this->plans->plannedSubscriptionIds($recipient->organization) : [];
+        // Perioden, deren Abo eine laufende Serienvorlage ganz berechnet (Feature 185, MVP-1411), gehören nicht in den Entwurf;
+        // bei teilweiser Deckung kommt der Rest in den Rechnungsvorschlag, der automatische Serienlauf lässt ihn aus (MVP-1455).
+        $quantities = $recipient->organization !== null ? $this->plans->plannedQuantities($recipient->organization) : [];
+        $this->plannedByOrganization[(int) $recipient->organization_id] = $quantities;
+        $planned = [];
+        if ($quantities !== []) {
+            foreach (ResaleSubscription::query()->whereKey(array_keys($quantities))->get(['id', 'quantity']) as $subscription) {
+                if ($automatic || $quantities[$subscription->id] >= $subscription->quantity) {
+                    $planned[] = (int) $subscription->id;
+                }
+            }
+        }
 
         return ResalePeriod::query()
             ->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value])
@@ -147,12 +160,47 @@ final class ResaleInvoiceDraftService {
     }
 
     /**
+     * Offene Lizenzmonate, die der Entwurf berechnet: ohne die Lizenzen, die eine aktive Serienvorlage für
+     * die Periode noch berechnen wird (zugeordnete Lizenzen × Laufzeit, abzüglich schon über ihre Rechnungen
+     * gedeckter Monate) — Phase 167, MVP-1455.
+     */
+    public function draftableMonths(ResalePeriod $period): float {
+        $open = $period->openMonths();
+        $planned = $this->plannedLicences($period);
+        if ($planned <= 0) {
+            return $open;
+        }
+        $byPlan = 0.0;
+        foreach ($period->links as $link) {
+            if ($link->mirrorLine()?->planKey !== null) {
+                $byPlan += (float) $link->months;
+            }
+        }
+
+        return max(0.0, $open - max(0.0, $planned * $period->termMonths() - $byPlan));
+    }
+
+    /**
+     * Lizenzen aktiver Serienvorlagen für das Abo der Periode — auch ohne vorherige Auswahl
+     * (Positionen einer Übergabe entstehen später aus den Perioden-IDs).
+     */
+    private function plannedLicences(ResalePeriod $period): int {
+        $organizationId = (int) $period->organization_id;
+        if (! isset($this->plannedByOrganization[$organizationId])) {
+            $organization = Organization::query()->withoutGlobalScopes()->find($organizationId);
+            $this->plannedByOrganization[$organizationId] = $organization !== null ? $this->plans->plannedQuantities($organization) : [];
+        }
+
+        return $this->plannedByOrganization[$organizationId][(int) $period->subscription_id] ?? 0;
+    }
+
+    /**
      * @return list<DraftEntry>
      *
      * @throws RuntimeException
      */
-    private function openLines(Customer $recipient, ?CarbonImmutable $reference = null): array {
-        $lines = $this->entries($this->openPeriodsFor($recipient, $reference));
+    private function openLines(Customer $recipient, ?CarbonImmutable $reference = null, bool $automatic = false): array {
+        $lines = $this->entries($this->openPeriodsFor($recipient, $reference, $automatic));
         if ($lines !== []) {
             return $lines;
         }
@@ -177,13 +225,13 @@ final class ResaleInvoiceDraftService {
      *
      * @throws RuntimeException nichts offen / Entwurf steht aus / kein Ziel für die externe Hoheit / Übertragung gescheitert
      */
-    public function draft(Organization $organization, Customer $recipient, ?User $user = null, ?CarbonImmutable $reference = null): array {
+    public function draft(Organization $organization, Customer $recipient, ?User $user = null, ?CarbonImmutable $reference = null, bool $automatic = false): array {
         $mode = $this->billingModes->effectiveFor($recipient);
         if (! $mode->isExternal()) {
-            return $this->draftLocal($organization, $recipient, $user, $reference);
+            return $this->draftLocal($organization, $recipient, $user, $reference, $automatic);
         }
 
-        return $this->transfer($organization, $recipient, $this->transferTargetFor($recipient), $user, $reference);
+        return $this->transfer($organization, $recipient, $this->transferTargetFor($recipient), $user, $reference, $automatic);
     }
 
     /**
@@ -229,8 +277,8 @@ final class ResaleInvoiceDraftService {
      *
      * @return DraftSummary
      */
-    private function transfer(Organization $organization, Customer $recipient, TransferTarget $target, ?User $user, ?CarbonImmutable $reference = null): array {
-        $entries = $this->openLines($recipient, $reference);
+    private function transfer(Organization $organization, Customer $recipient, TransferTarget $target, ?User $user, ?CarbonImmutable $reference = null, bool $automatic = false): array {
+        $entries = $this->openLines($recipient, $reference, $automatic);
         $periodIds = [];
         $from = null;
         $to = null;
@@ -278,13 +326,13 @@ final class ResaleInvoiceDraftService {
      *
      * @throws RuntimeException nichts offen / Entwurf steht schon aus
      */
-    public function draftLocal(Organization $organization, Customer $recipient, ?User $user, ?CarbonImmutable $reference = null): array {
+    public function draftLocal(Organization $organization, Customer $recipient, ?User $user, ?CarbonImmutable $reference = null, bool $automatic = false): array {
         $target = $this->targets->local();
         if ($target === null) {
             throw new RuntimeException((string) __('resale.draft.no_target', ['mode' => LocalInvoiceDraftTarget::KEY]));
         }
 
-        return $this->draftWith($target, $organization, $recipient, $user, $reference);
+        return $this->draftWith($target, $organization, $recipient, $user, $reference, $automatic);
     }
 
     /**
@@ -295,8 +343,8 @@ final class ResaleInvoiceDraftService {
      *
      * @throws RuntimeException nichts offen / Entwurf steht schon aus
      */
-    public function preview(Customer $recipient, ?CarbonImmutable $reference = null): array {
-        $lines = $this->openLines($recipient, $reference);
+    public function preview(Customer $recipient, ?CarbonImmutable $reference = null, bool $automatic = false): array {
+        $lines = $this->openLines($recipient, $reference, $automatic);
         $net = 0.0;
         foreach ($lines as $entry) {
             $net += $entry['line']['quantity'] * $entry['line']['unit_net'];
@@ -313,9 +361,9 @@ final class ResaleInvoiceDraftService {
      *
      * @return DraftSummary
      */
-    private function draftWith(InvoiceDraftTarget $target, Organization $organization, Customer $recipient, ?User $user, ?CarbonImmutable $reference): array {
+    private function draftWith(InvoiceDraftTarget $target, Organization $organization, Customer $recipient, ?User $user, ?CarbonImmutable $reference, bool $automatic = false): array {
         $target->ensureAvailable($organization, $recipient);
-        $entries = $this->openLines($recipient, $reference);
+        $entries = $this->openLines($recipient, $reference, $automatic);
         $reference ??= ResalePeriod::today();
 
         return DB::transaction(function () use ($target, $organization, $recipient, $user, $reference, $entries): array {
@@ -346,7 +394,7 @@ final class ResaleInvoiceDraftService {
         $attributes = ['draft_reference' => $result->reference, 'draft_created_at' => now()];
         $morphId = $result->morphIdFor((int) $period->id);
         if ($morphId !== null && $result->morphClass !== null) {
-            $months = $period->openMonths();
+            $months = $this->draftableMonths($period);
             ResalePeriodLink::query()->create([
                 'organization_id' => $organization->id,
                 'period_id' => $period->id,
@@ -424,7 +472,7 @@ final class ResaleInvoiceDraftService {
 
     /** Ganz offen und als Sammelposition eindeutig: Monatsartikel, oder eine Lizenz mit Jahreslaufzeit. */
     private function collapsible(ResalePeriod $period): bool {
-        if ($period->coveredMonths() > 0.001) {
+        if ($period->coveredMonths() > 0.001 || $this->plannedLicences($period) > 0) {
             return false;
         }
 
@@ -438,7 +486,7 @@ final class ResaleInvoiceDraftService {
      * @return DraftLine|null
      */
     public function lineFor(ResalePeriod $period): ?array {
-        if ($period->subscription->sale_unit_price === null || $period->openMonths() <= 0.001) {
+        if ($period->subscription->sale_unit_price === null || $this->draftableMonths($period) <= 0.001) {
             return null;
         }
 
@@ -469,9 +517,15 @@ final class ResaleInvoiceDraftService {
         $holder = $subscription->foreignCustomer !== null ? (string) __('resale.draft.end_customer', ['name' => $subscription->foreignCustomer->name]) . ' · ' : '';
         $range = $first->starts_on->format('d.m.Y') . ' – ' . $last->ends_on->format('d.m.Y');
 
+        $planned = $this->plannedLicences($first);
+        $count = $planned > 0
+            // Teildeckung durch eine Serienvorlage: welche Lizenzen der Entwurf berechnet (MVP-1455).
+            ? ' · ' . __('resale.draft.plan_remainder', ['open' => LicenseMonths::label($this->draftableMonths($first), (float) $termMonths), 'quantity' => $first->quantity, 'planned' => $planned])
+            : ($first->quantity > 1 ? ' · ' . $first->quantity . ' × ' : '');
+
         return [
             'name' => $subscription->productName(),
-            'description' => $holder . $range . ($first->quantity > 1 ? ' · ' . $first->quantity . ' × ' : ''),
+            'description' => $holder . $range . $count,
             'quantity' => $monthly ? round($quantity, 2) : round($quantity, 3),
             'unit_name' => $monthly ? 'Monat' : (string) __($yearly ? 'resale.draft.unit_year' : 'resale.draft.unit_piece'),
             'unit_net' => $monthly ? round($sale / $termMonths, 4) : round($sale, 2),
@@ -482,7 +536,9 @@ final class ResaleInvoiceDraftService {
 
     /** Anteil einer Periode an der Positionsmenge: offene Monate (Monatsartikel) bzw. offene Monate je Laufzeit. */
     private function share(ResalePeriod $period, bool $monthly): float {
-        return $monthly ? $period->openMonths() : $period->openMonths() / $period->termMonths();
+        $months = $this->draftableMonths($period);
+
+        return $monthly ? $months : $months / $period->termMonths();
     }
 
     private function isMonthly(ResaleSubscription $subscription): bool {

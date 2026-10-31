@@ -406,7 +406,7 @@ class ResaleSubscriptionController extends Controller {
         $subscription->load(['assignments', 'customer', 'foreignCustomer']);
         $startsOn = $this->queryDate($request, 'starts_on') ?? $subscription->starts_on;
         $endsOn = $this->queryDate($request, 'ends_on') ?? $subscription->ends_on;
-        $available = max(0, $subscription->quantity - $subscription->assignedQuantityBetween($startsOn, $endsOn));
+        $available = $subscription->transferableQuantityBetween($startsOn, $endsOn);
         $wanted = max(0, (int) $request->query('quantity', '0'));
 
         return view('finance.resale._transfer_dialog', [
@@ -417,6 +417,7 @@ class ResaleSubscriptionController extends Controller {
             'windowFrom' => $startsOn,
             'windowTo' => $endsOn,
             'segments' => $subscription->assignmentSegments(),
+            'billedPeriods' => $subscription->billedPeriodsBetween($startsOn, $endsOn),
             'prefill' => [
                 'customer_id' => $customerId !== null ? Sqid::encode(Customer::class, $customerId) : '',
                 'starts_on' => $startsOn->toDateString(),
@@ -429,7 +430,7 @@ class ResaleSubscriptionController extends Controller {
      * Abtretung anlegen: Kind-Abo mit Halter, Menge und Laufzeit; Produkt,
      * Preise und Rhythmus vom Vertrag. Der Vertrag plant danach mit dem Rest.
      */
-    public function transferStore(TransferResaleSubscriptionRequest $request, ResaleSubscription $subscription, LicenceAssignments $assignments): RedirectResponse {
+    public function transferStore(TransferResaleSubscriptionRequest $request, ResaleSubscription $subscription, LicenceAssignments $assignments, LinkProposer $proposer): RedirectResponse {
         $quantity = (int) $request->validated('quantity');
         $salePrice = $request->validated('sale_unit_price');
         $assignment = $assignments->create(
@@ -443,7 +444,15 @@ class ResaleSubscriptionController extends Controller {
             $request->user()?->id,
         );
 
-        return $this->backToCaller($subscription)->with('success', __('resale.transfer.flash.created', ['quantity' => $quantity, 'holder' => $assignment->holderLabel()]));
+        $redirect = $this->backToCaller($subscription)->with('success', __('resale.transfer.flash.created', ['quantity' => $quantity, 'holder' => $assignment->holderLabel()]));
+        try {
+            // Bezüge passend zu den neuen Haltern — wie nach Halterwechsel und Übernahme (Phase 167, MVP-1458).
+            $proposer->propose($this->currentOrganizationOrAbort(404));
+        } catch (RuntimeException $e) {
+            $redirect->with('warning', ErrorText::for($e));
+        }
+
+        return $redirect;
     }
 
     /**

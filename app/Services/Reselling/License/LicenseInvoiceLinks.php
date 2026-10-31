@@ -47,12 +47,19 @@ final class LicenseInvoiceLinks {
     public function candidates(Organization $organization, ?ResaleLicenseProduct $product, CarbonImmutable $soldOn): array {
         // Alle Positionen, nicht nur Lizenzartikel der Abos: Stückprodukte haben ihren eigenen Artikel.
         $lines = $this->mirror->linesFor($organization, null, $soldOn->subDays(self::CANDIDATE_WINDOW_DAYS), $soldOn->addDays(self::CANDIDATE_WINDOW_DAYS), licenceOnly: false);
+        $used = $this->usedUnits($organization, $lines);
         $options = [];
         foreach ($lines as $line) {
+            // Ausgeschöpfte Positionen bietet die Auswahl nicht an (Phase 167, MVP-1456); der Verkauf prüft dasselbe.
+            $free = self::capacityOf($line) - ($used[$line->identity()] ?? 0);
+            if ($free <= 0) {
+                continue;
+            }
             $options[] = [
                 'key' => $line->key,
                 'customer_id' => $line->recipientCustomerId,
-                'label' => trim(($line->voucherNumber ?? '—') . ' · ' . $line->label() . ' × ' . NumberHelper::toGermanFormat($line->quantity, 3, withThousandsSeparator: false, trimTrailingZeros: true)),
+                'label' => trim(($line->voucherNumber ?? '—') . ' · ' . $line->label() . ' × ' . NumberHelper::toGermanFormat($line->quantity, 3, withThousandsSeparator: false, trimTrailingZeros: true))
+                    . ' · ' . __('resale.license.line_free', ['free' => $free]),
                 'date' => $line->voucherDate?->toDateString() ?? '',
                 'voucher' => (string) ($line->voucherNumber ?? ''),
                 'match' => $product !== null && self::matches($line, $product),
@@ -61,6 +68,38 @@ final class LicenseInvoiceLinks {
         usort($options, static fn(array $a, array $b): int => ($b['match'] <=> $a['match']) ?: strcmp($b['date'], $a['date']) ?: strcmp($a['label'], $b['label']));
 
         return $options;
+    }
+
+    /** Stücke einer Rechnungsposition (Menge, aufgerundet, mindestens eins). */
+    public static function capacityOf(MirrorLine $line): int {
+        return max(1, (int) ceil($line->quantity - 0.001));
+    }
+
+    /**
+     * Laufende Verkäufe je Rechnungsposition.
+     *
+     * @param  Collection<int, MirrorLine>  $lines
+     * @return array<string, int> Identität der Position → Stücklizenzen
+     */
+    private function usedUnits(Organization $organization, Collection $lines): array {
+        $ids = [];
+        foreach ($lines as $line) {
+            $ids[$line->morphClass][] = $line->morphId;
+        }
+        $used = [];
+        foreach ($ids as $morphClass => $morphIds) {
+            $rows = ResaleLicenseAssignment::query()->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->whereNull('ended_at')
+                ->where('linkable_type', $morphClass)->whereIn('linkable_id', $morphIds)
+                ->get(['linkable_type', 'linkable_id']);
+            foreach ($rows as $row) {
+                $identity = MirrorLine::identityOf((string) $row->linkable_type, (int) $row->linkable_id);
+                $used[$identity] = ($used[$identity] ?? 0) + 1;
+            }
+        }
+
+        return $used;
     }
 
     /** Position gehört zum Lizenzprodukt: gleicher Artikel, sonst Produktname in der Bezeichnung. */

@@ -127,6 +127,18 @@ suscripción traspasa toda la suscripción al nuevo titular; si no, a partir
 de la fecha efectiva se crea una cesión. Si una factura ya va a la empresa
 sucesora, el tablero ofrece el traspaso directamente en esa factura.
 
+**Cantidades y cobertura:** el registro nunca permite asignar más de lo que
+hay. A un periodo usted le asigna como máximo lo que aún tiene abierto,
+también al mover un vínculo. Solo se pueden ceder, repartir o traspasar
+licencias que en el periodo no estén cedidas ni ya facturadas al titular;
+una cesión al propio titular se rechaza y los casos antiguos aparecen con
+«Revertir cesión». Una línea de plantilla periódica admite como máximo
+tantas licencias como factura («Línea de plantilla sobreasignada» señala los
+casos antiguos). Si una plantilla cubre solo una parte de una suscripción,
+la propuesta de factura contiene el resto («4 de 9 licencias, 5 por
+plantilla periódica»); la ejecución automática lo omite. Una línea de
+factura cubre como máximo tantas licencias de stock como piezas tiene.
+
 **Lista genérica:** además de las exportaciones de proveedores (Telekom,
 Quality Hosting), la importación acepta cualquier lista CSV o XLSX cuyas
 columnas se reconozcan por su nombre — alemán o inglés: id, empresa,
