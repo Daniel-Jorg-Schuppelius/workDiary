@@ -148,7 +148,7 @@ final class ResaleDraftRun {
             ->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value])
             ->whereNull('draft_reference')
             ->where('starts_on', '<', DateRange::dayAfter($dueBy))
-            ->whereHas('subscription', static fn(Builder $s) => $s->where('is_own_holding', false))
+            ->whereHas('subscription', static fn(Builder $s) => $s->where('is_own_holding', false)->notBilledByProvider())
             ->with(['subscription.customer', 'subscription.foreignCustomer.customer'])
             ->get();
 

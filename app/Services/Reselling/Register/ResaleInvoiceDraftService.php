@@ -127,7 +127,8 @@ final class ResaleInvoiceDraftService {
             ->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value])
             ->where('starts_on', '<', DateRange::dayAfter($reference))
             ->when($planned !== [], static fn($q) => $q->whereNotIn('subscription_id', $planned))
-            ->whereHas('subscription', fn($s) => $s->where('is_own_holding', false)->where($this->holderScope($recipient)))
+            // Domains im Subuser-Konto berechnet das Domainportal (MVP-1446) — nie ein zweites Mal über das Register.
+            ->whereHas('subscription', fn($s) => $s->where('is_own_holding', false)->where($this->holderScope($recipient))->notBilledByProvider())
             ->with(['subscription.foreignCustomer', 'links'])
             ->orderBy('starts_on');
     }

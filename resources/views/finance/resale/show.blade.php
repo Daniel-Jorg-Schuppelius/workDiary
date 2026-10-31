@@ -78,6 +78,10 @@
                         @else
                             <span class="text-muted">—</span>
                         @endif
+                        {{-- Subuser-Konto: das Domainportal stellt die Rechnung, das Register entwirft nichts (MVP-1446). --}}
+                        @if (($portalAccount = $subscription->providerBillingAccount()) !== null)
+                            <span class="block text-xs text-info">{{ __('resale.plan.portal_billed', ['account' => $portalAccount]) }}</span>
+                        @endif
                     </x-detail-grid.row>
                     <x-detail-grid.row :label="__('resale.field.status')"><x-status-badge size="xs" :tone="$subscription->status->tone()" :label="$subscription->status->label()" /></x-detail-grid.row>
                     @foreach ($planLinks as $entry)

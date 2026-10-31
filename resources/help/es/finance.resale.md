@@ -276,6 +276,11 @@ dominios desaparecidos terminan en el día de referencia; si la lista de
 dominios de una ejecución está vacía, no se termina nada. Las suscripciones
 de dominio y sus comprobantes de compra no se crean a mano — solo llegan
 por la sincronización.
+Los dominios de una cuenta de subusuario los factura el propio portal de
+dominios: envía al subusuario facturas mensuales que el diario de asientos
+asigna a los periodos. Estos dominios no necesitan plantilla periódica y
+nunca entran en un borrador de factura del registro; la carpeta de trabajo y
+la página de la suscripción indican el subusuario.
 
 **Renovaciones y suscripciones sin factura:** el informe «Renovaciones»
 muestra qué suscripciones se renuevan o terminan en el periodo (mosaicos

@@ -117,7 +117,8 @@ final class PlanAudit {
             if ($own === []) {
                 // Ohne Vorlage fehlt nur dann etwas, wenn auch das Register nicht entwirft (MVP-1439): bei aktivem
                 // Serienlauf für die Hoheit des Empfängers entsteht die Rechnung als Übergabe bzw. lokaler Entwurf.
-                if ($subscription->status->isPlanning() && ! $this->draftedByRegister($organization, $subscription->billedTo(), $drafted)) {
+                // Domains im Subuser-Konto rechnet das Domainportal selbst ab (MVP-1446) — dort fehlt keine Vorlage.
+                if ($subscription->status->isPlanning() && ! $subscription->isBilledByProvider() && ! $this->draftedByRegister($organization, $subscription->billedTo(), $drafted)) {
                     $findings[] = $this->finding(self::SUBSCRIPTION_WITHOUT_PLAN, $subscription, null, null);
                 }
 

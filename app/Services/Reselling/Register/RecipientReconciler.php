@@ -666,6 +666,7 @@ final class RecipientReconciler {
             ->where('is_own_holding', false)
             ->where(static fn($q) => $q->whereNotNull('customer_id')->orWhereNotNull('foreign_customer_id'))
             ->with(['customer:id,name', 'foreignCustomer:id,name,customer_id', 'foreignCustomer.customer:id,name'])
+            ->with(ResaleSubscription::providerBillingRelations())
             ->orderBy('label')->orderBy('starts_on');
     }
 }

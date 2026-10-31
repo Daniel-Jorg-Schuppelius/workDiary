@@ -1248,6 +1248,7 @@ return [
         'unlink' => 'Remove assignment',
         'none' => 'No recurring template for the recipients of this account.',
         'untitled' => 'Recurring template from :date',
+        'portal_billed' => 'Invoiced by the domain portal (subuser :account) — no recurring template, no draft',
         'no_licence_lines' => 'No licence line in this template.',
         'next' => 'next run :date',
         'failed' => 'last run failed',

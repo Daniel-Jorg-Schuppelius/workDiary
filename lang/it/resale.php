@@ -1248,6 +1248,7 @@ return [
         'unlink' => 'Rimuovi assegnazione',
         'none' => 'Nessun modello ricorrente per i destinatari di questo conto.',
         'untitled' => 'Modello ricorrente dal :date',
+        'portal_billed' => 'Fatturato dal portale dei domini (subutente :account) — nessun modello ricorrente, nessuna bozza',
         'no_licence_lines' => 'Nessuna riga di licenza in questo modello.',
         'next' => 'prossima esecuzione :date',
         'failed' => 'ultima esecuzione fallita',

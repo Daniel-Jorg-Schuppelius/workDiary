@@ -285,6 +285,12 @@ chaque exécution. Les domaines disparus prennent fin au jour de référence ;
 si la liste des domaines d’une exécution est vide, rien n’est terminé. Les
 abonnements de domaines et leurs pièces d’achat ne se créent pas à la main —
 ils n’arrivent que par la synchronisation.
+Les domaines d’un compte de sous-utilisateur sont facturés par le portail de
+domaines lui-même : il adresse au sous-utilisateur des factures mensuelles
+que le journal des écritures affecte aux périodes. Ces domaines n’ont besoin
+d’aucun modèle récurrent et n’entrent dans aucun brouillon de facture du
+registre ; le classeur de travail et la page d’abonnement indiquent le
+sous-utilisateur.
 
 **Renouvellements et abonnements sans facture :** le rapport
 « Renouvellements » montre quels abonnements se renouvellent ou prennent fin

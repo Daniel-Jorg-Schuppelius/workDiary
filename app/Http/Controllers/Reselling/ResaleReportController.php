@@ -293,6 +293,7 @@ class ResaleReportController extends Controller {
         $linked = array_map('intval', ResalePlanLink::query()->distinct()->pluck('subscription_id')->all());
         $subscriptions = ResaleSubscription::query()->planning()
             ->where('is_own_holding', false)
+            ->notBilledByProvider()
             ->where(static fn(Builder $w) => $w->whereNotNull('customer_id')->orWhereNotNull('foreign_customer_id'))
             ->when($linked !== [], static fn(Builder $q) => $q->whereNotIn('id', $linked))
             ->with(['customer:id,name,currency,billing_mode', 'foreignCustomer:id,name,customer_id', 'foreignCustomer.customer:id,name,currency,billing_mode'])

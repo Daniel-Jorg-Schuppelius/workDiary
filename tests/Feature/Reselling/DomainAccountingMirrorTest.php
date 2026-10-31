@@ -17,11 +17,14 @@ use App\Models\Customer\Customer;
 use App\Models\Domain\{DomainAccountingEntry, DomainProjection, DomainProviderConnection, DomainResellerAccount};
 use App\Models\Finance\AccountingVoucher;
 use App\Models\Reselling\{ResalePeriod, ResalePriceEntry, ResaleSubscription};
+use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Services\Reselling\Mirror\{DomainAccountingMirrorSource, InvoiceMirror};
-use App\Services\Reselling\Register\{LinkProposer, PeriodPlanner};
+use App\Services\Reselling\Plan\PlanAudit;
+use App\Services\Reselling\Register\{LinkProposer, PeriodPlanner, ResaleInvoiceDraftService};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\InteractsWithPlugins;
 use Tests\TestCase;
 
 /**
@@ -29,6 +32,7 @@ use Tests\TestCase;
  * Monatsrechnungen des Portals an Subreseller decken deren Domain-Perioden.
  */
 class DomainAccountingMirrorTest extends TestCase {
+    use InteractsWithPlugins;
     use RefreshDatabase;
     use WithOrganization;
 
@@ -209,5 +213,39 @@ class DomainAccountingMirrorTest extends TestCase {
         $plain = $source->voucherByKey($this->organization, $this->reseller->id . ':2026-10');
         $this->assertCount(1, $plain?->lines ?? []);
         $this->assertSame('4.50', $plain?->lines[0]->totalNet->getAmount());
+    }
+
+    public function test_domains_in_the_subuser_account_are_billed_by_the_portal_not_by_the_register(): void {
+        // Pilot 2026-10-31 (MVP-1446): der Subuser hat ein eigenes Konto beim Domainanbieter, das Portal stellt ihm die Rechnungen.
+        $own = DomainResellerAccount::factory()->create(['organization_id' => $this->organization->id, 'connection_id' => $this->connection->id, 'external_user' => 'eigenes-konto', 'depth' => 0, 'customer_id' => null]);
+        $subDomain = $this->domain('bewegung-beispiel.de');
+        $subDomain->forceFill(['reseller_account_id' => $this->reseller->id])->save();
+        $ownDomain = $this->domain('eigenbau-beispiel.de');
+        $ownDomain->forceFill(['reseller_account_id' => $own->id])->save();
+        $portal = $this->subscription('bewegung-beispiel.de', '2024-11-10');
+        $portal->forceFill(['domain_projection_id' => $subDomain->id])->save();
+        $direct = $this->subscription('eigenbau-beispiel.de', '2024-11-12');
+        $direct->forceFill(['domain_projection_id' => $ownDomain->id])->save();
+
+        $this->assertTrue($portal->fresh()?->isBilledByProvider());
+        $this->assertSame('nordlicht-systems', $portal->fresh()?->providerBillingAccount());
+        $this->assertFalse($direct->fresh()?->isBilledByProvider());
+
+        // Plan-Abgleich: nur der Domain im eigenen Konto fehlt eine Serienvorlage.
+        $this->enablePluginFor($this->organization, LexofficePlugin::ID, ['api_key' => 'lex-key', 'request_interval' => '0']);
+        $without = array_values(array_filter(app(PlanAudit::class)->findings($this->organization), static fn (array $f): bool => $f['kind'] === PlanAudit::SUBSCRIPTION_WITHOUT_PLAN));
+        $this->assertSame([$direct->id], array_map(static fn (array $f): ?int => $f['subscription']?->id, $without));
+
+        // Entwurf und Serienlauf (30 Tage Vorlauf): die Subuser-Domain kommt nie in eine Rechnung des Registers.
+        $open = app(ResaleInvoiceDraftService::class)->openPeriodsFor($this->nordlicht, CarbonImmutable::parse('2026-11-28'));
+        $this->assertNotEmpty($open);
+        $this->assertSame([$direct->id], array_values(array_unique($open->map(static fn (ResalePeriod $p): int => (int) $p->subscription_id)->all())));
+
+        // Mappe und Abo-Seite nennen den Grund.
+        $admin = $this->orgAdmin();
+        $hint = __('resale.plan.portal_billed', ['account' => 'nordlicht-systems']);
+        $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $this->nordlicht))->assertOk()->assertSee($hint);
+        $this->actingAs($admin)->get(route('finance.resale.show', $portal->sqid))->assertOk()->assertSee($hint);
+        $this->actingAs($admin)->get(route('finance.resale.show', $direct->sqid))->assertOk()->assertDontSee(__('resale.plan.portal_billed', ['account' => 'eigenes-konto']));
     }
 }

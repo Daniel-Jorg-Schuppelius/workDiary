@@ -1248,6 +1248,7 @@ return [
         'unlink' => 'Zuordnung lösen',
         'none' => 'Keine Serienvorlage für die Empfänger dieses Kontos.',
         'untitled' => 'Serienvorlage ab :date',
+        'portal_billed' => 'Rechnung stellt das Domainportal (Subuser :account) — keine Serienvorlage, kein Entwurf',
         'no_licence_lines' => 'Keine Lizenzposition in dieser Vorlage.',
         'next' => 'nächste Ausführung :date',
         'failed' => 'letzte Ausführung fehlgeschlagen',
