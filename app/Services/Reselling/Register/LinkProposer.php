@@ -90,8 +90,14 @@ final class LinkProposer {
     /** @var array<int, string> Abo-ID → Produktschlüssel des laufenden Laufs */
     private array $productKeys = [];
 
-    /** @var array<int, int> Abo → Zahl der Abos desselben Empfängers und Produkts (Geschwister, Mahlwerk-Regel) */
-    private array $siblings = [];
+    /** @var array<int, array<string, list<int>>> Empfänger → Produktschlüssel → Abos (Geschwister-Kandidaten der Zyklusregel) */
+    private array $siblingIds = [];
+
+    /** @var array<int, list<array{0: CarbonImmutable, 1: CarbonImmutable}>> Abo → Laufzeiten seiner nicht verzichteten Perioden (gleichzeitig laufend, Phase 166) */
+    private array $periodSpans = [];
+
+    /** @var list<array{0: ResalePeriod, 1: array<string, mixed>}> Audit der Stummel beim Bestellungswechsel, geschrieben nach dem Block ohne Modell-Events */
+    private array $stubAudits = [];
 
     /** @var list<string> Domains aller Domain-Abos des Laufs — Tippfehler-Toleranz beim Nennen ({@see MirrorLine::mentionsDomainLoosely()}) */
     private array $domainLabels = [];
@@ -128,7 +134,7 @@ final class LinkProposer {
      * begannen, nur weil das Datumsfenster weit genug war; „irgendwo im
      * Leistungszeitraum" reichte nicht, weil dann das zweite Jahr der falschen
      * Abos drankam. Der Lauf wendet die Regel nur bei Geschwister-Abos an
-     * (gleicher Empfänger, gleiches Produkt) — bei einem einzelnen Abo gibt es
+     * (gleicher Empfänger, gleiches Produkt, gleichzeitig laufend) — bei einem einzelnen Abo gibt es
      * nichts zu unterscheiden, und Sammelrechnungen tragen oft nur die Spanne
      * aller Positionen (Befund 2026-10-29); für alle gilt {@see serviceOverlaps()}.
      * Ohne Leistungszeitraum gilt das Fenster um das Rechnungsdatum ({@see inWindow()}).
@@ -168,6 +174,45 @@ final class LinkProposer {
         return ! $line->serviceTo->lessThan($period->starts_on) && ! $line->serviceFrom->greaterThan($period->ends_on);
     }
 
+    /**
+     * Abos desselben Empfängers und Produkts, die während der Periode laufen — eine
+     * nicht verzichtete, nicht strittige Periode überschneidet sie; das eigene zählt mit.
+     */
+    private function concurrentSiblings(ResalePeriod $period, int $recipient, string $product): int {
+        $count = 0;
+        foreach ($this->siblingIds[$recipient][$product] ?? [] as $id) {
+            if ($id === (int) $period->subscription_id) {
+                $count++;
+
+                continue;
+            }
+            foreach ($this->periodSpans[$id] ?? [] as [$from, $to]) {
+                if (! $to->lessThan($period->starts_on) && ! $from->greaterThan($period->ends_on)) {
+                    $count++;
+
+                    break;
+                }
+            }
+        }
+
+        return max(1, $count);
+    }
+
+    /**
+     * Bezug derselben Position, der schon an der Periode hängt (vom Stummel verschoben
+     * oder von Hand, Phase 166): der Lauf erhöht ihn, statt einen zweiten anzulegen —
+     * der Unique-Index je Periode und Position ließe das auch nicht zu.
+     */
+    private function existingLink(ResalePeriod $period, string $identity): ?ResalePeriodLink {
+        foreach ($period->links as $link) {
+            if ($link->mirrorIdentity() === $identity) {
+                return $link;
+            }
+        }
+
+        return null;
+    }
+
     public static function inWindow(ResalePeriod $period, MirrorLine $line): bool {
         $date = LicenseMonths::referenceDate($line);
         if ($date === null) {
@@ -203,6 +248,7 @@ final class LinkProposer {
             // entsteht nach dem Block mit Modell-Events, sonst bekäme die Audit-Zeile
             // keinen Ketten-Hash (HashChained hängt am creating-Event).
             $this->autoConfirmedAudits = [];
+            $this->stubAudits = [];
             DB::transaction(function () use ($organization, $reference, &$result): void {
                 Model::withoutEvents(function () use ($organization, $reference, &$result): void {
                     // Alte Vorschläge weg — bestätigte und manuelle Bezüge bleiben und zählen als
@@ -225,9 +271,15 @@ final class LinkProposer {
                         ->orderBy('id')
                         ->get();
                     ResaleSubscription::withCatalogArticles($subscriptions);
+                    // Stummel beim Bestellungswechsel (Phase 166, MVP-1450) vor der Bewertung: die Restperiode des
+                    // Vorgängers wird verzichtet, ihre Bezüge gehen an die erste Periode des Nachfolgers.
+                    $this->stubAudits = $subscriptions->isEmpty() ? [] : (new OrderChangeStubs)->settle($organization, $subscriptions);
                     $evaluated = $subscriptions->isEmpty() ? [] : $this->evaluate($organization, $subscriptions, $reference, $result);
                     $this->resettle($organization, array_values(array_diff($affected, $evaluated)));
                 });
+                foreach ($this->stubAudits as [$period, $payload]) {
+                    $period->audit(OrderChangeStubs::AUDIT, $payload);
+                }
                 foreach ($this->autoConfirmedAudits as [$period, $payload]) {
                     $period->audit(self::AUDIT_AUTO_CONFIRMED, $payload);
                 }
@@ -408,20 +460,25 @@ final class LinkProposer {
         // Produktschlüssel einmal je Abo — sonst zählt die Sharing-Regel „art:…" und
         // „name:…" desselben Produkts als zwei Produkte und die Nennungspflicht entfällt.
         $this->productKeys = [];
-        $siblingsByProduct = [];
+        $this->siblingIds = [];
         foreach ($subscriptions as $subscription) {
             $this->productKeys[$subscription->id] = $subscription->productKey($articleNames);
             $holder = $subscription->foreign_customer_id !== null ? 'f' . $subscription->foreign_customer_id : 'c' . $subscription->customer_id;
             $recipient = $recipientBySubscription[$subscription->id];
             if ($recipient !== null) {
                 $holdersByProduct[$recipient][$this->productKeys[$subscription->id]][$holder] = true;
-                $siblingsByProduct[$recipient][$this->productKeys[$subscription->id]] = ($siblingsByProduct[$recipient][$this->productKeys[$subscription->id]] ?? 0) + 1;
+                $this->siblingIds[$recipient][$this->productKeys[$subscription->id]][] = $subscription->id;
             }
         }
-        $this->siblings = [];
-        foreach ($subscriptions as $subscription) {
-            $recipient = $recipientBySubscription[$subscription->id];
-            $this->siblings[$subscription->id] = $recipient === null ? 1 : ($siblingsByProduct[$recipient][$this->productKeys[$subscription->id]] ?? 1);
+        // Geschwister zählen nur, solange sie laufen (Phase 166, MVP-1449): ein beendetes Abo mit
+        // verschobenem Jahrestag darf die Zyklusregel für seinen Nachfolger nicht auslösen.
+        $this->periodSpans = [];
+        foreach (ResalePeriod::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->whereIn('subscription_id', $subscriptions->pluck('id')->all())
+            ->whereNotIn('status', [PeriodStatus::Waived->value, PeriodStatus::Disputed->value])
+            ->get(['subscription_id', 'starts_on', 'ends_on']) as $span) {
+            $this->periodSpans[(int) $span->subscription_id][] = [$span->starts_on, $span->ends_on];
         }
         // Mehrere Abos desselben Halters teilen sich die Positionen; erst
         // verschiedene Halter (Endkunden eines Partners) brauchen die Nennung.
@@ -535,7 +592,7 @@ final class LinkProposer {
             // Empfänger. Ein einzelnes Abo nimmt auch Sammelrechnungen, deren Zeitraum nur
             // umspannt, und Rechnungen mit verschobenem Jahrestag (reisewelt-beispiel.de: „8 Jahr“ ab
             // 08.09.2016 für ein Abo ab 27.01.2017).
-            if (($this->siblings[$subscription->id] ?? 1) > 1 && ! self::serviceFits($period, $line)) {
+            if ($this->concurrentSiblings($period, $recipient, $product) > 1 && ! self::serviceFits($period, $line)) {
                 continue;
             }
             if (! $this->matchesProduct($subscription, $line)) {
@@ -579,7 +636,7 @@ final class LinkProposer {
             // („5 Jahr", Leistungszeitraum): eine Lizenz über zwei Jahre deckt zwölf Monate
             // dieser Periode, der Rest gehört der Folgeperiode. „24 Monat" ohne Zeitraum
             // bleibt offen — zwei Lizenzen für ein Jahr sind ebenso möglich.
-            $existing = $this->proposed[$period->id][$identity] ?? null;
+            $existing = $this->proposed[$period->id][$identity] ?? $this->existingLink($period, $identity);
             $cap = LicenseMonths::isLicenceCountCertain($line)
                 ? LicenseMonths::split($line)['licences'] * $termMonths - ($existing === null ? 0.0 : (float) $existing->months)
                 : PHP_FLOAT_MAX;

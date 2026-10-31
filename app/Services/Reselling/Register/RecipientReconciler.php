@@ -173,7 +173,7 @@ final class RecipientReconciler {
      * Gutschrift-Positionen des Empfängers (`credit_notes`) stehen daneben —
      * als negative Bezüge nur von Hand, nie heuristisch (Review 2026-09-10, A3).
      *
-     * @return array{subscriptions: Collection<int, ResaleSubscription>, has_source: bool, pending: int, inbox: list<InboxHint>, credit_notes: list<CreditNoteRow>, products: list<ProductRow>, periods: list<PeriodRow>, lines: list<LineRow>, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float}
+     * @return array{subscriptions: Collection<int, ResaleSubscription>, has_source: bool, pending: int, inbox: list<InboxHint>, credit_notes: list<CreditNoteRow>, products: list<ProductRow>, periods: list<PeriodRow>, lines: list<LineRow>, product_by_subscription: array<int, string>, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float}
      */
     public function forCustomer(Organization $organization, Customer $customer, ?CarbonImmutable $reference = null): array {
         $reference ??= ResalePeriod::today();
@@ -407,7 +407,7 @@ final class RecipientReconciler {
      * @param  Collection<int, MirrorLine>  $voided  stornierte Lizenzpositionen dieses Empfängers und verwandter Empfänger
      * @param  array<string, array<string, true>>  $recipientTokens  Empfängerschlüssel → Kern-Tokens des Empfängernamens
      * @param  array<string, true>  $baseTokens  Kern-Tokens des Empfängers selbst
-     * @return array{products: list<ProductRow>, periods: list<PeriodRow>, lines: list<LineRow>, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float}
+     * @return array{products: list<ProductRow>, periods: list<PeriodRow>, lines: list<LineRow>, product_by_subscription: array<int, string>, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float}
      */
     private function analyze(Collection $subscriptions, Collection $lines, array $linkedMonths, CarbonImmutable $reference, ?Collection $others = null, ?Collection $voided = null, array $recipientTokens = [], array $baseTokens = [], ?int $ownCustomerId = null): array {
         /** @var array<string, string> $articleNames Katalogschlüssel → Name */
@@ -656,7 +656,7 @@ final class RecipientReconciler {
         }
         usort($productRows, static fn(array $a, array $b): int => (($b['missing'] + $b['surplus']) <=> ($a['missing'] + $a['surplus'])) ?: strcmp($a['label'], $b['label']));
 
-        return ['products' => $productRows, 'periods' => $periodRows, 'lines' => $lineRows, 'open' => $open, 'partial' => $partial, 'proposed' => $proposed, 'free' => $free, 'missing' => $missing, 'surplus' => $surplus];
+        return ['products' => $productRows, 'periods' => $periodRows, 'lines' => $lineRows, 'product_by_subscription' => $productBySubscription, 'open' => $open, 'partial' => $partial, 'proposed' => $proposed, 'free' => $free, 'missing' => $missing, 'surplus' => $surplus];
     }
 
     /** @return \Illuminate\Database\Eloquent\Builder<ResaleSubscription> */

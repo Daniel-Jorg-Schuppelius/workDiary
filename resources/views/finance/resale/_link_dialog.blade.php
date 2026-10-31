@@ -9,7 +9,8 @@
   Rechnungsposition von Hand einer Periode zuordnen (Feature 152, MVP-761):
   Positionen des Rechnungsempfängers (alle Spiegelquellen) im Fenster um den
   Periodenbeginn. Zeilen ($rows: line (MirrorLine), licences, per_licence,
-  free, used, partly) bereitet der Controller vor.
+  free, used, partly, fit) bereitet der Controller vor; passende zuerst,
+  fragliche Passung verlangt die Bestätigung (Phase 166, MVP-1448).
 --}}
 <x-modal
     :title="__('resale.link.link_title', ['period' => $period->label()])"
@@ -38,10 +39,11 @@
             <option value="{{ $line->key }}" @selected((string) old('line_id') === $line->key) @disabled($row['used'])>
                 {{ $line->voucherNumber }} · {{ $line->voucherDate?->fdate() }}@if ($line->servicePeriodLabel() !== null) · {{ __('resale.reconcile.service_period') }} {{ $line->servicePeriodLabel() }}@endif · {{ __('resale.link_ui.position', ['position' => $line->position]) }} · {{ \Illuminate\Support\Str::limit($line->label(), 40) }} · {{ \App\Services\Reselling\Register\LicenseMonths::label($row['licences'] * $row['per_licence'], $row['per_licence']) }} × {{ $line->unitNet->withScale(2)->format() }}
                 @if ($row['used']) · {{ __('resale.link.line_used') }} @elseif ($row['partly']) · {{ __('resale.invoices.remaining', ['amount' => \App\Services\Reselling\Register\LicenseMonths::label($row['free'], $row['per_licence'])]) }} @endif
-                @if (! \App\Services\Reselling\Register\LinkAudit::fits($line, $period)) · ⚠ {{ __('resale.link_ui.mismatch_hint') }} @endif
+                @if ($row['fit']->label() !== '') · {{ $row['fit']->needsConfirmation() ? '⚠ ' : '' }}{{ $row['fit']->label() }} @endif
             </option>
         @endforeach
     </x-select-field>
     <x-input-field name="months" type="number" step="0.01" min="0.01" :label="__('resale.link.months_field')" :value="old('months', number_format($needed, 2, '.', ''))" required :hint="__('resale.link.months_hint')" />
     <x-input-field name="note" :label="__('resale.field.note')" :value="old('note')" />
+    <x-checkbox-field name="confirm_fit" :toggle="false" tone="warning" :checked="(bool) old('confirm_fit')" :label="__('resale.fit.confirm_field')" :hint="__('resale.fit.confirm_hint')" />
 </x-modal>

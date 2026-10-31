@@ -20,7 +20,7 @@ use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Services\Reselling\License\LicenseInvoiceLinks;
 use App\Services\Reselling\Mirror\InvoiceMirror;
 use App\Services\Reselling\Plan\{PlanLinkEditor, PlanSection};
-use App\Services\Reselling\Register\{LinkProposer, PeriodLinker, RecipientReconciler};
+use App\Services\Reselling\Register\{LinkProposer, PeriodLinker, RecipientReconciler, ReconcileBoard};
 use App\Support\{ErrorText, Sqid};
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
@@ -44,6 +44,7 @@ class ResaleReconcileController extends Controller {
         private readonly LicenseInvoiceLinks $licenseLinks,
         private readonly PlanSection $planSection,
         private readonly PlanLinkEditor $planLinks,
+        private readonly ReconcileBoard $board,
     ) {}
 
     public function index(Request $request): View {
@@ -81,7 +82,8 @@ class ResaleReconcileController extends Controller {
         $result = $this->reconciler->forCustomer($organization, $customer, $today);
         $workspace = $this->workspacePosition($organization, $customer, $today);
 
-        // Alle Perioden des Empfängers (auch gedeckte), chronologisch je Abo.
+        // Bezüge aller Perioden mit ihrer Spiegelposition: die Tafel zeigt sie mit Passung.
+        // Alle Perioden chronologisch bleiben Ziel der Gutschriften (Zuordnung nur von Hand).
         $allPeriods = [];
         $links = [];
         foreach ($result['subscriptions'] as $subscription) {
@@ -95,12 +97,6 @@ class ResaleReconcileController extends Controller {
         $this->mirror->preload($organization, $links);
         usort($allPeriods, static fn(array $a, array $b): int => strcmp($a['period']->starts_on->toDateString(), $b['period']->starts_on->toDateString()) ?: ($a['subscription']->id <=> $b['subscription']->id));
 
-        // Ziele der Zuordnung je Produkt: gleiches Produkt zuerst, die übrigen als Gruppe.
-        $targetsByProduct = [];
-        foreach ($result['periods'] as $row) {
-            $targetsByProduct[$row['product']][] = $row;
-        }
-
         // Stücklizenzen des Empfängers ohne Rechnungsbezug (Feature 185, MVP-1428).
         $unbilledLicenses = $this->licenseLinks->unbilled($organization, $today, (int) $customer->id);
 
@@ -108,7 +104,7 @@ class ResaleReconcileController extends Controller {
             'customer' => $customer,
             'today' => $today,
             'allPeriods' => $allPeriods,
-            'targetsByProduct' => $targetsByProduct,
+            'board' => $this->board->build($result, $today),
             'unbilledLicenses' => $unbilledLicenses,
             // Serienvorlagen des Empfängers in der Mappe (Phase 165, MVP-1444): adressiert an ihn oder über Zuordnung verbunden.
             'plan' => $this->planSection->build($organization, $result['subscriptions'], [(int) $customer->id]),

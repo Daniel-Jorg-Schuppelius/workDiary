@@ -92,6 +92,38 @@ Position anlegen" öffnet den Abo-Dialog mit Artikel, Menge, Beginn und Preis
 aus der Rechnung. Die Zuordnung darf eine Periode eines anderen Abos
 desselben Empfängers treffen — nie eine Periode eines fremden Kunden.
 
+**Arbeitsmappe und Abgleichstafel:** Der Abgleich eines Empfängers ist die
+Arbeitsmappe: oben die Abos mit Bearbeiten, Übernahme, Lizenzen abtreten und
+Rücknahme, darunter je Produkt die Abgleichstafel. Links stehen alle
+Perioden in Datumsfolge mit Soll und Deckung, rechts die
+Rechnungspositionen: zugeordnete mit ihrem Leistungszeitraum, bei offenen
+Perioden die passenden freien, Rechnungen an andere Kunden und Stornos.
+Positionen ohne passende Periode stehen als eigene Zeile „ohne Periode“ an
+ihrem Datum. Jede Position trägt ihre **Passung**: „passt“ (Zyklusbeginn
+höchstens 14 Tage vom Periodenbeginn), „um n Tage versetzt“ (bis 90 Tage),
+„überschneidet die Periode nur“, „außerhalb der Periode“ oder „gehört eher
+zu …“ (eine andere offene Periode liegt näher). Fragliche Zuordnungen fragen
+vor dem Speichern nach; im Bezug-Dialog und in der Schnellzuordnung der
+Abo-Seite bestätigen Sie sie mit dem Häkchen. Bezüge, die zeitlich nicht
+passen, sind gelb markiert — prüfen Sie sie und lösen Sie sie bei Bedarf.
+„Nächsten Empfänger abarbeiten“ im Überblick führt durch alle Empfänger mit
+offenem Betrag; fertig ist ein Empfänger ohne fällige offene Periode und
+ohne Vorlagenbefund. Verlängert der Anbieter ein Abo als neue Bestellung,
+verzichtet der Vorschlagslauf die kurze Restperiode der alten Bestellung und
+gibt ihre Bezüge an die erste Periode der neuen.
+
+**Insolvenz und Übernahme:** Wurde eine Rechnung storniert, weil der Kunde
+insolvent ist, verbuchen Sie die Periode in der Tafel mit „Als Ausfall
+verbuchen“ — der Verzicht-Dialog hat den Grund mit der Belegnummer
+vorbelegt. Führt eine andere Firma die Lizenzen weiter, nutzen Sie
+„Übernahme“ am Abo: neuer Halter und Stichtag. Liegt der Stichtag am Beginn
+der ersten offenen Periode, rechnet der neue Halter auch die offenen
+Perioden ab; liegt er später, verzichtet das Register die offenen Perioden
+davor auf Wunsch als Forderungsausfall. Ein Stichtag am Abo-Beginn gibt das
+ganze Abo an den neuen Halter, sonst entsteht ab dem Stichtag eine
+Abtretung. Geht eine Rechnung schon an die nachfolgende Firma, bietet die
+Tafel die Übernahme direkt an dieser Rechnung an.
+
 **Generische Liste:** Neben den Anbieter-Exporten (Telekom, Quality
 Hosting) nimmt der Import jede CSV- oder XLSX-Liste, deren Spalten am Namen
 erkennbar sind — deutsch oder englisch: Kennung, Firma, Produkt, Menge,

@@ -47,6 +47,7 @@ class AssignResaleLineRequest extends BaseFormRequest {
             'line_ids' => ['required_without:line_id', 'nullable', 'array', 'max:50'],
             'line_ids.*' => ['string', 'max:64'],
             'note' => ['nullable', 'string', 'max:255'],
+            'confirm_fit' => ['nullable', 'boolean'],
         ] + PeriodLinker::amountRules();
     }
 
@@ -55,8 +56,12 @@ class AssignResaleLineRequest extends BaseFormRequest {
             if ($validator->errors()->hasAny(['period_id', 'line_id', 'line_ids'])) {
                 return;
             }
+            $period = $this->period();
             foreach ($this->lines() as $line) {
-                $this->validateLineRecipient($validator, $this->period(), $line, $this->customer());
+                $this->validateLineRecipient($validator, $period, $line, $this->customer());
+            }
+            if ($period !== null && ! $validator->errors()->hasAny(['period_id', 'line_id']) && ($first = $this->line()) !== null) {
+                $this->validateLineFit($validator, $period, $first); // Zwillingszeilen tragen dieselben Daten
             }
         });
     }

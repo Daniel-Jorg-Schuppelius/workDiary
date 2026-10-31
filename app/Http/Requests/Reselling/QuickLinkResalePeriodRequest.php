@@ -42,6 +42,7 @@ class QuickLinkResalePeriodRequest extends BaseFormRequest {
         return [
             'period_id' => ['required', 'integer', new ExistsInCurrentOrganization('resale_periods')],
             'line_id' => ['required', 'string', 'max:64'],
+            'confirm_fit' => ['nullable', 'boolean'],
         ] + PeriodLinker::amountRules();
     }
 
@@ -50,7 +51,12 @@ class QuickLinkResalePeriodRequest extends BaseFormRequest {
             if ($validator->errors()->hasAny(['period_id', 'line_id'])) {
                 return;
             }
-            $this->validateLineRecipient($validator, $this->period(), $this->line());
+            $period = $this->period();
+            $line = $this->line();
+            $this->validateLineRecipient($validator, $period, $line);
+            if ($period !== null && $line !== null && ! $validator->errors()->hasAny(['period_id', 'line_id'])) {
+                $this->validateLineFit($validator, $period, $line);
+            }
         });
     }
 

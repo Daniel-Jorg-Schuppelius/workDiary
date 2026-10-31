@@ -3225,6 +3225,9 @@ Route::middleware('auth')->group(function () {
                 // Lizenzabtretung: Teil der Lizenzen an einen anderen Halter (zwei Firmen, ein Vertrag).
                 Route::get('{subscription}/abtretung', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'transferCreate'])->name('transfer.create');
                 Route::post('{subscription}/abtretung', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'transferStore'])->name('transfer.store');
+                // Übernahme durch eine andere Firma ab Stichtag, etwa nach Insolvenz (Phase 166, MVP-1451).
+                Route::get('{subscription}/uebernahme', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'takeoverCreate'])->name('takeover.create');
+                Route::post('{subscription}/uebernahme', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'takeoverStore'])->name('takeover.store');
                 Route::put('{subscription}', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'update'])->name('update');
                 Route::delete('{subscription}', [\App\Http\Controllers\Reselling\ResaleSubscriptionController::class, 'destroy'])->name('destroy');
             });

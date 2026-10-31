@@ -1572,6 +1572,8 @@ return [
         'line_id' => 'Línea de factura',
         'line_ids' => 'Líneas de factura',
         'line_ids.*' => 'Línea de factura',
+        'confirm_fit' => 'Confirmación del encaje',
+        'waive_before' => 'Renuncia antes de la fecha efectiva',
         'lineup_jersey' => 'Dorsal',
         'lineup_jersey.*' => 'Dorsal',
         'lineup_member' => 'Persona alineada',

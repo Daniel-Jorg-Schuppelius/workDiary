@@ -16,6 +16,7 @@ use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\ResalePeriod;
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
+use App\Services\Reselling\Register\LineFit;
 use Illuminate\Validation\Validator;
 
 /**
@@ -62,6 +63,20 @@ trait ChecksResaleLineRecipient {
         }
         if ($line->recipientCustomerId !== $billedTo->id) {
             $validator->errors()->add('line_id', (string) __('resale.link_error.line_foreign', ['customer' => $billedTo->name]));
+        }
+    }
+
+    /**
+     * Passung (Phase 166, MVP-1448): passt die Position zeitlich nicht oder gehört
+     * sie eher zu einer anderen offenen Periode, braucht die Zuordnung `confirm_fit`.
+     */
+    protected function validateLineFit(Validator $validator, ResalePeriod $period, MirrorLine $line): void {
+        if ($line->isCreditNote || $this->boolean('confirm_fit')) {
+            return;
+        }
+        $fit = LineFit::forPeriod($line, $period);
+        if ($fit->needsConfirmation()) {
+            $validator->errors()->add('confirm_fit', (string) __('resale.fit.error', ['voucher' => (string) $line->voucherNumber, 'fit' => $fit->label(), 'period' => $period->label()]));
         }
     }
 }

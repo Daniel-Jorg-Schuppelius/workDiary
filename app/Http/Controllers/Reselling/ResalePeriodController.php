@@ -21,7 +21,7 @@ use App\Models\Reselling\{ResaleIgnoredLine, ResalePeriod, ResalePeriodLink, Res
 use App\Services\Reselling\Marketplace\ProductNameMatcher;
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
 use App\Services\Reselling\Plan\RecurringPlans;
-use App\Services\Reselling\Register\{LicenseMonths, LinkProposer, PeriodLinker, ResaleInvoiceDraftService};
+use App\Services\Reselling\Register\{LicenseMonths, LineFit, LinkProposer, PeriodLinker, ResaleInvoiceDraftService};
 use App\Support\{ErrorText, Sqid};
 use App\Support\Query\DateRange;
 use CommonToolkit\Helper\Data\StringHelper;
@@ -322,8 +322,11 @@ class ResalePeriodController extends Controller {
         ]);
     }
 
-    public function waiveCreate(ResalePeriod $period): View {
-        return view('finance.resale._waive_dialog', ['period' => $period->load('subscription')]);
+    public function waiveCreate(Request $request, ResalePeriod $period): View {
+        // Vorbelegter Grund, etwa „Forderungsausfall: Rechnung … storniert“ aus der Abgleichstafel (Phase 166, MVP-1451).
+        $reason = StringHelper::trimToNull(mb_substr((string) $request->query('reason', ''), 0, 255));
+
+        return view('finance.resale._waive_dialog', ['period' => $period->load('subscription'), 'reasonDefault' => $reason ?? '']);
     }
 
     public function waive(WaiveResalePeriodRequest $request, ResalePeriod $period): RedirectResponse {
@@ -366,6 +369,7 @@ class ResalePeriodController extends Controller {
         // Bezüge an DIESER Periode zählen nicht: ein erneuter Bezug ersetzt sie; sie werden nur markiert.
         $consumed = $this->linker->consumed($lines, $period);
         $linked = $period->links->map(static fn(ResalePeriodLink $l): string => $l->mirrorIdentity())->all();
+        $competitors = LineFit::competitorsOf($period);
         $rows = [];
         foreach ($lines as $line) {
             $split = LicenseMonths::split($line);
@@ -378,8 +382,11 @@ class ResalePeriodController extends Controller {
                 'free' => $free,
                 'used' => in_array($line->identity(), $linked, true) || $free <= 0.001,
                 'partly' => $free > 0.001 && $free < $months - 0.001,
+                'fit' => LineFit::of($line, $period, $competitors),
             ];
         }
+        // Passende zuerst (Phase 166, MVP-1448), sonst neueste Rechnung zuerst wie aus dem Spiegel.
+        usort($rows, static fn(array $a, array $b): int => $a['fit']->rank() <=> $b['fit']->rank());
 
         return view('finance.resale._link_dialog', [
             'period' => $period,
@@ -396,7 +403,8 @@ class ResalePeriodController extends Controller {
         }
         $link = $this->attach($period, $line, $request->months(), $request->note(), $request->user()?->id);
 
-        return redirect()->route('finance.resale.show', $period->subscription->sqid)->with('success', __('resale.link.flash.linked', ['voucher' => (string) $link->voucher_number]));
+        // Zurück dorthin, wo der Dialog geöffnet wurde (Mappe, Abo-Seite, Perioden-Liste) — wie beim Verzicht.
+        return redirect(url()->previous(route('finance.resale.show', $period->subscription->sqid)))->with('success', __('resale.link.flash.linked', ['voucher' => (string) $link->voucher_number]));
     }
 
     /**

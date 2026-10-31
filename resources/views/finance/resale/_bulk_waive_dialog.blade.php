@@ -35,5 +35,10 @@
         <option value="waived" @selected(old('decision', 'waived') === 'waived')>{{ __('resale.period_status.waived') }}</option>
         <option value="disputed" @selected(old('decision') === 'disputed')>{{ __('resale.period_status.disputed') }}</option>
     </x-select-field>
-    <x-input-field name="reason" :label="__('resale.link.reason')" :value="old('reason')" required :hint="__('resale.link.reason_hint')" />
+    <x-input-field name="reason" :label="__('resale.link.reason')" :value="old('reason')" required :hint="__('resale.link.reason_hint')" list="resale-waive-reasons" />
+    <datalist id="resale-waive-reasons">
+        @foreach (__('resale.link.reason_presets') as $preset)
+            <option value="{{ $preset }}"></option>
+        @endforeach
+    </datalist>
 </x-modal>

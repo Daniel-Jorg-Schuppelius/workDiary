@@ -18,7 +18,7 @@ use App\Models\Integration\ExternalReference;
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\{LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
-use App\Services\Reselling\Register\{LinkProposer, PeriodPlanner};
+use App\Services\Reselling\Register\{LinkProposer, OrderChangeStubs, PeriodLinker, PeriodPlanner};
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -268,7 +268,8 @@ class LinkProposerTest extends TestCase {
         $this->actingAs($admin)->get(route('finance.resale.periods.link.create', $p2026->sqid))->assertOk()
             ->assertSee('RE/2026/0001')->assertSee('Pos. 1')->assertSee('1 × 12 ' . __('resale.link.months_short'))
             ->assertDontSee('Business Support');
-        $this->actingAs($admin)->post(route('finance.resale.periods.link.store', $p2026->sqid), ['line_id' => \App\Support\Sqid::encode(\App\Plugins\Lexoffice\Models\LexofficeVoucherLine::class, $line?->id), 'months' => 12])
+        // Der Bezug kehrt dorthin zurück, wo der Dialog geöffnet wurde (Phase 166) — hier die Abo-Seite.
+        $this->actingAs($admin)->from(route('finance.resale.show', $subscription->sqid))->post(route('finance.resale.periods.link.store', $p2026->sqid), ['line_id' => \App\Support\Sqid::encode(\App\Plugins\Lexoffice\Models\LexofficeVoucherLine::class, $line?->id), 'months' => 12])
             ->assertRedirect(route('finance.resale.show', $subscription->sqid));
         $p2026->refresh();
         $this->assertSame(PeriodStatus::Billed, $p2026->status);
@@ -771,5 +772,43 @@ class LinkProposerTest extends TestCase {
         $this->assertSame(LinkOrigin::Auto, $first($me)?->origin, 'exakte Nennung wird bestätigt');
         $this->assertSame(LinkOrigin::Auto, $first($plain)?->origin, 'exakt genannte Domain');
         $this->assertNull($first($hyphen), 'die eine Bindestrich entfernte Schwester-Domain bekommt nichts — der Text nennt exakt eine andere bekannte Domain');
+    }
+
+    public function test_ended_predecessor_does_not_trigger_the_cycle_rule_and_its_stub_moves_to_the_successor(): void {
+        // Verlängerung als neue Bestellung mit verschobenem Jahrestag (Pilot 2026-10-31): die alte Bestellung endet fünf Tage
+        // nach Beginn der neuen, berechnet wird weiter jedes Jahr am 30.11. für zwölf Monate mit Leistungszeitraum.
+        $this->travelTo('2026-10-31');
+        $customer = $this->customerWithContact('Grünweg Technik GmbH', 'c-gruenweg');
+        $base = ['label' => 'Exchange Online (Plan 1)', 'provider' => 'telekom_marketplace', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'status' => 'ended'];
+        $old = $this->subscription($base + ['starts_on' => '2020-11-28', 'ends_on' => '2023-01-04']);
+        $new = $this->subscription($base + ['starts_on' => '2022-12-30', 'ends_on' => '2026-01-04']);
+        $vouchers = [];
+        foreach ([2020, 2021, 2022, 2023, 2024] as $year) {
+            $vouchers[$year] = $this->voucher('c-gruenweg', 'RE/' . $year . '/0100', $year . '-11-30', [['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'quantity' => 12, 'net' => '3.95']], '', $year . '-11-30', ($year + 1) . '-11-29');
+        }
+        $stub = $old->periods()->reorder('starts_on', 'desc')->firstOrFail(); // die Relation sortiert aufsteigend
+        $this->assertSame('2022-11-28', $stub->starts_on->toDateString(), 'Stummel am Ende der alten Bestellung');
+        // Wie auf Prod: der Stummel trägt schon einen Monat der Rechnung 2022.
+        (new PeriodLinker)->attach($stub, $vouchers[2022]->lines()->firstOrFail(), 1.0, null, null);
+
+        (new LinkProposer)->propose($this->organization);
+
+        $stub->refresh();
+        $this->assertSame(PeriodStatus::Waived, $stub->status);
+        $this->assertStringContainsString('30.12.2022', (string) $stub->waived_reason);
+        $this->assertSame(0, $stub->links()->count(), 'der Bezug wanderte zum Nachfolger');
+        $this->assertDatabaseHas('audit_logs', ['event' => OrderChangeStubs::AUDIT, 'auditable_id' => $stub->id]);
+        $periods = $new->periods()->limit(3)->get();
+        $this->assertSame(['2022-12-30', '2023-12-30', '2024-12-30'], $periods->map(static fn (ResalePeriod $p): string => $p->starts_on->toDateString())->all());
+        $this->assertSame([12.0, 12.0, 12.0], $periods->map(static fn (ResalePeriod $p): float => $p->coveredMonths())->all(), 'Rest der Rechnung 2022, dann 2023 und 2024 trotz 30 Tagen Versatz');
+        $this->assertSame(['RE/2022/0100', 'RE/2023/0100', 'RE/2024/0100'], $periods->map(static fn (ResalePeriod $p): ?string => $p->links()->first()?->voucher_number)->all());
+        $this->assertSame(1, $periods->firstOrFail()->links()->count(), 'ein Bezug je Position: der verschobene Monat wurde um elf erhöht, nicht gedoppelt');
+        $this->assertSame(['RE/2020/0100', 'RE/2021/0100'], $old->periods()->limit(2)->get()->map(static fn (ResalePeriod $p): ?string => $p->links()->first()?->voucher_number)->all(), 'alte Jahre bleiben beim Vorgänger');
+
+        // Zweiter Lauf: nichts ändert sich, kein zweites Audit.
+        (new LinkProposer)->propose($this->organization);
+        $this->assertSame(PeriodStatus::Waived, $stub->fresh()?->status);
+        $this->assertSame(1, \Illuminate\Support\Facades\DB::table('audit_logs')->where('event', OrderChangeStubs::AUDIT)->count());
+        $this->assertSame([12.0, 12.0, 12.0], $new->periods()->limit(3)->get()->map(static fn (ResalePeriod $p): float => $p->coveredMonths())->all());
     }
 }

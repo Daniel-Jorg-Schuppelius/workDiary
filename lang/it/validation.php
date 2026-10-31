@@ -1572,6 +1572,8 @@ return [
         'line_id' => 'Riga di fattura',
         'line_ids' => 'Righe di fattura',
         'line_ids.*' => 'Riga di fattura',
+        'confirm_fit' => 'Conferma della corrispondenza',
+        'waive_before' => 'Rinuncia prima della data di decorrenza',
         'lineup_jersey' => 'Numero di maglia',
         'lineup_jersey.*' => 'Numero di maglia',
         'lineup_member' => 'Persona schierata',

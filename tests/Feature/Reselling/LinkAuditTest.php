@@ -127,8 +127,8 @@ class LinkAuditTest extends TestCase {
         $this->assertSame(PeriodStatus::Billed, $p2023->fresh()?->status);
         $this->assertSame(PeriodStatus::Open, $p2022->fresh()?->status);
 
-        // Dialog warnt bei Positionen außerhalb der Periode.
-        $this->actingAs($admin)->get(route('finance.resale.periods.link.create', $p2022->sqid))->assertOk()->assertSee(__('resale.link_ui.mismatch_hint'));
+        // Dialog warnt bei Positionen außerhalb der Periode (Passung, Phase 166).
+        $this->actingAs($admin)->get(route('finance.resale.periods.link.create', $p2022->sqid))->assertOk()->assertSee('⚠ ' . __('resale.fit.outside'));
     }
 
     public function test_fits_uses_service_period_or_invoice_date_window(): void {

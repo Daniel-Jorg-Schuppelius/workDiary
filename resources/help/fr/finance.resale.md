@@ -95,6 +95,45 @@ article, quantité, début et prix issus de la facture. Le rattachement peut
 viser une période d’un autre abonnement du même destinataire — jamais une
 période d’un autre client.
 
+**Classeur de travail et tableau de rapprochement :** le rapprochement d’un
+destinataire est le classeur de travail : en haut les abonnements avec
+modification, reprise, cession de licences et retour, en dessous le tableau
+de rapprochement par produit. À gauche toutes les périodes par date avec
+prévu et couverture, à droite les lignes de facture : affectées avec leur
+période de prestation, pour les périodes ouvertes les lignes libres
+correspondantes, les factures à d’autres clients et les annulations. Les
+lignes sans période correspondante apparaissent sur une ligne propre « sans
+période » à leur date. Chaque ligne indique sa **correspondance** : «
+correspond » (début de cycle à 14 jours au plus du début de période), «
+décalé de n jours » (jusqu’à 90 jours), « chevauche seulement la période »,
+« hors de la période » ou « appartient plutôt à … » (une autre période
+ouverte est plus proche). Les affectations douteuses demandent une
+confirmation avant l’enregistrement ; dans la boîte de dialogue de lien et
+dans l’affectation rapide de la page d’abonnement, vous les confirmez avec
+la case à cocher. Les liens qui ne correspondent pas dans le temps sont
+marqués en jaune — vérifiez-les et supprimez-les si nécessaire. « Traiter le
+prochain destinataire » dans la vue d’ensemble parcourt tous les
+destinataires avec un montant ouvert ; un destinataire est terminé
+lorsqu’aucune période échue n’est ouverte et qu’aucune constatation de
+modèle ne subsiste. Si le fournisseur renouvelle un abonnement sous forme de
+nouvelle commande, l’exécution des propositions abandonne la courte période
+résiduelle de l’ancienne commande et transfère ses liens à la première
+période de la nouvelle.
+
+**Insolvabilité et reprise :** si une facture a été annulée parce que le
+client est insolvable, comptabilisez la période dans le tableau avec «
+Comptabiliser comme perte » — la boîte de dialogue de renonciation reprend
+le motif avec le numéro de facture. Si une autre société poursuit les
+licences, utilisez « Reprise » sur l’abonnement : nouveau titulaire et date
+d’effet. Si la date d’effet correspond au début de la première période
+ouverte, le nouveau titulaire est aussi facturé pour les périodes ouvertes ;
+si elle est plus tardive, le registre abandonne sur demande les périodes
+ouvertes antérieures comme créances irrécouvrables. Une date d’effet au
+début de l’abonnement transfère tout l’abonnement au nouveau titulaire,
+sinon une cession commence à la date d’effet. Si une facture va déjà à la
+société qui reprend, le tableau propose la reprise directement sur cette
+facture.
+
 **Liste générique :** outre les exports fournisseurs (Telekom, Quality
 Hosting), l’import accepte toute liste CSV ou XLSX dont les colonnes sont
 reconnaissables par leur nom — allemand ou anglais : identifiant, société,

@@ -212,8 +212,12 @@ class RecipientReconcilerTest extends TestCase {
         $second = ResaleSubscription::query()->create(array_merge($subZahlenwerk->only(['organization_id', 'kind', 'provider', 'label', 'foreign_customer_id', 'article_ref', 'term_months', 'interval', 'renewal', 'status', 'currency']), ['quantity' => 1, 'starts_on' => '2026-09-12', 'external_id' => 'x2']));
         (new \App\Services\Reselling\Register\PeriodPlanner)->sync($second);
         // Review 2026-09-10 (C1): Feldfehler statt stillem Flash — der Dialog zeigt sie als 422.
+        // Die Rechnung liegt fast ein Jahr vor dieser Periode: ohne Bestätigung fragt die Passung nach (Phase 166), bestätigt zählt die Menge.
         $this->actingAs($admin)->from(route('finance.resale.reconcile.show', $partner))->post(route('finance.resale.reconcile.assign', $partner), [
             'period_id' => $second->periods()->firstOrFail()->sqid, 'line_id' => Sqid::encode(LexofficeVoucherLine::class, $lineA->id), 'months' => '12',
+        ])->assertSessionHasErrors('confirm_fit');
+        $this->actingAs($admin)->from(route('finance.resale.reconcile.show', $partner))->post(route('finance.resale.reconcile.assign', $partner), [
+            'period_id' => $second->periods()->firstOrFail()->sqid, 'line_id' => Sqid::encode(LexofficeVoucherLine::class, $lineA->id), 'months' => '12', 'confirm_fit' => '1',
         ])->assertRedirect(route('finance.resale.reconcile.show', $partner))->assertSessionHasErrors('months');
         $this->assertSame(0, $second->periods()->firstOrFail()->links()->count());
 
