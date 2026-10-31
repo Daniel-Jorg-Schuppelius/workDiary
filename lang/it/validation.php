@@ -1570,6 +1570,8 @@ return [
         'limit_value' => 'Limite',
         'line' => 'Riga',
         'line_id' => 'Riga di fattura',
+        'line_ids' => 'Righe di fattura',
+        'line_ids.*' => 'Riga di fattura',
         'lineup_jersey' => 'Numero di maglia',
         'lineup_jersey.*' => 'Numero di maglia',
         'lineup_member' => 'Persona schierata',
