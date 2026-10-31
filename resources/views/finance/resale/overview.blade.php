@@ -24,6 +24,8 @@
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('resale.overview.subtitle')">
         <x-slot:actions>
+            {{-- Einstieg in die Arbeitsmappen (Phase 165, MVP-1445): der nächste offene Empfänger in Arbeitsreihenfolge. --}}
+            <x-icon-btn icon="play_arrow" tone="primary" size="sm" placement="bar" :href="route('finance.resale.reconcile.next')" show-label>{{ __('resale.reconcile.worklist.start') }}</x-icon-btn>
             @if ($canManage)
                 <x-icon-btn icon="upload" tone="ghost" size="sm" data-entry-modal-trigger
                             :href="route('finance.resale.import.create')"

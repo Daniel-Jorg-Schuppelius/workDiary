@@ -3116,9 +3116,13 @@ Route::middleware('auth')->group(function () {
             Route::get('perioden', [\App\Http\Controllers\Reselling\ResalePeriodController::class, 'index'])->name('periods.index')->middleware('can:reselling.view');
             // Abgleich je Rechnungsempfänger: Perioden aller Abos gegen die Lizenzpositionen seiner Rechnungen.
             Route::get('abgleich', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'index'])->name('reconcile.index')->middleware('can:reselling.view');
+            // Arbeitsliste (Phase 165, MVP-1445): nächster offener Empfänger — fester Pfad vor {customer}.
+            Route::get('abgleich/weiter', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'next'])->name('reconcile.next')->middleware('can:reselling.view');
             Route::get('abgleich/{customer}', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'show'])->name('reconcile.show')->middleware('can:reselling.view');
             Route::post('abgleich/{customer}/bezug', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'assign'])->name('reconcile.assign')->middleware('can:reselling.manage');
             Route::post('abgleich/{customer}/halter', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'rehome'])->name('reconcile.rehome')->middleware('can:reselling.manage');
+            // Vorlagenposition einem Abo des Empfängers zuordnen — Arbeitsmappe (Phase 165, MVP-1444).
+            Route::post('abgleich/{customer}/vorlage', [\App\Http\Controllers\Reselling\ResaleReconcileController::class, 'planLinkStore'])->name('reconcile.plan.store')->middleware('can:reselling.manage');
             Route::get('bericht', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'index'])->name('report.index')->middleware('can:reselling.view');
             Route::get('bericht/rechnungsvorschlag.csv', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'export'])->name('report.export')->middleware('can:reselling.view');
             // Review 2026-09-10 (MVP-765-Rest): XLSX-Rechnungsvorschlag, Margen-Export (CSV/XLSX/PDF), Verlängerungen, Abos ohne Rechnung.

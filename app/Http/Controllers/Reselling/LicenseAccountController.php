@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Reselling;
 
-use App\Enums\Reselling\LinkOrigin;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
@@ -38,6 +37,7 @@ class LicenseAccountController extends Controller {
     public function __construct(
         private readonly LicenseAccounts $accounts,
         private readonly LicenseAccountOverview $overview,
+        private readonly \App\Services\Reselling\Plan\PlanLinkEditor $planLinks,
         private readonly AllocationDeriver $deriver,
     ) {}
 
@@ -130,22 +130,13 @@ class LicenseAccountController extends Controller {
         if (! $subscription instanceof ResaleSubscription) {
             throw ValidationException::withMessages(['subscription_id' => (string) __('resale.plan.error.subscription')]);
         }
-        $link = ResalePlanLink::query()->firstOrNew(['subscription_id' => $subscription->id, 'plan_key' => (string) $data['plan_key'], 'line_position' => (int) $data['line_position']]);
-        $link->fill([
-            'organization_id' => $organization->id,
-            'quantity' => (int) $data['quantity'],
-            'origin' => $link->exists && $link->origin === LinkOrigin::Proposed ? LinkOrigin::Confirmed : ($link->exists ? $link->origin : LinkOrigin::Manual),
-            'confirmed_at' => now(),
-            'created_by' => $link->exists ? $link->created_by : $request->user()?->id,
-        ])->save();
-        $link->audit('resale_plan_link.saved', ['plan' => $link->plan_key, 'position' => $link->line_position, 'quantity' => $link->quantity, 'subscription' => $subscription->label]);
+        $this->planLinks->save($organization, $subscription, (string) $data['plan_key'], (int) $data['line_position'], (int) $data['quantity'], $request->user()?->id);
 
         return redirect()->route('finance.resale.accounts.show', $group->routeKey())->with('success', __('resale.plan.flash.saved'));
     }
 
     public function planLinkDestroy(ResalePlanLink $link): RedirectResponse {
-        $link->audit('resale_plan_link.removed', ['plan' => $link->plan_key, 'position' => $link->line_position, 'quantity' => $link->quantity]);
-        $link->delete();
+        $this->planLinks->remove($link);
 
         return back()->with('success', __('resale.plan.flash.deleted'));
     }

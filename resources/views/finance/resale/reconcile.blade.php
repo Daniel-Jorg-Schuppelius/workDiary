@@ -22,10 +22,11 @@
 @section('content')
     <x-index-page overflow="clip" :title="__('resale.reconcile.title')" :subtitle="__('resale.reconcile.subtitle')">
         <x-slot:actions>
+            <x-icon-btn icon="play_arrow" tone="primary" size="sm" placement="bar" :href="route('finance.resale.reconcile.next')" show-label>{{ __('resale.reconcile.worklist.start') }}</x-icon-btn>
             @can(\App\Enums\User\Permission::ResellingManage->value)
                 <form method="POST" action="{{ route('finance.resale.periods.propose') }}">
                     @csrf
-                    <x-icon-btn icon="auto_awesome" tone="primary" size="sm" type="submit" show-label>{{ __('resale.link.action.propose') }}</x-icon-btn>
+                    <x-icon-btn icon="auto_awesome" tone="ghost" size="sm" type="submit" show-label>{{ __('resale.link.action.propose') }}</x-icon-btn>
                 </form>
             @endcan
             <x-icon-btn icon="fact_check" tone="ghost" size="sm" :href="route('finance.resale.periods.index')" show-label>{{ __('resale.periods.title') }}</x-icon-btn>
@@ -55,12 +56,14 @@
                 <tr>
                     <x-table.th sort type="string">{{ __('resale.field.billed_to') }}</x-table.th>
                     <x-table.th class="text-right" sort type="number">{{ __('resale.reconcile.col.subscriptions') }}</x-table.th>
+                    <x-table.th class="text-right" sort type="number">{{ __('resale.reconcile.col.open_amount') }}</x-table.th>
                     <x-table.th class="text-right" sort type="number">{{ __('resale.reconcile.kpi.open') }}</x-table.th>
                     <x-table.th class="text-right" sort type="number">{{ __('resale.reconcile.kpi.partial') }}</x-table.th>
                     <x-table.th class="text-right" sort type="number">{{ __('resale.reconcile.kpi.proposed') }}</x-table.th>
                     <x-table.th class="text-right" sort type="number">{{ __('resale.reconcile.kpi.free') }}</x-table.th>
                     <x-table.th class="text-right" sort type="number">{{ __('resale.reconcile.kpi.missing') }}</x-table.th>
                     <x-table.th class="text-right" sort type="number">{{ __('resale.reconcile.kpi.surplus') }}</x-table.th>
+                    <x-table.th class="text-right" sort type="number">{{ __('resale.reconcile.col.findings') }}</x-table.th>
                     <x-table.th class="text-right"></x-table.th>
                 </tr>
             </x-slot:head>
@@ -73,17 +76,22 @@
                             {{ $row['name'] }}
                             <x-status-badge tone="warning" size="xs" outline class="ml-1" title="{{ __('resale.reconcile.no_customer_hint') }}">{{ __('resale.reconcile.no_customer') }}</x-status-badge>
                         @endif
+                        @if ($row['done'] && $row['customer'] !== null)
+                            <x-status-badge tone="success" size="xs" class="ml-1" :label="__('resale.reconcile.worklist.done')" />
+                        @endif
                         @if ($row['subscriptions'] === 0 && $row['lines'] > 0)
                             <span class="block text-xs text-muted">{{ trans_choice('resale.reconcile.lines_without_subscription', $row['lines'], ['count' => $row['lines']]) }}</span>
                         @endif
                     </td>
                     <td class="text-right tabular-nums">{{ $row['subscriptions'] }}</td>
+                    <td class="text-right tabular-nums"><span @class(['text-error font-medium' => $row['open_amount'] !== null && $row['open_amount']->isPositive()])>{{ $row['open_amount']?->format() ?? '—' }}</span></td>
                     <td class="text-right tabular-nums"><span @class(['text-error font-medium' => $row['open'] > 0])>{{ $row['open'] }}</span></td>
                     <td class="text-right tabular-nums"><span @class(['text-warning font-medium' => $row['partial'] > 0])>{{ $row['partial'] }}</span></td>
                     <td class="text-right tabular-nums"><span @class(['text-info' => $row['proposed'] > 0])>{{ $row['proposed'] }}</span></td>
                     <td class="text-right tabular-nums"><span @class(['text-warning font-medium' => $row['free'] > 0.001])><x-resale.licence-months :value="$row['free']" /></span></td>
                     <td class="text-right tabular-nums"><span @class(['text-error font-medium' => $row['missing'] > 0.001])><x-resale.licence-months :value="$row['missing']" /></span></td>
                     <td class="text-right tabular-nums"><span @class(['text-info font-medium' => $row['surplus'] > 0.001])><x-resale.licence-months :value="$row['surplus']" /></span></td>
+                    <td class="text-right tabular-nums"><span @class(['text-warning font-medium' => $row['findings'] > 0])>{{ $row['findings'] }}</span></td>
                     <td class="text-right">
                         @if ($row['customer'] !== null)
                             <x-icon-btn icon="compare_arrows" size="xs" tone="ghost" :href="route('finance.resale.reconcile.show', $row['customer'])" :title="__('resale.reconcile.action.open')" />
@@ -91,7 +99,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty :colspan="9" icon="task_alt" :title="__('resale.reconcile.empty')" compact />
+                <x-table.empty :colspan="11" icon="task_alt" :title="__('resale.reconcile.empty')" compact />
             @endforelse
         </x-table>
     </x-index-page>

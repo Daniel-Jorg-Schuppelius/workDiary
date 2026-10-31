@@ -19,8 +19,10 @@ use App\Models\Customer\Customer;
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Services\Reselling\License\LicenseInvoiceLinks;
 use App\Services\Reselling\Mirror\InvoiceMirror;
+use App\Services\Reselling\Plan\{PlanLinkEditor, PlanSection};
 use App\Services\Reselling\Register\{LinkProposer, PeriodLinker, RecipientReconciler};
-use App\Support\ErrorText;
+use App\Support\{ErrorText, Sqid};
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\DB;
@@ -40,6 +42,8 @@ class ResaleReconcileController extends Controller {
         private readonly PeriodLinker $linker,
         private readonly InvoiceMirror $mirror,
         private readonly LicenseInvoiceLinks $licenseLinks,
+        private readonly PlanSection $planSection,
+        private readonly PlanLinkEditor $planLinks,
     ) {}
 
     public function index(Request $request): View {
@@ -47,7 +51,8 @@ class ResaleReconcileController extends Controller {
         $rows = $this->reconciler->overview($organization);
         $filter = (string) $request->query('show', 'problems');
         if ($filter === 'problems') {
-            $rows = array_values(array_filter($rows, static fn(array $r): bool => $r['open'] + $r['partial'] + $r['proposed'] > 0 || $r['free'] > 0.001));
+            // Nicht fertig (Phase 165, MVP-1445) — oder ohne Kunde mit freien Positionen, die noch niemand erklärt.
+            $rows = array_values(array_filter($rows, static fn(array $r): bool => ! $r['done'] || $r['proposed'] > 0 || $r['free'] > 0.001));
         }
         $totals = ['open' => 0, 'partial' => 0, 'proposed' => 0, 'free' => 0.0, 'missing' => 0.0, 'surplus' => 0.0];
         foreach ($rows as $row) {
@@ -59,10 +64,22 @@ class ResaleReconcileController extends Controller {
         return view('finance.resale.reconcile', ['rows' => $rows, 'filter' => $filter, 'totals' => $totals]);
     }
 
+    /** Nächster offener Empfänger der Arbeitsliste (Phase 165, MVP-1445) — oder die Liste, wenn alle fertig sind. */
+    public function next(): RedirectResponse {
+        $organization = $this->currentOrganizationOrAbort(404);
+        $first = $this->reconciler->worklist($organization)[0] ?? null;
+        if ($first === null || $first['customer'] === null) {
+            return redirect()->toList('finance.resale.reconcile.index')->with('info', __('resale.reconcile.worklist.all_done'));
+        }
+
+        return redirect()->route('finance.resale.reconcile.show', $first['customer']);
+    }
+
     public function show(Customer $customer): View {
         $organization = $this->currentOrganizationOrAbort(404);
         $today = ResalePeriod::today();
         $result = $this->reconciler->forCustomer($organization, $customer, $today);
+        $workspace = $this->workspacePosition($organization, $customer, $today);
 
         // Alle Perioden des Empfängers (auch gedeckte), chronologisch je Abo.
         $allPeriods = [];
@@ -93,7 +110,61 @@ class ResaleReconcileController extends Controller {
             'allPeriods' => $allPeriods,
             'targetsByProduct' => $targetsByProduct,
             'unbilledLicenses' => $unbilledLicenses,
+            // Serienvorlagen des Empfängers in der Mappe (Phase 165, MVP-1444): adressiert an ihn oder über Zuordnung verbunden.
+            'plan' => $this->planSection->build($organization, $result['subscriptions'], [(int) $customer->id]),
+            'planCandidates' => PlanSection::candidates($result['subscriptions']),
+            'workspace' => $workspace,
         ] + $result);
+    }
+
+    /**
+     * Stand in der Arbeitsliste (Phase 165, MVP-1445): Position und Gesamtzahl der offenen Empfänger,
+     * Vorgänger und Nachfolger; ein fertiger Empfänger steht außerhalb der Liste, „Nächster“ ist dann der erste.
+     *
+     * @return array{total: int, position: int|null, prev: Customer|null, next: Customer|null, done: bool, open_amount: \CommonToolkit\ValueObjects\Money|null}
+     */
+    private function workspacePosition(\App\Models\Platform\Organization $organization, Customer $customer, CarbonImmutable $today): array {
+        $rows = $this->reconciler->worklist($organization, $today);
+        $index = null;
+        foreach ($rows as $i => $row) {
+            if ($row['customer']?->id === $customer->id) {
+                $index = $i;
+
+                break;
+            }
+        }
+        $row = $index !== null ? $rows[$index] : null;
+
+        return [
+            'total' => count($rows),
+            'position' => $index !== null ? $index + 1 : null,
+            'prev' => $index !== null && $index > 0 ? $rows[$index - 1]['customer'] : null,
+            'next' => $index !== null ? ($rows[$index + 1]['customer'] ?? null) : ($rows[0]['customer'] ?? null),
+            'done' => $index === null,
+            'open_amount' => $row['open_amount'] ?? null,
+        ];
+    }
+
+    /**
+     * Vorlagenposition einem Abo des Empfängers zuordnen — dieselbe Zuordnung
+     * wie im Lizenzkonto, geprüft gegen den Empfänger statt gegen das Konto.
+     */
+    public function planLinkStore(Request $request, Customer $customer): RedirectResponse {
+        $organization = $this->currentOrganizationOrAbort(404);
+        $data = $request->validate([
+            'subscription_id' => ['required', 'string', 'max:32'],
+            'plan_key' => ['required', 'string', 'max:120'],
+            'line_position' => ['required', 'integer', 'min:0', 'max:65535'],
+            'quantity' => ['required', 'integer', 'min:1', 'max:100000'],
+        ]);
+        $subscriptionId = Sqid::decode(ResaleSubscription::class, (string) $data['subscription_id']);
+        $subscription = $subscriptionId !== null ? ResaleSubscription::query()->with('customer', 'foreignCustomer.customer')->find($subscriptionId) : null;
+        if (! $subscription instanceof ResaleSubscription || $subscription->billedTo()?->id !== $customer->id) {
+            throw ValidationException::withMessages(['subscription_id' => (string) __('resale.plan.error.subscription')]);
+        }
+        $this->planLinks->save($organization, $subscription, (string) $data['plan_key'], (int) $data['line_position'], (int) $data['quantity'], $request->user()?->id);
+
+        return redirect()->route('finance.resale.reconcile.show', $customer)->with('success', __('resale.plan.flash.saved'));
     }
 
     /**
