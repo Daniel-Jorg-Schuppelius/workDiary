@@ -649,6 +649,14 @@ return [
         'section' => 'Transferred licences',
         'from' => 'Transferred from',
         'assigned_hint' => ':count licence transferred to other holders|:count licences transferred to other holders',
+        'none_available' => 'Between :from and :to all :quantity licences are assigned. Change the period or return an assignment.',
+        'segments' => [
+            'title' => 'Free licences per period',
+            'period' => 'Period',
+            'assigned' => 'assigned',
+            'free' => 'free',
+            'open_end' => 'open',
+        ],
         'error' => [
             'holder' => 'Please choose a holder.',
             'quantity' => 'Only :available licences are not yet transferred.',

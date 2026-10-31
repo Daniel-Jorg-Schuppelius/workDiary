@@ -197,6 +197,47 @@ class LicenceTransferTest extends TestCase {
         $this->assertSame(PeriodStatus::Open, $p2025->fresh()?->status, 'Service 2025 nie berechnet — verzichten oder nachberechnen');
     }
 
+    public function test_dialog_shows_free_licences_per_period_and_blocks_when_nothing_is_free(): void {
+        // Pilot 2026-10-31: der Dialog bot „1“ an, obwohl alle Lizenzen abgetreten waren — jetzt freie Menge je Zeitabschnitt, Feld gesperrt ohne freie Lizenz.
+        $admin = $this->orgAdmin();
+        $schub = $this->customerWithContact('Hafen- und Schleppbetrieb M. Seewind GmbH & CO. KG', 'c-schub');
+        $nordufer = $this->customerWithContact('Nordufer Tank- und Service GmbH & Co. KG', 'c-mb');
+        $contract = ResaleSubscription::query()->create([
+            'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'external_id' => 'ent-3', 'label' => 'Exchange Online (Plan 1)',
+            'customer_id' => $schub->id, 'article_ref' => 'lex:' . $this->exchange->id, 'quantity' => 3, 'starts_on' => '2020-08-12', 'ends_on' => '2023-08-12',
+            'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'cancel', 'status' => 'ended', 'currency' => 'EUR', 'sale_unit_price' => '47.40',
+        ]);
+        (new PeriodPlanner)->sync($contract);
+        $this->actingAs($admin)->post(route('finance.resale.transfer.store', $contract->sqid), [
+            'mode' => 'customer', 'customer_id' => $nordufer->sqid, 'quantity' => 2, 'starts_on' => '2020-08-12', 'ends_on' => '2021-08-11',
+        ])->assertRedirect(route('finance.resale.show', $contract->sqid));
+
+        // Ganzer Vertragszeitraum: im ersten Jahr sind zwei abgetreten → nur eine frei; die Tabelle zeigt beide Abschnitte.
+        $dialog = $this->actingAs($admin)->get(route('finance.resale.transfer.create', $contract->sqid))->assertOk();
+        $dialog->assertSee(__('resale.transfer.segments.title'))
+            ->assertSeeInOrder(['12.08.2020 – 11.08.2021', '>2<', '>1<', '12.08.2021 – 12.08.2023', '>0<', '>3<'], false)
+            ->assertSee('max="1"', false)
+            ->assertSee('value="1"', false)
+            ->assertDontSee(__('resale.transfer.none_available', ['quantity' => 3, 'from' => '12.08.2020', 'to' => '12.08.2023']));
+
+        // Erstes Jahr voll abtreten, dann ist im ersten Jahr nichts mehr frei: Warnung, Menge gesperrt, Vorbelegung 0.
+        $this->actingAs($admin)->post(route('finance.resale.transfer.store', $contract->sqid), [
+            'mode' => 'customer', 'customer_id' => $nordufer->sqid, 'quantity' => 1, 'starts_on' => '2020-08-12', 'ends_on' => '2021-08-11',
+        ])->assertRedirect();
+        $this->actingAs($admin)->get(route('finance.resale.transfer.create', ['subscription' => $contract->sqid, 'starts_on' => '2020-08-12', 'ends_on' => '2021-08-11', 'quantity' => 2]))->assertOk()
+            ->assertSee(__('resale.transfer.none_available', ['quantity' => 3, 'from' => '12.08.2020', 'to' => '11.08.2021']))
+            ->assertSee('max="0"', false)
+            ->assertSee('disabled', false)
+            ->assertSee('value="0"', false);
+        // Der Server lehnt trotzdem ab, falls doch gesendet wird.
+        $this->actingAs($admin)->post(route('finance.resale.transfer.store', $contract->sqid), [
+            'mode' => 'customer', 'customer_id' => $nordufer->sqid, 'quantity' => 1, 'starts_on' => '2020-08-12', 'ends_on' => '2021-08-11',
+        ])->assertSessionHasErrors('quantity');
+        // Im zweiten Jahr sind alle drei frei.
+        $this->actingAs($admin)->get(route('finance.resale.transfer.create', ['subscription' => $contract->sqid, 'starts_on' => '2021-08-12', 'ends_on' => '2023-08-12']))->assertOk()
+            ->assertSee('max="3"', false)->assertDontSee('alert-warning', false);
+    }
+
     public function test_transfer_after_confirmed_periods_reduces_their_quantity_and_settles_them(): void {
         // Prod-Fall Schub & Schlepp: Perioden waren schon mit 9 Lizenzen bestätigt (4 Schub-Positionen = teilweise),
         // dann kam die Abtretung von 5 an Nordufer — die bestätigten Perioden müssen auf 4 fallen und damit voll sein.

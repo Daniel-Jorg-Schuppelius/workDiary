@@ -27,6 +27,31 @@
 >
     <div class="text-sm text-base-content/70">{{ __('resale.transfer.hint', ['holder' => $subscription->holderLabel(), 'quantity' => $subscription->quantity, 'available' => $available]) }}</div>
     <p class="text-xs text-muted">{{ __('resale.transfer.timeline_hint') }}</p>
+    {{-- Freie Lizenzen je Zeitabschnitt (Pilot 2026-10-31): mehr als frei lässt sich nicht abtreten; ohne freie Lizenz im Zeitraum bleibt die Menge gesperrt. --}}
+    @if ($available <= 0)
+        <div role="alert" class="alert alert-warning text-sm"><span>{{ __('resale.transfer.none_available', ['quantity' => $subscription->quantity, 'from' => $windowFrom->fdate(), 'to' => $windowTo?->fdate() ?? __('resale.transfer.segments.open_end')]) }}</span></div>
+    @endif
+    @if ($subscription->assignments->isNotEmpty())
+        <div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-muted mb-1">{{ __('resale.transfer.segments.title') }}</div>
+            <x-table bare>
+                <x-slot:head>
+                    <tr>
+                        <x-table.th>{{ __('resale.transfer.segments.period') }}</x-table.th>
+                        <x-table.th class="text-right">{{ __('resale.transfer.segments.assigned') }}</x-table.th>
+                        <x-table.th class="text-right">{{ __('resale.transfer.segments.free') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($segments as $segment)
+                    <tr>
+                        <td class="text-sm whitespace-nowrap">{{ $segment['from']->fdate() }} – {{ $segment['to']?->fdate() ?? __('resale.transfer.segments.open_end') }}</td>
+                        <td class="text-right tabular-nums">{{ $segment['assigned'] }}</td>
+                        <td class="text-right tabular-nums {{ $segment['free'] > 0 ? 'text-success' : 'text-muted' }}">{{ $segment['free'] }}</td>
+                    </tr>
+                @endforeach
+            </x-table>
+        </div>
+    @endif
 
     <div class="space-y-3" x-data="resaleHolderPicker"
          data-map="{{ json_encode($foreignByCustomer, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE) }}"
@@ -55,7 +80,7 @@
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <x-input-field name="quantity" type="number" min="1" :max="max(1, $available)" :label="__('resale.transfer.quantity')" :value="old('quantity', (string) $quantityDefault)" required />
+        <x-input-field name="quantity" type="number" min="1" :max="$available" :disabled="$available <= 0" :label="__('resale.transfer.quantity')" :value="old('quantity', (string) $quantityDefault)" required />
         <x-input-field name="sale_unit_price" type="number" step="0.01" min="0" :label="__('resale.field.sale_unit_price')" :value="old('sale_unit_price', $subscription->sale_unit_price?->withScale(2)->getAmount())" :hint="__('resale.dialog.price_hint')" />
     </div>
     <x-date-range layout="split" from-name="starts_on" to-name="ends_on" form-control size=""

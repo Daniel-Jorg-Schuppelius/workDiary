@@ -649,6 +649,14 @@ return [
         'section' => 'Licences cédées',
         'from' => 'Cédé depuis',
         'assigned_hint' => ':count licence cédée à d’autres détenteurs|:count licences cédées à d’autres détenteurs',
+        'none_available' => 'Du :from au :to, les :quantity licences sont toutes cédées. Modifiez la période ou reprenez une cession.',
+        'segments' => [
+            'title' => 'Licences libres par période',
+            'period' => 'Période',
+            'assigned' => 'cédées',
+            'free' => 'libres',
+            'open_end' => 'ouverte',
+        ],
         'error' => [
             'holder' => 'Veuillez choisir un détenteur.',
             'quantity' => 'Seules :available licences ne sont pas encore cédées.',
