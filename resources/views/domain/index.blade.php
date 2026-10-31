@@ -113,7 +113,7 @@
         @forelse ($domains as $domain)
             <tr class="hover">
                 <td>
-                    <a href="{{ route('domains.show', $domain) }}" class="link link-hover font-medium">{{ $domain->external_domain }}</a>
+                    <a href="{{ route('domains.show', $domain) }}" class="link link-hover font-medium">{{ $domain->displayName() }}</a>
                     <div class="text-xs text-muted font-mono">{{ $domain->external_user }}</div>
                 </td>
                 <td>{{ $domain->customer?->name ?? '—' }}</td>

@@ -57,7 +57,7 @@
             @else
                 <ul class="text-sm space-y-1">
                     @foreach ($unmapped->take(15) as $domain)
-                        <li><a href="{{ route('domains.show', $domain) }}" class="link link-hover">{{ $domain->external_domain }}</a></li>
+                        <li><a href="{{ route('domains.show', $domain) }}" class="link link-hover">{{ $domain->displayName() }}</a></li>
                     @endforeach
                 </ul>
             @endif
@@ -69,7 +69,7 @@
             @else
                 <ul class="text-sm space-y-1">
                     @foreach ($risky->take(15) as $domain)
-                        <li><a href="{{ route('domains.show', $domain) }}" class="link link-hover">{{ $domain->external_domain }}</a>
+                        <li><a href="{{ route('domains.show', $domain) }}" class="link link-hover">{{ $domain->displayName() }}</a>
                             <x-status-badge tone="warning" size="sm">{{ $domain->renewal_mode?->label() }}</x-status-badge></li>
                     @endforeach
                 </ul>

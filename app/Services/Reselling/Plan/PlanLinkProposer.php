@@ -17,7 +17,8 @@ use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResalePlanLink, ResaleSubscription};
 use App\Services\Reselling\Marketplace\{MarketplaceCompany, ProductNameMatcher};
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
-use App\Services\Reselling\Register\{DomainNames, LicenseAccounts};
+use App\Services\Reselling\Register\LicenseAccounts;
+use App\Support\DomainNames;
 use Illuminate\Support\Facades\DB;
 
 /**

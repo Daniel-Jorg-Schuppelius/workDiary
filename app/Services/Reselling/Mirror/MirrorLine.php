@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Mirror;
 
-use App\Services\Reselling\Register\{DomainNames, LicenseMonths};
-use App\Support\CarbonFmt;
+use App\Services\Reselling\Register\LicenseMonths;
+use App\Support\{CarbonFmt, DomainNames};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
