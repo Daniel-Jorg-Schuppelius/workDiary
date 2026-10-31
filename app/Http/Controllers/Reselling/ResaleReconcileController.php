@@ -16,13 +16,14 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Reselling\{AssignResaleLineRequest, RehomeResaleSubscriptionRequest};
 use App\Models\Customer\Customer;
-use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
+use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Services\Reselling\License\LicenseInvoiceLinks;
 use App\Services\Reselling\Mirror\InvoiceMirror;
 use App\Services\Reselling\Register\{LinkProposer, PeriodLinker, RecipientReconciler};
 use App\Support\ErrorText;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
 
@@ -125,13 +126,39 @@ class ResaleReconcileController extends Controller {
     /** Position → Periode eines beliebigen Abos dieses Empfängers. */
     public function assign(AssignResaleLineRequest $request, Customer $customer): RedirectResponse {
         $period = $request->period();
-        $line = $request->line();
-        if ($period === null || $line === null) {
+        $lines = $request->lines();
+        if ($period === null || $lines === []) {
             throw ValidationException::withMessages(['line_id' => (string) __('resale.link.error.line_missing')]);
         }
         $target = route('finance.resale.reconcile.show', $customer);
         try {
-            $link = $this->linker->attach($period, $line, $request->months(), $request->note(), $request->user()?->id);
+            // Mehrere Zwillingszeilen (drei × „12 Monat“): die Monate laufen der Reihe nach durch die Zeilen,
+            // jede nimmt, was sie noch frei hat — eine einzelne Zeile verhält sich wie bisher.
+            $link = DB::transaction(function () use ($period, $lines, $request): ResalePeriodLink {
+                $remaining = $request->months();
+                if (count($lines) === 1) {
+                    return $this->linker->attach($period, $lines[0], $remaining, $request->note(), $request->user()?->id);
+                }
+                $first = null;
+                foreach ($lines as $line) {
+                    $take = min($remaining, $this->linker->freeMonths($line, $period, true));
+                    if ($take <= 0.001) {
+                        continue;
+                    }
+                    $link = $this->linker->attach($period, $line, $take, $request->note(), $request->user()?->id);
+                    $first ??= $link;
+                    $remaining -= $take;
+                    if ($remaining <= 0.001) {
+                        break;
+                    }
+                }
+                if ($first === null || $remaining > 0.001) {
+                    // Nicht alles unterzubringen: nichts anlegen, Meldung wie bei einer einzelnen Zeile.
+                    throw new \InvalidArgumentException((string) __('resale.link.error.exceeds', ['amount' => \App\Services\Reselling\Register\LicenseMonths::label(max(0.0, $request->months() - $remaining), (float) $period->termMonths())]));
+                }
+
+                return $first;
+            });
         } catch (\InvalidArgumentException $e) {
             throw ValidationException::withMessages(['months' => ErrorText::for($e)]);
         }

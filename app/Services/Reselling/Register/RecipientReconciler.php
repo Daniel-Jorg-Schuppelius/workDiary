@@ -37,7 +37,7 @@ use Illuminate\Support\Collection;
  * ({@see InvoiceMirror}); `contact` ist der Empfängerschlüssel der Quelle.
  *
  * @phpstan-type LineRow array{line: MirrorLine, product: string, months: float, licences: float, per_licence: float, linked: float, free: float, periods: list<string>, recipient: string|null, recipient_id: int|null, contact: string, gap: bool}
- * @phpstan-type Candidate array{row: LineRow, distance: int}
+ * @phpstan-type Candidate array{row: LineRow, distance: int, count: int, rows: list<LineRow>, group_free: float, group_licences: float}
  * @phpstan-type PeriodRow array{period: ResalePeriod, subscription: ResaleSubscription, required: float, covered: float, needed: float, product: string, candidates: list<Candidate>, taken: list<Candidate>, foreign: list<Candidate>, voided: list<Candidate>}
  * @phpstan-type CreditNoteRow array{line: MirrorLine, months: float, licences: float, per_licence: float, linked: float, periods: list<string>}
  * @phpstan-type InboxHint array{company: string, subscriptions: list<ResaleSubscription>, mentions: int}
@@ -312,6 +312,40 @@ final class RecipientReconciler {
     }
 
     /**
+     * Gleiche Positionen desselben Belegs — drei Zeilen „12 Monat × 3,95“ für drei
+     * Lizenzen — werden eine Zeile mit Anzahl; sonst stehen drei identische
+     * Vorschläge mit je eigenem Knopf untereinander (Pilot 2026-10-31). Zwilling =
+     * gleicher Beleg, Artikel, Text, Menge, Einheit, Preis, Leistungszeitraum,
+     * Empfänger und gleicher Rest.
+     *
+     * @param  list<array{row: LineRow, distance: int}>  $entries
+     * @return list<Candidate>
+     */
+    private static function groupTwins(array $entries): array {
+        /** @var array<string, Candidate> $grouped */
+        $grouped = [];
+        foreach ($entries as $entry) {
+            $line = $entry['row']['line'];
+            $key = implode('|', [
+                $line->sourceKey, $line->voucherKey, (string) $line->articleKey, $line->name, (string) $line->description, (string) $line->quantity,
+                (string) $line->unitName, $line->unitNet->getAmount(), $line->serviceFrom?->toDateString() ?? '', $line->serviceTo?->toDateString() ?? '',
+                (string) $line->recipientCustomerId, sprintf('%.2f', $entry['row']['free']), sprintf('%.2f', $entry['row']['linked']),
+            ]);
+            if (isset($grouped[$key])) {
+                $grouped[$key]['count']++;
+                $grouped[$key]['rows'][] = $entry['row'];
+                $grouped[$key]['group_free'] += $entry['row']['free'];
+                $grouped[$key]['group_licences'] += $entry['row']['licences'];
+
+                continue;
+            }
+            $grouped[$key] = $entry + ['count' => 1, 'rows' => [$entry['row']], 'group_free' => $entry['row']['free'], 'group_licences' => $entry['row']['licences']];
+        }
+
+        return array_values($grouped);
+    }
+
+    /**
      * @param  Collection<int, ResaleSubscription>  $subscriptions
      * @param  Collection<int, MirrorLine>  $lines
      * @param  array<string, array{months: float, periods: list<string>}>  $linkedMonths
@@ -497,6 +531,7 @@ final class RecipientReconciler {
             }
             foreach (['candidates', 'taken', 'foreign', 'voided'] as $bucket) {
                 usort($periodRows[$index][$bucket], static fn(array $a, array $b): int => $a['distance'] <=> $b['distance']);
+                $periodRows[$index][$bucket] = self::groupTwins($periodRows[$index][$bucket]);
             }
         }
 

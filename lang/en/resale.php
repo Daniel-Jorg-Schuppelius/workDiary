@@ -1238,6 +1238,7 @@ return [
         'confirm' => 'Confirm assignment',
         'unlink' => 'Remove assignment',
         'none' => 'No recurring template for the recipients of this account.',
+        'untitled' => 'Recurring template from :date',
         'no_licence_lines' => 'No licence line in this template.',
         'next' => 'next run :date',
         'failed' => 'last run failed',
@@ -1308,7 +1309,7 @@ return [
             'plan_paused' => 'The template is :status, the subscription keeps running.',
             'plan_missing' => 'The assigned template :plan no longer exists.',
             'next_execution_off' => 'The template runs on :next, the next period starts on :period.',
-            'last_failed' => 'The last run of the template failed (:state): :error',
+            'last_failed' => 'Last run: :state',
         ],
     ],
     // Überblick als Aufgabenliste und Sammelaktionen (Feature 185, MVP-1414/1415)

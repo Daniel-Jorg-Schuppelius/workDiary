@@ -236,6 +236,44 @@ class RecipientReconcilerTest extends TestCase {
         $this->assertSame([], $result['periods']);
     }
 
+    public function test_twin_lines_of_one_voucher_are_one_row_and_assign_in_one_step(): void {
+        // Pilot 2026-10-31: drei Zeilen „12 Monat × 3,95“ für drei Lizenzen standen dreimal untereinander, je mit eigenem Knopf.
+        $admin = $this->orgAdmin();
+        $customer = $this->customerWithContact('Nordlicht Systems GmbH', 'c-nordlicht');
+        $subscription = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'quantity' => 3, 'starts_on' => '2025-08-12']);
+        $voucher = $this->voucher('c-nordlicht', 'RE/2025/0900', '2025-08-20', [
+            ['article' => $this->exchange, 'quantity' => 12, 'net' => '3.95'],
+            ['article' => $this->exchange, 'quantity' => 12, 'net' => '3.95'],
+            ['article' => $this->exchange, 'quantity' => 12, 'net' => '3.95'],
+        ]);
+        $period = $subscription->periods()->firstOrFail();
+
+        $analysis = app(RecipientReconciler::class)->forCustomer($this->organization, $customer);
+        $candidates = $analysis['periods'][0]['candidates'];
+        $this->assertCount(1, $candidates, 'drei Zwillingszeilen sind ein Vorschlag');
+        $this->assertSame(3, $candidates[0]['count']);
+        $this->assertSame(36.0, $candidates[0]['group_free']);
+        $this->assertSame(3.0, $candidates[0]['group_licences']);
+        $page = $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $customer))->assertOk();
+        $page->assertSee('3 ×')->assertSee('name="line_ids[]"', false);
+
+        // Ein Schritt ordnet alle drei Lizenzen zu: je Zeile ein Bezug über 12 Monate.
+        $keys = $voucher->lines()->orderBy('position')->get()->map(static fn(LexofficeVoucherLine $l): string => Sqid::encode(LexofficeVoucherLine::class, $l->id))->all();
+        $this->actingAs($admin)->post(route('finance.resale.reconcile.assign', $customer), [
+            'period_id' => $period->sqid, 'line_ids' => $keys, 'licences' => '3', 'per_licence' => '12.00',
+        ])->assertRedirect(route('finance.resale.reconcile.show', $customer))->assertSessionHas('success');
+        $period->refresh();
+        $this->assertSame(PeriodStatus::Billed, $period->status);
+        $this->assertSame([12.0, 12.0, 12.0], $period->links()->orderBy('linkable_id')->pluck('months')->map(static fn($m): float => (float) $m)->all());
+
+        // Mehr als frei: nichts anlegen, Fehler wie bei einer Zeile.
+        $second = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'quantity' => 1, 'starts_on' => '2025-08-12']);
+        $this->actingAs($admin)->post(route('finance.resale.reconcile.assign', $customer), [
+            'period_id' => $second->periods()->firstOrFail()->sqid, 'line_ids' => $keys, 'licences' => '1', 'per_licence' => '12.00',
+        ])->assertSessionHasErrors(['months']);
+        $this->assertSame(3, \App\Models\Reselling\ResalePeriodLink::query()->count(), 'kein vierter Bezug');
+    }
+
     public function test_sister_company_invoice_voided_invoice_and_inbox_mentions_are_shown(): void {
         $admin = $this->orgAdmin();
         $customer = $this->customerWithContact('Ökotherm Service GmbH', 'c-eco');
@@ -371,8 +409,11 @@ class RecipientReconcilerTest extends TestCase {
         $result = (new RecipientReconciler)->forCustomer($this->organization, $ute);
         [$first, $second] = $result['periods'];
         $this->assertSame(['Omega Rundum Service GmbH'], array_values(array_unique(array_map(static fn(array $c): string => (string) $c['row']['recipient'], $first['foreign']))));
-        $this->assertCount(3, $first['foreign'], 'alle drei Positionen der Sammelrechnung');
-        $this->assertCount(3, $second['foreign']);
+        // Drei Zwillingszeilen der Sammelrechnung sind eine Zeile mit Anzahl (Pilot 2026-10-31).
+        $this->assertCount(1, $first['foreign'], 'alle drei Positionen der Sammelrechnung als eine Zeile');
+        $this->assertSame(3, $first['foreign'][0]['count']);
+        $this->assertSame(3.0, $first['foreign'][0]['group_licences']);
+        $this->assertCount(1, $second['foreign']);
         $this->assertSame($delta->id, $first['foreign'][0]['row']['recipient_id']);
 
         $page = $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $ute))->assertOk();

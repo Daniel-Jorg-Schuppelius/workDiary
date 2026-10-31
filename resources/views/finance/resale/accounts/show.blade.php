@@ -382,13 +382,15 @@
                 @if ($plan['findings'] !== [])
                     <ul class="border-t border-base-300 px-4 py-3 space-y-1 text-sm">
                         @foreach ($plan['findings'] as $finding)
-                            {{-- Befund: Abzeichen, dann das Abo (Produkt bzw. Domain) als Titel, darunter Halter, Kennung, Vorlage und Meldung. --}}
-                            <li class="flex flex-wrap items-start gap-2 border-l-2 border-warning/60 pl-2">
-                                <x-status-badge size="xs" tone="warning" :label="__('resale.plan.finding.' . $finding['kind'] . '_short')" />
-                                <span class="min-w-0">
-                                    @if ($finding['subscription'] !== null)<a href="{{ route('finance.resale.show', $finding['subscription']->sqid) }}" class="link link-hover font-medium">{{ $finding['subscription']->label }}</a><span class="block text-xs text-muted">{{ $finding['subscription']->holderLabel() }} · {{ $finding['subscription']->identityLabel() }}</span>@endif
+                            {{-- Befund: feste Abzeichen-Spalte, rechts das Abo (Produkt bzw. Domain) mit Halter und Kennung in einer Zeile,
+                                 darunter Vorlage und Stand; die Meldung des Programms gekürzt mit Tooltip (Pilot 2026-10-31). --}}
+                            <li class="flex items-start gap-3 border-l-2 border-warning/60 pl-2 py-0.5">
+                                <span class="w-44 shrink-0 pt-0.5"><x-status-badge size="xs" tone="warning" :label="__('resale.plan.finding.' . $finding['kind'] . '_short')" /></span>
+                                <span class="min-w-0 flex-1">
+                                    @if ($finding['subscription'] !== null)<a href="{{ route('finance.resale.show', $finding['subscription']->sqid) }}" class="link link-hover font-medium">{{ $finding['subscription']->label }}</a> <span class="text-xs text-muted">· {{ $finding['subscription']->holderLabel() }} · {{ $finding['subscription']->identityLabel() }}</span>@endif
                                     @if ($finding['template'] !== null)<span class="block text-xs text-muted">{{ __('resale.plan.col.line') }}: {{ $finding['template']->label() }}@if ($finding['line'] !== null) · {{ $finding['line']->label() }}@endif</span>@endif
                                     <span class="block text-xs text-muted">{{ __('resale.plan.finding.' . $finding['kind'], $finding['params']) }}</span>
+                                    @if (($finding['params']['error'] ?? '') !== '')<span class="block text-xs text-muted/80 line-clamp-1" title="{{ $finding['params']['error'] }}">{{ $finding['params']['error'] }}</span>@endif
                                 </span>
                             </li>
                         @endforeach

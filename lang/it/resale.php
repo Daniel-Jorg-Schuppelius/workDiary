@@ -1238,6 +1238,7 @@ return [
         'confirm' => 'Conferma assegnazione',
         'unlink' => 'Rimuovi assegnazione',
         'none' => 'Nessun modello ricorrente per i destinatari di questo conto.',
+        'untitled' => 'Modello ricorrente dal :date',
         'no_licence_lines' => 'Nessuna riga di licenza in questo modello.',
         'next' => 'prossima esecuzione :date',
         'failed' => 'ultima esecuzione fallita',
@@ -1308,7 +1309,7 @@ return [
             'plan_paused' => 'Il modello è :status, l\'abbonamento continua.',
             'plan_missing' => 'Il modello assegnato :plan non esiste più.',
             'next_execution_off' => 'Il modello si esegue il :next, il prossimo periodo inizia il :period.',
-            'last_failed' => 'L\'ultima esecuzione del modello è fallita (:state): :error',
+            'last_failed' => 'Ultima esecuzione: :state',
         ],
     ],
     // Überblick als Aufgabenliste und Sammelaktionen (Feature 185, MVP-1414/1415)
