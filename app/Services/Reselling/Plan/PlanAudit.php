@@ -59,6 +59,7 @@ final class PlanAudit {
         private readonly RecurringPlans $plans,
         private readonly LicenseAccounts $accounts,
         private readonly ResaleDraftRun $drafts,
+        private readonly TemplateExecutions $executions,
     ) {}
 
     /**
@@ -106,6 +107,7 @@ final class PlanAudit {
             $linkedLines[$link->lineKey()] = true;
         }
         $nextStarts = $this->nextPeriodStarts($organization, array_values(array_map('intval', $subscriptions->pluck('id')->all())), $reference);
+        $executions = $this->executions->statesFor($organization, $templates->filter(static fn(PlanTemplate $t): bool => $t->lastFailed));
 
         $findings = [];
         /** @var array<int, bool> $drafted Empfänger → der Serienlauf des Registers entwirft seine Rechnungen */
@@ -138,7 +140,7 @@ final class PlanAudit {
                 }
                 $line = $template->line($link->line_position);
                 if ($template->lastFailed) {
-                    $findings[] = $this->finding(self::LAST_FAILED, $subscription, $template, $line, ['error' => (string) $template->lastError]);
+                    $findings[] = $this->finding(self::LAST_FAILED, $subscription, $template, $line, ['error' => (string) $template->lastError, 'state' => isset($executions[$template->key]) ? $executions[$template->key]->label() : '']);
                 }
                 if (! $template->isActive() && $subscription->status === SubscriptionStatus::Active) {
                     $findings[] = $this->finding(self::PLAN_PAUSED, $subscription, $template, $line, ['status' => $template->status]);

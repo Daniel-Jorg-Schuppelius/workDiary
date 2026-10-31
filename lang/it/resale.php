@@ -1234,6 +1234,12 @@ return [
         'failed' => 'ultima esecuzione fallita',
         'finalize' => 'finalizza e invia la fattura',
         'draft_only' => 'crea bozze',
+        'execution' => [
+            'paid' => 'La fattura :number del :date è pagata',
+            'open' => 'La fattura :number del :date è aperta — verificare l’invio nel programma di contabilità',
+            'missing_expected' => 'nessuna fattura per il :expected',
+            'missing' => 'nessuna fattura da questo modello',
+        ],
         'from_invoice' => 'Assegnazione dalla fattura :voucher, creata da questo modello.',
         'planned_by' => 'Fatturato tramite il modello ricorrente «:title» (prossima esecuzione :date).',
         'digest_line' => ':count casi tra abbonamenti e modelli ricorrenti (abbonamento senza modello, modello senza abbonamento, quantità diversa).',
@@ -1293,7 +1299,7 @@ return [
             'plan_paused' => 'Il modello è :status, l\'abbonamento continua.',
             'plan_missing' => 'Il modello assegnato :plan non esiste più.',
             'next_execution_off' => 'Il modello si esegue il :next, il prossimo periodo inizia il :period.',
-            'last_failed' => 'L\'ultima esecuzione del modello è fallita: :error',
+            'last_failed' => 'L\'ultima esecuzione del modello è fallita (:state): :error',
         ],
     ],
     // Überblick als Aufgabenliste und Sammelaktionen (Feature 185, MVP-1414/1415)

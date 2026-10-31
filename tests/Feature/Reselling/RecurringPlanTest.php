@@ -75,7 +75,7 @@ class RecurringPlanTest extends TestCase {
     }
 
     /** @return array<string, mixed> */
-    private function templateEntry(string $id, string $status = 'ACTIVE', string $next = '2027-10-18'): array {
+    private function templateEntry(string $id, string $status = 'ACTIVE', ?string $next = '2027-10-18', bool $failed = false, ?string $error = null): array {
         return [
             'id' => $id, 'organizationId' => 'org', 'title' => 'Rechnung Exchange', 'createdDate' => '2025-10-01T10:00:00.000+02:00', 'updatedDate' => '2026-10-01T10:00:00.000+02:00',
             'address' => ['contactId' => self::CONTACT, 'name' => 'Hafen- und Schleppbetrieb M. Seewind GmbH & CO. KG'],
@@ -83,10 +83,104 @@ class RecurringPlanTest extends TestCase {
             'paymentConditions' => ['paymentTermLabel' => '14 Tage', 'paymentTermDuration' => 14],
             'recurringTemplateSettings' => [
                 'id' => 'settings-' . $id, 'startDate' => '2025-10-18T00:00:00.000+02:00', 'endDate' => null, 'finalize' => false, 'shippingType' => 'service',
-                'executionInterval' => 'ANNUALLY', 'nextExecutionDate' => $next . 'T00:00:00.000+02:00', 'lastExecutionDate' => '2026-10-18T00:00:00.000+02:00',
-                'lastExecutionFailed' => false, 'lastExecutionErrorMessage' => null, 'executionStatus' => $status,
+                'executionInterval' => 'ANNUALLY', 'nextExecutionDate' => $next !== null ? $next . 'T00:00:00.000+02:00' : null, 'lastExecutionDate' => '2026-10-18T00:00:00.000+02:00',
+                'lastExecutionFailed' => $failed, 'lastExecutionErrorMessage' => $error, 'executionStatus' => $status,
             ],
         ];
+    }
+
+    /** Domain-Abo des Hafenbetriebs (direkter Kunde). */
+    private function domainSubscription(string $domain): ResaleSubscription {
+        $subscription = ResaleSubscription::query()->create([
+            'organization_id' => $this->organization->id, 'kind' => 'domain', 'provider' => 'domainreselling', 'external_id' => $domain, 'label' => $domain,
+            'customer_id' => $this->schub->id, 'quantity' => 1, 'starts_on' => '2025-10-18', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto',
+            'status' => 'active', 'currency' => 'EUR', 'sale_unit_price' => '9.00',
+        ]);
+        (new PeriodPlanner)->sync($subscription);
+
+        return $subscription;
+    }
+
+    public function test_domain_templates_count_as_plan_lines_and_link_only_by_exact_domain(): void {
+        // MVP-1442: Elf Lexoffice-Vorlagen auf Prod tragen „Top-Level-Domain“ mit der Domain im Text; ohne Einstufung
+        // sah das Register keine Lizenzposition und meldete jede Domain als „Abo ohne Serienvorlage“.
+        $tld = LexofficeArticle::create([
+            'organization_id' => $this->organization->id, 'external_id' => 'art-tld', 'name' => 'Top-Level-Domain', 'article_number' => 'TLD-DE',
+            'type' => 'SERVICE', 'unit_name' => 'Jahr', 'net_unit_price' => '8.55', 'currency' => 'EUR', 'vat_rate' => '19', 'synced_at' => now(),
+        ]);
+        $this->assertSame(\App\Enums\Reselling\ResaleArticleRole::License, app(\App\Services\Reselling\Register\LicenseArticleClassifier::class)->detected('Top-Level-Domain'), 'Domain-Artikel gelten als Abo-Artikel');
+        $kanzlei = $this->domainSubscription('beispiel-kanzlei.de');
+        $berlin = $this->domainSubscription('beispiel-kanzlei-berlin.de');
+        $hamburg = $this->domainSubscription('beispiel-kanzlei-hamburg.de');
+        $line = static fn(string $domain): array => ['type' => 'service', 'id' => 'art-tld', 'name' => 'Top-Level-Domain', 'description' => '.de-Domain inkl. Verwaltung (' . $domain . ')', 'quantity' => 1, 'unitName' => 'Jahr', 'unitPrice' => ['currency' => 'EUR', 'netAmount' => 8.55, 'taxRatePercentage' => 19.0]];
+        $this->fakeApi([$this->templateEntry('tpl-dom')], [$line('beispiel-kanzlei.de'), $line('beispiel-kanzlei-berlin.de')]);
+        (new LexofficeRecurringTemplateSync($this->organization->id))->sync($this->organization);
+
+        $template = app(RecurringPlans::class)->templateByKey($this->organization, 'lexoffice:tpl-dom');
+        $this->assertNotNull($template);
+        $this->assertCount(2, $template->licenceLines(), 'Domainzeilen sind Vorlagenpositionen');
+        $this->assertSame($tld->id, (int) LexofficeRecurringTemplate::query()->firstOrFail()->lines()->first()?->lexoffice_article_id);
+
+        $proposal = app(PlanLinkProposer::class)->propose($this->organization);
+        $this->assertSame(2, $proposal['links']);
+        $links = ResalePlanLink::query()->orderBy('line_position')->get();
+        $this->assertSame([$kanzlei->id, $berlin->id], $links->map(static fn(ResalePlanLink $l): int => (int) $l->subscription_id)->all(), 'exakte Nennung: „beispiel-kanzlei.de“ nimmt nicht die Zeile von beispiel-kanzlei-berlin.de');
+        $this->assertSame(0, ResalePlanLink::query()->where('subscription_id', $hamburg->id)->count());
+        $kinds = array_count_values(array_column(app(PlanAudit::class)->findings($this->organization), 'kind'));
+        $this->assertSame(1, $kinds[PlanAudit::SUBSCRIPTION_WITHOUT_PLAN] ?? 0, 'nur die Domain ohne Zeile bleibt ohne Vorlage');
+        $this->assertArrayNotHasKey(PlanAudit::QUANTITY_MISMATCH, $kinds);
+    }
+
+    public function test_failed_execution_shows_whether_the_invoice_exists_and_is_paid(): void {
+        // MVP-1441: Lexoffice meldet nur „fehlgeschlagen“ mit Text; ob die Rechnung dabei entstand, sagt der Spiegel.
+        $admin = $this->orgAdmin();
+        $exchange = $this->subscription('CNLCON00111', 'Exchange Online Plan 1', 1, '2025-10-18', 'lex:' . $this->exchange->id);
+        $mailError = 'Die Serienrechnung konnte nicht per E-Mail versendet werden.';
+        $this->fakeApi([
+            $this->templateEntry('tpl-paid', 'ACTIVE', '2027-01-13', true, $mailError),
+            $this->templateEntry('tpl-none', 'ACTIVE', '2027-02-01', true, $mailError),
+            $this->templateEntry('tpl-paused', 'PAUSED', null, true, 'Mindestens eine Empfänger-E-Mail wurde aus dem Kontakt gelöscht.'),
+        ], $this->exchangeLines(1));
+        (new LexofficeRecurringTemplateSync($this->organization->id))->sync($this->organization);
+        $voucher = static function (string $template, string $number, string $date, string $status) {
+            $voucher = LexofficeVoucher::create([
+                'organization_id' => app('currentOrganization')->id, 'external_id' => 'v-' . $number, 'contact_external_id' => self::CONTACT, 'voucher_type' => 'invoice', 'recurring_template_id' => $template,
+                'voucher_status' => $status, 'voucher_number' => $number, 'voucher_date' => $date, 'total_amount' => 56.41, 'currency' => 'EUR', 'archived' => false, 'lines_synced_at' => now(),
+            ]);
+            LexofficeVoucherLine::create([
+                'organization_id' => $voucher->organization_id, 'voucher_id' => $voucher->id, 'position' => 1, 'type' => 'service', 'external_article_id' => self::ARTICLE,
+                'name' => 'Exchange Online (Plan 1)', 'quantity' => 12, 'unit_name' => 'Monat', 'unit_net' => '3.95', 'total_net' => '47.40', 'tax_rate' => 19, 'currency' => 'EUR',
+            ]);
+        };
+        $voucher('tpl-paid', 'RE/2026/1010', '2026-01-13', 'paid');
+        $voucher('tpl-paid', 'RE/2025/0789', '2025-01-13', 'paid');
+        $voucher('tpl-paused', 'RE/2026/0500', '2026-05-01', 'open');
+
+        $plans = app(RecurringPlans::class);
+        $states = app(\App\Services\Reselling\Plan\TemplateExecutions::class)->statesFor($this->organization, $plans->templatesFor($this->organization));
+        $this->assertSame('paid', $states['lexoffice:tpl-paid']->state);
+        $this->assertSame('RE/2026/1010', $states['lexoffice:tpl-paid']->voucherNumber, 'die Rechnung im Fenster um „nächste Ausführung minus ein Jahr“, nicht die vom Vorjahr');
+        $this->assertSame('missing', $states['lexoffice:tpl-none']->state);
+        $this->assertSame('2026-02-01', $states['lexoffice:tpl-none']->expectedOn?->toDateString());
+        $this->assertSame('open', $states['lexoffice:tpl-paused']->state, 'ohne nächste Ausführung zählt die jüngste Rechnung');
+
+        // Befunde tragen den Stand, die Kontoseite zeigt ihn neben dem Abzeichen mit der Meldung als Tooltip.
+        foreach (['tpl-paid', 'tpl-none', 'tpl-paused'] as $i => $key) {
+            ResalePlanLink::query()->create(['organization_id' => $this->organization->id, 'subscription_id' => $exchange->id, 'plan_key' => 'lexoffice:' . $key, 'line_position' => 2, 'quantity' => 1, 'origin' => LinkOrigin::Confirmed]);
+        }
+        $findings = array_values(array_filter(app(PlanAudit::class)->findings($this->organization), static fn(array $f): bool => $f['kind'] === PlanAudit::LAST_FAILED));
+        $this->assertCount(3, $findings);
+        $byKey = [];
+        foreach ($findings as $finding) {
+            $byKey[$finding['template']?->key] = $finding['params']['state'];
+        }
+        $this->assertSame(__('resale.plan.execution.paid', ['number' => 'RE/2026/1010', 'date' => '13.01.2026']), $byKey['lexoffice:tpl-paid']);
+        $this->assertSame(__('resale.plan.execution.missing_expected', ['expected' => '01.02.2026']), $byKey['lexoffice:tpl-none']);
+        $this->assertSame(__('resale.plan.execution.open', ['number' => 'RE/2026/0500', 'date' => '01.05.2026']), $byKey['lexoffice:tpl-paused']);
+        $this->actingAs($admin)->get(route('finance.resale.accounts.show', 'qualityhosting:CNL00010'))->assertOk()
+            ->assertSee(__('resale.plan.execution.paid', ['number' => 'RE/2026/1010', 'date' => '13.01.2026']))
+            ->assertSee(__('resale.plan.execution.missing_expected', ['expected' => '01.02.2026']))
+            ->assertSee('title="' . $mailError . '"', false);
     }
 
     /**

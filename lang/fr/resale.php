@@ -1234,6 +1234,12 @@ return [
         'failed' => 'dernière exécution échouée',
         'finalize' => 'finalise et envoie la facture',
         'draft_only' => 'crée des brouillons',
+        'execution' => [
+            'paid' => 'La facture :number du :date est payée',
+            'open' => 'La facture :number du :date est ouverte — vérifier l’envoi dans le logiciel de comptabilité',
+            'missing_expected' => 'aucune facture pour le :expected',
+            'missing' => 'aucune facture issue de ce modèle',
+        ],
         'from_invoice' => 'Affectation d’après la facture :voucher, créée par ce modèle.',
         'planned_by' => 'Facturé via le modèle récurrent « :title » (prochaine exécution :date).',
         'digest_line' => ':count constats entre abonnements et modèles récurrents (abonnement sans modèle, modèle sans abonnement, quantité différente).',
@@ -1293,7 +1299,7 @@ return [
             'plan_paused' => 'Le modèle est :status, l\'abonnement continue.',
             'plan_missing' => 'Le modèle affecté :plan n\'existe plus.',
             'next_execution_off' => 'Le modèle s\'exécute le :next, la prochaine période commence le :period.',
-            'last_failed' => 'La dernière exécution du modèle a échoué : :error',
+            'last_failed' => 'La dernière exécution du modèle a échoué (:state) : :error',
         ],
     ],
     // Überblick als Aufgabenliste und Sammelaktionen (Feature 185, MVP-1414/1415)
